@@ -15,6 +15,7 @@ pub mod identity;
 pub mod ids;
 pub mod index;
 pub mod kind;
+pub mod lint;
 pub mod manifest;
 pub mod names;
 pub mod node;

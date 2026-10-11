@@ -98,3 +98,20 @@ Two tags, one constraint category, one accepted decision with two drivers (one l
 the Requirement), two options, four assessments and two consequences. Ten bindings, the
 Requirement's with one alias. Key `n` is `00000000-0000-7000-8000-` followed by `n` as twelve
 hexadecimal digits; the document key is key 0.
+
+## `lint-defaults.yaml`
+
+The linter's default configuration, written as a `spec/lint.yaml` that states every default: each
+rule's `enabled` and `severity`, the lexicons of `LQ-001`..`LQ-005` as `replace` lists, the
+`LQ-005` conjunction threshold, and the `LQ-008` minimum token count and similarity threshold.
+A tree without `spec/lint.yaml` is linted as if it held this file. `rules` and `suppressions` are
+lists of records: a rule's record names it in `rule`; a suppression names `rule`, `key` and a
+non-blank `reason`.
+
+The language rules read text as tokens: a text splits on Unicode word boundaries (UAX #29), and
+each piece that holds a letter or a decimal digit is a token, lower-cased, so `65,536`,
+`read_graph` and `don't` are one token each and punctuation is none. A body is read as a
+Markdown reader shows it, CommonMark without extensions: code blocks, HTML blocks and code spans
+are left out, and the text pieces are joined by single spaces. `LQ-005` reads a body sentence by
+sentence (Unicode sentence boundaries). `LQ-008` measures two names as the size of their tokens'
+multiset intersection over the size of its union.
