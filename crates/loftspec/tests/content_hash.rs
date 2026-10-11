@@ -42,9 +42,9 @@ fn ac_596_the_content_view_holds_its_fields_in_order() {
         name: "The hasher shall use SHA-256.".to_owned(),
         details: Details {
             tags: vec![
-                TagName::new("portable"),
-                TagName::new("identity"),
-                TagName::new("portable"),
+                TagName::parse("portable").unwrap(),
+                TagName::parse("identity").unwrap(),
+                TagName::parse("portable").unwrap(),
             ],
             ..Details::with_body("Only SHA-256.")
         },
@@ -132,12 +132,15 @@ fn ac_37_a_node_hashes_alike_at_any_position_among_its_siblings() {
 #[test]
 fn tag_order_and_repetition_do_not_change_the_content_hash() {
     let mut first = feature(key(1), "Keys", vec![]);
-    first.details.tags = vec![TagName::new("identity"), TagName::new("portable")];
+    first.details.tags = vec![
+        TagName::parse("identity").unwrap(),
+        TagName::parse("portable").unwrap(),
+    ];
     let mut second = first.clone();
     second.details.tags = vec![
-        TagName::new("portable"),
-        TagName::new("identity"),
-        TagName::new("identity"),
+        TagName::parse("portable").unwrap(),
+        TagName::parse("identity").unwrap(),
+        TagName::parse("identity").unwrap(),
     ];
     assert_eq!(first.content_hash(), second.content_hash());
 }

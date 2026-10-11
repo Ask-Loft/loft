@@ -145,7 +145,27 @@ fn ac_232_and_ac_233_an_alias_under_two_elements_names_both_and_the_alias() {
 }
 
 #[test]
-fn distinct_labels_and_aliases_validate_cleanly() {
+fn ac_287_and_ac_288_two_keys_with_one_live_label_name_both_and_the_label() {
+    let mut bindings = Bindings::default();
+    bindings.bind(requirement(1), label("RQ-7")).unwrap();
+    bindings.bind(requirement(2), label("RQ-7")).unwrap();
+    let errors = bindings.validate();
+    assert_eq!(
+        errors,
+        [BindingError::LabelUnderTwoKeys {
+            label: label("RQ-7"),
+            first: requirement(1).into(),
+            second: requirement(2).into(),
+        }]
+    );
+    let message = errors[0].to_string();
+    for part in [key(1).to_string(), key(2).to_string(), "RQ-7".to_owned()] {
+        assert!(message.contains(&part), "{message} names {part}");
+    }
+}
+
+#[test]
+fn ac_289_distinct_labels_and_aliases_validate_cleanly() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.relabel(requirement(1), label("RQ-9")).unwrap();

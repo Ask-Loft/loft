@@ -132,7 +132,7 @@ fn ac_214_ac_215_and_ac_217_registry_roots_are_over_entries_sorted_by_name() {
     document.tags.reverse();
     document.categories.push(CategoryEntry {
         id: CategoryId::new(key(33)),
-        name: CategoryName::new("a.first"),
+        name: CategoryName::parse("a.first").unwrap(),
         definition: "Sorts first.".to_owned(),
     });
     let with_category = roots(&document).categories;
@@ -151,7 +151,7 @@ fn the_two_registries_have_distinct_roots_even_when_equal() {
         .iter()
         .map(|tag| CategoryEntry {
             id: CategoryId::new(tag.id.key()),
-            name: CategoryName::new(tag.name.as_str()),
+            name: CategoryName::parse(tag.name.as_str()).unwrap(),
             definition: tag.definition.clone(),
         })
         .collect();

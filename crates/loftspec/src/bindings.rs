@@ -28,6 +28,12 @@ pub enum BindingError {
     AlreadyBound(ElementId),
     #[error("{element} cannot carry label {label}: its kind takes another prefix or none")]
     PrefixMismatch { element: ElementId, label: Label },
+    #[error("label {label} is the live label of both {first} and {second}")]
+    LabelUnderTwoKeys {
+        label: Label,
+        first: ElementId,
+        second: ElementId,
+    },
     #[error("alias {alias} of {alias_element} is the live label of {label_element}")]
     AliasIsLiveLabel {
         alias: Label,
@@ -151,15 +157,23 @@ impl Bindings {
         self.entries.is_empty()
     }
 
-    /// The alias rules the validator applies (RQ-10, RQ-66), each error once, in key order.
+    /// The label and alias rules the validator applies (RQ-70, RQ-10, RQ-66), each error once,
+    /// in key order.
     #[must_use]
     pub fn validate(&self) -> Vec<BindingError> {
-        let live: BTreeMap<Label, ElementId> = self
-            .iter()
-            .map(|binding| (binding.label, binding.element))
-            .collect();
-        let mut first_owner: BTreeMap<Label, ElementId> = BTreeMap::new();
+        let mut live: BTreeMap<Label, ElementId> = BTreeMap::new();
         let mut errors = Vec::new();
+        for binding in self.iter() {
+            let first = *live.entry(binding.label).or_insert(binding.element);
+            if first != binding.element {
+                errors.push(BindingError::LabelUnderTwoKeys {
+                    label: binding.label,
+                    first,
+                    second: binding.element,
+                });
+            }
+        }
+        let mut first_owner: BTreeMap<Label, ElementId> = BTreeMap::new();
         for (element, alias) in self.aliases() {
             if let Some(owner) = live.get(&alias).filter(|owner| **owner != element) {
                 errors.push(BindingError::AliasIsLiveLabel {

@@ -130,7 +130,7 @@ fn product_tree(k: &dyn Fn(u32) -> Key) -> Product {
     };
     let mut product = product(k(1), "Example Product");
     product.details = Details {
-        tags: vec![TagName::new("portable")],
+        tags: vec![TagName::parse("portable").unwrap()],
         ..Details::with_body("The example.")
     };
     product.feature_groups = vec![group];
@@ -143,7 +143,7 @@ fn component_tree(k: &dyn Fn(u32) -> Key) -> Component {
         name: "The document model shall reject unknown kinds.".to_owned(),
         details: Details::default(),
         binding: Some(TechnicalBinding {
-            category: CategoryName::new("runtime.language"),
+            category: CategoryName::parse("runtime.language").unwrap(),
             required_value: "rust".to_owned(),
         }),
         conservation_kind: None,
@@ -316,18 +316,18 @@ pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
     document.tags = vec![
         TagEntry {
             id: TagId::new(k(31)),
-            name: TagName::new("portable"),
+            name: TagName::parse("portable").unwrap(),
             definition: "Behaviour every implementation must reproduce exactly.".to_owned(),
         },
         TagEntry {
             id: TagId::new(k(30)),
-            name: TagName::new("identity"),
+            name: TagName::parse("identity").unwrap(),
             definition: "Keys, labels, aliases and the bindings between them.".to_owned(),
         },
     ];
     document.categories = vec![CategoryEntry {
         id: CategoryId::new(k(32)),
-        name: CategoryName::new("runtime.language"),
+        name: CategoryName::parse("runtime.language").unwrap(),
         definition: "The language the runtime is written in.".to_owned(),
     }];
     document.decisions = vec![decision(k)];
