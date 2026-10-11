@@ -2,6 +2,7 @@
 
 pub mod export;
 mod links;
+mod prose;
 mod tree;
 
 use uuid::Uuid;
@@ -9,7 +10,7 @@ use uuid::Uuid;
 use self::export::{Export, ExternalId};
 use crate::bindings::{BindingError, Counters};
 use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
-use crate::identity::LabelError;
+use crate::identity::{Label, LabelError};
 use crate::ids::{
     AuthoredStateId, CategoryId, DecisionId, DocumentId, NodeId, RequirementId, TagId,
 };
@@ -34,6 +35,10 @@ pub enum Finding {
         decision: DecisionId,
         subject: NodeId,
     },
+    /// A label reference in a node's name or body resolves to no element (AC-191).
+    UnresolvedReference { node: NodeId, reference: Label },
+    /// A body holds a Markdown heading, at this 1-based line (AC-193).
+    HeadingInBody { node: NodeId, line: usize },
 }
 
 /// An export the converter refuses.
@@ -103,6 +108,9 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
     document.edges = links::realizations(export, &nodes)?;
     document.edges.extend(links::scopes(export, &nodes)?);
     links::decisions(export, &nodes, &mut document, &mut findings)?;
+    let (mentions, prose_findings) = prose::mentions(export, &nodes, &document.bindings);
+    document.edges.extend(mentions);
+    findings.extend(prose_findings);
     document.derived_from = Some(DerivedFrom {
         authored_state_id: AuthoredStateId::new(export.authored_state_id.into()),
         content_address: export.content_address,

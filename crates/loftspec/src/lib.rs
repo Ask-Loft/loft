@@ -14,6 +14,7 @@ pub mod ids;
 pub mod kind;
 pub mod manifest;
 pub mod names;
+pub mod prose;
 pub mod statement;
 pub mod text;
 pub mod tree;

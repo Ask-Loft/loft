@@ -12,7 +12,8 @@ use loftspec::document::{DerivedFrom, Edge, SubjectRole};
 use loftspec::hash::hash_document;
 use loftspec::identity::{Key, Label};
 use loftspec::ids::{
-    AuthoredStateId, ComponentId, DecisionId, FeatureId, NodeId, OptionId, ProductId, RequirementId,
+    AuthoredStateId, ComponentId, CriterionId, DecisionId, ElementId, FeatureId, NodeId, OptionId,
+    ProductId, RequirementId,
 };
 use serde_json::{Value, json};
 
@@ -215,4 +216,58 @@ fn a_subject_of_no_kind_the_format_holds_is_refused() {
     value["architectureDecisions"][0]["subjectLinks"][0]["subject"]["nodeId"] = json!(uuid(77));
     let error = converted(&value).unwrap_err();
     assert!(error.to_string().contains("ADR-1"), "{error}");
+}
+
+#[test]
+fn ac_190_a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
+    let mut value = full_export();
+    value["nodes"][3]["body"] = json!("Builds on RQ-2, D-1/F-1 and RQ-2 again; see ADR-1.");
+    let conversion = converted(&value).unwrap();
+    let mentions: Vec<&Edge> = edges(&conversion)
+        .iter()
+        .filter(|edge| matches!(edge, Edge::Mentions { .. }))
+        .collect();
+    let source = ElementId::from(RequirementId::new(key(4)));
+    assert_eq!(
+        mentions,
+        [
+            &Edge::Mentions {
+                source,
+                target: ElementId::from(RequirementId::new(key(13))),
+            },
+            &Edge::Mentions {
+                source,
+                target: ElementId::from(FeatureId::new(key(3))),
+            },
+            &Edge::Mentions {
+                source,
+                target: ElementId::from(DecisionId::new(key(20))),
+            },
+        ]
+    );
+}
+
+#[test]
+fn ac_191_a_reference_that_does_not_resolve_is_a_finding() {
+    let mut value = full_export();
+    value["nodes"][4]["name"] = json!("Every node record carries the key RQ-99 names.");
+    let conversion = converted(&value).unwrap();
+    assert!(conversion.findings.contains(&Finding::UnresolvedReference {
+        node: NodeId::Criterion(CriterionId::new(key(5))),
+        reference: Label::parse("RQ-99").unwrap(),
+    }));
+}
+
+#[test]
+fn ac_192_and_ac_193_a_body_is_kept_byte_for_byte_and_a_heading_in_it_is_a_finding() {
+    let body = "Keys.\n\n## Rationale\n\tTabbed, trailing space. \n";
+    let mut value = full_export();
+    value["nodes"][2]["body"] = json!(body);
+    let conversion = converted(&value).unwrap();
+    let feature = &conversion.document.products[0].feature_groups[0].features[0];
+    assert_eq!(feature.details.body.as_deref(), Some(body));
+    assert!(conversion.findings.contains(&Finding::HeadingInBody {
+        node: NodeId::Feature(FeatureId::new(key(3))),
+        line: 3,
+    }));
 }
