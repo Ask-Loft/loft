@@ -154,9 +154,10 @@ fn group_slug(
     })
 }
 
-/// Lists a file whose key was just minted: a Product in the manifest, a Feature in the Feature
-/// Group whose directory holds it. A file no list can take stays unlisted, and the check after
-/// supplying reports it (AC-100, AC-700).
+/// Lists a file whose key was just minted (RQ-219): a Product in the manifest (AC-850), a Feature
+/// in the Feature Group whose directory holds it (AC-851), after the keys already listed
+/// (AC-852). A file no list can take stays unlisted, and the check after supplying reports it
+/// (AC-853, AC-854).
 fn list_new_file(tree: &mut Tree, role: &Role, key: Key) {
     let (lister, group_slug) = match role {
         Role::Product { .. } => (SpecPath::new(MANIFEST), None),

@@ -131,7 +131,7 @@ fn ac_94_a_renamed_node_keeps_its_file() {
 }
 
 #[test]
-fn a_new_feature_file_without_a_key_is_listed_by_the_group_of_its_directory() {
+fn ac_851_ac_852_a_new_feature_files_key_is_appended_to_the_features_of_its_directorys_group() {
     let mut files = codec::write(&small_document());
     files.insert(
         path("products/example-product/identity/labels.yaml"),
@@ -146,7 +146,7 @@ fn a_new_feature_file_without_a_key_is_listed_by_the_group_of_its_directory() {
 }
 
 #[test]
-fn a_new_feature_file_no_group_can_list_is_refused_and_nothing_is_formatted() {
+fn ac_853_ac_854_a_new_feature_file_no_group_can_list_is_refused_and_nothing_is_formatted() {
     let mut files = codec::write(&small_document());
     let stray = path("products/example-product/elsewhere/labels.yaml");
     files.insert(stray.clone(), b"name: \"Labels\"\n".to_vec());
@@ -154,4 +154,19 @@ fn a_new_feature_file_no_group_can_list_is_refused_and_nothing_is_formatted() {
     assert_eq!(errors.len(), 1, "{errors:?}");
     assert_eq!(errors[0].sites[0].path, stray);
     assert_eq!(errors[0].problem, Problem::NotListed("Feature Group"));
+}
+
+#[test]
+fn ac_850_ac_852_a_new_product_files_key_is_appended_to_the_manifests_products() {
+    let mut files = codec::write(&small_document());
+    files.insert(
+        path("products/new-product/product.yaml"),
+        b"name: \"New Product\"\n".to_vec(),
+    );
+    let files = formatted(&files);
+    let document = codec::read(&files).unwrap_or_else(|errors| panic!("{errors:?}"));
+    assert_eq!(document.products.len(), 2);
+    assert_eq!(document.products[0].name, "Example Product");
+    assert_eq!(document.products[1].name, "New Product");
+    assert_eq!(document.products[1].slug.as_str(), "new-product");
 }

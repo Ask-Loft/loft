@@ -11,13 +11,13 @@
   },
   "candidate": {
     "branchId": "21628c25-bcd5-46ab-a577-a105913d4b66",
-    "branchCheckpointId": "c13628e9-7f3b-462a-b5ae-31cd117dd234",
-    "checkpointSequence": 27,
-    "branchRevision": 166,
+    "branchCheckpointId": "3a004832-613e-4f6d-b593-c9ac22eeaf21",
+    "checkpointSequence": 28,
+    "branchRevision": 172,
     "baseAuthoredStateId": "46f04b35-1b47-4609-a737-3422d20380c6",
     "baseContentAddress": "77b926758c7b38f0be81c137acb8bf4ca37500754f46ee55666a0a85c4661204",
-    "contentAddress": "a3b5b328a9adbe8c3861f87873c35e9cf45f1d861d058e818d17e1f17ae5dda9",
-    "graphAddress": "91d8fc1fb12b972c36ee4c2fca287f04703df0f780885a0e7f229321a3f1b3e7",
+    "contentAddress": "8bbec2fc098b9ec08a436506b71319e9dfd61e960c2a728046b8f47282916c19",
+    "graphAddress": "1f5ed001880c2c0d48baca6b864feb307f5deff7f7d6b6b9eefd6b1f622d14f5",
     "vocabularyAddress": "abb2cb8766360353c014fc34f601fd8e23e578e703070523e60f898bf78a33c2",
     "technicalConstraintCategoryAddress": null
   }
