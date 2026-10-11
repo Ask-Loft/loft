@@ -35,6 +35,13 @@ The bootstrap ends at the self-hosting milestone: the document is imported into 
 - `crates/loft-cli` is the `loft` binary and owns nothing the library could own.
 - None of these ever depends on `loft-domain`, `loft-store` or any other crate of the private
   server. That boundary is the licence boundary.
+- Identifiers are typed domain IDs — `ProductId`, `FeatureGroupId`, `FeatureId`,
+  `RequirementId`, `CriterionId`, `ComponentId`, `ConstraintId`, `QualityAttributeId`,
+  `SectionId`, `DecisionId`, `OptionId`, `DriverId`, `ConsequenceId`, `TagId`, `CategoryId` — and
+  references by name are typed (`TagName`, `CategoryName`); never a plain string or one shared
+  key type. Every typed ID wraps the element's key and serialises as it, so the files, views and
+  digests are unchanged by the types. A kind change keeps the key through an explicit
+  conversion. Prose (names, bodies, statements) stays text.
 - `docs/` holds the lock, the exports and, while one is active, the work target. `testdata/` holds
   synthetic fixtures and golden vectors only.
 

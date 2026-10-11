@@ -2,142 +2,212 @@
 
 mod common;
 
-use common::{key, named};
-use loftspec::attributes::{Attributes, ConservationKind, VerificationFate};
+use common::{component, criterion, feature, fresh_key, key, requirement};
+use loftspec::attributes::{ConservationKind, VerificationFate};
 use loftspec::canonical::{Domain, canonical_bytes, digest};
-use loftspec::hash::{content_hash, node_view};
-use loftspec::kind::NodeKind;
-use loftspec::model::{Node, Title};
+use loftspec::hash::ContentHash;
+use loftspec::ids::{ConstraintId, FeatureGroupId, SectionId};
+use loftspec::names::TagName;
 use loftspec::statement::{EarsForm, Statement};
+use loftspec::tree::{
+    ComponentChild, Constraint, Criterion, Details, Feature, FeatureGroup, Requirement, Section,
+};
 
-fn parent_with(children: Vec<Node>) -> Node {
-    let mut parent = named(1, NodeKind::Feature, "Parent");
-    parent.children = children;
-    parent
+fn section(n: u32, name: &str) -> Section {
+    Section {
+        id: Some(SectionId::new(key(n))),
+        name: name.to_owned(),
+        body: "Prose.".to_owned(),
+        sections: Vec::new(),
+    }
+}
+
+fn two_requirements(first: &str, second: &str) -> Feature {
+    feature(
+        key(1),
+        "Parent",
+        vec![
+            requirement(key(2), first, vec![]),
+            requirement(key(3), second, vec![]),
+        ],
+    )
 }
 
 #[test]
 fn ac_34_the_content_view_holds_its_fields_in_order() {
-    let mut node = named(1, NodeKind::Constraint, "The hasher shall use SHA-256.");
-    node.body = Some("Only SHA-256.".to_owned());
-    node.tags = vec![
-        "portable".to_owned(),
-        "identity".to_owned(),
-        "portable".to_owned(),
-    ];
-    node.attributes = Attributes {
+    let mut constraint = Constraint {
+        id: Some(ConstraintId::new(key(1))),
+        name: "The hasher shall use SHA-256.".to_owned(),
+        details: Details {
+            tags: vec![
+                TagName::new("portable"),
+                TagName::new("identity"),
+                TagName::new("portable"),
+            ],
+            ..Details::with_body("Only SHA-256.")
+        },
+        binding: None,
         conservation_kind: Some(ConservationKind::Cap),
         verification_fate: Some(VerificationFate::Proved),
-        ..Attributes::default()
     };
-    let child = named(2, NodeKind::Section, "Notes");
-    let child_hash = content_hash(&child);
-    node.children = vec![child];
-    let canonical = String::from_utf8(canonical_bytes(&node_view(&node))).unwrap();
+    let notes = section(2, "Notes");
+    let notes_hash = notes.content_hash();
+    constraint.details.sections = vec![notes];
+    let canonical = String::from_utf8(canonical_bytes(&constraint.content_view())).unwrap();
     assert_eq!(
         canonical,
         format!(
-            r#"["constraint","The hasher shall use SHA-256.","Only SHA-256.",["identity","portable"],null,null,null,"cap","proved",["{child_hash}"]]"#
+            r#"["constraint","The hasher shall use SHA-256.","Only SHA-256.",["identity","portable"],null,null,null,"cap","proved",["{notes_hash}"]]"#
         )
     );
 }
 
 #[test]
 fn ac_35_and_ac_40_equal_views_with_different_keys_have_one_content_hash() {
-    let first = named(1, NodeKind::Criterion, "A criterion.");
-    let second = named(2, NodeKind::Criterion, "A criterion.");
-    let unkeyed = Node::named(None, NodeKind::Criterion, "A criterion.");
-    assert_eq!(content_hash(&first), content_hash(&second));
-    assert_eq!(content_hash(&first), content_hash(&unkeyed));
+    let first = criterion(key(1), "A criterion.");
+    let second = criterion(fresh_key(1), "A criterion.");
+    let unkeyed = Criterion {
+        id: None,
+        ..first.clone()
+    };
+    assert_eq!(first.content_hash(), second.content_hash());
+    assert_eq!(first.content_hash(), unkeyed.content_hash());
 }
 
 #[test]
 fn ac_41_changing_a_body_changes_the_content_hash() {
-    let mut node = named(1, NodeKind::Feature, "Keys");
-    let before = content_hash(&node);
-    node.body = Some("Keys address nodes.".to_owned());
-    assert_ne!(content_hash(&node), before);
+    let mut node = feature(key(1), "Keys", vec![]);
+    let before = node.content_hash();
+    node.details.body = Some("Keys address nodes.".to_owned());
+    assert_ne!(node.content_hash(), before);
 }
 
 #[test]
 fn an_empty_body_and_no_body_hash_differently() {
-    let mut node = named(1, NodeKind::Feature, "Keys");
-    let without = content_hash(&node);
-    node.body = Some(String::new());
-    assert_ne!(content_hash(&node), without);
+    let mut node = feature(key(1), "Keys", vec![]);
+    let without = node.content_hash();
+    node.details.body = Some(String::new());
+    assert_ne!(node.content_hash(), without);
 }
 
 #[test]
 fn ac_42_changing_a_child_changes_the_parent() {
-    let before = content_hash(&parent_with(vec![named(2, NodeKind::Requirement, "One.")]));
-    let after = content_hash(&parent_with(vec![named(2, NodeKind::Requirement, "Two.")]));
-    assert_ne!(before, after);
+    assert_ne!(
+        two_requirements("One.", "Two.").content_hash(),
+        two_requirements("One.", "Three.").content_hash()
+    );
 }
 
 #[test]
 fn ac_43_and_ac_44_reordering_children_changes_the_parent_and_no_sibling() {
-    let one = named(2, NodeKind::Requirement, "One.");
-    let two = named(3, NodeKind::Requirement, "Two.");
-    let (one_hash, two_hash) = (content_hash(&one), content_hash(&two));
-    let forward = parent_with(vec![one.clone(), two.clone()]);
-    let reversed = parent_with(vec![two.clone(), one.clone()]);
-    assert_ne!(content_hash(&forward), content_hash(&reversed));
-    assert_eq!(content_hash(&reversed.children[1]), one_hash);
-    assert_eq!(content_hash(&reversed.children[0]), two_hash);
+    let forward = two_requirements("One.", "Two.");
+    let mut reversed = forward.clone();
+    reversed.requirements.reverse();
+    assert_ne!(forward.content_hash(), reversed.content_hash());
+    assert_eq!(
+        forward.requirements[0].content_hash(),
+        reversed.requirements[1].content_hash()
+    );
+    assert_eq!(
+        forward.requirements[1].content_hash(),
+        reversed.requirements[0].content_hash()
+    );
 }
 
 #[test]
 fn ac_37_a_node_hashes_alike_at_any_position_among_its_siblings() {
-    let node = named(2, NodeKind::Requirement, "One.");
-    let first = parent_with(vec![node.clone(), named(3, NodeKind::Requirement, "Two.")]);
-    let second = parent_with(vec![named(3, NodeKind::Requirement, "Two."), node.clone()]);
+    let node = requirement(key(9), "Moved.", vec![]);
+    let mut first = two_requirements("One.", "Two.");
+    first.requirements.insert(0, node.clone());
+    let mut last = two_requirements("One.", "Two.");
+    last.requirements.push(node.clone());
     assert_eq!(
-        content_hash(&first.children[0]),
-        content_hash(&second.children[1])
+        first.requirements[0].content_hash(),
+        last.requirements[2].content_hash()
     );
 }
 
 #[test]
 fn tag_order_and_repetition_do_not_change_the_content_hash() {
-    let mut first = named(1, NodeKind::Feature, "Keys");
-    first.tags = vec!["identity".to_owned(), "portable".to_owned()];
+    let mut first = feature(key(1), "Keys", vec![]);
+    first.details.tags = vec![TagName::new("identity"), TagName::new("portable")];
     let mut second = first.clone();
-    second.tags = vec![
-        "portable".to_owned(),
-        "identity".to_owned(),
-        "identity".to_owned(),
+    second.details.tags = vec![
+        TagName::new("portable"),
+        TagName::new("identity"),
+        TagName::new("identity"),
     ];
-    assert_eq!(content_hash(&first), content_hash(&second));
+    assert_eq!(first.content_hash(), second.content_hash());
 }
 
 #[test]
 fn ac_242_a_statement_enters_as_its_rendered_sentence() {
-    let mut slotted = named(1, NodeKind::Requirement, "");
-    slotted.title = Title::Statement(Statement::Form(EarsForm::Unwanted {
-        r#if: "the manifest is absent".to_owned(),
-        system: "the reader".to_owned(),
-        shall: "report an error.".to_owned(),
-    }));
-    let mut text = slotted.clone();
-    text.title = Title::Statement(Statement::Text(
-        "If the manifest is absent, then the reader shall report an error.".to_owned(),
-    ));
-    assert_eq!(content_hash(&slotted), content_hash(&text));
+    let slotted = Requirement {
+        statement: Statement::Form(EarsForm::Unwanted {
+            r#if: "the manifest is absent".to_owned(),
+            system: "the reader".to_owned(),
+            shall: "report an error.".to_owned(),
+        }),
+        ..requirement(key(1), "", vec![])
+    };
+    let text = requirement(
+        key(1),
+        "If the manifest is absent, then the reader shall report an error.",
+        vec![],
+    );
+    assert_eq!(slotted.content_hash(), text.content_hash());
 }
 
 #[test]
 fn ac_158_a_section_is_hashed_by_the_node_rule() {
-    let section = named(9, NodeKind::Section, "Background");
+    let background = section(9, "Background");
     assert_eq!(
-        content_hash(&section),
-        digest(Domain::Node, &node_view(&section))
+        background.content_hash(),
+        digest(Domain::Node, &background.content_view())
     );
 }
 
 #[test]
+fn sections_follow_the_structural_children() {
+    let mut node = feature(key(1), "Keys", vec![requirement(key(2), "One.", vec![])]);
+    let notes = section(3, "Notes");
+    node.details.sections = vec![notes.clone()];
+    let children = node.content_view()[9].clone();
+    assert_eq!(children[0], node.requirements[0].content_hash().to_string());
+    assert_eq!(children[1], notes.content_hash().to_string());
+}
+
+#[test]
 fn the_kind_is_content() {
-    let feature = named(1, NodeKind::Feature, "Keys");
-    let group = named(1, NodeKind::FeatureGroup, "Keys");
-    assert_ne!(content_hash(&feature), content_hash(&group));
-    assert_eq!(key(1), feature.key.unwrap());
+    let feature_node = feature(key(1), "Keys", vec![]);
+    let group = FeatureGroup {
+        id: Some(FeatureGroupId::new(key(1))),
+        name: "Keys".to_owned(),
+        details: Details::default(),
+        features: Vec::new(),
+    };
+    assert_ne!(feature_node.content_hash(), group.content_hash());
+}
+
+#[test]
+fn a_component_keeps_one_ordered_list_of_mixed_children() {
+    let constraint = |n: u32| {
+        ComponentChild::Constraint(Constraint {
+            id: Some(ConstraintId::new(key(n))),
+            name: format!("Constraint {n}."),
+            details: Details::default(),
+            binding: None,
+            conservation_kind: None,
+            verification_fate: None,
+        })
+    };
+    let mut first = component(key(1), "Hasher");
+    first.children = vec![
+        constraint(2),
+        ComponentChild::Component(component(key(3), "Inner")),
+        constraint(4),
+    ];
+    let mut second = first.clone();
+    second.children.swap(0, 1);
+    assert_ne!(first.content_hash(), second.content_hash());
 }

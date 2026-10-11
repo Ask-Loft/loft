@@ -1,11 +1,11 @@
 //! Architecture Decisions: drivers, options, the assessment matrix and consequences, each element
 //! keyed (AC-181) and kept field for field from a v1 export (AC-257).
 
-use crate::identity::Key;
+use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decision {
-    pub key: Key,
+    pub id: DecisionId,
     pub title: String,
     pub context: String,
     pub state: DecisionState,
@@ -19,19 +19,19 @@ pub struct Decision {
 pub enum DecisionState {
     Proposed,
     Accepted {
-        selected_option: Key,
+        selected_option: OptionId,
         outcome: String,
     },
     Rejected {
         rationale: String,
     },
     Superseded {
-        selected_option: Key,
+        selected_option: OptionId,
         outcome: String,
-        successor: Key,
+        successor: DecisionId,
     },
     Retired {
-        selected_option: Key,
+        selected_option: OptionId,
         outcome: String,
         rationale: String,
     },
@@ -39,7 +39,7 @@ pub enum DecisionState {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Driver {
-    pub key: Key,
+    pub id: DriverId,
     pub payload: DriverPayload,
 }
 
@@ -47,12 +47,12 @@ pub struct Driver {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DriverPayload {
     Local { label: String, statement: String },
-    Subject { subject: Key },
+    Subject { subject: NodeId },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DecisionOption {
-    pub key: Key,
+    pub id: OptionId,
     pub title: String,
     pub description: String,
 }
@@ -80,8 +80,8 @@ impl Rating {
 /// One cell of the option × driver matrix.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Assessment {
-    pub option: Key,
-    pub driver: Key,
+    pub option: OptionId,
+    pub driver: DriverId,
     pub rating: Rating,
     pub rationale: String,
 }
@@ -108,8 +108,8 @@ impl ConsequenceKind {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Consequence {
-    pub key: Key,
+    pub id: ConsequenceId,
     pub kind: ConsequenceKind,
     pub statement: String,
-    pub subject: Option<Key>,
+    pub subject: Option<NodeId>,
 }

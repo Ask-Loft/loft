@@ -9,29 +9,29 @@ use super::HashError;
 use crate::canonical::{Digest, Domain, digest};
 use crate::decision::{Decision, DecisionState, DriverPayload};
 use crate::identity::Key;
+use crate::ids::{DecisionId, NodeId};
+
+use super::NodeIndex;
 
 /// Hashes every decision once, following supersession to its successor.
 pub(crate) struct DecisionHasher<'a> {
-    decisions: BTreeMap<Key, &'a Decision>,
-    nodes: &'a BTreeMap<Key, Digest>,
-    hashes: BTreeMap<Key, Digest>,
-    views: BTreeMap<Key, Value>,
-    in_progress: BTreeSet<Key>,
+    decisions: BTreeMap<DecisionId, &'a Decision>,
+    nodes: &'a NodeIndex,
+    hashes: BTreeMap<DecisionId, Digest>,
+    views: BTreeMap<DecisionId, Value>,
+    in_progress: BTreeSet<DecisionId>,
 }
 
 /// The view and its hash for every decision of a document.
-pub(crate) type DecisionViews = (BTreeMap<Key, Digest>, BTreeMap<Key, Value>);
+pub(crate) type DecisionViews = (BTreeMap<DecisionId, Digest>, BTreeMap<DecisionId, Value>);
 
 impl<'a> DecisionHasher<'a> {
-    pub(crate) fn new(
-        decisions: &'a [Decision],
-        nodes: &'a BTreeMap<Key, Digest>,
-    ) -> Result<Self, HashError> {
+    pub(crate) fn new(decisions: &'a [Decision], nodes: &'a NodeIndex) -> Result<Self, HashError> {
         let mut by_key = BTreeMap::new();
         for decision in decisions {
-            if nodes.contains_key(&decision.key) || by_key.insert(decision.key, decision).is_some()
-            {
-                return Err(HashError::DuplicateKey(decision.key));
+            let key = decision.id.key();
+            if nodes.contains_key(&key) || by_key.insert(decision.id, decision).is_some() {
+                return Err(HashError::DuplicateKey(key));
             }
         }
         Ok(Self {
@@ -44,14 +44,14 @@ impl<'a> DecisionHasher<'a> {
     }
 
     pub(crate) fn hash_all(mut self) -> Result<DecisionViews, HashError> {
-        let keys: Vec<Key> = self.decisions.keys().copied().collect();
+        let keys: Vec<DecisionId> = self.decisions.keys().copied().collect();
         for key in keys {
             self.hash(key)?;
         }
         Ok((self.hashes, self.views))
     }
 
-    fn hash(&mut self, key: Key) -> Result<Digest, HashError> {
+    fn hash(&mut self, key: DecisionId) -> Result<Digest, HashError> {
         if let Some(hash) = self.hashes.get(&key) {
             return Ok(*hash);
         }
@@ -72,7 +72,9 @@ impl<'a> DecisionHasher<'a> {
     }
 
     fn state_view(&mut self, decision: &Decision) -> Result<Value, HashError> {
-        let option = |selected: Key| position(decision, &decision.options, selected, |o| o.key);
+        let option = |selected: crate::ids::OptionId| {
+            position(decision, &decision.options, selected.key(), |o| o.id.key())
+        };
         Ok(match &decision.state {
             DecisionState::Proposed => json!({ "kind": "proposed" }),
             DecisionState::Accepted {
@@ -116,16 +118,13 @@ impl<'a> DecisionHasher<'a> {
 fn decision_view(
     decision: &Decision,
     state: &Value,
-    nodes: &BTreeMap<Key, Digest>,
+    nodes: &NodeIndex,
 ) -> Result<Value, HashError> {
-    let node = |subject: Key| {
-        nodes
-            .get(&subject)
-            .copied()
-            .ok_or(HashError::UnknownDecisionReference {
-                decision: decision.key,
-                reference: subject,
-            })
+    let node = |subject: NodeId| {
+        super::node_hash(nodes, subject).ok_or(HashError::UnknownDecisionReference {
+            decision: decision.id,
+            reference: subject.key(),
+        })
     };
     let drivers = decision
         .drivers
@@ -172,8 +171,12 @@ fn assessment_views(decision: &Decision) -> Result<Vec<Value>, HashError> {
         .assessments
         .iter()
         .map(|assessment| {
-            let option = position(decision, &decision.options, assessment.option, |o| o.key)?;
-            let driver = position(decision, &decision.drivers, assessment.driver, |d| d.key)?;
+            let option = position(decision, &decision.options, assessment.option.key(), |o| {
+                o.id.key()
+            })?;
+            let driver = position(decision, &decision.drivers, assessment.driver.key(), |d| {
+                d.id.key()
+            })?;
             Ok((
                 option,
                 driver,
@@ -199,7 +202,7 @@ fn position<T>(
         .iter()
         .position(|element| key_of(element) == key)
         .ok_or(HashError::UnknownDecisionReference {
-            decision: decision.key,
+            decision: decision.id,
             reference: key,
         })
 }

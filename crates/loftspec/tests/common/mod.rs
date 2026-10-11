@@ -4,80 +4,129 @@
 #![allow(dead_code)]
 
 use loftspec::attributes::{
-    Attributes, QaKind, QualityAggregation, QualityBand, QualityTarget, TechnicalBinding,
-    VerificationFate,
+    QaKind, QualityAggregation, QualityBand, QualityTarget, TechnicalBinding, VerificationFate,
 };
 use loftspec::decision::{
     Assessment, Consequence, ConsequenceKind, Decision, DecisionOption, DecisionState, Driver,
     DriverPayload, Rating,
 };
+use loftspec::document::{CategoryEntry, Document, Edge, SubjectRole, TagEntry};
 use loftspec::identity::{Key, Label};
-use loftspec::kind::NodeKind;
-use loftspec::model::{Document, Edge, EdgeKind, Node, RegistryEntry, SubjectRole, Title};
+use loftspec::ids::{
+    CategoryId, ComponentId, ConsequenceId, ConstraintId, CriterionId, DecisionId, DocumentId,
+    DriverId, FeatureGroupId, FeatureId, OptionId, ProductId, QualityAttributeId, RequirementId,
+    TagId,
+};
+use loftspec::names::{CategoryName, TagName};
 use loftspec::statement::{EarsForm, Statement};
+use loftspec::tree::{
+    Component, ComponentChild, Constraint, Criterion, Details, Feature, FeatureGroup, Product,
+    QualityAttribute, Requirement,
+};
 
 /// A deterministic version 7 key numbered `n`.
 pub fn key(n: u32) -> Key {
     Key::parse(&format!("00000000-0000-7000-8000-{n:012x}")).unwrap()
 }
 
+/// A different deterministic key for every `n`, to build the same document with fresh keys.
+pub fn fresh_key(n: u32) -> Key {
+    key(n + 0x1000)
+}
+
 pub fn label(text: &str) -> Label {
     Label::parse(text).unwrap()
 }
 
-pub fn named(n: u32, kind: NodeKind, name: &str) -> Node {
-    Node::named(Some(key(n)), kind, name)
+pub fn criterion(id: Key, name: &str) -> Criterion {
+    Criterion {
+        id: Some(CriterionId::new(id)),
+        name: name.to_owned(),
+        details: Details::default(),
+    }
 }
 
-fn requirement() -> Node {
-    let mut node = named(4, NodeKind::Requirement, "");
-    node.title = Title::Statement(Statement::Form(EarsForm::Ubiquitous {
+pub fn requirement(id: Key, text: &str, criteria: Vec<Criterion>) -> Requirement {
+    Requirement {
+        id: Some(RequirementId::new(id)),
+        statement: Statement::Text(text.to_owned()),
+        details: Details::default(),
+        criteria,
+    }
+}
+
+pub fn feature(id: Key, name: &str, requirements: Vec<Requirement>) -> Feature {
+    Feature {
+        id: Some(FeatureId::new(id)),
+        name: name.to_owned(),
+        details: Details::default(),
+        requirements,
+    }
+}
+
+pub fn component(id: Key, name: &str) -> Component {
+    Component {
+        id: Some(ComponentId::new(id)),
+        name: name.to_owned(),
+        details: Details::default(),
+        children: Vec::new(),
+    }
+}
+
+pub fn product(id: Key, name: &str) -> Product {
+    Product {
+        id: Some(ProductId::new(id)),
+        name: name.to_owned(),
+        details: Details::default(),
+        feature_groups: Vec::new(),
+    }
+}
+
+fn product_tree(k: &dyn Fn(u32) -> Key) -> Product {
+    let mut requirement = requirement(
+        k(4),
+        "",
+        vec![criterion(k(5), "Every node record carries a `key` field.")],
+    );
+    requirement.statement = Statement::Form(EarsForm::Ubiquitous {
         system: "The writer".to_owned(),
         shall: "write a key on every node.".to_owned(),
-    }));
-    node.children = vec![named(
-        5,
-        NodeKind::Criterion,
-        "Every node record carries a `key` field.",
-    )];
-    node
-}
-
-fn product() -> Node {
-    let mut feature = named(3, NodeKind::Feature, "Keys");
-    feature.body = Some("Keys address nodes.".to_owned());
-    feature.children = vec![requirement()];
-    let mut group = named(2, NodeKind::FeatureGroup, "Identity");
-    group.children = vec![feature];
-    let mut product = named(1, NodeKind::Product, "Example Product");
-    product.body = Some("The example.".to_owned());
-    product.tags = vec!["portable".to_owned()];
-    product.children = vec![group];
+    });
+    let mut feature = feature(k(3), "Keys", vec![requirement]);
+    feature.details = Details::with_body("Keys address nodes.");
+    let group = FeatureGroup {
+        id: Some(FeatureGroupId::new(k(2))),
+        name: "Identity".to_owned(),
+        details: Details::default(),
+        features: vec![feature],
+    };
+    let mut product = product(k(1), "Example Product");
+    product.details = Details {
+        tags: vec![TagName::new("portable")],
+        ..Details::with_body("The example.")
+    };
+    product.feature_groups = vec![group];
     product
 }
 
-fn component() -> Node {
-    let mut constraint = named(
-        7,
-        NodeKind::Constraint,
-        "The document model shall reject unknown kinds.",
-    );
-    constraint.attributes = Attributes {
-        constraint_binding: Some(TechnicalBinding {
-            category: "runtime.language".to_owned(),
+fn component_tree(k: &dyn Fn(u32) -> Key) -> Component {
+    let constraint = Constraint {
+        id: Some(ConstraintId::new(k(7))),
+        name: "The document model shall reject unknown kinds.".to_owned(),
+        details: Details::default(),
+        binding: Some(TechnicalBinding {
+            category: CategoryName::new("runtime.language"),
             required_value: "rust".to_owned(),
         }),
+        conservation_kind: None,
         verification_fate: Some(VerificationFate::Proved),
-        ..Attributes::default()
     };
-    let mut quality = named(
-        8,
-        NodeKind::QualityAttribute,
-        "Formatting completes quickly.",
-    );
-    quality.attributes = Attributes {
-        qa_kind: Some(QaKind::Latency),
-        quality_target: Some(QualityTarget {
+    let quality = QualityAttribute {
+        id: Some(QualityAttributeId::new(k(8))),
+        name: "Formatting completes quickly.".to_owned(),
+        details: Details::default(),
+        kind: QaKind::Latency,
+        target: QualityTarget {
             metric: "fmt.wall-time".to_owned(),
             band: QualityBand::AtMost {
                 upper: "2".to_owned(),
@@ -86,47 +135,57 @@ fn component() -> Node {
             aggregation: QualityAggregation::P95,
             scenario: "formatting a canonical tree of five thousand nodes".to_owned(),
             environment: "the reference developer machine".to_owned(),
-        }),
+        },
         verification_fate: Some(VerificationFate::Sampled),
-        ..Attributes::default()
     };
-    let mut component = named(6, NodeKind::Component, "Document model");
-    component.body =
-        Some("Nodes and keys.\n\tAn indented line with a trailing space. \n".to_owned());
-    component.children = vec![constraint, quality];
+    let mut component = component(k(6), "Document model");
+    component.details =
+        Details::with_body("Nodes and keys.\n\tAn indented line with a trailing space. \n");
+    component.children = vec![
+        ComponentChild::Constraint(constraint),
+        ComponentChild::QualityAttribute(quality),
+    ];
     component
 }
 
-fn decision() -> Decision {
+fn decision(k: &dyn Fn(u32) -> Key) -> Decision {
+    let assessment = |option: u32, driver: u32, rating: Rating, rationale: &str| Assessment {
+        option: OptionId::new(k(option)),
+        driver: DriverId::new(k(driver)),
+        rating,
+        rationale: rationale.to_owned(),
+    };
     Decision {
-        key: key(20),
+        id: DecisionId::new(k(20)),
         title: "Keys are UUIDs".to_owned(),
         context: "Every node carries its key in the file.".to_owned(),
         state: DecisionState::Accepted {
-            selected_option: key(23),
+            selected_option: OptionId::new(k(23)),
             outcome: "New keys are UUID version 7.".to_owned(),
         },
         drivers: vec![
             Driver {
-                key: key(21),
+                id: DriverId::new(k(21)),
                 payload: DriverPayload::Local {
                     label: "One key shape".to_owned(),
                     statement: "Converted and new keys share one syntax.".to_owned(),
                 },
             },
             Driver {
-                key: key(22),
-                payload: DriverPayload::Subject { subject: key(4) },
+                id: DriverId::new(k(22)),
+                payload: DriverPayload::Subject {
+                    subject: RequirementId::new(k(4)).into(),
+                },
             },
         ],
         options: vec![
             DecisionOption {
-                key: key(23),
+                id: OptionId::new(k(23)),
                 title: "UUID version 7".to_owned(),
                 description: "Time-ordered RFC 9562 UUIDs.".to_owned(),
             },
             DecisionOption {
-                key: key(24),
+                id: OptionId::new(k(24)),
                 title: "ULID".to_owned(),
                 description: "Crockford base32 identifiers.".to_owned(),
             },
@@ -144,13 +203,13 @@ fn decision() -> Decision {
         ],
         consequences: vec![
             Consequence {
-                key: key(25),
+                id: ConsequenceId::new(k(25)),
                 kind: ConsequenceKind::Obligation,
                 statement: "The formatter mints version 7 keys.".to_owned(),
-                subject: Some(key(4)),
+                subject: Some(RequirementId::new(k(4)).into()),
             },
             Consequence {
-                key: key(26),
+                id: ConsequenceId::new(k(26)),
                 kind: ConsequenceKind::Risk,
                 statement: "A key reveals when it was minted.".to_owned(),
                 subject: None,
@@ -159,75 +218,91 @@ fn decision() -> Decision {
     }
 }
 
-fn assessment(option: u32, driver: u32, rating: Rating, rationale: &str) -> Assessment {
-    Assessment {
-        option: key(option),
-        driver: key(driver),
-        rating,
-        rationale: rationale.to_owned(),
-    }
+fn edges(k: &dyn Fn(u32) -> Key) -> Vec<Edge> {
+    let decision = DecisionId::new(k(20));
+    vec![
+        Edge::Realizes {
+            feature: FeatureId::new(k(3)),
+            component: ComponentId::new(k(6)),
+        },
+        Edge::ScopedTo {
+            component: ComponentId::new(k(6)),
+            product: ProductId::new(k(1)),
+        },
+        Edge::Mentions {
+            source: CriterionId::new(k(5)).into(),
+            target: RequirementId::new(k(4)).into(),
+        },
+        Edge::Subject {
+            decision,
+            subject: RequirementId::new(k(4)).into(),
+            role: SubjectRole::Outcome,
+        },
+        Edge::Subject {
+            decision,
+            subject: ComponentId::new(k(6)).into(),
+            role: SubjectRole::Affected,
+        },
+    ]
 }
 
-fn entry(n: u32, name: &str, definition: &str) -> RegistryEntry {
-    RegistryEntry {
-        key: key(n),
-        name: name.to_owned(),
-        definition: definition.to_owned(),
-    }
+fn bind(document: &mut Document, k: &dyn Fn(u32) -> Key) {
+    let bindings = &mut document.bindings;
+    bindings.bind(ProductId::new(k(1)), label("P-1")).unwrap();
+    bindings
+        .bind(FeatureGroupId::new(k(2)), label("FG-1"))
+        .unwrap();
+    bindings.bind(FeatureId::new(k(3)), label("F-1")).unwrap();
+    bindings
+        .bind(RequirementId::new(k(4)), label("RQ-1"))
+        .unwrap();
+    bindings
+        .relabel(RequirementId::new(k(4)), label("RQ-2"))
+        .unwrap();
+    bindings
+        .bind(ComponentId::new(k(6)), label("CMP-1"))
+        .unwrap();
+    bindings
+        .bind(ConstraintId::new(k(7)), label("CON-1"))
+        .unwrap();
+    bindings
+        .bind(QualityAttributeId::new(k(8)), label("QA-1"))
+        .unwrap();
+    bindings
+        .bind(DecisionId::new(k(20)), label("ADR-1"))
+        .unwrap();
 }
 
-pub fn edge(source: u32, kind: EdgeKind, target: u32, role: Option<SubjectRole>) -> Edge {
-    Edge {
-        source: key(source),
-        kind,
-        target: key(target),
-        role,
-    }
-}
-
-/// The small document: P-1 > FG-1 > F-1 > RQ-1 > one criterion, root Component CMP-1 with CON-1
-/// and QA-1, five edges, two tags, one constraint category and ADR-1.
-pub fn small_document() -> Document {
-    let mut document = Document::empty(key(0));
-    document.products = vec![product()];
-    document.components = vec![component()];
-    document.edges = vec![
-        edge(3, EdgeKind::Realizes, 6, None),
-        edge(6, EdgeKind::ScopedTo, 1, None),
-        edge(5, EdgeKind::Mentions, 4, None),
-        edge(20, EdgeKind::Subject, 4, Some(SubjectRole::Outcome)),
-        edge(20, EdgeKind::Subject, 6, Some(SubjectRole::Affected)),
-    ];
+/// The small document built with the keys `k` gives: P-1 > FG-1 > F-1 > RQ-2 (alias RQ-1) > one
+/// unlabelled criterion, root Component CMP-1 with CON-1 and QA-1, five edges, two tags, one
+/// constraint category and ADR-1.
+pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
+    let mut document = Document::empty(DocumentId::new(k(0)));
+    document.products = vec![product_tree(k)];
+    document.components = vec![component_tree(k)];
+    document.edges = edges(k);
     document.tags = vec![
-        entry(
-            31,
-            "portable",
-            "Behaviour every implementation must reproduce exactly.",
-        ),
-        entry(
-            30,
-            "identity",
-            "Keys, labels, aliases and the bindings between them.",
-        ),
+        TagEntry {
+            id: TagId::new(k(31)),
+            name: TagName::new("portable"),
+            definition: "Behaviour every implementation must reproduce exactly.".to_owned(),
+        },
+        TagEntry {
+            id: TagId::new(k(30)),
+            name: TagName::new("identity"),
+            definition: "Keys, labels, aliases and the bindings between them.".to_owned(),
+        },
     ];
-    document.categories = vec![entry(
-        32,
-        "runtime.language",
-        "The language the runtime is written in.",
-    )];
-    document.decisions = vec![decision()];
-    for (n, text) in [
-        (1, "P-1"),
-        (2, "FG-1"),
-        (3, "F-1"),
-        (6, "CMP-1"),
-        (7, "CON-1"),
-        (8, "QA-1"),
-        (20, "ADR-1"),
-    ] {
-        document.bindings.bind(key(n), label(text)).unwrap();
-    }
-    document.bindings.bind(key(4), label("RQ-1")).unwrap();
-    document.bindings.relabel(key(4), label("RQ-2")).unwrap();
+    document.categories = vec![CategoryEntry {
+        id: CategoryId::new(k(32)),
+        name: CategoryName::new("runtime.language"),
+        definition: "The language the runtime is written in.".to_owned(),
+    }];
+    document.decisions = vec![decision(k)];
+    bind(&mut document, k);
     document
+}
+
+pub fn small_document() -> Document {
+    small_document_with(&key)
 }

@@ -6,7 +6,7 @@ mod common;
 
 use common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
-use loftspec::hash::{hash_document, node_view};
+use loftspec::hash::hash_document;
 use serde_json::Value;
 
 const SMALL_DOCUMENT: &str = include_str!("../../../testdata/golden/small-document.json");
@@ -18,8 +18,7 @@ struct Computed {
 }
 
 fn computed_views() -> Vec<Computed> {
-    let document = small_document();
-    let hashes = hash_document(&document).unwrap();
+    let hashes = hash_document(&small_document()).unwrap();
     let mut views = Vec::new();
     let mut push = |name: String, domain: Domain, view: &Value| {
         let canonical = String::from_utf8(canonical_bytes(view)).unwrap();
@@ -29,15 +28,11 @@ fn computed_views() -> Vec<Computed> {
             canonical,
         });
     };
-    for node in document.nodes() {
-        push(
-            format!("node:{}", node.key.unwrap()),
-            Domain::Node,
-            &node_view(node),
-        );
+    for (id, view) in &hashes.node_views {
+        push(format!("node:{}", id.key()), Domain::Node, view);
     }
-    for (key, view) in &hashes.decision_views {
-        push(format!("decision:{key}"), Domain::Decisions, view);
+    for (id, view) in &hashes.decision_views {
+        push(format!("decision:{id}"), Domain::Decisions, view);
     }
     for (name, domain, view) in &hashes.root_views {
         push(format!("root:{name}"), *domain, view);
@@ -45,10 +40,14 @@ fn computed_views() -> Vec<Computed> {
     views
 }
 
+fn vectors() -> Vec<Value> {
+    let golden: Value = serde_json::from_str(SMALL_DOCUMENT).unwrap();
+    golden["views"].as_array().unwrap().clone()
+}
+
 #[test]
 fn ac_48_the_small_document_vectors_are_reproduced_byte_for_byte() {
-    let golden: Value = serde_json::from_str(SMALL_DOCUMENT).unwrap();
-    let expected = golden["views"].as_array().unwrap();
+    let expected = vectors();
     let computed = computed_views();
     assert_eq!(computed.len(), expected.len(), "one view per golden vector");
     for view in &computed {
@@ -73,12 +72,9 @@ fn ac_48_the_small_document_vectors_are_reproduced_byte_for_byte() {
 
 #[test]
 fn the_small_document_roots_match_their_vectors() {
-    let golden: Value = serde_json::from_str(SMALL_DOCUMENT).unwrap();
-    let roots = hash_document(&small_document()).unwrap().roots;
+    let vectors = vectors();
     let vector = |name: &str| {
-        golden["views"]
-            .as_array()
-            .unwrap()
+        vectors
             .iter()
             .find(|vector| vector["name"] == name)
             .unwrap()["digest"]
@@ -86,6 +82,7 @@ fn the_small_document_roots_match_their_vectors() {
             .unwrap()
             .to_owned()
     };
+    let roots = hash_document(&small_document()).unwrap().roots;
     assert_eq!(roots.content.to_string(), vector("root:content"));
     assert_eq!(roots.bindings.to_string(), vector("root:bindings"));
     assert_eq!(roots.state.to_string(), vector("root:state"));

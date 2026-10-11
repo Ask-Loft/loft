@@ -38,8 +38,10 @@ Absent values are `null`; an empty string is not absent.
   `qualityTarget` is `{metric, band, unit, aggregation, scenario, environment}` with `band` as
   `{kind: "at_most" | "at_least" | "exactly" | "between", upper?, lower?, value?}`;
   `constraintBinding` is `{category, requiredValue}`. Each is `null` when absent.
-- `children` is the children's content hashes in order. The key, the label, the aliases, the
-  node's position among its siblings and every confirmation flag are not in the view.
+- `children` is the children's content hashes in order: the structural children first (a
+  Component's Components, Constraints and Quality Attributes in their one list), then the
+  node's Sections. The key, the label, the aliases, the node's position among its siblings and
+  every confirmation flag are not in the view.
 
 ### Edges root
 

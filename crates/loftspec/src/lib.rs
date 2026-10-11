@@ -5,12 +5,15 @@ pub mod attributes;
 pub mod bindings;
 pub mod canonical;
 pub mod decision;
+pub mod document;
 pub mod hash;
 pub mod identity;
+pub mod ids;
 pub mod kind;
 pub mod manifest;
-pub mod model;
+pub mod names;
 pub mod statement;
+pub mod tree;
 
 /// The identifier a manifest names for this format, versioned with the text form it describes.
 pub const FORMAT: &str = "loftspec/1";
