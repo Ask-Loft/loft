@@ -39,7 +39,7 @@ fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_ {
 pub fn read_tree(root: &Path) -> Result<Files, StoreError> {
     let spec = root.join(SPEC);
     if !spec.is_dir() {
-        return Err(StoreError::NoTree(root.to_path_buf()));
+        return Err(StoreError::NoTree(spec));
     }
     let mut files = BTreeMap::new();
     collect(&spec, "", &mut files)?;
@@ -99,4 +99,55 @@ fn stage_and_rename(root: &Path, staging: &Path, changed: &Files) -> Result<(), 
         fs::rename(&temporary, &target).map_err(io_error(&target))?;
     }
     Ok(())
+}
+
+/// Whether `path`, taken under `root` when relative, lies under `<root>/spec/` (RQ-171). The
+/// path is judged by its components, `.` and `..` resolved, so `docs/../spec/x` is under it.
+#[must_use]
+pub fn is_under_spec(root: &Path, path: &Path) -> bool {
+    let normal = |path: &Path| {
+        let mut parts: Vec<std::path::Component<'_>> = Vec::new();
+        for part in path.components() {
+            match part {
+                std::path::Component::CurDir => {}
+                std::path::Component::ParentDir => {
+                    parts.pop();
+                }
+                other => parts.push(other),
+            }
+        }
+        parts.into_iter().collect::<PathBuf>()
+    };
+    normal(&root.join(path)).starts_with(normal(&root.join(SPEC)))
+}
+
+/// Writes each output whose bytes differ from the file at its path, through a temporary file
+/// beside it and a rename, and returns the paths written (AC-548). Relative paths are taken
+/// under `root`.
+///
+/// # Errors
+///
+/// A file that cannot be read, written or renamed; outputs written before it stay written.
+pub fn write_outputs(
+    root: &Path,
+    outputs: &[(PathBuf, Vec<u8>)],
+) -> Result<Vec<PathBuf>, StoreError> {
+    let mut written = Vec::new();
+    for (path, bytes) in outputs {
+        let target = root.join(path);
+        if fs::read(&target).is_ok_and(|current| current == *bytes) {
+            continue;
+        }
+        if let Some(parent) = target.parent() {
+            fs::create_dir_all(parent).map_err(io_error(parent))?;
+        }
+        let name = target
+            .file_name()
+            .map_or_else(Default::default, |name| name.to_string_lossy());
+        let temporary = target.with_file_name(format!(".{name}.loft-{}", process::id()));
+        fs::write(&temporary, bytes).map_err(io_error(&temporary))?;
+        fs::rename(&temporary, &target).map_err(io_error(&target))?;
+        written.push(path.clone());
+    }
+    Ok(written)
 }

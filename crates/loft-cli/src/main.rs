@@ -1,11 +1,16 @@
 //! The `loft` command line (D-11 FG-9, FG-10). Exit codes: 0 on success, 1 on an error or a
 //! failed check, 2 on a usage error (RQ-154).
 
-use std::path::Path;
+mod check;
+mod json;
+mod render;
+
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use loftspec::codec::ReadError;
+use loftspec::lint::Severity;
 use loftspec_store::fs;
 
 #[derive(Parser)]
@@ -27,12 +32,67 @@ enum Command {
         #[arg(long)]
         check: bool,
     },
+    /// Read, validate and lint `spec/` (RQ-136).
+    Check {
+        /// Exit 1 on a finding at or above this severity (RQ-139).
+        #[arg(long, value_name = "SEVERITY")]
+        fail_on: Option<FailOn>,
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
+    },
+    /// Write the Markdown projection and the canonical JSON export (RQ-143).
+    Render {
+        /// Where to write the Markdown projection.
+        #[arg(long, value_name = "PATH")]
+        markdown: Option<PathBuf>,
+        /// Where to write the canonical JSON export.
+        #[arg(long, value_name = "PATH")]
+        json: Option<PathBuf>,
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
+    },
+}
+
+/// The severities `--fail-on` takes; any other is a usage error (AC-533).
+#[derive(Clone, Copy, ValueEnum)]
+enum FailOn {
+    Warning,
+    Info,
+    Hint,
+}
+
+impl From<FailOn> for Severity {
+    fn from(fail_on: FailOn) -> Self {
+        match fail_on {
+            FailOn::Warning => Self::Warning,
+            FailOn::Info => Self::Info,
+            FailOn::Hint => Self::Hint,
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, ValueEnum)]
+enum Format {
+    Json,
 }
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    let root = Path::new(".");
     match cli.command {
-        Command::Fmt { check } => fmt(Path::new("."), check),
+        Command::Fmt { check } => fmt(root, check),
+        Command::Check { fail_on, format } => check::run(
+            root,
+            fail_on.map(Severity::from),
+            format == Some(Format::Json),
+        ),
+        Command::Render {
+            markdown,
+            json,
+            format,
+        } => render::run(root, markdown, json, format == Some(Format::Json)),
     }
 }
 

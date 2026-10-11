@@ -1,68 +1,12 @@
 //! `loft fmt` as a process (D-11 F-39, F-44, F-47): exit codes, the paths it prints, and what it
 //! writes.
 
-use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::{env, fs, process};
+mod common;
 
-use loftspec::codec;
-use loftspec::convert::v1::convert;
-use loftspec::convert::v1::export::Export;
+use std::fs;
+use std::path::Path;
 
-const READING_LIST: &str =
-    include_str!("../../../testdata/v1/reading-list/loft-authored-state.json");
-
-/// A directory removed when the test ends.
-struct Scratch(PathBuf);
-
-impl Scratch {
-    /// A fresh directory holding the Reading List's `spec/` tree.
-    fn with_reading_list() -> Self {
-        static NEXT: AtomicUsize = AtomicUsize::new(0);
-        let number = NEXT.fetch_add(1, Ordering::Relaxed);
-        let root = env::temp_dir().join(format!("loft-cli-fmt-{}-{number}", process::id()));
-        let _ = fs::remove_dir_all(&root);
-        let document = convert(&Export::from_json(READING_LIST).unwrap())
-            .unwrap()
-            .document;
-        fs::create_dir_all(root.join("spec")).unwrap();
-        loftspec_store::fs::write_changed(&root, &codec::write(&document)).unwrap();
-        Self(root)
-    }
-
-    fn file(&self, path: &str) -> PathBuf {
-        self.0.join("spec").join(path)
-    }
-
-    fn edit(&self, path: &str, from: &str, to: &str) {
-        let text = fs::read_to_string(self.file(path)).unwrap();
-        assert!(text.contains(from), "{from:?} in {path}");
-        fs::write(self.file(path), text.replacen(from, to, 1)).unwrap();
-    }
-
-    fn loft(&self, args: &[&str]) -> Output {
-        Command::new(env!("CARGO_BIN_EXE_loft"))
-            .args(args)
-            .current_dir(&self.0)
-            .output()
-            .unwrap()
-    }
-}
-
-impl Drop for Scratch {
-    fn drop(&mut self) {
-        let _ = fs::remove_dir_all(&self.0);
-    }
-}
-
-fn stdout(output: &Output) -> String {
-    String::from_utf8(output.stdout.clone()).unwrap()
-}
-
-fn stderr(output: &Output) -> String {
-    String::from_utf8(output.stderr.clone()).unwrap()
-}
+use common::{Scratch, stderr, stdout};
 
 /// The first file under `spec/decisions/`, as its path under `spec/`.
 fn a_decision(root: &Path) -> String {

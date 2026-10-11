@@ -385,6 +385,7 @@ dependencies = [
  "clap",
  "loftspec",
  "loftspec-store",
+ "serde_json",
 ]
 
 [[package]]
