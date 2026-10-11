@@ -34,7 +34,7 @@ fn two_requirements(first: &str, second: &str) -> Feature {
 }
 
 #[test]
-fn ac_34_the_content_view_holds_its_fields_in_order() {
+fn ac_596_the_content_view_holds_its_fields_in_order() {
     let mut constraint = Constraint {
         id: Some(ConstraintId::new(key(1))),
         name: "The hasher shall use SHA-256.".to_owned(),
@@ -75,7 +75,7 @@ fn ac_35_and_ac_40_equal_views_with_different_keys_have_one_content_hash() {
 }
 
 #[test]
-fn ac_41_changing_a_body_changes_the_content_hash() {
+fn ac_597_changing_a_body_changes_the_content_hash() {
     let mut node = feature(key(1), "Keys", vec![]);
     let before = node.content_hash();
     node.details.body = Some("Keys address nodes.".to_owned());
@@ -91,7 +91,7 @@ fn an_empty_body_and_no_body_hash_differently() {
 }
 
 #[test]
-fn ac_42_changing_a_child_changes_the_parent() {
+fn ac_602_changing_a_child_changes_the_parent() {
     assert_ne!(
         two_requirements("One.", "Two.").content_hash(),
         two_requirements("One.", "Three.").content_hash()
@@ -99,7 +99,7 @@ fn ac_42_changing_a_child_changes_the_parent() {
 }
 
 #[test]
-fn ac_43_and_ac_44_reordering_children_changes_the_parent_and_no_sibling() {
+fn ac_603_and_ac_604_reordering_children_changes_the_parent_and_no_sibling() {
     let forward = two_requirements("One.", "Two.");
     let mut reversed = forward.clone();
     reversed.requirements.reverse();
@@ -141,7 +141,7 @@ fn tag_order_and_repetition_do_not_change_the_content_hash() {
 }
 
 #[test]
-fn ac_242_a_statement_enters_as_its_rendered_sentence() {
+fn ac_598_a_statement_enters_as_its_rendered_sentence() {
     let slotted = Requirement {
         statement: Statement::Form(EarsForm::Unwanted {
             r#if: "the manifest is absent".to_owned(),

@@ -163,7 +163,7 @@ fn the_two_registries_have_distinct_roots_even_when_equal() {
 }
 
 #[test]
-fn ac_219_and_ac_220_fresh_element_keys_leave_the_decision_view_hash() {
+fn ac_611_and_ac_612_fresh_element_keys_leave_the_decision_view_hash() {
     let before = hash_document(&small_document()).unwrap();
     let after = hash_document(&small_document_with(&fresh_key)).unwrap();
     assert_eq!(
