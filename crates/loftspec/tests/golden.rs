@@ -32,7 +32,7 @@ fn computed_views() -> Vec<Computed> {
         push(format!("node:{}", id.key()), Domain::Node, view);
     }
     for (id, view) in &hashes.decision_views {
-        push(format!("decision:{id}"), Domain::Decisions, view);
+        push(format!("decision:{id}"), Domain::Decision, view);
     }
     for (name, domain, view) in &hashes.root_views {
         push(format!("root:{name}"), *domain, view);

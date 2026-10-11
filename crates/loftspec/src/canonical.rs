@@ -14,6 +14,7 @@ pub enum Domain {
     Node,
     Edges,
     Registry,
+    Decision,
     Decisions,
     Content,
     Bindings,
@@ -21,10 +22,11 @@ pub enum Domain {
 }
 
 impl Domain {
-    pub const ALL: [Self; 7] = [
+    pub const ALL: [Self; 8] = [
         Self::Node,
         Self::Edges,
         Self::Registry,
+        Self::Decision,
         Self::Decisions,
         Self::Content,
         Self::Bindings,
@@ -37,6 +39,7 @@ impl Domain {
             Self::Node => "loftspec/node/1",
             Self::Edges => "loftspec/edges/1",
             Self::Registry => "loftspec/registry/1",
+            Self::Decision => "loftspec/decision/1",
             Self::Decisions => "loftspec/decisions/1",
             Self::Content => "loftspec/content/1",
             Self::Bindings => "loftspec/bindings/1",

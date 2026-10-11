@@ -20,7 +20,7 @@ Absent values are `null`; an empty string is not absent.
 | Node | `loftspec/node/1` | `[kind, text, body, tags, qaKind, qualityTarget, constraintBinding, conservationKind, verificationFate, children]` |
 | Edges root | `loftspec/edges/1` | `[[sourceHash, type, targetHash, role], …]` |
 | Registry root | `loftspec/registry/1` | `[registryName, [[name, definition], …]]` |
-| Decision | `loftspec/decisions/1` | `[title, context, state, drivers, options, assessments, consequences]` |
+| Decision | `loftspec/decision/1` | `[title, context, state, drivers, options, assessments, consequences]` |
 | Decisions root | `loftspec/decisions/1` | `[decisionHash, …]` |
 | Content root | `loftspec/content/1` | `[productHashes, componentHashes, edgesRoot, tagsRoot, categoriesRoot, decisionsRoot]` |
 | Binding root | `loftspec/bindings/1` | `[[key, label, aliases, contentHash], …]` |

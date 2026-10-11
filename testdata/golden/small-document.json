@@ -53,15 +53,15 @@
     },
     {
       "name": "decision:00000000-0000-7000-8000-000000000014",
-      "domain": "loftspec/decisions/1",
+      "domain": "loftspec/decision/1",
       "canonical": "[\"Keys are UUIDs\",\"Every node carries its key in the file.\",{\"kind\":\"accepted\",\"outcome\":\"New keys are UUID version 7.\",\"selectedOption\":0},[{\"kind\":\"local\",\"label\":\"One key shape\",\"statement\":\"Converted and new keys share one syntax.\"},{\"kind\":\"subject\",\"subject\":\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\"}],[[\"UUID version 7\",\"Time-ordered RFC 9562 UUIDs.\"],[\"ULID\",\"Crockford base32 identifiers.\"]],[[0,0,\"supports\",\"The same syntax as converted keys.\"],[0,1,\"supports\",\"The writer writes one shape.\"],[1,0,\"conflicts\",\"Two syntaxes in one document.\"],[1,1,\"neutral\",\"Either can be written.\"]],[[\"obligation\",\"The formatter mints version 7 keys.\",\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\"],[\"risk\",\"A key reveals when it was minted.\",null]]]",
-      "digest": "61f3bec628296f42d4b797b95d2f05b2ab32cdb8066fca5b2956fb8f05d9df1e"
+      "digest": "ad994498d2f00db8b91bf928bf085d8a41698a6c1835b519cf7922381e969ab3"
     },
     {
       "name": "root:edges",
       "domain": "loftspec/edges/1",
-      "canonical": "[[\"144e15263f8e4d502eff65f669d58d4128b372da1817f55bcc44d88573ef57ef\",\"mentions\",\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\",null],[\"49d1f40ac3ac8185a1664b67297af4002da6b83b61be7209726d3757afce7236\",\"realizes\",\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\",null],[\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\",\"scoped_to\",\"8f2974302e8f694e4ab38321945a1f22e785a5031ce13e18d764400dd8681809\",null],[\"61f3bec628296f42d4b797b95d2f05b2ab32cdb8066fca5b2956fb8f05d9df1e\",\"subject\",\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\",\"affected\"],[\"61f3bec628296f42d4b797b95d2f05b2ab32cdb8066fca5b2956fb8f05d9df1e\",\"subject\",\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\",\"outcome\"]]",
-      "digest": "a683f74891ca43e2e65dfcf999cb4b8fc3361ac61619e6a12167a1136954c3dc"
+      "canonical": "[[\"144e15263f8e4d502eff65f669d58d4128b372da1817f55bcc44d88573ef57ef\",\"mentions\",\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\",null],[\"49d1f40ac3ac8185a1664b67297af4002da6b83b61be7209726d3757afce7236\",\"realizes\",\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\",null],[\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\",\"scoped_to\",\"8f2974302e8f694e4ab38321945a1f22e785a5031ce13e18d764400dd8681809\",null],[\"ad994498d2f00db8b91bf928bf085d8a41698a6c1835b519cf7922381e969ab3\",\"subject\",\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\",\"affected\"],[\"ad994498d2f00db8b91bf928bf085d8a41698a6c1835b519cf7922381e969ab3\",\"subject\",\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\",\"outcome\"]]",
+      "digest": "6a97057a759038765f3afa15d3e5b9337b1729375570b0a0922223047cca2e61"
     },
     {
       "name": "root:tags",
@@ -78,26 +78,26 @@
     {
       "name": "root:decisions",
       "domain": "loftspec/decisions/1",
-      "canonical": "[\"61f3bec628296f42d4b797b95d2f05b2ab32cdb8066fca5b2956fb8f05d9df1e\"]",
-      "digest": "8cfc1e1f96fdc17d5ae6c30aa124adfb59fc56e77f3fd6a912b7e7bfbe608913"
+      "canonical": "[\"ad994498d2f00db8b91bf928bf085d8a41698a6c1835b519cf7922381e969ab3\"]",
+      "digest": "0eb4cab3816ae24006005ad2349e6fe6b9b47b364de96577de2eb4b12d62b2e5"
     },
     {
       "name": "root:content",
       "domain": "loftspec/content/1",
-      "canonical": "[[\"8f2974302e8f694e4ab38321945a1f22e785a5031ce13e18d764400dd8681809\"],[\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\"],\"a683f74891ca43e2e65dfcf999cb4b8fc3361ac61619e6a12167a1136954c3dc\",\"2e49670f4d269d9fb18eb82d114ee9c2aceb44e637d8a0db929c436d5cbefecb\",\"6f2ba2e8161502e18f052b6c0b9762b9bd7f038558b6285cb000ea2dfc4d4ca7\",\"8cfc1e1f96fdc17d5ae6c30aa124adfb59fc56e77f3fd6a912b7e7bfbe608913\"]",
-      "digest": "671997c1ca9d4dfe97eaad09f200021e692bff3498c188540b2a3f65f6f8c329"
+      "canonical": "[[\"8f2974302e8f694e4ab38321945a1f22e785a5031ce13e18d764400dd8681809\"],[\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\"],\"6a97057a759038765f3afa15d3e5b9337b1729375570b0a0922223047cca2e61\",\"2e49670f4d269d9fb18eb82d114ee9c2aceb44e637d8a0db929c436d5cbefecb\",\"6f2ba2e8161502e18f052b6c0b9762b9bd7f038558b6285cb000ea2dfc4d4ca7\",\"0eb4cab3816ae24006005ad2349e6fe6b9b47b364de96577de2eb4b12d62b2e5\"]",
+      "digest": "f60a0f0c2f193fbd79cd70187d259ce84674b20a884032890eada17f174da4e9"
     },
     {
       "name": "root:bindings",
       "domain": "loftspec/bindings/1",
-      "canonical": "[[\"00000000-0000-7000-8000-000000000001\",\"P-1\",[],\"8f2974302e8f694e4ab38321945a1f22e785a5031ce13e18d764400dd8681809\"],[\"00000000-0000-7000-8000-000000000002\",\"FG-1\",[],\"5957bf0ed54118a0ee1d802ac6dbea4beb4598d3506896f6666a25c2c406c858\"],[\"00000000-0000-7000-8000-000000000003\",\"F-1\",[],\"49d1f40ac3ac8185a1664b67297af4002da6b83b61be7209726d3757afce7236\"],[\"00000000-0000-7000-8000-000000000004\",\"RQ-2\",[\"RQ-1\"],\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\"],[\"00000000-0000-7000-8000-000000000006\",\"CMP-1\",[],\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\"],[\"00000000-0000-7000-8000-000000000007\",\"CON-1\",[],\"9c29f844372f48fab80520bb6f80564ec03c41df9e144d0e0cf858903c752864\"],[\"00000000-0000-7000-8000-000000000008\",\"QA-1\",[],\"9dcf810ea9ebabd1d81bcb3adc1775bee88015c0297af124c65f516047687eeb\"],[\"00000000-0000-7000-8000-000000000014\",\"ADR-1\",[],\"61f3bec628296f42d4b797b95d2f05b2ab32cdb8066fca5b2956fb8f05d9df1e\"]]",
-      "digest": "801f1a0868e00ac33f5e5233b81dc37bbc31f970a61b1a2a4eb5de8a783ad924"
+      "canonical": "[[\"00000000-0000-7000-8000-000000000001\",\"P-1\",[],\"8f2974302e8f694e4ab38321945a1f22e785a5031ce13e18d764400dd8681809\"],[\"00000000-0000-7000-8000-000000000002\",\"FG-1\",[],\"5957bf0ed54118a0ee1d802ac6dbea4beb4598d3506896f6666a25c2c406c858\"],[\"00000000-0000-7000-8000-000000000003\",\"F-1\",[],\"49d1f40ac3ac8185a1664b67297af4002da6b83b61be7209726d3757afce7236\"],[\"00000000-0000-7000-8000-000000000004\",\"RQ-2\",[\"RQ-1\"],\"7806f727dc725f1cd920b6d147bbd884d7debd2fc94eae563c6ec67943bd7c27\"],[\"00000000-0000-7000-8000-000000000006\",\"CMP-1\",[],\"4f6fe2e876ca18dca802f4e8e8f9350c85d69fe7706755133ae64762a2de1539\"],[\"00000000-0000-7000-8000-000000000007\",\"CON-1\",[],\"9c29f844372f48fab80520bb6f80564ec03c41df9e144d0e0cf858903c752864\"],[\"00000000-0000-7000-8000-000000000008\",\"QA-1\",[],\"9dcf810ea9ebabd1d81bcb3adc1775bee88015c0297af124c65f516047687eeb\"],[\"00000000-0000-7000-8000-000000000014\",\"ADR-1\",[],\"ad994498d2f00db8b91bf928bf085d8a41698a6c1835b519cf7922381e969ab3\"]]",
+      "digest": "cde3b0b52642da8ebbc1fe9ed6d99eec50cf7a09b987081e72fe685124ad2936"
     },
     {
       "name": "root:state",
       "domain": "loftspec/state/1",
-      "canonical": "[\"loftspec/1\",\"sha256-jcs/1\",\"00000000-0000-7000-8000-000000000000\",\"671997c1ca9d4dfe97eaad09f200021e692bff3498c188540b2a3f65f6f8c329\",\"801f1a0868e00ac33f5e5233b81dc37bbc31f970a61b1a2a4eb5de8a783ad924\",null]",
-      "digest": "39cc147c08a56fc340f9cb29f5a4f06b9a1498809e9ed8dd5f0b8b2943adac24"
+      "canonical": "[\"loftspec/1\",\"sha256-jcs/1\",\"00000000-0000-7000-8000-000000000000\",\"f60a0f0c2f193fbd79cd70187d259ce84674b20a884032890eada17f174da4e9\",\"cde3b0b52642da8ebbc1fe9ed6d99eec50cf7a09b987081e72fe685124ad2936\",null]",
+      "digest": "6b99b026bf12cb74efbaa2a18c483ad9c3d4336b7ba335e21c23dab53a023898"
     }
   ]
 }

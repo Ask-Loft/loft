@@ -64,7 +64,7 @@ impl<'a> DecisionHasher<'a> {
             .ok_or(HashError::UnknownDecision(key))?;
         let state = self.state_view(decision)?;
         let view = decision_view(decision, &state, self.nodes)?;
-        let hash = digest(Domain::Decisions, &view);
+        let hash = digest(Domain::Decision, &view);
         self.in_progress.remove(&key);
         self.hashes.insert(key, hash);
         self.views.insert(key, view);

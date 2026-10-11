@@ -12,6 +12,7 @@ fn ac_45_the_domain_strings_are_closed() {
             "loftspec/node/1",
             "loftspec/edges/1",
             "loftspec/registry/1",
+            "loftspec/decision/1",
             "loftspec/decisions/1",
             "loftspec/content/1",
             "loftspec/bindings/1",
