@@ -15,10 +15,11 @@ use crate::ids::{
 };
 use crate::kind::NodeKind;
 use crate::names::TagName;
+use crate::slug::Slug;
 use crate::statement::Statement;
 use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement,
+    Requirement, RootComponent,
 };
 
 /// The typed ID of every node of an export but its Facet Tags, by UUID.
@@ -116,7 +117,10 @@ impl<'a> Tree<'a> {
         for root in &self.roots {
             match self.ids.get(&root.node_id).map(|id| id.kind()) {
                 Some(NodeKind::Product) => document.products.push(builder.product(root)?),
-                Some(NodeKind::Component) => document.components.push(builder.component(root)?),
+                Some(NodeKind::Component) => document.components.push(RootComponent {
+                    slug: Slug::derive(&root.name, "component"),
+                    component: builder.component(root)?,
+                }),
                 _ => {
                     return Err(ConvertError::Orphan {
                         node: root.external_id.clone(),
@@ -178,12 +182,37 @@ struct Builder<'t, 'a> {
     labels: Vec<(NodeId, &'a ExternalId)>,
 }
 
-/// A node's structural children in ordinal order, each with its kind.
-type Children<'a> = Vec<(NodeKind, &'a Node)>;
+/// A node's structural children in ordinal order, grouped by kind.
+#[derive(Default)]
+struct Children<'a>(BTreeMap<NodeKind, Vec<&'a Node>>);
+
+impl<'a> Children<'a> {
+    /// Adds a child of `kind` under a parent of `parent_kind`, refusing a child that kind may
+    /// not hold (RQ-74).
+    fn add(
+        &mut self,
+        parent_kind: NodeKind,
+        kind: NodeKind,
+        parent: &Node,
+        child: &'a Node,
+    ) -> Result<(), ConvertError> {
+        if !parent_kind.may_contain(kind) {
+            return Err(containment(parent, child));
+        }
+        self.0.entry(kind).or_default().push(child);
+        Ok(())
+    }
+
+    /// The children of one kind, in ordinal order.
+    fn take(&mut self, kind: NodeKind) -> Vec<&'a Node> {
+        self.0.remove(&kind).unwrap_or_default()
+    }
+}
 
 impl<'a> Builder<'_, 'a> {
     /// Starts a node: marks it reached, records its label and v1 facts, reads its Facet Tags
-    /// into its details, and returns its structural children.
+    /// into its details, and returns its structural children, refusing a child its kind may not
+    /// hold (RQ-74).
     fn open(
         &mut self,
         node: &'a Node,
@@ -197,12 +226,12 @@ impl<'a> Builder<'_, 'a> {
             body: node.body.clone(),
             ..Details::default()
         };
-        let mut children = Vec::new();
+        let mut children = Children::default();
         let mut applications = Vec::new();
         let listed = self.tree.children.get(&node.node_id);
         for child in listed.map_or(&[][..], Vec::as_slice) {
             if let Some(child_id) = self.tree.ids.get(&child.node_id) {
-                children.push((child_id.kind(), *child));
+                children.add(id.kind(), child_id.kind(), node, child)?;
                 continue;
             }
             let application = self.facet_tag(child)?;
@@ -235,63 +264,63 @@ impl<'a> Builder<'_, 'a> {
         })
     }
 
+    /// Builds each child of one kind, in ordinal order.
+    fn each<T>(
+        &mut self,
+        children: &mut Children<'a>,
+        kind: NodeKind,
+        build: fn(&mut Self, &'a Node) -> Result<T, ConvertError>,
+    ) -> Result<Vec<T>, ConvertError> {
+        children
+            .take(kind)
+            .into_iter()
+            .map(|child| build(self, child))
+            .collect()
+    }
+
     fn product(&mut self, node: &'a Node) -> Result<Product, ConvertError> {
         let id = ProductId::new(node.node_id.into());
-        let (details, children) = self.open(node, id)?;
-        let mut feature_groups = Vec::new();
-        for (kind, child) in children {
-            match kind {
-                NodeKind::FeatureGroup => feature_groups.push(self.feature_group(child)?),
-                _ => return Err(containment(node, child)),
-            }
-        }
+        let (details, mut children) = self.open(node, id)?;
         Ok(Product {
             id: Some(id),
+            slug: Slug::derive(&node.name, "product"),
             name: node.name.clone(),
             details,
-            feature_groups,
+            feature_groups: self.each(
+                &mut children,
+                NodeKind::FeatureGroup,
+                Self::feature_group,
+            )?,
         })
     }
 
     fn feature_group(&mut self, node: &'a Node) -> Result<FeatureGroup, ConvertError> {
         let id = FeatureGroupId::new(node.node_id.into());
-        let (details, children) = self.open(node, id)?;
-        let (mut features, mut constraints) = (Vec::new(), Vec::new());
-        for (kind, child) in children {
-            match kind {
-                NodeKind::Feature => features.push(self.feature(child)?),
-                NodeKind::Constraint => constraints.push(self.constraint(child)?),
-                _ => return Err(containment(node, child)),
-            }
-        }
+        let (details, mut children) = self.open(node, id)?;
         Ok(FeatureGroup {
             id: Some(id),
+            slug: Slug::derive(&node.name, "feature-group"),
             name: node.name.clone(),
             details,
-            features,
-            constraints,
+            features: self.each(&mut children, NodeKind::Feature, Self::feature)?,
+            constraints: self.each(&mut children, NodeKind::Constraint, Self::constraint)?,
         })
     }
 
     fn feature(&mut self, node: &'a Node) -> Result<Feature, ConvertError> {
         let id = FeatureId::new(node.node_id.into());
-        let (details, children) = self.open(node, id)?;
-        let (mut requirements, mut quality_attributes) = (Vec::new(), Vec::new());
-        for (kind, child) in children {
-            match kind {
-                NodeKind::Requirement => requirements.push(self.requirement(child)?),
-                NodeKind::QualityAttribute => {
-                    quality_attributes.push(self.quality_attribute(child)?);
-                }
-                _ => return Err(containment(node, child)),
-            }
-        }
+        let (details, mut children) = self.open(node, id)?;
         Ok(Feature {
             id: Some(id),
+            slug: Slug::derive(&node.name, "feature"),
             name: node.name.clone(),
             details,
-            requirements,
-            quality_attributes,
+            requirements: self.each(&mut children, NodeKind::Requirement, Self::requirement)?,
+            quality_attributes: self.each(
+                &mut children,
+                NodeKind::QualityAttribute,
+                Self::quality_attribute,
+            )?,
         })
     }
 
@@ -302,26 +331,18 @@ impl<'a> Builder<'_, 'a> {
             self.findings
                 .push(Finding::StatementAsText { requirement: id });
         }
-        let (details, children) = self.open(node, id)?;
-        let mut criteria = Vec::new();
-        for (kind, child) in children {
-            match kind {
-                NodeKind::Criterion => criteria.push(self.criterion(child)?),
-                _ => return Err(containment(node, child)),
-            }
-        }
+        let (details, mut children) = self.open(node, id)?;
         Ok(Requirement {
             id: Some(id),
             statement,
             details,
-            criteria,
+            criteria: self.each(&mut children, NodeKind::Criterion, Self::criterion)?,
         })
     }
 
     fn criterion(&mut self, node: &'a Node) -> Result<Criterion, ConvertError> {
         let id = CriterionId::new(node.node_id.into());
-        let (details, children) = self.open(node, id)?;
-        leaf(node, &children)?;
+        let (details, _) = self.open(node, id)?;
         Ok(Criterion {
             id: Some(id),
             name: node.name.clone(),
@@ -331,36 +352,27 @@ impl<'a> Builder<'_, 'a> {
 
     fn component(&mut self, node: &'a Node) -> Result<Component, ConvertError> {
         let id = ComponentId::new(node.node_id.into());
-        let (details, children) = self.open(node, id)?;
+        let (details, mut children) = self.open(node, id)?;
         if let Some(scope) = node.component_scope {
             self.sidecar.scopes.insert(id, scope.into());
         }
-        let mut component = Component {
+        Ok(Component {
             id: Some(id),
             name: node.name.clone(),
             details,
-            components: Vec::new(),
-            constraints: Vec::new(),
-            quality_attributes: Vec::new(),
-        };
-        for (kind, child) in children {
-            match kind {
-                NodeKind::Component => component.components.push(self.component(child)?),
-                NodeKind::Constraint => component.constraints.push(self.constraint(child)?),
-                NodeKind::QualityAttribute => {
-                    let quality = self.quality_attribute(child)?;
-                    component.quality_attributes.push(quality);
-                }
-                _ => return Err(containment(node, child)),
-            }
-        }
-        Ok(component)
+            components: self.each(&mut children, NodeKind::Component, Self::component)?,
+            constraints: self.each(&mut children, NodeKind::Constraint, Self::constraint)?,
+            quality_attributes: self.each(
+                &mut children,
+                NodeKind::QualityAttribute,
+                Self::quality_attribute,
+            )?,
+        })
     }
 
     fn constraint(&mut self, node: &'a Node) -> Result<Constraint, ConvertError> {
         let id = ConstraintId::new(node.node_id.into());
-        let (details, children) = self.open(node, id)?;
-        leaf(node, &children)?;
+        let (details, _) = self.open(node, id)?;
         Ok(Constraint {
             id: Some(id),
             name: node.name.clone(),
@@ -373,8 +385,7 @@ impl<'a> Builder<'_, 'a> {
 
     fn quality_attribute(&mut self, node: &'a Node) -> Result<QualityAttribute, ConvertError> {
         let id = QualityAttributeId::new(node.node_id.into());
-        let (details, children) = self.open(node, id)?;
-        leaf(node, &children)?;
+        let (details, _) = self.open(node, id)?;
         Ok(QualityAttribute {
             id: Some(id),
             name: node.name.clone(),
@@ -386,14 +397,6 @@ impl<'a> Builder<'_, 'a> {
                 .ok_or_else(|| missing(node, "qualityTarget"))?,
             verification_fate: node.verification_fate,
         })
-    }
-}
-
-/// Refuses a structural child under a node that holds none.
-fn leaf(node: &Node, children: &Children<'_>) -> Result<(), ConvertError> {
-    match children.first() {
-        Some((_, child)) => Err(containment(node, child)),
-        None => Ok(()),
     }
 }
 

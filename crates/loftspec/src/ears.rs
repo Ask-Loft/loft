@@ -6,8 +6,9 @@ use std::ops::Range;
 
 use crate::text::lowercase;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Form {
+/// One of the five basic EARS forms, without its slots.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Form {
     Ubiquitous,
     EventDriven,
     StateDriven,

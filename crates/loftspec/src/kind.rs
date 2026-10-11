@@ -53,6 +53,27 @@ impl NodeKind {
         }
     }
 
+    /// The kinds a node of this kind holds as structural children, in the order its child
+    /// content hashes list them (AC-606..AC-609). Sections, which any node may hold, follow them
+    /// (AC-157, AC-605).
+    #[must_use]
+    pub const fn child_kinds(self) -> &'static [Self] {
+        match self {
+            Self::Product => &[Self::FeatureGroup],
+            Self::FeatureGroup => &[Self::Feature, Self::Constraint],
+            Self::Feature => &[Self::Requirement, Self::QualityAttribute],
+            Self::Requirement => &[Self::Criterion],
+            Self::Component => &[Self::Component, Self::Constraint, Self::QualityAttribute],
+            Self::Criterion | Self::Constraint | Self::QualityAttribute | Self::Section => &[],
+        }
+    }
+
+    /// Whether a node of this kind may hold a child of `child`'s kind (RQ-74).
+    #[must_use]
+    pub fn may_contain(self, child: Self) -> bool {
+        child == Self::Section || self.child_kinds().contains(&child)
+    }
+
     /// The prefix of the labels this kind receives at publish; a Section receives none.
     #[must_use]
     pub const fn label_prefix(self) -> Option<LabelPrefix> {

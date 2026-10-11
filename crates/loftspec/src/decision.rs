@@ -1,10 +1,12 @@
 //! Architecture Decisions: drivers, options, the assessment matrix and consequences, each element
 //! keyed (AC-181) and kept field for field from a v1 export (AC-257).
 
+use crate::wire::wire_names;
 use serde::Deserialize;
 
 use crate::identity::Label;
 use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
+use crate::slug::Slug;
 
 /// A node a decision names: one the document holds, or, on a retired or superseded decision, one
 /// it no longer holds, named by its former label (ADR-13).
@@ -23,6 +25,7 @@ impl<T: Into<NodeId>> From<T> for NodeRef {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decision {
     pub id: DecisionId,
+    pub slug: Slug,
     pub title: String,
     pub context: String,
     pub state: DecisionState,
@@ -54,6 +57,37 @@ pub enum DecisionState {
     },
 }
 
+/// The kind of a decision state, without its fields.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum StateKind {
+    Proposed,
+    Accepted,
+    Rejected,
+    Superseded,
+    Retired,
+}
+
+wire_names!(StateKind {
+    Proposed => "proposed",
+    Accepted => "accepted",
+    Rejected => "rejected",
+    Superseded => "superseded",
+    Retired => "retired",
+});
+
+impl DecisionState {
+    #[must_use]
+    pub const fn kind(&self) -> StateKind {
+        match self {
+            Self::Proposed => StateKind::Proposed,
+            Self::Accepted { .. } => StateKind::Accepted,
+            Self::Rejected { .. } => StateKind::Rejected,
+            Self::Superseded { .. } => StateKind::Superseded,
+            Self::Retired { .. } => StateKind::Retired,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Driver {
     pub id: DriverId,
@@ -65,6 +99,28 @@ pub struct Driver {
 pub enum DriverPayload {
     Local { label: String, statement: String },
     Subject { subject: NodeRef },
+}
+
+/// The kind of a driver, without its payload.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DriverKind {
+    Local,
+    Subject,
+}
+
+wire_names!(DriverKind {
+    Local => "local",
+    Subject => "subject",
+});
+
+impl DriverPayload {
+    #[must_use]
+    pub const fn kind(&self) -> DriverKind {
+        match self {
+            Self::Local { .. } => DriverKind::Local,
+            Self::Subject { .. } => DriverKind::Subject,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,17 +139,12 @@ pub enum Rating {
     Unknown,
 }
 
-impl Rating {
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Supports => "supports",
-            Self::Neutral => "neutral",
-            Self::Conflicts => "conflicts",
-            Self::Unknown => "unknown",
-        }
-    }
-}
+wire_names!(Rating {
+    Supports => "supports",
+    Neutral => "neutral",
+    Conflicts => "conflicts",
+    Unknown => "unknown",
+});
 
 /// One cell of the option × driver matrix.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -113,17 +164,12 @@ pub enum ConsequenceKind {
     Obligation,
 }
 
-impl ConsequenceKind {
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Benefit => "benefit",
-            Self::Cost => "cost",
-            Self::Risk => "risk",
-            Self::Obligation => "obligation",
-        }
-    }
-}
+wire_names!(ConsequenceKind {
+    Benefit => "benefit",
+    Cost => "cost",
+    Risk => "risk",
+    Obligation => "obligation",
+});
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Consequence {

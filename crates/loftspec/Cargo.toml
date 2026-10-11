@@ -19,3 +19,7 @@ thiserror.workspace = true
 unicode-properties.workspace = true
 unicode-segmentation.workspace = true
 uuid.workspace = true
+
+[dev-dependencies]
+proptest = "1"
+saphyr-parser = "0.1.0"

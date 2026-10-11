@@ -11,5 +11,10 @@ repository.workspace = true
 name = "loft"
 path = "src/main.rs"
 
+[dependencies]
+clap.workspace = true
+loftspec = { path = "../loftspec" }
+loftspec-store = { path = "../loftspec-store" }
+
 [lints]
 workspace = true

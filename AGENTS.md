@@ -73,6 +73,9 @@ The bootstrap ends at the self-hosting milestone: the document is imported into 
 Nothing confidential enters this repository, in any commit: no export of the private server's
 document D-1, no plans or strategy documents, no authoring records, no secrets, no `.loft/` or
 `.env` files, no customer data. The git history becomes public with the repository.
+Commit messages, code comments and test names are public too: they never name the private
+server's documents, states or repositories. Describe such sources generically, as "a large
+converted document" or "a local v1 export".
 
 ## Definition of done
 

@@ -7,5 +7,9 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[dependencies]
+loftspec = { path = "../loftspec" }
+thiserror.workspace = true
+
 [lints]
 workspace = true

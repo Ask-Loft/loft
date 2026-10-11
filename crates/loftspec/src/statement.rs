@@ -1,7 +1,9 @@
 //! A Requirement's sentence (D-11 F-10) and the fixed templates that render it (D-11 F-11).
 
-use crate::ears::{self, Form};
+use crate::ears;
+pub use crate::ears::Form;
 use crate::text::token_ranges;
+use crate::wire::wire_names;
 
 /// A Requirement's sentence, stored as plain text or as one of the five basic EARS forms.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,16 +42,76 @@ pub enum EarsForm {
     },
 }
 
-impl EarsForm {
-    /// The form's name as the text form writes it.
+wire_names!(Form {
+    Ubiquitous => "ubiquitous",
+    EventDriven => "event_driven",
+    StateDriven => "state_driven",
+    Unwanted => "unwanted",
+    Optional => "optional",
+});
+
+impl Form {
+    /// The form's slot names in template order, as the text form writes them: the condition
+    /// slot, named by the template's opening word in lowercase, then `system` and `shall`.
     #[must_use]
-    pub const fn name(&self) -> &'static str {
+    pub const fn slots(self) -> &'static [&'static str] {
         match self {
-            Self::Ubiquitous { .. } => "ubiquitous",
-            Self::EventDriven { .. } => "event_driven",
-            Self::StateDriven { .. } => "state_driven",
-            Self::Unwanted { .. } => "unwanted",
-            Self::Optional { .. } => "optional",
+            Self::Ubiquitous => &["system", "shall"],
+            Self::EventDriven => &["when", "system", "shall"],
+            Self::StateDriven => &["while", "system", "shall"],
+            Self::Unwanted => &["if", "system", "shall"],
+            Self::Optional => &["where", "system", "shall"],
+        }
+    }
+
+    /// The name of the condition slot; none for the ubiquitous form.
+    #[must_use]
+    pub const fn condition(self) -> Option<&'static str> {
+        match self.slots() {
+            [condition, _, _] => Some(condition),
+            _ => None,
+        }
+    }
+}
+
+impl EarsForm {
+    /// The form, without its slots.
+    #[must_use]
+    pub const fn kind(&self) -> Form {
+        match self {
+            Self::Ubiquitous { .. } => Form::Ubiquitous,
+            Self::EventDriven { .. } => Form::EventDriven,
+            Self::StateDriven { .. } => Form::StateDriven,
+            Self::Unwanted { .. } => Form::Unwanted,
+            Self::Optional { .. } => Form::Optional,
+        }
+    }
+
+    /// A form from its slots; the ubiquitous form takes no condition and ignores it.
+    #[must_use]
+    pub fn from_slots(form: Form, condition: String, system: String, shall: String) -> Self {
+        match form {
+            Form::Ubiquitous => Self::Ubiquitous { system, shall },
+            Form::EventDriven => Self::EventDriven {
+                when: condition,
+                system,
+                shall,
+            },
+            Form::StateDriven => Self::StateDriven {
+                r#while: condition,
+                system,
+                shall,
+            },
+            Form::Unwanted => Self::Unwanted {
+                r#if: condition,
+                system,
+                shall,
+            },
+            Form::Optional => Self::Optional {
+                r#where: condition,
+                system,
+                shall,
+            },
         }
     }
 
@@ -117,36 +179,22 @@ impl EarsForm {
             rest
         }
         .to_owned();
-        let condition = |word: &str| lead.strip_prefix(word).map(str::to_owned);
-        Some(match parse.form {
+        let word = match parse.form {
             Form::Ubiquitous => return None,
-            Form::EventDriven => Self::EventDriven {
-                when: condition("When ")?,
-                system,
-                shall,
-            },
-            Form::StateDriven => Self::StateDriven {
-                r#while: condition("While ")?,
-                system,
-                shall,
-            },
-            Form::Unwanted => Self::Unwanted {
-                r#if: condition("If ")?,
-                system,
-                shall,
-            },
-            Form::Optional => Self::Optional {
-                r#where: condition("Where ")?,
-                system,
-                shall,
-            },
-        })
+            Form::EventDriven => "When ",
+            Form::StateDriven => "While ",
+            Form::Unwanted => "If ",
+            Form::Optional => "Where ",
+        };
+        let condition = lead.strip_prefix(word)?.to_owned();
+        Some(Self::from_slots(parse.form, condition, system, shall))
     }
 
-    /// Every slot, in template order.
-    fn slots(&self) -> Vec<&str> {
+    /// The condition slot, when the form has one, then `system` and `shall`.
+    #[must_use]
+    pub fn parts(&self) -> (Option<&str>, &str, &str) {
         match self {
-            Self::Ubiquitous { system, shall } => vec![system, shall],
+            Self::Ubiquitous { system, shall } => (None, system, shall),
             Self::EventDriven {
                 when: condition,
                 system,
@@ -166,8 +214,14 @@ impl EarsForm {
                 r#where: condition,
                 system,
                 shall,
-            } => vec![condition, system, shall],
+            } => (Some(condition), system, shall),
         }
+    }
+
+    /// Every slot, in template order.
+    fn slots(&self) -> Vec<&str> {
+        let (condition, system, shall) = self.parts();
+        condition.into_iter().chain([system, shall]).collect()
     }
 }
 

@@ -4,20 +4,26 @@
 pub mod attributes;
 pub mod bindings;
 pub mod canonical;
+pub mod codec;
 pub mod convert;
 pub mod decision;
 pub mod document;
 mod ears;
+pub mod fmt;
 pub mod hash;
 pub mod identity;
 pub mod ids;
 pub mod kind;
 pub mod manifest;
 pub mod names;
+pub mod node;
 pub mod prose;
+pub mod slug;
 pub mod statement;
 pub mod text;
 pub mod tree;
+mod wire;
+pub mod yaml;
 
 /// The identifier a manifest names for this format, versioned with the text form it describes.
 pub const FORMAT: &str = "loftspec/1";

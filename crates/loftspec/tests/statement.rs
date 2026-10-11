@@ -143,6 +143,6 @@ fn ac_133_to_ac_137_each_form_names_its_slots() {
         ),
     ];
     for (form, name) in forms {
-        assert_eq!(form.name(), name);
+        assert_eq!(form.kind().as_str(), name);
     }
 }
