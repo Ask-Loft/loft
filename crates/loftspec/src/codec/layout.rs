@@ -246,30 +246,61 @@ fn check_directory(
     }
 }
 
-/// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849).
-fn check_keys(tree: &Tree, errors: &mut Vec<ReadError>) {
-    let site = |path: &SpecPath, position: Position| Site {
-        path: path.clone(),
-        location: Some(Location::At(position)),
-    };
-    let mut seen: BTreeMap<Key, (&SpecPath, Position)> = BTreeMap::new();
-    for (path, (_, content)) in &tree.files {
+/// Every key a keyed record of the tree carries, with the file and the position of the key.
+fn carried_keys(tree: &Tree) -> impl Iterator<Item = (Key, &SpecPath, Position)> {
+    tree.files.iter().flat_map(|(path, (_, content))| {
         let mut found = Vec::new();
         content
             .records()
             .for_each(|record| keyed(record, &mut found));
-        for (key, position) in found
-            .iter()
+        found
+            .into_iter()
             .filter_map(|record| key_of(record.get(field::KEY)?))
-        {
-            if let Some(&(first, at)) = seen.get(&key) {
-                errors.push(ReadError {
-                    sites: vec![site(first, at), site(path, position)],
-                    problem: Problem::DuplicateKey(key),
-                });
-            } else {
-                seen.insert(key, (path, position));
-            }
+            .map(move |(key, position)| (key, path, position))
+    })
+}
+
+fn site(path: &SpecPath, position: Position) -> Site {
+    Site {
+        path: path.clone(),
+        location: Some(Location::At(position)),
+    }
+}
+
+/// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849).
+fn check_keys(tree: &Tree, errors: &mut Vec<ReadError>) {
+    let mut seen: BTreeMap<Key, (&SpecPath, Position)> = BTreeMap::new();
+    for (key, path, position) in carried_keys(tree) {
+        if let Some(&(first, at)) = seen.get(&key) {
+            errors.push(ReadError {
+                sites: vec![site(first, at), site(path, position)],
+                problem: Problem::DuplicateKey(key),
+            });
+        } else {
+            seen.insert(key, (path, position));
         }
+    }
+}
+
+/// Where each key of a read tree is written: its file, and the position of its `key` field. A
+/// validation error or a lint finding names an element at its site (RQ-158).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Sites(BTreeMap<Key, Site>);
+
+impl Sites {
+    /// The sites of every key a tree carries.
+    #[must_use]
+    pub fn of(tree: &Tree) -> Self {
+        Self(
+            carried_keys(tree)
+                .map(|(key, path, position)| (key, site(path, position)))
+                .collect(),
+        )
+    }
+
+    /// The site of `key`, if the tree carries it.
+    #[must_use]
+    pub fn get(&self, key: Key) -> Option<&Site> {
+        self.0.get(&key)
     }
 }
