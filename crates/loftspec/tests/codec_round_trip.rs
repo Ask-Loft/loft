@@ -61,6 +61,7 @@ fn ac_119_writing_what_was_read_changes_no_byte() {
 
 #[test]
 #[ignore = "reads a local v1 export named by LOFTSPEC_V1_EXPORT; the export is not in this repository"]
+/// With `LOFTSPEC_TEXT_OUT` set, the written tree is left under that directory, for `loft fmt`.
 fn a_live_v1_export_round_trips_through_text() {
     let document = loftspec::convert::v1::convert(&common::v1::live_export())
         .unwrap()
@@ -88,6 +89,13 @@ fn a_live_v1_export_round_trips_through_text() {
         "{:?}",
         formatted.changed.keys()
     );
+    if let Ok(out) = std::env::var("LOFTSPEC_TEXT_OUT") {
+        for (path, bytes) in &files {
+            let target = std::path::Path::new(&out).join("spec").join(path.as_str());
+            std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+            std::fs::write(target, bytes).unwrap();
+        }
+    }
     let bytes: usize = files.values().map(Vec::len).sum();
     println!(
         "{} files, {bytes} bytes; write {written:?}, read {read:?}, format {format:?}; state \
