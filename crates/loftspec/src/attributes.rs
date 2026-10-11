@@ -1,4 +1,4 @@
-//! The typed attributes of Constraints and Quality Attributes (AC-34): the Quality Attribute kind
+//! The typed attributes of Constraints and Quality Attributes (AC-596): the Quality Attribute kind
 //! and target, the technical binding, the conservation kind and the verification fate. Their
 //! fields are those of a Loft v1 export, kept field for field (AC-165, AC-166).
 

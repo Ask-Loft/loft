@@ -1,4 +1,4 @@
-//! Node content views and content hashes (RQ-11) over the typed tree.
+//! Node content views and content hashes (RQ-11, RQ-159, RQ-160) over the typed tree.
 
 use std::collections::BTreeSet;
 
@@ -163,7 +163,7 @@ impl Parts for Requirement {
     fn id(&self) -> Option<NodeId> {
         self.id.map(NodeId::from)
     }
-    /// A statement enters as its rendered sentence (AC-242).
+    /// A statement enters as its rendered sentence (AC-598).
     fn fields(&self) -> Fields<'_> {
         plain(
             NodeKind::Requirement,

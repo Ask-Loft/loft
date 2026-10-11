@@ -1,5 +1,5 @@
-//! Decision views (RQ-62): every reference inside a decision is by position or by content hash,
-//! never by key, so fresh element keys leave the view unchanged (AC-219, AC-220).
+//! Decision views (RQ-161): every reference inside a decision is by position or by content hash,
+//! never by key, so fresh element keys leave the view unchanged (AC-611, AC-612).
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -113,7 +113,7 @@ impl<'a> DecisionHasher<'a> {
 }
 
 /// The decision view: title, context, state, drivers, options, assessments and consequences, in
-/// that order (AC-218). Options and drivers keep their authored order; an assessment names its
+/// that order (AC-610). Options and drivers keep their authored order; an assessment names its
 /// option and driver by position and the assessments are sorted by those positions.
 fn decision_view(
     decision: &Decision,
