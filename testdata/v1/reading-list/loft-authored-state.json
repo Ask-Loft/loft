@@ -1,0 +1,1347 @@
+{
+  "annotations": [],
+  "architectureDecisionAddress": "36bed1d7a2a6e9660e11eb2a28b5d0ab5fad140533a1edf1ba930c5b94816fe4",
+  "architectureDecisions": [
+    {
+      "assessments": [
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000064",
+          "driverId": "00000000-0000-4000-8000-000000000067",
+          "optionId": "00000000-0000-4000-8000-000000000065",
+          "rating": "supports",
+          "rationale": "A file needs nothing installed."
+        },
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000064",
+          "driverId": "00000000-0000-4000-8000-000000000068",
+          "optionId": "00000000-0000-4000-8000-000000000065",
+          "rating": "supports",
+          "rationale": "An array keeps its order."
+        },
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000064",
+          "driverId": "00000000-0000-4000-8000-000000000067",
+          "optionId": "00000000-0000-4000-8000-000000000066",
+          "rating": "conflicts",
+          "rationale": "A database needs its library."
+        },
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000064",
+          "driverId": "00000000-0000-4000-8000-000000000068",
+          "optionId": "00000000-0000-4000-8000-000000000066",
+          "rating": "neutral",
+          "rationale": "Order needs an extra column."
+        }
+      ],
+      "decisionHash": "df4e3469451a3719890f79cb40ac73816d04211c65a80090a8c1903d3527f9e4",
+      "elements": [
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "eb99fc4c1d49682cc8a0d92c44a07d773443323e617fc5fd448aecad91a7efcc",
+          "id": "00000000-0000-4000-8000-000000000064",
+          "ordinal": 0,
+          "parentId": null,
+          "payload": {
+            "kind": "architecture-decision",
+            "value": {
+              "context": "A shelf is small and read whole.",
+              "state": {
+                "kind": "accepted",
+                "outcome": "One JSON file per shelf.",
+                "selectedOptionId": "00000000-0000-4000-8000-000000000065"
+              },
+              "title": "Store a shelf in one file"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "110d7d42ebc1f04c2afb530643de60032900ad67d30e1aa18974390c6f7f32d7",
+          "id": "00000000-0000-4000-8000-000000000065",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-000000000064",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "The whole shelf in one file.",
+              "title": "One JSON file"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "a782c47b532d682f512cd4013264830bfe86cfbc23fcc7b1d6157723edaeb3e5",
+          "id": "00000000-0000-4000-8000-000000000066",
+          "ordinal": 1,
+          "parentId": "00000000-0000-4000-8000-000000000064",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A database file with a schema.",
+              "title": "An embedded database"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "2cd4d39e1368aa019b71e299efe633b098c97b8fd7008789fb1a146da443f224",
+          "id": "00000000-0000-4000-8000-000000000067",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-000000000064",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "Simple install",
+              "statement": "Nothing to install beside the binary."
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "d5bdb919f7522da55f89cce505d8b83407d11c842fc062dbb8d8de07e470c4f6",
+          "id": "00000000-0000-4000-8000-000000000068",
+          "ordinal": 1,
+          "parentId": "00000000-0000-4000-8000-000000000064",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "specification-subject",
+              "subject": {
+                "externalId": "RQ-2",
+                "nodeId": "00000000-0000-4000-8000-00000000002b",
+                "tier": "Requirement",
+                "type": "TierSection"
+              }
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "9393357c56c527314cea9a75d4f182dfce0cf5a13f179c5eb9797142de3ee6d7",
+          "id": "00000000-0000-4000-8000-000000000069",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-000000000064",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "obligation",
+              "statement": "The store rewrites the file on every change.",
+              "subject": {
+                "externalId": "CMP-1",
+                "nodeId": "00000000-0000-4000-8000-00000000003c",
+                "tier": null,
+                "type": "Component"
+              }
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "26ad7fb282dffd31ac9ca343a85c121a9d625d1ccda6bd492038bc1b8d9740e2",
+          "id": "00000000-0000-4000-8000-00000000006a",
+          "ordinal": 1,
+          "parentId": "00000000-0000-4000-8000-000000000064",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "risk",
+              "statement": "A very large shelf is slow to save.",
+              "subject": null
+            }
+          }
+        }
+      ],
+      "identity": {
+        "decisionId": "00000000-0000-4000-8000-000000000064",
+        "documentId": "00000000-0000-4000-8000-000000000001",
+        "externalId": "ADR-1"
+      },
+      "subjectLinks": [
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000064",
+          "role": "affected",
+          "subject": {
+            "externalId": "CMP-1",
+            "nodeId": "00000000-0000-4000-8000-00000000003c",
+            "tier": null,
+            "type": "Component"
+          }
+        },
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000064",
+          "role": "outcome",
+          "subject": {
+            "externalId": "RQ-2",
+            "nodeId": "00000000-0000-4000-8000-00000000002b",
+            "tier": "Requirement",
+            "type": "TierSection"
+          }
+        }
+      ]
+    },
+    {
+      "assessments": [
+        {
+          "decisionId": "00000000-0000-4000-8000-00000000006e",
+          "driverId": "00000000-0000-4000-8000-000000000070",
+          "optionId": "00000000-0000-4000-8000-00000000006f",
+          "rating": "supports",
+          "rationale": "Files need nothing installed."
+        },
+        {
+          "decisionId": "00000000-0000-4000-8000-00000000006e",
+          "driverId": "00000000-0000-4000-8000-000000000070",
+          "optionId": "00000000-0000-4000-8000-000000000071",
+          "rating": "neutral",
+          "rationale": "Archives need a library."
+        }
+      ],
+      "decisionHash": "e8082d686be45fb2420e5d93180c26cd1433e3d6a704eac4e2b1794b4e60ac55",
+      "elements": [
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "2f1687bf5ecbc70b720cd239ba1f8e8e42250bd0527c94c93ef5ddea7a190ec5",
+          "id": "00000000-0000-4000-8000-00000000006e",
+          "ordinal": 0,
+          "parentId": null,
+          "payload": {
+            "kind": "architecture-decision",
+            "value": {
+              "context": "An earlier layout.",
+              "state": {
+                "kind": "superseded",
+                "outcome": "One file per book.",
+                "selectedOptionId": "00000000-0000-4000-8000-00000000006f",
+                "successorDecisionId": "00000000-0000-4000-8000-000000000064"
+              },
+              "title": "Store a shelf as a directory"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "2375af65d0882c2ef374d4a9e3dc895884aabab4a03900a6f9ac741e7695714f",
+          "id": "00000000-0000-4000-8000-00000000006f",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-00000000006e",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A directory of small files.",
+              "title": "One file per book"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "689a39d31ab1cdceb92107052ef7d0c41e8b1652c524709cdec8fd5497e1a4f1",
+          "id": "00000000-0000-4000-8000-000000000071",
+          "ordinal": 1,
+          "parentId": "00000000-0000-4000-8000-00000000006e",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A compressed archive of the shelf.",
+              "title": "One archive"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "8bde0877e689ba5ee0272d076884830a45fa61d210f81406325de804f47043af",
+          "id": "00000000-0000-4000-8000-000000000070",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-00000000006e",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "Simple install",
+              "statement": "Nothing to install beside the binary."
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "2b2e810ff314c735fbb07edebbb6bb501ef33b0cbeb26bb2490d4d79a1587d7e",
+          "id": "00000000-0000-4000-8000-000000000072",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-00000000006e",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "cost",
+              "statement": "Listing a shelf opens every file.",
+              "subject": null
+            }
+          }
+        }
+      ],
+      "identity": {
+        "decisionId": "00000000-0000-4000-8000-00000000006e",
+        "documentId": "00000000-0000-4000-8000-000000000001",
+        "externalId": "ADR-2"
+      },
+      "subjectLinks": [
+        {
+          "decisionId": "00000000-0000-4000-8000-00000000006e",
+          "role": "outcome",
+          "subject": {
+            "externalId": "CMP-1",
+            "nodeId": "00000000-0000-4000-8000-00000000003c",
+            "tier": null,
+            "type": "Component"
+          }
+        }
+      ]
+    },
+    {
+      "assessments": [],
+      "decisionHash": "ebbe9d3ec2db6c5f326a18b2bb1649c5b0c211c4212d99466d560f7ae4123f1b",
+      "elements": [
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "5288dbaea4db4e2ee13bf170250fe2349bfa1a4d86fcc5c14d1cc8ec25930bbe",
+          "id": "00000000-0000-4000-8000-000000000078",
+          "ordinal": 0,
+          "parentId": null,
+          "payload": {
+            "kind": "architecture-decision",
+            "value": {
+              "context": "Readers look books up by author.",
+              "state": {
+                "kind": "proposed"
+              },
+              "title": "Index books by author"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "bf489130fab421eb57487de502030b8739a1801f452ec9ebcd7335e9023984d4",
+          "id": "00000000-0000-4000-8000-000000000079",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-000000000078",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "Built when the shelf loads.",
+              "title": "An in-memory index"
+            }
+          }
+        }
+      ],
+      "identity": {
+        "decisionId": "00000000-0000-4000-8000-000000000078",
+        "documentId": "00000000-0000-4000-8000-000000000001",
+        "externalId": "ADR-3"
+      },
+      "subjectLinks": []
+    },
+    {
+      "assessments": [
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000082",
+          "driverId": "00000000-0000-4000-8000-000000000084",
+          "optionId": "00000000-0000-4000-8000-000000000083",
+          "rating": "conflicts",
+          "rationale": "A server needs a network."
+        },
+        {
+          "decisionId": "00000000-0000-4000-8000-000000000082",
+          "driverId": "00000000-0000-4000-8000-000000000084",
+          "optionId": "00000000-0000-4000-8000-000000000085",
+          "rating": "unknown",
+          "rationale": "Depends on the folder service."
+        }
+      ],
+      "decisionHash": "55a7cbe889fb042dd41d21ab98313ff274aa3be1a65e8d7c8476276654cb2bb7",
+      "elements": [
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "1e6df5d4032a3c06adcdb03c694ec8966de043ada8f221e0b202f91f772f0c18",
+          "id": "00000000-0000-4000-8000-000000000082",
+          "ordinal": 0,
+          "parentId": null,
+          "payload": {
+            "kind": "architecture-decision",
+            "value": {
+              "context": "Readers use several devices.",
+              "state": {
+                "kind": "rejected",
+                "rationale": "The reading list stays offline."
+              },
+              "title": "Sync shelves through a server"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "8c236545ba0614cc7622d4c9645498d1bb751690b21b940ec11da89bf53b1966",
+          "id": "00000000-0000-4000-8000-000000000083",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-000000000082",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "Shelves merge on a server.",
+              "title": "A sync server"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "d3f1231397b7ddcc7e5da6771f6334c16a1908e69316ad45a9da13c82620cb17",
+          "id": "00000000-0000-4000-8000-000000000085",
+          "ordinal": 1,
+          "parentId": "00000000-0000-4000-8000-000000000082",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "Shelves sync through a folder service.",
+              "title": "A shared folder"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "763219d4af546b842341105887b8008a698663a56c092604199bc81b7e05e53a",
+          "id": "00000000-0000-4000-8000-000000000084",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-000000000082",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "Offline",
+              "statement": "The list works without a network."
+            }
+          }
+        }
+      ],
+      "identity": {
+        "decisionId": "00000000-0000-4000-8000-000000000082",
+        "documentId": "00000000-0000-4000-8000-000000000001",
+        "externalId": "ADR-4"
+      },
+      "subjectLinks": []
+    },
+    {
+      "assessments": [
+        {
+          "decisionId": "00000000-0000-4000-8000-00000000008c",
+          "driverId": "00000000-0000-4000-8000-00000000008e",
+          "optionId": "00000000-0000-4000-8000-00000000008d",
+          "rating": "supports",
+          "rationale": "A log replays backwards."
+        },
+        {
+          "decisionId": "00000000-0000-4000-8000-00000000008c",
+          "driverId": "00000000-0000-4000-8000-00000000008e",
+          "optionId": "00000000-0000-4000-8000-00000000008f",
+          "rating": "supports",
+          "rationale": "A snapshot restores directly."
+        }
+      ],
+      "decisionHash": "9832f4b9ff69ba2bdcea6ec5f77ee7f88dabaf5eee7f22b2fd4c7fc344d52eaf",
+      "elements": [
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "5433756be7ed92fdb71c7dbea8a96bd2227bbb2307ee0d63b2121816333c03e0",
+          "id": "00000000-0000-4000-8000-00000000008c",
+          "ordinal": 0,
+          "parentId": null,
+          "payload": {
+            "kind": "architecture-decision",
+            "value": {
+              "context": "Readers wanted an undo.",
+              "state": {
+                "kind": "retired",
+                "outcome": "An append-only log.",
+                "rationale": "Undo was dropped.",
+                "selectedOptionId": "00000000-0000-4000-8000-00000000008d"
+              },
+              "title": "Keep a change log"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "4548c48d180a19f671d99e44064d5a825cbc215c40f5af394b54b4a9d1662c3b",
+          "id": "00000000-0000-4000-8000-00000000008d",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-00000000008c",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "Every change appended to a file.",
+              "title": "An append-only log"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "229bbc8a17cc3bf8b199ba01538b1848578aa1e458359a7748593354081a9a6b",
+          "id": "00000000-0000-4000-8000-00000000008f",
+          "ordinal": 1,
+          "parentId": "00000000-0000-4000-8000-00000000008c",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A copy of the shelf before each change.",
+              "title": "Snapshots"
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "4a56da315a2ae1c8c14911e49239ac463c5cd92af200d2456c1e149e42e643a4",
+          "id": "00000000-0000-4000-8000-00000000008e",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-00000000008c",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "Undo",
+              "statement": "A reader can undo a change."
+            }
+          }
+        },
+        {
+          "documentId": "00000000-0000-4000-8000-000000000001",
+          "elementHash": "fd5629e93c1ae5e6aef775a7267d29e81e6f38819896e212a82d25f4a048cfde",
+          "id": "00000000-0000-4000-8000-000000000090",
+          "ordinal": 0,
+          "parentId": "00000000-0000-4000-8000-00000000008c",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "benefit",
+              "statement": "Every change can be replayed.",
+              "subject": {
+                "externalId": "RQ-2",
+                "nodeId": "00000000-0000-4000-8000-00000000002b",
+                "tier": "Requirement",
+                "type": "TierSection"
+              }
+            }
+          }
+        }
+      ],
+      "identity": {
+        "decisionId": "00000000-0000-4000-8000-00000000008c",
+        "documentId": "00000000-0000-4000-8000-000000000001",
+        "externalId": "ADR-5"
+      },
+      "subjectLinks": [
+        {
+          "decisionId": "00000000-0000-4000-8000-00000000008c",
+          "role": "outcome",
+          "subject": {
+            "externalId": "RQ-2",
+            "nodeId": "00000000-0000-4000-8000-00000000002b",
+            "tier": "Requirement",
+            "type": "TierSection"
+          }
+        }
+      ]
+    }
+  ],
+  "authoredStateId": "00000000-0000-4000-8000-000000000002",
+  "contentAddress": "6a99a6ad94411e4cdfb6868b3301b7974683bf6f953da294b711d4607ae0d64a",
+  "graphAddress": "40ac3599bf184e4990c23108dbb6639402d441b1e51f0f0eb99ad777e8c55158",
+  "nodes": [
+    {
+      "body": "Keeps the books a reader means to read.",
+      "childrenHashes": [
+        {
+          "nodeHash": "c120957b881f2efb3955f0c100207bc72ff663fb3137129f8201d80794cfc453",
+          "nodeId": "00000000-0000-4000-8000-000000000014"
+        },
+        {
+          "nodeHash": "0838456f797d5478c350cb896594596c73a906d2ea082b8e180fa4bfa105b885",
+          "nodeId": "00000000-0000-4000-8000-000000000015"
+        },
+        {
+          "nodeHash": "b84e6d245640f9e5d0d5ff4dd613f5a33359c5516a0ce9a10e5f5fd61ba485f4",
+          "nodeId": "00000000-0000-4000-8000-00000000000b"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "P-1",
+      "fateConfirmed": null,
+      "name": "Reading List",
+      "nodeHash": "276698f2d92b6d179eec90e4b5b0015b73788da11dd1096041a92f9f43155226",
+      "nodeId": "00000000-0000-4000-8000-00000000000a",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Product",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "FT-1",
+      "fateConfirmed": null,
+      "name": "portable",
+      "nodeHash": "b84e6d245640f9e5d0d5ff4dd613f5a33359c5516a0ce9a10e5f5fd61ba485f4",
+      "nodeId": "00000000-0000-4000-8000-00000000000b",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "FacetTag",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "e194d184793dc67638dc8e2991e12496a4fc9328a7fed6c0388ce0f5c62b38f7",
+          "nodeId": "00000000-0000-4000-8000-00000000001e"
+        },
+        {
+          "nodeHash": "ff4356efe5282dfa4c6f92e2fc10830ad2c7af1048d5feb755e5fbbf20b34e7d",
+          "nodeId": "00000000-0000-4000-8000-00000000001f"
+        },
+        {
+          "nodeHash": "41a6c90b38609ab38f9f1b5e955d21c5a4a18851e8a8720ec472ecd1bce58102",
+          "nodeId": "00000000-0000-4000-8000-000000000032"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "FG-1",
+      "fateConfirmed": null,
+      "name": "Shelf",
+      "nodeHash": "c120957b881f2efb3955f0c100207bc72ff663fb3137129f8201d80794cfc453",
+      "nodeId": "00000000-0000-4000-8000-000000000014",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "FeatureGroup",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": "Lists can be shared.\n\n## Notes\n\nA shared list is read-only.\n",
+      "childrenHashes": [
+        {
+          "nodeHash": "4e49e4fc5ee715d55c056dc43f258bd9f742ecb3de1406c010feb7a776ca0dd2",
+          "nodeId": "00000000-0000-4000-8000-000000000020"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "FG-2",
+      "fateConfirmed": null,
+      "name": "Sharing",
+      "nodeHash": "0838456f797d5478c350cb896594596c73a906d2ea082b8e180fa4bfa105b885",
+      "nodeId": "00000000-0000-4000-8000-000000000015",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "FeatureGroup",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": "Books are stored by CMP-1, as ADR-1 decided; F-2 removes them.",
+      "childrenHashes": [
+        {
+          "nodeHash": "3575f3d778831aed8e95e92151a57862ae1f0ef45f0751bdf43ecc2917e14591",
+          "nodeId": "00000000-0000-4000-8000-000000000028"
+        },
+        {
+          "nodeHash": "eaa7251e46304e49c936838b5b62113263420b97e7926336ab36521e49c4b7a9",
+          "nodeId": "00000000-0000-4000-8000-00000000002b"
+        },
+        {
+          "nodeHash": "5bd27e8fbadde3fffedad809f0cab161b0614b51dcb7abf9ece7099e7989d14f",
+          "nodeId": "00000000-0000-4000-8000-00000000002d"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "F-1",
+      "fateConfirmed": null,
+      "name": "Add a book",
+      "nodeHash": "e194d184793dc67638dc8e2991e12496a4fc9328a7fed6c0388ce0f5c62b38f7",
+      "nodeId": "00000000-0000-4000-8000-00000000001e",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Feature",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "8a27ac93db58eade6734c06a6bc7ac5f1fba1c966c70d68d9caa07f8f72ce2e0",
+          "nodeId": "00000000-0000-4000-8000-00000000002e"
+        },
+        {
+          "nodeHash": "7091714dc1c131edc2c681cb74169c3c995af9b8e14441514a7b9c4ea0e3f32b",
+          "nodeId": "00000000-0000-4000-8000-000000000030"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "F-2",
+      "fateConfirmed": null,
+      "name": "Remove a book",
+      "nodeHash": "ff4356efe5282dfa4c6f92e2fc10830ad2c7af1048d5feb755e5fbbf20b34e7d",
+      "nodeId": "00000000-0000-4000-8000-00000000001f",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Feature",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "cce2c149d0a2cbb1ac0ac0ce0ced8c766554a20df278101e2c4f3dc9f5626d30",
+          "nodeId": "00000000-0000-4000-8000-000000000033"
+        },
+        {
+          "nodeHash": "2fdab4c41d1bba49189bd02ce5172043e67cae2fa5ed5c4b64c4937124e3565e",
+          "nodeId": "00000000-0000-4000-8000-000000000035"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "F-3",
+      "fateConfirmed": null,
+      "name": "Share a list",
+      "nodeHash": "4e49e4fc5ee715d55c056dc43f258bd9f742ecb3de1406c010feb7a776ca0dd2",
+      "nodeId": "00000000-0000-4000-8000-000000000020",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Feature",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "51e4695c9d9b56240bbcb8d040b1272a84b5b9c327a9b480dd72ec6c96753761",
+          "nodeId": "00000000-0000-4000-8000-000000000029"
+        },
+        {
+          "nodeHash": "0788df939adb2da4262609aeeb1baf6fc83d852bf522b199382176eb2682a190",
+          "nodeId": "00000000-0000-4000-8000-00000000002a"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "RQ-1",
+      "fateConfirmed": null,
+      "name": "When a reader adds a book, the shelf shall record its title and author.",
+      "nodeHash": "3575f3d778831aed8e95e92151a57862ae1f0ef45f0751bdf43ecc2917e14591",
+      "nodeId": "00000000-0000-4000-8000-000000000028",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "AC-1",
+      "fateConfirmed": null,
+      "name": "A book added with a title and an author appears on the shelf.",
+      "nodeHash": "51e4695c9d9b56240bbcb8d040b1272a84b5b9c327a9b480dd72ec6c96753761",
+      "nodeId": "00000000-0000-4000-8000-000000000029",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "AC-2",
+      "fateConfirmed": null,
+      "name": "A book added without a title is refused with an error naming the title.",
+      "nodeHash": "0788df939adb2da4262609aeeb1baf6fc83d852bf522b199382176eb2682a190",
+      "nodeId": "00000000-0000-4000-8000-00000000002a",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "e1ab3ac112a0287b274a163054cfe0876d157b22352e4d26ae516b29161e62f7",
+          "nodeId": "00000000-0000-4000-8000-00000000002c"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "RQ-2",
+      "fateConfirmed": null,
+      "name": "The shelf shall keep books in the order they were added.",
+      "nodeHash": "eaa7251e46304e49c936838b5b62113263420b97e7926336ab36521e49c4b7a9",
+      "nodeId": "00000000-0000-4000-8000-00000000002b",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "AC-3",
+      "fateConfirmed": null,
+      "name": "Books list in the order they were added.",
+      "nodeHash": "e1ab3ac112a0287b274a163054cfe0876d157b22352e4d26ae516b29161e62f7",
+      "nodeId": "00000000-0000-4000-8000-00000000002c",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "QA-1",
+      "fateConfirmed": null,
+      "name": "Adding a book completes quickly.",
+      "nodeHash": "5bd27e8fbadde3fffedad809f0cab161b0614b51dcb7abf9ece7099e7989d14f",
+      "nodeId": "00000000-0000-4000-8000-00000000002d",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": "latency",
+      "qualityTarget": {
+        "aggregation": "p95",
+        "band": {
+          "kind": "at_most",
+          "upper": "50"
+        },
+        "environment": "a laptop",
+        "metric": "add.wall-time",
+        "scenario": "adding one book to a shelf of a thousand",
+        "unit": "ms"
+      },
+      "technicalBinding": null,
+      "tier": null,
+      "type": "QualityAttribute",
+      "verificationFate": "sampled"
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "8dca052b14f12daeee77ff7b2fa39bc8f3b9d8d2511fde4dc49c8400e42032de",
+          "nodeId": "00000000-0000-4000-8000-00000000002f"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "RQ-3",
+      "fateConfirmed": null,
+      "name": "If a reader removes a book that is not on the shelf, then the shelf shall report that the book is absent.",
+      "nodeHash": "8a27ac93db58eade6734c06a6bc7ac5f1fba1c966c70d68d9caa07f8f72ce2e0",
+      "nodeId": "00000000-0000-4000-8000-00000000002e",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "AC-4",
+      "fateConfirmed": null,
+      "name": "Removing an absent book reports the book as absent and changes nothing.",
+      "nodeHash": "8dca052b14f12daeee77ff7b2fa39bc8f3b9d8d2511fde4dc49c8400e42032de",
+      "nodeId": "00000000-0000-4000-8000-00000000002f",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "6a1e0ab4f864f056d185154d7ba14267b0e2890418f0fd184efa1c0a017151b1",
+          "nodeId": "00000000-0000-4000-8000-000000000031"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "RQ-4",
+      "fateConfirmed": null,
+      "name": "Removed books are gone",
+      "nodeHash": "7091714dc1c131edc2c681cb74169c3c995af9b8e14441514a7b9c4ea0e3f32b",
+      "nodeId": "00000000-0000-4000-8000-000000000030",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "AC-5",
+      "fateConfirmed": null,
+      "name": "A removed book no longer lists.",
+      "nodeHash": "6a1e0ab4f864f056d185154d7ba14267b0e2890418f0fd184efa1c0a017151b1",
+      "nodeId": "00000000-0000-4000-8000-000000000031",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "CON-1",
+      "fateConfirmed": true,
+      "name": "Every book shall carry a title.",
+      "nodeHash": "41a6c90b38609ab38f9f1b5e955d21c5a4a18851e8a8720ec472ecd1bce58102",
+      "nodeId": "00000000-0000-4000-8000-000000000032",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "Constraint",
+      "verificationFate": "proved"
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "9609a2db334c8db6ebf95ea486f33315e8477c6b9de83e2b25427661264676ac",
+          "nodeId": "00000000-0000-4000-8000-000000000034"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "RQ-5",
+      "fateConfirmed": null,
+      "name": "Where sharing is enabled, the shelf shall publish a read-only link.",
+      "nodeHash": "cce2c149d0a2cbb1ac0ac0ce0ced8c766554a20df278101e2c4f3dc9f5626d30",
+      "nodeId": "00000000-0000-4000-8000-000000000033",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "AC-6",
+      "fateConfirmed": null,
+      "name": "The link opens the list read-only, as RQ-99 once required.",
+      "nodeHash": "9609a2db334c8db6ebf95ea486f33315e8477c6b9de83e2b25427661264676ac",
+      "nodeId": "00000000-0000-4000-8000-000000000034",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "9cfd5d66de1c3a0dea3e0df4036e9d0848cc2fd8544cb5aef17ab28b8d4de731",
+          "nodeId": "00000000-0000-4000-8000-000000000036"
+        },
+        {
+          "nodeHash": "0098324f623aae6d6c887bde5358f835c6d6bd5a00a2d01d572f8c10b711d32a",
+          "nodeId": "00000000-0000-4000-8000-000000000037"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "RQ-6",
+      "fateConfirmed": null,
+      "name": "While a list is shared, the shelf shall refuse edits made through the link.",
+      "nodeHash": "2fdab4c41d1bba49189bd02ce5172043e67cae2fa5ed5c4b64c4937124e3565e",
+      "nodeId": "00000000-0000-4000-8000-000000000035",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "AC-7",
+      "fateConfirmed": null,
+      "name": "An edit made through the link is refused.",
+      "nodeHash": "9cfd5d66de1c3a0dea3e0df4036e9d0848cc2fd8544cb5aef17ab28b8d4de731",
+      "nodeId": "00000000-0000-4000-8000-000000000036",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "FT-2",
+      "fateConfirmed": null,
+      "name": "portable",
+      "nodeHash": "0098324f623aae6d6c887bde5358f835c6d6bd5a00a2d01d572f8c10b711d32a",
+      "nodeId": "00000000-0000-4000-8000-000000000037",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "FacetTag",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "0d3c3bff8172241ad54a08c6715130fca64bbd67e0246f9a0809da9de2414b90",
+          "nodeId": "00000000-0000-4000-8000-00000000003e"
+        },
+        {
+          "nodeHash": "c88ea9679dbeb0330214f003f53d7b8c55c3d268279d6de020cda8b045a17c90",
+          "nodeId": "00000000-0000-4000-8000-00000000003f"
+        },
+        {
+          "nodeHash": "dc5138c86e6021199b2c2bb20955c5283ae233a3efd9e1ff492b5605b784ff45",
+          "nodeId": "00000000-0000-4000-8000-000000000040"
+        },
+        {
+          "nodeHash": "8ff93512dba148835c5f546c5df323a232d26a93f3267ef996709b63f3ce6f75",
+          "nodeId": "00000000-0000-4000-8000-00000000003d"
+        }
+      ],
+      "componentScope": {
+        "kind": "product",
+        "productId": "00000000-0000-4000-8000-00000000000a"
+      },
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "CMP-1",
+      "fateConfirmed": null,
+      "name": "Shelf store",
+      "nodeHash": "69bc76a2e5baf311e34016eef3a10985c6cdb19a231b429c066e52fd2986859f",
+      "nodeId": "00000000-0000-4000-8000-00000000003c",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "Component",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "FT-3",
+      "fateConfirmed": null,
+      "name": "storage",
+      "nodeHash": "8ff93512dba148835c5f546c5df323a232d26a93f3267ef996709b63f3ce6f75",
+      "nodeId": "00000000-0000-4000-8000-00000000003d",
+      "ordinal": 3,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "FacetTag",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "CON-2",
+      "fateConfirmed": true,
+      "name": "The shelf store shall be written in Rust.",
+      "nodeHash": "0d3c3bff8172241ad54a08c6715130fca64bbd67e0246f9a0809da9de2414b90",
+      "nodeId": "00000000-0000-4000-8000-00000000003e",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": {
+        "category": "runtime.language",
+        "requiredValue": "rust"
+      },
+      "tier": null,
+      "type": "Constraint",
+      "verificationFate": "monitored"
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "QA-2",
+      "fateConfirmed": null,
+      "name": "Listing a shelf completes quickly.",
+      "nodeHash": "c88ea9679dbeb0330214f003f53d7b8c55c3d268279d6de020cda8b045a17c90",
+      "nodeId": "00000000-0000-4000-8000-00000000003f",
+      "ordinal": 1,
+      "proposedFate": "monitored",
+      "qaKind": "latency",
+      "qualityTarget": {
+        "aggregation": "p95",
+        "band": {
+          "kind": "at_most",
+          "upper": "20"
+        },
+        "environment": "a laptop",
+        "metric": "list.wall-time",
+        "scenario": "listing a shelf of a thousand books",
+        "unit": "ms"
+      },
+      "technicalBinding": null,
+      "tier": null,
+      "type": "QualityAttribute",
+      "verificationFate": "sampled"
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "CMP-2",
+      "fateConfirmed": null,
+      "name": "Book index",
+      "nodeHash": "dc5138c86e6021199b2c2bb20955c5283ae233a3efd9e1ff492b5605b784ff45",
+      "nodeId": "00000000-0000-4000-8000-000000000040",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "Component",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": {
+        "kind": "external"
+      },
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "CMP-3",
+      "fateConfirmed": null,
+      "name": "Link service",
+      "nodeHash": "095347f514c1a29214517839353bda2ba4357ec02f1d6d0eb00f4b6d283c399d",
+      "nodeId": "00000000-0000-4000-8000-000000000041",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "Component",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": {
+        "kind": "document"
+      },
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "CMP-4",
+      "fateConfirmed": null,
+      "name": "Shared types",
+      "nodeHash": "6150ebb73788300d9653611523092af87879ec3609338dd3dcf6804d5afe230a",
+      "nodeId": "00000000-0000-4000-8000-000000000042",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "Component",
+      "verificationFate": null
+    }
+  ],
+  "publishSequence": 1,
+  "publishedAt": "2026-10-11T00:00:00Z",
+  "realizationLinks": [
+    {
+      "componentId": "00000000-0000-4000-8000-00000000003c",
+      "featureId": "00000000-0000-4000-8000-00000000001e"
+    },
+    {
+      "componentId": "00000000-0000-4000-8000-00000000003c",
+      "featureId": "00000000-0000-4000-8000-00000000001f"
+    },
+    {
+      "componentId": "00000000-0000-4000-8000-000000000041",
+      "featureId": "00000000-0000-4000-8000-000000000020"
+    }
+  ],
+  "technicalConstraintCategories": [
+    {
+      "categoryEntryHash": "781d959ce4e66f7dbe8b02ed0c4b0befa0a04bc86753725dad9e7b6305474c3f",
+      "definition": "The language a component is written in.",
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "id": "00000000-0000-4000-8000-000000000005",
+      "name": "runtime.language"
+    }
+  ],
+  "technicalConstraintCategoryAddress": "bb2d7e92ceefbc661ce1a36bdcdac424379e4233719da9351560d7a1b9d442aa",
+  "vocabularyAddress": "10e95aad1d38be14583eb593dd52cf9af235f1af4186677bb212ae45fe5184e3",
+  "vocabularyEntries": [
+    {
+      "definition": "Behaviour every implementation reproduces.",
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "entryHash": "7fb44511fb769a4200882a4a04867c2e3bc685c5703aeab24c0347438660662d",
+      "entryId": "00000000-0000-4000-8000-000000000003",
+      "name": "portable"
+    },
+    {
+      "definition": "How and where shelves are kept.",
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "entryHash": "b5f52f40d7ab94010efdce3c058447c58bb5dcb628ab1ad3ff071aa6e22b2180",
+      "entryId": "00000000-0000-4000-8000-000000000004",
+      "name": "storage"
+    }
+  ]
+}

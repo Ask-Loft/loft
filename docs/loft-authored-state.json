@@ -1,0 +1,16 @@
+{
+  "annotations": [],
+  "architectureDecisionAddress": null,
+  "architectureDecisions": [],
+  "authoredStateId": "46f04b35-1b47-4609-a737-3422d20380c6",
+  "contentAddress": "77b926758c7b38f0be81c137acb8bf4ca37500754f46ee55666a0a85c4661204",
+  "graphAddress": "925d733c6195a31ac319dc1e44f7bd51084ecbbd8c25a4b1e7f1dd685f8d69cf",
+  "nodes": [],
+  "publishSequence": 1,
+  "publishedAt": "2026-10-11T15:10:44.298360465Z",
+  "realizationLinks": [],
+  "technicalConstraintCategories": [],
+  "technicalConstraintCategoryAddress": null,
+  "vocabularyAddress": "14e612e9405909e335f965ec84b726b4e93c158271e0c8816101bca2c55eb537",
+  "vocabularyEntries": []
+}
