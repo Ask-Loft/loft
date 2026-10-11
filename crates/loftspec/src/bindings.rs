@@ -1,8 +1,9 @@
 //! The bindings between elements, labels and aliases (D-11 F-2), held in `spec/labels.yaml`.
 
 use std::collections::BTreeMap;
+use std::num::NonZeroU64;
 
-use crate::identity::{Key, Label};
+use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::ElementId;
 
 /// An element's live label and every label it held before, in the order they were replaced.
@@ -201,5 +202,46 @@ impl Bindings {
                 .iter()
                 .map(move |alias| (binding.element, *alias))
         })
+    }
+}
+
+/// The next label value of each kind prefix (RQ-7), held beside the bindings in
+/// `spec/labels.yaml`. Every prefix has a counter; a counter never rewinds.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Counters(BTreeMap<LabelPrefix, NonZeroU64>);
+
+impl Default for Counters {
+    /// Every counter at its first value, 1.
+    fn default() -> Self {
+        Self(
+            LabelPrefix::ALL
+                .into_iter()
+                .map(|prefix| (prefix, NonZeroU64::MIN))
+                .collect(),
+        )
+    }
+}
+
+impl Counters {
+    /// The value the next label of `prefix` receives.
+    #[must_use]
+    pub fn next(&self, prefix: LabelPrefix) -> NonZeroU64 {
+        self.0.get(&prefix).copied().unwrap_or(NonZeroU64::MIN)
+    }
+
+    /// Counters one above the highest live label or alias of each prefix, and 1 for a prefix no
+    /// label carries (RQ-176, AC-702).
+    #[must_use]
+    pub fn above(bindings: &Bindings) -> Self {
+        let mut counters = Self::default();
+        let labels = bindings.iter().flat_map(|binding| {
+            std::iter::once(binding.label).chain(binding.aliases.iter().copied())
+        });
+        for label in labels {
+            let next = label.number().saturating_add(1);
+            let counter = counters.0.entry(label.prefix()).or_insert(NonZeroU64::MIN);
+            *counter = (*counter).max(next);
+        }
+        counters
     }
 }

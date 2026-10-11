@@ -3,6 +3,8 @@
 
 #![allow(dead_code)]
 
+pub mod v1;
+
 use loftspec::attributes::{
     QaKind, QualityAggregation, QualityBand, QualityTarget, TechnicalBinding, VerificationFate,
 };

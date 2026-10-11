@@ -1,7 +1,7 @@
 //! A whole document (CMP-2): the Products in the manifest's order, the root Components, the
 //! typed edges, the two registries, the decisions, the bindings and the record of a v1 source.
 
-use crate::bindings::Bindings;
+use crate::bindings::{Bindings, Counters};
 use crate::canonical::Digest;
 use crate::decision::Decision;
 use crate::ids::{
@@ -131,7 +131,8 @@ pub struct CategoryEntry {
     pub definition: String,
 }
 
-/// The v1 Authored State a converted document was derived from (RQ-20).
+/// The v1 Authored State a converted document was derived from: carried in the manifest and
+/// copied into every lock (RQ-17, RQ-20).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DerivedFrom {
     pub authored_state_id: AuthoredStateId,
@@ -151,6 +152,7 @@ pub struct Document {
     pub categories: Vec<CategoryEntry>,
     pub decisions: Vec<Decision>,
     pub bindings: Bindings,
+    pub counters: Counters,
     pub derived_from: Option<DerivedFrom>,
 }
 
@@ -167,6 +169,7 @@ impl Document {
             categories: Vec::new(),
             decisions: Vec::new(),
             bindings: Bindings::default(),
+            counters: Counters::default(),
             derived_from: None,
         }
     }
