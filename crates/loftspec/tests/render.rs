@@ -1,0 +1,147 @@
+//! The Markdown projection and the canonical JSON export (D-11 F-24, F-25).
+
+mod common;
+
+use common::small_document;
+use loftspec::canonical::canonical_bytes;
+use loftspec::hash::hash_document;
+use loftspec::render::{Projections, render};
+use serde_json::Value;
+
+fn projections() -> Projections {
+    render(&small_document()).unwrap()
+}
+
+fn markdown() -> String {
+    projections().markdown
+}
+
+fn export() -> Value {
+    serde_json::from_slice(&projections().json).unwrap()
+}
+
+fn state_root() -> String {
+    hash_document(&small_document())
+        .unwrap()
+        .roots
+        .state
+        .to_string()
+}
+
+#[test]
+fn ac_429_ac_430_ac_687_ac_688_capabilities_render_as_headings_of_levels_3_to_6() {
+    let markdown = markdown();
+    for line in [
+        "### P-1 · Example Product\n",
+        "#### FG-1 · Identity\n",
+        "##### F-1 · Keys\n",
+        "###### RQ-2 · The writer shall write a key on every node.\n",
+    ] {
+        assert!(markdown.contains(line), "{line}");
+    }
+}
+
+#[test]
+fn ac_431_ac_433_a_criterion_is_a_bold_paragraph_and_an_unlabelled_node_shows_its_key() {
+    assert!(markdown().contains(
+        "\n**00000000-0000-7000-8000-000000000005 · Acceptance Criterion · Every node record \
+         carries a `key` field.**\n"
+    ));
+}
+
+#[test]
+fn ac_432_components_decisions_tags_and_realizes_edges_follow_the_products() {
+    let markdown = markdown();
+    let at = |heading: &str| {
+        markdown
+            .find(heading)
+            .unwrap_or_else(|| panic!("{heading}"))
+    };
+    let order = [
+        at("## Capability Model\n"),
+        at("## Component Model\n"),
+        at("## Architecture Decisions\n"),
+        at("## Domain Vocabulary\n"),
+        at("## Realization Links\n"),
+    ];
+    assert!(order.is_sorted(), "{order:?}");
+    assert!(markdown.contains("| F-1 · Keys | CMP-1 · Document model |\n"));
+}
+
+#[test]
+fn ac_686_every_node_of_the_document_appears() {
+    let markdown = markdown();
+    for label in [
+        "P-1", "FG-1", "F-1", "RQ-2", "CMP-1", "CON-1", "CON-2", "QA-1", "QA-2", "ADR-1",
+    ] {
+        assert!(markdown.contains(&format!("{label} · ")), "{label}");
+    }
+}
+
+#[test]
+fn ac_434_ac_441_two_renders_are_byte_identical() {
+    assert_eq!(projections(), projections());
+}
+
+#[test]
+fn ac_435_ac_436_the_markdown_names_its_state_root_and_no_other_digest() {
+    let markdown = markdown();
+    let root = state_root();
+    assert!(markdown.contains(&format!("> loftspec/1 · state root `{root}`\n")));
+    let digests = markdown
+        .split(|c: char| !c.is_ascii_hexdigit())
+        .filter(|word| word.len() == 64)
+        .collect::<Vec<_>>();
+    assert_eq!(digests, [root.as_str()]);
+}
+
+#[test]
+fn ac_437_the_export_is_canonical_json() {
+    let bytes = projections().json;
+    let value: Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(canonical_bytes(&value), bytes);
+}
+
+#[test]
+fn ac_438_ac_439_the_export_holds_every_nodes_view_key_and_label() {
+    let export = export();
+    let hashes = hash_document(&small_document()).unwrap();
+    let nodes = export["nodes"].as_array().unwrap();
+    assert_eq!(nodes.len(), hashes.node_views.len());
+    let feature = nodes.iter().find(|node| node["label"] == "F-1").unwrap();
+    assert_eq!(feature["key"], "00000000-0000-7000-8000-000000000003");
+    assert_eq!(feature["kind"], "feature");
+    let id = loftspec::ids::FeatureId::new(common::key(3)).into();
+    assert_eq!(feature["view"], hashes.node_views[&id]);
+    let criterion = nodes
+        .iter()
+        .find(|node| node["kind"] == "criterion")
+        .unwrap();
+    assert_eq!(criterion["label"], Value::Null);
+}
+
+#[test]
+fn ac_440_the_export_names_its_state_root() {
+    assert_eq!(export()["stateRoot"], state_root());
+}
+
+#[test]
+fn ac_652_to_ac_654_the_export_holds_edges_decisions_and_registries() {
+    let export = export();
+    let edges = export["edges"].as_array().unwrap();
+    assert_eq!(edges.len(), 5);
+    assert!(
+        edges
+            .iter()
+            .any(|edge| edge["type"] == "subject" && edge["role"] == "outcome")
+    );
+    assert_eq!(export["decisions"][0]["label"], "ADR-1");
+    assert_eq!(export["tags"].as_array().unwrap().len(), 2);
+    assert_eq!(export["categories"][0]["name"], "runtime.language");
+}
+
+#[test]
+fn ac_655_the_export_layout_is_the_published_one() {
+    let published = include_bytes!("../../../testdata/golden/small-document.export.json");
+    assert_eq!(projections().json, published);
+}

@@ -115,3 +115,13 @@ Markdown reader shows it, CommonMark without extensions: code blocks, HTML block
 are left out, and the text pieces are joined by single spaces. `LQ-005` reads a body sentence by
 sentence (Unicode sentence boundaries). `LQ-008` measures two names as the size of their tokens'
 multiset intersection over the size of its union.
+
+## `small-document.export.json`
+
+The canonical JSON export of `small-document`, RFC 8785 bytes. Its top level is `format`,
+`stateRoot`, `nodes` (each `{key, label, kind, view}` in document order, `label` `null` where a
+node has none), `decisions` (each `{key, label, view}` by key), `edges` (each `{type, source,
+target, role}` sorted by canonical bytes; `role` is `null` except on `subject` edges, and a
+`subject` edge to a node the document no longer holds has the target `{formerLabel}`), `tags`
+and `categories` (each `{key, name, definition}` by name). Every `view` is the content view or
+decision view the hasher digests.
