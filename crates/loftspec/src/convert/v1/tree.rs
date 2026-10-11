@@ -15,10 +15,11 @@ use crate::ids::{
 };
 use crate::kind::NodeKind;
 use crate::names::TagName;
+use crate::slug::Slug;
 use crate::statement::Statement;
 use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement,
+    Requirement, RootComponent,
 };
 
 /// The typed ID of every node of an export but its Facet Tags, by UUID.
@@ -116,7 +117,10 @@ impl<'a> Tree<'a> {
         for root in &self.roots {
             match self.ids.get(&root.node_id).map(|id| id.kind()) {
                 Some(NodeKind::Product) => document.products.push(builder.product(root)?),
-                Some(NodeKind::Component) => document.components.push(builder.component(root)?),
+                Some(NodeKind::Component) => document.components.push(RootComponent {
+                    slug: Slug::derive(&root.name, "component"),
+                    component: builder.component(root)?,
+                }),
                 _ => {
                     return Err(ConvertError::Orphan {
                         node: root.external_id.clone(),
@@ -279,6 +283,7 @@ impl<'a> Builder<'_, 'a> {
         let (details, mut children) = self.open(node, id)?;
         Ok(Product {
             id: Some(id),
+            slug: Slug::derive(&node.name, "product"),
             name: node.name.clone(),
             details,
             feature_groups: self.each(
@@ -294,6 +299,7 @@ impl<'a> Builder<'_, 'a> {
         let (details, mut children) = self.open(node, id)?;
         Ok(FeatureGroup {
             id: Some(id),
+            slug: Slug::derive(&node.name, "feature-group"),
             name: node.name.clone(),
             details,
             features: self.each(&mut children, NodeKind::Feature, Self::feature)?,
@@ -306,6 +312,7 @@ impl<'a> Builder<'_, 'a> {
         let (details, mut children) = self.open(node, id)?;
         Ok(Feature {
             id: Some(id),
+            slug: Slug::derive(&node.name, "feature"),
             name: node.name.clone(),
             details,
             requirements: self.each(&mut children, NodeKind::Requirement, Self::requirement)?,

@@ -20,10 +20,11 @@ use loftspec::ids::{
     TagId,
 };
 use loftspec::names::{CategoryName, TagName};
+use loftspec::slug::Slug;
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement,
+    Requirement, RootComponent,
 };
 
 /// A deterministic version 7 key numbered `n`.
@@ -60,6 +61,7 @@ pub fn requirement(id: Key, text: &str, criteria: Vec<Criterion>) -> Requirement
 pub fn feature(id: Key, name: &str, requirements: Vec<Requirement>) -> Feature {
     Feature {
         id: Some(FeatureId::new(id)),
+        slug: Slug::derive(name, "feature"),
         name: name.to_owned(),
         details: Details::default(),
         requirements,
@@ -78,9 +80,22 @@ pub fn component(id: Key, name: &str) -> Component {
     }
 }
 
+pub fn slug(text: &str) -> Slug {
+    Slug::parse(text).unwrap()
+}
+
+/// A root Component under the slug its name derives.
+pub fn root(component: Component) -> RootComponent {
+    RootComponent {
+        slug: Slug::derive(&component.name, "component"),
+        component,
+    }
+}
+
 pub fn product(id: Key, name: &str) -> Product {
     Product {
         id: Some(ProductId::new(id)),
+        slug: Slug::derive(name, "product"),
         name: name.to_owned(),
         details: Details::default(),
         feature_groups: Vec::new(),
@@ -118,6 +133,7 @@ fn product_tree(k: &dyn Fn(u32) -> Key) -> Product {
     }];
     let group = FeatureGroup {
         id: Some(FeatureGroupId::new(k(2))),
+        slug: slug("identity"),
         name: "Identity".to_owned(),
         details: Details::default(),
         features: vec![feature],
@@ -185,6 +201,7 @@ fn decision(k: &dyn Fn(u32) -> Key) -> Decision {
     };
     Decision {
         id: DecisionId::new(k(20)),
+        slug: slug("keys-are-uuids"),
         title: "Keys are UUIDs".to_owned(),
         context: "Every node carries its key in the file.".to_owned(),
         state: DecisionState::Accepted {
@@ -313,7 +330,7 @@ fn bind(document: &mut Document, k: &dyn Fn(u32) -> Key) {
 pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
     let mut document = Document::empty(DocumentId::new(k(0)));
     document.products = vec![product_tree(k)];
-    document.components = vec![component_tree(k)];
+    document.components = vec![root(component_tree(k))];
     document.edges = edges(k);
     document.tags = vec![
         TagEntry {

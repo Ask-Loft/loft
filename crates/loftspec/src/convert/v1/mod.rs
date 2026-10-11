@@ -16,6 +16,7 @@ use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
 use crate::identity::{Label, LabelError};
 use crate::ids::{AuthoredStateId, CategoryId, DocumentId, NodeId, RequirementId, TagId};
 use crate::names::NameError;
+use crate::slug::Slug;
 
 /// A converted document and what the converter reported about it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -114,12 +115,43 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
     conversion.sidecar.record_highest(export);
     registries(export, &mut conversion.document);
     let document = &mut conversion.document;
+    unique_slugs(document);
     document.counters = Counters::above(&document.bindings);
     // A former label a decision names is seen, so it is never allocated again (ADR-13).
     for former in conversion.sidecar.former_labels.keys() {
         document.counters.raise(*former);
     }
     Ok(conversion)
+}
+
+/// Makes the slugs of each directory unique, in document order (AC-246): the Products, each
+/// Product's Feature Groups, each Feature Group's Features, the root Components and the
+/// decisions.
+fn unique_slugs(document: &mut Document) {
+    Slug::make_unique(
+        document
+            .products
+            .iter_mut()
+            .map(|product| &mut product.slug),
+    );
+    for product in &mut document.products {
+        Slug::make_unique(
+            product
+                .feature_groups
+                .iter_mut()
+                .map(|group| &mut group.slug),
+        );
+        for group in &mut product.feature_groups {
+            Slug::make_unique(group.features.iter_mut().map(|feature| &mut feature.slug));
+        }
+    }
+    Slug::make_unique(document.components.iter_mut().map(|root| &mut root.slug));
+    Slug::make_unique(
+        document
+            .decisions
+            .iter_mut()
+            .map(|decision| &mut decision.slug),
+    );
 }
 
 /// The label an external ID is, or an error naming the node that carries it.

@@ -107,7 +107,7 @@ fn hash_trees(document: &Document) -> Result<Trees, HashError> {
     let mut components = document
         .components
         .iter()
-        .map(|component| tree::hash_with(component.into(), &mut visit))
+        .map(|root| tree::hash_with((&root.component).into(), &mut visit))
         .collect::<Result<Vec<_>, _>>()?;
     components.sort_unstable();
     Ok(Trees {

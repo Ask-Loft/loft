@@ -13,7 +13,10 @@ use crate::ids::{
     ComponentId, ConstraintId, CriterionId, FeatureGroupId, FeatureId, ProductId,
     QualityAttributeId, RequirementId, SectionId,
 };
+use std::ops::{Deref, DerefMut};
+
 use crate::names::TagName;
+use crate::slug::Slug;
 use crate::statement::Statement;
 
 /// What every node kind but the Section carries besides its name and children: a body, the tags
@@ -38,6 +41,7 @@ impl Details {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Product {
     pub id: Option<ProductId>,
+    pub slug: Slug,
     pub name: String,
     pub details: Details,
     pub feature_groups: Vec<FeatureGroup>,
@@ -46,6 +50,7 @@ pub struct Product {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FeatureGroup {
     pub id: Option<FeatureGroupId>,
+    pub slug: Slug,
     pub name: String,
     pub details: Details,
     pub features: Vec<Feature>,
@@ -55,6 +60,7 @@ pub struct FeatureGroup {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Feature {
     pub id: Option<FeatureId>,
+    pub slug: Slug,
     pub name: String,
     pub details: Details,
     pub requirements: Vec<Requirement>,
@@ -104,6 +110,27 @@ pub struct QualityAttribute {
     pub kind: QaKind,
     pub target: QualityTarget,
     pub verification_fate: Option<VerificationFate>,
+}
+
+/// A Component with no parent, written to its own file under its slug (RQ-23, AC-757).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RootComponent {
+    pub slug: Slug,
+    pub component: Component,
+}
+
+impl Deref for RootComponent {
+    type Target = Component;
+
+    fn deref(&self) -> &Component {
+        &self.component
+    }
+}
+
+impl DerefMut for RootComponent {
+    fn deref_mut(&mut self) -> &mut Component {
+        &mut self.component
+    }
 }
 
 /// Headed prose inside a node: a name, a body and ordered child Sections (AC-155, AC-156).

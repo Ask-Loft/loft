@@ -12,7 +12,7 @@ use crate::ids::{
     ProductId, TagId,
 };
 use crate::names::{CategoryName, TagName};
-use crate::tree::{Component, Product};
+use crate::tree::{Product, RootComponent};
 
 /// The type of an edge (D-11 F-13, F-14).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -160,12 +160,13 @@ pub struct DerivedFrom {
 }
 
 /// A whole document. Products are in the manifest's order (AC-241); root Components, edges,
-/// registry entries and decisions are in no meaningful order.
+/// registry entries and decisions are in no meaningful order. The publish branch is named only
+/// when it is not `main` (AC-276).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Document {
     pub id: DocumentId,
     pub products: Vec<Product>,
-    pub components: Vec<Component>,
+    pub components: Vec<RootComponent>,
     pub edges: Vec<Edge>,
     pub tags: Vec<TagEntry>,
     pub categories: Vec<CategoryEntry>,
@@ -173,6 +174,7 @@ pub struct Document {
     pub bindings: Bindings,
     pub counters: Counters,
     pub derived_from: Option<DerivedFrom>,
+    pub publish_branch: Option<String>,
 }
 
 impl Document {
@@ -190,6 +192,7 @@ impl Document {
             bindings: Bindings::default(),
             counters: Counters::default(),
             derived_from: None,
+            publish_branch: None,
         }
     }
 }

@@ -2,7 +2,9 @@
 
 mod common;
 
-use common::{component, fresh_key, key, label, product, small_document, small_document_with};
+use common::{
+    component, fresh_key, key, label, product, root, small_document, small_document_with,
+};
 use loftspec::canonical::Digest;
 use loftspec::decision::DecisionState;
 use loftspec::document::{CategoryEntry, DerivedFrom, Document, Edge};
@@ -43,8 +45,8 @@ fn ac_54_the_same_document_with_fresh_keys_has_the_same_content_root() {
 #[test]
 fn ac_50_two_identical_edges_between_duplicate_nodes_both_count() {
     let mut document = small_document();
-    document.components.push(component(key(40), "Twin"));
-    document.components.push(component(key(41), "Twin"));
+    document.components.push(root(component(key(40), "Twin")));
+    document.components.push(root(component(key(41), "Twin")));
     document.edges.push(realizes(3, 40));
     let one = roots(&document).edges;
     document.edges.push(realizes(3, 41));
@@ -101,7 +103,7 @@ fn ac_57_and_ac_254_root_components_are_sorted_by_content_hash() {
     let mut document = small_document();
     document
         .components
-        .push(component(key(51), "Second Component"));
+        .push(root(component(key(51), "Second Component")));
     let hashes = hash_document(&document).unwrap();
     let mut sorted: Vec<Digest> = document
         .components
@@ -290,7 +292,7 @@ fn a_binding_of_an_unknown_element_is_refused() {
 #[test]
 fn a_key_carried_twice_is_refused() {
     let mut document = small_document();
-    document.components.push(component(key(6), "Another"));
+    document.components.push(root(component(key(6), "Another")));
     assert_eq!(
         hash_document(&document).unwrap_err(),
         HashError::DuplicateKey(key(6))

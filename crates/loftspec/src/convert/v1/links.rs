@@ -18,6 +18,7 @@ use crate::decision::{
 use crate::document::Edge;
 use crate::identity::{Key, Label};
 use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
+use crate::slug::Slug;
 
 /// Adds the export's `realizes` and `scoped_to` edges, then its decisions with their `subject`
 /// edges, bindings and sidecar facts.
@@ -195,6 +196,7 @@ impl<'a> Reader<'a> {
         self.facts.ordinal = root.ordinal;
         let mut decision = Decision {
             id: DecisionId::new(root.id.into()),
+            slug: Slug::derive(title, "decision"),
             title: title.clone(),
             context: context.clone(),
             state: decision_state(state),

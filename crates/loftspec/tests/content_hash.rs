@@ -187,6 +187,7 @@ fn the_kind_is_content() {
     let feature_node = feature(key(1), "Keys", vec![]);
     let group = FeatureGroup {
         id: Some(FeatureGroupId::new(key(1))),
+        slug: common::slug("group"),
         name: "Keys".to_owned(),
         details: Details::default(),
         features: Vec::new(),
@@ -241,6 +242,7 @@ fn ac_606_a_feature_groups_features_precede_its_constraints() {
     let child = feature(key(2), "Keys", vec![]);
     let group = FeatureGroup {
         id: Some(FeatureGroupId::new(key(1))),
+        slug: common::slug("group"),
         name: "Identity".to_owned(),
         details: Details::default(),
         features: vec![child.clone()],

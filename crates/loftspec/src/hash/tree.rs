@@ -15,7 +15,7 @@ use crate::names::TagName;
 use crate::node::Node;
 use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, Section,
+    Requirement, RootComponent, Section,
 };
 
 /// Called once per node, children first, with the node's ID, content view and content hash.
@@ -97,6 +97,13 @@ pub trait ContentHash {
     /// The digest of the content view under `loftspec/node/1`.
     fn content_hash(&self) -> Digest {
         digest(Domain::Node, &self.content_view())
+    }
+}
+
+/// A root Component hashes as its Component; its slug is not content.
+impl ContentHash for RootComponent {
+    fn node(&self) -> Node<'_> {
+        Node::Component(&self.component)
     }
 }
 

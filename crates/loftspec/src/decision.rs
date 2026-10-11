@@ -5,6 +5,7 @@ use serde::Deserialize;
 
 use crate::identity::Label;
 use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
+use crate::slug::Slug;
 
 /// A node a decision names: one the document holds, or, on a retired or superseded decision, one
 /// it no longer holds, named by its former label (ADR-13).
@@ -23,6 +24,7 @@ impl<T: Into<NodeId>> From<T> for NodeRef {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decision {
     pub id: DecisionId,
+    pub slug: Slug,
     pub title: String,
     pub context: String,
     pub state: DecisionState,
