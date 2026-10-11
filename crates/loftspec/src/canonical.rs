@@ -62,13 +62,23 @@ impl Digest {
     pub const fn as_bytes(&self) -> &[u8; 32] {
         &self.0
     }
+
+    /// The 64 lowercase hexadecimal digits, two per byte.
+    fn hex(&self) -> [u8; 64] {
+        const DIGITS: &[u8; 16] = b"0123456789abcdef";
+        let mut text = [0; 64];
+        for (pair, byte) in text.chunks_exact_mut(2).zip(self.0) {
+            pair[0] = DIGITS[usize::from(byte >> 4)];
+            pair[1] = DIGITS[usize::from(byte & 0x0f)];
+        }
+        text
+    }
 }
 
 impl fmt::Display for Digest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0
-            .iter()
-            .try_for_each(|byte| write!(formatter, "{byte:02x}"))
+        let hex = self.hex();
+        formatter.write_str(std::str::from_utf8(&hex).map_err(|_| fmt::Error)?)
     }
 }
 

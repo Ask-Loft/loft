@@ -1,6 +1,8 @@
 //! A whole document (CMP-2): the Products in the manifest's order, the root Components, the
 //! typed edges, the two registries, the decisions, the bindings and the record of a v1 source.
 
+use serde::Deserialize;
+
 use crate::bindings::{Bindings, Counters};
 use crate::canonical::Digest;
 use crate::decision::Decision;
@@ -33,7 +35,8 @@ impl EdgeKind {
 }
 
 /// The role a `subject` edge carries from a decision to a node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum SubjectRole {
     Affected,
     Outcome,

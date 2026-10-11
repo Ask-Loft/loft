@@ -105,6 +105,22 @@ impl NodeId {
         }
     }
 
+    /// The ID of a node of `kind` with `key`.
+    #[must_use]
+    pub const fn new(kind: NodeKind, key: Key) -> Self {
+        match kind {
+            NodeKind::Product => Self::Product(ProductId(key)),
+            NodeKind::FeatureGroup => Self::FeatureGroup(FeatureGroupId(key)),
+            NodeKind::Feature => Self::Feature(FeatureId(key)),
+            NodeKind::Requirement => Self::Requirement(RequirementId(key)),
+            NodeKind::Criterion => Self::Criterion(CriterionId(key)),
+            NodeKind::Component => Self::Component(ComponentId(key)),
+            NodeKind::Constraint => Self::Constraint(ConstraintId(key)),
+            NodeKind::QualityAttribute => Self::QualityAttribute(QualityAttributeId(key)),
+            NodeKind::Section => Self::Section(SectionId(key)),
+        }
+    }
+
     #[must_use]
     pub const fn kind(self) -> NodeKind {
         match self {

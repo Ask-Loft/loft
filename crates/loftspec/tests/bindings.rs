@@ -172,3 +172,21 @@ fn ac_289_distinct_labels_and_aliases_validate_cleanly() {
     bindings.bind(requirement(2), label("RQ-8")).unwrap();
     assert_eq!(bindings.validate(), []);
 }
+
+#[test]
+fn a_live_label_resolves_before_an_alias_and_the_lowest_key_resolves_a_clash() {
+    let mut bindings = Bindings::default();
+    bindings.bind(requirement(3), label("RQ-7")).unwrap();
+    bindings.relabel(requirement(3), label("RQ-9")).unwrap();
+    bindings.bind(requirement(4), label("RQ-7")).unwrap();
+    bindings.bind(requirement(2), label("RQ-5")).unwrap();
+    bindings.bind(requirement(1), label("RQ-5")).unwrap();
+    assert_eq!(
+        bindings.resolve(label("RQ-7")),
+        Some(requirement(4).into()),
+        "RQ-7 is the live label of RQ-4's key and an alias of another"
+    );
+    assert_eq!(bindings.resolve(label("RQ-5")), Some(requirement(1).into()));
+    bindings.relabel(requirement(1), label("RQ-6")).unwrap();
+    assert_eq!(bindings.resolve(label("RQ-5")), Some(requirement(2).into()));
+}

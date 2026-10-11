@@ -4,9 +4,10 @@
 
 use loftspec::attributes::{QaKind, QualityAggregation, QualityBand, VerificationFate};
 use loftspec::convert::v1::export::{
-    ComponentScope, ConsequenceKind, DecisionState, DriverPayload, ElementPayload, Export,
-    NodeType, Rating, SubjectRole, Tier,
+    ComponentScope, DecisionState, DriverPayload, ElementPayload, Export, NodeType, Tier,
 };
+use loftspec::decision::{ConsequenceKind, Rating};
+use loftspec::document::SubjectRole;
 use serde_json::{Value, json};
 
 mod common;

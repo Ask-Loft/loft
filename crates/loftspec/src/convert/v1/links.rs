@@ -2,28 +2,40 @@
 //! Component's Product scope a `scoped_to` edge (RQ-50), and each Architecture Decision a
 //! decision with its elements and `subject` edges (RQ-51), labelled by its external ID (AC-244).
 
-use std::collections::BTreeMap;
-
 use uuid::Uuid;
 
 use super::export::{
     self, ComponentScope, DecisionAggregate, Element, ElementPayload, Export, ExternalId,
     SubjectRef,
 };
-use super::tree::{kind_of, typed_id};
-use super::{ConvertError, Finding};
+use super::sidecar::DecisionFacts;
+use super::tree::{NodeIds, node_id};
+use super::{Conversion, ConvertError, Finding, label};
 use crate::decision::{
-    Assessment, Consequence, ConsequenceKind, Decision, DecisionOption, DecisionState, Driver,
-    DriverPayload, Rating,
+    Assessment, Consequence, Decision, DecisionOption, DecisionState, Driver, DriverPayload,
 };
-use crate::document::{Document, Edge, SubjectRole};
-use crate::identity::Label;
+use crate::document::Edge;
+use crate::identity::Key;
 use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
 
-pub(super) type NodeIds = BTreeMap<Uuid, NodeId>;
+/// Adds the export's `realizes` and `scoped_to` edges, then its decisions with their `subject`
+/// edges, bindings and sidecar facts.
+pub(super) fn convert(
+    export: &Export,
+    nodes: &NodeIds,
+    conversion: &mut Conversion,
+) -> Result<(), ConvertError> {
+    let edges = &mut conversion.document.edges;
+    edges.extend(realizations(export, nodes)?);
+    edges.extend(scopes(export, nodes)?);
+    for aggregate in &export.architecture_decisions {
+        decision(aggregate, nodes, conversion)?;
+    }
+    Ok(())
+}
 
 /// A `realizes` edge per Realization Link, each from a Feature to a Component.
-pub(super) fn realizations(export: &Export, nodes: &NodeIds) -> Result<Vec<Edge>, ConvertError> {
+fn realizations(export: &Export, nodes: &NodeIds) -> Result<Vec<Edge>, ConvertError> {
     export
         .realization_links
         .iter()
@@ -45,7 +57,7 @@ pub(super) fn realizations(export: &Export, nodes: &NodeIds) -> Result<Vec<Edge>
 }
 
 /// A `scoped_to` edge per Component scoped to a Product; other scopes yield no edge.
-pub(super) fn scopes(export: &Export, nodes: &NodeIds) -> Result<Vec<Edge>, ConvertError> {
+fn scopes(export: &Export, nodes: &NodeIds) -> Result<Vec<Edge>, ConvertError> {
     let mut edges = Vec::new();
     for node in &export.nodes {
         let Some(ComponentScope::Product { product_id }) = node.component_scope else {
@@ -69,60 +81,60 @@ pub(super) fn scopes(export: &Export, nodes: &NodeIds) -> Result<Vec<Edge>, Conv
     Ok(edges)
 }
 
-/// Every decision with its `subject` edges and its binding.
-pub(super) fn decisions(
-    export: &Export,
+/// One decision with its `subject` edges, its binding, its element ordinals and the subjects
+/// it names that the export no longer holds.
+fn decision(
+    aggregate: &DecisionAggregate,
     nodes: &NodeIds,
-    document: &mut Document,
-    findings: &mut Vec<Finding>,
+    conversion: &mut Conversion,
 ) -> Result<(), ConvertError> {
-    for aggregate in &export.architecture_decisions {
-        let reader = Reader {
-            aggregate,
-            nodes,
-            absent: std::cell::RefCell::new(Vec::new()),
-        };
-        let decision = reader.decision()?;
-        for link in &aggregate.subject_links {
-            document.edges.push(Edge::Subject {
-                decision: decision.id,
-                subject: reader.subject(&link.subject)?,
-                role: match link.role {
-                    export::SubjectRole::Outcome => SubjectRole::Outcome,
-                    export::SubjectRole::Affected => SubjectRole::Affected,
-                },
-            });
-        }
-        let external_id = &aggregate.identity.external_id;
-        let label =
-            Label::parse(&external_id.to_string()).map_err(|source| ConvertError::Label {
-                node: external_id.clone(),
-                source,
-            })?;
-        document.bindings.bind(decision.id, label)?;
-        findings.extend(
-            reader
-                .absent
-                .take()
-                .into_iter()
-                .map(|subject| Finding::AbsentSubject {
-                    decision: decision.id,
-                    subject,
-                }),
-        );
-        document.decisions.push(decision);
+    let mut reader = Reader {
+        aggregate,
+        nodes,
+        facts: DecisionFacts::default(),
+        absent: Vec::new(),
+    };
+    let decision = reader.decision()?;
+    for link in &aggregate.subject_links {
+        let subject = reader.subject(&link.subject)?;
+        conversion.document.edges.push(Edge::Subject {
+            decision: decision.id,
+            subject,
+            role: link.role,
+        });
     }
+    let external_id = &aggregate.identity.external_id;
+    conversion
+        .document
+        .bindings
+        .bind(decision.id, label(external_id)?)?;
+    for (subject, external_id) in reader.absent {
+        conversion.findings.push(Finding::AbsentSubject {
+            decision: decision.id,
+            subject,
+        });
+        conversion
+            .sidecar
+            .absent_subjects
+            .insert(subject, external_id);
+    }
+    conversion
+        .sidecar
+        .decisions
+        .insert(decision.id, reader.facts);
+    conversion.document.decisions.push(decision);
     Ok(())
 }
 
 struct Reader<'a> {
     aggregate: &'a DecisionAggregate,
     nodes: &'a NodeIds,
-    /// The subjects the decision names that the export does not hold, in order.
-    absent: std::cell::RefCell<Vec<NodeId>>,
+    facts: DecisionFacts,
+    /// The subjects the decision names that the export does not hold, in the order named.
+    absent: Vec<(NodeId, ExternalId)>,
 }
 
-impl Reader<'_> {
+impl<'a> Reader<'a> {
     fn external_id(&self) -> ExternalId {
         self.aggregate.identity.external_id.clone()
     }
@@ -138,30 +150,30 @@ impl Reader<'_> {
     /// The node a subject reference names. A v1 decision may still name a node the export no
     /// longer holds (a retired decision keeps its history); that reference is kept under its
     /// v1 key and kind and reported (D-11 gap G19).
-    fn subject(&self, subject: &SubjectRef) -> Result<NodeId, ConvertError> {
+    fn subject(&mut self, subject: &SubjectRef) -> Result<NodeId, ConvertError> {
         if let Some(id) = self.nodes.get(&subject.node_id) {
             return Ok(*id);
         }
-        let id = kind_of(subject.node_type, subject.tier)
-            .and_then(|kind| typed_id(kind, subject.node_id))
-            .ok_or_else(|| ConvertError::DecisionSubject {
+        let id = node_id(subject.node_type, subject.tier, subject.node_id).ok_or_else(|| {
+            ConvertError::DecisionSubject {
                 decision: self.external_id(),
                 subject: subject.node_id,
-            })?;
-        let mut absent = self.absent.borrow_mut();
-        if !absent.contains(&id) {
-            absent.push(id);
+            }
+        })?;
+        if !self.absent.iter().any(|(absent, _)| *absent == id) {
+            self.absent.push((id, subject.external_id.clone()));
         }
         Ok(id)
     }
 
     /// The decision's root element and its members in ordinal order; each member's parent is
     /// the root.
-    fn elements(&self) -> Result<(&Element, Vec<&Element>), ConvertError> {
-        let id = self.aggregate.identity.decision_id;
+    fn elements(&self) -> Result<(&'a Element, Vec<&'a Element>), ConvertError> {
+        let aggregate = self.aggregate;
+        let id = aggregate.identity.decision_id;
         let mut root = None;
         let mut members = Vec::new();
-        for element in &self.aggregate.elements {
+        for element in &aggregate.elements {
             match element.parent_id {
                 None if element.id == id && root.is_none() => root = Some(element),
                 Some(parent) if parent == id => members.push(element),
@@ -177,7 +189,7 @@ impl Reader<'_> {
         Ok((root, members))
     }
 
-    fn decision(&self) -> Result<Decision, ConvertError> {
+    fn decision(&mut self) -> Result<Decision, ConvertError> {
         let (root, members) = self.elements()?;
         let ElementPayload::ArchitectureDecision {
             title,
@@ -187,6 +199,7 @@ impl Reader<'_> {
         else {
             return Err(self.element_error(root.id, "is not an architecture decision"));
         };
+        self.facts.ordinal = root.ordinal;
         let mut decision = Decision {
             id: DecisionId::new(root.id.into()),
             title: title.clone(),
@@ -203,21 +216,29 @@ impl Reader<'_> {
         Ok(decision)
     }
 
-    fn add_member(&self, decision: &mut Decision, member: &Element) -> Result<(), ConvertError> {
+    fn add_member(
+        &mut self,
+        decision: &mut Decision,
+        member: &Element,
+    ) -> Result<(), ConvertError> {
+        let key = Key::from(member.id);
         match &member.payload {
             ElementPayload::ArchitectureDecision { .. } => {
                 return Err(self.element_error(member.id, "is a second decision"));
             }
             ElementPayload::DecisionOption { title, description } => {
+                let id = OptionId::new(key);
+                self.facts.options.insert(id, member.ordinal);
                 decision.options.push(DecisionOption {
-                    id: OptionId::new(member.id.into()),
+                    id,
                     title: title.clone(),
                     description: description.clone(),
                 });
             }
-            ElementPayload::Driver(payload) => decision.drivers.push(Driver {
-                id: DriverId::new(member.id.into()),
-                payload: match payload {
+            ElementPayload::Driver(payload) => {
+                let id = DriverId::new(key);
+                self.facts.drivers.insert(id, member.ordinal);
+                let payload = match payload {
                     export::DriverPayload::Local { label, statement } => DriverPayload::Local {
                         label: label.clone(),
                         statement: statement.clone(),
@@ -227,21 +248,27 @@ impl Reader<'_> {
                             subject: self.subject(subject)?,
                         }
                     }
-                },
-            }),
+                };
+                decision.drivers.push(Driver { id, payload });
+            }
             ElementPayload::Consequence {
                 kind,
                 statement,
                 subject,
-            } => decision.consequences.push(Consequence {
-                id: ConsequenceId::new(member.id.into()),
-                kind: consequence_kind(*kind),
-                statement: statement.clone(),
-                subject: subject
+            } => {
+                let id = ConsequenceId::new(key);
+                self.facts.consequences.insert(id, member.ordinal);
+                let subject = subject
                     .as_ref()
                     .map(|subject| self.subject(subject))
-                    .transpose()?,
-            }),
+                    .transpose()?;
+                decision.consequences.push(Consequence {
+                    id,
+                    kind: *kind,
+                    statement: statement.clone(),
+                    subject,
+                });
+            }
         }
         Ok(())
     }
@@ -253,12 +280,7 @@ impl Reader<'_> {
             .map(|assessment| Assessment {
                 option: OptionId::new(assessment.option_id.into()),
                 driver: DriverId::new(assessment.driver_id.into()),
-                rating: match assessment.rating {
-                    export::Rating::Supports => Rating::Supports,
-                    export::Rating::Neutral => Rating::Neutral,
-                    export::Rating::Conflicts => Rating::Conflicts,
-                    export::Rating::Unknown => Rating::Unknown,
-                },
+                rating: assessment.rating,
                 rationale: assessment.rationale.clone(),
             })
             .collect()
@@ -297,14 +319,5 @@ fn decision_state(state: &export::DecisionState) -> DecisionState {
             outcome: outcome.clone(),
             rationale: rationale.clone(),
         },
-    }
-}
-
-const fn consequence_kind(kind: export::ConsequenceKind) -> ConsequenceKind {
-    match kind {
-        export::ConsequenceKind::Benefit => ConsequenceKind::Benefit,
-        export::ConsequenceKind::Cost => ConsequenceKind::Cost,
-        export::ConsequenceKind::Risk => ConsequenceKind::Risk,
-        export::ConsequenceKind::Obligation => ConsequenceKind::Obligation,
     }
 }

@@ -8,9 +8,7 @@ use std::num::NonZeroU64;
 use serde_json::{Map, Value, json};
 use uuid::Uuid;
 
-use super::export::{ComponentScope, Export, ExternalId, NodeType, SubjectRef};
-use super::links::NodeIds;
-use super::tree::{kind_of, typed_id};
+use super::export::{ComponentScope, Export, ExternalId, Node};
 use crate::attributes::VerificationFate;
 use crate::identity::Key;
 use crate::ids::{ComponentId, ConsequenceId, DecisionId, DocumentId, DriverId, NodeId, OptionId};
@@ -81,11 +79,30 @@ pub struct DecisionFacts {
     pub consequences: BTreeMap<ConsequenceId, i64>,
 }
 
+impl NodeFacts {
+    pub(super) const fn of(node: &Node) -> Self {
+        Self {
+            ordinal: node.ordinal,
+            fate_confirmed: node.fate_confirmed,
+            proposed_fate: node.proposed_fate,
+        }
+    }
+}
+
+impl From<ComponentScope> for ScopeKind {
+    fn from(scope: ComponentScope) -> Self {
+        match scope {
+            ComponentScope::Document => Self::Document,
+            ComponentScope::External => Self::External,
+            ComponentScope::Product { .. } => Self::Product,
+        }
+    }
+}
+
 impl V1Sidecar {
-    /// Collects the sidecar of a converted export. `nodes` holds the typed ID of every node the
-    /// export holds but its Facet Tags.
-    pub(super) fn collect(export: &Export, document: DocumentId, nodes: &NodeIds) -> Self {
-        let mut sidecar = Self {
+    /// An empty sidecar for the document with this v1 UUID; the conversion's passes fill it.
+    pub(super) const fn new(document: DocumentId) -> Self {
+        Self {
             document,
             highest: BTreeMap::new(),
             nodes: BTreeMap::new(),
@@ -93,133 +110,26 @@ impl V1Sidecar {
             tags: BTreeMap::new(),
             decisions: BTreeMap::new(),
             absent_subjects: BTreeMap::new(),
-        };
-        let by_uuid: BTreeMap<Uuid, _> = export
-            .nodes
+        }
+    }
+
+    /// Records the highest value of each prefix among the export's nodes and decisions and the
+    /// absent subjects already recorded.
+    pub(super) fn record_highest(&mut self, export: &Export) {
+        let nodes = export.nodes.iter().map(|node| &node.external_id);
+        let decisions = export
+            .architecture_decisions
             .iter()
-            .map(|node| (node.node_id, node))
-            .collect();
-        for node in &export.nodes {
-            sidecar.see(&node.external_id);
-            let Some(id) = nodes.get(&node.node_id).copied() else {
-                continue;
-            };
-            sidecar.nodes.insert(
-                id,
-                NodeFacts {
-                    ordinal: node.ordinal,
-                    fate_confirmed: node.fate_confirmed,
-                    proposed_fate: node.proposed_fate,
-                },
-            );
-            if let (NodeId::Component(component), Some(scope)) = (id, node.component_scope) {
-                sidecar.scopes.insert(component, scope_kind(scope));
-            }
-            let mut applications: Vec<TagApplication> = node
-                .children_hashes
-                .iter()
-                .filter_map(|child| by_uuid.get(&child.node_id))
-                .filter(|child| child.node_type == NodeType::FacetTag)
-                .filter_map(|child| {
-                    Some(TagApplication {
-                        tag: TagName::parse(&child.name).ok()?,
-                        node_id: child.node_id,
-                        external_id: child.external_id.clone(),
-                        ordinal: child.ordinal,
-                    })
-                })
-                .collect();
-            applications.sort_by_key(|application| application.ordinal);
-            if !applications.is_empty() {
-                sidecar.tags.insert(id, applications);
-            }
+            .map(|decision| &decision.identity.external_id);
+        for external_id in nodes.chain(decisions).chain(self.absent_subjects.values()) {
+            let value = self
+                .highest
+                .entry(external_id.prefix().to_owned())
+                .or_insert(external_id.number());
+            *value = (*value).max(external_id.number());
         }
-        for aggregate in &export.architecture_decisions {
-            sidecar.see(&aggregate.identity.external_id);
-            sidecar.decision(aggregate);
-            for subject in subjects(aggregate) {
-                sidecar.absent(subject, nodes);
-            }
-        }
-        sidecar
     }
 
-    fn see(&mut self, external_id: &ExternalId) {
-        let highest = self
-            .highest
-            .entry(external_id.prefix().to_owned())
-            .or_insert(external_id.number());
-        *highest = (*highest).max(external_id.number());
-    }
-
-    fn absent(&mut self, subject: &SubjectRef, nodes: &NodeIds) {
-        if nodes.contains_key(&subject.node_id) {
-            return;
-        }
-        let Some(id) = kind_of(subject.node_type, subject.tier)
-            .and_then(|kind| typed_id(kind, subject.node_id))
-        else {
-            return;
-        };
-        self.see(&subject.external_id);
-        self.absent_subjects.insert(id, subject.external_id.clone());
-    }
-
-    fn decision(&mut self, aggregate: &super::export::DecisionAggregate) {
-        use super::export::ElementPayload;
-        let id = aggregate.identity.decision_id;
-        let mut facts = DecisionFacts::default();
-        for element in &aggregate.elements {
-            let key = Key::from(element.id);
-            match element.payload {
-                ElementPayload::ArchitectureDecision { .. } if element.id == id => {
-                    facts.ordinal = element.ordinal;
-                }
-                ElementPayload::ArchitectureDecision { .. } => {}
-                ElementPayload::DecisionOption { .. } => {
-                    facts.options.insert(OptionId::new(key), element.ordinal);
-                }
-                ElementPayload::Driver(_) => {
-                    facts.drivers.insert(DriverId::new(key), element.ordinal);
-                }
-                ElementPayload::Consequence { .. } => {
-                    facts
-                        .consequences
-                        .insert(ConsequenceId::new(key), element.ordinal);
-                }
-            }
-        }
-        self.decisions.insert(DecisionId::new(Key::from(id)), facts);
-    }
-}
-
-/// Every node reference a decision makes: its subject links, subject drivers and consequence
-/// subjects.
-fn subjects(aggregate: &super::export::DecisionAggregate) -> impl Iterator<Item = &SubjectRef> {
-    use super::export::{DriverPayload, ElementPayload};
-    let links = aggregate.subject_links.iter().map(|link| &link.subject);
-    let elements = aggregate
-        .elements
-        .iter()
-        .filter_map(|element| match &element.payload {
-            ElementPayload::Driver(DriverPayload::SpecificationSubject { subject }) => {
-                Some(subject)
-            }
-            ElementPayload::Consequence { subject, .. } => subject.as_ref(),
-            _ => None,
-        });
-    links.chain(elements)
-}
-
-const fn scope_kind(scope: ComponentScope) -> ScopeKind {
-    match scope {
-        ComponentScope::Document => ScopeKind::Document,
-        ComponentScope::External => ScopeKind::External,
-        ComponentScope::Product { .. } => ScopeKind::Product,
-    }
-}
-
-impl V1Sidecar {
     /// The sidecar as JSON: objects keyed by key or prefix in ascending order, two-space indent,
     /// one trailing newline. Equal sidecars give equal bytes (AC-206).
     #[must_use]

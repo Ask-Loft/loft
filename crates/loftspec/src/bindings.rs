@@ -1,6 +1,6 @@
 //! The bindings between elements, labels and aliases (D-11 F-2), held in `spec/labels.yaml`.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZeroU64;
 
 use crate::identity::{Key, Label, LabelPrefix};
@@ -14,10 +14,36 @@ pub struct Binding {
     pub aliases: Vec<Label>,
 }
 
+impl Binding {
+    /// The live label, then the aliases.
+    pub fn labels(&self) -> impl Iterator<Item = Label> + '_ {
+        std::iter::once(self.label).chain(self.aliases.iter().copied())
+    }
+}
+
 /// The bindings of a document, sorted by key.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Bindings {
     entries: BTreeMap<Key, Binding>,
+    /// The keys whose live label each label is; more than one only in bindings that break RQ-70.
+    live_keys: BTreeMap<Label, BTreeSet<Key>>,
+    /// The keys listing each label as an alias.
+    alias_keys: BTreeMap<Label, BTreeSet<Key>>,
+}
+
+/// Records `key` under `label` in a label index.
+fn index(keys: &mut BTreeMap<Label, BTreeSet<Key>>, label: Label, key: Key) {
+    keys.entry(label).or_default().insert(key);
+}
+
+/// Removes `key` from under `label` in a label index.
+fn unindex(keys: &mut BTreeMap<Label, BTreeSet<Key>>, label: Label, key: Key) {
+    if let Some(holders) = keys.get_mut(&label) {
+        holders.remove(&key);
+        if holders.is_empty() {
+            keys.remove(&label);
+        }
+    }
 }
 
 /// A binding rule a set of bindings breaks.
@@ -77,6 +103,7 @@ impl Bindings {
                     label,
                     aliases: Vec::new(),
                 });
+                index(&mut self.live_keys, label, element.key());
                 Ok(())
             }
         }
@@ -100,6 +127,10 @@ impl Bindings {
         if binding.label != label {
             let previous = std::mem::replace(&mut binding.label, label);
             binding.aliases.push(previous);
+            let key = element.key();
+            unindex(&mut self.live_keys, previous, key);
+            index(&mut self.live_keys, label, key);
+            index(&mut self.alias_keys, previous, key);
         }
         Ok(())
     }
@@ -116,6 +147,7 @@ impl Bindings {
             .get_mut(&element.key())
             .ok_or(BindingError::Unbound(element))?;
         binding.aliases.push(alias);
+        index(&mut self.alias_keys, alias, element.key());
         Ok(())
     }
 
@@ -133,14 +165,13 @@ impl Bindings {
             .map_or(&[], |binding| binding.aliases.as_slice())
     }
 
-    /// The element a live label or an alias names (AC-29).
+    /// The element a live label or an alias names (AC-29): a live label before an alias, and the
+    /// lowest key where bindings that break RQ-70 give a label to several.
     #[must_use]
     pub fn resolve(&self, label: Label) -> Option<ElementId> {
-        let bindings = || self.entries.values();
-        bindings()
-            .find(|binding| binding.label == label)
-            .or_else(|| bindings().find(|binding| binding.aliases.contains(&label)))
-            .map(|binding| binding.element)
+        let first = |keys: &BTreeMap<Label, BTreeSet<Key>>| keys.get(&label)?.first().copied();
+        let key = first(&self.live_keys).or_else(|| first(&self.alias_keys))?;
+        self.entries.get(&key).map(|binding| binding.element)
     }
 
     /// Every binding, in key order.
@@ -234,10 +265,7 @@ impl Counters {
     #[must_use]
     pub fn above(bindings: &Bindings) -> Self {
         let mut counters = Self::default();
-        let labels = bindings.iter().flat_map(|binding| {
-            std::iter::once(binding.label).chain(binding.aliases.iter().copied())
-        });
-        for label in labels {
+        for label in bindings.iter().flat_map(Binding::labels) {
             counters.raise(label);
         }
         counters

@@ -12,6 +12,9 @@ use crate::attributes::{
     ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
 };
 use crate::canonical::Digest;
+use crate::decision::{ConsequenceKind, Rating};
+use crate::document::SubjectRole;
+use crate::identity::{Label, LabelError, LabelPrefix};
 use crate::names::{CategoryName, TagName};
 
 /// An export the reader refuses.
@@ -82,6 +85,13 @@ impl ExternalId {
     #[must_use]
     pub const fn number(&self) -> NonZeroU64 {
         self.number
+    }
+
+    /// The Format label this external ID is, when the Format defines its prefix.
+    pub fn label(&self) -> Result<Label, LabelError> {
+        LabelPrefix::parse(&self.prefix)
+            .map(|prefix| Label::new(prefix, self.number))
+            .ok_or_else(|| LabelError::UnknownPrefix(self.to_string()))
     }
 }
 
@@ -297,24 +307,6 @@ pub enum DriverPayload {
     SpecificationSubject { subject: SubjectRef },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ConsequenceKind {
-    Benefit,
-    Cost,
-    Risk,
-    Obligation,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Rating {
-    Supports,
-    Neutral,
-    Conflicts,
-    Unknown,
-}
-
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Assessment {
@@ -323,13 +315,6 @@ pub struct Assessment {
     pub driver_id: Uuid,
     pub rating: Rating,
     pub rationale: String,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum SubjectRole {
-    Outcome,
-    Affected,
 }
 
 #[derive(Debug, Clone, Deserialize)]

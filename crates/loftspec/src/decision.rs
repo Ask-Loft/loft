@@ -1,6 +1,8 @@
 //! Architecture Decisions: drivers, options, the assessment matrix and consequences, each element
 //! keyed (AC-181) and kept field for field from a v1 export (AC-257).
 
+use serde::Deserialize;
+
 use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -57,7 +59,8 @@ pub struct DecisionOption {
     pub description: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Rating {
     Supports,
     Neutral,
@@ -86,7 +89,8 @@ pub struct Assessment {
     pub rationale: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum ConsequenceKind {
     Benefit,
     Cost,

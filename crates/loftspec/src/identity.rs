@@ -142,7 +142,9 @@ impl LabelPrefix {
         }
     }
 
-    fn from_text(text: &str) -> Option<Self> {
+    /// The prefix written as `text`, such as `RQ`.
+    #[must_use]
+    pub fn parse(text: &str) -> Option<Self> {
         Self::ALL.into_iter().find(|prefix| prefix.as_str() == text)
     }
 }
@@ -179,8 +181,8 @@ impl Label {
             return Err(malformed());
         }
         let number = digits.parse::<NonZeroU64>().map_err(|_| malformed())?;
-        let prefix = LabelPrefix::from_text(prefix)
-            .ok_or_else(|| LabelError::UnknownPrefix(text.to_owned()))?;
+        let prefix =
+            LabelPrefix::parse(prefix).ok_or_else(|| LabelError::UnknownPrefix(text.to_owned()))?;
         Ok(Self { prefix, number })
     }
 

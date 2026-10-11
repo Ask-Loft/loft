@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 
 use super::Finding;
 use super::export::Export;
-use super::links::NodeIds;
+use super::tree::NodeIds;
 use crate::bindings::Bindings;
 use crate::document::Edge;
 use crate::ids::ElementId;

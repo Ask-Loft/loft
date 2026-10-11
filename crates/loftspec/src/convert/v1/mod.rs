@@ -10,6 +10,7 @@ use uuid::Uuid;
 
 use self::export::{Export, ExternalId};
 use self::sidecar::V1Sidecar;
+use self::tree::Tree;
 use crate::bindings::{BindingError, Counters};
 use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
 use crate::identity::{Label, LabelError};
@@ -106,16 +107,41 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
     if !export.annotations.is_empty() {
         return Err(ConvertError::Annotations);
     }
-    let mut document = Document::empty(DocumentId::new(document_uuid(export)?.into()));
-    let mut findings = Vec::new();
-    tree::Tree::new(export)?.convert(&mut document, &mut findings)?;
-    let nodes = tree::node_ids(export)?;
-    document.edges = links::realizations(export, &nodes)?;
-    document.edges.extend(links::scopes(export, &nodes)?);
-    links::decisions(export, &nodes, &mut document, &mut findings)?;
-    let (mentions, prose_findings) = prose::mentions(export, &nodes, &document.bindings);
-    document.edges.extend(mentions);
-    findings.extend(prose_findings);
+    let document_id = DocumentId::new(document_uuid(export)?.into());
+    let tree = Tree::new(export)?;
+    let mut conversion = Conversion {
+        document: Document::empty(document_id),
+        sidecar: V1Sidecar::new(document_id),
+        findings: Vec::new(),
+    };
+    tree.convert(&mut conversion)?;
+    links::convert(export, &tree.ids, &mut conversion)?;
+    let (mentions, findings) = prose::mentions(export, &tree.ids, &conversion.document.bindings);
+    conversion.document.edges.extend(mentions);
+    conversion.findings.extend(findings);
+    conversion.sidecar.record_highest(export);
+    registries(export, &mut conversion.document);
+    let document = &mut conversion.document;
+    document.counters = Counters::above(&document.bindings);
+    // A label a decision still names is seen even when its node is gone, so it is not reused.
+    for external_id in conversion.sidecar.absent_subjects.values() {
+        if let Ok(label) = external_id.label() {
+            document.counters.raise(label);
+        }
+    }
+    Ok(conversion)
+}
+
+/// The label an external ID is, or an error naming the node that carries it.
+fn label(external_id: &ExternalId) -> Result<Label, ConvertError> {
+    external_id.label().map_err(|source| ConvertError::Label {
+        node: external_id.clone(),
+        source,
+    })
+}
+
+/// The source record, the tag registry and the category registry.
+fn registries(export: &Export, document: &mut Document) {
     document.derived_from = Some(DerivedFrom {
         authored_state_id: AuthoredStateId::new(export.authored_state_id.into()),
         content_address: export.content_address,
@@ -139,19 +165,6 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
             definition: category.definition.clone(),
         })
         .collect();
-    let sidecar = V1Sidecar::collect(export, document.id, &nodes);
-    document.counters = Counters::above(&document.bindings);
-    // A label a decision still names is seen even when its node is gone, so it is not reused.
-    for external_id in sidecar.absent_subjects.values() {
-        if let Ok(label) = Label::parse(&external_id.to_string()) {
-            document.counters.raise(label);
-        }
-    }
-    Ok(Conversion {
-        document,
-        sidecar,
-        findings,
-    })
 }
 
 /// The one document UUID the export's elements carry (D-11 gap G18).
