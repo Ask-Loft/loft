@@ -4,6 +4,7 @@
 pub mod attributes;
 pub mod bindings;
 pub mod canonical;
+pub mod codec;
 pub mod convert;
 pub mod decision;
 pub mod document;
