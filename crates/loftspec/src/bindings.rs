@@ -238,10 +238,16 @@ impl Counters {
             std::iter::once(binding.label).chain(binding.aliases.iter().copied())
         });
         for label in labels {
-            let next = label.number().saturating_add(1);
-            let counter = counters.0.entry(label.prefix()).or_insert(NonZeroU64::MIN);
-            *counter = (*counter).max(next);
+            counters.raise(label);
         }
         counters
+    }
+
+    /// Raises the counter of `label`'s prefix above `label`, so the value is never allocated
+    /// again; a counter already above it is unchanged.
+    pub fn raise(&mut self, label: Label) {
+        let next = label.number().saturating_add(1);
+        let counter = self.0.entry(label.prefix()).or_insert(NonZeroU64::MIN);
+        *counter = (*counter).max(next);
     }
 }

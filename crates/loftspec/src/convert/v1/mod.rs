@@ -3,11 +3,13 @@
 pub mod export;
 mod links;
 mod prose;
+pub mod sidecar;
 mod tree;
 
 use uuid::Uuid;
 
 use self::export::{Export, ExternalId};
+use self::sidecar::V1Sidecar;
 use crate::bindings::{BindingError, Counters};
 use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
 use crate::identity::{Label, LabelError};
@@ -20,6 +22,7 @@ use crate::names::NameError;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Conversion {
     pub document: Document,
+    pub sidecar: V1Sidecar,
     pub findings: Vec<Finding>,
 }
 
@@ -75,6 +78,8 @@ pub enum ConvertError {
         node: ExternalId,
         source: LabelError,
     },
+    #[error("Facet Tag {node} has a body, which a tag does not hold")]
+    FacetTagBody { node: ExternalId },
     #[error("Facet Tag {node}: {source}")]
     Tag { node: ExternalId, source: NameError },
     #[error(
@@ -134,8 +139,19 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
             definition: category.definition.clone(),
         })
         .collect();
+    let sidecar = V1Sidecar::collect(export, document.id, &nodes);
     document.counters = Counters::above(&document.bindings);
-    Ok(Conversion { document, findings })
+    // A label a decision still names is seen even when its node is gone, so it is not reused.
+    for external_id in sidecar.absent_subjects.values() {
+        if let Ok(label) = Label::parse(&external_id.to_string()) {
+            document.counters.raise(label);
+        }
+    }
+    Ok(Conversion {
+        document,
+        sidecar,
+        findings,
+    })
 }
 
 /// The one document UUID the export's elements carry (D-11 gap G18).

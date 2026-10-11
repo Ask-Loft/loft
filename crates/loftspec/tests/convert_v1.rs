@@ -258,6 +258,12 @@ fn a_live_v1_export_converts() {
         .iter()
         .filter(|node| node.node_type == loftspec::convert::v1::export::NodeType::FacetTag)
         .count();
+    let sidecar = conversion.sidecar.to_json();
+    assert_eq!(sidecar, convert(&export).unwrap().sidecar.to_json());
+    assert_eq!(
+        conversion.sidecar.nodes.len(),
+        export.nodes.len() - facet_tags
+    );
     let nodes = conversion.document.bindings.len() - conversion.document.decisions.len();
     assert_eq!(nodes, export.nodes.len() - facet_tags);
     assert_eq!(
@@ -265,9 +271,10 @@ fn a_live_v1_export_converts() {
         export.architecture_decisions.len()
     );
     println!(
-        "{nodes} nodes, {} edges, {} decisions, findings: {:?}",
+        "{nodes} nodes, {} edges, {} decisions, sidecar {} bytes, findings: {:?}",
         conversion.document.edges.len(),
         conversion.document.decisions.len(),
+        sidecar.len(),
         conversion.findings.iter().fold(
             std::collections::BTreeMap::new(),
             |mut counts, finding| {

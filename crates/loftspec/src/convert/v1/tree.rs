@@ -238,6 +238,9 @@ impl<'a> Builder<'_, 'a> {
         listed
             .iter()
             .map(|child| match kind(child)? {
+                Kind::FacetTag if child.body.is_some() => Err(ConvertError::FacetTagBody {
+                    node: child.external_id.clone(),
+                }),
                 Kind::FacetTag => {
                     self.reached.insert(child.node_id);
                     TagName::parse(&child.name)
