@@ -2,7 +2,9 @@
 //! the language rule that reports a statement outside the five forms, so a sentence the Format
 //! stores as slots is one that rule accepts. Spans index [`crate::text::tokenize`].
 
-use crate::text::{token_ranges, tokenize};
+use std::ops::Range;
+
+use crate::text::lowercase;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Form {
@@ -29,12 +31,15 @@ pub(crate) struct Parse {
     pub(crate) response: Span,
 }
 
-/// Parses `text` as one anchored basic EARS form; combined forms and empty placeholders give
-/// `None`. The system phrase may be a common noun with `the` or a bare proper name: it starts
-/// after the comma that closes the precondition, or failing that at the precondition's `the`.
-pub(crate) fn parse(text: &str) -> Option<Parse> {
-    let tokens = tokenize(text);
-    let ranges = token_ranges(text);
+/// Parses `text`, whose tokens lie at `ranges` (as [`crate::text::token_ranges`] gives them), as
+/// one anchored basic EARS form; combined forms and empty placeholders give `None`. The system
+/// phrase may be a common noun with `the` or a bare proper name: it starts after the comma that
+/// closes the precondition, or failing that at the precondition's `the`.
+pub(crate) fn parse(text: &str, ranges: &[Range<usize>]) -> Option<Parse> {
+    let tokens: Vec<String> = ranges
+        .iter()
+        .map(|range| lowercase(&text[range.clone()]))
+        .collect();
     let comma_before =
         |index: usize| index > 0 && text[ranges[index - 1].end..ranges[index].start].contains(',');
     ubiquitous(&tokens, &comma_before)

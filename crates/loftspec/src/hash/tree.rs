@@ -1,5 +1,6 @@
 //! Node content views and content hashes (RQ-11, RQ-159, RQ-160) over the typed tree.
 
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 
 use serde_json::{Value, json};
@@ -13,7 +14,7 @@ use crate::ids::NodeId;
 use crate::kind::NodeKind;
 use crate::names::TagName;
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
+    Component, Constraint, Criterion, Feature, FeatureGroup, Product, QualityAttribute,
     Requirement, Section,
 };
 
@@ -22,14 +23,14 @@ pub(crate) type Visit<'a> = dyn FnMut(Option<NodeId>, Value, Digest) -> Result<(
 
 mod sealed {
     use super::{
-        ConservationKind, Digest, HashError, NodeId, NodeKind, QaKind, QualityTarget, TagName,
+        ConservationKind, Cow, Digest, HashError, NodeId, NodeKind, QaKind, QualityTarget, TagName,
         TechnicalBinding, VerificationFate, Visit,
     };
 
     /// The fields of a node's content view other than its children.
     pub struct Fields<'a> {
         pub kind: NodeKind,
-        pub text: String,
+        pub text: Cow<'a, str>,
         pub body: Option<&'a str>,
         pub tags: &'a [TagName],
         pub qa_kind: Option<QaKind>,
@@ -93,12 +94,18 @@ pub(crate) fn hash_with(node: &impl Parts, visit: &mut Visit<'_>) -> Result<Dige
     Ok(hash)
 }
 
-fn plain<'a>(kind: NodeKind, text: &str, details: &'a Details) -> Fields<'a> {
+/// The fields of a node whose view holds no typed attribute.
+fn plain<'a>(
+    kind: NodeKind,
+    text: impl Into<Cow<'a, str>>,
+    body: Option<&'a str>,
+    tags: &'a [TagName],
+) -> Fields<'a> {
     Fields {
         kind,
-        text: text.to_owned(),
-        body: details.body.as_deref(),
-        tags: &details.tags,
+        text: text.into(),
+        body,
+        tags,
         qa_kind: None,
         quality_target: None,
         binding: None,
@@ -130,50 +137,31 @@ macro_rules! grouped {
     }};
 }
 
-impl Parts for Product {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        plain(NodeKind::Product, &self.name, &self.details)
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(visit, &self.details.sections, &self.feature_groups)
-    }
+/// `Parts` for kinds whose view holds only a name, a body and tags, with their child lists in
+/// canonical order.
+macro_rules! named_parts {
+    ($($node:ident [$($children:ident),*];)*) => {$(
+        impl Parts for $node {
+            fn id(&self) -> Option<NodeId> {
+                self.id.map(NodeId::from)
+            }
+            fn fields(&self) -> Fields<'_> {
+                let details = &self.details;
+                plain(NodeKind::$node, &self.name, details.body.as_deref(), &details.tags)
+            }
+            fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
+                grouped!(visit, &self.details.sections $(, &self.$children)*)
+            }
+        }
+    )*};
 }
 
-impl Parts for FeatureGroup {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        plain(NodeKind::FeatureGroup, &self.name, &self.details)
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(
-            visit,
-            &self.details.sections,
-            &self.features,
-            &self.constraints
-        )
-    }
-}
-
-impl Parts for Feature {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        plain(NodeKind::Feature, &self.name, &self.details)
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(
-            visit,
-            &self.details.sections,
-            &self.requirements,
-            &self.quality_attributes
-        )
-    }
+named_parts! {
+    Product [feature_groups];
+    FeatureGroup [features, constraints];
+    Feature [requirements, quality_attributes];
+    Criterion [];
+    Component [components, constraints, quality_attributes];
 }
 
 impl Parts for Requirement {
@@ -182,44 +170,16 @@ impl Parts for Requirement {
     }
     /// A statement enters as its rendered sentence (AC-598).
     fn fields(&self) -> Fields<'_> {
+        let details = &self.details;
         plain(
             NodeKind::Requirement,
-            &self.statement.render(),
-            &self.details,
+            self.statement.render(),
+            details.body.as_deref(),
+            &details.tags,
         )
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
         grouped!(visit, &self.details.sections, &self.criteria)
-    }
-}
-
-impl Parts for Criterion {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        plain(NodeKind::Criterion, &self.name, &self.details)
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(visit, &self.details.sections)
-    }
-}
-
-impl Parts for Component {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        plain(NodeKind::Component, &self.name, &self.details)
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(
-            visit,
-            &self.details.sections,
-            &self.components,
-            &self.constraints,
-            &self.quality_attributes
-        )
     }
 }
 
@@ -232,7 +192,12 @@ impl Parts for Constraint {
             binding: self.binding.as_ref(),
             conservation_kind: self.conservation_kind,
             verification_fate: self.verification_fate,
-            ..plain(NodeKind::Constraint, &self.name, &self.details)
+            ..plain(
+                NodeKind::Constraint,
+                &self.name,
+                self.details.body.as_deref(),
+                &self.details.tags,
+            )
         }
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
@@ -249,7 +214,12 @@ impl Parts for QualityAttribute {
             qa_kind: Some(self.kind),
             quality_target: Some(&self.target),
             verification_fate: self.verification_fate,
-            ..plain(NodeKind::QualityAttribute, &self.name, &self.details)
+            ..plain(
+                NodeKind::QualityAttribute,
+                &self.name,
+                self.details.body.as_deref(),
+                &self.details.tags,
+            )
         }
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
@@ -262,17 +232,7 @@ impl Parts for Section {
         self.id.map(NodeId::from)
     }
     fn fields(&self) -> Fields<'_> {
-        Fields {
-            kind: NodeKind::Section,
-            text: self.name.clone(),
-            body: Some(&self.body),
-            tags: &[],
-            qa_kind: None,
-            quality_target: None,
-            binding: None,
-            conservation_kind: None,
-            verification_fate: None,
-        }
+        plain(NodeKind::Section, &self.name, Some(&self.body), &[])
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
         grouped!(visit, &self.sections)

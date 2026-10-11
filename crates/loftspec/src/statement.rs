@@ -88,15 +88,13 @@ impl EarsForm {
             }
         }
     }
-}
 
-impl EarsForm {
     /// Cuts `sentence` into the slots of the EARS form it parses as, at the template's anchors:
     /// the prefix word, the comma before the system, `then`, and `shall`. The slots need not
     /// render back to the sentence; [`Statement::parse`] keeps them only when they do.
     fn cut(sentence: &str) -> Option<Self> {
-        let parse = ears::parse(sentence)?;
         let ranges = token_ranges(sentence);
+        let parse = ears::parse(sentence, &ranges)?;
         let shall_token = &ranges[parse.response.start - 1];
         let shall = sentence[shall_token.end..].strip_prefix(' ')?.to_owned();
         let head = sentence[..shall_token.start].strip_suffix(' ')?;
@@ -144,9 +142,7 @@ impl EarsForm {
             },
         })
     }
-}
 
-impl EarsForm {
     /// Every slot, in template order.
     fn slots(&self) -> Vec<&str> {
         match self {

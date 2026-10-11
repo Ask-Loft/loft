@@ -9,7 +9,7 @@ use super::HashError;
 use crate::canonical::{Digest, Domain, digest};
 use crate::decision::{Decision, DecisionState, DriverPayload};
 use crate::identity::Key;
-use crate::ids::{DecisionId, NodeId};
+use crate::ids::{DecisionId, DriverId, NodeId, OptionId};
 
 use super::NodeIndex;
 
@@ -72,9 +72,7 @@ impl<'a> DecisionHasher<'a> {
     }
 
     fn state_view(&mut self, decision: &Decision) -> Result<Value, HashError> {
-        let option = |selected: crate::ids::OptionId| {
-            position(decision, &decision.options, selected.key(), |o| o.id.key())
-        };
+        let option = |selected: OptionId| option_position(decision, selected);
         Ok(match &decision.state {
             DecisionState::Proposed => json!({ "kind": "proposed" }),
             DecisionState::Accepted {
@@ -171,12 +169,8 @@ fn assessment_views(decision: &Decision) -> Result<Vec<Value>, HashError> {
         .assessments
         .iter()
         .map(|assessment| {
-            let option = position(decision, &decision.options, assessment.option.key(), |o| {
-                o.id.key()
-            })?;
-            let driver = position(decision, &decision.drivers, assessment.driver.key(), |d| {
-                d.id.key()
-            })?;
+            let option = option_position(decision, assessment.option)?;
+            let driver = driver_position(decision, assessment.driver)?;
             Ok((
                 option,
                 driver,
@@ -192,15 +186,23 @@ fn assessment_views(decision: &Decision) -> Result<Vec<Value>, HashError> {
         .collect())
 }
 
-fn position<T>(
+fn option_position(decision: &Decision, option: OptionId) -> Result<usize, HashError> {
+    let keys = decision.options.iter().map(|option| option.id.key());
+    position(decision, keys, option.key())
+}
+
+fn driver_position(decision: &Decision, driver: DriverId) -> Result<usize, HashError> {
+    let keys = decision.drivers.iter().map(|driver| driver.id.key());
+    position(decision, keys, driver.key())
+}
+
+/// The position of `key` among a decision's element keys.
+fn position(
     decision: &Decision,
-    elements: &[T],
+    mut keys: impl Iterator<Item = Key>,
     key: Key,
-    key_of: impl Fn(&T) -> Key,
 ) -> Result<usize, HashError> {
-    elements
-        .iter()
-        .position(|element| key_of(element) == key)
+    keys.position(|candidate| candidate == key)
         .ok_or(HashError::UnknownDecisionReference {
             decision: decision.id,
             reference: key,

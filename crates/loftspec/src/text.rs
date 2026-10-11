@@ -10,10 +10,15 @@ use unicode_segmentation::UnicodeSegmentation;
 /// The tokens of `text`, lower-cased, in order.
 #[must_use]
 pub fn tokenize(text: &str) -> Vec<String> {
-    text.split_word_bounds()
-        .filter(|segment| segment.chars().any(is_token_character))
-        .map(|segment| segment.chars().flat_map(char::to_lowercase).collect())
+    token_ranges(text)
+        .into_iter()
+        .map(|range| lowercase(&text[range]))
         .collect()
+}
+
+/// A token in lower case.
+pub(crate) fn lowercase(token: &str) -> String {
+    token.chars().flat_map(char::to_lowercase).collect()
 }
 
 /// The byte range in `text` of each token [`tokenize`] returns, in the same order.
