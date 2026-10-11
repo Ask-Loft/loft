@@ -216,7 +216,7 @@ pub(crate) fn check(node: &yaml::Node, kind: Kind, mode: Mode) -> Result<Rec, Lo
         record.fields.push((field.name, value));
     }
     for field in kind.fields() {
-        if field.required && record.get(field.name).is_none() && !may_lack(kind, field, mode) {
+        if field.required && record.get(field.name).is_none() && !may_lack(field, mode) {
             return Err(located(node.position, Problem::MissingField(field.name)));
         }
     }
@@ -227,9 +227,9 @@ pub(crate) fn check(node: &yaml::Node, kind: Kind, mode: Mode) -> Result<Rec, Lo
     Ok(record)
 }
 
-/// Whether a required field may be missing in this mode: a key or a slug the formatter supplies.
-fn may_lack(kind: Kind, field: &Field, mode: Mode) -> bool {
-    mode == Mode::Formatting && ((field.name == "key" && kind.is_keyed()) || field.name == "slug")
+/// Whether a required field may be missing in this mode: one the formatter supplies.
+fn may_lack(field: &Field, mode: Mode) -> bool {
+    mode == Mode::Formatting && field.supply.is_some()
 }
 
 fn located(position: Position, problem: Problem) -> Located {

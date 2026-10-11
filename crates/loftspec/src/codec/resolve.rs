@@ -2,6 +2,7 @@
 //! Components and decisions in file-name order (RQ-209), Features in their group's order
 //! (RQ-28), and every reference typed by the element whose key it names.
 
+use super::schema::field;
 use std::collections::BTreeMap;
 
 use super::error::{Problem, ReadError, SpecPath};
@@ -13,7 +14,6 @@ use crate::decision::NodeRef;
 use crate::document::{CategoryEntry, DerivedFrom, Document, Edge, TagEntry};
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::{AuthoredStateId, CategoryId, DecisionId, DocumentId, ElementId, NodeId, TagId};
-use crate::kind::NodeKind;
 use crate::names::{CategoryName, TagName};
 use crate::slug::Slug;
 use crate::yaml::Position;
@@ -31,14 +31,14 @@ pub fn resolve(tree: &Tree) -> Result<Document, ReadError> {
         .expect("a read tree has a manifest");
     let files = tree
         .records(|role| matches!(role, Role::Product { .. } | Role::Feature { .. }))
-        .map(|(path, _, record)| (key(record, "key"), (path, record)))
+        .map(|(path, _, record)| (key(record, field::KEY), (path, record)))
         .collect();
     let mut resolver = Resolver {
         tree,
         index: index(tree),
         files,
         path: manifest_path,
-        document: Document::empty(DocumentId::new(key(manifest, "documentKey"))),
+        document: Document::empty(DocumentId::new(key(manifest, field::DOCUMENT_KEY))),
     };
     resolver.manifest(manifest)?;
     resolver.registries();
@@ -60,22 +60,6 @@ pub(super) struct Resolver<'t> {
     pub(super) document: Document,
 }
 
-/// The element kind each keyed record is.
-const fn node_kind(kind: Kind) -> Option<NodeKind> {
-    Some(match kind {
-        Kind::Product => NodeKind::Product,
-        Kind::FeatureGroup => NodeKind::FeatureGroup,
-        Kind::Feature => NodeKind::Feature,
-        Kind::Requirement => NodeKind::Requirement,
-        Kind::Criterion => NodeKind::Criterion,
-        Kind::RootComponent | Kind::Component => NodeKind::Component,
-        Kind::Constraint => NodeKind::Constraint,
-        Kind::QualityAttribute => NodeKind::QualityAttribute,
-        Kind::Section => NodeKind::Section,
-        _ => return None,
-    })
-}
-
 /// Every node and decision of the tree, by key.
 fn index(tree: &Tree) -> BTreeMap<Key, ElementId> {
     let mut found = Vec::new();
@@ -85,8 +69,8 @@ fn index(tree: &Tree) -> BTreeMap<Key, ElementId> {
     found
         .into_iter()
         .filter_map(|record| {
-            let key = Key::parse(record.text("key")?).ok()?;
-            let element = match (record.kind, node_kind(record.kind)) {
+            let key = Key::parse(record.text(field::KEY)?).ok()?;
+            let element = match (record.kind, record.kind.node_kind()) {
                 (Kind::Decision, _) => ElementId::Decision(DecisionId::new(key)),
                 (_, Some(kind)) => ElementId::Node(NodeId::new(kind, key)),
                 _ => return None,
@@ -119,7 +103,7 @@ pub(super) fn optional<T>(parse: fn(&str) -> Option<T>, record: &Rec, field: &st
 }
 
 pub(super) fn slug(record: &Rec) -> Slug {
-    Slug::parse(record.text("slug").expect("a checked slug")).expect("a checked slug")
+    Slug::parse(record.text(field::SLUG).expect("a checked slug")).expect("a checked slug")
 }
 
 impl<'t> Resolver<'t> {
@@ -163,7 +147,7 @@ impl<'t> Resolver<'t> {
     pub(super) fn node_ref(&self, value: &Val) -> Result<NodeRef, ReadError> {
         match value {
             Val::Record(former) => {
-                let label = Label::parse(former.text("formerLabel").unwrap_or_default())
+                let label = Label::parse(former.text(field::FORMER_LABEL).unwrap_or_default())
                     .map_err(|error| self.fail(Some(former.position), error.to_string()))?;
                 Ok(NodeRef::Former(label))
             }
@@ -173,7 +157,7 @@ impl<'t> Resolver<'t> {
 
     /// The `mentions` edges a record lists, from `source`.
     pub(super) fn mentions(&mut self, record: &Rec, source: ElementId) -> Result<(), ReadError> {
-        for target in record.list("mentions") {
+        for target in record.list(field::MENTIONS) {
             let target = self.element(target)?;
             self.document.edges.push(Edge::Mentions { source, target });
         }
@@ -181,15 +165,15 @@ impl<'t> Resolver<'t> {
     }
 
     fn manifest(&mut self, manifest: &Rec) -> Result<(), ReadError> {
-        self.document.publish_branch = manifest.text("publishBranch").map(str::to_owned);
-        if let Some(source) = manifest.record("derivedFrom") {
-            let address = text(source, "contentAddress");
+        self.document.publish_branch = manifest.text(field::PUBLISH_BRANCH).map(str::to_owned);
+        if let Some(source) = manifest.record(field::DERIVED_FROM) {
+            let address = text(source, field::CONTENT_ADDRESS);
             self.document.derived_from = Some(DerivedFrom {
-                authored_state_id: AuthoredStateId::new(key(source, "authoredStateId")),
+                authored_state_id: AuthoredStateId::new(key(source, field::AUTHORED_STATE_ID)),
                 content_address: address
                     .parse::<Digest>()
                     .map_err(|error| self.fail(Some(source.position), error.to_string()))?,
-                publish_sequence: text(source, "publishSequence").parse().unwrap_or(1),
+                publish_sequence: text(source, field::PUBLISH_SEQUENCE).parse().unwrap_or(1),
             });
         }
         Ok(())
@@ -198,16 +182,16 @@ impl<'t> Resolver<'t> {
     fn registries(&mut self) {
         for entry in self.tree.registry(TAGS) {
             self.document.tags.push(TagEntry {
-                id: TagId::new(key(entry, "key")),
-                name: TagName::parse(&text(entry, "name")).expect("a checked tag name"),
-                definition: text(entry, "definition"),
+                id: TagId::new(key(entry, field::KEY)),
+                name: TagName::parse(&text(entry, field::NAME)).expect("a checked tag name"),
+                definition: text(entry, field::DEFINITION),
             });
         }
         for entry in self.tree.registry(CATEGORIES) {
             self.document.categories.push(CategoryEntry {
-                id: CategoryId::new(key(entry, "key")),
-                name: CategoryName::parse(&text(entry, "name")).expect("a checked name"),
-                definition: text(entry, "definition"),
+                id: CategoryId::new(key(entry, field::KEY)),
+                name: CategoryName::parse(&text(entry, field::NAME)).expect("a checked name"),
+                definition: text(entry, field::DEFINITION),
             });
         }
     }
@@ -221,7 +205,7 @@ impl<'t> Resolver<'t> {
     }
 
     fn products(&mut self, manifest: &Rec) -> Result<(), ReadError> {
-        for listed in manifest.list("products") {
+        for listed in manifest.list(field::PRODUCTS) {
             let record = self.listed_file(listed);
             let product = self.product(record)?;
             self.document.products.push(product);
@@ -254,7 +238,7 @@ impl<'t> Resolver<'t> {
         let Some(labels) = self.tree.record(&self.path) else {
             return Ok(());
         };
-        if let Some(counters) = labels.record("counters") {
+        if let Some(counters) = labels.record(field::COUNTERS) {
             let values = counters.fields.iter().filter_map(|(prefix, value)| {
                 Some((LabelPrefix::parse(prefix)?, value.text()?.parse().ok()?))
             });
@@ -262,11 +246,11 @@ impl<'t> Resolver<'t> {
                 self.document.counters.set(prefix, next);
             }
         }
-        for binding in labels.list("bindings") {
+        for binding in labels.list(field::BINDINGS) {
             let Val::Record(binding) = binding else {
                 continue;
             };
-            let element = self.element(binding.get("key").expect("a checked key"))?;
+            let element = self.element(binding.get(field::KEY).expect("a checked key"))?;
             let fail = |error: crate::bindings::BindingError| {
                 ReadError::at(
                     &self.path,
@@ -274,10 +258,10 @@ impl<'t> Resolver<'t> {
                     Problem::Model(error.to_string()),
                 )
             };
-            let label = Label::parse(&text(binding, "label")).expect("a checked label");
+            let label = Label::parse(&text(binding, field::LABEL)).expect("a checked label");
             let bindings = &mut self.document.bindings;
             bindings.bind(element, label).map_err(fail)?;
-            for alias in binding.list("aliases") {
+            for alias in binding.list(field::ALIASES) {
                 let alias =
                     Label::parse(alias.text().unwrap_or_default()).expect("a checked label");
                 bindings.add_alias(element, alias).map_err(fail)?;

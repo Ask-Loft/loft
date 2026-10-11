@@ -4,6 +4,7 @@
 use super::files::{Content, Tree};
 use super::record::{Rec, Val};
 use super::schema::Order;
+use super::schema::field;
 
 /// Sorts every list the canonical layout orders, throughout the tree.
 pub(crate) fn canonicalize(tree: &mut Tree) {
@@ -17,8 +18,8 @@ pub(crate) fn canonicalize(tree: &mut Tree) {
 
 fn entry_order(entry: &Rec) -> (&str, &str) {
     (
-        entry.text("name").unwrap_or_default(),
-        entry.text("key").unwrap_or_default(),
+        entry.text(field::NAME).unwrap_or_default(),
+        entry.text(field::KEY).unwrap_or_default(),
     )
 }
 
@@ -39,8 +40,8 @@ fn sort_text(value: &Val) -> &str {
 fn subject_order(subject: &Val) -> (&str, &str) {
     match subject {
         Val::Record(record) => (
-            record.text("role").unwrap_or_default(),
-            record.get("node").map_or("", sort_text),
+            record.text(field::ROLE).unwrap_or_default(),
+            record.get(field::NODE).map_or("", sort_text),
         ),
         _ => ("", ""),
     }

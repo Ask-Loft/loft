@@ -3,6 +3,7 @@
 use super::error::ReadError;
 use super::record::Rec;
 use super::resolve::{Resolver, checked, key, slug, text};
+use super::schema::field;
 use crate::decision::{
     Assessment, Consequence, ConsequenceKind, Decision, DecisionOption, DecisionState, Driver,
     DriverPayload, Rating, StateKind,
@@ -13,43 +14,43 @@ use crate::ids::{ConsequenceId, DecisionId, DriverId, ElementId, OptionId};
 
 impl Resolver<'_> {
     pub(super) fn decision(&mut self, record: &Rec) -> Result<Decision, ReadError> {
-        let id = DecisionId::new(key(record, "key"));
+        let id = DecisionId::new(key(record, field::KEY));
         self.mentions(record, ElementId::Decision(id))?;
-        for subject in record.records("subjects") {
-            let node = self.node_ref(subject.get("node").expect("a checked node"))?;
+        for subject in record.records(field::SUBJECTS) {
+            let node = self.node_ref(subject.get(field::NODE).expect("a checked node"))?;
             self.document.edges.push(Edge::Subject {
                 decision: id,
                 subject: node,
-                role: checked(SubjectRole::parse, subject, "role"),
+                role: checked(SubjectRole::parse, subject, field::ROLE),
             });
         }
         let drivers = record
-            .records("drivers")
+            .records(field::DRIVERS)
             .map(|driver| {
-                let payload = match driver.get("subject") {
+                let payload = match driver.get(field::SUBJECT) {
                     Some(subject) => DriverPayload::Subject {
                         subject: self.node_ref(subject)?,
                     },
                     None => DriverPayload::Local {
-                        label: text(driver, "label"),
-                        statement: text(driver, "statement"),
+                        label: text(driver, field::LABEL),
+                        statement: text(driver, field::STATEMENT),
                     },
                 };
                 Ok(Driver {
-                    id: DriverId::new(key(driver, "key")),
+                    id: DriverId::new(key(driver, field::KEY)),
                     payload,
                 })
             })
             .collect::<Result<_, ReadError>>()?;
         let consequences = record
-            .records("consequences")
+            .records(field::CONSEQUENCES)
             .map(|consequence| {
                 Ok(Consequence {
-                    id: ConsequenceId::new(key(consequence, "key")),
-                    kind: checked(ConsequenceKind::parse, consequence, "kind"),
-                    statement: text(consequence, "statement"),
+                    id: ConsequenceId::new(key(consequence, field::KEY)),
+                    kind: checked(ConsequenceKind::parse, consequence, field::KIND),
+                    statement: text(consequence, field::STATEMENT),
                     subject: consequence
-                        .get("subject")
+                        .get(field::SUBJECT)
                         .map(|subject| self.node_ref(subject))
                         .transpose()?,
                 })
@@ -58,25 +59,25 @@ impl Resolver<'_> {
         Ok(Decision {
             id,
             slug: slug(record),
-            title: text(record, "title"),
-            context: text(record, "context"),
-            state: state_of(record.record("state").expect("a checked state")),
+            title: text(record, field::TITLE),
+            context: text(record, field::CONTEXT),
+            state: state_of(record.record(field::STATE).expect("a checked state")),
             drivers,
             options: record
-                .records("options")
+                .records(field::OPTIONS)
                 .map(|option| DecisionOption {
-                    id: OptionId::new(key(option, "key")),
-                    title: text(option, "title"),
-                    description: text(option, "description"),
+                    id: OptionId::new(key(option, field::KEY)),
+                    title: text(option, field::TITLE),
+                    description: text(option, field::DESCRIPTION),
                 })
                 .collect(),
             assessments: record
-                .records("assessments")
+                .records(field::ASSESSMENTS)
                 .map(|assessment| Assessment {
-                    option: OptionId::new(key(assessment, "option")),
-                    driver: DriverId::new(key(assessment, "driver")),
-                    rating: checked(Rating::parse, assessment, "rating"),
-                    rationale: text(assessment, "rationale"),
+                    option: OptionId::new(key(assessment, field::OPTION)),
+                    driver: DriverId::new(key(assessment, field::DRIVER)),
+                    rating: checked(Rating::parse, assessment, field::RATING),
+                    rationale: text(assessment, field::RATIONALE),
                 })
                 .collect(),
             consequences,
@@ -86,26 +87,26 @@ impl Resolver<'_> {
 
 /// A state record as the decision's state (AC-770..AC-775).
 fn state_of(state: &Rec) -> DecisionState {
-    let selected = || OptionId::new(key(state, "selectedOption"));
+    let selected = || OptionId::new(key(state, field::SELECTED_OPTION));
     let field = |name: &str| text(state, name);
-    match checked(StateKind::parse, state, "kind") {
+    match checked(StateKind::parse, state, field::KIND) {
         StateKind::Proposed => DecisionState::Proposed,
         StateKind::Accepted => DecisionState::Accepted {
             selected_option: selected(),
-            outcome: field("outcome"),
+            outcome: field(field::OUTCOME),
         },
         StateKind::Rejected => DecisionState::Rejected {
-            rationale: field("rationale"),
+            rationale: field(field::RATIONALE),
         },
         StateKind::Superseded => DecisionState::Superseded {
             selected_option: selected(),
-            outcome: field("outcome"),
-            successor: DecisionId::new(key(state, "successor")),
+            outcome: field(field::OUTCOME),
+            successor: DecisionId::new(key(state, field::SUCCESSOR)),
         },
         StateKind::Retired => DecisionState::Retired {
             selected_option: selected(),
-            outcome: field("outcome"),
-            rationale: field("rationale"),
+            outcome: field(field::OUTCOME),
+            rationale: field(field::RATIONALE),
         },
     }
 }

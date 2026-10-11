@@ -3,6 +3,7 @@
 use super::error::ReadError;
 use super::record::Rec;
 use super::resolve::{Resolver, checked, key, optional, slug, text};
+use super::schema::field;
 use crate::attributes::{
     BandKind, ConservationKind, QaKind, QualityAggregation, QualityBand, QualityTarget,
     TechnicalBinding, VerificationFate,
@@ -24,12 +25,12 @@ impl Resolver<'_> {
     fn details(&mut self, record: &Rec, id: NodeId) -> Result<Details, ReadError> {
         self.mentions(record, ElementId::Node(id))?;
         let tags = record
-            .list("tags")
+            .list(field::TAGS)
             .iter()
             .map(|tag| TagName::parse(tag.text().unwrap_or_default()).expect("a checked tag"))
             .collect();
         Ok(Details {
-            body: record.text("body").map(str::to_owned),
+            body: record.text(field::BODY).map(str::to_owned),
             tags,
             sections: self.sections(record)?,
         })
@@ -37,14 +38,14 @@ impl Resolver<'_> {
 
     fn sections(&mut self, record: &Rec) -> Result<Vec<Section>, ReadError> {
         record
-            .records("sections")
+            .records(field::SECTIONS)
             .map(|section| {
-                let id = SectionId::new(key(section, "key"));
+                let id = SectionId::new(key(section, field::KEY));
                 self.mentions(section, ElementId::Node(id.into()))?;
                 Ok(Section {
                     id: Some(id),
-                    name: text(section, "name"),
-                    body: text(section, "body"),
+                    name: text(section, field::NAME),
+                    body: text(section, field::BODY),
                     sections: self.sections(section)?,
                 })
             })
@@ -52,24 +53,24 @@ impl Resolver<'_> {
     }
 
     pub(super) fn product(&mut self, record: &Rec) -> Result<Product, ReadError> {
-        let id = ProductId::new(key(record, "key"));
+        let id = ProductId::new(key(record, field::KEY));
         Ok(Product {
             id: Some(id),
             slug: slug(record),
-            name: text(record, "name"),
+            name: text(record, field::NAME),
             details: self.details(record, id.into())?,
             feature_groups: record
-                .records("featureGroups")
+                .records(field::FEATURE_GROUPS)
                 .map(|group| self.feature_group(group))
                 .collect::<Result<_, _>>()?,
         })
     }
 
     fn feature_group(&mut self, record: &Rec) -> Result<FeatureGroup, ReadError> {
-        let id = FeatureGroupId::new(key(record, "key"));
+        let id = FeatureGroupId::new(key(record, field::KEY));
         let product_path = self.path.clone();
         let mut features = Vec::new();
-        for listed in record.list("features") {
+        for listed in record.list(field::FEATURES) {
             let feature = self.listed_file(listed);
             features.push(self.feature(feature)?);
         }
@@ -77,19 +78,19 @@ impl Resolver<'_> {
         Ok(FeatureGroup {
             id: Some(id),
             slug: slug(record),
-            name: text(record, "name"),
+            name: text(record, field::NAME),
             details: self.details(record, id.into())?,
             features,
             constraints: record
-                .records("constraints")
+                .records(field::CONSTRAINTS)
                 .map(|constraint| self.constraint(constraint))
                 .collect::<Result<_, _>>()?,
         })
     }
 
     fn feature(&mut self, record: &Rec) -> Result<Feature, ReadError> {
-        let id = FeatureId::new(key(record, "key"));
-        for target in record.list("realizes") {
+        let id = FeatureId::new(key(record, field::KEY));
+        for target in record.list(field::REALIZES) {
             let component = self.node(target, |node| match node {
                 NodeId::Component(component) => Some(component),
                 _ => None,
@@ -102,33 +103,35 @@ impl Resolver<'_> {
         Ok(Feature {
             id: Some(id),
             slug: slug(record),
-            name: text(record, "name"),
+            name: text(record, field::NAME),
             details: self.details(record, id.into())?,
             requirements: record
-                .records("requirements")
+                .records(field::REQUIREMENTS)
                 .map(|requirement| self.requirement(requirement))
                 .collect::<Result<_, _>>()?,
             quality_attributes: record
-                .records("qualityAttributes")
+                .records(field::QUALITY_ATTRIBUTES)
                 .map(|quality| self.quality_attribute(quality))
                 .collect::<Result<_, _>>()?,
         })
     }
 
     fn requirement(&mut self, record: &Rec) -> Result<Requirement, ReadError> {
-        let id = RequirementId::new(key(record, "key"));
-        let statement = record.record("statement").expect("a checked statement");
+        let id = RequirementId::new(key(record, field::KEY));
+        let statement = record
+            .record(field::STATEMENT)
+            .expect("a checked statement");
         Ok(Requirement {
             id: Some(id),
             statement: statement_of(statement),
             details: self.details(record, id.into())?,
             criteria: record
-                .records("criteria")
+                .records(field::CRITERIA)
                 .map(|criterion| {
-                    let id = CriterionId::new(key(criterion, "key"));
+                    let id = CriterionId::new(key(criterion, field::KEY));
                     Ok(Criterion {
                         id: Some(id),
-                        name: text(criterion, "name"),
+                        name: text(criterion, field::NAME),
                         details: self.details(criterion, id.into())?,
                     })
                 })
@@ -144,8 +147,8 @@ impl Resolver<'_> {
     }
 
     fn component(&mut self, record: &Rec) -> Result<Component, ReadError> {
-        let id = ComponentId::new(key(record, "key"));
-        for target in record.list("scopedTo") {
+        let id = ComponentId::new(key(record, field::KEY));
+        for target in record.list(field::SCOPED_TO) {
             let product = self.node(target, |node| match node {
                 NodeId::Product(product) => Some(product),
                 _ => None,
@@ -157,91 +160,93 @@ impl Resolver<'_> {
         }
         Ok(Component {
             id: Some(id),
-            name: text(record, "name"),
+            name: text(record, field::NAME),
             details: self.details(record, id.into())?,
             components: record
-                .records("components")
+                .records(field::COMPONENTS)
                 .map(|component| self.component(component))
                 .collect::<Result<_, _>>()?,
             constraints: record
-                .records("constraints")
+                .records(field::CONSTRAINTS)
                 .map(|constraint| self.constraint(constraint))
                 .collect::<Result<_, _>>()?,
             quality_attributes: record
-                .records("qualityAttributes")
+                .records(field::QUALITY_ATTRIBUTES)
                 .map(|quality| self.quality_attribute(quality))
                 .collect::<Result<_, _>>()?,
         })
     }
 
     fn constraint(&mut self, record: &Rec) -> Result<Constraint, ReadError> {
-        let id = ConstraintId::new(key(record, "key"));
+        let id = ConstraintId::new(key(record, field::KEY));
         Ok(Constraint {
             id: Some(id),
-            name: text(record, "name"),
+            name: text(record, field::NAME),
             details: self.details(record, id.into())?,
             binding: record
-                .record("constraintBinding")
+                .record(field::CONSTRAINT_BINDING)
                 .map(|binding| TechnicalBinding {
-                    category: CategoryName::parse(&text(binding, "category"))
+                    category: CategoryName::parse(&text(binding, field::CATEGORY))
                         .expect("a checked category"),
-                    required_value: text(binding, "requiredValue"),
+                    required_value: text(binding, field::REQUIRED_VALUE),
                 }),
-            conservation_kind: optional(ConservationKind::parse, record, "conservationKind"),
-            verification_fate: optional(VerificationFate::parse, record, "verificationFate"),
+            conservation_kind: optional(ConservationKind::parse, record, field::CONSERVATION_KIND),
+            verification_fate: optional(VerificationFate::parse, record, field::VERIFICATION_FATE),
         })
     }
 
     fn quality_attribute(&mut self, record: &Rec) -> Result<QualityAttribute, ReadError> {
-        let id = QualityAttributeId::new(key(record, "key"));
-        let target = record.record("qualityTarget").expect("a checked target");
+        let id = QualityAttributeId::new(key(record, field::KEY));
+        let target = record
+            .record(field::QUALITY_TARGET)
+            .expect("a checked target");
         Ok(QualityAttribute {
             id: Some(id),
-            name: text(record, "name"),
+            name: text(record, field::NAME),
             details: self.details(record, id.into())?,
-            kind: checked(QaKind::parse, record, "qaKind"),
+            kind: checked(QaKind::parse, record, field::QA_KIND),
             target: QualityTarget {
-                metric: text(target, "metric"),
-                band: band_of(target.record("band").expect("a checked band")),
-                unit: text(target, "unit"),
-                aggregation: checked(QualityAggregation::parse, target, "aggregation"),
-                scenario: text(target, "scenario"),
-                environment: text(target, "environment"),
+                metric: text(target, field::METRIC),
+                band: band_of(target.record(field::BAND).expect("a checked band")),
+                unit: text(target, field::UNIT),
+                aggregation: checked(QualityAggregation::parse, target, field::AGGREGATION),
+                scenario: text(target, field::SCENARIO),
+                environment: text(target, field::ENVIRONMENT),
             },
-            verification_fate: optional(VerificationFate::parse, record, "verificationFate"),
+            verification_fate: optional(VerificationFate::parse, record, field::VERIFICATION_FATE),
         })
     }
 }
 
 fn band_of(band: &Rec) -> QualityBand {
     let bound = |field: &str| text(band, field);
-    match checked(BandKind::parse, band, "kind") {
+    match checked(BandKind::parse, band, field::KIND) {
         BandKind::AtMost => QualityBand::AtMost {
-            upper: bound("upper"),
+            upper: bound(field::UPPER),
         },
         BandKind::AtLeast => QualityBand::AtLeast {
-            lower: bound("lower"),
+            lower: bound(field::LOWER),
         },
         BandKind::Exactly => QualityBand::Exactly {
-            value: bound("value"),
+            value: bound(field::VALUE),
         },
         BandKind::Between => QualityBand::Between {
-            lower: bound("lower"),
-            upper: bound("upper"),
+            lower: bound(field::LOWER),
+            upper: bound(field::UPPER),
         },
     }
 }
 
 /// A statement record as text or as a form with its slots (AC-751, AC-752).
 fn statement_of(record: &Rec) -> Statement {
-    if let Some(text) = record.text("text") {
+    if let Some(text) = record.text(field::TEXT) {
         return Statement::Text(text.to_owned());
     }
-    let form = checked(Form::parse, record, "form");
+    let form = checked(Form::parse, record, field::FORM);
     let condition = form
         .condition()
         .map(|slot| text(record, slot))
         .unwrap_or_default();
-    let (system, shall) = (text(record, "system"), text(record, "shall"));
+    let (system, shall) = (text(record, field::SYSTEM), text(record, field::SHALL));
     Statement::Form(EarsForm::from_slots(form, condition, system, shall))
 }

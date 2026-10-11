@@ -4,6 +4,7 @@
 
 mod canon;
 mod error;
+pub mod field;
 mod files;
 mod layout;
 mod record;

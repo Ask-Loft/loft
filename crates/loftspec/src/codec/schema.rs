@@ -83,49 +83,72 @@ pub enum Order {
     ByRoleThenTarget,
 }
 
+/// How the formatter supplies a required field a record lacks (RQ-59, RQ-213, RQ-218).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Supply {
+    /// A fresh version 7 key (RQ-3, RQ-218).
+    MintKey,
+    /// The name of the record's file or directory (AC-818).
+    SlugFromPath,
+    /// The directory the record's listed Features sit in, or else the slug its name derives,
+    /// unique among its siblings (AC-819, AC-820).
+    SlugFromName,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Field {
     pub name: &'static str,
     pub required: bool,
     pub shape: Shape,
     pub order: Order,
+    /// How the formatter supplies the field when it is missing; none for a field it never
+    /// supplies.
+    pub supply: Option<Supply>,
 }
 
-const fn field(name: &'static str, required: bool, shape: Shape) -> Field {
+const fn spec(name: &'static str, required: bool, shape: Shape) -> Field {
     Field {
         name,
         required,
         shape,
         order: Order::Authored,
+        supply: None,
     }
 }
 
 const fn req(name: &'static str, scalar: Scalar) -> Field {
-    field(name, true, Shape::One(Item::Scalar(scalar)))
+    spec(name, true, Shape::One(Item::Scalar(scalar)))
 }
 
 const fn opt(name: &'static str, scalar: Scalar) -> Field {
-    field(name, false, Shape::One(Item::Scalar(scalar)))
+    spec(name, false, Shape::One(Item::Scalar(scalar)))
 }
 
 const fn record(name: &'static str, required: bool, kind: Kind) -> Field {
-    field(name, required, Shape::One(Item::Record(kind)))
+    spec(name, required, Shape::One(Item::Record(kind)))
 }
 
 const fn node_ref(name: &'static str, required: bool) -> Field {
-    field(name, required, Shape::One(Item::NodeRef))
+    spec(name, required, Shape::One(Item::NodeRef))
 }
 
 const fn records(name: &'static str, kind: Kind) -> Field {
-    field(name, false, Shape::List(Item::Record(kind)))
+    spec(name, false, Shape::List(Item::Record(kind)))
 }
 
 const fn scalars(name: &'static str, scalar: Scalar) -> Field {
-    field(name, false, Shape::List(Item::Scalar(scalar)))
+    spec(name, false, Shape::List(Item::Scalar(scalar)))
 }
 
 const fn ordered(field: Field, order: Order) -> Field {
     Field { order, ..field }
+}
+
+const fn supplied(field: Field, supply: Supply) -> Field {
+    Field {
+        supply: Some(supply),
+        ..field
+    }
 }
 
 /// A list of keys the writer sorts: an edge field (RQ-168).
@@ -133,22 +156,28 @@ const fn edges(name: &'static str) -> Field {
     ordered(scalars(name, Scalar::Key), Order::ByKey)
 }
 
+pub use super::field;
+
 use crate::attributes::{BandKind, ConservationKind, QaKind, QualityAggregation, VerificationFate};
 use crate::decision::{ConsequenceKind, DriverKind, Rating, StateKind};
 use crate::document::SubjectRole;
 use crate::identity::LabelPrefix;
+use crate::kind::NodeKind;
 use crate::statement::Form;
 use Kind as K;
 use Scalar as S;
 
-const KEY: Field = req("key", S::Key);
-const SLUG: Field = req("slug", S::Slug);
-const NAME: Field = req("name", S::Text);
-const BODY: Field = opt("body", S::Text);
-const TAGS: Field = scalars("tags", S::Tag);
-const MENTIONS: Field = edges("mentions");
-const SECTIONS: Field = records("sections", K::Section);
-const FATE: Field = opt("verificationFate", S::Enum(VerificationFate::NAMES));
+/// The key of a keyed record, which the formatter mints when it is missing.
+const KEY: Field = supplied(req(field::KEY, S::Key), Supply::MintKey);
+const SLUG: Field = supplied(req(field::SLUG, S::Slug), Supply::SlugFromPath);
+/// A Feature Group's slug: it has no file of its own to take a name from.
+const GROUP_SLUG: Field = supplied(req(field::SLUG, S::Slug), Supply::SlugFromName);
+const NAME: Field = req(field::NAME, S::Text);
+const BODY: Field = opt(field::BODY, S::Text);
+const TAGS: Field = scalars(field::TAGS, S::Tag);
+const MENTIONS: Field = edges(field::MENTIONS);
+const SECTIONS: Field = records(field::SECTIONS, K::Section);
+const FATE: Field = opt(field::VERIFICATION_FATE, S::Enum(VerificationFate::NAMES));
 
 /// One counter per label prefix, in the order `counters` lists them (AC-786).
 const COUNTERS: [Field; LabelPrefix::ALL.len()] = {
@@ -162,35 +191,42 @@ const COUNTERS: [Field; LabelPrefix::ALL.len()] = {
 };
 
 const MANIFEST_FIELDS: &[Field] = &[
-    req("format", S::Identifier),
-    req("algorithm", S::Identifier),
-    req("documentKey", S::Key),
-    opt("publishBranch", S::Identifier),
-    scalars("products", S::Key),
-    record("derivedFrom", false, K::DerivedFrom),
+    req(field::FORMAT, S::Identifier),
+    req(field::ALGORITHM, S::Identifier),
+    req(field::DOCUMENT_KEY, S::Key),
+    opt(field::PUBLISH_BRANCH, S::Identifier),
+    scalars(field::PRODUCTS, S::Key),
+    record(field::DERIVED_FROM, false, K::DerivedFrom),
 ];
 
 const DERIVED_FROM_FIELDS: &[Field] = &[
-    req("authoredStateId", S::Key),
-    req("contentAddress", S::Digest),
-    req("publishSequence", S::Integer),
+    req(field::AUTHORED_STATE_ID, S::Key),
+    req(field::CONTENT_ADDRESS, S::Digest),
+    req(field::PUBLISH_SEQUENCE, S::Integer),
 ];
 
 const LABELS_FIELDS: &[Field] = &[
-    record("counters", true, K::Counters),
-    ordered(records("bindings", K::Binding), Order::ByKey),
+    record(field::COUNTERS, true, K::Counters),
+    ordered(records(field::BINDINGS, K::Binding), Order::ByKey),
 ];
 
 const BINDING_FIELDS: &[Field] = &[
-    req("key", S::Key),
-    req("label", S::Label),
-    scalars("aliases", S::Label),
+    req(field::KEY, S::Key),
+    req(field::LABEL, S::Label),
+    scalars(field::ALIASES, S::Label),
 ];
 
-const TAG_ENTRY_FIELDS: &[Field] = &[KEY, req("name", S::Tag), req("definition", S::Text)];
+const TAG_ENTRY_FIELDS: &[Field] = &[
+    KEY,
+    req(field::NAME, S::Tag),
+    req(field::DEFINITION, S::Text),
+];
 
-const CATEGORY_ENTRY_FIELDS: &[Field] =
-    &[KEY, req("name", S::Category), req("definition", S::Text)];
+const CATEGORY_ENTRY_FIELDS: &[Field] = &[
+    KEY,
+    req(field::NAME, S::Category),
+    req(field::DEFINITION, S::Text),
+];
 
 const PRODUCT_FIELDS: &[Field] = &[
     KEY,
@@ -199,19 +235,19 @@ const PRODUCT_FIELDS: &[Field] = &[
     BODY,
     TAGS,
     MENTIONS,
-    records("featureGroups", K::FeatureGroup),
+    records(field::FEATURE_GROUPS, K::FeatureGroup),
     SECTIONS,
 ];
 
 const FEATURE_GROUP_FIELDS: &[Field] = &[
     KEY,
-    SLUG,
+    GROUP_SLUG,
     NAME,
     BODY,
     TAGS,
     MENTIONS,
-    scalars("features", S::Key),
-    records("constraints", K::Constraint),
+    scalars(field::FEATURES, S::Key),
+    records(field::CONSTRAINTS, K::Constraint),
     SECTIONS,
 ];
 
@@ -221,32 +257,32 @@ const FEATURE_FIELDS: &[Field] = &[
     NAME,
     BODY,
     TAGS,
-    edges("realizes"),
+    edges(field::REALIZES),
     MENTIONS,
-    records("requirements", K::Requirement),
-    records("qualityAttributes", K::QualityAttribute),
+    records(field::REQUIREMENTS, K::Requirement),
+    records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
 ];
 
 const REQUIREMENT_FIELDS: &[Field] = &[
     KEY,
-    record("statement", true, K::Statement),
+    record(field::STATEMENT, true, K::Statement),
     BODY,
     TAGS,
     MENTIONS,
-    records("criteria", K::Criterion),
+    records(field::CRITERIA, K::Criterion),
     SECTIONS,
 ];
 
 const STATEMENT_FIELDS: &[Field] = &[
-    opt("text", S::Text),
-    opt("form", S::Enum(Form::NAMES)),
-    opt("when", S::Text),
-    opt("while", S::Text),
-    opt("if", S::Text),
-    opt("where", S::Text),
-    opt("system", S::Text),
-    opt("shall", S::Text),
+    opt(field::TEXT, S::Text),
+    opt(field::FORM, S::Enum(Form::NAMES)),
+    opt(field::WHEN, S::Text),
+    opt(field::WHILE, S::Text),
+    opt(field::IF, S::Text),
+    opt(field::WHERE, S::Text),
+    opt(field::SYSTEM, S::Text),
+    opt(field::SHALL, S::Text),
 ];
 
 const CRITERION_FIELDS: &[Field] = &[KEY, NAME, BODY, TAGS, MENTIONS, SECTIONS];
@@ -256,98 +292,107 @@ const CONSTRAINT_FIELDS: &[Field] = &[
     NAME,
     BODY,
     TAGS,
-    record("constraintBinding", false, K::ConstraintBinding),
-    opt("conservationKind", S::Enum(ConservationKind::NAMES)),
+    record(field::CONSTRAINT_BINDING, false, K::ConstraintBinding),
+    opt(field::CONSERVATION_KIND, S::Enum(ConservationKind::NAMES)),
     FATE,
     MENTIONS,
     SECTIONS,
 ];
 
-const CONSTRAINT_BINDING_FIELDS: &[Field] =
-    &[req("category", S::Category), req("requiredValue", S::Text)];
+const CONSTRAINT_BINDING_FIELDS: &[Field] = &[
+    req(field::CATEGORY, S::Category),
+    req(field::REQUIRED_VALUE, S::Text),
+];
 
 const QUALITY_ATTRIBUTE_FIELDS: &[Field] = &[
     KEY,
     NAME,
     BODY,
     TAGS,
-    req("qaKind", S::Enum(QaKind::NAMES)),
-    record("qualityTarget", true, K::QualityTarget),
+    req(field::QA_KIND, S::Enum(QaKind::NAMES)),
+    record(field::QUALITY_TARGET, true, K::QualityTarget),
     FATE,
     MENTIONS,
     SECTIONS,
 ];
 
 const QUALITY_TARGET_FIELDS: &[Field] = &[
-    req("metric", S::Text),
-    record("band", true, K::Band),
-    req("unit", S::Text),
-    req("aggregation", S::Enum(QualityAggregation::NAMES)),
-    req("scenario", S::Text),
-    req("environment", S::Text),
+    req(field::METRIC, S::Text),
+    record(field::BAND, true, K::Band),
+    req(field::UNIT, S::Text),
+    req(field::AGGREGATION, S::Enum(QualityAggregation::NAMES)),
+    req(field::SCENARIO, S::Text),
+    req(field::ENVIRONMENT, S::Text),
 ];
 
 const BAND_FIELDS: &[Field] = &[
-    req("kind", S::Enum(BandKind::NAMES)),
-    opt("lower", S::Text),
-    opt("upper", S::Text),
-    opt("value", S::Text),
+    req(field::KIND, S::Enum(BandKind::NAMES)),
+    opt(field::LOWER, S::Text),
+    opt(field::UPPER, S::Text),
+    opt(field::VALUE, S::Text),
 ];
 
-const SECTION_FIELDS: &[Field] = &[KEY, NAME, req("body", S::Text), MENTIONS, SECTIONS];
+const SECTION_FIELDS: &[Field] = &[KEY, NAME, req(field::BODY, S::Text), MENTIONS, SECTIONS];
 
 const DECISION_FIELDS: &[Field] = &[
     KEY,
     SLUG,
-    req("title", S::Text),
-    req("context", S::Text),
-    record("state", true, K::State),
-    records("drivers", K::Driver),
-    records("options", K::Option),
-    records("assessments", K::Assessment),
-    records("consequences", K::Consequence),
-    ordered(records("subjects", K::Subject), Order::ByRoleThenTarget),
+    req(field::TITLE, S::Text),
+    req(field::CONTEXT, S::Text),
+    record(field::STATE, true, K::State),
+    records(field::DRIVERS, K::Driver),
+    records(field::OPTIONS, K::Option),
+    records(field::ASSESSMENTS, K::Assessment),
+    records(field::CONSEQUENCES, K::Consequence),
+    ordered(
+        records(field::SUBJECTS, K::Subject),
+        Order::ByRoleThenTarget,
+    ),
     MENTIONS,
 ];
 
 const STATE_FIELDS: &[Field] = &[
-    req("kind", S::Enum(StateKind::NAMES)),
-    opt("selectedOption", S::Key),
-    opt("outcome", S::Text),
-    opt("rationale", S::Text),
-    opt("successor", S::Key),
+    req(field::KIND, S::Enum(StateKind::NAMES)),
+    opt(field::SELECTED_OPTION, S::Key),
+    opt(field::OUTCOME, S::Text),
+    opt(field::RATIONALE, S::Text),
+    opt(field::SUCCESSOR, S::Key),
 ];
 
 const DRIVER_FIELDS: &[Field] = &[
     KEY,
-    req("kind", S::Enum(DriverKind::NAMES)),
-    opt("label", S::Text),
-    opt("statement", S::Text),
-    node_ref("subject", false),
+    req(field::KIND, S::Enum(DriverKind::NAMES)),
+    opt(field::LABEL, S::Text),
+    opt(field::STATEMENT, S::Text),
+    node_ref(field::SUBJECT, false),
 ];
 
-const OPTION_FIELDS: &[Field] = &[KEY, req("title", S::Text), req("description", S::Text)];
+const OPTION_FIELDS: &[Field] = &[
+    KEY,
+    req(field::TITLE, S::Text),
+    req(field::DESCRIPTION, S::Text),
+];
 
 const ASSESSMENT_FIELDS: &[Field] = &[
-    req("option", S::Key),
-    req("driver", S::Key),
-    req("rating", S::Enum(Rating::NAMES)),
-    req("rationale", S::Text),
+    req(field::OPTION, S::Key),
+    req(field::DRIVER, S::Key),
+    req(field::RATING, S::Enum(Rating::NAMES)),
+    req(field::RATIONALE, S::Text),
 ];
 
 const CONSEQUENCE_FIELDS: &[Field] = &[
     KEY,
-    req("kind", S::Enum(ConsequenceKind::NAMES)),
-    req("statement", S::Text),
-    node_ref("subject", false),
+    req(field::KIND, S::Enum(ConsequenceKind::NAMES)),
+    req(field::STATEMENT, S::Text),
+    node_ref(field::SUBJECT, false),
 ];
 
 const SUBJECT_FIELDS: &[Field] = &[
-    req("role", S::Enum(SubjectRole::NAMES)),
-    node_ref("node", true),
+    req(field::ROLE, S::Enum(SubjectRole::NAMES)),
+    node_ref(field::NODE, true),
 ];
 
-const FORMER_LABEL_FIELDS: &[Field] = &[req("formerLabel", S::Label)];
+const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
 
 impl Kind {
     /// The kind's fields in the Format's order.
@@ -395,28 +440,36 @@ impl Kind {
             .find(|(_, field)| field.name == name)
     }
 
-    /// Whether the record carries a key the formatter mints when it is missing (RQ-3, RQ-218).
+    /// Whether the record carries its own key, which the formatter mints when it is missing
+    /// (RQ-3, RQ-218).
     #[must_use]
     pub const fn is_keyed(self) -> bool {
-        matches!(
-            self,
-            Self::TagEntry
-                | Self::CategoryEntry
-                | Self::Product
-                | Self::FeatureGroup
-                | Self::Feature
-                | Self::Requirement
-                | Self::Criterion
-                | Self::RootComponent
-                | Self::Component
-                | Self::Constraint
-                | Self::QualityAttribute
-                | Self::Section
-                | Self::Decision
-                | Self::Driver
-                | Self::Option
-                | Self::Consequence
-        )
+        let fields = self.fields();
+        let mut index = 0;
+        while index < fields.len() {
+            if matches!(fields[index].supply, Some(Supply::MintKey)) {
+                return true;
+            }
+            index += 1;
+        }
+        false
+    }
+
+    /// The node kind a record of this kind is; none for a record that is not a node.
+    #[must_use]
+    pub const fn node_kind(self) -> Option<NodeKind> {
+        Some(match self {
+            Self::Product => NodeKind::Product,
+            Self::FeatureGroup => NodeKind::FeatureGroup,
+            Self::Feature => NodeKind::Feature,
+            Self::Requirement => NodeKind::Requirement,
+            Self::Criterion => NodeKind::Criterion,
+            Self::RootComponent | Self::Component => NodeKind::Component,
+            Self::Constraint => NodeKind::Constraint,
+            Self::QualityAttribute => NodeKind::QualityAttribute,
+            Self::Section => NodeKind::Section,
+            _ => return None,
+        })
     }
 }
 
@@ -425,11 +478,11 @@ const COMPONENT: [Field; 10] = [
     NAME,
     BODY,
     TAGS,
-    edges("scopedTo"),
+    edges(field::SCOPED_TO),
     MENTIONS,
-    records("components", K::Component),
-    records("constraints", K::Constraint),
-    records("qualityAttributes", K::QualityAttribute),
+    records(field::COMPONENTS, K::Component),
+    records(field::CONSTRAINTS, K::Constraint),
+    records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
 ];
 /// A root Component: `slug` after `key`, then a Component's fields (AC-757).

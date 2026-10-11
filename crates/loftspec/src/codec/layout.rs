@@ -4,6 +4,7 @@
 //! slugs that match their names (RQ-211) and keys carried once (RQ-4). Checking is always
 //! strict; the formatter checks only after it has supplied what was missing.
 
+use super::schema::field;
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::error::{Problem, ReadError, Site, SpecPath};
@@ -41,8 +42,8 @@ pub(crate) fn parse_files(files: &Files, mode: Mode) -> Result<Tree, Vec<ReadErr
     };
     let manifest = read_file(&manifest_path, bytes, mode).map_err(|error| vec![error])?;
     if let Some(record) = manifest.1.records().next() {
-        let format = record.text("format").unwrap_or_default();
-        let algorithm = record.text("algorithm").unwrap_or_default();
+        let format = record.text(field::FORMAT).unwrap_or_default();
+        let algorithm = record.text(field::ALGORITHM).unwrap_or_default();
         if let Err(error) = check_identifiers(format, algorithm) {
             let problem = Problem::Unsupported(error);
             let position = Some(record.position);
@@ -103,7 +104,7 @@ fn check_slugs(tree: &Tree, errors: &mut Vec<ReadError>) {
         let Some(name) = role.slug() else {
             continue;
         };
-        if let Some(Val::Scalar { text, position }) = record.get("slug")
+        if let Some(Val::Scalar { text, position }) = record.get(field::SLUG)
             && text != name
         {
             let problem = Problem::SlugMismatch {
@@ -145,7 +146,7 @@ fn check_products(tree: &Tree, errors: &mut Vec<ReadError>) {
         return;
     };
     let carried = carried(tree, |role| matches!(role, Role::Product { .. }));
-    let keys = listed(manifest, "products");
+    let keys = listed(manifest, field::PRODUCTS);
     check_list(&manifest_path, &keys, &carried, errors);
     report_unlisted(tree, &carried, &keys, "manifest", errors);
 }
@@ -153,7 +154,7 @@ fn check_products(tree: &Tree, errors: &mut Vec<ReadError>) {
 /// The file of a role that carries each key.
 fn carried<'t>(tree: &'t Tree, wanted: impl Fn(&Role) -> bool + 't) -> BTreeMap<Key, &'t SpecPath> {
     tree.records(wanted)
-        .filter_map(|(path, _, record)| Some((key_of(record.get("key")?)?.0, path)))
+        .filter_map(|(path, _, record)| Some((key_of(record.get(field::KEY)?)?.0, path)))
         .collect()
 }
 
@@ -184,13 +185,13 @@ fn check_features(tree: &Tree, errors: &mut Vec<ReadError>) {
         let Some(product_dir) = role.slug() else {
             continue;
         };
-        for group in product.records("featureGroups") {
+        for group in product.records(field::FEATURE_GROUPS) {
             let group = Group {
                 path,
                 product_dir,
-                slug: group.text("slug").unwrap_or_default(),
+                slug: group.text(field::SLUG).unwrap_or_default(),
                 at: group.position,
-                keys: listed(group, "features"),
+                keys: listed(group, field::FEATURES),
             };
             check_group(tree, &group, &features, &mut lister, errors);
             all_listed.extend(group.keys);
@@ -257,7 +258,10 @@ fn check_keys(tree: &Tree, errors: &mut Vec<ReadError>) {
         content
             .records()
             .for_each(|record| keyed(record, &mut found));
-        for (key, position) in found.iter().filter_map(|record| key_of(record.get("key")?)) {
+        for (key, position) in found
+            .iter()
+            .filter_map(|record| key_of(record.get(field::KEY)?))
+        {
             if let Some(&(first, at)) = seen.get(&key) {
                 errors.push(ReadError {
                     sites: vec![site(first, at), site(path, position)],

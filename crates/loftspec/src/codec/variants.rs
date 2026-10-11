@@ -5,6 +5,7 @@
 use super::error::{Located, Problem};
 use super::record::Rec;
 use super::schema::Kind;
+use super::schema::field;
 use crate::attributes::BandKind;
 use crate::decision::{DriverKind, StateKind};
 use crate::statement::Form;
@@ -17,20 +18,20 @@ fn variant(kind: Kind, value: &str) -> &'static [&'static str] {
         Kind::Statement => Form::parse(value).map_or(&[], Form::slots),
         Kind::State => StateKind::parse(value).map_or(&[], |state| match state {
             StateKind::Proposed => &[],
-            StateKind::Accepted => &["selectedOption", "outcome"],
-            StateKind::Rejected => &["rationale"],
-            StateKind::Superseded => &["selectedOption", "outcome", "successor"],
-            StateKind::Retired => &["selectedOption", "outcome", "rationale"],
+            StateKind::Accepted => &[field::SELECTED_OPTION, field::OUTCOME],
+            StateKind::Rejected => &[field::RATIONALE],
+            StateKind::Superseded => &[field::SELECTED_OPTION, field::OUTCOME, field::SUCCESSOR],
+            StateKind::Retired => &[field::SELECTED_OPTION, field::OUTCOME, field::RATIONALE],
         }),
         Kind::Driver => DriverKind::parse(value).map_or(&[], |driver| match driver {
-            DriverKind::Local => &["label", "statement"],
-            DriverKind::Subject => &["subject"],
+            DriverKind::Local => &[field::LABEL, field::STATEMENT],
+            DriverKind::Subject => &[field::SUBJECT],
         }),
         Kind::Band => BandKind::parse(value).map_or(&[], |band| match band {
-            BandKind::AtMost => &["upper"],
-            BandKind::AtLeast => &["lower"],
-            BandKind::Exactly => &["value"],
-            BandKind::Between => &["lower", "upper"],
+            BandKind::AtMost => &[field::UPPER],
+            BandKind::AtLeast => &[field::LOWER],
+            BandKind::Exactly => &[field::VALUE],
+            BandKind::Between => &[field::LOWER, field::UPPER],
         }),
         _ => &[],
     }
@@ -39,9 +40,9 @@ fn variant(kind: Kind, value: &str) -> &'static [&'static str] {
 /// The field that selects a record's variant, and the fields every variant carries.
 const fn discriminant(kind: Kind) -> Option<(&'static str, &'static [&'static str])> {
     match kind {
-        Kind::Statement => Some(("form", &[])),
-        Kind::State | Kind::Band => Some(("kind", &[])),
-        Kind::Driver => Some(("kind", &["key"])),
+        Kind::Statement => Some((field::FORM, &[])),
+        Kind::State | Kind::Band => Some((field::KIND, &[])),
+        Kind::Driver => Some((field::KIND, &[field::KEY])),
         _ => None,
     }
 }
@@ -55,7 +56,7 @@ pub(super) fn check(record: &Rec) -> Result<(), Located> {
         position: record.position,
         problem: Problem::Shape(problem),
     };
-    if record.kind == Kind::Statement && record.get("text").is_some() {
+    if record.kind == Kind::Statement && record.get(field::TEXT).is_some() {
         return match record.fields.len() {
             1 => Ok(()),
             _ => Err(shape(
@@ -67,7 +68,7 @@ pub(super) fn check(record: &Rec) -> Result<(), Located> {
         return Err(Located {
             position: record.position,
             problem: Problem::MissingField(if record.kind == Kind::Statement {
-                "text"
+                field::TEXT
             } else {
                 selector
             }),

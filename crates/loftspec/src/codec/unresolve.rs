@@ -1,6 +1,7 @@
 //! A typed document as the record tree its files hold: each record at its path (RQ-21..RQ-25),
 //! each edge in its source's record (RQ-168), and no derived value anywhere (RQ-29).
 
+use super::schema::field;
 use std::collections::BTreeMap;
 
 use super::files::{Content, Role, Tree};
@@ -53,7 +54,7 @@ pub fn unresolve(document: &Document) -> Tree {
     for root in &document.components {
         let mut record = edges.component(&root.component);
         record.kind = Kind::RootComponent;
-        record.set_text("slug", root.slug.to_string());
+        record.set_text(field::SLUG, root.slug.to_string());
         let role = Role::Component {
             slug: root.slug.to_string(),
         };
@@ -99,31 +100,34 @@ fn records(items: impl IntoIterator<Item = Rec>) -> Val {
 
 fn entry(kind: Kind, key: Key, name: &str, definition: &str) -> Rec {
     let mut record = Rec::new(kind);
-    record.set_text("key", key.to_string());
-    record.set_text("name", name);
-    record.set_text("definition", definition);
+    record.set_text(field::KEY, key.to_string());
+    record.set_text(field::NAME, name);
+    record.set_text(field::DEFINITION, definition);
     record
 }
 
 fn manifest(document: &Document) -> Rec {
     let mut record = Rec::new(Kind::Manifest);
-    record.set_text("format", crate::FORMAT);
-    record.set_text("algorithm", crate::manifest::ALGORITHM);
-    record.set_text("documentKey", document.id.key().to_string());
+    record.set_text(field::FORMAT, crate::FORMAT);
+    record.set_text(field::ALGORITHM, crate::manifest::ALGORITHM);
+    record.set_text(field::DOCUMENT_KEY, document.id.key().to_string());
     if let Some(branch) = &document.publish_branch {
-        record.set_text("publishBranch", branch.as_str());
+        record.set_text(field::PUBLISH_BRANCH, branch.as_str());
     }
     let products = document.products.iter().filter_map(|product| product.id);
-    record.set("products", keys(products.map(crate::ids::ProductId::key)));
+    record.set(
+        field::PRODUCTS,
+        keys(products.map(crate::ids::ProductId::key)),
+    );
     if let Some(source) = &document.derived_from {
         let mut derived = Rec::new(Kind::DerivedFrom);
         derived.set_text(
             "authoredStateId",
             source.authored_state_id.key().to_string(),
         );
-        derived.set_text("contentAddress", source.content_address.to_string());
-        derived.set_text("publishSequence", source.publish_sequence.to_string());
-        record.set("derivedFrom", Val::Record(derived));
+        derived.set_text(field::CONTENT_ADDRESS, source.content_address.to_string());
+        derived.set_text(field::PUBLISH_SEQUENCE, source.publish_sequence.to_string());
+        record.set(field::DERIVED_FROM, Val::Record(derived));
     }
     record
 }
@@ -135,8 +139,8 @@ fn labels(document: &Document) -> Rec {
     }
     let bindings = document.bindings.iter().map(|binding| {
         let mut record = Rec::new(Kind::Binding);
-        record.set_text("key", binding.element.key().to_string());
-        record.set_text("label", binding.label.to_string());
+        record.set_text(field::KEY, binding.element.key().to_string());
+        record.set_text(field::LABEL, binding.label.to_string());
         record.set(
             "aliases",
             Val::List(binding.aliases.iter().map(Val::scalar).collect()),
@@ -144,8 +148,8 @@ fn labels(document: &Document) -> Rec {
         record
     });
     let mut record = Rec::new(Kind::Labels);
-    record.set("counters", Val::Record(counters));
-    record.set("bindings", records(bindings));
+    record.set(field::COUNTERS, Val::Record(counters));
+    record.set(field::BINDINGS, records(bindings));
     record
 }
 
@@ -190,8 +194,8 @@ impl Edges {
                     role,
                 } => {
                     let mut record = Rec::new(Kind::Subject);
-                    record.set_text("role", role.as_str());
-                    record.set("node", node_ref(subject));
+                    record.set_text(field::ROLE, role.as_str());
+                    record.set(field::NODE, node_ref(subject));
                     edges
                         .subjects
                         .entry(decision.into())
@@ -207,10 +211,10 @@ impl Edges {
     fn node(&self, kind: Kind, id: Option<NodeId>, name: Option<&str>, details: &Details) -> Rec {
         let mut record = Rec::new(kind);
         if let Some(id) = id {
-            record.set_text("key", id.key().to_string());
+            record.set_text(field::KEY, id.key().to_string());
         }
         if let Some(name) = name {
-            record.set_text("name", name);
+            record.set_text(field::NAME, name);
         }
         self.details(&mut record, id, details);
         record
@@ -218,7 +222,7 @@ impl Edges {
 
     fn details(&self, record: &mut Rec, id: Option<NodeId>, details: &Details) {
         if let Some(body) = &details.body {
-            record.set_text("body", body.as_str());
+            record.set_text(field::BODY, body.as_str());
         }
         record.set(
             "tags",
@@ -236,17 +240,17 @@ impl Edges {
             .and_then(|id| self.mentions.get(&id))
             .cloned()
             .unwrap_or_default();
-        record.set("mentions", keys(targets));
+        record.set(field::MENTIONS, keys(targets));
     }
 
     fn section(&self, section: &Section) -> Rec {
         let id = section.id.map(NodeId::from);
         let mut record = Rec::new(Kind::Section);
         if let Some(id) = id {
-            record.set_text("key", id.key().to_string());
+            record.set_text(field::KEY, id.key().to_string());
         }
-        record.set_text("name", section.name.as_str());
-        record.set_text("body", section.body.as_str());
+        record.set_text(field::NAME, section.name.as_str());
+        record.set_text(field::BODY, section.body.as_str());
         self.mentions(&mut record, id.map(ElementId::Node));
         record.set(
             "sections",
@@ -262,36 +266,42 @@ impl Edges {
             Some(&product.name),
             &product.details,
         );
-        record.set_text("slug", product.slug.to_string());
+        record.set_text(field::SLUG, product.slug.to_string());
         let groups = product.feature_groups.iter().map(|group| {
             let id = group.id.map(NodeId::from);
             let mut record = self.node(Kind::FeatureGroup, id, Some(&group.name), &group.details);
-            record.set_text("slug", group.slug.to_string());
+            record.set_text(field::SLUG, group.slug.to_string());
             let features = group.features.iter().filter_map(|feature| feature.id);
-            record.set("features", keys(features.map(crate::ids::FeatureId::key)));
+            record.set(
+                field::FEATURES,
+                keys(features.map(crate::ids::FeatureId::key)),
+            );
             record.set(
                 "constraints",
                 records(group.constraints.iter().map(|each| self.constraint(each))),
             );
             record
         });
-        record.set("featureGroups", records(groups));
+        record.set(field::FEATURE_GROUPS, records(groups));
         record
     }
 
     fn feature(&self, feature: &Feature) -> Rec {
         let id = feature.id.map(NodeId::from);
         let mut record = self.node(Kind::Feature, id, Some(&feature.name), &feature.details);
-        record.set_text("slug", feature.slug.to_string());
+        record.set_text(field::SLUG, feature.slug.to_string());
         let realizes = id
             .and_then(|id| self.realizes.get(&id))
             .cloned()
             .unwrap_or_default();
-        record.set("realizes", keys(realizes));
+        record.set(field::REALIZES, keys(realizes));
         let requirements = feature.requirements.iter().map(|requirement| {
             let id = requirement.id.map(NodeId::from);
             let mut record = self.node(Kind::Requirement, id, None, &requirement.details);
-            record.set("statement", Val::Record(statement(&requirement.statement)));
+            record.set(
+                field::STATEMENT,
+                Val::Record(statement(&requirement.statement)),
+            );
             let criteria = requirement.criteria.iter().map(|criterion| {
                 self.node(
                     Kind::Criterion,
@@ -300,10 +310,10 @@ impl Edges {
                     &criterion.details,
                 )
             });
-            record.set("criteria", records(criteria));
+            record.set(field::CRITERIA, records(criteria));
             record
         });
-        record.set("requirements", records(requirements));
+        record.set(field::REQUIREMENTS, records(requirements));
         record.set(
             "qualityAttributes",
             records(
@@ -328,7 +338,7 @@ impl Edges {
             .and_then(|id| self.scoped.get(&id))
             .cloned()
             .unwrap_or_default();
-        record.set("scopedTo", keys(scoped));
+        record.set(field::SCOPED_TO, keys(scoped));
         record.set(
             "components",
             records(
@@ -369,15 +379,15 @@ impl Edges {
         );
         if let Some(binding) = &constraint.binding {
             let mut nested = Rec::new(Kind::ConstraintBinding);
-            nested.set_text("category", binding.category.to_string());
-            nested.set_text("requiredValue", binding.required_value.as_str());
-            record.set("constraintBinding", Val::Record(nested));
+            nested.set_text(field::CATEGORY, binding.category.to_string());
+            nested.set_text(field::REQUIRED_VALUE, binding.required_value.as_str());
+            record.set(field::CONSTRAINT_BINDING, Val::Record(nested));
         }
         if let Some(kind) = constraint.conservation_kind {
-            record.set_text("conservationKind", kind.as_str());
+            record.set_text(field::CONSERVATION_KIND, kind.as_str());
         }
         if let Some(fate) = constraint.verification_fate {
-            record.set_text("verificationFate", fate.as_str());
+            record.set_text(field::VERIFICATION_FATE, fate.as_str());
         }
         record
     }
@@ -390,10 +400,10 @@ impl Edges {
             Some(&quality.name),
             &quality.details,
         );
-        record.set_text("qaKind", quality.kind.as_str());
-        record.set("qualityTarget", Val::Record(target(&quality.target)));
+        record.set_text(field::QA_KIND, quality.kind.as_str());
+        record.set(field::QUALITY_TARGET, Val::Record(target(&quality.target)));
         if let Some(fate) = quality.verification_fate {
-            record.set_text("verificationFate", fate.as_str());
+            record.set_text(field::VERIFICATION_FATE, fate.as_str());
         }
         record
     }
@@ -405,7 +415,7 @@ impl Edges {
             .get(&decision.id.into())
             .cloned()
             .unwrap_or_default();
-        record.set("subjects", records(subjects));
+        record.set(field::SUBJECTS, records(subjects));
         self.mentions(&mut record, Some(decision.id.into()));
         record
     }
