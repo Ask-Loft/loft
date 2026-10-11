@@ -1,0 +1,11 @@
+[package]
+name = "loftspec-store"
+version = "0.1.0"
+description = "Memory and file stores for Loft Specification Format documents"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true

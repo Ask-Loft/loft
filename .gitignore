@@ -1,0 +1,7 @@
+/target/
+.DS_Store
+__pycache__/
+*.py[cod]
+/.loft/
+.env
+.env.*

@@ -1,0 +1,7 @@
+# The workspace gate is `cargo nextest run --workspace` beside `cargo test --workspace --doc`.
+
+[profile.default]
+# A gate reports every failure, not the first: one red suite must not hide another.
+fail-fast = false
+# A hung test fails after ten minutes instead of holding the gate open.
+slow-timeout = { period = "60s", terminate-after = 10 }
