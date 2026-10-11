@@ -167,7 +167,7 @@ fn report_unlisted(
 /// RQ-212).
 fn check_features(tree: &Tree, errors: &mut Vec<ReadError>) {
     let features = carried(tree, |role| matches!(role, Role::Feature { .. }));
-    let mut lister: BTreeMap<String, String> = BTreeMap::new();
+    let mut lister = BTreeMap::new();
     let mut all_listed = Vec::new();
     for (path, role, product) in tree.records(|role| matches!(role, Role::Product { .. })) {
         let Role::Product {
@@ -180,7 +180,8 @@ fn check_features(tree: &Tree, errors: &mut Vec<ReadError>) {
             let group = Group {
                 path,
                 product_dir,
-                slug: group.text("slug").unwrap_or_default(),
+                slug: group.text("slug"),
+                at: group.position,
                 keys: listed(group, "features"),
             };
             check_group(tree, &group, &features, &mut lister, errors);
@@ -194,7 +195,10 @@ fn check_features(tree: &Tree, errors: &mut Vec<ReadError>) {
 struct Group<'a> {
     path: &'a SpecPath,
     product_dir: &'a str,
-    slug: &'a str,
+    /// None only while formatting, before the formatter supplies it.
+    slug: Option<&'a str>,
+    /// Where the group's record starts, which tells two groups apart.
+    at: Position,
     keys: Vec<(String, Position)>,
 }
 
@@ -202,23 +206,22 @@ fn check_group(
     tree: &Tree,
     group: &Group<'_>,
     features: &BTreeMap<String, SpecPath>,
-    lister: &mut BTreeMap<String, String>,
+    lister: &mut BTreeMap<String, (SpecPath, Position)>,
     errors: &mut Vec<ReadError>,
 ) {
     check_list(group.path, &group.keys, features, errors);
     for (key, position) in &group.keys {
-        let first = lister.insert(key.clone(), group.slug.to_owned());
-        if first.is_some_and(|first| first != group.slug) {
+        let this = (group.path.clone(), group.at);
+        if lister
+            .insert(key.clone(), this.clone())
+            .is_some_and(|first| first != this)
+        {
             let problem = Problem::ListedByTwoGroups(key.clone());
             errors.push(error(group.path, *position, problem));
         }
-        check_directory(
-            tree,
-            features.get(key),
-            group.product_dir,
-            group.slug,
-            errors,
-        );
+        if let Some(slug) = group.slug {
+            check_directory(tree, features.get(key), group.product_dir, slug, errors);
+        }
     }
 }
 

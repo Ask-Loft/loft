@@ -80,9 +80,18 @@ fn a_live_v1_export_round_trips_through_text() {
     assert_eq!(after.bindings, before.bindings, "binding root");
     assert_eq!(after.state, before.state, "state root");
     assert_eq!(codec::write(&back), files, "a second write changes no byte");
+    let started = std::time::Instant::now();
+    let formatted = loftspec::fmt::format(&files).unwrap();
+    let format = started.elapsed();
+    assert!(
+        formatted.changed.is_empty(),
+        "{:?}",
+        formatted.changed.keys()
+    );
     let bytes: usize = files.values().map(Vec::len).sum();
     println!(
-        "{} files, {bytes} bytes; write {written:?}, read {read:?}; state root {}",
+        "{} files, {bytes} bytes; write {written:?}, read {read:?}, format {format:?}; state \
+         root {}",
         files.len(),
         after.state
     );

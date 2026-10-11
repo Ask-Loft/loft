@@ -16,7 +16,7 @@ mod unresolve_parts;
 mod variants;
 
 pub use error::{Problem, ReadError, Site, SpecPath};
-pub use files::{Content, Files, Role, Tree};
+pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, Tree};
 pub use layout::read_tree;
 pub use record::{Mode, Rec, Val};
 pub use resolve::resolve;
