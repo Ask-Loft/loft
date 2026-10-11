@@ -3,8 +3,9 @@
 
 mod common;
 
-use common::v1::{export, named, node, tier, tree, uuid, with_identity_entry};
-use loftspec::convert::v1::export::Export;
+use common::v1::{
+    export, key, live_export, named, node, read, tier, tree, uuid, with_identity_entry,
+};
 use loftspec::convert::v1::{Conversion, ConvertError, Finding, convert};
 use loftspec::hash::hash_document;
 use loftspec::identity::{Key, Label, LabelPrefix};
@@ -14,15 +15,7 @@ use loftspec::ids::{
 };
 use loftspec::names::TagName;
 use loftspec::statement::Statement;
-use serde_json::{Value, json};
-
-fn key(n: u32) -> Key {
-    Key::parse(&uuid(n)).unwrap()
-}
-
-fn read(value: &Value) -> Export {
-    Export::from_json(&value.to_string()).unwrap()
-}
+use serde_json::json;
 
 fn converted() -> Conversion {
     convert(&read(&with_identity_entry(export(&tree(), &[])))).unwrap()
@@ -250,8 +243,7 @@ fn an_annotation_is_refused() {
 #[test]
 #[ignore = "reads a local v1 export named by LOFTSPEC_V1_EXPORT; no export is committed here"]
 fn a_live_v1_export_converts() {
-    let path = std::env::var("LOFTSPEC_V1_EXPORT").expect("LOFTSPEC_V1_EXPORT names an export");
-    let export = Export::from_json(&std::fs::read_to_string(path).unwrap()).unwrap();
+    let export = live_export();
     let conversion = convert(&export).unwrap();
     let facet_tags = export
         .nodes

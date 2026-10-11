@@ -1,7 +1,38 @@
 //! Builders for small Loft v1 exports, as JSON, for the converter's tests. Every node is in
 //! document `uuid(0)`; node `n` has UUID `uuid(n)` and node hash `hash(n)`.
 
+use loftspec::convert::v1::export::Export;
+use loftspec::convert::v1::{Conversion, ConvertError, convert};
+use loftspec::identity::Key;
 use serde_json::{Value, json};
+
+/// The key of node `n`: `uuid(n)`.
+pub fn key(n: u32) -> Key {
+    Key::parse(&uuid(n)).unwrap()
+}
+
+/// Reads an export built as JSON.
+pub fn read(value: &Value) -> Export {
+    Export::from_json(&value.to_string()).unwrap()
+}
+
+/// Converts an export built as JSON.
+pub fn convert_value(value: &Value) -> Result<Conversion, ConvertError> {
+    convert(&read(value))
+}
+
+/// The local export `LOFTSPEC_V1_EXPORT` names, for the ignored live tests.
+pub fn live_export() -> Export {
+    let path = std::env::var("LOFTSPEC_V1_EXPORT").expect("LOFTSPEC_V1_EXPORT names an export");
+    Export::from_json(&std::fs::read_to_string(path).unwrap()).unwrap()
+}
+
+/// The `tree()` with CMP-1 scoped to P-1, both `decisions()` and the `identity` tag entry.
+pub fn full_export() -> Value {
+    let mut nodes = tree();
+    nodes[5]["componentScope"] = json!({"kind": "product", "productId": uuid(1)});
+    with_identity_entry(export(&nodes, &decisions()))
+}
 
 pub fn hash(n: u8) -> String {
     format!("{n:02x}").repeat(32)

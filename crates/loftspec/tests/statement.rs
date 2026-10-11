@@ -78,12 +78,16 @@ fn ac_148_the_system_slot_is_rendered_verbatim() {
 
 #[test]
 fn ac_149_rendering_the_same_statement_twice_yields_identical_bytes() {
-    let statement = Statement::Form(EarsForm::Unwanted {
-        r#if: slots("two nodes carry one key"),
-        system: slots("the reader"),
-        shall: slots("report an error."),
-    });
-    assert_eq!(statement.render(), statement.render());
+    let statement = || {
+        Statement::Form(EarsForm::Unwanted {
+            r#if: slots("two nodes carry one key"),
+            system: slots("the reader"),
+            shall: slots("report an error."),
+        })
+    };
+    let sentence = "If two nodes carry one key, then the reader shall report an error.";
+    assert_eq!(statement().render(), sentence);
+    assert_eq!(statement().render(), sentence);
 }
 
 #[test]

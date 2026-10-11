@@ -12,14 +12,10 @@ use serde_json::{Value, json};
 
 mod common;
 
-use common::v1::{element, export, hash, node, subject, uuid};
+use common::v1::{element, export, hash, live_export, node, read, subject, uuid};
 
 const D11_SEQUENCE_1: &str =
     include_str!("../../../testdata/v1/d11-sequence-1/loft-authored-state.json");
-
-fn read(value: &Value) -> Export {
-    Export::from_json(&value.to_string()).unwrap()
-}
 
 #[test]
 fn the_formats_own_first_export_reads() {
@@ -215,8 +211,5 @@ fn an_unknown_node_type_is_an_error() {
 #[test]
 #[ignore = "reads a local v1 export named by LOFTSPEC_V1_EXPORT; no export is committed here"]
 fn a_live_v1_export_reads() {
-    let path = std::env::var("LOFTSPEC_V1_EXPORT").expect("LOFTSPEC_V1_EXPORT names an export");
-    let text = std::fs::read_to_string(path).unwrap();
-    let export = Export::from_json(&text).unwrap();
-    assert!(!export.nodes.is_empty());
+    assert!(!live_export().nodes.is_empty());
 }

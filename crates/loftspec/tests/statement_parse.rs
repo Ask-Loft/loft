@@ -1,6 +1,9 @@
 //! Parsing a sentence into its EARS slots (D-11 RQ-52): slots are kept only when the form's
 //! template renders them back to the sentence byte for byte; anything else stays text.
 
+mod common;
+
+use common::v1::live_export;
 use loftspec::statement::{EarsForm, Statement};
 
 fn form(sentence: &str) -> EarsForm {
@@ -136,9 +139,8 @@ fn every_parsed_form_renders_back_to_its_sentence() {
 #[test]
 #[ignore = "reads a local v1 export named by LOFTSPEC_V1_EXPORT; no export is committed here"]
 fn every_requirement_of_a_live_export_parses_or_stays_text() {
-    use loftspec::convert::v1::export::{Export, Tier};
-    let path = std::env::var("LOFTSPEC_V1_EXPORT").expect("LOFTSPEC_V1_EXPORT names an export");
-    let export = Export::from_json(&std::fs::read_to_string(path).unwrap()).unwrap();
+    use loftspec::convert::v1::export::Tier;
+    let export = live_export();
     let names: Vec<&str> = export
         .nodes
         .iter()

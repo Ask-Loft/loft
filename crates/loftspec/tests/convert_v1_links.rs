@@ -3,33 +3,18 @@
 
 mod common;
 
-use common::v1::{decisions, export, hash, tree, uuid, with_identity_entry};
+use common::v1::{convert_value, full_export, hash, key, uuid};
 use loftspec::canonical::Digest;
-use loftspec::convert::v1::export::Export;
-use loftspec::convert::v1::{Conversion, ConvertError, Finding, convert};
+use loftspec::convert::v1::{Conversion, ConvertError, Finding};
 use loftspec::decision::{ConsequenceKind, DecisionState, DriverPayload, Rating};
 use loftspec::document::{DerivedFrom, Edge, SubjectRole};
 use loftspec::hash::hash_document;
-use loftspec::identity::{Key, Label};
+use loftspec::identity::Label;
 use loftspec::ids::{
     AuthoredStateId, ComponentId, CriterionId, DecisionId, ElementId, FeatureId, NodeId, OptionId,
     ProductId, RequirementId,
 };
-use serde_json::{Value, json};
-
-fn key(n: u32) -> Key {
-    Key::parse(&uuid(n)).unwrap()
-}
-
-fn full_export() -> Value {
-    let mut nodes = tree();
-    nodes[5]["componentScope"] = json!({"kind": "product", "productId": uuid(1)});
-    with_identity_entry(export(&nodes, &decisions()))
-}
-
-fn converted(value: &Value) -> Result<Conversion, ConvertError> {
-    convert(&Export::from_json(&value.to_string()).unwrap())
-}
+use serde_json::json;
 
 fn edges(conversion: &Conversion) -> &[Edge] {
     &conversion.document.edges
@@ -37,7 +22,7 @@ fn edges(conversion: &Conversion) -> &[Edge] {
 
 #[test]
 fn ac_177_and_ac_178_each_realization_link_is_a_realizes_edge() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     let realizes: Vec<&Edge> = edges(&conversion)
         .iter()
         .filter(|edge| matches!(edge, Edge::Realizes { .. }))
@@ -53,7 +38,7 @@ fn ac_177_and_ac_178_each_realization_link_is_a_realizes_edge() {
 
 #[test]
 fn ac_179_and_ac_180_only_a_component_scoped_to_a_product_has_a_scoped_to_edge() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     let scoped: Vec<&Edge> = edges(&conversion)
         .iter()
         .filter(|edge| matches!(edge, Edge::ScopedTo { .. }))
@@ -69,7 +54,7 @@ fn ac_179_and_ac_180_only_a_component_scoped_to_a_product_has_a_scoped_to_edge()
 
 #[test]
 fn ac_181_ac_182_ac_183_and_ac_256_a_decision_keeps_its_keys_state_option_and_outcome() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     let decision = &conversion.document.decisions[0];
     assert_eq!(decision.id, DecisionId::new(key(20)));
     assert_eq!(decision.title, "Keys are UUIDs");
@@ -95,7 +80,7 @@ fn ac_181_ac_182_ac_183_and_ac_256_a_decision_keeps_its_keys_state_option_and_ou
 
 #[test]
 fn ac_257_drivers_consequences_and_assessments_keep_their_fields() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     let decision = &conversion.document.decisions[0];
     assert!(matches!(
         &decision.drivers[0].payload,
@@ -119,7 +104,7 @@ fn ac_257_drivers_consequences_and_assessments_keep_their_fields() {
 
 #[test]
 fn ac_184_each_subject_link_is_a_subject_edge_with_its_role() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     let subjects: Vec<&Edge> = edges(&conversion)
         .iter()
         .filter(|edge| matches!(edge, Edge::Subject { .. }))
@@ -143,7 +128,7 @@ fn ac_184_each_subject_link_is_a_subject_edge_with_its_role() {
 
 #[test]
 fn ac_244_every_decision_has_its_v1_external_id_as_label() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     let bindings = &conversion.document.bindings;
     assert_eq!(
         bindings.label_of(DecisionId::new(key(20))),
@@ -165,7 +150,7 @@ fn ac_244_every_decision_has_its_v1_external_id_as_label() {
 
 #[test]
 fn the_derived_from_record_names_the_source_state() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     assert_eq!(
         conversion.document.derived_from,
         Some(DerivedFrom {
@@ -178,7 +163,7 @@ fn the_derived_from_record_names_the_source_state() {
 
 #[test]
 fn a_converted_document_hashes() {
-    let conversion = converted(&full_export()).unwrap();
+    let conversion = convert_value(&full_export()).unwrap();
     let hashes = hash_document(&conversion.document).unwrap();
     assert_eq!(hashes.decisions.len(), 2);
 }
@@ -187,7 +172,7 @@ fn a_converted_document_hashes() {
 fn a_realization_link_whose_ends_are_not_a_feature_and_a_component_is_refused() {
     let mut value = full_export();
     value["realizationLinks"] = json!([{"featureId": uuid(4), "componentId": uuid(6)}]);
-    let error = converted(&value).unwrap_err();
+    let error = convert_value(&value).unwrap_err();
     assert!(matches!(error, ConvertError::Link { .. }), "{error}");
 }
 
@@ -195,7 +180,7 @@ fn a_realization_link_whose_ends_are_not_a_feature_and_a_component_is_refused() 
 fn a_subject_the_export_does_not_hold_is_kept_under_its_key_with_a_finding() {
     let mut value = full_export();
     value["architectureDecisions"][0]["subjectLinks"][0]["subject"]["nodeId"] = json!(uuid(77));
-    let conversion = converted(&value).unwrap();
+    let conversion = convert_value(&value).unwrap();
     let absent = NodeId::Requirement(RequirementId::new(key(77)));
     assert!(edges(&conversion).contains(&Edge::Subject {
         decision: DecisionId::new(key(20)),
@@ -214,7 +199,7 @@ fn a_subject_of_no_kind_the_format_holds_is_refused() {
     value["architectureDecisions"][0]["subjectLinks"][0]["subject"]["type"] = json!("FacetTag");
     value["architectureDecisions"][0]["subjectLinks"][0]["subject"]["tier"] = json!(null);
     value["architectureDecisions"][0]["subjectLinks"][0]["subject"]["nodeId"] = json!(uuid(77));
-    let error = converted(&value).unwrap_err();
+    let error = convert_value(&value).unwrap_err();
     assert!(error.to_string().contains("ADR-1"), "{error}");
 }
 
@@ -222,7 +207,7 @@ fn a_subject_of_no_kind_the_format_holds_is_refused() {
 fn ac_190_a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
     let mut value = full_export();
     value["nodes"][3]["body"] = json!("Builds on RQ-2, D-1/F-1 and RQ-2 again; see ADR-1.");
-    let conversion = converted(&value).unwrap();
+    let conversion = convert_value(&value).unwrap();
     let mentions: Vec<&Edge> = edges(&conversion)
         .iter()
         .filter(|edge| matches!(edge, Edge::Mentions { .. }))
@@ -251,7 +236,7 @@ fn ac_190_a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
 fn ac_191_a_reference_that_does_not_resolve_is_a_finding() {
     let mut value = full_export();
     value["nodes"][4]["name"] = json!("Every node record carries the key RQ-99 names.");
-    let conversion = converted(&value).unwrap();
+    let conversion = convert_value(&value).unwrap();
     assert!(conversion.findings.contains(&Finding::UnresolvedReference {
         node: NodeId::Criterion(CriterionId::new(key(5))),
         reference: Label::parse("RQ-99").unwrap(),
@@ -263,7 +248,7 @@ fn ac_192_and_ac_193_a_body_is_kept_byte_for_byte_and_a_heading_in_it_is_a_findi
     let body = "Keys.\n\n## Rationale\n\tTabbed, trailing space. \n";
     let mut value = full_export();
     value["nodes"][2]["body"] = json!(body);
-    let conversion = converted(&value).unwrap();
+    let conversion = convert_value(&value).unwrap();
     let feature = &conversion.document.products[0].feature_groups[0].features[0];
     assert_eq!(feature.details.body.as_deref(), Some(body));
     assert!(conversion.findings.contains(&Finding::HeadingInBody {

@@ -3,13 +3,17 @@
 //! scopes, Facet Tags, a constraint category, a quality target, decisions in each of the five
 //! states, and prose with a resolvable reference, an unresolvable one and a heading.
 
+mod common;
+
 use std::collections::BTreeMap;
+
+use common::v1::key;
 
 use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::{Conversion, Finding, convert};
 use loftspec::document::Edge;
 use loftspec::hash::hash_document;
-use loftspec::identity::{Key, Label, LabelPrefix};
+use loftspec::identity::{Label, LabelPrefix};
 use loftspec::ids::{CriterionId, FeatureGroupId, NodeId, RequirementId};
 
 const READING_LIST: &str =
@@ -21,10 +25,6 @@ const READING_LIST: &str =
 /// depends on the build shows there. A change to it is a deliberate format change, never a
 /// refresh to make a failure disappear.
 const STATE_ROOT: &str = "dbc5458091cc5b1c1e0da38c3bea1f55330580f827cc69e13f7e20b540eb4395";
-
-fn key(n: u32) -> Key {
-    Key::parse(&format!("00000000-0000-4000-8000-{n:012x}")).unwrap()
-}
 
 fn converted() -> Conversion {
     convert(&Export::from_json(READING_LIST).unwrap()).unwrap()

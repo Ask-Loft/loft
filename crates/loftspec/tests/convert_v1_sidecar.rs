@@ -3,28 +3,21 @@
 
 mod common;
 
-use common::v1::{decisions, export, tree, uuid, with_identity_entry};
+use common::v1::{convert_value, key, tree, uuid};
 use loftspec::attributes::VerificationFate;
-use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::sidecar::{FORMAT, ScopeKind};
-use loftspec::convert::v1::{Conversion, ConvertError, convert};
-use loftspec::identity::{Key, LabelPrefix};
+use loftspec::convert::v1::{Conversion, ConvertError};
+use loftspec::identity::LabelPrefix;
 use loftspec::ids::{
     ComponentId, ConstraintId, DecisionId, DocumentId, NodeId, OptionId, QualityAttributeId,
     RequirementId,
 };
 use serde_json::{Value, json};
 
-fn key(n: u32) -> Key {
-    Key::parse(&uuid(n)).unwrap()
-}
-
 fn full_export() -> Value {
-    let mut nodes = tree();
-    nodes[5]["componentScope"] = json!({"kind": "product", "productId": uuid(1)});
-    nodes[9]["componentScope"] = json!({"kind": "external"});
-    nodes[6]["proposedFate"] = json!("proved");
-    let mut value = with_identity_entry(export(&nodes, &decisions()));
+    let mut value = common::v1::full_export();
+    value["nodes"][9]["componentScope"] = json!({"kind": "external"});
+    value["nodes"][6]["proposedFate"] = json!("proved");
     // A subject the export no longer holds, labelled above every live Requirement.
     let subject = &mut value["architectureDecisions"][0]["subjectLinks"][0]["subject"];
     subject["nodeId"] = json!(uuid(77));
@@ -32,12 +25,8 @@ fn full_export() -> Value {
     value
 }
 
-fn read(value: &Value) -> Result<Conversion, ConvertError> {
-    convert(&Export::from_json(&value.to_string()).unwrap())
-}
-
 fn converted() -> Conversion {
-    read(&full_export()).unwrap()
+    convert_value(&full_export()).unwrap()
 }
 
 #[test]
@@ -100,7 +89,7 @@ fn ac_259_each_component_keeps_its_v1_scope_kind() {
     );
     let mut unscoped = full_export();
     unscoped["nodes"][9]["componentScope"] = Value::Null;
-    let sidecar = read(&unscoped).unwrap().sidecar;
+    let sidecar = convert_value(&unscoped).unwrap().sidecar;
     assert_eq!(sidecar.scopes.get(&ComponentId::new(key(10))), None);
 }
 
@@ -131,7 +120,7 @@ fn ac_206_two_conversions_write_identical_sidecars() {
 fn a_facet_tag_with_a_body_is_refused() {
     let mut value = full_export();
     value["nodes"][13]["body"] = json!("Keys and labels.");
-    let error = read(&value).unwrap_err();
+    let error = convert_value(&value).unwrap_err();
     assert!(
         matches!(error, ConvertError::FacetTagBody { .. }),
         "{error}"
