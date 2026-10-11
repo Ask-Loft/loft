@@ -19,6 +19,7 @@ pub mod prose;
 pub mod statement;
 pub mod text;
 pub mod tree;
+pub mod yaml;
 
 /// The identifier a manifest names for this format, versioned with the text form it describes.
 pub const FORMAT: &str = "loftspec/1";
