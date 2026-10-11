@@ -11,54 +11,87 @@ use crate::attributes::{
 };
 use crate::canonical::{Digest, Domain, digest};
 use crate::ids::NodeId;
-use crate::kind::NodeKind;
 use crate::names::TagName;
+use crate::node::Node;
 use crate::tree::{
-    Component, Constraint, Criterion, Feature, FeatureGroup, Product, QualityAttribute,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
     Requirement, Section,
 };
 
 /// Called once per node, children first, with the node's ID, content view and content hash.
 pub(crate) type Visit<'a> = dyn FnMut(Option<NodeId>, Value, Digest) -> Result<(), HashError> + 'a;
 
-mod sealed {
-    use super::{
-        ConservationKind, Cow, Digest, HashError, NodeId, NodeKind, QaKind, QualityTarget, TagName,
-        TechnicalBinding, VerificationFate, Visit,
-    };
+/// The fields of a node's content view other than its children.
+struct Fields<'a> {
+    text: Cow<'a, str>,
+    body: Option<&'a str>,
+    tags: &'a [TagName],
+    qa_kind: Option<QaKind>,
+    quality_target: Option<&'a QualityTarget>,
+    binding: Option<&'a TechnicalBinding>,
+    conservation_kind: Option<ConservationKind>,
+    verification_fate: Option<VerificationFate>,
+}
 
-    /// The fields of a node's content view other than its children.
-    pub struct Fields<'a> {
-        pub kind: NodeKind,
-        pub text: Cow<'a, str>,
-        pub body: Option<&'a str>,
-        pub tags: &'a [TagName],
-        pub qa_kind: Option<QaKind>,
-        pub quality_target: Option<&'a QualityTarget>,
-        pub binding: Option<&'a TechnicalBinding>,
-        pub conservation_kind: Option<ConservationKind>,
-        pub verification_fate: Option<VerificationFate>,
+impl<'a> Fields<'a> {
+    /// The fields of a node whose view holds no typed attribute.
+    const fn bare(text: Cow<'a, str>, body: Option<&'a str>, tags: &'a [TagName]) -> Self {
+        Self {
+            text,
+            body,
+            tags,
+            qa_kind: None,
+            quality_target: None,
+            binding: None,
+            conservation_kind: None,
+            verification_fate: None,
+        }
     }
 
-    pub trait Parts {
-        fn id(&self) -> Option<NodeId>;
-        fn fields(&self) -> Fields<'_>;
-        fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError>;
+    fn plain(text: impl Into<Cow<'a, str>>, details: &'a Details) -> Self {
+        Self::bare(text.into(), details.body.as_deref(), &details.tags)
+    }
+
+    fn of(node: Node<'a>) -> Self {
+        match node {
+            Node::Product(node) => Self::plain(&node.name, &node.details),
+            Node::FeatureGroup(node) => Self::plain(&node.name, &node.details),
+            Node::Feature(node) => Self::plain(&node.name, &node.details),
+            // A statement enters as its rendered sentence (AC-598).
+            Node::Requirement(node) => Self::plain(node.statement.render(), &node.details),
+            Node::Criterion(node) => Self::plain(&node.name, &node.details),
+            Node::Component(node) => Self::plain(&node.name, &node.details),
+            Node::Constraint(node) => Self {
+                binding: node.binding.as_ref(),
+                conservation_kind: node.conservation_kind,
+                verification_fate: node.verification_fate,
+                ..Self::plain(&node.name, &node.details)
+            },
+            Node::QualityAttribute(node) => Self {
+                qa_kind: Some(node.kind),
+                quality_target: Some(&node.target),
+                verification_fate: node.verification_fate,
+                ..Self::plain(&node.name, &node.details)
+            },
+            // A Section's view has no tags.
+            Node::Section(node) => Self::bare(Cow::Borrowed(&node.name), Some(&node.body), &[]),
+        }
     }
 }
 
-use sealed::{Fields, Parts};
-
 /// A node's content view and content hash.
-pub trait ContentHash: Parts {
+pub trait ContentHash {
+    /// The node, borrowed.
+    fn node(&self) -> Node<'_>;
+
     /// The view: kind, statement or name, body, sorted tag names, the five typed attributes,
     /// then the ordered child content hashes. It is a JSON array so that RFC 8785, which sorts
     /// object members, keeps this order.
     fn content_view(&self) -> Value {
-        let children = self
-            .child_hashes(&mut |_, _, _| Ok(()))
+        let node = self.node();
+        let children = child_hashes(node, &mut |_, _, _| Ok(()))
             .expect("hashing without an index never fails");
-        view(&self.fields(), &children)
+        view(node, &children)
     }
 
     /// The digest of the content view under `loftspec/node/1`.
@@ -67,12 +100,39 @@ pub trait ContentHash: Parts {
     }
 }
 
-impl<T: Parts> ContentHash for T {}
+impl ContentHash for Node<'_> {
+    fn node(&self) -> Node<'_> {
+        *self
+    }
+}
 
-fn view(fields: &Fields<'_>, children: &[Digest]) -> Value {
+macro_rules! content_hash {
+    ($($kind:ident),*) => {$(
+        impl ContentHash for $kind {
+            fn node(&self) -> Node<'_> {
+                Node::$kind(self)
+            }
+        }
+    )*};
+}
+
+content_hash!(
+    Product,
+    FeatureGroup,
+    Feature,
+    Requirement,
+    Criterion,
+    Component,
+    Constraint,
+    QualityAttribute,
+    Section
+);
+
+fn view(node: Node<'_>, children: &[Digest]) -> Value {
+    let fields = Fields::of(node);
     let tags: BTreeSet<&str> = fields.tags.iter().map(TagName::as_str).collect();
     json!([
-        fields.kind.as_str(),
+        node.kind().as_str(),
         fields.text,
         fields.body,
         tags,
@@ -85,156 +145,19 @@ fn view(fields: &Fields<'_>, children: &[Digest]) -> Value {
     ])
 }
 
+/// The content hashes of a node's children, in canonical order (RQ-160).
+fn child_hashes(node: Node<'_>, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
+    node.children()
+        .into_iter()
+        .map(|child| hash_with(child, visit))
+        .collect()
+}
+
 /// Hashes a node and everything beneath it, children first, reporting each node to `visit`.
-pub(crate) fn hash_with(node: &impl Parts, visit: &mut Visit<'_>) -> Result<Digest, HashError> {
-    let children = node.child_hashes(visit)?;
-    let view = view(&node.fields(), &children);
+pub(crate) fn hash_with(node: Node<'_>, visit: &mut Visit<'_>) -> Result<Digest, HashError> {
+    let children = child_hashes(node, visit)?;
+    let view = view(node, &children);
     let hash = digest(Domain::Node, &view);
     visit(node.id(), view, hash)?;
     Ok(hash)
-}
-
-/// The fields of a node whose view holds no typed attribute.
-fn plain<'a>(
-    kind: NodeKind,
-    text: impl Into<Cow<'a, str>>,
-    body: Option<&'a str>,
-    tags: &'a [TagName],
-) -> Fields<'a> {
-    Fields {
-        kind,
-        text: text.into(),
-        body,
-        tags,
-        qa_kind: None,
-        quality_target: None,
-        binding: None,
-        conservation_kind: None,
-        verification_fate: None,
-    }
-}
-
-/// Hashes one list of children in order, appending their content hashes to `hashes`.
-fn extend<'a, C: Parts + 'a>(
-    hashes: &mut Vec<Digest>,
-    children: impl IntoIterator<Item = &'a C>,
-    visit: &mut Visit<'_>,
-) -> Result<(), HashError> {
-    for child in children {
-        hashes.push(hash_with(child, visit)?);
-    }
-    Ok(())
-}
-
-/// A node's child content hashes: each list of structural children in turn, then the Sections
-/// (AC-605).
-macro_rules! grouped {
-    ($visit:expr, $sections:expr $(, $children:expr)*) => {{
-        let mut hashes = Vec::new();
-        $(extend(&mut hashes, $children, $visit)?;)*
-        extend(&mut hashes, $sections, $visit)?;
-        Ok(hashes)
-    }};
-}
-
-/// `Parts` for kinds whose view holds only a name, a body and tags, with their child lists in
-/// canonical order.
-macro_rules! named_parts {
-    ($($node:ident [$($children:ident),*];)*) => {$(
-        impl Parts for $node {
-            fn id(&self) -> Option<NodeId> {
-                self.id.map(NodeId::from)
-            }
-            fn fields(&self) -> Fields<'_> {
-                let details = &self.details;
-                plain(NodeKind::$node, &self.name, details.body.as_deref(), &details.tags)
-            }
-            fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-                grouped!(visit, &self.details.sections $(, &self.$children)*)
-            }
-        }
-    )*};
-}
-
-named_parts! {
-    Product [feature_groups];
-    FeatureGroup [features, constraints];
-    Feature [requirements, quality_attributes];
-    Criterion [];
-    Component [components, constraints, quality_attributes];
-}
-
-impl Parts for Requirement {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    /// A statement enters as its rendered sentence (AC-598).
-    fn fields(&self) -> Fields<'_> {
-        let details = &self.details;
-        plain(
-            NodeKind::Requirement,
-            self.statement.render(),
-            details.body.as_deref(),
-            &details.tags,
-        )
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(visit, &self.details.sections, &self.criteria)
-    }
-}
-
-impl Parts for Constraint {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        Fields {
-            binding: self.binding.as_ref(),
-            conservation_kind: self.conservation_kind,
-            verification_fate: self.verification_fate,
-            ..plain(
-                NodeKind::Constraint,
-                &self.name,
-                self.details.body.as_deref(),
-                &self.details.tags,
-            )
-        }
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(visit, &self.details.sections)
-    }
-}
-
-impl Parts for QualityAttribute {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        Fields {
-            qa_kind: Some(self.kind),
-            quality_target: Some(&self.target),
-            verification_fate: self.verification_fate,
-            ..plain(
-                NodeKind::QualityAttribute,
-                &self.name,
-                self.details.body.as_deref(),
-                &self.details.tags,
-            )
-        }
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(visit, &self.details.sections)
-    }
-}
-
-impl Parts for Section {
-    fn id(&self) -> Option<NodeId> {
-        self.id.map(NodeId::from)
-    }
-    fn fields(&self) -> Fields<'_> {
-        plain(NodeKind::Section, &self.name, Some(&self.body), &[])
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        grouped!(visit, &self.sections)
-    }
 }

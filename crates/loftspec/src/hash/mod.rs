@@ -102,12 +102,12 @@ fn hash_trees(document: &Document) -> Result<Trees, HashError> {
     let products = document
         .products
         .iter()
-        .map(|product| tree::hash_with(product, &mut visit))
+        .map(|product| tree::hash_with(product.into(), &mut visit))
         .collect::<Result<Vec<_>, _>>()?;
     let mut components = document
         .components
         .iter()
-        .map(|component| tree::hash_with(component, &mut visit))
+        .map(|component| tree::hash_with(component.into(), &mut visit))
         .collect::<Result<Vec<_>, _>>()?;
     components.sort_unstable();
     Ok(Trees {
