@@ -153,13 +153,7 @@ impl Builder {
     }
 
     fn nodes(&mut self, document: &Document) {
-        let roots = document.products.iter().map(Node::from).chain(
-            document
-                .components
-                .iter()
-                .map(|root| Node::Component(&root.component)),
-        );
-        for root in roots {
+        for root in document.root_nodes() {
             self.node(root, None);
         }
     }

@@ -23,6 +23,7 @@ pub mod slug;
 pub mod statement;
 pub mod text;
 pub mod tree;
+pub mod validate;
 mod wire;
 pub mod yaml;
 
