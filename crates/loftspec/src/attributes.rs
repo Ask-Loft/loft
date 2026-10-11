@@ -2,11 +2,11 @@
 //! and target, the technical binding, the conservation kind and the verification fate. Their
 //! fields are those of a Loft v1 export, kept field for field (AC-165, AC-166).
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::names::CategoryName;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum QaKind {
     Latency,
@@ -18,7 +18,7 @@ pub enum QaKind {
     Capacity,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum QualityAggregation {
     Each,
@@ -33,8 +33,8 @@ pub enum QualityAggregation {
 }
 
 /// The accepted range of a measured value; bounds are decimal strings.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum QualityBand {
     AtMost { upper: String },
     AtLeast { lower: String },
@@ -42,8 +42,8 @@ pub enum QualityBand {
     Between { lower: String, upper: String },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct QualityTarget {
     pub metric: String,
     pub band: QualityBand,
@@ -54,14 +54,14 @@ pub struct QualityTarget {
 }
 
 /// The value a Constraint requires within a constraint category.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TechnicalBinding {
     pub category: CategoryName,
     pub required_value: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ConservationKind {
     SumPreservation,
@@ -69,7 +69,7 @@ pub enum ConservationKind {
     OperationIdentity,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum VerificationFate {
     Proved,

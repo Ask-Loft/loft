@@ -5,7 +5,7 @@
 
 use std::fmt;
 
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize, de};
 
 /// A name that breaks its registry's syntax. The reader adds the file, line and column.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -50,6 +50,13 @@ macro_rules! registry_names {
             #[must_use]
             pub fn as_str(&self) -> &str {
                 &self.0
+            }
+        }
+
+        impl<'de> Deserialize<'de> for $name {
+            fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+                let name = String::deserialize(deserializer)?;
+                Self::parse(&name).map_err(de::Error::custom)
             }
         }
 
