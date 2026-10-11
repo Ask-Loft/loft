@@ -15,6 +15,14 @@ wins unless the task explicitly changes the contract. Authoring runs from `../lo
 `loft` skill and the connected production Loft MCP session; this repository keeps only the lock
 and the exports. Plans and authoring records are kept outside this repository.
 
+While a D-11 work branch is ahead of the lock, `docs/loft.work.json` names the exact Branch
+Checkpoint that implementation targets. It is a **candidate**, never the contract: validate it
+against the lock and the checkpoint record with the `loft` skill's
+`validate_repository_work_target.py`, read the checkpoint's content through the connected MCP
+session, and cite its Requirement and criterion labels in tests as candidate labels. When that
+exact checkpoint's merge is Published, one commit refreshes the lock and both exports and removes
+`docs/loft.work.json`.
+
 The bootstrap ends at the self-hosting milestone: the document is imported into `spec/`,
 `loft publish` writes a v2 lock whose `derivedFrom` names the last v1 state, and from then on
 `spec/` is the source.
@@ -27,8 +35,8 @@ The bootstrap ends at the self-hosting milestone: the document is imported into 
 - `crates/loft-cli` is the `loft` binary and owns nothing the library could own.
 - None of these ever depends on `loft-domain`, `loft-store` or any other crate of the private
   server. That boundary is the licence boundary.
-- `docs/` holds the lock and the exports. `testdata/` holds synthetic fixtures and golden vectors
-  only.
+- `docs/` holds the lock, the exports and, while one is active, the work target. `testdata/` holds
+  synthetic fixtures and golden vectors only.
 
 ## Workflow
 

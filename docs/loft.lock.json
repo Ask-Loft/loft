@@ -1,0 +1,16 @@
+{
+  "architectureDecisionAddress": null,
+  "authoredStateId": "46f04b35-1b47-4609-a737-3422d20380c6",
+  "contentAddress": "77b926758c7b38f0be81c137acb8bf4ca37500754f46ee55666a0a85c4661204",
+  "documentExternalId": "D-11",
+  "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+  "documentName": "Loft Specification Format",
+  "graphAddress": "925d733c6195a31ac319dc1e44f7bd51084ecbbd8c25a4b1e7f1dd685f8d69cf",
+  "normativeScope": "The whole of D-11 'Loft Specification Format'. Sequence 1 is the empty state the document was created with; nothing in it is normative yet, and work in progress is named by docs/loft.work.json as a candidate, never as the contract. This is a bootstrap pin: D-11 is authored in Loft v1 until the self-hosting milestone, after which spec/ is the source and this lock is replaced by a v2 lock whose derivedFrom names the last v1 state of D-11.",
+  "pinnedAt": "2026-10-11",
+  "publishSequence": 1,
+  "publishedAt": "2026-10-11T15:10:44.298360465Z",
+  "schemaVersion": 1,
+  "technicalConstraintCategoryAddress": null,
+  "vocabularyAddress": "14e612e9405909e335f965ec84b726b4e93c158271e0c8816101bca2c55eb537"
+}
