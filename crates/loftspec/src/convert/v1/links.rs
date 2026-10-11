@@ -10,12 +10,13 @@ use super::export::{
 };
 use super::sidecar::DecisionFacts;
 use super::tree::{NodeIds, node_id};
-use super::{Conversion, ConvertError, Finding, label};
+use super::{Conversion, ConvertError, label};
 use crate::decision::{
     Assessment, Consequence, Decision, DecisionOption, DecisionState, Driver, DriverPayload,
+    NodeRef,
 };
 use crate::document::Edge;
-use crate::identity::Key;
+use crate::identity::{Key, Label};
 use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
 
 /// Adds the export's `realizes` and `scoped_to` edges, then its decisions with their `subject`
@@ -81,8 +82,8 @@ fn scopes(export: &Export, nodes: &NodeIds) -> Result<Vec<Edge>, ConvertError> {
     Ok(edges)
 }
 
-/// One decision with its `subject` edges, its binding, its element ordinals and the subjects
-/// it names that the export no longer holds.
+/// One decision with its `subject` edges, its binding, its element ordinals and the v1 node
+/// behind each former label it names.
 fn decision(
     aggregate: &DecisionAggregate,
     nodes: &NodeIds,
@@ -92,7 +93,7 @@ fn decision(
         aggregate,
         nodes,
         facts: DecisionFacts::default(),
-        absent: Vec::new(),
+        former: Vec::new(),
     };
     let decision = reader.decision()?;
     for link in &aggregate.subject_links {
@@ -108,16 +109,7 @@ fn decision(
         .document
         .bindings
         .bind(decision.id, label(external_id)?)?;
-    for (subject, external_id) in reader.absent {
-        conversion.findings.push(Finding::AbsentSubject {
-            decision: decision.id,
-            subject,
-        });
-        conversion
-            .sidecar
-            .absent_subjects
-            .insert(subject, external_id);
-    }
+    conversion.sidecar.former_labels.extend(reader.former);
     conversion
         .sidecar
         .decisions
@@ -130,8 +122,8 @@ struct Reader<'a> {
     aggregate: &'a DecisionAggregate,
     nodes: &'a NodeIds,
     facts: DecisionFacts,
-    /// The subjects the decision names that the export does not hold, in the order named.
-    absent: Vec<(NodeId, ExternalId)>,
+    /// Each former label the decision names, with the v1 node UUID behind it.
+    former: Vec<(Label, Uuid)>,
 }
 
 impl<'a> Reader<'a> {
@@ -148,22 +140,23 @@ impl<'a> Reader<'a> {
     }
 
     /// The node a subject reference names. A v1 decision may still name a node the export no
-    /// longer holds (a retired decision keeps its history); that reference is kept under its
-    /// v1 key and kind and reported (D-11 gap G19).
-    fn subject(&mut self, subject: &SubjectRef) -> Result<NodeId, ConvertError> {
+    /// longer holds, as a retired decision keeps its history; that reference becomes the node's
+    /// v1 external ID as a former label (ADR-13).
+    fn subject(&mut self, subject: &SubjectRef) -> Result<NodeRef, ConvertError> {
         if let Some(id) = self.nodes.get(&subject.node_id) {
-            return Ok(*id);
+            return Ok(NodeRef::Held(*id));
         }
-        let id = node_id(subject.node_type, subject.tier, subject.node_id).ok_or_else(|| {
-            ConvertError::DecisionSubject {
+        if node_id(subject.node_type, subject.tier, subject.node_id).is_none() {
+            return Err(ConvertError::DecisionSubject {
                 decision: self.external_id(),
                 subject: subject.node_id,
-            }
-        })?;
-        if !self.absent.iter().any(|(absent, _)| *absent == id) {
-            self.absent.push((id, subject.external_id.clone()));
+            });
         }
-        Ok(id)
+        let former = label(&subject.external_id)?;
+        if !self.former.iter().any(|(known, _)| *known == former) {
+            self.former.push((former, subject.node_id));
+        }
+        Ok(NodeRef::Former(former))
     }
 
     /// The decision's root element and its members in ordinal order; each member's parent is

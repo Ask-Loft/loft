@@ -22,7 +22,7 @@ fn converted() -> Conversion {
 }
 
 #[test]
-fn ac_162_to_ac_164_and_ac_171_each_node_maps_to_its_kind_under_its_parent() {
+fn ac_162_to_ac_164_ac_171_and_ac_704_each_node_maps_to_its_kind_under_its_parent() {
     let document = converted().document;
     let [product] = document.products.as_slice() else {
         panic!("one Product");
@@ -174,7 +174,7 @@ fn ac_702_each_counter_is_one_above_the_highest_label_and_an_unused_prefix_start
 }
 
 #[test]
-fn an_export_naming_no_document_is_refused() {
+fn ac_706_an_export_naming_no_document_is_refused() {
     let mut value = export(&[], &[]);
     value["vocabularyEntries"] = json!([]);
     value["technicalConstraintCategories"] = json!([]);
@@ -186,7 +186,7 @@ fn an_export_naming_no_document_is_refused() {
 }
 
 #[test]
-fn an_export_naming_two_documents_is_refused() {
+fn ac_705_an_export_naming_two_documents_is_refused() {
     let mut nodes = tree();
     nodes[4]["documentId"] = json!(uuid(98));
     assert!(matches!(
@@ -250,6 +250,8 @@ fn a_live_v1_export_converts() {
         .iter()
         .filter(|node| node.node_type == loftspec::convert::v1::export::NodeType::FacetTag)
         .count();
+    let hashes = hash_document(&conversion.document).expect("a converted export hashes");
+    println!("state root {}", hashes.roots.state);
     let sidecar = conversion.sidecar.to_json();
     assert_eq!(sidecar, convert(&export).unwrap().sidecar.to_json());
     assert_eq!(
@@ -263,9 +265,10 @@ fn a_live_v1_export_converts() {
         export.architecture_decisions.len()
     );
     println!(
-        "{nodes} nodes, {} edges, {} decisions, sidecar {} bytes, findings: {:?}",
+        "{nodes} nodes, {} edges, {} decisions, {} former labels, sidecar {} bytes, findings: {:?}",
         conversion.document.edges.len(),
         conversion.document.decisions.len(),
+        conversion.sidecar.former_labels.len(),
         sidecar.len(),
         conversion.findings.iter().fold(
             std::collections::BTreeMap::new(),

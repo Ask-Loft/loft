@@ -14,9 +14,7 @@ use self::tree::Tree;
 use crate::bindings::{BindingError, Counters};
 use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
 use crate::identity::{Label, LabelError};
-use crate::ids::{
-    AuthoredStateId, CategoryId, DecisionId, DocumentId, NodeId, RequirementId, TagId,
-};
+use crate::ids::{AuthoredStateId, CategoryId, DocumentId, NodeId, RequirementId, TagId};
 use crate::names::NameError;
 
 /// A converted document and what the converter reported about it.
@@ -33,12 +31,6 @@ pub enum Finding {
     /// A Requirement's name is not one of the five forms as its template writes it, so it is
     /// stored as text (AC-187).
     StatementAsText { requirement: RequirementId },
-    /// A decision names a node the export does not hold, as a v1 decision may after the node
-    /// was deleted. The reference is kept; how the Format holds it is open (D-11 gap G19).
-    AbsentSubject {
-        decision: DecisionId,
-        subject: NodeId,
-    },
     /// A label reference in a node's name or body resolves to no element (AC-191).
     UnresolvedReference { node: NodeId, reference: Label },
     /// A body holds a Markdown heading, at this 1-based line (AC-193).
@@ -123,11 +115,9 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
     registries(export, &mut conversion.document);
     let document = &mut conversion.document;
     document.counters = Counters::above(&document.bindings);
-    // A label a decision still names is seen even when its node is gone, so it is not reused.
-    for external_id in conversion.sidecar.absent_subjects.values() {
-        if let Ok(label) = external_id.label() {
-            document.counters.raise(label);
-        }
+    // A former label a decision names is seen, so it is never allocated again (ADR-13).
+    for former in conversion.sidecar.former_labels.keys() {
+        document.counters.raise(*former);
     }
     Ok(conversion)
 }

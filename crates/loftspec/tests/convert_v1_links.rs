@@ -6,7 +6,7 @@ mod common;
 use common::v1::{convert_value, full_export, hash, key, uuid};
 use loftspec::canonical::Digest;
 use loftspec::convert::v1::{Conversion, ConvertError, Finding};
-use loftspec::decision::{ConsequenceKind, DecisionState, DriverPayload, Rating};
+use loftspec::decision::{ConsequenceKind, DecisionState, DriverPayload, NodeRef, Rating};
 use loftspec::document::{DerivedFrom, Edge, SubjectRole};
 use loftspec::hash::hash_document;
 use loftspec::identity::Label;
@@ -89,13 +89,13 @@ fn ac_257_drivers_consequences_and_assessments_keep_their_fields() {
     assert_eq!(
         decision.drivers[1].payload,
         DriverPayload::Subject {
-            subject: NodeId::Requirement(RequirementId::new(key(4)))
+            subject: RequirementId::new(key(4)).into()
         }
     );
     assert_eq!(decision.consequences[0].kind, ConsequenceKind::Obligation);
     assert_eq!(
         decision.consequences[0].subject,
-        Some(NodeId::Requirement(RequirementId::new(key(4))))
+        Some(RequirementId::new(key(4)).into())
     );
     assert_eq!(decision.consequences[1].subject, None);
     assert_eq!(decision.assessments.len(), 4);
@@ -114,12 +114,12 @@ fn ac_184_each_subject_link_is_a_subject_edge_with_its_role() {
         [
             &Edge::Subject {
                 decision: DecisionId::new(key(20)),
-                subject: NodeId::Requirement(RequirementId::new(key(4))),
+                subject: RequirementId::new(key(4)).into(),
                 role: SubjectRole::Outcome,
             },
             &Edge::Subject {
                 decision: DecisionId::new(key(20)),
-                subject: NodeId::Component(ComponentId::new(key(6))),
+                subject: ComponentId::new(key(6)).into(),
                 role: SubjectRole::Affected,
             },
         ]
@@ -176,21 +176,56 @@ fn a_realization_link_whose_ends_are_not_a_feature_and_a_component_is_refused() 
     assert!(matches!(error, ConvertError::Link { .. }), "{error}");
 }
 
-#[test]
-fn a_subject_the_export_does_not_hold_is_kept_under_its_key_with_a_finding() {
+/// The `full_export()` with ADR-1's outcome subject and its subject driver naming nodes the
+/// export no longer holds, last labelled RQ-9 and RQ-8.
+fn with_deleted_subjects() -> serde_json::Value {
     let mut value = full_export();
-    value["architectureDecisions"][0]["subjectLinks"][0]["subject"]["nodeId"] = json!(uuid(77));
-    let conversion = convert_value(&value).unwrap();
-    let absent = NodeId::Requirement(RequirementId::new(key(77)));
+    let decision = &mut value["architectureDecisions"][0];
+    let link = &mut decision["subjectLinks"][0]["subject"];
+    link["nodeId"] = json!(uuid(77));
+    link["externalId"] = json!("RQ-9");
+    let driver = &mut decision["elements"][4]["payload"]["value"]["subject"];
+    driver["nodeId"] = json!(uuid(78));
+    driver["externalId"] = json!("RQ-8");
+    value
+}
+
+fn former(text: &str) -> NodeRef {
+    NodeRef::Former(Label::parse(text).unwrap())
+}
+
+#[test]
+fn ac_723_ac_708_and_ac_709_a_reference_to_a_node_the_export_does_not_hold_is_its_former_label() {
+    let conversion = convert_value(&with_deleted_subjects()).unwrap();
     assert!(edges(&conversion).contains(&Edge::Subject {
         decision: DecisionId::new(key(20)),
-        subject: absent,
+        subject: former("RQ-9"),
         role: SubjectRole::Outcome,
     }));
-    assert!(conversion.findings.contains(&Finding::AbsentSubject {
-        decision: DecisionId::new(key(20)),
-        subject: absent,
-    }));
+    assert_eq!(
+        conversion.document.decisions[0].drivers[1].payload,
+        DriverPayload::Subject {
+            subject: former("RQ-8")
+        }
+    );
+}
+
+#[test]
+fn ac_711_and_ac_712_a_former_label_enters_the_edges_root_and_the_decision_view_as_an_object() {
+    let conversion = convert_value(&with_deleted_subjects()).unwrap();
+    let hashes = hash_document(&conversion.document).unwrap();
+    let (_, _, edges_view) = hashes
+        .root_views
+        .iter()
+        .find(|(name, _, _)| *name == "edges")
+        .unwrap();
+    assert!(edges_view.to_string().contains(r#"{"formerLabel":"RQ-9"}"#));
+    let decision_view = &hashes.decision_views[&DecisionId::new(key(20))];
+    assert!(
+        decision_view
+            .to_string()
+            .contains(r#"{"formerLabel":"RQ-8"}"#)
+    );
 }
 
 #[test]

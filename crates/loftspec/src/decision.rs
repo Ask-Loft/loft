@@ -3,7 +3,22 @@
 
 use serde::Deserialize;
 
+use crate::identity::Label;
 use crate::ids::{ConsequenceId, DecisionId, DriverId, NodeId, OptionId};
+
+/// A node a decision names: one the document holds, or, on a retired or superseded decision, one
+/// it no longer holds, named by its former label (ADR-13).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum NodeRef {
+    Held(NodeId),
+    Former(Label),
+}
+
+impl<T: Into<NodeId>> From<T> for NodeRef {
+    fn from(node: T) -> Self {
+        Self::Held(node.into())
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decision {
@@ -49,7 +64,7 @@ pub struct Driver {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DriverPayload {
     Local { label: String, statement: String },
-    Subject { subject: NodeId },
+    Subject { subject: NodeRef },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -115,5 +130,5 @@ pub struct Consequence {
     pub id: ConsequenceId,
     pub kind: ConsequenceKind,
     pub statement: String,
-    pub subject: Option<NodeId>,
+    pub subject: Option<NodeRef>,
 }

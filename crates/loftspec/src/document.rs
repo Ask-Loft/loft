@@ -5,9 +5,10 @@ use serde::Deserialize;
 
 use crate::bindings::{Bindings, Counters};
 use crate::canonical::Digest;
-use crate::decision::Decision;
+use crate::decision::{Decision, NodeRef};
+use crate::identity::Label;
 use crate::ids::{
-    AuthoredStateId, CategoryId, ComponentId, DecisionId, DocumentId, ElementId, FeatureId, NodeId,
+    AuthoredStateId, CategoryId, ComponentId, DecisionId, DocumentId, ElementId, FeatureId,
     ProductId, TagId,
 };
 use crate::names::{CategoryName, TagName};
@@ -73,9 +74,16 @@ pub enum Edge {
     /// A decision names a node as its outcome or as affected (AC-184).
     Subject {
         decision: DecisionId,
-        subject: NodeId,
+        subject: NodeRef,
         role: SubjectRole,
     },
+}
+
+/// The far end of an edge: an element, or the former label a `subject` edge may name.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EdgeTarget {
+    Element(ElementId),
+    Former(Label),
 }
 
 impl Edge {
@@ -100,12 +108,20 @@ impl Edge {
     }
 
     #[must_use]
-    pub fn target(self) -> ElementId {
+    pub fn target(self) -> EdgeTarget {
+        let element = |element: ElementId| EdgeTarget::Element(element);
         match self {
-            Self::Realizes { component, .. } => component.into(),
-            Self::ScopedTo { product, .. } => product.into(),
-            Self::Mentions { target, .. } => target,
-            Self::Subject { subject, .. } => subject.into(),
+            Self::Realizes { component, .. } => element(component.into()),
+            Self::ScopedTo { product, .. } => element(product.into()),
+            Self::Mentions { target, .. } => element(target),
+            Self::Subject {
+                subject: NodeRef::Held(node),
+                ..
+            } => element(node.into()),
+            Self::Subject {
+                subject: NodeRef::Former(label),
+                ..
+            } => EdgeTarget::Former(label),
         }
     }
 

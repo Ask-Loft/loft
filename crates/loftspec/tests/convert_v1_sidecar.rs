@@ -7,7 +7,7 @@ use common::v1::{convert_value, key, tree, uuid};
 use loftspec::attributes::VerificationFate;
 use loftspec::convert::v1::sidecar::{FORMAT, ScopeKind};
 use loftspec::convert::v1::{Conversion, ConvertError};
-use loftspec::identity::LabelPrefix;
+use loftspec::identity::{Label, LabelPrefix};
 use loftspec::ids::{
     ComponentId, ConstraintId, DecisionId, DocumentId, NodeId, OptionId, QualityAttributeId,
     RequirementId,
@@ -64,14 +64,14 @@ fn ac_197_and_ac_198_the_document_and_the_highest_value_of_each_prefix() {
     let sidecar = converted().sidecar;
     assert_eq!(sidecar.document, DocumentId::new(key(0)));
     let highest = |prefix: &str| sidecar.highest[prefix].get();
-    assert_eq!(highest("RQ"), 9, "an absent subject's label counts");
+    assert_eq!(highest("RQ"), 9, "a former label counts");
     assert_eq!(highest("CMP"), 2);
     assert_eq!(highest("FT"), 2);
     assert_eq!(highest("ADR"), 2);
 }
 
 #[test]
-fn a_label_an_absent_subject_carries_is_never_allocated_again() {
+fn ac_721_a_former_label_counts_as_seen_so_it_is_never_allocated_again() {
     let counters = converted().document.counters;
     assert_eq!(counters.next(LabelPrefix::Requirement).get(), 10);
 }
@@ -94,15 +94,15 @@ fn ac_259_each_component_keeps_its_v1_scope_kind() {
 }
 
 #[test]
-fn decision_elements_keep_their_ordinals_and_an_absent_subject_its_v1_label() {
+fn ac_724_decision_elements_keep_their_ordinals_and_a_former_label_its_v1_node() {
     let sidecar = converted().sidecar;
     let decision = &sidecar.decisions[&DecisionId::new(key(20))];
     assert_eq!(decision.ordinal, 0);
     assert_eq!(decision.options[&OptionId::new(key(24))], 1);
     assert_eq!(decision.drivers.len(), 2);
     assert_eq!(decision.consequences.len(), 2);
-    let absent = &sidecar.absent_subjects[&NodeId::from(RequirementId::new(key(77)))];
-    assert_eq!(absent.to_string(), "RQ-9");
+    let former = Label::parse("RQ-9").unwrap();
+    assert_eq!(sidecar.former_labels[&former].to_string(), uuid(77));
 }
 
 #[test]

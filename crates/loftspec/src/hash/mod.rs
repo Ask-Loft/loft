@@ -12,8 +12,8 @@ pub use tree::ContentHash;
 
 use crate::FORMAT;
 use crate::canonical::{Digest, Domain, canonical_bytes, digest};
-use crate::document::{DerivedFrom, Document, Edge, SubjectRole};
-use crate::identity::Key;
+use crate::document::{DerivedFrom, Document, Edge, EdgeTarget, SubjectRole};
+use crate::identity::{Key, Label};
 use crate::ids::{DecisionId, ElementId, NodeId};
 use crate::manifest::ALGORITHM;
 
@@ -198,9 +198,14 @@ pub fn hash_document(document: &Document) -> Result<DocumentHashes, HashError> {
     })
 }
 
+/// How a view names a node the document no longer holds: `{"formerLabel": <label>}` (ADR-13).
+pub(crate) fn former(label: Label) -> Value {
+    json!({ "formerLabel": label })
+}
+
 /// The edges root view: each edge as its source's hash, its type, its target's hash and its
 /// role, the tuples sorted by their canonical bytes, duplicates kept (RQ-13). An endpoint's hash
-/// is a node's content hash or a decision's view hash.
+/// is a node's content hash or a decision's view hash; a former label enters as itself.
 fn edges_view(
     edges: &[Edge],
     resolve: &impl Fn(ElementId) -> Option<Digest>,
@@ -210,10 +215,14 @@ fn edges_view(
     let mut tuples = edges
         .iter()
         .map(|edge| {
+            let target = match edge.target() {
+                EdgeTarget::Element(element) => json!(endpoint(element)?),
+                EdgeTarget::Former(label) => former(label),
+            };
             let tuple = json!([
                 endpoint(edge.source())?,
                 edge.kind().as_str(),
-                endpoint(edge.target())?,
+                target,
                 edge.role().map(SubjectRole::as_str),
             ]);
             Ok((canonical_bytes(&tuple), tuple))

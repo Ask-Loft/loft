@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use super::export::{ComponentScope, Export, ExternalId, Node};
 use crate::attributes::VerificationFate;
-use crate::identity::Key;
+use crate::identity::{Key, Label};
 use crate::ids::{ComponentId, ConsequenceId, DecisionId, DocumentId, DriverId, NodeId, OptionId};
 use crate::names::TagName;
 
@@ -32,8 +32,8 @@ pub struct V1Sidecar {
     pub tags: BTreeMap<NodeId, Vec<TagApplication>>,
     /// The ordinals of each decision's elements.
     pub decisions: BTreeMap<DecisionId, DecisionFacts>,
-    /// The external ID of each node a decision names that the export does not hold.
-    pub absent_subjects: BTreeMap<NodeId, ExternalId>,
+    /// The v1 node UUID behind each former label a decision names (ADR-13).
+    pub former_labels: BTreeMap<Label, Uuid>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -109,24 +109,28 @@ impl V1Sidecar {
             scopes: BTreeMap::new(),
             tags: BTreeMap::new(),
             decisions: BTreeMap::new(),
-            absent_subjects: BTreeMap::new(),
+            former_labels: BTreeMap::new(),
         }
     }
 
     /// Records the highest value of each prefix among the export's nodes and decisions and the
-    /// absent subjects already recorded.
+    /// former labels already recorded.
     pub(super) fn record_highest(&mut self, export: &Export) {
         let nodes = export.nodes.iter().map(|node| &node.external_id);
         let decisions = export
             .architecture_decisions
             .iter()
             .map(|decision| &decision.identity.external_id);
-        for external_id in nodes.chain(decisions).chain(self.absent_subjects.values()) {
-            let value = self
-                .highest
-                .entry(external_id.prefix().to_owned())
-                .or_insert(external_id.number());
-            *value = (*value).max(external_id.number());
+        let seen = nodes
+            .chain(decisions)
+            .map(|external_id| (external_id.prefix(), external_id.number()));
+        let former = self
+            .former_labels
+            .keys()
+            .map(|label| (label.prefix().as_str(), label.number()));
+        for (prefix, number) in seen.chain(former) {
+            let value = self.highest.entry(prefix.to_owned()).or_insert(number);
+            *value = (*value).max(number);
         }
     }
 
@@ -135,8 +139,8 @@ impl V1Sidecar {
     #[must_use]
     pub fn to_json(&self) -> String {
         let value = json!({
-            "absentSubjects": object(self.absent_subjects.iter().map(|(id, external_id)| {
-                (id.key().to_string(), json!(external_id.to_string()))
+            "formerLabels": object(self.former_labels.iter().map(|(label, node_id)| {
+                (label.to_string(), json!(node_id))
             })),
             "decisions": object(self.decisions.iter().map(|(id, facts)| {
                 (id.key().to_string(), decision_json(facts))

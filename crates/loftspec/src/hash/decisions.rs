@@ -7,9 +7,9 @@ use serde_json::{Value, json};
 
 use super::HashError;
 use crate::canonical::{Digest, Domain, digest};
-use crate::decision::{Decision, DecisionState, DriverPayload};
+use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
 use crate::identity::Key;
-use crate::ids::{DecisionId, DriverId, NodeId, OptionId};
+use crate::ids::{DecisionId, DriverId, OptionId};
 
 use super::NodeIndex;
 
@@ -118,11 +118,14 @@ fn decision_view(
     state: &Value,
     nodes: &NodeIndex,
 ) -> Result<Value, HashError> {
-    let node = |subject: NodeId| {
-        super::node_hash(nodes, subject).ok_or(HashError::UnknownDecisionReference {
-            decision: decision.id,
-            reference: subject.key(),
-        })
+    let node = |subject: NodeRef| match subject {
+        NodeRef::Held(node) => super::node_hash(nodes, node).map(|hash| json!(hash)).ok_or(
+            HashError::UnknownDecisionReference {
+                decision: decision.id,
+                reference: node.key(),
+            },
+        ),
+        NodeRef::Former(label) => Ok(super::former(label)),
     };
     let drivers = decision
         .drivers
