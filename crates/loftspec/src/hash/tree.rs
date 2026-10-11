@@ -13,8 +13,8 @@ use crate::ids::NodeId;
 use crate::kind::NodeKind;
 use crate::names::TagName;
 use crate::tree::{
-    Component, ComponentChild, Constraint, Criterion, Details, Feature, FeatureGroup, Product,
-    QualityAttribute, Requirement, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
+    Requirement, Section,
 };
 
 /// Called once per node, children first, with the node's ID, content view and content hash.
@@ -107,20 +107,27 @@ fn plain<'a>(kind: NodeKind, text: &str, details: &'a Details) -> Fields<'a> {
     }
 }
 
-/// The structural children's hashes in order, then the Sections' (structural children first).
-fn hashes<'a, C: Parts + 'a>(
+/// Hashes one list of children in order, appending their content hashes to `hashes`.
+fn extend<'a, C: Parts + 'a>(
+    hashes: &mut Vec<Digest>,
     children: impl IntoIterator<Item = &'a C>,
-    sections: &[Section],
     visit: &mut Visit<'_>,
-) -> Result<Vec<Digest>, HashError> {
-    let mut hashes = children
-        .into_iter()
-        .map(|child| hash_with(child, visit))
-        .collect::<Result<Vec<_>, _>>()?;
-    for section in sections {
-        hashes.push(hash_with(section, visit)?);
+) -> Result<(), HashError> {
+    for child in children {
+        hashes.push(hash_with(child, visit)?);
     }
-    Ok(hashes)
+    Ok(())
+}
+
+/// A node's child content hashes: each list of structural children in turn, then the Sections
+/// (AC-605).
+macro_rules! grouped {
+    ($visit:expr, $sections:expr $(, $children:expr)*) => {{
+        let mut hashes = Vec::new();
+        $(extend(&mut hashes, $children, $visit)?;)*
+        extend(&mut hashes, $sections, $visit)?;
+        Ok(hashes)
+    }};
 }
 
 impl Parts for Product {
@@ -131,7 +138,7 @@ impl Parts for Product {
         plain(NodeKind::Product, &self.name, &self.details)
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes(&self.feature_groups, &self.details.sections, visit)
+        grouped!(visit, &self.details.sections, &self.feature_groups)
     }
 }
 
@@ -143,7 +150,12 @@ impl Parts for FeatureGroup {
         plain(NodeKind::FeatureGroup, &self.name, &self.details)
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes(&self.features, &self.details.sections, visit)
+        grouped!(
+            visit,
+            &self.details.sections,
+            &self.features,
+            &self.constraints
+        )
     }
 }
 
@@ -155,7 +167,12 @@ impl Parts for Feature {
         plain(NodeKind::Feature, &self.name, &self.details)
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes(&self.requirements, &self.details.sections, visit)
+        grouped!(
+            visit,
+            &self.details.sections,
+            &self.requirements,
+            &self.quality_attributes
+        )
     }
 }
 
@@ -172,7 +189,7 @@ impl Parts for Requirement {
         )
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes(&self.criteria, &self.details.sections, visit)
+        grouped!(visit, &self.details.sections, &self.criteria)
     }
 }
 
@@ -184,7 +201,7 @@ impl Parts for Criterion {
         plain(NodeKind::Criterion, &self.name, &self.details)
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes::<Section>([], &self.details.sections, visit)
+        grouped!(visit, &self.details.sections)
     }
 }
 
@@ -196,31 +213,13 @@ impl Parts for Component {
         plain(NodeKind::Component, &self.name, &self.details)
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes(&self.children, &self.details.sections, visit)
-    }
-}
-
-impl Parts for ComponentChild {
-    fn id(&self) -> Option<NodeId> {
-        match self {
-            Self::Component(node) => node.id(),
-            Self::Constraint(node) => node.id(),
-            Self::QualityAttribute(node) => node.id(),
-        }
-    }
-    fn fields(&self) -> Fields<'_> {
-        match self {
-            Self::Component(node) => node.fields(),
-            Self::Constraint(node) => node.fields(),
-            Self::QualityAttribute(node) => node.fields(),
-        }
-    }
-    fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        match self {
-            Self::Component(node) => node.child_hashes(visit),
-            Self::Constraint(node) => node.child_hashes(visit),
-            Self::QualityAttribute(node) => node.child_hashes(visit),
-        }
+        grouped!(
+            visit,
+            &self.details.sections,
+            &self.components,
+            &self.constraints,
+            &self.quality_attributes
+        )
     }
 }
 
@@ -237,7 +236,7 @@ impl Parts for Constraint {
         }
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes::<Section>([], &self.details.sections, visit)
+        grouped!(visit, &self.details.sections)
     }
 }
 
@@ -254,7 +253,7 @@ impl Parts for QualityAttribute {
         }
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes::<Section>([], &self.details.sections, visit)
+        grouped!(visit, &self.details.sections)
     }
 }
 
@@ -276,6 +275,6 @@ impl Parts for Section {
         }
     }
     fn child_hashes(&self, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
-        hashes::<Section>([], &self.sections, visit)
+        grouped!(visit, &self.sections)
     }
 }

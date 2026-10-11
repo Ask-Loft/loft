@@ -3,14 +3,16 @@
 mod common;
 
 use common::{component, criterion, feature, fresh_key, key, requirement};
-use loftspec::attributes::{ConservationKind, VerificationFate};
+use loftspec::attributes::{
+    ConservationKind, QaKind, QualityAggregation, QualityBand, QualityTarget, VerificationFate,
+};
 use loftspec::canonical::{Domain, canonical_bytes, digest};
 use loftspec::hash::ContentHash;
-use loftspec::ids::{ConstraintId, FeatureGroupId, SectionId};
+use loftspec::ids::{ConstraintId, FeatureGroupId, QualityAttributeId, SectionId};
 use loftspec::names::TagName;
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
-    ComponentChild, Constraint, Criterion, Details, Feature, FeatureGroup, Requirement, Section,
+    Constraint, Criterion, Details, Feature, FeatureGroup, QualityAttribute, Requirement, Section,
 };
 
 fn section(n: u32, name: &str) -> Section {
@@ -185,29 +187,112 @@ fn the_kind_is_content() {
         name: "Keys".to_owned(),
         details: Details::default(),
         features: Vec::new(),
+        constraints: Vec::new(),
     };
     assert_ne!(feature_node.content_hash(), group.content_hash());
 }
 
+fn constraint(n: u32) -> Constraint {
+    Constraint {
+        id: Some(ConstraintId::new(key(n))),
+        name: format!("Constraint {n}."),
+        details: Details::default(),
+        binding: None,
+        conservation_kind: None,
+        verification_fate: None,
+    }
+}
+
+fn quality(n: u32) -> QualityAttribute {
+    QualityAttribute {
+        id: Some(QualityAttributeId::new(key(n))),
+        name: format!("Quality {n}."),
+        details: Details::default(),
+        kind: QaKind::Latency,
+        target: QualityTarget {
+            metric: "check.wall-time".to_owned(),
+            band: QualityBand::AtMost {
+                upper: "2".to_owned(),
+            },
+            unit: "s".to_owned(),
+            aggregation: QualityAggregation::P95,
+            scenario: "a canonical tree".to_owned(),
+            environment: "the reference machine".to_owned(),
+        },
+        verification_fate: None,
+    }
+}
+
+/// The child content hashes a node's content view lists, in order.
+fn children(node: &impl ContentHash) -> Vec<String> {
+    node.content_view()[9]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|hash| hash.as_str().unwrap().to_owned())
+        .collect()
+}
+
 #[test]
-fn a_component_keeps_one_ordered_list_of_mixed_children() {
-    let constraint = |n: u32| {
-        ComponentChild::Constraint(Constraint {
-            id: Some(ConstraintId::new(key(n))),
-            name: format!("Constraint {n}."),
-            details: Details::default(),
-            binding: None,
-            conservation_kind: None,
-            verification_fate: None,
-        })
+fn ac_606_a_feature_groups_features_precede_its_constraints() {
+    let child = feature(key(2), "Keys", vec![]);
+    let group = FeatureGroup {
+        id: Some(FeatureGroupId::new(key(1))),
+        name: "Identity".to_owned(),
+        details: Details::default(),
+        features: vec![child.clone()],
+        constraints: vec![constraint(3)],
     };
-    let mut first = component(key(1), "Hasher");
-    first.children = vec![
-        constraint(2),
-        ComponentChild::Component(component(key(3), "Inner")),
-        constraint(4),
-    ];
-    let mut second = first.clone();
-    second.children.swap(0, 1);
-    assert_ne!(first.content_hash(), second.content_hash());
+    assert_eq!(
+        children(&group),
+        vec![
+            child.content_hash().to_string(),
+            constraint(3).content_hash().to_string(),
+        ]
+    );
+}
+
+#[test]
+fn ac_607_a_features_requirements_precede_its_quality_attributes() {
+    let child = requirement(key(2), "The writer shall write a key.", vec![]);
+    let mut parent = feature(key(1), "Keys", vec![child.clone()]);
+    parent.quality_attributes = vec![quality(3)];
+    assert_eq!(
+        children(&parent),
+        vec![
+            child.content_hash().to_string(),
+            quality(3).content_hash().to_string(),
+        ]
+    );
+}
+
+#[test]
+fn ac_608_and_ac_609_a_components_children_are_grouped_by_kind() {
+    let inner = component(key(2), "Inner");
+    let mut parent = component(key(1), "Hasher");
+    parent.quality_attributes = vec![quality(4)];
+    parent.constraints = vec![constraint(3)];
+    parent.components = vec![inner.clone()];
+    assert_eq!(
+        children(&parent),
+        vec![
+            inner.content_hash().to_string(),
+            constraint(3).content_hash().to_string(),
+            quality(4).content_hash().to_string(),
+        ]
+    );
+}
+
+#[test]
+fn ac_605_a_nodes_sections_follow_its_other_children() {
+    let mut parent = component(key(1), "Hasher");
+    parent.details.sections = vec![section(5, "Notes")];
+    parent.constraints = vec![constraint(3)];
+    assert_eq!(
+        children(&parent),
+        vec![
+            constraint(3).content_hash().to_string(),
+            section(5, "Notes").content_hash().to_string(),
+        ]
+    );
 }

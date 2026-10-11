@@ -20,8 +20,8 @@ use loftspec::ids::{
 use loftspec::names::{CategoryName, TagName};
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
-    Component, ComponentChild, Constraint, Criterion, Details, Feature, FeatureGroup, Product,
-    QualityAttribute, Requirement,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
+    Requirement,
 };
 
 /// A deterministic version 7 key numbered `n`.
@@ -61,6 +61,7 @@ pub fn feature(id: Key, name: &str, requirements: Vec<Requirement>) -> Feature {
         name: name.to_owned(),
         details: Details::default(),
         requirements,
+        quality_attributes: Vec::new(),
     }
 }
 
@@ -69,7 +70,9 @@ pub fn component(id: Key, name: &str) -> Component {
         id: Some(ComponentId::new(id)),
         name: name.to_owned(),
         details: Details::default(),
-        children: Vec::new(),
+        components: Vec::new(),
+        constraints: Vec::new(),
+        quality_attributes: Vec::new(),
     }
 }
 
@@ -94,11 +97,36 @@ fn product_tree(k: &dyn Fn(u32) -> Key) -> Product {
     });
     let mut feature = feature(k(3), "Keys", vec![requirement]);
     feature.details = Details::with_body("Keys address nodes.");
+    feature.quality_attributes = vec![QualityAttribute {
+        id: Some(QualityAttributeId::new(k(10))),
+        name: "Minting a key completes quickly.".to_owned(),
+        details: Details::default(),
+        kind: QaKind::Latency,
+        target: QualityTarget {
+            metric: "mint.wall-time".to_owned(),
+            band: QualityBand::AtMost {
+                upper: "1".to_owned(),
+            },
+            unit: "ms".to_owned(),
+            aggregation: QualityAggregation::P99,
+            scenario: "minting one key".to_owned(),
+            environment: "the reference developer machine".to_owned(),
+        },
+        verification_fate: Some(VerificationFate::Sampled),
+    }];
     let group = FeatureGroup {
         id: Some(FeatureGroupId::new(k(2))),
         name: "Identity".to_owned(),
         details: Details::default(),
         features: vec![feature],
+        constraints: vec![Constraint {
+            id: Some(ConstraintId::new(k(9))),
+            name: "Every Product shall follow the identity rules.".to_owned(),
+            details: Details::default(),
+            binding: None,
+            conservation_kind: None,
+            verification_fate: Some(VerificationFate::Proved),
+        }],
     };
     let mut product = product(k(1), "Example Product");
     product.details = Details {
@@ -141,10 +169,8 @@ fn component_tree(k: &dyn Fn(u32) -> Key) -> Component {
     let mut component = component(k(6), "Document model");
     component.details =
         Details::with_body("Nodes and keys.\n\tAn indented line with a trailing space. \n");
-    component.children = vec![
-        ComponentChild::Constraint(constraint),
-        ComponentChild::QualityAttribute(quality),
-    ];
+    component.constraints = vec![constraint];
+    component.quality_attributes = vec![quality];
     component
 }
 
@@ -269,13 +295,19 @@ fn bind(document: &mut Document, k: &dyn Fn(u32) -> Key) {
         .bind(QualityAttributeId::new(k(8)), label("QA-1"))
         .unwrap();
     bindings
+        .bind(ConstraintId::new(k(9)), label("CON-2"))
+        .unwrap();
+    bindings
+        .bind(QualityAttributeId::new(k(10)), label("QA-2"))
+        .unwrap();
+    bindings
         .bind(DecisionId::new(k(20)), label("ADR-1"))
         .unwrap();
 }
 
 /// The small document built with the keys `k` gives: P-1 > FG-1 > F-1 > RQ-2 (alias RQ-1) > one
-/// unlabelled criterion, root Component CMP-1 with CON-1 and QA-1, five edges, two tags, one
-/// constraint category and ADR-1.
+/// unlabelled criterion, with QA-2 under F-1 and CON-2 under FG-1; root Component CMP-1 with
+/// CON-1 and QA-1; five edges, two tags, one constraint category and ADR-1.
 pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
     let mut document = Document::empty(DocumentId::new(k(0)));
     document.products = vec![product_tree(k)];

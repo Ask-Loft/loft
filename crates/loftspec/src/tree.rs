@@ -1,8 +1,10 @@
 //! The node tree, one struct per kind, so that containment is in the types: a Product holds
-//! Feature Groups, a Feature Group holds Features, a Feature holds Requirements, a Requirement
-//! holds criteria, and a Component holds Components, Constraints and Quality Attributes in one
-//! ordered list. Any node with a body may hold Sections (AC-157). A node read without a key has
-//! none until the formatter mints one (AC-209).
+//! Feature Groups; a Feature Group holds Features and Constraints; a Feature holds Requirements
+//! and Quality Attributes; a Requirement holds criteria; and a Component holds Components,
+//! Constraints and Quality Attributes. Children of different kinds are kept in one list per
+//! kind, the order the content view lists them in (AC-606..AC-609). Any node with a body may
+//! hold Sections (AC-157). A node read without a key has none until the formatter mints one
+//! (AC-209).
 
 use crate::attributes::{
     ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
@@ -47,6 +49,7 @@ pub struct FeatureGroup {
     pub name: String,
     pub details: Details,
     pub features: Vec<Feature>,
+    pub constraints: Vec<Constraint>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -55,6 +58,7 @@ pub struct Feature {
     pub name: String,
     pub details: Details,
     pub requirements: Vec<Requirement>,
+    pub quality_attributes: Vec<QualityAttribute>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -77,15 +81,9 @@ pub struct Component {
     pub id: Option<ComponentId>,
     pub name: String,
     pub details: Details,
-    pub children: Vec<ComponentChild>,
-}
-
-/// A child of a Component, in the Component's one ordered child list.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ComponentChild {
-    Component(Component),
-    Constraint(Constraint),
-    QualityAttribute(QualityAttribute),
+    pub components: Vec<Component>,
+    pub constraints: Vec<Constraint>,
+    pub quality_attributes: Vec<QualityAttribute>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

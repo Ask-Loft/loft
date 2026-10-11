@@ -38,9 +38,10 @@ Absent values are `null`; an empty string is not absent.
   `qualityTarget` is `{metric, band, unit, aggregation, scenario, environment}` with `band` as
   `{kind: "at_most" | "at_least" | "exactly" | "between", upper?, lower?, value?}`;
   `constraintBinding` is `{category, requiredValue}`. Each is `null` when absent.
-- `children` is the children's content hashes in order: the structural children first (a
-  Component's Components, Constraints and Quality Attributes in their one list), then the
-  node's Sections. The key, the label, the aliases, the node's position among its siblings and
+- `children` is the children's content hashes, grouped by kind and in order within each kind: a
+  Feature Group's Features, then its Constraints; a Feature's Requirements, then its Quality
+  Attributes; a Component's Components, then its Constraints, then its Quality Attributes; and
+  last, the node's Sections. The key, the label, the aliases, the node's position among its siblings and
   every confirmation flag are not in the view.
 
 ### Edges root
@@ -83,15 +84,17 @@ state view's `format` is `loftspec/1`, its `algorithm` `sha256-jcs/1`, and `deri
 ## `small-document.json`
 
 One Product, `Example Product` (body `The example.`, tag `portable`), holds the Feature Group
-`Identity`, which holds the Feature `Keys` (body `Keys address nodes.`), which holds a Requirement
-stored as the ubiquitous form with `system` `The writer` and `shall` `write a key on every
-node.`, which holds the criterion ``Every node record carries a `key` field.``. One root
+`Identity`, which holds the Feature `Keys` (body `Keys address nodes.`) and then a Constraint
+with the fate `proved`. The Feature holds a Requirement stored as the ubiquitous form with
+`system` `The writer` and `shall` `write a key on every node.`, which holds the criterion
+``Every node record carries a `key` field.``, and then a latency Quality Attribute with a p99
+target and the fate `sampled`. One root
 Component, `Document model`, has a body with a tab, a trailing space and a final line break, a
 Constraint with a technical binding (`runtime.language` = `rust`) and the fate `proved`, and a
 latency Quality Attribute with a target and the fate `sampled`. Five edges: the Feature realizes
 the Component, the Component is scoped to the Product, the criterion mentions the Requirement,
 and the decision's two subject edges (`outcome` to the Requirement, `affected` to the Component).
 Two tags, one constraint category, one accepted decision with two drivers (one local, one naming
-the Requirement), two options, four assessments and two consequences. Eight bindings, the
+the Requirement), two options, four assessments and two consequences. Ten bindings, the
 Requirement's with one alias. Key `n` is `00000000-0000-7000-8000-` followed by `n` as twelve
 hexadecimal digits; the document key is key 0.
