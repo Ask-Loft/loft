@@ -1,15 +1,18 @@
 //! Conversion from a Loft v1 Authored State export (D-11 F-13..F-16).
 
 pub mod export;
+mod links;
 mod tree;
 
 use uuid::Uuid;
 
 use self::export::{Export, ExternalId};
 use crate::bindings::{BindingError, Counters};
-use crate::document::{CategoryEntry, Document, TagEntry};
+use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
 use crate::identity::LabelError;
-use crate::ids::{CategoryId, DocumentId, RequirementId, TagId};
+use crate::ids::{
+    AuthoredStateId, CategoryId, DecisionId, DocumentId, NodeId, RequirementId, TagId,
+};
 use crate::names::NameError;
 
 /// A converted document and what the converter reported about it.
@@ -25,6 +28,12 @@ pub enum Finding {
     /// A Requirement's name is not one of the five forms as its template writes it, so it is
     /// stored as text (AC-187).
     StatementAsText { requirement: RequirementId },
+    /// A decision names a node the export does not hold, as a v1 decision may after the node
+    /// was deleted. The reference is kept; how the Format holds it is open (D-11 gap G19).
+    AbsentSubject {
+        decision: DecisionId,
+        subject: NodeId,
+    },
 }
 
 /// An export the converter refuses.
@@ -63,6 +72,20 @@ pub enum ConvertError {
     },
     #[error("Facet Tag {node}: {source}")]
     Tag { node: ExternalId, source: NameError },
+    #[error(
+        "a Realization Link from {feature} to {component} does not join a Feature to a Component"
+    )]
+    Link { feature: Uuid, component: Uuid },
+    #[error("{node} is scoped to {product}, which is not a Product of the export")]
+    Scope { node: ExternalId, product: Uuid },
+    #[error("{decision} names {subject}, which is not a node of any kind the Format holds")]
+    DecisionSubject { decision: ExternalId, subject: Uuid },
+    #[error("element {element} of {decision} {reason}")]
+    DecisionElement {
+        decision: ExternalId,
+        element: Uuid,
+        reason: &'static str,
+    },
     #[error(transparent)]
     Binding(#[from] BindingError),
 }
@@ -76,6 +99,15 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
     let mut document = Document::empty(DocumentId::new(document_uuid(export)?.into()));
     let mut findings = Vec::new();
     tree::Tree::new(export)?.convert(&mut document, &mut findings)?;
+    let nodes = tree::node_ids(export)?;
+    document.edges = links::realizations(export, &nodes)?;
+    document.edges.extend(links::scopes(export, &nodes)?);
+    links::decisions(export, &nodes, &mut document, &mut findings)?;
+    document.derived_from = Some(DerivedFrom {
+        authored_state_id: AuthoredStateId::new(export.authored_state_id.into()),
+        content_address: export.content_address,
+        publish_sequence: export.publish_sequence,
+    });
     document.tags = export
         .vocabulary_entries
         .iter()

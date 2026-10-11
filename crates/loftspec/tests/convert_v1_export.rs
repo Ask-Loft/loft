@@ -11,7 +11,7 @@ use serde_json::{Value, json};
 
 mod common;
 
-use common::v1::{export, hash, node, uuid};
+use common::v1::{element, export, hash, node, subject, uuid};
 
 const D11_SEQUENCE_1: &str =
     include_str!("../../../testdata/v1/d11-sequence-1/loft-authored-state.json");
@@ -136,21 +136,6 @@ fn links_and_registries_read() {
         export.technical_constraint_categories[0].name.as_str(),
         "runtime.language"
     );
-}
-
-fn subject(n: u32, external_id: &str) -> Value {
-    json!({"externalId": external_id, "nodeId": uuid(n), "tier": "Requirement", "type": "TierSection"})
-}
-
-fn element(n: u32, parent: Option<u32>, ordinal: i64, payload: &Value) -> Value {
-    json!({
-        "documentId": uuid(0),
-        "elementHash": hash(u8::try_from(n).unwrap()),
-        "id": uuid(n),
-        "ordinal": ordinal,
-        "parentId": parent.map(uuid),
-        "payload": payload,
-    })
 }
 
 #[test]

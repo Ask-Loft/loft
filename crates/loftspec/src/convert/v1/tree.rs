@@ -11,8 +11,8 @@ use super::{ConvertError, Finding};
 use crate::document::Document;
 use crate::identity::{Key, Label};
 use crate::ids::{
-    ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, ProductId,
-    QualityAttributeId, RequirementId,
+    ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, NodeId,
+    ProductId, QualityAttributeId, RequirementId,
 };
 use crate::names::TagName;
 use crate::statement::Statement;
@@ -23,7 +23,7 @@ use crate::tree::{
 
 /// The kind of a v1 node, from its type and tier.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Kind {
+pub(super) enum Kind {
     Product,
     FeatureGroup,
     Feature,
@@ -36,17 +36,49 @@ enum Kind {
 }
 
 fn kind(node: &Node) -> Result<Kind, ConvertError> {
-    Ok(match (node.node_type, node.tier) {
+    kind_of(node.node_type, node.tier).ok_or_else(|| missing(node, "tier"))
+}
+
+/// The kind of a v1 type and tier; a tier section without a tier has none.
+pub(super) const fn kind_of(node_type: NodeType, tier: Option<Tier>) -> Option<Kind> {
+    Some(match (node_type, tier) {
         (NodeType::TierSection, Some(Tier::Product)) => Kind::Product,
         (NodeType::TierSection, Some(Tier::FeatureGroup)) => Kind::FeatureGroup,
         (NodeType::TierSection, Some(Tier::Feature)) => Kind::Feature,
         (NodeType::TierSection, Some(Tier::Requirement)) => Kind::Requirement,
-        (NodeType::TierSection, None) => return Err(missing(node, "tier")),
+        (NodeType::TierSection, None) => return None,
         (NodeType::AcceptanceCriterion, _) => Kind::Criterion,
         (NodeType::Component, _) => Kind::Component,
         (NodeType::Constraint, _) => Kind::Constraint,
         (NodeType::QualityAttribute, _) => Kind::QualityAttribute,
         (NodeType::FacetTag, _) => Kind::FacetTag,
+    })
+}
+
+/// The typed ID of every node of the export but its Facet Tags, by UUID.
+pub(super) fn node_ids(export: &Export) -> Result<BTreeMap<Uuid, NodeId>, ConvertError> {
+    let mut ids = BTreeMap::new();
+    for node in &export.nodes {
+        if let Some(id) = typed_id(kind(node)?, node.node_id) {
+            ids.insert(node.node_id, id);
+        }
+    }
+    Ok(ids)
+}
+
+/// The typed ID a v1 node of `kind` has under the Format; a Facet Tag has none.
+pub(super) fn typed_id(kind: Kind, uuid: Uuid) -> Option<NodeId> {
+    let key = Key::from(uuid);
+    Some(match kind {
+        Kind::Product => ProductId::new(key).into(),
+        Kind::FeatureGroup => FeatureGroupId::new(key).into(),
+        Kind::Feature => FeatureId::new(key).into(),
+        Kind::Requirement => RequirementId::new(key).into(),
+        Kind::Criterion => CriterionId::new(key).into(),
+        Kind::Component => ComponentId::new(key).into(),
+        Kind::Constraint => ConstraintId::new(key).into(),
+        Kind::QualityAttribute => QualityAttributeId::new(key).into(),
+        Kind::FacetTag => return None,
     })
 }
 

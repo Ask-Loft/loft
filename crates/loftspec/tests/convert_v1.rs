@@ -3,7 +3,7 @@
 
 mod common;
 
-use common::v1::{export, node, uuid};
+use common::v1::{export, named, node, tier, tree, uuid, with_identity_entry};
 use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::{Conversion, ConvertError, Finding, convert};
 use loftspec::hash::hash_document;
@@ -18,105 +18,6 @@ use serde_json::{Value, json};
 
 fn key(n: u32) -> Key {
     Key::parse(&uuid(n)).unwrap()
-}
-
-fn named(mut node: Value, name: &str, ordinal: i64) -> Value {
-    node["name"] = json!(name);
-    node["ordinal"] = json!(ordinal);
-    node
-}
-
-fn tier(name: &str) -> Value {
-    json!(name)
-}
-
-fn constraint(n: u32, label: &str) -> Value {
-    let mut constraint = node(n, "Constraint", &Value::Null, label, &[]);
-    constraint["verificationFate"] = json!("monitored");
-    constraint["fateConfirmed"] = json!(true);
-    constraint["technicalBinding"] =
-        json!({"category": "runtime.language", "requiredValue": "rust"});
-    named(constraint, &format!("Constraint {n} shall hold."), 0)
-}
-
-fn quality(n: u32, label: &str) -> Value {
-    let mut quality = node(n, "QualityAttribute", &Value::Null, label, &[]);
-    quality["qaKind"] = json!("latency");
-    quality["verificationFate"] = json!("sampled");
-    quality["qualityTarget"] = json!({
-        "metric": "check.wall-time", "band": {"kind": "at_most", "upper": "2"}, "unit": "s",
-        "aggregation": "p95", "scenario": "a check", "environment": "a machine",
-    });
-    named(quality, &format!("Quality {n} is quick."), 1)
-}
-
-/// P-1 (tag `portable`) > FG-1 > F-1 > RQ-1 (slots) and RQ-2 (text), listed out of ordinal
-/// order, with AC-1 under RQ-1 and QA-2 under F-1; CON-2 under FG-1; root CMP-1 (tag `identity`)
-/// with CON-1, QA-1 and CMP-2.
-fn tree() -> Vec<Value> {
-    vec![
-        named(
-            node(1, "TierSection", &tier("Product"), "P-1", &[2, 9]),
-            "Example",
-            0,
-        ),
-        named(
-            node(2, "TierSection", &tier("FeatureGroup"), "FG-1", &[3, 11]),
-            "Identity",
-            0,
-        ),
-        named(
-            node(3, "TierSection", &tier("Feature"), "F-1", &[13, 4, 12]),
-            "Keys",
-            0,
-        ),
-        named(
-            node(4, "TierSection", &tier("Requirement"), "RQ-1", &[5]),
-            "The writer shall write a key on every node.",
-            0,
-        ),
-        named(
-            node(5, "AcceptanceCriterion", &Value::Null, "AC-1", &[]),
-            "Every node record carries a key.",
-            0,
-        ),
-        named(
-            node(6, "Component", &Value::Null, "CMP-1", &[7, 8, 10, 14]),
-            "Document model",
-            0,
-        ),
-        constraint(7, "CON-1"),
-        quality(8, "QA-1"),
-        named(
-            node(9, "FacetTag", &Value::Null, "FT-1", &[]),
-            "portable",
-            0,
-        ),
-        named(node(10, "Component", &Value::Null, "CMP-2", &[]), "Keys", 2),
-        constraint(11, "CON-2"),
-        quality(12, "QA-2"),
-        named(
-            node(13, "TierSection", &tier("Requirement"), "RQ-2", &[]),
-            "Keys are UUIDs",
-            1,
-        ),
-        named(
-            node(14, "FacetTag", &Value::Null, "FT-2", &[]),
-            "identity",
-            3,
-        ),
-    ]
-}
-
-fn with_identity_entry(mut value: Value) -> Value {
-    value["vocabularyEntries"]
-        .as_array_mut()
-        .unwrap()
-        .push(json!({
-            "entryHash": "ab".repeat(32), "entryId": uuid(72), "documentId": uuid(0),
-            "name": "identity", "definition": "Keys and labels.",
-        }));
-    value
 }
 
 fn read(value: &Value) -> Export {
@@ -357,11 +258,30 @@ fn a_live_v1_export_converts() {
         .iter()
         .filter(|node| node.node_type == loftspec::convert::v1::export::NodeType::FacetTag)
         .count();
-    let hashes = hash_document(&conversion.document).unwrap();
-    assert_eq!(hashes.nodes.len(), export.nodes.len() - facet_tags);
+    let nodes = conversion.document.bindings.len() - conversion.document.decisions.len();
+    assert_eq!(nodes, export.nodes.len() - facet_tags);
+    assert_eq!(
+        conversion.document.decisions.len(),
+        export.architecture_decisions.len()
+    );
     println!(
-        "{} nodes, {} findings",
-        hashes.nodes.len(),
-        conversion.findings.len()
+        "{nodes} nodes, {} edges, {} decisions, findings: {:?}",
+        conversion.document.edges.len(),
+        conversion.document.decisions.len(),
+        conversion.findings.iter().fold(
+            std::collections::BTreeMap::new(),
+            |mut counts, finding| {
+                *counts
+                    .entry(
+                        format!("{finding:?}")
+                            .split([' ', '{'])
+                            .next()
+                            .unwrap()
+                            .to_owned(),
+                    )
+                    .or_insert(0) += 1;
+                counts
+            }
+        )
     );
 }
