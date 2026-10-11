@@ -75,7 +75,28 @@ fn ac_527_an_unresolved_key_in_each_of_two_files_gives_two_errors() {
 }
 
 #[test]
-fn ac_317_a_child_kind_outside_the_profile_is_refused_where_it_stands() {
+fn ac_865_two_unresolved_keys_in_one_file_give_one_error_at_the_first() {
+    let files = edited(
+        FEATURE,
+        &format!("realizes:\n  - {COMPONENT_KEY}"),
+        "realizes:\n  - 00000000-0000-7000-8000-000000000077",
+    );
+    let files = {
+        let mut files = files;
+        let feature = text(&files, FEATURE).replacen(
+            &format!("mentions:\n          - {REQUIREMENT_KEY}"),
+            "mentions:\n          - 00000000-0000-7000-8000-000000000078",
+            1,
+        );
+        files.insert(path(FEATURE), feature.into_bytes());
+        files
+    };
+    let error = refused_in(&files, FEATURE);
+    assert!(model_problem(&error).contains("000000000077"), "{error:?}");
+}
+
+#[test]
+fn ac_317_ac_863_a_child_kind_outside_the_profile_is_refused_where_it_stands() {
     let files = edited(
         COMPONENT,
         "qualityAttributes:\n",
@@ -105,7 +126,7 @@ fn ac_319_a_product_file_without_a_product_record_is_refused() {
 }
 
 #[test]
-fn ac_322_a_realizes_edge_from_a_requirement_is_refused() {
+fn ac_322_ac_864_a_realizes_edge_from_a_requirement_is_refused() {
     let files = edited(
         FEATURE,
         "    statement:\n",

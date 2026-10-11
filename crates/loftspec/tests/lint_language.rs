@@ -66,7 +66,7 @@ fn ac_370_ac_373_ac_376_a_weak_term_in_a_statement_names_the_requirement_and_the
 }
 
 #[test]
-fn ac_371_a_finding_in_a_body_names_the_node_and_the_body_line() {
+fn ac_371_ac_872_a_finding_in_a_body_names_the_node_and_the_body_line() {
     let mut document = with_statement("The writer shall write keys.");
     added(&mut document).details.body =
         Some("First line.\n\nThe result is easy to read.\n".to_owned());
@@ -105,7 +105,7 @@ fn ac_375_a_term_removed_by_configuration_is_not_reported() {
 }
 
 #[test]
-fn ac_424_a_lexicon_can_be_extended() {
+fn ac_424_ac_868_a_lexicon_can_be_extended() {
     let document = with_statement("The writer shall be snappy.");
     let yaml = "rules:\n  - rule: LQ-001\n    lexicon:\n      extend:\n        - snappy\n";
     assert_eq!(of(&configured(&document, yaml), RuleId::Lq001).len(), 1);
@@ -282,5 +282,15 @@ fn ac_404_a_node_that_lists_the_tag_or_sits_under_one_that_does_is_not_lq_009() 
     let mut document = small_document();
     let tag = loftspec::names::TagName::parse("identity").unwrap();
     document.products[0].details.tags.push(tag);
+    assert!(of(&findings(&document), RuleId::Lq009).is_empty());
+}
+
+#[test]
+fn ac_873_lq_009_does_not_read_a_constraint() {
+    let mut document = small_document();
+    let tag = loftspec::names::TagName::parse("identity").unwrap();
+    document.products[0].details.tags.push(tag);
+    document.components[0].constraints[0].name =
+        "The document model shall keep identity rules.".to_owned();
     assert!(of(&findings(&document), RuleId::Lq009).is_empty());
 }

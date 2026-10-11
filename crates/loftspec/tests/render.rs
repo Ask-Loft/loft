@@ -4,6 +4,7 @@ mod common;
 
 use common::small_document;
 use loftspec::canonical::canonical_bytes;
+use loftspec::codec;
 use loftspec::hash::hash_document;
 use loftspec::render::{Projections, render};
 use serde_json::Value;
@@ -76,6 +77,28 @@ fn ac_686_every_node_of_the_document_appears() {
     ] {
         assert!(markdown.contains(&format!("{label} · ")), "{label}");
     }
+}
+
+#[test]
+fn ac_875_a_nodes_tags_render_on_one_line_after_its_body() {
+    assert!(markdown().contains("\n\nThe example.\n\nTags: `portable`\n\n"));
+}
+
+#[test]
+fn ac_876_the_title_is_the_first_products_name() {
+    assert!(markdown().starts_with("# Example Product\n\n"));
+}
+
+#[test]
+fn ac_877_root_components_render_in_the_order_the_reader_takes_them() {
+    let mut document = small_document();
+    document
+        .components
+        .push(common::root(common::component(common::key(50), "Alpha")));
+    let read = codec::read(&codec::write(&document)).unwrap();
+    let markdown = render(&read).unwrap().markdown;
+    let at = |name: &str| markdown.find(&format!(" · {name}\n")).unwrap();
+    assert!(at("Alpha") < at("Document model"), "{markdown}");
 }
 
 #[test]

@@ -125,7 +125,7 @@ fn ac_713_a_subject_edge_to_a_former_label_raises_no_unresolved_endpoint_error()
 #[test]
 /// A v1 export may scope a nested Component, and the conversion keeps that scope as an edge, so a
 /// `scoped_to` edge may start at any Component.
-fn a_scoped_to_edge_from_a_nested_component_is_accepted() {
+fn ac_324_a_scoped_to_edge_from_a_nested_component_is_accepted() {
     let mut document = small_document();
     document.components[0]
         .components

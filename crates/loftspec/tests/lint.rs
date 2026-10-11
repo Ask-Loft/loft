@@ -154,6 +154,17 @@ fn ac_356_ac_358_siblings_with_one_name_after_trimming_and_lowercasing_are_sh_00
 }
 
 #[test]
+fn ac_871_a_constraint_named_like_a_sibling_feature_is_not_sh_007() {
+    let mut document = small_document();
+    let mut keys = constraint(49);
+    keys.name = "Keys".to_owned();
+    document.products[0].feature_groups[0]
+        .constraints
+        .push(keys);
+    assert!(of(&findings(&document), RuleId::Sh007).is_empty());
+}
+
+#[test]
 fn ac_357_equal_names_under_different_parents_are_not_sh_007() {
     let mut document = small_document();
     document.components.push(root(component(key(45), "Keys")));
@@ -166,6 +177,15 @@ fn ac_359_ac_362_a_component_whose_subtree_holds_no_constraint_or_attribute_is_s
     document.components.push(root(component(key(46), "Loose")));
     assert_eq!(of(&findings(&document), RuleId::Sh008), [vec![key(46)]]);
     assert_eq!(severity(RuleId::Sh008), Severity::Info);
+}
+
+#[test]
+fn ac_870_a_component_inside_a_subtree_that_yields_sh_008_yields_none_of_its_own() {
+    let mut document = small_document();
+    let mut parent = component(key(46), "Loose");
+    parent.components.push(component(key(47), "Part"));
+    document.components.push(root(parent));
+    assert_eq!(of(&findings(&document), RuleId::Sh008), [vec![key(46)]]);
 }
 
 #[test]
@@ -261,7 +281,7 @@ fn ac_410_a_statement_with_a_form_is_not_v2_002() {
 }
 
 #[test]
-fn ac_412_ac_414_a_reference_without_a_mentions_edge_is_v2_003_naming_the_reference() {
+fn ac_412_ac_414_ac_874_a_reference_without_a_mentions_edge_or_a_target_is_v2_003() {
     let document = with_body("See CMP-1 and RQ-99.");
     let found: Vec<Finding> = findings(&document)
         .into_iter()
@@ -317,7 +337,7 @@ fn ac_420_ac_421_findings_are_ordered_by_path_line_column_rule_and_keys_and_stab
 }
 
 #[test]
-fn ac_422_a_rule_can_be_disabled() {
+fn ac_422_ac_866_a_rule_listed_under_rules_can_be_disabled() {
     let all = configured(
         &small_document(),
         "rules:\n  - rule: SH-006\n    enabled: false\n",
@@ -336,7 +356,7 @@ fn ac_423_a_rules_severity_can_be_set() {
 }
 
 #[test]
-fn ac_425_ac_675_a_suppression_names_a_rule_a_key_and_a_reason_and_drops_the_finding() {
+fn ac_425_ac_675_ac_867_a_suppression_names_a_rule_a_key_and_a_reason_and_drops_the_finding() {
     let yaml = format!(
         "suppressions:\n  - rule: SH-006\n    key: {}\n    reason: \"Kept for later.\"\n",
         key(30)
@@ -379,7 +399,7 @@ fn ac_673_a_severity_outside_the_three_is_an_error_naming_the_value() {
 }
 
 #[test]
-fn an_option_a_rule_does_not_take_is_an_unknown_field() {
+fn ac_869_an_option_a_rule_does_not_take_is_an_error_at_its_line_and_column() {
     let errors = LintConfig::read(Some(
         b"rules:\n  - rule: SH-001\n    lexicon:\n      extend:\n        - a\n",
     ));
