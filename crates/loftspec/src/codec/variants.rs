@@ -5,26 +5,33 @@
 use super::error::{Located, Problem};
 use super::record::Rec;
 use super::schema::Kind;
+use crate::attributes::BandKind;
+use crate::decision::{DriverKind, StateKind};
+use crate::statement::Form;
 
 /// The fields each value of a record's discriminating field takes, besides the fields every
-/// record of its kind carries.
+/// record of its kind carries. Each match is exhaustive over its model kind, so a new variant
+/// cannot be read without saying which fields it takes.
 fn variant(kind: Kind, value: &str) -> &'static [&'static str] {
-    match (kind, value) {
-        (Kind::Statement, "ubiquitous") => &["system", "shall"],
-        (Kind::Statement, "event_driven") => &["when", "system", "shall"],
-        (Kind::Statement, "state_driven") => &["while", "system", "shall"],
-        (Kind::Statement, "unwanted") => &["if", "system", "shall"],
-        (Kind::Statement, "optional") => &["where", "system", "shall"],
-        (Kind::State, "accepted") => &["selectedOption", "outcome"],
-        (Kind::State, "rejected") => &["rationale"],
-        (Kind::State, "superseded") => &["selectedOption", "outcome", "successor"],
-        (Kind::State, "retired") => &["selectedOption", "outcome", "rationale"],
-        (Kind::Driver, "local") => &["label", "statement"],
-        (Kind::Driver, "subject") => &["subject"],
-        (Kind::Band, "at_most") => &["upper"],
-        (Kind::Band, "at_least") => &["lower"],
-        (Kind::Band, "exactly") => &["value"],
-        (Kind::Band, "between") => &["lower", "upper"],
+    match kind {
+        Kind::Statement => Form::parse(value).map_or(&[], Form::slots),
+        Kind::State => StateKind::parse(value).map_or(&[], |state| match state {
+            StateKind::Proposed => &[],
+            StateKind::Accepted => &["selectedOption", "outcome"],
+            StateKind::Rejected => &["rationale"],
+            StateKind::Superseded => &["selectedOption", "outcome", "successor"],
+            StateKind::Retired => &["selectedOption", "outcome", "rationale"],
+        }),
+        Kind::Driver => DriverKind::parse(value).map_or(&[], |driver| match driver {
+            DriverKind::Local => &["label", "statement"],
+            DriverKind::Subject => &["subject"],
+        }),
+        Kind::Band => BandKind::parse(value).map_or(&[], |band| match band {
+            BandKind::AtMost => &["upper"],
+            BandKind::AtLeast => &["lower"],
+            BandKind::Exactly => &["value"],
+            BandKind::Between => &["lower", "upper"],
+        }),
         _ => &[],
     }
 }

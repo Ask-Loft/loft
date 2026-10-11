@@ -2,11 +2,13 @@
 
 use super::error::ReadError;
 use super::record::Rec;
-use super::resolve::{Resolver, key, slug, text, value};
+use super::resolve::{Resolver, checked, key, slug, text};
 use crate::decision::{
-    Assessment, Consequence, Decision, DecisionOption, DecisionState, Driver, DriverPayload,
+    Assessment, Consequence, ConsequenceKind, Decision, DecisionOption, DecisionState, Driver,
+    DriverPayload, Rating, StateKind,
 };
 use crate::document::Edge;
+use crate::document::SubjectRole;
 use crate::ids::{ConsequenceId, DecisionId, DriverId, ElementId, OptionId};
 
 impl Resolver<'_> {
@@ -18,7 +20,7 @@ impl Resolver<'_> {
             self.document.edges.push(Edge::Subject {
                 decision: id,
                 subject: node,
-                role: value(&text(subject, "role")),
+                role: checked(SubjectRole::parse, subject, "role"),
             });
         }
         let drivers = record
@@ -44,7 +46,7 @@ impl Resolver<'_> {
             .map(|consequence| {
                 Ok(Consequence {
                     id: ConsequenceId::new(key(consequence, "key")),
-                    kind: value(&text(consequence, "kind")),
+                    kind: checked(ConsequenceKind::parse, consequence, "kind"),
                     statement: text(consequence, "statement"),
                     subject: consequence
                         .get("subject")
@@ -73,7 +75,7 @@ impl Resolver<'_> {
                 .map(|assessment| Assessment {
                     option: OptionId::new(key(assessment, "option")),
                     driver: DriverId::new(key(assessment, "driver")),
-                    rating: value(&text(assessment, "rating")),
+                    rating: checked(Rating::parse, assessment, "rating"),
                     rationale: text(assessment, "rationale"),
                 })
                 .collect(),
@@ -86,24 +88,24 @@ impl Resolver<'_> {
 fn state_of(state: &Rec) -> DecisionState {
     let selected = || OptionId::new(key(state, "selectedOption"));
     let field = |name: &str| text(state, name);
-    match state.text("kind").unwrap_or_default() {
-        "accepted" => DecisionState::Accepted {
+    match checked(StateKind::parse, state, "kind") {
+        StateKind::Proposed => DecisionState::Proposed,
+        StateKind::Accepted => DecisionState::Accepted {
             selected_option: selected(),
             outcome: field("outcome"),
         },
-        "rejected" => DecisionState::Rejected {
+        StateKind::Rejected => DecisionState::Rejected {
             rationale: field("rationale"),
         },
-        "superseded" => DecisionState::Superseded {
+        StateKind::Superseded => DecisionState::Superseded {
             selected_option: selected(),
             outcome: field("outcome"),
             successor: DecisionId::new(key(state, "successor")),
         },
-        "retired" => DecisionState::Retired {
+        StateKind::Retired => DecisionState::Retired {
             selected_option: selected(),
             outcome: field("outcome"),
             rationale: field("rationale"),
         },
-        _ => DecisionState::Proposed,
     }
 }

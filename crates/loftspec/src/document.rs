@@ -1,6 +1,7 @@
 //! A whole document (CMP-2): the Products in the manifest's order, the root Components, the
 //! typed edges, the two registries, the decisions, the bindings and the record of a v1 source.
 
+use crate::wire::wire_names;
 use serde::Deserialize;
 
 use crate::bindings::{Bindings, Counters};
@@ -43,15 +44,10 @@ pub enum SubjectRole {
     Outcome,
 }
 
-impl SubjectRole {
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Affected => "affected",
-            Self::Outcome => "outcome",
-        }
-    }
-}
+wire_names!(SubjectRole {
+    Affected => "affected",
+    Outcome => "outcome",
+});
 
 /// A typed edge. Each type fixes the kinds at its two ends.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

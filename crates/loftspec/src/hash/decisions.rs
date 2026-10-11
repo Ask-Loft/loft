@@ -73,25 +73,26 @@ impl<'a> DecisionHasher<'a> {
 
     fn state_view(&mut self, decision: &Decision) -> Result<Value, HashError> {
         let option = |selected: OptionId| option_position(decision, selected);
+        let kind = decision.state.kind().as_str();
         Ok(match &decision.state {
-            DecisionState::Proposed => json!({ "kind": "proposed" }),
+            DecisionState::Proposed => json!({ "kind": kind }),
             DecisionState::Accepted {
                 selected_option,
                 outcome,
             } => json!({
-                "kind": "accepted",
+                "kind": kind,
                 "selectedOption": option(*selected_option)?,
                 "outcome": outcome,
             }),
             DecisionState::Rejected { rationale } => {
-                json!({ "kind": "rejected", "rationale": rationale })
+                json!({ "kind": kind, "rationale": rationale })
             }
             DecisionState::Superseded {
                 selected_option,
                 outcome,
                 successor,
             } => json!({
-                "kind": "superseded",
+                "kind": kind,
                 "selectedOption": option(*selected_option)?,
                 "outcome": outcome,
                 "successor": self.hash(*successor)?,
@@ -101,7 +102,7 @@ impl<'a> DecisionHasher<'a> {
                 outcome,
                 rationale,
             } => json!({
-                "kind": "retired",
+                "kind": kind,
                 "selectedOption": option(*selected_option)?,
                 "outcome": outcome,
                 "rationale": rationale,
@@ -130,12 +131,13 @@ fn decision_view(
     let drivers = decision
         .drivers
         .iter()
-        .map(|driver| match &driver.payload {
+        .map(|driver| (driver.payload.kind().as_str(), &driver.payload))
+        .map(|(kind, payload)| match payload {
             DriverPayload::Local { label, statement } => {
-                Ok(json!({ "kind": "local", "label": label, "statement": statement }))
+                Ok(json!({ "kind": kind, "label": label, "statement": statement }))
             }
             DriverPayload::Subject { subject } => {
-                Ok(json!({ "kind": "subject", "subject": node(*subject)? }))
+                Ok(json!({ "kind": kind, "subject": node(*subject)? }))
             }
         })
         .collect::<Result<Vec<_>, HashError>>()?;

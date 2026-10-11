@@ -22,6 +22,7 @@ pub mod slug;
 pub mod statement;
 pub mod text;
 pub mod tree;
+mod wire;
 pub mod yaml;
 
 /// The identifier a manifest names for this format, versioned with the text form it describes.

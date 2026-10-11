@@ -2,10 +2,9 @@
 
 use super::record::{Rec, Val};
 use super::schema::Kind;
-use super::unresolve::name_of;
 use crate::attributes::{QualityBand, QualityTarget};
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
-use crate::statement::{EarsForm, Statement};
+use crate::statement::Statement;
 
 /// A statement as `text`, or as `form` with its slots in template order (AC-751, AC-752).
 pub(super) fn statement(statement: &Statement) -> Rec {
@@ -17,48 +16,27 @@ pub(super) fn statement(statement: &Statement) -> Rec {
         }
         Statement::Form(form) => form,
     };
-    record.set_text("form", form.name());
-    let (condition, system, shall) = match form {
-        EarsForm::Ubiquitous { system, shall } => (None, system, shall),
-        EarsForm::EventDriven {
-            when,
-            system,
-            shall,
-        } => (Some(("when", when)), system, shall),
-        EarsForm::StateDriven {
-            r#while,
-            system,
-            shall,
-        } => (Some(("while", r#while)), system, shall),
-        EarsForm::Unwanted {
-            r#if,
-            system,
-            shall,
-        } => (Some(("if", r#if)), system, shall),
-        EarsForm::Optional {
-            r#where,
-            system,
-            shall,
-        } => (Some(("where", r#where)), system, shall),
-    };
-    if let Some((slot, text)) = condition {
-        record.set_text(slot, text.as_str());
+    let kind = form.kind();
+    record.set_text("form", kind.as_str());
+    let (condition, system, shall) = form.parts();
+    if let (Some(slot), Some(text)) = (kind.condition(), condition) {
+        record.set_text(slot, text);
     }
-    record.set_text("system", system.as_str());
-    record.set_text("shall", shall.as_str());
+    record.set_text("system", system);
+    record.set_text("shall", shall);
     record
 }
 
 /// A quality target with its band (AC-764, AC-765).
 pub(super) fn target(target: &QualityTarget) -> Rec {
     let mut band = Rec::new(Kind::Band);
-    let (kind, lower, upper, value) = match &target.band {
-        QualityBand::AtMost { upper } => ("at_most", None, Some(upper), None),
-        QualityBand::AtLeast { lower } => ("at_least", Some(lower), None, None),
-        QualityBand::Exactly { value } => ("exactly", None, None, Some(value)),
-        QualityBand::Between { lower, upper } => ("between", Some(lower), Some(upper), None),
+    let (lower, upper, value) = match &target.band {
+        QualityBand::AtMost { upper } => (None, Some(upper), None),
+        QualityBand::AtLeast { lower } => (Some(lower), None, None),
+        QualityBand::Exactly { value } => (None, None, Some(value)),
+        QualityBand::Between { lower, upper } => (Some(lower), Some(upper), None),
     };
-    band.set_text("kind", kind);
+    band.set_text("kind", target.band.kind().as_str());
     for (field, bound) in [("lower", lower), ("upper", upper), ("value", value)] {
         if let Some(bound) = bound {
             band.set_text(field, bound.as_str());
@@ -68,7 +46,7 @@ pub(super) fn target(target: &QualityTarget) -> Rec {
     record.set_text("metric", target.metric.as_str());
     record.set("band", Val::Record(band));
     record.set_text("unit", target.unit.as_str());
-    record.set_text("aggregation", name_of(&target.aggregation));
+    record.set_text("aggregation", target.aggregation.as_str());
     record.set_text("scenario", target.scenario.as_str());
     record.set_text("environment", target.environment.as_str());
     record
@@ -134,37 +112,25 @@ pub(super) fn node_ref(subject: NodeRef) -> Val {
 
 fn state(state: &DecisionState) -> Rec {
     let mut record = Rec::new(Kind::State);
-    let (kind, selected, outcome, rationale, successor) = match state {
-        DecisionState::Proposed => ("proposed", None, None, None, None),
+    let (selected, outcome, rationale, successor) = match state {
+        DecisionState::Proposed => (None, None, None, None),
         DecisionState::Accepted {
             selected_option,
             outcome,
-        } => ("accepted", Some(selected_option), Some(outcome), None, None),
-        DecisionState::Rejected { rationale } => ("rejected", None, None, Some(rationale), None),
+        } => (Some(selected_option), Some(outcome), None, None),
+        DecisionState::Rejected { rationale } => (None, None, Some(rationale), None),
         DecisionState::Superseded {
             selected_option,
             outcome,
             successor,
-        } => (
-            "superseded",
-            Some(selected_option),
-            Some(outcome),
-            None,
-            Some(successor),
-        ),
+        } => (Some(selected_option), Some(outcome), None, Some(successor)),
         DecisionState::Retired {
             selected_option,
             outcome,
             rationale,
-        } => (
-            "retired",
-            Some(selected_option),
-            Some(outcome),
-            Some(rationale),
-            None,
-        ),
+        } => (Some(selected_option), Some(outcome), Some(rationale), None),
     };
-    record.set_text("kind", kind);
+    record.set_text("kind", state.kind().as_str());
     if let Some(option) = selected {
         record.set_text("selectedOption", option.key().to_string());
     }
@@ -181,15 +147,12 @@ fn state(state: &DecisionState) -> Rec {
 }
 
 fn driver_payload(record: &mut Rec, payload: &DriverPayload) {
+    record.set_text("kind", payload.kind().as_str());
     match payload {
         DriverPayload::Local { label, statement } => {
-            record.set_text("kind", "local");
             record.set_text("label", label.as_str());
             record.set_text("statement", statement.as_str());
         }
-        DriverPayload::Subject { subject } => {
-            record.set_text("kind", "subject");
-            record.set("subject", node_ref(*subject));
-        }
+        DriverPayload::Subject { subject } => record.set("subject", node_ref(*subject)),
     }
 }

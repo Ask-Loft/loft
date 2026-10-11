@@ -4,8 +4,6 @@
 
 use std::collections::BTreeMap;
 
-use serde::de::DeserializeOwned;
-
 use super::error::{Problem, ReadError, SpecPath};
 use super::files::{CATEGORIES, LABELS, MANIFEST, Role, TAGS, Tree};
 use super::record::{Rec, Val};
@@ -108,10 +106,16 @@ pub(super) fn text(record: &Rec, field: &str) -> String {
     record.text(field).unwrap_or_default().to_owned()
 }
 
-/// A checked enumerated value as its model type.
-pub(super) fn value<T: DeserializeOwned>(text: &str) -> T {
-    serde_json::from_value(serde_json::Value::String(text.to_owned()))
-        .expect("a value the schema checked")
+/// A checked enumerated field as its model value.
+pub(super) fn checked<T>(parse: fn(&str) -> Option<T>, record: &Rec, field: &str) -> T {
+    parse(record.text(field).unwrap_or_default()).expect("a value the schema checked")
+}
+
+/// An optional checked enumerated field as its model value.
+pub(super) fn optional<T>(parse: fn(&str) -> Option<T>, record: &Rec, field: &str) -> Option<T> {
+    record
+        .text(field)
+        .map(|text| parse(text).expect("a value the schema checked"))
 }
 
 pub(super) fn slug(record: &Rec) -> Slug {

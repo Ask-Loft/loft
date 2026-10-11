@@ -3,8 +3,6 @@
 
 use std::collections::BTreeMap;
 
-use serde::Serialize;
-
 use super::files::{Content, Role, Tree};
 use super::record::{Rec, Val};
 use super::schema::Kind;
@@ -97,15 +95,6 @@ fn keys(items: impl IntoIterator<Item = Key>) -> Val {
 
 fn records(items: impl IntoIterator<Item = Rec>) -> Val {
     Val::List(items.into_iter().map(Val::Record).collect())
-}
-
-/// An enumerated model value as the text its serde name gives; the inverse of the reader's
-/// `value`.
-pub(super) fn name_of(value: &impl Serialize) -> String {
-    match serde_json::to_value(value) {
-        Ok(serde_json::Value::String(name)) => name,
-        _ => unreachable!("an enumerated value serializes as a string"),
-    }
 }
 
 fn entry(kind: Kind, key: Key, name: &str, definition: &str) -> Rec {
@@ -385,10 +374,10 @@ impl Edges {
             record.set("constraintBinding", Val::Record(nested));
         }
         if let Some(kind) = constraint.conservation_kind {
-            record.set_text("conservationKind", name_of(&kind));
+            record.set_text("conservationKind", kind.as_str());
         }
         if let Some(fate) = constraint.verification_fate {
-            record.set_text("verificationFate", name_of(&fate));
+            record.set_text("verificationFate", fate.as_str());
         }
         record
     }
@@ -401,10 +390,10 @@ impl Edges {
             Some(&quality.name),
             &quality.details,
         );
-        record.set_text("qaKind", name_of(&quality.kind));
+        record.set_text("qaKind", quality.kind.as_str());
         record.set("qualityTarget", Val::Record(target(&quality.target)));
         if let Some(fate) = quality.verification_fate {
-            record.set_text("verificationFate", name_of(&fate));
+            record.set_text("verificationFate", fate.as_str());
         }
         record
     }

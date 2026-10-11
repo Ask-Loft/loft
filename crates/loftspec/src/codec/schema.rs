@@ -133,35 +133,11 @@ const fn edges(name: &'static str) -> Field {
     ordered(scalars(name, Scalar::Key), Order::ByKey)
 }
 
-const FORMS: &[&str] = &[
-    "ubiquitous",
-    "event_driven",
-    "state_driven",
-    "unwanted",
-    "optional",
-];
-const STATES: &[&str] = &["proposed", "accepted", "rejected", "superseded", "retired"];
-const DRIVER_KINDS: &[&str] = &["local", "subject"];
-const RATINGS: &[&str] = &["supports", "neutral", "conflicts", "unknown"];
-const CONSEQUENCE_KINDS: &[&str] = &["benefit", "cost", "risk", "obligation"];
-const ROLES: &[&str] = &["outcome", "affected"];
-const QA_KINDS: &[&str] = &[
-    "latency",
-    "throughput",
-    "availability",
-    "cost",
-    "testability",
-    "usability",
-    "capacity",
-];
-const AGGREGATIONS: &[&str] = &[
-    "each", "single", "minimum", "maximum", "mean", "median", "p95", "p99", "total",
-];
-const BAND_KINDS: &[&str] = &["at_most", "at_least", "exactly", "between"];
-const CONSERVATION_KINDS: &[&str] = &["sum_preservation", "cap", "operation_identity"];
-const FATES: &[&str] = &["proved", "monitored", "sampled"];
-
+use crate::attributes::{BandKind, ConservationKind, QaKind, QualityAggregation, VerificationFate};
+use crate::decision::{ConsequenceKind, DriverKind, Rating, StateKind};
+use crate::document::SubjectRole;
 use crate::identity::LabelPrefix;
+use crate::statement::Form;
 use Kind as K;
 use Scalar as S;
 
@@ -172,7 +148,7 @@ const BODY: Field = opt("body", S::Text);
 const TAGS: Field = scalars("tags", S::Tag);
 const MENTIONS: Field = edges("mentions");
 const SECTIONS: Field = records("sections", K::Section);
-const FATE: Field = opt("verificationFate", S::Enum(FATES));
+const FATE: Field = opt("verificationFate", S::Enum(VerificationFate::NAMES));
 
 /// One counter per label prefix, in the order `counters` lists them (AC-786).
 const COUNTERS: [Field; LabelPrefix::ALL.len()] = {
@@ -264,7 +240,7 @@ const REQUIREMENT_FIELDS: &[Field] = &[
 
 const STATEMENT_FIELDS: &[Field] = &[
     opt("text", S::Text),
-    opt("form", S::Enum(FORMS)),
+    opt("form", S::Enum(Form::NAMES)),
     opt("when", S::Text),
     opt("while", S::Text),
     opt("if", S::Text),
@@ -281,7 +257,7 @@ const CONSTRAINT_FIELDS: &[Field] = &[
     BODY,
     TAGS,
     record("constraintBinding", false, K::ConstraintBinding),
-    opt("conservationKind", S::Enum(CONSERVATION_KINDS)),
+    opt("conservationKind", S::Enum(ConservationKind::NAMES)),
     FATE,
     MENTIONS,
     SECTIONS,
@@ -295,7 +271,7 @@ const QUALITY_ATTRIBUTE_FIELDS: &[Field] = &[
     NAME,
     BODY,
     TAGS,
-    req("qaKind", S::Enum(QA_KINDS)),
+    req("qaKind", S::Enum(QaKind::NAMES)),
     record("qualityTarget", true, K::QualityTarget),
     FATE,
     MENTIONS,
@@ -306,13 +282,13 @@ const QUALITY_TARGET_FIELDS: &[Field] = &[
     req("metric", S::Text),
     record("band", true, K::Band),
     req("unit", S::Text),
-    req("aggregation", S::Enum(AGGREGATIONS)),
+    req("aggregation", S::Enum(QualityAggregation::NAMES)),
     req("scenario", S::Text),
     req("environment", S::Text),
 ];
 
 const BAND_FIELDS: &[Field] = &[
-    req("kind", S::Enum(BAND_KINDS)),
+    req("kind", S::Enum(BandKind::NAMES)),
     opt("lower", S::Text),
     opt("upper", S::Text),
     opt("value", S::Text),
@@ -335,7 +311,7 @@ const DECISION_FIELDS: &[Field] = &[
 ];
 
 const STATE_FIELDS: &[Field] = &[
-    req("kind", S::Enum(STATES)),
+    req("kind", S::Enum(StateKind::NAMES)),
     opt("selectedOption", S::Key),
     opt("outcome", S::Text),
     opt("rationale", S::Text),
@@ -344,7 +320,7 @@ const STATE_FIELDS: &[Field] = &[
 
 const DRIVER_FIELDS: &[Field] = &[
     KEY,
-    req("kind", S::Enum(DRIVER_KINDS)),
+    req("kind", S::Enum(DriverKind::NAMES)),
     opt("label", S::Text),
     opt("statement", S::Text),
     node_ref("subject", false),
@@ -355,18 +331,21 @@ const OPTION_FIELDS: &[Field] = &[KEY, req("title", S::Text), req("description",
 const ASSESSMENT_FIELDS: &[Field] = &[
     req("option", S::Key),
     req("driver", S::Key),
-    req("rating", S::Enum(RATINGS)),
+    req("rating", S::Enum(Rating::NAMES)),
     req("rationale", S::Text),
 ];
 
 const CONSEQUENCE_FIELDS: &[Field] = &[
     KEY,
-    req("kind", S::Enum(CONSEQUENCE_KINDS)),
+    req("kind", S::Enum(ConsequenceKind::NAMES)),
     req("statement", S::Text),
     node_ref("subject", false),
 ];
 
-const SUBJECT_FIELDS: &[Field] = &[req("role", S::Enum(ROLES)), node_ref("node", true)];
+const SUBJECT_FIELDS: &[Field] = &[
+    req("role", S::Enum(SubjectRole::NAMES)),
+    node_ref("node", true),
+];
 
 const FORMER_LABEL_FIELDS: &[Field] = &[req("formerLabel", S::Label)];
 

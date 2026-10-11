@@ -2,15 +2,18 @@
 
 use super::error::ReadError;
 use super::record::Rec;
-use super::resolve::{Resolver, key, slug, text, value};
-use crate::attributes::{QualityBand, QualityTarget, TechnicalBinding};
+use super::resolve::{Resolver, checked, key, optional, slug, text};
+use crate::attributes::{
+    BandKind, ConservationKind, QaKind, QualityAggregation, QualityBand, QualityTarget,
+    TechnicalBinding, VerificationFate,
+};
 use crate::document::Edge;
 use crate::ids::{
     ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, NodeId,
     ProductId, QualityAttributeId, RequirementId, SectionId,
 };
 use crate::names::{CategoryName, TagName};
-use crate::statement::{EarsForm, Statement};
+use crate::statement::{EarsForm, Form, Statement};
 use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
     Requirement, RootComponent, Section,
@@ -184,8 +187,8 @@ impl Resolver<'_> {
                         .expect("a checked category"),
                     required_value: text(binding, "requiredValue"),
                 }),
-            conservation_kind: record.text("conservationKind").map(value),
-            verification_fate: record.text("verificationFate").map(value),
+            conservation_kind: optional(ConservationKind::parse, record, "conservationKind"),
+            verification_fate: optional(VerificationFate::parse, record, "verificationFate"),
         })
     }
 
@@ -196,33 +199,33 @@ impl Resolver<'_> {
             id: Some(id),
             name: text(record, "name"),
             details: self.details(record, id.into())?,
-            kind: value(&text(record, "qaKind")),
+            kind: checked(QaKind::parse, record, "qaKind"),
             target: QualityTarget {
                 metric: text(target, "metric"),
                 band: band_of(target.record("band").expect("a checked band")),
                 unit: text(target, "unit"),
-                aggregation: value(&text(target, "aggregation")),
+                aggregation: checked(QualityAggregation::parse, target, "aggregation"),
                 scenario: text(target, "scenario"),
                 environment: text(target, "environment"),
             },
-            verification_fate: record.text("verificationFate").map(value),
+            verification_fate: optional(VerificationFate::parse, record, "verificationFate"),
         })
     }
 }
 
 fn band_of(band: &Rec) -> QualityBand {
     let bound = |field: &str| text(band, field);
-    match band.text("kind").unwrap_or_default() {
-        "at_most" => QualityBand::AtMost {
+    match checked(BandKind::parse, band, "kind") {
+        BandKind::AtMost => QualityBand::AtMost {
             upper: bound("upper"),
         },
-        "at_least" => QualityBand::AtLeast {
+        BandKind::AtLeast => QualityBand::AtLeast {
             lower: bound("lower"),
         },
-        "exactly" => QualityBand::Exactly {
+        BandKind::Exactly => QualityBand::Exactly {
             value: bound("value"),
         },
-        _ => QualityBand::Between {
+        BandKind::Between => QualityBand::Between {
             lower: bound("lower"),
             upper: bound("upper"),
         },
@@ -234,29 +237,11 @@ fn statement_of(record: &Rec) -> Statement {
     if let Some(text) = record.text("text") {
         return Statement::Text(text.to_owned());
     }
-    let slot = |name: &str| text(record, name);
-    let (system, shall) = (slot("system"), slot("shall"));
-    Statement::Form(match record.text("form").unwrap_or_default() {
-        "event_driven" => EarsForm::EventDriven {
-            when: slot("when"),
-            system,
-            shall,
-        },
-        "state_driven" => EarsForm::StateDriven {
-            r#while: slot("while"),
-            system,
-            shall,
-        },
-        "unwanted" => EarsForm::Unwanted {
-            r#if: slot("if"),
-            system,
-            shall,
-        },
-        "optional" => EarsForm::Optional {
-            r#where: slot("where"),
-            system,
-            shall,
-        },
-        _ => EarsForm::Ubiquitous { system, shall },
-    })
+    let form = checked(Form::parse, record, "form");
+    let condition = form
+        .condition()
+        .map(|slot| text(record, slot))
+        .unwrap_or_default();
+    let (system, shall) = (text(record, "system"), text(record, "shall"));
+    Statement::Form(EarsForm::from_slots(form, condition, system, shall))
 }
