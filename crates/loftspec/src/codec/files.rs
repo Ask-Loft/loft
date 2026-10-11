@@ -71,6 +71,37 @@ impl Role {
         })
     }
 
+    /// The path of a file of this role: the inverse of [`Role::of`].
+    #[must_use]
+    pub fn path(&self) -> SpecPath {
+        SpecPath::new(&match self {
+            Self::Manifest => MANIFEST.to_owned(),
+            Self::Labels => LABELS.to_owned(),
+            Self::Tags => TAGS.to_owned(),
+            Self::Categories => CATEGORIES.to_owned(),
+            Self::Lint => LINT.to_owned(),
+            Self::Product { product } => format!("products/{product}/product.yaml"),
+            Self::Feature {
+                product,
+                group,
+                feature,
+            } => format!("products/{product}/{group}/{feature}.yaml"),
+            Self::Component { slug } => format!("components/{slug}.yaml"),
+            Self::Decision { slug } => format!("decisions/{slug}.yaml"),
+        })
+    }
+
+    /// The file or directory name the file's record's slug must equal (RQ-211).
+    #[must_use]
+    pub fn slug(&self) -> Option<&str> {
+        match self {
+            Self::Product { product } => Some(product),
+            Self::Feature { feature, .. } => Some(feature),
+            Self::Component { slug } | Self::Decision { slug } => Some(slug),
+            _ => None,
+        }
+    }
+
     /// The record kind the file holds at its top level; none for the lint configuration,
     /// which stage 5 reads.
     const fn kind(&self) -> Option<Kind> {
@@ -99,6 +130,28 @@ pub enum Content {
     Record(Rec),
     Registry(Vec<Rec>),
     Lint(Vec<u8>),
+}
+
+impl Content {
+    /// The records the file holds at its top level.
+    pub fn records(&self) -> impl Iterator<Item = &Rec> {
+        let records: &[Rec] = match self {
+            Self::Record(record) => std::slice::from_ref(record),
+            Self::Registry(entries) => entries,
+            Self::Lint(_) => &[],
+        };
+        records.iter()
+    }
+
+    /// The records the file holds at its top level, to change.
+    pub fn records_mut(&mut self) -> impl Iterator<Item = &mut Rec> {
+        let records: &mut [Rec] = match self {
+            Self::Record(record) => std::slice::from_mut(record),
+            Self::Registry(entries) => entries,
+            Self::Lint(_) => &mut [],
+        };
+        records.iter_mut()
+    }
 }
 
 /// Every file of a tree, checked, by path.

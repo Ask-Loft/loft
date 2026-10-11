@@ -1,20 +1,11 @@
 //! The records of a statement, a quality target and a decision's own fields.
 
-use serde::Serialize;
-
 use super::record::{Rec, Val};
 use super::schema::Kind;
-use super::unresolve::scalar;
+use super::unresolve::name_of;
 use crate::attributes::{QualityBand, QualityTarget};
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
 use crate::statement::{EarsForm, Statement};
-
-fn name_of(value: &impl Serialize) -> String {
-    match serde_json::to_value(value) {
-        Ok(serde_json::Value::String(name)) => name,
-        _ => unreachable!("an enumerated value serializes as a string"),
-    }
-}
 
 /// A statement as `text`, or as `form` with its slots in template order (AC-751, AC-752).
 pub(super) fn statement(statement: &Statement) -> Rec {
@@ -132,7 +123,7 @@ pub(super) fn decision_fields(decision: &Decision) -> Rec {
 /// A node reference: a held node's key, or `{formerLabel: <label>}` (AC-809).
 pub(super) fn node_ref(subject: NodeRef) -> Val {
     match subject {
-        NodeRef::Held(node) => scalar(&node.key()),
+        NodeRef::Held(node) => Val::scalar(&node.key()),
         NodeRef::Former(label) => {
             let mut record = Rec::new(Kind::FormerLabel);
             record.set_text("formerLabel", label.to_string());

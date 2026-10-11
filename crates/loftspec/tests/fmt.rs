@@ -3,29 +3,11 @@
 mod common;
 
 use common::small_document;
+use common::text::{FEATURE, PRODUCT, edited, path, text};
 use common::v1::{convert_value, full_export};
-use loftspec::codec::{self, Files, SpecPath};
+use loftspec::codec::{self, Files, Problem};
 use loftspec::fmt::format;
 use loftspec::identity::Key;
-
-const FEATURE: &str = "products/example-product/identity/keys.yaml";
-const PRODUCT: &str = "products/example-product/product.yaml";
-
-fn path(text: &str) -> SpecPath {
-    SpecPath::new(text)
-}
-
-fn text(files: &Files, at: &str) -> String {
-    String::from_utf8(files[&path(at)].clone()).unwrap()
-}
-
-fn edited(at: &str, from: &str, to: &str) -> Files {
-    let mut files = codec::write(&small_document());
-    let current = text(&files, at);
-    assert!(current.contains(from), "{from:?}");
-    files.insert(path(at), current.replacen(from, to, 1).into_bytes());
-    files
-}
 
 /// The files after formatting.
 fn formatted(files: &Files) -> Files {
@@ -161,4 +143,15 @@ fn a_new_feature_file_without_a_key_is_listed_by_the_group_of_its_directory() {
     assert_eq!(features.len(), 2);
     assert_eq!(features[1].name, "Labels");
     assert_eq!(features[1].slug.as_str(), "labels");
+}
+
+#[test]
+fn a_new_feature_file_no_group_can_list_is_refused_and_nothing_is_formatted() {
+    let mut files = codec::write(&small_document());
+    let stray = path("products/example-product/elsewhere/labels.yaml");
+    files.insert(stray.clone(), b"name: \"Labels\"\n".to_vec());
+    let errors = format(&files).unwrap_err();
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert_eq!(errors[0].sites[0].path, stray);
+    assert_eq!(errors[0].problem, Problem::NotListed("Feature Group"));
 }

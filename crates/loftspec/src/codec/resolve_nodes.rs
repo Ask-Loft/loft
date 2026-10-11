@@ -1,10 +1,7 @@
 //! Node records as typed nodes, with the edges they carry (RQ-168).
 
-use std::collections::BTreeMap;
-
-use super::error::{ReadError, SpecPath};
-use super::files::Role;
-use super::record::{Rec, Val};
+use super::error::ReadError;
+use super::record::Rec;
 use super::resolve::{Resolver, key, slug, text, value};
 use crate::attributes::{QualityBand, QualityTarget, TechnicalBinding};
 use crate::document::Edge;
@@ -18,14 +15,6 @@ use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
     Requirement, RootComponent, Section,
 };
-
-/// The records of a list field.
-fn records<'r>(record: &'r Rec, field: &str) -> impl Iterator<Item = &'r Rec> {
-    record.list(field).iter().filter_map(|value| match value {
-        Val::Record(record) => Some(record),
-        _ => None,
-    })
-}
 
 impl Resolver<'_> {
     /// A node's body, tags and Sections, and its `mentions` edges.
@@ -44,7 +33,8 @@ impl Resolver<'_> {
     }
 
     fn sections(&mut self, record: &Rec) -> Result<Vec<Section>, ReadError> {
-        records(record, "sections")
+        record
+            .records("sections")
             .map(|section| {
                 let id = SectionId::new(key(section, "key"));
                 self.mentions(section, ElementId::Node(id.into()))?;
@@ -65,7 +55,8 @@ impl Resolver<'_> {
             slug: slug(record),
             name: text(record, "name"),
             details: self.details(record, id.into())?,
-            feature_groups: records(record, "featureGroups")
+            feature_groups: record
+                .records("featureGroups")
                 .map(|group| self.feature_group(group))
                 .collect::<Result<_, _>>()?,
         })
@@ -74,15 +65,9 @@ impl Resolver<'_> {
     fn feature_group(&mut self, record: &Rec) -> Result<FeatureGroup, ReadError> {
         let id = FeatureGroupId::new(key(record, "key"));
         let product_path = self.path.clone();
-        let files: BTreeMap<String, (SpecPath, &Rec)> = self
-            .tree
-            .records(|role| matches!(role, Role::Feature { .. }))
-            .map(|(path, _, feature)| (text(feature, "key"), (path.clone(), feature)))
-            .collect();
         let mut features = Vec::new();
         for listed in record.list("features") {
-            let (path, feature) = &files[listed.text().unwrap_or_default()];
-            self.path = path.clone();
+            let feature = self.listed_file(listed);
             features.push(self.feature(feature)?);
         }
         self.path = product_path;
@@ -92,7 +77,8 @@ impl Resolver<'_> {
             name: text(record, "name"),
             details: self.details(record, id.into())?,
             features,
-            constraints: records(record, "constraints")
+            constraints: record
+                .records("constraints")
                 .map(|constraint| self.constraint(constraint))
                 .collect::<Result<_, _>>()?,
         })
@@ -115,10 +101,12 @@ impl Resolver<'_> {
             slug: slug(record),
             name: text(record, "name"),
             details: self.details(record, id.into())?,
-            requirements: records(record, "requirements")
+            requirements: record
+                .records("requirements")
                 .map(|requirement| self.requirement(requirement))
                 .collect::<Result<_, _>>()?,
-            quality_attributes: records(record, "qualityAttributes")
+            quality_attributes: record
+                .records("qualityAttributes")
                 .map(|quality| self.quality_attribute(quality))
                 .collect::<Result<_, _>>()?,
         })
@@ -131,7 +119,8 @@ impl Resolver<'_> {
             id: Some(id),
             statement: statement_of(statement),
             details: self.details(record, id.into())?,
-            criteria: records(record, "criteria")
+            criteria: record
+                .records("criteria")
                 .map(|criterion| {
                     let id = CriterionId::new(key(criterion, "key"));
                     Ok(Criterion {
@@ -167,13 +156,16 @@ impl Resolver<'_> {
             id: Some(id),
             name: text(record, "name"),
             details: self.details(record, id.into())?,
-            components: records(record, "components")
+            components: record
+                .records("components")
                 .map(|component| self.component(component))
                 .collect::<Result<_, _>>()?,
-            constraints: records(record, "constraints")
+            constraints: record
+                .records("constraints")
                 .map(|constraint| self.constraint(constraint))
                 .collect::<Result<_, _>>()?,
-            quality_attributes: records(record, "qualityAttributes")
+            quality_attributes: record
+                .records("qualityAttributes")
                 .map(|quality| self.quality_attribute(quality))
                 .collect::<Result<_, _>>()?,
         })

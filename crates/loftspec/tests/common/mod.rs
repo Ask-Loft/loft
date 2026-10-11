@@ -3,6 +3,7 @@
 
 #![allow(dead_code)]
 
+pub mod text;
 pub mod v1;
 
 use loftspec::attributes::{

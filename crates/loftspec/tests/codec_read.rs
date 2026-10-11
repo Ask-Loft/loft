@@ -3,30 +3,10 @@
 
 mod common;
 
-use common::small_document;
-use loftspec::codec::{self, Files, Problem, ReadError, SpecPath};
+use common::text::{FEATURE, PRODUCT, edited, files, path};
+use loftspec::codec::{self, Files, Problem, ReadError};
+use loftspec::manifest::ManifestError;
 use loftspec::yaml::{Location, Position};
-
-const FEATURE: &str = "products/example-product/identity/keys.yaml";
-const PRODUCT: &str = "products/example-product/product.yaml";
-
-fn files() -> Files {
-    codec::write(&small_document())
-}
-
-fn path(text: &str) -> SpecPath {
-    SpecPath::new(text)
-}
-
-/// The files with `from` replaced by `to` in the file at `at`.
-fn edited(at: &str, from: &str, to: &str) -> Files {
-    let mut files = files();
-    let bytes = files.get_mut(&path(at)).expect("a written file");
-    let text = String::from_utf8(bytes.clone()).unwrap();
-    assert!(text.contains(from), "{from:?} in {at}");
-    *bytes = text.replacen(from, to, 1).into_bytes();
-    files
-}
 
 fn refused(files: &Files) -> Vec<ReadError> {
     codec::read(files).expect_err("refused")
@@ -60,10 +40,8 @@ fn ac_69_ac_70_an_unknown_format_is_refused_and_no_other_file_is_read() {
     let mut files = edited("loftspec.yaml", "loftspec/1", "loftspec/2");
     files.insert(path("notes.yaml"), b"a: 1\n".to_vec());
     let error = only(&files);
-    assert_eq!(
-        error.problem,
-        Problem::Unsupported("`loftspec/2`".to_owned())
-    );
+    let unknown = ManifestError::UnknownFormat("loftspec/2".to_owned());
+    assert_eq!(error.problem, Problem::Unsupported(unknown));
 }
 
 #[test]

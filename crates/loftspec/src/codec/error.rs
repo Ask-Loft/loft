@@ -2,6 +2,8 @@
 
 use std::fmt;
 
+use crate::identity::Key;
+use crate::manifest::ManifestError;
 use crate::yaml::{self, Location, Position};
 
 /// A path under `spec/`, with `/` between its parts.
@@ -119,20 +121,20 @@ pub enum Problem {
     UnknownFile,
     #[error("the manifest is missing")]
     MissingManifest,
-    #[error("the manifest names {0}, which this reader does not implement")]
-    Unsupported(String),
+    #[error("{0}")]
+    Unsupported(ManifestError),
     #[error("the slug `{slug}` differs from the name `{name}` it fixes")]
     SlugMismatch { slug: String, name: String },
     #[error("the key {0} is carried twice")]
-    DuplicateKey(String),
+    DuplicateKey(Key),
     #[error("{0} is listed without a file")]
-    ListedWithoutFile(String),
+    ListedWithoutFile(Key),
     #[error("no {0} lists this file's key")]
     NotListed(&'static str),
     #[error("the key {0} is listed twice")]
-    ListedTwice(String),
+    ListedTwice(Key),
     #[error("the Feature {0} is listed by two Feature Groups")]
-    ListedByTwoGroups(String),
+    ListedByTwoGroups(Key),
     #[error("the Feature file is not in the directory of its Feature Group `{0}`")]
     WrongDirectory(String),
     #[error("{0}")]

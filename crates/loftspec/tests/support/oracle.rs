@@ -36,14 +36,14 @@ fn from_node(node: &yaml::Node) -> Tree {
 
 /// The tree saphyr-parser gives.
 pub fn theirs(text: &str) -> Option<Tree> {
-    let mut events = Parser::new_from_str(text).map(|event| {
+    let events = Parser::new_from_str(text).map(|event| {
         event
             .unwrap_or_else(|error| panic!("saphyr refused: {error}\n{text}"))
             .0
     });
     let mut stack: Vec<(Tree, Option<String>)> = Vec::new();
     let mut root = None;
-    for event in events.by_ref() {
+    for event in events {
         let node = match event {
             Event::MappingStart(..) => {
                 stack.push((Tree::Mapping(Vec::new()), None));

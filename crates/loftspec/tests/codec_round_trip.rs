@@ -8,22 +8,34 @@ use loftspec::codec::{self, Files};
 use loftspec::document::Document;
 use loftspec::hash::hash_document;
 
+/// The document a tree reads as, or a panic listing the first read errors.
+fn read_back(files: &Files) -> Document {
+    codec::read(files).unwrap_or_else(|errors| {
+        let messages: Vec<String> = errors.iter().take(20).map(ToString::to_string).collect();
+        panic!("{}", messages.join("\n"))
+    })
+}
+
 fn round_trip(document: &Document) -> (Files, Document) {
     let files = codec::write(document);
-    let back = codec::read(&files).unwrap_or_else(|errors| {
-        let messages: Vec<String> = errors.iter().map(ToString::to_string).collect();
-        panic!("{}", messages.join("\n"))
-    });
+    let back = read_back(&files);
     (files, back)
+}
+
+/// Asserts two documents have the same content, binding and state roots, returning the state
+/// root.
+fn assert_roots_match(before: &Document, after: &Document) -> loftspec::canonical::Digest {
+    let before = hash_document(before).unwrap().roots;
+    let after = hash_document(after).unwrap().roots;
+    assert_eq!(after.content, before.content, "content root");
+    assert_eq!(after.bindings, before.bindings, "binding root");
+    assert_eq!(after.state, before.state, "state root");
+    after.state
 }
 
 fn assert_same_roots(document: &Document) -> Files {
     let (files, back) = round_trip(document);
-    let before = hash_document(document).unwrap().roots;
-    let after = hash_document(&back).unwrap().roots;
-    assert_eq!(after.content, before.content, "content root");
-    assert_eq!(after.bindings, before.bindings, "binding root");
-    assert_eq!(after.state, before.state, "state root");
+    assert_roots_match(document, &back);
     files
 }
 
@@ -70,16 +82,9 @@ fn a_live_v1_export_round_trips_through_text() {
     let files = codec::write(&document);
     let written = started.elapsed();
     let started = std::time::Instant::now();
-    let back = codec::read(&files).unwrap_or_else(|errors| {
-        let messages: Vec<String> = errors.iter().take(20).map(ToString::to_string).collect();
-        panic!("{}", messages.join("\n"))
-    });
+    let back = read_back(&files);
     let read = started.elapsed();
-    let before = hash_document(&document).unwrap().roots;
-    let after = hash_document(&back).unwrap().roots;
-    assert_eq!(after.content, before.content, "content root");
-    assert_eq!(after.bindings, before.bindings, "binding root");
-    assert_eq!(after.state, before.state, "state root");
+    let state_root = assert_roots_match(&document, &back);
     assert_eq!(codec::write(&back), files, "a second write changes no byte");
     let started = std::time::Instant::now();
     let formatted = loftspec::fmt::format(&files).unwrap();
@@ -101,6 +106,6 @@ fn a_live_v1_export_round_trips_through_text() {
         "{} files, {bytes} bytes; write {written:?}, read {read:?}, format {format:?}; state \
          root {}",
         files.len(),
-        after.state
+        state_root
     );
 }

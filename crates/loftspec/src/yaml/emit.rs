@@ -174,7 +174,8 @@ fn is_null_or_boolean(token: &str) -> bool {
     const WORDS: [&str; 13] = [
         "~", "null", "true", "false", "y", "n", "yes", "no", "on", "off", "", "nan", "inf",
     ];
-    WORDS.contains(&token.to_ascii_lowercase().trim_start_matches('.'))
+    let word = token.trim_start_matches('.');
+    WORDS.iter().any(|known| known.eq_ignore_ascii_case(word))
 }
 
 /// Whether a YAML 1.1 or 1.2 reader would read the token as an integer or a float, including

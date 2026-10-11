@@ -276,11 +276,6 @@ impl Counters {
         self.0.insert(prefix, next);
     }
 
-    /// Every prefix with its next value, in prefix order.
-    pub fn iter(&self) -> impl Iterator<Item = (LabelPrefix, NonZeroU64)> + '_ {
-        self.0.iter().map(|(prefix, next)| (*prefix, *next))
-    }
-
     /// Raises the counter of `label`'s prefix above `label`, so the value is never allocated
     /// again; a counter already above it is unchanged.
     pub fn raise(&mut self, label: Label) {

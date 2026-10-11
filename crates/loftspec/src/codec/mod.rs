@@ -18,6 +18,7 @@ mod variants;
 pub use error::{Problem, ReadError, Site, SpecPath};
 pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, Tree};
 pub use layout::read_tree;
+pub(crate) use layout::{check_tree, parse_files};
 pub use record::{Mode, Rec, Val};
 pub use resolve::resolve;
 pub use unresolve::unresolve;
@@ -34,7 +35,7 @@ use crate::document::Document;
 /// Every read error the tree holds (RQ-30..RQ-33, RQ-65, RQ-4), or the first reference the
 /// model cannot hold.
 pub fn read(files: &Files) -> Result<Document, Vec<ReadError>> {
-    let tree = read_tree(files, Mode::Strict)?;
+    let tree = read_tree(files)?;
     resolve(&tree).map_err(|error| vec![error])
 }
 

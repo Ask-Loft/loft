@@ -31,9 +31,14 @@ pub fn resolve(tree: &Tree) -> Result<Document, ReadError> {
     let manifest = tree
         .record(&manifest_path)
         .expect("a read tree has a manifest");
+    let files = tree
+        .records(|role| matches!(role, Role::Product { .. } | Role::Feature { .. }))
+        .map(|(path, _, record)| (key(record, "key"), (path, record)))
+        .collect();
     let mut resolver = Resolver {
         tree,
         index: index(tree),
+        files,
         path: manifest_path,
         document: Document::empty(DocumentId::new(key(manifest, "documentKey"))),
     };
@@ -50,6 +55,8 @@ pub(super) struct Resolver<'t> {
     pub(super) tree: &'t Tree,
     /// The element each key names.
     pub(super) index: BTreeMap<Key, ElementId>,
+    /// The Product and Feature files, by the key their record carries.
+    pub(super) files: BTreeMap<Key, (&'t SpecPath, &'t Rec)>,
     /// The file being resolved, for errors.
     pub(super) path: SpecPath,
     pub(super) document: Document,
@@ -111,7 +118,7 @@ pub(super) fn slug(record: &Rec) -> Slug {
     Slug::parse(record.text("slug").expect("a checked slug")).expect("a checked slug")
 }
 
-impl Resolver<'_> {
+impl<'t> Resolver<'t> {
     pub(super) fn fail(&self, position: Option<Position>, problem: String) -> ReadError {
         ReadError::at(&self.path, position, Problem::Model(problem))
     }
@@ -201,15 +208,17 @@ impl Resolver<'_> {
         }
     }
 
+    /// The file a listed key names; a read tree has one for every listed key (AC-99, AC-699).
+    pub(super) fn listed_file(&mut self, listed: &Val) -> &'t Rec {
+        let key = Key::parse(listed.text().unwrap_or_default()).expect("a checked key");
+        let (path, record) = self.files[&key];
+        self.path = path.clone();
+        record
+    }
+
     fn products(&mut self, manifest: &Rec) -> Result<(), ReadError> {
-        let files: BTreeMap<String, (SpecPath, &Rec)> = self
-            .tree
-            .records(|role| matches!(role, Role::Product { .. }))
-            .map(|(path, _, record)| (text(record, "key"), (path.clone(), record)))
-            .collect();
         for listed in manifest.list("products") {
-            let (path, record) = &files[listed.text().unwrap_or_default()];
-            self.path = path.clone();
+            let record = self.listed_file(listed);
             let product = self.product(record)?;
             self.document.products.push(product);
         }
@@ -217,13 +226,9 @@ impl Resolver<'_> {
     }
 
     fn roots(&mut self) -> Result<(), ReadError> {
-        let roots: Vec<(SpecPath, &Rec)> = self
-            .tree
-            .records(|role| matches!(role, Role::Component { .. }))
-            .map(|(path, _, record)| (path.clone(), record))
-            .collect();
-        for (path, record) in roots {
-            self.path = path;
+        let tree = self.tree;
+        for (path, _, record) in tree.records(|role| matches!(role, Role::Component { .. })) {
+            self.path = path.clone();
             let root = self.root_component(record)?;
             self.document.components.push(root);
         }
@@ -231,13 +236,9 @@ impl Resolver<'_> {
     }
 
     fn decisions(&mut self) -> Result<(), ReadError> {
-        let decisions: Vec<(SpecPath, &Rec)> = self
-            .tree
-            .records(|role| matches!(role, Role::Decision { .. }))
-            .map(|(path, _, record)| (path.clone(), record))
-            .collect();
-        for (path, record) in decisions {
-            self.path = path;
+        let tree = self.tree;
+        for (path, _, record) in tree.records(|role| matches!(role, Role::Decision { .. })) {
+            self.path = path.clone();
             let decision = self.decision(record)?;
             self.document.decisions.push(decision);
         }
@@ -262,19 +263,21 @@ impl Resolver<'_> {
                 continue;
             };
             let element = self.element(binding.get("key").expect("a checked key"))?;
-            let (path, position) = (self.path.clone(), binding.position);
             let fail = |error: crate::bindings::BindingError| {
-                ReadError::at(&path, Some(position), Problem::Model(error.to_string()))
+                ReadError::at(
+                    &self.path,
+                    Some(binding.position),
+                    Problem::Model(error.to_string()),
+                )
             };
             let label = Label::parse(&text(binding, "label")).expect("a checked label");
-            let mut bindings = std::mem::take(&mut self.document.bindings);
+            let bindings = &mut self.document.bindings;
             bindings.bind(element, label).map_err(fail)?;
             for alias in binding.list("aliases") {
                 let alias =
                     Label::parse(alias.text().unwrap_or_default()).expect("a checked label");
                 bindings.add_alias(element, alias).map_err(fail)?;
             }
-            self.document.bindings = bindings;
         }
         Ok(())
     }

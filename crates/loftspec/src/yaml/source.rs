@@ -68,7 +68,7 @@ impl<'a> Line<'a> {
             .split('\n')
             .enumerate()
             .map(|(index, raw)| {
-                let indent = raw.len() - raw.trim_start_matches(' ').len();
+                let indent = leading_spaces(raw);
                 Self {
                     number: index + 1,
                     column: indent + 1,
@@ -102,4 +102,9 @@ impl<'a> Line<'a> {
     pub fn start(&self) -> Position {
         self.position(0)
     }
+}
+
+/// The number of spaces a text starts with.
+pub(super) fn leading_spaces(text: &str) -> usize {
+    text.len() - text.trim_start_matches(' ').len()
 }

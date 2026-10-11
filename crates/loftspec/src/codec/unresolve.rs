@@ -5,8 +5,7 @@ use std::collections::BTreeMap;
 
 use serde::Serialize;
 
-use super::error::SpecPath;
-use super::files::{CATEGORIES, Content, LABELS, MANIFEST, Role, TAGS, Tree};
+use super::files::{Content, Role, Tree};
 use super::record::{Rec, Val};
 use super::schema::Kind;
 use super::unresolve_parts::{decision_fields, node_ref, statement, target};
@@ -15,7 +14,6 @@ use crate::document::{Document, Edge};
 use crate::identity::{Key, LabelPrefix};
 use crate::ids::{ElementId, NodeId};
 use crate::tree::{Component, Constraint, Details, Feature, Product, QualityAttribute, Section};
-use crate::yaml::Position;
 
 /// The record tree of a document.
 #[must_use]
@@ -24,16 +22,10 @@ pub fn unresolve(document: &Document) -> Tree {
     let mut tree = Tree::default();
     put(
         &mut tree,
-        MANIFEST,
         Role::Manifest,
         Content::Record(manifest(document)),
     );
-    put(
-        &mut tree,
-        LABELS,
-        Role::Labels,
-        Content::Record(labels(document)),
-    );
+    put(&mut tree, Role::Labels, Content::Record(labels(document)));
     let tags = document.tags.iter().map(|tag| {
         entry(
             Kind::TagEntry,
@@ -42,12 +34,7 @@ pub fn unresolve(document: &Document) -> Tree {
             &tag.definition,
         )
     });
-    put(
-        &mut tree,
-        TAGS,
-        Role::Tags,
-        Content::Registry(tags.collect()),
-    );
+    put(&mut tree, Role::Tags, Content::Registry(tags.collect()));
     let categories = document.categories.iter().map(|category| {
         let name = category.name.as_str();
         entry(
@@ -59,7 +46,6 @@ pub fn unresolve(document: &Document) -> Tree {
     });
     put(
         &mut tree,
-        CATEGORIES,
         Role::Categories,
         Content::Registry(categories.collect()),
     );
@@ -70,29 +56,22 @@ pub fn unresolve(document: &Document) -> Tree {
         let mut record = edges.component(&root.component);
         record.kind = Kind::RootComponent;
         record.set_text("slug", root.slug.to_string());
-        let path = format!("components/{}.yaml", root.slug);
         let role = Role::Component {
             slug: root.slug.to_string(),
         };
-        put(&mut tree, &path, role, Content::Record(record));
+        put(&mut tree, role, Content::Record(record));
     }
     for decision in &document.decisions {
-        let path = format!("decisions/{}.yaml", decision.slug);
         let role = Role::Decision {
             slug: decision.slug.to_string(),
         };
-        put(
-            &mut tree,
-            &path,
-            role,
-            Content::Record(edges.decision(decision)),
-        );
+        put(&mut tree, role, Content::Record(edges.decision(decision)));
     }
     tree
 }
 
-fn put(tree: &mut Tree, path: &str, role: Role, content: Content) {
-    tree.files.insert(SpecPath::new(path), (role, content));
+fn put(tree: &mut Tree, role: Role, content: Content) {
+    tree.files.insert(role.path(), (role, content));
 }
 
 /// A Product's file and each of its Features' files.
@@ -105,33 +84,24 @@ fn products(tree: &mut Tree, edges: &Edges, product: &Product) {
                 group: group.slug.to_string(),
                 feature: feature.slug.to_string(),
             };
-            let path = format!("products/{dir}/{}/{}.yaml", group.slug, feature.slug);
-            put(tree, &path, role, Content::Record(edges.feature(feature)));
+            put(tree, role, Content::Record(edges.feature(feature)));
         }
     }
-    let path = format!("products/{dir}/product.yaml");
     let role = Role::Product { product: dir };
-    put(tree, &path, role, Content::Record(edges.product(product)));
-}
-
-/// A scalar value.
-pub(super) fn scalar<T: std::fmt::Display + ?Sized>(text: &T) -> Val {
-    Val::Scalar {
-        text: text.to_string(),
-        position: Position::new(1, 1),
-    }
+    put(tree, role, Content::Record(edges.product(product)));
 }
 
 fn keys(items: impl IntoIterator<Item = Key>) -> Val {
-    Val::List(items.into_iter().map(|key| scalar(&key)).collect())
+    Val::List(items.into_iter().map(|key| Val::scalar(&key)).collect())
 }
 
 fn records(items: impl IntoIterator<Item = Rec>) -> Val {
     Val::List(items.into_iter().map(Val::Record).collect())
 }
 
-/// An enumerated model value as the text its serde name gives.
-fn name_of(value: &impl Serialize) -> String {
+/// An enumerated model value as the text its serde name gives; the inverse of the reader's
+/// `value`.
+pub(super) fn name_of(value: &impl Serialize) -> String {
     match serde_json::to_value(value) {
         Ok(serde_json::Value::String(name)) => name,
         _ => unreachable!("an enumerated value serializes as a string"),
@@ -180,7 +150,7 @@ fn labels(document: &Document) -> Rec {
         record.set_text("label", binding.label.to_string());
         record.set(
             "aliases",
-            Val::List(binding.aliases.iter().map(scalar).collect()),
+            Val::List(binding.aliases.iter().map(Val::scalar).collect()),
         );
         record
     });
@@ -261,7 +231,10 @@ impl Edges {
         if let Some(body) = &details.body {
             record.set_text("body", body.as_str());
         }
-        record.set("tags", Val::List(details.tags.iter().map(scalar).collect()));
+        record.set(
+            "tags",
+            Val::List(details.tags.iter().map(Val::scalar).collect()),
+        );
         self.mentions(record, id.map(ElementId::Node));
         record.set(
             "sections",

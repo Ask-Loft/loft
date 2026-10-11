@@ -26,11 +26,8 @@ impl Scratch {
         let document = convert(&Export::from_json(READING_LIST).unwrap())
             .unwrap()
             .document;
-        for (path, bytes) in codec::write(&document) {
-            let target = root.join("spec").join(path.as_str());
-            fs::create_dir_all(target.parent().unwrap()).unwrap();
-            fs::write(target, bytes).unwrap();
-        }
+        fs::create_dir_all(root.join("spec")).unwrap();
+        loftspec_store::fs::write_changed(&root, &codec::write(&document)).unwrap();
         Self(root)
     }
 

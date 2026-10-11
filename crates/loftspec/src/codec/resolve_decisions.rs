@@ -1,7 +1,7 @@
 //! Decision records as typed decisions, with their `subject` edges (AC-806).
 
 use super::error::ReadError;
-use super::record::{Rec, Val};
+use super::record::Rec;
 use super::resolve::{Resolver, key, slug, text, value};
 use crate::decision::{
     Assessment, Consequence, Decision, DecisionOption, DecisionState, Driver, DriverPayload,
@@ -9,18 +9,11 @@ use crate::decision::{
 use crate::document::Edge;
 use crate::ids::{ConsequenceId, DecisionId, DriverId, ElementId, OptionId};
 
-fn records<'r>(record: &'r Rec, field: &str) -> impl Iterator<Item = &'r Rec> {
-    record.list(field).iter().filter_map(|value| match value {
-        Val::Record(record) => Some(record),
-        _ => None,
-    })
-}
-
 impl Resolver<'_> {
     pub(super) fn decision(&mut self, record: &Rec) -> Result<Decision, ReadError> {
         let id = DecisionId::new(key(record, "key"));
         self.mentions(record, ElementId::Decision(id))?;
-        for subject in records(record, "subjects") {
+        for subject in record.records("subjects") {
             let node = self.node_ref(subject.get("node").expect("a checked node"))?;
             self.document.edges.push(Edge::Subject {
                 decision: id,
@@ -28,7 +21,8 @@ impl Resolver<'_> {
                 role: value(&text(subject, "role")),
             });
         }
-        let drivers = records(record, "drivers")
+        let drivers = record
+            .records("drivers")
             .map(|driver| {
                 let payload = match driver.get("subject") {
                     Some(subject) => DriverPayload::Subject {
@@ -45,7 +39,8 @@ impl Resolver<'_> {
                 })
             })
             .collect::<Result<_, ReadError>>()?;
-        let consequences = records(record, "consequences")
+        let consequences = record
+            .records("consequences")
             .map(|consequence| {
                 Ok(Consequence {
                     id: ConsequenceId::new(key(consequence, "key")),
@@ -65,14 +60,16 @@ impl Resolver<'_> {
             context: text(record, "context"),
             state: state_of(record.record("state").expect("a checked state")),
             drivers,
-            options: records(record, "options")
+            options: record
+                .records("options")
                 .map(|option| DecisionOption {
                     id: OptionId::new(key(option, "key")),
                     title: text(option, "title"),
                     description: text(option, "description"),
                 })
                 .collect(),
-            assessments: records(record, "assessments")
+            assessments: record
+                .records("assessments")
                 .map(|assessment| Assessment {
                     option: OptionId::new(key(assessment, "option")),
                     driver: DriverId::new(key(assessment, "driver")),

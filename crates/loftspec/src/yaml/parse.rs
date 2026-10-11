@@ -1,11 +1,11 @@
 //! Block structure by indentation: mappings of plain field names and sequences of entries, each
 //! value on its key's line, beneath it, or as a literal block.
 
-use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 use super::error::{Error, ErrorKind, Position};
 use super::scalar::{self, BlockHeader, Chomping, Inline};
-use super::source::Line;
+use super::source::{Line, leading_spaces};
 use super::{Entry, Node, Scalar, Style, Value};
 
 /// Reads a whole file: nothing, or one mapping or sequence starting at column 1.
@@ -80,7 +80,7 @@ impl<'a> Parser<'a> {
 
     fn mapping(&mut self, indent: usize) -> Result<Node, Error> {
         let mut entries = Vec::new();
-        let mut seen = BTreeMap::new();
+        let mut seen = BTreeSet::new();
         let mut position = None;
         while let Some(line) = self.peek()? {
             if line.indent < indent {
@@ -93,7 +93,7 @@ impl<'a> Parser<'a> {
                 return Err(Error::at(line.start(), ErrorKind::UnexpectedSequence));
             }
             let (key, offset) = field(&line)?;
-            if seen.insert(key.to_owned(), line.start()).is_some() {
+            if !seen.insert(key) {
                 return Err(Error::at(
                     line.start(),
                     ErrorKind::DuplicateKey(key.to_owned()),
@@ -141,7 +141,7 @@ impl<'a> Parser<'a> {
         if rest.starts_with('\t') {
             return Err(Error::at(line.position(1), ErrorKind::TabSeparator));
         }
-        let offset = 1 + (rest.len() - rest.trim_start_matches(' ').len());
+        let offset = 1 + leading_spaces(rest);
         let content = &line.text[offset..];
         if content.is_empty() {
             return self.value(&line, offset, indent, false);
@@ -216,7 +216,7 @@ impl<'a> Parser<'a> {
         let mut lines: Vec<&str> = Vec::new();
         while let Some(line) = self.lines.get(self.next) {
             let raw = line.raw;
-            let spaces = raw.len() - raw.trim_start_matches(' ').len();
+            let spaces = leading_spaces(raw);
             if spaces == raw.len() {
                 lines.push(raw.get(content_indent..).unwrap_or(""));
             } else if spaces >= content_indent {
@@ -235,7 +235,7 @@ impl<'a> Parser<'a> {
     /// The indentation of a literal block's first line that is not empty; a leading empty line
     /// indented past it is refused.
     fn detect_indentation(&self, indent: usize) -> Result<usize, Error> {
-        let leading = |line: &Line<'_>| line.raw.len() - line.raw.trim_start_matches(' ').len();
+        let leading = |line: &Line<'_>| leading_spaces(line.raw);
         let rest = &self.lines[self.next..];
         let Some(first) = rest.iter().position(|line| leading(line) < line.raw.len()) else {
             return Ok(indent + 1);
@@ -304,8 +304,5 @@ fn field<'t>(line: &Line<'t>) -> Result<(&'t str, usize), Error> {
     if rest.starts_with('\t') {
         return error(colon + 1, ErrorKind::TabSeparator);
     }
-    Ok((
-        key,
-        colon + 1 + (rest.len() - rest.trim_start_matches(' ').len()),
-    ))
+    Ok((key, colon + 1 + leading_spaces(rest)))
 }

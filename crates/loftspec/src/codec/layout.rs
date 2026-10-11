@@ -1,23 +1,36 @@
-//! Reading a whole tree: the manifest first (RQ-18, RQ-67), then every file, then the rules
-//! that span files: Products as the manifest lists them (RQ-175), Features as their Feature
-//! Groups list them (RQ-28, RQ-212), slugs that match their names (RQ-211) and keys carried
-//! once (RQ-4).
+//! Reading a whole tree in two phases. Parsing reads the manifest first (RQ-18, RQ-67), then
+//! every file as its record. Checking applies the rules that span files: Products as the
+//! manifest lists them (RQ-175), Features as their Feature Groups list them (RQ-28, RQ-212),
+//! slugs that match their names (RQ-211) and keys carried once (RQ-4). Checking is always
+//! strict; the formatter checks only after it has supplied what was missing.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use super::error::{Problem, ReadError, Site, SpecPath};
-use super::files::{Content, Files, MANIFEST, Role, Tree, keyed, read_file};
+use super::files::{Files, MANIFEST, Role, Tree, keyed, read_file};
 use super::record::{Mode, Rec, Val};
+use crate::identity::Key;
 use crate::manifest::check_identifiers;
 use crate::yaml::{Location, Position};
 
-/// Reads and checks every file of a tree.
+/// Reads and checks every file of a tree, as every role but the formatter does.
 ///
 /// # Errors
 ///
 /// Every error found: a refused manifest alone, since no other file is read then (AC-70);
 /// otherwise each file's first error, and the rules across files when every file reads.
-pub fn read_tree(files: &Files, mode: Mode) -> Result<Tree, Vec<ReadError>> {
+pub fn read_tree(files: &Files) -> Result<Tree, Vec<ReadError>> {
+    let tree = parse_files(files, Mode::Strict)?;
+    check_tree(&tree)?;
+    Ok(tree)
+}
+
+/// Reads every file as the record its path names, the manifest first.
+///
+/// # Errors
+///
+/// A refused manifest alone, or each file's first error.
+pub(crate) fn parse_files(files: &Files, mode: Mode) -> Result<Tree, Vec<ReadError>> {
     let manifest_path = SpecPath::new(MANIFEST);
     let Some(bytes) = files.get(&manifest_path) else {
         return Err(vec![ReadError::at(
@@ -27,21 +40,13 @@ pub fn read_tree(files: &Files, mode: Mode) -> Result<Tree, Vec<ReadError>> {
         )]);
     };
     let manifest = read_file(&manifest_path, bytes, mode).map_err(|error| vec![error])?;
-    if let (_, Content::Record(record)) = &manifest {
+    if let Some(record) = manifest.1.records().next() {
         let format = record.text("format").unwrap_or_default();
         let algorithm = record.text("algorithm").unwrap_or_default();
-        if check_identifiers(format, algorithm).is_err() {
-            let unknown = if format == crate::FORMAT {
-                algorithm
-            } else {
-                format
-            };
-            let problem = Problem::Unsupported(format!("`{unknown}`"));
-            return Err(vec![ReadError::at(
-                &manifest_path,
-                Some(record.position),
-                problem,
-            )]);
+        if let Err(error) = check_identifiers(format, algorithm) {
+            let problem = Problem::Unsupported(error);
+            let position = Some(record.position);
+            return Err(vec![ReadError::at(&manifest_path, position, problem)]);
         }
     }
     let mut tree = Tree::default();
@@ -56,13 +61,25 @@ pub fn read_tree(files: &Files, mode: Mode) -> Result<Tree, Vec<ReadError>> {
         }
     }
     if errors.is_empty() {
-        check_slugs(&tree, &mut errors);
-        check_products(&tree, &mut errors);
-        check_features(&tree, &mut errors);
-        check_keys(&tree, &mut errors);
-    }
-    if errors.is_empty() {
         Ok(tree)
+    } else {
+        Err(errors)
+    }
+}
+
+/// Applies the rules that span files.
+///
+/// # Errors
+///
+/// Every rule the tree breaks.
+pub(crate) fn check_tree(tree: &Tree) -> Result<(), Vec<ReadError>> {
+    let mut errors = Vec::new();
+    check_slugs(tree, &mut errors);
+    check_products(tree, &mut errors);
+    check_features(tree, &mut errors);
+    check_keys(tree, &mut errors);
+    if errors.is_empty() {
+        Ok(())
     } else {
         Err(errors)
     }
@@ -72,21 +89,26 @@ fn error(path: &SpecPath, position: Position, problem: Problem) -> ReadError {
     ReadError::at(path, Some(position), problem)
 }
 
-/// A record's slug, when it has one, must equal the name it fixes (RQ-211).
+/// A checked key value.
+fn key_of(value: &Val) -> Option<(Key, Position)> {
+    match value {
+        Val::Scalar { text, position } => Some((Key::parse(text).ok()?, *position)),
+        _ => None,
+    }
+}
+
+/// A record's slug must equal the name it fixes (RQ-211).
 fn check_slugs(tree: &Tree, errors: &mut Vec<ReadError>) {
     for (path, role, record) in tree.records(|_| true) {
-        let name = match role {
-            Role::Product { product } => product,
-            Role::Feature { feature, .. } => feature,
-            Role::Component { slug } | Role::Decision { slug } => slug,
-            _ => continue,
+        let Some(name) = role.slug() else {
+            continue;
         };
         if let Some(Val::Scalar { text, position }) = record.get("slug")
             && text != name
         {
             let problem = Problem::SlugMismatch {
                 slug: text.clone(),
-                name: name.clone(),
+                name: name.to_owned(),
             };
             errors.push(error(path, *position, problem));
         }
@@ -94,35 +116,24 @@ fn check_slugs(tree: &Tree, errors: &mut Vec<ReadError>) {
 }
 
 /// The keys a list field names, with their positions.
-fn listed(record: &Rec, field: &str) -> Vec<(String, Position)> {
-    record
-        .list(field)
-        .iter()
-        .filter_map(|value| match value {
-            Val::Scalar { text, position } => Some((text.clone(), *position)),
-            _ => None,
-        })
-        .collect()
+fn listed(record: &Rec, field: &str) -> Vec<(Key, Position)> {
+    record.list(field).iter().filter_map(key_of).collect()
 }
 
 /// Checks one list of keys against the files that carry them: each listed key has a file
 /// (AC-99, AC-699) and is listed once (AC-102, AC-701).
 fn check_list(
     path: &SpecPath,
-    keys: &[(String, Position)],
-    carried: &BTreeMap<String, SpecPath>,
+    keys: &[(Key, Position)],
+    carried: &BTreeMap<Key, &SpecPath>,
     errors: &mut Vec<ReadError>,
 ) {
-    let mut seen = BTreeMap::new();
-    for (key, position) in keys {
-        if seen.insert(key.clone(), *position).is_some() {
-            errors.push(error(path, *position, Problem::ListedTwice(key.clone())));
-        } else if !carried.contains_key(key) {
-            errors.push(error(
-                path,
-                *position,
-                Problem::ListedWithoutFile(key.clone()),
-            ));
+    let mut seen = BTreeSet::new();
+    for &(key, position) in keys {
+        if !seen.insert(key) {
+            errors.push(error(path, position, Problem::ListedTwice(key)));
+        } else if !carried.contains_key(&key) {
+            errors.push(error(path, position, Problem::ListedWithoutFile(key)));
         }
     }
 }
@@ -139,24 +150,24 @@ fn check_products(tree: &Tree, errors: &mut Vec<ReadError>) {
     report_unlisted(tree, &carried, &keys, "manifest", errors);
 }
 
-/// The key each file of a role carries, by key.
-fn carried(tree: &Tree, wanted: impl Fn(&Role) -> bool) -> BTreeMap<String, SpecPath> {
+/// The file of a role that carries each key.
+fn carried<'t>(tree: &'t Tree, wanted: impl Fn(&Role) -> bool + 't) -> BTreeMap<Key, &'t SpecPath> {
     tree.records(wanted)
-        .filter_map(|(path, _, record)| Some((record.text("key")?.to_owned(), path.clone())))
+        .filter_map(|(path, _, record)| Some((key_of(record.get("key")?)?.0, path)))
         .collect()
 }
 
-/// A file whose key no list names (AC-100, AC-700). A file without a key, which only the
-/// formatter reads, is not reported: the formatter adds it to its list.
+/// A file whose key no list names (AC-100, AC-700).
 fn report_unlisted(
     tree: &Tree,
-    carried: &BTreeMap<String, SpecPath>,
-    keys: &[(String, Position)],
+    carried: &BTreeMap<Key, &SpecPath>,
+    keys: &[(Key, Position)],
     lister: &'static str,
     errors: &mut Vec<ReadError>,
 ) {
+    let named: BTreeSet<Key> = keys.iter().map(|(key, _)| *key).collect();
     for (key, path) in carried {
-        if !keys.iter().any(|(listed, _)| listed == key) {
+        if !named.contains(key) {
             let position = tree.record(path).map(|record| record.position);
             errors.push(ReadError::at(path, position, Problem::NotListed(lister)));
         }
@@ -170,17 +181,14 @@ fn check_features(tree: &Tree, errors: &mut Vec<ReadError>) {
     let mut lister = BTreeMap::new();
     let mut all_listed = Vec::new();
     for (path, role, product) in tree.records(|role| matches!(role, Role::Product { .. })) {
-        let Role::Product {
-            product: product_dir,
-        } = role
-        else {
+        let Some(product_dir) = role.slug() else {
             continue;
         };
-        for group in product.list("featureGroups").iter().flat_map(Val::records) {
+        for group in product.records("featureGroups") {
             let group = Group {
                 path,
                 product_dir,
-                slug: group.text("slug"),
+                slug: group.text("slug").unwrap_or_default(),
                 at: group.position,
                 keys: listed(group, "features"),
             };
@@ -195,32 +203,27 @@ fn check_features(tree: &Tree, errors: &mut Vec<ReadError>) {
 struct Group<'a> {
     path: &'a SpecPath,
     product_dir: &'a str,
-    /// None only while formatting, before the formatter supplies it.
-    slug: Option<&'a str>,
+    slug: &'a str,
     /// Where the group's record starts, which tells two groups apart.
     at: Position,
-    keys: Vec<(String, Position)>,
+    keys: Vec<(Key, Position)>,
 }
 
-fn check_group(
+fn check_group<'a>(
     tree: &Tree,
-    group: &Group<'_>,
-    features: &BTreeMap<String, SpecPath>,
-    lister: &mut BTreeMap<String, (SpecPath, Position)>,
+    group: &Group<'a>,
+    features: &BTreeMap<Key, &SpecPath>,
+    lister: &mut BTreeMap<Key, (&'a SpecPath, Position)>,
     errors: &mut Vec<ReadError>,
 ) {
     check_list(group.path, &group.keys, features, errors);
-    for (key, position) in &group.keys {
-        let this = (group.path.clone(), group.at);
-        if lister
-            .insert(key.clone(), this.clone())
-            .is_some_and(|first| first != this)
-        {
-            let problem = Problem::ListedByTwoGroups(key.clone());
-            errors.push(error(group.path, *position, problem));
+    for &(key, position) in &group.keys {
+        let this = (group.path, group.at);
+        if lister.insert(key, this).is_some_and(|first| first != this) {
+            errors.push(error(group.path, position, Problem::ListedByTwoGroups(key)));
         }
-        if let Some(slug) = group.slug {
-            check_directory(tree, features.get(key), group.product_dir, slug, errors);
+        if let Some(path) = features.get(&key) {
+            check_directory(tree, path, group.product_dir, group.slug, errors);
         }
     }
 }
@@ -228,14 +231,11 @@ fn check_group(
 /// A listed Feature's file must sit in its group's directory under its Product (RQ-212).
 fn check_directory(
     tree: &Tree,
-    file: Option<&SpecPath>,
+    path: &SpecPath,
     product_dir: &str,
     group_slug: &str,
     errors: &mut Vec<ReadError>,
 ) {
-    let Some(path) = file else {
-        return;
-    };
     if let Some((Role::Feature { product, group, .. }, _)) = tree.files.get(path)
         && (product != product_dir || group != group_slug)
     {
@@ -247,29 +247,24 @@ fn check_directory(
 
 /// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849).
 fn check_keys(tree: &Tree, errors: &mut Vec<ReadError>) {
-    let mut seen: BTreeMap<&str, Site> = BTreeMap::new();
+    let site = |path: &SpecPath, position: Position| Site {
+        path: path.clone(),
+        location: Some(Location::At(position)),
+    };
+    let mut seen: BTreeMap<Key, (&SpecPath, Position)> = BTreeMap::new();
     for (path, (_, content)) in &tree.files {
         let mut found = Vec::new();
-        match content {
-            Content::Record(record) => keyed(record, &mut found),
-            Content::Registry(entries) => entries.iter().for_each(|entry| keyed(entry, &mut found)),
-            Content::Lint(_) => {}
-        }
-        for record in found {
-            let Some(Val::Scalar { text, position }) = record.get("key") else {
-                continue;
-            };
-            let site = Site {
-                path: path.clone(),
-                location: Some(Location::At(*position)),
-            };
-            if let Some(first) = seen.get(text.as_str()) {
+        content
+            .records()
+            .for_each(|record| keyed(record, &mut found));
+        for (key, position) in found.iter().filter_map(|record| key_of(record.get("key")?)) {
+            if let Some(&(first, at)) = seen.get(&key) {
                 errors.push(ReadError {
-                    sites: vec![first.clone(), site],
-                    problem: Problem::DuplicateKey(text.clone()),
+                    sites: vec![site(first, at), site(path, position)],
+                    problem: Problem::DuplicateKey(key),
                 });
             } else {
-                seen.insert(text, site);
+                seen.insert(key, (path, position));
             }
         }
     }

@@ -56,22 +56,31 @@ pub enum Scalar {
     Text,
 }
 
-/// What a field holds.
+/// What a field holds: one item, or a list of them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Shape {
-    Scalar(Scalar),
-    Record(Kind),
-    /// A node's key, or a former label as `{formerLabel: <label>}` (AC-809).
-    NodeRef,
+    One(Item),
     List(Item),
 }
 
-/// What each entry of a list holds.
+/// What a field, or each entry of a list field, holds.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Item {
     Scalar(Scalar),
     Record(Kind),
+    /// A node's key, or a former label as `{formerLabel: <label>}` (AC-809).
     NodeRef,
+}
+
+/// The order the canonical layout gives a list field's entries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Order {
+    /// As the author wrote them, such as the Features a group lists (RQ-28).
+    Authored,
+    /// By key: edge targets (AC-807) and label bindings.
+    ByKey,
+    /// By role, then by target (AC-808).
+    ByRoleThenTarget,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -79,6 +88,7 @@ pub struct Field {
     pub name: &'static str,
     pub required: bool,
     pub shape: Shape,
+    pub order: Order,
 }
 
 const fn field(name: &'static str, required: bool, shape: Shape) -> Field {
@@ -86,19 +96,24 @@ const fn field(name: &'static str, required: bool, shape: Shape) -> Field {
         name,
         required,
         shape,
+        order: Order::Authored,
     }
 }
 
 const fn req(name: &'static str, scalar: Scalar) -> Field {
-    field(name, true, Shape::Scalar(scalar))
+    field(name, true, Shape::One(Item::Scalar(scalar)))
 }
 
 const fn opt(name: &'static str, scalar: Scalar) -> Field {
-    field(name, false, Shape::Scalar(scalar))
+    field(name, false, Shape::One(Item::Scalar(scalar)))
 }
 
 const fn record(name: &'static str, required: bool, kind: Kind) -> Field {
-    field(name, required, Shape::Record(kind))
+    field(name, required, Shape::One(Item::Record(kind)))
+}
+
+const fn node_ref(name: &'static str, required: bool) -> Field {
+    field(name, required, Shape::One(Item::NodeRef))
 }
 
 const fn records(name: &'static str, kind: Kind) -> Field {
@@ -109,19 +124,28 @@ const fn scalars(name: &'static str, scalar: Scalar) -> Field {
     field(name, false, Shape::List(Item::Scalar(scalar)))
 }
 
-pub const FORMS: &[&str] = &[
+const fn ordered(field: Field, order: Order) -> Field {
+    Field { order, ..field }
+}
+
+/// A list of keys the writer sorts: an edge field (RQ-168).
+const fn edges(name: &'static str) -> Field {
+    ordered(scalars(name, Scalar::Key), Order::ByKey)
+}
+
+const FORMS: &[&str] = &[
     "ubiquitous",
     "event_driven",
     "state_driven",
     "unwanted",
     "optional",
 ];
-pub const STATES: &[&str] = &["proposed", "accepted", "rejected", "superseded", "retired"];
-pub const DRIVER_KINDS: &[&str] = &["local", "subject"];
-pub const RATINGS: &[&str] = &["supports", "neutral", "conflicts", "unknown"];
-pub const CONSEQUENCE_KINDS: &[&str] = &["benefit", "cost", "risk", "obligation"];
-pub const ROLES: &[&str] = &["outcome", "affected"];
-pub const QA_KINDS: &[&str] = &[
+const STATES: &[&str] = &["proposed", "accepted", "rejected", "superseded", "retired"];
+const DRIVER_KINDS: &[&str] = &["local", "subject"];
+const RATINGS: &[&str] = &["supports", "neutral", "conflicts", "unknown"];
+const CONSEQUENCE_KINDS: &[&str] = &["benefit", "cost", "risk", "obligation"];
+const ROLES: &[&str] = &["outcome", "affected"];
+const QA_KINDS: &[&str] = &[
     "latency",
     "throughput",
     "availability",
@@ -130,16 +154,14 @@ pub const QA_KINDS: &[&str] = &[
     "usability",
     "capacity",
 ];
-pub const AGGREGATIONS: &[&str] = &[
+const AGGREGATIONS: &[&str] = &[
     "each", "single", "minimum", "maximum", "mean", "median", "p95", "p99", "total",
 ];
-pub const BAND_KINDS: &[&str] = &["at_most", "at_least", "exactly", "between"];
-pub const CONSERVATION_KINDS: &[&str] = &["sum_preservation", "cap", "operation_identity"];
-pub const FATES: &[&str] = &["proved", "monitored", "sampled"];
+const BAND_KINDS: &[&str] = &["at_most", "at_least", "exactly", "between"];
+const CONSERVATION_KINDS: &[&str] = &["sum_preservation", "cap", "operation_identity"];
+const FATES: &[&str] = &["proved", "monitored", "sampled"];
 
-/// The label prefixes, in the order `counters` lists them (AC-786).
-pub const PREFIXES: &[&str] = &["P", "FG", "F", "RQ", "AC", "CMP", "CON", "QA", "ADR"];
-
+use crate::identity::LabelPrefix;
 use Kind as K;
 use Scalar as S;
 
@@ -148,15 +170,16 @@ const SLUG: Field = req("slug", S::Slug);
 const NAME: Field = req("name", S::Text);
 const BODY: Field = opt("body", S::Text);
 const TAGS: Field = scalars("tags", S::Tag);
-const MENTIONS: Field = scalars("mentions", S::Key);
+const MENTIONS: Field = edges("mentions");
 const SECTIONS: Field = records("sections", K::Section);
 const FATE: Field = opt("verificationFate", S::Enum(FATES));
 
-const COUNTERS: [Field; 9] = {
-    let mut fields = [req("P", S::Integer); 9];
+/// One counter per label prefix, in the order `counters` lists them (AC-786).
+const COUNTERS: [Field; LabelPrefix::ALL.len()] = {
+    let mut fields = [req("P", S::Integer); LabelPrefix::ALL.len()];
     let mut index = 0;
-    while index < PREFIXES.len() {
-        fields[index] = req(PREFIXES[index], S::Integer);
+    while index < fields.len() {
+        fields[index] = req(LabelPrefix::ALL[index].as_str(), S::Integer);
         index += 1;
     }
     fields
@@ -179,7 +202,7 @@ const DERIVED_FROM_FIELDS: &[Field] = &[
 
 const LABELS_FIELDS: &[Field] = &[
     record("counters", true, K::Counters),
-    records("bindings", K::Binding),
+    ordered(records("bindings", K::Binding), Order::ByKey),
 ];
 
 const BINDING_FIELDS: &[Field] = &[
@@ -222,7 +245,7 @@ const FEATURE_FIELDS: &[Field] = &[
     NAME,
     BODY,
     TAGS,
-    scalars("realizes", S::Key),
+    edges("realizes"),
     MENTIONS,
     records("requirements", K::Requirement),
     records("qualityAttributes", K::QualityAttribute),
@@ -307,7 +330,7 @@ const DECISION_FIELDS: &[Field] = &[
     records("options", K::Option),
     records("assessments", K::Assessment),
     records("consequences", K::Consequence),
-    records("subjects", K::Subject),
+    ordered(records("subjects", K::Subject), Order::ByRoleThenTarget),
     MENTIONS,
 ];
 
@@ -324,7 +347,7 @@ const DRIVER_FIELDS: &[Field] = &[
     req("kind", S::Enum(DRIVER_KINDS)),
     opt("label", S::Text),
     opt("statement", S::Text),
-    field("subject", false, Shape::NodeRef),
+    node_ref("subject", false),
 ];
 
 const OPTION_FIELDS: &[Field] = &[KEY, req("title", S::Text), req("description", S::Text)];
@@ -340,13 +363,10 @@ const CONSEQUENCE_FIELDS: &[Field] = &[
     KEY,
     req("kind", S::Enum(CONSEQUENCE_KINDS)),
     req("statement", S::Text),
-    field("subject", false, Shape::NodeRef),
+    node_ref("subject", false),
 ];
 
-const SUBJECT_FIELDS: &[Field] = &[
-    req("role", S::Enum(ROLES)),
-    field("node", true, Shape::NodeRef),
-];
+const SUBJECT_FIELDS: &[Field] = &[req("role", S::Enum(ROLES)), node_ref("node", true)];
 
 const FORMER_LABEL_FIELDS: &[Field] = &[req("formerLabel", S::Label)];
 
@@ -387,6 +407,15 @@ impl Kind {
         }
     }
 
+    /// A field of the kind, by name, with its place in the Format's order.
+    #[must_use]
+    pub fn field(self, name: &str) -> Option<(usize, &'static Field)> {
+        self.fields()
+            .iter()
+            .enumerate()
+            .find(|(_, field)| field.name == name)
+    }
+
     /// Whether the record carries a key the formatter mints when it is missing (RQ-3, RQ-218).
     #[must_use]
     pub const fn is_keyed(self) -> bool {
@@ -417,7 +446,7 @@ const COMPONENT: [Field; 10] = [
     NAME,
     BODY,
     TAGS,
-    scalars("scopedTo", S::Key),
+    edges("scopedTo"),
     MENTIONS,
     records("components", K::Component),
     records("constraints", K::Constraint),

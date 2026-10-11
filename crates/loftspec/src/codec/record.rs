@@ -4,6 +4,7 @@
 
 use super::error::{Located, Problem};
 use super::schema::{Field, Item, Kind, Scalar, Shape};
+use crate::canonical::Digest;
 use crate::identity::{Key, Label};
 use crate::names::{CategoryName, TagName};
 use crate::slug::Slug;
@@ -35,6 +36,15 @@ pub enum Val {
 }
 
 impl Val {
+    /// A scalar the writer or formatter supplies, with no position in a source file.
+    #[must_use]
+    pub fn scalar(text: &(impl std::fmt::Display + ?Sized)) -> Self {
+        Self::Scalar {
+            text: text.to_string(),
+            position: Position::new(1, 1),
+        }
+    }
+
     /// The scalar's text.
     #[must_use]
     pub fn text(&self) -> Option<&str> {
@@ -88,10 +98,29 @@ impl Rec {
         }
     }
 
+    /// A field's value. Naming a field the kind does not define is a programming error.
     #[must_use]
     pub fn get(&self, name: &str) -> Option<&Val> {
+        debug_assert!(
+            self.kind.field(name).is_some(),
+            "{:?} has no field {name}",
+            self.kind
+        );
         self.fields
             .iter()
+            .find(|(field, _)| *field == name)
+            .map(|(_, value)| value)
+    }
+
+    /// A field's value, to change.
+    pub fn get_mut(&mut self, name: &str) -> Option<&mut Val> {
+        debug_assert!(
+            self.kind.field(name).is_some(),
+            "{:?} has no field {name}",
+            self.kind
+        );
+        self.fields
+            .iter_mut()
             .find(|(field, _)| *field == name)
             .map(|(_, value)| value)
     }
@@ -118,21 +147,32 @@ impl Rec {
         }
     }
 
+    /// The records of a list field.
+    pub fn records(&self, name: &str) -> impl Iterator<Item = &Self> {
+        self.list(name).iter().flat_map(Val::records)
+    }
+
+    /// The entries of a list field, to change; an absent field is added empty.
+    pub fn list_mut(&mut self, name: &'static str) -> &mut Vec<Val> {
+        if self.get(name).is_none() {
+            self.set(name, Val::List(Vec::new()));
+        }
+        match self.get_mut(name) {
+            Some(Val::List(items)) => items,
+            _ => unreachable!("{name} is a list field"),
+        }
+    }
+
     /// Sets a field, keeping the Format's order.
     pub fn set(&mut self, name: &'static str, value: Val) {
-        let order = |field: &str| {
+        let place = |field: &str| {
             self.kind
-                .fields()
-                .iter()
-                .position(|spec| spec.name == field)
+                .field(field)
                 .expect("a field the schema defines")
+                .0
         };
-        let place = order(name);
-        match self
-            .fields
-            .iter()
-            .position(|(field, _)| order(field) >= place)
-        {
+        let at = place(name);
+        match self.fields.iter().position(|(field, _)| place(field) >= at) {
             Some(index) if self.fields[index].0 == name => self.fields[index].1 = value,
             Some(index) => self.fields.insert(index, (name, value)),
             None => self.fields.push((name, value)),
@@ -166,7 +206,7 @@ pub(crate) fn check(node: &yaml::Node, kind: Kind, mode: Mode) -> Result<Rec, Lo
         fields: Vec::with_capacity(entries.len()),
     };
     for entry in entries {
-        let Some(field) = kind.fields().iter().find(|field| field.name == entry.key) else {
+        let Some((_, field)) = kind.field(&entry.key) else {
             return Err(located(
                 entry.key_position,
                 Problem::UnknownField(entry.key.clone()),
@@ -180,8 +220,9 @@ pub(crate) fn check(node: &yaml::Node, kind: Kind, mode: Mode) -> Result<Rec, Lo
             return Err(located(node.position, Problem::MissingField(field.name)));
         }
     }
-    let order = |name: &str| kind.fields().iter().position(|field| field.name == name);
-    record.fields.sort_by_key(|(name, _)| order(name));
+    record
+        .fields
+        .sort_by_cached_key(|(name, _)| kind.field(name).map(|(at, _)| at));
     super::variants::check(&record)?;
     Ok(record)
 }
@@ -197,9 +238,7 @@ fn located(position: Position, problem: Problem) -> Located {
 
 fn check_shape(node: &yaml::Node, shape: Shape, mode: Mode) -> Result<Val, Located> {
     match shape {
-        Shape::Scalar(scalar) => check_scalar(node, scalar),
-        Shape::Record(kind) => check(node, kind, mode).map(Val::Record),
-        Shape::NodeRef => check_item(node, Item::NodeRef, mode),
+        Shape::One(item) => check_item(node, item, mode),
         Shape::List(item) => match &node.value {
             Value::Sequence(items) => items
                 .iter()
@@ -236,13 +275,7 @@ fn check_scalar(node: &yaml::Node, scalar: Scalar) -> Result<Val, Located> {
         Scalar::Slug => single_line && Slug::parse(text).is_ok(),
         Scalar::Tag => single_line && TagName::parse(text).is_ok(),
         Scalar::Category => single_line && CategoryName::parse(text).is_ok(),
-        Scalar::Digest => {
-            single_line
-                && text.len() == 64
-                && text
-                    .bytes()
-                    .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'))
-        }
+        Scalar::Digest => single_line && text.parse::<Digest>().is_ok(),
         Scalar::Integer => {
             value.style == Style::Plain
                 && text.parse::<u64>().is_ok_and(|number| number > 0)
@@ -290,12 +323,7 @@ pub fn to_out(record: &Rec) -> Out {
         .iter()
         .filter(|(_, value)| !matches!(value, Val::List(items) if items.is_empty()))
         .map(|(name, value)| {
-            let field = record
-                .kind
-                .fields()
-                .iter()
-                .find(|field| field.name == *name)
-                .expect("a field the schema defines");
+            let (_, field) = record.kind.field(name).expect("a field the schema defines");
             (field.name, value_out(value, field.shape))
         })
         .collect();
@@ -303,18 +331,13 @@ pub fn to_out(record: &Rec) -> Out {
 }
 
 fn value_out(value: &Val, shape: Shape) -> Out {
-    let item = match shape {
-        Shape::Scalar(scalar) => Item::Scalar(scalar),
-        Shape::Record(kind) => Item::Record(kind),
-        Shape::NodeRef => Item::NodeRef,
-        Shape::List(item) => {
-            let Val::List(items) = value else {
-                unreachable!("a checked list");
-            };
-            return Out::Sequence(items.iter().map(|entry| item_out(entry, item)).collect());
+    match (shape, value) {
+        (Shape::List(item), Val::List(items)) => {
+            Out::Sequence(items.iter().map(|entry| item_out(entry, item)).collect())
         }
-    };
-    item_out(value, item)
+        (Shape::One(item), _) => item_out(value, item),
+        (Shape::List(_), _) => unreachable!("a checked list"),
+    }
 }
 
 fn item_out(value: &Val, item: Item) -> Out {
