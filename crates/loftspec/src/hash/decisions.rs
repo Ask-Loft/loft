@@ -1,11 +1,11 @@
 //! Decision views (RQ-161): every reference inside a decision is by position or by content hash,
-//! never by key, so fresh element keys leave the view unchanged (AC-611, AC-612).
+//! never by key, so fresh element keys leave the view unchanged (AC-611, AC-612). The decisions
+//! come from an indexed document, so every reference resolves and successors form no cycle.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use serde_json::{Value, json};
 
-use super::HashError;
 use crate::canonical::{Digest, Domain, digest};
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
 use crate::identity::Key;
@@ -19,69 +19,56 @@ pub(crate) struct DecisionHasher<'a> {
     nodes: &'a NodeIndex,
     hashes: BTreeMap<DecisionId, Digest>,
     views: BTreeMap<DecisionId, Value>,
-    in_progress: BTreeSet<DecisionId>,
 }
 
 /// The view and its hash for every decision of a document.
 pub(crate) type DecisionViews = (BTreeMap<DecisionId, Digest>, BTreeMap<DecisionId, Value>);
 
 impl<'a> DecisionHasher<'a> {
-    pub(crate) fn new(decisions: &'a [Decision], nodes: &'a NodeIndex) -> Result<Self, HashError> {
-        let mut by_key = BTreeMap::new();
-        for decision in decisions {
-            let key = decision.id.key();
-            if nodes.contains_key(&key) || by_key.insert(decision.id, decision).is_some() {
-                return Err(HashError::DuplicateKey(key));
-            }
-        }
-        Ok(Self {
-            decisions: by_key,
+    pub(crate) fn new(decisions: &'a [Decision], nodes: &'a NodeIndex) -> Self {
+        Self {
+            decisions: decisions
+                .iter()
+                .map(|decision| (decision.id, decision))
+                .collect(),
             nodes,
             hashes: BTreeMap::new(),
             views: BTreeMap::new(),
-            in_progress: BTreeSet::new(),
-        })
+        }
     }
 
-    pub(crate) fn hash_all(mut self) -> Result<DecisionViews, HashError> {
+    pub(crate) fn hash_all(mut self) -> DecisionViews {
         let keys: Vec<DecisionId> = self.decisions.keys().copied().collect();
         for key in keys {
-            self.hash(key)?;
+            self.hash(key);
         }
-        Ok((self.hashes, self.views))
+        (self.hashes, self.views)
     }
 
-    fn hash(&mut self, key: DecisionId) -> Result<Digest, HashError> {
+    fn hash(&mut self, key: DecisionId) -> Digest {
         if let Some(hash) = self.hashes.get(&key) {
-            return Ok(*hash);
+            return *hash;
         }
-        if !self.in_progress.insert(key) {
-            return Err(HashError::SupersessionCycle(key));
-        }
-        let decision = *self
-            .decisions
-            .get(&key)
-            .ok_or(HashError::UnknownDecision(key))?;
-        let state = self.state_view(decision)?;
-        let view = decision_view(decision, &state, self.nodes)?;
+        let decision = self.decisions[&key];
+        let state = self.state_view(decision);
+        let view = decision_view(decision, &state, self.nodes);
         let hash = digest(Domain::Decision, &view);
-        self.in_progress.remove(&key);
         self.hashes.insert(key, hash);
         self.views.insert(key, view);
-        Ok(hash)
+        hash
     }
 
-    fn state_view(&mut self, decision: &Decision) -> Result<Value, HashError> {
+    fn state_view(&mut self, decision: &Decision) -> Value {
         let option = |selected: OptionId| option_position(decision, selected);
         let kind = decision.state.kind().as_str();
-        Ok(match &decision.state {
+        match &decision.state {
             DecisionState::Proposed => json!({ "kind": kind }),
             DecisionState::Accepted {
                 selected_option,
                 outcome,
             } => json!({
                 "kind": kind,
-                "selectedOption": option(*selected_option)?,
+                "selectedOption": option(*selected_option),
                 "outcome": outcome,
             }),
             DecisionState::Rejected { rationale } => {
@@ -93,9 +80,9 @@ impl<'a> DecisionHasher<'a> {
                 successor,
             } => json!({
                 "kind": kind,
-                "selectedOption": option(*selected_option)?,
+                "selectedOption": option(*selected_option),
                 "outcome": outcome,
-                "successor": self.hash(*successor)?,
+                "successor": self.hash(*successor),
             }),
             DecisionState::Retired {
                 selected_option,
@@ -103,30 +90,21 @@ impl<'a> DecisionHasher<'a> {
                 rationale,
             } => json!({
                 "kind": kind,
-                "selectedOption": option(*selected_option)?,
+                "selectedOption": option(*selected_option),
                 "outcome": outcome,
                 "rationale": rationale,
             }),
-        })
+        }
     }
 }
 
 /// The decision view: title, context, state, drivers, options, assessments and consequences, in
 /// that order (AC-610). Options and drivers keep their authored order; an assessment names its
 /// option and driver by position and the assessments are sorted by those positions.
-fn decision_view(
-    decision: &Decision,
-    state: &Value,
-    nodes: &NodeIndex,
-) -> Result<Value, HashError> {
+fn decision_view(decision: &Decision, state: &Value, nodes: &NodeIndex) -> Value {
     let node = |subject: NodeRef| match subject {
-        NodeRef::Held(node) => super::node_hash(nodes, node).map(|hash| json!(hash)).ok_or(
-            HashError::UnknownDecisionReference {
-                decision: decision.id,
-                reference: node.key(),
-            },
-        ),
-        NodeRef::Former(label) => Ok(super::former(label)),
+        NodeRef::Held(node) => json!(super::node_hash(nodes, node)),
+        NodeRef::Former(label) => super::former(label),
     };
     let drivers = decision
         .drivers
@@ -134,13 +112,13 @@ fn decision_view(
         .map(|driver| (driver.payload.kind().as_str(), &driver.payload))
         .map(|(kind, payload)| match payload {
             DriverPayload::Local { label, statement } => {
-                Ok(json!({ "kind": kind, "label": label, "statement": statement }))
+                json!({ "kind": kind, "label": label, "statement": statement })
             }
             DriverPayload::Subject { subject } => {
-                Ok(json!({ "kind": kind, "subject": node(*subject)? }))
+                json!({ "kind": kind, "subject": node(*subject) })
             }
         })
-        .collect::<Result<Vec<_>, HashError>>()?;
+        .collect::<Vec<_>>();
     let options: Vec<[&str; 2]> = decision
         .options
         .iter()
@@ -150,66 +128,52 @@ fn decision_view(
         .consequences
         .iter()
         .map(|consequence| {
-            let subject = consequence.subject.map(node).transpose()?;
-            Ok(json!([
-                consequence.kind.as_str(),
-                consequence.statement,
-                subject
-            ]))
+            let subject = consequence.subject.map(node);
+            json!([consequence.kind.as_str(), consequence.statement, subject])
         })
-        .collect::<Result<Vec<_>, HashError>>()?;
-    Ok(json!([
+        .collect::<Vec<_>>();
+    json!([
         decision.title,
         decision.context,
         state,
         drivers,
         options,
-        assessment_views(decision)?,
+        assessment_views(decision),
         consequences,
-    ]))
+    ])
 }
 
-fn assessment_views(decision: &Decision) -> Result<Vec<Value>, HashError> {
-    let mut rows = decision
+fn assessment_views(decision: &Decision) -> Vec<Value> {
+    let mut rows: Vec<_> = decision
         .assessments
         .iter()
         .map(|assessment| {
-            let option = option_position(decision, assessment.option)?;
-            let driver = driver_position(decision, assessment.driver)?;
-            Ok((
-                option,
-                driver,
+            (
+                option_position(decision, assessment.option),
+                driver_position(decision, assessment.driver),
                 assessment.rating.as_str(),
                 assessment.rationale.as_str(),
-            ))
+            )
         })
-        .collect::<Result<Vec<_>, HashError>>()?;
+        .collect();
     rows.sort_unstable();
-    Ok(rows
-        .into_iter()
+    rows.into_iter()
         .map(|(option, driver, rating, rationale)| json!([option, driver, rating, rationale]))
-        .collect())
+        .collect()
 }
 
-fn option_position(decision: &Decision, option: OptionId) -> Result<usize, HashError> {
+fn option_position(decision: &Decision, option: OptionId) -> usize {
     let keys = decision.options.iter().map(|option| option.id.key());
-    position(decision, keys, option.key())
+    position(keys, option.key())
 }
 
-fn driver_position(decision: &Decision, driver: DriverId) -> Result<usize, HashError> {
+fn driver_position(decision: &Decision, driver: DriverId) -> usize {
     let keys = decision.drivers.iter().map(|driver| driver.id.key());
-    position(decision, keys, driver.key())
+    position(keys, driver.key())
 }
 
-/// The position of `key` among a decision's element keys.
-fn position(
-    decision: &Decision,
-    mut keys: impl Iterator<Item = Key>,
-    key: Key,
-) -> Result<usize, HashError> {
+/// The position of `key` among a decision's element keys, which indexing guarantees it is among.
+fn position(mut keys: impl Iterator<Item = Key>, key: Key) -> usize {
     keys.position(|candidate| candidate == key)
-        .ok_or(HashError::UnknownDecisionReference {
-            decision: decision.id,
-            reference: key,
-        })
+        .expect("an indexed decision names only its own options and drivers")
 }

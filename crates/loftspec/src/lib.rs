@@ -13,6 +13,7 @@ pub mod fmt;
 pub mod hash;
 pub mod identity;
 pub mod ids;
+pub mod index;
 pub mod kind;
 pub mod manifest;
 pub mod names;
