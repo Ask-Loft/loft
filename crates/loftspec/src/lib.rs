@@ -7,6 +7,7 @@ pub mod canonical;
 pub mod convert;
 pub mod decision;
 pub mod document;
+mod ears;
 pub mod hash;
 pub mod identity;
 pub mod ids;
@@ -14,6 +15,7 @@ pub mod kind;
 pub mod manifest;
 pub mod names;
 pub mod statement;
+pub mod text;
 pub mod tree;
 
 /// The identifier a manifest names for this format, versioned with the text form it describes.
