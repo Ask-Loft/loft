@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+  "normativeBaseline": {
+    "authoredStateId": "f903ada3-9ac9-4874-a29d-35f452d26e90",
+    "publishSequence": 2,
+    "contentAddress": "a769d7d1552beedac69061adff5f50b9cbc0b2506c3e8cf7ab415182ecb8b1f5",
+    "graphAddress": "99501840a35ea7728b28000e9b4a335dac718438ac49d42a3314d8c285131799",
+    "vocabularyAddress": "abb2cb8766360353c014fc34f601fd8e23e578e703070523e60f898bf78a33c2",
+    "technicalConstraintCategoryAddress": null
+  },
+  "candidate": {
+    "branchId": "70b3474a-f584-4842-a491-b00e0c596d1a",
+    "branchCheckpointId": "b061960b-0dad-4c23-a694-d714224145f3",
+    "checkpointSequence": 1,
+    "branchRevision": 12,
+    "baseAuthoredStateId": "f903ada3-9ac9-4874-a29d-35f452d26e90",
+    "baseContentAddress": "a769d7d1552beedac69061adff5f50b9cbc0b2506c3e8cf7ab415182ecb8b1f5",
+    "contentAddress": "f581dfb3603d7286b799d28b3e6c611a95c8310ad1845f2e21fa963e745e4195",
+    "graphAddress": "8a7b8018d43e19281fe42342f47397e0a621d2c207d1e03410d2ceca6bc639eb",
+    "vocabularyAddress": "abb2cb8766360353c014fc34f601fd8e23e578e703070523e60f898bf78a33c2",
+    "technicalConstraintCategoryAddress": null
+  }
+}
