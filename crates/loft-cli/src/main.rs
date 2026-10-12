@@ -7,11 +7,12 @@ mod json;
 mod publish;
 mod render;
 mod verify;
+mod version;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 use loftspec_store::FileStore;
 
@@ -20,10 +21,16 @@ use loftspec_store::FileStore;
     name = "loft",
     about = "Author, check and format a Loft specification in git"
 )]
-#[command(arg_required_else_help = true)]
+#[command(arg_required_else_help = true, disable_version_flag = true)]
 struct Cli {
+    /// Print the tool version, the format and the hashing algorithm (RQ-157).
+    #[arg(long)]
+    version: bool,
+    /// With `--version`, print one JSON document on standard output (AC-682).
+    #[arg(long, value_name = "FORMAT", requires = "version")]
+    format: Option<Format>,
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Subcommand)]
@@ -114,8 +121,17 @@ enum Format {
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    if cli.version {
+        version::run(cli.format == Some(Format::Json));
+        return ExitCode::SUCCESS;
+    }
+    let Some(command) = cli.command else {
+        // Clap prints the usage for a bare `loft`; any other way to reach here is a usage error.
+        let _ = Cli::command().print_help();
+        return ExitCode::from(2);
+    };
     let root = Path::new(".");
-    match cli.command {
+    match command {
         Command::Fmt { check } => fmt(root, check),
         Command::Check { fail_on, format } => check::run(
             root,
