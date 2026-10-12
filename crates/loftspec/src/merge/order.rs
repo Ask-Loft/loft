@@ -175,6 +175,15 @@ fn anchor<Id: Ord + Clone>(list: &[Id], element: &Id) -> Option<Anchor<Id>> {
     })
 }
 
+/// The base elements a side holds somewhere other than where base has them.
+pub fn moved<Id: Ord + Clone>(base: &[Id], side: &[Id]) -> BTreeSet<Id> {
+    let still = stationary(base, side);
+    base.iter()
+        .filter(|element| side.contains(element) && !still.contains(*element))
+        .cloned()
+        .collect()
+}
+
 /// The base elements a side left in place: a longest sequence of the elements both hold that
 /// both hold in the same order. Of two equally long choices, the one that keeps the earlier
 /// base element in place.

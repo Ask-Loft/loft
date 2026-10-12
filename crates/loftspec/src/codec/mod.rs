@@ -28,7 +28,7 @@ pub use resolve::resolve;
 pub use unresolve::unresolve;
 
 pub(crate) use canon::canonicalize;
-pub(crate) use files::write_files;
+pub(crate) use files::{read_file, write_files};
 
 use crate::document::Document;
 
@@ -59,6 +59,21 @@ pub fn write(document: &Document) -> Files {
     let mut tree = unresolve(document);
     canonicalize(&mut tree);
     write_files(&tree)
+}
+
+/// One file's content in canonical layout, exactly as [`write`] writes that file.
+pub(crate) fn write_content(path: &SpecPath, role: Role, content: Content) -> Vec<u8> {
+    let mut tree = Tree::default();
+    tree.files.insert(path.clone(), (role, content));
+    canonicalize(&mut tree);
+    write_files(&tree)
+        .remove(path)
+        .expect("the writer writes the file")
+}
+
+/// Whether a record holds exactly the fields its variant takes (RQ-220's variants).
+pub(crate) fn variant_holds(record: &Rec) -> bool {
+    variants::check(record).is_ok()
 }
 
 /// The bytes of `spec/labels.yaml` alone, exactly as [`write`] writes them, without writing the

@@ -48,7 +48,7 @@ const fn discriminant(kind: Kind) -> Option<(&'static str, &'static [&'static st
 }
 
 /// Requires a record to hold exactly the fields its variant takes.
-pub(super) fn check(record: &Rec) -> Result<(), Located> {
+pub(crate) fn check(record: &Rec) -> Result<(), Located> {
     let Some((selector, common)) = discriminant(record.kind) else {
         return Ok(());
     };
