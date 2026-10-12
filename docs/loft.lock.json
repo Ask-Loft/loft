@@ -1,16 +1,16 @@
 {
-  "architectureDecisionAddress": null,
-  "authoredStateId": "46f04b35-1b47-4609-a737-3422d20380c6",
-  "contentAddress": "77b926758c7b38f0be81c137acb8bf4ca37500754f46ee55666a0a85c4661204",
+  "architectureDecisionAddress": "89d3efd7c57219c7e897ff28a4c35b66391d53975b1c6ea68b5b1af94ed0eb5b",
+  "authoredStateId": "f903ada3-9ac9-4874-a29d-35f452d26e90",
+  "contentAddress": "a769d7d1552beedac69061adff5f50b9cbc0b2506c3e8cf7ab415182ecb8b1f5",
   "documentExternalId": "D-11",
   "documentId": "31c36546-9554-426c-980b-a501a32aa506",
   "documentName": "Loft Specification Format",
-  "graphAddress": "925d733c6195a31ac319dc1e44f7bd51084ecbbd8c25a4b1e7f1dd685f8d69cf",
-  "normativeScope": "The whole of D-11 'Loft Specification Format'. Sequence 1 is the empty state the document was created with; nothing in it is normative yet, and work in progress is named by docs/loft.work.json as a candidate, never as the contract. This is a bootstrap pin: D-11 is authored in Loft v1 until the self-hosting milestone, after which spec/ is the source and this lock is replaced by a v2 lock whose derivedFrom names the last v1 state of D-11.",
-  "pinnedAt": "2026-10-11",
-  "publishSequence": 1,
-  "publishedAt": "2026-10-11T15:10:44.298360465Z",
+  "graphAddress": "99501840a35ea7728b28000e9b4a335dac718438ac49d42a3314d8c285131799",
+  "normativeScope": "The whole of D-11 'Loft Specification Format' at publish sequence 2: the Format, the loftspec library and the loft CLI as specified for the bootstrap. This is a bootstrap pin: D-11 is authored in Loft v1 until the self-hosting milestone, after which spec/ is the source and this lock is replaced by a v2 lock whose derivedFrom names the last v1 state of D-11.",
+  "pinnedAt": "2026-10-12",
+  "publishSequence": 2,
+  "publishedAt": "2026-10-11T23:58:54.368466797Z",
   "schemaVersion": 1,
   "technicalConstraintCategoryAddress": null,
-  "vocabularyAddress": "14e612e9405909e335f965ec84b726b4e93c158271e0c8816101bca2c55eb537"
+  "vocabularyAddress": "abb2cb8766360353c014fc34f601fd8e23e578e703070523e60f898bf78a33c2"
 }
