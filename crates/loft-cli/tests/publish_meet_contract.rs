@@ -281,3 +281,19 @@ fn an_unmerged_code_file_is_refused_by_name() {
     pull_stops(&bob, "--no-rebase");
     refused(&bob, "src/main.rs");
 }
+
+#[test]
+fn a_pull_git_could_not_run_the_driver_for_is_refused_and_recovered_by_checkout_merge() {
+    let (_alice, bob) = two_publishes();
+    let broken = "merge.loft.driver=no-such-loft merge-driver %O %A %B %P";
+    let output = bob.git(&["-c", broken, "pull", "--quiet", "--no-rebase"]);
+    assert!(!output.status.success(), "the pull stops");
+    assert!(!bob.text("labels.yaml").contains("conflicts:"));
+    refused(&bob, "git checkout -m spec/labels.yaml");
+    bob.git_ok(&["checkout", "-m", "spec/labels.yaml"]);
+    assert!(bob.text("labels.yaml").contains("conflicts:"));
+    let printed = settle(&bob);
+    assert!(printed.contains("withdrew RQ-7"), "{printed}");
+    assert!(printed.contains("finished: true"), "{printed}");
+    checks_and_verifies(&bob);
+}

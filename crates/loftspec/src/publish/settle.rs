@@ -72,6 +72,8 @@ pub(super) fn preconditions(
 /// label, which allocation rebinds before the history is attached again.
 #[derive(Debug, Default)]
 pub(super) struct Settlement {
+    /// Whether the tree held a conflict record over `bindings`.
+    recorded: bool,
     lost: Vec<(ElementId, Label)>,
     pending: Vec<History>,
 }
@@ -98,6 +100,12 @@ impl History {
 }
 
 impl Settlement {
+    /// Whether `spec/labels.yaml` is unmerged although the tree held no conflict record over
+    /// `bindings`: git could not run the merge driver and kept one side of the file.
+    pub(super) fn unrecorded(&self, stopped: &Stopped) -> bool {
+        !self.recorded && stopped.unmerged.iter().any(|path| path == SETTLED[0])
+    }
+
     /// Attaches the history of each key that allocation rebound, and gives each withdrawn label
     /// with the label its key now holds.
     pub(super) fn reattach(self, bindings: &mut Bindings) -> Vec<Withdrawn> {
@@ -125,6 +133,7 @@ pub(super) fn settle(document: &mut Document, operation: Operation) -> Settlemen
         return settlement;
     };
     let conflict = document.conflicts.remove(at);
+    settlement.recorded = true;
     let (pulled, other) = match operation {
         Operation::Merge => (&conflict.theirs, &conflict.ours),
         Operation::Rebase => (&conflict.ours, &conflict.theirs),

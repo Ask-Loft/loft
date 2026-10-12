@@ -98,6 +98,13 @@ fn refusal(refusal: Refusal) -> Failure {
              before publishing",
             paths.join(", ")
         )),
+        Refusal::UnmergedBindings => Failure::Refused(
+            "spec/labels.yaml is unmerged but holds no conflict record: git could not run \
+             `loft merge-driver`, which it runs only when `loft` is on git's search path. Put \
+             `loft` there, run `git checkout -m spec/labels.yaml` to merge the file again, and \
+             publish again"
+                .to_owned(),
+        ),
         Refusal::Lock { revision, message } => Failure::Refused(format!(
             "the lock at {revision} is not a lock record: {message}"
         )),

@@ -243,3 +243,25 @@ fn a_rebase_of_another_branch_is_refused_and_nothing_is_written() {
     assert!(stderr(&output).contains("`feature`"), "{}", stderr(&output));
     assert_eq!(snapshot(&scratch), before);
 }
+
+#[test]
+fn unmerged_bindings_without_a_conflict_record_are_refused_with_the_way_out() {
+    let (scratch, scenario) = stopped(Stop::Merge);
+    // As git leaves the file when it could not run the driver: no conflict record.
+    let merged = fs::read_to_string(scratch.file("labels.yaml")).unwrap();
+    let plain = merged.split("conflicts:\n").next().unwrap();
+    fs::write(scratch.file("labels.yaml"), plain).unwrap();
+    let before = snapshot(&scratch);
+    let output = publish(&scratch, &scenario, &["publish"]);
+    assert_eq!(output.status.code(), Some(1));
+    let refusal = stderr(&output);
+    assert!(
+        refusal.contains("git checkout -m spec/labels.yaml"),
+        "{refusal}"
+    );
+    assert!(
+        refusal.contains("`loft` is on git's search path"),
+        "{refusal}"
+    );
+    assert_eq!(snapshot(&scratch), before);
+}

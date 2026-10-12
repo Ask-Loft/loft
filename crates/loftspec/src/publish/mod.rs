@@ -85,6 +85,9 @@ pub enum Refusal {
     Invalid(Vec<Placed>),
     /// In a stopped merge or rebase, paths other than the bindings and the lock are unmerged.
     Unmerged(Vec<String>),
+    /// In a stopped merge or rebase, `spec/labels.yaml` is unmerged but holds no conflict record
+    /// over its bindings: git could not run the merge driver, so the dispute is not in the tree.
+    UnmergedBindings,
     /// In a stopped merge or rebase, the lock at a commit is not a lock record.
     Lock {
         revision: &'static str,
@@ -124,6 +127,12 @@ pub fn publish(
         });
         (sequence, Settlement::default())
     };
+    // A tree the working lock already pins was settled; otherwise unmerged bindings without a
+    // conflict record are refused once the roots are known.
+    let unrecorded = repo
+        .stopped
+        .as_ref()
+        .is_some_and(|stopped| settlement.unrecorded(stopped));
     let invalid = placed(validate(&document), &sites);
     if !invalid.is_empty() {
         return Err(Refusal::Invalid(invalid));
@@ -143,6 +152,9 @@ pub fn publish(
         .roots;
     if let Some(previous) = previous.filter(|lock| lock.state_root == roots.state) {
         return Ok(Publication::Unchanged(previous.clone()));
+    }
+    if unrecorded {
+        return Err(Refusal::UnmergedBindings);
     }
     Ok(Publication::Published {
         lock: Lock {

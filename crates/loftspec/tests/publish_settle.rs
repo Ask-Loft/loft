@@ -298,3 +298,20 @@ fn a_lock_at_a_commit_that_is_not_a_lock_record_is_refused() {
     repo.stopped.as_mut().unwrap().other_lock = Some(b"<<<<<<< ours\n".to_vec());
     assert!(matches!(settle(&files, &repo), Err(Refusal::Lock { .. })));
 }
+
+#[test]
+fn unmerged_bindings_without_a_conflict_record_are_refused() {
+    let mut repo = stopped(Operation::Merge);
+    repo.branch = Some("main".to_owned());
+    assert_eq!(settle(&files(), &repo), Err(Refusal::UnmergedBindings));
+}
+
+#[test]
+fn bindings_merged_without_a_conflict_publish_when_only_the_lock_is_unmerged() {
+    let mut repo = stopped(Operation::Merge);
+    repo.stopped.as_mut().unwrap().unmerged = vec!["loft.lock.json".to_owned()];
+    assert!(matches!(
+        settle(&files(), &repo),
+        Ok(Publication::Published { .. })
+    ));
+}
