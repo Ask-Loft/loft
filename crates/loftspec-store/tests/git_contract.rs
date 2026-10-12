@@ -338,6 +338,12 @@ fn reading_the_state_changes_no_file_of_the_repository() {
         let root = build(&repository);
         let before = repository.snapshot();
         let _ = GitCommand::from_command(real_git).state(&root);
-        assert!(repository.snapshot() == before, "{name}: a file changed");
+        let after = repository.snapshot();
+        let changed: Vec<&String> = before
+            .keys()
+            .chain(after.keys())
+            .filter(|path| before.get(*path) != after.get(*path))
+            .collect();
+        assert!(changed.is_empty(), "{name}: changed {changed:?}");
     }
 }
