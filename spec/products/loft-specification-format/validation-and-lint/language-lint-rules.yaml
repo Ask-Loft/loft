@@ -136,7 +136,7 @@ requirements:
       shall: "report two near-duplicate names as `LQ-008`."
     criteria:
       - key: 6b6afe40-4db1-4705-be91-20e3a23d8d41
-        name: "Two names whose similarity reaches the configured threshold yield one `LQ-008` finding naming both keys."
+        name: "Two names of a kind other than criterion whose similarity reaches the configured threshold yield one `LQ-008` finding naming both keys."
       - key: e522f972-0b62-45be-890a-bc5194732fb4
         name: "A name shorter than the configured minimum token count takes part in no `LQ-008` finding."
       - key: 5f8aa91b-e0c4-432e-8a2e-da83b364b3a5
@@ -147,6 +147,10 @@ requirements:
         name: "The similarity of two names is the size of the multiset intersection of their tokens divided by the size of their multiset union."
       - key: 11cf6e9a-bf01-43d0-9e66-15cc4d07a3b8
         name: "Names are compared only between two nodes of one kind."
+      - key: 01a12dda-cece-7462-b240-636e6eb12919
+        name: "A criterion is compared only with the other criteria of its Requirement."
+      - key: 01a12dda-cece-7462-b240-636ff15f31ed
+        name: "Two criteria of one Requirement yield an `LQ-008` finding only when their tokens are identical."
   - key: 2fe2e5a3-c255-4596-91fa-a038783faaa2
     statement:
       form: ubiquitous
