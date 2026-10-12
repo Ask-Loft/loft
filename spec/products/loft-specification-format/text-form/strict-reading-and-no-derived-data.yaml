@@ -83,7 +83,7 @@ requirements:
   - key: 1a2a3fba-1983-4189-94df-6ec6af9b5be0
     statement:
       form: unwanted
-      if: "a constraint category name is not one or more segments joined by dots, each a lowercase letter followed by lowercase letters, digits and hyphens"
+      if: "a constraint category name does not match `[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*`"
       system: "the reader"
       shall: "report an error naming the file, line and column."
     criteria:

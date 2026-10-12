@@ -45,9 +45,9 @@ requirements:
   - key: 9a97cb58-a8d4-4789-80c0-9b6902ca4216
     statement:
       form: optional
-      where: "a decision is accepted, rejected, superseded or retired"
+      where: "a decision is not `proposed`"
       system: "the validator"
-      shall: "require at least two options, a driver and an assessment for each option and driver."
+      shall: "report each gap in its assessment matrix."
     criteria:
       - key: f3999221-efa4-4f40-95aa-f5bfaf734635
         name: "Such a decision with fewer than two options is an error naming the decision."
