@@ -21,6 +21,7 @@ pub mod index;
 pub mod kind;
 pub mod lint;
 pub mod manifest;
+pub mod merge;
 pub mod names;
 pub mod node;
 pub mod prose;
