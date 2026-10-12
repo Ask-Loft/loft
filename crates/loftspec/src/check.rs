@@ -83,7 +83,7 @@ pub fn check(files: &Files) -> Checked {
     }
 }
 
-fn place(error: ValidationError, sites: &Sites) -> Placed {
+pub(crate) fn place(error: ValidationError, sites: &Sites) -> Placed {
     let sites = error
         .keys()
         .into_iter()
