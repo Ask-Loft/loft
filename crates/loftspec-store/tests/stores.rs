@@ -58,7 +58,7 @@ fn a_document_save_leaves_lint_yaml_unchanged() {
     let mut document = store.load().unwrap();
     document.products.clear();
     let resaved = store.save(&document).unwrap();
-    assert!(!resaved.removed.is_empty());
+    assert_ne!(resaved.removed, Vec::new());
     assert!(!resaved.removed.contains(&SpecPath::new("lint.yaml")));
     assert_eq!(
         fs::read(scratch.0.join("spec/lint.yaml")).unwrap(),

@@ -89,7 +89,7 @@ fn ac_168_to_ac_170_every_node_keeps_its_uuid_and_its_external_id_without_aliase
             binding.label,
             Label::parse(v1["externalId"].as_str().unwrap()).unwrap()
         );
-        assert!(binding.aliases.is_empty());
+        assert_eq!(binding.aliases, Vec::new());
     }
     assert_eq!(document.bindings.len(), tree().len() - 2);
 }

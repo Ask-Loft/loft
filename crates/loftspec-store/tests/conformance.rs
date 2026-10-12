@@ -367,7 +367,7 @@ fn converted_v1_exports_agree() {
     for export in [READING_LIST, D11] {
         let document = converted(export);
         let mut pair = Pair::new();
-        assert!(!pair.step(&document).written.is_empty());
+        assert_ne!(pair.step(&document).written, Vec::new());
         assert_eq!(pair.step(&document), Saved::default());
     }
 }

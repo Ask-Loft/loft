@@ -65,7 +65,10 @@ fn ac_335_ac_337_a_feature_without_a_realizes_edge_is_sh_001() {
 
 #[test]
 fn ac_336_a_feature_with_a_realizes_edge_is_not_sh_001() {
-    assert!(of(&findings(&small_document()), RuleId::Sh001).is_empty());
+    assert_eq!(
+        of(&findings(&small_document()), RuleId::Sh001),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -86,7 +89,10 @@ fn ac_339_ac_340_a_component_with_a_child_or_realized_is_not_sh_002() {
         feature: FeatureId::new(key(3)),
         component: ComponentId::new(key(41)),
     });
-    assert!(of(&findings(&document), RuleId::Sh002).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Sh002),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -137,7 +143,10 @@ fn ac_353_ac_355_a_registry_entry_no_node_lists_is_sh_006() {
 fn ac_354_a_registry_entry_a_node_lists_is_not_sh_006() {
     let mut document = small_document();
     document.components[0].details.tags.push(tag("identity"));
-    assert!(of(&findings(&document), RuleId::Sh006).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Sh006),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -163,14 +172,20 @@ fn ac_871_a_constraint_named_like_a_sibling_feature_is_not_sh_007() {
     document.products[0].feature_groups[0]
         .constraints
         .push(keys);
-    assert!(of(&findings(&document), RuleId::Sh007).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Sh007),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
 fn ac_357_equal_names_under_different_parents_are_not_sh_007() {
     let mut document = small_document();
     document.components.push(root(component(key(45), "Keys")));
-    assert!(of(&findings(&document), RuleId::Sh007).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Sh007),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -198,7 +213,10 @@ fn ac_360_ac_361_a_constraint_or_attribute_in_the_subtree_clears_sh_008() {
     child.constraints.push(constraint(48));
     parent.components.push(child);
     document.components.push(root(parent));
-    assert!(of(&findings(&document), RuleId::Sh008).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Sh008),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -215,7 +233,10 @@ fn ac_363_ac_365_a_tag_no_registry_entry_names_is_sh_009_naming_the_node_and_the
 
 #[test]
 fn ac_364_a_tag_with_a_registry_entry_is_not_sh_009() {
-    assert!(of(&findings(&small_document()), RuleId::Sh009).is_empty());
+    assert_eq!(
+        of(&findings(&small_document()), RuleId::Sh009),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -258,7 +279,10 @@ fn ac_406_ac_408_each_heading_line_in_a_body_is_v2_001_naming_the_line() {
 
 #[test]
 fn ac_407_a_body_without_a_heading_is_not_v2_001() {
-    assert!(of(&findings(&small_document()), RuleId::V2001).is_empty());
+    assert_eq!(
+        of(&findings(&small_document()), RuleId::V2001),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -279,7 +303,10 @@ fn ac_410_a_statement_with_a_form_is_not_v2_002() {
     let document = small_document();
     let statement = &document.products[0].feature_groups[0].features[0].requirements[0].statement;
     assert!(matches!(statement, Statement::Form(_)));
-    assert!(of(&findings(&document), RuleId::V2002).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::V2002),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -305,7 +332,10 @@ fn ac_890_a_label_shaped_text_at_or_above_its_counter_is_not_a_reference() {
     document
         .counters
         .set(LabelPrefix::Product, NonZeroU64::new(2).unwrap());
-    assert!(of(&findings(&document), RuleId::V2003).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::V2003),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -315,7 +345,10 @@ fn ac_413_a_reference_with_its_mentions_edge_is_not_v2_003() {
         source: FeatureId::new(key(3)).into(),
         target: ComponentId::new(key(6)).into(),
     });
-    assert!(of(&findings(&document), RuleId::V2003).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::V2003),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]
@@ -357,7 +390,7 @@ fn ac_422_ac_866_a_rule_listed_under_rules_can_be_disabled() {
         &small_document(),
         "rules:\n  - rule: SH-006\n    enabled: false\n",
     );
-    assert!(of(&all, RuleId::Sh006).is_empty());
+    assert_eq!(of(&all, RuleId::Sh006), Vec::<Vec<Key>>::new());
 }
 
 #[test]
@@ -376,7 +409,10 @@ fn ac_425_ac_675_ac_867_a_suppression_names_a_rule_a_key_and_a_reason_and_drops_
         "suppressions:\n  - rule: SH-006\n    key: {}\n    reason: \"Kept for later.\"\n",
         key(30)
     );
-    assert!(of(&configured(&small_document(), &yaml), RuleId::Sh006).is_empty());
+    assert_eq!(
+        of(&configured(&small_document(), &yaml), RuleId::Sh006),
+        Vec::<Vec<Key>>::new()
+    );
 }
 
 #[test]

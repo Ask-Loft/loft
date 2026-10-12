@@ -1,0 +1,6 @@
+# CI and every checkout build with the same compiler, so a new stable release's lints arrive by
+# a deliberate bump here rather than as a failing build.
+[toolchain]
+channel = "1.99.0"
+components = ["clippy", "rustfmt"]
+profile = "minimal"
