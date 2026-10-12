@@ -32,8 +32,8 @@ Loft's commands depend on systems outside Loft: git and the clock. Tests run the
 binary, unchanged, against simulators from the Software Plant instead of those systems:
 
 - a `git` executable that answers the git calls Loft makes from a scenario the test writes (a
-  clean repository on `main`, uncommitted changes, another branch, a detached HEAD, a directory
-  outside any repository, a git error) and refuses any other call;
+  clean repository on `main`, uncommitted changes, another branch, a detached HEAD, a local
+  configuration, a directory outside any repository, a git error) and refuses any other call;
 - a clock that sets `SOURCE_DATE_EPOCH`, so a test names the publish time exactly.
 
 ```rust

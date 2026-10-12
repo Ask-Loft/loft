@@ -17,6 +17,9 @@ fn main() -> ExitCode {
     let (code, stdout, stderr) = match GitScenario::from_env() {
         Ok(scenario) => {
             let reply = scenario.answer(&args);
+            if let Some((name, value)) = &reply.set {
+                save(&scenario.with_config(name, value));
+            }
             let optional_locks = std::env::var_os(OPTIONAL_LOCKS_ENV);
             if let Some(lock) = reply.optional_lock
                 && optional_locks.as_deref() != Some("0".as_ref())
@@ -30,6 +33,12 @@ fn main() -> ExitCode {
     let _ = io::stdout().write_all(&stdout);
     let _ = io::stderr().write_all(stderr.as_bytes());
     ExitCode::from(u8::try_from(code).unwrap_or(1))
+}
+
+/// Writes the scenario a call changed back to its file, for the calls after it to read.
+fn save(scenario: &GitScenario) {
+    let path = std::env::var_os(SCENARIO_ENV).expect("the scenario was read from it");
+    scenario.write(Path::new(&path));
 }
 
 /// Appends `lock` to the record beside the scenario.

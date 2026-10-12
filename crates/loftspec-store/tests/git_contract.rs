@@ -351,3 +351,42 @@ fn ac_978_reading_the_state_changes_no_file_of_the_repository() {
         assert!(changed.is_empty(), "{name}: changed {changed:?}");
     }
 }
+
+/// The name `loft merge-driver --install` sets, and the value it sets it to.
+const DRIVER: (&str, &str) = ("merge.loft.driver", "loft merge-driver %O %A %B %P");
+
+#[test]
+fn the_simulator_answers_the_config_calls_as_real_git_does() {
+    let (name, value) = DRIVER;
+    // Unset, then set, then read back: each call sees the configuration the one before left.
+    let calls: [&[&str]; 3] = [
+        &["config", "--local", "--get", name],
+        &["config", "--local", name, value],
+        &["config", "--local", "--get", name],
+    ];
+    let cases: [Case; 2] = [
+        ("clean on main", committed, clean),
+        (
+            "outside a repository",
+            outside,
+            GitScenario::outside_repository,
+        ),
+    ];
+    for (case, build, scenario) in cases {
+        let repository = Scratch::new();
+        let root = build(&repository);
+        let plant = Scratch::new();
+        let simulator = scenario().install(&plant.0);
+        for call in calls {
+            let real = real_git().arg("-C").arg(&root).args(call).output().unwrap();
+            let simulated = simulator
+                .apply(&mut Command::new("git"))
+                .arg("-C")
+                .arg(&root)
+                .args(call)
+                .output()
+                .unwrap();
+            assert_eq!(reply(&simulated), reply(&real), "{case}: git {call:?}");
+        }
+    }
+}

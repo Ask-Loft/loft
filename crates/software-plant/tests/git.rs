@@ -4,7 +4,9 @@
 use std::process::Command;
 
 use software_plant::GitScenario;
-use software_plant::git::{Call, NOT_A_REPOSITORY, OPTIONAL_LOCKS_ENV, Reply, UNSCRIPTED};
+use software_plant::git::{
+    Call, LOCAL_OUTSIDE_A_REPOSITORY, NOT_A_REPOSITORY, OPTIONAL_LOCKS_ENV, Reply, UNSCRIPTED,
+};
 
 fn args(line: &str) -> Vec<String> {
     line.split(' ').map(str::to_owned).collect()
@@ -49,6 +51,7 @@ fn ac_972_a_detached_head_exits_1_and_prints_nothing() {
             stdout: Vec::new(),
             stderr: String::new(),
             optional_lock: None,
+            set: None,
         }
     );
 }
@@ -239,4 +242,71 @@ fn installing_a_scenario_starts_a_fresh_record_of_locks() {
     let locks = again.locks();
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(locks, NONE);
+}
+
+const DRIVER: &str = "merge.loft.driver";
+
+#[test]
+fn config_get_prints_the_value_of_a_name_the_scenario_sets() {
+    let scenario =
+        GitScenario::clean_on("main").with_config(DRIVER, "loft merge-driver %O %A %B %P");
+    let reply = scenario.answer(&[
+        "config".to_owned(),
+        "--local".to_owned(),
+        "--get".to_owned(),
+        DRIVER.to_owned(),
+    ]);
+    assert_eq!(
+        (reply.code, reply.stdout),
+        (0, b"loft merge-driver %O %A %B %P\n".to_vec())
+    );
+}
+
+#[test]
+fn config_get_exits_1_and_prints_nothing_for_a_name_the_scenario_does_not_set() {
+    let reply = answer(
+        &GitScenario::clean_on("main"),
+        "config --local --get merge.loft.name",
+    );
+    assert_eq!(
+        (reply.code, reply.stdout, reply.stderr),
+        (1, Vec::new(), String::new())
+    );
+}
+
+#[test]
+fn config_set_sets_the_name_in_the_scenario_the_executable_reads() {
+    let dir = plant("config");
+    let installed = GitScenario::clean_on("main").install(&dir);
+    let set = installed
+        .apply(&mut Command::new("git"))
+        .args(["config", "--local", DRIVER, "loft merge-driver %O %A %B %P"])
+        .output()
+        .unwrap();
+    let get = installed
+        .apply(&mut Command::new("git"))
+        .args(["config", "--local", "--get", DRIVER])
+        .output()
+        .unwrap();
+    let scenario = GitScenario::read(&installed.scenario).unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert_eq!((set.status.code(), set.stdout), (Some(0), Vec::new()));
+    assert_eq!(get.stdout, b"loft merge-driver %O %A %B %P\n");
+    assert_eq!(
+        scenario,
+        GitScenario::clean_on("main").with_config(DRIVER, "loft merge-driver %O %A %B %P")
+    );
+}
+
+#[test]
+fn outside_a_repository_a_config_call_exits_128_with_gits_message() {
+    let outside = GitScenario::outside_repository();
+    for line in ["config --local --get x", "config --local x y"] {
+        let reply = answer(&outside, line);
+        assert_eq!(
+            (reply.code, reply.stderr.as_str()),
+            (128, LOCAL_OUTSIDE_A_REPOSITORY),
+            "{line}"
+        );
+    }
 }
