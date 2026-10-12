@@ -2,6 +2,8 @@ key: fd3d21c7-76fa-4f82-abe0-a2266a7e39d8
 slug: loft-init
 name: "`loft init`"
 body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries."
+tags:
+  - writes-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
   - bcd4525c-3adf-45dd-beed-527d654d517c

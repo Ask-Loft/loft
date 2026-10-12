@@ -1,0 +1,122 @@
+key: 01a12e66-85dc-70ec-b5ed-93edeba3dfba
+slug: a-save-is-journaled-and-finished-by-the-next-command
+title: "A save is journaled and finished by the next command"
+context: "A command such as `loft fmt` or `loft import v1` changes many files under `spec/` and sometimes a file beside it. Renaming each file into place makes each file whole but not the set: a crash part-way leaves some files new and some old, a tree no single command wrote. The publisher must also write the lock and the bindings together or not at all."
+state:
+  kind: accepted
+  selectedOption: 01a12e66-85dc-70ec-b5ed-93f26cb09cd1
+  outcome: "A save stages its changed files in a journal beside `spec/`, commits by renaming the journal's plan into place, and then renames each file into place; a command that opens the tree finishes a committed save and discards an uncommitted one."
+drivers:
+  - key: 01a12e66-85dc-70ec-b5ed-93eeb2868ce3
+    kind: local
+    label: "Old or new"
+    statement: "After a crash, the files are either all as they were or all as the command wrote them."
+  - key: 01a12e66-85dc-70ec-b5ed-93ef80079d6d
+    kind: local
+    label: "Unchanged files alone"
+    statement: "A file whose bytes do not change is not rewritten."
+  - key: 01a12e66-85dc-70ec-b5ed-93f0b4c39a95
+    kind: local
+    label: "Portable"
+    statement: "The mechanism uses only operations every supported platform offers."
+  - key: 01a12e66-85dc-70ec-b5ed-93f193ce9d11
+    kind: local
+    label: "Beside the tree"
+    statement: "A file beside `spec/`, such as the sidecar or the lock, can join the same save as the tree."
+options:
+  - key: 01a12e66-85dc-70ec-b5ed-93f26cb09cd1
+    title: "A journal the next command finishes"
+    description: "Changed files are staged in a journal directory beside `spec/`; renaming the journal's plan into place commits the save; the files are then renamed into place, and a command that finds a committed plan finishes it, while one that finds an uncommitted journal discards it."
+  - key: 01a12e66-85dc-70ec-b5ed-93f39db4ec82
+    title: "A rename per file"
+    description: "Each changed file is written to a temporary file and renamed into place on its own."
+  - key: 01a12e66-85dc-70ec-b5ed-93f47fcb61a0
+    title: "Swap the whole tree"
+    description: "The new tree is written in full to a sibling directory, which then replaces `spec/`."
+  - key: 01a12e66-85dc-70ec-b5ed-93f5b5067d16
+    title: "Write in place"
+    description: "Each changed file is overwritten where it lies."
+assessments:
+  - option: 01a12e66-85dc-70ec-b5ed-93f26cb09cd1
+    driver: 01a12e66-85dc-70ec-b5ed-93eeb2868ce3
+    rating: supports
+    rationale: "the plan's rename is the single point at which the save happens"
+  - option: 01a12e66-85dc-70ec-b5ed-93f26cb09cd1
+    driver: 01a12e66-85dc-70ec-b5ed-93ef80079d6d
+    rating: supports
+    rationale: "only changed files enter the journal"
+  - option: 01a12e66-85dc-70ec-b5ed-93f26cb09cd1
+    driver: 01a12e66-85dc-70ec-b5ed-93f0b4c39a95
+    rating: supports
+    rationale: "it needs only a rename within one directory tree"
+  - option: 01a12e66-85dc-70ec-b5ed-93f26cb09cd1
+    driver: 01a12e66-85dc-70ec-b5ed-93f193ce9d11
+    rating: supports
+    rationale: "the plan names paths relative to the directory that holds `spec/`"
+  - option: 01a12e66-85dc-70ec-b5ed-93f39db4ec82
+    driver: 01a12e66-85dc-70ec-b5ed-93eeb2868ce3
+    rating: conflicts
+    rationale: "a crash part-way leaves a mixture of old and new files"
+  - option: 01a12e66-85dc-70ec-b5ed-93f39db4ec82
+    driver: 01a12e66-85dc-70ec-b5ed-93ef80079d6d
+    rating: supports
+    rationale: "only changed files are renamed"
+  - option: 01a12e66-85dc-70ec-b5ed-93f39db4ec82
+    driver: 01a12e66-85dc-70ec-b5ed-93f0b4c39a95
+    rating: supports
+    rationale: "a rename of one file"
+  - option: 01a12e66-85dc-70ec-b5ed-93f39db4ec82
+    driver: 01a12e66-85dc-70ec-b5ed-93f193ce9d11
+    rating: conflicts
+    rationale: "each file stands alone"
+  - option: 01a12e66-85dc-70ec-b5ed-93f47fcb61a0
+    driver: 01a12e66-85dc-70ec-b5ed-93eeb2868ce3
+    rating: conflicts
+    rationale: "a portable swap takes two renames, between which no tree is in place"
+  - option: 01a12e66-85dc-70ec-b5ed-93f47fcb61a0
+    driver: 01a12e66-85dc-70ec-b5ed-93ef80079d6d
+    rating: conflicts
+    rationale: "every file is written anew"
+  - option: 01a12e66-85dc-70ec-b5ed-93f47fcb61a0
+    driver: 01a12e66-85dc-70ec-b5ed-93f0b4c39a95
+    rating: conflicts
+    rationale: "an atomic exchange of two directories exists on some platforms only"
+  - option: 01a12e66-85dc-70ec-b5ed-93f47fcb61a0
+    driver: 01a12e66-85dc-70ec-b5ed-93f193ce9d11
+    rating: conflicts
+    rationale: "files beside `spec/` lie outside the swapped directory"
+  - option: 01a12e66-85dc-70ec-b5ed-93f5b5067d16
+    driver: 01a12e66-85dc-70ec-b5ed-93eeb2868ce3
+    rating: conflicts
+    rationale: "a crash can leave a file half written"
+  - option: 01a12e66-85dc-70ec-b5ed-93f5b5067d16
+    driver: 01a12e66-85dc-70ec-b5ed-93ef80079d6d
+    rating: supports
+    rationale: "only changed files are written"
+  - option: 01a12e66-85dc-70ec-b5ed-93f5b5067d16
+    driver: 01a12e66-85dc-70ec-b5ed-93f0b4c39a95
+    rating: supports
+    rationale: "an ordinary write"
+  - option: 01a12e66-85dc-70ec-b5ed-93f5b5067d16
+    driver: 01a12e66-85dc-70ec-b5ed-93f193ce9d11
+    rating: conflicts
+    rationale: "each file stands alone"
+consequences:
+  - key: 01a12e66-85dc-70ec-b5ed-93f6f14a7258
+    kind: obligation
+    statement: "Every command that opens the tree first finishes a committed save or discards an uncommitted one."
+    subject: 01a12e66-85dc-70ec-b5ed-93d67b25c117
+  - key: 01a12e66-85dc-70ec-b5ed-93f737efae51
+    kind: cost
+    statement: "A save keeps its journal in `.loft/save/` beside `spec/` while it runs, which the repository's ignore file names."
+  - key: 01a12e66-85dc-70ec-b5ed-93f81e08357c
+    kind: benefit
+    statement: "The publisher writes the lock and the bindings in one save, and the importer the tree and the sidecar."
+  - key: 01a12e66-85dc-70ec-b5ed-93f9d9a94e12
+    kind: risk
+    statement: "Two `loft` processes saving the same tree at once are not guarded against."
+subjects:
+  - role: affected
+    node: 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - role: outcome
+    node: 01a12e66-85dc-70ec-b5ed-93d67b25c117

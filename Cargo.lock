@@ -410,6 +410,8 @@ name = "loftspec-store"
 version = "2.0.0"
 dependencies = [
  "loftspec",
+ "serde",
+ "serde_json",
  "thiserror",
 ]
 

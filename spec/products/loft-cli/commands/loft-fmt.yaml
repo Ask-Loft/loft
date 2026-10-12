@@ -4,6 +4,7 @@ name: "`loft fmt`"
 body: "Rewrites the tree in canonical layout and mints missing keys, or with `--check` reports drift without writing."
 tags:
   - reads-tree
+  - writes-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
   - bcd4525c-3adf-45dd-beed-527d654d517c
@@ -16,12 +17,8 @@ requirements:
     criteria:
       - key: 100cafc9-84e3-4a71-95d6-ca65a8f81771
         name: "Every file whose bytes would change is rewritten in canonical layout."
-      - key: c9c71d0f-9456-4f83-be02-416fd56409b2
-        name: "A file whose bytes would not change is not rewritten."
       - key: 7903dea7-2b55-49aa-8143-b4bdd4561529
         name: "A key is minted for every node without one."
-      - key: e8c5b409-cb79-439a-9afb-717b70c096c5
-        name: "Files are written through a temporary directory and a rename."
       - key: 12065dff-4eff-49fb-a77e-3c09a0d27e66
         name: "The paths rewritten are printed."
   - key: a19f24f8-5980-4978-aa6a-5feb1cc4f045

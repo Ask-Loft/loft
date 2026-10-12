@@ -1,0 +1,37 @@
+key: 01a12e66-85dc-70ec-b5ed-93d53cc4b7ea
+slug: writing-the-tree
+name: "Writing the tree"
+body: "What a command that writes the `spec/` tree, or a file the Format places beside it, guarantees about the files on disk: a crash leaves either the files as they were or the files as the command wrote them, never a mixture. A command opts in by listing the tag `writes-tree` on its Feature, and each tagged command is tested against these rules."
+realizes:
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a12e66-85dc-70ec-b5ed-93d67b25c117
+    statement:
+      form: event_driven
+      when: "a command tagged `writes-tree` saves files"
+      system: "`loftspec-store`"
+      shall: "leave either every file as it was or every file as the command wrote it."
+    criteria:
+      - key: e8c5b409-cb79-439a-9afb-717b70c096c5
+        name: "Files are written through a temporary directory and a rename."
+      - key: c9c71d0f-9456-4f83-be02-416fd56409b2
+        name: "A file whose bytes would not change is not rewritten."
+      - key: 01a12e66-85dc-70ec-b5ed-93d7be28cc5a
+        name: "Every file of a save is staged beside `spec/` before any file under `spec/` changes."
+      - key: 01a12e66-85dc-70ec-b5ed-93d8cfb5d743
+        name: "A save interrupted before its journal is complete leaves every file as it was."
+      - key: 01a12e66-85dc-70ec-b5ed-93d97d993161
+        name: "A save interrupted after its journal is complete is finished by the next command that opens the tree."
+      - key: 01a12e66-85dc-70ec-b5ed-93daf58c4d95
+        name: "A file a command writes beside `spec/`, such as the sidecar, is written in the same save as the tree."
+  - key: 01a12e66-85dc-70ec-b5ed-93dba7c15e6c
+    statement:
+      form: ubiquitous
+      system: "The Feature of each `loft` command that writes the `spec/` tree"
+      shall: "list the tag `writes-tree`."
+    criteria:
+      - key: 01a12e66-85dc-70ec-b5ed-93dc74845f56
+        name: "A command that changes a file under `spec/` or beside it has a Feature that lists `writes-tree`."
+      - key: 01a12e66-85dc-70ec-b5ed-93dd526a59b0
+        name: "A command whose Feature lists `writes-tree` follows the rules for a save."

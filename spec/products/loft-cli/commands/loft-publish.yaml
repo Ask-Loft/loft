@@ -4,6 +4,7 @@ name: "`loft publish`"
 body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused."
 tags:
   - reads-tree
+  - writes-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
   - bcd4525c-3adf-45dd-beed-527d654d517c

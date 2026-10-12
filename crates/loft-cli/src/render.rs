@@ -8,7 +8,7 @@ use std::process::ExitCode;
 
 use loftspec::codec;
 use loftspec::render::render;
-use loftspec_store::fs;
+use loftspec_store::{FileStore, fs};
 use serde_json::{Value, json};
 
 use crate::json;
@@ -97,7 +97,9 @@ fn write(
         );
         return Err(Refusal::one("refused", message));
     }
-    let files = fs::read_tree(root).map_err(|error| Refusal::one("store", error.to_string()))?;
+    let files = FileStore::open(root)
+        .and_then(|store| store.read_files())
+        .map_err(|error| Refusal::one("store", error.to_string()))?;
     let document = codec::read(&files).map_err(|errors| Refusal {
         errors: errors
             .iter()

@@ -37,6 +37,11 @@ changes, the files are rewritten from v1 after `spec/` adopts the change, or v1 
 - `crates/loftspec` owns the document model, identity, the canonical byte form, hashing and the
   conversion from the v1 export. It performs no I/O and depends on no store.
 - `crates/loftspec-store` owns the `DocumentStore` trait and its memory and file implementations.
+  Every write of the tree, or of a file beside it, goes through one journaled save
+  (`journal::save`), whose journal lives in `.loft/save/` beside `spec/` while it runs; a command
+  opens the tree through `FileStore::open`, which first finishes or discards an interrupted save.
+  Never write a file of the Format any other way. The trait holds only what the CLI needs: load,
+  save and roots.
 - `crates/loft-cli` is the `loft` binary and owns nothing the library could own.
 - None of these ever depends on `loft-domain`, `loft-store` or any other crate of the private
   server. That boundary is the licence boundary.

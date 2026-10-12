@@ -2,6 +2,8 @@ key: a805b033-2ca8-4032-ae45-08ad04e6aed9
 slug: loft-import-v1
 name: "`loft import v1`"
 body: "Turns a Loft v1 export into a `spec/` tree through the converter, taking the label counters from a file or from the labels the export holds."
+tags:
+  - writes-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
   - bcd4525c-3adf-45dd-beed-527d654d517c

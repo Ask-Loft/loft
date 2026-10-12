@@ -76,7 +76,10 @@ fn stderr(output: &Output) -> String {
 
 /// Every file under `<root>/spec/`, by its path under `spec/`.
 fn tree(root: &Path) -> codec::Files {
-    loftspec_store::fs::read_tree(root).unwrap()
+    loftspec_store::FileStore::open(root)
+        .unwrap()
+        .read_files()
+        .unwrap()
 }
 
 fn converted() -> loftspec::convert::v1::Conversion {
