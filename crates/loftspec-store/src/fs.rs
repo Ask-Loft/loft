@@ -61,3 +61,6 @@ pub fn write_outputs(
 
 /// The file beside `spec/` that keeps the v1 facts the content view excludes (AC-508, AC-703).
 pub const SIDECAR: &str = "v1-sidecar.json";
+
+/// The lock a publish writes beside `spec/` (AC-666).
+pub use loftspec::publish::LOCK;
