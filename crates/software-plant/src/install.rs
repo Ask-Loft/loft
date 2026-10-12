@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::process::{self, Command};
 use std::sync::OnceLock;
 
-use crate::git::{GitScenario, SCENARIO_ENV};
+use crate::git::{GitScenario, LOCKS_FILE, SCENARIO_ENV};
 
 /// How often a build is retried when another test process is re-linking its output.
 const ATTEMPTS: usize = 5;
@@ -96,6 +96,7 @@ impl GitScenario {
     pub fn install(&self, dir: &Path) -> Installed {
         let scenario = dir.join("git-scenario.json");
         self.write(&scenario);
+        let _ = fs::remove_file(dir.join(LOCKS_FILE));
         let search_path = git_executable()
             .parent()
             .expect("the executable lies in a directory")
@@ -108,6 +109,15 @@ impl GitScenario {
 }
 
 impl Installed {
+    /// The locks the simulator recorded since the scenario was installed, in the order the calls
+    /// took them.
+    #[must_use]
+    pub fn locks(&self) -> Vec<String> {
+        fs::read_to_string(self.scenario.with_file_name(LOCKS_FILE))
+            .map(|text| text.lines().map(str::to_owned).collect())
+            .unwrap_or_default()
+    }
+
     /// Gives `command` a search path whose only `git` is the simulator, and the scenario.
     pub fn apply<'a>(&self, command: &'a mut Command) -> &'a mut Command {
         command

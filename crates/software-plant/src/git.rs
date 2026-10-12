@@ -16,6 +16,17 @@ pub const NOT_A_REPOSITORY: &str =
 /// The exit code of a call the simulator does not answer.
 pub const UNSCRIPTED: i32 = 2;
 
+/// The environment variable that, set to `0`, stops git taking the locks a call needs only for a
+/// side effect, such as the index lock `git status` takes to refresh the index.
+pub const OPTIONAL_LOCKS_ENV: &str = "GIT_OPTIONAL_LOCKS";
+
+/// The file, beside the scenario, where the simulator records each lock a call took, one per
+/// line.
+pub const LOCKS_FILE: &str = "git-locks";
+
+/// The lock `git status` takes in a repository to refresh the index.
+pub const INDEX_LOCK: &str = "index.lock";
+
 /// A scripted repository, and the calls that fail instead of answering.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -71,12 +82,14 @@ pub struct Failure {
     pub message: String,
 }
 
-/// What the simulator prints and how it exits.
+/// What the simulator prints and how it exits, and the lock the call takes unless optional
+/// locks are off.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Reply {
     pub code: i32,
     pub stdout: Vec<u8>,
     pub stderr: String,
+    pub optional_lock: Option<&'static str>,
 }
 
 impl Reply {
@@ -85,6 +98,7 @@ impl Reply {
             code: 0,
             stdout: stdout.into(),
             stderr: String::new(),
+            optional_lock: None,
         }
     }
 
@@ -93,6 +107,7 @@ impl Reply {
             code,
             stdout: Vec::new(),
             stderr: stderr.into(),
+            optional_lock: None,
         }
     }
 }
@@ -228,7 +243,10 @@ impl GitScenario {
                 Some(branch) => Reply::ok(format!("{branch}\n")),
                 None => Reply::fail(1, ""),
             },
-            Call::Status => Reply::ok(repository.porcelain(&pathspecs)),
+            Call::Status => Reply {
+                optional_lock: Some(INDEX_LOCK),
+                ..Reply::ok(repository.porcelain(&pathspecs))
+            },
         }
     }
 }
