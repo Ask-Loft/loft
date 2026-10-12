@@ -201,3 +201,20 @@ fn ac_672_ac_674_an_unknown_rule_in_the_lint_file_is_an_error_and_no_finding_is_
         "spec/lint.yaml:2:11: `XX-001` is not a rule the Format defines\n"
     );
 }
+
+#[test]
+fn entries_whose_names_begin_with_a_dot_are_not_part_of_the_tree() {
+    let scratch = Scratch::with_reading_list();
+    fs::write(scratch.file(".DS_Store"), [0, 0, 0, 1]).unwrap();
+    fs::write(scratch.file("products/.DS_Store"), [0, 0, 0, 1]).unwrap();
+    fs::create_dir(scratch.file(".hidden")).unwrap();
+    fs::write(scratch.file(".hidden/notes.yaml"), "not: [a, record]\n").unwrap();
+    let output = scratch.loft(&["check", "--fail-on", "warning"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        !stdout(&output).contains(".DS_Store"),
+        "{}",
+        stdout(&output)
+    );
+    assert_eq!(scratch.loft(&["fmt", "--check"]).status.code(), Some(0));
+}

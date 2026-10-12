@@ -71,6 +71,16 @@ requirements:
         name: "The manifest is `spec/loftspec.yaml`."
       - key: 5090b7e7-bef2-4213-902d-bebbffd370ba
         name: "No file other than those the Format names lives directly under `spec/`."
+  - key: 01a12dbe-e8df-7596-9849-322b9097a0c7
+    statement:
+      form: ubiquitous
+      system: "loftspec-store"
+      shall: "leave out of the tree each entry under `spec/` whose name begins with `.`."
+    criteria:
+      - key: 01a12dbe-e8df-7596-9849-322c6750ba95
+        name: "A file whose name begins with `.`, such as `.DS_Store`, is not read."
+      - key: 01a12dbe-e8df-7596-9849-322d01d64fc0
+        name: "A directory whose name begins with `.` is not read, nor anything beneath it."
   - key: 0e9a126f-0fb3-49f5-b8c7-939e429c2dae
     statement:
       form: ubiquitous
