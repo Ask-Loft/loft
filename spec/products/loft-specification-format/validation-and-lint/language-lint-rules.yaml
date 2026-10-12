@@ -158,7 +158,9 @@ requirements:
       shall: "report a tag registry term used in prose by a node that does not list the tag as `LQ-009`."
     criteria:
       - key: c4be0084-9c44-416f-9fd0-4f7c00925f98
-        name: "A node whose name or body contains a registry term and whose tags omit it yields one `LQ-009` finding per term, naming the node and the term."
+        name: "A node whose name or body contains a registry term and whose tags omit it yields one `LQ-009` finding per term."
+      - key: 01a12dec-ba4c-7741-b3ca-9e908eb0163b
+        name: "An `LQ-009` finding names the node and the term."
       - key: 19eac74a-adb5-4737-9f23-af6cc0040bf5
         name: "A node that lists the tag, or that sits under a node listing it, yields no `LQ-009` finding."
       - key: 17d5a69d-2fdd-4bfa-b49d-64d065282ed1

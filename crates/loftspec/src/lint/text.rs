@@ -84,46 +84,18 @@ pub(super) fn tokens(text: &str) -> Vec<String> {
     crate::text::tokenize(text)
 }
 
-/// The tokens of a name or statement without the text of its code spans, as a Markdown reader
-/// shows it: a run of backticks opens a span that the next run of the same length closes, and a
-/// run nothing closes stays literal.
+/// The tokens of a name or statement without the text of its code spans.
 pub(super) fn shown_tokens(text: &str) -> Vec<String> {
     tokens(&without_code_spans(text))
 }
 
 fn without_code_spans(text: &str) -> String {
-    let run = |from: usize| {
-        text[from..]
-            .bytes()
-            .take_while(|byte| *byte == b'`')
-            .count()
-    };
     let mut shown = String::with_capacity(text.len());
     let mut copied = 0;
-    let mut at = 0;
-    while let Some(offset) = text[at..].find('`') {
-        let open = at + offset;
-        let length = run(open);
-        let mut search = open + length;
-        let mut close = None;
-        while let Some(offset) = text[search..].find('`') {
-            let start = search + offset;
-            let found = run(start);
-            if found == length {
-                close = Some(start + found);
-                break;
-            }
-            search = start + found;
-        }
-        match close {
-            Some(end) => {
-                shown.push_str(&text[copied..open]);
-                shown.push(' ');
-                copied = end;
-                at = end;
-            }
-            None => at = open + length,
-        }
+    for span in crate::text::code_spans(text) {
+        shown.push_str(&text[copied..span.start]);
+        shown.push(' ');
+        copied = span.end;
     }
     shown.push_str(&text[copied..]);
     shown

@@ -355,6 +355,19 @@ pub(super) fn code_span(value: &str) -> String {
 
 /// A name written inline: backslashes and Markdown markers escaped, line breaks as spaces.
 pub(super) fn escape_inline(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut copied = 0;
+    for span in crate::text::code_spans(value) {
+        out.push_str(&escape_prose(&value[copied..span.start]));
+        out.push_str(&escape_code(&value[span.clone()]));
+        copied = span.end;
+    }
+    out.push_str(&escape_prose(&value[copied..]));
+    out
+}
+
+/// Text outside code spans: every character Markdown would read as markup.
+fn escape_prose(value: &str) -> String {
     value
         .replace('\\', "\\\\")
         .replace(['\n', '\r'], " ")
@@ -364,4 +377,10 @@ pub(super) fn escape_inline(value: &str) -> String {
         .replace('[', "\\[")
         .replace(']', "\\]")
         .replace('#', "\\#")
+}
+
+/// A code span, which Markdown shows as written: only a line break and `|`, which would end a
+/// table cell, change.
+fn escape_code(value: &str) -> String {
+    value.replace(['\n', '\r'], " ").replace('|', "\\|")
 }
