@@ -3,6 +3,7 @@
 //! belongs to a store (CMP-4).
 
 mod canon;
+mod conflict;
 mod error;
 pub mod field;
 mod files;
@@ -16,6 +17,7 @@ mod unresolve;
 mod unresolve_parts;
 mod variants;
 
+pub use conflict::{SideShape, side_shape};
 pub use error::{Problem, ReadError, Site, SpecPath};
 pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, Tree};
 pub use layout::{Sites, read_tree};

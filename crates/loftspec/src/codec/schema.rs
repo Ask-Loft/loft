@@ -34,6 +34,8 @@ pub enum Kind {
     Consequence,
     Subject,
     FormerLabel,
+    /// A typed merge conflict, in the `conflicts` list of the record that holds it (RQ-125).
+    Conflict,
 }
 
 /// What a scalar field holds, which fixes how it is checked and written.
@@ -70,6 +72,8 @@ pub enum Item {
     Record(Kind),
     /// A node's key, or a former label as `{formerLabel: <label>}` (AC-809).
     NodeRef,
+    /// One side of a conflict, in the shape of the field the conflict names (AC-860).
+    Side,
 }
 
 /// The order the canonical layout gives a list field's entries.
@@ -113,6 +117,40 @@ mod tables;
 use crate::kind::NodeKind;
 
 impl Kind {
+    /// Every kind of record.
+    pub const ALL: [Self; 30] = [
+        Self::Manifest,
+        Self::DerivedFrom,
+        Self::Labels,
+        Self::Counters,
+        Self::Binding,
+        Self::TagEntry,
+        Self::CategoryEntry,
+        Self::Product,
+        Self::FeatureGroup,
+        Self::Feature,
+        Self::Requirement,
+        Self::Statement,
+        Self::Criterion,
+        Self::RootComponent,
+        Self::Component,
+        Self::Constraint,
+        Self::ConstraintBinding,
+        Self::QualityAttribute,
+        Self::QualityTarget,
+        Self::Band,
+        Self::Section,
+        Self::Decision,
+        Self::State,
+        Self::Driver,
+        Self::Option,
+        Self::Assessment,
+        Self::Consequence,
+        Self::Subject,
+        Self::FormerLabel,
+        Self::Conflict,
+    ];
+
     /// The kind's fields in the Format's order.
     #[must_use]
     pub const fn fields(self) -> &'static [Field] {
@@ -141,6 +179,13 @@ impl Kind {
             index += 1;
         }
         false
+    }
+
+    /// Whether a record of the kind may hold a `conflicts` list: every keyed record, the
+    /// manifest and the bindings record (RQ-172).
+    #[must_use]
+    pub const fn hosts_conflicts(self) -> bool {
+        self.is_keyed() || matches!(self, Self::Manifest | Self::Labels)
     }
 
     /// The node kind a record of this kind is; none for a record that is not a node.

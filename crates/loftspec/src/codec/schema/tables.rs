@@ -74,6 +74,8 @@ const TAGS: Field = scalars(field::TAGS, S::Tag);
 const MENTIONS: Field = edges(field::MENTIONS);
 const SECTIONS: Field = records(field::SECTIONS, K::Section);
 const FATE: Field = opt(field::VERIFICATION_FATE, S::Enum(VerificationFate::NAMES));
+/// The conflicts a record holds, after every other field (AC-862).
+const CONFLICTS: Field = records(field::CONFLICTS, K::Conflict);
 
 /// One counter per label prefix, in the order `counters` lists them (AC-786).
 const COUNTERS: [Field; LabelPrefix::ALL.len()] = {
@@ -93,6 +95,7 @@ const MANIFEST_FIELDS: &[Field] = &[
     opt(field::PUBLISH_BRANCH, S::Identifier),
     scalars(field::PRODUCTS, S::Key),
     record(field::DERIVED_FROM, false, K::DerivedFrom),
+    CONFLICTS,
 ];
 
 const DERIVED_FROM_FIELDS: &[Field] = &[
@@ -104,6 +107,7 @@ const DERIVED_FROM_FIELDS: &[Field] = &[
 const LABELS_FIELDS: &[Field] = &[
     record(field::COUNTERS, true, K::Counters),
     ordered(records(field::BINDINGS, K::Binding), Order::ByKey),
+    CONFLICTS,
 ];
 
 const BINDING_FIELDS: &[Field] = &[
@@ -116,12 +120,14 @@ const TAG_ENTRY_FIELDS: &[Field] = &[
     KEY,
     req(field::NAME, S::Tag),
     req(field::DEFINITION, S::Text),
+    CONFLICTS,
 ];
 
 const CATEGORY_ENTRY_FIELDS: &[Field] = &[
     KEY,
     req(field::NAME, S::Category),
     req(field::DEFINITION, S::Text),
+    CONFLICTS,
 ];
 
 const PRODUCT_FIELDS: &[Field] = &[
@@ -133,6 +139,7 @@ const PRODUCT_FIELDS: &[Field] = &[
     MENTIONS,
     records(field::FEATURE_GROUPS, K::FeatureGroup),
     SECTIONS,
+    CONFLICTS,
 ];
 
 const FEATURE_GROUP_FIELDS: &[Field] = &[
@@ -145,6 +152,7 @@ const FEATURE_GROUP_FIELDS: &[Field] = &[
     scalars(field::FEATURES, S::Key),
     records(field::CONSTRAINTS, K::Constraint),
     SECTIONS,
+    CONFLICTS,
 ];
 
 const FEATURE_FIELDS: &[Field] = &[
@@ -158,6 +166,7 @@ const FEATURE_FIELDS: &[Field] = &[
     records(field::REQUIREMENTS, K::Requirement),
     records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
+    CONFLICTS,
 ];
 
 const REQUIREMENT_FIELDS: &[Field] = &[
@@ -168,6 +177,7 @@ const REQUIREMENT_FIELDS: &[Field] = &[
     MENTIONS,
     records(field::CRITERIA, K::Criterion),
     SECTIONS,
+    CONFLICTS,
 ];
 
 const STATEMENT_FIELDS: &[Field] = &[
@@ -181,7 +191,7 @@ const STATEMENT_FIELDS: &[Field] = &[
     opt(field::SHALL, S::Text),
 ];
 
-const CRITERION_FIELDS: &[Field] = &[KEY, NAME, BODY, TAGS, MENTIONS, SECTIONS];
+const CRITERION_FIELDS: &[Field] = &[KEY, NAME, BODY, TAGS, MENTIONS, SECTIONS, CONFLICTS];
 
 const CONSTRAINT_FIELDS: &[Field] = &[
     KEY,
@@ -193,6 +203,7 @@ const CONSTRAINT_FIELDS: &[Field] = &[
     FATE,
     MENTIONS,
     SECTIONS,
+    CONFLICTS,
 ];
 
 const CONSTRAINT_BINDING_FIELDS: &[Field] = &[
@@ -210,6 +221,7 @@ const QUALITY_ATTRIBUTE_FIELDS: &[Field] = &[
     FATE,
     MENTIONS,
     SECTIONS,
+    CONFLICTS,
 ];
 
 const QUALITY_TARGET_FIELDS: &[Field] = &[
@@ -228,7 +240,14 @@ const BAND_FIELDS: &[Field] = &[
     opt(field::VALUE, S::Text),
 ];
 
-const SECTION_FIELDS: &[Field] = &[KEY, NAME, req(field::BODY, S::Text), MENTIONS, SECTIONS];
+const SECTION_FIELDS: &[Field] = &[
+    KEY,
+    NAME,
+    req(field::BODY, S::Text),
+    MENTIONS,
+    SECTIONS,
+    CONFLICTS,
+];
 
 const DECISION_FIELDS: &[Field] = &[
     KEY,
@@ -245,6 +264,7 @@ const DECISION_FIELDS: &[Field] = &[
         Order::ByRoleThenTarget,
     ),
     MENTIONS,
+    CONFLICTS,
 ];
 
 const STATE_FIELDS: &[Field] = &[
@@ -261,12 +281,14 @@ const DRIVER_FIELDS: &[Field] = &[
     opt(field::LABEL, S::Text),
     opt(field::STATEMENT, S::Text),
     node_ref(field::SUBJECT, false),
+    CONFLICTS,
 ];
 
 const OPTION_FIELDS: &[Field] = &[
     KEY,
     req(field::TITLE, S::Text),
     req(field::DESCRIPTION, S::Text),
+    CONFLICTS,
 ];
 
 const ASSESSMENT_FIELDS: &[Field] = &[
@@ -281,6 +303,7 @@ const CONSEQUENCE_FIELDS: &[Field] = &[
     req(field::KIND, S::Enum(ConsequenceKind::NAMES)),
     req(field::STATEMENT, S::Text),
     node_ref(field::SUBJECT, false),
+    CONFLICTS,
 ];
 
 const SUBJECT_FIELDS: &[Field] = &[
@@ -290,7 +313,15 @@ const SUBJECT_FIELDS: &[Field] = &[
 
 const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
 
-const COMPONENT: [Field; 11] = [
+/// A conflict record: the field it names, then each side's value (AC-857, AC-858).
+const CONFLICT_FIELDS: &[Field] = &[
+    req(field::FIELD, S::Identifier),
+    spec(field::BASE, false, Shape::One(Item::Side)),
+    spec(field::OURS, false, Shape::One(Item::Side)),
+    spec(field::THEIRS, false, Shape::One(Item::Side)),
+];
+
+const COMPONENT: [Field; 12] = [
     KEY,
     NAME,
     BODY,
@@ -302,10 +333,11 @@ const COMPONENT: [Field; 11] = [
     records(field::CONSTRAINTS, K::Constraint),
     records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
+    CONFLICTS,
 ];
 /// A root Component: `slug` after `key`, then a Component's fields (AC-757).
-const ROOT_COMPONENT: [Field; 12] = {
-    let mut fields = [KEY; 12];
+const ROOT_COMPONENT: [Field; 13] = {
+    let mut fields = [KEY; 13];
     fields[1] = SLUG;
     let mut index = 1;
     while index < COMPONENT.len() {
@@ -347,5 +379,6 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::Consequence => CONSEQUENCE_FIELDS,
         Kind::Subject => SUBJECT_FIELDS,
         Kind::FormerLabel => FORMER_LABEL_FIELDS,
+        Kind::Conflict => CONFLICT_FIELDS,
     }
 }

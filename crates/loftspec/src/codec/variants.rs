@@ -42,7 +42,7 @@ const fn discriminant(kind: Kind) -> Option<(&'static str, &'static [&'static st
     match kind {
         Kind::Statement => Some((field::FORM, &[])),
         Kind::State | Kind::Band => Some((field::KIND, &[])),
-        Kind::Driver => Some((field::KIND, &[field::KEY])),
+        Kind::Driver => Some((field::KIND, &[field::KEY, field::CONFLICTS])),
         _ => None,
     }
 }
