@@ -17,7 +17,7 @@ fn answer(scenario: &GitScenario, line: &str) -> Reply {
 }
 
 #[test]
-fn the_prefix_is_answered_as_rev_parse_prints_it() {
+fn ac_965_the_prefix_is_answered_as_rev_parse_prints_it() {
     let top = GitScenario::clean_on("main");
     assert_eq!(answer(&top, "rev-parse --show-prefix").stdout, b"\n");
     let below = top.below("sub/");
@@ -28,7 +28,7 @@ fn the_prefix_is_answered_as_rev_parse_prints_it() {
 }
 
 #[test]
-fn the_branch_is_answered_as_symbolic_ref_prints_it() {
+fn ac_966_the_branch_is_answered_as_symbolic_ref_prints_it() {
     let reply = answer(
         &GitScenario::clean_on("main"),
         "symbolic-ref --quiet --short HEAD",
@@ -37,7 +37,7 @@ fn the_branch_is_answered_as_symbolic_ref_prints_it() {
 }
 
 #[test]
-fn a_detached_head_exits_1_and_prints_nothing() {
+fn ac_972_a_detached_head_exits_1_and_prints_nothing() {
     let reply = answer(
         &GitScenario::clean_on("main").detached(),
         "symbolic-ref --quiet --short HEAD",
@@ -54,7 +54,7 @@ fn a_detached_head_exits_1_and_prints_nothing() {
 }
 
 #[test]
-fn the_status_is_answered_as_porcelain_v1_prints_it() {
+fn ac_967_the_status_is_answered_as_porcelain_v1_prints_it() {
     let scenario = GitScenario::clean_on("main")
         .with("??", "spec/x/y")
         .with(" M", "spec/a")
@@ -70,7 +70,7 @@ fn the_status_is_answered_as_porcelain_v1_prints_it() {
 }
 
 #[test]
-fn the_status_takes_its_pathspec_from_the_working_directory() {
+fn ac_967_the_status_takes_its_pathspec_from_the_working_directory() {
     let scenario = GitScenario::clean_on("main")
         .below("docs/")
         .with(" M", "docs/spec/a")
@@ -83,7 +83,7 @@ fn the_status_takes_its_pathspec_from_the_working_directory() {
 }
 
 #[test]
-fn outside_a_repository_each_call_exits_128_with_gits_message() {
+fn ac_971_outside_a_repository_each_call_exits_128_with_gits_message() {
     let scenario = GitScenario::outside_repository();
     for line in [
         "rev-parse --show-prefix",
@@ -100,7 +100,7 @@ fn outside_a_repository_each_call_exits_128_with_gits_message() {
 }
 
 #[test]
-fn a_scripted_error_exits_with_its_code_and_message() {
+fn ac_973_a_scripted_error_exits_with_its_code_and_message() {
     let scenario =
         GitScenario::clean_on("main").failing(Call::Status, 128, "fatal: index broken\n");
     let reply = answer(&scenario, STATUS);
@@ -112,7 +112,7 @@ fn a_scripted_error_exits_with_its_code_and_message() {
 }
 
 #[test]
-fn an_unscripted_call_names_each_argument_and_exits_2() {
+fn ac_969_ac_970_an_unscripted_call_names_each_argument_and_exits_2() {
     let reply = answer(&GitScenario::clean_on("main"), "log --oneline -1");
     assert_eq!(reply.code, UNSCRIPTED);
     assert_eq!(UNSCRIPTED, 2);
@@ -124,7 +124,7 @@ fn an_unscripted_call_names_each_argument_and_exits_2() {
 }
 
 #[test]
-fn the_executable_reads_its_scenario_from_the_environment() {
+fn ac_968_the_executable_reads_its_scenario_from_the_environment() {
     let dir = std::env::temp_dir().join(format!("software-plant-git-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let installed = GitScenario::clean_on("trunk").install(&dir);
@@ -202,7 +202,7 @@ const STATUS_CALL: [&str; 6] = [
 ];
 
 #[test]
-fn a_status_call_with_optional_locks_records_the_index_lock() {
+fn ac_979_a_status_call_with_optional_locks_records_the_index_lock() {
     assert_eq!(locks_after("lock", &STATUS_CALL, None), ["index.lock"]);
     assert_eq!(
         locks_after("lock-1", &STATUS_CALL, Some("1")),
@@ -211,12 +211,12 @@ fn a_status_call_with_optional_locks_records_the_index_lock() {
 }
 
 #[test]
-fn a_status_call_with_optional_locks_set_to_0_records_no_lock() {
+fn ac_980_a_status_call_with_optional_locks_set_to_0_records_no_lock() {
     assert_eq!(locks_after("no-lock", &STATUS_CALL, Some("0")), NONE);
 }
 
 #[test]
-fn no_other_call_records_a_lock() {
+fn ac_981_no_other_call_records_a_lock() {
     let prefix = ["rev-parse", "--show-prefix"];
     let branch = ["symbolic-ref", "--quiet", "--short", "HEAD"];
     assert_eq!(locks_after("prefix", &prefix, None), NONE);
