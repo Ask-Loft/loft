@@ -1,0 +1,39 @@
+key: f849fd7c-3d89-40f8-9490-fa45636349e0
+slug: canonical-json-export
+name: "Canonical JSON export"
+body: "The machine-readable view of a document: every node's content view with its key and label, written as RFC 8785 canonical JSON."
+tags:
+  - portable
+realizes:
+  - dfa057a6-404f-44a0-a9ab-932900198ca4
+requirements:
+  - key: dc5e08ee-d353-4ffa-a11a-b73891382db5
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "export the document as canonical JSON of its content view."
+    criteria:
+      - key: 2a596a33-e23f-46c3-bbb9-4d6837b6c529
+        name: "The export is RFC 8785 canonical JSON."
+      - key: 962b4f50-dea4-48d4-8bfe-15223f0dc030
+        name: "The export holds every node's content view."
+      - key: 0d5b4a53-07e9-42d0-8a8a-431a1ab2871c
+        name: "The export holds each node's key and label beside its content view."
+      - key: fcaa7c95-1a3b-46e5-bd6b-4783c860c069
+        name: "The export names the state root it was rendered from."
+      - key: e4fbc2f6-dfc5-456b-a3ff-24fd696a5db3
+        name: "Two exports of one document are byte-identical."
+      - key: d518b6e5-4b45-4d00-a30d-1d14e54130e5
+        name: "The export's top-level layout is the one the Format publishes with its golden vectors."
+  - key: 012e4073-5018-4e4c-80da-edafbe28145a
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "include the edges, the decisions and the registries in the JSON export."
+    criteria:
+      - key: b7d7bfad-46fa-483b-8946-1e76b8b5f7d2
+        name: "The export holds every edge with its type, its endpoints' keys and its role."
+      - key: e6007e53-9a5e-4998-a879-74a376c47f1f
+        name: "The export holds every decision's view with its key and label."
+      - key: f5d30383-ecd0-43cd-b346-e349bf62038a
+        name: "The export holds the tag registry and the constraint categories."

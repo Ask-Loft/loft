@@ -1,0 +1,35 @@
+key: 6498001d-fe27-46ee-97a2-c3db59a22a24
+slug: the-round-trip-obligation
+name: "The round-trip obligation"
+body: "What the converter preserves so that the source Authored State's content, graph, vocabulary and decision addresses can be recomputed from the v2 document and the sidecar."
+tags:
+  - portable
+realizes:
+  - e26eb15d-2a28-44fe-bf85-1313011ab0ed
+requirements:
+  - key: c11370be-c166-411a-bfd8-d3f0c7951591
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "preserve what is needed to reproduce the source state's content, graph, vocabulary and decision addresses from the v2 document and the sidecar."
+    criteria:
+      - key: aa514ad5-0a80-4753-899f-c4a356b81ce9
+        name: "The source state's content address is reproduced for each fixture export."
+      - key: 7f7b75c1-eff6-4c55-bec6-de713456de95
+        name: "The source state's graph address is reproduced for each fixture export."
+      - key: 06ce97f2-af32-4a60-ba1b-06f9ef21e846
+        name: "The source state's vocabulary address is reproduced for each fixture export."
+      - key: e3202b31-235b-478b-b004-7d6be100cf4e
+        name: "The source state's decision address is reproduced for each fixture export."
+      - key: 927fa24c-02fa-4f25-8417-cb03f7b06e21
+        name: "The source state's technical constraint category address is reproduced for each fixture export."
+  - key: d8bc102b-97ea-408d-8027-ce62e1905a84
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "produce identical output for identical input."
+    criteria:
+      - key: a19fe298-d954-489c-b4cc-31b4c8098194
+        name: "Two conversions of one export write byte-identical `spec/` trees."
+      - key: 8cd5e640-2b0f-4f20-b0cb-fe070d794743
+        name: "Two conversions of one export write byte-identical sidecars."

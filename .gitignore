@@ -1,4 +1,7 @@
 /target/
+# Projections are rendered on demand and never committed (ADR-12).
+/docs/spec.md
+/docs/spec.json
 .DS_Store
 __pycache__/
 *.py[cod]

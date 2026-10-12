@@ -1,0 +1,183 @@
+key: 07b7e7a2-fdcb-4557-9b99-8d24d9c7dd4e
+slug: directory-layout
+name: "Directory layout"
+body: "The paths under `spec/` at which Products, Features, Components, decisions, registries, bindings and the manifest are written, and the slug that fixes a file's path when it is created."
+realizes:
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+requirements:
+  - key: 7def3ef4-18ac-4885-8c97-376836e88cdc
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Product to `spec/products/<slug>/product.yaml`."
+    criteria:
+      - key: 49517bba-8ab2-4c80-86ce-28a27c0388cd
+        name: "The Product file holds the Product record."
+      - key: 4a7dcec5-d67d-4c1d-ba8a-7dd9267310eb
+        name: "The Product file holds the Product's Feature Group records in order."
+      - key: a67099cf-ae41-4816-8b18-91e1d2ac469f
+        name: "Each Feature Group record lists its Features' keys in order."
+      - key: 09e08da0-5b21-4817-b78d-254a82c83e89
+        name: "A Feature Group's Constraints are written in its record in the Product file."
+  - key: 421d69e4-7afe-4889-bdf5-e792e999a131
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Feature to its own file under its Product's directory."
+    criteria:
+      - key: 2cf165a7-c2d6-4807-94ae-726fd33ec4ae
+        name: "A Feature's path is `spec/products/<product-slug>/<group-slug>/<feature-slug>.yaml`."
+      - key: cef3232b-cb35-4837-8fa3-62b44a0c0ef1
+        name: "A Feature file holds exactly one Feature."
+      - key: 814c8f7f-35ba-4a8f-a5cc-6f896a408421
+        name: "A Feature file holds the Feature's Requirements and their criteria."
+      - key: faa2ba48-b294-4e76-8228-990d6f3a52c8
+        name: "A Feature's Quality Attributes are written in its Feature file."
+  - key: af60c19b-c382-48de-8860-92724947f7dd
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each root Component with its subtree to `spec/components/<slug>.yaml`."
+    criteria:
+      - key: b7461b8e-df5c-4a86-b33a-303248aceb0a
+        name: "A Component file holds one root Component."
+      - key: c3bf55ad-2d30-4c88-b4a4-c5ed8d961d0c
+        name: "A Component file holds every Component, Constraint and Quality Attribute beneath its root."
+      - key: 6192a650-5fc1-4981-9c9f-8a282a717d05
+        name: "A Component record lists its Components, its Constraints and its Quality Attributes under separate keys."
+  - key: 844f48f2-8703-445e-8563-fe6774d152d5
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each decision to `spec/decisions/<slug>.yaml`."
+    criteria:
+      - key: 650c0fef-43bd-466c-9562-0b7a4863751c
+        name: "A decision file holds one decision."
+      - key: e2c45d35-f9bb-4287-aafd-d14b15d913b0
+        name: "A decision file holds the decision's drivers, options, assessments and consequences."
+  - key: dd4ab748-4872-4a1b-a675-58118e6aa0ef
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write the registries, the bindings and the manifest to their fixed paths."
+    criteria:
+      - key: 41265bf9-84de-4634-a17f-f466e32bc15b
+        name: "The tag registry is `spec/tags.yaml`."
+      - key: eca12dce-fd5e-4966-9701-fb25001087f4
+        name: "The constraint categories are `spec/categories.yaml`."
+      - key: d20bd20d-8736-4d08-ab9d-71f5b26e87a4
+        name: "The bindings are `spec/labels.yaml`."
+      - key: 79b36dc6-6ccc-424d-9ee6-df48bc2559dd
+        name: "The manifest is `spec/loftspec.yaml`."
+      - key: 5090b7e7-bef2-4213-902d-bebbffd370ba
+        name: "No file other than those the Format names lives directly under `spec/`."
+  - key: 0e9a126f-0fb3-49f5-b8c7-939e429c2dae
+    statement:
+      form: ubiquitous
+      system: "The formatter"
+      shall: "never change a file's path."
+    criteria:
+      - key: b1d17add-fb9f-4f1f-9059-26cabbe0112d
+        name: "A node whose name changes keeps its file path."
+      - key: 7de11a53-cbf1-4e83-a729-1562f46f094b
+        name: "A file's slug is set when the file is created."
+      - key: 8f35cc7f-2e73-469b-b2ba-9e546f1a55ae
+        name: "A record's slug is stored in its `slug` field and is the only source of its file or directory name."
+      - key: 51845d35-49e7-45c1-b85f-aba78c96fdd8
+        name: "The converter derives a record's initial slug from its v1 name deterministically."
+  - key: 22e126d8-e57a-46dc-88ab-517285b5c7d7
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each edge in the record of its source element."
+    criteria:
+      - key: 401809c3-5185-4e3c-a368-fda1d8fc3d0c
+        name: "A `realizes` edge is written in its Feature's record."
+      - key: db3ede51-1d83-4d6a-a10b-756d2e7331bd
+        name: "A `scoped_to` edge is written in its root Component's record."
+      - key: 0599c426-29f0-406c-96e9-5e62e5599eb4
+        name: "A `subject` edge is written in its decision's file."
+      - key: 1624f08c-5f87-443f-8715-8ac1f899c7b2
+        name: "A `mentions` edge is written in its source element's record."
+      - key: 52d056a6-2402-464b-b1c7-654aa4188602
+        name: "A record's `realizes` field holds its `realizes` edges."
+      - key: 95e7c88b-cec3-4b9c-b259-9875b2342c0e
+        name: "A record's `scopedTo` field holds its `scoped_to` edges."
+      - key: 57072b18-71a1-46e6-a298-4e7c24a395a0
+        name: "A record's `mentions` field holds its `mentions` edges."
+      - key: 9e8b15af-4cd0-4a66-a6c1-226543b870ba
+        name: "A decision's `subjects` field holds its `subject` edges."
+      - key: 06d81457-425d-46e6-8590-8661a31ced41
+        name: "The targets in a `realizes`, `scopedTo` or `mentions` field are sorted by key."
+      - key: 12cfd357-e28d-44c3-bf17-0bb4052f0480
+        name: "A decision's subjects are sorted by role, then by target."
+  - key: f5f64486-0989-4b14-b66f-26d3eb6bffa0
+    statement:
+      form: unwanted
+      if: "a slug is not lowercase ASCII letters and digits in runs joined by single hyphens"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: dc30125f-55d0-4565-83dd-2a88a08bdcb3
+        name: "A slug such as `node-registry-and-link-mapping` is accepted."
+      - key: 511b38b9-2358-4ad2-903f-d7435c67808c
+        name: "A slug with an uppercase letter is an error."
+      - key: 1dd19452-afac-4071-b629-36867018c978
+        name: "A slug with a leading, trailing or doubled hyphen is an error."
+      - key: 5a572c69-d283-4dca-9b10-21e8a481b5f5
+        name: "A slug with a character other than a lowercase ASCII letter, a digit or a hyphen is an error."
+  - key: 2c0e4b03-fadf-4dfb-afc6-19a8f192b201
+    statement:
+      form: unwanted
+      if: "a record's slug differs from the name of the file or directory it fixes"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: 53d87d33-07f7-4593-af47-b39ea75187aa
+        name: "The error names the slug and the file or directory name."
+      - key: c58ddc5c-448d-4d17-bef7-76302dfb2727
+        name: "A slug equal to its file or directory name raises no such error."
+  - key: a4d30ed0-af4a-483a-9c6c-43282bd3c7fe
+    statement:
+      form: unwanted
+      if: "a Feature file is not in its Feature Group's directory"
+      system: "the reader"
+      shall: "report an error naming the file."
+    criteria:
+      - key: 6510a592-ba34-4c50-b971-853c1adfa473
+        name: "The error names the file and the Feature Group's slug."
+      - key: 480b4596-59cc-4284-b251-6efb300354ec
+        name: "A Feature file in its Feature Group's directory raises no such error."
+  - key: 6df8578d-ee17-43b8-a97a-1a27e954ec5f
+    statement:
+      form: state_driven
+      while: "formatting"
+      system: "the reader"
+      shall: "take a missing slug from the name of the file or directory that holds the record."
+    criteria:
+      - key: 7eaa7e4e-2c4a-4085-80db-8d4d5db3b5f8
+        name: "A Feature without `slug` takes its file name without `.yaml`."
+      - key: 0d9cf43c-1b25-446d-a7e8-1b04bbe2a4c9
+        name: "A Feature Group without `slug` takes the name of its directory."
+      - key: 0dc18c20-d865-4ac8-ae80-bcb128bf87a9
+        name: "A Feature Group without `slug` and without a directory takes the slug derived from its name."
+  - key: 8e79d97c-3143-4e4b-b7e9-9c2030f8de2f
+    statement:
+      form: ubiquitous
+      system: "The converter and the formatter"
+      shall: "derive a slug from a name by the Format's slug rule."
+    criteria:
+      - key: 6673301d-b717-4223-97af-fb415c74e0dd
+        name: "The letters `A` to `Z` become `a` to `z`, and no other character is lowercased."
+      - key: 0d52cb82-8735-4e55-ab02-4f2d9d08d5cf
+        name: "Each run of characters other than `a` to `z` and `0` to `9` becomes one hyphen."
+      - key: b66c55f9-5f2e-4c8c-bd8d-11113a893527
+        name: "Leading and trailing hyphens are removed."
+      - key: b2436a81-e576-42d2-a062-226c644a14a3
+        name: "A slug longer than 48 characters is cut to its longest prefix of at most 48 characters that a hyphen follows, or to 48 characters when no such prefix exists."
+      - key: 9ec46847-10d0-4199-b3b5-e8753730bd17
+        name: "A name that leaves no character takes its kind as the slug, such as `feature-group`."
+      - key: 9108d42a-4bdb-4c10-b5ff-621a1ab76d82
+        name: "A slug equal to a reserved device name (`con`, `prn`, `aux`, `nul`, `com1` to `com9`, `lpt1` to `lpt9`) takes the suffix `-1`."
+      - key: 9e081a71-3795-4273-8bcf-bde4f9ba6223
+        name: "A slug already used in the same directory takes the first unused suffix of `-2`, `-3` and so on, in document order."

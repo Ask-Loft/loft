@@ -1,0 +1,80 @@
+key: 668e0630-0adc-4eca-bf61-b32dbaece7d0
+slug: loft-check
+name: "`loft check`"
+body: "Runs the validator and then the linter over the tree, with an exit code a CI job can gate on."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: e45fe93c-7771-4987-b8ab-e7ad4777e86e
+    statement:
+      form: ubiquitous
+      system: "`loft check`"
+      shall: "run the validator and then the linter over the tree."
+    criteria:
+      - key: fe67ba08-8af0-4f96-a32c-e8f9d72fbe1a
+        name: "Validation errors are printed before lint findings."
+      - key: 5eeebc60-25b0-4808-a30a-af3df11a5af3
+        name: "Every validation error is reported, not only the first."
+      - key: 79eddea6-1bb7-4bb2-acf9-54ab122d67d4
+        name: "`loft check` exits 1 when the validator reports an error."
+      - key: 3464df61-d8bb-4f31-a441-c33eeb13ff81
+        name: "Without `--fail-on`, `loft check` exits 0 when only lint findings exist."
+      - key: 7b7845cc-3beb-470d-b452-85facc95db4b
+        name: "Without `--format json`, `loft check` prints nothing on a clean tree."
+      - key: 624d55ce-9708-4494-a55b-4e7881dde35d
+        name: "`loft check` exits 0 on a clean tree."
+  - key: 964a39ee-cef5-413c-9bd7-5b3be4921422
+    statement:
+      form: unwanted
+      if: "the reader reports an error"
+      system: "`loft check`"
+      shall: "report it and exit 1."
+    criteria:
+      - key: 8a466701-2870-40f3-a69c-f95961ee4816
+        name: "Every read error is reported with the position the reader names."
+      - key: 2ad44810-acb8-4422-92b1-f3dea0613477
+        name: "The linter does not run."
+      - key: 282d8b3a-a8ab-4603-9a70-95d9ad60c251
+        name: "Within one file, the reader reports the first error it meets."
+  - key: fc068f5f-e760-4a81-aa85-b859585e298f
+    statement:
+      form: unwanted
+      if: "there is no `spec/` directory"
+      system: "`loft check`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 452f3e59-140c-457a-87f4-3b65d68fc0d5
+        name: "The error names the expected path."
+  - key: cd618b55-2fa9-47b1-902b-40ea9b9bdc7e
+    statement:
+      form: optional
+      where: "`--fail-on <severity>` is given"
+      system: "`loft check`"
+      shall: "exit 1 on a finding at or above that severity."
+    criteria:
+      - key: 8f7510bb-b9d4-44da-9f25-3b1c9654843c
+        name: "`--fail-on warning` exits 1 on a warning."
+      - key: f79a6fd0-1c5b-40ec-bb41-13818808532e
+        name: "`--fail-on info` exits 1 on an info finding."
+      - key: aaaebd79-25c4-4f97-b9fc-306d1cfb7e20
+        name: "`--fail-on hint` exits 1 on any finding."
+      - key: c67a1b53-b728-4330-a985-e75ef3ad7756
+        name: "A severity outside warning, info and hint is a usage error."
+      - key: 990cad2c-dee4-4f13-8b94-ceb85cf8b041
+        name: "`--fail-on info` exits 1 on a warning."
+      - key: 8244e4b1-96ad-4b15-91fe-6a929e1dbbf6
+        name: "`--fail-on warning` exits 0 when only info and hint findings exist."
+qualityAttributes:
+  - key: 1e930b51-5670-4035-b4d8-71d419e0f249
+    name: "`loft check` shall complete within 2 seconds at the 95th percentile on a document of five thousand nodes."
+    qaKind: latency
+    qualityTarget:
+      metric: "check.wall-time"
+      band:
+        kind: at_most
+        upper: "2"
+      unit: "s"
+      aggregation: p95
+      scenario: "`loft check` over a canonical tree of five thousand nodes with a warm page cache"
+      environment: "the reference developer machine named in the repository"
+    verificationFate: sampled

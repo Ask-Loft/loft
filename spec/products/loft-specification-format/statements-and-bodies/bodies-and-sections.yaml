@@ -1,0 +1,53 @@
+key: cebcdbcf-7a1b-4412-a6af-ec2bf0c5bc7c
+slug: bodies-and-sections
+name: "Bodies and sections"
+body: "The Markdown subset a body is written in, the Section node that carries headed prose, and the obligation to keep body text exactly as written."
+realizes:
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: bf1a80eb-b2d5-41f5-840d-801f95bc28b9
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "accept a body written in the Format's Markdown subset."
+    criteria:
+      - key: f7368a07-be60-4bcc-8206-a93cff5dbd69
+        name: "Paragraphs, bullet lists and numbered lists are accepted."
+      - key: eaeaaad5-7e9e-4228-8028-69615276b56f
+        name: "Code spans and fenced code blocks are accepted."
+      - key: fe3f217c-e981-4b05-a579-079f2b2c5d50
+        name: "Emphasis and links are accepted."
+      - key: 06eff017-781a-4670-b1f6-bfd1e6ffe1b7
+        name: "A heading in a body is a lint finding, not a read error."
+      - key: 148becdd-4893-41e9-b86e-9fa201f4e1a0
+        name: "Raw HTML in a body is a lint finding, not a read error."
+      - key: 4ac75a2e-16fd-4caf-b511-9754a2014b16
+        name: "Any other Markdown construct is a lint finding, not a read error."
+  - key: d87993f4-8c6c-430f-80de-1f38f7705825
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write prose that needs headings as Section nodes."
+    criteria:
+      - key: 9f00139f-99ee-4af5-832b-38c95fd7ed32
+        name: "A Section has a name and a body."
+      - key: d32d271d-3122-41a5-bbb0-110e7be2adf8
+        name: "A Section has ordered child Sections."
+      - key: 6cd1343f-06cb-4d45-8e13-cd5fb3016ac7
+        name: "A Section is accepted under any node that has a body."
+      - key: e2b89ee9-d139-4324-b572-507842251660
+        name: "A Section's content hash is computed by the node rule."
+      - key: 1f99b1f0-79fd-4d78-a8c9-968401279bed
+        name: "A Section is written inside its owning node's record under `sections`."
+  - key: 30aee11c-651e-4f44-913a-f3edd58ff6c4
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "preserve body text byte for byte."
+    criteria:
+      - key: 0ee1b3be-80d5-49e4-8c6b-5a04576cbeb4
+        name: "Trailing whitespace in a body survives a write and a read."
+      - key: 8e242843-fe5d-4d0c-b44a-9582ed17da4d
+        name: "A tab in a body survives a write and a read."
+      - key: 86fabf64-1efb-4d22-9cef-38ede6c160be
+        name: "Every Unicode scalar value in a body survives a write and a read."

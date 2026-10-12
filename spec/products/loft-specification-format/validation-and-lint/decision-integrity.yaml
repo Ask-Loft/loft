@@ -1,0 +1,76 @@
+key: 7423387f-468f-4155-965a-a5893ff1e43c
+slug: decision-integrity
+name: "Decision integrity"
+body: "The rules a decision's own references, its successor and its completeness for its state must meet."
+realizes:
+  - b90f38f9-766c-467f-a29c-d6ae3b796e52
+requirements:
+  - key: 4ac79bb4-2e40-4def-b21e-3b37bf0381dd
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "require every option and driver a decision names to be one of that decision's own."
+    criteria:
+      - key: ba09de77-507b-4e14-b51c-dd07e65b42b2
+        name: "A selected option that is not one of the decision's options is an error naming the decision."
+      - key: 3b4acd1e-d22b-4dd7-ad4f-10fd6af52b95
+        name: "An assessment whose option is not one of the decision's options is an error naming the decision and the option."
+      - key: d5d096b0-d25d-4471-aa44-59fac9a15258
+        name: "An assessment whose driver is not one of the decision's drivers is an error naming the decision and the driver."
+      - key: c58f3ce1-1458-4c07-802f-aa8aa2e3474e
+        name: "A decision whose named options and drivers are all its own raises no such error."
+  - key: 58efec3a-94e5-43df-b065-959dbe40c103
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "require a superseded decision's successor to be another decision of the document."
+    criteria:
+      - key: 7a87d4f3-b010-4f4b-b9c2-a0ca498dc799
+        name: "A successor that no decision carries is an error naming the decision and the successor's key."
+      - key: e13e5019-488f-4619-a4f5-0e7ec812b49d
+        name: "A decision that names itself as its successor is an error naming the decision."
+      - key: 969f5a99-d452-4df9-b20e-86b8d2d372f0
+        name: "A successor that is another decision of the document raises no such error."
+  - key: 3b005a4a-6374-4f72-9e1f-fe5bd42bc232
+    statement:
+      form: unwanted
+      if: "the successors of superseded decisions form a cycle"
+      system: "the validator"
+      shall: "report an error naming each decision in the cycle."
+    criteria:
+      - key: f74efbce-1835-4723-9488-dcd513b43a3f
+        name: "Three decisions that supersede one another in a ring yield one error naming all three."
+      - key: 84cde90e-2038-4a29-aeb6-0a339332347d
+        name: "A chain of successors that ends at a decision that is not superseded raises no such error."
+  - key: 9a97cb58-a8d4-4789-80c0-9b6902ca4216
+    statement:
+      form: optional
+      where: "a decision is accepted, rejected, superseded or retired"
+      system: "the validator"
+      shall: "require at least two options, a driver and an assessment for each option and driver."
+    criteria:
+      - key: f3999221-efa4-4f40-95aa-f5bfaf734635
+        name: "Such a decision with fewer than two options is an error naming the decision."
+      - key: 5b436619-da66-48b8-bbd7-97ed858c6eda
+        name: "Such a decision with no driver is an error naming the decision."
+      - key: 1a64b861-d7d8-49dd-b360-704ac827ac9c
+        name: "Such a decision without an assessment for an option and driver pair is an error naming the decision, the option and the driver."
+      - key: 9affc27b-6f3e-4d87-8d0c-36bbd9725c0c
+        name: "A proposed decision raises none of these errors."
+      - key: 9fbd4baa-aacf-4b04-bb44-baa5709870fd
+        name: "A decision with two options, a driver and every assessment raises no such error."
+  - key: f5a1c861-5080-4c86-a1ce-9909cad88894
+    statement:
+      form: optional
+      where: "a decision is accepted, superseded or retired"
+      system: "the validator"
+      shall: "require a consequence and an `outcome` subject."
+    criteria:
+      - key: 5914e647-f54d-4b36-b774-7ca8b629aca9
+        name: "Such a decision without a consequence is an error naming the decision."
+      - key: 1badb9b2-c0ef-402a-a0a8-167adfbbf3d8
+        name: "Such a decision without a `subject` edge of role `outcome` is an error naming the decision."
+      - key: 38488e10-aa4a-4d3d-97bf-5a33204fbb14
+        name: "A rejected or proposed decision raises none of these errors."
+      - key: 9aea0565-c4af-40bd-a0c5-877e2e3d115b
+        name: "A decision with a consequence and an `outcome` subject raises no such error."

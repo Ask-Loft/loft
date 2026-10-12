@@ -1,0 +1,85 @@
+key: 97feeaae-d632-478c-a817-e3fe686eb30c
+slug: content-view-and-node-hash
+name: "Content view and node hash"
+body: "What a node's content hash covers and excludes, and how each digest is derived from a domain string and the canonical JSON of a view."
+tags:
+  - portable
+realizes:
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+requirements:
+  - key: 2c2d0f22-4f9b-4732-bc64-33912bcf6e5d
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute a node's content hash from its content view alone."
+    criteria:
+      - key: d599579d-db5f-43e8-a8bf-cd736c4fa99a
+        name: "The content view excludes the key."
+      - key: 3ecebc64-bb54-4e96-b9e0-db7acb7e2632
+        name: "The content view excludes the label and the aliases."
+      - key: ca0d66a2-a855-4534-82f0-353a5f0da1ec
+        name: "The content view excludes the node's position among its siblings."
+      - key: 80121ae5-c398-4e9a-b93a-ea769aa61105
+        name: "The content view excludes the document key."
+      - key: 4c191167-1a92-4e39-af0a-c7fe616254ad
+        name: "The content view excludes every confirmation flag."
+      - key: 7d8a0b2b-50c6-4f0a-978e-6ba40a5eea7c
+        name: "Two nodes with equal content views and different keys have the same content hash."
+  - key: 07c345cf-c3d6-4acf-ab4f-9a88fc676afe
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "build a node's content view from the fields the Format lists, in the Format's order."
+    criteria:
+      - key: c396aefb-098c-45c4-b085-94adbe21252f
+        name: "The content view holds, in this order: kind, statement or name, body, the set of tag names sorted by UTF-8 bytes, the typed attributes (quality attribute kind, quality target, constraint binding, conservation kind, verification fate, component boundary), then the ordered list of child content hashes."
+      - key: 10b6a0d6-343b-457e-96fe-6a35d7c6d97c
+        name: "Changing a node's body changes its content hash."
+      - key: 421593e2-abea-4b2b-bb44-4f18f4d724fe
+        name: "A statement enters the content view as its rendered sentence, whether it is stored as `text` or as `form` with slots."
+      - key: e7fa5fad-a33e-40c4-965d-6e1c5a5487a4
+        name: "An absent body enters the content view as `null`."
+      - key: ea30fa3a-e60c-4d8b-bc42-56afe1a4c949
+        name: "An absent typed attribute enters the content view as `null`."
+      - key: 6765b75b-7031-4eb7-9ca7-9d30bbae08d0
+        name: "An empty body and an absent body give different content views."
+      - key: 0fce4cd0-8507-4add-aa60-adf0b00cbde2
+        name: "A Component's boundary enters the content view as its `boundary` field, `null` when the field is absent."
+  - key: 85db724a-1147-4344-b0be-00d1bea530d8
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "list a node's child content hashes grouped by kind."
+    criteria:
+      - key: cf2a785b-d447-44ec-8313-d0adab3c8fd3
+        name: "Changing a child's content changes its parent's content hash."
+      - key: 3f70047f-a2d1-470f-ad1e-56b92cca4dc0
+        name: "Reordering a node's children changes that node's content hash."
+      - key: 743bf697-3741-432d-9b51-5cef95feabb8
+        name: "Reordering a node's children changes no sibling's content hash."
+      - key: c74b3a7c-51f4-4e5e-91ce-57329d74ac49
+        name: "A node's Sections follow its other children in the list of child content hashes."
+      - key: 8291580d-9615-4526-a9bb-f194e9b25c59
+        name: "A Feature Group's Features precede its Constraints in its list of child content hashes."
+      - key: 944ae63e-5bec-4d44-9fe4-310dc15f945f
+        name: "A Feature's Requirements precede its Quality Attributes in its list of child content hashes."
+      - key: 620096a4-8337-4b79-ae6c-d4bf7f089768
+        name: "A Component's Components precede its Constraints in its list of child content hashes."
+      - key: ced6152d-fb9d-4832-a894-1996a7940a38
+        name: "A Component's Constraints precede its Quality Attributes in its list of child content hashes."
+  - key: b47edb72-4070-42dc-b89c-8e82cbafdb14
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "derive each digest as SHA-256 over a domain string, one zero byte and the RFC 8785 canonical JSON of the view."
+    criteria:
+      - key: ec8d0d1b-6c2a-4ff1-ae2c-bd1d0e1ebf68
+        name: "The domain strings are `loftspec/node/1`, `loftspec/edges/1`, `loftspec/registry/1`, `loftspec/decision/1`, `loftspec/decisions/1`, `loftspec/content/1`, `loftspec/bindings/1` and `loftspec/state/1`."
+      - key: f9e8c0b8-fd34-41bb-98a2-8854d25bfaea
+        name: "The same view hashed under two domain strings yields two different digests."
+      - key: ccd68fa9-cf0b-4766-87bf-65b05eef84e4
+        name: "The canonical bytes of a view are byte-identical to RFC 8785's serialisation of it."
+      - key: 11a77e35-59df-42af-ad77-f2d062c29e30
+        name: "The golden vectors published with the Format are reproduced byte for byte."
+      - key: fc49b3d4-27f7-41a0-8373-4ca4f6682546
+        name: "Every view whose fields have an order is a JSON array."

@@ -1,0 +1,82 @@
+key: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
+slug: loftspec
+name: "loftspec"
+body: "The Rust library crate implementing the Format: document model, identity, canonical bytes, hashing, conversion, validation, lint, rendering, publication and merging. It performs no input or output."
+scopedTo:
+  - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
+components:
+  - key: e1ab75a5-f206-4760-970f-bee0653c4f2a
+    name: "Document model"
+    body: "Nodes, keys, labels, bindings, statements and sections."
+    constraints:
+      - key: b2fd5ad7-69b7-4c9d-8872-f1b1c368b787
+        name: "The document model shall reject a node whose kind is outside the Format's closed set of kinds."
+        verificationFate: proved
+  - key: e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+    name: "Hasher"
+    body: "Content views, digests, roots and the state view."
+    constraints:
+      - key: 6a419962-96c2-48fc-b7b9-e461bcdc7780
+        name: "The hasher shall use SHA-256 as its only digest function."
+        verificationFate: proved
+  - key: bc3f5237-54b0-405a-9078-978e4c8c0419
+    name: "Reader and writer"
+    body: "The text form: the `spec/` tree read into a document and written back in canonical layout. The writer yields paths and bytes; writing them to disk belongs to a store outside this crate."
+    constraints:
+      - key: afab4e4e-f878-45b1-87bc-10d04357c7b4
+        name: "The reader and writer shall read and write UTF-8 only."
+        verificationFate: proved
+  - key: e26eb15d-2a28-44fe-bf85-1313011ab0ed
+    name: "Converter"
+    body: "Conversion from a Loft v1 export, with the sidecar."
+    tags:
+      - conversion
+    constraints:
+      - key: c15d4738-4283-4fd1-8999-300beff7e4f0
+        name: "The converter shall take a v1 export file as its only input."
+        verificationFate: proved
+  - key: b90f38f9-766c-467f-a29c-d6ae3b796e52
+    name: "Validator"
+    body: "Containment and reference checks that decide whether a document is valid."
+    constraints:
+      - key: 321b94fc-e737-483f-b37f-d2257898662b
+        name: "The validator shall change nothing in the document it validates."
+        verificationFate: proved
+  - key: 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+    name: "Linter"
+    body: "Structural, language and v2 lint rules, their findings and reports, and the lint configuration kept in the repository. The linter takes `spec/lint.yaml` as part of the tree it is given and reads no file itself."
+    constraints:
+      - key: 1eda8d1e-9912-4986-86ce-1549c052be78
+        name: "The linter shall change nothing in the document it lints."
+        verificationFate: proved
+  - key: dfa057a6-404f-44a0-a9ab-932900198ca4
+    name: "Renderer"
+    body: "The Markdown projection and the canonical JSON export, each derived from the `spec/` tree. The renderer yields their bytes; writing them to the given paths belongs to a store outside this crate."
+    constraints:
+      - key: 8eba04a2-e20a-4b9d-af0b-8f4c925d48e8
+        name: "The renderer shall depend on no clock, locale or environment variable."
+        verificationFate: proved
+  - key: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+    name: "Publisher"
+    body: "Publication preconditions, label allocation, the lock and its verification. The publisher decides from the tree, the repository state and the previous lock it is given, and yields the lock and the bindings to write; reading the repository and writing files belong to a store outside this crate."
+    constraints:
+      - key: 9e28f2b4-3700-40b5-b304-9952c1f34e93
+        name: "The publisher shall compute every root it writes with the hasher."
+        verificationFate: proved
+  - key: 540397b6-7607-4ca9-aaa1-529d0fab1811
+    name: "Merge engine"
+    body: "The merge driver's three-way merge over keys and ordered lists, with the typed conflict record."
+    constraints:
+      - key: 6fcc6939-eb09-4d3c-802d-35a42f1d02e0
+        name: "The merge engine shall take as input only the base, ours and theirs versions of one file."
+        verificationFate: proved
+constraints:
+  - key: 7ff6bd2b-7a21-4020-83aa-ad8aedec10a2
+    name: "`loftspec` shall perform no file or network input or output."
+    verificationFate: proved
+  - key: fb1d00d7-da12-43b1-b322-ab6b61a6f60c
+    name: "`loftspec` shall declare the Apache-2.0 licence in its package manifest."
+    verificationFate: proved
+  - key: 91986534-aa13-4ba3-bc78-dfdf63c0a608
+    name: "`loftspec` shall build on stable Rust at the crate's declared `rust-version`."
+    verificationFate: proved

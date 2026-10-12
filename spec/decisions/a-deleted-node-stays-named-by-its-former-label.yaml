@@ -1,0 +1,86 @@
+key: 63ac0564-e251-48db-93a1-130a3dc198a0
+slug: a-deleted-node-stays-named-by-its-former-label
+title: "A deleted node stays named by its former label"
+context: "A retired or superseded decision keeps its history: the nodes it chose, affected and weighed. When such a node later leaves the document, the decision still names it, and Loft v1 exports keep those references. The Format names a node by key in files and by content hash in views, and neither exists for a node the document no longer holds."
+state:
+  kind: accepted
+  selectedOption: 027e6dbc-df7b-45fb-8cd7-29d19d4e8e24
+  outcome: "A retired or superseded decision names a node the document no longer holds by that node's former label; the validator refuses a former label anywhere else and any former label an element carries, and the publisher allocates no former label again."
+drivers:
+  - key: bfb252d4-71a9-4dea-b6ae-2836b0ea7743
+    kind: local
+    label: "Readable history"
+    statement: "A reader of a retired decision can tell which node it named."
+  - key: b7f47a83-f531-403b-ba49-8ee5432451e2
+    kind: local
+    label: "Keyless content"
+    statement: "The content root stays free of keys, as every other view is."
+  - key: 659d6760-1e5a-485a-93fc-0761befd4332
+    kind: local
+    label: "Labels stay unique"
+    statement: "A label names one node for the life of the document."
+options:
+  - key: 027e6dbc-df7b-45fb-8cd7-29d19d4e8e24
+    title: "Former label"
+    description: "The reference is written as the label the node carried when it left the document."
+  - key: 782bdc43-17af-40a1-86ad-40c3a38f49c8
+    title: "Null reference"
+    description: "The reference stays, with `null` where the node would be named."
+  - key: 6a7c733e-ad08-465e-abe9-dd355206c42d
+    title: "Sidecar only"
+    description: "The reference leaves the document, and only a conversion's sidecar keeps it."
+assessments:
+  - option: 027e6dbc-df7b-45fb-8cd7-29d19d4e8e24
+    driver: 659d6760-1e5a-485a-93fc-0761befd4332
+    rating: supports
+    rationale: "the validator refuses a former label an element carries, and the counters never reach it again"
+  - option: 027e6dbc-df7b-45fb-8cd7-29d19d4e8e24
+    driver: b7f47a83-f531-403b-ba49-8ee5432451e2
+    rating: supports
+    rationale: "a label is not a key"
+  - option: 027e6dbc-df7b-45fb-8cd7-29d19d4e8e24
+    driver: bfb252d4-71a9-4dea-b6ae-2836b0ea7743
+    rating: supports
+    rationale: "the label is the name readers used"
+  - option: 6a7c733e-ad08-465e-abe9-dd355206c42d
+    driver: 659d6760-1e5a-485a-93fc-0761befd4332
+    rating: neutral
+    rationale: "no label is involved"
+  - option: 6a7c733e-ad08-465e-abe9-dd355206c42d
+    driver: b7f47a83-f531-403b-ba49-8ee5432451e2
+    rating: supports
+    rationale: "nothing enters the content root"
+  - option: 6a7c733e-ad08-465e-abe9-dd355206c42d
+    driver: bfb252d4-71a9-4dea-b6ae-2836b0ea7743
+    rating: conflicts
+    rationale: "the document loses the reference, and only a converted document has a sidecar"
+  - option: 782bdc43-17af-40a1-86ad-40c3a38f49c8
+    driver: 659d6760-1e5a-485a-93fc-0761befd4332
+    rating: neutral
+    rationale: "no label is involved"
+  - option: 782bdc43-17af-40a1-86ad-40c3a38f49c8
+    driver: b7f47a83-f531-403b-ba49-8ee5432451e2
+    rating: supports
+    rationale: "`null` carries no key"
+  - option: 782bdc43-17af-40a1-86ad-40c3a38f49c8
+    driver: bfb252d4-71a9-4dea-b6ae-2836b0ea7743
+    rating: conflicts
+    rationale: "which node it was is lost"
+consequences:
+  - key: 0b91251e-ff57-456e-acdd-5642cd1dcab0
+    kind: benefit
+    statement: "A retired decision stays readable after the nodes it named are deleted."
+  - key: 14bd586f-65a3-416a-97c5-533c34f76fef
+    kind: obligation
+    statement: "The validator checks every former label against the live labels and aliases."
+    subject: 3e4ba86f-b79e-45c3-ba8f-5242db072999
+  - key: 5e5e7395-fd3e-4913-8eea-35b0579eee31
+    kind: cost
+    statement: "Deleting a node that a retired or superseded decision names means rewriting that reference as the former label."
+subjects:
+  - role: affected
+    node: 5fe8a9e8-a712-4334-a77c-5546af736d77
+  - role: affected
+    node: 8347cb8c-00ef-4ea2-b801-e50b617b287e
+  - role: outcome
+    node: 158579bf-be89-431a-9e17-a1e0acf7f572

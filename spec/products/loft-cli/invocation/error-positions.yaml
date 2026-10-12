@@ -1,0 +1,28 @@
+key: 46f95a3b-6872-4ccf-a0ee-ae5195d03b93
+slug: error-positions
+name: "Error positions"
+body: "Reports errors in the `path:line:column` form that editors and CI annotations can jump to."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 5afe0290-8367-45d0-a684-271ec5d6302e
+    statement:
+      form: event_driven
+      when: "an error concerns a position in a file"
+      system: "`loft`"
+      shall: "name the file, line and column."
+    criteria:
+      - key: 60ddfaaa-37e9-440e-88d1-7798ed32d915
+        name: "A text error reads `<path>:<line>:<column>: <message>`."
+      - key: 68a0e0ad-9c20-44d2-a49d-5eabd197802a
+        name: "A JSON error carries `path`, `line` and `column`."
+      - key: f4e19564-5ba4-4815-81ee-b4cd19880ad5
+        name: "An error without a file position omits them."
+      - key: a1fb5428-86a2-41a3-b033-0b8e679119e7
+        name: "Each text error is reported on its own line."
+      - key: aee079f6-ab17-4507-a326-743605188b3a
+        name: "An error that concerns two positions names each as `<path>:<line>:<column>`."
+      - key: 75a0b051-49a7-4645-9a93-9adccfebac87
+        name: "Lines and columns are counted from 1."
+      - key: ec2de2d7-e0ca-4476-8613-6ce934301e55
+        name: "A column counts Unicode scalar values."

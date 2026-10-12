@@ -1,0 +1,33 @@
+key: c8438a49-a6bd-4e16-9380-fc2983c776b8
+slug: findings-and-reports
+name: "Findings and reports"
+body: "The typed record that carries each finding and the stable order in which a report lists findings."
+realizes:
+  - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+requirements:
+  - key: 9e2a70f3-1473-4b35-9906-874d2ab5e821
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "emit each finding as a typed record."
+    criteria:
+      - key: add44f32-26a2-4513-b7aa-9daef87e8a0d
+        name: "A finding carries the rule id."
+      - key: f761e2ba-58c8-4c4e-a5e9-d744a3dbe95d
+        name: "A finding carries the severity."
+      - key: 13a04199-3ad9-4ba9-b93d-26673d27efe6
+        name: "A finding carries the key of each element it names."
+      - key: b1cb67a4-1115-475f-8397-4335ece00141
+        name: "A finding carries the file path of each element it names."
+      - key: d22eae7d-d2eb-4ee2-a4e3-d3b80d1a7de1
+        name: "A finding carries the line and column where one applies."
+  - key: b355127b-b3e1-4a43-869f-d3bb6c05d9f2
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "emit findings in a stable order."
+    criteria:
+      - key: 6b8845ec-2d3e-4793-b21b-bfb03c1f23b8
+        name: "Findings are ordered by file path, then line, then column, then rule id, then the keys they name."
+      - key: 5d1fb070-cd33-4b8f-8d79-ce80c4bf40a2
+        name: "Two runs over one tree emit byte-identical reports."

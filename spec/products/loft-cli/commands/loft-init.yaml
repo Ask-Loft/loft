@@ -1,0 +1,39 @@
+key: fd3d21c7-76fa-4f82-abe0-a2266a7e39d8
+slug: loft-init
+name: "`loft init`"
+body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries."
+realizes:
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: a56973cd-8e4d-455a-b04d-c3881a0293e2
+    statement:
+      form: ubiquitous
+      system: "`loft init`"
+      shall: "create an empty document in the current directory."
+    criteria:
+      - key: 730ba2d9-1d64-4348-aab5-67bb1603f077
+        name: "`spec/` is created with a manifest."
+      - key: ffbe2ca9-2dbf-4131-9ebf-9175e0095661
+        name: "The manifest carries a fresh document key."
+      - key: d1290513-a15f-4ffb-ac63-4be03f855bda
+        name: "`spec/labels.yaml` is created with every counter at its first value."
+      - key: 08ee3e34-ad9c-4ea7-a444-4f83dcb34a2c
+        name: "The registries are created empty."
+      - key: 0c9f2a29-d819-4e45-b1e4-c315b5e2185d
+        name: "The created tree is read back by the reader without error."
+      - key: d7863851-11ea-4799-99c4-bcb0053c0353
+        name: "The created tree yields no validation error."
+      - key: bb0d97fe-7b40-4778-9663-2ff0a8b12340
+        name: "The created tree yields no lint finding."
+  - key: 2619414a-11f1-48db-b883-a7e0a3684618
+    statement:
+      form: unwanted
+      if: "`spec/` already exists"
+      system: "`loft init`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: c4b03b51-2b38-4563-960a-78f7ec62e68e
+        name: "Nothing is written."
+      - key: 936ac167-3589-4283-bd9e-78c8dd28e0f6
+        name: "The error names the existing path."

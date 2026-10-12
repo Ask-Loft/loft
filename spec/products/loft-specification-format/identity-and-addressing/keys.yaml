@@ -1,0 +1,127 @@
+key: c4ae0d15-6d2b-4e92-a004-36b3ca57f907
+slug: keys
+name: "Keys"
+body: "The UUID key that addresses a node: written on each node, kept through each edit, minted by the formatter when absent, and checked by the reader for presence and uniqueness."
+realizes:
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 4b0f3088-45c1-4a26-a553-9b0039879c9b
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write a key on every node."
+    criteria:
+      - key: 09c5903d-59c2-4069-839a-37a9ea59637c
+        name: "Every node record in a written file carries a `key` field."
+      - key: da6109bc-56bd-4cef-854e-1997c512a25d
+        name: "Every `key` value is an RFC 9562 UUID in lowercase hyphenated form."
+      - key: 49a43197-61cd-4158-8029-390fb9d93121
+        name: "A key read from a file is written back unchanged."
+      - key: d847dfde-e72f-4fe2-ae3e-455238e92813
+        name: "A key of any UUID version is written back unchanged."
+  - key: fce20bf7-fda6-45a8-a952-64b19b4bb8fc
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "keep a node's key through every edit of the node."
+    criteria:
+      - key: 7490d3a5-6bfc-4edb-af60-56e6783ae1b9
+        name: "A node's key is unchanged after its name changes."
+      - key: 1040a04a-c1bb-41e5-83bb-6a9591973506
+        name: "A node's key is unchanged after its body changes."
+      - key: 995c7b31-ea90-428c-8af0-5a69d9ba3426
+        name: "A node's key is unchanged after the node moves to another parent."
+      - key: 9a41e9fc-d57f-4312-bcb9-8ab41663c252
+        name: "A node's key is unchanged after the node is relabelled."
+      - key: ad8ae0e5-c9c6-4591-83d9-a510b33a7ce7
+        name: "A node's key is unchanged after its kind changes."
+      - key: 3003a33c-d009-403c-aeb1-ecb58d55db3f
+        name: "A node's key is unchanged after its tags change."
+  - key: 49f22aa3-9de5-4281-b316-235fa179c4ae
+    statement:
+      form: event_driven
+      when: "formatting a node without a key"
+      system: "the formatter"
+      shall: "mint a version 7 UUID as its key."
+    criteria:
+      - key: fc636463-f9bf-477b-9b3e-b8d386941d55
+        name: "A node without a `key` field has one after formatting."
+      - key: 328c1a4c-a474-48bc-b8e6-1eec7d4221b6
+        name: "A minted key is a version 7 UUID."
+      - key: c0e11ba4-ca83-42a8-a903-10c03251646a
+        name: "Two keys minted in one run differ."
+      - key: 30ada00d-413e-4da1-a7f3-9ba485c0f9f2
+        name: "A node that already has a key keeps it after formatting."
+  - key: 5469d0a1-b027-4474-ae19-8af16748d1d4
+    statement:
+      form: unwanted
+      if: "two keyed records of one document carry the same key"
+      system: "the reader"
+      shall: "report an error naming both files."
+    criteria:
+      - key: 30ae9d5c-b56f-4ea5-a7fd-03394c711d5c
+        name: "The error names both file paths."
+      - key: 3f9f169b-5427-4aaf-9488-ab990ed5c209
+        name: "The error names the duplicated key."
+      - key: 7cf55d42-f6f9-4933-8796-6ba28685e7ef
+        name: "No document is produced from a tree with a duplicate key."
+      - key: 604e8ceb-c018-408e-bc46-398e55677c69
+        name: "When both nodes are in one file, the error names that file once with the line and column of each node."
+      - key: 30c0c3ef-d7e6-41c1-b417-e499fa0d35a9
+        name: "A node and a decision that carry the same key are an error."
+      - key: 2f41a6fc-fe06-493a-890d-f293c9a72001
+        name: "Two registry entries that carry the same key are an error."
+  - key: 5c5630ab-727e-47f2-a686-f3ed0c23ac43
+    statement:
+      form: unwanted
+      if: "a keyed record has no key"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: db4844c7-decd-414d-bffb-ce2600ae56d7
+        name: "The error names the file path of the node record."
+      - key: 895b79ae-4ab6-4264-ac02-931e11d0f3f6
+        name: "The error names the 1-based line and 1-based column of the node record."
+  - key: b52170df-c8d8-4581-b7f6-be0e16983fad
+    statement:
+      form: state_driven
+      while: "formatting"
+      system: "the reader"
+      shall: "accept a keyed record without a key."
+    criteria:
+      - key: ee66947c-c16a-4fdb-8852-b598d9cac6b5
+        name: "A tree whose nodes lack keys is read without error when the formatter reads it."
+      - key: a921bada-537f-4588-8275-986de62ed138
+        name: "Every role other than the formatter receives the error of a node without a key."
+      - key: e21a7e35-1a88-4370-b12d-6c03ea3f6353
+        name: "A node read without a key has no key until the formatter mints one."
+  - key: dac135be-3e73-496b-8a63-b1d56a36d2e9
+    statement:
+      form: unwanted
+      if: "a node's key is not an RFC 9562 UUID in lowercase hyphenated form"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: 39bfcb2a-2708-4f3a-a643-872a106f6413
+        name: "The error names the offending key."
+      - key: b234b66d-a52b-42ad-8f9a-74225d8a2559
+        name: "The error names the file, line and column of the `key` field."
+      - key: 4a7644a9-cd46-4eea-afeb-7d52e0e3ec08
+        name: "A key written in uppercase hexadecimal is an error."
+      - key: 767afa80-6ed4-4b66-8ef5-db6d83a273b4
+        name: "A key without hyphens is an error."
+  - key: 885058fc-1245-48d8-b6dc-58ba457658d7
+    statement:
+      form: event_driven
+      when: "formatting a decision, driver, option, consequence or registry entry without a key"
+      system: "the formatter"
+      shall: "mint a version 7 UUID as its key."
+    criteria:
+      - key: 5c77c974-d958-41ce-a37c-7f35d96a61f2
+        name: "A decision without `key` has one after formatting."
+      - key: 3075d645-8b09-4d90-b75d-0263fbff5eeb
+        name: "A driver, an option or a consequence without `key` has one after formatting."
+      - key: 2fc48b34-95e9-41eb-98bf-cc65b476402f
+        name: "A tag or category entry without `key` has one after formatting."
+      - key: 10c656ac-7d48-4bef-a2af-ccce98fe4cf0
+        name: "The keyed records are nodes, decisions, drivers, options, consequences, tag entries and category entries."

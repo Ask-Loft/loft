@@ -2,6 +2,7 @@
 //! failed check, 2 on a usage error (RQ-154).
 
 mod check;
+mod import;
 mod json;
 mod render;
 
@@ -41,6 +42,11 @@ enum Command {
         #[arg(long, value_name = "FORMAT")]
         format: Option<Format>,
     },
+    /// Convert a Loft v1 export into `spec/` (RQ-130).
+    Import {
+        #[command(subcommand)]
+        source: ImportSource,
+    },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
         /// Where to write the Markdown projection.
@@ -49,6 +55,21 @@ enum Command {
         /// Where to write the canonical JSON export.
         #[arg(long, value_name = "PATH")]
         json: Option<PathBuf>,
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
+    },
+}
+
+#[derive(Subcommand)]
+enum ImportSource {
+    /// A Loft v1 Authored State export (`get_authored_state`).
+    V1 {
+        /// The export file.
+        export: PathBuf,
+        /// A YAML mapping of label prefix to next value (RQ-131).
+        #[arg(long, value_name = "FILE")]
+        counters: Option<PathBuf>,
         /// Print one JSON document on standard output (RQ-155).
         #[arg(long, value_name = "FORMAT")]
         format: Option<Format>,
@@ -86,6 +107,19 @@ fn main() -> ExitCode {
         Command::Check { fail_on, format } => check::run(
             root,
             fail_on.map(Severity::from),
+            format == Some(Format::Json),
+        ),
+        Command::Import {
+            source:
+                ImportSource::V1 {
+                    export,
+                    counters,
+                    format,
+                },
+        } => import::run(
+            root,
+            &export,
+            counters.as_deref(),
             format == Some(Format::Json),
         ),
         Command::Render {

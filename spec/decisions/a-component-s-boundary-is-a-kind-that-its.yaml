@@ -1,0 +1,124 @@
+key: 1fef62d6-31a4-44b2-adc2-43eb537f0342
+slug: a-component-s-boundary-is-a-kind-that-its
+title: "A Component's boundary is a kind that its subtree takes on"
+context: "A Loft v1 Component carried one scope kind: a Product, the whole document, or external. The v2 text form keeps a Product scope as a `scoped_to` edge and nothing else. A document authored in v2 therefore cannot say that a Component is a service outside Loft's governance, and the obligation rules report every such Component."
+state:
+  kind: accepted
+  selectedOption: ab1230f0-bca0-49d0-99a0-14f56e3c6f64
+  outcome: "A Component carries a `boundary` of `private` or `external`, a Component without one takes its parent's, and the obligation rules skip an `external` subtree."
+drivers:
+  - key: 6c944a8b-cec8-4da8-a877-88623f6cac35
+    kind: local
+    label: "Obligations follow governance"
+    statement: "A Component outside Loft's governance carries no structural obligation."
+  - key: d47d1225-af88-4c21-ba8a-b8af8cc37e6f
+    kind: local
+    label: "Room for sharing"
+    statement: "The same field can later say that a Component is shared between documents."
+  - key: 813ea421-2dbe-4f5b-8c57-d01ada45a7d2
+    kind: local
+    label: "One typed field"
+    statement: "The property is one field with named values, not a flag."
+  - key: 6f2ad37c-769a-476a-b161-6db6240f42aa
+    kind: local
+    label: "v1 parity"
+    statement: "A converted document yields the structural findings that v1 yields."
+options:
+  - key: ab1230f0-bca0-49d0-99a0-14f56e3c6f64
+    title: "Boundary kind, inherited"
+    description: "A `boundary` field of `private` or `external` on any Component, which a Component without it takes from its parent."
+  - key: 8ec710ff-d034-4e13-9f3a-26514d3394ef
+    title: "External flag"
+    description: "A boolean `external` field on any Component."
+  - key: 7bffb532-3c86-4197-9a51-8b47847c5420
+    title: "Reserved tag"
+    description: "A reserved tag name marks an external Component."
+  - key: 4e8650ac-fcf3-432a-97af-5423e81aa7f1
+    title: "v1 scope kinds"
+    description: "A `scope` field of `product`, `document` or `external` beside the `scoped_to` edge."
+assessments:
+  - option: 4e8650ac-fcf3-432a-97af-5423e81aa7f1
+    driver: 6c944a8b-cec8-4da8-a877-88623f6cac35
+    rating: supports
+    rationale: "the rules read the scope"
+  - option: 4e8650ac-fcf3-432a-97af-5423e81aa7f1
+    driver: 6f2ad37c-769a-476a-b161-6db6240f42aa
+    rating: supports
+    rationale: "field for field"
+  - option: 4e8650ac-fcf3-432a-97af-5423e81aa7f1
+    driver: 813ea421-2dbe-4f5b-8c57-d01ada45a7d2
+    rating: neutral
+    rationale: "one field, but it restates the `scoped_to` edge"
+  - option: 4e8650ac-fcf3-432a-97af-5423e81aa7f1
+    driver: d47d1225-af88-4c21-ba8a-b8af8cc37e6f
+    rating: neutral
+    rationale: "sharing becomes a fourth scope value"
+  - option: 7bffb532-3c86-4197-9a51-8b47847c5420
+    driver: 6c944a8b-cec8-4da8-a877-88623f6cac35
+    rating: neutral
+    rationale: "the rules read a tag name that an author can misspell without an error"
+  - option: 7bffb532-3c86-4197-9a51-8b47847c5420
+    driver: 6f2ad37c-769a-476a-b161-6db6240f42aa
+    rating: supports
+    rationale: "external maps to the tag"
+  - option: 7bffb532-3c86-4197-9a51-8b47847c5420
+    driver: 813ea421-2dbe-4f5b-8c57-d01ada45a7d2
+    rating: conflicts
+    rationale: "a tag carries meaning outside the registry"
+  - option: 7bffb532-3c86-4197-9a51-8b47847c5420
+    driver: d47d1225-af88-4c21-ba8a-b8af8cc37e6f
+    rating: neutral
+    rationale: "sharing needs another reserved tag"
+  - option: 8ec710ff-d034-4e13-9f3a-26514d3394ef
+    driver: 6c944a8b-cec8-4da8-a877-88623f6cac35
+    rating: supports
+    rationale: "the rules skip a flagged subtree"
+  - option: 8ec710ff-d034-4e13-9f3a-26514d3394ef
+    driver: 6f2ad37c-769a-476a-b161-6db6240f42aa
+    rating: supports
+    rationale: "external maps to the flag"
+  - option: 8ec710ff-d034-4e13-9f3a-26514d3394ef
+    driver: 813ea421-2dbe-4f5b-8c57-d01ada45a7d2
+    rating: conflicts
+    rationale: "a flag"
+  - option: 8ec710ff-d034-4e13-9f3a-26514d3394ef
+    driver: d47d1225-af88-4c21-ba8a-b8af8cc37e6f
+    rating: conflicts
+    rationale: "sharing needs a second field"
+  - option: ab1230f0-bca0-49d0-99a0-14f56e3c6f64
+    driver: 6c944a8b-cec8-4da8-a877-88623f6cac35
+    rating: supports
+    rationale: "the rules skip an external subtree"
+  - option: ab1230f0-bca0-49d0-99a0-14f56e3c6f64
+    driver: 6f2ad37c-769a-476a-b161-6db6240f42aa
+    rating: supports
+    rationale: "external maps to `external`, and inheritance matches v1's"
+  - option: ab1230f0-bca0-49d0-99a0-14f56e3c6f64
+    driver: 813ea421-2dbe-4f5b-8c57-d01ada45a7d2
+    rating: supports
+    rationale: "one field with named values"
+  - option: ab1230f0-bca0-49d0-99a0-14f56e3c6f64
+    driver: d47d1225-af88-4c21-ba8a-b8af8cc37e6f
+    rating: supports
+    rationale: "a `public` value joins the same field"
+consequences:
+  - key: 046a32c9-30b2-4007-8484-302a08bb76f4
+    kind: obligation
+    statement: "The converter gives the boundary `external` to each Component that the export scopes as external."
+    subject: 732ad96d-1e55-4a5b-95c2-1ea08d456803
+  - key: 553bed04-7797-4509-8bb4-c9251e69abbd
+    kind: cost
+    statement: "Every content view gains one slot, so every content hash changes once, before any v2 lock exists."
+  - key: 76a563fb-e3c3-4220-8c6b-bc84a305a23c
+    kind: risk
+    statement: "Adding the value `public` later is a change to the Format."
+  - key: 330a4b8b-1209-47ba-944c-27ab38548cd7
+    kind: benefit
+    statement: "A third-party service is modelled without suppressing a finding."
+subjects:
+  - role: affected
+    node: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
+  - role: outcome
+    node: 9221e5f6-d920-44f6-bc1a-1dac6e41f5dd
+  - role: outcome
+    node: bbb6eaf7-f1be-417a-a4d7-4dfe510a1e2b

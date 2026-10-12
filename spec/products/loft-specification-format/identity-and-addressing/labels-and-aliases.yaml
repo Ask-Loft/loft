@@ -1,0 +1,125 @@
+key: c788db27-2701-47f8-a74c-8fe6d13ab8c6
+slug: labels-and-aliases
+name: "Labels and aliases"
+body: "Human-readable labels allocated at publish from per-prefix counters, recorded in the bindings file, and preserved as aliases when a node's label changes."
+realizes:
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 8167c7b2-41bb-41b8-a5d9-9565fa3ecbde
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "record labels only in the bindings file."
+    criteria:
+      - key: 00f903a2-296f-45d0-a465-5a258efac8cd
+        name: "No node record under `spec/` carries a label field."
+      - key: 901c9c47-7917-436d-ac06-3af365269ed7
+        name: "`spec/labels.yaml` maps each labelled key to exactly one label."
+      - key: 47b85428-cc82-4571-9326-404141030fc5
+        name: "A node authored since the last publish or conversion has no entry in `spec/labels.yaml`."
+  - key: d1aae04f-e9e4-4bb0-bd84-2a334bee5542
+    statement:
+      form: ubiquitous
+      system: "The publisher"
+      shall: "allocate each label from a per-prefix counter."
+    criteria:
+      - key: e5b092a7-6cf7-4254-849e-b99a57385c93
+        name: "A label is a kind prefix, a hyphen and a positive integer without leading zeros."
+      - key: 52a35682-d0d0-4aff-8c8b-7618c1a65d3a
+        name: "The next value of each prefix counter is stored in `spec/labels.yaml`."
+      - key: 870afd07-a139-4313-a79e-fb9f2528f4f4
+        name: "Labels are allocated to unlabelled nodes in document order."
+      - key: 51137dfc-0ecc-4678-873f-68bdd9e1ec9e
+        name: "The kind prefixes are `P` for a Product, `FG` for a Feature Group, `F` for a Feature, `RQ` for a Requirement, `AC` for a criterion, `CMP` for a Component, `CON` for a Constraint, `QA` for a Quality Attribute and `ADR` for a decision."
+      - key: 4cecef66-9447-4199-93eb-08b4b715f439
+        name: "Root Components are visited in the order of their file names when labels are allocated."
+  - key: 2501b129-ef05-46ed-977c-cc980299cf27
+    statement:
+      form: ubiquitous
+      system: "The publisher"
+      shall: "never rewind a label counter."
+    criteria:
+      - key: bb182627-366f-44fb-ab7a-0aeef91ce3e4
+        name: "A label counter's next value never decreases between two publishes."
+      - key: 4badc484-5aa8-4a65-b3da-3834d7ff5dd3
+        name: "A label of a deleted node is never allocated again."
+  - key: 41a992bc-9eaa-4dfb-85cb-19205abe5a05
+    statement:
+      form: event_driven
+      when: "a node's label changes"
+      system: "the publisher"
+      shall: "record the previous label as a permanent alias of the same key."
+    criteria:
+      - key: e94ea406-b5cd-4086-9dd5-e8f46a93b9c3
+        name: "The previous label appears in the key's alias list after the change."
+      - key: 3be36f66-85b1-4e30-a169-58f954fd2b87
+        name: "An alias list only grows."
+      - key: c180a500-1ab9-4fe1-9dcd-5ef05891dd39
+        name: "An alias resolves to the key it was assigned to."
+      - key: 43058cb9-3c84-4ec7-9ddf-716a1796678d
+        name: "A Requirement promoted to a Feature keeps its Requirement label as an alias."
+  - key: aedb9bb4-8486-46fa-8c0c-f6546b4e2075
+    statement:
+      form: unwanted
+      if: "an alias equals a live label of another key"
+      system: "the validator"
+      shall: "report an error."
+    criteria:
+      - key: a44eac13-8d32-4670-836f-ab8895a0a38c
+        name: "The error names both keys."
+      - key: a6fa1bd4-aa5f-4f48-a060-1698430b924f
+        name: "The error names the colliding label."
+  - key: 23de8746-fa1e-4c83-946e-4b2c0f27dbf4
+    statement:
+      form: event_driven
+      when: "a published node's kind changes"
+      system: "the publisher"
+      shall: "allocate it a label of the new kind's prefix."
+    criteria:
+      - key: fa6546b2-88b1-40ec-a031-4ed526b482df
+        name: "A Requirement promoted to a Feature receives the next `F` label at the next publish."
+      - key: 336e8714-6b3f-469e-8b72-ff113618c722
+        name: "The node's previous label becomes an alias of its key."
+      - key: f2fb3f89-1f71-4f7b-b52c-8c30300c0a76
+        name: "A node whose kind is unchanged keeps its label."
+  - key: bcac53a3-e474-4690-93c7-b426b1ef07d3
+    statement:
+      form: unwanted
+      if: "an alias is listed under two keys"
+      system: "the validator"
+      shall: "report an error naming both keys."
+    criteria:
+      - key: 18650e7e-11a3-4dd9-b6a1-2e119bcdb47d
+        name: "The error names both keys."
+      - key: b19f9eec-94ff-4f35-b5e3-4eb6e3bff01f
+        name: "The error names the shared alias."
+  - key: 7d0194ef-50d1-4dfc-84cc-92c2780a7ca4
+    statement:
+      form: unwanted
+      if: "two keys carry the same live label"
+      system: "the validator"
+      shall: "report an error naming both keys."
+    criteria:
+      - key: dcc62ab5-0939-427b-88f0-52ccc66e1a3e
+        name: "The error names both keys."
+      - key: 1d54e95d-685b-42a4-8299-8021f29a6f10
+        name: "The error names the shared label."
+      - key: 3718a873-668c-4d69-9a11-824ae44f36f3
+        name: "Distinct live labels raise no such error."
+  - key: 158579bf-be89-431a-9e17-a1e0acf7f572
+    statement:
+      form: optional
+      where: "a retired or superseded decision names a node the document no longer holds"
+      system: "the writer"
+      shall: "write that reference as the node's former label."
+    criteria:
+      - key: ec5829de-89b2-4f98-aef3-6b49284e70f8
+        name: "A former label is the live label the node carried when it left the document."
+      - key: ee6a574b-4d71-4993-8b34-6df1f407df30
+        name: "A `subject` edge to such a node has the former label as its target."
+      - key: 13315bdc-a7ff-4e59-8303-57174902ef3a
+        name: "A driver that names such a node names its former label."
+      - key: 8d0b309c-6778-4b20-a3df-c4fd6cfed391
+        name: "A consequence that names such a node names its former label."
+      - key: 194a6572-6bb8-4baf-8a61-b721694f5d20
+        name: "In a file, a former label is written as a mapping whose single field `formerLabel` holds the label."

@@ -15,6 +15,7 @@ pub mod fmt;
 pub mod hash;
 pub mod identity;
 pub mod ids;
+pub mod import;
 pub mod index;
 pub mod kind;
 pub mod lint;

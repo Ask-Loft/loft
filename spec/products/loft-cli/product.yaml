@@ -1,0 +1,31 @@
+key: 8cab7e5c-cd93-48e5-91c7-019412f1abb8
+slug: loft-cli
+name: "Loft CLI"
+body: "The reference implementation's command line, `loft`: its commands, arguments, exit codes and JSON output. It fills every role the Format defines and adds only invocation."
+tags:
+  - git
+featureGroups:
+  - key: f9a85ce1-a26a-4b94-919c-f9e9e7f33441
+    slug: commands
+    name: "Commands"
+    body: "The `loft` commands that act on a `spec/` tree; each command that reads the tree states its refusal on a reader error as its own Requirement, so that refusal is tested per command."
+    tags:
+      - git
+    features:
+      - fd3d21c7-76fa-4f82-abe0-a2266a7e39d8
+      - a805b033-2ca8-4032-ae45-08ad04e6aed9
+      - 668e0630-0adc-4eca-bf61-b32dbaece7d0
+      - a53b8107-b5aa-41e0-af56-2d8b571bb908
+      - ba4f2ed9-5aff-44c3-8e99-57590052629f
+      - 568bbe91-b941-4eba-92a9-c134546ea5db
+      - f40c165f-3936-4241-bced-eeccfd3b4bef
+      - 929999f2-93e0-468b-9e85-5d438ec6b1b7
+  - key: 1586f1f8-1d67-4051-98c9-3f058c7e1002
+    slug: invocation
+    name: "Invocation"
+    body: "The conventions that every `loft` command shares: exit codes, JSON output, the version line and error positions."
+    features:
+      - 7acf997b-53f1-4a74-996d-0e515dcaa99a
+      - 69aa407f-4d31-4159-824e-9b65fa3d0680
+      - a126ed71-e9b5-4497-85b4-e9a00c5f17f0
+      - 46f95a3b-6872-4ccf-a0ee-ae5195d03b93

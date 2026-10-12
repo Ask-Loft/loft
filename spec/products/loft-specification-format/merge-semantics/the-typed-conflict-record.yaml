@@ -1,0 +1,42 @@
+key: 6a3af886-c63d-49a9-8467-0cc33fdcdc50
+slug: the-typed-conflict-record
+name: "The typed conflict record"
+body: "The record the merge driver adds to the record that owns a field the two sides changed to different values, with the validation error it holds open until removed."
+realizes:
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+requirements:
+  - key: a9fd08e2-ca6f-4cda-b165-34e1b52424a1
+    statement:
+      form: ubiquitous
+      system: "The merge driver"
+      shall: "write a conflict as a typed record in the file."
+    criteria:
+      - key: f4453890-d813-41f5-85f8-35a40dd56b37
+        name: "The record holds `field`, `base`, `ours` and `theirs`."
+      - key: e39b5d19-68e5-4773-b0f3-1932c110aa23
+        name: "The record sits in the `conflicts` list of the record that owns the field."
+      - key: 9fbf567b-d08b-46f9-9b6d-67abee0aed80
+        name: "The driver exits non-zero when it wrote any conflict record."
+      - key: 36b1cc8b-51b0-4d2d-8414-80878eaf9978
+        name: "The driver exits zero when it wrote none."
+  - key: ff7cd3e8-fc6e-47ff-b5db-45c86e485575
+    statement:
+      form: state_driven
+      while: "a conflict record exists"
+      system: "the validator"
+      shall: "report an error."
+    criteria:
+      - key: 9774a3b1-05fc-46af-9bda-80cb6f1ef081
+        name: "The error names the file and the key."
+      - key: 8e6056f4-ceff-488d-8927-ff0b7fdf6c51
+        name: "Removing the record clears the error."
+  - key: 4a3833c5-7087-4217-8d58-bcff1eaf0e49
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "accept a `conflicts` list on any keyed record."
+    criteria:
+      - key: 43cd1701-5073-4286-bd00-ee310924a614
+        name: "A keyed record with a `conflicts` list is read without a read error."
+      - key: 46270bcd-2914-4e27-961b-1db9ef6e4bf4
+        name: "A conflict record outside a `conflicts` list is an error naming the file, line and column."

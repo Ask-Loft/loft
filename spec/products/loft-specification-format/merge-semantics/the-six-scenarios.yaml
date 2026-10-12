@@ -1,0 +1,73 @@
+key: f907e0df-acf0-4a7d-a118-30a71393f290
+slug: the-six-scenarios
+name: "The six scenarios"
+body: "The six parallel-work cases, from edits to different Features to concurrent node creation, whose merged result the Format defines."
+realizes:
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+requirements:
+  - key: 11f42b31-9d15-48d0-aa19-c3b5ab0726a5
+    statement:
+      form: event_driven
+      when: "two sides edit different Features"
+      system: "the merge driver"
+      shall: "merge both edits without a conflict record."
+    criteria:
+      - key: 900c7eda-4e76-415a-a46e-0b81df199193
+        name: "The merged tree carries both edits."
+      - key: 8c9e967b-13a8-4ff6-887b-b14233ae1419
+        name: "The merged tree validates."
+  - key: fd89b409-82a2-4fc1-a898-b1e244140ebe
+    statement:
+      form: event_driven
+      when: "two sides append to one Feature"
+      system: "the merge driver"
+      shall: "keep both appends in base order."
+    criteria:
+      - key: 380aa0a6-3d67-43d2-a4b7-ab37397c0180
+        name: "Both appended Requirements follow the Feature's base Requirements."
+      - key: 9328bee0-0fa5-4364-9c11-9069e5aeb32a
+        name: "The merged tree validates."
+  - key: f3c690c0-3e32-492f-8dbd-7991233f3dc6
+    statement:
+      form: event_driven
+      when: "one side edits a Requirement and the other reorders it within its Feature"
+      system: "the merge driver"
+      shall: "keep the edit at the new position."
+    criteria:
+      - key: 4f86447a-8a90-4c61-9122-21e028fc6e53
+        name: "The Requirement is at the reordered position."
+      - key: 937b432b-d1e2-4bac-816e-27efcc15798b
+        name: "The Requirement carries the edit."
+  - key: 18399670-def4-4dc7-9cc7-35531035362c
+    statement:
+      form: event_driven
+      when: "one side deletes a node and the other adds a reference to it"
+      system: "the merge driver"
+      shall: "merge both changes."
+    criteria:
+      - key: 7f8f5ab3-f5f5-4002-accc-f04d0b94ec8d
+        name: "The deleted node is absent from the merged tree."
+      - key: 8514c308-6297-4f43-a6b7-535a4e5f03bb
+        name: "The validator reports the dangling key."
+  - key: 27d789a0-0371-47ec-8463-1a8f576ee377
+    statement:
+      form: event_driven
+      when: "two sides edit one statement to different texts"
+      system: "the merge driver"
+      shall: "write a conflict record for the statement."
+    criteria:
+      - key: e011210b-e470-4530-af00-b135742e1924
+        name: "The validator reports an error on the merged tree."
+      - key: 96b57712-6562-4544-ba62-e87b7e9c75c4
+        name: "Removing the conflict record clears the error."
+  - key: 279b70f0-5d7f-4f81-9c0e-34968a34c26e
+    statement:
+      form: event_driven
+      when: "two sides create nodes"
+      system: "the merge driver"
+      shall: "keep both nodes."
+    criteria:
+      - key: 26b41aff-d4b9-45fc-abc8-21616b68fbbf
+        name: "The two created nodes have different keys."
+      - key: 300e239b-f73c-4e57-bc05-4293e6b25bb7
+        name: "Neither created node has a label."

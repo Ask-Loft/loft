@@ -1,0 +1,55 @@
+key: 1ab7613a-7841-47ff-b773-d3ec540548ca
+slug: order-and-containment
+name: "Order and containment"
+body: "How sibling order and the containment of Features in their Feature Group are read from the files themselves rather than from a stored ordinal."
+realizes:
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+requirements:
+  - key: bbd3566b-f0bb-4b52-b680-d1adb5bdfd6e
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "take sibling order within a file from list order."
+    criteria:
+      - key: 5d9b1638-b75f-4d83-88fd-f8bdf7481345
+        name: "Siblings are ordered as they appear in the file."
+      - key: c1a4b4d4-e0ee-44fc-8e90-61a165407ebc
+        name: "No record carries an ordinal field."
+  - key: 3708a854-556c-42ca-9fef-aa62631836ad
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "take the order of Features from their Feature Group's key list."
+    criteria:
+      - key: 219aa945-d779-4945-b702-bd226cb45565
+        name: "Features are ordered as their keys appear in the Feature Group's list."
+      - key: 8237b6b2-5bf0-426b-8e02-859946bf5f1e
+        name: "A key listed by a Feature Group without a Feature file is an error naming the key."
+      - key: 763ea40b-1276-45be-b485-3d8b0afa0bdb
+        name: "A Feature file whose key no Feature Group lists is an error naming the file."
+      - key: 617bdfb4-d14c-491b-8962-3a1838901aea
+        name: "A Feature key listed by two Feature Groups is an error naming both groups."
+      - key: ebfd4052-d558-43fc-b26e-b7d88d738ea2
+        name: "A Feature key listed twice by one Feature Group is an error naming the group."
+  - key: 656d3cb8-cda8-432c-a4da-c76797ae345c
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "take the order of Products from the manifest's key list."
+    criteria:
+      - key: 0061e392-afd2-4a0a-aa36-d31ff115307d
+        name: "A key the manifest lists without a Product file is an error naming the key."
+      - key: fc3dc9f4-3afc-4c41-97ae-594c37cdbe31
+        name: "A Product file whose key the manifest does not list is an error naming the file."
+      - key: b37d66b6-46d4-4445-867e-c3c9c59350ac
+        name: "A Product key listed twice is an error naming the key."
+  - key: 2e47ab04-c7fe-4f8d-a90f-c0ed25c9a46b
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "order root Components and decisions by file name."
+    criteria:
+      - key: 178a4160-8155-4024-b807-6191cce533f4
+        name: "Root Components are ordered by the byte order of their file names."
+      - key: 84d6f7a6-fc3c-4ae8-a8e2-4524863376dd
+        name: "Decisions are ordered by the byte order of their file names."

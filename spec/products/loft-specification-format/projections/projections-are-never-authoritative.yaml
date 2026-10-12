@@ -1,0 +1,42 @@
+key: 30c52d77-eca8-4d2c-9e9e-c950db04ef59
+slug: projections-are-never-authoritative
+name: "Projections are never authoritative"
+body: "The guarantees that keep a projection derived: a render leaves `spec/` untouched, and the reader takes nothing from a projection."
+realizes:
+  - dfa057a6-404f-44a0-a9ab-932900198ca4
+requirements:
+  - key: a4f56f60-512e-4c33-ac10-1637be01ebf7
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "write nothing under `spec/`."
+    criteria:
+      - key: ac2b5c68-fdec-4a4b-bc00-9f48bbcf1f72
+        name: "A render leaves every file under `spec/` unchanged."
+      - key: 0784d052-457a-419a-9ecf-2ad01e540078
+        name: "A render writes only to the paths it is given."
+  - key: 57327371-b2ed-469e-bb64-d3d8e63a6031
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "take no input from a projection."
+    criteria:
+      - key: e773570b-f4cf-4913-a9fc-135c8e58a28d
+        name: "A Markdown or JSON projection present in the repository changes no root."
+      - key: 9c3c036c-bca6-4003-8120-020c78b9f8a8
+        name: "Deleting every projection changes no root."
+      - key: ae37a9e8-65da-41d5-a7d4-aacab3494f68
+        name: "Editing a projection changes no root."
+      - key: 7fa13e3a-eacf-4c4a-ada5-08cc8982ac31
+        name: "Editing a projection raises no finding."
+  - key: 74ec60e7-e88b-4371-bc3c-20d98f058896
+    statement:
+      form: unwanted
+      if: "an output path lies under `spec/`"
+      system: "the renderer"
+      shall: "refuse to render."
+    criteria:
+      - key: 8cc2bf16-3a4d-40ec-8298-b75169c59f54
+        name: "The refusal names the path."
+      - key: 4665a3a3-5c1d-4b40-8ff2-0e57bbb96db8
+        name: "No projection is written."

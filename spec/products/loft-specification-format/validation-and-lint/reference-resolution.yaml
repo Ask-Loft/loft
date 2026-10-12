@@ -1,0 +1,98 @@
+key: dc2a9890-ee94-4ec8-ac63-0503d459342e
+slug: reference-resolution
+name: "Reference resolution"
+body: "How edge endpoints and bindings resolve to elements of the document, which kinds each of the four edge types joins, and the refusal of a tag listed twice on one node."
+realizes:
+  - b90f38f9-766c-467f-a29c-d6ae3b796e52
+requirements:
+  - key: 7d19fa0b-23e1-478d-9e40-63ae609e2cce
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "require every edge endpoint that is not a former label to resolve to an element of the document."
+    criteria:
+      - key: 9f1c7243-1439-4cd9-857b-e9bdb39ed7c6
+        name: "An edge whose source key no node or decision carries is an error naming the edge and the key."
+      - key: 1bf93134-95c4-4f1f-8ce4-21fd9e5189c1
+        name: "An edge whose target key no node or decision carries is an error naming the edge and the key."
+      - key: bdd7608a-cfc8-4cfb-ba20-fe7cac8c0499
+        name: "An edge whose endpoints both resolve raises no such error."
+      - key: df467af2-7b08-45c1-af9c-f3c319ca07fd
+        name: "A `subject` edge whose target is a former label raises no unresolved-endpoint error."
+  - key: 1d225ba6-4437-4ceb-941c-ee4889bf8856
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "require each edge type's endpoints to be of the kinds that type joins."
+    criteria:
+      - key: d229695a-7eff-4813-b37b-9471191b7e50
+        name: "A `realizes` edge whose source is not a `feature` is an error naming the edge."
+      - key: 563c6cf7-2fc4-433d-8378-ccee91531722
+        name: "A `realizes` edge whose target is not a `component` is an error naming the edge."
+      - key: 3d678908-2949-409a-95ab-d6e6abec166c
+        name: "A `scoped_to` edge whose source is not a `component` is an error naming the edge."
+      - key: 85d02322-d1f0-4963-89aa-acc294f547fe
+        name: "A `scoped_to` edge whose target is not a `product` is an error naming the edge."
+      - key: de9e178a-0abe-437e-aeef-97796082ad0f
+        name: "A `subject` edge whose source is not a decision is an error naming the edge."
+      - key: f0bfdb34-abaa-4fdb-a9f0-ed47633c0845
+        name: "A `subject` edge whose target is a decision is an error naming the edge."
+      - key: 38dd427f-3b7e-4ded-abd2-0f5545d82bd3
+        name: "A `subject` edge without the role `outcome` or `affected` is an error naming the edge."
+      - key: 54e4634e-0f49-4037-ad96-d369a87d1d4d
+        name: "A `mentions` edge between any two elements is accepted."
+      - key: 84ad4018-9c69-4405-ba03-cf9e78ad2f55
+        name: "A `realizes`, `scoped_to` or `mentions` edge that carries a role is an error naming the edge."
+      - key: 75716d4f-e806-4cbf-b98b-2d7e71914678
+        name: "Where the text form cannot hold an edge between the wrong kinds, the reader's error at the edge's file, line and column is the error."
+  - key: 87a641e8-12e8-4c72-a91d-265311491360
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "require every binding to name an element of the document."
+    criteria:
+      - key: c15cbc78-1235-4acc-b9c5-34eb020b22a0
+        name: "A binding whose key no node or decision carries is an error naming the key."
+      - key: a72685f1-10a8-4f7a-9f74-60f6f09220fc
+        name: "A binding whose key a node or decision carries raises no such error."
+  - key: af93e945-23b0-4ac8-a162-382b0313eee2
+    statement:
+      form: unwanted
+      if: "a node lists one tag twice"
+      system: "the validator"
+      shall: "report an error naming the node's key and the tag."
+    criteria:
+      - key: b50429fb-4049-43fa-b62a-11186a20a47c
+        name: "The error names the node's key."
+      - key: 717d3b2e-5b85-462d-b16c-9914f7326969
+        name: "The error names the repeated tag."
+      - key: 9f56ea48-91e1-4db9-8eed-c29f4890e309
+        name: "A node that lists each tag once raises no such error."
+  - key: 20e02fd6-eb31-4380-ab1c-7b0dd0113d3e
+    statement:
+      form: unwanted
+      if: "a decision that is neither retired nor superseded names a former label"
+      system: "the validator"
+      shall: "report an error naming the decision and the label."
+    criteria:
+      - key: bbc1d527-d749-4ef3-beb8-e0fc02c1cd47
+        name: "A former label in a proposed decision is an error."
+      - key: 75b85f8d-f735-4a42-aff3-1962155ccc80
+        name: "A former label in an accepted decision is an error."
+      - key: 690d6901-42b4-4aa5-874d-543087532d51
+        name: "A former label in a rejected decision is an error."
+      - key: ba0f0813-08b8-4f85-89df-4f078621c2c5
+        name: "A former label in a retired or superseded decision raises no such error."
+  - key: 3e4ba86f-b79e-45c3-ba8f-5242db072999
+    statement:
+      form: unwanted
+      if: "a former label is the live label or an alias of an element"
+      system: "the validator"
+      shall: "report an error naming the label and the element."
+    criteria:
+      - key: 413700f7-079c-4af9-ad5d-fecf61e6dee4
+        name: "A former label equal to an element's live label is an error."
+      - key: 61a8bf38-d054-49e6-b502-749dd61bc149
+        name: "A former label equal to an element's alias is an error."
+      - key: 5df988dc-ded2-4e48-9edd-bffc530847bc
+        name: "A former label that no element carries raises no such error."

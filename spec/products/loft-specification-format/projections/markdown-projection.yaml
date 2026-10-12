@@ -1,0 +1,49 @@
+key: 25ab61fa-598b-483f-bc91-36413a78f4d8
+slug: markdown-projection
+name: "Markdown projection"
+body: "The Markdown view of a document for human readers: its heading levels, criterion paragraphs, trailing sections and the header naming the state root it came from."
+realizes:
+  - dfa057a6-404f-44a0-a9ab-932900198ca4
+requirements:
+  - key: fe40a5ea-6ac1-4cce-af11-054c3b573dc0
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "render the document as readable Markdown."
+    criteria:
+      - key: b2ee5722-bf7f-4ecf-81dc-ae89f54def58
+        name: "A Product renders as a level-3 heading `<label> · <name>`."
+      - key: 1546c7a4-c9c2-41e8-a25b-3e9624dfdf89
+        name: "A Feature Group renders as a level-4 heading."
+      - key: 77103f9a-1b14-477f-a15e-4bbde1a63a5c
+        name: "A criterion renders as a bold paragraph `<label> · Acceptance Criterion · <text>`."
+      - key: 26c8c2ee-5918-4d1d-a378-fce2b5a60ad0
+        name: "Components, decisions, the tag registry and `realizes` edges render in their own sections after the Products."
+      - key: 6aeb1e9e-d068-465e-a232-cc0ab630f3f0
+        name: "An unlabelled node renders with its key in place of a label."
+      - key: 8cf16204-5901-4e90-a29a-85d909292935
+        name: "Every node of the document appears in the rendering."
+      - key: 1760a1c1-823c-497b-92a5-a1f398e9b158
+        name: "A Feature renders as a level-5 heading."
+      - key: c4caef9a-c40e-4aaa-ab00-b8a135e8d2fe
+        name: "A Requirement renders as a level-6 heading with its statement text."
+      - key: 3566d7e4-f71f-4ab0-a914-4bd83a92b7f4
+        name: "A node's tags render on one line after its body."
+      - key: e9befe96-da46-4923-b9ec-8ec6adb2923e
+        name: "The rendering's title is the first Product's name."
+      - key: 53e61f79-4cb7-4358-a3bb-9f0b696cb344
+        name: "Root Components render in the order the reader takes them."
+      - key: cf46bfb8-ec99-4ff8-be93-43291cd89e46
+        name: "A Component with a `boundary` field renders a line naming its value."
+  - key: 9c6e70e8-244a-4184-848a-3f02a3b57bf0
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "render deterministically."
+    criteria:
+      - key: 595a04de-9d96-473f-8265-bf625c2604d4
+        name: "Two renders of one document are byte-identical."
+      - key: 492e2a5d-aa9d-4fff-a396-259bc47159d8
+        name: "The rendering opens with a header naming the state root it was rendered from."
+      - key: 2b1c1786-49e5-4b2f-b144-457a90a4b9e5
+        name: "The rendering contains no other digest."

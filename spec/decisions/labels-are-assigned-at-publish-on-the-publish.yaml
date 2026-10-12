@@ -1,0 +1,86 @@
+key: c402d024-c689-4e82-9daf-05554bfec179
+slug: labels-are-assigned-at-publish-on-the-publish
+title: "Labels are assigned at publish on the publish branch"
+context: "Labels such as `RQ-23` are the human-readable handles of nodes. They must be unique and are never reused. In a git repository two people create nodes on separate branches with no shared counter. When a label is assigned decides whether parallel work can collide."
+state:
+  kind: accepted
+  selectedOption: 7975e469-e782-473a-a071-c4ed352ccac4
+  outcome: "A node has no label until it is published; the publisher allocates labels from per-prefix counters that never rewind; an unpublished node is referenced by key and rendered by key."
+drivers:
+  - key: 5a362759-ee26-4c14-9404-bcf5a9c0b69f
+    kind: local
+    label: "No serial step during authoring"
+    statement: "Two engineers create nodes on branches without coordinating."
+  - key: 797dc29f-d5db-418a-8202-b702b3a2ef0d
+    kind: local
+    label: "Never reused"
+    statement: "A label, once allocated, is never given to another node."
+  - key: eafef12c-7e61-41be-9260-aea6bd78f4be
+    kind: local
+    label: "Human-readable handles"
+    statement: "Labels stay short, sequential and speakable."
+options:
+  - key: 7975e469-e782-473a-a071-c4ed352ccac4
+    title: "At publish on the publish branch"
+    description: "Keys at creation; the publisher allocates labels from per-prefix counters that advance only at publish."
+  - key: 1918f33a-9808-4aac-a96c-e32c357409d0
+    title: "At creation from a shared counter"
+    description: "Every creation takes the next value of a counter, which needs a shared service or a locked file."
+  - key: 74668a22-1bcf-475a-ad48-e7d053498bfc
+    title: "Content-derived labels"
+    description: "A label is derived from the node's content hash; no counter, but the label changes whenever the content does."
+assessments:
+  - option: 1918f33a-9808-4aac-a96c-e32c357409d0
+    driver: 5a362759-ee26-4c14-9404-bcf5a9c0b69f
+    rating: conflicts
+    rationale: "every creation needs the counter"
+  - option: 1918f33a-9808-4aac-a96c-e32c357409d0
+    driver: 797dc29f-d5db-418a-8202-b702b3a2ef0d
+    rating: supports
+    rationale: "the counter never rewinds"
+  - option: 1918f33a-9808-4aac-a96c-e32c357409d0
+    driver: eafef12c-7e61-41be-9260-aea6bd78f4be
+    rating: supports
+    rationale: "sequential per prefix"
+  - option: 74668a22-1bcf-475a-ad48-e7d053498bfc
+    driver: 5a362759-ee26-4c14-9404-bcf5a9c0b69f
+    rating: supports
+    rationale: "no counter"
+  - option: 74668a22-1bcf-475a-ad48-e7d053498bfc
+    driver: 797dc29f-d5db-418a-8202-b702b3a2ef0d
+    rating: conflicts
+    rationale: "a label changes with the content, so a handle is not kept"
+  - option: 74668a22-1bcf-475a-ad48-e7d053498bfc
+    driver: eafef12c-7e61-41be-9260-aea6bd78f4be
+    rating: conflicts
+    rationale: "hash fragments are neither short nor speakable"
+  - option: 7975e469-e782-473a-a071-c4ed352ccac4
+    driver: 5a362759-ee26-4c14-9404-bcf5a9c0b69f
+    rating: supports
+    rationale: "branches allocate nothing"
+  - option: 7975e469-e782-473a-a071-c4ed352ccac4
+    driver: 797dc29f-d5db-418a-8202-b702b3a2ef0d
+    rating: supports
+    rationale: "the counter only moves forward at publish"
+  - option: 7975e469-e782-473a-a071-c4ed352ccac4
+    driver: eafef12c-7e61-41be-9260-aea6bd78f4be
+    rating: supports
+    rationale: "sequential per prefix"
+consequences:
+  - key: ee882e28-1fd4-4409-b9c7-2b9109517b70
+    kind: benefit
+    statement: "Branches never conflict on labels."
+  - key: 9119b890-89b2-4d89-97f4-bf4bed066db9
+    kind: cost
+    statement: "Prose cannot cite a label for an unpublished node; a render shows the key instead."
+  - key: 0b340b4d-8c1f-49e3-a6d4-35543ab3f3fa
+    kind: obligation
+    statement: "The publisher records a relabelled node's previous label as a permanent alias."
+    subject: 41a992bc-9eaa-4dfb-85cb-19205abe5a05
+subjects:
+  - role: affected
+    node: e1ab75a5-f206-4760-970f-bee0653c4f2a
+  - role: outcome
+    node: 8167c7b2-41bb-41b8-a5d9-9565fa3ecbde
+  - role: outcome
+    node: d1aae04f-e9e4-4bb0-bd84-2a334bee5542

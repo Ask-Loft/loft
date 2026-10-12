@@ -1,0 +1,43 @@
+key: e368f3ac-0bb0-448c-a32d-fb6f3ef10ebd
+slug: the-statement-record
+name: "The statement record"
+body: "How a Requirement's sentence is stored: as plain text, or as one of the five basic EARS forms with its slots filled."
+realizes:
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 3ac449e4-ba6a-4983-b744-98a8f0f33ef9
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write a Requirement's sentence as a statement record."
+    criteria:
+      - key: a0200741-8714-4201-9d3e-684f98091664
+        name: "A statement holds `text` alone, or `form` with the slots of that form."
+      - key: 8caae286-bd6d-4194-b8cd-95fdc3705af1
+        name: "A statement with both `text` and `form` is an error."
+      - key: 0296f926-afef-4458-a488-bcf75faa47af
+        name: "A Requirement without a statement is an error."
+  - key: b139d533-a7b4-4328-9bcc-495fa4a23790
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "accept exactly the five basic EARS forms as statement forms."
+    criteria:
+      - key: 69d5b100-ab7e-468e-bc5e-b0af82730569
+        name: "`ubiquitous` takes the slots `system` and `shall`."
+      - key: 5881c6c2-8eca-4f66-b303-7e1ef871f158
+        name: "`event_driven` takes `when`, `system` and `shall`."
+      - key: f2d7d748-bbf2-4c5c-8089-f5e934bb2802
+        name: "`state_driven` takes `while`, `system` and `shall`."
+      - key: ba3eec5e-f7c5-4ce3-8a2b-6459cb6e98d7
+        name: "`unwanted` takes `if`, `system` and `shall`."
+      - key: abaa3d34-617d-4716-a190-41c24cdb4261
+        name: "`optional` takes `where`, `system` and `shall`."
+      - key: abc233be-b767-45b4-bfe7-07e74d397d28
+        name: "A form outside the five is an error naming the file, line and column."
+      - key: 368d6b83-78aa-4f46-9c78-d9d52f153f69
+        name: "A missing slot for the form is an error naming the slot."
+      - key: 5bb556fa-eb6f-432a-9b99-d237564c2c6d
+        name: "A slot the form does not take is an error naming the slot."
+      - key: d75ddd19-9bda-4de0-a0d9-283efe1c1492
+        name: "The `shall` slot holds the text after the modal verb, its closing punctuation included."

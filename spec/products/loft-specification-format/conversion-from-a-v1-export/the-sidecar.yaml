@@ -1,0 +1,39 @@
+key: 3d945f7b-7d24-474a-b6b4-ae3621fc7db4
+slug: the-sidecar
+name: "The sidecar"
+body: "The file beside `spec/` that keeps every v1 fact the content view excludes, so that the source state stays reproducible."
+realizes:
+  - e26eb15d-2a28-44fe-bf85-1313011ab0ed
+requirements:
+  - key: c801e83d-cb9c-4de7-85d4-ad6cf4ea8fc3
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "record in a sidecar every v1 fact the content view excludes."
+    criteria:
+      - key: 500c14e3-e11c-485e-8815-e0a22bc6dd7a
+        name: "The sidecar records each node's v1 ordinal."
+      - key: 39205500-567f-4998-a85b-b59f6576a1c5
+        name: "The sidecar records each node's `fateConfirmed`."
+      - key: 974a4fba-eed4-4979-942e-a212c7beeae3
+        name: "The sidecar records each Facet Tag node's UUID and ordinal against its tag application."
+      - key: cf1d226a-4f82-4e39-b388-fd606b39373f
+        name: "The sidecar records the v1 document UUID."
+      - key: 856e3474-e5fb-416f-a47f-fe80b6890b64
+        name: "The sidecar records, per label prefix, the highest allocated value."
+      - key: 7f9bac49-b581-4bfb-a0dc-1109c3efdd29
+        name: "The sidecar records each node's `proposedFate`."
+      - key: b2808b61-d3ea-4148-976a-84b215c25fd9
+        name: "The sidecar records each Component's v1 scope kind."
+      - key: d998b597-78d3-4eb3-94e4-5e9c19598f18
+        name: "The sidecar records the v1 node UUID behind each former label."
+  - key: db98380d-4f3f-4611-ae76-c87f205df4f6
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "write the sidecar outside the `spec/` tree."
+    criteria:
+      - key: fe2d3192-e8fd-4a68-96e5-e4c2963bca8e
+        name: "No file under `spec/` carries a sidecar fact."
+      - key: e05b6c0b-6a38-4743-96b0-8886b063f44c
+        name: "The sidecar is the file `v1-sidecar.json` beside `spec/`."
