@@ -13,5 +13,8 @@ serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 
+[dev-dependencies]
+software-plant = { path = "../software-plant" }
+
 [lints]
 workspace = true

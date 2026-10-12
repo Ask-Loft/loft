@@ -412,6 +412,7 @@ dependencies = [
  "loftspec",
  "serde",
  "serde_json",
+ "software-plant",
  "thiserror",
 ]
 
