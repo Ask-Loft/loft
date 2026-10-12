@@ -8,6 +8,7 @@ use std::process::ExitCode;
 use std::{fs, io};
 
 use loftspec::codec::{ReadError, SpecPath};
+use loftspec::identity::Label;
 use loftspec::merge::{Input, MergeError, merge_file};
 use loftspec_store::StoreError;
 use loftspec_store::fs::{SPEC, write_outputs};
@@ -24,13 +25,16 @@ pub struct Inputs<'a> {
 
 pub fn run(root: &Path, inputs: &Inputs<'_>) -> ExitCode {
     match merge(root, inputs) {
-        Ok(0) => ExitCode::SUCCESS,
-        Ok(conflicts) => {
+        Ok((0, _)) => ExitCode::SUCCESS,
+        Ok((conflicts, disputed)) => {
             let plural = if conflicts == 1 { "" } else { "s" };
             eprintln!(
                 "{}: {conflicts} merge conflict{plural} written",
                 inputs.path
             );
+            if !disputed.is_empty() {
+                eprintln!("{}: {}", inputs.path, settle_with_publish(&disputed));
+            }
             ExitCode::FAILURE
         }
         Err(messages) => {
@@ -40,6 +44,23 @@ pub fn run(root: &Path, inputs: &Inputs<'_>) -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+/// What to do about the labels two publishes gave apart.
+fn settle_with_publish(disputed: &[Label]) -> String {
+    let names = disputed
+        .iter()
+        .map(ToString::to_string)
+        .collect::<Vec<_>>()
+        .join(", ");
+    let (noun, verb, pronoun) = match disputed {
+        [_] => ("label", "was", "it"),
+        _ => ("labels", "were", "them"),
+    };
+    format!(
+        "{noun} {names} {verb} given apart by two publishes; run `loft publish` on the publish \
+         branch to settle {pronoun}"
+    )
 }
 
 /// Registers the driver, printing what it wrote, one name to a line.
@@ -65,9 +86,9 @@ pub fn install(root: &Path) -> ExitCode {
     }
 }
 
-/// Merges the file and writes it to `<ours>`, giving the number of conflicts written; or the
-/// messages, each to follow `<path>`, and nothing written.
-fn merge(root: &Path, inputs: &Inputs<'_>) -> Result<usize, Vec<String>> {
+/// Merges the file and writes it to `<ours>`, giving the number of conflicts written and the
+/// labels in dispute; or the messages, each to follow `<path>`, and nothing written.
+fn merge(root: &Path, inputs: &Inputs<'_>) -> Result<(usize, Vec<Label>), Vec<String>> {
     let spec_path =
         spec_path(inputs.path).ok_or_else(|| vec![format!(": not under a `{SPEC}` directory")])?;
     let read = |input: Input, file: &Path| {
@@ -91,7 +112,7 @@ fn merge(root: &Path, inputs: &Inputs<'_>) -> Result<usize, Vec<String>> {
     let merged = merge_file(&spec_path, &base, &ours, &theirs).map_err(messages)?;
     write_outputs(root, &[(inputs.ours.to_path_buf(), merged.bytes)])
         .map_err(|error| vec![format!(": {error}")])?;
-    Ok(merged.conflicts)
+    Ok((merged.conflicts, merged.disputed))
 }
 
 /// The path of the file within its tree: what follows the first `spec` directory of `path`.

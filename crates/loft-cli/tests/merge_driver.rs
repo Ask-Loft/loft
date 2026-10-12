@@ -155,3 +155,26 @@ fn an_empty_base_is_an_absent_one_and_a_field_the_sides_disagree_on_keeps_ours()
         "{merged}"
     );
 }
+
+#[test]
+fn a_label_two_publishes_gave_apart_is_named_with_the_command_that_settles_it() {
+    let scratch = Scratch::with_reading_list();
+    let base = fs::read_to_string(scratch.file("labels.yaml")).unwrap();
+    let binding =
+        |n: u32| format!("  - key: 01a13099-7453-76e1-9b96-9210000000a{n}\n    label: RQ-90\n");
+    let ours_text = format!("{base}{}", binding(1));
+    let theirs_text = format!("{base}{}", binding(2));
+    let output = driver(
+        &scratch,
+        [&base, &ours_text, &theirs_text],
+        "spec/labels.yaml",
+    );
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(
+        stderr(&output),
+        "spec/labels.yaml: 1 merge conflict written\n\
+         spec/labels.yaml: label RQ-90 was given apart by two publishes; run `loft publish` on \
+         the publish branch to settle it\n"
+    );
+    assert!(ours(&scratch).contains("  - field: bindings\n"));
+}
