@@ -134,7 +134,7 @@ fn each_register_entry_is_decided_by_a_node_of_the_specification() {
     }
 }
 
-/// Every file of the tree, concatenated.
+/// Every file of the tree, concatenated, leaving out entries whose names begin with `.`.
 fn spec_text(dir: &Path) -> String {
     let mut text = String::new();
     let mut entries: Vec<_> = fs::read_dir(dir)
@@ -143,6 +143,10 @@ fn spec_text(dir: &Path) -> String {
         .collect();
     entries.sort();
     for path in entries {
+        let hidden = path.file_name().unwrap().to_str().unwrap().starts_with('.');
+        if hidden {
+            continue;
+        }
         if path.is_dir() {
             text.push_str(&spec_text(&path));
         } else {

@@ -48,6 +48,12 @@ pub fn read_tree(root: &Path) -> Result<Files, StoreError> {
     Ok(files)
 }
 
+/// Whether an entry under `spec/` is left out of the tree: its name begins with `.`, as an
+/// operating system's or an editor's own files do (`.DS_Store`, swap files).
+fn hidden(name: &str) -> bool {
+    name.starts_with('.')
+}
+
 fn collect(dir: &Path, prefix: &str, files: &mut Files) -> Result<(), StoreError> {
     for entry in fs::read_dir(dir).map_err(io_error(dir))? {
         let entry = entry.map_err(io_error(dir))?;
@@ -56,6 +62,9 @@ fn collect(dir: &Path, prefix: &str, files: &mut Files) -> Result<(), StoreError
             .file_name()
             .into_string()
             .map_err(|_| StoreError::NotUtf8(path.clone()))?;
+        if hidden(&name) {
+            continue;
+        }
         let relative = if prefix.is_empty() {
             name
         } else {
@@ -166,9 +175,11 @@ pub const SIDECAR: &str = "v1-sidecar.json";
 pub fn write_import(root: &Path, files: &Files, sidecar: &[u8]) -> Result<(), StoreError> {
     let spec = root.join(SPEC);
     if spec.exists() {
-        let mut entries = fs::read_dir(&spec).map_err(io_error(&spec))?;
-        if entries.next().is_some() {
-            return Err(StoreError::NotEmpty(spec));
+        for entry in fs::read_dir(&spec).map_err(io_error(&spec))? {
+            let entry = entry.map_err(io_error(&spec))?;
+            if !entry.file_name().to_str().is_some_and(hidden) {
+                return Err(StoreError::NotEmpty(spec));
+            }
         }
     }
     fs::create_dir_all(&spec).map_err(io_error(&spec))?;

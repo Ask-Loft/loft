@@ -171,6 +171,16 @@ fn ac_517_ac_518_a_spec_directory_that_is_not_empty_is_refused() {
 }
 
 #[test]
+fn a_spec_directory_holding_only_dot_entries_counts_as_empty() {
+    let dir = Empty::new();
+    fs::create_dir(dir.0.join("spec")).unwrap();
+    dir.write("spec/.DS_Store", "");
+    let output = dir.import(&[]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(dir.0.join("spec/loftspec.yaml").is_file());
+}
+
+#[test]
 fn an_empty_spec_directory_is_accepted() {
     let dir = Empty::new();
     fs::create_dir(dir.0.join("spec")).unwrap();
