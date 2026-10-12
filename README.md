@@ -32,6 +32,16 @@ the clone's configuration. git then merges each file of the tree by key. Where t
 change one field apart, the file gains a conflict record in place of conflict markers, git
 reports the path as conflicted, and `loft check` reports the record until it is removed.
 
+git runs the driver through the shell, from the top of the working tree, with its own search
+path, which a dev dependency is not on. Give the command that starts `loft` there with
+`--command`: `loft merge-driver --install --command "npx --no-install loft"`, `"pnpm exec loft"`,
+`"uv run loft"`, or a path such as `node_modules/.bin/loft`. The install runs
+`<command> --version` as git would and refuses when it fails. The setting lives in the clone's
+`.git/config`, so a project runs the install in its setup step, such as npm's `prepare` script.
+If the command cannot run during a merge, the driver merges the file as text with conflict
+markers and leaves it conflicted; make the command run, then `git checkout -m <file>` merges it
+again.
+
 Two clones that publish apart can give one label to two nodes. When one pulls the other, by
 `git pull` (a merge) or `git pull --rebase`, the merge driver keeps the disputed bindings out of
 `spec/labels.yaml` in one conflict record and git stops. `loft publish`, run there on the

@@ -29,11 +29,17 @@ impl Dirs {
     /// Runs `loft merge-driver --install` with the simulator answering from `scenario`, and
     /// gives its output and the scenario as the run left it.
     fn install(&self, scenario: &GitScenario) -> (Output, GitScenario) {
+        self.install_with(scenario, &[])
+    }
+
+    /// Runs `loft merge-driver --install` followed by `args`.
+    fn install_with(&self, scenario: &GitScenario, args: &[&str]) -> (Output, GitScenario) {
         let installed = scenario.install(&self.plant);
         let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
         installed.apply(&mut command);
         let output = command
             .args(["merge-driver", "--install"])
+            .args(args)
             .current_dir(&self.tree)
             .output()
             .unwrap();
@@ -82,10 +88,20 @@ fn config(scenario: &GitScenario, name: &str) -> Option<String> {
     scenario.repository.as_ref()?.config.get(name).cloned()
 }
 
+/// What `loft --version` prints first.
+fn own_version() -> String {
+    format!("loft {}\n", env!("CARGO_PKG_VERSION"))
+}
+
+/// A clean repository on `main` in which `loft` runs where git runs the driver.
+fn clean() -> GitScenario {
+    GitScenario::clean_on("main").launcher("loft", &own_version())
+}
+
 #[test]
 fn ac_571_ac_572_ac_573_the_attribute_the_driver_and_its_name_are_registered() {
     let dirs = Dirs::new("fresh");
-    let (output, scenario) = dirs.install(&GitScenario::clean_on("main"));
+    let (output, scenario) = dirs.install(&clean());
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
     assert_eq!(
         text(&output.stdout),
@@ -95,9 +111,11 @@ fn ac_571_ac_572_ac_573_the_attribute_the_driver_and_its_name_are_registered() {
         dirs.attributes().as_deref(),
         Some("spec/**/*.yaml merge=loft\n")
     );
-    assert_eq!(
-        config(&scenario, DRIVER).as_deref(),
-        Some("loft merge-driver %O %A %B %P")
+    let driver = config(&scenario, DRIVER).unwrap();
+    assert_eq!(driver, loftspec_store::merge_driver::driver("loft"));
+    assert!(
+        driver.contains("then loft merge-driver %O %A %B %P;"),
+        "{driver}"
     );
     assert!(config(&scenario, NAME).is_some_and(|name| !name.is_empty()));
 }
@@ -106,7 +124,7 @@ fn ac_571_ac_572_ac_573_the_attribute_the_driver_and_its_name_are_registered() {
 fn ac_571_an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() {
     let dirs = Dirs::new("existing");
     fs::write(dirs.tree.join(".gitattributes"), "*.png binary").unwrap();
-    let (output, _) = dirs.install(&GitScenario::clean_on("main"));
+    let (output, _) = dirs.install(&clean());
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
     assert_eq!(
         dirs.attributes().as_deref(),
@@ -117,7 +135,7 @@ fn ac_571_an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() 
 #[test]
 fn ac_574_a_second_install_changes_nothing() {
     let dirs = Dirs::new("again");
-    let (_, installed) = dirs.install(&GitScenario::clean_on("main"));
+    let (_, installed) = dirs.install(&clean());
     let attributes = dirs.attributes();
     let (output, again) = dirs.install(&installed);
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
@@ -129,14 +147,68 @@ fn ac_574_a_second_install_changes_nothing() {
 #[test]
 fn a_driver_registered_with_another_command_is_set_to_loft_s() {
     let dirs = Dirs::new("other");
-    let scenario = GitScenario::clean_on("main").with_config(DRIVER, "cat %A");
+    let scenario = clean().with_config(DRIVER, "cat %A");
     let (output, after) = dirs.install(&scenario);
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
     assert!(text(&output.stdout).contains("merge.loft.driver\n"));
     assert_eq!(
-        config(&after, DRIVER).as_deref(),
-        Some("loft merge-driver %O %A %B %P")
+        config(&after, DRIVER),
+        Some(loftspec_store::merge_driver::driver("loft"))
     );
+}
+
+#[test]
+fn the_driver_runs_the_command_given_with_command_and_another_command_replaces_it() {
+    let dirs = Dirs::new("command");
+    let npx = "npx --no-install loft";
+    let scenario = clean().launcher(npx, &own_version());
+    let (output, installed) = dirs.install_with(&scenario, &["--command", npx]);
+    assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    let driver = config(&installed, DRIVER).unwrap();
+    assert!(
+        driver.contains(&format!("then {npx} merge-driver %O %A %B %P;")),
+        "{driver}"
+    );
+    let (output, replaced) = dirs.install(&installed);
+    assert_eq!(text(&output.stdout), "merge.loft.driver\n");
+    assert_eq!(
+        config(&replaced, DRIVER),
+        Some(loftspec_store::merge_driver::driver("loft"))
+    );
+}
+
+#[test]
+fn a_command_git_cannot_run_is_refused_and_nothing_is_written() {
+    let dirs = Dirs::new("missing");
+    let before = dirs.files();
+    let scenario = GitScenario::clean_on("main");
+    let (output, after) = dirs.install_with(&scenario, &["--command", "pnpm exec loft"]);
+    assert_eq!(output.status.code(), Some(1));
+    let error = text(&output.stderr);
+    assert!(
+        error.contains("git could not run `pnpm exec loft --version`"),
+        "{error}"
+    );
+    assert!(error.contains("--command"), "{error}");
+    assert_eq!(dirs.files(), before);
+    assert_eq!(after, scenario);
+}
+
+#[test]
+fn a_command_that_starts_another_version_is_warned_of_and_registered() {
+    let dirs = Dirs::new("version");
+    let scenario = GitScenario::clean_on("main").launcher("loft", "loft 0.1.0\nformat x\n");
+    let (output, installed) = dirs.install(&scenario);
+    assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    let warning = text(&output.stderr);
+    assert!(
+        warning.contains(&format!(
+            "`loft` starts loft 0.1.0, not {}",
+            own_version().trim_end()
+        )),
+        "{warning}"
+    );
+    assert!(config(&installed, DRIVER).is_some());
 }
 
 #[test]

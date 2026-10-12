@@ -15,6 +15,8 @@ use loftspec_store::fs::{SPEC, write_outputs};
 use loftspec_store::merge_driver;
 use loftspec_store::repository::GitCommand;
 
+use crate::version::VERSION;
+
 /// The three files git hands the driver, and the path of the file being merged as git names it.
 pub struct Inputs<'a> {
     pub base: &'a Path,
@@ -63,14 +65,30 @@ fn settle_with_publish(disputed: &[Label]) -> String {
     )
 }
 
-/// Registers the driver, printing what it wrote, one name to a line.
-pub fn install(root: &Path) -> ExitCode {
-    match merge_driver::install(&GitCommand::default(), root) {
-        Ok(written) => {
-            for name in written {
+/// Registers the driver started by `launcher`, printing what it wrote, one name to a line, and
+/// warning when the launcher starts another version of `loft`.
+pub fn install(root: &Path, launcher: &str) -> ExitCode {
+    match merge_driver::install(&GitCommand::default(), root, launcher) {
+        Ok(installed) => {
+            let own = format!("loft {VERSION}");
+            if installed.version != own {
+                eprintln!(
+                    "loft merge-driver --install: warning: `{launcher}` starts {}, not {own}",
+                    installed.version
+                );
+            }
+            for name in installed.written {
                 println!("{name}");
             }
             ExitCode::SUCCESS
+        }
+        Err(StoreError::Launcher(_)) => {
+            eprintln!(
+                "loft merge-driver --install: git could not run `{launcher} --version` from the \
+                 top of the working tree, where it runs the driver; give the command that starts \
+                 loft there with --command, such as --command \"npx --no-install loft\""
+            );
+            ExitCode::FAILURE
         }
         Err(StoreError::NotARepository(_)) => {
             eprintln!(

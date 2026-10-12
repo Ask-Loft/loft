@@ -16,6 +16,7 @@ use std::process::ExitCode;
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 use loftspec_store::FileStore;
+use loftspec_store::merge_driver::LAUNCHER;
 
 #[derive(Parser)]
 #[command(
@@ -73,6 +74,10 @@ enum Command {
         /// Register the driver in the repository instead of merging (RQ-152).
         #[arg(long, conflicts_with_all = ["base", "ours", "theirs", "path"])]
         install: bool,
+        /// With `--install`, the shell command that starts `loft` where git runs the driver, such
+        /// as `npx --no-install loft` for a dev dependency; `loft` unless given.
+        #[arg(long, requires = "install", value_name = "COMMAND")]
+        command: Option<String>,
         /// The common ancestor's version (git's `%O`).
         #[arg(required_unless_present = "install")]
         base: Option<PathBuf>,
@@ -172,7 +177,11 @@ fn main() -> ExitCode {
         ),
         Command::Publish { format } => publish::run(root, format == Some(Format::Json)),
         Command::Verify { format } => verify::run(root, format == Some(Format::Json)),
-        Command::MergeDriver { install: true, .. } => merge_driver::install(root),
+        Command::MergeDriver {
+            install: true,
+            command,
+            ..
+        } => merge_driver::install(root, command.as_deref().unwrap_or(LAUNCHER)),
         Command::MergeDriver {
             base: Some(base),
             ours: Some(ours),

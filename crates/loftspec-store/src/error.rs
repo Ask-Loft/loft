@@ -33,6 +33,9 @@ pub enum StoreError {
     Journal(PathBuf, String),
     #[error("{0}: not inside a git repository; a publish needs one")]
     NotARepository(PathBuf),
+    /// The command that starts `loft` cannot run where git runs the merge driver.
+    #[error("git could not run `{0} --version` from the top of the working tree")]
+    Launcher(String),
     #[error("git cannot be run: {0}")]
     GitUnavailable(String),
     #[error("`git {call}` failed: {message}")]

@@ -256,3 +256,64 @@ fn a_file_both_sides_add_is_merged_over_an_empty_base() {
         )
     );
 }
+
+#[test]
+fn a_driver_whose_launcher_cannot_run_leaves_conflict_markers_and_names_the_way_out() {
+    let repo = Repo::new();
+    let missing = format!(
+        "merge.loft.driver={}",
+        loftspec_store::merge_driver::driver("no-such-loft")
+    );
+    // Each side rewords a different Requirement of one file, which git's text merge joins
+    // without a conflict; the driver still reports one, so the file stays unmerged.
+    repo.git_ok(&["checkout", "--quiet", "-b", "theirs"]);
+    repo.0
+        .edit(SHARE, PUBLISH_LINK, "shall: \"publish a link.\"");
+    repo.commit("theirs");
+    repo.git_ok(&["checkout", "--quiet", "main"]);
+    repo.0.edit(
+        SHARE,
+        "refuse edits made through the link.",
+        "refuse every edit.",
+    );
+    repo.commit("ours");
+    let merged = repo.git(&["-c", &missing, "merge", "--no-edit", "theirs"]);
+    assert!(!merged.status.success(), "{}", printed(&merged));
+    assert!(
+        printed(&merged)
+            .contains("git checkout -m 'spec/products/reading-list/sharing/share-a-list.yaml'"),
+        "{}",
+        printed(&merged)
+    );
+    let text = repo.text(SHARE);
+    assert!(
+        text.contains("publish a link.") && text.contains("refuse every edit."),
+        "{text}"
+    );
+    let status = repo.git_ok(&["status", "--porcelain"]);
+    assert!(stdout(&status).contains("UU spec/products/reading-list/sharing/share-a-list.yaml"));
+}
+
+#[test]
+fn a_driver_whose_launcher_cannot_run_writes_markers_where_the_sides_meet() {
+    let repo = Repo::new();
+    let missing = format!(
+        "merge.loft.driver={}",
+        loftspec_store::merge_driver::driver("no-such-loft")
+    );
+    let merged = merge(
+        &repo,
+        |ours| ours.edit(SHARE, PUBLISH_LINK, "shall: \"publish a private link.\""),
+        |theirs| theirs.edit(SHARE, PUBLISH_LINK, "shall: \"publish a public link.\""),
+    );
+    assert!(!merged.status.success());
+    // The merge above ran the working driver; abort it and run the same merge without one.
+    repo.git_ok(&["merge", "--abort"]);
+    let again = repo.git(&["-c", &missing, "merge", "--no-edit", "theirs"]);
+    assert!(!again.status.success());
+    let text = repo.text(SHARE);
+    assert!(
+        text.contains("<<<<<<< ours") && text.contains(">>>>>>> theirs"),
+        "{text}"
+    );
+}

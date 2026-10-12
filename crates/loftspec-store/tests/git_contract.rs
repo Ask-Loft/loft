@@ -13,7 +13,10 @@ use std::process::Command;
 use common::Scratch;
 use loftspec::publish::RepoState;
 use loftspec_store::StoreError;
-use loftspec_store::repository::{CURRENT_BRANCH, GitCommand, Repository, SHOW_PREFIX, STATUS};
+use loftspec_store::merge_driver::{DRIVER, driver, install};
+use loftspec_store::repository::{
+    CURRENT_BRANCH, GitCommand, Repository, SHOW_PREFIX, STATUS, launcher_call,
+};
 use real_git::{git, real_git, reply, simulated, state};
 use software_plant::GitScenario;
 
@@ -288,12 +291,14 @@ fn ac_978_reading_the_state_changes_no_file_of_the_repository() {
     }
 }
 
-/// The name `loft merge-driver --install` sets, and the value it sets it to.
-const DRIVER: (&str, &str) = ("merge.loft.driver", "loft merge-driver %O %A %B %P");
+/// A launcher that runs anywhere, and one that runs nowhere.
+const LAUNCHER: &str = "echo loft 9.9.9 #";
+const MISSING: &str = "no-such-loft";
 
 #[test]
 fn the_simulator_answers_the_config_calls_as_real_git_does() {
-    let (name, value) = DRIVER;
+    let (name, value) = (DRIVER, driver(LAUNCHER));
+    let value = value.as_str();
     // Unset, then set, then read back: each call sees the configuration the one before left.
     let calls: [&[&str]; 3] = [
         &["config", "--local", "--get", name],
@@ -327,16 +332,53 @@ fn the_simulator_answers_the_config_calls_as_real_git_does() {
     }
 }
 
+#[test]
+fn the_simulator_answers_the_launcher_alias_as_real_git_does() {
+    let cases: [Case; 2] = [
+        ("clean on main", committed, || {
+            clean().launcher(LAUNCHER, "loft 9.9.9\n")
+        }),
+        ("outside a repository", outside, || {
+            GitScenario::outside_repository().launcher(LAUNCHER, "loft 9.9.9\n")
+        }),
+    ];
+    for (case, build, scenario) in cases {
+        let repository = Scratch::new();
+        let root = build(&repository);
+        let plant = Scratch::new();
+        let simulator = scenario().install(&plant.0);
+        for launcher in [LAUNCHER, MISSING] {
+            let call = launcher_call(launcher);
+            let real = real_git()
+                .arg("-C")
+                .arg(&root)
+                .args(&call)
+                .output()
+                .unwrap();
+            let simulated = simulator
+                .apply(&mut Command::new("git"))
+                .arg("-C")
+                .arg(&root)
+                .args(&call)
+                .output()
+                .unwrap();
+            assert_eq!(reply(&simulated), reply(&real), "{case}: {launcher}");
+        }
+    }
+}
+
 /// What one install wrote, or why it was refused.
 type Installed = Result<Vec<String>, String>;
 
-/// What two installs write, against the git that `git` runs.
-fn installs(git: &GitCommand, root: &Path) -> [Installed; 2] {
+/// What two installs with `launcher` write, against the git that `git` runs.
+fn installs(git: &GitCommand, root: &Path, launcher: &str) -> [Installed; 2] {
     let once = || {
-        loftspec_store::merge_driver::install(git, root).map_err(|error| match error {
+        let installed = install(git, root, launcher).map_err(|error| match error {
             StoreError::NotARepository(_) => "not a repository".to_owned(),
             other => other.to_string(),
-        })
+        })?;
+        assert_eq!(installed.version, "loft 9.9.9");
+        Ok(installed.written)
     };
     [once(), once()]
 }
@@ -351,28 +393,55 @@ fn installing_the_driver_writes_the_same_against_real_git_and_the_simulator() {
         ])
     };
     let refused = || Err("not a repository".to_owned());
-    let cases: [(Case, [Installed; 2]); 2] = [
-        (("clean on main", committed, clean), [all(), Ok(Vec::new())]),
+    let no_launcher = || {
+        Err(format!(
+            "git could not run `{MISSING} --version` from the top of the working tree"
+        ))
+    };
+    let with_launcher = || clean().launcher(LAUNCHER, "loft 9.9.9\n");
+    let cases: [(Case, &str, [Installed; 2]); 3] = [
+        (
+            ("clean on main", committed, with_launcher),
+            LAUNCHER,
+            [all(), Ok(Vec::new())],
+        ),
+        (
+            ("no launcher", committed, clean),
+            MISSING,
+            [no_launcher(), no_launcher()],
+        ),
         (
             (
                 "outside a repository",
                 outside,
                 GitScenario::outside_repository,
             ),
+            LAUNCHER,
             [refused(), refused()],
         ),
     ];
-    for ((name, build, scenario), want) in cases {
+    for ((name, build, scenario), launcher, want) in cases {
         let repository = Scratch::new();
         let root = build(&repository);
+        let before = repository.snapshot();
         assert_eq!(
-            installs(&GitCommand::from_command(real_git), &root),
+            installs(&GitCommand::from_command(real_git), &root, launcher),
             want,
             "{name}: git"
         );
+        if want[0].is_err() {
+            assert!(
+                repository.snapshot() == before,
+                "{name}: nothing is written"
+            );
+        }
         let plant = Scratch::new();
         let simulated = simulated(&scenario(), &plant.0);
         let tree = Scratch::new();
-        assert_eq!(installs(&simulated, &tree.0), want, "{name}: simulator");
+        assert_eq!(
+            installs(&simulated, &tree.0, launcher),
+            want,
+            "{name}: simulator"
+        );
     }
 }

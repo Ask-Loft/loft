@@ -5,6 +5,8 @@
 use std::fs;
 use std::process::{Command, Output};
 
+use loftspec_store::merge_driver::driver;
+
 use super::common::{Scratch, stderr};
 
 /// Real git, kept from the user's configuration and from any repository above the temporary
@@ -42,10 +44,9 @@ impl Repo {
     /// Runs real git in the repository, the driver registered, automatic maintenance off and an
     /// editor that keeps the message git proposes.
     pub fn git(&self, args: &[&str]) -> Output {
-        let driver = format!(
-            "merge.loft.driver='{}' merge-driver %O %A %B %P",
-            env!("CARGO_BIN_EXE_loft")
-        );
+        // The command `loft merge-driver --install --command '<loft>'` registers.
+        let launcher = format!("'{}'", env!("CARGO_BIN_EXE_loft"));
+        let driver = format!("merge.loft.driver={}", driver(&launcher));
         real_git()
             .args([
                 "-c",

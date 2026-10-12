@@ -11,7 +11,7 @@ use crate::json;
 const SCHEMA: &str = "loft-version/1";
 
 /// The tool release, from the crate that builds `loft`.
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn run(as_json: bool) {
     if as_json {

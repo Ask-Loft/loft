@@ -43,6 +43,16 @@ pub const REBASE_HEAD_NAMES: [&str; 2] = ["rebase-merge/head-name", "rebase-appl
 /// level.
 pub const UNMERGED: [&str; 6] = ["ls-files", "-u", "-z", "--full-name", "--", ":/"];
 
+/// The shell alias with which [`GitCommand::launcher_version`] runs `<command> --version`.
+#[must_use]
+pub fn launcher_call(command: &str) -> [String; 3] {
+    [
+        "-c".to_owned(),
+        format!("alias.loft-launcher=!{command} --version"),
+        "loft-launcher".to_owned(),
+    ]
+}
+
 /// Where the publisher learns the repository's state.
 pub trait Repository {
     /// The state of the repository that holds the directory `root`, which holds `spec/`.
@@ -130,6 +140,23 @@ impl GitCommand {
             return Ok(None);
         }
         Ok(Some(text(&succeeded(&call, output)?)))
+    }
+
+    /// The first line `<command> --version` prints when git runs it as it runs a merge driver:
+    /// through the shell, from the top of the working tree; none when it fails.
+    ///
+    /// # Errors
+    ///
+    /// git cannot be run.
+    pub fn launcher_version(
+        &self,
+        root: &Path,
+        command: &str,
+    ) -> Result<Option<String>, StoreError> {
+        let call = launcher_call(command);
+        let call: Vec<&str> = call.iter().map(String::as_str).collect();
+        let output = self.run(root, &call)?;
+        Ok(output.status.success().then(|| text(&output.stdout)))
     }
 
     /// Sets a name in the local configuration of the repository that holds `root`.
