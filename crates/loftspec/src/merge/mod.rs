@@ -3,6 +3,7 @@
 //! F-32..F-34). It takes only the base, ours and theirs versions of one file (CON-12).
 
 mod conflict;
+mod labels;
 mod list;
 pub mod order;
 mod record;
@@ -10,8 +11,9 @@ mod same;
 
 use std::fmt;
 
-use crate::codec::schema::{Field, Item, Order, Shape, field};
+use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
 use crate::codec::{Content, Mode, ReadError, Rec, Role, SpecPath, Val, read_file, write_content};
+use crate::identity::Label;
 
 /// One of the three versions of the file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -31,11 +33,13 @@ impl fmt::Display for Input {
     }
 }
 
-/// The merged file, in canonical layout, and how many conflict records it holds.
+/// The merged file, in canonical layout, how many conflict records it holds, and for
+/// `spec/labels.yaml` the labels that two publishes gave apart.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Merged {
     pub bytes: Vec<u8>,
     pub conflicts: usize,
+    pub disputed: Vec<Label>,
 }
 
 /// Why a file could not be merged; nothing is written.
@@ -85,12 +89,13 @@ pub fn merge_file(
     let (Some(ours), Some(theirs), true) = (ours, theirs, errors.is_empty()) else {
         return Err(MergeError::Unreadable(errors));
     };
-    let content = merge_content(base, ours, theirs)?;
+    let (content, disputed) = merge_content(base, ours, theirs)?;
     let bytes = write_content(path, role, content);
     let (_, written) = read_file(path, &bytes, Mode::Strict).map_err(MergeError::Unwritable)?;
     Ok(Merged {
         conflicts: written.records().map(count).sum(),
         bytes,
+        disputed,
     })
 }
 
@@ -98,28 +103,38 @@ fn merge_content(
     base: Option<Content>,
     ours: Content,
     theirs: Content,
-) -> Result<Content, MergeError> {
+) -> Result<(Content, Vec<Label>), MergeError> {
     Ok(match (base, ours, theirs) {
         (base, Content::Record(ours), Content::Record(theirs)) => {
             let base = match base {
                 Some(Content::Record(base)) => Some(base),
                 _ => None,
             };
-            Content::Record(record::merge_host(base.as_ref(), &ours, &theirs))
+            if ours.kind == Kind::Labels {
+                let (record, disputed) = labels::merge(base.as_ref(), &ours, &theirs);
+                return Ok((Content::Record(record), disputed));
+            }
+            (
+                Content::Record(record::merge_host(base.as_ref(), &ours, &theirs)),
+                Vec::new(),
+            )
         }
         (base, Content::Registry(ours), Content::Registry(theirs)) => {
             let base = match base {
                 Some(Content::Registry(base)) => base,
                 _ => Vec::new(),
             };
-            Content::Registry(registry(&base, &ours, &theirs))
+            (
+                Content::Registry(registry(&base, &ours, &theirs)),
+                Vec::new(),
+            )
         }
         (base, Content::Lint(ours), Content::Lint(theirs)) => {
             let base = match base {
                 Some(Content::Lint(base)) => base,
                 _ => Vec::new(),
             };
-            Content::Lint(lint(&base, ours, theirs)?)
+            (Content::Lint(lint(&base, ours, theirs)?), Vec::new())
         }
         _ => return Err(MergeError::NotAFormatFile),
     })

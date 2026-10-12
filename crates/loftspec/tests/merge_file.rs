@@ -256,7 +256,22 @@ fn a_binding_both_sides_change_apart_keeps_its_base_with_a_conflict_over_the_bin
     let merged = merge_at("labels.yaml", &base, &ours, &theirs);
     let text = String::from_utf8(merged.bytes).unwrap();
     assert!(text.contains("label: QA-2"), "{text}");
-    assert!(text.contains("conflicts:\n  - field: bindings\n"), "{text}");
+    let conflict = "conflicts:
+  - field: bindings
+    base:
+      - key: 00000000-0000-7000-8000-00000000000a
+        label: QA-2
+    ours:
+      - key: 00000000-0000-7000-8000-00000000000a
+        label: QA-3
+    theirs:
+      - key: 00000000-0000-7000-8000-00000000000a
+        label: QA-4
+";
+    assert!(
+        text.ends_with(conflict),
+        "only the disputed binding: {text}"
+    );
     assert_eq!(merged.conflicts, 1);
 }
 
