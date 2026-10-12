@@ -1,0 +1,24 @@
+key: a398e50b-66bc-43c0-b0b7-33d3b4c35435
+slug: idempotence
+name: "Idempotence"
+body: "A publish over a tree unchanged since the last one is a successful no-op that leaves the publish sequence where it was."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+requirements:
+  - key: 547213e1-d9b4-4f91-8b84-021d152b643c
+    statement:
+      form: state_driven
+      while: "nothing has changed since the last publish"
+      system: "the publisher"
+      shall: "write nothing."
+    criteria:
+      - key: 7ce60f65-a31c-4090-af1b-dab1bfec4709
+        name: "A second publish over an unchanged tree changes no file."
+      - key: 1dcadad9-0493-48a3-89e2-698c9e37f3af
+        name: "A second publish over an unchanged tree reports success."
+      - key: a809d3ad-870c-4047-a7c6-6a67f9bf6fac
+        name: "The publish sequence does not advance."
+      - key: 5c4df64c-5f8c-4f80-8d19-ce9ad9129858
+        name: "A tree has not changed when its recomputed state root equals the state root of the last lock."
+      - key: 90fd8f8e-2f8f-4c7a-9794-3bba717d2a8c
+        name: "An uncommitted change under `spec/` refuses the publish even when nothing has changed since the last publish."

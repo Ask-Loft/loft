@@ -1,0 +1,86 @@
+key: 3a9aac3d-d85a-4bef-a78d-aa5c1285d45c
+slug: a-merge-conflict-is-a-typed-record-in-the-file
+title: "A merge conflict is a typed record in the file"
+context: "Two branches can change the same field of the same node. git's default is conflict markers, which make a YAML file unreadable to every tool until a person repairs it. The Format needs a conflict representation that keeps the tree readable, lets the validator find every conflict, and lets a tool present both sides."
+state:
+  kind: accepted
+  selectedOption: 9e31a984-2c83-4b94-aaa2-c49e2502ea2e
+  outcome: "The merge driver writes each conflicting field as a typed conflict record holding the base, ours and theirs values; the validator reports an error while any record exists; the merge driver exits 1 when it wrote one."
+drivers:
+  - key: 6cd90758-02bc-4a00-ab1d-d6425afcc62b
+    kind: local
+    label: "The file stays readable"
+    statement: "A tree with a conflict still parses."
+  - key: 0697534c-a074-473b-9568-73af559ac68b
+    kind: local
+    label: "The validator finds every conflict"
+    statement: "An unresolved conflict cannot be published by accident."
+  - key: 932e705c-0834-4636-a85c-37c142133649
+    kind: local
+    label: "Tools can present both sides"
+    statement: "A reviewer or an agent sees base, ours and theirs."
+options:
+  - key: 9e31a984-2c83-4b94-aaa2-c49e2502ea2e
+    title: "Typed conflict record"
+    description: "The merge driver writes the field as a record holding base, ours and theirs; the validator reports every such record."
+  - key: 69e0b026-0762-4c39-aed5-fdd6f5bfbf4e
+    title: "git conflict markers"
+    description: "The merge driver leaves `<<<<<<<` markers in the file."
+  - key: 5ef7e3d2-48cf-4eb6-8160-b404e69a1416
+    title: "Refuse the merge"
+    description: "The merge driver fails and leaves resolution to the person."
+assessments:
+  - option: 5ef7e3d2-48cf-4eb6-8160-b404e69a1416
+    driver: 0697534c-a074-473b-9568-73af559ac68b
+    rating: conflicts
+    rationale: "nothing is recorded to find"
+  - option: 5ef7e3d2-48cf-4eb6-8160-b404e69a1416
+    driver: 6cd90758-02bc-4a00-ab1d-d6425afcc62b
+    rating: supports
+    rationale: "nothing is written"
+  - option: 5ef7e3d2-48cf-4eb6-8160-b404e69a1416
+    driver: 932e705c-0834-4636-a85c-37c142133649
+    rating: conflicts
+    rationale: "nothing is recorded to present"
+  - option: 69e0b026-0762-4c39-aed5-fdd6f5bfbf4e
+    driver: 0697534c-a074-473b-9568-73af559ac68b
+    rating: neutral
+    rationale: "the reader fails, which stops a publish but names no field"
+  - option: 69e0b026-0762-4c39-aed5-fdd6f5bfbf4e
+    driver: 6cd90758-02bc-4a00-ab1d-d6425afcc62b
+    rating: conflicts
+    rationale: "markers break the YAML"
+  - option: 69e0b026-0762-4c39-aed5-fdd6f5bfbf4e
+    driver: 932e705c-0834-4636-a85c-37c142133649
+    rating: conflicts
+    rationale: "sides are text fragments, not fields"
+  - option: 9e31a984-2c83-4b94-aaa2-c49e2502ea2e
+    driver: 0697534c-a074-473b-9568-73af559ac68b
+    rating: supports
+    rationale: "the validator reports each record"
+  - option: 9e31a984-2c83-4b94-aaa2-c49e2502ea2e
+    driver: 6cd90758-02bc-4a00-ab1d-d6425afcc62b
+    rating: supports
+    rationale: "the record is part of the YAML subset"
+  - option: 9e31a984-2c83-4b94-aaa2-c49e2502ea2e
+    driver: 932e705c-0834-4636-a85c-37c142133649
+    rating: supports
+    rationale: "base, ours and theirs are fields"
+consequences:
+  - key: 82eace43-64c4-4edc-9da8-a063c492f2d4
+    kind: benefit
+    statement: "A conflicted tree still reads, renders and diffs."
+  - key: 87c2850a-ce09-4ae1-81d6-626705b08229
+    kind: cost
+    statement: "The YAML subset and the reader grow one record kind."
+  - key: 1730876c-6fea-4f5c-9933-af3479c86025
+    kind: obligation
+    statement: "The validator reports every conflict record."
+    subject: ff7cd3e8-fc6e-47ff-b5db-45c86e485575
+subjects:
+  - role: affected
+    node: 540397b6-7607-4ca9-aaa1-529d0fab1811
+  - role: outcome
+    node: a9fd08e2-ca6f-4cda-b165-34e1b52424a1
+  - role: outcome
+    node: ff7cd3e8-fc6e-47ff-b5db-45c86e485575

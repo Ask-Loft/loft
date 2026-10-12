@@ -1,0 +1,49 @@
+key: ba4f2ed9-5aff-44c3-8e99-57590052629f
+slug: loft-render
+name: "`loft render`"
+body: "Writes the Markdown projection and the canonical JSON export of the tree, to the paths given or to their defaults under `docs/`."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 4e083c11-417c-4985-be62-9649620367de
+    statement:
+      form: ubiquitous
+      system: "`loft render`"
+      shall: "write the Markdown and JSON projections."
+    criteria:
+      - key: 55a55802-3298-408a-b0d8-b6bb8cbb08e4
+        name: "`--markdown <path>` writes the Markdown projection to that path."
+      - key: 041d8194-d4cd-4fa1-a46e-d949ca792c56
+        name: "`--json <path>` writes the canonical JSON export to that path."
+      - key: 686e5cc5-8cef-420e-8acd-d6b505395ead
+        name: "Without an output option, both are written to `docs/spec.md` and `docs/spec.json`."
+      - key: 0bb060ce-7164-4a5e-ae12-b180e04f5c2d
+        name: "A projection file whose bytes would not change is not rewritten."
+      - key: 5466f168-ddef-4f1a-9c1a-8362b01268a1
+        name: "Lint findings do not prevent a render."
+      - key: 91621914-8f78-4626-bfbe-188717aeb46f
+        name: "With only one of `--markdown` and `--json`, only that projection is written."
+      - key: 5f196252-af91-44c7-b113-df7d5ea881bc
+        name: "A validation error does not prevent a render, except a successor that leads back to its own decision."
+  - key: 4739b92a-7537-4640-b926-b05fe748b222
+    statement:
+      form: unwanted
+      if: "the reader reports an error"
+      system: "`loft render`"
+      shall: "write nothing and exit 1."
+    criteria:
+      - key: c820f700-d4c6-49c4-9711-e3b8ce608662
+        name: "Every read error is reported with the position the reader names."
+      - key: 2d6d9e26-f69e-4b9f-a653-e3f110eb7d0a
+        name: "No projection is written."
+  - key: 219d9233-7087-4e54-bd49-f15281043a90
+    statement:
+      form: unwanted
+      if: "an output path lies under `spec/`"
+      system: "`loft render`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 24e58016-7525-4ef3-8cd4-222a43d4c6fe
+        name: "The error names the path."
+      - key: 4b141b53-d7ce-489b-b162-cbf9ad383bee
+        name: "No projection is written."

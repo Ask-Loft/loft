@@ -1,0 +1,86 @@
+key: b021b979-c777-444e-8e1b-e749053d33ec
+slug: yaml-is-the-text-form
+title: "YAML is the text form"
+context: "One text form, one canonicalisation, one versioned hash. The text form must round-trip bodies byte for byte, be written in one canonical layout by a formatter, and read well in a git diff. Three candidates were weighed: a YAML subset, Markdown with front matter, and JSON."
+state:
+  kind: accepted
+  selectedOption: 6aa78c69-24fe-42db-898a-46f3790d0d9b
+  outcome: "The text form is the YAML subset the Format defines, written only by the formatter in canonical layout; the canonical bytes for hashing are the RFC 8785 JSON of the content view, never the YAML."
+drivers:
+  - key: 10f51ad8-2993-4ee7-8c32-0d6a9a30d808
+    kind: local
+    label: "Exact body round trip"
+    statement: "Multi-line prose with trailing spaces, tabs and any Unicode survives a write and a read byte for byte."
+  - key: ffc7c6a7-bfeb-4282-8c9e-0cbb902c3b9f
+    kind: local
+    label: "Canonical formatting"
+    statement: "One document has one byte sequence after formatting."
+  - key: 2982d8a0-4430-467d-bf74-90532eb05eaf
+    kind: local
+    label: "Readable diffs"
+    statement: "A reviewer reads a change in a pull request."
+options:
+  - key: 6aa78c69-24fe-42db-898a-46f3790d0d9b
+    title: "A YAML subset with a canonical formatter"
+    description: "Block mappings and sequences, plain, double-quoted and literal block scalars; the formatter fixes key order, indentation and scalar style."
+  - key: 1bb1a3cf-decc-4db9-ad01-76f326c0b075
+    title: "Markdown with YAML front matter"
+    description: "One Markdown file per node or Feature; structure in the front matter, bodies as Markdown sections."
+  - key: d1e8e428-2d95-480b-ad87-c7c4dd81311a
+    title: "JSON"
+    description: "Canonical by RFC 8785 directly; no comments; prose as escaped strings."
+assessments:
+  - option: 1bb1a3cf-decc-4db9-ad01-76f326c0b075
+    driver: 10f51ad8-2993-4ee7-8c32-0d6a9a30d808
+    rating: conflicts
+    rationale: "a heading or fence inside a body collides with the file's own structure"
+  - option: 1bb1a3cf-decc-4db9-ad01-76f326c0b075
+    driver: 2982d8a0-4430-467d-bf74-90532eb05eaf
+    rating: supports
+    rationale: "prose reads as prose"
+  - option: 1bb1a3cf-decc-4db9-ad01-76f326c0b075
+    driver: ffc7c6a7-bfeb-4282-8c9e-0cbb902c3b9f
+    rating: neutral
+    rationale: "front matter can be canonical; the Markdown body layout cannot be forced"
+  - option: 6aa78c69-24fe-42db-898a-46f3790d0d9b
+    driver: 10f51ad8-2993-4ee7-8c32-0d6a9a30d808
+    rating: supports
+    rationale: "literal block scalars, with double quotes where a block scalar would lie"
+  - option: 6aa78c69-24fe-42db-898a-46f3790d0d9b
+    driver: 2982d8a0-4430-467d-bf74-90532eb05eaf
+    rating: supports
+    rationale: "indented text with prose in blocks"
+  - option: 6aa78c69-24fe-42db-898a-46f3790d0d9b
+    driver: ffc7c6a7-bfeb-4282-8c9e-0cbb902c3b9f
+    rating: supports
+    rationale: "a fixed subset with a fixed key order"
+  - option: d1e8e428-2d95-480b-ad87-c7c4dd81311a
+    driver: 10f51ad8-2993-4ee7-8c32-0d6a9a30d808
+    rating: supports
+    rationale: "strings are exact"
+  - option: d1e8e428-2d95-480b-ad87-c7c4dd81311a
+    driver: 2982d8a0-4430-467d-bf74-90532eb05eaf
+    rating: conflicts
+    rationale: "prose becomes escaped single-line strings"
+  - option: d1e8e428-2d95-480b-ad87-c7c4dd81311a
+    driver: ffc7c6a7-bfeb-4282-8c9e-0cbb902c3b9f
+    rating: supports
+    rationale: "RFC 8785"
+consequences:
+  - key: 40517a09-18dc-41dd-9594-04d103c0d804
+    kind: benefit
+    statement: "Bodies round-trip exactly and diffs read naturally."
+  - key: 6ce8e459-7f48-4d16-be96-0063eea1f466
+    kind: cost
+    statement: "A YAML parser for the subset must be chosen or written; the subset is small enough to parse directly."
+  - key: cf62dad3-aafc-4805-a64a-74abf7c60522
+    kind: obligation
+    statement: "The reader rejects every construct outside the subset."
+    subject: c4cd9b41-10b0-48ce-904d-d6c7316b0958
+subjects:
+  - role: affected
+    node: bc3f5237-54b0-405a-9078-978e4c8c0419
+  - role: outcome
+    node: c4cd9b41-10b0-48ce-904d-d6c7316b0958
+  - role: outcome
+    node: ff3f7748-bbf2-4de2-801b-92355af814cf

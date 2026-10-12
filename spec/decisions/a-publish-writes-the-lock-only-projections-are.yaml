@@ -1,0 +1,89 @@
+key: 298c16e7-bc08-4ed4-b350-1a40a6350939
+slug: a-publish-writes-the-lock-only-projections-are
+title: "A publish writes the lock only; projections are rendered on demand"
+context: "v1 habitually committed a rendered Markdown and a JSON export beside the lock, and treated the Markdown as normative. In v2 the `spec/` tree is the specification. A second copy committed beside it can drift from it, and a reader that takes input from a projection would make the projection a source."
+state:
+  kind: superseded
+  selectedOption: f702fb64-2d83-4ad3-927a-12e236690554
+  outcome: "A publish writes the lock and the bindings in `spec/labels.yaml` and nothing else; the Markdown and JSON projections are rendered on demand, each stamped with the state root it renders, and no role takes input from a projection."
+  successor: 7475da2b-ed59-4063-ad77-d1728a511847
+drivers:
+  - key: 5921b0bb-a24d-4ed2-aa94-8abcb6002b35
+    kind: local
+    label: "One source"
+    statement: "`spec/` is the only input any role reads."
+  - key: 62cf231c-7077-4753-b723-7c2bcf412c14
+    kind: local
+    label: "No second copy to drift"
+    statement: "Nothing committed restates the specification."
+  - key: e25416ad-a771-4844-b34c-17ece047e725
+    kind: local
+    label: "Reproducible projections"
+    statement: "Any commit's Markdown or JSON can be rendered again exactly."
+options:
+  - key: f702fb64-2d83-4ad3-927a-12e236690554
+    title: "Lock only"
+    description: "A publish writes the lock and the bindings; projections are rendered on demand and never committed by a publish."
+  - key: 51a61e52-07f8-45e9-a2ab-d2adbfe6d7fd
+    title: "Lock and projections"
+    description: "A publish also writes the Markdown and the JSON export, as v1 did."
+  - key: af439b6c-7dc9-4e80-ab55-93869801fa42
+    title: "Projections only"
+    description: "A publish commits projections and no lock."
+assessments:
+  - option: 51a61e52-07f8-45e9-a2ab-d2adbfe6d7fd
+    driver: 5921b0bb-a24d-4ed2-aa94-8abcb6002b35
+    rating: neutral
+    rationale: "`spec/` stays the input, but readers are invited to treat the Markdown as the contract"
+  - option: 51a61e52-07f8-45e9-a2ab-d2adbfe6d7fd
+    driver: 62cf231c-7077-4753-b723-7c2bcf412c14
+    rating: conflicts
+    rationale: "two copies per publish"
+  - option: 51a61e52-07f8-45e9-a2ab-d2adbfe6d7fd
+    driver: e25416ad-a771-4844-b34c-17ece047e725
+    rating: supports
+    rationale: "the committed copy can be checked by rendering"
+  - option: af439b6c-7dc9-4e80-ab55-93869801fa42
+    driver: 5921b0bb-a24d-4ed2-aa94-8abcb6002b35
+    rating: conflicts
+    rationale: "without a lock nothing pins the roots"
+  - option: af439b6c-7dc9-4e80-ab55-93869801fa42
+    driver: 62cf231c-7077-4753-b723-7c2bcf412c14
+    rating: conflicts
+    rationale: "the projection is the only record"
+  - option: af439b6c-7dc9-4e80-ab55-93869801fa42
+    driver: e25416ad-a771-4844-b34c-17ece047e725
+    rating: neutral
+    rationale: "reproducible, but nothing says which state it renders"
+  - option: f702fb64-2d83-4ad3-927a-12e236690554
+    driver: 5921b0bb-a24d-4ed2-aa94-8abcb6002b35
+    rating: supports
+    rationale: "roles read only `spec/`"
+  - option: f702fb64-2d83-4ad3-927a-12e236690554
+    driver: 62cf231c-7077-4753-b723-7c2bcf412c14
+    rating: supports
+    rationale: "nothing restates `spec/`"
+  - option: f702fb64-2d83-4ad3-927a-12e236690554
+    driver: e25416ad-a771-4844-b34c-17ece047e725
+    rating: supports
+    rationale: "rendering is deterministic from any commit"
+consequences:
+  - key: c4393c88-736e-429c-b29e-2c2cae18c0da
+    kind: benefit
+    statement: "The specification has one source."
+  - key: 0a80d9dc-0f6e-4516-9b78-55adff78a029
+    kind: cost
+    statement: "A reader without the tool needs a rendering step or the hosted view."
+  - key: 70473fe2-80d0-446e-adcd-2b63d1b36c91
+    kind: obligation
+    statement: "The reader takes no input from a projection."
+    subject: 57327371-b2ed-469e-bb64-d3d8e63a6031
+subjects:
+  - role: affected
+    node: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+  - role: affected
+    node: dfa057a6-404f-44a0-a9ab-932900198ca4
+  - role: outcome
+    node: 51107486-84d6-4fb5-b02f-5e28f63d472a
+  - role: outcome
+    node: 57327371-b2ed-469e-bb64-d3d8e63a6031

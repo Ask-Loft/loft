@@ -1,0 +1,37 @@
+key: 35f9c8f7-2632-4aa4-8e7f-c2a9d520bece
+slug: ordered-lists
+name: "Ordered lists"
+body: "How the merge driver combines insertions, deletions and moves in one ordered list while keeping base order."
+realizes:
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+requirements:
+  - key: 07df0c04-3640-40a8-8b9c-92de99e959c2
+    statement:
+      form: event_driven
+      when: "both sides insert into one ordered list"
+      system: "the merge driver"
+      shall: "keep both insertions in base order."
+    criteria:
+      - key: 31750541-79f3-4644-98e9-6f9dbcdd0f1e
+        name: "Each side's insertion follows its base predecessor."
+      - key: 6b8a861f-38e3-4bed-b7ce-f3a6da10c777
+        name: "No existing element is reordered."
+      - key: cce9c4fc-fb12-4be5-96af-8a4cec0b6e0a
+        name: "An element deleted on one side and unmoved on the other is removed."
+      - key: 4f812b81-5f38-4d1a-8917-ffb8583fa272
+        name: "When both sides insert after one base element, our insertions precede theirs."
+  - key: a46bfd80-29af-4e41-bfe6-09a890a397a9
+    statement:
+      form: event_driven
+      when: "one side moves a record and the other edits it"
+      system: "the merge driver"
+      shall: "apply both."
+    criteria:
+      - key: c2efae73-3279-4cdd-8da8-5a40fbe6e078
+        name: "The record is at the moved position."
+      - key: 0d64f3e8-d565-433f-8ad5-2c7af6f2f3d4
+        name: "The record carries the edit."
+      - key: 4720ca24-c666-4a1a-95ef-6f9983d7e56d
+        name: "When both sides move one record to different positions, the merge driver writes a conflict record with field `position` on the moved record."
+      - key: 21e12edb-2009-4543-9efc-5777307e0ebe
+        name: "The moved record stays at its base position."

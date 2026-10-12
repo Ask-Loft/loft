@@ -1,0 +1,32 @@
+key: f40c165f-3936-4241-bced-eeccfd3b4bef
+slug: loft-verify
+name: "`loft verify`"
+body: "Recomputes the roots of the tree and compares them with the lock, with an exit code a CI job can gate on."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 4537dd47-8b56-4161-9571-3474bb7e3197
+    statement:
+      form: ubiquitous
+      system: "`loft verify`"
+      shall: "compare the recomputed roots with the lock."
+    criteria:
+      - key: 36ea9839-0d28-4140-bf9d-28523d58675e
+        name: "On a match it prints the state root and exits 0."
+      - key: df245b08-f768-4df5-8b98-ab0ac3530538
+        name: "On a mismatch it names the first differing root and exits 1."
+      - key: e9a71aa5-ab24-4720-b47d-9bd1fdd3fe21
+        name: "Without a lock it exits 1 naming the missing file."
+      - key: 032676a9-0d37-4fbc-8101-84b896f20a20
+        name: "A lock that is not a valid lock record exits 1 naming the lock file."
+  - key: 3c5f7612-5ee2-4d9e-9f4f-0835b58cb315
+    statement:
+      form: unwanted
+      if: "the reader reports an error"
+      system: "`loft verify`"
+      shall: "report it and exit 1."
+    criteria:
+      - key: 59c1a730-9fb4-4980-8f03-45c7585c99d9
+        name: "Every read error is reported with the position the reader names."
+      - key: ac98170d-3a99-483b-8d60-2041dad0665d
+        name: "No root is compared."

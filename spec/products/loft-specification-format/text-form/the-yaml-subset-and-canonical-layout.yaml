@@ -1,0 +1,128 @@
+key: e150cbbd-0ddf-431d-a985-4ddb99cb2a5b
+slug: the-yaml-subset-and-canonical-layout
+name: "The YAML subset and canonical layout"
+body: "The YAML constructs the reader accepts and the single layout the formatter writes, so that a formatted tree has one byte sequence."
+tags:
+  - portable
+realizes:
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+requirements:
+  - key: c4cd9b41-10b0-48ce-904d-d6c7316b0958
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "accept only the YAML subset the Format defines."
+    criteria:
+      - key: b83d6062-babd-432c-83b1-62feeeb9b253
+        name: "Block mappings and block sequences are accepted."
+      - key: 241f90cc-bce9-4e01-bac8-48b2d5d63834
+        name: "Plain scalars, double-quoted scalars and literal block scalars are accepted."
+      - key: f879c9a3-d955-4eb9-92fe-2cfd1ccd1aeb
+        name: "A YAML anchor, alias or tag is an error naming the file, line and column."
+      - key: be9c761e-bb57-4cce-beea-45c0688c65cd
+        name: "A flow collection is an error naming the file, line and column."
+      - key: 1448e13c-e41d-40bc-b19a-5d2104d05ee3
+        name: "A folded or single-quoted scalar is an error naming the file, line and column."
+      - key: 4bc4a29a-2b29-4de8-8e1b-880b68dbce8e
+        name: "A second document in one stream is an error naming the file, line and column."
+      - key: 87d00847-4d40-405d-8bb5-c3bacbbf0e35
+        name: "A comment is an error naming the file, line and column."
+  - key: 38716538-528a-4e9d-a568-0c4c96b7efa5
+    statement:
+      form: ubiquitous
+      system: "The formatter"
+      shall: "write each record in the Format's key order."
+    criteria:
+      - key: e5e231ee-37b9-4eda-8f1a-6b72e2fe389f
+        name: "Each record kind's keys appear in the order the Format publishes for that kind."
+      - key: 85578d8f-9326-4d0b-8578-19eee03b4f91
+        name: "Formatting the formatter's own output changes no byte."
+  - key: ff3f7748-bbf2-4de2-801b-92355af814cf
+    statement:
+      form: ubiquitous
+      system: "The formatter"
+      shall: "write every string in the canonical scalar style."
+    criteria:
+      - key: d5f47623-a28d-48c3-90eb-a875098f77fb
+        name: "A string is written as a literal block scalar only when it reads back byte for byte."
+      - key: bc27a558-5ae6-41c5-9632-d1da2186ef53
+        name: "Any other string is written double-quoted."
+      - key: 510737de-050e-443f-9b57-cac1c07c70ee
+        name: "A string with trailing spaces reads back byte for byte."
+      - key: e2e2868d-9ef0-42ea-8913-3994e4214599
+        name: "A string with a tab reads back byte for byte."
+      - key: 1e822da4-ef28-4d48-b15a-23baee31b94c
+        name: "A string containing any Unicode scalar value reads back byte for byte."
+  - key: f692f55e-249b-4628-b9be-c43894bd6229
+    statement:
+      form: ubiquitous
+      system: "The formatter"
+      shall: "write each registry sorted."
+    criteria:
+      - key: c82ffe9a-2c34-40f9-afe9-c84b4d8e3383
+        name: "Tag registry entries are sorted by name."
+      - key: 70ca09fb-3889-437c-b6de-bd749169c340
+        name: "Constraint categories are sorted by name."
+      - key: d2ef5bea-65d1-4d5f-8f32-600d5e5ee899
+        name: "Bindings are sorted by key."
+  - key: 915187fb-46cd-4429-8f34-376171cf154d
+    statement:
+      form: ubiquitous
+      system: "The formatter"
+      shall: "write with two-space indentation."
+    criteria:
+      - key: 3bea8fd5-b841-4d41-9baa-248497e6606a
+        name: "Every indentation step is two spaces."
+      - key: 87618989-6ea3-4db2-af3e-245bdf2bf270
+        name: "A sequence item is indented two spaces under its parent key."
+  - key: ae585f77-4055-414b-938e-50f5f304cd18
+    statement:
+      form: optional
+      where: "a value is a key, a label, a slug, an integer, an enumerated value, a tag name, a category name or a format identifier"
+      system: "the formatter"
+      shall: "write it as a plain scalar."
+    criteria:
+      - key: 79847bea-9fb7-4089-8534-bba8807c58f7
+        name: "A key is written as a plain scalar."
+      - key: 1ea43129-86b4-43a1-90a9-b4480071c998
+        name: "An integer field is written as a plain scalar."
+      - key: 7ceebaff-0488-43b5-89e6-279dd81e8ff3
+        name: "A value that a YAML 1.1 or 1.2 core schema reads as null, a boolean or a number in a field that is not an integer, such as a tag named `yes`, is written double-quoted."
+      - key: 5007f5ae-c0b6-4558-85b4-80c13cf014c5
+        name: "Free text, such as a name, a body or a statement slot, is never written as a plain scalar."
+  - key: c183ee0c-533d-4167-b090-db2da01a307c
+    statement:
+      form: ubiquitous
+      system: "The formatter"
+      shall: "write a string as a literal block scalar only when it contains a line feed and reads back byte for byte."
+    criteria:
+      - key: c09446a8-7780-45d1-8b3a-5b0ed2f89898
+        name: "A string containing a carriage return, U+0085, U+2028, U+2029 or U+FEFF is written double-quoted."
+      - key: 2db735c2-0616-4c68-bab3-a388f57b1eac
+        name: "A string containing a character that is not printable is written double-quoted."
+      - key: f23cb0ab-2ffc-4d66-b748-304beae4aefc
+        name: "A string whose first line that is not empty begins with a space is written double-quoted."
+      - key: be15edfc-c8d9-4754-9658-fcaa64550249
+        name: "A string made only of line feeds is written double-quoted."
+      - key: 1cb537a4-6c64-4603-91c2-90966c756f8c
+        name: "A literal block scalar of a string without a final line feed has the header `|-`."
+      - key: 0254fcdc-a964-4ddf-ac8b-09962aecbb72
+        name: "A literal block scalar of a string with exactly one final line feed has the header `|`."
+      - key: b8946470-1690-4a03-b59d-3b335c04d237
+        name: "A literal block scalar of a string with more than one final line feed has the header `|+`."
+      - key: 6c68af3a-642b-4003-a4a9-91a469480f82
+        name: "A tab after a literal line's indentation is read as content."
+  - key: c5bf9f97-b62d-404c-9965-030382dbca01
+    statement:
+      form: ubiquitous
+      system: "The formatter"
+      shall: "write a double-quoted string on one line with the Format's escapes."
+    criteria:
+      - key: 188ac65b-6255-458f-ae13-057ebd68302f
+        name: "A backslash is written `\\\\` and a double quote `\\\"`."
+      - key: 003b7e7e-f05c-4760-806d-4755113f02db
+        name: "A line feed is written `\\n`, a tab `\\t`, a carriage return `\\r` and U+0000 `\\0`."
+      - key: d90015f5-c99e-4f16-9426-4bd5c5f6c269
+        name: "Any other character that is not printable is written as `\\u` and four uppercase hexadecimal digits."
+      - key: 59fce014-a05d-4711-a092-195ea6059a49
+        name: "A character is printable when it is in U+0020 to U+007E, U+00A0 to U+D7FF, U+E000 to U+FFFD or U+10000 to U+10FFFF, other than U+2028, U+2029 and U+FEFF."

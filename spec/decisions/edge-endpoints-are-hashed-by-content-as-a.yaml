@@ -1,0 +1,86 @@
+key: 1e3fb5da-0e5a-4dbe-b285-9e8cdfd88f1e
+slug: edge-endpoints-are-hashed-by-content-as-a
+title: "Edge endpoints are hashed by content, as a multiset"
+context: "Two documents that say the same thing must have the same content root, on any implementation, so the content root cannot depend on keys. Edges join nodes. The question is how an edge names its endpoints inside the digest, and how two equal edges are counted."
+state:
+  kind: accepted
+  selectedOption: ffe1fed6-b8d7-4dfb-8a6b-9621bc1b7418
+  outcome: "An edge enters the edges root as the tuple of its endpoints' content hashes, its type and its role; the edges root is the digest of the sorted multiset of such tuples."
+drivers:
+  - key: 83b7c7fb-f770-4d66-a1f2-ca5d61dfda30
+    kind: local
+    label: "Key-free content root"
+    statement: "The content root does not change when keys change."
+  - key: a69dc4aa-46a8-4467-bafd-d8e0f2fb625e
+    kind: local
+    label: "Duplicates stay honest"
+    statement: "Two nodes with identical content and identical edges both count, so a copied subtree is visible in the root."
+  - key: cefd5c32-8751-43ec-abd3-25eafac09731
+    kind: local
+    label: "Stable under relabelling"
+    statement: "A publish that only assigns labels does not move the content root."
+options:
+  - key: ffe1fed6-b8d7-4dfb-8a6b-9621bc1b7418
+    title: "Content hashes, multiset"
+    description: "Each edge enters the digest as the tuple of its source's content hash, its type, its target's content hash and its role; the edges root is the digest of the sorted multiset of tuples."
+  - key: df7f38c2-bfd7-4512-aca0-c6da972094c0
+    title: "Keys"
+    description: "Each edge names its endpoints by key; the edges root depends on keys."
+  - key: 0f306edf-223a-4c44-9cc3-e9f3604755ff
+    title: "Labels"
+    description: "Each edge names its endpoints by label; the edges root depends on publication."
+assessments:
+  - option: 0f306edf-223a-4c44-9cc3-e9f3604755ff
+    driver: 83b7c7fb-f770-4d66-a1f2-ca5d61dfda30
+    rating: conflicts
+    rationale: "an unpublished node has no label, so the root cannot be computed before publish"
+  - option: 0f306edf-223a-4c44-9cc3-e9f3604755ff
+    driver: a69dc4aa-46a8-4467-bafd-d8e0f2fb625e
+    rating: supports
+    rationale: "labels distinguish the duplicates"
+  - option: 0f306edf-223a-4c44-9cc3-e9f3604755ff
+    driver: cefd5c32-8751-43ec-abd3-25eafac09731
+    rating: conflicts
+    rationale: "a relabel changes the tuple"
+  - option: df7f38c2-bfd7-4512-aca0-c6da972094c0
+    driver: 83b7c7fb-f770-4d66-a1f2-ca5d61dfda30
+    rating: conflicts
+    rationale: "fresh keys change the root"
+  - option: df7f38c2-bfd7-4512-aca0-c6da972094c0
+    driver: a69dc4aa-46a8-4467-bafd-d8e0f2fb625e
+    rating: supports
+    rationale: "keys distinguish the duplicates"
+  - option: df7f38c2-bfd7-4512-aca0-c6da972094c0
+    driver: cefd5c32-8751-43ec-abd3-25eafac09731
+    rating: supports
+    rationale: "labels not involved"
+  - option: ffe1fed6-b8d7-4dfb-8a6b-9621bc1b7418
+    driver: 83b7c7fb-f770-4d66-a1f2-ca5d61dfda30
+    rating: supports
+    rationale: "no key enters the tuple"
+  - option: ffe1fed6-b8d7-4dfb-8a6b-9621bc1b7418
+    driver: a69dc4aa-46a8-4467-bafd-d8e0f2fb625e
+    rating: supports
+    rationale: "the multiset counts equal tuples twice"
+  - option: ffe1fed6-b8d7-4dfb-8a6b-9621bc1b7418
+    driver: cefd5c32-8751-43ec-abd3-25eafac09731
+    rating: supports
+    rationale: "labels never enter the tuple"
+consequences:
+  - key: 0e3eba70-53a4-4033-a9e8-d9080c3e3507
+    kind: benefit
+    statement: "The content root is portable across instances and implementations."
+  - key: 99575b17-0f94-4e65-93cb-1e39caa81604
+    kind: obligation
+    statement: "The hasher recomputes an edge's tuple whenever an endpoint's content changes."
+    subject: 079bcc6f-b997-4303-a71e-644b2653d46c
+  - key: dfb7d1fd-2796-4d14-9157-15021467d5aa
+    kind: risk
+    statement: "Two content-identical nodes cannot be told apart inside the edges root; the bindings keep that distinction."
+subjects:
+  - role: affected
+    node: e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+  - role: outcome
+    node: 00f0e3f5-7cf6-474f-963b-cda9d7e74cc1
+  - role: outcome
+    node: 079bcc6f-b997-4303-a71e-644b2653d46c

@@ -1,0 +1,101 @@
+key: 82902abe-15bc-4742-b6fb-57d28ac4ff6d
+slug: loft-specification-format
+name: "Loft Specification Format"
+body: "The portable document model and the rules every implementation must follow so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the validator; the linter; the renderer; the publisher; and the merge driver. A role names an obligation, not a module: one program may fill every role."
+tags:
+  - portable
+featureGroups:
+  - key: c11aea07-d470-4baf-b583-d8e9945fbc6c
+    slug: identity-and-addressing
+    name: "Identity and addressing"
+    body: "Keys, labels, aliases and bindings; the content view and the hash of a node; the roots; the manifest, the lock and the derived-from record."
+    tags:
+      - identity
+      - portable
+    features:
+      - c4ae0d15-6d2b-4e92-a004-36b3ca57f907
+      - c788db27-2701-47f8-a74c-8fe6d13ab8c6
+      - 97feeaae-d632-478c-a817-e3fe686eb30c
+      - 61d7c512-16c1-44b2-a625-62d581fffd97
+      - 6ad0f26e-00c0-48f6-8886-cd0fb742ac48
+  - key: c85613e7-d493-4a54-9956-a9a5bfb405e1
+    slug: text-form
+    name: "Text form"
+    body: "The `spec/` tree: its directory layout, order and containment, strict reading without derived data, and the YAML subset in canonical layout."
+    tags:
+      - portable
+      - git
+    features:
+      - 07b7e7a2-fdcb-4557-9b99-8d24d9c7dd4e
+      - 1ab7613a-7841-47ff-b773-d3ec540548ca
+      - e0a5fbb9-9360-4e41-b00b-2269914d6779
+      - e150cbbd-0ddf-431d-a985-4ddb99cb2a5b
+      - d86939c2-1936-4c22-9fd4-745591491545
+      - 01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21
+  - key: b5ab6511-566c-4d3d-8068-5b942487936f
+    slug: statements-and-bodies
+    name: "Statements and bodies"
+    body: "The statement record with the five EARS forms and the render rule, the Markdown subset for bodies, and the Section node for prose that needs headings."
+    tags:
+      - portable
+    features:
+      - e368f3ac-0bb0-448c-a32d-fb6f3ef10ebd
+      - e22a15a9-240d-496a-96dd-8ae6bd93b497
+      - cebcdbcf-7a1b-4412-a6af-ec2bf0c5bc7c
+  - key: 08552f03-9608-41c5-86e1-0193be8fc005
+    slug: conversion-from-a-v1-export
+    name: "Conversion from a v1 export"
+    body: "How a Loft v1 export becomes a v2 document: the node, registry and link mapping, statements and references recovered from prose, the sidecar for what the content view excludes, and the round-trip obligation."
+    tags:
+      - conversion
+    features:
+      - 134af160-7045-4437-a190-381bf508105b
+      - 894d6ff5-d8d8-4d25-ac10-10c067c84990
+      - 3d945f7b-7d24-474a-b6b4-ae3621fc7db4
+      - 6498001d-fe27-46ee-97a2-c3db59a22a24
+  - key: a1b27be0-dd76-47d1-9406-1a2c394df762
+    slug: validation-and-lint
+    name: "Validation and lint"
+    body: "The containment and reference checks that decide whether a document is valid, and the structural, language and v2 lint rules with their findings, reports and repository configuration."
+    tags:
+      - portable
+    features:
+      - 2d6d2c7d-c829-4aea-bc1c-d6ca1a7c90c6
+      - dc2a9890-ee94-4ec8-ac63-0503d459342e
+      - 048729dd-e1d4-40aa-839f-ef9ec59515b0
+      - 85dd847b-3c5e-4c3c-bb45-a25f85080156
+      - b97d0eb8-bbcc-45d8-b18d-53c9c629c900
+      - c8438a49-a6bd-4e16-9380-fc2983c776b8
+      - 717019e9-87c6-4d11-88ba-76131d45fc97
+      - 7423387f-468f-4155-965a-a5893ff1e43c
+  - key: 04e8ae21-1edb-4170-a13f-ec1101ec3306
+    slug: projections
+    name: "Projections"
+    body: "The `spec/` tree is the specification, and the lock pins it. A projection is a derived, readable view of that tree that no role reads and no publish writes."
+    features:
+      - 25ab61fa-598b-483f-bc91-36413a78f4d8
+      - f849fd7c-3d89-40f8-9490-fa45636349e0
+      - 30c52d77-eca8-4d2c-9e9e-c950db04ef59
+  - key: b440f86a-ade7-45df-bc89-8ee1aadfb367
+    slug: publication
+    name: "Publication"
+    body: "A publish pins a validated, committed `spec/` tree in the lock, and a later verification recomputes that lock's roots from the tree."
+    tags:
+      - git
+    features:
+      - 30461367-0853-4600-ac96-02443cdcfe81
+      - d22ef71f-0e46-414d-9da2-5da8d9347ac2
+      - e74d3409-8e24-4790-9285-8568ef81453d
+      - a398e50b-66bc-43c0-b0b7-33d3b4c35435
+      - e05fa615-2708-4b59-8d22-f4119bedef5a
+  - key: 1be50284-6f97-4abd-ac76-7333de756f2a
+    slug: merge-semantics
+    name: "Merge semantics"
+    body: "How a merge driver combines two sides' edits to a `spec/` tree record by record, writing a typed conflict record wherever they disagree."
+    tags:
+      - git
+    features:
+      - b32e384b-ec53-45c5-bc3b-86bf862a97b1
+      - 35f9c8f7-2632-4aa4-8e7f-c2a9d520bece
+      - 6a3af886-c63d-49a9-8467-0cc33fdcdc50
+      - f907e0df-acf0-4a7d-a118-30a71393f290

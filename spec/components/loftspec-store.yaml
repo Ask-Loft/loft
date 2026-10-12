@@ -1,0 +1,10 @@
+key: 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+slug: loftspec-store
+name: "loftspec-store"
+body: "Memory and file stores for documents."
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
+constraints:
+  - key: 9908f127-794b-4463-a680-0639741cc37a
+    name: "`loftspec-store` shall write a `spec/` tree through a temporary directory and a rename."
+    verificationFate: proved

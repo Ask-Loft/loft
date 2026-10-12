@@ -1,0 +1,27 @@
+key: e22a15a9-240d-496a-96dd-8ae6bd93b497
+slug: rendering-statements
+name: "Rendering statements"
+body: "The fixed template that turns each statement form back into one sentence."
+realizes:
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: c8336fe2-01f7-43fe-9577-c990a9b0ee02
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "render each statement form by its fixed template."
+    criteria:
+      - key: 6719fce2-4f04-41bb-a8bd-2bb360e5baca
+        name: "`ubiquitous` renders as `<system> shall <shall>`."
+      - key: d5825652-5ecf-47ed-b9a9-22126fb48471
+        name: "`event_driven` renders as `When <when>, <system> shall <shall>`."
+      - key: 25f258d3-1f8f-47f4-8865-1165d32045ef
+        name: "`state_driven` renders as `While <while>, <system> shall <shall>`."
+      - key: 350e74d9-58e9-4fca-b818-e61c19b9ea94
+        name: "`unwanted` renders as `If <if>, then <system> shall <shall>`."
+      - key: e17e70e0-434b-40b6-bcaa-9e29355a3128
+        name: "`optional` renders as `Where <where>, <system> shall <shall>`."
+      - key: 1e665862-c5e1-480a-b64e-b066bc80c889
+        name: "The `system` slot is rendered verbatim."
+      - key: 23a03388-1c9e-4ae3-a146-15d3cfd58700
+        name: "Rendering the same statement twice yields identical bytes."

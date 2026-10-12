@@ -1,0 +1,62 @@
+key: b32e384b-ec53-45c5-bc3b-86bf862a97b1
+slug: three-way-merge-over-keys
+name: "Three-way merge over keys"
+body: "How the merge driver matches records across base, ours and theirs by key and combines the field changes of the two sides."
+realizes:
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+requirements:
+  - key: 610995bc-33b8-4db2-a574-11ca68c3982e
+    statement:
+      form: ubiquitous
+      system: "The merge driver"
+      shall: "merge records by key."
+    criteria:
+      - key: bf099859-d300-4434-92dc-15160662c4b2
+        name: "A record is matched across base, ours and theirs by its key."
+      - key: 787dc9c5-4ba0-465b-b8c7-278c3d85999c
+        name: "A record present on one side only is kept."
+      - key: 4ff52d06-26ac-4456-98aa-f01ae6b2de90
+        name: "A record deleted on one side and unchanged on the other is deleted."
+      - key: 8a65c76a-0ddb-4871-a7ae-e76457d57e28
+        name: "A record deleted on one side and changed on the other becomes a conflict record with `null` for the deleting side."
+      - key: a14a7d0f-cfe0-44e1-b758-3613ceb98947
+        name: "A mapping entry without a key is matched across base, ours and theirs by its field name."
+      - key: 2522c643-64ed-44db-92c2-0d4c97f7a514
+        name: "A list element without a key is matched across base, ours and theirs by its value."
+      - key: e949ba2e-312d-4e67-803a-fe3957f852ff
+        name: "The merged file is in the formatter's canonical layout."
+  - key: 1be4d9f1-799b-4212-bdc9-e2865df2b0dd
+    statement:
+      form: event_driven
+      when: "one side changes a field and the other leaves it"
+      system: "the merge driver"
+      shall: "take the change."
+    criteria:
+      - key: 56cd2388-3187-42ed-9408-1ff4b39585d8
+        name: "The changed value is in the result."
+      - key: 0e4cb4a6-0667-4b29-9903-9639c21ecc30
+        name: "No conflict record is written for the field."
+  - key: 3d22f367-9d75-4203-a0d9-5bfae8decf61
+    statement:
+      form: event_driven
+      when: "both sides change a field to the same value"
+      system: "the merge driver"
+      shall: "take that value once."
+    criteria:
+      - key: 07b7eee5-2492-4fb7-8083-215bb15d230e
+        name: "The value appears once in the result."
+      - key: a8f69ee8-877f-4417-b80e-32bd18a552b0
+        name: "No conflict record is written for the field."
+  - key: 072ca575-5332-42fb-bd72-a07eea18092a
+    statement:
+      form: unwanted
+      if: "both sides change one field to different values"
+      system: "the merge driver"
+      shall: "write a conflict record for that field."
+    criteria:
+      - key: 48587c93-7e9e-466e-8f24-1f51383b7af9
+        name: "The record that owns the field gains a conflict record for it."
+      - key: 99abee55-2c66-4c52-a1cc-266268df29f2
+        name: "The other fields of the record are merged."
+      - key: 2bcdbce9-4af8-4268-88af-6ac0afb7fa4c
+        name: "The field keeps its base value."

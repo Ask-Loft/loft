@@ -1,0 +1,12 @@
+- key: e40d5174-e83d-482f-ac42-0ad3dcd308eb
+  name: conversion
+  definition: "Behaviour that exists only for a document derived from a Loft v1 export."
+- key: 7ee44c39-2e22-4b90-a992-7fdd1c5322b9
+  name: git
+  definition: "Behaviour that exists because a git repository holds the history."
+- key: a1770725-0a7d-4c8d-8b5d-d4197e320c78
+  name: identity
+  definition: "Keys, labels, aliases and the bindings between them."
+- key: 40e7db4a-02a5-41d6-b18e-dc3f67211bdf
+  name: portable
+  definition: "Behaviour every implementation must reproduce exactly, so that two implementations compute the same content root for the same document."

@@ -1,0 +1,10 @@
+key: bcd4525c-3adf-45dd-beed-527d654d517c
+slug: loft-cli
+name: "loft-cli"
+body: "The `loft` binary."
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
+constraints:
+  - key: 58f9679b-7e68-44c5-a566-39c56384ffdd
+    name: "`loft-cli` shall expose exactly one binary, named `loft`."
+    verificationFate: proved

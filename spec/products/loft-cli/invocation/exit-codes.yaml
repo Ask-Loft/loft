@@ -1,0 +1,25 @@
+key: 7acf997b-53f1-4a74-996d-0e515dcaa99a
+slug: exit-codes
+name: "Exit codes"
+body: "Separates success, a failed operation and a mistake in the invocation, so that a script can branch on the exit code alone."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: fd945718-ba5e-4e74-ae3e-2a25b1d15124
+    statement:
+      form: ubiquitous
+      system: "`loft`"
+      shall: "exit 0 on success, 1 on an error and 2 on a usage error."
+    criteria:
+      - key: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
+        name: "A completed command exits 0."
+      - key: c90de606-c8d8-4ed2-8708-a0b4e0ad010f
+        name: "A refusal, a failed check or a failed verification exits 1."
+      - key: 4dec469b-6118-4297-9434-3ea9b7a45a85
+        name: "A failure the command does not expect exits 1 with its message on standard error."
+      - key: 056ca8b3-8d8b-452b-ae95-b65ad73bc229
+        name: "An unknown command, an unknown option or a missing argument exits 2."
+      - key: 32adb520-d5d3-4649-87ae-72413b41b0a0
+        name: "`loft` with no command prints the usage and exits 2."
+      - key: c16ed94a-6675-4f64-aee3-ac9a755b6a36
+        name: "`loft --help` prints the usage and exits 0."

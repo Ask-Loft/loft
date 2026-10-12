@@ -1,0 +1,82 @@
+key: 6ad0f26e-00c0-48f6-8886-cd0fb742ac48
+slug: manifest-lock-and-derived-state
+name: "Manifest, lock and derived state"
+body: "The manifest that names the format and the algorithm, the lock that pins the roots at publish, and the record of the source state for a document derived from a Loft v1 export."
+realizes:
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 2d87167d-73fa-4a2a-b12a-abdeeb884240
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write a manifest naming the format and the algorithm."
+    criteria:
+      - key: 8bb6d2f0-13d3-444b-ad8f-dde305207284
+        name: "`spec/loftspec.yaml` names the format as `loftspec/1`."
+      - key: 70be0a1b-8736-44c4-a03e-9cbddce5b0fb
+        name: "`spec/loftspec.yaml` names the algorithm as `sha256-jcs/1`."
+      - key: 43d949e0-fdb1-440b-b62b-4305a979cd0a
+        name: "`spec/loftspec.yaml` carries the document key."
+      - key: 217c5efa-1458-46d2-9dd9-bf5abb0d7bdd
+        name: "The document key is unchanged after the first write."
+      - key: b9512543-5235-42f5-bebd-89ef442b7025
+        name: "`spec/loftspec.yaml` lists the keys of the Products in document order."
+      - key: 927a5c08-65a7-42b1-a9f3-707830fd3afc
+        name: "`spec/loftspec.yaml` names the publish branch in `publishBranch` when it is not `main`."
+      - key: b1c3b192-77a6-41c1-8c45-4a7b1638937f
+        name: "`spec/loftspec.yaml` carries `derivedFrom` for a document derived from a Loft v1 export."
+  - key: 1e5c52a9-c0ec-4081-a444-76999b1a73d0
+    statement:
+      form: unwanted
+      if: "the manifest names a format or an algorithm the reader does not implement"
+      system: "the reader"
+      shall: "refuse the document."
+    criteria:
+      - key: b3eea94a-c54b-4b6a-ae7a-053fe11608ee
+        name: "The refusal names the unknown value."
+      - key: 7942d022-d7e0-4310-a0ab-ea21027d288e
+        name: "No node is read from a refused document."
+  - key: 27a53965-6d6e-4549-8d93-2a13988a3ecb
+    statement:
+      form: ubiquitous
+      system: "The publisher"
+      shall: "write a lock that pins the state root and the content root."
+    criteria:
+      - key: 666a6131-9f7f-47d5-a200-0bcc7fbe5046
+        name: "`loft.lock.json` carries `format`, `algorithm`, `documentKey`, `stateRoot`, `contentRoot`, `bindingRoot`, `publishSequence` and `publishedAt`."
+      - key: bb230cb5-ebb7-4bff-8b95-3a5a7e4dce76
+        name: "The content root in the lock equals the hasher's content root of the published `spec/` tree."
+      - key: ff13dc93-e174-4a9d-8f74-fdf818817b3c
+        name: "The state root in the lock equals the hasher's state root of the published `spec/` tree."
+      - key: 47505464-6ffb-401c-8d6f-1203e024a0b7
+        name: "The lock is written to `loft.lock.json` in the directory that holds `spec/`."
+  - key: 035cf58a-5fd2-410a-bff7-093f40abd24f
+    statement:
+      form: optional
+      where: "a document is derived from a Loft v1 export"
+      system: "the publisher"
+      shall: "record the source state in the lock."
+    tags:
+      - conversion
+    criteria:
+      - key: 9c8fecc4-1b3d-4eee-961f-a4075fa48921
+        name: "`derivedFrom` carries the source `authoredStateId`."
+      - key: 928decea-4ccb-4b25-91a2-6128d097ad51
+        name: "`derivedFrom` carries the source `contentAddress`."
+      - key: 1e93e84c-2cde-442a-a30b-990085d004e2
+        name: "A document that is not derived has no `derivedFrom` field."
+      - key: d722aab4-cd86-4355-b8e1-6ffe59c76c6d
+        name: "`derivedFrom` is carried unchanged into every later lock of the document."
+      - key: 0fa41bea-ffbf-4527-b549-c5729cd6043a
+        name: "`derivedFrom` carries the source `publishSequence`."
+  - key: 44b2e53b-1a77-4ee0-81ce-114b1de618da
+    statement:
+      form: unwanted
+      if: "the manifest is absent"
+      system: "the reader"
+      shall: "report an error naming the expected path."
+    criteria:
+      - key: 56ae3723-f115-4736-b439-e3fea325c9f7
+        name: "The error names `spec/loftspec.yaml`."
+      - key: 77b76991-67e1-4fbc-a5aa-5d989da1fd43
+        name: "No node is read from a tree without a manifest."

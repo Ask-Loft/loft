@@ -1,0 +1,86 @@
+key: 575101b8-1ce6-4633-96c0-3ccddb685046
+slug: lint-configuration-lives-in-the-repository
+title: "Lint configuration lives in the repository"
+context: "Lint findings gate a pull request. If configuration lives on each machine or only in command-line flags, two engineers, or an engineer and CI, see different findings for the same tree. The linter needs one place to read which rules run and at what severity, and that place should change only through review."
+state:
+  kind: accepted
+  selectedOption: 6c32eb35-9021-4c70-97a5-e938bc94fe4c
+  outcome: "The linter reads its configuration only from `spec/lint.yaml`; without that file it applies the default configuration; no flag or user file changes a finding."
+drivers:
+  - key: 45621c9b-a244-4e95-b13d-b791e4228086
+    kind: local
+    label: "Same findings everywhere"
+    statement: "Two engineers and CI get the same findings for the same tree."
+  - key: facfe4f8-5c40-4de1-a002-0218dc88dc33
+    kind: local
+    label: "Versioned with the spec"
+    statement: "A change of configuration is reviewed and merged like a change of the specification."
+  - key: 4dbe3003-e0a4-4b07-bd85-6160610ecb60
+    kind: local
+    label: "Reproducible gate"
+    statement: "A CI run reproduces a local run without extra arguments."
+options:
+  - key: 6c32eb35-9021-4c70-97a5-e938bc94fe4c
+    title: "`spec/lint.yaml`"
+    description: "The configuration is a file of the tree, read by the linter, changed by commit."
+  - key: 61eee544-fd1a-483e-8b41-0abb2db34765
+    title: "Configuration outside the repository"
+    description: "Each user's configuration directory holds it."
+  - key: 01a6026e-823f-43c5-8a9c-9a2615d92603
+    title: "Command-line flags only"
+    description: "Each invocation names the rules and severities it wants."
+assessments:
+  - option: 01a6026e-823f-43c5-8a9c-9a2615d92603
+    driver: 45621c9b-a244-4e95-b13d-b791e4228086
+    rating: conflicts
+    rationale: "each invocation may differ"
+  - option: 01a6026e-823f-43c5-8a9c-9a2615d92603
+    driver: 4dbe3003-e0a4-4b07-bd85-6160610ecb60
+    rating: neutral
+    rationale: "a CI script can repeat the flags, if kept in step by hand"
+  - option: 01a6026e-823f-43c5-8a9c-9a2615d92603
+    driver: facfe4f8-5c40-4de1-a002-0218dc88dc33
+    rating: conflicts
+    rationale: "flags live in scripts, not the spec"
+  - option: 61eee544-fd1a-483e-8b41-0abb2db34765
+    driver: 45621c9b-a244-4e95-b13d-b791e4228086
+    rating: conflicts
+    rationale: "each machine has its own"
+  - option: 61eee544-fd1a-483e-8b41-0abb2db34765
+    driver: 4dbe3003-e0a4-4b07-bd85-6160610ecb60
+    rating: conflicts
+    rationale: "CI has a configuration of its own"
+  - option: 61eee544-fd1a-483e-8b41-0abb2db34765
+    driver: facfe4f8-5c40-4de1-a002-0218dc88dc33
+    rating: conflicts
+    rationale: "no history beside the spec"
+  - option: 6c32eb35-9021-4c70-97a5-e938bc94fe4c
+    driver: 45621c9b-a244-4e95-b13d-b791e4228086
+    rating: supports
+    rationale: "one file, read by every run"
+  - option: 6c32eb35-9021-4c70-97a5-e938bc94fe4c
+    driver: 4dbe3003-e0a4-4b07-bd85-6160610ecb60
+    rating: supports
+    rationale: "CI reads the same file"
+  - option: 6c32eb35-9021-4c70-97a5-e938bc94fe4c
+    driver: facfe4f8-5c40-4de1-a002-0218dc88dc33
+    rating: supports
+    rationale: "it changes by commit and review"
+consequences:
+  - key: d294a763-37a4-47cd-a153-4d3135aded76
+    kind: benefit
+    statement: "Every run of the gate agrees."
+  - key: b82327bb-f8bf-4d20-bed2-d7ee411fb8a9
+    kind: cost
+    statement: "A personal preference for a rule's severity needs a reviewed change."
+  - key: cdde5f82-c334-4412-b55a-913ffc92624b
+    kind: obligation
+    statement: "Without `spec/lint.yaml` the linter applies the default configuration."
+    subject: 3132a93b-7ea5-4e27-869a-070211f0adb7
+subjects:
+  - role: affected
+    node: 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+  - role: outcome
+    node: 3132a93b-7ea5-4e27-869a-070211f0adb7
+  - role: outcome
+    node: 84ef55b2-9929-4bab-83eb-615cfcbccd51

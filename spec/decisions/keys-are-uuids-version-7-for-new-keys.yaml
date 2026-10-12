@@ -1,0 +1,86 @@
+key: eddeda39-bbe7-4866-a661-70fcf905250c
+slug: keys-are-uuids-version-7-for-new-keys
+title: "Keys are UUIDs, version 7 for new keys"
+context: "Every node carries its identity in the file, and a clone preserves it. Nodes converted from a Loft v1 export keep their v1 UUIDs; new nodes need keys minted locally by the formatter, with no server. The key syntax decides whether a document carries one key shape or two, which dependency every implementer must adopt, and whether keys sort by the time they were minted."
+state:
+  kind: accepted
+  selectedOption: c9cc8816-810c-4fa4-88a7-0d184123293d
+  outcome: "New keys are UUID version 7; a key of any UUID version read from a file is kept; the formatter mints keys; `uuid` is the only identity dependency."
+drivers:
+  - key: 37ebd4f2-4069-4a0c-8a0f-3b87b964093b
+    kind: local
+    label: "One key shape"
+    statement: "Converted and new keys share one syntax, so the reader, the validator and the merge driver treat every key alike."
+  - key: de6fa6b8-3279-4c5d-8850-119b0bd28ba6
+    kind: local
+    label: "Minimal dependencies"
+    statement: "The library adds no dependency that a second implementer must also adopt."
+  - key: db542fe4-18a9-4371-8fa4-7cf7909e1a0c
+    kind: local
+    label: "Time-ordered minting"
+    statement: "A key minted later sorts after a key minted earlier, so appended nodes keep key order and file order aligned."
+options:
+  - key: c9cc8816-810c-4fa4-88a7-0d184123293d
+    title: "UUID version 7"
+    description: "New keys are RFC 9562 version 7 UUIDs. Converted nodes keep their UUIDs. One syntax, one dependency, time-ordered minting."
+  - key: 5c799795-408c-4ad9-925b-810a332447e4
+    title: "ULID"
+    description: "New keys are ULIDs, 26 characters of Crockford base32. Converted nodes keep their UUIDs, so two syntaxes coexist in one document and a second dependency is needed."
+  - key: 470dfee5-4e49-4371-9a76-bac600edc948
+    title: "Prefixed short identifiers"
+    description: "Short random identifiers with a kind prefix, such as `rq_8f3k2`. Readable, but a bespoke syntax with its own collision budget, beside the converted UUIDs."
+assessments:
+  - option: 470dfee5-4e49-4371-9a76-bac600edc948
+    driver: 37ebd4f2-4069-4a0c-8a0f-3b87b964093b
+    rating: conflicts
+    rationale: "two syntaxes in one document"
+  - option: 470dfee5-4e49-4371-9a76-bac600edc948
+    driver: db542fe4-18a9-4371-8fa4-7cf7909e1a0c
+    rating: conflicts
+    rationale: "random identifiers do not sort by time"
+  - option: 470dfee5-4e49-4371-9a76-bac600edc948
+    driver: de6fa6b8-3279-4c5d-8850-119b0bd28ba6
+    rating: neutral
+    rationale: "no crate, but a bespoke generator and parser"
+  - option: 5c799795-408c-4ad9-925b-810a332447e4
+    driver: 37ebd4f2-4069-4a0c-8a0f-3b87b964093b
+    rating: conflicts
+    rationale: "two syntaxes in one document for ever"
+  - option: 5c799795-408c-4ad9-925b-810a332447e4
+    driver: db542fe4-18a9-4371-8fa4-7cf7909e1a0c
+    rating: supports
+    rationale: "ULIDs are time-ordered"
+  - option: 5c799795-408c-4ad9-925b-810a332447e4
+    driver: de6fa6b8-3279-4c5d-8850-119b0bd28ba6
+    rating: conflicts
+    rationale: "a ULID crate beside `uuid`"
+  - option: c9cc8816-810c-4fa4-88a7-0d184123293d
+    driver: 37ebd4f2-4069-4a0c-8a0f-3b87b964093b
+    rating: supports
+    rationale: "the same RFC 9562 syntax as converted keys"
+  - option: c9cc8816-810c-4fa4-88a7-0d184123293d
+    driver: db542fe4-18a9-4371-8fa4-7cf7909e1a0c
+    rating: supports
+    rationale: "version 7 embeds a millisecond timestamp"
+  - option: c9cc8816-810c-4fa4-88a7-0d184123293d
+    driver: de6fa6b8-3279-4c5d-8850-119b0bd28ba6
+    rating: supports
+    rationale: "`uuid` is already required for converted keys"
+consequences:
+  - key: b870fc7b-56f8-4b1b-87c7-2b3456ce0e3c
+    kind: benefit
+    statement: "One validator rule covers every key in the document."
+  - key: 94b36361-c651-4cda-94a1-20eef3f0b437
+    kind: obligation
+    statement: "The formatter mints version 7 keys for nodes without one."
+    subject: 49f22aa3-9de5-4281-b316-235fa179c4ae
+  - key: 466b4502-bb15-49c2-8cab-67d8cc8fc737
+    kind: risk
+    statement: "A version 7 key reveals the time it was minted, which a specification can tolerate."
+subjects:
+  - role: affected
+    node: e1ab75a5-f206-4760-970f-bee0653c4f2a
+  - role: outcome
+    node: 49f22aa3-9de5-4281-b316-235fa179c4ae
+  - role: outcome
+    node: 4b0f3088-45c1-4a26-a553-9b0039879c9b

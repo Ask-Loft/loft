@@ -7,25 +7,19 @@ history can be tidy, never because anything in it is confidential.
 
 ## Normative contract
 
-During the bootstrap, the contract is the Loft document D-11 "Loft Specification Format" as pinned
-by `docs/loft.lock.json`. `docs/loft-authored-state.json` is that immutable Authored State as
-`get_authored_state` returns it, and `docs/loft-authored-state.md` is its `render_markdown`
-projection; both must match the lock. When code and the pinned state disagree, the pinned state
-wins unless the task explicitly changes the contract. Authoring runs from `../loft/` with the
-`loft` skill and the connected production Loft MCP session; this repository keeps only the lock
-and the exports. Plans and authoring records are kept outside this repository.
+The contract is this repository's own specification in `spec/`, the Loft Specification Format's
+text form. It was imported from the last Loft v1 state of D-11 "Loft Specification Format"
+(publish sequence 3) by `loft import v1`; that export is kept as a public converter fixture under
+`testdata/v1/d11-sequence-3/`, and the Loft v1 document is no longer where the Format is authored.
+When code and `spec/` disagree, `spec/` wins unless the task explicitly changes the contract.
 
-While a D-11 work branch is ahead of the lock, `docs/loft.work.json` names the exact Branch
-Checkpoint that implementation targets. It is a **candidate**, never the contract: validate it
-against the lock and the checkpoint record with the `loft` skill's
-`validate_repository_work_target.py`, read the checkpoint's content through the connected MCP
-session, and cite its Requirement and criterion labels in tests as candidate labels. When that
-exact checkpoint's merge is Published, one commit refreshes the lock and both exports and removes
-`docs/loft.work.json`.
-
-The bootstrap ends at the self-hosting milestone: the document is imported into `spec/`,
-`loft publish` writes a v2 lock whose `derivedFrom` names the last v1 state, and from then on
-`spec/` is the source.
+Until the first `loft publish` writes a v2 lock whose `derivedFrom` names that v1 state, the
+contract is `spec/` as of the commit that imported it; later edits to `spec/` are candidates that
+the next publish makes normative. Change the specification by editing `spec/` in the same pull
+request as the code, then run `loft fmt` and `loft check --fail-on warning`, which CI also runs.
+Tests cite the labels in `spec/labels.yaml`; a node added since the import has no label until a
+publish allocates one. `loft render` writes `docs/spec.md` and `docs/spec.json` on demand; they are
+never committed and never normative. Plans and authoring records are kept outside this repository.
 
 ## Repository layout
 
@@ -42,8 +36,8 @@ The bootstrap ends at the self-hosting milestone: the document is imported into 
   key type. Every typed ID wraps the element's key and serialises as it, so the files, views and
   digests are unchanged by the types. A kind change keeps the key through an explicit
   conversion. Prose (names, bodies, statements) stays text.
-- `docs/` holds the lock, the exports and, while one is active, the work target. `testdata/` holds
-  synthetic fixtures and golden vectors only.
+- `spec/` is the specification. `testdata/` holds synthetic fixtures, golden vectors and the v1
+  exports the converter is tested on.
 
 ## Workflow
 

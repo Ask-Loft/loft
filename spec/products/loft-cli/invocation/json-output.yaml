@@ -1,0 +1,34 @@
+key: 69aa407f-4d31-4159-824e-9b65fa3d0680
+slug: json-output
+name: "JSON output"
+body: "Gives scripts and agents a machine-readable result for each command, described by a versioned schema per command under `schemas/`."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 35580b97-dacf-46bc-82f5-35a3a7f8ec7b
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft`"
+      shall: "print one JSON document on standard output."
+    criteria:
+      - key: 2c79f283-5247-412c-82be-0b77377eacd4
+        name: "The document matches the command's result schema."
+      - key: 881bd456-6e73-4608-8897-4932b28f52bc
+        name: "An error is reported as the JSON document on standard output."
+      - key: ca0f99a2-768b-45b1-9e28-e13a45362146
+        name: "Human-readable text goes to standard error only."
+      - key: 28d4b51f-92a1-4846-aff6-33a59d321f4f
+        name: "The exit code is the same as without `--format json`."
+  - key: d1f91d93-790a-4714-ac32-790328e13012
+    statement:
+      form: ubiquitous
+      system: "`loft`"
+      shall: "describe each command's JSON result by a schema published under `schemas/`."
+    criteria:
+      - key: fceeee48-fbd7-4685-a964-0e5e0fa4cc46
+        name: "Each command has one schema file named after it."
+      - key: 8dda6c65-219a-44aa-a2aa-d62c04f3a75b
+        name: "Each schema names its version."
+      - key: 713c6775-c2ed-4713-bd67-00c510d47a5b
+        name: "A change to a command's output changes its schema file."
