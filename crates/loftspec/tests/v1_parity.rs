@@ -38,7 +38,7 @@ macro_rules! fixture {
 const FIXTURES: [Fixture; 2] = [fixture!("reading-list"), fixture!("d11-sequence-3")];
 
 #[test]
-fn rq_226_and_ac_908_the_shared_rules_report_what_v1_reports_apart_from_the_register() {
+fn the_shared_rules_report_what_v1_reports_apart_from_the_register() {
     let register = register();
     for fixture in &FIXTURES {
         let document = converted(fixture.state);
@@ -57,7 +57,7 @@ fn rq_226_and_ac_908_the_shared_rules_report_what_v1_reports_apart_from_the_regi
 }
 
 #[test]
-fn ac_903_a_name_stored_as_slots_has_the_form_v1_parses_it_to() {
+fn a_name_stored_as_slots_has_the_form_v1_parses_it_to() {
     for fixture in &FIXTURES {
         let v1 = v1_forms(fixture.ears);
         let v2 = v2_forms(&converted(fixture.state));
@@ -93,7 +93,7 @@ fn a_name_v1_parses_is_stored_as_slots() {
 }
 
 #[test]
-fn ac_909_ac_910_and_ac_912_each_register_entry_is_well_formed() {
+fn each_register_entry_is_well_formed() {
     let register = register();
     let ids: BTreeSet<&str> = register.iter().map(|entry| entry.id.as_str()).collect();
     assert_eq!(ids.len(), register.len(), "ids are unique");
@@ -129,7 +129,7 @@ fn ac_909_ac_910_and_ac_912_each_register_entry_is_well_formed() {
 }
 
 #[test]
-fn ac_911_each_register_entry_is_decided_by_a_node_of_the_specification() {
+fn each_register_entry_is_decided_by_a_node_of_the_specification() {
     let spec = spec_text(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../../spec"));
     for entry in register() {
         for reference in &entry.decided_by {

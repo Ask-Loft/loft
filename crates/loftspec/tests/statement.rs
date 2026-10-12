@@ -7,7 +7,7 @@ fn slots(text: &str) -> String {
 }
 
 #[test]
-fn ac_143_ubiquitous_renders_as_system_shall_response() {
+fn ubiquitous_renders_as_system_shall_response() {
     let form = EarsForm::Ubiquitous {
         system: slots("The writer"),
         shall: slots("write a key on every node."),
@@ -16,7 +16,7 @@ fn ac_143_ubiquitous_renders_as_system_shall_response() {
 }
 
 #[test]
-fn ac_144_event_driven_renders_with_when() {
+fn event_driven_renders_with_when() {
     let form = EarsForm::EventDriven {
         when: slots("formatting a node without a key"),
         system: slots("the formatter"),
@@ -29,7 +29,7 @@ fn ac_144_event_driven_renders_with_when() {
 }
 
 #[test]
-fn ac_145_state_driven_renders_with_while() {
+fn state_driven_renders_with_while() {
     let form = EarsForm::StateDriven {
         r#while: slots("formatting"),
         system: slots("the reader"),
@@ -42,7 +42,7 @@ fn ac_145_state_driven_renders_with_while() {
 }
 
 #[test]
-fn ac_146_unwanted_renders_with_if_and_then() {
+fn unwanted_renders_with_if_and_then() {
     let form = EarsForm::Unwanted {
         r#if: slots("the manifest is absent"),
         system: slots("the reader"),
@@ -55,7 +55,7 @@ fn ac_146_unwanted_renders_with_if_and_then() {
 }
 
 #[test]
-fn ac_147_optional_renders_with_where() {
+fn optional_renders_with_where() {
     let form = EarsForm::Optional {
         r#where: slots("a document is derived from a Loft v1 export"),
         system: slots("the publisher"),
@@ -68,7 +68,7 @@ fn ac_147_optional_renders_with_where() {
 }
 
 #[test]
-fn ac_148_the_system_slot_is_rendered_verbatim() {
+fn the_system_slot_is_rendered_verbatim() {
     let form = EarsForm::Ubiquitous {
         system: slots("`loft check`"),
         shall: slots("exit 0."),
@@ -77,7 +77,7 @@ fn ac_148_the_system_slot_is_rendered_verbatim() {
 }
 
 #[test]
-fn ac_149_rendering_the_same_statement_twice_yields_identical_bytes() {
+fn rendering_the_same_statement_twice_yields_identical_bytes() {
     let statement = || {
         Statement::Form(EarsForm::Unwanted {
             r#if: slots("two nodes carry one key"),
@@ -91,7 +91,7 @@ fn ac_149_rendering_the_same_statement_twice_yields_identical_bytes() {
 }
 
 #[test]
-fn ac_130_a_text_statement_renders_as_its_text() {
+fn a_text_statement_renders_as_its_text() {
     let statement = Statement::Text(slots("The converter shall store bodies verbatim."));
     assert_eq!(
         statement.render(),
@@ -100,7 +100,7 @@ fn ac_130_a_text_statement_renders_as_its_text() {
 }
 
 #[test]
-fn ac_133_to_ac_137_each_form_names_its_slots() {
+fn each_form_names_its_slots() {
     let forms = [
         (
             EarsForm::Ubiquitous {

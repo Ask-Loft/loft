@@ -61,7 +61,7 @@ fn unlabel(scratch: &Scratch, label: &str) -> String {
 }
 
 #[test]
-fn ac_554_a_first_publish_writes_the_lock_and_prints_sequence_1_and_the_state_root() {
+fn a_first_publish_writes_the_lock_and_prints_sequence_1_and_the_state_root() {
     let scratch = Scratch::with_reading_list();
     let output = on_main(&scratch, &["publish"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
@@ -75,7 +75,7 @@ fn ac_554_a_first_publish_writes_the_lock_and_prints_sequence_1_and_the_state_ro
 }
 
 #[test]
-fn ac_933_the_publish_time_is_the_one_the_clock_gives_in_utc() {
+fn the_publish_time_is_the_one_the_clock_gives_in_utc() {
     let scratch = Scratch::with_reading_list();
     assert_eq!(on_main(&scratch, &["publish"]).status.code(), Some(0));
     assert!(
@@ -98,7 +98,7 @@ fn ac_933_the_publish_time_is_the_one_the_clock_gives_in_utc() {
 }
 
 #[test]
-fn ac_553_a_publish_prints_each_allocated_label_with_its_key() {
+fn a_publish_prints_each_allocated_label_with_its_key() {
     let scratch = Scratch::with_reading_list();
     let key = unlabel(&scratch, "AC-3");
     let output = on_main(&scratch, &["publish"]);
@@ -113,7 +113,7 @@ fn ac_553_a_publish_prints_each_allocated_label_with_its_key() {
 }
 
 #[test]
-fn ac_555_ac_464_a_second_publish_with_nothing_changed_writes_nothing_and_exits_0() {
+fn a_second_publish_with_nothing_changed_writes_nothing_and_exits_0() {
     let scratch = Scratch::with_reading_list();
     on_main(&scratch, &["publish"]);
     let before = format_files(&scratch);
@@ -137,7 +137,7 @@ fn refuses(scratch: &Scratch, output: &Output, reason: &str) {
 }
 
 #[test]
-fn ac_447_ac_552_uncommitted_changes_under_spec_refuse_naming_the_paths() {
+fn uncommitted_changes_under_spec_refuse_naming_the_paths() {
     let scratch = Scratch::with_reading_list();
     let git = GitScenario::clean_on("main")
         .with(" M", "spec/tags.yaml")
@@ -147,7 +147,7 @@ fn ac_447_ac_552_uncommitted_changes_under_spec_refuse_naming_the_paths() {
 }
 
 #[test]
-fn ac_450_another_branch_refuses_naming_both_branches() {
+fn another_branch_refuses_naming_both_branches() {
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft_with(
         &["publish"],
@@ -162,7 +162,7 @@ fn ac_450_another_branch_refuses_naming_both_branches() {
 }
 
 #[test]
-fn ac_690_a_detached_head_refuses() {
+fn a_detached_head_refuses() {
     let scratch = Scratch::with_reading_list();
     let git = GitScenario::clean_on("main").detached();
     let output = scratch.loft_with(&["publish"], Some(&git), &Clock::fixed(EPOCH));
@@ -174,7 +174,7 @@ fn ac_690_a_detached_head_refuses() {
 }
 
 #[test]
-fn ac_558_ac_559_outside_a_git_repository_a_publish_refuses_and_writes_nothing() {
+fn outside_a_git_repository_a_publish_refuses_and_writes_nothing() {
     let scratch = Scratch::with_reading_list();
     let before = format_files(&scratch);
     let output = scratch.loft_with(
@@ -187,7 +187,7 @@ fn ac_558_ac_559_outside_a_git_repository_a_publish_refuses_and_writes_nothing()
 }
 
 #[test]
-fn ac_935_a_git_that_cannot_be_run_refuses_naming_git() {
+fn a_git_that_cannot_be_run_refuses_naming_git() {
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft(&["publish"]);
     refuses(&scratch, &output, "git cannot be run");
@@ -206,7 +206,7 @@ fn a_failing_git_refuses_with_its_message() {
 }
 
 #[test]
-fn ac_926_an_invalid_lock_refuses_naming_the_lock_file() {
+fn an_invalid_lock_refuses_naming_the_lock_file() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.0.join(LOCK), "{}\n").unwrap();
     let output = on_main(&scratch, &["publish"]);
@@ -216,7 +216,7 @@ fn ac_926_an_invalid_lock_refuses_naming_the_lock_file() {
 }
 
 #[test]
-fn ac_934_an_epoch_that_is_not_a_whole_number_of_seconds_refuses_naming_it() {
+fn an_epoch_that_is_not_a_whole_number_of_seconds_refuses_naming_it() {
     let scratch = Scratch::with_reading_list();
     let output = scratch
         .command(Some(&GitScenario::clean_on("main")), &Clock::system())
@@ -228,7 +228,7 @@ fn ac_934_an_epoch_that_is_not_a_whole_number_of_seconds_refuses_naming_it() {
 }
 
 #[test]
-fn ac_451_a_validation_error_refuses_listing_the_errors() {
+fn a_validation_error_refuses_listing_the_errors() {
     let scratch = Scratch::with_reading_list();
     let decisions = scratch.0.join("spec/decisions");
     let accepted = fs::read_dir(&decisions)
@@ -248,7 +248,7 @@ fn ac_451_a_validation_error_refuses_listing_the_errors() {
 }
 
 #[test]
-fn rq_233_a_read_error_is_reported_before_any_other_refusal() {
+fn a_read_error_is_reported_before_any_other_refusal() {
     let scratch = Scratch::with_reading_list();
     scratch.edit(
         "products/reading-list/product.yaml",
@@ -265,7 +265,7 @@ fn rq_233_a_read_error_is_reported_before_any_other_refusal() {
 }
 
 #[test]
-fn ac_582_the_json_results_match_the_publish_schema() {
+fn the_json_results_match_the_publish_schema() {
     let scratch = Scratch::with_reading_list();
     let key = unlabel(&scratch, "AC-3");
     let published = json(&on_main(&scratch, &["publish", "--format", "json"]));
@@ -285,7 +285,7 @@ fn ac_582_the_json_results_match_the_publish_schema() {
 }
 
 #[test]
-fn ac_977_ac_978_a_publish_reads_the_repository_without_taking_any_of_gits_locks() {
+fn a_publish_reads_the_repository_without_taking_any_of_gits_locks() {
     let scratch = Scratch::with_reading_list();
     let plant = scratch.0.join(".plant");
     fs::create_dir_all(&plant).unwrap();

@@ -46,7 +46,7 @@ fn vectors() -> Vec<Value> {
 }
 
 #[test]
-fn ac_48_the_small_document_vectors_are_reproduced_byte_for_byte() {
+fn the_small_document_vectors_are_reproduced_byte_for_byte() {
     let expected = vectors();
     let computed = computed_views();
     assert_eq!(computed.len(), expected.len(), "one view per golden vector");
@@ -71,7 +71,7 @@ fn ac_48_the_small_document_vectors_are_reproduced_byte_for_byte() {
 }
 
 #[test]
-fn ac_48_the_small_document_roots_match_their_vectors() {
+fn the_small_document_roots_match_their_vectors() {
     let vectors = vectors();
     let vector = |name: &str| {
         vectors

@@ -7,7 +7,7 @@ use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 
 #[test]
-fn rq_74_each_kind_holds_only_the_kinds_the_profile_allows() {
+fn each_kind_holds_only_the_kinds_the_profile_allows() {
     use NodeKind::{
         Component, Constraint, Criterion, Feature, FeatureGroup, Product, QualityAttribute,
         Requirement,
@@ -25,14 +25,14 @@ fn rq_74_each_kind_holds_only_the_kinds_the_profile_allows() {
 }
 
 #[test]
-fn ac_157_every_kind_may_hold_sections() {
+fn every_kind_may_hold_sections() {
     for kind in NodeKind::ALL {
         assert!(kind.may_contain(NodeKind::Section), "{kind}");
     }
 }
 
 #[test]
-fn ac_605_to_ac_609_children_follow_the_table_then_the_sections() {
+fn children_follow_the_table_then_the_sections() {
     let document = small_document();
     let mut seen = 0;
     for root in &document.products {

@@ -36,7 +36,7 @@ fn two_requirements(first: &str, second: &str) -> Feature {
 }
 
 #[test]
-fn ac_596_the_content_view_holds_its_fields_in_order() {
+fn the_content_view_holds_its_fields_in_order() {
     let mut constraint = Constraint {
         id: Some(ConstraintId::new(key(1))),
         name: "The hasher shall use SHA-256.".to_owned(),
@@ -65,7 +65,7 @@ fn ac_596_the_content_view_holds_its_fields_in_order() {
 }
 
 #[test]
-fn ac_35_and_ac_40_equal_views_with_different_keys_have_one_content_hash() {
+fn equal_views_with_different_keys_have_one_content_hash() {
     let first = criterion(key(1), "A criterion.");
     let second = criterion(fresh_key(1), "A criterion.");
     let unkeyed = Criterion {
@@ -77,7 +77,7 @@ fn ac_35_and_ac_40_equal_views_with_different_keys_have_one_content_hash() {
 }
 
 #[test]
-fn ac_597_changing_a_body_changes_the_content_hash() {
+fn changing_a_body_changes_the_content_hash() {
     let mut node = feature(key(1), "Keys", vec![]);
     let before = node.content_hash();
     node.details.body = Some("Keys address nodes.".to_owned());
@@ -85,7 +85,7 @@ fn ac_597_changing_a_body_changes_the_content_hash() {
 }
 
 #[test]
-fn ac_601_an_empty_body_and_no_body_hash_differently() {
+fn an_empty_body_and_no_body_hash_differently() {
     let mut node = feature(key(1), "Keys", vec![]);
     let without = node.content_hash();
     node.details.body = Some(String::new());
@@ -93,7 +93,7 @@ fn ac_601_an_empty_body_and_no_body_hash_differently() {
 }
 
 #[test]
-fn ac_602_changing_a_child_changes_the_parent() {
+fn changing_a_child_changes_the_parent() {
     assert_ne!(
         two_requirements("One.", "Two.").content_hash(),
         two_requirements("One.", "Three.").content_hash()
@@ -101,7 +101,7 @@ fn ac_602_changing_a_child_changes_the_parent() {
 }
 
 #[test]
-fn ac_603_and_ac_604_reordering_children_changes_the_parent_and_no_sibling() {
+fn reordering_children_changes_the_parent_and_no_sibling() {
     let forward = two_requirements("One.", "Two.");
     let mut reversed = forward.clone();
     reversed.requirements.reverse();
@@ -117,7 +117,7 @@ fn ac_603_and_ac_604_reordering_children_changes_the_parent_and_no_sibling() {
 }
 
 #[test]
-fn ac_37_a_node_hashes_alike_at_any_position_among_its_siblings() {
+fn a_node_hashes_alike_at_any_position_among_its_siblings() {
     let node = requirement(key(9), "Moved.", vec![]);
     let mut first = two_requirements("One.", "Two.");
     first.requirements.insert(0, node.clone());
@@ -130,7 +130,7 @@ fn ac_37_a_node_hashes_alike_at_any_position_among_its_siblings() {
 }
 
 #[test]
-fn ac_596_tag_order_and_repetition_do_not_change_the_content_hash() {
+fn tag_order_and_repetition_do_not_change_the_content_hash() {
     let mut first = feature(key(1), "Keys", vec![]);
     first.details.tags = vec![
         TagName::parse("identity").unwrap(),
@@ -146,7 +146,7 @@ fn ac_596_tag_order_and_repetition_do_not_change_the_content_hash() {
 }
 
 #[test]
-fn ac_598_a_statement_enters_as_its_rendered_sentence() {
+fn a_statement_enters_as_its_rendered_sentence() {
     let slotted = Requirement {
         statement: Statement::Form(EarsForm::Unwanted {
             r#if: "the manifest is absent".to_owned(),
@@ -164,7 +164,7 @@ fn ac_598_a_statement_enters_as_its_rendered_sentence() {
 }
 
 #[test]
-fn ac_158_a_section_is_hashed_by_the_node_rule() {
+fn a_section_is_hashed_by_the_node_rule() {
     let background = section(9, "Background");
     assert_eq!(
         background.content_hash(),
@@ -173,7 +173,7 @@ fn ac_158_a_section_is_hashed_by_the_node_rule() {
 }
 
 #[test]
-fn ac_605_sections_follow_the_structural_children() {
+fn sections_follow_the_structural_children() {
     let mut node = feature(key(1), "Keys", vec![requirement(key(2), "One.", vec![])]);
     let notes = section(3, "Notes");
     node.details.sections = vec![notes.clone()];
@@ -183,7 +183,7 @@ fn ac_605_sections_follow_the_structural_children() {
 }
 
 #[test]
-fn ac_596_the_kind_is_content() {
+fn the_kind_is_content() {
     let feature_node = feature(key(1), "Keys", vec![]);
     let group = FeatureGroup {
         id: Some(FeatureGroupId::new(key(1))),
@@ -238,7 +238,7 @@ fn children(node: &impl ContentHash) -> Vec<String> {
 }
 
 #[test]
-fn ac_606_a_feature_groups_features_precede_its_constraints() {
+fn a_feature_groups_features_precede_its_constraints() {
     let child = feature(key(2), "Keys", vec![]);
     let group = FeatureGroup {
         id: Some(FeatureGroupId::new(key(1))),
@@ -258,7 +258,7 @@ fn ac_606_a_feature_groups_features_precede_its_constraints() {
 }
 
 #[test]
-fn ac_607_a_features_requirements_precede_its_quality_attributes() {
+fn a_features_requirements_precede_its_quality_attributes() {
     let child = requirement(key(2), "The writer shall write a key.", vec![]);
     let mut parent = feature(key(1), "Keys", vec![child.clone()]);
     parent.quality_attributes = vec![quality(3)];
@@ -272,7 +272,7 @@ fn ac_607_a_features_requirements_precede_its_quality_attributes() {
 }
 
 #[test]
-fn ac_608_and_ac_609_a_components_children_are_grouped_by_kind() {
+fn a_components_children_are_grouped_by_kind() {
     let inner = component(key(2), "Inner");
     let mut parent = component(key(1), "Hasher");
     parent.quality_attributes = vec![quality(4)];
@@ -289,7 +289,7 @@ fn ac_608_and_ac_609_a_components_children_are_grouped_by_kind() {
 }
 
 #[test]
-fn ac_605_a_nodes_sections_follow_its_other_children() {
+fn a_nodes_sections_follow_its_other_children() {
     let mut parent = component(key(1), "Hasher");
     parent.details.sections = vec![section(5, "Notes")];
     parent.constraints = vec![constraint(3)];

@@ -4,7 +4,7 @@ use loftspec::canonical::{Digest, Domain, canonical_bytes, digest};
 use serde_json::json;
 
 #[test]
-fn ac_45_the_domain_strings_are_closed() {
+fn the_domain_strings_are_closed() {
     let names: Vec<&str> = Domain::ALL.iter().map(|domain| domain.as_str()).collect();
     assert_eq!(
         names,
@@ -22,7 +22,7 @@ fn ac_45_the_domain_strings_are_closed() {
 }
 
 #[test]
-fn ac_46_one_view_under_two_domains_yields_two_digests() {
+fn one_view_under_two_domains_yields_two_digests() {
     let view = json!([
         "feature",
         "Keys",
@@ -43,7 +43,7 @@ fn ac_46_one_view_under_two_domains_yields_two_digests() {
 }
 
 #[test]
-fn ac_47_canonical_bytes_follow_rfc_8785() {
+fn canonical_bytes_follow_rfc_8785() {
     let view =
         json!({"b": [1, "é", null], "a": "line\nbreak\ttab \"quoted\"", "c": {"z": true, "y": 0}});
     assert_eq!(
@@ -53,7 +53,7 @@ fn ac_47_canonical_bytes_follow_rfc_8785() {
 }
 
 #[test]
-fn rq_12_a_digest_is_sha256_over_the_domain_a_zero_byte_and_the_canonical_bytes() {
+fn a_digest_is_sha256_over_the_domain_a_zero_byte_and_the_canonical_bytes() {
     // printf 'loftspec/node/1\0[]' | shasum -a 256
     assert_eq!(
         digest(Domain::Node, &json!([])).to_string(),

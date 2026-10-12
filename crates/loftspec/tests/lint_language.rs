@@ -52,7 +52,7 @@ fn added(document: &mut Document) -> &mut Requirement {
 }
 
 #[test]
-fn ac_370_ac_373_ac_376_a_weak_term_in_a_statement_names_the_requirement_and_the_term() {
+fn a_weak_term_in_a_statement_names_the_requirement_and_the_term() {
     let document = with_statement("The writer shall be fast and robust.");
     let all = findings(&document);
     let weak = of(&all, RuleId::Lq001);
@@ -66,7 +66,7 @@ fn ac_370_ac_373_ac_376_a_weak_term_in_a_statement_names_the_requirement_and_the
 }
 
 #[test]
-fn ac_371_ac_872_a_finding_in_a_body_names_the_node_and_the_body_line() {
+fn a_finding_in_a_body_names_the_node_and_the_body_line() {
     let mut document = with_statement("The writer shall write keys.");
     added(&mut document).details.body =
         Some("First line.\n\nThe result is easy to read.\n".to_owned());
@@ -78,7 +78,7 @@ fn ac_371_ac_872_a_finding_in_a_body_names_the_node_and_the_body_line() {
 }
 
 #[test]
-fn ac_372_ac_651_a_criterion_is_read_as_a_statement_and_named_by_its_key() {
+fn a_criterion_is_read_as_a_statement_and_named_by_its_key() {
     let mut document = with_statement("The writer shall write keys.");
     added(&mut document).criteria[0].name = "It is user-friendly.".to_owned();
     let all = findings(&document);
@@ -88,7 +88,7 @@ fn ac_372_ac_651_a_criterion_is_read_as_a_statement_and_named_by_its_key() {
 }
 
 #[test]
-fn ac_646_texts_split_into_the_published_tokens() {
+fn texts_split_into_the_published_tokens() {
     assert_eq!(
         tokenize("At most 65,536 keys; the `loft fmt` run—fast."),
         [
@@ -98,7 +98,7 @@ fn ac_646_texts_split_into_the_published_tokens() {
 }
 
 #[test]
-fn ac_375_a_term_removed_by_configuration_is_not_reported() {
+fn a_term_removed_by_configuration_is_not_reported() {
     let document = with_statement("The writer shall be fast.");
     let yaml = "rules:\n  - rule: LQ-001\n    lexicon:\n      remove:\n        - fast\n";
     assert_eq!(
@@ -108,14 +108,14 @@ fn ac_375_a_term_removed_by_configuration_is_not_reported() {
 }
 
 #[test]
-fn ac_424_ac_868_a_lexicon_can_be_extended() {
+fn a_lexicon_can_be_extended() {
     let document = with_statement("The writer shall be snappy.");
     let yaml = "rules:\n  - rule: LQ-001\n    lexicon:\n      extend:\n        - snappy\n";
     assert_eq!(of(&configured(&document, yaml), RuleId::Lq001).len(), 1);
 }
 
 #[test]
-fn ac_377_ac_380_a_vague_quantifier_is_lq_002_per_occurrence() {
+fn a_vague_quantifier_is_lq_002_per_occurrence() {
     let document = with_statement("The writer shall keep some keys for several runs.");
     let all = findings(&document);
     let terms: Vec<_> = of(&all, RuleId::Lq002)
@@ -127,7 +127,7 @@ fn ac_377_ac_380_a_vague_quantifier_is_lq_002_per_occurrence() {
 }
 
 #[test]
-fn ac_378_ac_379_at_most_before_a_number_is_a_bound() {
+fn at_most_before_a_number_is_a_bound() {
     for text in [
         "The writer shall keep at most 8 keys.",
         "The writer shall keep at most 65,536 keys.",
@@ -143,7 +143,7 @@ fn ac_378_ac_379_at_most_before_a_number_is_a_bound() {
 }
 
 #[test]
-fn ac_381_ac_383_an_escape_clause_is_lq_003() {
+fn an_escape_clause_is_lq_003() {
     let document = with_statement("The writer shall write keys if possible.");
     let all = findings(&document);
     let clauses = of(&all, RuleId::Lq003);
@@ -153,7 +153,7 @@ fn ac_381_ac_383_an_escape_clause_is_lq_003() {
 }
 
 #[test]
-fn ac_382_a_statement_without_an_escape_clause_is_not_lq_003() {
+fn a_statement_without_an_escape_clause_is_not_lq_003() {
     assert_eq!(
         of(&findings(&small_document()), RuleId::Lq003),
         Vec::<&Finding>::new()
@@ -161,7 +161,7 @@ fn ac_382_a_statement_without_an_escape_clause_is_not_lq_003() {
 }
 
 #[test]
-fn ac_384_to_ac_386_absolute_language_is_lq_004_only_when_enabled() {
+fn absolute_language_is_lq_004_only_when_enabled() {
     let document = with_statement("The writer shall always write keys.");
     assert_eq!(
         of(&findings(&document), RuleId::Lq004),
@@ -178,7 +178,7 @@ fn ac_384_to_ac_386_absolute_language_is_lq_004_only_when_enabled() {
 }
 
 #[test]
-fn ac_387_ac_390_a_statement_with_two_modal_verbs_is_lq_005() {
+fn a_statement_with_two_modal_verbs_is_lq_005() {
     let document = with_statement("The writer shall write keys and must sort them.");
     let all = findings(&document);
     assert_eq!(of(&all, RuleId::Lq005).len(), 1);
@@ -186,7 +186,7 @@ fn ac_387_ac_390_a_statement_with_two_modal_verbs_is_lq_005() {
 }
 
 #[test]
-fn ac_388_ac_389_conjunctions_that_reach_the_threshold_are_lq_005() {
+fn conjunctions_that_reach_the_threshold_are_lq_005() {
     let document = with_statement("The writer shall write keys and labels and names or slugs.");
     assert_eq!(of(&findings(&document), RuleId::Lq005).len(), 1);
     let two = with_statement("The writer shall write keys and labels or names.");
@@ -199,7 +199,7 @@ fn ac_388_ac_389_conjunctions_that_reach_the_threshold_are_lq_005() {
 }
 
 #[test]
-fn ac_391_to_ac_393_every_quality_attribute_carries_a_target_so_lq_006_is_silent() {
+fn every_quality_attribute_carries_a_target_so_lq_006_is_silent() {
     assert_eq!(
         of(&findings(&small_document()), RuleId::Lq006),
         Vec::<&Finding>::new()
@@ -208,7 +208,7 @@ fn ac_391_to_ac_393_every_quality_attribute_carries_a_target_so_lq_006_is_silent
 }
 
 #[test]
-fn ac_394_ac_397_ac_398_a_text_statement_outside_the_forms_is_lq_007_when_enabled() {
+fn a_text_statement_outside_the_forms_is_lq_007_when_enabled() {
     let document = with_statement("Keys everywhere, always.");
     assert_eq!(
         of(&findings(&document), RuleId::Lq007),
@@ -222,7 +222,7 @@ fn ac_394_ac_397_ac_398_a_text_statement_outside_the_forms_is_lq_007_when_enable
 }
 
 #[test]
-fn ac_395_ac_396_slots_and_bare_proper_names_are_not_lq_007() {
+fn slots_and_bare_proper_names_are_not_lq_007() {
     let mut document = with_statement("Loft shall refuse an unknown key.");
     let yaml = "rules:\n  - rule: LQ-007\n    enabled: true\n";
     assert_eq!(
@@ -237,7 +237,7 @@ fn ac_395_ac_396_slots_and_bare_proper_names_are_not_lq_007() {
 }
 
 #[test]
-fn ac_399_ac_402_ac_644_two_near_duplicate_names_are_one_lq_008_naming_both() {
+fn two_near_duplicate_names_are_one_lq_008_naming_both() {
     let mut document = small_document();
     document
         .components
@@ -253,7 +253,7 @@ fn ac_399_ac_402_ac_644_two_near_duplicate_names_are_one_lq_008_naming_both() {
 }
 
 #[test]
-fn ac_644_similarity_counts_repeated_tokens() {
+fn similarity_counts_repeated_tokens() {
     let mut document = small_document();
     document
         .components
@@ -268,7 +268,7 @@ fn ac_644_similarity_counts_repeated_tokens() {
 }
 
 #[test]
-fn ac_400_ac_698_a_name_below_the_minimum_takes_part_only_when_equal() {
+fn a_name_below_the_minimum_takes_part_only_when_equal() {
     let mut document = small_document();
     document.components.push(root(component(key(62), "Store")));
     document
@@ -284,7 +284,7 @@ fn ac_400_ac_698_a_name_below_the_minimum_takes_part_only_when_equal() {
 }
 
 #[test]
-fn ac_645_names_are_compared_only_within_one_kind() {
+fn names_are_compared_only_within_one_kind() {
     let mut document = small_document();
     document.components.push(root(component(key(62), "Keys")));
     assert_eq!(
@@ -294,7 +294,7 @@ fn ac_645_names_are_compared_only_within_one_kind() {
 }
 
 #[test]
-fn ac_403_ac_405_a_registry_term_the_node_does_not_list_is_lq_009() {
+fn a_registry_term_the_node_does_not_list_is_lq_009() {
     let document = small_document();
     let all = findings(&document);
     let found = of(&all, RuleId::Lq009);
@@ -305,7 +305,7 @@ fn ac_403_ac_405_a_registry_term_the_node_does_not_list_is_lq_009() {
 }
 
 #[test]
-fn ac_404_a_node_that_lists_the_tag_or_sits_under_one_that_does_is_not_lq_009() {
+fn a_node_that_lists_the_tag_or_sits_under_one_that_does_is_not_lq_009() {
     let mut document = small_document();
     let tag = loftspec::names::TagName::parse("identity").unwrap();
     document.products[0].details.tags.push(tag);
@@ -316,7 +316,7 @@ fn ac_404_a_node_that_lists_the_tag_or_sits_under_one_that_does_is_not_lq_009() 
 }
 
 #[test]
-fn ac_873_lq_009_does_not_read_a_constraint() {
+fn lq_009_does_not_read_a_constraint() {
     let mut document = small_document();
     let tag = loftspec::names::TagName::parse("identity").unwrap();
     document.products[0].details.tags.push(tag);
@@ -329,7 +329,7 @@ fn ac_873_lq_009_does_not_read_a_constraint() {
 }
 
 #[test]
-fn ac_920_a_code_span_in_a_statement_is_not_read_as_prose() {
+fn a_code_span_in_a_statement_is_not_read_as_prose() {
     let quoted =
         with_statement("The renderer shall write `<system> shall <shall>` for every form.");
     assert_eq!(
@@ -347,7 +347,7 @@ fn ac_920_a_code_span_in_a_statement_is_not_read_as_prose() {
 }
 
 #[test]
-fn ac_920_a_code_span_closes_only_on_a_run_of_its_own_length() {
+fn a_code_span_closes_only_on_a_run_of_its_own_length() {
     let double = with_statement("The writer shall write ``a ` fast b`` here.");
     assert_eq!(
         of(&findings(&double), RuleId::Lq001),
@@ -358,7 +358,7 @@ fn ac_920_a_code_span_closes_only_on_a_run_of_its_own_length() {
 }
 
 #[test]
-fn ac_920_a_registry_term_inside_a_code_span_is_not_lq_009() {
+fn a_registry_term_inside_a_code_span_is_not_lq_009() {
     let mut document = small_document();
     document.products[0].feature_groups[0].name = "The `identity` group".to_owned();
     assert_eq!(
@@ -379,7 +379,7 @@ fn with_criteria(texts: &[&str]) -> Document {
 }
 
 #[test]
-fn ac_923_sibling_criteria_that_enumerate_cases_are_not_lq_008() {
+fn sibling_criteria_that_enumerate_cases_are_not_lq_008() {
     let document = with_criteria(&[
         "The content address of the index is reproduced.",
         "The graph address of the index is reproduced.",
@@ -391,7 +391,7 @@ fn ac_923_sibling_criteria_that_enumerate_cases_are_not_lq_008() {
 }
 
 #[test]
-fn ac_923_identical_sibling_criteria_are_lq_008() {
+fn identical_sibling_criteria_are_lq_008() {
     let document = with_criteria(&["Nothing is written.", "Nothing is written!"]);
     let all = findings(&document);
     let found = of(&all, RuleId::Lq008);
@@ -400,7 +400,7 @@ fn ac_923_identical_sibling_criteria_are_lq_008() {
 }
 
 #[test]
-fn ac_922_identical_criteria_of_different_requirements_are_not_lq_008() {
+fn identical_criteria_of_different_requirements_are_not_lq_008() {
     let mut document = with_criteria(&["Nothing is written."]);
     let feature = &mut document.products[0].feature_groups[0].features[0];
     feature.requirements.push(requirement(

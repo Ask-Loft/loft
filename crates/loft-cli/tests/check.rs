@@ -39,7 +39,7 @@ fn json(output: &std::process::Output) -> Value {
 }
 
 #[test]
-fn ac_526_ac_636_a_clean_tree_exits_0_and_prints_nothing() {
+fn a_clean_tree_exits_0_and_prints_nothing() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.file("lint.yaml"), QUIET).unwrap();
     let output = scratch.loft(&["check"]);
@@ -49,7 +49,7 @@ fn ac_526_ac_636_a_clean_tree_exits_0_and_prints_nothing() {
 }
 
 #[test]
-fn ac_525_findings_alone_exit_0_one_per_line() {
+fn findings_alone_exit_0_one_per_line() {
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft(&["check"]);
     assert_eq!(output.status.code(), Some(0));
@@ -59,7 +59,7 @@ fn ac_525_findings_alone_exit_0_one_per_line() {
 }
 
 #[test]
-fn ac_522_ac_523_ac_524_every_validation_error_prints_before_the_findings_and_exits_1() {
+fn every_validation_error_prints_before_the_findings_and_exits_1() {
     let scratch = with_two_errors();
     let output = scratch.loft(&["check"]);
     assert_eq!(output.status.code(), Some(1));
@@ -82,7 +82,7 @@ fn ac_522_ac_523_ac_524_every_validation_error_prints_before_the_findings_and_ex
 }
 
 #[test]
-fn ac_528_ac_592_a_read_error_is_reported_at_its_position_and_lint_does_not_run() {
+fn a_read_error_is_reported_at_its_position_and_lint_does_not_run() {
     let scratch = Scratch::with_reading_list();
     scratch.edit(PRODUCT, "\nslug:", " # a note\nslug:");
     let output = scratch.loft(&["check"]);
@@ -93,7 +93,7 @@ fn ac_528_ac_592_a_read_error_is_reported_at_its_position_and_lint_does_not_run(
 }
 
 #[test]
-fn ac_529_a_directory_without_spec_is_refused_naming_the_path() {
+fn a_directory_without_spec_is_refused_naming_the_path() {
     let scratch = Scratch::with_reading_list();
     fs::remove_dir_all(scratch.file("")).unwrap();
     let output = scratch.loft(&["check"]);
@@ -106,7 +106,7 @@ fn ac_529_a_directory_without_spec_is_refused_naming_the_path() {
 }
 
 #[test]
-fn ac_530_ac_638_fail_on_warning_or_info_exits_1_on_a_warning() {
+fn fail_on_warning_or_info_exits_1_on_a_warning() {
     let scratch = Scratch::with_reading_list();
     let warning = "rules:\n  - rule: V2-002\n    severity: warning\n";
     fs::write(scratch.file("lint.yaml"), warning).unwrap();
@@ -122,7 +122,7 @@ fn ac_530_ac_638_fail_on_warning_or_info_exits_1_on_a_warning() {
 }
 
 #[test]
-fn ac_531_ac_532_ac_639_fail_on_counts_only_findings_at_or_above_it() {
+fn fail_on_counts_only_findings_at_or_above_it() {
     let scratch = Scratch::with_reading_list();
     let infos = "rules:\n  - rule: V2-003\n    enabled: false\n";
     fs::write(scratch.file("lint.yaml"), infos).unwrap();
@@ -144,7 +144,7 @@ fn ac_531_ac_532_ac_639_fail_on_counts_only_findings_at_or_above_it() {
 }
 
 #[test]
-fn ac_533_a_severity_outside_the_three_is_a_usage_error() {
+fn a_severity_outside_the_three_is_a_usage_error() {
     let scratch = Scratch::with_reading_list();
     assert_eq!(
         scratch.loft(&["check", "--fail-on", "error"]).status.code(),
@@ -153,7 +153,7 @@ fn ac_533_a_severity_outside_the_three_is_a_usage_error() {
 }
 
 #[test]
-fn ac_582_ac_585_ac_593_json_matches_the_schema_with_positions_and_the_same_exit_code() {
+fn json_matches_the_schema_with_positions_and_the_same_exit_code() {
     let scratch = with_two_errors();
     let output = scratch.loft(&["check", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1));
@@ -172,7 +172,7 @@ fn ac_582_ac_585_ac_593_json_matches_the_schema_with_positions_and_the_same_exit
 }
 
 #[test]
-fn ac_583_ac_584_ac_594_an_error_without_a_position_is_json_on_stdout() {
+fn an_error_without_a_position_is_json_on_stdout() {
     let scratch = Scratch::with_reading_list();
     fs::remove_dir_all(scratch.file("")).unwrap();
     let output = scratch.loft(&["check", "--format", "json"]);
@@ -183,7 +183,7 @@ fn ac_583_ac_584_ac_594_an_error_without_a_position_is_json_on_stdout() {
 }
 
 #[test]
-fn ac_582_a_clean_tree_in_json_has_no_errors_and_no_findings() {
+fn a_clean_tree_in_json_has_no_errors_and_no_findings() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.file("lint.yaml"), QUIET).unwrap();
     let output = scratch.loft(&["check", "--format", "json"]);
@@ -194,7 +194,7 @@ fn ac_582_a_clean_tree_in_json_has_no_errors_and_no_findings() {
 }
 
 #[test]
-fn ac_672_ac_674_an_unknown_rule_in_the_lint_file_is_an_error_and_no_finding_is_reported() {
+fn an_unknown_rule_in_the_lint_file_is_an_error_and_no_finding_is_reported() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.file("lint.yaml"), "rules:\n  - rule: XX-001\n").unwrap();
     let output = scratch.loft(&["check"]);
@@ -206,7 +206,7 @@ fn ac_672_ac_674_an_unknown_rule_in_the_lint_file_is_an_error_and_no_finding_is_
 }
 
 #[test]
-fn ac_900_ac_901_entries_whose_names_begin_with_a_dot_are_not_part_of_the_tree() {
+fn entries_whose_names_begin_with_a_dot_are_not_part_of_the_tree() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.file(".DS_Store"), [0, 0, 0, 1]).unwrap();
     fs::write(scratch.file("products/.DS_Store"), [0, 0, 0, 1]).unwrap();

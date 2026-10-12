@@ -87,7 +87,7 @@ fn converted() -> loftspec::convert::v1::Conversion {
 }
 
 #[test]
-fn ac_506_ac_508_the_tree_is_the_converters_output_and_the_sidecar_lies_beside_it() {
+fn the_tree_is_the_converters_output_and_the_sidecar_lies_beside_it() {
     let dir = Empty::new();
     let output = dir.import(&[]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
@@ -101,7 +101,7 @@ fn ac_506_ac_508_the_tree_is_the_converters_output_and_the_sidecar_lies_beside_i
 }
 
 #[test]
-fn ac_509_the_findings_print_as_a_lint_report() {
+fn the_findings_print_as_a_lint_report() {
     let dir = Empty::new();
     let output = dir.import(&[]);
     assert_eq!(
@@ -113,7 +113,7 @@ fn ac_509_the_findings_print_as_a_lint_report() {
 }
 
 #[test]
-fn ac_515_ac_516_without_counters_each_is_one_above_the_highest_and_a_warning_says_so() {
+fn without_counters_each_is_one_above_the_highest_and_a_warning_says_so() {
     let dir = Empty::new();
     let output = dir.import(&[]);
     let labels = fs::read_to_string(dir.0.join("spec/labels.yaml")).unwrap();
@@ -130,7 +130,7 @@ fn ac_515_ac_516_without_counters_each_is_one_above_the_highest_and_a_warning_sa
 }
 
 #[test]
-fn ac_510_ac_511_ac_512_a_counters_file_sets_the_prefixes_it_names() {
+fn a_counters_file_sets_the_prefixes_it_names() {
     let dir = Empty::new();
     dir.write("counters.yaml", "RQ: 40\nAC: 90\n");
     let output = dir.import(&["--counters", "counters.yaml"]);
@@ -148,7 +148,7 @@ fn ac_510_ac_511_ac_512_a_counters_file_sets_the_prefixes_it_names() {
 }
 
 #[test]
-fn ac_513_ac_514_a_counter_not_above_the_highest_label_is_refused_and_nothing_is_written() {
+fn a_counter_not_above_the_highest_label_is_refused_and_nothing_is_written() {
     let dir = Empty::new();
     dir.write("counters.yaml", "RQ: 6\n");
     let output = dir.import(&["--counters", "counters.yaml"]);
@@ -162,7 +162,7 @@ fn ac_513_ac_514_a_counter_not_above_the_highest_label_is_refused_and_nothing_is
 }
 
 #[test]
-fn ac_517_ac_518_a_spec_directory_that_is_not_empty_is_refused() {
+fn a_spec_directory_that_is_not_empty_is_refused() {
     let dir = Empty::new();
     fs::create_dir(dir.0.join("spec")).unwrap();
     dir.write("spec/loftspec.yaml", "format: loftspec/1\n");
@@ -174,7 +174,7 @@ fn ac_517_ac_518_a_spec_directory_that_is_not_empty_is_refused() {
 }
 
 #[test]
-fn ac_932_a_spec_directory_holding_only_dot_entries_counts_as_empty() {
+fn a_spec_directory_holding_only_dot_entries_counts_as_empty() {
     let dir = Empty::new();
     fs::create_dir(dir.0.join("spec")).unwrap();
     dir.write("spec/.DS_Store", "");
@@ -191,7 +191,7 @@ fn an_empty_spec_directory_is_accepted() {
 }
 
 #[test]
-fn ac_519_ac_521_a_missing_export_is_reported_by_its_path() {
+fn a_missing_export_is_reported_by_its_path() {
     let dir = Empty::new();
     let output = dir.loft(&["import", "v1", "absent.json"]);
     assert_eq!(output.status.code(), Some(1));
@@ -204,7 +204,7 @@ fn ac_519_ac_521_a_missing_export_is_reported_by_its_path() {
 }
 
 #[test]
-fn ac_520_a_file_that_is_not_an_export_names_its_path_and_the_first_missing_field() {
+fn a_file_that_is_not_an_export_names_its_path_and_the_first_missing_field() {
     let dir = Empty::new();
     dir.write("other.json", "{}");
     let output = dir.loft(&["import", "v1", "other.json"]);
@@ -219,7 +219,7 @@ fn ac_520_a_file_that_is_not_an_export_names_its_path_and_the_first_missing_fiel
 }
 
 #[test]
-fn ac_668_ac_671_a_missing_counters_file_is_reported_by_its_path() {
+fn a_missing_counters_file_is_reported_by_its_path() {
     let dir = Empty::new();
     let output = dir.import(&["--counters", "absent.yaml"]);
     assert_eq!(output.status.code(), Some(1));
@@ -232,7 +232,7 @@ fn ac_668_ac_671_a_missing_counters_file_is_reported_by_its_path() {
 }
 
 #[test]
-fn ac_669_a_prefix_outside_the_formats_is_reported_by_name() {
+fn a_prefix_outside_the_formats_is_reported_by_name() {
     let dir = Empty::new();
     dir.write("counters.yaml", "XX: 3\n");
     let output = dir.import(&["--counters", "counters.yaml"]);
@@ -242,7 +242,7 @@ fn ac_669_a_prefix_outside_the_formats_is_reported_by_name() {
 }
 
 #[test]
-fn ac_670_a_value_that_is_not_a_positive_integer_is_reported_with_its_prefix() {
+fn a_value_that_is_not_a_positive_integer_is_reported_with_its_prefix() {
     let dir = Empty::new();
     for value in ["0", "-3", "seven", "1.5"] {
         dir.write("counters.yaml", &format!("RQ: {value}\n"));
@@ -258,7 +258,7 @@ fn ac_670_a_value_that_is_not_a_positive_integer_is_reported_with_its_prefix() {
 }
 
 #[test]
-fn ac_582_json_output_matches_the_schema() {
+fn json_output_matches_the_schema() {
     let schema: Value = serde_json::from_str(include_str!("../../../schemas/import.json")).unwrap();
     let dir = Empty::new();
     let output = dir.import(&["--format", "json"]);

@@ -170,7 +170,7 @@ const CASES: [Case; 14] = [
 ];
 
 #[test]
-fn ac_965_ac_966_and_ac_967_the_simulator_answers_each_call_as_real_git_does() {
+fn the_simulator_answers_each_call_as_real_git_does() {
     for (name, build, scenario) in CASES {
         let repository = Scratch::new();
         let root = build(&repository);
@@ -191,7 +191,7 @@ fn ac_965_ac_966_and_ac_967_the_simulator_answers_each_call_as_real_git_does() {
 }
 
 #[test]
-fn ac_960_and_ac_961_the_port_reads_the_same_state_from_the_simulator_and_real_git() {
+fn the_port_reads_the_same_state_from_the_simulator_and_real_git() {
     for (name, build, scenario) in CASES {
         let repository = Scratch::new();
         let root = build(&repository);
@@ -259,7 +259,7 @@ fn a_git_that_cannot_be_run_is_reported_as_unavailable() {
 }
 
 #[test]
-fn ac_973_a_scripted_git_error_is_reported_with_its_call_and_message() {
+fn a_scripted_git_error_is_reported_with_its_call_and_message() {
     let plant = Scratch::new();
     let scenario = clean().failing(
         software_plant::git::Call::Status,
@@ -275,7 +275,7 @@ fn ac_973_a_scripted_git_error_is_reported_with_its_call_and_message() {
 }
 
 #[test]
-fn ac_978_reading_the_state_changes_no_file_of_the_repository() {
+fn reading_the_state_changes_no_file_of_the_repository() {
     for (name, build, _) in CASES {
         let repository = Scratch::new();
         let root = build(&repository);

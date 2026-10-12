@@ -26,23 +26,23 @@ fn lines() -> Vec<String> {
 }
 
 #[test]
-fn ac_589_the_first_line_is_loft_and_the_tool_version() {
+fn the_first_line_is_loft_and_the_tool_version() {
     assert_eq!(lines()[0], format!("loft {}", env!("CARGO_PKG_VERSION")));
 }
 
 #[test]
-fn ac_590_the_second_line_is_the_format() {
+fn the_second_line_is_the_format() {
     assert_eq!(lines()[1], "format loftspec/1");
 }
 
 #[test]
-fn ac_591_the_third_line_is_the_algorithm_and_there_is_no_other() {
+fn the_third_line_is_the_algorithm_and_there_is_no_other() {
     assert_eq!(lines()[2], "algorithm sha256-jcs/1");
     assert_eq!(lines().len(), 3);
 }
 
 #[test]
-fn ac_682_under_format_json_the_three_values_are_one_json_document() {
+fn under_format_json_the_three_values_are_one_json_document() {
     let output = loft(&["--version", "--format", "json"]);
     assert_eq!(output.status.code(), Some(0));
     let document: Value = serde_json::from_slice(&output.stdout).unwrap();
@@ -55,11 +55,11 @@ fn ac_682_under_format_json_the_three_values_are_one_json_document() {
 }
 
 #[test]
-fn ac_581_without_a_command_or_version_loft_still_exits_2() {
+fn without_a_command_or_version_loft_still_exits_2() {
     assert_eq!(loft(&[]).status.code(), Some(2));
 }
 
 #[test]
-fn ac_683_help_still_exits_0() {
+fn help_still_exits_0() {
     assert_eq!(loft(&["--help"]).status.code(), Some(0));
 }

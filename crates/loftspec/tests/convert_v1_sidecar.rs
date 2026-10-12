@@ -30,7 +30,7 @@ fn converted() -> Conversion {
 }
 
 #[test]
-fn ac_194_ac_195_and_ac_258_each_node_keeps_its_ordinal_confirmation_and_proposed_fate() {
+fn each_node_keeps_its_ordinal_confirmation_and_proposed_fate() {
     let sidecar = converted().sidecar;
     let constraint = sidecar.nodes[&NodeId::from(ConstraintId::new(key(7)))];
     assert_eq!(constraint.ordinal, 0);
@@ -48,7 +48,7 @@ fn ac_194_ac_195_and_ac_258_each_node_keeps_its_ordinal_confirmation_and_propose
 }
 
 #[test]
-fn ac_196_each_tag_application_keeps_its_facet_tag_node() {
+fn each_tag_application_keeps_its_facet_tag_node() {
     let sidecar = converted().sidecar;
     let [application] = sidecar.tags[&NodeId::from(ComponentId::new(key(6)))].as_slice() else {
         panic!("CMP-1 has one tag");
@@ -60,7 +60,7 @@ fn ac_196_each_tag_application_keeps_its_facet_tag_node() {
 }
 
 #[test]
-fn ac_197_and_ac_198_the_document_and_the_highest_value_of_each_prefix() {
+fn the_document_and_the_highest_value_of_each_prefix() {
     let sidecar = converted().sidecar;
     assert_eq!(sidecar.document, DocumentId::new(key(0)));
     let highest = |prefix: &str| sidecar.highest[prefix].get();
@@ -71,13 +71,13 @@ fn ac_197_and_ac_198_the_document_and_the_highest_value_of_each_prefix() {
 }
 
 #[test]
-fn ac_721_a_former_label_counts_as_seen_so_it_is_never_allocated_again() {
+fn a_former_label_counts_as_seen_so_it_is_never_allocated_again() {
     let counters = converted().document.counters;
     assert_eq!(counters.next(LabelPrefix::Requirement).get(), 10);
 }
 
 #[test]
-fn ac_259_each_component_keeps_its_v1_scope_kind() {
+fn each_component_keeps_its_v1_scope_kind() {
     let sidecar = converted().sidecar;
     assert_eq!(
         sidecar.scopes.get(&ComponentId::new(key(6))),
@@ -94,7 +94,7 @@ fn ac_259_each_component_keeps_its_v1_scope_kind() {
 }
 
 #[test]
-fn ac_724_decision_elements_keep_their_ordinals_and_a_former_label_its_v1_node() {
+fn decision_elements_keep_their_ordinals_and_a_former_label_its_v1_node() {
     let sidecar = converted().sidecar;
     let decision = &sidecar.decisions[&DecisionId::new(key(20))];
     assert_eq!(decision.ordinal, 0);
@@ -106,7 +106,7 @@ fn ac_724_decision_elements_keep_their_ordinals_and_a_former_label_its_v1_node()
 }
 
 #[test]
-fn ac_206_two_conversions_write_identical_sidecars() {
+fn two_conversions_write_identical_sidecars() {
     let first = converted().sidecar.to_json();
     assert_eq!(first, converted().sidecar.to_json());
     assert!(first.ends_with("}\n"));

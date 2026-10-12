@@ -17,7 +17,7 @@ fn formatted(files: &Files) -> Files {
 }
 
 #[test]
-fn ac_119_ac_544_a_canonical_tree_formats_to_itself() {
+fn a_canonical_tree_formats_to_itself() {
     for document in [
         small_document(),
         convert_value(&full_export()).unwrap().document,
@@ -30,7 +30,7 @@ fn ac_119_ac_544_a_canonical_tree_formats_to_itself() {
 }
 
 #[test]
-fn ac_534_ac_535_only_a_file_whose_bytes_change_is_rewritten() {
+fn only_a_file_whose_bytes_change_is_rewritten() {
     let canonical = codec::write(&small_document());
     let files = edited(
         FEATURE,
@@ -43,7 +43,7 @@ fn ac_534_ac_535_only_a_file_whose_bytes_change_is_rewritten() {
 }
 
 #[test]
-fn ac_536_ac_9_ac_10_a_record_without_a_key_gets_a_version_7_key() {
+fn a_record_without_a_key_gets_a_version_7_key() {
     let files = edited(
         FEATURE,
         "      - key: 00000000-0000-7000-8000-000000000005\n        name:",
@@ -66,7 +66,7 @@ fn ac_536_ac_9_ac_10_a_record_without_a_key_gets_a_version_7_key() {
 }
 
 #[test]
-fn ac_11_two_keys_minted_in_one_run_differ() {
+fn two_keys_minted_in_one_run_differ() {
     let files = edited(
         "decisions/keys-are-uuids.yaml",
         "  - key: 00000000-0000-7000-8000-000000000017\n    title:",
@@ -88,7 +88,7 @@ fn ac_11_two_keys_minted_in_one_run_differ() {
 }
 
 #[test]
-fn ac_845_an_option_without_a_key_gets_one() {
+fn an_option_without_a_key_gets_one() {
     let files = edited(
         "decisions/keys-are-uuids.yaml",
         "  - key: 00000000-0000-7000-8000-000000000018\n    title:",
@@ -98,28 +98,28 @@ fn ac_845_an_option_without_a_key_gets_one() {
 }
 
 #[test]
-fn ac_938_a_read_error_formats_nothing() {
+fn a_read_error_formats_nothing() {
     let files = edited(FEATURE, "name: \"Keys\"", "name: \"Keys\" # note");
     let errors = format(&files).unwrap_err();
     assert_eq!(errors[0].sites[0].path, path(FEATURE));
 }
 
 #[test]
-fn ac_818_a_feature_without_a_slug_takes_its_file_name() {
+fn a_feature_without_a_slug_takes_its_file_name() {
     let files = edited(FEATURE, "slug: keys\n", "");
     let result = format(&files).unwrap();
     assert!(text(&result.changed, FEATURE).contains("slug: keys\n"));
 }
 
 #[test]
-fn ac_819_a_feature_group_without_a_slug_takes_its_directory() {
+fn a_feature_group_without_a_slug_takes_its_directory() {
     let files = edited(PRODUCT, "    slug: identity\n", "");
     let result = format(&files).unwrap();
     assert!(text(&result.changed, PRODUCT).contains("    slug: identity\n"));
 }
 
 #[test]
-fn ac_94_a_renamed_node_keeps_its_file() {
+fn a_renamed_node_keeps_its_file() {
     let files = edited(FEATURE, "name: \"Keys\"", "name: \"Node keys\"");
     let result = format(&files).unwrap();
     assert!(result.changed.is_empty());
@@ -131,7 +131,7 @@ fn ac_94_a_renamed_node_keeps_its_file() {
 }
 
 #[test]
-fn ac_851_ac_852_a_new_feature_files_key_is_appended_to_the_features_of_its_directorys_group() {
+fn a_new_feature_files_key_is_appended_to_the_features_of_its_directorys_group() {
     let mut files = codec::write(&small_document());
     files.insert(
         path("products/example-product/identity/labels.yaml"),
@@ -146,7 +146,7 @@ fn ac_851_ac_852_a_new_feature_files_key_is_appended_to_the_features_of_its_dire
 }
 
 #[test]
-fn ac_853_ac_854_a_new_feature_file_no_group_can_list_is_refused_and_nothing_is_formatted() {
+fn a_new_feature_file_no_group_can_list_is_refused_and_nothing_is_formatted() {
     let mut files = codec::write(&small_document());
     let stray = path("products/example-product/elsewhere/labels.yaml");
     files.insert(stray.clone(), b"name: \"Labels\"\n".to_vec());
@@ -157,7 +157,7 @@ fn ac_853_ac_854_a_new_feature_file_no_group_can_list_is_refused_and_nothing_is_
 }
 
 #[test]
-fn ac_850_ac_852_a_new_product_files_key_is_appended_to_the_manifests_products() {
+fn a_new_product_files_key_is_appended_to_the_manifests_products() {
     let mut files = codec::write(&small_document());
     files.insert(
         path("products/new-product/product.yaml"),

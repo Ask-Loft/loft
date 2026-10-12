@@ -99,7 +99,7 @@ fn clean() -> GitScenario {
 }
 
 #[test]
-fn ac_571_ac_572_ac_573_the_attribute_the_driver_and_its_name_are_registered() {
+fn the_attribute_the_driver_and_its_name_are_registered() {
     let dirs = Dirs::new("fresh");
     let (output, scenario) = dirs.install(&clean());
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
@@ -121,7 +121,7 @@ fn ac_571_ac_572_ac_573_the_attribute_the_driver_and_its_name_are_registered() {
 }
 
 #[test]
-fn ac_571_an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() {
+fn an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() {
     let dirs = Dirs::new("existing");
     fs::write(dirs.tree.join(".gitattributes"), "*.png binary").unwrap();
     let (output, _) = dirs.install(&clean());
@@ -133,7 +133,7 @@ fn ac_571_an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() 
 }
 
 #[test]
-fn ac_574_a_second_install_changes_nothing() {
+fn a_second_install_changes_nothing() {
     let dirs = Dirs::new("again");
     let (_, installed) = dirs.install(&clean());
     let attributes = dirs.attributes();
@@ -212,7 +212,7 @@ fn a_command_that_starts_another_version_is_warned_of_and_registered() {
 }
 
 #[test]
-fn ac_575_ac_576_outside_a_repository_it_refuses_and_writes_nothing() {
+fn outside_a_repository_it_refuses_and_writes_nothing() {
     let dirs = Dirs::new("outside");
     let before = dirs.files();
     let (output, after) = dirs.install(&GitScenario::outside_repository());
