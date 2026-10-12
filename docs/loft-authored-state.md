@@ -1,6 +1,6 @@
 # Loft Specification Format
 
-> Loft `D-11` · Authored State `f903ada3-9ac9-4874-a29d-35f452d26e90` · content `a769d7d1552beedac69061adff5f50b9cbc0b2506c3e8cf7ab415182ecb8b1f5`
+> Loft `D-11` · Authored State `a0654aa3-9372-4a39-bba5-dffa80ef625f` · content `f581dfb3603d7286b799d28b3e6c611a95c8310ad1845f2e21fa963e745e4195`
 
 ## Capability Model
 
@@ -206,7 +206,7 @@ What a node's content hash covers and excludes, and how each digest is derived f
 
 ###### RQ-159 · The hasher shall build a node's content view from the fields the Format lists, in the Format's order.
 
-**AC-596 · Acceptance Criterion · The content view holds, in this order: kind, statement or name, body, the set of tag names sorted by UTF-8 bytes, the typed attributes (quality attribute kind, quality target, constraint binding, conservation kind, verification fate), then the ordered list of child content hashes.**
+**AC-596 · Acceptance Criterion · The content view holds, in this order: kind, statement or name, body, the set of tag names sorted by UTF-8 bytes, the typed attributes (quality attribute kind, quality target, constraint binding, conservation kind, verification fate, component boundary), then the ordered list of child content hashes.**
 
 **AC-597 · Acceptance Criterion · Changing a node's body changes its content hash.**
 
@@ -217,6 +217,8 @@ What a node's content hash covers and excludes, and how each digest is derived f
 **AC-600 · Acceptance Criterion · An absent typed attribute enters the content view as `null`.**
 
 **AC-601 · Acceptance Criterion · An empty body and an absent body give different content views.**
+
+**AC-885 · Acceptance Criterion · A Component's boundary enters the content view as its `boundary` field, `null` when the field is absent.**
 
 ###### RQ-160 · The hasher shall list a node's child content hashes grouped by kind.
 
@@ -796,7 +798,7 @@ The fields each record of the text form holds, their order, and which of them ar
 
 ###### RQ-192 · The writer shall write each Component record with the Component fields in the Format's order.
 
-**AC-755 · Acceptance Criterion · A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `scopedTo`, `mentions`, `components`, `constraints`, `qualityAttributes` and `sections`.**
+**AC-755 · Acceptance Criterion · A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `boundary`, `scopedTo`, `mentions`, `components`, `constraints`, `qualityAttributes` and `sections`.**
 
 **AC-756 · Acceptance Criterion · A Component record requires `key` and `name`.**
 
@@ -933,6 +935,30 @@ The fields each record of the text form holds, their order, and which of them ar
 **AC-861 · Acceptance Criterion · A conflict over a record's place in its list names the field `position`.**
 
 **AC-862 · Acceptance Criterion · A keyed record carries `conflicts` after every other field.**
+
+##### F-50 · Component boundary
+
+Whether a Component lies inside the document or outside Loft's governance, and how a Component's subtree takes it on.
+
+###### RQ-221 · The reader shall read a Component's boundary as `private` or `external`.
+
+**AC-878 · Acceptance Criterion · A Component record's `boundary` field holds `private` or `external`.**
+
+**AC-879 · Acceptance Criterion · Any other value in `boundary` is an error naming the file, line and column.**
+
+###### RQ-222 · loftspec shall give a Component without a `boundary` field the boundary of its parent Component.
+
+**AC-880 · Acceptance Criterion · A nested Component without `boundary` has its parent Component's boundary.**
+
+**AC-881 · Acceptance Criterion · A root Component without `boundary` has the boundary `private`.**
+
+**AC-882 · Acceptance Criterion · A Component with a `boundary` field has the boundary that the field holds.**
+
+###### RQ-223 · If a Component's `boundary` is `private` and a Component above it has the boundary `external`, then the validator shall report an error.
+
+**AC-883 · Acceptance Criterion · The error names the Component and the nearest Component above it whose boundary is `external`.**
+
+**AC-884 · Acceptance Criterion · A Component whose `boundary` is `external` beneath an `external` Component raises no error.**
 
 #### FG-3 · Statements and bodies
 
@@ -1136,6 +1162,14 @@ What each v1 node, Vocabulary Entry, Realization Link, Component scope and Archi
 
 **AC-706 · Acceptance Criterion · An export with no node, registry entry or decision is refused.**
 
+###### RQ-224 · The converter shall give the boundary `external` to each Component that the export scopes as external.
+
+**AC-892 · Acceptance Criterion · A Component that the export scopes as external has the `boundary` field `external`.**
+
+**AC-893 · Acceptance Criterion · A Component that the export scopes to a Product or to the document has no `boundary` field.**
+
+**AC-894 · Acceptance Criterion · A Component scoped to a Product or to the document beneath a Component scoped as external is reported as a finding naming both.**
+
 ##### F-14 · Statements and references from prose
 
 What the converter recovers from v1 names and bodies: statement slots where they render back exactly, `mentions` edges for label references, and bodies kept as written.
@@ -1157,6 +1191,8 @@ What the converter recovers from v1 names and bodies: statement slots where they
 **AC-190 · Acceptance Criterion · A resolvable reference becomes a `mentions` edge from the node to the referenced node.**
 
 **AC-191 · Acceptance Criterion · A reference whose label does not resolve is reported as a finding naming the node and the reference.**
+
+**AC-891 · Acceptance Criterion · A label-shaped text whose number is above every label of its prefix in the export is not a reference.**
 
 ###### RQ-54 · The converter shall store bodies verbatim.
 
@@ -1348,6 +1384,8 @@ The ten structural rules, SH-001 to SH-010: the shape each one reports and its d
 
 **AC-341 · Acceptance Criterion · The default severity of `SH-002` is info.**
 
+**AC-886 · Acceptance Criterion · A Component whose boundary is `external` yields no `SH-002` finding.**
+
 ###### RQ-82 · The linter shall report a Requirement without a criterion as `SH-003`.
 
 **AC-342 · Acceptance Criterion · A Requirement with no criterion yields one `SH-003` finding naming its key.**
@@ -1405,6 +1443,10 @@ The ten structural rules, SH-001 to SH-010: the shape each one reports and its d
 **AC-361 · Acceptance Criterion · A Component with a Quality Attribute in its subtree yields no `SH-008` finding.**
 
 **AC-362 · Acceptance Criterion · The default severity of `SH-008` is info.**
+
+**AC-887 · Acceptance Criterion · A Component whose boundary is `external` yields no `SH-008` finding.**
+
+**AC-888 · Acceptance Criterion · A Constraint or Quality Attribute under an `external` Component does not clear `SH-008` for a Component above it.**
 
 ###### RQ-88 · The linter shall report a tag that names no registry entry as `SH-009`.
 
@@ -1568,7 +1610,9 @@ The three rules the v2 text form adds, V2-001 to V2-003: a heading inside a body
 
 **AC-414 · Acceptance Criterion · The default severity of `V2-003` is warning.**
 
-**AC-874 · Acceptance Criterion · A label-shaped reference that names no element yields one `V2-003` finding naming the node and the reference.**
+**AC-874 · Acceptance Criterion · A label-shaped reference whose number is below its prefix's counter and that names no element yields one `V2-003` finding naming the node and the reference.**
+
+**AC-890 · Acceptance Criterion · A label-shaped text whose number is not below its prefix's counter in `spec/labels.yaml` is not a reference.**
 
 ##### F-22 · Findings and reports
 
@@ -1719,6 +1763,8 @@ The Markdown view of a document for human readers: its heading levels, criterion
 **AC-876 · Acceptance Criterion · The rendering's title is the first Product's name.**
 
 **AC-877 · Acceptance Criterion · Root Components render in the order the reader takes them.**
+
+**AC-889 · Acceptance Criterion · A Component with a `boundary` field renders a line naming its value.**
 
 ###### RQ-108 · The renderer shall render deterministically.
 
@@ -3040,6 +3086,56 @@ The Format's own reader parses the YAML subset and refuses each excluded constru
 - **outcome** — `RQ-33` · The reader shall accept only the YAML subset the Format defines.
 - **outcome** — `RQ-35` · The formatter shall write every string in the canonical scalar style.
 
+#### ADR-15 · A Component's boundary is a kind that its subtree takes on
+
+Status: `accepted`
+
+##### Context
+
+A Loft v1 Component carried one scope kind: a Product, the whole document, or external. The v2 text form keeps a Product scope as a `scoped_to` edge and nothing else. A document authored in v2 therefore cannot say that a Component is a service outside Loft's governance, and the obligation rules report every such Component.
+
+##### Drivers
+
+1. **Obligations follow governance** — A Component outside Loft's governance carries no structural obligation.
+2. **Room for sharing** — The same field can later say that a Component is shared between documents.
+3. **One typed field** — The property is one field with named values, not a flag.
+4. **v1 parity** — A converted document yields the structural findings that v1 yields.
+
+##### Options
+
+1. **Boundary kind, inherited** — A `boundary` field of `private` or `external` on any Component, which a Component without it takes from its parent.
+2. **External flag** — A boolean `external` field on any Component.
+3. **Reserved tag** — A reserved tag name marks an external Component.
+4. **v1 scope kinds** — A `scope` field of `product`, `document` or `external` beside the `scoped\_to` edge.
+
+##### Assessment
+
+| Option | Obligations follow governance | Room for sharing | One typed field | v1 parity |
+| --- | --- | --- | --- | --- |
+| Boundary kind, inherited | supports — the rules skip an external subtree | supports — a `public` value joins the same field | supports — one field with named values | supports — external maps to `external`, and inheritance matches v1's |
+| External flag | supports — the rules skip a flagged subtree | conflicts — sharing needs a second field | conflicts — a flag | supports — external maps to the flag |
+| Reserved tag | neutral — the rules read a tag name that an author can misspell without an error | neutral — sharing needs another reserved tag | conflicts — a tag carries meaning outside the registry | supports — external maps to the tag |
+| v1 scope kinds | supports — the rules read the scope | neutral — sharing becomes a fourth scope value | neutral — one field, but it restates the `scoped\_to` edge | supports — field for field |
+
+##### Decision
+
+Selected: **Boundary kind, inherited**
+
+A Component carries a `boundary` of `private` or `external`, a Component without one takes its parent's, and the obligation rules skip an `external` subtree.
+
+##### Consequences
+
+- **obligation** — The converter gives the boundary `external` to each Component that the export scopes as external. (`RQ-224` · The converter shall give the boundary `external` to each Component that the export scopes as external.)
+- **cost** — Every content view gains one slot, so every content hash changes once, before any v2 lock exists.
+- **risk** — Adding the value `public` later is a change to the Format.
+- **benefit** — A third-party service is modelled without suppressing a finding.
+
+##### Subjects
+
+- **affected** — `CMP-1` · loftspec
+- **outcome** — `RQ-221` · The reader shall read a Component's boundary as `private` or `external`.
+- **outcome** — `RQ-222` · loftspec shall give a Component without a `boundary` field the boundary of its parent Component.
+
 ### Decision History
 
 - **ADR-7 · Lint configuration lives in the repository** — superseded · successor `575101b8-1ce6-4633-96c0-3ccddb685046`
@@ -3071,6 +3167,9 @@ _None._
 
 | Feature | Component |
 | --- | --- |
+| F-50 · Component boundary | CMP-6 · Validator |
+| F-50 · Component boundary | CMP-4 · Reader and writer |
+| F-50 · Component boundary | CMP-2 · Document model |
 | F-19 · Structural lint rules | CMP-7 · Linter |
 | F-6 · Directory layout | CMP-4 · Reader and writer |
 | F-13 · Node, registry and link mapping | CMP-5 · Converter |
