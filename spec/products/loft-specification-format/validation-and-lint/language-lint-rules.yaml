@@ -23,6 +23,10 @@ requirements:
         name: "Every language rule except `LQ-007` reads a criterion's text, a Constraint's name and a Quality Attribute's name as it reads a statement."
       - key: c8395479-b226-46fb-951a-59ff16ca9bfe
         name: "A language rule reads the body of the node whose name or statement it reads."
+      - key: 01a12dca-2b3c-76f6-950a-cd628ea23330
+        name: "`LQ-001` to `LQ-005` and `LQ-009` do not read the text inside a code span of a name or statement."
+      - key: 01a12dca-2b3c-76f6-950a-cd63c6d629bb
+        name: "`LQ-008` compares names with the text of their code spans."
   - key: ca7770a6-d610-43a8-a850-e21fa0300ef3
     statement:
       form: ubiquitous
