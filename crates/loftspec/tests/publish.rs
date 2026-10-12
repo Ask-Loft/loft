@@ -341,7 +341,7 @@ fn ac_678_a_changed_source_state_alone_fails_on_the_state_root() {
 }
 
 #[test]
-fn a_lock_of_other_roots_never_verifies() {
+fn ac_468_a_lock_of_other_roots_never_verifies() {
     let (files, mut lock) = published();
     lock.state_root = "0".repeat(64).parse::<Digest>().unwrap();
     assert_eq!(mismatch(&files, &lock), Root::State);

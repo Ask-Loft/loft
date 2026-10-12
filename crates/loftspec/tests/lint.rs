@@ -462,7 +462,7 @@ fn ac_869_an_option_a_rule_does_not_take_is_an_error_at_its_line_and_column() {
 }
 
 #[test]
-fn a_suppression_without_a_reason_is_refused() {
+fn ac_425_and_ac_867_a_suppression_without_a_reason_is_refused() {
     let yaml = format!("suppressions:\n  - rule: SH-006\n    key: {}\n", key(30));
     let errors = LintConfig::read(Some(yaml.as_bytes())).unwrap_err();
     assert_eq!(errors[0].problem, Problem::MissingField("reason"));
@@ -479,7 +479,7 @@ fn every_rule_has_a_wire_name_and_a_default() {
 }
 
 #[test]
-fn a_tag_registry_entry_key_is_its_findings_subject() {
+fn ac_353_a_tag_registry_entry_key_is_its_findings_subject() {
     let mut document = small_document();
     document.tags.push(TagEntry {
         id: TagId::new(key(60)),

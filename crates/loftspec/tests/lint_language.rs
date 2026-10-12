@@ -329,7 +329,7 @@ fn ac_873_lq_009_does_not_read_a_constraint() {
 }
 
 #[test]
-fn a_code_span_in_a_statement_is_not_read_as_prose() {
+fn ac_920_a_code_span_in_a_statement_is_not_read_as_prose() {
     let quoted =
         with_statement("The renderer shall write `<system> shall <shall>` for every form.");
     assert_eq!(
@@ -347,7 +347,7 @@ fn a_code_span_in_a_statement_is_not_read_as_prose() {
 }
 
 #[test]
-fn a_code_span_closes_only_on_a_run_of_its_own_length() {
+fn ac_920_a_code_span_closes_only_on_a_run_of_its_own_length() {
     let double = with_statement("The writer shall write ``a ` fast b`` here.");
     assert_eq!(
         of(&findings(&double), RuleId::Lq001),
@@ -358,7 +358,7 @@ fn a_code_span_closes_only_on_a_run_of_its_own_length() {
 }
 
 #[test]
-fn a_registry_term_inside_a_code_span_is_not_lq_009() {
+fn ac_920_a_registry_term_inside_a_code_span_is_not_lq_009() {
     let mut document = small_document();
     document.products[0].feature_groups[0].name = "The `identity` group".to_owned();
     assert_eq!(
@@ -379,7 +379,7 @@ fn with_criteria(texts: &[&str]) -> Document {
 }
 
 #[test]
-fn sibling_criteria_that_enumerate_cases_are_not_lq_008() {
+fn ac_923_sibling_criteria_that_enumerate_cases_are_not_lq_008() {
     let document = with_criteria(&[
         "The content address of the index is reproduced.",
         "The graph address of the index is reproduced.",
@@ -391,7 +391,7 @@ fn sibling_criteria_that_enumerate_cases_are_not_lq_008() {
 }
 
 #[test]
-fn identical_sibling_criteria_are_lq_008() {
+fn ac_923_identical_sibling_criteria_are_lq_008() {
     let document = with_criteria(&["Nothing is written.", "Nothing is written!"]);
     let all = findings(&document);
     let found = of(&all, RuleId::Lq008);
@@ -400,7 +400,7 @@ fn identical_sibling_criteria_are_lq_008() {
 }
 
 #[test]
-fn identical_criteria_of_different_requirements_are_not_lq_008() {
+fn ac_922_identical_criteria_of_different_requirements_are_not_lq_008() {
     let mut document = with_criteria(&["Nothing is written."]);
     let feature = &mut document.products[0].feature_groups[0].features[0];
     feature.requirements.push(requirement(

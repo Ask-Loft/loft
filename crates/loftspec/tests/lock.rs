@@ -81,7 +81,7 @@ fn without(field: &str) -> String {
 }
 
 #[test]
-fn a_lock_that_lacks_a_lock_field_is_not_valid() {
+fn ac_897_a_lock_that_lacks_a_lock_field_is_not_valid() {
     for field in [
         "format",
         "algorithm",
@@ -97,14 +97,14 @@ fn a_lock_that_lacks_a_lock_field_is_not_valid() {
 }
 
 #[test]
-fn a_lock_that_holds_another_field_is_not_valid() {
+fn ac_898_a_lock_that_holds_another_field_is_not_valid() {
     let text = DERIVED.replacen("{\n", "{\n  \"labels\": 3,\n", 1);
     let error = Lock::read(text.as_bytes()).unwrap_err();
     assert!(error.to_string().contains("labels"), "{error}");
 }
 
 #[test]
-fn a_lock_that_names_an_unknown_format_or_algorithm_is_not_valid() {
+fn ac_899_a_lock_that_names_an_unknown_format_or_algorithm_is_not_valid() {
     let format = DERIVED.replace("loftspec/1", "loftspec/2");
     assert!(matches!(
         Lock::read(format.as_bytes()),
@@ -135,7 +135,7 @@ fn a_lock_with_a_malformed_value_is_not_valid() {
 }
 
 #[test]
-fn the_publish_time_is_written_in_utc_to_the_second() {
+fn ac_931_the_publish_time_is_written_in_utc_to_the_second() {
     for (seconds, text) in [
         (0, "1970-01-01T00:00:00Z"),
         (951_782_400, "2000-02-29T00:00:00Z"),
