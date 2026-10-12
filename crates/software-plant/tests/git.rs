@@ -4,7 +4,7 @@
 use std::process::Command;
 
 use software_plant::GitScenario;
-use software_plant::git::{Call, NOT_A_REPOSITORY, Reply, UNSCRIPTED};
+use software_plant::git::{Call, NOT_A_REPOSITORY, OPTIONAL_LOCKS_ENV, Reply, UNSCRIPTED};
 
 fn args(line: &str) -> Vec<String> {
     line.split(' ').map(str::to_owned).collect()
@@ -47,7 +47,8 @@ fn a_detached_head_exits_1_and_prints_nothing() {
         Reply {
             code: 1,
             stdout: Vec::new(),
-            stderr: String::new()
+            stderr: String::new(),
+            optional_lock: None,
         }
     );
 }
@@ -159,4 +160,83 @@ fn a_scenario_round_trips_through_its_file() {
     let read = GitScenario::read(&path);
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(read.unwrap(), scenario);
+}
+
+/// A fresh directory for one test's plant, named by the test.
+fn plant(name: &str) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("software-plant-{name}-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    dir
+}
+
+/// Runs one call through the installed simulator, with `GIT_OPTIONAL_LOCKS` set as given, and
+/// returns the locks the plant recorded.
+fn locks_after(name: &str, call: &[&str], optional_locks: Option<&str>) -> Vec<String> {
+    let dir = plant(name);
+    let installed = GitScenario::clean_on("main").install(&dir);
+    let mut command = Command::new("git");
+    installed
+        .apply(&mut command)
+        .env_remove(OPTIONAL_LOCKS_ENV)
+        .args(call);
+    if let Some(value) = optional_locks {
+        command.env(OPTIONAL_LOCKS_ENV, value);
+    }
+    assert!(command.status().unwrap().success());
+    let locks = installed.locks();
+    let _ = std::fs::remove_dir_all(&dir);
+    locks
+}
+
+/// No lock recorded.
+const NONE: [&str; 0] = [];
+
+const STATUS_CALL: [&str; 6] = [
+    "status",
+    "--porcelain=v1",
+    "-z",
+    "--untracked-files=all",
+    "--",
+    "spec",
+];
+
+#[test]
+fn a_status_call_with_optional_locks_records_the_index_lock() {
+    assert_eq!(locks_after("lock", &STATUS_CALL, None), ["index.lock"]);
+    assert_eq!(
+        locks_after("lock-1", &STATUS_CALL, Some("1")),
+        ["index.lock"]
+    );
+}
+
+#[test]
+fn a_status_call_with_optional_locks_set_to_0_records_no_lock() {
+    assert_eq!(locks_after("no-lock", &STATUS_CALL, Some("0")), NONE);
+}
+
+#[test]
+fn no_other_call_records_a_lock() {
+    let prefix = ["rev-parse", "--show-prefix"];
+    let branch = ["symbolic-ref", "--quiet", "--short", "HEAD"];
+    assert_eq!(locks_after("prefix", &prefix, None), NONE);
+    assert_eq!(locks_after("branch", &branch, None), NONE);
+}
+
+#[test]
+fn installing_a_scenario_starts_a_fresh_record_of_locks() {
+    let dir = plant("fresh");
+    let scenario = GitScenario::clean_on("main");
+    let installed = scenario.install(&dir);
+    installed
+        .apply(&mut Command::new("git"))
+        .env_remove(OPTIONAL_LOCKS_ENV)
+        .args(STATUS_CALL)
+        .status()
+        .unwrap();
+    assert_eq!(installed.locks(), ["index.lock"]);
+    let again = scenario.install(&dir);
+    let locks = again.locks();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert_eq!(locks, NONE);
 }

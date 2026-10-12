@@ -14,6 +14,7 @@ use loftspec::publish::{LOCK, Lock};
 use loftspec_store::FileStore;
 use serde_json::Value;
 use software_plant::clock::EPOCH_ENV;
+use software_plant::git::OPTIONAL_LOCKS_ENV;
 use software_plant::{Clock, GitScenario};
 
 /// Runs `loft` in a clean repository on `main` at [`EPOCH`].
@@ -281,4 +282,17 @@ fn the_json_results_match_the_publish_schema() {
     ));
     assert_eq!(refused["outcome"], "refused");
     assert_eq!(refused["errors"][0]["kind"], "refused");
+}
+
+#[test]
+fn a_publish_reads_the_repository_without_taking_any_of_gits_locks() {
+    let scratch = Scratch::with_reading_list();
+    let plant = scratch.0.join(".plant");
+    fs::create_dir_all(&plant).unwrap();
+    let installed = GitScenario::clean_on("main").install(&plant);
+    let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+    installed.apply(&mut command).env_remove(OPTIONAL_LOCKS_ENV);
+    let output = command.arg("publish").output().unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(installed.locks(), Vec::<String>::new());
 }
