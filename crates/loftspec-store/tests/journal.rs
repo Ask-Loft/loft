@@ -8,7 +8,7 @@ use std::fs;
 
 use common::Scratch;
 use loftspec::codec::SpecPath;
-use loftspec_store::fs::StoreError;
+use loftspec_store::StoreError;
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
 
 /// A tree of three files, one in a directory of its own.
@@ -56,6 +56,16 @@ fn written() -> BTreeMap<String, Vec<u8>> {
     .collect()
 }
 
+/// Leaves [`changes`] committed and not finished, as a save interrupted after its commit does.
+fn committed(scratch: &Scratch) {
+    drop(
+        journal::prepare(&scratch.0, &changes())
+            .unwrap()
+            .commit()
+            .unwrap(),
+    );
+}
+
 #[test]
 fn a_save_writes_and_removes_every_named_file_and_leaves_no_journal() {
     let scratch = tree();
@@ -98,12 +108,7 @@ fn a_save_interrupted_before_its_journal_is_complete_leaves_every_file_as_it_was
 #[test]
 fn a_save_interrupted_after_its_journal_is_complete_is_finished_by_recovery() {
     let scratch = tree();
-    drop(
-        journal::prepare(&scratch.0, &changes())
-            .unwrap()
-            .commit()
-            .unwrap(),
-    );
+    committed(&scratch);
     assert_eq!(
         fs::read(scratch.0.join("spec/tags.yaml")).unwrap(),
         b"tags\n"
@@ -115,12 +120,7 @@ fn a_save_interrupted_after_its_journal_is_complete_is_finished_by_recovery() {
 #[test]
 fn a_save_interrupted_part_way_through_finishing_is_finished_by_recovery() {
     let scratch = tree();
-    drop(
-        journal::prepare(&scratch.0, &changes())
-            .unwrap()
-            .commit()
-            .unwrap(),
-    );
+    committed(&scratch);
     // The first staged file, the new Product, reached its place before the interruption.
     fs::create_dir_all(scratch.0.join("spec/products/b")).unwrap();
     fs::rename(
@@ -135,32 +135,22 @@ fn a_save_interrupted_part_way_through_finishing_is_finished_by_recovery() {
 #[test]
 fn recovering_twice_changes_nothing_more() {
     let scratch = tree();
-    drop(
-        journal::prepare(&scratch.0, &changes())
-            .unwrap()
-            .commit()
-            .unwrap(),
-    );
+    committed(&scratch);
     journal::recover(&scratch.0).unwrap();
     journal::recover(&scratch.0).unwrap();
     assert_eq!(scratch.snapshot(), written());
 }
 
 #[test]
-fn a_save_finishes_an_interrupted_save_before_its_own() {
+fn a_save_is_refused_while_a_committed_journal_is_there() {
     let scratch = tree();
-    drop(
-        journal::prepare(&scratch.0, &changes())
-            .unwrap()
-            .commit()
-            .unwrap(),
-    );
+    committed(&scratch);
+    let before = scratch.snapshot();
     let mut more = Changes::default();
     more.write.insert(spec("tags.yaml"), b"tags 3\n".to_vec());
-    journal::save(&scratch.0, &more).unwrap();
-    let mut expected = written();
-    expected.insert("spec/tags.yaml".to_owned(), b"tags 3\n".to_vec());
-    assert_eq!(scratch.snapshot(), expected);
+    let error = journal::save(&scratch.0, &more).unwrap_err();
+    assert!(matches!(error, StoreError::Pending(_)), "{error}");
+    assert_eq!(scratch.snapshot(), before);
 }
 
 #[test]

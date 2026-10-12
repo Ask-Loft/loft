@@ -29,7 +29,7 @@ impl Scratch {
         fs::create_dir_all(root.join("spec")).unwrap();
         loftspec_store::FileStore::open(&root)
             .unwrap()
-            .write_files(&codec::write(&document))
+            .write_files(codec::write(&document))
             .unwrap();
         Self(root)
     }

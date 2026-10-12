@@ -1,0 +1,40 @@
+//! What can go wrong in a store: the document's own errors, and those of the files that hold it.
+
+use std::io;
+use std::path::{Path, PathBuf};
+
+use loftspec::codec::ReadError;
+use loftspec::index::IndexErrors;
+
+#[derive(Debug, thiserror::Error)]
+pub enum StoreError {
+    #[error("the store holds no document")]
+    NoDocument,
+    #[error("{}", .0.iter().map(ToString::to_string).collect::<Vec<_>>().join("\n"))]
+    Read(Vec<ReadError>),
+    #[error("the document does not index: {0:?}")]
+    Index(IndexErrors),
+    #[error("{0}: there is no `spec/` directory")]
+    NoTree(PathBuf),
+    #[error("{path}: {source}")]
+    Io {
+        path: PathBuf,
+        #[source]
+        source: io::Error,
+    },
+    #[error("{0}: a file name that is not UTF-8")]
+    NotUtf8(PathBuf),
+    #[error("{0}: `spec/` is not empty")]
+    NotEmpty(PathBuf),
+    #[error("{0}: a save is already in progress")]
+    Pending(PathBuf),
+    #[error("{0}: {1}")]
+    Journal(PathBuf, String),
+}
+
+pub(crate) fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_ {
+    move |source| StoreError::Io {
+        path: path.to_path_buf(),
+        source,
+    }
+}

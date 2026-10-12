@@ -3,14 +3,12 @@
 //! converse, that every command that reports a read error lists it.
 
 mod common;
+mod conformance;
 
 use std::collections::BTreeMap;
-use std::fs;
-use std::path::{Path, PathBuf};
 
 use common::{Scratch, stderr, stdout};
-use loftspec::codec;
-use loftspec::node::Node;
+use conformance::{is_pending, snapshot, tagged};
 
 const READING_LIST: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -18,6 +16,8 @@ const READING_LIST: &str = concat!(
 );
 
 const PRODUCT: &str = "products/reading-list/product.yaml";
+
+const TAG: &str = "reads-tree";
 
 /// The arguments that run each implemented command, by the slug of its Feature.
 const COMMANDS: [(&str, &[&str]); 4] = [
@@ -30,47 +30,6 @@ const COMMANDS: [(&str, &[&str]); 4] = [
 /// Tagged commands not implemented yet, by Feature slug and subcommand. Each must still be
 /// unknown to `loft`; once it exists it moves to [`COMMANDS`] and is held to the rules.
 const PENDING: [(&str, &str); 2] = [("loft-verify", "verify"), ("loft-publish", "publish")];
-
-/// The slugs of the Features in this repository's `spec/` that list `reads-tree`.
-fn tagged() -> Vec<String> {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let files = loftspec_store::FileStore::open(&root)
-        .unwrap()
-        .read_files()
-        .unwrap();
-    let document = codec::read(&files).unwrap();
-    let mut slugs = Vec::new();
-    document.walk(&mut |node| {
-        if let Node::Feature(feature) = node
-            && feature
-                .details
-                .tags
-                .iter()
-                .any(|tag| tag.as_str() == "reads-tree")
-        {
-            slugs.push(feature.slug.as_str().to_owned());
-        }
-    });
-    slugs.sort();
-    slugs
-}
-
-/// Every file under the scratch directory with its bytes.
-fn snapshot(root: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
-    let mut files = BTreeMap::new();
-    let mut pending = vec![root.to_owned()];
-    while let Some(dir) = pending.pop() {
-        for entry in fs::read_dir(&dir).unwrap() {
-            let path = entry.unwrap().path();
-            if path.is_dir() {
-                pending.push(path);
-            } else {
-                files.insert(path.clone(), fs::read(&path).unwrap());
-            }
-        }
-    }
-    files
-}
 
 /// A scratch tree whose product file holds a comment, which the reader refuses at line 1.
 fn broken() -> Scratch {
@@ -87,15 +46,8 @@ fn output_text(output: &std::process::Output) -> String {
 #[test]
 fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
     let commands: BTreeMap<&str, &[&str]> = COMMANDS.into_iter().collect();
-    let pending: BTreeMap<&str, &str> = PENDING.into_iter().collect();
-    for slug in tagged() {
-        if let Some(subcommand) = pending.get(slug.as_str()) {
-            let output = Scratch::with_reading_list().loft(&[subcommand]);
-            assert_eq!(
-                output.status.code(),
-                Some(2),
-                "`loft {subcommand}` exists now: move {slug} from PENDING to COMMANDS"
-            );
+    for slug in tagged(TAG) {
+        if is_pending(&slug, &PENDING) {
             continue;
         }
         let args = commands
@@ -117,7 +69,7 @@ fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
 
 #[test]
 fn each_command_that_reports_a_read_error_lists_reads_tree() {
-    let tagged = tagged();
+    let tagged = tagged(TAG);
     for (slug, args) in COMMANDS {
         let output = broken().loft(args);
         let reports = output_text(&output)

@@ -2,17 +2,19 @@
 //! finished by the next command": the changed files are staged in `.loft/save/`, renaming the
 //! journal's plan into place commits the save, and each staged file is then renamed into place.
 //! A save interrupted before the commit leaves every file as it was; one interrupted after is
-//! finished by [`recover`], which every command runs before it reads the tree.
+//! finished by [`recover`], which the file store runs when it is opened.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
-use loftspec::codec::SpecPath;
+use loftspec::codec::{Files, SpecPath};
 use serde::{Deserialize, Serialize};
 
-use crate::fs::{SPEC, StoreError, io_error};
+use crate::StoreError;
+use crate::error::io_error;
+use crate::fs::SPEC;
 
 /// The journal's directory under the root.
 pub const JOURNAL: &str = ".loft/save";
@@ -40,8 +42,7 @@ impl RootPath {
         Self(name.to_owned())
     }
 
-    #[must_use]
-    pub fn as_str(&self) -> &str {
+    pub(crate) fn as_str(&self) -> &str {
         &self.0
     }
 }
@@ -54,8 +55,19 @@ pub struct Changes {
 }
 
 impl Changes {
+    /// Writes each of the files of the tree and removes each of the paths under `spec/`.
     #[must_use]
-    pub fn is_empty(&self) -> bool {
+    pub fn of_tree(write: Files, remove: &[SpecPath]) -> Self {
+        Self {
+            write: write
+                .into_iter()
+                .map(|(path, bytes)| (RootPath::in_spec(&path), bytes))
+                .collect(),
+            remove: remove.iter().map(RootPath::in_spec).collect(),
+        }
+    }
+
+    fn is_empty(&self) -> bool {
         self.write.is_empty() && self.remove.is_empty()
     }
 }
@@ -82,20 +94,16 @@ pub struct Prepared {
 
 /// A save whose plan is committed and whose files are not yet all in place.
 #[derive(Debug)]
-pub struct Committed {
-    root: PathBuf,
-    plan: Plan,
-}
+pub struct Committed(Prepared);
 
-/// Saves the changes: any interrupted save is recovered first, then the changes are staged,
-/// committed and put in place. An empty set of changes writes nothing.
+/// Saves the changes: they are staged, committed and put in place. An empty set of changes
+/// writes nothing.
 ///
 /// # Errors
 ///
-/// A file that cannot be written, renamed or removed, or an interrupted save that cannot be
-/// recovered. Before the commit every file is as it was; after it, [`recover`] finishes the save.
+/// A journal is already there, or a file cannot be written, renamed or removed. Before the
+/// commit every file is as it was; after it, [`recover`] finishes the save.
 pub fn save(root: &Path, changes: &Changes) -> Result<(), StoreError> {
-    recover(root)?;
     if changes.is_empty() {
         return Ok(());
     }
@@ -149,10 +157,7 @@ impl Prepared {
         let plan = journal.join(PLAN);
         fs::rename(&staged, &plan).map_err(io_error(&plan))?;
         sync_dir(&journal)?;
-        Ok(Committed {
-            root: self.root,
-            plan: self.plan,
-        })
+        Ok(Committed(self))
     }
 }
 
@@ -163,7 +168,7 @@ impl Committed {
     ///
     /// A file that cannot be renamed or removed; [`recover`] finishes the save later.
     pub fn finish(self) -> Result<(), StoreError> {
-        finish(&self.root, &self.plan)
+        finish(&self.0.root, &self.0.plan)
     }
 }
 

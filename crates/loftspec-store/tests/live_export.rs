@@ -2,14 +2,13 @@
 //! and a save of the unchanged document, which writes nothing.
 
 mod common;
+mod fixtures;
 
 use std::time::Instant;
 use std::{env, fs};
 
-use common::Scratch;
+use fixtures::{converted, with_lint};
 use loftspec::codec;
-use loftspec::convert::v1::convert;
-use loftspec::convert::v1::export::Export;
 use loftspec_store::{DocumentStore, FileStore};
 
 #[test]
@@ -17,14 +16,8 @@ use loftspec_store::{DocumentStore, FileStore};
 fn a_live_v1_export_loads_and_saves_through_the_file_store() {
     let path = env::var("LOFTSPEC_V1_EXPORT").expect("LOFTSPEC_V1_EXPORT names a v1 export");
     let text = fs::read_to_string(path).unwrap();
-    let document = convert(&Export::from_json(&text).unwrap())
-        .unwrap()
-        .document;
-    let scratch = Scratch::new();
-    scratch.put(
-        "spec/lint.yaml",
-        "rules:\n  - rule: SH-002\n    enabled: false\n",
-    );
+    let document = converted(&text);
+    let scratch = with_lint();
 
     let started = Instant::now();
     let saved = FileStore::open(&scratch.0)

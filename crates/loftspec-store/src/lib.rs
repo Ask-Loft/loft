@@ -2,6 +2,7 @@
 //! document, saves it and reports its roots, held in memory or as a `spec/` tree, so the same
 //! scenarios run against both and the two agree.
 
+mod error;
 pub mod file;
 pub mod fs;
 pub mod journal;
@@ -11,8 +12,8 @@ use loftspec::codec::{Files, Role, SpecPath};
 use loftspec::document::Document;
 use loftspec::hash::{Roots, hash_document};
 
+pub use error::StoreError;
 pub use file::FileStore;
-pub use fs::StoreError;
 pub use memory::MemoryStore;
 
 /// Where a document is held between commands.
@@ -66,7 +67,7 @@ impl Saved {
         let removed = current
             .keys()
             .filter(|path| !next.contains_key(*path))
-            .filter(|path| Role::of(path).is_some_and(|role| role != Role::Lint))
+            .filter(|path| Role::of(path).is_some_and(|role| role.is_written()))
             .cloned()
             .collect();
         Self { written, removed }
