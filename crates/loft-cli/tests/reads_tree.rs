@@ -46,7 +46,7 @@ fn output_text(output: &std::process::Output) -> String {
 }
 
 #[test]
-fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
+fn ac_937_ac_938_ac_939_ac_941_each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
     let commands: BTreeMap<&str, &[&str]> = COMMANDS.into_iter().collect();
     for slug in tagged(TAG) {
         if is_pending(&slug, &PENDING) {
@@ -70,7 +70,7 @@ fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
 }
 
 #[test]
-fn each_command_that_reports_a_read_error_lists_reads_tree() {
+fn ac_940_each_command_that_reports_a_read_error_lists_reads_tree() {
     let tagged = tagged(TAG);
     for (slug, args) in COMMANDS {
         let output = broken().loft(args);

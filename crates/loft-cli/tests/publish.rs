@@ -75,7 +75,7 @@ fn ac_554_a_first_publish_writes_the_lock_and_prints_sequence_1_and_the_state_ro
 }
 
 #[test]
-fn the_publish_time_is_the_one_the_clock_gives_in_utc() {
+fn ac_933_the_publish_time_is_the_one_the_clock_gives_in_utc() {
     let scratch = Scratch::with_reading_list();
     assert_eq!(on_main(&scratch, &["publish"]).status.code(), Some(0));
     assert!(
@@ -187,7 +187,7 @@ fn ac_558_ac_559_outside_a_git_repository_a_publish_refuses_and_writes_nothing()
 }
 
 #[test]
-fn a_git_that_cannot_be_run_refuses_naming_git() {
+fn ac_935_a_git_that_cannot_be_run_refuses_naming_git() {
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft(&["publish"]);
     refuses(&scratch, &output, "git cannot be run");
@@ -206,7 +206,7 @@ fn a_failing_git_refuses_with_its_message() {
 }
 
 #[test]
-fn an_invalid_lock_refuses_naming_the_lock_file() {
+fn ac_926_an_invalid_lock_refuses_naming_the_lock_file() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.0.join(LOCK), "{}\n").unwrap();
     let output = on_main(&scratch, &["publish"]);
@@ -216,7 +216,7 @@ fn an_invalid_lock_refuses_naming_the_lock_file() {
 }
 
 #[test]
-fn an_epoch_that_is_not_a_whole_number_of_seconds_refuses_naming_it() {
+fn ac_934_an_epoch_that_is_not_a_whole_number_of_seconds_refuses_naming_it() {
     let scratch = Scratch::with_reading_list();
     let output = scratch
         .command(Some(&GitScenario::clean_on("main")), &Clock::system())
@@ -248,7 +248,7 @@ fn ac_451_a_validation_error_refuses_listing_the_errors() {
 }
 
 #[test]
-fn a_read_error_is_reported_before_any_other_refusal() {
+fn rq_233_a_read_error_is_reported_before_any_other_refusal() {
     let scratch = Scratch::with_reading_list();
     scratch.edit(
         "products/reading-list/product.yaml",
@@ -265,7 +265,7 @@ fn a_read_error_is_reported_before_any_other_refusal() {
 }
 
 #[test]
-fn the_json_results_match_the_publish_schema() {
+fn ac_582_the_json_results_match_the_publish_schema() {
     let scratch = Scratch::with_reading_list();
     let key = unlabel(&scratch, "AC-3");
     let published = json(&on_main(&scratch, &["publish", "--format", "json"]));
@@ -285,7 +285,7 @@ fn the_json_results_match_the_publish_schema() {
 }
 
 #[test]
-fn a_publish_reads_the_repository_without_taking_any_of_gits_locks() {
+fn ac_977_ac_978_a_publish_reads_the_repository_without_taking_any_of_gits_locks() {
     let scratch = Scratch::with_reading_list();
     let plant = scratch.0.join(".plant");
     fs::create_dir_all(&plant).unwrap();

@@ -111,7 +111,7 @@ fn ac_470_verification_writes_nothing() {
 }
 
 #[test]
-fn the_json_results_match_the_verify_schema() {
+fn ac_582_the_json_results_match_the_verify_schema() {
     let scratch = published();
     let verified = json(&scratch.loft(&["verify", "--format", "json"]));
     assert_eq!(verified["outcome"], "verified");
