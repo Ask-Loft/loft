@@ -470,7 +470,7 @@ fn ac_425_and_ac_867_a_suppression_without_a_reason_is_refused() {
 
 #[test]
 fn every_rule_has_a_wire_name_and_a_default() {
-    assert_eq!(RuleId::ALL.len(), 22);
+    assert_eq!(RuleId::ALL.len(), 23);
     for rule in RuleId::ALL {
         assert_eq!(RuleId::parse(rule.as_str()), Some(*rule));
     }

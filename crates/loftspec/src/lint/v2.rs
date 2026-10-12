@@ -1,6 +1,6 @@
 //! The rules the v2 text form adds (F-21): a heading inside a body (`V2-001`), a statement stored
-//! as text without slots (`V2-002`), and a label reference in prose without its `mentions` edge
-//! (`V2-003`).
+//! as text without slots (`V2-002`), a label reference in prose without its `mentions` edge
+//! (`V2-003`), and a citation of a withdrawn label that a publish cannot rewrite (`V2-004`).
 
 use std::collections::BTreeSet;
 
@@ -51,21 +51,46 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
             .map(|label| (label, None))
             .chain(body_references(body));
         let source = ElementId::from(item.id);
+        let mentioned = |target: ElementId| mentions.contains(&(source, target));
         for (label, line) in references {
-            let message = match context.document.bindings.resolve(label) {
-                Some(target) if mentions.contains(&(source, target)) => continue,
-                Some(_) => "The reference has no `mentions` edge.",
+            let holder = context.document.bindings.resolve(label);
+            let withdrawn = withdrawn_from(context, label).any(mentioned);
+            let (rule, message) = match holder {
+                Some(holder) if mentioned(holder) && withdrawn => (
+                    RuleId::V2004,
+                    "The label is withdrawn from one mentioned element and held by another; \
+                     the next publish cannot rewrite it.",
+                ),
+                Some(holder) if mentioned(holder) => continue,
+                _ if withdrawn => (
+                    RuleId::V2003,
+                    "The label is withdrawn from a mentioned element; the next publish rewrites it.",
+                ),
+                Some(_) => (RuleId::V2003, "The reference has no `mentions` edge."),
                 // A label never allocated is not a reference, such as the curve name `P-256`.
                 None if !counters.has_allocated(label) => continue,
-                None => "The reference names no element.",
+                None => (RuleId::V2003, "The reference names no element."),
             };
             out.push(
-                Raw::new(RuleId::V2003, vec![key], message)
+                Raw::new(rule, vec![key], message)
                     .term(label.to_string())
                     .line(line),
             );
         }
     }
+}
+
+/// The elements `label` was withdrawn from.
+fn withdrawn_from<'a>(
+    context: &'a Context<'_>,
+    label: crate::identity::Label,
+) -> impl Iterator<Item = ElementId> + 'a {
+    context
+        .document
+        .bindings
+        .iter()
+        .filter(move |binding| binding.withdrawn.contains(&label))
+        .map(|binding| binding.element)
 }
 
 /// The label references of a body, each with its body line.
