@@ -4,6 +4,7 @@ members = [
     "crates/loftspec",
     "crates/loftspec-store",
     "crates/loft-cli",
+    "crates/software-plant",
 ]
 
 [workspace.package]

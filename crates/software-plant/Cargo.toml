@@ -1,0 +1,17 @@
+[package]
+name = "software-plant"
+version = "2.0.0"
+description = "Simulators of the external systems Loft depends on, for tests only"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+# Test equipment: never published, and never a dependency of a published crate.
+publish = false
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true
