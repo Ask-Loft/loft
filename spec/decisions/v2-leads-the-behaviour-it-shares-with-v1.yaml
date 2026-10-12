@@ -3,7 +3,9 @@ slug: v2-leads-the-behaviour-it-shares-with-v1
 title: "v2 leads the behaviour it shares with v1, and each difference is registered"
 context: "The Format's specification now lives in this repository, so its rules change here rather than in Loft v1. Loft v1 implements the same structural and language rules, EARS forms and label rules, and its server keeps running. Without a reference and a record of intended differences, the two drift apart unseen, or one side blocks the other."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a12dad-fb7a-7333-9129-a6c1a0c22841
+  outcome: "Behaviour shared with v1 changes first in `spec/`, each difference from v1 is an entry of the divergence register, and loftspec's tests compare it with outputs a v1 implementation wrote."
 drivers:
   - key: 01a12dad-fb7a-7333-9129-a6bd8cf5ef54
     kind: local
