@@ -1,11 +1,13 @@
-//! The `spec/` tree on disk: read whole, and written back file by file through a temporary
-//! directory and a rename (AC-537), so a crash leaves each file either as it was or as written.
+//! The `spec/` tree on disk: read whole, and written back through the journal (AC-537), so a
+//! crash leaves every file either as it was or as written.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::{fs, io, process};
 
 use loftspec::codec::{Files, SpecPath};
+
+use crate::journal::{self, Changes, RootPath};
 
 /// The directory under the root that holds the tree.
 pub const SPEC: &str = "spec";
@@ -24,9 +26,13 @@ pub enum StoreError {
     NotUtf8(PathBuf),
     #[error("{0}: `spec/` is not empty")]
     NotEmpty(PathBuf),
+    #[error("{0}: a save is already in progress")]
+    Pending(PathBuf),
+    #[error("{0}: {1}")]
+    Journal(PathBuf, String),
 }
 
-fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_ {
+pub(crate) fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_ {
     move |source| StoreError::Io {
         path: path.to_path_buf(),
         source,
@@ -80,36 +86,24 @@ fn collect(dir: &Path, prefix: &str, files: &mut Files) -> Result<(), StoreError
     Ok(())
 }
 
-/// Writes each file into a temporary directory beside `spec/`, then renames each into place.
+/// Writes each file of the tree in one journaled save.
 ///
 /// # Errors
 ///
-/// A file that cannot be written or renamed; files renamed before it stay written.
+/// A file that cannot be staged or put in place, or an interrupted save that cannot be
+/// recovered.
 pub fn write_changed(root: &Path, changed: &Files) -> Result<(), StoreError> {
-    if changed.is_empty() {
-        return Ok(());
-    }
-    let staging = root.join(format!(".loft-write-{}", process::id()));
-    fs::create_dir_all(&staging).map_err(io_error(&staging))?;
-    let result = stage_and_rename(root, &staging, changed);
-    let _ = fs::remove_dir_all(&staging);
-    result
+    journal::save(root, &tree_changes(changed))
 }
 
-fn stage_and_rename(root: &Path, staging: &Path, changed: &Files) -> Result<(), StoreError> {
-    let mut staged = Vec::with_capacity(changed.len());
-    for (index, (path, bytes)) in changed.iter().enumerate() {
-        let temporary = staging.join(index.to_string());
-        fs::write(&temporary, bytes).map_err(io_error(&temporary))?;
-        staged.push((temporary, root.join(SPEC).join(path.as_str())));
+fn tree_changes(files: &Files) -> Changes {
+    Changes {
+        write: files
+            .iter()
+            .map(|(path, bytes)| (RootPath::in_spec(path), bytes.clone()))
+            .collect(),
+        remove: BTreeSet::new(),
     }
-    for (temporary, target) in staged {
-        if let Some(parent) = target.parent() {
-            fs::create_dir_all(parent).map_err(io_error(parent))?;
-        }
-        fs::rename(&temporary, &target).map_err(io_error(&target))?;
-    }
-    Ok(())
 }
 
 /// Whether `path`, taken under `root` when relative, lies under `<root>/spec/` (RQ-171). The
@@ -166,7 +160,8 @@ pub fn write_outputs(
 /// The file beside `spec/` that keeps the v1 facts the content view excludes (AC-508, AC-703).
 pub const SIDECAR: &str = "v1-sidecar.json";
 
-/// Writes an imported tree into an empty or missing `<root>/spec/`, and the sidecar beside it.
+/// Writes an imported tree into an empty or missing `<root>/spec/`, and the sidecar beside it,
+/// in one save.
 ///
 /// # Errors
 ///
@@ -183,7 +178,9 @@ pub fn write_import(root: &Path, files: &Files, sidecar: &[u8]) -> Result<(), St
         }
     }
     fs::create_dir_all(&spec).map_err(io_error(&spec))?;
-    write_changed(root, files)?;
-    write_outputs(root, &[(PathBuf::from(SIDECAR), sidecar.to_vec())])?;
-    Ok(())
+    let mut changes = tree_changes(files);
+    changes
+        .write
+        .insert(RootPath::beside(SIDECAR), sidecar.to_vec());
+    journal::save(root, &changes)
 }
