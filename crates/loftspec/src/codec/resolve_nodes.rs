@@ -5,7 +5,7 @@ use super::record::Rec;
 use super::resolve::{Resolver, checked, key, optional, slug, text};
 use super::schema::field;
 use crate::attributes::{
-    BandKind, ConservationKind, QaKind, QualityAggregation, QualityBand, QualityTarget,
+    BandKind, Boundary, ConservationKind, QaKind, QualityAggregation, QualityBand, QualityTarget,
     TechnicalBinding, VerificationFate,
 };
 use crate::document::Edge;
@@ -162,6 +162,7 @@ impl Resolver<'_> {
             id: Some(id),
             name: text(record, field::NAME),
             details: self.details(record, id.into())?,
+            boundary: optional(Boundary::parse, record, field::BOUNDARY),
             components: record
                 .records(field::COMPONENTS)
                 .map(|component| self.component(component))

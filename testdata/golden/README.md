@@ -17,7 +17,7 @@ Absent values are `null`; an empty string is not absent.
 
 | View | Domain | Shape |
 | --- | --- | --- |
-| Node | `loftspec/node/1` | `[kind, text, body, tags, qaKind, qualityTarget, constraintBinding, conservationKind, verificationFate, children]` |
+| Node | `loftspec/node/1` | `[kind, text, body, tags, qaKind, qualityTarget, constraintBinding, conservationKind, verificationFate, boundary, children]` |
 | Edges root | `loftspec/edges/1` | `[[sourceHash, type, targetHash, role], …]` |
 | Registry root | `loftspec/registry/1` | `[registryName, [[name, definition], …]]` |
 | Decision | `loftspec/decision/1` | `[title, context, state, drivers, options, assessments, consequences]` |
@@ -38,6 +38,9 @@ Absent values are `null`; an empty string is not absent.
   `qualityTarget` is `{metric, band, unit, aggregation, scenario, environment}` with `band` as
   `{kind: "at_most" | "at_least" | "exactly" | "between", upper?, lower?, value?}`;
   `constraintBinding` is `{category, requiredValue}`. Each is `null` when absent.
+- `boundary` is a Component's `boundary` field as written, `private` or `external`, and `null`
+  when the field is absent or the node is not a Component. A Component's inherited boundary is
+  not part of its view.
 - `children` is the children's content hashes, grouped by kind and in order within each kind: a
   Feature Group's Features, then its Constraints; a Feature's Requirements, then its Quality
   Attributes; a Component's Components, then its Constraints, then its Quality Attributes; and

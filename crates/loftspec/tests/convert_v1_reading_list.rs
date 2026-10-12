@@ -24,7 +24,7 @@ const READING_LIST: &str =
 /// where the converter is built with other `serde_json` features, so a canonical form that
 /// depends on the build shows there. A change to it is a deliberate format change, never a
 /// refresh to make a failure disappear.
-const STATE_ROOT: &str = "dbc5458091cc5b1c1e0da38c3bea1f55330580f827cc69e13f7e20b540eb4395";
+const STATE_ROOT: &str = "11f1b4e771adfad1e4f1d11f09a75ddf4fed7809e0cfd018f3fa5e6f11f69548";
 
 fn converted() -> Conversion {
     convert(&Export::from_json(READING_LIST).unwrap()).unwrap()

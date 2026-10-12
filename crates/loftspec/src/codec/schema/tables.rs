@@ -53,7 +53,9 @@ const fn edges(name: &'static str) -> Field {
     ordered(scalars(name, Scalar::Key), Order::ByKey)
 }
 
-use crate::attributes::{BandKind, ConservationKind, QaKind, QualityAggregation, VerificationFate};
+use crate::attributes::{
+    BandKind, Boundary, ConservationKind, QaKind, QualityAggregation, VerificationFate,
+};
 use crate::decision::{ConsequenceKind, DriverKind, Rating, StateKind};
 use crate::document::SubjectRole;
 use crate::identity::LabelPrefix;
@@ -288,11 +290,12 @@ const SUBJECT_FIELDS: &[Field] = &[
 
 const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
 
-const COMPONENT: [Field; 10] = [
+const COMPONENT: [Field; 11] = [
     KEY,
     NAME,
     BODY,
     TAGS,
+    opt(field::BOUNDARY, S::Enum(Boundary::NAMES)),
     edges(field::SCOPED_TO),
     MENTIONS,
     records(field::COMPONENTS, K::Component),
@@ -301,8 +304,8 @@ const COMPONENT: [Field; 10] = [
     SECTIONS,
 ];
 /// A root Component: `slug` after `key`, then a Component's fields (AC-757).
-const ROOT_COMPONENT: [Field; 11] = {
-    let mut fields = [KEY; 11];
+const ROOT_COMPONENT: [Field; 12] = {
+    let mut fields = [KEY; 12];
     fields[1] = SLUG;
     let mut index = 1;
     while index < COMPONENT.len() {

@@ -6,7 +6,7 @@ use std::collections::BTreeSet;
 use serde_json::{Value, json};
 
 use crate::attributes::{
-    ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
+    Boundary, ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
 };
 use crate::canonical::{Digest, Domain, digest};
 use crate::ids::NodeId;
@@ -30,6 +30,7 @@ struct Fields<'a> {
     binding: Option<&'a TechnicalBinding>,
     conservation_kind: Option<ConservationKind>,
     verification_fate: Option<VerificationFate>,
+    boundary: Option<Boundary>,
 }
 
 impl<'a> Fields<'a> {
@@ -44,6 +45,7 @@ impl<'a> Fields<'a> {
             binding: None,
             conservation_kind: None,
             verification_fate: None,
+            boundary: None,
         }
     }
 
@@ -59,7 +61,10 @@ impl<'a> Fields<'a> {
             // A statement enters as its rendered sentence (AC-598).
             Node::Requirement(node) => Self::plain(node.statement.render(), &node.details),
             Node::Criterion(node) => Self::plain(&node.name, &node.details),
-            Node::Component(node) => Self::plain(&node.name, &node.details),
+            Node::Component(node) => Self {
+                boundary: node.boundary,
+                ..Self::plain(&node.name, &node.details)
+            },
             Node::Constraint(node) => Self {
                 binding: node.binding.as_ref(),
                 conservation_kind: node.conservation_kind,
@@ -146,6 +151,7 @@ fn view(node: Node<'_>, children: &[Digest]) -> Value {
         fields.binding,
         fields.conservation_kind,
         fields.verification_fate,
+        fields.boundary,
         children,
     ])
 }

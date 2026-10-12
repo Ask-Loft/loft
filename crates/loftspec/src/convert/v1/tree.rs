@@ -360,6 +360,7 @@ impl<'a> Builder<'_, 'a> {
             id: Some(id),
             name: node.name.clone(),
             details,
+            boundary: None,
             components: self.each(&mut children, NodeKind::Component, Self::component)?,
             constraints: self.each(&mut children, NodeKind::Constraint, Self::constraint)?,
             quality_attributes: self.each(

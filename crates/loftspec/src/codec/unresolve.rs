@@ -334,6 +334,9 @@ impl Edges {
             Some(&component.name),
             &component.details,
         );
+        if let Some(boundary) = component.boundary {
+            record.set_text(field::BOUNDARY, boundary.as_str());
+        }
         let scoped = id
             .and_then(|id| self.scoped.get(&id))
             .cloned()
