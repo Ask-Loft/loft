@@ -2,6 +2,8 @@ key: ba4f2ed9-5aff-44c3-8e99-57590052629f
 slug: loft-render
 name: "`loft render`"
 body: "Writes the Markdown projection and the canonical JSON export of the tree, to the paths given or to their defaults under `docs/`."
+tags:
+  - reads-tree
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -25,17 +27,6 @@ requirements:
         name: "With only one of `--markdown` and `--json`, only that projection is written."
       - key: 5f196252-af91-44c7-b113-df7d5ea881bc
         name: "A validation error does not prevent a render, except a successor that leads back to its own decision."
-  - key: 4739b92a-7537-4640-b926-b05fe748b222
-    statement:
-      form: unwanted
-      if: "the reader reports an error"
-      system: "`loft render`"
-      shall: "write nothing and exit 1."
-    criteria:
-      - key: c820f700-d4c6-49c4-9711-e3b8ce608662
-        name: "Every read error is reported with the position the reader names."
-      - key: 2d6d9e26-f69e-4b9f-a653-e3f110eb7d0a
-        name: "No projection is written."
   - key: 219d9233-7087-4e54-bd49-f15281043a90
     statement:
       form: unwanted

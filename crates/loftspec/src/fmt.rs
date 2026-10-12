@@ -28,7 +28,7 @@ pub struct Formatted {
 /// # Errors
 ///
 /// Every read error of the tree, and every rule across files the supplied tree still breaks;
-/// nothing is formatted then (RQ-141).
+/// nothing is formatted then (Reading the tree).
 pub fn format(files: &Files) -> Result<Formatted, Vec<ReadError>> {
     let mut tree = parse_files(files, Mode::Formatting)?;
     let mut supplier = Supplier {

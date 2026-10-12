@@ -2,6 +2,8 @@ key: f40c165f-3936-4241-bced-eeccfd3b4bef
 slug: loft-verify
 name: "`loft verify`"
 body: "Recomputes the roots of the tree and compares them with the lock, with an exit code a CI job can gate on."
+tags:
+  - reads-tree
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -24,9 +26,7 @@ requirements:
       form: unwanted
       if: "the reader reports an error"
       system: "`loft verify`"
-      shall: "report it and exit 1."
+      shall: "compare no root."
     criteria:
-      - key: 59c1a730-9fb4-4980-8f03-45c7585c99d9
-        name: "Every read error is reported with the position the reader names."
       - key: ac98170d-3a99-483b-8d60-2041dad0665d
-        name: "No root is compared."
+        name: "The output names no root."

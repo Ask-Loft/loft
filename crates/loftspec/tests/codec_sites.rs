@@ -48,7 +48,7 @@ fn ac_592_the_site_of_a_key_is_its_file_line_and_column() {
 }
 
 #[test]
-fn ac_527_an_unresolved_key_in_each_of_two_files_gives_two_errors() {
+fn an_unresolved_key_in_each_of_two_files_gives_two_errors() {
     let mut files = edited(
         FEATURE,
         &format!("  - {COMPONENT_KEY}"),

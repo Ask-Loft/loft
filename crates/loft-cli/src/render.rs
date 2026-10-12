@@ -1,6 +1,6 @@
 //! `loft render` (F-40): the Markdown projection and the canonical JSON export, written to the
 //! paths given or to `docs/spec.md` and `docs/spec.json`. A read error, or an output path under
-//! `spec/`, writes nothing (RQ-144, RQ-171); a lint finding or a validation error does not
+//! `spec/`, writes nothing (Reading the tree, RQ-171); a lint finding or a validation error does not
 //! prevent a render (AC-549, AC-685).
 
 use std::path::{Path, PathBuf};

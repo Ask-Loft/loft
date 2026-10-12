@@ -2,6 +2,8 @@ key: a53b8107-b5aa-41e0-af56-2d8b571bb908
 slug: loft-fmt
 name: "`loft fmt`"
 body: "Rewrites the tree in canonical layout and mints missing keys, or with `--check` reports drift without writing."
+tags:
+  - reads-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
   - bcd4525c-3adf-45dd-beed-527d654d517c
@@ -22,17 +24,6 @@ requirements:
         name: "Files are written through a temporary directory and a rename."
       - key: 12065dff-4eff-49fb-a77e-3c09a0d27e66
         name: "The paths rewritten are printed."
-  - key: 82f6c9df-7cd3-4f02-91f9-4c04c771337c
-    statement:
-      form: unwanted
-      if: "the reader reports an error"
-      system: "`loft fmt`"
-      shall: "write nothing and exit 1."
-    criteria:
-      - key: ca669f9d-d54f-4fd7-babf-6e11c1b8359c
-        name: "Every read error is reported with the position the reader names."
-      - key: 46f8993d-9003-41eb-a6ec-877b90345154
-        name: "No file is changed."
   - key: a19f24f8-5980-4978-aa6a-5feb1cc4f045
     statement:
       form: optional
