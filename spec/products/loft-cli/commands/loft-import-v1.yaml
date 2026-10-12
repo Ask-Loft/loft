@@ -60,6 +60,8 @@ requirements:
       system: "`loft import v1`"
       shall: "refuse and exit 1."
     criteria:
+      - key: 01a12dbe-e8df-7596-9849-322e35ea7e5b
+        name: "An entry whose name begins with `.` does not make `spec/` not empty."
       - key: e9fd8379-d779-4bea-a0eb-3f24f9720b09
         name: "Nothing is written."
       - key: 51f6aa0b-9bfd-4c14-8c47-ba96011774e9
