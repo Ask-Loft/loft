@@ -21,6 +21,17 @@ Tests cite the labels in `spec/labels.yaml`; a node added since the import has n
 publish allocates one. `loft render` writes `docs/spec.md` and `docs/spec.json` on demand; they are
 never committed and never normative. Plans and authoring records are kept outside this repository.
 
+## Agreement with v1
+
+Loft v1 implements the same structural and language rules (`SH-*`, `LQ-*`), EARS forms and label
+rules, and this repository leads them (the accepted decision "v2 leads the behaviour it shares
+with v1"). Change shared behaviour through `spec/`. An intended difference from v1 is an entry of
+`testdata/v1/divergences.json` in the same pull request, naming its rule, condition, direction and
+the criteria or decisions in `decidedBy`. `tests/v1_parity.rs` compares loftspec with
+`v1-lint.json` and `v1-ears.json` beside each public v1 export. Those files are written only by a
+v1 implementation; never edit or regenerate them to make a failure disappear. When v1's output
+changes, the files are rewritten from v1 after `spec/` adopts the change, or v1 reverts it.
+
 ## Repository layout
 
 - `crates/loftspec` owns the document model, identity, the canonical byte form, hashing and the

@@ -3,6 +3,7 @@
 
 #![allow(dead_code)]
 
+pub mod parity;
 pub mod text;
 pub mod v1;
 
