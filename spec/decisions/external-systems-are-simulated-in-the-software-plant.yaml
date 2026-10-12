@@ -3,7 +3,9 @@ slug: external-systems-are-simulated-in-the-software-plant
 title: "External systems are simulated by executables in the Software Plant"
 context: "Loft's commands depend on systems outside Loft, first git and the clock. A test that uses the real system cannot produce that system's failures on demand, and a test hook in the shipped binary is code that the user runs but that no test of the user's path exercises."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a12ff0-f5e5-7095-8fa8-24c1381b5d36
+  outcome: "Each external system that Loft depends on has a simulator in the Software Plant, put in front of the unchanged binary under test through its search path or its environment, and a contract suite runs the same scenarios against the simulator and the real system."
 drivers:
   - key: 01a12ff0-f5e5-7095-8fa8-24bdaf257241
     kind: local

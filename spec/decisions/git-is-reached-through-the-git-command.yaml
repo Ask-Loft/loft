@@ -3,7 +3,9 @@ slug: git-is-reached-through-the-git-command
 title: "Git is an external component reached through the `git` command"
 context: "A publish refuses when `spec/` has uncommitted changes and when the current branch is not the publish branch, so the publisher needs the repository's state. `loftspec` performs no input or output, and the store that reads the repository is published as a library, so whatever reads git becomes a dependency of every user of the store."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a12ff0-f5e5-7095-8fa8-24cf7e9827c1
+  outcome: "The store reads the repository's state through a port whose one adapter runs the `git` command, and the publisher sees only the port's answer; tests put the Software Plant's git simulator first on the search path."
 drivers:
   - key: 01a12ff0-f5e5-7095-8fa8-24cb901006b8
     kind: local
