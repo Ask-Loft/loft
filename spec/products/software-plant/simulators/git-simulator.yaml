@@ -92,9 +92,11 @@ requirements:
       - key: 01a130de-573a-77b2-b40b-d4401ab22e67
         name: "`ls-files -u -z --full-name -- :/` prints the index entries of each unmerged path."
       - key: 01a130de-573a-77b2-b40b-d4416898c369
-        name: "`cat-file blob <revision>:./loft.lock.json` prints the lock that the revision holds."
+        name: "`rev-parse -q --verify <revision>:./loft.lock.json` prints the object id of the lock that the revision holds."
       - key: 01a130de-573a-77b2-b40b-d44240bd7d8a
-        name: "`cat-file blob <revision>:./loft.lock.json` exits 128 with git's message for a revision that holds no lock."
+        name: "`rev-parse -q --verify <revision>:./loft.lock.json` exits 1 and prints nothing for a revision that holds no lock."
+      - key: 01a13183-078a-72f7-9a43-0aa67b0ea106
+        name: "`cat-file blob <object>` prints the lock whose object id it names."
   - key: 01a1315a-f185-7564-b075-5947e608e195
     statement:
       form: ubiquitous
