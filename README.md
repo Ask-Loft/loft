@@ -26,6 +26,12 @@ recomputes those roots and compares them with the lock; CI runs it on `main`. A 
 `develop` into `main`, publishes there, commits the labels and the lock together, and merges
 `main` back into `develop`.
 
+`loft merge-driver --install`, run once in a clone, registers Loft as git's merge driver for
+`spec/`: it adds `spec/**/*.yaml merge=loft` to `.gitattributes` and sets `merge.loft.driver` in
+the clone's configuration. git then merges each file of the tree by key. Where two branches
+change one field apart, the file gains a conflict record in place of conflict markers, git
+reports the path as conflicted, and `loft check` reports the record until it is removed.
+
 ## Software Plant
 
 Loft's commands depend on systems outside Loft: git and the clock. Tests run the real `loft`

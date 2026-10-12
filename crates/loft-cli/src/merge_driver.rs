@@ -1,6 +1,7 @@
 //! `loft merge-driver <base> <ours> <theirs> <path>` (RQ-150, RQ-151): git's merge driver for
 //! the files of a `spec/` tree. It merges the three versions git hands it with the merge engine
 //! and writes the result to `<ours>`; every message names `<path>`, never git's temporary files.
+//! With `--install` it registers itself in the repository instead (RQ-152, RQ-153).
 
 use std::path::{Component, Path, PathBuf};
 use std::process::ExitCode;
@@ -8,7 +9,10 @@ use std::{fs, io};
 
 use loftspec::codec::{ReadError, SpecPath};
 use loftspec::merge::{Input, MergeError, merge_file};
+use loftspec_store::StoreError;
 use loftspec_store::fs::{SPEC, write_outputs};
+use loftspec_store::merge_driver;
+use loftspec_store::repository::GitCommand;
 
 /// The three files git hands the driver, and the path of the file being merged as git names it.
 pub struct Inputs<'a> {
@@ -33,6 +37,29 @@ pub fn run(root: &Path, inputs: &Inputs<'_>) -> ExitCode {
             for message in messages {
                 eprintln!("{}{message}", inputs.path);
             }
+            ExitCode::FAILURE
+        }
+    }
+}
+
+/// Registers the driver, printing what it wrote, one name to a line.
+pub fn install(root: &Path) -> ExitCode {
+    match merge_driver::install(&GitCommand::default(), root) {
+        Ok(written) => {
+            for name in written {
+                println!("{name}");
+            }
+            ExitCode::SUCCESS
+        }
+        Err(StoreError::NotARepository(_)) => {
+            eprintln!(
+                "loft merge-driver --install: a git repository is required, and the working \
+                 directory is not inside one"
+            );
+            ExitCode::FAILURE
+        }
+        Err(error) => {
+            eprintln!("loft merge-driver --install: {error}");
             ExitCode::FAILURE
         }
     }

@@ -390,3 +390,53 @@ fn the_simulator_answers_the_config_calls_as_real_git_does() {
         }
     }
 }
+
+/// What one install wrote, or why it was refused.
+type Installed = Result<Vec<String>, String>;
+
+/// What two installs write, against the git that `git` runs.
+fn installs(git: &GitCommand, root: &Path) -> [Installed; 2] {
+    let once = || {
+        loftspec_store::merge_driver::install(git, root).map_err(|error| match error {
+            StoreError::NotARepository(_) => "not a repository".to_owned(),
+            other => other.to_string(),
+        })
+    };
+    [once(), once()]
+}
+
+#[test]
+fn installing_the_driver_writes_the_same_against_real_git_and_the_simulator() {
+    let all = || {
+        Ok(vec![
+            ".gitattributes".to_owned(),
+            "merge.loft.driver".to_owned(),
+            "merge.loft.name".to_owned(),
+        ])
+    };
+    let refused = || Err("not a repository".to_owned());
+    let cases: [(Case, [Installed; 2]); 2] = [
+        (("clean on main", committed, clean), [all(), Ok(Vec::new())]),
+        (
+            (
+                "outside a repository",
+                outside,
+                GitScenario::outside_repository,
+            ),
+            [refused(), refused()],
+        ),
+    ];
+    for ((name, build, scenario), want) in cases {
+        let repository = Scratch::new();
+        let root = build(&repository);
+        assert_eq!(
+            installs(&GitCommand::from_command(real_git), &root),
+            want,
+            "{name}: git"
+        );
+        let plant = Scratch::new();
+        let simulated = simulated(&scenario(), &plant.0);
+        let tree = Scratch::new();
+        assert_eq!(installs(&simulated, &tree.0), want, "{name}: simulator");
+    }
+}

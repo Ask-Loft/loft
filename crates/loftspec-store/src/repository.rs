@@ -1,5 +1,5 @@
 //! The repository port: what the publisher needs to know of the git repository that holds the
-//! tree, read through the `git` command (the accepted decision "Git is an external component
+//! tree, and the local configuration that registers the merge driver, through the `git` command (the accepted decision "Git is an external component
 //! reached through the `git` command"). Nothing else in this crate runs git.
 
 use std::io;
@@ -24,6 +24,11 @@ pub const STATUS: [&str; 6] = [
     "--",
     SPEC,
 ];
+
+/// A name's value in the repository's local configuration; exit 1 when it is unset.
+pub const CONFIG_GET: [&str; 3] = ["config", "--local", "--get"];
+/// Sets a name in the repository's local configuration.
+pub const CONFIG_SET: [&str; 2] = ["config", "--local"];
 
 /// Where the publisher learns the repository's state.
 pub trait Repository {
@@ -72,7 +77,11 @@ impl GitCommand {
     }
 
     /// The working directory's path from the repository's top level.
-    fn prefix(&self, root: &Path) -> Result<String, StoreError> {
+    ///
+    /// # Errors
+    ///
+    /// `root` is not inside a repository, or git fails or cannot be run.
+    pub fn prefix(&self, root: &Path) -> Result<String, StoreError> {
         let call = SHOW_PREFIX;
         let output = self.run(root, &call)?;
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -94,6 +103,30 @@ impl GitCommand {
     fn status(&self, root: &Path) -> Result<Vec<u8>, StoreError> {
         let call = STATUS;
         succeeded(&call, self.run(root, &call)?)
+    }
+
+    /// A name's value in the local configuration of the repository that holds `root`, or none.
+    ///
+    /// # Errors
+    ///
+    /// git fails or cannot be run.
+    pub fn config_get(&self, root: &Path, name: &str) -> Result<Option<String>, StoreError> {
+        let call: Vec<&str> = CONFIG_GET.into_iter().chain([name]).collect();
+        let output = self.run(root, &call)?;
+        if output.status.code() == Some(1) {
+            return Ok(None);
+        }
+        Ok(Some(text(&succeeded(&call, output)?)))
+    }
+
+    /// Sets a name in the local configuration of the repository that holds `root`.
+    ///
+    /// # Errors
+    ///
+    /// git fails or cannot be run.
+    pub fn config_set(&self, root: &Path, name: &str, value: &str) -> Result<(), StoreError> {
+        let call: Vec<&str> = CONFIG_SET.into_iter().chain([name, value]).collect();
+        succeeded(&call, self.run(root, &call)?).map(drop)
     }
 }
 

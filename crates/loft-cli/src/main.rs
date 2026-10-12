@@ -70,14 +70,21 @@ enum Command {
     },
     /// Merge one file of `spec/` as git's merge driver, writing the result to `<ours>` (RQ-150).
     MergeDriver {
+        /// Register the driver in the repository instead of merging (RQ-152).
+        #[arg(long, conflicts_with_all = ["base", "ours", "theirs", "path"])]
+        install: bool,
         /// The common ancestor's version (git's `%O`).
-        base: PathBuf,
+        #[arg(required_unless_present = "install")]
+        base: Option<PathBuf>,
         /// This side's version, which the merge overwrites (git's `%A`).
-        ours: PathBuf,
+        #[arg(required_unless_present = "install")]
+        ours: Option<PathBuf>,
         /// The other side's version (git's `%B`).
-        theirs: PathBuf,
+        #[arg(required_unless_present = "install")]
+        theirs: Option<PathBuf>,
         /// The path of the file being merged, as git names it (git's `%P`).
-        path: String,
+        #[arg(required_unless_present = "install")]
+        path: Option<String>,
     },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
@@ -165,11 +172,13 @@ fn main() -> ExitCode {
         ),
         Command::Publish { format } => publish::run(root, format == Some(Format::Json)),
         Command::Verify { format } => verify::run(root, format == Some(Format::Json)),
+        Command::MergeDriver { install: true, .. } => merge_driver::install(root),
         Command::MergeDriver {
-            base,
-            ours,
-            theirs,
-            path,
+            base: Some(base),
+            ours: Some(ours),
+            theirs: Some(theirs),
+            path: Some(path),
+            ..
         } => merge_driver::run(
             root,
             &merge_driver::Inputs {
@@ -179,6 +188,8 @@ fn main() -> ExitCode {
                 path: &path,
             },
         ),
+        // Clap requires the four paths unless `--install` is given.
+        Command::MergeDriver { .. } => ExitCode::from(2),
         Command::Render {
             markdown,
             json,
