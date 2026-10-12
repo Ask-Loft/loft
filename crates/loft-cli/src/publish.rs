@@ -1,17 +1,18 @@
 //! `loft publish` (F-41): the publisher run over the tree inside a git repository. It prints
-//! each label it allocated with its key, each citation of a withdrawn label it rewrote, and the
-//! new publish sequence and state root; that nothing changed; or why it refused (RQ-145). A
-//! refusal writes nothing and exits 1.
+//! each label it allocated with its key, each label it withdrew, each citation of a withdrawn
+//! label it rewrote, the new publish sequence and state root, and in a stopped merge or rebase
+//! the git command that finishes it; that nothing changed; or why it refused (RQ-145). A
+//! refusal writes nothing and exits 1. It runs no git command that changes the repository.
 
 use std::path::Path;
 use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::ReadError;
-use loftspec::publish::{Publication, PublishedAt, ReadTree, Refusal, publish};
-use loftspec_store::FileStore;
+use loftspec::publish::{Operation, Publication, PublishedAt, ReadTree, Refusal, publish};
 use loftspec_store::clock::{Clock as _, SystemClock};
 use loftspec_store::repository::{GitCommand, Repository as _};
+use loftspec_store::{FileStore, StoreError};
 use serde_json::{Value, json};
 
 use crate::json;
@@ -53,13 +54,17 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
 }
 
 /// Reads the tree, then the repository, the previous lock and the time, runs the publisher and
-/// writes what it gives in one save.
+/// writes what it gives in one save. In a stopped merge or rebase a lock that is not a lock
+/// record, such as one holding conflict markers, is read as none.
 fn attempt(root: &Path) -> Result<Publication, Failure> {
     let store = FileStore::open(root)?;
     let files = store.read_files()?;
     let tree = ReadTree::read(&files).map_err(Failure::Read)?;
     let repo = GitCommand::default().state(root)?;
-    let previous = store.lock()?;
+    let previous = match store.lock() {
+        Err(StoreError::Lock(..)) if repo.stopped.is_some() => None,
+        lock => lock?,
+    };
     let at = PublishedAt::from_unix_seconds(SystemClock::from_env().now()?)
         .map_err(|error| Failure::Refused(format!("SOURCE_DATE_EPOCH: {error}")))?;
     let publication = publish(tree, &repo, previous.as_ref(), at).map_err(refusal)?;
@@ -105,10 +110,18 @@ fn print(publication: &Publication) {
             lock,
             allocated,
             rewritten,
+            withdrawn,
+            finish,
             ..
         } => {
             for allocated in allocated {
                 println!("{} {}", allocated.label, allocated.element.key());
+            }
+            for withdrawn in withdrawn {
+                println!(
+                    "withdrew {} from {}, which now holds {}",
+                    withdrawn.label, withdrawn.element, withdrawn.live
+                );
             }
             for rewritten in rewritten {
                 println!(
@@ -120,6 +133,9 @@ fn print(publication: &Publication) {
                 "published sequence {}, state root {}",
                 lock.publish_sequence, lock.state_root
             );
+            if let Some(operation) = finish {
+                println!("to finish: {}", finishing(*operation));
+            }
         }
         Publication::Unchanged(lock) => println!(
             "nothing changed since publish sequence {}, state root {}",
@@ -139,6 +155,14 @@ fn report(failure: &Failure) {
             );
         }
         Failure::Refused(reason) => eprintln!("publish refused: {reason}"),
+    }
+}
+
+/// The git command that finishes a stopped merge or rebase once a publish settled it.
+const fn finishing(operation: Operation) -> &'static str {
+    match operation {
+        Operation::Merge => "git add -A && git commit --no-edit",
+        Operation::Rebase => "git add -A && git rebase --continue",
     }
 }
 
@@ -176,15 +200,43 @@ fn published(publication: &Publication) -> Value {
             })
         })
         .collect();
-    json!({
+    let (withdrawn, finish) = settled(publication);
+    let mut document = json!({
         "schema": SCHEMA,
         "outcome": outcome,
         "allocated": allocated,
         "rewritten": rewritten,
+        "withdrawn": withdrawn,
         "publishSequence": lock.publish_sequence.get(),
         "stateRoot": lock.state_root.to_string(),
         "errors": [],
-    })
+    });
+    if let Some(finish) = finish {
+        document["finish"] = json!(finish);
+    }
+    document
+}
+
+/// The labels a publish withdrew, each with its key and the label the key now holds, and the
+/// command that finishes the merge or rebase it settled.
+fn settled(publication: &Publication) -> (Vec<Value>, Option<&'static str>) {
+    let Publication::Published {
+        withdrawn, finish, ..
+    } = publication
+    else {
+        return (Vec::new(), None);
+    };
+    let withdrawn = withdrawn
+        .iter()
+        .map(|withdrawn| {
+            json!({
+                "key": withdrawn.element.to_string(),
+                "withdrawn": withdrawn.label.to_string(),
+                "label": withdrawn.live.to_string(),
+            })
+        })
+        .collect();
+    (withdrawn, finish.map(finishing))
 }
 
 fn refused(failure: &Failure) -> Value {
@@ -198,6 +250,7 @@ fn refused(failure: &Failure) -> Value {
         "outcome": "refused",
         "allocated": [],
         "rewritten": [],
+        "withdrawn": [],
         "errors": errors,
     })
 }

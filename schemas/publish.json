@@ -9,6 +9,7 @@
     "outcome",
     "allocated",
     "rewritten",
+    "withdrawn",
     "errors"
   ],
   "properties": {
@@ -34,6 +35,15 @@
       "items": {
         "$ref": "#/$defs/rewritten"
       }
+    },
+    "withdrawn": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rewritten"
+      }
+    },
+    "finish": {
+      "type": "string"
     },
     "publishSequence": {
       "type": "integer",

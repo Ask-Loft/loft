@@ -169,6 +169,7 @@ fn assert_pulled_side_kept(settled: &Settled) {
         [Withdrawn {
             element: key(9),
             label: label("CON-2"),
+            live: label("CON-3"),
         }]
     );
 }

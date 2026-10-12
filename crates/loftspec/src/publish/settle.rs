@@ -21,11 +21,12 @@ use crate::ids::ElementId;
 const SETTLED: [&str; 2] = ["spec/labels.yaml", "loft.lock.json"];
 
 /// A label withdrawn from a key because the pulled side gives it to another key, or gives the
-/// key another label.
+/// key another label, and the label the key holds after the publish.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Withdrawn {
     pub element: Key,
     pub label: Label,
+    pub live: Label,
 }
 
 /// Refuses an unmerged path other than the bindings and the lock, then a stop of a branch other
@@ -71,7 +72,7 @@ pub(super) fn preconditions(
 /// label, which allocation rebinds before the history is attached again.
 #[derive(Debug, Default)]
 pub(super) struct Settlement {
-    pub(super) withdrawn: Vec<Withdrawn>,
+    lost: Vec<(ElementId, Label)>,
     pending: Vec<History>,
 }
 
@@ -97,11 +98,21 @@ impl History {
 }
 
 impl Settlement {
-    /// Attaches the history of each key that allocation rebound.
-    pub(super) fn reattach(&self, bindings: &mut Bindings) {
+    /// Attaches the history of each key that allocation rebound, and gives each withdrawn label
+    /// with the label its key now holds.
+    pub(super) fn reattach(self, bindings: &mut Bindings) -> Vec<Withdrawn> {
         for history in &self.pending {
             history.attach(bindings);
         }
+        let live = |element| bindings.label_of(element).expect("a settled key is bound");
+        self.lost
+            .into_iter()
+            .map(|(element, label)| Withdrawn {
+                element: element.key(),
+                label,
+                live: live(element),
+            })
+            .collect()
     }
 }
 
@@ -138,11 +149,8 @@ pub(super) fn settle(document: &mut Document, operation: Operation) -> Settlemen
 
 impl Settlement {
     fn add(&mut self, element: ElementId, outcome: Outcome, bindings: &mut Bindings) {
-        let lost = outcome.lost.iter().map(|label| Withdrawn {
-            element: element.key(),
-            label: *label,
-        });
-        self.withdrawn.extend(lost);
+        let lost = outcome.lost.iter().map(|label| (element, *label));
+        self.lost.extend(lost);
         let history = History {
             element,
             aliases: outcome.aliases,

@@ -131,7 +131,7 @@ pub fn publish(
     // Allocation gives only fresh labels of each element's own prefix, so the document stays
     // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
     let allocated = allocate(&mut document);
-    settlement.reattach(&mut document.bindings);
+    let withdrawn = settlement.reattach(&mut document.bindings);
     let (written, rewritten) = written(files, &document);
     if !rewritten.is_empty() {
         let mut next = files.clone();
@@ -157,7 +157,7 @@ pub fn publish(
         files: written,
         allocated,
         rewritten,
-        withdrawn: settlement.withdrawn,
+        withdrawn,
         finish: repo.stopped.as_ref().map(|stopped| stopped.operation),
     })
 }

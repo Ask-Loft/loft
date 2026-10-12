@@ -32,6 +32,15 @@ the clone's configuration. git then merges each file of the tree by key. Where t
 change one field apart, the file gains a conflict record in place of conflict markers, git
 reports the path as conflicted, and `loft check` reports the record until it is removed.
 
+Two clones that publish apart can give one label to two nodes. When one pulls the other, by
+`git pull` (a merge) or `git pull --rebase`, the merge driver keeps the disputed bindings out of
+`spec/labels.yaml` in one conflict record and git stops. `loft publish`, run there on the
+publish branch, settles them: the pulled side keeps its labels, the other side's colliding
+labels are withdrawn and their nodes get fresh ones, citations of a withdrawn label are
+rewritten in every element that mentions its node, and the lock is written anew. It then prints
+the git command that finishes, `git add -A && git commit --no-edit` after a merge or
+`git add -A && git rebase --continue` after a rebase; Loft itself never changes the repository.
+
 ## Software Plant
 
 Loft's commands depend on systems outside Loft: git and the clock. Tests run the real `loft`
@@ -39,7 +48,8 @@ binary, unchanged, against simulators from the Software Plant instead of those s
 
 - a `git` executable that answers the git calls Loft makes from a scenario the test writes (a
   clean repository on `main`, uncommitted changes, another branch, a detached HEAD, a local
-  configuration, a directory outside any repository, a git error) and refuses any other call;
+  configuration, a merge or rebase stopped on a conflict, a directory outside any repository, a
+  git error) and refuses any other call;
 - a clock that sets `SOURCE_DATE_EPOCH`, so a test names the publish time exactly.
 
 ```rust
