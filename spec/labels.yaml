@@ -2,8 +2,8 @@ counters:
   P: 4
   FG: 13
   F: 58
-  RQ: 248
-  AC: 977
+  RQ: 250
+  AC: 982
   CMP: 16
   CON: 17
   QA: 3
@@ -277,6 +277,20 @@ bindings:
     label: AC-898
   - key: 01a12ff0-f5e5-7095-8fa8-250a1958b798
     label: AC-899
+  - key: 01a13050-9f92-73f0-b7a3-fb6f8f1ab15c
+    label: RQ-249
+  - key: 01a13050-9f92-73f0-b7a3-fb706075669d
+    label: AC-979
+  - key: 01a13050-9f92-73f0-b7a3-fb71df8de3aa
+    label: AC-980
+  - key: 01a13050-9f92-73f0-b7a3-fb727687b663
+    label: AC-981
+  - key: 01a13050-9f92-73f0-b7a3-fb738a1eb895
+    label: RQ-248
+  - key: 01a13050-9f92-73f0-b7a3-fb74e360ede3
+    label: AC-977
+  - key: 01a13050-9f92-73f0-b7a3-fb750da1f63d
+    label: AC-978
   - key: 01c16dee-867b-4d85-b851-ac07db2a44f2
     label: AC-410
   - key: 01cb4866-fc85-4142-ade6-5a4ae9927beb
