@@ -1,7 +1,7 @@
 key: e74d3409-8e24-4790-9285-8568ef81453d
 slug: the-lock
 name: "The lock"
-body: "The lock record a publish writes to `loft.lock.json`, together with the label changes that are the only edit a publish makes under `spec/`."
+body: "The lock record a publish writes to `loft.lock.json`, together with the label changes and the rewritten citations that are the only edits a publish makes under `spec/`."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -10,20 +10,20 @@ requirements:
       form: event_driven
       when: "publishing a tree that changed since the last publish"
       system: "the publisher"
-      shall: "write only the lock and the bindings file."
+      shall: "write only the lock, the bindings file and the files in which it rewrites a citation."
     criteria:
       - key: 4aa59cef-750c-47a6-946a-07e1e0be0902
         name: "`loft.lock.json` is written with the fields of the lock record."
       - key: 74f2cdd9-aadc-4eee-815e-cf9711a22462
         name: "No projection is written by a publish."
       - key: 94856ac4-cf5b-4151-8afc-0854d338d7d1
-        name: "`spec/labels.yaml` is the only file under `spec/` that a publish changes."
+        name: "`spec/labels.yaml` and the files in which a publish rewrites a citation are the only files under `spec/` that a publish changes."
       - key: 489f3b99-0c96-46c7-b0d9-a1da6e6ccf18
         name: "The publish sequence is one more than the previous lock's, or 1 for a first publish."
       - key: 0066b673-cf11-414d-b8ec-f734e0c0b6bf
         name: "`publishedAt` is the publish time in UTC."
       - key: 848eda1a-790b-4dfe-b55b-8ee0acca532c
-        name: "If writing the lock or the bindings fails, neither is left changed."
+        name: "If writing any of the files a publish writes fails, none of them is left changed."
   - key: 01a12ff0-f5e5-7095-8fa8-24fbd830a37c
     statement:
       form: ubiquitous

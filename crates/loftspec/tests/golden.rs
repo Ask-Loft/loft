@@ -71,7 +71,7 @@ fn ac_48_the_small_document_vectors_are_reproduced_byte_for_byte() {
 }
 
 #[test]
-fn the_small_document_roots_match_their_vectors() {
+fn ac_48_the_small_document_roots_match_their_vectors() {
     let vectors = vectors();
     let vector = |name: &str| {
         vectors

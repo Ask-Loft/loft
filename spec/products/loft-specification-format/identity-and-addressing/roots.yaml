@@ -65,6 +65,8 @@ requirements:
         name: "Relabelling a node changes the binding root."
       - key: 245ac12d-523d-4ff2-8a39-f1918b595aff
         name: "The hash in a binding is computed from the document, never read from `spec/labels.yaml`."
+      - key: 01a130de-5738-756e-a4f4-f9521ba46949
+        name: "A binding's withdrawn labels enter no root."
       - key: 81c66bbd-5c2f-4bcb-b2b7-3949c04282f0
         name: "A node's binding carries the node's content hash."
       - key: b5d58ba7-c21b-40c8-8792-3cee2d34a793

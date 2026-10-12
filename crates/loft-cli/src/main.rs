@@ -4,26 +4,35 @@
 mod check;
 mod import;
 mod json;
+mod merge_driver;
 mod publish;
 mod render;
 mod verify;
+mod version;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 use loftspec_store::FileStore;
+use loftspec_store::merge_driver::LAUNCHER;
 
 #[derive(Parser)]
 #[command(
     name = "loft",
     about = "Author, check and format a Loft specification in git"
 )]
-#[command(arg_required_else_help = true)]
+#[command(arg_required_else_help = true, disable_version_flag = true)]
 struct Cli {
+    /// Print the tool version, the format and the hashing algorithm (RQ-157).
+    #[arg(long)]
+    version: bool,
+    /// With `--version`, print one JSON document on standard output (AC-682).
+    #[arg(long, value_name = "FORMAT", requires = "version")]
+    format: Option<Format>,
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Subcommand)]
@@ -59,6 +68,28 @@ enum Command {
         /// Print one JSON document on standard output (RQ-155).
         #[arg(long, value_name = "FORMAT")]
         format: Option<Format>,
+    },
+    /// Merge one file of `spec/` as git's merge driver, writing the result to `<ours>` (RQ-150).
+    MergeDriver {
+        /// Register the driver in the repository instead of merging (RQ-152).
+        #[arg(long, conflicts_with_all = ["base", "ours", "theirs", "path"])]
+        install: bool,
+        /// With `--install`, the shell command that starts `loft` where git runs the driver, such
+        /// as `npx --no-install loft` for a dev dependency; `loft` unless given.
+        #[arg(long, requires = "install", value_name = "COMMAND")]
+        command: Option<String>,
+        /// The common ancestor's version (git's `%O`).
+        #[arg(required_unless_present = "install")]
+        base: Option<PathBuf>,
+        /// This side's version, which the merge overwrites (git's `%A`).
+        #[arg(required_unless_present = "install")]
+        ours: Option<PathBuf>,
+        /// The other side's version (git's `%B`).
+        #[arg(required_unless_present = "install")]
+        theirs: Option<PathBuf>,
+        /// The path of the file being merged, as git names it (git's `%P`).
+        #[arg(required_unless_present = "install")]
+        path: Option<String>,
     },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
@@ -114,8 +145,17 @@ enum Format {
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    if cli.version {
+        version::run(cli.format == Some(Format::Json));
+        return ExitCode::SUCCESS;
+    }
+    let Some(command) = cli.command else {
+        // Clap prints the usage for a bare `loft`; any other way to reach here is a usage error.
+        let _ = Cli::command().print_help();
+        return ExitCode::from(2);
+    };
     let root = Path::new(".");
-    match cli.command {
+    match command {
         Command::Fmt { check } => fmt(root, check),
         Command::Check { fail_on, format } => check::run(
             root,
@@ -137,6 +177,28 @@ fn main() -> ExitCode {
         ),
         Command::Publish { format } => publish::run(root, format == Some(Format::Json)),
         Command::Verify { format } => verify::run(root, format == Some(Format::Json)),
+        Command::MergeDriver {
+            install: true,
+            command,
+            ..
+        } => merge_driver::install(root, command.as_deref().unwrap_or(LAUNCHER)),
+        Command::MergeDriver {
+            base: Some(base),
+            ours: Some(ours),
+            theirs: Some(theirs),
+            path: Some(path),
+            ..
+        } => merge_driver::run(
+            root,
+            &merge_driver::Inputs {
+                base: &base,
+                ours: &ours,
+                theirs: &theirs,
+                path: &path,
+            },
+        ),
+        // Clap requires the four paths unless `--install` is given.
+        Command::MergeDriver { .. } => ExitCode::from(2),
         Command::Render {
             markdown,
             json,

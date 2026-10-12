@@ -170,7 +170,7 @@ fn ac_655_the_export_layout_is_the_published_one() {
 }
 
 #[test]
-fn a_code_span_in_a_name_renders_as_written() {
+fn ac_925_a_code_span_in_a_name_renders_as_written() {
     let mut document = small_document();
     document.products[0].feature_groups[0].name =
         "The `event_driven` form and snake_case [notes]".to_owned();
@@ -182,7 +182,7 @@ fn a_code_span_in_a_name_renders_as_written() {
 }
 
 #[test]
-fn a_bar_in_a_code_span_is_still_escaped() {
+fn ac_925_a_bar_in_a_code_span_is_still_escaped() {
     let mut document = small_document();
     document.products[0].feature_groups[0].name = "The `a|b` form".to_owned();
     let markdown = render(&document).unwrap().markdown;

@@ -97,7 +97,8 @@ impl RuleId {
             | Self::Lq002
             | Self::Lq003
             | Self::Lq006
-            | Self::V2003 => Severity::Warning,
+            | Self::V2003
+            | Self::V2004 => Severity::Warning,
             Self::Sh002
             | Self::Sh005
             | Self::Sh006

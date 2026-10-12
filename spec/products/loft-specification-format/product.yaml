@@ -89,6 +89,8 @@ featureGroups:
       - e74d3409-8e24-4790-9285-8568ef81453d
       - a398e50b-66bc-43c0-b0b7-33d3b4c35435
       - e05fa615-2708-4b59-8d22-f4119bedef5a
+      - 01a130de-5737-776f-9c39-b9c7aec2fc26
+      - 01a130de-5737-776f-9c39-b9e3793de847
   - key: 1be50284-6f97-4abd-ac76-7333de756f2a
     slug: merge-semantics
     name: "Merge semantics"
@@ -100,3 +102,4 @@ featureGroups:
       - 35f9c8f7-2632-4aa4-8e7f-c2a9d520bece
       - 6a3af886-c63d-49a9-8467-0cc33fdcdc50
       - f907e0df-acf0-4a7d-a118-30a71393f290
+      - 01a130de-5737-776f-9c39-b9bb261d3fce

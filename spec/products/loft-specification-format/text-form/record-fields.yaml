@@ -208,11 +208,15 @@ requirements:
       - key: c5ed56ff-4332-4905-a67e-a3fcfe3c2a0b
         name: "`counters` is required and maps each of the nine label prefixes to its next value, in the order `P`, `FG`, `F`, `RQ`, `AC`, `CMP`, `CON`, `QA`, `ADR`."
       - key: 480910d9-f626-4e77-927c-72008061a372
-        name: "A binding's fields are, in order, `key`, `label` and `aliases`."
+        name: "A binding's fields are, in order, `key`, `label`, `aliases` and `withdrawn`."
       - key: 01a12dec-ba4c-7741-b3ca-9e8f125b4997
         name: "A binding's `key` and `label` are required."
       - key: a3d3edaf-117b-4b44-82cd-951405f69ee0
         name: "A binding's aliases are written in the order they were recorded."
+      - key: 01a130de-5738-756e-a4f4-f95029f17265
+        name: "A binding's withdrawn labels are written in the order they were recorded."
+      - key: 01a130de-5738-756e-a4f4-f951a95a6e17
+        name: "A binding without a withdrawn label omits `withdrawn`."
   - key: 10c0f6db-a0f3-4d58-9559-b4a70c47c339
     statement:
       form: ubiquitous

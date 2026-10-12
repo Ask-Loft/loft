@@ -85,7 +85,7 @@ fn ac_597_changing_a_body_changes_the_content_hash() {
 }
 
 #[test]
-fn an_empty_body_and_no_body_hash_differently() {
+fn ac_601_an_empty_body_and_no_body_hash_differently() {
     let mut node = feature(key(1), "Keys", vec![]);
     let without = node.content_hash();
     node.details.body = Some(String::new());
@@ -130,7 +130,7 @@ fn ac_37_a_node_hashes_alike_at_any_position_among_its_siblings() {
 }
 
 #[test]
-fn tag_order_and_repetition_do_not_change_the_content_hash() {
+fn ac_596_tag_order_and_repetition_do_not_change_the_content_hash() {
     let mut first = feature(key(1), "Keys", vec![]);
     first.details.tags = vec![
         TagName::parse("identity").unwrap(),
@@ -173,7 +173,7 @@ fn ac_158_a_section_is_hashed_by_the_node_rule() {
 }
 
 #[test]
-fn sections_follow_the_structural_children() {
+fn ac_605_sections_follow_the_structural_children() {
     let mut node = feature(key(1), "Keys", vec![requirement(key(2), "One.", vec![])]);
     let notes = section(3, "Notes");
     node.details.sections = vec![notes.clone()];
@@ -183,7 +183,7 @@ fn sections_follow_the_structural_children() {
 }
 
 #[test]
-fn the_kind_is_content() {
+fn ac_596_the_kind_is_content() {
     let feature_node = feature(key(1), "Keys", vec![]);
     let group = FeatureGroup {
         id: Some(FeatureGroupId::new(key(1))),

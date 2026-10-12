@@ -1,7 +1,7 @@
 key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
 slug: lint-rules-of-v2
 name: "Lint rules of v2"
-body: "The three rules the v2 text form adds, V2-001 to V2-003: a heading inside a body, a statement stored as text without slots, and a label reference without a `mentions` edge."
+body: "The four rules the v2 text form adds, V2-001 to V2-004: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -45,3 +45,21 @@ requirements:
         name: "A label-shaped reference whose number is below its prefix's counter and that names no element yields one `V2-003` finding naming the node and the reference."
       - key: cfe8fb26-befe-43b5-8bb8-c359c0a4b239
         name: "A label-shaped text whose number is not below its prefix's counter in `spec/labels.yaml` is not a reference."
+      - key: 01a130de-5739-7721-8fd2-76671dbec256
+        name: "A reference to a label withdrawn from a key that the node mentions yields one `V2-003` finding saying that the next publish rewrites it."
+      - key: 01a13176-1c9e-7519-8a0d-9ea2a1f1ae81
+        name: "A reference qualified by a document is not said to be rewritten by the next publish."
+  - key: 01a130de-5739-7721-8fd2-7668cd46ffb2
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-004` a citation of a withdrawn label that the next publish cannot rewrite, because the element mentions the label's live holder as well as the key it was withdrawn from, or two keys it was withdrawn from."
+    criteria:
+      - key: 01a130de-5739-7721-8fd2-76699386071a
+        name: "Such a citation yields one `V2-004` finding naming the element and the label."
+      - key: 01a130de-5739-7721-8fd2-766abb4f7731
+        name: "A citation in an element that mentions only one of the two keys yields no `V2-004` finding."
+      - key: 01a13176-1c9e-7519-8a0d-9ea3aaf747f7
+        name: "A citation in an element that mentions two keys the label was withdrawn from yields one `V2-004` finding."
+      - key: 01a130de-5739-7721-8fd2-766bcc39774e
+        name: "The default severity of `V2-004` is warning."

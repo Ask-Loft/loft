@@ -35,3 +35,14 @@ requirements:
         name: "When both sides move one record to different positions, the merge driver writes a conflict record with field `position` on the moved record."
       - key: 21e12edb-2009-4543-9efc-5777307e0ebe
         name: "The moved record stays at its base position."
+  - key: 01a13070-322f-7493-9495-407a1dab52e8
+    statement:
+      form: unwanted
+      if: "both sides move one value of a list of values to different positions"
+      system: "the merge driver"
+      shall: "write one conflict record for the whole list on the record that holds it."
+    criteria:
+      - key: 01a13070-322f-7493-9495-407bf10c78e5
+        name: "The conflict's sides hold each side's whole list."
+      - key: 01a13070-322f-7493-9495-407ce16da4fd
+        name: "The list keeps its base order."

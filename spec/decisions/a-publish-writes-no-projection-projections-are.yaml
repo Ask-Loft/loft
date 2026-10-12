@@ -3,9 +3,10 @@ slug: a-publish-writes-no-projection-projections-are
 title: "A publish writes no projection; projections are rendered on demand"
 context: "A rendered Markdown and a JSON export committed beside the lock can be mistaken for the specification. In v2 the `spec/` tree is the specification. A second copy committed beside it can drift from it, and a reader that takes input from a projection would make the projection a source."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 27f3ea10-952f-4d00-bf9d-b7b3bb0d1240
   outcome: "A publish writes the lock and the bindings in `spec/labels.yaml` and nothing else; the Markdown and JSON projections are rendered on demand, each stamped with the state root it renders, and no role takes input from a projection."
+  successor: 01a130de-573a-77b2-b40b-d45046845b37
 drivers:
   - key: 5b3edccb-6cd0-4a3e-b771-8510ca2b92da
     kind: local

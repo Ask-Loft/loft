@@ -134,7 +134,7 @@ fn ac_262_root_components_are_visited_in_the_order_of_their_file_names() {
 }
 
 #[test]
-fn decisions_are_allocated_labels_after_every_node_in_the_order_of_their_file_names() {
+fn ac_895_decisions_are_allocated_labels_after_every_node_in_the_order_of_their_file_names() {
     let mut document = small_document();
     let mut second = document.decisions[0].clone();
     second.id = DecisionId::new(key(46));
@@ -214,7 +214,7 @@ fn promoted() -> Document {
 }
 
 #[test]
-fn a_binding_whose_prefix_is_not_its_kinds_is_read_without_error() {
+fn ac_896_a_binding_whose_prefix_is_not_its_kinds_is_read_without_error() {
     let document = promoted();
     let mut files = codec::write(&small_document());
     let promoted_files = codec::write(&document);
@@ -262,7 +262,7 @@ fn a_second_allocation_gives_out_nothing() {
 }
 
 #[test]
-fn every_kind_takes_its_own_prefix() {
+fn ac_243_every_kind_takes_its_own_prefix() {
     let mut document = small_document();
     allocate(&mut document);
     document.walk(&mut |node: Node<'_>| {

@@ -48,7 +48,7 @@ requirements:
       - key: 7f8f5ab3-f5f5-4002-accc-f04d0b94ec8d
         name: "The deleted node is absent from the merged tree."
       - key: 8514c308-6297-4f43-a6b7-535a4e5f03bb
-        name: "The validator reports the dangling key."
+        name: "`loft check` reports the dangling key."
   - key: 27d789a0-0371-47ec-8463-1a8f576ee377
     statement:
       form: event_driven

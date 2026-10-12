@@ -49,6 +49,7 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
     resolver.roots();
     resolver.decisions();
     resolver.labels();
+    resolver.document.conflicts = super::resolve_conflicts::collect(tree);
     if resolver.errors.is_empty() {
         Ok(resolver.document)
     } else {
@@ -286,6 +287,11 @@ impl<'t> Resolver<'t> {
         for alias in binding.list(field::ALIASES) {
             let alias = Label::parse(alias.text().unwrap_or_default()).expect("a checked label");
             bindings.add_alias(element, alias).map_err(fail)?;
+        }
+        for withdrawn in binding.list(field::WITHDRAWN) {
+            let withdrawn =
+                Label::parse(withdrawn.text().unwrap_or_default()).expect("a checked label");
+            bindings.add_withdrawn(element, withdrawn).map_err(fail)?;
         }
         Ok(())
     }

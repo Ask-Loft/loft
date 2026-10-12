@@ -35,6 +35,7 @@ fn clean_on(branch: &str) -> RepoState {
     RepoState {
         branch: Some(branch.to_owned()),
         modified: Vec::new(),
+        stopped: None,
     }
 }
 
@@ -55,7 +56,7 @@ fn derived() -> Document {
 /// Publishes `files` on a clean `main` with no previous lock.
 fn first(files: &Files) -> (Lock, Vec<u8>) {
     match publish_files(files, &clean_on("main"), None, at(1_000)).unwrap() {
-        Publication::Published { lock, labels, .. } => (lock, labels.expect("new bindings")),
+        Publication::Published { lock, files, .. } => (lock, files[&SpecPath::new(LABELS)].clone()),
         Publication::Unchanged(_) => panic!("a first publish publishes"),
     }
 }
@@ -178,10 +179,10 @@ fn bindings_whose_bytes_would_not_change_are_not_given() {
         Some(&lock),
         at(0),
     );
-    let Ok(Publication::Published { labels, .. }) = changed else {
+    let Ok(Publication::Published { files, .. }) = changed else {
         panic!("a changed tree publishes");
     };
-    assert_eq!(labels, None);
+    assert_eq!(files, Files::new());
 }
 
 #[test]
@@ -341,7 +342,7 @@ fn ac_678_a_changed_source_state_alone_fails_on_the_state_root() {
 }
 
 #[test]
-fn a_lock_of_other_roots_never_verifies() {
+fn ac_468_a_lock_of_other_roots_never_verifies() {
     let (files, mut lock) = published();
     lock.state_root = "0".repeat(64).parse::<Digest>().unwrap();
     assert_eq!(mismatch(&files, &lock), Root::State);

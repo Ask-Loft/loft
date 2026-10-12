@@ -10,6 +10,7 @@
 pub mod clock;
 pub mod git;
 mod install;
+pub mod real_git;
 
 pub use clock::Clock;
 pub use git::GitScenario;

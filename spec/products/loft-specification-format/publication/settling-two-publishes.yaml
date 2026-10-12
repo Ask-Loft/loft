@@ -1,0 +1,99 @@
+key: 01a130de-5737-776f-9c39-b9c7aec2fc26
+slug: settling-two-publishes
+name: "Settling two publishes"
+body: "How a publish run during a stopped merge or rebase of the publish branch settles the labels that two publishes gave apart and pins the merged tree."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+requirements:
+  - key: 01a130de-5737-776f-9c39-b9c8dc788466
+    statement:
+      form: event_driven
+      when: "publishing during a stopped merge or rebase of the publish branch"
+      system: "the publisher"
+      shall: "publish the tree in the working directory."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9c9ad39d7c3
+        name: "The publish sequence is one more than the higher of the sequences of the lock at `HEAD` and the lock of the commit being merged or replayed, or 1 when neither holds a lock."
+      - key: 01a130de-5737-776f-9c39-b9cab792f466
+        name: "A `loft.lock.json` that holds conflict markers does not refuse the publish."
+      - key: 01a130de-5737-776f-9c39-b9cb2838b03c
+        name: "Uncommitted changes under `spec/` do not refuse the publish."
+      - key: 01a130de-5737-776f-9c39-b9ccaab26733
+        name: "When `loft.lock.json` already pins the tree in the working directory, nothing is written and the publish reports that nothing changed."
+      - key: 01a130de-5737-776f-9c39-b9cd636f8129
+        name: "During a rebase, the branch being rebased is the branch compared with the publish branch."
+  - key: 01a130de-5737-776f-9c39-b9cecd6da7e3
+    statement:
+      form: event_driven
+      when: "the tree holds a conflict record over `bindings`"
+      system: "the publisher"
+      shall: "keep the pulled side's bindings and withdraw the other side's colliding labels."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9cf427adad5
+        name: "In a stopped merge the pulled side is `theirs`."
+      - key: 01a130de-5737-776f-9c39-b9d0b8d6545f
+        name: "In a stopped rebase the pulled side is `ours`."
+      - key: 01a130de-5737-776f-9c39-b9d1b65d8df1
+        name: "A label that the other side gives to a key and the pulled side gives to another key is withdrawn from the other side's key."
+      - key: 01a130de-5737-776f-9c39-b9d2f9999682
+        name: "A label that the other side gives to a key the pulled side labels differently is withdrawn from that key."
+      - key: 01a130de-5737-776f-9c39-b9d35d6961bf
+        name: "A label of the other side that collides with no label of the pulled side is kept."
+      - key: 01a130de-5737-776f-9c39-b9d41adb52a2
+        name: "A key that lost its live label is allocated the next label of its prefix, in document order."
+      - key: 01a130de-5737-776f-9c39-b9d5cae5b612
+        name: "A key that lost only an alias keeps its live label."
+      - key: 01a130de-5737-776f-9c39-b9d602ab7f88
+        name: "The conflict record over `bindings` is removed."
+      - key: 01a130de-5737-776f-9c39-b9d726383e50
+        name: "Each label counter is raised above every withdrawn label."
+  - key: 01a130de-5737-776f-9c39-b9d8627bb336
+    statement:
+      form: unwanted
+      if: "a path other than `spec/labels.yaml` and `loft.lock.json` is unmerged"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9d99864b9d2
+        name: "The refusal names each unmerged path."
+      - key: 01a130de-5737-776f-9c39-b9da291a2f72
+        name: "Nothing is written."
+  - key: 01a130de-5737-776f-9c39-b9dbf7df7883
+    statement:
+      form: unwanted
+      if: "the stopped merge or rebase is not of the publish branch"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9dca9f91b4b
+        name: "The refusal names the branch being merged into or rebased and the publish branch."
+      - key: 01a130de-5737-776f-9c39-b9dd4cec9a1c
+        name: "A rebase of a detached HEAD is refused."
+      - key: 01a130de-5737-776f-9c39-b9de5c34df3c
+        name: "Nothing is written."
+  - key: 01a13142-e984-733a-8711-c58d24969079
+    statement:
+      form: unwanted
+      if: "`spec/labels.yaml` is unmerged and holds no conflict record over its bindings"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a13142-e984-733a-8711-c58e66098022
+        name: "The refusal names `spec/labels.yaml` and the command `git checkout -m spec/labels.yaml`, which merges the file again through the merge driver."
+      - key: 01a13142-e984-733a-8711-c58f5e46cc9d
+        name: "The refusal says that git runs the merge driver only when `loft` is on git's search path."
+      - key: 01a13142-e984-733a-8711-c590cfa87a4a
+        name: "Nothing is written."
+  - key: 01a130de-5737-776f-9c39-b9df6002881e
+    statement:
+      form: event_driven
+      when: "two clones publish apart and one pulls the other"
+      system: "Loft"
+      shall: "settle the labels so that the committed tree checks and verifies."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9e04bbd6f59
+        name: "After a pull by merge, the tree committed after the settling publish passes `loft check` and `loft verify`."
+      - key: 01a130de-5737-776f-9c39-b9e1b74aeecf
+        name: "After a pull by rebase, the tree passes `loft check` and `loft verify` after the next publish."
+      - key: 01a130de-5737-776f-9c39-b9e2c376e644
+        name: "A citation of a withdrawn label in a commit replayed after the settling publish is rewritten by the next publish."

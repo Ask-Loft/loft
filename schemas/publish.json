@@ -1,18 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-publish-1.json",
-  "title": "The result of `loft publish --format json`, version 1",
+  "$id": "loft-publish-2.json",
+  "title": "The result of `loft publish --format json`, version 2",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema",
     "outcome",
     "allocated",
+    "rewritten",
+    "withdrawn",
     "errors"
   ],
   "properties": {
     "schema": {
-      "const": "loft-publish/1"
+      "const": "loft-publish/2"
     },
     "outcome": {
       "type": "string",
@@ -27,6 +29,21 @@
       "items": {
         "$ref": "#/$defs/allocated"
       }
+    },
+    "rewritten": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rewritten"
+      }
+    },
+    "withdrawn": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rewritten"
+      }
+    },
+    "finish": {
+      "type": "string"
     },
     "publishSequence": {
       "type": "integer",
@@ -43,6 +60,26 @@
     }
   },
   "$defs": {
+    "rewritten": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "withdrawn",
+        "label"
+      ],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "withdrawn": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
     "allocated": {
       "type": "object",
       "additionalProperties": false,

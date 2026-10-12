@@ -89,7 +89,7 @@ fn ac_549_ac_685_findings_and_validation_errors_do_not_prevent_a_render() {
 }
 
 #[test]
-fn a_read_error_writes_no_projection() {
+fn ac_938_ac_939_a_read_error_writes_no_projection() {
     let scratch = Scratch::with_reading_list();
     let product = "products/reading-list/product.yaml";
     scratch.edit(product, "\nslug:", " # a note\nslug:");

@@ -13,7 +13,7 @@ fn epoch_of(command: &Command) -> Option<String> {
 }
 
 #[test]
-fn a_fixed_scenario_gives_every_run_the_same_epoch() {
+fn ac_974_a_fixed_scenario_gives_every_run_the_same_epoch() {
     let clock = Clock::fixed(1_700_000_000);
     for _ in 0..3 {
         let mut command = Command::new("loft");
@@ -23,7 +23,7 @@ fn a_fixed_scenario_gives_every_run_the_same_epoch() {
 }
 
 #[test]
-fn a_stepping_scenario_advances_the_epoch_by_its_step_on_each_run() {
+fn ac_975_a_stepping_scenario_advances_the_epoch_by_its_step_on_each_run() {
     let clock = Clock::stepping(100, 60);
     let epochs: Vec<_> = (0..3).map(|_| clock.next_epoch()).collect();
     assert_eq!(
@@ -33,7 +33,7 @@ fn a_stepping_scenario_advances_the_epoch_by_its_step_on_each_run() {
 }
 
 #[test]
-fn a_run_outside_any_scenario_leaves_the_epoch_unset() {
+fn ac_976_a_run_outside_any_scenario_leaves_the_epoch_unset() {
     let mut command = Command::new("loft");
     command.env(EPOCH_ENV, "5");
     Clock::system().apply(&mut command);

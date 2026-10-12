@@ -69,3 +69,39 @@ fn ac_407_text_that_only_resembles_a_heading_is_not_one() {
     );
     assert_eq!(heading_lines(""), Vec::<usize>::new());
 }
+
+fn spans(text: &str) -> Vec<(&str, String, bool)> {
+    loftspec::prose::label_spans(text)
+        .into_iter()
+        .map(|span| {
+            (
+                &text[span.range.clone()],
+                span.label.to_string(),
+                span.qualified,
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn a_label_span_covers_the_label_alone_and_says_whether_a_document_qualifies_it() {
+    let text = "See RQ-5 and D-2/AC-7, not XRQ-6.";
+    assert_eq!(
+        spans(text),
+        [
+            ("RQ-5", "RQ-5".to_owned(), false),
+            ("AC-7", "AC-7".to_owned(), true)
+        ]
+    );
+}
+
+#[test]
+fn label_spans_find_the_references_label_references_finds() {
+    for text in ["RQ-1, F-2 and ADR-3.", "RQ-1.5 RQ-2_ D-7/F-9 (CMP-4)", ""] {
+        let from_spans: Vec<_> = loftspec::prose::label_spans(text)
+            .into_iter()
+            .map(|span| span.label)
+            .collect();
+        assert_eq!(from_spans, label_references(text), "{text}");
+    }
+}

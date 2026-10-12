@@ -6,18 +6,26 @@ use std::num::NonZeroU64;
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::ElementId;
 
-/// An element's live label and every label it held before, in the order they were replaced.
+/// An element's live label, every label it held before in the order they were replaced, and the
+/// labels it lost to a publish that met another (RQ-70's withdrawn labels), which name nothing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Binding {
     pub element: ElementId,
     pub label: Label,
     pub aliases: Vec<Label>,
+    pub withdrawn: Vec<Label>,
 }
 
 impl Binding {
     /// The live label, then the aliases.
     pub fn labels(&self) -> impl Iterator<Item = Label> + '_ {
         std::iter::once(self.label).chain(self.aliases.iter().copied())
+    }
+
+    /// Every label the element was ever given: the live label, the aliases and the withdrawn
+    /// labels, none of which is allocated again.
+    pub fn every_label(&self) -> impl Iterator<Item = Label> + '_ {
+        self.labels().chain(self.withdrawn.iter().copied())
     }
 }
 
@@ -29,6 +37,23 @@ pub struct Bindings {
     live_keys: BTreeMap<Label, BTreeSet<Key>>,
     /// The keys listing each label as an alias.
     alias_keys: BTreeMap<Label, BTreeSet<Key>>,
+    /// The keys each label was withdrawn from.
+    withdrawn_keys: BTreeMap<Label, BTreeSet<Key>>,
+}
+
+/// What the next publish does with a citation of a label in an element, given the keys the
+/// element mentions: a label withdrawn from exactly one mentioned key becomes that key's live
+/// label, unless the element also mentions the label's live holder.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Citation {
+    /// No key the element mentions had the label withdrawn.
+    NotWithdrawn,
+    /// The citation becomes this label.
+    Rewritten(Label),
+    /// The element also mentions the label's live holder, so the citation stays.
+    HolderMentioned,
+    /// Two keys the element mentions had the label withdrawn, so the citation stays.
+    Ambiguous,
 }
 
 /// Records `key` under `label` in a label index.
@@ -73,6 +98,8 @@ pub enum BindingError {
         first: ElementId,
         second: ElementId,
     },
+    #[error("label {label} is withdrawn from {element}, which still holds it")]
+    WithdrawnIsOwnLabel { element: ElementId, label: Label },
 }
 
 fn check_prefix(element: ElementId, label: Label) -> Result<(), BindingError> {
@@ -117,6 +144,7 @@ impl Bindings {
                     element,
                     label,
                     aliases: Vec::new(),
+                    withdrawn: Vec::new(),
                 });
                 index(&mut self.live_keys, label, element.key());
                 Ok(())
@@ -166,6 +194,36 @@ impl Bindings {
         Ok(())
     }
 
+    /// Records a label the element lost to a publish that met another; it resolves to nothing.
+    pub fn add_withdrawn(
+        &mut self,
+        element: impl Into<ElementId>,
+        label: Label,
+    ) -> Result<(), BindingError> {
+        let element = element.into();
+        let binding = self
+            .entries
+            .get_mut(&element.key())
+            .ok_or(BindingError::Unbound(element))?;
+        binding.withdrawn.push(label);
+        index(&mut self.withdrawn_keys, label, element.key());
+        Ok(())
+    }
+
+    /// Removes an element's binding and returns it, freeing its live label and its aliases.
+    pub fn unbind(&mut self, element: impl Into<ElementId>) -> Option<Binding> {
+        let key = element.into().key();
+        let binding = self.entries.remove(&key)?;
+        unindex(&mut self.live_keys, binding.label, key);
+        for alias in &binding.aliases {
+            unindex(&mut self.alias_keys, *alias, key);
+        }
+        for withdrawn in &binding.withdrawn {
+            unindex(&mut self.withdrawn_keys, *withdrawn, key);
+        }
+        Some(binding)
+    }
+
     #[must_use]
     pub fn label_of(&self, element: impl Into<ElementId>) -> Option<Label> {
         self.entries
@@ -180,6 +238,13 @@ impl Bindings {
             .map_or(&[], |binding| binding.aliases.as_slice())
     }
 
+    #[must_use]
+    pub fn withdrawn_of(&self, element: impl Into<ElementId>) -> &[Label] {
+        self.entries
+            .get(&element.into().key())
+            .map_or(&[], |binding| binding.withdrawn.as_slice())
+    }
+
     /// The element a live label or an alias names (AC-29): a live label before an alias, and the
     /// lowest key where bindings that break RQ-70 give a label to several.
     #[must_use]
@@ -187,6 +252,39 @@ impl Bindings {
         let first = |keys: &BTreeMap<Label, BTreeSet<Key>>| keys.get(&label)?.first().copied();
         let key = first(&self.live_keys).or_else(|| first(&self.alias_keys))?;
         self.entries.get(&key).map(|binding| binding.element)
+    }
+
+    /// Whether any binding has a withdrawn label.
+    #[must_use]
+    pub fn has_withdrawn(&self) -> bool {
+        !self.withdrawn_keys.is_empty()
+    }
+
+    /// Whether `label` was withdrawn from any key.
+    #[must_use]
+    pub fn is_withdrawn(&self, label: Label) -> bool {
+        self.withdrawn_keys.contains_key(&label)
+    }
+
+    /// What the next publish does with an unqualified citation of `label` in an element that
+    /// mentions the keys `mentioned` accepts.
+    #[must_use]
+    pub fn citation(&self, label: Label, mentioned: impl Fn(Key) -> bool) -> Citation {
+        let from = self.withdrawn_keys.get(&label).into_iter().flatten();
+        let mut from = from.copied().filter(|key| mentioned(*key));
+        let Some(key) = from.next() else {
+            return Citation::NotWithdrawn;
+        };
+        if from.next().is_some() {
+            return Citation::Ambiguous;
+        }
+        if self
+            .resolve(label)
+            .is_some_and(|holder| mentioned(holder.key()))
+        {
+            return Citation::HolderMentioned;
+        }
+        Citation::Rewritten(self.entries[&key].label)
     }
 
     /// Every binding, in key order.
@@ -238,6 +336,16 @@ impl Bindings {
                 });
             }
         }
+        errors.extend(self.iter().flat_map(|binding| {
+            binding
+                .withdrawn
+                .iter()
+                .filter(|label| binding.labels().any(|held| held == **label))
+                .map(|label| BindingError::WithdrawnIsOwnLabel {
+                    element: binding.element,
+                    label: *label,
+                })
+        }));
         errors
     }
 
@@ -275,12 +383,12 @@ impl Counters {
         self.0.get(&prefix).copied().unwrap_or(NonZeroU64::MIN)
     }
 
-    /// Counters one above the highest live label or alias of each prefix, and 1 for a prefix no
-    /// label carries (RQ-176, AC-702).
+    /// Counters one above the highest live, alias or withdrawn label of each prefix, and 1 for a
+    /// prefix no label carries (RQ-176, AC-702).
     #[must_use]
     pub fn above(bindings: &Bindings) -> Self {
         let mut counters = Self::default();
-        counters.raise_all(bindings.iter().flat_map(Binding::labels));
+        counters.raise_all(bindings.iter().flat_map(Binding::every_label));
         counters
     }
 

@@ -19,6 +19,8 @@ pub enum Out {
     Integer(u64),
     /// Free text: a literal block where it reads back exactly, double-quoted otherwise.
     Text(String),
+    /// YAML's `null`, written plain.
+    Null,
 }
 
 impl Out {
@@ -94,6 +96,7 @@ fn line_value(text: &mut String, value: &Out, width: usize) {
         Out::Integer(number) => {
             let _ = write!(text, "{number}");
         }
+        Out::Null => text.push_str("null"),
         Out::Token(token) if is_plain(token) => text.push_str(token),
         Out::Token(token) => double_quoted(text, token),
         Out::Text(string) if is_literal(string) => literal(text, string, width + 2),

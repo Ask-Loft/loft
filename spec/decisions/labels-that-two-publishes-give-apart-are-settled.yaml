@@ -1,0 +1,129 @@
+key: 01a130de-573a-77b2-b40b-d44300846d1a
+slug: labels-that-two-publishes-give-apart-are-settled
+title: "Labels that two publishes give apart are settled by the next publish"
+context: "Labels come from counters in `spec/labels.yaml`, and a publish allocates them on the publish branch. Two clones of that branch can each publish before either pulls the other; the two publishes then give one label to two nodes, or one node two labels. A label that was pushed may already be cited outside the repository, and Loft never writes to git."
+state:
+  kind: accepted
+  selectedOption: 01a130de-573a-77b2-b40b-d4483c9c9a3e
+  outcome: "When two publishes meet, the next publish, run in the stopped merge or rebase, keeps the pulled side's bindings, records the other side's colliding labels as withdrawn, allocates new labels for the keys that lost theirs, and rewrites citations of withdrawn labels through `mentions` edges; the person commits."
+drivers:
+  - key: 01a130de-573a-77b2-b40b-d4447f30ca60
+    kind: local
+    label: "Pushed labels stay"
+    statement: "A label that was pushed keeps its node, since it may be cited outside the repository."
+  - key: 01a130de-573a-77b2-b40b-d445ec3fc9e0
+    kind: local
+    label: "No label twice"
+    statement: "No label is held by two nodes or given out again."
+  - key: 01a130de-573a-77b2-b40b-d4466bfe6239
+    kind: local
+    label: "Loft does not write to git"
+    statement: "Settling the labels runs no git command that changes the repository; the person commits."
+  - key: 01a130de-573a-77b2-b40b-d44706030df1
+    kind: local
+    label: "Git alone"
+    statement: "A small team settles the labels with git and Loft, without a service beside them."
+options:
+  - key: 01a130de-573a-77b2-b40b-d4483c9c9a3e
+    title: "The pulled side keeps its labels"
+    description: "The next publish in the stopped merge or rebase keeps the pulled side's bindings, withdraws the other side's colliding labels, allocates new labels for the keys that lost theirs, and rewrites citations of withdrawn labels through `mentions` edges."
+  - key: 01a130de-573a-77b2-b40b-d449c46888ec
+    title: "Renumber both sides"
+    description: "Both sides' colliding labels are withdrawn, and every node that held one gets a new label."
+  - key: 01a130de-573a-77b2-b40b-d44a0b25cfe2
+    title: "A central reservation"
+    description: "A publish refuses unless it can reserve its labels in a shared place, such as a ref on the remote."
+  - key: 01a130de-573a-77b2-b40b-d44b36c1f315
+    title: "Keep both"
+    description: "Both bindings stay, and the colliding label names both nodes."
+assessments:
+  - option: 01a130de-573a-77b2-b40b-d4483c9c9a3e
+    driver: 01a130de-573a-77b2-b40b-d4447f30ca60
+    rating: supports
+    rationale: "the pulled side is the side that was pushed"
+  - option: 01a130de-573a-77b2-b40b-d4483c9c9a3e
+    driver: 01a130de-573a-77b2-b40b-d445ec3fc9e0
+    rating: supports
+    rationale: "a colliding label stays with one node and is never given again"
+  - option: 01a130de-573a-77b2-b40b-d4483c9c9a3e
+    driver: 01a130de-573a-77b2-b40b-d4466bfe6239
+    rating: supports
+    rationale: "Loft prints the git command and the person runs it"
+  - option: 01a130de-573a-77b2-b40b-d4483c9c9a3e
+    driver: 01a130de-573a-77b2-b40b-d44706030df1
+    rating: supports
+    rationale: "the stopped merge or rebase carries everything the publish needs"
+  - option: 01a130de-573a-77b2-b40b-d449c46888ec
+    driver: 01a130de-573a-77b2-b40b-d4447f30ca60
+    rating: conflicts
+    rationale: "pushed labels change"
+  - option: 01a130de-573a-77b2-b40b-d449c46888ec
+    driver: 01a130de-573a-77b2-b40b-d445ec3fc9e0
+    rating: supports
+    rationale: "no label is held twice"
+  - option: 01a130de-573a-77b2-b40b-d449c46888ec
+    driver: 01a130de-573a-77b2-b40b-d4466bfe6239
+    rating: supports
+    rationale: "no git write"
+  - option: 01a130de-573a-77b2-b40b-d449c46888ec
+    driver: 01a130de-573a-77b2-b40b-d44706030df1
+    rating: supports
+    rationale: "git and Loft suffice"
+  - option: 01a130de-573a-77b2-b40b-d44a0b25cfe2
+    driver: 01a130de-573a-77b2-b40b-d4447f30ca60
+    rating: supports
+    rationale: "nothing collides"
+  - option: 01a130de-573a-77b2-b40b-d44a0b25cfe2
+    driver: 01a130de-573a-77b2-b40b-d445ec3fc9e0
+    rating: supports
+    rationale: "each label is reserved once"
+  - option: 01a130de-573a-77b2-b40b-d44a0b25cfe2
+    driver: 01a130de-573a-77b2-b40b-d4466bfe6239
+    rating: conflicts
+    rationale: "a reservation writes to the remote"
+  - option: 01a130de-573a-77b2-b40b-d44a0b25cfe2
+    driver: 01a130de-573a-77b2-b40b-d44706030df1
+    rating: conflicts
+    rationale: "a publish needs a shared writable place and the network"
+  - option: 01a130de-573a-77b2-b40b-d44b36c1f315
+    driver: 01a130de-573a-77b2-b40b-d4447f30ca60
+    rating: neutral
+    rationale: "the pushed node keeps the label, but shares it"
+  - option: 01a130de-573a-77b2-b40b-d44b36c1f315
+    driver: 01a130de-573a-77b2-b40b-d445ec3fc9e0
+    rating: conflicts
+    rationale: "one label names two nodes"
+  - option: 01a130de-573a-77b2-b40b-d44b36c1f315
+    driver: 01a130de-573a-77b2-b40b-d4466bfe6239
+    rating: supports
+    rationale: "no git write"
+  - option: 01a130de-573a-77b2-b40b-d44b36c1f315
+    driver: 01a130de-573a-77b2-b40b-d44706030df1
+    rating: supports
+    rationale: "git and Loft suffice"
+consequences:
+  - key: 01a130de-573a-77b2-b40b-d44c688e1937
+    kind: benefit
+    statement: "Two clones that publish apart reconcile with one more publish, without rewriting history."
+  - key: 01a130de-573a-77b2-b40b-d44df2c04ce6
+    kind: cost
+    statement: "A node of the side that pulled may change its label."
+  - key: 01a130de-573a-77b2-b40b-d44e2149c1e8
+    kind: obligation
+    statement: "A binding records each label withdrawn from it, and every publish rewrites citations of those labels."
+  - key: 01a130de-573a-77b2-b40b-d44f7fb0dfc9
+    kind: risk
+    statement: "A citation that no `mentions` edge backs keeps a withdrawn label until a person edits it."
+subjects:
+  - role: affected
+    node: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+  - role: affected
+    node: 540397b6-7607-4ca9-aaa1-529d0fab1811
+  - role: outcome
+    node: 01a130de-5737-776f-9c39-b9bf95b989dc
+  - role: outcome
+    node: 01a130de-5737-776f-9c39-b9cecd6da7e3
+  - role: outcome
+    node: 01a130de-5737-776f-9c39-b9e4eb848d1b
+  - role: outcome
+    node: 01a130de-5738-756e-a4f4-f948dae91847

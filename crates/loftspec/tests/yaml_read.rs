@@ -220,7 +220,7 @@ fn ac_231_a_byte_order_mark_is_refused_at_1_1() {
 }
 
 #[test]
-fn a_carriage_return_and_a_control_character_are_refused() {
+fn rq_33_a_carriage_return_and_a_control_character_are_refused() {
     assert_eq!(refused("a: 1\r\n"), (at(1, 5), ErrorKind::CarriageReturn));
     assert_eq!(
         refused("a: \u{7}\n"),
@@ -234,7 +234,7 @@ fn ac_681_a_column_counts_unicode_scalar_values() {
 }
 
 #[test]
-fn structure_the_subset_does_not_define_is_refused() {
+fn rq_33_structure_the_subset_does_not_define_is_refused() {
     assert_eq!(
         refused("a: 1\n  b: 2\n"),
         (at(2, 3), ErrorKind::MultiLinePlainScalar)

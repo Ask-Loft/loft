@@ -70,8 +70,11 @@ external system directly and never through a hook in a shipped binary. They put 
 the Software Plant in front of the unchanged binary under test:
 
 - **git**: `software_plant::GitScenario` scripts a repository (its prefix, its branch or a
-  detached HEAD, its porcelain status) and the failures Loft anticipates (outside a repository,
-  a scripted git error). `install` writes the scenario into the scratch directory, and
+  detached HEAD, its porcelain status, its local configuration, which a `config` call sets in
+  the scenario for the calls after it, and a merge or rebase stopped on a conflict, with the
+  commit it merges or replays, the lock each revision holds and the unmerged index entries,
+  and the version each launcher command prints when git runs it through the shell) and the
+  failures Loft anticipates (outside a repository, a scripted git error). `install` writes the scenario into the scratch directory, and
   `Installed::apply` gives a `Command` a search path whose only `git` is the simulator. Any call
   the simulator does not answer exits 2 naming the call, so Loft cannot come to depend on git
   behaviour nobody modelled.
@@ -88,6 +91,12 @@ The rules:
   repositories. A new anticipated failure joins the simulator's scenarios and its contract suite
   in the same change.
 - Only a contract suite touches a real external system. Every other test uses the simulator.
+- A system that calls Loft, rather than one Loft calls, gets no simulator: Loft never calls it,
+  so there is nothing for a simulator to answer. Its contract suite runs Loft under the real
+  system instead. git's merge machinery calls `loft merge-driver`, so
+  `crates/loft-cli/tests/merge_contract.rs` runs the six parallel-work scenarios under a real
+  `git merge` with the driver registered, and every other merge test calls the engine or the
+  driver directly.
 - `software-plant` holds simulators only. Fixtures and conformance harnesses stay in the crates
   they test.
 
