@@ -39,11 +39,46 @@ requirements:
       - key: 22328d0c-1299-463f-8966-069b3229b7af
         name: "`.gitattributes` gains `spec/**/*.yaml merge=loft` when absent."
       - key: 8cc41ae4-2be0-4f31-a579-2a5ff8c2b2e7
-        name: "`merge.loft.driver` is set to `loft merge-driver %O %A %B %P` in the repository's git configuration."
+        name: "`merge.loft.driver` is set in the repository's git configuration to a shell command that runs `<command> merge-driver %O %A %B %P`, where `<command>` is the one `--command` gives, or `loft`."
       - key: a08f5607-f5cc-46ca-9e69-b4bc0f2b7ffe
         name: "`merge.loft.name` is set to a description of the driver."
       - key: 38ba4917-e7a0-4e80-a88a-6d3ebed8f5f8
-        name: "A second `--install` changes nothing."
+        name: "A second `--install` with the same `<command>` changes nothing."
+      - key: 01a1315a-f184-73de-a72a-d1506a3e42c9
+        name: "An `--install` with another `<command>` replaces `merge.loft.driver`."
+  - key: 01a1315a-f184-73de-a72a-d151c3e309aa
+    statement:
+      form: unwanted
+      if: "`<command> --version`, run as git runs a shell command, from the top of the working tree, fails"
+      system: "`loft merge-driver --install`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1315a-f184-73de-a72a-d1529f652d52
+        name: "The error names `<command>` and says that git could not run it."
+      - key: 01a1315a-f184-73de-a72a-d153c8099c16
+        name: "Nothing is written."
+  - key: 01a1315a-f184-73de-a72a-d154f5811d33
+    statement:
+      form: event_driven
+      when: "the version that `<command> --version` prints differs from its own"
+      system: "`loft merge-driver --install`"
+      shall: "warn and register the driver."
+    criteria:
+      - key: 01a1315a-f184-73de-a72a-d1550f85c4e6
+        name: "The warning names both versions."
+  - key: 01a1315a-f184-73de-a72a-d15639c63921
+    statement:
+      form: unwanted
+      if: "git runs the registered driver and `<command> --version` fails"
+      system: "the registered driver"
+      shall: "merge the file as text with conflict markers and exit 1."
+    criteria:
+      - key: 01a1315a-f184-73de-a72a-d1576e01191c
+        name: "The file holds the conflict markers of `git merge-file`."
+      - key: 01a1315a-f185-7564-b075-594575a618b0
+        name: "It exits 1 even when the text merge has no conflict."
+      - key: 01a1315a-f185-7564-b075-5946fb27f135
+        name: "The message names the file and `git checkout -m`."
   - key: 3cc1c98e-eec3-471f-91cc-d10a3839ba41
     statement:
       form: unwanted
