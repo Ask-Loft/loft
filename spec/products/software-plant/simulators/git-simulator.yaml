@@ -48,3 +48,16 @@ requirements:
         name: "On a detached HEAD, `symbolic-ref` exits 1 and prints nothing."
       - key: 01a12ff0-f5e5-7095-8fa8-24ebb797ea45
         name: "A scripted git error exits with the scripted code and message."
+  - key: 01a13050-9f92-73f0-b7a3-fb6f8f1ab15c
+    statement:
+      form: event_driven
+      when: "a `git status` call arrives without `GIT_OPTIONAL_LOCKS` set to `0`"
+      system: "the git simulator"
+      shall: "record that the call took the index lock, as git takes it."
+    criteria:
+      - key: 01a13050-9f92-73f0-b7a3-fb706075669d
+        name: "Such a call records `index.lock` in the directory that holds its scenario."
+      - key: 01a13050-9f92-73f0-b7a3-fb71df8de3aa
+        name: "A `git status` call with `GIT_OPTIONAL_LOCKS` set to `0` records no lock."
+      - key: 01a13050-9f92-73f0-b7a3-fb727687b663
+        name: "No other call records a lock."

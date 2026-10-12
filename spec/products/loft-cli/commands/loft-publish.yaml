@@ -59,3 +59,13 @@ requirements:
         name: "The error names `git`."
       - key: 01a12ff0-f5e5-7095-8fa8-25074b3d8ead
         name: "Nothing is written."
+  - key: 01a13050-9f92-73f0-b7a3-fb738a1eb895
+    statement:
+      form: ubiquitous
+      system: "`loft publish`"
+      shall: "read the repository without taking any of git's locks."
+    criteria:
+      - key: 01a13050-9f92-73f0-b7a3-fb74e360ede3
+        name: "Every git call that `loft publish` makes runs with `GIT_OPTIONAL_LOCKS` set to `0`."
+      - key: 01a13050-9f92-73f0-b7a3-fb750da1f63d
+        name: "`git status` refreshes no index while `loft publish` reads the repository."
