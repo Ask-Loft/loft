@@ -10,3 +10,6 @@
 - key: 40e7db4a-02a5-41d6-b18e-dc3f67211bdf
   name: portable
   definition: "Behaviour every implementation must reproduce exactly, so that two implementations compute the same content root for the same document."
+- key: 01a12de5-62d0-763d-b71a-d8f7a13bc360
+  name: reads-tree
+  definition: "A `loft` command that reads the `spec/` tree, and so follows the shared rules for a reader error."

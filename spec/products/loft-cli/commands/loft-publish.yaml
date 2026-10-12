@@ -2,6 +2,8 @@ key: 568bbe91-b941-4eba-92a9-c134546ea5db
 slug: loft-publish
 name: "`loft publish`"
 body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused."
+tags:
+  - reads-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
   - bcd4525c-3adf-45dd-beed-527d654d517c
@@ -20,17 +22,6 @@ requirements:
         name: "A publish prints the new publish sequence and the state root and exits 0."
       - key: 5b969efe-ea71-42e5-ab2d-acd69a70451d
         name: "A publish with nothing changed prints that nothing changed and exits 0."
-  - key: 9d4f743f-9e62-4097-aa5d-8138fc188716
-    statement:
-      form: unwanted
-      if: "the reader reports an error"
-      system: "`loft publish`"
-      shall: "write nothing and exit 1."
-    criteria:
-      - key: 102e3648-7755-4703-ada8-098b1c7e1f91
-        name: "Every read error is reported with the position the reader names."
-      - key: 36183b10-acb4-4991-a833-f38115adfdac
-        name: "No file is changed."
   - key: 57b80a5e-d695-4a26-8f81-71146008335c
     statement:
       form: unwanted

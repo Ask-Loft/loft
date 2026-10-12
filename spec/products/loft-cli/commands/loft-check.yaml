@@ -2,6 +2,8 @@ key: 668e0630-0adc-4eca-bf61-b32dbaece7d0
 slug: loft-check
 name: "`loft check`"
 body: "Runs the validator and then the linter over the tree, with an exit code a CI job can gate on."
+tags:
+  - reads-tree
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -28,14 +30,10 @@ requirements:
       form: unwanted
       if: "the reader reports an error"
       system: "`loft check`"
-      shall: "report it and exit 1."
+      shall: "not run the linter."
     criteria:
-      - key: 8a466701-2870-40f3-a69c-f95961ee4816
-        name: "Every read error is reported with the position the reader names."
       - key: 2ad44810-acb8-4422-92b1-f3dea0613477
-        name: "The linter does not run."
-      - key: 282d8b3a-a8ab-4603-9a70-95d9ad60c251
-        name: "Within one file, the reader reports the first error it meets."
+        name: "No lint finding is reported."
   - key: fc068f5f-e760-4a81-aa85-b859585e298f
     statement:
       form: unwanted
