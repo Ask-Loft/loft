@@ -43,7 +43,7 @@ fn a_store_that_holds_no_document_says_so() {
 }
 
 #[test]
-fn a_save_of_an_unchanged_document_writes_nothing() {
+fn ac_535_a_save_of_an_unchanged_document_writes_nothing() {
     let (scratch, mut store) = saved();
     let before = scratch.snapshot();
     let resaved = store.save(&store.load().unwrap()).unwrap();
@@ -53,7 +53,7 @@ fn a_save_of_an_unchanged_document_writes_nothing() {
 }
 
 #[test]
-fn a_document_save_leaves_lint_yaml_unchanged() {
+fn ac_956_a_document_save_leaves_lint_yaml_unchanged() {
     let (scratch, mut store) = saved();
     let mut document = store.load().unwrap();
     document.products.clear();
@@ -67,7 +67,7 @@ fn a_document_save_leaves_lint_yaml_unchanged() {
 }
 
 #[test]
-fn a_save_finishes_an_interrupted_save_before_it_reads_the_tree() {
+fn ac_944_a_save_finishes_an_interrupted_save_before_it_reads_the_tree() {
     let (scratch, mut store) = saved();
     let tags = SpecPath::new("tags.yaml");
     let mut planted = Changes::default();
@@ -91,7 +91,7 @@ fn a_save_finishes_an_interrupted_save_before_it_reads_the_tree() {
 
 #[cfg(unix)]
 #[test]
-fn a_file_whose_bytes_would_not_change_is_not_rewritten() {
+fn ac_535_a_file_whose_bytes_would_not_change_is_not_rewritten() {
     use std::os::unix::fs::MetadataExt;
 
     let (scratch, mut store) = saved();

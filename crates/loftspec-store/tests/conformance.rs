@@ -243,7 +243,7 @@ fn walk(steps: &[fn() -> Document]) -> Saved {
 }
 
 #[test]
-fn creating_a_product_with_its_groups_and_features_agrees() {
+fn ac_950_ac_951_and_ac_952_creating_a_product_with_its_groups_and_features_agrees() {
     let saved = walk(&[created]);
     assert_eq!(
         saved.written,
@@ -261,7 +261,7 @@ fn creating_a_product_with_its_groups_and_features_agrees() {
 }
 
 #[test]
-fn adding_a_requirement_with_criteria_writes_only_its_feature() {
+fn ac_535_adding_a_requirement_with_criteria_writes_only_its_feature() {
     let saved = walk(&[created, with_requirement]);
     assert_eq!(
         saved.written,
@@ -270,7 +270,7 @@ fn adding_a_requirement_with_criteria_writes_only_its_feature() {
 }
 
 #[test]
-fn tagging_writes_the_registry_and_the_tagged_feature() {
+fn ac_535_tagging_writes_the_registry_and_the_tagged_feature() {
     let saved = walk(&[created, with_requirement, tagged]);
     assert_eq!(
         saved.written,
@@ -279,7 +279,7 @@ fn tagging_writes_the_registry_and_the_tagged_feature() {
 }
 
 #[test]
-fn linking_writes_the_component_and_the_linking_feature() {
+fn ac_535_linking_writes_the_component_and_the_linking_feature() {
     let saved = walk(&[created, with_requirement, tagged, linked]);
     assert_eq!(
         saved.written,
@@ -291,7 +291,7 @@ fn linking_writes_the_component_and_the_linking_feature() {
 }
 
 #[test]
-fn moving_a_requirement_writes_the_two_feature_files() {
+fn ac_535_moving_a_requirement_writes_the_two_feature_files() {
     let saved = walk(&[created, with_requirement, tagged, linked, requirement_moved]);
     assert_eq!(
         saved.written,
@@ -304,7 +304,7 @@ fn moving_a_requirement_writes_the_two_feature_files() {
 }
 
 #[test]
-fn moving_a_feature_removes_its_former_file() {
+fn ac_954_moving_a_feature_removes_its_former_file() {
     let steps = [
         created,
         with_requirement,
@@ -328,7 +328,7 @@ fn moving_a_feature_removes_its_former_file() {
 }
 
 #[test]
-fn a_directory_the_save_leaves_empty_is_removed() {
+fn ac_955_a_directory_the_save_leaves_empty_is_removed() {
     let mut pair = Pair::new();
     for step in [created, feature_moved] {
         pair.step(&step());
@@ -338,7 +338,7 @@ fn a_directory_the_save_leaves_empty_is_removed() {
 }
 
 #[test]
-fn deleting_a_feature_removes_its_file() {
+fn ac_953_deleting_a_feature_removes_its_file() {
     let steps = [
         created,
         with_requirement,
@@ -357,13 +357,13 @@ fn deleting_a_feature_removes_its_file() {
 }
 
 #[test]
-fn saving_an_unchanged_document_writes_and_removes_nothing() {
+fn ac_535_saving_an_unchanged_document_writes_and_removes_nothing() {
     let saved = walk(&[linked, linked]);
     assert_eq!(saved, Saved::default());
 }
 
 #[test]
-fn converted_v1_exports_agree() {
+fn ac_950_ac_951_and_ac_952_converted_v1_exports_agree() {
     for export in [READING_LIST, D11] {
         let document = converted(export);
         let mut pair = Pair::new();

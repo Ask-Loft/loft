@@ -51,7 +51,7 @@ fn a_tree_without_a_lock_has_none() {
 }
 
 #[test]
-fn a_publish_writes_the_bindings_and_the_lock_in_one_save() {
+fn ac_945_a_publish_writes_the_bindings_and_the_lock_in_one_save() {
     let (scratch, store) = saved();
     let mut bindings = labels(&scratch);
     bindings.extend_from_slice(b"# changed\n");
@@ -62,7 +62,7 @@ fn a_publish_writes_the_bindings_and_the_lock_in_one_save() {
 }
 
 #[test]
-fn a_publish_without_new_bindings_changes_no_file_under_spec() {
+fn ac_460_a_publish_without_new_bindings_changes_no_file_under_spec() {
     let (scratch, store) = saved();
     let before = scratch.snapshot();
     store.publish(None, &lock()).unwrap();
@@ -76,7 +76,7 @@ fn a_publish_without_new_bindings_changes_no_file_under_spec() {
 }
 
 #[test]
-fn a_lock_that_is_not_a_valid_lock_record_is_refused_naming_its_file() {
+fn ac_926_a_lock_that_is_not_a_valid_lock_record_is_refused_naming_its_file() {
     let (scratch, store) = saved();
     fs::write(scratch.0.join(LOCK), "{}\n").unwrap();
     let error = store.lock().unwrap_err();

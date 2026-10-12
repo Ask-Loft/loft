@@ -67,7 +67,7 @@ fn committed(scratch: &Scratch) {
 }
 
 #[test]
-fn a_save_writes_and_removes_every_named_file_and_leaves_no_journal() {
+fn ac_945_a_save_writes_and_removes_every_named_file_and_leaves_no_journal() {
     let scratch = tree();
     journal::save(&scratch.0, &changes()).unwrap();
     assert_eq!(scratch.snapshot(), written());
@@ -82,7 +82,7 @@ fn an_empty_save_creates_no_journal() {
 }
 
 #[test]
-fn every_file_of_a_save_is_staged_before_any_file_under_spec_changes() {
+fn ac_942_every_file_of_a_save_is_staged_before_any_file_under_spec_changes() {
     let scratch = tree();
     let before = scratch.snapshot();
     let _prepared = journal::prepare(&scratch.0, &changes()).unwrap();
@@ -97,7 +97,7 @@ fn every_file_of_a_save_is_staged_before_any_file_under_spec_changes() {
 }
 
 #[test]
-fn a_save_interrupted_before_its_journal_is_complete_leaves_every_file_as_it_was() {
+fn ac_943_a_save_interrupted_before_its_journal_is_complete_leaves_every_file_as_it_was() {
     let scratch = tree();
     let before = scratch.snapshot();
     drop(journal::prepare(&scratch.0, &changes()).unwrap());
@@ -106,7 +106,7 @@ fn a_save_interrupted_before_its_journal_is_complete_leaves_every_file_as_it_was
 }
 
 #[test]
-fn a_save_interrupted_after_its_journal_is_complete_is_finished_by_recovery() {
+fn ac_944_a_save_interrupted_after_its_journal_is_complete_is_finished_by_recovery() {
     let scratch = tree();
     committed(&scratch);
     assert_eq!(
@@ -118,7 +118,7 @@ fn a_save_interrupted_after_its_journal_is_complete_is_finished_by_recovery() {
 }
 
 #[test]
-fn a_save_interrupted_part_way_through_finishing_is_finished_by_recovery() {
+fn ac_944_a_save_interrupted_part_way_through_finishing_is_finished_by_recovery() {
     let scratch = tree();
     committed(&scratch);
     // The first staged file, the new Product, reached its place before the interruption.
