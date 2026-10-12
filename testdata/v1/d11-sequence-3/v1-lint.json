@@ -1,0 +1,748 @@
+{
+  "findings": [
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "1a2a3fba-1983-4189-94df-6ec6af9b5be0"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "25f258d3-1f8f-47f4-8865-1165d32045ef"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "350e74d9-58e9-4fca-b818-e61c19b9ea94"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "480910d9-f626-4e77-927c-72008061a372"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "6719fce2-4f04-41bb-a8bd-2bb360e5baca"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "9a97cb58-a8d4-4789-80c0-9b6902ca4216"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "c4be0084-9c44-416f-9fd0-4f7c00925f98"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "d5825652-5ecf-47ed-b9a9-22126fb48471"
+      ]
+    },
+    {
+      "rule": "LQ-005",
+      "severity": "info",
+      "subjects": [
+        "e17e70e0-434b-40b6-bcaa-9e29355a3128"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "01cb4866-fc85-4142-ade6-5a4ae9927beb",
+        "ed42e489-e71d-40bb-a38c-6d77ea75777e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "0254fcdc-a964-4ddf-ac8b-09962aecbb72",
+        "b8946470-1690-4a03-b59d-3b335c04d237"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06ce97f2-af32-4a60-ba1b-06f9ef21e846",
+        "7f7b75c1-eff6-4c55-bec6-de713456de95"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06ce97f2-af32-4a60-ba1b-06f9ef21e846",
+        "aa514ad5-0a80-4753-899f-c4a356b81ce9"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06ce97f2-af32-4a60-ba1b-06f9ef21e846",
+        "e3202b31-235b-478b-b004-7d6be100cf4e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06dec985-17e7-4c6f-8b20-911c7b68dde7",
+        "4c5ce0f7-b7cc-46af-88ef-439d0f75e425"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06dec985-17e7-4c6f-8b20-911c7b68dde7",
+        "c4b03b51-2b38-4563-960a-78f7ec62e68e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06dec985-17e7-4c6f-8b20-911c7b68dde7",
+        "ce2e849d-bbda-4ec3-9472-b4140e94c65c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06dec985-17e7-4c6f-8b20-911c7b68dde7",
+        "cf058b28-8642-4a6a-8a01-11acf0bfd3db"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06dec985-17e7-4c6f-8b20-911c7b68dde7",
+        "d02ba042-0e3b-425e-bdb0-d1d50f8b87a1"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "06dec985-17e7-4c6f-8b20-911c7b68dde7",
+        "e9fd8379-d779-4bea-a0eb-3f24f9720b09"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "07beb53e-4bb7-4114-b073-044ddcfa4aa0",
+        "6c33928e-bdb8-40e6-ac7d-1ab78fc010ca"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "0bb060ce-7164-4a5e-ae12-b180e04f5c2d",
+        "c9c71d0f-9456-4f83-be02-416fd56409b2"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "0e4cb4a6-0667-4b29-9903-9639c21ecc30",
+        "a8f69ee8-877f-4417-b80e-32bd18a552b0"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "0ef5f3ea-6b77-441e-972b-33585444e715",
+        "11c3ab62-c7fc-4250-b5ef-d3060af1a457"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "102e3648-7755-4703-ada8-098b1c7e1f91",
+        "59c1a730-9fb4-4980-8f03-45c7585c99d9"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "102e3648-7755-4703-ada8-098b1c7e1f91",
+        "8a466701-2870-40f3-a69c-f95961ee4816"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "102e3648-7755-4703-ada8-098b1c7e1f91",
+        "c820f700-d4c6-49c4-9711-e3b8ce608662"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "102e3648-7755-4703-ada8-098b1c7e1f91",
+        "ca669f9d-d54f-4fd7-babf-6e11c1b8359c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "1040a04a-c1bb-41e5-83bb-6a9591973506",
+        "7490d3a5-6bfc-4edb-af60-56e6783ae1b9"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "1040a04a-c1bb-41e5-83bb-6a9591973506",
+        "ad8ae0e5-c9c6-4591-83d9-a510b33a7ce7"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "13315bdc-a7ff-4e59-8303-57174902ef3a",
+        "8d0b309c-6778-4b20-a3df-c4fd6cfed391"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "15738450-9489-4243-9f8f-525584ffb371",
+        "36183b10-acb4-4991-a833-f38115adfdac"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "15738450-9489-4243-9f8f-525584ffb371",
+        "46f8993d-9003-41eb-a6ec-877b90345154"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "18650e7e-11a3-4dd9-b6a1-2e119bcdb47d",
+        "a44eac13-8d32-4670-836f-ab8895a0a38c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "18650e7e-11a3-4dd9-b6a1-2e119bcdb47d",
+        "dcc62ab5-0939-427b-88f0-52ccc66e1a3e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "1bf93134-95c4-4f1f-8ce4-21fd9e5189c1",
+        "9f1c7243-1439-4cd9-857b-e9bdb39ed7c6"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "1e930b51-5670-4035-b4d8-71d419e0f249",
+        "64d803a0-6125-494f-b72c-01ccc8c42a98"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "1f80c0ab-6f0d-48cb-b161-404a25f6dbb3",
+        "37207046-b14f-4170-b6b8-72cb2be25202"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "24e58016-7525-4ef3-8cd4-222a43d4c6fe",
+        "452f3e59-140c-457a-87f4-3b65d68fc0d5"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "24e58016-7525-4ef3-8cd4-222a43d4c6fe",
+        "51f6aa0b-9bfd-4c14-8c47-ba96011774e9"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "24e58016-7525-4ef3-8cd4-222a43d4c6fe",
+        "936ac167-3589-4283-bd9e-78c8dd28e0f6"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "24e58016-7525-4ef3-8cd4-222a43d4c6fe",
+        "cb16bdba-de06-402b-a94c-5680bdf0d82a"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "25012989-b874-4fee-8e0a-dd47c3078dc4",
+        "331154e5-37e4-434b-bc13-3ec0a4030502"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "25a4c4ef-35ac-40cb-a93b-00f79a17eb32",
+        "bcd19fde-9ac9-411e-b265-debe472a28f4"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "2d6d9e26-f69e-4b9f-a653-e3f110eb7d0a",
+        "4665a3a3-5c1d-4b40-8ff2-0e57bbb96db8"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "2d6d9e26-f69e-4b9f-a653-e3f110eb7d0a",
+        "4b141b53-d7ce-489b-b162-cbf9ad383bee"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "3530a906-33a1-4900-b403-66e12ed75f40",
+        "6571bb4f-0756-46b6-afb1-4793d1d78862"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "36183b10-acb4-4991-a833-f38115adfdac",
+        "46f8993d-9003-41eb-a6ec-877b90345154"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "38488e10-aa4a-4d3d-97bf-5a33204fbb14",
+        "9affc27b-6f3e-4d87-8d0c-36bbd9725c0c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "3c5f7612-5ee2-4d9e-9f4f-0835b58cb315",
+        "964a39ee-cef5-413c-9bd7-5b3be4921422"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "3cc1c98e-eec3-471f-91cc-d10a3839ba41",
+        "57b80a5e-d695-4a26-8f81-71146008335c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "42b98306-ab30-440c-80ee-2ed47992e917",
+        "4c6946ba-9b0e-4ca1-be0d-2ae3f73617ca"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4665a3a3-5c1d-4b40-8ff2-0e57bbb96db8",
+        "4b141b53-d7ce-489b-b162-cbf9ad383bee"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4739b92a-7537-4640-b926-b05fe748b222",
+        "82f6c9df-7cd3-4f02-91f9-4c04c771337c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4739b92a-7537-4640-b926-b05fe748b222",
+        "9d4f743f-9e62-4097-aa5d-8138fc188716"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4c5ce0f7-b7cc-46af-88ef-439d0f75e425",
+        "c4b03b51-2b38-4563-960a-78f7ec62e68e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4c5ce0f7-b7cc-46af-88ef-439d0f75e425",
+        "ce2e849d-bbda-4ec3-9472-b4140e94c65c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4c5ce0f7-b7cc-46af-88ef-439d0f75e425",
+        "cf058b28-8642-4a6a-8a01-11acf0bfd3db"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4c5ce0f7-b7cc-46af-88ef-439d0f75e425",
+        "d02ba042-0e3b-425e-bdb0-d1d50f8b87a1"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "4c5ce0f7-b7cc-46af-88ef-439d0f75e425",
+        "e9fd8379-d779-4bea-a0eb-3f24f9720b09"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "59c1a730-9fb4-4980-8f03-45c7585c99d9",
+        "8a466701-2870-40f3-a69c-f95961ee4816"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "59c1a730-9fb4-4980-8f03-45c7585c99d9",
+        "c820f700-d4c6-49c4-9711-e3b8ce608662"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "59c1a730-9fb4-4980-8f03-45c7585c99d9",
+        "ca669f9d-d54f-4fd7-babf-6e11c1b8359c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "620096a4-8337-4b79-ae6c-d4bf7f089768",
+        "ced6152d-fb9d-4832-a894-1996a7940a38"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "690d6901-42b4-4aa5-874d-543087532d51",
+        "bbc1d527-d749-4ef3-beb8-e0fc02c1cd47"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "7490d3a5-6bfc-4edb-af60-56e6783ae1b9",
+        "ad8ae0e5-c9c6-4591-83d9-a510b33a7ce7"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "7f7b75c1-eff6-4c55-bec6-de713456de95",
+        "aa514ad5-0a80-4753-899f-c4a356b81ce9"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "7f7b75c1-eff6-4c55-bec6-de713456de95",
+        "e3202b31-235b-478b-b004-7d6be100cf4e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "80121ae5-c398-4e9a-b93a-ea769aa61105",
+        "d599579d-db5f-43e8-a8bf-cd736c4fa99a"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "82f6c9df-7cd3-4f02-91f9-4c04c771337c",
+        "9d4f743f-9e62-4097-aa5d-8138fc188716"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "8a466701-2870-40f3-a69c-f95961ee4816",
+        "c820f700-d4c6-49c4-9711-e3b8ce608662"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "8a466701-2870-40f3-a69c-f95961ee4816",
+        "ca669f9d-d54f-4fd7-babf-6e11c1b8359c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "8c9e967b-13a8-4ff6-887b-b14233ae1419",
+        "9328bee0-0fa5-4364-9c11-9069e5aeb32a"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "8e6056f4-ceff-488d-8927-ff0b7fdf6c51",
+        "96b57712-6562-4544-ba62-e87b7e9c75c4"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "91a7d385-c851-40e8-b38c-bcd7f5c7f7ea",
+        "e7839497-a43e-4787-942f-5da688a606cd"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "a03c76cf-1598-4d51-9b9c-df5ce93be012",
+        "d56cc84c-fce0-4795-8c02-22c59e25a61d"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "a44eac13-8d32-4670-836f-ab8895a0a38c",
+        "dcc62ab5-0939-427b-88f0-52ccc66e1a3e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "a979745e-71f4-443c-a1ca-1815185cf2e4",
+        "b234b66d-a52b-42ad-8f9a-74225d8a2559"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "aa514ad5-0a80-4753-899f-c4a356b81ce9",
+        "e3202b31-235b-478b-b004-7d6be100cf4e"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "b193528f-2ca9-455a-b590-35534afb9efd",
+        "c879db97-2d50-4231-b5fe-891c5e0cfdf7"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "c4b03b51-2b38-4563-960a-78f7ec62e68e",
+        "ce2e849d-bbda-4ec3-9472-b4140e94c65c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "c4b03b51-2b38-4563-960a-78f7ec62e68e",
+        "cf058b28-8642-4a6a-8a01-11acf0bfd3db"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "c4b03b51-2b38-4563-960a-78f7ec62e68e",
+        "d02ba042-0e3b-425e-bdb0-d1d50f8b87a1"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "c4b03b51-2b38-4563-960a-78f7ec62e68e",
+        "e9fd8379-d779-4bea-a0eb-3f24f9720b09"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "c820f700-d4c6-49c4-9711-e3b8ce608662",
+        "ca669f9d-d54f-4fd7-babf-6e11c1b8359c"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "ce2e849d-bbda-4ec3-9472-b4140e94c65c",
+        "cf058b28-8642-4a6a-8a01-11acf0bfd3db"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "ce2e849d-bbda-4ec3-9472-b4140e94c65c",
+        "d02ba042-0e3b-425e-bdb0-d1d50f8b87a1"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "ce2e849d-bbda-4ec3-9472-b4140e94c65c",
+        "e9fd8379-d779-4bea-a0eb-3f24f9720b09"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "cf058b28-8642-4a6a-8a01-11acf0bfd3db",
+        "d02ba042-0e3b-425e-bdb0-d1d50f8b87a1"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "cf058b28-8642-4a6a-8a01-11acf0bfd3db",
+        "e9fd8379-d779-4bea-a0eb-3f24f9720b09"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "d02ba042-0e3b-425e-bdb0-d1d50f8b87a1",
+        "e9fd8379-d779-4bea-a0eb-3f24f9720b09"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "db26f299-683f-4689-a671-bc2be5ae1b7e",
+        "f52b2a5f-5a89-4d78-ad11-ea5a369fecf7"
+      ]
+    },
+    {
+      "rule": "LQ-008",
+      "severity": "info",
+      "subjects": [
+        "de9e178a-0abe-437e-aeef-97796082ad0f",
+        "f0bfdb34-abaa-4fdb-a9f0-ed47633c0845"
+      ]
+    },
+    {
+      "rule": "LQ-009",
+      "severity": "hint",
+      "subjects": [
+        "dfad8a1a-ce19-4364-be3c-81af2fd2baaf"
+      ]
+    }
+  ],
+  "format": "loftspec-v1-lint/1",
+  "ruleset": "loft-lint-1.4.0"
+}

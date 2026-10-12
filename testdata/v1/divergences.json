@@ -1,0 +1,14 @@
+{
+  "format": "loftspec-v1-divergences/1",
+  "divergences": [
+    {
+      "id": "external-components-carry-no-obligations",
+      "surface": "lint",
+      "rule": "SH-002",
+      "condition": "subject-external",
+      "direction": "v1-only",
+      "decidedBy": ["AC-886", "ADR-15"],
+      "note": "A Component whose boundary is external needs no Realization Link; v1 skips external Components in SH-008 only."
+    }
+  ]
+}
