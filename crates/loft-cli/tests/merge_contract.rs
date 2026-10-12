@@ -3,12 +3,15 @@
 //! no simulator stands in for it: this suite holds the driver to git's contract directly.
 
 mod common;
+#[path = "common/repo.rs"]
+mod repo;
 
 use std::collections::BTreeSet;
 use std::fs;
-use std::process::{Command, Output};
+use std::process::Output;
 
 use common::{Scratch, stderr, stdout};
+use repo::Repo;
 
 const SHARE: &str = "products/reading-list/sharing/share-a-list.yaml";
 const ADD: &str = "products/reading-list/shelf/add-a-book.yaml";
@@ -30,84 +33,15 @@ const REFUSE_EDITS: &str = "  - key: 00000000-0000-4000-8000-000000000035
         name: \"An edit made through the link is refused.\"
 ";
 
-/// Real git, kept from the user's configuration and from any repository above the temporary
-/// directory.
-fn real_git() -> Command {
-    let mut command = Command::new("git");
-    command
-        .env("GIT_CONFIG_GLOBAL", "/dev/null")
-        .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env(
-            "GIT_CEILING_DIRECTORIES",
-            std::env::temp_dir().canonicalize().unwrap(),
-        );
-    command
-}
-
-/// A scratch repository holding the Reading List's tree, committed on `main`, with the driver
-/// registered for `spec/` as `loft merge-driver --install` registers it.
-struct Repo(Scratch);
-
-impl Repo {
-    fn new() -> Self {
-        let scratch = Scratch::with_reading_list();
-        fs::write(
-            scratch.0.join(".gitattributes"),
-            "spec/**/*.yaml merge=loft\n",
-        )
-        .unwrap();
-        let repo = Self(scratch);
-        repo.git_ok(&["init", "--quiet", "-b", "main"]);
-        repo.commit("base");
-        repo
-    }
-
-    /// Runs real git in the repository, the driver registered and automatic maintenance off.
-    fn git(&self, args: &[&str]) -> Output {
-        let driver = format!(
-            "merge.loft.driver='{}' merge-driver %O %A %B %P",
-            env!("CARGO_BIN_EXE_loft")
-        );
-        real_git()
-            .args([
-                "-c",
-                "user.name=Plant",
-                "-c",
-                "user.email=plant@example.invalid",
-            ])
-            .args(["-c", "maintenance.auto=false", "-c", &driver])
-            .arg("-C")
-            .arg(&self.0.0)
-            .args(args)
-            .output()
-            .unwrap()
-    }
-
-    fn git_ok(&self, args: &[&str]) -> Output {
-        let output = self.git(args);
-        assert!(output.status.success(), "git {args:?}: {}", stderr(&output));
-        output
-    }
-
-    fn commit(&self, message: &str) {
-        self.git_ok(&["add", "-A"]);
-        self.git_ok(&["commit", "--quiet", "-m", message]);
-    }
-
-    /// Commits `theirs` on a branch from base and `ours` on `main`, then merges the branch.
-    fn merge(&self, ours: impl FnOnce(&Scratch), theirs: impl FnOnce(&Scratch)) -> Output {
-        self.git_ok(&["checkout", "--quiet", "-b", "theirs"]);
-        theirs(&self.0);
-        self.commit("theirs");
-        self.git_ok(&["checkout", "--quiet", "main"]);
-        ours(&self.0);
-        self.commit("ours");
-        self.git(&["merge", "--no-edit", "theirs"])
-    }
-
-    fn text(&self, path: &str) -> String {
-        fs::read_to_string(self.0.file(path)).unwrap()
-    }
+/// Commits `theirs` on a branch from base and `ours` on `main`, then merges the branch.
+fn merge(repo: &Repo, ours: impl FnOnce(&Scratch), theirs: impl FnOnce(&Scratch)) -> Output {
+    repo.git_ok(&["checkout", "--quiet", "-b", "theirs"]);
+    theirs(&repo.0);
+    repo.commit("theirs");
+    repo.git_ok(&["checkout", "--quiet", "main"]);
+    ours(&repo.0);
+    repo.commit("ours");
+    repo.git(&["merge", "--no-edit", "theirs"])
 }
 
 fn append(scratch: &Scratch, path: &str, text: &str) {
@@ -151,7 +85,8 @@ fn keys(text: &str) -> BTreeSet<String> {
 #[test]
 fn rq_162_ac_618_ac_619_edits_to_different_features_merge_cleanly_and_validate() {
     let repo = Repo::new();
-    let merged = repo.merge(
+    let merged = merge(
+        &repo,
         |ours| ours.edit(SHARE, PUBLISH_LINK, "shall: \"publish a link.\""),
         |theirs| theirs.edit(ADD, "record its title and author.", "record its title."),
     );
@@ -166,7 +101,8 @@ fn rq_163_ac_620_ac_621_both_appends_to_one_feature_follow_its_requirements_ours
     let repo = Repo::new();
     let ours_key = "01a13099-7453-76e1-9b96-921b114802b8";
     let theirs_key = "01a13099-7453-76e1-9b96-921d18d1d697";
-    let merged = repo.merge(
+    let merged = merge(
+        &repo,
         |ours| {
             let keys = Some((ours_key, "01a13099-7453-76e1-9b96-921c5ab97266"));
             append(ours, SHARE, &requirement(keys, "list the shared links."));
@@ -190,7 +126,8 @@ fn rq_163_ac_620_ac_621_both_appends_to_one_feature_follow_its_requirements_ours
 #[test]
 fn rq_164_ac_622_ac_623_a_requirement_edited_on_one_side_and_moved_on_the_other_is_both() {
     let repo = Repo::new();
-    let merged = repo.merge(
+    let merged = merge(
+        &repo,
         |ours| {
             ours.edit(SHARE, REFUSE_EDITS, "");
             ours.edit(
@@ -212,7 +149,8 @@ fn rq_164_ac_622_ac_623_a_requirement_edited_on_one_side_and_moved_on_the_other_
 fn rq_165_ac_624_ac_625_a_deleted_node_another_side_references_is_absent_and_check_names_it() {
     let repo = Repo::new();
     let deleted = "00000000-0000-4000-8000-000000000030";
-    let merged = repo.merge(
+    let merged = merge(
+        &repo,
         |ours| {
             let text = fs::read_to_string(ours.file(REMOVE)).unwrap();
             let start = text.find(&format!("  - key: {deleted}")).unwrap();
@@ -237,7 +175,8 @@ fn rq_165_ac_624_ac_625_a_deleted_node_another_side_references_is_absent_and_che
 #[test]
 fn rq_166_ac_626_ac_627_one_statement_edited_apart_conflicts_until_the_record_is_removed() {
     let repo = Repo::new();
-    let merged = repo.merge(
+    let merged = merge(
+        &repo,
         |ours| ours.edit(SHARE, PUBLISH_LINK, "shall: \"publish a link.\""),
         |theirs| theirs.edit(SHARE, PUBLISH_LINK, "shall: \"publish a private link.\""),
     );
@@ -279,7 +218,8 @@ fn rq_167_ac_628_ac_629_nodes_both_sides_create_are_both_kept_with_their_own_key
         let minted = scratch.loft(&["fmt"]);
         assert_eq!(minted.status.code(), Some(0), "{}", stderr(&minted));
     };
-    let merged = repo.merge(
+    let merged = merge(
+        &repo,
         |ours| create(ours, "list the shared links."),
         |theirs| create(theirs, "expire a shared link."),
     );
@@ -302,7 +242,8 @@ fn a_file_both_sides_add_is_merged_over_an_empty_base() {
     let feature = |name: &str| {
         format!("key: 01a13099-7453-76e1-9b96-921f20fbd080\nslug: lend-a-book\nname: \"{name}\"\n")
     };
-    let merged = repo.merge(
+    let merged = merge(
+        &repo,
         |ours| fs::write(ours.file(path), feature("Lend a book")).unwrap(),
         |theirs| fs::write(theirs.file(path), feature("Lend a book to a friend")).unwrap(),
     );
