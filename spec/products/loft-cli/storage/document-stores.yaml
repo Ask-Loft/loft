@@ -1,0 +1,45 @@
+key: 01a12e66-85dc-70ec-b5ed-93e0e0a23bdf
+slug: document-stores
+name: "Document stores"
+body: "The two stores behind one interface: a memory store that holds the document as the model, for tests and for a later server, and a file store that holds the `spec/` tree. The same scenarios run against both, and after each step the two agree."
+realizes:
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+requirements:
+  - key: 01a12e66-85dc-70ec-b5ed-93e1cf02e6a0
+    statement:
+      form: ubiquitous
+      system: "`loftspec-store`"
+      shall: "offer a memory store and a file store that each load a document, save it and report its roots."
+    criteria:
+      - key: 01a12e66-85dc-70ec-b5ed-93e254c4d234
+        name: "The memory store holds the document in memory."
+      - key: 01a12e66-85dc-70ec-b5ed-93e3127ccd78
+        name: "The file store holds the `spec/` tree under a given directory."
+  - key: 01a12e66-85dc-70ec-b5ed-93e4089b54b4
+    statement:
+      form: event_driven
+      when: "the same document is saved to a memory store and to a file store"
+      system: "`loftspec-store`"
+      shall: "report the same roots from both."
+    criteria:
+      - key: 01a12e66-85dc-70ec-b5ed-93e5c3ad6392
+        name: "The content, binding and state roots of the two stores are equal."
+      - key: 01a12e66-85dc-70ec-b5ed-93e6b89492e8
+        name: "The file store's tree equals the writer's output for the document."
+      - key: 01a12e66-85dc-70ec-b5ed-93e754160958
+        name: "The file store loads back a document equal to the one saved."
+  - key: 01a12e66-85dc-70ec-b5ed-93e80395773a
+    statement:
+      form: event_driven
+      when: "a document is saved to a file store"
+      system: "`loftspec-store`"
+      shall: "remove each file that the document no longer has."
+    criteria:
+      - key: 01a12e66-85dc-70ec-b5ed-93e9aaf3c7db
+        name: "The file of a deleted Feature is removed."
+      - key: 01a12e66-85dc-70ec-b5ed-93ea34ad2d8d
+        name: "The former file of a moved Feature is removed."
+      - key: 01a12e66-85dc-70ec-b5ed-93eb058ded41
+        name: "A directory under `spec/` that the save leaves empty is removed."
+      - key: 01a12e66-85dc-70ec-b5ed-93ec267637ec
+        name: "A document save leaves `spec/lint.yaml` unchanged."

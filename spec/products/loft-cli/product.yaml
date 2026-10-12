@@ -8,7 +8,7 @@ featureGroups:
   - key: f9a85ce1-a26a-4b94-919c-f9e9e7f33441
     slug: commands
     name: "Commands"
-    body: "The `loft` commands that act on a `spec/` tree. A command that reads the tree lists the tag `reads-tree`, which makes it follow the shared rules of \"Reading the tree\" and tests it against them; its own Feature states only what a reader error changes for that command."
+    body: "The `loft` commands that act on a `spec/` tree. A command that reads the tree lists the tag `reads-tree`, which makes it follow the shared rules of \"Reading the tree\" and tests it against them; its own Feature states only what a reader error changes for that command. A command that writes the tree lists the tag `writes-tree` and follows the shared rules of \"Writing the tree\" in the same way."
     tags:
       - git
     features:
@@ -23,10 +23,17 @@ featureGroups:
   - key: 1586f1f8-1d67-4051-98c9-3f058c7e1002
     slug: invocation
     name: "Invocation"
-    body: "The conventions that every `loft` command shares: exit codes, JSON output, the version line and error positions."
+    body: "The conventions that every `loft` command shares: exit codes, JSON output, the version line, error positions, and reading and writing the tree."
     features:
       - 7acf997b-53f1-4a74-996d-0e515dcaa99a
       - 69aa407f-4d31-4159-824e-9b65fa3d0680
       - a126ed71-e9b5-4497-85b4-e9a00c5f17f0
       - 46f95a3b-6872-4ccf-a0ee-ae5195d03b93
       - 01a12de5-62d0-763d-b71a-d8f88d7aa2c6
+      - 01a12e66-85dc-70ec-b5ed-93d53cc4b7ea
+  - key: 01a12e66-85dc-70ec-b5ed-93dfdc785d95
+    slug: storage
+    name: "Storage"
+    body: "Where a document is held between commands: in memory or as the `spec/` tree, behind one interface."
+    features:
+      - 01a12e66-85dc-70ec-b5ed-93e0e0a23bdf

@@ -13,3 +13,6 @@
 - key: 01a12de5-62d0-763d-b71a-d8f7a13bc360
   name: reads-tree
   definition: "A `loft` command that reads the `spec/` tree, and so follows the shared rules for a reader error."
+- key: 01a12e66-85dc-70ec-b5ed-93deb1149a0f
+  name: writes-tree
+  definition: "A `loft` command that writes the `spec/` tree or a file the Format places beside it, and so follows the shared rules for a save."
