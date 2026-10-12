@@ -114,6 +114,7 @@ const BINDING_FIELDS: &[Field] = &[
     req(field::KEY, S::Key),
     req(field::LABEL, S::Label),
     scalars(field::ALIASES, S::Label),
+    scalars(field::WITHDRAWN, S::Label),
 ];
 
 const TAG_ENTRY_FIELDS: &[Field] = &[

@@ -6,18 +6,26 @@ use std::num::NonZeroU64;
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::ElementId;
 
-/// An element's live label and every label it held before, in the order they were replaced.
+/// An element's live label, every label it held before in the order they were replaced, and the
+/// labels it lost to a publish that met another (RQ-70's withdrawn labels), which name nothing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Binding {
     pub element: ElementId,
     pub label: Label,
     pub aliases: Vec<Label>,
+    pub withdrawn: Vec<Label>,
 }
 
 impl Binding {
     /// The live label, then the aliases.
     pub fn labels(&self) -> impl Iterator<Item = Label> + '_ {
         std::iter::once(self.label).chain(self.aliases.iter().copied())
+    }
+
+    /// Every label the element was ever given: the live label, the aliases and the withdrawn
+    /// labels, none of which is allocated again.
+    pub fn every_label(&self) -> impl Iterator<Item = Label> + '_ {
+        self.labels().chain(self.withdrawn.iter().copied())
     }
 }
 
@@ -73,6 +81,8 @@ pub enum BindingError {
         first: ElementId,
         second: ElementId,
     },
+    #[error("label {label} is withdrawn from {element}, which still holds it")]
+    WithdrawnIsOwnLabel { element: ElementId, label: Label },
 }
 
 fn check_prefix(element: ElementId, label: Label) -> Result<(), BindingError> {
@@ -117,6 +127,7 @@ impl Bindings {
                     element,
                     label,
                     aliases: Vec::new(),
+                    withdrawn: Vec::new(),
                 });
                 index(&mut self.live_keys, label, element.key());
                 Ok(())
@@ -166,6 +177,32 @@ impl Bindings {
         Ok(())
     }
 
+    /// Records a label the element lost to a publish that met another; it resolves to nothing.
+    pub fn add_withdrawn(
+        &mut self,
+        element: impl Into<ElementId>,
+        label: Label,
+    ) -> Result<(), BindingError> {
+        let element = element.into();
+        let binding = self
+            .entries
+            .get_mut(&element.key())
+            .ok_or(BindingError::Unbound(element))?;
+        binding.withdrawn.push(label);
+        Ok(())
+    }
+
+    /// Removes an element's binding and returns it, freeing its live label and its aliases.
+    pub fn unbind(&mut self, element: impl Into<ElementId>) -> Option<Binding> {
+        let key = element.into().key();
+        let binding = self.entries.remove(&key)?;
+        unindex(&mut self.live_keys, binding.label, key);
+        for alias in &binding.aliases {
+            unindex(&mut self.alias_keys, *alias, key);
+        }
+        Some(binding)
+    }
+
     #[must_use]
     pub fn label_of(&self, element: impl Into<ElementId>) -> Option<Label> {
         self.entries
@@ -178,6 +215,13 @@ impl Bindings {
         self.entries
             .get(&element.into().key())
             .map_or(&[], |binding| binding.aliases.as_slice())
+    }
+
+    #[must_use]
+    pub fn withdrawn_of(&self, element: impl Into<ElementId>) -> &[Label] {
+        self.entries
+            .get(&element.into().key())
+            .map_or(&[], |binding| binding.withdrawn.as_slice())
     }
 
     /// The element a live label or an alias names (AC-29): a live label before an alias, and the
@@ -238,6 +282,16 @@ impl Bindings {
                 });
             }
         }
+        errors.extend(self.iter().flat_map(|binding| {
+            binding
+                .withdrawn
+                .iter()
+                .filter(|label| binding.labels().any(|held| held == **label))
+                .map(|label| BindingError::WithdrawnIsOwnLabel {
+                    element: binding.element,
+                    label: *label,
+                })
+        }));
         errors
     }
 
@@ -275,12 +329,12 @@ impl Counters {
         self.0.get(&prefix).copied().unwrap_or(NonZeroU64::MIN)
     }
 
-    /// Counters one above the highest live label or alias of each prefix, and 1 for a prefix no
-    /// label carries (RQ-176, AC-702).
+    /// Counters one above the highest live, alias or withdrawn label of each prefix, and 1 for a
+    /// prefix no label carries (RQ-176, AC-702).
     #[must_use]
     pub fn above(bindings: &Bindings) -> Self {
         let mut counters = Self::default();
-        counters.raise_all(bindings.iter().flat_map(Binding::labels));
+        counters.raise_all(bindings.iter().flat_map(Binding::every_label));
         counters
     }
 

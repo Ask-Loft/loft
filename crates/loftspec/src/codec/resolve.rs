@@ -288,6 +288,11 @@ impl<'t> Resolver<'t> {
             let alias = Label::parse(alias.text().unwrap_or_default()).expect("a checked label");
             bindings.add_alias(element, alias).map_err(fail)?;
         }
+        for withdrawn in binding.list(field::WITHDRAWN) {
+            let withdrawn =
+                Label::parse(withdrawn.text().unwrap_or_default()).expect("a checked label");
+            bindings.add_withdrawn(element, withdrawn).map_err(fail)?;
+        }
         Ok(())
     }
 }

@@ -151,8 +151,12 @@ fn labels(document: &Document) -> Rec {
         record.set_text(field::KEY, binding.element.key().to_string());
         record.set_text(field::LABEL, binding.label.to_string());
         record.set(
-            "aliases",
+            field::ALIASES,
             Val::List(binding.aliases.iter().map(Val::scalar).collect()),
+        );
+        record.set(
+            field::WITHDRAWN,
+            Val::List(binding.withdrawn.iter().map(Val::scalar).collect()),
         );
         record
     });

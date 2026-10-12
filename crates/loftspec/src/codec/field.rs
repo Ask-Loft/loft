@@ -87,3 +87,4 @@ pub const VERIFICATION_FATE: &str = "verificationFate";
 pub const WHEN: &str = "when";
 pub const WHERE: &str = "where";
 pub const WHILE: &str = "while";
+pub const WITHDRAWN: &str = "withdrawn";

@@ -54,7 +54,7 @@ fn raise_counters(document: &mut Document) {
         decisions,
         ..
     } = document;
-    let live = bindings.iter().flat_map(Binding::labels);
+    let live = bindings.iter().flat_map(Binding::every_label);
     counters.raise_all(live.chain(all_former_labels(edges, decisions)));
 }
 

@@ -115,7 +115,8 @@ fn binding_keys(error: &BindingError) -> Vec<Key> {
     match *error {
         BindingError::Unbound(element)
         | BindingError::AlreadyBound(element)
-        | BindingError::PrefixMismatch { element, .. } => vec![element.key()],
+        | BindingError::PrefixMismatch { element, .. }
+        | BindingError::WithdrawnIsOwnLabel { element, .. } => vec![element.key()],
         BindingError::LabelUnderTwoKeys { first, second, .. }
         | BindingError::AliasUnderTwoKeys { first, second, .. } => {
             vec![first.key(), second.key()]
