@@ -4,6 +4,7 @@
 mod check;
 mod import;
 mod json;
+mod merge_driver;
 mod publish;
 mod render;
 mod verify;
@@ -66,6 +67,17 @@ enum Command {
         /// Print one JSON document on standard output (RQ-155).
         #[arg(long, value_name = "FORMAT")]
         format: Option<Format>,
+    },
+    /// Merge one file of `spec/` as git's merge driver, writing the result to `<ours>` (RQ-150).
+    MergeDriver {
+        /// The common ancestor's version (git's `%O`).
+        base: PathBuf,
+        /// This side's version, which the merge overwrites (git's `%A`).
+        ours: PathBuf,
+        /// The other side's version (git's `%B`).
+        theirs: PathBuf,
+        /// The path of the file being merged, as git names it (git's `%P`).
+        path: String,
     },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
@@ -153,6 +165,20 @@ fn main() -> ExitCode {
         ),
         Command::Publish { format } => publish::run(root, format == Some(Format::Json)),
         Command::Verify { format } => verify::run(root, format == Some(Format::Json)),
+        Command::MergeDriver {
+            base,
+            ours,
+            theirs,
+            path,
+        } => merge_driver::run(
+            root,
+            &merge_driver::Inputs {
+                base: &base,
+                ours: &ours,
+                theirs: &theirs,
+                path: &path,
+            },
+        ),
         Command::Render {
             markdown,
             json,

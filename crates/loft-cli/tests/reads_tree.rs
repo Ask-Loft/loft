@@ -20,13 +20,25 @@ const PRODUCT: &str = "products/reading-list/product.yaml";
 const TAG: &str = "reads-tree";
 
 /// The arguments that run each implemented command, by the slug of its Feature.
-const COMMANDS: [(&str, &[&str]); 6] = [
+const COMMANDS: [(&str, &[&str]); 7] = [
     ("loft-check", &["check"]),
     ("loft-fmt", &["fmt"]),
     ("loft-render", &["render"]),
     ("loft-import-v1", &["import", "v1", READING_LIST]),
     ("loft-publish", &["publish"]),
     ("loft-verify", &["verify"]),
+    // The driver reads the three files git hands it, never the tree, so inputs that do not
+    // exist report against the path they name.
+    (
+        "loft-merge-driver",
+        &[
+            "merge-driver",
+            "base",
+            "ours",
+            "theirs",
+            "spec/loftspec.yaml",
+        ],
+    ),
 ];
 
 /// Tagged commands not implemented yet, by Feature slug and subcommand. Each must still be

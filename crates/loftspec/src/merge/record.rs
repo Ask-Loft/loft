@@ -135,17 +135,19 @@ fn merge_field(each: &Field, sides: &Sides<'_>, host: &mut Host<'_>) -> Option<V
             [list(base), list(ours), list(theirs)],
             host,
         ))),
-        (
-            Shape::One(Item::Record(_)),
-            Some(Val::Record(base)),
-            Some(Val::Record(ours)),
-            Some(Val::Record(theirs)),
-        ) => Some(Val::Record(merge_fields(
-            Some(base),
-            ours,
-            theirs,
-            &mut host.nest(each.name),
-        ))),
+        (Shape::One(Item::Record(_)), base, Some(Val::Record(ours)), Some(Val::Record(theirs))) => {
+            // A sub-record base lacks merges as one both sides added (S7).
+            let base = match base {
+                Some(Val::Record(base)) => Some(base),
+                _ => None,
+            };
+            Some(Val::Record(merge_fields(
+                base,
+                ours,
+                theirs,
+                &mut host.nest(each.name),
+            )))
+        }
         _ => {
             host.conflict(each.name, sides.base, sides.ours, sides.theirs);
             if sides.base_record {
