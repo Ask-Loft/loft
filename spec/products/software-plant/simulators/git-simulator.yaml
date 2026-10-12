@@ -61,3 +61,15 @@ requirements:
         name: "A `git status` call with `GIT_OPTIONAL_LOCKS` set to `0` records no lock."
       - key: 01a13050-9f92-73f0-b7a3-fb727687b663
         name: "No other call records a lock."
+  - key: 01a13070-3230-7079-8674-0f9119727740
+    statement:
+      form: ubiquitous
+      system: "The git simulator"
+      shall: "answer the git configuration calls that `loft merge-driver --install` makes as its scenario scripts them."
+    criteria:
+      - key: 01a13070-3230-7079-8674-0f92c25d79ec
+        name: "`config --local --get <name>` prints the value of a name the scenario sets."
+      - key: 01a13070-3230-7079-8674-0f9320080960
+        name: "`config --local --get <name>` exits 1 and prints nothing for a name the scenario does not set."
+      - key: 01a13070-3230-7079-8674-0f944ae80a03
+        name: "`config --local <name> <value>` sets the name in the scenario."

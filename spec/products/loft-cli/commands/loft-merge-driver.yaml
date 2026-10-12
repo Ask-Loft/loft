@@ -22,7 +22,7 @@ requirements:
   - key: 7317e4e8-72c5-4ba4-8d14-0e690c03b799
     statement:
       form: unwanted
-      if: "any of `<base>`, `<ours>` or `<theirs>` cannot be read as the Format's YAML subset"
+      if: "any of `<base>`, `<ours>` or `<theirs>` cannot be read as a file of the Format"
       system: "`loft merge-driver`"
       shall: "write nothing and exit 1."
     criteria:
@@ -55,3 +55,24 @@ requirements:
         name: "The error states that a git repository is required."
       - key: d02ba042-0e3b-425e-bdb0-d1d50f8b87a1
         name: "Nothing is written."
+  - key: 01a13070-322f-7493-9495-407d4cc6ccae
+    statement:
+      form: unwanted
+      if: "both sides change `spec/lint.yaml` to different contents"
+      system: "`loft merge-driver`"
+      shall: "write nothing and exit 1."
+    criteria:
+      - key: 01a13070-322f-7493-9495-407e928860f5
+        name: "The error names `<path>`."
+      - key: 01a13070-322f-7493-9495-407f0cd0f04c
+        name: "`<ours>` is unchanged."
+  - key: 01a13070-322f-7493-9495-40801726df97
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "find the file that `<path>` names from its `spec` directory, wherever that directory lies in the repository."
+    criteria:
+      - key: 01a13070-322f-7493-9495-40814154f6ca
+        name: "A `<path>` of `sub/spec/tags.yaml` is merged as `spec/tags.yaml`."
+      - key: 01a13070-322f-7493-9495-408256a94cb3
+        name: "A `<path>` with no `spec` directory exits 1 naming `<path>`."

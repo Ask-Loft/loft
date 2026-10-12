@@ -1,0 +1,91 @@
+key: 01a13070-7f35-7224-8ec2-c5aae3e42c5f
+slug: a-system-that-calls-loft-is-held-by-a-contract-suite
+title: "A system that calls Loft is held by a contract suite without a simulator"
+context: "git runs `loft merge-driver` during a merge. The Software Plant simulates each external system that Loft calls, and a contract suite holds each simulator to the real system. git's merge machinery is not a system that Loft calls: git calls Loft, so there is no call of Loft's for a simulator to answer."
+state:
+  kind: proposed
+drivers:
+  - key: 01a13070-7f35-7224-8ec2-c5a16bcce134
+    kind: local
+    label: "Loft does not call it"
+    statement: "Loft never makes the calls with which git merges a file; git calls Loft."
+  - key: 01a13070-7f35-7224-8ec2-c5a2d1095bdc
+    kind: local
+    label: "The caller's contract"
+    statement: "How git runs a merge driver, its arguments, its files and its exit codes, is git's to define."
+  - key: 01a13070-7f35-7224-8ec2-c5a3f8888751
+    kind: local
+    label: "Honest"
+    statement: "A test of the merge shows what a person's `git merge` does."
+options:
+  - key: 01a13070-7f35-7224-8ec2-c5a4d847f2c7
+    title: "A contract suite against real git"
+    description: "The parallel-work scenarios run as `git merge` in temporary repositories with the driver installed, and no simulator stands in for git's merge."
+  - key: 01a13070-7f35-7224-8ec2-c5a51d8175e3
+    title: "A merge simulator and a contract suite"
+    description: "The git simulator also runs a merge driver the way git does, and a contract suite holds it to real git."
+  - key: 01a13070-7f35-7224-8ec2-c5a698cb17fb
+    title: "No git in the tests"
+    description: "The tests call `loft merge-driver` directly with three files, and nothing runs `git merge`."
+assessments:
+  - option: 01a13070-7f35-7224-8ec2-c5a4d847f2c7
+    driver: 01a13070-7f35-7224-8ec2-c5a16bcce134
+    rating: supports
+    rationale: "no simulator stands in for a call Loft never makes"
+  - option: 01a13070-7f35-7224-8ec2-c5a4d847f2c7
+    driver: 01a13070-7f35-7224-8ec2-c5a2d1095bdc
+    rating: supports
+    rationale: "git itself calls the driver"
+  - option: 01a13070-7f35-7224-8ec2-c5a4d847f2c7
+    driver: 01a13070-7f35-7224-8ec2-c5a3f8888751
+    rating: supports
+    rationale: "the merge is git's own"
+  - option: 01a13070-7f35-7224-8ec2-c5a51d8175e3
+    driver: 01a13070-7f35-7224-8ec2-c5a16bcce134
+    rating: conflicts
+    rationale: "the simulator imitates a system that Loft does not call"
+  - option: 01a13070-7f35-7224-8ec2-c5a51d8175e3
+    driver: 01a13070-7f35-7224-8ec2-c5a2d1095bdc
+    rating: neutral
+    rationale: "the simulator copies git's contract and the suite checks the copy"
+  - option: 01a13070-7f35-7224-8ec2-c5a51d8175e3
+    driver: 01a13070-7f35-7224-8ec2-c5a3f8888751
+    rating: supports
+    rationale: "the contract suite compares the simulator with git"
+  - option: 01a13070-7f35-7224-8ec2-c5a698cb17fb
+    driver: 01a13070-7f35-7224-8ec2-c5a16bcce134
+    rating: supports
+    rationale: "nothing stands in for git"
+  - option: 01a13070-7f35-7224-8ec2-c5a698cb17fb
+    driver: 01a13070-7f35-7224-8ec2-c5a2d1095bdc
+    rating: conflicts
+    rationale: "nothing checks how git calls the driver"
+  - option: 01a13070-7f35-7224-8ec2-c5a698cb17fb
+    driver: 01a13070-7f35-7224-8ec2-c5a3f8888751
+    rating: conflicts
+    rationale: "no test runs a person's `git merge`"
+consequences:
+  - key: 01a13070-7f35-7224-8ec2-c5a7f99b6a5b
+    kind: obligation
+    statement: "Each parallel-work scenario runs under a real `git merge` with the driver installed."
+  - key: 01a13070-7f35-7224-8ec2-c5a89b646b0b
+    kind: cost
+    statement: "The suite needs git where it runs."
+  - key: 01a13070-7f35-7224-8ec2-c5a9ebf5d549
+    kind: risk
+    statement: "A change in how a git release calls a merge driver shows only where the suite runs."
+subjects:
+  - role: affected
+    node: 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+  - role: outcome
+    node: 11f42b31-9d15-48d0-aa19-c3b5ab0726a5
+  - role: outcome
+    node: 18399670-def4-4dc7-9cc7-35531035362c
+  - role: outcome
+    node: 279b70f0-5d7f-4f81-9c0e-34968a34c26e
+  - role: outcome
+    node: 27d789a0-0371-47ec-8463-1a8f576ee377
+  - role: outcome
+    node: f3c690c0-3e32-492f-8dbd-7991233f3dc6
+  - role: outcome
+    node: fd89b409-82a2-4fc1-a898-b1e244140ebe
