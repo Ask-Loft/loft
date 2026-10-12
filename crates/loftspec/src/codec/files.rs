@@ -102,6 +102,13 @@ impl Role {
         }
     }
 
+    /// Whether the writer writes a file of this role from the document: every role but the
+    /// lint configuration, which the document does not hold.
+    #[must_use]
+    pub const fn is_written(&self) -> bool {
+        self.kind().is_some()
+    }
+
     /// The record kind the file holds at its top level; none for the lint configuration,
     /// which stage 5 reads.
     const fn kind(&self) -> Option<Kind> {

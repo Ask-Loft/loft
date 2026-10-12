@@ -163,7 +163,7 @@ fn fmt(root: &Path, check: bool) -> ExitCode {
             ExitCode::FAILURE
         };
     }
-    match store.write_files(&formatted.changed) {
+    match store.write_files(formatted.changed) {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             eprintln!("{error}");

@@ -4,11 +4,11 @@
 //! writer's order, and the document is valid.
 
 mod common;
+mod fixtures;
 
 use common::Scratch;
+use fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{self, LINT, SpecPath};
-use loftspec::convert::v1::convert;
-use loftspec::convert::v1::export::Export;
 use loftspec::document::{Document, Edge, TagEntry};
 use loftspec::identity::Key;
 use loftspec::ids::{
@@ -28,9 +28,6 @@ const READING_LIST: &str =
     include_str!("../../../testdata/v1/reading-list/loft-authored-state.json");
 const D11: &str = include_str!("../../../testdata/v1/d11-sequence-3/loft-authored-state.json");
 
-/// A lint configuration the document does not hold, which every save must leave alone.
-const LINT_CONFIG: &str = "rules:\n  - rule: SH-002\n    enabled: false\n";
-
 /// A memory store and a file store saved in step.
 struct Pair {
     scratch: Scratch,
@@ -40,8 +37,7 @@ struct Pair {
 
 impl Pair {
     fn new() -> Self {
-        let scratch = Scratch::new();
-        scratch.put("spec/lint.yaml", LINT_CONFIG);
+        let scratch = with_lint();
         let file = FileStore::open(&scratch.0).unwrap();
         Self {
             scratch,
@@ -369,9 +365,7 @@ fn saving_an_unchanged_document_writes_and_removes_nothing() {
 #[test]
 fn converted_v1_exports_agree() {
     for export in [READING_LIST, D11] {
-        let document = convert(&Export::from_json(export).unwrap())
-            .unwrap()
-            .document;
+        let document = converted(export);
         let mut pair = Pair::new();
         assert!(!pair.step(&document).written.is_empty());
         assert_eq!(pair.step(&document), Saved::default());
