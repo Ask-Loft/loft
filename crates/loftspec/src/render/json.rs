@@ -19,9 +19,14 @@ use serde_json::{Value, json};
 use super::{Labels, state_root};
 use crate::canonical::canonical_bytes;
 use crate::document::{Document, EdgeTarget, SubjectRole};
-use crate::hash::DocumentHashes;
+use crate::hash::{DocumentHashes, Views};
 
-pub(super) fn render(document: &Document, hashes: &DocumentHashes, labels: &Labels) -> Vec<u8> {
+pub(super) fn render(
+    document: &Document,
+    hashes: &DocumentHashes,
+    views: &Views,
+    labels: &Labels,
+) -> Vec<u8> {
     let mut nodes = Vec::new();
     document.walk(&mut |node| {
         if let Some(id) = node.id() {
@@ -29,12 +34,12 @@ pub(super) fn render(document: &Document, hashes: &DocumentHashes, labels: &Labe
                 "key": id.key(),
                 "label": labels.label(id),
                 "kind": id.kind().as_str(),
-                "view": hashes.node_views[&id],
+                "view": views.nodes[&id],
             }));
         }
     });
-    let decisions: Vec<Value> = hashes
-        .decision_views
+    let decisions: Vec<Value> = views
+        .decisions
         .iter()
         .map(|(id, view)| json!({ "key": id.key(), "label": labels.label(*id), "view": view }))
         .collect();

@@ -5,7 +5,7 @@ mod common;
 use common::small_document;
 use loftspec::canonical::canonical_bytes;
 use loftspec::codec;
-use loftspec::hash::hash_document;
+use loftspec::hash::{hash_document, hash_document_with_views};
 use loftspec::render::{Projections, render};
 use serde_json::Value;
 
@@ -128,14 +128,14 @@ fn ac_437_the_export_is_canonical_json() {
 #[test]
 fn ac_438_ac_439_the_export_holds_every_nodes_view_key_and_label() {
     let export = export();
-    let hashes = hash_document(&small_document()).unwrap();
+    let (_, views) = hash_document_with_views(&small_document()).unwrap();
     let nodes = export["nodes"].as_array().unwrap();
-    assert_eq!(nodes.len(), hashes.node_views.len());
+    assert_eq!(nodes.len(), views.nodes.len());
     let feature = nodes.iter().find(|node| node["label"] == "F-1").unwrap();
     assert_eq!(feature["key"], "00000000-0000-7000-8000-000000000003");
     assert_eq!(feature["kind"], "feature");
     let id = loftspec::ids::FeatureId::new(common::key(3)).into();
-    assert_eq!(feature["view"], hashes.node_views[&id]);
+    assert_eq!(feature["view"], views.nodes[&id]);
     let criterion = nodes
         .iter()
         .find(|node| node["kind"] == "criterion")

@@ -4,7 +4,7 @@ mod common;
 
 use std::time::{Duration, Instant};
 
-use loftspec::hash::hash_document;
+use loftspec::hash::{hash_document, hash_document_with_views};
 
 /// The fastest of `runs` timings of `work`.
 fn fastest(runs: usize, mut work: impl FnMut()) -> Duration {
@@ -28,5 +28,11 @@ fn a_live_v1_export_hashes_in_reported_time() {
     let hashing = fastest(5, || {
         assert_eq!(hash_document(&document).unwrap().roots, roots);
     });
-    println!("hash_document: {hashing:?}, state root {}", roots.state);
+    let with_views = fastest(5, || {
+        assert_eq!(hash_document_with_views(&document).unwrap().0.roots, roots);
+    });
+    println!(
+        "hash_document: {hashing:?}, with views: {with_views:?}, state root {}",
+        roots.state
+    );
 }

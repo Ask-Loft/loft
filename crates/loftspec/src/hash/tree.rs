@@ -3,7 +3,8 @@
 use std::borrow::Cow;
 use std::collections::BTreeSet;
 
-use serde_json::{Value, json};
+use serde::Serialize;
+use serde_json::Value;
 
 use crate::attributes::{
     Boundary, ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
@@ -18,7 +19,32 @@ use crate::tree::{
 };
 
 /// Called once per node, children first, with the node's ID, content view and content hash.
-pub(crate) type Visit<'a> = dyn FnMut(Option<NodeId>, Value, Digest) + 'a;
+pub(crate) type Visit<'a> = dyn FnMut(Option<NodeId>, &NodeView<'_>, Digest) + 'a;
+
+/// A node's content view, borrowed from the node and its child hashes: kind, statement or name,
+/// body, sorted tag names, the typed attributes, then the ordered child content hashes. It
+/// serialises as a JSON array, so RFC 8785, which sorts object members, keeps this order.
+#[derive(Serialize)]
+pub(crate) struct NodeView<'a>(
+    &'static str,
+    Cow<'a, str>,
+    Option<&'a str>,
+    BTreeSet<&'a str>,
+    Option<QaKind>,
+    Option<&'a QualityTarget>,
+    Option<&'a TechnicalBinding>,
+    Option<ConservationKind>,
+    Option<VerificationFate>,
+    Option<Boundary>,
+    &'a [Digest],
+);
+
+impl NodeView<'_> {
+    /// The view as a JSON value, for a caller that keeps it.
+    pub(crate) fn to_value(&self) -> Value {
+        serde_json::to_value(self).expect("a content view serialises")
+    }
+}
 
 /// The fields of a node's content view other than its children.
 struct Fields<'a> {
@@ -94,12 +120,19 @@ pub trait ContentHash {
     fn content_view(&self) -> Value {
         let node = self.node();
         let children = child_hashes(node, &mut |_, _, _| {});
-        view(node, &children)
+        view(node, &children).to_value()
     }
 
     /// The digest of the content view under `loftspec/node/1`.
     fn content_hash(&self) -> Digest {
-        digest(Domain::Node, &self.content_view())
+        let node = self.node();
+        self.content_hash_with(&child_hashes(node, &mut |_, _, _| {}))
+    }
+
+    /// The content hash, given the content hashes of the node's children in canonical order, so
+    /// a caller that computed them does not compute them again.
+    fn content_hash_with(&self, children: &[Digest]) -> Digest {
+        digest(Domain::Node, &view(self.node(), children))
     }
 }
 
@@ -138,14 +171,13 @@ content_hash!(
     Section
 );
 
-fn view(node: Node<'_>, children: &[Digest]) -> Value {
+fn view<'a>(node: Node<'a>, children: &'a [Digest]) -> NodeView<'a> {
     let fields = Fields::of(node);
-    let tags: BTreeSet<&str> = fields.tags.iter().map(TagName::as_str).collect();
-    json!([
+    NodeView(
         node.kind().as_str(),
         fields.text,
         fields.body,
-        tags,
+        fields.tags.iter().map(TagName::as_str).collect(),
         fields.qa_kind,
         fields.quality_target,
         fields.binding,
@@ -153,7 +185,7 @@ fn view(node: Node<'_>, children: &[Digest]) -> Value {
         fields.verification_fate,
         fields.boundary,
         children,
-    ])
+    )
 }
 
 /// The content hashes of a node's children, in canonical order (RQ-160).
@@ -169,6 +201,6 @@ pub(crate) fn hash_with(node: Node<'_>, visit: &mut Visit<'_>) -> Digest {
     let children = child_hashes(node, visit);
     let view = view(node, &children);
     let hash = digest(Domain::Node, &view);
-    visit(node.id(), view, hash);
+    visit(node.id(), &view, hash);
     hash
 }

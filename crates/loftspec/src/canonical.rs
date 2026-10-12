@@ -2,6 +2,7 @@
 //! byte and the RFC 8785 canonical JSON of a view.
 
 use std::fmt;
+use std::io;
 use std::str::FromStr;
 
 use serde::Serialize;
@@ -122,18 +123,64 @@ pub fn canonical_bytes<T: Serialize>(view: &T) -> Vec<u8> {
         .expect("a view of strings, integers, booleans, nulls, arrays and objects serialises")
 }
 
-/// SHA-256 over the domain string, one zero byte and the view's canonical bytes.
+/// SHA-256 over the domain string, one zero byte and the view's canonical bytes, which are
+/// streamed into the hash as they are written rather than collected first.
 #[must_use]
 pub fn digest<T: Serialize>(domain: Domain, view: &T) -> Digest {
-    digest_bytes(domain, &canonical_bytes(view))
+    let mut writer = HashWriter::new(domain);
+    serde_json_canonicalizer::to_writer(view, &mut writer)
+        .expect("a view of strings, integers, booleans, nulls, arrays and objects serialises");
+    writer.finish()
 }
 
 /// SHA-256 over the domain string, one zero byte and canonical bytes already computed.
 #[must_use]
 pub fn digest_bytes(domain: Domain, canonical: &[u8]) -> Digest {
-    let mut hasher = Sha256::new();
-    hasher.update(domain.as_str().as_bytes());
-    hasher.update([0_u8]);
-    hasher.update(canonical);
-    Digest(hasher.finalize().into())
+    let mut writer = HashWriter::new(domain);
+    writer.0.update(canonical);
+    writer.finish()
+}
+
+/// The digest of a JSON array whose elements' canonical bytes are already computed, in order:
+/// RFC 8785 writes an array as its elements' canonical bytes, comma-separated, in brackets.
+#[must_use]
+pub fn digest_array(domain: Domain, elements: &[Vec<u8>]) -> Digest {
+    let mut writer = HashWriter::new(domain);
+    writer.0.update(b"[");
+    for (index, element) in elements.iter().enumerate() {
+        if index > 0 {
+            writer.0.update(b",");
+        }
+        writer.0.update(element);
+    }
+    writer.0.update(b"]");
+    writer.finish()
+}
+
+/// A SHA-256 hash seeded with a domain string and one zero byte, into which canonical bytes are
+/// written.
+struct HashWriter(Sha256);
+
+impl HashWriter {
+    fn new(domain: Domain) -> Self {
+        let mut hasher = Sha256::new();
+        hasher.update(domain.as_str().as_bytes());
+        hasher.update([0_u8]);
+        Self(hasher)
+    }
+
+    fn finish(self) -> Digest {
+        Digest(self.0.finalize().into())
+    }
+}
+
+impl io::Write for HashWriter {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        self.0.update(bytes);
+        Ok(bytes.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
 }
