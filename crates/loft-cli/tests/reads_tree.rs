@@ -20,16 +20,18 @@ const PRODUCT: &str = "products/reading-list/product.yaml";
 const TAG: &str = "reads-tree";
 
 /// The arguments that run each implemented command, by the slug of its Feature.
-const COMMANDS: [(&str, &[&str]); 4] = [
+const COMMANDS: [(&str, &[&str]); 6] = [
     ("loft-check", &["check"]),
     ("loft-fmt", &["fmt"]),
     ("loft-render", &["render"]),
     ("loft-import-v1", &["import", "v1", READING_LIST]),
+    ("loft-publish", &["publish"]),
+    ("loft-verify", &["verify"]),
 ];
 
 /// Tagged commands not implemented yet, by Feature slug and subcommand. Each must still be
 /// unknown to `loft`; once it exists it moves to [`COMMANDS`] and is held to the rules.
-const PENDING: [(&str, &str); 2] = [("loft-verify", "verify"), ("loft-publish", "publish")];
+const PENDING: [(&str, &str); 0] = [];
 
 /// A scratch tree whose product file holds a comment, which the reader refuses at line 1.
 fn broken() -> Scratch {

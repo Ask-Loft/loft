@@ -93,6 +93,21 @@ impl Bindings {
     ) -> Result<(), BindingError> {
         let element = element.into();
         check_prefix(element, label)?;
+        self.bind_as_written(element, label)
+    }
+
+    /// Records a binding as `spec/labels.yaml` holds it. A label whose prefix is no longer its
+    /// element's kind prefix is kept, for the next publish to replace (RQ-63); an element whose
+    /// kind takes no prefix, or an element bound twice, is refused.
+    pub(crate) fn bind_as_written(
+        &mut self,
+        element: impl Into<ElementId>,
+        label: Label,
+    ) -> Result<(), BindingError> {
+        let element = element.into();
+        if element.label_prefix().is_none() {
+            return Err(BindingError::PrefixMismatch { element, label });
+        }
         match self.entries.entry(element.key()) {
             std::collections::btree_map::Entry::Occupied(_) => {
                 Err(BindingError::AlreadyBound(element))
@@ -265,9 +280,7 @@ impl Counters {
     #[must_use]
     pub fn above(bindings: &Bindings) -> Self {
         let mut counters = Self::default();
-        for label in bindings.iter().flat_map(Binding::labels) {
-            counters.raise(label);
-        }
+        counters.raise_all(bindings.iter().flat_map(Binding::labels));
         counters
     }
 
@@ -281,6 +294,13 @@ impl Counters {
     /// Sets the next value of `prefix`, as `spec/labels.yaml` states it (AC-23).
     pub fn set(&mut self, prefix: LabelPrefix, next: NonZeroU64) {
         self.0.insert(prefix, next);
+    }
+
+    /// Raises each counter above every label of its prefix in `labels`.
+    pub fn raise_all(&mut self, labels: impl IntoIterator<Item = Label>) {
+        for label in labels {
+            self.raise(label);
+        }
     }
 
     /// Raises the counter of `label`'s prefix above `label`, so the value is never allocated

@@ -4,13 +4,14 @@
 mod check;
 mod import;
 mod json;
+mod publish;
 mod render;
+mod verify;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use loftspec::codec::ReadError;
 use loftspec::lint::Severity;
 use loftspec_store::FileStore;
 
@@ -46,6 +47,18 @@ enum Command {
     Import {
         #[command(subcommand)]
         source: ImportSource,
+    },
+    /// Allocate labels and write the lock that pins the tree, on the publish branch (RQ-145).
+    Publish {
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
+    },
+    /// Recompute the roots of `spec/` and compare them with the lock (RQ-148).
+    Verify {
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
     },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
@@ -122,6 +135,8 @@ fn main() -> ExitCode {
             counters.as_deref(),
             format == Some(Format::Json),
         ),
+        Command::Publish { format } => publish::run(root, format == Some(Format::Json)),
+        Command::Verify { format } => verify::run(root, format == Some(Format::Json)),
         Command::Render {
             markdown,
             json,
@@ -130,8 +145,9 @@ fn main() -> ExitCode {
     }
 }
 
-/// Prints each read error on its own line as `<path>:<line>:<column>: <message>` (RQ-158).
-fn report(errors: &[ReadError]) {
+/// Prints each error on its own line; a read or validation error as
+/// `<path>:<line>:<column>: <message>` (RQ-158).
+fn report(errors: &[impl std::fmt::Display]) {
     for error in errors {
         eprintln!("{error}");
     }

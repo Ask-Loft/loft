@@ -1,0 +1,9 @@
+key: 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+slug: git
+name: "Git"
+body: "The `git` command and the repository it reads, from which the publisher learns the current branch and whether `spec/` has uncommitted changes."
+tags:
+  - git
+boundary: external
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8

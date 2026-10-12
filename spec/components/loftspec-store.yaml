@@ -8,3 +8,6 @@ constraints:
   - key: 9908f127-794b-4463-a680-0639741cc37a
     name: "`loftspec-store` shall write a `spec/` tree through a temporary directory and a rename."
     verificationFate: proved
+  - key: 01a12ff0-f5e5-7095-8fa8-250890794446
+    name: "`loftspec-store` shall reach git only through its repository port."
+    verificationFate: proved

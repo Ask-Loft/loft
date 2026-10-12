@@ -2,11 +2,13 @@
 //! document, saves it and reports its roots, held in memory or as a `spec/` tree, so the same
 //! scenarios run against both and the two agree.
 
+pub mod clock;
 mod error;
 pub mod file;
 pub mod fs;
 pub mod journal;
 pub mod memory;
+pub mod repository;
 
 use loftspec::codec::{Files, Role, SpecPath};
 use loftspec::document::Document;

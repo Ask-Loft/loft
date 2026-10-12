@@ -18,7 +18,7 @@ requirements:
       - key: 3253dd82-b98d-4580-b539-a246e26bddda
         name: "No node record carries a label."
       - key: b9560931-586c-4595-83e3-816a590523c9
-        name: "No file under `spec/` carries a digest."
+        name: "No file under `spec/` carries a digest that the hasher computes."
   - key: b516b5ca-6c98-401a-bf94-127489d68cf5
     statement:
       form: unwanted

@@ -50,6 +50,12 @@ requirements:
         name: "The state root in the lock equals the hasher's state root of the published `spec/` tree."
       - key: 47505464-6ffb-401c-8d6f-1203e024a0b7
         name: "The lock is written to `loft.lock.json` in the directory that holds `spec/`."
+      - key: 01a12ff0-f5e5-7095-8fa8-24fa5105979f
+        name: "A lock that lacks one of the lock fields is not a valid lock record."
+      - key: 01a12ff0-f5e5-7095-8fa8-2509814aa46b
+        name: "A lock that holds a field other than the lock fields is not a valid lock record."
+      - key: 01a12ff0-f5e5-7095-8fa8-250a1958b798
+        name: "A lock that names a format or an algorithm that the reader does not implement is not a valid lock record."
   - key: 035cf58a-5fd2-410a-bff7-093f40abd24f
     statement:
       form: optional

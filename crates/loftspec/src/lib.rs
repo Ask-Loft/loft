@@ -23,6 +23,7 @@ pub mod manifest;
 pub mod names;
 pub mod node;
 pub mod prose;
+pub mod publish;
 pub mod render;
 pub mod slug;
 pub mod statement;

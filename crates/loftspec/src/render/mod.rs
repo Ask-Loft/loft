@@ -10,7 +10,7 @@ mod markdown;
 use std::collections::BTreeMap;
 
 use crate::document::Document;
-use crate::hash::{DocumentHashes, hash_indexed};
+use crate::hash::{DocumentHashes, hash_indexed_with_views};
 use crate::ids::ElementId;
 use crate::index::IndexErrors;
 
@@ -28,11 +28,11 @@ pub struct Projections {
 /// A document whose references do not resolve has no state root to stamp, and renders nothing.
 pub fn render(document: &Document) -> Result<Projections, IndexErrors> {
     let indexed = document.index()?;
-    let hashes = hash_indexed(&indexed);
+    let (hashes, views) = hash_indexed_with_views(&indexed);
     let labels = Labels::of(document);
     Ok(Projections {
         markdown: markdown::render(document, &hashes, &labels),
-        json: json::render(document, &hashes, &labels),
+        json: json::render(document, &hashes, &views, &labels),
     })
 }
 

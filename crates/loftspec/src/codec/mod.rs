@@ -57,3 +57,14 @@ pub fn write(document: &Document) -> Files {
     canonicalize(&mut tree);
     write_files(&tree)
 }
+
+/// The bytes of `spec/labels.yaml` alone, exactly as [`write`] writes them, without writing the
+/// rest of the tree.
+#[must_use]
+pub fn write_labels(document: &Document) -> Vec<u8> {
+    let mut tree = unresolve::unresolve_labels(document);
+    canonicalize(&mut tree);
+    write_files(&tree)
+        .remove(&SpecPath::new(LABELS))
+        .expect("the writer writes the bindings")
+}

@@ -67,10 +67,7 @@ pub fn check(files: &Files) -> Checked {
         Ok(read) => read,
         Err(errors) => return Checked::Unread(errors),
     };
-    let invalid = validate(&document)
-        .into_iter()
-        .map(|error| place(error, &sites))
-        .collect();
+    let invalid = placed(validate(&document), &sites);
     let config = LintConfig::read(files.get(&SpecPath::new(LINT)).map(Vec::as_slice));
     let (config, findings) = match config {
         Ok(config) => (Vec::new(), lint(&document, &sites, &config)),
@@ -81,6 +78,14 @@ pub fn check(files: &Files) -> Checked {
         config,
         findings,
     }
+}
+
+/// Validation errors, each placed at the sites of the elements it names.
+pub(crate) fn placed(errors: Vec<ValidationError>, sites: &Sites) -> Vec<Placed> {
+    errors
+        .into_iter()
+        .map(|error| place(error, sites))
+        .collect()
 }
 
 fn place(error: ValidationError, sites: &Sites) -> Placed {

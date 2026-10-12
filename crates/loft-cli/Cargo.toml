@@ -17,5 +17,8 @@ loftspec = { path = "../loftspec" }
 loftspec-store = { path = "../loftspec-store" }
 serde_json.workspace = true
 
+[dev-dependencies]
+software-plant = { path = "../software-plant" }
+
 [lints]
 workspace = true

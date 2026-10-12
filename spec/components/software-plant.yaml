@@ -1,0 +1,10 @@
+key: 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+slug: software-plant
+name: "software-plant"
+body: "The simulators of the Software Plant: a `git` executable and a clock, for tests only."
+scopedTo:
+  - 01a12ff0-f5e5-7095-8fa8-24ba9ff252f2
+constraints:
+  - key: 01a12ff0-f5e5-7095-8fa8-24bbd911d0cd
+    name: "`software-plant` shall be a dependency of no published crate."
+    verificationFate: proved

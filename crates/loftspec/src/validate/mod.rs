@@ -4,14 +4,14 @@
 //! reader's schema, so a document can break them only as text, where the reader refuses it; the
 //! validator checks the rules a typed document can still break.
 
-mod decisions;
+pub(crate) mod decisions;
 mod nodes;
 
 use crate::bindings::BindingError;
 use crate::document::Document;
 use crate::identity::{Key, Label};
 use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, NodeId, OptionId};
-use crate::index::{Index, IntegrityError, SupersessionCycle};
+use crate::index::{Index, IndexErrors, IntegrityError, SupersessionCycle};
 use crate::names::TagName;
 
 /// A rule a document breaks.
@@ -120,13 +120,21 @@ fn binding_keys(error: &BindingError) -> Vec<Key> {
     }
 }
 
+/// The integrity errors and supersession cycles that stop a document indexing, as validation
+/// errors.
+#[must_use]
+pub fn index_errors(errors: IndexErrors) -> Vec<ValidationError> {
+    let integrity = errors.integrity.into_iter().map(ValidationError::from);
+    let cycles = errors.cycles.into_iter().map(ValidationError::from);
+    integrity.chain(cycles).collect()
+}
+
 /// Every rule the document breaks, in a stable order: integrity, cycles, bindings, nodes and
 /// edges, then decisions.
 #[must_use]
 pub fn validate(document: &Document) -> Vec<ValidationError> {
     let (_, integrity, cycles) = Index::build(document);
-    let mut errors: Vec<ValidationError> = integrity.into_iter().map(Into::into).collect();
-    errors.extend(cycles.into_iter().map(ValidationError::from));
+    let mut errors = index_errors(IndexErrors { integrity, cycles });
     errors.extend(
         document
             .bindings

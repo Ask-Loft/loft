@@ -24,3 +24,17 @@ requirements:
         name: "`publishedAt` is the publish time in UTC."
       - key: 848eda1a-790b-4dfe-b55b-8ee0acca532c
         name: "If writing the lock or the bindings fails, neither is left changed."
+  - key: 01a12ff0-f5e5-7095-8fa8-24fbd830a37c
+    statement:
+      form: ubiquitous
+      system: "The publisher"
+      shall: "write the lock as a JSON object with its fields in the Format's order."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24fc60a2cac0
+        name: "The lock's fields are, in order, `format`, `algorithm`, `documentKey`, `stateRoot`, `contentRoot`, `bindingRoot`, `publishSequence`, `publishedAt` and `derivedFrom`."
+      - key: 01a12ff0-f5e5-7095-8fa8-24fdc9331a2e
+        name: "The lock is indented by two spaces and ends with one newline."
+      - key: 01a12ff0-f5e5-7095-8fa8-24fe3923692d
+        name: "Each root in the lock is written in lowercase hexadecimal."
+      - key: 01a12ff0-f5e5-7095-8fa8-24ffa23bc72a
+        name: "`publishedAt` is written in the RFC 3339 form in UTC to the second, ending in `Z`."

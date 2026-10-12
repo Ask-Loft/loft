@@ -6,7 +6,7 @@ mod common;
 
 use common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
-use loftspec::hash::hash_document;
+use loftspec::hash::{hash_document, hash_indexed_with_views};
 use serde_json::Value;
 
 const SMALL_DOCUMENT: &str = include_str!("../../../testdata/golden/small-document.json");
@@ -18,7 +18,7 @@ struct Computed {
 }
 
 fn computed_views() -> Vec<Computed> {
-    let hashes = hash_document(&small_document()).unwrap();
+    let (_, kept) = hash_indexed_with_views(&small_document().index().unwrap());
     let mut views = Vec::new();
     let mut push = |name: String, domain: Domain, view: &Value| {
         let canonical = String::from_utf8(canonical_bytes(view)).unwrap();
@@ -28,13 +28,13 @@ fn computed_views() -> Vec<Computed> {
             canonical,
         });
     };
-    for (id, view) in &hashes.node_views {
+    for (id, view) in &kept.nodes {
         push(format!("node:{}", id.key()), Domain::Node, view);
     }
-    for (id, view) in &hashes.decision_views {
+    for (id, view) in &kept.decisions {
         push(format!("decision:{id}"), Domain::Decision, view);
     }
-    for (name, domain, view) in &hashes.root_views {
+    for (name, domain, view) in &kept.roots {
         push(format!("root:{name}"), *domain, view);
     }
     views

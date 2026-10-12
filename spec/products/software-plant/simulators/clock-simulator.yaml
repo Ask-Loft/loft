@@ -1,0 +1,23 @@
+key: 01a12ff0-f5e5-7095-8fa8-24dbf02d347a
+slug: clock-simulator
+name: "Clock simulator"
+body: "Sets the time that the binary under test reads, through `SOURCE_DATE_EPOCH`, so that a test can name the publish time exactly."
+tags:
+  - plant-simulator
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+mentions:
+  - 01a12ff0-f5e5-7095-8fa8-24b707fdee97
+requirements:
+  - key: 01a12ff0-f5e5-7095-8fa8-24dc67815a01
+    statement:
+      form: ubiquitous
+      system: "The clock simulator"
+      shall: "give each run of the binary under test the time that its scenario names."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24dd2eb01c49
+        name: "A fixed scenario gives every run the same `SOURCE_DATE_EPOCH`."
+      - key: 01a12ff0-f5e5-7095-8fa8-24de370a8f60
+        name: "A stepping scenario advances `SOURCE_DATE_EPOCH` by its step on each run."
+      - key: 01a12ff0-f5e5-7095-8fa8-24dffd60173a
+        name: "A run outside any scenario leaves `SOURCE_DATE_EPOCH` unset."

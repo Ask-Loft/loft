@@ -386,6 +386,7 @@ dependencies = [
  "loftspec",
  "loftspec-store",
  "serde_json",
+ "software-plant",
 ]
 
 [[package]]
@@ -412,6 +413,7 @@ dependencies = [
  "loftspec",
  "serde",
  "serde_json",
+ "software-plant",
  "thiserror",
 ]
 
@@ -666,6 +668,14 @@ name = "slab"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
+
+[[package]]
+name = "software-plant"
+version = "2.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "strsim"

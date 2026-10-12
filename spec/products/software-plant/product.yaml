@@ -1,0 +1,13 @@
+key: 01a12ff0-f5e5-7095-8fa8-24ba9ff252f2
+slug: software-plant
+name: "Software Plant"
+body: "Simulators of the external systems that Loft depends on. Tests run Loft's own binaries, unchanged, against a simulator's scripted and repeatable behaviour instead of the real system, and a contract suite shared with the real system keeps each simulator honest."
+featureGroups:
+  - key: 01a12ff0-f5e5-7095-8fa8-24d892139560
+    slug: simulators
+    name: "Simulators"
+    body: "One Feature for each simulated external system, each listing the tag `plant-simulator`, beside the shared rules that every simulator follows."
+    features:
+      - 01a12ff0-f5e5-7095-8fa8-24d9132397cf
+      - 01a12ff0-f5e5-7095-8fa8-24dae20a57b3
+      - 01a12ff0-f5e5-7095-8fa8-24dbf02d347a

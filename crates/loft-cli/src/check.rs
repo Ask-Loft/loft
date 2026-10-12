@@ -76,18 +76,14 @@ fn print(checked: &Checked) {
 
 fn document(checked: &Checked) -> Value {
     let (errors, findings): (Vec<Value>, Vec<Value>) = match checked {
-        Checked::Unread(errors) => (
-            errors.iter().map(|e| json::read_error("read", e)).collect(),
-            Vec::new(),
-        ),
+        Checked::Unread(errors) => (json::read_errors(errors), Vec::new()),
         Checked::Read {
             invalid,
             config,
             findings,
         } => (
-            invalid
-                .iter()
-                .map(|placed| json::error("validation", &placed.error.to_string(), &placed.sites))
+            json::validation_errors(invalid)
+                .into_iter()
                 .chain(config.iter().map(|e| json::read_error("lint-config", e)))
                 .collect(),
             findings.iter().map(json::finding).collect(),
