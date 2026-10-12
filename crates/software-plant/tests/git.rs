@@ -398,21 +398,24 @@ fn unmerged_paths_are_answered_as_ls_files_prints_their_index_entries() {
 }
 
 #[test]
-fn the_lock_a_revision_holds_is_answered_or_refused_with_git_s_message() {
+fn the_lock_a_revision_holds_is_named_by_its_object_and_read_by_it() {
+    let object = "587be6b4c3f93f93c489c0111bba5596147a26cb";
     let scenario = GitScenario::clean_on("main")
         .below("sub/")
         .merging(SHA)
-        .lock_at("HEAD", "{\"a\": 1}\n");
-    let held = answer(&scenario, "cat-file blob HEAD:./loft.lock.json");
-    assert_eq!((held.code, held.stdout), (0, b"{\"a\": 1}\n".to_vec()));
-    let missing = answer(&scenario, "cat-file blob MERGE_HEAD:./loft.lock.json");
+        .lock_at("HEAD", object, "{\"a\": 1}\n");
+    let named = answer(&scenario, "rev-parse -q --verify HEAD:./loft.lock.json");
     assert_eq!(
-        (missing.code, missing.stderr.as_str()),
-        (
-            128,
-            "fatal: path 'sub/loft.lock.json' does not exist in 'MERGE_HEAD'\n"
-        )
+        (named.code, named.stdout),
+        (0, format!("{object}\n").into_bytes())
     );
+    let held = answer(&scenario, &format!("cat-file blob {object}"));
+    assert_eq!((held.code, held.stdout), (0, b"{\"a\": 1}\n".to_vec()));
+    let missing = answer(
+        &scenario,
+        "rev-parse -q --verify MERGE_HEAD:./loft.lock.json",
+    );
+    assert_eq!((missing.code, missing.stdout), (1, Vec::new()));
 }
 
 #[test]
@@ -421,7 +424,7 @@ fn outside_a_repository_the_calls_of_a_stopped_merge_exit_128() {
     for line in [
         MERGE_HEAD,
         "ls-files -u -z --full-name -- :/",
-        "cat-file blob HEAD:./loft.lock.json",
+        "rev-parse -q --verify HEAD:./loft.lock.json",
     ] {
         let reply = answer(&outside, line);
         assert_eq!(

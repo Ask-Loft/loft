@@ -21,6 +21,8 @@ const FEATURE_F2: &str = "00000000-0000-4000-8000-00000000001f";
 const FEATURE_F3: &str = "00000000-0000-4000-8000-000000000020";
 const COMMIT: &str = "b97feb1503e857271adfbc4604548baba9ff4d2b";
 const BLOB: &str = "20833b50d6fa1b4f9378bf129363513617191658";
+const HEAD_LOCK: &str = "7dc89e9dba4a0afa92e83f87c412b1aa11880f00";
+const OTHER_LOCK: &str = "587be6b4c3f93f93c489c0111bba5596147a26cb";
 
 /// A Reading List binding as `spec/labels.yaml` writes it.
 fn binding(key: &str, label: &str) -> String {
@@ -86,17 +88,19 @@ fn stopped(stop: Stop) -> (Scratch, GitScenario) {
     fs::write(scratch.0.join("loft.lock.json"), markers).unwrap();
     let (head, other) = (lock(4), lock(6));
     let scenario = match stop {
-        Stop::Merge => GitScenario::clean_on("main")
-            .merging(COMMIT)
-            .lock_at("MERGE_HEAD", &other),
+        Stop::Merge => {
+            GitScenario::clean_on("main")
+                .merging(COMMIT)
+                .lock_at("MERGE_HEAD", OTHER_LOCK, &other)
+        }
         Stop::Rebase => GitScenario::clean_on("main")
             .detached()
             .rebasing(COMMIT, "refs/heads/main")
-            .lock_at("REBASE_HEAD", &other),
+            .lock_at("REBASE_HEAD", OTHER_LOCK, &other),
     };
     let mut scenario = scenario
         .with("UU", "spec/labels.yaml")
-        .lock_at("HEAD", &head);
+        .lock_at("HEAD", HEAD_LOCK, &head);
     for path in ["loft.lock.json", "spec/labels.yaml"] {
         for stage in 1..=3 {
             scenario = scenario.unmerged("100644", BLOB, stage, path);

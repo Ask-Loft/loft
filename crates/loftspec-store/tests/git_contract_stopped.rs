@@ -118,8 +118,12 @@ fn merge(dir: &Scratch) -> (PathBuf, GitScenario) {
     let scenario = GitScenario::clean_on("main")
         .with("UU", "spec/labels.yaml")
         .merging(&rev(&dir.0, "MERGE_HEAD"))
-        .lock_at("HEAD", "local\n")
-        .lock_at("MERGE_HEAD", "pulled\n");
+        .lock_at("HEAD", &rev(&dir.0, "HEAD:loft.lock.json"), "local\n")
+        .lock_at(
+            "MERGE_HEAD",
+            &rev(&dir.0, "MERGE_HEAD:loft.lock.json"),
+            "pulled\n",
+        );
     let paths = ["loft.lock.json", "spec/labels.yaml"];
     (
         dir.0.clone(),
@@ -139,8 +143,12 @@ fn merge_below_the_top_level(dir: &Scratch) -> (PathBuf, GitScenario) {
         .below("sub/")
         .with("UU", "sub/spec/labels.yaml")
         .merging(&rev(&dir.0, "MERGE_HEAD"))
-        .lock_at("HEAD", "local\n")
-        .lock_at("MERGE_HEAD", "pulled\n");
+        .lock_at("HEAD", &rev(&dir.0, "HEAD:sub/loft.lock.json"), "local\n")
+        .lock_at(
+            "MERGE_HEAD",
+            &rev(&dir.0, "MERGE_HEAD:sub/loft.lock.json"),
+            "pulled\n",
+        );
     let paths = ["README.md", "sub/loft.lock.json", "sub/spec/labels.yaml"];
     (
         dir.0.join("sub"),
@@ -159,7 +167,11 @@ fn merge_without_a_local_lock(dir: &Scratch) -> (PathBuf, GitScenario) {
     let scenario = GitScenario::clean_on("main")
         .with("UU", "spec/labels.yaml")
         .merging(&rev(&dir.0, "MERGE_HEAD"))
-        .lock_at("MERGE_HEAD", "pulled\n");
+        .lock_at(
+            "MERGE_HEAD",
+            &rev(&dir.0, "MERGE_HEAD:loft.lock.json"),
+            "pulled\n",
+        );
     let paths = ["spec/labels.yaml"];
     (
         dir.0.clone(),
@@ -183,8 +195,12 @@ fn rebase(dir: &Scratch, detached: bool) -> (PathBuf, GitScenario) {
         .detached()
         .with("UU", "spec/labels.yaml")
         .rebasing(&rev(&dir.0, "REBASE_HEAD"), head_name)
-        .lock_at("HEAD", "pulled\n")
-        .lock_at("REBASE_HEAD", "local\n");
+        .lock_at("HEAD", &rev(&dir.0, "HEAD:loft.lock.json"), "pulled\n")
+        .lock_at(
+            "REBASE_HEAD",
+            &rev(&dir.0, "REBASE_HEAD:loft.lock.json"),
+            "local\n",
+        );
     let paths = ["loft.lock.json", "spec/labels.yaml"];
     (
         dir.0.clone(),
@@ -298,11 +314,8 @@ fn calls(rebasing: bool) -> Vec<Vec<String>> {
     let mut calls: Vec<Vec<String>> =
         vec![owned(&MERGE_HEAD), owned(&REBASE_HEAD), owned(&UNMERGED)];
     for revision in ["HEAD", other] {
-        calls.push(owned(&[
-            "cat-file",
-            "blob",
-            &format!("{revision}:./loft.lock.json"),
-        ]));
+        let lock = format!("{revision}:./loft.lock.json");
+        calls.push(owned(&["rev-parse", "-q", "--verify", &lock]));
     }
     if !rebasing {
         for name in REBASE_HEAD_NAMES {
@@ -324,12 +337,24 @@ fn the_simulator_answers_each_call_of_a_stopped_merge_or_rebase_as_real_git_does
         let plant = Scratch::new();
         let simulator = scenario.install(&plant.0);
         let rebasing = name.contains("rebase");
-        for call in calls(rebasing) {
-            let real = run(real_git(), &root, &call);
+        let compare = |call: &[String]| {
+            let real = run(real_git(), &root, call);
             let mut command = Command::new("git");
             simulator.apply(&mut command);
-            let simulated = run(command, &root, &call);
+            let simulated = run(command, &root, call);
             assert_eq!(reply(&simulated), reply(&real), "{name}: git {call:?}");
+            real
+        };
+        for call in calls(rebasing) {
+            let real = compare(&call);
+            // A lock's object id leads to the call that reads it.
+            let names_a_lock = call
+                .last()
+                .is_some_and(|arg| arg.ends_with(":./loft.lock.json"));
+            if names_a_lock && real.status.success() {
+                let object = String::from_utf8(real.stdout).unwrap();
+                compare(&["cat-file", "blob", object.trim_end()].map(str::to_owned));
+            }
         }
     }
 }

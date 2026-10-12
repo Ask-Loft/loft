@@ -2,7 +2,7 @@
 //! git answers them, byte for byte, and every other call refused.
 
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::{env, fs};
 
 use serde::{Deserialize, Serialize};
@@ -11,7 +11,7 @@ mod launcher;
 mod stopped;
 
 pub use launcher::ALIAS as LAUNCHER_ALIAS;
-pub use stopped::{IndexEntry, Operation, Stopped, StoppedCall};
+pub use stopped::{IndexEntry, LockBlob, Operation, Stopped, StoppedCall};
 
 /// The environment variable that names the scenario file the simulator reads.
 pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_GIT_SCENARIO";
@@ -252,12 +252,15 @@ impl GitScenario {
         self
     }
 
-    /// The same stopped repository with `loft.lock.json` at `revision` holding `text`.
+    /// The same stopped repository with `loft.lock.json` at `revision` holding `text`, stored as
+    /// the object `object`.
     #[must_use]
-    pub fn lock_at(mut self, revision: &str, text: &str) -> Self {
-        self.stopped_mut()
-            .locks
-            .insert(revision.to_owned(), text.to_owned());
+    pub fn lock_at(mut self, revision: &str, object: &str, text: &str) -> Self {
+        let lock = LockBlob {
+            object: object.to_owned(),
+            text: text.to_owned(),
+        };
+        self.stopped_mut().locks.insert(revision.to_owned(), lock);
         self
     }
 
@@ -370,7 +373,7 @@ impl GitScenario {
                 ..Reply::ok(Vec::new())
             },
             Call::Launcher => launcher::answer(&self.launchers, operands[0]),
-            Call::Stopped(call) => stopped::answer(call, &operands, repository, &working(args)),
+            Call::Stopped(call) => stopped::answer(call, &operands, repository),
         }
     }
 }
@@ -416,18 +419,6 @@ fn within(path: &str, scope: &str) -> bool {
         || path
             .strip_prefix(scope)
             .is_some_and(|rest| rest.starts_with('/'))
-}
-
-/// The directory a call is made in: the current one, changed by each leading `-C <directory>`.
-fn working(args: &[String]) -> PathBuf {
-    let mut working = PathBuf::from(".");
-    for pair in args
-        .chunks(2)
-        .take_while(|pair| pair.len() == 2 && pair[0] == "-C")
-    {
-        working = working.join(&pair[1]);
-    }
-    working
 }
 
 /// The call the arguments make and its operands (the pathspecs of a status, the name and value

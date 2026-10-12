@@ -108,9 +108,7 @@ impl GitScenario {
             search_path,
         }
     }
-}
 
-impl GitScenario {
     /// The scenario with the files of a stopped rebase written under `dir`, and its git
     /// directory set there.
     fn with_git_files(&self, dir: &Path) -> Self {

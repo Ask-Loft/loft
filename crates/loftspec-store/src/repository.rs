@@ -229,17 +229,19 @@ impl GitCommand {
         Ok(None)
     }
 
-    /// The bytes of the lock beside `spec/` at `revision`, or none where it holds no lock.
+    /// The bytes of the lock beside `spec/` at `revision`, or none where it holds no lock:
+    /// `rev-parse -q --verify` names the lock's object, or exits 1 without one, so no message of
+    /// git's is read.
     fn lock_at(&self, root: &Path, revision: &str) -> Result<Option<Vec<u8>>, StoreError> {
         let object = format!("{revision}:./{LOCK}");
-        let call = ["cat-file", "blob", object.as_str()];
+        let call = ["rev-parse", "-q", "--verify", object.as_str()];
         let output = self.run(root, &call)?;
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        let missing = ["does not exist in", "exists on disk, but not in"];
-        if output.status.code() == Some(128) && missing.iter().any(|m| stderr.contains(m)) {
+        if output.status.code() == Some(1) {
             return Ok(None);
         }
-        succeeded(&call, output).map(Some)
+        let object = text(&succeeded(&call, output)?);
+        let call = ["cat-file", "blob", object.as_str()];
+        succeeded(&call, self.run(root, &call)?).map(Some)
     }
 }
 

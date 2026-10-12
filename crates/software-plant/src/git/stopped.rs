@@ -3,14 +3,13 @@
 //! index entries of each unmerged path.
 
 use std::collections::BTreeMap;
-use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
 use super::{Reply, Repository};
 
-/// The lock's file name beside `spec/`.
-const LOCK: &str = "loft.lock.json";
+/// The lock's path from the working directory, after a revision.
+const LOCK_AT: &str = ":./loft.lock.json";
 
 /// The calls with which Loft reads a stopped merge or rebase.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -24,8 +23,10 @@ pub enum StoppedCall {
     GitPath,
     /// `git ls-files -u -z --full-name -- :/`
     Unmerged,
-    /// `git cat-file blob <revision>:./loft.lock.json`
-    LockAt,
+    /// `git rev-parse -q --verify <revision>:./loft.lock.json`
+    LockObject,
+    /// `git cat-file blob <object>`
+    Blob,
 }
 
 /// What stopped.
@@ -47,12 +48,20 @@ pub struct Stopped {
     /// `detached HEAD`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub head_name: Option<String>,
-    /// The text of `loft.lock.json` at each revision that holds one.
+    /// The lock at each revision that holds one.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub locks: BTreeMap<String, String>,
+    pub locks: BTreeMap<String, LockBlob>,
     /// The index entries of the unmerged paths, in the order git lists them.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub unmerged: Vec<IndexEntry>,
+}
+
+/// The lock a revision holds: its object id and its text.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LockBlob {
+    pub object: String,
+    pub text: String,
 }
 
 /// One index entry of an unmerged path, its path from the top level.
@@ -74,21 +83,17 @@ pub(super) fn parse<'a>(rest: &[&'a str]) -> Option<(StoppedCall, Vec<&'a str>)>
         ["ls-files", "-u", "-z", "--full-name", "--", ":/"] => {
             Some((StoppedCall::Unmerged, vec![]))
         }
-        ["cat-file", "blob", object] => {
-            let revision = object.strip_suffix(":./loft.lock.json")?;
-            Some((StoppedCall::LockAt, vec![revision]))
+        ["rev-parse", "-q", "--verify", object] => {
+            let revision = object.strip_suffix(LOCK_AT)?;
+            Some((StoppedCall::LockObject, vec![revision]))
         }
+        ["cat-file", "blob", object] => Some((StoppedCall::Blob, vec![*object])),
         _ => None,
     }
 }
 
-/// Answers a call in a repository, stopped or not, made in the directory `working`.
-pub(super) fn answer(
-    call: StoppedCall,
-    operands: &[&str],
-    repository: &Repository,
-    working: &Path,
-) -> Reply {
+/// Answers a call in a repository, stopped or not.
+pub(super) fn answer(call: StoppedCall, operands: &[&str], repository: &Repository) -> Reply {
     let stopped = repository.stopped.as_ref();
     let head = |operation| {
         stopped
@@ -109,31 +114,27 @@ pub(super) fn answer(
             Reply::ok(format!("{base}/{}\n", operands[0]))
         }
         StoppedCall::Unmerged => Reply::ok(unmerged(stopped)),
-        StoppedCall::LockAt => {
-            let revision = operands[0];
-            stopped
-                .and_then(|stopped| stopped.locks.get(revision))
-                .map_or_else(
-                    || missing_lock(repository, working, revision),
-                    |lock| Reply::ok(lock.clone()),
-                )
-        }
+        StoppedCall::LockObject => stopped
+            .and_then(|stopped| stopped.locks.get(operands[0]))
+            .map_or_else(
+                || Reply::fail(1, ""),
+                |lock| Reply::ok(format!("{}\n", lock.object)),
+            ),
+        StoppedCall::Blob => stopped
+            .and_then(|stopped| {
+                let mut locks = stopped.locks.values();
+                locks.find(|lock| lock.object == operands[0])
+            })
+            .map_or_else(
+                || {
+                    Reply::fail(
+                        128,
+                        format!("fatal: Not a valid object name {}\n", operands[0]),
+                    )
+                },
+                |lock| Reply::ok(lock.text.clone()),
+            ),
     }
-}
-
-/// git's refusal of a revision that holds no lock, which names the working tree's copy when
-/// there is one.
-fn missing_lock(repository: &Repository, working: &Path, revision: &str) -> Reply {
-    let missing = if working.join(LOCK).exists() {
-        "exists on disk, but not in"
-    } else {
-        "does not exist in"
-    };
-    let path = format!("{}{LOCK}", repository.prefix);
-    Reply::fail(
-        128,
-        format!("fatal: path '{path}' {missing} '{revision}'\n"),
-    )
 }
 
 fn unmerged(stopped: Option<&Stopped>) -> Vec<u8> {
