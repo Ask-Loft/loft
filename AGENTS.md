@@ -13,13 +13,16 @@ text form. It was imported from the last Loft v1 state of D-11 "Loft Specificati
 `testdata/v1/d11-sequence-3/`, and the Loft v1 document is no longer where the Format is authored.
 When code and `spec/` disagree, `spec/` wins unless the task explicitly changes the contract.
 
-Until the first `loft publish` writes a v2 lock whose `derivedFrom` names that v1 state, the
-contract is `spec/` as of the commit that imported it; later edits to `spec/` are candidates that
-the next publish makes normative. Change the specification by editing `spec/` in the same pull
-request as the code, then run `loft fmt` and `loft check --fail-on warning`, which CI also runs.
-Tests cite the labels in `spec/labels.yaml`; a node added since the import has no label until a
-publish allocates one. `loft render` writes `docs/spec.md` and `docs/spec.json` on demand; they are
-never committed and never normative. Plans and authoring records are kept outside this repository.
+The normative state is the one `loft.lock.json` pins: the state root of `spec/` at the last
+publish, which `loft verify` recomputes and CI checks on `main`. The first publish records the v1
+state the specification was imported from in the lock's `derivedFrom`; until it lands, the
+contract is `spec/` as of the commit that imported it. Edits to `spec/` on `develop` and on
+feature branches are candidates that the next publish on `main` makes normative. Change the
+specification by editing `spec/` in the same pull request as the code, then run `loft fmt` and
+`loft check --fail-on warning`, which CI also runs. Tests cite the labels in `spec/labels.yaml`; a
+node added since the last publish has no label until a publish allocates one. `loft render`
+writes `docs/spec.md` and `docs/spec.json` on demand; they are never committed and never
+normative. Plans and authoring records are kept outside this repository.
 
 ## Agreement with v1
 
@@ -88,6 +91,11 @@ The rules:
 - `software-plant` holds simulators only. Fixtures and conformance harnesses stay in the crates
   they test.
 
+`crates/loft-cli/tests/publish.rs` is the worked example. Every `loft` run in the command-line
+tests goes through `Scratch::loft`, which installs the git simulator clean on `main` and a fixed
+clock; a test that needs another repository or another time passes its own `GitScenario` and
+`Clock` to `Scratch::loft_with`.
+
 The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 
 ## Workflow
@@ -100,11 +108,12 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   ceiling. Crossing either gate requires same-turn refactoring, never a raised threshold or budget.
 - Keep every commit green. Do not update golden vectors merely to make a failure disappear.
 - Commit each completed plan stage separately; do not combine stages in one commit.
-- For a contract change during the bootstrap, use the `loft` workflow from `../loft/`: author on a
-  D-11 work branch, validate and lint, checkpoint, Publish only with explicit approval, then refresh
-  the lock and both exports from the authenticated `get_authored_state` and `render_markdown` reads
-  of that exact immutable state and verify the bundle before implementation relies on it. Never
-  treat an unpublished Draft as normative.
+- Publish on `main` only, and only with the maintainer's approval: merge `develop` into `main`,
+  run `loft publish` there over a committed `spec/`, commit `spec/labels.yaml` and
+  `loft.lock.json` together as the publish commit, check that `loft verify` passes, then merge
+  `main` back into `develop` so the allocated labels reach it. A second `loft publish` with
+  nothing changed writes nothing. CI runs `loft verify` on `main` only, since `develop` carries
+  unpublished candidates.
 - Preserve unrelated worktree changes.
 - Before handing work off, run `cargo fmt --all -- --check`,
   `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace` and

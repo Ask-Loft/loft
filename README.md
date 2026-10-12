@@ -19,6 +19,13 @@ Pre-release. The format and the command line are specified in this repository's 
 tree, in the format itself: `loft check` validates and lints it, and `loft render` writes a
 readable projection to `docs/spec.md`.
 
+`loft publish`, run on the publish branch (`main` unless `spec/loftspec.yaml` names another) over
+a committed tree, allocates labels to new nodes in `spec/labels.yaml` and writes
+`loft.lock.json`, which pins the specification's state, content and binding roots. `loft verify`
+recomputes those roots and compares them with the lock; CI runs it on `main`. A release merges
+`develop` into `main`, publishes there, commits the labels and the lock together, and merges
+`main` back into `develop`.
+
 ## Software Plant
 
 Loft's commands depend on systems outside Loft: git and the clock. Tests run the real `loft`
@@ -53,6 +60,7 @@ cargo nextest run --workspace
 cargo test --workspace --doc
 cargo run -q -p loft-cli -- fmt --check
 cargo run -q -p loft-cli -- check --fail-on warning
+cargo run -q -p loft-cli -- verify    # on main, which carries only published states
 ```
 
 Rust 1.97 or newer; `cargo install cargo-nextest --locked` provides the test runner.
