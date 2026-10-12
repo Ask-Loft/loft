@@ -431,3 +431,27 @@ fn outside_a_repository_the_calls_of_a_stopped_merge_exit_128() {
         );
     }
 }
+
+/// The shell alias with which `loft merge-driver --install` runs `<command> --version`.
+fn launcher(command: &str) -> Vec<String> {
+    vec![
+        "-c".to_owned(),
+        format!("alias.loft-launcher=!{command} --version"),
+        "loft-launcher".to_owned(),
+    ]
+}
+
+#[test]
+fn the_launcher_alias_prints_the_version_the_scenario_gives_the_command() {
+    let scenario = GitScenario::clean_on("main").launcher("npx --no-install loft", "loft 2.0.0\n");
+    let reply = scenario.answer(&launcher("npx --no-install loft"));
+    assert_eq!((reply.code, reply.stdout), (0, b"loft 2.0.0\n".to_vec()));
+    let outside = GitScenario::outside_repository().launcher("loft", "loft 2.0.0\n");
+    assert_eq!(outside.answer(&launcher("loft")).code, 0);
+}
+
+#[test]
+fn the_launcher_alias_exits_127_for_a_command_the_scenario_does_not_give() {
+    let reply = GitScenario::clean_on("main").answer(&launcher("loft"));
+    assert_eq!((reply.code, reply.stdout), (127, Vec::new()));
+}

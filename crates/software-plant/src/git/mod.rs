@@ -7,8 +7,10 @@ use std::{env, fs};
 
 use serde::{Deserialize, Serialize};
 
+mod launcher;
 mod stopped;
 
+pub use launcher::ALIAS as LAUNCHER_ALIAS;
 pub use stopped::{IndexEntry, Operation, Stopped, StoppedCall};
 
 /// The environment variable that names the scenario file the simulator reads.
@@ -44,6 +46,9 @@ pub struct GitScenario {
     pub repository: Option<Repository>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub failures: Vec<Failure>,
+    /// The version each command that runs prints for `<command> --version`.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub launchers: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -96,6 +101,8 @@ pub enum Call {
     ConfigSet,
     /// A call that reads a stopped merge or rebase.
     Stopped(StoppedCall),
+    /// `git -c alias.loft-launcher=!<command> --version loft-launcher`
+    Launcher,
 }
 
 /// A call that fails with a scripted exit code and message.
@@ -154,6 +161,7 @@ impl GitScenario {
                 git_dir: None,
             }),
             failures: Vec::new(),
+            launchers: BTreeMap::new(),
         }
     }
 
@@ -163,7 +171,16 @@ impl GitScenario {
         Self {
             repository: None,
             failures: Vec::new(),
+            launchers: BTreeMap::new(),
         }
+    }
+
+    /// The same scenario in which `command --version`, run through the shell, prints `version`.
+    #[must_use]
+    pub fn launcher(mut self, command: &str, version: &str) -> Self {
+        self.launchers
+            .insert(command.to_owned(), version.to_owned());
+        self
     }
 
     /// The same repository on a detached HEAD.
@@ -327,13 +344,12 @@ impl GitScenario {
             return Reply::fail(failure.code, failure.message.clone());
         }
         let Some(repository) = &self.repository else {
-            return Reply::fail(
-                128,
-                match call {
-                    Call::ConfigGet | Call::ConfigSet => LOCAL_OUTSIDE_A_REPOSITORY,
-                    _ => NOT_A_REPOSITORY,
-                },
-            );
+            return match call {
+                // git runs a shell alias outside a repository too.
+                Call::Launcher => launcher::answer(&self.launchers, operands[0]),
+                Call::ConfigGet | Call::ConfigSet => Reply::fail(128, LOCAL_OUTSIDE_A_REPOSITORY),
+                _ => Reply::fail(128, NOT_A_REPOSITORY),
+            };
         };
         match call {
             Call::ShowPrefix => Reply::ok(format!("{}\n", repository.prefix)),
@@ -353,6 +369,7 @@ impl GitScenario {
                 set: Some((operands[0].to_owned(), operands[1].to_owned())),
                 ..Reply::ok(Vec::new())
             },
+            Call::Launcher => launcher::answer(&self.launchers, operands[0]),
             Call::Stopped(call) => stopped::answer(call, &operands, repository, &working(args)),
         }
     }
@@ -436,6 +453,10 @@ fn parse(args: &[String]) -> Option<(Call, Vec<&str>)> {
         ["config", "--local", name, value] if !name.starts_with('-') => {
             Some((Call::ConfigSet, vec![*name, *value]))
         }
-        rest => stopped::parse(rest).map(|(call, operands)| (Call::Stopped(call), operands)),
+        rest => launcher::parse(rest)
+            .map(|command| (Call::Launcher, vec![command]))
+            .or_else(|| {
+                stopped::parse(rest).map(|(call, operands)| (Call::Stopped(call), operands))
+            }),
     }
 }
