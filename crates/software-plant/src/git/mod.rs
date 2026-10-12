@@ -2,7 +2,7 @@
 //! git answers them, byte for byte, and every other call refused.
 
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{env, fs};
 
 use serde::{Deserialize, Serialize};
@@ -353,9 +353,7 @@ impl GitScenario {
                 set: Some((operands[0].to_owned(), operands[1].to_owned())),
                 ..Reply::ok(Vec::new())
             },
-            Call::Stopped(call) => {
-                stopped::answer(call, &operands, repository, repository.git_dir.as_deref())
-            }
+            Call::Stopped(call) => stopped::answer(call, &operands, repository, &working(args)),
         }
     }
 }
@@ -401,6 +399,18 @@ fn within(path: &str, scope: &str) -> bool {
         || path
             .strip_prefix(scope)
             .is_some_and(|rest| rest.starts_with('/'))
+}
+
+/// The directory a call is made in: the current one, changed by each leading `-C <directory>`.
+fn working(args: &[String]) -> PathBuf {
+    let mut working = PathBuf::from(".");
+    for pair in args
+        .chunks(2)
+        .take_while(|pair| pair.len() == 2 && pair[0] == "-C")
+    {
+        working = working.join(&pair[1]);
+    }
+    working
 }
 
 /// The call the arguments make and its operands (the pathspecs of a status, the name and value

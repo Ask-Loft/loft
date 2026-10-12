@@ -166,6 +166,7 @@ fn a_publish_writes_the_rewritten_files_and_pins_the_tree_it_writes() {
     let repo = RepoState {
         branch: Some("main".to_owned()),
         modified: Vec::new(),
+        stopped: None,
     };
     let at = PublishedAt::from_unix_seconds(0).unwrap();
     let published = publish(ReadTree::read(&files).unwrap(), &repo, None, at).unwrap();

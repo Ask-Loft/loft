@@ -3,58 +3,22 @@
 //! for byte, and give the repository port the same state.
 
 mod common;
+#[path = "common/real_git.rs"]
+mod real_git;
 
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::Command;
 
 use common::Scratch;
 use loftspec::publish::RepoState;
 use loftspec_store::StoreError;
 use loftspec_store::repository::{CURRENT_BRANCH, GitCommand, Repository, SHOW_PREFIX, STATUS};
+use real_git::{git, real_git, reply, simulated, state};
 use software_plant::GitScenario;
 
 /// The calls Loft makes of git, exactly as the repository port makes them.
 const CALLS: [&[&str]; 3] = [&SHOW_PREFIX, &CURRENT_BRANCH, &STATUS];
-
-/// Real git, kept from the user's configuration and from any repository above the temporary
-/// directory.
-fn real_git() -> Command {
-    let mut command = Command::new("git");
-    command
-        .env("GIT_CONFIG_GLOBAL", "/dev/null")
-        .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env(
-            "GIT_CEILING_DIRECTORIES",
-            std::env::temp_dir().canonicalize().unwrap(),
-        );
-    command
-}
-
-/// Runs a setup command of real git in `dir`. Automatic maintenance is off: a commit would
-/// otherwise leave a detached `git maintenance` process writing under `.git/` while a test
-/// compares the repository's files.
-fn git(dir: &Path, args: &[&str]) {
-    let output = real_git()
-        .args([
-            "-c",
-            "user.name=Plant",
-            "-c",
-            "user.email=plant@example.invalid",
-            "-c",
-            "maintenance.auto=false",
-        ])
-        .arg("-C")
-        .arg(dir)
-        .args(args)
-        .output()
-        .unwrap();
-    assert!(
-        output.status.success(),
-        "git {args:?}: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-}
 
 /// A repository whose top level is `dir`, holding `spec/tags.yaml`, `README.md` and an ignore
 /// file for `*.tmp`, committed on `main`.
@@ -202,35 +166,6 @@ const CASES: [Case; 14] = [
     ),
 ];
 
-/// What one call printed and how it exited; the error message only where git exits 128, the
-/// one failure whose message Loft reads.
-fn reply(output: &Output) -> (Option<i32>, Vec<u8>, String) {
-    let code = output.status.code();
-    let stderr = if code == Some(128) {
-        String::from_utf8_lossy(&output.stderr).into_owned()
-    } else {
-        String::new()
-    };
-    (code, output.stdout.clone(), stderr)
-}
-
-/// The port's answer, with an error reduced to what the publisher acts on.
-fn state(git: &GitCommand, root: &Path) -> Result<RepoState, String> {
-    git.state(root).map_err(|error| match error {
-        StoreError::NotARepository(_) => "not a repository".to_owned(),
-        other => other.to_string(),
-    })
-}
-
-fn simulated(scenario: &GitScenario, plant: &Path) -> GitCommand {
-    let simulator = scenario.install(plant);
-    GitCommand::from_command(move || {
-        let mut command = Command::new("git");
-        simulator.apply(&mut command);
-        command
-    })
-}
-
 #[test]
 fn ac_965_ac_966_and_ac_967_the_simulator_answers_each_call_as_real_git_does() {
     for (name, build, scenario) in CASES {
@@ -271,6 +206,7 @@ fn on(branch: Option<&str>, modified: &[&str]) -> RepoState {
     RepoState {
         branch: branch.map(str::to_owned),
         modified: modified.iter().map(|path| (*path).to_owned()).collect(),
+        stopped: None,
     }
 }
 

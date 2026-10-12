@@ -4,6 +4,7 @@
 
 mod labels;
 mod lock;
+mod repo;
 pub mod rewrite;
 mod time;
 
@@ -12,6 +13,7 @@ use std::num::NonZeroU64;
 
 pub use labels::{Allocated, allocate};
 pub use lock::{LOCK, Lock, LockError};
+pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
 
 use rewrite::Rewritten;
@@ -22,16 +24,6 @@ use crate::codec::{self, Files, LABELS, ReadError, Sites, SpecPath, read_sited};
 use crate::document::Document;
 use crate::hash::hash_document;
 use crate::validate::{conflict_errors, index_errors, validate};
-
-/// What the publisher needs to know of the repository that holds the tree.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct RepoState {
-    /// The checked-out branch, or none on a detached HEAD.
-    pub branch: Option<String>,
-    /// The paths under `spec/` with uncommitted changes, from the directory that holds `spec/`,
-    /// sorted and without duplicates.
-    pub modified: Vec<String>,
-}
 
 /// A tree read for a publish or a verification: its files, its document and where each of its
 /// elements sits. Reading it first is what makes a read error come before every other answer.

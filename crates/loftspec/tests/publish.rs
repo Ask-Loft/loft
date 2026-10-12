@@ -35,6 +35,7 @@ fn clean_on(branch: &str) -> RepoState {
     RepoState {
         branch: Some(branch.to_owned()),
         modified: Vec::new(),
+        stopped: None,
     }
 }
 

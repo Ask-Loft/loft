@@ -1,12 +1,13 @@
 //! The repository port: what the publisher needs to know of the git repository that holds the
-//! tree, and the local configuration that registers the merge driver, through the `git` command (the accepted decision "Git is an external component
-//! reached through the `git` command"). Nothing else in this crate runs git.
+//! tree, a merge or rebase stopped in it included, and the local configuration that registers
+//! the merge driver, through the `git` command (the accepted decision "Git is an external
+//! component reached through the `git` command"). Nothing else in this crate runs git.
 
-use std::io;
 use std::path::Path;
 use std::process::{Command, Output};
+use std::{fs, io};
 
-use loftspec::publish::RepoState;
+use loftspec::publish::{LOCK, Operation, RepoState, Stopped};
 
 use crate::StoreError;
 use crate::fs::{SPEC, hidden};
@@ -29,6 +30,18 @@ pub const STATUS: [&str; 6] = [
 pub const CONFIG_GET: [&str; 3] = ["config", "--local", "--get"];
 /// Sets a name in the repository's local configuration.
 pub const CONFIG_SET: [&str; 2] = ["config", "--local"];
+
+/// The commit a stopped merge merges; exit 1 when no merge stopped.
+pub const MERGE_HEAD: [&str; 4] = ["rev-parse", "-q", "--verify", "MERGE_HEAD"];
+/// The commit a stopped rebase replays; exit 1 when no rebase stopped.
+pub const REBASE_HEAD: [&str; 4] = ["rev-parse", "-q", "--verify", "REBASE_HEAD"];
+/// A path under the git directory, from the working directory, completed by the path.
+pub const GIT_PATH: [&str; 2] = ["rev-parse", "--git-path"];
+/// Where each backend of a stopped rebase keeps the branch it rebases.
+pub const REBASE_HEAD_NAMES: [&str; 2] = ["rebase-merge/head-name", "rebase-apply/head-name"];
+/// The index entries of every unmerged path in the repository, with their paths from the top
+/// level.
+pub const UNMERGED: [&str; 6] = ["ls-files", "-u", "-z", "--full-name", "--", ":/"];
 
 /// Where the publisher learns the repository's state.
 pub trait Repository {
@@ -130,16 +143,111 @@ impl GitCommand {
     }
 }
 
+impl GitCommand {
+    /// The merge or rebase stopped in the repository, where one is: a rebase first, since a
+    /// rebase replays each commit by merging it.
+    fn stopped(
+        &self,
+        root: &Path,
+        prefix: &str,
+        branch: Option<&String>,
+    ) -> Result<Option<Stopped>, StoreError> {
+        let (operation, other, branch) = if self.verified(root, &REBASE_HEAD)? {
+            (Operation::Rebase, "REBASE_HEAD", self.rebased(root)?)
+        } else if self.verified(root, &MERGE_HEAD)? {
+            (Operation::Merge, "MERGE_HEAD", branch.cloned())
+        } else {
+            return Ok(None);
+        };
+        let call = UNMERGED;
+        let listed = succeeded(&call, self.run(root, &call)?)?;
+        Ok(Some(Stopped {
+            operation,
+            branch,
+            head_lock: self.lock_at(root, "HEAD")?,
+            other_lock: self.lock_at(root, other)?,
+            unmerged: unmerged(&listed, prefix),
+        }))
+    }
+
+    /// Whether a `rev-parse -q --verify` call names a commit.
+    fn verified(&self, root: &Path, call: &[&str]) -> Result<bool, StoreError> {
+        let output = self.run(root, call)?;
+        if output.status.code() == Some(1) {
+            return Ok(false);
+        }
+        succeeded(call, output).map(|_| true)
+    }
+
+    /// The branch a stopped rebase rebases, from the file either backend keeps it in; none
+    /// for a rebase of a detached HEAD.
+    fn rebased(&self, root: &Path) -> Result<Option<String>, StoreError> {
+        for name in REBASE_HEAD_NAMES {
+            let call: Vec<&str> = GIT_PATH.into_iter().chain([name]).collect();
+            let path = text(&succeeded(&call, self.run(root, &call)?)?);
+            match fs::read_to_string(root.join(path)) {
+                Ok(held) => {
+                    let branch = held.trim_end().strip_prefix("refs/heads/");
+                    return Ok(branch.map(str::to_owned));
+                }
+                Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+                Err(error) => {
+                    return Err(StoreError::Git {
+                        call: call.join(" "),
+                        message: error.to_string(),
+                    });
+                }
+            }
+        }
+        Ok(None)
+    }
+
+    /// The bytes of the lock beside `spec/` at `revision`, or none where it holds no lock.
+    fn lock_at(&self, root: &Path, revision: &str) -> Result<Option<Vec<u8>>, StoreError> {
+        let object = format!("{revision}:./{LOCK}");
+        let call = ["cat-file", "blob", object.as_str()];
+        let output = self.run(root, &call)?;
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let missing = ["does not exist in", "exists on disk, but not in"];
+        if output.status.code() == Some(128) && missing.iter().any(|m| stderr.contains(m)) {
+            return Ok(None);
+        }
+        succeeded(&call, output).map(Some)
+    }
+}
+
 impl Repository for GitCommand {
     fn state(&self, root: &Path) -> Result<RepoState, StoreError> {
         let prefix = self.prefix(root)?;
         let branch = self.branch(root)?;
         let status = self.status(root)?;
+        let stopped = self.stopped(root, &prefix, branch.as_ref())?;
         Ok(RepoState {
             branch,
             modified: modified(&status, &prefix),
+            stopped,
         })
     }
+}
+
+/// The paths of `ls-files -u -z` records, sorted and without duplicates: from the directory
+/// whose path from the top level is `prefix` where they are under it, and otherwise from the
+/// top level after `:/`.
+fn unmerged(listed: &[u8], prefix: &str) -> Vec<String> {
+    let mut paths: Vec<String> = listed
+        .split(|byte| *byte == 0)
+        .filter_map(|record| {
+            let record = String::from_utf8_lossy(record);
+            let (_, path) = record.split_once('\t')?;
+            Some(
+                path.strip_prefix(prefix)
+                    .map_or_else(|| format!(":/{path}"), str::to_owned),
+            )
+        })
+        .collect();
+    paths.sort();
+    paths.dedup();
+    paths
 }
 
 fn succeeded(call: &[&str], output: Output) -> Result<Vec<u8>, StoreError> {

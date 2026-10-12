@@ -119,6 +119,7 @@ fn a_tree_that_holds_a_conflict_compares_no_root_and_does_not_verify() {
     let repo = RepoState {
         branch: Some("main".to_owned()),
         modified: Vec::new(),
+        stopped: None,
     };
     let at = PublishedAt::from_unix_seconds(0).unwrap();
     let published = publish(ReadTree::read(&files()).unwrap(), &repo, None, at).unwrap();

@@ -3,10 +3,14 @@
 //! index entries of each unmerged path.
 
 use std::collections::BTreeMap;
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
 use super::{Reply, Repository};
+
+/// The lock's file name beside `spec/`.
+const LOCK: &str = "loft.lock.json";
 
 /// The calls with which Loft reads a stopped merge or rebase.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -78,12 +82,12 @@ pub(super) fn parse<'a>(rest: &[&'a str]) -> Option<(StoppedCall, Vec<&'a str>)>
     }
 }
 
-/// Answers a call in a repository, stopped or not.
+/// Answers a call in a repository, stopped or not, made in the directory `working`.
 pub(super) fn answer(
     call: StoppedCall,
     operands: &[&str],
     repository: &Repository,
-    git_dir: Option<&str>,
+    working: &Path,
 ) -> Reply {
     let stopped = repository.stopped.as_ref();
     let head = |operation| {
@@ -98,27 +102,38 @@ pub(super) fn answer(
         StoppedCall::MergeHead => head(Operation::Merge),
         StoppedCall::RebaseHead => head(Operation::Rebase),
         StoppedCall::GitPath => {
-            let base = git_dir.map_or_else(
-                || "../".repeat(repository.prefix.matches('/').count()) + ".git",
-                str::to_owned,
-            );
+            let base = repository
+                .git_dir
+                .clone()
+                .unwrap_or_else(|| "../".repeat(repository.prefix.matches('/').count()) + ".git");
             Reply::ok(format!("{base}/{}\n", operands[0]))
         }
         StoppedCall::Unmerged => Reply::ok(unmerged(stopped)),
         StoppedCall::LockAt => {
             let revision = operands[0];
-            match stopped.and_then(|stopped| stopped.locks.get(revision)) {
-                Some(lock) => Reply::ok(lock.clone()),
-                None => Reply::fail(
-                    128,
-                    format!(
-                        "fatal: path '{}loft.lock.json' does not exist in '{revision}'\n",
-                        repository.prefix
-                    ),
-                ),
-            }
+            stopped
+                .and_then(|stopped| stopped.locks.get(revision))
+                .map_or_else(
+                    || missing_lock(repository, working, revision),
+                    |lock| Reply::ok(lock.clone()),
+                )
         }
     }
+}
+
+/// git's refusal of a revision that holds no lock, which names the working tree's copy when
+/// there is one.
+fn missing_lock(repository: &Repository, working: &Path, revision: &str) -> Reply {
+    let missing = if working.join(LOCK).exists() {
+        "exists on disk, but not in"
+    } else {
+        "does not exist in"
+    };
+    let path = format!("{}{LOCK}", repository.prefix);
+    Reply::fail(
+        128,
+        format!("fatal: path '{path}' {missing} '{revision}'\n"),
+    )
 }
 
 fn unmerged(stopped: Option<&Stopped>) -> Vec<u8> {
