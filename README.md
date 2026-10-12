@@ -48,7 +48,9 @@ Clock::fixed(1_700_000_000).apply(&mut loft);
 
 A contract suite keeps each simulator honest by running the same scenarios against the
 simulator and the real system; `cargo nextest run -p loftspec-store git_contract` runs the git
-suite against the `git` on your search path. The thinking behind the Software Plant is at
+suite against the `git` on your search path. git also calls Loft, as the merge driver;
+`cargo nextest run -p loft-cli merge_contract` runs the parallel-work scenarios under a real
+`git merge`, with no simulator in between. The thinking behind the Software Plant is at
 <https://askloft.ai/vision>.
 
 ## Build and gate

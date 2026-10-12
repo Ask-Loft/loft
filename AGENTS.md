@@ -88,6 +88,12 @@ The rules:
   repositories. A new anticipated failure joins the simulator's scenarios and its contract suite
   in the same change.
 - Only a contract suite touches a real external system. Every other test uses the simulator.
+- A system that calls Loft, rather than one Loft calls, gets no simulator: Loft never calls it,
+  so there is nothing for a simulator to answer. Its contract suite runs Loft under the real
+  system instead. git's merge machinery calls `loft merge-driver`, so
+  `crates/loft-cli/tests/merge_contract.rs` runs the six parallel-work scenarios under a real
+  `git merge` with the driver registered, and every other merge test calls the engine or the
+  driver directly.
 - `software-plant` holds simulators only. Fixtures and conformance harnesses stay in the crates
   they test.
 
