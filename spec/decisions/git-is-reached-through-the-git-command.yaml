@@ -1,0 +1,126 @@
+key: 01a12ff0-f5e5-7095-8fa8-24ca1eb377f0
+slug: git-is-reached-through-the-git-command
+title: "Git is an external component reached through the `git` command"
+context: "A publish refuses when `spec/` has uncommitted changes and when the current branch is not the publish branch, so the publisher needs the repository's state. `loftspec` performs no input or output, and the store that reads the repository is published as a library, so whatever reads git becomes a dependency of every user of the store."
+state:
+  kind: proposed
+drivers:
+  - key: 01a12ff0-f5e5-7095-8fa8-24cb901006b8
+    kind: local
+    label: "Git's own answer"
+    statement: "The state that the publisher acts on is the state that git itself reports, its ignore rules and its index included."
+  - key: 01a12ff0-f5e5-7095-8fa8-24cc8c6aace1
+    kind: local
+    label: "Light dependencies"
+    statement: "A published crate takes no large dependency to learn three facts about a repository."
+  - key: 01a12ff0-f5e5-7095-8fa8-24cdc874387a
+    kind: local
+    label: "Testable unchanged"
+    statement: "A test can stand in for the repository without a change to the binary under test."
+  - key: 01a12ff0-f5e5-7095-8fa8-24ce5f514db0
+    kind: local
+    label: "Nothing extra"
+    statement: "A publish needs nothing in the repository beyond `spec/` and the lock."
+options:
+  - key: 01a12ff0-f5e5-7095-8fa8-24cf7e9827c1
+    title: "The `git` command behind a port"
+    description: "The store's repository port runs `git rev-parse`, `git symbolic-ref` and `git status --porcelain=v1 -z`, and the publisher sees only the port's answer."
+  - key: 01a12ff0-f5e5-7095-8fa8-24d0cef4e123
+    title: "gix"
+    description: "The store reads the repository with the `gix` library, written in Rust."
+  - key: 01a12ff0-f5e5-7095-8fa8-24d1dd75d699
+    title: "libgit2"
+    description: "The store reads the repository through `git2`, the Rust bindings to libgit2."
+  - key: 01a12ff0-f5e5-7095-8fa8-24d2aaa04b3e
+    title: "A marker file"
+    description: "The publisher reads no repository and trusts a file in which the user records the branch and a clean state."
+assessments:
+  - option: 01a12ff0-f5e5-7095-8fa8-24cf7e9827c1
+    driver: 01a12ff0-f5e5-7095-8fa8-24cb901006b8
+    rating: supports
+    rationale: "the answer is git's own"
+  - option: 01a12ff0-f5e5-7095-8fa8-24cf7e9827c1
+    driver: 01a12ff0-f5e5-7095-8fa8-24cc8c6aace1
+    rating: supports
+    rationale: "it adds no dependency"
+  - option: 01a12ff0-f5e5-7095-8fa8-24cf7e9827c1
+    driver: 01a12ff0-f5e5-7095-8fa8-24cdc874387a
+    rating: supports
+    rationale: "a `git` executable earlier on the search path stands in for it"
+  - option: 01a12ff0-f5e5-7095-8fa8-24cf7e9827c1
+    driver: 01a12ff0-f5e5-7095-8fa8-24ce5f514db0
+    rating: supports
+    rationale: "it reads the repository as it is"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d0cef4e123
+    driver: 01a12ff0-f5e5-7095-8fa8-24cb901006b8
+    rating: neutral
+    rationale: "a second implementation of git's rules, whose status support is younger than git's"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d0cef4e123
+    driver: 01a12ff0-f5e5-7095-8fa8-24cc8c6aace1
+    rating: conflicts
+    rationale: "a large tree of dependencies"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d0cef4e123
+    driver: 01a12ff0-f5e5-7095-8fa8-24cdc874387a
+    rating: conflicts
+    rationale: "only a real repository or an in-process fake stands in for it"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d0cef4e123
+    driver: 01a12ff0-f5e5-7095-8fa8-24ce5f514db0
+    rating: supports
+    rationale: "it reads the repository as it is"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d1dd75d699
+    driver: 01a12ff0-f5e5-7095-8fa8-24cb901006b8
+    rating: neutral
+    rationale: "a second implementation of git's rules"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d1dd75d699
+    driver: 01a12ff0-f5e5-7095-8fa8-24cc8c6aace1
+    rating: conflicts
+    rationale: "a C library built with the crate"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d1dd75d699
+    driver: 01a12ff0-f5e5-7095-8fa8-24cdc874387a
+    rating: conflicts
+    rationale: "only a real repository or an in-process fake stands in for it"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d1dd75d699
+    driver: 01a12ff0-f5e5-7095-8fa8-24ce5f514db0
+    rating: supports
+    rationale: "it reads the repository as it is"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d2aaa04b3e
+    driver: 01a12ff0-f5e5-7095-8fa8-24cb901006b8
+    rating: conflicts
+    rationale: "the file can disagree with the repository"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d2aaa04b3e
+    driver: 01a12ff0-f5e5-7095-8fa8-24cc8c6aace1
+    rating: supports
+    rationale: "it adds no dependency"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d2aaa04b3e
+    driver: 01a12ff0-f5e5-7095-8fa8-24cdc874387a
+    rating: supports
+    rationale: "a test writes the file"
+  - option: 01a12ff0-f5e5-7095-8fa8-24d2aaa04b3e
+    driver: 01a12ff0-f5e5-7095-8fa8-24ce5f514db0
+    rating: conflicts
+    rationale: "the marker is a file beyond `spec/` and the lock"
+consequences:
+  - key: 01a12ff0-f5e5-7095-8fa8-24d3526e8f31
+    kind: obligation
+    statement: "`loft publish` refuses with an error that names `git` when the command cannot be run."
+    subject: 01a12ff0-f5e5-7095-8fa8-24d4fac13e94
+  - key: 01a12ff0-f5e5-7095-8fa8-24d5dc565850
+    kind: cost
+    statement: "A publish needs `git` on the search path."
+  - key: 01a12ff0-f5e5-7095-8fa8-24d6b1aa18a8
+    kind: benefit
+    statement: "The Software Plant's git simulator stands in for git without a change to `loft`."
+  - key: 01a12ff0-f5e5-7095-8fa8-24d704050451
+    kind: risk
+    statement: "A git release that changes the porcelain v1 output breaks the port; the contract suite against real git reports it."
+subjects:
+  - role: affected
+    node: 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - role: affected
+    node: 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - role: outcome
+    node: 0edce68c-8576-4978-ab4e-d4d2b1a3c1aa
+  - role: outcome
+    node: 57b80a5e-d695-4a26-8f81-71146008335c
+  - role: outcome
+    node: 5c65bd93-dce3-4231-a105-42c0c1e080f8

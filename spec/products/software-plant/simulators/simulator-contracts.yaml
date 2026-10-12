@@ -1,0 +1,48 @@
+key: 01a12ff0-f5e5-7095-8fa8-24d9132397cf
+slug: simulator-contracts
+name: "Simulator contracts"
+body: "The rules that every simulator follows. A simulator opts in by listing the tag `plant-simulator` on its Feature, and each tagged Feature is tested against these rules."
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+requirements:
+  - key: 01a12ff0-f5e5-7095-8fa8-24ec5d7ca693
+    statement:
+      form: ubiquitous
+      system: "The Feature of each simulator in the Software Plant"
+      shall: "list the tag `plant-simulator`."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24edcc9b44db
+        name: "A Feature of the Software Plant that stands in for an external system lists `plant-simulator`."
+      - key: 01a12ff0-f5e5-7095-8fa8-24eef571669d
+        name: "A Feature whose tags include `plant-simulator` follows the rules for a simulator."
+  - key: 01a12ff0-f5e5-7095-8fa8-24ef91b5ee07
+    statement:
+      form: ubiquitous
+      system: "The Feature of each simulator"
+      shall: "mention the external Component that the simulator stands in for."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24f05110a0c4
+        name: "A Feature that lists `plant-simulator` mentions exactly one Component whose boundary is `external`."
+  - key: 01a12ff0-f5e5-7095-8fa8-24c63107e827
+    statement:
+      form: event_driven
+      when: "a contract scenario runs"
+      system: "the Software Plant"
+      shall: "run the scenario against the simulator and against the real system and require the same answers."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24f14f35455c
+        name: "Each scenario of a contract suite runs against the simulator and against the real system."
+      - key: 01a12ff0-f5e5-7095-8fa8-24f2e933d6af
+        name: "A scenario whose answers differ between the simulator and the real system fails the suite."
+      - key: 01a12ff0-f5e5-7095-8fa8-24f3c2e8413b
+        name: "Each Feature that lists `plant-simulator` has a contract suite."
+  - key: 01a12ff0-f5e5-7095-8fa8-24f4994c3b70
+    statement:
+      form: ubiquitous
+      system: "The Software Plant"
+      shall: "stand in for an external system without a change to the binary under test."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24f583d9258a
+        name: "A simulator reaches the binary under test only through its search path or its environment."
+      - key: 01a12ff0-f5e5-7095-8fa8-24f638d01948
+        name: "The binary under test is the one that ships."

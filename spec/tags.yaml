@@ -7,6 +7,9 @@
 - key: a1770725-0a7d-4c8d-8b5d-d4197e320c78
   name: identity
   definition: "Keys, labels, aliases and the bindings between them."
+- key: 01a12ff0-f5e5-7095-8fa8-24f767f5e728
+  name: plant-simulator
+  definition: "A Feature of the Software Plant that stands in for an external system, and so follows the shared rules for a simulator and is held to the real system by a contract suite."
 - key: 40e7db4a-02a5-41d6-b18e-dc3f67211bdf
   name: portable
   definition: "Behaviour every implementation must reproduce exactly, so that two implementations compute the same content root for the same document."

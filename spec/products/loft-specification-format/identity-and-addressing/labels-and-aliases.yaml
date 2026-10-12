@@ -33,6 +33,8 @@ requirements:
         name: "The kind prefixes are `P` for a Product, `FG` for a Feature Group, `F` for a Feature, `RQ` for a Requirement, `AC` for a criterion, `CMP` for a Component, `CON` for a Constraint, `QA` for a Quality Attribute and `ADR` for a decision."
       - key: 4cecef66-9447-4199-93eb-08b4b715f439
         name: "Root Components are visited in the order of their file names when labels are allocated."
+      - key: 01a12ff0-f5e5-7095-8fa8-24f82dc553e0
+        name: "Decisions are allocated labels after every node, in the order of their file names."
   - key: 2501b129-ef05-46ed-977c-cc980299cf27
     statement:
       form: ubiquitous
@@ -82,6 +84,8 @@ requirements:
         name: "The node's previous label becomes an alias of its key."
       - key: f2fb3f89-1f71-4f7b-b52c-8c30300c0a76
         name: "A node whose kind is unchanged keeps its label."
+      - key: 01a12ff0-f5e5-7095-8fa8-24f913494a56
+        name: "A binding whose label's prefix is not its element's kind prefix is read without error and replaced at the next publish."
   - key: bcac53a3-e474-4690-93c7-b426b1ef07d3
     statement:
       form: unwanted

@@ -1,0 +1,50 @@
+key: 01a12ff0-f5e5-7095-8fa8-24dae20a57b3
+slug: git-simulator
+name: "Git simulator"
+body: "A `git` executable that answers the git calls Loft makes from a scenario that a test writes, in place of a real repository. A test puts it first on the search path of the binary under test. Its scenarios cover the happy path and each failure that Loft anticipates from git."
+tags:
+  - git
+  - plant-simulator
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+mentions:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+requirements:
+  - key: 01a12ff0-f5e5-7095-8fa8-24e099990c21
+    statement:
+      form: ubiquitous
+      system: "The git simulator"
+      shall: "answer each git call that Loft makes as its scenario scripts it."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24e11c8c2d76
+        name: "The path from the repository's top level is answered as `git rev-parse --show-prefix` prints it."
+      - key: 01a12ff0-f5e5-7095-8fa8-24e2b391e9c1
+        name: "The current branch is answered as `git symbolic-ref --quiet --short HEAD` prints it."
+      - key: 01a12ff0-f5e5-7095-8fa8-24e322a6cdd6
+        name: "The status of a path is answered as `git status --porcelain=v1 -z --untracked-files=all` prints it."
+      - key: 01a12ff0-f5e5-7095-8fa8-24e476591aad
+        name: "The scenario is read from the file that the environment variable `SOFTWARE_PLANT_GIT_SCENARIO` names."
+  - key: 01a12ff0-f5e5-7095-8fa8-24e5e160e2e5
+    statement:
+      form: unwanted
+      if: "a git call is not one that the git simulator answers"
+      system: "the git simulator"
+      shall: "fail with a message that names the call."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24e61cc6724b
+        name: "The message names each argument of the call."
+      - key: 01a12ff0-f5e5-7095-8fa8-24e768815ba2
+        name: "The exit code is 2."
+  - key: 01a12ff0-f5e5-7095-8fa8-24e80e9dc5e8
+    statement:
+      form: optional
+      where: "the scenario scripts a failure"
+      system: "the git simulator"
+      shall: "fail as git fails."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-24e9a6ca24e0
+        name: "Outside a repository, each call exits 128 with git's `not a git repository` message."
+      - key: 01a12ff0-f5e5-7095-8fa8-24ea9ebe76a2
+        name: "On a detached HEAD, `symbolic-ref` exits 1 and prints nothing."
+      - key: 01a12ff0-f5e5-7095-8fa8-24ebb797ea45
+        name: "A scripted git error exits with the scripted code and message."

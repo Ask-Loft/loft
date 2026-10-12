@@ -1,7 +1,7 @@
 key: 30461367-0853-4600-ac96-02443cdcfe81
 slug: preconditions
 name: "Preconditions"
-body: "The three conditions that refuse a publish before it writes anything: uncommitted changes under `spec/`, a branch other than the publish branch, and a validation error."
+body: "The four conditions that refuse a publish before it writes anything: uncommitted changes under `spec/`, a branch other than the publish branch, a validation error, and a lock that is not a valid lock record."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -42,3 +42,14 @@ requirements:
         name: "No lock is written."
       - key: e3054f48-d6fb-47b2-a3ed-2f8d957cdf57
         name: "A lint finding does not refuse a publish."
+  - key: 01a12ff0-f5e5-7095-8fa8-250042e167c2
+    statement:
+      form: unwanted
+      if: "`loft.lock.json` is not a valid lock record"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a12ff0-f5e5-7095-8fa8-250191a02015
+        name: "The refusal names `loft.lock.json`."
+      - key: 01a12ff0-f5e5-7095-8fa8-2502e40aec14
+        name: "Nothing is written."

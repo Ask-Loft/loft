@@ -1,0 +1,7 @@
+key: 01a12ff0-f5e5-7095-8fa8-24b707fdee97
+slug: clock
+name: "Clock"
+body: "The system clock, read once as the time of a publish."
+boundary: external
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
