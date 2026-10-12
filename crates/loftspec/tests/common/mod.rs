@@ -75,6 +75,7 @@ pub fn component(id: Key, name: &str) -> Component {
         id: Some(ComponentId::new(id)),
         name: name.to_owned(),
         details: Details::default(),
+        boundary: None,
         components: Vec::new(),
         constraints: Vec::new(),
         quality_attributes: Vec::new(),

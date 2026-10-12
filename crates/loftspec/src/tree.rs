@@ -7,7 +7,7 @@
 //! (AC-209).
 
 use crate::attributes::{
-    ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
+    Boundary, ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
 };
 use crate::ids::{
     ComponentId, ConstraintId, CriterionId, FeatureGroupId, FeatureId, ProductId,
@@ -87,6 +87,8 @@ pub struct Component {
     pub id: Option<ComponentId>,
     pub name: String,
     pub details: Details,
+    /// The boundary as written; `None` takes the parent Component's.
+    pub boundary: Option<Boundary>,
     pub components: Vec<Component>,
     pub constraints: Vec<Constraint>,
     pub quality_attributes: Vec<QualityAttribute>,

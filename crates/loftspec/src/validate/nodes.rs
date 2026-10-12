@@ -1,13 +1,21 @@
-//! The rule on nodes a typed document can break: a tag listed twice (RQ-79).
+//! The rules on nodes a typed document can break: a tag listed twice (RQ-79), and a Component
+//! that declares `private` beneath an `external` one (ADR-15).
 
 use std::collections::BTreeSet;
 
 use super::ValidationError;
+use crate::boundary::Boundaries;
 use crate::document::Document;
 use crate::node::Node;
 
 pub(super) fn check(document: &Document, errors: &mut Vec<ValidationError>) {
     document.walk(&mut |node| repeated_tags(node, errors));
+    errors.extend(Boundaries::of(document).conflicts().iter().map(|conflict| {
+        ValidationError::PrivateUnderExternal {
+            component: conflict.component,
+            ancestor: conflict.ancestor,
+        }
+    }));
 }
 
 /// One error per tag a node lists more than once.

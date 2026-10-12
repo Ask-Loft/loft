@@ -4,6 +4,7 @@
 mod common;
 
 use common::v1::{convert_value, full_export, hash, key, uuid};
+use loftspec::attributes::Boundary;
 use loftspec::canonical::Digest;
 use loftspec::convert::v1::{Conversion, ConvertError, Finding};
 use loftspec::decision::{ConsequenceKind, DecisionState, DriverPayload, NodeRef, Rating};
@@ -270,12 +271,33 @@ fn ac_190_a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
 #[test]
 fn ac_191_a_reference_that_does_not_resolve_is_a_finding() {
     let mut value = full_export();
-    value["nodes"][4]["name"] = json!("Every node record carries the key RQ-99 names.");
+    // RQ-5 is the highest Requirement label, so RQ-4 was allocated once and has since gone.
+    for node in value["nodes"].as_array_mut().unwrap() {
+        if node["nodeId"] == uuid(13) {
+            node["externalId"] = json!("RQ-5");
+        }
+    }
+    value["nodes"][4]["name"] = json!("Every node record carries the key RQ-4 names.");
     let conversion = convert_value(&value).unwrap();
     assert!(conversion.findings.contains(&Finding::UnresolvedReference {
         node: NodeId::Criterion(CriterionId::new(key(5))),
-        reference: Label::parse("RQ-99").unwrap(),
+        reference: Label::parse("RQ-4").unwrap(),
     }));
+}
+
+#[test]
+fn ac_891_a_label_above_every_label_of_its_prefix_is_not_a_reference() {
+    let mut value = full_export();
+    value["nodes"][4]["name"] = json!("A client assertion accepts ES256 with P-256.");
+    let conversion = convert_value(&value).unwrap();
+    assert!(
+        !conversion
+            .findings
+            .iter()
+            .any(|finding| matches!(finding, Finding::UnresolvedReference { .. })),
+        "{:?}",
+        conversion.findings
+    );
 }
 
 #[test]
@@ -290,4 +312,67 @@ fn ac_192_and_ac_193_a_body_is_kept_byte_for_byte_and_a_heading_in_it_is_a_findi
         node: NodeId::Feature(FeatureId::new(key(3))),
         line: 3,
     }));
+}
+
+/// The full export with each listed Component's v1 scope replaced.
+fn scoped(mut export: serde_json::Value, scopes: &[(u32, serde_json::Value)]) -> serde_json::Value {
+    for node in export["nodes"].as_array_mut().unwrap() {
+        if let Some((_, scope)) = scopes.iter().find(|(n, _)| node["nodeId"] == uuid(*n)) {
+            node["componentScope"] = scope.clone();
+        }
+    }
+    export
+}
+
+fn boundary_of(conversion: &Conversion, n: u32) -> Option<Boundary> {
+    let mut found = None;
+    conversion.document.walk(&mut |node| {
+        if let loftspec::node::Node::Component(component) = node
+            && component.id == Some(ComponentId::new(key(n)))
+        {
+            found = Some(component.boundary);
+        }
+    });
+    found.expect("the Component is converted")
+}
+
+#[test]
+fn ac_892_a_component_the_export_scopes_as_external_has_the_boundary_external() {
+    let export = scoped(full_export(), &[(6, json!({"kind": "external"}))]);
+    let conversion = convert_value(&export).unwrap();
+    assert_eq!(boundary_of(&conversion, 6), Some(Boundary::External));
+    assert_eq!(
+        boundary_of(&conversion, 10),
+        None,
+        "the nested Component takes it on"
+    );
+}
+
+#[test]
+fn ac_893_a_component_scoped_to_a_product_or_the_document_has_no_boundary() {
+    let conversion = convert_value(&full_export()).unwrap();
+    assert_eq!(boundary_of(&conversion, 6), None);
+    let export = scoped(full_export(), &[(6, json!({"kind": "document"}))]);
+    assert_eq!(boundary_of(&convert_value(&export).unwrap(), 6), None);
+}
+
+#[test]
+fn ac_894_a_component_scoped_internally_beneath_an_external_one_is_a_finding() {
+    let export = scoped(
+        full_export(),
+        &[
+            (6, json!({"kind": "external"})),
+            (10, json!({"kind": "document"})),
+        ],
+    );
+    let conversion = convert_value(&export).unwrap();
+    assert!(
+        conversion
+            .findings
+            .contains(&Finding::InternalUnderExternal {
+                component: ComponentId::new(key(10)),
+                ancestor: ComponentId::new(key(6)),
+            })
+    );
+    assert_eq!(boundary_of(&conversion, 10), None);
 }

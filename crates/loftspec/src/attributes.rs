@@ -139,3 +139,18 @@ wire_names!(VerificationFate {
     Monitored => "monitored",
     Sampled => "sampled",
 });
+
+/// Whether a Component lies inside the document or outside Loft's governance (ADR-15). A
+/// Component without one takes its parent Component's; a root Component without one is
+/// `private`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Boundary {
+    Private,
+    External,
+}
+
+wire_names!(Boundary {
+    Private => "private",
+    External => "external",
+});

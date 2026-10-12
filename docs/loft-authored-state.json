@@ -1,6 +1,6 @@
 {
   "annotations": [],
-  "architectureDecisionAddress": "89d3efd7c57219c7e897ff28a4c35b66391d53975b1c6ea68b5b1af94ed0eb5b",
+  "architectureDecisionAddress": "7f2e7d68a4f0fbedcb3a46ad71b5fa3e3a889c5da5d379425e4de8af5e03b0b7",
   "architectureDecisions": [
     {
       "assessments": [
@@ -259,6 +259,362 @@
           "subject": {
             "externalId": "RQ-13",
             "nodeId": "079bcc6f-b997-4303-a71e-644b2653d46c",
+            "tier": "Requirement",
+            "type": "TierSection"
+          }
+        }
+      ]
+    },
+    {
+      "assessments": [
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6c944a8b-cec8-4da8-a877-88623f6cac35",
+          "optionId": "4e8650ac-fcf3-432a-97af-5423e81aa7f1",
+          "rating": "supports",
+          "rationale": "the rules read the scope"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6f2ad37c-769a-476a-b161-6db6240f42aa",
+          "optionId": "4e8650ac-fcf3-432a-97af-5423e81aa7f1",
+          "rating": "supports",
+          "rationale": "field for field"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "813ea421-2dbe-4f5b-8c57-d01ada45a7d2",
+          "optionId": "4e8650ac-fcf3-432a-97af-5423e81aa7f1",
+          "rating": "neutral",
+          "rationale": "one field, but it restates the `scoped_to` edge"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "d47d1225-af88-4c21-ba8a-b8af8cc37e6f",
+          "optionId": "4e8650ac-fcf3-432a-97af-5423e81aa7f1",
+          "rating": "neutral",
+          "rationale": "sharing becomes a fourth scope value"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6c944a8b-cec8-4da8-a877-88623f6cac35",
+          "optionId": "7bffb532-3c86-4197-9a51-8b47847c5420",
+          "rating": "neutral",
+          "rationale": "the rules read a tag name that an author can misspell without an error"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6f2ad37c-769a-476a-b161-6db6240f42aa",
+          "optionId": "7bffb532-3c86-4197-9a51-8b47847c5420",
+          "rating": "supports",
+          "rationale": "external maps to the tag"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "813ea421-2dbe-4f5b-8c57-d01ada45a7d2",
+          "optionId": "7bffb532-3c86-4197-9a51-8b47847c5420",
+          "rating": "conflicts",
+          "rationale": "a tag carries meaning outside the registry"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "d47d1225-af88-4c21-ba8a-b8af8cc37e6f",
+          "optionId": "7bffb532-3c86-4197-9a51-8b47847c5420",
+          "rating": "neutral",
+          "rationale": "sharing needs another reserved tag"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6c944a8b-cec8-4da8-a877-88623f6cac35",
+          "optionId": "8ec710ff-d034-4e13-9f3a-26514d3394ef",
+          "rating": "supports",
+          "rationale": "the rules skip a flagged subtree"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6f2ad37c-769a-476a-b161-6db6240f42aa",
+          "optionId": "8ec710ff-d034-4e13-9f3a-26514d3394ef",
+          "rating": "supports",
+          "rationale": "external maps to the flag"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "813ea421-2dbe-4f5b-8c57-d01ada45a7d2",
+          "optionId": "8ec710ff-d034-4e13-9f3a-26514d3394ef",
+          "rating": "conflicts",
+          "rationale": "a flag"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "d47d1225-af88-4c21-ba8a-b8af8cc37e6f",
+          "optionId": "8ec710ff-d034-4e13-9f3a-26514d3394ef",
+          "rating": "conflicts",
+          "rationale": "sharing needs a second field"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6c944a8b-cec8-4da8-a877-88623f6cac35",
+          "optionId": "ab1230f0-bca0-49d0-99a0-14f56e3c6f64",
+          "rating": "supports",
+          "rationale": "the rules skip an external subtree"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "6f2ad37c-769a-476a-b161-6db6240f42aa",
+          "optionId": "ab1230f0-bca0-49d0-99a0-14f56e3c6f64",
+          "rating": "supports",
+          "rationale": "external maps to `external`, and inheritance matches v1's"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "813ea421-2dbe-4f5b-8c57-d01ada45a7d2",
+          "optionId": "ab1230f0-bca0-49d0-99a0-14f56e3c6f64",
+          "rating": "supports",
+          "rationale": "one field with named values"
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "driverId": "d47d1225-af88-4c21-ba8a-b8af8cc37e6f",
+          "optionId": "ab1230f0-bca0-49d0-99a0-14f56e3c6f64",
+          "rating": "supports",
+          "rationale": "a `public` value joins the same field"
+        }
+      ],
+      "decisionHash": "cdfd4d19570f8b0b3c2e2f47a7b828c4f1819664c8f4c9e10940ecd75c234681",
+      "elements": [
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "85bcf238cf7068b7bb8abef5817bc192568f969cf314ebc723b214dc5f218872",
+          "id": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "ordinal": 0,
+          "parentId": null,
+          "payload": {
+            "kind": "architecture-decision",
+            "value": {
+              "context": "A Loft v1 Component carried one scope kind: a Product, the whole document, or external. The v2 text form keeps a Product scope as a `scoped_to` edge and nothing else. A document authored in v2 therefore cannot say that a Component is a service outside Loft's governance, and the obligation rules report every such Component.",
+              "state": {
+                "kind": "accepted",
+                "outcome": "A Component carries a `boundary` of `private` or `external`, a Component without one takes its parent's, and the obligation rules skip an `external` subtree.",
+                "selectedOptionId": "ab1230f0-bca0-49d0-99a0-14f56e3c6f64"
+              },
+              "title": "A Component's boundary is a kind that its subtree takes on"
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "1799b6b7c81e35de48b246c36f199d99fbdc844404c594213c0e2a9b2b6e9a11",
+          "id": "ab1230f0-bca0-49d0-99a0-14f56e3c6f64",
+          "ordinal": 0,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A `boundary` field of `private` or `external` on any Component, which a Component without it takes from its parent.",
+              "title": "Boundary kind, inherited"
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "bb7022233d920a9639b3dd94ee4f67c991a91323a3f254a878e8f79aba4c14e3",
+          "id": "8ec710ff-d034-4e13-9f3a-26514d3394ef",
+          "ordinal": 1,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A boolean `external` field on any Component.",
+              "title": "External flag"
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "6a50cac40a1dbf556a6a767db43123f4a4fc34e09ef08c2b398f4fc1e1e231e4",
+          "id": "7bffb532-3c86-4197-9a51-8b47847c5420",
+          "ordinal": 2,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A reserved tag name marks an external Component.",
+              "title": "Reserved tag"
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "bda9b319b1ef9be2a07ecd411544e5b7993f552f209409cf77e79edf87f97499",
+          "id": "4e8650ac-fcf3-432a-97af-5423e81aa7f1",
+          "ordinal": 3,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "option",
+            "value": {
+              "description": "A `scope` field of `product`, `document` or `external` beside the `scoped_to` edge.",
+              "title": "v1 scope kinds"
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "e4671dfe127d54bdb7f5eea00bd473eea845ef527b92a593f2f7459408902821",
+          "id": "6c944a8b-cec8-4da8-a877-88623f6cac35",
+          "ordinal": 0,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "Obligations follow governance",
+              "statement": "A Component outside Loft's governance carries no structural obligation."
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "11f8eb0abe4c3f87c37b19c43b62391669cf9867c8556efcaeabb4f207d9b35c",
+          "id": "d47d1225-af88-4c21-ba8a-b8af8cc37e6f",
+          "ordinal": 1,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "Room for sharing",
+              "statement": "The same field can later say that a Component is shared between documents."
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "ae58d23db61bea618bcd05da3392fa45fab67749058f2cac65081c59027d3000",
+          "id": "813ea421-2dbe-4f5b-8c57-d01ada45a7d2",
+          "ordinal": 2,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "One typed field",
+              "statement": "The property is one field with named values, not a flag."
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "89211860baa11155a7cca8ecc537f118f1b68d5781d47e225bb367ecb02a9f76",
+          "id": "6f2ad37c-769a-476a-b161-6db6240f42aa",
+          "ordinal": 3,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "driver",
+            "value": {
+              "kind": "local",
+              "label": "v1 parity",
+              "statement": "A converted document yields the structural findings that v1 yields."
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "0a213633e672f3b3e3cf2a9e4018c6546de27d4e1326f8409c49180e318ccf2f",
+          "id": "046a32c9-30b2-4007-8484-302a08bb76f4",
+          "ordinal": 0,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "obligation",
+              "statement": "The converter gives the boundary `external` to each Component that the export scopes as external.",
+              "subject": {
+                "externalId": "RQ-224",
+                "nodeId": "732ad96d-1e55-4a5b-95c2-1ea08d456803",
+                "tier": "Requirement",
+                "type": "TierSection"
+              }
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "b3efbe620be7c533109956741ca0fe82d2177341878d0f1c65b7ed07cca8b8ce",
+          "id": "553bed04-7797-4509-8bb4-c9251e69abbd",
+          "ordinal": 1,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "cost",
+              "statement": "Every content view gains one slot, so every content hash changes once, before any v2 lock exists.",
+              "subject": null
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "72f4c0d699d1de65460735cc0fc10e64b4f1a87abfaa5c756d59d82de7fcc1de",
+          "id": "76a563fb-e3c3-4220-8c6b-bc84a305a23c",
+          "ordinal": 2,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "risk",
+              "statement": "Adding the value `public` later is a change to the Format.",
+              "subject": null
+            }
+          }
+        },
+        {
+          "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+          "elementHash": "d26bffcff37080df582f8f8e2fa809148125ae1bb69723a7ff6aeb31aca3a616",
+          "id": "330a4b8b-1209-47ba-944c-27ab38548cd7",
+          "ordinal": 3,
+          "parentId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "payload": {
+            "kind": "consequence",
+            "value": {
+              "kind": "benefit",
+              "statement": "A third-party service is modelled without suppressing a finding.",
+              "subject": null
+            }
+          }
+        }
+      ],
+      "identity": {
+        "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+        "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+        "externalId": "ADR-15"
+      },
+      "subjectLinks": [
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "role": "affected",
+          "subject": {
+            "externalId": "CMP-1",
+            "nodeId": "dfad8a1a-ce19-4364-be3c-81af2fd2baaf",
+            "tier": null,
+            "type": "Component"
+          }
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "role": "outcome",
+          "subject": {
+            "externalId": "RQ-221",
+            "nodeId": "9221e5f6-d920-44f6-bc1a-1dac6e41f5dd",
+            "tier": "Requirement",
+            "type": "TierSection"
+          }
+        },
+        {
+          "decisionId": "1fef62d6-31a4-44b2-adc2-43eb537f0342",
+          "role": "outcome",
+          "subject": {
+            "externalId": "RQ-222",
+            "nodeId": "bbb6eaf7-f1be-417a-a4d7-4dfe510a1e2b",
             "tier": "Requirement",
             "type": "TierSection"
           }
@@ -3624,9 +3980,9 @@
       ]
     }
   ],
-  "authoredStateId": "f903ada3-9ac9-4874-a29d-35f452d26e90",
-  "contentAddress": "a769d7d1552beedac69061adff5f50b9cbc0b2506c3e8cf7ab415182ecb8b1f5",
-  "graphAddress": "99501840a35ea7728b28000e9b4a335dac718438ac49d42a3314d8c285131799",
+  "authoredStateId": "a0654aa3-9372-4a39-bba5-dffa80ef625f",
+  "contentAddress": "f581dfb3603d7286b799d28b3e6c611a95c8310ad1845f2e21fa963e745e4195",
+  "graphAddress": "8a7b8018d43e19281fe42342f47397e0a621d2c207d1e03410d2ceca6bc639eb",
   "nodes": [
     {
       "body": null,
@@ -4089,6 +4445,26 @@
       "componentScope": null,
       "conservationKind": null,
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-892",
+      "fateConfirmed": null,
+      "name": "A Component that the export scopes as external has the `boundary` field `external`.",
+      "nodeHash": "356ddb03095f915f0a7f1fe244cb48983bbd73591a46860789ba1d5095d0cddc",
+      "nodeId": "1832ec07-0475-4856-82d5-b8aa3483d3c7",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-232",
       "fateConfirmed": null,
       "name": "The error names both keys.",
@@ -4407,7 +4783,7 @@
       "body": "The Markdown view of a document for human readers: its heading levels, criterion paragraphs, trailing sections and the header naming the state root it came from.",
       "childrenHashes": [
         {
-          "nodeHash": "01e13467d72b95ca81b53cf41a2a41372400cca65f388a5f69fcb9e5c7d57d89",
+          "nodeHash": "35f32dd635fd0548aefae04eff4549b417a23ce11be87b9e381e5fe1a078266b",
           "nodeId": "fe40a5ea-6ac1-4cce-af11-054c3b573dc0"
         },
         {
@@ -4421,7 +4797,7 @@
       "externalId": "F-24",
       "fateConfirmed": null,
       "name": "Markdown projection",
-      "nodeHash": "a4e0ee738bab5f3a80302efbbdf46083ea54c982ec82ffd7acfc2d3539567a80",
+      "nodeHash": "c30ee13cddb847d024bdb4601acf76ad32e90c283144e480cb2abef532c4eda2",
       "nodeId": "25ab61fa-598b-483f-bc91-36413a78f4d8",
       "ordinal": 0,
       "proposedFate": null,
@@ -6617,6 +6993,26 @@
       "componentScope": null,
       "conservationKind": null,
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-883",
+      "fateConfirmed": null,
+      "name": "The error names the Component and the nearest Component above it whose boundary is `external`.",
+      "nodeHash": "3f2cfdb4e25482038e03bf951b074cb5c98aa9d3f5a23099688a5f9997f482f2",
+      "nodeId": "724e8365-eff4-457d-81f6-bb7507a02054",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-497",
       "fateConfirmed": null,
       "name": "`spec/` is created with a manifest.",
@@ -7011,11 +7407,11 @@
           "nodeId": "48261148-1b56-4aef-b70a-a4ca8069161a"
         },
         {
-          "nodeHash": "67f8bec506e95239543536dcb2133a3c9e179c1dab785929103f7d8afbfe88ec",
+          "nodeHash": "b013a85aeea303c3e780d6437d10bebbc6b34e4283f3b4ff543e4624bb9d97bb",
           "nodeId": "c11aea07-d470-4baf-b583-d8e9945fbc6c"
         },
         {
-          "nodeHash": "516742f3f165a8b56f384f2ff53eabd6513928aacad2f7a28e9242021305ccbc",
+          "nodeHash": "a1a68a5a74aca9e1f2b79d2f04dcee3c9871100799cfef8aed6696af1a26ccbf",
           "nodeId": "c85613e7-d493-4a54-9956-a9a5bfb405e1"
         },
         {
@@ -7023,15 +7419,15 @@
           "nodeId": "b5ab6511-566c-4d3d-8068-5b942487936f"
         },
         {
-          "nodeHash": "cfee6b4cabb97f5aa360ad4b9974c6882364d1d496c51476d08b2ec0cba100db",
+          "nodeHash": "5a2593cae9f269f82f695fb2602336bca0e7155fc270be2a9544c463e8f7549c",
           "nodeId": "08552f03-9608-41c5-86e1-0193be8fc005"
         },
         {
-          "nodeHash": "894a65c8e5ccf8cd16e8f42be34faed7ecbbdf34dc0e65099a7f0bc758bc2d7e",
+          "nodeHash": "96de81d9813bae43585fa36d6e5f8b03d2244f11b886c8d4c03e639dc3e53144",
           "nodeId": "a1b27be0-dd76-47d1-9406-1a2c394df762"
         },
         {
-          "nodeHash": "4abbfcc85f80bf96c3c98ff130f1e7b083bd3e264046a35b61900ae8c7a33966",
+          "nodeHash": "277872c816d37e07abb8067876dd3590ec1e15d28a8bf6b29c5b52158ee8f67e",
           "nodeId": "04e8ae21-1edb-4170-a13f-ec1101ec3306"
         },
         {
@@ -7049,7 +7445,7 @@
       "externalId": "P-1",
       "fateConfirmed": null,
       "name": "Loft Specification Format",
-      "nodeHash": "f2582e4fc62c276b78c6abea3312f18c128608adc298864e6047dbe437e5861e",
+      "nodeHash": "76969093efd59294fb2de3a34c5be0bf8464a37ac9ae13e9167bd237f6951fde",
       "nodeId": "82902abe-15bc-4742-b6fb-57d28ac4ff6d",
       "ordinal": 0,
       "proposedFate": null,
@@ -7071,6 +7467,26 @@
       "name": "A Quality Attribute without a quality target yields one `LQ-006` finding naming its key.",
       "nodeHash": "c9542d808d778650ee72e88c2d52fc4dc21865b4b56388f9bb67a45de3bc15c3",
       "nodeId": "832f5e23-49c6-4679-8dbf-a8edf6a6df3f",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-880",
+      "fateConfirmed": null,
+      "name": "A nested Component without `boundary` has its parent Component's boundary.",
+      "nodeHash": "e1acd5ce102c6893a27a74c905749cec2bd56a0544e4e78b39b469c7c0382ade",
+      "nodeId": "872bfa48-db37-441e-a26c-561cbb43e889",
       "ordinal": 0,
       "proposedFate": null,
       "qaKind": null,
@@ -7293,8 +7709,8 @@
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-755",
       "fateConfirmed": null,
-      "name": "A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `scopedTo`, `mentions`, `components`, `constraints`, `qualityAttributes` and `sections`.",
-      "nodeHash": "c918ccd05cab0d7275050c60b2279f0c86702423de3a93011a10bdc88925530a",
+      "name": "A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `boundary`, `scopedTo`, `mentions`, `components`, `constraints`, `qualityAttributes` and `sections`.",
+      "nodeHash": "903284dddec85a5cafe53f02c6b84668a904a9449d0a8063d593a8647b0ff8ac",
       "nodeId": "8ec0e58b-a8c9-49ef-b308-8a3c272d42d6",
       "ordinal": 0,
       "proposedFate": null,
@@ -7363,6 +7779,35 @@
       "technicalBinding": null,
       "tier": null,
       "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "def91438bd021ba9e95396129a1e60b9aa5ffd4f465aa0ba84a6fb1b5e56e5e7",
+          "nodeId": "f98bc2a4-85c3-46bb-9f6d-33459bd2210f"
+        },
+        {
+          "nodeHash": "011efbc4c6fae09ea7fdc404b28af9cbc0d3ea5ad99cb088df4c1521458cee78",
+          "nodeId": "cbd67e83-0c32-4c5e-9022-dd2c1df3ab69"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "RQ-221",
+      "fateConfirmed": null,
+      "name": "The reader shall read a Component's boundary as `private` or `external`.",
+      "nodeHash": "efa1d87584fc2b4c50824a16200d1fb4eab17cc6410db549a7c56967ea297a80",
+      "nodeId": "9221e5f6-d920-44f6-bc1a-1dac6e41f5dd",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
       "verificationFate": null
     },
     {
@@ -8831,8 +9276,8 @@
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-596",
       "fateConfirmed": null,
-      "name": "The content view holds, in this order: kind, statement or name, body, the set of tag names sorted by UTF-8 bytes, the typed attributes (quality attribute kind, quality target, constraint binding, conservation kind, verification fate), then the ordered list of child content hashes.",
-      "nodeHash": "b4162d8bdc8ee3d23f4c95e2d2754cbac4635877b2f5e6a2170b2ea86753f74f",
+      "name": "The content view holds, in this order: kind, statement or name, body, the set of tag names sorted by UTF-8 bytes, the typed attributes (quality attribute kind, quality target, constraint binding, conservation kind, verification fate, component boundary), then the ordered list of child content hashes.",
+      "nodeHash": "4243449eeb70aa9efc43632d5593aaae9eff611327e7239f98c10410fcf0f727",
       "nodeId": "c396aefb-098c-45c4-b085-94adbe21252f",
       "ordinal": 0,
       "proposedFate": null,
@@ -10110,6 +10555,26 @@
       "componentScope": null,
       "conservationKind": null,
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-878",
+      "fateConfirmed": null,
+      "name": "A Component record's `boundary` field holds `private` or `external`.",
+      "nodeHash": "def91438bd021ba9e95396129a1e60b9aa5ffd4f465aa0ba84a6fb1b5e56e5e7",
+      "nodeId": "f98bc2a4-85c3-46bb-9f6d-33459bd2210f",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-223",
       "fateConfirmed": null,
       "name": "A Requirement promoted to a Feature receives the next `F` label at the next publish.",
@@ -10315,6 +10780,10 @@
         {
           "nodeHash": "4f4203e82a82f6a576a9757b4166afb9130348f60c468331eafc36a8d62384de",
           "nodeId": "53e61f79-4cb7-4358-a3bb-9f0b696cb344"
+        },
+        {
+          "nodeHash": "a44474dd40315ee87a79366626dcb488151662d3918cfeaeebb6aaa47b3757c9",
+          "nodeId": "cf46bfb8-ec99-4ff8-be93-43291cd89e46"
         }
       ],
       "componentScope": null,
@@ -10323,7 +10792,7 @@
       "externalId": "RQ-107",
       "fateConfirmed": null,
       "name": "The renderer shall render the document as readable Markdown.",
-      "nodeHash": "01e13467d72b95ca81b53cf41a2a41372400cca65f388a5f69fcb9e5c7d57d89",
+      "nodeHash": "35f32dd635fd0548aefae04eff4549b417a23ce11be87b9e381e5fe1a078266b",
       "nodeId": "fe40a5ea-6ac1-4cce-af11-054c3b573dc0",
       "ordinal": 0,
       "proposedFate": null,
@@ -10947,6 +11416,10 @@
         {
           "nodeHash": "8ee6cb948d5c828cd1da093f74a5b577d9116c6100a2354bcbc2de0a4fd643c9",
           "nodeId": "9696e1c1-1c59-48fd-a26d-dab5c07539ab"
+        },
+        {
+          "nodeHash": "52945f6fe66b01f4590e5b3f017a30b0a03b1c07188f09edfa8a1d99934a8d39",
+          "nodeId": "732ad96d-1e55-4a5b-95c2-1ea08d456803"
         }
       ],
       "componentScope": null,
@@ -10955,7 +11428,7 @@
       "externalId": "F-13",
       "fateConfirmed": null,
       "name": "Node, registry and link mapping",
-      "nodeHash": "e2c209a9c55360409b133297f9a16adc622991f6afcfba456c95dec79f2b968a",
+      "nodeHash": "762be150b5a45bc7e01f7afc36c8d8ac16924aaa71c316e6228dd8be9ebe4c0c",
       "nodeId": "134af160-7045-4437-a190-381bf508105b",
       "ordinal": 1,
       "proposedFate": null,
@@ -11037,6 +11510,26 @@
       "name": "A node that lists the tag, or that sits under a node listing it, yields no `LQ-009` finding.",
       "nodeHash": "133199a556a91ec529ebb7852f6440ebec3d6a694ddc797553a6050cfed3216c",
       "nodeId": "19eac74a-adb5-4737-9f23-af6cc0040bf5",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-884",
+      "fateConfirmed": null,
+      "name": "A Component whose `boundary` is `external` beneath an `external` Component raises no error.",
+      "nodeHash": "c37a1b7874b4638714acc023a8bfb3fdc1d743fdaa2e2640244a052f85c6afef",
+      "nodeId": "1b45dce8-d1fe-4f5e-8906-4ea20cefd138",
       "ordinal": 1,
       "proposedFate": null,
       "qaKind": null,
@@ -11356,6 +11849,26 @@
       "name": "A criterion record requires `key` and `name`.",
       "nodeHash": "ae15716443767bbb3711da89646493787ba30dc5b114bf3a03a2f4da477548fe",
       "nodeId": "21357707-509c-47c7-aa74-7d4123699107",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-893",
+      "fateConfirmed": null,
+      "name": "A Component that the export scopes to a Product or to the document has no `boundary` field.",
+      "nodeHash": "5389de3e9540c324e975d92a4ec12d2468d1ddcd8a70181d480dba9802b44072",
+      "nodeId": "2188da06-e2b9-4add-8595-fc17b839c0ab",
       "ordinal": 1,
       "proposedFate": null,
       "qaKind": null,
@@ -12927,6 +13440,10 @@
         {
           "nodeHash": "8186fdcef254993df2c7f22f7a938e7911f9879193025669b5c0b0cb0f91db34",
           "nodeId": "f4fdf966-df4c-4aa5-ba96-040b43e7f26f"
+        },
+        {
+          "nodeHash": "89a246eae9c9194db0e5265f560731676f3e4c73f750ff1f874b78ddb126a146",
+          "nodeId": "478621d6-3676-4fec-bff2-c32a76ac7505"
         }
       ],
       "componentScope": null,
@@ -12935,7 +13452,7 @@
       "externalId": "RQ-53",
       "fateConfirmed": null,
       "name": "The converter shall turn each resolvable label reference in prose into a `mentions` edge.",
-      "nodeHash": "09fba980a9b1076f7f532da14603e5a3e0b736fa2cad39a3c596e49b1436243f",
+      "nodeHash": "91adf5b4abb42a2164a65be9169799019031977dbd5c82c678bfa6b6a1974932",
       "nodeId": "61dbab71-c9ca-49ae-964b-942161fbb5ef",
       "ordinal": 1,
       "proposedFate": null,
@@ -14765,6 +15282,10 @@
         {
           "nodeHash": "28476a2b4e86b8ddd550cfc817ee0dd16595d11074c70e7f4214ce9685acc33d",
           "nodeId": "24571cf2-3449-47e7-9d7b-0e5976360b3b"
+        },
+        {
+          "nodeHash": "bdcf3eb343ec630e354e23a55b6ae8b0e187ad7707b1bef2ec1834bed9a4f009",
+          "nodeId": "db26f299-683f-4689-a671-bc2be5ae1b7e"
         }
       ],
       "componentScope": null,
@@ -14773,7 +15294,7 @@
       "externalId": "RQ-81",
       "fateConfirmed": null,
       "name": "The linter shall report a leaf Component that no Feature realizes as `SH-002`.",
-      "nodeHash": "60bbeb241048e578287c7cdfdbe33c73a956bd1bd3725c0bc369049eb6825554",
+      "nodeHash": "a168c9ec34e0bb2ff4e7cdb0100484ab85d4a878937c108dbf66d74ffba2b59c",
       "nodeId": "baa36972-571e-45da-b368-14c8e70e4c33",
       "ordinal": 1,
       "proposedFate": null,
@@ -14822,6 +15343,39 @@
       "technicalBinding": null,
       "tier": null,
       "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "e1acd5ce102c6893a27a74c905749cec2bd56a0544e4e78b39b469c7c0382ade",
+          "nodeId": "872bfa48-db37-441e-a26c-561cbb43e889"
+        },
+        {
+          "nodeHash": "3f957198e49e6ffd2b7f119f12e7d300830f01553d818cd215ddbcc683514639",
+          "nodeId": "eae10663-009b-464d-8c95-9629a0f6f8e1"
+        },
+        {
+          "nodeHash": "17c004687c496caf71bcf2658007510ade8f483e591f8f1a1ceed3ee6e5ad618",
+          "nodeId": "e1aed306-c54e-40ac-bc16-5ff13e775ec5"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "RQ-222",
+      "fateConfirmed": null,
+      "name": "loftspec shall give a Component without a `boundary` field the boundary of its parent Component.",
+      "nodeHash": "34b8ee77302d08ad82b8d7eea61e5d7cfbcd0dd3d4ef8392dd3c6af02f2dead4",
+      "nodeId": "bbb6eaf7-f1be-417a-a4d7-4dfe510a1e2b",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
       "verificationFate": null
     },
     {
@@ -14945,7 +15499,7 @@
           "nodeId": "c788db27-2701-47f8-a74c-8fe6d13ab8c6"
         },
         {
-          "nodeHash": "31a8ce5ab81c2a5f9356e9d813320776ffa3c0882aff440c26fb9dbfb83dd264",
+          "nodeHash": "a8765ac85b76afad80f8e1fc268a5961ff45d6e2d2152c64879ad9c2638e8a86",
           "nodeId": "97feeaae-d632-478c-a817-e3fe686eb30c"
         },
         {
@@ -14963,7 +15517,7 @@
       "externalId": "FG-1",
       "fateConfirmed": null,
       "name": "Identity and addressing",
-      "nodeHash": "67f8bec506e95239543536dcb2133a3c9e179c1dab785929103f7d8afbfe88ec",
+      "nodeHash": "b013a85aeea303c3e780d6437d10bebbc6b34e4283f3b4ff543e4624bb9d97bb",
       "nodeId": "c11aea07-d470-4baf-b583-d8e9945fbc6c",
       "ordinal": 1,
       "proposedFate": null,
@@ -15211,6 +15765,26 @@
       "technicalBinding": null,
       "tier": "Requirement",
       "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-879",
+      "fateConfirmed": null,
+      "name": "Any other value in `boundary` is an error naming the file, line and column.",
+      "nodeHash": "011efbc4c6fae09ea7fdc404b28af9cbc0d3ea5ad99cb088df4c1521458cee78",
+      "nodeId": "cbd67e83-0c32-4c5e-9022-dd2c1df3ab69",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
       "verificationFate": null
     },
     {
@@ -16069,6 +16643,26 @@
       "componentScope": null,
       "conservationKind": null,
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-881",
+      "fateConfirmed": null,
+      "name": "A root Component without `boundary` has the boundary `private`.",
+      "nodeHash": "3f957198e49e6ffd2b7f119f12e7d300830f01553d818cd215ddbcc683514639",
+      "nodeId": "eae10663-009b-464d-8c95-9629a0f6f8e1",
+      "ordinal": 1,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-151",
       "fateConfirmed": null,
       "name": "Code spans and fenced code blocks are accepted.",
@@ -16852,7 +17446,7 @@
       "body": null,
       "childrenHashes": [
         {
-          "nodeHash": "b4162d8bdc8ee3d23f4c95e2d2754cbac4635877b2f5e6a2170b2ea86753f74f",
+          "nodeHash": "4243449eeb70aa9efc43632d5593aaae9eff611327e7239f98c10410fcf0f727",
           "nodeId": "c396aefb-098c-45c4-b085-94adbe21252f"
         },
         {
@@ -16874,6 +17468,10 @@
         {
           "nodeHash": "9e648b7f4c97dace944a80a2ed251a699f6507894aac737095a98d3f148047d2",
           "nodeId": "6765b75b-7031-4eb7-9ca7-9d30bbae08d0"
+        },
+        {
+          "nodeHash": "a23be543f65aa809a92154baa25dd3952140a717a1059c9822d5ea895f767d27",
+          "nodeId": "0fce4cd0-8507-4add-aa60-adf0b00cbde2"
         }
       ],
       "componentScope": null,
@@ -16882,7 +17480,7 @@
       "externalId": "RQ-159",
       "fateConfirmed": null,
       "name": "The hasher shall build a node's content view from the fields the Format lists, in the Format's order.",
-      "nodeHash": "71f26a652f822a834a2cb22c18a4b32c32aa021f91e881d9382de29b151d5a88",
+      "nodeHash": "3ebd3f847b955bdf030334a0cf24e27d031eeb49c735725aab65e8bf67eb665f",
       "nodeId": "07c345cf-c3d6-4acf-ab4f-9a88fc676afe",
       "ordinal": 2,
       "proposedFate": null,
@@ -18206,6 +18804,35 @@
       "body": null,
       "childrenHashes": [
         {
+          "nodeHash": "3f2cfdb4e25482038e03bf951b074cb5c98aa9d3f5a23099688a5f9997f482f2",
+          "nodeId": "724e8365-eff4-457d-81f6-bb7507a02054"
+        },
+        {
+          "nodeHash": "c37a1b7874b4638714acc023a8bfb3fdc1d743fdaa2e2640244a052f85c6afef",
+          "nodeId": "1b45dce8-d1fe-4f5e-8906-4ea20cefd138"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "RQ-223",
+      "fateConfirmed": null,
+      "name": "If a Component's `boundary` is `private` and a Component above it has the boundary `external`, then the validator shall report an error.",
+      "nodeHash": "0c457cc46ce8d5e433effd5dcea4fa4e72338d33e09f760b94770fc8251b1acd",
+      "nodeId": "572ffa6c-7bd1-48b3-b78b-8a6a4fcd3225",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
           "nodeHash": "547c924fb03550d042b613ade280febbb2c75a0fe29a6845ae0dcea01576a873",
           "nodeId": "07beb53e-4bb7-4114-b073-044ddcfa4aa0"
         },
@@ -18391,6 +19018,26 @@
       "name": "A Component record lists its Components, its Constraints and its Quality Attributes under separate keys.",
       "nodeHash": "f0acd322e485a5d540472ca306f685a30c19a09cd35b63ede22e04cf713a7208",
       "nodeId": "6192a650-5fc1-4981-9c9f-8a282a717d05",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-894",
+      "fateConfirmed": null,
+      "name": "A Component scoped to a Product or to the document beneath a Component scoped as external is reported as a finding naming both.",
+      "nodeHash": "c938bd8f032c5694460216cc55dc2c5309e46aa15ee93906b9b2c51905050b37",
+      "nodeId": "62720264-5510-4c5d-8bce-5e005be704bd",
       "ordinal": 2,
       "proposedFate": null,
       "qaKind": null,
@@ -18919,7 +19566,7 @@
           "nodeId": "5c79dcd9-ef53-43ec-957c-58a22a59bc2a"
         },
         {
-          "nodeHash": "09fba980a9b1076f7f532da14603e5a3e0b736fa2cad39a3c596e49b1436243f",
+          "nodeHash": "91adf5b4abb42a2164a65be9169799019031977dbd5c82c678bfa6b6a1974932",
           "nodeId": "61dbab71-c9ca-49ae-964b-942161fbb5ef"
         },
         {
@@ -18933,7 +19580,7 @@
       "externalId": "F-14",
       "fateConfirmed": null,
       "name": "Statements and references from prose",
-      "nodeHash": "6de1d3b2da1fa5374042e7899373b1e4e97f8d6e3d4a84f40ea77af99e59555f",
+      "nodeHash": "dd73c8ee9e22cfed00b05861104451481b4b8ca86cb8439ab6249d770114662e",
       "nodeId": "894d6ff5-d8d8-4d25-ac10-10c067c84990",
       "ordinal": 2,
       "proposedFate": null,
@@ -19980,8 +20627,12 @@
           "nodeId": "e150cbbd-0ddf-431d-a985-4ddb99cb2a5b"
         },
         {
-          "nodeHash": "6c779a8408ef087f058880de924fa0d963401c896670bdfa9eb22baf87fb058b",
+          "nodeHash": "4e22e49054fc1dba159ee04b0fd61fdad0de253e9bc941cc34189917f364c57b",
           "nodeId": "d86939c2-1936-4c22-9fd4-745591491545"
+        },
+        {
+          "nodeHash": "23c5b73148e0ef73c3b0e7e94253bebc0cf889f950268e471ad1501b88a49f77",
+          "nodeId": "01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21"
         }
       ],
       "componentScope": null,
@@ -19990,7 +20641,7 @@
       "externalId": "FG-2",
       "fateConfirmed": null,
       "name": "Text form",
-      "nodeHash": "516742f3f165a8b56f384f2ff53eabd6513928aacad2f7a28e9242021305ccbc",
+      "nodeHash": "a1a68a5a74aca9e1f2b79d2f04dcee3c9871100799cfef8aed6696af1a26ccbf",
       "nodeId": "c85613e7-d493-4a54-9956-a9a5bfb405e1",
       "ordinal": 2,
       "proposedFate": null,
@@ -20155,8 +20806,12 @@
           "nodeId": "dce49355-6753-4aa0-9943-33775b7780cd"
         },
         {
-          "nodeHash": "5f20a5296e058694dcf6db3fd263342c29df726e6bfebd6e82fc2ac56a53ff8e",
+          "nodeHash": "db49e49bd1e0730bd265d3a9090e58b2bc817d94927e2a6630beebc1f6d67d8c",
           "nodeId": "fa515695-aaf8-4e99-b153-bc9cb62f6412"
+        },
+        {
+          "nodeHash": "52cae7c1cab969134d9c4dc44a742fdfdb4be286ed0f2204e6631330407dd539",
+          "nodeId": "cfe8fb26-befe-43b5-8bb8-c359c0a4b239"
         }
       ],
       "componentScope": null,
@@ -20165,7 +20820,7 @@
       "externalId": "RQ-102",
       "fateConfirmed": null,
       "name": "The linter shall report a label reference in prose that has no matching `mentions` edge as `V2-003`.",
-      "nodeHash": "997df727315c1e46ea07484dd3ea4cbae0eb636d66453587b1245d58374d0215",
+      "nodeHash": "33a323ecc0099847914091f2fb38d9949b2d8c73183a3609798e873e07b5b514",
       "nodeId": "d0b632ee-a776-418e-91a0-fbbb8997b564",
       "ordinal": 2,
       "proposedFate": null,
@@ -20406,6 +21061,26 @@
       "name": "It exits 0 when no conflict record was written.",
       "nodeHash": "5b8b47b2b8d215ef29846909c61aa91bfc634f7d48e7d9b46464fa0aea072039",
       "nodeId": "de19d23c-e5a5-4317-9129-1b3fc91b5a67",
+      "ordinal": 2,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-882",
+      "fateConfirmed": null,
+      "name": "A Component with a `boundary` field has the boundary that the field holds.",
+      "nodeHash": "17c004687c496caf71bcf2658007510ade8f483e591f8f1a1ceed3ee6e5ad618",
+      "nodeId": "e1aed306-c54e-40ac-bc16-5ff13e775ec5",
       "ordinal": 2,
       "proposedFate": null,
       "qaKind": null,
@@ -21139,7 +21814,7 @@
           "nodeId": "9f4893b6-3629-4b77-906b-df0d2df3bdd6"
         },
         {
-          "nodeHash": "60bbeb241048e578287c7cdfdbe33c73a956bd1bd3725c0bc369049eb6825554",
+          "nodeHash": "a168c9ec34e0bb2ff4e7cdb0100484ab85d4a878937c108dbf66d74ffba2b59c",
           "nodeId": "baa36972-571e-45da-b368-14c8e70e4c33"
         },
         {
@@ -21163,7 +21838,7 @@
           "nodeId": "8816b993-6220-456a-b5e1-54726e988aed"
         },
         {
-          "nodeHash": "1182ffaca924b042bce0837ba5f504af413434c4f7475a118146e94776fac012",
+          "nodeHash": "22b4ec3552430ef7361711ba2cba6107d7b41af6e70e93527d1a915b57e8555f",
           "nodeId": "b6386e62-a1db-457c-adb5-fd7874abf2e3"
         },
         {
@@ -21181,7 +21856,7 @@
       "externalId": "F-19",
       "fateConfirmed": null,
       "name": "Structural lint rules",
-      "nodeHash": "1cbd54fc06c7c1d9d813ab25adf85ce1060eb0019c01fe8bfbc2746966f3d0a7",
+      "nodeHash": "3015a4b8630fb2a5f5ff3116a19e33f830e164703668e848dc6660cece2dd434",
       "nodeId": "048729dd-e1d4-40aa-839f-ef9ec59515b0",
       "ordinal": 3,
       "proposedFate": null,
@@ -24317,8 +24992,8 @@
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-874",
       "fateConfirmed": null,
-      "name": "A label-shaped reference that names no element yields one `V2-003` finding naming the node and the reference.",
-      "nodeHash": "5f20a5296e058694dcf6db3fd263342c29df726e6bfebd6e82fc2ac56a53ff8e",
+      "name": "A label-shaped reference whose number is below its prefix's counter and that names no element yields one `V2-003` finding naming the node and the reference.",
+      "nodeHash": "db49e49bd1e0730bd265d3a9090e58b2bc817d94927e2a6630beebc1f6d67d8c",
       "nodeId": "fa515695-aaf8-4e99-b153-bc9cb62f6412",
       "ordinal": 3,
       "proposedFate": null,
@@ -24483,11 +25158,11 @@
           "nodeId": "4042ddbc-f7e2-4e36-bd29-038dd774149e"
         },
         {
-          "nodeHash": "e2c209a9c55360409b133297f9a16adc622991f6afcfba456c95dec79f2b968a",
+          "nodeHash": "762be150b5a45bc7e01f7afc36c8d8ac16924aaa71c316e6228dd8be9ebe4c0c",
           "nodeId": "134af160-7045-4437-a190-381bf508105b"
         },
         {
-          "nodeHash": "6de1d3b2da1fa5374042e7899373b1e4e97f8d6e3d4a84f40ea77af99e59555f",
+          "nodeHash": "dd73c8ee9e22cfed00b05861104451481b4b8ca86cb8439ab6249d770114662e",
           "nodeId": "894d6ff5-d8d8-4d25-ac10-10c067c84990"
         },
         {
@@ -24505,7 +25180,7 @@
       "externalId": "FG-4",
       "fateConfirmed": null,
       "name": "Conversion from a v1 export",
-      "nodeHash": "cfee6b4cabb97f5aa360ad4b9974c6882364d1d496c51476d08b2ec0cba100db",
+      "nodeHash": "5a2593cae9f269f82f695fb2602336bca0e7155fc270be2a9544c463e8f7549c",
       "nodeId": "08552f03-9608-41c5-86e1-0193be8fc005",
       "ordinal": 4,
       "proposedFate": null,
@@ -25024,6 +25699,26 @@
       "technicalBinding": null,
       "tier": "Requirement",
       "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-891",
+      "fateConfirmed": null,
+      "name": "A label-shaped text whose number is above every label of its prefix in the export is not a reference.",
+      "nodeHash": "89a246eae9c9194db0e5265f560731676f3e4c73f750ff1f874b78ddb126a146",
+      "nodeId": "478621d6-3676-4fec-bff2-c32a76ac7505",
+      "ordinal": 4,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
       "verificationFate": null
     },
     {
@@ -25600,7 +26295,7 @@
           "nodeId": "2c2d0f22-4f9b-4732-bc64-33912bcf6e5d"
         },
         {
-          "nodeHash": "71f26a652f822a834a2cb22c18a4b32c32aa021f91e881d9382de29b151d5a88",
+          "nodeHash": "3ebd3f847b955bdf030334a0cf24e27d031eeb49c735725aab65e8bf67eb665f",
           "nodeId": "07c345cf-c3d6-4acf-ab4f-9a88fc676afe"
         },
         {
@@ -25618,7 +26313,7 @@
       "externalId": "F-3",
       "fateConfirmed": null,
       "name": "Content view and node hash",
-      "nodeHash": "31a8ce5ab81c2a5f9356e9d813320776ffa3c0882aff440c26fb9dbfb83dd264",
+      "nodeHash": "a8765ac85b76afad80f8e1fc268a5961ff45d6e2d2152c64879ad9c2638e8a86",
       "nodeId": "97feeaae-d632-478c-a817-e3fe686eb30c",
       "ordinal": 4,
       "proposedFate": null,
@@ -26223,6 +26918,26 @@
       "componentScope": null,
       "conservationKind": null,
       "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-890",
+      "fateConfirmed": null,
+      "name": "A label-shaped text whose number is not below its prefix's counter in `spec/labels.yaml` is not a reference.",
+      "nodeHash": "52cae7c1cab969134d9c4dc44a742fdfdb4be286ed0f2204e6631330407dd539",
+      "nodeId": "cfe8fb26-befe-43b5-8bb8-c359c0a4b239",
+      "ordinal": 4,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
       "externalId": "AC-419",
       "fateConfirmed": null,
       "name": "A finding carries the line and column where one applies.",
@@ -26268,6 +26983,26 @@
       "name": "A `superseded` state holds `kind`, `selectedOption`, `outcome` and `successor`.",
       "nodeHash": "fcc8e9b6e87fc940ec3a1a5016fbb525756e04f0391cdc65bbdc4bfd772996cd",
       "nodeId": "d9277e8e-e368-4823-9c2b-2b1c31946a3b",
+      "ordinal": 4,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-886",
+      "fateConfirmed": null,
+      "name": "A Component whose boundary is `external` yields no `SH-002` finding.",
+      "nodeHash": "bdcf3eb343ec630e354e23a55b6ae8b0e187ad7707b1bef2ec1834bed9a4f009",
+      "nodeId": "db26f299-683f-4689-a671-bc2be5ae1b7e",
       "ordinal": 4,
       "proposedFate": null,
       "qaKind": null,
@@ -27794,7 +28529,7 @@
           "nodeId": "dc2a9890-ee94-4ec8-ac63-0503d459342e"
         },
         {
-          "nodeHash": "1cbd54fc06c7c1d9d813ab25adf85ce1060eb0019c01fe8bfbc2746966f3d0a7",
+          "nodeHash": "3015a4b8630fb2a5f5ff3116a19e33f830e164703668e848dc6660cece2dd434",
           "nodeId": "048729dd-e1d4-40aa-839f-ef9ec59515b0"
         },
         {
@@ -27802,7 +28537,7 @@
           "nodeId": "85dd847b-3c5e-4c3c-bb45-a25f85080156"
         },
         {
-          "nodeHash": "859563855c8d185fbe49b108c191310762f3f5d198bd855a536b3f264addf0fb",
+          "nodeHash": "8d92ee7d0884b2161bd4d05afc78360d5a3283da5b9a5d80cc7abe9a6c5d73e6",
           "nodeId": "b97d0eb8-bbcc-45d8-b18d-53c9c629c900"
         },
         {
@@ -27824,7 +28559,7 @@
       "externalId": "FG-5",
       "fateConfirmed": null,
       "name": "Validation and lint",
-      "nodeHash": "894a65c8e5ccf8cd16e8f42be34faed7ecbbdf34dc0e65099a7f0bc758bc2d7e",
+      "nodeHash": "96de81d9813bae43585fa36d6e5f8b03d2244f11b886c8d4c03e639dc3e53144",
       "nodeId": "a1b27be0-dd76-47d1-9406-1a2c394df762",
       "ordinal": 5,
       "proposedFate": null,
@@ -27940,7 +28675,7 @@
           "nodeId": "4a2be88c-bc64-4eea-ac05-25220225d800"
         },
         {
-          "nodeHash": "997df727315c1e46ea07484dd3ea4cbae0eb636d66453587b1245d58374d0215",
+          "nodeHash": "33a323ecc0099847914091f2fb38d9949b2d8c73183a3609798e873e07b5b514",
           "nodeId": "d0b632ee-a776-418e-91a0-fbbb8997b564"
         }
       ],
@@ -27950,7 +28685,7 @@
       "externalId": "F-21",
       "fateConfirmed": null,
       "name": "Lint rules of v2",
-      "nodeHash": "859563855c8d185fbe49b108c191310762f3f5d198bd855a536b3f264addf0fb",
+      "nodeHash": "8d92ee7d0884b2161bd4d05afc78360d5a3283da5b9a5d80cc7abe9a6c5d73e6",
       "nodeId": "b97d0eb8-bbcc-45d8-b18d-53c9c629c900",
       "ordinal": 5,
       "proposedFate": null,
@@ -28300,10 +29035,30 @@
       "verificationFate": null
     },
     {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-887",
+      "fateConfirmed": null,
+      "name": "A Component whose boundary is `external` yields no `SH-008` finding.",
+      "nodeHash": "0c549fc472ba24dae24583ce9290eff82fbaf507df320a5b064b16ca024e87b2",
+      "nodeId": "f52b2a5f-5a89-4d78-ad11-ea5a369fecf7",
+      "ordinal": 5,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
       "body": "The `spec/` tree is the specification, and the lock pins it. A projection is a derived, readable view of that tree that no role reads and no publish writes.",
       "childrenHashes": [
         {
-          "nodeHash": "a4e0ee738bab5f3a80302efbbdf46083ea54c982ec82ffd7acfc2d3539567a80",
+          "nodeHash": "c30ee13cddb847d024bdb4601acf76ad32e90c283144e480cb2abef532c4eda2",
           "nodeId": "25ab61fa-598b-483f-bc91-36413a78f4d8"
         },
         {
@@ -28321,7 +29076,7 @@
       "externalId": "FG-6",
       "fateConfirmed": null,
       "name": "Projections",
-      "nodeHash": "4abbfcc85f80bf96c3c98ff130f1e7b083bd3e264046a35b61900ae8c7a33966",
+      "nodeHash": "277872c816d37e07abb8067876dd3590ec1e15d28a8bf6b29c5b52158ee8f67e",
       "nodeId": "04e8ae21-1edb-4170-a13f-ec1101ec3306",
       "ordinal": 6,
       "proposedFate": null,
@@ -28383,6 +29138,26 @@
       "technicalBinding": null,
       "tier": "Requirement",
       "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-885",
+      "fateConfirmed": null,
+      "name": "A Component's boundary enters the content view as its `boundary` field, `null` when the field is absent.",
+      "nodeHash": "a23be543f65aa809a92154baa25dd3952140a717a1059c9822d5ea895f767d27",
+      "nodeId": "0fce4cd0-8507-4add-aa60-adf0b00cbde2",
+      "ordinal": 6,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
       "verificationFate": null
     },
     {
@@ -29037,7 +29812,7 @@
       "body": null,
       "childrenHashes": [
         {
-          "nodeHash": "c918ccd05cab0d7275050c60b2279f0c86702423de3a93011a10bdc88925530a",
+          "nodeHash": "903284dddec85a5cafe53f02c6b84668a904a9449d0a8063d593a8647b0ff8ac",
           "nodeId": "8ec0e58b-a8c9-49ef-b308-8a3c272d42d6"
         },
         {
@@ -29059,7 +29834,7 @@
       "externalId": "RQ-192",
       "fateConfirmed": null,
       "name": "The writer shall write each Component record with the Component fields in the Format's order.",
-      "nodeHash": "9fb636eb955e90f23cf58923a1d26babf1ae24d90704b739b5f65236fbd3ac70",
+      "nodeHash": "79fdc8b6e969e8493b426d18355bfee7d77e37ab5f975c1e61769fe49d5a8f8d",
       "nodeId": "a60fa7b3-57f9-4a4d-8f1f-bbdd7b05686e",
       "ordinal": 6,
       "proposedFate": null,
@@ -29105,6 +29880,26 @@
       "technicalBinding": null,
       "tier": "Requirement",
       "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-888",
+      "fateConfirmed": null,
+      "name": "A Constraint or Quality Attribute under an `external` Component does not clear `SH-008` for a Component above it.",
+      "nodeHash": "6879a031c42e49f45ea199174c1c35edfd29b414aff87c6779bcb8b82eefce8e",
+      "nodeId": "b01fb299-c2f9-49c1-895b-fdff7f25042b",
+      "ordinal": 6,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
       "verificationFate": null
     },
     {
@@ -29253,7 +30048,7 @@
           "nodeId": "bf466bce-fa30-455d-83ea-190b4664578b"
         },
         {
-          "nodeHash": "9fb636eb955e90f23cf58923a1d26babf1ae24d90704b739b5f65236fbd3ac70",
+          "nodeHash": "79fdc8b6e969e8493b426d18355bfee7d77e37ab5f975c1e61769fe49d5a8f8d",
           "nodeId": "a60fa7b3-57f9-4a4d-8f1f-bbdd7b05686e"
         },
         {
@@ -29331,7 +30126,7 @@
       "externalId": "F-49",
       "fateConfirmed": null,
       "name": "Record fields",
-      "nodeHash": "6c779a8408ef087f058880de924fa0d963401c896670bdfa9eb22baf87fb058b",
+      "nodeHash": "4e22e49054fc1dba159ee04b0fd61fdad0de253e9bc941cc34189917f364c57b",
       "nodeId": "d86939c2-1936-4c22-9fd4-745591491545",
       "ordinal": 6,
       "proposedFate": null,
@@ -29483,6 +30278,39 @@
       "technicalBinding": null,
       "tier": null,
       "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": "Whether a Component lies inside the document or outside Loft's governance, and how a Component's subtree takes it on.",
+      "childrenHashes": [
+        {
+          "nodeHash": "efa1d87584fc2b4c50824a16200d1fb4eab17cc6410db549a7c56967ea297a80",
+          "nodeId": "9221e5f6-d920-44f6-bc1a-1dac6e41f5dd"
+        },
+        {
+          "nodeHash": "34b8ee77302d08ad82b8d7eea61e5d7cfbcd0dd3d4ef8392dd3c6af02f2dead4",
+          "nodeId": "bbb6eaf7-f1be-417a-a4d7-4dfe510a1e2b"
+        },
+        {
+          "nodeHash": "0c457cc46ce8d5e433effd5dcea4fa4e72338d33e09f760b94770fc8251b1acd",
+          "nodeId": "572ffa6c-7bd1-48b3-b78b-8a6a4fcd3225"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "F-50",
+      "fateConfirmed": null,
+      "name": "Component boundary",
+      "nodeHash": "23c5b73148e0ef73c3b0e7e94253bebc0cf889f950268e471ad1501b88a49f77",
+      "nodeId": "01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21",
+      "ordinal": 7,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Feature",
+      "type": "TierSection",
       "verificationFate": null
     },
     {
@@ -29975,6 +30803,14 @@
         {
           "nodeHash": "ae7bb6557224e103aaad3cfd21321001ebeeb316802e306c63b54f7814e4f0e7",
           "nodeId": "5f15284a-0d82-45a1-970f-6a4b04045243"
+        },
+        {
+          "nodeHash": "0c549fc472ba24dae24583ce9290eff82fbaf507df320a5b064b16ca024e87b2",
+          "nodeId": "f52b2a5f-5a89-4d78-ad11-ea5a369fecf7"
+        },
+        {
+          "nodeHash": "6879a031c42e49f45ea199174c1c35edfd29b414aff87c6779bcb8b82eefce8e",
+          "nodeId": "b01fb299-c2f9-49c1-895b-fdff7f25042b"
         }
       ],
       "componentScope": null,
@@ -29983,7 +30819,7 @@
       "externalId": "RQ-87",
       "fateConfirmed": null,
       "name": "The linter shall report a Component whose subtree holds no Constraint and no Quality Attribute as `SH-008`.",
-      "nodeHash": "1182ffaca924b042bce0837ba5f504af413434c4f7475a118146e94776fac012",
+      "nodeHash": "22b4ec3552430ef7361711ba2cba6107d7b41af6e70e93527d1a915b57e8555f",
       "nodeId": "b6386e62-a1db-457c-adb5-fd7874abf2e3",
       "ordinal": 7,
       "proposedFate": null,
@@ -31466,6 +32302,59 @@
     },
     {
       "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "AC-889",
+      "fateConfirmed": null,
+      "name": "A Component with a `boundary` field renders a line naming its value.",
+      "nodeHash": "a44474dd40315ee87a79366626dcb488151662d3918cfeaeebb6aaa47b3757c9",
+      "nodeId": "cf46bfb8-ec99-4ff8-be93-43291cd89e46",
+      "ordinal": 11,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "AcceptanceCriterion",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [
+        {
+          "nodeHash": "356ddb03095f915f0a7f1fe244cb48983bbd73591a46860789ba1d5095d0cddc",
+          "nodeId": "1832ec07-0475-4856-82d5-b8aa3483d3c7"
+        },
+        {
+          "nodeHash": "5389de3e9540c324e975d92a4ec12d2468d1ddcd8a70181d480dba9802b44072",
+          "nodeId": "2188da06-e2b9-4add-8595-fc17b839c0ab"
+        },
+        {
+          "nodeHash": "c938bd8f032c5694460216cc55dc2c5309e46aa15ee93906b9b2c51905050b37",
+          "nodeId": "62720264-5510-4c5d-8bce-5e005be704bd"
+        }
+      ],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "31c36546-9554-426c-980b-a501a32aa506",
+      "externalId": "RQ-224",
+      "fateConfirmed": null,
+      "name": "The converter shall give the boundary `external` to each Component that the export scopes as external.",
+      "nodeHash": "52945f6fe66b01f4590e5b3f017a30b0a03b1c07188f09edfa8a1d99934a8d39",
+      "nodeId": "732ad96d-1e55-4a5b-95c2-1ea08d456803",
+      "ordinal": 12,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": "Requirement",
+      "type": "TierSection",
+      "verificationFate": null
+    },
+    {
+      "body": null,
       "childrenHashes": [
         {
           "nodeHash": "df4959c63eb204a5e11c00f4e9f33ef32b0f336eb28f0d023f32486c39807f3e",
@@ -31841,8 +32730,8 @@
       "verificationFate": null
     }
   ],
-  "publishSequence": 2,
-  "publishedAt": "2026-10-11T23:58:54.368466797Z",
+  "publishSequence": 3,
+  "publishedAt": "2026-10-12T00:50:44.399363226Z",
   "realizationLinks": [
     {
       "componentId": "540397b6-7607-4ca9-aaa1-529d0fab1811",
@@ -31859,6 +32748,10 @@
     {
       "componentId": "e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea",
       "featureId": "61d7c512-16c1-44b2-a625-62d581fffd97"
+    },
+    {
+      "componentId": "e1ab75a5-f206-4760-970f-bee0653c4f2a",
+      "featureId": "01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21"
     },
     {
       "componentId": "e1ab75a5-f206-4760-970f-bee0653c4f2a",
@@ -31879,6 +32772,14 @@
     {
       "componentId": "163cc9da-ec4c-40e3-9926-d16ed9d0d1e4",
       "featureId": "30461367-0853-4600-ac96-02443cdcfe81"
+    },
+    {
+      "componentId": "bc3f5237-54b0-405a-9078-978e4c8c0419",
+      "featureId": "01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21"
+    },
+    {
+      "componentId": "b90f38f9-766c-467f-a29c-d6ae3b796e52",
+      "featureId": "01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21"
     },
     {
       "componentId": "e1ab75a5-f206-4760-970f-bee0653c4f2a",

@@ -3,11 +3,13 @@
 
 mod common;
 
+use std::num::NonZeroU64;
+
 use common::text::{FEATURE, files, path};
 use common::{component, criterion, feature, key, product, requirement, root, small_document};
 use loftspec::codec::{self, Problem, Sites};
 use loftspec::document::{Document, Edge, TagEntry};
-use loftspec::identity::Key;
+use loftspec::identity::{Key, LabelPrefix};
 use loftspec::ids::{ComponentId, FeatureId, RequirementId, TagId};
 use loftspec::lint::{Finding, LintConfig, RuleId, Severity, lint};
 use loftspec::names::TagName;
@@ -282,7 +284,11 @@ fn ac_410_a_statement_with_a_form_is_not_v2_002() {
 
 #[test]
 fn ac_412_ac_414_ac_874_a_reference_without_a_mentions_edge_or_a_target_is_v2_003() {
-    let document = with_body("See CMP-1 and RQ-99.");
+    let mut document = with_body("See CMP-1 and RQ-99.");
+    // RQ-99 was allocated once and its node has since gone.
+    document
+        .counters
+        .set(LabelPrefix::Requirement, NonZeroU64::new(100).unwrap());
     let found: Vec<Finding> = findings(&document)
         .into_iter()
         .filter(|f| f.rule == RuleId::V2003)
@@ -291,6 +297,15 @@ fn ac_412_ac_414_ac_874_a_reference_without_a_mentions_edge_or_a_target_is_v2_00
     assert_eq!(terms, ["CMP-1", "RQ-99"]);
     assert!(found.iter().all(|f| f.subjects[0].key == key(3)));
     assert_eq!(severity(RuleId::V2003), Severity::Warning);
+}
+
+#[test]
+fn ac_890_a_label_shaped_text_at_or_above_its_counter_is_not_a_reference() {
+    let mut document = with_body("ES256 with P-256, or P-2 at the counter.");
+    document
+        .counters
+        .set(LabelPrefix::Product, NonZeroU64::new(2).unwrap());
+    assert!(of(&findings(&document), RuleId::V2003).is_empty());
 }
 
 #[test]

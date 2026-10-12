@@ -9,6 +9,7 @@ pub const AUTHORED_STATE_ID: &str = "authoredStateId";
 pub const BAND: &str = "band";
 pub const BINDINGS: &str = "bindings";
 pub const BODY: &str = "body";
+pub const BOUNDARY: &str = "boundary";
 pub const CATEGORY: &str = "category";
 pub const COMPONENTS: &str = "components";
 pub const CONSEQUENCES: &str = "consequences";

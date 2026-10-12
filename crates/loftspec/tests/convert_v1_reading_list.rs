@@ -13,8 +13,8 @@ use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::{Conversion, Finding, convert};
 use loftspec::document::Edge;
 use loftspec::hash::hash_document;
-use loftspec::identity::{Label, LabelPrefix};
-use loftspec::ids::{CriterionId, FeatureGroupId, NodeId, RequirementId};
+use loftspec::identity::LabelPrefix;
+use loftspec::ids::{FeatureGroupId, NodeId, RequirementId};
 
 const READING_LIST: &str =
     include_str!("../../../testdata/v1/reading-list/loft-authored-state.json");
@@ -24,7 +24,7 @@ const READING_LIST: &str =
 /// where the converter is built with other `serde_json` features, so a canonical form that
 /// depends on the build shows there. A change to it is a deliberate format change, never a
 /// refresh to make a failure disappear.
-const STATE_ROOT: &str = "dbc5458091cc5b1c1e0da38c3bea1f55330580f827cc69e13f7e20b540eb4395";
+const STATE_ROOT: &str = "cdd8ae424e42500c4ab016349a07a6ec4834eab12a1808da6b68dfd5544e3bb4";
 
 fn converted() -> Conversion {
     convert(&Export::from_json(READING_LIST).unwrap()).unwrap()
@@ -62,7 +62,9 @@ fn the_edges_are_the_links_the_scope_the_subjects_and_the_references() {
 }
 
 #[test]
-fn the_findings_are_one_text_statement_one_heading_and_one_unresolved_reference_in_export_order() {
+/// The criterion that cites `RQ-99` names a label above every Requirement label of the export,
+/// which is no reference (AC-891).
+fn the_findings_are_one_text_statement_and_one_heading_in_export_order() {
     assert_eq!(
         converted().findings,
         [
@@ -72,10 +74,6 @@ fn the_findings_are_one_text_statement_one_heading_and_one_unresolved_reference_
             Finding::HeadingInBody {
                 node: NodeId::FeatureGroup(FeatureGroupId::new(key(0x15))),
                 line: 3,
-            },
-            Finding::UnresolvedReference {
-                node: NodeId::Criterion(CriterionId::new(key(0x34))),
-                reference: Label::parse("RQ-99").unwrap(),
             },
         ]
     );

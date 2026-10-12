@@ -54,8 +54,8 @@ fn ac_525_findings_alone_exit_0_one_per_line() {
     let output = scratch.loft(&["check"]);
     assert_eq!(output.status.code(), Some(0));
     let lines: Vec<String> = stdout(&output).lines().map(str::to_owned).collect();
-    assert_eq!(lines.len(), 8, "{lines:#?}");
-    assert!(lines[0].starts_with("spec/components/link-service.yaml:1:6: info SH-008: "));
+    assert_eq!(lines.len(), 6, "{lines:#?}");
+    assert!(lines[0].starts_with("spec/components/shared-types.yaml:1:6: info SH-002: "));
 }
 
 #[test]
@@ -108,6 +108,8 @@ fn ac_529_a_directory_without_spec_is_refused_naming_the_path() {
 #[test]
 fn ac_530_ac_638_fail_on_warning_or_info_exits_1_on_a_warning() {
     let scratch = Scratch::with_reading_list();
+    let warning = "rules:\n  - rule: V2-002\n    severity: warning\n";
+    fs::write(scratch.file("lint.yaml"), warning).unwrap();
     for severity in ["warning", "info"] {
         assert_eq!(
             scratch

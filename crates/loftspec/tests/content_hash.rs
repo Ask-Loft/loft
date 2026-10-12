@@ -59,7 +59,7 @@ fn ac_596_the_content_view_holds_its_fields_in_order() {
     assert_eq!(
         canonical,
         format!(
-            r#"["constraint","The hasher shall use SHA-256.","Only SHA-256.",["identity","portable"],null,null,null,"cap","proved",["{notes_hash}"]]"#
+            r#"["constraint","The hasher shall use SHA-256.","Only SHA-256.",["identity","portable"],null,null,null,"cap","proved",null,["{notes_hash}"]]"#
         )
     );
 }
@@ -177,7 +177,7 @@ fn sections_follow_the_structural_children() {
     let mut node = feature(key(1), "Keys", vec![requirement(key(2), "One.", vec![])]);
     let notes = section(3, "Notes");
     node.details.sections = vec![notes.clone()];
-    let children = node.content_view()[9].clone();
+    let children = node.content_view()[10].clone();
     assert_eq!(children[0], node.requirements[0].content_hash().to_string());
     assert_eq!(children[1], notes.content_hash().to_string());
 }
@@ -229,7 +229,7 @@ fn quality(n: u32) -> QualityAttribute {
 
 /// The child content hashes a node's content view lists, in order.
 fn children(node: &impl ContentHash) -> Vec<String> {
-    node.content_view()[9]
+    node.content_view()[10]
         .as_array()
         .unwrap()
         .iter()

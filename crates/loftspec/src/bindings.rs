@@ -271,6 +271,13 @@ impl Counters {
         counters
     }
 
+    /// Whether `label` lies below its prefix's counter, so that it was allocated at some point;
+    /// a label-shaped text at or above the counter is not a reference (AC-890, AC-891).
+    #[must_use]
+    pub fn has_allocated(&self, label: Label) -> bool {
+        label.number() < self.next(label.prefix())
+    }
+
     /// Sets the next value of `prefix`, as `spec/labels.yaml` states it (AC-23).
     pub fn set(&mut self, prefix: LabelPrefix, next: NonZeroU64) {
         self.0.insert(prefix, next);

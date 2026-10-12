@@ -3,6 +3,7 @@
 
 pub mod attributes;
 pub mod bindings;
+pub mod boundary;
 pub mod canonical;
 pub mod check;
 pub mod codec;
