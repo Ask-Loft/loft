@@ -271,12 +271,33 @@ fn ac_190_a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
 #[test]
 fn ac_191_a_reference_that_does_not_resolve_is_a_finding() {
     let mut value = full_export();
-    value["nodes"][4]["name"] = json!("Every node record carries the key RQ-99 names.");
+    // RQ-5 is the highest Requirement label, so RQ-4 was allocated once and has since gone.
+    for node in value["nodes"].as_array_mut().unwrap() {
+        if node["nodeId"] == uuid(13) {
+            node["externalId"] = json!("RQ-5");
+        }
+    }
+    value["nodes"][4]["name"] = json!("Every node record carries the key RQ-4 names.");
     let conversion = convert_value(&value).unwrap();
     assert!(conversion.findings.contains(&Finding::UnresolvedReference {
         node: NodeId::Criterion(CriterionId::new(key(5))),
-        reference: Label::parse("RQ-99").unwrap(),
+        reference: Label::parse("RQ-4").unwrap(),
     }));
+}
+
+#[test]
+fn ac_891_a_label_above_every_label_of_its_prefix_is_not_a_reference() {
+    let mut value = full_export();
+    value["nodes"][4]["name"] = json!("A client assertion accepts ES256 with P-256.");
+    let conversion = convert_value(&value).unwrap();
+    assert!(
+        !conversion
+            .findings
+            .iter()
+            .any(|finding| matches!(finding, Finding::UnresolvedReference { .. })),
+        "{:?}",
+        conversion.findings
+    );
 }
 
 #[test]

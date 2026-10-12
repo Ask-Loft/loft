@@ -45,6 +45,7 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
             ));
         }
         let name = item.name();
+        let counters = &context.document.counters;
         let references = label_references(&name)
             .into_iter()
             .map(|label| (label, None))
@@ -54,6 +55,8 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
             let message = match context.document.bindings.resolve(label) {
                 Some(target) if mentions.contains(&(source, target)) => continue,
                 Some(_) => "The reference has no `mentions` edge.",
+                // A label never allocated is not a reference, such as the curve name `P-256`.
+                None if !counters.has_allocated(label) => continue,
                 None => "The reference names no element.",
             };
             out.push(

@@ -13,8 +13,8 @@ use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::{Conversion, Finding, convert};
 use loftspec::document::Edge;
 use loftspec::hash::hash_document;
-use loftspec::identity::{Label, LabelPrefix};
-use loftspec::ids::{CriterionId, FeatureGroupId, NodeId, RequirementId};
+use loftspec::identity::LabelPrefix;
+use loftspec::ids::{FeatureGroupId, NodeId, RequirementId};
 
 const READING_LIST: &str =
     include_str!("../../../testdata/v1/reading-list/loft-authored-state.json");
@@ -62,7 +62,9 @@ fn the_edges_are_the_links_the_scope_the_subjects_and_the_references() {
 }
 
 #[test]
-fn the_findings_are_one_text_statement_one_heading_and_one_unresolved_reference_in_export_order() {
+/// The criterion that cites `RQ-99` names a label above every Requirement label of the export,
+/// which is no reference (AC-891).
+fn the_findings_are_one_text_statement_and_one_heading_in_export_order() {
     assert_eq!(
         converted().findings,
         [
@@ -72,10 +74,6 @@ fn the_findings_are_one_text_statement_one_heading_and_one_unresolved_reference_
             Finding::HeadingInBody {
                 node: NodeId::FeatureGroup(FeatureGroupId::new(key(0x15))),
                 line: 3,
-            },
-            Finding::UnresolvedReference {
-                node: NodeId::Criterion(CriterionId::new(key(0x34))),
-                reference: Label::parse("RQ-99").unwrap(),
             },
         ]
     );
