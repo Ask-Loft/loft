@@ -294,3 +294,33 @@ fn ac_873_lq_009_does_not_read_a_constraint() {
         "The document model shall keep identity rules.".to_owned();
     assert!(of(&findings(&document), RuleId::Lq009).is_empty());
 }
+
+#[test]
+fn a_code_span_in_a_statement_is_not_read_as_prose() {
+    let quoted =
+        with_statement("The renderer shall write `<system> shall <shall>` for every form.");
+    assert!(of(&findings(&quoted), RuleId::Lq005).is_empty());
+    let weak = with_statement("The writer shall name the `fast` path.");
+    assert!(of(&findings(&weak), RuleId::Lq001).is_empty());
+    let plain = with_statement("The writer shall be fast and name the `x` path.");
+    let terms: Vec<_> = of(&findings(&plain), RuleId::Lq001)
+        .iter()
+        .map(|f| f.term.clone().unwrap())
+        .collect();
+    assert_eq!(terms, ["fast"]);
+}
+
+#[test]
+fn a_code_span_closes_only_on_a_run_of_its_own_length() {
+    let double = with_statement("The writer shall write ``a ` fast b`` here.");
+    assert!(of(&findings(&double), RuleId::Lq001).is_empty());
+    let unclosed = with_statement("The writer shall keep a ` mark and be fast.");
+    assert_eq!(of(&findings(&unclosed), RuleId::Lq001).len(), 1);
+}
+
+#[test]
+fn a_registry_term_inside_a_code_span_is_not_lq_009() {
+    let mut document = small_document();
+    document.products[0].feature_groups[0].name = "The `identity` group".to_owned();
+    assert!(of(&findings(&document), RuleId::Lq009).is_empty());
+}

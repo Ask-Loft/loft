@@ -25,6 +25,21 @@ pub fn converted(export: &str) -> Document {
     codec::read(&codec::write(&conversion.document)).unwrap()
 }
 
+/// The document read back with every backtick removed from its text, so that each code span
+/// reads as prose: what the `code-span` condition compares with.
+pub fn without_backticks(document: &Document) -> Document {
+    let files = codec::write(document)
+        .into_iter()
+        .map(|(path, bytes)| {
+            (
+                path,
+                bytes.into_iter().filter(|byte| *byte != b'`').collect(),
+            )
+        })
+        .collect();
+    codec::read(&files).unwrap()
+}
+
 /// v1's findings as `v1-lint.json` records them.
 pub fn v1_lint(reference: &str) -> BTreeSet<Normal> {
     let reference: Value = serde_json::from_str(reference).unwrap();
@@ -153,12 +168,28 @@ pub fn register() -> Vec<Divergence> {
         .collect()
 }
 
+/// What the conditions read besides the finding: the Components whose boundary is `external`,
+/// and loftspec's findings with every code span read as prose.
+pub struct Facts {
+    pub external: BTreeSet<String>,
+    pub prose: BTreeSet<Normal>,
+}
+
+impl Facts {
+    pub fn of(document: &Document) -> Self {
+        Self {
+            external: external(document),
+            prose: v2_lint(&without_backticks(document)),
+        }
+    }
+}
+
 /// The entry that explains a finding only one side reports.
 fn explains<'a>(
     register: &'a [Divergence],
     direction: &str,
     finding: &Normal,
-    external: &BTreeSet<String>,
+    facts: &Facts,
 ) -> Option<&'a Divergence> {
     register.iter().find(|entry| {
         entry.surface == "lint"
@@ -166,7 +197,8 @@ fn explains<'a>(
             && entry.rule == finding.0
             && match entry.condition.as_str() {
                 "rule" => true,
-                "subject-external" => finding.2.iter().any(|s| external.contains(s)),
+                "subject-external" => finding.2.iter().any(|s| facts.external.contains(s)),
+                "code-span" => facts.prose.contains(finding),
                 _ => false,
             }
     })
@@ -176,12 +208,12 @@ fn explains<'a>(
 pub fn unexplained(
     v1: &BTreeSet<Normal>,
     v2: &BTreeSet<Normal>,
-    external: &BTreeSet<String>,
+    facts: &Facts,
     register: &[Divergence],
 ) -> (Vec<Normal>, Vec<Normal>) {
     let keep = |direction: &str, only: Vec<&Normal>| -> Vec<Normal> {
         only.into_iter()
-            .filter(|finding| explains(register, direction, finding, external).is_none())
+            .filter(|finding| explains(register, direction, finding, facts).is_none())
             .cloned()
             .collect()
     };
