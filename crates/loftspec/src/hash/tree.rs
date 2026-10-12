@@ -5,7 +5,6 @@ use std::collections::BTreeSet;
 
 use serde_json::{Value, json};
 
-use super::HashError;
 use crate::attributes::{
     ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
 };
@@ -19,7 +18,7 @@ use crate::tree::{
 };
 
 /// Called once per node, children first, with the node's ID, content view and content hash.
-pub(crate) type Visit<'a> = dyn FnMut(Option<NodeId>, Value, Digest) -> Result<(), HashError> + 'a;
+pub(crate) type Visit<'a> = dyn FnMut(Option<NodeId>, Value, Digest) + 'a;
 
 /// The fields of a node's content view other than its children.
 struct Fields<'a> {
@@ -89,8 +88,7 @@ pub trait ContentHash {
     /// object members, keeps this order.
     fn content_view(&self) -> Value {
         let node = self.node();
-        let children = child_hashes(node, &mut |_, _, _| Ok(()))
-            .expect("hashing without an index never fails");
+        let children = child_hashes(node, &mut |_, _, _| {});
         view(node, &children)
     }
 
@@ -153,7 +151,7 @@ fn view(node: Node<'_>, children: &[Digest]) -> Value {
 }
 
 /// The content hashes of a node's children, in canonical order (RQ-160).
-fn child_hashes(node: Node<'_>, visit: &mut Visit<'_>) -> Result<Vec<Digest>, HashError> {
+fn child_hashes(node: Node<'_>, visit: &mut Visit<'_>) -> Vec<Digest> {
     node.children()
         .into_iter()
         .map(|child| hash_with(child, visit))
@@ -161,10 +159,10 @@ fn child_hashes(node: Node<'_>, visit: &mut Visit<'_>) -> Result<Vec<Digest>, Ha
 }
 
 /// Hashes a node and everything beneath it, children first, reporting each node to `visit`.
-pub(crate) fn hash_with(node: Node<'_>, visit: &mut Visit<'_>) -> Result<Digest, HashError> {
-    let children = child_hashes(node, visit)?;
+pub(crate) fn hash_with(node: Node<'_>, visit: &mut Visit<'_>) -> Digest {
+    let children = child_hashes(node, visit);
     let view = view(node, &children);
     let hash = digest(Domain::Node, &view);
-    visit(node.id(), view, hash)?;
-    Ok(hash)
+    visit(node.id(), view, hash);
+    hash
 }

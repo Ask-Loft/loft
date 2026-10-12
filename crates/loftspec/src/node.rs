@@ -1,10 +1,11 @@
 //! Any node of the tree, borrowed, and its children in canonical order: the one place that says
 //! which list of a node holds which kind of child.
 
+use crate::document::Document;
 use crate::ids::NodeId;
 use crate::kind::NodeKind;
 use crate::tree::{
-    Component, Constraint, Criterion, Feature, FeatureGroup, Product, QualityAttribute,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
     Requirement, Section,
 };
 
@@ -51,6 +52,22 @@ impl<'a> Node<'a> {
             Self::Constraint(node) => node.id.map(NodeId::from),
             Self::QualityAttribute(node) => node.id.map(NodeId::from),
             Self::Section(node) => node.id.map(NodeId::from),
+        }
+    }
+
+    /// The body, tags and Sections of every kind but the Section, which has its own.
+    #[must_use]
+    pub const fn details(self) -> Option<&'a Details> {
+        match self {
+            Self::Product(node) => Some(&node.details),
+            Self::FeatureGroup(node) => Some(&node.details),
+            Self::Feature(node) => Some(&node.details),
+            Self::Requirement(node) => Some(&node.details),
+            Self::Criterion(node) => Some(&node.details),
+            Self::Component(node) => Some(&node.details),
+            Self::Constraint(node) => Some(&node.details),
+            Self::QualityAttribute(node) => Some(&node.details),
+            Self::Section(_) => None,
         }
     }
 
@@ -134,3 +151,21 @@ from_refs!(
     QualityAttribute,
     Section
 );
+
+impl Document {
+    /// The Products in the manifest's order, then the root Components.
+    pub fn root_nodes(&self) -> impl Iterator<Item = Node<'_>> {
+        let components = self
+            .components
+            .iter()
+            .map(|root| Node::Component(&root.component));
+        self.products.iter().map(Node::Product).chain(components)
+    }
+
+    /// Visits every node of the document, parents before children.
+    pub fn walk<'a>(&'a self, visit: &mut impl FnMut(Node<'a>)) {
+        for root in self.root_nodes() {
+            root.walk(visit);
+        }
+    }
+}

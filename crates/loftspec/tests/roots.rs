@@ -8,11 +8,12 @@ use common::{
 use loftspec::canonical::Digest;
 use loftspec::decision::DecisionState;
 use loftspec::document::{CategoryEntry, DerivedFrom, Document, Edge};
-use loftspec::hash::{ContentHash, HashError, Roots, hash_document};
+use loftspec::hash::{ContentHash, Roots, hash_document};
 use loftspec::ids::{
     AuthoredStateId, CategoryId, ComponentId, DecisionId, DocumentId, ElementId, FeatureId,
     OptionId, RequirementId,
 };
+use loftspec::index::IntegrityError;
 use loftspec::names::CategoryName;
 
 fn roots(document: &Document) -> Roots {
@@ -151,8 +152,9 @@ fn the_two_registries_have_distinct_roots_even_when_equal() {
     document.categories = document
         .tags
         .iter()
-        .map(|tag| CategoryEntry {
-            id: CategoryId::new(tag.id.key()),
+        .zip(40..)
+        .map(|(tag, n)| CategoryEntry {
+            id: CategoryId::new(key(n)),
             name: CategoryName::parse(tag.name.as_str()).unwrap(),
             definition: tag.definition.clone(),
         })
@@ -191,8 +193,14 @@ fn ac_221_and_ac_253_changing_an_outcome_changes_the_decisions_root_and_the_cont
 #[test]
 fn ac_222_decision_order_leaves_the_decisions_root() {
     let mut document = small_document();
-    let mut second = document.decisions[0].clone();
-    second.id = DecisionId::new(key(60));
+    let own = |n: u32| {
+        if (20..30).contains(&n) {
+            key(n + 40)
+        } else {
+            key(n)
+        }
+    };
+    let mut second = small_document_with(&own).decisions.remove(0);
     second.title = "A second decision".to_owned();
     document.decisions.push(second);
     let before = roots(&document).decisions;
@@ -261,8 +269,10 @@ fn an_edge_to_an_unknown_element_is_refused() {
     let mut document = small_document();
     document.edges.push(realizes(3, 77));
     assert_eq!(
-        hash_document(&document).unwrap_err(),
-        HashError::UnknownEdgeEndpoint(ComponentId::new(key(77)).into())
+        hash_document(&document).unwrap_err().integrity,
+        [IntegrityError::UnknownEdgeEndpoint(
+            ComponentId::new(key(77)).into()
+        )]
     );
 }
 
@@ -271,8 +281,10 @@ fn an_edge_naming_a_key_as_the_wrong_kind_is_refused() {
     let mut document = small_document();
     document.edges.push(realizes(4, 6));
     assert_eq!(
-        hash_document(&document).unwrap_err(),
-        HashError::UnknownEdgeEndpoint(FeatureId::new(key(4)).into())
+        hash_document(&document).unwrap_err().integrity,
+        [IntegrityError::UnknownEdgeEndpoint(
+            FeatureId::new(key(4)).into()
+        )]
     );
 }
 
@@ -284,8 +296,10 @@ fn a_binding_of_an_unknown_element_is_refused() {
         .bind(RequirementId::new(key(77)), label("RQ-77"))
         .unwrap();
     assert_eq!(
-        hash_document(&document).unwrap_err(),
-        HashError::UnknownBindingElement(ElementId::from(RequirementId::new(key(77))))
+        hash_document(&document).unwrap_err().integrity,
+        [IntegrityError::UnknownBindingElement(ElementId::from(
+            RequirementId::new(key(77))
+        ))]
     );
 }
 
@@ -294,8 +308,8 @@ fn a_key_carried_twice_is_refused() {
     let mut document = small_document();
     document.components.push(root(component(key(6), "Another")));
     assert_eq!(
-        hash_document(&document).unwrap_err(),
-        HashError::DuplicateKey(key(6))
+        hash_document(&document).unwrap_err().integrity,
+        [IntegrityError::DuplicateKey(key(6))]
     );
 }
 

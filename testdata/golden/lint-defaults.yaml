@@ -1,0 +1,129 @@
+rules:
+  - rule: SH-001
+    enabled: true
+    severity: warning
+  - rule: SH-002
+    enabled: true
+    severity: info
+  - rule: SH-003
+    enabled: true
+    severity: warning
+  - rule: SH-004
+    enabled: true
+    severity: warning
+  - rule: SH-005
+    enabled: true
+    severity: info
+  - rule: SH-006
+    enabled: true
+    severity: info
+  - rule: SH-007
+    enabled: true
+    severity: warning
+  - rule: SH-008
+    enabled: true
+    severity: info
+  - rule: SH-009
+    enabled: true
+    severity: warning
+  - rule: SH-010
+    enabled: true
+    severity: hint
+  - rule: LQ-001
+    enabled: true
+    severity: warning
+    lexicon:
+      replace:
+        - "appropriate"
+        - "adequate"
+        - "efficient"
+        - "flexible"
+        - "user friendly"
+        - "easy"
+        - "fast"
+        - "seamless"
+        - "reasonable"
+        - "sufficient"
+        - "robust"
+        - "intuitive"
+        - "timely"
+        - "optimal"
+        - "as soon as possible"
+  - rule: LQ-002
+    enabled: true
+    severity: warning
+    lexicon:
+      replace:
+        - "some"
+        - "several"
+        - "many"
+        - "few"
+        - "most"
+        - "various"
+        - "significant"
+        - "minimal"
+        - "frequently"
+        - "rarely"
+        - "regularly"
+  - rule: LQ-003
+    enabled: true
+    severity: warning
+    lexicon:
+      replace:
+        - "if possible"
+        - "where appropriate"
+        - "as appropriate"
+        - "as required"
+        - "as necessary"
+        - "if needed"
+        - "where feasible"
+        - "to the extent practical"
+        - "if applicable"
+  - rule: LQ-004
+    enabled: false
+    severity: info
+    lexicon:
+      replace:
+        - "all"
+        - "always"
+        - "never"
+        - "every"
+        - "any"
+        - "none"
+  - rule: LQ-005
+    enabled: true
+    severity: info
+    modalLexicon:
+      replace:
+        - "shall"
+        - "must"
+        - "will"
+        - "should"
+    conjunctionLexicon:
+      replace:
+        - "and"
+        - "or"
+    conjunctionThreshold: 3
+  - rule: LQ-006
+    enabled: true
+    severity: warning
+  - rule: LQ-007
+    enabled: false
+    severity: info
+  - rule: LQ-008
+    enabled: true
+    severity: info
+    minTokens: 2
+    threshold: 0.8
+  - rule: LQ-009
+    enabled: true
+    severity: hint
+  - rule: V2-001
+    enabled: true
+    severity: info
+  - rule: V2-002
+    enabled: true
+    severity: info
+  - rule: V2-003
+    enabled: true
+    severity: warning

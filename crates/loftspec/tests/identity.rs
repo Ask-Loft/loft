@@ -1,5 +1,5 @@
-//! Keys and labels (D-11 F-1 and F-2). Criterion labels are those of the candidate checkpoint named
-//! by `docs/loft.work.json`.
+//! Keys and labels (D-11 F-1 and F-2). Criterion labels are those of the Authored State pinned by
+//! `docs/loft.lock.json`.
 
 use loftspec::identity::{Key, KeyError, Label, LabelError, LabelPrefix};
 use loftspec::kind::NodeKind;

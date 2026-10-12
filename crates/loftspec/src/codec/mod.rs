@@ -18,7 +18,7 @@ mod variants;
 
 pub use error::{Problem, ReadError, Site, SpecPath};
 pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, Tree};
-pub use layout::read_tree;
+pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
 pub use record::{Mode, Rec, Val};
 pub use resolve::resolve;
@@ -33,11 +33,21 @@ use crate::document::Document;
 ///
 /// # Errors
 ///
-/// Every read error the tree holds (RQ-30..RQ-33, RQ-65, RQ-4), or the first reference the
-/// model cannot hold.
+/// Every read error the tree holds (RQ-30..RQ-33, RQ-65, RQ-4), or else, in each file, the
+/// first reference the model cannot hold.
 pub fn read(files: &Files) -> Result<Document, Vec<ReadError>> {
+    read_sited(files).map(|(document, _)| document)
+}
+
+/// Reads a `spec/` tree into a document, with the site of every key it carries.
+///
+/// # Errors
+///
+/// As [`read`].
+pub fn read_sited(files: &Files) -> Result<(Document, Sites), Vec<ReadError>> {
     let tree = read_tree(files)?;
-    resolve(&tree).map_err(|error| vec![error])
+    let document = resolve(&tree)?;
+    Ok((document, Sites::of(&tree)))
 }
 
 /// Writes a document as the files of its `spec/` tree, in canonical layout.

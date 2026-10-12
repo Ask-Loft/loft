@@ -22,9 +22,9 @@ use crate::yaml::Position;
 ///
 /// # Errors
 ///
-/// The first reference that names no element of the kind it needs, or a binding the model
-/// cannot hold.
-pub fn resolve(tree: &Tree) -> Result<Document, ReadError> {
+/// In each file, the first reference that names no element of the kind it needs; in the
+/// bindings, each binding the model cannot hold.
+pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
     let manifest_path = SpecPath::new(MANIFEST);
     let manifest = tree
         .record(&manifest_path)
@@ -39,14 +39,21 @@ pub fn resolve(tree: &Tree) -> Result<Document, ReadError> {
         files,
         path: manifest_path,
         document: Document::empty(DocumentId::new(key(manifest, field::DOCUMENT_KEY))),
+        errors: Vec::new(),
     };
-    resolver.manifest(manifest)?;
+    if let Err(error) = resolver.manifest(manifest) {
+        resolver.errors.push(error);
+    }
     resolver.registries();
-    resolver.products(manifest)?;
-    resolver.roots()?;
-    resolver.decisions()?;
-    resolver.labels()?;
-    Ok(resolver.document)
+    resolver.products(manifest);
+    resolver.roots();
+    resolver.decisions();
+    resolver.labels();
+    if resolver.errors.is_empty() {
+        Ok(resolver.document)
+    } else {
+        Err(resolver.errors)
+    }
 }
 
 pub(super) struct Resolver<'t> {
@@ -58,6 +65,8 @@ pub(super) struct Resolver<'t> {
     /// The file being resolved, for errors.
     pub(super) path: SpecPath,
     pub(super) document: Document,
+    /// The first error of each file, and each refused binding.
+    errors: Vec<ReadError>,
 }
 
 /// Every node and decision of the tree, by key.
@@ -204,39 +213,47 @@ impl<'t> Resolver<'t> {
         record
     }
 
-    fn products(&mut self, manifest: &Rec) -> Result<(), ReadError> {
-        for listed in manifest.list(field::PRODUCTS) {
-            let record = self.listed_file(listed);
-            let product = self.product(record)?;
-            self.document.products.push(product);
-        }
-        Ok(())
+    /// Keeps a resolved value, or records its error and goes on to the next file.
+    fn keep<T>(&mut self, resolved: Result<T, ReadError>) -> Option<T> {
+        resolved.map_err(|error| self.errors.push(error)).ok()
     }
 
-    fn roots(&mut self) -> Result<(), ReadError> {
+    fn products(&mut self, manifest: &Rec) {
+        for listed in manifest.list(field::PRODUCTS) {
+            let record = self.listed_file(listed);
+            let product = self.product(record);
+            if let Some(product) = self.keep(product) {
+                self.document.products.push(product);
+            }
+        }
+    }
+
+    fn roots(&mut self) {
         let tree = self.tree;
         for (path, _, record) in tree.records(|role| matches!(role, Role::Component { .. })) {
             self.path = path.clone();
-            let root = self.root_component(record)?;
-            self.document.components.push(root);
+            let root = self.root_component(record);
+            if let Some(root) = self.keep(root) {
+                self.document.components.push(root);
+            }
         }
-        Ok(())
     }
 
-    fn decisions(&mut self) -> Result<(), ReadError> {
+    fn decisions(&mut self) {
         let tree = self.tree;
         for (path, _, record) in tree.records(|role| matches!(role, Role::Decision { .. })) {
             self.path = path.clone();
-            let decision = self.decision(record)?;
-            self.document.decisions.push(decision);
+            let decision = self.decision(record);
+            if let Some(decision) = self.keep(decision) {
+                self.document.decisions.push(decision);
+            }
         }
-        Ok(())
     }
 
-    fn labels(&mut self) -> Result<(), ReadError> {
+    fn labels(&mut self) {
         self.path = SpecPath::new(LABELS);
         let Some(labels) = self.tree.record(&self.path) else {
-            return Ok(());
+            return;
         };
         if let Some(counters) = labels.record(field::COUNTERS) {
             let values = counters.fields.iter().filter_map(|(prefix, value)| {
@@ -247,25 +264,28 @@ impl<'t> Resolver<'t> {
             }
         }
         for binding in labels.list(field::BINDINGS) {
-            let Val::Record(binding) = binding else {
-                continue;
-            };
-            let element = self.element(binding.get(field::KEY).expect("a checked key"))?;
-            let fail = |error: crate::bindings::BindingError| {
-                ReadError::at(
-                    &self.path,
-                    Some(binding.position),
-                    Problem::Model(error.to_string()),
-                )
-            };
-            let label = Label::parse(&text(binding, field::LABEL)).expect("a checked label");
-            let bindings = &mut self.document.bindings;
-            bindings.bind(element, label).map_err(fail)?;
-            for alias in binding.list(field::ALIASES) {
-                let alias =
-                    Label::parse(alias.text().unwrap_or_default()).expect("a checked label");
-                bindings.add_alias(element, alias).map_err(fail)?;
+            if let Val::Record(binding) = binding {
+                let bound = self.binding(binding);
+                self.keep(bound);
             }
+        }
+    }
+
+    fn binding(&mut self, binding: &Rec) -> Result<(), ReadError> {
+        let element = self.element(binding.get(field::KEY).expect("a checked key"))?;
+        let fail = |error: crate::bindings::BindingError| {
+            ReadError::at(
+                &self.path,
+                Some(binding.position),
+                Problem::Model(error.to_string()),
+            )
+        };
+        let label = Label::parse(&text(binding, field::LABEL)).expect("a checked label");
+        let bindings = &mut self.document.bindings;
+        bindings.bind(element, label).map_err(fail)?;
+        for alias in binding.list(field::ALIASES) {
+            let alias = Label::parse(alias.text().unwrap_or_default()).expect("a checked label");
+            bindings.add_alias(element, alias).map_err(fail)?;
         }
         Ok(())
     }

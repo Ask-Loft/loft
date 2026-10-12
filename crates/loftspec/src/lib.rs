@@ -4,6 +4,7 @@
 pub mod attributes;
 pub mod bindings;
 pub mod canonical;
+pub mod check;
 pub mod codec;
 pub mod convert;
 pub mod decision;
@@ -13,15 +14,19 @@ pub mod fmt;
 pub mod hash;
 pub mod identity;
 pub mod ids;
+pub mod index;
 pub mod kind;
+pub mod lint;
 pub mod manifest;
 pub mod names;
 pub mod node;
 pub mod prose;
+pub mod render;
 pub mod slug;
 pub mod statement;
 pub mod text;
 pub mod tree;
+pub mod validate;
 mod wire;
 pub mod yaml;
 

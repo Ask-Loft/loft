@@ -86,6 +86,8 @@ fn a_live_v1_export_round_trips_through_text() {
     let read = started.elapsed();
     let state_root = assert_roots_match(&document, &back);
     assert_eq!(codec::write(&back), files, "a second write changes no byte");
+    let invalid = loftspec::validate::validate(&back);
+    assert!(invalid.is_empty(), "{invalid:#?}");
     let started = std::time::Instant::now();
     let formatted = loftspec::fmt::format(&files).unwrap();
     let format = started.elapsed();
