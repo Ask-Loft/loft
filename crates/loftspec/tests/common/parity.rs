@@ -100,6 +100,19 @@ pub fn external(document: &Document) -> BTreeSet<String> {
     external
 }
 
+/// The UUIDs of the criteria.
+pub fn criteria(document: &Document) -> BTreeSet<String> {
+    let mut criteria = BTreeSet::new();
+    document.walk(&mut |node| {
+        if let Node::Criterion(criterion) = node
+            && let Some(id) = criterion.id
+        {
+            criteria.insert(id.key().uuid().to_string());
+        }
+    });
+    criteria
+}
+
 /// v1's form of each Requirement as `v1-ears.json` records it, by UUID.
 pub fn v1_forms(reference: &str) -> BTreeMap<String, Option<String>> {
     let reference: Value = serde_json::from_str(reference).unwrap();
@@ -169,9 +182,10 @@ pub fn register() -> Vec<Divergence> {
 }
 
 /// What the conditions read besides the finding: the Components whose boundary is `external`,
-/// and loftspec's findings with every code span read as prose.
+/// the criteria, and loftspec's findings with every code span read as prose.
 pub struct Facts {
     pub external: BTreeSet<String>,
+    pub criteria: BTreeSet<String>,
     pub prose: BTreeSet<Normal>,
 }
 
@@ -179,6 +193,7 @@ impl Facts {
     pub fn of(document: &Document) -> Self {
         Self {
             external: external(document),
+            criteria: criteria(document),
             prose: v2_lint(&without_backticks(document)),
         }
     }
@@ -199,6 +214,7 @@ fn explains<'a>(
                 "rule" => true,
                 "subject-external" => finding.2.iter().any(|s| facts.external.contains(s)),
                 "code-span" => facts.prose.contains(finding),
+                "subjects-are-criteria" => finding.2.iter().all(|s| facts.criteria.contains(s)),
                 _ => false,
             }
     })

@@ -1,7 +1,9 @@
 //! `LQ-008`: two names of one kind that are equal, or whose multiset similarity reaches the
 //! threshold; names shorter than the minimum take part only when equal (AC-399, AC-400, AC-644,
 //! AC-645). The similarity of two names is the size of their tokens' multiset intersection over
-//! the size of its union.
+//! the size of its union. A criterion means something only under its Requirement, and siblings
+//! that differ in a word enumerate cases, so criteria are compared only with the other criteria
+//! of their Requirement and only for identical tokens.
 
 use std::collections::BTreeMap;
 
@@ -9,7 +11,15 @@ use super::context::Context;
 use super::text::tokens;
 use super::{LintConfig, Raw, RuleId, Similarity};
 use crate::identity::Key;
+use crate::ids::NodeId;
 use crate::kind::NodeKind;
+
+/// The names compared with one another: every node of a kind, or the criteria of one Requirement.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum Group {
+    Kind(NodeKind),
+    Criteria(Option<NodeId>),
+}
 
 /// A name as token numbers: in order, and sorted for counting.
 struct Name {
@@ -20,7 +30,7 @@ struct Name {
 
 pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Raw>) {
     let mut numbers = BTreeMap::<String, u32>::new();
-    let mut groups = BTreeMap::<NodeKind, Vec<Name>>::new();
+    let mut groups = BTreeMap::<Group, Vec<Name>>::new();
     for item in &context.items {
         let kind = item.id.kind();
         let words = tokens(&item.name());
@@ -41,15 +51,21 @@ pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Ra
             tokens,
             sorted,
         };
-        groups.entry(kind).or_default().push(name);
+        let group = if kind == NodeKind::Criterion {
+            Group::Criteria(item.parent)
+        } else {
+            Group::Kind(kind)
+        };
+        groups.entry(group).or_default().push(name);
     }
     let similarity = config.similarity();
-    for group in groups.values_mut() {
-        group.sort_unstable_by_key(|name| name.key);
-        for (index, left) in group.iter().enumerate() {
-            let near = group[index + 1..]
-                .iter()
-                .filter(|right| near(left, right, similarity));
+    for (group, names) in &mut groups {
+        let identical_only = matches!(group, Group::Criteria(_));
+        names.sort_unstable_by_key(|name| name.key);
+        for (index, left) in names.iter().enumerate() {
+            let near = names[index + 1..].iter().filter(|right| {
+                left.tokens == right.tokens || !identical_only && near(left, right, similarity)
+            });
             out.extend(near.map(|right| {
                 let message = "The names are near-duplicates within their kind.";
                 Raw::new(RuleId::Lq008, vec![left.key, right.key], message)
