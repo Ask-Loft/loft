@@ -296,3 +296,55 @@ fn ac_977_ac_978_a_publish_reads_the_repository_without_taking_any_of_gits_locks
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     assert_eq!(installed.locks(), Vec::<String>::new());
 }
+
+#[test]
+fn a_publish_prints_and_writes_each_citation_of_a_withdrawn_label_it_rewrites() {
+    let scratch = Scratch::with_reading_list();
+    scratch.edit(
+        "labels.yaml",
+        "    label: F-2\n",
+        "    label: F-2\n    withdrawn:\n      - F-9\n",
+    );
+    let feature = "products/reading-list/shelf/add-a-book.yaml";
+    scratch.edit(feature, "F-2 removes them.", "F-9 removes them.");
+    let output = on_main(&scratch, &["publish"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stdout(&output).starts_with(
+            "rewrote F-9 as F-2 in 00000000-0000-4000-8000-00000000001e\npublished sequence 1, "
+        ),
+        "{}",
+        stdout(&output)
+    );
+    let text = fs::read_to_string(scratch.file(feature)).unwrap();
+    assert!(text.contains("F-2 removes them."), "{text}");
+    let again = on_main(&scratch, &["publish", "--format", "json"]);
+    let document = json(&again);
+    assert_eq!(document["outcome"], "unchanged");
+    assert_eq!(document["rewritten"], serde_json::json!([]));
+}
+
+#[test]
+fn the_json_of_a_publish_lists_the_citations_it_rewrote() {
+    let scratch = Scratch::with_reading_list();
+    scratch.edit(
+        "labels.yaml",
+        "    label: F-2\n",
+        "    label: F-2\n    withdrawn:\n      - F-9\n",
+    );
+    scratch.edit(
+        "products/reading-list/shelf/add-a-book.yaml",
+        "F-2 removes them.",
+        "F-9 removes them.",
+    );
+    let document = json(&on_main(&scratch, &["publish", "--format", "json"]));
+    assert_eq!(document["schema"], "loft-publish/2");
+    assert_eq!(
+        document["rewritten"],
+        serde_json::json!([{
+            "key": "00000000-0000-4000-8000-00000000001e",
+            "withdrawn": "F-9",
+            "label": "F-2",
+        }])
+    );
+}

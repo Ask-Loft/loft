@@ -1,6 +1,7 @@
 //! `loft publish` (F-41): the publisher run over the tree inside a git repository. It prints
-//! each label it allocated with its key and the new publish sequence and state root, that nothing
-//! changed, or why it refused (RQ-145). A refusal writes nothing and exits 1.
+//! each label it allocated with its key, each citation of a withdrawn label it rewrote, and the
+//! new publish sequence and state root; that nothing changed; or why it refused (RQ-145). A
+//! refusal writes nothing and exits 1.
 
 use std::path::Path;
 use std::process::ExitCode;
@@ -16,7 +17,7 @@ use serde_json::{Value, json};
 use crate::json;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-publish/1";
+const SCHEMA: &str = "loft-publish/2";
 
 /// Why a publish did not happen.
 enum Failure {
@@ -62,8 +63,8 @@ fn attempt(root: &Path) -> Result<Publication, Failure> {
     let at = PublishedAt::from_unix_seconds(SystemClock::from_env().now()?)
         .map_err(|error| Failure::Refused(format!("SOURCE_DATE_EPOCH: {error}")))?;
     let publication = publish(tree, &repo, previous.as_ref(), at).map_err(refusal)?;
-    if let Publication::Published { lock, labels, .. } = &publication {
-        store.publish(labels.clone(), lock)?;
+    if let Publication::Published { lock, files, .. } = &publication {
+        store.publish(files.clone(), lock)?;
     }
     Ok(publication)
 }
@@ -93,10 +94,19 @@ fn refusal(refusal: Refusal) -> Failure {
 fn print(publication: &Publication) {
     match publication {
         Publication::Published {
-            lock, allocated, ..
+            lock,
+            allocated,
+            rewritten,
+            ..
         } => {
             for allocated in allocated {
                 println!("{} {}", allocated.label, allocated.element.key());
+            }
+            for rewritten in rewritten {
+                println!(
+                    "rewrote {} as {} in {}",
+                    rewritten.withdrawn, rewritten.label, rewritten.element
+                );
             }
             println!(
                 "published sequence {}, state root {}",
@@ -125,12 +135,30 @@ fn report(failure: &Failure) {
 }
 
 fn published(publication: &Publication) -> Value {
-    let (outcome, lock, allocated) = match publication {
+    let (outcome, lock, allocated, rewritten) = match publication {
         Publication::Published {
-            lock, allocated, ..
-        } => ("published", lock, allocated.as_slice()),
-        Publication::Unchanged(lock) => ("unchanged", lock, &[][..]),
+            lock,
+            allocated,
+            rewritten,
+            ..
+        } => (
+            "published",
+            lock,
+            allocated.as_slice(),
+            rewritten.as_slice(),
+        ),
+        Publication::Unchanged(lock) => ("unchanged", lock, &[][..], &[][..]),
     };
+    let rewritten: Vec<Value> = rewritten
+        .iter()
+        .map(|rewritten| {
+            json!({
+                "key": rewritten.element.to_string(),
+                "withdrawn": rewritten.withdrawn.to_string(),
+                "label": rewritten.label.to_string(),
+            })
+        })
+        .collect();
     let allocated: Vec<Value> = allocated
         .iter()
         .map(|allocated| {
@@ -144,6 +172,7 @@ fn published(publication: &Publication) -> Value {
         "schema": SCHEMA,
         "outcome": outcome,
         "allocated": allocated,
+        "rewritten": rewritten,
         "publishSequence": lock.publish_sequence.get(),
         "stateRoot": lock.state_root.to_string(),
         "errors": [],
@@ -160,6 +189,7 @@ fn refused(failure: &Failure) -> Value {
         "schema": SCHEMA,
         "outcome": "refused",
         "allocated": [],
+        "rewritten": [],
         "errors": errors,
     })
 }

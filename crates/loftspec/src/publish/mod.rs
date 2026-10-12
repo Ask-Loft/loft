@@ -4,6 +4,7 @@
 
 mod labels;
 mod lock;
+pub mod rewrite;
 mod time;
 
 use std::fmt;
@@ -12,6 +13,8 @@ use std::num::NonZeroU64;
 pub use labels::{Allocated, allocate};
 pub use lock::{LOCK, Lock, LockError};
 pub use time::{PublishedAt, TimeError};
+
+use rewrite::Rewritten;
 
 use crate::canonical::Digest;
 use crate::check::{Placed, placed};
@@ -59,12 +62,14 @@ impl<'a> ReadTree<'a> {
 pub enum Publication {
     /// Nothing changed since the previous lock, which stands (RQ-117).
     Unchanged(Lock),
-    /// A new lock, the labels it allocated, and the bytes of `spec/labels.yaml`, the only file
-    /// under `spec/` a publish changes (AC-460), where they differ from the tree's.
+    /// A new lock, the labels it allocated, the citations of withdrawn labels it rewrote, and
+    /// the files under `spec/` to write: `spec/labels.yaml` where it differs from the tree's,
+    /// and the files whose citations it rewrote, the only files a publish changes (AC-460).
     Published {
         lock: Lock,
-        labels: Option<Vec<u8>>,
+        files: Files,
         allocated: Vec<Allocated>,
+        rewritten: Vec<Rewritten>,
     },
 }
 
@@ -116,16 +121,20 @@ pub fn publish(
         return Err(Refusal::Invalid(invalid));
     }
     // Allocation gives only fresh labels of each element's own prefix, so the document stays
-    // valid; when it gives none, the roots are the tree's own (AC-640).
+    // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
     let allocated = allocate(&mut document);
+    let (written, rewritten) = written(files, &document);
+    if !rewritten.is_empty() {
+        let mut next = files.clone();
+        next.extend(written.clone());
+        document = codec::read(&next).expect("rewritten citations read back");
+    }
     let roots = hash_document(&document)
         .expect("a document the validator accepts indexes")
         .roots;
     if let Some(previous) = previous.filter(|lock| lock.state_root == roots.state) {
         return Ok(Publication::Unchanged(previous.clone()));
     }
-    let labels = codec::write_labels(&document);
-    let unchanged = files.get(&SpecPath::new(LABELS)) == Some(&labels);
     Ok(Publication::Published {
         lock: Lock {
             document_key: document.id,
@@ -138,9 +147,22 @@ pub fn publish(
             published_at: at,
             derived_from: document.derived_from,
         },
-        labels: (!unchanged).then_some(labels),
+        files: written,
         allocated,
+        rewritten,
     })
+}
+
+/// The files under `spec/` a publish writes for `document`, the tree after allocation: the
+/// bindings where they changed and the files whose citations of withdrawn labels it rewrites.
+fn written(files: &Files, document: &Document) -> (Files, Vec<Rewritten>) {
+    let rewrites = rewrite::rewrite(files, &document.bindings);
+    let mut written = rewrites.files;
+    let labels = codec::write_labels(document);
+    if files.get(&SpecPath::new(LABELS)) != Some(&labels) {
+        written.insert(SpecPath::new(LABELS), labels);
+    }
+    (written, rewrites.rewritten)
 }
 
 /// A root a lock records, in the order verification compares them (AC-678).
