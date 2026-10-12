@@ -150,7 +150,7 @@ fn ac_244_every_decision_has_its_v1_external_id_as_label() {
 }
 
 #[test]
-fn the_derived_from_record_names_the_source_state() {
+fn ac_274_and_ac_634_the_derived_from_record_names_the_source_state() {
     let conversion = convert_value(&full_export()).unwrap();
     assert_eq!(
         conversion.document.derived_from,

@@ -1,6 +1,8 @@
 //! What the Format reads in prose: the label references a name or body makes (D-11 RQ-53,
 //! RQ-102) and the Markdown heading lines in a body (RQ-54, RQ-100).
 
+use std::ops::Range;
+
 use crate::identity::Label;
 
 /// The label references in `text`, in order: `P-n`, `FG-n`, `F-n`, `RQ-n`, `AC-n`, `CMP-n`,
@@ -9,22 +11,46 @@ use crate::identity::Label;
 /// label, nor runs into a letter, a digit or a decimal point followed by a digit.
 #[must_use]
 pub fn label_references(text: &str) -> Vec<Label> {
+    label_spans(text)
+        .into_iter()
+        .map(|span| span.label)
+        .collect()
+}
+
+/// A label reference in a text: where the label stands, the label, and whether a document
+/// prefix `D-n/` qualifies it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LabelSpan {
+    /// The bytes of the label itself, without its document prefix.
+    pub range: Range<usize>,
+    pub label: Label,
+    pub qualified: bool,
+}
+
+/// The label references in `text`, in order, as [`label_references`] finds them, each with
+/// where it stands.
+#[must_use]
+pub fn label_spans(text: &str) -> Vec<LabelSpan> {
     let bytes = text.as_bytes();
-    let mut references = Vec::new();
+    let mut spans = Vec::new();
     let mut position = 0;
     while position < bytes.len() {
         let starts_word = position == 0 || !continues_word(bytes[position - 1]);
         if starts_word && bytes[position].is_ascii_uppercase() {
             let start = after_document_prefix(bytes, position);
             if let Some((label, end)) = label_at(text, start) {
-                references.push(label);
+                spans.push(LabelSpan {
+                    range: start..end,
+                    label,
+                    qualified: start != position,
+                });
                 position = end;
                 continue;
             }
         }
         position += 1;
     }
-    references
+    spans
 }
 
 /// A byte that a reference cannot follow: letters, digits, `_`, `-` and `/`.

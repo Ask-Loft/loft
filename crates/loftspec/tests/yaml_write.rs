@@ -54,7 +54,7 @@ fn ac_238_ac_239_two_space_indentation_and_entries_under_their_key() {
 }
 
 #[test]
-fn an_empty_top_level_collection_is_an_empty_file() {
+fn ac_791_an_empty_top_level_collection_is_an_empty_file() {
     assert_eq!(yaml::write(&Out::Sequence(Vec::new())), "");
 }
 
@@ -75,7 +75,7 @@ fn ac_121_a_multi_line_string_is_a_literal_block_with_its_chomping() {
 }
 
 #[test]
-fn strings_a_literal_block_would_change_are_double_quoted() {
+fn ac_832_ac_834_and_ac_835_strings_a_literal_block_would_change_are_double_quoted() {
     assert_eq!(field(text("\n\n")), "a: \"\\n\\n\"\n");
     assert_eq!(field(text("  lead\nx")), "a: \"  lead\\nx\"\n");
     assert_eq!(field(text("\n  lead")), "a: \"\\n  lead\"\n");
@@ -84,7 +84,7 @@ fn strings_a_literal_block_would_change_are_double_quoted() {
 }
 
 #[test]
-fn the_double_quoted_escapes_are_the_formats() {
+fn ac_840_ac_841_and_ac_842_the_double_quoted_escapes_are_the_formats() {
     assert_eq!(
         field(text("\\ \" \t \0 \u{7} \u{85} é")),
         "a: \"\\\\ \\\" \\t \\0 \\u0007 \\u0085 é\"\n"
@@ -92,7 +92,8 @@ fn the_double_quoted_escapes_are_the_formats() {
 }
 
 #[test]
-fn a_token_is_plain_unless_a_yaml_reader_would_take_it_for_something_else() {
+fn ac_828_ac_829_and_ac_830_a_token_is_plain_unless_a_yaml_reader_would_take_it_for_something_else()
+{
     for plain in [
         "RQ-12",
         "event_driven",
@@ -138,7 +139,7 @@ proptest! {
     }
 
     #[test]
-    fn any_multi_line_text_reads_back_byte_for_byte(
+    fn ac_123_and_ac_124_any_multi_line_text_reads_back_byte_for_byte(
         lines in prop::collection::vec("[ \\t a-z#:\\-\"\\\\]{0,8}", 1..6),
         feeds in 0..4usize,
     ) {

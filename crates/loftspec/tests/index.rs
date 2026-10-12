@@ -67,7 +67,7 @@ fn a_clean_document_indexes_every_element_and_its_place() {
 }
 
 #[test]
-fn every_integrity_error_is_reported_not_only_the_first() {
+fn ac_523_every_integrity_error_is_reported_not_only_the_first() {
     let mut document = small_document();
     document.components.push(root(component(key(6), "Another")));
     document.edges.push(Edge::Realizes {
@@ -90,7 +90,7 @@ fn every_integrity_error_is_reported_not_only_the_first() {
 }
 
 #[test]
-fn a_key_carried_by_a_decision_element_and_a_node_is_carried_twice() {
+fn ac_848_a_key_carried_by_a_decision_element_and_a_node_is_carried_twice() {
     let mut document = small_document();
     document.decisions[0].options[1].id = OptionId::new(key(3));
     let errors = document.index().unwrap_err().integrity;
@@ -101,7 +101,7 @@ fn a_key_carried_by_a_decision_element_and_a_node_is_carried_twice() {
 }
 
 #[test]
-fn a_successor_the_document_does_not_hold_is_unknown() {
+fn ac_729_a_successor_the_document_does_not_hold_is_unknown() {
     let mut document = small_document();
     document.decisions[0] = superseded_by(&document.decisions[0], 90);
     assert_eq!(
@@ -114,7 +114,7 @@ fn a_successor_the_document_does_not_hold_is_unknown() {
 }
 
 #[test]
-fn a_decision_that_supersedes_itself_is_reported_once() {
+fn ac_730_a_decision_that_supersedes_itself_is_reported_once() {
     let mut document = small_document();
     document.decisions[0] = superseded_by(&document.decisions[0], 20);
     let errors = document.index().unwrap_err();
@@ -126,7 +126,7 @@ fn a_decision_that_supersedes_itself_is_reported_once() {
 }
 
 #[test]
-fn a_ring_of_successors_is_one_cycle_naming_every_member() {
+fn ac_732_a_ring_of_successors_is_one_cycle_naming_every_member() {
     let mut document = small_document();
     document.decisions = vec![copy(0, 120), copy(100, 220), copy(200, 20)];
     let errors = document.index().unwrap_err();

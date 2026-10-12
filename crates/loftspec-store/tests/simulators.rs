@@ -100,7 +100,7 @@ fn tagged(document: &Document) -> Vec<Simulator> {
 }
 
 #[test]
-fn each_simulator_mentions_exactly_one_external_component() {
+fn ac_959_each_simulator_mentions_exactly_one_external_component() {
     let found = tagged(&document());
     assert!(!found.is_empty(), "no Feature lists `{TAG}`");
     for simulator in found {
@@ -112,7 +112,7 @@ fn each_simulator_mentions_exactly_one_external_component() {
 }
 
 #[test]
-fn each_simulator_has_a_contract_suite_and_each_suite_a_simulator() {
+fn ac_962_each_simulator_has_a_contract_suite_and_each_suite_a_simulator() {
     let tagged: BTreeSet<String> = tagged(&document())
         .into_iter()
         .map(|simulator| simulator.slug)
@@ -129,7 +129,7 @@ fn each_simulator_has_a_contract_suite_and_each_suite_a_simulator() {
 }
 
 #[test]
-fn each_feature_of_the_plant_that_stands_in_for_an_external_system_lists_the_tag() {
+fn ac_957_each_feature_of_the_plant_that_stands_in_for_an_external_system_lists_the_tag() {
     for simulator in simulators(&document()) {
         assert!(
             simulator.tagged || simulator.mentioned.is_empty(),
@@ -141,7 +141,7 @@ fn each_feature_of_the_plant_that_stands_in_for_an_external_system_lists_the_tag
 }
 
 #[test]
-fn only_the_repository_port_runs_git() {
+fn con_15_only_the_repository_port_runs_git() {
     let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
     for entry in std::fs::read_dir(&src).unwrap() {
         let path = entry.unwrap().path();

@@ -98,7 +98,7 @@ fn ac_845_an_option_without_a_key_gets_one() {
 }
 
 #[test]
-fn a_read_error_formats_nothing() {
+fn ac_938_a_read_error_formats_nothing() {
     let files = edited(FEATURE, "name: \"Keys\"", "name: \"Keys\" # note");
     let errors = format(&files).unwrap_err();
     assert_eq!(errors[0].sites[0].path, path(FEATURE));

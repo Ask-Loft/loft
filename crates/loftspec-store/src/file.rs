@@ -4,7 +4,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use loftspec::codec::{self, Files, LABELS, SpecPath};
+use loftspec::codec::{self, Files, SpecPath};
 use loftspec::document::Document;
 use loftspec::publish::{LOCK, Lock};
 
@@ -90,17 +90,13 @@ impl FileStore {
             .map_err(|error| StoreError::Lock(path, error))
     }
 
-    /// Writes what a publish gives in one save: `spec/labels.yaml` when it changes, and the lock
-    /// beside `spec/`; either both or neither (AC-463).
+    /// Writes what a publish gives in one save: the files under `spec/` it changes, and the lock
+    /// beside `spec/`; all of them or none (AC-463).
     ///
     /// # Errors
     ///
     /// A file cannot be staged or put in place.
-    pub fn publish(&self, labels: Option<Vec<u8>>, lock: &Lock) -> Result<(), StoreError> {
-        let mut files = Files::new();
-        if let Some(labels) = labels {
-            files.insert(SpecPath::new(LABELS), labels);
-        }
+    pub fn publish(&self, files: Files, lock: &Lock) -> Result<(), StoreError> {
         self.write_with_beside(files, (LOCK, lock.to_bytes()))
     }
 

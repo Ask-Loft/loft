@@ -1,0 +1,30 @@
+key: 01a130de-5737-776f-9c39-b9e3793de847
+slug: citations-of-withdrawn-labels
+name: "Citations of withdrawn labels"
+body: "How every publish rewrites a citation of a withdrawn label to the live label of the key it was withdrawn from, through the `mentions` edges of the element that cites it."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+requirements:
+  - key: 01a130de-5737-776f-9c39-b9e4eb848d1b
+    statement:
+      form: event_driven
+      when: "publishing"
+      system: "the publisher"
+      shall: "rewrite each citation of a withdrawn label to the live label of the key it was withdrawn from."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9e50721e395
+        name: "A citation is rewritten only in an element whose `mentions` include the key the label was withdrawn from."
+      - key: 01a130de-5737-776f-9c39-b9e6d8b26b3d
+        name: "Every text field of the element is rewritten, including the text of a decision's drivers, options and consequences."
+      - key: 01a130de-5737-776f-9c39-b9e7257a23c9
+        name: "A Section or a criterion with its own `mentions` is rewritten by its own `mentions`, not by its parent's."
+      - key: 01a130de-5737-776f-9c39-b9e8b4592c9b
+        name: "A citation qualified by a document is not rewritten."
+      - key: 01a130de-5737-776f-9c39-b9e92de7d540
+        name: "A citation in an element that also mentions the label's live holder is not rewritten."
+      - key: 01a130de-5737-776f-9c39-b9ea0764147f
+        name: "A citation of a label withdrawn from two keys that the element mentions is not rewritten."
+      - key: 01a130de-5737-776f-9c39-b9eba50663b5
+        name: "A file in which nothing is rewritten is not written."
+      - key: 01a130de-5737-776f-9c39-b9ec27f65049
+        name: "Each rewrite is reported with the element's key, the withdrawn label and the new label."

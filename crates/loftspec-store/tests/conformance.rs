@@ -9,11 +9,12 @@ mod fixtures;
 use common::Scratch;
 use fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{self, LINT, SpecPath};
+use loftspec::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
 use loftspec::document::{Document, Edge, TagEntry};
 use loftspec::identity::Key;
 use loftspec::ids::{
-    ComponentId, CriterionId, DocumentId, FeatureGroupId, FeatureId, ProductId, RequirementId,
-    TagId,
+    ComponentId, CriterionId, DocumentId, ElementId, FeatureGroupId, FeatureId, NodeId, ProductId,
+    RequirementId, TagId,
 };
 use loftspec::names::TagName;
 use loftspec::slug::Slug;
@@ -21,7 +22,7 @@ use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
     Component, Criterion, Details, Feature, FeatureGroup, Product, Requirement, RootComponent,
 };
-use loftspec::validate::validate;
+use loftspec::validate::{conflict_errors, validate};
 use loftspec_store::{DocumentStore, FileStore, MemoryStore, Saved};
 
 const READING_LIST: &str =
@@ -67,7 +68,11 @@ impl Pair {
         let loaded = self.file.load().unwrap();
         let canonical = codec::read(&codec::write(document)).unwrap();
         assert_eq!(loaded, canonical, "loaded back");
-        assert_eq!(validate(&loaded), Vec::new(), "valid");
+        assert_eq!(
+            validate(&loaded),
+            conflict_errors(&loaded),
+            "valid but for its conflicts"
+        );
         assert!(
             self.scratch
                 .snapshot()
@@ -233,6 +238,23 @@ fn feature_deleted() -> Document {
 }
 
 /// Saves each document in turn to a fresh pair, and returns what the last save did.
+/// The Requirement of step 2 holding a merge conflict over its statement's `shall`.
+fn conflicted() -> Document {
+    let mut document = with_requirement();
+    document.conflicts.push(Conflict {
+        owner: ConflictOwner::Element(ElementId::Node(NodeId::Requirement(RequirementId::new(
+            key(10),
+        )))),
+        field: FieldPath::new("statement.shall"),
+        base: Some(ConflictValue::Scalar("record the loan.".to_owned())),
+        ours: Some(ConflictValue::Scalar(
+            "record the loan and its date.".to_owned(),
+        )),
+        theirs: None,
+    });
+    document
+}
+
 fn walk(steps: &[fn() -> Document]) -> Saved {
     let mut pair = Pair::new();
     let mut last = Saved::default();
@@ -243,7 +265,7 @@ fn walk(steps: &[fn() -> Document]) -> Saved {
 }
 
 #[test]
-fn creating_a_product_with_its_groups_and_features_agrees() {
+fn ac_950_ac_951_and_ac_952_creating_a_product_with_its_groups_and_features_agrees() {
     let saved = walk(&[created]);
     assert_eq!(
         saved.written,
@@ -261,7 +283,7 @@ fn creating_a_product_with_its_groups_and_features_agrees() {
 }
 
 #[test]
-fn adding_a_requirement_with_criteria_writes_only_its_feature() {
+fn ac_535_adding_a_requirement_with_criteria_writes_only_its_feature() {
     let saved = walk(&[created, with_requirement]);
     assert_eq!(
         saved.written,
@@ -270,7 +292,7 @@ fn adding_a_requirement_with_criteria_writes_only_its_feature() {
 }
 
 #[test]
-fn tagging_writes_the_registry_and_the_tagged_feature() {
+fn ac_535_tagging_writes_the_registry_and_the_tagged_feature() {
     let saved = walk(&[created, with_requirement, tagged]);
     assert_eq!(
         saved.written,
@@ -279,7 +301,7 @@ fn tagging_writes_the_registry_and_the_tagged_feature() {
 }
 
 #[test]
-fn linking_writes_the_component_and_the_linking_feature() {
+fn ac_535_linking_writes_the_component_and_the_linking_feature() {
     let saved = walk(&[created, with_requirement, tagged, linked]);
     assert_eq!(
         saved.written,
@@ -291,7 +313,7 @@ fn linking_writes_the_component_and_the_linking_feature() {
 }
 
 #[test]
-fn moving_a_requirement_writes_the_two_feature_files() {
+fn ac_535_moving_a_requirement_writes_the_two_feature_files() {
     let saved = walk(&[created, with_requirement, tagged, linked, requirement_moved]);
     assert_eq!(
         saved.written,
@@ -304,7 +326,7 @@ fn moving_a_requirement_writes_the_two_feature_files() {
 }
 
 #[test]
-fn moving_a_feature_removes_its_former_file() {
+fn ac_954_moving_a_feature_removes_its_former_file() {
     let steps = [
         created,
         with_requirement,
@@ -328,7 +350,7 @@ fn moving_a_feature_removes_its_former_file() {
 }
 
 #[test]
-fn a_directory_the_save_leaves_empty_is_removed() {
+fn ac_955_a_directory_the_save_leaves_empty_is_removed() {
     let mut pair = Pair::new();
     for step in [created, feature_moved] {
         pair.step(&step());
@@ -338,7 +360,7 @@ fn a_directory_the_save_leaves_empty_is_removed() {
 }
 
 #[test]
-fn deleting_a_feature_removes_its_file() {
+fn ac_953_deleting_a_feature_removes_its_file() {
     let steps = [
         created,
         with_requirement,
@@ -357,13 +379,23 @@ fn deleting_a_feature_removes_its_file() {
 }
 
 #[test]
-fn saving_an_unchanged_document_writes_and_removes_nothing() {
+fn ac_535_saving_an_unchanged_document_writes_and_removes_nothing() {
     let saved = walk(&[linked, linked]);
     assert_eq!(saved, Saved::default());
 }
 
 #[test]
-fn converted_v1_exports_agree() {
+fn a_conflict_saves_and_loads_alike_in_both_stores_and_only_its_feature_is_written() {
+    let saved = walk(&[created, with_requirement, conflicted]);
+    assert_eq!(
+        saved.written,
+        paths(&["products/shelf/lending/borrowing.yaml"])
+    );
+    assert_eq!(saved.removed, Vec::new());
+}
+
+#[test]
+fn ac_950_ac_951_and_ac_952_converted_v1_exports_agree() {
     for export in [READING_LIST, D11] {
         let document = converted(export);
         let mut pair = Pair::new();

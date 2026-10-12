@@ -55,7 +55,7 @@ fn ac_534_fmt_rewrites_a_drifting_file_and_then_checks_clean() {
 }
 
 #[test]
-fn a_comment_is_an_error_at_its_position_and_nothing_is_written() {
+fn ac_248_ac_938_a_comment_is_an_error_at_its_position_and_nothing_is_written() {
     let scratch = Scratch::with_reading_list();
     let path = a_decision(&scratch.0);
     scratch.edit(&path, "\nslug:", " # a note\nslug:");
@@ -77,7 +77,7 @@ fn a_directory_without_a_tree_is_an_error() {
 }
 
 #[test]
-fn a_usage_error_exits_2() {
+fn ac_580_a_usage_error_exits_2() {
     let scratch = Scratch::with_reading_list();
     assert_eq!(scratch.loft(&["fmt", "--chekc"]).status.code(), Some(2));
     assert_eq!(scratch.loft(&["frobnicate"]).status.code(), Some(2));

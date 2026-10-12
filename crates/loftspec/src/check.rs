@@ -4,7 +4,8 @@
 
 use std::fmt;
 
-use crate::codec::{Files, LINT, ReadError, Site, Sites, SpecPath, read_sited};
+use crate::codec::{Files, LABELS, LINT, MANIFEST, ReadError, Site, Sites, SpecPath, read_sited};
+use crate::conflict::ConflictOwner;
 use crate::lint::{Finding, LintConfig, lint};
 use crate::validate::{ValidationError, validate};
 
@@ -89,10 +90,29 @@ pub(crate) fn placed(errors: Vec<ValidationError>, sites: &Sites) -> Vec<Placed>
 }
 
 fn place(error: ValidationError, sites: &Sites) -> Placed {
-    let sites = error
-        .keys()
+    let file = match &error {
+        ValidationError::Conflict {
+            owner: ConflictOwner::Manifest,
+            ..
+        } => Some(MANIFEST),
+        ValidationError::Conflict {
+            owner: ConflictOwner::Labels,
+            ..
+        } => Some(LABELS),
+        _ => None,
+    };
+    let sites = file
+        .map(|path| Site {
+            path: SpecPath::new(path),
+            location: None,
+        })
         .into_iter()
-        .filter_map(|key| sites.get(key).cloned())
+        .chain(
+            error
+                .keys()
+                .into_iter()
+                .filter_map(|key| sites.get(key).cloned()),
+        )
         .collect();
     Placed { error, sites }
 }

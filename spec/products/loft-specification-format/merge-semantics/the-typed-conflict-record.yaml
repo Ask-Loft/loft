@@ -14,7 +14,7 @@ requirements:
       - key: f4453890-d813-41f5-85f8-35a40dd56b37
         name: "The record holds `field`, `base`, `ours` and `theirs`."
       - key: e39b5d19-68e5-4773-b0f3-1932c110aa23
-        name: "The record sits in the `conflicts` list of the record that owns the field."
+        name: "The record sits in the `conflicts` list of the nearest keyed record that holds the field, or of the manifest or `spec/labels.yaml` when no keyed record holds it."
       - key: 9fbf567b-d08b-46f9-9b6d-67abee0aed80
         name: "The driver exits non-zero when it wrote any conflict record."
       - key: 36b1cc8b-51b0-4d2d-8414-80878eaf9978
@@ -34,9 +34,35 @@ requirements:
     statement:
       form: ubiquitous
       system: "The reader"
-      shall: "accept a `conflicts` list on any keyed record."
+      shall: "accept a `conflicts` list on any keyed record, on the manifest and on the record of `spec/labels.yaml`."
     criteria:
       - key: 43cd1701-5073-4286-bd00-ee310924a614
         name: "A keyed record with a `conflicts` list is read without a read error."
       - key: 46270bcd-2914-4e27-961b-1db9ef6e4bf4
         name: "A conflict record outside a `conflicts` list is an error naming the file, line and column."
+  - key: 01a13070-322e-74de-b959-5a9288bfd4f9
+    statement:
+      form: ubiquitous
+      system: "The merge driver"
+      shall: "name each conflicting field by its path from the record that holds the conflict."
+    criteria:
+      - key: 01a13070-322e-74de-b959-5a930eec987c
+        name: "A field of the record itself is named by its field name."
+      - key: 01a13070-322e-74de-b959-5a94e97f4672
+        name: "A field of an unkeyed record inside it is named by the dotted path through that record, such as `statement.shall`."
+      - key: 01a13070-322e-74de-b959-5a95c9e981d5
+        name: "A conflict over a record that one side deleted names the field `record`."
+      - key: 01a13070-322e-74de-b959-5a9672df690e
+        name: "In a `record` conflict, a side that deleted the record holds `null` and a side that kept it holds its key."
+      - key: 01a13070-322e-74de-b959-5a97400e809d
+        name: "In a `position` conflict, each side holds the key or value of the element that the record follows on that side, or `first`."
+  - key: 01a13070-322f-7493-9495-40683e19e26e
+    statement:
+      form: ubiquitous
+      system: "The Format"
+      shall: "reserve the names `conflicts`, `position` and `record` for conflict records."
+    criteria:
+      - key: 01a13070-322f-7493-9495-4069696d55fe
+        name: "No record kind defines a field named `position` or `record`."
+      - key: 01a13070-322f-7493-9495-406a938807d8
+        name: "No record kind uses the name `conflicts` for anything but its list of conflict records."

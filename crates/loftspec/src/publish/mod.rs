@@ -4,6 +4,9 @@
 
 mod labels;
 mod lock;
+mod repo;
+pub mod rewrite;
+pub mod settle;
 mod time;
 
 use std::fmt;
@@ -11,23 +14,26 @@ use std::num::NonZeroU64;
 
 pub use labels::{Allocated, allocate};
 pub use lock::{LOCK, Lock, LockError};
+pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
+
+use settle::Settlement;
 
 use crate::canonical::Digest;
 use crate::check::{Placed, placed};
 use crate::codec::{self, Files, LABELS, ReadError, Sites, SpecPath, read_sited};
 use crate::document::Document;
 use crate::hash::hash_document;
-use crate::validate::{index_errors, validate};
+use crate::identity::{Key, Label};
+use crate::validate::{conflict_errors, index_errors, validate};
 
-/// What the publisher needs to know of the repository that holds the tree.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct RepoState {
-    /// The checked-out branch, or none on a detached HEAD.
-    pub branch: Option<String>,
-    /// The paths under `spec/` with uncommitted changes, from the directory that holds `spec/`,
-    /// sorted and without duplicates.
-    pub modified: Vec<String>,
+/// A label that a publish replaced in an element: a citation it rewrote in the element's text,
+/// or a label it withdrew from the element's binding; `withdrawn` gave way to `label`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Relabel {
+    pub element: Key,
+    pub withdrawn: Label,
+    pub label: Label,
 }
 
 /// A tree read for a publish or a verification: its files, its document and where each of its
@@ -59,12 +65,18 @@ impl<'a> ReadTree<'a> {
 pub enum Publication {
     /// Nothing changed since the previous lock, which stands (RQ-117).
     Unchanged(Lock),
-    /// A new lock, the labels it allocated, and the bytes of `spec/labels.yaml`, the only file
-    /// under `spec/` a publish changes (AC-460), where they differ from the tree's.
+    /// A new lock, the labels it allocated, the citations of withdrawn labels it rewrote, and
+    /// the files under `spec/` to write: `spec/labels.yaml` where it differs from the tree's,
+    /// and the files whose citations it rewrote, the only files a publish changes (AC-460).
+    /// A publish run in a stopped merge or rebase also gives the labels it withdrew and what
+    /// stopped, which the user finishes.
     Published {
         lock: Lock,
-        labels: Option<Vec<u8>>,
+        files: Files,
         allocated: Vec<Allocated>,
+        rewritten: Vec<Relabel>,
+        withdrawn: Vec<Relabel>,
+        finish: Option<Operation>,
     },
 }
 
@@ -80,12 +92,24 @@ pub enum Refusal {
     },
     /// The validator reports errors (RQ-114).
     Invalid(Vec<Placed>),
+    /// In a stopped merge or rebase, paths other than the bindings and the lock are unmerged.
+    Unmerged(Vec<String>),
+    /// In a stopped merge or rebase, `spec/labels.yaml` is unmerged but holds no conflict record
+    /// over its bindings: git could not run the merge driver, so the dispute is not in the tree.
+    UnmergedBindings,
+    /// In a stopped merge or rebase, the lock at a commit is not a lock record.
+    Lock {
+        revision: &'static str,
+        message: String,
+    },
 }
 
-/// Publishes a tree that reads: refuses on an uncommitted change under `spec/`, a branch other
-/// than the publish branch or a validation error, in that order; otherwise allocates labels,
-/// and reports the previous lock when the state root equals it, or gives the new lock and
-/// bindings to write.
+/// Publishes a tree that reads. Outside a stopped merge or rebase it refuses on an uncommitted
+/// change under `spec/` or a branch other than the publish branch; in one it refuses as
+/// [`settle::preconditions`] says and settles the labels two publishes gave apart. Then it
+/// refuses on a validation error; otherwise allocates labels, rewrites citations of withdrawn
+/// labels, and reports the previous lock when the state root equals it, or gives the new lock
+/// and the files to write.
 ///
 /// # Errors
 ///
@@ -101,46 +125,93 @@ pub fn publish(
         mut document,
         sites,
     } = tree;
-    if !repo.modified.is_empty() {
-        return Err(Refusal::Modified(repo.modified.clone()));
-    }
     let branch = document.publish_branch.as_deref().unwrap_or("main");
-    if repo.branch.as_deref() != Some(branch) {
-        return Err(Refusal::Branch {
-            current: repo.branch.clone(),
-            publish: branch.to_owned(),
+    let (sequence, settlement) = if let Some(stopped) = &repo.stopped {
+        let sequence = settle::preconditions(stopped, branch)?;
+        (sequence, settle::settle(&mut document, stopped.operation))
+    } else {
+        preconditions(repo, branch)?;
+        let sequence = previous.map_or(NonZeroU64::MIN, |lock| {
+            lock.publish_sequence.saturating_add(1)
         });
-    }
+        (sequence, Settlement::default())
+    };
+    // A tree the working lock already pins was settled; otherwise unmerged bindings without a
+    // conflict record are refused once the roots are known.
+    let unrecorded = repo
+        .stopped
+        .as_ref()
+        .is_some_and(|stopped| settlement.unrecorded(stopped));
     let invalid = placed(validate(&document), &sites);
     if !invalid.is_empty() {
         return Err(Refusal::Invalid(invalid));
     }
     // Allocation gives only fresh labels of each element's own prefix, so the document stays
-    // valid; when it gives none, the roots are the tree's own (AC-640).
+    // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
     let allocated = allocate(&mut document);
+    let withdrawn = settlement.reattach(&mut document.bindings);
+    let rewrites = rewrite::rewrite(files, &document.bindings);
+    let mut written = rewrites.files;
+    if !written.is_empty() {
+        // The rewritten text changes the roots, so the tree is read back as it will be written.
+        write_labels(&mut written, files, &document);
+        let mut next = files.clone();
+        next.extend(written.clone());
+        document = codec::read(&next).expect("rewritten citations read back");
+    }
     let roots = hash_document(&document)
         .expect("a document the validator accepts indexes")
         .roots;
     if let Some(previous) = previous.filter(|lock| lock.state_root == roots.state) {
         return Ok(Publication::Unchanged(previous.clone()));
     }
-    let labels = codec::write_labels(&document);
-    let unchanged = files.get(&SpecPath::new(LABELS)) == Some(&labels);
+    if unrecorded {
+        return Err(Refusal::UnmergedBindings);
+    }
+    write_labels(&mut written, files, &document);
     Ok(Publication::Published {
         lock: Lock {
             document_key: document.id,
             state_root: roots.state,
             content_root: roots.content,
             binding_root: roots.bindings,
-            publish_sequence: previous.map_or(NonZeroU64::MIN, |lock| {
-                lock.publish_sequence.saturating_add(1)
-            }),
+            publish_sequence: sequence,
             published_at: at,
             derived_from: document.derived_from,
         },
-        labels: (!unchanged).then_some(labels),
+        files: written,
         allocated,
+        rewritten: rewrites.rewritten,
+        withdrawn,
+        finish: repo.stopped.as_ref().map(|stopped| stopped.operation),
     })
+}
+
+/// Refuses an uncommitted change under `spec/`, then a branch other than `branch`.
+fn preconditions(repo: &RepoState, branch: &str) -> Result<(), Refusal> {
+    if !repo.modified.is_empty() {
+        return Err(Refusal::Modified(repo.modified.clone()));
+    }
+    if repo.branch.as_deref() != Some(branch) {
+        return Err(Refusal::Branch {
+            current: repo.branch.clone(),
+            publish: branch.to_owned(),
+        });
+    }
+    Ok(())
+}
+
+/// Adds `spec/labels.yaml` to the files a publish writes, once, where the bindings of
+/// `document`, the tree after allocation, differ from the tree's.
+fn write_labels(written: &mut Files, files: &Files, document: &Document) {
+    let path = SpecPath::new(LABELS);
+    if written.contains_key(&path) {
+        return;
+    }
+    let labels = codec::write_labels(document);
+    if files.get(&path) != Some(&labels) {
+        written.insert(path, labels);
+    }
 }
 
 /// A root a lock records, in the order verification compares them (AC-678).
@@ -173,7 +244,7 @@ impl fmt::Display for Root {
 /// Why a tree that reads does not verify against a lock.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Unverified {
-    /// The tree's references do not resolve, so it has no roots.
+    /// The tree holds a merge conflict, or its references do not resolve, so it has no roots.
     Invalid(Vec<Placed>),
     /// The first root that differs (AC-469), with the lock's value and the tree's.
     Mismatch {
@@ -185,12 +256,17 @@ pub enum Unverified {
 
 /// Recomputes the roots of a tree that reads and compares them with the lock's: the content
 /// root, then the binding root, then the state root (RQ-118, AC-678). A tree that does not read
-/// never gets this far, so no root is compared (RQ-149). It writes nothing (AC-470).
+/// never gets this far, and a tree that holds a merge conflict compares no root, so no root is
+/// compared for either (RQ-149). It writes nothing (AC-470).
 ///
 /// # Errors
 ///
 /// The tree has no roots, or a root differs.
 pub fn verify(tree: &ReadTree<'_>, lock: &Lock) -> Result<Digest, Unverified> {
+    let conflicts = conflict_errors(&tree.document);
+    if !conflicts.is_empty() {
+        return Err(Unverified::Invalid(placed(conflicts, &tree.sites)));
+    }
     let roots = hash_document(&tree.document)
         .map_err(|errors| Unverified::Invalid(placed(index_errors(errors), &tree.sites)))?
         .roots;

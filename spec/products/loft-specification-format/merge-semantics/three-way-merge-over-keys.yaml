@@ -18,13 +18,15 @@ requirements:
       - key: 4ff52d06-26ac-4456-98aa-f01ae6b2de90
         name: "A record deleted on one side and unchanged on the other is deleted."
       - key: 8a65c76a-0ddb-4871-a7ae-e76457d57e28
-        name: "A record deleted on one side and changed on the other becomes a conflict record with `null` for the deleting side."
+        name: "A record deleted on one side and changed on the other is kept as the changing side wrote it, with a conflict record whose field is `record` and whose deleting side is `null`."
       - key: a14a7d0f-cfe0-44e1-b758-3613ceb98947
         name: "A mapping entry without a key is matched across base, ours and theirs by its field name."
       - key: 2522c643-64ed-44db-92c2-0d4c97f7a514
         name: "A list element without a key is matched across base, ours and theirs by its value."
       - key: e949ba2e-312d-4e67-803a-fe3957f852ff
         name: "The merged file is in the formatter's canonical layout."
+      - key: 01a13070-322f-7493-9495-406b0a698db6
+        name: "A record moved to another parent in one file is merged as a deletion from its base parent and an insertion into its new parent."
   - key: 1be4d9f1-799b-4212-bdc9-e2865df2b0dd
     statement:
       form: event_driven
@@ -60,3 +62,54 @@ requirements:
         name: "The other fields of the record are merged."
       - key: 2bcdbce9-4af8-4268-88af-6ac0afb7fa4c
         name: "The field keeps its base value."
+  - key: 01a13070-322f-7493-9495-406c3624a9a9
+    statement:
+      form: unwanted
+      if: "the merged fields of a record with variants do not form one of its variants"
+      system: "the merge driver"
+      shall: "keep the base record and write a conflict record for each field that either side changed."
+    criteria:
+      - key: 01a13070-322f-7493-9495-406d686c6821
+        name: "The record holds its base value in every field that either side changed."
+      - key: 01a13070-322f-7493-9495-406eeb869dce
+        name: "Each field that either side changed gains a conflict record."
+      - key: 01a13070-322f-7493-9495-406f4193a245
+        name: "The merged file is read without a read error."
+  - key: 01a13070-322f-7493-9495-4070d1827afd
+    statement:
+      form: event_driven
+      when: "base holds no version of the file"
+      system: "the merge driver"
+      shall: "merge as if base held no version of the file."
+    criteria:
+      - key: 01a13070-322f-7493-9495-4071687baaed
+        name: "An empty base file is read as an absent base."
+      - key: 01a13070-322f-7493-9495-4072b60122a2
+        name: "A conflicting field of a record that base lacks keeps the value that ours gave it."
+  - key: 01a13070-322f-7493-9495-4073432ae6e5
+    statement:
+      form: ubiquitous
+      system: "The merge driver"
+      shall: "merge each binding, assessment and decision subject as one value."
+    criteria:
+      - key: 01a13070-322f-7493-9495-40746cf3ac48
+        name: "A binding is matched by its key."
+      - key: 01a13070-b1ce-749d-b40a-8afd97a122b6
+        name: "An assessment is matched by its option and its driver."
+      - key: 01a13070-b1ce-749d-b40a-8afead38048d
+        name: "A decision subject is matched by its role and its node."
+      - key: 01a13070-322f-7493-9495-407575aee03c
+        name: "When both sides change an assessment or a decision subject to different values, the record that holds its list gains a conflict record for the list."
+      - key: 01a13070-322f-7493-9495-407671410897
+        name: "The element keeps its base value."
+  - key: 01a13070-322f-7493-9495-4077bb5be258
+    statement:
+      form: event_driven
+      when: "an input already holds conflict records"
+      system: "the merge driver"
+      shall: "merge the conflict records they hold as a set."
+    criteria:
+      - key: 01a13070-322f-7493-9495-4078bf5d780f
+        name: "A conflict record present on both sides is written once."
+      - key: 01a13070-322f-7493-9495-4079070331fc
+        name: "A conflict record that one side removed and the other left unchanged is removed."

@@ -206,7 +206,7 @@ fn ac_672_ac_674_an_unknown_rule_in_the_lint_file_is_an_error_and_no_finding_is_
 }
 
 #[test]
-fn entries_whose_names_begin_with_a_dot_are_not_part_of_the_tree() {
+fn ac_900_ac_901_entries_whose_names_begin_with_a_dot_are_not_part_of_the_tree() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.file(".DS_Store"), [0, 0, 0, 1]).unwrap();
     fs::write(scratch.file("products/.DS_Store"), [0, 0, 0, 1]).unwrap();

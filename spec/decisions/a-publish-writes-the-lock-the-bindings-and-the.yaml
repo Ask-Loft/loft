@@ -1,0 +1,106 @@
+key: 01a130de-573a-77b2-b40b-d45046845b37
+slug: a-publish-writes-the-lock-the-bindings-and-the
+title: "A publish writes the lock, the bindings and the citations it rewrites"
+context: "A publish wrote the lock and `spec/labels.yaml` and nothing else. Settling two publishes that met withdraws labels, and a citation of a withdrawn label then names another node unless its text is rewritten. Citations live in the node files, so a publish must write those files. Projections stay unwritten for the reasons that kept them out before."
+state:
+  kind: accepted
+  selectedOption: 01a130de-573a-77b2-b40b-d4557eba8dc4
+  outcome: "A publish writes the lock, the bindings in `spec/labels.yaml` and the node files in which it rewrites a citation of a withdrawn label, and nothing else; the Markdown and JSON projections are rendered on demand, each stamped with the state root it renders, and no role takes input from a projection."
+drivers:
+  - key: 01a130de-573a-77b2-b40b-d45130345191
+    kind: local
+    label: "One source"
+    statement: "`spec/` is the only input any role reads."
+  - key: 01a130de-573a-77b2-b40b-d45266f88df3
+    kind: local
+    label: "No second copy to drift"
+    statement: "Nothing committed restates the specification."
+  - key: 01a130de-573a-77b2-b40b-d4538af51cf5
+    kind: local
+    label: "Reproducible projections"
+    statement: "Any commit's Markdown or JSON can be rendered again exactly."
+  - key: 01a130de-573a-77b2-b40b-d454d11bf1cb
+    kind: local
+    label: "Citations follow labels"
+    statement: "A citation of a withdrawn label names the node it meant."
+options:
+  - key: 01a130de-573a-77b2-b40b-d4557eba8dc4
+    title: "Lock, bindings and rewritten citations"
+    description: "A publish writes the lock, the bindings and the node files in which it rewrites a citation of a withdrawn label; projections are rendered on demand."
+  - key: 01a130de-573a-77b2-b40b-d45622799fce
+    title: "Lock and bindings only"
+    description: "A publish writes the lock and the bindings; citations of withdrawn labels are left for people to edit."
+  - key: 01a130de-573a-77b2-b40b-d4572b466eaa
+    title: "Lock and projections"
+    description: "A publish also writes the Markdown and the JSON export beside the lock."
+assessments:
+  - option: 01a130de-573a-77b2-b40b-d4557eba8dc4
+    driver: 01a130de-573a-77b2-b40b-d45130345191
+    rating: supports
+    rationale: "roles read only `spec/`"
+  - option: 01a130de-573a-77b2-b40b-d4557eba8dc4
+    driver: 01a130de-573a-77b2-b40b-d45266f88df3
+    rating: supports
+    rationale: "nothing restates `spec/`"
+  - option: 01a130de-573a-77b2-b40b-d4557eba8dc4
+    driver: 01a130de-573a-77b2-b40b-d4538af51cf5
+    rating: supports
+    rationale: "rendering is deterministic from any commit"
+  - option: 01a130de-573a-77b2-b40b-d4557eba8dc4
+    driver: 01a130de-573a-77b2-b40b-d454d11bf1cb
+    rating: supports
+    rationale: "every citation backed by a `mentions` edge follows its node"
+  - option: 01a130de-573a-77b2-b40b-d45622799fce
+    driver: 01a130de-573a-77b2-b40b-d45130345191
+    rating: supports
+    rationale: "roles read only `spec/`"
+  - option: 01a130de-573a-77b2-b40b-d45622799fce
+    driver: 01a130de-573a-77b2-b40b-d45266f88df3
+    rating: supports
+    rationale: "nothing restates `spec/`"
+  - option: 01a130de-573a-77b2-b40b-d45622799fce
+    driver: 01a130de-573a-77b2-b40b-d4538af51cf5
+    rating: supports
+    rationale: "rendering is deterministic from any commit"
+  - option: 01a130de-573a-77b2-b40b-d45622799fce
+    driver: 01a130de-573a-77b2-b40b-d454d11bf1cb
+    rating: conflicts
+    rationale: "a citation names another node until someone edits it"
+  - option: 01a130de-573a-77b2-b40b-d4572b466eaa
+    driver: 01a130de-573a-77b2-b40b-d45130345191
+    rating: neutral
+    rationale: "`spec/` stays the input, but readers are invited to treat the Markdown as the contract"
+  - option: 01a130de-573a-77b2-b40b-d4572b466eaa
+    driver: 01a130de-573a-77b2-b40b-d45266f88df3
+    rating: conflicts
+    rationale: "two copies per publish"
+  - option: 01a130de-573a-77b2-b40b-d4572b466eaa
+    driver: 01a130de-573a-77b2-b40b-d4538af51cf5
+    rating: supports
+    rationale: "the committed copy can be checked by rendering"
+  - option: 01a130de-573a-77b2-b40b-d4572b466eaa
+    driver: 01a130de-573a-77b2-b40b-d454d11bf1cb
+    rating: conflicts
+    rationale: "the projection says nothing about citations"
+consequences:
+  - key: 01a130de-573a-77b2-b40b-d458b2c69c31
+    kind: benefit
+    statement: "Citations of withdrawn labels follow their nodes without a person's edit."
+  - key: 01a130de-573a-77b2-b40b-d45992dee122
+    kind: cost
+    statement: "A publish commit may change node files as well as the bindings."
+  - key: 01a130de-573a-77b2-b40b-d45acdfe2691
+    kind: obligation
+    statement: "The reader takes no input from a projection."
+    subject: 57327371-b2ed-469e-bb64-d3d8e63a6031
+subjects:
+  - role: affected
+    node: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+  - role: affected
+    node: dfa057a6-404f-44a0-a9ab-932900198ca4
+  - role: outcome
+    node: 01a130de-5737-776f-9c39-b9e4eb848d1b
+  - role: outcome
+    node: 51107486-84d6-4fb5-b02f-5e28f63d472a
+  - role: outcome
+    node: 57327371-b2ed-469e-bb64-d3d8e63a6031

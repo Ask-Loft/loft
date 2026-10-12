@@ -8,6 +8,7 @@ pub(crate) mod decisions;
 mod nodes;
 
 use crate::bindings::BindingError;
+use crate::conflict::{ConflictOwner, FieldPath};
 use crate::document::Document;
 use crate::identity::{Key, Label};
 use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, NodeId, OptionId};
@@ -65,6 +66,12 @@ pub enum ValidationError {
     /// An accepted, superseded or retired decision without an `outcome` subject (AC-740).
     #[error("decision {0} has no `subject` edge of role `outcome`")]
     NoOutcomeSubject(DecisionId),
+    /// A merge conflict that is not yet resolved (RQ-126).
+    #[error("{owner} holds an unresolved merge conflict over `{field}`")]
+    Conflict {
+        owner: ConflictOwner,
+        field: FieldPath,
+    },
 }
 
 impl ValidationError {
@@ -88,6 +95,7 @@ impl ValidationError {
             | Self::MissingAssessment { decision, .. }
             | Self::NoConsequence(decision)
             | Self::NoOutcomeSubject(decision) => vec![decision.key()],
+            Self::Conflict { owner, .. } => owner.key().into_iter().collect(),
         }
     }
 }
@@ -107,7 +115,8 @@ fn binding_keys(error: &BindingError) -> Vec<Key> {
     match *error {
         BindingError::Unbound(element)
         | BindingError::AlreadyBound(element)
-        | BindingError::PrefixMismatch { element, .. } => vec![element.key()],
+        | BindingError::PrefixMismatch { element, .. }
+        | BindingError::WithdrawnIsOwnLabel { element, .. } => vec![element.key()],
         BindingError::LabelUnderTwoKeys { first, second, .. }
         | BindingError::AliasUnderTwoKeys { first, second, .. } => {
             vec![first.key(), second.key()]
@@ -144,5 +153,19 @@ pub fn validate(document: &Document) -> Vec<ValidationError> {
     );
     nodes::check(document, &mut errors);
     decisions::check(document, &mut errors);
+    errors.extend(conflict_errors(document));
     errors
+}
+
+/// One error for each merge conflict the document holds (RQ-126).
+#[must_use]
+pub fn conflict_errors(document: &Document) -> Vec<ValidationError> {
+    document
+        .conflicts
+        .iter()
+        .map(|conflict| ValidationError::Conflict {
+            owner: conflict.owner,
+            field: conflict.field.clone(),
+        })
+        .collect()
 }

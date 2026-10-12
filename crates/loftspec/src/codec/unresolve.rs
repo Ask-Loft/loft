@@ -66,6 +66,7 @@ pub fn unresolve(document: &Document) -> Tree {
         };
         put(&mut tree, role, Content::Record(edges.decision(decision)));
     }
+    super::resolve_conflicts::attach(&mut tree, &document.conflicts);
     tree
 }
 
@@ -73,6 +74,7 @@ pub fn unresolve(document: &Document) -> Tree {
 pub(crate) fn unresolve_labels(document: &Document) -> Tree {
     let mut tree = Tree::default();
     put(&mut tree, Role::Labels, Content::Record(labels(document)));
+    super::resolve_conflicts::attach(&mut tree, &document.conflicts);
     tree
 }
 
@@ -149,8 +151,12 @@ fn labels(document: &Document) -> Rec {
         record.set_text(field::KEY, binding.element.key().to_string());
         record.set_text(field::LABEL, binding.label.to_string());
         record.set(
-            "aliases",
+            field::ALIASES,
             Val::List(binding.aliases.iter().map(Val::scalar).collect()),
+        );
+        record.set(
+            field::WITHDRAWN,
+            Val::List(binding.withdrawn.iter().map(Val::scalar).collect()),
         );
         record
     });

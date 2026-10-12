@@ -55,7 +55,7 @@ fn ac_165_and_ac_166_constraints_and_quality_attributes_keep_their_fields() {
 }
 
 #[test]
-fn constraints_and_quality_attributes_keep_their_parent_kind() {
+fn ac_171_constraints_and_quality_attributes_keep_their_parent_kind() {
     let document = converted().document;
     let group = &document.products[0].feature_groups[0];
     assert_eq!(group.constraints[0].id, Some(ConstraintId::new(key(11))));

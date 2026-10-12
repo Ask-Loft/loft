@@ -1,10 +1,17 @@
 //! The git simulator: the calls Loft makes of git, answered from a scripted repository the way
 //! git answers them, byte for byte, and every other call refused.
 
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::{env, fs};
 
 use serde::{Deserialize, Serialize};
+
+mod launcher;
+mod stopped;
+
+pub use launcher::ALIAS as LAUNCHER_ALIAS;
+pub use stopped::{IndexEntry, LockBlob, Operation, Stopped, StoppedCall};
 
 /// The environment variable that names the scenario file the simulator reads.
 pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_GIT_SCENARIO";
@@ -12,6 +19,10 @@ pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_GIT_SCENARIO";
 /// What git prints, with exit code 128, in a directory outside any repository.
 pub const NOT_A_REPOSITORY: &str =
     "fatal: not a git repository (or any of the parent directories): .git\n";
+
+/// What git prints, with exit code 128, for a `config --local` call outside any repository.
+pub const LOCAL_OUTSIDE_A_REPOSITORY: &str =
+    "fatal: --local can only be used inside a git repository\n";
 
 /// The exit code of a call the simulator does not answer.
 pub const UNSCRIPTED: i32 = 2;
@@ -35,6 +46,9 @@ pub struct GitScenario {
     pub repository: Option<Repository>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub failures: Vec<Failure>,
+    /// The version each command that runs prints for `<command> --version`.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub launchers: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,6 +62,16 @@ pub struct Repository {
     /// What `git status` reports, each path from the top level.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub status: Vec<Entry>,
+    /// The repository's local configuration, by name.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub config: BTreeMap<String, String>,
+    /// A merge or a rebase that stopped on a conflict.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stopped: Option<Stopped>,
+    /// The directory that stands for `.git`, where installing writes the files a git path names;
+    /// `.git` under the top level when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub git_dir: Option<String>,
 }
 
 /// One entry of the porcelain v1 status: its two-letter code and its path, and for a rename or
@@ -71,6 +95,14 @@ pub enum Call {
     CurrentBranch,
     /// `git status --porcelain=v1 -z --untracked-files=all -- <pathspec>…`
     Status,
+    /// `git config --local --get <name>`
+    ConfigGet,
+    /// `git config --local <name> <value>`
+    ConfigSet,
+    /// A call that reads a stopped merge or rebase.
+    Stopped(StoppedCall),
+    /// `git -c alias.loft-launcher=!<command> --version loft-launcher`
+    Launcher,
 }
 
 /// A call that fails with a scripted exit code and message.
@@ -82,14 +114,15 @@ pub struct Failure {
     pub message: String,
 }
 
-/// What the simulator prints and how it exits, and the lock the call takes unless optional
-/// locks are off.
+/// What the simulator prints and how it exits, the lock the call takes unless optional locks
+/// are off, and the configuration name and value the call sets in the scenario.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Reply {
     pub code: i32,
     pub stdout: Vec<u8>,
     pub stderr: String,
     pub optional_lock: Option<&'static str>,
+    pub set: Option<(String, String)>,
 }
 
 impl Reply {
@@ -99,6 +132,7 @@ impl Reply {
             stdout: stdout.into(),
             stderr: String::new(),
             optional_lock: None,
+            set: None,
         }
     }
 
@@ -108,6 +142,7 @@ impl Reply {
             stdout: Vec::new(),
             stderr: stderr.into(),
             optional_lock: None,
+            set: None,
         }
     }
 }
@@ -121,8 +156,12 @@ impl GitScenario {
                 prefix: String::new(),
                 branch: Some(branch.to_owned()),
                 status: Vec::new(),
+                config: BTreeMap::new(),
+                stopped: None,
+                git_dir: None,
             }),
             failures: Vec::new(),
+            launchers: BTreeMap::new(),
         }
     }
 
@@ -132,7 +171,16 @@ impl GitScenario {
         Self {
             repository: None,
             failures: Vec::new(),
+            launchers: BTreeMap::new(),
         }
+    }
+
+    /// The same scenario in which `command --version`, run through the shell, prints `version`.
+    #[must_use]
+    pub fn launcher(mut self, command: &str, version: &str) -> Self {
+        self.launchers
+            .insert(command.to_owned(), version.to_owned());
+        self
     }
 
     /// The same repository on a detached HEAD.
@@ -169,6 +217,70 @@ impl GitScenario {
             from: Some(from.to_owned()),
         });
         self
+    }
+
+    /// The same repository with `name` set to `value` in its local configuration.
+    #[must_use]
+    pub fn with_config(mut self, name: &str, value: &str) -> Self {
+        self.repository_mut()
+            .config
+            .insert(name.to_owned(), value.to_owned());
+        self
+    }
+
+    /// The same repository stopped in a merge of `head`.
+    #[must_use]
+    pub fn merging(self, head: &str) -> Self {
+        self.stopped_in(Operation::Merge, head, None)
+    }
+
+    /// The same repository stopped in a rebase that replays `head`, of the branch `head_name`
+    /// names (`refs/heads/<branch>` or `detached HEAD`).
+    #[must_use]
+    pub fn rebasing(self, head: &str, head_name: &str) -> Self {
+        self.stopped_in(Operation::Rebase, head, Some(head_name))
+    }
+
+    fn stopped_in(mut self, operation: Operation, head: &str, head_name: Option<&str>) -> Self {
+        self.repository_mut().stopped = Some(Stopped {
+            operation,
+            head: head.to_owned(),
+            head_name: head_name.map(str::to_owned),
+            locks: BTreeMap::new(),
+            unmerged: Vec::new(),
+        });
+        self
+    }
+
+    /// The same stopped repository with `loft.lock.json` at `revision` holding `text`, stored as
+    /// the object `object`.
+    #[must_use]
+    pub fn lock_at(mut self, revision: &str, object: &str, text: &str) -> Self {
+        let lock = LockBlob {
+            object: object.to_owned(),
+            text: text.to_owned(),
+        };
+        self.stopped_mut().locks.insert(revision.to_owned(), lock);
+        self
+    }
+
+    /// The same stopped repository with one more index entry of an unmerged path.
+    #[must_use]
+    pub fn unmerged(mut self, mode: &str, object: &str, stage: u8, path: &str) -> Self {
+        self.stopped_mut().unmerged.push(IndexEntry {
+            mode: mode.to_owned(),
+            object: object.to_owned(),
+            stage,
+            path: path.to_owned(),
+        });
+        self
+    }
+
+    fn stopped_mut(&mut self) -> &mut Stopped {
+        self.repository_mut()
+            .stopped
+            .as_mut()
+            .expect("a stopped merge or rebase")
     }
 
     /// The same scenario with `call` failing with `code` and `message`.
@@ -222,7 +334,7 @@ impl GitScenario {
     /// Answers one call, given its arguments after `git`.
     #[must_use]
     pub fn answer(&self, args: &[String]) -> Reply {
-        let Some((call, pathspecs)) = parse(args) else {
+        let Some((call, operands)) = parse(args) else {
             return Reply::fail(
                 UNSCRIPTED,
                 format!(
@@ -235,7 +347,12 @@ impl GitScenario {
             return Reply::fail(failure.code, failure.message.clone());
         }
         let Some(repository) = &self.repository else {
-            return Reply::fail(128, NOT_A_REPOSITORY);
+            return match call {
+                // git runs a shell alias outside a repository too.
+                Call::Launcher => launcher::answer(&self.launchers, operands[0]),
+                Call::ConfigGet | Call::ConfigSet => Reply::fail(128, LOCAL_OUTSIDE_A_REPOSITORY),
+                _ => Reply::fail(128, NOT_A_REPOSITORY),
+            };
         };
         match call {
             Call::ShowPrefix => Reply::ok(format!("{}\n", repository.prefix)),
@@ -245,8 +362,18 @@ impl GitScenario {
             },
             Call::Status => Reply {
                 optional_lock: Some(INDEX_LOCK),
-                ..Reply::ok(repository.porcelain(&pathspecs))
+                ..Reply::ok(repository.porcelain(&operands))
             },
+            Call::ConfigGet => match repository.config.get(operands[0]) {
+                Some(value) => Reply::ok(format!("{value}\n")),
+                None => Reply::fail(1, ""),
+            },
+            Call::ConfigSet => Reply {
+                set: Some((operands[0].to_owned(), operands[1].to_owned())),
+                ..Reply::ok(Vec::new())
+            },
+            Call::Launcher => launcher::answer(&self.launchers, operands[0]),
+            Call::Stopped(call) => stopped::answer(call, &operands, repository),
         }
     }
 }
@@ -294,8 +421,9 @@ fn within(path: &str, scope: &str) -> bool {
             .is_some_and(|rest| rest.starts_with('/'))
 }
 
-/// The call the arguments make and its pathspecs, after any leading `-C <directory>` pairs, or
-/// `None` for a call the simulator does not answer.
+/// The call the arguments make and its operands (the pathspecs of a status, the name and value
+/// of a configuration call), after any leading `-C <directory>` pairs, or `None` for a call the
+/// simulator does not answer.
 fn parse(args: &[String]) -> Option<(Call, Vec<&str>)> {
     let mut rest: Vec<&str> = args.iter().map(String::as_str).collect();
     while rest.first() == Some(&"-C") && rest.len() >= 2 {
@@ -312,6 +440,14 @@ fn parse(args: &[String]) -> Option<(Call, Vec<&str>)> {
             "--",
             pathspecs @ ..,
         ] if !pathspecs.is_empty() => Some((Call::Status, pathspecs.to_vec())),
-        _ => None,
+        ["config", "--local", "--get", name] => Some((Call::ConfigGet, vec![*name])),
+        ["config", "--local", name, value] if !name.starts_with('-') => {
+            Some((Call::ConfigSet, vec![*name, *value]))
+        }
+        rest => launcher::parse(rest)
+            .map(|command| (Call::Launcher, vec![command]))
+            .or_else(|| {
+                stopped::parse(rest).map(|(call, operands)| (Call::Stopped(call), operands))
+            }),
     }
 }

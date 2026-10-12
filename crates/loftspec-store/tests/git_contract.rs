@@ -3,58 +3,25 @@
 //! for byte, and give the repository port the same state.
 
 mod common;
+#[path = "common/real_git.rs"]
+mod real_git;
 
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::Command;
 
 use common::Scratch;
 use loftspec::publish::RepoState;
 use loftspec_store::StoreError;
-use loftspec_store::repository::{CURRENT_BRANCH, GitCommand, Repository, SHOW_PREFIX, STATUS};
+use loftspec_store::merge_driver::{DRIVER, driver, install};
+use loftspec_store::repository::{
+    CURRENT_BRANCH, GitCommand, Repository, SHOW_PREFIX, STATUS, launcher_call,
+};
+use real_git::{git, real_git, reply, simulated, state};
 use software_plant::GitScenario;
 
 /// The calls Loft makes of git, exactly as the repository port makes them.
 const CALLS: [&[&str]; 3] = [&SHOW_PREFIX, &CURRENT_BRANCH, &STATUS];
-
-/// Real git, kept from the user's configuration and from any repository above the temporary
-/// directory.
-fn real_git() -> Command {
-    let mut command = Command::new("git");
-    command
-        .env("GIT_CONFIG_GLOBAL", "/dev/null")
-        .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env(
-            "GIT_CEILING_DIRECTORIES",
-            std::env::temp_dir().canonicalize().unwrap(),
-        );
-    command
-}
-
-/// Runs a setup command of real git in `dir`. Automatic maintenance is off: a commit would
-/// otherwise leave a detached `git maintenance` process writing under `.git/` while a test
-/// compares the repository's files.
-fn git(dir: &Path, args: &[&str]) {
-    let output = real_git()
-        .args([
-            "-c",
-            "user.name=Plant",
-            "-c",
-            "user.email=plant@example.invalid",
-            "-c",
-            "maintenance.auto=false",
-        ])
-        .arg("-C")
-        .arg(dir)
-        .args(args)
-        .output()
-        .unwrap();
-    assert!(
-        output.status.success(),
-        "git {args:?}: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-}
 
 /// A repository whose top level is `dir`, holding `spec/tags.yaml`, `README.md` and an ignore
 /// file for `*.tmp`, committed on `main`.
@@ -202,37 +169,8 @@ const CASES: [Case; 14] = [
     ),
 ];
 
-/// What one call printed and how it exited; the error message only where git exits 128, the
-/// one failure whose message Loft reads.
-fn reply(output: &Output) -> (Option<i32>, Vec<u8>, String) {
-    let code = output.status.code();
-    let stderr = if code == Some(128) {
-        String::from_utf8_lossy(&output.stderr).into_owned()
-    } else {
-        String::new()
-    };
-    (code, output.stdout.clone(), stderr)
-}
-
-/// The port's answer, with an error reduced to what the publisher acts on.
-fn state(git: &GitCommand, root: &Path) -> Result<RepoState, String> {
-    git.state(root).map_err(|error| match error {
-        StoreError::NotARepository(_) => "not a repository".to_owned(),
-        other => other.to_string(),
-    })
-}
-
-fn simulated(scenario: &GitScenario, plant: &Path) -> GitCommand {
-    let simulator = scenario.install(plant);
-    GitCommand::from_command(move || {
-        let mut command = Command::new("git");
-        simulator.apply(&mut command);
-        command
-    })
-}
-
 #[test]
-fn the_simulator_answers_each_call_as_real_git_does() {
+fn ac_965_ac_966_and_ac_967_the_simulator_answers_each_call_as_real_git_does() {
     for (name, build, scenario) in CASES {
         let repository = Scratch::new();
         let root = build(&repository);
@@ -253,7 +191,7 @@ fn the_simulator_answers_each_call_as_real_git_does() {
 }
 
 #[test]
-fn the_port_reads_the_same_state_from_the_simulator_and_real_git() {
+fn ac_960_and_ac_961_the_port_reads_the_same_state_from_the_simulator_and_real_git() {
     for (name, build, scenario) in CASES {
         let repository = Scratch::new();
         let root = build(&repository);
@@ -271,6 +209,7 @@ fn on(branch: Option<&str>, modified: &[&str]) -> RepoState {
     RepoState {
         branch: branch.map(str::to_owned),
         modified: modified.iter().map(|path| (*path).to_owned()).collect(),
+        stopped: None,
     }
 }
 
@@ -320,7 +259,7 @@ fn a_git_that_cannot_be_run_is_reported_as_unavailable() {
 }
 
 #[test]
-fn a_scripted_git_error_is_reported_with_its_call_and_message() {
+fn ac_973_a_scripted_git_error_is_reported_with_its_call_and_message() {
     let plant = Scratch::new();
     let scenario = clean().failing(
         software_plant::git::Call::Status,
@@ -336,7 +275,7 @@ fn a_scripted_git_error_is_reported_with_its_call_and_message() {
 }
 
 #[test]
-fn reading_the_state_changes_no_file_of_the_repository() {
+fn ac_978_reading_the_state_changes_no_file_of_the_repository() {
     for (name, build, _) in CASES {
         let repository = Scratch::new();
         let root = build(&repository);
@@ -349,5 +288,160 @@ fn reading_the_state_changes_no_file_of_the_repository() {
             .filter(|path| before.get(*path) != after.get(*path))
             .collect();
         assert!(changed.is_empty(), "{name}: changed {changed:?}");
+    }
+}
+
+/// A launcher that runs anywhere, and one that runs nowhere.
+const LAUNCHER: &str = "echo loft 9.9.9 #";
+const MISSING: &str = "no-such-loft";
+
+#[test]
+fn the_simulator_answers_the_config_calls_as_real_git_does() {
+    let (name, value) = (DRIVER, driver(LAUNCHER));
+    let value = value.as_str();
+    // Unset, then set, then read back: each call sees the configuration the one before left.
+    let calls: [&[&str]; 3] = [
+        &["config", "--local", "--get", name],
+        &["config", "--local", name, value],
+        &["config", "--local", "--get", name],
+    ];
+    let cases: [Case; 2] = [
+        ("clean on main", committed, clean),
+        (
+            "outside a repository",
+            outside,
+            GitScenario::outside_repository,
+        ),
+    ];
+    for (case, build, scenario) in cases {
+        let repository = Scratch::new();
+        let root = build(&repository);
+        let plant = Scratch::new();
+        let simulator = scenario().install(&plant.0);
+        for call in calls {
+            let real = real_git().arg("-C").arg(&root).args(call).output().unwrap();
+            let simulated = simulator
+                .apply(&mut Command::new("git"))
+                .arg("-C")
+                .arg(&root)
+                .args(call)
+                .output()
+                .unwrap();
+            assert_eq!(reply(&simulated), reply(&real), "{case}: git {call:?}");
+        }
+    }
+}
+
+#[test]
+fn the_simulator_answers_the_launcher_alias_as_real_git_does() {
+    let cases: [Case; 2] = [
+        ("clean on main", committed, || {
+            clean().launcher(LAUNCHER, "loft 9.9.9\n")
+        }),
+        ("outside a repository", outside, || {
+            GitScenario::outside_repository().launcher(LAUNCHER, "loft 9.9.9\n")
+        }),
+    ];
+    for (case, build, scenario) in cases {
+        let repository = Scratch::new();
+        let root = build(&repository);
+        let plant = Scratch::new();
+        let simulator = scenario().install(&plant.0);
+        for launcher in [LAUNCHER, MISSING] {
+            let call = launcher_call(launcher);
+            let real = real_git()
+                .arg("-C")
+                .arg(&root)
+                .args(&call)
+                .output()
+                .unwrap();
+            let simulated = simulator
+                .apply(&mut Command::new("git"))
+                .arg("-C")
+                .arg(&root)
+                .args(&call)
+                .output()
+                .unwrap();
+            assert_eq!(reply(&simulated), reply(&real), "{case}: {launcher}");
+        }
+    }
+}
+
+/// What one install wrote, or why it was refused.
+type Installed = Result<Vec<String>, String>;
+
+/// What two installs with `launcher` write, against the git that `git` runs.
+fn installs(git: &GitCommand, root: &Path, launcher: &str) -> [Installed; 2] {
+    let once = || {
+        let installed = install(git, root, launcher).map_err(|error| match error {
+            StoreError::NotARepository(_) => "not a repository".to_owned(),
+            other => other.to_string(),
+        })?;
+        assert_eq!(installed.version, "loft 9.9.9");
+        Ok(installed.written)
+    };
+    [once(), once()]
+}
+
+#[test]
+fn installing_the_driver_writes_the_same_against_real_git_and_the_simulator() {
+    let all = || {
+        Ok(vec![
+            ".gitattributes".to_owned(),
+            "merge.loft.driver".to_owned(),
+            "merge.loft.name".to_owned(),
+        ])
+    };
+    let refused = || Err("not a repository".to_owned());
+    let no_launcher = || {
+        Err(format!(
+            "git could not run `{MISSING} --version` from the top of the working tree"
+        ))
+    };
+    let with_launcher = || clean().launcher(LAUNCHER, "loft 9.9.9\n");
+    let cases: [(Case, &str, [Installed; 2]); 3] = [
+        (
+            ("clean on main", committed, with_launcher),
+            LAUNCHER,
+            [all(), Ok(Vec::new())],
+        ),
+        (
+            ("no launcher", committed, clean),
+            MISSING,
+            [no_launcher(), no_launcher()],
+        ),
+        (
+            (
+                "outside a repository",
+                outside,
+                GitScenario::outside_repository,
+            ),
+            LAUNCHER,
+            [refused(), refused()],
+        ),
+    ];
+    for ((name, build, scenario), launcher, want) in cases {
+        let repository = Scratch::new();
+        let root = build(&repository);
+        let before = repository.snapshot();
+        assert_eq!(
+            installs(&GitCommand::from_command(real_git), &root, launcher),
+            want,
+            "{name}: git"
+        );
+        if want[0].is_err() {
+            assert!(
+                repository.snapshot() == before,
+                "{name}: nothing is written"
+            );
+        }
+        let plant = Scratch::new();
+        let simulated = simulated(&scenario(), &plant.0);
+        let tree = Scratch::new();
+        assert_eq!(
+            installs(&simulated, &tree.0, launcher),
+            want,
+            "{name}: simulator"
+        );
     }
 }

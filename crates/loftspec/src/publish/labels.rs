@@ -54,7 +54,7 @@ fn raise_counters(document: &mut Document) {
         decisions,
         ..
     } = document;
-    let live = bindings.iter().flat_map(Binding::labels);
+    let live = bindings.iter().flat_map(Binding::every_label);
     counters.raise_all(live.chain(all_former_labels(edges, decisions)));
 }
 
@@ -65,7 +65,7 @@ fn next_label(document: &mut Document, prefix: LabelPrefix) -> Label {
 }
 
 /// Every node, then every decision, in the order labels are allocated.
-fn elements_in_order(document: &Document) -> Vec<ElementId> {
+pub(super) fn elements_in_order(document: &Document) -> Vec<ElementId> {
     let mut elements = Vec::new();
     let mut visit = |node: Node<'_>| {
         if let Some(id) = node.id() {

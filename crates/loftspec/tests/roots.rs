@@ -68,7 +68,7 @@ fn ac_51_and_ac_252_adding_an_edge_changes_the_edges_root_and_the_content_root()
 }
 
 #[test]
-fn edge_order_does_not_change_the_edges_root() {
+fn ac_270_edge_order_does_not_change_the_edges_root() {
     let mut document = small_document();
     let before = roots(&document).edges;
     document.edges.reverse();
@@ -147,7 +147,7 @@ fn ac_214_ac_215_and_ac_217_registry_roots_are_over_entries_sorted_by_name() {
 }
 
 #[test]
-fn the_two_registries_have_distinct_roots_even_when_equal() {
+fn ac_279_the_two_registries_have_distinct_roots_even_when_equal() {
     let mut document = small_document();
     document.categories = document
         .tags
@@ -209,7 +209,7 @@ fn ac_222_decision_order_leaves_the_decisions_root() {
 }
 
 #[test]
-fn assessment_order_leaves_the_decision_view_hash() {
+fn ac_615_assessment_order_leaves_the_decision_view_hash() {
     let mut document = small_document();
     let id = DecisionId::new(key(20));
     let before = hash_document(&document).unwrap().decisions[&id];
@@ -265,7 +265,7 @@ fn ac_64_equal_state_views_have_the_same_state_root() {
 }
 
 #[test]
-fn an_edge_to_an_unknown_element_is_refused() {
+fn ac_321_an_edge_to_an_unknown_element_is_refused() {
     let mut document = small_document();
     document.edges.push(realizes(3, 77));
     assert_eq!(
@@ -277,7 +277,7 @@ fn an_edge_to_an_unknown_element_is_refused() {
 }
 
 #[test]
-fn an_edge_naming_a_key_as_the_wrong_kind_is_refused() {
+fn ac_322_an_edge_naming_a_key_as_the_wrong_kind_is_refused() {
     let mut document = small_document();
     document.edges.push(realizes(4, 6));
     assert_eq!(
@@ -289,7 +289,7 @@ fn an_edge_naming_a_key_as_the_wrong_kind_is_refused() {
 }
 
 #[test]
-fn a_binding_of_an_unknown_element_is_refused() {
+fn ac_330_a_binding_of_an_unknown_element_is_refused() {
     let mut document = small_document();
     document
         .bindings
@@ -304,7 +304,7 @@ fn a_binding_of_an_unknown_element_is_refused() {
 }
 
 #[test]
-fn a_key_carried_twice_is_refused() {
+fn ac_14_a_key_carried_twice_is_refused() {
     let mut document = small_document();
     document.components.push(root(component(key(6), "Another")));
     assert_eq!(

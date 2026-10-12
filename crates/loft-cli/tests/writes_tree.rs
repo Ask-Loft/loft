@@ -183,7 +183,7 @@ fn assert_exit(slug: &str, output: &Output, code: i32) {
 }
 
 #[test]
-fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
+fn ac_944_ac_947_each_tagged_command_finishes_a_committed_save_before_it_acts() {
     for (slug, args, kind) in implemented_tagged() {
         let scratch = fixture(kind);
         plant(&scratch, kind, true);
@@ -206,7 +206,7 @@ fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
 }
 
 #[test]
-fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
+fn ac_943_ac_947_each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
     for (slug, args, kind) in implemented_tagged() {
         let scratch = fixture(kind);
         plant(&scratch, kind, false);
@@ -223,7 +223,7 @@ fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
 }
 
 #[test]
-fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
+fn ac_946_each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
     let tagged = tagged(TAG);
     for (slug, args, kind) in COMMANDS {
         let scratch = fixture(kind);

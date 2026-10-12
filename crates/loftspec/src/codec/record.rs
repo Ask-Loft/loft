@@ -3,7 +3,7 @@
 //! (RQ-30, RQ-34). Formatting, reading and writing all pass through it.
 
 use super::error::{Located, Problem};
-use super::schema::{Field, Item, Kind, Scalar, Shape};
+use super::schema::{Field, Item, Kind, Scalar, Shape, field};
 use crate::canonical::Digest;
 use crate::identity::{Key, Label};
 use crate::names::{CategoryName, TagName};
@@ -30,9 +30,16 @@ pub struct Rec {
 /// A checked field value.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Val {
-    Scalar { text: String, position: Position },
+    Scalar {
+        text: String,
+        position: Position,
+    },
     Record(Rec),
     List(Vec<Val>),
+    /// YAML's plain `null`: the side of a conflict that deleted the record.
+    Null {
+        position: Position,
+    },
 }
 
 impl Val {
@@ -81,7 +88,7 @@ impl Val {
     #[must_use]
     pub const fn position(&self) -> Option<Position> {
         match self {
-            Self::Scalar { position, .. } => Some(*position),
+            Self::Scalar { position, .. } | Self::Null { position } => Some(*position),
             Self::Record(record) => Some(record.position),
             Self::List(_) => None,
         }
@@ -152,6 +159,22 @@ impl Rec {
         self.list(name).iter().flat_map(Val::records)
     }
 
+    /// The records inside this record, in every field but its conflicts.
+    pub fn children(&self) -> impl Iterator<Item = &Self> {
+        self.fields
+            .iter()
+            .filter(|(name, _)| *name != field::CONFLICTS)
+            .flat_map(|(_, value)| value.records())
+    }
+
+    /// The records inside this record, to change, in every field but its conflicts.
+    pub fn children_mut(&mut self) -> impl Iterator<Item = &mut Self> {
+        self.fields
+            .iter_mut()
+            .filter(|(name, _)| *name != field::CONFLICTS)
+            .flat_map(|(_, value)| value.records_mut())
+    }
+
     /// The entries of a list field, to change; an absent field is added empty.
     pub fn list_mut(&mut self, name: &'static str) -> &mut Vec<Val> {
         if self.get(name).is_none() {
@@ -212,7 +235,11 @@ pub(crate) fn check(node: &yaml::Node, kind: Kind, mode: Mode) -> Result<Rec, Lo
                 Problem::UnknownField(entry.key.clone()),
             ));
         };
-        let value = check_shape(&entry.value, field.shape, mode)?;
+        let value = if field.name == super::field::CONFLICTS {
+            super::conflict::check_conflicts(&entry.value, kind, mode)?
+        } else {
+            check_shape(&entry.value, field.shape, mode)?
+        };
         record.fields.push((field.name, value));
     }
     for field in kind.fields() {
@@ -236,7 +263,7 @@ fn located(position: Position, problem: Problem) -> Located {
     Located { position, problem }
 }
 
-fn check_shape(node: &yaml::Node, shape: Shape, mode: Mode) -> Result<Val, Located> {
+pub(super) fn check_shape(node: &yaml::Node, shape: Shape, mode: Mode) -> Result<Val, Located> {
     match shape {
         Shape::One(item) => check_item(node, item, mode),
         Shape::List(item) => match &node.value {
@@ -259,10 +286,14 @@ fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located>
             Value::Mapping(_) => check(node, Kind::FormerLabel, mode).map(Val::Record),
             _ => check_scalar(node, Scalar::Key),
         },
+        Item::Side => Err(located(
+            node.position,
+            Problem::Expected("a conflict record in a `conflicts` list"),
+        )),
     }
 }
 
-fn check_scalar(node: &yaml::Node, scalar: Scalar) -> Result<Val, Located> {
+pub(super) fn check_scalar(node: &yaml::Node, scalar: Scalar) -> Result<Val, Located> {
     let Value::Scalar(value) = &node.value else {
         return Err(located(node.position, Problem::Expected(describe(scalar))));
     };
@@ -324,13 +355,19 @@ pub fn to_out(record: &Rec) -> Out {
         .filter(|(_, value)| !matches!(value, Val::List(items) if items.is_empty()))
         .map(|(name, value)| {
             let (_, field) = record.kind.field(name).expect("a field the schema defines");
-            (field.name, value_out(value, field.shape))
+            let out = match value {
+                Val::List(items) if field.name == super::field::CONFLICTS => {
+                    super::conflict::conflicts_out(items, record.kind)
+                }
+                _ => value_out(value, field.shape),
+            };
+            (field.name, out)
         })
         .collect();
     Out::Mapping(fields)
 }
 
-fn value_out(value: &Val, shape: Shape) -> Out {
+pub(super) fn value_out(value: &Val, shape: Shape) -> Out {
     match (shape, value) {
         (Shape::List(item), Val::List(items)) => {
             Out::Sequence(items.iter().map(|entry| item_out(entry, item)).collect())
@@ -348,6 +385,7 @@ fn item_out(value: &Val, item: Item) -> Out {
             Item::Scalar(Scalar::Integer) => Out::Integer(text.parse().expect("a checked integer")),
             _ => Out::Token(text.clone()),
         },
+        Val::Null { .. } => Out::Null,
         Val::List(_) => unreachable!("lists do not nest"),
     }
 }

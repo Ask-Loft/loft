@@ -42,13 +42,13 @@ const fn discriminant(kind: Kind) -> Option<(&'static str, &'static [&'static st
     match kind {
         Kind::Statement => Some((field::FORM, &[])),
         Kind::State | Kind::Band => Some((field::KIND, &[])),
-        Kind::Driver => Some((field::KIND, &[field::KEY])),
+        Kind::Driver => Some((field::KIND, &[field::KEY, field::CONFLICTS])),
         _ => None,
     }
 }
 
 /// Requires a record to hold exactly the fields its variant takes.
-pub(super) fn check(record: &Rec) -> Result<(), Located> {
+pub(crate) fn check(record: &Rec) -> Result<(), Located> {
     let Some((selector, common)) = discriminant(record.kind) else {
         return Ok(());
     };

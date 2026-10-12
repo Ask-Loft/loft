@@ -30,3 +30,14 @@ requirements:
     criteria:
       - key: ac98170d-3a99-483b-8d60-2041dad0665d
         name: "The output names no root."
+  - key: 01a13070-322f-7493-9495-4083aa039d78
+    statement:
+      form: unwanted
+      if: "the tree holds a conflict record"
+      system: "`loft verify`"
+      shall: "compare no root and exit 1."
+    criteria:
+      - key: 01a13070-322f-7493-9495-4084fa080b8d
+        name: "The error names the file and the key of each conflict record."
+      - key: 01a13070-3230-7079-8674-0f903cd9f580
+        name: "The output names no root."

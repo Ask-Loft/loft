@@ -1,6 +1,7 @@
 //! A whole document (CMP-2): the Products in the manifest's order, the root Components, the
 //! typed edges, the two registries, the decisions, the bindings and the record of a v1 source.
 
+use crate::conflict::Conflict;
 use crate::wire::wire_names;
 use serde::Deserialize;
 
@@ -171,6 +172,8 @@ pub struct Document {
     pub counters: Counters,
     pub derived_from: Option<DerivedFrom>,
     pub publish_branch: Option<String>,
+    /// The merge conflicts the tree holds, which the validator reports until removed (RQ-126).
+    pub conflicts: Vec<Conflict>,
 }
 
 impl Document {
@@ -189,6 +192,7 @@ impl Document {
             counters: Counters::default(),
             derived_from: None,
             publish_branch: None,
+            conflicts: Vec::new(),
         }
     }
 }

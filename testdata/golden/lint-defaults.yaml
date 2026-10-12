@@ -127,3 +127,6 @@ rules:
   - rule: V2-003
     enabled: true
     severity: warning
+  - rule: V2-004
+    enabled: true
+    severity: warning

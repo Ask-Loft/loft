@@ -1,0 +1,38 @@
+key: 01a130de-5737-776f-9c39-b9bb261d3fce
+slug: labels-of-two-publishes
+name: "Labels of two publishes"
+body: "How the merge driver merges `spec/labels.yaml` when each side published: the label counters, and the bindings that two publishes gave apart."
+realizes:
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+requirements:
+  - key: 01a130de-5737-776f-9c39-b9bca3de321b
+    statement:
+      form: ubiquitous
+      system: "The merge driver"
+      shall: "merge each label counter to the higher of the two sides' values."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9bd85820faa
+        name: "Each merged label counter holds the higher of the values that ours and theirs give it."
+      - key: 01a130de-5737-776f-9c39-b9bef3fb25b1
+        name: "No conflict record is written for a label counter."
+  - key: 01a130de-5737-776f-9c39-b9bf95b989dc
+    statement:
+      form: unwanted
+      if: "the merged bindings give one label to two keys, or the two sides bind one key to different labels"
+      system: "the merge driver"
+      shall: "write one conflict record over `bindings` that holds only the bindings in dispute."
+    criteria:
+      - key: 01a130de-5737-776f-9c39-b9c0ad84f5b7
+        name: "A label that two keys hold after the merge, as a live label or as an alias, puts the binding of each of those keys in dispute."
+      - key: 01a130de-5737-776f-9c39-b9c1f8e8a2a6
+        name: "A key that the two sides bound to different labels puts its binding in dispute."
+      - key: 01a130de-5737-776f-9c39-b9c27ec4b08f
+        name: "A disputed binding that base lacks is absent from the merged bindings."
+      - key: 01a130de-5737-776f-9c39-b9c338953efe
+        name: "A disputed binding that base holds keeps its base value in the merged bindings."
+      - key: 01a130de-5737-776f-9c39-b9c4e5935bfe
+        name: "Each side of the conflict record lists only that side's disputed bindings."
+      - key: 01a130de-5737-776f-9c39-b9c58774ac2e
+        name: "A withdrawn label puts no binding in dispute."
+      - key: 01a130de-5737-776f-9c39-b9c6be4b9d04
+        name: "A binding that is not in dispute is merged as one value."

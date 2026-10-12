@@ -1,22 +1,24 @@
 //! `loft publish` (F-41): the publisher run over the tree inside a git repository. It prints
-//! each label it allocated with its key and the new publish sequence and state root, that nothing
-//! changed, or why it refused (RQ-145). A refusal writes nothing and exits 1.
+//! each label it allocated with its key, each label it withdrew, each citation of a withdrawn
+//! label it rewrote, the new publish sequence and state root, and in a stopped merge or rebase
+//! the git command that finishes it; that nothing changed; or why it refused (RQ-145). A
+//! refusal writes nothing and exits 1. It runs no git command that changes the repository.
 
 use std::path::Path;
 use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::ReadError;
-use loftspec::publish::{Publication, PublishedAt, ReadTree, Refusal, publish};
-use loftspec_store::FileStore;
+use loftspec::publish::{Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, publish};
 use loftspec_store::clock::{Clock as _, SystemClock};
 use loftspec_store::repository::{GitCommand, Repository as _};
+use loftspec_store::{FileStore, StoreError};
 use serde_json::{Value, json};
 
 use crate::json;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-publish/1";
+const SCHEMA: &str = "loft-publish/2";
 
 /// Why a publish did not happen.
 enum Failure {
@@ -52,18 +54,22 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
 }
 
 /// Reads the tree, then the repository, the previous lock and the time, runs the publisher and
-/// writes what it gives in one save.
+/// writes what it gives in one save. In a stopped merge or rebase a lock that is not a lock
+/// record, such as one holding conflict markers, is read as none.
 fn attempt(root: &Path) -> Result<Publication, Failure> {
     let store = FileStore::open(root)?;
     let files = store.read_files()?;
     let tree = ReadTree::read(&files).map_err(Failure::Read)?;
     let repo = GitCommand::default().state(root)?;
-    let previous = store.lock()?;
+    let previous = match store.lock() {
+        Err(StoreError::Lock(..)) if repo.stopped.is_some() => None,
+        lock => lock?,
+    };
     let at = PublishedAt::from_unix_seconds(SystemClock::from_env().now()?)
         .map_err(|error| Failure::Refused(format!("SOURCE_DATE_EPOCH: {error}")))?;
     let publication = publish(tree, &repo, previous.as_ref(), at).map_err(refusal)?;
-    if let Publication::Published { lock, labels, .. } = &publication {
-        store.publish(labels.clone(), lock)?;
+    if let Publication::Published { lock, files, .. } = &publication {
+        store.publish(files.clone(), lock)?;
     }
     Ok(publication)
 }
@@ -87,21 +93,56 @@ fn refusal(refusal: Refusal) -> Failure {
         } => Failure::Refused(format!(
             "HEAD is detached, not on the publish branch `{publish}`"
         )),
+        Refusal::Unmerged(paths) => Failure::Refused(format!(
+            "unmerged paths other than spec/labels.yaml and loft.lock.json: {}; resolve them \
+             before publishing",
+            paths.join(", ")
+        )),
+        Refusal::UnmergedBindings => Failure::Refused(
+            "spec/labels.yaml is unmerged but holds no conflict record, so `loft merge-driver` \
+             did not merge it: git runs the driver only when `loft` is on git's search path, \
+             and the driver writes nothing when it reports an error. Fix what stopped it, run \
+             `git checkout -m spec/labels.yaml` to merge the file again, and publish again"
+                .to_owned(),
+        ),
+        Refusal::Lock { revision, message } => Failure::Refused(format!(
+            "the lock at {revision} is not a lock record: {message}"
+        )),
     }
 }
 
 fn print(publication: &Publication) {
     match publication {
         Publication::Published {
-            lock, allocated, ..
+            lock,
+            allocated,
+            rewritten,
+            withdrawn,
+            finish,
+            ..
         } => {
             for allocated in allocated {
                 println!("{} {}", allocated.label, allocated.element.key());
+            }
+            for withdrawn in withdrawn {
+                println!(
+                    "withdrew {} from {}, which now holds {}",
+                    withdrawn.withdrawn, withdrawn.element, withdrawn.label
+                );
+            }
+            for rewritten in rewritten {
+                println!(
+                    "rewrote {} as {} in {}",
+                    rewritten.withdrawn, rewritten.label, rewritten.element
+                );
             }
             println!(
                 "published sequence {}, state root {}",
                 lock.publish_sequence, lock.state_root
             );
+            if let Some(operation) = finish {
+                println!("to finish: {}", finishing(*operation));
+            }
         }
         Publication::Unchanged(lock) => println!(
             "nothing changed since publish sequence {}, state root {}",
@@ -124,12 +165,32 @@ fn report(failure: &Failure) {
     }
 }
 
+/// The git command that finishes a stopped merge or rebase once a publish settled it.
+const fn finishing(operation: Operation) -> &'static str {
+    match operation {
+        Operation::Merge => "git add -A && git commit --no-edit",
+        Operation::Rebase => "git add -A && git rebase --continue",
+    }
+}
+
 fn published(publication: &Publication) -> Value {
-    let (outcome, lock, allocated) = match publication {
+    let (outcome, lock, allocated, rewritten, withdrawn, finish) = match publication {
         Publication::Published {
-            lock, allocated, ..
-        } => ("published", lock, allocated.as_slice()),
-        Publication::Unchanged(lock) => ("unchanged", lock, &[][..]),
+            lock,
+            allocated,
+            rewritten,
+            withdrawn,
+            finish,
+            ..
+        } => (
+            "published",
+            lock,
+            allocated.as_slice(),
+            rewritten.as_slice(),
+            withdrawn.as_slice(),
+            *finish,
+        ),
+        Publication::Unchanged(lock) => ("unchanged", lock, &[][..], &[][..], &[][..], None),
     };
     let allocated: Vec<Value> = allocated
         .iter()
@@ -140,14 +201,35 @@ fn published(publication: &Publication) -> Value {
             })
         })
         .collect();
-    json!({
+    let mut document = json!({
         "schema": SCHEMA,
         "outcome": outcome,
         "allocated": allocated,
+        "rewritten": relabels(rewritten),
+        "withdrawn": relabels(withdrawn),
         "publishSequence": lock.publish_sequence.get(),
         "stateRoot": lock.state_root.to_string(),
         "errors": [],
-    })
+    });
+    if let Some(operation) = finish {
+        document["finish"] = json!(finishing(operation));
+    }
+    document
+}
+
+/// Labels a publish replaced, each with the element's key, the label it withdrew and the label
+/// that took its place.
+fn relabels(relabels: &[Relabel]) -> Vec<Value> {
+    relabels
+        .iter()
+        .map(|relabel| {
+            json!({
+                "key": relabel.element.to_string(),
+                "withdrawn": relabel.withdrawn.to_string(),
+                "label": relabel.label.to_string(),
+            })
+        })
+        .collect()
 }
 
 fn refused(failure: &Failure) -> Value {
@@ -160,6 +242,8 @@ fn refused(failure: &Failure) -> Value {
         "schema": SCHEMA,
         "outcome": "refused",
         "allocated": [],
+        "rewritten": [],
+        "withdrawn": [],
         "errors": errors,
     })
 }

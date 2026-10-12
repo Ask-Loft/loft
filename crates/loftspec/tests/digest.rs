@@ -53,7 +53,7 @@ fn ac_47_canonical_bytes_follow_rfc_8785() {
 }
 
 #[test]
-fn a_digest_is_sha256_over_the_domain_a_zero_byte_and_the_canonical_bytes() {
+fn rq_12_a_digest_is_sha256_over_the_domain_a_zero_byte_and_the_canonical_bytes() {
     // printf 'loftspec/node/1\0[]' | shasum -a 256
     assert_eq!(
         digest(Domain::Node, &json!([])).to_string(),

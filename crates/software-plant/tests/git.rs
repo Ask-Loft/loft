@@ -4,7 +4,9 @@
 use std::process::Command;
 
 use software_plant::GitScenario;
-use software_plant::git::{Call, NOT_A_REPOSITORY, OPTIONAL_LOCKS_ENV, Reply, UNSCRIPTED};
+use software_plant::git::{
+    Call, LOCAL_OUTSIDE_A_REPOSITORY, NOT_A_REPOSITORY, OPTIONAL_LOCKS_ENV, Reply, UNSCRIPTED,
+};
 
 fn args(line: &str) -> Vec<String> {
     line.split(' ').map(str::to_owned).collect()
@@ -17,7 +19,7 @@ fn answer(scenario: &GitScenario, line: &str) -> Reply {
 }
 
 #[test]
-fn the_prefix_is_answered_as_rev_parse_prints_it() {
+fn ac_965_the_prefix_is_answered_as_rev_parse_prints_it() {
     let top = GitScenario::clean_on("main");
     assert_eq!(answer(&top, "rev-parse --show-prefix").stdout, b"\n");
     let below = top.below("sub/");
@@ -28,7 +30,7 @@ fn the_prefix_is_answered_as_rev_parse_prints_it() {
 }
 
 #[test]
-fn the_branch_is_answered_as_symbolic_ref_prints_it() {
+fn ac_966_the_branch_is_answered_as_symbolic_ref_prints_it() {
     let reply = answer(
         &GitScenario::clean_on("main"),
         "symbolic-ref --quiet --short HEAD",
@@ -37,7 +39,7 @@ fn the_branch_is_answered_as_symbolic_ref_prints_it() {
 }
 
 #[test]
-fn a_detached_head_exits_1_and_prints_nothing() {
+fn ac_972_a_detached_head_exits_1_and_prints_nothing() {
     let reply = answer(
         &GitScenario::clean_on("main").detached(),
         "symbolic-ref --quiet --short HEAD",
@@ -49,12 +51,13 @@ fn a_detached_head_exits_1_and_prints_nothing() {
             stdout: Vec::new(),
             stderr: String::new(),
             optional_lock: None,
+            set: None,
         }
     );
 }
 
 #[test]
-fn the_status_is_answered_as_porcelain_v1_prints_it() {
+fn ac_967_the_status_is_answered_as_porcelain_v1_prints_it() {
     let scenario = GitScenario::clean_on("main")
         .with("??", "spec/x/y")
         .with(" M", "spec/a")
@@ -70,7 +73,7 @@ fn the_status_is_answered_as_porcelain_v1_prints_it() {
 }
 
 #[test]
-fn the_status_takes_its_pathspec_from_the_working_directory() {
+fn ac_967_the_status_takes_its_pathspec_from_the_working_directory() {
     let scenario = GitScenario::clean_on("main")
         .below("docs/")
         .with(" M", "docs/spec/a")
@@ -83,7 +86,7 @@ fn the_status_takes_its_pathspec_from_the_working_directory() {
 }
 
 #[test]
-fn outside_a_repository_each_call_exits_128_with_gits_message() {
+fn ac_971_outside_a_repository_each_call_exits_128_with_gits_message() {
     let scenario = GitScenario::outside_repository();
     for line in [
         "rev-parse --show-prefix",
@@ -100,7 +103,7 @@ fn outside_a_repository_each_call_exits_128_with_gits_message() {
 }
 
 #[test]
-fn a_scripted_error_exits_with_its_code_and_message() {
+fn ac_973_a_scripted_error_exits_with_its_code_and_message() {
     let scenario =
         GitScenario::clean_on("main").failing(Call::Status, 128, "fatal: index broken\n");
     let reply = answer(&scenario, STATUS);
@@ -112,7 +115,7 @@ fn a_scripted_error_exits_with_its_code_and_message() {
 }
 
 #[test]
-fn an_unscripted_call_names_each_argument_and_exits_2() {
+fn ac_969_ac_970_an_unscripted_call_names_each_argument_and_exits_2() {
     let reply = answer(&GitScenario::clean_on("main"), "log --oneline -1");
     assert_eq!(reply.code, UNSCRIPTED);
     assert_eq!(UNSCRIPTED, 2);
@@ -124,7 +127,7 @@ fn an_unscripted_call_names_each_argument_and_exits_2() {
 }
 
 #[test]
-fn the_executable_reads_its_scenario_from_the_environment() {
+fn ac_968_the_executable_reads_its_scenario_from_the_environment() {
     let dir = std::env::temp_dir().join(format!("software-plant-git-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let installed = GitScenario::clean_on("trunk").install(&dir);
@@ -202,7 +205,7 @@ const STATUS_CALL: [&str; 6] = [
 ];
 
 #[test]
-fn a_status_call_with_optional_locks_records_the_index_lock() {
+fn ac_979_a_status_call_with_optional_locks_records_the_index_lock() {
     assert_eq!(locks_after("lock", &STATUS_CALL, None), ["index.lock"]);
     assert_eq!(
         locks_after("lock-1", &STATUS_CALL, Some("1")),
@@ -211,12 +214,12 @@ fn a_status_call_with_optional_locks_records_the_index_lock() {
 }
 
 #[test]
-fn a_status_call_with_optional_locks_set_to_0_records_no_lock() {
+fn ac_980_a_status_call_with_optional_locks_set_to_0_records_no_lock() {
     assert_eq!(locks_after("no-lock", &STATUS_CALL, Some("0")), NONE);
 }
 
 #[test]
-fn no_other_call_records_a_lock() {
+fn ac_981_no_other_call_records_a_lock() {
     let prefix = ["rev-parse", "--show-prefix"];
     let branch = ["symbolic-ref", "--quiet", "--short", "HEAD"];
     assert_eq!(locks_after("prefix", &prefix, None), NONE);
@@ -239,4 +242,219 @@ fn installing_a_scenario_starts_a_fresh_record_of_locks() {
     let locks = again.locks();
     let _ = std::fs::remove_dir_all(&dir);
     assert_eq!(locks, NONE);
+}
+
+const DRIVER: &str = "merge.loft.driver";
+
+#[test]
+fn config_get_prints_the_value_of_a_name_the_scenario_sets() {
+    let scenario =
+        GitScenario::clean_on("main").with_config(DRIVER, "loft merge-driver %O %A %B %P");
+    let reply = scenario.answer(&[
+        "config".to_owned(),
+        "--local".to_owned(),
+        "--get".to_owned(),
+        DRIVER.to_owned(),
+    ]);
+    assert_eq!(
+        (reply.code, reply.stdout),
+        (0, b"loft merge-driver %O %A %B %P\n".to_vec())
+    );
+}
+
+#[test]
+fn config_get_exits_1_and_prints_nothing_for_a_name_the_scenario_does_not_set() {
+    let reply = answer(
+        &GitScenario::clean_on("main"),
+        "config --local --get merge.loft.name",
+    );
+    assert_eq!(
+        (reply.code, reply.stdout, reply.stderr),
+        (1, Vec::new(), String::new())
+    );
+}
+
+#[test]
+fn config_set_sets_the_name_in_the_scenario_the_executable_reads() {
+    let dir = plant("config");
+    let installed = GitScenario::clean_on("main").install(&dir);
+    let set = installed
+        .apply(&mut Command::new("git"))
+        .args(["config", "--local", DRIVER, "loft merge-driver %O %A %B %P"])
+        .output()
+        .unwrap();
+    let get = installed
+        .apply(&mut Command::new("git"))
+        .args(["config", "--local", "--get", DRIVER])
+        .output()
+        .unwrap();
+    let scenario = GitScenario::read(&installed.scenario).unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert_eq!((set.status.code(), set.stdout), (Some(0), Vec::new()));
+    assert_eq!(get.stdout, b"loft merge-driver %O %A %B %P\n");
+    assert_eq!(
+        scenario,
+        GitScenario::clean_on("main").with_config(DRIVER, "loft merge-driver %O %A %B %P")
+    );
+}
+
+#[test]
+fn outside_a_repository_a_config_call_exits_128_with_gits_message() {
+    let outside = GitScenario::outside_repository();
+    for line in ["config --local --get x", "config --local x y"] {
+        let reply = answer(&outside, line);
+        assert_eq!(
+            (reply.code, reply.stderr.as_str()),
+            (128, LOCAL_OUTSIDE_A_REPOSITORY),
+            "{line}"
+        );
+    }
+}
+
+const MERGE_HEAD: &str = "rev-parse -q --verify MERGE_HEAD";
+const REBASE_HEAD: &str = "rev-parse -q --verify REBASE_HEAD";
+const SHA: &str = "b97feb1503e857271adfbc4604548baba9ff4d2b";
+
+#[test]
+fn the_commit_being_merged_or_replayed_is_answered_and_exits_1_when_none_is() {
+    let clean = GitScenario::clean_on("main");
+    for line in [MERGE_HEAD, REBASE_HEAD] {
+        let reply = answer(&clean, line);
+        assert_eq!((reply.code, reply.stdout), (1, Vec::new()), "{line}");
+    }
+    let merging = GitScenario::clean_on("main").merging(SHA);
+    assert_eq!(
+        answer(&merging, MERGE_HEAD).stdout,
+        format!("{SHA}\n").into_bytes()
+    );
+    assert_eq!(answer(&merging, REBASE_HEAD).code, 1);
+    let rebasing = GitScenario::clean_on("main")
+        .detached()
+        .rebasing(SHA, "refs/heads/main");
+    assert_eq!(
+        answer(&rebasing, REBASE_HEAD).stdout,
+        format!("{SHA}\n").into_bytes()
+    );
+    assert_eq!(answer(&rebasing, MERGE_HEAD).code, 1);
+}
+
+#[test]
+fn a_git_path_is_answered_under_the_git_directory_from_the_working_directory() {
+    let line = "rev-parse --git-path rebase-merge/head-name";
+    let top = GitScenario::clean_on("main");
+    assert_eq!(answer(&top, line).stdout, b".git/rebase-merge/head-name\n");
+    let below = top.below("sub/dir/");
+    assert_eq!(
+        answer(&below, line).stdout,
+        b"../../.git/rebase-merge/head-name\n"
+    );
+}
+
+#[test]
+fn an_installed_rebase_writes_the_branch_it_rebases_where_its_git_path_names() {
+    let dir = plant("rebase");
+    let scenario = GitScenario::clean_on("main")
+        .detached()
+        .rebasing(SHA, "refs/heads/main");
+    let installed = scenario.install(&dir);
+    let output = installed
+        .apply(&mut Command::new("git"))
+        .args(["rev-parse", "--git-path", "rebase-merge/head-name"])
+        .output()
+        .unwrap();
+    let named = String::from_utf8(output.stdout).unwrap();
+    let held = std::fs::read_to_string(named.trim_end()).unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert_eq!(held, "refs/heads/main\n");
+}
+
+#[test]
+fn unmerged_paths_are_answered_as_ls_files_prints_their_index_entries() {
+    let scenario = GitScenario::clean_on("main")
+        .merging(SHA)
+        .unmerged(
+            "100644",
+            "20833b50d6fa1b4f9378bf129363513617191658",
+            1,
+            "loft.lock.json",
+        )
+        .unmerged(
+            "100644",
+            "7dc89e9dba4a0afa92e83f87c412b1aa11880f00",
+            2,
+            "loft.lock.json",
+        );
+    let reply = answer(&scenario, "ls-files -u -z --full-name -- :/");
+    assert_eq!(
+        reply.stdout,
+        b"100644 20833b50d6fa1b4f9378bf129363513617191658 1\tloft.lock.json\0\
+          100644 7dc89e9dba4a0afa92e83f87c412b1aa11880f00 2\tloft.lock.json\0"
+    );
+    let clean = answer(
+        &GitScenario::clean_on("main"),
+        "ls-files -u -z --full-name -- :/",
+    );
+    assert_eq!((clean.code, clean.stdout), (0, Vec::new()));
+}
+
+#[test]
+fn the_lock_a_revision_holds_is_named_by_its_object_and_read_by_it() {
+    let object = "587be6b4c3f93f93c489c0111bba5596147a26cb";
+    let scenario = GitScenario::clean_on("main")
+        .below("sub/")
+        .merging(SHA)
+        .lock_at("HEAD", object, "{\"a\": 1}\n");
+    let named = answer(&scenario, "rev-parse -q --verify HEAD:./loft.lock.json");
+    assert_eq!(
+        (named.code, named.stdout),
+        (0, format!("{object}\n").into_bytes())
+    );
+    let held = answer(&scenario, &format!("cat-file blob {object}"));
+    assert_eq!((held.code, held.stdout), (0, b"{\"a\": 1}\n".to_vec()));
+    let missing = answer(
+        &scenario,
+        "rev-parse -q --verify MERGE_HEAD:./loft.lock.json",
+    );
+    assert_eq!((missing.code, missing.stdout), (1, Vec::new()));
+}
+
+#[test]
+fn outside_a_repository_the_calls_of_a_stopped_merge_exit_128() {
+    let outside = GitScenario::outside_repository();
+    for line in [
+        MERGE_HEAD,
+        "ls-files -u -z --full-name -- :/",
+        "rev-parse -q --verify HEAD:./loft.lock.json",
+    ] {
+        let reply = answer(&outside, line);
+        assert_eq!(
+            (reply.code, reply.stderr.as_str()),
+            (128, NOT_A_REPOSITORY),
+            "{line}"
+        );
+    }
+}
+
+/// The shell alias with which `loft merge-driver --install` runs `<command> --version`.
+fn launcher(command: &str) -> Vec<String> {
+    vec![
+        "-c".to_owned(),
+        format!("alias.loft-launcher=!{command} --version"),
+        "loft-launcher".to_owned(),
+    ]
+}
+
+#[test]
+fn the_launcher_alias_prints_the_version_the_scenario_gives_the_command() {
+    let scenario = GitScenario::clean_on("main").launcher("npx --no-install loft", "loft 2.0.0\n");
+    let reply = scenario.answer(&launcher("npx --no-install loft"));
+    assert_eq!((reply.code, reply.stdout), (0, b"loft 2.0.0\n".to_vec()));
+    let outside = GitScenario::outside_repository().launcher("loft", "loft 2.0.0\n");
+    assert_eq!(outside.answer(&launcher("loft")).code, 0);
+}
+
+#[test]
+fn the_launcher_alias_exits_127_for_a_command_the_scenario_does_not_give() {
+    let reply = GitScenario::clean_on("main").answer(&launcher("loft"));
+    assert_eq!((reply.code, reply.stdout), (127, Vec::new()));
 }
