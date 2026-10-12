@@ -386,6 +386,7 @@ dependencies = [
  "loftspec",
  "loftspec-store",
  "serde_json",
+ "software-plant",
 ]
 
 [[package]]

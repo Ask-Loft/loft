@@ -14,6 +14,7 @@ use std::process::Output;
 use common::{Scratch, stderr, stdout};
 use conformance::{is_pending, snapshot, tagged};
 use loftspec::codec::SpecPath;
+use loftspec::publish::LOCK;
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
 
 const READING_LIST: &str = concat!(
@@ -28,59 +29,96 @@ const TAG: &str = "writes-tree";
 /// The files the Format places beside `spec/`.
 const BESIDE: [&str; 2] = ["v1-sidecar.json", "loft.lock.json"];
 
-/// The arguments that run each implemented command, by the slug of its Feature, and whether it
-/// runs in an empty directory rather than over the Reading List.
-const COMMANDS: [(&str, &[&str], bool); 4] = [
-    ("loft-check", &["check"], false),
-    ("loft-fmt", &["fmt"], false),
+/// What a command runs over.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Fixture {
+    /// An empty directory.
+    Empty,
+    /// The Reading List with one key left out, so a formatter has a key to mint.
+    Unkeyed,
+    /// The Reading List as converted, in a clean repository on `main`.
+    Clean,
+}
+
+/// The arguments that run each implemented command, by the slug of its Feature, and what it
+/// runs over.
+const COMMANDS: [(&str, &[&str], Fixture); 6] = [
+    ("loft-check", &["check"], Fixture::Unkeyed),
+    ("loft-fmt", &["fmt"], Fixture::Unkeyed),
     (
         "loft-render",
         &["render", "--markdown", "out/spec.md"],
-        false,
+        Fixture::Unkeyed,
     ),
-    ("loft-import-v1", &["import", "v1", READING_LIST], true),
+    (
+        "loft-import-v1",
+        &["import", "v1", READING_LIST],
+        Fixture::Empty,
+    ),
+    ("loft-publish", &["publish"], Fixture::Clean),
+    ("loft-verify", &["verify"], Fixture::Clean),
 ];
 
 /// Tagged commands not implemented yet, by Feature slug and subcommand. Each must still be
 /// unknown to `loft`; once it exists it moves to [`COMMANDS`] and is held to the rules.
-const PENDING: [(&str, &str); 2] = [("loft-init", "init"), ("loft-publish", "publish")];
+const PENDING: [(&str, &str); 1] = [("loft-init", "init")];
 
 /// The body a planted save gives the Product, and the file it plants into an empty `spec/`.
 const PLANTED_BODY: &str = "A planted body.";
 const PLANTED_FILE: &str = "planted.yaml";
 
-/// A scratch directory for a command: empty, or the Reading List with one key left out, so a
-/// formatter has a key to mint.
-fn fixture(empty: bool) -> Scratch {
+/// The lock a planted save puts beside a clean tree: a previous publish at sequence 7, so the
+/// next publish is sequence 8 if the save was finished first and 1 if it was discarded.
+const PLANTED_LOCK: &str = r#"{
+  "format": "loftspec/1",
+  "algorithm": "sha256-jcs/1",
+  "documentKey": "00000000-0000-4000-8000-000000000001",
+  "stateRoot": "0000000000000000000000000000000000000000000000000000000000000000",
+  "contentRoot": "0000000000000000000000000000000000000000000000000000000000000000",
+  "bindingRoot": "0000000000000000000000000000000000000000000000000000000000000000",
+  "publishSequence": 7,
+  "publishedAt": "2026-01-01T00:00:00Z"
+}
+"#;
+
+/// A scratch directory for a command.
+fn fixture(fixture: Fixture) -> Scratch {
     let scratch = Scratch::with_reading_list();
-    if empty {
-        fs::remove_dir_all(scratch.0.join("spec")).unwrap();
-    } else {
-        scratch.edit(
+    match fixture {
+        Fixture::Empty => fs::remove_dir_all(scratch.0.join("spec")).unwrap(),
+        Fixture::Unkeyed => scratch.edit(
             PRODUCT,
             "      - key: 00000000-0000-4000-8000-000000000032\n        name:",
             "      - name:",
-        );
+        ),
+        Fixture::Clean => {}
     }
     scratch
 }
 
-/// Plants an interrupted save, committed or not, that changes what the command reads: in a
-/// tree, the Product's body; in an empty directory, a file under `spec/`, so that `spec/` is
-/// no longer empty once the save is finished.
-fn plant(scratch: &Scratch, empty: bool, committed: bool) {
-    let mut changes = Changes::default();
-    let (path, bytes) = if empty {
-        (PLANTED_FILE.to_owned(), b"planted\n".to_vec())
-    } else {
-        let text = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
-        let planted = text.replacen("Keeps the books a reader means to read.", PLANTED_BODY, 1);
-        assert_ne!(planted, text);
-        (PRODUCT.to_owned(), planted.into_bytes())
+/// Plants an interrupted save, committed or not, that changes what the command reads: in an
+/// empty directory, a file under `spec/`, so that `spec/` is no longer empty once the save is
+/// finished; beside a clean tree, a previous lock, since a finished change under `spec/` would
+/// be an uncommitted change that refuses a publish; otherwise the Product's body.
+fn plant(scratch: &Scratch, fixture: Fixture, committed: bool) {
+    let (path, bytes) = match fixture {
+        Fixture::Empty => (
+            RootPath::in_spec(&SpecPath::new(PLANTED_FILE)),
+            b"planted\n".to_vec(),
+        ),
+        Fixture::Clean => (RootPath::beside(LOCK), PLANTED_LOCK.as_bytes().to_vec()),
+        Fixture::Unkeyed => {
+            let text = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
+            let planted = text.replacen("Keeps the books a reader means to read.", PLANTED_BODY, 1);
+            assert_ne!(planted, text);
+            (
+                RootPath::in_spec(&SpecPath::new(PRODUCT)),
+                planted.into_bytes(),
+            )
+        }
     };
-    changes
-        .write
-        .insert(RootPath::in_spec(&SpecPath::new(&path)), bytes);
+    let mut changes = Changes::default();
+    changes.write.insert(path, bytes);
     let prepared = journal::prepare(&scratch.0, &changes).unwrap();
     if committed {
         drop(prepared.commit().unwrap());
@@ -88,13 +126,15 @@ fn plant(scratch: &Scratch, empty: bool, committed: bool) {
 }
 
 /// Whether the planted save took effect.
-fn planted(scratch: &Scratch, empty: bool) -> bool {
-    if empty {
-        scratch.file(PLANTED_FILE).exists()
-    } else {
-        fs::read_to_string(scratch.file(PRODUCT))
+fn planted(scratch: &Scratch, fixture: Fixture) -> bool {
+    match fixture {
+        Fixture::Empty => scratch.file(PLANTED_FILE).exists(),
+        Fixture::Clean => fs::read_to_string(scratch.0.join(LOCK))
             .unwrap()
-            .contains(PLANTED_BODY)
+            .contains("\"publishSequence\": 8,"),
+        Fixture::Unkeyed => fs::read_to_string(scratch.file(PRODUCT))
+            .unwrap()
+            .contains(PLANTED_BODY),
     }
 }
 
@@ -108,7 +148,7 @@ fn format_files(root: &Path) -> BTreeMap<String, Vec<u8>> {
 
 /// The implemented commands whose Features list the tag, after checking that each pending one
 /// is still unknown to `loft`.
-fn implemented_tagged() -> Vec<(&'static str, &'static [&'static str], bool)> {
+fn implemented_tagged() -> Vec<(&'static str, &'static [&'static str], Fixture)> {
     tagged(TAG)
         .into_iter()
         .filter(|slug| !is_pending(slug, &PENDING))
@@ -134,14 +174,14 @@ fn assert_exit(slug: &str, output: &Output, code: i32) {
 
 #[test]
 fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
-    for (slug, args, empty) in implemented_tagged() {
-        let scratch = fixture(empty);
-        plant(&scratch, empty, true);
+    for (slug, args, kind) in implemented_tagged() {
+        let scratch = fixture(kind);
+        plant(&scratch, kind, true);
         // In an empty directory the finished save leaves `spec/` not empty, which the command
         // must see before it writes.
-        assert_exit(slug, &scratch.loft(args), i32::from(empty));
+        assert_exit(slug, &scratch.loft(args), i32::from(kind == Fixture::Empty));
         assert!(
-            planted(&scratch, empty),
+            planted(&scratch, kind),
             "{slug}: the committed save was not finished first"
         );
         assert!(
@@ -153,12 +193,12 @@ fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
 
 #[test]
 fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
-    for (slug, args, empty) in implemented_tagged() {
-        let scratch = fixture(empty);
-        plant(&scratch, empty, false);
+    for (slug, args, kind) in implemented_tagged() {
+        let scratch = fixture(kind);
+        plant(&scratch, kind, false);
         assert_exit(slug, &scratch.loft(args), 0);
         assert!(
-            !planted(&scratch, empty),
+            !planted(&scratch, kind),
             "{slug}: an uncommitted save took effect"
         );
         assert!(
@@ -171,8 +211,8 @@ fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
 #[test]
 fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
     let tagged = tagged(TAG);
-    for (slug, args, empty) in COMMANDS {
-        let scratch = fixture(empty);
+    for (slug, args, kind) in COMMANDS {
+        let scratch = fixture(kind);
         let before = format_files(&scratch.0);
         scratch.loft(args);
         if format_files(&scratch.0) != before {
@@ -186,8 +226,8 @@ fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
 
 #[test]
 fn each_tagged_command_changes_a_file_of_the_format() {
-    for (slug, args, empty) in implemented_tagged() {
-        let scratch = fixture(empty);
+    for (slug, args, kind) in implemented_tagged() {
+        let scratch = fixture(kind);
         let before = format_files(&scratch.0);
         assert_exit(slug, &scratch.loft(args), 0);
         assert_ne!(format_files(&scratch.0), before, "{slug}: wrote nothing");
