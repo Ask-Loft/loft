@@ -219,14 +219,10 @@ fn finish(root: &Path, plan: &Plan) -> Result<(), StoreError> {
             Err(error) => return Err(io_error(&target)(error)),
         }
         remove_empty_parents(root, &target);
-        touched.extend(
-            target
-                .parent()
-                .filter(|dir| dir.exists())
-                .map(Path::to_owned),
-        );
+        touched.extend(target.parent().map(Path::to_owned));
     }
-    for dir in &touched {
+    // A directory a later removal emptied is gone, and has nothing left to sync.
+    for dir in touched.iter().filter(|dir| dir.exists()) {
         sync_dir(dir)?;
     }
     remove_journal(root)

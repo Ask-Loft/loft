@@ -5,7 +5,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::{fs, io, process};
 
-use loftspec::codec::{Files, SpecPath};
+use loftspec::codec::{Files, ReadError, SpecPath};
+use loftspec::index::IndexErrors;
 
 use crate::journal::{self, Changes, RootPath};
 
@@ -26,6 +27,12 @@ pub enum StoreError {
     NotUtf8(PathBuf),
     #[error("{0}: `spec/` is not empty")]
     NotEmpty(PathBuf),
+    #[error("the store holds no document")]
+    NoDocument,
+    #[error("{}", .0.iter().map(ToString::to_string).collect::<Vec<_>>().join("\n"))]
+    Read(Vec<ReadError>),
+    #[error("the document does not index: {0:?}")]
+    Index(IndexErrors),
     #[error("{0}: a save is already in progress")]
     Pending(PathBuf),
     #[error("{0}: {1}")]
