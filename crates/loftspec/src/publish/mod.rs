@@ -2,6 +2,12 @@
 //! verification. It decides from the tree, the repository's state and the previous lock it is
 //! given; reading the repository and writing files belong to a store.
 
+mod lock;
+mod time;
+
+pub use lock::{LOCK, Lock, LockError};
+pub use time::{PublishedAt, TimeError};
+
 /// What the publisher needs to know of the repository that holds the tree.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct RepoState {
