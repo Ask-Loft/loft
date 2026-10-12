@@ -115,6 +115,9 @@ impl Renderer<'_> {
         for product in scopes {
             let _ = writeln!(self.out, "Scope: Product `{}`\n", self.labels.name(product));
         }
+        if let Some(boundary) = component.boundary {
+            let _ = writeln!(self.out, "Boundary: `{}`\n", boundary.as_str());
+        }
         self.body_tags_and_sections(node, level);
         for child in node
             .children()

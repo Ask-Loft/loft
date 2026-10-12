@@ -6,9 +6,10 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use uuid::Uuid;
 
-use super::export::{Export, ExternalId, Node, NodeType, Tier};
+use super::export::{ComponentScope, Export, ExternalId, Node, NodeType, Tier};
 use super::sidecar::{NodeFacts, TagApplication, V1Sidecar};
 use super::{Conversion, ConvertError, Finding, label};
+use crate::attributes::Boundary;
 use crate::ids::{
     ComponentId, ConstraintId, CriterionId, FeatureGroupId, FeatureId, NodeId, ProductId,
     QualityAttributeId, RequirementId,
@@ -113,6 +114,7 @@ impl<'a> Tree<'a> {
             findings,
             reached: BTreeSet::new(),
             labels: Vec::new(),
+            external_above: None,
         };
         for root in &self.roots {
             match self.ids.get(&root.node_id).map(|id| id.kind()) {
@@ -180,6 +182,8 @@ struct Builder<'t, 'a> {
     findings: &'t mut Vec<Finding>,
     reached: BTreeSet<Uuid>,
     labels: Vec<(NodeId, &'a ExternalId)>,
+    /// The nearest Component above the one being converted that the export scopes as external.
+    external_above: Option<ComponentId>,
 }
 
 /// A node's structural children in ordinal order, grouped by kind.
@@ -356,12 +360,29 @@ impl<'a> Builder<'_, 'a> {
         if let Some(scope) = node.component_scope {
             self.sidecar.scopes.insert(id, scope.into());
         }
+        let boundary = match (node.component_scope, self.external_above) {
+            (Some(ComponentScope::External), _) => Some(Boundary::External),
+            (Some(_), Some(ancestor)) => {
+                self.findings.push(Finding::InternalUnderExternal {
+                    component: id,
+                    ancestor,
+                });
+                None
+            }
+            _ => None,
+        };
+        let above = self.external_above;
+        if boundary.is_some() {
+            self.external_above = Some(id);
+        }
+        let components = self.each(&mut children, NodeKind::Component, Self::component);
+        self.external_above = above;
         Ok(Component {
             id: Some(id),
             name: node.name.clone(),
             details,
-            boundary: None,
-            components: self.each(&mut children, NodeKind::Component, Self::component)?,
+            boundary,
+            components: components?,
             constraints: self.each(&mut children, NodeKind::Constraint, Self::constraint)?,
             quality_attributes: self.each(
                 &mut children,

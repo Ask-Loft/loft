@@ -10,7 +10,7 @@ mod nodes;
 use crate::bindings::BindingError;
 use crate::document::Document;
 use crate::identity::{Key, Label};
-use crate::ids::{DecisionId, DriverId, ElementId, NodeId, OptionId};
+use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, NodeId, OptionId};
 use crate::index::{Index, IntegrityError, SupersessionCycle};
 use crate::names::TagName;
 
@@ -40,6 +40,12 @@ pub enum ValidationError {
     /// A former label that an element still carries (RQ-180).
     #[error("the former label {label} is a label of {element}")]
     FormerLabelInUse { label: Label, element: ElementId },
+    /// A Component that declares `private` beneath an `external` one (ADR-15).
+    #[error("{component} is `private` beneath the external Component {ancestor}")]
+    PrivateUnderExternal {
+        component: ComponentId,
+        ancestor: ComponentId,
+    },
     /// A resolved decision with fewer than two options (AC-734).
     #[error("decision {0} is resolved with fewer than two options")]
     TooFewOptions(DecisionId),
@@ -72,6 +78,10 @@ impl ValidationError {
             Self::Binding(error) => binding_keys(error),
             Self::RepeatedTag { node, .. } => vec![node.key()],
             Self::FormerLabelInUse { element, .. } => vec![element.key()],
+            Self::PrivateUnderExternal {
+                component,
+                ancestor,
+            } => vec![component.key(), ancestor.key()],
             Self::FormerLabelInLiveDecision { decision, .. }
             | Self::TooFewOptions(decision)
             | Self::NoDriver(decision)

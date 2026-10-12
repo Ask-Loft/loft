@@ -3,6 +3,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::boundary::Boundaries;
 use crate::document::{Document, Edge};
 use crate::ids::{ComponentId, FeatureId, NodeId};
 use crate::names::TagName;
@@ -56,6 +57,8 @@ pub(super) struct Context<'a> {
     by_id: BTreeMap<NodeId, usize>,
     pub realizing: BTreeSet<FeatureId>,
     pub realized: BTreeSet<ComponentId>,
+    /// Which Components are `external`, written or taken on from above (ADR-15).
+    pub boundaries: Boundaries,
 }
 
 impl<'a> Context<'a> {
@@ -83,6 +86,7 @@ impl<'a> Context<'a> {
             by_id,
             realizing,
             realized,
+            boundaries: Boundaries::of(document),
         }
     }
 

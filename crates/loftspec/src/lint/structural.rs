@@ -5,9 +5,11 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use super::context::{Context, Item};
 use super::{Raw, RuleId};
+use crate::identity::Key;
 use crate::ids::NodeId;
 use crate::kind::NodeKind;
 use crate::node::Node;
+use crate::tree::Component;
 
 pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     for item in &context.items {
@@ -29,7 +31,10 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
                 let realized = component
                     .id
                     .is_some_and(|id| context.realized.contains(&id));
-                if component.components.is_empty() && !realized {
+                let external = component
+                    .id
+                    .is_some_and(|id| context.boundaries.is_external(id));
+                if component.components.is_empty() && !realized && !external {
                     out.push(one(RuleId::Sh002, "Leaf Component has no `realizes` edge."));
                 }
                 if looks_like_a_path(&component.name) {
@@ -115,22 +120,33 @@ fn duplicate_sibling_names(context: &Context<'_>, out: &mut Vec<Raw>) {
 }
 
 /// `SH-008`: the topmost Component of a subtree that holds no Constraint and no Quality
-/// Attribute, when its parent's subtree does or it has no parent.
+/// Attribute, when it has no parent or its parent is `external` or its parent's subtree holds one.
+/// An `external` Component yields none, and its own Constraints and Quality Attributes clear no
+/// Component above it (ADR-15).
 fn bare_component_subtrees(context: &Context<'_>, out: &mut Vec<Raw>) {
+    let external = |component: &Component| {
+        component
+            .id
+            .is_some_and(|id| context.boundaries.is_external(id))
+    };
     let mut envelopes = BTreeMap::new();
     for item in &context.items {
         if let Node::Component(component) = item.node {
-            envelope(component, &mut envelopes);
+            envelope(component, &external, &mut envelopes);
         }
     }
     for item in &context.items {
         let Node::Component(component) = item.node else {
             continue;
         };
-        let parent_has = item
-            .parent
-            .is_none_or(|parent| envelopes.get(&parent.key()).copied().unwrap_or(false));
-        if !envelope(component, &mut envelopes) && parent_has {
+        if external(component) {
+            continue;
+        }
+        let parent_clears = item.parent.is_none_or(|parent| {
+            context.boundaries.is_external_node(parent)
+                || envelopes.get(&parent.key()).copied().unwrap_or(false)
+        });
+        if !envelope(component, &external, &mut envelopes) && parent_clears {
             out.push(Raw::new(
                 RuleId::Sh008,
                 vec![item.id.key()],
@@ -140,9 +156,12 @@ fn bare_component_subtrees(context: &Context<'_>, out: &mut Vec<Raw>) {
     }
 }
 
+/// Whether the Component's subtree, `external` Components left out, holds a Constraint or a
+/// Quality Attribute.
 fn envelope(
-    component: &crate::tree::Component,
-    memo: &mut BTreeMap<crate::identity::Key, bool>,
+    component: &Component,
+    external: &impl Fn(&Component) -> bool,
+    memo: &mut BTreeMap<Key, bool>,
 ) -> bool {
     if let Some(known) = component.id.and_then(|id| memo.get(&id.key())) {
         return *known;
@@ -151,7 +170,8 @@ fn envelope(
     let held = component
         .components
         .iter()
-        .any(|child| envelope(child, memo));
+        .filter(|child| !external(child))
+        .any(|child| envelope(child, external, memo));
     let result = attached || held;
     if let Some(id) = component.id {
         memo.insert(id.key(), result);

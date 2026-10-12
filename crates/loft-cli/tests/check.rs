@@ -54,8 +54,8 @@ fn ac_525_findings_alone_exit_0_one_per_line() {
     let output = scratch.loft(&["check"]);
     assert_eq!(output.status.code(), Some(0));
     let lines: Vec<String> = stdout(&output).lines().map(str::to_owned).collect();
-    assert_eq!(lines.len(), 8, "{lines:#?}");
-    assert!(lines[0].starts_with("spec/components/link-service.yaml:1:6: info SH-008: "));
+    assert_eq!(lines.len(), 7, "{lines:#?}");
+    assert!(lines[0].starts_with("spec/components/shared-types.yaml:1:6: info SH-002: "));
 }
 
 #[test]

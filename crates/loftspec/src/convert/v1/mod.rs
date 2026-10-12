@@ -14,7 +14,9 @@ use self::tree::Tree;
 use crate::bindings::{BindingError, Counters};
 use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
 use crate::identity::{Label, LabelError};
-use crate::ids::{AuthoredStateId, CategoryId, DocumentId, NodeId, RequirementId, TagId};
+use crate::ids::{
+    AuthoredStateId, CategoryId, ComponentId, DocumentId, NodeId, RequirementId, TagId,
+};
 use crate::names::NameError;
 use crate::slug::Slug;
 
@@ -36,6 +38,12 @@ pub enum Finding {
     UnresolvedReference { node: NodeId, reference: Label },
     /// A body holds a Markdown heading, at this 1-based line (AC-193).
     HeadingInBody { node: NodeId, line: usize },
+    /// A Component scoped to a Product or the document beneath a Component scoped as external:
+    /// v1 treats it as internal, and v2 gives it its ancestor's boundary (ADR-15).
+    InternalUnderExternal {
+        component: ComponentId,
+        ancestor: ComponentId,
+    },
 }
 
 /// An export the converter refuses.

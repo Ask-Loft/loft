@@ -4,6 +4,7 @@
 mod common;
 
 use common::v1::{convert_value, full_export, hash, key, uuid};
+use loftspec::attributes::Boundary;
 use loftspec::canonical::Digest;
 use loftspec::convert::v1::{Conversion, ConvertError, Finding};
 use loftspec::decision::{ConsequenceKind, DecisionState, DriverPayload, NodeRef, Rating};
@@ -290,4 +291,67 @@ fn ac_192_and_ac_193_a_body_is_kept_byte_for_byte_and_a_heading_in_it_is_a_findi
         node: NodeId::Feature(FeatureId::new(key(3))),
         line: 3,
     }));
+}
+
+/// The full export with each listed Component's v1 scope replaced.
+fn scoped(mut export: serde_json::Value, scopes: &[(u32, serde_json::Value)]) -> serde_json::Value {
+    for node in export["nodes"].as_array_mut().unwrap() {
+        if let Some((_, scope)) = scopes.iter().find(|(n, _)| node["nodeId"] == uuid(*n)) {
+            node["componentScope"] = scope.clone();
+        }
+    }
+    export
+}
+
+fn boundary_of(conversion: &Conversion, n: u32) -> Option<Boundary> {
+    let mut found = None;
+    conversion.document.walk(&mut |node| {
+        if let loftspec::node::Node::Component(component) = node
+            && component.id == Some(ComponentId::new(key(n)))
+        {
+            found = Some(component.boundary);
+        }
+    });
+    found.expect("the Component is converted")
+}
+
+#[test]
+fn ac_892_a_component_the_export_scopes_as_external_has_the_boundary_external() {
+    let export = scoped(full_export(), &[(6, json!({"kind": "external"}))]);
+    let conversion = convert_value(&export).unwrap();
+    assert_eq!(boundary_of(&conversion, 6), Some(Boundary::External));
+    assert_eq!(
+        boundary_of(&conversion, 10),
+        None,
+        "the nested Component takes it on"
+    );
+}
+
+#[test]
+fn ac_893_a_component_scoped_to_a_product_or_the_document_has_no_boundary() {
+    let conversion = convert_value(&full_export()).unwrap();
+    assert_eq!(boundary_of(&conversion, 6), None);
+    let export = scoped(full_export(), &[(6, json!({"kind": "document"}))]);
+    assert_eq!(boundary_of(&convert_value(&export).unwrap(), 6), None);
+}
+
+#[test]
+fn ac_894_a_component_scoped_internally_beneath_an_external_one_is_a_finding() {
+    let export = scoped(
+        full_export(),
+        &[
+            (6, json!({"kind": "external"})),
+            (10, json!({"kind": "document"})),
+        ],
+    );
+    let conversion = convert_value(&export).unwrap();
+    assert!(
+        conversion
+            .findings
+            .contains(&Finding::InternalUnderExternal {
+                component: ComponentId::new(key(10)),
+                ancestor: ComponentId::new(key(6)),
+            })
+    );
+    assert_eq!(boundary_of(&conversion, 10), None);
 }
