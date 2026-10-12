@@ -6,13 +6,17 @@
 mod common;
 #[path = "common/repo.rs"]
 mod repo;
+#[path = "common/snapshot.rs"]
+mod snapshot;
 
 use std::fs;
 use std::process::{Command, Output};
 
 use common::{EPOCH, Scratch, stderr, stdout};
-use repo::{Repo, real_git};
+use repo::Repo;
+use snapshot::snapshot;
 use software_plant::Clock;
+use software_plant::real_git::{isolate, real_git};
 
 const SHARE: &str = "products/reading-list/sharing/share-a-list.yaml";
 const REMOVE: &str = "products/reading-list/shelf/remove-a-book.yaml";
@@ -20,14 +24,7 @@ const REMOVE: &str = "products/reading-list/shelf/remove-a-book.yaml";
 /// Runs `loft` in `repo` with real git on its search path, at [`EPOCH`].
 fn loft(repo: &Repo, args: &[&str]) -> Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
-    command
-        .current_dir(&repo.0.0)
-        .env("GIT_CONFIG_GLOBAL", "/dev/null")
-        .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env(
-            "GIT_CEILING_DIRECTORIES",
-            std::env::temp_dir().canonicalize().unwrap(),
-        );
+    isolate(&mut command).current_dir(&repo.0.0);
     Clock::fixed(EPOCH).apply(&mut command);
     command.args(args).output().unwrap()
 }
@@ -225,33 +222,12 @@ fn a_conflict_on_the_lock_alone_is_settled_by_a_publish() {
     checks_and_verifies(&bob);
 }
 
-/// Every file of the repository outside `.git`, by path.
-fn tree(repo: &Repo) -> Vec<(String, Vec<u8>)> {
-    let mut files = Vec::new();
-    let mut pending = vec![repo.0.0.clone()];
-    while let Some(dir) = pending.pop() {
-        for entry in fs::read_dir(&dir).unwrap() {
-            let path = entry.unwrap().path();
-            if path.ends_with(".git") {
-                continue;
-            }
-            if path.is_dir() {
-                pending.push(path);
-            } else {
-                files.push((path.display().to_string(), fs::read(&path).unwrap()));
-            }
-        }
-    }
-    files.sort();
-    files
-}
-
 fn refused(repo: &Repo, naming: &str) {
-    let before = tree(repo);
+    let before = snapshot(&repo.0.0);
     let output = loft(repo, &["publish"]);
     assert_eq!(output.status.code(), Some(1));
     assert!(stderr(&output).contains(naming), "{}", stderr(&output));
-    assert_eq!(tree(repo), before, "nothing is written");
+    assert_eq!(snapshot(&repo.0.0), before, "nothing is written");
 }
 
 #[test]

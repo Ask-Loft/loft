@@ -3,26 +3,11 @@
 
 mod common;
 
-use common::text::{FEATURE, edited, path, text};
+use common::text::{AFTER_CRITERIA, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text};
 use loftspec::codec::schema::{Item, Kind, Shape};
 use loftspec::codec::{self, Files, Problem, field};
 use loftspec::fmt::format;
 use loftspec::yaml::{Location, Position};
-
-/// The last line of the Requirement's criteria, after which a field of the Requirement goes.
-const AFTER_CRITERIA: &str = "          - 00000000-0000-7000-8000-000000000004\n";
-
-/// The small document with `lines` added to its Requirement after every other field.
-fn on_requirement(lines: &str) -> Files {
-    edited(FEATURE, AFTER_CRITERIA, &format!("{AFTER_CRITERIA}{lines}"))
-}
-
-const SHALL_CONFLICT: &str = "    conflicts:
-      - field: statement.shall
-        base: \"write a key on every node.\"
-        ours: \"write a key on each node.\"
-        theirs: \"write one key on every node.\"
-";
 
 /// The one read error a tree gives.
 fn refused(files: &Files) -> (Problem, Option<Location>) {

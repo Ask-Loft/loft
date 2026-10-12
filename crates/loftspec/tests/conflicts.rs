@@ -4,7 +4,7 @@
 
 mod common;
 
-use common::text::{FEATURE, edited, files, path, text};
+use common::text::{FEATURE, SHALL_CONFLICT, edited, files, on_requirement, path, text};
 use loftspec::check::{Checked, check};
 use loftspec::codec::{self, Files};
 use loftspec::conflict::{ConflictOwner, ConflictValue, FieldPath};
@@ -13,21 +13,8 @@ use loftspec::publish::{
     Publication, PublishedAt, ReadTree, RepoState, Unverified, publish, verify,
 };
 
-const AFTER_CRITERIA: &str = "          - 00000000-0000-7000-8000-000000000004\n";
-
-const SHALL_CONFLICT: &str = "    conflicts:
-      - field: statement.shall
-        base: \"write a key on every node.\"
-        ours: \"write a key on each node.\"
-        theirs: \"write one key on every node.\"
-";
-
 fn conflicted() -> Files {
-    edited(
-        FEATURE,
-        AFTER_CRITERIA,
-        &format!("{AFTER_CRITERIA}{SHALL_CONFLICT}"),
-    )
+    on_requirement(SHALL_CONFLICT)
 }
 
 /// The validation errors a tree gives, as they print.

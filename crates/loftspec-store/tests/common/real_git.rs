@@ -8,39 +8,18 @@ use loftspec::publish::RepoState;
 use loftspec_store::StoreError;
 use loftspec_store::repository::{GitCommand, Repository as _};
 use software_plant::GitScenario;
+use software_plant::real_git::setup_git;
 
-/// Real git, kept from the user's configuration and from any repository above the temporary
-/// directory.
-pub fn real_git() -> Command {
-    let mut command = Command::new("git");
-    command
-        .env("GIT_CONFIG_GLOBAL", "/dev/null")
-        .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env(
-            "GIT_CEILING_DIRECTORIES",
-            std::env::temp_dir().canonicalize().unwrap(),
-        );
-    command
+pub use software_plant::real_git::real_git;
+
+/// Runs a setup command of real git in `dir`, giving its output.
+pub fn git_output(dir: &Path, args: &[&str]) -> Output {
+    setup_git().arg("-C").arg(dir).args(args).output().unwrap()
 }
 
-/// Runs a setup command of real git in `dir`. Automatic maintenance is off: a commit would
-/// otherwise leave a detached `git maintenance` process writing under `.git/` while a test
-/// compares the repository's files.
+/// Runs a setup command of real git in `dir`, which succeeds.
 pub fn git(dir: &Path, args: &[&str]) {
-    let output = real_git()
-        .args([
-            "-c",
-            "user.name=Plant",
-            "-c",
-            "user.email=plant@example.invalid",
-            "-c",
-            "maintenance.auto=false",
-        ])
-        .arg("-C")
-        .arg(dir)
-        .args(args)
-        .output()
-        .unwrap();
+    let output = git_output(dir, args);
     assert!(
         output.status.success(),
         "git {args:?}: {}",

@@ -6,6 +6,8 @@
 mod common;
 #[path = "common/schema.rs"]
 mod schema;
+#[path = "common/snapshot.rs"]
+mod snapshot;
 
 use std::fs;
 use std::process::Output;
@@ -14,6 +16,7 @@ use common::{EPOCH, Scratch, stderr, stdout};
 use loftspec::codec::SpecPath;
 use loftspec::merge::merge_file;
 use serde_json::{Value, json};
+use snapshot::snapshot;
 use software_plant::{Clock, GitScenario};
 
 const FEATURE_F1: &str = "00000000-0000-4000-8000-00000000001e";
@@ -201,29 +204,11 @@ fn a_second_publish_before_finishing_changes_nothing() {
     assert_eq!(fs::read(scratch.0.join("loft.lock.json")).unwrap(), before);
 }
 
-/// Every file under the scratch tree, by path.
-fn snapshot(scratch: &Scratch) -> Vec<(String, Vec<u8>)> {
-    let mut files = Vec::new();
-    let mut pending = vec![scratch.0.clone()];
-    while let Some(dir) = pending.pop() {
-        for entry in fs::read_dir(&dir).unwrap() {
-            let path = entry.unwrap().path();
-            if path.is_dir() {
-                pending.push(path);
-            } else {
-                files.push((path.display().to_string(), fs::read(&path).unwrap()));
-            }
-        }
-    }
-    files.sort();
-    files
-}
-
 #[test]
 fn an_unmerged_code_file_is_refused_by_name_and_nothing_is_written() {
     let (scratch, scenario) = stopped(Stop::Merge);
     let scenario = scenario.unmerged("100644", BLOB, 2, "src/main.rs");
-    let before = snapshot(&scratch);
+    let before = snapshot(&scratch.0);
     let output = publish(&scratch, &scenario, &["publish"]);
     assert_eq!(output.status.code(), Some(1));
     assert!(
@@ -231,7 +216,7 @@ fn an_unmerged_code_file_is_refused_by_name_and_nothing_is_written() {
         "{}",
         stderr(&output)
     );
-    assert_eq!(snapshot(&scratch), before);
+    assert_eq!(snapshot(&scratch.0), before);
 }
 
 #[test]
@@ -241,11 +226,11 @@ fn a_rebase_of_another_branch_is_refused_and_nothing_is_written() {
         .detached()
         .rebasing(COMMIT, "refs/heads/feature")
         .with("UU", "spec/labels.yaml");
-    let before = snapshot(&scratch);
+    let before = snapshot(&scratch.0);
     let output = publish(&scratch, &scenario, &["publish"]);
     assert_eq!(output.status.code(), Some(1));
     assert!(stderr(&output).contains("`feature`"), "{}", stderr(&output));
-    assert_eq!(snapshot(&scratch), before);
+    assert_eq!(snapshot(&scratch.0), before);
 }
 
 #[test]
@@ -255,7 +240,7 @@ fn unmerged_bindings_without_a_conflict_record_are_refused_with_the_way_out() {
     let merged = fs::read_to_string(scratch.file("labels.yaml")).unwrap();
     let plain = merged.split("conflicts:\n").next().unwrap();
     fs::write(scratch.file("labels.yaml"), plain).unwrap();
-    let before = snapshot(&scratch);
+    let before = snapshot(&scratch.0);
     let output = publish(&scratch, &scenario, &["publish"]);
     assert_eq!(output.status.code(), Some(1));
     let refusal = stderr(&output);
@@ -267,5 +252,5 @@ fn unmerged_bindings_without_a_conflict_record_are_refused_with_the_way_out() {
         refusal.contains("`loft` is on git's search path"),
         "{refusal}"
     );
-    assert_eq!(snapshot(&scratch), before);
+    assert_eq!(snapshot(&scratch.0), before);
 }

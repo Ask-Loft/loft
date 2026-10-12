@@ -3,25 +3,12 @@
 //! to git's own contract share.
 
 use std::fs;
-use std::process::{Command, Output};
+use std::process::Output;
 
-use loftspec_store::merge_driver::driver;
+use loftspec_store::merge_driver::{ATTRIBUTE, ATTRIBUTES, driver};
+use software_plant::real_git::setup_git;
 
 use super::common::{Scratch, stderr};
-
-/// Real git, kept from the user's configuration and from any repository above the temporary
-/// directory.
-pub fn real_git() -> Command {
-    let mut command = Command::new("git");
-    command
-        .env("GIT_CONFIG_GLOBAL", "/dev/null")
-        .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env(
-            "GIT_CEILING_DIRECTORIES",
-            std::env::temp_dir().canonicalize().unwrap(),
-        );
-    command
-}
 
 /// A scratch repository holding the Reading List's tree, committed on `main`, with the driver
 /// registered for `spec/` as `loft merge-driver --install` registers it.
@@ -30,11 +17,7 @@ pub struct Repo(pub Scratch);
 impl Repo {
     pub fn new() -> Self {
         let scratch = Scratch::with_reading_list();
-        fs::write(
-            scratch.0.join(".gitattributes"),
-            "spec/**/*.yaml merge=loft\n",
-        )
-        .unwrap();
+        fs::write(scratch.0.join(ATTRIBUTES), format!("{ATTRIBUTE}\n")).unwrap();
         let repo = Self(scratch);
         repo.git_ok(&["init", "--quiet", "-b", "main"]);
         repo.commit("base");
@@ -47,15 +30,8 @@ impl Repo {
         // The command `loft merge-driver --install --command '<loft>'` registers.
         let launcher = format!("'{}'", env!("CARGO_BIN_EXE_loft"));
         let driver = format!("merge.loft.driver={}", driver(&launcher));
-        real_git()
-            .args([
-                "-c",
-                "user.name=Plant",
-                "-c",
-                "user.email=plant@example.invalid",
-            ])
-            .args(["-c", "maintenance.auto=false", "-c", "core.editor=true"])
-            .args(["-c", &driver])
+        setup_git()
+            .args(["-c", "core.editor=true", "-c", &driver])
             .arg("-C")
             .arg(&self.0.0)
             .args(args)

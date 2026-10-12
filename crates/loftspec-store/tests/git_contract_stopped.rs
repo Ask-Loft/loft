@@ -15,24 +15,12 @@ use loftspec::publish::{Operation, RepoState, Stopped};
 use loftspec_store::repository::{
     GIT_PATH, GitCommand, MERGE_HEAD, REBASE_HEAD, REBASE_HEAD_NAMES, Repository as _, UNMERGED,
 };
-use real_git::{git, real_git, reply, simulated, state};
+use real_git::{git, git_output, real_git, reply, simulated, state};
 use software_plant::GitScenario;
 
 /// Runs a setup command of real git in `dir` that stops on a conflict.
 fn stops(dir: &Path, args: &[&str]) {
-    let output = real_git()
-        .args([
-            "-c",
-            "user.name=Plant",
-            "-c",
-            "user.email=plant@example.invalid",
-        ])
-        .args(["-c", "maintenance.auto=false", "-c", "core.editor=true"])
-        .arg("-C")
-        .arg(dir)
-        .args(args)
-        .output()
-        .unwrap();
+    let output = git_output(dir, args);
     assert!(!output.status.success(), "git {args:?} stops");
 }
 
