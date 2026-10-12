@@ -34,7 +34,10 @@ const PENDING: [(&str, &str); 2] = [("loft-verify", "verify"), ("loft-publish", 
 /// The slugs of the Features in this repository's `spec/` that list `reads-tree`.
 fn tagged() -> Vec<String> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let files = loftspec_store::fs::read_tree(&root).unwrap();
+    let files = loftspec_store::FileStore::open(&root)
+        .unwrap()
+        .read_files()
+        .unwrap();
     let document = codec::read(&files).unwrap();
     let mut slugs = Vec::new();
     document.walk(&mut |node| {

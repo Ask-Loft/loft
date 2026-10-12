@@ -12,7 +12,7 @@ use std::process::ExitCode;
 use clap::{Parser, Subcommand, ValueEnum};
 use loftspec::codec::ReadError;
 use loftspec::lint::Severity;
-use loftspec_store::fs;
+use loftspec_store::FileStore;
 
 #[derive(Parser)]
 #[command(
@@ -138,8 +138,9 @@ fn report(errors: &[ReadError]) {
 }
 
 fn fmt(root: &Path, check: bool) -> ExitCode {
-    let files = match fs::read_tree(root) {
-        Ok(files) => files,
+    let opened = FileStore::open(root).and_then(|store| Ok((store.read_files()?, store)));
+    let (files, store) = match opened {
+        Ok(opened) => opened,
         Err(error) => {
             eprintln!("{error}");
             return ExitCode::FAILURE;
@@ -162,7 +163,7 @@ fn fmt(root: &Path, check: bool) -> ExitCode {
             ExitCode::FAILURE
         };
     }
-    match fs::write_changed(root, &formatted.changed) {
+    match store.write_files(&formatted.changed) {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             eprintln!("{error}");

@@ -51,7 +51,7 @@ pub(crate) fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_
 /// # Errors
 ///
 /// A missing `spec/` directory, a file that cannot be read, or a name that is not UTF-8.
-pub fn read_tree(root: &Path) -> Result<Files, StoreError> {
+pub(crate) fn read_tree(root: &Path) -> Result<Files, StoreError> {
     let spec = root.join(SPEC);
     if !spec.is_dir() {
         return Err(StoreError::NoTree(spec));
@@ -99,7 +99,7 @@ fn collect(dir: &Path, prefix: &str, files: &mut Files) -> Result<(), StoreError
 ///
 /// A file that cannot be staged or put in place, or an interrupted save that cannot be
 /// recovered.
-pub fn write_changed(root: &Path, changed: &Files) -> Result<(), StoreError> {
+pub(crate) fn write_changed(root: &Path, changed: &Files) -> Result<(), StoreError> {
     journal::save(root, &tree_changes(changed))
 }
 

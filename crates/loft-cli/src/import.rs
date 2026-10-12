@@ -9,7 +9,7 @@ use std::{fs as stdfs, io};
 use loftspec::codec::{self, Sites};
 use loftspec::identity::LabelPrefix;
 use loftspec::import::{ImportError, Imported, Reported, import};
-use loftspec_store::fs;
+use loftspec_store::{FileStore, fs};
 use serde_json::{Map, Value, json};
 
 use crate::json;
@@ -59,7 +59,8 @@ fn prepare(export: &Path, counters: Option<&Path>) -> Result<Imported, String> {
 }
 
 fn write(root: &Path, imported: Imported) -> Result<(Imported, Sites), String> {
-    fs::write_import(root, &imported.files, &imported.sidecar)
+    FileStore::open(root)
+        .and_then(|_| fs::write_import(root, &imported.files, &imported.sidecar))
         .map_err(|error| error.to_string())?;
     let (_, sites) = codec::read_sited(&imported.files).map_err(|errors| {
         errors

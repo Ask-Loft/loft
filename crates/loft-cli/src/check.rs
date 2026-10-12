@@ -7,7 +7,7 @@ use std::process::ExitCode;
 
 use loftspec::check::{Checked, check};
 use loftspec::lint::Severity;
-use loftspec_store::fs;
+use loftspec_store::FileStore;
 use serde_json::{Value, json};
 
 use crate::json;
@@ -16,7 +16,7 @@ use crate::json;
 const SCHEMA: &str = "loft-check/1";
 
 pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> ExitCode {
-    let files = match fs::read_tree(root) {
+    let files = match FileStore::open(root).and_then(|store| store.read_files()) {
         Ok(files) => files,
         Err(error) => {
             if as_json {
