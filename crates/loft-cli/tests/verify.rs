@@ -129,3 +129,22 @@ fn ac_582_the_json_results_match_the_verify_schema() {
     assert_eq!(missing["outcome"], "error");
     assert_eq!(missing["errors"][0]["kind"], "lock");
 }
+
+#[test]
+fn a_tree_that_holds_a_conflict_record_compares_no_root_and_exits_1() {
+    let scratch = published();
+    let manifest = scratch.file("loftspec.yaml");
+    let text = fs::read_to_string(&manifest).unwrap();
+    fs::write(
+        &manifest,
+        format!("{text}conflicts:\n  - field: format\n    ours: loftspec/2\n"),
+    )
+    .unwrap();
+    let output = scratch.loft(&["verify"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(stdout(&output), "");
+    assert_eq!(
+        stderr(&output),
+        "spec/loftspec.yaml: the manifest holds an unresolved merge conflict over `format`\n"
+    );
+}

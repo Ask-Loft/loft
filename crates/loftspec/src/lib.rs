@@ -7,6 +7,7 @@ pub mod boundary;
 pub mod canonical;
 pub mod check;
 pub mod codec;
+pub mod conflict;
 pub mod convert;
 pub mod decision;
 pub mod document;

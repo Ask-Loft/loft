@@ -9,11 +9,12 @@ mod fixtures;
 use common::Scratch;
 use fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{self, LINT, SpecPath};
+use loftspec::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
 use loftspec::document::{Document, Edge, TagEntry};
 use loftspec::identity::Key;
 use loftspec::ids::{
-    ComponentId, CriterionId, DocumentId, FeatureGroupId, FeatureId, ProductId, RequirementId,
-    TagId,
+    ComponentId, CriterionId, DocumentId, ElementId, FeatureGroupId, FeatureId, NodeId, ProductId,
+    RequirementId, TagId,
 };
 use loftspec::names::TagName;
 use loftspec::slug::Slug;
@@ -21,7 +22,7 @@ use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
     Component, Criterion, Details, Feature, FeatureGroup, Product, Requirement, RootComponent,
 };
-use loftspec::validate::validate;
+use loftspec::validate::{conflict_errors, validate};
 use loftspec_store::{DocumentStore, FileStore, MemoryStore, Saved};
 
 const READING_LIST: &str =
@@ -67,7 +68,11 @@ impl Pair {
         let loaded = self.file.load().unwrap();
         let canonical = codec::read(&codec::write(document)).unwrap();
         assert_eq!(loaded, canonical, "loaded back");
-        assert_eq!(validate(&loaded), Vec::new(), "valid");
+        assert_eq!(
+            validate(&loaded),
+            conflict_errors(&loaded),
+            "valid but for its conflicts"
+        );
         assert!(
             self.scratch
                 .snapshot()
@@ -233,6 +238,23 @@ fn feature_deleted() -> Document {
 }
 
 /// Saves each document in turn to a fresh pair, and returns what the last save did.
+/// The Requirement of step 2 holding a merge conflict over its statement's `shall`.
+fn conflicted() -> Document {
+    let mut document = with_requirement();
+    document.conflicts.push(Conflict {
+        owner: ConflictOwner::Element(ElementId::Node(NodeId::Requirement(RequirementId::new(
+            key(10),
+        )))),
+        field: FieldPath::new("statement.shall"),
+        base: Some(ConflictValue::Scalar("record the loan.".to_owned())),
+        ours: Some(ConflictValue::Scalar(
+            "record the loan and its date.".to_owned(),
+        )),
+        theirs: None,
+    });
+    document
+}
+
 fn walk(steps: &[fn() -> Document]) -> Saved {
     let mut pair = Pair::new();
     let mut last = Saved::default();
@@ -360,6 +382,16 @@ fn ac_953_deleting_a_feature_removes_its_file() {
 fn ac_535_saving_an_unchanged_document_writes_and_removes_nothing() {
     let saved = walk(&[linked, linked]);
     assert_eq!(saved, Saved::default());
+}
+
+#[test]
+fn a_conflict_saves_and_loads_alike_in_both_stores_and_only_its_feature_is_written() {
+    let saved = walk(&[created, with_requirement, conflicted]);
+    assert_eq!(
+        saved.written,
+        paths(&["products/shelf/lending/borrowing.yaml"])
+    );
+    assert_eq!(saved.removed, Vec::new());
 }
 
 #[test]

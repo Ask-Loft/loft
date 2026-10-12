@@ -49,6 +49,7 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
     resolver.roots();
     resolver.decisions();
     resolver.labels();
+    resolver.document.conflicts = super::resolve_conflicts::collect(tree);
     if resolver.errors.is_empty() {
         Ok(resolver.document)
     } else {

@@ -10,6 +10,7 @@ mod files;
 mod layout;
 mod record;
 mod resolve;
+mod resolve_conflicts;
 mod resolve_decisions;
 mod resolve_nodes;
 pub mod schema;

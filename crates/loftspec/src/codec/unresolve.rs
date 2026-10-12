@@ -66,6 +66,7 @@ pub fn unresolve(document: &Document) -> Tree {
         };
         put(&mut tree, role, Content::Record(edges.decision(decision)));
     }
+    super::resolve_conflicts::attach(&mut tree, &document.conflicts);
     tree
 }
 
@@ -73,6 +74,7 @@ pub fn unresolve(document: &Document) -> Tree {
 pub(crate) fn unresolve_labels(document: &Document) -> Tree {
     let mut tree = Tree::default();
     put(&mut tree, Role::Labels, Content::Record(labels(document)));
+    super::resolve_conflicts::attach(&mut tree, &document.conflicts);
     tree
 }
 

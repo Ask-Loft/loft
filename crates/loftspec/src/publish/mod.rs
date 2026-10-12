@@ -18,7 +18,7 @@ use crate::check::{Placed, placed};
 use crate::codec::{self, Files, LABELS, ReadError, Sites, SpecPath, read_sited};
 use crate::document::Document;
 use crate::hash::hash_document;
-use crate::validate::{index_errors, validate};
+use crate::validate::{conflict_errors, index_errors, validate};
 
 /// What the publisher needs to know of the repository that holds the tree.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -173,7 +173,7 @@ impl fmt::Display for Root {
 /// Why a tree that reads does not verify against a lock.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Unverified {
-    /// The tree's references do not resolve, so it has no roots.
+    /// The tree holds a merge conflict, or its references do not resolve, so it has no roots.
     Invalid(Vec<Placed>),
     /// The first root that differs (AC-469), with the lock's value and the tree's.
     Mismatch {
@@ -185,12 +185,17 @@ pub enum Unverified {
 
 /// Recomputes the roots of a tree that reads and compares them with the lock's: the content
 /// root, then the binding root, then the state root (RQ-118, AC-678). A tree that does not read
-/// never gets this far, so no root is compared (RQ-149). It writes nothing (AC-470).
+/// never gets this far, and a tree that holds a merge conflict compares no root, so no root is
+/// compared for either (RQ-149). It writes nothing (AC-470).
 ///
 /// # Errors
 ///
 /// The tree has no roots, or a root differs.
 pub fn verify(tree: &ReadTree<'_>, lock: &Lock) -> Result<Digest, Unverified> {
+    let conflicts = conflict_errors(&tree.document);
+    if !conflicts.is_empty() {
+        return Err(Unverified::Invalid(placed(conflicts, &tree.sites)));
+    }
     let roots = hash_document(&tree.document)
         .map_err(|errors| Unverified::Invalid(placed(index_errors(errors), &tree.sites)))?
         .roots;
