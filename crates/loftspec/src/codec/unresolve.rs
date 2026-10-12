@@ -69,6 +69,13 @@ pub fn unresolve(document: &Document) -> Tree {
     tree
 }
 
+/// The record tree of a document's bindings file alone.
+pub(crate) fn unresolve_labels(document: &Document) -> Tree {
+    let mut tree = Tree::default();
+    put(&mut tree, Role::Labels, Content::Record(labels(document)));
+    tree
+}
+
 fn put(tree: &mut Tree, role: Role, content: Content) {
     tree.files.insert(role.path(), (role, content));
 }

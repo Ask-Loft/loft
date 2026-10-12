@@ -6,15 +6,24 @@ mod common;
 mod schema;
 
 use std::fs;
-use std::process::{Command, Output};
+use std::process::Output;
 
 use common::{EPOCH, Scratch, stderr, stdout};
 use loftspec::codec::Files;
+use loftspec::publish::{LOCK, Lock};
 use loftspec_store::FileStore;
 use serde_json::Value;
+use software_plant::clock::EPOCH_ENV;
 use software_plant::{Clock, GitScenario};
 
-const LOCK: &str = "loft.lock.json";
+/// Runs `loft` in a clean repository on `main` at [`EPOCH`].
+fn on_main(scratch: &Scratch, args: &[&str]) -> Output {
+    scratch.loft_with(
+        args,
+        Some(&GitScenario::clean_on("main")),
+        &Clock::fixed(EPOCH),
+    )
+}
 
 fn lock(scratch: &Scratch) -> Option<String> {
     fs::read_to_string(scratch.0.join(LOCK)).ok()
@@ -50,30 +59,14 @@ fn unlabel(scratch: &Scratch, label: &str) -> String {
     key
 }
 
-/// Runs `loft` with a search path that holds no `git`, and the given environment.
-fn loft_without_git(scratch: &Scratch, args: &[&str], env: &[(&str, &str)]) -> Output {
-    let empty = scratch.0.join("out-of-path");
-    fs::create_dir_all(&empty).unwrap();
-    Command::new(env!("CARGO_BIN_EXE_loft"))
-        .args(args)
-        .env("PATH", &empty)
-        .envs(env.iter().copied())
-        .current_dir(&scratch.0)
-        .output()
-        .unwrap()
-}
-
 #[test]
 fn ac_554_a_first_publish_writes_the_lock_and_prints_sequence_1_and_the_state_root() {
     let scratch = Scratch::with_reading_list();
-    let output = scratch.loft(&["publish"]);
+    let output = on_main(&scratch, &["publish"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
-    let lock = lock(&scratch).unwrap();
-    let state = lock
-        .lines()
-        .find_map(|line| line.trim().strip_prefix("\"stateRoot\": \""))
+    let state = Lock::read(lock(&scratch).unwrap().as_bytes())
         .unwrap()
-        .trim_end_matches("\",");
+        .state_root;
     assert_eq!(
         stdout(&output),
         format!("published sequence 1, state root {state}\n")
@@ -83,17 +76,16 @@ fn ac_554_a_first_publish_writes_the_lock_and_prints_sequence_1_and_the_state_ro
 #[test]
 fn the_publish_time_is_the_one_the_clock_gives_in_utc() {
     let scratch = Scratch::with_reading_list();
-    assert_eq!(scratch.loft(&["publish"]).status.code(), Some(0));
+    assert_eq!(on_main(&scratch, &["publish"]).status.code(), Some(0));
     assert!(
         lock(&scratch)
             .unwrap()
             .contains("\"publishedAt\": \"2026-01-01T00:00:00Z\"")
     );
-    assert_eq!(EPOCH, 1_767_225_600);
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft_with(
         &["publish"],
-        &GitScenario::clean_on("main"),
+        Some(&GitScenario::clean_on("main")),
         &Clock::fixed(0),
     );
     assert_eq!(output.status.code(), Some(0));
@@ -108,7 +100,7 @@ fn the_publish_time_is_the_one_the_clock_gives_in_utc() {
 fn ac_553_a_publish_prints_each_allocated_label_with_its_key() {
     let scratch = Scratch::with_reading_list();
     let key = unlabel(&scratch, "AC-3");
-    let output = scratch.loft(&["publish"]);
+    let output = on_main(&scratch, &["publish"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     let first = stdout(&output).lines().next().unwrap().to_owned();
     assert_eq!(first, format!("AC-8 {key}"));
@@ -122,11 +114,11 @@ fn ac_553_a_publish_prints_each_allocated_label_with_its_key() {
 #[test]
 fn ac_555_ac_464_a_second_publish_with_nothing_changed_writes_nothing_and_exits_0() {
     let scratch = Scratch::with_reading_list();
-    scratch.loft(&["publish"]);
+    on_main(&scratch, &["publish"]);
     let before = format_files(&scratch);
     let output = scratch.loft_with(
         &["publish"],
-        &GitScenario::clean_on("main"),
+        Some(&GitScenario::clean_on("main")),
         &Clock::fixed(EPOCH + 60),
     );
     assert_eq!(output.status.code(), Some(0));
@@ -149,7 +141,7 @@ fn ac_447_ac_552_uncommitted_changes_under_spec_refuse_naming_the_paths() {
     let git = GitScenario::clean_on("main")
         .with(" M", "spec/tags.yaml")
         .with("??", "spec/products/new.yaml");
-    let output = scratch.loft_with(&["publish"], &git, &Clock::fixed(EPOCH));
+    let output = scratch.loft_with(&["publish"], Some(&git), &Clock::fixed(EPOCH));
     refuses(&scratch, &output, "spec/products/new.yaml, spec/tags.yaml");
 }
 
@@ -158,7 +150,7 @@ fn ac_450_another_branch_refuses_naming_both_branches() {
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft_with(
         &["publish"],
-        &GitScenario::clean_on("develop"),
+        Some(&GitScenario::clean_on("develop")),
         &Clock::fixed(EPOCH),
     );
     refuses(
@@ -172,7 +164,7 @@ fn ac_450_another_branch_refuses_naming_both_branches() {
 fn ac_690_a_detached_head_refuses() {
     let scratch = Scratch::with_reading_list();
     let git = GitScenario::clean_on("main").detached();
-    let output = scratch.loft_with(&["publish"], &git, &Clock::fixed(EPOCH));
+    let output = scratch.loft_with(&["publish"], Some(&git), &Clock::fixed(EPOCH));
     refuses(
         &scratch,
         &output,
@@ -186,7 +178,7 @@ fn ac_558_ac_559_outside_a_git_repository_a_publish_refuses_and_writes_nothing()
     let before = format_files(&scratch);
     let output = scratch.loft_with(
         &["publish"],
-        &GitScenario::outside_repository(),
+        Some(&GitScenario::outside_repository()),
         &Clock::fixed(EPOCH),
     );
     refuses(&scratch, &output, "git repository");
@@ -196,7 +188,7 @@ fn ac_558_ac_559_outside_a_git_repository_a_publish_refuses_and_writes_nothing()
 #[test]
 fn a_git_that_cannot_be_run_refuses_naming_git() {
     let scratch = Scratch::with_reading_list();
-    let output = loft_without_git(&scratch, &["publish"], &[]);
+    let output = scratch.loft(&["publish"]);
     refuses(&scratch, &output, "git cannot be run");
 }
 
@@ -208,7 +200,7 @@ fn a_failing_git_refuses_with_its_message() {
         128,
         "fatal: index file corrupt\n",
     );
-    let output = scratch.loft_with(&["publish"], &git, &Clock::fixed(EPOCH));
+    let output = scratch.loft_with(&["publish"], Some(&git), &Clock::fixed(EPOCH));
     refuses(&scratch, &output, "fatal: index file corrupt");
 }
 
@@ -216,7 +208,7 @@ fn a_failing_git_refuses_with_its_message() {
 fn an_invalid_lock_refuses_naming_the_lock_file() {
     let scratch = Scratch::with_reading_list();
     fs::write(scratch.0.join(LOCK), "{}\n").unwrap();
-    let output = scratch.loft(&["publish"]);
+    let output = on_main(&scratch, &["publish"]);
     assert_eq!(output.status.code(), Some(1));
     assert!(stderr(&output).contains("loft.lock.json: not a valid lock record"));
     assert_eq!(lock(&scratch).as_deref(), Some("{}\n"));
@@ -225,16 +217,10 @@ fn an_invalid_lock_refuses_naming_the_lock_file() {
 #[test]
 fn an_epoch_that_is_not_a_whole_number_of_seconds_refuses_naming_it() {
     let scratch = Scratch::with_reading_list();
-    let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
-    let plant = scratch.0.join("plant");
-    fs::create_dir_all(&plant).unwrap();
-    GitScenario::clean_on("main")
-        .install(&plant)
-        .apply(&mut command);
-    let output = command
+    let output = scratch
+        .command(Some(&GitScenario::clean_on("main")), &Clock::system())
         .arg("publish")
-        .env("SOURCE_DATE_EPOCH", "soon")
-        .current_dir(&scratch.0)
+        .env(EPOCH_ENV, "soon")
         .output()
         .unwrap();
     refuses(&scratch, &output, "SOURCE_DATE_EPOCH");
@@ -255,7 +241,7 @@ fn ac_451_a_validation_error_refuses_listing_the_errors() {
     let mut text = fs::read_to_string(&accepted).unwrap();
     text.push_str("  - role: affected\n    node:\n      formerLabel: AC-99\n");
     fs::write(&accepted, text).unwrap();
-    let output = scratch.loft(&["publish"]);
+    let output = on_main(&scratch, &["publish"]);
     refuses(&scratch, &output, "AC-99");
     assert!(stderr(&output).contains("the validator reports"));
 }
@@ -270,7 +256,7 @@ fn a_read_error_is_reported_before_any_other_refusal() {
     );
     let output = scratch.loft_with(
         &["publish"],
-        &GitScenario::outside_repository(),
+        Some(&GitScenario::outside_repository()),
         &Clock::fixed(EPOCH),
     );
     assert_eq!(output.status.code(), Some(1));
@@ -281,16 +267,16 @@ fn a_read_error_is_reported_before_any_other_refusal() {
 fn the_json_results_match_the_publish_schema() {
     let scratch = Scratch::with_reading_list();
     let key = unlabel(&scratch, "AC-3");
-    let published = json(&scratch.loft(&["publish", "--format", "json"]));
+    let published = json(&on_main(&scratch, &["publish", "--format", "json"]));
     assert_eq!(published["outcome"], "published");
     assert_eq!(published["publishSequence"], 1);
     assert_eq!(published["allocated"][0]["label"], "AC-8");
     assert_eq!(published["allocated"][0]["key"], key.as_str());
-    let unchanged = json(&scratch.loft(&["publish", "--format", "json"]));
+    let unchanged = json(&on_main(&scratch, &["publish", "--format", "json"]));
     assert_eq!(unchanged["outcome"], "unchanged");
     let refused = json(&scratch.loft_with(
         &["publish", "--format", "json"],
-        &GitScenario::clean_on("develop"),
+        Some(&GitScenario::clean_on("develop")),
         &Clock::fixed(EPOCH),
     ));
     assert_eq!(refused["outcome"], "refused");

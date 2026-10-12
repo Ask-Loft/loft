@@ -11,22 +11,11 @@ use std::process::{Command, Output};
 use common::Scratch;
 use loftspec::publish::RepoState;
 use loftspec_store::StoreError;
-use loftspec_store::repository::{GitCommand, Repository};
+use loftspec_store::repository::{CURRENT_BRANCH, GitCommand, Repository, SHOW_PREFIX, STATUS};
 use software_plant::GitScenario;
 
-/// The calls Loft makes of git, as the repository port makes them.
-const CALLS: [&[&str]; 3] = [
-    &["rev-parse", "--show-prefix"],
-    &["symbolic-ref", "--quiet", "--short", "HEAD"],
-    &[
-        "status",
-        "--porcelain=v1",
-        "-z",
-        "--untracked-files=all",
-        "--",
-        "spec",
-    ],
-];
+/// The calls Loft makes of git, exactly as the repository port makes them.
+const CALLS: [&[&str]; 3] = [&SHOW_PREFIX, &CURRENT_BRANCH, &STATUS];
 
 /// Real git, kept from the user's configuration and from any repository above the temporary
 /// directory.

@@ -133,14 +133,6 @@ pub fn digest<T: Serialize>(domain: Domain, view: &T) -> Digest {
     writer.finish()
 }
 
-/// SHA-256 over the domain string, one zero byte and canonical bytes already computed.
-#[must_use]
-pub fn digest_bytes(domain: Domain, canonical: &[u8]) -> Digest {
-    let mut writer = HashWriter::new(domain);
-    writer.0.update(canonical);
-    writer.finish()
-}
-
 /// The digest of a JSON array whose elements' canonical bytes are already computed, in order:
 /// RFC 8785 writes an array as its elements' canonical bytes, comma-separated, in brackets.
 #[must_use]

@@ -9,7 +9,7 @@ use loftspec::canonical::Digest;
 use loftspec::convert::v1::{Conversion, ConvertError, Finding};
 use loftspec::decision::{ConsequenceKind, DecisionState, DriverPayload, NodeRef, Rating};
 use loftspec::document::{DerivedFrom, Edge, SubjectRole};
-use loftspec::hash::{hash_document, hash_document_with_views};
+use loftspec::hash::{hash_document, hash_indexed_with_views};
 use loftspec::identity::Label;
 use loftspec::ids::{
     AuthoredStateId, ComponentId, CriterionId, DecisionId, ElementId, FeatureId, NodeId, OptionId,
@@ -214,7 +214,7 @@ fn ac_723_ac_708_and_ac_709_a_reference_to_a_node_the_export_does_not_hold_is_it
 #[test]
 fn ac_711_and_ac_712_a_former_label_enters_the_edges_root_and_the_decision_view_as_an_object() {
     let conversion = convert_value(&with_deleted_subjects()).unwrap();
-    let (_, views) = hash_document_with_views(&conversion.document).unwrap();
+    let (_, views) = hash_indexed_with_views(&conversion.document.index().unwrap());
     let (_, _, edges_view) = views
         .roots
         .iter()

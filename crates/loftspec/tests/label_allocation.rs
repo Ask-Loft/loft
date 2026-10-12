@@ -6,7 +6,7 @@ mod common;
 use std::num::NonZeroU64;
 
 use common::{component, criterion, feature, key, label, root, slug, small_document};
-use loftspec::codec;
+use loftspec::codec::{self, SpecPath};
 use loftspec::decision::NodeRef;
 use loftspec::document::{Document, Edge, SubjectRole};
 use loftspec::identity::LabelPrefix;
@@ -178,6 +178,25 @@ fn ac_243_a_section_takes_no_label() {
     });
     assert_eq!(allocated(&mut document), ["AC-1"]);
     assert_eq!(document.bindings.label_of(SectionId::new(key(49))), None);
+}
+
+#[test]
+fn a_label_bound_to_a_section_is_refused_by_the_reader() {
+    let mut document = small_document();
+    document.products[0].details.sections.push(Section {
+        id: Some(SectionId::new(key(49))),
+        name: "Background".to_owned(),
+        body: "Why keys.".to_owned(),
+        sections: Vec::new(),
+    });
+    let mut files = codec::write(&document);
+    let labels = files.get_mut(&SpecPath::new("labels.yaml")).unwrap();
+    labels.extend_from_slice(format!("  - key: {}\n    label: P-9\n", key(49)).as_bytes());
+    let errors = codec::read(&files).unwrap_err();
+    assert!(
+        errors.iter().any(|error| error.to_string().contains("P-9")),
+        "{errors:?}"
+    );
 }
 
 /// The small document with its Requirement promoted to a Feature beside F-1: the same key, the

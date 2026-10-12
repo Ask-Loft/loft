@@ -13,8 +13,23 @@ use loftspec::document::{DerivedFrom, Document, Edge, SubjectRole};
 use loftspec::hash::hash_document;
 use loftspec::ids::{AuthoredStateId, DecisionId};
 use loftspec::publish::{
-    Lock, Publication, PublishedAt, Refusal, RepoState, Root, Unverified, publish, verify,
+    Lock, Publication, PublishedAt, ReadTree, Refusal, RepoState, Root, Unverified, publish, verify,
 };
+
+/// Publishes a tree that reads.
+fn publish_files(
+    files: &Files,
+    repo: &RepoState,
+    previous: Option<&Lock>,
+    at: PublishedAt,
+) -> Result<Publication, Refusal> {
+    publish(ReadTree::read(files).unwrap(), repo, previous, at)
+}
+
+/// Verifies a tree that reads.
+fn verify_files(files: &Files, lock: &Lock) -> Result<Digest, Unverified> {
+    verify(&ReadTree::read(files).unwrap(), lock)
+}
 
 fn clean_on(branch: &str) -> RepoState {
     RepoState {
@@ -39,8 +54,8 @@ fn derived() -> Document {
 
 /// Publishes `files` on a clean `main` with no previous lock.
 fn first(files: &Files) -> (Lock, Vec<u8>) {
-    match publish(files, &clean_on("main"), None, at(1_000)).unwrap() {
-        Publication::Published { lock, labels, .. } => (lock, labels),
+    match publish_files(files, &clean_on("main"), None, at(1_000)).unwrap() {
+        Publication::Published { lock, labels, .. } => (lock, labels.expect("new bindings")),
         Publication::Unchanged(_) => panic!("a first publish publishes"),
     }
 }
@@ -58,7 +73,7 @@ fn ac_447_ac_448_uncommitted_changes_under_spec_refuse_naming_the_paths() {
         modified: vec!["spec/tags.yaml".to_owned()],
         ..clean_on("main")
     };
-    let refusal = publish(&codec::write(&small_document()), &repo, None, at(0)).unwrap_err();
+    let refusal = publish_files(&codec::write(&small_document()), &repo, None, at(0)).unwrap_err();
     assert_eq!(
         refusal,
         Refusal::Modified(vec!["spec/tags.yaml".to_owned()])
@@ -67,7 +82,7 @@ fn ac_447_ac_448_uncommitted_changes_under_spec_refuse_naming_the_paths() {
 
 #[test]
 fn ac_449_ac_450_a_branch_other_than_main_refuses_naming_both_branches() {
-    let refusal = publish(
+    let refusal = publish_files(
         &codec::write(&small_document()),
         &clean_on("develop"),
         None,
@@ -88,9 +103,9 @@ fn ac_449_the_manifest_can_name_another_publish_branch() {
     let mut document = small_document();
     document.publish_branch = Some("release".to_owned());
     let files = codec::write(&document);
-    assert!(publish(&files, &clean_on("release"), None, at(0)).is_ok());
+    assert!(publish_files(&files, &clean_on("release"), None, at(0)).is_ok());
     assert!(matches!(
-        publish(&files, &clean_on("main"), None, at(0)),
+        publish_files(&files, &clean_on("main"), None, at(0)),
         Err(Refusal::Branch { .. })
     ));
 }
@@ -98,7 +113,7 @@ fn ac_449_the_manifest_can_name_another_publish_branch() {
 #[test]
 fn ac_690_a_detached_head_is_refused_as_not_on_the_publish_branch() {
     let repo = RepoState::default();
-    let refusal = publish(&codec::write(&small_document()), &repo, None, at(0)).unwrap_err();
+    let refusal = publish_files(&codec::write(&small_document()), &repo, None, at(0)).unwrap_err();
     assert_eq!(
         refusal,
         Refusal::Branch {
@@ -119,7 +134,8 @@ fn ac_451_ac_452_a_validation_error_refuses_listing_the_errors() {
     });
     let files = codec::write(&document);
     assert!(codec::read(&files).is_ok(), "the tree reads");
-    let Err(Refusal::Invalid(errors)) = publish(&files, &clean_on("main"), None, at(0)) else {
+    let Err(Refusal::Invalid(errors)) = publish_files(&files, &clean_on("main"), None, at(0))
+    else {
         panic!("a validation error refuses the publish");
     };
     assert!(
@@ -140,21 +156,32 @@ fn ac_453_a_lint_finding_does_not_refuse_a_publish() {
         !loftspec::check::check(&files).findings().is_empty(),
         "the tree has a finding"
     );
-    assert!(publish(&files, &clean_on("main"), None, at(0)).is_ok());
+    assert!(publish_files(&files, &clean_on("main"), None, at(0)).is_ok());
 }
 
 #[test]
-fn a_read_error_refuses_before_any_other_condition() {
+fn a_tree_that_does_not_read_is_never_published() {
     let mut files = codec::write(&small_document());
     files.insert(SpecPath::new("stray.yaml"), b"x: 1\n".to_vec());
-    let repo = RepoState {
-        modified: vec!["spec/stray.yaml".to_owned()],
-        branch: None,
+    assert!(ReadTree::read(&files).is_err());
+}
+
+#[test]
+fn bindings_whose_bytes_would_not_change_are_not_given() {
+    let files = codec::write(&small_document());
+    let (lock, labels) = first(&files);
+    let mut document = codec::read(&with_labels(&files, labels)).unwrap();
+    document.products[0].name = "Keys and labels".to_owned();
+    let changed = publish_files(
+        &codec::write(&document),
+        &clean_on("main"),
+        Some(&lock),
+        at(0),
+    );
+    let Ok(Publication::Published { labels, .. }) = changed else {
+        panic!("a changed tree publishes");
     };
-    assert!(matches!(
-        publish(&files, &repo, None, at(0)),
-        Err(Refusal::Unread(_))
-    ));
+    assert_eq!(labels, None);
 }
 
 #[test]
@@ -198,7 +225,7 @@ fn ac_74_ac_75_ac_255_ac_77_the_lock_carries_the_source_state_of_a_derived_docum
     // AC-77: carried unchanged into the next lock.
     let mut changed = document.clone();
     changed.products[0].name = "Keys and labels".to_owned();
-    let next = publish(
+    let next = publish_files(
         &codec::write(&changed),
         &clean_on("main"),
         Some(&lock),
@@ -221,7 +248,7 @@ fn ac_464_ac_465_ac_466_ac_640_a_second_publish_over_an_unchanged_tree_is_a_no_o
     let files = codec::write(&small_document());
     let (lock, labels) = first(&files);
     let published = with_labels(&files, labels);
-    let again = publish(&published, &clean_on("main"), Some(&lock), at(2_000)).unwrap();
+    let again = publish_files(&published, &clean_on("main"), Some(&lock), at(2_000)).unwrap();
     assert_eq!(again, Publication::Unchanged(lock));
 }
 
@@ -231,7 +258,7 @@ fn ac_461_a_publish_after_a_change_is_one_more_than_the_previous_sequence() {
     let (lock, labels) = first(&files);
     let mut document = codec::read(&with_labels(&files, labels)).unwrap();
     document.products[0].name = "Keys and labels".to_owned();
-    let next = publish(
+    let next = publish_files(
         &codec::write(&document),
         &clean_on("main"),
         Some(&lock),
@@ -258,7 +285,7 @@ fn ac_641_an_uncommitted_change_refuses_even_when_nothing_changed_since_the_last
         ..clean_on("main")
     };
     assert!(matches!(
-        publish(&with_labels(&files, labels), &repo, Some(&lock), at(0)),
+        publish_files(&with_labels(&files, labels), &repo, Some(&lock), at(0)),
         Err(Refusal::Modified(_))
     ));
 }
@@ -271,7 +298,7 @@ fn published() -> (Files, Lock) {
 }
 
 fn mismatch(files: &Files, lock: &Lock) -> Root {
-    match verify(files, lock) {
+    match verify_files(files, lock) {
         Err(Unverified::Mismatch { root, .. }) => root,
         other => panic!("a mismatch, not {other:?}"),
     }
@@ -280,7 +307,7 @@ fn mismatch(files: &Files, lock: &Lock) -> Root {
 #[test]
 fn ac_468_verification_passes_when_the_state_root_matches() {
     let (files, lock) = published();
-    assert_eq!(verify(&files, &lock), Ok(lock.state_root));
+    assert_eq!(verify_files(&files, &lock), Ok(lock.state_root));
 }
 
 #[test]
@@ -311,13 +338,6 @@ fn ac_678_a_changed_source_state_alone_fails_on_the_state_root() {
         derived.publish_sequence = 4;
     }
     assert_eq!(mismatch(&codec::write(&document), &lock), Root::State);
-}
-
-#[test]
-fn rq_149_a_tree_that_does_not_read_compares_no_root() {
-    let (mut files, lock) = published();
-    files.insert(SpecPath::new("stray.yaml"), b"x: 1\n".to_vec());
-    assert!(matches!(verify(&files, &lock), Err(Unverified::Unread(_))));
 }
 
 #[test]

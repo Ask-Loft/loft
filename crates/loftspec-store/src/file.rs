@@ -6,9 +6,10 @@ use std::path::{Path, PathBuf};
 
 use loftspec::codec::{self, Files, LABELS, SpecPath};
 use loftspec::document::Document;
+use loftspec::publish::{LOCK, Lock};
 
 use crate::error::io_error;
-use crate::fs::{LOCK, SIDECAR, SPEC};
+use crate::fs::{SIDECAR, SPEC, hidden};
 use crate::journal::{self, Changes, RootPath};
 use crate::{DocumentStore, Saved, StoreError};
 
@@ -69,48 +70,48 @@ impl FileStore {
             return Err(StoreError::NotEmpty(spec));
         }
         fs::create_dir_all(&spec).map_err(io_error(&spec))?;
-        self.write_with_beside(files, [(SIDECAR, sidecar.to_vec())])
+        self.write_with_beside(files, (SIDECAR, sidecar.to_vec()))
     }
 
     /// The lock beside `spec/`, or none.
     ///
     /// # Errors
     ///
-    /// The lock is there but cannot be read.
-    pub fn lock(&self) -> Result<Option<Vec<u8>>, StoreError> {
+    /// The lock is there but cannot be read, or is not a valid lock record.
+    pub fn lock(&self) -> Result<Option<Lock>, StoreError> {
         let path = self.root.join(LOCK);
-        match fs::read(&path) {
-            Ok(bytes) => Ok(Some(bytes)),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
-            Err(error) => Err(io_error(&path)(error)),
-        }
+        let bytes = match fs::read(&path) {
+            Ok(bytes) => bytes,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(io_error(&path)(error)),
+        };
+        Lock::read(&bytes)
+            .map(Some)
+            .map_err(|error| StoreError::Lock(path, error))
     }
 
-    /// Writes what a publish gives in one save: `spec/labels.yaml`, unless its bytes would not
-    /// change, and the lock beside `spec/`; either both or neither (AC-463).
+    /// Writes what a publish gives in one save: `spec/labels.yaml` when it changes, and the lock
+    /// beside `spec/`; either both or neither (AC-463).
     ///
     /// # Errors
     ///
     /// A file cannot be staged or put in place.
-    pub fn publish(&self, labels: Vec<u8>, lock: Vec<u8>) -> Result<(), StoreError> {
-        let current = fs::read(self.root.join(SPEC).join(LABELS)).ok();
+    pub fn publish(&self, labels: Option<Vec<u8>>, lock: &Lock) -> Result<(), StoreError> {
         let mut files = Files::new();
-        if current.as_deref() != Some(labels.as_slice()) {
+        if let Some(labels) = labels {
             files.insert(SpecPath::new(LABELS), labels);
         }
-        self.write_with_beside(files, [(LOCK, lock)])
+        self.write_with_beside(files, (LOCK, lock.to_bytes()))
     }
 
-    /// Writes files of the tree and files beside it in one save, removing none.
-    fn write_with_beside<const N: usize>(
+    /// Writes files of the tree and one file beside it in one save, removing none.
+    fn write_with_beside(
         &self,
         files: Files,
-        beside: [(&str, Vec<u8>); N],
+        (name, bytes): (&str, Vec<u8>),
     ) -> Result<(), StoreError> {
         let mut changes = Changes::of_tree(files, &[]);
-        for (name, bytes) in beside {
-            changes.write.insert(RootPath::beside(name), bytes);
-        }
+        changes.write.insert(RootPath::beside(name), bytes);
         journal::save(&self.root, &changes)
     }
 }
@@ -136,12 +137,6 @@ impl DocumentStore for FileStore {
         journal::save(&self.root, &Changes::of_tree(next, &saved.removed))?;
         Ok(saved)
     }
-}
-
-/// Whether an entry under `spec/` is left out of the tree: its name begins with `.`, as an
-/// operating system's or an editor's own files do (`.DS_Store`, swap files).
-fn hidden(name: &str) -> bool {
-    name.starts_with('.')
 }
 
 /// Whether `dir` holds an entry that is not hidden.

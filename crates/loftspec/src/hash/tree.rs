@@ -126,13 +126,10 @@ pub trait ContentHash {
     /// The digest of the content view under `loftspec/node/1`.
     fn content_hash(&self) -> Digest {
         let node = self.node();
-        self.content_hash_with(&child_hashes(node, &mut |_, _, _| {}))
-    }
-
-    /// The content hash, given the content hashes of the node's children in canonical order, so
-    /// a caller that computed them does not compute them again.
-    fn content_hash_with(&self, children: &[Digest]) -> Digest {
-        digest(Domain::Node, &view(self.node(), children))
+        digest(
+            Domain::Node,
+            &view(node, &child_hashes(node, &mut |_, _, _| {})),
+        )
     }
 }
 

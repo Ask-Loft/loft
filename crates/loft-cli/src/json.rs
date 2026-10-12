@@ -2,6 +2,7 @@
 //! RQ-158): a site is `{path, line, column}`, or `{path, byte}` for bytes that are not UTF-8, and
 //! an error or finding carries its first site's fields beside the list of all of them.
 
+use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
 use loftspec::lint::Finding;
 use loftspec::yaml::Location;
@@ -39,6 +40,22 @@ pub fn error(kind: &str, message: &str, sites: &[Site]) -> Value {
 /// A read error as JSON.
 pub fn read_error(kind: &str, error: &ReadError) -> Value {
     self::error(kind, &error.problem.to_string(), &error.sites)
+}
+
+/// Read errors of the tree as JSON.
+pub fn read_errors(errors: &[ReadError]) -> Vec<Value> {
+    errors
+        .iter()
+        .map(|error| read_error("read", error))
+        .collect()
+}
+
+/// Validation errors, each at the sites of the elements it names, as JSON.
+pub fn validation_errors(errors: &[Placed]) -> Vec<Value> {
+    errors
+        .iter()
+        .map(|placed| self::error("validation", &placed.error.to_string(), &placed.sites))
+        .collect()
 }
 
 /// A finding: rule, severity, message, the term and body line where it has them, its first

@@ -11,11 +11,12 @@ use std::fs;
 use std::path::Path;
 use std::process::Output;
 
-use common::{Scratch, stderr, stdout};
+use common::{EPOCH, Scratch, stderr, stdout};
 use conformance::{is_pending, snapshot, tagged};
 use loftspec::codec::SpecPath;
-use loftspec::publish::LOCK;
+use loftspec::publish::{LOCK, Lock};
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
+use software_plant::{Clock, GitScenario};
 
 const READING_LIST: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -69,17 +70,25 @@ const PLANTED_FILE: &str = "planted.yaml";
 
 /// The lock a planted save puts beside a clean tree: a previous publish at sequence 7, so the
 /// next publish is sequence 8 if the save was finished first and 1 if it was discarded.
-const PLANTED_LOCK: &str = r#"{
-  "format": "loftspec/1",
-  "algorithm": "sha256-jcs/1",
-  "documentKey": "00000000-0000-4000-8000-000000000001",
-  "stateRoot": "0000000000000000000000000000000000000000000000000000000000000000",
-  "contentRoot": "0000000000000000000000000000000000000000000000000000000000000000",
-  "bindingRoot": "0000000000000000000000000000000000000000000000000000000000000000",
-  "publishSequence": 7,
-  "publishedAt": "2026-01-01T00:00:00Z"
+/// Runs `loft` in a clean repository on `main` at [`EPOCH`].
+fn on_main(scratch: &Scratch, args: &[&str]) -> Output {
+    scratch.loft_with(
+        args,
+        Some(&GitScenario::clean_on("main")),
+        &Clock::fixed(EPOCH),
+    )
 }
-"#;
+
+fn planted_lock() -> Vec<u8> {
+    let zero = "0".repeat(64);
+    let text = format!(
+        r#"{{"format":"loftspec/1","algorithm":"sha256-jcs/1",
+        "documentKey":"00000000-0000-4000-8000-000000000001",
+        "stateRoot":"{zero}","contentRoot":"{zero}","bindingRoot":"{zero}",
+        "publishSequence":7,"publishedAt":"2026-01-01T00:00:00Z"}}"#
+    );
+    Lock::read(text.as_bytes()).unwrap().to_bytes()
+}
 
 /// A scratch directory for a command.
 fn fixture(fixture: Fixture) -> Scratch {
@@ -106,7 +115,7 @@ fn plant(scratch: &Scratch, fixture: Fixture, committed: bool) {
             RootPath::in_spec(&SpecPath::new(PLANTED_FILE)),
             b"planted\n".to_vec(),
         ),
-        Fixture::Clean => (RootPath::beside(LOCK), PLANTED_LOCK.as_bytes().to_vec()),
+        Fixture::Clean => (RootPath::beside(LOCK), planted_lock()),
         Fixture::Unkeyed => {
             let text = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
             let planted = text.replacen("Keeps the books a reader means to read.", PLANTED_BODY, 1);
@@ -129,9 +138,10 @@ fn plant(scratch: &Scratch, fixture: Fixture, committed: bool) {
 fn planted(scratch: &Scratch, fixture: Fixture) -> bool {
     match fixture {
         Fixture::Empty => scratch.file(PLANTED_FILE).exists(),
-        Fixture::Clean => fs::read_to_string(scratch.0.join(LOCK))
-            .unwrap()
-            .contains("\"publishSequence\": 8,"),
+        Fixture::Clean => {
+            let lock = Lock::read(&fs::read(scratch.0.join(LOCK)).unwrap()).unwrap();
+            lock.publish_sequence.get() == 8
+        }
         Fixture::Unkeyed => fs::read_to_string(scratch.file(PRODUCT))
             .unwrap()
             .contains(PLANTED_BODY),
@@ -179,7 +189,11 @@ fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
         plant(&scratch, kind, true);
         // In an empty directory the finished save leaves `spec/` not empty, which the command
         // must see before it writes.
-        assert_exit(slug, &scratch.loft(args), i32::from(kind == Fixture::Empty));
+        assert_exit(
+            slug,
+            &on_main(&scratch, args),
+            i32::from(kind == Fixture::Empty),
+        );
         assert!(
             planted(&scratch, kind),
             "{slug}: the committed save was not finished first"
@@ -196,7 +210,7 @@ fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
     for (slug, args, kind) in implemented_tagged() {
         let scratch = fixture(kind);
         plant(&scratch, kind, false);
-        assert_exit(slug, &scratch.loft(args), 0);
+        assert_exit(slug, &on_main(&scratch, args), 0);
         assert!(
             !planted(&scratch, kind),
             "{slug}: an uncommitted save took effect"
@@ -214,7 +228,7 @@ fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
     for (slug, args, kind) in COMMANDS {
         let scratch = fixture(kind);
         let before = format_files(&scratch.0);
-        scratch.loft(args);
+        on_main(&scratch, args);
         if format_files(&scratch.0) != before {
             assert!(
                 tagged.iter().any(|tag| tag == slug),
@@ -229,7 +243,7 @@ fn each_tagged_command_changes_a_file_of_the_format() {
     for (slug, args, kind) in implemented_tagged() {
         let scratch = fixture(kind);
         let before = format_files(&scratch.0);
-        assert_exit(slug, &scratch.loft(args), 0);
+        assert_exit(slug, &on_main(&scratch, args), 0);
         assert_ne!(format_files(&scratch.0), before, "{slug}: wrote nothing");
     }
 }

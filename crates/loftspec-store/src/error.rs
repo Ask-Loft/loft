@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use loftspec::codec::ReadError;
 use loftspec::index::IndexErrors;
+use loftspec::publish::LockError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum StoreError {
@@ -38,6 +39,8 @@ pub enum StoreError {
     Git { call: String, message: String },
     #[error("SOURCE_DATE_EPOCH is {0:?}, not a whole number of seconds")]
     Epoch(String),
+    #[error("{0}: not a valid lock record: {1}")]
+    Lock(PathBuf, LockError),
 }
 
 pub(crate) fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_ {

@@ -6,11 +6,11 @@ use std::path::Path;
 use std::process::ExitCode;
 
 use loftspec::check::Placed;
-use loftspec::codec::{self, Files, ReadError};
-use loftspec::publish::{LOCK, Lock, Publication, PublishedAt, Refusal, publish};
+use loftspec::codec::ReadError;
+use loftspec::publish::{Publication, PublishedAt, ReadTree, Refusal, publish};
+use loftspec_store::FileStore;
 use loftspec_store::clock::{Clock as _, SystemClock};
 use loftspec_store::repository::{GitCommand, Repository as _};
-use loftspec_store::{FileStore, StoreError};
 use serde_json::{Value, json};
 
 use crate::json;
@@ -23,6 +23,12 @@ enum Failure {
     Read(Vec<ReadError>),
     Invalid(Vec<Placed>),
     Refused(String),
+}
+
+impl<E: ToString> From<E> for Failure {
+    fn from(error: E) -> Self {
+        Self::Refused(error.to_string())
+    }
 }
 
 pub fn run(root: &Path, as_json: bool) -> ExitCode {
@@ -48,45 +54,22 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
 /// Reads the tree, then the repository, the previous lock and the time, runs the publisher and
 /// writes what it gives in one save.
 fn attempt(root: &Path) -> Result<Publication, Failure> {
-    let refused = |error: StoreError| Failure::Refused(error.to_string());
-    let store = FileStore::open(root).map_err(refused)?;
-    let files = store.read_files().map_err(refused)?;
-    codec::read(&files).map_err(Failure::Read)?;
-    let repo = GitCommand::default().state(root).map_err(refused)?;
-    let previous = previous(&store)?;
-    let seconds = SystemClock::from_env().now().map_err(refused)?;
-    let at = PublishedAt::from_unix_seconds(seconds)
+    let store = FileStore::open(root)?;
+    let files = store.read_files()?;
+    let tree = ReadTree::read(&files).map_err(Failure::Read)?;
+    let repo = GitCommand::default().state(root)?;
+    let previous = store.lock()?;
+    let at = PublishedAt::from_unix_seconds(SystemClock::from_env().now()?)
         .map_err(|error| Failure::Refused(format!("SOURCE_DATE_EPOCH: {error}")))?;
-    let publication = decide(&files, &repo, previous.as_ref(), at)?;
+    let publication = publish(tree, &repo, previous.as_ref(), at).map_err(refusal)?;
     if let Publication::Published { lock, labels, .. } = &publication {
-        store
-            .publish(labels.clone(), lock.to_bytes())
-            .map_err(refused)?;
+        store.publish(labels.clone(), lock)?;
     }
     Ok(publication)
 }
 
-fn previous(store: &FileStore) -> Result<Option<Lock>, Failure> {
-    let bytes = store
-        .lock()
-        .map_err(|error| Failure::Refused(error.to_string()))?;
-    bytes
-        .map(|bytes| {
-            Lock::read(&bytes).map_err(|error| {
-                Failure::Refused(format!("{LOCK}: not a valid lock record: {error}"))
-            })
-        })
-        .transpose()
-}
-
-fn decide(
-    files: &Files,
-    repo: &loftspec::publish::RepoState,
-    previous: Option<&Lock>,
-    at: PublishedAt,
-) -> Result<Publication, Failure> {
-    publish(files, repo, previous, at).map_err(|refusal| match refusal {
-        Refusal::Unread(errors) => Failure::Read(errors),
+fn refusal(refusal: Refusal) -> Failure {
+    match refusal {
         Refusal::Invalid(errors) => Failure::Invalid(errors),
         Refusal::Modified(paths) => Failure::Refused(format!(
             "uncommitted changes under spec/: {}; commit them before publishing",
@@ -104,7 +87,7 @@ fn decide(
         } => Failure::Refused(format!(
             "HEAD is detached, not on the publish branch `{publish}`"
         )),
-    })
+    }
 }
 
 fn print(publication: &Publication) {
@@ -131,9 +114,7 @@ fn report(failure: &Failure) {
     match failure {
         Failure::Read(errors) => crate::report(errors),
         Failure::Invalid(errors) => {
-            for error in errors {
-                eprintln!("{error}");
-            }
+            crate::report(errors);
             eprintln!(
                 "publish refused: the validator reports {} errors",
                 errors.len()
@@ -170,12 +151,9 @@ fn published(publication: &Publication) -> Value {
 }
 
 fn refused(failure: &Failure) -> Value {
-    let errors: Vec<Value> = match failure {
-        Failure::Read(errors) => errors.iter().map(|e| json::read_error("read", e)).collect(),
-        Failure::Invalid(errors) => errors
-            .iter()
-            .map(|placed| json::error("validation", &placed.error.to_string(), &placed.sites))
-            .collect(),
+    let errors = match failure {
+        Failure::Read(errors) => json::read_errors(errors),
+        Failure::Invalid(errors) => json::validation_errors(errors),
         Failure::Refused(reason) => vec![json::error("refused", reason, &[])],
     };
     json!({

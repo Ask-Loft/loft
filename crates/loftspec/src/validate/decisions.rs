@@ -13,9 +13,35 @@ pub(super) fn check(document: &Document, errors: &mut Vec<ValidationError>) {
     }
 }
 
+/// Every former label the document's decisions name, in one pass over the edges and the
+/// decisions: in `subject` edges, drivers and consequences.
+pub(crate) fn all_former_labels<'a>(
+    edges: &'a [Edge],
+    decisions: &'a [Decision],
+) -> impl Iterator<Item = Label> + 'a {
+    let edges = edges.iter().filter_map(|edge| match *edge {
+        Edge::Subject { subject, .. } => Some(subject),
+        _ => None,
+    });
+    let elements = decisions.iter().flat_map(|decision| {
+        let drivers = decision
+            .drivers
+            .iter()
+            .filter_map(|driver| match driver.payload {
+                DriverPayload::Subject { subject } => Some(subject),
+                DriverPayload::Local { .. } => None,
+            });
+        drivers.chain(decision.consequences.iter().filter_map(|c| c.subject))
+    });
+    edges.chain(elements).filter_map(|subject| match subject {
+        NodeRef::Former(label) => Some(label),
+        NodeRef::Held(_) => None,
+    })
+}
+
 /// Every former label a decision names: in its `subject` edges, its drivers and its
 /// consequences.
-pub(crate) fn former_labels_of<'a>(
+fn former_labels_of<'a>(
     document: &'a Document,
     decision: &'a Decision,
 ) -> impl Iterator<Item = Label> + 'a {

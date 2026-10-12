@@ -19,14 +19,13 @@ pub(crate) struct DecisionHasher<'a> {
     nodes: &'a NodeIndex,
     hashes: BTreeMap<DecisionId, Digest>,
     views: BTreeMap<DecisionId, Value>,
-    keep_views: bool,
 }
 
-/// The hash of every decision of a document, and its view where views are kept.
+/// The view and its hash for every decision of a document.
 pub(crate) type DecisionViews = (BTreeMap<DecisionId, Digest>, BTreeMap<DecisionId, Value>);
 
 impl<'a> DecisionHasher<'a> {
-    pub(crate) fn new(decisions: &'a [Decision], nodes: &'a NodeIndex, keep_views: bool) -> Self {
+    pub(crate) fn new(decisions: &'a [Decision], nodes: &'a NodeIndex) -> Self {
         Self {
             decisions: decisions
                 .iter()
@@ -35,7 +34,6 @@ impl<'a> DecisionHasher<'a> {
             nodes,
             hashes: BTreeMap::new(),
             views: BTreeMap::new(),
-            keep_views,
         }
     }
 
@@ -56,9 +54,7 @@ impl<'a> DecisionHasher<'a> {
         let view = decision_view(decision, &state, self.nodes);
         let hash = digest(Domain::Decision, &view);
         self.hashes.insert(key, hash);
-        if self.keep_views {
-            self.views.insert(key, view);
-        }
+        self.views.insert(key, view);
         hash
     }
 

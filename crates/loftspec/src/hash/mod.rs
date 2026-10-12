@@ -7,12 +7,13 @@ mod tree;
 
 use std::collections::BTreeMap;
 
+use serde::Serialize;
 use serde_json::{Value, json};
 
 pub use tree::ContentHash;
 
 use crate::FORMAT;
-use crate::canonical::{Digest, Domain, canonical_bytes, digest_array};
+use crate::canonical::{Digest, Domain, canonical_bytes, digest, digest_array};
 use crate::document::{DerivedFrom, Document, Edge, EdgeTarget, SubjectRole};
 use crate::identity::{Key, Label};
 use crate::ids::{DecisionId, ElementId, NodeId};
@@ -119,17 +120,6 @@ pub fn hash_document(document: &Document) -> Result<DocumentHashes, IndexErrors>
     Ok(hash_indexed(&document.index()?))
 }
 
-/// [`hash_document`], keeping every view it digested.
-///
-/// # Errors
-///
-/// Every integrity error the document's index finds.
-pub fn hash_document_with_views(
-    document: &Document,
-) -> Result<(DocumentHashes, Views), IndexErrors> {
-    Ok(hash_indexed_with_views(&document.index()?))
-}
-
 /// Computes every content hash, decision view hash and root of an indexed document.
 #[must_use]
 pub fn hash_indexed(indexed: &Indexed<'_>) -> DocumentHashes {
@@ -144,46 +134,54 @@ pub fn hash_indexed_with_views(indexed: &Indexed<'_>) -> (DocumentHashes, Views)
     (hashes, views)
 }
 
+/// Digests a root view, keeping it as a value when views are kept.
+fn root<T: Serialize>(
+    views: &mut Option<&mut Views>,
+    name: &'static str,
+    domain: Domain,
+    view: &T,
+) -> Digest {
+    if let Some(views) = views {
+        let value = serde_json::to_value(view).expect("a root view serialises");
+        views.roots.push((name, domain, value));
+    }
+    digest(domain, view)
+}
+
 fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes {
     let document = indexed.document();
     let trees = hash_trees(document, views.as_deref_mut().map(|views| &mut views.nodes));
     let index = trees.index();
     let (decisions, decision_views) =
-        decisions::DecisionHasher::new(&document.decisions, &index, views.is_some()).hash_all();
+        decisions::DecisionHasher::new(&document.decisions, &index).hash_all();
     let resolve = |element: ElementId| match element {
         ElementId::Node(id) => node_hash(&index, id),
         ElementId::Decision(id) => decisions[&id],
     };
-    let mut kept = Vec::new();
-    let mut root = |name: &'static str, domain: Domain, view: &dyn erased::View| {
-        let hash = view.digest(domain);
-        if views.is_some() {
-            kept.push((name, domain, view.value()));
-        }
-        hash
-    };
-    let edges = root(
-        "edges",
-        Domain::Edges,
-        &EdgesView::of(&document.edges, &resolve),
-    );
+    let edges = edges_root(&document.edges, &resolve, &mut views);
     let tag_rows = document
         .tags
         .iter()
         .map(|tag| [tag.name.as_str(), tag.definition.as_str()]);
-    let tags = root("tags", Domain::Registry, &registry_view("tags", tag_rows));
+    let tags = root(
+        &mut views,
+        "tags",
+        Domain::Registry,
+        &registry_view("tags", tag_rows),
+    );
     let category_rows = document
         .categories
         .iter()
         .map(|category| [category.name.as_str(), category.definition.as_str()]);
     let categories = root(
+        &mut views,
         "categories",
         Domain::Registry,
         &registry_view("categories", category_rows),
     );
     let mut decision_hashes: Vec<Digest> = decisions.values().copied().collect();
     decision_hashes.sort_unstable();
-    let decisions_root = root("decisions", Domain::Decisions, &decision_hashes);
+    let decisions_root = root(&mut views, "decisions", Domain::Decisions, &decision_hashes);
     let content_view = (
         &trees.products,
         &trees.components,
@@ -192,20 +190,21 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         categories,
         decisions_root,
     );
-    let content = root("content", Domain::Content, &content_view);
+    let content = root(&mut views, "content", Domain::Content, &content_view);
     let bindings = root(
+        &mut views,
         "bindings",
         Domain::Bindings,
         &bindings_view(document, &resolve),
     );
     let state = root(
+        &mut views,
         "state",
         Domain::State,
         &state_view(document, content, bindings),
     );
     if let Some(views) = views {
         views.decisions = decision_views;
-        views.roots = kept;
     }
     DocumentHashes {
         nodes: trees.nodes,
@@ -224,75 +223,44 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
     }
 }
 
-/// A root view, digested by streaming it, or by its own means, and turned into a value only when
-/// a caller keeps it.
-mod erased {
-    use serde::Serialize;
-    use serde_json::Value;
-
-    use crate::canonical::{Digest, Domain, digest};
-
-    pub(super) trait View {
-        fn digest(&self, domain: Domain) -> Digest;
-        fn value(&self) -> Value;
-    }
-
-    impl<T: Serialize> View for T {
-        fn digest(&self, domain: Domain) -> Digest {
-            digest(domain, self)
-        }
-
-        fn value(&self) -> Value {
-            serde_json::to_value(self).expect("a root view serialises")
-        }
-    }
-}
-
 /// How a view names a node the document no longer holds: `{"formerLabel": <label>}` (ADR-13).
 pub(crate) fn former(label: Label) -> Value {
     json!({ "formerLabel": label })
 }
 
-/// The edges root view: each edge as its source's hash, its type, its target's hash and its
-/// role, the tuples sorted by their canonical bytes, duplicates kept (RQ-13). An endpoint's hash
-/// is a node's content hash or a decision's view hash; a former label enters as itself. Each
-/// tuple is canonicalised once, and the sorted bytes are digested as the array they make.
-struct EdgesView(Vec<Vec<u8>>);
-
-impl EdgesView {
-    fn of(edges: &[Edge], resolve: &impl Fn(ElementId) -> Digest) -> Self {
-        let mut tuples: Vec<Vec<u8>> = edges
-            .iter()
-            .map(|edge| {
-                let target = match edge.target() {
-                    EdgeTarget::Element(element) => json!(resolve(element)),
-                    EdgeTarget::Former(label) => former(label),
-                };
-                canonical_bytes(&(
-                    resolve(edge.source()),
-                    edge.kind().as_str(),
-                    target,
-                    edge.role().map(SubjectRole::as_str),
-                ))
-            })
-            .collect();
-        tuples.sort_unstable();
-        Self(tuples)
+/// The edges root: each edge as its source's hash, its type, its target's hash and its role,
+/// the tuples sorted by their canonical bytes, duplicates kept (RQ-13). An endpoint's hash is a
+/// node's content hash or a decision's view hash; a former label enters as itself. Each tuple is
+/// canonicalised once, and the sorted bytes are digested as the array they make.
+fn edges_root(
+    edges: &[Edge],
+    resolve: &impl Fn(ElementId) -> Digest,
+    views: &mut Option<&mut Views>,
+) -> Digest {
+    let mut tuples: Vec<Vec<u8>> = edges
+        .iter()
+        .map(|edge| {
+            let target = match edge.target() {
+                EdgeTarget::Element(element) => json!(resolve(element)),
+                EdgeTarget::Former(label) => former(label),
+            };
+            canonical_bytes(&(
+                resolve(edge.source()),
+                edge.kind().as_str(),
+                target,
+                edge.role().map(SubjectRole::as_str),
+            ))
+        })
+        .collect();
+    tuples.sort_unstable();
+    if let Some(views) = views {
+        let parse = |bytes: &Vec<u8>| -> Value {
+            serde_json::from_slice(bytes).expect("canonical bytes are JSON")
+        };
+        let value = Value::Array(tuples.iter().map(parse).collect());
+        views.roots.push(("edges", Domain::Edges, value));
     }
-}
-
-impl erased::View for EdgesView {
-    fn digest(&self, domain: Domain) -> Digest {
-        digest_array(domain, &self.0)
-    }
-
-    fn value(&self) -> Value {
-        let tuples = self
-            .0
-            .iter()
-            .map(|bytes| serde_json::from_slice(bytes).expect("canonical bytes are JSON"));
-        Value::Array(tuples.collect())
-    }
+    digest_array(Domain::Edges, &tuples)
 }
 
 /// A registry root view: the registry's name and its entries as name and definition, sorted by

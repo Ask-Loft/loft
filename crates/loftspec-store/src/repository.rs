@@ -9,7 +9,21 @@ use std::process::{Command, Output};
 use loftspec::publish::RepoState;
 
 use crate::StoreError;
-use crate::fs::SPEC;
+use crate::fs::{SPEC, hidden};
+
+/// The working directory's path from the repository's top level.
+pub const SHOW_PREFIX: [&str; 2] = ["rev-parse", "--show-prefix"];
+/// The checked-out branch; exit 1 on a detached HEAD.
+pub const CURRENT_BRANCH: [&str; 4] = ["symbolic-ref", "--quiet", "--short", "HEAD"];
+/// The porcelain v1 records of the uncommitted changes under `spec/`.
+pub const STATUS: [&str; 6] = [
+    "status",
+    "--porcelain=v1",
+    "-z",
+    "--untracked-files=all",
+    "--",
+    SPEC,
+];
 
 /// Where the publisher learns the repository's state.
 pub trait Repository {
@@ -59,7 +73,7 @@ impl GitCommand {
 
     /// The working directory's path from the repository's top level.
     fn prefix(&self, root: &Path) -> Result<String, StoreError> {
-        let call = ["rev-parse", "--show-prefix"];
+        let call = SHOW_PREFIX;
         let output = self.run(root, &call)?;
         let stderr = String::from_utf8_lossy(&output.stderr);
         if output.status.code() == Some(128) && stderr.contains("not a git repository") {
@@ -69,7 +83,7 @@ impl GitCommand {
     }
 
     fn branch(&self, root: &Path) -> Result<Option<String>, StoreError> {
-        let call = ["symbolic-ref", "--quiet", "--short", "HEAD"];
+        let call = CURRENT_BRANCH;
         let output = self.run(root, &call)?;
         if output.status.code() == Some(1) {
             return Ok(None);
@@ -78,14 +92,7 @@ impl GitCommand {
     }
 
     fn status(&self, root: &Path) -> Result<Vec<u8>, StoreError> {
-        let call = [
-            "status",
-            "--porcelain=v1",
-            "-z",
-            "--untracked-files=all",
-            "--",
-            SPEC,
-        ];
+        let call = STATUS;
         succeeded(&call, self.run(root, &call)?)
     }
 }
@@ -145,7 +152,7 @@ fn modified(status: &[u8], prefix: &str) -> Vec<String> {
     let mut paths: Vec<String> = paths
         .into_iter()
         .map(|path| path.strip_prefix(prefix).map(str::to_owned).unwrap_or(path))
-        .filter(|path| !path.split('/').any(|part| part.starts_with('.')))
+        .filter(|path| !path.split('/').any(hidden))
         .collect();
     paths.sort();
     paths.dedup();

@@ -5,7 +5,7 @@ mod common;
 use common::small_document;
 use loftspec::canonical::canonical_bytes;
 use loftspec::codec;
-use loftspec::hash::{hash_document, hash_document_with_views};
+use loftspec::hash::{hash_document, hash_indexed_with_views};
 use loftspec::render::{Projections, render};
 use serde_json::Value;
 
@@ -128,7 +128,7 @@ fn ac_437_the_export_is_canonical_json() {
 #[test]
 fn ac_438_ac_439_the_export_holds_every_nodes_view_key_and_label() {
     let export = export();
-    let (_, views) = hash_document_with_views(&small_document()).unwrap();
+    let (_, views) = hash_indexed_with_views(&small_document().index().unwrap());
     let nodes = export["nodes"].as_array().unwrap();
     assert_eq!(nodes.len(), views.nodes.len());
     let feature = nodes.iter().find(|node| node["label"] == "F-1").unwrap();

@@ -1,5 +1,6 @@
 //! What a publish writes through the file store: `spec/labels.yaml` and the lock beside `spec/`,
-//! in one save (AC-463), the bindings only when their bytes change.
+//! in one save (AC-463), the bindings only when the publisher gives them; and the lock read back
+//! only when it is a valid lock record.
 
 mod common;
 mod fixtures;
@@ -8,10 +9,10 @@ use std::fs;
 
 use common::Scratch;
 use fixtures::{LINT_CONFIG, converted, with_lint};
-use loftspec::codec::{self, LABELS, SpecPath};
-use loftspec_store::fs::LOCK;
+use loftspec::codec::LABELS;
+use loftspec::publish::{LOCK, Lock};
 use loftspec_store::journal::JOURNAL;
-use loftspec_store::{DocumentStore, FileStore};
+use loftspec_store::{DocumentStore, FileStore, StoreError};
 
 const READING_LIST: &str =
     include_str!("../../../testdata/v1/reading-list/loft-authored-state.json");
@@ -28,6 +29,21 @@ fn labels(scratch: &Scratch) -> Vec<u8> {
     fs::read(scratch.0.join("spec").join(LABELS)).unwrap()
 }
 
+/// A lock record for the tests.
+fn lock() -> Lock {
+    let zero = "0".repeat(64);
+    Lock::read(
+        format!(
+            r#"{{"format":"loftspec/1","algorithm":"sha256-jcs/1",
+            "documentKey":"00000000-0000-4000-8000-000000000001",
+            "stateRoot":"{zero}","contentRoot":"{zero}","bindingRoot":"{zero}",
+            "publishSequence":1,"publishedAt":"2026-01-01T00:00:00Z"}}"#
+        )
+        .as_bytes(),
+    )
+    .unwrap()
+}
+
 #[test]
 fn a_tree_without_a_lock_has_none() {
     let (_scratch, store) = saved();
@@ -39,19 +55,19 @@ fn a_publish_writes_the_bindings_and_the_lock_in_one_save() {
     let (scratch, store) = saved();
     let mut bindings = labels(&scratch);
     bindings.extend_from_slice(b"# changed\n");
-    store.publish(bindings.clone(), b"{}\n".to_vec()).unwrap();
+    store.publish(Some(bindings.clone()), &lock()).unwrap();
     assert_eq!(labels(&scratch), bindings);
-    assert_eq!(store.lock().unwrap(), Some(b"{}\n".to_vec()));
+    assert_eq!(store.lock().unwrap(), Some(lock()));
     assert!(!scratch.0.join(JOURNAL).exists());
 }
 
 #[test]
-fn a_publish_changes_no_other_file_under_spec() {
+fn a_publish_without_new_bindings_changes_no_file_under_spec() {
     let (scratch, store) = saved();
     let before = scratch.snapshot();
-    store.publish(labels(&scratch), b"{}\n".to_vec()).unwrap();
+    store.publish(None, &lock()).unwrap();
     let mut after = scratch.snapshot();
-    assert_eq!(after.remove(LOCK), Some(b"{}\n".to_vec()));
+    assert_eq!(after.remove(LOCK), Some(lock().to_bytes()));
     assert_eq!(after, before);
     assert_eq!(
         fs::read_to_string(scratch.0.join("spec/lint.yaml")).unwrap(),
@@ -59,22 +75,16 @@ fn a_publish_changes_no_other_file_under_spec() {
     );
 }
 
-#[cfg(unix)]
 #[test]
-fn bindings_whose_bytes_would_not_change_are_not_rewritten() {
-    use std::os::unix::fs::MetadataExt;
-
+fn a_lock_that_is_not_a_valid_lock_record_is_refused_naming_its_file() {
     let (scratch, store) = saved();
-    let path = scratch.0.join("spec").join(LABELS);
-    let before = fs::metadata(&path).unwrap();
-    let document = store.load().unwrap();
-    let unchanged = codec::write(&document)
-        .remove(&SpecPath::new(LABELS))
-        .unwrap();
-    store.publish(unchanged, b"{}\n".to_vec()).unwrap();
-    let after = fs::metadata(&path).unwrap();
-    assert_eq!(
-        (after.ino(), after.mtime_nsec(), after.mtime()),
-        (before.ino(), before.mtime_nsec(), before.mtime())
+    fs::write(scratch.0.join(LOCK), "{}\n").unwrap();
+    let error = store.lock().unwrap_err();
+    assert!(matches!(error, StoreError::Lock(..)), "{error}");
+    assert!(
+        error
+            .to_string()
+            .contains("loft.lock.json: not a valid lock record"),
+        "{error}"
     );
 }

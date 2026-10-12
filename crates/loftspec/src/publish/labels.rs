@@ -7,7 +7,7 @@ use crate::document::Document;
 use crate::identity::{Label, LabelPrefix};
 use crate::ids::ElementId;
 use crate::node::Node;
-use crate::validate::decisions::former_labels_of;
+use crate::validate::decisions::all_former_labels;
 
 /// A label a publish gave an element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -47,13 +47,15 @@ pub fn allocate(document: &mut Document) -> Vec<Allocated> {
 }
 
 fn raise_counters(document: &mut Document) {
-    let mut seen: Vec<Label> = document.bindings.iter().flat_map(Binding::labels).collect();
-    for decision in &document.decisions {
-        seen.extend(former_labels_of(document, decision));
-    }
-    for label in seen {
-        document.counters.raise(label);
-    }
+    let Document {
+        bindings,
+        counters,
+        edges,
+        decisions,
+        ..
+    } = document;
+    let live = bindings.iter().flat_map(Binding::labels);
+    counters.raise_all(live.chain(all_former_labels(edges, decisions)));
 }
 
 fn next_label(document: &mut Document, prefix: LabelPrefix) -> Label {

@@ -12,7 +12,6 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use loftspec::codec::ReadError;
 use loftspec::lint::Severity;
 use loftspec_store::FileStore;
 
@@ -146,8 +145,9 @@ fn main() -> ExitCode {
     }
 }
 
-/// Prints each read error on its own line as `<path>:<line>:<column>: <message>` (RQ-158).
-fn report(errors: &[ReadError]) {
+/// Prints each error on its own line; a read or validation error as
+/// `<path>:<line>:<column>: <message>` (RQ-158).
+fn report(errors: &[impl std::fmt::Display]) {
     for error in errors {
         eprintln!("{error}");
     }

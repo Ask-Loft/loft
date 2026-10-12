@@ -1,6 +1,7 @@
 //! What the command-line tests share: a scratch repository holding the Reading List's `spec/`
-//! tree and the `loft` binary run in it, in front of the Software Plant's simulators: its git
-//! simulator, clean on `main` unless a test scripts another repository, and a fixed clock.
+//! tree and the `loft` binary run in it, in front of the Software Plant's simulators: a fixed
+//! clock, and the git simulator for a command that reads the repository, with no `git` on the
+//! search path otherwise.
 
 use std::path::PathBuf;
 use std::process::{Command, Output};
@@ -49,19 +50,35 @@ impl Scratch {
         fs::write(self.file(path), text.replacen(from, to, 1)).unwrap();
     }
 
-    /// Runs `loft` in a clean repository on `main` at [`EPOCH`].
+    /// Runs `loft` at [`EPOCH`] with no `git` on its search path, as every command but a
+    /// publish needs.
     pub fn loft(&self, args: &[&str]) -> Output {
-        self.loft_with(args, &GitScenario::clean_on("main"), &Clock::fixed(EPOCH))
+        self.loft_with(args, None, &Clock::fixed(EPOCH))
     }
 
-    /// Runs `loft` with the git simulator answering from `git` and the time `clock` gives.
-    pub fn loft_with(&self, args: &[&str], git: &GitScenario, clock: &Clock) -> Output {
+    /// Runs `loft` with the git simulator answering from `git`, or no `git` at all, and the time
+    /// `clock` gives.
+    pub fn loft_with(&self, args: &[&str], git: Option<&GitScenario>, clock: &Clock) -> Output {
+        self.command(git, clock).args(args).output().unwrap()
+    }
+
+    /// The `loft` command in the scratch tree: the git simulator answering from `git` first on
+    /// its search path, or no `git` at all, and the time `clock` gives.
+    pub fn command(&self, git: Option<&GitScenario>, clock: &Clock) -> Command {
         let plant = self.plant();
         fs::create_dir_all(&plant).unwrap();
         let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
-        git.install(&plant).apply(&mut command);
+        match git {
+            Some(git) => {
+                git.install(&plant).apply(&mut command);
+            }
+            None => {
+                command.env("PATH", &plant);
+            }
+        }
         clock.apply(&mut command);
-        command.args(args).current_dir(&self.0).output().unwrap()
+        command.current_dir(&self.0);
+        command
     }
 
     /// The directory beside the scratch tree that holds the simulators' scenarios.

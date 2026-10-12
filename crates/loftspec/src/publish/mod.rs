@@ -14,14 +14,11 @@ pub use lock::{LOCK, Lock, LockError};
 pub use time::{PublishedAt, TimeError};
 
 use crate::canonical::Digest;
-use crate::check::{Placed, place};
+use crate::check::{Placed, placed};
 use crate::codec::{self, Files, LABELS, ReadError, Sites, SpecPath, read_sited};
 use crate::document::Document;
-use crate::hash::{Roots, hash_document};
-use crate::validate::validate;
-
-/// The publish branch of a manifest that names none (AC-449).
-pub const DEFAULT_PUBLISH_BRANCH: &str = "main";
+use crate::hash::hash_document;
+use crate::validate::{index_errors, validate};
 
 /// What the publisher needs to know of the repository that holds the tree.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -33,16 +30,40 @@ pub struct RepoState {
     pub modified: Vec<String>,
 }
 
+/// A tree read for a publish or a verification: its files, its document and where each of its
+/// elements sits. Reading it first is what makes a read error come before every other answer.
+pub struct ReadTree<'a> {
+    files: &'a Files,
+    document: Document,
+    sites: Sites,
+}
+
+impl<'a> ReadTree<'a> {
+    /// Reads a `spec/` tree.
+    ///
+    /// # Errors
+    ///
+    /// Every read error the tree holds.
+    pub fn read(files: &'a Files) -> Result<Self, Vec<ReadError>> {
+        let (document, sites) = read_sited(files)?;
+        Ok(Self {
+            files,
+            document,
+            sites,
+        })
+    }
+}
+
 /// What a publish decided.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Publication {
     /// Nothing changed since the previous lock, which stands (RQ-117).
     Unchanged(Lock),
-    /// A new lock, the bytes of `spec/labels.yaml`, the only file under `spec/` a publish
-    /// changes (AC-460), and the labels it allocated.
+    /// A new lock, the labels it allocated, and the bytes of `spec/labels.yaml`, the only file
+    /// under `spec/` a publish changes (AC-460), where they differ from the tree's.
     Published {
         lock: Lock,
-        labels: Vec<u8>,
+        labels: Option<Vec<u8>>,
         allocated: Vec<Allocated>,
     },
 }
@@ -50,8 +71,6 @@ pub enum Publication {
 /// Why a publish refused before it wrote anything (F-27).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Refusal {
-    /// The tree does not read.
-    Unread(Vec<ReadError>),
     /// Paths under `spec/` have uncommitted changes (RQ-112).
     Modified(Vec<String>),
     /// The current branch, none on a detached HEAD, is not the publish branch (RQ-113).
@@ -63,79 +82,65 @@ pub enum Refusal {
     Invalid(Vec<Placed>),
 }
 
-/// Publishes the tree: refuses on a read error, an uncommitted change under `spec/`, a branch
-/// other than the publish branch or a validation error, in that order; reports the previous lock
-/// when the tree's state root equals it; and otherwise allocates labels and gives the new lock
-/// and bindings to write.
+/// Publishes a tree that reads: refuses on an uncommitted change under `spec/`, a branch other
+/// than the publish branch or a validation error, in that order; otherwise allocates labels,
+/// and reports the previous lock when the state root equals it, or gives the new lock and
+/// bindings to write.
 ///
 /// # Errors
 ///
 /// A refusal, which writes nothing.
 pub fn publish(
-    files: &Files,
+    tree: ReadTree<'_>,
     repo: &RepoState,
     previous: Option<&Lock>,
     at: PublishedAt,
 ) -> Result<Publication, Refusal> {
-    let (mut document, sites) = read_sited(files).map_err(Refusal::Unread)?;
+    let ReadTree {
+        files,
+        mut document,
+        sites,
+    } = tree;
     if !repo.modified.is_empty() {
         return Err(Refusal::Modified(repo.modified.clone()));
     }
-    let branch = publish_branch(&document);
+    let branch = document.publish_branch.as_deref().unwrap_or("main");
     if repo.branch.as_deref() != Some(branch) {
         return Err(Refusal::Branch {
             current: repo.branch.clone(),
             publish: branch.to_owned(),
         });
     }
-    let roots = valid_roots(&document, &sites).map_err(Refusal::Invalid)?;
+    let invalid = placed(validate(&document), &sites);
+    if !invalid.is_empty() {
+        return Err(Refusal::Invalid(invalid));
+    }
+    // Allocation gives only fresh labels of each element's own prefix, so the document stays
+    // valid; when it gives none, the roots are the tree's own (AC-640).
+    let allocated = allocate(&mut document);
+    let roots = hash_document(&document)
+        .expect("a document the validator accepts indexes")
+        .roots;
     if let Some(previous) = previous.filter(|lock| lock.state_root == roots.state) {
         return Ok(Publication::Unchanged(previous.clone()));
     }
-    let allocated = allocate(&mut document);
-    let roots = valid_roots(&document, &sites).map_err(Refusal::Invalid)?;
-    let lock = Lock {
-        document_key: document.id,
-        state_root: roots.state,
-        content_root: roots.content,
-        binding_root: roots.bindings,
-        publish_sequence: previous.map_or(NonZeroU64::MIN, |lock| {
-            lock.publish_sequence.saturating_add(1)
-        }),
-        published_at: at,
-        derived_from: document.derived_from.clone(),
-    };
-    let labels = codec::write(&document)
-        .remove(&SpecPath::new(LABELS))
-        .expect("the writer writes the bindings");
+    let labels = codec::write_labels(&document);
+    let unchanged = files.get(&SpecPath::new(LABELS)) == Some(&labels);
     Ok(Publication::Published {
-        lock,
-        labels,
+        lock: Lock {
+            document_key: document.id,
+            state_root: roots.state,
+            content_root: roots.content,
+            binding_root: roots.bindings,
+            publish_sequence: previous.map_or(NonZeroU64::MIN, |lock| {
+                lock.publish_sequence.saturating_add(1)
+            }),
+            published_at: at,
+            derived_from: document.derived_from,
+        },
+        labels: (!unchanged).then_some(labels),
         allocated,
     })
-}
-
-/// The branch a publish must run on: the manifest's `publishBranch`, or `main`.
-#[must_use]
-pub fn publish_branch(document: &Document) -> &str {
-    document
-        .publish_branch
-        .as_deref()
-        .unwrap_or(DEFAULT_PUBLISH_BRANCH)
-}
-
-/// The roots of a document the validator accepts, or its errors at their sites.
-fn valid_roots(document: &Document, sites: &Sites) -> Result<Roots, Vec<Placed>> {
-    let invalid: Vec<Placed> = validate(document)
-        .into_iter()
-        .map(|error| place(error, sites))
-        .collect();
-    if !invalid.is_empty() {
-        return Err(invalid);
-    }
-    Ok(hash_document(document)
-        .expect("a document the validator accepts indexes")
-        .roots)
 }
 
 /// A root a lock records, in the order verification compares them (AC-678).
@@ -147,33 +152,28 @@ pub enum Root {
 }
 
 impl Root {
-    /// The lock field that records the root.
+    /// The root's name: `content`, `binding` or `state`; the lock field is the name followed by
+    /// `Root`.
     #[must_use]
-    pub const fn field(self) -> &'static str {
+    pub const fn name(self) -> &'static str {
         match self {
-            Self::Content => "contentRoot",
-            Self::Binding => "bindingRoot",
-            Self::State => "stateRoot",
+            Self::Content => "content",
+            Self::Binding => "binding",
+            Self::State => "state",
         }
     }
 }
 
 impl fmt::Display for Root {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(match self {
-            Self::Content => "content root",
-            Self::Binding => "binding root",
-            Self::State => "state root",
-        })
+        write!(formatter, "{} root", self.name())
     }
 }
 
-/// Why a tree does not verify against a lock.
+/// Why a tree that reads does not verify against a lock.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Unverified {
-    /// The tree does not read; no root is compared (RQ-149).
-    Unread(Vec<ReadError>),
-    /// The tree reads but its roots cannot be computed.
+    /// The tree's references do not resolve, so it has no roots.
     Invalid(Vec<Placed>),
     /// The first root that differs (AC-469), with the lock's value and the tree's.
     Mismatch {
@@ -183,22 +183,17 @@ pub enum Unverified {
     },
 }
 
-/// Recomputes the roots of the tree and compares them with the lock's: the content root, then
-/// the binding root, then the state root (RQ-118, AC-678). It writes nothing (AC-470).
+/// Recomputes the roots of a tree that reads and compares them with the lock's: the content
+/// root, then the binding root, then the state root (RQ-118, AC-678). A tree that does not read
+/// never gets this far, so no root is compared (RQ-149). It writes nothing (AC-470).
 ///
 /// # Errors
 ///
-/// The tree does not read, or a root differs.
-pub fn verify(files: &Files, lock: &Lock) -> Result<Digest, Unverified> {
-    let (document, sites) = read_sited(files).map_err(Unverified::Unread)?;
-    let Ok(hashes) = hash_document(&document) else {
-        let invalid = validate(&document)
-            .into_iter()
-            .map(|error| place(error, &sites))
-            .collect();
-        return Err(Unverified::Invalid(invalid));
-    };
-    let roots = hashes.roots;
+/// The tree has no roots, or a root differs.
+pub fn verify(tree: &ReadTree<'_>, lock: &Lock) -> Result<Digest, Unverified> {
+    let roots = hash_document(&tree.document)
+        .map_err(|errors| Unverified::Invalid(placed(index_errors(errors), &tree.sites)))?
+        .roots;
     for (root, lock, tree) in [
         (Root::Content, lock.content_root, roots.content),
         (Root::Binding, lock.binding_root, roots.bindings),

@@ -8,22 +8,31 @@ mod schema;
 use std::fs;
 use std::process::Output;
 
-use common::{Scratch, stderr, stdout};
+use common::{EPOCH, Scratch, stderr, stdout};
+use loftspec::publish::{LOCK, Lock};
 use serde_json::Value;
-
-const LOCK: &str = "loft.lock.json";
+use software_plant::{Clock, GitScenario};
 
 /// The Reading List, published.
 fn published() -> Scratch {
     let scratch = Scratch::with_reading_list();
-    assert_eq!(scratch.loft(&["publish"]).status.code(), Some(0));
+    assert_eq!(
+        scratch
+            .loft_with(
+                &["publish"],
+                Some(&GitScenario::clean_on("main")),
+                &Clock::fixed(EPOCH)
+            )
+            .status
+            .code(),
+        Some(0)
+    );
     scratch
 }
 
 fn state_root(scratch: &Scratch) -> String {
-    let lock: Value =
-        serde_json::from_str(&fs::read_to_string(scratch.0.join(LOCK)).unwrap()).unwrap();
-    lock["stateRoot"].as_str().unwrap().to_owned()
+    let bytes = fs::read(scratch.0.join(LOCK)).unwrap();
+    Lock::read(&bytes).unwrap().state_root.to_string()
 }
 
 fn json(output: &Output) -> Value {

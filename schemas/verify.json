@@ -84,7 +84,8 @@
           "enum": [
             "read",
             "validation",
-            "lock"
+            "lock",
+            "store"
           ]
         },
         "message": {
