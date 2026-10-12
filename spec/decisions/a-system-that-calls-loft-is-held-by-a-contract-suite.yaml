@@ -3,7 +3,9 @@ slug: a-system-that-calls-loft-is-held-by-a-contract-suite
 title: "A system that calls Loft is held by a contract suite without a simulator"
 context: "git runs `loft merge-driver` during a merge. The Software Plant simulates each external system that Loft calls, and a contract suite holds each simulator to the real system. git's merge machinery is not a system that Loft calls: git calls Loft, so there is no call of Loft's for a simulator to answer."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a13070-7f35-7224-8ec2-c5a4d847f2c7
+  outcome: "The parallel-work scenarios run under a real `git merge` with `loft merge-driver` installed, as a contract suite with no simulator, because git calls Loft and Loft does not call git's merge."
 drivers:
   - key: 01a13070-7f35-7224-8ec2-c5a16bcce134
     kind: local
