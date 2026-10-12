@@ -8,7 +8,7 @@ requirements:
   - key: 5c65bd93-dce3-4231-a105-42c0c1e080f8
     statement:
       form: unwanted
-      if: "the working tree has uncommitted changes under `spec/`"
+      if: "the working tree has uncommitted changes under `spec/` while no merge or rebase is stopped"
       system: "the publisher"
       shall: "refuse to publish."
     criteria:
@@ -45,7 +45,7 @@ requirements:
   - key: 01a12ff0-f5e5-7095-8fa8-250042e167c2
     statement:
       form: unwanted
-      if: "`loft.lock.json` is not a valid lock record"
+      if: "`loft.lock.json` is not a valid lock record while no merge or rebase is stopped"
       system: "the publisher"
       shall: "refuse to publish."
     criteria:

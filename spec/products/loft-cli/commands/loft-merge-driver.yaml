@@ -76,3 +76,14 @@ requirements:
         name: "A `<path>` of `sub/spec/tags.yaml` is merged as `spec/tags.yaml`."
       - key: 01a13070-322f-7493-9495-408256a94cb3
         name: "A `<path>` with no `spec` directory exits 1 naming `<path>`."
+  - key: 01a130de-573a-77b2-b40b-d4376d658262
+    statement:
+      form: event_driven
+      when: "it writes a conflict record over `bindings`"
+      system: "`loft merge-driver`"
+      shall: "name each disputed label and tell the user to run `loft publish` on the publish branch."
+    criteria:
+      - key: 01a130de-573a-77b2-b40b-d438ff0370b7
+        name: "Each disputed label is named."
+      - key: 01a130de-573a-77b2-b40b-d439212274cf
+        name: "The message tells the user to run `loft publish` on the publish branch."

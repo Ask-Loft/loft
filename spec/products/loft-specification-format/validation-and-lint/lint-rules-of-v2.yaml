@@ -45,3 +45,17 @@ requirements:
         name: "A label-shaped reference whose number is below its prefix's counter and that names no element yields one `V2-003` finding naming the node and the reference."
       - key: cfe8fb26-befe-43b5-8bb8-c359c0a4b239
         name: "A label-shaped text whose number is not below its prefix's counter in `spec/labels.yaml` is not a reference."
+      - key: 01a130de-5739-7721-8fd2-76671dbec256
+        name: "A reference to a label withdrawn from a key that the node mentions yields one `V2-003` finding saying that the next publish rewrites it."
+  - key: 01a130de-5739-7721-8fd2-7668cd46ffb2
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a citation of a withdrawn label in an element that mentions both the key it was withdrawn from and its live holder as `V2-004`."
+    criteria:
+      - key: 01a130de-5739-7721-8fd2-76699386071a
+        name: "Such a citation yields one `V2-004` finding naming the element and the label."
+      - key: 01a130de-5739-7721-8fd2-766abb4f7731
+        name: "A citation in an element that mentions only one of the two keys yields no `V2-004` finding."
+      - key: 01a130de-5739-7721-8fd2-766bcc39774e
+        name: "The default severity of `V2-004` is warning."

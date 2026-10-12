@@ -26,6 +26,8 @@ requirements:
         name: "A publish prints the new publish sequence and the state root and exits 0."
       - key: 5b969efe-ea71-42e5-ab2d-acd69a70451d
         name: "A publish with nothing changed prints that nothing changed and exits 0."
+      - key: 01a130de-573a-77b2-b40b-d430e3bfbde6
+        name: "A publish prints each rewritten citation with the element's key, the withdrawn label and the new label."
   - key: 57b80a5e-d695-4a26-8f81-71146008335c
     statement:
       form: unwanted
@@ -69,3 +71,20 @@ requirements:
         name: "Every git call that `loft publish` makes runs with `GIT_OPTIONAL_LOCKS` set to `0`."
       - key: 01a13050-9f92-73f0-b7a3-fb750da1f63d
         name: "`git status` refreshes no index while `loft publish` reads the repository."
+  - key: 01a130de-573a-77b2-b40b-d43134f122a6
+    statement:
+      form: event_driven
+      when: "publishing during a stopped merge or rebase"
+      system: "`loft publish`"
+      shall: "print what it settled and the git command that finishes the merge or rebase."
+    criteria:
+      - key: 01a130de-573a-77b2-b40b-d432f2cff1fb
+        name: "Each withdrawn label is printed with its key and the label the key now holds."
+      - key: 01a130de-573a-77b2-b40b-d43343a78222
+        name: "After a stopped merge it prints `git add -A && git commit --no-edit`."
+      - key: 01a130de-573a-77b2-b40b-d43452caf3f6
+        name: "After a stopped rebase it prints `git add -A && git rebase --continue`."
+      - key: 01a130de-573a-77b2-b40b-d435cb8db5b7
+        name: "It runs no git command that changes the repository."
+      - key: 01a130de-573a-77b2-b40b-d436e37f19d1
+        name: "With `--format json`, the document names the withdrawn labels, the rewritten citations and the finishing command."

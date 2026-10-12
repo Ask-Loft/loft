@@ -1,7 +1,7 @@
 key: c788db27-2701-47f8-a74c-8fe6d13ab8c6
 slug: labels-and-aliases
 name: "Labels and aliases"
-body: "Human-readable labels allocated at publish from per-prefix counters, recorded in the bindings file, and preserved as aliases when a node's label changes."
+body: "Human-readable labels allocated at publish from per-prefix counters, recorded in the bindings file, preserved as aliases when a node's label changes, and recorded as withdrawn when a key loses a label that two publishes gave apart."
 realizes:
   - e1ab75a5-f206-4760-970f-bee0653c4f2a
 requirements:
@@ -58,6 +58,32 @@ requirements:
         name: "An alias list only grows."
       - key: c180a500-1ab9-4fe1-9dcd-5ef05891dd39
         name: "An alias resolves to the key it was assigned to."
+  - key: 01a130de-5738-756e-a4f4-f948dae91847
+    statement:
+      form: event_driven
+      when: "a publish settles a label that two publishes gave apart"
+      system: "the publisher"
+      shall: "record the label as withdrawn from the key that loses it."
+    criteria:
+      - key: 01a130de-5738-756e-a4f4-f9496bd44461
+        name: "The binding of the key that loses the label lists the label under `withdrawn`."
+      - key: 01a130de-5738-756e-a4f4-f94aa84cb8de
+        name: "A withdrawn label resolves to no element through the key it was withdrawn from."
+      - key: 01a130de-5738-756e-a4f4-f94b236ebc0c
+        name: "A withdrawn label is never allocated again."
+      - key: 01a130de-5738-756e-a4f4-f94c253aafeb
+        name: "A `withdrawn` list only grows."
+  - key: 01a130de-5738-756e-a4f4-f94dd0463a88
+    statement:
+      form: unwanted
+      if: "a withdrawn label of a key is that key's live label or one of its aliases"
+      system: "the validator"
+      shall: "report an error."
+    criteria:
+      - key: 01a130de-5738-756e-a4f4-f94e21124f57
+        name: "The error names the key."
+      - key: 01a130de-5738-756e-a4f4-f94fb2163075
+        name: "The error names the label."
       - key: 43058cb9-3c84-4ec7-9ddf-716a1796678d
         name: "A Requirement promoted to a Feature keeps its Requirement label as an alias."
   - key: aedb9bb4-8486-46fa-8c0c-f6546b4e2075

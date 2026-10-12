@@ -73,3 +73,25 @@ requirements:
         name: "`config --local --get <name>` exits 1 and prints nothing for a name the scenario does not set."
       - key: 01a13070-3230-7079-8674-0f944ae80a03
         name: "`config --local <name> <value>` sets the name in the scenario."
+  - key: 01a130de-573a-77b2-b40b-d43a68f8b582
+    statement:
+      form: ubiquitous
+      system: "The git simulator"
+      shall: "answer the calls with which `loft publish` reads a stopped merge or rebase as its scenario scripts them."
+    criteria:
+      - key: 01a130de-573a-77b2-b40b-d43b5f268e1a
+        name: "`rev-parse -q --verify MERGE_HEAD` prints the commit being merged in a stopped merge."
+      - key: 01a130de-573a-77b2-b40b-d43cf5af8c51
+        name: "`rev-parse -q --verify MERGE_HEAD` exits 1 and prints nothing when no merge is stopped."
+      - key: 01a130de-573a-77b2-b40b-d43d2d244ea9
+        name: "`rev-parse -q --verify REBASE_HEAD` prints the commit being replayed in a stopped rebase."
+      - key: 01a130de-573a-77b2-b40b-d43e335b01d7
+        name: "`rev-parse -q --verify REBASE_HEAD` exits 1 and prints nothing when no rebase is stopped."
+      - key: 01a130de-573a-77b2-b40b-d43fd731b46b
+        name: "`rev-parse --git-path <path>` prints the path of the file that names the branch being rebased, for `rebase-merge/head-name` and `rebase-apply/head-name`."
+      - key: 01a130de-573a-77b2-b40b-d4401ab22e67
+        name: "`ls-files -u -z --full-name -- :/` prints the index entries of each unmerged path."
+      - key: 01a130de-573a-77b2-b40b-d4416898c369
+        name: "`cat-file blob <revision>:./loft.lock.json` prints the lock that the revision holds."
+      - key: 01a130de-573a-77b2-b40b-d44240bd7d8a
+        name: "`cat-file blob <revision>:./loft.lock.json` exits 128 with git's message for a revision that holds no lock."

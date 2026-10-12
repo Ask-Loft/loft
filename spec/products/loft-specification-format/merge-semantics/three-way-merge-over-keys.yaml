@@ -99,7 +99,7 @@ requirements:
       - key: 01a13070-b1ce-749d-b40a-8afead38048d
         name: "A decision subject is matched by its role and its node."
       - key: 01a13070-322f-7493-9495-407575aee03c
-        name: "When both sides change one such element to different values, the record that holds its list gains a conflict record for the list."
+        name: "When both sides change an assessment or a decision subject to different values, the record that holds its list gains a conflict record for the list."
       - key: 01a13070-322f-7493-9495-407671410897
         name: "The element keeps its base value."
   - key: 01a13070-322f-7493-9495-4077bb5be258
