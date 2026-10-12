@@ -71,6 +71,19 @@ requirements:
         name: "A rebase of a detached HEAD is refused."
       - key: 01a130de-5737-776f-9c39-b9de5c34df3c
         name: "Nothing is written."
+  - key: 01a13142-e984-733a-8711-c58d24969079
+    statement:
+      form: unwanted
+      if: "`spec/labels.yaml` is unmerged and holds no conflict record over its bindings"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a13142-e984-733a-8711-c58e66098022
+        name: "The refusal names `spec/labels.yaml` and the command `git checkout -m spec/labels.yaml`, which merges the file again through the merge driver."
+      - key: 01a13142-e984-733a-8711-c58f5e46cc9d
+        name: "The refusal says that git runs the merge driver only when `loft` is on git's search path."
+      - key: 01a13142-e984-733a-8711-c590cfa87a4a
+        name: "Nothing is written."
   - key: 01a130de-5737-776f-9c39-b9df6002881e
     statement:
       form: event_driven
