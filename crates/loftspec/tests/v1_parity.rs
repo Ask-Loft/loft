@@ -10,7 +10,7 @@ use std::fs;
 use std::path::Path;
 
 use common::parity::{
-    converted, external, register, unexplained, v1_forms, v1_lint, v2_forms, v2_lint,
+    Facts, converted, register, unexplained, v1_forms, v1_lint, v2_forms, v2_lint,
 };
 
 struct Fixture {
@@ -45,7 +45,7 @@ fn the_shared_rules_report_what_v1_reports_apart_from_the_register() {
         let (missing, extra) = unexplained(
             &v1_lint(fixture.lint),
             &v2_lint(&document),
-            &external(&document),
+            &Facts::of(&document),
             &register,
         );
         assert!(
@@ -104,7 +104,7 @@ fn each_register_entry_is_well_formed() {
             entry.id
         );
         assert!(
-            ["subject-external", "rule"].contains(&entry.condition.as_str()),
+            ["subject-external", "code-span", "rule"].contains(&entry.condition.as_str()),
             "{}: condition `{}`",
             entry.id,
             entry.condition

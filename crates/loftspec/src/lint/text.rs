@@ -1,4 +1,5 @@
-//! The texts the language rules read (AC-646): a name or statement as its tokens, and a body as
+//! The texts the language rules read (AC-646): a name or statement as its tokens, without its
+//! code spans for the rules that read it as prose, and a body as
 //! the text a Markdown reader shows, without code blocks, HTML blocks or code spans, each token
 //! and sentence with the body line it starts on.
 
@@ -81,6 +82,51 @@ fn join(text: &mut String, pieces: &mut Vec<(usize, usize)>, piece: &str, line: 
 /// The tokens of a name or statement.
 pub(super) fn tokens(text: &str) -> Vec<String> {
     crate::text::tokenize(text)
+}
+
+/// The tokens of a name or statement without the text of its code spans, as a Markdown reader
+/// shows it: a run of backticks opens a span that the next run of the same length closes, and a
+/// run nothing closes stays literal.
+pub(super) fn shown_tokens(text: &str) -> Vec<String> {
+    tokens(&without_code_spans(text))
+}
+
+fn without_code_spans(text: &str) -> String {
+    let run = |from: usize| {
+        text[from..]
+            .bytes()
+            .take_while(|byte| *byte == b'`')
+            .count()
+    };
+    let mut shown = String::with_capacity(text.len());
+    let mut copied = 0;
+    let mut at = 0;
+    while let Some(offset) = text[at..].find('`') {
+        let open = at + offset;
+        let length = run(open);
+        let mut search = open + length;
+        let mut close = None;
+        while let Some(offset) = text[search..].find('`') {
+            let start = search + offset;
+            let found = run(start);
+            if found == length {
+                close = Some(start + found);
+                break;
+            }
+            search = start + found;
+        }
+        match close {
+            Some(end) => {
+                shown.push_str(&text[copied..open]);
+                shown.push(' ');
+                copied = end;
+                at = end;
+            }
+            None => at = open + length,
+        }
+    }
+    shown.push_str(&text[copied..]);
+    shown
 }
 
 /// Where `phrase` starts as a run of `tokens`.

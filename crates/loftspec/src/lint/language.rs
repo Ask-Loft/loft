@@ -2,10 +2,12 @@
 //! `loft-lint` 1.4.0. They read assertion texts (a Requirement's statement, a criterion's text, a
 //! Constraint's or Quality Attribute's name) and the bodies of the same nodes (RQ-90, AC-651);
 //! `LQ-008` also reads the names of Products, Feature Groups, Features and Components, and
-//! `LQ-009` the names and bodies of every node that tags apply to.
+//! `LQ-009` the names and bodies of every node that tags apply to. The text of a code span is
+//! not prose: `LQ-001`..`LQ-005` and `LQ-009` leave it out of a name or statement, as every rule
+//! leaves code out of a body, and `LQ-008` compares names whole.
 
 use super::context::{Context, Item};
-use super::text::{Body, occurrences, phrase_positions, tokens};
+use super::text::{Body, occurrences, phrase_positions, shown_tokens, tokens};
 use super::{LintConfig, Raw, RuleId};
 use crate::identity::Key;
 use crate::kind::NodeKind;
@@ -81,7 +83,7 @@ impl Texts {
         let (tokens_, lines) = body.as_ref().map(Body::tokens).unwrap_or_default();
         Self {
             key: item.id.key(),
-            name: tokens(&item.name()),
+            name: shown_tokens(&item.name()),
             body: tokens_,
             lines,
             sentences: body.as_ref().map(Body::sentences).unwrap_or_default(),
@@ -223,7 +225,7 @@ fn untagged_terms(context: &Context<'_>, out: &mut Vec<Raw>) {
     let mut entries: Vec<_> = context.document.tags.iter().collect();
     entries.sort_unstable_by_key(|entry| entry.id);
     for item in context.items.iter().filter(|item| taggable(item.id.kind())) {
-        let name = tokens(&item.name());
+        let name = shown_tokens(&item.name());
         let body = item.body().map(|body| Body::read(body).tokens());
         for entry in &entries {
             let phrase = tokens(entry.name.as_str());
