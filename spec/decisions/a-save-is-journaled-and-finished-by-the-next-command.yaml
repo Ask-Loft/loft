@@ -3,7 +3,9 @@ slug: a-save-is-journaled-and-finished-by-the-next-command
 title: "A save is journaled and finished by the next command"
 context: "A command such as `loft fmt` or `loft import v1` changes many files under `spec/` and sometimes a file beside it. Renaming each file into place makes each file whole but not the set: a crash part-way leaves some files new and some old, a tree no single command wrote. The publisher must also write the lock and the bindings together or not at all."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a12e66-85dc-70ec-b5ed-93f26cb09cd1
+  outcome: "A save stages its changed files in a journal beside `spec/`, commits by renaming the journal's plan into place, and then renames each file into place; a command that opens the tree finishes a committed save and discards an uncommitted one."
 drivers:
   - key: 01a12e66-85dc-70ec-b5ed-93eeb2868ce3
     kind: local
