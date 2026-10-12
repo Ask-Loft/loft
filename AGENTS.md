@@ -2,33 +2,101 @@
 
 This repository is the open home of the Loft Specification Format and its reference
 implementation: the `loftspec` library, the `loftspec-store` stores and the `loft` command line.
-It is Apache-2.0 and becomes public at release 0.1.0; it is private until then only so the early
+It is Apache-2.0 and becomes public at release 2.0.0; it is private until then only so the early
 history can be tidy, never because anything in it is confidential.
 
 ## Normative contract
 
-During the bootstrap, the contract is the Loft document D-11 "Loft Specification Format" as pinned
-by `docs/loft.lock.json`. `docs/loft-authored-state.json` is that immutable Authored State as
-`get_authored_state` returns it, and `docs/loft-authored-state.md` is its `render_markdown`
-projection; both must match the lock. When code and the pinned state disagree, the pinned state
-wins unless the task explicitly changes the contract. Authoring runs from `../loft/` with the
-`loft` skill and the connected production Loft MCP session; this repository keeps only the lock
-and the exports. Plans and authoring records are kept outside this repository.
+The contract is this repository's own specification in `spec/`, the Loft Specification Format's
+text form. It was imported from the last Loft v1 state of D-11 "Loft Specification Format"
+(publish sequence 3) by `loft import v1`; that export is kept as a public converter fixture under
+`testdata/v1/d11-sequence-3/`, and the Loft v1 document is no longer where the Format is authored.
+When code and `spec/` disagree, `spec/` wins unless the task explicitly changes the contract.
 
-The bootstrap ends at the self-hosting milestone: the document is imported into `spec/`,
-`loft publish` writes a v2 lock whose `derivedFrom` names the last v1 state, and from then on
-`spec/` is the source.
+The normative state is the one `loft.lock.json` pins: the state root of `spec/` at the last
+publish, which `loft verify` recomputes and CI checks on `main`. The first publish records the v1
+state the specification was imported from in the lock's `derivedFrom`; until it lands, the
+contract is `spec/` as of the commit that imported it. Edits to `spec/` on `develop` and on
+feature branches are candidates that the next publish on `main` makes normative. Change the
+specification by editing `spec/` in the same pull request as the code, then run `loft fmt` and
+`loft check --fail-on warning`, which CI also runs. Tests cite the labels in `spec/labels.yaml`; a
+node added since the last publish has no label until a publish allocates one. `loft render`
+writes `docs/spec.md` and `docs/spec.json` on demand; they are never committed and never
+normative. Plans and authoring records are kept outside this repository.
+
+## Agreement with v1
+
+Loft v1 implements the same structural and language rules (`SH-*`, `LQ-*`), EARS forms and label
+rules, and this repository leads them (the accepted decision "v2 leads the behaviour it shares
+with v1"). Change shared behaviour through `spec/`. An intended difference from v1 is an entry of
+`testdata/v1/divergences.json` in the same pull request, naming its rule, condition, direction and
+the criteria or decisions in `decidedBy`. `tests/v1_parity.rs` compares loftspec with
+`v1-lint.json` and `v1-ears.json` beside each public v1 export. Those files are written only by a
+v1 implementation; never edit or regenerate them to make a failure disappear. When v1's output
+changes, the files are rewritten from v1 after `spec/` adopts the change, or v1 reverts it.
 
 ## Repository layout
 
 - `crates/loftspec` owns the document model, identity, the canonical byte form, hashing and the
   conversion from the v1 export. It performs no I/O and depends on no store.
 - `crates/loftspec-store` owns the `DocumentStore` trait and its memory and file implementations.
+  Every write of the tree, or of a file beside it, goes through one journaled save
+  (`journal::save`), whose journal lives in `.loft/save/` beside `spec/` while it runs; a command
+  opens the tree through `FileStore::open`, which first finishes or discards an interrupted save.
+  Never write a file of the Format any other way. The trait holds only what the CLI needs: load,
+  save and roots.
 - `crates/loft-cli` is the `loft` binary and owns nothing the library could own.
+- `crates/software-plant` is the Software Plant: simulators of the external systems Loft depends
+  on, for tests only. It is never published and never a dependency of a published crate.
 - None of these ever depends on `loft-domain`, `loft-store` or any other crate of the private
   server. That boundary is the licence boundary.
-- `docs/` holds the lock and the exports. `testdata/` holds synthetic fixtures and golden vectors
-  only.
+- Identifiers are typed domain IDs — `ProductId`, `FeatureGroupId`, `FeatureId`,
+  `RequirementId`, `CriterionId`, `ComponentId`, `ConstraintId`, `QualityAttributeId`,
+  `SectionId`, `DecisionId`, `OptionId`, `DriverId`, `ConsequenceId`, `TagId`, `CategoryId` — and
+  references by name are typed (`TagName`, `CategoryName`); never a plain string or one shared
+  key type. Every typed ID wraps the element's key and serialises as it, so the files, views and
+  digests are unchanged by the types. A kind change keeps the key through an explicit
+  conversion. Prose (names, bodies, statements) stays text.
+- `spec/` is the specification. `testdata/` holds synthetic fixtures, golden vectors and the v1
+  exports the converter is tested on.
+
+## Software Plant
+
+Loft depends on systems outside it: git, which tells the publisher the current branch and whether
+`spec/` has uncommitted changes, and the clock, which dates a publish. Each is a root Component
+with the boundary `external` in `spec/`, and Loft reaches it through one port with one real
+adapter; `loftspec-store` reaches git only through its repository port. Tests never reach an
+external system directly and never through a hook in a shipped binary. They put a simulator from
+the Software Plant in front of the unchanged binary under test:
+
+- **git**: `software_plant::GitScenario` scripts a repository (its prefix, its branch or a
+  detached HEAD, its porcelain status) and the failures Loft anticipates (outside a repository,
+  a scripted git error). `install` writes the scenario into the scratch directory, and
+  `Installed::apply` gives a `Command` a search path whose only `git` is the simulator. Any call
+  the simulator does not answer exits 2 naming the call, so Loft cannot come to depend on git
+  behaviour nobody modelled.
+- **the clock**: `software_plant::Clock` sets `SOURCE_DATE_EPOCH`, which `loft publish` reads as
+  its publish time, fixed or stepping between runs.
+
+The rules:
+
+- A new external system is specified first: a root Component with the boundary `external`, a
+  port in the crate that uses it, and a Feature of the Software Plant (P-3) that lists the tag
+  `plant-simulator` and mentions that Component.
+- Every simulator has a contract suite that runs the same scenarios against the simulator and
+  against the real system and requires the same answers; the git suite runs real git in scratch
+  repositories. A new anticipated failure joins the simulator's scenarios and its contract suite
+  in the same change.
+- Only a contract suite touches a real external system. Every other test uses the simulator.
+- `software-plant` holds simulators only. Fixtures and conformance harnesses stay in the crates
+  they test.
+
+`crates/loft-cli/tests/publish.rs` is the worked example. Every `loft` run in the command-line
+tests goes through `Scratch::loft`, which installs the git simulator clean on `main` and a fixed
+clock; a test that needs another repository or another time passes its own `GitScenario` and
+`Clock` to `Scratch::loft_with`.
+
+The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 
 ## Workflow
 
@@ -40,11 +108,12 @@ The bootstrap ends at the self-hosting milestone: the document is imported into 
   ceiling. Crossing either gate requires same-turn refactoring, never a raised threshold or budget.
 - Keep every commit green. Do not update golden vectors merely to make a failure disappear.
 - Commit each completed plan stage separately; do not combine stages in one commit.
-- For a contract change during the bootstrap, use the `loft` workflow from `../loft/`: author on a
-  D-11 work branch, validate and lint, checkpoint, Publish only with explicit approval, then refresh
-  the lock and both exports from the authenticated `get_authored_state` and `render_markdown` reads
-  of that exact immutable state and verify the bundle before implementation relies on it. Never
-  treat an unpublished Draft as normative.
+- Publish on `main` only, and only with the maintainer's approval: merge `develop` into `main`,
+  run `loft publish` there over a committed `spec/`, commit `spec/labels.yaml` and
+  `loft.lock.json` together as the publish commit, check that `loft verify` passes, then merge
+  `main` back into `develop` so the allocated labels reach it. A second `loft publish` with
+  nothing changed writes nothing. CI runs `loft verify` on `main` only, since `develop` carries
+  unpublished candidates.
 - Preserve unrelated worktree changes.
 - Before handing work off, run `cargo fmt --all -- --check`,
   `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace` and
@@ -58,6 +127,9 @@ The bootstrap ends at the self-hosting milestone: the document is imported into 
 Nothing confidential enters this repository, in any commit: no export of the private server's
 document D-1, no plans or strategy documents, no authoring records, no secrets, no `.loft/` or
 `.env` files, no customer data. The git history becomes public with the repository.
+Commit messages, code comments and test names are public too: they never name the private
+server's documents, states or repositories. Describe such sources generically, as "a large
+converted document" or "a local v1 export".
 
 ## Definition of done
 

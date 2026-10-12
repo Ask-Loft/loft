@@ -1,0 +1,57 @@
+key: 929999f2-93e0-468b-9e85-5d438ec6b1b7
+slug: loft-merge-driver
+name: "`loft merge-driver`"
+body: "Runs the merge engine as the git merge driver for `spec/` files, and with `--install` registers that driver in the repository."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 9b4fe97f-079b-4407-a4f5-04f53e943a86
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver <base> <ours> <theirs> <path>`"
+      shall: "run the merge engine as a git merge driver."
+    criteria:
+      - key: 2125d786-98e0-471e-9f01-cd73c71120fa
+        name: "The merged content is written to `<ours>`."
+      - key: 0ae5690d-b7ab-4920-805a-7f4998562d66
+        name: "Messages name `<path>`, not the temporary files."
+      - key: de19d23c-e5a5-4317-9129-1b3fc91b5a67
+        name: "It exits 0 when no conflict record was written."
+      - key: c06eb0fd-db49-424c-b2ae-b3f70b6ff445
+        name: "It exits 1 when a conflict record was written."
+  - key: 7317e4e8-72c5-4ba4-8d14-0e690c03b799
+    statement:
+      form: unwanted
+      if: "any of `<base>`, `<ours>` or `<theirs>` cannot be read as the Format's YAML subset"
+      system: "`loft merge-driver`"
+      shall: "write nothing and exit 1."
+    criteria:
+      - key: 32379a89-f1f6-4053-8e0e-b422b293cde3
+        name: "The error names which input failed and where."
+      - key: 3dc02cdb-0451-4827-a2e3-010c6b3a274e
+        name: "`<ours>` is unchanged."
+  - key: f053c085-ad10-4ff4-af2a-ed7e278358d2
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver --install`"
+      shall: "register the driver in the repository."
+    criteria:
+      - key: 22328d0c-1299-463f-8966-069b3229b7af
+        name: "`.gitattributes` gains `spec/**/*.yaml merge=loft` when absent."
+      - key: 8cc41ae4-2be0-4f31-a579-2a5ff8c2b2e7
+        name: "`merge.loft.driver` is set to `loft merge-driver %O %A %B %P` in the repository's git configuration."
+      - key: a08f5607-f5cc-46ca-9e69-b4bc0f2b7ffe
+        name: "`merge.loft.name` is set to a description of the driver."
+      - key: 38ba4917-e7a0-4e80-a88a-6d3ebed8f5f8
+        name: "A second `--install` changes nothing."
+  - key: 3cc1c98e-eec3-471f-91cc-d10a3839ba41
+    statement:
+      form: unwanted
+      if: "the working directory is not inside a git repository"
+      system: "`loft merge-driver --install`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 6c33928e-bdb8-40e6-ac7d-1ab78fc010ca
+        name: "The error states that a git repository is required."
+      - key: d02ba042-0e3b-425e-bdb0-d1d50f8b87a1
+        name: "Nothing is written."

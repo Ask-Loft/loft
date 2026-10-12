@@ -1,0 +1,34 @@
+{
+  "findings": [
+    {
+      "rule": "SH-002",
+      "severity": "info",
+      "subjects": [
+        "00000000-0000-4000-8000-000000000040"
+      ]
+    },
+    {
+      "rule": "SH-002",
+      "severity": "info",
+      "subjects": [
+        "00000000-0000-4000-8000-000000000042"
+      ]
+    },
+    {
+      "rule": "SH-008",
+      "severity": "info",
+      "subjects": [
+        "00000000-0000-4000-8000-000000000040"
+      ]
+    },
+    {
+      "rule": "SH-008",
+      "severity": "info",
+      "subjects": [
+        "00000000-0000-4000-8000-000000000042"
+      ]
+    }
+  ],
+  "format": "loftspec-v1-lint/1",
+  "ruleset": "loft-lint-1.4.0"
+}

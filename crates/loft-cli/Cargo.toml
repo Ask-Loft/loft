@@ -1,6 +1,6 @@
 [package]
 name = "loft-cli"
-version = "0.1.0"
+version = "2.0.0"
 description = "The loft command line: author, check, format, render and publish a specification in a git repository"
 edition.workspace = true
 rust-version.workspace = true
@@ -10,6 +10,15 @@ repository.workspace = true
 [[bin]]
 name = "loft"
 path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+loftspec = { path = "../loftspec" }
+loftspec-store = { path = "../loftspec-store" }
+serde_json.workspace = true
+
+[dev-dependencies]
+software-plant = { path = "../software-plant" }
 
 [lints]
 workspace = true

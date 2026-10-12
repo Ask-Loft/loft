@@ -1,0 +1,98 @@
+key: a805b033-2ca8-4032-ae45-08ad04e6aed9
+slug: loft-import-v1
+name: "`loft import v1`"
+body: "Turns a Loft v1 export into a `spec/` tree through the converter, taking the label counters from a file or from the labels the export holds."
+tags:
+  - writes-tree
+realizes:
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 2d50ac1f-fcc6-47f4-81a2-d2e369fc4a60
+    statement:
+      form: ubiquitous
+      system: "`loft import v1 <export>`"
+      shall: "convert a Loft v1 export into `spec/`."
+    criteria:
+      - key: 5a70d86e-e021-47bb-9bab-c808cd0b5059
+        name: "Apart from the label counters, the tree equals the converter's output in canonical layout."
+      - key: b6e0cb57-c705-41de-8a95-df960c58ed64
+        name: "The sidecar is written to `v1-sidecar.json` beside `spec/`."
+      - key: f085d02e-7386-4616-9236-ecf0c8232710
+        name: "The conversion findings are printed as a lint report."
+  - key: c822a7b4-f9a6-46b7-b102-cc12e15a7c1d
+    statement:
+      form: optional
+      where: "`--counters <file>` is given"
+      system: "`loft import v1`"
+      shall: "take the label counters from it."
+    criteria:
+      - key: 2a8c9716-22c7-4f30-a029-130730d1b00f
+        name: "The file is a YAML mapping of label prefix to next value."
+      - key: 2fdbdacc-7bb2-445a-8e64-7ca4f9055d11
+        name: "Each prefix named in the file sets that prefix's counter."
+      - key: 96dcd1b8-ebe6-4b9e-87a3-688d8845c74f
+        name: "A prefix absent from the file is set to the highest value seen plus one."
+  - key: cc5cc362-1fc5-41f3-b053-49bbc7aae81e
+    statement:
+      form: unwanted
+      if: "a counter in `--counters` is not above the highest label seen for its prefix"
+      system: "`loft import v1`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 1d044315-9a24-476e-8125-121b04a899ba
+        name: "The error names the prefix, the file's value and the highest label seen."
+      - key: cf058b28-8642-4a6a-8a01-11acf0bfd3db
+        name: "Nothing is written."
+  - key: d0cb2a3b-08dc-46a6-9449-1d7ec17d5300
+    statement:
+      form: state_driven
+      while: "`--counters` is absent"
+      system: "`loft import v1`"
+      shall: "set each counter to the highest value seen plus one."
+    criteria:
+      - key: 50303ffc-a84b-425e-b0d6-2b283206586d
+        name: "Each prefix's counter equals its highest label value plus one."
+      - key: 369f28aa-ffb4-4b54-92b5-4dc1f1b2d8ed
+        name: "A warning names the prefixes and states that the source may have allocated higher values."
+  - key: 4c0eaf2b-b3a2-4276-a3b3-8ed8a9fcbac7
+    statement:
+      form: unwanted
+      if: "`spec/` is not empty"
+      system: "`loft import v1`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a12dbe-e8df-7596-9849-322e35ea7e5b
+        name: "An entry whose name begins with `.` does not make `spec/` not empty."
+      - key: e9fd8379-d779-4bea-a0eb-3f24f9720b09
+        name: "Nothing is written."
+      - key: 51f6aa0b-9bfd-4c14-8c47-ba96011774e9
+        name: "The error names the `spec/` path."
+  - key: 36bd29e7-2394-4690-b5df-8856692a6ec1
+    statement:
+      form: unwanted
+      if: "`<export>` cannot be read as a Loft v1 export"
+      system: "`loft import v1`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: d56cc84c-fce0-4795-8c02-22c59e25a61d
+        name: "A missing file is reported by its path."
+      - key: 6c10807c-13cd-4937-87e1-480460cdd09a
+        name: "A file that is not a v1 export is reported by its path and the first missing field."
+      - key: 06dec985-17e7-4c6f-8b20-911c7b68dde7
+        name: "Nothing is written."
+  - key: e0313c1b-833e-4cbd-bf56-79ab6708755c
+    statement:
+      form: unwanted
+      if: "the `--counters` file cannot be read as a mapping of label prefixes to positive integers"
+      system: "`loft import v1`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: a03c76cf-1598-4d51-9b9c-df5ce93be012
+        name: "A missing file is reported by its path."
+      - key: feb5cd90-f60b-44e2-8552-a1e1ea74ba41
+        name: "A prefix outside the Format's kind prefixes is reported by name."
+      - key: 38ee1e43-e3ce-462d-a4d6-63e8271312c0
+        name: "A value that is not a positive integer is reported with its prefix."
+      - key: 4c5ce0f7-b7cc-46af-88ef-439d0f75e425
+        name: "Nothing is written."

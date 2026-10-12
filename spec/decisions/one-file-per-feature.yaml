@@ -1,0 +1,86 @@
+key: 4042699d-bb03-483c-b1ec-96330cfa5e4e
+slug: one-file-per-feature
+title: "One file per Feature"
+context: "The text form is a tree of YAML files held in git. The file granularity decides what a merge conflict touches, what a review diff shows and how many files a document has. A document of a thousand Requirements has about two hundred Features."
+state:
+  kind: accepted
+  selectedOption: bbec02dc-c892-4bb4-b0ac-72c346635747
+  outcome: "Each Feature is written to its own file with its Requirements and criteria; the Feature Group lists its Features' keys in order in the Product file."
+drivers:
+  - key: 3a86dc1c-27ce-4861-840f-d35ecbbde565
+    kind: local
+    label: "Merge granularity"
+    statement: "Concurrent edits to different units do not touch one file."
+  - key: ee5059e9-6f14-40e7-ac8a-6b942993573c
+    kind: local
+    label: "Reviewable diffs"
+    statement: "A change shows as the diff of one unit with its context around it."
+  - key: d3230884-4126-46cb-9805-b3561fdf4858
+    kind: local
+    label: "Bounded file count"
+    statement: "The tree has hundreds of files, not thousands."
+options:
+  - key: bbec02dc-c892-4bb4-b0ac-72c346635747
+    title: "One file per Feature"
+    description: "A Feature file holds the Feature, its Requirements and their criteria; the Feature Group lists its Features' keys in the Product file."
+  - key: 439e5ca8-2060-42de-9915-7446b3ca70b1
+    title: "One file per Product"
+    description: "A whole Product, with every Feature Group, Feature, Requirement and criterion, in one file."
+  - key: 864b6a81-a4e1-4d7e-8e7a-dafd99b7b9de
+    title: "One file per Requirement"
+    description: "Each Requirement with its criteria in its own file; Features list Requirement keys."
+assessments:
+  - option: 439e5ca8-2060-42de-9915-7446b3ca70b1
+    driver: 3a86dc1c-27ce-4861-840f-d35ecbbde565
+    rating: conflicts
+    rationale: "every edit touches one large file"
+  - option: 439e5ca8-2060-42de-9915-7446b3ca70b1
+    driver: d3230884-4126-46cb-9805-b3561fdf4858
+    rating: supports
+    rationale: "a handful of files"
+  - option: 439e5ca8-2060-42de-9915-7446b3ca70b1
+    driver: ee5059e9-6f14-40e7-ac8a-6b942993573c
+    rating: conflicts
+    rationale: "a small change sits in a diff of thousands of lines"
+  - option: 864b6a81-a4e1-4d7e-8e7a-dafd99b7b9de
+    driver: 3a86dc1c-27ce-4861-840f-d35ecbbde565
+    rating: supports
+    rationale: "the finest granularity"
+  - option: 864b6a81-a4e1-4d7e-8e7a-dafd99b7b9de
+    driver: d3230884-4126-46cb-9805-b3561fdf4858
+    rating: conflicts
+    rationale: "thousands of files"
+  - option: 864b6a81-a4e1-4d7e-8e7a-dafd99b7b9de
+    driver: ee5059e9-6f14-40e7-ac8a-6b942993573c
+    rating: neutral
+    rationale: "a Requirement's context, its Feature, is in another file"
+  - option: bbec02dc-c892-4bb4-b0ac-72c346635747
+    driver: 3a86dc1c-27ce-4861-840f-d35ecbbde565
+    rating: supports
+    rationale: "most parallel edits land in different files"
+  - option: bbec02dc-c892-4bb4-b0ac-72c346635747
+    driver: d3230884-4126-46cb-9805-b3561fdf4858
+    rating: supports
+    rationale: "about two hundred files for a large document"
+  - option: bbec02dc-c892-4bb4-b0ac-72c346635747
+    driver: ee5059e9-6f14-40e7-ac8a-6b942993573c
+    rating: supports
+    rationale: "a Requirement change shows inside its Feature"
+consequences:
+  - key: c73a912d-99a6-4b52-8fd9-10ca4caa40a2
+    kind: benefit
+    statement: "Most parallel edits touch different files and merge without a driver."
+  - key: 37497768-f1df-498f-a5d1-81e4ca52ce0c
+    kind: obligation
+    statement: "The reader checks that every listed key has a file and every Feature file is listed."
+    subject: 3708a854-556c-42ca-9fef-aa62631836ad
+  - key: 711d9544-8f50-4c66-8356-ec2b0351cbdb
+    kind: cost
+    statement: "Moving a Requirement between Features is a two-file change."
+subjects:
+  - role: affected
+    node: bc3f5237-54b0-405a-9078-978e4c8c0419
+  - role: outcome
+    node: 3708a854-556c-42ca-9fef-aa62631836ad
+  - role: outcome
+    node: 421d69e4-7afe-4889-bdf5-e792e999a131

@@ -1,0 +1,21 @@
+key: a126ed71-e9b5-4497-85b4-e9a00c5f17f0
+slug: version
+name: "Version"
+body: "Reports the tool release together with the format and the hashing algorithm it implements, on three fixed lines."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 14897c51-7b62-4fb0-b64c-59d7f94c16e4
+    statement:
+      form: ubiquitous
+      system: "`loft --version`"
+      shall: "print the tool version, the format identifier and the algorithm identifier."
+    criteria:
+      - key: e5971faf-f14e-4366-bd1e-6662016f5e34
+        name: "The first line is `loft <semver>`."
+      - key: 175ea87e-f40b-48e7-b6ca-38df5c4d275f
+        name: "The second line is `format loftspec/1`."
+      - key: e4d6aabf-a993-4561-9f50-6da16174a773
+        name: "The third line is `algorithm sha256-jcs/1`."
+      - key: 8fb28153-393e-47f0-9551-e34a5a97836c
+        name: "Under `--format json`, the three values are printed as one JSON document."

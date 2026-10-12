@@ -1,0 +1,122 @@
+key: 01a12ff0-f5e5-7095-8fa8-24bca541edef
+slug: external-systems-are-simulated-in-the-software-plant
+title: "External systems are simulated by executables in the Software Plant"
+context: "Loft's commands depend on systems outside Loft, first git and the clock. A test that uses the real system cannot produce that system's failures on demand, and a test hook in the shipped binary is code that the user runs but that no test of the user's path exercises."
+state:
+  kind: accepted
+  selectedOption: 01a12ff0-f5e5-7095-8fa8-24c1381b5d36
+  outcome: "Each external system that Loft depends on has a simulator in the Software Plant, put in front of the unchanged binary under test through its search path or its environment, and a contract suite runs the same scenarios against the simulator and the real system."
+drivers:
+  - key: 01a12ff0-f5e5-7095-8fa8-24bdaf257241
+    kind: local
+    label: "The shipped binary"
+    statement: "Tests run the binary that ships, unchanged."
+  - key: 01a12ff0-f5e5-7095-8fa8-24bed30b66dc
+    kind: local
+    label: "Failures on demand"
+    statement: "Each failure that Loft anticipates from an external system can be produced in a test."
+  - key: 01a12ff0-f5e5-7095-8fa8-24bfa561badb
+    kind: local
+    label: "Honest"
+    statement: "A stand-in answers as the real system answers."
+  - key: 01a12ff0-f5e5-7095-8fa8-24c0deaa44f5
+    kind: local
+    label: "One stand-in"
+    statement: "Each external system has one stand-in to maintain."
+options:
+  - key: 01a12ff0-f5e5-7095-8fa8-24c1381b5d36
+    title: "Simulators with a contract suite"
+    description: "Each external system has a simulator in the Software Plant, an executable or an environment value put in front of the binary under test, and a contract suite runs the same scenarios against the simulator and the real system."
+  - key: 01a12ff0-f5e5-7095-8fa8-24c29f72aa5b
+    title: "In-process fakes"
+    description: "Each port has a fake implementation that tests pass to the library."
+  - key: 01a12ff0-f5e5-7095-8fa8-24c3a4764fa7
+    title: "Real systems only"
+    description: "Tests use a real repository and the real clock."
+  - key: 01a12ff0-f5e5-7095-8fa8-24c40d76904e
+    title: "Both kinds of stand-in"
+    description: "In-process fakes for tests of the libraries and executable simulators for tests of the binary."
+assessments:
+  - option: 01a12ff0-f5e5-7095-8fa8-24c1381b5d36
+    driver: 01a12ff0-f5e5-7095-8fa8-24bdaf257241
+    rating: supports
+    rationale: "the simulator stands outside the binary"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c1381b5d36
+    driver: 01a12ff0-f5e5-7095-8fa8-24bed30b66dc
+    rating: supports
+    rationale: "a scenario scripts each failure"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c1381b5d36
+    driver: 01a12ff0-f5e5-7095-8fa8-24bfa561badb
+    rating: supports
+    rationale: "the contract suite fails when the simulator and the real system differ"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c1381b5d36
+    driver: 01a12ff0-f5e5-7095-8fa8-24c0deaa44f5
+    rating: supports
+    rationale: "one simulator for each system"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c29f72aa5b
+    driver: 01a12ff0-f5e5-7095-8fa8-24bdaf257241
+    rating: conflicts
+    rationale: "the binary has to be told to use the fake"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c29f72aa5b
+    driver: 01a12ff0-f5e5-7095-8fa8-24bed30b66dc
+    rating: supports
+    rationale: "the fake returns each failure"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c29f72aa5b
+    driver: 01a12ff0-f5e5-7095-8fa8-24bfa561badb
+    rating: neutral
+    rationale: "nothing compares the fake with the real system unless a suite is written for it"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c29f72aa5b
+    driver: 01a12ff0-f5e5-7095-8fa8-24c0deaa44f5
+    rating: supports
+    rationale: "one fake for each port"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c3a4764fa7
+    driver: 01a12ff0-f5e5-7095-8fa8-24bdaf257241
+    rating: supports
+    rationale: "nothing stands in front of the binary"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c3a4764fa7
+    driver: 01a12ff0-f5e5-7095-8fa8-24bed30b66dc
+    rating: conflicts
+    rationale: "a real system's failures cannot be produced on demand"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c3a4764fa7
+    driver: 01a12ff0-f5e5-7095-8fa8-24bfa561badb
+    rating: supports
+    rationale: "the answers are the real system's"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c3a4764fa7
+    driver: 01a12ff0-f5e5-7095-8fa8-24c0deaa44f5
+    rating: supports
+    rationale: "there is no stand-in"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c40d76904e
+    driver: 01a12ff0-f5e5-7095-8fa8-24bdaf257241
+    rating: supports
+    rationale: "the binary's tests use the simulator"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c40d76904e
+    driver: 01a12ff0-f5e5-7095-8fa8-24bed30b66dc
+    rating: supports
+    rationale: "both script each failure"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c40d76904e
+    driver: 01a12ff0-f5e5-7095-8fa8-24bfa561badb
+    rating: neutral
+    rationale: "the fakes and the simulators can drift apart"
+  - option: 01a12ff0-f5e5-7095-8fa8-24c40d76904e
+    driver: 01a12ff0-f5e5-7095-8fa8-24c0deaa44f5
+    rating: conflicts
+    rationale: "two stand-ins for each system"
+consequences:
+  - key: 01a12ff0-f5e5-7095-8fa8-24c5acc3b402
+    kind: obligation
+    statement: "Each simulator has a contract suite that runs its scenarios against the real system."
+    subject: 01a12ff0-f5e5-7095-8fa8-24c63107e827
+  - key: 01a12ff0-f5e5-7095-8fa8-24c7e4d0197c
+    kind: cost
+    statement: "A contract suite needs the real system where it runs, git among them."
+  - key: 01a12ff0-f5e5-7095-8fa8-24c8a3e2c8ce
+    kind: benefit
+    statement: "`loft` carries no test hook."
+  - key: 01a12ff0-f5e5-7095-8fa8-24c95978c4bd
+    kind: risk
+    statement: "A behaviour that no scenario covers can differ between a simulator and the real system unnoticed."
+subjects:
+  - role: affected
+    node: 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+  - role: outcome
+    node: 01a12ff0-f5e5-7095-8fa8-24c63107e827

@@ -1,6 +1,6 @@
 [package]
 name = "loftspec"
-version = "0.1.0"
+version = "2.0.0"
 description = "The Loft Specification Format: document model, identity, canonical bytes, hashing and conversion"
 edition.workspace = true
 rust-version.workspace = true
@@ -9,3 +9,18 @@ repository.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+pulldown-cmark.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_json_canonicalizer.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+unicode-properties.workspace = true
+unicode-segmentation.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest = "1"
+saphyr-parser = "0.1.0"

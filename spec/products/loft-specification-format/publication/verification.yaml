@@ -1,0 +1,23 @@
+key: e05fa615-2708-4b59-8d22-f4119bedef5a
+slug: verification
+name: "Verification"
+body: "A read-only check that the roots recomputed from `spec/` match the roots a lock records."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+requirements:
+  - key: 0c1355f5-5ae8-4d5b-8c57-f8d676e57b07
+    statement:
+      form: ubiquitous
+      system: "The publisher"
+      shall: "verify a lock by recomputing the roots from `spec/`."
+    criteria:
+      - key: 578f5c61-2af2-4310-bb2d-1c1a835c5e52
+        name: "Verification fails when the recomputed content root differs from the lock's."
+      - key: c055dc1f-9249-4f90-a9ff-d9eca9ec47e7
+        name: "Verification passes only when the recomputed state root equals the lock's."
+      - key: 1d115287-9a4e-4377-a78c-9571ddf0d198
+        name: "Verification fails naming the first differing root."
+      - key: 49cfb0d6-21dc-4f01-8154-bce08d9a4ef4
+        name: "Verification writes nothing."
+      - key: fe7a139a-76e5-4e40-8221-98904ef6003d
+        name: "The roots are compared in the order content root, binding root, state root."

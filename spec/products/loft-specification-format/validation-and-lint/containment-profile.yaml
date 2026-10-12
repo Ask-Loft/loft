@@ -1,0 +1,47 @@
+key: 2d6d2c7d-c829-4aea-bc1c-d6ca1a7c90c6
+slug: containment-profile
+name: "Containment profile"
+body: "Which kind of node may stand under which parent kind, and the single Product record that each Product file holds."
+realizes:
+  - b90f38f9-766c-467f-a29c-d6ae3b796e52
+requirements:
+  - key: 89359cc6-c4d7-428e-9535-0224c7a12449
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "accept a child only where the containment profile allows its kind under its parent's kind."
+    criteria:
+      - key: b8310eca-0d41-4904-9eec-43c553343933
+        name: "A `product` is accepted only at the root."
+      - key: 5c81bfc6-6b35-4fb0-ac67-76baf2c27eb7
+        name: "A `feature_group` is accepted only under a `product`."
+      - key: 9c8872c8-fd77-43c0-a11f-cde2ce0c51f4
+        name: "A `feature` is accepted only under a `feature_group`."
+      - key: 2c23ff10-9676-426e-81ae-f19b052e9171
+        name: "A `requirement` is accepted only under a `feature`."
+      - key: 4aed1fa5-ca97-4413-a50f-c52a876de020
+        name: "A `criterion` is accepted only under a `requirement`."
+      - key: c52d2893-6b6b-4cba-b710-8fd28a420204
+        name: "A `component` is accepted at the root or under a `component`."
+      - key: 748d5f95-2d7e-49ad-a10c-640ef8348b75
+        name: "A `constraint` is accepted only under a `component` or a `feature_group`."
+      - key: e15dc002-88bb-4dd2-8532-042fa21b2842
+        name: "A `quality_attribute` is accepted only under a `component` or a `feature`."
+      - key: f3e0cf5f-9e01-4286-aff0-30be5b0fd863
+        name: "A `section` is accepted wherever a body is accepted."
+      - key: ab6e9c6c-316d-4adb-972b-b502e34f7936
+        name: "A child outside the profile is an error naming the child's key and both kinds."
+      - key: 2f006e08-4cf2-414c-9614-3d314fbc4e2c
+        name: "Where the text form cannot hold a child outside the profile, the reader's error at the child's file, line and column is the error."
+  - key: 8e685cb3-6fd8-454f-93d7-5e548ff23207
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "accept exactly one Product record per Product file."
+    criteria:
+      - key: 1b65e948-658c-476b-afe6-a3f20db26ab8
+        name: "A Product file with two Product records is an error naming the file."
+      - key: 46a1bdfb-1923-4a03-acea-721405f2669d
+        name: "A Product file without a Product record is an error naming the file."
+      - key: 323090cb-990e-43e7-9fd3-311eeeec8c57
+        name: "A Product file with one Product record raises no such error."

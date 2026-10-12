@@ -1,0 +1,68 @@
+key: dc918909-2892-40ce-be29-805437e63cd5
+slug: bodies-are-stored-verbatim-on-import
+title: "Bodies are stored verbatim on import"
+context: "A Loft v1 export carries bodies with headings and other prose that the v2 model would express as Section nodes. The converter can transform such bodies during import or store them byte for byte and report them."
+state:
+  kind: accepted
+  selectedOption: ce9f44de-6c21-4674-9f1c-9a75f7395b79
+  outcome: "The converter stores every body byte for byte and reports a body with headings as a finding; restructuring into Sections is an authored change after import."
+drivers:
+  - key: 08f7dd13-8e55-4aa2-a7b6-acb910f54f51
+    kind: local
+    label: "Exact round trip"
+    statement: "The source state's four addresses must be reproducible, so body bytes must be preserved."
+  - key: c07376ba-f9db-4ca5-a232-b1755494d28d
+    kind: local
+    label: "No silent change of meaning"
+    statement: "Import alters nothing the document says without an author's decision."
+  - key: fc4d0d7a-66ac-412e-8d79-73520920832e
+    kind: local
+    label: "A clean v2 outline"
+    statement: "Bodies should eventually carry no headings."
+options:
+  - key: ce9f44de-6c21-4674-9f1c-9a75f7395b79
+    title: "Verbatim, with findings"
+    description: "Bodies are stored unchanged; a heading in a body is reported; authors restructure after import."
+  - key: e6abd68a-1cd4-4fa5-9067-226a13109e2b
+    title: "Split headings into Sections automatically"
+    description: "The converter turns each heading and the text beneath it into a Section node during import."
+assessments:
+  - option: ce9f44de-6c21-4674-9f1c-9a75f7395b79
+    driver: 08f7dd13-8e55-4aa2-a7b6-acb910f54f51
+    rating: supports
+    rationale: "bytes preserved"
+  - option: ce9f44de-6c21-4674-9f1c-9a75f7395b79
+    driver: c07376ba-f9db-4ca5-a232-b1755494d28d
+    rating: supports
+    rationale: "nothing changes without an author"
+  - option: ce9f44de-6c21-4674-9f1c-9a75f7395b79
+    driver: fc4d0d7a-66ac-412e-8d79-73520920832e
+    rating: neutral
+    rationale: "clean-up is deferred to authors, who are told where"
+  - option: e6abd68a-1cd4-4fa5-9067-226a13109e2b
+    driver: 08f7dd13-8e55-4aa2-a7b6-acb910f54f51
+    rating: conflicts
+    rationale: "body bytes change"
+  - option: e6abd68a-1cd4-4fa5-9067-226a13109e2b
+    driver: c07376ba-f9db-4ca5-a232-b1755494d28d
+    rating: conflicts
+    rationale: "a heuristic split changes structure"
+  - option: e6abd68a-1cd4-4fa5-9067-226a13109e2b
+    driver: fc4d0d7a-66ac-412e-8d79-73520920832e
+    rating: supports
+    rationale: "no heading remains in a body"
+consequences:
+  - key: 780c8c3f-5a2a-40b0-90ce-902f48b34081
+    kind: benefit
+    statement: "The v1 round trip stays exact."
+  - key: 033944c7-d47e-4314-bd6d-15860ad09901
+    kind: obligation
+    statement: "The linter reports a heading inside a body so authors can restructure."
+  - key: 603b2b75-aebf-4aa9-9258-4c1e21572e63
+    kind: cost
+    statement: "An imported document carries findings until its authors restructure the bodies."
+subjects:
+  - role: affected
+    node: e26eb15d-2a28-44fe-bf85-1313011ab0ed
+  - role: outcome
+    node: c94f7f97-dd1b-4ae3-9e0e-37cdadc7f7b2

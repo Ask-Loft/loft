@@ -1,0 +1,59 @@
+key: a8e900f0-119a-4f5e-b667-490294e286c7
+slug: one-invocation-convention-across-commands
+title: "One invocation convention across commands"
+context: "`loft` is driven by people, scripts and agents. If each command chooses its own exit codes, its own error shape and its own JSON layout, every caller learns eight conventions and misreads some of them."
+state:
+  kind: accepted
+  selectedOption: 44d3bfb8-09f4-4858-9728-d694a60d589c
+  outcome: "Every `loft` command exits 0 on success, 1 on an error and 2 on a usage error; under `--format json` it prints one JSON document on standard output, errors included; an error about a file names the file, line and column."
+drivers:
+  - key: 3550e0f9-3682-4ced-bc21-fb52b9ec5642
+    kind: local
+    label: "One shape to parse"
+    statement: "Scripts and agents parse one result and one error shape."
+  - key: 12d15f46-eb73-4ee1-861a-f063be6b038c
+    kind: local
+    label: "An exit code means one thing"
+    statement: "0, 1 and 2 mean the same on every command."
+options:
+  - key: 44d3bfb8-09f4-4858-9728-d694a60d589c
+    title: "One convention"
+    description: "Every command shares exit codes 0, 1 and 2, one JSON document on standard output under `--format json`, and errors naming the file, line and column."
+  - key: 72f2edae-036c-44c3-bf99-cfc12643b5d2
+    title: "Per-command conventions"
+    description: "Each command chooses what fits it best."
+assessments:
+  - option: 44d3bfb8-09f4-4858-9728-d694a60d589c
+    driver: 12d15f46-eb73-4ee1-861a-f063be6b038c
+    rating: supports
+    rationale: "0 success, 1 error, 2 usage everywhere"
+  - option: 44d3bfb8-09f4-4858-9728-d694a60d589c
+    driver: 3550e0f9-3682-4ced-bc21-fb52b9ec5642
+    rating: supports
+    rationale: "one error shape, one result envelope"
+  - option: 72f2edae-036c-44c3-bf99-cfc12643b5d2
+    driver: 12d15f46-eb73-4ee1-861a-f063be6b038c
+    rating: conflicts
+    rationale: "an exit code means what each command says"
+  - option: 72f2edae-036c-44c3-bf99-cfc12643b5d2
+    driver: 3550e0f9-3682-4ced-bc21-fb52b9ec5642
+    rating: conflicts
+    rationale: "a parser per command"
+consequences:
+  - key: 6514161c-6c24-4dcc-bfd1-2d852b51dd37
+    kind: benefit
+    statement: "One caller library serves every command."
+  - key: d6522f8f-a672-402b-9517-efff1411e765
+    kind: cost
+    statement: "A command with a natural third outcome expresses it in its JSON result, not its exit code."
+  - key: 9c5c8b41-f0aa-4571-b300-9cd4a68db5c4
+    kind: obligation
+    statement: "Each command's result schema is published under `schemas/`."
+    subject: d1f91d93-790a-4714-ac32-790328e13012
+subjects:
+  - role: affected
+    node: bcd4525c-3adf-45dd-beed-527d654d517c
+  - role: outcome
+    node: 35580b97-dacf-46bc-82f5-35a3a7f8ec7b
+  - role: outcome
+    node: fd945718-ba5e-4e74-ae3e-2a25b1d15124

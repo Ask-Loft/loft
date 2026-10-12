@@ -1,0 +1,281 @@
+key: d86939c2-1936-4c22-9fd4-745591491545
+slug: record-fields
+name: "Record fields"
+body: "The fields each record of the text form holds, their order, and which of them are required."
+realizes:
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+requirements:
+  - key: c4e1027c-cb48-40f9-9dbc-91edbd069151
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Product record with the Product fields in the Format's order."
+    criteria:
+      - key: 75a35a7c-a76b-4e23-9e97-877edcedfa8d
+        name: "A Product record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `featureGroups` and `sections`."
+      - key: d655ff82-d634-4657-a7fc-be907a1471a0
+        name: "A Product record requires `key`, `slug` and `name`."
+  - key: 25012989-b874-4fee-8e0a-dd47c3078dc4
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Feature Group record with the Feature Group fields in the Format's order."
+    criteria:
+      - key: a3c78911-ca55-4b53-a93f-c37db333a56f
+        name: "A Feature Group record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `features`, `constraints` and `sections`."
+      - key: 37207046-b14f-4170-b6b8-72cb2be25202
+        name: "A Feature Group record requires `key`, `slug` and `name`."
+  - key: 331154e5-37e4-434b-bc13-3ec0a4030502
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Feature record with the Feature fields in the Format's order."
+    criteria:
+      - key: c491ef69-943a-4236-b477-f5421254b040
+        name: "A Feature record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `realizes`, `mentions`, `requirements`, `qualityAttributes` and `sections`."
+      - key: 1f80c0ab-6f0d-48cb-b161-404a25f6dbb3
+        name: "A Feature record requires `key`, `slug` and `name`."
+  - key: 2fc3126f-2add-4a90-b540-e668bf7e9be4
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Requirement record with the Requirement fields in the Format's order."
+    criteria:
+      - key: e7dc77a2-7271-4771-9a81-9c15d313dcbd
+        name: "A Requirement record's fields are, in order, `key`, `statement`, `body`, `tags`, `mentions`, `criteria` and `sections`."
+      - key: 87666050-867f-4485-811c-1a2da466a5ea
+        name: "A Requirement record requires `key` and `statement`."
+  - key: b10a38cc-09f6-4555-bbe2-df97df1f1497
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each statement record with the statement fields in the Format's order."
+    criteria:
+      - key: a12fa6d5-650e-41c3-8cee-4af31c6da25d
+        name: "A statement stored as text has the single field `text`."
+      - key: 4adb75fb-0ed3-4945-aed4-a1a2702ba184
+        name: "A statement stored as a form has `form`, then the condition slot `when`, `while`, `if` or `where` where the form takes one, then `system` and `shall`."
+  - key: bf466bce-fa30-455d-83ea-190b4664578b
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each criterion record with the criterion fields in the Format's order."
+    criteria:
+      - key: 0ef5f3ea-6b77-441e-972b-33585444e715
+        name: "A criterion record's fields are, in order, `key`, `name`, `body`, `tags`, `mentions` and `sections`."
+      - key: 21357707-509c-47c7-aa74-7d4123699107
+        name: "A criterion record requires `key` and `name`."
+  - key: a60fa7b3-57f9-4a4d-8f1f-bbdd7b05686e
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Component record with the Component fields in the Format's order."
+    criteria:
+      - key: 8ec0e58b-a8c9-49ef-b308-8a3c272d42d6
+        name: "A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `boundary`, `scopedTo`, `mentions`, `components`, `constraints`, `qualityAttributes` and `sections`."
+      - key: 703326e4-5939-4d27-a9f2-760234c35deb
+        name: "A Component record requires `key` and `name`."
+      - key: 0e4a5ccf-6223-4c83-ad2c-1d930ae21b5b
+        name: "A root Component record carries `slug` after `key` and requires it."
+      - key: f7c95f33-52df-403b-8375-aae8b4f86337
+        name: "A Component record that is not a root carries no `slug`."
+  - key: ca47daa8-7fdd-44b6-b787-b08765ad338d
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Constraint record with the Constraint fields in the Format's order."
+    criteria:
+      - key: 20508d40-d75a-445c-a759-9bfaecbd0eee
+        name: "A Constraint record's fields are, in order, `key`, `name`, `body`, `tags`, `constraintBinding`, `conservationKind`, `verificationFate`, `mentions` and `sections`."
+      - key: 0382db93-36b8-4305-8895-1dbf16566010
+        name: "A Constraint record requires `key` and `name`."
+      - key: 255a177e-61e1-4f34-8893-1d5ebf00ff4f
+        name: "A `constraintBinding` holds `category` and then `requiredValue`, and requires both."
+  - key: 2ad7193a-6651-4916-8e7a-632ffa6c8148
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Quality Attribute record with the Quality Attribute fields in the Format's order."
+    criteria:
+      - key: a4e50cd6-4f62-4646-b50d-df5545e25c96
+        name: "A Quality Attribute record's fields are, in order, `key`, `name`, `body`, `tags`, `qaKind`, `qualityTarget`, `verificationFate`, `mentions` and `sections`."
+      - key: bebadb74-d7b5-4405-b03d-b1ca56f8b8aa
+        name: "A Quality Attribute record requires `key`, `name`, `qaKind` and `qualityTarget`."
+      - key: 89c0f36d-8b7f-4bf4-8627-3be18a05346b
+        name: "A `qualityTarget` holds, in order, `metric`, `band`, `unit`, `aggregation`, `scenario` and `environment`, and requires all of them."
+      - key: e969dc57-e669-41a0-a17f-0ff73da550e7
+        name: "A `band` holds `kind`, then whichever of `lower`, `upper` and `value` its kind takes, in that order."
+  - key: 6fec5ecc-c87a-486e-be12-5900c1fc9009
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Section record with the Section fields in the Format's order."
+    criteria:
+      - key: 11c3ab62-c7fc-4250-b5ef-d3060af1a457
+        name: "A Section record's fields are, in order, `key`, `name`, `body`, `mentions` and `sections`."
+      - key: 305f223f-f6f4-4ef5-8217-9a6dfa052902
+        name: "A Section record requires `key`, `name` and `body`."
+  - key: e0966b97-6a03-4609-88b0-36d057fb1ab8
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each decision record with the decision fields in the Format's order."
+    criteria:
+      - key: 90ec6b07-f753-404b-8f6c-fa3ebf68f779
+        name: "A decision record's fields are, in order, `key`, `slug`, `title`, `context`, `state`, `drivers`, `options`, `assessments`, `consequences`, `subjects` and `mentions`."
+      - key: fbdbf763-97ef-4622-b5c1-50ffccfdddb6
+        name: "A decision record requires `key`, `slug`, `title`, `context` and `state`."
+  - key: b8c27f6a-0fe0-4559-a16f-68db5bdcf28b
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each decision state with the fields its kind takes in the Format's order."
+    criteria:
+      - key: 9617580e-7e68-4cfa-8db5-98dbe93fb4f4
+        name: "A state record begins with `kind`, one of `proposed`, `accepted`, `rejected`, `superseded` and `retired`."
+      - key: 0c01104f-7eea-44bd-8b12-5406689e0c1c
+        name: "A `proposed` state holds `kind` alone."
+      - key: dc77c9f1-8b2d-4e8f-8e6f-847de8426a62
+        name: "An `accepted` state holds `kind`, `selectedOption` and `outcome`."
+      - key: 363887ca-d64b-421e-ad67-b17a40be2a0c
+        name: "A `rejected` state holds `kind` and `rationale`."
+      - key: d9277e8e-e368-4823-9c2b-2b1c31946a3b
+        name: "A `superseded` state holds `kind`, `selectedOption`, `outcome` and `successor`."
+      - key: 3e71df83-1f02-441d-aa73-a570fee491ec
+        name: "A `retired` state holds `kind`, `selectedOption`, `outcome` and `rationale`."
+  - key: 86366952-f53e-4a4f-89d5-4224c62e539f
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each driver record with the fields its kind takes in the Format's order."
+    criteria:
+      - key: defbad1e-b478-49c8-b68a-b3338ff9c7c6
+        name: "A local driver's fields are, in order, `key`, `kind`, `label` and `statement`, and all are required."
+      - key: 51d4329b-f298-449a-b0d0-83b99fcf0da5
+        name: "A subject driver's fields are, in order, `key`, `kind` and `subject`, and all are required."
+  - key: b82e28d0-ddd4-4f9a-ac48-b33f3c972273
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each option record with the option fields in the Format's order."
+    criteria:
+      - key: 4b409fa0-3c92-44d5-8b0d-0c0d0d5cfa2b
+        name: "An option record's fields are, in order, `key`, `title` and `description`, and all are required."
+  - key: c2b36b1a-361e-4a3b-a994-9d00f2f075e5
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each assessment record with the assessment fields in the Format's order."
+    criteria:
+      - key: 9cffd19b-adfb-441f-a618-259872e273f8
+        name: "An assessment record's fields are, in order, `option`, `driver`, `rating` and `rationale`, and all are required."
+  - key: 7005fa33-bdc0-4778-9048-20eb372a68ef
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each consequence record with the consequence fields in the Format's order."
+    criteria:
+      - key: f727a8aa-1cf5-4f1e-ab11-1bfc629136b1
+        name: "A consequence record's fields are, in order, `key`, `kind`, `statement` and `subject`."
+      - key: de3fad3d-0a38-43d6-8cfb-1eb79426a55c
+        name: "A consequence record requires `key`, `kind` and `statement`."
+  - key: af9731ce-29e6-4c4a-849c-1fd9e3644f0b
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each subject record with the subject fields in the Format's order."
+    criteria:
+      - key: 3d55fd29-71a6-4b5a-8c77-94a6d7eaa885
+        name: "A subject record's fields are, in order, `role` and `node`, and both are required."
+  - key: 2ed3afa9-390b-44dc-b905-066679cafb0d
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write the manifest with the manifest fields in the Format's order."
+    criteria:
+      - key: 5da704a2-97eb-429e-bd69-04d1613a7167
+        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `products` and `derivedFrom`."
+      - key: 4783e5ae-9990-4606-a8d1-fe92b68d5792
+        name: "The manifest requires `format`, `algorithm` and `documentKey`."
+      - key: 069a4c14-1826-4f2f-a0ae-fd8aae922b97
+        name: "`derivedFrom` holds, in order, `authoredStateId`, `contentAddress` and `publishSequence`, and requires all three."
+  - key: ca2b29a1-09e5-4e6f-b4d7-1aa56a952393
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write `spec/labels.yaml` as a mapping of `counters` and `bindings`."
+    criteria:
+      - key: c5ed56ff-4332-4905-a67e-a3fcfe3c2a0b
+        name: "`counters` is required and maps each of the nine label prefixes to its next value, in the order `P`, `FG`, `F`, `RQ`, `AC`, `CMP`, `CON`, `QA`, `ADR`."
+      - key: 480910d9-f626-4e77-927c-72008061a372
+        name: "A binding's fields are, in order, `key`, `label` and `aliases`."
+      - key: 01a12dec-ba4c-7741-b3ca-9e8f125b4997
+        name: "A binding's `key` and `label` are required."
+      - key: a3d3edaf-117b-4b44-82cd-951405f69ee0
+        name: "A binding's aliases are written in the order they were recorded."
+  - key: 10c0f6db-a0f3-4d58-9559-b4a70c47c339
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write the tag registry and the constraint categories each as a sequence of entries."
+    criteria:
+      - key: 5890ac4b-cf40-4cc0-a055-38fc7cb3b109
+        name: "An entry's fields are, in order, `key`, `name` and `definition`, and all are required."
+      - key: a53f560c-62ec-46e6-b8e1-2ee89b7ae8ce
+        name: "Entries with the same name are sorted by key."
+      - key: e360b9d4-a4d6-4885-b7b0-373e1a8098ef
+        name: "A registry with no entries is written as an empty file."
+  - key: 5e700d25-4601-4a1c-976e-7677b9960373
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "name every field in camelCase."
+    criteria:
+      - key: e6e438c1-17b4-43ee-bb10-cfc6349512de
+        name: "A field name of two or more words is written in camelCase, such as `qualityTarget`."
+      - key: cd72dc82-7bd6-4137-b731-187c1bcab753
+        name: "An enumerated value of two or more words is written in snake_case, such as `event_driven`."
+  - key: a822a4de-4821-4664-ab5e-ce9773b81db0
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write a reference to an element as the element's key."
+    criteria:
+      - key: 8df4b0b3-9592-46af-b1fc-a673e946ab98
+        name: "A reference to a node is written as the node's key."
+      - key: 242c02e8-c5ad-4e79-82b3-1729ee8fe480
+        name: "A reference to a decision, an option or a driver is written as its key."
+  - key: 53272cda-553d-478e-a1b9-4d2b134b7801
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "omit an absent optional field and an empty list."
+    criteria:
+      - key: 9a397087-e0f8-4d4f-bb2a-8dd6947de172
+        name: "An absent body is not written."
+      - key: 52ac1ef4-078b-4f98-8fd1-40db5d2f4750
+        name: "An empty body is written as `\"\"`."
+      - key: 21926982-314a-47fd-946d-f6d542cf00cf
+        name: "An empty list is not written."
+      - key: 6dd2fc8c-0489-427b-8204-4aa1ae2922e8
+        name: "The reader reads a missing list as empty."
+      - key: 75d426d2-038b-4944-9b0f-5eff0f852122
+        name: "The reader reads a missing optional field as absent."
+  - key: 8ccf63fb-ac68-4f21-b0ff-da8e5f83bba2
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each conflict record with the conflict fields in the Format's order."
+    criteria:
+      - key: de4e2402-107e-45f1-8692-554e4b303019
+        name: "A conflict record's fields are, in order, `field`, `base`, `ours` and `theirs`."
+      - key: dcfbd049-e92a-47dd-a657-9d2b1227ea94
+        name: "A conflict record requires `field`."
+      - key: cf310c23-6c72-4873-abf6-3a505161ab09
+        name: "A side on which the field is absent omits its member."
+      - key: 5254cb43-dfb9-4801-9612-cf62bd55ee4b
+        name: "`base`, `ours` and `theirs` each hold a value in the shape the named field takes."
+      - key: 93fb81cf-bddd-4fc6-a0e1-000ae0e1139d
+        name: "A conflict over a record's place in its list names the field `position`."
+      - key: 8d5454d6-7672-489c-9b0c-6db2cd173bfe
+        name: "A keyed record carries `conflicts` after every other field."

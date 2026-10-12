@@ -1,0 +1,101 @@
+key: 8f334e16-a744-4561-9639-0118403d88d2
+slug: the-format-s-own-reader-and-writer-implement-its
+title: "The Format's own reader and writer implement its YAML subset"
+context: "The Format admits a small YAML subset, rejects every construct outside it, a comment included, at a file, line and column, and fixes one canonical byte sequence for each document. The maintained YAML libraries for Rust discard comments while scanning and report nothing about them, none rejects the other excluded constructs on its own, and none writes the Format's canonical layout."
+state:
+  kind: accepted
+  selectedOption: 0f2d964b-d7cc-4e37-bc2a-e592907fabd5
+  outcome: "The Format's own reader parses the YAML subset and refuses each excluded construct at its position, its own writer emits the canonical layout, and a differential test holds both to a conforming YAML parser."
+drivers:
+  - key: 13a7712c-2a7f-4877-98a8-987cf117ecfb
+    kind: local
+    label: "Exact rejection"
+    statement: "Every construct outside the subset, a comment included, is refused where it occurs."
+  - key: 5365085b-2c7e-4de0-8a37-2b6190f24900
+    kind: local
+    label: "Positioned errors"
+    statement: "Every read error names a file, line and column."
+  - key: 771158ef-09b4-4551-9b89-decbd437ecc4
+    kind: local
+    label: "Canonical bytes"
+    statement: "The writer produces one byte sequence for each document, which a second implementation can reproduce."
+  - key: 0c871ae6-9ea3-42fe-9578-155fdcfc6b65
+    kind: local
+    label: "Few dependencies"
+    statement: "Reading and writing add no runtime dependency."
+options:
+  - key: 0f2d964b-d7cc-4e37-bc2a-e592907fabd5
+    title: "Own reader and writer"
+    description: "The reader parses exactly the subset and refuses everything else as it scans; the writer emits the canonical layout directly."
+  - key: d5342adf-180a-47c3-9883-b448e7d75659
+    title: "A YAML library and extra checks"
+    description: "A conforming YAML library reads and writes, a second scanner finds the constructs the library accepts or discards, and a pass rewrites its output into the canonical layout."
+  - key: 08ef7fa9-d4c4-41d1-beb8-a2a205fb5e5a
+    title: "Comments allowed"
+    description: "A YAML library reads and writes; comments are accepted and the formatter drops them."
+assessments:
+  - option: 08ef7fa9-d4c4-41d1-beb8-a2a205fb5e5a
+    driver: 0c871ae6-9ea3-42fe-9578-155fdcfc6b65
+    rating: conflicts
+    rationale: "a library dependency at version 0.1"
+  - option: 08ef7fa9-d4c4-41d1-beb8-a2a205fb5e5a
+    driver: 13a7712c-2a7f-4877-98a8-987cf117ecfb
+    rating: conflicts
+    rationale: "a comment is accepted, and the next format deletes it"
+  - option: 08ef7fa9-d4c4-41d1-beb8-a2a205fb5e5a
+    driver: 5365085b-2c7e-4de0-8a37-2b6190f24900
+    rating: supports
+    rationale: "the library reports positions"
+  - option: 08ef7fa9-d4c4-41d1-beb8-a2a205fb5e5a
+    driver: 771158ef-09b4-4551-9b89-decbd437ecc4
+    rating: neutral
+    rationale: "canonical only after a rewriting pass over the library's output"
+  - option: 0f2d964b-d7cc-4e37-bc2a-e592907fabd5
+    driver: 0c871ae6-9ea3-42fe-9578-155fdcfc6b65
+    rating: supports
+    rationale: "no dependency"
+  - option: 0f2d964b-d7cc-4e37-bc2a-e592907fabd5
+    driver: 13a7712c-2a7f-4877-98a8-987cf117ecfb
+    rating: supports
+    rationale: "each excluded construct is one branch of the scanner"
+  - option: 0f2d964b-d7cc-4e37-bc2a-e592907fabd5
+    driver: 5365085b-2c7e-4de0-8a37-2b6190f24900
+    rating: supports
+    rationale: "the scanner holds the position of every character"
+  - option: 0f2d964b-d7cc-4e37-bc2a-e592907fabd5
+    driver: 771158ef-09b4-4551-9b89-decbd437ecc4
+    rating: supports
+    rationale: "the writer emits only the canonical layout"
+  - option: d5342adf-180a-47c3-9883-b448e7d75659
+    driver: 0c871ae6-9ea3-42fe-9578-155fdcfc6b65
+    rating: conflicts
+    rationale: "a library dependency at version 0.1"
+  - option: d5342adf-180a-47c3-9883-b448e7d75659
+    driver: 13a7712c-2a7f-4877-98a8-987cf117ecfb
+    rating: neutral
+    rationale: "exact only while the two scanners agree on every token"
+  - option: d5342adf-180a-47c3-9883-b448e7d75659
+    driver: 5365085b-2c7e-4de0-8a37-2b6190f24900
+    rating: supports
+    rationale: "both report positions"
+  - option: d5342adf-180a-47c3-9883-b448e7d75659
+    driver: 771158ef-09b4-4551-9b89-decbd437ecc4
+    rating: neutral
+    rationale: "canonical only after a rewriting pass over the library's output"
+consequences:
+  - key: f585b147-34e8-4775-99ab-50550bdac703
+    kind: cost
+    statement: "The reader and writer are about fifteen hundred lines that the project maintains."
+  - key: 402b6ce5-9f3e-44de-ab22-1f1e8e373d17
+    kind: obligation
+    statement: "A differential test compares the reader with a conforming YAML parser on every document the reader accepts, including every document the writer produces."
+  - key: 8a84efb5-bfae-4a19-ae0d-276e2c16c9c0
+    kind: benefit
+    statement: "An author learns of a comment or another excluded construct at its position, before any text is lost."
+subjects:
+  - role: affected
+    node: bc3f5237-54b0-405a-9078-978e4c8c0419
+  - role: outcome
+    node: c4cd9b41-10b0-48ce-904d-d6c7316b0958
+  - role: outcome
+    node: ff3f7748-bbf2-4de2-801b-92355af814cf

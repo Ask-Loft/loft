@@ -1,0 +1,147 @@
+key: 048729dd-e1d4-40aa-839f-ef9ec59515b0
+slug: structural-lint-rules
+name: "Structural lint rules"
+body: "The ten structural rules, SH-001 to SH-010: the shape each one reports and its default severity."
+realizes:
+  - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+requirements:
+  - key: 9f4893b6-3629-4b77-906b-df0d2df3bdd6
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a Feature with no `realizes` edge as `SH-001`."
+    criteria:
+      - key: 9d2c84d8-9d97-48b9-a5ee-30998eff44be
+        name: "A Feature with no `realizes` edge yields one `SH-001` finding naming the Feature's key."
+      - key: e6aae29d-87eb-4e93-a422-fd3b282f25ae
+        name: "A Feature with at least one `realizes` edge yields no `SH-001` finding."
+      - key: b4a0c3a0-54a7-4a85-b94d-cf7c8ed9b5d0
+        name: "The default severity of `SH-001` is warning."
+  - key: baa36972-571e-45da-b368-14c8e70e4c33
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a leaf Component that no Feature realizes as `SH-002`."
+    criteria:
+      - key: d78be863-41bd-4bff-8036-665abb7e7a62
+        name: "A Component with no child Component and no incoming `realizes` edge yields one `SH-002` finding naming its key."
+      - key: de87c3ec-c353-465d-b240-708cf69b5513
+        name: "A Component with a child Component yields no `SH-002` finding."
+      - key: 5919f595-00aa-4c6a-a97a-1fc868fdf663
+        name: "A Component that at least one Feature realizes yields no `SH-002` finding."
+      - key: 24571cf2-3449-47e7-9d7b-0e5976360b3b
+        name: "The default severity of `SH-002` is info."
+      - key: db26f299-683f-4689-a671-bc2be5ae1b7e
+        name: "A Component whose boundary is `external` yields no `SH-002` finding."
+  - key: f02049ca-7e48-49fb-aeb1-f2d79d1945ad
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a Requirement without a criterion as `SH-003`."
+    criteria:
+      - key: 1daac450-4037-408a-8c27-f6b30ab9e268
+        name: "A Requirement with no criterion yields one `SH-003` finding naming its key."
+      - key: 1772fb23-111d-4f94-bc76-dfe46f22853e
+        name: "A Requirement with at least one criterion yields no `SH-003` finding."
+      - key: f5cd13b3-3eb6-4817-a141-5948d3039691
+        name: "The default severity of `SH-003` is warning."
+  - key: 44fa3237-c63c-4ab6-ba5b-bdb37dd48593
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a Feature without a Requirement as `SH-004`."
+    criteria:
+      - key: c49a4d5c-308c-49cd-a3a2-8ea837e346cc
+        name: "A Feature with no Requirement yields one `SH-004` finding naming its key."
+      - key: 93fe64e8-e408-456b-bd35-dc42e687c5b0
+        name: "A Feature with at least one Requirement yields no `SH-004` finding."
+      - key: 03c737e0-15fc-4033-96f3-1192bc6e7832
+        name: "The default severity of `SH-004` is warning."
+  - key: bd49631d-d9a3-47f9-bf4e-db2c61d99e51
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a Product or Feature Group without children as `SH-005`."
+    criteria:
+      - key: ed42e489-e71d-40bb-a38c-6d77ea75777e
+        name: "A Product with no Feature Group yields one `SH-005` finding naming its key."
+      - key: 01cb4866-fc85-4142-ade6-5a4ae9927beb
+        name: "A Feature Group with no Feature yields one `SH-005` finding naming its key."
+      - key: 3530a906-33a1-4900-b403-66e12ed75f40
+        name: "A Product with at least one Feature Group yields no `SH-005` finding."
+      - key: 6571bb4f-0756-46b6-afb1-4793d1d78862
+        name: "A Feature Group with at least one Feature yields no `SH-005` finding."
+      - key: c88cd3b0-f2f0-425b-8db3-3c54ccde9309
+        name: "The default severity of `SH-005` is info."
+  - key: 338bfa2a-4f56-4072-8497-8e23bc4355d9
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a tag registry entry that no node applies as `SH-006`."
+    criteria:
+      - key: 77ce9dad-9dc2-4b7c-9a99-a222ea5cbc7a
+        name: "A registry entry that no node lists yields one `SH-006` finding naming the entry."
+      - key: b3cc46b5-f2f6-4551-a9e5-a7602b1d6b27
+        name: "A registry entry that at least one node lists yields no `SH-006` finding."
+      - key: eb2b2e3f-3d63-4818-b3c2-f75fa2d91864
+        name: "The default severity of `SH-006` is info."
+  - key: 8816b993-6220-456a-b5e1-54726e988aed
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report two siblings with one name as `SH-007`."
+    criteria:
+      - key: 31749bd1-2df7-4009-8cf7-6cb4fc0ce22f
+        name: "Two siblings whose names are equal after trimming and lowercasing yield one `SH-007` finding naming both keys."
+      - key: 437f46cc-0138-41df-9d21-08dcd05c9b90
+        name: "Two nodes with equal names under different parents yield no `SH-007` finding."
+      - key: 8b0d18c5-301c-49d9-8312-c9c94da0fd89
+        name: "The default severity of `SH-007` is warning."
+      - key: ceef82b6-77ec-4c9b-874f-a57aa14af20c
+        name: "Siblings are compared within one group of kinds: Products, Feature Groups, Features and Requirements together, then Components, Constraints, Quality Attributes, criteria and Sections each alone."
+  - key: b6386e62-a1db-457c-adb5-fd7874abf2e3
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a Component whose subtree holds no Constraint and no Quality Attribute as `SH-008`."
+    criteria:
+      - key: ba521a99-8cb1-48df-91d8-e46d5b4373d8
+        name: "The topmost Component of a subtree that holds no Constraint and no Quality Attribute yields one `SH-008` finding naming its key."
+      - key: e236c9da-dffd-45ec-837e-e4cd752a9297
+        name: "A Component inside a subtree that already yields an `SH-008` finding yields none of its own."
+      - key: 91a7d385-c851-40e8-b38c-bcd7f5c7f7ea
+        name: "A Component with a Constraint in its subtree yields no `SH-008` finding."
+      - key: e7839497-a43e-4787-942f-5da688a606cd
+        name: "A Component with a Quality Attribute in its subtree yields no `SH-008` finding."
+      - key: 5f15284a-0d82-45a1-970f-6a4b04045243
+        name: "The default severity of `SH-008` is info."
+      - key: f52b2a5f-5a89-4d78-ad11-ea5a369fecf7
+        name: "A Component whose boundary is `external` yields no `SH-008` finding."
+      - key: b01fb299-c2f9-49c1-895b-fdff7f25042b
+        name: "A Constraint or Quality Attribute under an `external` Component does not clear `SH-008` for a Component above it."
+  - key: edb24aa4-9e77-47a9-9eaf-b6a9bb7481e4
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a tag that names no registry entry as `SH-009`."
+    criteria:
+      - key: e568f568-5a1f-4837-b3ae-0d9d9951a0f4
+        name: "A tag on a node that matches no tag registry entry yields one `SH-009` finding naming the node's key and the tag."
+      - key: 4dae59a3-12fb-49b6-9e65-5970da5a0512
+        name: "A tag that matches a registry entry yields no `SH-009` finding."
+      - key: 70738cf6-5c71-41a4-9742-5f186fff425c
+        name: "The default severity of `SH-009` is warning."
+  - key: 88248705-c7de-4e8b-a141-89495a9b07df
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a Component whose name is shaped like a file path as `SH-010`."
+    criteria:
+      - key: 1b921114-b4a6-49df-81ff-8553b795c3c2
+        name: "A Component whose name contains a path separator yields one `SH-010` finding naming its key."
+      - key: e28ec77a-820b-4d66-847f-efb92ea3c9b9
+        name: "A Component whose name ends in a full stop and one to four ASCII letters or digits yields one `SH-010` finding naming its key."
+      - key: 5bcc96b8-8962-4f3a-991a-9b97c7fb2706
+        name: "A Component name with neither yields no `SH-010` finding."
+      - key: c82f7f1d-7a85-4b8e-930c-edd28e2e8039
+        name: "The default severity of `SH-010` is hint."

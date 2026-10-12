@@ -1,0 +1,47 @@
+key: 894d6ff5-d8d8-4d25-ac10-10c067c84990
+slug: statements-and-references-from-prose
+name: "Statements and references from prose"
+body: "What the converter recovers from v1 names and bodies: statement slots where they render back exactly, `mentions` edges for label references, and bodies kept as written."
+realizes:
+  - e26eb15d-2a28-44fe-bf85-1313011ab0ed
+requirements:
+  - key: 5c79dcd9-ef53-43ec-957c-58a22a59bc2a
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "store statement slots only when their rendering reproduces the v1 name byte for byte."
+    criteria:
+      - key: a9126bca-e9f9-455b-9997-34876049e5bb
+        name: "A name whose parsed slots render back to the name is stored as slots."
+      - key: 7e2a6dc0-f5a3-402a-b6ef-4dd3864b4238
+        name: "Any other name is stored as `text`."
+      - key: 142fe64a-ddf9-4a3d-82e7-8d6ebe4c9bc9
+        name: "A name stored as `text` is reported as a finding."
+      - key: 01a12dad-fb7a-7333-9129-a6bb9e98e883
+        name: "A name stored as slots has the EARS form that v1 parses the name to."
+  - key: 61dbab71-c9ca-49ae-964b-942161fbb5ef
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "turn each resolvable label reference in prose into a `mentions` edge."
+    criteria:
+      - key: 33a82191-e668-4cb0-8c21-d98e6ca9e01e
+        name: "References of the forms `P-n`, `FG-n`, `F-n`, `RQ-n`, `AC-n`, `CMP-n`, `CON-n`, `QA-n` and `ADR-n` are recognised."
+      - key: c990c8ce-9714-4974-ab24-15b0d785b3ab
+        name: "A reference with a `D-n/` prefix is recognised."
+      - key: 246c2160-9498-431d-91bb-7eecbab1b6a6
+        name: "A resolvable reference becomes a `mentions` edge from the node to the referenced node."
+      - key: f4fdf966-df4c-4aa5-ba96-040b43e7f26f
+        name: "A reference whose label does not resolve is reported as a finding naming the node and the reference."
+      - key: 478621d6-3676-4fec-bff2-c32a76ac7505
+        name: "A label-shaped text whose number is above every label of its prefix in the export is not a reference."
+  - key: c94f7f97-dd1b-4ae3-9e0e-37cdadc7f7b2
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "store bodies verbatim."
+    criteria:
+      - key: 88b8ef58-1d6d-497f-8158-13b73720f335
+        name: "A body is stored byte for byte."
+      - key: 465f64b6-9060-48ca-9627-183d9c10e6e6
+        name: "A body with a heading is reported as a finding."

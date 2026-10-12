@@ -1,0 +1,26 @@
+key: d22ef71f-0e46-414d-9da2-5da8d9347ac2
+slug: label-allocation-at-publish
+name: "Label allocation at publish"
+body: "How a publish gives each unlabelled node the next label of its kind prefix while advancing the counters in `spec/labels.yaml`."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+requirements:
+  - key: f46f376e-59d6-467d-9e54-94769bb5cb88
+    statement:
+      form: event_driven
+      when: "publishing"
+      system: "the publisher"
+      shall: "allocate a label to every node without one."
+    criteria:
+      - key: 48d1d38f-594d-424e-96c1-d8a9704a4f67
+        name: "Every node of a kind that takes a label prefix has a binding after a publish."
+      - key: ead11d53-c079-425a-92ba-efb9e9eabede
+        name: "Each new label is the next value of the counter for the node's kind prefix."
+      - key: 5a104fe4-9a84-4aca-8440-620eb2f29918
+        name: "Each counter in `spec/labels.yaml` advances to the next unallocated value."
+      - key: 716f464c-33a3-4dca-8263-e3043c14339e
+        name: "The publisher reports each allocated label with its key."
+      - key: a2443e5b-68d3-4b96-b2c6-41c2228a5161
+        name: "Every decision has a binding after a publish."
+      - key: 4dbbe95a-8d28-458a-8289-ff33b34d3cef
+        name: "No label that a decision carries as a former label is allocated."

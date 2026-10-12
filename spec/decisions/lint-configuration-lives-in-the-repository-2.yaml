@@ -1,0 +1,87 @@
+key: e2774ca8-7217-4d48-bba4-49fdb87372bc
+slug: lint-configuration-lives-in-the-repository-2
+title: "Lint configuration lives in the repository"
+context: "Lint findings gate a pull request. If configuration lives on each machine or only in command-line flags, two engineers, or an engineer and CI, see different findings for the same tree. The linter needs one place to read which rules run and at what severity, and that place should change only through review."
+state:
+  kind: superseded
+  selectedOption: fbeb9660-615a-4764-a7f5-e519053fc455
+  outcome: "The linter reads its configuration only from `spec/lint.yaml`; without that file it runs every rule at its default severity; no flag or user file changes a finding."
+  successor: 575101b8-1ce6-4633-96c0-3ccddb685046
+drivers:
+  - key: b14c31fa-8f89-46a8-85b7-300e893109da
+    kind: local
+    label: "Same findings everywhere"
+    statement: "Two engineers and CI get the same findings for the same tree."
+  - key: a89dbd59-ab7c-477b-b203-2fa56e6f32b6
+    kind: local
+    label: "Versioned with the spec"
+    statement: "A change of configuration is reviewed and merged like a change of the specification."
+  - key: adc8f155-ee6d-4b7d-b64f-32298ebd632e
+    kind: local
+    label: "Reproducible gate"
+    statement: "A CI run reproduces a local run without extra arguments."
+options:
+  - key: fbeb9660-615a-4764-a7f5-e519053fc455
+    title: "`spec/lint.yaml`"
+    description: "The configuration is a file of the tree, read by the linter, changed by commit."
+  - key: 773f6339-d85e-41bb-8123-ec64ea3bf9b0
+    title: "Configuration outside the repository"
+    description: "Each user's configuration directory holds it."
+  - key: 844098b5-28c3-4846-83b8-5ae63b0cf39d
+    title: "Command-line flags only"
+    description: "Each invocation names the rules and severities it wants."
+assessments:
+  - option: 773f6339-d85e-41bb-8123-ec64ea3bf9b0
+    driver: a89dbd59-ab7c-477b-b203-2fa56e6f32b6
+    rating: conflicts
+    rationale: "no history beside the spec"
+  - option: 773f6339-d85e-41bb-8123-ec64ea3bf9b0
+    driver: adc8f155-ee6d-4b7d-b64f-32298ebd632e
+    rating: conflicts
+    rationale: "CI has a configuration of its own"
+  - option: 773f6339-d85e-41bb-8123-ec64ea3bf9b0
+    driver: b14c31fa-8f89-46a8-85b7-300e893109da
+    rating: conflicts
+    rationale: "each machine has its own"
+  - option: 844098b5-28c3-4846-83b8-5ae63b0cf39d
+    driver: a89dbd59-ab7c-477b-b203-2fa56e6f32b6
+    rating: conflicts
+    rationale: "flags live in scripts, not the spec"
+  - option: 844098b5-28c3-4846-83b8-5ae63b0cf39d
+    driver: adc8f155-ee6d-4b7d-b64f-32298ebd632e
+    rating: neutral
+    rationale: "a CI script can repeat the flags, if kept in step by hand"
+  - option: 844098b5-28c3-4846-83b8-5ae63b0cf39d
+    driver: b14c31fa-8f89-46a8-85b7-300e893109da
+    rating: conflicts
+    rationale: "each invocation may differ"
+  - option: fbeb9660-615a-4764-a7f5-e519053fc455
+    driver: a89dbd59-ab7c-477b-b203-2fa56e6f32b6
+    rating: supports
+    rationale: "it changes by commit and review"
+  - option: fbeb9660-615a-4764-a7f5-e519053fc455
+    driver: adc8f155-ee6d-4b7d-b64f-32298ebd632e
+    rating: supports
+    rationale: "CI reads the same file"
+  - option: fbeb9660-615a-4764-a7f5-e519053fc455
+    driver: b14c31fa-8f89-46a8-85b7-300e893109da
+    rating: supports
+    rationale: "one file, read by every run"
+consequences:
+  - key: 8853b5ae-3871-48ee-8b12-86e9d907055b
+    kind: benefit
+    statement: "Every run of the gate agrees."
+  - key: 00499961-e4b7-4ef8-9446-41b108422943
+    kind: cost
+    statement: "A personal preference for a rule's severity needs a reviewed change."
+  - key: 2a4821b4-2b56-4a47-98fc-7a93308cf59e
+    kind: obligation
+    statement: "Without `spec/lint.yaml` the linter applies the default configuration."
+    subject: 3132a93b-7ea5-4e27-869a-070211f0adb7
+subjects:
+  - role: affected
+    node: 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+  - role: outcome
+    node: 3132a93b-7ea5-4e27-869a-070211f0adb7
+  - role: outcome
+    node: 84ef55b2-9929-4bab-83eb-615cfcbccd51

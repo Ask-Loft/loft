@@ -8,10 +8,9 @@ jobs:
   rust:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy,rustfmt
+      - uses: actions/checkout@v7
+      # Installs the toolchain rust-toolchain.toml pins.
+      - run: rustup toolchain install
       - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@v2
         with:
@@ -21,3 +20,10 @@ jobs:
       - run: cargo nextest run --workspace
       # nextest runs no doctests, and the doctests are compile_fail boundaries.
       - run: cargo test --workspace --doc
+      # The repository's own specification stays canonical and free of errors and warnings.
+      - run: cargo run -q -p loft-cli -- fmt --check
+      - run: cargo run -q -p loft-cli -- check --fail-on warning
+      # The lock pins the published specification. Only main carries published states;
+      # develop and feature branches hold candidates that the next publish makes normative.
+      - if: github.ref == 'refs/heads/main'
+        run: cargo run -q -p loft-cli -- verify

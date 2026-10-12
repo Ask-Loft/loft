@@ -1,0 +1,163 @@
+key: 134af160-7045-4437-a190-381bf508105b
+slug: node-registry-and-link-mapping
+name: "Node, registry and link mapping"
+body: "What each v1 node, Vocabulary Entry, Realization Link, Component scope and Architecture Decision becomes in the v2 document."
+realizes:
+  - e26eb15d-2a28-44fe-bf85-1313011ab0ed
+requirements:
+  - key: 3e16e0fb-d79f-4f0b-969a-747aae038401
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "map each v1 node to exactly one v2 node of the corresponding kind."
+    criteria:
+      - key: 2eddf40d-e9c0-400a-bce4-20397cb55422
+        name: "Product, Feature Group, Feature and Requirement tier sections map to `product`, `feature_group`, `feature` and `requirement`."
+      - key: 7b47bcec-b7df-46fc-85b9-53abbf279c46
+        name: "An Acceptance Criterion maps to a `criterion`."
+      - key: 050570df-045d-428c-95b0-10a55a8912c2
+        name: "A Component maps to a `component`."
+      - key: 18aabedd-93cc-4be7-ad0b-4359c624d507
+        name: "A Constraint maps to a `constraint` with its technical binding, conservation kind and verification fate kept field for field."
+      - key: 2c0b93d3-d76d-4f6c-9339-1a26825d7a80
+        name: "A Quality Attribute maps to a `quality_attribute` with its kind and its quality target kept field for field."
+      - key: 033aa134-4eb4-48cc-8b73-bd81a658e8ef
+        name: "The v2 node count equals the v1 node count less the Facet Tag nodes."
+  - key: f397bfad-6a2f-4c34-a7c3-35a426c73987
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "keep each v1 node's UUID as its key and its external ID as its label."
+    criteria:
+      - key: 55523ded-db36-4c8d-9f14-7ac575921aae
+        name: "Every binding's key equals the v1 `nodeId`."
+      - key: 8aa215ce-aff0-41ff-a192-395e1be76a6c
+        name: "Every binding's label equals the v1 `externalId`."
+      - key: c43d94e2-99e1-4d8e-b537-ce92b7ec4484
+        name: "No alias is created by conversion."
+      - key: 112a85b4-d84e-4d1a-8f0d-8a15f84f0947
+        name: "Every converted decision has a binding whose label is its v1 external ID."
+  - key: e2d908df-9c83-4efc-af86-49de1f937bc2
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "take parentage from the v1 children hashes."
+    criteria:
+      - key: 225f0669-f543-4114-a546-67da0cd2996d
+        name: "Each node's parent is the node whose `childrenHashes` lists it."
+  - key: 828956f2-76f9-48a3-af12-04a379662efc
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "turn each Facet Tag node into a tag on its parent."
+    criteria:
+      - key: 6eba4deb-d002-4fab-9c40-81e2f87e676a
+        name: "The parent lists the tag name."
+      - key: 0171fefe-bed5-4d4d-a743-4ca792d5b134
+        name: "The Facet Tag node does not exist in the v2 document."
+  - key: 9cc9a284-cde5-44ce-ac9f-4b6ebc4443fa
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "turn each Vocabulary Entry into a tag registry entry."
+    criteria:
+      - key: ce6fe7cf-1504-4b83-b1f7-6851790d2261
+        name: "A registry entry keeps the entry's UUID as key."
+      - key: 68528fcc-36dd-417a-b84a-0232d6fb0b3a
+        name: "A registry entry keeps the entry's name and definition."
+  - key: be28f06a-8037-41f1-b4a6-2c5f2be7718f
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "turn each Realization Link into a `realizes` edge."
+    criteria:
+      - key: b4b50c4b-e61b-463b-9773-1e6e836e1934
+        name: "A `realizes` edge runs from the Feature to the Component."
+      - key: 1099abf2-bd1c-4d61-b8b6-03996045f230
+        name: "The edge count equals the v1 Realization Link count."
+  - key: 130c8897-0886-4ae7-9fe6-cd55a84f8a2e
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "turn each authored Component scope into a `scoped_to` edge."
+    criteria:
+      - key: b628145a-64d0-4a19-aecd-58c731fe09ee
+        name: "A Component scoped to a Product has a `scoped_to` edge to that Product."
+      - key: bb632940-5be2-44ce-a4ca-37fd09575370
+        name: "A Component without an authored scope has no `scoped_to` edge."
+  - key: 8347cb8c-00ef-4ea2-b801-e50b617b287e
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "turn each Architecture Decision into a decision with driver, option and consequence children, typed assessments and subject edges."
+    criteria:
+      - key: 6352e27b-cbc9-4c7c-975b-e565394828dc
+        name: "Each decision element keeps its v1 UUID as key."
+      - key: a363130e-f1da-4cd1-83d1-21b3f01c3471
+        name: "The decision's state is kept."
+      - key: fec812a9-c812-4ba6-aa10-9289aa20084a
+        name: "The decision's selected option is kept."
+      - key: 1e997f5a-b3e1-4e7d-b58e-a6da4df322cb
+        name: "Each subject link becomes a `subject` edge carrying its role."
+      - key: b0bf9480-b94a-4038-853e-8fbe2e85086f
+        name: "The decision's outcome is kept."
+      - key: 432ffe63-32b4-4670-b152-c0176b30ac6f
+        name: "Each driver, option, consequence and assessment keeps its fields field for field."
+      - key: 7c142075-2466-47d1-a6d0-dac92b87e2cb
+        name: "A reference to a node the export does not hold becomes that node's v1 external ID as a former label."
+  - key: 088fb7ce-ee52-461a-ba54-cfc5990c9fb5
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "turn each technical constraint category into a constraint category entry."
+    criteria:
+      - key: 0fd0b803-9b5e-4939-8999-acde19ff3f37
+        name: "A category entry keeps the category's UUID as key."
+      - key: 74741ac3-f126-4102-b8f9-ed6817478532
+        name: "A category entry keeps the category's fields field for field."
+      - key: a3ad8897-3b6b-4185-b5f5-25b57ac78ab3
+        name: "The category entry count equals the v1 category count."
+  - key: 7abdcdfd-782e-42a0-9547-22583fc0e0e7
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "take sibling order from the v1 ordinals."
+    criteria:
+      - key: a718ec2b-f761-4c8e-aa03-67d154e13912
+        name: "Siblings are ordered by ascending ordinal."
+      - key: 41b3c599-9619-4afa-9fd6-94d461dd9f91
+        name: "No ordinal is written into a v2 record."
+  - key: 9c880681-1a4b-4fca-aa00-f655794a0a14
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "set each label counter to one more than the highest label value seen for its prefix."
+    criteria:
+      - key: 736a6913-d166-4ecd-8184-3cffb39ec7fa
+        name: "A prefix with no label in the export has its counter at 1."
+      - key: 3990c21e-bcde-4370-929d-f983898b941a
+        name: "A former label in a decision counts as a label seen for its prefix."
+  - key: 9696e1c1-1c59-48fd-a26d-dab5c07539ab
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "key the document by the v1 document UUID that every element of the export carries."
+    criteria:
+      - key: e2cbdcd8-92af-45a9-9ed1-272f96141c72
+        name: "The document key equals the `documentId` of every node, registry entry and decision of the export."
+      - key: 1c63b84c-aa01-4dcb-b349-0ec785d8db7c
+        name: "An export whose elements carry two document UUIDs is refused with an error naming both."
+      - key: 81239df2-9066-4c0d-ad9a-5ca38bdcc69e
+        name: "An export with no node, registry entry or decision is refused."
+  - key: 732ad96d-1e55-4a5b-95c2-1ea08d456803
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "give the boundary `external` to each Component that the export scopes as external."
+    criteria:
+      - key: 1832ec07-0475-4856-82d5-b8aa3483d3c7
+        name: "A Component that the export scopes as external has the `boundary` field `external`."
+      - key: 2188da06-e2b9-4add-8595-fc17b839c0ab
+        name: "A Component that the export scopes to a Product or to the document has no `boundary` field."
+      - key: 62720264-5510-4c5d-8bce-5e005be704bd
+        name: "A Component scoped to a Product or to the document beneath a Component scoped as external is reported as a finding naming both."

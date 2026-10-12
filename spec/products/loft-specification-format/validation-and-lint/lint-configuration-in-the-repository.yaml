@@ -1,0 +1,62 @@
+key: 717019e9-87c6-4d11-88ba-76131d45fc97
+slug: lint-configuration-in-the-repository
+name: "Lint configuration in the repository"
+body: "The `spec/lint.yaml` file, which disables rules, sets severities, adjusts lexicons and records suppressions, and the guarantee that findings depend only on the tree and that file."
+realizes:
+  - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+requirements:
+  - key: 3132a93b-7ea5-4e27-869a-070211f0adb7
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "read its configuration from `spec/lint.yaml`."
+    criteria:
+      - key: 418741da-1f21-4b99-b1d1-d01694b2c0e4
+        name: "A rule can be disabled."
+      - key: 099d6605-02c0-4d35-8417-31a857b83e91
+        name: "A rule's severity can be set to warning, info or hint."
+      - key: e947d713-de7e-4734-9e01-8f88a9a98c67
+        name: "A rule's lexicon can be extended or reduced where the rule has one."
+      - key: 6dfc97bd-d6cc-4aa5-be82-acdd3534388f
+        name: "A suppression names a rule, a key and a reason."
+      - key: f1dffdf9-7a64-4963-97d2-56abb8785033
+        name: "Without `spec/lint.yaml` the default configuration applies."
+      - key: e6817368-dacc-4e66-9e5d-c93d4f58f898
+        name: "A finding whose rule and key match a suppression is not reported."
+      - key: 955c346a-54e1-4a0c-844a-14ae60e533fe
+        name: "A rule's threshold can be set where the rule has one."
+      - key: afdf852d-6550-4b76-8848-2a0a15e69720
+        name: "`spec/lint.yaml` lists rules under `rules`, each entry naming its rule in `rule`."
+      - key: 5d88cd66-8a99-49b2-8fb0-81fe7f279efb
+        name: "`spec/lint.yaml` lists suppressions under `suppressions`, each entry holding `rule`, `key` and `reason`."
+      - key: ea187e27-222a-43c6-95b9-21c57a45f4ae
+        name: "A lexicon is edited either by `replace` or by `extend` and `remove`."
+  - key: 84ef55b2-9929-4bab-83eb-615cfcbccd51
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "produce the same findings for the same tree and configuration on any machine."
+    criteria:
+      - key: fd77fb2d-bc20-4e9e-b847-07478638a8e3
+        name: "The report does not depend on the machine's locale."
+      - key: f176910e-8964-4bc1-935b-7fe6449e9c92
+        name: "The report does not depend on environment variables."
+      - key: 50317b21-3db1-4fa0-82f9-66460b420846
+        name: "No command-line option changes the findings."
+      - key: 3f75ab57-f704-443f-8333-2c7a560cf287
+        name: "No file outside the tree changes the findings."
+  - key: f2ba331f-49be-4a2a-b46b-0e843a85fa5b
+    statement:
+      form: unwanted
+      if: "`spec/lint.yaml` names a rule or a severity the Format does not define"
+      system: "the linter"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: c7d450dd-01d6-4e3b-b4e3-1da3901899e8
+        name: "An unknown rule id is reported by name."
+      - key: 51476155-0011-49ec-8b0b-56bc63e31722
+        name: "A severity outside warning, info and hint is reported by value."
+      - key: 52ee7f6c-7c56-4558-a630-f9d6c2f2ac8a
+        name: "No finding is reported from a tree whose lint configuration is in error."
+      - key: 82583ede-1fd1-4725-808c-11da7876ee0e
+        name: "An option the named rule does not take is an error naming the file, line and column."

@@ -1,0 +1,47 @@
+key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
+slug: lint-rules-of-v2
+name: "Lint rules of v2"
+body: "The three rules the v2 text form adds, V2-001 to V2-003: a heading inside a body, a statement stored as text without slots, and a label reference without a `mentions` edge."
+realizes:
+  - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+requirements:
+  - key: af776c23-28e9-4e41-b7d0-e53db3341af8
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a heading inside a body as `V2-001`."
+    criteria:
+      - key: bafdd3ca-8bac-44c2-bb6a-1973d4db3575
+        name: "Each Markdown heading line in a body yields one `V2-001` finding naming the node and the line."
+      - key: 0dd1b0e1-e89c-4e17-8e01-e8efe4ab56f8
+        name: "A body without a heading yields no `V2-001` finding."
+      - key: a10cd4b9-faba-4ccf-be00-46834ba0b4f9
+        name: "The default severity of `V2-001` is info."
+  - key: 4a2be88c-bc64-4eea-ac05-25220225d800
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a statement stored as text without slots as `V2-002`."
+    criteria:
+      - key: d5f52995-2c2a-46d3-b6f0-95c735e6bdfe
+        name: "A statement with `text` and no `form` yields one `V2-002` finding naming the Requirement."
+      - key: 01c16dee-867b-4d85-b851-ac07db2a44f2
+        name: "A statement with `form` yields no `V2-002` finding."
+      - key: e82461c3-b158-4409-90fd-2eb77f2b02f5
+        name: "The default severity of `V2-002` is info."
+  - key: d0b632ee-a776-418e-91a0-fbbb8997b564
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a label reference in prose that has no matching `mentions` edge as `V2-003`."
+    criteria:
+      - key: d02368ae-15a6-4161-b884-7aa3bc8e0dca
+        name: "A label-shaped reference in a body or statement without a `mentions` edge from the node to the referenced key yields one `V2-003` finding naming the node and the reference."
+      - key: 1bbf8476-72b9-452e-a465-e5c83e26b1bd
+        name: "A reference with a matching `mentions` edge yields no `V2-003` finding."
+      - key: dce49355-6753-4aa0-9943-33775b7780cd
+        name: "The default severity of `V2-003` is warning."
+      - key: fa515695-aaf8-4e99-b153-bc9cb62f6412
+        name: "A label-shaped reference whose number is below its prefix's counter and that names no element yields one `V2-003` finding naming the node and the reference."
+      - key: cfe8fb26-befe-43b5-8bb8-c359c0a4b239
+        name: "A label-shaped text whose number is not below its prefix's counter in `spec/labels.yaml` is not a reference."

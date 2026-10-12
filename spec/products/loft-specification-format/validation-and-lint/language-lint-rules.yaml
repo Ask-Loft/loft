@@ -1,0 +1,169 @@
+key: 85dd847b-3c5e-4c3c-bb45-a25f85080156
+slug: language-lint-rules
+name: "Language lint rules"
+body: "The nine language rules, LQ-001 to LQ-009, and the texts they read: what each one reports and its default severity."
+realizes:
+  - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+requirements:
+  - key: a8870b0b-b7e4-41a7-b1f6-246df0eee61c
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "apply the language rules to assertion texts and to bodies."
+    criteria:
+      - key: 07483c2d-60d2-4be4-aca4-94a08918d6bd
+        name: "A finding on a statement names the Requirement's key."
+      - key: ec295d73-7878-4d2c-a47b-e5e4a7f55d50
+        name: "A finding in a body names the node's key and the body line."
+      - key: 71d34053-d475-4c02-b7b7-7b4c38e7c581
+        name: "A finding on a criterion names the criterion's key."
+      - key: 180674fc-b5ac-422d-a08a-fd92a2af74f6
+        name: "Texts are split into tokens by the tokenizer the Format publishes."
+      - key: 3fdc6bfd-b12c-447a-b814-2dd058a7ade0
+        name: "Every language rule except `LQ-007` reads a criterion's text, a Constraint's name and a Quality Attribute's name as it reads a statement."
+      - key: c8395479-b226-46fb-951a-59ff16ca9bfe
+        name: "A language rule reads the body of the node whose name or statement it reads."
+      - key: 01a12dca-2b3c-76f6-950a-cd628ea23330
+        name: "`LQ-001` to `LQ-005` and `LQ-009` do not read the text inside a code span of a name or statement."
+      - key: 01a12dca-2b3c-76f6-950a-cd63c6d629bb
+        name: "`LQ-008` compares names with the text of their code spans."
+  - key: ca7770a6-d610-43a8-a850-e21fa0300ef3
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a weak term as `LQ-001`."
+    criteria:
+      - key: aa84f41d-efa2-428d-ac2d-c5376e6f3db5
+        name: "A statement or body containing a term of the weak-term lexicon yields one `LQ-001` finding per occurrence, naming the node and the term."
+      - key: d65e17d9-72c2-4f9a-9980-31ad208a2ba3
+        name: "The default weak-term lexicon is published with the Format."
+      - key: 287347e1-c9d3-4460-b2e4-4927e0ad49e5
+        name: "A term removed from the lexicon by configuration yields no `LQ-001` finding."
+      - key: 7656f25c-43c2-4d2e-af44-eee02f543284
+        name: "The default severity of `LQ-001` is warning."
+  - key: c82950af-1bc2-4e4f-ada5-bb434137c3fd
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a vague quantifier as `LQ-002`."
+    criteria:
+      - key: 75986339-9a51-4c62-86c4-bd3e252fb682
+        name: "A statement or body containing a term of the vague-quantifier lexicon yields one `LQ-002` finding per occurrence, naming the node and the term."
+      - key: a3cf4083-6e11-4377-a4da-861fd7fb5db8
+        name: "`at most 8`, and the same two words before any other number, yield no `LQ-002` finding."
+      - key: a32edf27-5090-451f-9995-4b692c66ff32
+        name: "A number written with digit grouping, such as `65,536`, yields no `LQ-002` finding."
+      - key: 196bba6f-e64d-416b-ba8a-689e5e15d8b3
+        name: "The default severity of `LQ-002` is warning."
+      - key: 6247620c-31cb-44a5-859c-c49f3ecbf68c
+        name: "The default vague-quantifier lexicon is published with the Format."
+  - key: 4545309f-0026-4c74-b707-3e0d4987657c
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report an escape clause as `LQ-003`."
+    criteria:
+      - key: 15fa4e7b-c415-4ddc-b81d-7db9f035cc08
+        name: "A statement containing a clause of the escape-clause lexicon yields one `LQ-003` finding per occurrence, naming the node and the clause."
+      - key: 45c442a5-4be0-4b79-9602-47aa493489a3
+        name: "A statement without such a clause yields no `LQ-003` finding."
+      - key: 7f17a47e-9705-41e5-8b01-6b3dc5401c67
+        name: "The default severity of `LQ-003` is warning."
+      - key: 2efa6234-b6ae-4b54-8a7b-51dcc8d8d74f
+        name: "The default escape-clause lexicon is published with the Format."
+  - key: 0a09216c-df1b-4308-93f1-1fcfea842391
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report absolute language as `LQ-004`."
+    criteria:
+      - key: ddf5e6b3-c07e-4929-bb50-c74e2c33656f
+        name: "A statement containing a term of the absolute-language lexicon yields one `LQ-004` finding per occurrence, naming the node and the term, when the rule is enabled."
+      - key: 6ac58a00-f484-4561-a21e-c9a49d89d2d2
+        name: "`LQ-004` is disabled by default."
+      - key: 264973c2-4d75-4b5f-b9b3-6e0248123d7b
+        name: "The default severity of `LQ-004` is info."
+      - key: 96a51c6c-e187-450d-b4f6-2945feb72a8c
+        name: "The default absolute-language lexicon is published with the Format."
+  - key: 01500e0f-6f7f-44be-8f19-128e2450ae3e
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a compound statement as `LQ-005`."
+    criteria:
+      - key: eb0f346d-4826-47a5-85a8-8d6094d7ec26
+        name: "A statement with more than one modal verb yields one `LQ-005` finding naming the node."
+      - key: 9bef78b5-de9d-4d2a-8a81-43c1d99ad7db
+        name: "A statement whose coordinating conjunctions reach the configured threshold yields one `LQ-005` finding naming the node."
+      - key: 43c1c4b2-7c57-43b7-8f2e-27e9da8fce15
+        name: "The default threshold is published with the Format."
+      - key: 43bf9e0d-7af6-4724-b7c4-bf1db1a8d984
+        name: "The default severity of `LQ-005` is info."
+      - key: 910be572-9de4-4c8b-9181-d41e99805ce6
+        name: "The default modal and conjunction lexicons are published with the Format."
+  - key: 0f934ae3-144d-4464-8c9b-4dbd06364312
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a Quality Attribute without a quantified target as `LQ-006`."
+    criteria:
+      - key: 832f5e23-49c6-4679-8dbf-a8edf6a6df3f
+        name: "A Quality Attribute without a quality target yields one `LQ-006` finding naming its key."
+      - key: 6a4b358e-d6eb-4937-a2e3-f50a9436c53a
+        name: "A Quality Attribute with a metric, a band and a unit yields no `LQ-006` finding."
+      - key: fa7e0180-ef25-4d4d-ae3c-6b7ab68aab80
+        name: "The default severity of `LQ-006` is warning."
+  - key: 1b31841d-e3be-4359-a408-5b28671ba78f
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a statement outside the five EARS forms as `LQ-007`."
+    criteria:
+      - key: 20142888-30eb-4fa4-b9f8-222d7e4ca1cb
+        name: "A statement stored as text that parses into none of the five forms yields one `LQ-007` finding naming the node when the rule is enabled."
+      - key: 00151e20-e536-4b69-b639-6ef96634dd10
+        name: "A statement stored with slots yields no `LQ-007` finding."
+      - key: dd13c929-f6e3-4111-9812-b8a708fcf120
+        name: "A text statement whose subject is a bare proper name parses as a form."
+      - key: f04a4416-65d0-4f5f-9232-e5d7b5bd01fc
+        name: "`LQ-007` is disabled by default."
+      - key: 1cef8833-a99c-40ea-811f-aeb2d2f6c460
+        name: "The default severity of `LQ-007` is info."
+  - key: 9a896523-cdaf-475d-aea3-a64b1e6a8300
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report two near-duplicate names as `LQ-008`."
+    criteria:
+      - key: 6b6afe40-4db1-4705-be91-20e3a23d8d41
+        name: "Two names of a kind other than criterion whose similarity reaches the configured threshold yield one `LQ-008` finding naming both keys."
+      - key: e522f972-0b62-45be-890a-bc5194732fb4
+        name: "A name shorter than the configured minimum token count takes part in no `LQ-008` finding."
+      - key: 5f8aa91b-e0c4-432e-8a2e-da83b364b3a5
+        name: "The default threshold and minimum are published with the Format."
+      - key: c2ef39f5-e5bd-4b2d-b04d-0fa39158f474
+        name: "The default severity of `LQ-008` is info."
+      - key: f61c402a-73df-4fbf-84a8-5a433c3f87d3
+        name: "The similarity of two names is the size of the multiset intersection of their tokens divided by the size of their multiset union."
+      - key: 11cf6e9a-bf01-43d0-9e66-15cc4d07a3b8
+        name: "Names are compared only between two nodes of one kind."
+      - key: 01a12dda-cece-7462-b240-636e6eb12919
+        name: "A criterion is compared only with the other criteria of its Requirement."
+      - key: 01a12dda-cece-7462-b240-636ff15f31ed
+        name: "Two criteria of one Requirement yield an `LQ-008` finding only when their tokens are identical."
+  - key: 2fe2e5a3-c255-4596-91fa-a038783faaa2
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report a tag registry term used in prose by a node that does not list the tag as `LQ-009`."
+    criteria:
+      - key: c4be0084-9c44-416f-9fd0-4f7c00925f98
+        name: "A node whose name or body contains a registry term and whose tags omit it yields one `LQ-009` finding per term."
+      - key: 01a12dec-ba4c-7741-b3ca-9e908eb0163b
+        name: "An `LQ-009` finding names the node and the term."
+      - key: 19eac74a-adb5-4737-9f23-af6cc0040bf5
+        name: "A node that lists the tag, or that sits under a node listing it, yields no `LQ-009` finding."
+      - key: 17d5a69d-2fdd-4bfa-b49d-64d065282ed1
+        name: "The default severity of `LQ-009` is hint."
+      - key: 3230d576-5cf7-401a-ab94-10266b0573c7
+        name: "`LQ-009` reads the names and bodies of Products, Feature Groups, Features, Requirements and Components."

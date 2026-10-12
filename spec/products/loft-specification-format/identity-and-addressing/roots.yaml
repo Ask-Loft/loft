@@ -1,0 +1,147 @@
+key: 61d7c512-16c1-44b2-a625-62d581fffd97
+slug: roots
+name: "Roots"
+body: "The edges root, the content root, the binding root, the registry roots, the decisions root and the state root, and what each of them is sensitive to."
+tags:
+  - portable
+realizes:
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+requirements:
+  - key: 079bcc6f-b997-4303-a71e-644b2653d46c
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute the edges root over the sorted multiset of edges, each as its source's hash, its type, its target's hash and its role."
+    criteria:
+      - key: 3f87be4b-4bc3-4dd9-93fc-bc874f32215c
+        name: "An edge enters the multiset by the content hashes of its endpoints."
+      - key: 352da811-df99-4919-b4d0-6efcd0b7c97b
+        name: "Two identical edges between duplicate nodes both count."
+      - key: 440669e2-8133-48c2-85ab-a721782ee735
+        name: "Adding an edge changes the edges root."
+      - key: 75ba89e0-d6ee-4a6e-a81b-b9dccba165ed
+        name: "Rekeying a node leaves the edges root unchanged."
+      - key: 735135ce-6c8e-40f8-9f10-87ba23a346e9
+        name: "Relabelling a node leaves the edges root unchanged."
+      - key: a0510545-2865-4b2c-a28b-b8ebb8b94667
+        name: "A node endpoint enters by its content hash."
+      - key: 16ed798a-86b8-44aa-9bda-dab20590bedf
+        name: "A decision endpoint enters by its decision view hash."
+      - key: 40c3cca7-0ca2-4114-98f1-4f8e310dbb88
+        name: "The edge tuples are sorted by their canonical bytes."
+      - key: 4349e2e9-51b8-4684-8a15-079f254cab07
+        name: "An edge without a role enters the edges root with `null` as its role."
+      - key: 4e5e915a-26be-42e0-b6cf-d17cf9e95327
+        name: "A former-label endpoint enters the edges root as the object `{\"formerLabel\": <label>}`."
+  - key: 00f0e3f5-7cf6-474f-963b-cda9d7e74cc1
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute the content root from the Product roots in document order, the Component roots sorted, the edges root, the registry roots and the decisions root."
+    criteria:
+      - key: d56b9623-7212-49bf-9d24-5692ab3a9ac6
+        name: "The same document with fresh keys has the same content root."
+      - key: 9d540b62-2320-4764-a14a-e2f4dd7da89a
+        name: "Relabelling every node leaves the content root unchanged."
+      - key: 371ad570-9dd3-4893-ad0a-58859b55c5fc
+        name: "Reordering the Products in the manifest's list changes the content root."
+      - key: 9ad90ae7-2dd8-4f71-aea2-3ed4b7b8a45c
+        name: "Reordering the root Components leaves the content root unchanged."
+      - key: 2ad09421-d551-4540-8207-7151fdd71370
+        name: "Changing a registry entry changes the content root."
+      - key: 98c7bb01-2020-4a6c-a6bf-1671cdff85eb
+        name: "Adding an edge changes the content root."
+      - key: 3ad1410a-47e3-4a4d-9f92-f4bf6613d56c
+        name: "Changing a decision changes the content root."
+      - key: dff9c2bc-a436-4ab5-9414-8b001729f563
+        name: "The root Component roots are sorted by their content hash."
+  - key: 77ccd1ef-a335-48b8-8f70-7fc1d80707d8
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute the binding root over the sorted bindings of key, label, aliases and content hash."
+    criteria:
+      - key: fb197598-98ce-4ae1-9374-c62c17f0e3b7
+        name: "Relabelling a node changes the binding root."
+      - key: 245ac12d-523d-4ff2-8a39-f1918b595aff
+        name: "The hash in a binding is computed from the document, never read from `spec/labels.yaml`."
+      - key: 81c66bbd-5c2f-4bcb-b2b7-3949c04282f0
+        name: "A node's binding carries the node's content hash."
+      - key: b5d58ba7-c21b-40c8-8792-3cee2d34a793
+        name: "A decision's binding carries the decision view hash."
+      - key: c3bc74da-f243-47f8-9ecc-0a8c77c0bd58
+        name: "The bindings are sorted by key in byte order."
+  - key: 03b218c6-4049-4f09-9c44-22638ef1eeaa
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute the state root over the state view alone."
+    criteria:
+      - key: abf199fb-6538-437e-9fb4-c6e19dcdaa9c
+        name: "The state view holds the format, the algorithm, the document key, the content root, the binding root and the derived-from record."
+      - key: 75dc8c6e-6e73-4244-8933-5410888d35c4
+        name: "Changing any state view field changes the state root."
+      - key: 2675e509-709a-4343-9468-5a1eb88c2326
+        name: "Two documents with equal state views have the same state root."
+      - key: 5a64f45c-0231-4181-bf6f-b889356a797e
+        name: "The derived-from record holds the source `authoredStateId`, `contentAddress` and `publishSequence`."
+      - key: c93e84de-4ef3-4992-ac20-ec6724a8b9eb
+        name: "A document that is not derived has `null` as its derived-from record."
+      - key: 64e542ae-cfb5-4d3b-a9fb-c28672221b7c
+        name: "The derived-from record is read from `spec/loftspec.yaml`."
+  - key: 3763d0ec-da5c-4c93-bc86-852891f548bb
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute each registry root over the sorted entries of that registry."
+    criteria:
+      - key: de051f91-ee1f-4458-8a19-90548afa005f
+        name: "The tag registry root is computed over the entries sorted by name in UTF-8 byte order."
+      - key: 76416e28-c076-4c69-ac92-33fcd0104941
+        name: "The constraint category root is computed over the categories sorted by name in UTF-8 byte order."
+      - key: 32081899-e591-4f44-b36f-77efe894fbe7
+        name: "Changing an entry's definition changes its registry root."
+      - key: 421b1a75-b729-476a-b441-158338853733
+        name: "Reordering the entries in the file leaves the registry root unchanged."
+      - key: df4a2f67-e867-4b1a-b3c2-295cbfdb9533
+        name: "A registry root view begins with the registry's name, `tags` or `categories`."
+      - key: a9809fee-2b6f-4acf-98d3-b1c547854c89
+        name: "Two registries with equal entries have different roots."
+  - key: 369819ea-896d-4912-9cc5-9a38edd3fe10
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute the decisions root over the sorted decision views."
+    criteria:
+      - key: 87c46910-b1ad-4178-8323-530cf8c9d277
+        name: "Changing a decision's outcome changes the decisions root."
+      - key: ab062f25-d52b-456c-a0ef-038cd3435d32
+        name: "Reordering the decision files leaves the decisions root unchanged."
+      - key: a288743c-f400-43c0-b94f-cf44b200d145
+        name: "Each decision view is digested under `loftspec/decision/1`."
+      - key: 0b7b632e-d0ba-4b3e-ac3a-614196546029
+        name: "The decisions root is computed over the decision view hashes sorted in byte order."
+  - key: 5fe8a9e8-a712-4334-a77c-5546af736d77
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "build each decision view from the decision's content alone."
+    criteria:
+      - key: 3723d05c-93d1-4443-96d5-6fde3582ff60
+        name: "A decision view holds the title, the context, the state, the drivers, the options, the assessments and the consequences, in that order."
+      - key: 866656d6-6813-40d4-aa9d-a626baa99c4c
+        name: "A decision view excludes the keys of the decision and its elements."
+      - key: 953b2ff0-b7cf-4a5f-abc4-080547688f05
+        name: "The same decision with fresh element keys has the same decision view hash."
+      - key: 6638d8b2-3314-41d3-a6e2-790b49e4a91b
+        name: "A decision view names its selected option by the option's position."
+      - key: 967fe476-7a21-47a7-a9d0-0e0db26da32b
+        name: "An assessment names its option and its driver by their positions."
+      - key: 6ba51cae-9973-4c10-ac50-683c2291d040
+        name: "The assessments are sorted by option position and then by driver position."
+      - key: 27f952b8-2049-4cea-bec7-24463a1b7c39
+        name: "A successor decision is named by its decision view hash."
+      - key: d8f8ba11-7fab-41cf-9256-125ac0fd14c2
+        name: "A driver or consequence that names a node names it by its content hash."
+      - key: e87865d3-079e-4ae9-8952-5b1fc0ac71e4
+        name: "A driver or consequence that names a former label names it as the object `{\"formerLabel\": <label>}`."

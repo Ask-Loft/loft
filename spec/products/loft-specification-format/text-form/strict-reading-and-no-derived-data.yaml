@@ -1,0 +1,111 @@
+key: e0a5fbb9-9360-4e41-b00b-2269914d6779
+slug: strict-reading-and-no-derived-data
+name: "Strict reading and no derived data"
+body: "What the reader rejects at a named file, line and column, and the derived values that are never written into a node record."
+realizes:
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+requirements:
+  - key: 3e212957-d55a-4272-b797-2289c1815b8e
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write no derived value into a node record."
+    criteria:
+      - key: 18c36259-4114-42c6-ae93-daef412d2b60
+        name: "No node record carries a hash."
+      - key: 5868a0f5-7d55-4ad9-a9d4-3a832748042e
+        name: "No node record carries an ordinal."
+      - key: 3253dd82-b98d-4580-b539-a246e26bddda
+        name: "No node record carries a label."
+      - key: b9560931-586c-4595-83e3-816a590523c9
+        name: "No file under `spec/` carries a digest that the hasher computes."
+  - key: b516b5ca-6c98-401a-bf94-127489d68cf5
+    statement:
+      form: unwanted
+      if: "a record contains a field the Format does not define"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: 1fbebe3e-b884-4366-b86a-bf4bd5c98635
+        name: "The error names the unknown field."
+      - key: a979745e-71f4-443c-a1ca-1815185cf2e4
+        name: "The error names the file, line and column of the unknown field."
+  - key: 5d46c247-b94e-4b48-ba4a-1cd9acee6ad9
+    statement:
+      form: unwanted
+      if: "a mapping repeats a field"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: 1275a5d8-be9c-499e-8dc0-875e1261f1b5
+        name: "The error names the repeated field."
+      - key: a74868be-0976-4316-80b2-833e8f72257b
+        name: "The error names the file, line and column of the second occurrence."
+  - key: a5c3e9aa-0a51-4f1a-b053-d585a57f01bc
+    statement:
+      form: unwanted
+      if: "indentation contains a tab"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: b05f1ce6-24ed-4cec-9b13-93617bc5257e
+        name: "The error names the file, line and column of the tab."
+  - key: b1558c80-961c-462d-98bd-bc25eb818b1f
+    statement:
+      form: unwanted
+      if: "a file is not valid UTF-8"
+      system: "the reader"
+      shall: "report an error naming the file and the byte offset."
+    criteria:
+      - key: cb16bdba-de06-402b-a94c-5680bdf0d82a
+        name: "The error names the file path."
+      - key: 1e1f704f-b3e0-4dca-84b8-108719c84fbf
+        name: "The error names the byte offset of the first invalid sequence."
+      - key: 5e6f0a1f-0dd4-4fab-9a2a-9ce95ae79bd3
+        name: "A byte order mark is an error naming the file, line and column."
+  - key: 6eb0d0b0-9db3-42b2-9819-24a165a9063e
+    statement:
+      form: unwanted
+      if: "a tag name is not a lowercase letter followed by lowercase letters, digits and hyphens"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: e376ce70-3b62-4090-b0ec-219865c5d721
+        name: "The error names the offending tag name."
+      - key: 25a4c4ef-35ac-40cb-a93b-00f79a17eb32
+        name: "A tag name with an uppercase letter is an error."
+      - key: ed094ef7-119d-4c75-a7fd-919380056d5f
+        name: "A tag name containing a dot is an error."
+      - key: b65636fd-0260-48f0-8835-3d3a0d2e0b3b
+        name: "A tag name such as `conversion` is accepted."
+      - key: c879db97-2d50-4231-b5fe-891c5e0cfdf7
+        name: "A tag name that begins with a digit or a hyphen is an error."
+  - key: 1a2a3fba-1983-4189-94df-6ec6af9b5be0
+    statement:
+      form: unwanted
+      if: "a constraint category name does not match `[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*`"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: f636b9a2-e9ad-44ba-950f-1d5207c60800
+        name: "The error names the offending category name."
+      - key: bfabb5e4-ae0c-47b5-be9b-299ac857ff6d
+        name: "A category name with an empty segment is an error."
+      - key: bcd19fde-9ac9-411e-b265-debe472a28f4
+        name: "A category name with an uppercase letter is an error."
+      - key: 91e356a6-f5eb-40e9-b2c6-9fa731d216cf
+        name: "A category name such as `runtime.language` is accepted."
+      - key: b193528f-2ca9-455a-b590-35534afb9efd
+        name: "A category name segment that begins with a digit or a hyphen is an error."
+  - key: 8e4e8f96-8779-4d0d-9bde-c0ab74e2183f
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "accept exactly the edge types `realizes`, `scoped_to`, `mentions` and `subject`."
+    criteria:
+      - key: baea74fc-390e-4384-982c-10cfc84c1b0f
+        name: "An edge of type `realizes`, `scoped_to`, `mentions` or `subject` is accepted."
+      - key: 8343bb90-b218-4e3e-9ba6-ee81fafbe39e
+        name: "An edge of any other type is an error naming the file, line and column."
+      - key: 90e432ba-1513-4064-83e1-8444087f0bfb
+        name: "A decision's supersession is recorded in its state, not as an edge."

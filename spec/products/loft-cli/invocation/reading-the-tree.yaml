@@ -1,0 +1,32 @@
+key: 01a12de5-62d0-763d-b71a-d8f88d7aa2c6
+slug: reading-the-tree
+name: "Reading the tree"
+body: "What a command that reads the `spec/` tree does when the reader reports an error: it acts on nothing it read. A command opts in by listing the tag `reads-tree` on its Feature, and each tagged command is tested against these rules."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a12de5-62d0-763d-b71a-d8f97b5e1ed8
+    statement:
+      form: unwanted
+      if: "the reader reports an error"
+      system: "a command tagged `reads-tree`"
+      shall: "report the error, change no file and exit 1."
+    criteria:
+      - key: 01a12de5-62d0-763d-b71a-d8fa7abd7ea0
+        name: "Each read error names its file, line and column in the error-position form."
+      - key: 282d8b3a-a8ab-4603-9a70-95d9ad60c251
+        name: "Within one file, the reader reports the first error it meets."
+      - key: 01a12de5-62d0-763d-b71a-d8fb1a7b647f
+        name: "No file is changed."
+      - key: 01a12de5-62d0-763d-b71a-d8fc4b7d28da
+        name: "The exit code is 1."
+  - key: 01a12de5-62d0-763d-b71a-d8fdf1710c0c
+    statement:
+      form: ubiquitous
+      system: "The Feature of each `loft` command that reads the `spec/` tree"
+      shall: "list the tag `reads-tree`."
+    criteria:
+      - key: 01a12de5-62d0-763d-b71a-d8fe243b687d
+        name: "A command that reports a read error has a Feature that lists `reads-tree`."
+      - key: 01a12de5-62d0-763d-b71a-d8ffb506966c
+        name: "A command whose Feature lists `reads-tree` follows the rules for a reader error."

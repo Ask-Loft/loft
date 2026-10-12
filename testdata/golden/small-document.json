@@ -1,0 +1,115 @@
+{
+  "fixture": "small-document",
+  "format": "loftspec/1",
+  "algorithm": "sha256-jcs/1",
+  "views": [
+    {
+      "name": "node:00000000-0000-7000-8000-000000000005",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"criterion\",\"Every node record carries a `key` field.\",null,[],null,null,null,null,null,null,[]]",
+      "digest": "4b486b96302de1481db7a7242b4e81e246ce8020f511d564f9aac07b0cec47cc"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000004",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"requirement\",\"The writer shall write a key on every node.\",null,[],null,null,null,null,null,null,[\"4b486b96302de1481db7a7242b4e81e246ce8020f511d564f9aac07b0cec47cc\"]]",
+      "digest": "cd36d60f406b5f38e2d0d78d8f4751a4f444e5083840f0f7b60ea444af441625"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-00000000000a",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"quality_attribute\",\"Minting a key completes quickly.\",null,[],\"latency\",{\"aggregation\":\"p99\",\"band\":{\"kind\":\"at_most\",\"upper\":\"1\"},\"environment\":\"the reference developer machine\",\"metric\":\"mint.wall-time\",\"scenario\":\"minting one key\",\"unit\":\"ms\"},null,null,\"sampled\",null,[]]",
+      "digest": "e1146eacba1bedf1f835ebb7ba273e4ca579159bca10783b4b1691f7d075d6c3"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000003",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"feature\",\"Keys\",\"Keys address nodes.\",[],null,null,null,null,null,null,[\"cd36d60f406b5f38e2d0d78d8f4751a4f444e5083840f0f7b60ea444af441625\",\"e1146eacba1bedf1f835ebb7ba273e4ca579159bca10783b4b1691f7d075d6c3\"]]",
+      "digest": "28b62a491967e11aa90ff62466455c226ac3cdf8eacd21c8be1b0ac46938288c"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000009",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"constraint\",\"Every Product shall follow the identity rules.\",null,[],null,null,null,null,\"proved\",null,[]]",
+      "digest": "fbb91a54c32c1c94efe689b4ba2d68d0b320249254925c7e3bde8be51d116da2"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000002",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"feature_group\",\"Identity\",null,[],null,null,null,null,null,null,[\"28b62a491967e11aa90ff62466455c226ac3cdf8eacd21c8be1b0ac46938288c\",\"fbb91a54c32c1c94efe689b4ba2d68d0b320249254925c7e3bde8be51d116da2\"]]",
+      "digest": "f0e8bcafda8065ab9ea34fc9e30b6618b6ced87a7fe91ba8f3700b6b9b0ad43d"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000001",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"product\",\"Example Product\",\"The example.\",[\"portable\"],null,null,null,null,null,null,[\"f0e8bcafda8065ab9ea34fc9e30b6618b6ced87a7fe91ba8f3700b6b9b0ad43d\"]]",
+      "digest": "5510e100f02e2a85702ff6690e1a42cd1d6d1c9082016ce9c768bac1f84d6f87"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000007",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"constraint\",\"The document model shall reject unknown kinds.\",null,[],null,null,{\"category\":\"runtime.language\",\"requiredValue\":\"rust\"},null,\"proved\",null,[]]",
+      "digest": "52f35143bdfa5008943fbb2e50a6089bcf3567c9d55cfc162dc8956c906c32f7"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000008",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"quality_attribute\",\"Formatting completes quickly.\",null,[],\"latency\",{\"aggregation\":\"p95\",\"band\":{\"kind\":\"at_most\",\"upper\":\"2\"},\"environment\":\"the reference developer machine\",\"metric\":\"fmt.wall-time\",\"scenario\":\"formatting a canonical tree of five thousand nodes\",\"unit\":\"s\"},null,null,\"sampled\",null,[]]",
+      "digest": "83b3f4831352fe5a980e8747eb1ce9ad0dbfb93b3b977c8970e9a7aff6c561f8"
+    },
+    {
+      "name": "node:00000000-0000-7000-8000-000000000006",
+      "domain": "loftspec/node/1",
+      "canonical": "[\"component\",\"Document model\",\"Nodes and keys.\\n\\tAn indented line with a trailing space. \\n\",[],null,null,null,null,null,null,[\"52f35143bdfa5008943fbb2e50a6089bcf3567c9d55cfc162dc8956c906c32f7\",\"83b3f4831352fe5a980e8747eb1ce9ad0dbfb93b3b977c8970e9a7aff6c561f8\"]]",
+      "digest": "7e2f580c75bf7bd40d6101b688e1f2cc46cbe121ffc5b99395972d9479814ae9"
+    },
+    {
+      "name": "decision:00000000-0000-7000-8000-000000000014",
+      "domain": "loftspec/decision/1",
+      "canonical": "[\"Keys are UUIDs\",\"Every node carries its key in the file.\",{\"kind\":\"accepted\",\"outcome\":\"New keys are UUID version 7.\",\"selectedOption\":0},[{\"kind\":\"local\",\"label\":\"One key shape\",\"statement\":\"Converted and new keys share one syntax.\"},{\"kind\":\"subject\",\"subject\":\"cd36d60f406b5f38e2d0d78d8f4751a4f444e5083840f0f7b60ea444af441625\"}],[[\"UUID version 7\",\"Time-ordered RFC 9562 UUIDs.\"],[\"ULID\",\"Crockford base32 identifiers.\"]],[[0,0,\"supports\",\"The same syntax as converted keys.\"],[0,1,\"supports\",\"The writer writes one shape.\"],[1,0,\"conflicts\",\"Two syntaxes in one document.\"],[1,1,\"neutral\",\"Either can be written.\"]],[[\"obligation\",\"The formatter mints version 7 keys.\",\"cd36d60f406b5f38e2d0d78d8f4751a4f444e5083840f0f7b60ea444af441625\"],[\"risk\",\"A key reveals when it was minted.\",null]]]",
+      "digest": "a296a9d1d135f3e8d22ebdaee47f31d64eb46ca465994a8366cd699896557c3c"
+    },
+    {
+      "name": "root:edges",
+      "domain": "loftspec/edges/1",
+      "canonical": "[[\"28b62a491967e11aa90ff62466455c226ac3cdf8eacd21c8be1b0ac46938288c\",\"realizes\",\"7e2f580c75bf7bd40d6101b688e1f2cc46cbe121ffc5b99395972d9479814ae9\",null],[\"4b486b96302de1481db7a7242b4e81e246ce8020f511d564f9aac07b0cec47cc\",\"mentions\",\"cd36d60f406b5f38e2d0d78d8f4751a4f444e5083840f0f7b60ea444af441625\",null],[\"7e2f580c75bf7bd40d6101b688e1f2cc46cbe121ffc5b99395972d9479814ae9\",\"scoped_to\",\"5510e100f02e2a85702ff6690e1a42cd1d6d1c9082016ce9c768bac1f84d6f87\",null],[\"a296a9d1d135f3e8d22ebdaee47f31d64eb46ca465994a8366cd699896557c3c\",\"subject\",\"7e2f580c75bf7bd40d6101b688e1f2cc46cbe121ffc5b99395972d9479814ae9\",\"affected\"],[\"a296a9d1d135f3e8d22ebdaee47f31d64eb46ca465994a8366cd699896557c3c\",\"subject\",\"cd36d60f406b5f38e2d0d78d8f4751a4f444e5083840f0f7b60ea444af441625\",\"outcome\"]]",
+      "digest": "f8d178703c7872f08ac8c478b5c9e11f3a447ef25332d0c31cf956b273e8354a"
+    },
+    {
+      "name": "root:tags",
+      "domain": "loftspec/registry/1",
+      "canonical": "[\"tags\",[[\"identity\",\"Keys, labels, aliases and the bindings between them.\"],[\"portable\",\"Behaviour every implementation must reproduce exactly.\"]]]",
+      "digest": "2e49670f4d269d9fb18eb82d114ee9c2aceb44e637d8a0db929c436d5cbefecb"
+    },
+    {
+      "name": "root:categories",
+      "domain": "loftspec/registry/1",
+      "canonical": "[\"categories\",[[\"runtime.language\",\"The language the runtime is written in.\"]]]",
+      "digest": "6f2ba2e8161502e18f052b6c0b9762b9bd7f038558b6285cb000ea2dfc4d4ca7"
+    },
+    {
+      "name": "root:decisions",
+      "domain": "loftspec/decisions/1",
+      "canonical": "[\"a296a9d1d135f3e8d22ebdaee47f31d64eb46ca465994a8366cd699896557c3c\"]",
+      "digest": "9ab38736a042439909614f4248a376c0068c6fef48e4d294c7d69941c7440dea"
+    },
+    {
+      "name": "root:content",
+      "domain": "loftspec/content/1",
+      "canonical": "[[\"5510e100f02e2a85702ff6690e1a42cd1d6d1c9082016ce9c768bac1f84d6f87\"],[\"7e2f580c75bf7bd40d6101b688e1f2cc46cbe121ffc5b99395972d9479814ae9\"],\"f8d178703c7872f08ac8c478b5c9e11f3a447ef25332d0c31cf956b273e8354a\",\"2e49670f4d269d9fb18eb82d114ee9c2aceb44e637d8a0db929c436d5cbefecb\",\"6f2ba2e8161502e18f052b6c0b9762b9bd7f038558b6285cb000ea2dfc4d4ca7\",\"9ab38736a042439909614f4248a376c0068c6fef48e4d294c7d69941c7440dea\"]",
+      "digest": "af3c1e068a59ca0444ff1ae9b561828856dcd432722552d90aacb1e8240dd09a"
+    },
+    {
+      "name": "root:bindings",
+      "domain": "loftspec/bindings/1",
+      "canonical": "[[\"00000000-0000-7000-8000-000000000001\",\"P-1\",[],\"5510e100f02e2a85702ff6690e1a42cd1d6d1c9082016ce9c768bac1f84d6f87\"],[\"00000000-0000-7000-8000-000000000002\",\"FG-1\",[],\"f0e8bcafda8065ab9ea34fc9e30b6618b6ced87a7fe91ba8f3700b6b9b0ad43d\"],[\"00000000-0000-7000-8000-000000000003\",\"F-1\",[],\"28b62a491967e11aa90ff62466455c226ac3cdf8eacd21c8be1b0ac46938288c\"],[\"00000000-0000-7000-8000-000000000004\",\"RQ-2\",[\"RQ-1\"],\"cd36d60f406b5f38e2d0d78d8f4751a4f444e5083840f0f7b60ea444af441625\"],[\"00000000-0000-7000-8000-000000000006\",\"CMP-1\",[],\"7e2f580c75bf7bd40d6101b688e1f2cc46cbe121ffc5b99395972d9479814ae9\"],[\"00000000-0000-7000-8000-000000000007\",\"CON-1\",[],\"52f35143bdfa5008943fbb2e50a6089bcf3567c9d55cfc162dc8956c906c32f7\"],[\"00000000-0000-7000-8000-000000000008\",\"QA-1\",[],\"83b3f4831352fe5a980e8747eb1ce9ad0dbfb93b3b977c8970e9a7aff6c561f8\"],[\"00000000-0000-7000-8000-000000000009\",\"CON-2\",[],\"fbb91a54c32c1c94efe689b4ba2d68d0b320249254925c7e3bde8be51d116da2\"],[\"00000000-0000-7000-8000-00000000000a\",\"QA-2\",[],\"e1146eacba1bedf1f835ebb7ba273e4ca579159bca10783b4b1691f7d075d6c3\"],[\"00000000-0000-7000-8000-000000000014\",\"ADR-1\",[],\"a296a9d1d135f3e8d22ebdaee47f31d64eb46ca465994a8366cd699896557c3c\"]]",
+      "digest": "5351d55201591dd601a718bbd7106f88807171ad6935c18bc32e063eba667947"
+    },
+    {
+      "name": "root:state",
+      "domain": "loftspec/state/1",
+      "canonical": "[\"loftspec/1\",\"sha256-jcs/1\",\"00000000-0000-7000-8000-000000000000\",\"af3c1e068a59ca0444ff1ae9b561828856dcd432722552d90aacb1e8240dd09a\",\"5351d55201591dd601a718bbd7106f88807171ad6935c18bc32e063eba667947\",null]",
+      "digest": "19a1280730e79a9537d34403c4fcda7af254ba33af48650f01b939a9f760d47c"
+    }
+  ]
+}

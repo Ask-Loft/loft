@@ -1,0 +1,122 @@
+key: 01a12dad-fb7a-7333-9129-a6bc9ad902da
+slug: v2-leads-the-behaviour-it-shares-with-v1
+title: "v2 leads the behaviour it shares with v1, and each difference is registered"
+context: "The Format's specification now lives in this repository, so its rules change here rather than in Loft v1. Loft v1 implements the same structural and language rules, EARS forms and label rules, and its server keeps running. Without a reference and a record of intended differences, the two drift apart unseen, or one side blocks the other."
+state:
+  kind: accepted
+  selectedOption: 01a12dad-fb7a-7333-9129-a6c1a0c22841
+  outcome: "Behaviour shared with v1 changes first in `spec/`, each difference from v1 is an entry of the divergence register, and loftspec's tests compare it with outputs a v1 implementation wrote."
+drivers:
+  - key: 01a12dad-fb7a-7333-9129-a6bd8cf5ef54
+    kind: local
+    label: "Open standard"
+    statement: "The open Format defines the meaning of the rules it shares with v1."
+  - key: 01a12dad-fb7a-7333-9129-a6bed6abf303
+    kind: local
+    label: "No surprise on the server"
+    statement: "Users of the v1 server see no unannounced change in their findings."
+  - key: 01a12dad-fb7a-7333-9129-a6bf497ce1a3
+    kind: local
+    label: "Caught at the cause"
+    statement: "A difference shows in the commit that introduces it."
+  - key: 01a12dad-fb7a-7333-9129-a6c07f2e8244
+    kind: local
+    label: "Low upkeep"
+    statement: "The guard costs little to keep current."
+options:
+  - key: 01a12dad-fb7a-7333-9129-a6c1a0c22841
+    title: "v2 leads, with a register"
+    description: "Shared behaviour changes first in `spec/`; v1 follows through its own Change Set, and each difference until then is a register entry."
+  - key: 01a12dad-fb7a-7333-9129-a6c219923522
+    title: "v1 leads until convergence"
+    description: "The v1 server's behaviour is the reference; v2 matches it, and each difference needs a decision of this Format."
+  - key: 01a12dad-fb7a-7333-9129-a6c316e8ac48
+    title: "A frozen gate only"
+    description: "Agreement is checked against one frozen v1 state and nothing else."
+  - key: 01a12dad-fb7a-7333-9129-a6c416e02846
+    title: "The server adopts the crates now"
+    description: "The v1 server calls loftspec for its lint and statement parsing at once."
+assessments:
+  - option: 01a12dad-fb7a-7333-9129-a6c1a0c22841
+    driver: 01a12dad-fb7a-7333-9129-a6bd8cf5ef54
+    rating: supports
+    rationale: "the open Format defines the shared rules"
+  - option: 01a12dad-fb7a-7333-9129-a6c1a0c22841
+    driver: 01a12dad-fb7a-7333-9129-a6bed6abf303
+    rating: neutral
+    rationale: "v1 takes a change only through its own Change Set"
+  - option: 01a12dad-fb7a-7333-9129-a6c1a0c22841
+    driver: 01a12dad-fb7a-7333-9129-a6bf497ce1a3
+    rating: supports
+    rationale: "loftspec's own tests compare against v1's outputs"
+  - option: 01a12dad-fb7a-7333-9129-a6c1a0c22841
+    driver: 01a12dad-fb7a-7333-9129-a6c07f2e8244
+    rating: neutral
+    rationale: "the reference outputs are rewritten when v1 changes"
+  - option: 01a12dad-fb7a-7333-9129-a6c219923522
+    driver: 01a12dad-fb7a-7333-9129-a6bd8cf5ef54
+    rating: conflicts
+    rationale: "each change to a shared rule waits for the server"
+  - option: 01a12dad-fb7a-7333-9129-a6c219923522
+    driver: 01a12dad-fb7a-7333-9129-a6bed6abf303
+    rating: supports
+    rationale: "the server's behaviour is the reference"
+  - option: 01a12dad-fb7a-7333-9129-a6c219923522
+    driver: 01a12dad-fb7a-7333-9129-a6bf497ce1a3
+    rating: supports
+    rationale: "the same reference outputs"
+  - option: 01a12dad-fb7a-7333-9129-a6c219923522
+    driver: 01a12dad-fb7a-7333-9129-a6c07f2e8244
+    rating: neutral
+    rationale: "the reference outputs are rewritten when v1 changes"
+  - option: 01a12dad-fb7a-7333-9129-a6c316e8ac48
+    driver: 01a12dad-fb7a-7333-9129-a6bd8cf5ef54
+    rating: supports
+    rationale: "nothing binds the Format"
+  - option: 01a12dad-fb7a-7333-9129-a6c316e8ac48
+    driver: 01a12dad-fb7a-7333-9129-a6bed6abf303
+    rating: conflicts
+    rationale: "drift after the frozen state goes unseen"
+  - option: 01a12dad-fb7a-7333-9129-a6c316e8ac48
+    driver: 01a12dad-fb7a-7333-9129-a6bf497ce1a3
+    rating: conflicts
+    rationale: "a difference shows only when the pin moves"
+  - option: 01a12dad-fb7a-7333-9129-a6c316e8ac48
+    driver: 01a12dad-fb7a-7333-9129-a6c07f2e8244
+    rating: supports
+    rationale: "one fixture, never rewritten"
+  - option: 01a12dad-fb7a-7333-9129-a6c416e02846
+    driver: 01a12dad-fb7a-7333-9129-a6bd8cf5ef54
+    rating: supports
+    rationale: "the server runs the Format's own code"
+  - option: 01a12dad-fb7a-7333-9129-a6c416e02846
+    driver: 01a12dad-fb7a-7333-9129-a6bed6abf303
+    rating: conflicts
+    rationale: "every change to the crates reaches the server at once"
+  - option: 01a12dad-fb7a-7333-9129-a6c416e02846
+    driver: 01a12dad-fb7a-7333-9129-a6bf497ce1a3
+    rating: supports
+    rationale: "one implementation cannot drift"
+  - option: 01a12dad-fb7a-7333-9129-a6c416e02846
+    driver: 01a12dad-fb7a-7333-9129-a6c07f2e8244
+    rating: conflicts
+    rationale: "the server adopts the crates before the Format is stable"
+consequences:
+  - key: 01a12dad-fb7a-7333-9129-a6c56664cf96
+    kind: obligation
+    statement: "A change to a shared rule in v1 is matched by an edit of `spec/`, or v1 reverts it."
+    subject: 01a12dad-fb7a-7333-9129-a6b022ee1210
+  - key: 01a12dad-fb7a-7333-9129-a6c6fde891ec
+    kind: cost
+    statement: "The reference outputs are rewritten from a v1 implementation whenever v1's output on a public export changes."
+  - key: 01a12dad-fb7a-7333-9129-a6c742b9c8db
+    kind: benefit
+    statement: "A change that breaks agreement fails in this repository's own tests."
+  - key: 01a12dad-fb7a-7333-9129-a6c8fc42918c
+    kind: risk
+    statement: "A difference that only a private v1 document exercises is seen only where that document is checked."
+subjects:
+  - role: affected
+    node: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
+  - role: outcome
+    node: 01a12dad-fb7a-7333-9129-a6b022ee1210

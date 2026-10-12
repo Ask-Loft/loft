@@ -1,0 +1,42 @@
+key: 01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21
+slug: component-boundary
+name: "Component boundary"
+body: "Whether a Component lies inside the document or outside Loft's governance, and how a Component's subtree takes it on."
+realizes:
+  - b90f38f9-766c-467f-a29c-d6ae3b796e52
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 9221e5f6-d920-44f6-bc1a-1dac6e41f5dd
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "read a Component's boundary as `private` or `external`."
+    criteria:
+      - key: f98bc2a4-85c3-46bb-9f6d-33459bd2210f
+        name: "A Component record's `boundary` field holds `private` or `external`."
+      - key: cbd67e83-0c32-4c5e-9022-dd2c1df3ab69
+        name: "Any other value in `boundary` is an error naming the file, line and column."
+  - key: bbb6eaf7-f1be-417a-a4d7-4dfe510a1e2b
+    statement:
+      form: ubiquitous
+      system: "loftspec"
+      shall: "give a Component without a `boundary` field the boundary of its parent Component."
+    criteria:
+      - key: 872bfa48-db37-441e-a26c-561cbb43e889
+        name: "A nested Component without `boundary` has its parent Component's boundary."
+      - key: eae10663-009b-464d-8c95-9629a0f6f8e1
+        name: "A root Component without `boundary` has the boundary `private`."
+      - key: e1aed306-c54e-40ac-bc16-5ff13e775ec5
+        name: "A Component with a `boundary` field has the boundary that the field holds."
+  - key: 572ffa6c-7bd1-48b3-b78b-8a6a4fcd3225
+    statement:
+      form: unwanted
+      if: "a Component's `boundary` is `private` and a Component above it has the boundary `external`"
+      system: "the validator"
+      shall: "report an error."
+    criteria:
+      - key: 724e8365-eff4-457d-81f6-bb7507a02054
+        name: "The error names the Component and the nearest Component above it whose boundary is `external`."
+      - key: 1b45dce8-d1fe-4f5e-8906-4ea20cefd138
+        name: "A Component whose `boundary` is `external` beneath an `external` Component raises no error."

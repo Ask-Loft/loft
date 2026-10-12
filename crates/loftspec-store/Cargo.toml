@@ -1,11 +1,20 @@
 [package]
 name = "loftspec-store"
-version = "0.1.0"
+version = "2.0.0"
 description = "Memory and file stores for Loft Specification Format documents"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+
+[dependencies]
+loftspec = { path = "../loftspec" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+software-plant = { path = "../software-plant" }
 
 [lints]
 workspace = true

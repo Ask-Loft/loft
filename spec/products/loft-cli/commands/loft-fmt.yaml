@@ -1,0 +1,71 @@
+key: a53b8107-b5aa-41e0-af56-2d8b571bb908
+slug: loft-fmt
+name: "`loft fmt`"
+body: "Rewrites the tree in canonical layout and mints missing keys, or with `--check` reports drift without writing."
+tags:
+  - reads-tree
+  - writes-tree
+realizes:
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 66adc20f-43e3-46cb-b323-e028e544571c
+    statement:
+      form: ubiquitous
+      system: "`loft fmt`"
+      shall: "rewrite `spec/` in canonical layout."
+    criteria:
+      - key: 100cafc9-84e3-4a71-95d6-ca65a8f81771
+        name: "Every file whose bytes would change is rewritten in canonical layout."
+      - key: 7903dea7-2b55-49aa-8143-b4bdd4561529
+        name: "A key is minted for every node without one."
+      - key: 12065dff-4eff-49fb-a77e-3c09a0d27e66
+        name: "The paths rewritten are printed."
+  - key: a19f24f8-5980-4978-aa6a-5feb1cc4f045
+    statement:
+      form: optional
+      where: "`--check` is given"
+      system: "`loft fmt`"
+      shall: "report drift without writing."
+    criteria:
+      - key: 8a8155a7-3a89-4bb6-8013-c95862ec770e
+        name: "The drifting paths are printed."
+      - key: 06caf38b-69e9-452e-8214-abd5e0822328
+        name: "A node without a key counts as drift."
+      - key: 15738450-9489-4243-9f8f-525584ffb371
+        name: "No file is changed."
+      - key: 4b1d5dcf-b105-440c-85f1-27bf6612388a
+        name: "`--check` exits 0 on a canonical tree."
+      - key: 0a9bd0ba-557c-471e-bd9c-23d17a4f2ba7
+        name: "`--check` exits 1 when any file drifts."
+  - key: 6fed8147-5ffa-4e4d-b01c-f431ee1562a6
+    statement:
+      form: event_driven
+      when: "`loft fmt` mints the key of a Product or Feature file"
+      system: "`loft fmt`"
+      shall: "add the key to the list that names the file."
+    criteria:
+      - key: aebaf850-8893-42db-be63-6b097ef9f8c4
+        name: "A new Product file's key is appended to the manifest's `products`."
+      - key: f85d86b7-cd45-40f9-8036-a5323801b8fc
+        name: "A new Feature file's key is appended to the `features` of the Feature Group whose directory holds the file."
+      - key: f329ee99-de83-42e4-9688-5767c24f7907
+        name: "An appended key follows the keys already listed."
+      - key: 961b3d9b-7d46-4feb-8444-f953f40b7872
+        name: "A new Feature file that no Feature Group's directory holds is reported as unlisted."
+      - key: 34cebd79-970b-4712-9566-142cce7c9b80
+        name: "When a new file is reported as unlisted, `loft fmt` changes no file."
+qualityAttributes:
+  - key: 64d803a0-6125-494f-b72c-01ccc8c42a98
+    name: "`loft fmt --check` shall complete within 2 seconds at the 95th percentile on a canonical document of five thousand nodes."
+    qaKind: latency
+    qualityTarget:
+      metric: "fmt.check.wall-time"
+      band:
+        kind: at_most
+        upper: "2"
+      unit: "s"
+      aggregation: p95
+      scenario: "`loft fmt --check` over a canonical tree of five thousand nodes with a warm page cache"
+      environment: "the reference developer machine named in the repository"
+    verificationFate: sampled
