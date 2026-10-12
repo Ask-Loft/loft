@@ -21,6 +21,8 @@ requirements:
         name: "Components, decisions, the tag registry and `realizes` edges render in their own sections after the Products."
       - key: 6aeb1e9e-d068-465e-a232-cc0ab630f3f0
         name: "An unlabelled node renders with its key in place of a label."
+      - key: 01a12ded-9feb-76f6-b7f4-d37d9a1ca8ed
+        name: "A code span in a name renders as written, apart from `|`, which is escaped."
       - key: 8cf16204-5901-4e90-a29a-85d909292935
         name: "Every node of the document appears in the rendering."
       - key: 1760a1c1-823c-497b-92a5-a1f398e9b158
