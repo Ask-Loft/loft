@@ -91,11 +91,13 @@ pub struct Installed {
 }
 
 impl GitScenario {
-    /// Writes the scenario into `dir` and names the directory that holds the simulator.
+    /// Writes the scenario into `dir` and names the directory that holds the simulator. A
+    /// stopped rebase's branch is written where its git path names it, in a directory under
+    /// `dir` that stands for `.git`.
     #[must_use]
     pub fn install(&self, dir: &Path) -> Installed {
         let scenario = dir.join("git-scenario.json");
-        self.write(&scenario);
+        self.with_git_files(dir).write(&scenario);
         let _ = fs::remove_file(dir.join(LOCKS_FILE));
         let search_path = git_executable()
             .parent()
@@ -105,6 +107,31 @@ impl GitScenario {
             scenario,
             search_path,
         }
+    }
+}
+
+impl GitScenario {
+    /// The scenario with the files of a stopped rebase written under `dir`, and its git
+    /// directory set there.
+    fn with_git_files(&self, dir: &Path) -> Self {
+        let mut scenario = self.clone();
+        let Some(repository) = scenario.repository.as_mut() else {
+            return scenario;
+        };
+        let Some(head_name) = repository
+            .stopped
+            .as_ref()
+            .and_then(|s| s.head_name.clone())
+        else {
+            return scenario;
+        };
+        let git_dir = dir.join("git-dir");
+        let rebase = git_dir.join("rebase-merge");
+        fs::create_dir_all(&rebase).expect("the git directory is created");
+        fs::write(rebase.join("head-name"), format!("{head_name}\n"))
+            .expect("the rebased branch is written");
+        repository.git_dir = Some(git_dir.to_string_lossy().into_owned());
+        scenario
     }
 }
 

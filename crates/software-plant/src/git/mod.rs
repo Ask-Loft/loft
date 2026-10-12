@@ -7,6 +7,10 @@ use std::{env, fs};
 
 use serde::{Deserialize, Serialize};
 
+mod stopped;
+
+pub use stopped::{IndexEntry, Operation, Stopped, StoppedCall};
+
 /// The environment variable that names the scenario file the simulator reads.
 pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_GIT_SCENARIO";
 
@@ -56,6 +60,13 @@ pub struct Repository {
     /// The repository's local configuration, by name.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub config: BTreeMap<String, String>,
+    /// A merge or a rebase that stopped on a conflict.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stopped: Option<Stopped>,
+    /// The directory that stands for `.git`, where installing writes the files a git path names;
+    /// `.git` under the top level when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub git_dir: Option<String>,
 }
 
 /// One entry of the porcelain v1 status: its two-letter code and its path, and for a rename or
@@ -83,6 +94,8 @@ pub enum Call {
     ConfigGet,
     /// `git config --local <name> <value>`
     ConfigSet,
+    /// A call that reads a stopped merge or rebase.
+    Stopped(StoppedCall),
 }
 
 /// A call that fails with a scripted exit code and message.
@@ -137,6 +150,8 @@ impl GitScenario {
                 branch: Some(branch.to_owned()),
                 status: Vec::new(),
                 config: BTreeMap::new(),
+                stopped: None,
+                git_dir: None,
             }),
             failures: Vec::new(),
         }
@@ -194,6 +209,58 @@ impl GitScenario {
             .config
             .insert(name.to_owned(), value.to_owned());
         self
+    }
+
+    /// The same repository stopped in a merge of `head`.
+    #[must_use]
+    pub fn merging(self, head: &str) -> Self {
+        self.stopped_in(Operation::Merge, head, None)
+    }
+
+    /// The same repository stopped in a rebase that replays `head`, of the branch `head_name`
+    /// names (`refs/heads/<branch>` or `detached HEAD`).
+    #[must_use]
+    pub fn rebasing(self, head: &str, head_name: &str) -> Self {
+        self.stopped_in(Operation::Rebase, head, Some(head_name))
+    }
+
+    fn stopped_in(mut self, operation: Operation, head: &str, head_name: Option<&str>) -> Self {
+        self.repository_mut().stopped = Some(Stopped {
+            operation,
+            head: head.to_owned(),
+            head_name: head_name.map(str::to_owned),
+            locks: BTreeMap::new(),
+            unmerged: Vec::new(),
+        });
+        self
+    }
+
+    /// The same stopped repository with `loft.lock.json` at `revision` holding `text`.
+    #[must_use]
+    pub fn lock_at(mut self, revision: &str, text: &str) -> Self {
+        self.stopped_mut()
+            .locks
+            .insert(revision.to_owned(), text.to_owned());
+        self
+    }
+
+    /// The same stopped repository with one more index entry of an unmerged path.
+    #[must_use]
+    pub fn unmerged(mut self, mode: &str, object: &str, stage: u8, path: &str) -> Self {
+        self.stopped_mut().unmerged.push(IndexEntry {
+            mode: mode.to_owned(),
+            object: object.to_owned(),
+            stage,
+            path: path.to_owned(),
+        });
+        self
+    }
+
+    fn stopped_mut(&mut self) -> &mut Stopped {
+        self.repository_mut()
+            .stopped
+            .as_mut()
+            .expect("a stopped merge or rebase")
     }
 
     /// The same scenario with `call` failing with `code` and `message`.
@@ -286,6 +353,9 @@ impl GitScenario {
                 set: Some((operands[0].to_owned(), operands[1].to_owned())),
                 ..Reply::ok(Vec::new())
             },
+            Call::Stopped(call) => {
+                stopped::answer(call, &operands, repository, repository.git_dir.as_deref())
+            }
         }
     }
 }
@@ -356,6 +426,6 @@ fn parse(args: &[String]) -> Option<(Call, Vec<&str>)> {
         ["config", "--local", name, value] if !name.starts_with('-') => {
             Some((Call::ConfigSet, vec![*name, *value]))
         }
-        _ => None,
+        rest => stopped::parse(rest).map(|(call, operands)| (Call::Stopped(call), operands)),
     }
 }

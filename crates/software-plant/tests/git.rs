@@ -310,3 +310,124 @@ fn outside_a_repository_a_config_call_exits_128_with_gits_message() {
         );
     }
 }
+
+const MERGE_HEAD: &str = "rev-parse -q --verify MERGE_HEAD";
+const REBASE_HEAD: &str = "rev-parse -q --verify REBASE_HEAD";
+const SHA: &str = "b97feb1503e857271adfbc4604548baba9ff4d2b";
+
+#[test]
+fn the_commit_being_merged_or_replayed_is_answered_and_exits_1_when_none_is() {
+    let clean = GitScenario::clean_on("main");
+    for line in [MERGE_HEAD, REBASE_HEAD] {
+        let reply = answer(&clean, line);
+        assert_eq!((reply.code, reply.stdout), (1, Vec::new()), "{line}");
+    }
+    let merging = GitScenario::clean_on("main").merging(SHA);
+    assert_eq!(
+        answer(&merging, MERGE_HEAD).stdout,
+        format!("{SHA}\n").into_bytes()
+    );
+    assert_eq!(answer(&merging, REBASE_HEAD).code, 1);
+    let rebasing = GitScenario::clean_on("main")
+        .detached()
+        .rebasing(SHA, "refs/heads/main");
+    assert_eq!(
+        answer(&rebasing, REBASE_HEAD).stdout,
+        format!("{SHA}\n").into_bytes()
+    );
+    assert_eq!(answer(&rebasing, MERGE_HEAD).code, 1);
+}
+
+#[test]
+fn a_git_path_is_answered_under_the_git_directory_from_the_working_directory() {
+    let line = "rev-parse --git-path rebase-merge/head-name";
+    let top = GitScenario::clean_on("main");
+    assert_eq!(answer(&top, line).stdout, b".git/rebase-merge/head-name\n");
+    let below = top.below("sub/dir/");
+    assert_eq!(
+        answer(&below, line).stdout,
+        b"../../.git/rebase-merge/head-name\n"
+    );
+}
+
+#[test]
+fn an_installed_rebase_writes_the_branch_it_rebases_where_its_git_path_names() {
+    let dir = plant("rebase");
+    let scenario = GitScenario::clean_on("main")
+        .detached()
+        .rebasing(SHA, "refs/heads/main");
+    let installed = scenario.install(&dir);
+    let output = installed
+        .apply(&mut Command::new("git"))
+        .args(["rev-parse", "--git-path", "rebase-merge/head-name"])
+        .output()
+        .unwrap();
+    let named = String::from_utf8(output.stdout).unwrap();
+    let held = std::fs::read_to_string(named.trim_end()).unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert_eq!(held, "refs/heads/main\n");
+}
+
+#[test]
+fn unmerged_paths_are_answered_as_ls_files_prints_their_index_entries() {
+    let scenario = GitScenario::clean_on("main")
+        .merging(SHA)
+        .unmerged(
+            "100644",
+            "20833b50d6fa1b4f9378bf129363513617191658",
+            1,
+            "loft.lock.json",
+        )
+        .unmerged(
+            "100644",
+            "7dc89e9dba4a0afa92e83f87c412b1aa11880f00",
+            2,
+            "loft.lock.json",
+        );
+    let reply = answer(&scenario, "ls-files -u -z --full-name -- :/");
+    assert_eq!(
+        reply.stdout,
+        b"100644 20833b50d6fa1b4f9378bf129363513617191658 1\tloft.lock.json\0\
+          100644 7dc89e9dba4a0afa92e83f87c412b1aa11880f00 2\tloft.lock.json\0"
+    );
+    let clean = answer(
+        &GitScenario::clean_on("main"),
+        "ls-files -u -z --full-name -- :/",
+    );
+    assert_eq!((clean.code, clean.stdout), (0, Vec::new()));
+}
+
+#[test]
+fn the_lock_a_revision_holds_is_answered_or_refused_with_git_s_message() {
+    let scenario = GitScenario::clean_on("main")
+        .below("sub/")
+        .merging(SHA)
+        .lock_at("HEAD", "{\"a\": 1}\n");
+    let held = answer(&scenario, "cat-file blob HEAD:./loft.lock.json");
+    assert_eq!((held.code, held.stdout), (0, b"{\"a\": 1}\n".to_vec()));
+    let missing = answer(&scenario, "cat-file blob MERGE_HEAD:./loft.lock.json");
+    assert_eq!(
+        (missing.code, missing.stderr.as_str()),
+        (
+            128,
+            "fatal: path 'sub/loft.lock.json' does not exist in 'MERGE_HEAD'\n"
+        )
+    );
+}
+
+#[test]
+fn outside_a_repository_the_calls_of_a_stopped_merge_exit_128() {
+    let outside = GitScenario::outside_repository();
+    for line in [
+        MERGE_HEAD,
+        "ls-files -u -z --full-name -- :/",
+        "cat-file blob HEAD:./loft.lock.json",
+    ] {
+        let reply = answer(&outside, line);
+        assert_eq!(
+            (reply.code, reply.stderr.as_str()),
+            (128, NOT_A_REPOSITORY),
+            "{line}"
+        );
+    }
+}
