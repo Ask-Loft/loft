@@ -3,7 +3,9 @@ slug: a-publish-writes-the-lock-the-bindings-and-the
 title: "A publish writes the lock, the bindings and the citations it rewrites"
 context: "A publish wrote the lock and `spec/labels.yaml` and nothing else. Settling two publishes that met withdraws labels, and a citation of a withdrawn label then names another node unless its text is rewritten. Citations live in the node files, so a publish must write those files. Projections stay unwritten for the reasons that kept them out before."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a130de-573a-77b2-b40b-d4557eba8dc4
+  outcome: "A publish writes the lock, the bindings in `spec/labels.yaml` and the node files in which it rewrites a citation of a withdrawn label, and nothing else; the Markdown and JSON projections are rendered on demand, each stamped with the state root it renders, and no role takes input from a projection."
 drivers:
   - key: 01a130de-573a-77b2-b40b-d45130345191
     kind: local

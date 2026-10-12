@@ -3,7 +3,9 @@ slug: labels-that-two-publishes-give-apart-are-settled
 title: "Labels that two publishes give apart are settled by the next publish"
 context: "Labels come from counters in `spec/labels.yaml`, and a publish allocates them on the publish branch. Two clones of that branch can each publish before either pulls the other; the two publishes then give one label to two nodes, or one node two labels. A label that was pushed may already be cited outside the repository, and Loft never writes to git."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a130de-573a-77b2-b40b-d4483c9c9a3e
+  outcome: "When two publishes meet, the next publish, run in the stopped merge or rebase, keeps the pulled side's bindings, records the other side's colliding labels as withdrawn, allocates new labels for the keys that lost theirs, and rewrites citations of withdrawn labels through `mentions` edges; the person commits."
 drivers:
   - key: 01a130de-573a-77b2-b40b-d4447f30ca60
     kind: local
