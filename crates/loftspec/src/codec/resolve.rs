@@ -282,7 +282,7 @@ impl<'t> Resolver<'t> {
         };
         let label = Label::parse(&text(binding, field::LABEL)).expect("a checked label");
         let bindings = &mut self.document.bindings;
-        bindings.bind(element, label).map_err(fail)?;
+        bindings.bind_as_written(element, label).map_err(fail)?;
         for alias in binding.list(field::ALIASES) {
             let alias = Label::parse(alias.text().unwrap_or_default()).expect("a checked label");
             bindings.add_alias(element, alias).map_err(fail)?;

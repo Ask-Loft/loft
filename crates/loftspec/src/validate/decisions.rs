@@ -15,7 +15,7 @@ pub(super) fn check(document: &Document, errors: &mut Vec<ValidationError>) {
 
 /// Every former label a decision names: in its `subject` edges, its drivers and its
 /// consequences.
-fn former_labels_of<'a>(
+pub(crate) fn former_labels_of<'a>(
     document: &'a Document,
     decision: &'a Decision,
 ) -> impl Iterator<Item = Label> + 'a {

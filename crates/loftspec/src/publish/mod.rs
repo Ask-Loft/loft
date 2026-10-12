@@ -2,9 +2,11 @@
 //! verification. It decides from the tree, the repository's state and the previous lock it is
 //! given; reading the repository and writing files belong to a store.
 
+mod labels;
 mod lock;
 mod time;
 
+pub use labels::{Allocated, allocate};
 pub use lock::{LOCK, Lock, LockError};
 pub use time::{PublishedAt, TimeError};
 

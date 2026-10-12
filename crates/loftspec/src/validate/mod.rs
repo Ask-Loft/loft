@@ -4,7 +4,7 @@
 //! reader's schema, so a document can break them only as text, where the reader refuses it; the
 //! validator checks the rules a typed document can still break.
 
-mod decisions;
+pub(crate) mod decisions;
 mod nodes;
 
 use crate::bindings::BindingError;

@@ -93,6 +93,18 @@ impl Bindings {
     ) -> Result<(), BindingError> {
         let element = element.into();
         check_prefix(element, label)?;
+        self.bind_as_written(element, label)
+    }
+
+    /// Records a binding as `spec/labels.yaml` holds it. A label whose prefix is no longer its
+    /// element's kind prefix is kept, for the next publish to replace (RQ-63); only an element
+    /// bound twice is refused.
+    pub fn bind_as_written(
+        &mut self,
+        element: impl Into<ElementId>,
+        label: Label,
+    ) -> Result<(), BindingError> {
+        let element = element.into();
         match self.entries.entry(element.key()) {
             std::collections::btree_map::Entry::Occupied(_) => {
                 Err(BindingError::AlreadyBound(element))
