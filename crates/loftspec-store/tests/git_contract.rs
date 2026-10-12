@@ -31,7 +31,9 @@ fn real_git() -> Command {
     command
 }
 
-/// Runs a setup command of real git in `dir`.
+/// Runs a setup command of real git in `dir`. Automatic maintenance is off: a commit would
+/// otherwise leave a detached `git maintenance` process writing under `.git/` while a test
+/// compares the repository's files.
 fn git(dir: &Path, args: &[&str]) {
     let output = real_git()
         .args([
@@ -39,6 +41,8 @@ fn git(dir: &Path, args: &[&str]) {
             "user.name=Plant",
             "-c",
             "user.email=plant@example.invalid",
+            "-c",
+            "maintenance.auto=false",
         ])
         .arg("-C")
         .arg(dir)
