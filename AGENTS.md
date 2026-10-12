@@ -2,7 +2,7 @@
 
 This repository is the open home of the Loft Specification Format and its reference
 implementation: the `loftspec` library, the `loftspec-store` stores and the `loft` command line.
-It is Apache-2.0 and becomes public at release 0.1.0; it is private until then only so the early
+It is Apache-2.0 and becomes public at release 2.0.0; it is private until then only so the early
 history can be tidy, never because anything in it is confidential.
 
 ## Normative contract
