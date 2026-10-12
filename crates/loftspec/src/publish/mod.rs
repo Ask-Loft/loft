@@ -6,6 +6,7 @@ mod labels;
 mod lock;
 mod repo;
 pub mod rewrite;
+pub mod settle;
 mod time;
 
 use std::fmt;
@@ -17,6 +18,7 @@ pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
 
 use rewrite::Rewritten;
+use settle::{Settlement, Withdrawn};
 
 use crate::canonical::Digest;
 use crate::check::{Placed, placed};
@@ -57,11 +59,15 @@ pub enum Publication {
     /// A new lock, the labels it allocated, the citations of withdrawn labels it rewrote, and
     /// the files under `spec/` to write: `spec/labels.yaml` where it differs from the tree's,
     /// and the files whose citations it rewrote, the only files a publish changes (AC-460).
+    /// A publish run in a stopped merge or rebase also gives the labels it withdrew and what
+    /// stopped, which the user finishes.
     Published {
         lock: Lock,
         files: Files,
         allocated: Vec<Allocated>,
         rewritten: Vec<Rewritten>,
+        withdrawn: Vec<Withdrawn>,
+        finish: Option<Operation>,
     },
 }
 
@@ -77,12 +83,21 @@ pub enum Refusal {
     },
     /// The validator reports errors (RQ-114).
     Invalid(Vec<Placed>),
+    /// In a stopped merge or rebase, paths other than the bindings and the lock are unmerged.
+    Unmerged(Vec<String>),
+    /// In a stopped merge or rebase, the lock at a commit is not a lock record.
+    Lock {
+        revision: &'static str,
+        message: String,
+    },
 }
 
-/// Publishes a tree that reads: refuses on an uncommitted change under `spec/`, a branch other
-/// than the publish branch or a validation error, in that order; otherwise allocates labels,
-/// and reports the previous lock when the state root equals it, or gives the new lock and
-/// bindings to write.
+/// Publishes a tree that reads. Outside a stopped merge or rebase it refuses on an uncommitted
+/// change under `spec/` or a branch other than the publish branch; in one it refuses as
+/// [`settle::preconditions`] says and settles the labels two publishes gave apart. Then it
+/// refuses on a validation error; otherwise allocates labels, rewrites citations of withdrawn
+/// labels, and reports the previous lock when the state root equals it, or gives the new lock
+/// and the files to write.
 ///
 /// # Errors
 ///
@@ -98,16 +113,17 @@ pub fn publish(
         mut document,
         sites,
     } = tree;
-    if !repo.modified.is_empty() {
-        return Err(Refusal::Modified(repo.modified.clone()));
-    }
     let branch = document.publish_branch.as_deref().unwrap_or("main");
-    if repo.branch.as_deref() != Some(branch) {
-        return Err(Refusal::Branch {
-            current: repo.branch.clone(),
-            publish: branch.to_owned(),
+    let (sequence, settlement) = if let Some(stopped) = &repo.stopped {
+        let sequence = settle::preconditions(stopped, branch)?;
+        (sequence, settle::settle(&mut document, stopped.operation))
+    } else {
+        preconditions(repo, branch)?;
+        let sequence = previous.map_or(NonZeroU64::MIN, |lock| {
+            lock.publish_sequence.saturating_add(1)
         });
-    }
+        (sequence, Settlement::default())
+    };
     let invalid = placed(validate(&document), &sites);
     if !invalid.is_empty() {
         return Err(Refusal::Invalid(invalid));
@@ -115,6 +131,7 @@ pub fn publish(
     // Allocation gives only fresh labels of each element's own prefix, so the document stays
     // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
     let allocated = allocate(&mut document);
+    settlement.reattach(&mut document.bindings);
     let (written, rewritten) = written(files, &document);
     if !rewritten.is_empty() {
         let mut next = files.clone();
@@ -133,16 +150,30 @@ pub fn publish(
             state_root: roots.state,
             content_root: roots.content,
             binding_root: roots.bindings,
-            publish_sequence: previous.map_or(NonZeroU64::MIN, |lock| {
-                lock.publish_sequence.saturating_add(1)
-            }),
+            publish_sequence: sequence,
             published_at: at,
             derived_from: document.derived_from,
         },
         files: written,
         allocated,
         rewritten,
+        withdrawn: settlement.withdrawn,
+        finish: repo.stopped.as_ref().map(|stopped| stopped.operation),
     })
+}
+
+/// Refuses an uncommitted change under `spec/`, then a branch other than `branch`.
+fn preconditions(repo: &RepoState, branch: &str) -> Result<(), Refusal> {
+    if !repo.modified.is_empty() {
+        return Err(Refusal::Modified(repo.modified.clone()));
+    }
+    if repo.branch.as_deref() != Some(branch) {
+        return Err(Refusal::Branch {
+            current: repo.branch.clone(),
+            publish: branch.to_owned(),
+        });
+    }
+    Ok(())
 }
 
 /// The files under `spec/` a publish writes for `document`, the tree after allocation: the

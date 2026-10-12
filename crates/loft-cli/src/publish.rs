@@ -88,6 +88,14 @@ fn refusal(refusal: Refusal) -> Failure {
         } => Failure::Refused(format!(
             "HEAD is detached, not on the publish branch `{publish}`"
         )),
+        Refusal::Unmerged(paths) => Failure::Refused(format!(
+            "unmerged paths other than spec/labels.yaml and loft.lock.json: {}; resolve them \
+             before publishing",
+            paths.join(", ")
+        )),
+        Refusal::Lock { revision, message } => Failure::Refused(format!(
+            "the lock at {revision} is not a lock record: {message}"
+        )),
     }
 }
 

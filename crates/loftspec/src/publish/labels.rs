@@ -65,7 +65,7 @@ fn next_label(document: &mut Document, prefix: LabelPrefix) -> Label {
 }
 
 /// Every node, then every decision, in the order labels are allocated.
-fn elements_in_order(document: &Document) -> Vec<ElementId> {
+pub(super) fn elements_in_order(document: &Document) -> Vec<ElementId> {
     let mut elements = Vec::new();
     let mut visit = |node: Node<'_>| {
         if let Some(id) = node.id() {
