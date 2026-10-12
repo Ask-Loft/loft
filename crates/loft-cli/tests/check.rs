@@ -82,7 +82,7 @@ fn ac_522_ac_523_ac_524_every_validation_error_prints_before_the_findings_and_ex
 }
 
 #[test]
-fn ac_527_ac_528_ac_592_a_read_error_is_reported_at_its_position_and_lint_does_not_run() {
+fn ac_528_ac_592_a_read_error_is_reported_at_its_position_and_lint_does_not_run() {
     let scratch = Scratch::with_reading_list();
     scratch.edit(PRODUCT, "\nslug:", " # a note\nslug:");
     let output = scratch.loft(&["check"]);
