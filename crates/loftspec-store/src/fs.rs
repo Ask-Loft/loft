@@ -22,6 +22,8 @@ pub enum StoreError {
     },
     #[error("{0}: a file name that is not UTF-8")]
     NotUtf8(PathBuf),
+    #[error("{0}: `spec/` is not empty")]
+    NotEmpty(PathBuf),
 }
 
 fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_ {
@@ -150,4 +152,27 @@ pub fn write_outputs(
         written.push(path.clone());
     }
     Ok(written)
+}
+
+/// The file beside `spec/` that keeps the v1 facts the content view excludes (AC-508, AC-703).
+pub const SIDECAR: &str = "v1-sidecar.json";
+
+/// Writes an imported tree into an empty or missing `<root>/spec/`, and the sidecar beside it.
+///
+/// # Errors
+///
+/// `spec/` holds a file or directory already (RQ-134), in which case nothing is written; or a
+/// file cannot be written.
+pub fn write_import(root: &Path, files: &Files, sidecar: &[u8]) -> Result<(), StoreError> {
+    let spec = root.join(SPEC);
+    if spec.exists() {
+        let mut entries = fs::read_dir(&spec).map_err(io_error(&spec))?;
+        if entries.next().is_some() {
+            return Err(StoreError::NotEmpty(spec));
+        }
+    }
+    fs::create_dir_all(&spec).map_err(io_error(&spec))?;
+    write_changed(root, files)?;
+    write_outputs(root, &[(PathBuf::from(SIDECAR), sidecar.to_vec())])?;
+    Ok(())
 }
