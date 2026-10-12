@@ -53,6 +53,7 @@ featureGroups:
       - 894d6ff5-d8d8-4d25-ac10-10c067c84990
       - 3d945f7b-7d24-474a-b6b4-ae3621fc7db4
       - 6498001d-fe27-46ee-97a2-c3db59a22a24
+      - 01a12dad-fb7a-7333-9129-a6a99935b250
   - key: a1b27be0-dd76-47d1-9406-1a2c394df762
     slug: validation-and-lint
     name: "Validation and lint"

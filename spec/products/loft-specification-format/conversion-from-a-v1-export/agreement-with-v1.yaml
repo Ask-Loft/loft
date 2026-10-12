@@ -1,0 +1,54 @@
+key: 01a12dad-fb7a-7333-9129-a6a99935b250
+slug: agreement-with-v1
+name: "Agreement with v1"
+body: "How loftspec stays in agreement with Loft v1 on the behaviour the two share: the structural and language rules and the EARS forms, compared on public v1 exports against outputs a v1 implementation wrote, with each intended difference recorded in a register."
+realizes:
+  - e26eb15d-2a28-44fe-bf85-1313011ab0ed
+requirements:
+  - key: 01a12dad-fb7a-7333-9129-a6aa799966a4
+    statement:
+      form: optional
+      where: "a v1 export is converted"
+      system: "loftspec"
+      shall: "report the findings of the rules `SH-001` to `SH-010` and `LQ-001` to `LQ-009` that `loft-lint` 1.4.0 reports for that export, apart from the divergences that the register records."
+    criteria:
+      - key: 01a12dad-fb7a-7333-9129-a6ab4522d817
+        name: "Findings are compared by rule, severity and the set of subjects."
+      - key: 01a12dad-fb7a-7333-9129-a6ac0efd4d6d
+        name: "Messages, evidence and the number of occurrences are not compared."
+      - key: 01a12dad-fb7a-7333-9129-a6ad1596927b
+        name: "Findings of the rules `V2-001` to `V2-003` are not compared."
+      - key: 01a12dad-fb7a-7333-9129-a6aec4f6fb92
+        name: "The converted document is compared as the text form reads it back."
+      - key: 01a12dad-fb7a-7333-9129-a6af1f6dc0aa
+        name: "A finding that only one side reports and no divergence explains fails the comparison."
+  - key: 01a12dad-fb7a-7333-9129-a6b022ee1210
+    statement:
+      form: ubiquitous
+      system: "loftspec"
+      shall: "record each intended difference from v1 as an entry of the divergence register `testdata/v1/divergences.json`."
+    criteria:
+      - key: 01a12dad-fb7a-7333-9129-a6b15622c366
+        name: "An entry names the surface, the rule, the condition and the direction of the difference."
+      - key: 01a12dad-fb7a-7333-9129-a6b245b3b782
+        name: "An entry names in `decidedBy` the criteria or decisions that decide the difference."
+      - key: 01a12dad-fb7a-7333-9129-a6b3c3137bec
+        name: "A `decidedBy` reference that resolves to no label or key in `spec/` fails the check."
+      - key: 01a12dad-fb7a-7333-9129-a6b4c5e6c279
+        name: "A condition other than `subject-external` or `rule` fails the check."
+      - key: 01a12dad-fb7a-7333-9129-a6b5c12b41b8
+        name: "An entry that explains no finding on any checked export fails the check as stale."
+  - key: 01a12dad-fb7a-7333-9129-a6b6c301f8f1
+    statement:
+      form: ubiquitous
+      system: "loftspec"
+      shall: "keep v1's lint findings and EARS forms for each public v1 export that its tests convert."
+    criteria:
+      - key: 01a12dad-fb7a-7333-9129-a6b761f8ec44
+        name: "The lint findings are kept in `v1-lint.json` beside the export."
+      - key: 01a12dad-fb7a-7333-9129-a6b8bf9d2a3f
+        name: "The EARS forms are kept in `v1-ears.json` beside the export."
+      - key: 01a12dad-fb7a-7333-9129-a6b91f040ca7
+        name: "The files are written by a v1 implementation, never by loftspec."
+      - key: 01a12dad-fb7a-7333-9129-a6ba2ff2fa9e
+        name: "A difference between the files and the v1 implementation's current output fails a test."

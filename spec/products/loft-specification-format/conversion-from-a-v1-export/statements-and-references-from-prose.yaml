@@ -17,6 +17,8 @@ requirements:
         name: "Any other name is stored as `text`."
       - key: 142fe64a-ddf9-4a3d-82e7-8d6ebe4c9bc9
         name: "A name stored as `text` is reported as a finding."
+      - key: 01a12dad-fb7a-7333-9129-a6bb9e98e883
+        name: "A name stored as slots has the EARS form that v1 parses the name to."
   - key: 61dbab71-c9ca-49ae-964b-942161fbb5ef
     statement:
       form: ubiquitous
