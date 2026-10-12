@@ -11,7 +11,15 @@ pub(super) struct Host<'a> {
     pub(super) conflicts: &'a mut Vec<Val>,
 }
 
-impl Host<'_> {
+impl<'a> Host<'a> {
+    /// The host for the record being merged itself, whose conflicts go to `conflicts`.
+    pub(super) const fn root(conflicts: &'a mut Vec<Val>) -> Self {
+        Host {
+            prefix: String::new(),
+            conflicts,
+        }
+    }
+
     /// The path of a field of the record being merged.
     pub(super) fn path(&self, name: &str) -> String {
         format!("{}{name}", self.prefix)
@@ -25,16 +33,10 @@ impl Host<'_> {
         }
     }
 
-    /// Records a conflict over field `name` with each side's value.
-    pub(super) fn conflict(
-        &mut self,
-        name: &str,
-        base: Option<&Val>,
-        ours: Option<&Val>,
-        theirs: Option<&Val>,
-    ) {
+    /// Records a conflict over field `name` with each side's value: base, ours, theirs.
+    pub(super) fn conflict(&mut self, name: &str, sides: [Option<&Val>; 3]) {
         let path = self.path(name);
-        self.conflicts.push(conflict(&path, [base, ours, theirs]));
+        self.conflicts.push(conflict(&path, sides));
     }
 }
 

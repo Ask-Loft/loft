@@ -9,7 +9,7 @@ use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::ReadError;
-use loftspec::publish::{Operation, Publication, PublishedAt, ReadTree, Refusal, publish};
+use loftspec::publish::{Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, publish};
 use loftspec_store::clock::{Clock as _, SystemClock};
 use loftspec_store::repository::{GitCommand, Repository as _};
 use loftspec_store::{FileStore, StoreError};
@@ -99,10 +99,10 @@ fn refusal(refusal: Refusal) -> Failure {
             paths.join(", ")
         )),
         Refusal::UnmergedBindings => Failure::Refused(
-            "spec/labels.yaml is unmerged but holds no conflict record: git could not run \
-             `loft merge-driver`, which it runs only when `loft` is on git's search path. Put \
-             `loft` there, run `git checkout -m spec/labels.yaml` to merge the file again, and \
-             publish again"
+            "spec/labels.yaml is unmerged but holds no conflict record, so `loft merge-driver` \
+             did not merge it: git runs the driver only when `loft` is on git's search path, \
+             and the driver writes nothing when it reports an error. Fix what stopped it, run \
+             `git checkout -m spec/labels.yaml` to merge the file again, and publish again"
                 .to_owned(),
         ),
         Refusal::Lock { revision, message } => Failure::Refused(format!(
@@ -127,7 +127,7 @@ fn print(publication: &Publication) {
             for withdrawn in withdrawn {
                 println!(
                     "withdrew {} from {}, which now holds {}",
-                    withdrawn.label, withdrawn.element, withdrawn.live
+                    withdrawn.withdrawn, withdrawn.element, withdrawn.label
                 );
             }
             for rewritten in rewritten {
@@ -174,30 +174,24 @@ const fn finishing(operation: Operation) -> &'static str {
 }
 
 fn published(publication: &Publication) -> Value {
-    let (outcome, lock, allocated, rewritten) = match publication {
+    let (outcome, lock, allocated, rewritten, withdrawn, finish) = match publication {
         Publication::Published {
             lock,
             allocated,
             rewritten,
+            withdrawn,
+            finish,
             ..
         } => (
             "published",
             lock,
             allocated.as_slice(),
             rewritten.as_slice(),
+            withdrawn.as_slice(),
+            *finish,
         ),
-        Publication::Unchanged(lock) => ("unchanged", lock, &[][..], &[][..]),
+        Publication::Unchanged(lock) => ("unchanged", lock, &[][..], &[][..], &[][..], None),
     };
-    let rewritten: Vec<Value> = rewritten
-        .iter()
-        .map(|rewritten| {
-            json!({
-                "key": rewritten.element.to_string(),
-                "withdrawn": rewritten.withdrawn.to_string(),
-                "label": rewritten.label.to_string(),
-            })
-        })
-        .collect();
     let allocated: Vec<Value> = allocated
         .iter()
         .map(|allocated| {
@@ -207,43 +201,35 @@ fn published(publication: &Publication) -> Value {
             })
         })
         .collect();
-    let (withdrawn, finish) = settled(publication);
     let mut document = json!({
         "schema": SCHEMA,
         "outcome": outcome,
         "allocated": allocated,
-        "rewritten": rewritten,
-        "withdrawn": withdrawn,
+        "rewritten": relabels(rewritten),
+        "withdrawn": relabels(withdrawn),
         "publishSequence": lock.publish_sequence.get(),
         "stateRoot": lock.state_root.to_string(),
         "errors": [],
     });
-    if let Some(finish) = finish {
-        document["finish"] = json!(finish);
+    if let Some(operation) = finish {
+        document["finish"] = json!(finishing(operation));
     }
     document
 }
 
-/// The labels a publish withdrew, each with its key and the label the key now holds, and the
-/// command that finishes the merge or rebase it settled.
-fn settled(publication: &Publication) -> (Vec<Value>, Option<&'static str>) {
-    let Publication::Published {
-        withdrawn, finish, ..
-    } = publication
-    else {
-        return (Vec::new(), None);
-    };
-    let withdrawn = withdrawn
+/// Labels a publish replaced, each with the element's key, the label it withdrew and the label
+/// that took its place.
+fn relabels(relabels: &[Relabel]) -> Vec<Value> {
+    relabels
         .iter()
-        .map(|withdrawn| {
+        .map(|relabel| {
             json!({
-                "key": withdrawn.element.to_string(),
-                "withdrawn": withdrawn.label.to_string(),
-                "label": withdrawn.live.to_string(),
+                "key": relabel.element.to_string(),
+                "withdrawn": relabel.withdrawn.to_string(),
+                "label": relabel.label.to_string(),
             })
         })
-        .collect();
-    (withdrawn, finish.map(finishing))
+        .collect()
 }
 
 fn refused(failure: &Failure) -> Value {

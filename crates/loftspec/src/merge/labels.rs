@@ -7,7 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use super::conflict::{conflict, push};
 use super::record::merge_host;
-use super::same::same_value;
+use super::same::same_record;
 use crate::codec::schema::field;
 use crate::codec::{Rec, Val};
 use crate::identity::Label;
@@ -23,19 +23,29 @@ pub(super) fn merge(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> (Rec, Vec<L
         by_key(theirs),
     ];
     let (merged, disputed) = bindings(&sides);
-    let resolved = |side: &Rec| {
-        let mut side = side.clone();
-        side.set(field::COUNTERS, Val::Record(counters(ours, theirs)));
-        side.set(field::BINDINGS, records(merged.values()));
-        side
+    // The bindings and counters are merged here; the host merge sees the rest of the record.
+    let counters = counters(ours, theirs);
+    let rest = |side: &Rec| {
+        let mut rest = Rec::new(side.kind);
+        rest.fields = side
+            .fields
+            .iter()
+            .filter(|(name, _)| ![field::BINDINGS, field::COUNTERS].contains(name))
+            .cloned()
+            .collect();
+        rest
     };
-    let mut record = merge_host(base, &resolved(ours), &resolved(theirs));
+    let mut record = merge_host(base.map(rest).as_ref(), &rest(ours), &rest(theirs));
+    record.set(field::COUNTERS, Val::Record(counters));
+    record.set(field::BINDINGS, records(merged.values()));
     if !disputed.is_empty() {
         let lists = sides
             .each_ref()
             .map(|side| records(disputed.iter().filter_map(|key| side.get(key))));
-        let [base, ours, theirs] = lists.each_ref().map(Some);
-        push(&mut record, conflict(field::BINDINGS, [base, ours, theirs]));
+        push(
+            &mut record,
+            conflict(field::BINDINGS, lists.each_ref().map(Some)),
+        );
     }
     (record, labels_in_dispute(&sides, &disputed))
 }
@@ -79,14 +89,12 @@ fn bindings([base, ours, theirs]: &[ByKey; 3]) -> (ByKey, BTreeSet<String>) {
         .collect();
     let mut merged = ByKey::new();
     let mut disputed = BTreeSet::new();
+    let same = |left: Option<&Rec>, right: Option<&Rec>| match (left, right) {
+        (Some(left), Some(right)) => same_record(left, right),
+        (None, None) => true,
+        _ => false,
+    };
     for key in keys {
-        let same = |left: Option<&Rec>, right: Option<&Rec>| match (left, right) {
-            (Some(left), Some(right)) => {
-                same_value(&Val::Record(left.clone()), &Val::Record(right.clone()))
-            }
-            (None, None) => true,
-            _ => false,
-        };
         let [b, o, t] = [base.get(key), ours.get(key), theirs.get(key)];
         let kept = if same(o, t) || same(t, b) {
             o

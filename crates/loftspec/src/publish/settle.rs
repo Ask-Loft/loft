@@ -9,24 +9,23 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZeroU64;
 
 use super::labels::elements_in_order;
-use super::{Lock, Operation, Refusal, Stopped};
+use super::{LOCK, Lock, Operation, Refusal, Relabel, Stopped};
 use crate::bindings::Bindings;
-use crate::codec::field;
+use crate::codec::{LABELS, field};
 use crate::conflict::{ConflictOwner, ConflictValue};
 use crate::document::Document;
 use crate::identity::{Key, Label};
 use crate::ids::ElementId;
 
-/// The unmerged paths a settling publish resolves, from the directory that holds `spec/`.
-const SETTLED: [&str; 2] = ["spec/labels.yaml", "loft.lock.json"];
+/// Whether `path`, an unmerged path from the directory that holds `spec/`, is one a settling
+/// publish resolves: the bindings or the lock.
+fn settled_path(path: &str) -> bool {
+    path == LOCK || is_bindings(path)
+}
 
-/// A label withdrawn from a key because the pulled side gives it to another key, or gives the
-/// key another label, and the label the key holds after the publish.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Withdrawn {
-    pub element: Key,
-    pub label: Label,
-    pub live: Label,
+/// Whether `path`, from the directory that holds `spec/`, is `spec/labels.yaml`.
+fn is_bindings(path: &str) -> bool {
+    path.strip_prefix("spec/") == Some(LABELS)
 }
 
 /// Refuses an unmerged path other than the bindings and the lock, then a stop of a branch other
@@ -39,7 +38,7 @@ pub(super) fn preconditions(
     let unmerged: Vec<String> = stopped
         .unmerged
         .iter()
-        .filter(|path| !SETTLED.contains(&path.as_str()))
+        .filter(|path| !settled_path(path))
         .cloned()
         .collect();
     if !unmerged.is_empty() {
@@ -51,10 +50,7 @@ pub(super) fn preconditions(
             publish: publish_branch.to_owned(),
         });
     }
-    let other = match stopped.operation {
-        Operation::Merge => "MERGE_HEAD",
-        Operation::Rebase => "REBASE_HEAD",
-    };
+    let other = stopped.operation.other_head();
     let mut highest = None;
     for (revision, bytes) in [("HEAD", &stopped.head_lock), (other, &stopped.other_lock)] {
         if let Some(bytes) = bytes {
@@ -103,22 +99,22 @@ impl Settlement {
     /// Whether `spec/labels.yaml` is unmerged although the tree held no conflict record over
     /// `bindings`: git could not run the merge driver and kept one side of the file.
     pub(super) fn unrecorded(&self, stopped: &Stopped) -> bool {
-        !self.recorded && stopped.unmerged.iter().any(|path| path == SETTLED[0])
+        !self.recorded && stopped.unmerged.iter().any(|path| is_bindings(path))
     }
 
     /// Attaches the history of each key that allocation rebound, and gives each withdrawn label
     /// with the label its key now holds.
-    pub(super) fn reattach(self, bindings: &mut Bindings) -> Vec<Withdrawn> {
+    pub(super) fn reattach(self, bindings: &mut Bindings) -> Vec<Relabel> {
         for history in &self.pending {
             history.attach(bindings);
         }
         let live = |element| bindings.label_of(element).expect("a settled key is bound");
         self.lost
             .into_iter()
-            .map(|(element, label)| Withdrawn {
+            .map(|(element, withdrawn)| Relabel {
                 element: element.key(),
-                label,
-                live: live(element),
+                withdrawn,
+                label: live(element),
             })
             .collect()
     }
@@ -150,7 +146,7 @@ pub(super) fn settle(document: &mut Document, operation: Operation) -> Settlemen
             continue;
         };
         document.bindings.unbind(element);
-        let outcome = settled(*key, pulled.get(key), other.get(key), &held);
+        let outcome = settled(element, pulled.get(key), other.get(key), &held);
         settlement.add(element, outcome, &mut document.bindings);
     }
     settlement
@@ -160,11 +156,7 @@ impl Settlement {
     fn add(&mut self, element: ElementId, outcome: Outcome, bindings: &mut Bindings) {
         let lost = outcome.lost.iter().map(|label| (element, *label));
         self.lost.extend(lost);
-        let history = History {
-            element,
-            aliases: outcome.aliases,
-            withdrawn: outcome.withdrawn,
-        };
+        let history = outcome.history;
         match outcome.live {
             Some(live) => {
                 let bound = bindings.bind_as_written(element, live);
@@ -246,23 +238,24 @@ fn held(
     undisputed.chain(disputed).collect()
 }
 
-/// A disputed key's settled binding: its live label, none when it lost it, its aliases and its
-/// withdrawn labels, and the labels settling withdrew from it.
+/// A disputed key's settled binding: its live label, none when it lost it, the aliases and
+/// withdrawn labels it keeps, and the labels settling withdrew from it.
 struct Outcome {
     live: Option<Label>,
-    aliases: Vec<Label>,
-    withdrawn: Vec<Label>,
+    history: History,
     lost: Vec<Label>,
 }
 
-/// Keeps the pulled side's binding of `key`, and of the other side's labels for it withdraws
-/// each that another key holds or that the pulled side replaced, keeping the rest as aliases.
+/// Keeps the pulled side's binding of `element`, and of the other side's labels for it
+/// withdraws each that another key holds or that the pulled side replaced, keeping the rest as
+/// aliases.
 fn settled(
-    key: Key,
+    element: ElementId,
     pulled: Option<&Side>,
     other: Option<&Side>,
     held: &BTreeMap<Label, Key>,
 ) -> Outcome {
+    let key = element.key();
     let collides = |label: Label| held.get(&label).is_some_and(|holder| *holder != key);
     let (mut live, mut aliases) = pulled.map_or((None, Vec::new()), |side| {
         (Some(side.label), side.aliases.clone())
@@ -295,8 +288,11 @@ fn settled(
     }
     Outcome {
         live,
-        aliases,
-        withdrawn,
+        history: History {
+            element,
+            aliases,
+            withdrawn,
+        },
         lost,
     }
 }

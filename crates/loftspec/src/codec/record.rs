@@ -3,7 +3,7 @@
 //! (RQ-30, RQ-34). Formatting, reading and writing all pass through it.
 
 use super::error::{Located, Problem};
-use super::schema::{Field, Item, Kind, Scalar, Shape};
+use super::schema::{Field, Item, Kind, Scalar, Shape, field};
 use crate::canonical::Digest;
 use crate::identity::{Key, Label};
 use crate::names::{CategoryName, TagName};
@@ -157,6 +157,22 @@ impl Rec {
     /// The records of a list field.
     pub fn records(&self, name: &str) -> impl Iterator<Item = &Self> {
         self.list(name).iter().flat_map(Val::records)
+    }
+
+    /// The records inside this record, in every field but its conflicts.
+    pub fn children(&self) -> impl Iterator<Item = &Self> {
+        self.fields
+            .iter()
+            .filter(|(name, _)| *name != field::CONFLICTS)
+            .flat_map(|(_, value)| value.records())
+    }
+
+    /// The records inside this record, to change, in every field but its conflicts.
+    pub fn children_mut(&mut self) -> impl Iterator<Item = &mut Self> {
+        self.fields
+            .iter_mut()
+            .filter(|(name, _)| *name != field::CONFLICTS)
+            .flat_map(|(_, value)| value.records_mut())
     }
 
     /// The entries of a list field, to change; an absent field is added empty.

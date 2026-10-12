@@ -33,16 +33,9 @@ pub(super) fn same_value(left: &Val, right: &Val) -> bool {
     }
 }
 
-fn same_record(left: &Rec, right: &Rec) -> bool {
-    let fields = |record: &Rec| -> Vec<(&'static str, Val)> {
-        record
-            .fields
-            .iter()
-            .filter(|(_, value)| present(Some(value)).is_some())
-            .cloned()
-            .collect()
-    };
-    let (left_fields, right_fields) = (fields(left), fields(right));
+/// Whether two records of one kind hold the same present fields with the same values.
+pub(super) fn same_record(left: &Rec, right: &Rec) -> bool {
+    let (left_fields, right_fields) = (present_fields(left), present_fields(right));
     left.kind == right.kind
         && left_fields.len() == right_fields.len()
         && left_fields
@@ -51,6 +44,15 @@ fn same_record(left: &Rec, right: &Rec) -> bool {
             .all(|((left_name, left), (right_name, right))| {
                 left_name == right_name && same_value(left, right)
             })
+}
+
+/// The fields of a record that hold a present value.
+fn present_fields(record: &Rec) -> Vec<&(&'static str, Val)> {
+    record
+        .fields
+        .iter()
+        .filter(|(_, value)| present(Some(value)).is_some())
+        .collect()
 }
 
 /// A value as text that two values share exactly when they are the same.

@@ -8,7 +8,7 @@ use super::conflict::{Host, conflict, push};
 use super::order::{Anchor, merge_order, moved};
 use super::record::merge_host;
 use super::same::{same_value, text};
-use crate::codec::schema::{Field, Item, Kind, Order, field};
+use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
 use crate::codec::{Rec, Val};
 
 /// What an element is matched by, and how many times its side has held it before.
@@ -26,7 +26,8 @@ enum Ident {
 enum Element {
     /// A record with a key, which holds its own conflicts and merges field by field.
     Host,
-    /// A binding or an assessment, which merges as one value (RQ-119's whole values).
+    /// An assessment, which merges as one value (RQ-119's whole values); bindings, the other
+    /// whole values, are merged by the labels merge before any list merge sees them.
     Whole,
     /// A scalar or a record matched by its value, which no side can change, only add or remove.
     Value,
@@ -34,7 +35,7 @@ enum Element {
 
 const fn element(item: Item) -> Element {
     match item {
-        Item::Record(Kind::Binding | Kind::Assessment) => Element::Whole,
+        Item::Record(Kind::Assessment) => Element::Whole,
         Item::Record(kind) if kind.hosts_conflicts() => Element::Host,
         _ => Element::Value,
     }
@@ -79,10 +80,12 @@ fn side(item: Item, values: &[Val]) -> Side<'_> {
 /// of a value, is one conflict over the list on the record that holds it.
 pub(super) fn merge_list(
     each: &Field,
-    item: Item,
     [base, ours, theirs]: [&[Val]; 3],
     host: &mut Host<'_>,
 ) -> Vec<Val> {
+    let Shape::List(item) = each.shape else {
+        unreachable!("only a list field merges as a list");
+    };
     let kind = element(item);
     let sides = [side(item, base), side(item, ours), side(item, theirs)];
     let mut merger = Merger {
@@ -109,8 +112,7 @@ pub(super) fn merge_list(
     };
     if merger.disagree {
         let lists = [base, ours, theirs].map(|values| Val::List(values.to_vec()));
-        let [base, ours, theirs] = lists.each_ref().map(Some);
-        host.conflict(each.name, base, ours, theirs);
+        host.conflict(each.name, lists.each_ref().map(Some));
     }
     let mut placed = BTreeSet::new();
     order

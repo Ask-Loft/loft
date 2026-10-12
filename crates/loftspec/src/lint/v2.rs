@@ -1,24 +1,27 @@
 //! The rules the v2 text form adds (F-21): a heading inside a body (`V2-001`), a statement stored
 //! as text without slots (`V2-002`), a label reference in prose without its `mentions` edge
 //! (`V2-003`), and a citation of a withdrawn label that a publish cannot rewrite (`V2-004`).
+//! What a publish does with a citation is the bindings' to say, so lint and the publish agree.
 
 use std::collections::BTreeSet;
 
 use super::context::Context;
 use super::{Raw, RuleId};
+use crate::bindings::Citation;
 use crate::document::Edge;
+use crate::identity::Key;
 use crate::ids::ElementId;
 use crate::node::Node;
-use crate::prose::{heading_lines, label_references};
+use crate::prose::{LabelSpan, heading_lines, label_spans};
 use crate::statement::Statement;
 
 pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
-    let mentions: BTreeSet<(ElementId, ElementId)> = context
+    let mentions: BTreeSet<(ElementId, Key)> = context
         .document
         .edges
         .iter()
         .filter_map(|edge| match *edge {
-            Edge::Mentions { source, target } => Some((source, target)),
+            Edge::Mentions { source, target } => Some((source, target.key())),
             _ => None,
         })
         .collect();
@@ -45,59 +48,68 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
             ));
         }
         let name = item.name();
-        let counters = &context.document.counters;
-        let references = label_references(&name)
+        let references = label_spans(&name)
             .into_iter()
-            .map(|label| (label, None))
+            .map(|span| (span, None))
             .chain(body_references(body));
         let source = ElementId::from(item.id);
-        let mentioned = |target: ElementId| mentions.contains(&(source, target));
-        for (label, line) in references {
-            let holder = context.document.bindings.resolve(label);
-            let withdrawn = withdrawn_from(context, label).any(mentioned);
-            let (rule, message) = match holder {
-                Some(holder) if mentioned(holder) && withdrawn => (
-                    RuleId::V2004,
-                    "The label is withdrawn from one mentioned element and held by another; \
-                     the next publish cannot rewrite it.",
-                ),
-                Some(holder) if mentioned(holder) => continue,
-                _ if withdrawn => (
-                    RuleId::V2003,
-                    "The label is withdrawn from a mentioned element; the next publish rewrites it.",
-                ),
-                Some(_) => (RuleId::V2003, "The reference has no `mentions` edge."),
-                // A label never allocated is not a reference, such as the curve name `P-256`.
-                None if !counters.has_allocated(label) => continue,
-                None => (RuleId::V2003, "The reference names no element."),
+        let mentioned = |target: Key| mentions.contains(&(source, target));
+        for (span, line) in references {
+            let Some((rule, message)) = finding(context, &span, mentioned) else {
+                continue;
             };
             out.push(
                 Raw::new(rule, vec![key], message)
-                    .term(label.to_string())
+                    .term(span.label.to_string())
                     .line(line),
             );
         }
     }
 }
 
-/// The elements `label` was withdrawn from.
-fn withdrawn_from<'a>(
-    context: &'a Context<'_>,
-    label: crate::identity::Label,
-) -> impl Iterator<Item = ElementId> + 'a {
-    context
-        .document
-        .bindings
-        .iter()
-        .filter(move |binding| binding.withdrawn.contains(&label))
-        .map(|binding| binding.element)
+/// The finding a label reference yields in an element that mentions the keys `mentioned`
+/// accepts: by what the next publish does with it, then by whether it names an element.
+fn finding(
+    context: &Context<'_>,
+    span: &LabelSpan,
+    mentioned: impl Fn(Key) -> bool + Copy,
+) -> Option<(RuleId, &'static str)> {
+    let bindings = &context.document.bindings;
+    let citation = if span.qualified {
+        Citation::NotWithdrawn
+    } else {
+        bindings.citation(span.label, mentioned)
+    };
+    Some(match citation {
+        Citation::Rewritten(_) => (
+            RuleId::V2003,
+            "The label is withdrawn from a mentioned element; the next publish rewrites it.",
+        ),
+        Citation::HolderMentioned => (
+            RuleId::V2004,
+            "The label is withdrawn from one mentioned element and held by another; the next \
+             publish cannot rewrite it.",
+        ),
+        Citation::Ambiguous => (
+            RuleId::V2004,
+            "The label is withdrawn from two mentioned elements; the next publish cannot rewrite \
+             it.",
+        ),
+        Citation::NotWithdrawn => match bindings.resolve(span.label) {
+            Some(holder) if mentioned(holder.key()) => return None,
+            Some(_) => (RuleId::V2003, "The reference has no `mentions` edge."),
+            // A label never allocated is not a reference, such as the curve name `P-256`.
+            None if !context.document.counters.has_allocated(span.label) => return None,
+            None => (RuleId::V2003, "The reference names no element."),
+        },
+    })
 }
 
 /// The label references of a body, each with its body line.
-fn body_references(body: &str) -> impl Iterator<Item = (crate::identity::Label, Option<usize>)> {
+fn body_references(body: &str) -> impl Iterator<Item = (LabelSpan, Option<usize>)> {
     body.lines().enumerate().flat_map(|(index, line)| {
-        label_references(line)
+        label_spans(line)
             .into_iter()
-            .map(move |label| (label, Some(index + 1)))
+            .map(move |span| (span, Some(index + 1)))
     })
 }

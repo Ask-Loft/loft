@@ -160,13 +160,9 @@ fn registry(base: &[Rec], ours: &[Rec], theirs: &[Rec]) -> Vec<Rec> {
         |entries: &[Rec]| -> Vec<Val> { entries.iter().cloned().map(Val::Record).collect() };
     // Entries hold their own conflicts, and a list merged by key has no place to conflict over.
     let mut none = Vec::new();
-    let mut host = conflict::Host {
-        prefix: String::new(),
-        conflicts: &mut none,
-    };
+    let mut host = conflict::Host::root(&mut none);
     let merged = list::merge_list(
         &entries,
-        Item::Record(kind),
         [&values(base), &values(ours), &values(theirs)],
         &mut host,
     );
@@ -192,12 +188,6 @@ fn count(record: &Rec) -> usize {
     } else {
         0
     };
-    let inside: usize = record
-        .fields
-        .iter()
-        .filter(|(name, _)| *name != field::CONFLICTS)
-        .flat_map(|(_, value)| value.records())
-        .map(count)
-        .sum();
+    let inside: usize = record.children().map(count).sum();
     own + inside
 }

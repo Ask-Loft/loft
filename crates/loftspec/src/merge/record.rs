@@ -21,10 +21,7 @@ struct Sides<'a> {
 /// as a set, followed by those the merge writes.
 pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
     let mut conflicts = carried(base, ours, theirs);
-    let mut host = Host {
-        prefix: String::new(),
-        conflicts: &mut conflicts,
-    };
+    let mut host = Host::root(&mut conflicts);
     let mut record = merge_fields(base, ours, theirs, &mut host);
     if !conflicts.is_empty() {
         record.set(field::CONFLICTS, Val::List(conflicts));
@@ -94,7 +91,7 @@ pub(super) fn merge_fields(
     for each in fields(ours) {
         let sides = sides(each, base, ours, theirs);
         if !same(sides.ours, sides.base) || !same(sides.theirs, sides.base) {
-            host.conflict(each.name, sides.base, sides.ours, sides.theirs);
+            host.conflict(each.name, [sides.base, sides.ours, sides.theirs]);
         }
     }
     record
@@ -129,9 +126,8 @@ fn merge_field(each: &Field, sides: &Sides<'_>, host: &mut Host<'_>) -> Option<V
         return sides.ours.cloned();
     }
     match (each.shape, sides.base, sides.ours, sides.theirs) {
-        (Shape::List(item), base, ours, theirs) => Some(Val::List(merge_list(
+        (Shape::List(_), base, ours, theirs) => Some(Val::List(merge_list(
             each,
-            item,
             [list(base), list(ours), list(theirs)],
             host,
         ))),
@@ -149,7 +145,7 @@ fn merge_field(each: &Field, sides: &Sides<'_>, host: &mut Host<'_>) -> Option<V
             )))
         }
         _ => {
-            host.conflict(each.name, sides.base, sides.ours, sides.theirs);
+            host.conflict(each.name, [sides.base, sides.ours, sides.theirs]);
             if sides.base_record {
                 sides.base.cloned()
             } else {

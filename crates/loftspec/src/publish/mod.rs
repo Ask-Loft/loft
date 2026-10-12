@@ -17,15 +17,24 @@ pub use lock::{LOCK, Lock, LockError};
 pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
 
-use rewrite::Rewritten;
-use settle::{Settlement, Withdrawn};
+use settle::Settlement;
 
 use crate::canonical::Digest;
 use crate::check::{Placed, placed};
 use crate::codec::{self, Files, LABELS, ReadError, Sites, SpecPath, read_sited};
 use crate::document::Document;
 use crate::hash::hash_document;
+use crate::identity::{Key, Label};
 use crate::validate::{conflict_errors, index_errors, validate};
+
+/// A label that a publish replaced in an element: a citation it rewrote in the element's text,
+/// or a label it withdrew from the element's binding; `withdrawn` gave way to `label`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Relabel {
+    pub element: Key,
+    pub withdrawn: Label,
+    pub label: Label,
+}
 
 /// A tree read for a publish or a verification: its files, its document and where each of its
 /// elements sits. Reading it first is what makes a read error come before every other answer.
@@ -65,8 +74,8 @@ pub enum Publication {
         lock: Lock,
         files: Files,
         allocated: Vec<Allocated>,
-        rewritten: Vec<Rewritten>,
-        withdrawn: Vec<Withdrawn>,
+        rewritten: Vec<Relabel>,
+        withdrawn: Vec<Relabel>,
         finish: Option<Operation>,
     },
 }
@@ -141,8 +150,11 @@ pub fn publish(
     // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
     let allocated = allocate(&mut document);
     let withdrawn = settlement.reattach(&mut document.bindings);
-    let (written, rewritten) = written(files, &document);
-    if !rewritten.is_empty() {
+    let rewrites = rewrite::rewrite(files, &document.bindings);
+    let mut written = rewrites.files;
+    if !written.is_empty() {
+        // The rewritten text changes the roots, so the tree is read back as it will be written.
+        write_labels(&mut written, files, &document);
         let mut next = files.clone();
         next.extend(written.clone());
         document = codec::read(&next).expect("rewritten citations read back");
@@ -156,6 +168,7 @@ pub fn publish(
     if unrecorded {
         return Err(Refusal::UnmergedBindings);
     }
+    write_labels(&mut written, files, &document);
     Ok(Publication::Published {
         lock: Lock {
             document_key: document.id,
@@ -168,7 +181,7 @@ pub fn publish(
         },
         files: written,
         allocated,
-        rewritten,
+        rewritten: rewrites.rewritten,
         withdrawn,
         finish: repo.stopped.as_ref().map(|stopped| stopped.operation),
     })
@@ -188,16 +201,17 @@ fn preconditions(repo: &RepoState, branch: &str) -> Result<(), Refusal> {
     Ok(())
 }
 
-/// The files under `spec/` a publish writes for `document`, the tree after allocation: the
-/// bindings where they changed and the files whose citations of withdrawn labels it rewrites.
-fn written(files: &Files, document: &Document) -> (Files, Vec<Rewritten>) {
-    let rewrites = rewrite::rewrite(files, &document.bindings);
-    let mut written = rewrites.files;
-    let labels = codec::write_labels(document);
-    if files.get(&SpecPath::new(LABELS)) != Some(&labels) {
-        written.insert(SpecPath::new(LABELS), labels);
+/// Adds `spec/labels.yaml` to the files a publish writes, once, where the bindings of
+/// `document`, the tree after allocation, differ from the tree's.
+fn write_labels(written: &mut Files, files: &Files, document: &Document) {
+    let path = SpecPath::new(LABELS);
+    if written.contains_key(&path) {
+        return;
     }
-    (written, rewrites.rewritten)
+    let labels = codec::write_labels(document);
+    if files.get(&path) != Some(&labels) {
+        written.insert(path, labels);
+    }
 }
 
 /// A root a lock records, in the order verification compares them (AC-678).

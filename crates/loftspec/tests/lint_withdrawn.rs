@@ -93,3 +93,36 @@ fn v2_004_is_a_rule_with_a_wire_name_and_a_warning_by_default() {
     assert_eq!(RuleId::parse("V2-004"), Some(RuleId::V2004));
     assert_eq!(RuleId::V2004.default_severity(), Severity::Warning);
 }
+
+#[test]
+fn a_citation_of_a_label_withdrawn_from_two_mentioned_keys_is_v2_004() {
+    let mut document = citing("See RQ-9.");
+    document
+        .bindings
+        .add_withdrawn(ComponentId::new(key(6)), label("RQ-9"))
+        .unwrap();
+    document.edges.push(Edge::Mentions {
+        source: FeatureId::new(key(3)).into(),
+        target: ComponentId::new(key(6)).into(),
+    });
+    let found = of(&document, RuleId::V2004);
+    let [finding] = found.as_slice() else {
+        panic!("one finding: {found:?}");
+    };
+    assert_eq!(
+        finding.message,
+        "The label is withdrawn from two mentioned elements; the next publish cannot rewrite it."
+    );
+    assert_eq!(of(&document, RuleId::V2003), Vec::new());
+}
+
+#[test]
+fn a_qualified_citation_of_a_withdrawn_label_is_not_said_to_be_rewritten() {
+    let found = of(&citing("See D-7/RQ-9."), RuleId::V2003);
+    assert!(
+        found
+            .iter()
+            .all(|finding| !finding.message.contains("rewrites it")),
+        "{found:?}"
+    );
+}

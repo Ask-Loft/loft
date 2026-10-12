@@ -179,10 +179,10 @@ impl GitCommand {
         prefix: &str,
         branch: Option<&String>,
     ) -> Result<Option<Stopped>, StoreError> {
-        let (operation, other, branch) = if self.verified(root, &REBASE_HEAD)? {
-            (Operation::Rebase, "REBASE_HEAD", self.rebased(root)?)
+        let (operation, branch) = if self.verified(root, &REBASE_HEAD)? {
+            (Operation::Rebase, self.rebased(root)?)
         } else if self.verified(root, &MERGE_HEAD)? {
-            (Operation::Merge, "MERGE_HEAD", branch.cloned())
+            (Operation::Merge, branch.cloned())
         } else {
             return Ok(None);
         };
@@ -192,7 +192,7 @@ impl GitCommand {
             operation,
             branch,
             head_lock: self.lock_at(root, "HEAD")?,
-            other_lock: self.lock_at(root, other)?,
+            other_lock: self.lock_at(root, operation.other_head())?,
             unmerged: unmerged(&listed, prefix),
         }))
     }

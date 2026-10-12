@@ -20,6 +20,17 @@ pub enum Operation {
     Rebase,
 }
 
+impl Operation {
+    /// The reference that names the commit being merged or replayed.
+    #[must_use]
+    pub const fn other_head(self) -> &'static str {
+        match self {
+            Self::Merge => "MERGE_HEAD",
+            Self::Rebase => "REBASE_HEAD",
+        }
+    }
+}
+
 /// A merge or a rebase that stopped on a conflict.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Stopped {

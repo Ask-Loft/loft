@@ -37,6 +37,23 @@ pub struct Bindings {
     live_keys: BTreeMap<Label, BTreeSet<Key>>,
     /// The keys listing each label as an alias.
     alias_keys: BTreeMap<Label, BTreeSet<Key>>,
+    /// The keys each label was withdrawn from.
+    withdrawn_keys: BTreeMap<Label, BTreeSet<Key>>,
+}
+
+/// What the next publish does with a citation of a label in an element, given the keys the
+/// element mentions: a label withdrawn from exactly one mentioned key becomes that key's live
+/// label, unless the element also mentions the label's live holder.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Citation {
+    /// No key the element mentions had the label withdrawn.
+    NotWithdrawn,
+    /// The citation becomes this label.
+    Rewritten(Label),
+    /// The element also mentions the label's live holder, so the citation stays.
+    HolderMentioned,
+    /// Two keys the element mentions had the label withdrawn, so the citation stays.
+    Ambiguous,
 }
 
 /// Records `key` under `label` in a label index.
@@ -189,6 +206,7 @@ impl Bindings {
             .get_mut(&element.key())
             .ok_or(BindingError::Unbound(element))?;
         binding.withdrawn.push(label);
+        index(&mut self.withdrawn_keys, label, element.key());
         Ok(())
     }
 
@@ -199,6 +217,9 @@ impl Bindings {
         unindex(&mut self.live_keys, binding.label, key);
         for alias in &binding.aliases {
             unindex(&mut self.alias_keys, *alias, key);
+        }
+        for withdrawn in &binding.withdrawn {
+            unindex(&mut self.withdrawn_keys, *withdrawn, key);
         }
         Some(binding)
     }
@@ -231,6 +252,39 @@ impl Bindings {
         let first = |keys: &BTreeMap<Label, BTreeSet<Key>>| keys.get(&label)?.first().copied();
         let key = first(&self.live_keys).or_else(|| first(&self.alias_keys))?;
         self.entries.get(&key).map(|binding| binding.element)
+    }
+
+    /// Whether any binding has a withdrawn label.
+    #[must_use]
+    pub fn has_withdrawn(&self) -> bool {
+        !self.withdrawn_keys.is_empty()
+    }
+
+    /// Whether `label` was withdrawn from any key.
+    #[must_use]
+    pub fn is_withdrawn(&self, label: Label) -> bool {
+        self.withdrawn_keys.contains_key(&label)
+    }
+
+    /// What the next publish does with an unqualified citation of `label` in an element that
+    /// mentions the keys `mentioned` accepts.
+    #[must_use]
+    pub fn citation(&self, label: Label, mentioned: impl Fn(Key) -> bool) -> Citation {
+        let from = self.withdrawn_keys.get(&label).into_iter().flatten();
+        let mut from = from.copied().filter(|key| mentioned(*key));
+        let Some(key) = from.next() else {
+            return Citation::NotWithdrawn;
+        };
+        if from.next().is_some() {
+            return Citation::Ambiguous;
+        }
+        if self
+            .resolve(label)
+            .is_some_and(|holder| mentioned(holder.key()))
+        {
+            return Citation::HolderMentioned;
+        }
+        Citation::Rewritten(self.entries[&key].label)
     }
 
     /// Every binding, in key order.

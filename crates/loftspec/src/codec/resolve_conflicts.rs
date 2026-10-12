@@ -37,18 +37,9 @@ fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
             });
         }
     }
-    for child in children(record) {
+    for child in record.children() {
         collect_from(child, conflicts);
     }
-}
-
-/// The records inside a record, apart from its conflicts.
-fn children(record: &Rec) -> impl Iterator<Item = &Rec> {
-    record
-        .fields
-        .iter()
-        .filter(|(name, _)| *name != field::CONFLICTS)
-        .flat_map(|(_, value)| value.records())
 }
 
 /// The owner a record that may hold conflicts is, by its kind and its key.
@@ -105,12 +96,8 @@ fn attach_to(record: &mut Rec, by_owner: &BTreeMap<ConflictOwner, Vec<&Conflict>
         let items = list.iter().map(|conflict| Val::Record(rec(conflict, kind)));
         record.set(field::CONFLICTS, Val::List(items.collect()));
     }
-    for (name, value) in &mut record.fields {
-        if *name != field::CONFLICTS {
-            for child in value.records_mut() {
-                attach_to(child, by_owner);
-            }
-        }
+    for child in record.children_mut() {
+        attach_to(child, by_owner);
     }
 }
 

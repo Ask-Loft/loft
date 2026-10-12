@@ -8,8 +8,8 @@ use common::text::{FEATURE, files, path, text};
 use common::{key, label};
 use loftspec::codec::{self, Files};
 use loftspec::hash::hash_document;
-use loftspec::publish::rewrite::{Rewritten, rewrite};
-use loftspec::publish::{Publication, PublishedAt, ReadTree, RepoState, publish};
+use loftspec::publish::rewrite::rewrite;
+use loftspec::publish::{Publication, PublishedAt, ReadTree, Relabel, RepoState, publish};
 
 const DECISION: &str = "decisions/keys-are-uuids.yaml";
 const CRITERION_NAME: &str = "name: \"Every node record carries a `key` field.\"";
@@ -55,7 +55,7 @@ fn a_citation_in_an_element_that_mentions_the_key_is_rewritten_to_its_live_label
     let (_, rewrites) = rewritten_tree(&[WITHDRAWN, (FEATURE, from, &to)]);
     assert_eq!(
         rewrites.rewritten,
-        [Rewritten {
+        [Relabel {
             element: key(5),
             withdrawn: label("RQ-9"),
             label: label("RQ-2"),
@@ -141,7 +141,7 @@ fn a_decision_s_option_text_is_rewritten_by_the_decision_s_mentions() {
     let (_, rewrites) = rewritten_tree(&[WITHDRAWN, option, mentions]);
     assert_eq!(
         rewrites.rewritten,
-        [Rewritten {
+        [Relabel {
             element: key(20),
             withdrawn: label("RQ-9"),
             label: label("RQ-2"),

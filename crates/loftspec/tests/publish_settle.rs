@@ -14,9 +14,9 @@ use loftspec::document::Document;
 use loftspec::hash::hash_document;
 use loftspec::ids::ElementId;
 use loftspec::merge::merge_file;
-use loftspec::publish::settle::Withdrawn;
 use loftspec::publish::{
-    Lock, Operation, Publication, PublishedAt, ReadTree, Refusal, RepoState, Stopped, publish,
+    Lock, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, RepoState, Stopped,
+    publish,
 };
 
 /// A binding as a labels file lists it: the key's number, its live label and its aliases.
@@ -112,7 +112,7 @@ fn settle(files: &Files, repo: &RepoState) -> Result<Publication, Refusal> {
 /// What a publish gave, and the tree with the files it wrote.
 struct Settled {
     lock: Lock,
-    withdrawn: Vec<Withdrawn>,
+    withdrawn: Vec<Relabel>,
     finish: Option<Operation>,
     tree: Files,
     document: Document,
@@ -166,10 +166,10 @@ fn assert_pulled_side_kept(settled: &Settled) {
     assert_eq!(settled.document.conflicts, Vec::new());
     assert_eq!(
         settled.withdrawn,
-        [Withdrawn {
+        [Relabel {
             element: key(9),
-            label: label("CON-2"),
-            live: label("CON-3"),
+            withdrawn: label("CON-2"),
+            label: label("CON-3"),
         }]
     );
 }
