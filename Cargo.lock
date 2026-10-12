@@ -380,7 +380,7 @@ checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
 name = "loft-cli"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "clap",
  "loftspec",
@@ -390,7 +390,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "proptest",
  "pulldown-cmark",
@@ -407,7 +407,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec-store"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "loftspec",
  "thiserror",
