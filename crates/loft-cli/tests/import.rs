@@ -200,7 +200,7 @@ fn ac_519_ac_521_a_missing_export_is_reported_by_its_path() {
         "{}",
         stderr(&output)
     );
-    assert!(dir.entries().is_empty());
+    assert_eq!(dir.entries(), Vec::<String>::new());
 }
 
 #[test]
@@ -228,7 +228,7 @@ fn ac_668_ac_671_a_missing_counters_file_is_reported_by_its_path() {
         "{}",
         stderr(&output)
     );
-    assert!(dir.entries().is_empty());
+    assert_eq!(dir.entries(), Vec::<String>::new());
 }
 
 #[test]

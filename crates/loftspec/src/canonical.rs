@@ -67,9 +67,9 @@ impl Digest {
     fn hex(&self) -> [u8; 64] {
         const DIGITS: &[u8; 16] = b"0123456789abcdef";
         let mut text = [0; 64];
-        for (pair, byte) in text.chunks_exact_mut(2).zip(self.0) {
-            pair[0] = DIGITS[usize::from(byte >> 4)];
-            pair[1] = DIGITS[usize::from(byte & 0x0f)];
+        for ([high, low], byte) in text.as_chunks_mut::<2>().0.iter_mut().zip(self.0) {
+            *high = DIGITS[usize::from(byte >> 4)];
+            *low = DIGITS[usize::from(byte & 0x0f)];
         }
         text
     }

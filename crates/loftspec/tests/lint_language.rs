@@ -101,7 +101,10 @@ fn ac_646_texts_split_into_the_published_tokens() {
 fn ac_375_a_term_removed_by_configuration_is_not_reported() {
     let document = with_statement("The writer shall be fast.");
     let yaml = "rules:\n  - rule: LQ-001\n    lexicon:\n      remove:\n        - fast\n";
-    assert!(of(&configured(&document, yaml), RuleId::Lq001).is_empty());
+    assert_eq!(
+        of(&configured(&document, yaml), RuleId::Lq001),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
@@ -151,13 +154,19 @@ fn ac_381_ac_383_an_escape_clause_is_lq_003() {
 
 #[test]
 fn ac_382_a_statement_without_an_escape_clause_is_not_lq_003() {
-    assert!(of(&findings(&small_document()), RuleId::Lq003).is_empty());
+    assert_eq!(
+        of(&findings(&small_document()), RuleId::Lq003),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
 fn ac_384_to_ac_386_absolute_language_is_lq_004_only_when_enabled() {
     let document = with_statement("The writer shall always write keys.");
-    assert!(of(&findings(&document), RuleId::Lq004).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq004),
+        Vec::<&Finding>::new()
+    );
     let enabled = configured(&document, "rules:\n  - rule: LQ-004\n    enabled: true\n");
     let absolute: Vec<_> = of(&enabled, RuleId::Lq004)
         .into_iter()
@@ -181,7 +190,7 @@ fn ac_388_ac_389_conjunctions_that_reach_the_threshold_are_lq_005() {
     let document = with_statement("The writer shall write keys and labels and names or slugs.");
     assert_eq!(of(&findings(&document), RuleId::Lq005).len(), 1);
     let two = with_statement("The writer shall write keys and labels or names.");
-    assert!(of(&findings(&two), RuleId::Lq005).is_empty());
+    assert_eq!(of(&findings(&two), RuleId::Lq005), Vec::<&Finding>::new());
     let lowered = configured(
         &two,
         "rules:\n  - rule: LQ-005\n    conjunctionThreshold: 2\n",
@@ -191,14 +200,20 @@ fn ac_388_ac_389_conjunctions_that_reach_the_threshold_are_lq_005() {
 
 #[test]
 fn ac_391_to_ac_393_every_quality_attribute_carries_a_target_so_lq_006_is_silent() {
-    assert!(of(&findings(&small_document()), RuleId::Lq006).is_empty());
+    assert_eq!(
+        of(&findings(&small_document()), RuleId::Lq006),
+        Vec::<&Finding>::new()
+    );
     assert_eq!(severity(RuleId::Lq006), Severity::Warning);
 }
 
 #[test]
 fn ac_394_ac_397_ac_398_a_text_statement_outside_the_forms_is_lq_007_when_enabled() {
     let document = with_statement("Keys everywhere, always.");
-    assert!(of(&findings(&document), RuleId::Lq007).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq007),
+        Vec::<&Finding>::new()
+    );
     let enabled = configured(&document, "rules:\n  - rule: LQ-007\n    enabled: true\n");
     let found = of(&enabled, RuleId::Lq007);
     assert_eq!(found.len(), 1);
@@ -210,9 +225,15 @@ fn ac_394_ac_397_ac_398_a_text_statement_outside_the_forms_is_lq_007_when_enable
 fn ac_395_ac_396_slots_and_bare_proper_names_are_not_lq_007() {
     let mut document = with_statement("Loft shall refuse an unknown key.");
     let yaml = "rules:\n  - rule: LQ-007\n    enabled: true\n";
-    assert!(of(&configured(&document, yaml), RuleId::Lq007).is_empty());
+    assert_eq!(
+        of(&configured(&document, yaml), RuleId::Lq007),
+        Vec::<&Finding>::new()
+    );
     added(&mut document).statement = Statement::parse("The writer shall write keys.");
-    assert!(of(&configured(&document, yaml), RuleId::Lq007).is_empty());
+    assert_eq!(
+        of(&configured(&document, yaml), RuleId::Lq007),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
@@ -240,7 +261,10 @@ fn ac_644_similarity_counts_repeated_tokens() {
     document
         .components
         .push(root(component(key(63), "key store")));
-    assert!(of(&findings(&document), RuleId::Lq008).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq008),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
@@ -251,7 +275,7 @@ fn ac_400_ac_698_a_name_below_the_minimum_takes_part_only_when_equal() {
         .components
         .push(root(component(key(63), "Store index")));
     let raised = configured(&document, "rules:\n  - rule: LQ-008\n    threshold: 0.5\n");
-    assert!(of(&raised, RuleId::Lq008).is_empty());
+    assert_eq!(of(&raised, RuleId::Lq008), Vec::<&Finding>::new());
     let lowered = configured(
         &document,
         "rules:\n  - rule: LQ-008\n    threshold: 0.5\n    minTokens: 1\n",
@@ -263,7 +287,10 @@ fn ac_400_ac_698_a_name_below_the_minimum_takes_part_only_when_equal() {
 fn ac_645_names_are_compared_only_within_one_kind() {
     let mut document = small_document();
     document.components.push(root(component(key(62), "Keys")));
-    assert!(of(&findings(&document), RuleId::Lq008).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq008),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
@@ -282,7 +309,10 @@ fn ac_404_a_node_that_lists_the_tag_or_sits_under_one_that_does_is_not_lq_009() 
     let mut document = small_document();
     let tag = loftspec::names::TagName::parse("identity").unwrap();
     document.products[0].details.tags.push(tag);
-    assert!(of(&findings(&document), RuleId::Lq009).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq009),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
@@ -292,16 +322,22 @@ fn ac_873_lq_009_does_not_read_a_constraint() {
     document.products[0].details.tags.push(tag);
     document.components[0].constraints[0].name =
         "The document model shall keep identity rules.".to_owned();
-    assert!(of(&findings(&document), RuleId::Lq009).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq009),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
 fn a_code_span_in_a_statement_is_not_read_as_prose() {
     let quoted =
         with_statement("The renderer shall write `<system> shall <shall>` for every form.");
-    assert!(of(&findings(&quoted), RuleId::Lq005).is_empty());
+    assert_eq!(
+        of(&findings(&quoted), RuleId::Lq005),
+        Vec::<&Finding>::new()
+    );
     let weak = with_statement("The writer shall name the `fast` path.");
-    assert!(of(&findings(&weak), RuleId::Lq001).is_empty());
+    assert_eq!(of(&findings(&weak), RuleId::Lq001), Vec::<&Finding>::new());
     let plain = with_statement("The writer shall be fast and name the `x` path.");
     let terms: Vec<_> = of(&findings(&plain), RuleId::Lq001)
         .iter()
@@ -313,7 +349,10 @@ fn a_code_span_in_a_statement_is_not_read_as_prose() {
 #[test]
 fn a_code_span_closes_only_on_a_run_of_its_own_length() {
     let double = with_statement("The writer shall write ``a ` fast b`` here.");
-    assert!(of(&findings(&double), RuleId::Lq001).is_empty());
+    assert_eq!(
+        of(&findings(&double), RuleId::Lq001),
+        Vec::<&Finding>::new()
+    );
     let unclosed = with_statement("The writer shall keep a ` mark and be fast.");
     assert_eq!(of(&findings(&unclosed), RuleId::Lq001).len(), 1);
 }
@@ -322,7 +361,10 @@ fn a_code_span_closes_only_on_a_run_of_its_own_length() {
 fn a_registry_term_inside_a_code_span_is_not_lq_009() {
     let mut document = small_document();
     document.products[0].feature_groups[0].name = "The `identity` group".to_owned();
-    assert!(of(&findings(&document), RuleId::Lq009).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq009),
+        Vec::<&Finding>::new()
+    );
 }
 
 /// The small document with one more Requirement under F-1 holding the given criteria.
@@ -342,7 +384,10 @@ fn sibling_criteria_that_enumerate_cases_are_not_lq_008() {
         "The content address of the index is reproduced.",
         "The graph address of the index is reproduced.",
     ]);
-    assert!(of(&findings(&document), RuleId::Lq008).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq008),
+        Vec::<&Finding>::new()
+    );
 }
 
 #[test]
@@ -363,5 +408,8 @@ fn identical_criteria_of_different_requirements_are_not_lq_008() {
         "If the reader fails, then the writer shall stop.",
         vec![criterion(key(81), "Nothing is written.")],
     ));
-    assert!(of(&findings(&document), RuleId::Lq008).is_empty());
+    assert_eq!(
+        of(&findings(&document), RuleId::Lq008),
+        Vec::<&Finding>::new()
+    );
 }

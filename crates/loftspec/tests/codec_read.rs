@@ -236,7 +236,7 @@ fn ac_791_an_empty_registry_file_reads_as_no_entries() {
         );
         files
     };
-    assert!(codec::read(&files).unwrap().categories.is_empty());
+    assert_eq!(codec::read(&files).unwrap().categories, Vec::new());
 }
 
 #[test]

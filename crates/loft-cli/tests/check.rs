@@ -165,7 +165,10 @@ fn ac_582_ac_585_ac_593_json_matches_the_schema_with_positions_and_the_same_exit
         (error["line"].as_u64(), error["column"].as_u64()),
         (Some(1), Some(6))
     );
-    assert!(!document["findings"].as_array().unwrap().is_empty());
+    assert_ne!(
+        document["findings"].as_array().unwrap(),
+        &Vec::<Value>::new()
+    );
 }
 
 #[test]

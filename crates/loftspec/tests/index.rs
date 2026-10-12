@@ -122,7 +122,7 @@ fn a_decision_that_supersedes_itself_is_reported_once() {
         errors.integrity,
         [IntegrityError::SupersedesItself(DecisionId::new(key(20)))]
     );
-    assert!(errors.cycles.is_empty());
+    assert_eq!(errors.cycles, Vec::new());
 }
 
 #[test]

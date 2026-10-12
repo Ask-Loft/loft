@@ -39,7 +39,10 @@ fn a_reference_in_backticks_or_brackets_is_recognised() {
 
 #[test]
 fn a_label_inside_a_longer_word_or_number_is_not_a_reference() {
-    assert!(labels("XRQ-1 RQ-1a RQ-12b BIG-RQ-3 RQ-01 FT-3 rq-4 RQ-").is_empty());
+    assert_eq!(
+        labels("XRQ-1 RQ-1a RQ-12b BIG-RQ-3 RQ-01 FT-3 rq-4 RQ-"),
+        Vec::<String>::new()
+    );
     assert_eq!(labels("F-1.5 is a version, not F-1"), ["F-1"]);
 }
 
@@ -56,7 +59,13 @@ fn a_setext_heading_is_found_at_its_text_line() {
 
 #[test]
 fn ac_407_text_that_only_resembles_a_heading_is_not_one() {
-    assert!(heading_lines("#hashtag\n    # indented code\n\n---\n| a | b |\n|---|---|").is_empty());
-    assert!(heading_lines("```\n# in a fence\n```\n~~~\n## also\n~~~").is_empty());
-    assert!(heading_lines("").is_empty());
+    assert_eq!(
+        heading_lines("#hashtag\n    # indented code\n\n---\n| a | b |\n|---|---|"),
+        Vec::<usize>::new()
+    );
+    assert_eq!(
+        heading_lines("```\n# in a fence\n```\n~~~\n## also\n~~~"),
+        Vec::<usize>::new()
+    );
+    assert_eq!(heading_lines(""), Vec::<usize>::new());
 }

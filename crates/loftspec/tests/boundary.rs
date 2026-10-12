@@ -139,7 +139,7 @@ fn ac_883_private_beneath_external_is_an_error_naming_both() {
 #[test]
 fn ac_884_external_beneath_external_raises_no_error() {
     let document = nested_document(Some(Boundary::External), Some(Boundary::External));
-    assert!(validate(&document).is_empty());
+    assert_eq!(validate(&document), Vec::new());
 }
 
 // The obligation rules.
@@ -160,7 +160,7 @@ fn ac_886_an_external_leaf_component_yields_no_sh_002() {
         .push(common::root(common::component(key(41), "Voyage API")));
     assert_eq!(findings(&document, RuleId::Sh002), [vec![key(41)]]);
     document.components[1].boundary = Some(Boundary::External);
-    assert!(findings(&document, RuleId::Sh002).is_empty());
+    assert_eq!(findings(&document, RuleId::Sh002), Vec::<Vec<Key>>::new());
 }
 
 #[test]
@@ -171,7 +171,7 @@ fn ac_887_an_external_component_yields_no_sh_008() {
         .push(common::root(common::component(key(41), "Voyage API")));
     assert_eq!(findings(&document, RuleId::Sh008), [vec![key(41)]]);
     document.components[1].boundary = Some(Boundary::External);
-    assert!(findings(&document, RuleId::Sh008).is_empty());
+    assert_eq!(findings(&document, RuleId::Sh008), Vec::<Vec<Key>>::new());
 }
 
 #[test]
