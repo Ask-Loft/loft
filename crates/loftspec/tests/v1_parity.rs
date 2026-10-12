@@ -104,7 +104,13 @@ fn each_register_entry_is_well_formed() {
             entry.id
         );
         assert!(
-            ["subject-external", "code-span", "rule"].contains(&entry.condition.as_str()),
+            [
+                "subject-external",
+                "code-span",
+                "subjects-are-criteria",
+                "rule"
+            ]
+            .contains(&entry.condition.as_str()),
             "{}: condition `{}`",
             entry.id,
             entry.condition

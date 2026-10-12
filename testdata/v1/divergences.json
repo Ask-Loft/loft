@@ -34,6 +34,18 @@
         "01a12dca-2b3c-76f6-950a-cd628ea23330"
       ],
       "note": "A tag name quoted in a code span of a name is an identifier, not a use of the term."
+    },
+    {
+      "id": "criteria-are-compared-within-their-requirement",
+      "surface": "lint",
+      "rule": "LQ-008",
+      "condition": "subjects-are-criteria",
+      "direction": "v1-only",
+      "decidedBy": [
+        "01a12dda-cece-7462-b240-636e6eb12919",
+        "01a12dda-cece-7462-b240-636ff15f31ed"
+      ],
+      "note": "A criterion means something only under its Requirement, and sibling criteria that differ in a word enumerate cases; only identical sibling criteria are near-duplicates."
     }
   ]
 }

@@ -324,3 +324,44 @@ fn a_registry_term_inside_a_code_span_is_not_lq_009() {
     document.products[0].feature_groups[0].name = "The `identity` group".to_owned();
     assert!(of(&findings(&document), RuleId::Lq009).is_empty());
 }
+
+/// The small document with one more Requirement under F-1 holding the given criteria.
+fn with_criteria(texts: &[&str]) -> Document {
+    let mut document = with_statement("The writer shall write the index.");
+    added(&mut document).criteria = texts
+        .iter()
+        .enumerate()
+        .map(|(n, text)| criterion(key(70 + u32::try_from(n).unwrap()), text))
+        .collect();
+    document
+}
+
+#[test]
+fn sibling_criteria_that_enumerate_cases_are_not_lq_008() {
+    let document = with_criteria(&[
+        "The content address of the index is reproduced.",
+        "The graph address of the index is reproduced.",
+    ]);
+    assert!(of(&findings(&document), RuleId::Lq008).is_empty());
+}
+
+#[test]
+fn identical_sibling_criteria_are_lq_008() {
+    let document = with_criteria(&["Nothing is written.", "Nothing is written!"]);
+    let all = findings(&document);
+    let found = of(&all, RuleId::Lq008);
+    assert_eq!(found.len(), 1);
+    assert_eq!(keys(found[0]), [key(70), key(71)]);
+}
+
+#[test]
+fn identical_criteria_of_different_requirements_are_not_lq_008() {
+    let mut document = with_criteria(&["Nothing is written."]);
+    let feature = &mut document.products[0].feature_groups[0].features[0];
+    feature.requirements.push(requirement(
+        key(80),
+        "If the reader fails, then the writer shall stop.",
+        vec![criterion(key(81), "Nothing is written.")],
+    ));
+    assert!(of(&findings(&document), RuleId::Lq008).is_empty());
+}
