@@ -279,7 +279,7 @@ fn the_json_results_match_the_publish_schema() {
         Some(&GitScenario::clean_on("develop")),
         &Clock::fixed(EPOCH),
     ));
-    assert_eq!(refused["outcome"], "refused");
+    assert_eq!(refused["outcome"], "error");
     assert_eq!(refused["errors"][0]["kind"], "refused");
 }
 
@@ -337,7 +337,7 @@ fn the_json_of_a_publish_lists_the_citations_it_rewrote() {
         "F-9 removes them.",
     );
     let document = json(&on_main(&scratch, &["publish", "--format", "json"]));
-    assert_eq!(document["schema"], "loft-publish/2");
+    assert_eq!(document["schema"], "loft-publish/1");
     assert_eq!(
         document["rewritten"],
         serde_json::json!([{

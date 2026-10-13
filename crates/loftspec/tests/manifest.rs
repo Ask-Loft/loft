@@ -1,4 +1,4 @@
-//! The manifest's format and algorithm (D-11 F-5).
+//! The manifest's format and algorithm (F-5).
 
 use loftspec::FORMAT;
 use loftspec::manifest::{ALGORITHM, ManifestError, check_identifiers};

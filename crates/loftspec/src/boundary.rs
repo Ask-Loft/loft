@@ -1,4 +1,4 @@
-//! Each Component's boundary as its subtree takes it on (D-11 Component boundary, ADR-15): a
+//! Each Component's boundary as its subtree takes it on (F-50, ADR-15): a
 //! Component without a `boundary` field has its parent Component's, and a root Component without
 //! one is `private`.
 

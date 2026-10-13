@@ -70,6 +70,12 @@ requirements:
         name: "The document says whether any file was written."
       - key: 01a134d2-2a86-76d0-a05e-22288a5935c5
         name: "A read error is listed among the document's errors with its file, line and column."
+      - key: 01a1354e-bca0-714b-8727-09ad9d63023f
+        name: "The outcome is `formatted` when files were rewritten."
+      - key: 01a1354e-bca0-714b-8727-09ae06851518
+        name: "The outcome is `canonical` when no file would change."
+      - key: 01a1354e-bca0-714b-8727-09af5e3b8600
+        name: "With `--check`, the outcome is `drift` when a file would change."
 qualityAttributes:
   - key: 64d803a0-6125-494f-b72c-01ccc8c42a98
     name: "`loft fmt --check` shall complete within 2 seconds at the 95th percentile on a canonical document of five thousand nodes."

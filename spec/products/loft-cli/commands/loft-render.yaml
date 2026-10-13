@@ -38,3 +38,12 @@ requirements:
         name: "The error names the path."
       - key: 4b141b53-d7ce-489b-b162-cbf9ad383bee
         name: "No projection is written."
+  - key: 01a1354e-bca0-714b-8727-09ba81818211
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft render`"
+      shall: "give the result of the render as its outcome."
+    criteria:
+      - key: 01a1354e-bca0-714b-8727-09bb78f5ee4c
+        name: "The outcome is `rendered` when every projection was written or was already current."

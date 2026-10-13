@@ -1,4 +1,4 @@
-//! What the reader refuses in a `spec/` tree, and where it says the error is (D-11 F-6..F-10,
+//! What the reader refuses in a `spec/` tree, and where it says the error is (F-6..F-10,
 //! F-49, F-47).
 
 mod common;

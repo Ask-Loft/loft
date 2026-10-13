@@ -1,4 +1,4 @@
-//! A Requirement's sentence (D-11 F-10) and the fixed templates that render it (D-11 F-11).
+//! A Requirement's sentence (F-10) and the fixed templates that render it (F-11).
 
 use crate::ears;
 pub use crate::ears::Form;

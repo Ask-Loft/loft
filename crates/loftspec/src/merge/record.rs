@@ -1,13 +1,13 @@
-//! The merge of one record over its fields (D-11 F-32): a field one side changed takes the
+//! The merge of one record over its fields (F-32): a field one side changed takes the
 //! change, a field both changed alike takes it once, and a field both changed apart keeps its
 //! base value and gains a conflict on the record that holds it (RQ-120..RQ-122). An unkeyed
 //! record inside it merges field by field under a dotted path.
 
 use super::conflict::Host;
 use super::list::merge_list;
-use super::same::{same, same_record};
+use super::same::{same, same_conflict};
 use crate::codec::schema::{Field, Item, Shape};
-use crate::codec::{Rec, Val, variant_holds};
+use crate::codec::{ConflictRec, Rec, Val, variant_holds};
 
 /// One field's value on each side, and whether base has the record at all.
 struct Sides<'a> {
@@ -29,14 +29,14 @@ pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
 
 /// The conflicts the inputs already hold: one on both sides is written once, one that a side
 /// removed is removed, and one that a side added is added.
-fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<Rec> {
-    let holds = |record: &Rec, conflict: &Rec| {
+fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<ConflictRec> {
+    let holds = |record: &Rec, conflict: &ConflictRec| {
         record
             .conflicts
             .iter()
-            .any(|each| same_record(each, conflict))
+            .any(|each| same_conflict(each, conflict))
     };
-    let kept = |conflict: &Rec| match base {
+    let kept = |conflict: &ConflictRec| match base {
         Some(base) if holds(base, conflict) => holds(ours, conflict) && holds(theirs, conflict),
         _ => true,
     };

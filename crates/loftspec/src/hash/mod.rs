@@ -1,5 +1,5 @@
-//! The hasher (CMP-3): content hashes, decision view hashes and the roots of a document (D-11
-//! F-3, F-4, F-5). Each view is RFC 8785 canonical JSON; each digest is domain-separated. The
+//! The hasher (CMP-3): content hashes, decision view hashes and the roots of a document
+//! (F-3, F-4, F-5). Each view is RFC 8785 canonical JSON; each digest is domain-separated. The
 //! hasher takes an indexed document, so every reference it follows resolves.
 
 mod decisions;

@@ -1,4 +1,4 @@
-//! `loft merge-driver <base> <ours> <theirs> <path>` as git runs it (D-11 F-43): the merged file
+//! `loft merge-driver <base> <ours> <theirs> <path>` as git runs it (F-43): the merged file
 //! written to `<ours>`, the exit code saying whether a conflict was written, and messages that
 //! name `<path>` rather than git's temporary files.
 
@@ -217,6 +217,7 @@ fn the_json_document_of_a_merge_names_the_path_and_the_conflicts_written() {
     );
     assert_eq!(conflicted.status.code(), Some(1));
     let document = json_of(&conflicted);
+    assert_eq!(document["outcome"], "conflicted");
     assert_eq!(document["path"], spec_path());
     assert_eq!(
         (document["conflicts"].clone(), document["disputed"].clone()),
@@ -224,7 +225,11 @@ fn the_json_document_of_a_merge_names_the_path_and_the_conflicts_written() {
     );
     let clean = driver_with(&scratch, [&base, &ours_text, &base], &spec_path(), &JSON);
     assert_eq!(clean.status.code(), Some(0), "{}", stderr(&clean));
-    assert_eq!(json_of(&clean)["conflicts"], 0);
+    let document = json_of(&clean);
+    assert_eq!(
+        (document["outcome"].clone(), document["conflicts"].clone()),
+        (json!("merged"), json!(0))
+    );
 }
 
 #[test]
@@ -254,7 +259,9 @@ fn a_refused_merge_is_listed_among_the_json_document_s_errors() {
         &JSON,
     );
     assert_eq!(output.status.code(), Some(1));
-    let error = &json_of(&output)["errors"][0];
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    let error = &document["errors"][0];
     assert!(
         error["message"]
             .as_str()

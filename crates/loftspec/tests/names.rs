@@ -1,4 +1,4 @@
-//! Tag and constraint category names (D-11 RQ-71, RQ-72): a tag name is a lowercase letter
+//! Tag and constraint category names (RQ-71, RQ-72): a tag name is a lowercase letter
 //! followed by lowercase letters, digits and hyphens; a category name is one or more such
 //! segments joined by dots.
 

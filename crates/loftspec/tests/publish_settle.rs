@@ -1,4 +1,4 @@
-//! Settling two publishes (D-11, settling two publishes): a publish run in a stopped merge or
+//! Settling two publishes (F-58): a publish run in a stopped merge or
 //! rebase of the publish branch keeps the pulled side's bindings, withdraws the other side's
 //! colliding labels, relabels a key that lost its live label, and pins the tree it writes.
 

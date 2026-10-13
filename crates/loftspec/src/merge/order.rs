@@ -1,4 +1,4 @@
-//! The three-way merge of one ordered list (D-11 F-33). Each side's insertions and moves hang
+//! The three-way merge of one ordered list (F-33). Each side's insertions and moves hang
 //! after the element they follow on that side, ours before theirs; the elements neither side
 //! moved keep their base order; an element both sides moved apart stays at its base position,
 //! with a conflict over its place (RQ-123, RQ-124). Which elements survive is the caller's to

@@ -62,6 +62,19 @@ requirements:
         name: "`--fail-on info` exits 1 on a warning."
       - key: 8244e4b1-96ad-4b15-91fe-6a929e1dbbf6
         name: "`--fail-on warning` exits 0 when only info and hint findings exist."
+  - key: 01a1354e-8c63-74ae-abcf-1d49b656d3b0
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft check`"
+      shall: "give the result of the check as its outcome."
+    criteria:
+      - key: 01a1354e-8c63-74ae-abcf-1d4a15afb02e
+        name: "The outcome is `passed` when the tree holds no error and no finding at or above `--fail-on`."
+      - key: 01a1354e-8c63-74ae-abcf-1d4b5f441b3a
+        name: "The outcome is `failed` when the tree holds a read, validation or lint configuration error."
+      - key: 01a1354e-8c63-74ae-abcf-1d4cec99548c
+        name: "The outcome is `failed` when a finding is at or above `--fail-on`."
 qualityAttributes:
   - key: 1e930b51-5670-4035-b4d8-71d419e0f249
     name: "`loft check` shall complete within 2 seconds at the 95th percentile on a document of five thousand nodes."

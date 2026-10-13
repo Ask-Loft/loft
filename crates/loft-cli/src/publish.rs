@@ -18,7 +18,7 @@ use serde_json::{Value, json};
 use crate::json;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-publish/2";
+const SCHEMA: &str = "loft-publish/1";
 
 /// Why a publish did not happen.
 enum Failure {
@@ -201,20 +201,17 @@ fn published(publication: &Publication) -> Value {
             })
         })
         .collect();
-    let mut document = json!({
-        "schema": SCHEMA,
-        "outcome": outcome,
+    let mut fields = json!({
         "allocated": allocated,
         "rewritten": relabels(rewritten),
         "withdrawn": relabels(withdrawn),
         "publishSequence": lock.publish_sequence.get(),
         "stateRoot": lock.state_root.to_string(),
-        "errors": [],
     });
     if let Some(operation) = finish {
-        document["finish"] = json!(finishing(operation));
+        fields["finish"] = json!(finishing(operation));
     }
-    document
+    json::result(SCHEMA, outcome, fields, Vec::new())
 }
 
 /// Labels a publish replaced, each with the element's key, the label it withdrew and the label
@@ -238,12 +235,5 @@ fn refused(failure: &Failure) -> Value {
         Failure::Invalid(errors) => json::validation_errors(errors),
         Failure::Refused(reason) => vec![json::error("refused", reason, &[])],
     };
-    json!({
-        "schema": SCHEMA,
-        "outcome": "refused",
-        "allocated": [],
-        "rewritten": [],
-        "withdrawn": [],
-        "errors": errors,
-    })
+    json::failure(SCHEMA, errors)
 }

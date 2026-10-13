@@ -1,4 +1,4 @@
-//! Citations of withdrawn labels in lint (D-11 F-21): `V2-003` says that the next publish
+//! Citations of withdrawn labels in lint (F-21): `V2-003` says that the next publish
 //! rewrites a citation of a label withdrawn from a key the element mentions, and `V2-004` reports
 //! a citation the publish cannot rewrite because the element also mentions the label's holder.
 

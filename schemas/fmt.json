@@ -2,39 +2,75 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-fmt-1.json",
   "title": "The result of `loft fmt --format json`, version 1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "changed",
-    "minted",
-    "written",
-    "errors"
-  ],
-  "properties": {
-    "schema": {
-      "const": "loft-fmt/1"
-    },
-    "changed": {
-      "type": "array",
-      "items": {
-        "type": "string"
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "changed",
+        "minted",
+        "written",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-fmt/1"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "formatted",
+            "canonical",
+            "drift"
+          ]
+        },
+        "changed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "minted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "written": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     },
-    "minted": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "written": {
-      "type": "boolean"
-    },
-    "errors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/error"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-fmt/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     }
-  },
+  ],
   "$defs": {
     "site": {
       "type": "object",

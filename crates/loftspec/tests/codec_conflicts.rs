@@ -1,4 +1,4 @@
-//! The typed conflict record in the text form (D-11 F-34, RQ-220): where it may sit, how its
+//! The typed conflict record in the text form (F-34, RQ-220): where it may sit, how its
 //! sides are read and written, and what the reader refuses.
 
 mod common;
@@ -57,6 +57,16 @@ fn a_conflict_record_requires_field() {
     let files = on_requirement("    conflicts:\n      - ours: \"write a key on each node.\"\n");
     let (problem, _) = refused(&files);
     assert_eq!(problem, Problem::MissingField(field::FIELD));
+}
+
+#[test]
+fn a_side_other_than_base_ours_or_theirs_is_an_unknown_field_whatever_it_holds() {
+    let files = on_requirement(
+        "    conflicts:\n      - field: body\n        mine:\n          - \"Why keys.\"\n",
+    );
+    let (problem, location) = refused(&files);
+    assert_eq!(problem, Problem::UnknownField("mine".to_owned()));
+    assert_eq!(location, Some(Location::At(Position::new(20, 9))));
 }
 
 #[test]

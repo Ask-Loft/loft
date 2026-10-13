@@ -1,4 +1,4 @@
-//! What the Format reads in prose: the label references a name or body makes (D-11 RQ-53,
+//! What the Format reads in prose: the label references a name or body makes (RQ-53,
 //! RQ-102) and the Markdown heading lines in a body (RQ-54, RQ-100).
 
 use std::ops::Range;

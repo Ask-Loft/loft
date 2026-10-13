@@ -1,4 +1,4 @@
-//! The manifest: the format and algorithm a document is written in (D-11 F-5).
+//! The manifest: the format and algorithm a document is written in (F-5).
 
 use crate::FORMAT;
 

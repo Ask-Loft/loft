@@ -1,4 +1,4 @@
-//! A merge conflict in the model (D-11 F-34): the validator reports it at the file and key of
+//! A merge conflict in the model (F-34): the validator reports it at the file and key of
 //! the record that holds it until it is removed (RQ-126), it survives a write and a read, no
 //! hash reads it, and a tree that holds one does not verify.
 

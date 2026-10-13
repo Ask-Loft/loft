@@ -1,4 +1,4 @@
-//! The `loft` command line (D-11 FG-9, FG-10). Exit codes: 0 on success, 1 on an error or a
+//! The `loft` command line (FG-9, FG-10). Exit codes: 0 on success, 1 on an error or a
 //! failed check, 2 on a usage error (RQ-154).
 
 mod check;

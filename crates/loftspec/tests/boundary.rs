@@ -1,4 +1,4 @@
-//! A Component's boundary (D-11 F-50, ADR-15): the field in the text form and the content view,
+//! A Component's boundary (F-50, ADR-15): the field in the text form and the content view,
 //! how a subtree takes it on, the validator's rule, the obligation rules and the rendering.
 
 mod common;

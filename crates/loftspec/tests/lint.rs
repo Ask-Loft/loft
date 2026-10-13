@@ -1,5 +1,5 @@
-//! The structural and v2 lint rules, findings and reports, and the lint configuration (D-11
-//! F-19, F-21, F-22, F-23).
+//! The structural and v2 lint rules, findings and reports, and the lint configuration
+//! (F-19, F-21, F-22, F-23).
 
 mod common;
 

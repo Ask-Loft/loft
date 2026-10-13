@@ -124,6 +124,7 @@ fn the_json_document_names_spec_as_created_and_carries_the_document_key() {
     let output = scratch.loft(&["init", "--format", "json"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     let document = json_of(&output);
+    assert_eq!(document["outcome"], "created");
     assert_eq!(document["created"], "spec/");
     assert_eq!(document["documentKey"], document_key(&scratch));
 }
@@ -134,8 +135,9 @@ fn a_refused_init_is_listed_among_the_json_document_s_errors_naming_the_path() {
     fs::create_dir(scratch.0.join("spec")).unwrap();
     let output = scratch.loft(&["init", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1));
-    let error = &json_of(&output)["errors"][0];
-    let message = error["message"].as_str().unwrap();
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    let message = document["errors"][0]["message"].as_str().unwrap();
     assert!(
         message.contains("spec") && message.contains("already exists"),
         "{message}"

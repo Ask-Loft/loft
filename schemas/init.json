@@ -2,29 +2,62 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-init-1.json",
   "title": "The result of `loft init --format json`, version 1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "errors"
-  ],
-  "properties": {
-    "schema": {
-      "const": "loft-init/1"
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "created",
+        "documentKey",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-init/1"
+        },
+        "outcome": {
+          "const": "created"
+        },
+        "created": {
+          "const": "spec/"
+        },
+        "documentKey": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
     },
-    "created": {
-      "const": "spec/"
-    },
-    "documentKey": {
-      "type": "string"
-    },
-    "errors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/error"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-init/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     }
-  },
+  ],
   "$defs": {
     "site": {
       "type": "object",

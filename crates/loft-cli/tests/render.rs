@@ -1,4 +1,4 @@
-//! `loft render` as a process (D-11 F-40, F-26): what it writes and where, what it refuses, and
+//! `loft render` as a process (F-40, F-26): what it writes and where, what it refuses, and
 //! that no projection feeds back into the tree.
 
 mod common;
@@ -7,6 +7,8 @@ mod schema;
 
 use std::collections::BTreeMap;
 use std::fs;
+
+use std::process::Output;
 
 use common::{Scratch, stderr, stdout};
 use serde_json::Value;
@@ -26,6 +28,11 @@ fn tree(scratch: &Scratch) -> BTreeMap<String, Vec<u8>> {
         }
     }
     files
+}
+
+/// The JSON document a render printed, held to the render schema.
+fn json_of(output: &Output) -> Value {
+    schema::conforming(&output.stdout, include_str!("../../../schemas/render.json"))
 }
 
 fn exists(scratch: &Scratch, path: &str) -> bool {
@@ -71,9 +78,20 @@ fn an_unchanged_projection_is_not_rewritten() {
     let scratch = Scratch::with_reading_list();
     scratch.loft(&["render"]);
     let output = scratch.loft(&["render", "--format", "json"]);
-    let document = schema::conforming(&output.stdout, include_str!("../../../schemas/render.json"));
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "rendered");
     assert_eq!(document["written"], Value::Array(Vec::new()));
     assert_eq!(document["unchanged"].as_array().unwrap().len(), 2);
+}
+
+#[test]
+fn a_refused_render_is_an_error_in_json() {
+    let scratch = Scratch::with_reading_list();
+    let output = scratch.loft(&["render", "--markdown", "spec/out.md", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    assert_eq!(document["errors"][0]["kind"], "refused");
 }
 
 #[test]

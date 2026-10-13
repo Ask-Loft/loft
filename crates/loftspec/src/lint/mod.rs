@@ -1,4 +1,4 @@
-//! The linter (CMP-7, D-11 F-19..F-23): the structural rules `SH-001`..`SH-010`, the language
+//! The linter (CMP-7, F-19..F-23): the structural rules `SH-001`..`SH-010`, the language
 //! rules `LQ-001`..`LQ-009` and the v2 rules `V2-001`..`V2-004`, each finding a typed record in a
 //! stable order. The configuration is `spec/lint.yaml`, part of the tree the linter is given; no
 //! flag, environment variable, clock or locale changes a finding (RQ-106). The linter changes

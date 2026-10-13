@@ -15,11 +15,24 @@ use crate::json;
 const SCHEMA: &str = "loft-fmt/1";
 
 /// What a run did: the files that change, the keys minted, and whether it wrote them.
-#[derive(Default)]
 struct Outcome {
     changed: Vec<String>,
     minted: usize,
     written: bool,
+}
+
+impl Outcome {
+    /// The outcome's name: `formatted` when files were rewritten, `canonical` when none would
+    /// change, `drift` when `--check` finds one that would.
+    const fn name(&self) -> &'static str {
+        if self.written {
+            "formatted"
+        } else if self.changed.is_empty() {
+            "canonical"
+        } else {
+            "drift"
+        }
+    }
 }
 
 /// Why the tree was not formatted: its errors as JSON, and as the lines standard error shows.
@@ -30,10 +43,9 @@ struct Failure {
 
 impl From<StoreError> for Failure {
     fn from(error: StoreError) -> Self {
-        let message = error.to_string();
         Self {
-            errors: vec![json::error("store", &message, &[])],
-            lines: vec![message],
+            errors: vec![json::store_error(&error)],
+            lines: vec![error.to_string()],
         }
     }
 }
@@ -48,31 +60,34 @@ impl From<Vec<ReadError>> for Failure {
 }
 
 pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
-    let (outcome, failure) = match attempt(root, check) {
-        Ok(outcome) => (outcome, None),
-        Err(failure) => (Outcome::default(), Some(failure)),
-    };
-    if as_json {
-        let errors = failure.as_ref().map_or_else(Vec::new, |f| f.errors.clone());
-        json::print(&json!({
-            "schema": SCHEMA,
-            "changed": outcome.changed,
-            "minted": outcome.minted,
-            "written": outcome.written,
-            "errors": errors,
-        }));
-    } else {
-        for path in &outcome.changed {
-            println!("{path}");
+    match attempt(root, check) {
+        Ok(outcome) => {
+            let name = outcome.name();
+            if as_json {
+                let fields = json!({
+                    "changed": outcome.changed,
+                    "minted": outcome.minted,
+                    "written": outcome.written,
+                });
+                json::print(&json::result(SCHEMA, name, fields, Vec::new()));
+            } else {
+                for path in &outcome.changed {
+                    println!("{path}");
+                }
+            }
+            if name == "drift" {
+                ExitCode::FAILURE
+            } else {
+                ExitCode::SUCCESS
+            }
         }
-    }
-    match failure {
-        Some(failure) => {
+        Err(failure) => {
+            if as_json {
+                json::print(&json::failure(SCHEMA, failure.errors));
+            }
             crate::report(&failure.lines);
             ExitCode::FAILURE
         }
-        None if check && !outcome.changed.is_empty() => ExitCode::FAILURE,
-        None => ExitCode::SUCCESS,
     }
 }
 

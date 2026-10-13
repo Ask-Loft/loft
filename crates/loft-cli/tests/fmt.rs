@@ -1,4 +1,4 @@
-//! `loft fmt` as a process (D-11 F-39, F-44, F-47): exit codes, the paths it prints, and what it
+//! `loft fmt` as a process (F-39, F-44, F-47): exit codes, the paths it prints, and what it
 //! writes.
 
 mod common;
@@ -106,9 +106,10 @@ fn the_json_document_lists_the_files_rewritten_and_the_keys_minted() {
     );
     let mut changed = vec![format!("spec/{path}"), format!("spec/{PRODUCT}")];
     changed.sort();
-    let document = |changed: &[String], minted: usize, written: bool| {
+    let document = |outcome: &str, changed: &[String], minted: usize, written: bool| {
         json!({
             "schema": "loft-fmt/1",
+            "outcome": outcome,
             "changed": changed,
             "minted": minted,
             "written": written,
@@ -117,12 +118,12 @@ fn the_json_document_lists_the_files_rewritten_and_the_keys_minted() {
     };
     let check = scratch.loft(&["fmt", "--check", "--format", "json"]);
     assert_eq!(check.status.code(), Some(1));
-    assert_eq!(json_of(&check), document(&changed, 1, false));
+    assert_eq!(json_of(&check), document("drift", &changed, 1, false));
     let write = scratch.loft(&["fmt", "--format", "json"]);
     assert_eq!(write.status.code(), Some(0), "{}", stderr(&write));
-    assert_eq!(json_of(&write), document(&changed, 1, true));
+    assert_eq!(json_of(&write), document("formatted", &changed, 1, true));
     let again = scratch.loft(&["fmt", "--format", "json"]);
-    assert_eq!(json_of(&again), document(&[], 0, false));
+    assert_eq!(json_of(&again), document("canonical", &[], 0, false));
 }
 
 #[test]
@@ -132,7 +133,9 @@ fn a_read_error_is_listed_in_the_json_document_with_its_file_line_and_column() {
     scratch.edit(&path, "\nslug:", " # a note\nslug:");
     let output = scratch.loft(&["fmt", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1));
-    let error = &json_of(&output)["errors"][0];
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    let error = &document["errors"][0];
     assert_eq!(error["kind"], "read");
     assert_eq!(error["path"], format!("spec/{path}"));
     assert_eq!(error["line"], 1);

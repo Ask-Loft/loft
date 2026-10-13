@@ -1,4 +1,4 @@
-//! The merge of one file (D-11 F-32..F-34): records matched by key and merged field by field, a
+//! The merge of one file (F-32..F-34): records matched by key and merged field by field, a
 //! conflict written where both sides changed one field apart, lists merged in base order, and
 //! the result in canonical layout.
 
@@ -290,6 +290,21 @@ fn conflicts_the_inputs_hold_merge_as_a_set() {
     assert_eq!(
         conflicts, 1,
         "a conflict both sides added is written once: {kept}"
+    );
+}
+
+#[test]
+fn two_conflicts_over_one_field_with_different_sides_are_both_kept() {
+    let base = feature();
+    let after = CRITERION_BLOCK;
+    let held = |side: &str| {
+        let conflict = format!("    conflicts:\n      - field: body\n        ours: \"{side}\"\n");
+        with(&base, &[(after, &format!("{after}{conflict}"))])
+    };
+    let (kept, conflicts) = merged(&base, &held("Old."), &held("Other."));
+    assert_eq!(
+        conflicts, 2,
+        "conflicts differing only in a side are two: {kept}"
     );
 }
 

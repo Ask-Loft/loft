@@ -1,4 +1,4 @@
-//! The strict reader of the YAML subset (D-11 F-8, F-9, ADR-14).
+//! The strict reader of the YAML subset (F-8, F-9, ADR-14).
 
 use loftspec::yaml::{self, Entry, ErrorKind, Location, Node, Position, Style, Value};
 

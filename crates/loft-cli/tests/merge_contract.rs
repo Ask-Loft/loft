@@ -1,4 +1,4 @@
-//! The six parallel-work scenarios (D-11 F-35) under a real `git merge`, with `loft merge-driver`
+//! The six parallel-work scenarios (F-35) under a real `git merge`, with `loft merge-driver`
 //! registered for `spec/`. git calls the driver and Loft never calls git's merge machinery, so
 //! no simulator stands in for it: this suite holds the driver to git's contract directly.
 

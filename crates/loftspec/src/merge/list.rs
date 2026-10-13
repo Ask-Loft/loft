@@ -1,4 +1,4 @@
-//! The merge of one list field (D-11 F-32, F-33): elements matched across the sides by key, a
+//! The merge of one list field (F-32, F-33): elements matched across the sides by key, a
 //! binding by its key, an assessment by its option and driver, anything else by its value
 //! (AC-471, AC-662); which elements survive; and, for a list in authored order, where each goes.
 
@@ -9,7 +9,7 @@ use super::order::{Anchor, merge_order, moved};
 use super::record::merge_host;
 use super::same::{same_value, text};
 use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
-use crate::codec::{Rec, Val};
+use crate::codec::{ConflictRec, Rec, Val};
 
 /// What an element is matched by, and how many times its side has held it before.
 type Id = (Ident, usize);
@@ -236,7 +236,7 @@ enum Side3 {
 }
 
 /// A conflict over where a record goes: each side names the element it follows, or `first`.
-fn position_conflict(position: &super::order::PositionConflict<Id>) -> Rec {
+fn position_conflict(position: &super::order::PositionConflict<Id>) -> ConflictRec {
     let anchor = |anchor: &Option<Anchor<Id>>| {
         anchor.as_ref().map(|anchor| {
             Val::scalar(match anchor {
@@ -246,11 +246,8 @@ fn position_conflict(position: &super::order::PositionConflict<Id>) -> Rec {
             })
         })
     };
-    let [base, ours, theirs] = [&position.base, &position.ours, &position.theirs].map(anchor);
-    conflict(
-        field::POSITION,
-        [base.as_ref(), ours.as_ref(), theirs.as_ref()],
-    )
+    let sides = [&position.base, &position.ours, &position.theirs].map(anchor);
+    ConflictRec::new(field::POSITION, sides)
 }
 
 /// The records of a list, to merge as host records of a registry.

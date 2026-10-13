@@ -1,4 +1,4 @@
-//! Converting a v1 export's links and decisions (D-11 F-13): `realizes` and `scoped_to` edges,
+//! Converting a v1 export's links and decisions (F-13): `realizes` and `scoped_to` edges,
 //! Architecture Decisions with their elements and `subject` edges, and the derived-from record.
 
 mod common;
@@ -242,7 +242,7 @@ fn a_subject_of_no_kind_the_format_holds_is_refused() {
 #[test]
 fn a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
     let mut value = full_export();
-    value["nodes"][3]["body"] = json!("Builds on RQ-2, D-1/F-1 and RQ-2 again; see ADR-1.");
+    value["nodes"][3]["body"] = json!("Builds on RQ-2, D-2/F-1 and RQ-2 again; see ADR-1.");
     let conversion = convert_value(&value).unwrap();
     let mentions: Vec<&Edge> = edges(&conversion)
         .iter()

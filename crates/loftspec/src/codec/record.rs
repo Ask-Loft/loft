@@ -28,7 +28,51 @@ pub struct Rec {
     /// The conflict records it holds, apart from its fields: only a record whose kind
     /// [`Kind::hosts_conflicts`] has any, and the writer puts them after every other field
     /// (AC-862).
-    pub conflicts: Vec<Self>,
+    pub conflicts: Vec<ConflictRec>,
+}
+
+/// A conflict record (RQ-125): the path of the field it names, and each side's value in the
+/// shape of that field; a side on which the field is absent has none (AC-859).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConflictRec {
+    pub field: String,
+    pub base: Option<Val>,
+    pub ours: Option<Val>,
+    pub theirs: Option<Val>,
+}
+
+impl ConflictRec {
+    /// A conflict over the field at `field`, with its sides in the Format's order: base, ours,
+    /// theirs.
+    #[must_use]
+    pub fn new(field: impl Into<String>, [base, ours, theirs]: [Option<Val>; 3]) -> Self {
+        Self {
+            field: field.into(),
+            base,
+            ours,
+            theirs,
+        }
+    }
+
+    /// The sides by name, in the Format's order: `base`, `ours`, `theirs` (AC-857).
+    #[must_use]
+    pub fn sides(&self) -> [(&'static str, Option<&Val>); 3] {
+        [
+            (field::BASE, self.base.as_ref()),
+            (field::OURS, self.ours.as_ref()),
+            (field::THEIRS, self.theirs.as_ref()),
+        ]
+    }
+
+    /// The side named `name`, to set.
+    pub fn side_mut(&mut self, name: &str) -> Option<&mut Option<Val>> {
+        match name {
+            field::BASE => Some(&mut self.base),
+            field::OURS => Some(&mut self.ours),
+            field::THEIRS => Some(&mut self.theirs),
+            _ => None,
+        }
+    }
 }
 
 /// A checked field value.
@@ -288,7 +332,6 @@ fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located>
             Value::Mapping(_) => check(node, Kind::FormerLabel, mode).map(Val::Record),
             _ => check_scalar(node, Scalar::Key),
         },
-        Item::Side => unreachable!("a conflict's sides are checked by `check_conflicts`"),
     }
 }
 

@@ -1,4 +1,4 @@
-//! The canonical writer (D-11 F-9): layout, scalar styles, and exact read-back.
+//! The canonical writer (F-9): layout, scalar styles, and exact read-back.
 
 #[path = "support/oracle.rs"]
 mod oracle;

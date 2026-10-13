@@ -1,5 +1,5 @@
 //! Where the reader says an element is written, every error of every file, and the
-//! containment and edge-kind rules that the typed text form refuses as it reads (D-11 F-17,
+//! containment and edge-kind rules that the typed text form refuses as it reads (F-17,
 //! F-18, F-47).
 
 mod common;

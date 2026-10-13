@@ -2,49 +2,98 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-verify-1.json",
   "title": "The result of `loft verify --format json`, version 1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "outcome",
-    "errors"
-  ],
-  "properties": {
-    "schema": {
-      "const": "loft-verify/1"
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "stateRoot",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-verify/1"
+        },
+        "outcome": {
+          "const": "verified"
+        },
+        "stateRoot": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
     },
-    "outcome": {
-      "type": "string",
-      "enum": [
-        "verified",
-        "mismatch",
-        "error"
-      ]
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "root",
+        "lock",
+        "tree",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-verify/1"
+        },
+        "outcome": {
+          "const": "mismatch"
+        },
+        "root": {
+          "type": "string",
+          "enum": [
+            "contentRoot",
+            "bindingRoot",
+            "stateRoot"
+          ]
+        },
+        "lock": {
+          "type": "string"
+        },
+        "tree": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
     },
-    "stateRoot": {
-      "type": "string"
-    },
-    "root": {
-      "type": "string",
-      "enum": [
-        "contentRoot",
-        "bindingRoot",
-        "stateRoot"
-      ]
-    },
-    "lock": {
-      "type": "string"
-    },
-    "tree": {
-      "type": "string"
-    },
-    "errors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/error"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-verify/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     }
-  },
+  ],
   "$defs": {
     "site": {
       "type": "object",

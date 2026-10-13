@@ -1,5 +1,4 @@
-//! The merge of `spec/labels.yaml` when each side published (D-11 F-32, the labels of two
-//! publishes): counters take the higher value, and the bindings two publishes gave apart leave
+//! The merge of `spec/labels.yaml` when each side published (F-32, F-60): counters take the higher value, and the bindings two publishes gave apart leave
 //! the merged bindings for one conflict record over `bindings`.
 
 mod common;

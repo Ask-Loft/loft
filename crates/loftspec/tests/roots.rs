@@ -1,4 +1,4 @@
-//! The edges, registry, decisions, content, binding and state roots (D-11 F-4, F-5).
+//! The edges, registry, decisions, content, binding and state roots (F-4, F-5).
 
 mod common;
 

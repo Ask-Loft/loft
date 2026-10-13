@@ -1,4 +1,4 @@
-//! `loft import v1` as a function (D-11 F-37): a v1 export converted into a `spec/` tree, with
+//! `loft import v1` as a function (F-37): a v1 export converted into a `spec/` tree, with
 //! the label counters taken from a counters file (RQ-131, RQ-132, RQ-173) or set one above the
 //! highest label seen (RQ-133), and the conversion findings and the sidecar beside it.
 

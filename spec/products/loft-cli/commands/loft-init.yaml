@@ -52,3 +52,5 @@ requirements:
         name: "The document carries the new document key."
       - key: 01a134d2-2a86-76d0-a05e-222c51cfc7fe
         name: "A refusal is listed among the document's errors and names the existing path."
+      - key: 01a1354e-bca0-714b-8727-09b2e3942f6f
+        name: "The outcome is `created` when the tree was created."

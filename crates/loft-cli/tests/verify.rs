@@ -121,6 +121,7 @@ fn the_json_results_match_the_verify_schema() {
     let mismatch = json(&scratch.loft(&["verify", "--format", "json"]));
     assert_eq!(mismatch["outcome"], "mismatch");
     assert_eq!(mismatch["root"], "contentRoot");
+    assert!(mismatch["lock"].is_string() && mismatch["tree"].is_string());
     fs::remove_file(scratch.0.join(LOCK)).unwrap();
     let missing = json(&scratch.loft(&["verify", "--format", "json"]));
     assert_eq!(missing["outcome"], "error");

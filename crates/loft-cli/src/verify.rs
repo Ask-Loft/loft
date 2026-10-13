@@ -38,12 +38,8 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
     match attempt(root) {
         Ok(state) => {
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "outcome": "verified",
-                    "stateRoot": state.to_string(),
-                    "errors": [],
-                }));
+                let fields = json!({ "stateRoot": state.to_string() });
+                json::print(&json::result(SCHEMA, "verified", fields, Vec::new()));
             } else {
                 println!("verified: state root {state}");
             }
@@ -88,14 +84,14 @@ fn document(failure: &Failure) -> Value {
         Failure::Read(errors) => json::read_errors(errors),
         Failure::Store(kind, message) => vec![json::error(kind, message, &[])],
         Failure::Unverified(Unverified::Invalid(errors)) => json::validation_errors(errors),
-        Failure::Unverified(Unverified::Mismatch { .. }) => Vec::new(),
+        Failure::Unverified(Unverified::Mismatch { root, lock, tree }) => {
+            let fields = json!({
+                "root": format!("{}Root", root.name()),
+                "lock": lock.to_string(),
+                "tree": tree.to_string(),
+            });
+            return json::result(SCHEMA, "mismatch", fields, Vec::new());
+        }
     };
-    let mut document = json!({ "schema": SCHEMA, "outcome": "error", "errors": errors });
-    if let Failure::Unverified(Unverified::Mismatch { root, lock, tree }) = failure {
-        document["outcome"] = json!("mismatch");
-        document["root"] = json!(format!("{}Root", root.name()));
-        document["lock"] = json!(lock.to_string());
-        document["tree"] = json!(tree.to_string());
-    }
-    document
+    json::failure(SCHEMA, errors)
 }

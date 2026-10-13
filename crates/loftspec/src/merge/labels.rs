@@ -1,4 +1,4 @@
-//! The merge of `spec/labels.yaml` (D-11 F-32, the labels of two publishes): each label counter
+//! The merge of `spec/labels.yaml` (F-32, F-60): each label counter
 //! takes the higher of the two sides' values, and the bindings that two publishes gave apart
 //! leave the merged bindings for one conflict record over `bindings` that lists only them. A
 //! publish run in the stopped merge or rebase settles them.

@@ -2,45 +2,108 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-merge-driver-1.json",
   "title": "The result of `loft merge-driver --format json`, version 1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "errors"
-  ],
-  "properties": {
-    "schema": {
-      "const": "loft-merge-driver/1"
-    },
-    "path": {
-      "type": "string"
-    },
-    "conflicts": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "disputed": {
-      "type": "array",
-      "items": {
-        "type": "string"
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "path",
+        "conflicts",
+        "disputed",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-merge-driver/1"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "merged",
+            "conflicted"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "conflicts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disputed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     },
-    "written": {
-      "type": "array",
-      "items": {
-        "type": "string"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "written",
+        "version",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-merge-driver/1"
+        },
+        "outcome": {
+          "const": "installed"
+        },
+        "written": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "version": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     },
-    "version": {
-      "type": "string"
-    },
-    "errors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/error"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-merge-driver/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     }
-  },
+  ],
   "$defs": {
     "site": {
       "type": "object",

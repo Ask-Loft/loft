@@ -1,19 +1,18 @@
 //! The conflicts a merge writes: each on the record that holds the field, named by its path
-//! from that record (D-11 F-34).
+//! from that record (F-34).
 
-use crate::codec::schema::{Kind, field};
-use crate::codec::{Rec, Val};
+use crate::codec::{ConflictRec, Val};
 
 /// Where the conflicts of the record being merged go, and the path from that record to the
 /// unkeyed record whose fields are being merged.
 pub(super) struct Host<'a> {
     pub(super) prefix: String,
-    pub(super) conflicts: &'a mut Vec<Rec>,
+    pub(super) conflicts: &'a mut Vec<ConflictRec>,
 }
 
 impl<'a> Host<'a> {
     /// The host for the record being merged itself, whose conflicts go to `conflicts`.
-    pub(super) const fn root(conflicts: &'a mut Vec<Rec>) -> Self {
+    pub(super) const fn root(conflicts: &'a mut Vec<ConflictRec>) -> Self {
         Host {
             prefix: String::new(),
             conflicts,
@@ -41,16 +40,6 @@ impl<'a> Host<'a> {
 }
 
 /// A conflict record over `path`; a side whose value is absent omits its member (AC-859).
-pub(super) fn conflict(path: &str, sides: [Option<&Val>; 3]) -> Rec {
-    let mut record = Rec::new(Kind::Conflict);
-    record.set_text(field::FIELD, path);
-    for (name, side) in [field::BASE, field::OURS, field::THEIRS]
-        .into_iter()
-        .zip(sides)
-    {
-        if let Some(value) = super::same::present(side) {
-            record.set(name, value.clone());
-        }
-    }
-    record
+pub(super) fn conflict(path: &str, sides: [Option<&Val>; 3]) -> ConflictRec {
+    ConflictRec::new(path, sides.map(|side| super::same::present(side).cloned()))
 }
