@@ -1,12 +1,12 @@
 //! References written by name (Keys): once every key is minted, each reference the author wrote
-//! as a record naming its target takes the key of the one element of an accepted kind that has
-//! that name. An option and a driver are looked for in their own decision. A tree without such a
-//! reference costs one scan.
+//! as a record naming its target takes the key of the one element of the field's [`Target`] that
+//! has that name. An option and a driver are looked for in their own decision. Only the files
+//! that hold such a reference are walked.
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
-use crate::codec::schema::{Kind, field};
-use crate::codec::{Problem, ReadError, Rec, SpecPath, Tree, Val, statement_of};
+use crate::codec::schema::{Kind, Target, field};
+use crate::codec::{Problem, ReadError, Rec, SpecPath, Tree, Val, keyed, statement_of};
 use crate::kind::NodeKind;
 
 /// An element a name may identify.
@@ -25,23 +25,33 @@ struct Index {
 
 impl Index {
     fn of(tree: &Tree) -> Self {
-        let mut elements = Vec::new();
+        let mut records = Vec::new();
         for (_, content) in tree.files.values() {
             for record in content.records() {
-                collect(record, &mut elements);
+                keyed(record, &mut records);
             }
         }
-        let mut by_name: HashMap<String, Vec<usize>> = HashMap::new();
-        let mut by_key = HashMap::new();
-        for (at, element) in elements.iter().enumerate() {
-            by_name.entry(element.name.clone()).or_default().push(at);
-            by_key.insert(element.key.clone(), at);
+        let mut index = Self {
+            elements: Vec::new(),
+            by_name: HashMap::new(),
+            by_key: HashMap::new(),
+        };
+        for record in records {
+            if let Some(key) = record.text(field::KEY)
+                && (is_node(record.kind) || record.kind == Kind::Decision)
+            {
+                let at = index.elements.len();
+                let name = name_of(record);
+                index.by_name.entry(name.clone()).or_default().push(at);
+                index.by_key.insert(key.to_owned(), at);
+                index.elements.push(Named {
+                    kind: record.kind,
+                    key: key.to_owned(),
+                    name,
+                });
+            }
         }
-        Self {
-            elements,
-            by_name,
-            by_key,
-        }
+        index
     }
 
     /// The keys of the elements named `name` whose kind `accepts` takes.
@@ -60,50 +70,49 @@ impl Index {
 /// Elements of one decision, each as its key and name.
 type Keyed = Vec<(String, String)>;
 
-/// Which of a decision's elements a reference looks among.
-type Pick = fn(&Local) -> &Keyed;
-
 /// The options and drivers of the decision a reference sits in.
 struct Local {
     options: Keyed,
     drivers: Keyed,
 }
 
-/// Where a reference field looks for its target, and how an error names what it wanted.
-enum Wanted {
-    Index(fn(Kind) -> bool, &'static str),
-    Local(Pick, &'static str),
-}
-
 const fn is_node(kind: Kind) -> bool {
     kind.node_kind().is_some()
 }
 
-impl Wanted {
-    fn of(kind: Kind, field: &str) -> Self {
-        match (kind, field) {
-            (Kind::Feature, field::REALIZES) => Self::Index(
-                |kind| matches!(kind.node_kind(), Some(NodeKind::Component)),
-                "Component",
-            ),
-            (_, field::SCOPED_TO) => Self::Index(|kind| kind == Kind::Product, "Product"),
-            (_, field::SUCCESSOR) => Self::Index(|kind| kind == Kind::Decision, "decision"),
-            (_, field::SELECTED_OPTION | field::OPTION) => {
-                Self::Local(|local| &local.options, "option of this decision")
-            }
-            (_, field::DRIVER) => Self::Local(|local| &local.drivers, "driver of this decision"),
-            (_, field::MENTIONS) => Self::Index(
-                |kind| is_node(kind) || kind == Kind::Decision,
-                "node or decision",
-            ),
-            _ => Self::Index(is_node, "node"),
-        }
-    }
+/// Where a reference looks for its target.
+enum Look {
+    /// Among the tree's nodes and decisions, of the kinds the function accepts.
+    Among(fn(Kind) -> bool),
+    /// Among the options or the drivers of its own decision.
+    Own(fn(&Local) -> &Keyed),
+}
 
-    const fn describe(&self) -> &'static str {
-        match self {
-            Self::Index(_, what) | Self::Local(_, what) => what,
+/// Where a reference to `target` looks.
+fn look(target: Target) -> Look {
+    match target {
+        Target::Component => {
+            Look::Among(|kind| matches!(kind.node_kind(), Some(NodeKind::Component)))
         }
+        Target::Product => Look::Among(|kind| kind == Kind::Product),
+        Target::Decision => Look::Among(|kind| kind == Kind::Decision),
+        Target::NodeOrDecision => Look::Among(|kind| is_node(kind) || kind == Kind::Decision),
+        Target::Option => Look::Own(|local| &local.options),
+        Target::Driver => Look::Own(|local| &local.drivers),
+        _ => Look::Among(is_node),
+    }
+}
+
+/// How an error names what a reference to `target` wanted.
+const fn describe(target: Target) -> &'static str {
+    match target {
+        Target::Component => "Component",
+        Target::Product => "Product",
+        Target::Decision => "decision",
+        Target::NodeOrDecision => "node or decision",
+        Target::Option => "option of this decision",
+        Target::Driver => "driver of this decision",
+        _ => "node",
     }
 }
 
@@ -111,18 +120,23 @@ impl Wanted {
 ///
 /// # Errors
 ///
-/// Each reference whose name matches no element of an accepted kind, or more than one.
+/// Each reference whose name matches no element of the field's target, or more than one.
 pub(super) fn resolve(tree: &mut Tree) -> Result<(), Vec<ReadError>> {
-    let written = tree
+    let written: BTreeSet<SpecPath> = tree
         .files
-        .values()
-        .any(|(_, content)| content.records().any(holds_by_name));
-    if !written {
+        .iter()
+        .filter(|(_, (_, content))| content.records().any(holds_by_name))
+        .map(|(path, _)| path.clone())
+        .collect();
+    if written.is_empty() {
         return Ok(());
     }
     let index = Index::of(tree);
     let mut errors = Vec::new();
     for (path, (_, content)) in &mut tree.files {
+        if !written.contains(path) {
+            continue;
+        }
         let mut resolver = Resolver {
             index: &index,
             path,
@@ -142,22 +156,6 @@ pub(super) fn resolve(tree: &mut Tree) -> Result<(), Vec<ReadError>> {
 /// Whether a record, or any record in it, is a reference written by name.
 fn holds_by_name(record: &Rec) -> bool {
     record.kind == Kind::ByName || record.children().any(holds_by_name)
-}
-
-/// The nodes and decisions a record holds, itself included.
-fn collect(record: &Rec, elements: &mut Vec<Named>) {
-    if (is_node(record.kind) || record.kind == Kind::Decision)
-        && let Some(key) = record.text(field::KEY)
-    {
-        elements.push(Named {
-            kind: record.kind,
-            key: key.to_owned(),
-            name: name_of(record),
-        });
-    }
-    for child in record.children() {
-        collect(child, elements);
-    }
 }
 
 /// A record's name as [`crate::node::Node::name`] gives a node's, or a decision's title: a
@@ -194,15 +192,6 @@ impl Local {
             drivers: drivers.collect(),
         }
     }
-
-    /// The keys of the options or drivers `pick` gives that are named `name`.
-    fn named<'a>(&'a self, pick: Pick, name: &str) -> Vec<&'a str> {
-        pick(self)
-            .iter()
-            .filter(|(_, candidate)| candidate == name)
-            .map(|(key, _)| key.as_str())
-            .collect()
-    }
 }
 
 /// The name of a subject driver's node: the name it was written by, or its node's name.
@@ -227,13 +216,10 @@ struct Resolver<'a> {
 
 impl Resolver<'_> {
     /// Resolves the references a record and everything in it hold; `local` is the decision it
-    /// sits in, if any. A record that holds none is passed by.
+    /// sits in, gathered only for a decision that holds a reference by name.
     fn record(&mut self, record: &mut Rec, local: Option<&Local>) {
-        if !holds_by_name(record) {
-            return;
-        }
         let own;
-        let local = if record.kind == Kind::Decision {
+        let local = if record.kind == Kind::Decision && holds_by_name(record) {
             own = Local::of(record, self.index);
             Some(&own)
         } else {
@@ -241,31 +227,35 @@ impl Resolver<'_> {
         };
         let kind = record.kind;
         for (name, value) in &mut record.fields {
-            self.field(value, &Wanted::of(kind, name), local);
+            let target = kind
+                .field(name)
+                .and_then(|(_, field)| field.shape.item().target());
+            self.field(value, target, local);
         }
     }
 
     /// Resolves a field's value: one item, or each entry of a list.
-    fn field(&mut self, value: &mut Val, wanted: &Wanted, local: Option<&Local>) {
+    fn field(&mut self, value: &mut Val, target: Option<Target>, local: Option<&Local>) {
         let items = match value {
             Val::List(items) => items.as_mut_slice(),
             single => std::slice::from_mut(single),
         };
         for item in items {
-            self.item(item, wanted, local);
+            self.item(item, target, local);
         }
     }
 
     /// Replaces a reference written by name with its target's key, or resolves inside a record.
-    fn item(&mut self, item: &mut Val, wanted: &Wanted, local: Option<&Local>) {
+    /// The reader makes a reference by name only in a field whose item is a reference.
+    fn item(&mut self, item: &mut Val, target: Option<Target>, local: Option<&Local>) {
         let Val::Record(record) = item else {
             return;
         };
-        if record.kind != Kind::ByName {
+        let (Kind::ByName, Some(target)) = (record.kind, target) else {
             self.record(record, local);
             return;
-        }
-        match self.target(record, wanted, local) {
+        };
+        match self.target(record, target, local) {
             Ok(key) => *item = key,
             Err(problem) => {
                 let error = ReadError::at(self.path, Some(record.position), problem);
@@ -275,16 +265,17 @@ impl Resolver<'_> {
     }
 
     /// The key a reference by name takes, or why it takes none.
-    fn target(
-        &self,
-        by_name: &Rec,
-        wanted: &Wanted,
-        local: Option<&Local>,
-    ) -> Result<Val, Problem> {
+    fn target(&self, by_name: &Rec, target: Target, local: Option<&Local>) -> Result<Val, Problem> {
         let name = by_name.text(field::NAME).unwrap_or_default();
-        let keys = match wanted {
-            Wanted::Index(accepts, _) => self.index.named(name, *accepts),
-            Wanted::Local(pick, _) => local.map_or_else(Vec::new, |local| local.named(*pick, name)),
+        let keys: Vec<&str> = match look(target) {
+            Look::Among(accepts) => self.index.named(name, accepts),
+            Look::Own(pick) => local
+                .map(pick)
+                .into_iter()
+                .flatten()
+                .filter(|(_, candidate)| candidate == name)
+                .map(|(key, _)| key.as_str())
+                .collect(),
         };
         match keys.as_slice() {
             [key] => Ok(Val::Scalar {
@@ -293,7 +284,7 @@ impl Resolver<'_> {
             }),
             [] => Err(Problem::NameUnresolved {
                 name: name.to_owned(),
-                wanted: wanted.describe(),
+                wanted: describe(target),
             }),
             many => Err(Problem::NameAmbiguous {
                 name: name.to_owned(),

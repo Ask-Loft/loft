@@ -28,12 +28,17 @@ pub fn converted(export: &str) -> Document {
 /// The document read back with every backtick removed from its text, so that each code span
 /// reads as prose: what the `code-span` condition compares with.
 pub fn without_backticks(document: &Document) -> Document {
+    rewritten(document, |text| text.replace('`', ""))
+}
+
+/// The document read back with `rewrite` applied to the text of each of its files.
+fn rewritten(document: &Document, rewrite: impl Fn(String) -> String) -> Document {
     let files = codec::write(document)
         .into_iter()
         .map(|(path, bytes)| {
             (
                 path,
-                bytes.into_iter().filter(|byte| *byte != b'`').collect(),
+                rewrite(String::from_utf8(bytes).unwrap()).into_bytes(),
             )
         })
         .collect();
@@ -51,24 +56,19 @@ pub fn with_hyphenated_tags(document: &Document) -> Document {
         .filter(|name| name.contains('-'))
         .map(|name| (name.replace('-', " "), name.to_owned()))
         .collect();
-    let files = codec::write(document)
-        .into_iter()
-        .map(|(path, bytes)| {
-            let mut text = String::from_utf8(bytes).unwrap();
-            for (words, name) in &spaced {
-                let lower = text.to_lowercase();
-                let starts: Vec<usize> = lower
-                    .match_indices(words.as_str())
-                    .map(|(at, _)| at)
-                    .collect();
-                for at in starts {
-                    text.replace_range(at..at + name.len(), name);
-                }
+    rewritten(document, |mut text| {
+        for (words, name) in &spaced {
+            let lower = text.to_lowercase();
+            let starts: Vec<usize> = lower
+                .match_indices(words.as_str())
+                .map(|(at, _)| at)
+                .collect();
+            for at in starts {
+                text.replace_range(at..at + name.len(), name);
             }
-            (path, text.into_bytes())
-        })
-        .collect();
-    codec::read(&files).unwrap()
+        }
+        text
+    })
 }
 
 /// v1's findings as `v1-lint.json` records them.

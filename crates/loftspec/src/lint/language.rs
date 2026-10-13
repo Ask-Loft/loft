@@ -11,7 +11,7 @@
 
 use super::context::{Context, Item};
 use super::text::{
-    Body, hyphen_joins, occurrences, phrase_positions, shown_tokens, tokens, without_code_spans,
+    Body, occurrences, phrase_positions, shown_tokens, tokens, without_code_spans, words,
 };
 use super::{LintConfig, Raw, RuleId};
 use crate::identity::Key;
@@ -276,8 +276,8 @@ fn outside_the_forms(item: &Item<'_>, out: &mut Vec<Raw>) {
     }
 }
 
-/// A text's tokens, each token's body line (none for a name), and, where a tag is hyphenated,
-/// whether each token follows the one before it across a hyphen.
+/// A text's tokens, each token's body line (none for a name), and whether each token follows the
+/// one before it across a hyphen.
 struct Words {
     tokens: Vec<String>,
     lines: Vec<usize>,
@@ -285,30 +285,21 @@ struct Words {
 }
 
 impl Words {
-    fn name(name: &str, hyphens: bool) -> Self {
-        let shown = without_code_spans(name);
+    fn name(name: &str) -> Self {
+        let (tokens, joins) = words(&without_code_spans(name));
         Self {
-            tokens: tokens(&shown),
+            tokens,
             lines: Vec::new(),
-            joins: if hyphens {
-                hyphen_joins(&shown)
-            } else {
-                Vec::new()
-            },
+            joins,
         }
     }
 
-    fn body(body: &str, hyphens: bool) -> Self {
-        let body = Body::read(body);
-        let (tokens, lines) = body.tokens();
+    fn body(body: &str) -> Self {
+        let (tokens, lines, joins) = Body::read(body).words();
         Self {
             tokens,
             lines,
-            joins: if hyphens {
-                body.hyphen_joins()
-            } else {
-                Vec::new()
-            },
+            joins,
         }
     }
 
@@ -334,15 +325,12 @@ fn untagged_terms(context: &Context<'_>, out: &mut Vec<Raw>) {
             (name, tokens(name), name.contains('-'))
         })
         .collect();
-    let hyphens = terms.iter().any(|(_, _, hyphenated)| *hyphenated);
     for item in context.items.iter().filter(|item| taggable(item.id.kind())) {
-        let name = Words::name(&item.name(), hyphens);
-        let body = item.body().map(|body| Words::body(body, hyphens));
+        let name = Words::name(&item.name());
+        let body = item.body().map(Words::body);
+        let listed: Vec<&str> = context.lineage(item.id).flat_map(Item::tags).collect();
         for (term, phrase, hyphenated) in &terms {
-            let covered = context
-                .lineage(item.id)
-                .any(|above| above.tags().any(|tag| tag == *term));
-            if phrase.is_empty() || covered {
+            if phrase.is_empty() || listed.contains(term) {
                 continue;
             }
             if let Some(spot) = first_spot(phrase, *hyphenated, &name, body.as_ref()) {

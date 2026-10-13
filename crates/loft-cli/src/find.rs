@@ -65,10 +65,6 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
     let mut found = Vec::new();
     let mut consider = |element: ElementId, kind: &'static str, slug: Option<&str>, name: &str| {
         let key = element.key();
-        // Every element read from a tree carries a key, and so a site.
-        let Some(site) = sites.get(key) else {
-            return;
-        };
         let text = key.to_string();
         let label = document
             .bindings
@@ -85,7 +81,10 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
                 key: text,
                 label,
                 kind,
-                site: site.clone(),
+                site: sites
+                    .get(key)
+                    .cloned()
+                    .expect("every element read from a tree has a site"),
                 name: name.to_owned(),
             });
         }

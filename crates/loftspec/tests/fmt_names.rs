@@ -157,6 +157,16 @@ fn only_an_element_of_a_kind_the_field_accepts_answers_a_name() {
     );
     let errors = format(&files).unwrap_err();
     assert_eq!(errors[0].sites[0].path, path(COMPONENT));
+    let files = replaced(
+        &canonical,
+        DECISION,
+        &[(
+            "  kind: accepted\n".to_owned(),
+            "  kind: superseded\n  successor:\n    name: \"Document model\"\n".to_owned(),
+        )],
+    );
+    let errors = format(&files).unwrap_err();
+    assert!(errors[0].to_string().contains("decision"), "{}", errors[0]);
 }
 
 #[test]

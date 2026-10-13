@@ -24,8 +24,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - The README says how to work: write the specification with an agent, and read what it wrote,
   and installs from crates.io with `--locked`, so that the dependencies are the ones released
   together.
-- The `loftspec` library's Rust API changes: `Product` gains `constraints`, and the record kinds,
-  scalar shapes and read problems gain variants. Those three enums are now `#[non_exhaustive]`,
+- The `loftspec` library's Rust API changes: `Product` gains `constraints`, the record kinds,
+  scalar shapes and read problems gain variants, and a reference scalar names its `Target`. Those three enums are now `#[non_exhaustive]`,
   so that a variant added later breaks no `match` outside the crate. `loft-cli` 2.0.1 still
   builds against this release.
 
