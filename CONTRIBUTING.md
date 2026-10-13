@@ -25,6 +25,7 @@ add have keys and no labels until then.
   real system.
 - Behaviour shared with Loft v1 is led from here. An intended difference is an entry in
   `testdata/v1/divergences.json`.
+- A change to a command's output changes its schema under `schemas/` in the same commit.
 
 ## Before you open a pull request
 
