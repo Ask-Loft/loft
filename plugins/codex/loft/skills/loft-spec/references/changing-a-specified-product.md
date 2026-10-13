@@ -16,8 +16,9 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
 
 ## Find the nodes the change touches
 
-- A label the user names, such as `RQ-12`, is bound to a key in `spec/labels.yaml`: find the
-  label there, then the key in the files under `spec/`.
+- Run `loft find` with a label the user names, such as `RQ-12`, a slug, or part of a node's
+  name: it prints each match's key, label, kind, file and name. `spec/labels.yaml` binds each
+  label to its key.
 - To find a node by its words, run `loft render`, which writes the whole document as Markdown to
   `docs/spec.md`, with every node under its label, and search it. The projection is for reading;
   never edit it, and never commit it unless the project does.

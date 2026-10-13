@@ -9,7 +9,8 @@ override them here.
 ## Contents
 
 - Write, format, check, commit
-- Reference a node by its key
+- Reference another node
+- Expect `loft fmt` to reshape the file
 - Write the YAML the reader accepts
 - Leave identity to `loft`
 
@@ -23,22 +24,37 @@ override them here.
 3. Run `loft check --format json` and read its document. Its `errors` stop everything: fix each
    one first. Then read its `findings`, each with a `rule`, a `severity` and the place it names.
 4. Fix each error and each finding at warning, then each finding below warning that the text
-   should not carry. Return to step 2.
+   should not carry. Read `lint-findings.md` only for a finding whose message leaves its fix
+   unclear. Return to step 2.
 5. Commit `spec/` once `loft fmt --check` and `loft check --fail-on warning` pass.
 
 `loft fmt` changes only layout and identity, never your words. Run it as often as you like.
 
-## Reference a node by its key
+## Reference another node
 
-A reference names its target by the target's key: a Feature's `realizes`, a Component's
-`scopedTo`, every `mentions`, a decision's `subjects`, and a decision's own `selectedOption`,
-`option` and `driver`. A key exists only once `loft fmt` has minted it, so:
+A reference carries its target's key: a Feature's `realizes`, a Component's `scopedTo`, every
+`mentions`, a decision's `subjects` and `successor`, its state's `selectedOption`, an
+assessment's `option` and `driver`, and a driver's or consequence's `subject`. Write it by the
+target's name instead, as a record of one field, and `loft fmt` writes the key in its place:
 
-1. Write the target node first.
-2. Run `loft fmt`, then read the target's new `key` from its file.
-3. Write the reference with that key.
+```yaml fragment
+realizes:
+  - name: "Shelf store"
+```
 
-Never invent a key to reference a node that does not exist yet.
+`format.md` says what each field looks for by name. The target may be one you write in the same
+edit: `loft fmt` mints its key first. A name that matches nothing, or more than one element, is
+an error at the reference, and nothing is formatted; make the name exact.
+
+To read the key or label of a node that exists, run `loft find` with its label, its slug or part
+of its name: it prints each match's key, label, kind, file and name. Never invent a key.
+
+## Expect `loft fmt` to reshape the file
+
+`loft fmt` writes each file in canonical layout: each item of a list of records gains a `key:`
+line first, quotes that YAML does not need are dropped, fields move into the Format's order, and
+each reference by name becomes a key. Read a file again after `loft fmt` before you edit it; an
+edit prepared against the text you wrote may no longer match.
 
 ## Write the YAML the reader accepts
 
