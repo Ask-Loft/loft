@@ -27,6 +27,39 @@ fn a_decision(root: &Path) -> String {
 }
 
 #[test]
+fn fmt_writes_the_key_of_a_reference_written_by_name_which_check_refuses() {
+    let scratch = Scratch::with_reading_list();
+    let product = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
+    let lines: Vec<&str> = product.lines().collect();
+    let group = lines
+        .iter()
+        .position(|line| *line == "featureGroups:")
+        .unwrap();
+    let key = lines[group + 1].strip_prefix("  - key: ").unwrap();
+    let name = lines[group + 1..]
+        .iter()
+        .find_map(|line| line.strip_prefix("    name: "))
+        .unwrap();
+    let named = product.replacen(
+        "\nbody: ",
+        &format!("\nmentions:\n  - name: {name}\nbody: "),
+        1,
+    );
+    fs::write(scratch.file(PRODUCT), named).unwrap();
+    let check = scratch.loft(&["check"]);
+    assert_eq!(check.status.code(), Some(1));
+    let report = stdout(&check) + &stderr(&check);
+    assert!(report.contains("loft fmt"), "{report}");
+    let write = scratch.loft(&["fmt"]);
+    assert_eq!(write.status.code(), Some(0), "{}", stderr(&write));
+    let formatted = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
+    assert!(
+        formatted.contains(&format!("mentions:\n  - {key}\n")),
+        "{formatted}"
+    );
+}
+
+#[test]
 fn a_canonical_tree_checks_clean_and_formats_to_nothing() {
     let scratch = Scratch::with_reading_list();
     let check = scratch.loft(&["fmt", "--check"]);

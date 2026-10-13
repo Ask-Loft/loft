@@ -34,6 +34,8 @@ pub enum Kind {
     Consequence,
     Subject,
     FormerLabel,
+    /// A reference written by name, which only the formatter reads and replaces by a key.
+    ByName,
 }
 
 /// What a scalar field holds, which fixes how it is checked and written.
@@ -41,6 +43,9 @@ pub enum Kind {
 pub enum Scalar {
     /// A lowercase hyphenated UUID (RQ-60).
     Key,
+    /// A reference to another element by its key; while formatting it may instead be a
+    /// [`Kind::ByName`] record.
+    Ref,
     Label,
     Slug,
     Tag,
@@ -68,7 +73,8 @@ pub enum Shape {
 pub enum Item {
     Scalar(Scalar),
     Record(Kind),
-    /// A node's key, or a former label as `{formerLabel: <label>}` (AC-809).
+    /// A node's key, or a former label as `{formerLabel: <label>}` (AC-809); while formatting,
+    /// also a [`Kind::ByName`] record.
     NodeRef,
 }
 
@@ -114,7 +120,7 @@ use crate::kind::NodeKind;
 
 impl Kind {
     /// Every kind of record.
-    pub const ALL: [Self; 29] = [
+    pub const ALL: [Self; 30] = [
         Self::Manifest,
         Self::DerivedFrom,
         Self::Labels,
@@ -144,6 +150,7 @@ impl Kind {
         Self::Consequence,
         Self::Subject,
         Self::FormerLabel,
+        Self::ByName,
     ];
 
     /// The kind's fields in the Format's order.

@@ -1,7 +1,10 @@
 //! `loft fmt` as a function (F-39): the tree parsed as the formatter parses it, every
-//! missing key minted and every missing slug supplied, the tree then checked as strictly as any
+//! missing key minted and every missing slug supplied, every reference written by name replaced
+//! by its target's key, the tree then checked as strictly as any
 //! role checks it, and the files whose bytes change in canonical layout. It writes nothing
 //! itself; writing belongs to a store (CMP-4).
+
+mod names;
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -48,6 +51,7 @@ pub fn format(files: &Files) -> Result<Formatted, Vec<ReadError>> {
     for (role, key) in new_files {
         list_new_file(&mut tree, &role, key.expect("a minted key"));
     }
+    names::resolve(&mut tree)?;
     check_tree(&tree)?;
     canonicalize(&mut tree);
     let changed = write_files(&tree)

@@ -139,4 +139,10 @@ pub enum Problem {
     WrongDirectory(String),
     #[error("{0}")]
     Model(String),
+    #[error("a reference written by name, which `loft fmt` resolves to a key")]
+    ByName,
+    #[error("no {wanted} is named \"{name}\"")]
+    NameUnresolved { name: String, wanted: &'static str },
+    #[error("\"{name}\" names more than one element: {}", keys.join(", "))]
+    NameAmbiguous { name: String, keys: Vec<String> },
 }

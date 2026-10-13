@@ -243,7 +243,7 @@ fn band_of(band: &Rec) -> QualityBand {
 }
 
 /// A statement record as text or as a form with its slots (AC-751, AC-752).
-fn statement_of(record: &Rec) -> Statement {
+pub(crate) fn statement_of(record: &Rec) -> Statement {
     if let Some(text) = record.text(field::TEXT) {
         return Statement::Text(text.to_owned());
     }

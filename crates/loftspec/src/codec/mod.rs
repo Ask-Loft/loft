@@ -29,6 +29,7 @@ pub use unresolve::unresolve;
 
 pub(crate) use canon::canonicalize;
 pub(crate) use files::{read_file, write_files};
+pub(crate) use resolve_nodes::statement_of;
 
 use crate::document::Document;
 

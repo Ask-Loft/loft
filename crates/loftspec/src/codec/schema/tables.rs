@@ -50,7 +50,7 @@ const fn supplied(field: Field, supply: Supply) -> Field {
 
 /// A list of keys the writer sorts: an edge field (RQ-168).
 const fn edges(name: &'static str) -> Field {
-    ordered(scalars(name, Scalar::Key), Order::ByKey)
+    ordered(scalars(name, Scalar::Ref), Order::ByKey)
 }
 
 use crate::attributes::{
@@ -251,10 +251,10 @@ const DECISION_FIELDS: &[Field] = &[
 
 const STATE_FIELDS: &[Field] = &[
     req(field::KIND, S::Enum(StateKind::NAMES)),
-    opt(field::SELECTED_OPTION, S::Key),
+    opt(field::SELECTED_OPTION, S::Ref),
     opt(field::OUTCOME, S::Text),
     opt(field::RATIONALE, S::Text),
-    opt(field::SUCCESSOR, S::Key),
+    opt(field::SUCCESSOR, S::Ref),
 ];
 
 const DRIVER_FIELDS: &[Field] = &[
@@ -272,8 +272,8 @@ const OPTION_FIELDS: &[Field] = &[
 ];
 
 const ASSESSMENT_FIELDS: &[Field] = &[
-    req(field::OPTION, S::Key),
-    req(field::DRIVER, S::Key),
+    req(field::OPTION, S::Ref),
+    req(field::DRIVER, S::Ref),
     req(field::RATING, S::Enum(Rating::NAMES)),
     req(field::RATIONALE, S::Text),
 ];
@@ -291,6 +291,8 @@ const SUBJECT_FIELDS: &[Field] = &[
 ];
 
 const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
+
+const BY_NAME_FIELDS: &[Field] = &[req(field::NAME, S::Text)];
 
 const COMPONENT: [Field; 11] = [
     KEY,
@@ -349,5 +351,6 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::Consequence => CONSEQUENCE_FIELDS,
         Kind::Subject => SUBJECT_FIELDS,
         Kind::FormerLabel => FORMER_LABEL_FIELDS,
+        Kind::ByName => BY_NAME_FIELDS,
     }
 }
