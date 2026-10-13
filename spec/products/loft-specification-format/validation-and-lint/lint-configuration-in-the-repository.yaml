@@ -33,6 +33,10 @@ requirements:
         name: "`spec/lint.yaml` lists suppressions under `suppressions`, each entry holding `rule`, `key` and `reason`."
       - key: ea187e27-222a-43c6-95b9-21c57a45f4ae
         name: "A lexicon is edited either by `replace` or by `extend` and `remove`."
+      - key: 01a136a6-ed91-7133-bfb2-83e0b6a72e75
+        name: "A field that takes a list, written with no value, holds an empty list."
+      - key: 01a136a6-ed91-7133-bfb2-83e12b484bb4
+        name: "The Format publishes a `spec/lint.yaml` that states each rule's default switch, severity and every option the rule takes."
   - key: 84ef55b2-9929-4bab-83eb-615cfcbccd51
     statement:
       form: ubiquitous
