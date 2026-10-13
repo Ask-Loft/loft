@@ -10,9 +10,7 @@
 //! `LQ-001`..`LQ-004` use.
 
 use super::context::{Context, Item};
-use super::text::{
-    Body, occurrences, phrase_positions, shown_tokens, tokens, without_code_spans, words,
-};
+use super::text::{Body, occurrences, phrase_positions, tokens, without_code_spans, words};
 use super::{LintConfig, Raw, RuleId};
 use crate::identity::Key;
 use crate::kind::NodeKind;
@@ -58,12 +56,14 @@ const LEXICAL: [(RuleId, Scope, &str); 5] = [
 ];
 
 pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Raw>) {
+    let terms = terms(context);
     for item in &context.items {
         let assertion = is_assertion(item.id.kind());
-        if !assertion && item.body().is_none() {
+        let tagged = taggable(item.id.kind());
+        if !assertion && !tagged && item.body().is_none() {
             continue;
         }
-        let texts = Texts::read(item, assertion);
+        let texts = Texts::read(item, assertion || tagged, assertion);
         for (rule, scope, message) in LEXICAL {
             if assertion || scope == Scope::Body {
                 lexical(&texts, rule, scope, message, config, out);
@@ -73,9 +73,11 @@ pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Ra
             compound(&texts, config, out);
             outside_the_forms(item, out);
         }
+        if tagged {
+            untagged_terms(context, item, &texts, &terms, out);
+        }
     }
     super::similarity::check(context, config, out);
-    untagged_terms(context, out);
     // LQ-006 reads a Quality Attribute without a quantified target. Every Quality Attribute
     // carries a target in the model, so the rule has nothing to report.
 }
@@ -107,30 +109,27 @@ impl Spot {
     }
 }
 
-/// A node's texts, read once: its body's tokens with their lines, and for an assertion its
-/// name's tokens and its body's sentences with their lines.
+/// A node's texts, read once for every language rule: its body's words, its name's words where
+/// a rule reads the name, and for an assertion its body's sentences with their lines.
 struct Texts {
     key: Key,
-    name: Vec<String>,
-    body: Vec<String>,
-    lines: Vec<usize>,
+    name: Words,
+    body: Words,
     sentences: Vec<(Vec<String>, usize)>,
 }
 
 impl Texts {
-    fn read(item: &Item<'_>, assertion: bool) -> Self {
+    fn read(item: &Item<'_>, named: bool, assertion: bool) -> Self {
         let body = item.body().map(Body::read);
-        let (tokens_, lines) = body.as_ref().map(Body::tokens).unwrap_or_default();
         let sentences = body.as_ref().filter(|_| assertion).map(Body::sentences);
         Self {
             key: item.id.key(),
-            name: if assertion {
-                shown_tokens(&item.name())
+            name: if named {
+                Words::name(&item.name())
             } else {
-                Vec::new()
+                Words::default()
             },
-            body: tokens_,
-            lines,
+            body: body.as_ref().map(Words::body).unwrap_or_default(),
             sentences: sentences.unwrap_or_default(),
         }
     }
@@ -143,19 +142,19 @@ impl Texts {
         keep: impl Fn(&[String], usize) -> bool + 'a,
     ) -> impl Iterator<Item = Spot> + 'a {
         let names = if scope == Scope::Assertion {
-            phrase_positions(&self.name, phrase)
+            phrase_positions(&self.name.tokens, phrase)
         } else {
             Vec::new()
         };
         let name = names
             .into_iter()
-            .filter(|at| keep(&self.name, *at))
+            .filter(|at| keep(&self.name.tokens, *at))
             .map(|_| Spot::Name)
             .collect::<Vec<_>>();
-        let body = phrase_positions(&self.body, phrase)
+        let body = phrase_positions(&self.body.tokens, phrase)
             .into_iter()
-            .filter(move |at| keep(&self.body, *at))
-            .map(|at| Spot::Body(self.lines[at]));
+            .filter(move |at| keep(&self.body.tokens, *at))
+            .map(|at| Spot::Body(self.body.lines[at]));
         name.into_iter().chain(body)
     }
 }
@@ -243,7 +242,7 @@ fn compound(texts: &Texts, config: &LintConfig, out: &mut Vec<Raw>) {
         occurrences(tokens, config.modals()) > 1
             || occurrences(tokens, config.conjunctions()) >= config.conjunction_threshold()
     };
-    let spot = if compound(&texts.name) {
+    let spot = if compound(&texts.name.tokens) {
         Some(Spot::Name)
     } else {
         texts
@@ -278,6 +277,7 @@ fn outside_the_forms(item: &Item<'_>, out: &mut Vec<Raw>) {
 
 /// A text's tokens, each token's body line (none for a name), and whether each token follows the
 /// one before it across a hyphen.
+#[derive(Default)]
 struct Words {
     tokens: Vec<String>,
     lines: Vec<usize>,
@@ -294,8 +294,8 @@ impl Words {
         }
     }
 
-    fn body(body: &str) -> Self {
-        let (tokens, lines, joins) = Body::read(body).words();
+    fn body(body: &Body) -> Self {
+        let (tokens, lines, joins) = body.words();
         Self {
             tokens,
             lines,
@@ -312,53 +312,58 @@ impl Words {
     }
 }
 
-/// `LQ-009`: a registry term in the name or body of a node that tags apply to, where neither the
-/// node nor a node above it lists the tag; one finding per node and term (AC-403, AC-404). A tag
-/// whose words are joined by hyphens matches only text that joins them by hyphens.
-fn untagged_terms(context: &Context<'_>, out: &mut Vec<Raw>) {
+/// A tag registry entry as `LQ-009` matches it: its name, the name's tokens, and whether the
+/// name joins its words by hyphens.
+type Term<'a> = (&'a str, Vec<String>, bool);
+
+/// The registry's terms in key order, each prepared once.
+fn terms<'a>(context: &Context<'a>) -> Vec<Term<'a>> {
     let mut entries: Vec<_> = context.document.tags.iter().collect();
     entries.sort_unstable_by_key(|entry| entry.id);
-    let terms: Vec<(&str, Vec<String>, bool)> = entries
-        .iter()
+    entries
+        .into_iter()
         .map(|entry| {
             let name = entry.name.as_str();
             (name, tokens(name), name.contains('-'))
         })
-        .collect();
-    for item in context.items.iter().filter(|item| taggable(item.id.kind())) {
-        let name = Words::name(&item.name());
-        let body = item.body().map(Words::body);
-        let listed: Vec<&str> = context.lineage(item.id).flat_map(Item::tags).collect();
-        for (term, phrase, hyphenated) in &terms {
-            if phrase.is_empty() || listed.contains(term) {
-                continue;
-            }
-            if let Some(spot) = first_spot(phrase, *hyphenated, &name, body.as_ref()) {
-                out.push(
-                    Raw::new(
-                        RuleId::Lq009,
-                        vec![item.id.key()],
-                        "The text uses a tag registry term the node does not list.",
-                    )
-                    .term(*term)
-                    .line(spot.line()),
-                );
-            }
+        .filter(|(_, phrase, _)| !phrase.is_empty())
+        .collect()
+}
+
+/// `LQ-009`: a registry term in the name or body of a node that tags apply to, where neither the
+/// node nor a node above it lists the tag; one finding per node and term (AC-403, AC-404). A tag
+/// whose words are joined by hyphens matches only text that joins them by hyphens.
+fn untagged_terms(
+    context: &Context<'_>,
+    item: &Item<'_>,
+    texts: &Texts,
+    terms: &[Term<'_>],
+    out: &mut Vec<Raw>,
+) {
+    let listed: Vec<&str> = context.lineage(item.id).flat_map(Item::tags).collect();
+    for (term, phrase, hyphenated) in terms {
+        if listed.contains(term) {
+            continue;
+        }
+        if let Some(spot) = first_spot(phrase, *hyphenated, &texts.name, &texts.body) {
+            out.push(
+                Raw::new(
+                    RuleId::Lq009,
+                    vec![item.id.key()],
+                    "The text uses a tag registry term the node does not list.",
+                )
+                .term(*term)
+                .line(spot.line()),
+            );
         }
     }
 }
 
 /// The first spot `phrase` occurs at.
-fn first_spot(
-    phrase: &[String],
-    hyphenated: bool,
-    name: &Words,
-    body: Option<&Words>,
-) -> Option<Spot> {
+fn first_spot(phrase: &[String], hyphenated: bool, name: &Words, body: &Words) -> Option<Spot> {
     if name.first(phrase, hyphenated).is_some() {
         return Some(Spot::Name);
     }
-    let body = body?;
     let at = body.first(phrase, hyphenated)?;
     Some(Spot::Body(body.lines[at]))
 }

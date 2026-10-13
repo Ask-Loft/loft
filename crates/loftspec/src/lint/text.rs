@@ -96,11 +96,6 @@ pub(super) fn tokens(text: &str) -> Vec<String> {
     crate::text::tokenize(text)
 }
 
-/// The tokens of a name or statement without the text of its code spans.
-pub(super) fn shown_tokens(text: &str) -> Vec<String> {
-    tokens(&without_code_spans(text))
-}
-
 /// The tokens of `text`, and whether each follows the one before it across a single hyphen, as
 /// the words of `key-shape` do.
 pub(super) fn words(text: &str) -> (Vec<String>, Vec<bool>) {
