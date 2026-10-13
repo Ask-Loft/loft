@@ -1,9 +1,8 @@
 //! A document written as a `spec/` tree reads back to the same roots (FG-2).
 
-mod common;
-
-use common::small_document;
-use common::v1::{convert_value, full_export};
+use crate::common;
+use crate::common::small_document;
+use crate::common::v1::{convert_value, full_export};
 use loftspec::codec::{self, Files};
 use loftspec::document::Document;
 use loftspec::hash::hash_document;

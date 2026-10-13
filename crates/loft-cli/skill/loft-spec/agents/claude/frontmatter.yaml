@@ -1,0 +1,12 @@
+# Claude Code frontmatter. These top-level keys are appended verbatim to the host-neutral
+# SKILL.md frontmatter when the Claude Code package is composed.
+#
+# Do not define name or description here: the host-neutral SKILL.md owns both, and the composer
+# refuses a fragment that defines either.
+#
+# when_to_use is appended to description in the host's skill listing, and the combined text is
+# cut at 1536 characters; the composer refuses a package that passes it.
+#
+# allowed-tools pre-approves only the commands that change nothing, so every write still asks.
+when_to_use: Use when the repository holds a spec/ directory or a loft.lock.json, when the user names Loft, a Specification, a Requirement or criterion, a label such as RQ-12 or AC-40, a Feature, Component, Constraint, Quality Attribute or decision, or asks to specify, spec out, write acceptance criteria, review a spec, or fix loft check findings.
+allowed-tools: Bash(loft --version), Bash(loft check:*), Bash(loft fmt --check:*), Bash(loft verify:*)

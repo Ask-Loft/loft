@@ -1,0 +1,17 @@
+key: 01a13654-6e11-74fa-a359-25a5e0990497
+slug: versions-that-agree
+name: "Versions that agree"
+body: "The skill and its plugins are released with `loft`, so they carry its version."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e11-74fa-a359-25a6eb71f847
+    statement:
+      form: ubiquitous
+      system: "Each plugin manifest"
+      shall: "carry the version of the workspace."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-25a786145aea
+        name: "The manifest's version equals the workspace version in `Cargo.toml`."
+      - key: 01a13654-6e11-74fa-a359-25a81d2f74f6
+        name: "The guard fails when a manifest's version differs from the workspace version."

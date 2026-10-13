@@ -1,0 +1,27 @@
+key: 01a13654-6e11-74fa-a359-257b7318d09b
+slug: committed-packages
+name: "Committed packages"
+body: "The plugin packages under `plugins/` are the composer's output, committed so that a marketplace can serve them from the repository."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e11-74fa-a359-257c9973fcbf
+    statement:
+      form: ubiquitous
+      system: "Each committed package"
+      shall: "equal the composition of the source for its host."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-257d87cef795
+        name: "The guard fails when a file of a committed package differs from the composition."
+      - key: 01a13654-6e11-74fa-a359-257e776f9932
+        name: "The guard fails when a committed package holds a file the composition does not."
+      - key: 01a13654-6e11-74fa-a359-257fc96e0159
+        name: "The guard fails when a committed package lacks a file of the composition."
+  - key: 01a13654-6e11-74fa-a359-2580320aaa47
+    statement:
+      form: ubiquitous
+      system: "`scripts/package-skill.sh`"
+      shall: "rewrite both committed packages from the source."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-2581cfacca51
+        name: "After the script runs, each committed package equals its composition."

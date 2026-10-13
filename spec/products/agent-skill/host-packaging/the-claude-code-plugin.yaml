@@ -1,0 +1,31 @@
+key: 01a13654-6e11-74fa-a359-2590f18ff9d5
+slug: the-claude-code-plugin
+name: "The Claude Code plugin"
+body: "The repository is a Claude Code marketplace that holds one plugin, `loft`, whose skill is the Claude Code package."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e11-74fa-a359-25918658f261
+    statement:
+      form: ubiquitous
+      system: "The repository's `.claude-plugin/marketplace.json`"
+      shall: "list the plugin `loft` at `./plugins/claude/loft`."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-25929d751eef
+        name: "The marketplace is named `loft` and names its owner."
+      - key: 01a13654-6e11-74fa-a359-2593d89f4d3e
+        name: "The plugin entry is named `loft`."
+      - key: 01a13654-6e11-74fa-a359-25944f87ddf4
+        name: "The plugin entry's source is `./plugins/claude/loft`."
+  - key: 01a13654-6e11-74fa-a359-25957a074df8
+    statement:
+      form: ubiquitous
+      system: "The manifest `plugins/claude/loft/.claude-plugin/plugin.json`"
+      shall: "describe the plugin."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-2596c765f8ea
+        name: "The manifest is named `loft`."
+      - key: 01a13654-6e11-74fa-a359-2597853f5d9e
+        name: "The manifest gives the version, a description, the author, the repository and the licence."
+      - key: 01a13654-6e11-74fa-a359-2598f5b72114
+        name: "The plugin's skill lies at `skills/loft-spec/`."

@@ -1,16 +1,13 @@
 //! `loft render` as a process (F-40, F-26): what it writes and where, what it refuses, and
 //! that no projection feeds back into the tree.
 
-mod common;
-#[path = "common/schema.rs"]
-mod schema;
-
 use std::collections::BTreeMap;
 use std::fs;
 
 use std::process::Output;
 
-use common::{Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout};
+use crate::schema;
 use serde_json::Value;
 
 /// Every file under `spec/` with its bytes.

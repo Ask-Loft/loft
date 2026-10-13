@@ -1,0 +1,62 @@
+key: 01a13654-bf86-77e9-8fd5-8dc0ba996254
+slug: loft-skill-install
+name: "`loft skill install`"
+body: "Writes the `loft-spec` skill into a project, or brings it to the version of the installed `loft`."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a13654-bf86-77e9-8fd5-8dc1dbb50264
+    statement:
+      form: ubiquitous
+      system: "`loft skill install`"
+      shall: "write the `loft-spec` skill into the current directory."
+    criteria:
+      - key: 01a13654-bf86-77e9-8fd5-8dc2abcad562
+        name: "The Claude Code package is written to `.claude/skills/loft-spec/`."
+      - key: 01a13654-bf86-77e9-8fd5-8dc38e0eec9a
+        name: "The Codex package is written to `.agents/skills/loft-spec/`."
+      - key: 01a13654-bf86-77e9-8fd5-8dc45d64494e
+        name: "Each package is the composition of the skill that `loft` embeds."
+      - key: 01a13654-bf86-77e9-8fd5-8dc58145c4bd
+        name: "A file that a skill directory held and its package does not is removed."
+      - key: 01a13654-bf86-77e9-8fd5-8dc69b2cc428
+        name: "No file outside the two skill directories is written."
+      - key: 01a13654-bf86-77e9-8fd5-8dc705e61e20
+        name: "The command writes the skill where there is no `spec/`."
+  - key: 01a13654-bf86-77e9-8fd5-8dc8af39c9d9
+    statement:
+      form: ubiquitous
+      system: "`loft skill install`"
+      shall: "replace each skill directory whole, through a directory written beside it and a rename."
+    criteria:
+      - key: 01a13654-bf86-77e9-8fd5-8dc99bc8eceb
+        name: "The package is written to a temporary directory beside the skill directory."
+      - key: 01a13654-bf86-77e9-8fd5-8dca5c8fb5b6
+        name: "The temporary directory is renamed into place."
+      - key: 01a13654-bf86-77e9-8fd5-8dcb3b697eba
+        name: "No temporary directory remains after the command."
+  - key: 01a13654-bf86-77e9-8fd5-8dcc0ed7b5b9
+    statement:
+      form: unwanted
+      if: "a skill directory cannot be written"
+      system: "`loft skill install`"
+      shall: "report an error and exit 1."
+    criteria:
+      - key: 01a13654-bf86-77e9-8fd5-8dcdad40c3a6
+        name: "The error names the directory."
+      - key: 01a13654-bf86-77e9-8fd5-8dce7f16041a
+        name: "A skill directory the command has not replaced is left as it was."
+  - key: 01a13654-bf86-77e9-8fd5-8dcf2edee532
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft skill install`"
+      shall: "name the skill directories it wrote in its JSON document."
+    criteria:
+      - key: 01a13654-bf86-77e9-8fd5-8dd023338c07
+        name: "The document lists each skill directory written."
+      - key: 01a13654-bf86-77e9-8fd5-8dd1585f57e4
+        name: "The outcome is `installed` when both skill directories were written."
+      - key: 01a13654-bf86-77e9-8fd5-8dd2a7db3828
+        name: "An error is listed among the document's errors."

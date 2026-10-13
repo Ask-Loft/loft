@@ -1,14 +1,12 @@
 //! `loft import v1` as a process (F-37): the tree and sidecar it writes, its findings and
 //! counters warning, and the refusals that write nothing.
 
-#[path = "common/schema.rs"]
-mod schema;
-
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{env, fs, process};
 
+use crate::schema;
 use loftspec::codec;
 use loftspec::convert::v1::convert;
 use loftspec::convert::v1::export::Export;

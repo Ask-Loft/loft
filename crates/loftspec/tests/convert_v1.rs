@@ -1,9 +1,7 @@
 //! Converting a Loft v1 export into a document (F-13, F-14): node kinds, keys and labels,
 //! parentage and order, Facet Tags, the registries, statements and the label counters.
 
-mod common;
-
-use common::v1::{
+use crate::common::v1::{
     export, key, live_export, named, node, read, tier, tree, uuid, with_identity_entry,
 };
 use loftspec::convert::v1::{Conversion, ConvertError, Finding, convert};

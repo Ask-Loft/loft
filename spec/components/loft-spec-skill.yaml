@@ -1,0 +1,16 @@
+key: 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+slug: loft-spec-skill
+name: "loft-spec skill"
+body: "The `loft-spec` skill: its host-neutral source under `crates/loft-cli/skill/loft-spec/`, the composer in `loft` that builds a package for each agent host, and the plugin packages committed under `plugins/`."
+scopedTo:
+  - 01a13653-2d9b-714a-a6f3-7183cacff8d8
+constraints:
+  - key: 01a13653-3ec0-76e7-bf76-fc75dd4de6c2
+    name: "The skill's source shall name no agent host outside its `agents/` directory."
+    verificationFate: proved
+  - key: 01a13653-3ec0-76e7-bf76-fc766c3b6235
+    name: "The skill's `SKILL.md` shall hold at most 500 lines."
+    verificationFate: proved
+  - key: 01a13653-3ec0-76e7-bf76-fc7751215cc6
+    name: "The skill's source shall lie under `crates/loft-cli/skill/`."
+    verificationFate: proved

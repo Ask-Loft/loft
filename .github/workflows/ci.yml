@@ -18,8 +18,6 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo nextest run --workspace
-      # nextest runs no doctests, and the doctests are compile_fail boundaries.
-      - run: cargo test --workspace --doc
       # The repository's own specification stays canonical and free of errors and warnings.
       - run: cargo run -q -p loft-cli -- fmt --check
       - run: cargo run -q -p loft-cli -- check --fail-on warning

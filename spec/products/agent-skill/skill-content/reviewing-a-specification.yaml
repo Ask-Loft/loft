@@ -1,0 +1,42 @@
+key: 01a13654-6e12-74a1-ad7f-e803445d59b2
+slug: reviewing-a-specification
+name: "Reviewing a specification"
+body: "A review of a specification beyond what lint checks: the coverage of each Requirement by its criteria, contradictions, and how the product is broken down."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e804d5171232
+    statement:
+      form: event_driven
+      when: "the user asks for a review of a specification"
+      system: "the skill"
+      shall: "direct the agent to run `loft check` before judging the text."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e805fab6c72b
+        name: "The workflow tells the agent to report the findings of `loft check --format json` first."
+  - key: 01a13654-6e12-74a1-ad7f-e8061b5c1bb6
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the judgements that lint cannot make."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8070e76bc6d
+        name: "The workflow tells the agent to check that each Requirement's conditions are covered by its criteria."
+      - key: 01a13654-6e12-74a1-ad7f-e808e8a9fbbf
+        name: "The workflow names the kinds of contradiction to look for between statements, criteria and decisions."
+      - key: 01a13654-6e12-74a1-ad7f-e8090e077a51
+        name: "The workflow tells the agent to check that each Feature holds one capability."
+      - key: 01a13654-6e12-74a1-ad7f-e80a59b52d15
+        name: "The workflow tells the agent to check that each accepted decision is complete."
+  - key: 01a13654-6e12-74a1-ad7f-e80b547d12bf
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach how a review is reported."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e80c7fc7b541
+        name: "The workflow tells the agent to order findings by severity."
+      - key: 01a13654-6e12-74a1-ad7f-e80dfb01d2d4
+        name: "The workflow tells the agent to report only findings it can show in the text."
+      - key: 01a13654-6e12-74a1-ad7f-e80ef947241e
+        name: "The workflow tells the agent to change nothing unless the user asks for fixes."

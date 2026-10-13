@@ -1,15 +1,12 @@
 //! `loft fmt` as a process (F-39, F-44, F-47): exit codes, the paths it prints, and what it
 //! writes.
 
-mod common;
-#[path = "common/schema.rs"]
-mod schema;
-
 use std::fs;
 use std::path::Path;
 use std::process::Output;
 
-use common::{Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout};
+use crate::schema;
 use serde_json::{Value, json};
 
 const PRODUCT: &str = "products/reading-list/product.yaml";

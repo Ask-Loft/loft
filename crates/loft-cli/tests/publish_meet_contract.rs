@@ -3,18 +3,12 @@
 //! stop, and Bob finishes with the command it prints. Every scenario that finishes ends with
 //! `loft check --fail-on warning` and `loft verify` passing.
 
-mod common;
-#[path = "common/repo.rs"]
-mod repo;
-#[path = "common/snapshot.rs"]
-mod snapshot;
-
 use std::fs;
 use std::process::{Command, Output};
 
-use common::{EPOCH, Scratch, stderr, stdout};
-use repo::Repo;
-use snapshot::snapshot;
+use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::repo::Repo;
+use crate::snapshot::snapshot;
 use software_plant::Clock;
 use software_plant::real_git::{isolate, real_git};
 

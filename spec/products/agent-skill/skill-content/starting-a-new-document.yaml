@@ -1,0 +1,42 @@
+key: 01a13654-6e12-74a1-ad7f-e80fa77c11bd
+slug: starting-a-new-document
+name: "Starting a new document"
+body: "The workflows for a document written where there is no `spec/`: drafted from a conversation with the user, or from an existing codebase."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e81041194501
+    statement:
+      form: event_driven
+      when: "the user asks for a specification where there is no `spec/`"
+      system: "the skill"
+      shall: "direct the agent to run `loft init` before writing a node."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e81114282b0d
+        name: "The workflow tells the agent to run `loft init` in the directory that will hold `spec/`."
+  - key: 01a13654-6e12-74a1-ad7f-e8122d427e43
+    statement:
+      form: event_driven
+      when: "the agent drafts a document from a conversation"
+      system: "the skill"
+      shall: "direct the agent to agree an outline with the user before writing a criterion."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e81367a06bb2
+        name: "The workflow tells the agent to ask the user about the product's users, capabilities and limits."
+      - key: 01a13654-6e12-74a1-ad7f-e8146c92a387
+        name: "The workflow tells the agent to propose the Products, Feature Groups, Features and Components as an outline."
+      - key: 01a13654-6e12-74a1-ad7f-e815dd8c2841
+        name: "The workflow tells the agent to write criteria only after the user agrees the outline."
+  - key: 01a13654-6e12-74a1-ad7f-e8160d179571
+    statement:
+      form: event_driven
+      when: "the agent drafts a document from an existing codebase"
+      system: "the skill"
+      shall: "direct the agent to confirm with the user each behaviour it infers from the code."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8170af00839
+        name: "The workflow tells the agent to read the code before proposing an outline."
+      - key: 01a13654-6e12-74a1-ad7f-e818e6e5caad
+        name: "The workflow tells the agent to list each behaviour inferred from the code as a question for the user."
+      - key: 01a13654-6e12-74a1-ad7f-e819405744bd
+        name: "The workflow tells the agent to state a behaviour as a Requirement only once the user confirms it."

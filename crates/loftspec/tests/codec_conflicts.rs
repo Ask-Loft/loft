@@ -1,9 +1,9 @@
 //! The typed conflict record in the text form (F-34, RQ-220): where it may sit, how its
 //! sides are read and written, and what the reader refuses.
 
-mod common;
-
-use common::text::{AFTER_CRITERIA, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text};
+use crate::common::text::{
+    AFTER_CRITERIA, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text,
+};
 use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Files, Problem, field};
 use loftspec::fmt::format;

@@ -1,9 +1,7 @@
 //! What the reader refuses in a `spec/` tree, and where it says the error is (F-6..F-10,
 //! F-49, F-47).
 
-mod common;
-
-use common::text::{FEATURE, PRODUCT, edited, files, path};
+use crate::common::text::{FEATURE, PRODUCT, edited, files, path};
 use loftspec::codec::{self, Files, Problem, ReadError};
 use loftspec::manifest::ManifestError;
 use loftspec::yaml::{Location, Position};

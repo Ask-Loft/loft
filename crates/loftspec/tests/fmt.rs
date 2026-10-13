@@ -1,10 +1,8 @@
 //! `loft fmt` as a function (F-39): canonical layout, minted keys, supplied slugs.
 
-mod common;
-
-use common::small_document;
-use common::text::{FEATURE, PRODUCT, edited, path, text};
-use common::v1::{convert_value, full_export};
+use crate::common::small_document;
+use crate::common::text::{FEATURE, PRODUCT, edited, path, text};
+use crate::common::v1::{convert_value, full_export};
 use loftspec::codec::{self, Files, Problem};
 use loftspec::fmt::format;
 use loftspec::identity::Key;

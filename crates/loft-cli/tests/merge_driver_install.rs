@@ -1,13 +1,11 @@
 //! `loft merge-driver --install` (F-43) in front of the git simulator: it registers the
 //! driver in the repository once, and refuses outside a repository without writing anything.
 
-#[path = "common/schema.rs"]
-mod schema;
-
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::{env, fs, process};
 
+use crate::schema;
 use serde_json::{Value, json};
 use software_plant::GitScenario;
 

@@ -1,0 +1,47 @@
+key: 01a13654-6e12-74a1-ad7f-e7f6231d2539
+slug: publishing-and-merging
+name: "Publishing and merging"
+body: "Publishing on the publish branch, checking the lock in CI, and merging `spec/` in git."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e7f7ccb7e0c2
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a publish runs on the publish branch at the user's request."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7f847e10bbf
+        name: "The workflow tells the agent to run `loft publish` only when the user asks."
+      - key: 01a13654-6e12-74a1-ad7f-e7f977a9c7c3
+        name: "The workflow tells the agent that `loft publish` runs on the publish branch over a committed `spec/`."
+      - key: 01a13654-6e12-74a1-ad7f-e7fa09ba9b73
+        name: "The workflow tells the agent to commit `spec/labels.yaml` and `loft.lock.json` together after a publish."
+  - key: 01a13654-6e12-74a1-ad7f-e7fbeab45d02
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that `loft verify` checks the tree against the lock."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7fcf0770fb4
+        name: "The workflow tells the agent that `loft verify` recomputes the roots and compares them with the lock."
+  - key: 01a13654-6e12-74a1-ad7f-e7fdb94346a7
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the merge driver."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7fe5089e62a
+        name: "The workflow tells the agent to run `loft merge-driver --install` once in each clone."
+      - key: 01a13654-6e12-74a1-ad7f-e7ff89477a44
+        name: "The workflow tells the agent to settle a conflict record by editing the node and removing the record."
+  - key: 01a13654-6e12-74a1-ad7f-e8008b9e88ed
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach how two publishes that meet are settled."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8010fe868f0
+        name: "The workflow tells the agent to run `loft publish` in the stopped merge or rebase of the publish branch."
+      - key: 01a13654-6e12-74a1-ad7f-e80246ce001b
+        name: "The workflow tells the agent to run the command that the settling publish prints."

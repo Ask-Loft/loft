@@ -2,9 +2,7 @@
 //! rewrites a citation of a label withdrawn from a key the element mentions, and `V2-004` reports
 //! a citation the publish cannot rewrite because the element also mentions the label's holder.
 
-mod common;
-
-use common::{key, label, small_document};
+use crate::common::{key, label, small_document};
 use loftspec::codec::Sites;
 use loftspec::document::{Document, Edge};
 use loftspec::ids::{ComponentId, FeatureId, RequirementId};

@@ -19,7 +19,8 @@ publish on `main`, which `loft verify` recomputes and CI checks there. Edits to 
 - Write new nodes without keys and run `loft fmt`, which mints them. Labels (`RQ-12`, `AC-40`)
   are allocated only by `loft publish` on `main`; a node added since the last publish has a key
   and no label.
-- Create a decision `proposed` and accept it in a later change, never accepted at birth.
+- Create a decision in the state that is true: `proposed` while the choice is open, `accepted`
+  once it is made.
 - Keep `loft fmt --check` and `loft check --fail-on warning` clean; CI runs both.
 - `loft render` writes `docs/spec.md` and `docs/spec.json` on demand. They are never committed
   and never normative.
@@ -60,6 +61,15 @@ change, or v1 reverts it.
   key type. Every typed ID wraps the element's key and serialises as it, so the files, views and
   digests are unchanged by the types. A kind change keeps the key through an explicit
   conversion. Prose (names, bodies, statements) stays text.
+- `crates/loft-cli/skill/loft-spec/` is the source of the `loft-spec` agent skill: `SKILL.md`,
+  a router whose frontmatter holds only `name` and `description`; `references/`, one workflow
+  each; and `agents/`, each host's adaptation (`openai.yaml` for Codex; a frontmatter fragment, a
+  route bullet and a host reference under `claude/` for Claude Code). `loft` embeds it, and
+  `crates/loft-cli/src/skill/` composes one package per host, which `loft skill install` and
+  `loft init` write into a project.
+- `plugins/claude/loft/` and `plugins/codex/loft/` are the plugins, each holding its host's
+  package under `skills/loft-spec/`; `.claude-plugin/marketplace.json` and
+  `.agents/plugins/marketplace.json` list them.
 - `spec/` is the specification. `schemas/` holds the JSON schema of each command's output.
   `testdata/` holds synthetic fixtures, the golden vectors under `testdata/golden/` and the v1
   exports the converter is tested on.
@@ -83,6 +93,20 @@ text goes to standard error only.
   `crates/loft-cli/tests/common/commands.rs`; and its schema. The suites in `reads_tree.rs`,
   `writes_tree.rs` and `schemas.rs` then hold it to every shared rule, and fail until each of
   those is in place.
+
+## The agent skill
+
+- Change the skill only in its source, then run `scripts/package-skill.sh` to rewrite the plugin
+  packages. Never edit a package under `plugins/` by hand: `crates/loft-cli/tests/plugins.rs`
+  fails while a package differs from the composition, or a manifest's version from the version
+  of `loft`.
+- `SKILL.md` and the references name no host; whatever is particular to a host lies under
+  `agents/`. A new source file is also listed in `SOURCE` in `crates/loft-cli/src/skill/mod.rs`.
+- Every YAML block of a reference is marked: `path=` blocks form the reference's example tree,
+  which passes `loft check --fail-on warning`; a `rule=` block is a wrong example that raises its
+  rule and no other warning; a `fragment` is shown and not run. The lint guide describes every
+  rule the linter defines. `crates/loft-cli/tests/skill.rs` holds the source to these rules and
+  to each reference's opening and contents.
 
 ## Software Plant
 
@@ -139,6 +163,10 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 - Test names say what they prove in words and cite no label: a publish can withdraw a label and
   give its node a new one, and a guard (`crates/loft-cli/tests/citations.rs`) fails on a label
   in a test name.
+- Each crate's integration tests are one binary, `tests/main.rs`, with a module for each file of
+  `tests/` and the modules they share; one binary links once, where a binary per file linked
+  dozens of times. Declare a new test file there as `mod <file>;`: Cargo no longer finds it by
+  itself, and a guard (`crates/loft-cli/tests/test_modules.rs`) fails on a file left out.
 - Treat `clippy::too_many_lines` as a hard refactoring gate: never allow, expect, or suppress it.
   When it fires, complete the necessary refactoring within the same turn before continuing or
   handing work off.
@@ -160,13 +188,13 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   cargo fmt --all -- --check
   cargo clippy --workspace --all-targets -- -D warnings
   cargo nextest run --workspace
-  cargo test --workspace --doc
   cargo run -q -p loft-cli -- fmt --check
   cargo run -q -p loft-cli -- check --fail-on warning
   ```
 
-  nextest runs no doctests, so `cargo test --doc` is what keeps the `compile_fail` boundaries
-  checked; install the runner with `cargo install cargo-nextest --locked`.
+  Install the runner with `cargo install cargo-nextest --locked`. nextest runs no doctests, and
+  the crates have none; one added later brings `cargo test --workspace --doc` into this list and
+  CI with it.
 - For docs-only work, run only the checks relevant to the changed documents.
 - For a focused loop, use `cargo nextest run -p <crate> <test-name>`.
 

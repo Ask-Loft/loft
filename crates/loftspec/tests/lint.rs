@@ -1,13 +1,14 @@
 //! The structural and v2 lint rules, findings and reports, and the lint configuration
 //! (F-19, F-21, F-22, F-23).
 
-mod common;
-
 use std::num::NonZeroU64;
 
-use common::text::{FEATURE, files, path};
-use common::{component, criterion, feature, key, product, requirement, root, small_document};
-use loftspec::codec::{self, Problem, Sites};
+use crate::common::lint::{configured, findings, severity};
+use crate::common::text::{FEATURE, files, path};
+use crate::common::{
+    component, criterion, feature, key, product, requirement, root, small_document,
+};
+use loftspec::codec::{self, Problem};
 use loftspec::document::{Document, Edge, TagEntry};
 use loftspec::identity::{Key, LabelPrefix};
 use loftspec::ids::{ComponentId, FeatureId, RequirementId, TagId};
@@ -16,15 +17,6 @@ use loftspec::names::TagName;
 use loftspec::statement::Statement;
 use loftspec::tree::{Constraint, Details};
 
-fn findings(document: &Document) -> Vec<Finding> {
-    lint(document, &Sites::default(), &LintConfig::default())
-}
-
-fn configured(document: &Document, yaml: &str) -> Vec<Finding> {
-    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
-    lint(document, &Sites::default(), &config)
-}
-
 /// The keys each finding of `rule` names.
 fn of(findings: &[Finding], rule: RuleId) -> Vec<Vec<Key>> {
     findings
@@ -32,10 +24,6 @@ fn of(findings: &[Finding], rule: RuleId) -> Vec<Vec<Key>> {
         .filter(|finding| finding.rule == rule)
         .map(|finding| finding.subjects.iter().map(|s| s.key).collect())
         .collect()
-}
-
-fn severity(rule: RuleId) -> Severity {
-    LintConfig::default().severity(rule)
 }
 
 fn tag(name: &str) -> TagName {
@@ -470,7 +458,7 @@ fn a_suppression_without_a_reason_is_refused() {
 
 #[test]
 fn every_rule_has_a_wire_name_and_a_default() {
-    assert_eq!(RuleId::ALL.len(), 23);
+    assert_eq!(RuleId::ALL.len(), 27);
     for rule in RuleId::ALL {
         assert_eq!(RuleId::parse(rule.as_str()), Some(*rule));
     }
@@ -490,4 +478,50 @@ fn a_tag_registry_entry_key_is_its_findings_subject() {
     found.sort();
     assert_eq!(found, [vec![key(30)], vec![key(60)]]);
     let _ = RequirementId::new(key(4));
+}
+
+#[test]
+fn a_list_written_with_no_value_is_empty() {
+    let empty_rules = LintConfig::read(Some(b"rules:\nsuppressions:\n")).unwrap();
+    assert_eq!(empty_rules, LintConfig::default());
+    let yaml = "rules:\n  - rule: LQ-001\n    lexicon:\n      replace:\n";
+    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
+    assert_eq!(config.lexicon(RuleId::Lq001), &Vec::<Vec<String>>::new());
+}
+
+#[test]
+fn the_published_defaults_state_every_option() {
+    let published = include_str!("../../../testdata/golden/lint-defaults.yaml");
+    for option in [
+        "lexicon",
+        "modalLexicon",
+        "conjunctionLexicon",
+        "conjunctionThreshold",
+        "minTokens",
+        "threshold",
+        "maxCriteria",
+        "maxBodyWords",
+        "properNames",
+    ] {
+        assert!(published.contains(&format!("    {option}:")), "{option}");
+    }
+}
+
+#[test]
+fn a_count_below_its_least_value_is_an_error_naming_the_value() {
+    for (rule, option, least) in [
+        ("LQ-005", "conjunctionThreshold", 2),
+        ("LQ-008", "minTokens", 1),
+        ("V2-006", "maxCriteria", 1),
+        ("V2-006", "maxBodyWords", 1),
+    ] {
+        let yaml = |value: usize| format!("rules:\n  - rule: {rule}\n    {option}: {value}\n");
+        assert!(
+            LintConfig::read(Some(yaml(least).as_bytes())).is_ok(),
+            "{option}"
+        );
+        let errors = LintConfig::read(Some(yaml(least - 1).as_bytes())).unwrap_err();
+        let message = errors[0].to_string();
+        assert!(message.contains(&format!("at least {least}")), "{message}");
+    }
 }

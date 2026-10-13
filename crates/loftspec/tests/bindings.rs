@@ -1,9 +1,7 @@
 //! Bindings and aliases (F-2): a label changes only by relabelling, which keeps the previous
 //! label as a permanent alias, and the validator refuses aliases that collide.
 
-mod common;
-
-use common::{key, label};
+use crate::common::{key, label};
 use loftspec::bindings::{BindingError, Bindings};
 use loftspec::ids::{ElementId, FeatureId, ProductId, RequirementId, SectionId};
 

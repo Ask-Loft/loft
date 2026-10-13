@@ -1,13 +1,10 @@
 //! A local v1 export through the file store, timed: the first save, opening and loading the tree,
 //! and a save of the unchanged document, which writes nothing.
 
-mod common;
-mod fixtures;
-
 use std::time::Instant;
 use std::{env, fs};
 
-use fixtures::{converted, with_lint};
+use crate::fixtures::{converted, with_lint};
 use loftspec::codec;
 use loftspec_store::{DocumentStore, FileStore};
 

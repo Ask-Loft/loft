@@ -1,14 +1,11 @@
 //! `loft publish` as a process (F-41, F-27 to F-30), run in front of the Software Plant's git
 //! simulator and clock: what it prints, what it writes, and when it refuses.
 
-mod common;
-#[path = "common/schema.rs"]
-mod schema;
-
 use std::fs;
 use std::process::Output;
 
-use common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::schema;
 use loftspec::codec::Files;
 use loftspec::publish::{LOCK, Lock};
 use loftspec_store::FileStore;

@@ -2,16 +2,12 @@
 //! registered for `spec/`. git calls the driver and Loft never calls git's merge machinery, so
 //! no simulator stands in for it: this suite holds the driver to git's contract directly.
 
-mod common;
-#[path = "common/repo.rs"]
-mod repo;
-
 use std::collections::BTreeSet;
 use std::fs;
 use std::process::Output;
 
-use common::{Scratch, stderr, stdout};
-use repo::Repo;
+use crate::common::{Scratch, stderr, stdout};
+use crate::repo::Repo;
 
 const SHARE: &str = "products/reading-list/sharing/share-a-list.yaml";
 const ADD: &str = "products/reading-list/shelf/add-a-book.yaml";

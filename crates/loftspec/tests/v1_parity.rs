@@ -3,13 +3,11 @@
 //! the entries of the divergence register; and each entry is well formed and decided by a node of
 //! `spec/`.
 
-mod common;
-
 use std::collections::BTreeSet;
 use std::fs;
 use std::path::Path;
 
-use common::parity::{
+use crate::common::parity::{
     Facts, converted, register, unexplained, v1_forms, v1_lint, v2_forms, v2_lint,
 };
 

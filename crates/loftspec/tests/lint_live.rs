@@ -1,10 +1,9 @@
 //! The linter over a large converted document: every rule's count, for comparison with the
 //! counts its source reported.
 
-mod common;
-
 use std::collections::BTreeMap;
 
+use crate::common;
 use loftspec::codec;
 use loftspec::lint::{LintConfig, lint};
 

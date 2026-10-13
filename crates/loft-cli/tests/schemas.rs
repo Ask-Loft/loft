@@ -2,15 +2,11 @@
 //! command, that names its version and allows the envelope's result and error shapes; every
 //! schema describes sites and errors alike.
 
-#[path = "common/commands.rs"]
-mod commands;
-#[path = "common/help.rs"]
-mod help;
-
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use commands::COMMANDS;
+use crate::commands::COMMANDS;
+use crate::help;
 use serde_json::{Value, json};
 
 fn schemas() -> PathBuf {
@@ -111,4 +107,20 @@ fn every_schema_describes_sites_and_errors_alike_but_for_the_error_kinds() {
             "{name}"
         );
     }
+}
+
+#[test]
+fn the_check_schema_lists_exactly_the_rules_the_linter_defines() {
+    let schema = read("check.json");
+    let listed: Vec<&str> = schema["$defs"]["finding"]["properties"]["rule"]["enum"]
+        .as_array()
+        .expect("the rules a finding names")
+        .iter()
+        .map(|rule| rule.as_str().unwrap())
+        .collect();
+    let defined: Vec<&str> = loftspec::lint::RuleId::ALL
+        .iter()
+        .map(|rule| rule.as_str())
+        .collect();
+    assert_eq!(listed, defined);
 }

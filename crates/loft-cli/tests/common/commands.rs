@@ -19,7 +19,7 @@ pub enum Fixture {
 }
 
 /// Each command by the slug of its Feature, with the arguments that run it and its fixture.
-pub const COMMANDS: [(&str, &[&str], Fixture); 8] = [
+pub const COMMANDS: [(&str, &[&str], Fixture); 9] = [
     ("loft-check", &["check"], Fixture::Unkeyed),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed),
     (
@@ -36,6 +36,8 @@ pub const COMMANDS: [(&str, &[&str], Fixture); 8] = [
     ("loft-verify", &["verify"], Fixture::Clean),
     // Init refuses any existing `spec/` before reading it.
     ("loft-init", &["init"], Fixture::Empty),
+    // The skill is written whether or not there is a tree.
+    ("loft-skill-install", &["skill", "install"], Fixture::Empty),
     // The driver reads the three files git hands it, never the tree, so inputs that do not
     // exist report against the path they name and write nothing.
     (

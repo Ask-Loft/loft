@@ -1,0 +1,19 @@
+key: 01a13654-6e11-74fa-a359-25765cf291a1
+slug: a-host-neutral-source
+name: "A host-neutral source"
+body: "One source of the skill serves every agent host. What only one host needs lies under the source's `agents/` directory, and the composer adds it to that host's package alone."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e11-74fa-a359-25773f12b6d0
+    statement:
+      form: ubiquitous
+      system: "The skill's source"
+      shall: "keep each host's adaptation under its `agents/` directory."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-25781bc106ea
+        name: "The Codex adaptation is `agents/openai.yaml`."
+      - key: 01a13654-6e11-74fa-a359-2579b05343e8
+        name: "The Claude Code adaptation is the directory `agents/claude/`, holding a frontmatter fragment, a route bullet and a host reference."
+      - key: 01a13654-6e11-74fa-a359-257ad4b67436
+        name: "The guard fails on a host's name in `SKILL.md` or in a reference."

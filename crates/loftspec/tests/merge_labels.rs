@@ -1,9 +1,7 @@
 //! The merge of `spec/labels.yaml` when each side published (F-32, F-60): counters take the higher value, and the bindings two publishes gave apart leave
 //! the merged bindings for one conflict record over `bindings`.
 
-mod common;
-
-use common::text::{files, text};
+use crate::common::text::{files, text};
 use loftspec::codec::SpecPath;
 use loftspec::merge::{Merged, merge_file};
 

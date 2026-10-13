@@ -13,6 +13,9 @@ categories = ["development-tools", "parser-implementations"]
 # The tests read fixtures from the repository and use the Software Plant, neither of which is
 # published, so they run from the repository only.
 exclude = ["tests"]
+# The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
+# checked by the operating system once each.
+autotests = false
 
 [lints]
 workspace = true
@@ -31,3 +34,7 @@ uuid.workspace = true
 [dev-dependencies]
 proptest = "1"
 saphyr-parser = "0.1.0"
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Loft Spec"
+  short_description: "Write, change and review a Loft specification with the loft CLI"
+  default_prompt: "Use $loft-spec to write, change or review the Loft specification in spec/ with the loft command line."
+
+policy:
+  allow_implicit_invocation: true

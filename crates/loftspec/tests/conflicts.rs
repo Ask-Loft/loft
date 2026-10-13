@@ -2,9 +2,7 @@
 //! the record that holds it until it is removed (RQ-126), it survives a write and a read, no
 //! hash reads it, and a tree that holds one does not verify.
 
-mod common;
-
-use common::text::{FEATURE, SHALL_CONFLICT, edited, files, on_requirement, path, text};
+use crate::common::text::{FEATURE, SHALL_CONFLICT, edited, files, on_requirement, path, text};
 use loftspec::check::{Checked, check};
 use loftspec::codec::{self, Files};
 use loftspec::conflict::{ConflictOwner, ConflictValue, FieldPath};
