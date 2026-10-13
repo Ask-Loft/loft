@@ -276,31 +276,39 @@ fn outside_the_forms(item: &Item<'_>, out: &mut Vec<Raw>) {
     }
 }
 
-/// A text's tokens, whether each follows the one before it across a hyphen, and each token's body
-/// line; a name's tokens all stand on its one line.
+/// A text's tokens, each token's body line (none for a name), and, where a tag is hyphenated,
+/// whether each token follows the one before it across a hyphen.
 struct Words {
     tokens: Vec<String>,
+    lines: Vec<usize>,
     joins: Vec<bool>,
-    lines: Option<Vec<usize>>,
 }
 
 impl Words {
-    fn name(name: &str) -> Self {
+    fn name(name: &str, hyphens: bool) -> Self {
         let shown = without_code_spans(name);
         Self {
             tokens: tokens(&shown),
-            joins: hyphen_joins(&shown),
-            lines: None,
+            lines: Vec::new(),
+            joins: if hyphens {
+                hyphen_joins(&shown)
+            } else {
+                Vec::new()
+            },
         }
     }
 
-    fn body(body: &str) -> Self {
+    fn body(body: &str, hyphens: bool) -> Self {
         let body = Body::read(body);
         let (tokens, lines) = body.tokens();
         Self {
             tokens,
-            joins: body.hyphen_joins(),
-            lines: Some(lines),
+            lines,
+            joins: if hyphens {
+                body.hyphen_joins()
+            } else {
+                Vec::new()
+            },
         }
     }
 
@@ -319,26 +327,32 @@ impl Words {
 fn untagged_terms(context: &Context<'_>, out: &mut Vec<Raw>) {
     let mut entries: Vec<_> = context.document.tags.iter().collect();
     entries.sort_unstable_by_key(|entry| entry.id);
+    let terms: Vec<(&str, Vec<String>, bool)> = entries
+        .iter()
+        .map(|entry| {
+            let name = entry.name.as_str();
+            (name, tokens(name), name.contains('-'))
+        })
+        .collect();
+    let hyphens = terms.iter().any(|(_, _, hyphenated)| *hyphenated);
     for item in context.items.iter().filter(|item| taggable(item.id.kind())) {
-        let name = Words::name(&item.name());
-        let body = item.body().map(Words::body);
-        for entry in &entries {
-            let phrase = tokens(entry.name.as_str());
+        let name = Words::name(&item.name(), hyphens);
+        let body = item.body().map(|body| Words::body(body, hyphens));
+        for (term, phrase, hyphenated) in &terms {
             let covered = context
                 .lineage(item.id)
-                .any(|above| above.tags().any(|tag| tag == entry.name.as_str()));
+                .any(|above| above.tags().any(|tag| tag == *term));
             if phrase.is_empty() || covered {
                 continue;
             }
-            let hyphenated = entry.name.as_str().contains('-');
-            if let Some(spot) = first_spot(&phrase, hyphenated, &name, body.as_ref()) {
+            if let Some(spot) = first_spot(phrase, *hyphenated, &name, body.as_ref()) {
                 out.push(
                     Raw::new(
                         RuleId::Lq009,
                         vec![item.id.key()],
                         "The text uses a tag registry term the node does not list.",
                     )
-                    .term(entry.name.as_str())
+                    .term(*term)
                     .line(spot.line()),
                 );
             }
@@ -358,7 +372,7 @@ fn first_spot(
     }
     let body = body?;
     let at = body.first(phrase, hyphenated)?;
-    Some(Spot::Body(body.lines.as_ref()?[at]))
+    Some(Spot::Body(body.lines[at]))
 }
 
 const fn taggable(kind: NodeKind) -> bool {

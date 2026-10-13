@@ -4,7 +4,7 @@
 use std::fmt::Write;
 
 use super::Labels;
-use super::markdown::{Nodes, escape_inline, node_name};
+use super::markdown::{Nodes, escape_inline};
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef, StateKind};
 use crate::document::{Document, Edge};
 use crate::ids::{DecisionId, DriverId, OptionId};
@@ -112,7 +112,7 @@ impl Writer<'_> {
                     .nodes
                     .get(&node)
                     .copied()
-                    .map(node_name)
+                    .map(|node| node.name().into_owned())
                     .unwrap_or_default();
                 format!("`{}` · {}", self.labels.name(node), escape_inline(&name))
             }

@@ -1,7 +1,9 @@
 //! The language rules `LQ-001`..`LQ-009` and the texts they read (F-20).
 
 use crate::common::lint::{added, configured, findings, keys, of, severity};
-use crate::common::{component, criterion, key, requirement, root, small_document};
+use crate::common::{
+    component, criterion, key, requirement, root, small_document, with_hyphenated_tag,
+};
 use loftspec::document::Document;
 use loftspec::lint::{Finding, RuleId, Severity};
 use loftspec::statement::Statement;
@@ -281,19 +283,6 @@ fn a_node_that_lists_the_tag_or_sits_under_one_that_does_is_not_lq_009() {
         of(&findings(&document), RuleId::Lq009),
         Vec::<&Finding>::new()
     );
-}
-
-/// The small document with the tag `key-shape` in its registry, its Product's body set to
-/// `body`.
-fn with_hyphenated_tag(body: &str) -> Document {
-    let mut document = small_document();
-    document.tags.push(loftspec::document::TagEntry {
-        id: loftspec::ids::TagId::new(key(63)),
-        name: loftspec::names::TagName::parse("key-shape").unwrap(),
-        definition: "How a key is written.".to_owned(),
-    });
-    document.products[0].details.body = Some(body.to_owned());
-    document
 }
 
 /// The terms of the `LQ-009` findings on the document.

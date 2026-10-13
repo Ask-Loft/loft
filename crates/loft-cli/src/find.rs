@@ -22,7 +22,7 @@ struct Match {
     key: String,
     label: Option<String>,
     kind: &'static str,
-    site: Option<Site>,
+    site: Site,
     name: String,
 }
 
@@ -65,6 +65,11 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
     let mut found = Vec::new();
     let mut consider = |element: ElementId, kind: &'static str, slug: Option<&str>, name: &str| {
         let key = element.key();
+        // Every element read from a tree carries a key, and so a site.
+        let Some(site) = sites.get(key) else {
+            return;
+        };
+        let text = key.to_string();
         let label = document
             .bindings
             .label_of(element)
@@ -73,14 +78,14 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
             .as_deref()
             .is_some_and(|label| label.eq_ignore_ascii_case(query))
             || slug == Some(query)
-            || key.to_string() == wanted
+            || text == wanted
             || name.to_lowercase().contains(&wanted);
         if identified {
             found.push(Match {
-                key: key.to_string(),
+                key: text,
                 label,
                 kind,
-                site: sites.get(key).cloned(),
+                site: site.clone(),
                 name: name.to_owned(),
             });
         }
@@ -100,14 +105,10 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
 
 /// A match as one line: key, label, kind, site and name, two spaces apart.
 fn line(found: &Match) -> String {
-    let site = found
-        .site
-        .as_ref()
-        .map_or_else(|| "-".to_owned(), ToString::to_string);
     let label = found.label.as_deref().unwrap_or("-");
     format!(
-        "{}  {label}  {}  {site}  {}",
-        found.key, found.kind, found.name
+        "{}  {label}  {}  {}  {}",
+        found.key, found.kind, found.site, found.name
     )
 }
 
@@ -116,9 +117,7 @@ fn match_json(found: &Match) -> Value {
     fields.insert("key".to_owned(), json!(found.key));
     fields.insert("label".to_owned(), json!(found.label));
     fields.insert("kind".to_owned(), json!(found.kind));
-    if let Some(site) = &found.site {
-        fields.extend(json::site(site));
-    }
+    fields.extend(json::site(&found.site));
     fields.insert("name".to_owned(), json!(found.name));
     Value::Object(fields)
 }

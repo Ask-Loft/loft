@@ -29,22 +29,13 @@ fn replaced(files: &Files, at: &str, edits: &[(String, String)]) -> Files {
     files
 }
 
-/// `field: <key>` at `indent` spaces, and the same reference written by `name`.
-fn by_name(indent: usize, field: &str, key: &str, name: &str) -> (String, String) {
-    let pad = " ".repeat(indent);
+/// `<lead><field>: <key>`, and the same reference written by `name`; `lead` is the indent, or the
+/// indent and dash of a list entry whose first field this is.
+fn by_name(lead: &str, field: &str, key: &str, name: &str) -> (String, String) {
+    let pad = " ".repeat(lead.len());
     (
-        format!("{pad}{field}: {key}\n"),
-        format!("{pad}{field}:\n{pad}  name: \"{name}\"\n"),
-    )
-}
-
-/// A list entry's first field `- field: <key>` at `indent` spaces, and the same reference
-/// written by `name`.
-fn first_by_name(indent: usize, field: &str, key: &str, name: &str) -> (String, String) {
-    let pad = " ".repeat(indent);
-    (
-        format!("{pad}- {field}: {key}\n"),
-        format!("{pad}- {field}:\n{pad}    name: \"{name}\"\n"),
+        format!("{lead}{field}: {key}\n"),
+        format!("{lead}{field}:\n{pad}  name: \"{name}\"\n"),
     )
 }
 
@@ -59,14 +50,14 @@ fn listed_by_name(indent: usize, key: &str, name: &str) -> (String, String) {
 
 fn decision_by_name(files: &Files) -> Files {
     let edits = [
-        by_name(2, "selectedOption", UUID_V7, "UUID version 7"),
-        by_name(4, "subject", REQUIREMENT, REQUIREMENT_NAME),
-        first_by_name(2, "option", ULID, "ULID"),
-        first_by_name(2, "option", UUID_V7, "UUID version 7"),
-        by_name(4, "driver", LOCAL_DRIVER, "One key shape"),
-        by_name(4, "driver", SUBJECT_DRIVER, REQUIREMENT_NAME),
-        by_name(4, "node", COMPONENT_KEY, "Document model"),
-        by_name(4, "node", REQUIREMENT, REQUIREMENT_NAME),
+        by_name("  ", "selectedOption", UUID_V7, "UUID version 7"),
+        by_name("    ", "subject", REQUIREMENT, REQUIREMENT_NAME),
+        by_name("  - ", "option", ULID, "ULID"),
+        by_name("  - ", "option", UUID_V7, "UUID version 7"),
+        by_name("    ", "driver", LOCAL_DRIVER, "One key shape"),
+        by_name("    ", "driver", SUBJECT_DRIVER, REQUIREMENT_NAME),
+        by_name("    ", "node", COMPONENT_KEY, "Document model"),
+        by_name("    ", "node", REQUIREMENT, REQUIREMENT_NAME),
     ];
     replaced(files, DECISION, &edits)
 }
@@ -126,7 +117,7 @@ fn a_reference_by_name_may_name_an_option_minted_in_the_same_run() {
                 format!("  - key: {ULID}\n    title: \"ULID\"\n"),
                 "  - title: \"ULID\"\n".to_owned(),
             ),
-            by_name(2, "selectedOption", UUID_V7, "ULID"),
+            by_name("  ", "selectedOption", UUID_V7, "ULID"),
         ],
     );
     let result = format(&files).unwrap();
@@ -174,7 +165,7 @@ fn a_name_that_matches_nothing_is_an_error_at_the_reference() {
     let files = replaced(
         &canonical,
         DECISION,
-        &[by_name(2, "selectedOption", UUID_V7, "Snowflake IDs")],
+        &[by_name("  ", "selectedOption", UUID_V7, "Snowflake IDs")],
     );
     let errors = format(&files).unwrap_err();
     let message = errors[0].to_string();
@@ -196,7 +187,7 @@ fn a_name_that_matches_two_elements_names_both_keys() {
                 "    title: \"ULID\"\n".to_owned(),
                 "    title: \"UUID version 7\"\n".to_owned(),
             ),
-            by_name(2, "selectedOption", UUID_V7, "UUID version 7"),
+            by_name("  ", "selectedOption", UUID_V7, "UUID version 7"),
         ],
     );
     let message = format(&files).unwrap_err()[0].to_string();

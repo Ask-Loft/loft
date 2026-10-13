@@ -92,13 +92,7 @@ fn a_name_v1_parses_is_stored_as_slots() {
 
 #[test]
 fn a_hyphenated_tag_v1_matches_in_spaced_prose_is_a_recorded_divergence() {
-    let mut document = crate::common::small_document();
-    document.tags.push(loftspec::document::TagEntry {
-        id: loftspec::ids::TagId::new(crate::common::key(63)),
-        name: loftspec::names::TagName::parse("key-shape").unwrap(),
-        definition: "How a key is written.".to_owned(),
-    });
-    document.products[0].details.body = Some("Every key follows the key shape rule.".to_owned());
+    let document = crate::common::with_hyphenated_tag("Every key follows the key shape rule.");
     let v2 = v2_lint(&document);
     let facts = Facts::of(&document);
     let v1: BTreeSet<_> = v2.union(&facts.hyphenated).cloned().collect();
