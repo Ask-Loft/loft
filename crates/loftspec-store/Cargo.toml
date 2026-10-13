@@ -6,9 +6,16 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+readme = "../../README.md"
+keywords.workspace = true
+categories = ["development-tools", "filesystem"]
+# The tests read fixtures from the repository and use the Software Plant, neither of which is
+# published, so they run from the repository only.
+exclude = ["tests"]
 
 [dependencies]
-loftspec = { path = "../loftspec" }
+loftspec.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

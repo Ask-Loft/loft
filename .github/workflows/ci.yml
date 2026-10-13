@@ -27,3 +27,8 @@ jobs:
       # develop and feature branches hold candidates that the next publish makes normative.
       - if: github.ref == 'refs/heads/main'
         run: cargo run -q -p loft-cli -- verify
+      # A second publish of a published tree changes nothing.
+      - if: github.ref == 'refs/heads/main'
+        run: |
+          cargo run -q -p loft-cli -- publish
+          test -z "$(git status --porcelain)"

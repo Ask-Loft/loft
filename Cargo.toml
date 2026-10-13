@@ -12,8 +12,13 @@ edition = "2024"
 rust-version = "1.97"
 license = "Apache-2.0"
 repository = "https://github.com/Ask-Loft/loft"
+homepage = "https://askloft.ai"
+keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
+# The published crates depend on one another at the release they ship in.
+loftspec = { path = "crates/loftspec", version = "2.0.0" }
+loftspec-store = { path = "crates/loftspec-store", version = "2.0.0" }
 clap = { version = "4", features = ["derive"] }
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version
 # change can change a finding.
