@@ -506,3 +506,22 @@ fn the_published_defaults_state_every_option() {
         assert!(published.contains(&format!("    {option}:")), "{option}");
     }
 }
+
+#[test]
+fn a_count_below_its_least_value_is_an_error_naming_the_value() {
+    for (rule, option, least) in [
+        ("LQ-005", "conjunctionThreshold", 2),
+        ("LQ-008", "minTokens", 1),
+        ("V2-006", "maxCriteria", 1),
+        ("V2-006", "maxBodyWords", 1),
+    ] {
+        let yaml = |value: usize| format!("rules:\n  - rule: {rule}\n    {option}: {value}\n");
+        assert!(
+            LintConfig::read(Some(yaml(least).as_bytes())).is_ok(),
+            "{option}"
+        );
+        let errors = LintConfig::read(Some(yaml(least - 1).as_bytes())).unwrap_err();
+        let message = errors[0].to_string();
+        assert!(message.contains(&format!("at least {least}")), "{message}");
+    }
+}

@@ -60,31 +60,87 @@ pub(super) const CONJUNCTIONS: &[&str] = &["and", "or"];
 /// The words `V2-007` reads as normative in a body.
 pub(super) const NORMATIVE_WORDS: &[&str] = &["shall", "must"];
 
-/// `V2-006` reports a Requirement with more criteria than this.
-pub(super) const MAX_CRITERIA: usize = 20;
+/// What an option holds, and its default.
+pub(super) enum Kind {
+    /// A lexicon, edited by `replace` or by `extend` and `remove`.
+    Lexicon(&'static [&'static str]),
+    /// A whole number of at least `least`, which `expected` names in an error.
+    Count {
+        default: usize,
+        least: usize,
+        expected: &'static str,
+    },
+    /// A decimal above 0 and at most 1, with at most six places, held in millionths.
+    Millionths(u32),
+    /// A list of names, none of them blank; none by default.
+    Names,
+}
 
-/// `V2-006` reports a Requirement whose body holds more words than this.
-pub(super) const MAX_BODY_WORDS: usize = 150;
+/// Every option a rule takes beside `enabled` and `severity`, by rule and key, in the order the
+/// published defaults state them.
+pub(super) const OPTIONS: [(RuleId, &str, Kind); 13] = [
+    (RuleId::Lq001, "lexicon", Kind::Lexicon(WEAK_TERMS)),
+    (RuleId::Lq002, "lexicon", Kind::Lexicon(VAGUE_QUANTIFIERS)),
+    (RuleId::Lq003, "lexicon", Kind::Lexicon(ESCAPE_CLAUSES)),
+    (RuleId::Lq004, "lexicon", Kind::Lexicon(ABSOLUTES)),
+    (RuleId::Lq005, "modalLexicon", Kind::Lexicon(MODALS)),
+    (
+        RuleId::Lq005,
+        "conjunctionLexicon",
+        Kind::Lexicon(CONJUNCTIONS),
+    ),
+    // A segment whose conjunctions reach this count.
+    (
+        RuleId::Lq005,
+        "conjunctionThreshold",
+        Kind::Count {
+            default: 3,
+            least: 2,
+            expected: "a count of at least 2",
+        },
+    ),
+    // Names of at least this many tokens are compared.
+    (
+        RuleId::Lq008,
+        "minTokens",
+        Kind::Count {
+            default: 2,
+            least: 1,
+            expected: "a count of at least 1",
+        },
+    ),
+    // Two names whose similarity reaches this are near-duplicates.
+    (RuleId::Lq008, "threshold", Kind::Millionths(800_000)),
+    // A Requirement with more criteria than this.
+    (
+        RuleId::V2006,
+        "maxCriteria",
+        Kind::Count {
+            default: 20,
+            least: 1,
+            expected: "a count of at least 1",
+        },
+    ),
+    // A Requirement whose body holds more words than this.
+    (
+        RuleId::V2006,
+        "maxBodyWords",
+        Kind::Count {
+            default: 150,
+            least: 1,
+            expected: "a count of at least 1",
+        },
+    ),
+    (RuleId::V2007, "lexicon", Kind::Lexicon(NORMATIVE_WORDS)),
+    (RuleId::V2008, "properNames", Kind::Names),
+];
 
-/// LQ-005 reports a segment whose conjunctions reach this count.
-pub(super) const CONJUNCTION_THRESHOLD: usize = 3;
-
-/// LQ-008 compares names of at least this many tokens.
-pub(super) const MIN_TOKENS: usize = 2;
-
-/// LQ-008 reports two names whose similarity reaches this, in millionths.
-pub(super) const SIMILARITY_MILLIONTHS: u32 = 800_000;
-
-/// The lexicon a lexical rule reads by default.
-pub(super) const fn lexicon(rule: RuleId) -> Option<&'static [&'static str]> {
-    match rule {
-        RuleId::Lq001 => Some(WEAK_TERMS),
-        RuleId::Lq002 => Some(VAGUE_QUANTIFIERS),
-        RuleId::Lq003 => Some(ESCAPE_CLAUSES),
-        RuleId::Lq004 => Some(ABSOLUTES),
-        RuleId::V2007 => Some(NORMATIVE_WORDS),
-        _ => None,
-    }
+/// The option `key` of `rule`, where the rule takes it.
+pub(super) fn option(rule: RuleId, key: &str) -> Option<(&'static str, &'static Kind)> {
+    OPTIONS
+        .iter()
+        .find(|(each, name, _)| *each == rule && *name == key)
+        .map(|(_, name, kind)| (*name, kind))
 }
 
 impl RuleId {
@@ -139,33 +195,32 @@ pub fn defaults_text() -> String {
             rule.enabled_by_default(),
             rule.default_severity()
         );
-        let list = |text: &mut String, field: &str, terms: &[&str]| {
-            let _ = writeln!(text, "    {field}:\n      replace:");
-            for term in terms {
-                let _ = writeln!(text, "        - \"{term}\"");
-            }
-        };
-        if let Some(terms) = lexicon(*rule) {
-            list(&mut text, "lexicon", terms);
-        }
-        if *rule == RuleId::Lq005 {
-            list(&mut text, "modalLexicon", MODALS);
-            list(&mut text, "conjunctionLexicon", CONJUNCTIONS);
-            let _ = writeln!(text, "    conjunctionThreshold: {CONJUNCTION_THRESHOLD}");
-        }
-        if *rule == RuleId::V2006 {
-            let _ = writeln!(text, "    maxCriteria: {MAX_CRITERIA}");
-            let _ = writeln!(text, "    maxBodyWords: {MAX_BODY_WORDS}");
-        }
-        if *rule == RuleId::V2008 {
-            // The default is no names: a list written with no value.
-            text.push_str("    properNames:\n");
-        }
-        if *rule == RuleId::Lq008 {
-            let _ = writeln!(text, "    minTokens: {MIN_TOKENS}");
-            let threshold = super::config::millionths_text(SIMILARITY_MILLIONTHS);
-            let _ = writeln!(text, "    threshold: {threshold}");
+        for (_, key, kind) in OPTIONS.iter().filter(|(each, ..)| each == rule) {
+            option_text(&mut text, key, kind);
         }
     }
     text
+}
+
+/// An option at its default, as the published defaults write it.
+fn option_text(text: &mut String, key: &str, kind: &Kind) {
+    match kind {
+        Kind::Lexicon(terms) => {
+            let _ = writeln!(text, "    {key}:\n      replace:");
+            for term in *terms {
+                let _ = writeln!(text, "        - \"{term}\"");
+            }
+        }
+        Kind::Count { default, .. } => {
+            let _ = writeln!(text, "    {key}: {default}");
+        }
+        Kind::Millionths(default) => {
+            let threshold = super::config::millionths_text(*default);
+            let _ = writeln!(text, "    {key}: {threshold}");
+        }
+        // No names: a list written with no value.
+        Kind::Names => {
+            let _ = writeln!(text, "    {key}:");
+        }
+    }
 }
