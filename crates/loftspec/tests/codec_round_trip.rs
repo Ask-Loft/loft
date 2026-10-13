@@ -65,7 +65,7 @@ fn the_reading_list_reads_back_to_the_same_roots() {
 }
 
 #[test]
-fn ac_119_writing_what_was_read_changes_no_byte() {
+fn writing_what_was_read_changes_no_byte() {
     let document = convert_value(&full_export()).unwrap().document;
     let (files, back) = round_trip(&document);
     assert_eq!(codec::write(&back), files);

@@ -35,7 +35,7 @@ fn the_sidecar_is_the_one_recorded_beside_the_export() {
 }
 
 #[test]
-fn ac_119_the_converted_export_round_trips_through_text() {
+fn the_converted_export_round_trips_through_text() {
     let document = converted().document;
     let read = codec::read(&codec::write(&document)).unwrap();
     assert_eq!(codec::write(&read), codec::write(&document));

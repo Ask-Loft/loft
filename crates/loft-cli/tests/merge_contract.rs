@@ -83,7 +83,7 @@ fn keys(text: &str) -> BTreeSet<String> {
 }
 
 #[test]
-fn rq_162_ac_618_ac_619_edits_to_different_features_merge_cleanly_and_validate() {
+fn edits_to_different_features_merge_cleanly_and_validate() {
     let repo = Repo::new();
     let merged = merge(
         &repo,
@@ -97,7 +97,7 @@ fn rq_162_ac_618_ac_619_edits_to_different_features_merge_cleanly_and_validate()
 }
 
 #[test]
-fn rq_163_ac_620_ac_621_both_appends_to_one_feature_follow_its_requirements_ours_first() {
+fn both_appends_to_one_feature_follow_its_requirements_ours_first() {
     let repo = Repo::new();
     let ours_key = "01a13099-7453-76e1-9b96-921b114802b8";
     let theirs_key = "01a13099-7453-76e1-9b96-921d18d1d697";
@@ -124,7 +124,7 @@ fn rq_163_ac_620_ac_621_both_appends_to_one_feature_follow_its_requirements_ours
 }
 
 #[test]
-fn rq_164_ac_622_ac_623_a_requirement_edited_on_one_side_and_moved_on_the_other_is_both() {
+fn a_requirement_edited_on_one_side_and_moved_on_the_other_is_both() {
     let repo = Repo::new();
     let merged = merge(
         &repo,
@@ -146,7 +146,7 @@ fn rq_164_ac_622_ac_623_a_requirement_edited_on_one_side_and_moved_on_the_other_
 }
 
 #[test]
-fn rq_165_ac_624_ac_625_a_deleted_node_another_side_references_is_absent_and_check_names_it() {
+fn a_deleted_node_another_side_references_is_absent_and_check_names_it() {
     let repo = Repo::new();
     let deleted = "00000000-0000-4000-8000-000000000030";
     let merged = merge(
@@ -173,7 +173,7 @@ fn rq_165_ac_624_ac_625_a_deleted_node_another_side_references_is_absent_and_che
 }
 
 #[test]
-fn rq_166_ac_626_ac_627_one_statement_edited_apart_conflicts_until_the_record_is_removed() {
+fn one_statement_edited_apart_conflicts_until_the_record_is_removed() {
     let repo = Repo::new();
     let merged = merge(
         &repo,
@@ -210,7 +210,7 @@ fn rq_166_ac_626_ac_627_one_statement_edited_apart_conflicts_until_the_record_is
 }
 
 #[test]
-fn rq_167_ac_628_ac_629_nodes_both_sides_create_are_both_kept_with_their_own_keys_unlabelled() {
+fn nodes_both_sides_create_are_both_kept_with_their_own_keys_unlabelled() {
     let repo = Repo::new();
     let base = keys(&repo.text(SHARE));
     let create = |scratch: &Scratch, shall: &str| {

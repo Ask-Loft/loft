@@ -27,7 +27,7 @@ fn external_document() -> Document {
 }
 
 #[test]
-fn ac_755_boundary_is_written_after_the_body_and_tags_and_before_scoped_to() {
+fn boundary_is_written_after_the_body_and_tags_and_before_scoped_to() {
     let written = codec::write(&external_document());
     let component = String::from_utf8(written[&common::text::path(COMPONENT)].clone()).unwrap();
     let boundary = component.find("\nboundary: external\n").expect("written");
@@ -36,7 +36,7 @@ fn ac_755_boundary_is_written_after_the_body_and_tags_and_before_scoped_to() {
 }
 
 #[test]
-fn ac_878_boundary_reads_back_as_written() {
+fn boundary_reads_back_as_written() {
     let document = external_document();
     let read = codec::read(&codec::write(&document)).unwrap();
     assert_eq!(read.components[0].boundary, Some(Boundary::External));
@@ -44,13 +44,13 @@ fn ac_878_boundary_reads_back_as_written() {
 }
 
 #[test]
-fn ac_878_a_component_without_boundary_reads_as_none() {
+fn a_component_without_boundary_reads_as_none() {
     assert_eq!(codec::read(&files()).unwrap().components[0].boundary, None);
     assert!(!text(&files(), COMPONENT).contains("boundary"));
 }
 
 #[test]
-fn ac_879_another_boundary_value_is_an_error_at_its_position() {
+fn another_boundary_value_is_an_error_at_its_position() {
     let files = edited(COMPONENT, "scopedTo:", "boundary: outside\nscopedTo:");
     let errors = codec::read(&files).expect_err("refused");
     assert_eq!(errors.len(), 1, "{errors:?}");
@@ -65,7 +65,7 @@ fn ac_879_another_boundary_value_is_an_error_at_its_position() {
 }
 
 #[test]
-fn ac_596_ac_885_the_boundary_enters_the_content_view_as_written() {
+fn the_boundary_enters_the_content_view_as_written() {
     let mut component = small_document().components[0].component.clone();
     let view = |component: &loftspec::tree::Component| {
         String::from_utf8(canonical_bytes(&component.content_view()[9])).unwrap()
@@ -78,7 +78,7 @@ fn ac_596_ac_885_the_boundary_enters_the_content_view_as_written() {
 }
 
 #[test]
-fn ac_885_an_explicit_private_and_an_absent_boundary_give_different_views() {
+fn an_explicit_private_and_an_absent_boundary_give_different_views() {
     let mut component = small_document().components[0].component.clone();
     let absent = component.content_hash();
     component.boundary = Some(Boundary::Private);
@@ -86,7 +86,7 @@ fn ac_885_an_explicit_private_and_an_absent_boundary_give_different_views() {
 }
 
 #[test]
-fn ac_596_a_node_that_is_not_a_component_has_a_null_boundary_slot() {
+fn a_node_that_is_not_a_component_has_a_null_boundary_slot() {
     let feature = &small_document().products[0].feature_groups[0].features[0];
     assert_eq!(feature.content_view()[9], serde_json::Value::Null);
 }
@@ -103,27 +103,27 @@ fn nested_document(parent: Option<Boundary>, child: Option<Boundary>) -> Documen
 }
 
 #[test]
-fn ac_880_a_nested_component_without_boundary_takes_its_parents() {
+fn a_nested_component_without_boundary_takes_its_parents() {
     let boundaries = Boundaries::of(&nested_document(Some(Boundary::External), None));
     assert!(boundaries.is_external(ComponentId::new(key(40))));
 }
 
 #[test]
-fn ac_881_a_root_component_without_boundary_is_private() {
+fn a_root_component_without_boundary_is_private() {
     let boundaries = Boundaries::of(&nested_document(None, None));
     assert!(!boundaries.is_external(ComponentId::new(key(6))));
     assert!(!boundaries.is_external(ComponentId::new(key(40))));
 }
 
 #[test]
-fn ac_882_a_written_boundary_is_the_components_own() {
+fn a_written_boundary_is_the_components_own() {
     let boundaries = Boundaries::of(&nested_document(None, Some(Boundary::External)));
     assert!(!boundaries.is_external(ComponentId::new(key(6))));
     assert!(boundaries.is_external(ComponentId::new(key(40))));
 }
 
 #[test]
-fn ac_883_private_beneath_external_is_an_error_naming_both() {
+fn private_beneath_external_is_an_error_naming_both() {
     let document = nested_document(Some(Boundary::External), Some(Boundary::Private));
     let errors = validate(&document);
     assert_eq!(
@@ -137,7 +137,7 @@ fn ac_883_private_beneath_external_is_an_error_naming_both() {
 }
 
 #[test]
-fn ac_884_external_beneath_external_raises_no_error() {
+fn external_beneath_external_raises_no_error() {
     let document = nested_document(Some(Boundary::External), Some(Boundary::External));
     assert_eq!(validate(&document), Vec::new());
 }
@@ -153,7 +153,7 @@ fn findings(document: &Document, rule: RuleId) -> Vec<Vec<Key>> {
 }
 
 #[test]
-fn ac_886_an_external_leaf_component_yields_no_sh_002() {
+fn an_external_leaf_component_yields_no_sh_002() {
     let mut document = small_document();
     document
         .components
@@ -164,7 +164,7 @@ fn ac_886_an_external_leaf_component_yields_no_sh_002() {
 }
 
 #[test]
-fn ac_887_an_external_component_yields_no_sh_008() {
+fn an_external_component_yields_no_sh_008() {
     let mut document = small_document();
     document
         .components
@@ -175,7 +175,7 @@ fn ac_887_an_external_component_yields_no_sh_008() {
 }
 
 #[test]
-fn ac_888_an_external_childs_constraint_does_not_clear_sh_008_above_it() {
+fn an_external_childs_constraint_does_not_clear_sh_008_above_it() {
     let mut document = small_document();
     let mut service = common::component(key(42), "Turnstile");
     service.boundary = Some(Boundary::External);
@@ -196,7 +196,7 @@ fn ac_888_an_external_childs_constraint_does_not_clear_sh_008_above_it() {
 // The rendering.
 
 #[test]
-fn ac_889_a_component_with_a_boundary_renders_a_line_naming_it() {
+fn a_component_with_a_boundary_renders_a_line_naming_it() {
     let markdown = render(&external_document()).unwrap().markdown;
     assert!(markdown.contains("\nBoundary: `external`\n"), "{markdown}");
     let plain = render(&small_document()).unwrap().markdown;

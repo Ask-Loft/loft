@@ -77,12 +77,12 @@ fn add_decision(document: &mut Document, offset: u32, state: DecisionState) {
 }
 
 #[test]
-fn ac_693_ac_331_ac_334_ac_728_ac_731_ac_738_ac_742_a_valid_document_raises_no_error() {
+fn a_valid_document_raises_no_error() {
     assert_eq!(validate(&small_document()), []);
 }
 
 #[test]
-fn ac_320_an_edge_whose_source_no_element_carries_is_an_error_naming_the_key() {
+fn an_edge_whose_source_no_element_carries_is_an_error_naming_the_key() {
     let mut document = small_document();
     document.edges.push(Edge::Realizes {
         feature: FeatureId::new(key(77)),
@@ -100,7 +100,7 @@ fn ac_320_an_edge_whose_source_no_element_carries_is_an_error_naming_the_key() {
 }
 
 #[test]
-fn ac_321_an_edge_whose_target_no_element_carries_is_an_error_naming_the_key() {
+fn an_edge_whose_target_no_element_carries_is_an_error_naming_the_key() {
     let mut document = small_document();
     document.edges.push(Edge::Mentions {
         source: FeatureId::new(key(3)).into(),
@@ -115,7 +115,7 @@ fn ac_321_an_edge_whose_target_no_element_carries_is_an_error_naming_the_key() {
 }
 
 #[test]
-fn ac_713_a_subject_edge_to_a_former_label_raises_no_unresolved_endpoint_error() {
+fn a_subject_edge_to_a_former_label_raises_no_unresolved_endpoint_error() {
     let mut document = small_document();
     set_state(&mut document, retired());
     affected_former(&mut document, "RQ-90");
@@ -125,7 +125,7 @@ fn ac_713_a_subject_edge_to_a_former_label_raises_no_unresolved_endpoint_error()
 #[test]
 /// A v1 export may scope a nested Component, and the conversion keeps that scope as an edge, so a
 /// `scoped_to` edge may start at any Component.
-fn ac_324_a_scoped_to_edge_from_a_nested_component_is_accepted() {
+fn a_scoped_to_edge_from_a_nested_component_is_accepted() {
     let mut document = small_document();
     document.components[0]
         .components
@@ -138,7 +138,7 @@ fn ac_324_a_scoped_to_edge_from_a_nested_component_is_accepted() {
 }
 
 #[test]
-fn ac_330_a_binding_whose_key_no_element_carries_is_an_error_naming_the_key() {
+fn a_binding_whose_key_no_element_carries_is_an_error_naming_the_key() {
     let mut document = small_document();
     document
         .bindings
@@ -155,7 +155,7 @@ fn ac_330_a_binding_whose_key_no_element_carries_is_an_error_naming_the_key() {
 }
 
 #[test]
-fn ac_332_ac_333_a_tag_listed_twice_is_an_error_naming_the_node_and_the_tag() {
+fn a_tag_listed_twice_is_an_error_naming_the_node_and_the_tag() {
     let mut document = small_document();
     let tags = &mut document.products[0].details.tags;
     tags.push(tags[0].clone());
@@ -175,7 +175,7 @@ fn ac_332_ac_333_a_tag_listed_twice_is_an_error_naming_the_node_and_the_tag() {
 }
 
 #[test]
-fn ac_287_ac_288_two_keys_with_one_live_label_are_an_error_naming_both_and_the_label() {
+fn two_keys_with_one_live_label_are_an_error_naming_both_and_the_label() {
     let mut document = small_document();
     document.components.push(root(component(key(41), "Twin")));
     document
@@ -195,7 +195,7 @@ fn ac_287_ac_288_two_keys_with_one_live_label_are_an_error_naming_both_and_the_l
 }
 
 #[test]
-fn ac_714_a_former_label_in_a_proposed_decision_is_an_error() {
+fn a_former_label_in_a_proposed_decision_is_an_error() {
     let mut document = small_document();
     set_state(&mut document, DecisionState::Proposed);
     let former = affected_former(&mut document, "RQ-90");
@@ -210,7 +210,7 @@ fn ac_714_a_former_label_in_a_proposed_decision_is_an_error() {
 }
 
 #[test]
-fn ac_715_a_former_label_in_an_accepted_decision_is_an_error() {
+fn a_former_label_in_an_accepted_decision_is_an_error() {
     let mut document = small_document();
     let former = affected_former(&mut document, "RQ-90");
     let error = ValidationError::FormerLabelInLiveDecision {
@@ -227,7 +227,7 @@ fn ac_715_a_former_label_in_an_accepted_decision_is_an_error() {
 }
 
 #[test]
-fn ac_716_a_former_label_in_a_rejected_decision_is_an_error() {
+fn a_former_label_in_a_rejected_decision_is_an_error() {
     let mut document = small_document();
     set_state(
         &mut document,
@@ -247,7 +247,7 @@ fn ac_716_a_former_label_in_a_rejected_decision_is_an_error() {
 }
 
 #[test]
-fn ac_717_a_former_label_in_a_retired_or_superseded_decision_raises_no_such_error() {
+fn a_former_label_in_a_retired_or_superseded_decision_raises_no_such_error() {
     let mut document = small_document();
     set_state(&mut document, retired());
     affected_former(&mut document, "RQ-90");
@@ -258,7 +258,7 @@ fn ac_717_a_former_label_in_a_retired_or_superseded_decision_raises_no_such_erro
 }
 
 #[test]
-fn ac_718_a_former_label_equal_to_a_live_label_is_an_error() {
+fn a_former_label_equal_to_a_live_label_is_an_error() {
     let mut document = small_document();
     set_state(&mut document, retired());
     let former = affected_former(&mut document, "CMP-1");
@@ -272,7 +272,7 @@ fn ac_718_a_former_label_equal_to_a_live_label_is_an_error() {
 }
 
 #[test]
-fn ac_719_a_former_label_equal_to_an_alias_is_an_error() {
+fn a_former_label_equal_to_an_alias_is_an_error() {
     let mut document = small_document();
     set_state(&mut document, retired());
     let former = affected_former(&mut document, "RQ-1");
@@ -286,7 +286,7 @@ fn ac_719_a_former_label_equal_to_an_alias_is_an_error() {
 }
 
 #[test]
-fn ac_720_a_former_label_no_element_carries_raises_no_such_error() {
+fn a_former_label_no_element_carries_raises_no_such_error() {
     let mut document = small_document();
     set_state(&mut document, retired());
     affected_former(&mut document, "RQ-90");
@@ -294,7 +294,7 @@ fn ac_720_a_former_label_no_element_carries_raises_no_such_error() {
 }
 
 #[test]
-fn ac_725_a_selected_option_of_another_decision_is_an_error_naming_the_decision() {
+fn a_selected_option_of_another_decision_is_an_error_naming_the_decision() {
     let mut document = small_document();
     set_state(
         &mut document,
@@ -315,7 +315,7 @@ fn ac_725_a_selected_option_of_another_decision_is_an_error_naming_the_decision(
 }
 
 #[test]
-fn ac_726_an_assessment_of_another_option_is_an_error_naming_the_decision_and_the_option() {
+fn an_assessment_of_another_option_is_an_error_naming_the_decision_and_the_option() {
     let mut document = small_document();
     decision(&mut document).assessments[0].option = OptionId::new(key(81));
     let errors = validate(&document);
@@ -334,7 +334,7 @@ fn ac_726_an_assessment_of_another_option_is_an_error_naming_the_decision_and_th
 }
 
 #[test]
-fn ac_727_an_assessment_of_another_driver_is_an_error_naming_the_decision_and_the_driver() {
+fn an_assessment_of_another_driver_is_an_error_naming_the_decision_and_the_driver() {
     let mut document = small_document();
     decision(&mut document).assessments[0].driver = DriverId::new(key(82));
     assert_eq!(
@@ -347,7 +347,7 @@ fn ac_727_an_assessment_of_another_driver_is_an_error_naming_the_decision_and_th
 }
 
 #[test]
-fn ac_729_a_successor_no_decision_carries_is_an_error_naming_the_decision_and_the_key() {
+fn a_successor_no_decision_carries_is_an_error_naming_the_decision_and_the_key() {
     let mut document = small_document();
     set_state(&mut document, superseded(0, 90));
     let errors = validate(&document);
@@ -368,7 +368,7 @@ fn ac_729_a_successor_no_decision_carries_is_an_error_naming_the_decision_and_th
 }
 
 #[test]
-fn ac_730_a_decision_that_names_itself_as_its_successor_is_an_error() {
+fn a_decision_that_names_itself_as_its_successor_is_an_error() {
     let mut document = small_document();
     set_state(&mut document, superseded(0, DECISION));
     assert_eq!(
@@ -380,7 +380,7 @@ fn ac_730_a_decision_that_names_itself_as_its_successor_is_an_error() {
 }
 
 #[test]
-fn ac_732_three_decisions_superseding_one_another_in_a_ring_yield_one_error_naming_all_three() {
+fn three_decisions_superseding_one_another_in_a_ring_yield_one_error_naming_all_three() {
     let mut document = small_document();
     set_state(&mut document, superseded(0, DECISION + 100));
     add_decision(&mut document, 100, superseded(100, DECISION + 200));
@@ -396,7 +396,7 @@ fn ac_732_three_decisions_superseding_one_another_in_a_ring_yield_one_error_nami
 }
 
 #[test]
-fn ac_733_a_chain_of_successors_that_ends_at_a_live_decision_raises_no_such_error() {
+fn a_chain_of_successors_that_ends_at_a_live_decision_raises_no_such_error() {
     let mut document = small_document();
     set_state(&mut document, superseded(0, DECISION + 100));
     add_decision(&mut document, 100, superseded(100, DECISION + 200));
@@ -412,7 +412,7 @@ fn ac_733_a_chain_of_successors_that_ends_at_a_live_decision_raises_no_such_erro
 }
 
 #[test]
-fn ac_734_a_resolved_decision_with_fewer_than_two_options_is_an_error() {
+fn a_resolved_decision_with_fewer_than_two_options_is_an_error() {
     let mut document = small_document();
     let decision = decision(&mut document);
     decision.options.truncate(1);
@@ -426,7 +426,7 @@ fn ac_734_a_resolved_decision_with_fewer_than_two_options_is_an_error() {
 }
 
 #[test]
-fn ac_735_a_resolved_decision_without_a_driver_is_an_error() {
+fn a_resolved_decision_without_a_driver_is_an_error() {
     let mut document = small_document();
     let decision = decision(&mut document);
     decision.drivers.clear();
@@ -438,7 +438,7 @@ fn ac_735_a_resolved_decision_without_a_driver_is_an_error() {
 }
 
 #[test]
-fn ac_736_a_missing_assessment_is_an_error_naming_the_decision_the_option_and_the_driver() {
+fn a_missing_assessment_is_an_error_naming_the_decision_the_option_and_the_driver() {
     let mut document = small_document();
     decision(&mut document).assessments.remove(0);
     assert_eq!(
@@ -452,7 +452,7 @@ fn ac_736_a_missing_assessment_is_an_error_naming_the_decision_the_option_and_th
 }
 
 #[test]
-fn ac_737_ac_741_a_proposed_decision_raises_no_completeness_error() {
+fn a_proposed_decision_raises_no_completeness_error() {
     let mut document = small_document();
     set_state(&mut document, DecisionState::Proposed);
     let decision = decision(&mut document);
@@ -467,7 +467,7 @@ fn ac_737_ac_741_a_proposed_decision_raises_no_completeness_error() {
 }
 
 #[test]
-fn ac_739_an_accepted_decision_without_a_consequence_is_an_error() {
+fn an_accepted_decision_without_a_consequence_is_an_error() {
     let mut document = small_document();
     decision(&mut document).consequences.clear();
     assert_eq!(
@@ -477,7 +477,7 @@ fn ac_739_an_accepted_decision_without_a_consequence_is_an_error() {
 }
 
 #[test]
-fn ac_740_an_accepted_decision_without_an_outcome_subject_is_an_error() {
+fn an_accepted_decision_without_an_outcome_subject_is_an_error() {
     let mut document = small_document();
     document.edges.retain(|edge| {
         !matches!(
@@ -495,7 +495,7 @@ fn ac_740_an_accepted_decision_without_an_outcome_subject_is_an_error() {
 }
 
 #[test]
-fn ac_741_a_rejected_decision_needs_no_consequence_or_outcome_subject() {
+fn a_rejected_decision_needs_no_consequence_or_outcome_subject() {
     let mut document = small_document();
     set_state(
         &mut document,
@@ -517,7 +517,7 @@ fn ac_741_a_rejected_decision_needs_no_consequence_or_outcome_subject() {
 }
 
 #[test]
-fn ac_523_every_error_is_reported_not_only_the_first() {
+fn every_error_is_reported_not_only_the_first() {
     let mut document = small_document();
     decision(&mut document).consequences.clear();
     decision(&mut document).assessments.remove(0);

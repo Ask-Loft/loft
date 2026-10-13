@@ -19,8 +19,9 @@ state the specification was imported from in the lock's `derivedFrom`; until it 
 contract is `spec/` as of the commit that imported it. Edits to `spec/` on `develop` and on
 feature branches are candidates that the next publish on `main` makes normative. Change the
 specification by editing `spec/` in the same pull request as the code, then run `loft fmt` and
-`loft check --fail-on warning`, which CI also runs. Tests cite the labels in `spec/labels.yaml`; a
-node added since the last publish has no label until a publish allocates one. `loft render`
+`loft check --fail-on warning`, which CI also runs. Test names say what they prove in words and
+cite no label: a publish can withdraw a label and give its node a new one, and a guard
+(`crates/loft-cli/tests/citations.rs`) fails on a label in a test name. `loft render`
 writes `docs/spec.md` and `docs/spec.json` on demand; they are never committed and never
 normative. Plans and authoring records are kept outside this repository.
 

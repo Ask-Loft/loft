@@ -20,7 +20,7 @@ fn shipped_dependencies(manifest: &str) -> Vec<&str> {
 }
 
 #[test]
-fn con_16_no_published_crate_depends_on_software_plant() {
+fn no_published_crate_depends_on_software_plant() {
     let mut published = 0;
     for entry in fs::read_dir(CRATES).unwrap() {
         let manifest = entry.unwrap().path().join("Cargo.toml");

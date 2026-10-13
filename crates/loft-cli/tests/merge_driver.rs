@@ -46,7 +46,7 @@ fn spec_path() -> String {
 }
 
 #[test]
-fn ac_565_and_ac_567_a_clean_merge_is_written_to_ours_and_exits_0() {
+fn a_clean_merge_is_written_to_ours_and_exits_0() {
     let (scratch, base) = setup();
     let ours_text = edited(&base, SHALL, "shall: \"publish a link.\"");
     let theirs_text = edited(&base, "refuse edits made", "refuse every edit made");
@@ -60,7 +60,7 @@ fn ac_565_and_ac_567_a_clean_merge_is_written_to_ours_and_exits_0() {
 }
 
 #[test]
-fn ac_566_and_ac_568_a_written_conflict_exits_1_naming_the_path() {
+fn a_written_conflict_exits_1_naming_the_path() {
     let (scratch, base) = setup();
     let ours_text = edited(&base, SHALL, "shall: \"publish a link.\"");
     let theirs_text = edited(&base, SHALL, "shall: \"publish a private link.\"");
@@ -79,7 +79,7 @@ fn ac_566_and_ac_568_a_written_conflict_exits_1_naming_the_path() {
 }
 
 #[test]
-fn ac_569_and_ac_570_an_unreadable_input_is_named_with_where_and_ours_is_unchanged() {
+fn an_unreadable_input_is_named_with_where_and_ours_is_unchanged() {
     let (scratch, base) = setup();
     scratch.edit(FEATURE, "\nslug:", " # a note\nslug:");
     let theirs_text = fs::read_to_string(scratch.file(FEATURE)).unwrap();

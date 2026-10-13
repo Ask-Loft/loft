@@ -23,14 +23,14 @@ fn reformatted(files: &Files) -> Files {
 }
 
 #[test]
-fn ac_664_a_keyed_record_with_a_conflicts_list_is_read_without_a_read_error() {
+fn a_keyed_record_with_a_conflicts_list_is_read_without_a_read_error() {
     let files = on_requirement(SHALL_CONFLICT);
     assert!(codec::read_tree(&files).is_ok());
     assert!(codec::read(&files).is_ok());
 }
 
 #[test]
-fn ac_665_a_conflict_record_outside_a_conflicts_list_is_an_error_naming_the_file_line_and_column() {
+fn a_conflict_record_outside_a_conflicts_list_is_an_error_naming_the_file_line_and_column() {
     let files = on_requirement("    field: statement.shall\n");
     let (problem, location) = refused(&files);
     assert_eq!(problem, Problem::UnknownField("field".to_owned()));
@@ -38,7 +38,7 @@ fn ac_665_a_conflict_record_outside_a_conflicts_list_is_an_error_naming_the_file
 }
 
 #[test]
-fn ac_857_a_conflict_record_s_fields_are_field_base_ours_theirs_in_that_order() {
+fn a_conflict_record_s_fields_are_field_base_ours_theirs_in_that_order() {
     let files = on_requirement(
         "    conflicts:
       - theirs: \"write one key on every node.\"
@@ -53,14 +53,14 @@ fn ac_857_a_conflict_record_s_fields_are_field_base_ours_theirs_in_that_order() 
 }
 
 #[test]
-fn ac_858_a_conflict_record_requires_field() {
+fn a_conflict_record_requires_field() {
     let files = on_requirement("    conflicts:\n      - ours: \"write a key on each node.\"\n");
     let (problem, _) = refused(&files);
     assert_eq!(problem, Problem::MissingField(field::FIELD));
 }
 
 #[test]
-fn ac_859_a_side_on_which_the_field_is_absent_omits_its_member() {
+fn a_side_on_which_the_field_is_absent_omits_its_member() {
     let files =
         on_requirement("    conflicts:\n      - field: body\n        ours: \"Why keys.\"\n");
     assert!(codec::read(&files).is_ok());
@@ -68,7 +68,7 @@ fn ac_859_a_side_on_which_the_field_is_absent_omits_its_member() {
 }
 
 #[test]
-fn ac_860_each_side_holds_a_value_in_the_shape_the_named_field_takes() {
+fn each_side_holds_a_value_in_the_shape_the_named_field_takes() {
     let tags = "    conflicts:
       - field: tags
         ours:
@@ -85,13 +85,13 @@ fn ac_860_each_side_holds_a_value_in_the_shape_the_named_field_takes() {
 }
 
 #[test]
-fn ac_860_a_text_side_is_written_double_quoted() {
+fn a_text_side_is_written_double_quoted() {
     let files = on_requirement(SHALL_CONFLICT);
     assert_eq!(reformatted(&files), Files::new());
 }
 
 #[test]
-fn ac_861_a_conflict_over_a_record_s_place_names_the_field_position() {
+fn a_conflict_over_a_record_s_place_names_the_field_position() {
     let files = on_requirement(
         "    conflicts:
       - field: position
@@ -105,7 +105,7 @@ fn ac_861_a_conflict_over_a_record_s_place_names_the_field_position() {
 }
 
 #[test]
-fn ac_862_a_keyed_record_carries_conflicts_after_every_other_field() {
+fn a_keyed_record_carries_conflicts_after_every_other_field() {
     let files = edited(
         FEATURE,
         "    criteria:\n",

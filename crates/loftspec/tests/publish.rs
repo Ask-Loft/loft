@@ -69,7 +69,7 @@ fn with_labels(files: &Files, labels: Vec<u8>) -> Files {
 }
 
 #[test]
-fn ac_447_ac_448_uncommitted_changes_under_spec_refuse_naming_the_paths() {
+fn uncommitted_changes_under_spec_refuse_naming_the_paths() {
     let repo = RepoState {
         modified: vec!["spec/tags.yaml".to_owned()],
         ..clean_on("main")
@@ -82,7 +82,7 @@ fn ac_447_ac_448_uncommitted_changes_under_spec_refuse_naming_the_paths() {
 }
 
 #[test]
-fn ac_449_ac_450_a_branch_other_than_main_refuses_naming_both_branches() {
+fn a_branch_other_than_main_refuses_naming_both_branches() {
     let refusal = publish_files(
         &codec::write(&small_document()),
         &clean_on("develop"),
@@ -100,7 +100,7 @@ fn ac_449_ac_450_a_branch_other_than_main_refuses_naming_both_branches() {
 }
 
 #[test]
-fn ac_449_the_manifest_can_name_another_publish_branch() {
+fn the_manifest_can_name_another_publish_branch() {
     let mut document = small_document();
     document.publish_branch = Some("release".to_owned());
     let files = codec::write(&document);
@@ -112,7 +112,7 @@ fn ac_449_the_manifest_can_name_another_publish_branch() {
 }
 
 #[test]
-fn ac_690_a_detached_head_is_refused_as_not_on_the_publish_branch() {
+fn a_detached_head_is_refused_as_not_on_the_publish_branch() {
     let repo = RepoState::default();
     let refusal = publish_files(&codec::write(&small_document()), &repo, None, at(0)).unwrap_err();
     assert_eq!(
@@ -125,7 +125,7 @@ fn ac_690_a_detached_head_is_refused_as_not_on_the_publish_branch() {
 }
 
 #[test]
-fn ac_451_ac_452_a_validation_error_refuses_listing_the_errors() {
+fn a_validation_error_refuses_listing_the_errors() {
     // An accepted decision may not name a former label (RQ-179).
     let mut document = small_document();
     document.edges.push(Edge::Subject {
@@ -148,7 +148,7 @@ fn ac_451_ac_452_a_validation_error_refuses_listing_the_errors() {
 }
 
 #[test]
-fn ac_453_a_lint_finding_does_not_refuse_a_publish() {
+fn a_lint_finding_does_not_refuse_a_publish() {
     let mut document = small_document();
     document.products[0].feature_groups[0].features[0].requirements[0].criteria[0].name =
         "The writer is fast and/or cheap, etc.".to_owned();
@@ -186,7 +186,7 @@ fn bindings_whose_bytes_would_not_change_are_not_given() {
 }
 
 #[test]
-fn ac_454_ac_460_a_publish_labels_every_node_and_changes_only_the_bindings() {
+fn a_publish_labels_every_node_and_changes_only_the_bindings() {
     let files = codec::write(&small_document());
     let (_, labels) = first(&files);
     let published = codec::read(&with_labels(&files, labels.clone())).unwrap();
@@ -199,7 +199,7 @@ fn ac_454_ac_460_a_publish_labels_every_node_and_changes_only_the_bindings() {
 }
 
 #[test]
-fn ac_72_ac_73_the_lock_pins_the_hashers_roots_of_the_published_tree() {
+fn the_lock_pins_the_hashers_roots_of_the_published_tree() {
     let files = codec::write(&small_document());
     let (lock, labels) = first(&files);
     let published = codec::read(&with_labels(&files, labels)).unwrap();
@@ -212,14 +212,14 @@ fn ac_72_ac_73_the_lock_pins_the_hashers_roots_of_the_published_tree() {
 }
 
 #[test]
-fn ac_461_ac_462_a_first_publish_is_sequence_1_at_the_given_time() {
+fn a_first_publish_is_sequence_1_at_the_given_time() {
     let (lock, _) = first(&codec::write(&small_document()));
     assert_eq!(lock.publish_sequence, NonZeroU64::MIN);
     assert_eq!(lock.published_at, at(1_000));
 }
 
 #[test]
-fn ac_74_ac_75_ac_255_ac_77_the_lock_carries_the_source_state_of_a_derived_document() {
+fn the_lock_carries_the_source_state_of_a_derived_document() {
     let document = derived();
     let (lock, _) = first(&codec::write(&document));
     assert_eq!(lock.derived_from, document.derived_from);
@@ -239,13 +239,13 @@ fn ac_74_ac_75_ac_255_ac_77_the_lock_carries_the_source_state_of_a_derived_docum
 }
 
 #[test]
-fn ac_76_the_lock_of_a_document_that_is_not_derived_has_no_source_state() {
+fn the_lock_of_a_document_that_is_not_derived_has_no_source_state() {
     let (lock, _) = first(&codec::write(&small_document()));
     assert_eq!(lock.derived_from, None);
 }
 
 #[test]
-fn ac_464_ac_465_ac_466_ac_640_a_second_publish_over_an_unchanged_tree_is_a_no_op() {
+fn a_second_publish_over_an_unchanged_tree_is_a_no_op() {
     let files = codec::write(&small_document());
     let (lock, labels) = first(&files);
     let published = with_labels(&files, labels);
@@ -254,7 +254,7 @@ fn ac_464_ac_465_ac_466_ac_640_a_second_publish_over_an_unchanged_tree_is_a_no_o
 }
 
 #[test]
-fn ac_461_a_publish_after_a_change_is_one_more_than_the_previous_sequence() {
+fn a_publish_after_a_change_is_one_more_than_the_previous_sequence() {
     let files = codec::write(&small_document());
     let (lock, labels) = first(&files);
     let mut document = codec::read(&with_labels(&files, labels)).unwrap();
@@ -278,7 +278,7 @@ fn ac_461_a_publish_after_a_change_is_one_more_than_the_previous_sequence() {
 }
 
 #[test]
-fn ac_641_an_uncommitted_change_refuses_even_when_nothing_changed_since_the_last_publish() {
+fn an_uncommitted_change_refuses_even_when_nothing_changed_since_the_last_publish() {
     let files = codec::write(&small_document());
     let (lock, labels) = first(&files);
     let repo = RepoState {
@@ -306,13 +306,13 @@ fn mismatch(files: &Files, lock: &Lock) -> Root {
 }
 
 #[test]
-fn ac_468_verification_passes_when_the_state_root_matches() {
+fn verification_passes_when_the_state_root_matches() {
     let (files, lock) = published();
     assert_eq!(verify_files(&files, &lock), Ok(lock.state_root));
 }
 
 #[test]
-fn ac_467_ac_469_a_changed_content_root_fails_naming_it_first() {
+fn a_changed_content_root_fails_naming_it_first() {
     let (files, lock) = published();
     let mut document = codec::read(&files).unwrap();
     document.products[0].name = "Changed".to_owned();
@@ -321,7 +321,7 @@ fn ac_467_ac_469_a_changed_content_root_fails_naming_it_first() {
 }
 
 #[test]
-fn ac_678_a_relabel_alone_fails_on_the_binding_root() {
+fn a_relabel_alone_fails_on_the_binding_root() {
     let (files, lock) = published();
     let mut document = codec::read(&files).unwrap();
     document
@@ -332,7 +332,7 @@ fn ac_678_a_relabel_alone_fails_on_the_binding_root() {
 }
 
 #[test]
-fn ac_678_a_changed_source_state_alone_fails_on_the_state_root() {
+fn a_changed_source_state_alone_fails_on_the_state_root() {
     let (files, lock) = published();
     let mut document = codec::read(&files).unwrap();
     if let Some(derived) = &mut document.derived_from {
@@ -342,7 +342,7 @@ fn ac_678_a_changed_source_state_alone_fails_on_the_state_root() {
 }
 
 #[test]
-fn ac_468_a_lock_of_other_roots_never_verifies() {
+fn a_lock_of_other_roots_never_verifies() {
     let (files, mut lock) = published();
     lock.state_root = "0".repeat(64).parse::<Digest>().unwrap();
     assert_eq!(mismatch(&files, &lock), Root::State);
