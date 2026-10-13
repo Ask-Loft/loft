@@ -1,6 +1,8 @@
 //! `loft init` (F-36): an empty document created in the current directory, with a fresh
 //! document key, and the `loft-spec` skill beside it unless `--no-skill` is given. Refused, with
-//! nothing written, where `spec/` exists already (RQ-129).
+//! nothing written, where `spec/` exists already (RQ-129). Inside a git repository whose local
+//! configuration does not register the merge driver, the text output suggests registering it.
+//! A configuration git cannot read leaves the suggestion out and never fails the command.
 
 use std::path::Path;
 use std::process::ExitCode;
@@ -9,6 +11,8 @@ use loftspec::codec;
 use loftspec::document::Document;
 use loftspec::ids::DocumentId;
 use loftspec_store::FileStore;
+use loftspec_store::merge_driver::{DRIVER, LAUNCHER};
+use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
 use crate::{json, skill};
@@ -40,6 +44,19 @@ pub fn run(root: &Path, with_skill: bool, as_json: bool) -> ExitCode {
     } else {
         println!("created spec/, document key {key}");
         skill::report(&skills);
+        if merge_driver_missing(&GitCommand::default(), root) {
+            println!(
+                "next: run `{LAUNCHER} merge-driver --install` once in each clone, so git merges \
+                 spec/ by key; where loft runs through npm, add --command \"npx --no-install loft\""
+            );
+        }
     }
     ExitCode::SUCCESS
+}
+
+/// Whether `root` lies in a git repository whose local configuration names no merge driver.
+/// Outside a repository, git refuses the read of its local configuration, which leaves the
+/// suggestion out.
+fn merge_driver_missing(git: &GitCommand, root: &Path) -> bool {
+    matches!(git.config_get(root, DRIVER), Ok(None))
 }

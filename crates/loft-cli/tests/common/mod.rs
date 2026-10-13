@@ -99,7 +99,7 @@ impl Scratch {
     }
 
     /// The directory beside the scratch tree that holds the simulators' scenarios.
-    fn plant(&self) -> PathBuf {
+    pub fn plant(&self) -> PathBuf {
         let mut plant = self.0.clone().into_os_string();
         plant.push(".plant");
         PathBuf::from(plant)
