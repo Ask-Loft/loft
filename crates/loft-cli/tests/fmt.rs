@@ -16,10 +16,7 @@ const PRODUCT: &str = "products/reading-list/product.yaml";
 
 /// The one JSON document a run printed, held to the `loft fmt` schema.
 fn json_of(output: &Output) -> Value {
-    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/fmt.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
-    document
+    schema::conforming(&output.stdout, include_str!("../../../schemas/fmt.json"))
 }
 
 /// The first file under `spec/decisions/`, as its path under `spec/`.
@@ -109,28 +106,23 @@ fn the_json_document_lists_the_files_rewritten_and_the_keys_minted() {
     );
     let mut changed = vec![format!("spec/{path}"), format!("spec/{PRODUCT}")];
     changed.sort();
+    let document = |changed: &[String], minted: usize, written: bool| {
+        json!({
+            "schema": "loft-fmt/1",
+            "changed": changed,
+            "minted": minted,
+            "written": written,
+            "errors": [],
+        })
+    };
     let check = scratch.loft(&["fmt", "--check", "--format", "json"]);
     assert_eq!(check.status.code(), Some(1));
-    let document = json_of(&check);
-    assert_eq!(document["changed"], json!(changed));
-    assert_eq!(
-        (document["minted"].clone(), document["written"].clone()),
-        (json!(1), json!(false))
-    );
+    assert_eq!(json_of(&check), document(&changed, 1, false));
     let write = scratch.loft(&["fmt", "--format", "json"]);
     assert_eq!(write.status.code(), Some(0), "{}", stderr(&write));
-    let document = json_of(&write);
-    assert_eq!(document["changed"], json!(changed));
-    assert_eq!(
-        (document["minted"].clone(), document["written"].clone()),
-        (json!(1), json!(true))
-    );
-    let again = json_of(&scratch.loft(&["fmt", "--format", "json"]));
-    assert_eq!(again["changed"], json!([]));
-    assert_eq!(
-        (again["minted"].clone(), again["written"].clone()),
-        (json!(0), json!(false))
-    );
+    assert_eq!(json_of(&write), document(&changed, 1, true));
+    let again = scratch.loft(&["fmt", "--format", "json"]);
+    assert_eq!(json_of(&again), document(&[], 0, false));
 }
 
 #[test]

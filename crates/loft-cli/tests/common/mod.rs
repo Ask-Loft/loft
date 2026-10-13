@@ -39,10 +39,9 @@ impl Scratch {
         let document = convert(&Export::from_json(READING_LIST).unwrap())
             .unwrap()
             .document;
-        fs::create_dir_all(scratch.0.join("spec")).unwrap();
         loftspec_store::FileStore::open(&scratch.0)
             .unwrap()
-            .write_files(codec::write(&document))
+            .create(codec::write(&document))
             .unwrap();
         scratch
     }

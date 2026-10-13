@@ -4,6 +4,8 @@
 
 mod common;
 mod conformance;
+#[path = "common/help.rs"]
+mod help;
 
 use std::collections::BTreeMap;
 
@@ -101,16 +103,7 @@ fn each_command_that_reports_a_read_error_lists_reads_tree() {
 
 #[test]
 fn every_implemented_command_has_an_entry() {
-    let help = stdout(&Scratch::with_reading_list().loft(&["--help"]));
-    let listed: Vec<&str> = help
-        .lines()
-        .skip_while(|line| !line.starts_with("Commands:"))
-        .skip(1)
-        .take_while(|line| line.starts_with("  "))
-        .filter_map(|line| line.split_whitespace().next())
-        .filter(|name| *name != "help")
-        .collect();
-    for name in listed {
+    for name in help::subcommands() {
         assert!(
             COMMANDS.iter().any(|(_, args)| args[0] == name),
             "`loft {name}` has no entry in COMMANDS"

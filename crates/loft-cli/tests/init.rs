@@ -11,7 +11,8 @@ use std::fs;
 
 use common::{Scratch, stderr, stdout};
 use loftspec::bindings::Counters;
-use loftspec::codec::{self, Files, SpecPath};
+use loftspec::document::Document;
+use loftspec_store::{DocumentStore as _, FileStore};
 use serde_json::Value;
 use snapshot::snapshot;
 
@@ -23,22 +24,14 @@ fn initialised() -> Scratch {
     scratch
 }
 
-/// The files of the tree, by their path under `spec/`.
-fn tree(scratch: &Scratch) -> Files {
-    snapshot(&scratch.0.join("spec"))
-        .into_iter()
-        .map(|(path, bytes)| (SpecPath::new(&path), bytes))
-        .collect()
+/// The document the tree holds, read back by the reader.
+fn document(scratch: &Scratch) -> Document {
+    FileStore::open(&scratch.0).unwrap().load().unwrap()
 }
 
 /// The document key the manifest carries.
 fn document_key(scratch: &Scratch) -> String {
-    let manifest = fs::read_to_string(scratch.file("loftspec.yaml")).unwrap();
-    let line = manifest
-        .lines()
-        .find_map(|line| line.strip_prefix("documentKey: "))
-        .expect("a document key");
-    line.to_owned()
+    document(scratch).id.to_string()
 }
 
 #[test]
@@ -57,7 +50,7 @@ fn the_manifest_carries_a_fresh_document_key() {
 
 #[test]
 fn the_labels_file_is_created_with_every_counter_at_its_first_value() {
-    let document = codec::read(&tree(&initialised())).unwrap();
+    let document = document(&initialised());
     assert_eq!(document.counters, Counters::default());
     assert!(document.bindings.iter().next().is_none());
 }
@@ -73,8 +66,10 @@ fn the_registries_are_created_empty() {
 #[test]
 fn the_created_tree_reads_validates_and_lints_clean() {
     let scratch = initialised();
-    let document = codec::read(&tree(&scratch)).expect("the tree reads");
-    assert_eq!(loftspec::validate::validate(&document), Vec::new());
+    assert_eq!(
+        loftspec::validate::validate(&document(&scratch)),
+        Vec::new()
+    );
     let check = scratch.loft(&["check", "--fail-on", "hint"]);
     assert_eq!(check.status.code(), Some(0), "{}", stdout(&check));
     assert_eq!(stdout(&check), "");
@@ -120,10 +115,7 @@ fn a_tree_already_there_is_refused_and_left_as_it_was() {
 
 /// The one JSON document a run printed, held to the `loft init` schema.
 fn json_of(output: &std::process::Output) -> Value {
-    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/init.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
-    document
+    schema::conforming(&output.stdout, include_str!("../../../schemas/init.json"))
 }
 
 #[test]
@@ -138,7 +130,8 @@ fn the_json_document_names_spec_as_created_and_carries_the_document_key() {
 
 #[test]
 fn a_refused_init_is_listed_among_the_json_document_s_errors_naming_the_path() {
-    let scratch = Scratch::with_reading_list();
+    let scratch = Scratch::empty();
+    fs::create_dir(scratch.0.join("spec")).unwrap();
     let output = scratch.loft(&["init", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1));
     let error = &json_of(&output)["errors"][0];

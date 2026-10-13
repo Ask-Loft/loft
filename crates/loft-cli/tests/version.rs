@@ -6,8 +6,6 @@ mod schema;
 
 use std::process::{Command, Output};
 
-use serde_json::Value;
-
 fn loft(args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_loft"))
         .args(args)
@@ -45,10 +43,10 @@ fn the_third_line_is_the_algorithm_and_there_is_no_other() {
 fn under_format_json_the_three_values_are_one_json_document() {
     let output = loft(&["--version", "--format", "json"]);
     assert_eq!(output.status.code(), Some(0));
-    let document: Value = serde_json::from_slice(&output.stdout).unwrap();
-    let schema: Value =
-        serde_json::from_str(include_str!("../../../schemas/version.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    let document = schema::conforming(
+        &output.stdout,
+        include_str!("../../../schemas/version.json"),
+    );
     assert_eq!(document["version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(document["format"], "loftspec/1");
     assert_eq!(document["algorithm"], "sha256-jcs/1");

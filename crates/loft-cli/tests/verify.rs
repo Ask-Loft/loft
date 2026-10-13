@@ -36,10 +36,7 @@ fn state_root(scratch: &Scratch) -> String {
 }
 
 fn json(output: &Output) -> Value {
-    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/verify.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
-    document
+    schema::conforming(&output.stdout, include_str!("../../../schemas/verify.json"))
 }
 
 #[test]

@@ -15,7 +15,7 @@ mod version;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
+use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 use loftspec_store::merge_driver::LAUNCHER;
 
@@ -43,27 +43,24 @@ struct Cli {
 enum Command {
     /// Create an empty document in the current directory (RQ-128).
     Init {
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
     /// Rewrite `spec/` in canonical layout, minting missing keys (RQ-140).
     Fmt {
         /// Report the files that would change, without writing (RQ-142).
         #[arg(long)]
         check: bool,
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
     /// Read, validate and lint `spec/` (RQ-136).
     Check {
         /// Exit 1 on a finding at or above this severity (RQ-139).
         #[arg(long, value_name = "SEVERITY")]
         fail_on: Option<FailOn>,
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
     /// Convert a Loft v1 export into `spec/` (RQ-130).
     Import {
@@ -72,15 +69,13 @@ enum Command {
     },
     /// Allocate labels and write the lock that pins the tree, on the publish branch (RQ-145).
     Publish {
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
     /// Recompute the roots of `spec/` and compare them with the lock (RQ-148).
     Verify {
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
     /// Merge one file of `spec/` as git's merge driver, writing the result to `<ours>` (RQ-150).
     MergeDriver {
@@ -103,9 +98,8 @@ enum Command {
         /// The path of the file being merged, as git names it (git's `%P`).
         #[arg(required_unless_present = "install")]
         path: Option<String>,
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
@@ -115,9 +109,8 @@ enum Command {
         /// Where to write the canonical JSON export.
         #[arg(long, value_name = "PATH")]
         json: Option<PathBuf>,
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
 }
 
@@ -130,9 +123,8 @@ enum ImportSource {
         /// A YAML mapping of label prefix to next value (RQ-131).
         #[arg(long, value_name = "FILE")]
         counters: Option<PathBuf>,
-        /// Print one JSON document on standard output (RQ-155).
-        #[arg(long, value_name = "FORMAT")]
-        format: Option<Format>,
+        #[command(flatten)]
+        output: Output,
     },
 }
 
@@ -159,6 +151,20 @@ enum Format {
     Json,
 }
 
+/// The output a command prints, which every command takes.
+#[derive(Args)]
+struct Output {
+    /// Print one JSON document on standard output (RQ-155).
+    #[arg(long, value_name = "FORMAT")]
+    format: Option<Format>,
+}
+
+impl Output {
+    fn json(&self) -> bool {
+        self.format == Some(Format::Json)
+    }
+}
+
 fn main() -> ExitCode {
     let cli = Cli::parse();
     if cli.version {
@@ -172,44 +178,33 @@ fn main() -> ExitCode {
     };
     let root = Path::new(".");
     match command {
-        Command::Init { format } => init::run(root, format == Some(Format::Json)),
-        Command::Fmt { check, format } => fmt::run(root, check, format == Some(Format::Json)),
-        Command::Check { fail_on, format } => check::run(
-            root,
-            fail_on.map(Severity::from),
-            format == Some(Format::Json),
-        ),
+        Command::Init { output } => init::run(root, output.json()),
+        Command::Fmt { check, output } => fmt::run(root, check, output.json()),
+        Command::Check { fail_on, output } => {
+            check::run(root, fail_on.map(Severity::from), output.json())
+        }
         Command::Import {
             source:
                 ImportSource::V1 {
                     export,
                     counters,
-                    format,
+                    output,
                 },
-        } => import::run(
-            root,
-            &export,
-            counters.as_deref(),
-            format == Some(Format::Json),
-        ),
-        Command::Publish { format } => publish::run(root, format == Some(Format::Json)),
-        Command::Verify { format } => verify::run(root, format == Some(Format::Json)),
+        } => import::run(root, &export, counters.as_deref(), output.json()),
+        Command::Publish { output } => publish::run(root, output.json()),
+        Command::Verify { output } => verify::run(root, output.json()),
         Command::MergeDriver {
             install: true,
             command,
-            format,
+            output,
             ..
-        } => merge_driver::install(
-            root,
-            command.as_deref().unwrap_or(LAUNCHER),
-            format == Some(Format::Json),
-        ),
+        } => merge_driver::install(root, command.as_deref().unwrap_or(LAUNCHER), output.json()),
         Command::MergeDriver {
             base: Some(base),
             ours: Some(ours),
             theirs: Some(theirs),
             path: Some(path),
-            format,
+            output,
             ..
         } => merge_driver::run(
             root,
@@ -219,15 +214,15 @@ fn main() -> ExitCode {
                 theirs: &theirs,
                 path: &path,
             },
-            format == Some(Format::Json),
+            output.json(),
         ),
         // Clap requires the four paths unless `--install` is given.
         Command::MergeDriver { .. } => ExitCode::from(2),
         Command::Render {
             markdown,
             json,
-            format,
-        } => render::run(root, markdown, json, format == Some(Format::Json)),
+            output,
+        } => render::run(root, markdown, json, output.json()),
     }
 }
 

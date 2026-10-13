@@ -34,7 +34,6 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
     match merge(root, inputs) {
         Ok((conflicts, disputed)) => {
             if as_json {
-                let disputed: Vec<String> = disputed.iter().map(ToString::to_string).collect();
                 json::print(&json!({
                     "schema": SCHEMA,
                     "path": inputs.path,
@@ -57,19 +56,14 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
             ExitCode::FAILURE
         }
         Err(messages) => {
-            let messages: Vec<String> = messages
-                .iter()
-                .map(|message| format!("{}{message}", inputs.path))
-                .collect();
-            if as_json {
-                let errors: Vec<_> = messages
-                    .iter()
-                    .map(|message| json::error("merge", message, &[]))
-                    .collect();
-                json::print(&json!({ "schema": SCHEMA, "path": inputs.path, "errors": errors }));
-            }
+            let mut errors = Vec::new();
             for message in messages {
+                let message = format!("{}{message}", inputs.path);
+                errors.push(json::error("merge", &message, &[]));
                 eprintln!("{message}");
+            }
+            if as_json {
+                json::print(&json!({ "schema": SCHEMA, "path": inputs.path, "errors": errors }));
             }
             ExitCode::FAILURE
         }

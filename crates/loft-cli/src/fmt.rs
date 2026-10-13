@@ -15,62 +15,70 @@ use crate::json;
 const SCHEMA: &str = "loft-fmt/1";
 
 /// What a run did: the files that change, the keys minted, and whether it wrote them.
+#[derive(Default)]
 struct Outcome {
     changed: Vec<String>,
     minted: usize,
     written: bool,
 }
 
-/// Why the tree was not formatted.
-enum Failure {
-    Read(Vec<ReadError>),
-    Store(String),
+/// Why the tree was not formatted: its errors as JSON, and as the lines standard error shows.
+struct Failure {
+    errors: Vec<Value>,
+    lines: Vec<String>,
 }
 
 impl From<StoreError> for Failure {
     fn from(error: StoreError) -> Self {
-        Self::Store(error.to_string())
+        let message = error.to_string();
+        Self {
+            errors: vec![json::error("store", &message, &[])],
+            lines: vec![message],
+        }
+    }
+}
+
+impl From<Vec<ReadError>> for Failure {
+    fn from(errors: Vec<ReadError>) -> Self {
+        Self {
+            errors: json::read_errors(&errors),
+            lines: errors.iter().map(ToString::to_string).collect(),
+        }
     }
 }
 
 pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
-    match attempt(root, check) {
-        Ok(outcome) => {
-            if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "changed": outcome.changed,
-                    "minted": outcome.minted,
-                    "written": outcome.written,
-                    "errors": [],
-                }));
-            } else {
-                for path in &outcome.changed {
-                    println!("{path}");
-                }
-            }
-            if check && !outcome.changed.is_empty() {
-                ExitCode::FAILURE
-            } else {
-                ExitCode::SUCCESS
-            }
+    let (outcome, failure) = match attempt(root, check) {
+        Ok(outcome) => (outcome, None),
+        Err(failure) => (Outcome::default(), Some(failure)),
+    };
+    if as_json {
+        let errors = failure.as_ref().map_or_else(Vec::new, |f| f.errors.clone());
+        json::print(&json!({
+            "schema": SCHEMA,
+            "changed": outcome.changed,
+            "minted": outcome.minted,
+            "written": outcome.written,
+            "errors": errors,
+        }));
+    } else {
+        for path in &outcome.changed {
+            println!("{path}");
         }
-        Err(failure) => {
-            if as_json {
-                json::print(&document(&failure));
-            }
-            match failure {
-                Failure::Read(errors) => crate::report(&errors),
-                Failure::Store(message) => eprintln!("{message}"),
-            }
+    }
+    match failure {
+        Some(failure) => {
+            crate::report(&failure.lines);
             ExitCode::FAILURE
         }
+        None if check && !outcome.changed.is_empty() => ExitCode::FAILURE,
+        None => ExitCode::SUCCESS,
     }
 }
 
 fn attempt(root: &Path, check: bool) -> Result<Outcome, Failure> {
     let store = FileStore::open(root)?;
-    let formatted = format(&store.read_files()?).map_err(Failure::Read)?;
+    let formatted = format(&store.read_files()?)?;
     let changed = formatted.changed.keys().map(ToString::to_string).collect();
     let written = !check && !formatted.changed.is_empty();
     if written {
@@ -81,12 +89,4 @@ fn attempt(root: &Path, check: bool) -> Result<Outcome, Failure> {
         minted: formatted.minted,
         written,
     })
-}
-
-fn document(failure: &Failure) -> Value {
-    let errors = match failure {
-        Failure::Read(errors) => json::read_errors(errors),
-        Failure::Store(message) => vec![json::error("store", message, &[])],
-    };
-    json!({ "schema": SCHEMA, "changed": [], "minted": 0, "written": false, "errors": errors })
 }

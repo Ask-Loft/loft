@@ -250,11 +250,10 @@ fn install_takes_no_paths_and_the_paths_need_no_install() {
 
 /// The one JSON document a run printed, held to the `loft merge-driver` schema.
 fn json_of(output: &Output) -> Value {
-    let document: Value = serde_json::from_str(&text(&output.stdout)).unwrap();
-    let schema: Value =
-        serde_json::from_str(include_str!("../../../schemas/merge-driver.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
-    document
+    schema::conforming(
+        &output.stdout,
+        include_str!("../../../schemas/merge-driver.json"),
+    )
 }
 
 #[test]

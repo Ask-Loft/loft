@@ -83,7 +83,7 @@ impl FileStore {
         if spec.exists() {
             return Err(StoreError::Exists(spec));
         }
-        fs::create_dir_all(&spec).map_err(io_error(&spec))?;
+        // The save creates `spec/` with its files, so an interrupted save leaves none behind.
         self.write_files(files)
     }
 
