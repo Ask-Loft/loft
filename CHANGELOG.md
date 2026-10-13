@@ -21,7 +21,13 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   merge driver, keeps interviewing until no answer would change the outline, keeps open questions
   out of `spec/`, writes decisions in one pass by name, corrects an unpublished decision in place
   and supersedes a published one only after asking.
-- The README says how to work: write the specification with an agent, and read what it wrote.
+- The README says how to work: write the specification with an agent, and read what it wrote,
+  and installs from crates.io with `--locked`, so that the dependencies are the ones released
+  together.
+- The `loftspec` library's Rust API changes: `Product` gains `constraints`, and the record kinds,
+  scalar shapes and read problems gain variants. Those three enums are now `#[non_exhaustive]`,
+  so that a variant added later breaks no `match` outside the crate. `loft-cli` 2.0.1 still
+  builds against this release.
 
 ## 2.0.1 (2026-10-13)
 

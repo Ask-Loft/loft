@@ -46,7 +46,7 @@ You write a specification by talking to a coding agent, not by editing YAML. The
 
 ```sh
 npm install --save-dev @ask-loft/loft      # a prebuilt binary, in a project that uses npm
-cargo install loft-cli                     # from crates.io
+cargo install --locked loft-cli            # from crates.io, with the tested dependencies
 cargo install --path crates/loft-cli       # from a clone of this repository
 ```
 

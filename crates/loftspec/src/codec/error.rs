@@ -101,6 +101,7 @@ impl Located {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[non_exhaustive]
 pub enum Problem {
     #[error("{0}")]
     Syntax(yaml::ErrorKind),

@@ -4,6 +4,7 @@
 
 /// Every kind of record a file of the text form holds.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
 pub enum Kind {
     Manifest,
     DerivedFrom,
@@ -40,6 +41,7 @@ pub enum Kind {
 
 /// What a scalar field holds, which fixes how it is checked and written.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Scalar {
     /// A lowercase hyphenated UUID (RQ-60).
     Key,

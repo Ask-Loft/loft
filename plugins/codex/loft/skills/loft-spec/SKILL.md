@@ -14,10 +14,11 @@ every node; the author owns the words.
 ## Check availability
 
 Run `loft --version` before the first command and expect version 2. If `loft` is not on the
-search path, try the project's package runner: `npx --no-install loft`, `pnpm exec loft` or
-`yarn loft`, and run every later command the same way. If none runs, stop, say so, and tell the
-user how to install it: `npm install --save-dev @ask-loft/loft` in a project that uses npm,
-`cargo install loft-cli`, or a release binary from the Loft repository. Never install it unasked.
+search path, try `~/.cargo/bin/loft`, where `cargo install` puts it, then the project's package
+runner: `npx --no-install loft`, `pnpm exec loft` or `yarn loft`. Run every later command the
+way that worked. If none runs, stop, say so, and tell the user how to install it:
+`npm install --save-dev @ask-loft/loft` in a project that uses npm,
+`cargo install --locked loft-cli`, or a release binary from the Loft repository. Never install it unasked.
 Run every `loft` command from the directory that holds `spec/`.
 
 ## Route the intent
