@@ -1,7 +1,7 @@
 key: 7423387f-468f-4155-965a-a5893ff1e43c
 slug: decision-integrity
 name: "Decision integrity"
-body: "The rules a decision's own references, its successor and its completeness for its state must meet."
+body: "The rules for a decision's own references, its successor and its completeness in each state."
 realizes:
   - b90f38f9-766c-467f-a29c-d6ae3b796e52
 requirements:
