@@ -153,3 +153,31 @@ requirements:
         name: "A consequence that names such a node names its former label."
       - key: 194a6572-6bb8-4baf-8a61-b721694f5d20
         name: "In a file, a former label is written as a mapping whose single field `formerLabel` holds the label."
+  - key: 01a137a8-ae5b-7395-a025-0da856cebdef
+    statement:
+      form: event_driven
+      when: "formatting finds a binding whose key no node or decision carries"
+      system: "the formatter"
+      shall: "drop that binding from the bindings file."
+    criteria:
+      - key: 01a137a8-ae5b-7395-a025-0da98138cce8
+        name: "After formatting, the bindings file lists no key that no node or decision carries."
+      - key: 01a137a8-ae5b-7395-a025-0daa86467cff
+        name: "Formatting leaves the label counters unchanged, so no label of a dropped binding is allocated again."
+      - key: 01a137a8-ae5b-7395-a025-0dab7b5cf623
+        name: "A binding whose key a node or decision carries is kept."
+  - key: 01a137a8-ae5b-7395-a025-0dac26f000aa
+    statement:
+      form: event_driven
+      when: "formatting drops the binding of a node that a retired or superseded decision names"
+      system: "the formatter"
+      shall: "write that reference as the binding's live label under `formerLabel`."
+    criteria:
+      - key: 01a137a8-ae5b-7395-a025-0dadf1a91a7f
+        name: "A `subject` edge of such a decision to the node is written as the node's former label."
+      - key: 01a137a8-ae5b-7395-a025-0dae99806097
+        name: "A driver of such a decision that names the node names its former label."
+      - key: 01a137a8-ae5b-7395-a025-0dafcfc9d8c0
+        name: "A consequence of such a decision that names the node names its former label."
+      - key: 01a137a8-ae5b-7395-a025-0db0d44d55b4
+        name: "A decision that is neither retired nor superseded and names the node keeps the key, which the reader refuses."

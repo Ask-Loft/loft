@@ -21,6 +21,8 @@ requirements:
         name: "A key is minted for every node without one."
       - key: 01a13737-c20a-744c-94d5-08af17bf983d
         name: "Every reference written by name is replaced by its target's key."
+      - key: 01a137a8-ae5b-7395-a025-0da7f7b88277
+        name: "A binding whose key no node or decision carries is dropped from `spec/labels.yaml`."
       - key: 12065dff-4eff-49fb-a77e-3c09a0d27e66
         name: "The paths rewritten are printed."
   - key: a19f24f8-5980-4978-aa6a-5feb1cc4f045

@@ -44,3 +44,5 @@ requirements:
         name: "The workflow tells the agent never to give one node's key to another."
       - key: 01a13654-6e12-74a1-ad7f-e7de4c98b7dc
         name: "The workflow tells the agent that a deleted node's label is never allocated again."
+      - key: 01a137a8-ae5b-7395-a025-0da60323e0f6
+        name: "The workflow tells the agent that `loft fmt` drops a deleted node's binding and writes a retired or superseded decision's reference to it as its former label."
