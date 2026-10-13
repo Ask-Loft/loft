@@ -18,7 +18,8 @@ cycle to `the-loop.md`; the wording to `writing-rules.md`. Never restate or over
 Run `loft init` in the directory that will hold `spec/`, usually the root of the product's
 repository. It creates `spec/` with a manifest, label counters and empty registries, and refuses
 where `spec/` already exists. If the repository is a git repository and more than one person
-will edit `spec/`, also run `loft merge-driver --install`, as `publishing-and-merging.md` says.
+will edit `spec/`, also run `loft merge-driver --install`, as `publishing-and-merging.md` says;
+`loft init` suggests it in its text output while the repository has not registered it.
 
 ## Draft from a conversation
 
