@@ -28,12 +28,13 @@ pub(super) fn collect(tree: &Tree) -> Vec<Conflict> {
 fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
     if let Some(owner) = owner(record) {
         for conflict in &record.conflicts {
+            let [base, ours, theirs] = conflict.sides().map(|(_, side)| side.map(value));
             conflicts.push(Conflict {
                 owner,
                 field: FieldPath::new(&conflict.field),
-                base: conflict.base.as_ref().map(value),
-                ours: conflict.ours.as_ref().map(value),
-                theirs: conflict.theirs.as_ref().map(value),
+                base,
+                ours,
+                theirs,
             });
         }
     }
@@ -103,13 +104,11 @@ fn attach_to(record: &mut Rec, by_owner: &BTreeMap<ConflictOwner, Vec<&Conflict>
 /// A conflict as the record its host holds.
 fn rec(conflict: &Conflict, host: Kind) -> ConflictRec {
     let shape = side_shape(host, conflict.field.as_str()).expect("a conflict the reader checked");
-    let side = |side: &Option<ConflictValue>| side.as_ref().map(|side| side_val(side, shape));
-    ConflictRec {
-        field: conflict.field.as_str().to_owned(),
-        base: side(&conflict.base),
-        ours: side(&conflict.ours),
-        theirs: side(&conflict.theirs),
-    }
+    let sides = [&conflict.base, &conflict.ours, &conflict.theirs];
+    ConflictRec::new(
+        conflict.field.as_str(),
+        sides.map(|side| side.as_ref().map(|side| side_val(side, shape))),
+    )
 }
 
 fn side_val(side: &ConflictValue, shape: SideShape) -> Val {

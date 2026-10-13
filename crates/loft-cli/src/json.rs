@@ -88,23 +88,17 @@ pub fn finding(finding: &Finding) -> Value {
 
 /// The document of a command that ran to a result (F-45): its schema, its outcome, its result
 /// `fields` and any errors the result carries.
-pub fn result(schema: &str, outcome: &str, fields: Value, errors: Vec<Value>) -> Value {
-    let mut document = Map::new();
-    document.insert("schema".to_owned(), json!(schema));
-    document.insert("outcome".to_owned(), json!(outcome));
-    if let Value::Object(fields) = fields {
-        document.extend(fields);
-    }
-    document.insert("errors".to_owned(), Value::Array(errors));
-    Value::Object(document)
+pub fn result(schema: &str, outcome: &str, mut fields: Value, errors: Vec<Value>) -> Value {
+    fields["schema"] = json!(schema);
+    fields["outcome"] = json!(outcome);
+    fields["errors"] = Value::Array(errors);
+    fields
 }
 
 /// The document of a command that stopped on an error: its schema, the outcome `error` and the
 /// errors, and nothing else (F-45).
 pub fn failure(schema: &str, errors: Vec<Value>) -> Value {
-    let mut document = json!({ "schema": schema, "outcome": "error" });
-    document["errors"] = Value::Array(errors);
-    document
+    result(schema, "error", json!({}), errors)
 }
 
 /// An error of the store that holds the tree, with no site.

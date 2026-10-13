@@ -60,7 +60,7 @@ fn check(value: &Value, schema: &Value, root: &Value, at: &str, found: &mut Vec<
 
 /// Requires exactly one branch to hold; when none does, reports the closest one's departures.
 fn one_of(value: &Value, branches: &[Value], root: &Value, at: &str, found: &mut Vec<String>) {
-    let mut departures: Vec<Vec<String>> = branches
+    let departures: Vec<Vec<String>> = branches
         .iter()
         .map(|branch| {
             let mut each = Vec::new();
@@ -71,9 +71,13 @@ fn one_of(value: &Value, branches: &[Value], root: &Value, at: &str, found: &mut
     match departures.iter().filter(|each| each.is_empty()).count() {
         1 => {}
         0 => {
-            departures.sort_by_key(Vec::len);
             found.push(format!("{at}: matches no branch of `oneOf`"));
-            found.append(&mut departures[0]);
+            found.extend(
+                departures
+                    .into_iter()
+                    .min_by_key(Vec::len)
+                    .unwrap_or_default(),
+            );
         }
         many => found.push(format!("{at}: matches {many} branches of `oneOf`")),
     }

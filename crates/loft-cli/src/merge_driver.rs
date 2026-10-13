@@ -33,12 +33,9 @@ pub struct Inputs<'a> {
 pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
     match merge(root, inputs) {
         Ok((conflicts, disputed)) => {
+            let merged = conflicts == 0;
             if as_json {
-                let outcome = if conflicts == 0 {
-                    "merged"
-                } else {
-                    "conflicted"
-                };
+                let outcome = if merged { "merged" } else { "conflicted" };
                 let fields = json!({
                     "path": inputs.path,
                     "conflicts": conflicts,
@@ -46,7 +43,7 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
                 });
                 json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
             }
-            if conflicts == 0 {
+            if merged {
                 return ExitCode::SUCCESS;
             }
             let plural = if conflicts == 1 { "" } else { "s" };

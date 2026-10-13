@@ -17,7 +17,7 @@ use std::process::Output;
 
 use commands::{COMMANDS, Fixture};
 use common::{EPOCH, Scratch, stderr, stdout};
-use conformance::tagged;
+use conformance::{tagged, tagged_commands};
 use loftspec::codec::SpecPath;
 use loftspec::publish::{LOCK, Lock};
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
@@ -125,19 +125,6 @@ fn format_files(root: &Path) -> BTreeMap<String, Vec<u8>> {
         .collect()
 }
 
-/// The commands whose Features list the tag.
-fn implemented_tagged() -> Vec<(&'static str, &'static [&'static str], Fixture)> {
-    tagged(TAG)
-        .into_iter()
-        .map(|slug| {
-            COMMANDS
-                .into_iter()
-                .find(|(name, _, _)| *name == slug)
-                .unwrap_or_else(|| panic!("{slug} lists `{TAG}` but COMMANDS has no entry"))
-        })
-        .collect()
-}
-
 /// Asserts the command exited with `code`, showing what it printed if not.
 fn assert_exit(slug: &str, output: &Output, code: i32) {
     assert_eq!(
@@ -151,7 +138,7 @@ fn assert_exit(slug: &str, output: &Output, code: i32) {
 
 #[test]
 fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
-    for (slug, args, kind) in implemented_tagged() {
+    for (slug, args, kind) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         plant(&scratch, kind, true);
         // In an empty directory the finished save leaves `spec/` not empty, which the command
@@ -174,7 +161,7 @@ fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
 
 #[test]
 fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
-    for (slug, args, kind) in implemented_tagged() {
+    for (slug, args, kind) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         plant(&scratch, kind, false);
         assert_exit(slug, &run(&scratch, kind, args), 0);
@@ -207,7 +194,7 @@ fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
 
 #[test]
 fn each_tagged_command_changes_a_file_of_the_format() {
-    for (slug, args, kind) in implemented_tagged() {
+    for (slug, args, kind) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         let before = format_files(&scratch.0);
         assert_exit(slug, &run(&scratch, kind, args), 0);

@@ -88,12 +88,7 @@ fn check_conflict(node: &yaml::Node, host: Kind, mode: Mode) -> Result<ConflictR
             },
         )
     })?;
-    let mut conflict = ConflictRec {
-        field: text.to_owned(),
-        base: None,
-        ours: None,
-        theirs: None,
-    };
+    let mut conflict = ConflictRec::new(text, [None, None, None]);
     for entry in entries.iter().filter(|entry| entry.key != field::FIELD) {
         let Some(side) = conflict.side_mut(&entry.key) else {
             return Err(Located {

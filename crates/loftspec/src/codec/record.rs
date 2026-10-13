@@ -42,6 +42,18 @@ pub struct ConflictRec {
 }
 
 impl ConflictRec {
+    /// A conflict over the field at `field`, with its sides in the Format's order: base, ours,
+    /// theirs.
+    #[must_use]
+    pub fn new(field: impl Into<String>, [base, ours, theirs]: [Option<Val>; 3]) -> Self {
+        Self {
+            field: field.into(),
+            base,
+            ours,
+            theirs,
+        }
+    }
+
     /// The sides by name, in the Format's order: `base`, `ours`, `theirs` (AC-857).
     #[must_use]
     pub fn sides(&self) -> [(&'static str, Option<&Val>); 3] {

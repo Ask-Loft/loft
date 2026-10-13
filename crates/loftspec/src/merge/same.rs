@@ -1,8 +1,6 @@
 //! Equality of field values as the merge sees it: by content alone, never by where a value
 //! sat in its file, with an empty list the same as an absent one (AC-799).
 
-use std::fmt::Write as _;
-
 use crate::codec::{ConflictRec, Rec, Val};
 
 /// Whether two sides hold the same value of a field.
@@ -85,13 +83,26 @@ pub(super) fn text(value: &Val) -> String {
                 .filter(|(_, value)| present(Some(value)).is_some())
                 .map(|(name, value)| format!("{name}={}", text(value)));
             let mut text = format!("{{{}}}", fields.collect::<Vec<_>>().join(";"));
-            for conflict in &record.conflicts {
-                let sides = conflict
-                    .sides()
-                    .map(|(_, side)| present(side).map_or_else(String::new, self::text));
-                let _ = write!(text, "[{}:{}]", conflict.field, sides.join("|"));
+            if !record.conflicts.is_empty() {
+                let conflicts: Vec<String> = record.conflicts.iter().map(conflict_text).collect();
+                text.push('[');
+                text.push_str(&conflicts.join(","));
+                text.push(']');
             }
             text
         }
     }
+}
+
+/// A conflict as text, its field and each present side by name, as a record's text names its
+/// fields.
+fn conflict_text(conflict: &ConflictRec) -> String {
+    let sides = conflict
+        .sides()
+        .into_iter()
+        .filter_map(|(name, side)| present(side).map(|side| format!("{name}={}", text(side))));
+    let fields: Vec<String> = std::iter::once(format!("field={}", conflict.field))
+        .chain(sides)
+        .collect();
+    format!("{{{}}}", fields.join(";"))
 }

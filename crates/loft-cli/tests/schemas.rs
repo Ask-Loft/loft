@@ -1,5 +1,6 @@
 //! Each command's JSON result is described by one schema under `schemas/`, named after the
-//! command, that names its version; every schema describes sites and errors alike.
+//! command, that names its version and allows the envelope's result and error shapes; every
+//! schema describes sites and errors alike.
 
 #[path = "common/commands.rs"]
 mod commands;
@@ -10,7 +11,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use commands::COMMANDS;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 fn schemas() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../schemas")
@@ -22,15 +23,11 @@ fn read(name: &str) -> Value {
     serde_json::from_str(&text).unwrap()
 }
 
-/// The `schema` const of each branch of a command's schema.
-fn names(schema: &Value) -> Vec<&str> {
-    let branches = schema["oneOf"]
+/// The shapes a command's schema allows: its result shapes, then its error shape.
+fn branches(schema: &Value) -> &[Value] {
+    schema["oneOf"]
         .as_array()
-        .expect("a result and an error shape");
-    let names = branches
-        .iter()
-        .map(|branch| branch["properties"]["schema"]["const"].as_str());
-    names.map(|name| name.expect("a schema const")).collect()
+        .expect("a result and an error shape")
 }
 
 #[test]
@@ -47,16 +44,16 @@ fn each_command_has_one_schema_named_after_it_that_names_its_version() {
     for (_, args, _) in COMMANDS {
         let command = args[0];
         let schema = read(&format!("{command}.json"));
-        let names = names(&schema);
-        assert!(
-            names.iter().all(|name| *name == names[0]),
-            "{command}: {names:?}"
-        );
-        let version = names[0].strip_prefix(&format!("loft-{command}/"));
+        let name = &branches(&schema)[0]["properties"]["schema"]["const"];
+        for branch in branches(&schema) {
+            assert_eq!(&branch["properties"]["schema"]["const"], name, "{command}");
+        }
+        let version = name
+            .as_str()
+            .and_then(|name| name.strip_prefix(&format!("loft-{command}/")));
         assert!(
             version.is_some_and(|version| version.parse::<u32>().is_ok()),
-            "{command}: {}",
-            names[0]
+            "{command}: {name}"
         );
         assert_eq!(
             schema["$id"],
@@ -71,22 +68,25 @@ fn every_document_carries_schema_outcome_and_errors_and_an_error_carries_only_th
     for (_, args, _) in COMMANDS {
         let command = args[0];
         let schema = read(&format!("{command}.json"));
-        let branches = schema["oneOf"].as_array().unwrap();
-        for branch in branches {
-            let required = branch["required"].as_array().unwrap();
+        let (error, results) = branches(&schema).split_last().unwrap();
+        for result in results {
+            let required = result["required"].as_array().unwrap();
             for field in ["schema", "outcome", "errors"] {
-                assert!(required.contains(&Value::from(field)), "{command}: {field}");
+                assert!(required.contains(&json!(field)), "{command}: {field}");
             }
         }
-        let error = branches.last().unwrap();
-        assert_eq!(
-            error["properties"]["outcome"]["const"], "error",
-            "{command}"
-        );
-        let mut fields: Vec<&String> = error["properties"].as_object().unwrap().keys().collect();
-        fields.sort();
-        assert_eq!(fields, ["errors", "outcome", "schema"], "{command}");
-        assert_eq!(error["additionalProperties"], false, "{command}");
+        let name = &error["properties"]["schema"]["const"];
+        let only_three = json!({
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["schema", "outcome", "errors"],
+            "properties": {
+                "schema": { "const": name },
+                "outcome": { "const": "error" },
+                "errors": { "type": "array", "items": { "$ref": "#/$defs/error" } },
+            },
+        });
+        assert_eq!(error, &only_three, "{command}");
     }
 }
 

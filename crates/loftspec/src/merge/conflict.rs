@@ -40,12 +40,6 @@ impl<'a> Host<'a> {
 }
 
 /// A conflict record over `path`; a side whose value is absent omits its member (AC-859).
-pub(super) fn conflict(path: &str, [base, ours, theirs]: [Option<&Val>; 3]) -> ConflictRec {
-    let side = |side| super::same::present(side).cloned();
-    ConflictRec {
-        field: path.to_owned(),
-        base: side(base),
-        ours: side(ours),
-        theirs: side(theirs),
-    }
+pub(super) fn conflict(path: &str, sides: [Option<&Val>; 3]) -> ConflictRec {
+    ConflictRec::new(path, sides.map(|side| super::same::present(side).cloned()))
 }

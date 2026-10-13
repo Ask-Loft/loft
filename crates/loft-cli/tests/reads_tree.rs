@@ -11,7 +11,7 @@ mod snapshot;
 
 use commands::COMMANDS;
 use common::{Scratch, stderr, stdout};
-use conformance::tagged;
+use conformance::{tagged, tagged_commands};
 use snapshot::snapshot;
 
 const PRODUCT: &str = "products/reading-list/product.yaml";
@@ -32,11 +32,7 @@ fn output_text(output: &std::process::Output) -> String {
 
 #[test]
 fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
-    for slug in tagged(TAG) {
-        let (_, args, _) = COMMANDS
-            .into_iter()
-            .find(|(name, _, _)| *name == slug)
-            .unwrap_or_else(|| panic!("{slug} lists `{TAG}` but COMMANDS has no entry"));
+    for (slug, args, _) in tagged_commands(TAG) {
         let scratch = broken();
         let before = snapshot(&scratch.0);
         let output = scratch.loft(args);

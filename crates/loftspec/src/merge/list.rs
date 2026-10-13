@@ -246,11 +246,8 @@ fn position_conflict(position: &super::order::PositionConflict<Id>) -> ConflictR
             })
         })
     };
-    let [base, ours, theirs] = [&position.base, &position.ours, &position.theirs].map(anchor);
-    conflict(
-        field::POSITION,
-        [base.as_ref(), ours.as_ref(), theirs.as_ref()],
-    )
+    let sides = [&position.base, &position.ours, &position.theirs].map(anchor);
+    ConflictRec::new(field::POSITION, sides)
 }
 
 /// The records of a list, to merge as host records of a registry.
