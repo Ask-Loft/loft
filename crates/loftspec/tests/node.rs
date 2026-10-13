@@ -1,8 +1,6 @@
 //! The containment table (F-17) and the canonical traversal of the tree (RQ-160).
 
-mod common;
-
-use common::small_document;
+use crate::common::small_document;
 use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 

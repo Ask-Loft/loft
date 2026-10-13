@@ -139,6 +139,10 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 - Test names say what they prove in words and cite no label: a publish can withdraw a label and
   give its node a new one, and a guard (`crates/loft-cli/tests/citations.rs`) fails on a label
   in a test name.
+- Each crate's integration tests are one binary, `tests/main.rs`, with a module for each file of
+  `tests/` and the modules they share; one binary links once, where a binary per file linked
+  dozens of times. Declare a new test file there as `mod <file>;`: Cargo no longer finds it by
+  itself, and a guard (`crates/loft-cli/tests/test_modules.rs`) fails on a file left out.
 - Treat `clippy::too_many_lines` as a hard refactoring gate: never allow, expect, or suppress it.
   When it fires, complete the necessary refactoring within the same turn before continuing or
   handing work off.
@@ -160,13 +164,13 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   cargo fmt --all -- --check
   cargo clippy --workspace --all-targets -- -D warnings
   cargo nextest run --workspace
-  cargo test --workspace --doc
   cargo run -q -p loft-cli -- fmt --check
   cargo run -q -p loft-cli -- check --fail-on warning
   ```
 
-  nextest runs no doctests, so `cargo test --doc` is what keeps the `compile_fail` boundaries
-  checked; install the runner with `cargo install cargo-nextest --locked`.
+  Install the runner with `cargo install cargo-nextest --locked`. nextest runs no doctests, and
+  the crates have none; one added later brings `cargo test --workspace --doc` into this list and
+  CI with it.
 - For docs-only work, run only the checks relevant to the changed documents.
 - For a focused loop, use `cargo nextest run -p <crate> <test-name>`.
 

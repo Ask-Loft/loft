@@ -1,9 +1,8 @@
 //! The hasher's time on a large converted document, against a local v1 export.
 
-mod common;
-
 use std::time::{Duration, Instant};
 
+use crate::common;
 use loftspec::hash::{hash_document, hash_indexed_with_views};
 
 /// The fastest of `runs` timings of `work`.

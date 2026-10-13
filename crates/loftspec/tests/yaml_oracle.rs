@@ -1,7 +1,6 @@
 //! Every document the reader accepts reads the same in a conforming YAML parser (ADR-14).
 
-#[path = "support/oracle.rs"]
-mod oracle;
+use crate::oracle;
 
 const ACCEPTED: &[&str] = &[
     "key: 0190f5f6-0000-7000-8000-000000000001\nrequirements:\n  - key: a\n    name: \"N\"\n  - key: b\n",

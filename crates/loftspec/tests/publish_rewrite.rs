@@ -2,10 +2,8 @@
 //! label withdrawn from a key to that key's live label, in the text of every element whose
 //! `mentions` include the key, and only there.
 
-mod common;
-
-use common::text::{FEATURE, files, path, text};
-use common::{key, label};
+use crate::common::text::{FEATURE, files, path, text};
+use crate::common::{key, label};
 use loftspec::codec::{self, Files};
 use loftspec::hash::hash_document;
 use loftspec::publish::rewrite::rewrite;

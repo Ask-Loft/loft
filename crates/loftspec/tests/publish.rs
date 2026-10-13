@@ -1,11 +1,10 @@
 //! The publisher (F-27 to F-31): its preconditions, the lock and bindings it gives, idempotence,
 //! and verification of a lock against the tree.
 
-mod common;
-
 use std::num::NonZeroU64;
 
-use common::{key, small_document};
+use crate::common;
+use crate::common::{key, small_document};
 use loftspec::canonical::Digest;
 use loftspec::codec::{self, Files, LABELS, SpecPath};
 use loftspec::decision::NodeRef;

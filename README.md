@@ -140,7 +140,6 @@ suite against the `git` on your search path. git also calls Loft, as the merge d
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo nextest run --workspace
-cargo test --workspace --doc
 cargo run -q -p loft-cli -- fmt --check
 cargo run -q -p loft-cli -- check --fail-on warning
 cargo run -q -p loft-cli -- verify    # on main, which carries only published states

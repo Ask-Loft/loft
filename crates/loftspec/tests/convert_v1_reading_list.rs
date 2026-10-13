@@ -3,11 +3,9 @@
 //! scopes, Facet Tags, a constraint category, a quality target, decisions in each of the five
 //! states, and prose with a resolvable reference, an unresolvable one and a heading.
 
-mod common;
-
 use std::collections::BTreeMap;
 
-use common::v1::key;
+use crate::common::v1::key;
 
 use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::{Conversion, Finding, convert};

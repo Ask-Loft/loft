@@ -1,10 +1,8 @@
 //! Withdrawn labels (F-2): a label a key lost to a publish that met another is recorded on
 //! the key's binding, resolves to nothing, is never allocated again and enters no root.
 
-mod common;
-
-use common::text::{files, text};
-use common::{key, label, small_document};
+use crate::common::text::{files, text};
+use crate::common::{key, label, small_document};
 use loftspec::bindings::{BindingError, Bindings, Counters};
 use loftspec::codec;
 use loftspec::document::Document;

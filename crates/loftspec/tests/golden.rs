@@ -2,9 +2,7 @@
 //! vectors in `testdata/golden/` were computed by an independent implementation; never
 //! regenerate them to make this test pass.
 
-mod common;
-
-use common::small_document;
+use crate::common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
 use loftspec::hash::{hash_document, hash_indexed_with_views};
 use serde_json::Value;

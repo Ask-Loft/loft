@@ -1,8 +1,6 @@
 //! The edges, registry, decisions, content, binding and state roots (F-4, F-5).
 
-mod common;
-
-use common::{
+use crate::common::{
     component, fresh_key, key, label, product, root, small_document, small_document_with,
 };
 use loftspec::canonical::Digest;

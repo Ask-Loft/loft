@@ -3,11 +3,8 @@
 //! tree is the writer's output for the document, it loads back the document saved in the
 //! writer's order, and the document is valid.
 
-mod common;
-mod fixtures;
-
-use common::Scratch;
-use fixtures::{LINT_CONFIG, converted, with_lint};
+use crate::common::Scratch;
+use crate::fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{self, LINT, SpecPath};
 use loftspec::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
 use loftspec::document::{Document, Edge, TagEntry};

@@ -33,7 +33,6 @@ add have keys and no labels until then.
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo nextest run --workspace
-cargo test --workspace --doc
 cargo run -q -p loft-cli -- fmt --check
 cargo run -q -p loft-cli -- check --fail-on warning
 ```

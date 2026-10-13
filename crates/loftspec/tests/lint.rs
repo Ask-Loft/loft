@@ -1,12 +1,12 @@
 //! The structural and v2 lint rules, findings and reports, and the lint configuration
 //! (F-19, F-21, F-22, F-23).
 
-mod common;
-
 use std::num::NonZeroU64;
 
-use common::text::{FEATURE, files, path};
-use common::{component, criterion, feature, key, product, requirement, root, small_document};
+use crate::common::text::{FEATURE, files, path};
+use crate::common::{
+    component, criterion, feature, key, product, requirement, root, small_document,
+};
 use loftspec::codec::{self, Problem, Sites};
 use loftspec::document::{Document, Edge, TagEntry};
 use loftspec::identity::{Key, LabelPrefix};

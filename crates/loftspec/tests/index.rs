@@ -1,9 +1,7 @@
 //! The document index: every key, the element that carries it, each node's place, and every
 //! integrity error found at once.
 
-mod common;
-
-use common::{component, key, label, root, small_document, small_document_with};
+use crate::common::{component, key, label, root, small_document, small_document_with};
 use loftspec::decision::{Decision, DecisionState};
 use loftspec::document::Edge;
 use loftspec::ids::{

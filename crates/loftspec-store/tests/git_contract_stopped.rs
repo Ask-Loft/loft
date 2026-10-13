@@ -2,20 +2,16 @@
 //! a scratch repository and scripts the simulator with the commits and blobs real git made, and
 //! the two must answer each call Loft makes alike and give the repository port the same state.
 
-mod common;
-#[path = "common/real_git.rs"]
-mod real_git;
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use common::Scratch;
+use crate::common::Scratch;
+use crate::real_git::{git, git_output, real_git, reply, simulated, state};
 use loftspec::publish::{Operation, RepoState, Stopped};
 use loftspec_store::repository::{
     GIT_PATH, GitCommand, MERGE_HEAD, REBASE_HEAD, REBASE_HEAD_NAMES, Repository as _, UNMERGED,
 };
-use real_git::{git, git_output, real_git, reply, simulated, state};
 use software_plant::GitScenario;
 
 /// Runs a setup command of real git in `dir` that stops on a conflict.

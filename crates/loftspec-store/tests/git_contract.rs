@@ -2,22 +2,18 @@
 //! the Software Plant's git simulator, and the two must answer each call Loft makes alike, byte
 //! for byte, and give the repository port the same state.
 
-mod common;
-#[path = "common/real_git.rs"]
-mod real_git;
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use common::Scratch;
+use crate::common::Scratch;
+use crate::real_git::{git, real_git, reply, simulated, state};
 use loftspec::publish::RepoState;
 use loftspec_store::StoreError;
 use loftspec_store::merge_driver::{DRIVER, driver, install};
 use loftspec_store::repository::{
     CURRENT_BRANCH, GitCommand, Repository, SHOW_PREFIX, STATUS, launcher_call,
 };
-use real_git::{git, real_git, reply, simulated, state};
 use software_plant::GitScenario;
 
 /// The calls Loft makes of git, exactly as the repository port makes them.

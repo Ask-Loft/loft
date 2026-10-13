@@ -1,12 +1,10 @@
 //! Writing the tree: a save leaves either every file as it was or every file as written, and the
 //! next command finishes a committed save or discards an uncommitted one.
 
-mod common;
-
 use std::collections::BTreeMap;
 use std::fs;
 
-use common::Scratch;
+use crate::common::Scratch;
 use loftspec::codec::SpecPath;
 use loftspec_store::StoreError;
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};

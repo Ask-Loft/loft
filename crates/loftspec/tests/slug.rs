@@ -1,8 +1,6 @@
 //! Slugs: their syntax and the rule that derives one from a name (F-6, AC-245, AC-246).
 
-mod common;
-
-use common::v1::{convert_value, full_export};
+use crate::common::v1::{convert_value, full_export};
 use loftspec::slug::Slug;
 
 fn derive(name: &str) -> String {

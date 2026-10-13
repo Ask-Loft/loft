@@ -1,9 +1,7 @@
 //! The validator (F-18, F-48, RQ-70): every error a typed document can hold, each naming
 //! the elements it concerns.
 
-mod common;
-
-use common::{component, key, label, root, small_document, small_document_with};
+use crate::common::{component, key, label, root, small_document, small_document_with};
 use loftspec::bindings::BindingError;
 use loftspec::decision::{Decision, DecisionState, NodeRef};
 use loftspec::document::{Document, Edge, SubjectRole};

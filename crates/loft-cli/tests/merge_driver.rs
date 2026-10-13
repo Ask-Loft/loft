@@ -2,14 +2,11 @@
 //! written to `<ours>`, the exit code saying whether a conflict was written, and messages that
 //! name `<path>` rather than git's temporary files.
 
-mod common;
-#[path = "common/schema.rs"]
-mod schema;
-
 use std::fs;
 use std::process::Output;
 
-use common::{Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout};
+use crate::schema;
 use serde_json::{Value, json};
 
 const FEATURE: &str = "products/reading-list/sharing/share-a-list.yaml";

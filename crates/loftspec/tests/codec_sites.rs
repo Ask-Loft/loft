@@ -2,10 +2,8 @@
 //! containment and edge-kind rules that the typed text form refuses as it reads (F-17,
 //! F-18, F-47).
 
-mod common;
-
-use common::key;
-use common::text::{FEATURE, PRODUCT, edited, files, path, text};
+use crate::common::key;
+use crate::common::text::{FEATURE, PRODUCT, edited, files, path, text};
 use loftspec::codec::{self, Files, Problem, ReadError};
 
 const COMPONENT: &str = "components/document-model.yaml";

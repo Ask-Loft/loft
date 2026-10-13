@@ -8,6 +8,9 @@ license.workspace = true
 repository.workspace = true
 # Test equipment: never published, and never a dependency of a published crate.
 publish = false
+# The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
+# checked by the operating system once each.
+autotests = false
 
 [dependencies]
 serde.workspace = true
@@ -15,3 +18,7 @@ serde_json.workspace = true
 
 [lints]
 workspace = true
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"

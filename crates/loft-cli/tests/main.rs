@@ -1,0 +1,35 @@
+//! The integration tests of the `loft` command line, as one binary: a module for each file beside
+//! this one, and the modules they share. One binary is linked once, and checked once by the
+//! operating system before its first run.
+
+#[path = "common/commands.rs"]
+mod commands;
+mod common;
+mod conformance;
+#[path = "common/help.rs"]
+mod help;
+#[path = "common/repo.rs"]
+mod repo;
+#[path = "common/schema.rs"]
+mod schema;
+#[path = "common/snapshot.rs"]
+mod snapshot;
+
+mod check;
+mod citations;
+mod fmt;
+mod import;
+mod init;
+mod merge_contract;
+mod merge_driver;
+mod merge_driver_install;
+mod publish;
+mod publish_meet_contract;
+mod publish_settle;
+mod reads_tree;
+mod render;
+mod schemas;
+mod test_modules;
+mod verify;
+mod version;
+mod writes_tree;
