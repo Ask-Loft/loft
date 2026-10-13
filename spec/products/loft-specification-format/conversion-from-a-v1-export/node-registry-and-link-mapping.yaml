@@ -19,6 +19,8 @@ requirements:
         name: "A Component maps to a `component`."
       - key: 18aabedd-93cc-4be7-ad0b-4359c624d507
         name: "A Constraint maps to a `constraint` with its technical binding, conservation kind and verification fate kept field for field."
+      - key: 01a13732-a47a-7583-b6e7-cb852051bb76
+        name: "A Constraint under a Product tier section becomes a Constraint of the converted Product."
       - key: 2c0b93d3-d76d-4f6c-9339-1a26825d7a80
         name: "A Quality Attribute maps to a `quality_attribute` with its kind and its quality target kept field for field."
       - key: 033aa134-4eb4-48cc-8b73-bd81a658e8ef

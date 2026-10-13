@@ -12,7 +12,7 @@ requirements:
       shall: "write each Product record with the Product fields in the Format's order."
     criteria:
       - key: 75a35a7c-a76b-4e23-9e97-877edcedfa8d
-        name: "A Product record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `featureGroups` and `sections`."
+        name: "A Product record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `featureGroups`, `constraints` and `sections`."
       - key: d655ff82-d634-4657-a7fc-be907a1471a0
         name: "A Product record requires `key`, `slug` and `name`."
   - key: 25012989-b874-4fee-8e0a-dd47c3078dc4
