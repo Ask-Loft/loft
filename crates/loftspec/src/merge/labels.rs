@@ -26,14 +26,9 @@ pub(super) fn merge(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> (Rec, Vec<L
     // The bindings and counters are merged here; the host merge sees the rest of the record.
     let counters = counters(ours, theirs);
     let rest = |side: &Rec| {
-        let mut rest = Rec::new(side.kind);
-        rest.fields = side
-            .fields
-            .iter()
-            .filter(|(name, _)| ![field::BINDINGS, field::COUNTERS].contains(name))
-            .cloned()
-            .collect();
-        rest.conflicts.clone_from(&side.conflicts);
+        let mut rest = side.clone();
+        rest.fields
+            .retain(|(name, _)| ![field::BINDINGS, field::COUNTERS].contains(name));
         rest
     };
     let mut record = merge_host(base.map(rest).as_ref(), &rest(ours), &rest(theirs));

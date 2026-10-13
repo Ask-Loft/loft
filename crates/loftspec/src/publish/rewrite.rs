@@ -78,8 +78,8 @@ impl Withdrawals<'_> {
         let own = kind.field(field::MENTIONS).and_then(|_| element(record));
         let governing = own.as_ref().or(around);
         for (name, value) in &mut record.fields {
-            let shape = kind.field(name).map(|(_, each)| each.shape);
-            self.value(value, shape, governing, out);
+            let (_, each) = kind.field(name).expect("a field the schema defines");
+            self.value(value, each.shape, governing, out);
         }
     }
 
@@ -87,16 +87,16 @@ impl Withdrawals<'_> {
     fn value(
         &self,
         value: &mut Val,
-        shape: Option<Shape>,
+        shape: Shape,
         governing: Option<&Element>,
         out: &mut Vec<Relabel>,
     ) {
         let text = Item::Scalar(Scalar::Text);
         match (shape, value) {
-            (Some(Shape::One(item)), Val::Scalar { text: prose, .. }) if item == text => {
+            (Shape::One(item), Val::Scalar { text: prose, .. }) if item == text => {
                 self.text(prose, governing, out);
             }
-            (Some(Shape::List(item)), Val::List(items)) if item == text => {
+            (Shape::List(item), Val::List(items)) if item == text => {
                 let prose = items.iter_mut().filter_map(|item| match item {
                     Val::Scalar { text, .. } => Some(text),
                     _ => None,

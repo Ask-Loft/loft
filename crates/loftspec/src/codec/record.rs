@@ -288,10 +288,7 @@ fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located>
             Value::Mapping(_) => check(node, Kind::FormerLabel, mode).map(Val::Record),
             _ => check_scalar(node, Scalar::Key),
         },
-        Item::Side => Err(located(
-            node.position,
-            Problem::Expected("a conflict record in a `conflicts` list"),
-        )),
+        Item::Side => unreachable!("a conflict's sides are checked by `check_conflicts`"),
     }
 }
 

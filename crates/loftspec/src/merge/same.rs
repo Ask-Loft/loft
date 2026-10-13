@@ -21,13 +21,7 @@ pub(super) fn same_value(left: &Val, right: &Val) -> bool {
     match (left, right) {
         (Val::Scalar { text: left, .. }, Val::Scalar { text: right, .. }) => left == right,
         (Val::Null { .. }, Val::Null { .. }) => true,
-        (Val::List(left), Val::List(right)) => {
-            left.len() == right.len()
-                && left
-                    .iter()
-                    .zip(right)
-                    .all(|(left, right)| same_value(left, right))
-        }
+        (Val::List(left), Val::List(right)) => all_same(left, right, same_value),
         (Val::Record(left), Val::Record(right)) => same_record(left, right),
         _ => false,
     }
@@ -45,12 +39,16 @@ pub(super) fn same_record(left: &Rec, right: &Rec) -> bool {
             .all(|((left_name, left), (right_name, right))| {
                 left_name == right_name && same_value(left, right)
             })
-        && left.conflicts.len() == right.conflicts.len()
+        && all_same(&left.conflicts, &right.conflicts, same_record)
+}
+
+/// Whether two lists hold the same items in the same order, by `same`.
+fn all_same<T>(left: &[T], right: &[T], same: fn(&T, &T) -> bool) -> bool {
+    left.len() == right.len()
         && left
-            .conflicts
             .iter()
-            .zip(&right.conflicts)
-            .all(|(left, right)| same_record(left, right))
+            .zip(right)
+            .all(|(left, right)| same(left, right))
 }
 
 /// The fields of a record that hold a present value.
@@ -68,18 +66,18 @@ pub(super) fn text(value: &Val) -> String {
         Val::Scalar { text, .. } => text.clone(),
         Val::Null { .. } => "null".to_owned(),
         Val::List(items) => format!("[{}]", items.iter().map(text).collect::<Vec<_>>().join(",")),
-        Val::Record(record) => record_text(record),
+        Val::Record(record) => {
+            let fields = record
+                .fields
+                .iter()
+                .filter(|(_, value)| present(Some(value)).is_some())
+                .map(|(name, value)| format!("{name}={}", text(value)));
+            let mut text = format!("{{{}}}", fields.collect::<Vec<_>>().join(";"));
+            if !record.conflicts.is_empty() {
+                let conflicts = record.conflicts.iter().cloned().map(Val::Record);
+                text.push_str(&self::text(&Val::List(conflicts.collect())));
+            }
+            text
+        }
     }
-}
-
-/// A record as text that two records share exactly when they are the same, conflicts included.
-pub(super) fn record_text(record: &Rec) -> String {
-    let fields = record
-        .fields
-        .iter()
-        .filter(|(_, value)| present(Some(value)).is_some())
-        .map(|(name, value)| format!("{name}={}", text(value)));
-    let conflicts = record.conflicts.iter().map(record_text);
-    let conflicts = conflicts.collect::<Vec<_>>().join(",");
-    format!("{{{}}}[{conflicts}]", fields.collect::<Vec<_>>().join(";"))
 }
