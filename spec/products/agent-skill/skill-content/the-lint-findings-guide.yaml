@@ -18,7 +18,7 @@ requirements:
       - key: 01a13654-6e12-74a1-ad7f-e82ef275a5b5
         name: "Each rule is given its meaning and its usual fix."
       - key: 01a13654-6e12-74a1-ad7f-e82fbb1e90c9
-        name: "Each rule that a tree can raise is given a wrong example that raises it."
+        name: "Each rule that an unpublished tree can raise is given a wrong example that raises it."
   - key: 01a13654-6e12-74a1-ad7f-e830453cf786
     statement:
       form: ubiquitous
