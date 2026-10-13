@@ -5,8 +5,23 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- A Product may hold Constraints, for a rule the whole product keeps. The v1 converter carries
+  a Constraint under a Product across. A document that uses this is refused by an older `loft`.
+- `loft fmt` turns a reference written by name (`name: "…"`) into its target's key: an option by
+  title, a driver by label, a decision by title, a Requirement by its statement, any other node
+  by its name. An accepted decision can be written in one pass.
+- `loft find <query>` prints the key, label, kind, file and name of each node or decision whose
+  label, slug or key equals the query or whose name contains it.
+- `LQ-009` matches a hyphenated tag such as `event-details` only in its hyphenated form, not in
+  ordinary prose with the same words; a recorded divergence from v1.
 - `loft init` suggests `loft merge-driver --install` inside a git repository that has not
-  registered the merge driver yet.
+  registered the merge driver, and suggests putting the project under git first outside one.
+  `loft merge-driver --install` asks to commit `.gitattributes` when it writes it.
+- The `loft-spec` skill finds `loft` through npm's runners, asks before `git init`, installs the
+  merge driver, keeps interviewing until no answer would change the outline, keeps open questions
+  out of `spec/`, writes decisions in one pass by name, corrects an unpublished decision in place
+  and supersedes a published one only after asking.
+- The README says how to work: write the specification with an agent, and read what it wrote.
 
 ## 2.0.1 (2026-10-13)
 
