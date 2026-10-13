@@ -30,6 +30,8 @@ requirements:
         name: "The workflow tells the agent that `spec/labels.yaml` binds each label to a key."
       - key: 01a13654-6e12-74a1-ad7f-e7dae093871b
         name: "The workflow tells the agent that `loft render` writes a Markdown projection to search by name."
+      - key: 01a13754-833e-725b-b941-633d59fd0a4f
+        name: "The workflow tells the agent that `loft find` prints a node's key, label and file from its label, slug or name."
   - key: 01a13654-6e12-74a1-ad7f-e7db3840bd52
     statement:
       form: ubiquitous

@@ -31,6 +31,10 @@ requirements:
         name: "The router tells the agent to stop and say how to install `loft` when it is missing."
       - key: 01a13654-6e12-74a1-ad7f-e850bd329c00
         name: "The router tells the agent never to install `loft` unasked."
+      - key: 01a13754-833e-725b-b941-634f8a751b92
+        name: "The router tells the agent to try the project's package runner, such as `npx --no-install loft`, where `loft` is not on the search path."
+      - key: 01a13754-833e-725b-b941-635064a96c9a
+        name: "The router names installing `loft` from npm and from crates.io."
   - key: 01a13654-6e12-74a1-ad7f-e851f120905f
     statement:
       form: ubiquitous
@@ -49,6 +53,10 @@ requirements:
         name: "The router tells the agent to read each reference it selects completely before acting."
       - key: 01a13654-6e12-74a1-ad7f-e8574740ac62
         name: "The router tells the agent to select the fewest references the intent needs."
+      - key: 01a13754-833e-725b-b941-635109d6a69e
+        name: "A `spec/` that holds only what `loft init` wrote is routed as a new document."
+      - key: 01a13754-833e-725b-b941-63521f349f0d
+        name: "The router tells the agent not to read again a reference it read earlier in the conversation."
   - key: 01a13654-6e12-74a1-ad7f-e8583ffd796c
     statement:
       form: ubiquitous

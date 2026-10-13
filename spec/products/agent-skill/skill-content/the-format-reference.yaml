@@ -45,6 +45,8 @@ requirements:
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e826ffb21d78
         name: "`realizes`, `scopedTo`, `subjects` and `mentions` are each described with the kinds at their ends."
+      - key: 01a13754-833e-725b-b941-6348a3a982e5
+        name: "A reference written by name is shown, with what each reference field looks for by name."
   - key: 01a13654-6e12-74a1-ad7f-e827ee0a7582
     statement:
       form: ubiquitous

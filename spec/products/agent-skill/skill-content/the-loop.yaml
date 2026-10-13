@@ -19,18 +19,20 @@ requirements:
         name: "The loop tells the agent to read the findings of `loft check --format json`."
       - key: 01a13654-6e12-74a1-ad7f-e83ae769dfdc
         name: "The loop tells the agent to fix each error before committing."
+      - key: 01a13754-833e-725b-b941-6349f8c53b0a
+        name: "The loop tells the agent to read the lint-findings guide only for a finding whose message leaves its fix unclear."
       - key: 01a13654-6e12-74a1-ad7f-e83bb1da4f3e
         name: "The loop tells the agent to commit `spec/` once `loft check --fail-on warning` passes."
   - key: 01a13654-6e12-74a1-ad7f-e83c22b5e2a4
     statement:
       form: ubiquitous
       system: "The skill"
-      shall: "teach that a reference to a node needs that node's key."
+      shall: "teach how a reference names its target."
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e83debec8622
-        name: "The loop tells the agent to write the target node first."
+        name: "The loop tells the agent to write a reference by its target's name, which `loft fmt` replaces with the target's key."
       - key: 01a13654-6e12-74a1-ad7f-e83e867452a4
-        name: "The loop tells the agent to run `loft fmt` to mint the target's key before writing the reference."
+        name: "The loop tells the agent to read an existing node's key with `loft find`."
   - key: 01a13654-6e12-74a1-ad7f-e83ffc67ef87
     statement:
       form: ubiquitous
@@ -55,3 +57,13 @@ requirements:
         name: "The loop tells the agent never to edit `spec/labels.yaml`."
       - key: 01a13654-6e12-74a1-ad7f-e8467408c5de
         name: "The loop tells the agent never to edit `loft.lock.json`."
+  - key: 01a13754-833e-725b-b941-634c3d7b868a
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that `loft fmt` reshapes the files it writes."
+    criteria:
+      - key: 01a13754-833e-725b-b941-634defdb43ee
+        name: "The loop tells the agent that `loft fmt` gives each list item a `key` line, drops quotes that are not needed and puts fields in order."
+      - key: 01a13754-833e-725b-b941-634e9a3535f6
+        name: "The loop tells the agent to read a file again after `loft fmt` before editing it."

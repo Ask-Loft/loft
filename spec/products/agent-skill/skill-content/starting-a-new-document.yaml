@@ -14,6 +14,12 @@ requirements:
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e81114282b0d
         name: "The workflow tells the agent to run `loft init` in the directory that will hold `spec/`."
+      - key: 01a13754-833e-725b-b941-633f46c7ef47
+        name: "The workflow tells the agent to ask the user before running `git init` where the directory is not in a git repository."
+      - key: 01a13754-833e-725b-b941-634038ece94c
+        name: "The workflow tells the agent to run `loft merge-driver --install` once the project is under git."
+      - key: 01a13754-833e-725b-b941-6341b5258499
+        name: "The workflow tells the agent to commit `.gitattributes` after the merge driver is installed."
   - key: 01a13654-6e12-74a1-ad7f-e8122d427e43
     statement:
       form: event_driven
@@ -27,6 +33,10 @@ requirements:
         name: "The workflow tells the agent to propose the Products, Feature Groups, Features and Components as an outline."
       - key: 01a13654-6e12-74a1-ad7f-e815dd8c2841
         name: "The workflow tells the agent to write criteria only after the user agrees the outline."
+      - key: 01a13754-833e-725b-b941-63427f79b997
+        name: "The workflow tells the agent to keep asking until every answer that would change the outline or a Requirement is given."
+      - key: 01a13754-833e-725b-b941-6343e6d7feaa
+        name: "The workflow tells the agent never to call a draft ready for implementation while a question that would change it is open."
   - key: 01a13654-6e12-74a1-ad7f-e8160d179571
     statement:
       form: event_driven
@@ -40,3 +50,16 @@ requirements:
         name: "The workflow tells the agent to list each behaviour inferred from the code as a question for the user."
       - key: 01a13654-6e12-74a1-ad7f-e819405744bd
         name: "The workflow tells the agent to state a behaviour as a Requirement only once the user confirms it."
+  - key: 01a13754-833e-725b-b941-63441f37d11b
+    statement:
+      form: event_driven
+      when: "the agent finishes a first draft"
+      system: "the skill"
+      shall: "direct the agent to commit the draft and report it."
+    criteria:
+      - key: 01a13754-833e-725b-b941-63451838464b
+        name: "The workflow tells the agent to commit `spec/` on its own once the checks pass."
+      - key: 01a13754-833e-725b-b941-634690fd62fa
+        name: "The workflow tells the agent to report the outline, the open questions and any finding left with its reason."
+      - key: 01a13754-833e-725b-b941-63475455b1bd
+        name: "The workflow tells the agent to keep open questions out of `spec/`."
