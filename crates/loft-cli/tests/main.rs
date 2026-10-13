@@ -17,6 +17,7 @@ mod snapshot;
 
 mod check;
 mod citations;
+mod find;
 mod fmt;
 mod import;
 mod init;

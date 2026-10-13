@@ -1,9 +1,12 @@
 //! Any node of the tree, borrowed, and its children in canonical order: the one place that says
 //! which list of a node holds which kind of child.
 
+use std::borrow::Cow;
+
 use crate::document::Document;
 use crate::ids::NodeId;
 use crate::kind::NodeKind;
+use crate::slug::Slug;
 use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
     Requirement, Section,
@@ -24,6 +27,33 @@ pub enum Node<'a> {
 }
 
 impl<'a> Node<'a> {
+    /// The node's name; a Requirement's is its statement as one sentence.
+    #[must_use]
+    pub fn name(self) -> Cow<'a, str> {
+        match self {
+            Self::Product(node) => (&node.name).into(),
+            Self::FeatureGroup(node) => (&node.name).into(),
+            Self::Feature(node) => (&node.name).into(),
+            Self::Requirement(node) => node.statement.render().into(),
+            Self::Criterion(node) => (&node.name).into(),
+            Self::Component(node) => (&node.name).into(),
+            Self::Constraint(node) => (&node.name).into(),
+            Self::QualityAttribute(node) => (&node.name).into(),
+            Self::Section(node) => (&node.name).into(),
+        }
+    }
+
+    /// The node's slug, for the kinds that carry one.
+    #[must_use]
+    pub const fn slug(self) -> Option<&'a Slug> {
+        match self {
+            Self::Product(node) => Some(&node.slug),
+            Self::FeatureGroup(node) => Some(&node.slug),
+            Self::Feature(node) => Some(&node.slug),
+            _ => None,
+        }
+    }
+
     #[must_use]
     pub const fn kind(self) -> NodeKind {
         match self {

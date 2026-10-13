@@ -2,6 +2,8 @@ key: 01a13743-3a3f-7716-90b9-0940f78ac4b8
 slug: loft-find
 name: "`loft find`"
 body: "Looks up the nodes and decisions of the tree by label, slug, key or name, and prints where each one is and the key a reference to it carries."
+tags:
+  - reads-tree
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
