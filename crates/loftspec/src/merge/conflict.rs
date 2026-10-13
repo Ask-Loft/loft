@@ -8,12 +8,12 @@ use crate::codec::{Rec, Val};
 /// unkeyed record whose fields are being merged.
 pub(super) struct Host<'a> {
     pub(super) prefix: String,
-    pub(super) conflicts: &'a mut Vec<Val>,
+    pub(super) conflicts: &'a mut Vec<Rec>,
 }
 
 impl<'a> Host<'a> {
     /// The host for the record being merged itself, whose conflicts go to `conflicts`.
-    pub(super) const fn root(conflicts: &'a mut Vec<Val>) -> Self {
+    pub(super) const fn root(conflicts: &'a mut Vec<Rec>) -> Self {
         Host {
             prefix: String::new(),
             conflicts,
@@ -41,7 +41,7 @@ impl<'a> Host<'a> {
 }
 
 /// A conflict record over `path`; a side whose value is absent omits its member (AC-859).
-pub(super) fn conflict(path: &str, sides: [Option<&Val>; 3]) -> Val {
+pub(super) fn conflict(path: &str, sides: [Option<&Val>; 3]) -> Rec {
     let mut record = Rec::new(Kind::Conflict);
     record.set_text(field::FIELD, path);
     for (name, side) in [field::BASE, field::OURS, field::THEIRS]
@@ -52,10 +52,5 @@ pub(super) fn conflict(path: &str, sides: [Option<&Val>; 3]) -> Val {
             record.set(name, value.clone());
         }
     }
-    Val::Record(record)
-}
-
-/// Adds a conflict to the `conflicts` list of a record that holds it.
-pub(super) fn push(record: &mut Rec, conflict: Val) {
-    record.list_mut(field::CONFLICTS).push(conflict);
+    record
 }

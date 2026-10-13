@@ -4,7 +4,7 @@
 mod common;
 
 use common::text::{AFTER_CRITERIA, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text};
-use loftspec::codec::schema::{Item, Kind, Shape};
+use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Files, Problem, field};
 use loftspec::fmt::format;
 use loftspec::yaml::{Location, Position};
@@ -183,30 +183,48 @@ fn the_manifest_and_the_bindings_record_hold_conflicts_too() {
     assert!(codec::read(&files).is_ok());
 }
 
+const DECISION: &str = "decisions/keys-are-uuids.yaml";
+
 #[test]
 fn a_driver_holds_conflicts_whatever_its_kind() {
-    assert!(Kind::Driver.field(field::CONFLICTS).is_some());
+    for (after, conflict) in [
+        (
+            "    statement: \"Converted and new keys share one syntax.\"\n",
+            "      - field: label\n        ours: \"One shape\"\n",
+        ),
+        (
+            "    subject: 00000000-0000-7000-8000-000000000004\n",
+            "      - field: subject\n        ours: 00000000-0000-7000-8000-000000000006\n",
+        ),
+    ] {
+        let files = edited(
+            DECISION,
+            after,
+            &format!("{after}    conflicts:\n{conflict}"),
+        );
+        let document = codec::read(&files).expect("the tree reads");
+        assert_eq!(document.conflicts.len(), 1, "{conflict}");
+    }
+}
+
+#[test]
+fn a_record_that_holds_no_conflicts_refuses_a_conflicts_list_as_an_unknown_field() {
+    let files = edited(
+        FEATURE,
+        "      shall: \"write a key on every node.\"\n",
+        "      shall: \"write a key on every node.\"\n      conflicts:\n        - field: shall\n",
+    );
+    let (problem, _) = refused(&files);
+    assert_eq!(problem, Problem::UnknownField(field::CONFLICTS.to_owned()));
 }
 
 #[test]
 fn the_names_conflicts_position_and_record_are_reserved_for_conflict_records() {
+    let reserved = [field::CONFLICTS, field::POSITION, field::RECORD];
     for kind in Kind::ALL {
         for each in kind.fields() {
-            assert!(
-                each.name != field::POSITION && each.name != field::RECORD,
-                "{kind:?}.{}",
-                each.name
-            );
-            if each.name == field::CONFLICTS {
-                assert_eq!(each.shape, Shape::List(Item::Record(Kind::Conflict)));
-                assert!(kind.hosts_conflicts(), "{kind:?}");
-            }
+            assert!(!reserved.contains(&each.name), "{kind:?}.{}", each.name);
         }
-        assert_eq!(
-            kind.hosts_conflicts(),
-            kind.field(field::CONFLICTS).is_some(),
-            "{kind:?}"
-        );
     }
 }
 

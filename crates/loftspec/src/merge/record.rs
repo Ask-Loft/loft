@@ -6,7 +6,7 @@
 use super::conflict::Host;
 use super::list::merge_list;
 use super::same::same;
-use crate::codec::schema::{Field, Item, Shape, field};
+use crate::codec::schema::{Field, Item, Shape};
 use crate::codec::{Rec, Val, variant_holds};
 
 /// One field's value on each side, and whether base has the record at all.
@@ -23,21 +23,19 @@ pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
     let mut conflicts = carried(base, ours, theirs);
     let mut host = Host::root(&mut conflicts);
     let mut record = merge_fields(base, ours, theirs, &mut host);
-    if !conflicts.is_empty() {
-        record.set(field::CONFLICTS, Val::List(conflicts));
-    }
+    record.conflicts = conflicts;
     record
 }
 
 /// The conflicts the inputs already hold: one on both sides is written once, one that a side
 /// removed is removed, and one that a side added is added.
-fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<Val> {
+fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<Rec> {
     let texts = |record: Option<&Rec>| -> Vec<String> {
         record.map_or_else(Vec::new, |record| {
             record
-                .list(field::CONFLICTS)
+                .conflicts
                 .iter()
-                .map(super::same::text)
+                .map(super::same::record_text)
                 .collect()
         })
     };
@@ -50,12 +48,12 @@ fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<Val> {
         }
     };
     let ours_kept = ours
-        .list(field::CONFLICTS)
+        .conflicts
         .iter()
         .zip(&in_ours)
         .filter(|(_, text)| kept(text));
     let theirs_added = theirs
-        .list(field::CONFLICTS)
+        .conflicts
         .iter()
         .zip(&in_theirs)
         .filter(|(_, text)| !in_ours.contains(text) && kept(text));
@@ -87,7 +85,7 @@ pub(super) fn merge_fields(
     }
     host.conflicts.truncate(mark);
     let mut record = base.unwrap_or(ours).clone();
-    record.fields.retain(|(name, _)| *name != field::CONFLICTS);
+    record.conflicts.clear();
     for each in fields(ours) {
         let sides = sides(each, base, ours, theirs);
         if !same(sides.ours, sides.base) || !same(sides.theirs, sides.base) {
@@ -97,13 +95,9 @@ pub(super) fn merge_fields(
     record
 }
 
-/// The fields of a record's kind that the merge combines: all but its conflicts.
+/// The fields of a record's kind, which the merge combines.
 fn fields(record: &Rec) -> impl Iterator<Item = &'static Field> {
-    record
-        .kind
-        .fields()
-        .iter()
-        .filter(|each| each.name != field::CONFLICTS)
+    record.kind.fields().iter()
 }
 
 fn sides<'a>(each: &Field, base: Option<&'a Rec>, ours: &'a Rec, theirs: &'a Rec) -> Sides<'a> {

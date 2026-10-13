@@ -4,7 +4,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::conflict::{Host, conflict, push};
+use super::conflict::{Host, conflict};
 use super::order::{Anchor, merge_order, moved};
 use super::record::merge_host;
 use super::same::{same_value, text};
@@ -101,7 +101,7 @@ pub(super) fn merge_list(
         for position in result.conflicts {
             match elements.get_mut(&position.element) {
                 Some(Val::Record(record)) if kind == Element::Host => {
-                    push(record, position_conflict(&position));
+                    record.conflicts.push(position_conflict(&position));
                 }
                 _ => merger.disagree = true,
             }
@@ -220,7 +220,7 @@ impl Merger {
                     Side3::Ours => [key.as_ref(), Some(&null), key.as_ref()],
                     Side3::Theirs => [key.as_ref(), key.as_ref(), Some(&null)],
                 };
-                push(&mut record, conflict(field::RECORD, sides));
+                record.conflicts.push(conflict(field::RECORD, sides));
                 Some(Val::Record(record))
             }
             _ => None,
@@ -236,7 +236,7 @@ enum Side3 {
 }
 
 /// A conflict over where a record goes: each side names the element it follows, or `first`.
-fn position_conflict(position: &super::order::PositionConflict<Id>) -> Val {
+fn position_conflict(position: &super::order::PositionConflict<Id>) -> Rec {
     let anchor = |anchor: &Option<Anchor<Id>>| {
         anchor.as_ref().map(|anchor| {
             Val::scalar(match anchor {

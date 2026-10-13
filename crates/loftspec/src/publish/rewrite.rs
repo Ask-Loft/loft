@@ -78,10 +78,8 @@ impl Withdrawals<'_> {
         let own = kind.field(field::MENTIONS).and_then(|_| element(record));
         let governing = own.as_ref().or(around);
         for (name, value) in &mut record.fields {
-            if *name != field::CONFLICTS {
-                let shape = kind.field(name).map(|(_, each)| each.shape);
-                self.value(value, shape, governing, out);
-            }
+            let shape = kind.field(name).map(|(_, each)| each.shape);
+            self.value(value, shape, governing, out);
         }
     }
 

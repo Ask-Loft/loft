@@ -27,7 +27,7 @@ pub(super) fn collect(tree: &Tree) -> Vec<Conflict> {
 
 fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
     if let Some(owner) = owner(record) {
-        for conflict in record.records(field::CONFLICTS) {
+        for conflict in &record.conflicts {
             conflicts.push(Conflict {
                 owner,
                 field: FieldPath::new(conflict.text(field::FIELD).unwrap_or_default()),
@@ -93,8 +93,7 @@ pub(super) fn attach(tree: &mut Tree, conflicts: &[Conflict]) {
 fn attach_to(record: &mut Rec, by_owner: &BTreeMap<ConflictOwner, Vec<&Conflict>>) {
     if let Some(list) = owner(record).and_then(|owner| by_owner.get(&owner)) {
         let kind = record.kind;
-        let items = list.iter().map(|conflict| Val::Record(rec(conflict, kind)));
-        record.set(field::CONFLICTS, Val::List(items.collect()));
+        record.conflicts = list.iter().map(|conflict| rec(conflict, kind)).collect();
     }
     for child in record.children_mut() {
         attach_to(child, by_owner);

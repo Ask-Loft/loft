@@ -5,7 +5,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::conflict::{conflict, push};
+use super::conflict::conflict;
 use super::record::merge_host;
 use super::same::same_record;
 use crate::codec::schema::field;
@@ -33,6 +33,7 @@ pub(super) fn merge(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> (Rec, Vec<L
             .filter(|(name, _)| ![field::BINDINGS, field::COUNTERS].contains(name))
             .cloned()
             .collect();
+        rest.conflicts.clone_from(&side.conflicts);
         rest
     };
     let mut record = merge_host(base.map(rest).as_ref(), &rest(ours), &rest(theirs));
@@ -42,10 +43,8 @@ pub(super) fn merge(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> (Rec, Vec<L
         let lists = sides
             .each_ref()
             .map(|side| records(disputed.iter().filter_map(|key| side.get(key))));
-        push(
-            &mut record,
-            conflict(field::BINDINGS, lists.each_ref().map(Some)),
-        );
+        let over_bindings = conflict(field::BINDINGS, lists.each_ref().map(Some));
+        record.conflicts.push(over_bindings);
     }
     (record, labels_in_dispute(&sides, &disputed))
 }

@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 
 use super::error::{Problem, ReadError, SpecPath};
 use super::record::{Mode, Rec, check, to_out};
-use super::schema::{Kind, field};
+use super::schema::Kind;
 use crate::yaml::{self, Out, Value};
 
 /// The bytes of each file under `spec/`, by path.
@@ -266,14 +266,8 @@ pub(crate) fn keyed<'a>(record: &'a Rec, found: &mut Vec<&'a Rec>) {
     if record.kind.is_keyed() {
         found.push(record);
     }
-    // A conflict's sides hold no keyed record (`side_shape`), so the walk does not enter them.
-    for (_, value) in record
-        .fields
-        .iter()
-        .filter(|(name, _)| *name != field::CONFLICTS)
-    {
-        for child in value.records() {
-            keyed(child, found);
-        }
+    // A conflict's sides hold no keyed record (`side_shape`), and conflicts are no child.
+    for child in record.children() {
+        keyed(child, found);
     }
 }

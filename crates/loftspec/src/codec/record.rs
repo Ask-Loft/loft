@@ -25,6 +25,10 @@ pub struct Rec {
     pub position: Position,
     /// The fields present, in the Format's order.
     pub fields: Vec<(&'static str, Val)>,
+    /// The conflict records it holds, apart from its fields: only a record whose kind
+    /// [`Kind::hosts_conflicts`] has any, and the writer puts them after every other field
+    /// (AC-862).
+    pub conflicts: Vec<Self>,
 }
 
 /// A checked field value.
@@ -102,6 +106,7 @@ impl Rec {
             kind,
             position: Position::new(1, 1),
             fields: Vec::new(),
+            conflicts: Vec::new(),
         }
     }
 
@@ -159,19 +164,15 @@ impl Rec {
         self.list(name).iter().flat_map(Val::records)
     }
 
-    /// The records inside this record, in every field but its conflicts.
+    /// The records inside this record's fields.
     pub fn children(&self) -> impl Iterator<Item = &Self> {
-        self.fields
-            .iter()
-            .filter(|(name, _)| *name != field::CONFLICTS)
-            .flat_map(|(_, value)| value.records())
+        self.fields.iter().flat_map(|(_, value)| value.records())
     }
 
-    /// The records inside this record, to change, in every field but its conflicts.
+    /// The records inside this record's fields, to change.
     pub fn children_mut(&mut self) -> impl Iterator<Item = &mut Self> {
         self.fields
             .iter_mut()
-            .filter(|(name, _)| *name != field::CONFLICTS)
             .flat_map(|(_, value)| value.records_mut())
     }
 
@@ -227,19 +228,20 @@ pub(crate) fn check(node: &yaml::Node, kind: Kind, mode: Mode) -> Result<Rec, Lo
         kind,
         position: node.position,
         fields: Vec::with_capacity(entries.len()),
+        conflicts: Vec::new(),
     };
     for entry in entries {
+        if entry.key == field::CONFLICTS && kind.hosts_conflicts() {
+            record.conflicts = super::conflict::check_conflicts(&entry.value, kind, mode)?;
+            continue;
+        }
         let Some((_, field)) = kind.field(&entry.key) else {
             return Err(located(
                 entry.key_position,
                 Problem::UnknownField(entry.key.clone()),
             ));
         };
-        let value = if field.name == super::field::CONFLICTS {
-            super::conflict::check_conflicts(&entry.value, kind, mode)?
-        } else {
-            check_shape(&entry.value, field.shape, mode)?
-        };
+        let value = check_shape(&entry.value, field.shape, mode)?;
         record.fields.push((field.name, value));
     }
     for field in kind.fields() {
@@ -346,24 +348,22 @@ const fn describe(scalar: Scalar) -> &'static str {
 }
 
 /// The record as the writer lays it out: its fields in order, an empty list left out
-/// (AC-798), each scalar in the style its shape gives.
+/// (AC-798), each scalar in the style its shape gives, then its conflicts (AC-862).
 #[must_use]
 pub fn to_out(record: &Rec) -> Out {
-    let fields = record
+    let mut fields: Vec<_> = record
         .fields
         .iter()
         .filter(|(_, value)| !matches!(value, Val::List(items) if items.is_empty()))
         .map(|(name, value)| {
             let (_, field) = record.kind.field(name).expect("a field the schema defines");
-            let out = match value {
-                Val::List(items) if field.name == super::field::CONFLICTS => {
-                    super::conflict::conflicts_out(items, record.kind)
-                }
-                _ => value_out(value, field.shape),
-            };
-            (field.name, out)
+            (field.name, value_out(value, field.shape))
         })
         .collect();
+    if !record.conflicts.is_empty() {
+        let conflicts = super::conflict::conflicts_out(&record.conflicts, record.kind);
+        fields.push((field::CONFLICTS, conflicts));
+    }
     Out::Mapping(fields)
 }
 

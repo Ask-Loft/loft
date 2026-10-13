@@ -32,9 +32,6 @@ pub fn side_shape(host: Kind, path: &str) -> Option<SideShape> {
     let mut segments = path.split('.').peekable();
     while let Some(segment) = segments.next() {
         let (_, found) = kind.field(segment)?;
-        if found.name == field::CONFLICTS {
-            return None;
-        }
         if segments.peek().is_none() {
             return holds_no_keyed_record(found.shape).then_some(SideShape::Field(found.shape));
         }
@@ -56,7 +53,11 @@ fn holds_no_keyed_record(shape: Shape) -> bool {
 }
 
 /// Checks the `conflicts` list of a record of `host`.
-pub(crate) fn check_conflicts(node: &yaml::Node, host: Kind, mode: Mode) -> Result<Val, Located> {
+pub(crate) fn check_conflicts(
+    node: &yaml::Node,
+    host: Kind,
+    mode: Mode,
+) -> Result<Vec<Rec>, Located> {
     let items = match &node.value {
         Value::Sequence(items) => items.as_slice(),
         Value::Empty => &[],
@@ -64,9 +65,8 @@ pub(crate) fn check_conflicts(node: &yaml::Node, host: Kind, mode: Mode) -> Resu
     };
     items
         .iter()
-        .map(|item| check_conflict(item, host, mode).map(Val::Record))
-        .collect::<Result<_, _>>()
-        .map(Val::List)
+        .map(|item| check_conflict(item, host, mode))
+        .collect()
 }
 
 fn check_conflict(node: &yaml::Node, host: Kind, mode: Mode) -> Result<Rec, Located> {
@@ -92,6 +92,7 @@ fn check_conflict(node: &yaml::Node, host: Kind, mode: Mode) -> Result<Rec, Loca
         kind: Kind::Conflict,
         position: node.position,
         fields: vec![(field::FIELD, named)],
+        conflicts: Vec::new(),
     };
     for entry in entries.iter().filter(|entry| entry.key != field::FIELD) {
         let Some((_, side)) = Kind::Conflict.field(&entry.key) else {
@@ -130,14 +131,11 @@ fn located(node: &yaml::Node, problem: Problem) -> Located {
 
 /// The `conflicts` list of a record of `host` as the writer lays it out: each conflict's
 /// fields in the Format's order, each side in the shape of the field it names (AC-857).
-pub(crate) fn conflicts_out(items: &[Val], host: Kind) -> Out {
+pub(crate) fn conflicts_out(conflicts: &[Rec], host: Kind) -> Out {
     Out::Sequence(
-        items
+        conflicts
             .iter()
-            .filter_map(|item| match item {
-                Val::Record(conflict) => Some(conflict_out(conflict, host)),
-                _ => None,
-            })
+            .map(|conflict| conflict_out(conflict, host))
             .collect(),
     )
 }

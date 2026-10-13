@@ -33,7 +33,8 @@ pub(super) fn same_value(left: &Val, right: &Val) -> bool {
     }
 }
 
-/// Whether two records of one kind hold the same present fields with the same values.
+/// Whether two records of one kind hold the same present fields with the same values, and the
+/// same conflicts: a record whose conflicts differ is not the same record.
 pub(super) fn same_record(left: &Rec, right: &Rec) -> bool {
     let (left_fields, right_fields) = (present_fields(left), present_fields(right));
     left.kind == right.kind
@@ -44,6 +45,12 @@ pub(super) fn same_record(left: &Rec, right: &Rec) -> bool {
             .all(|((left_name, left), (right_name, right))| {
                 left_name == right_name && same_value(left, right)
             })
+        && left.conflicts.len() == right.conflicts.len()
+        && left
+            .conflicts
+            .iter()
+            .zip(&right.conflicts)
+            .all(|(left, right)| same_record(left, right))
 }
 
 /// The fields of a record that hold a present value.
@@ -61,13 +68,18 @@ pub(super) fn text(value: &Val) -> String {
         Val::Scalar { text, .. } => text.clone(),
         Val::Null { .. } => "null".to_owned(),
         Val::List(items) => format!("[{}]", items.iter().map(text).collect::<Vec<_>>().join(",")),
-        Val::Record(record) => {
-            let fields = record
-                .fields
-                .iter()
-                .filter(|(_, value)| present(Some(value)).is_some())
-                .map(|(name, value)| format!("{name}={}", text(value)));
-            format!("{{{}}}", fields.collect::<Vec<_>>().join(";"))
-        }
+        Val::Record(record) => record_text(record),
     }
+}
+
+/// A record as text that two records share exactly when they are the same, conflicts included.
+pub(super) fn record_text(record: &Rec) -> String {
+    let fields = record
+        .fields
+        .iter()
+        .filter(|(_, value)| present(Some(value)).is_some())
+        .map(|(name, value)| format!("{name}={}", text(value)));
+    let conflicts = record.conflicts.iter().map(record_text);
+    let conflicts = conflicts.collect::<Vec<_>>().join(",");
+    format!("{{{}}}[{conflicts}]", fields.collect::<Vec<_>>().join(";"))
 }
