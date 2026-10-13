@@ -38,3 +38,10 @@ featureGroups:
     body: "Where a document is held between commands: in memory or as the `spec/` tree, behind one interface."
     features:
       - 01a12e66-85dc-70ec-b5ed-93e0e0a23bdf
+  - key: 01a136db-1a3d-7739-a3f4-9ade7a0209f3
+    slug: distribution
+    name: "Distribution"
+    body: "How `loft` reaches the people who run it: the crates on crates.io, the npm packages that carry prebuilt binaries, and the release that publishes both from a tag."
+    features:
+      - 01a136db-1a3c-76b9-8641-d0a122869236
+      - 01a136db-1a3d-7739-a3f4-9ac908cf3cff

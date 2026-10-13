@@ -1,0 +1,8 @@
+key: 01a136db-1a3c-76b9-8641-d09fc8730b8a
+slug: release-workflow
+name: "Release workflow"
+body: "The GitHub Actions workflow that a version tag starts, with the scripts it runs: `scripts/release-check.sh` and `scripts/publish-crates.sh`."
+constraints:
+  - key: 01a136db-1a3c-76b9-8641-d0a0575393e5
+    name: "The release workflow shall store no registry token in the repository."
+    verificationFate: proved

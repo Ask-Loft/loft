@@ -1,0 +1,57 @@
+key: 01a136db-1a3c-76b9-8641-d0a122869236
+slug: releases
+name: "Releases"
+body: "A release is cut by the maintainer: a version tag on `main` starts the release workflow, which checks the tag, waits for the maintainer's approval, and then publishes the crates, the npm packages and the binaries."
+realizes:
+  - 01a136db-1a3c-76b9-8641-d09fc8730b8a
+requirements:
+  - key: 01a136db-1a3c-76b9-8641-d0a2457ecaf4
+    statement:
+      form: event_driven
+      when: "a tag `vX.Y.Z` is pushed"
+      system: "the release workflow"
+      shall: "check that the tag may be released before it publishes anything."
+    criteria:
+      - key: 01a136db-1a3c-76b9-8641-d0a37bb4accb
+        name: "The tag names the version that every published crate carries."
+      - key: 01a136db-1a3c-76b9-8641-d0a4250b26f1
+        name: "The tag's commit is on `main`."
+      - key: 01a136db-1a3c-76b9-8641-d0a55992721a
+        name: "`CHANGELOG.md` holds an entry for the version, dated."
+      - key: 01a136db-1a3c-76b9-8641-d0a6d8371817
+        name: "The gate and `loft verify` pass on the tag's commit."
+  - key: 01a136db-1a3c-76b9-8641-d0a7f6751d9b
+    statement:
+      form: ubiquitous
+      system: "The release workflow"
+      shall: "publish only after the maintainer approves the release."
+    criteria:
+      - key: 01a136db-1a3c-76b9-8641-d0a893876602
+        name: "The publishing job runs in an environment that requires the maintainer's approval."
+      - key: 01a136db-1a3c-76b9-8641-d0a993a75025
+        name: "Only a version tag may deploy to that environment."
+  - key: 01a136db-1a3c-76b9-8641-d0aa9cf9b645
+    statement:
+      form: ubiquitous
+      system: "The release workflow"
+      shall: "publish the release to crates.io, to npm and as a GitHub release."
+    criteria:
+      - key: 01a136db-1a3c-76b9-8641-d0ab36276f59
+        name: "The crates are published to crates.io in dependency order."
+      - key: 01a136db-1a3c-76b9-8641-d0ac6ee063a0
+        name: "The platform packages are published to npm before `@ask-loft/loft`."
+      - key: 01a136db-1a3c-76b9-8641-d0ad357dbbec
+        name: "The GitHub release carries the binary of each supported platform."
+      - key: 01a136db-1a3c-76b9-8641-d0ae82053c73
+        name: "The GitHub release's notes are the version's entry in `CHANGELOG.md`."
+      - key: 01a136db-1a3c-76b9-8641-d0aff368382c
+        name: "Each registry authenticates the workflow by its trusted-publishing identity."
+  - key: 01a136db-1a3d-7739-a3f4-9ac7348dcffe
+    statement:
+      form: unwanted
+      if: "a registry already holds a package at the release's version"
+      system: "the release workflow"
+      shall: "skip that package and publish the rest."
+    criteria:
+      - key: 01a136db-1a3d-7739-a3f4-9ac88b69ecbe
+        name: "A release run that stopped part way publishes the remainder when it runs again."
