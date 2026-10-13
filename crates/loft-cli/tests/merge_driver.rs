@@ -3,11 +3,14 @@
 //! name `<path>` rather than git's temporary files.
 
 mod common;
+#[path = "common/schema.rs"]
+mod schema;
 
 use std::fs;
 use std::process::Output;
 
 use common::{Scratch, stderr, stdout};
+use serde_json::{Value, json};
 
 const FEATURE: &str = "products/reading-list/sharing/share-a-list.yaml";
 
@@ -29,13 +32,36 @@ fn edited(text: &str, from: &str, to: &str) -> String {
 }
 
 /// Writes the three inputs and runs the driver for `path`.
-fn driver(scratch: &Scratch, [base, ours, theirs]: [&str; 3], path: &str) -> Output {
+fn driver(scratch: &Scratch, inputs: [&str; 3], path: &str) -> Output {
+    driver_with(scratch, inputs, path, &[])
+}
+
+/// Writes the three inputs and runs the driver for `path`, followed by `args`.
+fn driver_with(
+    scratch: &Scratch,
+    [base, ours, theirs]: [&str; 3],
+    path: &str,
+    args: &[&str],
+) -> Output {
     for (name, text) in INPUTS.iter().zip([base, ours, theirs]) {
         fs::write(scratch.0.join(name), text).unwrap();
     }
     let [base, ours, theirs] = INPUTS;
-    scratch.loft(&["merge-driver", base, ours, theirs, path])
+    let mut all = vec!["merge-driver", base, ours, theirs, path];
+    all.extend(args);
+    scratch.loft(&all)
 }
+
+/// The one JSON document a run printed, held to the `loft merge-driver` schema.
+fn json_of(output: &Output) -> Value {
+    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
+    let schema: Value =
+        serde_json::from_str(include_str!("../../../schemas/merge-driver.json")).unwrap();
+    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    document
+}
+
+const JSON: [&str; 2] = ["--format", "json"];
 
 fn ours(scratch: &Scratch) -> String {
     fs::read_to_string(scratch.0.join(INPUTS[1])).unwrap()
@@ -177,4 +203,64 @@ fn a_label_two_publishes_gave_apart_is_named_with_the_command_that_settles_it() 
          the publish branch to settle it\n"
     );
     assert!(ours(&scratch).contains("  - field: bindings\n"));
+}
+
+#[test]
+fn the_json_document_of_a_merge_names_the_path_and_the_conflicts_written() {
+    let (scratch, base) = setup();
+    let ours_text = edited(&base, SHALL, "shall: \"publish a link.\"");
+    let theirs_text = edited(&base, SHALL, "shall: \"publish a private link.\"");
+    let conflicted = driver_with(
+        &scratch,
+        [&base, &ours_text, &theirs_text],
+        &spec_path(),
+        &JSON,
+    );
+    assert_eq!(conflicted.status.code(), Some(1));
+    let document = json_of(&conflicted);
+    assert_eq!(document["path"], spec_path());
+    assert_eq!(
+        (document["conflicts"].clone(), document["disputed"].clone()),
+        (json!(1), json!([]))
+    );
+    let clean = driver_with(&scratch, [&base, &ours_text, &base], &spec_path(), &JSON);
+    assert_eq!(clean.status.code(), Some(0), "{}", stderr(&clean));
+    assert_eq!(json_of(&clean)["conflicts"], 0);
+}
+
+#[test]
+fn the_json_document_of_a_merge_names_each_disputed_label() {
+    let scratch = Scratch::with_reading_list();
+    let base = fs::read_to_string(scratch.file("labels.yaml")).unwrap();
+    let binding =
+        |n: u32| format!("  - key: 01a13099-7453-76e1-9b96-9210000000a{n}\n    label: RQ-90\n");
+    let ours_text = format!("{base}{}", binding(1));
+    let theirs_text = format!("{base}{}", binding(2));
+    let output = driver_with(
+        &scratch,
+        [&base, &ours_text, &theirs_text],
+        "spec/labels.yaml",
+        &JSON,
+    );
+    assert_eq!(json_of(&output)["disputed"], json!(["RQ-90"]));
+}
+
+#[test]
+fn a_refused_merge_is_listed_among_the_json_document_s_errors() {
+    let (scratch, base) = setup();
+    let output = driver_with(
+        &scratch,
+        [&base, &base, &base],
+        "elsewhere/file.yaml",
+        &JSON,
+    );
+    assert_eq!(output.status.code(), Some(1));
+    let error = &json_of(&output)["errors"][0];
+    assert!(
+        error["message"]
+            .as_str()
+            .unwrap()
+            .contains("elsewhere/file.yaml"),
+        "{error}"
+    );
 }

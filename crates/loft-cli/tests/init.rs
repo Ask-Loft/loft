@@ -2,6 +2,8 @@
 //! which reads, validates and lints clean; refused, with nothing written, where `spec/` exists.
 
 mod common;
+#[path = "common/schema.rs"]
+mod schema;
 #[path = "common/snapshot.rs"]
 mod snapshot;
 
@@ -10,6 +12,7 @@ use std::fs;
 use common::{Scratch, stderr, stdout};
 use loftspec::bindings::Counters;
 use loftspec::codec::{self, Files, SpecPath};
+use serde_json::Value;
 use snapshot::snapshot;
 
 /// A directory where `loft init` ran and succeeded.
@@ -113,4 +116,35 @@ fn a_tree_already_there_is_refused_and_left_as_it_was() {
     let before = snapshot(&scratch.0);
     assert_eq!(scratch.loft(&["init"]).status.code(), Some(1));
     assert_eq!(snapshot(&scratch.0), before);
+}
+
+/// The one JSON document a run printed, held to the `loft init` schema.
+fn json_of(output: &std::process::Output) -> Value {
+    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
+    let schema: Value = serde_json::from_str(include_str!("../../../schemas/init.json")).unwrap();
+    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    document
+}
+
+#[test]
+fn the_json_document_names_spec_as_created_and_carries_the_document_key() {
+    let scratch = Scratch::empty();
+    let output = scratch.loft(&["init", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let document = json_of(&output);
+    assert_eq!(document["created"], "spec/");
+    assert_eq!(document["documentKey"], document_key(&scratch));
+}
+
+#[test]
+fn a_refused_init_is_listed_among_the_json_document_s_errors_naming_the_path() {
+    let scratch = Scratch::with_reading_list();
+    let output = scratch.loft(&["init", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let error = &json_of(&output)["errors"][0];
+    let message = error["message"].as_str().unwrap();
+    assert!(
+        message.contains("spec") && message.contains("already exists"),
+        "{message}"
+    );
 }

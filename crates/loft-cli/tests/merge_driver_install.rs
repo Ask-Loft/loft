@@ -1,10 +1,14 @@
 //! `loft merge-driver --install` (D-11 F-43) in front of the git simulator: it registers the
 //! driver in the repository once, and refuses outside a repository without writing anything.
 
+#[path = "common/schema.rs"]
+mod schema;
+
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::{env, fs, process};
 
+use serde_json::{Value, json};
 use software_plant::GitScenario;
 
 /// A directory for the tree, and one beside it for the simulator's scenario, removed at the end.
@@ -242,4 +246,41 @@ fn install_takes_no_paths_and_the_paths_need_no_install() {
         .output()
         .unwrap();
     assert_eq!(output.status.code(), Some(2));
+}
+
+/// The one JSON document a run printed, held to the `loft merge-driver` schema.
+fn json_of(output: &Output) -> Value {
+    let document: Value = serde_json::from_str(&text(&output.stdout)).unwrap();
+    let schema: Value =
+        serde_json::from_str(include_str!("../../../schemas/merge-driver.json")).unwrap();
+    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    document
+}
+
+#[test]
+fn the_json_document_of_an_install_lists_the_names_written_and_the_launcher_s_version() {
+    let dirs = Dirs::new("json");
+    let (output, _) = dirs.install_with(&clean(), &["--format", "json"]);
+    assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    let document = json_of(&output);
+    assert_eq!(
+        document["written"],
+        json!([".gitattributes", "merge.loft.driver", "merge.loft.name"])
+    );
+    assert_eq!(document["version"], own_version().trim_end());
+}
+
+#[test]
+fn a_refused_install_is_listed_among_the_json_document_s_errors() {
+    let dirs = Dirs::new("json-outside");
+    let (output, _) = dirs.install_with(&GitScenario::outside_repository(), &["--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let error = &json_of(&output)["errors"][0];
+    assert!(
+        error["message"]
+            .as_str()
+            .unwrap()
+            .contains("a git repository is required"),
+        "{error}"
+    );
 }

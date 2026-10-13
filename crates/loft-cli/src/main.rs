@@ -2,6 +2,7 @@
 //! failed check, 2 on a usage error (RQ-154).
 
 mod check;
+mod fmt;
 mod import;
 mod init;
 mod json;
@@ -16,7 +17,6 @@ use std::process::ExitCode;
 
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
-use loftspec_store::FileStore;
 use loftspec_store::merge_driver::LAUNCHER;
 
 #[derive(Parser)]
@@ -39,12 +39,19 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     /// Create an empty document in the current directory (RQ-128).
-    Init,
+    Init {
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
+    },
     /// Rewrite `spec/` in canonical layout, minting missing keys (RQ-140).
     Fmt {
         /// Report the files that would change, without writing (RQ-142).
         #[arg(long)]
         check: bool,
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
     },
     /// Read, validate and lint `spec/` (RQ-136).
     Check {
@@ -93,6 +100,9 @@ enum Command {
         /// The path of the file being merged, as git names it (git's `%P`).
         #[arg(required_unless_present = "install")]
         path: Option<String>,
+        /// Print one JSON document on standard output (RQ-155).
+        #[arg(long, value_name = "FORMAT")]
+        format: Option<Format>,
     },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
@@ -159,8 +169,8 @@ fn main() -> ExitCode {
     };
     let root = Path::new(".");
     match command {
-        Command::Init => init::run(root),
-        Command::Fmt { check } => fmt(root, check),
+        Command::Init { format } => init::run(root, format == Some(Format::Json)),
+        Command::Fmt { check, format } => fmt::run(root, check, format == Some(Format::Json)),
         Command::Check { fail_on, format } => check::run(
             root,
             fail_on.map(Severity::from),
@@ -184,13 +194,19 @@ fn main() -> ExitCode {
         Command::MergeDriver {
             install: true,
             command,
+            format,
             ..
-        } => merge_driver::install(root, command.as_deref().unwrap_or(LAUNCHER)),
+        } => merge_driver::install(
+            root,
+            command.as_deref().unwrap_or(LAUNCHER),
+            format == Some(Format::Json),
+        ),
         Command::MergeDriver {
             base: Some(base),
             ours: Some(ours),
             theirs: Some(theirs),
             path: Some(path),
+            format,
             ..
         } => merge_driver::run(
             root,
@@ -200,6 +216,7 @@ fn main() -> ExitCode {
                 theirs: &theirs,
                 path: &path,
             },
+            format == Some(Format::Json),
         ),
         // Clap requires the four paths unless `--install` is given.
         Command::MergeDriver { .. } => ExitCode::from(2),
@@ -216,40 +233,5 @@ fn main() -> ExitCode {
 fn report(errors: &[impl std::fmt::Display]) {
     for error in errors {
         eprintln!("{error}");
-    }
-}
-
-fn fmt(root: &Path, check: bool) -> ExitCode {
-    let opened = FileStore::open(root).and_then(|store| Ok((store.read_files()?, store)));
-    let (files, store) = match opened {
-        Ok(opened) => opened,
-        Err(error) => {
-            eprintln!("{error}");
-            return ExitCode::FAILURE;
-        }
-    };
-    let formatted = match loftspec::fmt::format(&files) {
-        Ok(formatted) => formatted,
-        Err(errors) => {
-            report(&errors);
-            return ExitCode::FAILURE;
-        }
-    };
-    for path in formatted.changed.keys() {
-        println!("{path}");
-    }
-    if check {
-        return if formatted.changed.is_empty() {
-            ExitCode::SUCCESS
-        } else {
-            ExitCode::FAILURE
-        };
-    }
-    match store.write_files(formatted.changed) {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(error) => {
-            eprintln!("{error}");
-            ExitCode::FAILURE
-        }
     }
 }

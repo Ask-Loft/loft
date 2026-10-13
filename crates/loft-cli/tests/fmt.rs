@@ -2,11 +2,25 @@
 //! writes.
 
 mod common;
+#[path = "common/schema.rs"]
+mod schema;
 
 use std::fs;
 use std::path::Path;
+use std::process::Output;
 
 use common::{Scratch, stderr, stdout};
+use serde_json::{Value, json};
+
+const PRODUCT: &str = "products/reading-list/product.yaml";
+
+/// The one JSON document a run printed, held to the `loft fmt` schema.
+fn json_of(output: &Output) -> Value {
+    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
+    let schema: Value = serde_json::from_str(include_str!("../../../schemas/fmt.json")).unwrap();
+    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    document
+}
 
 /// The first file under `spec/decisions/`, as its path under `spec/`.
 fn a_decision(root: &Path) -> String {
@@ -81,4 +95,54 @@ fn a_usage_error_exits_2() {
     let scratch = Scratch::with_reading_list();
     assert_eq!(scratch.loft(&["fmt", "--chekc"]).status.code(), Some(2));
     assert_eq!(scratch.loft(&["frobnicate"]).status.code(), Some(2));
+}
+
+#[test]
+fn the_json_document_lists_the_files_rewritten_and_the_keys_minted() {
+    let scratch = Scratch::with_reading_list();
+    let path = a_decision(&scratch.0);
+    scratch.edit(&path, "title: \"", "title:   \"");
+    scratch.edit(
+        PRODUCT,
+        "      - key: 00000000-0000-4000-8000-000000000032\n        name:",
+        "      - name:",
+    );
+    let mut changed = vec![format!("spec/{path}"), format!("spec/{PRODUCT}")];
+    changed.sort();
+    let check = scratch.loft(&["fmt", "--check", "--format", "json"]);
+    assert_eq!(check.status.code(), Some(1));
+    let document = json_of(&check);
+    assert_eq!(document["changed"], json!(changed));
+    assert_eq!(
+        (document["minted"].clone(), document["written"].clone()),
+        (json!(1), json!(false))
+    );
+    let write = scratch.loft(&["fmt", "--format", "json"]);
+    assert_eq!(write.status.code(), Some(0), "{}", stderr(&write));
+    let document = json_of(&write);
+    assert_eq!(document["changed"], json!(changed));
+    assert_eq!(
+        (document["minted"].clone(), document["written"].clone()),
+        (json!(1), json!(true))
+    );
+    let again = json_of(&scratch.loft(&["fmt", "--format", "json"]));
+    assert_eq!(again["changed"], json!([]));
+    assert_eq!(
+        (again["minted"].clone(), again["written"].clone()),
+        (json!(0), json!(false))
+    );
+}
+
+#[test]
+fn a_read_error_is_listed_in_the_json_document_with_its_file_line_and_column() {
+    let scratch = Scratch::with_reading_list();
+    let path = a_decision(&scratch.0);
+    scratch.edit(&path, "\nslug:", " # a note\nslug:");
+    let output = scratch.loft(&["fmt", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let error = &json_of(&output)["errors"][0];
+    assert_eq!(error["kind"], "read");
+    assert_eq!(error["path"], format!("spec/{path}"));
+    assert_eq!(error["line"], 1);
+    assert!(error["column"].is_u64());
 }
