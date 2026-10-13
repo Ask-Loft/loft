@@ -1,16 +1,16 @@
 //! The rules of the writing craft (F-21): a criterion whose name states more than one outcome
-//! (`V2-005`), a Requirement whose size suggests a Feature (`V2-006`), a normative word in a
-//! body (`V2-007`), and a proper name after an article in a statement's system (`V2-008`).
+//! (`V2-005`), a Requirement whose size suggests a Feature (`V2-006`), and a proper name after
+//! an article in a statement's system (`V2-008`). A normative word in a body (`V2-007`) is a
+//! lexical rule, read with the language rules' scan in `language.rs`.
 
 use super::context::{Context, Item};
-use super::text::{Body, phrase_positions, without_code_spans};
+use super::text::{Body, without_code_spans};
 use super::{LintConfig, Raw, RuleId};
 use crate::node::Node;
 use crate::statement::Statement;
 
 pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Raw>) {
     for item in &context.items {
-        let body = item.body().map(|body| Body::read(body).tokens());
         match item.node {
             Node::Criterion(criterion) if is_compound(&criterion.name) => {
                 out.push(Raw::new(
@@ -20,14 +20,13 @@ pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Ra
                 ));
             }
             Node::Requirement(requirement) => {
-                let words = body.as_ref().map_or(0, |(tokens, _)| tokens.len());
+                let words = item
+                    .body()
+                    .map_or(0, |body| Body::read(body).tokens().0.len());
                 oversized(item, requirement.criteria.len(), words, config, out);
                 proper_name(item, &requirement.statement, config, out);
             }
             _ => {}
-        }
-        if let Some((tokens, lines)) = &body {
-            normative(item, tokens, lines, config, out);
         }
     }
 }
@@ -68,30 +67,6 @@ fn oversized(
             config.max_body_words()
         );
         out.push(Raw::new(RuleId::V2006, vec![key], message).term("body"));
-    }
-}
-
-/// `V2-007`: one finding for each occurrence of a lexicon word in a node's body, outside code.
-fn normative(
-    item: &Item<'_>,
-    tokens: &[String],
-    lines: &[usize],
-    config: &LintConfig,
-    out: &mut Vec<Raw>,
-) {
-    for phrase in config.lexicon(RuleId::V2007) {
-        for at in phrase_positions(tokens, phrase) {
-            out.push(
-                Raw::new(
-                    RuleId::V2007,
-                    vec![item.id.key()],
-                    "The body holds a normative word; state the obligation in a statement or a \
-                     criterion.",
-                )
-                .term(phrase.join(" "))
-                .line(Some(lines[at])),
-            );
-        }
     }
 }
 
