@@ -36,6 +36,17 @@
       "note": "A tag name quoted in a code span of a name is an identifier, not a use of the term."
     },
     {
+      "id": "hyphenated-tags-match-hyphenated-text-lq-009",
+      "surface": "lint",
+      "rule": "LQ-009",
+      "condition": "hyphenated-tag",
+      "direction": "v1-only",
+      "decidedBy": [
+        "01a1374b-8812-7647-9f20-123c93572591"
+      ],
+      "note": "A tag whose words are joined by hyphens names a term, not the same words joined by spaces in ordinary prose."
+    },
+    {
       "id": "criteria-are-compared-within-their-requirement",
       "surface": "lint",
       "rule": "LQ-008",

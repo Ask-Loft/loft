@@ -283,6 +283,58 @@ fn a_node_that_lists_the_tag_or_sits_under_one_that_does_is_not_lq_009() {
     );
 }
 
+/// The small document with the tag `key-shape` in its registry, its Product's body set to
+/// `body`.
+fn with_hyphenated_tag(body: &str) -> Document {
+    let mut document = small_document();
+    document.tags.push(loftspec::document::TagEntry {
+        id: loftspec::ids::TagId::new(key(63)),
+        name: loftspec::names::TagName::parse("key-shape").unwrap(),
+        definition: "How a key is written.".to_owned(),
+    });
+    document.products[0].details.body = Some(body.to_owned());
+    document
+}
+
+/// The terms of the `LQ-009` findings on the document.
+fn untagged_terms(document: &Document) -> Vec<String> {
+    of(&findings(document), RuleId::Lq009)
+        .iter()
+        .filter_map(|finding| finding.term.clone())
+        .collect()
+}
+
+#[test]
+fn a_hyphenated_tag_matches_only_text_that_joins_its_words_by_hyphens() {
+    let hyphenated = with_hyphenated_tag("Every key follows the key-shape rule.");
+    assert!(untagged_terms(&hyphenated).contains(&"key-shape".to_owned()));
+    let spaced = with_hyphenated_tag("Every key follows the key shape rule. Key, shape.");
+    assert!(!untagged_terms(&spaced).contains(&"key-shape".to_owned()));
+    let mut named = with_hyphenated_tag("The example.");
+    named.products[0].feature_groups[0].name = "Key-shape identity".to_owned();
+    assert!(untagged_terms(&named).contains(&"key-shape".to_owned()));
+    named.products[0].feature_groups[0].name = "Key shape identity".to_owned();
+    assert!(!untagged_terms(&named).contains(&"key-shape".to_owned()));
+}
+
+#[test]
+fn a_tag_of_three_hyphenated_words_needs_every_hyphen() {
+    let mut document = with_hyphenated_tag("Keys keep one-key-shape and one-key shape.");
+    document.tags.last_mut().unwrap().name =
+        loftspec::names::TagName::parse("one-key-shape").unwrap();
+    let found = untagged_terms(&document);
+    assert!(found.contains(&"one-key-shape".to_owned()), "{found:?}");
+    document.products[0].details.body = Some("Keys keep one-key shape.".to_owned());
+    assert!(!untagged_terms(&document).contains(&"one-key-shape".to_owned()));
+}
+
+#[test]
+fn a_one_word_tag_matches_its_word_however_the_text_joins_it() {
+    let mut document = small_document();
+    document.products[0].feature_groups[0].name = "Identity-first keys".to_owned();
+    assert!(untagged_terms(&document).contains(&"identity".to_owned()));
+}
+
 #[test]
 fn lq_009_does_not_read_a_constraint() {
     let mut document = small_document();

@@ -56,6 +56,11 @@ impl Body {
             .unzip()
     }
 
+    /// Whether each token of the shown text follows the one before it across a single hyphen.
+    pub(super) fn hyphen_joins(&self) -> Vec<bool> {
+        hyphen_joins(&self.text)
+    }
+
     /// Every sentence of the shown text, trimmed, with its tokens and the body line it starts on.
     pub(super) fn sentences(&self) -> Vec<(Vec<String>, usize)> {
         self.text
@@ -87,6 +92,17 @@ pub(super) fn tokens(text: &str) -> Vec<String> {
 /// The tokens of a name or statement without the text of its code spans.
 pub(super) fn shown_tokens(text: &str) -> Vec<String> {
     tokens(&without_code_spans(text))
+}
+
+/// Whether each token of `text` follows the one before it across a single hyphen, as the words
+/// of `key-shape` do.
+pub(super) fn hyphen_joins(text: &str) -> Vec<bool> {
+    let ranges = token_ranges(text);
+    let mut joins = vec![false; ranges.len()];
+    for (index, pair) in ranges.windows(2).enumerate() {
+        joins[index + 1] = &text[pair[0].end..pair[1].start] == "-";
+    }
+    joins
 }
 
 /// The text of a name or statement with each code span replaced by a space.

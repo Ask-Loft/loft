@@ -10,7 +10,9 @@
 //! `LQ-001`..`LQ-004` use.
 
 use super::context::{Context, Item};
-use super::text::{Body, occurrences, phrase_positions, shown_tokens, tokens};
+use super::text::{
+    Body, hyphen_joins, occurrences, phrase_positions, shown_tokens, tokens, without_code_spans,
+};
 use super::{LintConfig, Raw, RuleId};
 use crate::identity::Key;
 use crate::kind::NodeKind;
@@ -274,14 +276,52 @@ fn outside_the_forms(item: &Item<'_>, out: &mut Vec<Raw>) {
     }
 }
 
+/// A text's tokens, whether each follows the one before it across a hyphen, and each token's body
+/// line; a name's tokens all stand on its one line.
+struct Words {
+    tokens: Vec<String>,
+    joins: Vec<bool>,
+    lines: Option<Vec<usize>>,
+}
+
+impl Words {
+    fn name(name: &str) -> Self {
+        let shown = without_code_spans(name);
+        Self {
+            tokens: tokens(&shown),
+            joins: hyphen_joins(&shown),
+            lines: None,
+        }
+    }
+
+    fn body(body: &str) -> Self {
+        let body = Body::read(body);
+        let (tokens, lines) = body.tokens();
+        Self {
+            tokens,
+            joins: body.hyphen_joins(),
+            lines: Some(lines),
+        }
+    }
+
+    /// Where `phrase` first starts; a hyphenated tag only where its words are joined by hyphens
+    /// in the text too.
+    fn first(&self, phrase: &[String], hyphenated: bool) -> Option<usize> {
+        phrase_positions(&self.tokens, phrase)
+            .into_iter()
+            .find(|at| !hyphenated || self.joins[at + 1..at + phrase.len()].iter().all(|j| *j))
+    }
+}
+
 /// `LQ-009`: a registry term in the name or body of a node that tags apply to, where neither the
-/// node nor a node above it lists the tag; one finding per node and term (AC-403, AC-404).
+/// node nor a node above it lists the tag; one finding per node and term (AC-403, AC-404). A tag
+/// whose words are joined by hyphens matches only text that joins them by hyphens.
 fn untagged_terms(context: &Context<'_>, out: &mut Vec<Raw>) {
     let mut entries: Vec<_> = context.document.tags.iter().collect();
     entries.sort_unstable_by_key(|entry| entry.id);
     for item in context.items.iter().filter(|item| taggable(item.id.kind())) {
-        let name = shown_tokens(&item.name());
-        let body = item.body().map(|body| Body::read(body).tokens());
+        let name = Words::name(&item.name());
+        let body = item.body().map(Words::body);
         for entry in &entries {
             let phrase = tokens(entry.name.as_str());
             let covered = context
@@ -290,7 +330,8 @@ fn untagged_terms(context: &Context<'_>, out: &mut Vec<Raw>) {
             if phrase.is_empty() || covered {
                 continue;
             }
-            if let Some(spot) = first_spot(&phrase, &name, body.as_ref()) {
+            let hyphenated = entry.name.as_str().contains('-');
+            if let Some(spot) = first_spot(&phrase, hyphenated, &name, body.as_ref()) {
                 out.push(
                     Raw::new(
                         RuleId::Lq009,
@@ -308,15 +349,16 @@ fn untagged_terms(context: &Context<'_>, out: &mut Vec<Raw>) {
 /// The first spot `phrase` occurs at.
 fn first_spot(
     phrase: &[String],
-    name: &[String],
-    body: Option<&(Vec<String>, Vec<usize>)>,
+    hyphenated: bool,
+    name: &Words,
+    body: Option<&Words>,
 ) -> Option<Spot> {
-    if !phrase_positions(name, phrase).is_empty() {
+    if name.first(phrase, hyphenated).is_some() {
         return Some(Spot::Name);
     }
-    let (tokens, lines) = body?;
-    let at = *phrase_positions(tokens, phrase).first()?;
-    Some(Spot::Body(lines[at]))
+    let body = body?;
+    let at = body.first(phrase, hyphenated)?;
+    Some(Spot::Body(body.lines.as_ref()?[at]))
 }
 
 const fn taggable(kind: NodeKind) -> bool {
