@@ -23,6 +23,7 @@ mod init;
 mod merge_contract;
 mod merge_driver;
 mod merge_driver_install;
+mod plugins;
 mod publish;
 mod publish_meet_contract;
 mod publish_settle;
