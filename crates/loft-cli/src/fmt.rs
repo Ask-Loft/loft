@@ -4,12 +4,12 @@
 use std::path::Path;
 use std::process::ExitCode;
 
-use loftspec::codec::ReadError;
 use loftspec::fmt::format;
-use loftspec_store::{FileStore, StoreError};
-use serde_json::{Value, json};
+use loftspec_store::FileStore;
+use serde_json::json;
 
 use crate::json;
+use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-fmt/1";
@@ -31,30 +31,6 @@ impl Outcome {
             "canonical"
         } else {
             "drift"
-        }
-    }
-}
-
-/// Why the tree was not formatted: its errors as JSON, and as the lines standard error shows.
-struct Failure {
-    errors: Vec<Value>,
-    lines: Vec<String>,
-}
-
-impl From<StoreError> for Failure {
-    fn from(error: StoreError) -> Self {
-        Self {
-            errors: vec![json::store_error(&error)],
-            lines: vec![error.to_string()],
-        }
-    }
-}
-
-impl From<Vec<ReadError>> for Failure {
-    fn from(errors: Vec<ReadError>) -> Self {
-        Self {
-            errors: json::read_errors(&errors),
-            lines: errors.iter().map(ToString::to_string).collect(),
         }
     }
 }
@@ -81,17 +57,11 @@ pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
                 ExitCode::SUCCESS
             }
         }
-        Err(failure) => {
-            if as_json {
-                json::print(&json::failure(SCHEMA, failure.errors));
-            }
-            crate::report(&failure.lines);
-            ExitCode::FAILURE
-        }
+        Err(stop) => stop.exit(SCHEMA, as_json),
     }
 }
 
-fn attempt(root: &Path, check: bool) -> Result<Outcome, Failure> {
+fn attempt(root: &Path, check: bool) -> Result<Outcome, Stop> {
     let store = FileStore::open(root)?;
     let formatted = format(&store.read_files()?)?;
     let changed = formatted.changed.keys().map(ToString::to_string).collect();

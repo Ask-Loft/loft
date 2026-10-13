@@ -9,10 +9,10 @@ use std::process::ExitCode;
 use loftspec::codec::{self, Site, Sites};
 use loftspec::document::Document;
 use loftspec::ids::ElementId;
-use loftspec_store::FileStore;
 use serde_json::{Map, Value, json};
 
 use crate::json;
+use crate::stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-find/1";
@@ -27,19 +27,10 @@ struct Match {
 }
 
 pub fn run(root: &Path, query: &str, as_json: bool) -> ExitCode {
-    let files = match FileStore::open(root).and_then(|store| store.read_files()) {
-        Ok(files) => files,
-        Err(error) => return json::stop(SCHEMA, vec![json::store_error(&error)], &error, as_json),
-    };
-    let (document, sites) = match codec::read_sited(&files) {
+    let read = stop::read_files(root).and_then(|files| Ok(codec::read_sited(&files)?));
+    let (document, sites) = match read {
         Ok(read) => read,
-        Err(errors) => {
-            if as_json {
-                json::print(&json::failure(SCHEMA, json::read_errors(&errors)));
-            }
-            crate::report(&errors);
-            return ExitCode::FAILURE;
-        }
+        Err(stop) => return stop.exit(SCHEMA, as_json),
     };
     let found = find(&document, &sites, query);
     if as_json {

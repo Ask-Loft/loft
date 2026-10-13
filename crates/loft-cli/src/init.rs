@@ -17,6 +17,7 @@ use loftspec_store::{FileStore, StoreError};
 use serde_json::json;
 
 use crate::merge_driver::NPM_COMMAND;
+use crate::stop::Stop;
 use crate::{json, skill};
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -27,7 +28,7 @@ pub fn run(root: &Path, with_skill: bool, as_json: bool) -> ExitCode {
     if let Err(error) =
         FileStore::open(root).and_then(|store| store.create(codec::write(&document)))
     {
-        return json::stop(SCHEMA, vec![json::store_error(&error)], &error, as_json);
+        return Stop::from(error).exit(SCHEMA, as_json);
     }
     let skills = if with_skill {
         match skill::install(root) {

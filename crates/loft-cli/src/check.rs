@@ -7,24 +7,18 @@ use std::process::ExitCode;
 
 use loftspec::check::{Checked, check};
 use loftspec::lint::Severity;
-use loftspec_store::FileStore;
 use serde_json::{Value, json};
 
 use crate::json;
+use crate::stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-check/1";
 
 pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> ExitCode {
-    let files = match FileStore::open(root).and_then(|store| store.read_files()) {
+    let files = match stop::read_files(root) {
         Ok(files) => files,
-        Err(error) => {
-            if as_json {
-                json::print(&json::failure(SCHEMA, vec![json::store_error(&error)]));
-            }
-            eprintln!("{error}");
-            return ExitCode::FAILURE;
-        }
+        Err(stop) => return stop.exit(SCHEMA, as_json),
     };
     let checked = check(&files);
     let failed_on = fail_on.is_some_and(|threshold| {

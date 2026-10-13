@@ -13,6 +13,7 @@ use loftspec_store::{FileStore, fs};
 use serde_json::{Map, Value, json};
 
 use crate::json;
+use crate::stop::Stop;
 
 const SCHEMA: &str = "loft-import/1";
 
@@ -22,14 +23,7 @@ pub fn run(root: &Path, export: &Path, counters: Option<&Path>, as_json: bool) -
             report(&imported, &sites, as_json);
             ExitCode::SUCCESS
         }
-        Err(message) => {
-            if as_json {
-                let errors = vec![json::error("refused", &message, &[])];
-                json::print(&json::failure(SCHEMA, errors));
-            }
-            eprintln!("{message}");
-            ExitCode::FAILURE
-        }
+        Err(message) => Stop::one("refused", message).exit(SCHEMA, as_json),
     }
 }
 

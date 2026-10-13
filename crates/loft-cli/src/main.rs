@@ -11,6 +11,7 @@ mod merge_driver;
 mod publish;
 mod render;
 mod skill;
+mod stop;
 mod verify;
 mod version;
 
@@ -256,13 +257,5 @@ fn main() -> ExitCode {
         Command::Skill {
             action: SkillAction::Install { output },
         } => skill::run(root, output.json()),
-    }
-}
-
-/// Prints each error on its own line; a read or validation error as
-/// `<path>:<line>:<column>: <message>` (RQ-158).
-fn report(errors: &[impl std::fmt::Display]) {
-    for error in errors {
-        eprintln!("{error}");
     }
 }
