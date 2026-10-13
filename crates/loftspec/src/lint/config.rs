@@ -6,7 +6,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::defaults::{
-    self, CONJUNCTION_THRESHOLD, CONJUNCTIONS, MIN_TOKENS, MODALS, SIMILARITY_MILLIONTHS,
+    self, CONJUNCTION_THRESHOLD, CONJUNCTIONS, MAX_BODY_WORDS, MAX_CRITERIA, MIN_TOKENS, MODALS,
+    SIMILARITY_MILLIONTHS,
 };
 use super::lexicon::{self, Edits, Lexicon};
 use super::{RuleId, Severity};
@@ -32,6 +33,9 @@ pub struct LintConfig {
     conjunctions: Lexicon,
     conjunction_threshold: usize,
     similarity: Similarity,
+    max_criteria: usize,
+    max_body_words: usize,
+    proper_names: Vec<String>,
     suppressions: BTreeSet<(RuleId, Key)>,
 }
 
@@ -54,6 +58,9 @@ impl Default for LintConfig {
                 min_tokens: MIN_TOKENS,
                 threshold: SIMILARITY_MILLIONTHS,
             },
+            max_criteria: MAX_CRITERIA,
+            max_body_words: MAX_BODY_WORDS,
+            proper_names: Vec::new(),
             suppressions: BTreeSet::new(),
         }
     }
@@ -128,6 +135,24 @@ impl LintConfig {
     #[must_use]
     pub const fn similarity(&self) -> Similarity {
         self.similarity
+    }
+
+    /// `V2-006`'s limit on a Requirement's criteria.
+    #[must_use]
+    pub const fn max_criteria(&self) -> usize {
+        self.max_criteria
+    }
+
+    /// `V2-006`'s limit on the words of a Requirement's body.
+    #[must_use]
+    pub const fn max_body_words(&self) -> usize {
+        self.max_body_words
+    }
+
+    /// The proper names `V2-008` reads, each matched whole and in its own case.
+    #[must_use]
+    pub fn proper_names(&self) -> &[String] {
+        &self.proper_names
     }
 }
 
@@ -276,6 +301,21 @@ impl Reader {
                     config.similarity.threshold = threshold;
                 }
             }
+            ("maxCriteria", RuleId::V2006) => {
+                if let Some(count) = self.count(value) {
+                    config.max_criteria = count;
+                }
+            }
+            ("maxBodyWords", RuleId::V2006) => {
+                if let Some(count) = self.count(value) {
+                    config.max_body_words = count;
+                }
+            }
+            ("properNames", RuleId::V2008) => {
+                if let Some(names) = self.names(value) {
+                    config.proper_names = names;
+                }
+            }
             (other, _) => self.fail(option.key_position, Problem::UnknownField(other.to_owned())),
         }
     }
@@ -293,6 +333,27 @@ impl Reader {
             self.fail(node.position, Problem::Invalid { value, expected });
         }
         parsed
+    }
+
+    fn count(&mut self, node: &Node) -> Option<usize> {
+        let positive = |text: &str| text.parse().ok().filter(|count| *count >= 1);
+        self.parsed(node, "a count of at least 1", positive)
+    }
+
+    /// A sequence of names, none of them blank.
+    fn names(&mut self, node: &Node) -> Option<Vec<String>> {
+        let Value::Sequence(items) = &node.value else {
+            self.fail(node.position, Problem::Expected("a sequence"));
+            return None;
+        };
+        let mut names = Vec::new();
+        for item in items {
+            let name = self.parsed(item, "a name", |text| {
+                (!text.trim().is_empty()).then(|| text.to_owned())
+            })?;
+            names.push(name);
+        }
+        Some(names)
     }
 
     fn lexicon(&mut self, node: &Node, defaults: &[&str]) -> Option<Lexicon> {

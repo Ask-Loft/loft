@@ -57,6 +57,15 @@ pub(super) const MODALS: &[&str] = &["shall", "must", "will", "should"];
 
 pub(super) const CONJUNCTIONS: &[&str] = &["and", "or"];
 
+/// The words `V2-007` reads as normative in a body.
+pub(super) const NORMATIVE_WORDS: &[&str] = &["shall", "must"];
+
+/// `V2-006` reports a Requirement with more criteria than this.
+pub(super) const MAX_CRITERIA: usize = 20;
+
+/// `V2-006` reports a Requirement whose body holds more words than this.
+pub(super) const MAX_BODY_WORDS: usize = 150;
+
 /// LQ-005 reports a segment whose conjunctions reach this count.
 pub(super) const CONJUNCTION_THRESHOLD: usize = 3;
 
@@ -73,6 +82,7 @@ pub(super) const fn lexicon(rule: RuleId) -> Option<&'static [&'static str]> {
         RuleId::Lq002 => Some(VAGUE_QUANTIFIERS),
         RuleId::Lq003 => Some(ESCAPE_CLAUSES),
         RuleId::Lq004 => Some(ABSOLUTES),
+        RuleId::V2007 => Some(NORMATIVE_WORDS),
         _ => None,
     }
 }
@@ -98,7 +108,9 @@ impl RuleId {
             | Self::Lq003
             | Self::Lq006
             | Self::V2003
-            | Self::V2004 => Severity::Warning,
+            | Self::V2004
+            | Self::V2005
+            | Self::V2007 => Severity::Warning,
             Self::Sh002
             | Self::Sh005
             | Self::Sh006
@@ -108,7 +120,9 @@ impl RuleId {
             | Self::Lq007
             | Self::Lq008
             | Self::V2001
-            | Self::V2002 => Severity::Info,
+            | Self::V2002
+            | Self::V2006
+            | Self::V2008 => Severity::Info,
             Self::Sh010 | Self::Lq009 => Severity::Hint,
         }
     }
@@ -138,6 +152,10 @@ pub fn defaults_text() -> String {
             list(&mut text, "modalLexicon", MODALS);
             list(&mut text, "conjunctionLexicon", CONJUNCTIONS);
             let _ = writeln!(text, "    conjunctionThreshold: {CONJUNCTION_THRESHOLD}");
+        }
+        if *rule == RuleId::V2006 {
+            let _ = writeln!(text, "    maxCriteria: {MAX_CRITERIA}");
+            let _ = writeln!(text, "    maxBodyWords: {MAX_BODY_WORDS}");
         }
         if *rule == RuleId::Lq008 {
             let _ = writeln!(text, "    minTokens: {MIN_TOKENS}");

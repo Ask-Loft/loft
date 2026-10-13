@@ -130,3 +130,21 @@ rules:
   - rule: V2-004
     enabled: true
     severity: warning
+  - rule: V2-005
+    enabled: true
+    severity: warning
+  - rule: V2-006
+    enabled: true
+    severity: info
+    maxCriteria: 20
+    maxBodyWords: 150
+  - rule: V2-007
+    enabled: true
+    severity: warning
+    lexicon:
+      replace:
+        - "shall"
+        - "must"
+  - rule: V2-008
+    enabled: true
+    severity: info
