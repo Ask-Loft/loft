@@ -111,7 +111,7 @@ impl LintConfig {
             .any(|key| self.suppressions.contains(&(rule, *key)))
     }
 
-    /// The lexicon of a lexical rule, `LQ-001`..`LQ-004`.
+    /// The lexicon of a rule that takes one: `LQ-001`..`LQ-004` and `V2-007`.
     #[must_use]
     pub fn lexicon(&self, rule: RuleId) -> &Lexicon {
         &self.lexicons[&rule]
@@ -290,8 +290,7 @@ impl Reader {
                 }
             }
             ("minTokens", RuleId::Lq008) => {
-                let positive = |text: &str| text.parse().ok().filter(|count| *count >= 1);
-                if let Some(count) = self.parsed(value, "a count of at least 1", positive) {
+                if let Some(count) = self.count(value) {
                     config.similarity.min_tokens = count;
                 }
             }
@@ -340,20 +339,19 @@ impl Reader {
         self.parsed(node, "a count of at least 1", positive)
     }
 
-    /// A sequence of names, none of them blank.
+    /// A sequence of names, none of them blank; each blank name is an error.
     fn names(&mut self, node: &Node) -> Option<Vec<String>> {
-        let Value::Sequence(items) = &node.value else {
-            self.fail(node.position, Problem::Expected("a sequence"));
-            return None;
-        };
-        let mut names = Vec::new();
-        for item in items {
-            let name = self.parsed(item, "a name", |text| {
-                (!text.trim().is_empty()).then(|| text.to_owned())
-            })?;
-            names.push(name);
-        }
-        Some(names)
+        let errors = self.errors.len();
+        let names: Vec<String> = self
+            .items(node)
+            .iter()
+            .filter_map(|item| {
+                self.parsed(item, "a name", |text| {
+                    (!text.trim().is_empty()).then(|| text.to_owned())
+                })
+            })
+            .collect();
+        (self.errors.len() == errors).then_some(names)
     }
 
     fn lexicon(&mut self, node: &Node, defaults: &[&str]) -> Option<Lexicon> {

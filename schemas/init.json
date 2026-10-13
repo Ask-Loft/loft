@@ -106,7 +106,7 @@
           "type": "string",
           "enum": [
             "store",
-            "skill"
+            "install"
           ]
         },
         "message": {

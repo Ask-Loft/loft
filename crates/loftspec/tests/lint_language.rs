@@ -1,37 +1,11 @@
 //! The language rules `LQ-001`..`LQ-009` and the texts they read (F-20).
 
+use crate::common::lint::{added, configured, findings, keys, of, severity};
 use crate::common::{component, criterion, key, requirement, root, small_document};
-use loftspec::codec::Sites;
 use loftspec::document::Document;
-use loftspec::identity::Key;
-use loftspec::lint::{Finding, LintConfig, RuleId, Severity, lint};
+use loftspec::lint::{Finding, RuleId, Severity};
 use loftspec::statement::Statement;
 use loftspec::text::tokenize;
-use loftspec::tree::Requirement;
-
-fn findings(document: &Document) -> Vec<Finding> {
-    lint(document, &Sites::default(), &LintConfig::default())
-}
-
-fn configured(document: &Document, yaml: &str) -> Vec<Finding> {
-    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
-    lint(document, &Sites::default(), &config)
-}
-
-fn of(findings: &[Finding], rule: RuleId) -> Vec<&Finding> {
-    findings
-        .iter()
-        .filter(|finding| finding.rule == rule)
-        .collect()
-}
-
-fn keys(finding: &Finding) -> Vec<Key> {
-    finding.subjects.iter().map(|subject| subject.key).collect()
-}
-
-fn severity(rule: RuleId) -> Severity {
-    LintConfig::default().severity(rule)
-}
 
 /// The small document with one more Requirement under F-1, its statement stored as text.
 fn with_statement(text: &str) -> Document {
@@ -43,10 +17,6 @@ fn with_statement(text: &str) -> Document {
         vec![criterion(key(61), "It holds.")],
     ));
     document
-}
-
-fn added(document: &mut Document) -> &mut Requirement {
-    &mut document.products[0].feature_groups[0].features[0].requirements[1]
 }
 
 #[test]

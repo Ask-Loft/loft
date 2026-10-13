@@ -2,15 +2,12 @@
 //! a new one, so a name like `ac_454_…` would go on naming a criterion that no longer holds it.
 //! A guard keeps every test name free of a label.
 
+use crate::common::workspace;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 /// The label prefixes, as they would appear in a name.
 const PREFIXES: [&str; 9] = ["p", "fg", "f", "rq", "ac", "cmp", "con", "qa", "adr"];
-
-fn workspace() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
 
 /// The labels a test name holds anywhere: `ac_165_and_ac_166_…` holds AC-165 and AC-166.
 fn cited(name: &str) -> Vec<String> {

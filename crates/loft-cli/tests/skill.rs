@@ -4,15 +4,11 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use crate::common::{Scratch, stdout};
+use crate::common::{Scratch, skill_source, stdout};
 use loftspec::lint::RuleId;
 use serde_json::Value;
-
-fn skill() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("skill/loft-spec")
-}
 
 fn text(path: &Path) -> String {
     fs::read_to_string(path).unwrap_or_else(|_| panic!("no {}", path.display()))
@@ -20,7 +16,7 @@ fn text(path: &Path) -> String {
 
 /// The references, by file name, with their text.
 fn references() -> BTreeMap<String, String> {
-    let found: BTreeMap<String, String> = fs::read_dir(skill().join("references"))
+    let found: BTreeMap<String, String> = fs::read_dir(skill_source().join("references"))
         .unwrap()
         .map(|entry| entry.unwrap().path())
         .map(|path| {
@@ -39,7 +35,7 @@ fn references() -> BTreeMap<String, String> {
 }
 
 /// The frontmatter's lines and the body's, fences excluded.
-fn split(skill_md: &str) -> (Vec<&str>, Vec<&str>) {
+pub fn split(skill_md: &str) -> (Vec<&str>, Vec<&str>) {
     let lines: Vec<&str> = skill_md.lines().collect();
     assert_eq!(lines[0], "---", "SKILL.md opens with a frontmatter");
     let end = lines[1..].iter().position(|line| *line == "---").unwrap() + 1;
@@ -130,7 +126,10 @@ fn rules(document: &Value, severity: Option<&str>) -> BTreeSet<String> {
 
 #[test]
 fn the_skill_s_neutral_files_name_no_host() {
-    let mut neutral = vec![("SKILL.md".to_owned(), text(&skill().join("SKILL.md")))];
+    let mut neutral = vec![(
+        "SKILL.md".to_owned(),
+        text(&skill_source().join("SKILL.md")),
+    )];
     neutral.extend(references());
     for (name, text) in &neutral {
         for host in [
@@ -157,16 +156,16 @@ fn each_host_s_adaptation_lies_under_agents() {
         "claude/claude-host.md",
     ] {
         assert!(
-            skill().join("agents").join(adaptation).is_file(),
+            skill_source().join("agents").join(adaptation).is_file(),
             "{adaptation}"
         );
     }
-    assert!(!skill().join("references/claude-host.md").exists());
+    assert!(!skill_source().join("references/claude-host.md").exists());
 }
 
 #[test]
 fn the_frontmatter_holds_the_name_and_the_description_alone() {
-    let skill_md = text(&skill().join("SKILL.md"));
+    let skill_md = text(&skill_source().join("SKILL.md"));
     let (frontmatter, _) = split(&skill_md);
     let fields: Vec<&str> = frontmatter
         .iter()
@@ -181,7 +180,7 @@ fn the_frontmatter_holds_the_name_and_the_description_alone() {
 
 #[test]
 fn the_router_routes_each_reference_once_and_the_loop_first() {
-    let skill_md = text(&skill().join("SKILL.md"));
+    let skill_md = text(&skill_source().join("SKILL.md"));
     let (_, body) = split(&skill_md);
     let bullets: Vec<&str> = body
         .iter()
@@ -231,6 +230,14 @@ fn each_reference_opens_with_its_use_and_lists_its_sections_in_order() {
 #[test]
 fn every_yaml_block_is_marked_with_its_role() {
     for (name, markdown) in references() {
+        // Only a column-0 "```yaml" fence is read as an example, so every fence takes that form.
+        for line in markdown.lines() {
+            let fence = line.trim_start();
+            if fence.starts_with("```") || fence.starts_with("~~~") {
+                let read = line == "```" || line.starts_with("```yaml");
+                assert!(read, "{name}: a fence the examples cannot read: `{line}`");
+            }
+        }
         for block in yaml_blocks(&markdown) {
             let marked = block.info == "fragment" || attribute(&block.info, "path").is_some();
             assert!(marked, "{name}: a YAML block marked `{}`", block.info);
@@ -258,16 +265,25 @@ fn each_reference_s_example_tree_passes_check() {
 fn each_wrong_example_raises_its_rule_and_no_other_warning() {
     for (name, markdown) in references() {
         let examples = examples(&markdown);
-        for (rule, files) in &examples.wrong {
-            let mut tree = examples.tree.clone();
-            tree.extend(files.iter().cloned());
-            let document = checked(&tree);
-            assert!(rules(&document, None).contains(rule), "{name}: {rule}");
-            let mut warnings = rules(&document, Some("warning"));
-            warnings.remove(rule);
-            assert_eq!(warnings, BTreeSet::new(), "{name}: {rule}");
-        }
+        // Each example runs `loft` three times in its own scratch directory, so they run at once.
+        std::thread::scope(|scope| {
+            for (rule, files) in &examples.wrong {
+                let (name, tree) = (&name, &examples.tree);
+                scope.spawn(move || raises_only(name, rule, tree, files));
+            }
+        });
     }
+}
+
+/// Asserts that `files`, written over `tree`, raise `rule` and no other warning.
+fn raises_only(name: &str, rule: &str, tree: &[(String, String)], files: &[(String, String)]) {
+    let mut tree = tree.to_vec();
+    tree.extend(files.iter().cloned());
+    let document = checked(&tree);
+    assert!(rules(&document, None).contains(rule), "{name}: {rule}");
+    let mut warnings = rules(&document, Some("warning"));
+    warnings.remove(rule);
+    assert_eq!(warnings, BTreeSet::new(), "{name}: {rule}");
 }
 
 /// The rules an unpublished tree cannot raise: a Quality Attribute always holds a target, and

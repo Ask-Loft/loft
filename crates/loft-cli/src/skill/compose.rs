@@ -3,8 +3,6 @@
 //! under `agents/claude/`, and holds no `agents/` directory; the Codex package keeps
 //! `agents/openai.yaml` alone. No package carries another host's adaptation.
 
-use std::fmt;
-
 /// An agent host the skill is composed for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Host {
@@ -24,7 +22,7 @@ impl Host {
     }
 }
 
-const CLAUDE: &str = "agents/claude/";
+const CODEX_ADAPTATION: &str = "agents/openai.yaml";
 const FRAGMENT: &str = "agents/claude/frontmatter.yaml";
 const ROUTE: &str = "agents/claude/route.md";
 const HOST_REFERENCE: &str = "agents/claude/claude-host.md";
@@ -51,30 +49,6 @@ pub enum ComposeError {
     Anchor(usize),
 }
 
-impl fmt::Display for ComposeError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Missing(path) => write!(formatter, "the source has no `{path}`"),
-            Self::NoFrontmatter => formatter.write_str("`SKILL.md` opens with no frontmatter"),
-            Self::Defines(field) => {
-                write!(
-                    formatter,
-                    "the fragment defines `{field}`, which `SKILL.md` owns"
-                )
-            }
-            Self::Budget(length) => write!(
-                formatter,
-                "`description` and `when_to_use` hold {length} characters, more than \
-                 {LISTING_BUDGET}"
-            ),
-            Self::Anchor(count) => write!(
-                formatter,
-                "`SKILL.md` names `{ANCHOR}` {count} times, where it should name it once"
-            ),
-        }
-    }
-}
-
 /// A package's files, by path, in the source's order.
 pub type Files = Vec<(String, String)>;
 
@@ -84,31 +58,37 @@ pub type Files = Vec<(String, String)>;
 ///
 /// A [`ComposeError`] for a source the host's adaptation does not fit.
 pub fn compose(host: Host, source: &[(&str, &str)]) -> Result<Files, ComposeError> {
-    let kept = |path: &str| match host {
-        Host::ClaudeCode => !path.starts_with("agents/"),
-        Host::Codex => !path.starts_with(CLAUDE),
+    let find = |path: &'static str| {
+        source
+            .iter()
+            .find(|(each, _)| *each == path)
+            .map(|(_, text)| *text)
+            .ok_or(ComposeError::Missing(path))
+    };
+    // Every host drops `agents/`, but for the adaptation it reads in place.
+    let (kept, skill_md, added) = match host {
+        Host::ClaudeCode => {
+            let skill_md = claude_skill_md(find("SKILL.md")?, find(FRAGMENT)?, find(ROUTE)?)?;
+            let reference = (
+                COMPOSED_REFERENCE.to_owned(),
+                find(HOST_REFERENCE)?.to_owned(),
+            );
+            (None, Some(skill_md), Some(reference))
+        }
+        Host::Codex => (Some(CODEX_ADAPTATION), None, None),
     };
     let mut files: Files = source
         .iter()
-        .filter(|(path, _)| kept(path))
-        .map(|(path, text)| ((*path).to_owned(), (*text).to_owned()))
+        .filter(|(path, _)| !path.starts_with("agents/") || Some(*path) == kept)
+        .map(|(path, text)| {
+            let text = match (&skill_md, *path) {
+                (Some(composed), "SKILL.md") => composed.clone(),
+                _ => (*text).to_owned(),
+            };
+            ((*path).to_owned(), text)
+        })
         .collect();
-    if host == Host::ClaudeCode {
-        let find = |path: &'static str| {
-            source
-                .iter()
-                .find(|(each, _)| *each == path)
-                .map(|(_, text)| *text)
-                .ok_or(ComposeError::Missing(path))
-        };
-        let skill_md = claude_skill_md(find("SKILL.md")?, find(FRAGMENT)?, find(ROUTE)?)?;
-        let skill = files.iter_mut().find(|(path, _)| path == "SKILL.md");
-        skill.ok_or(ComposeError::Missing("SKILL.md"))?.1 = skill_md;
-        files.push((
-            COMPOSED_REFERENCE.to_owned(),
-            find(HOST_REFERENCE)?.to_owned(),
-        ));
-    }
+    files.extend(added);
     Ok(files)
 }
 
@@ -190,6 +170,7 @@ mod tests {
                 "- Read `references/claude-host.md`.\n",
             ),
             ("agents/openai.yaml", "interface: {}"),
+            ("agents/another/host.md", "another host"),
             ("references/the-loop.md", "loop"),
         ]
     }

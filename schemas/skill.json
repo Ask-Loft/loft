@@ -97,7 +97,7 @@
         "kind": {
           "type": "string",
           "enum": [
-            "skill"
+            "install"
           ]
         },
         "message": {

@@ -6,10 +6,11 @@ use super::context::{Context, Item};
 use super::text::{Body, phrase_positions, without_code_spans};
 use super::{LintConfig, Raw, RuleId};
 use crate::node::Node;
-use crate::statement::{EarsForm, Statement};
+use crate::statement::Statement;
 
 pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Raw>) {
     for item in &context.items {
+        let body = item.body().map(|body| Body::read(body).tokens());
         match item.node {
             Node::Criterion(criterion) if is_compound(&criterion.name) => {
                 out.push(Raw::new(
@@ -19,12 +20,15 @@ pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Ra
                 ));
             }
             Node::Requirement(requirement) => {
-                oversized(item, requirement.criteria.len(), config, out);
+                let words = body.as_ref().map_or(0, |(tokens, _)| tokens.len());
+                oversized(item, requirement.criteria.len(), words, config, out);
                 proper_name(item, &requirement.statement, config, out);
             }
             _ => {}
         }
-        normative(item, config, out);
+        if let Some((tokens, lines)) = &body {
+            normative(item, tokens, lines, config, out);
+        }
     }
 }
 
@@ -43,7 +47,13 @@ fn is_compound(name: &str) -> bool {
 }
 
 /// `V2-006`: one finding for each limit a Requirement passes, its criteria and its body's words.
-fn oversized(item: &Item<'_>, criteria: usize, config: &LintConfig, out: &mut Vec<Raw>) {
+fn oversized(
+    item: &Item<'_>,
+    criteria: usize,
+    words: usize,
+    config: &LintConfig,
+    out: &mut Vec<Raw>,
+) {
     let key = item.id.key();
     if criteria > config.max_criteria() {
         let message = format!(
@@ -52,9 +62,6 @@ fn oversized(item: &Item<'_>, criteria: usize, config: &LintConfig, out: &mut Ve
         );
         out.push(Raw::new(RuleId::V2006, vec![key], message).term("criteria"));
     }
-    let words = item
-        .body()
-        .map_or(0, |body| Body::read(body).tokens().0.len());
     if words > config.max_body_words() {
         let message = format!(
             "The Requirement's body holds {words} words, more than {}; it may be a Feature.",
@@ -65,13 +72,15 @@ fn oversized(item: &Item<'_>, criteria: usize, config: &LintConfig, out: &mut Ve
 }
 
 /// `V2-007`: one finding for each occurrence of a lexicon word in a node's body, outside code.
-fn normative(item: &Item<'_>, config: &LintConfig, out: &mut Vec<Raw>) {
-    let Some(body) = item.body() else {
-        return;
-    };
-    let (tokens, lines) = Body::read(body).tokens();
+fn normative(
+    item: &Item<'_>,
+    tokens: &[String],
+    lines: &[usize],
+    config: &LintConfig,
+    out: &mut Vec<Raw>,
+) {
     for phrase in config.lexicon(RuleId::V2007) {
-        for at in phrase_positions(&tokens, phrase) {
+        for at in phrase_positions(tokens, phrase) {
             out.push(
                 Raw::new(
                     RuleId::V2007,
@@ -91,7 +100,7 @@ fn proper_name(item: &Item<'_>, statement: &Statement, config: &LintConfig, out:
     let Statement::Form(form) = statement else {
         return;
     };
-    let system = system(form).trim();
+    let system = form.parts().1.trim();
     let Some(named) = system
         .strip_prefix("the ")
         .or_else(|| system.strip_prefix("The "))
@@ -107,15 +116,5 @@ fn proper_name(item: &Item<'_>, statement: &Statement, config: &LintConfig, out:
             )
             .term(name),
         );
-    }
-}
-
-fn system(form: &EarsForm) -> &str {
-    match form {
-        EarsForm::Ubiquitous { system, .. }
-        | EarsForm::EventDriven { system, .. }
-        | EarsForm::StateDriven { system, .. }
-        | EarsForm::Unwanted { system, .. }
-        | EarsForm::Optional { system, .. } => system,
     }
 }

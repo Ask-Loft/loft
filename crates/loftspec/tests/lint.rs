@@ -3,11 +3,12 @@
 
 use std::num::NonZeroU64;
 
+use crate::common::lint::{configured, findings, severity};
 use crate::common::text::{FEATURE, files, path};
 use crate::common::{
     component, criterion, feature, key, product, requirement, root, small_document,
 };
-use loftspec::codec::{self, Problem, Sites};
+use loftspec::codec::{self, Problem};
 use loftspec::document::{Document, Edge, TagEntry};
 use loftspec::identity::{Key, LabelPrefix};
 use loftspec::ids::{ComponentId, FeatureId, RequirementId, TagId};
@@ -16,15 +17,6 @@ use loftspec::names::TagName;
 use loftspec::statement::Statement;
 use loftspec::tree::{Constraint, Details};
 
-fn findings(document: &Document) -> Vec<Finding> {
-    lint(document, &Sites::default(), &LintConfig::default())
-}
-
-fn configured(document: &Document, yaml: &str) -> Vec<Finding> {
-    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
-    lint(document, &Sites::default(), &config)
-}
-
 /// The keys each finding of `rule` names.
 fn of(findings: &[Finding], rule: RuleId) -> Vec<Vec<Key>> {
     findings
@@ -32,10 +24,6 @@ fn of(findings: &[Finding], rule: RuleId) -> Vec<Vec<Key>> {
         .filter(|finding| finding.rule == rule)
         .map(|finding| finding.subjects.iter().map(|s| s.key).collect())
         .collect()
-}
-
-fn severity(rule: RuleId) -> Severity {
-    LintConfig::default().severity(rule)
 }
 
 fn tag(name: &str) -> TagName {

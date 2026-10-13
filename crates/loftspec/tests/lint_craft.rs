@@ -1,37 +1,12 @@
 //! The rules of the writing craft `V2-005`..`V2-008` (F-21): a compound criterion, an oversized
 //! Requirement, normative text in a body, and an article before a proper name.
 
+use crate::common::lint::{added, configured, findings, keys, of, severity};
 use crate::common::{criterion, key, requirement, small_document};
-use loftspec::codec::Sites;
 use loftspec::document::Document;
-use loftspec::identity::Key;
-use loftspec::lint::{Finding, LintConfig, RuleId, Severity, lint};
+use loftspec::lint::{Finding, LintConfig, RuleId, Severity};
 use loftspec::statement::{EarsForm, Statement};
-use loftspec::tree::{Criterion, Requirement};
-
-fn findings(document: &Document) -> Vec<Finding> {
-    lint(document, &Sites::default(), &LintConfig::default())
-}
-
-fn configured(document: &Document, yaml: &str) -> Vec<Finding> {
-    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
-    lint(document, &Sites::default(), &config)
-}
-
-fn of(findings: &[Finding], rule: RuleId) -> Vec<&Finding> {
-    findings
-        .iter()
-        .filter(|finding| finding.rule == rule)
-        .collect()
-}
-
-fn keys(finding: &Finding) -> Vec<Key> {
-    finding.subjects.iter().map(|subject| subject.key).collect()
-}
-
-fn severity(rule: RuleId) -> Severity {
-    LintConfig::default().severity(rule)
-}
+use loftspec::tree::Criterion;
 
 /// The small document with one more Requirement under F-1, keyed 60, holding `criteria`.
 fn with_criteria(criteria: Vec<Criterion>) -> Document {
@@ -48,10 +23,6 @@ fn with_criteria(criteria: Vec<Criterion>) -> Document {
 /// The small document with one more Requirement whose one criterion is named `name`, keyed 61.
 fn with_criterion(name: &str) -> Document {
     with_criteria(vec![criterion(key(61), name)])
-}
-
-fn added(document: &mut Document) -> &mut Requirement {
-    &mut document.products[0].feature_groups[0].features[0].requirements[1]
 }
 
 /// `count` criteria keyed from 100.

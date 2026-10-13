@@ -3,7 +3,7 @@
 //! clock, and the git simulator for a command that reads the repository, with no `git` on the
 //! search path otherwise.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{env, fs, process};
@@ -18,6 +18,16 @@ pub const EPOCH: u64 = 1_767_225_600;
 
 const READING_LIST: &str =
     include_str!("../../../../testdata/v1/reading-list/loft-authored-state.json");
+
+/// The root of the repository.
+pub fn workspace() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+/// The source of the `loft-spec` skill.
+pub fn skill_source() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("skill/loft-spec")
+}
 
 /// A directory removed when the test ends.
 pub struct Scratch(pub PathBuf);

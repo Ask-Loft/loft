@@ -3,15 +3,11 @@
 //! every manifest carries the version of `loft`.
 
 use std::fs;
-use std::path::{Path, PathBuf};
 
+use crate::common::workspace;
 use crate::skill_install::{CLAUDE, CODEX, installed};
 use crate::snapshot::snapshot;
 use serde_json::{Value, json};
-
-fn workspace() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
 
 fn read(path: &str) -> Value {
     let text = fs::read_to_string(workspace().join(path)).unwrap_or_else(|_| panic!("no {path}"));

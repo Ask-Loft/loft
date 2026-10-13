@@ -2,31 +2,26 @@
 //! each host and written into the current directory, each package replacing its directory whole.
 
 use std::fs;
-use std::path::{Path, PathBuf};
 
-use crate::common::{Scratch, stderr};
+use crate::common::{Scratch, skill_source, stderr};
 use crate::schema;
+use crate::skill::split;
 use crate::snapshot::snapshot;
 use serde_json::{Value, json};
 
 pub const CLAUDE: &str = ".claude/skills/loft-spec";
 pub const CODEX: &str = ".agents/skills/loft-spec";
 
-fn source() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("skill/loft-spec")
-}
-
-/// A directory where `loft skill install` ran and succeeded.
-pub fn installed() -> Scratch {
-    let scratch = Scratch::empty();
+/// `scratch` after `loft skill install` ran there and succeeded.
+fn install_into(scratch: Scratch) -> Scratch {
     let output = scratch.loft(&["skill", "install"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     scratch
 }
 
-/// The paths of the files under `dir`.
-fn paths(dir: &Path) -> Vec<String> {
-    snapshot(dir).into_keys().collect()
+/// A directory where `loft skill install` ran and succeeded.
+pub fn installed() -> Scratch {
+    install_into(Scratch::empty())
 }
 
 fn json_of(output: &std::process::Output) -> Value {
@@ -43,7 +38,7 @@ fn skill_install_writes_a_package_for_each_host_where_there_is_no_spec() {
 
 #[test]
 fn the_codex_package_is_the_source_without_the_claude_code_adaptation() {
-    let mut expected = snapshot(&source());
+    let mut expected = snapshot(&skill_source());
     expected.retain(|path, _| !path.starts_with("agents/claude/"));
     assert_eq!(snapshot(&installed().0.join(CODEX)), expected);
 }
@@ -51,7 +46,7 @@ fn the_codex_package_is_the_source_without_the_claude_code_adaptation() {
 #[test]
 fn the_claude_code_package_is_the_source_with_its_adaptation_applied() {
     let package = snapshot(&installed().0.join(CLAUDE));
-    let source = snapshot(&source());
+    let source = snapshot(&skill_source());
     let mut expected: Vec<String> = source
         .keys()
         .filter(|path| !path.starts_with("agents/"))
@@ -70,10 +65,9 @@ fn the_claude_code_package_is_the_source_with_its_adaptation_applied() {
         }
     }
     let skill_md = String::from_utf8(package["SKILL.md"].clone()).unwrap();
-    let fields: Vec<&str> = skill_md
-        .lines()
-        .skip(1)
-        .take_while(|line| *line != "---")
+    let fields: Vec<&str> = split(&skill_md)
+        .0
+        .iter()
         .map(|line| line.split_once(':').unwrap().0)
         .collect();
     assert_eq!(
@@ -101,8 +95,7 @@ fn skill_install_replaces_each_directory_whole_and_leaves_no_temporary_directory
     let scratch = Scratch::empty();
     fs::create_dir_all(scratch.0.join(CLAUDE)).unwrap();
     fs::write(scratch.0.join(CLAUDE).join("stale.md"), "old").unwrap();
-    let output = scratch.loft(&["skill", "install"]);
-    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let scratch = install_into(scratch);
     assert!(!scratch.0.join(CLAUDE).join("stale.md").exists());
     for parent in [".claude/skills", ".agents/skills"] {
         let names: Vec<String> = fs::read_dir(scratch.0.join(parent))
@@ -117,10 +110,9 @@ fn skill_install_replaces_each_directory_whole_and_leaves_no_temporary_directory
 fn skill_install_writes_nothing_outside_the_two_skill_directories() {
     let scratch = Scratch::empty();
     fs::write(scratch.0.join("README.md"), "readme").unwrap();
-    let output = scratch.loft(&["skill", "install"]);
-    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
-    let outside: Vec<String> = paths(&scratch.0)
-        .into_iter()
+    let scratch = install_into(scratch);
+    let outside: Vec<String> = snapshot(&scratch.0)
+        .into_keys()
         .filter(|path| !path.starts_with(CLAUDE) && !path.starts_with(CODEX))
         .collect();
     assert_eq!(outside, ["README.md"]);
