@@ -3,7 +3,7 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## 2.0.0 (unreleased)
+## 2.0.0 (2026-10-13)
 
 The first public release. Version 2 because it succeeds the format of Loft v1, whose exports
 `loft import v1` converts.
