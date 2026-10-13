@@ -95,6 +95,55 @@ requirements:
         name: "Every role other than the formatter receives the error of a node without a key."
       - key: e21a7e35-1a88-4370-b12d-6c03ea3f6353
         name: "A node read without a key has no key until the formatter mints one."
+  - key: 01a13737-c20a-744c-94d5-08b087e2b638
+    statement:
+      form: state_driven
+      while: "formatting"
+      system: "the formatter"
+      shall: "replace a reference written by name with the key of the element that name identifies."
+    criteria:
+      - key: 01a13737-c20a-744c-94d5-08b125cb6886
+        name: "A reference is written by name as a record whose one field is `name`, in place of a key."
+      - key: 01a13737-c20a-744c-94d5-08b2e4da9e2b
+        name: "A decision's `selectedOption` written by name takes the key of the decision's option with that title."
+      - key: 01a13737-c20a-744c-94d5-08b360b904ad
+        name: "An assessment's `option` written by name takes the key of its decision's option with that title."
+      - key: 01a13737-c20a-744c-94d5-08b431932db1
+        name: "An assessment's `driver` written by name takes the key of its decision's driver with that label."
+      - key: 01a13737-c20a-744c-94d5-08b53ef4fd95
+        name: "An assessment's `driver` written by name takes the key of its decision's subject driver whose subject has that name."
+      - key: 01a13737-c20a-744c-94d5-08b640debbe4
+        name: "A decision's `successor` written by name takes the key of the decision with that title."
+      - key: 01a13737-c20a-744c-94d5-08b74b95e0f1
+        name: "A `realizes`, `scopedTo`, `mentions` or subject reference written by name takes the key of the node with that name."
+      - key: 01a13737-c20a-744c-94d5-08b8a5d655ba
+        name: "A reference by name may name an element that the same formatting mints a key for."
+      - key: 01a13737-c20a-744c-94d5-08b9565d800f
+        name: "Only an element of a kind the field accepts answers a reference by name."
+  - key: 01a13737-c20a-744c-94d5-08bae0cd1883
+    statement:
+      form: unwanted
+      if: "a reference written by name matches no element, or more than one"
+      system: "the formatter"
+      shall: "report an error and format nothing."
+    criteria:
+      - key: 01a13737-c20a-744c-94d5-08bb3054a1bb
+        name: "The error names the file, line and column of the reference."
+      - key: 01a13737-c20a-744c-94d5-08bcf68ca6b1
+        name: "The error names the name that was written."
+      - key: 01a13737-c20a-744c-94d5-08bdf918ab1b
+        name: "The error for more than one match names each matching element's key."
+      - key: 01a13737-c20a-744c-94d5-08bee5c44673
+        name: "No file is changed."
+  - key: 01a13737-c20a-744c-94d5-08bf44be04d7
+    statement:
+      form: unwanted
+      if: "a reference written by name reaches any role other than the formatter"
+      system: "the reader"
+      shall: "report an error naming its file, line and column."
+    criteria:
+      - key: 01a13737-c20a-744c-94d5-08c010891542
+        name: "The error says that `loft fmt` resolves a reference by name."
   - key: dac135be-3e73-496b-8a63-b1d56a36d2e9
     statement:
       form: unwanted
