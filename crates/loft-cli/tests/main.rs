@@ -29,6 +29,7 @@ mod publish_settle;
 mod reads_tree;
 mod render;
 mod schemas;
+mod skill;
 mod test_modules;
 mod verify;
 mod version;
