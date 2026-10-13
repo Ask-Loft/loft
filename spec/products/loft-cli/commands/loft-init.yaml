@@ -1,10 +1,11 @@
 key: fd3d21c7-76fa-4f82-abe0-a2266a7e39d8
 slug: loft-init
 name: "`loft init`"
-body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries."
+body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries, and the `loft-spec` skill beside it for the project's coding agents."
 tags:
   - writes-tree
 realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -54,3 +55,30 @@ requirements:
         name: "A refusal is listed among the document's errors and names the existing path."
       - key: 01a1354e-bca0-714b-8727-09b2e3942f6f
         name: "The outcome is `created` when the tree was created."
+      - key: 01a13654-bf86-77e9-8fd5-8db7425b50cf
+        name: "The document names each skill directory written."
+  - key: 01a13654-bf86-77e9-8fd5-8db8f1c4c52b
+    statement:
+      form: ubiquitous
+      system: "`loft init`"
+      shall: "write the `loft-spec` skill beside `spec/`."
+    criteria:
+      - key: 01a13654-bf86-77e9-8fd5-8db9430eabcf
+        name: "The Claude Code package is written to `.claude/skills/loft-spec/`."
+      - key: 01a13654-bf86-77e9-8fd5-8dba633f2cf9
+        name: "The Codex package is written to `.agents/skills/loft-spec/`."
+      - key: 01a13654-bf86-77e9-8fd5-8dbbc2ae6315
+        name: "Each package is the composition of the skill that `loft` embeds."
+      - key: 01a13654-bf86-77e9-8fd5-8dbc6fd2c972
+        name: "A skill directory that already exists is replaced."
+  - key: 01a13654-bf86-77e9-8fd5-8dbdbd959708
+    statement:
+      form: optional
+      where: "`--no-skill` is given"
+      system: "`loft init`"
+      shall: "write no skill."
+    criteria:
+      - key: 01a13654-bf86-77e9-8fd5-8dbe4d28651c
+        name: "Neither `.claude/skills/loft-spec/` nor `.agents/skills/loft-spec/` is written."
+      - key: 01a13654-bf86-77e9-8fd5-8dbf78af83af
+        name: "`spec/` is created as it is without the option."

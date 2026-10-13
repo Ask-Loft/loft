@@ -1,0 +1,43 @@
+key: 01a13654-6e12-74a1-ad7f-e7df3a543f24
+slug: executable-examples
+name: "Executable examples"
+body: "The YAML examples of the skill are run: each is written into a fresh tree and checked, so that the skill never teaches a shape `loft` refuses."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e7e0f2528222
+    statement:
+      form: ubiquitous
+      system: "Each YAML example of the skill"
+      shall: "carry a mark that gives its role."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7e1a9154493
+        name: "A block marked `path=` is part of its reference's example tree, at that path."
+      - key: 01a13654-6e12-74a1-ad7f-e7e2d3845bf2
+        name: "A block marked `rule=` is a wrong example of that rule."
+      - key: 01a13654-6e12-74a1-ad7f-e7e36f91bf31
+        name: "A block marked `fragment` is shown and not run."
+      - key: 01a13654-6e12-74a1-ad7f-e7e491cee65b
+        name: "The guard fails on a YAML block without a mark."
+  - key: 01a13654-6e12-74a1-ad7f-e7e590d41620
+    statement:
+      form: ubiquitous
+      system: "Each reference's example tree"
+      shall: "pass `loft check --fail-on warning`."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7e6803005e4
+        name: "The tree is the reference's `path=` blocks written into a tree that `loft init --no-skill` created."
+      - key: 01a13654-6e12-74a1-ad7f-e7e7f18b2d01
+        name: "The tree passes `loft check --fail-on warning` after `loft fmt`."
+  - key: 01a13654-6e12-74a1-ad7f-e7e8c5c2b9c5
+    statement:
+      form: ubiquitous
+      system: "Each wrong example of the skill"
+      shall: "raise the rule it is marked with."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7e90eb4a618
+        name: "The example is written over its reference's example tree, at its path."
+      - key: 01a13654-6e12-74a1-ad7f-e7eafdd6f3ca
+        name: "The example raises a finding of its rule."
+      - key: 01a13654-6e12-74a1-ad7f-e7eb0d478d79
+        name: "The example raises no finding of another rule at warning severity."

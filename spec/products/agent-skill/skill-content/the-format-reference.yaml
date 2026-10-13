@@ -1,0 +1,57 @@
+key: 01a13654-6e12-74a1-ad7f-e81adc26abbb
+slug: the-format-reference
+name: "The format reference"
+body: "The reference an agent writes nodes from: the files of `spec/`, each record's fields in order, the statement forms, the edges and `spec/lint.yaml`."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e81b230c1b58
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "describe the files of `spec/`."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e81c49c02d9a
+        name: "The reference names the file that holds each kind of record."
+      - key: 01a13654-6e12-74a1-ad7f-e81d9ed697c5
+        name: "The reference names the files that `loft` writes."
+  - key: 01a13654-6e12-74a1-ad7f-e81ee79ca3cc
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "describe each record's fields in the order `loft fmt` writes them."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e81f36179b75
+        name: "Each record kind the reader accepts is described."
+      - key: 01a13654-6e12-74a1-ad7f-e82025743019
+        name: "Each field is marked required or optional."
+      - key: 01a13654-6e12-74a1-ad7f-e821aae0cd60
+        name: "Each field that takes a closed set of values lists the values."
+  - key: 01a13654-6e12-74a1-ad7f-e822ea889f87
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "describe the five statement forms."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8239f1b7a06
+        name: "Each form is shown with its slots."
+      - key: 01a13654-6e12-74a1-ad7f-e8240c210306
+        name: "Each form is shown with the sentence it renders."
+  - key: 01a13654-6e12-74a1-ad7f-e825f5c84d27
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "describe the edges an author writes."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e826ffb21d78
+        name: "`realizes`, `scopedTo`, `subjects` and `mentions` are each described with the kinds at their ends."
+  - key: 01a13654-6e12-74a1-ad7f-e827ee0a7582
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "describe `spec/lint.yaml`."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e828abe60209
+        name: "The reference shows a rule entry with an option."
+      - key: 01a13654-6e12-74a1-ad7f-e829ca1c1ae1
+        name: "The reference shows a suppression with its reason."

@@ -1,0 +1,37 @@
+key: 01a13654-6e12-74a1-ad7f-e7ec83d9267e
+slug: progressive-disclosure
+name: "Progressive disclosure"
+body: "Each reference holds one concern, says so at its top and lists its contents, so that an agent loads only what a workflow needs and finds each rule in one place."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e7edfbbdb1af
+    statement:
+      form: ubiquitous
+      system: "Each reference of the skill"
+      shall: "open by naming the work it is for and the concerns it owns."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7eed80f2cbc
+        name: "The reference's first paragraph begins \"Use this workflow for\"."
+      - key: 01a13654-6e12-74a1-ad7f-e7ef7bfe19d8
+        name: "The reference names the concerns it owns."
+      - key: 01a13654-6e12-74a1-ad7f-e7f05e5461b4
+        name: "A concern the reference leaves out is named with the reference that owns it."
+  - key: 01a13654-6e12-74a1-ad7f-e7f18a60b4df
+    statement:
+      form: ubiquitous
+      system: "Each reference of the skill"
+      shall: "list its sections under `## Contents` before the first of them."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7f20b262819
+        name: "The reference holds a `## Contents` list."
+      - key: 01a13654-6e12-74a1-ad7f-e7f3cfa8c039
+        name: "The list names each `##` section of the reference in order."
+  - key: 01a13654-6e12-74a1-ad7f-e7f49a22ce1c
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "state each rule in the one reference that owns it."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7f54d5c67de
+        name: "A rule that one reference states is not restated in another."

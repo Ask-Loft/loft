@@ -1,0 +1,37 @@
+key: 01a13654-6e11-74fa-a359-25996138a11d
+slug: the-codex-plugin
+name: "The Codex plugin"
+body: "The repository is a Codex marketplace that holds one plugin, `loft`, whose skill is the Codex package."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e11-74fa-a359-259a9a78a94e
+    statement:
+      form: ubiquitous
+      system: "The repository's `.agents/plugins/marketplace.json`"
+      shall: "list the plugin `loft` at `./plugins/codex/loft`."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-259bfc5eb8f6
+        name: "The marketplace is named `loft`."
+      - key: 01a13654-6e11-74fa-a359-259c47fce600
+        name: "The plugin entry is named `loft`."
+      - key: 01a13654-6e11-74fa-a359-259da6905e8d
+        name: "The plugin entry's source is the local path `./plugins/codex/loft`."
+      - key: 01a13654-6e11-74fa-a359-259e441509e2
+        name: "The plugin entry sets `policy.installation` and `policy.authentication`."
+      - key: 01a13654-6e11-74fa-a359-259f8f155f76
+        name: "The plugin entry sets `category`."
+  - key: 01a13654-6e11-74fa-a359-25a0123a4443
+    statement:
+      form: ubiquitous
+      system: "The manifest `plugins/codex/loft/plugin.json`"
+      shall: "describe the plugin in the Agent Plugins format."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-25a1fb8cabae
+        name: "The manifest declares the Agent Plugins schema."
+      - key: 01a13654-6e11-74fa-a359-25a24d99231b
+        name: "The manifest is named `loft`."
+      - key: 01a13654-6e11-74fa-a359-25a3b563d673
+        name: "The manifest gives the version, a description and the author."
+      - key: 01a13654-6e11-74fa-a359-25a48fca0462
+        name: "The plugin's skill lies at `skills/loft-spec/`."

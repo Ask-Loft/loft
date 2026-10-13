@@ -1,0 +1,44 @@
+key: 01a13654-6e12-74a1-ad7f-e7d2e7922c08
+slug: changing-a-specified-product
+name: "Changing a specified product"
+body: "The workflow for a feature or a fix in a product that a specification already describes: the specification changes first, in its own commit, and the code follows it."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e7d3806141c0
+    statement:
+      form: event_driven
+      when: "the user asks for a change to a product that a `spec/` describes"
+      system: "the skill"
+      shall: "direct the agent to change the specification before the code."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7d4c0dc3e58
+        name: "The workflow tells the agent to find the nodes the change touches before editing."
+      - key: 01a13654-6e12-74a1-ad7f-e7d57d6a9b23
+        name: "The workflow tells the agent to commit the change to `spec/` separately from the code."
+      - key: 01a13654-6e12-74a1-ad7f-e7d6f9cfb9d5
+        name: "The workflow tells the agent to write the code after the specification's commit."
+      - key: 01a13654-6e12-74a1-ad7f-e7d7b8919cdc
+        name: "The workflow tells the agent to check that the code meets each new or changed criterion."
+  - key: 01a13654-6e12-74a1-ad7f-e7d87f61c646
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the agent to find a node by its label or by its name."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7d9ee3969fd
+        name: "The workflow tells the agent that `spec/labels.yaml` binds each label to a key."
+      - key: 01a13654-6e12-74a1-ad7f-e7dae093871b
+        name: "The workflow tells the agent that `loft render` writes a Markdown projection to search by name."
+  - key: 01a13654-6e12-74a1-ad7f-e7db3840bd52
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach which edits keep a node's identity."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e7dc7711429e
+        name: "The workflow tells the agent that a node keeps its key when its text changes."
+      - key: 01a13654-6e12-74a1-ad7f-e7dd23ba4d9f
+        name: "The workflow tells the agent never to give one node's key to another."
+      - key: 01a13654-6e12-74a1-ad7f-e7de4c98b7dc
+        name: "The workflow tells the agent that a deleted node's label is never allocated again."

@@ -25,6 +25,8 @@ requirements:
         name: "A finding whose rule and key match a suppression is not reported."
       - key: 955c346a-54e1-4a0c-844a-14ae60e533fe
         name: "A rule's threshold can be set where the rule has one."
+      - key: 01a13654-f961-7722-b3a5-58d7eab6fedc
+        name: "A rule's list of names can be set where the rule takes one."
       - key: afdf852d-6550-4b76-8848-2a0a15e69720
         name: "`spec/lint.yaml` lists rules under `rules`, each entry naming its rule in `rule`."
       - key: 5d88cd66-8a99-49b2-8fb0-81fe7f279efb

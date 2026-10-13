@@ -1,0 +1,57 @@
+key: 01a13654-6e12-74a1-ad7f-e835a1b49fd3
+slug: the-loop
+name: "The loop"
+body: "The cycle in which an agent edits `spec/`: write, format, check, fix and commit."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e836b24cfc56
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the loop in which an agent edits `spec/`."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8377169082b
+        name: "The loop tells the agent to write a new node without a key."
+      - key: 01a13654-6e12-74a1-ad7f-e838cd096142
+        name: "The loop tells the agent to run `loft fmt` after writing."
+      - key: 01a13654-6e12-74a1-ad7f-e8397fef117e
+        name: "The loop tells the agent to read the findings of `loft check --format json`."
+      - key: 01a13654-6e12-74a1-ad7f-e83ae769dfdc
+        name: "The loop tells the agent to fix each error before committing."
+      - key: 01a13654-6e12-74a1-ad7f-e83bb1da4f3e
+        name: "The loop tells the agent to commit `spec/` once `loft check --fail-on warning` passes."
+  - key: 01a13654-6e12-74a1-ad7f-e83c22b5e2a4
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a reference to a node needs that node's key."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e83debec8622
+        name: "The loop tells the agent to write the target node first."
+      - key: 01a13654-6e12-74a1-ad7f-e83e867452a4
+        name: "The loop tells the agent to run `loft fmt` to mint the target's key before writing the reference."
+  - key: 01a13654-6e12-74a1-ad7f-e83ffc67ef87
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the YAML subset that the reader accepts."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8408a33fe46
+        name: "The loop names comments, anchors, flow collections and single-quoted scalars as refused."
+      - key: 01a13654-6e12-74a1-ad7f-e841fc362a2a
+        name: "The loop tells the agent to double-quote free text."
+  - key: 01a13654-6e12-74a1-ad7f-e84215708eb2
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the files and fields that `loft` writes and the author does not."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e843b0ec22b0
+        name: "The loop tells the agent never to write or change a key."
+      - key: 01a13654-6e12-74a1-ad7f-e844a7e67133
+        name: "The loop tells the agent never to write a label into a node."
+      - key: 01a13654-6e12-74a1-ad7f-e8459fe9eb87
+        name: "The loop tells the agent never to edit `spec/labels.yaml`."
+      - key: 01a13654-6e12-74a1-ad7f-e8467408c5de
+        name: "The loop tells the agent never to edit `loft.lock.json`."
