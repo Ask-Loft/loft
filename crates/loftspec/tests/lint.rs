@@ -479,3 +479,30 @@ fn a_tag_registry_entry_key_is_its_findings_subject() {
     assert_eq!(found, [vec![key(30)], vec![key(60)]]);
     let _ = RequirementId::new(key(4));
 }
+
+#[test]
+fn a_list_written_with_no_value_is_empty() {
+    let empty_rules = LintConfig::read(Some(b"rules:\nsuppressions:\n")).unwrap();
+    assert_eq!(empty_rules, LintConfig::default());
+    let yaml = "rules:\n  - rule: LQ-001\n    lexicon:\n      replace:\n";
+    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
+    assert_eq!(config.lexicon(RuleId::Lq001), &Vec::<Vec<String>>::new());
+}
+
+#[test]
+fn the_published_defaults_state_every_option() {
+    let published = include_str!("../../../testdata/golden/lint-defaults.yaml");
+    for option in [
+        "lexicon",
+        "modalLexicon",
+        "conjunctionLexicon",
+        "conjunctionThreshold",
+        "minTokens",
+        "threshold",
+        "maxCriteria",
+        "maxBodyWords",
+        "properNames",
+    ] {
+        assert!(published.contains(&format!("    {option}:")), "{option}");
+    }
+}

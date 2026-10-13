@@ -245,3 +245,11 @@ fn proper_names_must_be_a_list_of_names() {
         assert!(LintConfig::read(Some(yaml.as_bytes())).is_err(), "{yaml}");
     }
 }
+
+#[test]
+fn proper_names_written_with_no_value_are_empty() {
+    let yaml = "rules:\n  - rule: V2-008\n    properNames:\n";
+    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
+    assert_eq!(config.proper_names(), Vec::<String>::new());
+    assert_eq!(config, LintConfig::default());
+}

@@ -148,3 +148,4 @@ rules:
   - rule: V2-008
     enabled: true
     severity: info
+    properNames:

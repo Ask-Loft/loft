@@ -157,6 +157,10 @@ pub fn defaults_text() -> String {
             let _ = writeln!(text, "    maxCriteria: {MAX_CRITERIA}");
             let _ = writeln!(text, "    maxBodyWords: {MAX_BODY_WORDS}");
         }
+        if *rule == RuleId::V2008 {
+            // The default is no names: a list written with no value.
+            text.push_str("    properNames:\n");
+        }
         if *rule == RuleId::Lq008 {
             let _ = writeln!(text, "    minTokens: {MIN_TOKENS}");
             let threshold = super::config::millionths_text(SIMILARITY_MILLIONTHS);

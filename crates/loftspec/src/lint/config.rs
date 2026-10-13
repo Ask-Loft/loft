@@ -193,12 +193,16 @@ impl Reader {
         &[]
     }
 
+    /// A sequence's items; a field written with no value holds none.
     fn items<'a>(&mut self, node: &'a Node) -> &'a [Node] {
-        if let Value::Sequence(items) = &node.value {
-            return items;
+        match &node.value {
+            Value::Sequence(items) => items,
+            Value::Empty => &[],
+            _ => {
+                self.fail(node.position, Problem::Expected("a sequence"));
+                &[]
+            }
         }
-        self.fail(node.position, Problem::Expected("a sequence"));
-        &[]
     }
 
     fn scalar<'a>(&mut self, node: &'a Node) -> Option<&'a str> {
