@@ -1,0 +1,62 @@
+key: 01a13743-3a3f-7716-90b9-0940f78ac4b8
+slug: loft-find
+name: "`loft find`"
+body: "Looks up the nodes and decisions of the tree by label, slug, key or name, and prints where each one is and the key a reference to it carries."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a13743-3a3f-7716-90b9-09416cd9fcda
+    statement:
+      form: ubiquitous
+      system: "`loft find <query>`"
+      shall: "list every node and decision that the query identifies."
+    criteria:
+      - key: 01a13743-3a3f-7716-90b9-0942fff3d721
+        name: "An element whose label equals the query is listed."
+      - key: 01a13743-3a3f-7716-90b9-09432075b953
+        name: "An element whose slug equals the query is listed."
+      - key: 01a13743-3a3f-7716-90b9-0944c8541cfc
+        name: "An element whose key equals the query is listed."
+      - key: 01a13743-3a3f-7716-90b9-0945720a59a7
+        name: "An element whose name contains the query, ignoring case, is listed."
+      - key: 01a13743-3a3f-7716-90b9-09468d328b9a
+        name: "A Requirement's name is its statement as one sentence, and a decision's name is its title."
+      - key: 01a13743-3a3f-7716-90b9-094774588805
+        name: "Each match is printed on one line with its key, label, kind, file, line, column and name."
+      - key: 01a13743-3a3f-7716-90b9-09486d6b677d
+        name: "An element without a label is printed with `-` as its label."
+      - key: 01a13743-3a3f-7716-90b9-0949c4fc3811
+        name: "No file is written."
+  - key: 01a13743-3a3f-7716-90b9-094aa95bb851
+    statement:
+      form: unwanted
+      if: "no element matches the query"
+      system: "`loft find`"
+      shall: "exit 1."
+    criteria:
+      - key: 01a13743-3a3f-7716-90b9-094b0e2de3c6
+        name: "The output says that nothing matches the query."
+  - key: 01a13743-3a3f-7716-90b9-094c9841200d
+    statement:
+      form: unwanted
+      if: "the reader reports an error"
+      system: "`loft find`"
+      shall: "list no element."
+    criteria:
+      - key: 01a13743-3a3f-7716-90b9-094dc4eaa9e3
+        name: "The output lists no match."
+  - key: 01a13743-3a3f-7716-90b9-094ea91ad68f
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft find`"
+      shall: "list each match in its JSON document."
+    criteria:
+      - key: 01a13743-3a3f-7716-90b9-094f8525b2da
+        name: "Each match carries its key, label, kind, file, line, column and name."
+      - key: 01a13743-3a3f-7716-90b9-09509b5c53bb
+        name: "The label of an element without one is `null`."
+      - key: 01a13743-3a3f-7716-90b9-095193324f43
+        name: "The outcome is `found` when an element matches."
+      - key: 01a13743-3a3f-7716-90b9-0952a6a6ae46
+        name: "The outcome is `none` when no element matches."
