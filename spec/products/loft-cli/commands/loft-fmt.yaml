@@ -55,6 +55,21 @@ requirements:
         name: "A new Feature file that no Feature Group's directory holds is reported as unlisted."
       - key: 34cebd79-970b-4712-9566-142cce7c9b80
         name: "When a new file is reported as unlisted, `loft fmt` changes no file."
+  - key: 01a134d2-2a86-76d0-a05e-2224ef7ff7f6
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft fmt`"
+      shall: "list in its JSON document the files it rewrites and the keys it mints."
+    criteria:
+      - key: 01a134d2-2a86-76d0-a05e-222569582f11
+        name: "The document lists the path of each file rewritten, or with `--check` of each file that drifts."
+      - key: 01a134d2-2a86-76d0-a05e-2226bb246209
+        name: "The document gives the number of keys minted."
+      - key: 01a134d2-2a86-76d0-a05e-22279632018c
+        name: "The document says whether any file was written."
+      - key: 01a134d2-2a86-76d0-a05e-22288a5935c5
+        name: "A read error is listed among the document's errors with its file, line and column."
 qualityAttributes:
   - key: 64d803a0-6125-494f-b72c-01ccc8c42a98
     name: "`loft fmt --check` shall complete within 2 seconds at the 95th percentile on a canonical document of five thousand nodes."

@@ -39,3 +39,16 @@ requirements:
         name: "Nothing is written."
       - key: 936ac167-3589-4283-bd9e-78c8dd28e0f6
         name: "The error names the existing path."
+  - key: 01a134d2-2a86-76d0-a05e-2229fd4c9866
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft init`"
+      shall: "name the tree it created and its document key in its JSON document."
+    criteria:
+      - key: 01a134d2-2a86-76d0-a05e-222ab9b9947e
+        name: "The document names `spec/` as created."
+      - key: 01a134d2-2a86-76d0-a05e-222b473dad99
+        name: "The document carries the new document key."
+      - key: 01a134d2-2a86-76d0-a05e-222c51cfc7fe
+        name: "A refusal is listed among the document's errors and names the existing path."
