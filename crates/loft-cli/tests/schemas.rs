@@ -1,12 +1,15 @@
 //! Each command's JSON result is described by one schema under `schemas/`, named after the
 //! command, that names its version; every schema describes sites and errors alike.
 
+#[path = "common/commands.rs"]
+mod commands;
 #[path = "common/help.rs"]
 mod help;
 
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use commands::COMMANDS;
 use serde_json::Value;
 
 fn schemas() -> PathBuf {
@@ -31,10 +34,18 @@ fn names(schema: &Value) -> Vec<&str> {
 }
 
 #[test]
+fn every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown() {
+    let mut listed = help::subcommands();
+    listed.sort();
+    let mut entries: Vec<&str> = COMMANDS.iter().map(|(_, args, _)| args[0]).collect();
+    entries.sort_unstable();
+    assert_eq!(listed, entries);
+}
+
+#[test]
 fn each_command_has_one_schema_named_after_it_that_names_its_version() {
-    let commands = help::subcommands();
-    assert!(commands.len() >= 8, "{commands:?}");
-    for command in commands {
+    for (_, args, _) in COMMANDS {
+        let command = args[0];
         let schema = read(&format!("{command}.json"));
         let names = names(&schema);
         assert!(
@@ -57,7 +68,8 @@ fn each_command_has_one_schema_named_after_it_that_names_its_version() {
 
 #[test]
 fn every_document_carries_schema_outcome_and_errors_and_an_error_carries_only_those() {
-    for command in help::subcommands() {
+    for (_, args, _) in COMMANDS {
+        let command = args[0];
         let schema = read(&format!("{command}.json"));
         let branches = schema["oneOf"].as_array().unwrap();
         for branch in branches {
