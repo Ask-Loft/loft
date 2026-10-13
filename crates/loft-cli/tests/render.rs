@@ -71,9 +71,7 @@ fn an_unchanged_projection_is_not_rewritten() {
     let scratch = Scratch::with_reading_list();
     scratch.loft(&["render"]);
     let output = scratch.loft(&["render", "--format", "json"]);
-    let document: Value = serde_json::from_str(&stdout(&output)).unwrap();
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/render.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    let document = schema::conforming(&output.stdout, include_str!("../../../schemas/render.json"));
     assert_eq!(document["written"], Value::Array(Vec::new()));
     assert_eq!(document["unchanged"].as_array().unwrap().len(), 2);
 }

@@ -1,8 +1,8 @@
 # Loft
 
 The Loft Specification Format and its reference implementation: a specification document model
-that one person edits in a git repository and controls with the `loft` command line, with no
-server.
+that a person or a small team edits in a git repository and controls with the `loft` command
+line, with no server.
 
 - `crates/loftspec` — the format: document model, identity, canonical bytes, hashing, conversion
   from the v1 export
@@ -11,13 +11,59 @@ server.
 - `crates/software-plant` — the Software Plant: simulators of the external systems Loft depends
   on, for tests only
 
-Licensed under Apache-2.0 (`LICENSE`, `NOTICE`).
+Licensed under Apache-2.0 (`LICENSE`, `NOTICE`). Contributions: `CONTRIBUTING.md`. Security
+reports: `SECURITY.md`. Changes: `CHANGELOG.md`.
 
 ## Status
 
-Pre-release. The format and the command line are specified in this repository's own `spec/`
-tree, in the format itself: `loft check` validates and lints it, and `loft render` writes a
-readable projection to `docs/spec.md`.
+2.0.0, the first public release. The format and the command line are specified in this
+repository's own `spec/` tree, in the format itself: `loft check` validates and lints it, and
+`loft render` writes a readable projection to `docs/spec.md`.
+
+## Install
+
+```sh
+cargo install loft-cli                     # from crates.io
+cargo install --path crates/loft-cli       # from a clone of this repository
+```
+
+Rust 1.97 or newer. The binary is `loft`; `loft --version` prints its release, the format and the
+hashing algorithm.
+
+## Quick start
+
+```sh
+git init my-spec && cd my-spec
+loft init                       # spec/: a manifest, label counters and empty registries
+# write Products and Features under spec/products/, without keys
+loft fmt                        # canonical layout; mints a key for every new node
+loft check                      # read, validate and lint
+loft merge-driver --install     # once per clone: git merges spec/ by key
+git add -A && git commit -m "spec: first draft"
+loft publish                    # on main: labels for new nodes and loft.lock.json
+git add -A && git commit -m "spec: publish"
+loft verify                     # in CI: the tree matches the lock
+```
+
+| Command | What it does |
+|---|---|
+| `loft init` | Creates an empty document in the current directory |
+| `loft fmt [--check]` | Rewrites `spec/` in canonical layout and mints missing keys, or reports drift |
+| `loft check [--fail-on <severity>]` | Reads, validates and lints `spec/` |
+| `loft render` | Writes the Markdown projection and the canonical JSON export |
+| `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
+| `loft publish` | Allocates labels and writes the lock, on the publish branch |
+| `loft verify` | Recomputes the roots and compares them with the lock |
+| `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
+
+## Exit codes and JSON
+
+Every command exits 0 on success, 1 on an error, a refusal or a failed check, and 2 on a usage
+error. With `--format json` a command prints one JSON document on standard output, described by
+its schema under `schemas/` (`schemas/<command>.json`, whose name carries its version);
+human-readable text goes to standard error, and the exit code is the same as without it.
+
+## Publishing and merging
 
 `loft publish`, run on the publish branch (`main` unless `spec/loftspec.yaml` names another) over
 a committed tree, allocates labels to new nodes in `spec/labels.yaml` and writes

@@ -37,11 +37,10 @@ fn format_files(scratch: &Scratch) -> (Files, Option<String>) {
 }
 
 fn json(output: &Output) -> Value {
-    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
-    let schema: Value =
-        serde_json::from_str(include_str!("../../../schemas/publish.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
-    document
+    schema::conforming(
+        &output.stdout,
+        include_str!("../../../schemas/publish.json"),
+    )
 }
 
 /// Leaves the binding of `label` out of `spec/labels.yaml`, so the next publish allocates.

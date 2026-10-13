@@ -12,7 +12,6 @@ use std::{env, fs, process};
 use loftspec::codec;
 use loftspec::convert::v1::convert;
 use loftspec::convert::v1::export::Export;
-use serde_json::Value;
 
 const READING_LIST: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -259,12 +258,11 @@ fn a_value_that_is_not_a_positive_integer_is_reported_with_its_prefix() {
 
 #[test]
 fn json_output_matches_the_schema() {
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/import.json")).unwrap();
+    let schema = include_str!("../../../schemas/import.json");
     let dir = Empty::new();
     let output = dir.import(&["--format", "json"]);
     assert_eq!(output.status.code(), Some(0));
-    let document: Value = serde_json::from_str(&stdout(&output)).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    let document = schema::conforming(&output.stdout, schema);
     assert_eq!(document["findings"].as_array().unwrap().len(), 2);
     assert!(
         document["written"]
@@ -274,7 +272,6 @@ fn json_output_matches_the_schema() {
     );
     let refused = dir.import(&["--format", "json"]);
     assert_eq!(refused.status.code(), Some(1));
-    let document: Value = serde_json::from_str(&stdout(&refused)).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    let document = schema::conforming(&refused.stdout, schema);
     assert_eq!(document["errors"].as_array().unwrap().len(), 1);
 }

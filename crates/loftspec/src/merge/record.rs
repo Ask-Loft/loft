@@ -5,8 +5,8 @@
 
 use super::conflict::Host;
 use super::list::merge_list;
-use super::same::same;
-use crate::codec::schema::{Field, Item, Shape, field};
+use super::same::{same, same_record};
+use crate::codec::schema::{Field, Item, Shape};
 use crate::codec::{Rec, Val, variant_holds};
 
 /// One field's value on each side, and whether base has the record at all.
@@ -23,46 +23,29 @@ pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
     let mut conflicts = carried(base, ours, theirs);
     let mut host = Host::root(&mut conflicts);
     let mut record = merge_fields(base, ours, theirs, &mut host);
-    if !conflicts.is_empty() {
-        record.set(field::CONFLICTS, Val::List(conflicts));
-    }
+    record.conflicts = conflicts;
     record
 }
 
 /// The conflicts the inputs already hold: one on both sides is written once, one that a side
 /// removed is removed, and one that a side added is added.
-fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<Val> {
-    let texts = |record: Option<&Rec>| -> Vec<String> {
-        record.map_or_else(Vec::new, |record| {
-            record
-                .list(field::CONFLICTS)
-                .iter()
-                .map(super::same::text)
-                .collect()
-        })
+fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<Rec> {
+    let holds = |record: &Rec, conflict: &Rec| {
+        record
+            .conflicts
+            .iter()
+            .any(|each| same_record(each, conflict))
     };
-    let (in_base, in_ours, in_theirs) = (texts(base), texts(Some(ours)), texts(Some(theirs)));
-    let kept = |text: &String| {
-        if in_base.contains(text) {
-            in_ours.contains(text) && in_theirs.contains(text)
-        } else {
-            true
-        }
+    let kept = |conflict: &Rec| match base {
+        Some(base) if holds(base, conflict) => holds(ours, conflict) && holds(theirs, conflict),
+        _ => true,
     };
-    let ours_kept = ours
-        .list(field::CONFLICTS)
-        .iter()
-        .zip(&in_ours)
-        .filter(|(_, text)| kept(text));
+    let ours_kept = ours.conflicts.iter().filter(|conflict| kept(conflict));
     let theirs_added = theirs
-        .list(field::CONFLICTS)
+        .conflicts
         .iter()
-        .zip(&in_theirs)
-        .filter(|(_, text)| !in_ours.contains(text) && kept(text));
-    ours_kept
-        .chain(theirs_added)
-        .map(|(conflict, _)| conflict.clone())
-        .collect()
+        .filter(|conflict| !holds(ours, conflict) && kept(conflict));
+    ours_kept.chain(theirs_added).cloned().collect()
 }
 
 /// Merges the fields of one record; its conflicts go to `host`. A record whose merged fields
@@ -76,7 +59,7 @@ pub(super) fn merge_fields(
     let kind = ours.kind;
     let mark = host.conflicts.len();
     let mut record = Rec::new(kind);
-    for each in fields(ours) {
+    for each in kind.fields() {
         let sides = sides(each, base, ours, theirs);
         if let Some(value) = merge_field(each, &sides, host) {
             record.set(each.name, value);
@@ -86,24 +69,15 @@ pub(super) fn merge_fields(
         return record;
     }
     host.conflicts.truncate(mark);
-    let mut record = base.unwrap_or(ours).clone();
-    record.fields.retain(|(name, _)| *name != field::CONFLICTS);
-    for each in fields(ours) {
+    // The host merge sets the record's own conflicts; an unkeyed record holds none.
+    let record = base.unwrap_or(ours).clone();
+    for each in kind.fields() {
         let sides = sides(each, base, ours, theirs);
         if !same(sides.ours, sides.base) || !same(sides.theirs, sides.base) {
             host.conflict(each.name, [sides.base, sides.ours, sides.theirs]);
         }
     }
     record
-}
-
-/// The fields of a record's kind that the merge combines: all but its conflicts.
-fn fields(record: &Rec) -> impl Iterator<Item = &'static Field> {
-    record
-        .kind
-        .fields()
-        .iter()
-        .filter(|each| each.name != field::CONFLICTS)
 }
 
 fn sides<'a>(each: &Field, base: Option<&'a Rec>, ours: &'a Rec, theirs: &'a Rec) -> Sides<'a> {

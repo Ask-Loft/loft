@@ -4,6 +4,15 @@
 
 use serde_json::Value;
 
+/// The one JSON document `stdout` holds, after asserting that it matches `schema`, the text of
+/// a file under `schemas/`.
+pub fn conforming(stdout: &[u8], schema: &str) -> Value {
+    let document: Value = serde_json::from_slice(stdout).expect("one JSON document");
+    let schema: Value = serde_json::from_str(schema).expect("a schema");
+    assert_eq!(violations(&document, &schema), Vec::<String>::new());
+    document
+}
+
 /// Every way `value` departs from `schema`, each with the JSON pointer where it does.
 pub fn violations(value: &Value, schema: &Value) -> Vec<String> {
     let mut found = Vec::new();

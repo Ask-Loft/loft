@@ -4,6 +4,8 @@
 
 mod common;
 mod conformance;
+#[path = "common/help.rs"]
+mod help;
 
 use std::collections::BTreeMap;
 
@@ -20,13 +22,15 @@ const PRODUCT: &str = "products/reading-list/product.yaml";
 const TAG: &str = "reads-tree";
 
 /// The arguments that run each implemented command, by the slug of its Feature.
-const COMMANDS: [(&str, &[&str]); 7] = [
+const COMMANDS: [(&str, &[&str]); 8] = [
     ("loft-check", &["check"]),
     ("loft-fmt", &["fmt"]),
     ("loft-render", &["render"]),
     ("loft-import-v1", &["import", "v1", READING_LIST]),
     ("loft-publish", &["publish"]),
     ("loft-verify", &["verify"]),
+    // Init refuses any existing `spec/` before reading it.
+    ("loft-init", &["init"]),
     // The driver reads the three files git hands it, never the tree, so inputs that do not
     // exist report against the path they name.
     (
@@ -99,16 +103,7 @@ fn each_command_that_reports_a_read_error_lists_reads_tree() {
 
 #[test]
 fn every_implemented_command_has_an_entry() {
-    let help = stdout(&Scratch::with_reading_list().loft(&["--help"]));
-    let listed: Vec<&str> = help
-        .lines()
-        .skip_while(|line| !line.starts_with("Commands:"))
-        .skip(1)
-        .take_while(|line| line.starts_with("  "))
-        .filter_map(|line| line.split_whitespace().next())
-        .filter(|name| *name != "help")
-        .collect();
-    for name in listed {
+    for name in help::subcommands() {
         assert!(
             COMMANDS.iter().any(|(_, args)| args[0] == name),
             "`loft {name}` has no entry in COMMANDS"

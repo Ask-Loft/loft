@@ -15,7 +15,7 @@ use std::process::Output;
 use common::{EPOCH, Scratch, stderr, stdout};
 use loftspec::codec::SpecPath;
 use loftspec::merge::merge_file;
-use serde_json::{Value, json};
+use serde_json::json;
 use snapshot::snapshot;
 use software_plant::{Clock, GitScenario};
 
@@ -175,10 +175,10 @@ fn a_publish_in_a_stopped_rebase_prints_git_rebase_continue() {
 fn the_json_of_a_settling_publish_names_the_withdrawn_labels_and_the_finishing_command() {
     let (scratch, scenario) = stopped(Stop::Merge);
     let output = publish(&scratch, &scenario, &["publish", "--format", "json"]);
-    let document: Value = serde_json::from_str(&stdout(&output)).unwrap();
-    let schema: Value =
-        serde_json::from_str(include_str!("../../../schemas/publish.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    let document = schema::conforming(
+        &output.stdout,
+        include_str!("../../../schemas/publish.json"),
+    );
     assert_eq!(
         document["withdrawn"],
         json!([{"key": FEATURE_F3, "withdrawn": "F-4", "label": "F-5"}])

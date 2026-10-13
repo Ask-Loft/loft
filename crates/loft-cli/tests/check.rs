@@ -31,11 +31,7 @@ fn with_two_errors() -> Scratch {
 }
 
 fn json(output: &std::process::Output) -> Value {
-    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/check.json")).unwrap();
-    let violations = schema::violations(&document, &schema);
-    assert!(violations.is_empty(), "{violations:#?}");
-    document
+    schema::conforming(&output.stdout, include_str!("../../../schemas/check.json"))
 }
 
 #[test]
