@@ -3,6 +3,13 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- `@ask-loft/loft` on npm: prebuilt `loft` binaries for macOS, Linux and Windows on x64 and
+  arm64, run by a launcher with no install script.
+- Each release publishes from its tag, after the maintainer's approval, to crates.io and npm by
+  Trusted Publishing, with the binaries attached to a GitHub release.
+
 ## 2.0.0 (2026-10-13)
 
 The first public release. Version 2 because it succeeds the format of Loft v1, whose exports
