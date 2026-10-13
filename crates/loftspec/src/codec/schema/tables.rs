@@ -133,6 +133,7 @@ const PRODUCT_FIELDS: &[Field] = &[
     TAGS,
     MENTIONS,
     records(field::FEATURE_GROUPS, K::FeatureGroup),
+    records(field::CONSTRAINTS, K::Constraint),
     SECTIONS,
 ];
 

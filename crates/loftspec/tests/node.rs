@@ -23,6 +23,15 @@ fn each_kind_holds_only_the_kinds_the_profile_allows() {
 }
 
 #[test]
+fn a_product_holds_constraints_and_no_quality_attribute() {
+    use NodeKind::{Constraint, Feature, Product, QualityAttribute, Requirement};
+    assert!(Product.may_contain(Constraint));
+    assert!(!Product.may_contain(QualityAttribute));
+    assert!(!Feature.may_contain(Constraint));
+    assert!(!Requirement.may_contain(Constraint));
+}
+
+#[test]
 fn every_kind_may_hold_sections() {
     for kind in NodeKind::ALL {
         assert!(kind.may_contain(NodeKind::Section), "{kind}");

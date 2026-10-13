@@ -101,6 +101,7 @@ pub fn product(id: Key, name: &str) -> Product {
         name: name.to_owned(),
         details: Details::default(),
         feature_groups: Vec::new(),
+        constraints: Vec::new(),
     }
 }
 

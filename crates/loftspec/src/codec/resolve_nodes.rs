@@ -63,6 +63,10 @@ impl Resolver<'_> {
                 .records(field::FEATURE_GROUPS)
                 .map(|group| self.feature_group(group))
                 .collect::<Result<_, _>>()?,
+            constraints: record
+                .records(field::CONSTRAINTS)
+                .map(|constraint| self.constraint(constraint))
+                .collect::<Result<_, _>>()?,
         })
     }
 

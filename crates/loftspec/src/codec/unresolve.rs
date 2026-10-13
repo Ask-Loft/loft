@@ -290,12 +290,16 @@ impl Edges {
                 keys(features.map(crate::ids::FeatureId::key)),
             );
             record.set(
-                "constraints",
+                field::CONSTRAINTS,
                 records(group.constraints.iter().map(|each| self.constraint(each))),
             );
             record
         });
         record.set(field::FEATURE_GROUPS, records(groups));
+        record.set(
+            field::CONSTRAINTS,
+            records(product.constraints.iter().map(|each| self.constraint(each))),
+        );
         record
     }
 

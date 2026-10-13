@@ -45,6 +45,7 @@ pub struct Product {
     pub name: String,
     pub details: Details,
     pub feature_groups: Vec<FeatureGroup>,
+    pub constraints: Vec<Constraint>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

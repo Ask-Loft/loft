@@ -95,6 +95,7 @@ impl<'a> Node<'a> {
         match self {
             Self::Product(node) => {
                 children.extend(node.feature_groups.iter().map(Self::FeatureGroup));
+                children.extend(node.constraints.iter().map(Self::Constraint));
             }
             Self::FeatureGroup(node) => {
                 children.extend(node.features.iter().map(Self::Feature));

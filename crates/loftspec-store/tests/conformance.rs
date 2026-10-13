@@ -130,6 +130,7 @@ fn created() -> Document {
             group(2, "Lending", vec![feature(3, "Borrowing")]),
             group(4, "Keeping", vec![feature(5, "Returning")]),
         ],
+        constraints: Vec::new(),
     });
     document
 }

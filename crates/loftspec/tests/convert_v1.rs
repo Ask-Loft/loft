@@ -2,7 +2,7 @@
 //! parentage and order, Facet Tags, the registries, statements and the label counters.
 
 use crate::common::v1::{
-    export, key, live_export, named, node, read, tier, tree, uuid, with_identity_entry,
+    constraint, export, key, live_export, named, node, read, tier, tree, uuid, with_identity_entry,
 };
 use loftspec::convert::v1::{Conversion, ConvertError, Finding, convert};
 use loftspec::hash::hash_document;
@@ -61,6 +61,22 @@ fn constraints_and_quality_attributes_keep_their_parent_kind() {
         group.features[0].quality_attributes[0].id,
         Some(QualityAttributeId::new(key(12)))
     );
+}
+
+#[test]
+fn a_constraint_under_a_product_becomes_the_products_constraint() {
+    let mut nodes = tree();
+    nodes[0] = named(
+        node(1, "TierSection", &tier("Product"), "P-1", &[2, 9, 20]),
+        "Example",
+        0,
+    );
+    nodes.push(constraint(20, "CON-20"));
+    let document = convert(&read(&with_identity_entry(export(&nodes, &[]))))
+        .unwrap()
+        .document;
+    let product = &document.products[0];
+    assert_eq!(product.constraints[0].id, Some(ConstraintId::new(key(20))));
 }
 
 #[test]

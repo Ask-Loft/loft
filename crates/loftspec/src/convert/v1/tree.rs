@@ -295,6 +295,7 @@ impl<'a> Builder<'_, 'a> {
                 NodeKind::FeatureGroup,
                 Self::feature_group,
             )?,
+            constraints: self.each(&mut children, NodeKind::Constraint, Self::constraint)?,
         })
     }
 
