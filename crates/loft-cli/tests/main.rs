@@ -30,6 +30,7 @@ mod reads_tree;
 mod render;
 mod schemas;
 mod skill;
+mod skill_install;
 mod test_modules;
 mod verify;
 mod version;

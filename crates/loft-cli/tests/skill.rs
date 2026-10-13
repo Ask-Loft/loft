@@ -107,7 +107,7 @@ fn examples(markdown: &str) -> Examples {
 /// and `loft fmt` run.
 fn checked(files: &[(String, String)]) -> Value {
     let scratch = Scratch::empty();
-    assert_eq!(scratch.loft(&["init"]).status.code(), Some(0));
+    assert_eq!(scratch.loft(&["init", "--no-skill"]).status.code(), Some(0));
     for (path, text) in files {
         let at = scratch.0.join(path);
         fs::create_dir_all(at.parent().unwrap()).unwrap();

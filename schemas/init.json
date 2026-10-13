@@ -11,6 +11,7 @@
         "outcome",
         "created",
         "documentKey",
+        "skills",
         "errors"
       ],
       "properties": {
@@ -25,6 +26,15 @@
         },
         "documentKey": {
           "type": "string"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "enum": [
+              ".claude/skills/loft-spec",
+              ".agents/skills/loft-spec"
+            ]
+          }
         },
         "errors": {
           "type": "array",
@@ -95,7 +105,8 @@
         "kind": {
           "type": "string",
           "enum": [
-            "store"
+            "store",
+            "skill"
           ]
         },
         "message": {
