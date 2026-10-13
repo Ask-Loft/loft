@@ -37,6 +37,8 @@ requirements:
       form: ubiquitous
       system: "The skill"
       shall: "teach which edits keep a node's identity."
+    tags:
+      - identity
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e7dc7711429e
         name: "The workflow tells the agent that a node keeps its key when its text changes."

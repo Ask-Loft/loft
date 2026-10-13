@@ -76,18 +76,27 @@ requirements:
       form: event_driven
       when: "publishing during a stopped merge or rebase"
       system: "`loft publish`"
-      shall: "print what it settled and the git command that finishes the merge or rebase."
+      shall: "print what it settled."
     criteria:
       - key: 01a130de-573a-77b2-b40b-d432f2cff1fb
         name: "Each withdrawn label is printed with its key and the label the key now holds."
+      - key: 01a130de-573a-77b2-b40b-d436e37f19d1
+        name: "With `--format json`, the document names the withdrawn labels and the rewritten citations."
+  - key: 01a137b0-2dbd-767e-bea2-59054af9c9a5
+    statement:
+      form: event_driven
+      when: "publishing during a stopped merge or rebase"
+      system: "`loft publish`"
+      shall: "print the git command that finishes the merge or rebase."
+    criteria:
       - key: 01a130de-573a-77b2-b40b-d43343a78222
         name: "After a stopped merge it prints `git add -A && git commit --no-edit`."
       - key: 01a130de-573a-77b2-b40b-d43452caf3f6
         name: "After a stopped rebase it prints `git add -A && git rebase --continue`."
       - key: 01a130de-573a-77b2-b40b-d435cb8db5b7
         name: "It runs no git command that changes the repository."
-      - key: 01a130de-573a-77b2-b40b-d436e37f19d1
-        name: "With `--format json`, the document names the withdrawn labels, the rewritten citations and the finishing command."
+      - key: 01a137b0-2dbd-767e-bea2-5906ff293d36
+        name: "With `--format json`, the document names the finishing command."
   - key: 01a1354e-bca0-714b-8727-09b6dfe6f288
     statement:
       form: optional

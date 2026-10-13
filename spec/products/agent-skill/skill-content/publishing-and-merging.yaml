@@ -2,6 +2,8 @@ key: 01a13654-6e12-74a1-ad7f-e7f6231d2539
 slug: publishing-and-merging
 name: "Publishing and merging"
 body: "Publishing on the publish branch, checking the lock in CI, and merging `spec/` in git."
+tags:
+  - git
 realizes:
   - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
 requirements:
