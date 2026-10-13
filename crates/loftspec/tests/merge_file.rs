@@ -294,6 +294,21 @@ fn conflicts_the_inputs_hold_merge_as_a_set() {
 }
 
 #[test]
+fn two_conflicts_over_one_field_with_different_sides_are_both_kept() {
+    let base = feature();
+    let after = CRITERION_BLOCK;
+    let held = |side: &str| {
+        let conflict = format!("    conflicts:\n      - field: body\n        ours: \"{side}\"\n");
+        with(&base, &[(after, &format!("{after}{conflict}"))])
+    };
+    let (kept, conflicts) = merged(&base, &held("Old."), &held("Other."));
+    assert_eq!(
+        conflicts, 2,
+        "conflicts differing only in a side are two: {kept}"
+    );
+}
+
+#[test]
 fn registries_merge_their_entries_by_key() {
     let base = text(&files(), "tags.yaml");
     let entry = |key: &str, name: &str| {

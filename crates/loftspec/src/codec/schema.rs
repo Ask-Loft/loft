@@ -34,8 +34,6 @@ pub enum Kind {
     Consequence,
     Subject,
     FormerLabel,
-    /// A typed merge conflict, in the `conflicts` list of the record that holds it (RQ-125).
-    Conflict,
 }
 
 /// What a scalar field holds, which fixes how it is checked and written.
@@ -72,8 +70,6 @@ pub enum Item {
     Record(Kind),
     /// A node's key, or a former label as `{formerLabel: <label>}` (AC-809).
     NodeRef,
-    /// One side of a conflict, in the shape of the field the conflict names (AC-860).
-    Side,
 }
 
 /// The order the canonical layout gives a list field's entries.
@@ -118,7 +114,7 @@ use crate::kind::NodeKind;
 
 impl Kind {
     /// Every kind of record.
-    pub const ALL: [Self; 30] = [
+    pub const ALL: [Self; 29] = [
         Self::Manifest,
         Self::DerivedFrom,
         Self::Labels,
@@ -148,7 +144,6 @@ impl Kind {
         Self::Consequence,
         Self::Subject,
         Self::FormerLabel,
-        Self::Conflict,
     ];
 
     /// The kind's fields in the Format's order.

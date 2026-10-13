@@ -291,14 +291,6 @@ const SUBJECT_FIELDS: &[Field] = &[
 
 const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
 
-/// A conflict record: the field it names, then each side's value (AC-857, AC-858).
-const CONFLICT_FIELDS: &[Field] = &[
-    req(field::FIELD, S::Identifier),
-    spec(field::BASE, false, Shape::One(Item::Side)),
-    spec(field::OURS, false, Shape::One(Item::Side)),
-    spec(field::THEIRS, false, Shape::One(Item::Side)),
-];
-
 const COMPONENT: [Field; 11] = [
     KEY,
     NAME,
@@ -356,6 +348,5 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::Consequence => CONSEQUENCE_FIELDS,
         Kind::Subject => SUBJECT_FIELDS,
         Kind::FormerLabel => FORMER_LABEL_FIELDS,
-        Kind::Conflict => CONFLICT_FIELDS,
     }
 }

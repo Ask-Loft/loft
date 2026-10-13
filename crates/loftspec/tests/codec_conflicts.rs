@@ -60,6 +60,16 @@ fn a_conflict_record_requires_field() {
 }
 
 #[test]
+fn a_side_other_than_base_ours_or_theirs_is_an_unknown_field_whatever_it_holds() {
+    let files = on_requirement(
+        "    conflicts:\n      - field: body\n        mine:\n          - \"Why keys.\"\n",
+    );
+    let (problem, location) = refused(&files);
+    assert_eq!(problem, Problem::UnknownField("mine".to_owned()));
+    assert_eq!(location, Some(Location::At(Position::new(20, 9))));
+}
+
+#[test]
 fn a_side_on_which_the_field_is_absent_omits_its_member() {
     let files =
         on_requirement("    conflicts:\n      - field: body\n        ours: \"Why keys.\"\n");

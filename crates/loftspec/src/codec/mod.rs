@@ -23,7 +23,7 @@ pub use error::{Problem, ReadError, Site, SpecPath};
 pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, Tree};
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
-pub use record::{Mode, Rec, Val};
+pub use record::{ConflictRec, Mode, Rec, Val};
 pub use resolve::resolve;
 pub use unresolve::unresolve;
 

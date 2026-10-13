@@ -9,7 +9,7 @@ use super::order::{Anchor, merge_order, moved};
 use super::record::merge_host;
 use super::same::{same_value, text};
 use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
-use crate::codec::{Rec, Val};
+use crate::codec::{ConflictRec, Rec, Val};
 
 /// What an element is matched by, and how many times its side has held it before.
 type Id = (Ident, usize);
@@ -236,7 +236,7 @@ enum Side3 {
 }
 
 /// A conflict over where a record goes: each side names the element it follows, or `first`.
-fn position_conflict(position: &super::order::PositionConflict<Id>) -> Rec {
+fn position_conflict(position: &super::order::PositionConflict<Id>) -> ConflictRec {
     let anchor = |anchor: &Option<Anchor<Id>>| {
         anchor.as_ref().map(|anchor| {
             Val::scalar(match anchor {

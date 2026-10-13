@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 use super::conflict::{SideShape, side_shape};
 use super::files::Tree;
-use super::record::{Rec, Val};
+use super::record::{ConflictRec, Rec, Val};
 use super::schema::{Item, Kind, Shape, field};
 use crate::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
 use crate::identity::Key;
@@ -30,10 +30,10 @@ fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
         for conflict in &record.conflicts {
             conflicts.push(Conflict {
                 owner,
-                field: FieldPath::new(conflict.text(field::FIELD).unwrap_or_default()),
-                base: conflict.get(field::BASE).map(value),
-                ours: conflict.get(field::OURS).map(value),
-                theirs: conflict.get(field::THEIRS).map(value),
+                field: FieldPath::new(&conflict.field),
+                base: conflict.base.as_ref().map(value),
+                ours: conflict.ours.as_ref().map(value),
+                theirs: conflict.theirs.as_ref().map(value),
             });
         }
     }
@@ -101,20 +101,15 @@ fn attach_to(record: &mut Rec, by_owner: &BTreeMap<ConflictOwner, Vec<&Conflict>
 }
 
 /// A conflict as the record its host holds.
-fn rec(conflict: &Conflict, host: Kind) -> Rec {
+fn rec(conflict: &Conflict, host: Kind) -> ConflictRec {
     let shape = side_shape(host, conflict.field.as_str()).expect("a conflict the reader checked");
-    let mut record = Rec::new(Kind::Conflict);
-    record.set_text(field::FIELD, conflict.field.as_str());
-    for (name, side) in [
-        (field::BASE, &conflict.base),
-        (field::OURS, &conflict.ours),
-        (field::THEIRS, &conflict.theirs),
-    ] {
-        if let Some(side) = side {
-            record.set(name, side_val(side, shape));
-        }
+    let side = |side: &Option<ConflictValue>| side.as_ref().map(|side| side_val(side, shape));
+    ConflictRec {
+        field: conflict.field.as_str().to_owned(),
+        base: side(&conflict.base),
+        ours: side(&conflict.ours),
+        theirs: side(&conflict.theirs),
     }
-    record
 }
 
 fn side_val(side: &ConflictValue, shape: SideShape) -> Val {

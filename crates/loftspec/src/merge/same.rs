@@ -1,7 +1,9 @@
 //! Equality of field values as the merge sees it: by content alone, never by where a value
 //! sat in its file, with an empty list the same as an absent one (AC-799).
 
-use crate::codec::{Rec, Val};
+use std::fmt::Write as _;
+
+use crate::codec::{ConflictRec, Rec, Val};
 
 /// Whether two sides hold the same value of a field.
 pub(super) fn same(left: Option<&Val>, right: Option<&Val>) -> bool {
@@ -39,7 +41,17 @@ pub(super) fn same_record(left: &Rec, right: &Rec) -> bool {
             .all(|((left_name, left), (right_name, right))| {
                 left_name == right_name && same_value(left, right)
             })
-        && all_same(&left.conflicts, &right.conflicts, same_record)
+        && all_same(&left.conflicts, &right.conflicts, same_conflict)
+}
+
+/// Whether two conflicts name the same field with the same sides.
+pub(super) fn same_conflict(left: &ConflictRec, right: &ConflictRec) -> bool {
+    left.field == right.field
+        && left
+            .sides()
+            .into_iter()
+            .zip(right.sides())
+            .all(|((_, left), (_, right))| same(left, right))
 }
 
 /// Whether two lists hold the same items in the same order, by `same`.
@@ -73,9 +85,11 @@ pub(super) fn text(value: &Val) -> String {
                 .filter(|(_, value)| present(Some(value)).is_some())
                 .map(|(name, value)| format!("{name}={}", text(value)));
             let mut text = format!("{{{}}}", fields.collect::<Vec<_>>().join(";"));
-            if !record.conflicts.is_empty() {
-                let conflicts = record.conflicts.iter().cloned().map(Val::Record);
-                text.push_str(&self::text(&Val::List(conflicts.collect())));
+            for conflict in &record.conflicts {
+                let sides = conflict
+                    .sides()
+                    .map(|(_, side)| present(side).map_or_else(String::new, self::text));
+                let _ = write!(text, "[{}:{}]", conflict.field, sides.join("|"));
             }
             text
         }
