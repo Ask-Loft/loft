@@ -11,10 +11,11 @@ use loftspec::codec;
 use loftspec::document::Document;
 use loftspec::ids::DocumentId;
 use loftspec_store::FileStore;
-use loftspec_store::merge_driver::{DRIVER, LAUNCHER};
+use loftspec_store::merge_driver::DRIVER;
 use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
+use crate::merge_driver::NPM_COMMAND;
 use crate::{json, skill};
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -44,19 +45,13 @@ pub fn run(root: &Path, with_skill: bool, as_json: bool) -> ExitCode {
     } else {
         println!("created spec/, document key {key}");
         skill::report(&skills);
-        if merge_driver_missing(&GitCommand::default(), root) {
+        // Outside a repository git refuses the read, which leaves the suggestion out.
+        if matches!(GitCommand::default().config_get(root, DRIVER), Ok(None)) {
             println!(
-                "next: run `{LAUNCHER} merge-driver --install` once in each clone, so git merges \
-                 spec/ by key; where loft runs through npm, add --command \"npx --no-install loft\""
+                "next: run `loft merge-driver --install` once in each clone, so git merges spec/ \
+                 by key; where loft runs through npm, add --command \"{NPM_COMMAND}\""
             );
         }
     }
     ExitCode::SUCCESS
-}
-
-/// Whether `root` lies in a git repository whose local configuration names no merge driver.
-/// Outside a repository, git refuses the read of its local configuration, which leaves the
-/// suggestion out.
-fn merge_driver_missing(git: &GitCommand, root: &Path) -> bool {
-    matches!(git.config_get(root, DRIVER), Ok(None))
 }

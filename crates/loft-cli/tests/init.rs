@@ -4,7 +4,7 @@
 use std::fs;
 use std::process::Output;
 
-use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout};
 use crate::schema;
 use crate::skill_install::{CLAUDE, CODEX, installed};
 use crate::snapshot::snapshot;
@@ -12,8 +12,8 @@ use loftspec::bindings::Counters;
 use loftspec::document::Document;
 use loftspec_store::{DocumentStore as _, FileStore};
 use serde_json::Value;
+use software_plant::GitScenario;
 use software_plant::git::Call;
-use software_plant::{Clock, GitScenario};
 
 /// A directory where `loft init` ran and succeeded.
 fn initialised() -> Scratch {
@@ -195,15 +195,11 @@ fn init_with_no_skill_writes_no_skill_and_the_same_tree() {
     }
 }
 
-/// `loft init` run with the git simulator answering from `scenario`: its output, and the scenario
-/// as the run left it.
-fn init_in(scenario: &GitScenario, args: &[&str]) -> (Scratch, Output, GitScenario) {
-    let scratch = Scratch::empty();
-    let args: Vec<&str> = ["init"].into_iter().chain(args.iter().copied()).collect();
-    let output = scratch.loft_with(&args, Some(scenario), &Clock::fixed(EPOCH));
+/// `loft init` run with `args` and the git simulator answering from `scenario`; it succeeds.
+fn init_in(scenario: &GitScenario, args: &[&str]) -> Output {
+    let (output, _) = Scratch::empty().loft_in(&[&["init"][..], args].concat(), scenario);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
-    let after = GitScenario::read(&scratch.plant().join("git-scenario.json")).unwrap();
-    (scratch, output, after)
+    output
 }
 
 fn suggests_the_driver(output: &Output) -> bool {
@@ -212,7 +208,7 @@ fn suggests_the_driver(output: &Output) -> bool {
 
 #[test]
 fn in_a_repository_without_the_driver_init_suggests_installing_it() {
-    let (_, output, _) = init_in(&GitScenario::clean_on("main"), &[]);
+    let output = init_in(&GitScenario::clean_on("main"), &[]);
     let text = stdout(&output);
     let last = text.lines().last().unwrap();
     assert!(last.contains("loft merge-driver --install"), "{text}");
@@ -225,20 +221,20 @@ fn in_a_repository_without_the_driver_init_suggests_installing_it() {
 #[test]
 fn init_suggests_nothing_where_the_repository_names_the_driver() {
     let scenario = GitScenario::clean_on("main").with_config("merge.loft.driver", "loft");
-    let (_, output, _) = init_in(&scenario, &[]);
+    let output = init_in(&scenario, &[]);
     assert!(!suggests_the_driver(&output), "{}", stdout(&output));
 }
 
 #[test]
 fn init_suggests_nothing_outside_a_repository() {
-    let (_, output, _) = init_in(&GitScenario::outside_repository(), &[]);
+    let output = init_in(&GitScenario::outside_repository(), &[]);
     assert!(!suggests_the_driver(&output), "{}", stdout(&output));
 }
 
 #[test]
 fn init_succeeds_and_suggests_nothing_where_git_fails_or_cannot_be_run() {
     let scenario = GitScenario::clean_on("main").failing(Call::ConfigGet, 128, "fatal: unreadable");
-    let (_, output, _) = init_in(&scenario, &[]);
+    let output = init_in(&scenario, &[]);
     assert!(!suggests_the_driver(&output), "{}", stdout(&output));
     let output = Scratch::empty().loft(&["init"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
@@ -247,14 +243,16 @@ fn init_succeeds_and_suggests_nothing_where_git_fails_or_cannot_be_run() {
 
 #[test]
 fn the_json_document_carries_no_suggestion() {
-    let (_, output, _) = init_in(&GitScenario::clean_on("main"), &["--format", "json"]);
+    let output = init_in(&GitScenario::clean_on("main"), &["--format", "json"]);
     json_of(&output);
     assert!(!suggests_the_driver(&output), "{}", stdout(&output));
 }
 
 #[test]
 fn the_suggestion_writes_nothing_to_the_repository() {
-    let (scratch, _, after) = init_in(&GitScenario::clean_on("main"), &[]);
+    let scratch = Scratch::empty();
+    let (output, after) = scratch.loft_in(&["init"], &GitScenario::clean_on("main"));
+    assert!(suggests_the_driver(&output), "{}", stdout(&output));
     assert_eq!(after, GitScenario::clean_on("main"));
     assert!(!scratch.0.join(".gitattributes").exists());
 }
