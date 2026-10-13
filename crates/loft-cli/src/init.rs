@@ -21,26 +21,18 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
         Ok(()) => {
             let key = document.id.to_string();
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "created": "spec/",
-                    "documentKey": key,
-                    "errors": [],
-                }));
+                let fields = json!({ "created": "spec/", "documentKey": key });
+                json::print(&json::result(SCHEMA, "created", fields, Vec::new()));
             } else {
                 println!("created spec/, document key {key}");
             }
             ExitCode::SUCCESS
         }
         Err(error) => {
-            let message = error.to_string();
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "errors": [json::error("store", &message, &[])],
-                }));
+                json::print(&json::failure(SCHEMA, vec![json::store_error(&error)]));
             }
-            eprintln!("{message}");
+            eprintln!("{error}");
             ExitCode::FAILURE
         }
     }

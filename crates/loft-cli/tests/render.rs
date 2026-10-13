@@ -72,8 +72,19 @@ fn an_unchanged_projection_is_not_rewritten() {
     scratch.loft(&["render"]);
     let output = scratch.loft(&["render", "--format", "json"]);
     let document = schema::conforming(&output.stdout, include_str!("../../../schemas/render.json"));
+    assert_eq!(document["outcome"], "rendered");
     assert_eq!(document["written"], Value::Array(Vec::new()));
     assert_eq!(document["unchanged"].as_array().unwrap().len(), 2);
+}
+
+#[test]
+fn a_refused_render_is_an_error_in_json() {
+    let scratch = Scratch::with_reading_list();
+    let output = scratch.loft(&["render", "--markdown", "spec/out.md", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let document = schema::conforming(&output.stdout, include_str!("../../../schemas/render.json"));
+    assert_eq!(document["outcome"], "error");
+    assert_eq!(document["errors"][0]["kind"], "refused");
 }
 
 #[test]

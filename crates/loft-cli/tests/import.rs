@@ -263,6 +263,7 @@ fn json_output_matches_the_schema() {
     let output = dir.import(&["--format", "json"]);
     assert_eq!(output.status.code(), Some(0));
     let document = schema::conforming(&output.stdout, schema);
+    assert_eq!(document["outcome"], "imported");
     assert_eq!(document["findings"].as_array().unwrap().len(), 2);
     assert!(
         document["written"]
@@ -273,5 +274,6 @@ fn json_output_matches_the_schema() {
     let refused = dir.import(&["--format", "json"]);
     assert_eq!(refused.status.code(), Some(1));
     let document = schema::conforming(&refused.stdout, schema);
+    assert_eq!(document["outcome"], "error");
     assert_eq!(document["errors"].as_array().unwrap().len(), 1);
 }

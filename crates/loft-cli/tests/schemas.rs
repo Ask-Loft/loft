@@ -19,23 +19,62 @@ fn read(name: &str) -> Value {
     serde_json::from_str(&text).unwrap()
 }
 
+/// The `schema` const of each branch of a command's schema.
+fn names(schema: &Value) -> Vec<&str> {
+    let branches = schema["oneOf"]
+        .as_array()
+        .expect("a result and an error shape");
+    let names = branches
+        .iter()
+        .map(|branch| branch["properties"]["schema"]["const"].as_str());
+    names.map(|name| name.expect("a schema const")).collect()
+}
+
 #[test]
 fn each_command_has_one_schema_named_after_it_that_names_its_version() {
     let commands = help::subcommands();
     assert!(commands.len() >= 8, "{commands:?}");
     for command in commands {
         let schema = read(&format!("{command}.json"));
-        let name = schema["properties"]["schema"]["const"].as_str().unwrap();
-        let version = name.strip_prefix(&format!("loft-{command}/"));
+        let names = names(&schema);
+        assert!(
+            names.iter().all(|name| *name == names[0]),
+            "{command}: {names:?}"
+        );
+        let version = names[0].strip_prefix(&format!("loft-{command}/"));
         assert!(
             version.is_some_and(|version| version.parse::<u32>().is_ok()),
-            "{command}: {name}"
+            "{command}: {}",
+            names[0]
         );
         assert_eq!(
             schema["$id"],
             format!("loft-{command}-{}.json", version.unwrap()),
             "{command}"
         );
+    }
+}
+
+#[test]
+fn every_document_carries_schema_outcome_and_errors_and_an_error_carries_only_those() {
+    for command in help::subcommands() {
+        let schema = read(&format!("{command}.json"));
+        let branches = schema["oneOf"].as_array().unwrap();
+        for branch in branches {
+            let required = branch["required"].as_array().unwrap();
+            for field in ["schema", "outcome", "errors"] {
+                assert!(required.contains(&Value::from(field)), "{command}: {field}");
+            }
+        }
+        let error = branches.last().unwrap();
+        assert_eq!(
+            error["properties"]["outcome"]["const"], "error",
+            "{command}"
+        );
+        let mut fields: Vec<&String> = error["properties"].as_object().unwrap().keys().collect();
+        fields.sort();
+        assert_eq!(fields, ["errors", "outcome", "schema"], "{command}");
+        assert_eq!(error["additionalProperties"], false, "{command}");
     }
 }
 

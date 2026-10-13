@@ -34,13 +34,17 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
     match merge(root, inputs) {
         Ok((conflicts, disputed)) => {
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
+                let outcome = if conflicts == 0 {
+                    "merged"
+                } else {
+                    "conflicted"
+                };
+                let fields = json!({
                     "path": inputs.path,
                     "conflicts": conflicts,
                     "disputed": disputed,
-                    "errors": [],
-                }));
+                });
+                json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
             }
             if conflicts == 0 {
                 return ExitCode::SUCCESS;
@@ -63,7 +67,7 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
                 eprintln!("{message}");
             }
             if as_json {
-                json::print(&json!({ "schema": SCHEMA, "path": inputs.path, "errors": errors }));
+                json::print(&json::failure(SCHEMA, errors));
             }
             ExitCode::FAILURE
         }
@@ -100,12 +104,8 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
                 );
             }
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "written": installed.written,
-                    "version": installed.version,
-                    "errors": [],
-                }));
+                let fields = json!({ "written": installed.written, "version": installed.version });
+                json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
             } else {
                 for name in installed.written {
                     println!("{name}");
@@ -116,8 +116,8 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
         Err(error) => {
             let message = format!("loft merge-driver --install: {}", refusal(&error, launcher));
             if as_json {
-                let errors = [json::error("install", &message, &[])];
-                json::print(&json!({ "schema": SCHEMA, "errors": errors }));
+                let errors = vec![json::error("install", &message, &[])];
+                json::print(&json::failure(SCHEMA, errors));
             }
             eprintln!("{message}");
             ExitCode::FAILURE

@@ -2,44 +2,75 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-import-1.json",
   "title": "The result of `loft import v1 --format json`, version 1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "written",
-    "findings",
-    "warnings",
-    "errors"
-  ],
-  "properties": {
-    "schema": {
-      "const": "loft-import/1"
-    },
-    "written": {
-      "type": "array",
-      "items": {
-        "type": "string"
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "written",
+        "findings",
+        "warnings",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-import/1"
+        },
+        "outcome": {
+          "const": "imported"
+        },
+        "written": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/finding"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     },
-    "findings": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/finding"
-      }
-    },
-    "warnings": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "errors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/error"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-import/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     }
-  },
+  ],
   "$defs": {
     "site": {
       "type": "object",

@@ -262,6 +262,7 @@ fn the_json_document_of_an_install_lists_the_names_written_and_the_launcher_s_ve
     let (output, _) = dirs.install_with(&clean(), &["--format", "json"]);
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
     let document = json_of(&output);
+    assert_eq!(document["outcome"], "installed");
     assert_eq!(
         document["written"],
         json!([".gitattributes", "merge.loft.driver", "merge.loft.name"])
@@ -274,7 +275,9 @@ fn a_refused_install_is_listed_among_the_json_document_s_errors() {
     let dirs = Dirs::new("json-outside");
     let (output, _) = dirs.install_with(&GitScenario::outside_repository(), &["--format", "json"]);
     assert_eq!(output.status.code(), Some(1));
-    let error = &json_of(&output)["errors"][0];
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    let error = &document["errors"][0];
     assert!(
         error["message"]
             .as_str()

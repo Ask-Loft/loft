@@ -2,37 +2,68 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-render-1.json",
   "title": "The result of `loft render --format json`, version 1",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "written",
-    "unchanged",
-    "errors"
-  ],
-  "properties": {
-    "schema": {
-      "const": "loft-render/1"
-    },
-    "written": {
-      "type": "array",
-      "items": {
-        "type": "string"
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "written",
+        "unchanged",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-render/1"
+        },
+        "outcome": {
+          "const": "rendered"
+        },
+        "written": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unchanged": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     },
-    "unchanged": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "errors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/error"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-render/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     }
-  },
+  ],
   "$defs": {
     "site": {
       "type": "object",

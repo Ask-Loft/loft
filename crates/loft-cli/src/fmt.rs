@@ -22,6 +22,18 @@ struct Outcome {
     written: bool,
 }
 
+impl Outcome {
+    /// The outcome's name: `formatted` when files were rewritten, `drift` when `--check` finds a
+    /// file that would change, `canonical` when none would.
+    fn name(&self, check: bool) -> &'static str {
+        match (self.changed.is_empty(), check) {
+            (true, _) => "canonical",
+            (false, true) => "drift",
+            (false, false) => "formatted",
+        }
+    }
+}
+
 /// Why the tree was not formatted: its errors as JSON, and as the lines standard error shows.
 struct Failure {
     errors: Vec<Value>,
@@ -30,10 +42,9 @@ struct Failure {
 
 impl From<StoreError> for Failure {
     fn from(error: StoreError) -> Self {
-        let message = error.to_string();
         Self {
-            errors: vec![json::error("store", &message, &[])],
-            lines: vec![message],
+            errors: vec![json::store_error(&error)],
+            lines: vec![error.to_string()],
         }
     }
 }
@@ -53,14 +64,19 @@ pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
         Err(failure) => (Outcome::default(), Some(failure)),
     };
     if as_json {
-        let errors = failure.as_ref().map_or_else(Vec::new, |f| f.errors.clone());
-        json::print(&json!({
-            "schema": SCHEMA,
-            "changed": outcome.changed,
-            "minted": outcome.minted,
-            "written": outcome.written,
-            "errors": errors,
-        }));
+        json::print(&match &failure {
+            Some(failure) => json::failure(SCHEMA, failure.errors.clone()),
+            None => json::result(
+                SCHEMA,
+                outcome.name(check),
+                json!({
+                    "changed": outcome.changed,
+                    "minted": outcome.minted,
+                    "written": outcome.written,
+                }),
+                Vec::new(),
+            ),
+        });
     } else {
         for path in &outcome.changed {
             println!("{path}");

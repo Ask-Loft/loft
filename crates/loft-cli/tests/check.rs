@@ -154,6 +154,7 @@ fn json_matches_the_schema_with_positions_and_the_same_exit_code() {
     let output = scratch.loft(&["check", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1));
     let document = json(&output);
+    assert_eq!(document["outcome"], "failed");
     let error = &document["errors"][0];
     assert_eq!(error["kind"], "validation");
     assert_eq!(error["path"], format!("spec/{PRODUCT}"));
@@ -174,8 +175,20 @@ fn an_error_without_a_position_is_json_on_stdout() {
     let output = scratch.loft(&["check", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1));
     let document = json(&output);
+    assert_eq!(document["outcome"], "error");
+    assert!(document.get("findings").is_none());
     let error = &document["errors"][0];
     assert!(error.get("path").is_none() && error.get("line").is_none());
+}
+
+#[test]
+fn a_finding_at_or_above_fail_on_is_a_failed_check_in_json() {
+    let scratch = Scratch::with_reading_list();
+    let output = scratch.loft(&["check", "--fail-on", "hint", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let document = json(&output);
+    assert_eq!(document["outcome"], "failed");
+    assert_eq!(document["errors"], Value::Array(Vec::new()));
 }
 
 #[test]
@@ -185,6 +198,7 @@ fn a_clean_tree_in_json_has_no_errors_and_no_findings() {
     let output = scratch.loft(&["check", "--format", "json"]);
     assert_eq!(output.status.code(), Some(0));
     let document = json(&output);
+    assert_eq!(document["outcome"], "passed");
     assert_eq!(document["errors"], Value::Array(Vec::new()));
     assert_eq!(document["findings"], Value::Array(Vec::new()));
 }

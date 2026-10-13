@@ -24,5 +24,7 @@ The command line:
 
 - `loft init`, `fmt`, `check`, `render`, `import v1`, `publish`, `verify` and `merge-driver`,
   with `--install` and `--command` for a `loft` started by a dev-dependency launcher.
-- `--format json` on every command, each document described by a schema under `schemas/`.
+- `--format json` on every command, each document described by a schema under `schemas/`, at
+  version 1. Every document carries `schema`, `outcome` and `errors`; on an error it holds only
+  those.
 - Exit codes 0 on success, 1 on an error, a refusal or a failed check, and 2 on a usage error.

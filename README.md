@@ -63,6 +63,15 @@ error. With `--format json` a command prints one JSON document on standard outpu
 its schema under `schemas/` (`schemas/<command>.json`, whose name carries its version);
 human-readable text goes to standard error, and the exit code is the same as without it.
 
+Every document carries `schema`, `outcome` and `errors`. `outcome` names the result in words,
+including the results that exit 1 without an error: `failed` for `check`, `drift` for
+`fmt --check`, `conflicted` for a merge and `mismatch` for `verify`. A command that stops on an
+error has the outcome `error`, and its document then holds only those three fields:
+
+```json
+{"schema": "loft-fmt/1", "outcome": "error", "errors": [{"kind": "read", "message": "...", "path": "spec/...", "line": 1, "column": 3, "sites": [...]}]}
+```
+
 ## Publishing and merging
 
 `loft publish`, run on the publish branch (`main` unless `spec/loftspec.yaml` names another) over
