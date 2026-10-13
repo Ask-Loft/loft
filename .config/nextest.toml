@@ -1,4 +1,4 @@
-# The workspace gate is `cargo nextest run --workspace` beside `cargo test --workspace --doc`.
+# The workspace gate runs `cargo nextest run --workspace`.
 
 [profile.default]
 # A gate reports every failure, not the first: one red suite must not hide another.

@@ -164,13 +164,13 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   cargo fmt --all -- --check
   cargo clippy --workspace --all-targets -- -D warnings
   cargo nextest run --workspace
-  cargo test --workspace --doc
   cargo run -q -p loft-cli -- fmt --check
   cargo run -q -p loft-cli -- check --fail-on warning
   ```
 
-  nextest runs no doctests, so `cargo test --doc` is what keeps the `compile_fail` boundaries
-  checked; install the runner with `cargo install cargo-nextest --locked`.
+  Install the runner with `cargo install cargo-nextest --locked`. nextest runs no doctests, and
+  the crates have none; one added later brings `cargo test --workspace --doc` into this list and
+  CI with it.
 - For docs-only work, run only the checks relevant to the changed documents.
 - For a focused loop, use `cargo nextest run -p <crate> <test-name>`.
 
