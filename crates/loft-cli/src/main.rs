@@ -22,7 +22,10 @@ use loftspec_store::merge_driver::LAUNCHER;
 #[derive(Parser)]
 #[command(
     name = "loft",
-    about = "Author, check and format a Loft specification in git"
+    about = "Author, check and format a Loft specification in git",
+    after_help = "Exit codes: 0 on success, 1 on an error, a refusal or a failed check, 2 on a usage \
+                  error.\nWith `--format json` a command prints one JSON document on standard \
+                  output, described by its schema under `schemas/` in the Loft repository."
 )]
 #[command(arg_required_else_help = true, disable_version_flag = true)]
 struct Cli {

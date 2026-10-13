@@ -63,3 +63,16 @@ fn without_a_command_or_version_loft_still_exits_2() {
 fn help_still_exits_0() {
     assert_eq!(loft(&["--help"]).status.code(), Some(0));
 }
+
+#[test]
+fn help_names_the_exit_codes_and_the_json_schemas() {
+    let help = String::from_utf8(loft(&["--help"]).stdout).unwrap();
+    for part in [
+        "0 on success",
+        "1 on an error",
+        "2 on a usage error",
+        "schemas/",
+    ] {
+        assert!(help.contains(part), "{part}: {help}");
+    }
+}
