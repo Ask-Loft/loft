@@ -1,7 +1,7 @@
 key: fd3d21c7-76fa-4f82-abe0-a2266a7e39d8
 slug: loft-init
 name: "`loft init`"
-body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries, and the `loft-spec` skill beside it for the project's coding agents."
+body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries, and the `loft-spec` skill beside it for the project's coding agents. In a git repository that has not registered Loft's merge driver yet, it suggests registering it."
 tags:
   - writes-tree
 realizes:
@@ -82,3 +82,26 @@ requirements:
         name: "Neither `.claude/skills/loft-spec/` nor `.agents/skills/loft-spec/` is written."
       - key: 01a13654-bf86-77e9-8fd5-8dbf78af83af
         name: "`spec/` is created as it is without the option."
+  - key: 01a13711-d7d2-7100-8424-b9644093d3f8
+    statement:
+      form: state_driven
+      while: "the current directory lies in a git repository whose local configuration names no Loft merge driver"
+      system: "`loft init`"
+      shall: "suggest `loft merge-driver --install` in its text output."
+    criteria:
+      - key: 01a13711-d7d2-7100-8424-b96531bdfd6e
+        name: "The suggestion names `loft merge-driver --install`."
+      - key: 01a13711-d7d2-7100-8424-b966024561d0
+        name: "The suggestion names `--command` for a project that runs `loft` through npm."
+      - key: 01a13711-d7d2-7100-8424-b967b32a99da
+        name: "No suggestion is printed where the repository's configuration names the merge driver."
+      - key: 01a13711-d7d2-7100-8424-b968ec7fc74f
+        name: "No suggestion is printed outside a git repository."
+      - key: 01a13711-d7d2-7100-8424-b969ba2fe385
+        name: "No suggestion is printed where git cannot be run or fails."
+      - key: 01a13711-d7d2-7100-8424-b96ac01e705d
+        name: "`loft init` exits 0 where git cannot be run or fails."
+      - key: 01a13711-d7d2-7100-8424-b96b4610ef38
+        name: "The JSON document carries no suggestion."
+      - key: 01a13711-d7d2-7100-8424-b96c875c37d4
+        name: "Nothing is written to the repository's configuration or to `.gitattributes`."

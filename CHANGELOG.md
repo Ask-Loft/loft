@@ -3,6 +3,11 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- `loft init` suggests `loft merge-driver --install` inside a git repository that has not
+  registered the merge driver yet.
+
 ## 2.0.1 (2026-10-13)
 
 - `@ask-loft/loft` on npm: prebuilt `loft` binaries for macOS, Linux and Windows on x64 and

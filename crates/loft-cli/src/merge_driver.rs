@@ -19,6 +19,9 @@ use serde_json::json;
 use crate::json;
 use crate::version::VERSION;
 
+/// The command that starts `loft` where a project has it as an npm dev dependency.
+pub const NPM_COMMAND: &str = "npx --no-install loft";
+
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-merge-driver/1";
 
@@ -128,7 +131,7 @@ fn refusal(error: &StoreError, launcher: &str) -> String {
         StoreError::Launcher(_) => format!(
             "git could not run `{launcher} --version` from the top of the working tree, where it \
              runs the driver; give the command that starts loft there with --command, such as \
-             --command \"npx --no-install loft\""
+             --command \"{NPM_COMMAND}\""
         ),
         StoreError::NotARepository(_) => "a git repository is required, and the working \
                                           directory is not inside one"

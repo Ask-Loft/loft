@@ -11,7 +11,7 @@ use std::{env, fs, process};
 use loftspec::codec;
 use loftspec::convert::v1::convert;
 use loftspec::convert::v1::export::Export;
-use software_plant::{Clock, GitScenario};
+use software_plant::{Clock, GitScenario, Installed};
 
 /// The time every run reads unless a test gives another: 2026-01-01T00:00:00Z.
 pub const EPOCH: u64 = 1_767_225_600;
@@ -79,15 +79,34 @@ impl Scratch {
         self.command(git, clock).args(args).output().unwrap()
     }
 
+    /// Runs `loft` at [`EPOCH`] with the git simulator answering from `git`, and gives its output
+    /// and the scenario as the run left it.
+    pub fn loft_in(&self, args: &[&str], git: &GitScenario) -> (Output, GitScenario) {
+        let (mut command, installed) = self.installed_command(Some(git), &Clock::fixed(EPOCH));
+        let output = command.args(args).output().unwrap();
+        let scenario = installed.expect("a scenario was installed").scenario;
+        (output, GitScenario::read(&scenario).unwrap())
+    }
+
     /// The `loft` command in the scratch tree: the git simulator answering from `git` first on
     /// its search path, or no `git` at all, and the time `clock` gives.
     pub fn command(&self, git: Option<&GitScenario>, clock: &Clock) -> Command {
+        self.installed_command(git, clock).0
+    }
+
+    /// [`Self::command`], with the simulator's scenario as installed, if `git` is given.
+    fn installed_command(
+        &self,
+        git: Option<&GitScenario>,
+        clock: &Clock,
+    ) -> (Command, Option<Installed>) {
         let plant = self.plant();
         fs::create_dir_all(&plant).unwrap();
         let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
-        match git {
-            Some(git) => {
-                git.install(&plant).apply(&mut command);
+        let installed = git.map(|git| git.install(&plant));
+        match &installed {
+            Some(installed) => {
+                installed.apply(&mut command);
             }
             None => {
                 command.env("PATH", &plant);
@@ -95,7 +114,7 @@ impl Scratch {
         }
         clock.apply(&mut command);
         command.current_dir(&self.0);
-        command
+        (command, installed)
     }
 
     /// The directory beside the scratch tree that holds the simulators' scenarios.
