@@ -175,12 +175,7 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 - Keep every commit green. Do not update golden vectors merely to make a failure disappear.
 - Commit each completed step separately; do not combine unrelated steps in one commit.
 - Open pull requests against `develop`. `main` carries released, published states only.
-- Publish on `main` only, and only with the maintainer's approval: merge `develop` into `main`,
-  run `loft publish` there over a committed `spec/`, commit `spec/labels.yaml` and
-  `loft.lock.json` together as the publish commit, check that `loft verify` passes, then merge
-  `main` back into `develop` so the allocated labels reach it. A second `loft publish` with
-  nothing changed writes nothing; CI checks both on `main` only, since `develop` carries
-  unpublished candidates.
+- Publish on `main` only, as part of a release (see Releasing).
 - Preserve unrelated worktree changes.
 - Before every commit of code, run what CI runs, and fix any failure before committing:
 
@@ -197,6 +192,30 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   CI with it.
 - For docs-only work, run only the checks relevant to the changed documents.
 - For a focused loop, use `cargo nextest run -p <crate> <test-name>`.
+
+## Releasing
+
+A release happens only with the maintainer's approval, and in this order:
+
+1. On a branch from `develop`, set the new version in every crate's `Cargo.toml`, in the
+   workspace dependencies and in both plugin manifests (`tests/plugins.rs` fails until they
+   agree), and date its entry in `CHANGELOG.md` as `## X.Y.Z (YYYY-MM-DD)`. Merge it into
+   `develop`, then `develop` into `main`.
+2. On `main`, run `loft publish` over the committed `spec/`, commit `spec/labels.yaml` and
+   `loft.lock.json` together as the publish commit, and check that `loft verify` passes. A second
+   `loft publish` with nothing changed writes nothing; CI checks both on `main` only, since
+   `develop` carries unpublished candidates.
+3. Run `scripts/release-check.sh vX.Y.Z`, tag `vX.Y.Z` on `main`, and push `main` and the tag.
+4. The tag starts `.github/workflows/release.yml`: it runs the release check and the gate, then
+   waits for the maintainer to approve the `release` environment. Once approved,
+   `scripts/publish-crates.sh` publishes the crates to crates.io in dependency order, skipping
+   any version crates.io already holds, and the tag gets a GitHub release whose notes are the
+   version's changelog entry. crates.io trusts the workflow through Trusted Publishing; no
+   registry token is stored in the repository.
+5. Merge `main` back into `develop`, so the allocated labels and the release reach it.
+
+`software-plant` is never published (`publish = false`). CI on `main` runs
+`cargo publish --workspace --dry-run`, so a crate that would not package fails before a release.
 
 ## Public hygiene
 

@@ -1,0 +1,67 @@
+name: Release
+
+# A tag `vX.Y.Z` pushed on main releases that version: the checks run first, then, once the
+# maintainer approves the `release` environment, the crates go to crates.io and the tag gets a
+# GitHub release. crates.io trusts this workflow directly (Trusted Publishing), so no registry
+# token is stored in the repository.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # Installs the toolchain rust-toolchain.toml pins.
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.146
+      # The tag names the crates' version, its commit is on main, and the changelog dates it.
+      - run: scripts/release-check.sh "$GITHUB_REF_NAME"
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo nextest run --workspace
+      - run: cargo run -q -p loft-cli -- fmt --check
+      - run: cargo run -q -p loft-cli -- check --fail-on warning
+      - run: cargo run -q -p loft-cli -- verify
+      - run: scripts/publish-crates.sh --dry-run
+
+  publish:
+    needs: check
+    runs-on: ubuntu-latest
+    # Waits for the maintainer's approval; only `v*` tags may deploy to it.
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      # Exchanges this run's identity for a short-lived crates.io token.
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      # Publishes the crates crates.io does not hold yet, so a failed run can run again.
+      - run: scripts/publish-crates.sh
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+      # The release notes are the version's entry in the changelog.
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          awk -v head="## $version " 'index($0, head) == 1 {on = 1; next} /^## / {on = 0} on' \
+            CHANGELOG.md > notes.md
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
+            gh release create "$GITHUB_REF_NAME" --verify-tag --title "Loft $version" \
+              --notes-file notes.md
