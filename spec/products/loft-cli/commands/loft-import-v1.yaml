@@ -96,3 +96,12 @@ requirements:
         name: "A value that is not a positive integer is reported with its prefix."
       - key: 4c5ce0f7-b7cc-46af-88ef-439d0f75e425
         name: "Nothing is written."
+  - key: 01a1354e-bca0-714b-8727-09b00c8a7898
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft import v1`"
+      shall: "give the result of the import as its outcome."
+    criteria:
+      - key: 01a1354e-bca0-714b-8727-09b1a5251d11
+        name: "The outcome is `imported` when the tree and the sidecar were written."

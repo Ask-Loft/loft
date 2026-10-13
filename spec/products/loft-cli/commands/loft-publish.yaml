@@ -88,3 +88,16 @@ requirements:
         name: "It runs no git command that changes the repository."
       - key: 01a130de-573a-77b2-b40b-d436e37f19d1
         name: "With `--format json`, the document names the withdrawn labels, the rewritten citations and the finishing command."
+  - key: 01a1354e-bca0-714b-8727-09b6dfe6f288
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft publish`"
+      shall: "give the result of the publish as its outcome."
+    criteria:
+      - key: 01a1354e-bca0-714b-8727-09b72e32d0aa
+        name: "The outcome is `published` when the publish wrote a lock."
+      - key: 01a1354e-bca0-714b-8727-09b84136ea73
+        name: "The outcome is `unchanged` when nothing changed since the last publish."
+      - key: 01a1354e-bca0-714b-8727-09b992ab7df5
+        name: "A refusal has the outcome `error` and is listed among the document's errors."
