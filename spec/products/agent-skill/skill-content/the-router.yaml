@@ -33,6 +33,8 @@ requirements:
         name: "The router tells the agent never to install `loft` unasked."
       - key: 01a13754-833e-725b-b941-634f8a751b92
         name: "The router tells the agent to try the project's package runner, such as `npx --no-install loft`, where `loft` is not on the search path."
+      - key: 01a13767-36e8-72a0-a2ce-a57040deda7e
+        name: "The router tells the agent to try `~/.cargo/bin/loft`, where `cargo install` puts it, before the package runners when `loft` is not on the search path."
       - key: 01a13754-833e-725b-b941-635064a96c9a
         name: "The router names installing `loft` from npm and from crates.io."
   - key: 01a13654-6e12-74a1-ad7f-e851f120905f
