@@ -16,17 +16,21 @@ reports: `SECURITY.md`. Changes: `CHANGELOG.md`.
 
 ## Status
 
-2.0.0, the first public release. The format and the command line are specified in this
+2.0.1; 2.0.0 was the first public release. The format and the command line are specified in this
 repository's own `spec/` tree, in the format itself: `loft check` validates and lints it, and
 `loft render` writes a readable projection to `docs/spec.md`.
 
 ## Install
 
 ```sh
+npm install --save-dev @ask-loft/loft      # a prebuilt binary, in a project that uses npm
 cargo install loft-cli                     # from crates.io
 cargo install --path crates/loft-cli       # from a clone of this repository
 ```
 
+The npm package carries prebuilt binaries for macOS, Linux and Windows on x64 and arm64, and runs
+as `npx loft`; in such a project, register the merge driver with
+`npx loft merge-driver --install --command "npx --no-install loft"`. Building from source needs
 Rust 1.97 or newer. The binary is `loft`; `loft --version` prints its release, the format and the
 hashing algorithm.
 

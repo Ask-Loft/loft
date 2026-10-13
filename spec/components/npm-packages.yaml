@@ -1,0 +1,13 @@
+key: 01a136db-1a3c-76b9-8641-d09cf460849a
+slug: npm-packages
+name: "npm packages"
+body: "The npm packages that carry `loft`: the package `@ask-loft/loft`, whose launcher runs the binary, and one package for each supported platform holding that platform's binary. The launcher lies under `npm/`; the release stamps the version and copies each binary in."
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
+constraints:
+  - key: 01a136db-1a3c-76b9-8641-d09dc448a2d0
+    name: "The npm packages shall run no install script."
+    verificationFate: proved
+  - key: 01a136db-1a3c-76b9-8641-d09e74566205
+    name: "The launcher shall depend on no package outside `@ask-loft`."
+    verificationFate: proved

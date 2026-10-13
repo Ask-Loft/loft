@@ -43,6 +43,12 @@ cargo run -q -p loft-cli -- check --fail-on warning
 Every commit stays green. Open pull requests against `develop`; `main` carries released, published
 states only.
 
+## Releases
+
+Releases are cut by the maintainer: a tag `vX.Y.Z` on `main` runs the release workflow, which
+publishes the crates to crates.io and the prebuilt binaries to npm after the maintainer approves
+it. `AGENTS.md` lists the steps.
+
 ## Public by default
 
 Everything here is public, the history included. Never commit secrets, private documents or

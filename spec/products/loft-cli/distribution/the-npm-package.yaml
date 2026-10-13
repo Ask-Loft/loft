@@ -1,0 +1,71 @@
+key: 01a136db-1a3d-7739-a3f4-9ac908cf3cff
+slug: the-npm-package
+name: "The npm package"
+body: |
+  `loft` is a compiled binary, so npm carries it prebuilt: one package for each platform holds that platform's binary, and the package `@ask-loft/loft` runs the one that suits the machine. A project that already uses npm then installs `loft` as a dev dependency, and git starts it as the merge driver with `npx --no-install loft`.
+realizes:
+  - 01a136db-1a3c-76b9-8641-d09cf460849a
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a136db-1a3d-7739-a3f4-9aca1a0aeabf
+    statement:
+      form: ubiquitous
+      system: "The package `@ask-loft/loft`"
+      shall: "run the `loft` binary built for the platform it is installed on."
+    criteria:
+      - key: 01a136db-1a3d-7739-a3f4-9acba290bbc3
+        name: "The package installs a command named `loft`."
+      - key: 01a136db-1a3d-7739-a3f4-9acceaf09b98
+        name: "The command passes its arguments to the binary unchanged."
+      - key: 01a136db-1a3d-7739-a3f4-9acd008efda7
+        name: "The binary reads and writes the command's standard input, output and error."
+      - key: 01a136db-1a3d-7739-a3f4-9acee003d368
+        name: "The command exits with the binary's exit code."
+      - key: 01a136db-1a3d-7739-a3f4-9acffbe368ae
+        name: "Installing the package runs no install script."
+  - key: 01a136db-1a3d-7739-a3f4-9ad0dd70b4aa
+    statement:
+      form: ubiquitous
+      system: "Each platform package"
+      shall: "hold the `loft` binary of one supported platform."
+    criteria:
+      - key: 01a136db-1a3d-7739-a3f4-9ad1daac9b30
+        name: "A platform package is named `@ask-loft/loft-<platform>-<arch>`, with Node's names for the platform and the architecture."
+      - key: 01a136db-1a3d-7739-a3f4-9ad215020978
+        name: "A platform package declares its platform in `os` and its architecture in `cpu`."
+      - key: 01a136db-1a3d-7739-a3f4-9ad353f9bda4
+        name: "`@ask-loft/loft` lists every platform package as an optional dependency."
+      - key: 01a136db-1a3d-7739-a3f4-9ad4b81acfa6
+        name: "The supported platforms are macOS, Linux and Windows, each on x64 and arm64."
+      - key: 01a136db-1a3d-7739-a3f4-9ad553a8b50a
+        name: "A Linux binary is linked statically, so it runs whatever C library the system has."
+  - key: 01a136db-1a3d-7739-a3f4-9ad6bd26d6c1
+    statement:
+      form: unwanted
+      if: "the platform has no platform package"
+      system: "the command `loft`"
+      shall: "exit 1 and report that no prebuilt binary exists for the platform."
+    criteria:
+      - key: 01a136db-1a3d-7739-a3f4-9ad770100c3e
+        name: "The report names the platform and the architecture."
+      - key: 01a136db-1a3d-7739-a3f4-9ad8a08248c7
+        name: "The report names `cargo install loft-cli` as the other way to install `loft`."
+  - key: 01a136db-1a3d-7739-a3f4-9ad986cb5e5c
+    statement:
+      form: unwanted
+      if: "the platform package is not installed"
+      system: "the command `loft`"
+      shall: "exit 1 and name the missing package."
+    criteria:
+      - key: 01a136db-1a3d-7739-a3f4-9ada1cff00bc
+        name: "The report says that optional dependencies must be installed."
+  - key: 01a136db-1a3d-7739-a3f4-9adb6aa95ecd
+    statement:
+      form: ubiquitous
+      system: "Each npm package"
+      shall: "carry the version of `loft` that its binary reports."
+    criteria:
+      - key: 01a136db-1a3d-7739-a3f4-9adcb2877527
+        name: "Every npm package of a release carries the version of the crates that release publishes."
+      - key: 01a136db-1a3d-7739-a3f4-9add17d89361
+        name: "`@ask-loft/loft` requires each platform package at exactly its own version."

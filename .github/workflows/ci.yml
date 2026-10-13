@@ -30,3 +30,7 @@ jobs:
         run: |
           cargo run -q -p loft-cli -- publish
           test -z "$(git status --porcelain)"
+      # The crates package and verify as crates.io would take them; a version crates.io already
+      # holds is only a warning here.
+      - if: github.ref == 'refs/heads/main'
+        run: cargo publish --workspace --dry-run
