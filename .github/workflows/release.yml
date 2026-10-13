@@ -143,7 +143,7 @@ jobs:
         run: |
           version=${GITHUB_REF_NAME#v}
           awk -v head="## $version " 'index($0, head) == 1 {on = 1; next} /^## / {on = 0} on' \
-            CHANGELOG.md > notes.md
+            CHANGELOG.md | sed '/./,$!d' > notes.md
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
             gh release create "$GITHUB_REF_NAME" --verify-tag --title "Loft $version" \
               --notes-file notes.md
