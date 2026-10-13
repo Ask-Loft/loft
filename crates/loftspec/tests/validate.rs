@@ -1,4 +1,4 @@
-//! The validator (D-11 F-18, F-48, RQ-70): every error a typed document can hold, each naming
+//! The validator (F-18, F-48, RQ-70): every error a typed document can hold, each naming
 //! the elements it concerns.
 
 mod common;

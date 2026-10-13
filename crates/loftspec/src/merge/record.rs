@@ -1,4 +1,4 @@
-//! The merge of one record over its fields (D-11 F-32): a field one side changed takes the
+//! The merge of one record over its fields (F-32): a field one side changed takes the
 //! change, a field both changed alike takes it once, and a field both changed apart keeps its
 //! base value and gains a conflict on the record that holds it (RQ-120..RQ-122). An unkeyed
 //! record inside it merges field by field under a dotted path.

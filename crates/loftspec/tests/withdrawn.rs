@@ -1,4 +1,4 @@
-//! Withdrawn labels (D-11 F-2): a label a key lost to a publish that met another is recorded on
+//! Withdrawn labels (F-2): a label a key lost to a publish that met another is recorded on
 //! the key's binding, resolves to nothing, is never allocated again and enters no root.
 
 mod common;

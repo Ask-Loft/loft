@@ -1,4 +1,4 @@
-//! The containment table (D-11 F-17) and the canonical traversal of the tree (RQ-160).
+//! The containment table (F-17) and the canonical traversal of the tree (RQ-160).
 
 mod common;
 

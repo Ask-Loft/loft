@@ -1,4 +1,4 @@
-//! The links of a v1 export (D-11 F-13): Realization Links become `realizes` edges (RQ-49), a
+//! The links of a v1 export (F-13): Realization Links become `realizes` edges (RQ-49), a
 //! Component's Product scope a `scoped_to` edge (RQ-50), and each Architecture Decision a
 //! decision with its elements and `subject` edges (RQ-51), labelled by its external ID (AC-244).
 

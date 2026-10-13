@@ -1,4 +1,4 @@
-//! `loft fmt` as a function (D-11 F-39): the tree parsed as the formatter parses it, every
+//! `loft fmt` as a function (F-39): the tree parsed as the formatter parses it, every
 //! missing key minted and every missing slug supplied, the tree then checked as strictly as any
 //! role checks it, and the files whose bytes change in canonical layout. It writes nothing
 //! itself; writing belongs to a store (CMP-4).

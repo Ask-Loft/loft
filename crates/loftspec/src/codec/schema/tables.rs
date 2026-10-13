@@ -1,5 +1,5 @@
-//! The field tables of the record schema: each kind's fields in the Format's order (D-11
-//! F-49), built with the constructors below.
+//! The field tables of the record schema: each kind's fields in the Format's order
+//! (F-49), built with the constructors below.
 
 use super::{Field, Item, Kind, Order, Scalar, Shape, Supply, field};
 

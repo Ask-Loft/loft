@@ -1,4 +1,4 @@
-//! The merge of one list field (D-11 F-32, F-33): elements matched across the sides by key, a
+//! The merge of one list field (F-32, F-33): elements matched across the sides by key, a
 //! binding by its key, an assessment by its option and driver, anything else by its value
 //! (AC-471, AC-662); which elements survive; and, for a list in authored order, where each goes.
 

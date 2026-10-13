@@ -1,4 +1,4 @@
-//! `loft merge-driver <base> <ours> <theirs> <path>` as git runs it (D-11 F-43): the merged file
+//! `loft merge-driver <base> <ours> <theirs> <path>` as git runs it (F-43): the merged file
 //! written to `<ours>`, the exit code saying whether a conflict was written, and messages that
 //! name `<path>` rather than git's temporary files.
 

@@ -1,4 +1,4 @@
-//! The Markdown projection and the canonical JSON export (D-11 F-24, F-25).
+//! The Markdown projection and the canonical JSON export (F-24, F-25).
 
 mod common;
 

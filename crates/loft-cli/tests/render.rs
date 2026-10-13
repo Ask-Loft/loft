@@ -1,4 +1,4 @@
-//! `loft render` as a process (D-11 F-40, F-26): what it writes and where, what it refuses, and
+//! `loft render` as a process (F-40, F-26): what it writes and where, what it refuses, and
 //! that no projection feeds back into the tree.
 
 mod common;

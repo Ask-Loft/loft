@@ -1,4 +1,4 @@
-//! The merge of one file (D-11 F-32..F-34): records matched by key and merged field by field, a
+//! The merge of one file (F-32..F-34): records matched by key and merged field by field, a
 //! conflict written where both sides changed one field apart, lists merged in base order, and
 //! the result in canonical layout.
 

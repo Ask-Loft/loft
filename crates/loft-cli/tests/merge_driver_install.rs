@@ -1,4 +1,4 @@
-//! `loft merge-driver --install` (D-11 F-43) in front of the git simulator: it registers the
+//! `loft merge-driver --install` (F-43) in front of the git simulator: it registers the
 //! driver in the repository once, and refuses outside a repository without writing anything.
 
 #[path = "common/schema.rs"]

@@ -1,4 +1,4 @@
-//! What the Format reads in prose (D-11 F-14, F-21): label references (RQ-53) and Markdown
+//! What the Format reads in prose (F-14, F-21): label references (RQ-53) and Markdown
 //! heading lines in a body (RQ-54, RQ-100).
 
 use loftspec::identity::Label;
@@ -24,7 +24,7 @@ fn every_label_form_is_recognised() {
 #[test]
 fn a_reference_with_a_document_prefix_is_recognised() {
     assert_eq!(
-        labels("As D-1/RQ-12 and D-11/AC-3 state."),
+        labels("As D-2/RQ-12 and D-7/AC-3 state."),
         ["RQ-12", "AC-3"]
     );
 }

@@ -1,4 +1,4 @@
-//! The record schema of the text form (D-11 F-49): each record kind's fields in the Format's
+//! The record schema of the text form (F-49): each record kind's fields in the Format's
 //! order, which are required, and what each field holds. One table drives reading, formatting
 //! and writing, so the three cannot disagree on a field's name, place or style.
 

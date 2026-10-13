@@ -1,4 +1,4 @@
-//! The node tree of a v1 export (D-11 F-13): parentage from the children each node lists
+//! The node tree of a v1 export (F-13): parentage from the children each node lists
 //! (RQ-46), sibling order by ordinal (RQ-68), one v2 node per v1 node of the corresponding kind
 //! (RQ-44), keys and labels kept (RQ-45), and each Facet Tag a tag on its parent (RQ-47).
 

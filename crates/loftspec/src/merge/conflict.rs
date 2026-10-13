@@ -1,5 +1,5 @@
 //! The conflicts a merge writes: each on the record that holds the field, named by its path
-//! from that record (D-11 F-34).
+//! from that record (F-34).
 
 use crate::codec::{ConflictRec, Val};
 

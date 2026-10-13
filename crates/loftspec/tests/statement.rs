@@ -1,4 +1,4 @@
-//! The statement record and its render templates (D-11 F-10, F-11).
+//! The statement record and its render templates (F-10, F-11).
 
 use loftspec::statement::{EarsForm, Statement};
 

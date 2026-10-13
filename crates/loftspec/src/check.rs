@@ -1,4 +1,4 @@
-//! `loft check` as a function (D-11 F-38): the tree read, then validated, then linted. A read
+//! `loft check` as a function (F-38): the tree read, then validated, then linted. A read
 //! error stops it before the validator; an error in `spec/lint.yaml` stops it before the linter.
 //! Every error and finding names the sites of the elements it concerns (RQ-158).
 

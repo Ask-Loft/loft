@@ -1,5 +1,5 @@
 //! The Reading List export: a small v1 export whose every hash and address the v1 hashing
-//! produced, converted end to end (D-11 F-13..F-15). It covers every node kind, all four Component
+//! produced, converted end to end (F-13..F-15). It covers every node kind, all four Component
 //! scopes, Facet Tags, a constraint category, a quality target, decisions in each of the five
 //! states, and prose with a resolvable reference, an unresolvable one and a heading.
 

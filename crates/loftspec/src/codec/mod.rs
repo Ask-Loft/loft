@@ -1,4 +1,4 @@
-//! The text form (D-11 FG-2): a `spec/` tree read into a document and a document written back
+//! The text form (FG-2): a `spec/` tree read into a document and a document written back
 //! as files in canonical layout. The writer yields paths and bytes; writing them to disk
 //! belongs to a store (CMP-4).
 

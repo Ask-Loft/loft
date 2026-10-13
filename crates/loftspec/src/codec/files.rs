@@ -1,4 +1,4 @@
-//! The files of a `spec/` tree, each read as the record its path names (D-11 F-6), and written
+//! The files of a `spec/` tree, each read as the record its path names (F-6), and written
 //! back in canonical layout.
 
 use std::collections::BTreeMap;

@@ -1,4 +1,4 @@
-//! References and headings in v1 prose (D-11 F-14): each resolvable label reference in a node's
+//! References and headings in v1 prose (F-14): each resolvable label reference in a node's
 //! name or body becomes one `mentions` edge from the node to the element it names (RQ-53); a
 //! reference that does not resolve and a heading in a body are reported (AC-191, AC-193). A
 //! label-shaped text above every label of its prefix in the export, such as the curve name

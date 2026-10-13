@@ -1,6 +1,6 @@
 //! The merge engine (CMP-10): a three-way merge of one file of a `spec/` tree, over keys and
-//! ordered lists, that writes a typed conflict record where the two sides disagree (D-11
-//! F-32..F-34). It takes only the base, ours and theirs versions of one file (CON-12).
+//! ordered lists, that writes a typed conflict record where the two sides disagree
+//! (F-32..F-34). It takes only the base, ours and theirs versions of one file (CON-12).
 
 mod conflict;
 mod labels;

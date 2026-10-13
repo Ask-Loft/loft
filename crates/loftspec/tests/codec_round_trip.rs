@@ -1,4 +1,4 @@
-//! A document written as a `spec/` tree reads back to the same roots (D-11 FG-2).
+//! A document written as a `spec/` tree reads back to the same roots (FG-2).
 
 mod common;
 

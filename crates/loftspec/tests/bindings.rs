@@ -1,4 +1,4 @@
-//! Bindings and aliases (D-11 F-2): a label changes only by relabelling, which keeps the previous
+//! Bindings and aliases (F-2): a label changes only by relabelling, which keeps the previous
 //! label as a permanent alias, and the validator refuses aliases that collide.
 
 mod common;

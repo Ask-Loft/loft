@@ -1,4 +1,4 @@
-//! Citations of withdrawn labels (D-11, the citations of withdrawn labels): a publish rewrites a
+//! Citations of withdrawn labels (F-59): a publish rewrites a
 //! label withdrawn from a key to that key's live label, in the text of every element whose
 //! `mentions` include the key, and only there.
 

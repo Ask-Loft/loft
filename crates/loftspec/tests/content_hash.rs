@@ -1,4 +1,4 @@
-//! A node's content view and content hash (D-11 F-3).
+//! A node's content view and content hash (F-3).
 
 mod common;
 

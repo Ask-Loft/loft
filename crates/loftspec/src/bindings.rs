@@ -1,4 +1,4 @@
-//! The bindings between elements, labels and aliases (D-11 F-2), held in `spec/labels.yaml`.
+//! The bindings between elements, labels and aliases (F-2), held in `spec/labels.yaml`.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZeroU64;

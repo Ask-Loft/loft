@@ -1,4 +1,4 @@
-//! `loft fmt` as a process (D-11 F-39, F-44, F-47): exit codes, the paths it prints, and what it
+//! `loft fmt` as a process (F-39, F-44, F-47): exit codes, the paths it prints, and what it
 //! writes.
 
 mod common;

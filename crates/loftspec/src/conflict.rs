@@ -1,4 +1,4 @@
-//! A typed merge conflict in the model (D-11 F-34): which record holds it, the field it names,
+//! A typed merge conflict in the model (F-34): which record holds it, the field it names,
 //! and the value each side gave that field. The validator reports every conflict until it is
 //! removed (RQ-126), and no hash reads it.
 

@@ -1,4 +1,4 @@
-//! `loft check` as a process (D-11 F-38, F-44, F-45, F-47, RQ-174): what it prints, in which
+//! `loft check` as a process (F-38, F-44, F-45, F-47, RQ-174): what it prints, in which
 //! order and form, and the exit code a CI job gates on.
 
 mod common;

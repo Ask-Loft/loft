@@ -1,4 +1,4 @@
-//! Parsing a sentence into its EARS slots (D-11 RQ-52): slots are kept only when the form's
+//! Parsing a sentence into its EARS slots (RQ-52): slots are kept only when the form's
 //! template renders them back to the sentence byte for byte; anything else stays text.
 
 mod common;

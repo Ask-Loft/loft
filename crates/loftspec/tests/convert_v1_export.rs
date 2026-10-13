@@ -1,4 +1,4 @@
-//! Reading a Loft v1 Authored State export (D-11 F-13), the converter's input. The reader is
+//! Reading a Loft v1 Authored State export (F-13), the converter's input. The reader is
 //! strict: a field the v1 export does not define is an error, so a drift in the v1 format
 //! surfaces here and not as a wrong conversion.
 

@@ -1,4 +1,4 @@
-//! Keys and labels (D-11 F-1 and F-2). Criterion labels are those of `spec/labels.yaml`.
+//! Keys and labels (F-1 and F-2). Criterion labels are those of `spec/labels.yaml`.
 
 use loftspec::identity::{Key, KeyError, Label, LabelError, LabelPrefix};
 use loftspec::kind::NodeKind;

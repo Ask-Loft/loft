@@ -1,4 +1,4 @@
-//! The typed conflict record (D-11 F-34): what each side of a conflict holds, found from the
+//! The typed conflict record (F-34): what each side of a conflict holds, found from the
 //! record that holds the conflict and the field path it names, so that a side is read and
 //! written in the shape of that field (AC-860, RQ-220).
 

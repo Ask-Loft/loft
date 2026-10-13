@@ -1,4 +1,4 @@
-//! `loft import v1` as a process (D-11 F-37): the tree and sidecar it writes, its findings and
+//! `loft import v1` as a process (F-37): the tree and sidecar it writes, its findings and
 //! counters warning, and the refusals that write nothing.
 
 #[path = "common/schema.rs"]

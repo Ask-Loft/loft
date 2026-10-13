@@ -1,4 +1,4 @@
-//! The v1 sidecar (D-11 F-15): every v1 fact the content view excludes that reproducing the
+//! The v1 sidecar (F-15): every v1 fact the content view excludes that reproducing the
 //! source state needs (RQ-55, RQ-57), written deterministically (RQ-58) to `v1-sidecar.json`
 //! beside `spec/` (AC-703).
 

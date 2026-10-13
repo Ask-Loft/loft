@@ -1,4 +1,4 @@
-//! The merge of one ordered list (D-11 F-33): both sides' insertions kept in base order, a
+//! The merge of one ordered list (F-33): both sides' insertions kept in base order, a
 //! move on one side applied, and a record both sides moved apart left at its base position with
 //! a conflict over its place.
 

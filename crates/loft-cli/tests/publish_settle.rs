@@ -1,4 +1,4 @@
-//! `loft publish` in a stopped merge or rebase (D-11, the `loft publish` command): in front of
+//! `loft publish` in a stopped merge or rebase (F-41): in front of
 //! the git simulator, it reads the stopped state before the lock, reads a lock that holds
 //! conflict markers as none, prints what it settled and the git command that finishes, and
 //! refuses what it cannot settle.

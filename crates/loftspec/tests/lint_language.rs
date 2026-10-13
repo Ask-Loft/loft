@@ -1,4 +1,4 @@
-//! The language rules `LQ-001`..`LQ-009` and the texts they read (D-11 F-20).
+//! The language rules `LQ-001`..`LQ-009` and the texts they read (F-20).
 
 mod common;
 

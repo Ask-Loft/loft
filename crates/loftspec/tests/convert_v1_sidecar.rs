@@ -1,4 +1,4 @@
-//! The sidecar of a v1 conversion (D-11 F-15, RQ-55, RQ-58): every v1 fact the content view
+//! The sidecar of a v1 conversion (F-15, RQ-55, RQ-58): every v1 fact the content view
 //! excludes that the round trip to the source state needs, written deterministically.
 
 mod common;

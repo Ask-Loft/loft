@@ -1,4 +1,4 @@
-//! `loft fmt` as a function (D-11 F-39): canonical layout, minted keys, supplied slugs.
+//! `loft fmt` as a function (F-39): canonical layout, minted keys, supplied slugs.
 
 mod common;
 

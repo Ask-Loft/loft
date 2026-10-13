@@ -1,4 +1,4 @@
-//! The typed conflict record in the text form (D-11 F-34, RQ-220): where it may sit, how its
+//! The typed conflict record in the text form (F-34, RQ-220): where it may sit, how its
 //! sides are read and written, and what the reader refuses.
 
 mod common;

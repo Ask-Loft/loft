@@ -1,4 +1,4 @@
-//! Slugs: their syntax and the rule that derives one from a name (D-11 F-6, AC-245, AC-246).
+//! Slugs: their syntax and the rule that derives one from a name (F-6, AC-245, AC-246).
 
 mod common;
 
