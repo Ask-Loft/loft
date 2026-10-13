@@ -46,6 +46,19 @@ requirements:
         name: "A second `--install` with the same `<command>` changes nothing."
       - key: 01a1315a-f184-73de-a72a-d1506a3e42c9
         name: "An `--install` with another `<command>` replaces `merge.loft.driver`."
+  - key: 01a13751-027d-754b-af03-8654e11f5fe2
+    statement:
+      form: event_driven
+      when: "`loft merge-driver --install` writes `.gitattributes`"
+      system: "`loft merge-driver --install`"
+      shall: "say in its text output that `.gitattributes` is to be committed."
+    criteria:
+      - key: 01a13751-027d-754b-af03-86557633f581
+        name: "The last line of the text output says to commit `.gitattributes`."
+      - key: 01a13751-027d-754b-af03-86562bc4313a
+        name: "No such line is printed when `.gitattributes` already holds the attribute."
+      - key: 01a13751-027d-754b-af03-8657733d9104
+        name: "The JSON document is unchanged."
   - key: 01a1315a-f184-73de-a72a-d151c3e309aa
     statement:
       form: unwanted
