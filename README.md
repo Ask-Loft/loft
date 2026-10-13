@@ -16,7 +16,8 @@ reports: `SECURITY.md`. Changes: `CHANGELOG.md`.
 
 ## Status
 
-2.0.1; 2.0.0 was the first public release. The format and the command line are specified in this
+Released: the latest version and its changes are in `CHANGELOG.md`; 2.0.0 was the first public
+release. The format and the command line are specified in this
 repository's own `spec/` tree, in the format itself: `loft check` validates and lints it, and
 `loft render` writes a readable projection to `docs/spec.md`.
 
