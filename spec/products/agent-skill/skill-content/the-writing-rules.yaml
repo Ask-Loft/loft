@@ -1,0 +1,107 @@
+key: 01a13654-6e12-74a1-ad7f-e85eaf10c334
+slug: the-writing-rules
+name: "The writing rules"
+body: "The craft that a validator cannot check alone: how a product is broken down, how a Requirement and its criteria are worded, and where text that is not normative belongs."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e85fd3643f1b
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the breakdown of a product into Feature Groups, Features, Requirements and criteria."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e860aa0fe27e
+        name: "The rules name the chain from a Product to a criterion."
+      - key: 01a13654-6e12-74a1-ad7f-e86152ae5ca1
+        name: "The rules tell the agent that a Feature realizes the Components that implement it."
+  - key: 01a13654-6e12-74a1-ad7f-e8626f368993
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the five statement forms and when each applies."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8634c960648
+        name: "Each form is matched to the kind of condition it states."
+      - key: 01a13654-6e12-74a1-ad7f-e8644e9cbab5
+        name: "The rules tell the agent that a common-noun system takes \"the\" and a proper name stands bare."
+      - key: 01a13654-6e12-74a1-ad7f-e8652bf343c9
+        name: "The rules tell the agent that one statement states one obligation."
+  - key: 01a13654-6e12-74a1-ad7f-e8666f3df2f6
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a Requirement's criteria are atomic and together complete."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e867c643a800
+        name: "The rules tell the agent that each criterion states one verifiable outcome."
+      - key: 01a13654-6e12-74a1-ad7f-e8680b9cc91f
+        name: "The rules tell the agent to list a Requirement's conditions and map each to a criterion."
+      - key: 01a13654-6e12-74a1-ad7f-e869cb7134a0
+        name: "The rules name failures, refusals, empty states and ordering as conditions to cover."
+      - key: 01a13654-6e12-74a1-ad7f-e86a2426d348
+        name: "The rules tell the agent that a criterion which only repeats its Requirement covers nothing."
+  - key: 01a13654-6e12-74a1-ad7f-e86b92745177
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach one Requirement for each rule of a catalogue."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e86c305d4cd8
+        name: "The rules tell the agent to give each rule, check or command of a catalogue its own Requirement."
+  - key: 01a13654-6e12-74a1-ad7f-e86de70da85f
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that an oversized Requirement is promoted to a Feature."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e86e2f916ee7
+        name: "The rules tell the agent to promote a Requirement that holds more than one concern to a Feature."
+      - key: 01a13654-6e12-74a1-ad7f-e86fac4d1522
+        name: "The rules tell the agent not to split such a Requirement into siblings that repeat one condition."
+  - key: 01a13654-6e12-74a1-ad7f-e870a74c4ec6
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a body holds no normative text."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e871b21fb752
+        name: "The rules tell the agent that a body holds rationale and examples."
+      - key: 01a13654-6e12-74a1-ad7f-e87229f89c0d
+        name: "The rules tell the agent to state an obligation in a statement, a criterion, a Constraint or a decision."
+      - key: 01a13654-6e12-74a1-ad7f-e873e2b02140
+        name: "The rules tell the agent to put prose that needs headings in a Section."
+  - key: 01a13654-6e12-74a1-ad7f-e874276c0e47
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a Quality Attribute's target is complete."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e875e4f2a1b7
+        name: "The rules tell the agent that a target names a metric, a band, a unit, an aggregation, a scenario and an environment."
+  - key: 01a13654-6e12-74a1-ad7f-e8767b4cf84b
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach what a decision holds in each state."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8776b272f33
+        name: "The rules tell the agent to create a decision in the state that is true, proposed or accepted."
+      - key: 01a13654-6e12-74a1-ad7f-e87804e57def
+        name: "The rules name what an accepted decision holds: two options or more, a driver, an assessment for each option and driver, a selected option, an outcome, a consequence and an outcome subject."
+  - key: 01a13654-6e12-74a1-ad7f-e879924837c8
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a rule more than one Feature shares is stated once and marked by a tag."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e87a0c1ed2d3
+        name: "The rules tell the agent to state a shared rule once and list its tag on each Feature it binds."
+  - key: 01a13654-6e12-74a1-ad7f-e87b983077ea
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a label cited in prose needs a `mentions` edge."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e87c34b09979
+        name: "The rules tell the agent to add a `mentions` edge for each label its prose cites."

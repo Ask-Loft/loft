@@ -5,6 +5,9 @@
 //! `LQ-009` the names and bodies of every node that tags apply to. The text of a code span is
 //! not prose: `LQ-001`..`LQ-005` and `LQ-009` leave it out of a name or statement, as every rule
 //! leaves code out of a body, and `LQ-008` compares names whole.
+//!
+//! `V2-007` (F-21) is a lexical rule too, over the body of every node: its scan is the one
+//! `LQ-001`..`LQ-004` use.
 
 use super::context::{Context, Item};
 use super::text::{Body, occurrences, phrase_positions, shown_tokens, tokens};
@@ -14,25 +17,60 @@ use crate::kind::NodeKind;
 use crate::node::Node;
 use crate::statement::Statement;
 
-const LEXICAL: [(RuleId, &str); 4] = [
-    (RuleId::Lq001, "a weak term"),
-    (RuleId::Lq002, "a vague quantifier"),
-    (RuleId::Lq003, "an escape clause"),
-    (RuleId::Lq004, "absolute language"),
+/// The texts a lexical rule reads.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Scope {
+    /// An assertion's name or statement and its body.
+    Assertion,
+    /// The body of any node.
+    Body,
+}
+
+/// Each lexical rule: the texts it reads and the message of its finding.
+const LEXICAL: [(RuleId, Scope, &str); 5] = [
+    (
+        RuleId::Lq001,
+        Scope::Assertion,
+        "The text contains a weak term.",
+    ),
+    (
+        RuleId::Lq002,
+        Scope::Assertion,
+        "The text contains a vague quantifier.",
+    ),
+    (
+        RuleId::Lq003,
+        Scope::Assertion,
+        "The text contains an escape clause.",
+    ),
+    (
+        RuleId::Lq004,
+        Scope::Assertion,
+        "The text contains absolute language.",
+    ),
+    (
+        RuleId::V2007,
+        Scope::Body,
+        "The body holds a normative word; state the obligation in a statement or a criterion.",
+    ),
 ];
 
 pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Raw>) {
-    for item in context
-        .items
-        .iter()
-        .filter(|item| is_assertion(item.id.kind()))
-    {
-        let texts = Texts::read(item);
-        for (rule, what) in LEXICAL {
-            lexical(&texts, rule, what, config, out);
+    for item in &context.items {
+        let assertion = is_assertion(item.id.kind());
+        if !assertion && item.body().is_none() {
+            continue;
         }
-        compound(&texts, config, out);
-        outside_the_forms(item, out);
+        let texts = Texts::read(item, assertion);
+        for (rule, scope, message) in LEXICAL {
+            if assertion || scope == Scope::Body {
+                lexical(&texts, rule, scope, message, config, out);
+            }
+        }
+        if assertion {
+            compound(&texts, config, out);
+            outside_the_forms(item, out);
+        }
     }
     super::similarity::check(context, config, out);
     untagged_terms(context, out);
@@ -67,8 +105,8 @@ impl Spot {
     }
 }
 
-/// A node's texts, read once: its name's tokens, its body's tokens with their lines, and its
-/// body's sentences with theirs.
+/// A node's texts, read once: its body's tokens with their lines, and for an assertion its
+/// name's tokens and its body's sentences with their lines.
 struct Texts {
     key: Key,
     name: Vec<String>,
@@ -78,25 +116,36 @@ struct Texts {
 }
 
 impl Texts {
-    fn read(item: &Item<'_>) -> Self {
+    fn read(item: &Item<'_>, assertion: bool) -> Self {
         let body = item.body().map(Body::read);
         let (tokens_, lines) = body.as_ref().map(Body::tokens).unwrap_or_default();
+        let sentences = body.as_ref().filter(|_| assertion).map(Body::sentences);
         Self {
             key: item.id.key(),
-            name: shown_tokens(&item.name()),
+            name: if assertion {
+                shown_tokens(&item.name())
+            } else {
+                Vec::new()
+            },
             body: tokens_,
             lines,
-            sentences: body.as_ref().map(Body::sentences).unwrap_or_default(),
+            sentences: sentences.unwrap_or_default(),
         }
     }
 
-    /// Every spot `phrase` occurs at that `keep` keeps.
+    /// Every spot of `scope` that `phrase` occurs at and `keep` keeps.
     fn spots<'a>(
         &'a self,
+        scope: Scope,
         phrase: &'a [String],
         keep: impl Fn(&[String], usize) -> bool + 'a,
     ) -> impl Iterator<Item = Spot> + 'a {
-        let name = phrase_positions(&self.name, phrase)
+        let names = if scope == Scope::Assertion {
+            phrase_positions(&self.name, phrase)
+        } else {
+            Vec::new()
+        };
+        let name = names
             .into_iter()
             .filter(|at| keep(&self.name, *at))
             .map(|_| Spot::Name)
@@ -109,14 +158,20 @@ impl Texts {
     }
 }
 
-/// `LQ-001`..`LQ-004`: one finding per occurrence of a lexicon phrase, naming the node and the
-/// term (AC-373).
-fn lexical(texts: &Texts, rule: RuleId, what: &str, config: &LintConfig, out: &mut Vec<Raw>) {
+/// `LQ-001`..`LQ-004` and `V2-007`: one finding per occurrence of a lexicon phrase in the
+/// rule's scope, naming the node and the term (AC-373).
+fn lexical(
+    texts: &Texts,
+    rule: RuleId,
+    scope: Scope,
+    message: &str,
+    config: &LintConfig,
+    out: &mut Vec<Raw>,
+) {
     for phrase in config.lexicon(rule) {
         let term = phrase.join(" ");
         let keep = |tokens: &[String], at| !exact_bound(rule, phrase, tokens, at);
-        for spot in texts.spots(phrase, keep) {
-            let message = format!("The text contains {what}.");
+        for spot in texts.spots(scope, phrase, keep) {
             out.push(
                 Raw::new(rule, vec![texts.key], message)
                     .term(&term)

@@ -1,0 +1,67 @@
+key: 01a13654-6e12-74a1-ad7f-e84735aaa63f
+slug: the-router
+name: "The router"
+body: "`SKILL.md`: the skill's frontmatter and a short router that sends the agent to the references a workflow needs, with the guardrails that hold in every workflow."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e8484841982f
+    statement:
+      form: ubiquitous
+      system: "The skill's `SKILL.md`"
+      shall: "open with a frontmatter of `name` and `description` alone."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e849e37aabe3
+        name: "The frontmatter holds `name` and `description` and no other field."
+      - key: 01a13654-6e12-74a1-ad7f-e84a804c1640
+        name: "`name` is `loft-spec`, the name of the skill's directory."
+      - key: 01a13654-6e12-74a1-ad7f-e84bc8fc512a
+        name: "`description` holds at most 1024 characters."
+      - key: 01a13654-6e12-74a1-ad7f-e84c0361d656
+        name: "`description` names writing, changing and reviewing a specification with `loft`."
+  - key: 01a13654-6e12-74a1-ad7f-e84d585ac20e
+    statement:
+      form: ubiquitous
+      system: "The router"
+      shall: "tell the agent to check that `loft` is available before the first command."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e84e8e9b7685
+        name: "The router tells the agent to run `loft --version` and to expect version 2."
+      - key: 01a13654-6e12-74a1-ad7f-e84fbde2cc56
+        name: "The router tells the agent to stop and say how to install `loft` when it is missing."
+      - key: 01a13654-6e12-74a1-ad7f-e850bd329c00
+        name: "The router tells the agent never to install `loft` unasked."
+  - key: 01a13654-6e12-74a1-ad7f-e851f120905f
+    statement:
+      form: ubiquitous
+      system: "The router"
+      shall: "route each workflow to the references it needs."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e852c126aa81
+        name: "Each reference of the skill is named by one route bullet."
+      - key: 01a13654-6e12-74a1-ad7f-e853a691386c
+        name: "The first route bullet sends every workflow to the loop before the first edit of `spec/`."
+      - key: 01a13654-6e12-74a1-ad7f-e854d335b334
+        name: "A new document is routed to `references/new-document.md`."
+      - key: 01a13654-6e12-74a1-ad7f-e855af371185
+        name: "A change to a product that a specification already describes is routed to `references/changing-a-specified-product.md`."
+      - key: 01a13654-6e12-74a1-ad7f-e85674355b04
+        name: "The router tells the agent to read each reference it selects completely before acting."
+      - key: 01a13654-6e12-74a1-ad7f-e8574740ac62
+        name: "The router tells the agent to select the fewest references the intent needs."
+  - key: 01a13654-6e12-74a1-ad7f-e8583ffd796c
+    statement:
+      form: ubiquitous
+      system: "The router"
+      shall: "state the guardrails that hold in every workflow."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e859e0192142
+        name: "The router tells the agent to edit `spec/` only on the user's intent."
+      - key: 01a13654-6e12-74a1-ad7f-e85ab12ab6d3
+        name: "The router tells the agent to run `loft publish` only when the user asks for it."
+      - key: 01a13654-6e12-74a1-ad7f-e85bb74fc069
+        name: "The router tells the agent that `loft` owns keys, labels, `spec/labels.yaml` and `loft.lock.json`."
+      - key: 01a13654-6e12-74a1-ad7f-e85c6f24deaa
+        name: "The router tells the agent to finish with `loft fmt --check` and `loft check --fail-on warning` passing."
+      - key: 01a13654-6e12-74a1-ad7f-e85dc7da5922
+        name: "The router tells the agent to report what it changed."

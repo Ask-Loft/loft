@@ -108,3 +108,19 @@ fn every_schema_describes_sites_and_errors_alike_but_for_the_error_kinds() {
         );
     }
 }
+
+#[test]
+fn the_check_schema_lists_exactly_the_rules_the_linter_defines() {
+    let schema = read("check.json");
+    let listed: Vec<&str> = schema["$defs"]["finding"]["properties"]["rule"]["enum"]
+        .as_array()
+        .expect("the rules a finding names")
+        .iter()
+        .map(|rule| rule.as_str().unwrap())
+        .collect();
+    let defined: Vec<&str> = loftspec::lint::RuleId::ALL
+        .iter()
+        .map(|rule| rule.as_str())
+        .collect();
+    assert_eq!(listed, defined);
+}

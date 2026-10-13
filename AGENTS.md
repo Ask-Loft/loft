@@ -19,7 +19,8 @@ publish on `main`, which `loft verify` recomputes and CI checks there. Edits to 
 - Write new nodes without keys and run `loft fmt`, which mints them. Labels (`RQ-12`, `AC-40`)
   are allocated only by `loft publish` on `main`; a node added since the last publish has a key
   and no label.
-- Create a decision `proposed` and accept it in a later change, never accepted at birth.
+- Create a decision in the state that is true: `proposed` while the choice is open, `accepted`
+  once it is made.
 - Keep `loft fmt --check` and `loft check --fail-on warning` clean; CI runs both.
 - `loft render` writes `docs/spec.md` and `docs/spec.json` on demand. They are never committed
   and never normative.
@@ -60,6 +61,15 @@ change, or v1 reverts it.
   key type. Every typed ID wraps the element's key and serialises as it, so the files, views and
   digests are unchanged by the types. A kind change keeps the key through an explicit
   conversion. Prose (names, bodies, statements) stays text.
+- `crates/loft-cli/skill/loft-spec/` is the source of the `loft-spec` agent skill: `SKILL.md`,
+  a router whose frontmatter holds only `name` and `description`; `references/`, one workflow
+  each; and `agents/`, each host's adaptation (`openai.yaml` for Codex; a frontmatter fragment, a
+  route bullet and a host reference under `claude/` for Claude Code). `loft` embeds it, and
+  `crates/loft-cli/src/skill/` composes one package per host, which `loft skill install` and
+  `loft init` write into a project.
+- `plugins/claude/loft/` and `plugins/codex/loft/` are the plugins, each holding its host's
+  package under `skills/loft-spec/`; `.claude-plugin/marketplace.json` and
+  `.agents/plugins/marketplace.json` list them.
 - `spec/` is the specification. `schemas/` holds the JSON schema of each command's output.
   `testdata/` holds synthetic fixtures, the golden vectors under `testdata/golden/` and the v1
   exports the converter is tested on.
@@ -83,6 +93,20 @@ text goes to standard error only.
   `crates/loft-cli/tests/common/commands.rs`; and its schema. The suites in `reads_tree.rs`,
   `writes_tree.rs` and `schemas.rs` then hold it to every shared rule, and fail until each of
   those is in place.
+
+## The agent skill
+
+- Change the skill only in its source, then run `scripts/package-skill.sh` to rewrite the plugin
+  packages. Never edit a package under `plugins/` by hand: `crates/loft-cli/tests/plugins.rs`
+  fails while a package differs from the composition, or a manifest's version from the version
+  of `loft`.
+- `SKILL.md` and the references name no host; whatever is particular to a host lies under
+  `agents/`. A new source file is also listed in `SOURCE` in `crates/loft-cli/src/skill/mod.rs`.
+- Every YAML block of a reference is marked: `path=` blocks form the reference's example tree,
+  which passes `loft check --fail-on warning`; a `rule=` block is a wrong example that raises its
+  rule and no other warning; a `fragment` is shown and not run. The lint guide describes every
+  rule the linter defines. `crates/loft-cli/tests/skill.rs` holds the source to these rules and
+  to each reference's opening and contents.
 
 ## Software Plant
 

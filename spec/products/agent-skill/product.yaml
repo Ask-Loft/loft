@@ -1,0 +1,32 @@
+key: 01a13653-2d9b-714a-a6f3-7183cacff8d8
+slug: agent-skill
+name: "Agent Skill"
+body: "The `loft-spec` skill, which teaches a coding agent to write, change and review a specification in this Format with `loft`, and the packages that put it in front of each agent host."
+featureGroups:
+  - key: 01a13653-2d9c-760d-846c-c5f958b37166
+    slug: skill-content
+    name: "Skill content"
+    body: "What the skill teaches, and how it is laid out so that an agent reads only what a workflow needs."
+    features:
+      - 01a13654-6e12-74a1-ad7f-e7d2e7922c08
+      - 01a13654-6e12-74a1-ad7f-e7df3a543f24
+      - 01a13654-6e12-74a1-ad7f-e7ec83d9267e
+      - 01a13654-6e12-74a1-ad7f-e7f6231d2539
+      - 01a13654-6e12-74a1-ad7f-e803445d59b2
+      - 01a13654-6e12-74a1-ad7f-e80fa77c11bd
+      - 01a13654-6e12-74a1-ad7f-e81adc26abbb
+      - 01a13654-6e12-74a1-ad7f-e82a7557cc49
+      - 01a13654-6e12-74a1-ad7f-e835a1b49fd3
+      - 01a13654-6e12-74a1-ad7f-e84735aaa63f
+      - 01a13654-6e12-74a1-ad7f-e85eaf10c334
+  - key: 01a13653-2d9c-760d-846c-c5fa77747e93
+    slug: host-packaging
+    name: "Host packaging"
+    body: "One host-neutral source of the skill, the package composed from it for each agent host, and the plugins that publish those packages."
+    features:
+      - 01a13654-6e11-74fa-a359-25765cf291a1
+      - 01a13654-6e11-74fa-a359-257b7318d09b
+      - 01a13654-6e11-74fa-a359-2582deb18ac0
+      - 01a13654-6e11-74fa-a359-2590f18ff9d5
+      - 01a13654-6e11-74fa-a359-25996138a11d
+      - 01a13654-6e11-74fa-a359-25a5e0990497

@@ -1,7 +1,7 @@
 key: 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 slug: loft-specification-format
 name: "Loft Specification Format"
-body: "The portable document model and the rules every implementation must follow so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the validator; the linter; the renderer; the publisher; and the merge driver. A role names an obligation, not a module: one program may fill every role."
+body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the validator; the linter; the renderer; the publisher; and the merge driver. A role names an obligation, not a module: one program may fill every role."
 tags:
   - portable
 featureGroups:

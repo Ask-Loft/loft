@@ -1,7 +1,7 @@
 key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
 slug: lint-rules-of-v2
 name: "Lint rules of v2"
-body: "The four rules the v2 text form adds, V2-001 to V2-004: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite."
+body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -63,3 +63,73 @@ requirements:
         name: "A citation in an element that mentions two keys the label was withdrawn from yields one `V2-004` finding."
       - key: 01a130de-5739-7721-8fd2-766bcc39774e
         name: "The default severity of `V2-004` is warning."
+  - key: 01a13654-f961-7722-b3a5-58d836f39a0d
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-005` a criterion whose name states more than one outcome."
+    criteria:
+      - key: 01a13654-f961-7722-b3a5-58d95e75b1de
+        name: "A criterion name holding a semicolon outside code spans yields one `V2-005` finding naming the criterion."
+      - key: 01a13654-f961-7722-b3a5-58daa75d40b1
+        name: "A criterion name holding more than one sentence outside code spans yields one `V2-005` finding naming the criterion."
+      - key: 01a13654-f961-7722-b3a5-58dbe93dde5e
+        name: "A sentence ends at a full stop, question mark or exclamation mark followed by a space and a capital letter."
+      - key: 01a13654-f961-7722-b3a5-58dc117c35bb
+        name: "A criterion name of one sentence without a semicolon yields no `V2-005` finding."
+      - key: 01a13654-f961-7722-b3a5-58dd9174e7f0
+        name: "The default severity of `V2-005` is warning."
+  - key: 01a13654-f961-7722-b3a5-58de951b4037
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-006` a Requirement whose size suggests a Feature."
+    criteria:
+      - key: 01a13654-f961-7722-b3a5-58dff27d9159
+        name: "A Requirement with more criteria than `maxCriteria` yields one `V2-006` finding naming the Requirement and its count of criteria."
+      - key: 01a13654-f961-7722-b3a5-58e005d0b7fa
+        name: "A Requirement whose body holds more words than `maxBodyWords` yields one `V2-006` finding naming the Requirement and its count of words."
+      - key: 01a13654-f961-7722-b3a5-58e129f964ab
+        name: "A Requirement within both limits yields no `V2-006` finding."
+      - key: 01a13654-f961-7722-b3a5-58e2518cfb9b
+        name: "Words inside code spans and code blocks are not counted."
+      - key: 01a13654-f961-7722-b3a5-58e359cf121a
+        name: "`maxCriteria` is 20 unless `spec/lint.yaml` sets it."
+      - key: 01a13654-f961-7722-b3a5-58e4dce484c3
+        name: "`maxBodyWords` is 150 unless `spec/lint.yaml` sets it."
+      - key: 01a13654-f961-7722-b3a5-58e5e3ba25d9
+        name: "The default severity of `V2-006` is info."
+  - key: 01a13654-f961-7722-b3a5-58e67900dd06
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-007` a normative word in a body."
+    criteria:
+      - key: 01a13654-f961-7722-b3a5-58e7490e919b
+        name: "Each occurrence of a lexicon word in the body of a node or a Section yields one `V2-007` finding naming the node, the word and the body line."
+      - key: 01a13654-f961-7722-b3a5-58e88b60539e
+        name: "A lexicon word is matched as a whole word, in any case."
+      - key: 01a13654-f961-7722-b3a5-58e97500fb98
+        name: "A lexicon word inside a code span or a code block yields no `V2-007` finding."
+      - key: 01a13654-f961-7722-b3a5-58ea3c831a2c
+        name: "A body without a lexicon word yields no `V2-007` finding."
+      - key: 01a13654-f961-7722-b3a5-58eb72d771ad
+        name: "The lexicon is `shall` and `must` unless `spec/lint.yaml` edits it."
+      - key: 01a13654-f961-7722-b3a5-58ec076dc3e1
+        name: "The default severity of `V2-007` is warning."
+  - key: 01a13654-f961-7722-b3a5-58ed90b036c4
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-008` a statement whose system is a proper name after an article."
+    criteria:
+      - key: 01a13654-f961-7722-b3a5-58ee657b3f1b
+        name: "A statement whose `system` slot is `the` or `The` followed by a name in `properNames` yields one `V2-008` finding naming the Requirement and the name."
+      - key: 01a13654-f961-7722-b3a5-58efa4273d6f
+        name: "A statement whose `system` slot is a name in `properNames` without an article yields no `V2-008` finding."
+      - key: 01a13654-f961-7722-b3a5-58f0a1ed908d
+        name: "A name in `properNames` is matched whole and in its own case."
+      - key: 01a13654-f961-7722-b3a5-58f112e3ac73
+        name: "`properNames` is empty unless `spec/lint.yaml` lists names."
+      - key: 01a13654-f961-7722-b3a5-58f2407d1549
+        name: "The default severity of `V2-008` is info."

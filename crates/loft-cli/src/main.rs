@@ -9,6 +9,7 @@ mod json;
 mod merge_driver;
 mod publish;
 mod render;
+mod skill;
 mod verify;
 mod version;
 
@@ -41,8 +42,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Create an empty document in the current directory (RQ-128).
+    /// Create an empty document in the current directory, and the `loft-spec` skill beside it
+    /// (RQ-128).
     Init {
+        /// Write only `spec/`, without the skill for coding agents.
+        #[arg(long)]
+        no_skill: bool,
         #[command(flatten)]
         output: Output,
     },
@@ -101,6 +106,11 @@ enum Command {
         #[command(flatten)]
         output: Output,
     },
+    /// Manage the `loft-spec` skill that teaches coding agents to write a specification.
+    Skill {
+        #[command(subcommand)]
+        action: SkillAction,
+    },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
         /// Where to write the Markdown projection.
@@ -109,6 +119,16 @@ enum Command {
         /// Where to write the canonical JSON export.
         #[arg(long, value_name = "PATH")]
         json: Option<PathBuf>,
+        #[command(flatten)]
+        output: Output,
+    },
+}
+
+#[derive(Subcommand)]
+enum SkillAction {
+    /// Write the skill for Claude Code and Codex into the current directory, replacing any
+    /// earlier version.
+    Install {
         #[command(flatten)]
         output: Output,
     },
@@ -178,7 +198,7 @@ fn main() -> ExitCode {
     };
     let root = Path::new(".");
     match command {
-        Command::Init { output } => init::run(root, output.json()),
+        Command::Init { no_skill, output } => init::run(root, !no_skill, output.json()),
         Command::Fmt { check, output } => fmt::run(root, check, output.json()),
         Command::Check { fail_on, output } => {
             check::run(root, fail_on.map(Severity::from), output.json())
@@ -223,6 +243,9 @@ fn main() -> ExitCode {
             json,
             output,
         } => render::run(root, markdown, json, output.json()),
+        Command::Skill {
+            action: SkillAction::Install { output },
+        } => skill::run(root, output.json()),
     }
 }
 

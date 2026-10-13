@@ -3,12 +3,8 @@
 //! by itself: a file that `tests/main.rs` does not declare would never be compiled or run. A guard
 //! fails on such a file.
 
+use crate::common::workspace;
 use std::fs;
-use std::path::{Path, PathBuf};
-
-fn workspace() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
 
 /// The files directly in `tests/` that `main` does not declare as `mod <file>;`.
 fn undeclared(tests: &[String], main: &str) -> Vec<String> {

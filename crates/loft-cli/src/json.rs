@@ -2,6 +2,9 @@
 //! RQ-158): a site is `{path, line, column}`, or `{path, byte}` for bytes that are not UTF-8, and
 //! an error or finding carries its first site's fields beside the list of all of them.
 
+use std::fmt::Display;
+use std::process::ExitCode;
+
 use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
 use loftspec::lint::Finding;
@@ -112,4 +115,14 @@ pub fn print(document: &Value) {
         "{}",
         serde_json::to_string(document).expect("a JSON value serializes")
     );
+}
+
+/// Stops a command on an error: prints the failure document when JSON was asked for, and the
+/// message on standard error, and exits 1.
+pub fn stop(schema: &str, errors: Vec<Value>, message: &impl Display, as_json: bool) -> ExitCode {
+    if as_json {
+        print(&failure(schema, errors));
+    }
+    eprintln!("{message}");
+    ExitCode::FAILURE
 }

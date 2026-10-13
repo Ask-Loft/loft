@@ -28,6 +28,7 @@ mod identity;
 mod index;
 mod label_allocation;
 mod lint;
+mod lint_craft;
 mod lint_language;
 mod lint_live;
 mod lint_withdrawn;

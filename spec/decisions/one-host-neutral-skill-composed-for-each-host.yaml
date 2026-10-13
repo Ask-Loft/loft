@@ -1,0 +1,83 @@
+key: 01a13655-2b85-70a3-a3c2-6b5cfac8e1a6
+slug: one-host-neutral-skill-composed-for-each-host
+title: "One host-neutral source of the skill, composed for each agent host"
+context: "The `loft-spec` skill reaches coding agents through more than one host, and each host reads skills from its own directory and takes its own metadata: one host takes extra frontmatter fields and a reference about its tools, another takes a sidecar file of interface and policy. The skill's teaching is the same for every host."
+state:
+  kind: accepted
+  selectedOption: 01a13655-2b85-70a3-a3c2-6b60ef899dd5
+  outcome: "The skill has one host-neutral source under `crates/loft-cli/skill/loft-spec/`, with each host's adaptation under its `agents/` directory, and the composer in `loft` builds one package for each host from it."
+drivers:
+  - key: 01a13655-2b85-70a3-a3c2-6b5d5d919f10
+    kind: local
+    label: "One text to maintain"
+    statement: "Each rule the skill teaches is written once."
+  - key: 01a13655-2b85-70a3-a3c2-6b5ea1ed1ce7
+    kind: local
+    label: "Host affordances"
+    statement: "Each host receives the metadata it reads."
+  - key: 01a13655-2b85-70a3-a3c2-6b5f83a2afbb
+    kind: local
+    label: "No foreign metadata"
+    statement: "No host's package carries another host's adaptation."
+options:
+  - key: 01a13655-2b85-70a3-a3c2-6b60ef899dd5
+    title: "A neutral source composed for each host"
+    description: "One host-neutral source with each host's adaptation under `agents/`; a composer builds one package for each host."
+  - key: 01a13655-2b85-70a3-a3c2-6b61e3d670b0
+    title: "One package for every host"
+    description: "One package that carries every host's metadata at once, installed unchanged everywhere."
+  - key: 01a13655-2b85-70a3-a3c2-6b62a0f737f6
+    title: "A source for each host"
+    description: "A separate copy of the skill for each host, edited by hand."
+assessments:
+  - option: 01a13655-2b85-70a3-a3c2-6b60ef899dd5
+    driver: 01a13655-2b85-70a3-a3c2-6b5d5d919f10
+    rating: supports
+    rationale: "one source holds every rule"
+  - option: 01a13655-2b85-70a3-a3c2-6b60ef899dd5
+    driver: 01a13655-2b85-70a3-a3c2-6b5ea1ed1ce7
+    rating: supports
+    rationale: "the composer adds each host's metadata"
+  - option: 01a13655-2b85-70a3-a3c2-6b60ef899dd5
+    driver: 01a13655-2b85-70a3-a3c2-6b5f83a2afbb
+    rating: supports
+    rationale: "the composer leaves out every other host's adaptation"
+  - option: 01a13655-2b85-70a3-a3c2-6b61e3d670b0
+    driver: 01a13655-2b85-70a3-a3c2-6b5d5d919f10
+    rating: supports
+    rationale: "one package holds every rule"
+  - option: 01a13655-2b85-70a3-a3c2-6b61e3d670b0
+    driver: 01a13655-2b85-70a3-a3c2-6b5ea1ed1ce7
+    rating: supports
+    rationale: "the package carries every host's metadata"
+  - option: 01a13655-2b85-70a3-a3c2-6b61e3d670b0
+    driver: 01a13655-2b85-70a3-a3c2-6b5f83a2afbb
+    rating: conflicts
+    rationale: "each host receives the other hosts' metadata"
+  - option: 01a13655-2b85-70a3-a3c2-6b62a0f737f6
+    driver: 01a13655-2b85-70a3-a3c2-6b5d5d919f10
+    rating: conflicts
+    rationale: "each rule is written once for each host"
+  - option: 01a13655-2b85-70a3-a3c2-6b62a0f737f6
+    driver: 01a13655-2b85-70a3-a3c2-6b5ea1ed1ce7
+    rating: supports
+    rationale: "each copy carries its host's metadata"
+  - option: 01a13655-2b85-70a3-a3c2-6b62a0f737f6
+    driver: 01a13655-2b85-70a3-a3c2-6b5f83a2afbb
+    rating: supports
+    rationale: "each copy carries only its host's metadata"
+consequences:
+  - key: 01a13655-5916-709b-a949-15daafbb54e6
+    kind: obligation
+    statement: "A guard fails when the skill's neutral source names a host, and when a committed package differs from its composition."
+  - key: 01a13655-5916-709b-a949-15db91ef5251
+    kind: cost
+    statement: "A change to the skill is followed by a regeneration of the committed packages."
+  - key: 01a13655-5916-709b-a949-15dc3436fb7f
+    kind: benefit
+    statement: "The packages that `loft` writes and the packages that the marketplaces serve are the same composition."
+subjects:
+  - role: affected
+    node: 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+  - role: outcome
+    node: 01a13654-6e11-74fa-a359-25773f12b6d0

@@ -1,0 +1,39 @@
+key: 01a13654-6e12-74a1-ad7f-e82a7557cc49
+slug: the-lint-findings-guide
+name: "The lint-findings guide"
+body: "What each finding and error of `loft check` means, and how an agent fixes it."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a13654-6e12-74a1-ad7f-e82b136b5e3e
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "describe each lint rule the Format defines."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e82c7ad18aa9
+        name: "Each rule id the linter defines is described in the guide."
+      - key: 01a13654-6e12-74a1-ad7f-e82d58233860
+        name: "The guide describes no rule id the linter does not define."
+      - key: 01a13654-6e12-74a1-ad7f-e82ef275a5b5
+        name: "Each rule is given its meaning and its usual fix."
+      - key: 01a13654-6e12-74a1-ad7f-e82fbb1e90c9
+        name: "Each rule that an unpublished tree can raise is given a wrong example that raises it."
+  - key: 01a13654-6e12-74a1-ad7f-e830453cf786
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "describe each kind of error `loft check` reports."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e83171b0ee07
+        name: "Each error kind of the check command's schema is described with its usual fix."
+  - key: 01a13654-6e12-74a1-ad7f-e8326b7bca46
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach when a finding is suppressed."
+    criteria:
+      - key: 01a13654-6e12-74a1-ad7f-e8336693f1d1
+        name: "The guide tells the agent never to reword text only to silence a finding."
+      - key: 01a13654-6e12-74a1-ad7f-e8347de65155
+        name: "The guide tells the agent that a suppression in `spec/lint.yaml` carries the reason the finding does not apply."

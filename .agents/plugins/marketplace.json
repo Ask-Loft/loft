@@ -1,0 +1,20 @@
+{
+  "name": "loft",
+  "interface": {
+    "displayName": "Loft"
+  },
+  "plugins": [
+    {
+      "name": "loft",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex/loft"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

@@ -89,7 +89,8 @@ pub(super) fn shown_tokens(text: &str) -> Vec<String> {
     tokens(&without_code_spans(text))
 }
 
-fn without_code_spans(text: &str) -> String {
+/// The text of a name or statement with each code span replaced by a space.
+pub(super) fn without_code_spans(text: &str) -> String {
     let mut shown = String::with_capacity(text.len());
     let mut copied = 0;
     for span in crate::text::code_spans(text) {

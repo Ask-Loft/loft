@@ -1,0 +1,54 @@
+key: 01a13654-6e11-74fa-a359-2582deb18ac0
+slug: composition-for-a-host
+name: "Composition for a host"
+body: "The composer in `loft` builds one host's package from the source. A package carries nothing of another host."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a13654-6e11-74fa-a359-2583befe0f6a
+    statement:
+      form: event_driven
+      when: "the composer builds the Claude Code package"
+      system: "the composer"
+      shall: "add the Claude Code adaptation to the source."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-2584b63d1878
+        name: "The fragment's fields follow `name` and `description` in the frontmatter."
+      - key: 01a13654-6e11-74fa-a359-25858a77467e
+        name: "The route bullet follows the router's first route bullet."
+      - key: 01a13654-6e11-74fa-a359-25863da75d91
+        name: "The host reference is written as `references/claude-host.md`."
+      - key: 01a13654-6e11-74fa-a359-258705eba9d4
+        name: "The package holds no `agents/` directory."
+  - key: 01a13654-6e11-74fa-a359-258823b5a255
+    statement:
+      form: event_driven
+      when: "the composer builds the Codex package"
+      system: "the composer"
+      shall: "keep the Codex adaptation alone."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-25899f3af052
+        name: "The package holds `agents/openai.yaml`."
+      - key: 01a13654-6e11-74fa-a359-258a000d76fc
+        name: "The package holds no `agents/claude/` directory."
+      - key: 01a13654-6e11-74fa-a359-258b526a82cb
+        name: "`SKILL.md` and the references are the source's, byte for byte."
+  - key: 01a13654-6e11-74fa-a359-258ca0e69147
+    statement:
+      form: unwanted
+      if: "the Claude Code fragment defines `name` or `description`"
+      system: "the composer"
+      shall: "refuse to build the package."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-258d62713a57
+        name: "The error names the field."
+  - key: 01a13654-6e11-74fa-a359-258ec12bbbbc
+    statement:
+      form: unwanted
+      if: "`description` and the fragment's `when_to_use` hold more than 1536 characters together"
+      system: "the composer"
+      shall: "refuse to build the package."
+    criteria:
+      - key: 01a13654-6e11-74fa-a359-258f0c07e90c
+        name: "The error names the combined length and the limit."

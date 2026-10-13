@@ -5,9 +5,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::defaults::{
-    self, CONJUNCTION_THRESHOLD, CONJUNCTIONS, MIN_TOKENS, MODALS, SIMILARITY_MILLIONTHS,
-};
+use super::defaults::{self, Kind, OPTIONS};
 use super::lexicon::{self, Edits, Lexicon};
 use super::{RuleId, Severity};
 use crate::codec::{LINT, Problem, ReadError, SpecPath};
@@ -22,38 +20,48 @@ pub struct Similarity {
     pub threshold: u32,
 }
 
-/// An effective lint configuration: every rule's switch and severity, every lexicon and
-/// threshold, and the suppressions.
+/// The value of a rule's option, of the [`Kind`] the option takes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Setting {
+    Lexicon(Lexicon),
+    Count(usize),
+    Millionths(u32),
+    Names(Vec<String>),
+}
+
+impl Setting {
+    fn default_of(kind: &Kind) -> Self {
+        match kind {
+            Kind::Lexicon(terms) => {
+                Self::Lexicon(lexicon::effective(terms, None).expect("a valid default"))
+            }
+            Kind::Count { default, .. } => Self::Count(*default),
+            Kind::Millionths(default) => Self::Millionths(*default),
+            Kind::Names => Self::Names(Vec::new()),
+        }
+    }
+}
+
+/// An effective lint configuration: every rule's switch and severity, every option, and the
+/// suppressions.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LintConfig {
     rules: BTreeMap<RuleId, (bool, Severity)>,
-    lexicons: BTreeMap<RuleId, Lexicon>,
-    modals: Lexicon,
-    conjunctions: Lexicon,
-    conjunction_threshold: usize,
-    similarity: Similarity,
+    options: BTreeMap<(RuleId, &'static str), Setting>,
     suppressions: BTreeSet<(RuleId, Key)>,
 }
 
 impl Default for LintConfig {
     fn default() -> Self {
-        let lexicon = |terms: &[&str]| lexicon::effective(terms, None).expect("a valid default");
         Self {
             rules: RuleId::ALL
                 .iter()
                 .map(|rule| (*rule, (rule.enabled_by_default(), rule.default_severity())))
                 .collect(),
-            lexicons: RuleId::ALL
+            options: OPTIONS
                 .iter()
-                .filter_map(|rule| Some((*rule, lexicon(defaults::lexicon(*rule)?))))
+                .map(|(rule, key, kind)| ((*rule, *key), Setting::default_of(kind)))
                 .collect(),
-            modals: lexicon(MODALS),
-            conjunctions: lexicon(CONJUNCTIONS),
-            conjunction_threshold: CONJUNCTION_THRESHOLD,
-            similarity: Similarity {
-                min_tokens: MIN_TOKENS,
-                threshold: SIMILARITY_MILLIONTHS,
-            },
             suppressions: BTreeSet::new(),
         }
     }
@@ -104,30 +112,73 @@ impl LintConfig {
             .any(|key| self.suppressions.contains(&(rule, *key)))
     }
 
-    /// The lexicon of a lexical rule, `LQ-001`..`LQ-004`.
+    /// The lexicon of a rule that takes one: `LQ-001`..`LQ-004` and `V2-007`.
     #[must_use]
     pub fn lexicon(&self, rule: RuleId) -> &Lexicon {
-        &self.lexicons[&rule]
+        self.lexicon_at(rule, "lexicon")
     }
 
     #[must_use]
     pub fn modals(&self) -> &Lexicon {
-        &self.modals
+        self.lexicon_at(RuleId::Lq005, "modalLexicon")
     }
 
     #[must_use]
     pub fn conjunctions(&self) -> &Lexicon {
-        &self.conjunctions
+        self.lexicon_at(RuleId::Lq005, "conjunctionLexicon")
     }
 
     #[must_use]
-    pub const fn conjunction_threshold(&self) -> usize {
-        self.conjunction_threshold
+    pub fn conjunction_threshold(&self) -> usize {
+        self.count(RuleId::Lq005, "conjunctionThreshold")
     }
 
     #[must_use]
-    pub const fn similarity(&self) -> Similarity {
-        self.similarity
+    pub fn similarity(&self) -> Similarity {
+        let Setting::Millionths(threshold) = self.options[&(RuleId::Lq008, "threshold")] else {
+            unreachable!("`threshold` is a decimal");
+        };
+        Similarity {
+            min_tokens: self.count(RuleId::Lq008, "minTokens"),
+            threshold,
+        }
+    }
+
+    /// `V2-006`'s limit on a Requirement's criteria.
+    #[must_use]
+    pub fn max_criteria(&self) -> usize {
+        self.count(RuleId::V2006, "maxCriteria")
+    }
+
+    /// `V2-006`'s limit on the words of a Requirement's body.
+    #[must_use]
+    pub fn max_body_words(&self) -> usize {
+        self.count(RuleId::V2006, "maxBodyWords")
+    }
+
+    /// The proper names `V2-008` reads, each matched whole and in its own case.
+    #[must_use]
+    pub fn proper_names(&self) -> &[String] {
+        let Setting::Names(names) = &self.options[&(RuleId::V2008, "properNames")] else {
+            unreachable!("`properNames` is a list of names");
+        };
+        names
+    }
+
+    // Each option holds the setting of its kind: the defaults and the reader both follow
+    // `OPTIONS`.
+    fn lexicon_at(&self, rule: RuleId, key: &'static str) -> &Lexicon {
+        let Setting::Lexicon(lexicon) = &self.options[&(rule, key)] else {
+            unreachable!("`{key}` is a lexicon");
+        };
+        lexicon
+    }
+
+    fn count(&self, rule: RuleId, key: &'static str) -> usize {
+        let Setting::Count(count) = self.options[&(rule, key)] else {
+            unreachable!("`{key}` is a count");
+        };
+        count
     }
 }
 
@@ -168,12 +219,16 @@ impl Reader {
         &[]
     }
 
+    /// A sequence's items; a field written with no value holds none.
     fn items<'a>(&mut self, node: &'a Node) -> &'a [Node] {
-        if let Value::Sequence(items) = &node.value {
-            return items;
+        match &node.value {
+            Value::Sequence(items) => items,
+            Value::Empty => &[],
+            _ => {
+                self.fail(node.position, Problem::Expected("a sequence"));
+                &[]
+            }
         }
-        self.fail(node.position, Problem::Expected("a sequence"));
-        &[]
     }
 
     fn scalar<'a>(&mut self, node: &'a Node) -> Option<&'a str> {
@@ -226,8 +281,8 @@ impl Reader {
 
     fn option(&mut self, rule: RuleId, option: &Entry, config: &mut LintConfig) {
         let value = &option.value;
-        match (option.key.as_str(), rule) {
-            ("enabled", _) => {
+        match option.key.as_str() {
+            "enabled" => {
                 if let Some(enabled) = self.parsed(value, "`true` or `false`", |text| match text {
                     "true" => Some(true),
                     "false" => Some(false),
@@ -236,47 +291,21 @@ impl Reader {
                     config.rules.get_mut(&rule).expect("every rule").0 = enabled;
                 }
             }
-            ("severity", _) => {
+            "severity" => {
                 if let Some(severity) = self.parsed(value, "warning, info or hint", Severity::parse)
                 {
                     config.rules.get_mut(&rule).expect("every rule").1 = severity;
                 }
             }
-            ("lexicon", _) if defaults::lexicon(rule).is_some() => {
-                let defaults = defaults::lexicon(rule).expect("a lexical rule");
-                if let Some(lexicon) = self.lexicon(value, defaults) {
-                    config.lexicons.insert(rule, lexicon);
+            key => {
+                let Some((key, kind)) = defaults::option(rule, key) else {
+                    let unknown = Problem::UnknownField(key.to_owned());
+                    return self.fail(option.key_position, unknown);
+                };
+                if let Some(setting) = self.setting(value, kind) {
+                    config.options.insert((rule, key), setting);
                 }
             }
-            ("modalLexicon", RuleId::Lq005) => {
-                if let Some(lexicon) = self.lexicon(value, MODALS) {
-                    config.modals = lexicon;
-                }
-            }
-            ("conjunctionLexicon", RuleId::Lq005) => {
-                if let Some(lexicon) = self.lexicon(value, CONJUNCTIONS) {
-                    config.conjunctions = lexicon;
-                }
-            }
-            ("conjunctionThreshold", RuleId::Lq005) => {
-                let at_least_two = |text: &str| text.parse().ok().filter(|count| *count >= 2);
-                if let Some(count) = self.parsed(value, "a count of at least 2", at_least_two) {
-                    config.conjunction_threshold = count;
-                }
-            }
-            ("minTokens", RuleId::Lq008) => {
-                let positive = |text: &str| text.parse().ok().filter(|count| *count >= 1);
-                if let Some(count) = self.parsed(value, "a count of at least 1", positive) {
-                    config.similarity.min_tokens = count;
-                }
-            }
-            ("threshold", RuleId::Lq008) => {
-                let expected = "a decimal above 0 and at most 1, with at most six places";
-                if let Some(threshold) = self.parsed(value, expected, parse_millionths) {
-                    config.similarity.threshold = threshold;
-                }
-            }
-            (other, _) => self.fail(option.key_position, Problem::UnknownField(other.to_owned())),
         }
     }
 
@@ -293,6 +322,40 @@ impl Reader {
             self.fail(node.position, Problem::Invalid { value, expected });
         }
         parsed
+    }
+
+    /// An option's setting, read as its kind reads.
+    fn setting(&mut self, node: &Node, kind: &Kind) -> Option<Setting> {
+        match kind {
+            Kind::Lexicon(defaults) => self.lexicon(node, defaults).map(Setting::Lexicon),
+            Kind::Count {
+                least, expected, ..
+            } => {
+                let count = |text: &str| text.parse().ok().filter(|count| count >= least);
+                self.parsed(node, expected, count).map(Setting::Count)
+            }
+            Kind::Millionths(_) => {
+                let expected = "a decimal above 0 and at most 1, with at most six places";
+                self.parsed(node, expected, parse_millionths)
+                    .map(Setting::Millionths)
+            }
+            Kind::Names => self.names(node).map(Setting::Names),
+        }
+    }
+
+    /// A sequence of names, none of them blank; each blank name is an error.
+    fn names(&mut self, node: &Node) -> Option<Vec<String>> {
+        let errors = self.errors.len();
+        let names: Vec<String> = self
+            .items(node)
+            .iter()
+            .filter_map(|item| {
+                self.parsed(item, "a name", |text| {
+                    (!text.trim().is_empty()).then(|| text.to_owned())
+                })
+            })
+            .collect();
+        (self.errors.len() == errors).then_some(names)
     }
 
     fn lexicon(&mut self, node: &Node, defaults: &[&str]) -> Option<Lexicon> {
