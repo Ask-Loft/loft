@@ -20,29 +20,29 @@ pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> ExitCode {
         Ok(files) => files,
         Err(error) => {
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "errors": [json::error("store", &error.to_string(), &[])],
-                    "findings": [],
-                }));
+                json::print(&json::failure(SCHEMA, vec![json::store_error(&error)]));
             }
             eprintln!("{error}");
             return ExitCode::FAILURE;
         }
     };
     let checked = check(&files);
-    if as_json {
-        json::print(&document(&checked));
-    } else {
-        print(&checked);
-    }
     let failed_on = fail_on.is_some_and(|threshold| {
         checked
             .findings()
             .iter()
             .any(|finding| finding.severity >= threshold)
     });
-    if checked.has_errors() || failed_on {
+    let failed = checked.has_errors() || failed_on;
+    if as_json {
+        json::print(&document(
+            &checked,
+            if failed { "failed" } else { "passed" },
+        ));
+    } else {
+        print(&checked);
+    }
+    if failed {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
@@ -74,7 +74,7 @@ fn print(checked: &Checked) {
     }
 }
 
-fn document(checked: &Checked) -> Value {
+fn document(checked: &Checked, outcome: &str) -> Value {
     let (errors, findings): (Vec<Value>, Vec<Value>) = match checked {
         Checked::Unread(errors) => (json::read_errors(errors), Vec::new()),
         Checked::Read {
@@ -89,5 +89,5 @@ fn document(checked: &Checked) -> Value {
             findings.iter().map(json::finding).collect(),
         ),
     };
-    json!({ "schema": SCHEMA, "errors": errors, "findings": findings })
+    json::result(SCHEMA, outcome, json!({ "findings": findings }), errors)
 }

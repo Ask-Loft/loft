@@ -1,4 +1,4 @@
-//! Converting a v1 export's links and decisions (D-11 F-13): `realizes` and `scoped_to` edges,
+//! Converting a v1 export's links and decisions (F-13): `realizes` and `scoped_to` edges,
 //! Architecture Decisions with their elements and `subject` edges, and the derived-from record.
 
 mod common;
@@ -22,7 +22,7 @@ fn edges(conversion: &Conversion) -> &[Edge] {
 }
 
 #[test]
-fn ac_177_and_ac_178_each_realization_link_is_a_realizes_edge() {
+fn each_realization_link_is_a_realizes_edge() {
     let conversion = convert_value(&full_export()).unwrap();
     let realizes: Vec<&Edge> = edges(&conversion)
         .iter()
@@ -38,7 +38,7 @@ fn ac_177_and_ac_178_each_realization_link_is_a_realizes_edge() {
 }
 
 #[test]
-fn ac_179_and_ac_180_only_a_component_scoped_to_a_product_has_a_scoped_to_edge() {
+fn only_a_component_scoped_to_a_product_has_a_scoped_to_edge() {
     let conversion = convert_value(&full_export()).unwrap();
     let scoped: Vec<&Edge> = edges(&conversion)
         .iter()
@@ -54,7 +54,7 @@ fn ac_179_and_ac_180_only_a_component_scoped_to_a_product_has_a_scoped_to_edge()
 }
 
 #[test]
-fn ac_181_ac_182_ac_183_and_ac_256_a_decision_keeps_its_keys_state_option_and_outcome() {
+fn a_decision_keeps_its_keys_state_option_and_outcome() {
     let conversion = convert_value(&full_export()).unwrap();
     let decision = &conversion.document.decisions[0];
     assert_eq!(decision.id, DecisionId::new(key(20)));
@@ -80,7 +80,7 @@ fn ac_181_ac_182_ac_183_and_ac_256_a_decision_keeps_its_keys_state_option_and_ou
 }
 
 #[test]
-fn ac_257_drivers_consequences_and_assessments_keep_their_fields() {
+fn drivers_consequences_and_assessments_keep_their_fields() {
     let conversion = convert_value(&full_export()).unwrap();
     let decision = &conversion.document.decisions[0];
     assert!(matches!(
@@ -104,7 +104,7 @@ fn ac_257_drivers_consequences_and_assessments_keep_their_fields() {
 }
 
 #[test]
-fn ac_184_each_subject_link_is_a_subject_edge_with_its_role() {
+fn each_subject_link_is_a_subject_edge_with_its_role() {
     let conversion = convert_value(&full_export()).unwrap();
     let subjects: Vec<&Edge> = edges(&conversion)
         .iter()
@@ -128,7 +128,7 @@ fn ac_184_each_subject_link_is_a_subject_edge_with_its_role() {
 }
 
 #[test]
-fn ac_244_every_decision_has_its_v1_external_id_as_label() {
+fn every_decision_has_its_v1_external_id_as_label() {
     let conversion = convert_value(&full_export()).unwrap();
     let bindings = &conversion.document.bindings;
     assert_eq!(
@@ -150,7 +150,7 @@ fn ac_244_every_decision_has_its_v1_external_id_as_label() {
 }
 
 #[test]
-fn ac_274_and_ac_634_the_derived_from_record_names_the_source_state() {
+fn the_derived_from_record_names_the_source_state() {
     let conversion = convert_value(&full_export()).unwrap();
     assert_eq!(
         conversion.document.derived_from,
@@ -196,7 +196,7 @@ fn former(text: &str) -> NodeRef {
 }
 
 #[test]
-fn ac_723_ac_708_and_ac_709_a_reference_to_a_node_the_export_does_not_hold_is_its_former_label() {
+fn a_reference_to_a_node_the_export_does_not_hold_is_its_former_label() {
     let conversion = convert_value(&with_deleted_subjects()).unwrap();
     assert!(edges(&conversion).contains(&Edge::Subject {
         decision: DecisionId::new(key(20)),
@@ -212,7 +212,7 @@ fn ac_723_ac_708_and_ac_709_a_reference_to_a_node_the_export_does_not_hold_is_it
 }
 
 #[test]
-fn ac_711_and_ac_712_a_former_label_enters_the_edges_root_and_the_decision_view_as_an_object() {
+fn a_former_label_enters_the_edges_root_and_the_decision_view_as_an_object() {
     let conversion = convert_value(&with_deleted_subjects()).unwrap();
     let (_, views) = hash_indexed_with_views(&conversion.document.index().unwrap());
     let (_, _, edges_view) = views
@@ -240,9 +240,9 @@ fn a_subject_of_no_kind_the_format_holds_is_refused() {
 }
 
 #[test]
-fn ac_190_a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
+fn a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
     let mut value = full_export();
-    value["nodes"][3]["body"] = json!("Builds on RQ-2, D-1/F-1 and RQ-2 again; see ADR-1.");
+    value["nodes"][3]["body"] = json!("Builds on RQ-2, D-2/F-1 and RQ-2 again; see ADR-1.");
     let conversion = convert_value(&value).unwrap();
     let mentions: Vec<&Edge> = edges(&conversion)
         .iter()
@@ -269,7 +269,7 @@ fn ac_190_a_resolvable_reference_in_a_name_or_body_is_a_mentions_edge() {
 }
 
 #[test]
-fn ac_191_a_reference_that_does_not_resolve_is_a_finding() {
+fn a_reference_that_does_not_resolve_is_a_finding() {
     let mut value = full_export();
     // RQ-5 is the highest Requirement label, so RQ-4 was allocated once and has since gone.
     for node in value["nodes"].as_array_mut().unwrap() {
@@ -286,7 +286,7 @@ fn ac_191_a_reference_that_does_not_resolve_is_a_finding() {
 }
 
 #[test]
-fn ac_891_a_label_above_every_label_of_its_prefix_is_not_a_reference() {
+fn a_label_above_every_label_of_its_prefix_is_not_a_reference() {
     let mut value = full_export();
     value["nodes"][4]["name"] = json!("A client assertion accepts ES256 with P-256.");
     let conversion = convert_value(&value).unwrap();
@@ -301,7 +301,7 @@ fn ac_891_a_label_above_every_label_of_its_prefix_is_not_a_reference() {
 }
 
 #[test]
-fn ac_192_and_ac_193_a_body_is_kept_byte_for_byte_and_a_heading_in_it_is_a_finding() {
+fn a_body_is_kept_byte_for_byte_and_a_heading_in_it_is_a_finding() {
     let body = "Keys.\n\n## Rationale\n\tTabbed, trailing space. \n";
     let mut value = full_export();
     value["nodes"][2]["body"] = json!(body);
@@ -337,7 +337,7 @@ fn boundary_of(conversion: &Conversion, n: u32) -> Option<Boundary> {
 }
 
 #[test]
-fn ac_892_a_component_the_export_scopes_as_external_has_the_boundary_external() {
+fn a_component_the_export_scopes_as_external_has_the_boundary_external() {
     let export = scoped(full_export(), &[(6, json!({"kind": "external"}))]);
     let conversion = convert_value(&export).unwrap();
     assert_eq!(boundary_of(&conversion, 6), Some(Boundary::External));
@@ -349,7 +349,7 @@ fn ac_892_a_component_the_export_scopes_as_external_has_the_boundary_external() 
 }
 
 #[test]
-fn ac_893_a_component_scoped_to_a_product_or_the_document_has_no_boundary() {
+fn a_component_scoped_to_a_product_or_the_document_has_no_boundary() {
     let conversion = convert_value(&full_export()).unwrap();
     assert_eq!(boundary_of(&conversion, 6), None);
     let export = scoped(full_export(), &[(6, json!({"kind": "document"}))]);
@@ -357,7 +357,7 @@ fn ac_893_a_component_scoped_to_a_product_or_the_document_has_no_boundary() {
 }
 
 #[test]
-fn ac_894_a_component_scoped_internally_beneath_an_external_one_is_a_finding() {
+fn a_component_scoped_internally_beneath_an_external_one_is_a_finding() {
     let export = scoped(
         full_export(),
         &[

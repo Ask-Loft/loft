@@ -1,5 +1,5 @@
 //! Where the reader says an element is written, every error of every file, and the
-//! containment and edge-kind rules that the typed text form refuses as it reads (D-11 F-17,
+//! containment and edge-kind rules that the typed text form refuses as it reads (F-17,
 //! F-18, F-47).
 
 mod common;
@@ -31,7 +31,7 @@ fn model_problem(error: &ReadError) -> &str {
 }
 
 #[test]
-fn ac_592_the_site_of_a_key_is_its_file_line_and_column() {
+fn the_site_of_a_key_is_its_file_line_and_column() {
     let (_, sites) = codec::read_sited(&files()).unwrap();
     assert_eq!(
         sites.get(key(3)).unwrap().to_string(),
@@ -48,7 +48,7 @@ fn ac_592_the_site_of_a_key_is_its_file_line_and_column() {
 }
 
 #[test]
-fn ac_865_an_unresolved_key_in_each_of_two_files_gives_two_errors() {
+fn an_unresolved_key_in_each_of_two_files_gives_two_errors() {
     let mut files = edited(
         FEATURE,
         &format!("  - {COMPONENT_KEY}"),
@@ -75,7 +75,7 @@ fn ac_865_an_unresolved_key_in_each_of_two_files_gives_two_errors() {
 }
 
 #[test]
-fn ac_865_two_unresolved_keys_in_one_file_give_one_error_at_the_first() {
+fn two_unresolved_keys_in_one_file_give_one_error_at_the_first() {
     let files = edited(
         FEATURE,
         &format!("realizes:\n  - {COMPONENT_KEY}"),
@@ -96,7 +96,7 @@ fn ac_865_two_unresolved_keys_in_one_file_give_one_error_at_the_first() {
 }
 
 #[test]
-fn ac_317_ac_863_a_child_kind_outside_the_profile_is_refused_where_it_stands() {
+fn a_child_kind_outside_the_profile_is_refused_where_it_stands() {
     let files = edited(
         COMPONENT,
         "qualityAttributes:\n",
@@ -110,7 +110,7 @@ fn ac_317_ac_863_a_child_kind_outside_the_profile_is_refused_where_it_stands() {
 }
 
 #[test]
-fn ac_318_a_product_file_with_two_product_records_is_refused() {
+fn a_product_file_with_two_product_records_is_refused() {
     let product = text(&files(), PRODUCT);
     let two = format!("- {}", product.replace('\n', "\n  ").trim_end());
     let mut files = files();
@@ -119,14 +119,14 @@ fn ac_318_a_product_file_with_two_product_records_is_refused() {
 }
 
 #[test]
-fn ac_319_a_product_file_without_a_product_record_is_refused() {
+fn a_product_file_without_a_product_record_is_refused() {
     let mut files = files();
     files.insert(path(PRODUCT), Vec::new());
     refused_in(&files, PRODUCT);
 }
 
 #[test]
-fn ac_322_ac_864_a_realizes_edge_from_a_requirement_is_refused() {
+fn a_realizes_edge_from_a_requirement_is_refused() {
     let files = edited(
         FEATURE,
         "    statement:\n",
@@ -137,7 +137,7 @@ fn ac_322_ac_864_a_realizes_edge_from_a_requirement_is_refused() {
 }
 
 #[test]
-fn ac_323_a_realizes_edge_to_a_requirement_is_refused() {
+fn a_realizes_edge_to_a_requirement_is_refused() {
     let files = edited(
         FEATURE,
         &format!("  - {COMPONENT_KEY}"),
@@ -151,7 +151,7 @@ fn ac_323_a_realizes_edge_to_a_requirement_is_refused() {
 }
 
 #[test]
-fn ac_325_a_scoped_to_edge_to_a_feature_is_refused() {
+fn a_scoped_to_edge_to_a_feature_is_refused() {
     let files = edited(
         COMPONENT,
         "  - 00000000-0000-7000-8000-000000000001",
@@ -165,7 +165,7 @@ fn ac_325_a_scoped_to_edge_to_a_feature_is_refused() {
 }
 
 #[test]
-fn ac_326_a_subject_edge_from_a_node_is_refused() {
+fn a_subject_edge_from_a_node_is_refused() {
     let files = edited(
         FEATURE,
         "requirements:\n",
@@ -176,7 +176,7 @@ fn ac_326_a_subject_edge_from_a_node_is_refused() {
 }
 
 #[test]
-fn ac_327_a_subject_edge_to_a_decision_is_refused() {
+fn a_subject_edge_to_a_decision_is_refused() {
     let files = edited(
         DECISION,
         &format!("    node: {COMPONENT_KEY}"),
@@ -190,20 +190,20 @@ fn ac_327_a_subject_edge_to_a_decision_is_refused() {
 }
 
 #[test]
-fn ac_328_a_subject_edge_without_a_role_is_refused() {
+fn a_subject_edge_without_a_role_is_refused() {
     let files = edited(DECISION, "  - role: affected\n    node:", "  - node:");
     let error = refused_in(&files, DECISION);
     assert_eq!(error.problem, Problem::MissingField("role"));
 }
 
 #[test]
-fn ac_328_a_subject_edge_with_another_role_is_refused() {
+fn a_subject_edge_with_another_role_is_refused() {
     let files = edited(DECISION, "role: affected", "role: mentioned");
     refused_in(&files, DECISION);
 }
 
 #[test]
-fn ac_642_a_realizes_edge_that_carries_a_role_is_refused() {
+fn a_realizes_edge_that_carries_a_role_is_refused() {
     let files = edited(
         FEATURE,
         &format!("  - {COMPONENT_KEY}"),

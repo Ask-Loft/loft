@@ -1,4 +1,4 @@
-//! The validator (CMP-6, D-11 FG-5): the rules that decide whether a document is valid, every
+//! The validator (CMP-6, FG-5): the rules that decide whether a document is valid, every
 //! error reported rather than only the first (AC-523). It reads the document and changes nothing
 //! (CON-8). Containment and the kinds each edge type joins are in the model's types and the
 //! reader's schema, so a document can break them only as text, where the reader refuses it; the

@@ -41,3 +41,16 @@ requirements:
         name: "The error names the file and the key of each conflict record."
       - key: 01a13070-3230-7079-8674-0f903cd9f580
         name: "The output names no root."
+  - key: 01a1354e-bca0-714b-8727-09bc2c6b2e99
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft verify`"
+      shall: "give the result of the verification as its outcome."
+    criteria:
+      - key: 01a1354e-bca0-714b-8727-09bd96bb5298
+        name: "The outcome is `verified` when every root matches the lock."
+      - key: 01a1354e-bca0-714b-8727-09be9f16e984
+        name: "The outcome is `mismatch` when a root differs from the lock."
+      - key: 01a1354e-bca0-714b-8727-09bf279690b0
+        name: "A mismatch's document names the first root that differs, with the lock's and the tree's values."

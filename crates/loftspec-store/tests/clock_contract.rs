@@ -61,7 +61,7 @@ fn a_later_run_reads_no_earlier_instant() {
 }
 
 #[test]
-fn ac_934_an_epoch_that_is_not_a_whole_number_of_seconds_is_refused_naming_it() {
+fn an_epoch_that_is_not_a_whole_number_of_seconds_is_refused_naming_it() {
     for epoch in ["", "-1", "1.5", "soon", "１２"] {
         let error = SystemClock::with_epoch(Some(epoch)).now().unwrap_err();
         assert!(

@@ -1,4 +1,4 @@
-//! The YAML subset of the text form (D-11 F-9, ADR-14): a strict reader that accepts block
+//! The YAML subset of the text form (F-9, ADR-14): a strict reader that accepts block
 //! mappings and sequences with plain, double-quoted and literal scalars, and refuses every other
 //! construct at its line and column; and the canonical writer, whose output the reader reads
 //! back byte for byte.

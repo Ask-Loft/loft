@@ -1,4 +1,4 @@
-//! What the Format reads in prose (D-11 F-14, F-21): label references (RQ-53) and Markdown
+//! What the Format reads in prose (F-14, F-21): label references (RQ-53) and Markdown
 //! heading lines in a body (RQ-54, RQ-100).
 
 use loftspec::identity::Label;
@@ -12,7 +12,7 @@ fn labels(text: &str) -> Vec<String> {
 }
 
 #[test]
-fn ac_188_every_label_form_is_recognised() {
+fn every_label_form_is_recognised() {
     assert_eq!(
         labels("P-1, FG-2, F-3, RQ-4, AC-5, CMP-6, CON-7, QA-8 and ADR-9."),
         [
@@ -22,9 +22,9 @@ fn ac_188_every_label_form_is_recognised() {
 }
 
 #[test]
-fn ac_189_a_reference_with_a_document_prefix_is_recognised() {
+fn a_reference_with_a_document_prefix_is_recognised() {
     assert_eq!(
-        labels("As D-1/RQ-12 and D-11/AC-3 state."),
+        labels("As D-2/RQ-12 and D-7/AC-3 state."),
         ["RQ-12", "AC-3"]
     );
 }
@@ -47,7 +47,7 @@ fn a_label_inside_a_longer_word_or_number_is_not_a_reference() {
 }
 
 #[test]
-fn ac_406_an_atx_heading_line_is_found_with_its_line_number() {
+fn an_atx_heading_line_is_found_with_its_line_number() {
     assert_eq!(heading_lines("Intro.\n# Title\ntext\n### Deep"), [2, 4]);
     assert_eq!(heading_lines("   ## Indented three"), [1]);
 }
@@ -58,7 +58,7 @@ fn a_setext_heading_is_found_at_its_text_line() {
 }
 
 #[test]
-fn ac_407_text_that_only_resembles_a_heading_is_not_one() {
+fn text_that_only_resembles_a_heading_is_not_one() {
     assert_eq!(
         heading_lines("#hashtag\n    # indented code\n\n---\n| a | b |\n|---|---|"),
         Vec::<usize>::new()

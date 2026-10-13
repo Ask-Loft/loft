@@ -3,25 +3,26 @@
 //! repository's own `spec/` lists the tag; and the converse, that every command that changes a
 //! file under `spec/` or beside it lists the tag.
 
+#[path = "common/commands.rs"]
+mod commands;
 mod common;
 mod conformance;
+#[path = "common/snapshot.rs"]
+mod snapshot;
 
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use std::process::Output;
 
+use commands::{COMMANDS, Fixture};
 use common::{EPOCH, Scratch, stderr, stdout};
-use conformance::{is_pending, snapshot, tagged};
+use conformance::{tagged, tagged_commands};
 use loftspec::codec::SpecPath;
 use loftspec::publish::{LOCK, Lock};
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
+use snapshot::snapshot;
 use software_plant::{Clock, GitScenario};
-
-const READING_LIST: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../../testdata/v1/reading-list/loft-authored-state.json"
-);
 
 const PRODUCT: &str = "products/reading-list/product.yaml";
 
@@ -30,55 +31,23 @@ const TAG: &str = "writes-tree";
 /// The files the Format places beside `spec/`.
 const BESIDE: [&str; 2] = ["v1-sidecar.json", "loft.lock.json"];
 
-/// What a command runs over.
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Fixture {
-    /// An empty directory.
-    Empty,
-    /// The Reading List with one key left out, so a formatter has a key to mint.
-    Unkeyed,
-    /// The Reading List as converted, in a clean repository on `main`.
-    Clean,
-}
-
-/// The arguments that run each implemented command, by the slug of its Feature, and what it
-/// runs over.
-const COMMANDS: [(&str, &[&str], Fixture); 6] = [
-    ("loft-check", &["check"], Fixture::Unkeyed),
-    ("loft-fmt", &["fmt"], Fixture::Unkeyed),
-    (
-        "loft-render",
-        &["render", "--markdown", "out/spec.md"],
-        Fixture::Unkeyed,
-    ),
-    (
-        "loft-import-v1",
-        &["import", "v1", READING_LIST],
-        Fixture::Empty,
-    ),
-    ("loft-publish", &["publish"], Fixture::Clean),
-    ("loft-verify", &["verify"], Fixture::Clean),
-];
-
-/// Tagged commands not implemented yet, by Feature slug and subcommand. Each must still be
-/// unknown to `loft`; once it exists it moves to [`COMMANDS`] and is held to the rules.
-const PENDING: [(&str, &str); 1] = [("loft-init", "init")];
-
 /// The body a planted save gives the Product, and the file it plants into an empty `spec/`.
 const PLANTED_BODY: &str = "A planted body.";
 const PLANTED_FILE: &str = "planted.yaml";
 
-/// The lock a planted save puts beside a clean tree: a previous publish at sequence 7, so the
-/// next publish is sequence 8 if the save was finished first and 1 if it was discarded.
-/// Runs `loft` in a clean repository on `main` at [`EPOCH`].
-fn on_main(scratch: &Scratch, args: &[&str]) -> Output {
-    scratch.loft_with(
-        args,
-        Some(&GitScenario::clean_on("main")),
-        &Clock::fixed(EPOCH),
-    )
+/// Runs `loft` over `fixture`: in a clean repository on `main` for the clean fixture, with no
+/// `git` otherwise.
+fn run(scratch: &Scratch, fixture: Fixture, args: &[&str]) -> Output {
+    if fixture == Fixture::Clean {
+        let git = GitScenario::clean_on("main");
+        scratch.loft_with(args, Some(&git), &Clock::fixed(EPOCH))
+    } else {
+        scratch.loft(args)
+    }
 }
 
+/// The lock a planted save puts beside a clean tree: a previous publish at sequence 7, so the
+/// next publish is sequence 8 if the save was finished first and 1 if it was discarded.
 fn planted_lock() -> Vec<u8> {
     let zero = "0".repeat(64);
     let text = format!(
@@ -156,21 +125,6 @@ fn format_files(root: &Path) -> BTreeMap<String, Vec<u8>> {
         .collect()
 }
 
-/// The implemented commands whose Features list the tag, after checking that each pending one
-/// is still unknown to `loft`.
-fn implemented_tagged() -> Vec<(&'static str, &'static [&'static str], Fixture)> {
-    tagged(TAG)
-        .into_iter()
-        .filter(|slug| !is_pending(slug, &PENDING))
-        .map(|slug| {
-            COMMANDS
-                .into_iter()
-                .find(|(name, _, _)| *name == slug)
-                .unwrap_or_else(|| panic!("{slug} lists `{TAG}` but COMMANDS has no entry"))
-        })
-        .collect()
-}
-
 /// Asserts the command exited with `code`, showing what it printed if not.
 fn assert_exit(slug: &str, output: &Output, code: i32) {
     assert_eq!(
@@ -183,15 +137,15 @@ fn assert_exit(slug: &str, output: &Output, code: i32) {
 }
 
 #[test]
-fn ac_944_ac_947_each_tagged_command_finishes_a_committed_save_before_it_acts() {
-    for (slug, args, kind) in implemented_tagged() {
+fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
+    for (slug, args, kind) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         plant(&scratch, kind, true);
         // In an empty directory the finished save leaves `spec/` not empty, which the command
         // must see before it writes.
         assert_exit(
             slug,
-            &on_main(&scratch, args),
+            &run(&scratch, kind, args),
             i32::from(kind == Fixture::Empty),
         );
         assert!(
@@ -206,11 +160,11 @@ fn ac_944_ac_947_each_tagged_command_finishes_a_committed_save_before_it_acts() 
 }
 
 #[test]
-fn ac_943_ac_947_each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
-    for (slug, args, kind) in implemented_tagged() {
+fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
+    for (slug, args, kind) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         plant(&scratch, kind, false);
-        assert_exit(slug, &on_main(&scratch, args), 0);
+        assert_exit(slug, &run(&scratch, kind, args), 0);
         assert!(
             !planted(&scratch, kind),
             "{slug}: an uncommitted save took effect"
@@ -223,12 +177,12 @@ fn ac_943_ac_947_each_tagged_command_discards_an_uncommitted_save_before_it_acts
 }
 
 #[test]
-fn ac_946_each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
+fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
     let tagged = tagged(TAG);
     for (slug, args, kind) in COMMANDS {
         let scratch = fixture(kind);
         let before = format_files(&scratch.0);
-        on_main(&scratch, args);
+        run(&scratch, kind, args);
         if format_files(&scratch.0) != before {
             assert!(
                 tagged.iter().any(|tag| tag == slug),
@@ -240,10 +194,10 @@ fn ac_946_each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
 
 #[test]
 fn each_tagged_command_changes_a_file_of_the_format() {
-    for (slug, args, kind) in implemented_tagged() {
+    for (slug, args, kind) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         let before = format_files(&scratch.0);
-        assert_exit(slug, &on_main(&scratch, args), 0);
+        assert_exit(slug, &run(&scratch, kind, args), 0);
         assert_ne!(format_files(&scratch.0), before, "{slug}: wrote nothing");
     }
 }

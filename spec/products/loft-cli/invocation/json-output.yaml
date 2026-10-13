@@ -32,3 +32,19 @@ requirements:
         name: "Each schema names its version."
       - key: 713c6775-c2ed-4713-bd67-00c510d47a5b
         name: "A change to a command's output changes its schema file."
+  - key: 01a1354e-8c63-74ae-abcf-1d4d62016427
+    statement:
+      form: ubiquitous
+      system: "`loft`"
+      shall: "give every command's JSON document the fields `schema`, `outcome` and `errors`."
+    criteria:
+      - key: 01a1354e-8c63-74ae-abcf-1d4e393ff800
+        name: "`outcome` names the command's result in words."
+      - key: 01a1354e-8c63-74ae-abcf-1d4f59be7fa0
+        name: "A command that stops on an error has the outcome `error`."
+      - key: 01a1354e-8c63-74ae-abcf-1d50dffda990
+        name: "A document whose outcome is `error` holds only `schema`, `outcome` and `errors`."
+      - key: 01a1354e-8c63-74ae-abcf-1d51892f59f1
+        name: "A document whose outcome is not `error` holds the command's result fields."
+      - key: 01a1354e-8c63-74ae-abcf-1d52ebd9a6f3
+        name: "The document of `loft --version` holds no `outcome` and no `errors`."

@@ -1,10 +1,14 @@
-//! `loft merge-driver --install` (D-11 F-43) in front of the git simulator: it registers the
+//! `loft merge-driver --install` (F-43) in front of the git simulator: it registers the
 //! driver in the repository once, and refuses outside a repository without writing anything.
+
+#[path = "common/schema.rs"]
+mod schema;
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::{env, fs, process};
 
+use serde_json::{Value, json};
 use software_plant::GitScenario;
 
 /// A directory for the tree, and one beside it for the simulator's scenario, removed at the end.
@@ -99,7 +103,7 @@ fn clean() -> GitScenario {
 }
 
 #[test]
-fn ac_571_ac_572_ac_573_the_attribute_the_driver_and_its_name_are_registered() {
+fn the_attribute_the_driver_and_its_name_are_registered() {
     let dirs = Dirs::new("fresh");
     let (output, scenario) = dirs.install(&clean());
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
@@ -121,7 +125,7 @@ fn ac_571_ac_572_ac_573_the_attribute_the_driver_and_its_name_are_registered() {
 }
 
 #[test]
-fn ac_571_an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() {
+fn an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() {
     let dirs = Dirs::new("existing");
     fs::write(dirs.tree.join(".gitattributes"), "*.png binary").unwrap();
     let (output, _) = dirs.install(&clean());
@@ -133,7 +137,7 @@ fn ac_571_an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() 
 }
 
 #[test]
-fn ac_574_a_second_install_changes_nothing() {
+fn a_second_install_changes_nothing() {
     let dirs = Dirs::new("again");
     let (_, installed) = dirs.install(&clean());
     let attributes = dirs.attributes();
@@ -212,7 +216,7 @@ fn a_command_that_starts_another_version_is_warned_of_and_registered() {
 }
 
 #[test]
-fn ac_575_ac_576_outside_a_repository_it_refuses_and_writes_nothing() {
+fn outside_a_repository_it_refuses_and_writes_nothing() {
     let dirs = Dirs::new("outside");
     let before = dirs.files();
     let (output, after) = dirs.install(&GitScenario::outside_repository());
@@ -242,4 +246,43 @@ fn install_takes_no_paths_and_the_paths_need_no_install() {
         .output()
         .unwrap();
     assert_eq!(output.status.code(), Some(2));
+}
+
+/// The one JSON document a run printed, held to the `loft merge-driver` schema.
+fn json_of(output: &Output) -> Value {
+    schema::conforming(
+        &output.stdout,
+        include_str!("../../../schemas/merge-driver.json"),
+    )
+}
+
+#[test]
+fn the_json_document_of_an_install_lists_the_names_written_and_the_launcher_s_version() {
+    let dirs = Dirs::new("json");
+    let (output, _) = dirs.install_with(&clean(), &["--format", "json"]);
+    assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "installed");
+    assert_eq!(
+        document["written"],
+        json!([".gitattributes", "merge.loft.driver", "merge.loft.name"])
+    );
+    assert_eq!(document["version"], own_version().trim_end());
+}
+
+#[test]
+fn a_refused_install_is_listed_among_the_json_document_s_errors() {
+    let dirs = Dirs::new("json-outside");
+    let (output, _) = dirs.install_with(&GitScenario::outside_repository(), &["--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    let error = &document["errors"][0];
+    assert!(
+        error["message"]
+            .as_str()
+            .unwrap()
+            .contains("a git repository is required"),
+        "{error}"
+    );
 }

@@ -46,12 +46,8 @@ pub fn run(
                     .collect()
             };
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "written": names(&written),
-                    "unchanged": names(&unchanged),
-                    "errors": [],
-                }));
+                let fields = json!({ "written": names(&written), "unchanged": names(&unchanged) });
+                json::print(&json::result(SCHEMA, "rendered", fields, Vec::new()));
             } else {
                 for path in &written {
                     println!("{}", path.display());
@@ -62,12 +58,7 @@ pub fn run(
         Err(refusal) => {
             if as_json {
                 let errors: Vec<Value> = refusal.errors.iter().map(|(e, _)| e.clone()).collect();
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "written": [],
-                    "unchanged": [],
-                    "errors": errors,
-                }));
+                json::print(&json::failure(SCHEMA, errors));
             }
             for (_, line) in &refusal.errors {
                 eprintln!("{line}");

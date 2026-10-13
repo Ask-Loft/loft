@@ -1,64 +1,92 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-publish-2.json",
-  "title": "The result of `loft publish --format json`, version 2",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema",
-    "outcome",
-    "allocated",
-    "rewritten",
-    "withdrawn",
-    "errors"
-  ],
-  "properties": {
-    "schema": {
-      "const": "loft-publish/2"
-    },
-    "outcome": {
-      "type": "string",
-      "enum": [
-        "published",
-        "unchanged",
-        "refused"
-      ]
-    },
-    "allocated": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/allocated"
+  "$id": "loft-publish-1.json",
+  "title": "The result of `loft publish --format json`, version 1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "allocated",
+        "rewritten",
+        "withdrawn",
+        "publishSequence",
+        "stateRoot",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-publish/1"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "published",
+            "unchanged"
+          ]
+        },
+        "allocated": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/allocated"
+          }
+        },
+        "rewritten": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/rewritten"
+          }
+        },
+        "withdrawn": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/rewritten"
+          }
+        },
+        "finish": {
+          "type": "string"
+        },
+        "publishSequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stateRoot": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     },
-    "rewritten": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/rewritten"
-      }
-    },
-    "withdrawn": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/rewritten"
-      }
-    },
-    "finish": {
-      "type": "string"
-    },
-    "publishSequence": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "stateRoot": {
-      "type": "string"
-    },
-    "errors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/error"
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-publish/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
       }
     }
-  },
+  ],
   "$defs": {
     "rewritten": {
       "type": "object",

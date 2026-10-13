@@ -1,4 +1,4 @@
-//! A document written as a `spec/` tree reads back to the same roots (D-11 FG-2).
+//! A document written as a `spec/` tree reads back to the same roots (FG-2).
 
 mod common;
 
@@ -65,7 +65,7 @@ fn the_reading_list_reads_back_to_the_same_roots() {
 }
 
 #[test]
-fn ac_119_writing_what_was_read_changes_no_byte() {
+fn writing_what_was_read_changes_no_byte() {
     let document = convert_value(&full_export()).unwrap().document;
     let (files, back) = round_trip(&document);
     assert_eq!(codec::write(&back), files);

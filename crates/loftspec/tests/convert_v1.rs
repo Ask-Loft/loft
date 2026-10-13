@@ -1,4 +1,4 @@
-//! Converting a Loft v1 export into a document (D-11 F-13, F-14): node kinds, keys and labels,
+//! Converting a Loft v1 export into a document (F-13, F-14): node kinds, keys and labels,
 //! parentage and order, Facet Tags, the registries, statements and the label counters.
 
 mod common;
@@ -22,7 +22,7 @@ fn converted() -> Conversion {
 }
 
 #[test]
-fn ac_162_to_ac_164_ac_171_and_ac_704_each_node_maps_to_its_kind_under_its_parent() {
+fn each_node_maps_to_its_kind_under_its_parent() {
     let document = converted().document;
     let [product] = document.products.as_slice() else {
         panic!("one Product");
@@ -42,7 +42,7 @@ fn ac_162_to_ac_164_ac_171_and_ac_704_each_node_maps_to_its_kind_under_its_paren
 }
 
 #[test]
-fn ac_165_and_ac_166_constraints_and_quality_attributes_keep_their_fields() {
+fn constraints_and_quality_attributes_keep_their_fields() {
     let document = converted().document;
     let component = &document.components[0];
     let constraint = &component.constraints[0];
@@ -55,7 +55,7 @@ fn ac_165_and_ac_166_constraints_and_quality_attributes_keep_their_fields() {
 }
 
 #[test]
-fn ac_171_constraints_and_quality_attributes_keep_their_parent_kind() {
+fn constraints_and_quality_attributes_keep_their_parent_kind() {
     let document = converted().document;
     let group = &document.products[0].feature_groups[0];
     assert_eq!(group.constraints[0].id, Some(ConstraintId::new(key(11))));
@@ -66,14 +66,14 @@ fn ac_171_constraints_and_quality_attributes_keep_their_parent_kind() {
 }
 
 #[test]
-fn ac_167_the_node_count_is_the_v1_count_less_the_facet_tags() {
+fn the_node_count_is_the_v1_count_less_the_facet_tags() {
     let document = converted().document;
     let hashes = hash_document(&document).unwrap();
     assert_eq!(hashes.nodes.len(), tree().len() - 2);
 }
 
 #[test]
-fn ac_168_to_ac_170_every_node_keeps_its_uuid_and_its_external_id_without_aliases() {
+fn every_node_keeps_its_uuid_and_its_external_id_without_aliases() {
     let document = converted().document;
     for v1 in tree() {
         if v1["type"] == "FacetTag" {
@@ -95,7 +95,7 @@ fn ac_168_to_ac_170_every_node_keeps_its_uuid_and_its_external_id_without_aliase
 }
 
 #[test]
-fn ac_173_and_ac_174_a_facet_tag_becomes_a_tag_on_its_parent() {
+fn a_facet_tag_becomes_a_tag_on_its_parent() {
     let document = converted().document;
     assert_eq!(
         document.products[0].details.tags,
@@ -110,7 +110,7 @@ fn ac_173_and_ac_174_a_facet_tag_becomes_a_tag_on_its_parent() {
 }
 
 #[test]
-fn ac_175_ac_176_and_ac_226_to_ac_228_the_registries_keep_keys_names_and_definitions() {
+fn the_registries_keep_keys_names_and_definitions() {
     let document = converted().document;
     let tags: Vec<(TagId, &str, &str)> = document
         .tags
@@ -134,7 +134,7 @@ fn ac_175_ac_176_and_ac_226_to_ac_228_the_registries_keep_keys_names_and_definit
 }
 
 #[test]
-fn ac_236_siblings_are_ordered_by_ascending_ordinal() {
+fn siblings_are_ordered_by_ascending_ordinal() {
     let document = converted().document;
     let ids: Vec<Option<RequirementId>> = document.products[0].feature_groups[0].features[0]
         .requirements
@@ -151,7 +151,7 @@ fn ac_236_siblings_are_ordered_by_ascending_ordinal() {
 }
 
 #[test]
-fn ac_185_to_ac_187_a_statement_is_slots_when_it_renders_back_and_text_with_a_finding_otherwise() {
+fn a_statement_is_slots_when_it_renders_back_and_text_with_a_finding_otherwise() {
     let conversion = converted();
     let requirements = &conversion.document.products[0].feature_groups[0].features[0].requirements;
     assert!(matches!(requirements[0].statement, Statement::Form(_)));
@@ -165,7 +165,7 @@ fn ac_185_to_ac_187_a_statement_is_slots_when_it_renders_back_and_text_with_a_fi
 }
 
 #[test]
-fn ac_702_each_counter_is_one_above_the_highest_label_and_an_unused_prefix_starts_at_1() {
+fn each_counter_is_one_above_the_highest_label_and_an_unused_prefix_starts_at_1() {
     let counters = converted().document.counters;
     assert_eq!(counters.next(LabelPrefix::Requirement).get(), 3);
     assert_eq!(counters.next(LabelPrefix::Component).get(), 3);
@@ -174,7 +174,7 @@ fn ac_702_each_counter_is_one_above_the_highest_label_and_an_unused_prefix_start
 }
 
 #[test]
-fn ac_706_an_export_naming_no_document_is_refused() {
+fn an_export_naming_no_document_is_refused() {
     let mut value = export(&[], &[]);
     value["vocabularyEntries"] = json!([]);
     value["technicalConstraintCategories"] = json!([]);
@@ -186,7 +186,7 @@ fn ac_706_an_export_naming_no_document_is_refused() {
 }
 
 #[test]
-fn ac_705_an_export_naming_two_documents_is_refused() {
+fn an_export_naming_two_documents_is_refused() {
     let mut nodes = tree();
     nodes[4]["documentId"] = json!(uuid(98));
     assert!(matches!(

@@ -1,4 +1,4 @@
-//! Two publishes that meet (D-11, settling two publishes) under real git: Alice publishes in the
+//! Two publishes that meet (F-58) under real git: Alice publishes in the
 //! origin, Bob publishes in his clone and pulls by merge or by rebase, `loft publish` settles the
 //! stop, and Bob finishes with the command it prints. Every scenario that finishes ends with
 //! `loft check --fail-on warning` and `loft verify` passing.

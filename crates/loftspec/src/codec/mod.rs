@@ -1,4 +1,4 @@
-//! The text form (D-11 FG-2): a `spec/` tree read into a document and a document written back
+//! The text form (FG-2): a `spec/` tree read into a document and a document written back
 //! as files in canonical layout. The writer yields paths and bytes; writing them to disk
 //! belongs to a store (CMP-4).
 
@@ -23,7 +23,7 @@ pub use error::{Problem, ReadError, Site, SpecPath};
 pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, Tree};
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
-pub use record::{Mode, Rec, Val};
+pub use record::{ConflictRec, Mode, Rec, Val};
 pub use resolve::resolve;
 pub use unresolve::unresolve;
 

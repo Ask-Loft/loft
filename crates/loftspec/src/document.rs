@@ -16,7 +16,7 @@ use crate::ids::{
 use crate::names::{CategoryName, TagName};
 use crate::tree::{Product, RootComponent};
 
-/// The type of an edge (D-11 F-13, F-14).
+/// The type of an edge (F-13, F-14).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum EdgeKind {
     Realizes,

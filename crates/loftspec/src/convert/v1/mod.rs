@@ -1,4 +1,4 @@
-//! Conversion from a Loft v1 Authored State export (D-11 F-13..F-16).
+//! Conversion from a Loft v1 Authored State export (F-13..F-16).
 
 pub mod export;
 mod links;
@@ -197,7 +197,7 @@ fn registries(export: &Export, document: &mut Document) {
         .collect();
 }
 
-/// The one document UUID the export's elements carry (D-11 gap G18).
+/// The one document UUID the export's elements carry.
 fn document_uuid(export: &Export) -> Result<Uuid, ConvertError> {
     let nodes = export.nodes.iter().map(|node| node.document_id);
     let entries = export

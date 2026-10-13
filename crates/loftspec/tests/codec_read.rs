@@ -1,4 +1,4 @@
-//! What the reader refuses in a `spec/` tree, and where it says the error is (D-11 F-6..F-10,
+//! What the reader refuses in a `spec/` tree, and where it says the error is (F-6..F-10,
 //! F-49, F-47).
 
 mod common;
@@ -24,7 +24,7 @@ fn at(line: usize, column: usize) -> Location {
 }
 
 #[test]
-fn ac_234_ac_235_a_tree_without_a_manifest_is_refused_naming_its_path() {
+fn a_tree_without_a_manifest_is_refused_naming_its_path() {
     let mut files = files();
     files.remove(&path("loftspec.yaml"));
     let error = only(&files);
@@ -36,7 +36,7 @@ fn ac_234_ac_235_a_tree_without_a_manifest_is_refused_naming_its_path() {
 }
 
 #[test]
-fn ac_69_ac_70_an_unknown_format_is_refused_and_no_other_file_is_read() {
+fn an_unknown_format_is_refused_and_no_other_file_is_read() {
     let mut files = edited("loftspec.yaml", "loftspec/1", "loftspec/2");
     files.insert(path("notes.yaml"), b"a: 1\n".to_vec());
     let error = only(&files);
@@ -45,7 +45,7 @@ fn ac_69_ac_70_an_unknown_format_is_refused_and_no_other_file_is_read() {
 }
 
 #[test]
-fn ac_107_ac_108_an_unknown_field_is_refused_at_its_position() {
+fn an_unknown_field_is_refused_at_its_position() {
     let files = edited(FEATURE, "slug: keys\n", "slug: keys\ncolour: \"red\"\n");
     let error = only(&files);
     assert_eq!(error.problem, Problem::UnknownField("colour".to_owned()));
@@ -58,7 +58,7 @@ fn ac_107_ac_108_an_unknown_field_is_refused_at_its_position() {
 }
 
 #[test]
-fn ac_299_an_edge_of_another_type_is_refused() {
+fn an_edge_of_another_type_is_refused() {
     let files = edited(FEATURE, "realizes:", "dependsOn:");
     assert_eq!(
         only(&files).problem,
@@ -67,7 +67,7 @@ fn ac_299_an_edge_of_another_type_is_refused() {
 }
 
 #[test]
-fn ac_93_a_file_the_format_does_not_name_is_refused() {
+fn a_file_the_format_does_not_name_is_refused() {
     let mut files = files();
     files.insert(path("notes.yaml"), b"a: 1\n".to_vec());
     let error = only(&files);
@@ -76,7 +76,7 @@ fn ac_93_a_file_the_format_does_not_name_is_refused() {
 }
 
 #[test]
-fn ac_16_ac_17_a_record_without_a_key_is_refused_outside_the_formatter() {
+fn a_record_without_a_key_is_refused_outside_the_formatter() {
     let files = edited(
         FEATURE,
         "      - key: 00000000-0000-7000-8000-000000000005\n        name:",
@@ -86,7 +86,7 @@ fn ac_16_ac_17_a_record_without_a_key_is_refused_outside_the_formatter() {
 }
 
 #[test]
-fn ac_212_a_key_in_uppercase_is_refused() {
+fn a_key_in_uppercase_is_refused() {
     let files = edited(
         FEATURE,
         "key: 00000000-0000-7000-8000-00000000000a",
@@ -96,7 +96,7 @@ fn ac_212_a_key_in_uppercase_is_refused() {
 }
 
 #[test]
-fn ac_291_a_tag_name_with_an_uppercase_letter_is_refused() {
+fn a_tag_name_with_an_uppercase_letter_is_refused() {
     let files = edited(PRODUCT, "  - portable\n", "  - Portable\n");
     let error = only(&files);
     assert!(matches!(
@@ -110,7 +110,7 @@ fn ac_291_a_tag_name_with_an_uppercase_letter_is_refused() {
 }
 
 #[test]
-fn ac_131_a_statement_with_text_and_a_form_is_refused() {
+fn a_statement_with_text_and_a_form_is_refused() {
     let files = edited(
         FEATURE,
         "      form: ubiquitous\n",
@@ -120,19 +120,19 @@ fn ac_131_a_statement_with_text_and_a_form_is_refused() {
 }
 
 #[test]
-fn ac_139_a_missing_slot_is_refused_naming_it() {
+fn a_missing_slot_is_refused_naming_it() {
     let files = edited(FEATURE, "form: ubiquitous", "form: event_driven");
     assert_eq!(only(&files).problem, Problem::MissingField("when"));
 }
 
 #[test]
-fn ac_140_a_slot_the_form_does_not_take_is_refused() {
+fn a_slot_the_form_does_not_take_is_refused() {
     let files = edited(FEATURE, "      system:", "      when: \"x\"\n      system:");
     assert!(matches!(only(&files).problem, Problem::Shape(message) if message.contains("when")));
 }
 
 #[test]
-fn ac_814_a_slug_that_differs_from_its_file_name_is_refused() {
+fn a_slug_that_differs_from_its_file_name_is_refused() {
     let files = edited(FEATURE, "slug: keys", "slug: other");
     let error = only(&files);
     assert_eq!(
@@ -145,7 +145,7 @@ fn ac_814_a_slug_that_differs_from_its_file_name_is_refused() {
 }
 
 #[test]
-fn ac_816_a_feature_file_outside_its_groups_directory_is_refused() {
+fn a_feature_file_outside_its_groups_directory_is_refused() {
     let mut files = files();
     let bytes = files.remove(&path(FEATURE)).unwrap();
     files.insert(path("products/example-product/elsewhere/keys.yaml"), bytes);
@@ -157,7 +157,7 @@ fn ac_816_a_feature_file_outside_its_groups_directory_is_refused() {
 }
 
 #[test]
-fn ac_99_a_listed_feature_without_a_file_is_refused() {
+fn a_listed_feature_without_a_file_is_refused() {
     let files = edited(
         PRODUCT,
         "      - 00000000-0000-7000-8000-000000000003\n",
@@ -169,7 +169,7 @@ fn ac_99_a_listed_feature_without_a_file_is_refused() {
 }
 
 #[test]
-fn ac_100_a_feature_file_no_group_lists_is_refused() {
+fn a_feature_file_no_group_lists_is_refused() {
     let mut files = files();
     let other = String::from_utf8(files[&path(FEATURE)].clone())
         .unwrap()
@@ -186,7 +186,7 @@ fn ac_100_a_feature_file_no_group_lists_is_refused() {
 }
 
 #[test]
-fn ac_102_a_feature_listed_twice_by_one_group_is_refused() {
+fn a_feature_listed_twice_by_one_group_is_refused() {
     let files = edited(
         PRODUCT,
         "      - 00000000-0000-7000-8000-000000000003\n",
@@ -196,7 +196,7 @@ fn ac_102_a_feature_listed_twice_by_one_group_is_refused() {
 }
 
 #[test]
-fn ac_699_a_listed_product_without_a_file_is_refused() {
+fn a_listed_product_without_a_file_is_refused() {
     let files = edited(
         "loftspec.yaml",
         "products:\n",
@@ -209,7 +209,7 @@ fn ac_699_a_listed_product_without_a_file_is_refused() {
 }
 
 #[test]
-fn ac_13_ac_14_a_key_carried_twice_is_refused_naming_both_places() {
+fn a_key_carried_twice_is_refused_naming_both_places() {
     let files = edited(
         "decisions/keys-are-uuids.yaml",
         "key: 00000000-0000-7000-8000-000000000019",
@@ -222,7 +222,7 @@ fn ac_13_ac_14_a_key_carried_twice_is_refused_naming_both_places() {
 }
 
 #[test]
-fn ac_791_an_empty_registry_file_reads_as_no_entries() {
+fn an_empty_registry_file_reads_as_no_entries() {
     let mut files = files();
     files.insert(path("categories.yaml"), Vec::new());
     let files = {
@@ -240,7 +240,7 @@ fn ac_791_an_empty_registry_file_reads_as_no_entries() {
 }
 
 #[test]
-fn ac_809_a_former_label_reads_as_a_former_label() {
+fn a_former_label_reads_as_a_former_label() {
     let files = edited(
         "decisions/keys-are-uuids.yaml",
         "    node: 00000000-0000-7000-8000-000000000006\n",
@@ -255,7 +255,7 @@ fn ac_809_a_former_label_reads_as_a_former_label() {
 }
 
 #[test]
-fn ac_797_an_empty_body_stays_empty() {
+fn an_empty_body_stays_empty() {
     let files = edited(PRODUCT, "body: \"The example.\"", "body: \"\"");
     let document = codec::read(&files).unwrap();
     assert_eq!(document.products[0].details.body.as_deref(), Some(""));

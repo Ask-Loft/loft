@@ -1,9 +1,9 @@
-//! The typed conflict record (D-11 F-34): what each side of a conflict holds, found from the
+//! The typed conflict record (F-34): what each side of a conflict holds, found from the
 //! record that holds the conflict and the field path it names, so that a side is read and
 //! written in the shape of that field (AC-860, RQ-220).
 
 use super::error::{Located, Problem};
-use super::record::{self, Mode, Rec, Val};
+use super::record::{self, ConflictRec, Mode, Val};
 use super::schema::{Item, Kind, Scalar, Shape, field};
 use crate::yaml::{self, Out, Style, Value};
 
@@ -32,9 +32,6 @@ pub fn side_shape(host: Kind, path: &str) -> Option<SideShape> {
     let mut segments = path.split('.').peekable();
     while let Some(segment) = segments.next() {
         let (_, found) = kind.field(segment)?;
-        if found.name == field::CONFLICTS {
-            return None;
-        }
         if segments.peek().is_none() {
             return holds_no_keyed_record(found.shape).then_some(SideShape::Field(found.shape));
         }
@@ -56,7 +53,11 @@ fn holds_no_keyed_record(shape: Shape) -> bool {
 }
 
 /// Checks the `conflicts` list of a record of `host`.
-pub(crate) fn check_conflicts(node: &yaml::Node, host: Kind, mode: Mode) -> Result<Val, Located> {
+pub(crate) fn check_conflicts(
+    node: &yaml::Node,
+    host: Kind,
+    mode: Mode,
+) -> Result<Vec<ConflictRec>, Located> {
     let items = match &node.value {
         Value::Sequence(items) => items.as_slice(),
         Value::Empty => &[],
@@ -64,12 +65,11 @@ pub(crate) fn check_conflicts(node: &yaml::Node, host: Kind, mode: Mode) -> Resu
     };
     items
         .iter()
-        .map(|item| check_conflict(item, host, mode).map(Val::Record))
-        .collect::<Result<_, _>>()
-        .map(Val::List)
+        .map(|item| check_conflict(item, host, mode))
+        .collect()
 }
 
-fn check_conflict(node: &yaml::Node, host: Kind, mode: Mode) -> Result<Rec, Located> {
+fn check_conflict(node: &yaml::Node, host: Kind, mode: Mode) -> Result<ConflictRec, Located> {
     let Value::Mapping(entries) = &node.value else {
         return Err(located(node, Problem::Expected("a mapping of fields")));
     };
@@ -88,19 +88,15 @@ fn check_conflict(node: &yaml::Node, host: Kind, mode: Mode) -> Result<Rec, Loca
             },
         )
     })?;
-    let mut conflict = Rec {
-        kind: Kind::Conflict,
-        position: node.position,
-        fields: vec![(field::FIELD, named)],
-    };
+    let mut conflict = ConflictRec::new(text, [None, None, None]);
     for entry in entries.iter().filter(|entry| entry.key != field::FIELD) {
-        let Some((_, side)) = Kind::Conflict.field(&entry.key) else {
+        let Some(side) = conflict.side_mut(&entry.key) else {
             return Err(Located {
                 position: entry.key_position,
                 problem: Problem::UnknownField(entry.key.clone()),
             });
         };
-        conflict.set(side.name, check_side(&entry.value, shape, mode)?);
+        *side = Some(check_side(&entry.value, shape, mode)?);
     }
     Ok(conflict)
 }
@@ -130,34 +126,24 @@ fn located(node: &yaml::Node, problem: Problem) -> Located {
 
 /// The `conflicts` list of a record of `host` as the writer lays it out: each conflict's
 /// fields in the Format's order, each side in the shape of the field it names (AC-857).
-pub(crate) fn conflicts_out(items: &[Val], host: Kind) -> Out {
+pub(crate) fn conflicts_out(conflicts: &[ConflictRec], host: Kind) -> Out {
     Out::Sequence(
-        items
+        conflicts
             .iter()
-            .filter_map(|item| match item {
-                Val::Record(conflict) => Some(conflict_out(conflict, host)),
-                _ => None,
-            })
+            .map(|conflict| conflict_out(conflict, host))
             .collect(),
     )
 }
 
-fn conflict_out(conflict: &Rec, host: Kind) -> Out {
-    let path = conflict.text(field::FIELD).unwrap_or_default();
-    let shape = side_shape(host, path).expect("a conflict the reader or the merge checked");
-    let fields = conflict
-        .fields
-        .iter()
-        .map(|(name, value)| {
-            let out = if *name == field::FIELD {
-                Out::Token(path.to_owned())
-            } else {
-                side_out(value, shape)
-            };
-            (*name, out)
-        })
-        .collect();
-    Out::Mapping(fields)
+fn conflict_out(conflict: &ConflictRec, host: Kind) -> Out {
+    let shape =
+        side_shape(host, &conflict.field).expect("a conflict the reader or the merge checked");
+    let sides = conflict
+        .sides()
+        .into_iter()
+        .filter_map(|(name, value)| value.map(|value| (name, side_out(value, shape))));
+    let path = (field::FIELD, Out::Token(conflict.field.clone()));
+    Out::Mapping(std::iter::once(path).chain(sides).collect())
 }
 
 fn side_out(value: &Val, shape: SideShape) -> Out {

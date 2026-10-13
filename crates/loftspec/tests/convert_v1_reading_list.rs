@@ -1,5 +1,5 @@
 //! The Reading List export: a small v1 export whose every hash and address the v1 hashing
-//! produced, converted end to end (D-11 F-13..F-15). It covers every node kind, all four Component
+//! produced, converted end to end (F-13..F-15). It covers every node kind, all four Component
 //! scopes, Facet Tags, a constraint category, a quality target, decisions in each of the five
 //! states, and prose with a resolvable reference, an unresolvable one and a heading.
 
@@ -31,7 +31,7 @@ fn converted() -> Conversion {
 }
 
 #[test]
-fn ac_167_every_node_but_the_facet_tags_and_every_decision_is_bound() {
+fn every_node_but_the_facet_tags_and_every_decision_is_bound() {
     let document = converted().document;
     let nodes = document.bindings.len() - document.decisions.len();
     assert_eq!(nodes, 27, "30 v1 nodes less 3 Facet Tags");
@@ -41,7 +41,7 @@ fn ac_167_every_node_but_the_facet_tags_and_every_decision_is_bound() {
 }
 
 #[test]
-fn ac_178_ac_179_and_ac_180_the_edges_are_the_links_the_scope_the_subjects_and_the_references() {
+fn the_edges_are_the_links_the_scope_the_subjects_and_the_references() {
     let edges = converted().document.edges;
     let mut kinds: BTreeMap<&str, usize> = BTreeMap::new();
     for edge in &edges {
@@ -64,7 +64,7 @@ fn ac_178_ac_179_and_ac_180_the_edges_are_the_links_the_scope_the_subjects_and_t
 #[test]
 /// The criterion that cites `RQ-99` names a label above every Requirement label of the export,
 /// which is no reference (AC-891).
-fn ac_187_and_ac_193_the_findings_are_one_text_statement_and_one_heading_in_export_order() {
+fn the_findings_are_one_text_statement_and_one_heading_in_export_order() {
     assert_eq!(
         converted().findings,
         [
@@ -80,8 +80,7 @@ fn ac_187_and_ac_193_the_findings_are_one_text_statement_and_one_heading_in_expo
 }
 
 #[test]
-fn rq_176_and_ac_198_each_counter_is_one_above_the_highest_label_and_facet_tags_count_in_the_sidecar()
- {
+fn each_counter_is_one_above_the_highest_label_and_facet_tags_count_in_the_sidecar() {
     let conversion = converted();
     let next = |prefix| conversion.document.counters.next(prefix).get();
     assert_eq!(next(LabelPrefix::Requirement), 7);
@@ -92,7 +91,7 @@ fn rq_176_and_ac_198_each_counter_is_one_above_the_highest_label_and_facet_tags_
 }
 
 #[test]
-fn ac_206_two_conversions_write_identical_sidecars() {
+fn two_conversions_write_identical_sidecars() {
     assert_eq!(converted().sidecar.to_json(), converted().sidecar.to_json());
 }
 

@@ -1,4 +1,4 @@
-//! The strict reader of the YAML subset (D-11 F-8, F-9, ADR-14).
+//! The strict reader of the YAML subset (F-8, F-9, ADR-14).
 
 use loftspec::yaml::{self, Entry, ErrorKind, Location, Node, Position, Style, Value};
 
@@ -42,7 +42,7 @@ fn at(line: usize, column: usize) -> Position {
 }
 
 #[test]
-fn ac_112_block_mappings_and_sequences_are_accepted() {
+fn block_mappings_and_sequences_are_accepted() {
     let node = read(
         "key: 0190f5f6-0000-7000-8000-000000000001\nrequirements:\n  - key: a\n    name: \"N\"\n  - key: b\n",
     );
@@ -64,7 +64,7 @@ fn a_sequence_may_start_at_its_key_indentation() {
 }
 
 #[test]
-fn ac_113_plain_double_quoted_and_literal_scalars_are_accepted() {
+fn plain_double_quoted_and_literal_scalars_are_accepted() {
     let node =
         read("a: plain\nb: \"quoted \\\"x\\\"\\n\\t\\u00E9\"\nc: |\n  line one\n  line two\n");
     let fields = entries(&node);
@@ -90,7 +90,7 @@ fn literal_chomping_keeps_exactly_the_final_line_feeds_its_header_says() {
 }
 
 #[test]
-fn ac_123_ac_124_a_literal_keeps_trailing_spaces_tabs_and_inner_indentation() {
+fn a_literal_keeps_trailing_spaces_tabs_and_inner_indentation() {
     let node = read("a: |\n  one  \n  \ttab\n    deeper\n\n  after blank\nb: x\n");
     assert_eq!(
         scalar(&entries(&node)[0].value).1,
@@ -117,14 +117,14 @@ fn a_key_without_a_value_is_empty() {
 }
 
 #[test]
-fn ac_114_anchors_aliases_and_tags_are_refused_at_their_position() {
+fn anchors_aliases_and_tags_are_refused_at_their_position() {
     assert_eq!(refused("a: &x 1\n"), (at(1, 4), ErrorKind::Anchor));
     assert_eq!(refused("a: *x\n"), (at(1, 4), ErrorKind::Alias));
     assert_eq!(refused("a: !tag x\n"), (at(1, 4), ErrorKind::Tag));
 }
 
 #[test]
-fn ac_115_flow_collections_are_refused() {
+fn flow_collections_are_refused() {
     assert_eq!(
         refused("a: [1, 2]\n"),
         (at(1, 4), ErrorKind::FlowCollection)
@@ -136,7 +136,7 @@ fn ac_115_flow_collections_are_refused() {
 }
 
 #[test]
-fn ac_116_folded_and_single_quoted_scalars_are_refused() {
+fn folded_and_single_quoted_scalars_are_refused() {
     assert_eq!(refused("a: >\n  x\n"), (at(1, 4), ErrorKind::FoldedScalar));
     assert_eq!(
         refused("a: 'x'\n"),
@@ -145,7 +145,7 @@ fn ac_116_folded_and_single_quoted_scalars_are_refused() {
 }
 
 #[test]
-fn ac_117_a_document_marker_is_refused() {
+fn a_document_marker_is_refused() {
     assert_eq!(
         refused("a: 1\n---\nb: 2\n"),
         (at(2, 1), ErrorKind::DocumentMarker)
@@ -161,7 +161,7 @@ fn ac_117_a_document_marker_is_refused() {
 }
 
 #[test]
-fn ac_248_a_comment_is_refused_wherever_it_stands() {
+fn a_comment_is_refused_wherever_it_stands() {
     assert_eq!(refused("# note\na: 1\n"), (at(1, 1), ErrorKind::Comment));
     assert_eq!(refused("a: 1 # note\n"), (at(1, 6), ErrorKind::Comment));
     assert_eq!(refused("a: \"x\" # note\n"), (at(1, 8), ErrorKind::Comment));
@@ -185,7 +185,7 @@ fn a_hash_inside_content_is_not_a_comment() {
 }
 
 #[test]
-fn ac_109_ac_110_a_repeated_field_is_refused_at_its_second_occurrence() {
+fn a_repeated_field_is_refused_at_its_second_occurrence() {
     assert_eq!(
         refused("a: 1\nb: 2\na: 3\n"),
         (at(3, 1), ErrorKind::DuplicateKey("a".to_owned()))
@@ -193,7 +193,7 @@ fn ac_109_ac_110_a_repeated_field_is_refused_at_its_second_occurrence() {
 }
 
 #[test]
-fn ac_111_a_tab_in_indentation_is_refused_at_the_tab() {
+fn a_tab_in_indentation_is_refused_at_the_tab() {
     assert_eq!(
         refused("a:\n\tb: 1\n"),
         (at(2, 1), ErrorKind::TabInIndentation)
@@ -205,14 +205,14 @@ fn ac_111_a_tab_in_indentation_is_refused_at_the_tab() {
 }
 
 #[test]
-fn ac_229_ac_230_bytes_that_are_not_utf8_are_refused_at_their_offset() {
+fn bytes_that_are_not_utf8_are_refused_at_their_offset() {
     let error = yaml::read(b"a: \xff\n").expect_err("refused");
     assert_eq!(error.location, Location::Byte(3));
     assert_eq!(error.kind, ErrorKind::InvalidUtf8);
 }
 
 #[test]
-fn ac_231_a_byte_order_mark_is_refused_at_1_1() {
+fn a_byte_order_mark_is_refused_at_1_1() {
     assert_eq!(
         refused("\u{FEFF}a: 1\n"),
         (at(1, 1), ErrorKind::ByteOrderMark)
@@ -220,7 +220,7 @@ fn ac_231_a_byte_order_mark_is_refused_at_1_1() {
 }
 
 #[test]
-fn rq_33_a_carriage_return_and_a_control_character_are_refused() {
+fn a_carriage_return_and_a_control_character_are_refused() {
     assert_eq!(refused("a: 1\r\n"), (at(1, 5), ErrorKind::CarriageReturn));
     assert_eq!(
         refused("a: \u{7}\n"),
@@ -229,12 +229,12 @@ fn rq_33_a_carriage_return_and_a_control_character_are_refused() {
 }
 
 #[test]
-fn ac_681_a_column_counts_unicode_scalar_values() {
+fn a_column_counts_unicode_scalar_values() {
     assert_eq!(refused("a: \"é\" #\n"), (at(1, 8), ErrorKind::Comment));
 }
 
 #[test]
-fn rq_33_structure_the_subset_does_not_define_is_refused() {
+fn structure_the_subset_does_not_define_is_refused() {
     assert_eq!(
         refused("a: 1\n  b: 2\n"),
         (at(2, 3), ErrorKind::MultiLinePlainScalar)

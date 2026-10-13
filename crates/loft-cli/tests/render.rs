@@ -1,4 +1,4 @@
-//! `loft render` as a process (D-11 F-40, F-26): what it writes and where, what it refuses, and
+//! `loft render` as a process (F-40, F-26): what it writes and where, what it refuses, and
 //! that no projection feeds back into the tree.
 
 mod common;
@@ -7,6 +7,8 @@ mod schema;
 
 use std::collections::BTreeMap;
 use std::fs;
+
+use std::process::Output;
 
 use common::{Scratch, stderr, stdout};
 use serde_json::Value;
@@ -28,12 +30,17 @@ fn tree(scratch: &Scratch) -> BTreeMap<String, Vec<u8>> {
     files
 }
 
+/// The JSON document a render printed, held to the render schema.
+fn json_of(output: &Output) -> Value {
+    schema::conforming(&output.stdout, include_str!("../../../schemas/render.json"))
+}
+
 fn exists(scratch: &Scratch, path: &str) -> bool {
     scratch.0.join(path).exists()
 }
 
 #[test]
-fn ac_547_without_an_option_both_projections_go_to_docs() {
+fn without_an_option_both_projections_go_to_docs() {
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft(&["render"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
@@ -46,7 +53,7 @@ fn ac_547_without_an_option_both_projections_go_to_docs() {
 }
 
 #[test]
-fn ac_545_ac_546_ac_684_each_option_writes_only_its_projection() {
+fn each_option_writes_only_its_projection() {
     let scratch = Scratch::with_reading_list();
     assert_eq!(
         scratch
@@ -67,19 +74,28 @@ fn ac_545_ac_546_ac_684_each_option_writes_only_its_projection() {
 }
 
 #[test]
-fn ac_548_an_unchanged_projection_is_not_rewritten() {
+fn an_unchanged_projection_is_not_rewritten() {
     let scratch = Scratch::with_reading_list();
     scratch.loft(&["render"]);
     let output = scratch.loft(&["render", "--format", "json"]);
-    let document: Value = serde_json::from_str(&stdout(&output)).unwrap();
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/render.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "rendered");
     assert_eq!(document["written"], Value::Array(Vec::new()));
     assert_eq!(document["unchanged"].as_array().unwrap().len(), 2);
 }
 
 #[test]
-fn ac_549_ac_685_findings_and_validation_errors_do_not_prevent_a_render() {
+fn a_refused_render_is_an_error_in_json() {
+    let scratch = Scratch::with_reading_list();
+    let output = scratch.loft(&["render", "--markdown", "spec/out.md", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    assert_eq!(document["errors"][0]["kind"], "refused");
+}
+
+#[test]
+fn findings_and_validation_errors_do_not_prevent_a_render() {
     let scratch = Scratch::with_reading_list();
     let product = "products/reading-list/product.yaml";
     scratch.edit(product, "  - portable\n", "  - portable\n  - portable\n");
@@ -89,7 +105,7 @@ fn ac_549_ac_685_findings_and_validation_errors_do_not_prevent_a_render() {
 }
 
 #[test]
-fn ac_938_ac_939_a_read_error_writes_no_projection() {
+fn a_read_error_writes_no_projection() {
     let scratch = Scratch::with_reading_list();
     let product = "products/reading-list/product.yaml";
     scratch.edit(product, "\nslug:", " # a note\nslug:");
@@ -100,7 +116,7 @@ fn ac_938_ac_939_a_read_error_writes_no_projection() {
 }
 
 #[test]
-fn ac_656_ac_657_ac_658_ac_659_an_output_under_spec_is_refused_and_nothing_is_written() {
+fn an_output_under_spec_is_refused_and_nothing_is_written() {
     let scratch = Scratch::with_reading_list();
     let before = tree(&scratch);
     for path in ["spec/out.md", "docs/../spec/out.md", "./spec/deep/out.md"] {
@@ -113,7 +129,7 @@ fn ac_656_ac_657_ac_658_ac_659_an_output_under_spec_is_refused_and_nothing_is_wr
 }
 
 #[test]
-fn ac_442_ac_443_a_render_changes_nothing_under_spec_and_writes_only_its_paths() {
+fn a_render_changes_nothing_under_spec_and_writes_only_its_paths() {
     let scratch = Scratch::with_reading_list();
     let before = tree(&scratch);
     scratch.loft(&["render", "--markdown", "a.md"]);
@@ -127,7 +143,7 @@ fn ac_442_ac_443_a_render_changes_nothing_under_spec_and_writes_only_its_paths()
 }
 
 #[test]
-fn ac_444_to_ac_446_ac_689_projections_change_no_root_and_raise_no_finding() {
+fn projections_change_no_root_and_raise_no_finding() {
     let scratch = Scratch::with_reading_list();
     let report = |scratch: &Scratch| stdout(&scratch.loft(&["check", "--format", "json"]));
     let before = report(&scratch);

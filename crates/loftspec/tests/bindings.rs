@@ -1,4 +1,4 @@
-//! Bindings and aliases (D-11 F-2): a label changes only by relabelling, which keeps the previous
+//! Bindings and aliases (F-2): a label changes only by relabelling, which keeps the previous
 //! label as a permanent alias, and the validator refuses aliases that collide.
 
 mod common;
@@ -12,7 +12,7 @@ fn requirement(n: u32) -> RequirementId {
 }
 
 #[test]
-fn ac_20_a_bound_element_has_exactly_one_label() {
+fn a_bound_element_has_exactly_one_label() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-1")).unwrap();
     assert_eq!(bindings.label_of(requirement(1)), Some(label("RQ-1")));
@@ -25,7 +25,7 @@ fn ac_20_a_bound_element_has_exactly_one_label() {
 }
 
 #[test]
-fn ac_243_a_label_carries_its_elements_kind_prefix() {
+fn a_label_carries_its_elements_kind_prefix() {
     let mut bindings = Bindings::default();
     assert_eq!(
         bindings.bind(ProductId::new(key(1)), label("RQ-1")),
@@ -42,7 +42,7 @@ fn ac_243_a_label_carries_its_elements_kind_prefix() {
 }
 
 #[test]
-fn ac_27_a_relabel_records_the_previous_label_as_an_alias() {
+fn a_relabel_records_the_previous_label_as_an_alias() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.relabel(requirement(1), label("RQ-9")).unwrap();
@@ -51,7 +51,7 @@ fn ac_27_a_relabel_records_the_previous_label_as_an_alias() {
 }
 
 #[test]
-fn ac_28_an_alias_list_only_grows() {
+fn an_alias_list_only_grows() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.relabel(requirement(1), label("RQ-8")).unwrap();
@@ -68,7 +68,7 @@ fn ac_28_an_alias_list_only_grows() {
 }
 
 #[test]
-fn ac_31_and_ac_224_a_promoted_requirement_keeps_its_key_and_its_label_as_an_alias() {
+fn a_promoted_requirement_keeps_its_key_and_its_label_as_an_alias() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     let feature: FeatureId = requirement(1).promote();
@@ -80,7 +80,7 @@ fn ac_31_and_ac_224_a_promoted_requirement_keeps_its_key_and_its_label_as_an_ali
 }
 
 #[test]
-fn ac_29_an_alias_resolves_to_the_element_it_was_assigned_to() {
+fn an_alias_resolves_to_the_element_it_was_assigned_to() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.bind(requirement(2), label("RQ-8")).unwrap();
@@ -102,7 +102,7 @@ fn relabelling_an_unbound_element_is_refused() {
 }
 
 #[test]
-fn ac_32_and_ac_33_an_alias_equal_to_another_elements_label_names_both_and_the_label() {
+fn an_alias_equal_to_another_elements_label_names_both_and_the_label() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.relabel(requirement(1), label("RQ-9")).unwrap();
@@ -123,7 +123,7 @@ fn ac_32_and_ac_33_an_alias_equal_to_another_elements_label_names_both_and_the_l
 }
 
 #[test]
-fn ac_232_and_ac_233_an_alias_under_two_elements_names_both_and_the_alias() {
+fn an_alias_under_two_elements_names_both_and_the_alias() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.relabel(requirement(1), label("RQ-9")).unwrap();
@@ -145,7 +145,7 @@ fn ac_232_and_ac_233_an_alias_under_two_elements_names_both_and_the_alias() {
 }
 
 #[test]
-fn ac_287_and_ac_288_two_keys_with_one_live_label_name_both_and_the_label() {
+fn two_keys_with_one_live_label_name_both_and_the_label() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.bind(requirement(2), label("RQ-7")).unwrap();
@@ -165,7 +165,7 @@ fn ac_287_and_ac_288_two_keys_with_one_live_label_name_both_and_the_label() {
 }
 
 #[test]
-fn ac_289_distinct_labels_and_aliases_validate_cleanly() {
+fn distinct_labels_and_aliases_validate_cleanly() {
     let mut bindings = Bindings::default();
     bindings.bind(requirement(1), label("RQ-7")).unwrap();
     bindings.relabel(requirement(1), label("RQ-9")).unwrap();

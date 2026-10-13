@@ -1,4 +1,4 @@
-//! Slugs: their syntax and the rule that derives one from a name (D-11 F-6, AC-245, AC-246).
+//! Slugs: their syntax and the rule that derives one from a name (F-6, AC-245, AC-246).
 
 mod common;
 
@@ -10,8 +10,7 @@ fn derive(name: &str) -> String {
 }
 
 #[test]
-fn ac_810_to_ac_813_a_slug_is_lowercase_ascii_letters_and_digits_in_runs_joined_by_single_hyphens()
-{
+fn a_slug_is_lowercase_ascii_letters_and_digits_in_runs_joined_by_single_hyphens() {
     assert!(Slug::parse("node-registry-and-link-mapping").is_ok());
     assert!(Slug::parse("f2").is_ok());
     for bad in ["", "Keys", "-keys", "keys-", "a--b", "a_b", "a.b", "é"] {
@@ -20,7 +19,7 @@ fn ac_810_to_ac_813_a_slug_is_lowercase_ascii_letters_and_digits_in_runs_joined_
 }
 
 #[test]
-fn ac_821_to_ac_823_only_a_to_z_are_lowercased_and_every_other_run_is_one_hyphen() {
+fn only_a_to_z_are_lowercased_and_every_other_run_is_one_hyphen() {
     assert_eq!(
         derive("Node, registry and link mapping"),
         "node-registry-and-link-mapping"
@@ -31,7 +30,7 @@ fn ac_821_to_ac_823_only_a_to_z_are_lowercased_and_every_other_run_is_one_hyphen
 }
 
 #[test]
-fn ac_824_a_long_slug_is_cut_at_a_hyphen_within_48_characters() {
+fn a_long_slug_is_cut_at_a_hyphen_within_48_characters() {
     let name = "one two three four five six seven eight nine ten eleven";
     let slug = derive(name);
     assert_eq!(slug, "one-two-three-four-five-six-seven-eight-nine-ten");
@@ -40,19 +39,19 @@ fn ac_824_a_long_slug_is_cut_at_a_hyphen_within_48_characters() {
 }
 
 #[test]
-fn ac_825_a_name_that_leaves_nothing_takes_the_kind() {
+fn a_name_that_leaves_nothing_takes_the_kind() {
     assert_eq!(derive("§ — ¶"), "feature-group");
 }
 
 #[test]
-fn ac_826_a_reserved_device_name_takes_the_suffix_1() {
+fn a_reserved_device_name_takes_the_suffix_1() {
     assert_eq!(derive("CON"), "con-1");
     assert_eq!(derive("lpt9"), "lpt9-1");
     assert_eq!(derive("console"), "console");
 }
 
 #[test]
-fn ac_827_a_repeated_slug_takes_the_first_free_suffix_in_order() {
+fn a_repeated_slug_takes_the_first_free_suffix_in_order() {
     let mut slugs: Vec<Slug> = ["keys", "keys", "keys-2", "keys"]
         .iter()
         .map(|text| Slug::parse(text).unwrap())
@@ -63,7 +62,7 @@ fn ac_827_a_repeated_slug_takes_the_first_free_suffix_in_order() {
 }
 
 #[test]
-fn ac_246_the_converter_derives_each_slug_from_its_v1_name() {
+fn the_converter_derives_each_slug_from_its_v1_name() {
     let document = convert_value(&full_export()).unwrap().document;
     let product = &document.products[0];
     assert_eq!(product.slug, Slug::derive(&product.name, "product"));

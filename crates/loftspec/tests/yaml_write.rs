@@ -1,4 +1,4 @@
-//! The canonical writer (D-11 F-9): layout, scalar styles, and exact read-back.
+//! The canonical writer (F-9): layout, scalar styles, and exact read-back.
 
 #[path = "support/oracle.rs"]
 mod oracle;
@@ -32,7 +32,7 @@ fn read_back(written: &str) -> String {
 }
 
 #[test]
-fn ac_238_ac_239_two_space_indentation_and_entries_under_their_key() {
+fn two_space_indentation_and_entries_under_their_key() {
     let document = Out::Mapping(vec![
         ("key", token("0190f5f6-0000-7000-8000-000000000001")),
         (
@@ -54,18 +54,18 @@ fn ac_238_ac_239_two_space_indentation_and_entries_under_their_key() {
 }
 
 #[test]
-fn ac_791_an_empty_top_level_collection_is_an_empty_file() {
+fn an_empty_top_level_collection_is_an_empty_file() {
     assert_eq!(yaml::write(&Out::Sequence(Vec::new())), "");
 }
 
 #[test]
-fn ac_122_a_single_line_string_is_double_quoted() {
+fn a_single_line_string_is_double_quoted() {
     assert_eq!(field(text("Keys")), "a: \"Keys\"\n");
     assert_eq!(field(text("")), "a: \"\"\n");
 }
 
 #[test]
-fn ac_121_a_multi_line_string_is_a_literal_block_with_its_chomping() {
+fn a_multi_line_string_is_a_literal_block_with_its_chomping() {
     assert_eq!(field(text("one\ntwo")), "a: |-\n  one\n  two\n");
     assert_eq!(field(text("one\ntwo\n")), "a: |\n  one\n  two\n");
     assert_eq!(
@@ -75,7 +75,7 @@ fn ac_121_a_multi_line_string_is_a_literal_block_with_its_chomping() {
 }
 
 #[test]
-fn ac_832_ac_834_and_ac_835_strings_a_literal_block_would_change_are_double_quoted() {
+fn strings_a_literal_block_would_change_are_double_quoted() {
     assert_eq!(field(text("\n\n")), "a: \"\\n\\n\"\n");
     assert_eq!(field(text("  lead\nx")), "a: \"  lead\\nx\"\n");
     assert_eq!(field(text("\n  lead")), "a: \"\\n  lead\"\n");
@@ -84,7 +84,7 @@ fn ac_832_ac_834_and_ac_835_strings_a_literal_block_would_change_are_double_quot
 }
 
 #[test]
-fn ac_840_ac_841_and_ac_842_the_double_quoted_escapes_are_the_formats() {
+fn the_double_quoted_escapes_are_the_formats() {
     assert_eq!(
         field(text("\\ \" \t \0 \u{7} \u{85} é")),
         "a: \"\\\\ \\\" \\t \\0 \\u0007 \\u0085 é\"\n"
@@ -92,8 +92,7 @@ fn ac_840_ac_841_and_ac_842_the_double_quoted_escapes_are_the_formats() {
 }
 
 #[test]
-fn ac_828_ac_829_and_ac_830_a_token_is_plain_unless_a_yaml_reader_would_take_it_for_something_else()
-{
+fn a_token_is_plain_unless_a_yaml_reader_would_take_it_for_something_else() {
     for plain in [
         "RQ-12",
         "event_driven",
@@ -118,7 +117,7 @@ fn ac_828_ac_829_and_ac_830_a_token_is_plain_unless_a_yaml_reader_would_take_it_
 }
 
 #[test]
-fn ac_119_writing_what_was_read_changes_no_byte() {
+fn writing_what_was_read_changes_no_byte() {
     let document = Out::Mapping(vec![
         ("name", text("A\ttab and trailing  ")),
         ("body", text("# Heading\n\n- item  \n\ttabbed\n")),
@@ -134,12 +133,12 @@ fn ac_119_writing_what_was_read_changes_no_byte() {
 
 proptest! {
     #[test]
-    fn ac_123_to_ac_125_any_string_reads_back_byte_for_byte(value in any::<String>()) {
+    fn any_string_reads_back_byte_for_byte(value in any::<String>()) {
         prop_assert_eq!(read_back(&field(Out::Text(value.clone()))), value);
     }
 
     #[test]
-    fn ac_123_and_ac_124_any_multi_line_text_reads_back_byte_for_byte(
+    fn any_multi_line_text_reads_back_byte_for_byte(
         lines in prop::collection::vec("[ \\t a-z#:\\-\"\\\\]{0,8}", 1..6),
         feeds in 0..4usize,
     ) {

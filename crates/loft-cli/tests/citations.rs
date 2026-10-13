@@ -1,44 +1,24 @@
-//! Tests cite the labels of the criteria they prove (`ac_454_…`); a guard keeps every citation
-//! true: each label a test name leads with is a label of `spec/labels.yaml`.
+//! Test names cite no label: a publish that meets another can withdraw a label and give its node
+//! a new one, so a name like `ac_454_…` would go on naming a criterion that no longer holds it.
+//! A guard keeps every test name free of a label.
 
-use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// The label prefixes a test name may cite, as they appear in a name.
+/// The label prefixes, as they would appear in a name.
 const PREFIXES: [&str; 9] = ["p", "fg", "f", "rq", "ac", "cmp", "con", "qa", "adr"];
 
 fn workspace() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
-/// The labels a test name leads with: `ac_165_and_ac_166_…` cites AC-165 and AC-166.
+/// The labels a test name holds anywhere: `ac_165_and_ac_166_…` holds AC-165 and AC-166.
 fn cited(name: &str) -> Vec<String> {
-    let parts: Vec<&str> = name.split('_').collect();
-    let mut labels = Vec::new();
-    let mut at = 0;
-    loop {
-        if parts.get(at) == Some(&"and") && !labels.is_empty() {
-            at += 1;
-        }
-        let (Some(prefix), Some(number)) = (parts.get(at), parts.get(at + 1)) else {
-            break;
-        };
-        if !PREFIXES.contains(prefix) || !number.bytes().all(|b| b.is_ascii_digit()) {
-            break;
-        }
-        labels.push(format!("{}-{number}", prefix.to_uppercase()));
-        at += 2;
-    }
-    labels
-}
-
-/// Every label `spec/labels.yaml` binds.
-fn labels() -> BTreeSet<String> {
-    let text = fs::read_to_string(workspace().join("spec/labels.yaml")).unwrap();
-    text.lines()
-        .filter_map(|line| line.trim().strip_prefix("label: "))
-        .map(str::to_owned)
+    name.split('_')
+        .collect::<Vec<_>>()
+        .windows(2)
+        .filter(|pair| PREFIXES.contains(&pair[0]) && pair[1].bytes().all(|b| b.is_ascii_digit()))
+        .map(|pair| format!("{}-{}", pair[0].to_uppercase(), pair[1]))
         .collect()
 }
 
@@ -69,21 +49,20 @@ fn test_names(text: &str) -> Vec<String> {
     names
 }
 
-/// Each citation in `names` that `labels` does not bind, as `name: label`.
-fn missing(names: &[(String, String)], labels: &BTreeSet<String>) -> Vec<String> {
+/// Each label a name in `names` holds, as `file: name: label`.
+fn citations(names: &[(String, String)]) -> Vec<String> {
     names
         .iter()
         .flat_map(|(file, name)| {
             cited(name)
                 .into_iter()
-                .filter(|label| !labels.contains(label))
                 .map(move |label| format!("{file}: {name}: {label}"))
         })
         .collect()
 }
 
 #[test]
-fn every_label_a_test_name_cites_is_a_label_of_the_spec() {
+fn no_test_name_cites_a_label() {
     let mut files = Vec::new();
     for entry in fs::read_dir(workspace().join("crates")).unwrap() {
         let krate = entry.unwrap().path();
@@ -107,24 +86,20 @@ fn every_label_a_test_name_cites_is_a_label_of_the_spec() {
         })
         .collect();
     assert!(names.len() > 500, "the scan found {} tests", names.len());
-    assert_eq!(missing(&names, &labels()), Vec::<String>::new());
+    assert_eq!(citations(&names), Vec::<String>::new());
 }
 
 #[test]
-fn a_citation_is_the_leading_run_of_labels_in_a_name() {
+fn a_label_is_found_anywhere_in_a_name() {
     assert_eq!(cited("ac_454_every_node"), ["AC-454"]);
     assert_eq!(cited("ac_165_and_ac_166_both"), ["AC-165", "AC-166"]);
-    assert_eq!(cited("rq_74_ac_317_a_kind"), ["RQ-74", "AC-317"]);
+    assert_eq!(cited("a_kind_rq_74"), ["RQ-74"]);
     assert_eq!(cited("a_scenario_round_trips"), Vec::<String>::new());
-    assert_eq!(
-        cited("and_ac_1_is_not_led_by_a_label"),
-        Vec::<String>::new()
-    );
+    assert_eq!(cited("two_publishes_meet"), Vec::<String>::new());
 }
 
 #[test]
-fn a_test_name_citing_a_label_the_spec_does_not_bind_is_reported() {
-    let labels = BTreeSet::from(["AC-1".to_owned()]);
-    let names = [("t.rs".to_owned(), "ac_1_and_ac_99_x".to_owned())];
-    assert_eq!(missing(&names, &labels), ["t.rs: ac_1_and_ac_99_x: AC-99"]);
+fn a_test_name_citing_a_label_is_reported() {
+    let names = [("t.rs".to_owned(), "ac_1_x".to_owned())];
+    assert_eq!(citations(&names), ["t.rs: ac_1_x: AC-1"]);
 }

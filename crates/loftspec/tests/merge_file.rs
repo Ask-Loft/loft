@@ -1,4 +1,4 @@
-//! The merge of one file (D-11 F-32..F-34): records matched by key and merged field by field, a
+//! The merge of one file (F-32..F-34): records matched by key and merged field by field, a
 //! conflict written where both sides changed one field apart, lists merged in base order, and
 //! the result in canonical layout.
 
@@ -47,7 +47,7 @@ const CRITERION_BLOCK: &str = "      - key: 00000000-0000-7000-8000-000000000005
 ";
 
 #[test]
-fn ac_471_ac_474_ac_475_records_are_matched_by_key_and_each_side_s_change_is_taken() {
+fn records_are_matched_by_key_and_each_side_s_change_is_taken() {
     let base = feature();
     let ours = with(&base, &[(SHALL, "shall: \"write a key on each node.\"")]);
     let theirs = with(
@@ -61,7 +61,7 @@ fn ac_471_ac_474_ac_475_records_are_matched_by_key_and_each_side_s_change_is_tak
 }
 
 #[test]
-fn ac_472_a_record_present_on_one_side_only_is_kept() {
+fn a_record_present_on_one_side_only_is_kept() {
     let base = feature();
     let added = "      - key: 00000000-0000-7000-8000-0000000000aa
         name: \"A minted key is version 7.\"
@@ -76,7 +76,7 @@ fn ac_472_a_record_present_on_one_side_only_is_kept() {
 }
 
 #[test]
-fn ac_473_a_record_deleted_on_one_side_and_unchanged_on_the_other_is_deleted() {
+fn a_record_deleted_on_one_side_and_unchanged_on_the_other_is_deleted() {
     let base = feature();
     let ours = with(&base, &[("    criteria:\n", ""), (CRITERION_BLOCK, "")]);
     let (text, conflicts) = merged(&base, &ours, &base);
@@ -85,7 +85,7 @@ fn ac_473_a_record_deleted_on_one_side_and_unchanged_on_the_other_is_deleted() {
 }
 
 #[test]
-fn ac_660_a_record_deleted_on_one_side_and_changed_on_the_other_is_kept_with_a_record_conflict() {
+fn a_record_deleted_on_one_side_and_changed_on_the_other_is_kept_with_a_record_conflict() {
     let base = feature();
     let ours = with(&base, &[("    criteria:\n", ""), (CRITERION_BLOCK, "")]);
     let theirs = with(
@@ -108,7 +108,7 @@ fn ac_660_a_record_deleted_on_one_side_and_changed_on_the_other_is_kept_with_a_r
 }
 
 #[test]
-fn ac_661_a_mapping_entry_without_a_key_is_matched_by_its_field_name() {
+fn a_mapping_entry_without_a_key_is_matched_by_its_field_name() {
     let base = feature();
     let ours = with(
         &base,
@@ -125,7 +125,7 @@ fn ac_661_a_mapping_entry_without_a_key_is_matched_by_its_field_name() {
 }
 
 #[test]
-fn ac_662_a_list_element_without_a_key_is_matched_by_its_value() {
+fn a_list_element_without_a_key_is_matched_by_its_value() {
     let base = feature();
     let body = "body: \"Keys address nodes.\"\n";
     let ours = with(&base, &[(body, &format!("{body}tags:\n  - identity\n"))]);
@@ -142,7 +142,7 @@ fn ac_662_a_list_element_without_a_key_is_matched_by_its_value() {
 }
 
 #[test]
-fn ac_697_the_merged_file_is_in_the_formatter_s_canonical_layout() {
+fn the_merged_file_is_in_the_formatter_s_canonical_layout() {
     let base = feature();
     let realizes = "realizes:\n  - 00000000-0000-7000-8000-000000000006\n";
     let ours = with(
@@ -168,7 +168,7 @@ fn ac_697_the_merged_file_is_in_the_formatter_s_canonical_layout() {
 }
 
 #[test]
-fn ac_476_ac_477_both_sides_changing_a_field_alike_take_it_once_without_a_conflict() {
+fn both_sides_changing_a_field_alike_take_it_once_without_a_conflict() {
     let base = feature();
     let both = with(&base, &[(SHALL, "shall: \"write a key on each node.\"")]);
     let (text, conflicts) = merged(&base, &both, &both);
@@ -177,7 +177,7 @@ fn ac_476_ac_477_both_sides_changing_a_field_alike_take_it_once_without_a_confli
 }
 
 #[test]
-fn ac_478_ac_479_ac_855_both_sides_changing_one_field_apart_conflict_on_its_record() {
+fn both_sides_changing_one_field_apart_conflict_on_its_record() {
     let base = feature();
     let ours = with(&base, &[(SHALL, "shall: \"write a key on each node.\"")]);
     let theirs = with(
@@ -294,6 +294,21 @@ fn conflicts_the_inputs_hold_merge_as_a_set() {
 }
 
 #[test]
+fn two_conflicts_over_one_field_with_different_sides_are_both_kept() {
+    let base = feature();
+    let after = CRITERION_BLOCK;
+    let held = |side: &str| {
+        let conflict = format!("    conflicts:\n      - field: body\n        ours: \"{side}\"\n");
+        with(&base, &[(after, &format!("{after}{conflict}"))])
+    };
+    let (kept, conflicts) = merged(&base, &held("Old."), &held("Other."));
+    assert_eq!(
+        conflicts, 2,
+        "conflicts differing only in a side are two: {kept}"
+    );
+}
+
+#[test]
 fn registries_merge_their_entries_by_key() {
     let base = text(&files(), "tags.yaml");
     let entry = |key: &str, name: &str| {
@@ -376,7 +391,7 @@ fn three_requirements() -> String {
 }
 
 #[test]
-fn ac_480_and_ac_663_requirements_both_sides_append_follow_the_base_ones_ours_first() {
+fn requirements_both_sides_append_follow_the_base_ones_ours_first() {
     let base = three_requirements();
     let append = |n: &str| {
         with(
@@ -396,7 +411,7 @@ fn ac_480_and_ac_663_requirements_both_sides_append_follow_the_base_ones_ours_fi
 }
 
 #[test]
-fn ac_483_ac_484_a_requirement_moved_on_one_side_and_edited_on_the_other_is_moved_and_edited() {
+fn a_requirement_moved_on_one_side_and_edited_on_the_other_is_moved_and_edited() {
     let base = three_requirements();
     let third = "  - key: 00000000-0000-7000-8000-0000000000c3\n    statement:\n      form: ubiquitous\n      system: \"The writer\"\n      shall: \"write requirement c3.\"\n";
     let ours = with(
@@ -421,7 +436,7 @@ fn ac_483_ac_484_a_requirement_moved_on_one_side_and_edited_on_the_other_is_move
 }
 
 #[test]
-fn ac_696_a_requirement_both_sides_moved_apart_stays_with_a_position_conflict() {
+fn a_requirement_both_sides_moved_apart_stays_with_a_position_conflict() {
     let base = three_requirements();
     let third = "  - key: 00000000-0000-7000-8000-0000000000c3\n    statement:\n      form: ubiquitous\n      system: \"The writer\"\n      shall: \"write requirement c3.\"\n";
     let second = "  - key: 00000000-0000-7000-8000-0000000000c2\n";

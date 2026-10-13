@@ -1,4 +1,4 @@
-//! Parsing a sentence into its EARS slots (D-11 RQ-52): slots are kept only when the form's
+//! Parsing a sentence into its EARS slots (RQ-52): slots are kept only when the form's
 //! template renders them back to the sentence byte for byte; anything else stays text.
 
 mod common;
@@ -22,7 +22,7 @@ fn stays_text(sentence: &str) {
 }
 
 #[test]
-fn ac_185_a_ubiquitous_sentence_parses_into_its_slots() {
+fn a_ubiquitous_sentence_parses_into_its_slots() {
     assert_eq!(
         form("The writer shall write a key on every node."),
         EarsForm::Ubiquitous {
@@ -33,7 +33,7 @@ fn ac_185_a_ubiquitous_sentence_parses_into_its_slots() {
 }
 
 #[test]
-fn ac_185_a_bare_proper_name_is_a_system() {
+fn a_bare_proper_name_is_a_system() {
     assert_eq!(
         form("`loft check` shall run the validator and then the linter over the tree."),
         EarsForm::Ubiquitous {
@@ -44,7 +44,7 @@ fn ac_185_a_bare_proper_name_is_a_system() {
 }
 
 #[test]
-fn ac_185_each_prefixed_form_parses_into_its_slots() {
+fn each_prefixed_form_parses_into_its_slots() {
     assert_eq!(
         form("When formatting a node without a key, the formatter shall mint a key."),
         EarsForm::EventDriven {
@@ -92,20 +92,20 @@ fn the_comma_that_closes_the_precondition_is_the_last_before_shall() {
 }
 
 #[test]
-fn ac_186_a_sentence_outside_the_five_forms_stays_text() {
+fn a_sentence_outside_the_five_forms_stays_text() {
     stays_text("Keys are UUIDs.");
     stays_text("The writer must write a key.");
     stays_text("The writer shall");
 }
 
 #[test]
-fn ac_186_a_combined_form_stays_text() {
+fn a_combined_form_stays_text() {
     stays_text("When a node is read, if it has no key, the formatter shall mint one.");
     stays_text("While formatting, when a key is absent, the formatter shall mint one.");
 }
 
 #[test]
-fn ac_186_a_sentence_the_template_cannot_reproduce_stays_text() {
+fn a_sentence_the_template_cannot_reproduce_stays_text() {
     // The precondition ends at `the` with no comma: the form parses, but the template writes a
     // comma the sentence does not have.
     stays_text("When formatting the formatter shall mint a key.");
@@ -118,13 +118,13 @@ fn ac_186_a_sentence_the_template_cannot_reproduce_stays_text() {
 }
 
 #[test]
-fn ac_186_a_ubiquitous_bare_name_with_a_lead_in_clause_stays_text() {
+fn a_ubiquitous_bare_name_with_a_lead_in_clause_stays_text() {
     // A bare proper name holds no later `the`: this is a lead-in clause, not a system phrase.
     stays_text("After the merge Loft shall rehash every ancestor.");
 }
 
 #[test]
-fn ac_185_every_parsed_form_renders_back_to_its_sentence() {
+fn every_parsed_form_renders_back_to_its_sentence() {
     for sentence in [
         "The writer shall write a key on every node.",
         "When publishing a tree that changed since the last publish, the publisher shall write only the lock and the bindings file.",

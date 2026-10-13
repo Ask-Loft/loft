@@ -14,8 +14,13 @@ use loftspec_store::StoreError;
 use loftspec_store::fs::{SPEC, write_outputs};
 use loftspec_store::merge_driver;
 use loftspec_store::repository::GitCommand;
+use serde_json::json;
 
+use crate::json;
 use crate::version::VERSION;
+
+/// The schema `--format json` writes to, by name and version (RQ-156).
+const SCHEMA: &str = "loft-merge-driver/1";
 
 /// The three files git hands the driver, and the path of the file being merged as git names it.
 pub struct Inputs<'a> {
@@ -25,10 +30,22 @@ pub struct Inputs<'a> {
     pub path: &'a str,
 }
 
-pub fn run(root: &Path, inputs: &Inputs<'_>) -> ExitCode {
+pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
     match merge(root, inputs) {
-        Ok((0, _)) => ExitCode::SUCCESS,
         Ok((conflicts, disputed)) => {
+            let merged = conflicts == 0;
+            if as_json {
+                let outcome = if merged { "merged" } else { "conflicted" };
+                let fields = json!({
+                    "path": inputs.path,
+                    "conflicts": conflicts,
+                    "disputed": disputed,
+                });
+                json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
+            }
+            if merged {
+                return ExitCode::SUCCESS;
+            }
             let plural = if conflicts == 1 { "" } else { "s" };
             eprintln!(
                 "{}: {conflicts} merge conflict{plural} written",
@@ -40,8 +57,14 @@ pub fn run(root: &Path, inputs: &Inputs<'_>) -> ExitCode {
             ExitCode::FAILURE
         }
         Err(messages) => {
+            let mut errors = Vec::new();
             for message in messages {
-                eprintln!("{}{message}", inputs.path);
+                let message = format!("{}{message}", inputs.path);
+                errors.push(json::error("merge", &message, &[]));
+                eprintln!("{message}");
+            }
+            if as_json {
+                json::print(&json::failure(SCHEMA, errors));
             }
             ExitCode::FAILURE
         }
@@ -67,7 +90,7 @@ fn settle_with_publish(disputed: &[Label]) -> String {
 
 /// Registers the driver started by `launcher`, printing what it wrote, one name to a line, and
 /// warning when the launcher starts another version of `loft`.
-pub fn install(root: &Path, launcher: &str) -> ExitCode {
+pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
     match merge_driver::install(&GitCommand::default(), root, launcher) {
         Ok(installed) => {
             let own = format!("loft {VERSION}");
@@ -77,30 +100,40 @@ pub fn install(root: &Path, launcher: &str) -> ExitCode {
                     installed.version
                 );
             }
-            for name in installed.written {
-                println!("{name}");
+            if as_json {
+                let fields = json!({ "written": installed.written, "version": installed.version });
+                json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
+            } else {
+                for name in installed.written {
+                    println!("{name}");
+                }
             }
             ExitCode::SUCCESS
         }
-        Err(StoreError::Launcher(_)) => {
-            eprintln!(
-                "loft merge-driver --install: git could not run `{launcher} --version` from the \
-                 top of the working tree, where it runs the driver; give the command that starts \
-                 loft there with --command, such as --command \"npx --no-install loft\""
-            );
-            ExitCode::FAILURE
-        }
-        Err(StoreError::NotARepository(_)) => {
-            eprintln!(
-                "loft merge-driver --install: a git repository is required, and the working \
-                 directory is not inside one"
-            );
-            ExitCode::FAILURE
-        }
         Err(error) => {
-            eprintln!("loft merge-driver --install: {error}");
+            let message = format!("loft merge-driver --install: {}", refusal(&error, launcher));
+            if as_json {
+                let errors = vec![json::error("install", &message, &[])];
+                json::print(&json::failure(SCHEMA, errors));
+            }
+            eprintln!("{message}");
             ExitCode::FAILURE
         }
+    }
+}
+
+/// Why the driver was not registered.
+fn refusal(error: &StoreError, launcher: &str) -> String {
+    match error {
+        StoreError::Launcher(_) => format!(
+            "git could not run `{launcher} --version` from the top of the working tree, where it \
+             runs the driver; give the command that starts loft there with --command, such as \
+             --command \"npx --no-install loft\""
+        ),
+        StoreError::NotARepository(_) => "a git repository is required, and the working \
+                                          directory is not inside one"
+            .to_owned(),
+        error => error.to_string(),
     }
 }
 

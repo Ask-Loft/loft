@@ -122,3 +122,22 @@ requirements:
         name: "Each disputed label is named."
       - key: 01a130de-573a-77b2-b40b-d439212274cf
         name: "The message tells the user to run `loft publish` on the publish branch."
+  - key: 01a134d2-2a86-76d0-a05e-222dfe6e5992
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft merge-driver`"
+      shall: "describe the merge or the installation in its JSON document."
+    criteria:
+      - key: 01a134d2-2a86-76d0-a05e-222e57b47c1f
+        name: "A merge's document names the path merged, the number of conflicts written and each disputed label."
+      - key: 01a134d2-2a86-76d0-a05e-222fbb4c6386
+        name: "An installation's document lists each name written and the version of `loft` the launcher starts."
+      - key: 01a134d2-2a86-76d0-a05e-2230c65cab7e
+        name: "A refusal is listed among the document's errors."
+      - key: 01a1354e-bca0-714b-8727-09b3ed69dc7f
+        name: "A merge's outcome is `merged` when it wrote no conflict record."
+      - key: 01a1354e-bca0-714b-8727-09b46caf5643
+        name: "A merge's outcome is `conflicted` when it wrote a conflict record."
+      - key: 01a1354e-bca0-714b-8727-09b591b36d45
+        name: "An installation's outcome is `installed`."

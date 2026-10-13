@@ -1,4 +1,4 @@
-//! The edges, registry, decisions, content, binding and state roots (D-11 F-4, F-5).
+//! The edges, registry, decisions, content, binding and state roots (F-4, F-5).
 
 mod common;
 
@@ -28,7 +28,7 @@ fn realizes(feature: u32, component: u32) -> Edge {
 }
 
 #[test]
-fn ac_49_and_ac_52_an_edge_enters_by_its_endpoints_content_so_rekeying_leaves_the_edges_root() {
+fn an_edge_enters_by_its_endpoints_content_so_rekeying_leaves_the_edges_root() {
     assert_eq!(
         roots(&small_document()).edges,
         roots(&small_document_with(&fresh_key)).edges
@@ -36,7 +36,7 @@ fn ac_49_and_ac_52_an_edge_enters_by_its_endpoints_content_so_rekeying_leaves_th
 }
 
 #[test]
-fn ac_54_the_same_document_with_fresh_keys_has_the_same_content_root() {
+fn the_same_document_with_fresh_keys_has_the_same_content_root() {
     assert_eq!(
         roots(&small_document()).content,
         roots(&small_document_with(&fresh_key)).content
@@ -44,7 +44,7 @@ fn ac_54_the_same_document_with_fresh_keys_has_the_same_content_root() {
 }
 
 #[test]
-fn ac_50_two_identical_edges_between_duplicate_nodes_both_count() {
+fn two_identical_edges_between_duplicate_nodes_both_count() {
     let mut document = small_document();
     document.components.push(root(component(key(40), "Twin")));
     document.components.push(root(component(key(41), "Twin")));
@@ -55,7 +55,7 @@ fn ac_50_two_identical_edges_between_duplicate_nodes_both_count() {
 }
 
 #[test]
-fn ac_51_and_ac_252_adding_an_edge_changes_the_edges_root_and_the_content_root() {
+fn adding_an_edge_changes_the_edges_root_and_the_content_root() {
     let mut document = small_document();
     let before = roots(&document);
     document.edges.push(Edge::Mentions {
@@ -68,7 +68,7 @@ fn ac_51_and_ac_252_adding_an_edge_changes_the_edges_root_and_the_content_root()
 }
 
 #[test]
-fn ac_270_edge_order_does_not_change_the_edges_root() {
+fn edge_order_does_not_change_the_edges_root() {
     let mut document = small_document();
     let before = roots(&document).edges;
     document.edges.reverse();
@@ -76,7 +76,7 @@ fn ac_270_edge_order_does_not_change_the_edges_root() {
 }
 
 #[test]
-fn ac_53_ac_55_and_ac_59_relabelling_moves_the_binding_root_and_nothing_else() {
+fn relabelling_moves_the_binding_root_and_nothing_else() {
     let mut document = small_document();
     let before = roots(&document);
     document
@@ -91,7 +91,7 @@ fn ac_53_ac_55_and_ac_59_relabelling_moves_the_binding_root_and_nothing_else() {
 }
 
 #[test]
-fn ac_56_reordering_the_products_changes_the_content_root() {
+fn reordering_the_products_changes_the_content_root() {
     let mut document = small_document();
     document.products.push(product(key(50), "Second Product"));
     let before = roots(&document).content;
@@ -100,7 +100,7 @@ fn ac_56_reordering_the_products_changes_the_content_root() {
 }
 
 #[test]
-fn ac_57_and_ac_254_root_components_are_sorted_by_content_hash() {
+fn root_components_are_sorted_by_content_hash() {
     let mut document = small_document();
     document
         .components
@@ -118,7 +118,7 @@ fn ac_57_and_ac_254_root_components_are_sorted_by_content_hash() {
 }
 
 #[test]
-fn ac_58_and_ac_216_changing_a_registry_entry_changes_its_root_and_the_content_root() {
+fn changing_a_registry_entry_changes_its_root_and_the_content_root() {
     let mut document = small_document();
     let before = roots(&document);
     document.tags[0].definition.push_str(" Always.");
@@ -129,7 +129,7 @@ fn ac_58_and_ac_216_changing_a_registry_entry_changes_its_root_and_the_content_r
 }
 
 #[test]
-fn ac_214_ac_215_and_ac_217_registry_roots_are_over_entries_sorted_by_name() {
+fn registry_roots_are_over_entries_sorted_by_name() {
     let mut document = small_document();
     let before = roots(&document);
     document.tags.reverse();
@@ -147,7 +147,7 @@ fn ac_214_ac_215_and_ac_217_registry_roots_are_over_entries_sorted_by_name() {
 }
 
 #[test]
-fn ac_279_the_two_registries_have_distinct_roots_even_when_equal() {
+fn the_two_registries_have_distinct_roots_even_when_equal() {
     let mut document = small_document();
     document.categories = document
         .tags
@@ -167,7 +167,7 @@ fn ac_279_the_two_registries_have_distinct_roots_even_when_equal() {
 }
 
 #[test]
-fn ac_611_and_ac_612_fresh_element_keys_leave_the_decision_view_hash() {
+fn fresh_element_keys_leave_the_decision_view_hash() {
     let before = hash_document(&small_document()).unwrap();
     let after = hash_document(&small_document_with(&fresh_key)).unwrap();
     assert_eq!(
@@ -178,7 +178,7 @@ fn ac_611_and_ac_612_fresh_element_keys_leave_the_decision_view_hash() {
 }
 
 #[test]
-fn ac_221_and_ac_253_changing_an_outcome_changes_the_decisions_root_and_the_content_root() {
+fn changing_an_outcome_changes_the_decisions_root_and_the_content_root() {
     let mut document = small_document();
     let before = roots(&document);
     document.decisions[0].state = DecisionState::Accepted {
@@ -191,7 +191,7 @@ fn ac_221_and_ac_253_changing_an_outcome_changes_the_decisions_root_and_the_cont
 }
 
 #[test]
-fn ac_222_decision_order_leaves_the_decisions_root() {
+fn decision_order_leaves_the_decisions_root() {
     let mut document = small_document();
     let own = |n: u32| {
         if (20..30).contains(&n) {
@@ -209,7 +209,7 @@ fn ac_222_decision_order_leaves_the_decisions_root() {
 }
 
 #[test]
-fn ac_615_assessment_order_leaves_the_decision_view_hash() {
+fn assessment_order_leaves_the_decision_view_hash() {
     let mut document = small_document();
     let id = DecisionId::new(key(20));
     let before = hash_document(&document).unwrap().decisions[&id];
@@ -218,7 +218,7 @@ fn ac_615_assessment_order_leaves_the_decision_view_hash() {
 }
 
 #[test]
-fn ac_240_a_bindings_content_hash_is_computed_from_the_tree() {
+fn a_bindings_content_hash_is_computed_from_the_tree() {
     let mut document = small_document();
     let before = roots(&document).bindings;
     document.products[0].feature_groups[0].features[0]
@@ -232,7 +232,7 @@ fn ac_240_a_bindings_content_hash_is_computed_from_the_tree() {
 }
 
 #[test]
-fn ac_62_and_ac_63_every_state_view_field_moves_the_state_root() {
+fn every_state_view_field_moves_the_state_root() {
     let document = small_document();
     let before = roots(&document).state;
     let mut other_key = document.clone();
@@ -257,7 +257,7 @@ fn ac_62_and_ac_63_every_state_view_field_moves_the_state_root() {
 }
 
 #[test]
-fn ac_64_equal_state_views_have_the_same_state_root() {
+fn equal_state_views_have_the_same_state_root() {
     assert_eq!(
         roots(&small_document()).state,
         roots(&small_document()).state
@@ -265,7 +265,7 @@ fn ac_64_equal_state_views_have_the_same_state_root() {
 }
 
 #[test]
-fn ac_321_an_edge_to_an_unknown_element_is_refused() {
+fn an_edge_to_an_unknown_element_is_refused() {
     let mut document = small_document();
     document.edges.push(realizes(3, 77));
     assert_eq!(
@@ -277,7 +277,7 @@ fn ac_321_an_edge_to_an_unknown_element_is_refused() {
 }
 
 #[test]
-fn ac_322_an_edge_naming_a_key_as_the_wrong_kind_is_refused() {
+fn an_edge_naming_a_key_as_the_wrong_kind_is_refused() {
     let mut document = small_document();
     document.edges.push(realizes(4, 6));
     assert_eq!(
@@ -289,7 +289,7 @@ fn ac_322_an_edge_naming_a_key_as_the_wrong_kind_is_refused() {
 }
 
 #[test]
-fn ac_330_a_binding_of_an_unknown_element_is_refused() {
+fn a_binding_of_an_unknown_element_is_refused() {
     let mut document = small_document();
     document
         .bindings
@@ -304,7 +304,7 @@ fn ac_330_a_binding_of_an_unknown_element_is_refused() {
 }
 
 #[test]
-fn ac_14_a_key_carried_twice_is_refused() {
+fn a_key_carried_twice_is_refused() {
     let mut document = small_document();
     document.components.push(root(component(key(6), "Another")));
     assert_eq!(

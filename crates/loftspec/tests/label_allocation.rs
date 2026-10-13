@@ -30,7 +30,7 @@ fn counter(document: &Document, prefix: LabelPrefix) -> u64 {
 }
 
 #[test]
-fn ac_454_every_node_of_a_kind_that_takes_a_prefix_has_a_binding_after_a_publish() {
+fn every_node_of_a_kind_that_takes_a_prefix_has_a_binding_after_a_publish() {
     let mut document = small_document();
     allocate(&mut document);
     document.walk(&mut |node| {
@@ -43,7 +43,7 @@ fn ac_454_every_node_of_a_kind_that_takes_a_prefix_has_a_binding_after_a_publish
 }
 
 #[test]
-fn ac_457_the_publisher_reports_each_allocated_label_with_its_key() {
+fn the_publisher_reports_each_allocated_label_with_its_key() {
     let mut document = small_document();
     assert_eq!(
         allocate(&mut document),
@@ -55,7 +55,7 @@ fn ac_457_the_publisher_reports_each_allocated_label_with_its_key() {
 }
 
 #[test]
-fn ac_455_ac_456_a_new_label_is_the_counters_next_value_and_the_counter_advances() {
+fn a_new_label_is_the_counters_next_value_and_the_counter_advances() {
     let mut document = small_document();
     document
         .counters
@@ -65,7 +65,7 @@ fn ac_455_ac_456_a_new_label_is_the_counters_next_value_and_the_counter_advances
 }
 
 #[test]
-fn ac_25_a_counter_below_a_live_label_is_raised_before_it_gives_one_out() {
+fn a_counter_below_a_live_label_is_raised_before_it_gives_one_out() {
     let mut document = small_document();
     document
         .counters
@@ -82,7 +82,7 @@ fn ac_25_a_counter_below_a_live_label_is_raised_before_it_gives_one_out() {
 }
 
 #[test]
-fn ac_26_the_label_of_a_deleted_node_is_never_given_out_again() {
+fn the_label_of_a_deleted_node_is_never_given_out_again() {
     let mut document = small_document();
     // AC-1 to AC-4 were given to criteria since deleted; the counter remembers them.
     document
@@ -92,7 +92,7 @@ fn ac_26_the_label_of_a_deleted_node_is_never_given_out_again() {
 }
 
 #[test]
-fn ac_722_no_label_that_a_decision_carries_as_a_former_label_is_allocated() {
+fn no_label_that_a_decision_carries_as_a_former_label_is_allocated() {
     let mut document = small_document();
     document.edges.push(Edge::Subject {
         decision: DecisionId::new(key(20)),
@@ -103,7 +103,7 @@ fn ac_722_no_label_that_a_decision_carries_as_a_former_label_is_allocated() {
 }
 
 #[test]
-fn ac_24_labels_are_allocated_in_document_order_parents_before_children() {
+fn labels_are_allocated_in_document_order_parents_before_children() {
     let mut document = small_document();
     let group = &mut document.products[0].feature_groups[0];
     group.features.push(feature(
@@ -119,7 +119,7 @@ fn ac_24_labels_are_allocated_in_document_order_parents_before_children() {
 }
 
 #[test]
-fn ac_262_root_components_are_visited_in_the_order_of_their_file_names() {
+fn root_components_are_visited_in_the_order_of_their_file_names() {
     let mut document = small_document();
     let mut later = root(component(key(44), "Zeta"));
     later.slug = slug("zeta");
@@ -134,7 +134,7 @@ fn ac_262_root_components_are_visited_in_the_order_of_their_file_names() {
 }
 
 #[test]
-fn ac_895_decisions_are_allocated_labels_after_every_node_in_the_order_of_their_file_names() {
+fn decisions_are_allocated_labels_after_every_node_in_the_order_of_their_file_names() {
     let mut document = small_document();
     let mut second = document.decisions[0].clone();
     second.id = DecisionId::new(key(46));
@@ -151,7 +151,7 @@ fn ac_895_decisions_are_allocated_labels_after_every_node_in_the_order_of_their_
 }
 
 #[test]
-fn ac_691_every_decision_has_a_binding_after_a_publish() {
+fn every_decision_has_a_binding_after_a_publish() {
     let mut document = small_document();
     let mut unbound = document.decisions[0].clone();
     unbound.id = DecisionId::new(key(48));
@@ -168,7 +168,7 @@ fn ac_691_every_decision_has_a_binding_after_a_publish() {
 }
 
 #[test]
-fn ac_243_a_section_takes_no_label() {
+fn a_section_takes_no_label() {
     let mut document = small_document();
     document.products[0].details.sections.push(Section {
         id: Some(SectionId::new(key(49))),
@@ -214,7 +214,7 @@ fn promoted() -> Document {
 }
 
 #[test]
-fn ac_896_a_binding_whose_prefix_is_not_its_kinds_is_read_without_error() {
+fn a_binding_whose_prefix_is_not_its_kinds_is_read_without_error() {
     let document = promoted();
     let mut files = codec::write(&small_document());
     let promoted_files = codec::write(&document);
@@ -229,7 +229,7 @@ fn ac_896_a_binding_whose_prefix_is_not_its_kinds_is_read_without_error() {
 }
 
 #[test]
-fn ac_223_ac_224_a_promoted_requirement_receives_the_next_f_label_and_keeps_its_own_as_an_alias() {
+fn a_promoted_requirement_receives_the_next_f_label_and_keeps_its_own_as_an_alias() {
     let mut document = promoted();
     let element = ElementId::from(FeatureId::new(key(4)));
     assert!(allocate(&mut document).contains(&Allocated {
@@ -245,7 +245,7 @@ fn ac_223_ac_224_a_promoted_requirement_receives_the_next_f_label_and_keeps_its_
 }
 
 #[test]
-fn ac_225_a_node_whose_kind_is_unchanged_keeps_its_label() {
+fn a_node_whose_kind_is_unchanged_keeps_its_label() {
     let mut document = small_document();
     allocate(&mut document);
     assert_eq!(
@@ -262,7 +262,7 @@ fn a_second_allocation_gives_out_nothing() {
 }
 
 #[test]
-fn ac_243_every_kind_takes_its_own_prefix() {
+fn every_kind_takes_its_own_prefix() {
     let mut document = small_document();
     allocate(&mut document);
     document.walk(&mut |node: Node<'_>| {

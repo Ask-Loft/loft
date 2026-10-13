@@ -1,5 +1,5 @@
-//! Keys, the identity of a node, decision or registry entry (D-11 F-1), and labels, the
-//! human-readable handles the publisher allocates (D-11 F-2).
+//! Keys, the identity of a node, decision or registry entry (F-1), and labels, the
+//! human-readable handles the publisher allocates (F-2).
 
 use std::fmt;
 use std::num::NonZeroU64;

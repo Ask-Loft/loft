@@ -1,4 +1,4 @@
-//! The merge of one ordered list (D-11 F-33): both sides' insertions kept in base order, a
+//! The merge of one ordered list (F-33): both sides' insertions kept in base order, a
 //! move on one side applied, and a record both sides moved apart left at its base position with
 //! a conflict over its place.
 
@@ -28,7 +28,7 @@ fn order<'a>(base: &[&'a str], ours: &[&'a str], theirs: &[&'a str]) -> Vec<&'a 
 }
 
 #[test]
-fn ac_480_each_side_s_insertion_follows_its_base_predecessor() {
+fn each_side_s_insertion_follows_its_base_predecessor() {
     assert_eq!(
         order(
             &["a", "b", "c"],
@@ -40,7 +40,7 @@ fn ac_480_each_side_s_insertion_follows_its_base_predecessor() {
 }
 
 #[test]
-fn ac_481_no_existing_element_is_reordered() {
+fn no_existing_element_is_reordered() {
     assert_eq!(
         order(
             &["a", "b", "c", "d"],
@@ -52,7 +52,7 @@ fn ac_481_no_existing_element_is_reordered() {
 }
 
 #[test]
-fn ac_482_an_element_deleted_on_one_side_and_unmoved_on_the_other_is_removed() {
+fn an_element_deleted_on_one_side_and_unmoved_on_the_other_is_removed() {
     assert_eq!(
         order(&["a", "b", "c"], &["a", "c"], &["a", "b", "c"]),
         ["a", "c"]
@@ -60,7 +60,7 @@ fn ac_482_an_element_deleted_on_one_side_and_unmoved_on_the_other_is_removed() {
 }
 
 #[test]
-fn ac_663_when_both_sides_insert_after_one_base_element_our_insertions_precede_theirs() {
+fn when_both_sides_insert_after_one_base_element_our_insertions_precede_theirs() {
     assert_eq!(
         order(&["a", "b"], &["a", "x", "x2", "b"], &["a", "y", "b"]),
         ["a", "x", "x2", "y", "b"]
@@ -68,7 +68,7 @@ fn ac_663_when_both_sides_insert_after_one_base_element_our_insertions_precede_t
 }
 
 #[test]
-fn ac_483_a_record_one_side_moved_is_at_the_moved_position() {
+fn a_record_one_side_moved_is_at_the_moved_position() {
     assert_eq!(
         order(&["a", "b", "c"], &["c", "a", "b"], &["a", "b", "c"]),
         ["c", "a", "b"]
@@ -80,7 +80,7 @@ fn ac_483_a_record_one_side_moved_is_at_the_moved_position() {
 }
 
 #[test]
-fn ac_696_and_ac_856_a_record_both_sides_moved_apart_conflicts_and_stays_at_its_base_position() {
+fn a_record_both_sides_moved_apart_conflicts_and_stays_at_its_base_position() {
     let (order, conflicts) = merged(&["a", "b", "c"], &["c", "a", "b"], &["a", "c", "b"]);
     assert_eq!(order, ["a", "b", "c"]);
     assert_eq!(

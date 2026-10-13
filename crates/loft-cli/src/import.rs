@@ -24,13 +24,8 @@ pub fn run(root: &Path, export: &Path, counters: Option<&Path>, as_json: bool) -
         }
         Err(message) => {
             if as_json {
-                json::print(&json!({
-                    "schema": SCHEMA,
-                    "written": [],
-                    "findings": [],
-                    "warnings": [],
-                    "errors": [json::error("refused", &message, &[])],
-                }));
+                let errors = vec![json::error("refused", &message, &[])];
+                json::print(&json::failure(SCHEMA, errors));
             }
             eprintln!("{message}");
             ExitCode::FAILURE
@@ -82,13 +77,12 @@ fn report(imported: &Imported, sites: &Sites, as_json: bool) {
             .map(|path| format!("spec/{path}"))
             .collect();
         written.push(fs::SIDECAR.to_owned());
-        json::print(&json!({
-            "schema": SCHEMA,
+        let fields = json!({
             "written": written,
             "findings": findings.iter().map(|f| finding(f, sites)).collect::<Vec<_>>(),
             "warnings": warning.iter().collect::<Vec<_>>(),
-            "errors": [],
-        }));
+        });
+        json::print(&json::result(SCHEMA, "imported", fields, Vec::new()));
     } else {
         for reported in &findings {
             println!("{}", line(reported, sites));

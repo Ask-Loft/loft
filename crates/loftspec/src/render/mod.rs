@@ -1,4 +1,4 @@
-//! The renderer (CMP-8, D-11 FG-6): the readable Markdown projection and the canonical JSON
+//! The renderer (CMP-8, FG-6): the readable Markdown projection and the canonical JSON
 //! export of a document, each stamped with the state root it was rendered from. Both are derived
 //! and deterministic; no role reads them (F-26, ADR-12). The renderer yields bytes and depends on
 //! no clock, locale or environment (CON-10); writing them belongs to a store.

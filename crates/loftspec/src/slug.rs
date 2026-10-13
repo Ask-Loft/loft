@@ -1,4 +1,4 @@
-//! The slug that fixes a record's file or directory name (D-11 F-6, RQ-26, AC-245, AC-246): set
+//! The slug that fixes a record's file or directory name (F-6, RQ-26, AC-245, AC-246): set
 //! when the record is created and never changed by the formatter.
 
 use std::collections::BTreeSet;

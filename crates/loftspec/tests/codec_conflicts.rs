@@ -1,10 +1,10 @@
-//! The typed conflict record in the text form (D-11 F-34, RQ-220): where it may sit, how its
+//! The typed conflict record in the text form (F-34, RQ-220): where it may sit, how its
 //! sides are read and written, and what the reader refuses.
 
 mod common;
 
 use common::text::{AFTER_CRITERIA, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text};
-use loftspec::codec::schema::{Item, Kind, Shape};
+use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Files, Problem, field};
 use loftspec::fmt::format;
 use loftspec::yaml::{Location, Position};
@@ -23,14 +23,14 @@ fn reformatted(files: &Files) -> Files {
 }
 
 #[test]
-fn ac_664_a_keyed_record_with_a_conflicts_list_is_read_without_a_read_error() {
+fn a_keyed_record_with_a_conflicts_list_is_read_without_a_read_error() {
     let files = on_requirement(SHALL_CONFLICT);
     assert!(codec::read_tree(&files).is_ok());
     assert!(codec::read(&files).is_ok());
 }
 
 #[test]
-fn ac_665_a_conflict_record_outside_a_conflicts_list_is_an_error_naming_the_file_line_and_column() {
+fn a_conflict_record_outside_a_conflicts_list_is_an_error_naming_the_file_line_and_column() {
     let files = on_requirement("    field: statement.shall\n");
     let (problem, location) = refused(&files);
     assert_eq!(problem, Problem::UnknownField("field".to_owned()));
@@ -38,7 +38,7 @@ fn ac_665_a_conflict_record_outside_a_conflicts_list_is_an_error_naming_the_file
 }
 
 #[test]
-fn ac_857_a_conflict_record_s_fields_are_field_base_ours_theirs_in_that_order() {
+fn a_conflict_record_s_fields_are_field_base_ours_theirs_in_that_order() {
     let files = on_requirement(
         "    conflicts:
       - theirs: \"write one key on every node.\"
@@ -53,14 +53,24 @@ fn ac_857_a_conflict_record_s_fields_are_field_base_ours_theirs_in_that_order() 
 }
 
 #[test]
-fn ac_858_a_conflict_record_requires_field() {
+fn a_conflict_record_requires_field() {
     let files = on_requirement("    conflicts:\n      - ours: \"write a key on each node.\"\n");
     let (problem, _) = refused(&files);
     assert_eq!(problem, Problem::MissingField(field::FIELD));
 }
 
 #[test]
-fn ac_859_a_side_on_which_the_field_is_absent_omits_its_member() {
+fn a_side_other_than_base_ours_or_theirs_is_an_unknown_field_whatever_it_holds() {
+    let files = on_requirement(
+        "    conflicts:\n      - field: body\n        mine:\n          - \"Why keys.\"\n",
+    );
+    let (problem, location) = refused(&files);
+    assert_eq!(problem, Problem::UnknownField("mine".to_owned()));
+    assert_eq!(location, Some(Location::At(Position::new(20, 9))));
+}
+
+#[test]
+fn a_side_on_which_the_field_is_absent_omits_its_member() {
     let files =
         on_requirement("    conflicts:\n      - field: body\n        ours: \"Why keys.\"\n");
     assert!(codec::read(&files).is_ok());
@@ -68,7 +78,7 @@ fn ac_859_a_side_on_which_the_field_is_absent_omits_its_member() {
 }
 
 #[test]
-fn ac_860_each_side_holds_a_value_in_the_shape_the_named_field_takes() {
+fn each_side_holds_a_value_in_the_shape_the_named_field_takes() {
     let tags = "    conflicts:
       - field: tags
         ours:
@@ -85,13 +95,13 @@ fn ac_860_each_side_holds_a_value_in_the_shape_the_named_field_takes() {
 }
 
 #[test]
-fn ac_860_a_text_side_is_written_double_quoted() {
+fn a_text_side_is_written_double_quoted() {
     let files = on_requirement(SHALL_CONFLICT);
     assert_eq!(reformatted(&files), Files::new());
 }
 
 #[test]
-fn ac_861_a_conflict_over_a_record_s_place_names_the_field_position() {
+fn a_conflict_over_a_record_s_place_names_the_field_position() {
     let files = on_requirement(
         "    conflicts:
       - field: position
@@ -105,7 +115,7 @@ fn ac_861_a_conflict_over_a_record_s_place_names_the_field_position() {
 }
 
 #[test]
-fn ac_862_a_keyed_record_carries_conflicts_after_every_other_field() {
+fn a_keyed_record_carries_conflicts_after_every_other_field() {
     let files = edited(
         FEATURE,
         "    criteria:\n",
@@ -183,30 +193,48 @@ fn the_manifest_and_the_bindings_record_hold_conflicts_too() {
     assert!(codec::read(&files).is_ok());
 }
 
+const DECISION: &str = "decisions/keys-are-uuids.yaml";
+
 #[test]
 fn a_driver_holds_conflicts_whatever_its_kind() {
-    assert!(Kind::Driver.field(field::CONFLICTS).is_some());
+    for (after, conflict) in [
+        (
+            "    statement: \"Converted and new keys share one syntax.\"\n",
+            "      - field: label\n        ours: \"One shape\"\n",
+        ),
+        (
+            "    subject: 00000000-0000-7000-8000-000000000004\n",
+            "      - field: subject\n        ours: 00000000-0000-7000-8000-000000000006\n",
+        ),
+    ] {
+        let files = edited(
+            DECISION,
+            after,
+            &format!("{after}    conflicts:\n{conflict}"),
+        );
+        let document = codec::read(&files).expect("the tree reads");
+        assert_eq!(document.conflicts.len(), 1, "{conflict}");
+    }
+}
+
+#[test]
+fn a_record_that_holds_no_conflicts_refuses_a_conflicts_list_as_an_unknown_field() {
+    let files = edited(
+        FEATURE,
+        "      shall: \"write a key on every node.\"\n",
+        "      shall: \"write a key on every node.\"\n      conflicts:\n        - field: shall\n",
+    );
+    let (problem, _) = refused(&files);
+    assert_eq!(problem, Problem::UnknownField(field::CONFLICTS.to_owned()));
 }
 
 #[test]
 fn the_names_conflicts_position_and_record_are_reserved_for_conflict_records() {
+    let reserved = [field::CONFLICTS, field::POSITION, field::RECORD];
     for kind in Kind::ALL {
         for each in kind.fields() {
-            assert!(
-                each.name != field::POSITION && each.name != field::RECORD,
-                "{kind:?}.{}",
-                each.name
-            );
-            if each.name == field::CONFLICTS {
-                assert_eq!(each.shape, Shape::List(Item::Record(Kind::Conflict)));
-                assert!(kind.hosts_conflicts(), "{kind:?}");
-            }
+            assert!(!reserved.contains(&each.name), "{kind:?}.{}", each.name);
         }
-        assert_eq!(
-            kind.hosts_conflicts(),
-            kind.field(field::CONFLICTS).is_some(),
-            "{kind:?}"
-        );
     }
 }
 

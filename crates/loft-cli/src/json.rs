@@ -6,6 +6,7 @@ use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
 use loftspec::lint::Finding;
 use loftspec::yaml::Location;
+use loftspec_store::StoreError;
 use serde_json::{Map, Value, json};
 
 /// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
@@ -83,6 +84,26 @@ pub fn finding(finding: &Finding) -> Value {
     });
     fields.insert("subjects".to_owned(), Value::Array(subjects.collect()));
     Value::Object(fields)
+}
+
+/// The document of a command that ran to a result (F-45): its schema, its outcome, its result
+/// `fields` and any errors the result carries.
+pub fn result(schema: &str, outcome: &str, mut fields: Value, errors: Vec<Value>) -> Value {
+    fields["schema"] = json!(schema);
+    fields["outcome"] = json!(outcome);
+    fields["errors"] = Value::Array(errors);
+    fields
+}
+
+/// The document of a command that stopped on an error: its schema, the outcome `error` and the
+/// errors, and nothing else (F-45).
+pub fn failure(schema: &str, errors: Vec<Value>) -> Value {
+    result(schema, "error", json!({}), errors)
+}
+
+/// An error of the store that holds the tree, with no site.
+pub fn store_error(error: &StoreError) -> Value {
+    self::error("store", &error.to_string(), &[])
 }
 
 /// Prints one JSON document on standard output.

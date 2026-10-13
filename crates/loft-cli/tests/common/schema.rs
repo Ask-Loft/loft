@@ -1,8 +1,17 @@
 //! A check of a JSON value against the subset of JSON Schema 2020-12 that `schemas/` uses:
 //! `type`, `const`, `enum`, `minimum`, `required`, `properties`, `additionalProperties: false`,
-//! `items` and local `$ref`s into `$defs`.
+//! `items`, `oneOf` and local `$ref`s into `$defs`.
 
 use serde_json::Value;
+
+/// The one JSON document `stdout` holds, after asserting that it matches `schema`, the text of
+/// a file under `schemas/`.
+pub fn conforming(stdout: &[u8], schema: &str) -> Value {
+    let document: Value = serde_json::from_slice(stdout).expect("one JSON document");
+    let schema: Value = serde_json::from_str(schema).expect("a schema");
+    assert_eq!(violations(&document, &schema), Vec::<String>::new());
+    document
+}
 
 /// Every way `value` departs from `schema`, each with the JSON pointer where it does.
 pub fn violations(value: &Value, schema: &Value) -> Vec<String> {
@@ -15,6 +24,9 @@ fn check(value: &Value, schema: &Value, root: &Value, at: &str, found: &mut Vec<
     if let Some(reference) = schema["$ref"].as_str() {
         let name = reference.trim_start_matches("#/$defs/");
         return check(value, &root["$defs"][name], root, at, found);
+    }
+    if let Some(branches) = schema["oneOf"].as_array() {
+        return one_of(value, branches, root, at, found);
     }
     if let Some(expected) = schema.get("const")
         && value != expected
@@ -43,6 +55,31 @@ fn check(value: &Value, schema: &Value, root: &Value, at: &str, found: &mut Vec<
         for (index, item) in items.iter().enumerate() {
             check(item, schema, root, &format!("{at}/{index}"), found);
         }
+    }
+}
+
+/// Requires exactly one branch to hold; when none does, reports the closest one's departures.
+fn one_of(value: &Value, branches: &[Value], root: &Value, at: &str, found: &mut Vec<String>) {
+    let departures: Vec<Vec<String>> = branches
+        .iter()
+        .map(|branch| {
+            let mut each = Vec::new();
+            check(value, branch, root, at, &mut each);
+            each
+        })
+        .collect();
+    match departures.iter().filter(|each| each.is_empty()).count() {
+        1 => {}
+        0 => {
+            found.push(format!("{at}: matches no branch of `oneOf`"));
+            found.extend(
+                departures
+                    .into_iter()
+                    .min_by_key(Vec::len)
+                    .unwrap_or_default(),
+            );
+        }
+        many => found.push(format!("{at}: matches {many} branches of `oneOf`")),
     }
 }
 

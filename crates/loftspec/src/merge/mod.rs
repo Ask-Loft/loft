@@ -1,6 +1,6 @@
 //! The merge engine (CMP-10): a three-way merge of one file of a `spec/` tree, over keys and
-//! ordered lists, that writes a typed conflict record where the two sides disagree (D-11
-//! F-32..F-34). It takes only the base, ours and theirs versions of one file (CON-12).
+//! ordered lists, that writes a typed conflict record where the two sides disagree
+//! (F-32..F-34). It takes only the base, ours and theirs versions of one file (CON-12).
 
 mod conflict;
 mod labels;
@@ -11,7 +11,7 @@ mod same;
 
 use std::fmt;
 
-use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
+use crate::codec::schema::{Field, Item, Kind, Order, Shape};
 use crate::codec::{Content, Mode, ReadError, Rec, Role, SpecPath, Val, read_file, write_content};
 use crate::identity::Label;
 
@@ -183,11 +183,5 @@ fn lint(base: &[u8], ours: Vec<u8>, theirs: Vec<u8>) -> Result<Vec<u8>, MergeErr
 
 /// The conflict records a record and every record inside it hold.
 fn count(record: &Rec) -> usize {
-    let own = if record.kind.hosts_conflicts() {
-        record.list(field::CONFLICTS).len()
-    } else {
-        0
-    };
-    let inside: usize = record.children().map(count).sum();
-    own + inside
+    record.conflicts.len() + record.children().map(count).sum::<usize>()
 }

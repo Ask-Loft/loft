@@ -1,4 +1,4 @@
-//! The Markdown projection and the canonical JSON export (D-11 F-24, F-25).
+//! The Markdown projection and the canonical JSON export (F-24, F-25).
 
 mod common;
 
@@ -30,7 +30,7 @@ fn state_root() -> String {
 }
 
 #[test]
-fn ac_429_ac_430_ac_687_ac_688_capabilities_render_as_headings_of_levels_3_to_6() {
+fn capabilities_render_as_headings_of_levels_3_to_6() {
     let markdown = markdown();
     for line in [
         "### P-1 · Example Product\n",
@@ -43,7 +43,7 @@ fn ac_429_ac_430_ac_687_ac_688_capabilities_render_as_headings_of_levels_3_to_6(
 }
 
 #[test]
-fn ac_431_ac_433_a_criterion_is_a_bold_paragraph_and_an_unlabelled_node_shows_its_key() {
+fn a_criterion_is_a_bold_paragraph_and_an_unlabelled_node_shows_its_key() {
     assert!(markdown().contains(
         "\n**00000000-0000-7000-8000-000000000005 · Acceptance Criterion · Every node record \
          carries a `key` field.**\n"
@@ -51,7 +51,7 @@ fn ac_431_ac_433_a_criterion_is_a_bold_paragraph_and_an_unlabelled_node_shows_it
 }
 
 #[test]
-fn ac_432_components_decisions_tags_and_realizes_edges_follow_the_products() {
+fn components_decisions_tags_and_realizes_edges_follow_the_products() {
     let markdown = markdown();
     let at = |heading: &str| {
         markdown
@@ -70,7 +70,7 @@ fn ac_432_components_decisions_tags_and_realizes_edges_follow_the_products() {
 }
 
 #[test]
-fn ac_686_every_node_of_the_document_appears() {
+fn every_node_of_the_document_appears() {
     let markdown = markdown();
     for label in [
         "P-1", "FG-1", "F-1", "RQ-2", "CMP-1", "CON-1", "CON-2", "QA-1", "QA-2", "ADR-1",
@@ -80,17 +80,17 @@ fn ac_686_every_node_of_the_document_appears() {
 }
 
 #[test]
-fn ac_875_a_nodes_tags_render_on_one_line_after_its_body() {
+fn a_nodes_tags_render_on_one_line_after_its_body() {
     assert!(markdown().contains("\n\nThe example.\n\nTags: `portable`\n\n"));
 }
 
 #[test]
-fn ac_876_the_title_is_the_first_products_name() {
+fn the_title_is_the_first_products_name() {
     assert!(markdown().starts_with("# Example Product\n\n"));
 }
 
 #[test]
-fn ac_877_root_components_render_in_the_order_the_reader_takes_them() {
+fn root_components_render_in_the_order_the_reader_takes_them() {
     let mut document = small_document();
     document
         .components
@@ -102,12 +102,12 @@ fn ac_877_root_components_render_in_the_order_the_reader_takes_them() {
 }
 
 #[test]
-fn ac_434_ac_441_two_renders_are_byte_identical() {
+fn two_renders_are_byte_identical() {
     assert_eq!(projections(), projections());
 }
 
 #[test]
-fn ac_435_ac_436_the_markdown_names_its_state_root_and_no_other_digest() {
+fn the_markdown_names_its_state_root_and_no_other_digest() {
     let markdown = markdown();
     let root = state_root();
     assert!(markdown.contains(&format!("> loftspec/1 · state root `{root}`\n")));
@@ -119,14 +119,14 @@ fn ac_435_ac_436_the_markdown_names_its_state_root_and_no_other_digest() {
 }
 
 #[test]
-fn ac_437_the_export_is_canonical_json() {
+fn the_export_is_canonical_json() {
     let bytes = projections().json;
     let value: Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(canonical_bytes(&value), bytes);
 }
 
 #[test]
-fn ac_438_ac_439_the_export_holds_every_nodes_view_key_and_label() {
+fn the_export_holds_every_nodes_view_key_and_label() {
     let export = export();
     let (_, views) = hash_indexed_with_views(&small_document().index().unwrap());
     let nodes = export["nodes"].as_array().unwrap();
@@ -144,12 +144,12 @@ fn ac_438_ac_439_the_export_holds_every_nodes_view_key_and_label() {
 }
 
 #[test]
-fn ac_440_the_export_names_its_state_root() {
+fn the_export_names_its_state_root() {
     assert_eq!(export()["stateRoot"], state_root());
 }
 
 #[test]
-fn ac_652_to_ac_654_the_export_holds_edges_decisions_and_registries() {
+fn the_export_holds_edges_decisions_and_registries() {
     let export = export();
     let edges = export["edges"].as_array().unwrap();
     assert_eq!(edges.len(), 5);
@@ -164,13 +164,13 @@ fn ac_652_to_ac_654_the_export_holds_edges_decisions_and_registries() {
 }
 
 #[test]
-fn ac_655_the_export_layout_is_the_published_one() {
+fn the_export_layout_is_the_published_one() {
     let published = include_bytes!("../../../testdata/golden/small-document.export.json");
     assert_eq!(projections().json, published);
 }
 
 #[test]
-fn ac_925_a_code_span_in_a_name_renders_as_written() {
+fn a_code_span_in_a_name_renders_as_written() {
     let mut document = small_document();
     document.products[0].feature_groups[0].name =
         "The `event_driven` form and snake_case [notes]".to_owned();
@@ -182,7 +182,7 @@ fn ac_925_a_code_span_in_a_name_renders_as_written() {
 }
 
 #[test]
-fn ac_925_a_bar_in_a_code_span_is_still_escaped() {
+fn a_bar_in_a_code_span_is_still_escaped() {
     let mut document = small_document();
     document.products[0].feature_groups[0].name = "The `a|b` form".to_owned();
     let markdown = render(&document).unwrap().markdown;

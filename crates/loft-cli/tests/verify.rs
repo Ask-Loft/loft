@@ -36,14 +36,11 @@ fn state_root(scratch: &Scratch) -> String {
 }
 
 fn json(output: &Output) -> Value {
-    let document: Value = serde_json::from_str(&stdout(output)).unwrap();
-    let schema: Value = serde_json::from_str(include_str!("../../../schemas/verify.json")).unwrap();
-    assert_eq!(schema::violations(&document, &schema), Vec::<String>::new());
-    document
+    schema::conforming(&output.stdout, include_str!("../../../schemas/verify.json"))
 }
 
 #[test]
-fn ac_560_on_a_match_it_prints_the_state_root_and_exits_0() {
+fn on_a_match_it_prints_the_state_root_and_exits_0() {
     let scratch = published();
     let output = scratch.loft(&["verify"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
@@ -54,7 +51,7 @@ fn ac_560_on_a_match_it_prints_the_state_root_and_exits_0() {
 }
 
 #[test]
-fn ac_561_on_a_mismatch_it_names_the_first_differing_root_and_exits_1() {
+fn on_a_mismatch_it_names_the_first_differing_root_and_exits_1() {
     let scratch = published();
     scratch.edit(
         "products/reading-list/product.yaml",
@@ -67,7 +64,7 @@ fn ac_561_on_a_mismatch_it_names_the_first_differing_root_and_exits_1() {
 }
 
 #[test]
-fn ac_562_without_a_lock_it_exits_1_naming_the_missing_file() {
+fn without_a_lock_it_exits_1_naming_the_missing_file() {
     let scratch = Scratch::with_reading_list();
     let output = scratch.loft(&["verify"]);
     assert_eq!(output.status.code(), Some(1));
@@ -75,7 +72,7 @@ fn ac_562_without_a_lock_it_exits_1_naming_the_missing_file() {
 }
 
 #[test]
-fn ac_667_a_lock_that_is_not_a_valid_lock_record_exits_1_naming_the_lock_file() {
+fn a_lock_that_is_not_a_valid_lock_record_exits_1_naming_the_lock_file() {
     let scratch = published();
     let text = fs::read_to_string(scratch.0.join(LOCK)).unwrap();
     fs::write(
@@ -89,7 +86,7 @@ fn ac_667_a_lock_that_is_not_a_valid_lock_record_exits_1_naming_the_lock_file() 
 }
 
 #[test]
-fn ac_564_a_read_error_names_no_root() {
+fn a_read_error_names_no_root() {
     let scratch = published();
     scratch.edit(
         "products/reading-list/product.yaml",
@@ -103,7 +100,7 @@ fn ac_564_a_read_error_names_no_root() {
 }
 
 #[test]
-fn ac_470_verification_writes_nothing() {
+fn verification_writes_nothing() {
     let scratch = published();
     let before = fs::read(scratch.0.join(LOCK)).unwrap();
     scratch.loft(&["verify"]);
@@ -111,7 +108,7 @@ fn ac_470_verification_writes_nothing() {
 }
 
 #[test]
-fn ac_582_the_json_results_match_the_verify_schema() {
+fn the_json_results_match_the_verify_schema() {
     let scratch = published();
     let verified = json(&scratch.loft(&["verify", "--format", "json"]));
     assert_eq!(verified["outcome"], "verified");
@@ -124,6 +121,7 @@ fn ac_582_the_json_results_match_the_verify_schema() {
     let mismatch = json(&scratch.loft(&["verify", "--format", "json"]));
     assert_eq!(mismatch["outcome"], "mismatch");
     assert_eq!(mismatch["root"], "contentRoot");
+    assert!(mismatch["lock"].is_string() && mismatch["tree"].is_string());
     fs::remove_file(scratch.0.join(LOCK)).unwrap();
     let missing = json(&scratch.loft(&["verify", "--format", "json"]));
     assert_eq!(missing["outcome"], "error");
