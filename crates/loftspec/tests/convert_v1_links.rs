@@ -1,9 +1,7 @@
 //! Converting a v1 export's links and decisions (F-13): `realizes` and `scoped_to` edges,
 //! Architecture Decisions with their elements and `subject` edges, and the derived-from record.
 
-mod common;
-
-use common::v1::{convert_value, full_export, hash, key, uuid};
+use crate::common::v1::{convert_value, full_export, hash, key, uuid};
 use loftspec::attributes::Boundary;
 use loftspec::canonical::Digest;
 use loftspec::convert::v1::{Conversion, ConvertError, Finding};

@@ -3,25 +3,18 @@
 //! repository's own `spec/` lists the tag; and the converse, that every command that changes a
 //! file under `spec/` or beside it lists the tag.
 
-#[path = "common/commands.rs"]
-mod commands;
-mod common;
-mod conformance;
-#[path = "common/snapshot.rs"]
-mod snapshot;
-
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 use std::process::Output;
 
-use commands::{COMMANDS, Fixture};
-use common::{EPOCH, Scratch, stderr, stdout};
-use conformance::{tagged, tagged_commands};
+use crate::commands::{COMMANDS, Fixture};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::conformance::{tagged, tagged_commands};
+use crate::snapshot::snapshot;
 use loftspec::codec::SpecPath;
 use loftspec::publish::{LOCK, Lock};
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
-use snapshot::snapshot;
 use software_plant::{Clock, GitScenario};
 
 const PRODUCT: &str = "products/reading-list/product.yaml";

@@ -1,8 +1,6 @@
 //! The canonical writer (F-9): layout, scalar styles, and exact read-back.
 
-#[path = "support/oracle.rs"]
-mod oracle;
-
+use crate::oracle;
 use loftspec::yaml::{self, Out, Value};
 use proptest::prelude::*;
 

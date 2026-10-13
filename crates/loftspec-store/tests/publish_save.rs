@@ -2,13 +2,10 @@
 //! `spec/labels.yaml` and the files whose citations it rewrote, and the lock beside `spec/`, in
 //! one save (AC-463); and the lock read back only when it is a valid lock record.
 
-mod common;
-mod fixtures;
-
 use std::fs;
 
-use common::Scratch;
-use fixtures::{LINT_CONFIG, converted, with_lint};
+use crate::common::Scratch;
+use crate::fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{Files, LABELS, SpecPath};
 use loftspec::publish::{LOCK, Lock};
 use loftspec_store::journal::JOURNAL;

@@ -2,13 +2,11 @@
 //! rebase of the publish branch keeps the pulled side's bindings, withdraws the other side's
 //! colliding labels, relabels a key that lost its live label, and pins the tree it writes.
 
-mod common;
-
 use std::fmt::Write as _;
 use std::num::NonZeroU64;
 
-use common::text::{files, path};
-use common::{key, label};
+use crate::common::text::{files, path};
+use crate::common::{key, label};
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::document::Document;
 use loftspec::hash::hash_document;

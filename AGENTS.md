@@ -139,6 +139,10 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 - Test names say what they prove in words and cite no label: a publish can withdraw a label and
   give its node a new one, and a guard (`crates/loft-cli/tests/citations.rs`) fails on a label
   in a test name.
+- Each crate's integration tests are one binary, `tests/main.rs`, with a module for each file of
+  `tests/` and the modules they share; one binary links once, where a binary per file linked
+  dozens of times. Declare a new test file there as `mod <file>;`: Cargo no longer finds it by
+  itself, and a guard (`crates/loft-cli/tests/test_modules.rs`) fails on a file left out.
 - Treat `clippy::too_many_lines` as a hard refactoring gate: never allow, expect, or suppress it.
   When it fires, complete the necessary refactoring within the same turn before continuing or
   handing work off.

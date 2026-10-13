@@ -13,6 +13,9 @@ categories = ["command-line-utilities", "development-tools"]
 # The tests read fixtures from the repository and use the Software Plant, neither of which is
 # published, so they run from the repository only.
 exclude = ["tests"]
+# The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
+# checked by the operating system once each.
+autotests = false
 
 [[bin]]
 name = "loft"
@@ -29,3 +32,7 @@ software-plant = { path = "../software-plant" }
 
 [lints]
 workspace = true
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"

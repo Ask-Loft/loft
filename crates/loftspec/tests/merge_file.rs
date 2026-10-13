@@ -2,9 +2,7 @@
 //! conflict written where both sides changed one field apart, lists merged in base order, and
 //! the result in canonical layout.
 
-mod common;
-
-use common::text::{FEATURE, files, text};
+use crate::common::text::{FEATURE, files, text};
 use loftspec::codec::{self, SpecPath};
 use loftspec::merge::{Input, MergeError, Merged, merge_file};
 

@@ -1,14 +1,11 @@
 //! `loft verify` as a process (F-42, F-31): the roots recomputed from the tree and compared with
 //! the lock, with an exit code a CI job can gate on.
 
-mod common;
-#[path = "common/schema.rs"]
-mod schema;
-
 use std::fs;
 use std::process::Output;
 
-use common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::schema;
 use loftspec::publish::{LOCK, Lock};
 use serde_json::Value;
 use software_plant::{Clock, GitScenario};

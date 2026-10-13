@@ -1,11 +1,10 @@
 //! Label allocation at publish (F-28, RQ-7, RQ-8, RQ-9, RQ-63): the next label of each kind
 //! prefix, in document order, from counters that never rewind.
 
-mod common;
-
 use std::num::NonZeroU64;
 
-use common::{component, criterion, feature, key, label, root, slug, small_document};
+use crate::common;
+use crate::common::{component, criterion, feature, key, label, root, slug, small_document};
 use loftspec::codec::{self, SpecPath};
 use loftspec::decision::NodeRef;
 use loftspec::document::{Document, Edge, SubjectRole};

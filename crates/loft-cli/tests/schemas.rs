@@ -2,15 +2,11 @@
 //! command, that names its version and allows the envelope's result and error shapes; every
 //! schema describes sites and errors alike.
 
-#[path = "common/commands.rs"]
-mod commands;
-#[path = "common/help.rs"]
-mod help;
-
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use commands::COMMANDS;
+use crate::commands::COMMANDS;
+use crate::help;
 use serde_json::{Value, json};
 
 fn schemas() -> PathBuf {

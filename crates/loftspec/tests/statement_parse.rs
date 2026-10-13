@@ -1,9 +1,7 @@
 //! Parsing a sentence into its EARS slots (RQ-52): slots are kept only when the form's
 //! template renders them back to the sentence byte for byte; anything else stays text.
 
-mod common;
-
-use common::v1::live_export;
+use crate::common::v1::live_export;
 use loftspec::statement::{EarsForm, Statement};
 
 fn form(sentence: &str) -> EarsForm {

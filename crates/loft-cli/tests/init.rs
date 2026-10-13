@@ -1,20 +1,15 @@
 //! `loft init` (the `loft init` Feature): an empty document created in the current directory,
 //! which reads, validates and lints clean; refused, with nothing written, where `spec/` exists.
 
-mod common;
-#[path = "common/schema.rs"]
-mod schema;
-#[path = "common/snapshot.rs"]
-mod snapshot;
-
 use std::fs;
 
-use common::{Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout};
+use crate::schema;
+use crate::snapshot::snapshot;
 use loftspec::bindings::Counters;
 use loftspec::document::Document;
 use loftspec_store::{DocumentStore as _, FileStore};
 use serde_json::Value;
-use snapshot::snapshot;
 
 /// A directory where `loft init` ran and succeeded.
 fn initialised() -> Scratch {

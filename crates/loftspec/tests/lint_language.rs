@@ -1,8 +1,6 @@
 //! The language rules `LQ-001`..`LQ-009` and the texts they read (F-20).
 
-mod common;
-
-use common::{component, criterion, key, requirement, root, small_document};
+use crate::common::{component, criterion, key, requirement, root, small_document};
 use loftspec::codec::Sites;
 use loftspec::document::Document;
 use loftspec::identity::Key;

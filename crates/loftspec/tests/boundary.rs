@@ -1,10 +1,9 @@
 //! A Component's boundary (F-50, ADR-15): the field in the text form and the content view,
 //! how a subtree takes it on, the validator's rule, the obligation rules and the rendering.
 
-mod common;
-
-use common::text::{edited, files, text};
-use common::{key, small_document};
+use crate::common;
+use crate::common::text::{edited, files, text};
+use crate::common::{key, small_document};
 use loftspec::attributes::Boundary;
 use loftspec::boundary::Boundaries;
 use loftspec::canonical::canonical_bytes;

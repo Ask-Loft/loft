@@ -1,8 +1,7 @@
 //! `loft --version` (F-46): the tool release with the format and the hashing algorithm it
 //! implements, on three fixed lines or as one JSON document.
 
-#[path = "common/schema.rs"]
-mod schema;
+use crate::schema;
 
 use std::process::{Command, Output};
 

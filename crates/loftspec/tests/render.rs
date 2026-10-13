@@ -1,8 +1,7 @@
 //! The Markdown projection and the canonical JSON export (F-24, F-25).
 
-mod common;
-
-use common::small_document;
+use crate::common;
+use crate::common::small_document;
 use loftspec::canonical::canonical_bytes;
 use loftspec::codec;
 use loftspec::hash::{hash_document, hash_indexed_with_views};

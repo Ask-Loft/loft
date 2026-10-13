@@ -1,13 +1,10 @@
 //! The file store saves only what changes: a file whose bytes would not change is left alone, a
 //! save of an unchanged document writes nothing, and `spec/lint.yaml` is never removed.
 
-mod common;
-mod fixtures;
-
 use std::fs;
 
-use common::Scratch;
-use fixtures::{LINT_CONFIG, converted, with_lint};
+use crate::common::Scratch;
+use crate::fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{self, SpecPath};
 use loftspec::document::Document;
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};

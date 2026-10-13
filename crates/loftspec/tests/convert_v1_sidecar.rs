@@ -1,9 +1,8 @@
 //! The sidecar of a v1 conversion (F-15, RQ-55, RQ-58): every v1 fact the content view
 //! excludes that the round trip to the source state needs, written deterministically.
 
-mod common;
-
-use common::v1::{convert_value, key, tree, uuid};
+use crate::common;
+use crate::common::v1::{convert_value, key, tree, uuid};
 use loftspec::attributes::VerificationFate;
 use loftspec::convert::v1::sidecar::{FORMAT, ScopeKind};
 use loftspec::convert::v1::{Conversion, ConvertError};

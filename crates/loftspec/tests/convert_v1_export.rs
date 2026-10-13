@@ -10,9 +10,7 @@ use loftspec::decision::{ConsequenceKind, Rating};
 use loftspec::document::SubjectRole;
 use serde_json::{Value, json};
 
-mod common;
-
-use common::v1::{element, export, hash, live_export, node, read, subject, uuid};
+use crate::common::v1::{element, export, hash, live_export, node, read, subject, uuid};
 
 const D11_SEQUENCE_1: &str =
     include_str!("../../../testdata/v1/d11-sequence-1/loft-authored-state.json");

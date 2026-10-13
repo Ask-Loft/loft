@@ -1,8 +1,7 @@
 //! A node's content view and content hash (F-3).
 
-mod common;
-
-use common::{component, criterion, feature, fresh_key, key, requirement};
+use crate::common;
+use crate::common::{component, criterion, feature, fresh_key, key, requirement};
 use loftspec::attributes::{
     ConservationKind, QaKind, QualityAggregation, QualityBand, QualityTarget, VerificationFate,
 };

@@ -6,8 +6,8 @@ fail-fast = false
 # A hung test fails after ten minutes instead of holding the gate open.
 slow-timeout = { period = "60s", terminate-after = 10 }
 
-# The contract suites run real git and real `loft` processes and are the longest tests; started
-# first, they no longer finish alone after every other test.
+# The contract suites, the modules named `*_contract*`, run real git and real `loft` processes
+# and are the longest tests; started first, they no longer finish alone after every other test.
 [[profile.default.overrides]]
-filter = 'binary(~contract)'
+filter = 'test(/^[a-z_]*_contract[a-z_]*::/)'
 priority = 10

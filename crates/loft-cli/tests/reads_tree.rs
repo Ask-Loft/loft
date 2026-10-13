@@ -2,17 +2,10 @@
 //! against each command whose Feature in this repository's own `spec/` lists the tag; and the
 //! converse, that every command that reports a read error lists it.
 
-#[path = "common/commands.rs"]
-mod commands;
-mod common;
-mod conformance;
-#[path = "common/snapshot.rs"]
-mod snapshot;
-
-use commands::COMMANDS;
-use common::{Scratch, stderr, stdout};
-use conformance::{tagged, tagged_commands};
-use snapshot::snapshot;
+use crate::commands::COMMANDS;
+use crate::common::{Scratch, stderr, stdout};
+use crate::conformance::{tagged, tagged_commands};
+use crate::snapshot::snapshot;
 
 const PRODUCT: &str = "products/reading-list/product.yaml";
 

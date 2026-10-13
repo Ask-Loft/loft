@@ -3,20 +3,15 @@
 //! conflict markers as none, prints what it settled and the git command that finishes, and
 //! refuses what it cannot settle.
 
-mod common;
-#[path = "common/schema.rs"]
-mod schema;
-#[path = "common/snapshot.rs"]
-mod snapshot;
-
 use std::fs;
 use std::process::Output;
 
-use common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::schema;
+use crate::snapshot::snapshot;
 use loftspec::codec::SpecPath;
 use loftspec::merge::merge_file;
 use serde_json::json;
-use snapshot::snapshot;
 use software_plant::{Clock, GitScenario};
 
 const FEATURE_F1: &str = "00000000-0000-4000-8000-00000000001e";
