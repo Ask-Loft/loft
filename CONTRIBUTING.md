@@ -8,8 +8,8 @@ agents alike; this page is the short version.
 The contract is this repository's own specification in `spec/`, written in the Loft
 Specification Format. A change of behaviour changes `spec/` in the same pull request as the
 code: write the new Requirements and criteria without keys, run `loft fmt` to mint them, and keep
-`loft check --fail-on warning` clean. A new decision is added as `proposed` and accepted in a
-later change. When code and `spec/` disagree, `spec/` wins unless the change is to the contract.
+`loft check --fail-on warning` clean. A decision is added in the state that is true, `proposed` or
+`accepted`. When code and `spec/` disagree, `spec/` wins unless the change is to the contract.
 
 Labels (`RQ-12`, `AC-40`) are allocated only by `loft publish` on `main`, at release. Nodes you
 add have keys and no labels until then.
@@ -26,6 +26,9 @@ add have keys and no labels until then.
 - Behaviour shared with Loft v1 is led from here. An intended difference is an entry in
   `testdata/v1/divergences.json`.
 - A change to a command's output changes its schema under `schemas/` in the same commit.
+- The `loft-spec` agent skill is changed only in its source, `crates/loft-cli/skill/loft-spec/`;
+  then `scripts/package-skill.sh` rewrites the plugin packages under `plugins/`. The source names
+  no agent host outside its `agents/` directory, and its YAML examples run as tests.
 
 ## Before you open a pull request
 

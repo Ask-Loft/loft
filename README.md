@@ -34,8 +34,8 @@ hashing algorithm.
 
 ```sh
 git init my-spec && cd my-spec
-loft init                       # spec/: a manifest, label counters and empty registries
-# write Products and Features under spec/products/, without keys
+loft init                       # spec/, and the loft-spec skill for coding agents
+# write Products and Features under spec/products/ without keys, or ask your agent to
 loft fmt                        # canonical layout; mints a key for every new node
 loft check                      # read, validate and lint
 loft merge-driver --install     # once per clone: git merges spec/ by key
@@ -47,7 +47,7 @@ loft verify                     # in CI: the tree matches the lock
 
 | Command | What it does |
 |---|---|
-| `loft init` | Creates an empty document in the current directory |
+| `loft init [--no-skill]` | Creates an empty document in the current directory, and the agent skill beside it |
 | `loft fmt [--check]` | Rewrites `spec/` in canonical layout and mints missing keys, or reports drift |
 | `loft check [--fail-on <severity>]` | Reads, validates and lints `spec/` |
 | `loft render` | Writes the Markdown projection and the canonical JSON export |
@@ -55,6 +55,27 @@ loft verify                     # in CI: the tree matches the lock
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
 | `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
+| `loft skill install` | Writes the agent skill into the current directory, or brings it up to date |
+
+## Agents
+
+The `loft-spec` skill teaches a coding agent to write, change and review a specification with
+`loft`: the edit loop, the format's files and fields, the writing rules, what each lint finding
+means, review, and publishing. The agent reads one short router, then only the references a task
+needs.
+
+`loft init` writes the skill for Claude Code to `.claude/skills/loft-spec/` and for Codex to
+`.agents/skills/loft-spec/`; `--no-skill` leaves it out. `loft skill install` writes it into any
+project, and after an upgrade of `loft` brings it to the new version. Commit both directories so
+that everyone working on the project has the skill.
+
+The skill is also a plugin, for an agent that works across projects:
+
+- Claude Code: `/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@loft`.
+- Codex: `codex plugin marketplace add Ask-Loft/loft`, then `codex plugin add loft@loft`, or
+  choose it in `/plugins`.
+
+The plugin teaches the agent; it does not install `loft`, which the skill expects on the path.
 
 ## Exit codes and JSON
 
@@ -146,3 +167,7 @@ cargo run -q -p loft-cli -- verify    # on main, which carries only published st
 ```
 
 Rust 1.97 or newer; `cargo install cargo-nextest --locked` provides the test runner.
+
+The skill's source lies in `crates/loft-cli/skill/loft-spec/`. After changing it, run
+`scripts/package-skill.sh` to rewrite the plugin packages under `plugins/`; a test fails while
+they differ.
