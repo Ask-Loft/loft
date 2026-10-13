@@ -23,21 +23,28 @@ const READING_LIST: &str =
 pub struct Scratch(pub PathBuf);
 
 impl Scratch {
-    /// A fresh directory holding the Reading List's `spec/` tree.
-    pub fn with_reading_list() -> Self {
+    /// A fresh, empty directory.
+    pub fn empty() -> Self {
         static NEXT: AtomicUsize = AtomicUsize::new(0);
         let number = NEXT.fetch_add(1, Ordering::Relaxed);
         let root = env::temp_dir().join(format!("loft-cli-{}-{number}", process::id()));
         let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).unwrap();
+        Self(root)
+    }
+
+    /// A fresh directory holding the Reading List's `spec/` tree.
+    pub fn with_reading_list() -> Self {
+        let scratch = Self::empty();
         let document = convert(&Export::from_json(READING_LIST).unwrap())
             .unwrap()
             .document;
-        fs::create_dir_all(root.join("spec")).unwrap();
-        loftspec_store::FileStore::open(&root)
+        fs::create_dir_all(scratch.0.join("spec")).unwrap();
+        loftspec_store::FileStore::open(&scratch.0)
             .unwrap()
             .write_files(codec::write(&document))
             .unwrap();
-        Self(root)
+        scratch
     }
 
     pub fn file(&self, path: &str) -> PathBuf {

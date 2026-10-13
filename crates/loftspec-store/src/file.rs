@@ -73,6 +73,20 @@ impl FileStore {
         self.write_with_beside(files, (SIDECAR, sidecar.to_vec()))
     }
 
+    /// Writes a new tree into a `spec/` that does not exist yet, in one save.
+    ///
+    /// # Errors
+    ///
+    /// `spec/` exists already, in which case nothing is written; or a file cannot be written.
+    pub fn create(&self, files: Files) -> Result<(), StoreError> {
+        let spec = self.root.join(SPEC);
+        if spec.exists() {
+            return Err(StoreError::Exists(spec));
+        }
+        fs::create_dir_all(&spec).map_err(io_error(&spec))?;
+        self.write_files(files)
+    }
+
     /// The lock beside `spec/`, or none.
     ///
     /// # Errors

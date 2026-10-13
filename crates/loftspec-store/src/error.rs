@@ -27,6 +27,8 @@ pub enum StoreError {
     NotUtf8(PathBuf),
     #[error("{0}: `spec/` is not empty")]
     NotEmpty(PathBuf),
+    #[error("{0}: `spec/` already exists")]
+    Exists(PathBuf),
     #[error("{0}: a save is already in progress")]
     Pending(PathBuf),
     #[error("{0}: {1}")]

@@ -3,6 +3,7 @@
 
 mod check;
 mod import;
+mod init;
 mod json;
 mod merge_driver;
 mod publish;
@@ -37,6 +38,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Create an empty document in the current directory (RQ-128).
+    Init,
     /// Rewrite `spec/` in canonical layout, minting missing keys (RQ-140).
     Fmt {
         /// Report the files that would change, without writing (RQ-142).
@@ -156,6 +159,7 @@ fn main() -> ExitCode {
     };
     let root = Path::new(".");
     match command {
+        Command::Init => init::run(root),
         Command::Fmt { check } => fmt(root, check),
         Command::Check { fail_on, format } => check::run(
             root,

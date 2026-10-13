@@ -43,7 +43,7 @@ enum Fixture {
 
 /// The arguments that run each implemented command, by the slug of its Feature, and what it
 /// runs over.
-const COMMANDS: [(&str, &[&str], Fixture); 6] = [
+const COMMANDS: [(&str, &[&str], Fixture); 7] = [
     ("loft-check", &["check"], Fixture::Unkeyed),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed),
     (
@@ -58,11 +58,12 @@ const COMMANDS: [(&str, &[&str], Fixture); 6] = [
     ),
     ("loft-publish", &["publish"], Fixture::Clean),
     ("loft-verify", &["verify"], Fixture::Clean),
+    ("loft-init", &["init"], Fixture::Empty),
 ];
 
 /// Tagged commands not implemented yet, by Feature slug and subcommand. Each must still be
 /// unknown to `loft`; once it exists it moves to [`COMMANDS`] and is held to the rules.
-const PENDING: [(&str, &str); 1] = [("loft-init", "init")];
+const PENDING: [(&str, &str); 0] = [];
 
 /// The body a planted save gives the Product, and the file it plants into an empty `spec/`.
 const PLANTED_BODY: &str = "A planted body.";
