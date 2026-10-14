@@ -146,12 +146,15 @@ impl Reader {
         let node = self
             .required(item, field("node"), "node")
             .and_then(|node| self.parsed(&node.value, "a key", |text| Key::parse(text).ok()));
-        let reviewed = field("reviewed").map(|reviewed| {
-            let expected = "64 lowercase hexadecimal digits";
-            self.parsed(&reviewed.value, expected, |text| {
-                text.parse::<Digest>().ok()
-            })
-        });
+        // A `reviewed` that does not parse leaves the link unread; none leaves it unreviewed.
+        let reviewed = match field("reviewed") {
+            None => Some(None),
+            Some(reviewed) => {
+                let expected = "64 lowercase hexadecimal digits";
+                let parse = |text: &str| text.parse::<Digest>().ok();
+                self.parsed(&reviewed.value, expected, parse).map(Some)
+            }
+        };
         let evidence = self.evidence(item, field("tests"), field("unverified"));
         if let Some(node) = node
             && !self.nodes.insert(node)
@@ -161,7 +164,7 @@ impl Reader {
         }
         Some(Link {
             node: node?,
-            reviewed: reviewed.map_or(Some(None), |digest| digest.map(Some))?,
+            reviewed: reviewed?,
             evidence: evidence?,
             position: Some(item.position),
         })
@@ -180,10 +183,11 @@ impl Reader {
                 if items.is_empty() {
                     let empty = Problem::Shape("`tests` lists no test".to_owned());
                     self.fail(Some(tests.value.position), empty);
+                    return None;
                 }
+                // Every test is read, so each one's errors are reported.
                 let read: Vec<Option<Test>> = items.iter().map(|test| self.test(test)).collect();
-                let read: Option<Vec<Test>> = read.into_iter().collect();
-                read.filter(|tests| !tests.is_empty()).map(Evidence::Tests)
+                read.into_iter().collect::<Option<_>>().map(Evidence::Tests)
             }
             (None, Some(reason)) => self
                 .text(&reason.value, "a reason")

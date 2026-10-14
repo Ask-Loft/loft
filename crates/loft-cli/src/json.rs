@@ -7,15 +7,20 @@ use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
-use loftspec::lint::Finding;
+use loftspec::lint::{Finding, Severity};
 use loftspec::yaml::Location;
 use serde_json::{Map, Value, json};
 
 /// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
 pub fn site(site: &Site) -> Map<String, Value> {
+    site_at(&site.path, site.location)
+}
+
+/// The fields of a site at `location` in the file `path`, which may lie outside `spec/`.
+pub fn site_at(path: &impl Display, location: Option<Location>) -> Map<String, Value> {
     let mut fields = Map::new();
-    fields.insert("path".to_owned(), json!(site.path.to_string()));
-    match site.location {
+    fields.insert("path".to_owned(), json!(path.to_string()));
+    match location {
         Some(Location::At(position)) => {
             fields.insert("line".to_owned(), json!(position.line));
             fields.insert("column".to_owned(), json!(position.column));
@@ -30,13 +35,16 @@ pub fn site(site: &Site) -> Map<String, Value> {
 
 /// An error: its kind and message, its first site's fields, and every site.
 pub fn error(kind: &str, message: &str, sites: &[Site]) -> Value {
-    let mut fields = sites.first().map(site).unwrap_or_default();
+    error_at(kind, message, sites.iter().map(site).collect())
+}
+
+/// An error at `sites`, each given as its fields.
+pub fn error_at(kind: &str, message: &str, sites: Vec<Map<String, Value>>) -> Value {
+    let mut fields = sites.first().cloned().unwrap_or_default();
     fields.insert("kind".to_owned(), json!(kind));
     fields.insert("message".to_owned(), json!(message));
-    fields.insert(
-        "sites".to_owned(),
-        Value::Array(sites.iter().map(|s| Value::Object(site(s))).collect()),
-    );
+    let sites = sites.into_iter().map(Value::Object).collect();
+    fields.insert("sites".to_owned(), Value::Array(sites));
     Value::Object(fields)
 }
 
@@ -101,6 +109,14 @@ pub fn result(schema: &str, outcome: &str, mut fields: Value, errors: Vec<Value>
 /// errors, and nothing else (F-45).
 pub fn failure(schema: &str, errors: Vec<Value>) -> Value {
     result(schema, "error", json!({}), errors)
+}
+
+/// Whether a finding of one of `severities` meets the `--fail-on` threshold, where one is given.
+pub fn fails_on(
+    threshold: Option<Severity>,
+    severities: impl IntoIterator<Item = Severity>,
+) -> bool {
+    threshold.is_some_and(|threshold| severities.into_iter().any(|severity| severity >= threshold))
 }
 
 /// Prints one JSON document on standard output.

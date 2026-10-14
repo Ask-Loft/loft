@@ -21,13 +21,8 @@ pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> ExitCode {
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
     let checked = check(&files);
-    let failed_on = fail_on.is_some_and(|threshold| {
-        checked
-            .findings()
-            .iter()
-            .any(|finding| finding.severity >= threshold)
-    });
-    let failed = checked.has_errors() || failed_on;
+    let severities = checked.findings().iter().map(|finding| finding.severity);
+    let failed = checked.has_errors() || json::fails_on(fail_on, severities);
     if as_json {
         json::print(&document(
             &checked,

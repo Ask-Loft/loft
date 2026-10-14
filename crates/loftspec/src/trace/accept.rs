@@ -2,15 +2,13 @@
 //! reviewer has checked its tests against the node as it now reads. A link with a `TR-004` or
 //! `TR-005` finding is never accepted.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
-use super::{Trace, TraceRule, places, reconcile};
+use super::{Place, TestFiles, Trace, TraceRule, places, reconcile};
 use crate::document::Document;
 use crate::hash::DocumentHashes;
 use crate::identity::Key;
-
-use super::findings::TestFiles;
 
 /// Why a node's link cannot be accepted.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -57,30 +55,23 @@ pub fn accept(
 ) -> Result<(), Vec<Refusal>> {
     let places = places(document);
     let untrue = untrue(trace, document, hashes, files);
+    let linked: HashSet<Key> = trace.links.iter().map(|link| link.node).collect();
     let refusals: Vec<Refusal> = keys
         .iter()
-        .filter_map(|key| {
-            if !places.contains_key(key) {
-                Some(Refusal::NoNode(*key))
-            } else if !trace.links.iter().any(|link| link.node == *key) {
-                Some(Refusal::NoLink(*key))
+        .filter_map(|&key| {
+            if !places.contains_key(&key) {
+                Some(Refusal::NoNode(key))
+            } else if !linked.contains(&key) {
+                Some(Refusal::NoLink(key))
             } else {
-                let rule = untrue.iter().find(|(node, _)| node == key);
-                rule.map(|(_, rule)| Refusal::Finding(*key, *rule))
+                untrue.get(&key).map(|&rule| Refusal::Finding(key, rule))
             }
         })
         .collect();
     if !refusals.is_empty() {
         return Err(refusals);
     }
-    let keys: HashSet<&Key> = keys.iter().collect();
-    for link in trace
-        .links
-        .iter_mut()
-        .filter(|link| keys.contains(&link.node))
-    {
-        link.reviewed = Some(hashes.nodes[&places[&link.node].id]);
-    }
+    stamp(trace, keys, &places, hashes);
     Ok(())
 }
 
@@ -93,37 +84,49 @@ pub fn accept_stale(
     files: &impl TestFiles,
 ) -> Vec<Key> {
     let reconciled = reconcile(document, hashes, trace, files);
-    let rules = |key: Key| {
-        reconciled
-            .findings
-            .iter()
-            .filter(move |finding| finding.node == key)
-            .map(|finding| finding.rule)
-    };
+    let mut asks_review = HashSet::new();
+    let mut refused = HashSet::new();
+    for finding in &reconciled.findings {
+        if finding.rule.asks_review() {
+            asks_review.insert(finding.node);
+        } else if finding.rule.refuses_accept() {
+            refused.insert(finding.node);
+        }
+    }
     let stale: Vec<Key> = trace
         .links
         .iter()
         .map(|link| link.node)
-        .filter(|key| {
-            rules(*key).any(|rule| matches!(rule, TraceRule::Tr002 | TraceRule::Tr003))
-                && !rules(*key).any(|rule| matches!(rule, TraceRule::Tr004 | TraceRule::Tr005))
-        })
+        .filter(|key| asks_review.contains(key) && !refused.contains(key))
         .collect();
-    accept(trace, &stale, document, hashes, files).expect("a stale link can be accepted");
+    stamp(trace, &stale, &places(document), hashes);
     stale
 }
 
-/// The node and rule of each `TR-004` and `TR-005` finding.
+/// Writes each named node's current content hash into its link's `reviewed`.
+fn stamp(trace: &mut Trace, keys: &[Key], places: &HashMap<Key, Place>, hashes: &DocumentHashes) {
+    let keys: HashSet<&Key> = keys.iter().collect();
+    for link in trace
+        .links
+        .iter_mut()
+        .filter(|link| keys.contains(&link.node))
+    {
+        link.reviewed = Some(hashes.nodes[&places[&link.node].id]);
+    }
+}
+
+/// The first rule of a finding that refuses accepting each node's link.
 fn untrue(
     trace: &Trace,
     document: &Document,
     hashes: &DocumentHashes,
     files: &impl TestFiles,
-) -> Vec<(Key, TraceRule)> {
-    reconcile(document, hashes, trace, files)
-        .findings
-        .into_iter()
-        .filter(|finding| matches!(finding.rule, TraceRule::Tr004 | TraceRule::Tr005))
-        .map(|finding| (finding.node, finding.rule))
-        .collect()
+) -> HashMap<Key, TraceRule> {
+    let mut untrue = HashMap::new();
+    for finding in reconcile(document, hashes, trace, files).findings {
+        if finding.rule.refuses_accept() {
+            untrue.entry(finding.node).or_insert(finding.rule);
+        }
+    }
+    untrue
 }

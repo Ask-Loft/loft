@@ -3,11 +3,11 @@
 //! found, `TR-005` a link whose node is not in scope. A test is found as a whole word in its
 //! file; the reconciler runs no test and reads no runner's report.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::path::{Component, Path};
 
-use super::{Evidence, Link, Test, Trace, order, places};
+use super::{Evidence, Test, Trace, order, places};
 use crate::document::Document;
 use crate::hash::DocumentHashes;
 use crate::identity::Key;
@@ -42,6 +42,19 @@ impl TraceRule {
             Self::Tr002 | Self::Tr003 | Self::Tr004 | Self::Tr005 => Severity::Warning,
         }
     }
+
+    /// Whether the rule asks for a review: `TR-002` and `TR-003`.
+    #[must_use]
+    pub const fn asks_review(self) -> bool {
+        matches!(self, Self::Tr002 | Self::Tr003)
+    }
+
+    /// Whether the rule says the link is not true, so it cannot be accepted: `TR-004` and
+    /// `TR-005`.
+    #[must_use]
+    pub const fn refuses_accept(self) -> bool {
+        matches!(self, Self::Tr004 | Self::Tr005)
+    }
 }
 
 impl fmt::Display for TraceRule {
@@ -54,7 +67,6 @@ impl fmt::Display for TraceRule {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TraceFinding {
     pub rule: TraceRule,
-    pub severity: Severity,
     pub node: Key,
     /// The test a `TR-004` finding is about.
     pub test: Option<Test>,
@@ -77,6 +89,24 @@ pub struct Reconciled {
     pub linked: usize,
 }
 
+impl TraceFinding {
+    fn new(rule: TraceRule, node: Key, link: Option<Position>, message: impl Into<String>) -> Self {
+        Self {
+            rule,
+            node,
+            test: None,
+            link,
+            message: message.into(),
+        }
+    }
+
+    /// The rule's severity.
+    #[must_use]
+    pub const fn severity(&self) -> Severity {
+        self.rule.severity()
+    }
+}
+
 /// Compares `trace` with `document`, whose hashes are `hashes`, and with the test files.
 pub fn reconcile(
     document: &Document,
@@ -85,91 +115,82 @@ pub fn reconcile(
     files: &impl TestFiles,
 ) -> Reconciled {
     let places = places(document);
+    let mut read = HashMap::new();
     let mut findings = Vec::new();
     let mut linked = HashSet::new();
     for link in &trace.links {
-        let finding = |rule: TraceRule, message: String| TraceFinding {
-            rule,
-            severity: rule.severity(),
-            node: link.node,
-            test: None,
-            link: link.position,
-            message,
-        };
+        let finding =
+            |rule, message: &str| TraceFinding::new(rule, link.node, link.position, message);
         let Some(place) = places.get(&link.node).filter(|place| place.in_scope) else {
-            let message = if places.contains_key(&link.node) {
-                "the node is not in scope: only acceptance criteria and proved Constraints and \
-                 Quality Attributes are"
-            } else {
-                "no node of the tree carries this key"
-            };
-            findings.push(finding(TraceRule::Tr005, message.to_owned()));
+            findings.push(finding(
+                TraceRule::Tr005,
+                if places.contains_key(&link.node) {
+                    "the node is not in scope: only acceptance criteria and proved Constraints \
+                     and Quality Attributes are"
+                } else {
+                    "no node of the tree carries this key"
+                },
+            ));
             continue;
         };
         linked.insert(link.node);
         match link.reviewed {
-            None => findings.push(finding(
-                TraceRule::Tr002,
-                "the link has not been reviewed".to_owned(),
-            )),
+            None => findings.push(finding(TraceRule::Tr002, "the link has not been reviewed")),
             Some(reviewed) if reviewed != hashes.nodes[&place.id] => findings.push(finding(
                 TraceRule::Tr003,
-                "the node changed after the link was reviewed".to_owned(),
+                "the node changed after the link was reviewed",
             )),
             Some(_) => {}
         }
-        for (test, message) in missing(link, files) {
-            findings.push(TraceFinding {
-                test: Some(test.clone()),
-                ..finding(TraceRule::Tr004, message)
-            });
+        let tests = match &link.evidence {
+            Evidence::Tests(tests) => tests.as_slice(),
+            Evidence::Unverified(_) => &[],
+        };
+        for test in tests {
+            if let Some(wrong) = missing(test, &mut read, files) {
+                findings.push(TraceFinding {
+                    test: Some(test.clone()),
+                    ..finding(TraceRule::Tr004, &wrong)
+                });
+            }
         }
     }
-    let mut in_scope: Vec<_> = places.iter().filter(|(_, place)| place.in_scope).collect();
-    in_scope.sort_by_key(|(_, place)| place.index);
-    for (key, _) in &in_scope {
-        if !linked.contains(*key) {
-            findings.push(TraceFinding {
-                rule: TraceRule::Tr001,
-                severity: TraceRule::Tr001.severity(),
-                node: **key,
-                test: None,
-                link: None,
-                message: "no link names this node".to_owned(),
-            });
+    let mut in_scope = 0;
+    for (key, _) in places.iter().filter(|(_, place)| place.in_scope) {
+        in_scope += 1;
+        if !linked.contains(key) {
+            let message = "no link names this node";
+            findings.push(TraceFinding::new(TraceRule::Tr001, *key, None, message));
         }
     }
     findings.sort_by_key(|finding| (order(&places, finding.node), finding.rule));
     Reconciled {
         findings,
-        in_scope: in_scope.len(),
+        in_scope,
         linked: linked.len(),
     }
 }
 
-/// Each test of `link` that cannot be found, with what is wrong.
-fn missing<'a>(link: &'a Link, files: &impl TestFiles) -> Vec<(&'a Test, String)> {
-    let Evidence::Tests(tests) = &link.evidence else {
-        return Vec::new();
-    };
-    tests
-        .iter()
-        .filter_map(|test| {
-            let file = &test.file;
-            let wrong = if inside(file) {
-                match files.text(file) {
-                    None => format!("the file `{file}` does not exist"),
-                    Some(text) if !occurs_whole(&text, &test.name) => {
-                        format!("`{}` does not occur in `{file}` as a whole word", test.name)
-                    }
-                    Some(_) => return None,
-                }
-            } else {
-                format!("the file `{file}` lies outside the directory that holds `spec/`")
-            };
-            Some((test, wrong))
-        })
-        .collect()
+/// What is wrong with `test` when it cannot be found; each file is read once, into `read`.
+fn missing<'a>(
+    test: &'a Test,
+    read: &mut HashMap<&'a str, Option<String>>,
+    files: &impl TestFiles,
+) -> Option<String> {
+    let file = test.file.as_str();
+    if !inside(file) {
+        return Some(format!(
+            "the file `{file}` lies outside the directory that holds `spec/`"
+        ));
+    }
+    match read.entry(file).or_insert_with(|| files.text(file)) {
+        None => Some(format!("the file `{file}` does not exist")),
+        Some(held) if !occurs_whole(held, &test.name) => Some(format!(
+            "`{}` does not occur in `{file}` as a whole word",
+            test.name
+        )),
+        Some(_) => None,
+    }
 }
 
 /// Whether `path` names a file under the directory that holds `spec/`: relative, and never
