@@ -20,12 +20,12 @@ pub use time::{PublishedAt, TimeError};
 use settle::Settlement;
 
 use crate::canonical::Digest;
-use crate::check::{Placed, placed};
+use crate::check::{Placed, hashed, placed};
 use crate::codec::{self, Files, LABELS, ReadError, Sites, SpecPath, read_sited};
 use crate::document::Document;
 use crate::hash::hash_document;
 use crate::identity::{Key, Label};
-use crate::validate::{conflict_errors, index_errors, validate};
+use crate::validate::validate;
 
 /// A label that a publish replaced in an element: a citation it rewrote in the element's text,
 /// or a label it withdrew from the element's binding; `withdrawn` gave way to `label`.
@@ -263,12 +263,8 @@ pub enum Unverified {
 ///
 /// The tree has no roots, or a root differs.
 pub fn verify(tree: &ReadTree<'_>, lock: &Lock) -> Result<Digest, Unverified> {
-    let conflicts = conflict_errors(&tree.document);
-    if !conflicts.is_empty() {
-        return Err(Unverified::Invalid(placed(conflicts, &tree.sites)));
-    }
-    let roots = hash_document(&tree.document)
-        .map_err(|errors| Unverified::Invalid(placed(index_errors(errors), &tree.sites)))?
+    let roots = hashed(&tree.document, &tree.sites)
+        .map_err(Unverified::Invalid)?
         .roots;
     for (root, lock, tree) in [
         (Root::Content, lock.content_root, roots.content),

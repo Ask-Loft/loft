@@ -31,6 +31,7 @@ mod publish;
 mod publish_meet_contract;
 mod publish_settle;
 mod reads_tree;
+mod reconcile;
 mod render;
 mod schemas;
 mod skill;

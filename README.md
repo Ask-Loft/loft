@@ -89,6 +89,7 @@ needs.
 | `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
+| `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
 | `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
 | `loft skill install` | Writes the agent skill into the current directory, or brings it up to date |
 

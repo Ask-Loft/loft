@@ -9,6 +9,7 @@ mod init;
 mod json;
 mod merge_driver;
 mod publish;
+mod reconcile;
 mod render;
 mod skill;
 mod stop;
@@ -84,6 +85,21 @@ enum Command {
     Find {
         /// A label such as `RQ-12`, a slug, a key, or part of a name.
         query: String,
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Compare `loft.trace.yaml` with the tree and the tests that verify it, and accept the
+    /// links a reviewer has checked.
+    Reconcile {
+        /// Exit 1 on a finding at or above this severity.
+        #[arg(long, value_name = "SEVERITY")]
+        fail_on: Option<FailOn>,
+        /// Accept the link of this node, by key or label, once its tests are reviewed.
+        #[arg(long, value_name = "NODE")]
+        accept: Vec<String>,
+        /// Accept every unreviewed or stale link whose tests are found.
+        #[arg(long, conflicts_with = "accept")]
+        accept_stale: bool,
         #[command(flatten)]
         output: Output,
     },
@@ -223,6 +239,19 @@ fn main() -> ExitCode {
         } => import::run(root, &export, counters.as_deref(), output.json()),
         Command::Publish { output } => publish::run(root, output.json()),
         Command::Find { query, output } => find::run(root, &query, output.json()),
+        Command::Reconcile {
+            fail_on,
+            accept,
+            accept_stale,
+            output,
+        } => {
+            let options = reconcile::Options {
+                fail_on: fail_on.map(Severity::from),
+                accept: &accept,
+                accept_stale,
+            };
+            reconcile::run(root, &options, output.json())
+        }
         Command::Verify { output } => verify::run(root, output.json()),
         Command::MergeDriver {
             install: true,

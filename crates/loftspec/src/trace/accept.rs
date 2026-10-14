@@ -23,12 +23,22 @@ pub enum Refusal {
     Finding(Key, TraceRule),
 }
 
+impl Refusal {
+    /// The node the refusal is about.
+    #[must_use]
+    pub const fn key(&self) -> Key {
+        match self {
+            Self::NoNode(key) | Self::NoLink(key) | Self::Finding(key, _) => *key,
+        }
+    }
+}
+
 impl fmt::Display for Refusal {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::NoNode(key) => write!(formatter, "{key}: no node of the tree carries this key"),
-            Self::NoLink(key) => write!(formatter, "{key}: no link names this node"),
-            Self::Finding(key, rule) => write!(formatter, "{key}: the link has a {rule} finding"),
+            Self::NoNode(_) => formatter.write_str("no node of the tree carries this key"),
+            Self::NoLink(_) => formatter.write_str("no link names this node"),
+            Self::Finding(_, rule) => write!(formatter, "the link has a {rule} finding"),
         }
     }
 }

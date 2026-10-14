@@ -2,6 +2,8 @@ key: 01a1383c-2899-72f8-b39a-0a07470f28d1
 slug: loft-reconcile
 name: "`loft reconcile`"
 body: "Compares `loft.trace.yaml` with the tree and with the files that hold the tests, prints the reconciliation findings with an exit code a CI job can gate on, and accepts the links a reviewer has checked."
+tags:
+  - reads-tree
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -112,6 +114,6 @@ requirements:
       - key: 01a1383c-2899-72f8-b39a-0a27b1f95794
         name: "The document lists the keys of the links accepted."
       - key: 01a1383c-2899-72f8-b39a-0a28d4846c77
-        name: "The outcome is `passed` when the trace file holds no error and no finding is at or above `--fail-on`."
+        name: "The outcome is `passed` when no finding is at or above `--fail-on`."
       - key: 01a1383c-2899-72f8-b39a-0a29399fe17b
-        name: "The outcome is `failed` when the trace file holds an error, a node cannot be accepted, or a finding is at or above `--fail-on`."
+        name: "The outcome is `failed` when a finding is at or above `--fail-on`."

@@ -6,8 +6,10 @@ use std::fmt;
 
 use crate::codec::{Files, LABELS, LINT, MANIFEST, ReadError, Site, Sites, SpecPath, read_sited};
 use crate::conflict::ConflictOwner;
+use crate::document::Document;
+use crate::hash::{DocumentHashes, hash_document};
 use crate::lint::{Finding, LintConfig, lint};
-use crate::validate::{ValidationError, validate};
+use crate::validate::{ValidationError, conflict_errors, index_errors, validate};
 
 /// A validation error placed at the sites of the elements it names.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -79,6 +81,20 @@ pub fn check(files: &Files) -> Checked {
         config,
         findings,
     }
+}
+
+/// The hashes of a document read from a tree with the sites `sites`.
+///
+/// # Errors
+///
+/// The document holds a merge conflict, or does not index, so it has no hashes: each error at
+/// the sites of the elements it names.
+pub fn hashed(document: &Document, sites: &Sites) -> Result<DocumentHashes, Vec<Placed>> {
+    let conflicts = conflict_errors(document);
+    if !conflicts.is_empty() {
+        return Err(placed(conflicts, sites));
+    }
+    hash_document(document).map_err(|errors| placed(index_errors(errors), sites))
 }
 
 /// Validation errors, each placed at the sites of the elements it names.
