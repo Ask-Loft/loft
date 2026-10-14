@@ -150,6 +150,39 @@ fn a_decision_s_option_text_is_rewritten_by_the_decision_s_mentions() {
 }
 
 #[test]
+fn a_decision_s_driver_and_consequence_text_is_rewritten_by_the_decision_s_mentions() {
+    let driver = (
+        DECISION,
+        "statement: \"Converted and new keys share one syntax.\"",
+        "statement: \"Converted and new keys share one syntax, as RQ-9 asks.\"",
+    );
+    let consequence = (
+        DECISION,
+        "statement: \"A key reveals when it was minted.\"",
+        "statement: \"A key reveals when it was minted, despite RQ-9.\"",
+    );
+    let mentions = (
+        DECISION,
+        "    node: 00000000-0000-7000-8000-000000000004\n",
+        "    node: 00000000-0000-7000-8000-000000000004\nmentions:\n  - 00000000-0000-7000-8000-000000000004\n",
+    );
+    let (_, rewrites) = rewritten_tree(&[WITHDRAWN, driver, consequence, mentions]);
+    let citation = Relabel {
+        element: key(20),
+        withdrawn: label("RQ-9"),
+        label: label("RQ-2"),
+    };
+    assert_eq!(rewrites.rewritten, [citation.clone(), citation]);
+    let decision = String::from_utf8(rewrites.files[&path(DECISION)].clone()).unwrap();
+    assert!(
+        decision.contains("one syntax, as RQ-2 asks.\""),
+        "{decision}"
+    );
+    assert!(decision.contains("minted, despite RQ-2.\""), "{decision}");
+    assert!(!decision.contains("RQ-9"), "{decision}");
+}
+
+#[test]
 fn a_tree_without_a_withdrawn_label_is_not_rewritten() {
     let (from, to) = (CRITERION_NAME, citing("RQ-9").2);
     let (_, rewrites) = rewritten_tree(&[(FEATURE, from, &to)]);

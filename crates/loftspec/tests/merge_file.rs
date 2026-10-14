@@ -6,12 +6,12 @@ use crate::common::text::{FEATURE, files, text};
 use loftspec::codec::{self, SpecPath};
 use loftspec::merge::{Input, MergeError, Merged, merge_file};
 
-fn feature() -> String {
+pub(crate) fn feature() -> String {
     text(&files(), FEATURE)
 }
 
 /// `text` with each `(from, to)` replaced once.
-fn with(text: &str, edits: &[(&str, &str)]) -> String {
+pub(crate) fn with(text: &str, edits: &[(&str, &str)]) -> String {
     let mut text = text.to_owned();
     for (from, to) in edits {
         assert!(text.contains(from), "{from:?} in\n{text}");
@@ -20,7 +20,7 @@ fn with(text: &str, edits: &[(&str, &str)]) -> String {
     text
 }
 
-fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
+pub(crate) fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
     merge_file(
         &SpecPath::new(path),
         base.as_bytes(),
@@ -31,7 +31,7 @@ fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
 }
 
 /// Merges the Feature file and gives the result as text.
-fn merged(base: &str, ours: &str, theirs: &str) -> (String, usize) {
+pub(crate) fn merged(base: &str, ours: &str, theirs: &str) -> (String, usize) {
     let merged = merge_at(FEATURE, base, ours, theirs);
     (String::from_utf8(merged.bytes).unwrap(), merged.conflicts)
 }
@@ -364,7 +364,7 @@ fn a_path_that_names_no_file_of_the_format_is_refused() {
 }
 
 /// The Feature with a second and a third Requirement after the first.
-fn three_requirements() -> String {
+pub(crate) fn three_requirements() -> String {
     let requirement = |n: &str| {
         format!(
             "  - key: 00000000-0000-7000-8000-0000000000{n}

@@ -83,6 +83,10 @@ struct History {
 }
 
 impl History {
+    fn labels(&self) -> impl Iterator<Item = Label> + '_ {
+        self.aliases.iter().chain(&self.withdrawn).copied()
+    }
+
     fn attach(&self, bindings: &mut Bindings) {
         for alias in &self.aliases {
             let added = bindings.add_alias(self.element, *alias);
@@ -120,7 +124,9 @@ impl Settlement {
     }
 }
 
-/// Settles the conflict over `bindings` in `document`, where it holds one, and removes it.
+/// Settles the conflict over `bindings` in `document`, where it holds one, and removes it. The
+/// counters are raised above every label a key that lost its live label keeps, so allocation
+/// gives none of them out again.
 pub(super) fn settle(document: &mut Document, operation: Operation) -> Settlement {
     let mut settlement = Settlement::default();
     let Some(at) = document.conflicts.iter().position(|conflict| {
@@ -149,6 +155,10 @@ pub(super) fn settle(document: &mut Document, operation: Operation) -> Settlemen
         let outcome = settled(element, pulled.get(key), other.get(key), &held);
         settlement.add(element, outcome, &mut document.bindings);
     }
+    // The history of a key that lost its live label is out of the bindings until allocation
+    // has rebound the key, so the counters are raised above it now, before allocation runs.
+    let held_back = settlement.pending.iter().flat_map(History::labels);
+    document.counters.raise_all(held_back);
     settlement
 }
 

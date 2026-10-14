@@ -10,6 +10,7 @@ use crate::common::{key, label};
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::document::Document;
 use loftspec::hash::hash_document;
+use loftspec::identity::LabelPrefix;
 use loftspec::ids::ElementId;
 use loftspec::merge::merge_file;
 use loftspec::publish::{
@@ -250,6 +251,27 @@ fn a_withdrawn_list_only_grows_when_a_key_that_lists_one_withdraws_another() {
         bindings.withdrawn_of(criterion),
         [label("AC-1"), label("AC-2")]
     );
+}
+
+#[test]
+fn the_counter_is_raised_above_a_withdrawn_label_of_a_key_that_lost_its_live_label() {
+    let earlier: [Withdrawn; 1] = [(0x9, &["CON-12"])];
+    let files = met_files(
+        Operation::Merge,
+        withdrawing(&LOCAL, &earlier),
+        labels(&PULLED),
+    );
+    let settled = settled(&files, &stopped(Operation::Merge));
+    let document = &settled.document;
+    let live = document.bindings.label_of_key(key(9)).unwrap();
+    let constraint = document.bindings.resolve(live).unwrap();
+    assert!(
+        document
+            .bindings
+            .withdrawn_of(constraint)
+            .contains(&label("CON-12"))
+    );
+    assert!(document.counters.next(LabelPrefix::Constraint).get() > 12);
 }
 
 #[test]

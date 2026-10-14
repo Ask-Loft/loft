@@ -4044,6 +4044,11 @@ links:
         name: "in_a_stopped_merge_the_pulled_side_is_theirs_and_the_other_key_is_relabelled"
       - file: "crates/loft-cli/tests/publish_settle.rs"
         name: "a_publish_in_a_stopped_merge_prints_what_it_settled_and_how_to_finish"
+  - node: 01a130de-5737-776f-9c39-b9d726383e50
+    reviewed: c089b86c2106d39a381a9675a22ac1efc4e6c89ab83775241ee3d24409ac0ca9
+    tests:
+      - file: "crates/loftspec/tests/publish_settle.rs"
+        name: "the_counter_is_raised_above_a_withdrawn_label_of_a_key_that_lost_its_live_label"
   - node: 01a130de-5737-776f-9c39-b9d99864b9d2
     reviewed: d8d64d4478bb7300f5a1af22349a82c6117063eac56c7daa2c01dd6801018b72
     tests:
@@ -4124,6 +4129,11 @@ links:
         name: "a_citation_in_an_element_that_mentions_the_key_is_rewritten_to_its_live_label"
       - file: "crates/loftspec/tests/publish_rewrite.rs"
         name: "a_citation_in_an_element_that_does_not_mention_the_key_is_left"
+  - node: 01a130de-5737-776f-9c39-b9e6d8b26b3d
+    reviewed: 5e5099088a177adce336a49b9585302d56e2a11d1a2d118450cf97de3c6393b8
+    tests:
+      - file: "crates/loftspec/tests/publish_rewrite.rs"
+        name: "a_decision_s_driver_and_consequence_text_is_rewritten_by_the_decision_s_mentions"
   - node: 01a130de-5737-776f-9c39-b9e8b4592c9b
     reviewed: 827509a45388de55559923246e14d76e0e34ac5324f1b6e92657b1ea1a135368
     tests:
@@ -4190,6 +4200,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_file.rs"
         name: "the_merged_file_is_in_the_formatter_s_canonical_layout"
+  - node: 01a13070-322f-7493-9495-406b0a698db6
+    reviewed: 6648444e5966f5ab153cda9fe3ee7a8c694fc4e73e088717d9407314d8c9e697
+    tests:
+      - file: "crates/loftspec/tests/merge_lists.rs"
+        name: "a_record_moved_to_another_parent_is_deleted_from_its_base_parent_and_inserted_in_the_new"
   - node: 56cd2388-3187-42ed-9408-1ff4b39585d8
     reviewed: 551ec76dec08767b92479dca7449c9edc4d3bccd80841dd40a1d1aaa9db48af5
     tests:
@@ -4235,6 +4250,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_file.rs"
         name: "a_statement_the_merge_would_leave_in_no_form_keeps_its_base_and_conflicts_on_each_change"
+  - node: 01a13070-322f-7493-9495-406f4193a245
+    reviewed: 2c0a8883517596e101fdb513619b66e4393b6624eab5940f98fdec8601a6ce05
+    tests:
+      - file: "crates/loftspec/tests/merge_lists.rs"
+        name: "a_merged_record_that_keeps_its_base_variant_is_read_back_without_a_read_error"
   - node: 01a13070-322f-7493-9495-4071687baaed
     reviewed: 79e50321e9040d6252e03454cb1e6f270517fc2ba7332958aac00e8086844d2e
     tests:
@@ -4260,6 +4280,31 @@ links:
         name: "a_key_both_sides_bind_to_different_labels_that_base_holds_keeps_its_base_binding"
       - file: "crates/loftspec/tests/merge_file.rs"
         name: "a_binding_both_sides_change_apart_keeps_its_base_with_a_conflict_over_the_bindings"
+  - node: 01a13070-b1ce-749d-b40a-8afd97a122b6
+    reviewed: 6c5bef8c9e2e4079cae54de16ec04b0790f5d7335a14b61e8e0a5f642d771d9a
+    tests:
+      - file: "crates/loftspec/tests/merge_decisions.rs"
+        name: "assessments_are_matched_by_option_and_driver_and_each_side_s_change_is_taken"
+  - node: 01a13070-b1ce-749d-b40a-8afead38048d
+    reviewed: 7d282572785242ecb419b0e8376b1d625a337a08784bf4f4dbbf2a77af5c0f99
+    tests:
+      - file: "crates/loftspec/tests/merge_decisions.rs"
+        name: "subjects_are_matched_by_role_and_node"
+  - node: 01a13070-322f-7493-9495-407575aee03c
+    reviewed: 4f4c8aa7ac28168f229a670109cc7aa6e75b662a7d40a9e37fbc570a4aa8e418
+    tests:
+      - file: "crates/loftspec/tests/merge_decisions.rs"
+        name: "an_assessment_both_sides_change_apart_gives_the_decision_one_conflict_over_its_list"
+  - node: 01a13070-322f-7493-9495-407671410897
+    reviewed: 8059b4a8793330dc671796dbc1275e2cf6f2283d469280b66907cc1b779cee5c
+    tests:
+      - file: "crates/loftspec/tests/merge_decisions.rs"
+        name: "an_assessment_both_sides_change_apart_keeps_its_base_value"
+  - node: 01a13a1b-2f3d-70d6-88b6-56e858b4b211
+    reviewed: b2e11fe9cf9cbb968e1ca28c6234d79556b4aacb6cdef101c8392bb73ecaf5ff
+    tests:
+      - file: "crates/loftspec/tests/merge_decisions.rs"
+        name: "a_subject_each_side_replaces_differently_is_removed_and_both_replacements_are_kept"
   - node: 01a13070-322f-7493-9495-4078bf5d780f
     reviewed: f48ad1001c1a8a52f24c071d6edcc866b09d47d7277797a79d1ed507e93bd0c8
     tests:
@@ -4320,6 +4365,16 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_order.rs"
         name: "a_record_both_sides_moved_apart_conflicts_and_stays_at_its_base_position"
+  - node: 01a13070-322f-7493-9495-407bf10c78e5
+    reviewed: 9fe8d471def574b0329e624531c0142651def95624cf40599b284f98f4ebf26d
+    tests:
+      - file: "crates/loftspec/tests/merge_lists.rs"
+        name: "a_value_both_sides_move_apart_gives_one_conflict_holding_each_side_s_whole_list"
+  - node: 01a13070-322f-7493-9495-407ce16da4fd
+    reviewed: b0c3add2908243bb7fd0471c4724f1c40c01d4ee95a97e4b847d85eabf7bdb69
+    tests:
+      - file: "crates/loftspec/tests/merge_lists.rs"
+        name: "a_list_of_values_both_sides_reorder_apart_keeps_its_base_order"
   - node: f4453890-d813-41f5-85f8-35a40dd56b37
     reviewed: b89ed352fc984bc4ef7cd88e74186227ef4e0f43571b9cd60915ad62350c7441
     tests:
