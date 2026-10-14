@@ -50,6 +50,7 @@ mod merge_lists;
 mod merge_order;
 mod names;
 mod node;
+mod package;
 mod prose;
 mod publish;
 mod publish_rewrite;

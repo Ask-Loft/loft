@@ -36,6 +36,7 @@ mod reads_tree;
 mod reconcile;
 mod render;
 mod schemas;
+mod shipped_binary;
 mod skill;
 mod skill_files;
 mod skill_format;

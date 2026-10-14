@@ -37,3 +37,12 @@ jobs:
       # holds is only a warning here.
       - if: github.ref == 'refs/heads/main'
         run: cargo publish --workspace --dry-run
+  # loftspec builds on stable Rust at its declared rust-version, the workspace's, and not only on
+  # the newer toolchain rust-toolchain.toml pins: `+<version>` overrides that file. The library
+  # alone is built, since its tests may use what a newer toolchain brings.
+  rust-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup toolchain install 1.97 --profile minimal
+      - run: cargo +1.97 build -p loftspec --locked

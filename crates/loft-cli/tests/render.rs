@@ -4,11 +4,12 @@
 use std::collections::BTreeMap;
 use std::fs;
 
-use std::process::Output;
+use std::process::{Command, Output};
 
-use crate::common::{Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
 use serde_json::Value;
+use software_plant::Clock;
 
 /// Every file under `spec/` with its bytes.
 fn tree(scratch: &Scratch) -> BTreeMap<String, Vec<u8>> {
@@ -150,4 +151,31 @@ fn projections_change_no_root_and_raise_no_finding() {
     assert_eq!(report(&scratch), before, "an edited projection");
     fs::remove_dir_all(scratch.0.join("docs")).unwrap();
     assert_eq!(report(&scratch), before, "a deleted projection");
+}
+
+/// What `command` printed and the two projections it wrote, rendering the scratch tree into an
+/// empty `docs/`.
+fn rendered(scratch: &Scratch, command: &mut Command) -> [Vec<u8>; 3] {
+    let _ = fs::remove_dir_all(scratch.0.join("docs"));
+    let output = command.arg("render").output().unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let written = |path: &str| fs::read(scratch.0.join(path)).unwrap();
+    [
+        output.stdout,
+        written("docs/spec.md"),
+        written("docs/spec.json"),
+    ]
+}
+
+#[test]
+fn the_projections_are_the_same_bytes_under_another_clock_locale_and_environment() {
+    let scratch = Scratch::with_reading_list();
+    let first = rendered(&scratch, &mut scratch.command(None, &Clock::fixed(EPOCH)));
+    let mut other = scratch.command(None, &Clock::system());
+    other
+        .env("TZ", "Pacific/Kiritimati")
+        .env("LANG", "tr_TR.UTF-8")
+        .env("LC_ALL", "tr_TR.UTF-8")
+        .env("LC_TIME", "ja_JP.UTF-8");
+    assert_eq!(first, rendered(&scratch, &mut other));
 }

@@ -75,6 +75,19 @@ fn an_unresolved_key_in_each_of_two_files_gives_two_errors() {
 }
 
 #[test]
+fn an_error_in_two_files_names_each_by_path_line_and_column() {
+    let files = edited(DECISION, DECISION_KEY, FEATURE_KEY);
+    let errors = codec::read(&files).expect_err("refused");
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert_eq!(
+        errors[0].to_string(),
+        "spec/decisions/keys-are-uuids.yaml:1:6: \
+         spec/products/example-product/identity/keys.yaml:1:6: \
+         the key 00000000-0000-7000-8000-000000000003 is carried twice"
+    );
+}
+
+#[test]
 fn two_unresolved_keys_in_one_file_give_one_error_at_the_first() {
     let files = edited(
         FEATURE,

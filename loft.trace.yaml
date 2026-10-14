@@ -2444,6 +2444,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/import.rs"
         name: "the_tree_is_the_converters_output_and_the_sidecar_lies_beside_it"
+  - node: a19fe298-d954-489c-b4cc-31b4c8098194
+    reviewed: 3d6f759e49d9d9270ebfdc10cb1d71d0f77b3b30016a72e39592e7047cc3d5bb
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_reading_list.rs"
+        name: "two_conversions_write_byte_identical_spec_trees"
   - node: 8cd5e640-2b0f-4f20-b0cb-fe070d794743
     reviewed: 0e38f2db0d1da89ad6c8e49556e62db6f68a17417f52db92cfedcbf326eddae6
     tests:
@@ -6162,6 +6167,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/check.rs"
         name: "every_validation_error_prints_before_the_findings_and_exits_1"
+  - node: aee079f6-ab17-4507-a326-743605188b3a
+    reviewed: 6a417e5c715423f706a43808e8597a139142c6b0d9f6563831c26e053707c16c
+    tests:
+      - file: "crates/loftspec/tests/codec_sites.rs"
+        name: "an_error_in_two_files_names_each_by_path_line_and_column"
   - node: 75a0b051-49a7-4645-9a93-9adccfebac87
     reviewed: 9b73a6580ee8a756abddda6ba583e711441ad613c07acca0587541ad630448dd
     tests:
@@ -6467,6 +6477,11 @@ links:
     tests:
       - file: "crates/loftspec-store/tests/simulators.rs"
         name: "each_simulator_has_a_contract_suite_and_each_suite_a_simulator"
+  - node: 01a12ff0-f5e5-7095-8fa8-24f638d01948
+    reviewed: a3fb3624cc245df77abb4d568eb9f52ab6ba640fa0492560557758eb7db4ef9e
+    tests:
+      - file: "crates/loft-cli/tests/shipped_binary.rs"
+        name: "the_tests_run_the_loft_binary_as_it_ships"
   - node: 01a12ff0-f5e5-7095-8fa8-24e11c8c2d76
     reviewed: 3760f5e29ad13b9cdec237f502e7b50c867c3ee10c026c6cd0c81d6d54f22922
     tests:
@@ -7349,6 +7364,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_manifest_carries_the_version_of_loft"
+  - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
+    reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
+    tests:
+      - file: "crates/loft-cli/tests/shipped_binary.rs"
+        name: "the_package_exposes_exactly_one_binary_named_loft"
   - node: 01a13653-3ec0-76e7-bf76-fc75dd4de6c2
     reviewed: 70a99dbf0ea4710f444c9260b91542d3c9cd24a974b92cfdc4d02dbfe1944394
     tests:
@@ -7375,6 +7395,13 @@ links:
   - node: 1eda8d1e-9912-4986-86ce-1549c052be78
     reviewed: 2d0ffccdc087bbbb719b4bba5a4bba81b86032af862df19785316d7c65c51b1b
     unverified: "Holds by the type system: the linter takes the document by shared reference."
+  - node: 8eba04a2-e20a-4b9d-af0b-8f4c925d48e8
+    reviewed: df838cdd9b67799a0dc46ddcbde90a4d094ac8cacd45fe9c7284dac2813a0d6a
+    tests:
+      - file: "crates/loftspec/tests/package.rs"
+        name: "the_renderer_and_the_hasher_read_no_clock_locale_or_environment"
+      - file: "crates/loft-cli/tests/render.rs"
+        name: "the_projections_are_the_same_bytes_under_another_clock_locale_and_environment"
   - node: 9e28f2b4-3700-40b5-b304-9952c1f34e93
     reviewed: df3e95f970f33bb6d3f4badf648ce90ecb5b1d5556fe7c4b00abd2062be94cb7
     tests:
@@ -7386,6 +7413,21 @@ links:
   - node: 01a1383a-4a93-70fa-a19d-af1f57f5d87c
     reviewed: a27b224994923d877ebbc849bfabf6d1bfb47f6e7bf787054eab233e22bfc204
     unverified: "Holds by the type system: every reconciler function takes the document by shared reference."
+  - node: 7ff6bd2b-7a21-4020-83aa-ad8aedec10a2
+    reviewed: 2e8eb653635e879018d283f254ac40e357714f1a26b49437a557cae9b911f3b0
+    tests:
+      - file: "crates/loftspec/tests/package.rs"
+        name: "the_library_uses_no_file_network_process_or_environment"
+  - node: fb1d00d7-da12-43b1-b322-ab6b61a6f60c
+    reviewed: 0c1e0df63a87f67588636dfcbb518ec1456a22728cbef3d7bf158d3502699f3d
+    tests:
+      - file: "crates/loftspec/tests/package.rs"
+        name: "the_package_declares_the_apache_licence"
+  - node: 91986534-aa13-4ba3-bc78-dfdf63c0a608
+    reviewed: b7dd9d3796f3e05a3baaf2ce9e538eb30526f2091658a702f70cc7dfde0ebfcd
+    tests:
+      - file: "crates/loftspec/tests/package.rs"
+        name: "ci_builds_the_library_with_the_toolchain_its_rust_version_names"
   - node: 01a136db-1a3c-76b9-8641-d09dc448a2d0
     reviewed: 5bdbf0e4a09b1a780dc9aa50e5bfa481285bd2853b5dd93d34757d80e771b407
     tests:

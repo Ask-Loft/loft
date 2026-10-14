@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 
 use crate::common::v1::key;
 
+use loftspec::codec;
 use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::{Conversion, Finding, convert};
 use loftspec::document::Edge;
@@ -91,6 +92,13 @@ fn each_counter_is_one_above_the_highest_label_and_facet_tags_count_in_the_sidec
 #[test]
 fn two_conversions_write_identical_sidecars() {
     assert_eq!(converted().sidecar.to_json(), converted().sidecar.to_json());
+}
+
+#[test]
+fn two_conversions_write_byte_identical_spec_trees() {
+    let first = codec::write(&converted().document);
+    assert!(first.len() > 10, "the tree holds {} files", first.len());
+    assert_eq!(first, codec::write(&converted().document));
 }
 
 #[test]
