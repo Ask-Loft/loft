@@ -1,0 +1,43 @@
+key: 01a13af8-fa82-7377-8cc1-1810eaf847ad
+slug: release-feed-simulator
+name: "Release feed simulator"
+body: "An HTTP endpoint on the test machine that answers as GitHub's releases API does for `Ask-Loft/loft`. A test points the binary under test at it with `LOFT_UPDATE_ENDPOINT` and scripts the releases it lists. Its contract suite asks the real API the same questions, without a token."
+tags:
+  - plant-simulator
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+mentions:
+  - 01a13a90-3554-7631-bb13-097dd7f28d86
+requirements:
+  - key: 01a13a90-3557-734a-9b7f-e5704c1572a1
+    statement:
+      form: ubiquitous
+      system: "The release feed simulator"
+      shall: "list the releases its scenario names, in the shape of GitHub's releases API."
+    criteria:
+      - key: 01a13a90-3557-734a-9b7f-e5712706aba9
+        name: "A scenario's latest release is answered with its tag, its page and the flags `draft` and `prerelease`."
+      - key: 01a13a90-3557-734a-9b7f-e572d3f9fccc
+        name: "A scenario can list a draft or a prerelease newer than the latest release."
+      - key: 01a13a90-3557-734a-9b7f-e57324734716
+        name: "A scenario can list a release whose tag is not of the form `vX.Y.Z`."
+  - key: 01a13a90-3557-734a-9b7f-e57440e0eb36
+    statement:
+      form: ubiquitous
+      system: "The release feed simulator"
+      shall: "answer as its scenario names: with the releases, an error status, a rate limit, or no answer at all."
+    criteria:
+      - key: 01a13a90-3557-734a-9b7f-e575666b9daf
+        name: "An error scenario answers with the status it names."
+      - key: 01a13a90-3557-734a-9b7f-e576de2f052d
+        name: "A rate-limit scenario answers as GitHub does when the unauthenticated limit is spent."
+      - key: 01a13a90-3557-734a-9b7f-e577590b45d7
+        name: "A silent scenario accepts each connection and sends no answer."
+  - key: 01a13a90-3557-734a-9b7f-e578f766380a
+    statement:
+      form: ubiquitous
+      system: "The release feed simulator"
+      shall: "count the requests it receives."
+    criteria:
+      - key: 01a13a90-3557-734a-9b7f-e579f2e6839b
+        name: "A test reads the number of requests that its runs made."

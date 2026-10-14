@@ -40,6 +40,7 @@ mod reads_tree;
 mod reconcile;
 mod record_install;
 mod release_check;
+mod release_feed_contract;
 mod release_workflow;
 mod render;
 mod schemas;
