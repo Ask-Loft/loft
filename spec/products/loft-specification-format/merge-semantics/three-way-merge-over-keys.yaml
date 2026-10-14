@@ -19,6 +19,22 @@ requirements:
         name: "A record deleted on one side and unchanged on the other is deleted."
       - key: 8a65c76a-0ddb-4871-a7ae-e76457d57e28
         name: "A record deleted on one side and changed on the other is kept as the changing side wrote it, with a conflict record whose field is `record` and whose deleting side is `null`."
+      - key: 01a13b3a-594a-7413-a3dc-4059514edb86
+        name: "A record that one side deleted is kept as the other side wrote it while the merge keeps any record beneath it."
+      - key: 01a13b3a-594a-7413-a3dc-405a6f13124d
+        name: "A record that one side deleted and that the merge keeps only to hold a record beneath it carries a conflict record whose field is `record`."
+      - key: 01a13b3a-594a-7413-a3dc-405bd9b36fd5
+        name: "A record that one side deleted and that the other side changed only by deleting records beneath it is deleted."
+      - key: 01a13b3a-594a-7413-a3dc-405c54116d51
+        name: "A record is not changed by a move within a list whose order the Format sorts."
+      - key: 01a13b9a-057e-73d1-956b-fda73982546d
+        name: "A record that one side gave another kind is of that kind in the result, unless that kind cannot hold a record that the merge keeps beneath it."
+      - key: 01a13bfc-b853-75c8-9ec8-bad9b39e3d67
+        name: "A record whose kind in the result cannot hold a record that the merge keeps beneath it takes the kind of another of its versions that can."
+      - key: 01a13b9a-057e-73d1-956b-fda864fcb75d
+        name: "A record that the sides gave two different kinds keeps its base kind."
+      - key: 01a13b9a-057e-73d1-956b-fda9ee6e2ddb
+        name: "Each field that a record's kind in the result defines as its other versions' kinds do is merged as if the record had kept its kind."
       - key: a14a7d0f-cfe0-44e1-b758-3613ceb98947
         name: "A mapping entry without a key is matched across base, ours and theirs by its field name."
       - key: 2522c643-64ed-44db-92c2-0d4c97f7a514
@@ -42,6 +58,12 @@ requirements:
         name: "When the sides move the record to different parents, the record stays at its base parent with a conflict record whose field is `parent`."
       - key: 01a13acc-1f4f-759a-b78e-51763e2acef6
         name: "In a `parent` conflict, each side holds the key of the record's parent on that side."
+      - key: 01a13b3a-594a-7413-a3dc-405d3eb8a19f
+        name: "When the sides move the record to different parents and neither side holds its base parent, the record is where ours put it, with a conflict record whose field is `parent`."
+      - key: 01a13b3a-594a-7413-a3dc-405e9f212dcc
+        name: "When the sides' moves would place a record beneath itself, each record of the cycle stays at its base parent, or where ours put it when base lacks it, with a conflict record whose field is `parent`."
+      - key: 01a13b3a-594a-7413-a3dc-405f25e0eff9
+        name: "When both sides add the record at different parents, the record is where ours put it, with a conflict record whose field is `parent` and no `base`."
       - key: 01a13acc-1f4f-759a-b78e-517707b6075a
         name: "When the other side deletes the record, the record is kept where the moving side put it, with a conflict record whose field is `record` and whose deleting side is `null`."
       - key: 01a13acc-1f4f-759a-b78e-5178ef058395
@@ -123,6 +145,10 @@ requirements:
         name: "When both sides change an assessment to different values, the record that holds its list gains a conflict record for the list."
       - key: 01a13070-322f-7493-9495-407671410897
         name: "The assessment keeps its base value."
+      - key: 01a13b3a-594a-7413-a3dc-4060ade857b9
+        name: "When one side deletes an assessment and the other changes it, the record that holds its list gains a conflict record for the list."
+      - key: 01a13b3a-594a-7413-a3dc-4061c28bc4c8
+        name: "An assessment that one side deleted and the other changed keeps its base value."
       - key: 01a13a1b-2f3d-70d6-88b6-56e858b4b211
         name: "A decision subject that each side replaces with a different subject is removed, and each side's replacement is kept."
   - key: 01a13070-322f-7493-9495-4077bb5be258

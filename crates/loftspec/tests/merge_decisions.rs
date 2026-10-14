@@ -2,7 +2,7 @@
 //! driver, a subject by its role and its node, each merged as one value, and a disagreement over
 //! an assessment written as one conflict over the decision's assessments.
 
-use crate::common::merge::{merge_at, with};
+use crate::common::merge::{merged_at, with};
 use crate::common::text::{DECISION, files, text};
 
 /// The rationale of the assessment of the second option against the second driver.
@@ -18,8 +18,7 @@ fn decision() -> String {
 
 /// Merges the decision file and gives the result as text.
 fn merged(base: &str, ours: &str, theirs: &str) -> (String, usize) {
-    let merged = merge_at(DECISION, base, ours, theirs);
-    (String::from_utf8(merged.bytes).unwrap(), merged.conflicts)
+    merged_at(DECISION, base, ours, theirs)
 }
 
 /// The decision's fields before its conflict records.
@@ -96,6 +95,40 @@ fn an_assessment_both_sides_change_apart_keeps_its_base_value() {
         &rationale(&base, "Ours."),
         &rationale(&base, "Theirs."),
     );
+    assert_eq!(fields(&text), base, "{text}");
+}
+
+/// The assessment of the second option against the second driver.
+const ASSESSMENT: &str = "  - option: 00000000-0000-7000-8000-000000000018
+    driver: 00000000-0000-7000-8000-000000000016
+    rating: neutral
+    rationale: \"Either can be written.\"
+";
+
+/// Merges the decision file where ours deletes the assessment and theirs changes it.
+fn assessment_deleted_and_changed() -> (String, String, usize) {
+    let base = decision();
+    let ours = with(&base, &[(ASSESSMENT, "")]);
+    let theirs = rationale(&base, "Theirs.");
+    let (text, conflicts) = merged(&base, &ours, &theirs);
+    (base, text, conflicts)
+}
+
+#[test]
+fn an_assessment_one_side_deletes_and_the_other_changes_gives_the_decision_a_conflict_over_its_list()
+ {
+    let (_, text, conflicts) = assessment_deleted_and_changed();
+    assert_eq!(conflicts, 1, "{text}");
+    let (_, records) = text
+        .split_once("\nconflicts:\n")
+        .expect("a conflict record");
+    assert!(records.starts_with("  - field: assessments\n"), "{text}");
+    assert!(records.contains("\"Theirs.\""), "{text}");
+}
+
+#[test]
+fn an_assessment_one_side_deletes_and_the_other_changes_keeps_its_base_value() {
+    let (base, text, _) = assessment_deleted_and_changed();
     assert_eq!(fields(&text), base, "{text}");
 }
 

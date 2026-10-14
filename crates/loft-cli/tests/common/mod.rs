@@ -39,6 +39,28 @@ pub fn workspace() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
+/// Every Rust source file beneath `dir`.
+pub fn sources(dir: &Path) -> Vec<PathBuf> {
+    let mut found = Vec::new();
+    for entry in fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            found.extend(sources(&path));
+        } else if path.extension().is_some_and(|extension| extension == "rs") {
+            found.push(path);
+        }
+    }
+    found
+}
+
+/// `path` as a guard reports it: from the root of the repository.
+pub fn shown(path: &Path) -> String {
+    path.strip_prefix(workspace())
+        .unwrap()
+        .display()
+        .to_string()
+}
+
 /// The source of the `loft-spec` skill.
 pub fn skill_source() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("skill/loft-spec")

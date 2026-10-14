@@ -8,6 +8,9 @@ use super::text::{FEATURE, files, text};
 /// The criterion's name.
 pub const CRITERION: &str = "name: \"Every node record carries a `key` field.\"";
 
+/// The criterion's name as one side edits it.
+pub const EDITED: &str = "name: \"Every node record carries one key.\"";
+
 /// The first Requirement's criteria, the one criterion they hold.
 pub const CRITERIA: &str = "    criteria:
       - key: 00000000-0000-7000-8000-000000000005
@@ -30,20 +33,21 @@ pub fn with(text: &str, edits: &[(&str, &str)]) -> String {
     text
 }
 
+/// Merges the file at `path` with `merge_file`, which must merge.
 pub fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
-    merge_file(
-        &SpecPath::new(path),
-        base.as_bytes(),
-        ours.as_bytes(),
-        theirs.as_bytes(),
-    )
-    .expect("the file merges")
+    let [base, ours, theirs] = [base, ours, theirs].map(str::as_bytes);
+    merge_file(&SpecPath::new(path), base, ours, theirs).expect("the file merges")
+}
+
+/// Merges the file at `path` and gives the result as text.
+pub fn merged_at(path: &str, base: &str, ours: &str, theirs: &str) -> (String, usize) {
+    let merged = merge_at(path, base, ours, theirs);
+    (String::from_utf8(merged.bytes).unwrap(), merged.conflicts)
 }
 
 /// Merges the Feature file and gives the result as text.
 pub fn merged(base: &str, ours: &str, theirs: &str) -> (String, usize) {
-    let merged = merge_at(FEATURE, base, ours, theirs);
-    (String::from_utf8(merged.bytes).unwrap(), merged.conflicts)
+    merged_at(FEATURE, base, ours, theirs)
 }
 
 /// The small document's tree with the file at `at` replaced by `text`, read back.
@@ -69,6 +73,15 @@ pub fn requirement(n: &str) -> String {
 /// The last line of the statement of the Requirement keyed `n`, after which its criteria go.
 pub fn shall(n: &str) -> String {
     format!("      shall: \"write requirement {n}.\"\n")
+}
+
+/// `base` with the criterion moved from the first Requirement to the one keyed `n`.
+pub fn moved_to(base: &str, n: &str) -> String {
+    let after = shall(n);
+    with(
+        base,
+        &[(CRITERIA, ""), (&after, &format!("{after}{CRITERIA}"))],
+    )
 }
 
 /// The Feature with a second and a third Requirement after the first.

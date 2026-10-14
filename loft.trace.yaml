@@ -3361,7 +3361,7 @@ links:
   - node: d65e17d9-72c2-4f9a-9980-31ad208a2ba3
     reviewed: 304d02a56f9abddf101d70299b24f71ca93d98194494371db63482315c2d4151
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 287347e1-c9d3-4460-b2e4-4927e0ad49e5
     reviewed: db483d0c38e3b3649a20f54f13e40cdbed0947be42ebe588d3f6da12a223af7b
@@ -3396,7 +3396,7 @@ links:
   - node: 6247620c-31cb-44a5-859c-c49f3ecbf68c
     reviewed: d6967c24d60ee0601e063a4029053319d9e8e00cc052b6b03cc5b67dba7a43d0
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 15fa4e7b-c415-4ddc-b81d-7db9f035cc08
     reviewed: 90603d473440e246475d817c134419d95b0df4cfa0fd24c56f494dc057631029
@@ -3416,7 +3416,7 @@ links:
   - node: 2efa6234-b6ae-4b54-8a7b-51dcc8d8d74f
     reviewed: 052145e0f843ef2c5fa220459b8facdae906dcb665478123da7f0f4de918e54d
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: ddf5e6b3-c07e-4929-bb50-c74e2c33656f
     reviewed: 19bcdd0baf796027608afd59c0037cee5c764a1f2b1d86d1ee01f5a37b308832
@@ -3436,7 +3436,7 @@ links:
   - node: 96a51c6c-e187-450d-b4f6-2945feb72a8c
     reviewed: e7fac0ac3fc86dadfd3526cba02c0d2cdc23883ba248473baf0ee75ac4725687
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: eb0f346d-4826-47a5-85a8-8d6094d7ec26
     reviewed: b733998b199e7bfbbb720e04a091a188154ca9ee214ddf54ab2f3847b5df94b3
@@ -3451,7 +3451,7 @@ links:
   - node: 43c1c4b2-7c57-43b7-8f2e-27e9da8fce15
     reviewed: 8abe3a7715bcf4c7978dfc263ccb0072268bad2a959a28b981a830a67d656906
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
       - file: "crates/loftspec/tests/lint_language.rs"
         name: "conjunctions_that_reach_the_threshold_are_lq_005"
@@ -3463,7 +3463,7 @@ links:
   - node: 910be572-9de4-4c8b-9181-d41e99805ce6
     reviewed: 8afe6a65ff9916a96c2d212ea7e7ba8435e2a230db67d0529ee29430de75f35e
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 832f5e23-49c6-4679-8dbf-a8edf6a6df3f
     reviewed: 2bbe0a828ede0eb9d4340c63d02b4a0f3a6c86f01e5985fff4fecda4cef38bb9
@@ -3518,7 +3518,7 @@ links:
   - node: 5f8aa91b-e0c4-432e-8a2e-da83b364b3a5
     reviewed: 19e19d57735230a441d60faf9ff433a37f53d0f92f0077feccc93e909f133b72
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: c2ef39f5-e5bd-4b2d-b04d-0fa39158f474
     reviewed: 6866a766dffd57db8711e28ac804ca23eae60ccac49e309f4e8f31b65e36b371
@@ -3710,7 +3710,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "a_criterion_name_with_a_semicolon_is_v2_005"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 01a13654-f961-7722-b3a5-58dff27d9159
     reviewed: f6b93c4a670199f2a55bc929e7d9fc03065404c7d3b8ad50045180f68e95bca3
@@ -3755,7 +3755,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "a_requirement_with_more_criteria_than_the_limit_is_v2_006"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 01a13654-f961-7722-b3a5-58e7490e919b
     reviewed: e33a3a38015549a0e8bada3b83b8a405e4ce2d7c863644c001f03983ccc207e0
@@ -3788,14 +3788,14 @@ links:
         name: "a_normative_word_in_a_body_is_v2_007_at_each_occurrence_and_its_line"
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "the_lexicon_of_v2_007_is_edited_in_the_lint_configuration"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 01a13654-f961-7722-b3a5-58ec076dc3e1
     reviewed: 915f6969d55f6977fe960c64e15f8c306d74a1df4c505a8b3caaaff2750fc50c
     tests:
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "a_normative_word_in_a_body_is_v2_007_at_each_occurrence_and_its_line"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 01a13654-f961-7722-b3a5-58ee657b3f1b
     reviewed: cf8f56a7dea14c5eb299ccb7d0fb3e8399143840bc5cc9e1914c6627a15ab08f
@@ -3826,7 +3826,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "a_proper_name_after_an_article_is_v2_008"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
   - node: 01a13a11-78db-72eb-a831-e9d136e5ebb5
     reviewed: c51f43f0698829695915c0f4500e9bb0c001f2cdf5b79299cbe298e27a197de9
@@ -3901,12 +3901,12 @@ links:
   - node: 418741da-1f21-4b99-b1d1-d01694b2c0e4
     reviewed: 0f2dc4adfab2b4469a18315cdf39bb035a2acf28b8f1173b3456277f316a2005
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_rule_listed_under_rules_can_be_disabled"
   - node: 099d6605-02c0-4d35-8417-31a857b83e91
     reviewed: 93f96e31f079ec952f8593316bc707163bb9e9a3703b8e030d5498ba3963df94
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_rules_severity_can_be_set"
   - node: e947d713-de7e-4734-9e01-8f88a9a98c67
     reviewed: 6984f664cdbcac1445016cdeb142643f11485a0148cc13a455fc90d2c2fdbc04
@@ -3916,19 +3916,19 @@ links:
   - node: 6dfc97bd-d6cc-4aa5-be82-acdd3534388f
     reviewed: c9312cda966d182b7f85fc542a441e3480533252e50c58ca04021f391e0b1fa1
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_suppression_names_a_rule_a_key_and_a_reason_and_drops_the_finding"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_suppression_without_a_reason_is_refused"
   - node: f1dffdf9-7a64-4963-97d2-56abb8785033
     reviewed: 90b29eec7b59628f7dfd25f8d4324fc4499e3d33366e0d871f98983d5ffac3b8
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "without_a_lint_file_the_defaults_apply"
   - node: e6817368-dacc-4e66-9e5d-c93d4f58f898
     reviewed: c30df030823d2bd73577c5e8f7f30d61de1a7fa0e91b77ad1b6dcc877d015852
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_suppression_names_a_rule_a_key_and_a_reason_and_drops_the_finding"
   - node: 955c346a-54e1-4a0c-844a-14ae60e533fe
     reviewed: 0a18d5bf9f908e1fb0049e2dfeff055fabafe8a982c9b2fca047b6ef7d938217
@@ -3945,14 +3945,14 @@ links:
   - node: afdf852d-6550-4b76-8848-2a0a15e69720
     reviewed: cbff90746efe832c36eb394afe8f0b3c803b131f57473651522efef05fa8c36d
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_rule_listed_under_rules_can_be_disabled"
   - node: 5d88cd66-8a99-49b2-8fb0-81fe7f279efb
     reviewed: b22d3e6e472eaa3b6c029dba5d2ff0721222bf77e98989a4fd625f116f096a94
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_suppression_names_a_rule_a_key_and_a_reason_and_drops_the_finding"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_suppression_without_a_reason_is_refused"
   - node: ea187e27-222a-43c6-95b9-21c57a45f4ae
     reviewed: 12623696ad32d24f3077733e40cd1aed6836d6f4752d994a6f5f15a6835ba485
@@ -3962,16 +3962,16 @@ links:
   - node: 01a136a6-ed91-7133-bfb2-83e0b6a72e75
     reviewed: 84c93d15ba83b0459baede0ff2df13f78f18e7b4c7da8c752b34609b64abe0a5
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_list_written_with_no_value_is_empty"
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "proper_names_written_with_no_value_are_empty"
   - node: 01a136a6-ed91-7133-bfb2-83e12b484bb4
     reviewed: b40cbbf0c32e02e3f9814a5ca233621e9558fc5f5212cd58fde01e3d88a50938
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_are_the_codes"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "the_published_defaults_state_every_option"
   - node: fd77fb2d-bc20-4e9e-b847-07478638a8e3
     reviewed: fafd13a8c218f370595af1be755b6ebfb4e31cce97a3a7f27993528047a4c882
@@ -3998,39 +3998,39 @@ links:
     tests:
       - file: "crates/loft-cli/tests/check.rs"
         name: "an_unknown_rule_in_the_lint_file_is_an_error_and_no_finding_is_reported"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "an_unknown_rule_is_an_error_at_its_line_and_column_named"
   - node: 51476155-0011-49ec-8b0b-56bc63e31722
     reviewed: 22dbf973b658787b8c48a9aadbc0944a7d1877f6e406128727543a0eceab7793
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "a_severity_outside_the_three_is_an_error_naming_the_value"
   - node: 52ee7f6c-7c56-4558-a630-f9d6c2f2ac8a
     reviewed: 7591aa5109294dc8a7f22e0e778e69c3149ecfe644719d66916f3b3bb27bcfdc
     tests:
       - file: "crates/loft-cli/tests/check.rs"
         name: "an_unknown_rule_in_the_lint_file_is_an_error_and_no_finding_is_reported"
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "an_unknown_rule_is_an_error_at_its_line_and_column_named"
   - node: 82583ede-1fd1-4725-808c-11da7876ee0e
     reviewed: 3cd060abbf31756a60ead3720a3cafe376a190d1589ae5815775c3055b7e2e37
     tests:
-      - file: "crates/loftspec/tests/lint.rs"
+      - file: "crates/loftspec/tests/lint_config.rs"
         name: "an_option_a_rule_does_not_take_is_an_error_at_its_line_and_column"
   - node: ba09de77-507b-4e14-b51c-dd07e65b42b2
     reviewed: cd6345ddd96ba364ac0a0c7b7d206e5c71559f4f77a6f6a20e8c2e4a6cfa2a12
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_selected_option_of_another_decision_is_an_error_naming_the_decision"
   - node: 3b4acd1e-d22b-4dd7-ad4f-10fd6af52b95
     reviewed: 08412925da4fc666427defc5040f97ec6fe1dda706a867ce2448e350220f74dc
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "an_assessment_of_another_option_is_an_error_naming_the_decision_and_the_option"
   - node: d5d096b0-d25d-4471-aa44-59fac9a15258
     reviewed: 3c1e117922f9ff3b8b2164ed6120d07ca28c53e9101cf5ef1c84527d06d7c7e5
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "an_assessment_of_another_driver_is_an_error_naming_the_decision_and_the_driver"
   - node: c58f3ce1-1458-4c07-802f-aa8aa2e3474e
     reviewed: 281e8c15c52a089d1b1c077c49c0a7158ecbf6232a487da6640a334442138195
@@ -4040,14 +4040,14 @@ links:
   - node: 7a87d4f3-b010-4f4b-b9c2-a0ca498dc799
     reviewed: 87bd31fd2a4dfc1c89470563e2bce28514800ddbd20a711f18676737ae336515
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_successor_no_decision_carries_is_an_error_naming_the_decision_and_the_key"
       - file: "crates/loftspec/tests/index.rs"
         name: "a_successor_the_document_does_not_hold_is_unknown"
   - node: e13e5019-488f-4619-a4f5-0e7ec812b49d
     reviewed: ab4f01c85bf8e58d4943f73c19acee6bbb4092272b1c1fb764f798389d7bebca
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_decision_that_names_itself_as_its_successor_is_an_error"
       - file: "crates/loftspec/tests/index.rs"
         name: "a_decision_that_supersedes_itself_is_reported_once"
@@ -4061,32 +4061,32 @@ links:
     tests:
       - file: "crates/loftspec/tests/index.rs"
         name: "a_ring_of_successors_is_one_cycle_naming_every_member"
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "three_decisions_superseding_one_another_in_a_ring_yield_one_error_naming_all_three"
   - node: 84cde90e-2038-4a29-aeb6-0a339332347d
     reviewed: 3218f803c627fcdd8fda836c9f2406c98fb71215afb99bd0a25a527c0d32890a
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_chain_of_successors_that_ends_at_a_live_decision_raises_no_such_error"
   - node: f3999221-efa4-4f40-95aa-f5bfaf734635
     reviewed: 833b88335e801398a20b05a814ba6f708d04dbddd6f87e646a7ca548d011ed3c
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_resolved_decision_with_fewer_than_two_options_is_an_error"
   - node: 5b436619-da66-48b8-bbd7-97ed858c6eda
     reviewed: f635ecaadd031ee95b835c909e2a7e0a9798fecbf5493d941d0e3592d63aaeed
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_resolved_decision_without_a_driver_is_an_error"
   - node: 1a64b861-d7d8-49dd-b360-704ac827ac9c
     reviewed: 178f7ffe9e25346d3a9836f906c13e9b2fa87710edf913a8abe1f95cfc93fbbf
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_missing_assessment_is_an_error_naming_the_decision_the_option_and_the_driver"
   - node: 9affc27b-6f3e-4d87-8d0c-36bbd9725c0c
     reviewed: 9a99ef37f768a945ffbb0a8bd2b3cc98258dd892a0ace0a8e81db1ea34c26951
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_proposed_decision_raises_no_completeness_error"
   - node: 9fbd4baa-aacf-4b04-bb44-baa5709870fd
     reviewed: fbe944a6447d7cd9d33a5513302a4cf99ff26c8ec059896bf681ae5417fb260a
@@ -4096,19 +4096,19 @@ links:
   - node: 5914e647-f54d-4b36-b774-7ca8b629aca9
     reviewed: eca876f0669a98611f18feced25c621a22a303cf54942333e5038fd9d6e4a03f
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "an_accepted_decision_without_a_consequence_is_an_error"
   - node: 1badb9b2-c0ef-402a-a0a8-167adfbbf3d8
     reviewed: a1aeee4e79d4b26f9b71774aecb7a3cf0b4dee75053bced5b164a85f6a06208d
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "an_accepted_decision_without_an_outcome_subject_is_an_error"
   - node: 38488e10-aa4a-4d3d-97bf-5a33204fbb14
     reviewed: 73a3f85dc8c66b5e2cacded8d48d32bc2eb03160ec7753c6ec9d234c30de42b8
     tests:
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_proposed_decision_raises_no_completeness_error"
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "a_rejected_decision_needs_no_consequence_or_outcome_subject"
   - node: 9aea0565-c4af-40bd-a0c5-877e2e3d115b
     reviewed: 80002d6409f940aa1e65d683f037c114bd48dc96396575b387766e2171933c0c
@@ -4730,6 +4730,52 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_file.rs"
         name: "a_record_deleted_on_one_side_and_changed_on_the_other_is_kept_with_a_record_conflict"
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_one_side_deletes_and_the_other_moves_within_its_list_is_kept_with_a_record_conflict"
+  - node: 01a13b3a-594a-7413-a3dc-4059514edb86
+    reviewed: 66b5a560ddf344cc62f3ae3e50f3b6f63ccebbfaa8acdee452958872ec4ea898
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_one_side_deletes_is_kept_as_the_other_side_wrote_it_while_a_record_beneath_it_is_kept"
+  - node: 01a13b3a-594a-7413-a3dc-405a6f13124d
+    reviewed: b7754000d44418c9518b75e7f1ea849253cf2c6a72ec27e8555a6c3e809d30c9
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_one_side_deletes_and_the_merge_keeps_only_to_hold_a_record_beneath_it_carries_a_record_conflict"
+  - node: 01a13b3a-594a-7413-a3dc-405bd9b36fd5
+    reviewed: 5fb96577b26850d4f2f704f9c2a10d481060074a5eea12ad902722890eaed118
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_one_side_deletes_and_the_other_changes_only_by_deleting_records_beneath_it_is_deleted"
+  - node: 01a13b3a-594a-7413-a3dc-405c54116d51
+    reviewed: 78fb5f5044ed0f2902509ebf615363b4aea3927391db124b8bdd51be5a23ac80
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_registry_entry_the_sorted_order_moves_when_another_is_renamed_is_unchanged"
+  - node: 01a13b9a-057e-73d1-956b-fda73982546d
+    reviewed: 7f121877e8e9efc875bb979a8d50fcd2a26eb7e8c0281691fed26f0ae5f4d923
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_one_side_turns_into_another_kind_is_of_that_kind"
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_whose_new_kind_cannot_hold_a_record_kept_beneath_it_keeps_a_kind_that_can"
+  - node: 01a13bfc-b853-75c8-9ec8-bad9b39e3d67
+    reviewed: c15e5462e839ffeec65c24d62cecbf2060e5fa08c63d960b7ea2a2eb135dc3bf
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_whose_new_kind_cannot_hold_a_record_kept_beneath_it_keeps_a_kind_that_can"
+  - node: 01a13b9a-057e-73d1-956b-fda864fcb75d
+    reviewed: 9931edcd38c61e3ac55a7c5bd71d3270956d0b19c9fa919f119af872ee8826d1
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_the_sides_turn_into_two_different_kinds_keeps_its_base_kind"
+  - node: 01a13b9a-057e-73d1-956b-fda9ee6e2ddb
+    reviewed: b00ec06d5b059128042eb7f434a7b34bb880809ad3d0516d2fc36ff96e374e2e
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_field_both_kinds_define_alike_takes_the_other_side_s_change"
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_the_sides_turn_into_two_different_kinds_keeps_its_base_kind"
   - node: a14a7d0f-cfe0-44e1-b758-3613ceb98947
     reviewed: 4950f113026412f86ab89b1aedde976024c411a23aa588182534afe264cae794
     tests:
@@ -4782,6 +4828,23 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_moves.rs"
         name: "each_side_of_a_parent_conflict_holds_the_key_of_the_record_s_parent_on_that_side"
+  - node: 01a13b3a-594a-7413-a3dc-405d3eb8a19f
+    reviewed: 449ab45cbb04a53f6b33a513d79f4d932ba43bc5584dbb94584e3bb3db859f21
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_both_sides_move_apart_whose_base_parent_neither_holds_is_where_ours_put_it_with_a_parent_conflict"
+  - node: 01a13b3a-594a-7413-a3dc-405e9f212dcc
+    reviewed: 0c1eda9ef7991268f0d91e9b9d161d7ecc67d38d021a2f11eb843579685ec3c1
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "records_whose_moves_would_form_a_cycle_stay_at_the_base_parent_or_where_ours_put_one_base_lacks"
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_cycle_through_a_record_the_sides_moved_apart_leaves_each_record_base_holds_at_its_base_parent"
+  - node: 01a13b3a-594a-7413-a3dc-405f25e0eff9
+    reviewed: a9253395e2b7e707d7ba83211788acf537208c581538f279654196a01bbcf8f5
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_both_sides_add_at_different_parents_is_where_ours_put_it_with_a_parent_conflict_without_base"
   - node: 01a13acc-1f4f-759a-b78e-517707b6075a
     reviewed: a3efa345134349e5698b55c280636536e24101a14fac0de84b37f562df364421
     tests:
@@ -4797,7 +4860,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_moves.rs"
         name: "the_merged_file_carries_each_key_once"
-      - file: "crates/loftspec/tests/merge_moves.rs"
+      - file: "crates/loftspec/tests/merge_by_key.rs"
         name: "a_merge_whose_result_would_carry_a_key_twice_writes_nothing"
   - node: 56cd2388-3187-42ed-9408-1ff4b39585d8
     reviewed: 551ec76dec08767b92479dca7449c9edc4d3bccd80841dd40a1d1aaa9db48af5
@@ -4894,6 +4957,16 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_decisions.rs"
         name: "an_assessment_both_sides_change_apart_keeps_its_base_value"
+  - node: 01a13b3a-594a-7413-a3dc-4060ade857b9
+    reviewed: 014045ed8539e92bb3ed5087b1c1016cff19dd20eaf6cb0833dc7e733d98e265
+    tests:
+      - file: "crates/loftspec/tests/merge_decisions.rs"
+        name: "an_assessment_one_side_deletes_and_the_other_changes_gives_the_decision_a_conflict_over_its_list"
+  - node: 01a13b3a-594a-7413-a3dc-4061c28bc4c8
+    reviewed: 935d8e9afcc21f0f7fdc2356ede8bed1b3a0a61f05e5a23453c980fa9261aad8
+    tests:
+      - file: "crates/loftspec/tests/merge_decisions.rs"
+        name: "an_assessment_one_side_deletes_and_the_other_changes_keeps_its_base_value"
   - node: 01a13a1b-2f3d-70d6-88b6-56e858b4b211
     reviewed: b2e11fe9cf9cbb968e1ca28c6234d79556b4aacb6cdef101c8392bb73ecaf5ff
     tests:
@@ -5763,7 +5836,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/check.rs"
         name: "every_validation_error_prints_before_the_findings_and_exits_1"
-      - file: "crates/loftspec/tests/validate.rs"
+      - file: "crates/loftspec/tests/validate_decisions.rs"
         name: "every_error_is_reported_not_only_the_first"
       - file: "crates/loftspec/tests/index.rs"
         name: "every_integrity_error_is_reported_not_only_the_first"
@@ -6212,11 +6285,17 @@ links:
     tests:
       - file: "crates/loft-cli/tests/merge_driver.rs"
         name: "an_unreadable_input_is_named_with_where_and_ours_is_unchanged"
+      - file: "crates/loftspec/tests/merge_moves.rs"
+        name: "an_input_that_carries_a_key_twice_is_unreadable_at_both_sites"
+      - file: "crates/loft-cli/tests/merge_driver.rs"
+        name: "an_input_that_carries_a_key_twice_exits_1_naming_it_and_both_sites_and_ours_is_unchanged"
   - node: 3dc02cdb-0451-4827-a2e3-010c6b3a274e
     reviewed: ad65862899318e099892a6fc190a490402205d0066093bc1f8ebbefae7237ca9
     tests:
       - file: "crates/loft-cli/tests/merge_driver.rs"
         name: "an_unreadable_input_is_named_with_where_and_ours_is_unchanged"
+      - file: "crates/loft-cli/tests/merge_driver.rs"
+        name: "an_input_that_carries_a_key_twice_exits_1_naming_it_and_both_sites_and_ours_is_unchanged"
   - node: 22328d0c-1299-463f-8966-069b3229b7af
     reviewed: 15706411927b3f3da3193e86e176cd1336ddb44a3e2d57f5c63aaab6daa2cfdd
     tests:

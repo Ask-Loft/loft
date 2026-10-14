@@ -118,6 +118,46 @@ fn an_unreadable_input_is_named_with_where_and_ours_is_unchanged() {
 }
 
 #[test]
+fn an_input_that_carries_a_key_twice_exits_1_naming_it_and_both_sites_and_ours_is_unchanged() {
+    let (scratch, base) = setup();
+    let key = "00000000-0000-4000-8000-000000000034";
+    let start = base.find(&format!("      - key: {key}\n")).unwrap();
+    let criterion: String = base[start..]
+        .split_inclusive('\n')
+        .enumerate()
+        .take_while(|(index, line)| *index == 0 || line.starts_with("        "))
+        .map(|(_, line)| line)
+        .collect();
+    let criterion = criterion.as_str();
+    let theirs_text = edited(&base, criterion, &format!("{criterion}{criterion}"));
+    let output = driver(&scratch, [&base, &base, &theirs_text], &spec_path());
+    assert_eq!(output.status.code(), Some(1));
+    let [first, second] = &key_sites(&theirs_text, key)[..] else {
+        panic!("{theirs_text}")
+    };
+    assert_eq!(
+        stderr(&output),
+        format!(
+            "{}:{first}, {second}: theirs: the key {key} is carried twice\n",
+            spec_path()
+        )
+    );
+    assert_eq!(ours(&scratch), base);
+}
+
+/// The `<line>:<column>` of each `key` field of `text` that carries `key`, at its value.
+fn key_sites(text: &str, key: &str) -> Vec<String> {
+    let field = format!("key: {key}");
+    text.lines()
+        .enumerate()
+        .filter_map(|(index, line)| {
+            let column = line.find(&field)? + "key: ".len() + 1;
+            Some(format!("{}:{column}", index + 1))
+        })
+        .collect()
+}
+
+#[test]
 fn a_path_below_the_top_level_is_merged_from_its_spec_directory_and_named_as_given() {
     let (scratch, base) = setup();
     let ours_text = edited(&base, SHALL, "shall: \"publish a link.\"");

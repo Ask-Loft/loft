@@ -28,6 +28,9 @@ pub const DESCRIPTION: &str = "description";
 pub const DOCUMENT_KEY: &str = "documentKey";
 pub const DRIVER: &str = "driver";
 pub const DRIVERS: &str = "drivers";
+/// The pseudo-field that names a registry's list of entries, which the file holds at its top
+/// as one sequence.
+pub const ENTRIES: &str = "entries";
 pub const ENVIRONMENT: &str = "environment";
 pub const FEATURES: &str = "features";
 pub const FEATURE_GROUPS: &str = "featureGroups";

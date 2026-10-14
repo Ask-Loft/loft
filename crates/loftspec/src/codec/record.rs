@@ -186,6 +186,13 @@ impl Rec {
         self.get(name).and_then(Val::text)
     }
 
+    /// The key the record carries; none where its `key` field is absent or holds no key. Asking
+    /// a kind that defines no `key` field is a programming error.
+    #[must_use]
+    pub fn key(&self) -> Option<Key> {
+        self.text(field::KEY).and_then(|text| Key::parse(text).ok())
+    }
+
     #[must_use]
     pub fn record(&self, name: &str) -> Option<&Self> {
         match self.get(name) {

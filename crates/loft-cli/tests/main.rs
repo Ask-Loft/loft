@@ -53,6 +53,7 @@ mod skill;
 mod skill_files;
 mod skill_format;
 mod skill_install;
+mod source_limits;
 mod telemetry_event;
 mod telemetry_failures;
 mod telemetry_notice;

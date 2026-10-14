@@ -203,6 +203,8 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   handing work off.
 - Keep the complexity thresholds in `clippy.toml` enabled. Rust source files have a 500-line
   ceiling. Crossing either gate requires same-turn refactoring, never a raised threshold or budget.
+  Guards in `crates/loft-cli/tests/source_limits.rs` hold the ceiling, the thresholds and the
+  ban on suppressing `clippy::too_many_lines`.
 - Keep every commit green. Do not update golden vectors merely to make a failure disappear.
 - Commit each completed step separately; do not combine unrelated steps in one commit.
 - Open pull requests against `develop`. `main` carries released, published states only.
