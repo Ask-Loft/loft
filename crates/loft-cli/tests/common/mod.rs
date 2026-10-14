@@ -11,7 +11,7 @@ use std::{env, fs, process};
 use loftspec::codec;
 use loftspec::convert::v1::convert;
 use loftspec::convert::v1::export::Export;
-use software_plant::real_git::isolate;
+use software_plant::real_git;
 use software_plant::{Clock, GitScenario, Installed};
 
 /// The time every run reads unless a test gives another: 2026-01-01T00:00:00Z.
@@ -103,7 +103,7 @@ impl Scratch {
     /// contract suite runs it.
     pub fn loft_under_real_git(&self, args: &[&str]) -> Output {
         let mut command = self.bare(&Clock::fixed(EPOCH));
-        isolate(&mut command).args(args).output().unwrap()
+        real_git::isolate(&mut command).args(args).output().unwrap()
     }
 
     /// The `loft` command in the scratch tree: the git simulator answering from `git` first on
@@ -138,15 +138,33 @@ impl Scratch {
     fn bare(&self, clock: &Clock) -> Command {
         let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
         clock.apply(&mut command);
+        isolate(&mut command, &self.home());
         command.current_dir(&self.0);
         command
     }
 
+    /// The home directory every run is given, beside the scratch tree, created on first use.
+    pub fn home(&self) -> PathBuf {
+        let home = self.beside(".home");
+        fs::create_dir_all(&home).unwrap();
+        home
+    }
+
+    /// The directory where `loft` keeps its settings under [`Self::home`].
+    pub fn config(&self) -> PathBuf {
+        config_under(&self.home())
+    }
+
     /// The directory beside the scratch tree that holds the simulators' scenarios.
     fn plant(&self) -> PathBuf {
-        let mut plant = self.0.clone().into_os_string();
-        plant.push(".plant");
-        PathBuf::from(plant)
+        self.beside(".plant")
+    }
+
+    /// The path beside the scratch tree whose name ends in `suffix`.
+    fn beside(&self, suffix: &str) -> PathBuf {
+        let mut path = self.0.clone().into_os_string();
+        path.push(suffix);
+        PathBuf::from(path)
     }
 }
 
@@ -154,6 +172,57 @@ impl Drop for Scratch {
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.0);
         let _ = fs::remove_dir_all(self.plant());
+        let _ = fs::remove_dir_all(self.beside(".home"));
+    }
+}
+
+/// The variables that would let a test run reach the user's own settings, or tell `loft` that
+/// an agent or CI started it.
+const OUTSIDE: [&str; 12] = [
+    "XDG_CONFIG_HOME",
+    "CARGO_HOME",
+    "CI",
+    "CLAUDECODE",
+    "CLAUDE_CODE_ENTRYPOINT",
+    "CLAUDE_CODE_IS_COWORK",
+    "CODEX_THREAD_ID",
+    "CODEX_SANDBOX",
+    "CODEX_SANDBOX_NETWORK_DISABLED",
+    "CODEX_CI",
+    "AI_AGENT",
+    "AGENT",
+];
+
+/// Gives a run `home` as its home directory and keeps it from the user's settings, from agent
+/// and CI markers, and from the network: telemetry and the update check are off, and both
+/// services are a closed port on the loopback interface. A test that exercises either switches
+/// it on and points it at a simulator.
+pub fn isolate(command: &mut Command, home: &Path) {
+    for name in OUTSIDE {
+        command.env_remove(name);
+    }
+    command
+        .env("HOME", home)
+        .env("USERPROFILE", home)
+        .env("APPDATA", home.join("AppData/Roaming"))
+        .env("LOFT_TELEMETRY", "off")
+        .env("LOFT_UPDATE_CHECK", "off")
+        .env("LOFT_TELEMETRY_ENDPOINT", CLOSED)
+        .env("LOFT_UPDATE_ENDPOINT", CLOSED);
+}
+
+/// An address on the loopback interface where nothing listens.
+pub const CLOSED: &str = "http://127.0.0.1:9";
+
+/// The directory where `loft` keeps its settings for a user whose home is `home`, on the
+/// platform the tests run on.
+pub fn config_under(home: &Path) -> PathBuf {
+    if cfg!(windows) {
+        home.join("AppData/Roaming/loft")
+    } else if cfg!(target_os = "macos") {
+        home.join("Library/Application Support/loft")
+    } else {
+        home.join(".config/loft")
     }
 }
 

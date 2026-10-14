@@ -4,6 +4,7 @@
 #![deny(clippy::print_stdout, clippy::print_stderr)]
 
 mod check;
+mod endpoints;
 mod find;
 mod finish;
 mod fmt;
@@ -15,8 +16,12 @@ mod out;
 mod publish;
 mod reconcile;
 mod render;
+mod settings;
 mod skill;
 mod stop;
+mod switch_command;
+mod switches;
+mod time;
 mod verify;
 mod version;
 
@@ -143,6 +148,17 @@ enum Command {
         #[command(subcommand)]
         action: SkillAction,
     },
+    /// Switch telemetry on or off for you on this machine, or report its state.
+    Telemetry {
+        #[command(subcommand)]
+        action: SwitchAction,
+    },
+    /// Switch the check for a newer release on or off for you on this machine, or report its
+    /// state.
+    UpdateCheck {
+        #[command(subcommand)]
+        action: SwitchAction,
+    },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
         /// Where to write the Markdown projection.
@@ -164,6 +180,35 @@ enum SkillAction {
         #[command(flatten)]
         output: Output,
     },
+}
+
+#[derive(Subcommand)]
+enum SwitchAction {
+    /// Switch it on.
+    On {
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Switch it off.
+    Off {
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Report whether it is on, and which switch decided.
+    Status {
+        #[command(flatten)]
+        output: Output,
+    },
+}
+
+impl SwitchAction {
+    fn split(&self) -> (switch_command::Action, bool) {
+        match self {
+            Self::On { output } => (switch_command::Action::On, output.json()),
+            Self::Off { output } => (switch_command::Action::Off, output.json()),
+            Self::Status { output } => (switch_command::Action::Status, output.json()),
+        }
+    }
 }
 
 #[derive(Subcommand)]
@@ -302,5 +347,13 @@ fn dispatch(command: Command) -> Finished {
         Command::Skill {
             action: SkillAction::Install { output },
         } => skill::run(root, output.json()),
+        Command::Telemetry { action } => {
+            let (action, as_json) = action.split();
+            switch_command::telemetry(action, as_json)
+        }
+        Command::UpdateCheck { action } => {
+            let (action, as_json) = action.split();
+            switch_command::update_check(action, as_json)
+        }
     }
 }
