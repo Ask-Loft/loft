@@ -26,6 +26,7 @@ mod switch_command;
 mod switches;
 mod telemetry;
 mod time;
+mod update_check;
 mod verify;
 mod version;
 
@@ -313,13 +314,18 @@ fn run(cli: Cli) -> ExitCode {
     let sends = command.event_name();
     let finished = dispatch(command);
     let root = Path::new(".");
-    let telemetry = sends.and_then(|name| telemetry::prepare(name, &finished, started, root));
-    network::run(telemetry.into_iter().collect());
+    let mut jobs = Vec::new();
+    if let Some(name) = sends {
+        jobs.extend(telemetry::prepare(name, &finished, started, root));
+        jobs.extend(update_check::after_run());
+    }
+    network::run(jobs);
     finished.code
 }
 
 impl Command {
-    /// The name the command event gives this command, if the command sends one.
+    /// The name the command event gives this command, if the command sends one; a command
+    /// that sends one also checks for updates.
     const fn event_name(&self) -> Option<&'static str> {
         match self {
             Self::Init { .. } => Some("init"),

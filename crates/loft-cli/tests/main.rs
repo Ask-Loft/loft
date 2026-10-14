@@ -20,6 +20,7 @@ mod snapshot;
 mod workflow;
 
 mod check;
+mod checks_for_updates;
 mod citations;
 mod closed_output;
 mod collector_contract;
@@ -56,6 +57,7 @@ mod telemetry_notice;
 mod telemetry_switches;
 mod telemetry_tokens;
 mod test_modules;
+mod update_check;
 mod update_check_switches;
 mod verify;
 mod version;

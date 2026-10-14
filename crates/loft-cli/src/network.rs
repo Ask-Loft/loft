@@ -55,6 +55,27 @@ pub fn post_json(url: &str, body: &[u8], left: Duration) -> Option<u16> {
     Some(response.status().as_u16())
 }
 
+/// `GET`s `url` within `left`, asking for GitHub's JSON, and gives the answer's status and body,
+/// or none when no answer came.
+pub fn get_json(url: &str, left: Duration) -> Option<(u16, Vec<u8>)> {
+    if !allowed(url) {
+        return None;
+    }
+    let mut response = agent(left, 2)
+        .get(url)
+        .header("Accept", "application/vnd.github+json")
+        .call()
+        .ok()?;
+    let status = response.status().as_u16();
+    let body = response
+        .body_mut()
+        .with_config()
+        .limit(1 << 20)
+        .read_to_vec()
+        .ok()?;
+    Some((status, body))
+}
+
 fn agent(left: Duration, redirects: u32) -> Agent {
     Agent::config_builder()
         .http_status_as_error(false)
