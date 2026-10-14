@@ -7374,6 +7374,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/npm.rs"
         name: "no_package_has_an_install_script_and_each_names_the_repository"
+  - node: 01a136db-1a3c-76b9-8641-d09e74566205
+    reviewed: 25cb6c54d25827748316f14549341d50dceedd00e30bdb4b51b129125ea2aa74
+    tests:
+      - file: "crates/loft-cli/tests/npm.rs"
+        name: "the_launcher_depends_on_no_package_outside_the_ask_loft_scope"
   - node: 01a12ff0-f5e5-7095-8fa8-24bbd911d0cd
     reviewed: 3c60f2775f369288271f53b350dee81ef97fb765bfdcfafa5468ed0898b39975
     tests:

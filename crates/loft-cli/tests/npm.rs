@@ -249,3 +249,136 @@ fn the_smoke_check_fails_where_the_packed_binary_cannot_run() {
     let output = smoke(&out);
     assert_ne!(output.status.code(), Some(0), "{}", stdout(&output));
 }
+
+/// The names of the packages `package` depends on, in each field that lists dependencies.
+fn dependencies(package: &Value) -> Vec<String> {
+    let fields = [
+        "dependencies",
+        "optionalDependencies",
+        "peerDependencies",
+        "bundleDependencies",
+        "bundledDependencies",
+    ];
+    let mut names = Vec::new();
+    for field in fields {
+        match &package[field] {
+            Value::Null | Value::Bool(_) => {}
+            Value::Object(listed) => names.extend(listed.keys().cloned()),
+            Value::Array(listed) => names.extend(
+                listed
+                    .iter()
+                    .map(|name| name.as_str().expect(field).to_owned()),
+            ),
+            other => panic!("{field}: {other}"),
+        }
+    }
+    names
+}
+
+/// The quoted text at the start of `rest`, with a template's leading `${name}` replaced by the
+/// text the script's `const name` holds; a module named by anything but a quote is refused.
+fn quoted(script: &str, rest: &str) -> String {
+    let rest = rest.trim_start();
+    let quote = rest.chars().next().unwrap_or(' ');
+    assert!(
+        ['"', '\'', '`'].contains(&quote),
+        "a module named by an expression: {rest}"
+    );
+    let text = rest[1..].split(quote).next().unwrap().to_owned();
+    let Some(name) = text
+        .strip_prefix("${")
+        .and_then(|after| after.split('}').next())
+    else {
+        return text;
+    };
+    let definition = format!("const {name} = ");
+    let (_, value) = script
+        .split_once(&definition)
+        .unwrap_or_else(|| panic!("no {definition}in the script"));
+    text.replacen(&format!("${{{name}}}"), &quoted(script, value), 1)
+}
+
+/// The module each `require(…)`, `require.resolve(…)` and `import` in `script` names.
+fn required(script: &str) -> Vec<String> {
+    let mut modules = Vec::new();
+    for call in ["require(", "require.resolve(", "import("] {
+        for (at, _) in script.match_indices(call) {
+            modules.push(quoted(script, &script[at + call.len()..]));
+        }
+    }
+    for line in script.lines().map(str::trim_start) {
+        let rest = if line.starts_with("import ") || line.starts_with("} from ") {
+            line.rsplit_once("from ")
+                .map_or(line.strip_prefix("import "), |(_, rest)| Some(rest))
+        } else {
+            None
+        };
+        modules.extend(rest.map(|rest| quoted(script, rest)));
+    }
+    modules
+}
+
+/// Whether `module`, required by the script at `script` in the package at `root`, is a built-in
+/// of Node, a file of the package itself or a package of the `@ask-loft` scope.
+fn within_reach(module: &str, script: &Path, root: &Path) -> bool {
+    if module.starts_with("./") || module.starts_with("../") {
+        let root = fs::canonicalize(root).unwrap();
+        return fs::canonicalize(script.parent().unwrap().join(module))
+            .is_ok_and(|target| target.starts_with(root));
+    }
+    module.starts_with("node:") || module.starts_with("@ask-loft/")
+}
+
+/// Every JavaScript file under `dir`.
+fn scripts(dir: &Path, found: &mut Vec<PathBuf>) {
+    for entry in fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            scripts(&path, found);
+        } else if path
+            .extension()
+            .is_some_and(|extension| ["js", "cjs", "mjs"].contains(&extension.to_str().unwrap()))
+        {
+            found.push(path);
+        }
+    }
+}
+
+#[test]
+fn the_launcher_depends_on_no_package_outside_the_ask_loft_scope() {
+    let scratch = Scratch::empty();
+    let root = unpacked(&scratch, &assembled(&scratch), "loft");
+    let package = manifest(&root);
+    let names = dependencies(&package);
+    assert!(
+        !names.is_empty(),
+        "the launcher lists its platform packages"
+    );
+    for name in names {
+        assert!(name.starts_with("@ask-loft/"), "{name}");
+    }
+    let launcher = root.join(package["bin"]["loft"].as_str().unwrap());
+    assert_eq!(
+        fs::read(&launcher).unwrap(),
+        fs::read(workspace().join("npm/loft/bin/loft.js")).unwrap(),
+        "the packed launcher is npm/loft/bin/loft.js"
+    );
+    let mut found = Vec::new();
+    scripts(&root, &mut found);
+    assert!(found.contains(&launcher), "{found:?}");
+    for script in found {
+        let modules = required(&fs::read_to_string(&script).unwrap());
+        assert!(
+            !modules.is_empty(),
+            "{}: requires nothing",
+            script.display()
+        );
+        for module in modules {
+            assert!(
+                within_reach(&module, &script, &root),
+                "{}: {module}",
+                script.display()
+            );
+        }
+    }
+}
