@@ -2,9 +2,11 @@
 //! containment and edge-kind rules that the typed text form refuses as it reads (F-17,
 //! F-18, F-47).
 
-use crate::common::key;
+use crate::common::fields::fields;
 use crate::common::text::{FEATURE, PRODUCT, edited, files, path, text};
-use loftspec::codec::{self, Files, Problem, ReadError};
+use crate::common::{component, key, proposed_decision, slug, small_document};
+use loftspec::codec::{self, Files, Problem, ReadError, SpecPath};
+use loftspec::tree::RootComponent;
 
 const COMPONENT: &str = "components/document-model.yaml";
 const DECISION: &str = "decisions/keys-are-uuids.yaml";
@@ -208,4 +210,62 @@ fn a_realizes_edge_that_carries_a_role_is_refused() {
         &format!("  - node: {COMPONENT_KEY}\n    role: outcome"),
     );
     refused_in(&files, FEATURE);
+}
+
+#[test]
+fn a_decision_file_holds_one_decision() {
+    let mut document = small_document();
+    document.decisions.push(proposed_decision(key(50), "a"));
+    let written = codec::write(&document);
+    let decisions: Vec<&str> = written
+        .keys()
+        .map(SpecPath::as_str)
+        .filter(|at| at.starts_with("decisions/"))
+        .collect();
+    assert_eq!(decisions, ["decisions/a.yaml", DECISION]);
+    for at in decisions {
+        assert_eq!(fields(&written, at, &[])[0], "key", "{at} holds one record");
+    }
+    let decision = text(&files(), DECISION);
+    let two = format!("- {}", decision.replace('\n', "\n  ").trim_end());
+    let mut files = files();
+    files.insert(path(DECISION), format!("{two}\n{two}\n").into_bytes());
+    refused_in(&files, DECISION);
+}
+
+/// The small document with two more root Components and two more decisions, slugged `a` and
+/// `a-z`: `-` sorts before `.`, so `a-z.yaml` comes before `a.yaml` in byte order though `a`
+/// comes before `a-z` as a slug, as a key and in the document.
+fn with_a_and_a_z() -> loftspec::document::Document {
+    let mut document = small_document();
+    for (n, at) in [(50, "a"), (51, "a-z")] {
+        document.components.push(RootComponent {
+            slug: slug(at),
+            component: component(key(n), "Part"),
+        });
+        document.decisions.push(proposed_decision(key(n + 2), at));
+    }
+    document
+}
+
+#[test]
+fn root_components_are_read_in_the_byte_order_of_their_file_names() {
+    let read = codec::read(&codec::write(&with_a_and_a_z())).unwrap();
+    let slugs: Vec<&str> = read
+        .components
+        .iter()
+        .map(|root| root.slug.as_str())
+        .collect();
+    assert_eq!(slugs, ["a-z", "a", "document-model"]);
+}
+
+#[test]
+fn decisions_are_read_in_the_byte_order_of_their_file_names() {
+    let read = codec::read(&codec::write(&with_a_and_a_z())).unwrap();
+    let slugs: Vec<&str> = read
+        .decisions
+        .iter()
+        .map(|decision| decision.slug.as_str())
+        .collect();
+    assert_eq!(slugs, ["a-z", "a", "keys-are-uuids"]);
 }

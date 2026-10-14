@@ -134,8 +134,12 @@ pub enum Problem {
     NotListed(&'static str),
     #[error("the key {0} is listed twice")]
     ListedTwice(Key),
-    #[error("the Feature {0} is listed by two Feature Groups")]
-    ListedByTwoGroups(Key),
+    #[error("the Feature {feature} is listed by two Feature Groups, `{first}` and `{second}`")]
+    ListedByTwoGroups {
+        feature: Key,
+        first: String,
+        second: String,
+    },
     #[error("the Feature file is not in the directory of its Feature Group `{0}`")]
     WrongDirectory(String),
     #[error("{0}")]

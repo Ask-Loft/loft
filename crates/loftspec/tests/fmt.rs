@@ -1,11 +1,14 @@
 //! `loft fmt` as a function (F-39): canonical layout, minted keys, supplied slugs.
 
+use crate::common::fields::scalar;
 use crate::common::small_document;
-use crate::common::text::{FEATURE, PRODUCT, edited, path, text};
+use crate::common::text::{FEATURE, PRODUCT, edited, files as small_files, path, text};
 use crate::common::v1::{convert_value, full_export};
 use loftspec::codec::{self, Files, Problem};
 use loftspec::fmt::format;
 use loftspec::identity::Key;
+
+const GROUP_SLUG: &[&str] = &["featureGroups", "0", "slug"];
 
 /// The files after formatting.
 fn formatted(files: &Files) -> Files {
@@ -167,4 +170,81 @@ fn a_new_product_files_key_is_appended_to_the_manifests_products() {
     assert_eq!(document.products[0].name, "Example Product");
     assert_eq!(document.products[1].name, "New Product");
     assert_eq!(document.products[1].slug.as_str(), "new-product");
+}
+
+#[test]
+fn a_feature_group_without_a_slug_or_a_directory_takes_the_slug_its_name_derives() {
+    let files = edited(
+        PRODUCT,
+        "featureGroups:\n",
+        "featureGroups:\n  - key: 00000000-0000-7000-8000-000000000050\n    name: \"Key \
+         Shapes\"\n",
+    );
+    let result = format(&files).unwrap();
+    assert_eq!(scalar(&result.changed, PRODUCT, GROUP_SLUG), "key-shapes");
+}
+
+/// The files with the first `from` replaced by `to` in the file at `at`, after asserting that
+/// the entry at index 0 of the list at `route` then has `before` as its `field`.
+fn reordered(at: &str, from: &str, to: &str, route: &[&str], before: &str) -> Files {
+    let files = edited(at, from, to);
+    assert_eq!(
+        scalar(&files, at, route),
+        before,
+        "out of order before formatting"
+    );
+    files
+}
+
+#[test]
+fn the_formatter_writes_tag_registry_entries_sorted_by_name() {
+    let tags = text(&small_files(), "tags.yaml");
+    let portable = tags
+        .find("- key: 00000000-0000-7000-8000-00000000001f")
+        .unwrap();
+    let swapped = format!("{}{}", &tags[portable..], &tags[..portable]);
+    let files = reordered("tags.yaml", &tags, &swapped, &["0", "name"], "portable");
+    let files = formatted(&files);
+    let names = [0, 1].map(|index| scalar(&files, "tags.yaml", &[&index.to_string(), "name"]));
+    assert_eq!(names, ["identity", "portable"]);
+}
+
+#[test]
+fn the_formatter_writes_constraint_categories_sorted_by_name() {
+    let first = "- key: 00000000-0000-7000-8000-000000000020\n";
+    let later = "- key: 00000000-0000-7000-8000-000000000066\n  name: zeta.part\n  definition: \
+                 \"Sorts last.\"\n";
+    let files = reordered(
+        "categories.yaml",
+        first,
+        &format!("{later}{first}"),
+        &["0", "name"],
+        "zeta.part",
+    );
+    let files = formatted(&files);
+    let names =
+        [0, 1].map(|index| scalar(&files, "categories.yaml", &[&index.to_string(), "name"]));
+    assert_eq!(names, ["runtime.language", "zeta.part"]);
+}
+
+#[test]
+fn the_formatter_writes_bindings_sorted_by_key() {
+    let product = "  - key: 00000000-0000-7000-8000-000000000001\n    label: P-1\n";
+    let group = "  - key: 00000000-0000-7000-8000-000000000002\n    label: FG-1\n";
+    let files = reordered(
+        "labels.yaml",
+        &format!("{product}{group}"),
+        &format!("{group}{product}"),
+        &["bindings", "0", "label"],
+        "FG-1",
+    );
+    let result = format(&files).unwrap();
+    assert_eq!(
+        result.changed[&path("labels.yaml")],
+        small_files()[&path("labels.yaml")]
+    );
+    assert_eq!(
+        scalar(&result.changed, "labels.yaml", &["bindings", "0", "label"]),
+        "P-1"
+    );
 }

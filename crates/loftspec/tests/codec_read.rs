@@ -1,8 +1,10 @@
 //! What the reader refuses in a `spec/` tree, and where it says the error is (F-6..F-10,
 //! F-49, F-47).
 
+use crate::common::key;
 use crate::common::text::{FEATURE, PRODUCT, edited, files, path};
 use loftspec::codec::{self, Files, Problem, ReadError};
+use loftspec::identity::Key;
 use loftspec::manifest::ManifestError;
 use loftspec::yaml::{Location, Position};
 
@@ -257,4 +259,98 @@ fn an_empty_body_stays_empty() {
     let files = edited(PRODUCT, "body: \"The example.\"", "body: \"\"");
     let document = codec::read(&files).unwrap();
     assert_eq!(document.products[0].details.body.as_deref(), Some(""));
+}
+
+#[test]
+fn a_feature_listed_by_two_groups_is_refused_naming_both_groups() {
+    let files = edited(
+        PRODUCT,
+        "        verificationFate: proved\n",
+        "        verificationFate: proved\n  - key: 00000000-0000-7000-8000-000000000050\n    \
+         slug: other\n    name: \"Other\"\n    features:\n      - \
+         00000000-0000-7000-8000-000000000003\n",
+    );
+    let error = only(&files);
+    assert_eq!(error.sites[0].location, Some(at(21, 9)));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/product.yaml:21:9: the Feature \
+         00000000-0000-7000-8000-000000000003 is listed by two Feature Groups, `identity` and \
+         `other`"
+    );
+}
+
+#[test]
+fn siblings_are_read_in_the_order_the_file_lists_them() {
+    let files = edited(
+        FEATURE,
+        "      - key: 00000000-0000-7000-8000-000000000005\n",
+        "      - key: 00000000-0000-7000-8000-000000000065\n        name: \"Zeta, listed \
+         first.\"\n      - key: 00000000-0000-7000-8000-000000000005\n",
+    );
+    let document = codec::read(&files).unwrap();
+    let requirement = &document.products[0].feature_groups[0].features[0].requirements[0];
+    let keys: Vec<Key> = requirement
+        .criteria
+        .iter()
+        .map(|criterion| criterion.id.unwrap().key())
+        .collect();
+    assert_eq!(keys, [key(0x65), key(5)], "neither key nor name order");
+}
+
+#[test]
+fn a_record_carrying_an_ordinal_is_refused() {
+    let files = edited(FEATURE, "slug: keys\n", "slug: keys\nordinal: 1\n");
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::UnknownField("ordinal".to_owned()));
+    assert_eq!(error.sites[0].location, Some(at(3, 1)));
+}
+
+#[test]
+fn features_are_read_in_the_order_their_group_lists_them() {
+    let mut files = edited(
+        PRODUCT,
+        "      - 00000000-0000-7000-8000-000000000003\n",
+        "      - 00000000-0000-7000-8000-000000000063\n      - \
+         00000000-0000-7000-8000-000000000003\n",
+    );
+    files.insert(
+        path("products/example-product/identity/zeta.yaml"),
+        b"key: 00000000-0000-7000-8000-000000000063\nslug: zeta\nname: \"Zeta\"\n".to_vec(),
+    );
+    let document = codec::read(&files).unwrap();
+    let keys: Vec<Key> = document.products[0].feature_groups[0]
+        .features
+        .iter()
+        .map(|feature| feature.id.unwrap().key())
+        .collect();
+    assert_eq!(keys, [key(0x63), key(3)], "neither file name nor key order");
+}
+
+#[test]
+fn a_product_file_the_manifest_does_not_list_is_refused_naming_the_file() {
+    let mut files = files();
+    files.insert(
+        path("products/other-product/product.yaml"),
+        b"key: 00000000-0000-7000-8000-000000000050\nslug: other-product\nname: \"Other\"\n"
+            .to_vec(),
+    );
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::NotListed("manifest"));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/other-product/product.yaml:1:1: no manifest lists this file's key"
+    );
+}
+
+#[test]
+fn a_product_key_listed_twice_is_refused_naming_the_key() {
+    let listed = "  - 00000000-0000-7000-8000-000000000001\n";
+    let files = edited("loftspec.yaml", listed, &format!("{listed}{listed}"));
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::ListedTwice(key(1)));
+    assert_eq!(
+        error.to_string(),
+        "spec/loftspec.yaml:6:5: the key 00000000-0000-7000-8000-000000000001 is listed twice"
+    );
 }

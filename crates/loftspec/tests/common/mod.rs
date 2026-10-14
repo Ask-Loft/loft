@@ -1,6 +1,8 @@
 //! The small document the hashing tests and the golden vectors share. `testdata/golden/README.md`
 //! describes the same document in prose.
 
+pub mod fields;
+pub mod full;
 pub mod lint;
 pub mod parity;
 pub mod text;
@@ -355,6 +357,21 @@ pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
     document.decisions = vec![decision(k)];
     bind(&mut document, k);
     document
+}
+
+/// A proposed decision with nothing but its key, slug, title and context.
+pub fn proposed_decision(id: Key, slug_text: &str) -> Decision {
+    Decision {
+        id: DecisionId::new(id),
+        slug: slug(slug_text),
+        title: "A proposal".to_owned(),
+        context: "Nothing is decided yet.".to_owned(),
+        state: DecisionState::Proposed,
+        drivers: Vec::new(),
+        options: Vec::new(),
+        assessments: Vec::new(),
+        consequences: Vec::new(),
+    }
 }
 
 pub fn small_document() -> Document {
