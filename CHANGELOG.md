@@ -3,7 +3,7 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## Unreleased
+## 2.0.4 (2026-10-14)
 
 - `loft reconcile` checks `loft.trace.yaml`, a file beside `spec/` that links each acceptance
   criterion, and each Constraint and Quality Attribute whose `verificationFate` is `proved`, to

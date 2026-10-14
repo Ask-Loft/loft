@@ -1,6 +1,6 @@
 [package]
 name = "loftspec-store"
-version = "2.0.3"
+version = "2.0.4"
 description = "Memory and file stores for Loft Specification Format documents"
 edition.workspace = true
 rust-version.workspace = true
