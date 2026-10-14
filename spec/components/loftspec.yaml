@@ -1,7 +1,7 @@
 key: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
 slug: loftspec
 name: "loftspec"
-body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the validator, the linter, the renderer, the publisher and the merge engine. It performs no input or output."
+body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the validator, the linter, the renderer, the publisher, the merge engine and the reconciler. It performs no input or output."
 scopedTo:
   - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 components:
@@ -69,6 +69,13 @@ components:
     constraints:
       - key: 6fcc6939-eb09-4d3c-802d-35a42f1d02e0
         name: "The merge engine shall take as input only the base, ours and theirs versions of one file."
+        verificationFate: proved
+  - key: 01a1383a-4a92-778a-b49d-e3efdabc7f04
+    name: "Reconciler"
+    body: "The trace file and the reconciliation findings. The reconciler decides from the tree, the trace file and the test files it is given, and yields the findings and the trace file to write; reading and writing files belong to a store outside this crate."
+    constraints:
+      - key: 01a1383a-4a93-70fa-a19d-af1f57f5d87c
+        name: "The reconciler shall change nothing in the document it is given."
         verificationFate: proved
 constraints:
   - key: 7ff6bd2b-7a21-4020-83aa-ad8aedec10a2

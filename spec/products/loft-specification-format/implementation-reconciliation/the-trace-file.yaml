@@ -1,0 +1,82 @@
+key: 01a1383a-4a94-72cc-9c61-11318846c14a
+slug: the-trace-file
+name: "The trace file"
+body: "`loft.trace.yaml`, beside `spec/`, links each node that tests verify to those tests by file and name, and pins each link to the content hash its node had when the link was last reviewed. It lies outside `spec/`: it enters no root, and no publish writes it."
+realizes:
+  - 01a1383a-4a92-778a-b49d-e3efdabc7f04
+requirements:
+  - key: 01a1383a-4a94-72cc-9c61-113259a04495
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "read the trace file from `loft.trace.yaml` in the directory that holds `spec/`."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-11335995b088
+        name: "A path in the trace file is relative to the directory that holds `spec/`."
+      - key: 01a1383a-4a94-72cc-9c61-113424099980
+        name: "Without `loft.trace.yaml` the trace file holds no link."
+      - key: 01a1383a-4a94-72cc-9c61-11355d75e089
+        name: "The trace file enters no root."
+      - key: 01a1383a-4a94-72cc-9c61-1136cf5458f4
+        name: "No publish writes the trace file."
+  - key: 01a1383a-4a94-72cc-9c61-1137e8be3d22
+    statement:
+      form: ubiquitous
+      system: "The trace file"
+      shall: "hold its format and its links."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-1138adf76dd7
+        name: "The trace file's fields are, in order, `format` and `links`."
+      - key: 01a1383a-4a94-72cc-9c61-113970c25dfa
+        name: "`format` is `loft-trace/1`."
+      - key: 01a1383a-4a94-72cc-9c61-113a51df9c8c
+        name: "A link's fields are, in order, `node`, `reviewed`, `tests` and `unverified`."
+      - key: 01a1383a-4a94-72cc-9c61-113bfd17caac
+        name: "`node` is the key of the node the link verifies."
+      - key: 01a1383a-4a94-72cc-9c61-113c25908040
+        name: "`reviewed` is the content hash, in 64 lowercase hexadecimal digits, that the node had when the link was last reviewed."
+      - key: 01a1383a-4a94-72cc-9c61-113d2dcde1c2
+        name: "A link without `reviewed` has not been reviewed."
+      - key: 01a1383a-4a94-72cc-9c61-113e5f1e727c
+        name: "`tests` lists the tests that verify the node, each with the fields `file` and `name`, in that order."
+      - key: 01a1383a-4a94-72cc-9c61-113f7fd4bdbf
+        name: "`unverified` gives the reason why no test verifies the node."
+  - key: 01a1383a-4a94-72cc-9c61-1140605946ed
+    statement:
+      form: unwanted
+      if: "the trace file breaks its form"
+      system: "the reconciler"
+      shall: "report an error naming the file and line."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-1141c18d6640
+        name: "A field the trace file does not define is an error."
+      - key: 01a1383a-4a94-72cc-9c61-11423830223a
+        name: "A `format` other than `loft-trace/1` is an error."
+      - key: 01a1383a-4a94-72cc-9c61-1143e0f26555
+        name: "A link that holds both `tests` and `unverified` is an error."
+      - key: 01a1383a-4a94-72cc-9c61-1144b94fbd76
+        name: "A link that holds neither `tests` nor `unverified` is an error."
+      - key: 01a1383a-4a94-72cc-9c61-11454c554228
+        name: "An empty `tests` list is an error."
+      - key: 01a1383a-4a94-72cc-9c61-1146fb3042b7
+        name: "A blank `unverified` reason is an error."
+      - key: 01a1383a-4a94-72cc-9c61-114746816207
+        name: "Two links that name one node are an error."
+      - key: 01a1383a-4a94-72cc-9c61-114826c1e5e1
+        name: "A `node` that is not a key is an error."
+      - key: 01a1383a-4a94-72cc-9c61-1149e432e243
+        name: "A `reviewed` that is not 64 lowercase hexadecimal digits is an error."
+  - key: 01a1383a-4a94-72cc-9c61-114ad7b84b97
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "write the trace file's links in the document order of their nodes."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-114be71af77a
+        name: "Links whose nodes are in the tree follow the document order of those nodes."
+      - key: 01a1383a-4a94-72cc-9c61-114c051d222d
+        name: "Links whose nodes are not in the tree follow every other link, in the order of their keys."
+      - key: 01a1383a-4a94-72cc-9c61-114d0d372cdc
+        name: "The trace file is written in the canonical layout of the YAML subset."
+      - key: 01a1383a-4a94-72cc-9c61-114e84acba63
+        name: "Writing back a trace file just read, with no link changed, yields the bytes of its canonical layout."

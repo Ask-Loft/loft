@@ -1,0 +1,133 @@
+key: 01a1383a-4a94-72cc-9c61-11074c67c6d6
+slug: reconciliation-findings
+name: "Reconciliation findings"
+body: "What the reconciler reports when it compares the trace file with the tree and with the files that hold the tests. `TR-001` is a node that no link names; `TR-002` a link not yet reviewed; `TR-003` a link reviewed before its node changed; `TR-004` a test that cannot be found; `TR-005` a link whose node is not in scope. Accepting a link records that a reviewer has checked its tests against the node as it now reads."
+realizes:
+  - 01a1383a-4a92-778a-b49d-e3efdabc7f04
+requirements:
+  - key: 01a1383a-4a94-72cc-9c61-1108938c605b
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "expect a link for every acceptance criterion and for every Constraint and Quality Attribute whose `verificationFate` is `proved`."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-1109df5d0b90
+        name: "Every acceptance criterion is in scope."
+      - key: 01a1383a-4a94-72cc-9c61-110a9d80c167
+        name: "A Constraint whose `verificationFate` is `proved` is in scope."
+      - key: 01a1383a-4a94-72cc-9c61-110b9eb6ff49
+        name: "A Quality Attribute whose `verificationFate` is `proved` is in scope."
+      - key: 01a1383a-4a94-72cc-9c61-110c4fd001d7
+        name: "A Constraint or Quality Attribute whose `verificationFate` is `monitored` or `sampled` is not in scope."
+      - key: 01a1383a-70ad-7163-bef5-d4f6058d83f5
+        name: "A Constraint or Quality Attribute without a `verificationFate` is not in scope."
+      - key: 01a1383a-4a94-72cc-9c61-110d3305b7f1
+        name: "No node of another kind is in scope."
+  - key: 01a1383a-4a94-72cc-9c61-110e614ed17b
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report a node in scope that no link names as `TR-001`."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-110f3c666997
+        name: "Each node in scope that no link names yields one `TR-001` finding naming the node."
+      - key: 01a1383a-4a94-72cc-9c61-1110ef35e947
+        name: "A node in scope that a link names yields no `TR-001` finding."
+      - key: 01a1383a-4a94-72cc-9c61-111110fba712
+        name: "The default severity of `TR-001` is info."
+  - key: 01a1383a-4a94-72cc-9c61-1112d0c534d7
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report a link without `reviewed` as `TR-002`."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-11139e858001
+        name: "Each link without `reviewed` yields one `TR-002` finding naming its node."
+      - key: 01a1383a-4a94-72cc-9c61-11147705b668
+        name: "A link without `reviewed` yields no `TR-003` finding."
+      - key: 01a1383a-4a94-72cc-9c61-1115a608ba6f
+        name: "The default severity of `TR-002` is warning."
+  - key: 01a1383a-4a94-72cc-9c61-1116da9f6a34
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-003` a link whose `reviewed` differs from its node's content hash."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-1117280c47c7
+        name: "Each link whose `reviewed` differs from its node's content hash yields one `TR-003` finding naming the node."
+      - key: 01a1383a-4a94-72cc-9c61-1118d5c2dd0d
+        name: "A link whose node changed only its label yields no `TR-003` finding."
+      - key: 01a1383a-4a94-72cc-9c61-1119a9be82e4
+        name: "The default severity of `TR-003` is warning."
+  - key: 01a1383a-4a94-72cc-9c61-111a87952913
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-004` a test that cannot be found in the file the link names."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-111bf7203ba1
+        name: "A test whose file does not exist yields one `TR-004` finding naming the node, the file and the test."
+      - key: 01a1383a-4a94-72cc-9c61-111cff7149ea
+        name: "A test whose name does not occur in its file as a whole word yields one `TR-004` finding naming the node, the file and the test."
+      - key: 01a1383a-4a94-72cc-9c61-111d19f9c40f
+        name: "A name occurs as a whole word where no letter, digit or underscore adjoins either of its ends."
+      - key: 01a1383a-4a94-72cc-9c61-111e9852b7bc
+        name: "A test file path that leaves the directory holding `spec/` yields one `TR-004` finding."
+      - key: 01a1383a-4a94-72cc-9c61-111f48ec67b6
+        name: "The default severity of `TR-004` is warning."
+  - key: 01a1383a-4a94-72cc-9c61-112072c7f632
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-005` a link whose node is not in scope."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-1121f6bdb141
+        name: "A link naming a key that no node of the tree carries yields one `TR-005` finding naming the key."
+      - key: 01a1383a-4a94-72cc-9c61-112252e48ba6
+        name: "A link naming a node of the tree that is not in scope yields one `TR-005` finding naming the node."
+      - key: 01a1383a-4a94-72cc-9c61-112395c97b41
+        name: "A link with a `TR-005` finding yields no `TR-002` or `TR-003` finding."
+      - key: 01a1383a-4a94-72cc-9c61-1124d0ad3e2e
+        name: "The default severity of `TR-005` is warning."
+  - key: 01a1383a-4a94-72cc-9c61-1125f06ff01f
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "find a test without running it."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-112676c754a8
+        name: "The reconciler runs no test."
+      - key: 01a1383a-4a94-72cc-9c61-1127d3750eb2
+        name: "The reconciler reads no test runner's report."
+  - key: 01a1383a-4a94-72cc-9c61-1128b697bbba
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "order its findings by the document order of their nodes, then by rule."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-1129fed00787
+        name: "Findings on links whose nodes are not in the tree follow every other finding, in the order of their keys."
+      - key: 01a1383a-4a94-72cc-9c61-112a0f44141e
+        name: "Two findings of one rule on one node keep the order of the tests in the link."
+  - key: 01a1383a-4a94-72cc-9c61-112baded1c12
+    statement:
+      form: event_driven
+      when: "a link is accepted"
+      system: "the reconciler"
+      shall: "set the link's `reviewed` to its node's current content hash."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-112c2538aff7
+        name: "Accepting a link changes no other field of the link."
+      - key: 01a1383a-4a94-72cc-9c61-112d8124fa61
+        name: "Accepting a link changes no other link."
+  - key: 01a1383a-4a94-72cc-9c61-112e2331d26f
+    statement:
+      form: unwanted
+      if: "a link to be accepted has a `TR-004` or `TR-005` finding"
+      system: "the reconciler"
+      shall: "not accept the link."
+    criteria:
+      - key: 01a1383a-4a94-72cc-9c61-112f69f65a33
+        name: "A link with a `TR-004` finding keeps its `reviewed`."
+      - key: 01a1383a-4a94-72cc-9c61-113097bffe15
+        name: "A link with a `TR-005` finding keeps its `reviewed`."
