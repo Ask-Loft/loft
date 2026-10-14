@@ -1,5 +1,28 @@
 format: loft-trace/1
 links:
+  - node: 09c5903d-59c2-4069-839a-37a9ea59637c
+    reviewed: 1c42d4267e8bc2518eff664ee0496a2c15168ee82c957732ee9204586fb7a30f
+    tests:
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_product_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_feature_group_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_feature_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_requirement_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_criterion_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_constraint_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_quality_attribute_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_section_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_root_component_record_carries_its_slug_after_its_key_and_requires_it"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_component_record_without_its_key_or_name_is_refused_at_the_root_and_beneath_it"
   - node: da6109bc-56bd-4cef-854e-1997c512a25d
     reviewed: 51b1b7f132ed22010a8e9d8bcd29f8ea77aeea24217eefefcf1909ef5a09488e
     tests:
@@ -800,6 +823,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_document_vectors_are_reproduced_byte_for_byte"
+  - node: 64e542ae-cfb5-4d3b-a9fb-c28672221b7c
+    reviewed: 82ac6e2b771bdd41e77765799b58dd8d13bde5aaa81f4de780bb9569d93f4395
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "derived_from_holds_its_three_fields_in_the_published_order_and_requires_each"
+      - file: "crates/loftspec/tests/publish.rs"
+        name: "the_lock_carries_the_source_state_of_a_derived_document"
   - node: de051f91-ee1f-4458-8a19-90548afa005f
     reviewed: 430d6fa6c896131cd380d56462b333ae5adcaf44092092ec7ffd86091b53029e
     tests:
@@ -900,6 +930,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/manifest.rs"
         name: "the_format_and_algorithm_identifiers"
+  - node: 43d949e0-fdb1-440b-b62b-4305a979cd0a
+    reviewed: 7488b071346268146218381b9c62eb6daa74ce9bc7f3e365a5609076a16fcf4e
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "the_manifests_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_manifest_without_its_format_algorithm_or_document_key_is_refused"
   - node: b1c3b192-77a6-41c1-8c45-4a7b1638937f
     reviewed: 7a6904f7864cbbe1ab535a818f3023e9ef7916e668d5b2cc2894ace613de541d
     tests:
@@ -1000,6 +1037,11 @@ links:
         name: "a_product_file_without_a_product_record_is_refused"
       - file: "crates/loftspec-store/tests/conformance.rs"
         name: "creating_a_product_with_its_groups_and_features_agrees"
+  - node: 09e08da0-5b21-4817-b78d-254a82c83e89
+    reviewed: 510b31bd70b44edebdd68cb62ba86fb2f5bf284a257eb899635f460e9cf94d14
+    tests:
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_feature_group_records_fields_are_written_in_the_published_order"
   - node: 2cf165a7-c2d6-4807-94ae-726fd33ec4ae
     reviewed: 7217f36b0991db6577517586e395fc62f0fcc11460f22c54587f3393c54a3024
     tests:
@@ -1014,6 +1056,20 @@ links:
         name: "adding_a_requirement_with_criteria_writes_only_its_feature"
       - file: "crates/loftspec/tests/codec_sites.rs"
         name: "the_site_of_a_key_is_its_file_line_and_column"
+  - node: faa2ba48-b294-4e76-8228-990d6f3a52c8
+    reviewed: 752d233e43533c9cebaebc4f6d9a05e62d770d17a019313818cf4d00c904044f
+    tests:
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_quality_attribute_records_fields_are_written_in_the_published_order"
+  - node: 6192a650-5fc1-4981-9c9f-8a282a717d05
+    reviewed: 88370d41dfb31e7e29673021898b65eb4cecae402c660590b5fab1b34d6822d7
+    tests:
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_component_record_without_its_key_or_name_is_refused_at_the_root_and_beneath_it"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_band_holds_its_kind_and_then_the_bounds_its_kind_takes_in_order"
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "formatting_drops_the_binding_of_a_deleted_node"
   - node: 650c0fef-43bd-466c-9562-0b7a4863751c
     reviewed: 8012363383bff3e1bd2d5b1e0a2ee46c42e4fddc3eb645c4746ec59c620da9b6
     tests:
@@ -1080,6 +1136,22 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "a_renamed_node_keeps_its_file"
+  - node: 7de11a53-cbf1-4e83-a729-1562f46f094b
+    reviewed: 725f0f0532b96dad30a303495a34d0fdc1cf7caccde77889f9cd2572420f8c22
+    tests:
+      - file: "crates/loftspec/tests/fmt.rs"
+        name: "a_feature_without_a_slug_takes_its_file_name"
+      - file: "crates/loftspec/tests/fmt.rs"
+        name: "a_feature_group_without_a_slug_or_a_directory_takes_the_slug_its_name_derives"
+      - file: "crates/loftspec/tests/fmt.rs"
+        name: "a_renamed_node_keeps_its_file"
+  - node: 8f35cc7f-2e73-469b-b2ba-9e546f1a55ae
+    reviewed: e8504afa8abe8a25863bace699541411d3d98478b5e5b2a768f52fe76da8f21e
+    tests:
+      - file: "crates/loftspec/tests/codec_read.rs"
+        name: "a_slug_that_differs_from_its_file_name_is_refused"
+      - file: "crates/loftspec/tests/fmt.rs"
+        name: "a_renamed_node_keeps_its_file"
   - node: 51845d35-49e7-45c1-b85f-aba78c96fdd8
     reviewed: 0325227a6477ad6541d9dc6fb7123361f95fa8989233581caede491c5f75cca3
     tests:
@@ -1106,6 +1178,40 @@ links:
         name: "a_subject_edge_from_a_node_is_refused"
       - file: "crates/loftspec/tests/codec_read.rs"
         name: "a_former_label_reads_as_a_former_label"
+  - node: 1624f08c-5f87-443f-8715-8ac1f899c7b2
+    reviewed: 9d02074384a49f47bc7b49f8d50be807ee2f1790e8622c9fc841d1e248f28ee5
+    tests:
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_product_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_feature_group_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_feature_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_requirement_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_criterion_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_constraint_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_quality_attribute_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_section_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_fields_decisions.rs"
+        name: "a_decision_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_round_trip.rs"
+        name: "the_small_document_reads_back_to_the_same_roots"
+  - node: 52d056a6-2402-464b-b1c7-654aa4188602
+    reviewed: 004badc9e2bdb827f101c3ac0e1ede8bb9a57341a74b470c593bf0024859c5c0
+    tests:
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_feature_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/codec_sites.rs"
+        name: "two_unresolved_keys_in_one_file_give_one_error_at_the_first"
+      - file: "crates/loftspec/tests/codec_sites.rs"
+        name: "a_realizes_edge_to_a_requirement_is_refused"
+      - file: "crates/loftspec/tests/codec_round_trip.rs"
+        name: "the_small_document_reads_back_to_the_same_roots"
   - node: 95e7c88b-cec3-4b9c-b259-9875b2342c0e
     reviewed: 8686fcd368a7815ad9743ec7945787b51f341412f4af8235c887650da175fbb5
     tests:
@@ -1113,6 +1219,17 @@ links:
         name: "a_scoped_to_edge_to_a_feature_is_refused"
       - file: "crates/loftspec/tests/boundary.rs"
         name: "boundary_is_written_after_the_body_and_tags_and_before_scoped_to"
+  - node: 57072b18-71a1-46e6-a298-4e7c24a395a0
+    reviewed: b0a4a936fd57a7b57e22356b767a1a46921145742e2d5a96fbf5f85a97ef42f0
+    tests:
+      - file: "crates/loft-cli/tests/fmt.rs"
+        name: "fmt_writes_the_key_of_a_reference_written_by_name_which_check_refuses"
+      - file: "crates/loftspec/tests/codec_fields.rs"
+        name: "a_criterion_records_fields_are_written_in_the_published_order"
+      - file: "crates/loftspec/tests/publish_rewrite.rs"
+        name: "a_citation_in_an_element_that_also_mentions_the_label_s_holder_is_left"
+      - file: "crates/loftspec/tests/codec_round_trip.rs"
+        name: "the_small_document_reads_back_to_the_same_roots"
   - node: 9e8b15af-4cd0-4a66-a6c1-226543b870ba
     reviewed: a6cfc21128caf03f500bce03772fb9461cc609f80fea1f44f543385075c69622
     tests:
@@ -1850,6 +1967,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_read.rs"
         name: "an_empty_body_stays_empty"
+  - node: 6dd2fc8c-0489-427b-8204-4aa1ae2922e8
+    reviewed: 48d471ec459ac7cbd48d9e8e7ef0878788513073a977dedc55bb89bd9f56628b
+    tests:
+      - file: "crates/loftspec/tests/codec_round_trip.rs"
+        name: "the_small_document_reads_back_to_the_same_roots"
+      - file: "crates/loftspec/tests/codec_read.rs"
+        name: "an_empty_registry_file_reads_as_no_entries"
   - node: 75d426d2-038b-4944-9b0f-5eff0f852122
     reviewed: 2733f26a7e97bd85ab7abbc5b79f3d19d2563206346800ed0d4af9f7fbe08e3f
     tests:
@@ -2476,6 +2600,26 @@ links:
         name: "two_conversions_write_identical_sidecars"
       - file: "crates/loftspec/tests/convert_v1_sidecar.rs"
         name: "two_conversions_write_identical_sidecars"
+  - node: 01a12dad-fb7a-7333-9129-a6ab4522d817
+    reviewed: 87611eb6ad1d493f06f30292c7d92d73a57eeb5220267f5041ca009ef98eda96
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "the_shared_rules_report_what_v1_reports_apart_from_the_register"
+  - node: 01a12dad-fb7a-7333-9129-a6ac0efd4d6d
+    reviewed: 86ba75cdd48002668957a8cff880df0da19399a1eb240a4f780568164f360a47
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "the_shared_rules_report_what_v1_reports_apart_from_the_register"
+  - node: 01a12dad-fb7a-7333-9129-a6ad1596927b
+    reviewed: 5f33c7f43a7c7ffc4c37ddf4b4471165df5acf85aee2d2ee0ba315d1c479ed72
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "the_shared_rules_report_what_v1_reports_apart_from_the_register"
+  - node: 01a12dad-fb7a-7333-9129-a6aec4f6fb92
+    reviewed: 7f52f98d128626851f4d3bed16ec2d0f8e9791a792e94b9c782bd2565613abf6
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "the_shared_rules_report_what_v1_reports_apart_from_the_register"
   - node: 01a12dad-fb7a-7333-9129-a6af1f6dc0aa
     reviewed: c6224f7a348421a3690c0e2903750dd6fb092cbef8fc5cdee99a98b6c20d0dab
     tests:
@@ -2539,6 +2683,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_sites.rs"
         name: "a_product_file_without_a_product_record_is_refused"
+  - node: 323090cb-990e-43e7-9fd3-311eeeec8c57
+    reviewed: 0674e8cd0938c9abadc5681ba039c76bdb57f5ba8302de39b0cbf37b74178ab5
+    tests:
+      - file: "crates/loftspec/tests/codec_round_trip.rs"
+        name: "the_small_document_reads_back_to_the_same_roots"
   - node: 9f1c7243-1439-4cd9-857b-e9bdb39ed7c6
     reviewed: 60c9ba8b328f0766a133f0d3d906721bbe1384eca43d83e8c59f203ad1c284df
     tests:
@@ -4529,6 +4678,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_file.rs"
         name: "a_record_deleted_on_one_side_and_changed_on_the_other_is_kept_with_a_record_conflict"
+  - node: 01a13070-322e-74de-b959-5a97400e809d
+    reviewed: 03d6799917c94265f8fe692165f5c54fa06a099d1e36bd128bda9bcf3986d7a2
+    tests:
+      - file: "crates/loftspec/tests/merge_file.rs"
+        name: "a_requirement_both_sides_moved_apart_stays_with_a_position_conflict"
+      - file: "crates/loftspec/tests/merge_order.rs"
+        name: "a_record_both_sides_moved_apart_conflicts_and_stays_at_its_base_position"
   - node: 01a13070-322f-7493-9495-4069696d55fe
     reviewed: 6be618c461778d8d7069cab4e2660b341e8eeb3c878b2dadadb04c2802439dd4
     tests:
@@ -6419,6 +6575,20 @@ links:
     tests:
       - file: "crates/loft-cli/tests/writes_skill.rs"
         name: "each_command_that_writes_a_skill_directory_lists_writes_skill"
+  - node: 01a12e66-85dc-70ec-b5ed-93e254c4d234
+    reviewed: 66cc6c26ad69647b264578f3a3c80a5c1ccc711c9704d65b25e8d83484bec700
+    tests:
+      - file: "crates/loftspec-store/tests/conformance.rs"
+        name: "creating_a_product_with_its_groups_and_features_agrees"
+      - file: "crates/loftspec-store/tests/stores.rs"
+        name: "a_store_that_holds_no_document_says_so"
+  - node: 01a12e66-85dc-70ec-b5ed-93e3127ccd78
+    reviewed: 03745409f494051aec55a80e72cb2a680c05f413d07e7376f2dc2caaf994d354
+    tests:
+      - file: "crates/loftspec-store/tests/stores.rs"
+        name: "a_save_finishes_an_interrupted_save_before_it_reads_the_tree"
+      - file: "crates/loftspec-store/tests/conformance.rs"
+        name: "a_directory_the_save_leaves_empty_is_removed"
   - node: 01a12e66-85dc-70ec-b5ed-93e5c3ad6392
     reviewed: 93e87bdcb62033b957021ee187e55f097a9685260d4bacb2804cef4f8b924b7f
     tests:
@@ -6769,6 +6939,16 @@ links:
   - node: 01a137a8-ae5b-7395-a025-0da60323e0f6
     reviewed: 59f30a529f7125c0bf088457bdedcf3b9c4201ddcb8785bbbe666d39a1cc14f1
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/changing-a-specified-product.md, read it there."
+  - node: 01a13654-6e12-74a1-ad7f-e7e1a9154493
+    reviewed: 4f411b54d7e736e81bad82287ae9d8d69a73edb4a2a2d05af39a90e97b068d09
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "each_reference_s_example_tree_passes_check"
+  - node: 01a13654-6e12-74a1-ad7f-e7e2d3845bf2
+    reviewed: 31bbca9331d5cc6076b07c052ecc2725a3987d5d7ff9bf9adfc05f113a613225
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "each_wrong_example_raises_its_rule_and_no_other_warning"
   - node: 01a13654-6e12-74a1-ad7f-e7e491cee65b
     reviewed: 7733db26d1a986beaf8369cfb23976d7844ec16fc45316f484a0852de6076972
     tests:
@@ -7465,6 +7645,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill.rs"
         name: "the_frontmatter_holds_the_name_and_the_description_alone"
+  - node: 01a13653-3ec0-76e7-bf76-fc7751215cc6
+    reviewed: c67fe13807a4a249e922d267f695e68ff7e55b95c45e6c8dbe9de142f0ce97a6
+    tests:
+      - file: "crates/loft-cli/tests/skill_install.rs"
+        name: "the_codex_package_is_the_source_without_the_claude_code_adaptation"
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "each_committed_package_equals_the_composition_for_its_host"
   - node: 01a12ff0-f5e5-7095-8fa8-250890794446
     reviewed: a0a7f76fb9d5e79c9860f92a0be4c541d52c8432895379c53c255a1e9f90f807
     tests:
