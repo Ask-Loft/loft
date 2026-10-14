@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::document::Document;
 use loftspec::publish::{LOCK, Lock};
-use loftspec::trace::{TRACE, TestFiles};
+use loftspec::trace::{TRACE, TestFile, TestFiles};
 
 use crate::error::io_error;
 use crate::fs::{SIDECAR, SPEC, hidden};
@@ -167,8 +167,12 @@ pub struct ProjectFiles {
 }
 
 impl TestFiles for ProjectFiles {
-    fn text(&self, path: &str) -> Option<String> {
-        fs::read_to_string(self.root.join(path)).ok()
+    fn read(&self, path: &str) -> TestFile {
+        match fs::read(self.root.join(path)) {
+            Ok(bytes) => String::from_utf8(bytes).map_or(TestFile::NotText, TestFile::Text),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => TestFile::Missing,
+            Err(error) => TestFile::Unreadable(error.to_string()),
+        }
     }
 }
 

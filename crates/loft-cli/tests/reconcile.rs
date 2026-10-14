@@ -25,7 +25,12 @@ fn project() -> Scratch {
 
 /// A link to `node` verified by `name` in `tests/shelf.rs`.
 fn link(node: &str, name: &str) -> String {
-    format!("  - node: {node}\n    tests:\n      - file: {TEST_FILE}\n        name: {name}\n")
+    link_in(node, TEST_FILE, name)
+}
+
+/// A link to `node` verified by `name` in `file`.
+fn link_in(node: &str, file: &str, name: &str) -> String {
+    format!("  - node: {node}\n    tests:\n      - file: {file}\n        name: {name}\n")
 }
 
 fn write_trace(scratch: &Scratch, links: &[String]) {
@@ -316,4 +321,67 @@ fn the_json_document_carries_each_finding_the_counts_and_the_accepted_keys() {
     assert_eq!(missing["severity"], "warning");
     let failed = json_of(&scratch.loft(&["reconcile", "--fail-on", "warning", "--format", "json"]));
     assert_eq!(failed["outcome"], "failed");
+}
+
+#[test]
+fn a_refusal_names_each_node_as_given_and_says_how_an_unknown_name_was_read() {
+    let scratch = project();
+    write_trace(
+        &scratch,
+        &[link(AC_1, "a_book_is_added"), link(AC_2, "not_there")],
+    );
+    let before = snapshot(&scratch.0);
+    let unknown = "01a13900-0000-7000-8000-0000000000ff";
+    let output = scratch.loft(&[
+        "reconcile",
+        "--accept",
+        "AC-99",
+        "--accept",
+        unknown,
+        "--accept",
+        AC_1,
+        "--accept",
+        AC_2,
+        "--accept",
+        "a book",
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(
+        stderr(&output).lines().collect::<Vec<_>>(),
+        [
+            "cannot accept AC-99: no node of the tree carries this label".to_owned(),
+            format!("cannot accept {unknown}: no node of the tree carries this key"),
+            format!("cannot accept {AC_2}: the link has a TR-004 finding"),
+            "cannot accept a book: it is neither a key nor a label".to_owned(),
+        ]
+    );
+    assert!(snapshot(&scratch.0) == before, "a file changed");
+}
+
+#[test]
+fn a_test_file_that_is_not_text_or_cannot_be_read_is_reported_saying_why() {
+    let scratch = project();
+    fs::write(scratch.0.join("tests/binary.rs"), [0xff, 0xfe, 0x00]).unwrap();
+    fs::create_dir_all(scratch.0.join("tests/folder.rs")).unwrap();
+    write_trace(
+        &scratch,
+        &[
+            link_in(AC_1, "tests/binary.rs", "a_book_is_added"),
+            link_in(AC_2, "tests/folder.rs", "a_book_is_added"),
+        ],
+    );
+    let json = json_of(&scratch.loft(&["reconcile", "--format", "json"]));
+    let messages: Vec<&str> = json["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|finding| finding["rule"] == "TR-004")
+        .map(|finding| finding["message"].as_str().unwrap())
+        .collect();
+    assert_eq!(messages.len(), 2, "{messages:?}");
+    assert_eq!(messages[0], "the file `tests/binary.rs` is not UTF-8 text");
+    assert!(
+        messages[1].starts_with("the file `tests/folder.rs` cannot be read: "),
+        "{messages:?}"
+    );
 }

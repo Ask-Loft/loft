@@ -12,9 +12,11 @@ use loftspec::codec::{self, Site, Sites};
 use loftspec::document::Document;
 use loftspec::hash::DocumentHashes;
 use loftspec::identity::{Key, Label};
+use loftspec::ids::ElementId;
 use loftspec::lint::Severity;
 use loftspec::trace::{
-    self, Reconciled, TRACE, Trace, TraceFinding, TraceRule, accept, accept_stale, reconcile,
+    self, Reconciled, TRACE, TestFiles, Trace, TraceFinding, TraceRule, accept, accept_stale,
+    reconcile,
 };
 use loftspec::yaml::Location;
 use loftspec_store::FileStore;
@@ -101,20 +103,7 @@ fn accepted(read: &mut Read, options: &Options<'_>) -> Result<Vec<Key>, Stop> {
     } else if options.accept.is_empty() {
         Vec::new()
     } else {
-        let keys = named(&read.document, options.accept)?;
-        accept(&mut read.trace, &keys, &read.document, &read.hashes, &files).map_err(
-            |refusals| {
-                let report = Report {
-                    document: &read.document,
-                    sites: &read.sites,
-                };
-                let messages = refusals.iter().map(|refusal| {
-                    format!("cannot accept {}: {refusal}", report.name(refusal.key()))
-                });
-                Stop::all("accept", messages.collect())
-            },
-        )?;
-        keys
+        accept_named(read, options.accept, &files)?
     };
     if !keys.is_empty() {
         let text = trace::write(&read.trace, &read.document);
@@ -123,29 +112,55 @@ fn accepted(read: &mut Read, options: &Options<'_>) -> Result<Vec<Key>, Stop> {
     Ok(keys)
 }
 
-/// The key of each node named by its key or its label; a name that is neither stops the command.
-fn named(document: &Document, names: &[String]) -> Result<Vec<Key>, Stop> {
-    let mut unknown = Vec::new();
-    let keys = names
+/// Accepts the links of the nodes `names` gives, each by its key or its label; any name that
+/// names no node, or whose link cannot be accepted, stops the command with every refusal in the
+/// order of the names. The trace file is then not written, so links accepted in `read` stay
+/// unwritten.
+fn accept_named(
+    read: &mut Read,
+    names: &[String],
+    files: &impl TestFiles,
+) -> Result<Vec<Key>, Stop> {
+    let resolved: Vec<(&String, Result<Key, &str>)> = names
         .iter()
-        .filter_map(|name| {
-            let key = Key::parse(name).ok().or_else(|| {
-                let label = Label::parse(name).ok()?;
-                Some(document.bindings.resolve(label)?.key())
-            });
-            if key.is_none() {
-                unknown.push(format!(
-                    "cannot accept {name}: no node of the tree carries it"
-                ));
-            }
-            key
+        .map(|name| (name, resolve(&read.document, name)))
+        .collect();
+    let keys: Vec<Key> = resolved.iter().filter_map(|(_, key)| key.ok()).collect();
+    let refusals = accept(&mut read.trace, &keys, &read.document, &read.hashes, files)
+        .err()
+        .unwrap_or_default();
+    let messages: Vec<String> = resolved
+        .iter()
+        .filter_map(|(name, key)| {
+            let why = match key {
+                Err(why) => (*why).to_owned(),
+                Ok(key) => refusals
+                    .iter()
+                    .find(|refusal| refusal.key() == *key)?
+                    .to_string(),
+            };
+            Some(format!("cannot accept {name}: {why}"))
         })
         .collect();
-    if unknown.is_empty() {
+    if messages.is_empty() {
         Ok(keys)
     } else {
-        Err(Stop::all("accept", unknown))
+        Err(Stop::all("accept", messages))
     }
+}
+
+/// The key a name gives: the name itself when it is a key, which the reconciler then checks, or
+/// the node its label names.
+fn resolve(document: &Document, name: &str) -> Result<Key, &'static str> {
+    if let Ok(key) = Key::parse(name) {
+        return Ok(key);
+    }
+    let label = Label::parse(name).map_err(|_| "it is neither a key nor a label")?;
+    document
+        .bindings
+        .resolve(label)
+        .map(ElementId::key)
+        .ok_or("no node of the tree carries this label")
 }
 
 /// Where a finding is: its node's site, or, for a node the tree does not carry, its link's place

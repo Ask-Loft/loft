@@ -77,8 +77,19 @@ pub struct TraceFinding {
 
 /// The files that hold the tests, by their paths relative to the directory that holds `spec/`.
 pub trait TestFiles {
-    /// The file's text; none when there is no such file or it cannot be read as text.
-    fn text(&self, path: &str) -> Option<String>;
+    fn read(&self, path: &str) -> TestFile;
+}
+
+/// What reading a test file gave.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TestFile {
+    Text(String),
+    /// No file is at the path.
+    Missing,
+    /// The file is not UTF-8 text.
+    NotText,
+    /// The file is there but cannot be read, and why.
+    Unreadable(String),
 }
 
 /// What the reconciler found, and how many nodes in scope a link names.
@@ -174,7 +185,7 @@ pub fn reconcile(
 /// What is wrong with `test` when it cannot be found; each file is read once, into `read`.
 fn missing<'a>(
     test: &'a Test,
-    read: &mut HashMap<&'a str, Option<String>>,
+    read: &mut HashMap<&'a str, TestFile>,
     files: &impl TestFiles,
 ) -> Option<String> {
     let file = test.file.as_str();
@@ -183,13 +194,15 @@ fn missing<'a>(
             "the file `{file}` lies outside the directory that holds `spec/`"
         ));
     }
-    match read.entry(file).or_insert_with(|| files.text(file)) {
-        None => Some(format!("the file `{file}` does not exist")),
-        Some(held) if !occurs_whole(held, &test.name) => Some(format!(
+    match read.entry(file).or_insert_with(|| files.read(file)) {
+        TestFile::Text(held) if occurs_whole(held, &test.name) => None,
+        TestFile::Text(_) => Some(format!(
             "`{}` does not occur in `{file}` as a whole word",
             test.name
         )),
-        Some(_) => None,
+        TestFile::Missing => Some(format!("the file `{file}` does not exist")),
+        TestFile::NotText => Some(format!("the file `{file}` is not UTF-8 text")),
+        TestFile::Unreadable(why) => Some(format!("the file `{file}` cannot be read: {why}")),
     }
 }
 

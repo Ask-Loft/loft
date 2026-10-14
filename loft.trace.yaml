@@ -2981,6 +2981,20 @@ links:
     tests:
       - file: "crates/loftspec/tests/trace_findings.rs"
         name: "a_test_whose_file_does_not_exist_is_tr_004_naming_the_file_and_test"
+  - node: 01a139d8-bf45-745b-b61d-b78d51400b7b
+    reviewed: 3b1717af5ec8af1b43cdb34e372972554f43f0478ec21da5a5838e3b3173906a
+    tests:
+      - file: "crates/loftspec/tests/trace_findings.rs"
+        name: "a_test_file_that_is_not_text_or_cannot_be_read_is_tr_004_saying_why"
+      - file: "crates/loft-cli/tests/reconcile.rs"
+        name: "a_test_file_that_is_not_text_or_cannot_be_read_is_reported_saying_why"
+  - node: 01a139d8-bf45-745b-b61d-b78ebcf629b7
+    reviewed: b969c8179dc73b0a738041fd70bd396207fea57c7327fd6207df6f9a27bd9125
+    tests:
+      - file: "crates/loftspec/tests/trace_findings.rs"
+        name: "a_test_file_that_is_not_text_or_cannot_be_read_is_tr_004_saying_why"
+      - file: "crates/loft-cli/tests/reconcile.rs"
+        name: "a_test_file_that_is_not_text_or_cannot_be_read_is_reported_saying_why"
   - node: 01a1383a-4a94-72cc-9c61-111cff7149ea
     reviewed: 727ca06e9beb97ae5153e4cdc0588c3df4a9508db2904e16b7483c4c8ecd1acc
     tests:
@@ -3704,6 +3718,26 @@ links:
     tests:
       - file: "crates/loft-cli/tests/reconcile.rs"
         name: "a_node_that_cannot_be_accepted_writes_nothing_and_names_each_refusal"
+  - node: 01a139d8-bf45-745b-b61d-b7899cd2e749
+    reviewed: c30fdb2d454f3e926cb9bde85805c2f0a33ce21b111007422f8cb08626ce66cf
+    tests:
+      - file: "crates/loft-cli/tests/reconcile.rs"
+        name: "a_refusal_names_each_node_as_given_and_says_how_an_unknown_name_was_read"
+  - node: 01a139d8-bf45-745b-b61d-b78a1addb2d9
+    reviewed: 667fcd185816bfe9008f39f04d3610cdc65ed62fe17114489822870d42f4f9ee
+    tests:
+      - file: "crates/loft-cli/tests/reconcile.rs"
+        name: "a_refusal_names_each_node_as_given_and_says_how_an_unknown_name_was_read"
+  - node: 01a139d8-bf45-745b-b61d-b78b3266717f
+    reviewed: 2dd9d42ebafd2526bb4c944fcbd0f593e52da5228d79be825a4a4e934e2d9a55
+    tests:
+      - file: "crates/loft-cli/tests/reconcile.rs"
+        name: "a_refusal_names_each_node_as_given_and_says_how_an_unknown_name_was_read"
+  - node: 01a139d8-bf45-745b-b61d-b78c93f27b7b
+    reviewed: 2be3355ca0229ff872d4ae05ff7e3a69d10768989ea5d61c457a52993580fd61
+    tests:
+      - file: "crates/loft-cli/tests/reconcile.rs"
+        name: "a_refusal_names_each_node_as_given_and_says_how_an_unknown_name_was_read"
   - node: 01a1383c-2899-72f8-b39a-0a21af41dcc3
     reviewed: 5f4264aa1fa2142a490fefd4a998c70f811a2cb435e4b39f05d3b72acc5a26e8
     tests:

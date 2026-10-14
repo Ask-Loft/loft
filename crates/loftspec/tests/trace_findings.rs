@@ -12,23 +12,26 @@ use loftspec::identity::Key;
 use loftspec::ids::{CriterionId, NodeId};
 use loftspec::lint::Severity;
 use loftspec::trace::{
-    Evidence, Link, Reconciled, Refusal, Test, TestFiles, Trace, TraceRule, accept, accept_stale,
-    reconcile,
+    Evidence, Link, Reconciled, Refusal, Test, TestFile, TestFiles, Trace, TraceRule, accept,
+    accept_stale, reconcile,
 };
 
-/// Test files held in memory.
+/// Test files held in memory; a path not held is missing.
 #[derive(Default)]
-struct Files(HashMap<String, String>);
+struct Files(HashMap<String, TestFile>);
 
 impl TestFiles for Files {
-    fn text(&self, path: &str) -> Option<String> {
-        self.0.get(path).cloned()
+    fn read(&self, path: &str) -> TestFile {
+        self.0.get(path).cloned().unwrap_or(TestFile::Missing)
     }
 }
 
 /// One file, `tests/a.rs`, holding `text`.
 fn files(text: &str) -> Files {
-    Files(HashMap::from([("tests/a.rs".to_owned(), text.to_owned())]))
+    Files(HashMap::from([(
+        "tests/a.rs".to_owned(),
+        TestFile::Text(text.to_owned()),
+    )]))
 }
 
 fn hashes(document: &Document) -> DocumentHashes {
@@ -182,12 +185,43 @@ fn a_test_whose_file_does_not_exist_is_tr_004_naming_the_file_and_test() {
     assert_eq!(found(&reconciled), [(TraceRule::Tr004, key(9))]);
     let finding = &reconciled.findings[0];
     assert_eq!(finding.test.as_ref().unwrap().file, "tests/gone.rs");
-    assert!(
-        finding.message.contains("tests/gone.rs"),
-        "{}",
-        finding.message
-    );
+    assert_eq!(finding.message, "the file `tests/gone.rs` does not exist");
     assert_eq!(TraceRule::Tr004.severity(), Severity::Warning);
+}
+
+#[test]
+fn a_test_file_that_is_not_text_or_cannot_be_read_is_tr_004_saying_why() {
+    let document = small_document();
+    let mut links = all_reviewed(&document);
+    for (link, file) in [(1, "tests/binary.rs"), (2, "tests/locked.rs")] {
+        let Evidence::Tests(tests) = &mut links[link].evidence else {
+            unreachable!()
+        };
+        tests[0].file = file.to_owned();
+    }
+    let mut files = files(SOURCE);
+    files
+        .0
+        .insert("tests/binary.rs".to_owned(), TestFile::NotText);
+    let denied = TestFile::Unreadable("permission denied".to_owned());
+    files.0.insert("tests/locked.rs".to_owned(), denied);
+    let reconciled = run(&document, links, &files);
+    assert_eq!(
+        found(&reconciled),
+        [(TraceRule::Tr004, key(9)), (TraceRule::Tr004, key(7))]
+    );
+    let messages: Vec<&str> = reconciled
+        .findings
+        .iter()
+        .map(|finding| finding.message.as_str())
+        .collect();
+    assert_eq!(
+        messages,
+        [
+            "the file `tests/binary.rs` is not UTF-8 text",
+            "the file `tests/locked.rs` cannot be read: permission denied",
+        ]
+    );
 }
 
 #[test]
@@ -223,9 +257,10 @@ fn a_test_file_outside_the_project_is_tr_004() {
     };
     tests[0].file = "../elsewhere/tests/a.rs".to_owned();
     let mut files = files(SOURCE);
+    let elsewhere = TestFile::Text(SOURCE.to_owned());
     files
         .0
-        .insert("../elsewhere/tests/a.rs".to_owned(), SOURCE.to_owned());
+        .insert("../elsewhere/tests/a.rs".to_owned(), elsewhere);
     assert_eq!(
         found(&run(&document, links, &files)),
         [(TraceRule::Tr004, key(7))]

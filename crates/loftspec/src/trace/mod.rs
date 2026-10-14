@@ -11,7 +11,7 @@ mod read;
 mod write;
 
 pub use accept::{Refusal, accept, accept_stale};
-pub use findings::{Reconciled, TestFiles, TraceFinding, TraceRule, reconcile};
+pub use findings::{Reconciled, TestFile, TestFiles, TraceFinding, TraceRule, reconcile};
 pub use read::read;
 pub use write::write;
 

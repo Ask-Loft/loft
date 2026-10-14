@@ -66,7 +66,7 @@ review of each, so run it only when the user asks for it.
 | `TR-001` | No link names a node in scope | Write a test and link it, or link it `unverified` with the reason |
 | `TR-002` | The link was never reviewed | Review its tests, then accept it |
 | `TR-003` | The node changed after the link was reviewed | Read the node's new words; change the test where it no longer verifies them; accept it |
-| `TR-004` | A test's file does not exist, lies outside the project, or does not hold its name | Correct the path or the name, or remove the test from the link |
+| `TR-004` | A test's file does not exist, lies outside the project, is not UTF-8 text, cannot be read, or does not hold its name | Correct the path or the name, or remove the test from the link; the message says which |
 | `TR-005` | The link's node is gone, or is not in scope | Remove the link, or link the node that replaced it |
 
 Never weaken a node's words to fit a test; change the test, or report the gap.
