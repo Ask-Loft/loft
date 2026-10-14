@@ -5,7 +5,6 @@
 
 use std::fmt;
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites};
@@ -22,6 +21,7 @@ use loftspec::yaml::Location;
 use loftspec_store::FileStore;
 use serde_json::{Map, Value, json};
 
+use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
 use crate::stop::Stop;
@@ -47,7 +47,7 @@ struct Read {
     trace: Trace,
 }
 
-pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
     let mut read = match read(root) {
         Ok(read) => read,
         Err(stop) => return stop.exit(SCHEMA, as_json),
@@ -68,16 +68,16 @@ pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> ExitCode {
         document: &read.document,
         sites: &read.sites,
     };
+    let outcome = if failed { "failed" } else { "passed" };
     if as_json {
-        let outcome = if failed { "failed" } else { "passed" };
         json::print(&report.document(&reconciled, &accepted, outcome));
     } else {
         report.print(&reconciled, &accepted);
     }
     if failed {
-        ExitCode::FAILURE
+        Finished::failure(outcome)
     } else {
-        ExitCode::SUCCESS
+        Finished::success(outcome)
     }
 }
 

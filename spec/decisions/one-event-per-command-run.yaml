@@ -1,0 +1,64 @@
+key: 01a13a90-3554-7631-bb13-098b0f4014f8
+slug: one-event-per-command-run
+title: "Telemetry sends one event per command run"
+context: "Usage could be measured as whole workflows, such as starting a specification and reaching a clean check, or as single command runs. `loft` sees only the command it is running; a workflow spans runs and often an agent's session, which `loft` does not see."
+state:
+  kind: accepted
+  selectedOption: 01a13a90-3554-7631-bb13-0990edc3041e
+  outcome: "Each run of a command tagged `sends-telemetry` sends one command event. Events about workflows, a sample project or an outcome a person confirms are left for a later version."
+drivers:
+  - key: 01a13a90-3554-7631-bb13-098cc5419508
+    kind: local
+    label: "Nothing extra to run"
+    statement: "Neither a person nor an agent runs anything beyond the commands they already run."
+  - key: 01a13a90-3554-7631-bb13-098d50777520
+    kind: local
+    label: "Observed, not guessed"
+    statement: "An event states only what `loft` itself observed in that run."
+options:
+  - key: 01a13a90-3554-7631-bb13-098e94457e76
+    title: "Workflow markers from the skill"
+    description: "The agent skill tells the agent to run a command that marks where a workflow starts and finishes."
+  - key: 01a13a90-3554-7631-bb13-098fa49f35e8
+    title: "Workflows inferred from runs"
+    description: "`loft` treats a run of `loft init` or `loft import v1` as a workflow's start and a clean check or a publish as its end."
+  - key: 01a13a90-3554-7631-bb13-0990edc3041e
+    title: "One event per command run"
+    description: "Each run sends one event about itself, and workflows are left to a later version."
+assessments:
+  - option: 01a13a90-3554-7631-bb13-098e94457e76
+    driver: 01a13a90-3554-7631-bb13-098cc5419508
+    rating: conflicts
+    rationale: "the agent runs the marker commands"
+  - option: 01a13a90-3554-7631-bb13-098e94457e76
+    driver: 01a13a90-3554-7631-bb13-098d50777520
+    rating: neutral
+    rationale: "the markers report what the agent says, not what `loft` saw"
+  - option: 01a13a90-3554-7631-bb13-098fa49f35e8
+    driver: 01a13a90-3554-7631-bb13-098cc5419508
+    rating: supports
+    rationale: "nothing extra is run"
+  - option: 01a13a90-3554-7631-bb13-098fa49f35e8
+    driver: 01a13a90-3554-7631-bb13-098d50777520
+    rating: conflicts
+    rationale: "the boundaries of a workflow are guessed"
+  - option: 01a13a90-3554-7631-bb13-0990edc3041e
+    driver: 01a13a90-3554-7631-bb13-098cc5419508
+    rating: supports
+    rationale: "nothing extra is run"
+  - option: 01a13a90-3554-7631-bb13-0990edc3041e
+    driver: 01a13a90-3554-7631-bb13-098d50777520
+    rating: supports
+    rationale: "each event describes the run that sent it"
+consequences:
+  - key: 01a13a90-3554-7631-bb13-0991b692932e
+    kind: cost
+    statement: "Whether people finish what they start is not measured until workflow events are specified."
+  - key: 01a13a90-3554-7631-bb13-099296b4de11
+    kind: benefit
+    statement: "The event has a single shape, which one schema states whole."
+subjects:
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-2649ed65e219
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-2668830924fe

@@ -4,13 +4,13 @@
 //! prevent a render (AC-549, AC-685).
 
 use std::path::{Path, PathBuf};
-use std::process::ExitCode;
 
 use loftspec::codec;
 use loftspec::render::render;
 use loftspec_store::fs;
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
 use crate::stop::{self, Stop};
@@ -24,7 +24,7 @@ pub fn run(
     markdown: Option<PathBuf>,
     json_path: Option<PathBuf>,
     as_json: bool,
-) -> ExitCode {
+) -> Finished {
     match write(root, markdown, json_path) {
         Ok((written, unchanged)) => {
             let names = |paths: &[PathBuf]| -> Vec<String> {
@@ -41,7 +41,7 @@ pub fn run(
                     outln!("{}", path.display());
                 }
             }
-            ExitCode::SUCCESS
+            Finished::success("rendered")
         }
         Err(stop) => stop.exit(SCHEMA, as_json),
     }

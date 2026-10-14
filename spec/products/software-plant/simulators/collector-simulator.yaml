@@ -1,0 +1,59 @@
+key: 01a13af6-c86d-7585-a796-bfc869241b37
+slug: collector-simulator
+name: "Collector simulator"
+body: "An HTTP endpoint on the test machine that stands in for the telemetry collector. A test points the binary under test at it with `LOFT_TELEMETRY_ENDPOINT`, then reads the events it received. Its scenarios cover a collector that accepts each event and each failure that Loft anticipates from one."
+tags:
+  - plant-simulator
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+mentions:
+  - 01a13a90-3554-7631-bb13-09810e715c54
+requirements:
+  - key: 01a13a90-3557-734a-9b7f-e566cd16acfa
+    statement:
+      form: ubiquitous
+      system: "The collector simulator"
+      shall: "record each event it receives, byte for byte, in the order received."
+    criteria:
+      - key: 01a13a90-3557-734a-9b7f-e5674386be99
+        name: "A test reads every event that a run sent."
+      - key: 01a13a90-3557-734a-9b7f-e568aece7f5b
+        name: "A test reads each event's body exactly as it was sent."
+      - key: 01a13a90-3557-734a-9b7f-e56977767e2b
+        name: "A scenario in which no run sends records no event."
+  - key: 01a13a90-3557-734a-9b7f-e56abaa43d81
+    statement:
+      form: ubiquitous
+      system: "The collector simulator"
+      shall: "answer as its scenario names: accept, refuse the connection, answer with an error status, or accept the connection and never answer."
+    criteria:
+      - key: 01a13a90-3557-734a-9b7f-e56bfd6f6c2b
+        name: "An accepting scenario answers each event with a success status."
+      - key: 01a13a90-3557-734a-9b7f-e56c2f9f49ba
+        name: "A refusing scenario refuses each connection."
+      - key: 01a13a90-3557-734a-9b7f-e56d4ba29f05
+        name: "An error scenario answers each event with the status it names."
+      - key: 01a13a90-3557-734a-9b7f-e56e90827fc5
+        name: "A silent scenario accepts each connection and sends no answer."
+  - key: 01a13af6-c86d-7585-a796-bfc99e5c08a3
+    statement:
+      form: event_driven
+      when: "an accepting collector simulator receives a request"
+      system: "the collector simulator"
+      shall: "answer as the telemetry collector's contract states."
+    body: "The contract that the real collector is built to, and that the contract suite holds both to: the simulator is written first, and the collector at `https://askloft.ai/api/telemetry` is built to pass the same suite."
+    criteria:
+      - key: 01a13af6-c86d-7585-a796-bfca01185b86
+        name: "A `POST` to `/api/telemetry` with `Content-Type: application/json` whose body is a valid command event is answered `202 Accepted` with an empty body."
+      - key: 01a13af6-c86d-7585-a796-bfcb9949fcb4
+        name: "A second event with an `eventId` already received is answered `202 Accepted` and recorded once."
+      - key: 01a13af6-c86d-7585-a796-bfccdb2fdbde
+        name: "A body that is not a valid `loft-telemetry-event/1` is answered `400 Bad Request` and not recorded."
+      - key: 01a13af6-c86d-7585-a796-bfcd09b64b9b
+        name: "A body larger than 4 KiB is answered `413 Content Too Large` and not recorded."
+      - key: 01a13af6-c86d-7585-a796-bfce104b239c
+        name: "A request with any method but `POST` is answered `405 Method Not Allowed`."
+      - key: 01a13af6-c86d-7585-a796-bfcf3a2ba231
+        name: "A request with another content type is answered `415 Unsupported Media Type`."
+      - key: 01a13af6-c86d-7585-a796-bfd06aadf874
+        name: "No answer sets a cookie."

@@ -1,0 +1,73 @@
+key: 01a13a90-3554-7631-bb13-0982abcdc6f7
+slug: a-branch-is-sent-as-a-keyed-hash
+title: "A branch is sent as a keyed hash"
+context: "Runs on two branches of one checkout look alike to the collector unless the event tells them apart. A branch name can name a customer, a ticket or a feature that is not yet public. Branch names are few and predictable, such as `main` or a ticket number, so a hash of the name alone can be reversed by hashing likely names."
+state:
+  kind: accepted
+  selectedOption: 01a13a90-3554-7631-bb13-09868ce89942
+  outcome: "The event carries an HMAC-SHA256 of the branch name, keyed with a secret drawn at random for the checkout and kept beside `spec/`, truncated to 16 hexadecimal digits."
+drivers:
+  - key: 01a13a90-3554-7631-bb13-098312ec2e19
+    kind: local
+    label: "Separate colocated runs"
+    statement: "Runs on two branches of one checkout carry different values."
+  - key: 01a13a90-3554-7631-bb13-09843c34e90b
+    kind: local
+    label: "Not reversible"
+    statement: "No one without the checkout's secret can learn a branch name from the value sent."
+options:
+  - key: 01a13a90-3554-7631-bb13-0985b08c0b2a
+    title: "A bare hash"
+    description: "The event carries a SHA-256 of the branch name."
+  - key: 01a13a90-3554-7631-bb13-09868ce89942
+    title: "A keyed hash"
+    description: "The event carries an HMAC of the branch name, keyed with a secret that never leaves the checkout."
+  - key: 01a13a90-3554-7631-bb13-0987732a9e58
+    title: "The project token alone"
+    description: "The event carries no branch; the project token already tells checkouts and worktrees apart."
+  - key: 01a13a90-3554-7631-bb13-0988e4e23769
+    title: "No branch"
+    description: "The event carries nothing about the branch or the checkout."
+assessments:
+  - option: 01a13a90-3554-7631-bb13-0985b08c0b2a
+    driver: 01a13a90-3554-7631-bb13-098312ec2e19
+    rating: supports
+    rationale: "two branch names give two hashes"
+  - option: 01a13a90-3554-7631-bb13-0985b08c0b2a
+    driver: 01a13a90-3554-7631-bb13-09843c34e90b
+    rating: conflicts
+    rationale: "hashing likely names recovers the branch, and every `main` hashes alike"
+  - option: 01a13a90-3554-7631-bb13-09868ce89942
+    driver: 01a13a90-3554-7631-bb13-098312ec2e19
+    rating: supports
+    rationale: "two branch names give two values"
+  - option: 01a13a90-3554-7631-bb13-09868ce89942
+    driver: 01a13a90-3554-7631-bb13-09843c34e90b
+    rating: supports
+    rationale: "the key never leaves the checkout"
+  - option: 01a13a90-3554-7631-bb13-0987732a9e58
+    driver: 01a13a90-3554-7631-bb13-098312ec2e19
+    rating: neutral
+    rationale: "two worktrees are told apart, two branches in one worktree are not"
+  - option: 01a13a90-3554-7631-bb13-0987732a9e58
+    driver: 01a13a90-3554-7631-bb13-09843c34e90b
+    rating: supports
+    rationale: "nothing about the branch is sent"
+  - option: 01a13a90-3554-7631-bb13-0988e4e23769
+    driver: 01a13a90-3554-7631-bb13-098312ec2e19
+    rating: conflicts
+    rationale: "runs are not told apart"
+  - option: 01a13a90-3554-7631-bb13-0988e4e23769
+    driver: 01a13a90-3554-7631-bb13-09843c34e90b
+    rating: supports
+    rationale: "nothing about the branch is sent"
+consequences:
+  - key: 01a13a90-3554-7631-bb13-09899d2615e7
+    kind: cost
+    statement: "Every sending run in a repository asks git for its branch."
+  - key: 01a13a90-3554-7631-bb13-098ae37776b3
+    kind: benefit
+    statement: "One branch name in two checkouts gives two values, so no branch can be followed across checkouts."
+subjects:
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-262e889837b8

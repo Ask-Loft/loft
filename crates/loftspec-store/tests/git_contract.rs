@@ -187,6 +187,27 @@ fn the_simulator_answers_each_call_as_real_git_does() {
 }
 
 #[test]
+fn the_port_reads_the_same_branch_from_the_simulator_and_real_git() {
+    let branch = |git: &GitCommand, root: &Path| {
+        git.branch(root).map_err(|error| match error {
+            StoreError::NotARepository(_) => "not a repository".to_owned(),
+            other => other.to_string(),
+        })
+    };
+    for (name, build, scenario) in CASES {
+        let repository = Scratch::new();
+        let root = build(&repository);
+        let plant = Scratch::new();
+        let real = GitCommand::from_command(real_git);
+        assert_eq!(
+            branch(&simulated(&scenario(), &plant.0), &root),
+            branch(&real, &root),
+            "{name}"
+        );
+    }
+}
+
+#[test]
 fn the_port_reads_the_same_state_from_the_simulator_and_real_git() {
     for (name, build, scenario) in CASES {
         let repository = Scratch::new();

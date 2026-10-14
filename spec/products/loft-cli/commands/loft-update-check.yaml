@@ -1,0 +1,60 @@
+key: 01a13a90-3556-7106-a68c-25f8340f5996
+slug: loft-update-check
+name: "`loft update-check`"
+body: "Switches the update check on and off for the user on the machine, and reports its state. It reads no tree, sends no event and asks GitHub nothing."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a13a90-3556-7106-a68c-2609ebc00b40
+requirements:
+  - key: 01a13a90-3556-7106-a68c-25f90ad447cc
+    statement:
+      form: event_driven
+      when: "a person runs `loft update-check off` or `loft update-check on`"
+      system: "`loft update-check`"
+      shall: "record the choice in the user's configuration directory and exit 0."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-25fa07f495a0
+        name: "After `loft update-check off`, `loft update-check status` reports the check off."
+      - key: 01a13a90-3556-7106-a68c-25fb9f40e2a6
+        name: "After `loft update-check on`, `loft update-check status` reports the check on unless `LOFT_UPDATE_CHECK` switches it off."
+      - key: 01a13a90-3556-7106-a68c-25fccada5dbd
+        name: "Running the same subcommand twice leaves the same state."
+  - key: 01a13a90-3556-7106-a68c-25fd3736c518
+    statement:
+      form: event_driven
+      when: "a person runs `loft update-check status`"
+      system: "`loft update-check`"
+      shall: "report whether the check is on, which switch decided it, the latest release it holds and when that answer was received."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-25fe0f30b26b
+        name: "The report names `LOFT_UPDATE_CHECK` when the variable decided the state."
+      - key: 01a13a90-3556-7106-a68c-25ffd834a189
+        name: "The report names `loft update-check off` when the recorded choice decided the state."
+      - key: 01a13a90-3556-7106-a68c-2600eec19ede
+        name: "The report names the default when neither switch is set."
+      - key: 01a13a90-3556-7106-a68c-26013011315f
+        name: "The report names the latest release held and the time it was received."
+      - key: 01a13a90-3556-7106-a68c-2602f0d82c23
+        name: "The report states that no answer is held when none is."
+  - key: 01a13a90-3556-7106-a68c-2603e9464038
+    statement:
+      form: ubiquitous
+      system: "`loft update-check`"
+      shall: "send no event and ask GitHub nothing."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26040415efa7
+        name: "No network connection is opened by any `loft update-check` subcommand."
+  - key: 01a13a90-3556-7106-a68c-2605a616bcb6
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft update-check`"
+      shall: "give the resulting state of the update check as its outcome."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-2606f9220e30
+        name: "The outcome is `on` when the check is on after the command."
+      - key: 01a13a90-3556-7106-a68c-2607530abb56
+        name: "The outcome is `off` when the check is off after the command."
+      - key: 01a13a90-3556-7106-a68c-260809856f03
+        name: "The document validates against `schemas/update-check.json`."

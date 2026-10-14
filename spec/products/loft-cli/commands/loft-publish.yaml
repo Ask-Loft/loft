@@ -3,8 +3,10 @@ slug: loft-publish
 name: "`loft publish`"
 body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused."
 tags:
+  - checks-for-updates
   - needs-repository
   - reads-tree
+  - sends-telemetry
   - writes-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d

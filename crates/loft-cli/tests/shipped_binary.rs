@@ -1,7 +1,7 @@
 //! The one binary `loft-cli` ships, and that the tests run that binary as it ships. The manifest
 //! declares a single binary target, `loft`, and nothing Cargo would find as another. No crate
 //! built into it declares a feature or reads the build's configuration, the tests turn on no
-//! feature, the release builds it with no feature flag, and every test that starts `loft` starts
+//! feature, the release's build builds it with no feature flag, and every test that starts `loft` starts
 //! the binary Cargo built for this package.
 
 use crate::common::workspace;
@@ -14,8 +14,15 @@ const BUILT_IN: [&str; 3] = ["loft-cli", "loftspec", "loftspec-store"];
 
 /// What a test may start other than `loft`: the archiver, Node and npm, which unpack, run and
 /// install the npm packages built around it, the scripts that build and smoke-test those
-/// packages, and the release check, copied into a scratch repository.
-const OTHER_PROGRAMS: [&str; 6] = [
+/// packages, the release check, copied into a scratch repository, the built `loft` itself placed
+/// where an npm install puts it, which only `Scratch::npm_installed` starts, to show how `loft`
+/// tells it was installed by npm; `whoami` and `hostname`, whose answers a test plants as text the command
+/// event must never carry; and `script`, which runs the built `loft` on a pseudo-terminal.
+const OTHER_PROGRAMS: [&str; 10] = [
+    "&copy",
+    "\"script\"",
+    "\"whoami\"",
+    "\"hostname\"",
     "\"tar\"",
     "\"node\"",
     "\"npm\"",
@@ -143,12 +150,12 @@ fn the_tests_run_the_loft_binary_as_it_ships() {
             assert!(!line.contains("features"), "{krate}: {line}");
         }
     }
-    let release = read(".github/workflows/release.yml");
-    let builds: Vec<&str> = release
+    let build = read(".github/workflows/build.yml");
+    let builds: Vec<&str> = build
         .lines()
         .filter(|line| line.contains("cargo build") && line.contains("-p loft-cli"))
         .collect();
-    assert_eq!(builds.len(), 1, "release.yml builds loft {builds:?}");
+    assert_eq!(builds.len(), 1, "build.yml builds loft {builds:?}");
     assert!(!builds[0].contains("features"), "{}", builds[0]);
     assert_the_tests_start_only_the_built_loft();
 }

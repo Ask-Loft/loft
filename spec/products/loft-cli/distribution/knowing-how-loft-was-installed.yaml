@@ -1,0 +1,56 @@
+key: 01a13acd-2cac-7382-9410-cfa65c96496b
+slug: knowing-how-loft-was-installed
+name: "Knowing how `loft` was installed"
+body: "`loft` reaches people through npm, cargo and release binaries, and the update notice and the command event both need to know which one ran. An install record, written by `loft record-install` when the npm package installs, says so exactly. A record may never be written: pnpm and Bun skip a dependency's install script unless the project allows it, `npm install --ignore-scripts` skips every one, and neither cargo nor a downloaded binary runs anything when it is installed. So where the executable lies answers when no record does, and nothing else in `loft` depends on a record existing."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a13acd-2cac-7382-9410-cf94b7f27de9
+requirements:
+  - key: 01a13acd-2cac-7382-9410-cfa76615e07f
+    statement:
+      form: event_driven
+      when: "Loft needs to know how the running `loft` was installed"
+      system: "Loft"
+      shall: "take the way that the install record for its own executable path states."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfa8262a1d92
+        name: "A record for the running executable's path that states `npm`, `cargo` or `release-binary` gives that way."
+      - key: 01a13acd-2cac-7382-9410-cfa99c36e871
+        name: "A record for another executable's path is not used."
+  - key: 01a13acd-2cac-7382-9410-cfaa26c2eeaf
+    statement:
+      form: unwanted
+      if: "no install record names the running executable's own path"
+      system: "Loft"
+      shall: "infer how `loft` was installed from where its executable lies."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfab14b7c6e6
+        name: "An executable inside a `node_modules/@ask-loft/` directory gives `npm`."
+      - key: 01a13acd-2cac-7382-9410-cfac9b15896b
+        name: "An executable in cargo's binary directory, which cargo's list of installed crates names under `loft-cli`, gives `cargo`."
+      - key: 01a13acd-2cac-7382-9410-cfadb0b1d49d
+        name: "Any other executable gives `unknown`."
+  - key: 01a13acd-2cac-7382-9410-cfae9ff4f9e6
+    statement:
+      form: unwanted
+      if: "the install record cannot be read or does not parse"
+      system: "Loft"
+      shall: "infer how `loft` was installed as if there were no record."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfafabf7e02e
+        name: "The way is inferred from where the executable lies."
+      - key: 01a13acd-2cac-7382-9410-cfb037dec8a1
+        name: "Nothing about the record is written to standard error."
+  - key: 01a13acd-2cac-7382-9410-cfb1af8a84b1
+    statement:
+      form: ubiquitous
+      system: "Every `loft` command"
+      shall: "behave the same whether or not an install record exists."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfb227917029
+        name: "A command's standard output is the same with or without an install record."
+      - key: 01a13acd-2cac-7382-9410-cfb31f69ffdc
+        name: "A command's exit code is the same with or without an install record."
+      - key: 01a13acd-2cac-7382-9410-cfb402bd2fed
+        name: "A machine on which the npm install script never ran gets the update notice that names `npm install @ask-loft/loft@latest`."

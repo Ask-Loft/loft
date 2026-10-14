@@ -132,7 +132,21 @@ under test:
   is the simulator. Any call the simulator does not answer exits 2 naming the call, so Loft
   cannot come to depend on git behaviour nobody modelled.
 - **the clock**: `software_plant::Clock` sets `SOURCE_DATE_EPOCH`, which `loft publish` reads as
-  its publish time, fixed or stepping between runs.
+  its publish time and the command event as its hour, fixed or stepping between runs.
+- **the telemetry collector**: `software_plant::Collector` serves the collector's wire contract
+  on a loopback port (accepting, failing with a status, silent, or a refused port) and records
+  the requests and the events it accepted.
+- **GitHub's releases**: `software_plant::ReleaseFeed` answers the latest-release request on a
+  loopback port with a release, a draft, a prerelease, an error, a rate limit or silence, and
+  counts the requests.
+
+The command event and the update check reach the network only through the network client
+(`crates/loft-cli/src/network.rs`), which accepts plain `http` only on the loopback interface,
+so `LOFT_TELEMETRY_ENDPOINT` and `LOFT_UPDATE_ENDPOINT` can point a run at a simulator and at
+nothing else unencrypted. `.cargo/config.toml` starts every process Cargo runs with both off and
+both addresses at a closed loopback port; a test that exercises either switches it on through
+`tests/common/telemetry.rs` or `asking` in `tests/update_check.rs`. Run a gate's own `loft`
+through `cargo run`, never `target/debug/loft` directly, or set `LOFT_TELEMETRY=internal`.
 
 The rules:
 
@@ -143,7 +157,14 @@ The rules:
   against the real system and requires the same answers; the git suite runs real git in scratch
   repositories. A new anticipated failure joins the simulator's scenarios and its contract suite
   in the same change.
-- Only a contract suite touches a real external system. Every other test uses the simulator.
+- Real git in a test runs through `software_plant::real_git`, which keeps it from the user's
+  configuration, from any repository above the temporary directory and, through
+  `forget_repository`, from any repository git's environment names: git sets `GIT_DIR` and its
+  kin for a hook or `git rebase --exec`, and a test started that way must still find only its
+  scratch repository. The command-line harness's `isolate` forgets them too.
+- Only a contract suite touches a real external system. Every other test uses the simulator. A
+  suite whose real system is a remote service runs its real half only on demand: the half is
+  `#[ignore]`, and `--run-ignored only` runs it.
 - A system that calls Loft, rather than one Loft calls, gets no simulator: Loft never calls it,
   so there is nothing for a simulator to answer. Its contract suite runs Loft under the real
   system instead. git's merge machinery calls `loft merge-driver`, so
@@ -208,6 +229,10 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 
 A release happens only with the maintainer's approval, and in this order:
 
+0. Run `.github/workflows/build.yml` on `develop` ("Run workflow" on its page, or
+   `gh workflow run build.yml --ref develop`) and wait for every platform to build. Ordinary CI
+   builds only the host platform, so a change that breaks a cross-build, such as a dependency
+   with C code, shows here first.
 1. On a branch from `develop`, set the new version in every crate's `Cargo.toml`, in the
    workspace dependencies and in both plugin manifests (`tests/plugins.rs` fails until they
    agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
@@ -219,7 +244,7 @@ A release happens only with the maintainer's approval, and in this order:
 3. On `main`, run `scripts/release-check.sh vX.Y.Z`; it checks `HEAD` while the tag does not
    exist. Then tag `vX.Y.Z` on `main` and push the tag.
 4. The tag starts `.github/workflows/release.yml`. It runs the release check and the gate, builds
-   `loft` for each supported platform, packs the npm packages into tarballs, runs `loft` through
+   `loft` for each supported platform through `build.yml`, packs the npm packages into tarballs, runs `loft` through
    the launcher from them (`scripts/npm-smoke.sh`) and checks them with a dry run, then waits for
    the maintainer to approve: on the run's page, "Review deployments", tick `release`, "Approve and
    deploy". Once approved, the publish job runs the tarballs it downloaded once more,

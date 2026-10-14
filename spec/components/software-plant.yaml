@@ -1,7 +1,7 @@
 key: 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
 slug: software-plant
 name: "software-plant"
-body: "The simulators of the Software Plant: a `git` executable and a clock, for tests only."
+body: "The simulators of the Software Plant: a `git` executable, a clock, a telemetry collector and a release feed, for tests only."
 scopedTo:
   - 01a12ff0-f5e5-7095-8fa8-24ba9ff252f2
 constraints:

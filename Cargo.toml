@@ -20,6 +20,7 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 loftspec = { path = "crates/loftspec", version = "2.0.3" }
 loftspec-store = { path = "crates/loftspec-store", version = "2.0.3" }
 clap = { version = "4", features = ["derive"] }
+hmac = "0.12"
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version
 # change can change a finding.
 pulldown-cmark = { version = "=0.13.4", default-features = false }
@@ -33,7 +34,10 @@ thiserror = "2"
 # can change a finding or a parsed statement.
 unicode-properties = { version = "=0.1.4", default-features = false, features = ["general-category"] }
 unicode-segmentation = "=1.13.3"
-uuid = { version = "1", features = ["serde", "v7"] }
+# HTTPS through rustls with ring and the bundled root certificates, for the command event and the
+# update check; no compression, no native TLS.
+ureq = { version = "3.4", default-features = false, features = ["rustls"] }
+uuid = { version = "1", features = ["serde", "v4", "v7"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

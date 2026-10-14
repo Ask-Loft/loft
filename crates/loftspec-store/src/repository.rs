@@ -114,11 +114,22 @@ impl GitCommand {
         Ok(text(&succeeded(&call, output)?))
     }
 
-    fn branch(&self, root: &Path) -> Result<Option<String>, StoreError> {
+    /// The current branch's short name, or none on a detached HEAD.
+    ///
+    /// # Errors
+    ///
+    /// `root` is not inside a repository, or git fails or cannot be run.
+    pub fn branch(&self, root: &Path) -> Result<Option<String>, StoreError> {
         let call = CURRENT_BRANCH;
         let output = self.run(root, &call)?;
-        if output.status.code() == Some(1) {
-            return Ok(None);
+        match output.status.code() {
+            Some(1) => return Ok(None),
+            Some(128)
+                if String::from_utf8_lossy(&output.stderr).contains("not a git repository") =>
+            {
+                return Err(StoreError::NotARepository(root.to_owned()));
+            }
+            _ => {}
         }
         Ok(Some(text(&succeeded(&call, output)?)))
     }

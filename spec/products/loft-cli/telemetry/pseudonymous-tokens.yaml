@@ -1,0 +1,91 @@
+key: 01a13a90-3556-7106-a68c-262e889837b8
+slug: pseudonymous-tokens
+name: "Pseudonymous tokens"
+body: "The tokens that let the collector tell runs apart without knowing whose they are. An installation token stays the same for one user's `loft` on one machine; a project token stays the same for one checkout of one project, so two worktrees of one repository have two; a branch token stays the same for one branch of one checkout. Each is drawn at random or keyed with a secret drawn at random, so none can be computed from what it stands for, and none links one machine to another."
+tags:
+  - git
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+mentions:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+requirements:
+  - key: 01a13a90-3556-7106-a68c-262fc8b6780c
+    statement:
+      form: event_driven
+      when: "Loft first sends an event for a user on a machine"
+      system: "Loft"
+      shall: "draw an installation token at random and keep it in the user's configuration directory."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26301f3c2da0
+        name: "`installation` is a random UUID of version 4."
+      - key: 01a13a90-3556-7106-a68c-2631d5db5571
+        name: "Every later event from that user on that machine carries the same `installation`."
+      - key: 01a13a90-3556-7106-a68c-2632d9117d07
+        name: "The token is kept in `loft/telemetry.json` under the user's configuration directory."
+  - key: 01a13a90-3556-7106-a68c-26336262d08b
+    statement:
+      form: event_driven
+      when: "Loft first sends an event from a directory that holds `spec/`"
+      system: "Loft"
+      shall: "draw a project token and a branch secret at random and keep them in `.loft/telemetry.json` beside `spec/`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26347eac0bf1
+        name: "`project` is a random UUID of version 4."
+      - key: 01a13a90-3556-7106-a68c-2635000a3f7d
+        name: "Every later event from that directory carries the same `project`."
+      - key: 01a13a90-3556-7106-a68c-26361dd644a7
+        name: "Two checkouts of one repository carry different project tokens."
+      - key: 01a13a90-3556-7106-a68c-26372f96cea7
+        name: "A directory whose `.loft/` was deleted carries a new project token."
+      - key: 01a13a90-3556-7106-a68c-263816bdf093
+        name: "Loft writes `.loft/.gitignore` ignoring every file of `.loft/` when it creates `.loft/telemetry.json`."
+      - key: 01a13a90-3556-7106-a68c-2639c4534d5b
+        name: "An event from a directory that holds no `spec/` carries no `project` and no `branch`."
+  - key: 01a13a90-3556-7106-a68c-263ac491d421
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry the branch as an HMAC-SHA256 of the branch name, keyed with the checkout's branch secret and truncated to its first 16 hexadecimal digits."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-263bc79a5f25
+        name: "Two events from one branch of one checkout carry the same `branch`."
+      - key: 01a13a90-3556-7106-a68c-263c42886cfc
+        name: "Two branches of one checkout carry different branch tokens."
+      - key: 01a13a90-3556-7106-a68c-263d835617c1
+        name: "One branch name in two checkouts gives two different branch tokens."
+      - key: 01a13a90-3556-7106-a68c-263eafad8cbb
+        name: "The branch secret never appears in an event."
+      - key: 01a13a90-3556-7106-a68c-263fbfe870cd
+        name: "The branch name never appears in an event."
+  - key: 01a13a90-3556-7106-a68c-2640f062ca22
+    statement:
+      form: unwanted
+      if: "the run is outside a git repository, on a detached HEAD, or cannot run git"
+      system: "Loft"
+      shall: "send the event without `branch`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-2641ea88509b
+        name: "The event holds no `branch` field."
+      - key: 01a13a90-3556-7106-a68c-26423b68d5b5
+        name: "Nothing about git is written to standard error."
+  - key: 01a13a90-3556-7106-a68c-2643ec6b3de7
+    statement:
+      form: unwanted
+      if: "Loft cannot write `.loft/telemetry.json`"
+      system: "Loft"
+      shall: "send the event without `project` and `branch`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26448c13bd47
+        name: "The event holds neither a `project` nor a `branch` field."
+      - key: 01a13a90-3556-7106-a68c-26451ac393a9
+        name: "The command exits with the code it would have exited with had the file been written."
+  - key: 01a13a90-3556-7106-a68c-2646935680a0
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "derive no token from a path, a git remote, an email address, a host or user name, or the content of the tree."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26476deda7e3
+        name: "Two installations on machines with the same host name, user name and home path carry different installation tokens."
+      - key: 01a13a90-3556-7106-a68c-26482eb8c54c
+        name: "Two checkouts at the same path, made one after the other, carry different project tokens."

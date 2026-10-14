@@ -4,6 +4,31 @@ name: "loft-cli"
 body: "The `loft` binary."
 scopedTo:
   - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
+components:
+  - key: 01a13a90-3554-7631-bb13-097e6805bffe
+    name: "Network client"
+    body: "The part of `loft` that talks to a service over the network: it sends the command event to the telemetry collector and asks GitHub for the latest release. Both happen after a command's own work is done, under one time limit."
+    constraints:
+      - key: 01a13a90-3554-7631-bb13-097fbc9045c0
+        name: "The network client shall be the only part of `loft` that opens a network connection."
+        verificationFate: proved
+      - key: 01a13b18-98fc-71bc-8c93-e189c71c479d
+        name: "The network client shall reach a service through the proxy that the first of `ALL_PROXY`, `HTTPS_PROXY` and `HTTP_PROXY` to be set names, unless `NO_PROXY` lists the service's host."
+        verificationFate: proved
+    qualityAttributes:
+      - key: 01a13a90-3554-7631-bb13-09808cdac81a
+        name: "The network client shall add at most 500 milliseconds to a command run, whether or not a service answers."
+        qaKind: latency
+        qualityTarget:
+          metric: "network.added_latency"
+          band:
+            kind: at_most
+            upper: "500"
+          unit: "ms"
+          aggregation: each
+          scenario: "One command run that sends its event and fetches the latest release, against a collector and a release feed that accept the connection and never answer"
+          environment: "A stand-in collector and release feed on the machine that runs the test"
+        verificationFate: sampled
 constraints:
   - key: 58f9679b-7e68-44c5-a566-39c56384ffdd
     name: "`loft-cli` shall expose exactly one binary, named `loft`."

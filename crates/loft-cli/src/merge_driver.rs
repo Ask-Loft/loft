@@ -4,7 +4,6 @@
 //! With `--install` it registers itself in the repository instead (RQ-152, RQ-153).
 
 use std::path::{Component, Path, PathBuf};
-use std::process::ExitCode;
 use std::{fs, io};
 
 use loftspec::codec::{ReadError, SpecPath};
@@ -16,6 +15,7 @@ use loftspec_store::merge_driver::{self, ATTRIBUTES};
 use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
 use crate::out::{errln, outln};
 use crate::version::VERSION;
@@ -34,12 +34,12 @@ pub struct Inputs<'a> {
     pub path: &'a str,
 }
 
-pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> Finished {
     match merge(root, inputs) {
         Ok((conflicts, disputed)) => {
             let merged = conflicts == 0;
+            let outcome = if merged { "merged" } else { "conflicted" };
             if as_json {
-                let outcome = if merged { "merged" } else { "conflicted" };
                 let fields = json!({
                     "path": inputs.path,
                     "conflicts": conflicts,
@@ -48,7 +48,7 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
                 json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
             }
             if merged {
-                return ExitCode::SUCCESS;
+                return Finished::success(outcome);
             }
             let plural = if conflicts == 1 { "" } else { "s" };
             errln!(
@@ -58,7 +58,7 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
             if !disputed.is_empty() {
                 errln!("{}: {}", inputs.path, settle_with_publish(&disputed));
             }
-            ExitCode::FAILURE
+            Finished::failure(outcome)
         }
         Err(messages) => {
             let mut errors = Vec::new();
@@ -67,10 +67,11 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
                 errors.push(json::error("merge", &message, &[]));
                 errln!("{message}");
             }
+            let finished = Finished::stopped(&errors);
             if as_json {
                 json::print(&json::failure(SCHEMA, errors));
             }
-            ExitCode::FAILURE
+            finished
         }
     }
 }
@@ -94,7 +95,7 @@ fn settle_with_publish(disputed: &[Label]) -> String {
 
 /// Registers the driver started by `launcher`, printing what it wrote, one name to a line, and
 /// warning when the launcher starts another version of `loft`.
-pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
+pub fn install(root: &Path, launcher: &str, as_json: bool) -> Finished {
     match merge_driver::install(&GitCommand::default(), root, launcher) {
         Ok(installed) => {
             let own = format!("loft {VERSION}");
@@ -115,16 +116,17 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
                     outln!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
                 }
             }
-            ExitCode::SUCCESS
+            Finished::success("installed")
         }
         Err(error) => {
             let message = format!("loft merge-driver --install: {}", refusal(&error, launcher));
+            let errors = vec![json::error("install", &message, &[])];
+            let finished = Finished::stopped(&errors);
             if as_json {
-                let errors = vec![json::error("install", &message, &[])];
                 json::print(&json::failure(SCHEMA, errors));
             }
             errln!("{message}");
-            ExitCode::FAILURE
+            finished
         }
     }
 }

@@ -6,7 +6,6 @@
 //! be run or fails leaves the suggestion out and never fails the command.
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::codec;
 use loftspec::document::Document;
@@ -16,6 +15,7 @@ use loftspec_store::repository::GitCommand;
 use loftspec_store::{FileStore, StoreError};
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::merge_driver::NPM_COMMAND;
 use crate::out::outln;
 use crate::stop::Stop;
@@ -24,7 +24,7 @@ use crate::{json, skill};
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-init/1";
 
-pub fn run(root: &Path, with_skill: bool, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, with_skill: bool, as_json: bool) -> Finished {
     let document = Document::empty(DocumentId::mint());
     if let Err(error) =
         FileStore::open(root).and_then(|store| store.create(codec::write(&document)))
@@ -52,7 +52,7 @@ pub fn run(root: &Path, with_skill: bool, as_json: bool) -> ExitCode {
             outln!("{suggestion}");
         }
     }
-    ExitCode::SUCCESS
+    Finished::success("created")
 }
 
 /// What to do about the merge driver: register it where the repository has not, or put the

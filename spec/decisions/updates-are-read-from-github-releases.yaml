@@ -1,0 +1,64 @@
+key: 01a13a90-3554-7631-bb13-09ab05304f45
+slug: updates-are-read-from-github-releases
+title: "Updates are read from GitHub releases"
+context: "`loft` is installed from crates.io, from npm, or as a binary from a GitHub release, and every release reaches all three. The update check needs one place to learn the latest version from."
+state:
+  kind: accepted
+  selectedOption: 01a13a90-3554-7631-bb13-09ae48967568
+  outcome: "The update check reads the latest release of `Ask-Loft/loft` from GitHub's REST API without a token, ignoring drafts and prereleases."
+drivers:
+  - key: 01a13a90-3554-7631-bb13-09ac26f7d401
+    kind: local
+    label: "One source for every install"
+    statement: "One answer serves `loft` however it was installed."
+  - key: 01a13a90-3554-7631-bb13-09ad8fe4bb0b
+    kind: local
+    label: "Release notes at hand"
+    statement: "The notice can point to the notes of the newer release."
+options:
+  - key: 01a13a90-3554-7631-bb13-09ae48967568
+    title: "GitHub releases"
+    description: "Read the latest release of the repository from GitHub's REST API."
+  - key: 01a13a90-3554-7631-bb13-09afc7667adb
+    title: "crates.io"
+    description: "Read the newest version of `loft-cli` from the crates.io API."
+  - key: 01a13a90-3554-7631-bb13-09b0183db12d
+    title: "The npm registry"
+    description: "Read the `latest` tag of `@ask-loft/loft` from the npm registry."
+assessments:
+  - option: 01a13a90-3554-7631-bb13-09ae48967568
+    driver: 01a13a90-3554-7631-bb13-09ac26f7d401
+    rating: supports
+    rationale: "the release workflow publishes every channel from the tag"
+  - option: 01a13a90-3554-7631-bb13-09ae48967568
+    driver: 01a13a90-3554-7631-bb13-09ad8fe4bb0b
+    rating: supports
+    rationale: "each release page holds its notes"
+  - option: 01a13a90-3554-7631-bb13-09afc7667adb
+    driver: 01a13a90-3554-7631-bb13-09ac26f7d401
+    rating: neutral
+    rationale: "a crate is published in the same run, but answers for one channel"
+  - option: 01a13a90-3554-7631-bb13-09afc7667adb
+    driver: 01a13a90-3554-7631-bb13-09ad8fe4bb0b
+    rating: conflicts
+    rationale: "a crate's page holds no release notes"
+  - option: 01a13a90-3554-7631-bb13-09b0183db12d
+    driver: 01a13a90-3554-7631-bb13-09ac26f7d401
+    rating: neutral
+    rationale: "a package is published in the same run, but answers for one channel"
+  - option: 01a13a90-3554-7631-bb13-09b0183db12d
+    driver: 01a13a90-3554-7631-bb13-09ad8fe4bb0b
+    rating: conflicts
+    rationale: "a package's page holds no release notes"
+consequences:
+  - key: 01a13a90-3554-7631-bb13-09b116b9dbe9
+    kind: risk
+    statement: "GitHub limits requests without a token by address, so a busy shared address can be refused; checking at most once a day keeps a single machine well inside the limit."
+  - key: 01a13a90-3554-7631-bb13-09b28380dacf
+    kind: benefit
+    statement: "A contract suite can ask the real API the questions that tests ask a stand-in for it."
+subjects:
+  - role: affected
+    node: 01a13a90-3554-7631-bb13-097dd7f28d86
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-2609ebc00b40

@@ -1,0 +1,68 @@
+key: 01a13a90-3556-7106-a68c-2649ed65e219
+slug: sending-a-command-event
+name: "Sending a command event"
+body: "The shared rules for the commands that send telemetry. A command opts in by listing the tag `sends-telemetry` on its Feature, and each tagged command is tested against these rules. `loft merge-driver` lists no tag, since git runs it once for each file it merges, nor do the commands that switch telemetry and the update check on and off."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+mentions:
+  - 01a13a90-3554-7631-bb13-09810e715c54
+requirements:
+  - key: 01a13a90-3556-7106-a68c-264a4804828f
+    statement:
+      form: event_driven
+      when: "a command tagged `sends-telemetry` finishes its work"
+      system: "Loft"
+      shall: "send one command event to the telemetry collector."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-264ba1547489
+        name: "A run of a tagged command sends exactly one event."
+      - key: 01a13a90-3556-7106-a68c-264cddb2ff08
+        name: "The event is sent after the command has written its output."
+      - key: 01a13a90-3556-7106-a68c-264d8215ca2b
+        name: "A run of a command that lists no `sends-telemetry` tag sends no event."
+  - key: 01a13a90-3556-7106-a68c-264e9589d055
+    statement:
+      form: ubiquitous
+      system: "The Feature of each `loft` command that sends a command event"
+      shall: "list the tag `sends-telemetry`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-264f419f9d9d
+        name: "A command that sends an event has a Feature that lists `sends-telemetry`."
+      - key: 01a13a90-3556-7106-a68c-265029868ddb
+        name: "A command whose Feature lists `sends-telemetry` sends an event."
+  - key: 01a13a90-3556-7106-a68c-26513d8c27e0
+    statement:
+      form: unwanted
+      if: "the telemetry collector refuses the connection, answers with an error or does not answer within the network client's time limit"
+      system: "Loft"
+      shall: "drop the event."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-2652f6b751e0
+        name: "The command exits with the code it would have exited with had the event been received."
+      - key: 01a13a90-3556-7106-a68c-2653b2630807
+        name: "Standard output is the same as when the event is received."
+      - key: 01a13a90-3556-7106-a68c-26543710c06a
+        name: "Nothing about the failed send is written to standard error."
+      - key: 01a13a90-3556-7106-a68c-2655175ed5dc
+        name: "The event is not sent a second time."
+      - key: 01a13a90-3556-7106-a68c-2656bc2a3e6a
+        name: "The event is not kept for a later run."
+  - key: 01a13a91-33a9-72de-95bb-48da9834c26a
+    statement:
+      form: optional
+      where: "`LOFT_TELEMETRY_ENDPOINT` is set to a non-empty address"
+      system: "Loft"
+      shall: "send the command event to that address in place of the telemetry collector's."
+    criteria:
+      - key: 01a13a91-33a9-72de-95bb-48db26458eb2
+        name: "The event reaches the address that `LOFT_TELEMETRY_ENDPOINT` names."
+      - key: 01a13a91-33a9-72de-95bb-48dc5fa49a93
+        name: "No connection to the telemetry collector's own address is opened."
+      - key: 01a13a91-33a9-72de-95bb-48dd312bb711
+        name: "An `https` address is accepted."
+      - key: 01a13a91-33a9-72de-95bb-48de195eedc2
+        name: "An `http` address on the loopback interface is accepted."
+      - key: 01a13a91-33a9-72de-95bb-48df032fc5b8
+        name: "An `http` address off the loopback interface is never contacted."
+      - key: 01a13a91-33a9-72de-95bb-48e0aeab2b38
+        name: "The telemetry notice names the address that `LOFT_TELEMETRY_ENDPOINT` names."

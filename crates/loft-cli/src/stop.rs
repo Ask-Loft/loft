@@ -3,7 +3,6 @@
 //! `<path>:<line>:<column>: <message>` (RQ-158).
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::{Files, ReadError};
@@ -11,6 +10,7 @@ use loftspec::trace::{TRACE, TraceError};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::Value;
 
+use crate::finish::Finished;
 use crate::json;
 use crate::out::errln;
 
@@ -47,14 +47,15 @@ impl Stop {
 
     /// Prints the failure document under `schema` when JSON was asked for, and each line on
     /// standard error, and exits 1.
-    pub fn exit(self, schema: &str, as_json: bool) -> ExitCode {
+    pub fn exit(self, schema: &str, as_json: bool) -> Finished {
+        let finished = Finished::stopped(&self.errors);
         if as_json {
             json::print(&json::failure(schema, self.errors));
         }
         for line in &self.lines {
             errln!("{line}");
         }
-        ExitCode::FAILURE
+        finished
     }
 }
 

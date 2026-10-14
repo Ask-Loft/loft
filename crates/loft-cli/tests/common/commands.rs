@@ -50,7 +50,7 @@ pub fn command(scratch: &Scratch, fixture: Fixture) -> Command {
 }
 
 /// Each command by the slug of its Feature, with the arguments that run it and its fixture.
-pub const COMMANDS: [(&str, &[&str], Fixture); 11] = [
+pub const COMMANDS: [(&str, &[&str], Fixture); 14] = [
     ("loft-check", &["check"], Fixture::Unkeyed),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed),
     (
@@ -83,5 +83,17 @@ pub const COMMANDS: [(&str, &[&str], Fixture); 11] = [
             "spec/loftspec.yaml",
         ],
         Fixture::Unkeyed,
+    ),
+    // The install record and the switches read and write the user's settings, never the tree.
+    (
+        "loft-record-install",
+        &["record-install", "release-binary"],
+        Fixture::Empty,
+    ),
+    ("loft-telemetry", &["telemetry", "status"], Fixture::Empty),
+    (
+        "loft-update-check",
+        &["update-check", "status"],
+        Fixture::Empty,
     ),
 ];

@@ -6684,6 +6684,220 @@ links:
     tests:
       - file: "crates/loft-cli/tests/reconcile.rs"
         name: "the_json_document_carries_each_finding_the_counts_and_the_accepted_keys"
+  - node: 01a13a90-3555-73cc-af6c-ca22164bb57a
+    reviewed: 655368ee70d624e30f6464a91811d72cc54532b1ee05f3decd37b00f48a31fcb
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "off_is_recorded_and_status_reports_the_recorded_choice"
+  - node: 01a13a90-3555-73cc-af6c-ca23e1f4ec28
+    reviewed: e17ac0184dc1939f810abf29729f79f523a35b8caa63114ca191bedc8244ae7a
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "on_after_off_reports_telemetry_on"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "the_variable_set_to_off_beats_a_recorded_on"
+  - node: 01a13a90-3555-73cc-af6c-ca2429f392eb
+    reviewed: cf29fd3a5277692419f77e637f4c59bc31eb1b75a920f2f3027db4554189f47e
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "running_the_same_subcommand_twice_leaves_the_same_state"
+  - node: 01a13a90-3555-73cc-af6c-ca26faed97b9
+    reviewed: 8615db66468e443b650a42d84a67602bcf5900b117824f1e79a3ab63d307834c
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "the_variable_set_to_off_beats_a_recorded_on"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "any_value_of_the_variable_but_internal_switches_telemetry_off"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "internal_keeps_telemetry_on"
+  - node: 01a13a90-3555-73cc-af6c-ca27ad54c155
+    reviewed: 17bd85b901c00490df007131f2128d775cc73fc4c380a6935ee37e30e1b5ab2a
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "off_is_recorded_and_status_reports_the_recorded_choice"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "status_in_text_names_the_state_the_switch_and_the_collector"
+  - node: 01a13a90-3555-73cc-af6c-ca28fa7c3c68
+    reviewed: b9a17d0ec1a525dfd35ab8e1fa2fe820bdfeb330b9a5f8ecdc01d13117f9ead3
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "telemetry_is_on_by_default"
+  - node: 01a13a90-3555-73cc-af6c-ca29b34a1b32
+    reviewed: bd87a8ab7c3fe6fb7ee5c2fe7c4f1c4d2446e51546320263466dafaa30ff8a9d
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "status_names_the_collector_address"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "status_in_text_names_the_state_the_switch_and_the_collector"
+  - node: 01a13a90-3555-73cc-af6c-ca2a8738872f
+    reviewed: 068aa0e34b683be1e7f74df94b2cc284a17e7795fd03d7457ab9b8b82b35ffa2
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "status_states_whether_the_notice_has_been_printed"
+  - node: 01a13a90-3555-73cc-af6c-ca2caad67a09
+    reviewed: 5f2537a03020b58e94a7408f50e0a20fbc6c7b9be664437b03dd9f8c0fd0d7ac
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "the_switch_subcommands_open_no_connection"
+  - node: 01a13a90-3555-73cc-af6c-ca2e8bf13ef2
+    reviewed: b1d84237ad47bf1780ad718633a2e45d0d89810d9f2c45cab77d548334c09c87
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "telemetry_is_on_by_default"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "on_after_off_reports_telemetry_on"
+  - node: 01a13a90-3555-73cc-af6c-ca2f82c71224
+    reviewed: c3dc3495ab86c4329d451f6e99953d06c6cb47d61fe948b140d061e1f2a05468
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "off_is_recorded_and_status_reports_the_recorded_choice"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "the_variable_set_to_off_beats_a_recorded_on"
+  - node: 01a13a90-3555-73cc-af6c-ca30a9600dbe
+    reviewed: d29f9eef64b52cb0916afc68d058e8f604a4ad131b1a3cd103deae4653bca30d
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "telemetry_is_on_by_default"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "off_is_recorded_and_status_reports_the_recorded_choice"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "a_settings_directory_that_cannot_be_written_is_an_error"
+  - node: 01a13a90-3556-7106-a68c-25fa07f495a0
+    reviewed: 2b64a55db56660ced4b97c8b89128a116cd843c456f182e8ac08b72955e0e3ef
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "off_is_recorded_until_on"
+  - node: 01a13a90-3556-7106-a68c-25fb9f40e2a6
+    reviewed: 689b0bfe32512fbaf887c3d2af89f94ebd3f920ab5445012408fb288825e5401
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "status_after_on_reports_the_check_on"
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "any_value_of_the_variable_switches_the_check_off"
+  - node: 01a13a90-3556-7106-a68c-25fccada5dbd
+    reviewed: cf29fd3a5277692419f77e637f4c59bc31eb1b75a920f2f3027db4554189f47e
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "running_the_same_subcommand_twice_leaves_the_same_state"
+  - node: 01a13a90-3556-7106-a68c-25fe0f30b26b
+    reviewed: ab55c7d099709c6ddf671d12e0af99d7ef285affcdda01622e0eaabb7ed07e0e
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "any_value_of_the_variable_switches_the_check_off"
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "status_in_text_names_the_state_and_the_switch"
+  - node: 01a13a90-3556-7106-a68c-25ffd834a189
+    reviewed: 9500640d5577c9e4072b48bc81010c2ceff81d81183f7372608a0825aabb293f
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "off_is_recorded_until_on"
+  - node: 01a13a90-3556-7106-a68c-2600eec19ede
+    reviewed: b9a17d0ec1a525dfd35ab8e1fa2fe820bdfeb330b9a5f8ecdc01d13117f9ead3
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "the_update_check_is_on_by_default"
+  - node: 01a13a90-3556-7106-a68c-26013011315f
+    reviewed: 726e154c5036dd338eb4d41534a18021557351659aa1ae78a9010c0e920c50c2
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "status_names_the_latest_release_held_and_when_it_was_received"
+  - node: 01a13a90-3556-7106-a68c-2602f0d82c23
+    reviewed: 0ce5dd9ca04b7eda5844a74c4a4fd3fe6dcce4a8907bf3666828fa0321f3e3fc
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "status_states_that_no_answer_is_held_when_none_is"
+  - node: 01a13a90-3556-7106-a68c-26040415efa7
+    reviewed: b843867fd2cb53e740557544aab6dd9457152486e1720370b8d9ee992ad8e2e0
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "the_switch_subcommands_open_no_connection"
+  - node: 01a13a90-3556-7106-a68c-2606f9220e30
+    reviewed: 9a91cf2c9174393ee067c2646e9999afb3f00fdd10a0e204e86a3f67ee10d604
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "off_is_recorded_until_on"
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "the_update_check_is_on_by_default"
+  - node: 01a13a90-3556-7106-a68c-2607530abb56
+    reviewed: 1c8ee8e4eeff9b8fc98d4341f7ac2ec49496cabef11986f8662d25df19d31697
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "off_is_recorded_until_on"
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "any_value_of_the_variable_switches_the_check_off"
+  - node: 01a13a90-3556-7106-a68c-260809856f03
+    reviewed: d96890b384742ba8b134f80df1ecd1f46415e08eaff0db9272e9f442f7e3c45d
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "off_is_recorded_until_on"
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "status_names_the_latest_release_held_and_when_it_was_received"
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "status_states_that_no_answer_is_held_when_none_is"
+  - node: 01a13acd-2cac-7382-9410-cf96276d5a27
+    reviewed: f7d05e1a846eb171f86fc0b5d926885669a6b3a6ef44ee4d885d2c249b29fdbf
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "the_record_holds_the_executable_s_path_the_way_and_the_version"
+  - node: 01a13acd-2cac-7382-9410-cf97682666c1
+    reviewed: 5523e5da818d04f0daaaffef22e6d401e058bf6b10f4b9f8093fc4f42e332d98
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "a_second_record_for_the_same_path_replaces_the_first"
+  - node: 01a13acd-2cac-7382-9410-cf9882141061
+    reviewed: e236ae8586c3c7a2c265d65b3b20a079e93574cfce26fc5da75a32342b41c649
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "records_for_other_paths_are_kept_unchanged"
+  - node: 01a13acd-2cac-7382-9410-cf99745e3a14
+    reviewed: 0a962500ca5e83244d7d3a82d6fa44467565e9a8906344e68de75b4342076260
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "nothing_is_written_to_standard_output_without_format_json"
+  - node: 01a13acd-2cac-7382-9410-cf9bf7f264ca
+    reviewed: 92fea2311e47ff388a4e4eea28785762655f5ccefd303661e5c6c80b9b5430d8
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "a_way_outside_the_three_is_a_usage_error_naming_them_and_nothing_is_written"
+  - node: 01a13acd-2cac-7382-9410-cf9cf93086e0
+    reviewed: 108da84a8d6a504184ab4b0c17654b240353ed9a359474ec85d2818fe2be300d
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "a_way_outside_the_three_is_a_usage_error_naming_them_and_nothing_is_written"
+  - node: 01a13acd-2cac-7382-9410-cf9ecb357917
+    reviewed: 005c1fe6bd4d17e5574248c61856339f2869fd7f995d9746697a05ee2a90a070
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "a_record_that_cannot_be_written_exits_0_and_names_the_path"
+  - node: 01a13acd-2cac-7382-9410-cf9fa6e63467
+    reviewed: f056c8ac7759ce4cab705d1e369e5f7fe400cb87717bd54e5e55fda5959a0cf5
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "a_record_that_cannot_be_written_exits_0_and_names_the_path"
+  - node: 01a13acd-2cac-7382-9410-cfa1ec43e16b
+    reviewed: a852b15df8dcc38e8fab91a7929062ee265f9c96122e219edf9f0ed19dbc8923
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
+      - file: "crates/loft-cli/tests/checks_for_updates.rs"
+        name: "a_command_asks_github_once_exactly_when_its_feature_lists_checks_for_updates"
+  - node: 01a13acd-2cac-7382-9410-cfa336dca7b8
+    reviewed: 4b46756c3c87cf5585b142b06729037d464261b7f98bb48e5022fd4eb50748f2
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "the_json_document_names_the_path_and_the_way_recorded"
+  - node: 01a13acd-2cac-7382-9410-cfa42e4fdd45
+    reviewed: 0061715986c251e37e6439637a5b7f6ddfa32067532403cbc627c9ed912581df
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "a_record_that_cannot_be_written_exits_0_and_names_the_path"
+  - node: 01a13acd-2cac-7382-9410-cfa537d570dd
+    reviewed: 5252b3965ae89a63593ee66719495916251289b87444c057a6bb1d7cfd09ba96
+    tests:
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "the_json_document_names_the_path_and_the_way_recorded"
+      - file: "crates/loft-cli/tests/record_install.rs"
+        name: "a_record_that_cannot_be_written_exits_0_and_names_the_path"
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:
@@ -7166,8 +7380,8 @@ links:
   - node: 01a136db-1a3d-7739-a3f4-9acba290bbc3
     reviewed: 43f456f483ca680f6de81e592bf12022db95ecf97784ff23a48b00300d98491e
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
-        name: "no_package_has_an_install_script_and_each_names_the_repository"
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
   - node: 01a136db-1a3d-7739-a3f4-9acceaf09b98
     reviewed: 14c79bdf4e71c25445621b0acebbcdad21e36e52addc1413682ce1120108ba6f
     tests:
@@ -7186,10 +7400,42 @@ links:
       - file: "crates/loft-cli/tests/npm.rs"
         name: "the_launcher_runs_the_binary_with_its_arguments_streams_and_exit_code"
   - node: 01a136db-1a3d-7739-a3f4-9acffbe368ae
-    reviewed: 836e1af77506ac94078ee262d5ec283a1ffa0eeea233c21c62f1d0c48958515f
+    reviewed: 2da4bc514a00b0e6d75b327a7d3cad271643b56fc476384eabda818ff7b8f405
     tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
+  - node: 01a13acd-2cac-7382-9410-cfb6ad57bacb
+    reviewed: a9a169e9a4662fb516be15429bcb4eee4af9d69ddca8e95542eaaa339ac790ae
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
+  - node: 01a13acd-2cac-7382-9410-cfb7d41d9a6e
+    reviewed: 1dbbd41157aca799e1b7021a89d297946afba64e6b5784957989d7979b14efb7
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "the_install_script_records_npm_for_the_platform_binary_and_prints_nothing"
       - file: "crates/loft-cli/tests/npm.rs"
-        name: "no_package_has_an_install_script_and_each_names_the_repository"
+        name: "npm_installs_the_platform_binary_executable"
+  - node: 01a13acd-2cac-7382-9410-cfb8f4b00d96
+    reviewed: c230d465fda76c3bd3e0b4325c0508d422311c8ad0233fc7bacfda7d96cfad50
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "the_install_succeeds_when_the_record_cannot_be_written"
+  - node: 01a13acd-2cac-7382-9410-cfb96ea0013a
+    reviewed: dda70e7e4c86146d6c85fd7fe687527f1a0a9e56eb03da2302e27a5926dffb84
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "the_install_succeeds_when_the_platform_package_is_missing"
+  - node: 01a13acd-2cac-7382-9410-cfba733ae6da
+    reviewed: c31b16155edb771996cde766ea69f24d8be7a2ddc3bfd5349cc25944fd000819
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "the_install_script_records_npm_for_the_platform_binary_and_prints_nothing"
+  - node: 01a13acd-2cac-7382-9410-cfbb26af04d2
+    reviewed: 97bbed8091fad43b0432b3302c0442f79f4f1a47eefd71f25b9ffa19a4be4e73
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did"
   - node: 01a136db-1a3d-7739-a3f4-9ad1daac9b30
     reviewed: e7c0086dcb6f4f417e771077126b69141cce02f432be3e9b6d310a7b60cbc027
     tests:
@@ -7207,6 +7453,11 @@ links:
         name: "every_package_carries_the_version_of_loft"
   - node: 01a136db-1a3d-7739-a3f4-9ad4b81acfa6
     reviewed: 9410d4d3aae75aa5d54e6d8230b262a26f9f362ed4eda8255b3e5b11bb8205e5
+    tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "the_build_the_npm_packages_and_their_tests_name_the_same_six_platforms"
+  - node: 01a136db-1a3d-7739-a3f4-9ad553a8b50a
+    reviewed: c0ce99f0829e4dd644fa62578e587067cb0831ef55f4cc5db4c33e041530acaa
     tests:
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "the_build_the_npm_packages_and_their_tests_name_the_same_six_platforms"
@@ -7240,6 +7491,827 @@ links:
     tests:
       - file: "crates/loft-cli/tests/npm.rs"
         name: "every_package_carries_the_version_of_loft"
+  - node: 01a13a90-3556-7106-a68c-260be27502fc
+    reviewed: f6d28d3b22fda4d3a1bca0df5f793bfa324da8bfac3b27cf53e678c6e5a32744
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_order.rs"
+        name: "github_is_asked_after_the_command_has_written_its_output"
+  - node: 01a13a90-3556-7106-a68c-260c50d30983
+    reviewed: 9831cd7973302306ccb47c5801f75b3328a9caa9894c1f57ca9690d191a66b4d
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_run_within_a_day_of_the_last_answer_asks_nothing"
+  - node: 01a13a90-3556-7106-a68c-260dc2052004
+    reviewed: f30b862c0716ff3a5318329eb5e82515771d6c16442d115a15c2e68081395be1
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_draft_or_a_prerelease_is_not_taken_as_the_latest"
+  - node: 01a13a90-3556-7106-a68c-260e181ecae9
+    reviewed: 81cf34ed3010875d34da53e29adfacc25e2de7661dd7b64d918d4ecb3a190be1
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_draft_or_a_prerelease_is_not_taken_as_the_latest"
+  - node: 01a13a90-3556-7106-a68c-260fa6f9c527
+    reviewed: de992db7be4afca79c031fd39998592cc562a418e26f1217636276f015a2f74a
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_latest_release_is_asked_after_the_output_and_kept_with_its_time"
+  - node: 01a13a90-3556-7106-a68c-261028550c78
+    reviewed: d44eacbc3f7d22a9251a99d4bd57ca91ceb45680943a93987164dc1f7bd82ca3
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_request_carries_nothing_but_the_address_and_the_name_loft"
+  - node: 01a13b18-98fe-75d5-9d61-9df1c16bef2b
+    reviewed: 40e1c4402f9c0809f911d198a7a98764f11a10452c2f2a6dc1ab52aedf315273
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_run_that_cannot_keep_the_answer_asks_github_nothing"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_run_that_cannot_keep_the_answer_prints_no_update_notice"
+  - node: 01a13b18-98fe-75d5-9d61-9df25d202423
+    reviewed: 3b35797197475be665b6228733544da5abbea5a661406053abd63bf857a958d2
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_run_that_cannot_keep_the_answer_prints_no_update_notice"
+  - node: 01a13a90-3556-7106-a68c-26124482fd80
+    reviewed: 6649eea6ce4017b71ba479070cc7c8fbb2e66512ad35d2d5eaec141eed422762
+    tests:
+      - file: "crates/loft-cli/tests/checks_for_updates.rs"
+        name: "a_command_asks_github_once_exactly_when_its_feature_lists_checks_for_updates"
+  - node: 01a13a90-3556-7106-a68c-26139dc2c75e
+    reviewed: 0c30fa92f2b87f9c9f7663f757309b0d56856fb6deccbe9b3e172470af020e88
+    tests:
+      - file: "crates/loft-cli/tests/checks_for_updates.rs"
+        name: "a_command_asks_github_once_exactly_when_its_feature_lists_checks_for_updates"
+  - node: 01a13a90-3556-7106-a68c-2614dac04816
+    reviewed: f0ac50a3d8810f5f4440c3c3b7705c4173c463eef3618729ed478ecc8e3c7035
+    tests:
+      - file: "crates/loft-cli/tests/checks_for_updates.rs"
+        name: "each_feature_that_lists_sends_telemetry_lists_checks_for_updates"
+  - node: 01a13a90-3556-7106-a68c-261661f91970
+    reviewed: 0579964bfb00bbefe76d9afb6f490514ede8c76a7419e9b1c4f1628a0eeb43ce
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_newer_release_is_told_of_on_a_later_run_once_a_day"
+  - node: 01a13a90-3556-7106-a68c-2617ca9ac4d4
+    reviewed: b5ab009a87fab7253d5ce41b191e5dc2f1d54b8d8b977100c9940a1494c772b0
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_notice_is_printed_in_every_mode"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_notice_is_printed_on_a_terminal_too"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_newer_release_is_told_of_on_a_later_run_once_a_day"
+  - node: 01a13a90-3556-7106-a68c-2618663aced0
+    reviewed: 6455d9c5c6cbe8fdd1c2b69d4fb81543531d61f3d02fcf21c1b77759738d5d54
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_newer_release_is_told_of_on_a_later_run_once_a_day"
+  - node: 01a13a90-3556-7106-a68c-2619d930949e
+    reviewed: cb95d8c0e28be95d74cda3587778418b25fef2501707df3f9175dfa08d2765ec
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_newer_release_is_told_of_on_a_later_run_once_a_day"
+  - node: 01a13a90-3556-7106-a68c-261af9d8f977
+    reviewed: e2a84800b894a9b22e51791202ef6250ce2cc5235dea1e49cf6db8bac321672d
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_running_version_or_an_older_one_is_told_of_by_no_notice"
+  - node: 01a13a90-3556-7106-a68c-261ceba59cc8
+    reviewed: 45e31ad3a1846423d78a273b26e2bce687cb694c5bcf9fa28de51383b6663b4e
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_notice_names_the_way_to_update_that_matches_the_install"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "an_npm_install_whose_script_never_ran_still_names_npm"
+  - node: 01a13a90-3556-7106-a68c-261d5624aad4
+    reviewed: af6b212eeee153d2201424937e5e34d4fe0ce24d6fe48dfdad7e60546965c221
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_notice_names_the_way_to_update_that_matches_the_install"
+  - node: 01a13a90-3556-7106-a68c-261eb713e39a
+    reviewed: 2164c702c86f5f7d183eeaf6ce459349fd7ab9b72af9b303382303a6c48bffd0
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_notice_names_the_way_to_update_that_matches_the_install"
+  - node: 01a13a90-3556-7106-a68c-262084e08bfd
+    reviewed: 1be0e375ba404450077c8e3c5fb7bff19eb12a3943b665771ee1087f71b7576f
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_feed_that_refuses_fails_rate_limits_or_stays_silent_changes_nothing"
+  - node: 01a13a90-3556-7106-a68c-2621ce3f4142
+    reviewed: 0e04ee9f692aeb3061b4182da6b45c71536115c292832cf41469c476b446d7db
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_feed_that_refuses_fails_rate_limits_or_stays_silent_changes_nothing"
+  - node: 01a13a90-3556-7106-a68c-26227b1b3865
+    reviewed: 46051803b20e0c2bd8875a9bc4339798c550eaa07bf5c171e1b636632ea5f49f
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_failed_request_writes_nothing_to_standard_error"
+  - node: 01a13a90-3556-7106-a68c-2623b69745b0
+    reviewed: 26a28e72e3d9e59a6b2a29457fd7d665f92ffc87454ae34fd5b6df47b9714abc
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_feed_that_refuses_fails_rate_limits_or_stays_silent_changes_nothing"
+  - node: 01a13a90-3556-7106-a68c-26253da5687a
+    reviewed: 731315a212609a20c70ed2855032a101aa1cb5799a0bd5c4750c60a20f153029
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_tag_that_is_not_a_version_is_told_of_by_no_notice"
+  - node: 01a13a90-3556-7106-a68c-262692ba1eb3
+    reviewed: ce750c69c2c243fcaf82c575cef5af5537ef9b1c1a6639d14f18935d8d994275
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_tag_that_is_not_a_version_is_told_of_by_no_notice"
+  - node: 01a13a90-3556-7106-a68c-26282b92dab4
+    reviewed: e9365106ab5261760a4ef42530c65f8b87f3407dd654fe708ce7d6e88350e6c3
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "while_the_update_check_is_off_nothing_is_asked_or_told"
+  - node: 01a13a90-3556-7106-a68c-26296ca6c3f2
+    reviewed: 44503ba703ebee765409e6164bfedb21774f22d1d9723fc7138afb9908e45d9f
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "while_the_update_check_is_off_nothing_is_asked_or_told"
+  - node: 01a13a90-3556-7106-a68c-262a3b1dad2f
+    reviewed: f5c6fae626939631cbf6b8ade35fd757fab171bb2bc6e5c270f1e0d3ffa34780
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "any_value_of_the_variable_switches_the_check_off"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "while_the_update_check_is_off_nothing_is_asked_or_told"
+  - node: 01a13a90-3556-7106-a68c-262bffb489f6
+    reviewed: d43efe5721934f215c454acf401ade2bfb4307a6b28a8534366f41885d7985af
+    tests:
+      - file: "crates/loft-cli/tests/update_check_switches.rs"
+        name: "off_is_recorded_until_on"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "while_the_update_check_is_off_nothing_is_asked_or_told"
+  - node: 01a13a90-3556-7106-a68c-262cd72bf698
+    reviewed: 291c7ae077d16d8e13e50371e2bbcb915532d081e27b9a75ce5d0e058dec35f6
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "switching_telemetry_off_leaves_the_update_check_as_it_was"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "switching_telemetry_off_leaves_the_update_check_asking"
+  - node: 01a13a91-33a8-74fc-8986-bedbe975ef68
+    reviewed: 1393e233823ddfba06e909053c800c2d9cd8155ea9e265f2e25749a542405b12
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_latest_release_is_asked_after_the_output_and_kept_with_its_time"
+  - node: 01a13a91-33a8-74fc-8986-bedc219da097
+    reviewed: e9365106ab5261760a4ef42530c65f8b87f3407dd654fe708ce7d6e88350e6c3
+    tests:
+      - file: "crates/loft-cli/tests/network_client.rs"
+        name: "a_named_proxy_carries_the_request"
+  - node: 01a13a91-33a9-72de-95bb-48d721617c7c
+    reviewed: 4f18a00f6c671ca074ad3097741868532bb6089b0c7152057dfa91f6f7047716
+    tests:
+      - file: "crates/loft-cli/src/network.rs"
+        name: "https_is_allowed_anywhere_and_http_only_on_the_loopback_interface"
+  - node: 01a13a91-33a9-72de-95bb-48d8482e73c5
+    reviewed: a6622b499b0f0557c23b8aeb698943c86eddd45501419157f44407d9eaf3708c
+    tests:
+      - file: "crates/loft-cli/src/network.rs"
+        name: "https_is_allowed_anywhere_and_http_only_on_the_loopback_interface"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_latest_release_is_asked_after_the_output_and_kept_with_its_time"
+  - node: 01a13a91-33a9-72de-95bb-48d9dad981f0
+    reviewed: 8af2c7e5fc226829f47bcc8817868e228ebbd4bc8ced8f0829ce3e34ddb53ef1
+    tests:
+      - file: "crates/loft-cli/src/network.rs"
+        name: "https_is_allowed_anywhere_and_http_only_on_the_loopback_interface"
+  - node: 01a13acd-2cac-7382-9410-cfa8262a1d92
+    reviewed: 722398612ad55c7f54af92367c6e6274e5aee816febeee89bc73b0ecd57ef234
+    tests:
+      - file: "crates/loft-cli/src/install.rs"
+        name: "a_record_for_the_executable_gives_its_way_and_one_for_another_path_does_not"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "the_notice_names_the_way_to_update_that_matches_the_install"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_install_record_sets_installed_by"
+  - node: 01a13acd-2cac-7382-9410-cfa99c36e871
+    reviewed: 1247b81316342fddae80ff59e747bc5a7e0138079e17fe5f96aa29594e4c1371
+    tests:
+      - file: "crates/loft-cli/src/install.rs"
+        name: "a_record_for_the_executable_gives_its_way_and_one_for_another_path_does_not"
+  - node: 01a13acd-2cac-7382-9410-cfab14b7c6e6
+    reviewed: 2da4842e99e3eebe4279a3baddbb5d7fdf1bb9365d49ee4b865d1bd37b7853a2
+    tests:
+      - file: "crates/loft-cli/src/install.rs"
+        name: "an_executable_inside_node_modules_at_ask_loft_was_installed_by_npm"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_executable_inside_node_modules_at_ask_loft_is_installed_by_npm"
+  - node: 01a13acd-2cac-7382-9410-cfac9b15896b
+    reviewed: 232d92c0857cd4b1db1ac15bbecd3101b1530ca3257fd06b5290d108b7de5d5a
+    tests:
+      - file: "crates/loft-cli/src/install.rs"
+        name: "an_executable_in_cargo_s_bin_listed_under_loft_cli_was_installed_by_cargo"
+  - node: 01a13acd-2cac-7382-9410-cfadb0b1d49d
+    reviewed: a11a6c40cd932e466dddbacc8ab897c9693378212260b5b95e98a77e401ca7a3
+    tests:
+      - file: "crates/loft-cli/src/install.rs"
+        name: "an_executable_inside_node_modules_at_ask_loft_was_installed_by_npm"
+      - file: "crates/loft-cli/src/install.rs"
+        name: "an_executable_in_cargo_s_bin_listed_under_loft_cli_was_installed_by_cargo"
+  - node: 01a13acd-2cac-7382-9410-cfafabf7e02e
+    reviewed: bf2110f77329ddc3d1f49013b56788bff30053a5a51a3dd59eedb23fc2003bbf
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_install_record_that_does_not_parse_leaves_the_way_inferred_and_prints_nothing"
+      - file: "crates/loft-cli/src/install.rs"
+        name: "a_damaged_record_gives_no_way"
+  - node: 01a13acd-2cac-7382-9410-cfb037dec8a1
+    reviewed: 9d4a561e1dd1e79733aead937ce59ad8aa2c27c30aa94eb6228916d80fbb97e8
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_install_record_that_does_not_parse_leaves_the_way_inferred_and_prints_nothing"
+  - node: 01a13acd-2cac-7382-9410-cfb227917029
+    reviewed: b41f0cde08cbed432b7576066a7192b5af611af45a910145c95a3a4010f9832a
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did"
+  - node: 01a13acd-2cac-7382-9410-cfb31f69ffdc
+    reviewed: df7832f4e0c47302f89041ba9c2b53278a7c6b595f4e361b588bd6ac48f72c08
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did"
+  - node: 01a13acd-2cac-7382-9410-cfb402bd2fed
+    reviewed: 3a1cd282484f6bb1cd463bca2855fe462cbb21d8f4b7409239617d12d976cd4e
+    tests:
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "an_npm_install_whose_script_never_ran_still_names_npm"
+  - node: 01a13a90-3556-7106-a68c-26301f3c2da0
+    reviewed: eca5a9702c603b67a88dd6ebd9c435ae8142335c299641db200a9fb1017d46b0
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_fresh_installation_under_the_same_home_draws_a_new_token"
+  - node: 01a13a90-3556-7106-a68c-2631d5db5571
+    reviewed: e07dc77f2393e2a261ddd242a4923f53284b2a4c5790713cdce0da3cfa2bde4b
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "the_installation_token_is_kept_and_carried_by_every_later_event"
+  - node: 01a13a90-3556-7106-a68c-2632d9117d07
+    reviewed: 02c4f7e35f10c56a766cd462496bb00fcf0e0051911a071c6f05b6d6dec16cfc
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "the_installation_token_is_kept_and_carried_by_every_later_event"
+  - node: 01a13a90-3556-7106-a68c-26347eac0bf1
+    reviewed: 5c08fb5cbacfd817dcc95fd89f1efffd4ac92cb416e5605043934eb47b90e9d9
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_deleted_local_directory_gives_a_new_project_token"
+  - node: 01a13a90-3556-7106-a68c-2635000a3f7d
+    reviewed: c893bcdf021da6aa08152c170293bc4d2ee80898951452e9068b82c5048112dc
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "the_project_token_is_kept_beside_spec_where_git_never_sees_it"
+  - node: 01a13a90-3556-7106-a68c-26361dd644a7
+    reviewed: 4258af7ba9e5bbffa53efcbca50db917e459b911d4e8d3082f06acff82137bdc
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "two_checkouts_carry_different_tokens_for_the_same_branch"
+  - node: 01a13a90-3556-7106-a68c-26372f96cea7
+    reviewed: 637bbc9811614df5f0b3495670a1a977954cc9ac59022041da1a87591b1d0b72
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_deleted_local_directory_gives_a_new_project_token"
+  - node: 01a13a90-3556-7106-a68c-263816bdf093
+    reviewed: b7a9c98f165334a6d6e17c1b5e3784e35f6d982009eaf5197e2166e1e7f152a1
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "the_project_token_is_kept_beside_spec_where_git_never_sees_it"
+  - node: 01a13a90-3556-7106-a68c-2639c4534d5b
+    reviewed: c47a587876ccd26588b4e0005193e1c529f140479b2e6e0f87cdd72e2ce0a894
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_directory_without_spec_carries_no_project_and_no_branch"
+  - node: 01a13a90-3556-7106-a68c-263bc79a5f25
+    reviewed: 6d0fbb23bdef19fc9073fc9a04827859cbbb717ec0f24ff72dba371af535e125
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "one_branch_keeps_its_token_and_two_branches_differ"
+  - node: 01a13a90-3556-7106-a68c-263c42886cfc
+    reviewed: 246bb18e3e2056aba67eee436cc694e2a2b12b3ab55c5978035814312661a9e2
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "one_branch_keeps_its_token_and_two_branches_differ"
+      - file: "crates/loft-cli/src/telemetry/tokens.rs"
+        name: "a_branch_token_is_16_hex_digits_that_depend_on_the_secret_and_the_name"
+  - node: 01a13a90-3556-7106-a68c-263d835617c1
+    reviewed: 22d104adf710e84acd49305db40fbc2f20981dbc18bdac743ddd350eb769cd93
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "two_checkouts_carry_different_tokens_for_the_same_branch"
+      - file: "crates/loft-cli/src/telemetry/tokens.rs"
+        name: "a_branch_token_is_16_hex_digits_that_depend_on_the_secret_and_the_name"
+  - node: 01a13a90-3556-7106-a68c-263eafad8cbb
+    reviewed: 5d0a9b226f61574e63b9ab1758ad20f29541d49d992ea533d0fdadc938bc10fc
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "neither_the_branch_name_nor_its_secret_appears_in_the_event"
+  - node: 01a13a90-3556-7106-a68c-263fbfe870cd
+    reviewed: 8bb323f2cafbcafc0f2bec8035813925d54e31e59d01512013888b993e1df6ab
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "neither_the_branch_name_nor_its_secret_appears_in_the_event"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_carries_no_text_from_the_tree_the_files_the_repository_or_the_environment"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_git_remote_and_the_configured_names_never_reach_the_event"
+  - node: 01a13a90-3556-7106-a68c-2641ea88509b
+    reviewed: fc69695bb2de8a5374176032062b5fa093920bdb83deb76c48a3810468d3e433
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "no_branch_is_sent_on_a_detached_head_outside_a_repository_or_without_git"
+  - node: 01a13a90-3556-7106-a68c-26423b68d5b5
+    reviewed: 7b8a3de7e075cff03bd2460513db1a3b5a7938893d683aa1266573d2ec8badff
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "no_branch_is_sent_on_a_detached_head_outside_a_repository_or_without_git"
+  - node: 01a13a90-3556-7106-a68c-26448c13bd47
+    reviewed: e6373e82232b6c8df5da5e35b69b0486c0b6b156a8aac3045d9dcfd4b72d73bc
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_local_directory_that_cannot_be_written_leaves_out_project_and_branch"
+  - node: 01a13a90-3556-7106-a68c-26451ac393a9
+    reviewed: ad4d5e33d790e7fe575c15ef2caa0a35a8c7fa87d9f1f82c4e59dd41877f24fe
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_local_directory_that_cannot_be_written_leaves_out_project_and_branch"
+  - node: 01a13a90-3556-7106-a68c-26476deda7e3
+    reviewed: 2b34a7269c6eea875ccdeabaa697472c2361270d7b063470ccce9713a44e8b82
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_fresh_installation_under_the_same_home_draws_a_new_token"
+  - node: 01a13a90-3556-7106-a68c-26482eb8c54c
+    reviewed: d2547f07435038d454425e3e7e4c525b641f914a0245b6665c6e277a01fa1fb4
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "a_deleted_local_directory_gives_a_new_project_token"
+  - node: 01a13a90-3556-7106-a68c-264ba1547489
+    reviewed: aedd53052156ff99dfb93191ee69b7ce0aeee6fffcc968e8c2d030e22d5d6ac6
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
+  - node: 01a13a90-3556-7106-a68c-264cddb2ff08
+    reviewed: bf7eb27ea4f2ff788d56cdbc92de53e4104e49543f80826d364be33a390f6e8e
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_order.rs"
+        name: "the_event_is_sent_after_the_command_has_written_its_output"
+  - node: 01a13a90-3556-7106-a68c-264d8215ca2b
+    reviewed: 83be8b9cdef46a7c8a1b8441f4c590e73734da60934fd292f609ae91f5215d41
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "the_switch_subcommands_open_no_connection"
+      - file: "crates/loft-cli/tests/schemas.rs"
+        name: "every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown"
+  - node: 01a13a90-3556-7106-a68c-264f419f9d9d
+    reviewed: 920c4341ec094bb33d98d7ca5c33d61c097b848fc634155e8e921510e073730a
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
+      - file: "crates/loft-cli/tests/schemas.rs"
+        name: "every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown"
+  - node: 01a13a90-3556-7106-a68c-265029868ddb
+    reviewed: 4e9c44032f77a59bff7eded34629566684072e2d9fd98ef65e5adaf1e334e0a9
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
+  - node: 01a13a90-3556-7106-a68c-2652f6b751e0
+    reviewed: d000ae92285b83d633e6489a48f8c9d42eefc00282b8b5dc51ba0560ed706576
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "a_collector_that_refuses_fails_or_stays_silent_changes_nothing_a_person_sees"
+  - node: 01a13a90-3556-7106-a68c-2653b2630807
+    reviewed: bfe675e334cfcc8af5ad6890116af6eaf6607bc727defae89db032fc85fcf516
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "a_collector_that_refuses_fails_or_stays_silent_changes_nothing_a_person_sees"
+  - node: 01a13a90-3556-7106-a68c-26543710c06a
+    reviewed: b169e7573b15d31820b1e555ed537825cb3f6772fe6f0410602c701885bf7d73
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "a_collector_that_refuses_fails_or_stays_silent_changes_nothing_a_person_sees"
+  - node: 01a13a90-3556-7106-a68c-2655175ed5dc
+    reviewed: 0f08371431e0b5e9643bb0f7e5986bb8d46d180c96641ba59c0d48d5268e2393
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "a_failed_event_is_neither_sent_again_nor_kept_for_a_later_run"
+  - node: 01a13a90-3556-7106-a68c-2656bc2a3e6a
+    reviewed: 3591fe1ca10297919ef119902e559821e6bf8c11d2c032512e6ec326ba0a8518
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "a_failed_event_is_neither_sent_again_nor_kept_for_a_later_run"
+  - node: 01a13a91-33a9-72de-95bb-48db26458eb2
+    reviewed: d626dade04e5aa113a3000b8233874cf10cced4a555be371fb189090ed490d74
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+  - node: 01a13a91-33a9-72de-95bb-48dc5fa49a93
+    reviewed: c99605dbe83abecd47dfa0a587f2d704629e3ab45a1836665ca1983b88680057
+    tests:
+      - file: "crates/loft-cli/tests/network_client.rs"
+        name: "a_named_collector_is_the_only_one_contacted"
+  - node: 01a13a91-33a9-72de-95bb-48dd312bb711
+    reviewed: 4f18a00f6c671ca074ad3097741868532bb6089b0c7152057dfa91f6f7047716
+    tests:
+      - file: "crates/loft-cli/src/network.rs"
+        name: "https_is_allowed_anywhere_and_http_only_on_the_loopback_interface"
+  - node: 01a13a91-33a9-72de-95bb-48de195eedc2
+    reviewed: a6622b499b0f0557c23b8aeb698943c86eddd45501419157f44407d9eaf3708c
+    tests:
+      - file: "crates/loft-cli/src/network.rs"
+        name: "https_is_allowed_anywhere_and_http_only_on_the_loopback_interface"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+  - node: 01a13a91-33a9-72de-95bb-48df032fc5b8
+    reviewed: 8af2c7e5fc226829f47bcc8817868e228ebbd4bc8ced8f0829ce3e34ddb53ef1
+    tests:
+      - file: "crates/loft-cli/src/network.rs"
+        name: "https_is_allowed_anywhere_and_http_only_on_the_loopback_interface"
+  - node: 01a13a91-33a9-72de-95bb-48e0aeab2b38
+    reviewed: 50184ccd61a4baa8da5bae5380b862bd3a5a4bad90ddc49d625aa85042c292b6
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+  - node: 01a13a90-3556-7106-a68c-265928699022
+    reviewed: 0a48aeba88b769226c6f9105f88f746bcf8935600d4d0df097cd84e3b0e96058
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "while_telemetry_is_off_nothing_is_sent_written_or_printed"
+  - node: 01a13a90-3556-7106-a68c-265aad07f75a
+    reviewed: e376f1f6fa1ac3b2a06e366caa306fbe4eb42bb89d07e3f8d94d145b37d87154
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "while_telemetry_is_off_nothing_is_sent_written_or_printed"
+  - node: 01a13a90-3556-7106-a68c-265b185c167a
+    reviewed: 0783117c95ec56a7689acb491f9270f30afcdc6cd0b73deda8dff0903a911ef0
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "while_telemetry_is_off_nothing_is_sent_written_or_printed"
+  - node: 01a13a90-3556-7106-a68c-265ce556b8ad
+    reviewed: a03ca345187f6f30c50742ea3e88224b25a2dcaccdc6400ff2ac8c1a197311f9
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "while_telemetry_is_off_nothing_is_sent_written_or_printed"
+  - node: 01a13a90-3556-7106-a68c-265d78901344
+    reviewed: 2d1968459ac9fcfb94959f377c9c68c31faf3480ab634d4463c6abfa949ac760
+    tests:
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "the_launcher_honours_both_switches"
+  - node: 01a13a90-3556-7106-a68c-265f0ddbd183
+    reviewed: 710d4782e752ae6167675eda689ca8a2a37a36644181be32b164b18e30aedf15
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "any_value_of_the_variable_but_internal_switches_telemetry_off"
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "while_telemetry_is_off_nothing_is_sent_written_or_printed"
+  - node: 01a13a90-3556-7106-a68c-2660eb750bfc
+    reviewed: 0887c6bd6b98c7d0b56449e1d48b59fdef65adda01b9768aacd28486aef35ffe
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "any_value_of_the_variable_but_internal_switches_telemetry_off"
+  - node: 01a13a90-3556-7106-a68c-266127afb2a4
+    reviewed: fb306af1dbac4b857c87c68f389d982eabfe87374599690a6d84c4c15ee77140
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "internal_ci_and_an_agent_set_the_mode_in_that_order"
+  - node: 01a13a90-3556-7106-a68c-266243da1d21
+    reviewed: cb5b5989bca9744934c0642da62c24c1e45a6fa8559c39f79dbfac3582a8d62b
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "internal_sends_nothing_after_loft_telemetry_off"
+  - node: 01a13a90-3556-7106-a68c-2663b515247a
+    reviewed: e86bd6a92edc2b83f56108eb9d639f2a29cdb11c340dbfb8309e9277a86b9bae
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "the_variable_set_to_off_sends_nothing_after_loft_telemetry_on"
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "the_variable_set_to_off_beats_a_recorded_on"
+  - node: 01a13a90-3556-7106-a68c-2665366573ec
+    reviewed: 9e6d93dbccfbfac15a5c88a67f49b4ec6414296f8678231bfe67662170dafb46
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "while_telemetry_is_off_nothing_is_sent_written_or_printed"
+  - node: 01a13a90-3556-7106-a68c-2666a99b5550
+    reviewed: 6f5e8d680e20095fe0eae77da672d40612c8be047239c382e5d030d1460c0aff
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_switches.rs"
+        name: "off_deletes_the_installation_token"
+  - node: 01a13a90-3556-7106-a68c-26678ed89b03
+    reviewed: bc10ba6d8a7e00b103bd93bf30f037c3b24e7c369c113b54e2a68b7ac9c32234
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_tokens.rs"
+        name: "on_after_off_draws_a_new_installation_token"
+  - node: 01a13a90-3556-7106-a68c-266a569960f9
+    reviewed: bb17751e547c31dbe9bfb479ec8710238b995469cc019e83282150ec7f57416d
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
+  - node: 01a13a90-3556-7106-a68c-266bf864496c
+    reviewed: a7f3217da3375c98e2a4f15a987170ac9676789cd0578b63e9320d72638b8ba8
+    tests:
+      - file: "crates/loft-cli/tests/schemas.rs"
+        name: "every_object_a_schema_describes_admits_no_field_it_does_not_name"
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_notice_names_every_field_of_the_event"
+  - node: 01a13a90-3556-7106-a68c-266c677694e9
+    reviewed: f8100a30302d2d9bbb3c9b9562b8e3d0227d5f3c26478f33bec20f102a2732c9
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_readme_s_sample_event_follows_the_schema"
+  - node: 01a13a90-3556-7106-a68c-266eda4a7888
+    reviewed: 03729d0c990bf331dd99a80d4b67f32dc9f0720e692ec7c38be1a0bc38e1c5e9
+    tests:
+      - file: "crates/loft-cli/tests/sends_telemetry.rs"
+        name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+  - node: 01a13a90-3556-7106-a68c-266f986642f8
+    reviewed: f44050e8c66091303474d86e67cc23c1f0907030354ac62ac7a6bbc1c3daa86e
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_outcome_and_error_kinds_are_the_same_with_or_without_json"
+  - node: 01a13a90-3556-7106-a68c-2670e342cb97
+    reviewed: ccfd4f1bb81935ccb193bc1b7326d660d6b03180a23b1dd8b87da6fb1cffa351
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_outcome_and_error_kinds_are_the_same_with_or_without_json"
+  - node: 01a13a90-3556-7106-a68c-2671bfe977a1
+    reviewed: dfb346d96350a1d9b98f6adc814b04802fc31d1e6c829d6f581de1774bdae5fa
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "error_kinds_keep_the_order_the_command_reports_them_in"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_outcome_and_error_kinds_are_the_same_with_or_without_json"
+  - node: 01a13a90-3556-7106-a68c-2672d40f39b5
+    reviewed: 64fc9777fe7a9a101d0453d429dbe7c61e2747d498ba22f8bbc7149ca38778b7
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "a_command_that_reports_no_error_has_no_error_kinds"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+  - node: 01a13a90-3556-7106-a68c-26743faeb1a0
+    reviewed: d56e264fa265e1123720d999c4837d5ee795aae9f958eb9a2ce8881d3f5f9558
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+      - file: "crates/loft-cli/tests/version.rs"
+        name: "the_first_line_is_loft_and_the_tool_version"
+  - node: 01a13acd-2cac-7382-9410-cfbdad2b9e55
+    reviewed: 015692a675fccc39f5175a1ab1725f1f53610a8874b3cdbca23a4e1044444071
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_operating_system_and_architecture_has_its_name_and_any_other_is_other"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_platform_is_the_one_the_binary_was_built_for"
+  - node: 01a13acd-2cac-7382-9410-cfbe5fc613c3
+    reviewed: 6727d154b143cbec5c83625b97a41da5305695c882bce6dc6b112784a19225a9
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_operating_system_and_architecture_has_its_name_and_any_other_is_other"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_platform_is_the_one_the_binary_was_built_for"
+  - node: 01a13acd-2cac-7382-9410-cfc0977194f2
+    reviewed: 74113c8bbb91c346afe128dce30a5a436f5955832193839321d506a7796153fe
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_install_record_sets_installed_by"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_executable_inside_node_modules_at_ask_loft_is_installed_by_npm"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_install_record_that_does_not_parse_leaves_the_way_inferred_and_prints_nothing"
+  - node: 01a13a90-3556-7106-a68c-26760fc99952
+    reviewed: 4e2fb950e162db5f21af7c1827724e8b6aee573cbdcfee7cde5f69ba10cfed4d
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_time_is_the_hour_in_utc"
+  - node: 01a13a90-3556-7106-a68c-267796809678
+    reviewed: d2d9a8ed3a8a94dbf5a8e29fa86a63aff8546d251a8be2c3aa97015c2c9f23bc
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_time_is_the_hour_in_utc"
+  - node: 01a13a90-3556-7106-a68c-2679db317325
+    reviewed: de34bf02e563009b3f33bf5026246991e6ce6ee4a9abb4fef453c5b5ee3e9a2e
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_duration_falls_in_its_bucket_at_both_edges"
+  - node: 01a13a90-3556-7106-a68c-267a5b0a8662
+    reviewed: 66368da8bbe763ecf02fba8b18e2c008fb540f5e053d4c938b186c67b2f8b230
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_duration_falls_in_its_bucket_at_both_edges"
+  - node: 01a13a90-3556-7106-a68c-267b9765b6df
+    reviewed: a86950b8b3b7881d46815229a01dbd9d361d86450564b965c0b2adcb08c03357
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_duration_falls_in_its_bucket_at_both_edges"
+  - node: 01a13a90-3556-7106-a68c-267c848d2f92
+    reviewed: bdf4bd7fd12a11007a468bc0be863d3cc26d3a52166943d86d5ed0cbf4cdd6fb
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_duration_falls_in_its_bucket_at_both_edges"
+  - node: 01a13a90-3556-7106-a68c-267d4bb2cf32
+    reviewed: c7dec67a910d9ff879472ba2f9fdd11e64071adc17e1139140a27e8e98b1a340
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_duration_falls_in_its_bucket_at_both_edges"
+  - node: 01a13a90-3556-7106-a68c-267f4f19f39e
+    reviewed: e3da7129971a51a5fc8351f2ea4264d715acb207fd1a2eb1fb90dd25bb759c9a
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "internal_ci_and_an_agent_set_the_mode_in_that_order"
+  - node: 01a13a90-3556-7106-a68c-2680443bb3f6
+    reviewed: 5d5b7a74089565e0b89ef4faa9eafa005cf9f8da438d11658c3c3843db309962
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "internal_ci_and_an_agent_set_the_mode_in_that_order"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_agent_inside_ci_is_still_named"
+  - node: 01a13a90-3556-7106-a68c-26819a860609
+    reviewed: c1140a7b3bba55f84648387551139c28bb769b585a7a20345c7208c02091d078
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "internal_ci_and_an_agent_set_the_mode_in_that_order"
+  - node: 01a13a90-3556-7106-a68c-2682629d7c96
+    reviewed: 7457c8d846a270cc21787edaebcaca7b5c125b961efb2b2d3eae3a2f6af38c1a
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "a_run_whose_standard_error_is_a_terminal_is_interactive"
+  - node: 01a13a90-3556-7106-a68c-2683dd6f15ca
+    reviewed: 1114de8e2ede4ec552e20cda7094755f695cba1103e90e607e3c0db37fc9d3d4
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "internal_ci_and_an_agent_set_the_mode_in_that_order"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+  - node: 01a13a90-3556-7106-a68c-26858a4e4f5d
+    reviewed: 58f0654772b5851bb0408439e2f65364829e8c86bba7b515e1f8168d1f264391
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_agent_is_recognised_by_its_markers_in_order"
+  - node: 01a13a90-3556-7106-a68c-268661043d5f
+    reviewed: 22270e01b48f63a5f81f12fe07657443f2886bcfab5d2f4f43197a1875e9fb9b
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_agent_is_recognised_by_its_markers_in_order"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "a_codex_plugin_inside_claude_code_is_claude_code"
+  - node: 01a13a90-3556-7106-a68c-2688a1633fb9
+    reviewed: d1d7be8ccf926675e56253b2fc43578fd5314ec1e3cea071f716ca328613195d
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "each_agent_is_recognised_by_its_markers_in_order"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "an_agent_inside_ci_is_still_named"
+  - node: 01a13acd-2cad-74ea-9479-766d2581801b
+    reviewed: 0a8ae50cfc196968a57a96e4c65e29fa21c0394cf534ba86847a7f23610c8080
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "a_codex_variable_outside_the_four_markers_recognises_no_agent"
+  - node: 01a13a90-3556-7106-a68c-26878b793048
+    reviewed: 36edd69135babee2302f78e88ce9d4c1cfddc8be4bb77efa16de0bc34cdaf667
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "the_generic_variables_name_an_agent_by_their_beginning"
+  - node: 01a13acd-6513-768b-bcf2-2a3af3d65e4b
+    reviewed: ee59aeb19cad7a6e69637292a71d711792db0c6e52ac093d7f1068c78327d553
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "the_generic_variables_name_an_agent_by_their_beginning"
+  - node: 01a13a90-3556-7106-a68c-2689609cf06b
+    reviewed: cd3d4bddf658c4e8df9fa52dada1b253dde6be39c400cd1ec8ae227538e0537e
+    tests:
+      - file: "crates/loft-cli/src/telemetry/event.rs"
+        name: "no_marker_leaves_the_agent_unknown"
+  - node: 01a13a90-3556-7106-a68c-268a196bf54a
+    reviewed: 4e7fc600daa3066e1ee2db37e536491fa9a41a7fffc1a4ab0bd5830f4b987a29
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "no_marker_value_path_part_or_text_of_the_tree_appears_in_the_event"
+  - node: 01a13a90-3556-7106-a68c-268cb3a4c1b3
+    reviewed: 8488ee5f72bda6de84493d633923d208b828c71ccb8eb3d5be8a2cae058e0cb7
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "every_event_has_its_own_random_id"
+  - node: 01a13a90-3556-7106-a68c-268d3cee7f2e
+    reviewed: 371e93debdf48c7fda334e171b62e7a93d42ef42e520573f0053a19468b89a89
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_follows_its_schema_and_names_the_run"
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "every_event_has_its_own_random_id"
+  - node: 01a13a90-3556-7106-a68c-268f7078183c
+    reviewed: 90d890408b38b6ded17418b02db3bba9a4a1fe202a554b01e20388477fc46687
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "no_marker_value_path_part_or_text_of_the_tree_appears_in_the_event"
+  - node: 01a13a90-3556-7106-a68c-2690c023b422
+    reviewed: 3a1b44433ab504902ef835c7610dc333b86ece80e0f0fa35435d876afa36d4e0
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_git_remote_and_the_configured_names_never_reach_the_event"
+  - node: 01a13a90-3556-7106-a68c-269150fb7dd5
+    reviewed: 8569e1c40d0fe9ce2a91d3ffff767d7d1aca242cf8630933e49d171fce90f2b5
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_git_remote_and_the_configured_names_never_reach_the_event"
+  - node: 01a13a90-3556-7106-a68c-269277a30a1d
+    reviewed: b441cb0385238e5a61f521bfdca5f18b7e3f1a255d61bfbfa3dfffdf5f6b455d
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_carries_no_text_from_the_tree_the_files_the_repository_or_the_environment"
+  - node: 01a13a90-3556-7106-a68c-26930a6ea083
+    reviewed: d84ce8037c35483a06d2e8ff74abc59a7a87cd79ddac7d529ac88231c4c6614f
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "no_marker_value_path_part_or_text_of_the_tree_appears_in_the_event"
+  - node: 01a13a90-3556-7106-a68c-2694e485481b
+    reviewed: 7f79cab8cbfb67dad497c4d5f8ce94b52876ef36a0a74c3bdfb9426e70664635
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_event_carries_no_text_from_the_tree_the_files_the_repository_or_the_environment"
+  - node: 01a13a90-3556-7106-a68c-269742f8186f
+    reviewed: b6302af7bdb8d7e2e650fca646e919350fe83e06e6ee68918af70f6559e79cc9
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_order.rs"
+        name: "the_notice_is_printed_before_the_event_is_sent"
+  - node: 01a13a90-3556-7106-a68c-2698015b285f
+    reviewed: 0d41cda45df44b73603dab78294eefba1c687074aa0019e64419404ccfaea20b
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+  - node: 01a13a90-3556-7106-a68c-2699a18c1bc2
+    reviewed: 6455d9c5c6cbe8fdd1c2b69d4fb81543531d61f3d02fcf21c1b77759738d5d54
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+  - node: 01a13a90-3556-7106-a68c-269a7be8d6fa
+    reviewed: d0140a7a1498292c9c4f725c8a5d98355a3990845e501203eeaff40858d248e5
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+  - node: 01a13a90-3556-7106-a68c-269b80c240d4
+    reviewed: cc9dff59028746d77dad4515226b6b3f312da7ba6f9a426277dcc2c18ecd7b23
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "a_later_run_prints_no_notice"
+  - node: 01a13a90-3556-7106-a68c-269d9057bec8
+    reviewed: 808162523a64becc920ba9b78c3ac363cf0d686c9d702df4af0c4e2cd91b0667
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_notice_names_every_field_of_the_event"
+  - node: 01a13a90-3556-7106-a68c-269ef844029f
+    reviewed: 51ef03f635de0ac7ccb093fcb160fba7b9ded34a54d5cce48a3f7cd960205f6e
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+      - file: "crates/loft-cli/src/telemetry/notice.rs"
+        name: "the_notice_names_the_address_both_switches_and_the_retention"
+  - node: 01a13a90-3556-7106-a68c-269f8675cb2a
+    reviewed: ef2c2dabfaa86b0c73ca198e6f594d5c2b4d9c0f7a2b5693e98dcf6665532c3c
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+  - node: 01a13a90-3556-7106-a68c-26a02a9f270e
+    reviewed: d8b494f1fa73aa575b91743f7bbb47035c034e34136e1b5538681ff374c5b97c
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+  - node: 01a13a90-3556-7106-a68c-26a1fe9a3566
+    reviewed: 6924a89ea26be66dcde45f8861b539c210625946aa312223e3bbc189dc5a0bfa
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+      - file: "crates/loft-cli/src/telemetry/notice.rs"
+        name: "the_notice_names_the_address_both_switches_and_the_retention"
+  - node: 01a13a90-3556-7106-a68c-26a2689c1033
+    reviewed: 700e51b147a14fb126672d9d74f5397364bfd9d78773968de55145ac0e3831bb
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+  - node: 01a13a90-3556-7106-a68c-26a3d900e6a6
+    reviewed: 31e6ceed9a9c09595c463172424a5bf405a37c435f8e5efd124122a338096f54
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "the_first_run_prints_the_notice_on_standard_error_and_still_sends"
+      - file: "crates/loft-cli/src/telemetry/notice.rs"
+        name: "the_notice_names_the_address_both_switches_and_the_retention"
+  - node: 01a13a90-3556-7106-a68c-26a55dc444b3
+    reviewed: 05f59d28072e470c4c7975c2e48c787404ce7122c92c4be6e86cf8e8a5d9a046
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_notice.rs"
+        name: "a_notice_that_cannot_be_recorded_is_printed_again_and_the_event_still_sent"
   - node: 01a12ff0-f5e5-7095-8fa8-24edcc9b44db
     reviewed: c9ede49992a2253856d8f616d48fe2158f53e2cde7efc752806243cecfbc79e6
     tests:
@@ -7451,6 +8523,127 @@ links:
     tests:
       - file: "crates/software-plant/tests/clock.rs"
         name: "a_run_outside_any_scenario_leaves_the_epoch_unset"
+  - node: 01a13a90-3557-734a-9b7f-e5674386be99
+    reviewed: df66380e5f2fa89d43b5d38666bfde901cc4b863eb0f302b981701f97a89c886
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_records_events_in_the_order_received"
+  - node: 01a13a90-3557-734a-9b7f-e568aece7f5b
+    reviewed: 53471fb1140c520a692791ceeec02b2908fb93c15a7dea257b9a949874c424b8
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_records_events_in_the_order_received"
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_records_an_event_sent_twice_once"
+  - node: 01a13a90-3557-734a-9b7f-e56977767e2b
+    reviewed: 562429c18fafb741512f75af28203e5fe765332881c4a55dbba7c0a5b8b18567
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "while_telemetry_is_off_nothing_is_sent_written_or_printed"
+  - node: 01a13a90-3557-734a-9b7f-e56bfd6f6c2b
+    reviewed: e53e0261dff4b9d19dc48414b1f9976a5341cace44377ac9070fae2b1cec8ad3
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+  - node: 01a13a90-3557-734a-9b7f-e56c2f9f49ba
+    reviewed: 5b34f5ccbe8ef77e1fe52db1e599c48a970eeb4fb7f92f7edcbf5bcf9c7d0256
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "a_refusing_collector_refuses_the_connection"
+  - node: 01a13a90-3557-734a-9b7f-e56d4ba29f05
+    reviewed: 48d67dc8e6ae8979a2d811e521751cc5dd1cfc42a420daa23da73a9ec61f765e
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "a_failing_simulator_answers_every_request_with_its_status"
+  - node: 01a13a90-3557-734a-9b7f-e56e90827fc5
+    reviewed: 56a0e3ef309b9c16eb4d27b91b9966717db64e0b7036e872c8cc1911a7760d18
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "a_silent_simulator_accepts_the_connection_and_never_answers"
+  - node: 01a13af6-c86d-7585-a796-bfca01185b86
+    reviewed: 813c079830282643cc52a51b1d846d449f15bfdeae5374cafa4b221e6cdd4ea0
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+  - node: 01a13af6-c86d-7585-a796-bfcb9949fcb4
+    reviewed: 7c983264b9d0ea25ff0a7ca71a9ba8886d1fd202d4b827fb48d5e34673d58bd1
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_records_an_event_sent_twice_once"
+  - node: 01a13af6-c86d-7585-a796-bfccdb2fdbde
+    reviewed: e0e0d2c9af5979c5cf0853944a7144703f28c40e62c2aefaeaac77efeae5e1de
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_records_no_event_it_refuses"
+  - node: 01a13af6-c86d-7585-a796-bfcd09b64b9b
+    reviewed: 80eef971dcd7ca68b8593306de3d67f23de432b6ecf2be446adc0325c2856c46
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_records_no_event_it_refuses"
+  - node: 01a13af6-c86d-7585-a796-bfce104b239c
+    reviewed: 30d99c2325bf246a7235e263c2edf172cec67e5deb43da09cc86106b6b508b23
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+  - node: 01a13af6-c86d-7585-a796-bfcf3a2ba231
+    reviewed: e0d39b044767b5e26853663334bebb7c004c8a4c4182923a308569c42df0ed3a
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+  - node: 01a13af6-c86d-7585-a796-bfd06aadf874
+    reviewed: c77dd0ebd9b7d3bec2bc8447d265915dfbdc26c26f81449cdd7d2475ea024e75
+    tests:
+      - file: "crates/loft-cli/tests/collector_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_states"
+  - node: 01a13a90-3557-734a-9b7f-e5712706aba9
+    reviewed: d52f2aa904e8ff51ed2d457be73236fa8b4f22a5cdc6439c5165b44eca473fc2
+    tests:
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "the_simulator_answers_the_latest_release_in_github_s_shape"
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "the_simulator_skips_a_newer_draft_and_a_newer_prerelease_as_github_does"
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "a_misreporting_simulator_answers_its_release_whatever_its_flags"
+  - node: 01a13a90-3557-734a-9b7f-e572d3f9fccc
+    reviewed: 633cb6cdc79617c9c1f06f089c2419bc507ddfd49500ddf7f99d922b557fd597
+    tests:
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "the_simulator_skips_a_newer_draft_and_a_newer_prerelease_as_github_does"
+  - node: 01a13a90-3557-734a-9b7f-e57324734716
+    reviewed: 9156b23128af77ae6ab63a31bacd4a73f1a273abfed24a71db1429986683382a
+    tests:
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "a_simulator_can_list_a_release_whose_tag_is_not_a_version"
+  - node: 01a13a90-3557-734a-9b7f-e575666b9daf
+    reviewed: e8ec0b54c814564c7159152590c4ec66d777fcfa4e25f77bf1c3d84cecd913e6
+    tests:
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "a_failing_simulator_answers_with_its_status"
+  - node: 01a13a90-3557-734a-9b7f-e576de2f052d
+    reviewed: 1378133ceb9e213b3a2ed4582e33e703683d1998fed14e2551f733913fba161d
+    tests:
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "a_rate_limited_simulator_answers_as_github_does_when_the_limit_is_spent"
+  - node: 01a13a90-3557-734a-9b7f-e577590b45d7
+    reviewed: 56a0e3ef309b9c16eb4d27b91b9966717db64e0b7036e872c8cc1911a7760d18
+    tests:
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "a_silent_simulator_never_answers_and_a_refusing_one_refuses"
+      - file: "crates/loft-cli/tests/telemetry_failures.rs"
+        name: "a_silent_collector_and_a_silent_release_feed_add_at_most_the_time_limit"
+  - node: 01a13a90-3557-734a-9b7f-e579f2e6839b
+    reviewed: fa1890472ca3a46f1e02968111ce4a7ea037d210c41e5898ec9ffaaca8d19ac2
+    tests:
+      - file: "crates/loft-cli/tests/release_feed_contract.rs"
+        name: "the_simulator_counts_the_requests_it_receives"
+      - file: "crates/loft-cli/tests/update_check.rs"
+        name: "a_run_within_a_day_of_the_last_answer_asks_nothing"
   - node: 01a13654-6e12-74a1-ad7f-e7d4c0dc3e58
     reviewed: 3f41a2be394b6b630da9e6129a912554832b8a0f5b879b067f3c43e53b5362f0
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/changing-a-specified-product.md, read it there."
@@ -8186,6 +9379,22 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_manifest_carries_the_version_of_loft"
+  - node: 01a13a90-3554-7631-bb13-097fbc9045c0
+    reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
+    tests:
+      - file: "crates/loft-cli/tests/network_client.rs"
+        name: "only_the_network_client_opens_a_connection"
+      - file: "crates/loftspec/tests/package.rs"
+        name: "the_library_uses_no_file_network_process_or_environment"
+  - node: 01a13b18-98fc-71bc-8c93-e189c71c479d
+    reviewed: 7b74fefe55d3fa866b5072bc224d6be8f2b84248721f6fd9289a7f58e632751b
+    tests:
+      - file: "crates/loft-cli/tests/network_client.rs"
+        name: "a_named_proxy_carries_the_request"
+      - file: "crates/loft-cli/tests/network_client.rs"
+        name: "the_first_proxy_variable_set_wins"
+      - file: "crates/loft-cli/tests/network_client.rs"
+        name: "a_host_that_no_proxy_lists_is_reached_directly"
   - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
     reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
     tests:
@@ -8282,10 +9491,12 @@ links:
       - file: "crates/loftspec/tests/package.rs"
         name: "ci_builds_the_library_with_the_toolchain_its_rust_version_names"
   - node: 01a136db-1a3c-76b9-8641-d09dc448a2d0
-    reviewed: 5bdbf0e4a09b1a780dc9aa50e5bfa481285bd2853b5dd93d34757d80e771b407
+    reviewed: 855b8a234e1314daeede190f9cad1e8a2f583e4680a1f2a111ac2b096859ebc5
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
-        name: "no_package_has_an_install_script_and_each_names_the_repository"
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
+      - file: "crates/loft-cli/tests/npm_install.rs"
+        name: "the_install_script_records_npm_for_the_platform_binary_and_prints_nothing"
   - node: 01a136db-1a3c-76b9-8641-d09e74566205
     reviewed: 25cb6c54d25827748316f14549341d50dceedd00e30bdb4b51b129125ea2aa74
     tests:

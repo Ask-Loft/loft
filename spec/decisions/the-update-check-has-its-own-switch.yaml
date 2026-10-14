@@ -1,0 +1,61 @@
+key: 01a13a90-3554-7631-bb13-09a4ff829ed2
+slug: the-update-check-has-its-own-switch
+title: "The update check has its own switch"
+context: "The update check also reaches a service over the network: GitHub sees the address of each request. It sends nothing about the person or the project, and its use is to them rather than to the maintainers."
+state:
+  kind: accepted
+  selectedOption: 01a13a90-3554-7631-bb13-09a7127b6daa
+  outcome: "`loft update-check off` and `LOFT_UPDATE_CHECK` switch the update check off; the telemetry switches leave it as it was."
+drivers:
+  - key: 01a13a90-3554-7631-bb13-09a5a0fa9121
+    kind: local
+    label: "Separate consent"
+    statement: "A person who refuses telemetry can still be told of a newer release, and one who keeps telemetry can refuse the check."
+  - key: 01a13a90-3554-7631-bb13-09a63b963971
+    kind: local
+    label: "One switch for the network"
+    statement: "A person who wants `loft` to reach no service at all sets as few switches as possible."
+options:
+  - key: 01a13a90-3554-7631-bb13-09a7127b6daa
+    title: "Its own switch"
+    description: "The update check is switched on and off apart from telemetry."
+  - key: 01a13a90-3554-7631-bb13-09a8f167d2f1
+    title: "The telemetry switch"
+    description: "The telemetry switches turn the update check off too, and it has none of its own."
+  - key: 01a13a90-3554-7631-bb13-09a9986c7aa8
+    title: "Both"
+    description: "The update check has its own switch, and switching telemetry off also turns it off."
+assessments:
+  - option: 01a13a90-3554-7631-bb13-09a7127b6daa
+    driver: 01a13a90-3554-7631-bb13-09a5a0fa9121
+    rating: supports
+    rationale: "each is chosen on its own"
+  - option: 01a13a90-3554-7631-bb13-09a7127b6daa
+    driver: 01a13a90-3554-7631-bb13-09a63b963971
+    rating: conflicts
+    rationale: "two switches stop all network use"
+  - option: 01a13a90-3554-7631-bb13-09a8f167d2f1
+    driver: 01a13a90-3554-7631-bb13-09a5a0fa9121
+    rating: conflicts
+    rationale: "refusing telemetry also refuses update notices"
+  - option: 01a13a90-3554-7631-bb13-09a8f167d2f1
+    driver: 01a13a90-3554-7631-bb13-09a63b963971
+    rating: supports
+    rationale: "one switch stops all network use"
+  - option: 01a13a90-3554-7631-bb13-09a9986c7aa8
+    driver: 01a13a90-3554-7631-bb13-09a5a0fa9121
+    rating: conflicts
+    rationale: "refusing telemetry also refuses update notices"
+  - option: 01a13a90-3554-7631-bb13-09a9986c7aa8
+    driver: 01a13a90-3554-7631-bb13-09a63b963971
+    rating: supports
+    rationale: "the telemetry switch stops all network use"
+consequences:
+  - key: 01a13a90-3554-7631-bb13-09aa42f64999
+    kind: cost
+    statement: "A person who wants no network use at all sets both switches."
+subjects:
+  - role: affected
+    node: 01a13a90-3556-7106-a68c-26574c7ad289
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-2609ebc00b40

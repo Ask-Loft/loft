@@ -1,0 +1,60 @@
+key: 01a13a90-3555-73cc-af6c-ca20bdd015c8
+slug: loft-telemetry
+name: "`loft telemetry`"
+body: "Switches telemetry on and off for the user on the machine, and reports its state. It reads no tree and sends no event."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a13a90-3556-7106-a68c-26574c7ad289
+requirements:
+  - key: 01a13a90-3555-73cc-af6c-ca21c9f6acca
+    statement:
+      form: event_driven
+      when: "a person runs `loft telemetry off` or `loft telemetry on`"
+      system: "`loft telemetry`"
+      shall: "record the choice in the user's configuration directory and exit 0."
+    criteria:
+      - key: 01a13a90-3555-73cc-af6c-ca22164bb57a
+        name: "After `loft telemetry off`, `loft telemetry status` reports telemetry off."
+      - key: 01a13a90-3555-73cc-af6c-ca23e1f4ec28
+        name: "After `loft telemetry on`, `loft telemetry status` reports telemetry on unless `LOFT_TELEMETRY` switches it off."
+      - key: 01a13a90-3555-73cc-af6c-ca2429f392eb
+        name: "Running the same subcommand twice leaves the same state."
+  - key: 01a13a90-3555-73cc-af6c-ca25fc025c03
+    statement:
+      form: event_driven
+      when: "a person runs `loft telemetry status`"
+      system: "`loft telemetry`"
+      shall: "report whether telemetry is on, which switch decided it, the collector's address and whether the notice has been printed."
+    criteria:
+      - key: 01a13a90-3555-73cc-af6c-ca26faed97b9
+        name: "The report names `LOFT_TELEMETRY` when the variable decided the state."
+      - key: 01a13a90-3555-73cc-af6c-ca27ad54c155
+        name: "The report names `loft telemetry off` when the recorded choice decided the state."
+      - key: 01a13a90-3555-73cc-af6c-ca28fa7c3c68
+        name: "The report names the default when neither switch is set."
+      - key: 01a13a90-3555-73cc-af6c-ca29b34a1b32
+        name: "The report names the collector's address."
+      - key: 01a13a90-3555-73cc-af6c-ca2a8738872f
+        name: "The report states whether the notice has been printed."
+  - key: 01a13a90-3555-73cc-af6c-ca2b385ede5f
+    statement:
+      form: ubiquitous
+      system: "`loft telemetry`"
+      shall: "send no event and ask GitHub nothing."
+    criteria:
+      - key: 01a13a90-3555-73cc-af6c-ca2caad67a09
+        name: "No network connection is opened by any `loft telemetry` subcommand."
+  - key: 01a13a90-3555-73cc-af6c-ca2d5e84858e
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft telemetry`"
+      shall: "give the resulting state of telemetry as its outcome."
+    criteria:
+      - key: 01a13a90-3555-73cc-af6c-ca2e8bf13ef2
+        name: "The outcome is `on` when telemetry is on after the command."
+      - key: 01a13a90-3555-73cc-af6c-ca2f82c71224
+        name: "The outcome is `off` when telemetry is off after the command."
+      - key: 01a13a90-3555-73cc-af6c-ca30a9600dbe
+        name: "The document validates against `schemas/telemetry.json`."

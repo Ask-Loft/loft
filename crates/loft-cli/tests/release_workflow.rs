@@ -1,6 +1,7 @@
 //! What the release workflow, `.github/workflows/release.yml`, promises, held by guards over its
 //! jobs: a version tag starts it, the release check, the gate and `loft verify` run on the tag's
-//! commit before anything is built, the npm packages are packed and run before the approval and
+//! commit before anything is built, the build is `.github/workflows/build.yml`, which also runs
+//! by hand before a tag, the npm packages are packed and run before the approval and
 //! run again before anything is published, the GitHub release carries every platform's binary,
 //! and no registry token is stored in the repository.
 
@@ -13,6 +14,11 @@ use software_plant::real_git::real_git;
 
 fn release() -> String {
     read(".github/workflows/release.yml")
+}
+
+/// The build workflow, which the release calls and which also runs by hand.
+fn build() -> String {
+    read(".github/workflows/build.yml")
 }
 
 /// What the release's check job runs in place of a step of CI's gate, or nothing where it does
@@ -117,21 +123,30 @@ fn the_check_job_runs_the_gate_and_verify_and_the_build_waits_for_it() {
         let lines = job(&workflow, name);
         assert_eq!(lines[0], format!("needs: {needs}"), "the job `{name}`");
     }
+    assert_eq!(
+        job(&workflow, "build")[1..],
+        ["uses: ./.github/workflows/build.yml"]
+    );
+    assert_eq!(
+        block(&build(), "on:", " "),
+        ["workflow_call:", "workflow_dispatch:"]
+    );
 }
 
 #[test]
 fn the_github_release_carries_an_archive_of_each_platform_s_binary() {
     let workflow = release();
-    let platforms: Vec<String> = matrix(&workflow).into_iter().map(|(p, _)| p).collect();
+    let builder = build();
+    let platforms: Vec<String> = matrix(&builder).into_iter().map(|(p, _)| p).collect();
     assert_eq!(platforms.len(), 6, "{platforms:?}");
-    let build = job(&workflow, "build");
+    let steps = job(&builder, "build");
     for line in [
         "mkdir -p \"binaries/${{ matrix.platform }}\"",
         "cp \"target/${{ matrix.target }}/release/$executable\" \"binaries/${{ matrix.platform }}/\"",
         "name: binary-${{ matrix.platform }}",
         "path: binaries",
     ] {
-        build.position(line);
+        steps.position(line);
     }
     let package = job(&workflow, "package");
     for line in [
@@ -153,7 +168,7 @@ fn the_github_release_carries_an_archive_of_each_platform_s_binary() {
 fn the_build_the_npm_packages_and_their_tests_name_the_same_six_platforms() {
     let supported = supported();
     let mut built = Vec::new();
-    for (platform, target) in matrix(&release()) {
+    for (platform, target) in matrix(&build()) {
         let (os, cpu) = platform.split_once('-').unwrap();
         let system = match os {
             "darwin" => "apple-darwin",

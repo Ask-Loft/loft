@@ -61,6 +61,19 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   `UnderivableTag` and `TagCollision`; `Problem::ListedByTwoGroups` names its groups;
   `VocabularyEntry.name` is a `String` and `V1Sidecar` gains `tag_names`; `write_sites` is new;
   `MergeError` gains `DuplicateKey` and `Unplaced`, and `Problem` gains `MovedAndChanged`.
+- Telemetry, on by default: each run of `check`, `find`, `fmt`, `import v1`, `init`, `publish`,
+  `reconcile`, `render`, `skill install` and `verify` sends one pseudonymous command event to
+  `https://askloft.ai/api/telemetry` after its output, within 500 milliseconds and printing
+  nothing. A notice on standard error before the first event says what is sent and how to
+  switch it off. `loft telemetry off|on|status` and `LOFT_TELEMETRY=off` switch it off;
+  `schemas/telemetry-event.json` lists every field. See "Telemetry and the update check" in
+  the README.
+- The update check: at most once a day `loft` asks GitHub for the latest release, and a later
+  run tells of a newer one with the way to update. `loft update-check off|on|status` and
+  `LOFT_UPDATE_CHECK=off` switch it off.
+- `loft record-install npm|cargo|release-binary` records how `loft` was installed. The npm
+  package runs it from a `postinstall` script, which never fails an install; without a record,
+  `loft` infers the way from where it lies.
 
 ## 2.0.3 (2026-10-14)
 

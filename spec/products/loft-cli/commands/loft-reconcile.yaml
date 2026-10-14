@@ -3,7 +3,9 @@ slug: loft-reconcile
 name: "`loft reconcile`"
 body: "Compares `loft.trace.yaml` with the tree and with the files that hold the tests, prints the reconciliation findings with an exit code a CI job can gate on, and accepts the links a reviewer has checked."
 tags:
+  - checks-for-updates
   - reads-tree
+  - sends-telemetry
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
