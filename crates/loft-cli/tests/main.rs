@@ -8,6 +8,8 @@ mod common;
 mod conformance;
 #[path = "common/help.rs"]
 mod help;
+#[path = "common/markdown.rs"]
+mod markdown;
 #[path = "common/repo.rs"]
 mod repo;
 #[path = "common/schema.rs"]
@@ -35,6 +37,8 @@ mod reconcile;
 mod render;
 mod schemas;
 mod skill;
+mod skill_files;
+mod skill_format;
 mod skill_install;
 mod test_modules;
 mod verify;

@@ -12,7 +12,7 @@ mod write;
 
 pub use accept::{Refusal, accept, accept_stale};
 pub use findings::{Reconciled, TestFile, TestFiles, TraceFinding, TraceRule, reconcile};
-pub use read::read;
+pub use read::{FILE_FIELDS, LINK_FIELDS, TEST_FIELDS, read};
 pub use write::write;
 
 use std::collections::HashMap;

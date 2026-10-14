@@ -6809,6 +6809,66 @@ links:
   - node: 01a13754-833e-725b-b941-63475455b1bd
     reviewed: 627c2b318b88f22f6ffe0b39970c4ed2be650d5217eb5dc64b568777ff0efa71
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/new-document.md, read it there."
+  - node: 01a13654-6e12-74a1-ad7f-e81c49c02d9a
+    reviewed: ac3dd0655198efeeae6d87c26a26178dc593bd02158fbbe746e4e012e6ad7716
+    tests:
+      - file: "crates/loft-cli/tests/skill_files.rs"
+        name: "the_files_table_names_the_file_of_each_kind_of_record"
+  - node: 01a13654-6e12-74a1-ad7f-e81d9ed697c5
+    reviewed: a437393f9a4b9dea2a97f81787b90f9f85b421334540aa278a1cba01f22db085
+    tests:
+      - file: "crates/loft-cli/tests/skill_files.rs"
+        name: "the_files_table_names_each_command_that_writes_a_file"
+  - node: 01a1383e-2e64-72e5-b7f4-bc3c64ad28dc
+    reviewed: 037fc1a27a3c61bddb715589a13d1e3c953649447af32e40225bbf79e3d7f253
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "the_trace_file_and_each_of_its_fields_are_described"
+  - node: 01a13654-6e12-74a1-ad7f-e81f36179b75
+    reviewed: fc06e19c13cc30e4b93a6adacccb7a76c92500ffee8524ea0d67d3e74db50d52
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "each_record_kind_the_reader_accepts_is_described_with_its_fields_in_order"
+  - node: 01a13654-6e12-74a1-ad7f-e82025743019
+    reviewed: f3fb229651c7bbb1c39be580e5862f20516173d51e6291441462031666157466
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "each_field_is_marked_required_or_optional_as_the_schema_holds_it"
+  - node: 01a13654-6e12-74a1-ad7f-e821aae0cd60
+    reviewed: fd2de76102a3621871441ad623e2f2133d03da8554a6313fa421d2ae1c9f21be
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "each_field_of_a_closed_set_lists_its_values"
+  - node: 01a13654-6e12-74a1-ad7f-e8239f1b7a06
+    reviewed: bbedb4b95c391297bd3d7ba79dee967a48c07543fda7c8dcc419b0d795b80797
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "each_statement_form_is_shown_with_its_slots_in_order"
+  - node: 01a13654-6e12-74a1-ad7f-e8240c210306
+    reviewed: 586a24f152cd3023b785d75ff383b692870a8dd6affa17461b4342b9b99358b5
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "each_statement_form_is_shown_with_the_sentence_loft_renders"
+  - node: 01a13654-6e12-74a1-ad7f-e826ffb21d78
+    reviewed: 6c553fd7fb4a9cd84563a92a1fe35dfa87b891a7ec67efad151befe194ab0587
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "each_edge_is_described_with_the_kinds_at_its_ends"
+  - node: 01a13754-833e-725b-b941-6348a3a982e5
+    reviewed: 01240181dc80de998128aee7c5c34f21e44cb20f010e5a5d3001b8160626f6cb
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "each_reference_field_is_shown_with_what_it_looks_for_by_name"
+  - node: 01a13654-6e12-74a1-ad7f-e828abe60209
+    reviewed: f320bee73bce6b7cc00516af36e7c1330e7fd6c5b58347f85f81b0de3c2cc0fb
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "the_lint_configuration_shows_a_rule_entry_with_an_option"
+  - node: 01a13654-6e12-74a1-ad7f-e829ca1c1ae1
+    reviewed: 484255bf4aca894a75916bc8cd61772af95c953d9212452fbb7d6c31f4eb87f3
+    tests:
+      - file: "crates/loft-cli/tests/skill_format.rs"
+        name: "the_lint_configuration_shows_a_suppression_with_its_reason"
   - node: 01a13654-6e12-74a1-ad7f-e82c7ad18aa9
     reviewed: ebd1f54d135a3b0d79423a2b100e33b9202571c2edc81f32f9dfb4ebb0295a33
     tests:
@@ -6819,6 +6879,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill.rs"
         name: "the_lint_guide_describes_each_rule_and_shows_each_rule_an_unpublished_tree_can_raise"
+  - node: 01a13654-6e12-74a1-ad7f-e82ef275a5b5
+    reviewed: c15874130491df0def63fadaa960510d102cf1d58410615a69f39748c55d3695
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "each_rule_is_given_its_meaning_and_its_usual_fix"
   - node: 01a13654-6e12-74a1-ad7f-e82fbb1e90c9
     reviewed: aa8f0b3ee726520e6833cc8c53e18b33acac32846d02083e1a3337bbacf7bd19
     tests:
@@ -6826,6 +6891,11 @@ links:
         name: "the_lint_guide_describes_each_rule_and_shows_each_rule_an_unpublished_tree_can_raise"
       - file: "crates/loft-cli/tests/skill.rs"
         name: "each_wrong_example_raises_its_rule_and_no_other_warning"
+  - node: 01a13654-6e12-74a1-ad7f-e83171b0ee07
+    reviewed: e2bee85b96bb6241068358743091187afb4570f7dd8fbe3e80f3c5fa89110a54
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "each_error_kind_of_the_check_schema_is_described_with_its_usual_fix"
   - node: 01a13654-6e12-74a1-ad7f-e8336693f1d1
     reviewed: c5ad7fb63e9236ae3fd6934d383c0f71e9131691d9c256ce22ea3225a86e11c4
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/lint-findings.md, read it there."
@@ -6907,6 +6977,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill.rs"
         name: "the_frontmatter_holds_the_name_and_the_description_alone"
+  - node: 01a13654-6e12-74a1-ad7f-e84c0361d656
+    reviewed: 1ff2dac96063708c77fe892f3e70ba60e6def6c9579fffdfddb56d9c32a978d0
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "the_description_names_writing_changing_and_reviewing_a_specification_with_loft"
   - node: 01a13654-6e12-74a1-ad7f-e84e8e9b7685
     reviewed: 520b0e3cfa0afe341743b896979c9b8cb85b75a183460d8445da0b470109b2ae
     unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."

@@ -7,6 +7,7 @@ use std::fs;
 use std::path::Path;
 
 use crate::common::{Scratch, skill_source, stdout};
+use crate::markdown::{rows_by_span, table, tables};
 use loftspec::lint::RuleId;
 use serde_json::Value;
 
@@ -194,6 +195,22 @@ fn the_frontmatter_holds_the_name_and_the_description_alone() {
 }
 
 #[test]
+fn the_description_names_writing_changing_and_reviewing_a_specification_with_loft() {
+    let skill_md = text(&skill_source().join("SKILL.md"));
+    let (frontmatter, _) = split(&skill_md);
+    let description = frontmatter[1].strip_prefix("description: ").unwrap();
+    let (first, _) = description.split_once(". ").unwrap();
+    let words: BTreeSet<String> = first
+        .split(|c: char| !c.is_alphanumeric())
+        .map(str::to_lowercase)
+        .collect();
+    for word in ["write", "change", "review", "specification"] {
+        assert!(words.contains(word), "{word}: {first}");
+    }
+    assert!(first.contains("`loft`"), "{first}");
+}
+
+#[test]
 fn the_router_routes_each_reference_once_and_the_loop_first() {
     let skill_md = text(&skill_source().join("SKILL.md"));
     let (_, body) = split(&skill_md);
@@ -335,4 +352,46 @@ fn the_lint_guide_describes_each_rule_and_shows_each_rule_an_unpublished_tree_ca
         .filter(|rule| !UNRAISABLE.contains(&rule.as_str()))
         .collect();
     assert_eq!(shown, raisable);
+}
+
+/// Whether a cell says something: a dash or an empty cell does not.
+fn says(cell: &str) -> bool {
+    cell.chars().any(char::is_alphanumeric)
+}
+
+#[test]
+fn each_rule_is_given_its_meaning_and_its_usual_fix() {
+    let guide = &references()["lint-findings.md"];
+    let tables: Vec<_> = tables(guide)
+        .into_iter()
+        .filter(|table| table.header == ["Rule", "Default", "Reports", "Usual fix"])
+        .collect();
+    let rows: BTreeMap<&str, &[String]> = tables.iter().flat_map(rows_by_span).collect();
+    for rule in RuleId::ALL {
+        let row = rows
+            .get(rule.as_str())
+            .unwrap_or_else(|| panic!("no row for {}", rule.as_str()));
+        for cell in &row[2..] {
+            assert!(says(cell), "{}: {cell:?}", rule.as_str());
+        }
+    }
+}
+
+#[test]
+fn each_error_kind_of_the_check_schema_is_described_with_its_usual_fix() {
+    let schema: Value = serde_json::from_str(include_str!("../../../schemas/check.json")).unwrap();
+    let kinds: BTreeSet<&str> = schema["$defs"]["error"]["properties"]["kind"]["enum"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|kind| kind.as_str().unwrap())
+        .collect();
+    let guide = &references()["lint-findings.md"];
+    let errors = table(guide, "`kind`");
+    assert_eq!(errors.header[1..], ["Means", "Usual fix"]);
+    let rows = rows_by_span(&errors);
+    assert_eq!(rows.keys().copied().collect::<BTreeSet<_>>(), kinds);
+    for (kind, row) in rows {
+        assert!(row[1..].iter().all(|cell| says(cell)), "{kind}: {row:?}");
+    }
 }

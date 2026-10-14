@@ -10,6 +10,15 @@ use crate::codec::{Problem, Strict};
 use crate::identity::Key;
 use crate::yaml::{self, Entry, Location, Node, Position};
 
+/// The fields of the trace file, in the order the writer writes them.
+pub const FILE_FIELDS: [&str; 2] = ["format", "links"];
+
+/// The fields of a link, in the order the writer writes them.
+pub const LINK_FIELDS: [&str; 4] = ["node", "reviewed", "tests", "unverified"];
+
+/// The fields of a test, in the order the writer writes them.
+pub const TEST_FIELDS: [&str; 2] = ["file", "name"];
+
 /// Reads the trace file; no file holds no link.
 ///
 /// # Errors
@@ -56,7 +65,7 @@ impl Strict for Reader {
 
 impl Reader {
     fn file(&mut self, root: &Node) -> Trace {
-        let fields = self.fields(root, &["format", "links"]);
+        let fields = self.fields(root, &FILE_FIELDS);
         if let Some(format) = self.required(root, fields, "format") {
             let expected = "`loft-trace/1`";
             self.parsed(&format.value, expected, |text| {
@@ -71,7 +80,7 @@ impl Reader {
     }
 
     fn link(&mut self, item: &Node) -> Option<Link> {
-        let fields = self.fields(item, &["node", "reviewed", "tests", "unverified"]);
+        let fields = self.fields(item, &LINK_FIELDS);
         let node = self
             .required(item, fields, "node")
             .and_then(|node| self.parsed(&node.value, "a key", |text| Key::parse(text).ok()));
@@ -134,7 +143,7 @@ impl Reader {
     }
 
     fn test(&mut self, item: &Node) -> Option<Test> {
-        let fields = self.fields(item, &["file", "name"]);
+        let fields = self.fields(item, &TEST_FIELDS);
         let mut required = |name: &'static str, expected| {
             let entry = self.required(item, fields, name)?;
             self.text(&entry.value, expected)

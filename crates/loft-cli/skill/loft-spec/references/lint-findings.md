@@ -208,7 +208,7 @@ nodes; text in code spans and code blocks is not prose. `LQ-001`..`LQ-004` take 
 | `LQ-003` | warning | An escape clause such as "if possible", "as required" | State when it applies, or drop it |
 | `LQ-004` | info, off | An absolute such as "all", "always", "never" | Check the absolute is meant |
 | `LQ-005` | info | A text with two modal verbs or three conjunctions (`modalLexicon`, `conjunctionLexicon`, `conjunctionThreshold`) | Split it into one obligation each |
-| `LQ-006` | warning | A Quality Attribute with no target; it never fires, since the target is required | — |
+| `LQ-006` | warning | A Quality Attribute with no target; it never fires, since the target is required | None: a Quality Attribute without `qualityTarget` is a `read` error first |
 | `LQ-007` | info, off | A statement stored as text that matches none of the five forms | Write it as slots |
 | `LQ-008` | info | Two names of one kind nearly alike (`minTokens`, `threshold`) | Name each for what distinguishes it |
 | `LQ-009` | hint | Prose that uses a tag's name where neither the node nor a node above it lists the tag; a one-word tag matches its word, a hyphenated one only its hyphenated form | List the tag, or reword |

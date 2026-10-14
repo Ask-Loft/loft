@@ -14,6 +14,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 ## Contents
 
 - The files of `spec/`
+- The manifest and the labels
 - Products and Feature Groups
 - Features and Requirements
 - Statements
@@ -30,25 +31,57 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 
 | Path | Holds | Written by |
 |---|---|---|
-| `spec/loftspec.yaml` | The manifest: format, algorithm, document key, Products in order | `loft init`, `loft fmt` |
-| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft publish`; `loft fmt` drops a deleted node's binding |
-| `spec/tags.yaml` | The tag registry | you |
-| `spec/categories.yaml` | The category registry for Constraint bindings | you |
+| `spec/loftspec.yaml` | The manifest: format, algorithm, document key, Products in order | `loft init`; `loft fmt` adds each new Product |
+| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft init` and `loft publish`; `loft fmt` drops a deleted node's binding |
+| `spec/tags.yaml` | The tag registry | `loft init`, empty; then you and `loft fmt` |
+| `spec/categories.yaml` | The category registry for Constraint bindings | `loft init`, empty; then you and `loft fmt` |
 | `spec/lint.yaml` | The lint configuration, optional | you |
-| `spec/products/<product>/product.yaml` | A Product and its Feature Groups | you |
-| `spec/products/<product>/<group>/<feature>.yaml` | One Feature, in its group's directory | you |
-| `spec/components/<component>.yaml` | One root Component and everything beneath it | you |
-| `spec/decisions/<decision>.yaml` | One decision | you |
+| `spec/products/<product>/product.yaml` | A Product and its Feature Groups | you and `loft fmt` |
+| `spec/products/<product>/<group>/<feature>.yaml` | One Feature, in its group's directory | you and `loft fmt` |
+| `spec/components/<component>.yaml` | One root Component and everything beneath it | you and `loft fmt` |
+| `spec/decisions/<decision>.yaml` | One decision | you and `loft fmt` |
 | `loft.lock.json`, beside `spec/` | The lock that pins the published tree | `loft publish` only |
 | `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` |
+| `v1-sidecar.json`, beside `spec/` | What a Loft v1 export held that the format has no field for | `loft import v1` only |
+
+`loft fmt` writes each file it names in canonical layout. `loft publish` also rewrites each
+citation of a label it withdrew, in the prose of the node or decision that cites it.
+`loft import v1` writes a whole tree from a Loft v1 export, and the sidecar beside it.
+`loft skill install` writes this skill beside `spec/`, in a directory for each agent, as
+`loft init` does unless given `--no-skill`.
 
 A file's name is its slug: lowercase letters, digits and hyphens. No other path under `spec/` is
 allowed, but files and directories whose names start with `.` are ignored. A registry with no
 entries is an empty file.
 
 Fields are written in the order the tables below give; an optional field that is absent, or a
-list that is empty, is left out. Required fields are marked; `key` and `slug` are required in a
-formatted tree, and `loft fmt` writes them.
+list that is empty, is left out. Each field is marked required or optional; `key` and `slug` are
+required in a formatted tree, and `loft fmt` writes them.
+
+## The manifest and the labels
+
+`loft init` writes both files, as the table above says; their fields are these.
+
+| Manifest field | | `derivedFrom` field | |
+|---|---|---|---|
+| `format` | required: the Format's name and version | `authoredStateId` | required |
+| `algorithm` | required: the hash algorithm | `contentAddress` | required |
+| `documentKey` | required: the document's key | `publishSequence` | required |
+| `publishBranch` | optional: the branch publishes run on, where it is not `main` | | |
+| `products` | optional: the Products' keys, in order | | |
+| `derivedFrom` | optional: the Loft v1 Authored State an imported document derives from | | |
+
+| `spec/labels.yaml` field | | `counters` field | |
+|---|---|---|---|
+| `counters` | required | `P`, `FG`, `F`, `RQ`, `AC`, `CMP`, `CON`, `QA`, `ADR` | required: the next number of each label prefix |
+| `bindings` | optional: by key | | |
+
+| Binding field | |
+|---|---|
+| `key` | required: a node's or a decision's key |
+| `label` | required: its live label |
+| `aliases` | optional: the labels it carried before |
+| `withdrawn` | optional: the labels withdrawn from it |
 
 ## Products and Feature Groups
 
@@ -60,7 +93,7 @@ formatted tree, and `loft fmt` writes them.
 | `body` | optional | `body` | optional |
 | `tags` | optional | `tags` | optional |
 | `mentions` | optional | `mentions` | optional |
-| `featureGroups` | optional | `features` | written by `loft fmt` |
+| `featureGroups` | optional | `features` | optional: Feature keys, which `loft fmt` writes |
 | `constraints` | optional | `constraints` | optional |
 | `sections` | optional | `sections` | optional |
 
@@ -152,6 +185,13 @@ sections:
 A Requirement's `statement` is a mapping: `form`, then the form's condition slot, then `system`
 and `shall`. The `shall` slot holds everything after "shall", its full stop included.
 
+| Statement field | |
+|---|---|
+| `text` | optional: a whole sentence, in place of `form` and its slots |
+| `form` | optional: `ubiquitous`, `event_driven`, `state_driven`, `unwanted` or `optional`; required without `text` |
+| `when`, `while`, `if`, `where` | optional: the condition slot its `form` takes |
+| `system`, `shall` | optional: every `form` takes both |
+
 | `form` | Slots in order | Renders as |
 |---|---|---|
 | `ubiquitous` | `system`, `shall` | <system> shall <shall> |
@@ -184,10 +224,15 @@ A root Component without `boundary` is `private`; a nested one takes its parent'
 |---|---|
 | `key`, `name` | required |
 | `body`, `tags` | optional |
-| `constraintBinding` | optional: `category` (a name from `spec/categories.yaml`) and `requiredValue` |
+| `constraintBinding` | optional: the category it binds, below |
 | `conservationKind` | optional: `sum_preservation`, `cap` or `operation_identity` |
 | `verificationFate` | optional: `proved`, `monitored` or `sampled` |
 | `mentions`, `sections` | optional |
+
+| `constraintBinding` field | |
+|---|---|
+| `category` | required: a name from `spec/categories.yaml` |
+| `requiredValue` | required: the value the Constraint requires |
 
 A Constraint sits under a Component, a Feature Group or a Product, and binds what it sits under:
 the Reading List above holds one for the whole product, and its Shelf group one for the shelf.
@@ -200,31 +245,54 @@ body: "Where the shelf is kept, in the device's own storage."
 
 ## Quality Attributes
 
-A Quality Attribute sits under a Feature or a Component: `key`, `name`, `body`, `tags`, `qaKind`,
-`qualityTarget`, `verificationFate`, `mentions`, `sections`, with `name`, `qaKind` and
-`qualityTarget` required.
+A Quality Attribute sits under a Feature or a Component.
 
-- `qaKind`: `latency`, `throughput`, `availability`, `cost`, `testability`, `usability` or
-  `capacity`.
-- `qualityTarget`: `metric`, `band`, `unit`, `aggregation`, `scenario` and `environment`, all
-  required.
-- `band.kind` decides its bounds: `at_most` takes `upper`, `at_least` takes `lower`, `exactly`
-  takes `value`, `between` takes `lower` and `upper`. Bounds are quoted decimals.
-- `aggregation`: `each`, `single`, `minimum`, `maximum`, `mean`, `median`, `p95`, `p99` or
-  `total`.
+| Quality Attribute field | |
+|---|---|
+| `key`, `name` | required |
+| `body`, `tags` | optional |
+| `qaKind` | required: `latency`, `throughput`, `availability`, `cost`, `testability`, `usability` or `capacity` |
+| `qualityTarget` | required: below |
+| `verificationFate` | optional: `proved`, `monitored` or `sampled` |
+| `mentions`, `sections` | optional |
+
+| `qualityTarget` field | |
+|---|---|
+| `metric` | required |
+| `band` | required: below |
+| `unit` | required |
+| `aggregation` | required: `each`, `single`, `minimum`, `maximum`, `mean`, `median`, `p95`, `p99` or `total` |
+| `scenario`, `environment` | required |
+
+| `band` field | |
+|---|---|
+| `kind` | required: `at_most`, `at_least`, `exactly` or `between` |
+| `lower`, `upper`, `value` | optional: the bounds its `kind` takes |
+
+`band.kind` decides its bounds: `at_most` takes `upper`, `at_least` takes `lower`, `exactly`
+takes `value`, `between` takes `lower` and `upper`. Bounds are quoted decimals.
 
 ## Sections and bodies
 
 A body is Markdown: paragraphs, lists, code spans, fenced code blocks, emphasis and links. Any
 other construct, such as raw HTML, a table or a block quote, is reported as `V2-009`. A Section
-holds prose that needs its own heading: `key`, `name`, `body` (required), `mentions` and nested
-`sections`. Any node with a body may hold Sections. A heading inside a body belongs in a Section
-instead (`V2-001`).
+holds prose that needs its own heading. Any node with a body may hold Sections. A heading inside
+a body belongs in a Section instead (`V2-001`).
+
+| Section field | |
+|---|---|
+| `key`, `name`, `body` | required |
+| `mentions`, `sections` | optional: `sections` nests Sections |
 
 ## Tags and categories
 
-Both registries are lists of `key`, `name` and `definition`. A tag name is lowercase letters,
-digits and hyphens; a category name is such segments joined by dots.
+Both registries are lists of entries.
+
+| Tag field | | Category field | |
+|---|---|---|---|
+| `key` | required | `key` | required |
+| `name` | required: lowercase letters, digits and hyphens | `name` | required: such segments joined by dots |
+| `definition` | required | `definition` | required |
 
 ```yaml path=spec/tags.yaml
 - name: offline
@@ -243,6 +311,11 @@ digits and hyphens; a category name is such segments joined by dots.
 | `key`, `slug`, `title`, `context`, `state` | required |
 | `drivers`, `options`, `assessments`, `consequences`, `subjects`, `mentions` | optional |
 
+| `state` field | |
+|---|---|
+| `kind` | required: `proposed`, `accepted`, `rejected`, `superseded` or `retired` |
+| `selectedOption`, `outcome`, `rationale`, `successor` | optional: as its `kind` decides, below |
+
 `state.kind` decides the other state fields:
 
 | `kind` | Also holds |
@@ -253,14 +326,27 @@ digits and hyphens; a category name is such segments joined by dots.
 | `superseded` | `selectedOption`, `outcome`, `successor` (a decision) |
 | `retired` | `selectedOption`, `outcome`, `rationale` |
 
-- A driver is `key`, `kind: local`, `label` and `statement`, or `key`, `kind: subject` and
-  `subject` (a node).
-- An option is `key`, `title` and `description`.
-- An assessment is `option`, `driver`, `rating` (`supports`, `neutral`, `conflicts` or
-  `unknown`) and `rationale`.
-- A consequence is `key`, `kind` (`benefit`, `cost`, `risk` or `obligation`), `statement` and an
-  optional `subject`.
-- A subject is `role` (`affected` or `outcome`) and `node`.
+| Driver field | | Option field | |
+|---|---|---|---|
+| `key` | required | `key`, `title`, `description` | required |
+| `kind` | required: `local` or `subject` | | |
+| `label`, `statement` | optional: a `local` driver holds both | | |
+| `subject` | optional: a `subject` driver holds it, a node | | |
+
+| Assessment field | | Consequence field | |
+|---|---|---|---|
+| `option` | required: an option of this decision | `key` | required |
+| `driver` | required: a driver of this decision | `kind` | required: `benefit`, `cost`, `risk` or `obligation` |
+| `rating` | required: `supports`, `neutral`, `conflicts` or `unknown` | `statement` | required |
+| `rationale` | required | `subject` | optional: a node |
+
+A retired or superseded decision that names a node the document no longer holds names it by its
+former label, the label it last carried, which `loft fmt` writes in place of its key.
+
+| Subject field | | Former label field | |
+|---|---|---|---|
+| `role` | required: `affected` or `outcome` | `formerLabel` | required: the node's last label |
+| `node` | required: a node | | |
 
 ```yaml path=spec/decisions/keep-the-shelf-on-the-device.yaml
 title: "Keep the shelf on the device"
@@ -314,7 +400,7 @@ The decision above is written in one pass: its options, drivers and subjects are
 | `realizes` | a Feature | the Components that implement it |
 | `scopedTo` | a Component | the Products it serves |
 | `subjects` | a decision | the nodes it affects or that state its outcome |
-| `mentions` | any node | any node its prose refers to |
+| `mentions` | any node or decision | any node or decision its prose refers to |
 
 Every edge carries its target's key, as does every reference of a decision. While you write, a
 reference may instead name its target, as a record of one field, `name`; `loft fmt` replaces it
@@ -357,15 +443,20 @@ The rules, their options and their defaults are in `lint-findings.md`.
 
 ## The trace file
 
-`loft.trace.yaml`, beside `spec/`, holds `format`, which is `loft-trace/1`, and `links`. It is
-not part of the specification: it enters no root, and no publish writes it. `reconciling.md`
-shows one and says when to write it.
+`loft.trace.yaml`, beside `spec/`, links nodes to the tests that verify them. It is not part of
+the specification: it enters no root, and no publish writes it. `reconciling.md` shows one and
+says when to write it.
 
-| Field of a link | Holds |
+| Trace file field | | Test field | |
+|---|---|---|---|
+| `format` | required: `loft-trace/1` | `file` | required: its path from the directory that holds `spec/` |
+| `links` | optional | `name` | required: the test's name |
+
+| Link field | |
 |---|---|
-| `node` | Required. The key of an acceptance criterion, or of a Constraint or Quality Attribute whose `verificationFate` is `proved` |
-| `reviewed` | The node's content hash when the link was last accepted; `loft reconcile --accept` writes it |
-| `tests` | The tests that verify the node, each with a required `file`, from the directory that holds `spec/`, and a required `name` |
-| `unverified` | The reason no test verifies the node |
+| `node` | required: the key of an acceptance criterion, or of a Constraint or Quality Attribute whose `verificationFate` is `proved` |
+| `reviewed` | optional: the node's content hash when the link was last accepted; `loft reconcile --accept` writes it |
+| `tests` | optional: the tests that verify the node |
+| `unverified` | optional: the reason no test verifies the node |
 
 A link holds exactly one of `tests` and `unverified`, and no two links name one node.
