@@ -26,6 +26,17 @@ requirements:
         name: "The answer is kept in `loft/update-check.json` under the user's configuration directory, with the time it was received."
       - key: 01a13a90-3556-7106-a68c-261028550c78
         name: "The request carries no token, no field of the command event and no text from the tree."
+  - key: 01a13b18-98fe-75d5-9d61-9df07e6521e6
+    statement:
+      form: unwanted
+      if: "the answer cannot be kept in the user's configuration directory"
+      system: "Loft"
+      shall: "neither ask GitHub nor print an update notice."
+    criteria:
+      - key: 01a13b18-98fe-75d5-9d61-9df1c16bef2b
+        name: "A run whose `loft/update-check.json` cannot be written asks GitHub nothing."
+      - key: 01a13b18-98fe-75d5-9d61-9df25d202423
+        name: "A run whose `loft/update-check.json` cannot be written prints no update notice."
   - key: 01a13a90-3556-7106-a68c-2611d4e9ddbe
     statement:
       form: ubiquitous

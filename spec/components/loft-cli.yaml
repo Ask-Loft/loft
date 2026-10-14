@@ -12,6 +12,9 @@ components:
       - key: 01a13a90-3554-7631-bb13-097fbc9045c0
         name: "The network client shall be the only part of `loft` that opens a network connection."
         verificationFate: proved
+      - key: 01a13b18-98fc-71bc-8c93-e189c71c479d
+        name: "The network client shall reach a service through the proxy that the first of `ALL_PROXY`, `HTTPS_PROXY` and `HTTP_PROXY` to be set names, unless `NO_PROXY` lists the service's host."
+        verificationFate: proved
     qualityAttributes:
       - key: 01a13a90-3554-7631-bb13-09808cdac81a
         name: "The network client shall add at most 500 milliseconds to a command run, whether or not a service answers."
