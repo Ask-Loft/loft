@@ -3,6 +3,7 @@ slug: loft-publish
 name: "`loft publish`"
 body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused."
 tags:
+  - needs-repository
   - reads-tree
   - writes-tree
 realizes:
@@ -28,17 +29,6 @@ requirements:
         name: "A publish with nothing changed prints that nothing changed and exits 0."
       - key: 01a130de-573a-77b2-b40b-d430e3bfbde6
         name: "A publish prints each rewritten citation with the element's key, the withdrawn label and the new label."
-  - key: 57b80a5e-d695-4a26-8f81-71146008335c
-    statement:
-      form: unwanted
-      if: "the working directory is not inside a git repository"
-      system: "`loft publish`"
-      shall: "refuse and exit 1."
-    criteria:
-      - key: 07beb53e-4bb7-4114-b073-044ddcfa4aa0
-        name: "The error states that a git repository is required."
-      - key: ce2e849d-bbda-4ec3-9472-b4140e94c65c
-        name: "Nothing is written."
   - key: 01a12ff0-f5e5-7095-8fa8-250359012c88
     statement:
       form: optional
