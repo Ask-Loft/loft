@@ -38,4 +38,5 @@ mod skill_install;
 mod test_modules;
 mod verify;
 mod version;
+mod writes_skill;
 mod writes_tree;

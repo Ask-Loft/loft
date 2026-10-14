@@ -9,6 +9,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   bit, so `npx loft` failed with `EACCES`. The release now packs each package into a tarball
   before the binaries leave the job that marks them executable, runs `loft` from the tarballs,
   and publishes those tarballs. npm 2.0.2 is deprecated.
+- `loft init` and `loft skill install` ask for the skill directories they wrote to be committed,
+  so that every clone's coding agents have the skill; the `loft-spec` skill commits them with
+  `.gitattributes` when it starts a document.
 
 ## 2.0.2 (2026-10-14)
 

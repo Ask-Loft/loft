@@ -80,10 +80,17 @@ pub fn error_json(error: &SkillError) -> serde_json::Value {
     json::error("install", &error.to_string(), &[])
 }
 
-/// Prints the line for each skill directory written.
+/// Prints the line for each skill directory written, then asks for them to be committed
+/// (Writing the skill).
 pub fn report(written: &[&str]) {
     for directory in written {
         println!("installed {directory}");
+    }
+    if !written.is_empty() {
+        println!(
+            "commit {}, so that every clone's coding agents have the skill",
+            written.join(" and ")
+        );
     }
 }
 

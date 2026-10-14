@@ -23,8 +23,9 @@ where `spec/` already exists.
 The specification lives in git. If the directory is not in a git repository, ask the user before
 running `git init`; never create a repository unasked. Once the project is under git, run
 `loft merge-driver --install`, so that git merges `spec/` by key, and commit the `.gitattributes`
-it writes, as `publishing-and-merging.md` says. The last line of `loft init` says what the merge
-driver still needs: the install, or putting the project under git first.
+it writes, as `publishing-and-merging.md` says, together with the skill directories that
+`loft init` names, so that every clone's coding agents have the skill. The last line of `loft init` says what the merge driver still needs: the
+install, or putting the project under git first.
 
 ## Draft from a conversation
 
