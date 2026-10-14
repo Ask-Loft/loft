@@ -22,6 +22,7 @@ mod workflow;
 mod check;
 mod citations;
 mod closed_output;
+mod collector_contract;
 mod find;
 mod fmt;
 mod import;

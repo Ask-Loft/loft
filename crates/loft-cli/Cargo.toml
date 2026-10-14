@@ -29,6 +29,8 @@ serde_json.workspace = true
 
 [dev-dependencies]
 software-plant = { path = "../software-plant" }
+ureq.workspace = true
+uuid.workspace = true
 
 [lints]
 workspace = true
