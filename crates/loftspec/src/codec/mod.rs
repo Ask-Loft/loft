@@ -14,6 +14,7 @@ mod resolve_conflicts;
 mod resolve_decisions;
 mod resolve_nodes;
 pub mod schema;
+mod strict;
 mod unresolve;
 mod unresolve_parts;
 mod variants;
@@ -31,6 +32,7 @@ pub use unresolve::unresolve;
 pub(crate) use canon::canonicalize;
 pub(crate) use files::{read_file, write_files};
 pub(crate) use resolve_nodes::statement_of;
+pub(crate) use strict::Strict;
 
 use crate::document::Document;
 

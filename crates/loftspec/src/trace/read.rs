@@ -6,9 +6,9 @@ use std::collections::HashSet;
 
 use super::{Evidence, FORMAT, Link, Test, Trace, TraceError};
 use crate::canonical::Digest;
-use crate::codec::Problem;
+use crate::codec::{Problem, Strict};
 use crate::identity::Key;
-use crate::yaml::{self, Entry, Location, Node, Position, Value};
+use crate::yaml::{self, Entry, Location, Node, Position};
 
 /// Reads the trace file; no file holds no link.
 ///
@@ -45,109 +45,38 @@ struct Reader {
     nodes: HashSet<Key>,
 }
 
-impl Reader {
+impl Strict for Reader {
     fn fail(&mut self, position: Option<Position>, problem: Problem) {
         self.errors.push(TraceError {
             location: position.map(Location::At),
             problem,
         });
     }
+}
 
-    fn entries<'a>(&mut self, node: &'a Node) -> &'a [Entry] {
-        if let Value::Mapping(entries) = &node.value {
-            return entries;
-        }
-        self.fail(Some(node.position), Problem::Expected("a mapping"));
-        &[]
-    }
-
-    /// A sequence's items; a field written with no value holds none.
-    fn items<'a>(&mut self, node: &'a Node) -> &'a [Node] {
-        match &node.value {
-            Value::Sequence(items) => items,
-            Value::Empty => &[],
-            _ => {
-                self.fail(Some(node.position), Problem::Expected("a sequence"));
-                &[]
-            }
-        }
-    }
-
-    /// A scalar that `parse` accepts; anything else is an error naming what was `expected`.
-    fn parsed<T>(
-        &mut self,
-        node: &Node,
-        expected: &'static str,
-        parse: impl Fn(&str) -> Option<T>,
-    ) -> Option<T> {
-        let Value::Scalar(scalar) = &node.value else {
-            self.fail(Some(node.position), Problem::Expected("a scalar"));
-            return None;
-        };
-        let parsed = parse(&scalar.text);
-        if parsed.is_none() {
-            let value = scalar.text.clone();
-            self.fail(Some(node.position), Problem::Invalid { value, expected });
-        }
-        parsed
-    }
-
-    /// A scalar that is not blank.
-    fn text(&mut self, node: &Node, expected: &'static str) -> Option<String> {
-        self.parsed(node, expected, |text| {
-            (!text.trim().is_empty()).then(|| text.to_owned())
-        })
-    }
-
-    /// Each field `allowed` names, by name; every other field is an error.
-    fn fields<'a>(
-        &mut self,
-        node: &'a Node,
-        allowed: &[&str],
-    ) -> impl Fn(&str) -> Option<&'a Entry> + use<'a> {
-        let entries = self.entries(node);
-        for entry in entries {
-            if !allowed.contains(&entry.key.as_str()) {
-                let unknown = Problem::UnknownField(entry.key.clone());
-                self.fail(Some(entry.key_position), unknown);
-            }
-        }
-        move |name| entries.iter().find(|entry| entry.key == name)
-    }
-
-    /// The field `name` of `node`, which an error reports missing when it is not there.
-    fn required<'a>(
-        &mut self,
-        node: &Node,
-        entry: Option<&'a Entry>,
-        name: &'static str,
-    ) -> Option<&'a Entry> {
-        if entry.is_none() {
-            self.fail(Some(node.position), Problem::MissingField(name));
-        }
-        entry
-    }
-
+impl Reader {
     fn file(&mut self, root: &Node) -> Trace {
-        let field = self.fields(root, &["format", "links"]);
-        if let Some(format) = self.required(root, field("format"), "format") {
+        let fields = self.fields(root, &["format", "links"]);
+        if let Some(format) = self.required(root, fields, "format") {
             let expected = "`loft-trace/1`";
             self.parsed(&format.value, expected, |text| {
                 (text == FORMAT).then_some(())
             });
         }
-        let items = field("links").map_or(&[][..], |links| self.items(&links.value));
+        let items = fields
+            .get("links")
+            .map_or(&[][..], |links| self.items(&links.value));
         let links = items.iter().filter_map(|item| self.link(item)).collect();
         Trace { links }
     }
 
     fn link(&mut self, item: &Node) -> Option<Link> {
-        let field = self.fields(item, &["node", "reviewed", "tests", "unverified"]);
+        let fields = self.fields(item, &["node", "reviewed", "tests", "unverified"]);
         let node = self
-            .required(item, field("node"), "node")
+            .required(item, fields, "node")
             .and_then(|node| self.parsed(&node.value, "a key", |text| Key::parse(text).ok()));
         // A `reviewed` that does not parse leaves the link unread; none leaves it unreviewed.
-        let reviewed = match field("reviewed") {
+        let reviewed = match fields.get("reviewed") {
             None => Some(None),
             Some(reviewed) => {
                 let expected = "64 lowercase hexadecimal digits";
@@ -155,7 +84,7 @@ impl Reader {
                 self.parsed(&reviewed.value, expected, parse).map(Some)
             }
         };
-        let evidence = self.evidence(item, field("tests"), field("unverified"));
+        let evidence = self.evidence(item, fields.get("tests"), fields.get("unverified"));
         if let Some(node) = node
             && !self.nodes.insert(node)
         {
@@ -205,9 +134,9 @@ impl Reader {
     }
 
     fn test(&mut self, item: &Node) -> Option<Test> {
-        let field = self.fields(item, &["file", "name"]);
+        let fields = self.fields(item, &["file", "name"]);
         let mut required = |name: &'static str, expected| {
-            let entry = self.required(item, field(name), name)?;
+            let entry = self.required(item, fields, name)?;
             self.text(&entry.value, expected)
         };
         let file = required("file", "a path");

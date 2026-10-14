@@ -8,9 +8,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use super::defaults::{self, Kind, OPTIONS};
 use super::lexicon::{self, Edits, Lexicon};
 use super::{RuleId, Severity};
-use crate::codec::{LINT, Problem, ReadError, SpecPath};
+use crate::codec::{LINT, Problem, ReadError, SpecPath, Strict};
 use crate::identity::Key;
-use crate::yaml::{self, Entry, Node, Position, Value};
+use crate::yaml::{self, Entry, Node, Position};
 
 /// LQ-008's comparison: names of at least `min_tokens` tokens are near-duplicates when their
 /// similarity reaches `threshold` millionths.
@@ -205,46 +205,23 @@ struct Reader {
     errors: Vec<ReadError>,
 }
 
-impl Reader {
-    fn fail(&mut self, position: Position, problem: Problem) {
+impl Strict for Reader {
+    fn fail(&mut self, position: Option<Position>, problem: Problem) {
         self.errors
-            .push(ReadError::at(&self.path, Some(position), problem));
+            .push(ReadError::at(&self.path, position, problem));
     }
+}
 
-    fn entries<'a>(&mut self, node: &'a Node) -> &'a [Entry] {
-        if let Value::Mapping(entries) = &node.value {
-            return entries;
-        }
-        self.fail(node.position, Problem::Expected("a mapping"));
-        &[]
-    }
-
-    /// A sequence's items; a field written with no value holds none.
-    fn items<'a>(&mut self, node: &'a Node) -> &'a [Node] {
-        match &node.value {
-            Value::Sequence(items) => items,
-            Value::Empty => &[],
-            _ => {
-                self.fail(node.position, Problem::Expected("a sequence"));
-                &[]
-            }
-        }
-    }
-
-    fn scalar<'a>(&mut self, node: &'a Node) -> Option<&'a str> {
-        if let Value::Scalar(scalar) = &node.value {
-            return Some(&scalar.text);
-        }
-        self.fail(node.position, Problem::Expected("a scalar"));
-        None
-    }
-
+impl Reader {
     fn file(&mut self, root: &Node, config: &mut LintConfig) {
         for entry in self.entries(root) {
             match entry.key.as_str() {
                 "rules" => self.rules(&entry.value, config),
                 "suppressions" => self.suppressions(&entry.value, config),
-                other => self.fail(entry.key_position, Problem::UnknownField(other.to_owned())),
+                other => {
+                    let unknown = Problem::UnknownField(other.to_owned());
+                    self.fail(Some(entry.key_position), unknown);
+                }
             }
         }
     }
@@ -266,7 +243,7 @@ impl Reader {
         let entries = self.entries(item);
         let Some(named) = entries.iter().find(|entry| entry.key == "rule") else {
             if !entries.is_empty() {
-                self.fail(item.position, Problem::MissingField("rule"));
+                self.fail(Some(item.position), Problem::MissingField("rule"));
             }
             return;
         };
@@ -300,28 +277,13 @@ impl Reader {
             key => {
                 let Some((key, kind)) = defaults::option(rule, key) else {
                     let unknown = Problem::UnknownField(key.to_owned());
-                    return self.fail(option.key_position, unknown);
+                    return self.fail(Some(option.key_position), unknown);
                 };
                 if let Some(setting) = self.setting(value, kind) {
                     config.options.insert((rule, key), setting);
                 }
             }
         }
-    }
-
-    fn parsed<T>(
-        &mut self,
-        node: &Node,
-        expected: &'static str,
-        parse: impl Fn(&str) -> Option<T>,
-    ) -> Option<T> {
-        let text = self.scalar(node)?;
-        let parsed = parse(text);
-        if parsed.is_none() {
-            let value = text.to_owned();
-            self.fail(node.position, Problem::Invalid { value, expected });
-        }
-        parsed
     }
 
     /// An option's setting, read as its kind reads.
@@ -349,11 +311,7 @@ impl Reader {
         let names: Vec<String> = self
             .items(node)
             .iter()
-            .filter_map(|item| {
-                self.parsed(item, "a name", |text| {
-                    (!text.trim().is_empty()).then(|| text.to_owned())
-                })
-            })
+            .filter_map(|item| self.text(item, "a name"))
             .collect();
         (self.errors.len() == errors).then_some(names)
     }
@@ -369,44 +327,30 @@ impl Reader {
                 "replace" => edits.replace = Some(phrases),
                 "extend" => edits.extend = phrases,
                 "remove" => edits.remove = phrases,
-                other => self.fail(entry.key_position, Problem::UnknownField(other.to_owned())),
+                other => {
+                    let unknown = Problem::UnknownField(other.to_owned());
+                    self.fail(Some(entry.key_position), unknown);
+                }
             }
         }
         lexicon::effective(defaults, Some(&edits))
-            .map_err(|problem| self.fail(node.position, Problem::Shape(problem)))
+            .map_err(|problem| self.fail(Some(node.position), Problem::Shape(problem)))
             .ok()
     }
 
     fn suppression(&mut self, item: &Node, config: &mut LintConfig) {
-        let entries = self.entries(item);
-        let field = |name: &str| entries.iter().find(|entry| entry.key == name);
-        for entry in entries {
-            if !matches!(entry.key.as_str(), "rule" | "key" | "reason") {
-                self.fail(entry.key_position, Problem::UnknownField(entry.key.clone()));
-            }
-        }
-        let mut required = |name: &'static str| {
-            let found = field(name);
-            if found.is_none() {
-                self.errors.push(ReadError::at(
-                    &self.path,
-                    Some(item.position),
-                    Problem::MissingField(name),
-                ));
-            }
-            found
-        };
-        let (rule, key, reason) = (required("rule"), required("key"), required("reason"));
+        let fields = self.fields(item, &["rule", "key", "reason"]);
+        let (rule, key, reason) = (
+            self.required(item, fields, "rule"),
+            self.required(item, fields, "key"),
+            self.required(item, fields, "reason"),
+        );
         let rule = rule
             .and_then(|rule| self.parsed(&rule.value, "a rule the Format defines", RuleId::parse));
         let key =
             key.and_then(|key| self.parsed(&key.value, "a key", |text| Key::parse(text).ok()));
-        let reason = reason.and_then(|reason| {
-            self.parsed(&reason.value, "a reason", |text| {
-                (!text.trim().is_empty()).then_some(())
-            })
-        });
-        if let (Some(rule), Some(key), Some(())) = (rule, key, reason) {
+        let reason = reason.and_then(|reason| self.text(&reason.value, "a reason"));
+        if let (Some(rule), Some(key), Some(_)) = (rule, key, reason) {
             config.suppressions.insert((rule, key));
         }
     }
