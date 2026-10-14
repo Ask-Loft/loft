@@ -2,13 +2,13 @@
 //! exit code a CI job can gate on (RQ-148). A tree that does not read compares no root (RQ-149).
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::canonical::Digest;
 use loftspec::publish::{LOCK, ReadTree, Root, Unverified, verify};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
 use crate::out::{errln, outln};
 use crate::stop::Stop;
@@ -38,7 +38,7 @@ impl From<StoreError> for Failure {
     }
 }
 
-pub fn run(root: &Path, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, as_json: bool) -> Finished {
     match attempt(root) {
         Ok(state) => {
             if as_json {
@@ -47,7 +47,7 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
             } else {
                 outln!("verified: state root {state}");
             }
-            ExitCode::SUCCESS
+            Finished::success("verified")
         }
         Err(Failure::Stopped(stop)) => stop.exit(SCHEMA, as_json),
         Err(Failure::Mismatch { root, lock, tree }) => {
@@ -60,7 +60,7 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
                 json::print(&json::result(SCHEMA, "mismatch", fields, Vec::new()));
             }
             errln!("the {root} differs: {LOCK} has {lock}, the tree has {tree}");
-            ExitCode::FAILURE
+            Finished::failure("mismatch")
         }
     }
 }

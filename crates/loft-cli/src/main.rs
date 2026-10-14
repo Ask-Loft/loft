@@ -5,6 +5,7 @@
 
 mod check;
 mod find;
+mod finish;
 mod fmt;
 mod import;
 mod init;
@@ -25,6 +26,8 @@ use std::process::ExitCode;
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 use loftspec_store::merge_driver::LAUNCHER;
+
+use finish::Finished;
 
 #[derive(Parser)]
 #[command(
@@ -230,6 +233,11 @@ fn run(cli: Cli) -> ExitCode {
         let _ = Cli::command().print_help();
         return ExitCode::from(2);
     };
+    dispatch(command).code
+}
+
+/// Runs `command` in the current directory.
+fn dispatch(command: Command) -> Finished {
     let root = Path::new(".");
     match command {
         Command::Init { no_skill, output } => init::run(root, !no_skill, output.json()),
@@ -285,7 +293,7 @@ fn run(cli: Cli) -> ExitCode {
             output.json(),
         ),
         // Clap requires the four paths unless `--install` is given.
-        Command::MergeDriver { .. } => ExitCode::from(2),
+        Command::MergeDriver { .. } => Finished::usage(),
         Command::Render {
             markdown,
             json,

@@ -9,6 +9,7 @@ use loftspec::check::{Checked, check};
 use loftspec::lint::Severity;
 use serde_json::{Value, json};
 
+use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
 use crate::stop;
@@ -16,7 +17,7 @@ use crate::stop;
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-check/1";
 
-pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> Finished {
     let files = match stop::read_files(root) {
         Ok(files) => files,
         Err(stop) => return stop.exit(SCHEMA, as_json),
@@ -24,19 +25,19 @@ pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> ExitCode {
     let checked = check(&files);
     let severities = checked.findings().iter().map(|finding| finding.severity);
     let failed = checked.has_errors() || json::fails_on(fail_on, severities);
+    let outcome = if failed { "failed" } else { "passed" };
+    let document = document(&checked, outcome);
     if as_json {
-        json::print(&document(
-            &checked,
-            if failed { "failed" } else { "passed" },
-        ));
+        json::print(&document);
     } else {
         print(&checked);
     }
-    if failed {
+    let code = if failed {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
-    }
+    };
+    Finished::with(code, outcome, json::errors_of(&document))
 }
 
 fn print(checked: &Checked) {

@@ -2,12 +2,12 @@
 //! `--check` the drift reported and nothing written (RQ-140, RQ-142).
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::fmt::format;
 use loftspec_store::FileStore;
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
 use crate::out::{errln, outln};
 use crate::stop::Stop;
@@ -36,7 +36,7 @@ impl Outcome {
     }
 }
 
-pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, check: bool, as_json: bool) -> Finished {
     match attempt(root, check) {
         Ok(outcome) => {
             let name = outcome.name();
@@ -53,9 +53,9 @@ pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
                 }
             }
             if name == "drift" {
-                ExitCode::FAILURE
+                Finished::failure(name)
             } else {
-                ExitCode::SUCCESS
+                Finished::success(name)
             }
         }
         Err(stop) => stop.exit(SCHEMA, as_json),

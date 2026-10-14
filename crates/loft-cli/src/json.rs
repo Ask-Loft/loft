@@ -3,7 +3,6 @@
 //! an error or finding carries its first site's fields beside the list of all of them.
 
 use std::fmt::Display;
-use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
@@ -11,6 +10,7 @@ use loftspec::lint::{Finding, Severity};
 use loftspec::yaml::Location;
 use serde_json::{Map, Value, json};
 
+use crate::finish::Finished;
 use crate::out::outln;
 
 /// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
@@ -121,6 +121,11 @@ pub fn fails_on(
     threshold.is_some_and(|threshold| severities.into_iter().any(|severity| severity >= threshold))
 }
 
+/// The errors a document carries.
+pub fn errors_of(document: &Value) -> &[Value] {
+    document["errors"].as_array().map_or(&[], Vec::as_slice)
+}
+
 /// Prints one JSON document on standard output.
 pub fn print(document: &Value) {
     outln!(
@@ -131,7 +136,7 @@ pub fn print(document: &Value) {
 
 /// Stops a command on an error: prints the failure document when JSON was asked for, and the
 /// message on standard error, and exits 1.
-pub fn stop(schema: &str, errors: Vec<Value>, message: &impl Display, as_json: bool) -> ExitCode {
+pub fn stop(schema: &str, errors: Vec<Value>, message: &impl Display, as_json: bool) -> Finished {
     let lines = vec![message.to_string()];
     crate::stop::Stop { errors, lines }.exit(schema, as_json)
 }
