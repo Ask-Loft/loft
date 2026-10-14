@@ -179,3 +179,27 @@ fn the_projections_are_the_same_bytes_under_another_clock_locale_and_environment
         .env("LC_TIME", "ja_JP.UTF-8");
     assert_eq!(first, rendered(&scratch, &mut other));
 }
+
+#[test]
+fn a_render_that_writes_its_projections_or_finds_them_current_is_rendered_in_json() {
+    let scratch = Scratch::with_reading_list();
+    let first = json_of(&scratch.loft(&["render", "--format", "json"]));
+    assert_eq!(first["outcome"], "rendered");
+    assert_eq!(first["written"].as_array().unwrap().len(), 2, "{first}");
+    fs::remove_file(scratch.0.join("docs/spec.json")).unwrap();
+    let mixed = json_of(&scratch.loft(&["render", "--format", "json"]));
+    assert_eq!(mixed["outcome"], "rendered");
+    assert_eq!(mixed["written"], serde_json::json!(["docs/spec.json"]));
+    assert_eq!(mixed["unchanged"], serde_json::json!(["docs/spec.md"]));
+}
+
+#[test]
+fn a_projection_that_cannot_be_written_exits_1_with_the_message_on_standard_error() {
+    let scratch = Scratch::with_reading_list();
+    fs::write(scratch.0.join("out"), "a file, not a directory\n").unwrap();
+    let output = scratch.loft(&["render", "--markdown", "out/spec.md"]);
+    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
+    let message = stderr(&output);
+    assert!(message.contains("out: "), "{message}");
+    assert_eq!(stdout(&output), "");
+}

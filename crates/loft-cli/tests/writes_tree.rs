@@ -194,3 +194,39 @@ fn each_tagged_command_changes_a_file_of_the_format() {
         assert_ne!(format_files(&scratch.0), before, "{slug}: wrote nothing");
     }
 }
+
+/// The document key the manifest under `root` carries, read from its text so that a tree
+/// without every key still answers.
+fn document_key(root: &Path) -> String {
+    let manifest = fs::read_to_string(root.join("spec/loftspec.yaml")).unwrap();
+    let key = manifest
+        .lines()
+        .find_map(|line| line.strip_prefix("documentKey: "));
+    key.expect("the manifest carries a document key").to_owned()
+}
+
+#[test]
+fn no_tagged_command_changes_the_document_key_once_a_tree_is_written() {
+    let commands = tagged_commands(TAG);
+    let (first, later): (Vec<_>, Vec<_>) = commands
+        .into_iter()
+        .partition(|(_, _, kind)| *kind == Fixture::Empty);
+    assert!(!first.is_empty() && !later.is_empty());
+    // Each command that writes the first tree, then every other over the tree it wrote.
+    for (slug, args, kind) in first {
+        let scratch = fixture(kind);
+        assert_exit(slug, &run(&scratch, kind, args), 0);
+        let key = document_key(&scratch.0);
+        for (next, args, kind) in &later {
+            assert_exit(next, &run(&scratch, *kind, args), 0);
+            assert_eq!(document_key(&scratch.0), key, "{next} after {slug}");
+        }
+    }
+    // Each other command over its own fixture.
+    for (slug, args, kind) in later {
+        let scratch = fixture(kind);
+        let key = document_key(&scratch.0);
+        assert_exit(slug, &run(&scratch, kind, args), 0);
+        assert_eq!(document_key(&scratch.0), key, "{slug}");
+    }
+}

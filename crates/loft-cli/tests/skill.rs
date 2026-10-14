@@ -395,3 +395,18 @@ fn each_error_kind_of_the_check_schema_is_described_with_its_usual_fix() {
         assert!(row[1..].iter().all(|cell| says(cell)), "{kind}: {row:?}");
     }
 }
+
+#[test]
+fn a_fragment_block_is_shown_and_not_run() {
+    // A fragment that would neither read nor check as a file of the tree.
+    let markdown = "Text.\n\n```yaml fragment\nmentions:\n  - name: \"Nothing\"\n```\n";
+    let examples = examples(markdown);
+    assert_eq!(examples.tree, Vec::new());
+    assert_eq!(examples.wrong, BTreeMap::new());
+    let shown = references()
+        .values()
+        .flat_map(|markdown| yaml_blocks(markdown))
+        .filter(|block| block.info == "fragment")
+        .count();
+    assert!(shown >= 1, "no reference shows a fragment");
+}

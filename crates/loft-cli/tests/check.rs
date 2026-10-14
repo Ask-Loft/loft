@@ -353,3 +353,18 @@ fn no_file_outside_the_tree_changes_the_findings() {
     }
     assert_eq!(run(), before);
 }
+
+#[test]
+fn a_read_error_or_a_lint_configuration_error_is_a_failed_check_in_json() {
+    let read = Scratch::with_reading_list();
+    read.edit(PRODUCT, "\nslug:", " # a note\nslug:");
+    let lint = Scratch::with_reading_list();
+    fs::write(lint.file("lint.yaml"), "rules:\n  - rule: XX-001\n").unwrap();
+    for (scratch, kind) in [(read, "read"), (lint, "lint")] {
+        let output = scratch.loft(&["check", "--format", "json"]);
+        assert_eq!(output.status.code(), Some(1), "{kind}");
+        let document = json(&output);
+        assert_eq!(document["outcome"], "failed", "{kind}: {document}");
+        assert_ne!(document["errors"], Value::Array(Vec::new()), "{kind}");
+    }
+}

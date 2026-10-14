@@ -271,4 +271,15 @@ mod tests {
              host's listing limit of 1536"
         );
     }
+
+    #[test]
+    fn the_refusal_of_a_defined_field_names_the_field() {
+        for (fragment, field) in [("name: y\n", "name"), ("description: y\n", "description")] {
+            let error = compose(Host::ClaudeCode, &source(fragment)).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                format!("the fragment defines `{field}`, which `SKILL.md` owns")
+            );
+        }
+    }
 }

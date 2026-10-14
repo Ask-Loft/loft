@@ -222,6 +222,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt_names.rs"
         name: "a_name_that_matches_two_elements_names_both_keys"
+  - node: 01a13737-c20a-744c-94d5-08bee5c44673
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/loft-cli/tests/fmt.rs"
+        name: "a_reference_by_name_that_matches_nothing_or_two_elements_changes_no_file"
   - node: 01a13737-c20a-744c-94d5-08c010891542
     reviewed: ca46a5d1120ac24a42f8a08b921cb7a04dc99529944417b57246704b2a928bf5
     tests:
@@ -962,6 +967,11 @@ links:
         name: "the_manifests_fields_are_written_in_the_published_order"
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_manifest_without_its_format_algorithm_or_document_key_is_refused"
+  - node: 217c5efa-1458-46d2-9dd9-bf5abb0d7bdd
+    reviewed: 3e918b97be00d84df6a16e45fc44c8dd8b3ecbab7ad6d2f6e0565796d1eba131
+    tests:
+      - file: "crates/loft-cli/tests/writes_tree.rs"
+        name: "no_tagged_command_changes_the_document_key_once_a_tree_is_written"
   - node: b9512543-5235-42f5-bebd-89ef442b7025
     reviewed: 34693a0932fe69e84d3e8f9faa0ded32f9458337d3eb6c148c783716b65e4aa7
     tests:
@@ -4329,6 +4339,11 @@ links:
         name: "a_lock_that_is_not_a_valid_lock_record_is_refused_naming_its_file"
       - file: "crates/loft-cli/tests/publish.rs"
         name: "an_invalid_lock_refuses_naming_the_lock_file"
+  - node: 01a12ff0-f5e5-7095-8fa8-2502e40aec14
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/publish.rs"
+        name: "an_invalid_lock_writes_nothing"
   - node: 48d1d38f-594d-424e-96c1-d8a9704a4f67
     reviewed: 45e9130e5720bd1baf2e3638b6f505eee9042c0c7497ccafdfb47cbe451bedf0
     tests:
@@ -4368,6 +4383,11 @@ links:
         name: "a_first_publish_writes_the_lock_and_prints_sequence_1_and_the_state_root"
       - file: "crates/loftspec-store/tests/publish_save.rs"
         name: "a_publish_writes_the_bindings_and_the_lock_in_one_save"
+  - node: 74f2cdd9-aadc-4eee-815e-cf9711a22462
+    reviewed: 085045edd9f56b4874d86ef4e1b3d9802c0fa540f71d6f70dbb6f364141d3094
+    tests:
+      - file: "crates/loft-cli/tests/publish.rs"
+        name: "a_publish_writes_only_the_lock_and_the_bindings_and_no_projection"
   - node: 94856ac4-cf5b-4151-8afc-0854d338d7d1
     reviewed: ae4a03a21a015eaaa07ffb306ba203a6f8d41f92978405ada83ab43c6706230e
     tests:
@@ -4387,6 +4407,18 @@ links:
     tests:
       - file: "crates/loftspec/tests/publish.rs"
         name: "a_first_publish_is_sequence_1_at_the_given_time"
+  - node: 848eda1a-790b-4dfe-b55b-8ee0acca532c
+    reviewed: 9e0e1a90041fa3222d2c865d3bfb595f710a972cfb9946614b746b1d67458ee3
+    tests:
+      - file: "crates/loftspec-store/tests/publish_save.rs"
+        name: "a_publish_that_fails_before_its_journal_is_complete_leaves_every_file_as_it_was"
+      - file: "crates/loft-cli/tests/publish.rs"
+        name: "a_publish_whose_journal_cannot_be_written_changes_no_file"
+  - node: 01a13acc-470a-75d5-beed-efe24aef8581
+    reviewed: dc271d8353b567e5c2eccec5de802e11d3be61e2a4a27a8d1ed7cf899808769a
+    tests:
+      - file: "crates/loftspec-store/tests/publish_save.rs"
+        name: "a_publish_that_fails_after_its_journal_is_complete_is_finished_by_the_next_opening"
   - node: 01a12ff0-f5e5-7095-8fa8-24fc60a2cac0
     reviewed: a5b16e6ea97db9a5916a6a42e038b7ef83091a78e406cc718e8dd54b5c1534ad
     tests:
@@ -4467,6 +4499,11 @@ links:
         name: "a_changed_source_state_alone_fails_on_the_state_root"
       - file: "crates/loftspec/tests/publish.rs"
         name: "a_relabel_alone_fails_on_the_binding_root"
+  - node: 01a130de-5737-776f-9c39-b9c9ad39d7c3
+    reviewed: b3af640844f1b47fbd77770a370df7126098bb46632dea6e6734144fe3c796e4
+    tests:
+      - file: "crates/loftspec/tests/publish_settle.rs"
+        name: "the_sequence_is_one_past_the_higher_of_the_two_locks_or_1_without_either"
   - node: 01a130de-5737-776f-9c39-b9cab792f466
     reviewed: 5e0245b084cd6ed9f89a862ecf2dcef05e91a2df4497bb6d5d5066028121b23f
     tests:
@@ -4528,6 +4565,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/publish_settle.rs"
         name: "a_key_that_lost_only_an_alias_keeps_its_live_label_and_its_other_aliases"
+  - node: 01a130de-5737-776f-9c39-b9d41adb52a2
+    reviewed: 974a168746b364931d7aab19f770d91c22e16a0ef9593264d7fd9cec33efde1a
+    tests:
+      - file: "crates/loftspec/tests/publish_settle.rs"
+        name: "keys_that_lost_their_live_labels_are_allocated_in_document_order_not_key_order"
   - node: 01a130de-5737-776f-9c39-b9d5cae5b612
     reviewed: 574679352ee089ffe10b85360d9506fd6833f9062fafd2b69bea35eae8777da9
     tests:
@@ -4630,6 +4672,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/publish_rewrite.rs"
         name: "a_decision_s_driver_and_consequence_text_is_rewritten_by_the_decision_s_mentions"
+  - node: 01a130de-5737-776f-9c39-b9e7257a23c9
+    reviewed: 2d15a9cbdb9fd567743bc30b0ab4a870ca80831a4c06f2a425d77f540665baaf
+    tests:
+      - file: "crates/loftspec/tests/publish_rewrite.rs"
+        name: "a_section_with_its_own_mentions_is_rewritten_by_them_under_a_feature_without_them"
+      - file: "crates/loftspec/tests/publish_rewrite.rs"
+        name: "a_section_or_criterion_whose_own_mentions_leave_out_the_key_is_left_under_a_feature_that_mentions_it"
   - node: 01a130de-5737-776f-9c39-b9e8b4592c9b
     reviewed: 827509a45388de55559923246e14d76e0e34ac5324f1b6e92657b1ea1a135368
     tests:
@@ -4927,6 +4976,15 @@ links:
         name: "both_sides_changing_one_field_apart_conflict_on_its_record"
       - file: "crates/loft-cli/tests/merge_contract.rs"
         name: "one_statement_edited_apart_conflicts_until_the_record_is_removed"
+  - node: e39b5d19-68e5-4773-b0f3-1932c110aa23
+    reviewed: b2e5878a9483829758082bf937e9545160ded9e791877bd0b3b1786e049ba63c
+    tests:
+      - file: "crates/loftspec/tests/merge_file.rs"
+        name: "a_conflict_on_a_field_no_keyed_record_holds_sits_in_the_manifest_s_conflicts"
+      - file: "crates/loftspec/tests/merge_file.rs"
+        name: "both_sides_changing_one_field_apart_conflict_on_its_record"
+      - file: "crates/loftspec/tests/merge_file.rs"
+        name: "a_binding_both_sides_change_apart_keeps_its_base_with_a_conflict_over_the_bindings"
   - node: 9fbf567b-d08b-46f9-9b6d-67abee0aed80
     reviewed: ff3e1006acc125aa9a0421cbcafcaa02d72c40d7126112bb2701126007473361
     tests:
@@ -5585,6 +5643,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/init.rs"
         name: "outside_a_repository_init_suggests_git_and_then_the_driver"
+  - node: 01a13751-027d-754b-af03-86532d3be47e
+    reviewed: 5ce9ca53e3eff3d26477ad55cc7129d0e1e489569f2c379969a19b4199a06e75
+    tests:
+      - file: "crates/loft-cli/tests/init.rs"
+        name: "outside_a_repository_init_creates_no_git_repository_with_real_git"
   - node: 5a70d86e-e021-47bb-9bab-c808cd0b5059
     reviewed: 7200e9c0d4ff1eba1b89d858a47c40bf291d69cde71f389941ad022fde32c691
     tests:
@@ -5769,6 +5832,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/check.rs"
         name: "a_clean_tree_in_json_has_no_errors_and_no_findings"
+  - node: 01a1354e-8c63-74ae-abcf-1d4b5f441b3a
+    reviewed: 236f51bd88bd8e64c64fdb4d293bc22e1cc79cded0cdcf72ba95d90e7098bdcd
+    tests:
+      - file: "crates/loft-cli/tests/check.rs"
+        name: "a_read_error_or_a_lint_configuration_error_is_a_failed_check_in_json"
+      - file: "crates/loft-cli/tests/check.rs"
+        name: "json_matches_the_schema_with_positions_and_the_same_exit_code"
   - node: 01a1354e-8c63-74ae-abcf-1d4cec99548c
     reviewed: a4af35078f9c46a4efb615b503f1adee928c25db7290a2deff1fcaa77143f8b5
     tests:
@@ -5796,6 +5866,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/fmt.rs"
         name: "fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes"
+  - node: 01a137b5-8a69-7480-9b93-21a620ee90f2
+    reviewed: c407e84ff5c5494768ca2cd02efa2f74f35194ba550430dbaded38add221b392
+    tests:
+      - file: "crates/loft-cli/tests/fmt.rs"
+        name: "each_dropped_binding_is_reported_on_standard_error_with_its_label_and_key"
   - node: 12065dff-4eff-49fb-a77e-3c09a0d27e66
     reviewed: 2d57705a129914124927ca1e522a2743eb61dff26c4ee16c776635e88194e122
     tests:
@@ -5941,6 +6016,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/render.rs"
         name: "an_output_under_spec_is_refused_and_nothing_is_written"
+  - node: 01a1354e-bca0-714b-8727-09bb78f5ee4c
+    reviewed: c7e39d2c1029bdeddc0006828f10aedc85fb713581dafe9ce1897e87e62a9a02
+    tests:
+      - file: "crates/loft-cli/tests/render.rs"
+        name: "a_render_that_writes_its_projections_or_finds_them_current_is_rendered_in_json"
+      - file: "crates/loft-cli/tests/render.rs"
+        name: "an_unchanged_projection_is_not_rewritten"
   - node: f413650f-ee5c-43cd-8588-d54a8b53aa65
     reviewed: 4b3134c2bdea023834a8876c216f10ac7994d4427fd13945042f6908c24bccbc
     tests:
@@ -5983,6 +6065,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/publish.rs"
         name: "a_git_that_cannot_be_run_refuses_naming_git"
+  - node: 01a12ff0-f5e5-7095-8fa8-25074b3d8ead
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/publish.rs"
+        name: "a_git_that_cannot_be_run_writes_nothing"
   - node: 01a13050-9f92-73f0-b7a3-fb74e360ede3
     reviewed: 3f79015f88fc13e280848eb768f4d5ea511e86b4106d4d3bc9ece0a13ca55d15
     tests:
@@ -6002,6 +6089,13 @@ links:
         name: "a_publish_in_a_stopped_merge_prints_what_it_settled_and_how_to_finish"
       - file: "crates/loft-cli/tests/publish_settle.rs"
         name: "a_publish_in_a_stopped_rebase_prints_git_rebase_continue"
+  - node: 01a130de-573a-77b2-b40b-d436e37f19d1
+    reviewed: 7f096894c3e06e150746f40ba944b2e3be03a77378ff87f229480064a137b941
+    tests:
+      - file: "crates/loft-cli/tests/publish_settle.rs"
+        name: "the_json_of_a_settling_publish_names_the_citations_it_rewrote"
+      - file: "crates/loft-cli/tests/publish_settle.rs"
+        name: "the_json_of_a_settling_publish_names_the_withdrawn_labels_and_the_finishing_command"
   - node: 01a130de-573a-77b2-b40b-d43343a78222
     reviewed: cac32486a2f36d0e6739d871fa6c0b6d00af4524dad612cccd5cba57be2cfd24
     tests:
@@ -6016,6 +6110,11 @@ links:
         name: "a_publish_in_a_stopped_rebase_prints_git_rebase_continue"
       - file: "crates/loft-cli/tests/publish_meet_contract.rs"
         name: "a_pull_by_rebase_settles_and_the_next_publish_rewrites_a_later_citation"
+  - node: 01a130de-573a-77b2-b40b-d435cb8db5b7
+    reviewed: cf2256e11a74fe60afcab9fd093848475cf54a3fac333ac524ac5b8f9d080f6a
+    tests:
+      - file: "crates/loft-cli/tests/publish_meet_contract.rs"
+        name: "a_settling_publish_changes_nothing_in_the_repository"
   - node: 01a137b0-2dbd-767e-bea2-5906ff293d36
     reviewed: c268834def36a50bfd7880b384654e9ba5cdff7d952fc144776163270398047a
     tests:
@@ -6061,6 +6160,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/verify.rs"
         name: "a_read_error_names_no_root"
+  - node: 01a13070-322f-7493-9495-4084fa080b8d
+    reviewed: 92193916b9b3c74513a5149be9b52a687e2df65e02ad5d098119c12db7fea6cc
+    tests:
+      - file: "crates/loft-cli/tests/verify.rs"
+        name: "each_conflict_record_is_named_with_its_file_and_its_key"
   - node: 01a13070-3230-7079-8674-0f903cd9f580
     reviewed: 4bf53182354bef668d7a68d88a77fae37a25d7b3b41fb754bc167c4d093a6571
     tests:
@@ -6152,6 +6256,11 @@ links:
         name: "the_driver_runs_the_command_given_with_command_and_another_command_replaces_it"
       - file: "crates/loft-cli/tests/merge_driver_install.rs"
         name: "a_second_install_changes_nothing"
+  - node: 01a13751-027d-754b-af03-8657733d9104
+    reviewed: 0aed1f67b58991933fed25e4e0a08849ad6e3d06f805908d16276e178f8b17a5
+    tests:
+      - file: "crates/loft-cli/tests/merge_driver_install.rs"
+        name: "the_json_document_of_an_install_that_writes_gitattributes_carries_no_request_to_commit"
   - node: 01a1315a-f184-73de-a72a-d1529f652d52
     reviewed: 608105ad4de6b9e7dc14485b4b3ed4dd722eeaedb147a9a1cde5b328f4d79ba3
     tests:
@@ -6591,6 +6700,11 @@ links:
         name: "every_validation_error_prints_before_the_findings_and_exits_1"
       - file: "crates/loft-cli/tests/verify.rs"
         name: "on_a_mismatch_it_names_the_first_differing_root_and_exits_1"
+  - node: 4dec469b-6118-4297-9434-3ea9b7a45a85
+    reviewed: 34e98a5570824077aecd7526ef8089164d18642b8bf17458587899108e598fc3
+    tests:
+      - file: "crates/loft-cli/tests/render.rs"
+        name: "a_projection_that_cannot_be_written_exits_1_with_the_message_on_standard_error"
   - node: 01a13acc-470a-75d5-beed-efe01a7c2865
     reviewed: d8c14ed8bc33dd5398801a83e8a045f97c99cac4994295ec5bef6997a81f8f6e
     tests:
@@ -6903,6 +7017,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/writes_skill.rs"
         name: "init_with_no_skill_asks_for_no_commit"
+  - node: 01a1380a-9f4b-741a-83a5-973a6a9dc106
+    reviewed: 08904d27219d6119f3d36e0f5eaae55ddbe150f54fada6fbbe9691d1067961a5
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill.rs"
+        name: "each_tagged_command_commits_nothing_under_real_git"
   - node: 01a1380a-9f4b-741a-83a5-973ce5482179
     reviewed: 02c7ee3d964cdeb2a132f34b4aff81fd62da5d95e4bca2cc4a3e2f124e9f3051
     tests:
@@ -7378,6 +7497,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill.rs"
         name: "each_wrong_example_raises_its_rule_and_no_other_warning"
+  - node: 01a13654-6e12-74a1-ad7f-e7e36f91bf31
+    reviewed: 27a8425e9f21b8cd250e29734362f724a4659ae1875c37cccb526ca8989c01e3
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "a_fragment_block_is_shown_and_not_run"
   - node: 01a13654-6e12-74a1-ad7f-e7e491cee65b
     reviewed: 7733db26d1a986beaf8369cfb23976d7844ec16fc45316f484a0852de6076972
     tests:
@@ -7961,6 +8085,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "the_codex_package_is_the_source_without_the_claude_code_adaptation"
+  - node: 01a13654-6e11-74fa-a359-258d62713a57
+    reviewed: 7fc8f106049cd06973a76375d867654004667b209ca312a231f4c5bbd17ad784
+    tests:
+      - file: "crates/loft-cli/src/skill/compose.rs"
+        name: "the_refusal_of_a_defined_field_names_the_field"
   - node: 01a13654-6e11-74fa-a359-258f0c07e90c
     reviewed: 71b24ce20c811df5cce0e03f0c784183690b47554d0d5c757d34e95bc8c1d530
     tests:

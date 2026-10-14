@@ -143,3 +143,41 @@ fn a_tree_that_holds_a_conflict_record_compares_no_root_and_exits_1() {
         "spec/loftspec.yaml: the manifest holds an unresolved merge conflict over `format`\n"
     );
 }
+
+#[test]
+fn each_conflict_record_is_named_with_its_file_and_its_key() {
+    let scratch = published();
+    let manifest = scratch.file("loftspec.yaml");
+    let text = fs::read_to_string(&manifest).unwrap();
+    fs::write(
+        &manifest,
+        format!("{text}conflicts:\n  - field: format\n    ours: loftspec/2\n"),
+    )
+    .unwrap();
+    let feature = "products/reading-list/shelf/remove-a-book.yaml";
+    let text = fs::read_to_string(scratch.file(feature)).unwrap();
+    fs::write(
+        scratch.file(feature),
+        format!("{text}    conflicts:\n      - field: body\n        ours: \"Why books go.\"\n"),
+    )
+    .unwrap();
+    let output = scratch.loft(&["verify"]);
+    assert_eq!(output.status.code(), Some(1));
+    let errors = stderr(&output);
+    let lines: Vec<&str> = errors.lines().collect();
+    assert_eq!(lines.len(), 2, "{errors}");
+    assert!(
+        lines
+            .iter()
+            .any(|line| line.starts_with("spec/loftspec.yaml: ") && line.contains("conflict")),
+        "{errors}"
+    );
+    assert!(
+        lines
+            .iter()
+            .any(|line| line.starts_with(&format!("spec/{feature}"))
+                && line.contains("00000000-0000-4000-8000-000000000030")
+                && line.contains("conflict")),
+        "{errors}"
+    );
+}

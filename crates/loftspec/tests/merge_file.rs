@@ -461,3 +461,21 @@ fn a_requirement_both_sides_moved_apart_stays_with_a_position_conflict() {
         "{text}"
     );
 }
+
+#[test]
+fn a_conflict_on_a_field_no_keyed_record_holds_sits_in_the_manifest_s_conflicts() {
+    let base = text(&files(), "loftspec.yaml");
+    let ours = with(
+        &base,
+        &[("products:\n", "publishBranch: release\nproducts:\n")],
+    );
+    let theirs = with(
+        &base,
+        &[("products:\n", "publishBranch: trunk\nproducts:\n")],
+    );
+    let merged = merge_at("loftspec.yaml", &base, &ours, &theirs);
+    let text = String::from_utf8(merged.bytes).unwrap();
+    assert_eq!(merged.conflicts, 1);
+    let conflict = "conflicts:\n  - field: publishBranch\n    ours: release\n    theirs: trunk\n";
+    assert!(text.ends_with(conflict), "at the top level: {text}");
+}

@@ -288,3 +288,21 @@ fn a_refused_install_is_listed_among_the_json_document_s_errors() {
         "{error}"
     );
 }
+
+#[test]
+fn the_json_document_of_an_install_that_writes_gitattributes_carries_no_request_to_commit() {
+    let dirs = Dirs::new("json-commit");
+    let (output, _) = dirs.install_with(&clean(), &["--format", "json"]);
+    assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    assert!(dirs.attributes().is_some());
+    assert_eq!(
+        json_of(&output),
+        json!({
+            "schema": "loft-merge-driver/1",
+            "outcome": "installed",
+            "written": [".gitattributes", "merge.loft.driver", "merge.loft.name"],
+            "version": own_version().trim_end(),
+            "errors": [],
+        })
+    );
+}

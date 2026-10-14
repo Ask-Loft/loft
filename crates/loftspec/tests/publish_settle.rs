@@ -6,12 +6,12 @@ use std::fmt::Write as _;
 use std::num::NonZeroU64;
 
 use crate::common::text::{files, path};
-use crate::common::{key, label};
+use crate::common::{key, label, small_document};
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::document::Document;
 use loftspec::hash::hash_document;
 use loftspec::identity::LabelPrefix;
-use loftspec::ids::ElementId;
+use loftspec::ids::{ConstraintId, ElementId};
 use loftspec::merge::merge_file;
 use loftspec::publish::{
     Lock, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, RepoState, Stopped,
@@ -373,4 +373,54 @@ fn bindings_merged_without_a_conflict_publish_when_only_the_lock_is_unmerged() {
         settle(&files(), &repo),
         Ok(Publication::Published { .. })
     ));
+}
+
+#[test]
+fn the_sequence_is_one_past_the_higher_of_the_two_locks_or_1_without_either() {
+    let files = met(Operation::Merge, &LOCAL, &PULLED);
+    for (head, other, expected) in [
+        (Some(6), Some(4), 7),
+        (Some(4), Some(6), 7),
+        (Some(5), None, 6),
+        (None, Some(5), 6),
+        (None, None, 1),
+    ] {
+        let mut repo = stopped(Operation::Merge);
+        let stopped = repo.stopped.as_mut().unwrap();
+        stopped.head_lock = head.map(lock);
+        stopped.other_lock = other.map(lock);
+        assert_eq!(
+            settled(&files, &repo).lock.publish_sequence.get(),
+            expected,
+            "HEAD at {head:?}, the other commit at {other:?}"
+        );
+    }
+}
+
+#[test]
+fn keys_that_lost_their_live_labels_are_allocated_in_document_order_not_key_order() {
+    // Two more constraints under the Component, after its first: in document order the
+    // constraint keyed 9, under the Product, comes before the Component's, keyed 7.
+    let mut document = small_document();
+    let component = &mut document.components[0].component;
+    for n in [0xb, 0xc] {
+        let mut extra = component.constraints[0].clone();
+        extra.id = Some(ConstraintId::new(key(n)));
+        extra.name = format!("The document model shall reject kind {n}.");
+        component.constraints.push(extra);
+    }
+    let local = labels(&[(0x9, "CON-2", &[]), (0x7, "CON-3", &[])]);
+    let pulled = labels(&[(0xb, "CON-2", &[]), (0xc, "CON-3", &[])]);
+    let base = labels(&[]);
+    let at = SpecPath::new("labels.yaml");
+    let merged = merge_file(&at, base.as_bytes(), local.as_bytes(), pulled.as_bytes()).unwrap();
+    assert!(merged.conflicts > 0, "the sides dispute the labels");
+    let mut files = codec::write(&document);
+    files.insert(path("labels.yaml"), merged.bytes);
+    let settled = settled(&files, &stopped(Operation::Merge));
+    let bindings = &settled.document.bindings;
+    assert_eq!(bindings.label_of_key(key(0x9)), Some(label("CON-4")));
+    assert_eq!(bindings.label_of_key(key(0x7)), Some(label("CON-5")));
+    assert_eq!(bindings.label_of_key(key(0xb)), Some(label("CON-2")));
+    assert_eq!(bindings.label_of_key(key(0xc)), Some(label("CON-3")));
 }

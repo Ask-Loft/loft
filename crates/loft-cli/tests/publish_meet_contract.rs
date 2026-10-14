@@ -267,3 +267,21 @@ fn a_pull_git_could_not_run_the_driver_for_is_refused_and_recovered_by_checkout_
     assert!(printed.contains("finished: true"), "{printed}");
     checks_and_verifies(&bob);
 }
+
+#[test]
+fn a_settling_publish_changes_nothing_in_the_repository() {
+    for how in ["--no-rebase", "--rebase"] {
+        let (_alice, bob) = two_publishes();
+        pull_stops(&bob, how);
+        let git_dir = bob.0.0.join(".git");
+        let state = |repo: &Repo| {
+            let index = repo.git_ok(&["ls-files", "--stage"]).stdout;
+            let refs = repo.git_ok(&["for-each-ref"]).stdout;
+            (snapshot(&git_dir), index, refs)
+        };
+        let before = state(&bob);
+        let printed = loft_ok(&bob, &["publish"]);
+        assert!(printed.contains("withdrew RQ-7"), "{how}: {printed}");
+        assert!(state(&bob) == before, "{how}: the repository changed");
+    }
+}
