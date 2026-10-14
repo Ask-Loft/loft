@@ -28,7 +28,9 @@ requirements:
       - key: 01a13b3a-594a-7413-a3dc-405c54116d51
         name: "A record is not changed by a move within a list whose order the Format sorts."
       - key: 01a13b9a-057e-73d1-956b-fda73982546d
-        name: "A record that one side gave another kind is of that kind in the result."
+        name: "A record that one side gave another kind is of that kind in the result, unless that kind cannot hold a record that the merge keeps beneath it."
+      - key: 01a13bfc-b853-75c8-9ec8-bad9b39e3d67
+        name: "A record whose kind in the result cannot hold a record that the merge keeps beneath it takes the kind of another of its versions that can."
       - key: 01a13b9a-057e-73d1-956b-fda864fcb75d
         name: "A record that the sides gave two different kinds keeps its base kind."
       - key: 01a13b9a-057e-73d1-956b-fda9ee6e2ddb

@@ -3,24 +3,14 @@
 //! edit, or with a conflict where the sides disagree over its parent or its survival.
 
 use crate::common::merge::{
-    CRITERIA, CRITERION, merge_at, merged, read_back, requirement, shall, three_requirements, with,
+    CRITERIA, CRITERION, EDITED, merge_at, merged, moved_to, read_back, requirement, shall,
+    three_requirements, with,
 };
 use crate::common::text::{COMPONENT, FEATURE, PRODUCT, files, indented, text};
 use loftspec::codec::{Problem, ReadError, Site, SpecPath};
 use loftspec::identity::Key;
 use loftspec::merge::{Input, MergeError, merge_file};
 use loftspec::yaml::{Location, Position};
-
-const EDITED: &str = "name: \"Every node record carries one key.\"";
-
-/// `base` with the criterion moved from the first Requirement to `requirement`.
-fn moved_to(base: &str, requirement: &str) -> String {
-    let after = shall(requirement);
-    with(
-        base,
-        &[(CRITERIA, ""), (&after, &format!("{after}{CRITERIA}"))],
-    )
-}
 
 /// How many records of the text carry `key`.
 fn carried(text: &str, key: &str) -> usize {

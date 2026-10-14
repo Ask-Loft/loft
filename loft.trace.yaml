@@ -4753,10 +4753,17 @@ links:
       - file: "crates/loftspec/tests/merge_by_key.rs"
         name: "a_registry_entry_the_sorted_order_moves_when_another_is_renamed_is_unchanged"
   - node: 01a13b9a-057e-73d1-956b-fda73982546d
-    reviewed: 640c0d5b8444063b82bed9040fec311aa2d0eead4940d1dacb2c018f1252a7db
+    reviewed: 7f121877e8e9efc875bb979a8d50fcd2a26eb7e8c0281691fed26f0ae5f4d923
     tests:
       - file: "crates/loftspec/tests/merge_by_key.rs"
         name: "a_record_one_side_turns_into_another_kind_is_of_that_kind"
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_whose_new_kind_cannot_hold_a_record_kept_beneath_it_keeps_a_kind_that_can"
+  - node: 01a13bfc-b853-75c8-9ec8-bad9b39e3d67
+    reviewed: c15e5462e839ffeec65c24d62cecbf2060e5fa08c63d960b7ea2a2eb135dc3bf
+    tests:
+      - file: "crates/loftspec/tests/merge_by_key.rs"
+        name: "a_record_whose_new_kind_cannot_hold_a_record_kept_beneath_it_keeps_a_kind_that_can"
   - node: 01a13b9a-057e-73d1-956b-fda864fcb75d
     reviewed: 9931edcd38c61e3ac55a7c5bd71d3270956d0b19c9fa919f119af872ee8826d1
     tests:
@@ -4953,12 +4960,12 @@ links:
   - node: 01a13b3a-594a-7413-a3dc-4060ade857b9
     reviewed: 014045ed8539e92bb3ed5087b1c1016cff19dd20eaf6cb0833dc7e733d98e265
     tests:
-      - file: "crates/loftspec/tests/merge_by_key.rs"
+      - file: "crates/loftspec/tests/merge_decisions.rs"
         name: "an_assessment_one_side_deletes_and_the_other_changes_gives_the_decision_a_conflict_over_its_list"
   - node: 01a13b3a-594a-7413-a3dc-4061c28bc4c8
     reviewed: 935d8e9afcc21f0f7fdc2356ede8bed1b3a0a61f05e5a23453c980fa9261aad8
     tests:
-      - file: "crates/loftspec/tests/merge_by_key.rs"
+      - file: "crates/loftspec/tests/merge_decisions.rs"
         name: "an_assessment_one_side_deletes_and_the_other_changes_keeps_its_base_value"
   - node: 01a13a1b-2f3d-70d6-88b6-56e858b4b211
     reviewed: b2e11fe9cf9cbb968e1ca28c6234d79556b4aacb6cdef101c8392bb73ecaf5ff

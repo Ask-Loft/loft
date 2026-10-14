@@ -8,12 +8,11 @@
 //! a list in authored order: never by the records beneath it, and never by the order a sorted
 //! list keeps.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use super::conflict::Side;
 use super::flat::{Flat, Node, Parent};
 use super::place::Placed;
-use super::same::same_record;
 use super::tree::Lists;
 use crate::identity::Key;
 
@@ -27,9 +26,10 @@ pub(super) enum Fate {
     Despite(Side),
     /// Kept although a side deleted it, as part of a record kept despite that deletion.
     Beneath,
-    /// Deleted by the side and left as it was by the other: gone unless the merge keeps it.
+    /// Deleted by the side and left as it was by the other: it ends as gone unless the merge
+    /// keeps it.
     Tentative(Side),
-    /// Gone: deleted by both sides, or by one with nothing to keep it.
+    /// Gone: deleted by both sides.
     Gone,
 }
 
@@ -40,25 +40,26 @@ impl Fate {
 }
 
 /// The fate of every key any version holds, given each record's merged place and the lists
-/// filtered to the records each holds after the merge.
+/// filtered to the records each holds after the merge. A record left `Tentative` is gone.
 pub(super) fn decide(
     sides: &[Flat; 3],
     places: &BTreeMap<Key, Placed>,
     lists: &Lists,
 ) -> BTreeMap<Key, Fate> {
-    let keys = sides.iter().flat_map(|side| side.nodes.keys().copied());
-    let mut fates: BTreeMap<Key, Fate> = keys.map(|key| (key, seed(key, sides, lists))).collect();
+    let keys: BTreeSet<Key> = sides
+        .iter()
+        .flat_map(|side| side.nodes.keys().copied())
+        .collect();
+    let mut fates: BTreeMap<Key, Fate> = keys
+        .into_iter()
+        .map(|key| (key, seed(key, sides, lists)))
+        .collect();
     let parent = |key: &Key| match places.get(key).map(|placed| placed.place.0) {
         Some(Parent::Key(parent)) => Some(parent),
         _ => None,
     };
     promote(&mut fates, &parent);
     keep_beneath(&mut fates, &parent);
-    for fate in fates.values_mut() {
-        if let Fate::Tentative(_) = fate {
-            *fate = Fate::Gone;
-        }
-    }
     fates
 }
 
@@ -115,14 +116,7 @@ fn seed(key: Key, sides: &[Flat; 3], lists: &Lists) -> Fate {
 
 /// A record `deleter` deleted: kept despite it where the other side changed the record.
 fn deleted(key: Key, base: &Node, kept: &Node, deleter: Side, lists: &Lists) -> Fate {
-    let keeper = match deleter {
-        Side::Ours => Side::Theirs,
-        Side::Theirs => Side::Ours,
-    };
-    let changed = !same_record(&base.own, &kept.own)
-        || base.place != kept.place
-        || lists.moved(keeper, &kept.place, key);
-    if changed {
+    if kept.changed_from(base) || lists.moved(deleter.other(), &kept.place, key) {
         Fate::Despite(deleter)
     } else {
         Fate::Tentative(deleter)

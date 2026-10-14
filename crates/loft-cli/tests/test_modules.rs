@@ -3,7 +3,7 @@
 //! by itself: a file that `tests/main.rs` does not declare would never be compiled or run. A guard
 //! fails on such a file.
 
-use crate::common::workspace;
+use crate::common::{shown, workspace};
 use std::fs;
 
 /// The files directly in `tests/` that `main` does not declare as `mod <file>;`.
@@ -33,11 +33,7 @@ fn every_test_file_is_declared_in_its_crate_s_test_binary() {
             .filter_map(|path| Some(path.file_stem()?.to_str()?.to_owned()))
             .filter(|stem| stem != "main")
             .collect();
-        let shown = tests
-            .strip_prefix(workspace())
-            .unwrap()
-            .display()
-            .to_string();
+        let shown = shown(&tests);
         missing.extend(
             undeclared(&stems, &main)
                 .into_iter()

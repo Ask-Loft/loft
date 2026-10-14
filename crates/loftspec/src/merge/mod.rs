@@ -193,10 +193,9 @@ fn twice_in(path: &SpecPath, content: &Content) -> Vec<ReadError> {
     let mut seen = BTreeMap::new();
     let mut errors = Vec::new();
     for record in keyed_records(content.records()) {
-        let Some(Val::Scalar { text, position }) = record.get(field::KEY) else {
-            continue;
-        };
-        let Ok(key) = Key::parse(text) else {
+        let (Some(key), Some(Val::Scalar { position, .. })) =
+            (record.key(), record.get(field::KEY))
+        else {
             continue;
         };
         match seen.get(&key) {

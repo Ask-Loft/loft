@@ -5,6 +5,7 @@ use super::order::{Anchor, PositionConflict};
 use super::same::holds;
 use crate::codec::schema::field;
 use crate::codec::{ConflictRec, Rec, Val};
+use crate::identity::Key;
 
 /// Where the conflicts of the record being merged go, and the path from that record to the
 /// unkeyed record whose fields are being merged.
@@ -54,6 +55,16 @@ pub(super) enum Side {
     Theirs,
 }
 
+impl Side {
+    /// The other side.
+    pub(super) const fn other(self) -> Self {
+        match self {
+            Self::Ours => Self::Theirs,
+            Self::Theirs => Self::Ours,
+        }
+    }
+}
+
 /// A conflict over `record` on a keyed record that `deleter` deleted and the other side kept:
 /// each side names the record's key, and the deleting side `null` (AC-473).
 pub(super) fn record_conflict(record: &Rec, deleter: Side) -> ConflictRec {
@@ -75,16 +86,13 @@ pub(super) fn parent_conflict(sides: [Option<Val>; 3]) -> ConflictRec {
     ConflictRec::new(field::PARENT, sides)
 }
 
-/// A conflict over where a record goes: each side names the element it follows, by `name`, or
+/// A conflict over where a record goes: each side names the record it follows, by its key, or
 /// `first`.
-pub(super) fn position_conflict<Id>(
-    position: &PositionConflict<Id>,
-    name: impl Fn(&Id) -> String,
-) -> ConflictRec {
-    let anchor = |anchor: &Option<Anchor<Id>>| {
+pub(super) fn position_conflict(position: &PositionConflict<Key>) -> ConflictRec {
+    let anchor = |anchor: &Option<Anchor<Key>>| {
         anchor.as_ref().map(|anchor| match anchor {
             Anchor::First => Val::scalar("first"),
-            Anchor::After(id) => Val::scalar(&name(id)),
+            Anchor::After(key) => Val::scalar(key),
         })
     };
     let sides = [&position.base, &position.ours, &position.theirs].map(anchor);

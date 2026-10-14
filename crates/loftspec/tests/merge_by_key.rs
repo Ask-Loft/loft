@@ -1,6 +1,6 @@
 //! The merge by key (F-32), which `merge_file` is for record files and registries: deletions
-//! beneath a deleted record, moves apart and cycles of moves, assessments, a key carried twice
-//! and changes of kind. Each record is merged by its key, its place as one value, and a record
+//! beneath a deleted record, moves apart and cycles of moves, a key carried twice and changes of
+//! kind. Each record is merged by its key, its place as one value, and a record
 //! one side deleted is kept only where the other side changed it or the merge keeps a record
 //! beneath it.
 
@@ -9,11 +9,10 @@ use loftspec::identity::Key;
 use loftspec::merge::{MergeError, merge_file};
 
 use crate::common::merge::{
-    CRITERIA, CRITERION, read_back, requirement, shall, three_requirements, with,
+    CRITERIA, CRITERION, EDITED, merged, merged_at, moved_to, read_back, requirement, shall,
+    three_requirements, with,
 };
-use crate::common::text::{COMPONENT, DECISION, FEATURE, files, indented, text};
-
-const EDITED: &str = "name: \"Every node record carries one key.\"";
+use crate::common::text::{COMPONENT, FEATURE, files, indented, text};
 
 /// A second criterion of the first Requirement, after the first.
 const SECOND: &str = "      - key: 00000000-0000-7000-8000-0000000000d6
@@ -40,25 +39,6 @@ fn ours_deleted(n: &str, by: &str) -> String {
     )
 }
 
-/// Merges the file at `path` with `merge_file`, which must merge.
-fn merged_at(path: &str, base: &str, ours: &str, theirs: &str) -> (String, usize) {
-    let merged = merge_file(
-        &SpecPath::new(path),
-        base.as_bytes(),
-        ours.as_bytes(),
-        theirs.as_bytes(),
-    )
-    .expect("the file merges");
-    (String::from_utf8(merged.bytes).unwrap(), merged.conflicts)
-}
-
-/// Merges the Feature file, and checks that the result reads back.
-fn merged(base: &str, ours: &str, theirs: &str) -> (String, usize) {
-    let (text, conflicts) = merged_at(FEATURE, base, ours, theirs);
-    read_back(FEATURE, &text);
-    (text, conflicts)
-}
-
 /// The Feature with three Requirements, the first holding two criteria.
 fn two_criteria() -> String {
     with(
@@ -77,7 +57,9 @@ fn deleted_and_edited_beneath() -> (String, usize) {
     let base = two_criteria();
     let ours = without_first(&base, &format!("{FIRST}{CRITERIA}{SECOND}"));
     let theirs = with(&base, &[(CRITERION, EDITED)]);
-    merged(&base, &ours, &theirs)
+    let (text, conflicts) = merged(&base, &ours, &theirs);
+    read_back(FEATURE, &text);
+    (text, conflicts)
 }
 
 #[test]
@@ -109,7 +91,7 @@ fn a_record_one_side_deletes_and_the_other_changes_only_by_deleting_records_bene
     let first = CRITERIA.replace("    criteria:\n", "");
     let theirs = with(&base, &[(&first, "")]);
     // Other files name the deleted Requirement, so the tree is not read back.
-    let (text, conflicts) = merged_at(FEATURE, &base, &ours, &theirs);
+    let (text, conflicts) = merged(&base, &ours, &theirs);
     assert_eq!(conflicts, 0, "{text}");
     assert!(
         !text.contains("key: 00000000-0000-7000-8000-000000000004"),
@@ -138,15 +120,6 @@ fn a_registry_entry_the_sorted_order_moves_when_another_is_renamed_is_unchanged(
     assert!(text.starts_with(&format!("{renamed}{gamma}")), "{text}");
 }
 
-/// `base` with the criterion moved from the first Requirement to the one keyed `n`.
-fn moved_to(base: &str, n: &str) -> String {
-    let after = shall(n);
-    with(
-        base,
-        &[(CRITERIA, ""), (&after, &format!("{after}{CRITERIA}"))],
-    )
-}
-
 #[test]
 fn a_record_both_sides_move_apart_whose_base_parent_neither_holds_is_where_ours_put_it_with_a_parent_conflict()
  {
@@ -155,7 +128,7 @@ fn a_record_both_sides_move_apart_whose_base_parent_neither_holds_is_where_ours_
     let ours = emptied(&moved_to(&base, "c2"));
     let theirs = emptied(&moved_to(&base, "c3"));
     // Other files name the deleted Requirement, so the tree is not read back.
-    let (text, conflicts) = merged_at(FEATURE, &base, &ours, &theirs);
+    let (text, conflicts) = merged(&base, &ours, &theirs);
     let conflict = "        conflicts:
           - field: parent
             base: 00000000-0000-7000-8000-000000000004
@@ -192,6 +165,7 @@ fn records_whose_moves_would_form_a_cycle_stay_at_the_base_parent_or_where_ours_
     let ours = with(&base, &[(&held, &holding(&held, &added))]);
     let theirs = with(&base, &[(&held, &holding(&added, &held))]);
     let (text, conflicts) = merged(&base, &ours, &theirs);
+    read_back(FEATURE, &text);
     assert_eq!(conflicts, 2, "{text}");
     let top = "00000000-0000-7000-8000-000000000003";
     let e1 = "00000000-0000-7000-8000-0000000000e1";
@@ -220,6 +194,7 @@ fn a_record_both_sides_add_at_different_parents_is_where_ours_put_it_with_a_pare
         &[(&after, &format!("{after}    criteria:\n{added}"))],
     );
     let (text, conflicts) = merged(&base, &ours, &theirs);
+    read_back(FEATURE, &text);
     let conflict = "        conflicts:
           - field: parent
             ours: 00000000-0000-7000-8000-000000000004
@@ -230,43 +205,6 @@ fn a_record_both_sides_add_at_different_parents_is_where_ours_put_it_with_a_pare
         "{text}"
     );
     assert_eq!(conflicts, 1, "{text}");
-}
-
-/// The assessment of the second option against the second driver.
-const ASSESSMENT: &str = "  - option: 00000000-0000-7000-8000-000000000018
-    driver: 00000000-0000-7000-8000-000000000016
-    rating: neutral
-    rationale: \"Either can be written.\"
-";
-
-/// Merges the decision file where ours deletes the assessment and theirs changes it.
-fn assessment_deleted_and_changed() -> (String, String, usize) {
-    let base = text(&files(), DECISION);
-    let ours = with(&base, &[(ASSESSMENT, "")]);
-    let theirs = with(&base, &[("Either can be written.", "Theirs.")]);
-    let (text, conflicts) = merged_at(DECISION, &base, &ours, &theirs);
-    (base, text, conflicts)
-}
-
-#[test]
-fn an_assessment_one_side_deletes_and_the_other_changes_gives_the_decision_a_conflict_over_its_list()
- {
-    let (_, text, conflicts) = assessment_deleted_and_changed();
-    assert_eq!(conflicts, 1, "{text}");
-    let (_, records) = text
-        .split_once("\nconflicts:\n")
-        .expect("a conflict record");
-    assert!(records.starts_with("  - field: assessments\n"), "{text}");
-    assert!(records.contains("\"Theirs.\""), "{text}");
-}
-
-#[test]
-fn an_assessment_one_side_deletes_and_the_other_changes_keeps_its_base_value() {
-    let (base, text, _) = assessment_deleted_and_changed();
-    let fields = text
-        .find("\nconflicts:\n")
-        .map_or(&text[..], |at| &text[..=at]);
-    assert_eq!(fields, base, "{text}");
 }
 
 #[test]
@@ -321,6 +259,7 @@ fn a_cycle_through_a_record_the_sides_moved_apart_leaves_each_record_base_holds_
         holding(&inner, &holding(&added, &outer))
     );
     let (text, conflicts) = merged(&base, &ours, &theirs);
+    read_back(FEATURE, &text);
     assert_eq!(conflicts, 2, "{text}");
     let parent = |base: &str, ours: &str, theirs: &str| {
         let key = |n: &str| format!("00000000-0000-7000-8000-0000000000{n}");
@@ -351,6 +290,7 @@ fn a_record_one_side_deletes_and_the_other_moves_within_its_list_is_kept_with_a_
     let ours = with(&base, &[(&c3, "")]);
     let theirs = with(&base, &[(&c3, ""), (FIRST, &format!("{c3}{FIRST}"))]);
     let (text, conflicts) = merged(&base, &ours, &theirs);
+    read_back(FEATURE, &text);
     assert_eq!(conflicts, 1, "{text}");
     assert!(
         text.contains(&format!(
@@ -471,4 +411,45 @@ fn a_record_the_sides_turn_into_two_different_kinds_keeps_its_base_kind() {
     assert!(text.contains(&format!("constraints:\n{kept}")), "{text}");
     assert!(!text.contains("components:"), "{text}");
     assert!(!text.contains("read.wall-time"), "{text}");
+}
+
+/// A Component of the Component file, keyed `…0000000000c1`, holding `beneath`.
+fn sub_component(beneath: &str) -> String {
+    format!(
+        "components:\n  - key: 00000000-0000-7000-8000-0000000000c1\n    name: \"Parser\"\n{beneath}"
+    )
+}
+
+#[test]
+fn a_record_whose_new_kind_cannot_hold_a_record_kept_beneath_it_keeps_a_kind_that_can() {
+    let base = text(&files(), COMPONENT);
+    let base = with(
+        &base,
+        &[(
+            "constraints:\n",
+            &format!("{}constraints:\n", sub_component("")),
+        )],
+    );
+    // Ours gives the Component a Constraint, which a Constraint cannot hold.
+    let held = "    constraints:
+      - key: 00000000-0000-7000-8000-0000000000c2
+        name: \"The parser shall refuse tabs.\"
+        verificationFate: proved
+";
+    let ours = with(&base, &[(&sub_component(""), &sub_component(held))]);
+    // Theirs turns the Component into a Constraint.
+    let theirs = with(
+        &base,
+        &[
+            (&sub_component(""), ""),
+            (
+                "constraints:\n",
+                "constraints:\n  - key: 00000000-0000-7000-8000-0000000000c1\n    name: \"Parser\"\n    verificationFate: proved\n",
+            ),
+        ],
+    );
+    let (text, _) = merged_at(COMPONENT, &base, &ours, &theirs);
+    read_back(COMPONENT, &text);
+    assert!(text.contains(&sub_component(held)), "{text}");
+    assert_eq!(text.matches("0000000000c1").count(), 1, "{text}");
 }

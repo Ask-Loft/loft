@@ -60,7 +60,7 @@ pub(super) fn merge(
         }
     }
     let merged = lists.merge(&places, &mut records);
-    Ok(rebuild(top, &records, &merged))
+    Ok(rebuild(top, records, &merged))
 }
 
 /// A record the merge keeps without a place, or whose parent it does not keep: one the merge
@@ -77,14 +77,14 @@ fn unplaced(records: &BTreeMap<Key, Rec>, places: &BTreeMap<Key, Placed>) -> Opt
 
 /// The own fields of every record a side holds, merged.
 fn merge_records(sides: &[Flat; 3], sure: &BTreeSet<Key>) -> BTreeMap<Key, Rec> {
-    let [base, ours, theirs] = sides;
+    let [_, ours, theirs] = sides;
     let keys: BTreeSet<&Key> = ours.nodes.keys().chain(theirs.nodes.keys()).collect();
     keys.into_iter()
         .map(|key| {
-            let [base, ours, theirs] =
-                [base, ours, theirs].map(|side| side.nodes.get(key).map(|node| &node.own));
+            let [ours, theirs] =
+                [ours, theirs].map(|side| side.nodes.get(key).map(|node| &node.own));
             let record = match (ours, theirs) {
-                (Some(ours), Some(theirs)) => merge_kinds(*key, sides, sure, base, ours, theirs),
+                (Some(_), Some(_)) => merge_kinds(*key, sides, sure),
                 (Some(only), None) | (None, Some(only)) => only.clone(),
                 (None, None) => unreachable!("a key a side holds"),
             };
@@ -94,11 +94,12 @@ fn merge_records(sides: &[Flat; 3], sure: &BTreeSet<Key>) -> BTreeMap<Key, Rec> 
 }
 
 /// Each version's lists, each filtered to the records the merge places in it and those no side
-/// holds, so that a record moved elsewhere makes no neighbour look moved; and the order each
-/// list keeps.
+/// holds, so that a record moved elsewhere makes no neighbour look moved; the order each list
+/// keeps; and the records ours and theirs each moved within each list in authored order.
 pub(super) struct Lists {
     sides: [BTreeMap<Place, Vec<Key>>; 3],
     orders: BTreeMap<Place, Order>,
+    moved: [BTreeMap<Place, BTreeSet<Key>>; 2],
 }
 
 impl Lists {
@@ -120,10 +121,22 @@ impl Lists {
             }
             lists
         });
-        Self {
+        let mut lists = Self {
             sides: filtered,
             orders,
-        }
+            moved: Default::default(),
+        };
+        lists.moved = [1, 2].map(|side| lists.moved_in(side));
+        lists
+    }
+
+    /// The records `side` holds elsewhere than base does in each list in authored order.
+    fn moved_in(&self, side: usize) -> BTreeMap<Place, BTreeSet<Key>> {
+        self.orders
+            .keys()
+            .filter(|place| self.authored(place))
+            .map(|place| (*place, moved(self.list(0, place), self.list(side, place))))
+            .collect()
     }
 
     fn list(&self, side: usize, place: &Place) -> &[Key] {
@@ -138,10 +151,12 @@ impl Lists {
     /// authored order.
     pub(super) fn moved(&self, side: Side, place: &Place, key: Key) -> bool {
         let side = match side {
-            Side::Ours => 1,
-            Side::Theirs => 2,
+            Side::Ours => 0,
+            Side::Theirs => 1,
         };
-        self.authored(place) && moved(self.list(0, place), self.list(side, place)).contains(&key)
+        self.moved[side]
+            .get(place)
+            .is_some_and(|moved| moved.contains(&key))
     }
 
     /// Every list that holds a record after the merge, in merged order; a record both sides
@@ -154,21 +169,16 @@ impl Lists {
         let targets: BTreeSet<Place> = records.keys().map(|key| places[key].place).collect();
         targets
             .into_iter()
-            .map(|place| (place, self.merge_list(place, places, records)))
+            .map(|place| (place, self.merge_list(place, records)))
             .collect()
     }
 
-    fn merge_list(
-        &self,
-        place: Place,
-        places: &BTreeMap<Key, Placed>,
-        records: &mut BTreeMap<Key, Rec>,
-    ) -> Vec<Key> {
+    fn merge_list(&self, place: Place, records: &mut BTreeMap<Key, Rec>) -> Vec<Key> {
         let [base, ours, theirs] = [0, 1, 2].map(|side| self.list(side, &place));
+        // Each record the merge keeps has a place (`unplaced`), and each list holds only the
+        // records placed in it (`Lists::filtered`): a record here survives if it is kept.
         let kept: &BTreeMap<Key, Rec> = records;
-        let survives = |key: &Key| {
-            kept.contains_key(key) && places.get(key).is_some_and(|at| at.place == place)
-        };
+        let survives = |key: &Key| kept.contains_key(key);
         if !self.authored(&place) {
             // The writer sorts the list; which records it holds is all the merge settles.
             let mut seen = BTreeSet::new();
@@ -183,7 +193,7 @@ impl Lists {
         let merged = merge_order(base, ours, theirs, &survives);
         for position in &merged.conflicts {
             if let Some(record) = records.get_mut(&position.element) {
-                hold(record, position_conflict(position, Key::to_string));
+                hold(record, position_conflict(position));
             }
         }
         merged.order

@@ -10,18 +10,7 @@ use proptest::test_runner::TestCaseError;
 
 use crate::common::edit_tree::{Y, conflicts, read};
 use crate::common::merge_cases::{Case, cases, unsettled};
-use crate::common::merge_keys::{Flat, Kept, deletions, flatten};
-
-fn config() -> ProptestConfig {
-    ProptestConfig {
-        // `PROPTEST_CASES` runs more, as when hunting for a new class of failure.
-        cases: std::env::var("PROPTEST_CASES")
-            .ok()
-            .and_then(|cases| cases.parse().ok())
-            .unwrap_or(256),
-        ..ProptestConfig::default()
-    }
-}
+use crate::common::merge_keys::{Flat, deletions, flatten};
 
 /// How many conflict records a version of the case's file carries.
 fn carried(case: &Case, bytes: &[u8]) -> usize {
@@ -29,8 +18,6 @@ fn carried(case: &Case, bytes: &[u8]) -> usize {
 }
 
 proptest! {
-    #![proptest_config(config())]
-
     #[test]
     fn every_generated_version_reads_back_and_is_a_formatter_fixed_point(case in cases()) {
         for bytes in [&case.base, &case.ours, &case.theirs] {
@@ -48,16 +35,23 @@ proptest! {
 /// A side merged with base either way round, or with itself, is that side.
 fn idempotent(case: &Case) -> Result<(), TestCaseError> {
     for side in [&case.ours, &case.theirs] {
+        let conflicts = carried(case, side);
         for (ours, theirs) in [(side, &case.base), (&case.base, side), (side, side)] {
-            gives(case, ours, theirs, side)?;
+            gives(case, ours, theirs, side, conflicts)?;
         }
     }
     Ok(())
 }
 
 /// Whether merging `ours` and `theirs` over the case's base gives `expected`, with only the
-/// conflict records it carries.
-fn gives(case: &Case, ours: &[u8], theirs: &[u8], expected: &[u8]) -> Result<(), TestCaseError> {
+/// conflict records it carries, `conflicts` of them.
+fn gives(
+    case: &Case,
+    ours: &[u8],
+    theirs: &[u8],
+    expected: &[u8],
+    conflicts: usize,
+) -> Result<(), TestCaseError> {
     let merged = case.merge(&case.base, ours, theirs);
     prop_assert!(merged.is_ok(), "{merged:?}\n{case:?}");
     let merged = merged.unwrap();
@@ -67,7 +61,7 @@ fn gives(case: &Case, ours: &[u8], theirs: &[u8], expected: &[u8]) -> Result<(),
         "{:?}",
         case
     );
-    prop_assert_eq!(merged.conflicts, carried(case, expected));
+    prop_assert_eq!(merged.conflicts, conflicts);
     Ok(())
 }
 
@@ -103,8 +97,8 @@ fn keys_conserved(case: &Case, merged: &Merged) -> Result<(), TestCaseError> {
             );
         }
     }
-    for (key, kept) in deletions(&base, &ours, &theirs) {
-        if kept != Kept::Changed {
+    for (key, changed) in deletions(&base, &ours, &theirs) {
+        if !changed {
             prop_assert!(
                 !result.has(&key),
                 "{key} is brought back\n{written}\n{case:?}"
@@ -138,11 +132,11 @@ fn agree_where(base: &Y, one: &Y, other: &Y) -> bool {
         })
 }
 
-/// Whether both sides add one key under different parents: ours hosts it, and which side's
-/// parent survives, and so how many conflicts the merge writes, follows from that, by design.
-fn both_sides_add_a_key_apart(case: &Case) -> bool {
-    let [base, ours, theirs] =
-        [&case.base, &case.ours, &case.theirs].map(|bytes| flat(case, bytes));
+/// Whether both sides add one key, which `base` lacks, under different parents: ours hosts it,
+/// and which side's parent survives, and so how many conflicts the merge writes, follows from
+/// that, by design.
+fn both_sides_add_a_key_apart(case: &Case, base: &Flat) -> bool {
+    let [ours, theirs] = [&case.ours, &case.theirs].map(|bytes| flat(case, bytes));
     ours.keyed.iter().any(|(key, added)| {
         !base.has(key)
             && theirs
@@ -155,7 +149,8 @@ fn both_sides_add_a_key_apart(case: &Case) -> bool {
 /// Swapping the sides keeps the conflicts, the keys and, in a merge without conflicts, each
 /// record's parent and fields.
 fn symmetric(case: &Case) -> Result<(), TestCaseError> {
-    prop_assume!(!both_sides_add_a_key_apart(case));
+    let base = flat(case, &case.base);
+    prop_assume!(!both_sides_add_a_key_apart(case, &base));
     let (one, other) = (case.merged(), case.swapped());
     prop_assert_eq!(
         one.is_ok(),
@@ -172,7 +167,6 @@ fn symmetric(case: &Case) -> Result<(), TestCaseError> {
     let (one, other) = (flat(case, &one.bytes), flat(case, &other.bytes));
     prop_assert_eq!(one.keys(), other.keys(), "{:?}", case);
     if conflict_free(&one) && conflict_free(&other) {
-        let base = flat(case, &case.base);
         prop_assert!(agree(&base, &one, &other), "{one:#?}\n{other:#?}\n{case:?}");
     }
     Ok(())
@@ -212,8 +206,6 @@ fn conserves(case: &Case) -> Result<(), TestCaseError> {
 }
 
 proptest! {
-    #![proptest_config(config())]
-
     #[test]
     fn a_merge_reads_back_as_a_formatter_fixed_point_carrying_each_key_once(case in cases()) {
         reads_back(&case)?;

@@ -4,26 +4,11 @@
 //! given a budget.
 
 use std::fs;
-use std::path::{Path, PathBuf};
 
-use crate::common::workspace;
+use crate::common::{shown, sources, workspace};
 
 /// The most lines a Rust source file may hold.
 const CEILING: usize = 500;
-
-/// Every Rust source file beneath `dir`.
-fn sources(dir: &Path) -> Vec<PathBuf> {
-    let mut found = Vec::new();
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.is_dir() {
-            found.extend(sources(&path));
-        } else if path.extension().is_some_and(|extension| extension == "rs") {
-            found.push(path);
-        }
-    }
-    found
-}
 
 /// Each file of `files`, by name and text, that holds more lines than the ceiling, with its
 /// count.
@@ -37,13 +22,9 @@ fn over_ceiling(files: &[(String, String)]) -> Vec<(String, usize)> {
 
 /// Every Rust source file under `crates/`, by its path from the workspace and its text.
 fn workspace_sources() -> Vec<(String, String)> {
-    let workspace = workspace();
-    sources(&workspace.join("crates"))
+    sources(&workspace().join("crates"))
         .into_iter()
-        .map(|path| {
-            let name = path.strip_prefix(&workspace).unwrap().display().to_string();
-            (name, fs::read_to_string(&path).unwrap())
-        })
+        .map(|path| (shown(&path), fs::read_to_string(&path).unwrap()))
         .collect()
 }
 

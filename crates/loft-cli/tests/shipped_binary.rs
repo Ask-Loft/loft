@@ -4,10 +4,9 @@
 //! feature, the release's build builds it with no feature flag, and every test that starts `loft` starts
 //! the binary Cargo built for this package.
 
-use crate::common::workspace;
+use crate::common::{shown, sources, workspace};
 use crate::workflow::read;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// The crates built into `loft`.
 const BUILT_IN: [&str; 3] = ["loft-cli", "loftspec", "loftspec-store"];
@@ -53,25 +52,6 @@ fn tables<'a>(manifest: &'a str, header: &str) -> Vec<Vec<&'a str>> {
         }
     }
     found
-}
-
-/// Every Rust source file under `dir`.
-fn sources(dir: &Path, found: &mut Vec<PathBuf>) {
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.is_dir() {
-            sources(&path, found);
-        } else if path.extension().is_some_and(|extension| extension == "rs") {
-            found.push(path);
-        }
-    }
-}
-
-fn shown(path: &Path) -> String {
-    path.strip_prefix(workspace())
-        .unwrap()
-        .display()
-        .to_string()
 }
 
 /// The argument of each `Command::new(…)` in `text`, as written.
@@ -125,11 +105,7 @@ fn the_tests_run_the_loft_binary_as_it_ships() {
             Vec::<Vec<&str>>::new(),
             "{krate}"
         );
-        let mut files = Vec::new();
-        sources(
-            &workspace().join("crates").join(krate).join("src"),
-            &mut files,
-        );
+        let files = sources(&workspace().join("crates").join(krate).join("src"));
         assert!(
             files.len() > 5,
             "{krate}: the scan found {} files",
@@ -163,8 +139,7 @@ fn the_tests_run_the_loft_binary_as_it_ships() {
 /// Every program a test of this crate starts is the `loft` Cargo built or one of
 /// [`OTHER_PROGRAMS`].
 fn assert_the_tests_start_only_the_built_loft() {
-    let mut files = Vec::new();
-    sources(&workspace().join("crates/loft-cli/tests"), &mut files);
+    let files = sources(&workspace().join("crates/loft-cli/tests"));
     let mut started = 0;
     for file in files
         .iter()

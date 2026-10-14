@@ -122,14 +122,13 @@ pub(super) fn merge_places(
 fn ladder(key: Key, sides: &[Flat; 3], fits: &Fits<'_>) -> Option<Ladder> {
     let [base, ours, theirs] = sides.each_ref().map(|side| side.place(&key));
     let (chosen, apart) = chosen(base, ours, theirs)?;
-    let side = [ours, theirs]
+    let takes = |place: &Place| fits.fits(key, *place);
+    let side = [ours, theirs].into_iter().flatten().find(takes);
+    let mut levels: Vec<Place> = [Some(chosen), base]
         .into_iter()
         .flatten()
-        .find(|place| fits.fits(key, *place));
-    let mut levels: Vec<Place> = [Some(chosen), base, side]
-        .into_iter()
-        .flatten()
-        .filter(|place| fits.fits(key, *place))
+        .filter(takes)
+        .chain(side)
         .collect();
     levels.dedup();
     (!levels.is_empty()).then_some(Ladder {

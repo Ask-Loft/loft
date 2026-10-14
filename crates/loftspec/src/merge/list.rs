@@ -20,31 +20,17 @@ enum Ident {
     Value(String),
 }
 
-/// How an element of a list merges.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Element {
-    /// An assessment, which merges as one value (RQ-119's whole values); bindings, the other
-    /// whole values, are merged by the labels merge before any list merge sees them.
-    Whole,
-    /// A scalar or a record matched by its value, which no side can change, only add or remove.
-    Value,
-}
-
-const fn element(item: Item) -> Element {
-    match item {
-        Item::Record(Kind::Assessment) => Element::Whole,
-        _ => Element::Value,
-    }
-}
-
-fn ident(item: Item, value: &Val) -> Ident {
+/// What a list's element is matched by: an assessment (`whole`) by its option and driver, and
+/// anything else by its value.
+fn ident(whole: bool, value: &Val) -> Ident {
     let record_text = |name: &str| match value {
         Val::Record(record) => record.text(name).unwrap_or_default().to_owned(),
         _ => String::new(),
     };
-    match element(item) {
-        Element::Whole => Ident::Pair(record_text(field::OPTION), record_text(field::DRIVER)),
-        Element::Value => Ident::Value(text(value)),
+    if whole {
+        Ident::Pair(record_text(field::OPTION), record_text(field::DRIVER))
+    } else {
+        Ident::Value(text(value))
     }
 }
 
@@ -54,12 +40,12 @@ struct Listed<'a> {
     by_id: BTreeMap<Id, &'a Val>,
 }
 
-fn side(item: Item, values: &[Val]) -> Listed<'_> {
+fn side(whole: bool, values: &[Val]) -> Listed<'_> {
     let mut seen: BTreeMap<Ident, usize> = BTreeMap::new();
     let mut ids = Vec::new();
     let mut by_id = BTreeMap::new();
     for value in values {
-        let ident = ident(item, value);
+        let ident = ident(whole, value);
         let count = seen.entry(ident.clone()).or_default();
         let id = (ident, *count);
         *count += 1;
@@ -79,10 +65,10 @@ pub(super) fn merge_list(
     let Shape::List(item) = each.shape else {
         unreachable!("only a list field merges as a list");
     };
-    let kind = element(item);
-    let sides = [side(item, base), side(item, ours), side(item, theirs)];
+    let whole = item == Item::Record(Kind::Assessment);
+    let sides = [side(whole, base), side(whole, ours), side(whole, theirs)];
     let mut merger = Merger {
-        kind,
+        whole,
         disagree: false,
     };
     let mut elements = merger.elements(&sides);
@@ -107,7 +93,11 @@ pub(super) fn merge_list(
 }
 
 struct Merger {
-    kind: Element,
+    /// Whether the list holds assessments, each of which merges as one value (RQ-119's whole
+    /// values); bindings, the other whole values, are merged by the labels merge before any
+    /// list merge sees them. Any other element is a scalar or a record matched by its value,
+    /// which no side can change, only add or remove.
+    whole: bool,
     disagree: bool,
 }
 
@@ -141,7 +131,7 @@ impl Merger {
             (Some(base), Some(kept), None) | (Some(base), None, Some(kept)) => {
                 self.deleted(base, kept)
             }
-            (None, Some(ours), Some(theirs)) => Some(self.whole(None, ours, theirs)),
+            (None, Some(ours), Some(theirs)) => Some(self.whole_value(None, ours, theirs)),
             (None, Some(only), None) | (None, None, Some(only)) => Some(only.clone()),
             (Some(_) | None, None, None) => None,
         }
@@ -149,15 +139,16 @@ impl Merger {
 
     /// An element all three sides hold.
     fn three(&mut self, base: &Val, ours: &Val, theirs: &Val) -> Val {
-        match self.kind {
-            Element::Whole => self.whole(Some(base), ours, theirs),
-            Element::Value => base.clone(),
+        if self.whole {
+            self.whole_value(Some(base), ours, theirs)
+        } else {
+            base.clone()
         }
     }
 
     /// A whole value: one side's change wins, equal changes coalesce, and a disagreement keeps
     /// base, or ours where base lacks it, with a conflict over the list.
-    fn whole(&mut self, base: Option<&Val>, ours: &Val, theirs: &Val) -> Val {
+    fn whole_value(&mut self, base: Option<&Val>, ours: &Val, theirs: &Val) -> Val {
         let unchanged = |side: &Val| base.is_some_and(|base| same_value(side, base));
         if same_value(ours, theirs) || unchanged(theirs) {
             return ours.clone();
@@ -173,7 +164,7 @@ impl Merger {
     /// assessment the other side changed keeps its base value with a conflict over the list, as
     /// when both sides change it apart.
     fn deleted(&mut self, base: &Val, kept: &Val) -> Option<Val> {
-        if self.kind == Element::Whole && !same_value(base, kept) {
+        if self.whole && !same_value(base, kept) {
             self.disagree = true;
             return Some(base.clone());
         }

@@ -22,7 +22,7 @@ pub enum Top {
 
 /// The field a registry's entries are held under while the tree is edited; the file itself is
 /// one sequence.
-pub const ENTRIES: &str = "entries";
+pub use loftspec::codec::field::ENTRIES;
 
 /// The field names a file may hold, each as the `'static` name the writer takes.
 fn name(text: &str) -> &'static str {

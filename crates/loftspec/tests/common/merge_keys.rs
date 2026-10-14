@@ -1,5 +1,5 @@
-//! A version of a file read as its keyed records: for each key its own fields, its place and
-//! its subtree, which the merge properties compare across base, ours, theirs and the result.
+//! A version of a file read as its keyed records: for each key its own fields and its place,
+//! which the merge properties compare across base, ours, theirs and the result.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -13,12 +13,9 @@ pub type Place = (Option<String>, &'static str);
 /// One keyed record.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Keyed {
-    pub kind: Kind,
     pub place: Place,
     /// Its fields without the lists of keyed records, conflicts included.
     pub own: Y,
-    /// The record with everything in it.
-    pub subtree: Y,
 }
 
 /// A version of a file by key.
@@ -32,11 +29,16 @@ pub struct Flat {
 }
 
 fn own(record: &Y, kind: Kind) -> Y {
-    let mut own = record.clone();
-    if let Y::Map(fields) = &mut own {
-        fields.retain(|(name, _)| list_kind(Some(kind), name).is_none());
+    match record {
+        Y::Map(fields) => Y::Map(
+            fields
+                .iter()
+                .filter(|(name, _)| list_kind(Some(kind), name).is_none())
+                .cloned()
+                .collect(),
+        ),
+        other => other.clone(),
     }
-    own
 }
 
 /// The version `bytes` of a file holding `top`, by key; an empty version holds nothing.
@@ -57,7 +59,6 @@ pub fn flatten(top: Top, bytes: &[u8]) -> Flat {
             Some((last, parent)) if parent.is_empty() && top == Top::Registry => (None, last.0),
             Some((last, parent)) => (key_at.get(parent).cloned(), last.0),
         };
-        let subtree = node(&root, &at.path).clone();
         if !place.1.is_empty() {
             flat.lists
                 .entry(place.clone())
@@ -65,10 +66,8 @@ pub fn flatten(top: Top, bytes: &[u8]) -> Flat {
                 .push(at.key.clone());
         }
         let keyed = Keyed {
-            kind: at.kind,
             place,
-            own: own(&subtree, at.kind),
-            subtree,
+            own: own(node(&root, &at.path), at.kind),
         };
         if flat.keyed.insert(at.key.clone(), keyed).is_some() {
             flat.twice.insert(at.key);
@@ -131,38 +130,25 @@ fn unchanged(base: &Flat, side: &Flat, key: &str) -> bool {
     common(&before_list, &after_list) == common(&after_list, &before_list)
 }
 
-/// How the side that kept a record the other side deleted left it: untouched, beneath it
-/// included; untouched but for records beneath it that it deleted; or otherwise changed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Kept {
-    Untouched,
-    DeletedBeneath,
-    Changed,
-}
-
-fn kept(base: &Flat, side: &Flat, key: &str) -> Kept {
+/// Whether the side that kept a record the other side deleted changed it: anything but leaving
+/// it untouched, beneath it included, but for records beneath it that it deleted.
+fn changed(base: &Flat, side: &Flat, key: &str) -> bool {
     if !unchanged(base, side, key) {
-        return Kept::Changed;
+        return true;
     }
     let now = side.beneath(key);
-    if !now.iter().all(|inner| unchanged(base, side, inner)) {
-        return Kept::Changed;
-    }
-    let gone: Vec<String> = base.beneath(key).difference(&now).cloned().collect();
-    if gone.is_empty() {
-        Kept::Untouched
-    } else if gone.iter().all(|inner| !side.has(inner)) {
-        Kept::DeletedBeneath
-    } else {
-        Kept::Changed
-    }
+    !now.iter().all(|inner| unchanged(base, side, inner))
+        || base
+            .beneath(key)
+            .difference(&now)
+            .any(|inner| side.has(inner))
 }
 
-/// Each record of base one side deleted where its deletion starts, with how the other side
-/// kept it. Where a deletion starts, the record's parent on the keeping side is on the deleting
+/// Each record of base one side deleted where its deletion starts, with whether the other side
+/// changed it. Where a deletion starts, the record's parent on the keeping side is on the deleting
 /// side too, or it has none; a record beneath one the merge keeps for the keeping side's change
 /// comes with that record, so only where a deletion starts is a record bound to go.
-pub fn deletions(base: &Flat, ours: &Flat, theirs: &Flat) -> Vec<(String, Kept)> {
+pub fn deletions(base: &Flat, ours: &Flat, theirs: &Flat) -> Vec<(String, bool)> {
     let mut found = Vec::new();
     for key in base.keyed.keys() {
         let (deleting, keeping) = match (ours.has(key), theirs.has(key)) {
@@ -172,7 +158,7 @@ pub fn deletions(base: &Flat, ours: &Flat, theirs: &Flat) -> Vec<(String, Kept)>
         };
         let parent = &keeping.keyed[key].place.0;
         if parent.as_ref().is_none_or(|parent| deleting.has(parent)) {
-            found.push((key.clone(), kept(base, keeping, key)));
+            found.push((key.clone(), changed(base, keeping, key)));
         }
     }
     found

@@ -5,6 +5,7 @@
 
 use std::collections::BTreeMap;
 
+use super::same::same_record;
 use crate::codec::schema::{Item, Kind, Order, Shape, field};
 use crate::codec::{Content, Rec, Val};
 use crate::identity::Key;
@@ -21,14 +22,19 @@ pub(super) enum Parent {
 /// A list of keyed records: the record that holds it and its field.
 pub(super) type Place = (Parent, &'static str);
 
-/// The field a registry's entries are listed in, under the top.
-pub(super) const ENTRIES: &str = "entries";
-
 /// One keyed record of a version: its own fields, and the list it sits in.
 #[derive(Debug, Clone)]
 pub(super) struct Node {
     pub(super) own: Rec,
     pub(super) place: Place,
+}
+
+impl Node {
+    /// Whether this version changed the record from `base`: in its own fields and conflicts, or
+    /// in its place.
+    pub(super) fn changed_from(&self, base: &Self) -> bool {
+        !same_record(&base.own, &self.own) || base.place != self.place
+    }
 }
 
 /// One version of a file by key.
@@ -52,7 +58,7 @@ impl Flat {
             }
             Content::Registry(entries) => {
                 for entry in entries {
-                    flat.node(entry, (Parent::Top, ENTRIES));
+                    flat.node(entry, (Parent::Top, field::ENTRIES));
                 }
             }
             Content::Lint(_) => {}
@@ -79,7 +85,9 @@ impl Flat {
     }
 
     fn node(&mut self, record: &Rec, place: Place) {
-        let key = key_of(record);
+        let key = record
+            .key()
+            .expect("a keyed record carries a key the reader checked");
         self.lists.entry(place).or_default().push(key);
         let own = self.own(record, Parent::Key(key));
         self.nodes.insert(key, Node { own, place });
@@ -107,14 +115,6 @@ impl Flat {
     }
 }
 
-/// The key of a keyed record, which the reader checked.
-fn key_of(record: &Rec) -> Key {
-    record
-        .text(field::KEY)
-        .and_then(|text| Key::parse(text).ok())
-        .expect("a keyed record carries a key the reader checked")
-}
-
 /// The kind of keyed record a field of a record of `kind` lists; none for any other field.
 pub(super) fn keyed_list(kind: Kind, name: &str) -> Option<Kind> {
     match kind.field(name)?.1.shape {
@@ -135,32 +135,33 @@ pub(super) fn order_of(parent: Option<Kind>, name: &str) -> Order {
 pub(super) fn accepts(parent: Option<Kind>, name: &str, kind: Kind) -> bool {
     match parent {
         Some(parent) => keyed_list(parent, name) == Some(kind),
-        None => name == ENTRIES,
+        None => name == field::ENTRIES,
     }
 }
 
 /// The merged records and lists, built back into a file's content: each list's records, each
-/// with its own lists, from the top down.
+/// with its own lists, from the top down. Each record sits in one list, so it is taken out of
+/// `nodes` rather than copied.
 pub(super) fn rebuild(
     top: Option<Rec>,
-    nodes: &BTreeMap<Key, Rec>,
+    nodes: BTreeMap<Key, Rec>,
     lists: &BTreeMap<Place, Vec<Key>>,
 ) -> Content {
-    let build = Build { nodes, lists };
+    let mut build = Build { nodes, lists };
     match top {
         Some(top) => Content::Record(build.fill(top, Parent::Top)),
-        None => Content::Registry(build.records(&(Parent::Top, ENTRIES))),
+        None => Content::Registry(build.records(&(Parent::Top, field::ENTRIES))),
     }
 }
 
 struct Build<'a> {
-    nodes: &'a BTreeMap<Key, Rec>,
+    nodes: BTreeMap<Key, Rec>,
     lists: &'a BTreeMap<Place, Vec<Key>>,
 }
 
 impl Build<'_> {
     /// `record` with each of its lists of keyed records, as `parent` holds them.
-    fn fill(&self, mut record: Rec, parent: Parent) -> Rec {
+    fn fill(&mut self, mut record: Rec, parent: Parent) -> Rec {
         for each in record.kind.fields() {
             if keyed_list(record.kind, each.name).is_none() {
                 continue;
@@ -176,10 +177,14 @@ impl Build<'_> {
         record
     }
 
-    fn records(&self, place: &Place) -> Vec<Rec> {
-        let keys = self.lists.get(place).map_or(&[][..], Vec::as_slice);
+    fn records(&mut self, place: &Place) -> Vec<Rec> {
+        let lists = self.lists;
+        let keys = lists.get(place).map_or(&[][..], Vec::as_slice);
         keys.iter()
-            .map(|key| self.fill(self.nodes[key].clone(), Parent::Key(*key)))
+            .map(|key| {
+                let record = self.nodes.remove(key).expect("a merged record in one list");
+                self.fill(record, Parent::Key(*key))
+            })
             .collect()
     }
 }

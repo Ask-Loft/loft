@@ -1,6 +1,7 @@
 //! A keyed record's own fields where its versions differ in kind (F-32). The kind merges as one
 //! value: the side that changed it wins, base where the sides changed it apart, and ours where
-//! base lacks the record. Each version is then read as that kind, keeping the fields that kind
+//! base lacks the record; a kind that cannot hold a record the merge surely keeps beneath it
+//! gives way to another version's kind that can. Each version is then read as that kind, keeping the fields that kind
 //! defines as the version's own kind does and base's value of every other field, and the record
 //! merges field by field as if it had kept its kind.
 
@@ -8,49 +9,61 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use super::flat::{Flat, Parent, keyed_list};
 use super::record::merge_own;
-use super::same::same_record;
 use crate::codec::schema::Kind;
 use crate::codec::{Rec, side_shape, variant_holds};
 use crate::identity::Key;
 
+/// The own fields of each version of the record keyed `key`: base's where it holds the record,
+/// and ours' and theirs', which both hold it.
+fn versions(key: Key, sides: &[Flat; 3]) -> (Option<&Rec>, &Rec, &Rec) {
+    let [base, ours, theirs] = sides
+        .each_ref()
+        .map(|side| side.nodes.get(&key).map(|node| &node.own));
+    let (ours, theirs) = ours
+        .zip(theirs)
+        .expect("a record ours and theirs both hold");
+    (base, ours, theirs)
+}
+
 /// Merges the own fields of the record keyed `key`, which ours and theirs both hold.
-pub(super) fn merge_kinds(
-    key: Key,
-    sides: &[Flat; 3],
-    sure: &BTreeSet<Key>,
-    base: Option<&Rec>,
-    ours: &Rec,
-    theirs: &Rec,
-) -> Rec {
-    let kind = merged_kind(key, sides, sure, base, ours, theirs);
+pub(super) fn merge_kinds(key: Key, sides: &[Flat; 3], sure: &BTreeSet<Key>) -> Rec {
+    let (base, ours, theirs) = versions(key, sides);
+    if ours.kind == theirs.kind && base.is_none_or(|base| base.kind == ours.kind) {
+        // Every version is of the merged kind, and reads as that kind as it is.
+        return formed(merge_own(base, ours, theirs), ours, theirs, base);
+    }
+    let kind = merged_kind(key, sides, sure);
     let base = base.map(|base| as_kind(base, kind, None));
     let read = |version: &Rec| as_kind(version, kind, base.as_ref());
     let (ours, theirs) = (read(ours), read(theirs));
-    let merged = merge_own(base.as_ref(), &ours, &theirs);
+    formed(
+        merge_own(base.as_ref(), &ours, &theirs),
+        &ours,
+        &theirs,
+        base.as_ref(),
+    )
+}
+
+/// `merged` where it forms one of its kind's variants. Read as the merged kind, a version of
+/// another kind may form none; the first version that forms one is then taken whole, as ours,
+/// theirs, then base.
+fn formed(merged: Rec, ours: &Rec, theirs: &Rec, base: Option<&Rec>) -> Rec {
     if variant_holds(&merged) {
         return merged;
     }
-    // Read as the merged kind, a version of another kind may form none of its variants; the
-    // first version that forms one is then taken whole, as ours, theirs, then base.
-    [&ours, &theirs]
+    [ours, theirs]
         .into_iter()
-        .chain(base.as_ref())
+        .chain(base)
         .find(|version| variant_holds(version))
-        .unwrap_or(&ours)
+        .unwrap_or(ours)
         .clone()
 }
 
 /// The record's kind in the result. A kind that lacks a list in which a side holds a record
 /// beneath it that the merge surely keeps gives way to the next version's that has every such
 /// list; a record the merge deletes needs no list.
-fn merged_kind(
-    key: Key,
-    sides: &[Flat; 3],
-    sure: &BTreeSet<Key>,
-    base: Option<&Rec>,
-    ours: &Rec,
-    theirs: &Rec,
-) -> Kind {
+fn merged_kind(key: Key, sides: &[Flat; 3], sure: &BTreeSet<Key>) -> Kind {
+    let (base, ours, theirs) = versions(key, sides);
     let versions = match base {
         _ if ours.kind == theirs.kind => [
             ours.kind,
@@ -74,8 +87,11 @@ fn merged_kind(
 fn children(key: Key, sides: &[Flat; 3]) -> impl Iterator<Item = (&'static str, Key)> + '_ {
     sides[1..]
         .iter()
-        .flat_map(|side| &side.lists)
-        .filter(move |((parent, _), _)| *parent == Parent::Key(key))
+        .flat_map(move |side| {
+            side.lists
+                .range((Parent::Key(key), "")..)
+                .take_while(move |((parent, _), _)| *parent == Parent::Key(key))
+        })
         .flat_map(|((_, name), keys)| keys.iter().map(|child| (*name, *child)))
 }
 
@@ -99,15 +115,11 @@ fn kept(key: Key, sides: &[Flat; 3], known: &mut BTreeMap<Key, bool>) -> bool {
     // A record met again on its way down, through moves that nest records apart, adds nothing.
     known.insert(key, false);
     let [base, ours, theirs] = sides.each_ref().map(|side| side.nodes.get(&key));
-    let kept = match (base, ours.or(theirs)) {
-        (None, _) => true,
-        (Some(_), None) => false,
-        (Some(_), Some(_)) if ours.is_some() && theirs.is_some() => true,
-        (Some(base), Some(kept)) => !same_record(&base.own, &kept.own) || base.place != kept.place,
-    } || children(key, sides)
-        .collect::<Vec<_>>()
-        .into_iter()
-        .any(|(_, child)| kept(child, sides, known));
+    let kept = match (base, ours, theirs) {
+        (None, ..) | (Some(_), Some(_), Some(_)) => true,
+        (Some(_), None, None) => false,
+        (Some(base), Some(kept), None) | (Some(base), None, Some(kept)) => kept.changed_from(base),
+    } || children(key, sides).any(|(_, child)| kept(child, sides, known));
     known.insert(key, kept);
     kept
 }
