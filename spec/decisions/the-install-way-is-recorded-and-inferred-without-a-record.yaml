@@ -1,0 +1,86 @@
+key: 01a13acd-2cab-755a-a4e6-31ff2677b30e
+slug: the-install-way-is-recorded-and-inferred-without-a-record
+title: "How `loft` was installed is recorded at install, and inferred where no record exists"
+context: "The update notice names the command that installs the newer release, and the command event reports which channel people use, so `loft` needs to know whether npm, cargo or a release binary put it on the machine. Only npm can run a script at install, and pnpm, Bun and `npm install --ignore-scripts` often skip it. The npm packages ran no install script until now."
+state:
+  kind: accepted
+  selectedOption: 01a13acd-2cab-755a-a4e6-32056f8d085c
+  outcome: "`loft record-install` records the way for its own executable, the `postinstall` of `@ask-loft/loft` runs it, and where no record exists `loft` infers the way from where its executable lies."
+drivers:
+  - key: 01a13acd-2cab-755a-a4e6-320097095eb0
+    kind: local
+    label: "Exact where possible"
+    statement: "Where an install can say how it was made, `loft` uses what it said."
+  - key: 01a13acd-2cab-755a-a4e6-320150515096
+    kind: local
+    label: "Works without a script"
+    statement: "Every command, the update notice included, works when no install script ever ran."
+  - key: 01a13acd-2cab-755a-a4e6-3202b2953eb4
+    kind: local
+    label: "Few install scripts"
+    statement: "Installing `loft` runs as little as possible, since install scripts are a common path for malicious packages and scanners flag them."
+options:
+  - key: 01a13acd-2cab-755a-a4e6-3203c1042903
+    title: "Inference only"
+    description: "`loft` infers the way from where its executable lies, and no script runs at install."
+  - key: 01a13acd-2cab-755a-a4e6-32041d3cd6b0
+    title: "A record only"
+    description: "`loft record-install` runs from the `postinstall`, and `loft` knows nothing without its record."
+  - key: 01a13acd-2cab-755a-a4e6-32056f8d085c
+    title: "A record, with inference where none exists"
+    description: "`loft record-install` runs from the `postinstall`, and `loft` infers the way where no record exists."
+assessments:
+  - option: 01a13acd-2cab-755a-a4e6-3203c1042903
+    driver: 01a13acd-2cab-755a-a4e6-320097095eb0
+    rating: neutral
+    rationale: "a location is a strong sign, not a statement"
+  - option: 01a13acd-2cab-755a-a4e6-3203c1042903
+    driver: 01a13acd-2cab-755a-a4e6-320150515096
+    rating: supports
+    rationale: "no script is needed"
+  - option: 01a13acd-2cab-755a-a4e6-3203c1042903
+    driver: 01a13acd-2cab-755a-a4e6-3202b2953eb4
+    rating: supports
+    rationale: "no script runs"
+  - option: 01a13acd-2cab-755a-a4e6-32041d3cd6b0
+    driver: 01a13acd-2cab-755a-a4e6-320097095eb0
+    rating: supports
+    rationale: "the install states the way"
+  - option: 01a13acd-2cab-755a-a4e6-32041d3cd6b0
+    driver: 01a13acd-2cab-755a-a4e6-320150515096
+    rating: conflicts
+    rationale: "a skipped script leaves the way unknown"
+  - option: 01a13acd-2cab-755a-a4e6-32041d3cd6b0
+    driver: 01a13acd-2cab-755a-a4e6-3202b2953eb4
+    rating: conflicts
+    rationale: "one script runs at install"
+  - option: 01a13acd-2cab-755a-a4e6-32056f8d085c
+    driver: 01a13acd-2cab-755a-a4e6-320097095eb0
+    rating: supports
+    rationale: "the install states the way where it can"
+  - option: 01a13acd-2cab-755a-a4e6-32056f8d085c
+    driver: 01a13acd-2cab-755a-a4e6-320150515096
+    rating: supports
+    rationale: "inference answers where no script ran"
+  - option: 01a13acd-2cab-755a-a4e6-32056f8d085c
+    driver: 01a13acd-2cab-755a-a4e6-3202b2953eb4
+    rating: conflicts
+    rationale: "one script runs at install"
+consequences:
+  - key: 01a13acd-2cab-755a-a4e6-32060e69f691
+    kind: cost
+    statement: "`@ask-loft/loft` has an install script, which security scanners report."
+  - key: 01a13acd-2cab-755a-a4e6-3207dd02d2d0
+    kind: obligation
+    statement: "The install script never fails an install."
+    subject: 01a136db-1a3d-7739-a3f4-9ac908cf3cff
+  - key: 01a13acd-2cab-755a-a4e6-320894b3229a
+    kind: benefit
+    statement: "`loft record-install` can record facts of an installation that a later version needs."
+subjects:
+  - role: affected
+    node: 01a136db-1a3c-76b9-8641-d09cf460849a
+  - role: outcome
+    node: 01a13acd-2cac-7382-9410-cf94b7f27de9
+  - role: outcome
+    node: 01a13acd-2cac-7382-9410-cfa65c96496b

@@ -22,7 +22,28 @@ requirements:
       - key: 01a136db-1a3d-7739-a3f4-9acee003d368
         name: "The command exits with the binary's exit code."
       - key: 01a136db-1a3d-7739-a3f4-9acffbe368ae
-        name: "Installing the package runs no install script."
+        name: "No platform package has an install script."
+  - key: 01a13acd-2cac-7382-9410-cfb523b2ea6a
+    statement:
+      form: event_driven
+      when: "npm installs the package `@ask-loft/loft`"
+      system: "its `postinstall` script"
+      shall: "run `loft record-install npm` through the launcher."
+    mentions:
+      - 01a13acd-2cac-7382-9410-cf94b7f27de9
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfb6ad57bacb
+        name: "`postinstall` is the package's only script."
+      - key: 01a13acd-2cac-7382-9410-cfb7d41d9a6e
+        name: "After an install that runs scripts, the install record names the platform package's binary with the way `npm`."
+      - key: 01a13acd-2cac-7382-9410-cfb8f4b00d96
+        name: "The install succeeds when `loft record-install` cannot write its record."
+      - key: 01a13acd-2cac-7382-9410-cfb96ea0013a
+        name: "The install succeeds when the platform package is missing."
+      - key: 01a13acd-2cac-7382-9410-cfba733ae6da
+        name: "The script prints nothing when the record is written."
+      - key: 01a13acd-2cac-7382-9410-cfbb26af04d2
+        name: "An install with scripts skipped leaves a `loft` that runs every command as it does after an install that ran them."
   - key: 01a136db-1a3d-7739-a3f4-9ad0dd70b4aa
     statement:
       form: ubiquitous

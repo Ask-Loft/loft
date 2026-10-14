@@ -6,7 +6,7 @@ scopedTo:
   - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
 constraints:
   - key: 01a136db-1a3c-76b9-8641-d09dc448a2d0
-    name: "The npm packages shall run no install script."
+    name: "The npm packages shall run no install script but the `postinstall` of `@ask-loft/loft`, which runs only `loft record-install npm`."
     verificationFate: proved
   - key: 01a136db-1a3c-76b9-8641-d09e74566205
     name: "The launcher shall depend on no package outside `@ask-loft`."

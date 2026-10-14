@@ -60,13 +60,15 @@ requirements:
       form: ubiquitous
       system: "The update notice"
       shall: "name the way to install the newer release that matches how the running `loft` was installed."
+    mentions:
+      - 01a13acd-2cac-7382-9410-cfa65c96496b
     criteria:
       - key: 01a13a90-3556-7106-a68c-261ceba59cc8
-        name: "A `loft` run through the npm launcher names `npm install @ask-loft/loft@latest`."
+        name: "A `loft` installed by `npm` names `npm install @ask-loft/loft@latest`."
       - key: 01a13a90-3556-7106-a68c-261d5624aad4
-        name: "A `loft` installed by cargo names `cargo install --locked loft-cli`."
+        name: "A `loft` installed by `cargo` names `cargo install --locked loft-cli`."
       - key: 01a13a90-3556-7106-a68c-261eb713e39a
-        name: "Any other `loft` names the page of the newer release on GitHub."
+        name: "A `loft` installed as a `release-binary`, or in an `unknown` way, names the page of the newer release on GitHub."
   - key: 01a13a90-3556-7106-a68c-261f83aecce5
     statement:
       form: unwanted

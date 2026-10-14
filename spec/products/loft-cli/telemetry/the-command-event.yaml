@@ -9,6 +9,9 @@ body: |
     "schema": "loft-telemetry-event/1",
     "eventId": "3f0c9a52-6c1e-4f7b-9d41-0b6e2f8a1c77",
     "version": "2.1.0",
+    "os": "macos",
+    "arch": "aarch64",
+    "installedBy": "npm",
     "time": "2026-10-14T09:00:00Z",
     "installation": "b1e4c0d2-8a37-4c5e-9f10-6d2a7e3b5c48",
     "project": "5d9a1f60-2b84-4e3c-a7f1-c3e05b9d2a16",
@@ -33,7 +36,7 @@ requirements:
       - key: 01a13a90-3556-7106-a68c-266a569960f9
         name: "Every event sent validates against `schemas/telemetry-event.json`."
       - key: 01a13a90-3556-7106-a68c-266bf864496c
-        name: "The schema admits no field beyond `schema`, `eventId`, `version`, `time`, `installation`, `project`, `branch`, `mode`, `agent`, `command`, `outcome`, `errorKinds` and `duration`."
+        name: "The schema admits no field beyond `schema`, `eventId`, `version`, `os`, `arch`, `installedBy`, `time`, `installation`, `project`, `branch`, `mode`, `agent`, `command`, `outcome`, `errorKinds` and `duration`."
       - key: 01a13a90-3556-7106-a68c-266c677694e9
         name: "The sample event in the documentation validates against `schemas/telemetry-event.json`."
   - key: 01a13a90-3556-7106-a68c-266da8c0f195
@@ -60,6 +63,26 @@ requirements:
     criteria:
       - key: 01a13a90-3556-7106-a68c-26743faeb1a0
         name: "`version` is the version that `loft --version` prints."
+  - key: 01a13acd-2cac-7382-9410-cfbc98ab7957
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry the operating system and the architecture that the running `loft` was built for."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfbdad2b9e55
+        name: "`os` is `linux`, `macos` or `windows` for a binary built for that system, and `other` for any other."
+      - key: 01a13acd-2cac-7382-9410-cfbe5fc613c3
+        name: "`arch` is `x86_64` or `aarch64` for a binary built for that architecture, and `other` for any other."
+  - key: 01a13acd-2cac-7382-9410-cfbff82198c4
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry how the running `loft` was installed, as `npm`, `cargo`, `release-binary` or `unknown`."
+    mentions:
+      - 01a13acd-2cac-7382-9410-cfa65c96496b
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfc0977194f2
+        name: "`installedBy` is the way of installing that Loft determines for the running executable."
   - key: 01a13a90-3556-7106-a68c-2675922c948d
     statement:
       form: ubiquitous
@@ -106,20 +129,25 @@ requirements:
     statement:
       form: ubiquitous
       system: "The command event"
-      shall: "name the agent that started the run, as one of `claude`, `claude-code`, `chatgpt`, `chatgpt-codex` and `unknown`."
+      shall: "name the agent that started the run, as one of `claude`, `claude-code`, `chatgpt`, `chatgpt-codex` and `unknown`, by the first of these rules that holds: the Claude app, Claude Code, Codex, a generic agent variable."
+    body: "No agent documents the variables it sets for the commands it runs, so the markers below are those the agents set today, as observed and as other tools that detect agents record them. Claude's markers come first, because a Codex plugin inside Claude Code sets a variable whose name begins with `CODEX_`. A recognised agent says only which agent ran `loft`; it decides nothing else."
     criteria:
       - key: 01a13a90-3556-7106-a68c-26858a4e4f5d
-        name: "A run started by the Claude app has the agent `claude`."
+        name: "A run with a non-empty `CLAUDE_CODE_IS_COWORK`, or with `CLAUDE_CODE_ENTRYPOINT` set to `claude-desktop`, has the agent `claude`."
       - key: 01a13a90-3556-7106-a68c-268661043d5f
-        name: "A run started by Claude Code has the agent `claude-code`."
-      - key: 01a13a90-3556-7106-a68c-26878b793048
-        name: "A run started by the ChatGPT app has the agent `chatgpt`."
+        name: "A run that is not `claude`, with `CLAUDECODE` set to `1` or with any `CLAUDE_CODE_ENTRYPOINT`, has the agent `claude-code`."
       - key: 01a13a90-3556-7106-a68c-2688a1633fb9
-        name: "A run started by Codex has the agent `chatgpt-codex`."
+        name: "A run that is neither, with a non-empty `CODEX_THREAD_ID`, `CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED` or `CODEX_CI`, has the agent `chatgpt-codex`."
+      - key: 01a13acd-2cad-74ea-9479-766d2581801b
+        name: "A variable whose name begins with `CODEX_` but is none of those four, such as `CODEX_COMPANION_SESSION_ID`, recognises no agent."
+      - key: 01a13a90-3556-7106-a68c-26878b793048
+        name: "Otherwise, an `AI_AGENT` value that begins with `claude-code`, `claude`, `codex` or `chatgpt` gives the agent `claude-code`, `claude`, `chatgpt-codex` or `chatgpt` respectively."
+      - key: 01a13acd-6513-768b-bcf2-2a3af3d65e4b
+        name: "Without such an `AI_AGENT` value, an `AGENT` value is read the same way."
       - key: 01a13a90-3556-7106-a68c-2689609cf06b
-        name: "A run with no recognised agent has the agent `unknown`."
+        name: "A run that meets none of these rules has the agent `unknown`."
       - key: 01a13a90-3556-7106-a68c-268a196bf54a
-        name: "The agent is recognised from whether its marker variables are present, and no variable's value is sent."
+        name: "No marker variable's value appears in the event."
   - key: 01a13a90-3556-7106-a68c-268b6ce63e37
     statement:
       form: ubiquitous
