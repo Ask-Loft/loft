@@ -11,13 +11,16 @@ use std::path::{Path, PathBuf};
 /// The crates built into `loft`.
 const BUILT_IN: [&str; 3] = ["loft-cli", "loftspec", "loftspec-store"];
 
-/// What a test may start other than `loft`: the archiver and Node, which unpack and run the npm
-/// packages built around it, and the scripts that build and smoke-test those packages.
-const OTHER_PROGRAMS: [&str; 4] = [
+/// What a test may start other than `loft`: the archiver, Node and npm, which unpack, run and
+/// install the npm packages built around it, the scripts that build and smoke-test those
+/// packages, and the release check, copied into a scratch repository.
+const OTHER_PROGRAMS: [&str; 6] = [
     "\"tar\"",
     "\"node\"",
+    "\"npm\"",
     "workspace().join(\"scripts/npm-packages.sh\")",
     "workspace().join(\"scripts/npm-smoke.sh\")",
+    "repo.join(SCRIPT)",
 ];
 
 /// How a test starts `loft`.

@@ -5,14 +5,15 @@
 //! publishes them.
 
 use std::fs;
+use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 
 use crate::common::{Scratch, stderr, stdout, workspace};
 use serde_json::{Value, json};
 
-const PLATFORMS: [&str; 6] = [
+pub const PLATFORMS: [&str; 6] = [
     "darwin-arm64",
     "darwin-x64",
     "linux-arm64",
@@ -248,6 +249,67 @@ fn the_smoke_check_fails_where_the_packed_binary_cannot_run() {
     assert_eq!(packed.status.code(), Some(0), "{}", stderr(&packed));
     let output = smoke(&out);
     assert_ne!(output.status.code(), Some(0), "{}", stdout(&output));
+}
+
+#[test]
+fn the_binary_reads_the_standard_input_given_to_the_launcher() {
+    let scratch = Scratch::empty();
+    let project = project(&scratch, true);
+    let binary = project.join(format!("node_modules/@ask-loft/loft-{}/bin/loft", host()));
+    // In place of `loft`, a binary that copies its standard input to its output and its error.
+    let copies = "#!/bin/sh\ninput=$(cat)\nprintf '%s' \"$input\"\nprintf '%s' \"$input\" >&2\n";
+    fs::write(&binary, copies).unwrap();
+    fs::set_permissions(&binary, fs::Permissions::from_mode(0o755)).unwrap();
+    let mut child = Command::new("node")
+        .arg(project.join("node_modules/@ask-loft/loft/bin/loft.js"))
+        .current_dir(&project)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    input.write_all(b"a tree on standard input").unwrap();
+    drop(input);
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(stdout(&output), "a tree on standard input");
+    assert_eq!(stderr(&output), "a tree on standard input");
+}
+
+#[test]
+fn npm_installs_the_platform_binary_executable() {
+    let scratch = Scratch::empty();
+    let out = assembled(&scratch);
+    let project = scratch.0.join("installed");
+    fs::create_dir_all(&project).unwrap();
+    fs::write(
+        project.join("package.json"),
+        r#"{"name": "installed", "private": true}"#,
+    )
+    .unwrap();
+    let platform = format!("loft-{}", host());
+    let output = Command::new("npm")
+        .args(["install", "--offline", "--no-audit", "--no-fund"])
+        .arg(out.join(format!("{platform}.tgz")))
+        .arg(out.join("loft.tgz"))
+        .env("npm_config_cache", scratch.0.join("npm-cache"))
+        .env("npm_config_userconfig", scratch.0.join("npmrc"))
+        .env("npm_config_update_notifier", "false")
+        .current_dir(&project)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let binary = project.join(format!("node_modules/@ask-loft/{platform}/bin/loft"));
+    let mode = fs::metadata(&binary).unwrap().permissions().mode();
+    assert_eq!(mode & 0o111, 0o111, "{}: {mode:o}", binary.display());
+    let launched = launch(&project, None, &["--version"]);
+    assert_eq!(launched.status.code(), Some(0), "{}", stderr(&launched));
+    assert!(
+        stdout(&launched).contains(env!("CARGO_PKG_VERSION")),
+        "{}",
+        stdout(&launched)
+    );
 }
 
 /// The names of the packages `package` depends on, in each field that lists dependencies.

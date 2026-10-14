@@ -1,7 +1,7 @@
 //! What the `loftspec` package promises of itself, held by guards over its source, its manifest
 //! and CI: it performs no file or network input or output, its renderer reads no clock, locale or
-//! environment variable, it declares the Apache-2.0 licence, and CI builds it with the toolchain
-//! its declared `rust-version` names.
+//! environment variable, its hasher digests with SHA-256 alone, it declares the Apache-2.0
+//! licence, and CI builds it with the toolchain its declared `rust-version` names.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -73,6 +73,13 @@ const DEPENDENCIES: [&str; 9] = [
     "unicode-properties",
     "unicode-segmentation",
     "uuid",
+];
+
+/// What names a digest function other than SHA-256: the rest of the SHA-2 family, SHA-1, SHA-3,
+/// and the other families a crate might bring.
+const OTHER_DIGESTS: [&str; 14] = [
+    "Sha224", "Sha384", "Sha512", "Sha1", "sha1", "Sha3", "sha3", "Md5", "md5", "Blake", "blake",
+    "Keccak", "Crc", "crc32",
 ];
 
 fn workspace() -> PathBuf {
@@ -246,5 +253,34 @@ fn ci_builds_the_library_with_the_toolchain_its_rust_version_names() {
             steps.contains(&step.as_str()),
             "ci.yml: the `rust-version` job lacks `{step}`"
         );
+    }
+}
+
+#[test]
+fn the_hasher_digests_with_sha_256_alone() {
+    let (scanned, found) = uses(&[""], &OTHER_DIGESTS);
+    assert!(scanned > 50, "the scan found {scanned} source files");
+    assert_eq!(found, Vec::<String>::new());
+    let (_, found) = uses(&[""], &["sha2::", "Sha256"]);
+    let canonical: Vec<&str> = found
+        .iter()
+        .filter_map(|use_| use_.strip_prefix("src/canonical.rs:"))
+        .collect();
+    assert_eq!(found.len(), canonical.len(), "{found:?}");
+    let source = read(&Path::new(CRATE).join("src/canonical.rs"));
+    assert!(
+        source.contains("use sha2::{Digest as _, Sha256};")
+            && source.contains("struct HashWriter(Sha256);"),
+        "src/canonical.rs: the hasher's writer is not SHA-256"
+    );
+    // A UUID of version 3 or 5 is an MD5 or SHA-1 digest of a name.
+    let root = read(&workspace().join("Cargo.toml"));
+    let dependencies = table(&root, "[workspace.dependencies]");
+    let uuid = dependencies
+        .iter()
+        .find(|line| line.starts_with("uuid "))
+        .expect("Cargo.toml declares uuid");
+    for feature in ["\"v3\"", "\"v5\"", "\"md5\"", "\"sha1\""] {
+        assert!(!uuid.contains(feature), "Cargo.toml: {uuid}");
     }
 }
