@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use super::export::{ComponentScope, Export, ExternalId, Node, NodeType, Tier};
 use super::sidecar::{NodeFacts, TagApplication, V1Sidecar};
+use super::tag_names::TagNames;
 use super::{Conversion, ConvertError, Finding, label};
 use crate::attributes::Boundary;
 use crate::ids::{
@@ -15,7 +16,6 @@ use crate::ids::{
     QualityAttributeId, RequirementId,
 };
 use crate::kind::NodeKind;
-use crate::names::TagName;
 use crate::slug::Slug;
 use crate::statement::Statement;
 use crate::tree::{
@@ -100,9 +100,13 @@ impl<'a> Tree<'a> {
     }
 
     /// Builds the Products, the root Components and the bindings of every node, reporting each
-    /// Requirement stored as text and recording each node's v1 facts in the sidecar. Every node
-    /// must be reached from a root.
-    pub(super) fn convert(&self, conversion: &mut Conversion) -> Result<(), ConvertError> {
+    /// Requirement stored as text, recording each node's v1 facts in the sidecar and each Facet
+    /// Tag's derived name in `tag_names`. Every node must be reached from a root.
+    pub(super) fn convert(
+        &self,
+        conversion: &mut Conversion,
+        tag_names: &mut TagNames,
+    ) -> Result<(), ConvertError> {
         let Conversion {
             document,
             sidecar,
@@ -112,6 +116,7 @@ impl<'a> Tree<'a> {
             tree: self,
             sidecar,
             findings,
+            tag_names,
             reached: BTreeSet::new(),
             labels: Vec::new(),
             external_above: None,
@@ -180,6 +185,7 @@ struct Builder<'t, 'a> {
     tree: &'t Tree<'a>,
     sidecar: &'t mut V1Sidecar,
     findings: &'t mut Vec<Finding>,
+    tag_names: &'t mut TagNames,
     reached: BTreeSet<Uuid>,
     labels: Vec<(NodeId, &'a ExternalId)>,
     /// The nearest Component above the one being converted that the export scopes as external.
@@ -248,7 +254,7 @@ impl<'a> Builder<'_, 'a> {
         Ok((details, children))
     }
 
-    /// A Facet Tag read as the tag it applies; a tag holds no body.
+    /// A Facet Tag read as the tag its name derives; a tag holds no body.
     fn facet_tag(&mut self, node: &Node) -> Result<TagApplication, ConvertError> {
         if node.body.is_some() {
             return Err(ConvertError::FacetTagBody {
@@ -256,12 +262,8 @@ impl<'a> Builder<'_, 'a> {
             });
         }
         self.reached.insert(node.node_id);
-        let tag = TagName::parse(&node.name).map_err(|source| ConvertError::Tag {
-            node: node.external_id.clone(),
-            source,
-        })?;
         Ok(TagApplication {
-            tag,
+            tag: self.tag_names.derive(&node.name)?,
             node_id: node.node_id,
             external_id: node.external_id.clone(),
             ordinal: node.ordinal,

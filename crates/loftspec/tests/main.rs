@@ -20,6 +20,7 @@ mod convert_v1_export;
 mod convert_v1_links;
 mod convert_v1_reading_list;
 mod convert_v1_sidecar;
+mod convert_v1_tag_names;
 mod digest;
 mod fmt;
 mod fmt_deleted;

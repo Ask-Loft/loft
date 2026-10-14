@@ -1720,10 +1720,12 @@ links:
       - file: "crates/loftspec/tests/convert_v1.rs"
         name: "constraints_and_quality_attributes_keep_their_parent_kind"
   - node: 6eba4deb-d002-4fab-9c40-81e2f87e676a
-    reviewed: a312980bf10c9047ff2ae74a338182f05657127e52517d2ab136a9eeaa6d0372
+    reviewed: 3a8575e4242821fdb078ff77816d426bddae0106672e78d17b480365e45013e0
     tests:
       - file: "crates/loftspec/tests/convert_v1.rs"
         name: "a_facet_tag_becomes_a_tag_on_its_parent"
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "the_parent_lists_the_tag_name_derived_from_the_facet_tag_s_name"
   - node: 0171fefe-bed5-4d4d-a743-4ca792d5b134
     reviewed: 20f21214f5a98ea11acc9d28304b6de9ce2a406aac85d9ecae4a394165059bfe
     tests:
@@ -1735,10 +1737,47 @@ links:
       - file: "crates/loftspec/tests/convert_v1.rs"
         name: "the_registries_keep_keys_names_and_definitions"
   - node: 68528fcc-36dd-417a-b84a-0232d6fb0b3a
-    reviewed: 327219c9256c921e69494a1b546b9f66653376d75aefad04032499764aa1df98
+    reviewed: 2c11d54c44f25eb6ef3410c57912eac47fcdd010262c63bc6f976c12fe0d2cd2
     tests:
       - file: "crates/loftspec/tests/convert_v1.rs"
         name: "the_registries_keep_keys_names_and_definitions"
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "a_registry_entry_s_name_is_the_tag_name_derived_from_the_entry_s_name"
+  - node: 01a13a12-b540-76e4-949d-eeec114e2f6f
+    reviewed: 4c9da0598570837fe4e0122c82556e87b7d0903e5c6838805e00921faecc1397
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "a_registry_entry_keeps_the_entry_s_definition"
+  - node: 01a13a12-b540-76e4-949d-eeeefaa88bb2
+    reviewed: 6bf00bdf1cac26f7f871d4476387b90eccedf92cac5ad1374b640a6cb43a4009
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "the_derived_name_is_lowercase_with_each_run_of_other_characters_one_hyphen"
+  - node: 01a13a12-b540-76e4-949d-eeefe52baa4a
+    reviewed: 3033b2299b71dda2bb9582548a917985b1b718ebf1c89374310e776266a4610a
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "the_derived_name_has_no_hyphen_at_its_start_or_its_end"
+  - node: 01a13a12-b540-76e4-949d-eef0357457ab
+    reviewed: d47a47cd24eed61a561af93d006367b26d10466f045c0e2e9e24f6c457d59bfd
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "a_v1_name_that_is_already_a_tag_name_is_kept_as_it_is"
+  - node: 01a13a12-b540-76e4-949d-eef1ae237548
+    reviewed: 1ac146a5e030a6223ee5a3f37a52b3acbb0d7f244068cedd101a1e26bc8c77cd
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "a_v1_name_whose_derived_name_is_empty_or_begins_with_no_letter_stops_the_conversion"
+  - node: 01a13a12-b540-76e4-949d-eef266fd1426
+    reviewed: 3af8de80fa8d9bd703d0b7f2baffced27303c0de4645f978866e88f321252c2a
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "two_v1_names_that_derive_one_tag_name_stop_the_conversion_naming_both"
+  - node: 01a13a12-b540-76e4-949d-eef3d2c2e8d4
+    reviewed: 9d1859d5c959e791b917d8f68eee1ef7452b96bf38878e68685727c6d759f71c
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "a_facet_tag_and_a_vocabulary_entry_with_one_v1_name_derive_one_tag_name"
   - node: b4b50c4b-e61b-463b-9773-1e6e836e1934
     reviewed: 1cc876a74f417c08104d22bbe827926a92596b1c64aab7fe210376bf47c07ac7
     tests:
@@ -1980,6 +2019,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_v1_sidecar.rs"
         name: "decision_elements_keep_their_ordinals_and_a_former_label_its_v1_node"
+  - node: 01a13a12-b540-76e4-949d-eef491f007b9
+    reviewed: ba38f2f7389b4be5eff8a61d0db7d768b61520823d076f0ac3874ec8dc9178b3
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
+        name: "the_sidecar_records_the_v1_name_behind_each_derived_tag_name_that_differs"
   - node: e05b6c0b-6a38-4743-96b0-8886b063f44c
     reviewed: 9f15dd0cb235b9263a147ce34edd0d279b96f9ccaf503c0d92e6e86e00d9efcf
     tests:

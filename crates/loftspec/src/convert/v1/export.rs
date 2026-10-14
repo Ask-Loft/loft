@@ -15,7 +15,7 @@ use crate::canonical::Digest;
 use crate::decision::{ConsequenceKind, Rating};
 use crate::document::SubjectRole;
 use crate::identity::{Label, LabelError, LabelPrefix};
-use crate::names::{CategoryName, TagName};
+use crate::names::CategoryName;
 
 /// An export the reader refuses.
 #[derive(Debug, thiserror::Error)]
@@ -190,7 +190,8 @@ pub struct VocabularyEntry {
     pub entry_hash: Digest,
     pub entry_id: Uuid,
     pub document_id: Uuid,
-    pub name: TagName,
+    /// Free text in v1; the converter derives the tag name (RQ-71).
+    pub name: String,
     pub definition: String,
 }
 

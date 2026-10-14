@@ -27,6 +27,8 @@ requirements:
         name: "The sidecar records each Component's v1 scope kind."
       - key: d998b597-78d3-4eb3-94e4-5e9c19598f18
         name: "The sidecar records the v1 node UUID behind each former label."
+      - key: 01a13a12-b540-76e4-949d-eef491f007b9
+        name: "The sidecar records the v1 name behind each derived tag name that differs from it."
   - key: db98380d-4f3f-4611-ae76-c87f205df4f6
     statement:
       form: ubiquitous
