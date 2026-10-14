@@ -46,6 +46,20 @@ requirements:
         name: "The GitHub release's notes are the version's entry in `CHANGELOG.md`."
       - key: 01a136db-1a3c-76b9-8641-d0aff368382c
         name: "Each registry authenticates the workflow by its trusted-publishing identity."
+  - key: 01a13804-d7aa-7131-91ff-bee4ed990cd9
+    statement:
+      form: ubiquitous
+      system: "The release workflow"
+      shall: "publish to npm the tarballs it packed and ran before the approval."
+    criteria:
+      - key: 01a13804-d7aa-7131-91ff-bee5623be056
+        name: "Each npm package is packed into a tarball before the approval."
+      - key: 01a13804-d7aa-7131-91ff-bee66b0a045e
+        name: "Each npm package is published from its tarball, never from a directory."
+      - key: 01a13804-d7aa-7131-91ff-bee7f5aa4f49
+        name: "Before the approval, `loft --version` run through the launcher installed from the tarballs reports the release's version."
+      - key: 01a13804-d7aa-7131-91ff-bee8aea3f91b
+        name: "The publishing job runs the same check on the tarballs it downloaded before it publishes anything."
   - key: 01a136db-1a3d-7739-a3f4-9ac7348dcffe
     statement:
       form: unwanted

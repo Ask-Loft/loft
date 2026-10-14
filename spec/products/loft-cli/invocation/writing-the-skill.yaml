@@ -1,0 +1,34 @@
+key: 01a1380a-9f4b-741a-83a5-973429a1c475
+slug: writing-the-skill
+name: "Writing the skill"
+body: "What a command that writes the `loft-spec` skill into a project says once it has: commit the skill directories, so that every clone's coding agents find the skill. A command opts in by listing the tag `writes-skill` on its Feature, and each tagged command is tested against these rules."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a1380a-9f4b-741a-83a5-9735117f77e5
+    statement:
+      form: event_driven
+      when: "a command tagged `writes-skill` writes a skill directory"
+      system: "the command"
+      shall: "ask in its text output for the skill directories to be committed."
+    criteria:
+      - key: 01a1380a-9f4b-741a-83a5-97365938e9ed
+        name: "The request names each skill directory written."
+      - key: 01a1380a-9f4b-741a-83a5-973716060074
+        name: "The request says that a committed skill reaches every clone's coding agents."
+      - key: 01a1380a-9f4b-741a-83a5-9738d1f4ccef
+        name: "The JSON document carries no request."
+      - key: 01a1380a-9f4b-741a-83a5-9739770052a7
+        name: "No request is printed where no skill directory is written."
+      - key: 01a1380a-9f4b-741a-83a5-973a6a9dc106
+        name: "The command commits nothing."
+  - key: 01a1380a-9f4b-741a-83a5-973bef635dc3
+    statement:
+      form: ubiquitous
+      system: "The Feature of each `loft` command that writes the `loft-spec` skill"
+      shall: "list the tag `writes-skill`."
+    criteria:
+      - key: 01a1380a-9f4b-741a-83a5-973ce5482179
+        name: "A command that writes a skill directory has a Feature that lists `writes-skill`."
+      - key: 01a1380a-9f4b-741a-83a5-973db6faa3be
+        name: "A command whose Feature lists `writes-skill` writes a skill directory."

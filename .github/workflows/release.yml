@@ -79,8 +79,10 @@ jobs:
           pattern: binary-*
           path: binaries
           merge-multiple: true
-      # The npm packages, assembled and packed as npm would publish them.
+      # The npm packages, packed into the tarballs the publish job publishes: an artifact keeps a
+      # tarball's file modes, never a plain file's. Then `loft` is run from them.
       - run: scripts/npm-packages.sh binaries release/npm
+      - run: scripts/npm-smoke.sh release/npm
       - run: scripts/publish-npm.sh release/npm --dry-run
       # An archive of each binary for the GitHub release.
       - run: |
@@ -116,6 +118,13 @@ jobs:
         with:
           name: release
           path: release
+      # npm's Trusted Publishing needs npm 11.5.1 or later.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install --global npm@11.6.2
+      # The tarballs about to be published run, before anything is published.
+      - run: scripts/npm-smoke.sh release/npm
       # Exchanges this run's identity for a short-lived crates.io token.
       - uses: rust-lang/crates-io-auth-action@v1
         id: auth
@@ -123,11 +132,6 @@ jobs:
       - run: scripts/publish-crates.sh
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-      # npm's Trusted Publishing needs npm 11.5.1 or later.
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-      - run: npm install --global npm@11.6.2
       # npm exchanges this run's identity for a short-lived token itself. Publishes the platform
       # packages, then `@ask-loft/loft`, skipping any version npm already holds.
       - run: scripts/publish-npm.sh release/npm
