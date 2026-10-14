@@ -165,6 +165,12 @@ pub enum Problem {
     SlugMismatch { slug: String, name: String },
     #[error("the key {0} is carried twice")]
     DuplicateKey(Key),
+    /// A key carried twice that a `record` conflict names: the merge driver, which runs per
+    /// file, kept the record in the file one branch moved it from, because the other changed it.
+    #[error(
+        "the key {0} is carried twice: the record was moved in one branch and changed in the other"
+    )]
+    MovedAndChanged(Key),
     #[error("{0} is listed without a file")]
     ListedWithoutFile(Key),
     #[error("no {0} lists this file's key")]

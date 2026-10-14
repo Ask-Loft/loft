@@ -55,14 +55,14 @@ requirements:
       - key: 01a13070-322e-74de-b959-5a9672df690e
         name: "In a `record` conflict, a side that deleted the record holds `null` and a side that kept it holds its key."
       - key: 01a13070-322e-74de-b959-5a97400e809d
-        name: "In a `position` conflict, each side holds the key or value of the element that the record follows on that side, or `first`."
+        name: "In a `position` conflict, each side holds the key of the record that the record follows on that side, or `first`."
   - key: 01a13070-322f-7493-9495-40683e19e26e
     statement:
       form: ubiquitous
       system: "The Format"
-      shall: "reserve the names `conflicts`, `position` and `record` for conflict records."
+      shall: "reserve the names `conflicts`, `parent`, `position` and `record` for conflict records."
     criteria:
       - key: 01a13070-322f-7493-9495-4069696d55fe
-        name: "No record kind defines a field named `position` or `record`."
+        name: "No record kind defines a field named `parent`, `position` or `record`."
       - key: 01a13070-322f-7493-9495-406a938807d8
         name: "No record kind uses the name `conflicts` for anything but its list of conflict records."

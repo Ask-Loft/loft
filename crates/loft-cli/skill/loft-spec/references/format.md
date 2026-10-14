@@ -56,7 +56,9 @@ entries is an empty file.
 
 Fields are written in the order the tables below give; an optional field that is absent, or a
 list that is empty, is left out. Each field is marked required or optional; `key` and `slug` are
-required in a formatted tree, and `loft fmt` writes them.
+required in a formatted tree, and `loft fmt` writes them. The names `conflicts`, `parent`,
+`position` and `record` are reserved for the conflict records of a merge, which
+`publishing-and-merging.md` settles; no record has a field of those names.
 
 ## The manifest and the labels
 

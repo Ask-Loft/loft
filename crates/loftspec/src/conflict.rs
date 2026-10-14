@@ -53,7 +53,7 @@ impl fmt::Display for ConflictOwner {
 }
 
 /// The field a conflict names, from the record that holds it: a field name, a path dotted
-/// through the unkeyed records inside it (`statement.shall`), `position` or `record`.
+/// through the unkeyed records inside it (`statement.shall`), `position`, `parent` or `record`.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FieldPath(String);
 

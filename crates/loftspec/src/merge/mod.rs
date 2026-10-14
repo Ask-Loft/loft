@@ -5,15 +5,20 @@
 mod conflict;
 mod labels;
 mod list;
+mod moves;
 pub mod order;
+mod places;
 mod record;
 mod same;
 
+use std::collections::BTreeSet;
 use std::fmt;
 
-use crate::codec::schema::{Field, Item, Kind, Order, Shape};
-use crate::codec::{Content, Mode, ReadError, Rec, Role, SpecPath, Val, read_file, write_content};
-use crate::identity::Label;
+use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
+use crate::codec::{
+    Content, Mode, ReadError, Rec, Role, SpecPath, Val, keyed, read_file, write_content,
+};
+use crate::identity::{Key, Label};
 
 /// One of the three versions of the file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,6 +59,12 @@ pub enum MergeError {
     /// The merged file does not read back; the merge writes nothing rather than a file the
     /// reader refuses.
     Unwritable(ReadError),
+    /// The merged file would carry one key twice, which no tree may (RQ-4); the merge writes
+    /// nothing.
+    DuplicateKey(Key),
+    /// A record moved within the file has no parent left on either side to hold it; the merge
+    /// writes nothing rather than lose it.
+    Unplaced(Key),
 }
 
 /// Merges one file of a `spec/` tree. An empty base is an absent one, as git gives when both
@@ -92,6 +103,9 @@ pub fn merge_file(
     let (content, disputed) = merge_content(base, ours, theirs)?;
     let bytes = write_content(path, role, content);
     let (_, written) = read_file(path, &bytes, Mode::Strict).map_err(MergeError::Unwritable)?;
+    if let Some(key) = carried_twice(&written) {
+        return Err(MergeError::DuplicateKey(key));
+    }
     Ok(Merged {
         conflicts: written.records().map(count).sum(),
         bytes,
@@ -105,8 +119,8 @@ fn merge_content(
     theirs: Content,
 ) -> Result<(Content, Vec<Label>), MergeError> {
     Ok(match (base, ours, theirs) {
-        (base, Content::Record(ours), Content::Record(theirs)) => {
-            let base = match base {
+        (base, Content::Record(mut ours), Content::Record(mut theirs)) => {
+            let mut base = match base {
                 Some(Content::Record(base)) => Some(base),
                 _ => None,
             };
@@ -114,6 +128,8 @@ fn merge_content(
                 let (record, disputed) = labels::merge(base.as_ref(), &ours, &theirs);
                 return Ok((Content::Record(record), disputed));
             }
+            moves::normalise(base.as_mut(), &mut ours, &mut theirs)
+                .map_err(MergeError::Unplaced)?;
             (
                 Content::Record(record::merge_host(base.as_ref(), &ours, &theirs)),
                 Vec::new(),
@@ -179,6 +195,20 @@ fn lint(base: &[u8], ours: Vec<u8>, theirs: Vec<u8>) -> Result<Vec<u8>, MergeErr
     } else {
         Err(MergeError::BothChanged)
     }
+}
+
+/// A key that two keyed records of the merged file carry, which the merge refuses to write
+/// (RQ-4).
+fn carried_twice(content: &Content) -> Option<Key> {
+    let mut found = Vec::new();
+    content
+        .records()
+        .for_each(|record| keyed(record, &mut found));
+    let mut seen = BTreeSet::new();
+    found
+        .into_iter()
+        .filter_map(|record| Key::parse(record.text(field::KEY)?).ok())
+        .find(|key| !seen.insert(*key))
 }
 
 /// The conflict records a record and every record inside it hold.

@@ -26,6 +26,19 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   Facet Tag and its Vocabulary Entry alike. A name that derives nothing, or two v1 names that
   derive one tag name, stop the conversion naming them. The sidecar keeps each v1 name that
   changed, under `tagNames`.
+- `loft merge-driver` matches a record moved to another parent in the same file, such as a
+  criterion moved to another Requirement or a Constraint moved between Components, with its base
+  record by its key, and writes it once. It used to keep the record at its old parent with a
+  `record` conflict and also insert it at the new one when the other branch edited it, write it
+  twice without a conflict when both branches moved it apart, and lose a deletion made in the
+  other branch. Now the record is at its new parent with the other branch's edit; one both
+  branches moved apart stays at its base parent with a new conflict over `parent`, each side
+  naming the parent's key; and one the other branch deleted is kept where it was moved, with a
+  `record` conflict. The driver refuses, writing nothing, a merge that would carry a key twice.
+  `parent` is reserved beside `conflicts`, `position` and `record`.
+- A key carried twice that a `record` conflict names, as when one branch moved a record to
+  another file and the other changed it, is reported as a record moved in one branch and changed
+  in the other.
 - An error or finding that names two sites in one file names the file once:
   `spec/a.yaml:18:10, 28:10: …`.
 - A Feature listed by two Feature Groups is one error that names both groups.

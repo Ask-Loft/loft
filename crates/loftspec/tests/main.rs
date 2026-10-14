@@ -47,6 +47,7 @@ mod merge_decisions;
 mod merge_file;
 mod merge_labels;
 mod merge_lists;
+mod merge_moves;
 mod merge_order;
 mod names;
 mod node;

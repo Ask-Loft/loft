@@ -274,19 +274,50 @@ fn site(path: &SpecPath, position: Position) -> Site {
     }
 }
 
-/// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849).
+/// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849). A key
+/// that a `record` conflict names was kept by the merge driver in the file one branch moved its
+/// record from, because the other branch changed it there, and the error says so.
 fn check_keys(tree: &Tree, errors: &mut Vec<ReadError>) {
     let mut seen: BTreeMap<Key, (&SpecPath, Position)> = BTreeMap::new();
+    let mut twice = Vec::new();
     for (key, path, position) in carried_keys(tree) {
         if let Some(&(first, at)) = seen.get(&key) {
-            errors.push(ReadError {
-                sites: vec![site(first, at), site(path, position)],
-                problem: Problem::DuplicateKey(key),
-            });
+            twice.push((key, vec![site(first, at), site(path, position)]));
         } else {
             seen.insert(key, (path, position));
         }
     }
+    if twice.is_empty() {
+        return;
+    }
+    let kept = kept_by_merge(tree);
+    errors.extend(twice.into_iter().map(|(key, sites)| ReadError {
+        sites,
+        problem: if kept.contains(&key) {
+            Problem::MovedAndChanged(key)
+        } else {
+            Problem::DuplicateKey(key)
+        },
+    }));
+}
+
+/// The keys that a side of a `record` conflict in the tree holds: records the merge driver kept
+/// where one side deleted them (AC-1048).
+fn kept_by_merge(tree: &Tree) -> BTreeSet<Key> {
+    let mut found = Vec::new();
+    for (_, content) in tree.files.values() {
+        content
+            .records()
+            .for_each(|record| keyed(record, &mut found));
+    }
+    found
+        .iter()
+        .flat_map(|record| &record.conflicts)
+        .filter(|conflict| conflict.field == field::RECORD)
+        .flat_map(|conflict| conflict.sides().map(|(_, side)| side.and_then(key_of)))
+        .flatten()
+        .map(|(key, _)| key)
+        .collect()
 }
 
 /// Where each key of a read tree is written: its file, and the position of its `key` field. A

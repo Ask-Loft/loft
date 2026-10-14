@@ -197,6 +197,14 @@ fn messages(error: MergeError) -> Vec<String> {
                 error.problem
             )]
         }
+        MergeError::DuplicateKey(key) => {
+            vec![format!(": the merged file would carry the key {key} twice")]
+        }
+        MergeError::Unplaced(key) => {
+            vec![format!(
+                ": the record {key} was moved, and neither side holds a parent for it"
+            )]
+        }
     }
 }
 

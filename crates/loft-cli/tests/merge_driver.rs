@@ -5,9 +5,10 @@
 use std::fs;
 use std::process::Output;
 
-use crate::common::{Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
 use serde_json::{Value, json};
+use software_plant::{Clock, GitScenario};
 
 const FEATURE: &str = "products/reading-list/sharing/share-a-list.yaml";
 
@@ -265,5 +266,45 @@ fn a_refused_merge_is_listed_among_the_json_document_s_errors() {
             .unwrap()
             .contains("elsewhere/file.yaml"),
         "{error}"
+    );
+}
+
+#[test]
+fn a_record_both_sides_move_apart_exits_1_with_a_parent_conflict_that_verify_names() {
+    let scratch = Scratch::with_reading_list();
+    let git = GitScenario::clean_on("main");
+    let published = scratch.loft_with(&["publish"], Some(&git), &Clock::fixed(EPOCH));
+    assert_eq!(published.status.code(), Some(0), "{}", stderr(&published));
+    let base = fs::read_to_string(scratch.file(FEATURE)).unwrap();
+    let criteria = "    criteria:\n";
+    let start = base
+        .find("    criteria:\n      - key: 00000000-0000-4000-8000-000000000034")
+        .unwrap();
+    let end = base
+        .find("  - key: 00000000-0000-4000-8000-000000000035")
+        .unwrap();
+    let item = &base[start + criteria.len()..end];
+    let without = base.replacen(&base[start..end], "", 1);
+    let ours_text = without.replacen(criteria, &format!("{criteria}{item}"), 1);
+    let theirs_text = format!(
+        "{without}  - key: 00000000-0000-4000-8000-000000000099\n    statement:\n      \
+         text: \"A list is shared.\"\n{criteria}{item}"
+    );
+    let output = driver(&scratch, [&base, &ours_text, &theirs_text], &spec_path());
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    assert_eq!(
+        stderr(&output),
+        format!("{}: 1 merge conflict written\n", spec_path())
+    );
+    let merged = ours(&scratch);
+    assert!(merged.contains("          - field: parent\n"), "{merged}");
+    assert_eq!(merged.matches("000000000034\n").count(), 1, "{merged}");
+    fs::write(scratch.file(FEATURE), &merged).unwrap();
+    let verified = scratch.loft(&["verify"]);
+    assert_eq!(verified.status.code(), Some(1));
+    assert!(
+        stderr(&verified).contains("holds an unresolved merge conflict over `parent`"),
+        "{}",
+        stderr(&verified)
     );
 }

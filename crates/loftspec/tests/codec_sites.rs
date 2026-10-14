@@ -282,3 +282,30 @@ fn decisions_are_read_in_the_byte_order_of_their_file_names() {
         .collect();
     assert_eq!(slugs, ["a-z", "a", "keys-are-uuids"]);
 }
+
+#[test]
+fn a_key_carried_twice_that_a_record_conflict_names_says_the_record_was_moved_and_changed() {
+    let fate = "verificationFate: proved\n";
+    let conflict = "        conflicts:
+          - field: record
+            base: 00000000-0000-7000-8000-000000000009
+            ours: null
+            theirs: 00000000-0000-7000-8000-000000000009
+";
+    let mut files = edited(PRODUCT, fate, &format!("{fate}{conflict}"));
+    let moved = "  - key: 00000000-0000-7000-8000-000000000009
+    name: \"Every Product shall follow the identity rules.\"
+    verificationFate: proved
+";
+    let component = text(&files, COMPONENT).replacen(fate, &format!("{fate}{moved}"), 1);
+    files.insert(path(COMPONENT), component.into_bytes());
+    let error = refused_in(&files, COMPONENT);
+    assert_eq!(error.problem, Problem::MovedAndChanged(key(9)));
+    assert!(
+        error.to_string().ends_with(
+            "the key 00000000-0000-7000-8000-000000000009 is carried twice: the record was \
+             moved in one branch and changed in the other"
+        ),
+        "{error}"
+    );
+}

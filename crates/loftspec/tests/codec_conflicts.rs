@@ -229,8 +229,13 @@ fn a_record_that_holds_no_conflicts_refuses_a_conflicts_list_as_an_unknown_field
 }
 
 #[test]
-fn the_names_conflicts_position_and_record_are_reserved_for_conflict_records() {
-    let reserved = [field::CONFLICTS, field::POSITION, field::RECORD];
+fn the_names_conflicts_parent_position_and_record_are_reserved_for_conflict_records() {
+    let reserved = [
+        field::CONFLICTS,
+        field::PARENT,
+        field::POSITION,
+        field::RECORD,
+    ];
     for kind in Kind::ALL {
         for each in kind.fields() {
             assert!(!reserved.contains(&each.name), "{kind:?}.{}", each.name);

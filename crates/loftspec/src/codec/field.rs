@@ -48,6 +48,8 @@ pub const OPTION: &str = "option";
 pub const OPTIONS: &str = "options";
 pub const OURS: &str = "ours";
 pub const OUTCOME: &str = "outcome";
+/// The pseudo-field a conflict over the parent that a record was moved to names.
+pub const PARENT: &str = "parent";
 /// The pseudo-field a conflict over a record's place in its list names (AC-861).
 pub const POSITION: &str = "position";
 pub const PRODUCTS: &str = "products";

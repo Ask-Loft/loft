@@ -1,5 +1,6 @@
 //! The merge of one file across records and lists (F-32, F-33): a record moved to another
-//! parent, a list of values both sides reordered apart, and a merged file read back.
+//! parent matched by its key, a list of values both sides reordered apart, and a merged file
+//! read back.
 
 use crate::common::text::{FEATURE, files};
 use crate::merge_file::{feature, merged, three_requirements, with};
@@ -42,28 +43,39 @@ fn listed(indent: &str, tags: &[&str]) -> String {
 }
 
 #[test]
-fn a_record_moved_to_another_parent_is_deleted_from_its_base_parent_and_inserted_in_the_new() {
+fn a_record_moved_to_another_parent_is_matched_with_its_base_record_by_its_key() {
     let base = three_requirements();
+    let name = "name: \"Every node record carries a `key` field.\"\n";
+    let renamed = "name: \"Every node record carries one key.\"\n";
+    let bodied = format!("{name}        body: \"Minted keys too.\"\n");
     let ours = with(
         &base,
         &[
             (CRITERIA, ""),
             (SECOND_SHALL, &format!("{SECOND_SHALL}{CRITERIA}")),
+            (name, renamed),
         ],
     );
-    let theirs = with(&base, &[(CRITERIA, &format!("{CRITERIA}{ADDED}"))]);
+    let theirs = with(
+        &base,
+        &[(CRITERIA, &format!("{CRITERIA}{ADDED}")), (name, &bodied)],
+    );
     let (text, conflicts) = merged(&base, &ours, &theirs);
     let first = "      shall: \"write a key on every node.\"\n    criteria:\n";
     assert!(
         text.contains(&format!("{first}{ADDED}")),
         "the base parent keeps only the other side's insertion: {text}"
     );
+    let moved = with(CRITERIA, &[(name, &bodied.replace(name, renamed))]);
     assert!(
-        text.contains(&format!("{SECOND_SHALL}{CRITERIA}")),
-        "the new parent holds the moved record: {text}"
+        text.contains(&format!("{SECOND_SHALL}{moved}")),
+        "the new parent holds the record, with both sides' edits: {text}"
     );
     assert_eq!(text.matches("000000000005\n").count(), 1, "{text}");
     assert_eq!(conflicts, 0);
+    let mut files = files();
+    files.insert(SpecPath::new(FEATURE), text.into_bytes());
+    assert!(codec::read(&files).is_ok());
 }
 
 #[test]
