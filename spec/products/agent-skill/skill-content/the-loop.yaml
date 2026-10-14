@@ -67,3 +67,15 @@ requirements:
         name: "The loop tells the agent that `loft fmt` gives each list item a `key` line, drops quotes that are not needed and puts fields in order."
       - key: 01a13754-833e-725b-b941-634e9a3535f6
         name: "The loop tells the agent to read a file again after `loft fmt` before editing it."
+  - key: 01a137bc-e40d-749f-8570-9ef6f7c26572
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach what a binding that `loft fmt` drops means."
+    criteria:
+      - key: 01a137bc-e40d-749f-8570-9ef7849c1f23
+        name: "The loop tells the agent that `loft fmt` reports each binding it drops on standard error."
+      - key: 01a137bc-e40d-749f-8570-9ef85dd4b6ae
+        name: "The loop tells the agent that a dropped binding of a node it did not delete means a key was lost from a file."
+      - key: 01a137bc-e40d-749f-8570-9ef91001c2a9
+        name: "The loop tells the agent to restore a lost key and `spec/labels.yaml` from git and run `loft fmt` again."

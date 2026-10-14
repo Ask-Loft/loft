@@ -20,6 +20,8 @@ requirements:
         name: "The workflow tells the agent to run `loft merge-driver --install` once the project is under git."
       - key: 01a13754-833e-725b-b941-6341b5258499
         name: "The workflow tells the agent to commit `.gitattributes` after the merge driver is installed."
+      - key: 01a137bc-e40c-76d4-85b1-f798fe1b64d1
+        name: "The workflow tells the agent that the last line of `loft init` says what the merge driver still needs."
   - key: 01a13654-6e12-74a1-ad7f-e8122d427e43
     statement:
       form: event_driven
