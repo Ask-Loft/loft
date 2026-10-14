@@ -224,16 +224,9 @@ fn each_export_the_tests_convert_is_checked_against_v1s_outputs_beside_it() {
             checked.contains(name.as_str()),
             "{name} is checked"
         );
-        assert_eq!(
-            dir.join("v1-lint.json").is_file(),
-            converts,
-            "{name}/v1-lint.json"
-        );
-        assert_eq!(
-            dir.join("v1-ears.json").is_file(),
-            converts,
-            "{name}/v1-ears.json"
-        );
+        for output in ["v1-lint.json", "v1-ears.json"] {
+            assert_eq!(dir.join(output).is_file(), converts, "{name}/{output}");
+        }
         exports.push(name);
     }
     assert!(
@@ -252,12 +245,12 @@ fn normal(rule: &str, subjects: &[&str]) -> Normal {
     (rule.to_owned(), "warning".to_owned(), subjects)
 }
 
-/// Facts with the criteria `criteria` and the findings `prose` once code spans read as prose.
-fn facts(criteria: &[&str], prose: &[Normal]) -> Facts {
+/// Facts with the criteria `criteria` and nothing else.
+fn facts(criteria: &[&str]) -> Facts {
     Facts {
         external: BTreeSet::new(),
         criteria: criteria.iter().map(|id| (*id).to_owned()).collect(),
-        prose: prose.iter().cloned().collect(),
+        prose: BTreeSet::new(),
         hyphenated: BTreeSet::new(),
     }
 }
@@ -306,7 +299,7 @@ fn code_span_explains_what_v1_reports_and_loftspec_reports_once_backticks_are_re
 
 #[test]
 fn subjects_are_criteria_explains_a_finding_only_when_every_subject_is_a_criterion() {
-    let facts = facts(&["c1", "c2"], &[]);
+    let facts = facts(&["c1", "c2"]);
     let entries = entry_with("subjects-are-criteria");
     let rule = entries[0].rule.clone();
     let criteria = normal(&rule, &["c1", "c2"]);
@@ -320,7 +313,7 @@ fn subjects_are_criteria_explains_a_finding_only_when_every_subject_is_a_criteri
 
 #[test]
 fn subjects_are_criteria_explains_no_finding_without_a_subject() {
-    let facts = facts(&["c1"], &[]);
+    let facts = facts(&["c1"]);
     let entries = entry_with("subjects-are-criteria");
     let subjectless = normal(&entries[0].rule, &[]);
     assert_eq!(

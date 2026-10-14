@@ -1,27 +1,18 @@
 //! A node's content view and content hash (F-3).
 
 use crate::common;
-use crate::common::{component, criterion, feature, fresh_key, key, requirement};
+use crate::common::{component, criterion, feature, fresh_key, key, requirement, section};
 use loftspec::attributes::{
     ConservationKind, QaKind, QualityAggregation, QualityBand, QualityTarget, VerificationFate,
 };
 use loftspec::canonical::{Domain, canonical_bytes, digest};
 use loftspec::hash::ContentHash;
-use loftspec::ids::{ConstraintId, FeatureGroupId, QualityAttributeId, SectionId};
+use loftspec::ids::{ConstraintId, FeatureGroupId, QualityAttributeId};
 use loftspec::names::TagName;
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
-    Constraint, Criterion, Details, Feature, FeatureGroup, QualityAttribute, Requirement, Section,
+    Constraint, Criterion, Details, Feature, FeatureGroup, QualityAttribute, Requirement,
 };
-
-fn section(n: u32, name: &str) -> Section {
-    Section {
-        id: Some(SectionId::new(key(n))),
-        name: name.to_owned(),
-        body: "Prose.".to_owned(),
-        sections: Vec::new(),
-    }
-}
 
 fn two_requirements(first: &str, second: &str) -> Feature {
     feature(
@@ -51,7 +42,7 @@ fn the_content_view_holds_its_fields_in_order() {
         conservation_kind: Some(ConservationKind::Cap),
         verification_fate: Some(VerificationFate::Proved),
     };
-    let notes = section(2, "Notes");
+    let notes = section(2, "Notes", "Prose.");
     let notes_hash = notes.content_hash();
     constraint.details.sections = vec![notes];
     let canonical = String::from_utf8(canonical_bytes(&constraint.content_view())).unwrap();
@@ -164,7 +155,7 @@ fn a_statement_enters_as_its_rendered_sentence() {
 
 #[test]
 fn a_section_is_hashed_by_the_node_rule() {
-    let background = section(9, "Background");
+    let background = section(9, "Background", "Prose.");
     assert_eq!(
         background.content_hash(),
         digest(Domain::Node, &background.content_view())
@@ -174,7 +165,7 @@ fn a_section_is_hashed_by_the_node_rule() {
 #[test]
 fn sections_follow_the_structural_children() {
     let mut node = feature(key(1), "Keys", vec![requirement(key(2), "One.", vec![])]);
-    let notes = section(3, "Notes");
+    let notes = section(3, "Notes", "Prose.");
     node.details.sections = vec![notes.clone()];
     let children = node.content_view()[10].clone();
     assert_eq!(children[0], node.requirements[0].content_hash().to_string());
@@ -312,13 +303,13 @@ fn a_components_children_are_grouped_by_kind() {
 #[test]
 fn a_nodes_sections_follow_its_other_children() {
     let mut parent = component(key(1), "Hasher");
-    parent.details.sections = vec![section(5, "Notes")];
+    parent.details.sections = vec![section(5, "Notes", "Prose.")];
     parent.constraints = vec![constraint(3)];
     assert_eq!(
         children(&parent),
         vec![
             constraint(3).content_hash().to_string(),
-            section(5, "Notes").content_hash().to_string(),
+            section(5, "Notes", "Prose.").content_hash().to_string(),
         ]
     );
 }

@@ -6,16 +6,13 @@ use std::collections::BTreeSet;
 
 use crate::common::full::{full_document, full_files};
 use crate::common::key;
-use crate::common::text::{FEATURE, PRODUCT, path, text};
+use crate::common::text::{COMPONENT, DECISION, FEATURE, PRODUCT, path, refused_in, text};
 use loftspec::codec::{self, Files, Problem};
 use loftspec::document::{Document, Edge};
 use loftspec::hash::hash_document;
 use loftspec::ids::{DecisionId, ElementId};
 use loftspec::kind::NodeKind;
 use loftspec::validate::validate;
-
-const COMPONENT: &str = "components/document-model.yaml";
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 
 /// The field that holds the children of each structural kind.
 const CHILD_FIELDS: [&str; 7] = [
@@ -102,10 +99,7 @@ fn a_feature_file_outside_a_feature_groups_directory_is_refused() {
     let mut files = full_files();
     let feature = files.remove(&path(FEATURE)).unwrap();
     files.insert(path(MISPLACED), feature);
-    let errors = codec::read(&files).unwrap_err();
-    assert_eq!(errors.len(), 1, "{errors:?}");
-    assert_eq!(errors[0].problem, Problem::UnknownFile);
-    assert_eq!(errors[0].sites[0].path, path(MISPLACED));
+    assert_eq!(refused_in(&files, MISPLACED).problem, Problem::UnknownFile);
 }
 
 /// The kinds of the nodes that hold at least one Section.

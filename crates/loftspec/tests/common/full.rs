@@ -11,21 +11,13 @@ use loftspec::ids::{
 use loftspec::names::TagName;
 use loftspec::tree::{Details, Section};
 
-use super::{component, key, label, small_document};
+use super::{component, key, label, section, small_document};
 
 /// A Section numbered `n` holding one child Section numbered `n + 1`.
-fn section(n: u32) -> Section {
-    let child = Section {
-        id: Some(SectionId::new(key(n + 1))),
-        name: "Detail".to_owned(),
-        body: "A nested Section.".to_owned(),
-        sections: Vec::new(),
-    };
+fn notes(n: u32) -> Section {
     Section {
-        id: Some(SectionId::new(key(n))),
-        name: "Notes".to_owned(),
-        body: "A Section.".to_owned(),
-        sections: vec![child],
+        sections: vec![section(n + 1, "Detail", "A nested Section.")],
+        ..section(n, "Notes", "A Section.")
     }
 }
 
@@ -34,7 +26,7 @@ fn details(n: u32) -> Details {
     Details {
         body: Some("A body.".to_owned()),
         tags: vec![TagName::parse("identity").unwrap()],
-        sections: vec![section(n)],
+        sections: vec![notes(n)],
     }
 }
 

@@ -2,20 +2,8 @@
 //! parent matched by its key, a list of values both sides reordered apart, and a merged file
 //! read back.
 
-use crate::common::text::{FEATURE, files};
-use crate::merge_file::{feature, merged, three_requirements, with};
-use loftspec::codec::{self, SpecPath};
-
-/// The first Requirement's criteria, the one criterion they hold.
-const CRITERIA: &str = "    criteria:
-      - key: 00000000-0000-7000-8000-000000000005
-        name: \"Every node record carries a `key` field.\"
-        mentions:
-          - 00000000-0000-7000-8000-000000000004
-";
-
-/// The last line of the second Requirement, after which its criteria go.
-const SECOND_SHALL: &str = "      shall: \"write requirement c2.\"\n";
+use crate::common::merge::{CRITERIA, feature, merged, read_back, shall, three_requirements, with};
+use crate::common::text::FEATURE;
 
 /// A criterion added after the first Requirement's criterion.
 const ADDED: &str = "      - key: 00000000-0000-7000-8000-0000000000aa
@@ -45,6 +33,7 @@ fn listed(indent: &str, tags: &[&str]) -> String {
 #[test]
 fn a_record_moved_to_another_parent_is_matched_with_its_base_record_by_its_key() {
     let base = three_requirements();
+    let second_shall = &shall("c2");
     let name = "name: \"Every node record carries a `key` field.\"\n";
     let renamed = "name: \"Every node record carries one key.\"\n";
     let bodied = format!("{name}        body: \"Minted keys too.\"\n");
@@ -52,7 +41,7 @@ fn a_record_moved_to_another_parent_is_matched_with_its_base_record_by_its_key()
         &base,
         &[
             (CRITERIA, ""),
-            (SECOND_SHALL, &format!("{SECOND_SHALL}{CRITERIA}")),
+            (second_shall, &format!("{second_shall}{CRITERIA}")),
             (name, renamed),
         ],
     );
@@ -68,14 +57,12 @@ fn a_record_moved_to_another_parent_is_matched_with_its_base_record_by_its_key()
     );
     let moved = with(CRITERIA, &[(name, &bodied.replace(name, renamed))]);
     assert!(
-        text.contains(&format!("{SECOND_SHALL}{moved}")),
+        text.contains(&format!("{second_shall}{moved}")),
         "the new parent holds the record, with both sides' edits: {text}"
     );
     assert_eq!(text.matches("000000000005\n").count(), 1, "{text}");
     assert_eq!(conflicts, 0);
-    let mut files = files();
-    files.insert(SpecPath::new(FEATURE), text.into_bytes());
-    assert!(codec::read(&files).is_ok());
+    read_back(FEATURE, &text);
 }
 
 #[test]
@@ -97,10 +84,7 @@ fn a_merged_record_that_keeps_its_base_variant_is_read_back_without_a_read_error
     );
     let (text, conflicts) = merged(&base, &ours, &theirs);
     assert!(conflicts > 0, "{text}");
-    let mut files = files();
-    files.insert(SpecPath::new(FEATURE), text.into_bytes());
-    let read = codec::read(&files);
-    assert!(read.is_ok(), "{:?}", read.err());
+    read_back(FEATURE, &text);
 }
 
 #[test]

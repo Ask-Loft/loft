@@ -6114,7 +6114,9 @@ links:
     reviewed: cf2256e11a74fe60afcab9fd093848475cf54a3fac333ac524ac5b8f9d080f6a
     tests:
       - file: "crates/loft-cli/tests/publish_meet_contract.rs"
-        name: "a_settling_publish_changes_nothing_in_the_repository"
+        name: "a_pull_by_merge_settles_in_one_publish_and_the_merge_commit_checks_and_verifies"
+      - file: "crates/loft-cli/tests/publish_meet_contract.rs"
+        name: "a_pull_by_rebase_settles_and_the_next_publish_rewrites_a_later_citation"
   - node: 01a137b0-2dbd-767e-bea2-5906ff293d36
     reviewed: c268834def36a50bfd7880b384654e9ba5cdff7d952fc144776163270398047a
     tests:
@@ -6709,14 +6711,12 @@ links:
     reviewed: d8c14ed8bc33dd5398801a83e8a045f97c99cac4994295ec5bef6997a81f8f6e
     tests:
       - file: "crates/loft-cli/tests/closed_output.rs"
-        name: "every_command_with_its_output_closed_exits_with_the_code_it_exits_with_when_open"
-      - file: "crates/loft-cli/tests/closed_output.rs"
-        name: "a_command_that_fails_on_its_findings_still_exits_1_with_its_output_closed"
+        name: "every_command_with_its_output_closed_exits_as_when_open_and_writes_nothing_about_it"
   - node: 01a13acc-470a-75d5-beed-efe1276e3676
     reviewed: 52f9a93c01e8025017925851e22c7b8291440e2f1381d46a0dac66907a08de2d
     tests:
       - file: "crates/loft-cli/tests/closed_output.rs"
-        name: "every_command_with_its_output_closed_writes_nothing_about_it_to_standard_error"
+        name: "every_command_with_its_output_closed_exits_as_when_open_and_writes_nothing_about_it"
   - node: 056ca8b3-8d8b-452b-ae95-b65ad73bc229
     reviewed: a7da14b136a6b61c2c1c0aa68c0963ec94c4c7664116714033cdaf8589beb4ce
     tests:

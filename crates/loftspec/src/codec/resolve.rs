@@ -72,11 +72,7 @@ pub(super) struct Resolver<'t> {
 
 /// Every node and decision of the tree, by key.
 fn index(tree: &Tree) -> BTreeMap<Key, ElementId> {
-    let mut found = Vec::new();
-    for (_, _, record) in tree.records(|_| true) {
-        super::files::keyed(record, &mut found);
-    }
-    found
+    super::files::keyed_records(tree.records(|_| true).map(|(_, _, record)| record))
         .into_iter()
         .filter_map(|record| {
             let key = Key::parse(record.text(field::KEY)?).ok()?;

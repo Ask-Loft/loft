@@ -7,7 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::common::{EPOCH, Scratch, stderr};
 use crate::markdown::{rows_by_span, section, table};
 use crate::skill_format::format;
-use crate::snapshot::snapshot;
+use crate::snapshot::{self, snapshot};
 use loftspec::codec::{Role, SpecPath};
 use loftspec::publish::LOCK;
 use loftspec::trace::TRACE;
@@ -87,10 +87,10 @@ fn the_files_table_names_the_file_of_each_kind_of_record() {
 
 /// The files that differ between two snapshots, as the files table names them.
 fn changed(before: &BTreeMap<String, Vec<u8>>, after: &BTreeMap<String, Vec<u8>>) -> Vec<String> {
-    let changed = after
+    snapshot::changed(before, after)
         .iter()
-        .filter(|(path, bytes)| before.get(*path) != Some(bytes));
-    changed.map(|(path, _)| pattern(path)).collect()
+        .map(|path| pattern(path))
+        .collect()
 }
 
 /// The files `loft init --no-skill` writes, as the files table names them.

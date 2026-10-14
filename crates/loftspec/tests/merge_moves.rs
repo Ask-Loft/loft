@@ -2,26 +2,14 @@
 //! key, so that it is written once, at the parent the merge settles on, with the other side's
 //! edit, or with a conflict where the sides disagree over its parent or its survival.
 
-use crate::common::text::{FEATURE, PRODUCT, files, text};
-use crate::merge_file::{merge_at, merged, three_requirements, with};
-use loftspec::codec::{self, SpecPath};
+use crate::common::merge::{
+    CRITERIA, CRITERION, merge_at, merged, read_back, requirement, shall, three_requirements, with,
+};
+use crate::common::text::{COMPONENT, FEATURE, PRODUCT, files, indented, text};
+use loftspec::codec::SpecPath;
 use loftspec::merge::{MergeError, merge_file};
 
-/// The first Requirement's criteria, the one criterion they hold.
-const CRITERIA: &str = "    criteria:
-      - key: 00000000-0000-7000-8000-000000000005
-        name: \"Every node record carries a `key` field.\"
-        mentions:
-          - 00000000-0000-7000-8000-000000000004
-";
-
-const NAME: &str = "name: \"Every node record carries a `key` field.\"";
 const EDITED: &str = "name: \"Every node record carries one key.\"";
-
-/// The last line of a Requirement's statement, after which its criteria go.
-fn shall(requirement: &str) -> String {
-    format!("      shall: \"write requirement {requirement}.\"\n")
-}
 
 /// `base` with the criterion moved from the first Requirement to `requirement`.
 fn moved_to(base: &str, requirement: &str) -> String {
@@ -32,42 +20,36 @@ fn moved_to(base: &str, requirement: &str) -> String {
     )
 }
 
-/// The small document's tree with the file at `at` replaced by `text`, read back.
-fn read_back(at: &str, text: &str) {
-    let mut files = files();
-    files.insert(SpecPath::new(at), text.as_bytes().to_vec());
-    let read = codec::read(&files);
-    assert!(read.is_ok(), "{:?}\n{text}", read.err());
-}
-
 /// How many records of the text carry `key`.
 fn carried(text: &str, key: &str) -> usize {
     text.matches(&format!("key: 00000000-0000-7000-8000-{key}\n"))
         .count()
 }
 
+/// Merges the Feature file and asserts that the result holds `conflicts` conflicts, carries the
+/// criterion once and reads back; the merged text.
+fn merged_once(base: &str, ours: &str, theirs: &str, conflicts: usize) -> String {
+    let (text, held) = merged(base, ours, theirs);
+    assert_eq!(held, conflicts, "{text}");
+    assert_eq!(carried(&text, "000000000005"), 1, "{text}");
+    read_back(FEATURE, &text);
+    text
+}
+
 #[test]
 fn a_record_one_side_moves_and_the_other_edits_is_at_its_new_parent_with_the_edit() {
     let base = three_requirements();
     let ours = moved_to(&base, "c2");
-    let theirs = with(&base, &[(NAME, EDITED)]);
-    let (text, conflicts) = merged(&base, &ours, &theirs);
-    assert_eq!(conflicts, 0, "{text}");
-    assert_eq!(carried(&text, "000000000005"), 1, "{text}");
-    let edited = with(CRITERIA, &[(NAME, EDITED)]);
+    let theirs = with(&base, &[(CRITERION, EDITED)]);
+    let text = merged_once(&base, &ours, &theirs, 0);
+    let edited = with(CRITERIA, &[(CRITERION, EDITED)]);
     assert!(text.contains(&format!("{}{edited}", shall("c2"))), "{text}");
-    read_back(FEATURE, &text);
 }
 
 #[test]
 fn a_record_moved_into_a_parent_its_side_added_carries_the_other_side_s_edit() {
     let base = three_requirements();
-    let added = "  - key: 00000000-0000-7000-8000-0000000000c9
-    statement:
-      form: ubiquitous
-      system: \"The writer\"
-      shall: \"write requirement c9.\"
-";
+    let added = &requirement("c9");
     let ours = with(
         &base,
         &[
@@ -78,24 +60,21 @@ fn a_record_moved_into_a_parent_its_side_added_carries_the_other_side_s_edit() {
             ),
         ],
     );
-    let theirs = with(&base, &[(NAME, EDITED)]);
-    let (text, conflicts) = merged(&base, &ours, &theirs);
-    assert_eq!(conflicts, 0, "{text}");
-    assert_eq!(carried(&text, "000000000005"), 1, "{text}");
-    let edited = with(CRITERIA, &[(NAME, EDITED)]);
+    let theirs = with(&base, &[(CRITERION, EDITED)]);
+    let text = merged_once(&base, &ours, &theirs, 0);
+    let edited = with(CRITERIA, &[(CRITERION, EDITED)]);
     assert!(text.contains(&format!("{added}{edited}")), "{text}");
-    read_back(FEATURE, &text);
 }
 
 #[test]
 fn a_record_both_sides_move_to_one_parent_is_there_without_a_conflict() {
     let base = three_requirements();
     let ours = moved_to(&base, "c3");
-    let theirs = with(&moved_to(&base, "c3"), &[(NAME, EDITED)]);
+    let theirs = with(&moved_to(&base, "c3"), &[(CRITERION, EDITED)]);
     let (text, conflicts) = merged(&base, &ours, &theirs);
     assert_eq!(conflicts, 0, "{text}");
     assert!(!text.contains("conflicts:"), "{text}");
-    let edited = with(CRITERIA, &[(NAME, EDITED)]);
+    let edited = with(CRITERIA, &[(CRITERION, EDITED)]);
     assert!(text.contains(&format!("{}{edited}", shall("c3"))), "{text}");
     read_back(FEATURE, &text);
 }
@@ -103,13 +82,10 @@ fn a_record_both_sides_move_to_one_parent_is_there_without_a_conflict() {
 #[test]
 fn a_record_both_sides_move_apart_stays_at_its_base_parent_with_a_parent_conflict() {
     let base = three_requirements();
-    let (text, conflicts) = merged(&base, &moved_to(&base, "c2"), &moved_to(&base, "c3"));
-    assert_eq!(conflicts, 1, "{text}");
-    assert_eq!(carried(&text, "000000000005"), 1, "{text}");
+    let text = merged_once(&base, &moved_to(&base, "c2"), &moved_to(&base, "c3"), 1);
     let first = "      shall: \"write a key on every node.\"\n";
     assert!(text.contains(&format!("{first}{CRITERIA}")), "{text}");
     assert!(text.contains("          - field: parent\n"), "{text}");
-    read_back(FEATURE, &text);
 }
 
 #[test]
@@ -131,8 +107,7 @@ fn a_record_one_side_moves_and_the_other_deletes_is_kept_where_it_was_moved_with
 {
     let base = three_requirements();
     let theirs = with(&base, &[(CRITERIA, "")]);
-    let (text, conflicts) = merged(&base, &moved_to(&base, "c2"), &theirs);
-    assert_eq!(conflicts, 1, "{text}");
+    let text = merged_once(&base, &moved_to(&base, "c2"), &theirs, 1);
     let conflict = "        conflicts:
           - field: record
             base: 00000000-0000-7000-8000-000000000005
@@ -141,41 +116,31 @@ fn a_record_one_side_moves_and_the_other_deletes_is_kept_where_it_was_moved_with
 ";
     let kept = format!("{}{CRITERIA}{conflict}", shall("c2"));
     assert!(text.contains(&kept), "{text}");
-    assert_eq!(carried(&text, "000000000005"), 1, "{text}");
-    read_back(FEATURE, &text);
 }
 
 #[test]
 fn a_new_parent_the_other_side_deletes_is_kept_with_a_record_conflict() {
     let base = three_requirements();
-    let second = "  - key: 00000000-0000-7000-8000-0000000000c2
-    statement:
-      form: ubiquitous
-      system: \"The writer\"
-      shall: \"write requirement c2.\"
-";
-    let theirs = with(&base, &[(second, ""), (NAME, EDITED)]);
-    let (text, conflicts) = merged(&base, &moved_to(&base, "c2"), &theirs);
-    assert_eq!(conflicts, 1, "{text}");
+    let second = &requirement("c2");
+    let theirs = with(&base, &[(second, ""), (CRITERION, EDITED)]);
+    let text = merged_once(&base, &moved_to(&base, "c2"), &theirs, 1);
     let conflict = "    conflicts:
       - field: record
         base: 00000000-0000-7000-8000-0000000000c2
         ours: 00000000-0000-7000-8000-0000000000c2
         theirs: null
 ";
-    let edited = with(CRITERIA, &[(NAME, EDITED)]);
+    let edited = with(CRITERIA, &[(CRITERION, EDITED)]);
     assert!(
         text.contains(&format!("{second}{edited}{conflict}")),
         "the new parent holds the record with the other side's edit: {text}"
     );
-    assert_eq!(carried(&text, "000000000005"), 1, "{text}");
-    read_back(FEATURE, &text);
 }
 
 #[test]
 fn the_merged_file_carries_each_key_once() {
     let base = three_requirements();
-    let edited = with(&base, &[(NAME, EDITED)]);
+    let edited = with(&base, &[(CRITERION, EDITED)]);
     let deleted = with(&base, &[(CRITERIA, "")]);
     let apart = moved_to(&base, "c3");
     for theirs in [&edited, &deleted, &apart] {
@@ -218,11 +183,6 @@ fn records_each_side_moves_into_the_other_stay_at_their_base_parents_with_parent
     read_back(FEATURE, &text);
 }
 
-/// `text` with every line indented by `by`.
-fn indented(text: &str, by: &str) -> String {
-    text.lines().flat_map(|line| [by, line, "\n"]).collect()
-}
-
 #[test]
 fn a_section_moved_out_of_a_record_the_other_side_moved_is_written_once_with_both_edits() {
     let section = "        sections:
@@ -260,7 +220,6 @@ fn a_section_moved_out_of_a_record_the_other_side_moved_is_written_once_with_bot
 
 #[test]
 fn a_constraint_moved_to_a_nested_component_and_edited_on_the_other_side_is_moved_and_edited() {
-    let at_path = "components/document-model.yaml";
     let constraints = "constraints:
   - key: 00000000-0000-7000-8000-000000000007
     name: \"The document model shall reject unknown kinds.\"
@@ -274,19 +233,19 @@ fn a_constraint_moved_to_a_nested_component_and_edited_on_the_other_side_is_move
     name: \"Reader\"
 ";
     let base = with(
-        &text(&files(), at_path),
+        &text(&files(), COMPONENT),
         &[(constraints, &format!("{nested}{constraints}"))],
     );
     let moved = format!("{nested}{}", indented(constraints, "    "));
     let ours = with(&base, &[(constraints, ""), (nested, &moved)]);
     let theirs = with(&base, &[("reject unknown kinds.", "refuse unknown kinds.")]);
-    let merged = merge_at(at_path, &base, &ours, &theirs);
+    let merged = merge_at(COMPONENT, &base, &ours, &theirs);
     let text = String::from_utf8(merged.bytes).unwrap();
     assert_eq!(merged.conflicts, 0, "{text}");
     assert_eq!(carried(&text, "000000000007"), 1, "{text}");
     let expected = moved.replace("reject unknown kinds.", "refuse unknown kinds.");
     assert!(text.contains(&expected), "{text}");
-    read_back(at_path, &text);
+    read_back(COMPONENT, &text);
 }
 
 #[test]

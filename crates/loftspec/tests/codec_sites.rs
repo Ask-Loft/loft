@@ -3,25 +3,17 @@
 //! F-18, F-47).
 
 use crate::common::fields::fields;
-use crate::common::text::{FEATURE, PRODUCT, edited, files, path, text};
+use crate::common::text::{
+    COMPONENT, DECISION, FEATURE, PRODUCT, edited, files, path, refused_in, text,
+};
 use crate::common::{component, key, proposed_decision, slug, small_document};
-use loftspec::codec::{self, Files, Problem, ReadError, SpecPath};
+use loftspec::codec::{self, Problem, ReadError, SpecPath};
 use loftspec::tree::RootComponent;
 
-const COMPONENT: &str = "components/document-model.yaml";
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 const FEATURE_KEY: &str = "00000000-0000-7000-8000-000000000003";
 const REQUIREMENT_KEY: &str = "00000000-0000-7000-8000-000000000004";
 const COMPONENT_KEY: &str = "00000000-0000-7000-8000-000000000006";
 const DECISION_KEY: &str = "00000000-0000-7000-8000-000000000014";
-
-/// The one error a tree gives, which must name the file at `at`.
-fn refused_in(files: &Files, at: &str) -> ReadError {
-    let errors = codec::read(files).expect_err("refused");
-    assert_eq!(errors.len(), 1, "{errors:?}");
-    assert_eq!(errors[0].sites[0].path, path(at), "{errors:?}");
-    errors[0].clone()
-}
 
 fn model_problem(error: &ReadError) -> &str {
     match &error.problem {

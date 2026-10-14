@@ -2,10 +2,8 @@
 //! driver, a subject by its role and its node, each merged as one value, and a disagreement over
 //! an assessment written as one conflict over the decision's assessments.
 
-use crate::common::text::{files, text};
-use crate::merge_file::{merge_at, with};
-
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
+use crate::common::merge::{merge_at, with};
+use crate::common::text::{DECISION, files, text};
 
 /// The rationale of the assessment of the second option against the second driver.
 const RATIONALE: &str = "rationale: \"Either can be written.\"";

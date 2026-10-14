@@ -142,8 +142,9 @@ fn every_schema() -> Vec<String> {
     names
 }
 
-/// The JSON pointer of each object `schema` describes that admits a property it does not name.
-fn open_objects(schema: &Value, at: &str, found: &mut Vec<String>) {
+/// The JSON pointer of each object `schema` describes that admits a property it does not name;
+/// gives the number of objects it describes.
+fn open_objects(schema: &Value, at: &str, found: &mut Vec<String>) -> usize {
     match schema {
         Value::Object(fields) => {
             let object =
@@ -151,16 +152,18 @@ fn open_objects(schema: &Value, at: &str, found: &mut Vec<String>) {
             if object && fields.get("additionalProperties") != Some(&Value::Bool(false)) {
                 found.push(at.to_owned());
             }
-            for (name, field) in fields {
-                open_objects(field, &format!("{at}/{name}"), found);
-            }
+            let nested: usize = fields
+                .iter()
+                .map(|(name, field)| open_objects(field, &format!("{at}/{name}"), found))
+                .sum();
+            usize::from(object) + nested
         }
-        Value::Array(items) => {
-            for (index, item) in items.iter().enumerate() {
-                open_objects(item, &format!("{at}/{index}"), found);
-            }
-        }
-        _ => {}
+        Value::Array(items) => items
+            .iter()
+            .enumerate()
+            .map(|(index, item)| open_objects(item, &format!("{at}/{index}"), found))
+            .sum(),
+        _ => 0,
     }
 }
 
@@ -169,15 +172,10 @@ fn every_object_a_schema_describes_admits_no_field_it_does_not_name() {
     let names = every_schema();
     assert!(names.len() >= 12, "the scan found {names:?}");
     let mut open = Vec::new();
-    let mut objects = 0;
-    for name in names {
-        let schema = read(&name);
-        objects += serde_json::to_string(&schema)
-            .unwrap()
-            .matches("\"additionalProperties\"")
-            .count();
-        open_objects(&schema, &name, &mut open);
-    }
+    let objects: usize = names
+        .iter()
+        .map(|name| open_objects(&read(name), name, &mut open))
+        .sum();
     assert!(objects > 30, "the scan found {objects} objects");
     assert_eq!(open, Vec::<String>::new());
 }
@@ -190,7 +188,7 @@ fn an_open_object_in_a_schema_is_found() {
         "additionalProperties": false,
         "properties": { "nested": { "type": "object", "properties": {} } },
     });
-    open_objects(&schema, "x.json", &mut open);
+    assert_eq!(open_objects(&schema, "x.json", &mut open), 2);
     assert_eq!(open, ["x.json/properties/nested"]);
 }
 

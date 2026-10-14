@@ -1,6 +1,7 @@
 //! The npm packages (the Feature "The npm package"): `scripts/npm-packages.sh` packs them into
 //! tarballs from a binary for each platform, here the `loft` under test copied for every platform,
-//! and the launcher of `@ask-loft/loft` runs the binary of the platform it is installed on.
+//! or, where a test runs only this machine's, a stand-in for each other one; and the launcher of
+//! `@ask-loft/loft` runs the binary of the platform it is installed on.
 //! `scripts/npm-smoke.sh` runs that launcher from the tarballs, as the release does before it
 //! publishes them.
 
@@ -10,21 +11,35 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-use crate::common::{Scratch, stderr, stdout, workspace};
+use crate::common::{PLATFORMS, Scratch, stderr, stdout, workspace};
 use serde_json::{Value, json};
-
-pub const PLATFORMS: [&str; 6] = [
-    "darwin-arm64",
-    "darwin-x64",
-    "linux-arm64",
-    "linux-x64",
-    "win32-arm64",
-    "win32-x64",
-];
 
 /// The tarballs packed in `scratch/out` from the binary under test, each copied in without its
 /// execute bits, as a download of the build's artifacts leaves it.
 fn assembled(scratch: &Scratch) -> PathBuf {
+    pack(scratch, |_| {
+        Path::new(env!("CARGO_BIN_EXE_loft")).to_owned()
+    })
+}
+
+/// [`assembled`], with `binary` for this machine's platform and a stand-in that never runs for
+/// every other one, so that a test that runs only this machine's packs a single real binary.
+fn assembled_with(scratch: &Scratch, binary: &Path) -> PathBuf {
+    let stand_in = scratch.0.join("stand-in");
+    fs::write(&stand_in, "a binary for another platform\n").unwrap();
+    let host = host();
+    pack(scratch, |platform| {
+        if platform == host {
+            binary.to_owned()
+        } else {
+            stand_in.clone()
+        }
+    })
+}
+
+/// The tarballs packed in `scratch/out` from the file `binary` gives for each platform, each
+/// copied in without its execute bits.
+fn pack(scratch: &Scratch, binary: impl Fn(&str) -> PathBuf) -> PathBuf {
     for platform in PLATFORMS {
         let dir = scratch.0.join("binaries").join(platform);
         fs::create_dir_all(&dir).unwrap();
@@ -33,9 +48,9 @@ fn assembled(scratch: &Scratch) -> PathBuf {
         } else {
             "loft"
         };
-        let binary = dir.join(name);
-        fs::copy(env!("CARGO_BIN_EXE_loft"), &binary).unwrap();
-        fs::set_permissions(&binary, fs::Permissions::from_mode(0o644)).unwrap();
+        let copy = dir.join(name);
+        fs::copy(binary(platform), &copy).unwrap();
+        fs::set_permissions(&copy, fs::Permissions::from_mode(0o644)).unwrap();
     }
     let output = Command::new(workspace().join("scripts/npm-packages.sh"))
         .arg(scratch.0.join("binaries"))
@@ -81,18 +96,22 @@ fn host() -> String {
 /// A project whose `node_modules` holds `@ask-loft/loft` and, with `platform`, this machine's
 /// platform package, extracted from their tarballs as npm installs them.
 fn project(scratch: &Scratch, platform: bool) -> PathBuf {
-    let out = assembled(scratch);
+    project_from(scratch, &assembled(scratch), platform)
+}
+
+/// [`project`], from the tarballs in `out`.
+fn project_from(scratch: &Scratch, out: &Path, platform: bool) -> PathBuf {
     let scope = scratch.0.join("project/node_modules/@ask-loft");
-    unpack(&out, "loft", &scope.join("loft"));
+    unpack(out, "loft", &scope.join("loft"));
     if platform {
         let name = format!("loft-{}", host());
-        unpack(&out, &name, &scope.join(&name));
+        unpack(out, &name, &scope.join(&name));
     }
     scratch.0.join("project")
 }
 
-/// The launcher run with `args` in `project`, with Node first loading `preload` if given.
-fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
+/// The launcher installed in `project`, run there by Node, which first loads `preload` if given.
+fn launcher(project: &Path, preload: Option<&str>) -> Command {
     let mut node = Command::new("node");
     if let Some(script) = preload {
         let path = project.join("preload.js");
@@ -100,10 +119,13 @@ fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
         node.arg("--require").arg(path);
     }
     node.arg(project.join("node_modules/@ask-loft/loft/bin/loft.js"))
-        .args(args)
-        .current_dir(project)
-        .output()
-        .unwrap()
+        .current_dir(project);
+    node
+}
+
+/// The launcher run with `args` in `project`, with Node first loading `preload` if given.
+fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
+    launcher(project, preload).args(args).output().unwrap()
 }
 
 /// `scripts/npm-smoke.sh` run over the tarballs in `out`.
@@ -254,15 +276,12 @@ fn the_smoke_check_fails_where_the_packed_binary_cannot_run() {
 #[test]
 fn the_binary_reads_the_standard_input_given_to_the_launcher() {
     let scratch = Scratch::empty();
-    let project = project(&scratch, true);
-    let binary = project.join(format!("node_modules/@ask-loft/loft-{}/bin/loft", host()));
     // In place of `loft`, a binary that copies its standard input to its output and its error.
-    let copies = "#!/bin/sh\ninput=$(cat)\nprintf '%s' \"$input\"\nprintf '%s' \"$input\" >&2\n";
-    fs::write(&binary, copies).unwrap();
-    fs::set_permissions(&binary, fs::Permissions::from_mode(0o755)).unwrap();
-    let mut child = Command::new("node")
-        .arg(project.join("node_modules/@ask-loft/loft/bin/loft.js"))
-        .current_dir(&project)
+    let copies = scratch.0.join("copies");
+    let script = "#!/bin/sh\ninput=$(cat)\nprintf '%s' \"$input\"\nprintf '%s' \"$input\" >&2\n";
+    fs::write(&copies, script).unwrap();
+    let project = project_from(&scratch, &assembled_with(&scratch, &copies), true);
+    let mut child = launcher(&project, None)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -280,7 +299,7 @@ fn the_binary_reads_the_standard_input_given_to_the_launcher() {
 #[test]
 fn npm_installs_the_platform_binary_executable() {
     let scratch = Scratch::empty();
-    let out = assembled(&scratch);
+    let out = assembled_with(&scratch, Path::new(env!("CARGO_BIN_EXE_loft")));
     let project = scratch.0.join("installed");
     fs::create_dir_all(&project).unwrap();
     fs::write(

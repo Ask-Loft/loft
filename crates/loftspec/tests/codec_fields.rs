@@ -5,13 +5,12 @@
 use crate::common::fields::{assert_required, fields};
 use crate::common::full::{full_files, full_nested_document};
 use crate::common::small_document;
-use crate::common::text::{FEATURE, PRODUCT, path, text};
+use crate::common::text::{COMPONENT, FEATURE, PRODUCT, path, text};
 use loftspec::attributes::QualityBand;
 use loftspec::codec::{self, Problem, Site};
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::yaml::{Location, Position};
 
-const COMPONENT: &str = "components/document-model.yaml";
 const GROUP: &[&str] = &["featureGroups", "0"];
 const REQUIREMENT: &[&str] = &["requirements", "0"];
 const CRITERION: &[&str] = &["requirements", "0", "criteria", "0"];
@@ -136,37 +135,56 @@ fn a_statement_stored_as_text_has_the_single_field_text() {
     assert_eq!(fields(&files, FEATURE, STATEMENT), ["text"]);
 }
 
-/// The small document's files with its Requirement's statement in the form whose condition
-/// slot is `condition`, or in the ubiquitous form for none.
-fn with_form(condition: Option<&str>) -> codec::Files {
-    let (slot, system, shall) = (
-        "a condition".to_owned(),
-        "The writer".to_owned(),
-        "write a key.".to_owned(),
-    );
-    let form = match condition {
-        None => EarsForm::Ubiquitous { system, shall },
-        Some("when") => EarsForm::EventDriven {
-            when: slot,
-            system,
-            shall,
-        },
-        Some("while") => EarsForm::StateDriven {
-            r#while: slot,
-            system,
-            shall,
-        },
-        Some("if") => EarsForm::Unwanted {
-            r#if: slot,
-            system,
-            shall,
-        },
-        Some(_) => EarsForm::Optional {
-            r#where: slot,
-            system,
-            shall,
-        },
-    };
+/// Each form of a statement, with the fields the Format publishes for it, in order.
+fn forms() -> [(EarsForm, &'static [&'static str]); 5] {
+    let slot = || "a condition".to_owned();
+    let system = || "The writer".to_owned();
+    let shall = || "write a key.".to_owned();
+    [
+        (
+            EarsForm::Ubiquitous {
+                system: system(),
+                shall: shall(),
+            },
+            &["form", "system", "shall"],
+        ),
+        (
+            EarsForm::EventDriven {
+                when: slot(),
+                system: system(),
+                shall: shall(),
+            },
+            &["form", "when", "system", "shall"],
+        ),
+        (
+            EarsForm::StateDriven {
+                r#while: slot(),
+                system: system(),
+                shall: shall(),
+            },
+            &["form", "while", "system", "shall"],
+        ),
+        (
+            EarsForm::Unwanted {
+                r#if: slot(),
+                system: system(),
+                shall: shall(),
+            },
+            &["form", "if", "system", "shall"],
+        ),
+        (
+            EarsForm::Optional {
+                r#where: slot(),
+                system: system(),
+                shall: shall(),
+            },
+            &["form", "where", "system", "shall"],
+        ),
+    ]
+}
+
+/// The small document's files with its Requirement's statement in `form`.
+fn with_form(form: EarsForm) -> codec::Files {
     let mut document = small_document();
     let requirement = &mut document.products[0].feature_groups[0].features[0].requirements[0];
     requirement.statement = Statement::Form(form);
@@ -175,14 +193,9 @@ fn with_form(condition: Option<&str>) -> codec::Files {
 
 #[test]
 fn a_statement_stored_as_a_form_has_form_then_its_condition_then_system_and_shall() {
-    for condition in [None, Some("when"), Some("while"), Some("if"), Some("where")] {
-        let published: Vec<&str> = ["form"]
-            .into_iter()
-            .chain(condition)
-            .chain(["system", "shall"])
-            .collect();
-        let written = fields(&with_form(condition), FEATURE, STATEMENT);
-        assert_eq!(written, published, "{condition:?}");
+    for (form, published) in forms() {
+        let written = fields(&with_form(form), FEATURE, STATEMENT);
+        assert_eq!(written, published);
     }
 }
 

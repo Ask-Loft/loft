@@ -8,7 +8,7 @@ use super::schema::field;
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::error::{Problem, ReadError, Site, SpecPath};
-use super::files::{Files, MANIFEST, Role, Tree, keyed, read_file};
+use super::files::{Files, MANIFEST, Role, Tree, keyed_records, read_file};
 use super::record::{Mode, Rec, Val};
 use crate::identity::Key;
 use crate::manifest::check_identifiers;
@@ -253,17 +253,16 @@ fn check_directory(
     }
 }
 
-/// Every key a keyed record of the tree carries, with the file and the position of the key.
-fn carried_keys(tree: &Tree) -> impl Iterator<Item = (Key, &SpecPath, Position)> {
+/// Every key a keyed record of the tree carries, with the file, the position of the key and the
+/// record.
+fn carried_keys(tree: &Tree) -> impl Iterator<Item = (Key, &SpecPath, Position, &Rec)> {
     tree.files.iter().flat_map(|(path, (_, content))| {
-        let mut found = Vec::new();
-        content
-            .records()
-            .for_each(|record| keyed(record, &mut found));
-        found
+        keyed_records(content.records())
             .into_iter()
-            .filter_map(|record| key_of(record.get(field::KEY)?))
-            .map(move |(key, position)| (key, path, position))
+            .filter_map(move |record| {
+                let (key, position) = key_of(record.get(field::KEY)?)?;
+                Some((key, path, position, record))
+            })
     })
 }
 
@@ -275,49 +274,33 @@ fn site(path: &SpecPath, position: Position) -> Site {
 }
 
 /// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849). A key
-/// that a `record` conflict names was kept by the merge driver in the file one branch moved its
-/// record from, because the other branch changed it there, and the error says so.
+/// whose record holds a `record` conflict was kept by the merge driver in the file one branch
+/// moved its record from, because the other branch changed it there, and the error says so.
 fn check_keys(tree: &Tree, errors: &mut Vec<ReadError>) {
-    let mut seen: BTreeMap<Key, (&SpecPath, Position)> = BTreeMap::new();
-    let mut twice = Vec::new();
-    for (key, path, position) in carried_keys(tree) {
-        if let Some(&(first, at)) = seen.get(&key) {
-            twice.push((key, vec![site(first, at), site(path, position)]));
-        } else {
-            seen.insert(key, (path, position));
-        }
+    let mut seen: BTreeMap<Key, (&SpecPath, Position, &Rec)> = BTreeMap::new();
+    for (key, path, position, record) in carried_keys(tree) {
+        let Some(&(first, at, other)) = seen.get(&key) else {
+            seen.insert(key, (path, position, record));
+            continue;
+        };
+        errors.push(ReadError {
+            sites: vec![site(first, at), site(path, position)],
+            problem: if kept_by_merge(other) || kept_by_merge(record) {
+                Problem::MovedAndChanged(key)
+            } else {
+                Problem::DuplicateKey(key)
+            },
+        });
     }
-    if twice.is_empty() {
-        return;
-    }
-    let kept = kept_by_merge(tree);
-    errors.extend(twice.into_iter().map(|(key, sites)| ReadError {
-        sites,
-        problem: if kept.contains(&key) {
-            Problem::MovedAndChanged(key)
-        } else {
-            Problem::DuplicateKey(key)
-        },
-    }));
 }
 
-/// The keys that a side of a `record` conflict in the tree holds: records the merge driver kept
-/// where one side deleted them (AC-1048).
-fn kept_by_merge(tree: &Tree) -> BTreeSet<Key> {
-    let mut found = Vec::new();
-    for (_, content) in tree.files.values() {
-        content
-            .records()
-            .for_each(|record| keyed(record, &mut found));
-    }
-    found
+/// Whether the merge driver kept a record where one side deleted it: the record then holds a
+/// conflict over `record` (AC-1048).
+fn kept_by_merge(record: &Rec) -> bool {
+    record
+        .conflicts
         .iter()
-        .flat_map(|record| &record.conflicts)
-        .filter(|conflict| conflict.field == field::RECORD)
-        .flat_map(|conflict| conflict.sides().map(|(_, side)| side.and_then(key_of)))
-        .flatten()
-        .map(|(key, _)| key)
-        .collect()
+        .any(|conflict| conflict.field == field::RECORD)
 }
 
 /// Where each key of a read tree is written: its file, and the position of its `key` field. A
@@ -331,7 +314,7 @@ impl Sites {
     pub fn of(tree: &Tree) -> Self {
         Self(
             carried_keys(tree)
-                .map(|(key, path, position)| (key, site(path, position)))
+                .map(|(key, path, position, _)| (key, site(path, position)))
                 .collect(),
         )
     }

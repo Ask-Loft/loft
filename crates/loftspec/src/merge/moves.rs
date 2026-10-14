@@ -7,21 +7,19 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::Input;
-use super::conflict::conflict;
+use super::conflict::{Side, record_conflict};
 use super::places::{Place, Places, put, take};
 use super::record::merge_host;
-use super::same::same_conflict;
+use super::same::holds;
 use crate::codec::{ConflictRec, Rec, Val, field};
 use crate::identity::Key;
 
 /// Where the merge puts one record a side moved, and which side's version takes it.
-#[derive(Debug, Clone)]
 struct Plan {
     to: Place,
-    host: Input,
-    /// Each side's parent, where the sides put the record apart: base, ours, theirs.
-    apart: Option<[Option<String>; 3]>,
+    host: Side,
+    /// Whether the sides put the record apart, so that it gains a conflict over `parent`.
+    apart: bool,
 }
 
 /// Merges every record a side moved within the file and puts it at the parent the merge settles
@@ -50,12 +48,12 @@ pub(super) fn normalise(
             take(ours, &key),
             take(theirs, &key),
         ];
-        let Some(record) = merged(&key, copies, plan) else {
+        let Some(record) = merged(&key, copies, plan, &sides) else {
             continue;
         };
         let (host, other) = match plan.host {
-            Input::Theirs => (&mut *theirs, &mut *ours),
-            Input::Base | Input::Ours => (&mut *ours, &mut *theirs),
+            Side::Ours => (&mut *ours, &mut *theirs),
+            Side::Theirs => (&mut *theirs, &mut *ours),
         };
         // A parent that a record moved earlier took into the other version is found there.
         if let Err(record) = put(host, record, &plan.to)
@@ -86,22 +84,17 @@ fn plan(places: [Option<&Place>; 3], sides: &[Places; 3]) -> Option<Plan> {
         (Some(base), Some(side)) => !side.same_parent(base),
         _ => false,
     };
-    let to = |place: &Place, host: Input| Plan {
+    let to = |place: &Place, host: Side| Plan {
         to: place.clone(),
         host,
-        apart: None,
+        apart: false,
     };
-    match (base, ours, theirs) {
-        (Some(_), Some(at), Some(other)) if moved(ours) && moved(theirs) => {
-            if at.same_parent(other) {
-                Some(to(at, Input::Ours))
-            } else {
-                Some(apart(places, sides))
-            }
-        }
-        (None, Some(at), Some(other)) if !at.same_parent(other) => Some(apart(places, sides)),
-        (_, Some(at), _) if moved(ours) => Some(to(at, Input::Ours)),
-        (_, _, Some(at)) if moved(theirs) => Some(to(at, Input::Theirs)),
+    // Both sides placed the record anew: both moved it, or both added it.
+    let both = base.is_none() || moved(ours) && moved(theirs);
+    match (ours, theirs) {
+        (Some(at), Some(other)) if both && !at.same_parent(other) => Some(apart(places, sides)),
+        (Some(at), _) if moved(ours) => Some(to(at, Side::Ours)),
+        (_, Some(at)) if moved(theirs) => Some(to(at, Side::Theirs)),
         _ => None,
     }
 }
@@ -111,64 +104,59 @@ fn plan(places: [Option<&Place>; 3], sides: &[Places; 3]) -> Option<Plan> {
 /// conflict over `parent` names each side's parent.
 fn apart(places: [Option<&Place>; 3], sides: &[Places; 3]) -> Plan {
     let [base, ours, theirs] = places;
-    let held = |side: &Places, host: Input| {
-        base.filter(|base| side.keys.contains(&base.parent))
+    let held = |side: &Places, host: Side| {
+        base.filter(|base| side.holds(&base.parent))
             .map(|base| (base, host))
     };
-    let (to, host) = held(&sides[1], Input::Ours)
-        .or_else(|| held(&sides[2], Input::Theirs))
-        .or_else(|| ours.map(|ours| (ours, Input::Ours)))
-        .or_else(|| theirs.map(|theirs| (theirs, Input::Theirs)))
+    let (to, host) = held(&sides[1], Side::Ours)
+        .or_else(|| held(&sides[2], Side::Theirs))
+        .or_else(|| ours.map(|ours| (ours, Side::Ours)))
+        .or_else(|| theirs.map(|theirs| (theirs, Side::Theirs)))
         .expect("a side holds a record it moved");
     Plan {
         to: to.clone(),
         host,
-        apart: Some(places.map(|place| place.map(|place| place.parent.clone()))),
+        apart: true,
     }
 }
 
 /// The record merged from the versions that hold it. One that a side deleted is kept as the
 /// moving side wrote it, with a conflict over `record` (AC-473); one the sides put apart gains a
-/// conflict over `parent`.
-fn merged(key: &str, [base, ours, theirs]: [Option<Rec>; 3], plan: &Plan) -> Option<Rec> {
+/// conflict over `parent` naming each side's parent.
+fn merged(
+    key: &str,
+    [base, ours, theirs]: [Option<Rec>; 3],
+    plan: &Plan,
+    sides: &[Places; 3],
+) -> Option<Rec> {
+    let in_base = base.is_some();
     let mut record = match (ours, theirs) {
         (Some(ours), Some(theirs)) => merge_host(base.as_ref(), &ours, &theirs),
-        (Some(kept), None) => deleted(key, base.is_some(), kept, Input::Theirs),
-        (None, Some(kept)) => deleted(key, base.is_some(), kept, Input::Ours),
+        (Some(kept), None) => deleted(in_base, kept, Side::Theirs),
+        (None, Some(kept)) => deleted(in_base, kept, Side::Ours),
         (None, None) => return None,
     };
-    if let Some(parents) = &plan.apart {
-        let sides = parents
+    if plan.apart {
+        let parents = sides
             .each_ref()
-            .map(|parent| parent.as_deref().map(Val::scalar));
-        hold(&mut record, ConflictRec::new(field::PARENT, sides));
+            .map(|places| places.get(key).map(|place| Val::scalar(&place.parent)));
+        hold(&mut record, ConflictRec::new(field::PARENT, parents));
     }
     Some(record)
 }
 
 /// A record `deleter` deleted and the other side moved.
-fn deleted(key: &str, in_base: bool, mut kept: Rec, deleter: Input) -> Rec {
+fn deleted(in_base: bool, mut kept: Rec, deleter: Side) -> Rec {
     if in_base {
-        let key = Val::scalar(key);
-        let null = Val::Null {
-            position: kept.position,
-        };
-        let sides = match deleter {
-            Input::Ours => [Some(&key), Some(&null), Some(&key)],
-            Input::Base | Input::Theirs => [Some(&key), Some(&key), Some(&null)],
-        };
-        hold(&mut kept, conflict(field::RECORD, sides));
+        let conflict = record_conflict(&kept, deleter);
+        hold(&mut kept, conflict);
     }
     kept
 }
 
 /// Gives a record a conflict, unless it holds that conflict already.
 fn hold(record: &mut Rec, conflict: ConflictRec) {
-    if !record
-        .conflicts
-        .iter()
-        .any(|held| same_conflict(held, &conflict))
-    {
+    if !holds(record, &conflict) {
         record.conflicts.push(conflict);
     }
 }

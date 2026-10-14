@@ -2,16 +2,13 @@
 //! when one is missing.
 
 use crate::common::key;
-use crate::common::text::{FEATURE, PRODUCT, edited, files, path, text};
+use crate::common::text::{COMPONENT, DECISION, FEATURE, PRODUCT, edited, files, path, text};
 use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem};
 use loftspec::document::Document;
 use loftspec::fmt::format;
 use loftspec::identity::{Key, Label};
 use loftspec::names::TagName;
-
-const COMPONENT: &str = "components/document-model.yaml";
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 
 /// One edit: the first `from` replaced by `to` in the file at `at`.
 type Edit = (&'static str, &'static str, &'static str);

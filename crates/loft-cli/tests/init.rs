@@ -14,7 +14,7 @@ use loftspec_store::{DocumentStore as _, FileStore};
 use serde_json::Value;
 use software_plant::GitScenario;
 use software_plant::git::Call;
-use software_plant::real_git::{isolate, real_git};
+use software_plant::real_git::git_output;
 
 /// A directory where `loft init` ran and succeeded.
 fn initialised() -> Scratch {
@@ -270,9 +270,7 @@ fn the_suggestion_writes_nothing_to_the_repository() {
 #[test]
 fn outside_a_repository_init_creates_no_git_repository_with_real_git() {
     let scratch = Scratch::empty();
-    let mut command = std::process::Command::new(env!("CARGO_BIN_EXE_loft"));
-    isolate(&mut command).current_dir(&scratch.0);
-    let output = command.arg("init").output().unwrap();
+    let output = scratch.loft_under_real_git(&["init"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     assert!(
         stdout(&output).contains("git repository"),
@@ -280,10 +278,6 @@ fn outside_a_repository_init_creates_no_git_repository_with_real_git() {
         stdout(&output)
     );
     assert!(!scratch.0.join(".git").exists());
-    let inside = real_git()
-        .args(["rev-parse", "--git-dir"])
-        .current_dir(&scratch.0)
-        .output()
-        .unwrap();
+    let inside = git_output(&scratch.0, &["rev-parse", "--git-dir"]);
     assert!(!inside.status.success(), "{}", stdout(&inside));
 }

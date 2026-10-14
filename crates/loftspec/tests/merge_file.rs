@@ -2,42 +2,14 @@
 //! conflict written where both sides changed one field apart, lists merged in base order, and
 //! the result in canonical layout.
 
+use crate::common::merge::{
+    CRITERION, feature, merge_at, merged, requirement, three_requirements, with,
+};
 use crate::common::text::{FEATURE, files, text};
 use loftspec::codec::{self, SpecPath};
-use loftspec::merge::{Input, MergeError, Merged, merge_file};
-
-pub(crate) fn feature() -> String {
-    text(&files(), FEATURE)
-}
-
-/// `text` with each `(from, to)` replaced once.
-pub(crate) fn with(text: &str, edits: &[(&str, &str)]) -> String {
-    let mut text = text.to_owned();
-    for (from, to) in edits {
-        assert!(text.contains(from), "{from:?} in\n{text}");
-        text = text.replacen(from, to, 1);
-    }
-    text
-}
-
-pub(crate) fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
-    merge_file(
-        &SpecPath::new(path),
-        base.as_bytes(),
-        ours.as_bytes(),
-        theirs.as_bytes(),
-    )
-    .expect("the file merges")
-}
-
-/// Merges the Feature file and gives the result as text.
-pub(crate) fn merged(base: &str, ours: &str, theirs: &str) -> (String, usize) {
-    let merged = merge_at(FEATURE, base, ours, theirs);
-    (String::from_utf8(merged.bytes).unwrap(), merged.conflicts)
-}
+use loftspec::merge::{Input, MergeError, merge_file};
 
 const SHALL: &str = "shall: \"write a key on every node.\"";
-const CRITERION: &str = "name: \"Every node record carries a `key` field.\"";
 const CRITERION_BLOCK: &str = "      - key: 00000000-0000-7000-8000-000000000005
         name: \"Every node record carries a `key` field.\"
         mentions:
@@ -363,31 +335,6 @@ fn a_path_that_names_no_file_of_the_format_is_refused() {
     assert_eq!(refused, Err(MergeError::NotAFormatFile));
 }
 
-/// The Feature with a second and a third Requirement after the first.
-pub(crate) fn three_requirements() -> String {
-    let requirement = |n: &str| {
-        format!(
-            "  - key: 00000000-0000-7000-8000-0000000000{n}
-    statement:
-      form: ubiquitous
-      system: \"The writer\"
-      shall: \"write requirement {n}.\"
-"
-        )
-    };
-    with(
-        &feature(),
-        &[(
-            "qualityAttributes:\n",
-            &format!(
-                "{}{}qualityAttributes:\n",
-                requirement("c2"),
-                requirement("c3")
-            ),
-        )],
-    )
-}
-
 #[test]
 fn requirements_both_sides_append_follow_the_base_ones_ours_first() {
     let base = three_requirements();
@@ -411,7 +358,7 @@ fn requirements_both_sides_append_follow_the_base_ones_ours_first() {
 #[test]
 fn a_requirement_moved_on_one_side_and_edited_on_the_other_is_moved_and_edited() {
     let base = three_requirements();
-    let third = "  - key: 00000000-0000-7000-8000-0000000000c3\n    statement:\n      form: ubiquitous\n      system: \"The writer\"\n      shall: \"write requirement c3.\"\n";
+    let third = &requirement("c3");
     let ours = with(
         &base,
         &[
@@ -436,7 +383,7 @@ fn a_requirement_moved_on_one_side_and_edited_on_the_other_is_moved_and_edited()
 #[test]
 fn a_requirement_both_sides_moved_apart_stays_with_a_position_conflict() {
     let base = three_requirements();
-    let third = "  - key: 00000000-0000-7000-8000-0000000000c3\n    statement:\n      form: ubiquitous\n      system: \"The writer\"\n      shall: \"write requirement c3.\"\n";
+    let third = &requirement("c3");
     let second = "  - key: 00000000-0000-7000-8000-0000000000c2\n";
     let ours = with(
         &base,

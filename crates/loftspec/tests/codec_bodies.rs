@@ -3,11 +3,10 @@
 
 use crate::common::fields::scalar;
 use crate::common::text::PRODUCT;
-use crate::common::{key, small_document};
+use crate::common::{key, section, small_document};
 use loftspec::codec;
 use loftspec::document::Document;
 use loftspec::hash::hash_document;
-use loftspec::ids::SectionId;
 use loftspec::tree::Section;
 use proptest::prelude::*;
 
@@ -30,24 +29,18 @@ fn feature_body_read_back(body: &str) -> Option<String> {
         .clone()
 }
 
-fn section(n: u32, name: &str, sections: Vec<Section>) -> Section {
-    Section {
-        id: Some(SectionId::new(key(n))),
-        name: name.to_owned(),
-        body: format!("Section {n}."),
-        sections,
-    }
-}
-
 /// The small document whose Product holds one Section whose child Sections are `children`, each
 /// a key's number and a name, in that order.
 fn with_child_sections(children: &[(u32, &str)]) -> Document {
     let children = children
         .iter()
-        .map(|(n, name)| section(*n, name, Vec::new()))
+        .map(|(n, name)| section(*n, name, &format!("Section {n}.")))
         .collect();
     let mut document = small_document();
-    document.products[0].details.sections = vec![section(70, "Notes", children)];
+    document.products[0].details.sections = vec![Section {
+        sections: children,
+        ..section(70, "Notes", "Section 70.")
+    }];
     document
 }
 

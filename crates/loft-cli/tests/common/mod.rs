@@ -1,7 +1,7 @@
 //! What the command-line tests share: a scratch repository holding the Reading List's `spec/`
 //! tree and the `loft` binary run in it, in front of the Software Plant's simulators: a fixed
 //! clock, and the git simulator for a command that reads the repository, with no `git` on the
-//! search path otherwise.
+//! search path otherwise; or, for a contract suite, under real git.
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -11,6 +11,7 @@ use std::{env, fs, process};
 use loftspec::codec;
 use loftspec::convert::v1::convert;
 use loftspec::convert::v1::export::Export;
+use software_plant::real_git::isolate;
 use software_plant::{Clock, GitScenario, Installed};
 
 /// The time every run reads unless a test gives another: 2026-01-01T00:00:00Z.
@@ -18,6 +19,16 @@ pub const EPOCH: u64 = 1_767_225_600;
 
 const READING_LIST: &str =
     include_str!("../../../../testdata/v1/reading-list/loft-authored-state.json");
+
+/// The platforms `loft` is released for, by Node's names.
+pub const PLATFORMS: [&str; 6] = [
+    "darwin-arm64",
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64",
+    "win32-arm64",
+    "win32-x64",
+];
 
 /// The root of the repository.
 pub fn workspace() -> PathBuf {
@@ -88,6 +99,13 @@ impl Scratch {
         (output, GitScenario::read(&scenario).unwrap())
     }
 
+    /// Runs `loft` at [`EPOCH`] under real git, kept from the user's configuration, as a
+    /// contract suite runs it.
+    pub fn loft_under_real_git(&self, args: &[&str]) -> Output {
+        let mut command = self.bare(&Clock::fixed(EPOCH));
+        isolate(&mut command).args(args).output().unwrap()
+    }
+
     /// The `loft` command in the scratch tree: the git simulator answering from `git` first on
     /// its search path, or no `git` at all, and the time `clock` gives.
     pub fn command(&self, git: Option<&GitScenario>, clock: &Clock) -> Command {
@@ -102,7 +120,7 @@ impl Scratch {
     ) -> (Command, Option<Installed>) {
         let plant = self.plant();
         fs::create_dir_all(&plant).unwrap();
-        let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
+        let mut command = self.bare(clock);
         let installed = git.map(|git| git.install(&plant));
         match &installed {
             Some(installed) => {
@@ -112,9 +130,16 @@ impl Scratch {
                 command.env("PATH", &plant);
             }
         }
+        (command, installed)
+    }
+
+    /// The `loft` command in the scratch tree at the time `clock` gives, its search path as
+    /// inherited.
+    fn bare(&self, clock: &Clock) -> Command {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
         clock.apply(&mut command);
         command.current_dir(&self.0);
-        (command, installed)
+        command
     }
 
     /// The directory beside the scratch tree that holds the simulators' scenarios.

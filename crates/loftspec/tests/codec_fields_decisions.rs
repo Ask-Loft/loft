@@ -4,14 +4,13 @@
 
 use crate::common::fields::{assert_required, fields, without};
 use crate::common::full::full_files;
-use crate::common::text::{path, text};
+use crate::common::text::{DECISION, path, refused_in, text};
 use crate::common::{key, proposed_decision, small_document};
 use loftspec::codec::{self, Files, Problem};
 use loftspec::decision::DecisionState;
 use loftspec::document::Document;
 use loftspec::ids::{DecisionId, OptionId};
 
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 const STATE: &[&str] = &["state"];
 const LOCAL: &[&str] = &["drivers", "0"];
 const SUBJECT: &[&str] = &["drivers", "1"];
@@ -38,14 +37,6 @@ fn read_state(files: &Files) -> DecisionState {
         .iter()
         .find(|decision| decision.id == DecisionId::new(key(20)));
     decision.unwrap().state.clone()
-}
-
-/// The one error a tree gives, which must name the decision file.
-fn refused(files: &Files) -> Problem {
-    let errors = codec::read(files).expect_err("refused");
-    assert_eq!(errors.len(), 1, "{errors:?}");
-    assert_eq!(errors[0].sites[0].path, path(DECISION));
-    errors[0].problem.clone()
 }
 
 #[test]
@@ -131,7 +122,10 @@ fn a_proposed_state_holds_its_kind_alone() {
         1,
     );
     files.insert(path(DECISION), carrying.into_bytes());
-    assert!(matches!(refused(&files), Problem::Shape(_)));
+    assert!(matches!(
+        refused_in(&files, DECISION).problem,
+        Problem::Shape(_)
+    ));
 }
 
 #[test]
@@ -267,6 +261,9 @@ fn a_decisions_supersession_is_recorded_in_its_state_and_not_as_an_edge() {
             path(DECISION),
             (text(&files, DECISION) + &edge).into_bytes(),
         );
-        assert_eq!(refused(&carrying), Problem::UnknownField(field.to_owned()));
+        assert_eq!(
+            refused_in(&carrying, DECISION).problem,
+            Problem::UnknownField(field.to_owned())
+        );
     }
 }

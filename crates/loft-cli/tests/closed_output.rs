@@ -7,16 +7,16 @@
 use std::io;
 use std::process::{Output, Stdio};
 
-use crate::commands::{COMMANDS, Fixture};
-use crate::common::{EPOCH, Scratch, stderr};
-use crate::writes_tree::fixture;
-use software_plant::{Clock, GitScenario};
+use crate::commands::{COMMANDS, Fixture, command, fixture};
+use crate::common::stderr;
 
-/// One run of `loft`: a name for its failure messages, its arguments and its fixture.
+/// One run of `loft`: a name for its failure messages, its arguments, its fixture, and whether
+/// it fails on its findings.
 struct Case {
     name: String,
     args: Vec<&'static str>,
     fixture: Fixture,
+    fails: bool,
 }
 
 impl Case {
@@ -25,15 +25,22 @@ impl Case {
             name: name.to_owned(),
             args: args.to_vec(),
             fixture,
+            fails: false,
         }
     }
 
-    /// Runs the case over a fresh fixture: in a clean repository on `main` for the clean
-    /// fixture, with no `git` otherwise; with standard output closed when `closed`.
+    /// The case, run where it fails on its findings.
+    fn failing(name: &str, args: &[&'static str]) -> Self {
+        Self {
+            fails: true,
+            ..Self::new(name, args, Fixture::Clean)
+        }
+    }
+
+    /// Runs the case over a fresh fixture, with standard output closed when `closed`.
     fn run(&self, closed: bool) -> Output {
-        let scratch: Scratch = fixture(self.fixture);
-        let git = (self.fixture == Fixture::Clean).then(|| GitScenario::clean_on("main"));
-        let mut command = scratch.command(git.as_ref(), &Clock::fixed(EPOCH));
+        let scratch = fixture(self.fixture);
+        let mut command = command(&scratch, self.fixture);
         command.args(&self.args).stderr(Stdio::piped());
         if closed {
             let (reader, writer) = io::pipe().unwrap();
@@ -57,58 +64,35 @@ fn cases() -> Vec<Case> {
         })
         .collect();
     cases.push(Case::new("reconcile", &["reconcile"], Fixture::Clean));
-    cases.extend(failing());
+    cases.push(Case::failing(
+        "reconcile failing on info",
+        &["reconcile", "--fail-on", "info"],
+    ));
+    cases.push(Case::failing(
+        "check failing on info",
+        &["check", "--fail-on", "info"],
+    ));
     cases
 }
 
-/// Commands that print a line for each finding and then fail on them.
-fn failing() -> [Case; 2] {
-    [
-        Case::new(
-            "reconcile failing on info",
-            &["reconcile", "--fail-on", "info"],
-            Fixture::Clean,
-        ),
-        Case::new(
-            "check failing on info",
-            &["check", "--fail-on", "info"],
-            Fixture::Clean,
-        ),
-    ]
-}
-
 #[test]
-fn every_command_with_its_output_closed_exits_with_the_code_it_exits_with_when_open() {
-    for case in cases() {
-        let open = case.run(false);
-        let closed = case.run(true);
-        assert_eq!(
-            closed.status.code(),
-            open.status.code(),
-            "{}: the exit code with the output closed\n{}",
-            case.name,
-            stderr(&closed)
-        );
-    }
-}
-
-#[test]
-fn every_command_with_its_output_closed_writes_nothing_about_it_to_standard_error() {
+fn every_command_with_its_output_closed_exits_as_when_open_and_writes_nothing_about_it() {
     for case in cases() {
         let open = case.run(false);
         let closed = case.run(true);
         let text = stderr(&closed);
+        assert_eq!(
+            closed.status.code(),
+            open.status.code(),
+            "{}: the exit code with the output closed\n{text}",
+            case.name
+        );
+        if case.fails {
+            assert_eq!(open.status.code(), Some(1), "{}", case.name);
+        }
         for mention in ["panicked", "Broken pipe"] {
             assert!(!text.contains(mention), "{}: {mention}\n{text}", case.name);
         }
         assert_eq!(text, stderr(&open), "{}: standard error", case.name);
-    }
-}
-
-#[test]
-fn a_command_that_fails_on_its_findings_still_exits_1_with_its_output_closed() {
-    for case in failing() {
-        assert_eq!(case.run(false).status.code(), Some(1), "{}", case.name);
-        assert_eq!(case.run(true).status.code(), Some(1), "{}", case.name);
     }
 }

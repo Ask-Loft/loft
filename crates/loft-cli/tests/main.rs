@@ -16,6 +16,8 @@ mod repo;
 mod schema;
 #[path = "common/snapshot.rs"]
 mod snapshot;
+#[path = "common/workflow.rs"]
+mod workflow;
 
 mod check;
 mod citations;

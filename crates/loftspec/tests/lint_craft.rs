@@ -2,12 +2,11 @@
 //! Requirement, normative text in a body, and an article before a proper name.
 
 use crate::common::lint::{added, configured, findings, keys, of, severity};
-use crate::common::{criterion, key, requirement, small_document};
+use crate::common::{criterion, key, requirement, section, small_document};
 use loftspec::document::Document;
-use loftspec::ids::SectionId;
 use loftspec::lint::{Finding, LintConfig, RuleId, Severity};
 use loftspec::statement::{EarsForm, Statement};
-use loftspec::tree::{Criterion, Section};
+use loftspec::tree::Criterion;
 
 /// The small document with one more Requirement under F-1, keyed 60, holding `criteria`.
 fn with_criteria(criteria: Vec<Criterion>) -> Document {
@@ -38,37 +37,30 @@ fn words(count: usize) -> String {
     vec!["word"; count].join(" ")
 }
 
-#[test]
-fn a_criterion_name_with_a_semicolon_is_v2_005() {
-    let document = with_criterion("The key is written; the label is kept.");
+/// Asserts that a criterion named `name` is one `V2-005` finding, which names the criterion.
+fn assert_compound(name: &str) {
+    let document = with_criterion(name);
     let all = findings(&document);
     let compound = of(&all, RuleId::V2005);
-    assert_eq!(compound.len(), 1);
-    assert_eq!(keys(compound[0]), [key(61)]);
+    assert_eq!(compound.len(), 1, "{name}");
+    assert_eq!(keys(compound[0]), [key(61)], "{name}");
+}
+
+#[test]
+fn a_criterion_name_with_a_semicolon_is_v2_005() {
+    assert_compound("The key is written; the label is kept.");
     assert_eq!(severity(RuleId::V2005), Severity::Warning);
 }
 
 #[test]
 fn a_criterion_name_of_two_sentences_is_v2_005() {
-    let document = with_criterion("The key is written. The label is kept.");
-    let all = findings(&document);
-    let compound = of(&all, RuleId::V2005);
-    assert_eq!(compound.len(), 1);
-    assert_eq!(keys(compound[0]), [key(61)]);
+    assert_compound("The key is written. The label is kept.");
 }
 
 #[test]
 fn a_question_mark_or_an_exclamation_mark_before_a_space_and_a_capital_ends_a_sentence() {
-    for name in [
-        "Is the key kept? The label is.",
-        "The key is kept! The label is.",
-    ] {
-        let document = with_criterion(name);
-        let all = findings(&document);
-        let compound = of(&all, RuleId::V2005);
-        assert_eq!(compound.len(), 1, "{name}");
-        assert_eq!(keys(compound[0]), [key(61)], "{name}");
-    }
+    assert_compound("Is the key kept? The label is.");
+    assert_compound("The key is kept! The label is.");
 }
 
 #[test]
@@ -207,12 +199,8 @@ fn a_normative_word_in_a_body_is_v2_007_at_each_occurrence_and_its_line() {
 #[test]
 fn a_normative_word_in_a_sections_body_is_v2_007_naming_the_section() {
     let mut document = with_criterion("The key is written.");
-    added(&mut document).criteria[0].details.sections = vec![Section {
-        id: Some(SectionId::new(key(62))),
-        name: "Notes".to_owned(),
-        body: "It must stop.\nIt must, it must.\n".to_owned(),
-        sections: Vec::new(),
-    }];
+    added(&mut document).criteria[0].details.sections =
+        vec![section(62, "Notes", "It must stop.\nIt must, it must.\n")];
     let all = findings(&document);
     let found: Vec<_> = of(&all, RuleId::V2007)
         .iter()

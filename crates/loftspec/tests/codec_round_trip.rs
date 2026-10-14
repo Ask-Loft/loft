@@ -3,14 +3,12 @@
 use crate::common;
 use crate::common::fields::scalar;
 use crate::common::small_document;
-use crate::common::text::{FEATURE, PRODUCT, text};
+use crate::common::text::{DECISION, FEATURE, PRODUCT, text};
 use crate::common::v1::{convert_value, full_export};
 use loftspec::codec::{self, Files};
 use loftspec::document::{Document, Edge, SubjectRole};
 use loftspec::hash::hash_document;
 use loftspec::ids::{ComponentId, DecisionId};
-
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 
 /// The document a tree reads as, or a panic listing the first read errors.
 fn read_back(files: &Files) -> Document {

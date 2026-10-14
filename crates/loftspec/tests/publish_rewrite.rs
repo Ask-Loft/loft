@@ -2,14 +2,13 @@
 //! label withdrawn from a key to that key's live label, in the text of every element whose
 //! `mentions` include the key, and only there.
 
-use crate::common::text::{FEATURE, files, path, text};
+use crate::common::text::{DECISION, FEATURE, files, path, text};
 use crate::common::{key, label};
 use loftspec::codec::{self, Files};
 use loftspec::hash::hash_document;
 use loftspec::publish::rewrite::rewrite;
 use loftspec::publish::{Publication, PublishedAt, ReadTree, Relabel, RepoState, publish};
 
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 const CRITERION_NAME: &str = "name: \"Every node record carries a `key` field.\"";
 const MENTIONS_4: &str = "        mentions:\n          - 00000000-0000-7000-8000-000000000004\n";
 

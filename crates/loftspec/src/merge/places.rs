@@ -1,7 +1,7 @@
 //! Where each keyed record of one file sits, and the surgery that takes a record, with every
 //! record inside it, out of the file and puts it in at another parent.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use crate::codec::schema::{Item, Shape, field};
 use crate::codec::{Rec, Val};
@@ -23,22 +23,26 @@ impl Place {
 }
 
 /// One version of the file: the place of each keyed record below its top record, and the key of
-/// every keyed record it carries. A key carried twice has no place: the file names no one
-/// parent for it.
+/// its top record. A key carried twice has no place: the file names no one parent for it.
 #[derive(Debug, Default)]
 pub(super) struct Places {
     places: BTreeMap<String, Option<Place>>,
-    pub(super) keys: BTreeSet<String>,
+    top: Option<String>,
 }
 
 impl Places {
     pub(super) fn of(record: &Rec) -> Self {
-        let mut places = Self::default();
-        if let Some(key) = key_of(record) {
-            places.keys.insert(key.to_owned());
-        }
+        let mut places = Self {
+            places: BTreeMap::new(),
+            top: key_of(record).map(str::to_owned),
+        };
         places.walk(record);
         places
+    }
+
+    /// Whether a keyed record of the file carries `key`.
+    pub(super) fn holds(&self, key: &str) -> bool {
+        self.top.as_deref() == Some(key) || self.places.contains_key(key)
     }
 
     /// The place of the record that carries `key`; none where the file lacks it or carries it
@@ -55,14 +59,13 @@ impl Places {
     /// Whether the record that carries `key` sits, at any depth, inside the one that carries
     /// `ancestor`.
     pub(super) fn within(&self, key: &str, ancestor: &str) -> bool {
+        // Each place's parent is the record that holds it in the file, so the chain ends.
         let mut at = self.get(key);
-        // A chain longer than the keys the file carries would be a cycle, which no file holds.
-        for _ in 0..=self.keys.len() {
-            match at {
-                Some(place) if place.parent == ancestor => return true,
-                Some(place) => at = self.get(&place.parent),
-                None => return false,
+        while let Some(place) = at {
+            if place.parent == ancestor {
+                return true;
             }
+            at = self.get(&place.parent);
         }
         false
     }
@@ -94,7 +97,7 @@ impl Places {
             field,
             before: before.to_vec(),
         };
-        let twice = !self.keys.insert(key.to_owned());
+        let twice = self.holds(key);
         self.places
             .insert(key.to_owned(), (!twice).then_some(place));
     }

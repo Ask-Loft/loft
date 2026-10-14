@@ -5,7 +5,7 @@
 
 use super::conflict::Host;
 use super::list::merge_list;
-use super::same::{same, same_conflict};
+use super::same::{holds, same};
 use crate::codec::schema::{Field, Item, Shape};
 use crate::codec::{ConflictRec, Rec, Val, variant_holds};
 
@@ -30,12 +30,6 @@ pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
 /// The conflicts the inputs already hold: one on both sides is written once, one that a side
 /// removed is removed, and one that a side added is added.
 fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<ConflictRec> {
-    let holds = |record: &Rec, conflict: &ConflictRec| {
-        record
-            .conflicts
-            .iter()
-            .any(|each| same_conflict(each, conflict))
-    };
     let kept = |conflict: &ConflictRec| match base {
         Some(base) if holds(base, conflict) => holds(ours, conflict) && holds(theirs, conflict),
         _ => true,

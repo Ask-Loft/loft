@@ -8,13 +8,20 @@
 use std::fmt;
 use std::io::{self, ErrorKind, Write};
 use std::process::ExitCode;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicU8, Ordering};
 
-/// Set once standard output can no longer be written: every later line to it is skipped.
-static SKIPPED: AtomicBool = AtomicBool::new(false);
+/// What became of standard output: [`OPEN`], [`CLOSED`] or [`FAILED`].
+static STDOUT: AtomicU8 = AtomicU8::new(OPEN);
 
-/// Set once writing standard output failed for a reason other than its closing.
-static FAILED: AtomicBool = AtomicBool::new(false);
+/// Standard output can be written.
+const OPEN: u8 = 0;
+
+/// Its reader closed standard output: every later line to it is skipped.
+const CLOSED: u8 = 1;
+
+/// Writing standard output failed for a reason other than its closing: every later line to it is
+/// skipped, and the command fails.
+const FAILED: u8 = 2;
 
 /// Prints a line on standard output, as `println!` does.
 macro_rules! outln {
@@ -34,7 +41,7 @@ pub(crate) use {errln, outln};
 
 /// Writes `line` and a newline to standard output, unless it can no longer be written.
 pub fn stdout_line(line: fmt::Arguments<'_>) {
-    if SKIPPED.load(Ordering::Relaxed) {
+    if STDOUT.load(Ordering::Relaxed) != OPEN {
         return;
     }
     let written = writeln!(io::stdout().lock(), "{line}");
@@ -49,10 +56,10 @@ pub fn stderr_line(line: fmt::Arguments<'_>) {
 /// Flushes standard output and gives the code the command exits with: `code`, or 1 when writing
 /// standard output failed for a reason other than its closing.
 pub fn finish(code: ExitCode) -> ExitCode {
-    if !SKIPPED.load(Ordering::Relaxed) {
+    if STDOUT.load(Ordering::Relaxed) == OPEN {
         settle(io::stdout().lock().flush());
     }
-    if FAILED.load(Ordering::Relaxed) {
+    if STDOUT.load(Ordering::Relaxed) == FAILED {
         ExitCode::FAILURE
     } else {
         code
@@ -65,9 +72,10 @@ fn settle(written: io::Result<()>) {
     let Err(error) = written else {
         return;
     };
-    SKIPPED.store(true, Ordering::Relaxed);
-    if error.kind() != ErrorKind::BrokenPipe {
-        FAILED.store(true, Ordering::Relaxed);
+    if error.kind() == ErrorKind::BrokenPipe {
+        STDOUT.store(CLOSED, Ordering::Relaxed);
+    } else {
+        STDOUT.store(FAILED, Ordering::Relaxed);
         errln!("cannot write to standard output: {error}");
     }
 }

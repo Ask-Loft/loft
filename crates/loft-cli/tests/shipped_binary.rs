@@ -5,6 +5,7 @@
 //! the binary Cargo built for this package.
 
 use crate::common::workspace;
+use crate::workflow::read;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -26,12 +27,8 @@ const OTHER_PROGRAMS: [&str; 6] = [
 /// How a test starts `loft`.
 const LOFT: &str = "env!(\"CARGO_BIN_EXE_loft\")";
 
-fn read(path: &Path) -> String {
-    fs::read_to_string(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()))
-}
-
 fn manifest(krate: &str) -> String {
-    read(&workspace().join("crates").join(krate).join("Cargo.toml"))
+    read(Path::new("crates").join(krate).join("Cargo.toml"))
 }
 
 /// The trimmed lines of each table `header` names in `manifest`, one list per table.
@@ -146,7 +143,7 @@ fn the_tests_run_the_loft_binary_as_it_ships() {
             assert!(!line.contains("features"), "{krate}: {line}");
         }
     }
-    let release = read(&workspace().join(".github/workflows/release.yml"));
+    let release = read(".github/workflows/release.yml");
     let builds: Vec<&str> = release
         .lines()
         .filter(|line| line.contains("cargo build") && line.contains("-p loft-cli"))

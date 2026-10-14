@@ -6,7 +6,7 @@ use std::process::Output;
 
 use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
-use crate::snapshot::snapshot;
+use crate::snapshot::{changed, snapshot};
 use loftspec::codec::Files;
 use loftspec::publish::{LOCK, Lock};
 use loftspec_store::FileStore;
@@ -346,25 +346,33 @@ fn the_json_of_a_publish_lists_the_citations_it_rewrote() {
     );
 }
 
-#[test]
-fn a_git_that_cannot_be_run_writes_nothing() {
+/// Runs a publish through `run` over the Reading List with a label to allocate, once `prepare`
+/// has made it fail; asserts it exits 1 and writes nothing, and gives its output.
+fn fails_writing_nothing(
+    prepare: impl FnOnce(&Scratch),
+    run: impl FnOnce(&Scratch) -> Output,
+) -> Output {
     let scratch = Scratch::with_reading_list();
     unlabel(&scratch, "AC-3");
+    prepare(&scratch);
     let before = snapshot(&scratch.0);
-    let output = scratch.loft(&["publish"]);
-    assert_eq!(output.status.code(), Some(1));
+    let output = run(&scratch);
+    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
     assert_eq!(snapshot(&scratch.0), before);
+    output
+}
+
+#[test]
+fn a_git_that_cannot_be_run_writes_nothing() {
+    fails_writing_nothing(|_| {}, |scratch| scratch.loft(&["publish"]));
 }
 
 #[test]
 fn an_invalid_lock_writes_nothing() {
-    let scratch = Scratch::with_reading_list();
-    unlabel(&scratch, "AC-3");
-    fs::write(scratch.0.join(LOCK), "{}\n").unwrap();
-    let before = snapshot(&scratch.0);
-    let output = on_main(&scratch, &["publish"]);
-    assert_eq!(output.status.code(), Some(1));
-    assert_eq!(snapshot(&scratch.0), before);
+    fails_writing_nothing(
+        |scratch| fs::write(scratch.0.join(LOCK), "{}\n").unwrap(),
+        |scratch| on_main(scratch, &["publish"]),
+    );
 }
 
 #[test]
@@ -375,25 +383,17 @@ fn a_publish_writes_only_the_lock_and_the_bindings_and_no_projection() {
     let output = on_main(&scratch, &["publish"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     let after = snapshot(&scratch.0);
-    let changed: Vec<&String> = after
-        .iter()
-        .filter(|(path, bytes)| before.get(*path) != Some(bytes))
-        .map(|(path, _)| path)
-        .collect();
-    assert_eq!(changed, [LOCK, "spec/labels.yaml"]);
+    assert_eq!(changed(&before, &after), [LOCK, "spec/labels.yaml"]);
     assert!(before.keys().all(|path| after.contains_key(path)));
     assert!(!scratch.0.join("docs").exists());
 }
 
 #[test]
 fn a_publish_whose_journal_cannot_be_written_changes_no_file() {
-    let scratch = Scratch::with_reading_list();
-    unlabel(&scratch, "AC-3");
     // The journal lives under `.loft/`, which a file of that name keeps from being created.
-    fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap();
-    let before = snapshot(&scratch.0);
-    let output = on_main(&scratch, &["publish"]);
-    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
+    let output = fails_writing_nothing(
+        |scratch| fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap(),
+        |scratch| on_main(scratch, &["publish"]),
+    );
     assert!(stderr(&output).contains(".loft"), "{}", stderr(&output));
-    assert_eq!(snapshot(&scratch.0), before);
 }

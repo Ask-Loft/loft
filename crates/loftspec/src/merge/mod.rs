@@ -16,7 +16,7 @@ use std::fmt;
 
 use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
 use crate::codec::{
-    Content, Mode, ReadError, Rec, Role, SpecPath, Val, keyed, read_file, write_content,
+    Content, Mode, ReadError, Rec, Role, SpecPath, Val, keyed_records, read_file, write_content,
 };
 use crate::identity::{Key, Label};
 
@@ -200,12 +200,8 @@ fn lint(base: &[u8], ours: Vec<u8>, theirs: Vec<u8>) -> Result<Vec<u8>, MergeErr
 /// A key that two keyed records of the merged file carry, which the merge refuses to write
 /// (RQ-4).
 fn carried_twice(content: &Content) -> Option<Key> {
-    let mut found = Vec::new();
-    content
-        .records()
-        .for_each(|record| keyed(record, &mut found));
     let mut seen = BTreeSet::new();
-    found
+    keyed_records(content.records())
         .into_iter()
         .filter_map(|record| Key::parse(record.text(field::KEY)?).ok())
         .find(|key| !seen.insert(*key))

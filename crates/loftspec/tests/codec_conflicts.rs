@@ -2,7 +2,7 @@
 //! sides are read and written, and what the reader refuses.
 
 use crate::common::text::{
-    AFTER_CRITERIA, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text,
+    AFTER_CRITERIA, DECISION, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text,
 };
 use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Files, Problem, field};
@@ -192,8 +192,6 @@ fn the_manifest_and_the_bindings_record_hold_conflicts_too() {
     );
     assert!(codec::read(&files).is_ok());
 }
-
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 
 #[test]
 fn a_driver_holds_conflicts_whatever_its_kind() {

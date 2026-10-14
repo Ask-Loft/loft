@@ -4,6 +4,7 @@
 pub mod fields;
 pub mod full;
 pub mod lint;
+pub mod merge;
 pub mod parity;
 pub mod text;
 pub mod v1;
@@ -20,14 +21,14 @@ use loftspec::identity::{Key, Label};
 use loftspec::ids::{
     CategoryId, ComponentId, ConsequenceId, ConstraintId, CriterionId, DecisionId, DocumentId,
     DriverId, FeatureGroupId, FeatureId, OptionId, ProductId, QualityAttributeId, RequirementId,
-    TagId,
+    SectionId, TagId,
 };
 use loftspec::names::{CategoryName, TagName};
 use loftspec::slug::Slug;
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, RootComponent,
+    Requirement, RootComponent, Section,
 };
 
 /// A deterministic version 7 key numbered `n`.
@@ -42,6 +43,16 @@ pub fn fresh_key(n: u32) -> Key {
 
 pub fn label(text: &str) -> Label {
     Label::parse(text).unwrap()
+}
+
+/// A Section keyed `n`, named `name`, holding `body` and no child Section.
+pub fn section(n: u32, name: &str, body: &str) -> Section {
+    Section {
+        id: Some(SectionId::new(key(n))),
+        name: name.to_owned(),
+        body: body.to_owned(),
+        sections: Vec::new(),
+    }
 }
 
 pub fn criterion(id: Key, name: &str) -> Criterion {

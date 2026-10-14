@@ -2,14 +2,12 @@
 //! name its target instead of carrying its key, and the formatter writes the key in its place.
 
 use crate::common::small_document;
-use crate::common::text::{FEATURE, PRODUCT, path, text};
+use crate::common::text::{COMPONENT, DECISION, FEATURE, PRODUCT, path, text};
 use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem, Site};
 use loftspec::fmt::format;
 use loftspec::yaml::{Location, Position};
 
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
-const COMPONENT: &str = "components/document-model.yaml";
 const UUID_V7: &str = "00000000-0000-7000-8000-000000000017";
 const ULID: &str = "00000000-0000-7000-8000-000000000018";
 const LOCAL_DRIVER: &str = "00000000-0000-7000-8000-000000000015";

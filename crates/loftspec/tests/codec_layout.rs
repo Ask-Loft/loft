@@ -4,7 +4,7 @@
 
 use crate::common::fields::{fields, scalar, scalars};
 use crate::common::full::full_nested_document;
-use crate::common::text::{FEATURE, PRODUCT, files, path, text};
+use crate::common::text::{COMPONENT, FEATURE, PRODUCT, files, path, refused_in, text};
 use crate::common::{component, feature, key, product, root, slug, small_document};
 use loftspec::codec::{self, Files, Problem, SpecPath};
 use loftspec::document::{Document, Edge};
@@ -12,15 +12,7 @@ use loftspec::ids::{ComponentId, CriterionId, FeatureGroupId, FeatureId, Product
 use loftspec::tree::{Details, FeatureGroup};
 use loftspec::yaml::{self, ErrorKind, Node, Value};
 
-const COMPONENT: &str = "components/document-model.yaml";
 const LATER: &str = "products/example-product/identity/later.yaml";
-
-/// Asserts that the tree is refused with one error, in the file at `at`.
-fn assert_refused_in(files: &Files, at: &str) {
-    let errors = codec::read(files).expect_err("refused");
-    assert_eq!(errors.len(), 1, "{errors:?}");
-    assert_eq!(errors[0].sites[0].path, path(at), "{errors:?}");
-}
 
 /// The small document's files with the file at `at` holding its record twice, as a list.
 fn holding_twice(at: &str) -> Files {
@@ -78,25 +70,23 @@ fn a_feature_group_record_lists_its_features_keys_in_document_order() {
     );
 }
 
+/// Asserts that the file at `at` holds one record: one is read, and two or none are refused.
+fn assert_holds_one_record(at: &str) {
+    assert_eq!(fields(&files(), at, &[])[..3], ["key", "slug", "name"]);
+    refused_in(&holding_twice(at), at);
+    let mut empty = files();
+    empty.insert(path(at), Vec::new());
+    refused_in(&empty, at);
+}
+
 #[test]
 fn a_feature_file_holds_exactly_one_feature() {
-    assert_eq!(fields(&files(), FEATURE, &[])[..3], ["key", "slug", "name"]);
-    assert_refused_in(&holding_twice(FEATURE), FEATURE);
-    let mut empty = files();
-    empty.insert(path(FEATURE), Vec::new());
-    assert_refused_in(&empty, FEATURE);
+    assert_holds_one_record(FEATURE);
 }
 
 #[test]
 fn a_component_file_holds_one_root_component() {
-    assert_eq!(
-        fields(&files(), COMPONENT, &[])[..3],
-        ["key", "slug", "name"]
-    );
-    assert_refused_in(&holding_twice(COMPONENT), COMPONENT);
-    let mut empty = files();
-    empty.insert(path(COMPONENT), Vec::new());
-    assert_refused_in(&empty, COMPONENT);
+    assert_holds_one_record(COMPONENT);
 }
 
 #[test]
