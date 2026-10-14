@@ -1,7 +1,11 @@
 //! `loft fmt` as a function (F-39): the tree parsed as the formatter parses it, every
-//! missing key minted and every missing slug supplied, the tree then checked as strictly as any
+//! missing key minted and every missing slug supplied, every reference written by name replaced
+//! by its target's key, the binding of every deleted node dropped, the tree then checked as strictly as any
 //! role checks it, and the files whose bytes change in canonical layout. It writes nothing
 //! itself; writing belongs to a store (CMP-4).
+
+mod deleted;
+mod names;
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -11,7 +15,7 @@ use crate::codec::{
     Files, MANIFEST, Mode, ReadError, Rec, Role, SpecPath, Tree, Val, canonicalize, check_tree,
     parse_files, write_files,
 };
-use crate::identity::Key;
+use crate::identity::{Key, Label};
 use crate::slug::Slug;
 
 /// What formatting a tree changes.
@@ -21,6 +25,8 @@ pub struct Formatted {
     pub changed: Files,
     /// How many keys were minted (AC-536).
     pub minted: usize,
+    /// The label and key of each binding dropped because no node or decision carries its key.
+    pub dropped: Vec<(Label, Key)>,
 }
 
 /// Formats a tree.
@@ -48,6 +54,8 @@ pub fn format(files: &Files) -> Result<Formatted, Vec<ReadError>> {
     for (role, key) in new_files {
         list_new_file(&mut tree, &role, key.expect("a minted key"));
     }
+    names::resolve(&mut tree)?;
+    let dropped = deleted::settle(&mut tree);
     check_tree(&tree)?;
     canonicalize(&mut tree);
     let changed = write_files(&tree)
@@ -57,6 +65,7 @@ pub fn format(files: &Files) -> Result<Formatted, Vec<ReadError>> {
     Ok(Formatted {
         changed,
         minted: supplier.minted,
+        dropped,
     })
 }
 

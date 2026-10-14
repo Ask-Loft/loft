@@ -20,17 +20,7 @@ pub(super) struct Item<'a> {
 impl<'a> Item<'a> {
     /// The node's name; a Requirement's is its statement as rendered.
     pub(super) fn name(&self) -> std::borrow::Cow<'a, str> {
-        match self.node {
-            Node::Product(node) => (&node.name).into(),
-            Node::FeatureGroup(node) => (&node.name).into(),
-            Node::Feature(node) => (&node.name).into(),
-            Node::Requirement(node) => node.statement.render().into(),
-            Node::Criterion(node) => (&node.name).into(),
-            Node::Component(node) => (&node.name).into(),
-            Node::Constraint(node) => (&node.name).into(),
-            Node::QualityAttribute(node) => (&node.name).into(),
-            Node::Section(node) => (&node.name).into(),
-        }
+        self.node.name()
     }
 
     /// The node's body, if it has one.

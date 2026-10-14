@@ -2,6 +2,8 @@ key: 01a13654-6e12-74a1-ad7f-e7f6231d2539
 slug: publishing-and-merging
 name: "Publishing and merging"
 body: "Publishing on the publish branch, checking the lock in CI, and merging `spec/` in git."
+tags:
+  - git
 realizes:
   - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
 requirements:
@@ -33,6 +35,8 @@ requirements:
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e7fe5089e62a
         name: "The workflow tells the agent to run `loft merge-driver --install` once in each clone."
+      - key: 01a13754-833e-725b-b941-633e9f643540
+        name: "The workflow tells the agent to commit `.gitattributes` when the install writes it."
       - key: 01a13654-6e12-74a1-ad7f-e7ff89477a44
         name: "The workflow tells the agent to settle a conflict record by editing the node and removing the record."
   - key: 01a13654-6e12-74a1-ad7f-e8008b9e88ed

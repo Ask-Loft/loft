@@ -30,11 +30,15 @@ requirements:
         name: "The workflow tells the agent that `spec/labels.yaml` binds each label to a key."
       - key: 01a13654-6e12-74a1-ad7f-e7dae093871b
         name: "The workflow tells the agent that `loft render` writes a Markdown projection to search by name."
+      - key: 01a13754-833e-725b-b941-633d59fd0a4f
+        name: "The workflow tells the agent that `loft find` prints a node's key, label and file from its label, slug or name."
   - key: 01a13654-6e12-74a1-ad7f-e7db3840bd52
     statement:
       form: ubiquitous
       system: "The skill"
       shall: "teach which edits keep a node's identity."
+    tags:
+      - identity
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e7dc7711429e
         name: "The workflow tells the agent that a node keeps its key when its text changes."
@@ -42,3 +46,5 @@ requirements:
         name: "The workflow tells the agent never to give one node's key to another."
       - key: 01a13654-6e12-74a1-ad7f-e7de4c98b7dc
         name: "The workflow tells the agent that a deleted node's label is never allocated again."
+      - key: 01a137a8-ae5b-7395-a025-0da60323e0f6
+        name: "The workflow tells the agent that `loft fmt` drops a deleted node's binding and writes a retired or superseded decision's reference to it as its former label."

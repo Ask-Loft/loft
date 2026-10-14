@@ -12,7 +12,7 @@ use loftspec::identity::Label;
 use loftspec::merge::{Input, MergeError, merge_file};
 use loftspec_store::StoreError;
 use loftspec_store::fs::{SPEC, write_outputs};
-use loftspec_store::merge_driver;
+use loftspec_store::merge_driver::{self, ATTRIBUTES};
 use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
@@ -107,8 +107,11 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
                 let fields = json!({ "written": installed.written, "version": installed.version });
                 json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
             } else {
-                for name in installed.written {
+                for name in &installed.written {
                     println!("{name}");
+                }
+                if installed.written.iter().any(|name| name == ATTRIBUTES) {
+                    println!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
                 }
             }
             ExitCode::SUCCESS

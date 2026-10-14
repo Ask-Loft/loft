@@ -167,3 +167,7 @@ requirements:
         name: "The default severity of `LQ-009` is hint."
       - key: 3230d576-5cf7-401a-ab94-10266b0573c7
         name: "`LQ-009` reads the names and bodies of Products, Feature Groups, Features, Requirements and Components."
+      - key: 01a1374b-8812-7647-9f20-123c93572591
+        name: "A tag name whose words are joined by hyphens matches only text that joins the same words by hyphens."
+      - key: 01a1374b-8812-7647-9f20-123d27471c25
+        name: "A tag name of one word matches that word wherever it stands in the text."

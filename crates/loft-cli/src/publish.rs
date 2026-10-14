@@ -16,6 +16,7 @@ use loftspec_store::{FileStore, StoreError};
 use serde_json::{Value, json};
 
 use crate::json;
+use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-publish/1";
@@ -43,13 +44,7 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
             }
             ExitCode::SUCCESS
         }
-        Err(failure) => {
-            if as_json {
-                json::print(&refused(&failure));
-            }
-            report(&failure);
-            ExitCode::FAILURE
-        }
+        Err(failure) => stop(failure).exit(SCHEMA, as_json),
     }
 }
 
@@ -151,17 +146,22 @@ fn print(publication: &Publication) {
     }
 }
 
-fn report(failure: &Failure) {
+/// A failed publish as the errors that stop the command.
+fn stop(failure: Failure) -> Stop {
     match failure {
-        Failure::Read(errors) => crate::report(errors),
+        Failure::Read(errors) => errors.into(),
         Failure::Invalid(errors) => {
-            crate::report(errors);
-            eprintln!(
-                "publish refused: the validator reports {} errors",
-                errors.len()
-            );
+            let mut stop = Stop::invalid(&errors);
+            let count = errors.len();
+            stop.lines.push(format!(
+                "publish refused: the validator reports {count} errors"
+            ));
+            stop
         }
-        Failure::Refused(reason) => eprintln!("publish refused: {reason}"),
+        Failure::Refused(reason) => Stop {
+            errors: vec![json::error("refused", &reason, &[])],
+            lines: vec![format!("publish refused: {reason}")],
+        },
     }
 }
 
@@ -227,13 +227,4 @@ fn relabels(relabels: &[Relabel]) -> Vec<Value> {
             })
         })
         .collect()
-}
-
-fn refused(failure: &Failure) -> Value {
-    let errors = match failure {
-        Failure::Read(errors) => json::read_errors(errors),
-        Failure::Invalid(errors) => json::validation_errors(errors),
-        Failure::Refused(reason) => vec![json::error("refused", reason, &[])],
-    };
-    json::failure(SCHEMA, errors)
 }

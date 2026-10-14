@@ -16,8 +16,9 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
 
 ## Find the nodes the change touches
 
-- A label the user names, such as `RQ-12`, is bound to a key in `spec/labels.yaml`: find the
-  label there, then the key in the files under `spec/`.
+- Run `loft find` with a label the user names, such as `RQ-12`, a slug, or part of a node's
+  name: it prints each match's key, label, kind, file and name. `spec/labels.yaml` binds each
+  label to its key.
 - To find a node by its words, run `loft render`, which writes the whole document as Markdown to
   `docs/spec.md`, with every node under its label, and search it. The projection is for reading;
   never edit it, and never commit it unless the project does.
@@ -30,8 +31,9 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
   key.
 - A changed behaviour is the same Requirement or criterion with new words. Change the statement
   or the criterion in place.
-- A removed behaviour is a removed node. Remove its file, or its entry in its parent's list, and
-  every reference to its key.
+- A removed behaviour is a removed node. Remove its file, or its entry in its parent's list, then
+  run `loft fmt`, which drops its binding from `spec/labels.yaml`. Remove every other reference
+  to its key that `loft check` reports.
 - A behaviour that contradicts a decision needs a new decision that supersedes the old one; ask
   the user before making it.
 
@@ -45,7 +47,9 @@ document.
   node.
 - A deleted node's label is never allocated again; a later publish gives new nodes new labels.
 - A retired or superseded decision that names a deleted node names it by its former label, as
-  a mapping whose single field `formerLabel` holds the label.
+  a mapping whose single field `formerLabel` holds the label. `loft fmt` writes it when it drops
+  the node's binding; a live decision that names a deleted node is an error to resolve with the
+  user.
 
 ## Commit the specification, then the code
 

@@ -101,6 +101,7 @@ pub fn product(id: Key, name: &str) -> Product {
         name: name.to_owned(),
         details: Details::default(),
         feature_groups: Vec::new(),
+        constraints: Vec::new(),
     }
 }
 
@@ -358,4 +359,17 @@ pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
 
 pub fn small_document() -> Document {
     small_document_with(&key)
+}
+
+/// The small document with the tag `key-shape` in its registry, its Product's body set to
+/// `body`.
+pub fn with_hyphenated_tag(body: &str) -> Document {
+    let mut document = small_document();
+    document.tags.push(loftspec::document::TagEntry {
+        id: loftspec::ids::TagId::new(key(63)),
+        name: loftspec::names::TagName::parse("key-shape").unwrap(),
+        definition: "How a key is written.".to_owned(),
+    });
+    document.products[0].details.body = Some(body.to_owned());
+    document
 }

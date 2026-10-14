@@ -27,6 +27,39 @@ fn a_decision(root: &Path) -> String {
 }
 
 #[test]
+fn fmt_writes_the_key_of_a_reference_written_by_name_which_check_refuses() {
+    let scratch = Scratch::with_reading_list();
+    let product = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
+    let lines: Vec<&str> = product.lines().collect();
+    let group = lines
+        .iter()
+        .position(|line| *line == "featureGroups:")
+        .unwrap();
+    let key = lines[group + 1].strip_prefix("  - key: ").unwrap();
+    let name = lines[group + 1..]
+        .iter()
+        .find_map(|line| line.strip_prefix("    name: "))
+        .unwrap();
+    let named = product.replacen(
+        "\nbody: ",
+        &format!("\nmentions:\n  - name: {name}\nbody: "),
+        1,
+    );
+    fs::write(scratch.file(PRODUCT), named).unwrap();
+    let check = scratch.loft(&["check"]);
+    assert_eq!(check.status.code(), Some(1));
+    let report = stdout(&check) + &stderr(&check);
+    assert!(report.contains("loft fmt"), "{report}");
+    let write = scratch.loft(&["fmt"]);
+    assert_eq!(write.status.code(), Some(0), "{}", stderr(&write));
+    let formatted = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
+    assert!(
+        formatted.contains(&format!("mentions:\n  - {key}\n")),
+        "{formatted}"
+    );
+}
+
+#[test]
 fn a_canonical_tree_checks_clean_and_formats_to_nothing() {
     let scratch = Scratch::with_reading_list();
     let check = scratch.loft(&["fmt", "--check"]);
@@ -98,8 +131,8 @@ fn the_json_document_lists_the_files_rewritten_and_the_keys_minted() {
     scratch.edit(&path, "title: \"", "title:   \"");
     scratch.edit(
         PRODUCT,
-        "      - key: 00000000-0000-4000-8000-000000000032\n        name:",
-        "      - name:",
+        "      - key: 00000000-0000-4000-8000-000000000032\n",
+        "      - name: \"A new criterion.\"\n      - key: 00000000-0000-4000-8000-000000000032\n",
     );
     let mut changed = vec![format!("spec/{path}"), format!("spec/{PRODUCT}")];
     changed.sort();
@@ -137,4 +170,35 @@ fn a_read_error_is_listed_in_the_json_document_with_its_file_line_and_column() {
     assert_eq!(error["path"], format!("spec/{path}"));
     assert_eq!(error["line"], 1);
     assert!(error["column"].is_u64());
+}
+
+#[test]
+fn fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes() {
+    let scratch = Scratch::with_reading_list();
+    let deleted = "00000000-0000-4000-8000-00000000002a";
+    let labels = || fs::read_to_string(scratch.file("labels.yaml")).unwrap();
+    assert!(labels().contains(deleted));
+    scratch.edit(
+        "products/reading-list/shelf/add-a-book.yaml",
+        &format!(
+            "      - key: {deleted}\n        name: \"A book added without a title is refused with an error naming the title.\"\n"
+        ),
+        "",
+    );
+    assert_eq!(scratch.loft(&["check"]).status.code(), Some(1));
+    let output = scratch.loft(&["fmt"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stdout(&output).contains("spec/labels.yaml"),
+        "{}",
+        stdout(&output)
+    );
+    assert!(
+        stderr(&output).contains(&format!("({deleted}) names no node or decision")),
+        "{}",
+        stderr(&output)
+    );
+    assert!(!labels().contains(deleted));
+    let check = scratch.loft(&["check"]);
+    assert_eq!(check.status.code(), Some(0), "{}", stdout(&check));
 }

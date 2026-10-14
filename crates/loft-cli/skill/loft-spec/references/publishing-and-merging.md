@@ -35,7 +35,9 @@ next publish makes normative, so they run `loft fmt --check` and
 Run `loft merge-driver --install` once in each clone. git then merges each file of `spec/` by
 key: two branches that edit different nodes, or different fields of one node, merge cleanly.
 When git runs the driver through something other than a `loft` on its search path, pass the
-command that starts it: `loft merge-driver --install --command "npx --no-install loft"`.
+command that starts it: `loft merge-driver --install --command "npx --no-install loft"`. When
+the install writes `.gitattributes`, commit it: every clone needs the attribute, while the driver
+itself is set in each clone's own configuration.
 
 ## Settle a conflict record
 

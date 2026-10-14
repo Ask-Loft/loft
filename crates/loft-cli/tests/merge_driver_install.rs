@@ -105,10 +105,14 @@ fn the_attribute_the_driver_and_its_name_are_registered() {
     let dirs = Dirs::new("fresh");
     let (output, scenario) = dirs.install(&clean());
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    let printed = text(&output.stdout);
+    let lines: Vec<&str> = printed.lines().collect();
     assert_eq!(
-        text(&output.stdout),
-        ".gitattributes\nmerge.loft.driver\nmerge.loft.name\n"
+        lines[..3],
+        [".gitattributes", "merge.loft.driver", "merge.loft.name"]
     );
+    assert!(lines[3].starts_with("commit .gitattributes"), "{printed}");
+    assert_eq!(lines.len(), 4, "{printed}");
     assert_eq!(
         dirs.attributes().as_deref(),
         Some("spec/**/*.yaml merge=loft\n")

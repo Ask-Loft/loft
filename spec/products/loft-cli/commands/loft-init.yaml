@@ -95,8 +95,6 @@ requirements:
         name: "The suggestion names `--command` for a project that runs `loft` through npm."
       - key: 01a13711-d7d2-7100-8424-b967b32a99da
         name: "No suggestion is printed where the repository's configuration names the merge driver."
-      - key: 01a13711-d7d2-7100-8424-b968ec7fc74f
-        name: "No suggestion is printed outside a git repository."
       - key: 01a13711-d7d2-7100-8424-b969ba2fe385
         name: "No suggestion is printed where git cannot be run or fails."
       - key: 01a13711-d7d2-7100-8424-b96ac01e705d
@@ -105,3 +103,18 @@ requirements:
         name: "The JSON document carries no suggestion."
       - key: 01a13711-d7d2-7100-8424-b96c875c37d4
         name: "Nothing is written to the repository's configuration or to `.gitattributes`."
+  - key: 01a13751-027d-754b-af03-864f1d975787
+    statement:
+      form: state_driven
+      while: "the current directory lies outside any git repository"
+      system: "`loft init`"
+      shall: "suggest putting the project under git and then running `loft merge-driver --install` in its text output."
+    criteria:
+      - key: 01a13751-027d-754b-af03-8650be5fa1d7
+        name: "The suggestion says that the merge driver needs a git repository."
+      - key: 01a13751-027d-754b-af03-86512495c3c6
+        name: "The suggestion names `loft merge-driver --install`."
+      - key: 01a13751-027d-754b-af03-8652a9415fa5
+        name: "The JSON document carries no suggestion."
+      - key: 01a13751-027d-754b-af03-86532d3be47e
+        name: "No git repository is created."

@@ -32,6 +32,17 @@ fn assert_roots_match(before: &Document, after: &Document) -> loftspec::canonica
     after.state
 }
 
+#[test]
+fn a_products_constraints_are_written_in_its_record_and_read_back() {
+    let mut document = small_document();
+    let mut constraint = document.components[0].constraints[0].clone();
+    constraint.id = Some(loftspec::ids::ConstraintId::new(common::key(90)));
+    document.products[0].constraints = vec![constraint.clone()];
+    let files = assert_same_roots(&document);
+    let back = read_back(&files);
+    assert_eq!(back.products[0].constraints, vec![constraint]);
+}
+
 fn assert_same_roots(document: &Document) -> Files {
     let (files, back) = round_trip(document);
     assert_roots_match(document, &back);

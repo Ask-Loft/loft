@@ -89,6 +89,12 @@ requirements:
         name: "The rules tell the agent to create a decision in the state that is true, proposed or accepted."
       - key: 01a13654-6e12-74a1-ad7f-e87804e57def
         name: "The rules name what an accepted decision holds: two options or more, a driver, an assessment for each option and driver, a selected option, an outcome, a consequence and an outcome subject."
+      - key: 01a13754-833e-725b-b941-6353610104c5
+        name: "The rules tell the agent to write an accepted decision in one pass, naming its options, drivers and subjects by name."
+      - key: 01a13754-833e-725b-b941-635487824231
+        name: "The rules tell the agent to edit in place a decision that has no label yet."
+      - key: 01a13754-833e-725b-b941-6355848f9798
+        name: "The rules tell the agent to supersede a decision that has a label only after asking the user."
   - key: 01a13654-6e12-74a1-ad7f-e879924837c8
     statement:
       form: ubiquitous
@@ -97,6 +103,8 @@ requirements:
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e87a0c1ed2d3
         name: "The rules tell the agent to state a shared rule once and list its tag on each Feature it binds."
+      - key: 01a13754-833e-725b-b941-6356f7d9e260
+        name: "The rules tell the agent to name a tag as the text writes its term."
   - key: 01a13654-6e12-74a1-ad7f-e87b983077ea
     statement:
       form: ubiquitous
@@ -105,3 +113,13 @@ requirements:
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e87c34b09979
         name: "The rules tell the agent to add a `mentions` edge for each label its prose cites."
+  - key: 01a13754-833e-725b-b941-635739bdb865
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach where a Constraint stands."
+    criteria:
+      - key: 01a13754-833e-725b-b941-635806d9389b
+        name: "The rules tell the agent that a Constraint binds the Component, Feature Group or Product it stands under."
+      - key: 01a13754-833e-725b-b941-6359d4f2fdf6
+        name: "The rules tell the agent to state a rule for the whole product once, on the Product."

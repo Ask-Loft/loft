@@ -226,9 +226,18 @@ fn init_suggests_nothing_where_the_repository_names_the_driver() {
 }
 
 #[test]
-fn init_suggests_nothing_outside_a_repository() {
-    let output = init_in(&GitScenario::outside_repository(), &[]);
-    assert!(!suggests_the_driver(&output), "{}", stdout(&output));
+fn outside_a_repository_init_suggests_git_and_then_the_driver() {
+    let scratch = Scratch::empty();
+    let (output, _) = scratch.loft_in(&["init"], &GitScenario::outside_repository());
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let text = stdout(&output);
+    let last = text.lines().last().unwrap();
+    assert!(last.contains("git repository"), "{text}");
+    assert!(last.contains("loft merge-driver --install"), "{text}");
+    assert!(!scratch.0.join(".git").exists());
+    let json = init_in(&GitScenario::outside_repository(), &["--format", "json"]);
+    json_of(&json);
+    assert!(!suggests_the_driver(&json), "{}", stdout(&json));
 }
 
 #[test]

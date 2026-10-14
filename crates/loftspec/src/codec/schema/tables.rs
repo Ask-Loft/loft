@@ -1,7 +1,7 @@
 //! The field tables of the record schema: each kind's fields in the Format's order
 //! (F-49), built with the constructors below.
 
-use super::{Field, Item, Kind, Order, Scalar, Shape, Supply, field};
+use super::{Field, Item, Kind, Order, Scalar, Shape, Supply, Target, field};
 
 const fn spec(name: &'static str, required: bool, shape: Shape) -> Field {
     Field {
@@ -48,9 +48,9 @@ const fn supplied(field: Field, supply: Supply) -> Field {
     }
 }
 
-/// A list of keys the writer sorts: an edge field (RQ-168).
-const fn edges(name: &'static str) -> Field {
-    ordered(scalars(name, Scalar::Key), Order::ByKey)
+/// A list of keys of `target` elements the writer sorts: an edge field (RQ-168).
+const fn edges(name: &'static str, target: Target) -> Field {
+    ordered(scalars(name, Scalar::Ref(target)), Order::ByKey)
 }
 
 use crate::attributes::{
@@ -71,7 +71,7 @@ const GROUP_SLUG: Field = supplied(req(field::SLUG, S::Slug), Supply::SlugFromNa
 const NAME: Field = req(field::NAME, S::Text);
 const BODY: Field = opt(field::BODY, S::Text);
 const TAGS: Field = scalars(field::TAGS, S::Tag);
-const MENTIONS: Field = edges(field::MENTIONS);
+const MENTIONS: Field = edges(field::MENTIONS, Target::NodeOrDecision);
 const SECTIONS: Field = records(field::SECTIONS, K::Section);
 const FATE: Field = opt(field::VERIFICATION_FATE, S::Enum(VerificationFate::NAMES));
 
@@ -133,6 +133,7 @@ const PRODUCT_FIELDS: &[Field] = &[
     TAGS,
     MENTIONS,
     records(field::FEATURE_GROUPS, K::FeatureGroup),
+    records(field::CONSTRAINTS, K::Constraint),
     SECTIONS,
 ];
 
@@ -154,7 +155,7 @@ const FEATURE_FIELDS: &[Field] = &[
     NAME,
     BODY,
     TAGS,
-    edges(field::REALIZES),
+    edges(field::REALIZES, Target::Component),
     MENTIONS,
     records(field::REQUIREMENTS, K::Requirement),
     records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
@@ -250,10 +251,10 @@ const DECISION_FIELDS: &[Field] = &[
 
 const STATE_FIELDS: &[Field] = &[
     req(field::KIND, S::Enum(StateKind::NAMES)),
-    opt(field::SELECTED_OPTION, S::Key),
+    opt(field::SELECTED_OPTION, S::Ref(Target::Option)),
     opt(field::OUTCOME, S::Text),
     opt(field::RATIONALE, S::Text),
-    opt(field::SUCCESSOR, S::Key),
+    opt(field::SUCCESSOR, S::Ref(Target::Decision)),
 ];
 
 const DRIVER_FIELDS: &[Field] = &[
@@ -271,8 +272,8 @@ const OPTION_FIELDS: &[Field] = &[
 ];
 
 const ASSESSMENT_FIELDS: &[Field] = &[
-    req(field::OPTION, S::Key),
-    req(field::DRIVER, S::Key),
+    req(field::OPTION, S::Ref(Target::Option)),
+    req(field::DRIVER, S::Ref(Target::Driver)),
     req(field::RATING, S::Enum(Rating::NAMES)),
     req(field::RATIONALE, S::Text),
 ];
@@ -291,13 +292,15 @@ const SUBJECT_FIELDS: &[Field] = &[
 
 const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
 
+const BY_NAME_FIELDS: &[Field] = &[req(field::NAME, S::Text)];
+
 const COMPONENT: [Field; 11] = [
     KEY,
     NAME,
     BODY,
     TAGS,
     opt(field::BOUNDARY, S::Enum(Boundary::NAMES)),
-    edges(field::SCOPED_TO),
+    edges(field::SCOPED_TO, Target::Product),
     MENTIONS,
     records(field::COMPONENTS, K::Component),
     records(field::CONSTRAINTS, K::Constraint),
@@ -348,5 +351,6 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::Consequence => CONSEQUENCE_FIELDS,
         Kind::Subject => SUBJECT_FIELDS,
         Kind::FormerLabel => FORMER_LABEL_FIELDS,
+        Kind::ByName => BY_NAME_FIELDS,
     }
 }

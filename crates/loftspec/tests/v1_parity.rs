@@ -91,6 +91,20 @@ fn a_name_v1_parses_is_stored_as_slots() {
 }
 
 #[test]
+fn a_hyphenated_tag_v1_matches_in_spaced_prose_is_a_recorded_divergence() {
+    let document = crate::common::with_hyphenated_tag("Every key follows the key shape rule.");
+    let v2 = v2_lint(&document);
+    let facts = Facts::of(&document);
+    let v1: BTreeSet<_> = v2.union(&facts.hyphenated).cloned().collect();
+    assert!(v1.len() > v2.len(), "v1 matches the spaced words");
+    let (missing, extra) = unexplained(&v1, &v2, &facts, &register());
+    assert!(
+        missing.is_empty() && extra.is_empty(),
+        "{missing:?} {extra:?}"
+    );
+}
+
+#[test]
 fn each_register_entry_is_well_formed() {
     let register = register();
     let ids: BTreeSet<&str> = register.iter().map(|entry| entry.id.as_str()).collect();
@@ -105,6 +119,7 @@ fn each_register_entry_is_well_formed() {
             [
                 "subject-external",
                 "code-span",
+                "hyphenated-tag",
                 "subjects-are-criteria",
                 "rule"
             ]
