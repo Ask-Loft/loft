@@ -12,6 +12,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - `loft init` and `loft skill install` ask for the skill directories they wrote to be committed,
   so that every clone's coding agents have the skill; the `loft-spec` skill commits them with
   `.gitattributes` when it starts a document.
+- The `loft-spec` skill keeps what the product leaves out of scope out of Constraints and
+  criteria, recording it in a decision or in the body of the node it bounds.
 
 ## 2.0.2 (2026-10-14)
 

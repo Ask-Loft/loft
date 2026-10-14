@@ -122,6 +122,11 @@ product, such as the language all its code is written in, once on the Product. N
 rule onto several nodes. Name it as one "shall" sentence. Bind it to a category with a
 required value when the value matters on its own, such as a storage limit.
 
+What the product leaves out is not a Constraint: "shall exclude waitlists from the first version"
+binds nothing and goes stale with the next version. Nor is it a criterion: "the message contains
+no QR code" only restates an exclusion. Record a choice to leave something out as a decision, and
+state the edge of scope in the body of the Product or Feature it bounds.
+
 ## Record decisions
 
 Record a choice that shaped the product as a decision: its context, the drivers that weigh, at
