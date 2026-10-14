@@ -39,6 +39,8 @@ requirements:
         name: "The supported platforms are macOS, Linux and Windows, each on x64 and arm64."
       - key: 01a136db-1a3d-7739-a3f4-9ad553a8b50a
         name: "A Linux binary is linked statically, so it runs whatever C library the system has."
+      - key: 01a13804-d7aa-7131-91ff-bee982c65dc1
+        name: "A macOS or Linux platform package's binary is executable once npm installs it."
   - key: 01a136db-1a3d-7739-a3f4-9ad6bd26d6c1
     statement:
       form: unwanted
