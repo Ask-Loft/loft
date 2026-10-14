@@ -3,6 +3,13 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- The npm packages run again: 2.0.2's platform packages shipped `loft` without its execute
+  bit, so `npx loft` failed with `EACCES`. The release now packs each package into a tarball
+  before the binaries leave the job that marks them executable, runs `loft` from the tarballs,
+  and publishes those tarballs. npm 2.0.2 is deprecated.
+
 ## 2.0.2 (2026-10-14)
 
 - A Product may hold Constraints, for a rule the whole product keeps. The v1 converter carries
