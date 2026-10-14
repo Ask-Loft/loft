@@ -3,7 +3,7 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## Unreleased
+## 2.0.3 (2026-10-14)
 
 - The npm packages run again: 2.0.2's platform packages shipped `loft` without its execute
   bit, so `npx loft` failed with `EACCES`. The release now packs each package into a tarball
