@@ -3,16 +3,18 @@
 //! one time limit, and never writes to standard error: a service that refuses, fails or stays
 //! silent changes nothing a person sees.
 
+use std::net::IpAddr;
 use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
 
 use ureq::Agent;
+use ureq::http::Uri;
 
 use crate::version::VERSION;
 
 /// The most the network client adds to a command run.
-pub const LIMIT: Duration = Duration::from_millis(500);
+const LIMIT: Duration = Duration::from_millis(500);
 
 /// Work for the network, given the time it has left.
 pub type Job = Box<dyn FnOnce(Duration) + Send>;
@@ -44,11 +46,8 @@ pub fn run(jobs: Vec<Job>) {
 /// `POST`s `body` as JSON to `url` within `left`, following no redirect, and gives the
 /// answer's status, or none when no answer came.
 pub fn post_json(url: &str, body: &[u8], left: Duration) -> Option<u16> {
-    if !allowed(url) {
-        return None;
-    }
     let response = agent(left, &format!("loft/{VERSION}"))
-        .post(url)
+        .post(allowed(url)?)
         .header("Content-Type", "application/json")
         .send(body)
         .ok()?;
@@ -59,11 +58,8 @@ pub fn post_json(url: &str, body: &[u8], left: Duration) -> Option<u16> {
 /// answer's status and body, or none when no answer came. The request names `loft` and nothing
 /// else about it, not even its version.
 pub fn get_json(url: &str, left: Duration) -> Option<(u16, Vec<u8>)> {
-    if !allowed(url) {
-        return None;
-    }
     let mut response = agent(left, "loft")
-        .get(url)
+        .get(allowed(url)?)
         .header("Accept", "application/vnd.github+json")
         .call()
         .ok()?;
@@ -89,26 +85,21 @@ fn agent(left: Duration, user_agent: &str) -> Agent {
         .into()
 }
 
-/// Whether `url` may be contacted: any `https` address, and an `http` one only on the loopback
-/// interface, where nothing crosses a network.
-pub fn allowed(url: &str) -> bool {
-    if url.starts_with("https://") {
-        return true;
-    }
-    let Some(rest) = url.strip_prefix("http://") else {
-        return false;
-    };
-    let authority = rest.split(['/', '?', '#']).next().unwrap_or_default();
-    let host = match authority.strip_prefix('[') {
-        Some(bracketed) => bracketed.split(']').next().unwrap_or_default(),
-        None => authority
-            .rsplit_once(':')
-            .map_or(authority, |(host, _)| host),
-    };
-    host == "localhost"
+/// `url` as the address the request goes to, if it may be contacted: any `https` address, and
+/// an `http` one only on the loopback interface, where nothing crosses a network. The address
+/// is parsed once, by the parser the request uses, so the host checked is the host contacted.
+fn allowed(url: &str) -> Option<Uri> {
+    let uri: Uri = url.parse().ok()?;
+    let host = uri.host()?.trim_start_matches('[').trim_end_matches(']');
+    let loopback = host == "localhost"
         || host
-            .parse::<std::net::IpAddr>()
-            .is_ok_and(|address| address.is_loopback())
+            .parse::<IpAddr>()
+            .is_ok_and(|address| address.is_loopback());
+    match uri.scheme_str()? {
+        "https" => Some(uri),
+        "http" if loopback => Some(uri),
+        _ => None,
+    }
 }
 
 #[cfg(test)]
@@ -125,7 +116,7 @@ mod tests {
             "http://localhost:3000/x",
             "http://[::1]:8080/",
         ] {
-            assert!(allowed(url), "{url}");
+            assert!(allowed(url).is_some(), "{url}");
         }
         for url in [
             "http://askloft.ai/api/telemetry",
@@ -134,8 +125,10 @@ mod tests {
             "http://[2001:db8::1]:80/",
             "ftp://127.0.0.1/",
             "127.0.0.1:9",
+            "http://127.0.0.1:9@askloft.ai/api/telemetry",
+            "http://localhost@10.0.0.5/",
         ] {
-            assert!(!allowed(url), "{url}");
+            assert!(allowed(url).is_none(), "{url}");
         }
     }
 }
