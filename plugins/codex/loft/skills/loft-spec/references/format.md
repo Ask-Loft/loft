@@ -1,7 +1,7 @@
 # The format
 
 Use this workflow for the shape of what you write in `spec/`: which file holds each record, each
-record's fields in order, the five statement forms, the edges, and `spec/lint.yaml`. It owns the
+record's fields in order, the five statement forms, the edges, `spec/lint.yaml` and `loft.trace.yaml`. It owns the
 fields and their values. The order of the steps, the YAML subset and the files `loft` owns belong
 to `the-loop.md`; how to word a node belongs to `writing-rules.md`. Never restate or override
 them here.
@@ -24,6 +24,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 - Decisions
 - Edges
 - Lint configuration
+- The trace file
 
 ## The files of `spec/`
 
@@ -39,6 +40,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | `spec/components/<component>.yaml` | One root Component and everything beneath it | you |
 | `spec/decisions/<decision>.yaml` | One decision | you |
 | `loft.lock.json`, beside `spec/` | The lock that pins the published tree | `loft publish` only |
+| `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` |
 
 A file's name is its slug: lowercase letters, digits and hyphens. No other path under `spec/` is
 allowed, but files and directories whose names start with `.` are ignored. A registry with no
@@ -350,3 +352,18 @@ suppressions:
 ```
 
 The rules, their options and their defaults are in `lint-findings.md`.
+
+## The trace file
+
+`loft.trace.yaml`, beside `spec/`, holds `format`, which is `loft-trace/1`, and `links`. It is
+not part of the specification: it enters no root, and no publish writes it. `reconciling.md`
+shows one and says when to write it.
+
+| Field of a link | Holds |
+|---|---|
+| `node` | Required. The key of an acceptance criterion, or of a Constraint or Quality Attribute whose `verificationFate` is `proved` |
+| `reviewed` | The node's content hash when the link was last accepted; `loft reconcile --accept` writes it |
+| `tests` | The tests that verify the node, each with a required `file`, from the directory that holds `spec/`, and a required `name` |
+| `unverified` | The reason no test verifies the node |
+
+A link holds exactly one of `tests` and `unverified`, and no two links name one node.

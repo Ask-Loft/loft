@@ -35,6 +35,6 @@ requirements:
       - key: 01a1383e-2e64-72e5-b7f4-bc39c30eb8f5
         name: "The workflow tells the agent to accept a link only after reading each of its tests against the node as it now reads."
       - key: 01a1383e-2e64-72e5-b7f4-bc3ac8eac943
-        name: "The workflow tells the agent to accept a link with `loft reconcile --accept` and never to write `reviewed` itself."
+        name: "The workflow tells the agent to accept a link with `loft reconcile --accept`."
       - key: 01a1383e-2e64-72e5-b7f4-bc3b649cb1e3
         name: "The workflow tells the agent never to run `loft reconcile --accept-stale` unasked."

@@ -37,6 +37,7 @@ const SOURCE: &[(&str, &str)] = source![
     "references/lint-findings.md",
     "references/new-document.md",
     "references/publishing-and-merging.md",
+    "references/reconciling.md",
     "references/reviewing.md",
     "references/the-loop.md",
     "references/writing-rules.md",

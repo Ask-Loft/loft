@@ -113,6 +113,21 @@ fn checked(files: &[(String, String)]) -> Value {
     serde_json::from_str(&stdout(&scratch.loft(&["check", "--format", "json"]))).unwrap()
 }
 
+/// The JSON document of `loft reconcile` over a tree `loft init` created, `files` written into
+/// it and `loft fmt` run: an example trace file names keys of its own, so only its form is
+/// checked.
+fn reconciled(files: &[(String, String)]) -> Value {
+    let scratch = Scratch::empty();
+    assert_eq!(scratch.loft(&["init", "--no-skill"]).status.code(), Some(0));
+    for (path, text) in files {
+        let at = scratch.0.join(path);
+        fs::create_dir_all(at.parent().unwrap()).unwrap();
+        fs::write(at, text).unwrap();
+    }
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0), "{files:?}");
+    serde_json::from_str(&stdout(&scratch.loft(&["reconcile", "--format", "json"]))).unwrap()
+}
+
 /// The rules of a check document's findings at `severity`, or at any severity.
 fn rules(document: &Value, severity: Option<&str>) -> BTreeSet<String> {
     document["findings"]
@@ -257,6 +272,14 @@ fn each_reference_s_example_tree_passes_check() {
         let document = checked(&examples.tree);
         assert_eq!(document["errors"], Value::Array(Vec::new()), "{name}");
         assert_eq!(rules(&document, Some("warning")), BTreeSet::new(), "{name}");
+        if examples
+            .tree
+            .iter()
+            .any(|(path, _)| path == "loft.trace.yaml")
+        {
+            let reconciled = reconciled(&examples.tree);
+            assert_eq!(reconciled["errors"], Value::Array(Vec::new()), "{name}");
+        }
     }
     assert!(trees >= 2, "the scan found {trees} example trees");
 }

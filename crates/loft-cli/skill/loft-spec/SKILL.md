@@ -34,6 +34,9 @@ no second reading.
   an existing codebase.
 - Read [`references/changing-a-specified-product.md`](references/changing-a-specified-product.md)
   to change a product that a `spec/` already describes: a new feature, a fix, a removal.
+- Read [`references/reconciling.md`](references/reconciling.md) to link tests to the nodes
+  they verify with `loft reconcile`, after changing the code or when the user asks which tests
+  verify the specification.
 - Also read [`references/format.md`](references/format.md) for the files, fields and statement
   forms of any node you write.
 - Also read [`references/writing-rules.md`](references/writing-rules.md) whenever you write or
