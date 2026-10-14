@@ -242,8 +242,10 @@ when telemetry is off.
 `loft telemetry off` deletes the installation token; a variable set to `off` wins over a
 recorded `on`, and a recorded `off` wins over any variable. The settings live in `loft/` under
 the user's configuration directory (`~/.config` on Linux, `~/Library/Application Support` on
-macOS, `%APPDATA%` on Windows). Neither address accepts plain `http` except on the loopback
-interface. `LOFT_TELEMETRY=internal` marks runs by Loft's own maintainers and CI.
+macOS, `%APPDATA%` on Windows); when they cannot be written, `loft` does not check for updates
+at all, rather than ask and tell again on every run. Neither address accepts plain `http` except
+on the loopback interface. Both requests go through the proxy named by the first of
+`ALL_PROXY`, `HTTPS_PROXY` and `HTTP_PROXY` that is set, unless `NO_PROXY` lists the host. `LOFT_TELEMETRY=internal` marks runs by Loft's own maintainers and CI.
 
 ## Software Plant
 

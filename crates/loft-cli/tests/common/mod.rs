@@ -180,7 +180,15 @@ impl Drop for Scratch {
 
 /// The variables that would let a test run reach the user's own settings, or tell `loft` that
 /// an agent or CI started it.
-const OUTSIDE: [&str; 12] = [
+const OUTSIDE: [&str; 20] = [
+    "ALL_PROXY",
+    "all_proxy",
+    "HTTPS_PROXY",
+    "https_proxy",
+    "HTTP_PROXY",
+    "http_proxy",
+    "NO_PROXY",
+    "no_proxy",
     "XDG_CONFIG_HOME",
     "CARGO_HOME",
     "CI",
@@ -196,8 +204,8 @@ const OUTSIDE: [&str; 12] = [
 ];
 
 /// Gives a run `home` as its home directory and keeps it from the user's settings, from agent
-/// and CI markers, and from the network: telemetry and the update check are off, and both
-/// services are a closed port on the loopback interface. A test that exercises either switches
+/// and CI markers, and from the network: telemetry and the update check are off, both
+/// services are a closed port on the loopback interface, and no proxy is named. A test that exercises either switches
 /// it on and points it at a simulator.
 pub fn isolate(command: &mut Command, home: &Path) {
     for name in OUTSIDE {

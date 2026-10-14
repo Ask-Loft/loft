@@ -5,6 +5,7 @@ use std::process::Command;
 
 use crate::common::telemetry::{EVENT_SCHEMA, Sent, events, sending, sent, the_event};
 use crate::common::{EPOCH, Scratch, isolate, stderr, stdout};
+use crate::repo::Repo;
 use crate::schema;
 use serde_json::{Value, json};
 use software_plant::{Clock, Collector, GitScenario};
@@ -237,4 +238,85 @@ fn an_install_record_that_does_not_parse_leaves_the_way_inferred_and_prints_noth
     let sent = sent(&scratch, &["check"], None);
     assert_eq!(the_event(&sent)["installedBy"], json!("unknown"));
     assert_eq!(stderr(&sent.output), "");
+}
+
+#[cfg(unix)]
+#[test]
+fn a_run_whose_standard_error_is_a_terminal_is_interactive() {
+    let scratch = Scratch::with_reading_list();
+    crate::common::telemetry::seen(&scratch);
+    let collector = Collector::accepting();
+    let loft = env!("CARGO_BIN_EXE_loft");
+    // `script` runs `loft` on a pseudo-terminal; its two families take their arguments apart.
+    let mut command = Command::new("script");
+    if cfg!(target_os = "linux") {
+        command.args(["-q", "-e", "-c", &format!("'{loft}' check"), "/dev/null"]);
+    } else {
+        command.args(["-q", "/dev/null", loft, "check"]);
+    }
+    isolate(&mut command, &scratch.home());
+    Clock::fixed(EPOCH).apply(&mut command);
+    sending(&mut command, &collector.url());
+    command
+        .current_dir(&scratch.0)
+        .stdin(std::process::Stdio::null())
+        .output()
+        .unwrap();
+    assert_eq!(events(&collector)[0]["mode"], json!("interactive"));
+}
+
+#[test]
+fn error_kinds_keep_the_order_the_command_reports_them_in() {
+    let scratch = Scratch::with_reading_list();
+    scratch.edit(
+        "products/reading-list/product.yaml",
+        "  - portable\n",
+        "  - portable\n  - portable\n",
+    );
+    fs::write(scratch.file("lint.yaml"), "rules:\n  - rule: XX-001\n").unwrap();
+    let sent = sent(&scratch, &["check", "--format", "json"], None);
+    let printed: Value = serde_json::from_str(&stdout(&sent.output)).unwrap();
+    let kinds: Vec<Value> = printed["errors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|error| error["kind"].clone())
+        .collect();
+    assert_eq!(kinds, [json!("validation"), json!("lint-config")]);
+    assert_eq!(the_event(&sent)["errorKinds"], json!(kinds));
+}
+
+#[test]
+fn the_git_remote_and_the_configured_names_never_reach_the_event() {
+    let repo = Repo::new();
+    repo.git_ok(&["config", "user.email", "telltale@acme.example"]);
+    repo.git_ok(&["config", "user.name", "Telltale Person"]);
+    repo.git_ok(&[
+        "remote",
+        "add",
+        "origin",
+        "https://acme-telltale.example/acme/secret-plans.git",
+    ]);
+    repo.git_ok(&["checkout", "--quiet", "-b", "feature/acme-telltale"]);
+    let scratch = &repo.0;
+    crate::common::telemetry::seen(scratch);
+    let collector = Collector::accepting();
+    let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
+    isolate(&mut command, &scratch.home());
+    software_plant::real_git::isolate(&mut command);
+    sending(&mut command, &collector.url());
+    command
+        .arg("check")
+        .current_dir(&scratch.0)
+        .output()
+        .unwrap();
+    let body = String::from_utf8(collector.events().remove(0)).unwrap();
+    let event: Value = serde_json::from_str(&body).unwrap();
+    assert!(
+        event.get("branch").is_some(),
+        "real git named no branch: {body}"
+    );
+    for telltale in ["telltale", "acme", "Telltale Person", "secret-plans"] {
+        assert!(!body.contains(telltale), "{telltale} in {body}");
+    }
 }

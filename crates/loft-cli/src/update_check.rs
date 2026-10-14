@@ -22,22 +22,30 @@ const DAY: u64 = 86_400;
 
 /// Prints the update notice when the kept answer names a release newer than this `loft` and
 /// no notice was printed in the last day, and gives the work that asks GitHub again when the
-/// kept answer is missing or more than a day old. Nothing while the update check is off.
+/// kept answer is missing or more than a day old. Nothing while the update check is off, and
+/// nothing when the settings cannot be written, since an answer or a notice that cannot be
+/// kept would be asked for and printed again on every run.
 pub fn after_run() -> Option<Job> {
     if !UPDATE_CHECK.state().on {
         return None;
     }
     let now = SystemClock::from_env().now().ok()?;
     let mut kept = settings::read(UPDATE_CHECK.file);
-    if let Some(notice) = notice(&kept, now) {
-        errln!("{notice}");
-        kept["noticeAt"] = json!(now);
-        let _ = settings::write(UPDATE_CHECK.file, &kept);
-    }
-    let fresh = kept["receivedAt"]
+    let due = notice(&kept, now);
+    let stale = kept["receivedAt"]
         .as_u64()
-        .is_some_and(|received| now < received.saturating_add(DAY));
-    if fresh {
+        .is_none_or(|received| now >= received.saturating_add(DAY));
+    if due.is_none() && !stale {
+        return None;
+    }
+    if due.is_some() {
+        kept["noticeAt"] = json!(now);
+    }
+    settings::write(UPDATE_CHECK.file, &kept).ok()?;
+    if let Some(notice) = due {
+        errln!("{notice}");
+    }
+    if !stale {
         return None;
     }
     let address = endpoints::latest_release();

@@ -257,6 +257,39 @@ fn a_failed_request_writes_nothing_to_standard_error() {
     }
 }
 
+#[test]
+fn a_run_that_cannot_keep_the_answer_asks_github_nothing() {
+    let scratch = Scratch::with_reading_list();
+    let blocked = scratch.0.join("not-a-directory");
+    fs::write(&blocked, "").unwrap();
+    let feed = newer();
+    let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+    asking(&mut command, &feed.url());
+    let output = command
+        .env("HOME", &blocked)
+        .env("APPDATA", &blocked)
+        .arg("check")
+        .output()
+        .unwrap();
+    assert!(feed.requests().is_empty());
+    assert_eq!(stderr(&output), "");
+}
+
+#[cfg(unix)]
+#[test]
+fn a_run_that_cannot_keep_the_answer_prints_no_update_notice() {
+    use std::os::unix::fs::PermissionsExt;
+    let scratch = Scratch::with_reading_list();
+    let feed = newer();
+    check_at(&scratch, &feed.url(), EPOCH);
+    let config = scratch.config();
+    fs::set_permissions(&config, fs::Permissions::from_mode(0o555)).unwrap();
+    let output = check_at(&scratch, &feed.url(), EPOCH + DAY + 60);
+    fs::set_permissions(&config, fs::Permissions::from_mode(0o755)).unwrap();
+    assert_eq!(stderr(&output), "");
+    assert_eq!(feed.requests().len(), 1);
+}
+
 /// Answers every request with a redirect to `to`.
 struct Redirecting(String);
 
