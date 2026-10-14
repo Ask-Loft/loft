@@ -52,6 +52,7 @@ mod merge_labels;
 mod merge_lists;
 mod merge_moves;
 mod merge_order;
+mod merge_props;
 mod names;
 mod node;
 mod package;
