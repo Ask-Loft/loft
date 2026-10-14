@@ -52,7 +52,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - An assessment one branch deleted and the other changed keeps its base value with a conflict
   over `assessments`. It used to be dropped silently.
 - A record whose kind one branch changed takes that kind, and its fields that both kinds define
-  alike merge as before; an edit to a field the new kind lacks is dropped. Such a merge used to
+  alike merge as before; an edit to a field the new kind lacks is dropped. Where the new kind
+  cannot hold a record the merge keeps beneath it, the record keeps a kind of another branch that
+  can, and the change of kind is dropped. Neither drop writes a conflict. Such a merge used to
   panic in a debug build.
 - A merge input that carries a key twice is refused as unreadable, naming both sites, and a merge
   whose result would carry a key twice writes nothing.
