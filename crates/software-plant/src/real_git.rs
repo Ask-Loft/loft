@@ -1,6 +1,6 @@
 //! Real git, as the contract suites run it beside the simulator: kept from the user's
-//! configuration and from any repository above the temporary directory, and run directly rather
-//! than through a launcher in front of it.
+//! configuration, from any repository above the temporary directory and from any repository
+//! git's own environment names, and run directly rather than through a launcher in front of it.
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -27,9 +27,47 @@ fn exec_path() -> &'static Path {
     })
 }
 
+/// The variables through which git finds a repository other than the one around its working
+/// directory, `GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE` and the rest, as
+/// `git rev-parse --local-env-vars` names them. git sets them for the commands it runs itself,
+/// such as a hook or `git rebase --exec`, so a test started that way would otherwise reach the
+/// developer's own repository instead of its scratch one.
+///
+/// # Panics
+///
+/// git cannot be run or does not list them.
+fn repository_variables() -> &'static [String] {
+    static NAMES: OnceLock<Vec<String>> = OnceLock::new();
+    NAMES.get_or_init(|| {
+        let output = Command::new(exec_path().join("git"))
+            .args(["rev-parse", "--local-env-vars"])
+            .output()
+            .expect("git runs");
+        assert!(
+            output.status.success(),
+            "git lists its repository variables"
+        );
+        let names = String::from_utf8(output.stdout).expect("the names are UTF-8");
+        names.lines().map(str::to_owned).collect()
+    })
+}
+
+/// Keeps a command from any repository git's environment names, so that git, run by it or by
+/// Loft under it, finds only the repository around its working directory.
+///
+/// # Panics
+///
+/// git cannot be run or does not list its repository variables.
+pub fn forget_repository(command: &mut Command) -> &mut Command {
+    for name in repository_variables() {
+        command.env_remove(name);
+    }
+    command
+}
+
 /// Keeps a command that runs git, or runs Loft which runs git, from the user's git
-/// configuration and from any repository above the temporary directory, and puts git's own
-/// directory first on its search path.
+/// configuration, from any repository above the temporary directory and from any repository
+/// git's environment names, and puts git's own directory first on its search path.
 ///
 /// # Panics
 ///
@@ -41,7 +79,7 @@ pub fn isolate(command: &mut Command) -> &mut Command {
     let inherited = env::var_os("PATH").unwrap_or_default();
     let search = iter::once(exec_path().to_path_buf()).chain(env::split_paths(&inherited));
     let search = env::join_paths(search).expect("the search path joins");
-    command
+    forget_repository(command)
         .env("PATH", search)
         .env("GIT_CONFIG_GLOBAL", "/dev/null")
         .env("GIT_CONFIG_NOSYSTEM", "1")

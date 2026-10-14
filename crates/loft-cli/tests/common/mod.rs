@@ -242,13 +242,15 @@ const OUTSIDE: [&str; 20] = [
 ];
 
 /// Gives a run `home` as its home directory and keeps it from the user's settings, from agent
-/// and CI markers, and from the network: telemetry and the update check are off, both
-/// services are a closed port on the loopback interface, and no proxy is named. A test that exercises either switches
-/// it on and points it at a simulator.
+/// and CI markers, from any repository git's environment names, and from the network:
+/// telemetry and the update check are off, both services are a closed port on the loopback
+/// interface, and no proxy is named. A test that exercises either switches it on and points it
+/// at a simulator.
 pub fn isolate(command: &mut Command, home: &Path) {
     for name in OUTSIDE {
         command.env_remove(name);
     }
+    real_git::forget_repository(command);
     command
         .env("HOME", home)
         .env("USERPROFILE", home)

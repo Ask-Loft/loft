@@ -157,6 +157,11 @@ The rules:
   against the real system and requires the same answers; the git suite runs real git in scratch
   repositories. A new anticipated failure joins the simulator's scenarios and its contract suite
   in the same change.
+- Real git in a test runs through `software_plant::real_git`, which keeps it from the user's
+  configuration, from any repository above the temporary directory and, through
+  `forget_repository`, from any repository git's environment names: git sets `GIT_DIR` and its
+  kin for a hook or `git rebase --exec`, and a test started that way must still find only its
+  scratch repository. The command-line harness's `isolate` forgets them too.
 - Only a contract suite touches a real external system. Every other test uses the simulator. A
   suite whose real system is a remote service runs its real half only on demand: the half is
   `#[ignore]`, and `--run-ignored only` runs it.
