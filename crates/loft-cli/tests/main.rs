@@ -37,6 +37,7 @@ mod publish_meet_contract;
 mod publish_settle;
 mod reads_tree;
 mod reconcile;
+mod record_install;
 mod release_check;
 mod release_workflow;
 mod render;

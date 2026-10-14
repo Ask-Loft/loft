@@ -12,5 +12,9 @@ npx loft check
 
 As git's merge driver for `spec/`: `npx loft merge-driver --install --command "npx --no-install loft"`.
 
+Installing runs one script, which records in your configuration directory that npm installed
+`loft`, so that the update notice names `npm install @ask-loft/loft@latest`. It never fails an
+install, and `loft` works the same when a package manager skips it.
+
 Elsewhere, `cargo install loft-cli` builds it from source. Documentation, the Format and the
 source: <https://github.com/Ask-Loft/loft>.

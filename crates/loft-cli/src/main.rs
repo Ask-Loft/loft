@@ -10,11 +10,13 @@ mod finish;
 mod fmt;
 mod import;
 mod init;
+mod install;
 mod json;
 mod merge_driver;
 mod out;
 mod publish;
 mod reconcile;
+mod record_install;
 mod render;
 mod settings;
 mod skill;
@@ -148,6 +150,14 @@ enum Command {
         #[command(subcommand)]
         action: SkillAction,
     },
+    /// Record how this `loft` was installed, for the update notice and telemetry. The npm
+    /// package runs it when it installs; run it yourself after installing another way.
+    RecordInstall {
+        /// How this `loft` was installed.
+        way: InstalledBy,
+        #[command(flatten)]
+        output: Output,
+    },
     /// Switch telemetry on or off for you on this machine, or report its state.
     Telemetry {
         #[command(subcommand)]
@@ -239,6 +249,24 @@ impl From<FailOn> for Severity {
             FailOn::Warning => Self::Warning,
             FailOn::Info => Self::Info,
             FailOn::Hint => Self::Hint,
+        }
+    }
+}
+
+/// The ways `loft record-install` records; any other is a usage error.
+#[derive(Clone, Copy, ValueEnum)]
+enum InstalledBy {
+    Npm,
+    Cargo,
+    ReleaseBinary,
+}
+
+impl From<InstalledBy> for install::Way {
+    fn from(way: InstalledBy) -> Self {
+        match way {
+            InstalledBy::Npm => Self::Npm,
+            InstalledBy::Cargo => Self::Cargo,
+            InstalledBy::ReleaseBinary => Self::ReleaseBinary,
         }
     }
 }
@@ -347,6 +375,7 @@ fn dispatch(command: Command) -> Finished {
         Command::Skill {
             action: SkillAction::Install { output },
         } => skill::run(root, output.json()),
+        Command::RecordInstall { way, output } => record_install::run(way.into(), output.json()),
         Command::Telemetry { action } => {
             let (action, as_json) = action.split();
             switch_command::telemetry(action, as_json)

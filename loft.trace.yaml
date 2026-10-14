@@ -7167,7 +7167,7 @@ links:
     reviewed: 43f456f483ca680f6de81e592bf12022db95ecf97784ff23a48b00300d98491e
     tests:
       - file: "crates/loft-cli/tests/npm.rs"
-        name: "no_package_has_an_install_script_and_each_names_the_repository"
+        name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
   - node: 01a136db-1a3d-7739-a3f4-9acceaf09b98
     reviewed: 14c79bdf4e71c25445621b0acebbcdad21e36e52addc1413682ce1120108ba6f
     tests:
@@ -7186,10 +7186,10 @@ links:
       - file: "crates/loft-cli/tests/npm.rs"
         name: "the_launcher_runs_the_binary_with_its_arguments_streams_and_exit_code"
   - node: 01a136db-1a3d-7739-a3f4-9acffbe368ae
-    reviewed: 836e1af77506ac94078ee262d5ec283a1ffa0eeea233c21c62f1d0c48958515f
+    reviewed: 2da4bc514a00b0e6d75b327a7d3cad271643b56fc476384eabda818ff7b8f405
     tests:
       - file: "crates/loft-cli/tests/npm.rs"
-        name: "no_package_has_an_install_script_and_each_names_the_repository"
+        name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
   - node: 01a136db-1a3d-7739-a3f4-9ad1daac9b30
     reviewed: e7c0086dcb6f4f417e771077126b69141cce02f432be3e9b6d310a7b60cbc027
     tests:
@@ -8282,10 +8282,12 @@ links:
       - file: "crates/loftspec/tests/package.rs"
         name: "ci_builds_the_library_with_the_toolchain_its_rust_version_names"
   - node: 01a136db-1a3c-76b9-8641-d09dc448a2d0
-    reviewed: 5bdbf0e4a09b1a780dc9aa50e5bfa481285bd2853b5dd93d34757d80e771b407
+    reviewed: 855b8a234e1314daeede190f9cad1e8a2f583e4680a1f2a111ac2b096859ebc5
     tests:
       - file: "crates/loft-cli/tests/npm.rs"
-        name: "no_package_has_an_install_script_and_each_names_the_repository"
+        name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
+      - file: "crates/loft-cli/tests/npm.rs"
+        name: "the_install_script_records_npm_for_the_platform_binary_and_prints_nothing"
   - node: 01a136db-1a3c-76b9-8641-d09e74566205
     reviewed: 25cb6c54d25827748316f14549341d50dceedd00e30bdb4b51b129125ea2aa74
     tests:

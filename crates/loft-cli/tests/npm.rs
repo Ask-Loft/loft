@@ -3,7 +3,8 @@
 //! or, where a test runs only this machine's, a stand-in for each other one; and the launcher of
 //! `@ask-loft/loft` runs the binary of the platform it is installed on.
 //! `scripts/npm-smoke.sh` runs that launcher from the tarballs, as the release does before it
-//! publishes them.
+//! publishes them. Its install script records that npm installed `loft`, and an install never
+//! fails because of it.
 
 use std::fs;
 use std::io::Write;
@@ -11,7 +12,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-use crate::common::{PLATFORMS, Scratch, stderr, stdout, workspace};
+use crate::common::{PLATFORMS, Scratch, config_under, isolate, stderr, stdout, workspace};
 use serde_json::{Value, json};
 
 /// The tarballs packed in `scratch/out` from the binary under test, each copied in without its
@@ -110,9 +111,11 @@ fn project_from(scratch: &Scratch, out: &Path, platform: bool) -> PathBuf {
     scratch.0.join("project")
 }
 
-/// The launcher installed in `project`, run there by Node, which first loads `preload` if given.
-fn launcher(project: &Path, preload: Option<&str>) -> Command {
+/// The launcher installed in `project`, run there by Node for a user whose home is `home`, with
+/// Node first loading `preload` if given.
+fn launcher(project: &Path, home: &Path, preload: Option<&str>) -> Command {
     let mut node = Command::new("node");
+    isolate(&mut node, home);
     if let Some(script) = preload {
         let path = project.join("preload.js");
         fs::write(&path, script).unwrap();
@@ -123,9 +126,13 @@ fn launcher(project: &Path, preload: Option<&str>) -> Command {
     node
 }
 
-/// The launcher run with `args` in `project`, with Node first loading `preload` if given.
-fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
-    launcher(project, preload).args(args).output().unwrap()
+/// The launcher run with `args` in `project` for a user whose home is `home`, with Node first
+/// loading `preload` if given.
+fn launch(project: &Path, home: &Path, preload: Option<&str>, args: &[&str]) -> Output {
+    launcher(project, home, preload)
+        .args(args)
+        .output()
+        .unwrap()
 }
 
 /// `scripts/npm-smoke.sh` run over the tarballs in `out`.
@@ -175,12 +182,22 @@ fn each_platform_package_declares_its_platform_and_holds_its_binary() {
     }
 }
 
+/// The install script of `@ask-loft/loft` run in `project` for a user whose home is `home`.
+fn postinstall(project: &Path, home: &Path) -> Output {
+    let mut node = Command::new("node");
+    isolate(&mut node, home);
+    node.arg(project.join("node_modules/@ask-loft/loft/bin/postinstall.js"))
+        .current_dir(project)
+        .output()
+        .unwrap()
+}
+
 #[test]
-fn no_package_has_an_install_script_and_each_names_the_repository() {
+fn only_the_launcher_package_has_an_install_script_and_each_names_the_repository() {
     let scratch = Scratch::empty();
     let out = assembled(&scratch);
-    let names = std::iter::once("loft".to_owned()).chain(PLATFORMS.map(|p| format!("loft-{p}")));
-    for name in names {
+    for platform in PLATFORMS {
+        let name = format!("loft-{platform}");
         let package = manifest(&unpacked(&scratch, &out, &name));
         assert_eq!(package["scripts"], Value::Null, "{name}");
         assert_eq!(
@@ -188,23 +205,90 @@ fn no_package_has_an_install_script_and_each_names_the_repository() {
             "{name}"
         );
     }
+    let main = manifest(&unpacked(&scratch, &out, "loft"));
     assert_eq!(
-        manifest(&unpacked(&scratch, &out, "loft"))["bin"],
-        json!({ "loft": "bin/loft.js" })
+        main["scripts"],
+        json!({ "postinstall": "node bin/postinstall.js" })
     );
+    assert_eq!(
+        main["repository"]["url"],
+        "git+https://github.com/Ask-Loft/loft.git"
+    );
+    assert_eq!(main["bin"], json!({ "loft": "bin/loft.js" }));
+}
+
+#[test]
+fn the_install_script_records_npm_for_the_platform_binary_and_prints_nothing() {
+    let scratch = Scratch::empty();
+    let project = project(&scratch, true);
+    let output = postinstall(&project, &scratch.home());
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(stdout(&output), "");
+    assert_eq!(stderr(&output), "");
+    let binary = project.join(format!("node_modules/@ask-loft/loft-{}/bin/loft", host()));
+    let records: Value =
+        serde_json::from_slice(&fs::read(scratch.config().join("install.json")).unwrap()).unwrap();
+    assert_eq!(records["installs"][0]["way"], json!("npm"));
+    assert_eq!(
+        records["installs"][0]["path"],
+        json!(fs::canonicalize(binary).unwrap())
+    );
+}
+
+#[test]
+fn the_install_succeeds_when_the_platform_package_is_missing() {
+    let scratch = Scratch::empty();
+    let project = project(&scratch, false);
+    let output = postinstall(&project, &scratch.home());
+    assert_eq!(output.status.code(), Some(0));
+    assert_eq!(stdout(&output), "");
+    assert_eq!(stderr(&output), "");
+    assert!(!scratch.config().join("install.json").exists());
+}
+
+#[test]
+fn the_install_succeeds_when_the_record_cannot_be_written() {
+    let scratch = Scratch::empty();
+    let project = project(&scratch, true);
+    let blocked = scratch.0.join("not-a-directory");
+    fs::write(&blocked, "").unwrap();
+    let output = postinstall(&project, &blocked);
+    assert_eq!(output.status.code(), Some(0));
+    assert_eq!(stdout(&output), "");
+    assert_eq!(stderr(&output), "");
+    assert!(!config_under(&blocked).exists());
+}
+
+#[test]
+fn an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did() {
+    let scratch = Scratch::empty();
+    let project = project(&scratch, true);
+    let home = scratch.home();
+    let commands: [&[&str]; 3] = [&["--version"], &["check"], &["telemetry", "status"]];
+    let without: Vec<Output> = commands
+        .iter()
+        .map(|args| launch(&project, &home, None, args))
+        .collect();
+    assert_eq!(postinstall(&project, &home).status.code(), Some(0));
+    assert!(scratch.config().join("install.json").exists());
+    for (args, before) in commands.iter().zip(without) {
+        let after = launch(&project, &home, None, args);
+        assert_eq!(after.status.code(), before.status.code(), "{args:?}");
+        assert_eq!(stdout(&after), stdout(&before), "{args:?}");
+        assert_eq!(stderr(&after), stderr(&before), "{args:?}");
+    }
 }
 
 #[test]
 fn the_launcher_runs_the_binary_with_its_arguments_streams_and_exit_code() {
     let scratch = Scratch::empty();
     let project = project(&scratch, true);
+    let home = scratch.home();
     for args in [&["--version"][..], &["check"][..], &["no-such-command"][..]] {
-        let launched = launch(&project, None, args);
-        let direct = Command::new(env!("CARGO_BIN_EXE_loft"))
-            .args(args)
-            .current_dir(&project)
-            .output()
-            .unwrap();
+        let launched = launch(&project, &home, None, args);
+        let mut direct = Command::new(env!("CARGO_BIN_EXE_loft"));
+        isolate(&mut direct, &home);
+        let direct = direct.args(args).current_dir(&project).output().unwrap();
         assert_eq!(launched.status.code(), direct.status.code(), "{args:?}");
         assert_eq!(stdout(&launched), stdout(&direct), "{args:?}");
         assert_eq!(stderr(&launched), stderr(&direct), "{args:?}");
@@ -216,7 +300,7 @@ fn a_platform_without_a_package_is_reported_with_the_other_way_to_install() {
     let scratch = Scratch::empty();
     let project = project(&scratch, true);
     let elsewhere = "Object.defineProperty(process, 'platform', { value: 'aix' });";
-    let output = launch(&project, Some(elsewhere), &["--version"]);
+    let output = launch(&project, &scratch.home(), Some(elsewhere), &["--version"]);
     assert_eq!(output.status.code(), Some(1));
     let report = stderr(&output);
     let arch = host().split_once('-').unwrap().1.to_owned();
@@ -228,7 +312,7 @@ fn a_platform_without_a_package_is_reported_with_the_other_way_to_install() {
 fn a_missing_platform_package_is_named_with_the_optional_dependencies() {
     let scratch = Scratch::empty();
     let project = project(&scratch, false);
-    let output = launch(&project, None, &["--version"]);
+    let output = launch(&project, &scratch.home(), None, &["--version"]);
     assert_eq!(output.status.code(), Some(1));
     let report = stderr(&output);
     assert!(
@@ -281,7 +365,7 @@ fn the_binary_reads_the_standard_input_given_to_the_launcher() {
     let script = "#!/bin/sh\ninput=$(cat)\nprintf '%s' \"$input\"\nprintf '%s' \"$input\" >&2\n";
     fs::write(&copies, script).unwrap();
     let project = project_from(&scratch, &assembled_with(&scratch, &copies), true);
-    let mut child = launcher(&project, None)
+    let mut child = launcher(&project, &scratch.home(), None)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -308,7 +392,10 @@ fn npm_installs_the_platform_binary_executable() {
     )
     .unwrap();
     let platform = format!("loft-{}", host());
-    let output = Command::new("npm")
+    let home = scratch.home();
+    let mut npm = Command::new("npm");
+    isolate(&mut npm, &home);
+    let output = npm
         .args(["install", "--offline", "--no-audit", "--no-fund"])
         .arg(out.join(format!("{platform}.tgz")))
         .arg(out.join("loft.tgz"))
@@ -322,7 +409,12 @@ fn npm_installs_the_platform_binary_executable() {
     let binary = project.join(format!("node_modules/@ask-loft/{platform}/bin/loft"));
     let mode = fs::metadata(&binary).unwrap().permissions().mode();
     assert_eq!(mode & 0o111, 0o111, "{}: {mode:o}", binary.display());
-    let launched = launch(&project, None, &["--version"]);
+    // npm ran the install script, which recorded the install for the user who ran npm.
+    let records: Value =
+        serde_json::from_slice(&fs::read(config_under(&home).join("install.json")).unwrap())
+            .unwrap();
+    assert_eq!(records["installs"][0]["way"], json!("npm"));
+    let launched = launch(&project, &home, None, &["--version"]);
     assert_eq!(launched.status.code(), Some(0), "{}", stderr(&launched));
     assert!(
         stdout(&launched).contains(env!("CARGO_PKG_VERSION")),
