@@ -19,6 +19,7 @@ mod snapshot;
 
 mod check;
 mod citations;
+mod closed_output;
 mod find;
 mod fmt;
 mod import;

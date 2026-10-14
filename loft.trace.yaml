@@ -6284,6 +6284,18 @@ links:
         name: "every_validation_error_prints_before_the_findings_and_exits_1"
       - file: "crates/loft-cli/tests/verify.rs"
         name: "on_a_mismatch_it_names_the_first_differing_root_and_exits_1"
+  - node: 01a13acc-470a-75d5-beed-efe01a7c2865
+    reviewed: d8c14ed8bc33dd5398801a83e8a045f97c99cac4994295ec5bef6997a81f8f6e
+    tests:
+      - file: "crates/loft-cli/tests/closed_output.rs"
+        name: "every_command_with_its_output_closed_exits_with_the_code_it_exits_with_when_open"
+      - file: "crates/loft-cli/tests/closed_output.rs"
+        name: "a_command_that_fails_on_its_findings_still_exits_1_with_its_output_closed"
+  - node: 01a13acc-470a-75d5-beed-efe1276e3676
+    reviewed: 52f9a93c01e8025017925851e22c7b8291440e2f1381d46a0dac66907a08de2d
+    tests:
+      - file: "crates/loft-cli/tests/closed_output.rs"
+        name: "every_command_with_its_output_closed_writes_nothing_about_it_to_standard_error"
   - node: 056ca8b3-8d8b-452b-ae95-b65ad73bc229
     reviewed: a7da14b136a6b61c2c1c0aa68c0963ec94c4c7664116714033cdaf8589beb4ce
     tests:

@@ -1,5 +1,7 @@
 //! The `loft` command line (FG-9, FG-10). Exit codes: 0 on success, 1 on an error or a
-//! failed check, 2 on a usage error (RQ-154).
+//! failed check, 2 on a usage error (RQ-154). Every line is written through `out`, which a
+//! closed standard output does not panic.
+#![deny(clippy::print_stdout, clippy::print_stderr)]
 
 mod check;
 mod find;
@@ -8,6 +10,7 @@ mod import;
 mod init;
 mod json;
 mod merge_driver;
+mod out;
 mod publish;
 mod reconcile;
 mod render;
@@ -212,7 +215,12 @@ impl Output {
 }
 
 fn main() -> ExitCode {
-    let cli = Cli::parse();
+    let code = run(Cli::parse());
+    out::finish(code)
+}
+
+/// Runs the command the arguments name and gives the code it exits with.
+fn run(cli: Cli) -> ExitCode {
     if cli.version {
         version::run(cli.format == Some(Format::Json));
         return ExitCode::SUCCESS;

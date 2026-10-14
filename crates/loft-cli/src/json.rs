@@ -11,6 +11,8 @@ use loftspec::lint::{Finding, Severity};
 use loftspec::yaml::Location;
 use serde_json::{Map, Value, json};
 
+use crate::out::outln;
+
 /// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
 pub fn site(site: &Site) -> Map<String, Value> {
     site_at(&site.path, site.location)
@@ -121,7 +123,7 @@ pub fn fails_on(
 
 /// Prints one JSON document on standard output.
 pub fn print(document: &Value) {
-    println!(
+    outln!(
         "{}",
         serde_json::to_string(document).expect("a JSON value serializes")
     );

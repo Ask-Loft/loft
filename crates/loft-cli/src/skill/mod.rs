@@ -13,6 +13,7 @@ use std::process::ExitCode;
 use serde_json::json;
 
 use crate::json;
+use crate::out::outln;
 
 use compose::Host;
 
@@ -85,10 +86,10 @@ pub fn error_json(error: &SkillError) -> serde_json::Value {
 /// (Writing the skill).
 pub fn report(written: &[&str]) {
     for directory in written {
-        println!("installed {directory}");
+        outln!("installed {directory}");
     }
     if !written.is_empty() {
-        println!(
+        outln!(
             "commit {}, so that every clone's coding agents have the skill",
             written.join(" and ")
         );

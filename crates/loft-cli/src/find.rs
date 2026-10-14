@@ -12,6 +12,7 @@ use loftspec::ids::ElementId;
 use serde_json::{Map, Value, json};
 
 use crate::json;
+use crate::out::{errln, outln};
 use crate::stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -40,11 +41,11 @@ pub fn run(root: &Path, query: &str, as_json: bool) -> ExitCode {
         json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
     } else {
         for each in &found {
-            println!("{}", line(each));
+            outln!("{}", line(each));
         }
     }
     if found.is_empty() {
-        eprintln!("nothing matches \"{query}\"");
+        errln!("nothing matches \"{query}\"");
         return ExitCode::FAILURE;
     }
     ExitCode::SUCCESS

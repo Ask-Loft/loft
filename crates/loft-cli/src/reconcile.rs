@@ -23,6 +23,7 @@ use loftspec_store::FileStore;
 use serde_json::{Map, Value, json};
 
 use crate::json;
+use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
@@ -215,11 +216,11 @@ impl Report<'_> {
 
     fn print(&self, reconciled: &Reconciled, accepted: &[Key]) {
         for key in accepted {
-            println!("accepted {}", self.name(*key));
+            outln!("accepted {}", self.name(*key));
         }
         for finding in &reconciled.findings {
             let label = self.label(finding.node).unwrap_or_else(|| "-".to_owned());
-            println!(
+            outln!(
                 "{}: {} {}: {label}: {}",
                 self.place(finding),
                 finding.severity(),
@@ -227,7 +228,7 @@ impl Report<'_> {
                 finding.message
             );
         }
-        println!("{}", summary(reconciled));
+        outln!("{}", summary(reconciled));
     }
 
     fn document(&self, reconciled: &Reconciled, accepted: &[Key], outcome: &str) -> Value {

@@ -12,6 +12,7 @@ use loftspec_store::{FileStore, StoreError};
 use serde_json::Value;
 
 use crate::json;
+use crate::out::errln;
 
 /// Why a command stopped: its errors as JSON, and the lines standard error shows.
 pub struct Stop {
@@ -51,7 +52,7 @@ impl Stop {
             json::print(&json::failure(schema, self.errors));
         }
         for line in &self.lines {
-            eprintln!("{line}");
+            errln!("{line}");
         }
         ExitCode::FAILURE
     }

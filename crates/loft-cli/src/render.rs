@@ -12,6 +12,7 @@ use loftspec_store::fs;
 use serde_json::json;
 
 use crate::json;
+use crate::out::outln;
 use crate::stop::{self, Stop};
 
 const SCHEMA: &str = "loft-render/1";
@@ -37,7 +38,7 @@ pub fn run(
                 json::print(&json::result(SCHEMA, "rendered", fields, Vec::new()));
             } else {
                 for path in &written {
-                    println!("{}", path.display());
+                    outln!("{}", path.display());
                 }
             }
             ExitCode::SUCCESS

@@ -26,6 +26,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   Facet Tag and its Vocabulary Entry alike. A name that derives nothing, or two v1 names that
   derive one tag name, stop the conversion naming them. The sidecar keeps each v1 name that
   changed, under `tagNames`.
+- A command whose standard output is closed before it finishes, as by `loft reconcile | head -1`,
+  no longer panics with "failed printing to stdout: Broken pipe" and exit 101: it skips the rest
+  of its output, writes nothing about it to standard error and exits with the code it exits with
+  when its output is open. Any other failure to write standard output exits 1 with its message on
+  standard error.
 - `loft merge-driver` matches a record moved to another parent in the same file, such as a
   criterion moved to another Requirement or a Constraint moved between Components, with its base
   record by its key, and writes it once. It used to keep the record at its old parent with a

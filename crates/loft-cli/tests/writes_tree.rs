@@ -53,7 +53,7 @@ fn planted_lock() -> Vec<u8> {
 }
 
 /// A scratch directory for a command.
-fn fixture(fixture: Fixture) -> Scratch {
+pub fn fixture(fixture: Fixture) -> Scratch {
     let scratch = Scratch::with_reading_list();
     match fixture {
         Fixture::Empty => fs::remove_dir_all(scratch.0.join("spec")).unwrap(),

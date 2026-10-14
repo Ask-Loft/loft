@@ -10,6 +10,7 @@ use loftspec::lint::Severity;
 use serde_json::{Value, json};
 
 use crate::json;
+use crate::out::outln;
 use crate::stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -42,7 +43,7 @@ fn print(checked: &Checked) {
     match checked {
         Checked::Unread(errors) => {
             for error in errors {
-                println!("{error}");
+                outln!("{error}");
             }
         }
         Checked::Read {
@@ -51,13 +52,13 @@ fn print(checked: &Checked) {
             findings,
         } => {
             for error in invalid {
-                println!("{error}");
+                outln!("{error}");
             }
             for error in config {
-                println!("{error}");
+                outln!("{error}");
             }
             for finding in findings {
-                println!("{finding}");
+                outln!("{finding}");
             }
         }
     }

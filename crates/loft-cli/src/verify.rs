@@ -10,6 +10,7 @@ use loftspec_store::{FileStore, StoreError};
 use serde_json::json;
 
 use crate::json;
+use crate::out::{errln, outln};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -44,7 +45,7 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
                 let fields = json!({ "stateRoot": state.to_string() });
                 json::print(&json::result(SCHEMA, "verified", fields, Vec::new()));
             } else {
-                println!("verified: state root {state}");
+                outln!("verified: state root {state}");
             }
             ExitCode::SUCCESS
         }
@@ -58,7 +59,7 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
                 });
                 json::print(&json::result(SCHEMA, "mismatch", fields, Vec::new()));
             }
-            eprintln!("the {root} differs: {LOCK} has {lock}, the tree has {tree}");
+            errln!("the {root} differs: {LOCK} has {lock}, the tree has {tree}");
             ExitCode::FAILURE
         }
     }
