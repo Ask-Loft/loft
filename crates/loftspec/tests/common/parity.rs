@@ -243,7 +243,10 @@ fn explains(entry: &Divergence, direction: &str, finding: &Normal, facts: &Facts
             "subject-external" => finding.2.iter().any(|s| facts.external.contains(s)),
             "code-span" => facts.prose.contains(finding),
             "hyphenated-tag" => facts.hyphenated.contains(finding),
-            "subjects-are-criteria" => finding.2.iter().all(|s| facts.criteria.contains(s)),
+            "subjects-are-criteria" => {
+                // A finding without a subject has no subject that is a criterion.
+                !finding.2.is_empty() && finding.2.iter().all(|s| facts.criteria.contains(s))
+            }
             _ => false,
         }
 }

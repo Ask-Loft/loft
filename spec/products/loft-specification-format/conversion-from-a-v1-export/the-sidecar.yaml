@@ -36,6 +36,6 @@ requirements:
       shall: "write the sidecar outside the `spec/` tree."
     criteria:
       - key: fe2d3192-e8fd-4a68-96e5-e4c2963bca8e
-        name: "No file under `spec/` carries a sidecar fact."
+        name: "No file under `spec/` carries a sidecar fact other than the document key."
       - key: e05b6c0b-6a38-4743-96b0-8886b063f44c
         name: "The sidecar is the file `v1-sidecar.json` beside `spec/`."

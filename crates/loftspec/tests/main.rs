@@ -8,6 +8,7 @@ mod oracle;
 
 mod bindings;
 mod boundary;
+mod codec_bodies;
 mod codec_conflicts;
 mod codec_derived;
 mod codec_fields;
@@ -18,6 +19,7 @@ mod codec_read;
 mod codec_round_trip;
 mod codec_sites;
 mod conflicts;
+mod containment;
 mod content_hash;
 mod convert_v1;
 mod convert_v1_d11;

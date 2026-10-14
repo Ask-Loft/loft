@@ -546,6 +546,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/roots.rs"
         name: "the_same_document_with_fresh_keys_has_the_same_content_root"
+  - node: 4c191167-1a92-4e39-af0a-c7fe616254ad
+    reviewed: 1cf1e1953250044f494d85736e5887d0298dfb992df05a5effc71420a3cb9571
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_sidecar.rs"
+        name: "a_confirmation_flag_changes_the_sidecar_and_no_content_hash"
   - node: 7d8a0b2b-50c6-4f0a-978e-6ba40a5eea7c
     reviewed: 28e5c45eaf43c1159f4d53bfae43973d1b098ad7f8bba41d931c3e37b30ab822
     tests:
@@ -2338,6 +2343,13 @@ links:
   - node: 9f00139f-99ee-4af5-832b-38c95fd7ed32
     reviewed: f698ddd9361848ceba078f0ad66152108119155e318e2897140da8bcdcdd4614
     unverified: "Holds by the type system: the Section type carries a name and a body."
+  - node: d32d271d-3122-41a5-bbb0-110e7be2adf8
+    reviewed: 6316c56575cdc651d9e7ac559ab43de4d5ddb5b22bacd6b9e1a99802ae2194f4
+    tests:
+      - file: "crates/loftspec/tests/codec_bodies.rs"
+        name: "child_sections_keep_their_written_order_through_a_write_and_a_read"
+      - file: "crates/loftspec/tests/codec_bodies.rs"
+        name: "the_order_of_child_sections_is_content"
   - node: 6cd1343f-06cb-4d45-8e13-cd5fb3016ac7
     reviewed: 2275c162f0bf8f771e4fe7fd7f550314353a9a59543dcfef641deee547b03695
     tests:
@@ -2353,6 +2365,23 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_round_trip.rs"
         name: "a_section_is_written_under_sections_in_its_owning_nodes_record"
+  - node: 0ee1b3be-80d5-49e4-8c6b-5a04576cbeb4
+    reviewed: d31f9ab1b4f4ff12febd4e1dfd32fe4b2d27ed3a7814659e5b99415065b0e379
+    tests:
+      - file: "crates/loftspec/tests/codec_bodies.rs"
+        name: "trailing_whitespace_in_a_body_survives_a_write_and_a_read"
+  - node: 8e242843-fe5d-4d0c-b44a-9582ed17da4d
+    reviewed: 8ed7fdaf1072f9c1695f47860d807ce19d5f0d61db29cda4c5092edd9c8b93b1
+    tests:
+      - file: "crates/loftspec/tests/codec_bodies.rs"
+        name: "a_tab_in_a_body_survives_a_write_and_a_read"
+  - node: 86fabf64-1efb-4d22-9cef-38ede6c160be
+    reviewed: ac1c1ffd2130c83191fd6afc7db3783c99633f921e3b32023549e76f1d260a4b
+    tests:
+      - file: "crates/loftspec/tests/codec_bodies.rs"
+        name: "every_unicode_scalar_value_in_a_body_survives_a_write_and_a_read"
+      - file: "crates/loftspec/tests/codec_bodies.rs"
+        name: "any_string_as_a_body_survives_a_write_and_a_read"
   - node: 2eddf40d-e9c0-400a-bce4-20397cb55422
     reviewed: 145ded436364c49ae81a2d496019054d2c465f8e69b1f69b7dc43d1b7e744f20
     tests:
@@ -2722,6 +2751,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_v1_tag_names.rs"
         name: "the_sidecar_records_the_v1_name_behind_each_derived_tag_name_that_differs"
+  - node: fe2d3192-e8fd-4a68-96e5-e4c2963bca8e
+    reviewed: 21ed3cf0368dcadfd2931366789f193bae9500a0644523da7d0fea55fc1390cb
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_sidecar.rs"
+        name: "no_file_under_spec_carries_a_sidecar_fact"
   - node: e05b6c0b-6a38-4743-96b0-8886b063f44c
     reviewed: 9f15dd0cb235b9263a147ce34edd0d279b96f9ccaf503c0d92e6e86e00d9efcf
     tests:
@@ -2799,6 +2833,18 @@ links:
     tests:
       - file: "crates/loftspec/tests/v1_parity.rs"
         name: "each_register_entry_is_well_formed"
+  - node: 01a12dca-2b3c-76f6-950a-cd649aeff84e
+    reviewed: 8ac3167cfc7c25a2e4849a8d51a25cb653c395dfe5d5541d7197ef2ff309015b
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "code_span_explains_what_v1_reports_and_loftspec_reports_once_backticks_are_removed"
+  - node: 01a12dda-cece-7462-b240-637034103832
+    reviewed: 5a171b94b76e91be64c296946adc771cf788f4efc29b0cfc2873ad9fe5a7bcc8
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "subjects_are_criteria_explains_a_finding_only_when_every_subject_is_a_criterion"
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "subjects_are_criteria_explains_no_finding_without_a_subject"
   - node: 01a13a1b-2f3d-70d6-88b6-56e70f3dd3cd
     reviewed: 72d7d9c5799621158b3fd514c47a79639b7c9b034cfa7e835b87c2b61f9cbc9c
     tests:
@@ -2811,12 +2857,80 @@ links:
     tests:
       - file: "crates/loftspec/tests/v1_parity.rs"
         name: "every_register_entry_explains_a_finding_on_a_checked_export"
+  - node: 01a12dad-fb7a-7333-9129-a6b761f8ec44
+    reviewed: a6ef2f9370f46cd7f89439e40e0162787519e00beb1eab276e3a8d95b70b60ee
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "each_export_the_tests_convert_is_checked_against_v1s_outputs_beside_it"
+  - node: 01a12dad-fb7a-7333-9129-a6b8bf9d2a3f
+    reviewed: cfb8ce83b09b1bad6d8095192bd1d6a3fd057975f05a0fb508e80a91676a73d1
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "each_export_the_tests_convert_is_checked_against_v1s_outputs_beside_it"
   - node: 01a12dad-fb7a-7333-9129-a6ba2ff2fa9e
     reviewed: 5e9f420c42f4bd660db2b73f30cd1f7e7345d2f415d927293e372b70d68d8a2b
     unverified: "Checked against the v1 implementation outside this repository."
   - node: b8310eca-0d41-4904-9eec-43c553343933
     reviewed: bfcaadcb8af0f4315f07e5c37312a7602271d050665dfca72a189b90eec95bba
     unverified: "Holds by the type system: only the document holds Products, and no node type has a field for one."
+  - node: 5c81bfc6-6b35-4fb0-ac67-76baf2c27eb7
+    reviewed: 15af17d1ffdebb53ac073eeb602e9ba340176220568b9dc8637532f3dd370246
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_child_field_is_read_only_in_a_record_whose_kind_the_profile_lets_hold_it"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
+  - node: 9c8872c8-fd77-43c0-a11f-cde2ce0c51f4
+    reviewed: 182dd5bc1a2900cbb5c0eb308b57c9de78cb90c68881cf72efef889fd63a47ed
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_child_field_is_read_only_in_a_record_whose_kind_the_profile_lets_hold_it"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_feature_file_outside_a_feature_groups_directory_is_refused"
+  - node: 2c23ff10-9676-426e-81ae-f19b052e9171
+    reviewed: 25ee00764b78423bc25eeadaac165de74f33214a3c81abe42a7952ce5659a07d
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_child_field_is_read_only_in_a_record_whose_kind_the_profile_lets_hold_it"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
+  - node: 4aed1fa5-ca97-4413-a50f-c52a876de020
+    reviewed: 7a9a556fc990c0941cbfc68c46af7a41d8581997c0657833dca46f4d1f8e8dc8
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_child_field_is_read_only_in_a_record_whose_kind_the_profile_lets_hold_it"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
+  - node: c52d2893-6b6b-4cba-b710-8fd28a420204
+    reviewed: ad9bae61aa149e3cceb36fdcfee68480e5797cc2554873c09475ebff509a1609
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_child_field_is_read_only_in_a_record_whose_kind_the_profile_lets_hold_it"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
+  - node: 748d5f95-2d7e-49ad-a10c-640ef8348b75
+    reviewed: d132d7605a2cbadc6b4160e369bb552c142ac1e19176cb9d838341ae2f50b7bd
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_child_field_is_read_only_in_a_record_whose_kind_the_profile_lets_hold_it"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
+  - node: e15dc002-88bb-4dd2-8532-042fa21b2842
+    reviewed: 95effd91a37e53fda909815381ec4388a8f63ae182c926c18848b8fb7d355b2e
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_child_field_is_read_only_in_a_record_whose_kind_the_profile_lets_hold_it"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
+  - node: f3e0cf5f-9e01-4286-aff0-30be5b0fd863
+    reviewed: 0b05c6e5a30cb493b7b747e0b70059f03bd35ed90a941cb547607806a03d494a
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_section_under_a_node_of_every_kind_and_under_a_section_is_accepted"
+      - file: "crates/loftspec/tests/node.rs"
+        name: "the_profile_lets_each_kind_hold_exactly_these_kinds"
   - node: ab6e9c6c-316d-4adb-972b-b502e34f7936
     reviewed: 05d2f31c001eb845c8ad6a9858a8226ee7419c7b8ce0b1f5983b9e65add21f81
     tests:
@@ -2903,6 +3017,11 @@ links:
         name: "a_subject_edge_with_another_role_is_refused"
       - file: "crates/loftspec/tests/codec_sites.rs"
         name: "a_subject_edge_without_a_role_is_refused"
+  - node: 54e4634e-0f49-4037-ad96-d369a87d1d4d
+    reviewed: 7c4dbd3beb04b482b2f0c41af867c33d66667394a731b86c5a70f1ebf30db31c
+    tests:
+      - file: "crates/loftspec/tests/containment.rs"
+        name: "a_mentions_edge_between_any_two_elements_is_accepted"
   - node: 84ad4018-9c69-4405-ba03-cf9e78ad2f55
     reviewed: bee243a98f5ea24e0f8a3b7e5ca5f14deac77ab314a02a23e32aa9fd38e80b16
     tests:
@@ -3554,6 +3673,20 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "a_criterion_name_with_a_semicolon_is_v2_005"
+  - node: 01a13654-f961-7722-b3a5-58daa75d40b1
+    reviewed: fb61d2c268942cd81b77c8c22365df3c58c0f2042023bf2271598c4abd781fea
+    tests:
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_criterion_name_of_two_sentences_is_v2_005"
+  - node: 01a13654-f961-7722-b3a5-58dbe93dde5e
+    reviewed: 95a9961dea947dc22c2a50d26f2a29d6ec804275235b7d24a19a112a1ce6b604
+    tests:
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_question_mark_or_an_exclamation_mark_before_a_space_and_a_capital_ends_a_sentence"
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_sentence_mark_without_a_space_and_a_capital_after_it_ends_no_sentence"
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_criterion_name_of_two_sentences_is_v2_005"
   - node: 01a13654-f961-7722-b3a5-58dc117c35bb
     reviewed: e1a947dc1272d1c0c4e4afc76f8ac8ce68224899c99ba723b9aa7b3c57d49d2b
     tests:
@@ -3571,6 +3704,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "a_requirement_with_more_criteria_than_the_limit_is_v2_006"
+  - node: 01a13654-f961-7722-b3a5-58e005d0b7fa
+    reviewed: 80cb47c29a7a69ccc12341e0e3317ae90c36903661f703bda61447f8c045676e
+    tests:
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_requirement_body_longer_than_the_limit_is_v2_006"
   - node: 01a13654-f961-7722-b3a5-58e129f964ab
     reviewed: c94efb3aea4596e626c8dca46a5101d5fda625f55f0c6db820acbaa8a1f89d62
     tests:
@@ -3606,6 +3744,13 @@ links:
         name: "a_requirement_with_more_criteria_than_the_limit_is_v2_006"
       - file: "crates/loftspec/tests/lint.rs"
         name: "the_published_defaults_are_the_codes"
+  - node: 01a13654-f961-7722-b3a5-58e7490e919b
+    reviewed: e33a3a38015549a0e8bada3b83b8a405e4ce2d7c863644c001f03983ccc207e0
+    tests:
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_normative_word_in_a_sections_body_is_v2_007_naming_the_section"
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_normative_word_in_a_body_is_v2_007_at_each_occurrence_and_its_line"
   - node: 01a13654-f961-7722-b3a5-58e88b60539e
     reviewed: e7e53725ce64ae74b0aff23dd6e99e7227de0b257fe961f9ba9a24cfcad3e285
     tests:
@@ -3618,6 +3763,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_craft.rs"
         name: "a_normative_word_in_code_or_inside_another_word_is_not_v2_007"
+  - node: 01a13654-f961-7722-b3a5-58ea3c831a2c
+    reviewed: 341cf832e13d63ab9193efdf696a213713dbdd9fe901d3f4f4908d4065c4a176
+    tests:
+      - file: "crates/loftspec/tests/lint_craft.rs"
+        name: "a_body_without_a_normative_word_is_not_v2_007"
   - node: 01a13654-f961-7722-b3a5-58eb72d771ad
     reviewed: cf1561d9b7f7feed9b466e8802600ecad3c0895268e06cf9b0cb25106f3e6f2f
     tests:
