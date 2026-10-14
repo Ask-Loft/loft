@@ -3,6 +3,8 @@ slug: loft-init
 name: "`loft init`"
 body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries, and the `loft-spec` skill beside it for the project's coding agents. In a git repository that has not registered Loft's merge driver yet, it suggests registering it."
 tags:
+  - checks-for-updates
+  - sends-telemetry
   - writes-skill
   - writes-tree
 realizes:

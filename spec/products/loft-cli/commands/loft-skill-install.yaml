@@ -3,6 +3,8 @@ slug: loft-skill-install
 name: "`loft skill install`"
 body: "Writes the `loft-spec` skill into a project, or brings it to the version of the installed `loft`."
 tags:
+  - checks-for-updates
+  - sends-telemetry
   - writes-skill
 realizes:
   - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd

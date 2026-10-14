@@ -1,0 +1,150 @@
+key: 01a13a90-3556-7106-a68c-2668830924fe
+slug: the-command-event
+name: "The command event"
+body: |
+  What one command event holds. Every field has a closed set of values or a random token, so that the schema itself shows everything an event can say. The schema is `schemas/telemetry-event.json`, and the documentation shows a sample event beside it:
+
+  ```json
+  {
+    "schema": "loft-telemetry-event/1",
+    "eventId": "3f0c9a52-6c1e-4f7b-9d41-0b6e2f8a1c77",
+    "version": "2.1.0",
+    "time": "2026-10-14T09:00:00Z",
+    "installation": "b1e4c0d2-8a37-4c5e-9f10-6d2a7e3b5c48",
+    "project": "5d9a1f60-2b84-4e3c-a7f1-c3e05b9d2a16",
+    "branch": "9c41e07a5b2fd813",
+    "mode": "agent",
+    "agent": "claude-code",
+    "command": "check",
+    "outcome": "failed",
+    "errorKinds": [],
+    "duration": "under-1s"
+  }
+  ```
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+requirements:
+  - key: 01a13a90-3556-7106-a68c-266925690f92
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "hold exactly the fields of the schema `loft-telemetry-event/1`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-266a569960f9
+        name: "Every event sent validates against `schemas/telemetry-event.json`."
+      - key: 01a13a90-3556-7106-a68c-266bf864496c
+        name: "The schema admits no field beyond `schema`, `eventId`, `version`, `time`, `installation`, `project`, `branch`, `mode`, `agent`, `command`, `outcome`, `errorKinds` and `duration`."
+      - key: 01a13a90-3556-7106-a68c-266c677694e9
+        name: "The sample event in the documentation validates against `schemas/telemetry-event.json`."
+  - key: 01a13a90-3556-7106-a68c-266da8c0f195
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "name the command that ran, the outcome of its run and the kind of each error it reported."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-266eda4a7888
+        name: "`command` names the subcommand that ran, such as `check` or `import v1`."
+      - key: 01a13a90-3556-7106-a68c-266f986642f8
+        name: "`outcome` is the word that the command's JSON document gives as its outcome."
+      - key: 01a13a90-3556-7106-a68c-2670e342cb97
+        name: "`outcome` is the same whether or not the run was given `--format json`."
+      - key: 01a13a90-3556-7106-a68c-2671bfe977a1
+        name: "`errorKinds` lists the `kind` of each error the run reported, in the order reported."
+      - key: 01a13a90-3556-7106-a68c-2672d40f39b5
+        name: "`errorKinds` is empty for a run that reported no error."
+  - key: 01a13a90-3556-7106-a68c-26734a3226bb
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry the version of the `loft` that ran."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26743faeb1a0
+        name: "`version` is the version that `loft --version` prints."
+  - key: 01a13a90-3556-7106-a68c-2675922c948d
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry the time of the run in UTC, truncated to the hour."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26760fc99952
+        name: "`time` is the hour in which the run finished, with zero minutes and seconds."
+      - key: 01a13a90-3556-7106-a68c-267796809678
+        name: "`time` is written in UTC with the suffix `Z`."
+  - key: 01a13a90-3556-7106-a68c-2678cfb6553a
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry the duration of the run as one of five buckets."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-2679db317325
+        name: "A run shorter than 100 milliseconds has the duration `under-100ms`."
+      - key: 01a13a90-3556-7106-a68c-267a5b0a8662
+        name: "A run of at least 100 milliseconds and under 1 second has the duration `under-1s`."
+      - key: 01a13a90-3556-7106-a68c-267b9765b6df
+        name: "A run of at least 1 second and under 10 seconds has the duration `under-10s`."
+      - key: 01a13a90-3556-7106-a68c-267c848d2f92
+        name: "A run of at least 10 seconds and under 60 seconds has the duration `under-60s`."
+      - key: 01a13a90-3556-7106-a68c-267d4bb2cf32
+        name: "A run of 60 seconds or more has the duration `60s-or-more`."
+  - key: 01a13a90-3556-7106-a68c-267e5de0efbe
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry the mode of the run, chosen by the first of these rules that holds: `internal`, `ci`, `agent`, `interactive`, `unknown`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-267f4f19f39e
+        name: "A run with `LOFT_TELEMETRY` set to `internal` has the mode `internal`."
+      - key: 01a13a90-3556-7106-a68c-2680443bb3f6
+        name: "A run that is not `internal`, with a non-empty `CI` variable, has the mode `ci`, even when an agent started it."
+      - key: 01a13a90-3556-7106-a68c-26819a860609
+        name: "A run that is neither `internal` nor `ci`, started by a recognised agent, has the mode `agent`."
+      - key: 01a13a90-3556-7106-a68c-2682629d7c96
+        name: "A run that is neither `internal`, `ci` nor `agent`, whose standard error is a terminal, has the mode `interactive`."
+      - key: 01a13a90-3556-7106-a68c-2683dd6f15ca
+        name: "A run that meets none of the other rules has the mode `unknown`."
+  - key: 01a13a90-3556-7106-a68c-2684760de600
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "name the agent that started the run, as one of `claude`, `claude-code`, `chatgpt`, `chatgpt-codex` and `unknown`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26858a4e4f5d
+        name: "A run started by the Claude app has the agent `claude`."
+      - key: 01a13a90-3556-7106-a68c-268661043d5f
+        name: "A run started by Claude Code has the agent `claude-code`."
+      - key: 01a13a90-3556-7106-a68c-26878b793048
+        name: "A run started by the ChatGPT app has the agent `chatgpt`."
+      - key: 01a13a90-3556-7106-a68c-2688a1633fb9
+        name: "A run started by Codex has the agent `chatgpt-codex`."
+      - key: 01a13a90-3556-7106-a68c-2689609cf06b
+        name: "A run with no recognised agent has the agent `unknown`."
+      - key: 01a13a90-3556-7106-a68c-268a196bf54a
+        name: "The agent is recognised from whether its marker variables are present, and no variable's value is sent."
+  - key: 01a13a90-3556-7106-a68c-268b6ce63e37
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry an event id drawn at random for that event."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-268cb3a4c1b3
+        name: "Two events, from one run or from two, never share an event id."
+      - key: 01a13a90-3556-7106-a68c-268d3cee7f2e
+        name: "`eventId` is a random UUID of version 4."
+  - key: 01a13a90-3556-7106-a68c-268ed0175b6b
+    statement:
+      form: ubiquitous
+      system: "The command event"
+      shall: "carry no text taken from the tree, the code, the file system, the repository or the environment."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-268f7078183c
+        name: "No part of a path in the run's working directory or home directory appears in the event."
+      - key: 01a13a90-3556-7106-a68c-2690c023b422
+        name: "No address of a git remote appears in the event."
+      - key: 01a13a90-3556-7106-a68c-269150fb7dd5
+        name: "No email address from the git configuration appears in the event."
+      - key: 01a13a90-3556-7106-a68c-269277a30a1d
+        name: "Neither the host name nor the user name of the machine appears in the event."
+      - key: 01a13a90-3556-7106-a68c-26930a6ea083
+        name: "No name, statement or body from `spec/` appears in the event."
+      - key: 01a13a90-3556-7106-a68c-2694e485481b
+        name: "No text the command wrote to standard output or standard error appears in the event."

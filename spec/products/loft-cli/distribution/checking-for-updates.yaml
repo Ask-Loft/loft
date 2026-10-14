@@ -1,0 +1,129 @@
+key: 01a13a90-3556-7106-a68c-2609ebc00b40
+slug: checking-for-updates
+name: "Checking for updates"
+body: "`loft` tells its user when a newer release exists, and how to install it. It asks GitHub at the end of a run at most once a day, keeps the answer, and tells of a newer release on a later run, so that no run waits for GitHub before its work. A command opts in by listing the tag `checks-for-updates` on its Feature; the commands that list `sends-telemetry` list it too. The request carries no token and nothing from the tree. The check has its own switches, `loft update-check off` and `LOFT_UPDATE_CHECK=off`, apart from those of telemetry."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+mentions:
+  - 01a13a90-3554-7631-bb13-097dd7f28d86
+requirements:
+  - key: 01a13a90-3556-7106-a68c-260a5734a935
+    statement:
+      form: event_driven
+      when: "a command tagged `checks-for-updates` finishes its work and the kept answer is missing or more than 24 hours old"
+      system: "Loft"
+      shall: "fetch the latest release of `Ask-Loft/loft` from GitHub into the user's configuration directory."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-260be27502fc
+        name: "Loft asks GitHub after the command has written its output."
+      - key: 01a13a90-3556-7106-a68c-260c50d30983
+        name: "A run within 24 hours of the last answer received, for the same user on the same machine, asks GitHub nothing."
+      - key: 01a13a90-3556-7106-a68c-260dc2052004
+        name: "A draft release is not taken as the latest."
+      - key: 01a13a90-3556-7106-a68c-260e181ecae9
+        name: "A prerelease is not taken as the latest."
+      - key: 01a13a90-3556-7106-a68c-260fa6f9c527
+        name: "The answer is kept in `loft/update-check.json` under the user's configuration directory, with the time it was received."
+      - key: 01a13a90-3556-7106-a68c-261028550c78
+        name: "The request carries no token, no field of the command event and no text from the tree."
+  - key: 01a13a90-3556-7106-a68c-2611d4e9ddbe
+    statement:
+      form: ubiquitous
+      system: "The Feature of each `loft` command that checks for updates"
+      shall: "list the tag `checks-for-updates`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26124482fd80
+        name: "A command that checks for updates has a Feature that lists `checks-for-updates`."
+      - key: 01a13a90-3556-7106-a68c-26139dc2c75e
+        name: "A command whose Feature lists `checks-for-updates` checks for updates."
+      - key: 01a13a90-3556-7106-a68c-2614dac04816
+        name: "Each Feature that lists `sends-telemetry` lists `checks-for-updates`."
+  - key: 01a13a90-3556-7106-a68c-2615efb71543
+    statement:
+      form: event_driven
+      when: "a command tagged `checks-for-updates` finishes its work and the kept answer names a release newer than the running `loft`"
+      system: "Loft"
+      shall: "print an update notice to standard error."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-261661f91970
+        name: "The notice names the running version and the newer version."
+      - key: 01a13a90-3556-7106-a68c-2617ca9ac4d4
+        name: "The notice is printed in every mode, CI included."
+      - key: 01a13a90-3556-7106-a68c-2618663aced0
+        name: "Standard output holds no part of the notice."
+      - key: 01a13a90-3556-7106-a68c-2619d930949e
+        name: "A run within 24 hours of the last update notice, for the same user on the same machine, prints no update notice."
+      - key: 01a13a90-3556-7106-a68c-261af9d8f977
+        name: "No notice is printed when the kept answer names the running version or an older one."
+  - key: 01a13a90-3556-7106-a68c-261b4111d7f7
+    statement:
+      form: ubiquitous
+      system: "The update notice"
+      shall: "name the way to install the newer release that matches how the running `loft` was installed."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-261ceba59cc8
+        name: "A `loft` run through the npm launcher names `npm install @ask-loft/loft@latest`."
+      - key: 01a13a90-3556-7106-a68c-261d5624aad4
+        name: "A `loft` installed by cargo names `cargo install --locked loft-cli`."
+      - key: 01a13a90-3556-7106-a68c-261eb713e39a
+        name: "Any other `loft` names the page of the newer release on GitHub."
+  - key: 01a13a90-3556-7106-a68c-261f83aecce5
+    statement:
+      form: unwanted
+      if: "GitHub refuses the connection, answers with an error or a rate limit, or does not answer within the network client's time limit"
+      system: "Loft"
+      shall: "keep the answer it already holds."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-262084e08bfd
+        name: "The command exits with the code it would have exited with had GitHub answered."
+      - key: 01a13a90-3556-7106-a68c-2621ce3f4142
+        name: "Standard output is the same as when GitHub answers."
+      - key: 01a13a90-3556-7106-a68c-26227b1b3865
+        name: "Nothing about the failed request is written to standard error."
+      - key: 01a13a90-3556-7106-a68c-2623b69745b0
+        name: "The answer kept before the request is unchanged."
+  - key: 01a13a90-3556-7106-a68c-2624d926b2e3
+    statement:
+      form: unwanted
+      if: "the latest release's tag is not a version of the form `vX.Y.Z`"
+      system: "Loft"
+      shall: "print no update notice for that release."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26253da5687a
+        name: "No update notice is printed."
+      - key: 01a13a90-3556-7106-a68c-262692ba1eb3
+        name: "Nothing about the tag is written to standard error."
+  - key: 01a13a90-3556-7106-a68c-26277b450016
+    statement:
+      form: state_driven
+      while: "the update check is switched off"
+      system: "Loft"
+      shall: "ask GitHub nothing and print no update notice."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26282b92dab4
+        name: "No connection to GitHub is opened."
+      - key: 01a13a90-3556-7106-a68c-26296ca6c3f2
+        name: "No update notice is printed, even from an answer kept before the check was switched off."
+      - key: 01a13a90-3556-7106-a68c-262a3b1dad2f
+        name: "`LOFT_UPDATE_CHECK` set to any non-empty value switches the update check off."
+      - key: 01a13a90-3556-7106-a68c-262bffb489f6
+        name: "`loft update-check off` keeps the check off for that user on that machine until `loft update-check on`."
+      - key: 01a13a90-3556-7106-a68c-262cd72bf698
+        name: "Switching telemetry off leaves the update check as it was."
+  - key: 01a13a91-33a8-74fc-8986-bedae926d543
+    statement:
+      form: optional
+      where: "`LOFT_UPDATE_ENDPOINT` is set to a non-empty address"
+      system: "Loft"
+      shall: "ask that address for the latest release in place of GitHub."
+    criteria:
+      - key: 01a13a91-33a8-74fc-8986-bedbe975ef68
+        name: "The request reaches the address that `LOFT_UPDATE_ENDPOINT` names."
+      - key: 01a13a91-33a8-74fc-8986-bedc219da097
+        name: "No connection to GitHub is opened."
+      - key: 01a13a91-33a9-72de-95bb-48d721617c7c
+        name: "An `https` address is accepted."
+      - key: 01a13a91-33a9-72de-95bb-48d8482e73c5
+        name: "An `http` address on the loopback interface is accepted."
+      - key: 01a13a91-33a9-72de-95bb-48d9dad981f0
+        name: "An `http` address off the loopback interface is never contacted."

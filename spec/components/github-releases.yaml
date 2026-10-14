@@ -1,0 +1,7 @@
+key: 01a13a90-3554-7631-bb13-097dd7f28d86
+slug: github-releases
+name: "GitHub releases"
+body: "The releases of the `Ask-Loft/loft` repository, read through GitHub's REST API without a token. Its address is fixed in `loft`, and `LOFT_UPDATE_ENDPOINT` replaces it, for a mirror."
+boundary: external
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8

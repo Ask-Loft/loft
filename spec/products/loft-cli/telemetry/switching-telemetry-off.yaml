@@ -1,0 +1,54 @@
+key: 01a13a90-3556-7106-a68c-26574c7ad289
+slug: switching-telemetry-off
+name: "Switching telemetry off"
+body: "Two switches turn telemetry off: `loft telemetry off`, which lasts for the user on that machine, and `LOFT_TELEMETRY=off`, for one shell, one CI job or one container. Every way of running `loft` reaches the same binary, so the switches hold for a run from a terminal, through the npm launcher or by an agent that a skill directs. Any value of `LOFT_TELEMETRY` other than `internal` switches telemetry off, so a mistyped value fails toward sending nothing."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+requirements:
+  - key: 01a13a90-3556-7106-a68c-26589c64013c
+    statement:
+      form: state_driven
+      while: "telemetry is switched off"
+      system: "Loft"
+      shall: "send no event, print no telemetry notice and create no token."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-265928699022
+        name: "No connection to the telemetry collector is opened."
+      - key: 01a13a90-3556-7106-a68c-265aad07f75a
+        name: "No telemetry notice is printed."
+      - key: 01a13a90-3556-7106-a68c-265b185c167a
+        name: "Neither `telemetry.json` file is created."
+      - key: 01a13a90-3556-7106-a68c-265ce556b8ad
+        name: "Loft reads both switches before it reads or writes a token and before it opens a connection."
+      - key: 01a13a90-3556-7106-a68c-265d78901344
+        name: "A run through the npm launcher honours both switches."
+  - key: 01a13a90-3556-7106-a68c-265e3e3a8d23
+    statement:
+      form: optional
+      where: "`LOFT_TELEMETRY` is set to a non-empty value"
+      system: "Loft"
+      shall: "treat `internal` as on and every other value as off."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-265f0ddbd183
+        name: "`LOFT_TELEMETRY=off` switches telemetry off."
+      - key: 01a13a90-3556-7106-a68c-2660eb750bfc
+        name: "`LOFT_TELEMETRY=0` switches telemetry off."
+      - key: 01a13a90-3556-7106-a68c-266127afb2a4
+        name: "`LOFT_TELEMETRY=internal` sends events with the mode `internal`."
+      - key: 01a13a90-3556-7106-a68c-266243da1d21
+        name: "`LOFT_TELEMETRY=internal` sends nothing after `loft telemetry off`."
+      - key: 01a13a90-3556-7106-a68c-2663b515247a
+        name: "`LOFT_TELEMETRY=off` sends nothing after `loft telemetry on`."
+  - key: 01a13a90-3556-7106-a68c-2664dd1aebca
+    statement:
+      form: event_driven
+      when: "a person runs `loft telemetry off`"
+      system: "Loft"
+      shall: "keep telemetry off for that user on that machine until `loft telemetry on`."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-2665366573ec
+        name: "Every later run for that user on that machine sends no event."
+      - key: 01a13a90-3556-7106-a68c-2666a99b5550
+        name: "The installation token is deleted."
+      - key: 01a13a90-3556-7106-a68c-26678ed89b03
+        name: "A run after `loft telemetry on` sends an event with a new installation token."

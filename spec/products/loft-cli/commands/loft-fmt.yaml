@@ -3,7 +3,9 @@ slug: loft-fmt
 name: "`loft fmt`"
 body: "Rewrites the tree in canonical layout and mints missing keys, or with `--check` reports drift without writing."
 tags:
+  - checks-for-updates
   - reads-tree
+  - sends-telemetry
   - writes-tree
 realizes:
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
