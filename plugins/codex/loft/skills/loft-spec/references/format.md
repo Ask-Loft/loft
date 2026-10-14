@@ -215,9 +215,11 @@ A Quality Attribute sits under a Feature or a Component: `key`, `name`, `body`, 
 
 ## Sections and bodies
 
-A body is Markdown: paragraphs, lists, code, emphasis and links. A Section holds prose that needs
-its own heading: `key`, `name`, `body` (required), `mentions` and nested `sections`. Any node with
-a body may hold Sections. A heading inside a body belongs in a Section instead (`V2-001`).
+A body is Markdown: paragraphs, lists, code spans, fenced code blocks, emphasis and links. Any
+other construct, such as raw HTML, a table or a block quote, is reported as `V2-009`. A Section
+holds prose that needs its own heading: `key`, `name`, `body` (required), `mentions` and nested
+`sections`. Any node with a body may hold Sections. A heading inside a body belongs in a Section
+instead (`V2-001`).
 
 ## Tags and categories
 

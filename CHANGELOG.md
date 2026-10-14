@@ -17,6 +17,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   product by linking its tests.
 - This repository traces its own criteria: its trace file is seeded from the test names that cited
   labels before test names stopped citing them, and CI runs `loft reconcile --fail-on warning`.
+- A new lint rule, `V2-009` (info), reports each Markdown construct in a body outside the Format's
+  subset of paragraphs, lists, code spans, fenced code blocks, emphasis and links: raw HTML, a
+  block quote, a table, an image, a thematic break, an indented code block, a footnote, a task
+  list item or struck-through text, each at its first body line.
 
 ## 2.0.3 (2026-10-14)
 

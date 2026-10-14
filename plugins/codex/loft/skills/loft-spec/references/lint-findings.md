@@ -358,6 +358,7 @@ featureGroups:
 | `V2-002` | info | A statement stored as `text` | Write it as `form` and slots |
 | `V2-003` | warning | A label cited in prose without a `mentions` edge to its node, a label that names nothing, or a label withdrawn from a mentioned node, which the next publish rewrites | Add the `mentions` edge, or fix the label |
 | `V2-004` | warning | A withdrawn label the next publish cannot rewrite, because the node mentions two candidates | Cite the node by its live label |
+| `V2-009` | info | A Markdown construct in a body outside the subset: raw HTML, a block quote, a table, an image, a thematic break, an indented code block, a footnote, a task list item or struck-through text | Rewrite it as paragraphs, lists, code spans, fenced code blocks, emphasis and links |
 
 `V2-003` and `V2-004` concern labels, so they arise only in a published tree.
 
@@ -389,6 +390,24 @@ realizes:
 requirements:
   - statement:
       text: "When the user saves a note, the note store shall keep the note."
+    criteria:
+      - name: "The note is listed after it is saved."
+```
+
+```yaml rule=V2-009 path=spec/products/notes/writing/write-a-note.yaml
+name: "Write a note"
+body: |
+  Saving a short note.
+
+  > Short notes are read.
+realizes:
+  - 00000000-0000-7000-8000-000000000101
+requirements:
+  - statement:
+      form: event_driven
+      when: "the user saves a note"
+      system: "the note store"
+      shall: "keep the note."
     criteria:
       - name: "The note is listed after it is saved."
 ```

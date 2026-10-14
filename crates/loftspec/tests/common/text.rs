@@ -45,3 +45,13 @@ pub const SHALL_CONFLICT: &str = "    conflicts:
 pub fn on_requirement(lines: &str) -> Files {
     edited(FEATURE, AFTER_CRITERIA, &format!("{AFTER_CRITERIA}{lines}"))
 }
+
+/// The small document's files with the Feature's body written as the block scalar `body`.
+pub fn with_feature_body(body: &str) -> Files {
+    let indented: String = body.lines().flat_map(|line| ["  ", line, "\n"]).collect();
+    edited(
+        FEATURE,
+        "body: \"Keys address nodes.\"\n",
+        &format!("body: |\n{indented}"),
+    )
+}

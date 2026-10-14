@@ -183,3 +183,26 @@ fn an_absent_body_is_not_written() {
     );
     assert_eq!(read_back(&files).products[0].details.body, None);
 }
+
+#[test]
+fn a_section_is_written_under_sections_in_its_owning_nodes_record() {
+    let files = common::full::full_files();
+    let at = |file, route: &[&str]| scalar(&files, file, route);
+    assert_eq!(
+        at(PRODUCT, &["sections", "0", "key"]),
+        common::key(40).to_string()
+    );
+    assert_eq!(at(PRODUCT, &["sections", "0", "name"]), "Notes");
+    assert_eq!(
+        at(PRODUCT, &["sections", "0", "sections", "0", "key"]),
+        common::key(41).to_string()
+    );
+    assert_eq!(
+        at(FEATURE, &["requirements", "0", "sections", "0", "key"]),
+        common::key(51).to_string()
+    );
+    assert!(
+        files.keys().all(|path| !path.as_str().contains("section")),
+        "no Section has a file of its own"
+    );
+}

@@ -39,6 +39,7 @@ mod lint;
 mod lint_craft;
 mod lint_language;
 mod lint_live;
+mod lint_markdown;
 mod lint_withdrawn;
 mod lock;
 mod manifest;

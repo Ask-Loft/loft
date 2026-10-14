@@ -2,7 +2,7 @@
 //! F-49, F-47).
 
 use crate::common::key;
-use crate::common::text::{FEATURE, PRODUCT, edited, files, path};
+use crate::common::text::{FEATURE, PRODUCT, edited, files, path, with_feature_body};
 use loftspec::codec::{self, Files, Problem, ReadError};
 use loftspec::identity::Key;
 use loftspec::manifest::ManifestError;
@@ -425,4 +425,56 @@ fn a_node_record_carrying_a_label_field_is_refused() {
         assert_eq!(error.problem, Problem::UnknownField("label".to_owned()));
         assert_eq!(error.sites[0].location, Some(at(line, column)), "{to:?}");
     }
+}
+
+#[test]
+fn a_requirement_without_a_statement_is_refused() {
+    let files = edited(
+        FEATURE,
+        "    statement:\n      form: ubiquitous\n      system: \"The writer\"\n      \
+         shall: \"write a key on every node.\"\n",
+        "",
+    );
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::MissingField("statement"));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/identity/keys.yaml:8:5: the field `statement` is required"
+    );
+}
+
+#[test]
+fn a_form_outside_the_five_is_refused_at_its_file_line_and_column() {
+    let files = edited(FEATURE, "form: ubiquitous", "form: optative");
+    assert_eq!(
+        only(&files).to_string(),
+        "spec/products/example-product/identity/keys.yaml:10:13: `optative` is not a value the \
+         field defines"
+    );
+}
+
+/// The Feature's body as the reader reads it, after writing `body` as a block.
+fn body_read(body: &str) -> String {
+    let document = codec::read(&with_feature_body(body)).unwrap();
+    let feature = &document.products[0].feature_groups[0].features[0];
+    feature.details.body.clone().unwrap()
+}
+
+#[test]
+fn paragraphs_bullet_lists_and_numbered_lists_in_a_body_are_accepted() {
+    let body =
+        "A paragraph.\n\nAnother paragraph.\n\n- A bullet\n- Another\n\n1. First\n2. Second\n";
+    assert_eq!(body_read(body), body);
+}
+
+#[test]
+fn code_spans_and_fenced_code_blocks_in_a_body_are_accepted() {
+    let body = "Run `loft check` first.\n\n```sh\nloft check --fail-on warning\n```\n";
+    assert_eq!(body_read(body), body);
+}
+
+#[test]
+fn emphasis_and_links_in_a_body_are_accepted() {
+    let body = "Keys are *never* reused; see **the** [format](https://example.com).\n";
+    assert_eq!(body_read(body), body);
 }
