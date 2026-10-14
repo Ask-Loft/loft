@@ -14,8 +14,11 @@ const BUILT_IN: [&str; 3] = ["loft-cli", "loftspec", "loftspec-store"];
 
 /// What a test may start other than `loft`: the archiver, Node and npm, which unpack, run and
 /// install the npm packages built around it, the scripts that build and smoke-test those
-/// packages, and the release check, copied into a scratch repository.
-const OTHER_PROGRAMS: [&str; 6] = [
+/// packages, the release check, copied into a scratch repository, and a byte-for-byte copy of
+/// the built `loft` placed where an npm install puts it, to show how `loft` tells it was
+/// installed by npm.
+const OTHER_PROGRAMS: [&str; 7] = [
+    "&copy",
     "\"tar\"",
     "\"node\"",
     "\"npm\"",

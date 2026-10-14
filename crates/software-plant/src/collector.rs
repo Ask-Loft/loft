@@ -280,6 +280,8 @@ enum CommandName {
     Init,
     #[serde(rename = "publish")]
     Publish,
+    #[serde(rename = "reconcile")]
+    Reconcile,
     #[serde(rename = "render")]
     Render,
     #[serde(rename = "skill install")]
@@ -299,6 +301,7 @@ enum ErrorKind {
     Integrity,
     Lock,
     Install,
+    Accept,
 }
 
 #[derive(Deserialize)]

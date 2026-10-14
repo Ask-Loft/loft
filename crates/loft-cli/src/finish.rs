@@ -8,9 +8,7 @@ use serde_json::Value;
 /// How a command finished.
 pub struct Finished {
     pub code: ExitCode,
-    #[expect(dead_code, reason = "the command event reads it")]
     pub outcome: &'static str,
-    #[expect(dead_code, reason = "the command event reads it")]
     pub error_kinds: Vec<String>,
 }
 

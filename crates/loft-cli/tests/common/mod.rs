@@ -3,6 +3,8 @@
 //! clock, and the git simulator for a command that reads the repository, with no `git` on the
 //! search path otherwise; or, for a contract suite, under real git.
 
+pub mod telemetry;
+
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};

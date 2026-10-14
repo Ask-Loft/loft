@@ -20,6 +20,7 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 loftspec = { path = "crates/loftspec", version = "2.0.3" }
 loftspec-store = { path = "crates/loftspec-store", version = "2.0.3" }
 clap = { version = "4", features = ["derive"] }
+hmac = "0.12"
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version
 # change can change a finding.
 pulldown-cmark = { version = "=0.13.4", default-features = false }

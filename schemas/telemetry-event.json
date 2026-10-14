@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loft-telemetry-event-1.json",
+  "title": "The command event `loft` sends to the telemetry collector, version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "eventId",
+    "version",
+    "os",
+    "arch",
+    "installedBy",
+    "time",
+    "installation",
+    "mode",
+    "agent",
+    "command",
+    "outcome",
+    "errorKinds",
+    "duration"
+  ],
+  "properties": {
+    "schema": {
+      "const": "loft-telemetry-event/1"
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "version": {
+      "type": "string"
+    },
+    "os": {
+      "type": "string",
+      "enum": [
+        "linux",
+        "macos",
+        "windows",
+        "other"
+      ]
+    },
+    "arch": {
+      "type": "string",
+      "enum": [
+        "x86_64",
+        "aarch64",
+        "other"
+      ]
+    },
+    "installedBy": {
+      "type": "string",
+      "enum": [
+        "npm",
+        "cargo",
+        "release-binary",
+        "unknown"
+      ]
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:00:00Z$"
+    },
+    "installation": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "project": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "branch": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "ci",
+        "agent",
+        "interactive",
+        "unknown"
+      ]
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "claude",
+        "claude-code",
+        "chatgpt",
+        "chatgpt-codex",
+        "unknown"
+      ]
+    },
+    "command": {
+      "type": "string",
+      "enum": [
+        "check",
+        "find",
+        "fmt",
+        "import v1",
+        "init",
+        "publish",
+        "reconcile",
+        "render",
+        "skill install",
+        "verify"
+      ]
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "errorKinds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "store",
+          "read",
+          "validation",
+          "lint-config",
+          "refused",
+          "integrity",
+          "lock",
+          "install",
+          "accept"
+        ]
+      }
+    },
+    "duration": {
+      "type": "string",
+      "enum": [
+        "under-100ms",
+        "under-1s",
+        "under-10s",
+        "under-60s",
+        "60s-or-more"
+      ]
+    }
+  }
+}

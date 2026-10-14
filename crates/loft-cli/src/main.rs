@@ -13,6 +13,7 @@ mod init;
 mod install;
 mod json;
 mod merge_driver;
+mod network;
 mod out;
 mod publish;
 mod reconcile;
@@ -23,12 +24,14 @@ mod skill;
 mod stop;
 mod switch_command;
 mod switches;
+mod telemetry;
 mod time;
 mod verify;
 mod version;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::time::Instant;
 
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
@@ -306,7 +309,35 @@ fn run(cli: Cli) -> ExitCode {
         let _ = Cli::command().print_help();
         return ExitCode::from(2);
     };
-    dispatch(command).code
+    let started = Instant::now();
+    let sends = command.event_name();
+    let finished = dispatch(command);
+    let root = Path::new(".");
+    let telemetry = sends.and_then(|name| telemetry::prepare(name, &finished, started, root));
+    network::run(telemetry.into_iter().collect());
+    finished.code
+}
+
+impl Command {
+    /// The name the command event gives this command, if the command sends one.
+    const fn event_name(&self) -> Option<&'static str> {
+        match self {
+            Self::Init { .. } => Some("init"),
+            Self::Fmt { .. } => Some("fmt"),
+            Self::Check { .. } => Some("check"),
+            Self::Import { .. } => Some("import v1"),
+            Self::Publish { .. } => Some("publish"),
+            Self::Reconcile { .. } => Some("reconcile"),
+            Self::Find { .. } => Some("find"),
+            Self::Verify { .. } => Some("verify"),
+            Self::Render { .. } => Some("render"),
+            Self::Skill { .. } => Some("skill install"),
+            Self::MergeDriver { .. }
+            | Self::RecordInstall { .. }
+            | Self::Telemetry { .. }
+            | Self::UpdateCheck { .. } => None,
+        }
+    }
 }
 
 /// Runs `command` in the current directory.

@@ -23,14 +23,16 @@ path = "src/main.rs"
 
 [dependencies]
 clap.workspace = true
+hmac.workspace = true
 loftspec.workspace = true
 loftspec-store.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
+ureq.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 software-plant = { path = "../software-plant" }
-ureq.workspace = true
-uuid.workspace = true
 
 [lints]
 workspace = true

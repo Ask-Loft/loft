@@ -74,7 +74,6 @@ pub fn record(way: Way) -> Result<PathBuf, SettingsError> {
 }
 
 /// How the running `loft` was installed.
-#[expect(dead_code, reason = "the command event and the update notice read it")]
 pub fn way() -> Way {
     let Some(executable) = executable() else {
         return Way::Unknown;

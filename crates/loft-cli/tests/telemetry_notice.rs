@@ -1,0 +1,77 @@
+//! The telemetry notice: printed to standard error before the first event leaves a machine,
+//! once, and again while it cannot be recorded.
+
+use std::fs;
+
+use crate::common::telemetry::{command, events};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
+use software_plant::{Clock, Collector};
+
+#[test]
+fn the_first_run_prints_the_notice_on_standard_error_and_still_sends() {
+    let scratch = Scratch::with_reading_list();
+    let collector = Collector::accepting();
+    let first = command(&scratch, None, &collector)
+        .arg("check")
+        .output()
+        .unwrap();
+    let notice = stderr(&first);
+    for needed in [
+        collector.url().as_str(),
+        "loft telemetry off",
+        "LOFT_TELEMETRY=off",
+        "30 days",
+        "90 days",
+        "network address",
+        "https://github.com/Ask-Loft/loft#telemetry-and-the-update-check",
+    ] {
+        assert!(notice.contains(needed), "{needed} in {notice}");
+    }
+    assert!(!notice.contains("anonymous"), "{notice}");
+    assert_eq!(events(&collector).len(), 1);
+    let off = scratch
+        .command(None, &Clock::fixed(EPOCH))
+        .arg("check")
+        .output()
+        .unwrap();
+    assert_eq!(stdout(&first), stdout(&off));
+}
+
+#[test]
+fn a_later_run_prints_no_notice() {
+    let scratch = Scratch::with_reading_list();
+    let collector = Collector::accepting();
+    command(&scratch, None, &collector)
+        .arg("check")
+        .output()
+        .unwrap();
+    let second = command(&scratch, None, &collector)
+        .arg("check")
+        .output()
+        .unwrap();
+    assert_eq!(stderr(&second), "");
+    assert_eq!(events(&collector).len(), 2);
+}
+
+#[test]
+fn a_notice_that_cannot_be_recorded_is_printed_again_and_the_event_still_sent() {
+    let scratch = Scratch::with_reading_list();
+    let blocked = scratch.0.join("not-a-directory");
+    fs::write(&blocked, "").unwrap();
+    let collector = Collector::accepting();
+    for _ in 0..2 {
+        let output = command(&scratch, None, &collector)
+            .env("HOME", &blocked)
+            .env("APPDATA", &blocked)
+            .arg("check")
+            .output()
+            .unwrap();
+        assert!(
+            stderr(&output).contains("telemetry is on"),
+            "{}",
+            stderr(&output)
+        );
+        assert_eq!(output.status.code(), Some(0));
+    }
+    assert_eq!(events(&collector).len(), 2);
+}
