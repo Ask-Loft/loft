@@ -33,7 +33,13 @@ fn each_tagged_command_sends_exactly_one_valid_event() {
     {
         let requests = requests(kind, args);
         assert_eq!(requests.len(), 1, "{slug}");
-        schema::conforming(&requests[0].body, EVENT_SCHEMA);
+        let event = schema::conforming(&requests[0].body, EVENT_SCHEMA);
+        let words = if ["import", "skill"].contains(&args[0]) {
+            2
+        } else {
+            1
+        };
+        assert_eq!(event["command"], args[..words].join(" ").as_str(), "{slug}");
     }
 }
 
@@ -48,4 +54,29 @@ fn each_command_that_sends_an_event_lists_sends_telemetry() {
             "{slug}: sends {sends}"
         );
     }
+}
+
+#[test]
+fn the_switch_subcommands_open_no_connection() {
+    let scratch = fixture(Fixture::Empty);
+    let collector = Collector::accepting();
+    let feed = software_plant::ReleaseFeed::listing(vec![]);
+    for args in [
+        ["telemetry", "off"],
+        ["telemetry", "on"],
+        ["telemetry", "status"],
+        ["update-check", "off"],
+        ["update-check", "on"],
+        ["update-check", "status"],
+    ] {
+        let output = command(&scratch, None, &collector)
+            .env_remove("LOFT_UPDATE_CHECK")
+            .env("LOFT_UPDATE_ENDPOINT", feed.url())
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(0), "{args:?}");
+    }
+    assert!(collector.requests().is_empty());
+    assert!(feed.requests().is_empty());
 }

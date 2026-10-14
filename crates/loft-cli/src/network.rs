@@ -47,7 +47,7 @@ pub fn post_json(url: &str, body: &[u8], left: Duration) -> Option<u16> {
     if !allowed(url) {
         return None;
     }
-    let response = agent(left, 0)
+    let response = agent(left, &format!("loft/{VERSION}"))
         .post(url)
         .header("Content-Type", "application/json")
         .send(body)
@@ -55,13 +55,14 @@ pub fn post_json(url: &str, body: &[u8], left: Duration) -> Option<u16> {
     Some(response.status().as_u16())
 }
 
-/// `GET`s `url` within `left`, asking for GitHub's JSON, and gives the answer's status and body,
-/// or none when no answer came.
+/// `GET`s `url` within `left`, asking for GitHub's JSON, following no redirect, and gives the
+/// answer's status and body, or none when no answer came. The request names `loft` and nothing
+/// else about it, not even its version.
 pub fn get_json(url: &str, left: Duration) -> Option<(u16, Vec<u8>)> {
     if !allowed(url) {
         return None;
     }
-    let mut response = agent(left, 2)
+    let mut response = agent(left, "loft")
         .get(url)
         .header("Accept", "application/vnd.github+json")
         .call()
@@ -76,12 +77,14 @@ pub fn get_json(url: &str, left: Duration) -> Option<(u16, Vec<u8>)> {
     Some((status, body))
 }
 
-fn agent(left: Duration, redirects: u32) -> Agent {
+/// A client that gives up after `left`, follows no redirect, since a redirect could lead off
+/// the loopback interface over plain `http`, and names itself `user_agent`.
+fn agent(left: Duration, user_agent: &str) -> Agent {
     Agent::config_builder()
         .http_status_as_error(false)
         .timeout_global(Some(left))
-        .max_redirects(redirects)
-        .user_agent(format!("loft/{VERSION}"))
+        .max_redirects(0)
+        .user_agent(user_agent)
         .build()
         .into()
 }

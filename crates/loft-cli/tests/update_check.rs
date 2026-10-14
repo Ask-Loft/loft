@@ -7,6 +7,7 @@ use std::process::{Command, Output};
 
 use crate::common::{EPOCH, Scratch, isolate, stderr, stdout};
 use serde_json::{Value, json};
+use software_plant::http::{Request, Responder, Response, Server};
 use software_plant::releases::{LATEST, Release};
 use software_plant::{Clock, ReleaseFeed};
 
@@ -90,14 +91,26 @@ fn a_newer_release_is_told_of_on_a_later_run_once_a_day() {
 }
 
 #[test]
-fn the_notice_is_printed_in_ci_too() {
-    let scratch = Scratch::with_reading_list();
-    let feed = newer();
-    check_at(&scratch, &feed.url(), EPOCH);
-    let mut command = scratch.command(None, &Clock::fixed(EPOCH + 60));
-    asking(&mut command, &feed.url());
-    let output = command.env("CI", "true").arg("check").output().unwrap();
-    assert!(stderr(&output).contains("99.0.0"), "{}", stderr(&output));
+fn the_notice_is_printed_in_every_mode() {
+    let modes = [
+        ("CI", "true"),
+        ("CLAUDECODE", "1"),
+        ("LOFT_TELEMETRY", "internal"),
+    ];
+    for (name, value) in modes {
+        let scratch = Scratch::with_reading_list();
+        crate::common::telemetry::seen(&scratch);
+        let feed = newer();
+        check_at(&scratch, &feed.url(), EPOCH);
+        let mut command = scratch.command(None, &Clock::fixed(EPOCH + 60));
+        asking(&mut command, &feed.url());
+        let output = command.env(name, value).arg("check").output().unwrap();
+        assert!(
+            stderr(&output).contains("99.0.0"),
+            "{name}: {}",
+            stderr(&output)
+        );
+    }
 }
 
 #[test]
@@ -223,6 +236,53 @@ fn a_feed_that_refuses_fails_rate_limits_or_stays_silent_changes_nothing() {
 }
 
 #[test]
+fn a_failed_request_writes_nothing_to_standard_error() {
+    let failing = ReleaseFeed::failing(500);
+    let limited = ReleaseFeed::rate_limited();
+    let silent = ReleaseFeed::silent();
+    for address in [
+        ReleaseFeed::refusing(),
+        failing.url(),
+        limited.url(),
+        silent.url(),
+    ] {
+        let scratch = Scratch::with_reading_list();
+        let output = check_at(&scratch, &address, EPOCH);
+        assert_eq!(stderr(&output), "", "{address}");
+        assert_eq!(
+            stderr(&check_at(&scratch, &address, EPOCH + DAY)),
+            "",
+            "{address}"
+        );
+    }
+}
+
+/// Answers every request with a redirect to `to`.
+struct Redirecting(String);
+
+impl Responder for Redirecting {
+    fn answer(&mut self, _: &Request) -> Option<Response> {
+        let mut response = Response::empty(302);
+        response
+            .headers
+            .push(("Location".to_owned(), self.0.clone()));
+        Some(response)
+    }
+}
+
+#[test]
+fn a_redirect_is_not_followed() {
+    let scratch = Scratch::with_reading_list();
+    let target = newer();
+    let redirecting = Server::start(Redirecting(format!("{}{LATEST}", target.url())));
+    let output = check_at(&scratch, &redirecting.url(), EPOCH);
+    assert_eq!(redirecting.requests().len(), 1);
+    assert!(target.requests().is_empty());
+    assert!(kept(&scratch).get("latest").is_none(), "{}", kept(&scratch));
+    assert_eq!(stderr(&output), "");
+}
+
+#[test]
 fn while_the_update_check_is_off_nothing_is_asked_or_told() {
     for variable in [Some("off"), None] {
         let scratch = Scratch::with_reading_list();
@@ -248,7 +308,7 @@ fn while_the_update_check_is_off_nothing_is_asked_or_told() {
 }
 
 #[test]
-fn the_request_carries_nothing_but_the_address_and_the_version_of_loft() {
+fn the_request_carries_nothing_but_the_address_and_the_name_loft() {
     let scratch = Scratch::with_reading_list();
     let feed = newer();
     check_at(&scratch, &feed.url(), EPOCH);
@@ -256,10 +316,7 @@ fn the_request_carries_nothing_but_the_address_and_the_version_of_loft() {
     assert_eq!(request.method, "GET");
     assert_eq!(request.path, LATEST);
     assert_eq!(request.body, Vec::<u8>::new());
-    assert_eq!(
-        request.header("user-agent"),
-        Some(concat!("loft/", env!("CARGO_PKG_VERSION")))
-    );
+    assert_eq!(request.header("user-agent"), Some("loft"));
     let names: Vec<&str> = request
         .headers
         .iter()

@@ -555,3 +555,30 @@ fn the_launcher_depends_on_no_package_outside_the_ask_loft_scope() {
         }
     }
 }
+
+#[test]
+fn the_launcher_honours_both_switches() {
+    let scratch = Scratch::empty();
+    let project = project(&scratch, true);
+    let home = scratch.home();
+    let collector = software_plant::Collector::accepting();
+    let feed = software_plant::ReleaseFeed::listing(vec![]);
+    let run = |value: Option<&str>| {
+        let mut node = launcher(&project, &home, None);
+        node.env("LOFT_TELEMETRY_ENDPOINT", collector.url())
+            .env("LOFT_UPDATE_ENDPOINT", feed.url());
+        for name in ["LOFT_TELEMETRY", "LOFT_UPDATE_CHECK"] {
+            match value {
+                Some(value) => node.env(name, value),
+                None => node.env_remove(name),
+            };
+        }
+        node.arg("check").output().unwrap();
+    };
+    run(Some("off"));
+    assert!(collector.requests().is_empty());
+    assert!(feed.requests().is_empty());
+    run(None);
+    assert_eq!(collector.events().len(), 1);
+    assert_eq!(feed.requests().len(), 1);
+}

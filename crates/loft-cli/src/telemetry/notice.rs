@@ -7,9 +7,9 @@ pub fn text(address: &str) -> String {
     format!(
         "\
 loft: telemetry is on. After each command, loft sends one event to {address}:
-  its version, operating system and architecture, how it was installed, the hour, the command,
-  its outcome and error kinds, how long it took, whether CI or an agent ran it, and random
-  tokens for this installation, this checkout and its branch.
+  its schema and a random event id, loft's version, operating system and architecture, how it
+  was installed, the hour, the command, its outcome and error kinds, how long it took, whether
+  CI or an agent ran it, and random tokens for this installation, this checkout and its branch.
   It never sends the specification, the code, a path, a repository address, a name or an
   error message. The tokens are pseudonymous; the collector also sees the network address each
   event comes from. Events with tokens are kept for at most 30 days and aggregates without

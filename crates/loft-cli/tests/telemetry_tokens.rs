@@ -122,3 +122,26 @@ fn a_local_directory_that_cannot_be_written_leaves_out_project_and_branch() {
     assert!(event.get("branch").is_none(), "{event}");
     assert_eq!(json!(event["installation"].is_string()), json!(true));
 }
+
+#[test]
+fn on_after_off_draws_a_new_installation_token() {
+    let scratch = Scratch::with_reading_list();
+    let first = check(&scratch, None)["installation"].clone();
+    for action in ["off", "on"] {
+        let output = scratch
+            .command(None, &software_plant::Clock::fixed(crate::common::EPOCH))
+            .args(["telemetry", action])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(0), "{action}");
+    }
+    assert_ne!(check(&scratch, None)["installation"], first);
+}
+
+#[test]
+fn a_fresh_installation_under_the_same_home_draws_a_new_token() {
+    let scratch = Scratch::with_reading_list();
+    let first = check(&scratch, None)["installation"].clone();
+    fs::remove_dir_all(scratch.config()).unwrap();
+    assert_ne!(check(&scratch, None)["installation"], first);
+}

@@ -51,18 +51,29 @@ fn a_failed_event_is_neither_sent_again_nor_kept_for_a_later_run() {
 }
 
 #[test]
-fn a_silent_collector_adds_at_most_the_network_client_s_time_limit() {
+fn a_silent_collector_and_a_silent_release_feed_add_at_most_the_time_limit() {
     let scratch = Scratch::with_reading_list();
     seen(&scratch);
     let silent = Collector::silent();
+    let feed = software_plant::ReleaseFeed::silent();
     let mut off = scratch.command(None, &Clock::fixed(EPOCH));
     let started = Instant::now();
     off.args(["check", "--fail-on", "hint"]).output().unwrap();
     let without = started.elapsed();
-    let (_, with) = run(&scratch, &silent.url());
+    let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+    sending(&mut command, &silent.url())
+        .env_remove("LOFT_UPDATE_CHECK")
+        .env("LOFT_UPDATE_ENDPOINT", feed.url());
+    let started = Instant::now();
+    command
+        .args(["check", "--fail-on", "hint"])
+        .output()
+        .unwrap();
+    let with = started.elapsed();
+    assert_eq!(feed.requests().len(), 1);
     // The limit is 500 milliseconds; the margin absorbs a loaded test machine.
     assert!(
-        with < without + Duration::from_millis(900),
+        with < without + Duration::from_millis(700),
         "{with:?} against {without:?}"
     );
     assert!(with >= Duration::from_millis(400), "{with:?}");
@@ -86,8 +97,12 @@ fn while_telemetry_is_off_nothing_is_sent_written_or_printed() {
         assert!(collector.requests().is_empty(), "{variable:?}");
         assert_eq!(stderr(&output), "", "{variable:?}");
         assert!(!scratch.0.join(".loft").exists(), "{variable:?}");
-        let kept =
-            std::fs::read_to_string(scratch.config().join("telemetry.json")).unwrap_or_default();
-        assert!(!kept.contains("installation"), "{variable:?}: {kept}");
+        let kept = scratch.config().join("telemetry.json");
+        if variable.is_some() {
+            assert!(!kept.exists(), "{variable:?}");
+        } else {
+            let kept = std::fs::read_to_string(kept).unwrap();
+            assert!(!kept.contains("installation"), "{kept}");
+        }
     }
 }

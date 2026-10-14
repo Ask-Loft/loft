@@ -75,3 +75,41 @@ fn a_notice_that_cannot_be_recorded_is_printed_again_and_the_event_still_sent() 
     }
     assert_eq!(events(&collector).len(), 2);
 }
+
+#[test]
+fn the_notice_names_every_field_of_the_event() {
+    let schema: serde_json::Value =
+        serde_json::from_str(crate::common::telemetry::EVENT_SCHEMA).unwrap();
+    let scratch = Scratch::with_reading_list();
+    let collector = Collector::accepting();
+    let output = command(&scratch, None, &collector)
+        .arg("check")
+        .output()
+        .unwrap();
+    let notice = stderr(&output)
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    let phrase = |field: &str| match field {
+        "schema" => "its schema",
+        "eventId" => "event id",
+        "version" => "version",
+        "os" => "operating system",
+        "arch" => "architecture",
+        "installedBy" => "how it was installed",
+        "time" => "the hour",
+        "installation" => "this installation",
+        "project" => "this checkout",
+        "branch" => "its branch",
+        "mode" => "whether CI or an agent ran it",
+        "agent" => "an agent",
+        "command" => "the command",
+        "outcome" => "outcome",
+        "errorKinds" => "error kinds",
+        "duration" => "how long it took",
+        other => panic!("the notice does not say how it names `{other}`"),
+    };
+    for field in schema["properties"].as_object().unwrap().keys() {
+        assert!(notice.contains(phrase(field)), "{field}: {notice}");
+    }
+}

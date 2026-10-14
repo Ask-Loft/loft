@@ -4,7 +4,7 @@ use std::fs;
 use std::process::Command;
 
 use crate::common::telemetry::{EVENT_SCHEMA, Sent, events, sending, sent, the_event};
-use crate::common::{EPOCH, Scratch, isolate, stdout};
+use crate::common::{EPOCH, Scratch, isolate, stderr, stdout};
 use crate::schema;
 use serde_json::{Value, json};
 use software_plant::{Clock, Collector, GitScenario};
@@ -148,7 +148,13 @@ fn the_event_carries_no_text_from_the_tree_the_files_the_repository_or_the_envir
     let output = command.output().unwrap();
     let body = String::from_utf8(collector.events().remove(0)).unwrap();
     let home = scratch.home();
+    let real = |mut command: Command| {
+        let output = command.output().unwrap();
+        String::from_utf8(output.stdout).unwrap().trim().to_owned()
+    };
     let mut telltales = vec![
+        real(Command::new("whoami")),
+        real(Command::new("hostname")),
         "telltale".to_owned(),
         "acme".to_owned(),
         scratch.0.display().to_string(),
@@ -157,7 +163,8 @@ fn the_event_carries_no_text_from_the_tree_the_files_the_repository_or_the_envir
         "shelf".to_owned(),
         "Reading List".to_owned(),
     ];
-    telltales.extend(stdout(&output).lines().take(3).map(str::to_owned));
+    telltales.extend(stdout(&output).lines().map(str::to_owned));
+    telltales.extend(stderr(&output).lines().map(str::to_owned));
     for telltale in telltales.iter().filter(|telltale| !telltale.is_empty()) {
         assert!(!body.contains(telltale.as_str()), "{telltale} in {body}");
     }
@@ -220,4 +227,14 @@ fn the_readme_s_sample_event_follows_the_schema() {
         .unwrap()
         .0;
     schema::conforming(sample.as_bytes(), EVENT_SCHEMA);
+}
+
+#[test]
+fn an_install_record_that_does_not_parse_leaves_the_way_inferred_and_prints_nothing() {
+    let scratch = Scratch::with_reading_list();
+    fs::create_dir_all(scratch.config()).unwrap();
+    fs::write(scratch.config().join("install.json"), "{ not json").unwrap();
+    let sent = sent(&scratch, &["check"], None);
+    assert_eq!(the_event(&sent)["installedBy"], json!("unknown"));
+    assert_eq!(stderr(&sent.output), "");
 }

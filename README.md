@@ -227,7 +227,8 @@ no exit code, and a lost event is never sent again.
 `loft` also checks for updates. At the end of the same commands, at most once a day, it asks
 GitHub for the latest release and keeps the answer; a later run tells you on standard error,
 at most once a day, when a newer release exists and how to install it. The request carries
-nothing but `loft`'s version in its User-Agent. This check has its own switch and stays on
+nothing about you or your project: its User-Agent is `loft`, without even the version, and it
+follows no redirect. This check has its own switch and stays on
 when telemetry is off.
 
 | To                                   | Run or set                                   |

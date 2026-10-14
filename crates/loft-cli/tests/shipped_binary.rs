@@ -16,9 +16,12 @@ const BUILT_IN: [&str; 3] = ["loft-cli", "loftspec", "loftspec-store"];
 /// install the npm packages built around it, the scripts that build and smoke-test those
 /// packages, the release check, copied into a scratch repository, and a byte-for-byte copy of
 /// the built `loft` placed where an npm install puts it, to show how `loft` tells it was
-/// installed by npm.
-const OTHER_PROGRAMS: [&str; 7] = [
+/// installed by npm; and `whoami` and `hostname`, whose answers a test plants as text the command
+/// event must never carry.
+const OTHER_PROGRAMS: [&str; 9] = [
     "&copy",
+    "\"whoami\"",
+    "\"hostname\"",
     "\"tar\"",
     "\"node\"",
     "\"npm\"",

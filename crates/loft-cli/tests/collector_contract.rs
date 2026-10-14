@@ -140,6 +140,17 @@ fn the_simulator_records_an_event_sent_twice_once() {
 }
 
 #[test]
+fn the_simulator_records_events_in_the_order_received() {
+    let collector = Collector::accepting();
+    let bodies: Vec<String> = (0..3).map(|_| event().to_string()).collect();
+    for body in &bodies {
+        post(&collector.url(), "application/json", body.as_bytes());
+    }
+    let expected: Vec<Vec<u8>> = bodies.into_iter().map(String::into_bytes).collect();
+    assert_eq!(collector.events(), expected);
+}
+
+#[test]
 fn the_simulator_records_no_event_it_refuses() {
     let collector = Collector::accepting();
     let _ = answers(&collector.url());

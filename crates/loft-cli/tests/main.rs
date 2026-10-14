@@ -32,6 +32,7 @@ mod merge_contract;
 mod merge_driver;
 mod merge_driver_install;
 mod needs_repository;
+mod network_client;
 mod npm;
 mod plugins;
 mod publish;
