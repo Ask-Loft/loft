@@ -166,6 +166,8 @@ requirements:
         name: "Formatting leaves the label counters unchanged, so no label of a dropped binding is allocated again."
       - key: 01a137a8-ae5b-7395-a025-0dab7b5cf623
         name: "A binding whose key a node or decision carries is kept."
+      - key: 01a137b5-8a69-7480-9b93-21a71fd2a1cc
+        name: "The formatter gives the label and key of each binding it drops."
   - key: 01a137a8-ae5b-7395-a025-0dac26f000aa
     statement:
       form: event_driven
