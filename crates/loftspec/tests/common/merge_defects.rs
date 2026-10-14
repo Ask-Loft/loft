@@ -4,21 +4,18 @@
 use loftspec::codec::schema::field;
 
 use super::edit_tree::Top;
-use super::merge_cases::Case;
-use super::merge_keys::{Flat, Kept, deletions, flatten};
-
-fn versions(case: &Case) -> [Flat; 3] {
-    [&case.base, &case.ours, &case.theirs].map(|bytes| flatten(case.fixture.top, bytes))
-}
+use super::merge_keys::{Flat, Kept, Versions, deletions};
 
 /// Today's engine: a key whose record is of one kind in one version and of another kind in
 /// another (one side deleted it and added a record of another kind under the same key, or
 /// both sides added it as different kinds) reaches a field the other kind lacks, and a debug
 /// build panics on the field access; lifted when the merge is rewritten.
-pub fn a_key_changes_kind(case: &Case) -> bool {
-    let [base, ours, theirs] = versions(case);
+pub fn a_key_changes_kind(versions: &Versions) -> bool {
+    let Versions {
+        base, ours, theirs, ..
+    } = versions;
     let kinds = |key: &String| {
-        [&base, &ours, &theirs]
+        [base, ours, theirs]
             .into_iter()
             .filter_map(|flat| flat.keyed.get(key).map(|keyed| keyed.kind))
             .collect::<Vec<_>>()
@@ -36,15 +33,20 @@ pub fn a_key_changes_kind(case: &Case) -> bool {
 /// base holds, the outcome depends on which side moves which: the same pair of moves merges
 /// with two `parent` conflicts one way round and is refused the other; lifted when the merge is
 /// rewritten.
-pub fn moves_on_the_two_sides_form_a_cycle(case: &Case) -> bool {
-    let [_, ours, theirs] = versions(case);
+pub fn moves_on_the_two_sides_form_a_cycle(versions: &Versions) -> bool {
     let parents = |key: &str| -> Vec<String> {
-        [&ours, &theirs]
+        versions
+            .sides()
             .into_iter()
             .filter_map(|flat| flat.keyed.get(key)?.place.0.clone())
             .collect()
     };
-    let keys: Vec<&String> = ours.keyed.keys().chain(theirs.keyed.keys()).collect();
+    let keys: Vec<&String> = versions
+        .ours
+        .keyed
+        .keys()
+        .chain(versions.theirs.keyed.keys())
+        .collect();
     keys.into_iter().any(|start| {
         let mut seen = vec![start.clone()];
         let mut open = parents(start);
@@ -64,9 +66,8 @@ pub fn moves_on_the_two_sides_form_a_cycle(case: &Case) -> bool {
 /// Today's engine: a record one side deleted, which the other side left as it was but for
 /// records beneath it that it deleted, is brought back with a `record` conflict, since whether
 /// the keeping side changed it compares the whole subtree; lifted when the merge is rewritten.
-pub fn a_side_deletes_beneath_a_record_the_other_side_deleted(case: &Case) -> bool {
-    let [base, ours, theirs] = versions(case);
-    deletions(&base, &ours, &theirs)
+pub fn a_side_deletes_beneath_a_record_the_other_side_deleted(versions: &Versions) -> bool {
+    deletions(&versions.base, &versions.ours, &versions.theirs)
         .into_iter()
         .any(|(_, kept)| kept == Kept::DeletedBeneath)
 }
@@ -74,8 +75,13 @@ pub fn a_side_deletes_beneath_a_record_the_other_side_deleted(case: &Case) -> bo
 /// Today's engine: in a registry, which is sorted by name, renaming an entry re-sorts it, so a
 /// neighbouring entry looks moved; when the other side deleted that neighbour, the deletion is
 /// kept back with a `record` conflict; lifted when the merge is rewritten.
-pub fn a_side_renames_an_entry_and_the_other_deletes_one(case: &Case) -> bool {
-    let [base, ours, theirs] = versions(case);
+pub fn a_side_renames_an_entry_and_the_other_deletes_one(versions: &Versions) -> bool {
+    let Versions {
+        top,
+        base,
+        ours,
+        theirs,
+    } = versions;
     let renames = |side: &Flat| {
         side.keyed.iter().any(|(key, entry)| {
             base.keyed
@@ -84,17 +90,15 @@ pub fn a_side_renames_an_entry_and_the_other_deletes_one(case: &Case) -> bool {
         })
     };
     let deletes = |side: &Flat| base.keyed.keys().any(|key| !side.has(key));
-    case.fixture.top == Top::Registry
-        && ((renames(&ours) && deletes(&theirs)) || (renames(&theirs) && deletes(&ours)))
+    *top == Top::Registry
+        && ((renames(ours) && deletes(theirs)) || (renames(theirs) && deletes(ours)))
 }
 
 /// Today's engine: when both sides alike move a record out of its parent to another list and
 /// then move that parent, still holding another record, into the record it held, the merge
 /// writes a `record` conflict on the parent whose theirs side is null, though neither side
 /// deleted it; lifted when the merge is rewritten.
-pub fn moves_a_record_into_one_it_held(case: &Case, side: &[u8]) -> bool {
-    let base = flatten(case.fixture.top, &case.base);
-    let side = flatten(case.fixture.top, side);
+pub fn moves_a_record_into_one_it_held(base: &Flat, side: &Flat) -> bool {
     side.keyed.keys().any(|key| {
         base.beneath(key)
             .iter()
@@ -106,9 +110,7 @@ pub fn moves_a_record_into_one_it_held(case: &Case, side: &[u8]) -> bool {
 /// reorder the records that list held in base, the merge puts the moved record into ours only,
 /// so theirs seems to have moved a neighbour elsewhere, and it writes a `position` conflict and
 /// an order neither side has; lifted when the merge is rewritten.
-pub fn moves_a_record_into_a_list_it_also_reorders(case: &Case, side: &[u8]) -> bool {
-    let base = flatten(case.fixture.top, &case.base);
-    let side = flatten(case.fixture.top, side);
+pub fn moves_a_record_into_a_list_it_also_reorders(base: &Flat, side: &Flat) -> bool {
     side.lists.iter().any(|(place, keys)| {
         let moved_in = keys.iter().any(|key| {
             base.keyed

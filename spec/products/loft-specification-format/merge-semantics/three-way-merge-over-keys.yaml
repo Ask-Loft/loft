@@ -27,6 +27,12 @@ requirements:
         name: "A record that one side deleted and that the other side changed only by deleting records beneath it is deleted."
       - key: 01a13b3a-594a-7413-a3dc-405c54116d51
         name: "A record is not changed by a move within a list whose order the Format sorts."
+      - key: 01a13b9a-057e-73d1-956b-fda73982546d
+        name: "A record that one side gave another kind is of that kind in the result."
+      - key: 01a13b9a-057e-73d1-956b-fda864fcb75d
+        name: "A record that the sides gave two different kinds keeps its base kind."
+      - key: 01a13b9a-057e-73d1-956b-fda9ee6e2ddb
+        name: "Each field that a record's kind in the result defines as its other versions' kinds do is merged as if the record had kept its kind."
       - key: a14a7d0f-cfe0-44e1-b758-3613ceb98947
         name: "A mapping entry without a key is matched across base, ours and theirs by its field name."
       - key: 2522c643-64ed-44db-92c2-0d4c97f7a514

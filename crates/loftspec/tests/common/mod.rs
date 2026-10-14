@@ -11,6 +11,7 @@ pub mod merge;
 pub mod merge_cases;
 pub mod merge_defects;
 pub mod merge_keys;
+pub mod merge_known;
 pub mod parity;
 pub mod text;
 pub mod v1;

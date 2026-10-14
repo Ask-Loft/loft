@@ -4,12 +4,12 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::conflict::{Host, Side, record_conflict};
-use super::order::{Anchor, merge_order, moved};
+use super::conflict::{Host, Side, position_conflict, record_conflict};
+use super::order::{merge_order, moved};
 use super::record::merge_host;
 use super::same::{same_value, text};
 use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
-use crate::codec::{ConflictRec, Rec, Val};
+use crate::codec::{Rec, Val};
 
 /// What an element is matched by, and how many times its side has held it before.
 type Id = (Ident, usize);
@@ -92,6 +92,7 @@ pub(super) fn merge_list(
         kind,
         moved_by_ours: moved(&sides[0].ids, &sides[1].ids),
         moved_by_theirs: moved(&sides[0].ids, &sides[2].ids),
+        keeps_changed_wholes: host.keeps_changed_wholes,
         disagree: false,
     };
     let mut elements = merger.elements(&sides);
@@ -101,7 +102,9 @@ pub(super) fn merge_list(
         for position in result.conflicts {
             match elements.get_mut(&position.element) {
                 Some(Val::Record(record)) if kind == Element::Host => {
-                    record.conflicts.push(position_conflict(&position));
+                    record
+                        .conflicts
+                        .push(position_conflict(&position, anchor_text));
                 }
                 _ => merger.disagree = true,
             }
@@ -126,6 +129,7 @@ struct Merger {
     kind: Element,
     moved_by_ours: BTreeSet<Id>,
     moved_by_theirs: BTreeSet<Id>,
+    keeps_changed_wholes: bool,
     disagree: bool,
 }
 
@@ -206,8 +210,9 @@ impl Merger {
 
     /// An element one side deleted: removed when the other side left it as it was, and
     /// otherwise, for a record with a key, kept as the other side wrote it with a conflict over
-    /// the record (AC-473, AC-660).
-    fn deleted(&self, base: &Val, kept: &Val, moved: bool, deleter: Side) -> Option<Val> {
+    /// the record (AC-473, AC-660). Under the merge by key, a whole value the other side changed
+    /// keeps its base value with a conflict over the list, as when both sides change it apart.
+    fn deleted(&mut self, base: &Val, kept: &Val, moved: bool, deleter: Side) -> Option<Val> {
         let unchanged = same_value(base, kept) && !moved;
         match (unchanged, self.kind, kept) {
             (false, Element::Host, Val::Record(record)) => {
@@ -215,24 +220,21 @@ impl Merger {
                 record.conflicts.push(record_conflict(&record, deleter));
                 Some(Val::Record(record))
             }
+            (_, Element::Whole, _) if self.keeps_changed_wholes && !same_value(base, kept) => {
+                self.disagree = true;
+                Some(base.clone())
+            }
             _ => None,
         }
     }
 }
 
-/// A conflict over where a record goes: each side names the element it follows, or `first`.
-fn position_conflict(position: &super::order::PositionConflict<Id>) -> ConflictRec {
-    let anchor = |anchor: &Option<Anchor<Id>>| {
-        anchor.as_ref().map(|anchor| {
-            Val::scalar(match anchor {
-                Anchor::First => "first",
-                Anchor::After((Ident::Key(key) | Ident::Value(key), _)) => key.as_str(),
-                Anchor::After((Ident::Pair(option, _), _)) => option.as_str(),
-            })
-        })
-    };
-    let sides = [&position.base, &position.ours, &position.theirs].map(anchor);
-    ConflictRec::new(field::POSITION, sides)
+/// The text a `position` conflict names an element by: its key, its value, or an assessment's
+/// option.
+fn anchor_text((ident, _): &Id) -> String {
+    match ident {
+        Ident::Key(key) | Ident::Value(key) | Ident::Pair(key, _) => key.clone(),
+    }
 }
 
 /// The records of a list, to merge as host records of a registry.

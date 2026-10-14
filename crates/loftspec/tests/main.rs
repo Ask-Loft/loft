@@ -46,6 +46,8 @@ mod lint_markdown;
 mod lint_withdrawn;
 mod lock;
 mod manifest;
+mod merge_by_key;
+mod merge_by_key_props;
 mod merge_decisions;
 mod merge_file;
 mod merge_labels;

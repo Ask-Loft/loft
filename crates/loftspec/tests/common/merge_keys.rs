@@ -39,8 +39,11 @@ fn own(record: &Y, kind: Kind) -> Y {
     own
 }
 
-/// The version `bytes` of a file holding `top`, by key.
+/// The version `bytes` of a file holding `top`, by key; an empty version holds nothing.
 pub fn flatten(top: Top, bytes: &[u8]) -> Flat {
+    if bytes.is_empty() {
+        return Flat::default();
+    }
     let root = read(top, bytes);
     let found = records(top, &root);
     let key_at: BTreeMap<_, _> = found
@@ -72,6 +75,30 @@ pub fn flatten(top: Top, bytes: &[u8]) -> Flat {
         }
     }
     flat
+}
+
+/// The three versions of a file, by key.
+#[derive(Debug, Clone)]
+pub struct Versions {
+    pub top: Top,
+    pub base: Flat,
+    pub ours: Flat,
+    pub theirs: Flat,
+}
+
+impl Versions {
+    pub fn of(top: Top, [base, ours, theirs]: [&[u8]; 3]) -> Self {
+        Self {
+            top,
+            base: flatten(top, base),
+            ours: flatten(top, ours),
+            theirs: flatten(top, theirs),
+        }
+    }
+
+    pub fn sides(&self) -> [&Flat; 2] {
+        [&self.ours, &self.theirs]
+    }
 }
 
 impl Flat {

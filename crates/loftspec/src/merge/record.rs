@@ -20,8 +20,23 @@ struct Sides<'a> {
 /// Merges a record that holds conflicts: its fields, then the conflicts already on it, merged
 /// as a set, followed by those the merge writes.
 pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
+    merge_with(base, ours, theirs, false)
+}
+
+/// Merges a record's own fields, as the merge by key does, which holds no list of keyed
+/// records: as [`merge_host`], but a whole value one side deleted and the other changed keeps
+/// its base value with a conflict over its list.
+pub(super) fn merge_own(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
+    merge_with(base, ours, theirs, true)
+}
+
+fn merge_with(base: Option<&Rec>, ours: &Rec, theirs: &Rec, by_key: bool) -> Rec {
     let mut conflicts = carried(base, ours, theirs);
-    let mut host = Host::root(&mut conflicts);
+    let mut host = if by_key {
+        Host::by_key(&mut conflicts)
+    } else {
+        Host::root(&mut conflicts)
+    };
     let mut record = merge_fields(base, ours, theirs, &mut host);
     record.conflicts = conflicts;
     record

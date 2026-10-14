@@ -7,11 +7,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::conflict::{Side, record_conflict};
+use super::conflict::{Side, hold, parent_conflict, record_conflict};
 use super::places::{Place, Places, put, take};
 use super::record::merge_host;
-use super::same::holds;
-use crate::codec::{ConflictRec, Rec, Val, field};
+use crate::codec::{Rec, Val};
 use crate::identity::Key;
 
 /// Where the merge puts one record a side moved, and which side's version takes it.
@@ -140,7 +139,7 @@ fn merged(
         let parents = sides
             .each_ref()
             .map(|places| places.get(key).map(|place| Val::scalar(&place.parent)));
-        hold(&mut record, ConflictRec::new(field::PARENT, parents));
+        hold(&mut record, parent_conflict(parents));
     }
     Some(record)
 }
@@ -152,13 +151,6 @@ fn deleted(in_base: bool, mut kept: Rec, deleter: Side) -> Rec {
         hold(&mut kept, conflict);
     }
     kept
-}
-
-/// Gives a record a conflict, unless it holds that conflict already.
-fn hold(record: &mut Rec, conflict: ConflictRec) {
-    if !holds(record, &conflict) {
-        record.conflicts.push(conflict);
-    }
 }
 
 /// The planned keys, each after every planned key that sits inside it in any version, so that a

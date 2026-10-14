@@ -3,13 +3,18 @@
 //! (F-32..F-34). It takes only the base, ours and theirs versions of one file (CON-12).
 
 mod conflict;
+mod exist;
+mod flat;
+mod kind;
 mod labels;
 mod list;
 mod moves;
 pub mod order;
+mod place;
 mod places;
 mod record;
 mod same;
+mod tree;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
@@ -65,8 +70,9 @@ pub enum MergeError {
     /// The merged file would carry one key twice, which no tree may (RQ-4); the merge writes
     /// nothing.
     DuplicateKey(Key),
-    /// A record moved within the file has no parent left on either side to hold it; the merge
-    /// writes nothing rather than lose it.
+    /// A record moved within the file has no parent left on either side to hold it, or, in the
+    /// merge by key, a record no list of the merged file can take, which only a key whose kind
+    /// differs between the versions leaves; the merge writes nothing rather than lose it.
     Unplaced(Key),
 }
 
@@ -84,9 +90,60 @@ pub fn merge_file(
     theirs: &[u8],
 ) -> Result<Merged, MergeError> {
     let role = Role::of(path).ok_or(MergeError::NotAFormatFile)?;
+    let (base, ours, theirs) = read_inputs(path, &role, [base, ours, theirs])?;
+    let (content, disputed) = merge_content(base, ours, theirs)?;
+    let (bytes, written) = write_back(path, role, content)?;
+    if let Some(key) = carried_twice(&written) {
+        return Err(MergeError::DuplicateKey(key));
+    }
+    Ok(merged(bytes, &written, disputed))
+}
+
+/// Merges one file of a `spec/` tree as one merge by key: every keyed record of a record file
+/// or a registry merged on its own, with its place as one merged value, and each list rebuilt
+/// in merged order. `spec/labels.yaml` and `spec/lint.yaml` merge as [`merge_file`] merges
+/// them. The same contract as [`merge_file`], which it is to replace.
+///
+/// # Errors
+///
+/// As [`merge_file`]; and a record no list of the merged file can take, which only a key whose
+/// kind differs between the versions can leave.
+#[doc(hidden)]
+pub fn merge_file_by_key(
+    path: &SpecPath,
+    base: &[u8],
+    ours: &[u8],
+    theirs: &[u8],
+) -> Result<Merged, MergeError> {
+    let role = Role::of(path).ok_or(MergeError::NotAFormatFile)?;
+    let (base, ours, theirs) = read_inputs(path, &role, [base, ours, theirs])?;
+    let by_key = match (&ours, &theirs) {
+        (Content::Record(top), Content::Record(_)) => top.kind != Kind::Labels,
+        (Content::Registry(_), Content::Registry(_)) => true,
+        _ => false,
+    };
+    let (content, disputed) = if by_key {
+        let content = tree::merge(base.as_ref(), &ours, &theirs).map_err(MergeError::Unplaced)?;
+        (content, Vec::new())
+    } else {
+        merge_content(base, ours, theirs)?
+    };
+    let (bytes, written) = write_back(path, role, content)?;
+    if let Some(error) = twice_in(path, &written).into_iter().next() {
+        return Err(MergeError::Unwritable(error));
+    }
+    Ok(merged(bytes, &written, disputed))
+}
+
+/// The three inputs, read; an empty base is none, except for the lint configuration.
+fn read_inputs(
+    path: &SpecPath,
+    role: &Role,
+    inputs: [&[u8]; 3],
+) -> Result<(Option<Content>, Content, Content), MergeError> {
     let mut errors = Vec::new();
     let mut read = |input: Input, bytes: &[u8]| {
-        if input == Input::Base && bytes.is_empty() && role != Role::Lint {
+        if input == Input::Base && bytes.is_empty() && *role != Role::Lint {
             return None;
         }
         let read = read_file(path, bytes, Mode::Strict);
@@ -102,23 +159,33 @@ pub fn merge_file(
             }
         }
     };
+    let [base, ours, theirs] = inputs;
     let base = read(Input::Base, base);
     let ours = read(Input::Ours, ours);
     let theirs = read(Input::Theirs, theirs);
-    let (Some(ours), Some(theirs), true) = (ours, theirs, errors.is_empty()) else {
-        return Err(MergeError::Unreadable(errors));
-    };
-    let (content, disputed) = merge_content(base, ours, theirs)?;
+    match (ours, theirs, errors.is_empty()) {
+        (Some(ours), Some(theirs), true) => Ok((base, ours, theirs)),
+        _ => Err(MergeError::Unreadable(errors)),
+    }
+}
+
+/// The merged content in canonical layout, and read back.
+fn write_back(
+    path: &SpecPath,
+    role: Role,
+    content: Content,
+) -> Result<(Vec<u8>, Content), MergeError> {
     let bytes = write_content(path, role, content);
     let (_, written) = read_file(path, &bytes, Mode::Strict).map_err(MergeError::Unwritable)?;
-    if let Some(key) = carried_twice(&written) {
-        return Err(MergeError::DuplicateKey(key));
-    }
-    Ok(Merged {
+    Ok((bytes, written))
+}
+
+fn merged(bytes: Vec<u8>, written: &Content, disputed: Vec<Label>) -> Merged {
+    Merged {
         conflicts: written.records().map(count).sum(),
         bytes,
         disputed,
-    })
+    }
 }
 
 fn merge_content(

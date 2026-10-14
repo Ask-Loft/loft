@@ -1,6 +1,8 @@
 //! The conflicts a merge writes: each on the record that holds the field, named by its path
-//! from that record (F-34).
+//! from that record (F-34), and each written once (`hold`).
 
+use super::order::{Anchor, PositionConflict};
+use super::same::holds;
 use crate::codec::schema::field;
 use crate::codec::{ConflictRec, Rec, Val};
 
@@ -9,6 +11,10 @@ use crate::codec::{ConflictRec, Rec, Val};
 pub(super) struct Host<'a> {
     pub(super) prefix: String,
     pub(super) conflicts: &'a mut Vec<ConflictRec>,
+    /// Whether a whole value that one side deleted and the other changed keeps its base value
+    /// with a conflict over its list, as the merge by key has it; the merge of nested records
+    /// drops it.
+    pub(super) keeps_changed_wholes: bool,
 }
 
 impl<'a> Host<'a> {
@@ -17,6 +23,16 @@ impl<'a> Host<'a> {
         Host {
             prefix: String::new(),
             conflicts,
+            keeps_changed_wholes: false,
+        }
+    }
+
+    /// The host for a record the merge by key merges, whose conflicts go to `conflicts`.
+    pub(super) const fn by_key(conflicts: &'a mut Vec<ConflictRec>) -> Self {
+        Host {
+            prefix: String::new(),
+            conflicts,
+            keeps_changed_wholes: true,
         }
     }
 
@@ -30,6 +46,7 @@ impl<'a> Host<'a> {
         Host {
             prefix: format!("{}{name}.", self.prefix),
             conflicts: self.conflicts,
+            keeps_changed_wholes: self.keeps_changed_wholes,
         }
     }
 
@@ -64,4 +81,34 @@ pub(super) fn record_conflict(record: &Rec, deleter: Side) -> ConflictRec {
         Side::Theirs => [key, key, Some(&null)],
     };
     conflict(field::RECORD, sides)
+}
+
+/// A conflict over `parent` on a record the sides put at different parents, or that the merge
+/// put elsewhere than either side: each side names the record's parent there, or has none
+/// where it lacks the record.
+pub(super) fn parent_conflict(sides: [Option<Val>; 3]) -> ConflictRec {
+    ConflictRec::new(field::PARENT, sides)
+}
+
+/// A conflict over where a record goes: each side names the element it follows, by `name`, or
+/// `first`.
+pub(super) fn position_conflict<Id>(
+    position: &PositionConflict<Id>,
+    name: impl Fn(&Id) -> String,
+) -> ConflictRec {
+    let anchor = |anchor: &Option<Anchor<Id>>| {
+        anchor.as_ref().map(|anchor| match anchor {
+            Anchor::First => Val::scalar("first"),
+            Anchor::After(id) => Val::scalar(&name(id)),
+        })
+    };
+    let sides = [&position.base, &position.ours, &position.theirs].map(anchor);
+    ConflictRec::new(field::POSITION, sides)
+}
+
+/// Gives a record a conflict, unless it holds that conflict already.
+pub(super) fn hold(record: &mut Rec, conflict: ConflictRec) {
+    if !holds(record, &conflict) {
+        record.conflicts.push(conflict);
+    }
 }

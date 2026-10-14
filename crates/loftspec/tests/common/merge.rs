@@ -1,8 +1,12 @@
 //! The small document's Feature file and the edits the merge tests make to it.
 
-use loftspec::codec::{self, SpecPath};
-use loftspec::merge::{Merged, merge_file};
+use loftspec::codec::schema::Kind;
+use loftspec::codec::{self, Role, SpecPath};
+use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key};
 
+use super::edit_tree::Top;
+use super::merge_keys::Versions;
+use super::merge_known::known_difference;
 use super::text::{FEATURE, files, text};
 
 /// The criterion's name.
@@ -30,14 +34,50 @@ pub fn with(text: &str, edits: &[(&str, &str)]) -> String {
     text
 }
 
+/// Merges the file at `path`, which must merge, and asserts that the merge by key gives the
+/// same unless the case is one of its known differences.
 pub fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
-    merge_file(
-        &SpecPath::new(path),
-        base.as_bytes(),
-        ours.as_bytes(),
-        theirs.as_bytes(),
-    )
-    .expect("the file merges")
+    let inputs = [base, ours, theirs].map(str::as_bytes);
+    let merged = merge_file(&SpecPath::new(path), inputs[0], inputs[1], inputs[2]);
+    agrees_by_key(path, inputs, &merged);
+    merged.expect("the file merges")
+}
+
+/// Asserts that `merge_file_by_key` gives `expected`, what `merge_file` gave, unless the case
+/// is one of the merge by key's known differences.
+pub fn agrees_by_key(path: &str, inputs: [&[u8]; 3], expected: &Result<Merged, MergeError>) {
+    let spec_path = SpecPath::new(path);
+    let top = Role::of(&spec_path).and_then(|role| top(&role));
+    if top.is_some_and(|top| known_difference(&Versions::of(top, inputs)).is_some()) {
+        return;
+    }
+    let by_key = merge_file_by_key(&spec_path, inputs[0], inputs[1], inputs[2]);
+    let text = |merged: &Result<Merged, MergeError>| match merged {
+        Ok(merged) => format!(
+            "{} conflicts:\n{}",
+            merged.conflicts,
+            String::from_utf8_lossy(&merged.bytes)
+        ),
+        Err(error) => format!("{error:?}"),
+    };
+    assert!(
+        by_key == *expected,
+        "the merge by key gives {}\nwhere the file merge gives {}",
+        text(&by_key),
+        text(expected)
+    );
+}
+
+/// What a file holds at its top, for the files whose keyed records the merge by key merges.
+fn top(role: &Role) -> Option<Top> {
+    Some(match role {
+        Role::Tags | Role::Categories => Top::Registry,
+        Role::Product { .. } => Top::Record(Kind::Product),
+        Role::Feature { .. } => Top::Record(Kind::Feature),
+        Role::Component { .. } => Top::Record(Kind::RootComponent),
+        Role::Decision { .. } => Top::Record(Kind::Decision),
+        Role::Manifest | Role::Labels | Role::Lint => return None,
+    })
 }
 
 /// Merges the Feature file and gives the result as text.
