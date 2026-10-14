@@ -15,6 +15,8 @@ requirements:
         name: "The reference names the file that holds each kind of record."
       - key: 01a13654-6e12-74a1-ad7f-e81d9ed697c5
         name: "The reference names the files that `loft` writes."
+      - key: 01a1383e-2e64-72e5-b7f4-bc3c64ad28dc
+        name: "The reference describes `loft.trace.yaml` and each of its fields."
   - key: 01a13654-6e12-74a1-ad7f-e81ee79ca3cc
     statement:
       form: ubiquitous

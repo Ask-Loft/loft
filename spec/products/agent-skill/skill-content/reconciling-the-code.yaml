@@ -1,0 +1,40 @@
+key: 01a1383e-2e64-72e5-b7f4-bc2fa9a246d7
+slug: reconciling-the-code
+name: "Reconciling the code"
+body: "`references/reconciling.md`: the workflow that keeps `loft.trace.yaml` true, so that each node in scope names the tests that verify it, and a change to the specification yields the list of tests to write or review."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a1383e-2e64-72e5-b7f4-bc3006f2c894
+    statement:
+      form: event_driven
+      when: "the code changes for a specification, or the user asks which tests verify it"
+      system: "the skill"
+      shall: "direct the agent to reconcile the code with `loft reconcile`."
+    criteria:
+      - key: 01a1383e-2e64-72e5-b7f4-bc3116dbb317
+        name: "The workflow tells the agent to run `loft reconcile` to list the nodes whose tests need work."
+      - key: 01a1383e-2e64-72e5-b7f4-bc320fedb2e9
+        name: "The workflow tells the agent that `TR-001`, `TR-002` and `TR-003` findings are the work to do."
+      - key: 01a1383e-2e64-72e5-b7f4-bc337a3e0a65
+        name: "The workflow tells the agent to add a link to `loft.trace.yaml` for each node it writes a test for."
+      - key: 01a1383e-2e64-72e5-b7f4-bc3437e33fb8
+        name: "The workflow tells the agent to write a link's `node` as the node's key, read with `loft find`."
+      - key: 01a1383e-2e64-72e5-b7f4-bc351a82463d
+        name: "The workflow tells the agent to give a reason in `unverified` where no test can verify a node."
+      - key: 01a1383e-2e64-72e5-b7f4-bc361984a9a7
+        name: "The workflow tells the agent to commit `loft.trace.yaml` with the code it traces."
+      - key: 01a1383e-2e64-72e5-b7f4-bc37a8e347c5
+        name: "The workflow describes each rule from `TR-001` to `TR-005` with its fix."
+  - key: 01a1383e-2e64-72e5-b7f4-bc38474f8841
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that accepting a link states that a reviewer checked its tests."
+    criteria:
+      - key: 01a1383e-2e64-72e5-b7f4-bc39c30eb8f5
+        name: "The workflow tells the agent to accept a link only after reading each of its tests against the node as it now reads."
+      - key: 01a1383e-2e64-72e5-b7f4-bc3ac8eac943
+        name: "The workflow tells the agent to accept a link with `loft reconcile --accept` and never to write `reviewed` itself."
+      - key: 01a1383e-2e64-72e5-b7f4-bc3b649cb1e3
+        name: "The workflow tells the agent never to run `loft reconcile --accept-stale` unasked."
