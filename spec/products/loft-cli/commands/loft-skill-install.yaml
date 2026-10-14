@@ -2,6 +2,8 @@ key: 01a13654-bf86-77e9-8fd5-8dc0ba996254
 slug: loft-skill-install
 name: "`loft skill install`"
 body: "Writes the `loft-spec` skill into a project, or brings it to the version of the installed `loft`."
+tags:
+  - writes-skill
 realizes:
   - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
   - bcd4525c-3adf-45dd-beed-527d654d517c
