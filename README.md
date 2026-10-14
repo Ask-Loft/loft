@@ -56,6 +56,11 @@ as `npx loft`; in such a project, register the merge driver with
 Rust 1.97 or newer. The binary is `loft`; `loft --version` prints its release, the format and the
 hashing algorithm.
 
+The npm package records that npm installed it when it installs. After `cargo install`, or after
+unpacking a binary from a GitHub release, `loft record-install cargo` or
+`loft record-install release-binary` records the same, so that the update notice names the right
+way to update; without it, `loft` infers the way from where it lies.
+
 ## Quick start
 
 ```sh
@@ -89,6 +94,7 @@ needs.
 | `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
+| `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
 | `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
 | `loft skill install` | Writes the agent skill into the current directory, or brings it up to date |
 
@@ -162,16 +168,100 @@ rewritten in every element that mentions its node, and the lock is written anew.
 the git command that finishes, `git add -A && git commit --no-edit` after a merge or
 `git add -A && git rebase --continue` after a rebase; Loft itself never changes the repository.
 
+## Tracing tests to criteria
+
+`loft.trace.yaml`, beside `spec/`, links each acceptance criterion, and each Constraint or
+Quality Attribute whose `verificationFate` is `proved`, to the tests that verify it, by file and
+test name, or says why no test can. Each link holds the content hash its node had when a reviewer
+last accepted it, so a changed criterion shows up as a stale link. `loft reconcile` reports nodes
+no link names, links not yet reviewed or gone stale, tests it cannot find in their files, and
+links to nodes that are gone, without running any test, so it works for any language.
+`loft reconcile --accept <label>` records a review, and CI runs `loft reconcile --fail-on warning`.
+The trace file is not part of the specification: it enters no root and no publish writes it.
+
+## Telemetry and the update check
+
+Telemetry is on by default. At the end of each run of `check`, `find`, `fmt`, `import v1`,
+`init`, `publish`, `reconcile`, `render`, `skill install` and `verify`, `loft` sends one command
+event to `https://askloft.ai/api/telemetry`, so that the maintainers learn which commands are
+used, how they end and how long they take. Before the first event leaves a machine, `loft` prints
+a notice on standard error saying what it sends and how to switch it off. An event looks like
+this:
+
+```json
+{
+  "schema": "loft-telemetry-event/1",
+  "eventId": "0b9a3c0e-7f4d-4a43-9a52-3f3f2c4b8d11",
+  "version": "2.0.4",
+  "os": "macos",
+  "arch": "aarch64",
+  "installedBy": "npm",
+  "time": "2026-10-14T15:00:00Z",
+  "installation": "6f1d2c3b-9a8e-4f7d-8c6b-5a4e3d2c1b0a",
+  "project": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+  "branch": "9f86d081884c7d65",
+  "mode": "agent",
+  "agent": "claude-code",
+  "command": "check",
+  "outcome": "failed",
+  "errorKinds": [],
+  "duration": "under-1s"
+}
+```
+
+`schemas/telemetry-event.json` lists every field and every value it may take. The time is the
+hour, in UTC; `mode` says whether the run was internal, in CI, by a coding agent, at a terminal or
+none of these; `agent` names the agent from the variables its host sets. The three tokens are
+random: `installation` is drawn once for the user on the machine, `project` once for a checkout,
+in a `.loft/` beside `spec/` that git ignores, and `branch` is the branch name keyed with a secret
+kept in that same file, so the same branch in two checkouts gives two different tokens. An event
+never carries the specification, the code, a path, a repository address, a name or an error
+message. The tokens are pseudonymous rather than anonymous, and the collector sees the network
+address each event comes from. Events with tokens are kept for at most 30 days, and aggregates
+without them for at most 90 days.
+
+Sending never gets in the way. It starts after the command's output, gives up after 500
+milliseconds and prints nothing; a collector that is down, slow or refusing changes no output and
+no exit code, and a lost event is never sent again.
+
+`loft` also checks for updates. At the end of the same commands, at most once a day, it asks
+GitHub for the latest release and keeps the answer; a later run tells you on standard error,
+at most once a day, when a newer release exists and how to install it. The request carries
+nothing about you or your project: its User-Agent is `loft`, without even the version, and it
+follows no redirect. This check has its own switch and stays on
+when telemetry is off.
+
+| To                                   | Run or set                                   |
+| ------------------------------------ | -------------------------------------------- |
+| switch telemetry off for the user    | `loft telemetry off` (`on` and `status` too) |
+| switch telemetry off for one shell   | `LOFT_TELEMETRY=off` (any value but `internal`) |
+| switch the update check off          | `loft update-check off`, or `LOFT_UPDATE_CHECK=off` |
+| send elsewhere                       | `LOFT_TELEMETRY_ENDPOINT=<url>`              |
+| ask elsewhere for releases           | `LOFT_UPDATE_ENDPOINT=<GitHub API base>`     |
+
+`loft telemetry off` deletes the installation token; a variable set to `off` wins over a
+recorded `on`, and a recorded `off` wins over any variable. The settings live in `loft/` under
+the user's configuration directory (`~/.config` on Linux, `~/Library/Application Support` on
+macOS, `%APPDATA%` on Windows); when they cannot be written, `loft` does not check for updates
+at all, rather than ask and tell again on every run. Neither address accepts plain `http` except
+on the loopback interface. Both requests go through the proxy named by the first of
+`ALL_PROXY`, `HTTPS_PROXY` and `HTTP_PROXY` that is set, unless `NO_PROXY` lists the host. `LOFT_TELEMETRY=internal` marks runs by Loft's own maintainers and CI.
+
 ## Software Plant
 
-Loft's commands depend on systems outside Loft: git and the clock. Tests run the real `loft`
-binary, unchanged, against simulators from the Software Plant instead of those systems:
+Loft's commands depend on systems outside Loft: git, the clock, the telemetry collector and
+GitHub's releases. Tests run the real `loft` binary, unchanged, against simulators from the
+Software Plant instead of those systems:
 
 - a `git` executable that answers the git calls Loft makes from a scenario the test writes (a
   clean repository on `main`, uncommitted changes, another branch, a detached HEAD, a local
   configuration, a merge or rebase stopped on a conflict, a directory outside any repository, a
   git error) and refuses any other call;
-- a clock that sets `SOURCE_DATE_EPOCH`, so a test names the publish time exactly.
+- a clock that sets `SOURCE_DATE_EPOCH`, so a test names the publish time exactly;
+- a collector on a loopback port that accepts, rejects, fails, stays silent or refuses
+  connections as the collector's wire contract says, and records what it received;
+- a release feed on a loopback port that answers GitHub's latest-release request with a
+  release, a draft, a prerelease, an error or a rate limit, or stays silent.
 
 ```rust
 use std::process::Command;
@@ -187,7 +277,12 @@ A contract suite keeps each simulator honest by running the same scenarios again
 simulator and the real system; `cargo nextest run -p loftspec-store git_contract` runs the git
 suite against the `git` on your search path. git also calls Loft, as the merge driver;
 `cargo nextest run -p loft-cli merge_contract` runs the parallel-work scenarios under a real
-`git merge`, with no simulator in between. The thinking behind the Software Plant is at
+`git merge`, with no simulator in between. The collector and release-feed suites,
+`collector_contract` and `release_feed_contract` in `loft-cli`, run their real halves only on
+demand (`--run-ignored only`): against the collector named by `LOFT_COLLECTOR_CONTRACT_URL`, and
+against GitHub. Every process Cargo starts in this repository, the tests included, begins with
+telemetry and the update check off (`.cargo/config.toml`); a test that exercises either switches
+it on and points it at a simulator. The thinking behind the Software Plant is at
 <https://askloft.ai/vision>.
 
 ## Build and gate

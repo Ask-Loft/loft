@@ -1,3 +1,6 @@
+- key: 01a13a90-3557-734a-9b7f-e57a4599b6aa
+  name: checks-for-updates
+  definition: "A `loft` command that may look for a newer release at the end of its run and tell of one, and so follows the shared rules for the update check."
 - key: e40d5174-e83d-482f-ac42-0ad3dcd308eb
   name: conversion
   definition: "Behaviour that exists only for a document derived from a Loft v1 export."
@@ -19,6 +22,9 @@
 - key: 01a12de5-62d0-763d-b71a-d8f7a13bc360
   name: reads-tree
   definition: "A `loft` command that reads the `spec/` tree, and so follows the shared rules for a reader error."
+- key: 01a13a90-3557-734a-9b7f-e57bb9bdb2c1
+  name: sends-telemetry
+  definition: "A `loft` command that sends one command event at the end of its run, and so follows the shared rules for telemetry."
 - key: 01a1380a-9f4c-7295-b189-97224d55101f
   name: writes-skill
   definition: "A `loft` command that writes the `loft-spec` skill into a project, and so follows the shared rule for asking that it be committed."

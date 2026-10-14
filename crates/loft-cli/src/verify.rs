@@ -2,14 +2,15 @@
 //! exit code a CI job can gate on (RQ-148). A tree that does not read compares no root (RQ-149).
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::canonical::Digest;
 use loftspec::publish::{LOCK, ReadTree, Root, Unverified, verify};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::{errln, outln};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -37,16 +38,16 @@ impl From<StoreError> for Failure {
     }
 }
 
-pub fn run(root: &Path, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, as_json: bool) -> Finished {
     match attempt(root) {
         Ok(state) => {
             if as_json {
                 let fields = json!({ "stateRoot": state.to_string() });
                 json::print(&json::result(SCHEMA, "verified", fields, Vec::new()));
             } else {
-                println!("verified: state root {state}");
+                outln!("verified: state root {state}");
             }
-            ExitCode::SUCCESS
+            Finished::success("verified")
         }
         Err(Failure::Stopped(stop)) => stop.exit(SCHEMA, as_json),
         Err(Failure::Mismatch { root, lock, tree }) => {
@@ -58,8 +59,8 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
                 });
                 json::print(&json::result(SCHEMA, "mismatch", fields, Vec::new()));
             }
-            eprintln!("the {root} differs: {LOCK} has {lock}, the tree has {tree}");
-            ExitCode::FAILURE
+            errln!("the {root} differs: {LOCK} has {lock}, the tree has {tree}");
+            Finished::failure("mismatch")
         }
     }
 }

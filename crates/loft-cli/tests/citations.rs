@@ -2,9 +2,8 @@
 //! a new one, so a name like `ac_454_…` would go on naming a criterion that no longer holds it.
 //! A guard keeps every test name free of a label.
 
-use crate::common::workspace;
+use crate::common::{shown, sources, workspace};
 use std::fs;
-use std::path::{Path, PathBuf};
 
 /// The label prefixes, as they would appear in a name.
 const PREFIXES: [&str; 9] = ["p", "fg", "f", "rq", "ac", "cmp", "con", "qa", "adr"];
@@ -17,18 +16,6 @@ fn cited(name: &str) -> Vec<String> {
         .filter(|pair| PREFIXES.contains(&pair[0]) && pair[1].bytes().all(|b| b.is_ascii_digit()))
         .map(|pair| format!("{}-{}", pair[0].to_uppercase(), pair[1]))
         .collect()
-}
-
-/// Every Rust source file under each crate's `src/` and `tests/`.
-fn sources(dir: &Path, found: &mut Vec<PathBuf>) {
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.is_dir() {
-            sources(&path, found);
-        } else if path.extension().is_some_and(|extension| extension == "rs") {
-            found.push(path);
-        }
-    }
 }
 
 /// The name of each `#[test]` function in `text`.
@@ -60,23 +47,20 @@ fn citations(names: &[(String, String)]) -> Vec<String> {
 
 #[test]
 fn no_test_name_cites_a_label() {
+    // Every Rust source file under each crate's `src/` and `tests/`.
     let mut files = Vec::new();
     for entry in fs::read_dir(workspace().join("crates")).unwrap() {
         let krate = entry.unwrap().path();
         for part in ["src", "tests"] {
             if krate.join(part).is_dir() {
-                sources(&krate.join(part), &mut files);
+                files.extend(sources(&krate.join(part)));
             }
         }
     }
     let names: Vec<(String, String)> = files
         .iter()
         .flat_map(|file| {
-            let shown = file
-                .strip_prefix(workspace())
-                .unwrap()
-                .display()
-                .to_string();
+            let shown = shown(file);
             test_names(&fs::read_to_string(file).unwrap())
                 .into_iter()
                 .map(move |name| (shown.clone(), name))

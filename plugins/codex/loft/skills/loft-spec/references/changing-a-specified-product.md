@@ -60,4 +60,6 @@ specification, in its own commits.
 ## Check the code against the criteria
 
 Before reporting, walk each new or changed criterion and name the test or code that meets it.
-Report any criterion the code does not yet meet; never weaken a criterion to fit the code.
+Report any criterion the code does not yet meet; never weaken a criterion to fit the code. Then
+reconcile the code as `reconciling.md` describes, so that `loft.trace.yaml` links each new test
+to its node.

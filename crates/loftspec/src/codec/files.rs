@@ -261,8 +261,16 @@ pub fn write_files(tree: &Tree) -> Files {
         .collect()
 }
 
-/// Every keyed record of a record tree, with its key when it has one, depth first.
-pub(crate) fn keyed<'a>(record: &'a Rec, found: &mut Vec<&'a Rec>) {
+/// Every keyed record of the record trees `roots`, with its key when it has one, depth first.
+pub(crate) fn keyed_records<'a>(roots: impl IntoIterator<Item = &'a Rec>) -> Vec<&'a Rec> {
+    let mut found = Vec::new();
+    for root in roots {
+        keyed(root, &mut found);
+    }
+    found
+}
+
+fn keyed<'a>(record: &'a Rec, found: &mut Vec<&'a Rec>) {
     if record.kind.is_keyed() {
         found.push(record);
     }

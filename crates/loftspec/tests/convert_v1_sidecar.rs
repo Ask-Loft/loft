@@ -4,8 +4,10 @@
 use crate::common;
 use crate::common::v1::{convert_value, key, tree, uuid};
 use loftspec::attributes::VerificationFate;
+use loftspec::codec;
 use loftspec::convert::v1::sidecar::{FORMAT, ScopeKind};
 use loftspec::convert::v1::{Conversion, ConvertError};
+use loftspec::hash::hash_document;
 use loftspec::identity::{Label, LabelPrefix};
 use loftspec::ids::{
     ComponentId, ConstraintId, DecisionId, DocumentId, NodeId, OptionId, QualityAttributeId,
@@ -124,4 +126,94 @@ fn a_facet_tag_with_a_body_is_refused() {
         matches!(error, ConvertError::FacetTagBody { .. }),
         "{error}"
     );
+}
+
+/// The full export with `fateConfirmed` set to `flag` on every node.
+fn every_fate_confirmed(flag: &Value) -> Value {
+    let mut value = full_export();
+    for node in value["nodes"].as_array_mut().unwrap() {
+        node["fateConfirmed"] = flag.clone();
+    }
+    value
+}
+
+#[test]
+fn a_confirmation_flag_changes_the_sidecar_and_no_content_hash() {
+    let constraint = NodeId::from(ConstraintId::new(key(7)));
+    let [confirmed, unconfirmed, unset] = [json!(true), json!(false), Value::Null]
+        .map(|flag| convert_value(&every_fate_confirmed(&flag)).unwrap());
+    let hashes = |conversion: &Conversion| hash_document(&conversion.document).unwrap();
+    let confirmed_hashes = hashes(&confirmed);
+    for other in [&unconfirmed, &unset] {
+        let other_hashes = hashes(other);
+        assert_eq!(other_hashes.nodes, confirmed_hashes.nodes);
+        assert_eq!(other_hashes.roots.content, confirmed_hashes.roots.content);
+    }
+    let flags = [&confirmed, &unconfirmed, &unset]
+        .map(|conversion| conversion.sidecar.nodes[&constraint].fate_confirmed);
+    assert_eq!(flags, [Some(true), Some(false), None]);
+}
+
+/// The v1 name of a tag whose v2 name the converter derives as `portable-rules`.
+const V1_TAG_NAME: &str = "Portable Rules";
+
+/// The names of the fields that hold sidecar facts and nothing else.
+const SIDECAR_FIELDS: [&str; 10] = [
+    "ordinal",
+    "fateConfirmed",
+    "proposedFate",
+    "componentScope",
+    "scope",
+    "nodeId",
+    "externalId",
+    "formerLabels",
+    "highest",
+    "tagNames",
+];
+
+/// The v1 document UUID is left out: the converter keys the document by it, so
+/// `spec/loftspec.yaml` carries it as the document key.
+#[test]
+fn no_file_under_spec_carries_a_sidecar_fact() {
+    let mut value = full_export();
+    value["nodes"][8]["name"] = json!(V1_TAG_NAME);
+    value["vocabularyEntries"][0]["name"] = json!(V1_TAG_NAME);
+    let conversion = convert_value(&value).unwrap();
+    let sidecar = &conversion.sidecar;
+    assert_eq!(
+        sidecar.tag_names.values().collect::<Vec<_>>(),
+        [V1_TAG_NAME]
+    );
+    assert_eq!(sidecar.scopes.len(), 2);
+    let applications = sidecar.tags.values().flatten();
+    let mut facts: Vec<String> = applications
+        .flat_map(|application| {
+            [
+                application.node_id.to_string(),
+                application.external_id.to_string(),
+            ]
+        })
+        .collect();
+    facts.extend(sidecar.former_labels.values().map(ToString::to_string));
+    facts.push(V1_TAG_NAME.to_owned());
+    assert_eq!(facts.len(), 6, "{facts:?}");
+    for (path, bytes) in codec::write(&conversion.document) {
+        let text = String::from_utf8(bytes).unwrap();
+        for fact in &facts {
+            assert!(
+                !text.contains(fact.as_str()),
+                "{} holds {fact}",
+                path.as_str()
+            );
+        }
+        for line in text.lines() {
+            let field = line.trim_start().trim_start_matches("- ");
+            let field = field.split(':').next().unwrap_or_default();
+            assert!(
+                !SIDECAR_FIELDS.contains(&field),
+                "{}: {line}",
+                path.as_str()
+            );
+        }
+    }
 }

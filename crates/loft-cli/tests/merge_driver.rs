@@ -5,9 +5,10 @@
 use std::fs;
 use std::process::Output;
 
-use crate::common::{Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
 use serde_json::{Value, json};
+use software_plant::{Clock, GitScenario};
 
 const FEATURE: &str = "products/reading-list/sharing/share-a-list.yaml";
 
@@ -114,6 +115,46 @@ fn an_unreadable_input_is_named_with_where_and_ours_is_unchanged() {
     );
     assert!(!message.contains(".merge_file"), "{message}");
     assert_eq!(ours(&scratch), base);
+}
+
+#[test]
+fn an_input_that_carries_a_key_twice_exits_1_naming_it_and_both_sites_and_ours_is_unchanged() {
+    let (scratch, base) = setup();
+    let key = "00000000-0000-4000-8000-000000000034";
+    let start = base.find(&format!("      - key: {key}\n")).unwrap();
+    let criterion: String = base[start..]
+        .split_inclusive('\n')
+        .enumerate()
+        .take_while(|(index, line)| *index == 0 || line.starts_with("        "))
+        .map(|(_, line)| line)
+        .collect();
+    let criterion = criterion.as_str();
+    let theirs_text = edited(&base, criterion, &format!("{criterion}{criterion}"));
+    let output = driver(&scratch, [&base, &base, &theirs_text], &spec_path());
+    assert_eq!(output.status.code(), Some(1));
+    let [first, second] = &key_sites(&theirs_text, key)[..] else {
+        panic!("{theirs_text}")
+    };
+    assert_eq!(
+        stderr(&output),
+        format!(
+            "{}:{first}, {second}: theirs: the key {key} is carried twice\n",
+            spec_path()
+        )
+    );
+    assert_eq!(ours(&scratch), base);
+}
+
+/// The `<line>:<column>` of each `key` field of `text` that carries `key`, at its value.
+fn key_sites(text: &str, key: &str) -> Vec<String> {
+    let field = format!("key: {key}");
+    text.lines()
+        .enumerate()
+        .filter_map(|(index, line)| {
+            let column = line.find(&field)? + "key: ".len() + 1;
+            Some(format!("{}:{column}", index + 1))
+        })
+        .collect()
 }
 
 #[test]
@@ -265,5 +306,45 @@ fn a_refused_merge_is_listed_among_the_json_document_s_errors() {
             .unwrap()
             .contains("elsewhere/file.yaml"),
         "{error}"
+    );
+}
+
+#[test]
+fn a_record_both_sides_move_apart_exits_1_with_a_parent_conflict_that_verify_names() {
+    let scratch = Scratch::with_reading_list();
+    let git = GitScenario::clean_on("main");
+    let published = scratch.loft_with(&["publish"], Some(&git), &Clock::fixed(EPOCH));
+    assert_eq!(published.status.code(), Some(0), "{}", stderr(&published));
+    let base = fs::read_to_string(scratch.file(FEATURE)).unwrap();
+    let criteria = "    criteria:\n";
+    let start = base
+        .find("    criteria:\n      - key: 00000000-0000-4000-8000-000000000034")
+        .unwrap();
+    let end = base
+        .find("  - key: 00000000-0000-4000-8000-000000000035")
+        .unwrap();
+    let item = &base[start + criteria.len()..end];
+    let without = base.replacen(&base[start..end], "", 1);
+    let ours_text = without.replacen(criteria, &format!("{criteria}{item}"), 1);
+    let theirs_text = format!(
+        "{without}  - key: 00000000-0000-4000-8000-000000000099\n    statement:\n      \
+         text: \"A list is shared.\"\n{criteria}{item}"
+    );
+    let output = driver(&scratch, [&base, &ours_text, &theirs_text], &spec_path());
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    assert_eq!(
+        stderr(&output),
+        format!("{}: 1 merge conflict written\n", spec_path())
+    );
+    let merged = ours(&scratch);
+    assert!(merged.contains("          - field: parent\n"), "{merged}");
+    assert_eq!(merged.matches("000000000034\n").count(), 1, "{merged}");
+    fs::write(scratch.file(FEATURE), &merged).unwrap();
+    let verified = scratch.loft(&["verify"]);
+    assert_eq!(verified.status.code(), Some(1));
+    assert!(
+        stderr(&verified).contains("holds an unresolved merge conflict over `parent`"),
+        "{}",
+        stderr(&verified)
     );
 }

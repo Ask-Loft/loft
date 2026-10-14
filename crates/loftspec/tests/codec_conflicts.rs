@@ -2,7 +2,7 @@
 //! sides are read and written, and what the reader refuses.
 
 use crate::common::text::{
-    AFTER_CRITERIA, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text,
+    AFTER_CRITERIA, DECISION, FEATURE, SHALL_CONFLICT, edited, on_requirement, path, text,
 };
 use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Files, Problem, field};
@@ -193,8 +193,6 @@ fn the_manifest_and_the_bindings_record_hold_conflicts_too() {
     assert!(codec::read(&files).is_ok());
 }
 
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
-
 #[test]
 fn a_driver_holds_conflicts_whatever_its_kind() {
     for (after, conflict) in [
@@ -229,8 +227,13 @@ fn a_record_that_holds_no_conflicts_refuses_a_conflicts_list_as_an_unknown_field
 }
 
 #[test]
-fn the_names_conflicts_position_and_record_are_reserved_for_conflict_records() {
-    let reserved = [field::CONFLICTS, field::POSITION, field::RECORD];
+fn the_names_conflicts_parent_position_and_record_are_reserved_for_conflict_records() {
+    let reserved = [
+        field::CONFLICTS,
+        field::PARENT,
+        field::POSITION,
+        field::RECORD,
+    ];
     for kind in Kind::ALL {
         for each in kind.fields() {
             assert!(!reserved.contains(&each.name), "{kind:?}.{}", each.name);

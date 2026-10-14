@@ -1,0 +1,7 @@
+key: 01a13a90-3554-7631-bb13-09810e715c54
+slug: telemetry-collector
+name: "Telemetry collector"
+body: "The service that receives command events over HTTPS at `https://askloft.ai/api/telemetry`. It sets aside events it has already received by their event id and keeps events for a limited time; how it stores and reports them is specified outside this repository, and it is built against the same contract suite that holds the Software Plant's stand-in for it. `LOFT_TELEMETRY_ENDPOINT` replaces the address, for a collector of one's own."
+boundary: external
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8

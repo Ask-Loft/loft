@@ -17,11 +17,25 @@ const TAG: &str = "plant-simulator";
 /// The slug of the Software Plant.
 const PLANT: &str = "software-plant";
 
-/// The contract suite of each simulator, by the slug of its Feature: a test binary of this
-/// crate.
-const SUITES: [(&str, &str); 2] = [
-    ("git-simulator", "git_contract"),
-    ("clock-simulator", "clock_contract"),
+/// The contract suite of each simulator, by the slug of its Feature: a test file of the crate
+/// whose port reaches the real system, by its path in the repository.
+const SUITES: [(&str, &str); 4] = [
+    (
+        "git-simulator",
+        "crates/loftspec-store/tests/git_contract.rs",
+    ),
+    (
+        "clock-simulator",
+        "crates/loftspec-store/tests/clock_contract.rs",
+    ),
+    (
+        "collector-simulator",
+        "crates/loft-cli/tests/collector_contract.rs",
+    ),
+    (
+        "release-feed-simulator",
+        "crates/loft-cli/tests/release_feed_contract.rs",
+    ),
 ];
 
 fn repository() -> PathBuf {
@@ -123,7 +137,7 @@ fn each_simulator_has_a_contract_suite_and_each_suite_a_simulator() {
         "the Features that list `{TAG}` and the suites"
     );
     for (slug, suite) in SUITES {
-        let file = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("tests/{suite}.rs"));
+        let file = repository().join(suite);
         assert!(file.is_file(), "{slug}: no suite at {}", file.display());
     }
 }

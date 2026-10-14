@@ -3,7 +3,9 @@ slug: loft-render
 name: "`loft render`"
 body: "Writes the Markdown projection and the canonical JSON export of the tree, to the paths given or to their defaults under `docs/`."
 tags:
+  - checks-for-updates
   - reads-tree
+  - sends-telemetry
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:

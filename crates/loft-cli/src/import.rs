@@ -3,7 +3,6 @@
 
 use std::fmt::Write as _;
 use std::path::Path;
-use std::process::ExitCode;
 use std::{fs as stdfs, io};
 
 use loftspec::codec::{self, Sites};
@@ -12,16 +11,18 @@ use loftspec::import::{ImportError, Imported, Reported, import};
 use loftspec_store::{FileStore, fs};
 use serde_json::{Map, Value, json};
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::{errln, outln};
 use crate::stop::Stop;
 
 const SCHEMA: &str = "loft-import/1";
 
-pub fn run(root: &Path, export: &Path, counters: Option<&Path>, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, export: &Path, counters: Option<&Path>, as_json: bool) -> Finished {
     match prepare(export, counters).and_then(|imported| write(root, imported)) {
         Ok((imported, sites)) => {
             report(&imported, &sites, as_json);
-            ExitCode::SUCCESS
+            Finished::success("imported")
         }
         Err(message) => Stop::one("refused", message).exit(SCHEMA, as_json),
     }
@@ -79,11 +80,11 @@ fn report(imported: &Imported, sites: &Sites, as_json: bool) {
         json::print(&json::result(SCHEMA, "imported", fields, Vec::new()));
     } else {
         for reported in &findings {
-            println!("{}", line(reported, sites));
+            outln!("{}", line(reported, sites));
         }
     }
     if let Some(warning) = warning {
-        eprintln!("warning: {warning}");
+        errln!("warning: {warning}");
     }
 }
 

@@ -8,10 +8,15 @@
 //! crate.
 
 pub mod clock;
+pub mod collector;
 pub mod git;
+pub mod http;
 mod install;
 pub mod real_git;
+pub mod releases;
 
 pub use clock::Clock;
+pub use collector::Collector;
 pub use git::GitScenario;
 pub use install::{Installed, git_executable};
+pub use releases::ReleaseFeed;

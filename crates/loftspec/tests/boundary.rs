@@ -2,7 +2,7 @@
 //! how a subtree takes it on, the validator's rule, the obligation rules and the rendering.
 
 use crate::common;
-use crate::common::text::{edited, files, text};
+use crate::common::text::{COMPONENT, edited, files, text};
 use crate::common::{key, small_document};
 use loftspec::attributes::Boundary;
 use loftspec::boundary::Boundaries;
@@ -16,8 +16,6 @@ use loftspec::lint::{LintConfig, RuleId, lint};
 use loftspec::render::render;
 use loftspec::tree::{Constraint, Details};
 use loftspec::validate::{ValidationError, validate};
-
-const COMPONENT: &str = "components/document-model.yaml";
 
 fn external_document() -> Document {
     let mut document = small_document();

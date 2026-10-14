@@ -1,11 +1,13 @@
 //! The small document's `spec/` tree, for the reader and formatter tests.
 
-use loftspec::codec::{self, Files, SpecPath};
+use loftspec::codec::{self, Files, ReadError, SpecPath};
 
 use super::small_document;
 
 pub const FEATURE: &str = "products/example-product/identity/keys.yaml";
 pub const PRODUCT: &str = "products/example-product/product.yaml";
+pub const COMPONENT: &str = "components/document-model.yaml";
+pub const DECISION: &str = "decisions/keys-are-uuids.yaml";
 
 /// The small document's files.
 pub fn files() -> Files {
@@ -19,6 +21,14 @@ pub fn path(text: &str) -> SpecPath {
 /// A file's text.
 pub fn text(files: &Files, at: &str) -> String {
     String::from_utf8(files[&path(at)].clone()).unwrap()
+}
+
+/// The one error a tree gives, which must name the file at `at`.
+pub fn refused_in(files: &Files, at: &str) -> ReadError {
+    let errors = codec::read(files).expect_err("refused");
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert_eq!(errors[0].sites[0].path, path(at), "{errors:?}");
+    errors[0].clone()
 }
 
 /// The small document's files with the first `from` replaced by `to` in the file at `at`.
@@ -44,4 +54,18 @@ pub const SHALL_CONFLICT: &str = "    conflicts:
 /// The small document with `lines` added to its Requirement after every other field.
 pub fn on_requirement(lines: &str) -> Files {
     edited(FEATURE, AFTER_CRITERIA, &format!("{AFTER_CRITERIA}{lines}"))
+}
+
+/// The small document's files with the Feature's body written as the block scalar `body`.
+pub fn with_feature_body(body: &str) -> Files {
+    edited(
+        FEATURE,
+        "body: \"Keys address nodes.\"\n",
+        &format!("body: |\n{}", indented(body, "  ")),
+    )
+}
+
+/// `text` with every line indented by `by`.
+pub fn indented(text: &str, by: &str) -> String {
+    text.lines().flat_map(|line| [by, line, "\n"]).collect()
 }

@@ -1,0 +1,101 @@
+key: 01a13a90-3554-7631-bb13-0993631f10a1
+slug: telemetry-is-on-until-switched-off
+title: "Telemetry is on until switched off, with a notice on the first run that sends"
+context: "The maintainers want to learn which commands people run, how often they fail and on which release, without asking for the specification, the code or who runs it. Telemetry that only a few switch on reports on those few. Telemetry that is on by default has to tell people so, and has to stop entirely when they say so."
+state:
+  kind: accepted
+  selectedOption: 01a13a90-3554-7631-bb13-09997982770d
+  outcome: "Telemetry is on by default. The first run that sends prints a notice to standard error and sends its event in the same run; `loft telemetry off` and `LOFT_TELEMETRY=off` stop all sending."
+drivers:
+  - key: 01a13a90-3554-7631-bb13-09943c9f8c6b
+    kind: local
+    label: "Usage signal"
+    statement: "Events arrive from the people who use `loft`, not only from those who chose to send them."
+  - key: 01a13a90-3554-7631-bb13-09955696d0a6
+    kind: local
+    label: "Told as it leaves"
+    statement: "A person learns that telemetry is on no later than the run that sends their first event."
+  - key: 01a13a90-3554-7631-bb13-09963a1fed2a
+    kind: local
+    label: "Fresh machines report"
+    statement: "A run on a new machine or in a fresh CI container reports too."
+options:
+  - key: 01a13a90-3554-7631-bb13-09971888845d
+    title: "Off until switched on"
+    description: "Nothing is sent until a person runs `loft telemetry on`."
+  - key: 01a13a90-3554-7631-bb13-099851127254
+    title: "On, with a silent first run"
+    description: "The first run prints the notice and sends nothing; sending starts with the next run."
+  - key: 01a13a90-3554-7631-bb13-09997982770d
+    title: "On, with the notice and the event on the first run"
+    description: "The first run prints the notice and sends its event."
+  - key: 01a13a90-3554-7631-bb13-099a7c2673ef
+    title: "No telemetry"
+    description: "`loft` sends nothing, ever."
+assessments:
+  - option: 01a13a90-3554-7631-bb13-09971888845d
+    driver: 01a13a90-3554-7631-bb13-09943c9f8c6b
+    rating: conflicts
+    rationale: "only the few who switch it on report"
+  - option: 01a13a90-3554-7631-bb13-09971888845d
+    driver: 01a13a90-3554-7631-bb13-09955696d0a6
+    rating: supports
+    rationale: "nothing leaves before a person acts"
+  - option: 01a13a90-3554-7631-bb13-09971888845d
+    driver: 01a13a90-3554-7631-bb13-09963a1fed2a
+    rating: conflicts
+    rationale: "a fresh machine has not been switched on"
+  - option: 01a13a90-3554-7631-bb13-099851127254
+    driver: 01a13a90-3554-7631-bb13-09943c9f8c6b
+    rating: supports
+    rationale: "every installation reports from its second run"
+  - option: 01a13a90-3554-7631-bb13-099851127254
+    driver: 01a13a90-3554-7631-bb13-09955696d0a6
+    rating: supports
+    rationale: "the notice comes a whole run before the first event"
+  - option: 01a13a90-3554-7631-bb13-099851127254
+    driver: 01a13a90-3554-7631-bb13-09963a1fed2a
+    rating: conflicts
+    rationale: "a fresh CI container never gets past its first run"
+  - option: 01a13a90-3554-7631-bb13-09997982770d
+    driver: 01a13a90-3554-7631-bb13-09943c9f8c6b
+    rating: supports
+    rationale: "every installation reports from its first run"
+  - option: 01a13a90-3554-7631-bb13-09997982770d
+    driver: 01a13a90-3554-7631-bb13-09955696d0a6
+    rating: supports
+    rationale: "the notice is printed before the first event is sent"
+  - option: 01a13a90-3554-7631-bb13-09997982770d
+    driver: 01a13a90-3554-7631-bb13-09963a1fed2a
+    rating: supports
+    rationale: "the first run of a fresh container sends"
+  - option: 01a13a90-3554-7631-bb13-099a7c2673ef
+    driver: 01a13a90-3554-7631-bb13-09943c9f8c6b
+    rating: conflicts
+    rationale: "nothing arrives"
+  - option: 01a13a90-3554-7631-bb13-099a7c2673ef
+    driver: 01a13a90-3554-7631-bb13-09955696d0a6
+    rating: supports
+    rationale: "nothing leaves"
+  - option: 01a13a90-3554-7631-bb13-099a7c2673ef
+    driver: 01a13a90-3554-7631-bb13-09963a1fed2a
+    rating: conflicts
+    rationale: "nothing arrives"
+consequences:
+  - key: 01a13a90-3554-7631-bb13-099bb910ce44
+    kind: risk
+    statement: "The first event leaves in the same run that tells of telemetry, before a person can switch it off."
+  - key: 01a13a90-3554-7631-bb13-099c18d29f55
+    kind: obligation
+    statement: "The notice is printed before the first event is sent, and both switches stop every send."
+    subject: 01a13a90-3556-7106-a68c-2695f6f1baaa
+  - key: 01a13a90-3554-7631-bb13-099d4890f2b3
+    kind: cost
+    statement: "Every sending run spends up to the network client's time limit when the collector does not answer."
+subjects:
+  - role: affected
+    node: 01a13a90-3554-7631-bb13-097e6805bffe
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-26574c7ad289
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-2695f6f1baaa

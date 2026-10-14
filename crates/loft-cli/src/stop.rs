@@ -3,14 +3,16 @@
 //! `<path>:<line>:<column>: <message>` (RQ-158).
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::{Files, ReadError};
+use loftspec::trace::{TRACE, TraceError};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::Value;
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::errln;
 
 /// Why a command stopped: its errors as JSON, and the lines standard error shows.
 pub struct Stop {
@@ -45,14 +47,15 @@ impl Stop {
 
     /// Prints the failure document under `schema` when JSON was asked for, and each line on
     /// standard error, and exits 1.
-    pub fn exit(self, schema: &str, as_json: bool) -> ExitCode {
+    pub fn exit(self, schema: &str, as_json: bool) -> Finished {
+        let finished = Finished::stopped(&self.errors);
         if as_json {
             json::print(&json::failure(schema, self.errors));
         }
         for line in &self.lines {
-            eprintln!("{line}");
+            errln!("{line}");
         }
-        ExitCode::FAILURE
+        finished
     }
 }
 
@@ -66,6 +69,21 @@ impl From<Vec<ReadError>> for Stop {
     fn from(errors: Vec<ReadError>) -> Self {
         Self {
             errors: json::read_errors(&errors),
+            lines: errors.iter().map(ToString::to_string).collect(),
+        }
+    }
+}
+
+impl From<Vec<TraceError>> for Stop {
+    fn from(errors: Vec<TraceError>) -> Self {
+        Self {
+            errors: errors
+                .iter()
+                .map(|error| {
+                    let site = json::site_at(&TRACE, error.location);
+                    json::error_at("trace", &error.problem.to_string(), vec![site])
+                })
+                .collect(),
             lines: errors.iter().map(ToString::to_string).collect(),
         }
     }

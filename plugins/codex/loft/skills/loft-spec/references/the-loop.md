@@ -82,4 +82,5 @@ the order `format.md` gives; `loft fmt` restores the order if you do not.
   deleted nodes. Prose may cite a label;
   `writing-rules.md` says how.
 - Never edit `spec/labels.yaml` or `loft.lock.json`.
+- Never write a `reviewed` hash into `loft.trace.yaml`: `loft reconcile --accept` writes it.
 - Never copy a key from one node to another, or from an example into a document.

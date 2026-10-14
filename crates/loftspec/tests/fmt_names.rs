@@ -2,12 +2,12 @@
 //! name its target instead of carrying its key, and the formatter writes the key in its place.
 
 use crate::common::small_document;
-use crate::common::text::{FEATURE, PRODUCT, path, text};
-use loftspec::codec::{self, Files};
+use crate::common::text::{COMPONENT, DECISION, FEATURE, PRODUCT, path, text};
+use crate::fmt::formatted;
+use loftspec::codec::{self, Files, Problem, Site};
 use loftspec::fmt::format;
+use loftspec::yaml::{Location, Position};
 
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
-const COMPONENT: &str = "components/document-model.yaml";
 const UUID_V7: &str = "00000000-0000-7000-8000-000000000017";
 const ULID: &str = "00000000-0000-7000-8000-000000000018";
 const LOCAL_DRIVER: &str = "00000000-0000-7000-8000-000000000015";
@@ -178,9 +178,15 @@ fn a_name_that_matches_nothing_is_an_error_at_the_reference() {
         &[by_name("  ", "selectedOption", UUID_V7, "Snowflake IDs")],
     );
     let errors = format(&files).unwrap_err();
+    // The reference is the record under `selectedOption`, which starts on line 8 at column 5.
+    let site = Site {
+        path: path(DECISION),
+        location: Some(Location::At(Position::new(8, 5))),
+    };
+    assert_eq!(errors[0].sites, [site]);
     let message = errors[0].to_string();
     assert!(
-        message.starts_with(&format!("spec/{DECISION}:8:")),
+        message.starts_with(&format!("spec/{DECISION}:8:5:")),
         "{message}"
     );
     assert!(message.contains("Snowflake IDs"), "{message}");
@@ -228,4 +234,28 @@ fn an_unresolved_name_changes_no_file() {
         )],
     );
     assert!(format(&files).is_err());
+}
+
+#[test]
+fn a_reference_by_name_is_a_record_whose_one_field_is_name() {
+    let canonical = codec::write(&small_document());
+    let (keyed, named) = by_name("  ", "selectedOption", UUID_V7, "UUID version 7");
+    let files = replaced(&canonical, DECISION, &[(keyed.clone(), named.clone())]);
+    assert_eq!(
+        text(&formatted(&files), DECISION),
+        text(&canonical, DECISION)
+    );
+    for (second, field) in [
+        (format!("    key: {UUID_V7}\n"), "key"),
+        ("    title: \"UUID version 7\"\n".to_owned(), "title"),
+    ] {
+        let files = replaced(
+            &canonical,
+            DECISION,
+            &[(keyed.clone(), format!("{named}{second}"))],
+        );
+        let errors = format(&files).unwrap_err();
+        assert_eq!(errors.len(), 1, "{errors:?}");
+        assert_eq!(errors[0].problem, Problem::UnknownField(field.to_owned()));
+    }
 }

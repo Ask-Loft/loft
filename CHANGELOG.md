@@ -3,6 +3,95 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.0.4 (2026-10-14)
+
+- `loft reconcile` checks `loft.trace.yaml`, a file beside `spec/` that links each acceptance
+  criterion, and each Constraint and Quality Attribute whose `verificationFate` is `proved`, to
+  the tests that verify it by file and name. Each link holds the content hash its node had when
+  a reviewer last accepted it. `TR-001` reports a node no link names, `TR-002` a link never
+  reviewed, `TR-003` a link reviewed before its node changed, `TR-004` a test that cannot be
+  found as a whole word in its file, and `TR-005` a link whose node is gone or not in scope. No
+  test is run. `--fail-on` gates CI; `--accept <key|label>` and `--accept-stale` record a review.
+  The trace file enters no root, and no publish writes it.
+- The `loft-spec` skill has a new reference, `reconciling.md`, and ends a change to a specified
+  product by linking its tests.
+- This repository traces its own criteria: its trace file is seeded from the test names that cited
+  labels before test names stopped citing them, and CI runs `loft reconcile --fail-on warning`.
+- A new lint rule, `V2-009` (info), reports each Markdown construct in a body outside the Format's
+  subset of paragraphs, lists, code spans, fenced code blocks, emphasis and links: raw HTML, a
+  block quote, a table, an image, a thematic break, an indented code block, a footnote, a task
+  list item or struck-through text, each at its first body line.
+- `loft import v1` converts a v1 tag whose name is not a v2 tag name, such as "MCP tool": the
+  name is lowercased and each run of other characters becomes one hyphen (`mcp-tool`), for the
+  Facet Tag and its Vocabulary Entry alike. A name that derives nothing, or two v1 names that
+  derive one tag name, stop the conversion naming them. The sidecar keeps each v1 name that
+  changed, under `tagNames`.
+- A command whose standard output is closed before it finishes, as by `loft reconcile | head -1`,
+  no longer panics with "failed printing to stdout: Broken pipe" and exit 101: it skips the rest
+  of its output, writes nothing about it to standard error and exits with the code it exits with
+  when its output is open. Any other failure to write standard output exits 1 with its message on
+  standard error.
+- `loft merge-driver` merges every record of a file by its key, wherever each branch holds it:
+  its fields, its place (its parent and list) as one value, and each list in merged order. A
+  record moved to another parent in the same file, such as a criterion moved to another
+  Requirement or a Constraint moved between Components, is written once, where it was moved and
+  with the other branch's edits. It used to stay at its old parent with a `record` conflict and
+  also appear at the new one when the other branch edited it, appear twice when both branches
+  moved it apart, and lose a deletion made in the other branch.
+- A record the two branches moved to different parents stays at its base parent, or where `ours`
+  put it when neither branch holds that parent, with a new conflict over `parent`, each side
+  naming the parent's key. So does each record of a cycle the two branches' moves would make, and
+  a record both branches added at different parents goes where `ours` put it, with a `parent`
+  conflict. `parent` is reserved beside `conflicts`, `position` and `record`.
+- A record one branch deleted is kept, as the other branch wrote it and with a `record` conflict,
+  when the other branch changed or moved it or when the merge keeps a record beneath it. One the
+  other branch changed only by deleting records beneath it is deleted.
+- A record that a list the Format sorts moves, as renaming a tag moves its neighbours, is not
+  changed by the move: renaming a tag next to one the other branch deleted no longer keeps the
+  deleted tag with a `record` conflict.
+- An assessment one branch deleted and the other changed keeps its base value with a conflict
+  over `assessments`. It used to be dropped silently.
+- A record whose kind one branch changed takes that kind, and its fields that both kinds define
+  alike merge as before; an edit to a field the new kind lacks is dropped. Where the new kind
+  cannot hold a record the merge keeps beneath it, the record keeps a kind of another branch that
+  can, and the change of kind is dropped. Neither drop writes a conflict. Such a merge used to
+  panic in a debug build.
+- A merge input that carries a key twice is refused as unreadable, naming both sites, and a merge
+  whose result would carry a key twice writes nothing.
+- A key carried twice that a `record` conflict names, as when one branch moved a record to
+  another file and the other changed it, is reported as a record moved in one branch and changed
+  in the other.
+- An error or finding that names two sites in one file names the file once:
+  `spec/a.yaml:18:10, 28:10: …`.
+- A Feature listed by two Feature Groups is one error that names both groups.
+- A publish that settles a key which lost its live label raises the label counter above the
+  key's withdrawn labels, so none of them is given out again.
+- A `loft skill install` that fails leaves the skill directory as it was, with no temporary
+  directory beside it.
+- The skill's listing-budget refusal names the combined length and the limit.
+- The `loft-spec` skill's format reference describes every record kind with its fields, each
+  marked required or optional, and names every command that writes each file; tests now hold
+  the reference to the code.
+- CI builds `loftspec` with the toolchain its declared `rust-version` names.
+- The release workflow's check job runs `loft reconcile --fail-on warning`, as CI does.
+- Library API: `loftspec`'s `RuleId` gains `V2009`; `ConvertError::Tag` gives way to
+  `UnderivableTag` and `TagCollision`; `Problem::ListedByTwoGroups` names its groups;
+  `VocabularyEntry.name` is a `String` and `V1Sidecar` gains `tag_names`; `write_sites` is new;
+  `MergeError` gains `Unplaced`, and `Problem` gains `MovedAndChanged`.
+- Telemetry, on by default: each run of `check`, `find`, `fmt`, `import v1`, `init`, `publish`,
+  `reconcile`, `render`, `skill install` and `verify` sends one pseudonymous command event to
+  `https://askloft.ai/api/telemetry` after its output, within 500 milliseconds and printing
+  nothing. A notice on standard error before the first event says what is sent and how to
+  switch it off. `loft telemetry off|on|status` and `LOFT_TELEMETRY=off` switch it off;
+  `schemas/telemetry-event.json` lists every field. See "Telemetry and the update check" in
+  the README.
+- The update check: at most once a day `loft` asks GitHub for the latest release, and a later
+  run tells of a newer one with the way to update. `loft update-check off|on|status` and
+  `LOFT_UPDATE_CHECK=off` switch it off.
+- `loft record-install npm|cargo|release-binary` records how `loft` was installed. The npm
+  package runs it from a `postinstall` script, which never fails an install; without a record,
+  `loft` infers the way from where it lies.
+
 ## 2.0.3 (2026-10-14)
 
 - The npm packages run again: 2.0.2's platform packages shipped `loft` without its execute

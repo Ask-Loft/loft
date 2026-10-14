@@ -1,0 +1,55 @@
+key: 01a13a90-3556-7106-a68c-2695f6f1baaa
+slug: the-telemetry-notice
+name: "The telemetry notice"
+body: "Telemetry is on until a person switches it off, so the first run that sends tells them so, in the same run, before its event leaves the machine. The notice goes to standard error, where a person or an agent reading the run sees it, and leaves standard output to the command's own result."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+mentions:
+  - 01a13a90-3554-7631-bb13-09810e715c54
+requirements:
+  - key: 01a13a90-3556-7106-a68c-26961572abfd
+    statement:
+      form: event_driven
+      when: "Loft is about to send the first event for a user on a machine"
+      system: "Loft"
+      shall: "print the telemetry notice to standard error before it sends the event."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-269742f8186f
+        name: "The notice is printed before the event is sent."
+      - key: 01a13a90-3556-7106-a68c-2698015b285f
+        name: "The notice is written to standard error."
+      - key: 01a13a90-3556-7106-a68c-2699a18c1bc2
+        name: "Standard output holds no part of the notice."
+      - key: 01a13a90-3556-7106-a68c-269a7be8d6fa
+        name: "The event of the run that prints the notice is sent."
+      - key: 01a13a90-3556-7106-a68c-269b80c240d4
+        name: "A later run for the same user on the same machine prints no notice."
+  - key: 01a13a90-3556-7106-a68c-269ce3f79100
+    statement:
+      form: ubiquitous
+      system: "The telemetry notice"
+      shall: "say what is sent, where it goes, how long it is kept and how to switch telemetry off."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-269d9057bec8
+        name: "The notice lists the fields of the command event."
+      - key: 01a13a90-3556-7106-a68c-269ef844029f
+        name: "The notice names the collector's address."
+      - key: 01a13a90-3556-7106-a68c-269f8675cb2a
+        name: "The notice states that events with tokens are kept for at most 30 days and aggregates without tokens for at most 90 days."
+      - key: 01a13a90-3556-7106-a68c-26a02a9f270e
+        name: "The notice states that the collector sees the network address each event comes from."
+      - key: 01a13a90-3556-7106-a68c-26a1fe9a3566
+        name: "The notice names `loft telemetry off` and `LOFT_TELEMETRY=off`."
+      - key: 01a13a90-3556-7106-a68c-26a2689c1033
+        name: "The notice names the page of the documentation that describes telemetry."
+      - key: 01a13a90-3556-7106-a68c-26a3d900e6a6
+        name: "The notice does not call the data anonymous."
+  - key: 01a13a90-3556-7106-a68c-26a4e86085ea
+    statement:
+      form: unwanted
+      if: "Loft cannot record that the notice was printed"
+      system: "Loft"
+      shall: "print the notice again on the next run that sends."
+    criteria:
+      - key: 01a13a90-3556-7106-a68c-26a55dc444b3
+        name: "A run after an unrecorded notice prints the notice."

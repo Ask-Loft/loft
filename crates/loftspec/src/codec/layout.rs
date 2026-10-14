@@ -8,7 +8,7 @@ use super::schema::field;
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::error::{Problem, ReadError, Site, SpecPath};
-use super::files::{Files, MANIFEST, Role, Tree, keyed, read_file};
+use super::files::{Files, MANIFEST, Role, Tree, keyed_records, read_file};
 use super::record::{Mode, Rec, Val};
 use crate::identity::Key;
 use crate::manifest::check_identifiers;
@@ -210,20 +210,27 @@ struct Group<'a> {
     keys: Vec<(Key, Position)>,
 }
 
+/// Checks one group's list. A key another group listed first is an error naming both groups
+/// (AC-101), and only that: the Feature's directory answers to the first group alone.
 fn check_group<'a>(
     tree: &Tree,
     group: &Group<'a>,
     features: &BTreeMap<Key, &SpecPath>,
-    lister: &mut BTreeMap<Key, (&'a SpecPath, Position)>,
+    lister: &mut BTreeMap<Key, (&'a SpecPath, Position, &'a str)>,
     errors: &mut Vec<ReadError>,
 ) {
     check_list(group.path, &group.keys, features, errors);
     for &(key, position) in &group.keys {
-        let this = (group.path, group.at);
-        if lister.insert(key, this).is_some_and(|first| first != this) {
-            errors.push(error(group.path, position, Problem::ListedByTwoGroups(key)));
-        }
-        if let Some(path) = features.get(&key) {
+        let this = (group.path, group.at, group.slug);
+        let first = *lister.entry(key).or_insert(this);
+        if (first.0, first.1) != (this.0, this.1) {
+            let problem = Problem::ListedByTwoGroups {
+                feature: key,
+                first: first.2.to_owned(),
+                second: group.slug.to_owned(),
+            };
+            errors.push(error(group.path, position, problem));
+        } else if let Some(path) = features.get(&key) {
             check_directory(tree, path, group.product_dir, group.slug, errors);
         }
     }
@@ -246,17 +253,16 @@ fn check_directory(
     }
 }
 
-/// Every key a keyed record of the tree carries, with the file and the position of the key.
-fn carried_keys(tree: &Tree) -> impl Iterator<Item = (Key, &SpecPath, Position)> {
+/// Every key a keyed record of the tree carries, with the file, the position of the key and the
+/// record.
+fn carried_keys(tree: &Tree) -> impl Iterator<Item = (Key, &SpecPath, Position, &Rec)> {
     tree.files.iter().flat_map(|(path, (_, content))| {
-        let mut found = Vec::new();
-        content
-            .records()
-            .for_each(|record| keyed(record, &mut found));
-        found
+        keyed_records(content.records())
             .into_iter()
-            .filter_map(|record| key_of(record.get(field::KEY)?))
-            .map(move |(key, position)| (key, path, position))
+            .filter_map(move |record| {
+                let (key, position) = key_of(record.get(field::KEY)?)?;
+                Some((key, path, position, record))
+            })
     })
 }
 
@@ -267,19 +273,34 @@ fn site(path: &SpecPath, position: Position) -> Site {
     }
 }
 
-/// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849).
+/// No two keyed records carry one key (RQ-4, AC-13, AC-14, AC-251, AC-848, AC-849). A key
+/// whose record holds a `record` conflict was kept by the merge driver in the file one branch
+/// moved its record from, because the other branch changed it there, and the error says so.
 fn check_keys(tree: &Tree, errors: &mut Vec<ReadError>) {
-    let mut seen: BTreeMap<Key, (&SpecPath, Position)> = BTreeMap::new();
-    for (key, path, position) in carried_keys(tree) {
-        if let Some(&(first, at)) = seen.get(&key) {
-            errors.push(ReadError {
-                sites: vec![site(first, at), site(path, position)],
-                problem: Problem::DuplicateKey(key),
-            });
-        } else {
-            seen.insert(key, (path, position));
-        }
+    let mut seen: BTreeMap<Key, (&SpecPath, Position, &Rec)> = BTreeMap::new();
+    for (key, path, position, record) in carried_keys(tree) {
+        let Some(&(first, at, other)) = seen.get(&key) else {
+            seen.insert(key, (path, position, record));
+            continue;
+        };
+        errors.push(ReadError {
+            sites: vec![site(first, at), site(path, position)],
+            problem: if kept_by_merge(other) || kept_by_merge(record) {
+                Problem::MovedAndChanged(key)
+            } else {
+                Problem::DuplicateKey(key)
+            },
+        });
     }
+}
+
+/// Whether the merge driver kept a record where one side deleted it: the record then holds a
+/// conflict over `record` (AC-1048).
+fn kept_by_merge(record: &Rec) -> bool {
+    record
+        .conflicts
+        .iter()
+        .any(|conflict| conflict.field == field::RECORD)
 }
 
 /// Where each key of a read tree is written: its file, and the position of its `key` field. A
@@ -293,7 +314,7 @@ impl Sites {
     pub fn of(tree: &Tree) -> Self {
         Self(
             carried_keys(tree)
-                .map(|(key, path, position)| (key, site(path, position)))
+                .map(|(key, path, position, _)| (key, site(path, position)))
                 .collect(),
         )
     }

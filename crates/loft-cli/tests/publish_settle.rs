@@ -249,3 +249,33 @@ fn unmerged_bindings_without_a_conflict_record_are_refused_with_the_way_out() {
     );
     assert_eq!(snapshot(&scratch.0), before);
 }
+
+#[test]
+fn the_json_of_a_settling_publish_names_the_citations_it_rewrote() {
+    let (scratch, scenario) = stopped(Stop::Merge);
+    // `F-2` mentions the Feature that loses `F-4` and cites that label.
+    scratch.edit(
+        "products/reading-list/shelf/remove-a-book.yaml",
+        "name: \"Remove a book\"\nrealizes:\n  - 00000000-0000-4000-8000-00000000003c\n",
+        &format!(
+            "name: \"Remove a book\"\nbody: \"Sharing follows F-4.\"\nrealizes:\n  - 00000000-0000-4000-8000-00000000003c\nmentions:\n  - {FEATURE_F3}\n"
+        ),
+    );
+    let output = publish(&scratch, &scenario, &["publish", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let document = schema::conforming(
+        &output.stdout,
+        include_str!("../../../schemas/publish.json"),
+    );
+    assert_eq!(
+        document["withdrawn"],
+        json!([{"key": FEATURE_F3, "withdrawn": "F-4", "label": "F-5"}])
+    );
+    assert_eq!(
+        document["rewritten"],
+        json!([{"key": FEATURE_F2, "withdrawn": "F-4", "label": "F-5"}])
+    );
+    let feature =
+        fs::read_to_string(scratch.file("products/reading-list/shelf/remove-a-book.yaml")).unwrap();
+    assert!(feature.contains("Sharing follows F-5."), "{feature}");
+}

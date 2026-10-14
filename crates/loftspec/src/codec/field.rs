@@ -28,6 +28,9 @@ pub const DESCRIPTION: &str = "description";
 pub const DOCUMENT_KEY: &str = "documentKey";
 pub const DRIVER: &str = "driver";
 pub const DRIVERS: &str = "drivers";
+/// The pseudo-field that names a registry's list of entries, which the file holds at its top
+/// as one sequence.
+pub const ENTRIES: &str = "entries";
 pub const ENVIRONMENT: &str = "environment";
 pub const FEATURES: &str = "features";
 pub const FEATURE_GROUPS: &str = "featureGroups";
@@ -48,6 +51,8 @@ pub const OPTION: &str = "option";
 pub const OPTIONS: &str = "options";
 pub const OURS: &str = "ours";
 pub const OUTCOME: &str = "outcome";
+/// The pseudo-field a conflict over the parent that a record was moved to names.
+pub const PARENT: &str = "parent";
 /// The pseudo-field a conflict over a record's place in its list names (AC-861).
 pub const POSITION: &str = "position";
 pub const PRODUCTS: &str = "products";

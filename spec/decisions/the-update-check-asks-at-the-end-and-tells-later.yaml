@@ -1,0 +1,48 @@
+key: 01a13a90-3554-7631-bb13-099e0dfc9d8f
+slug: the-update-check-asks-at-the-end-and-tells-later
+title: "The update check asks at the end of a run and tells on a later one"
+context: "Asking GitHub takes a network round trip, and a command's own work matters more to its user than news of a release."
+state:
+  kind: accepted
+  selectedOption: 01a13a90-3554-7631-bb13-09a1b3514e88
+  outcome: "At the end of a run, when the kept answer is more than a day old, `loft` asks GitHub and keeps the answer; a later run tells of a newer release from the kept answer."
+drivers:
+  - key: 01a13a90-3554-7631-bb13-099f173aba8c
+    kind: local
+    label: "No wait before work"
+    statement: "No run waits for GitHub before it does its own work."
+  - key: 01a13a90-3554-7631-bb13-09a0867fff31
+    kind: local
+    label: "Prompt news"
+    statement: "A person learns of a newer release on the first run after it is published."
+options:
+  - key: 01a13a90-3554-7631-bb13-09a1b3514e88
+    title: "Ask at the end, tell later"
+    description: "Ask after the command's work and keep the answer; print the notice on a later run."
+  - key: 01a13a90-3554-7631-bb13-09a228d708c6
+    title: "Ask at the start, tell now"
+    description: "Ask before the command's work and print the notice in the same run."
+assessments:
+  - option: 01a13a90-3554-7631-bb13-09a1b3514e88
+    driver: 01a13a90-3554-7631-bb13-099f173aba8c
+    rating: supports
+    rationale: "the request follows the work"
+  - option: 01a13a90-3554-7631-bb13-09a1b3514e88
+    driver: 01a13a90-3554-7631-bb13-09a0867fff31
+    rating: neutral
+    rationale: "the news comes one run late"
+  - option: 01a13a90-3554-7631-bb13-09a228d708c6
+    driver: 01a13a90-3554-7631-bb13-099f173aba8c
+    rating: conflicts
+    rationale: "the first run of a day waits for GitHub"
+  - option: 01a13a90-3554-7631-bb13-09a228d708c6
+    driver: 01a13a90-3554-7631-bb13-09a0867fff31
+    rating: supports
+    rationale: "the news comes in the run that learns it"
+consequences:
+  - key: 01a13a90-3554-7631-bb13-09a374bd4b92
+    kind: cost
+    statement: "A newer release is told of one run after `loft` learns of it."
+subjects:
+  - role: outcome
+    node: 01a13a90-3556-7106-a68c-2609ebc00b40

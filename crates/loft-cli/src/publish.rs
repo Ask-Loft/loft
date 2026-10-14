@@ -5,7 +5,6 @@
 //! refusal writes nothing and exits 1. It runs no git command that changes the repository.
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::check::Placed;
 use loftspec::codec::ReadError;
@@ -15,7 +14,9 @@ use loftspec_store::repository::{GitCommand, Repository as _};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::{Value, json};
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -34,7 +35,7 @@ impl<E: ToString> From<E> for Failure {
     }
 }
 
-pub fn run(root: &Path, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, as_json: bool) -> Finished {
     match attempt(root) {
         Ok(publication) => {
             if as_json {
@@ -42,7 +43,7 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
             } else {
                 print(&publication);
             }
-            ExitCode::SUCCESS
+            Finished::success(outcome(&publication))
         }
         Err(failure) => stop(failure).exit(SCHEMA, as_json),
     }
@@ -117,31 +118,37 @@ fn print(publication: &Publication) {
             ..
         } => {
             for allocated in allocated {
-                println!("{} {}", allocated.label, allocated.element.key());
+                outln!("{} {}", allocated.label, allocated.element.key());
             }
             for withdrawn in withdrawn {
-                println!(
+                outln!(
                     "withdrew {} from {}, which now holds {}",
-                    withdrawn.withdrawn, withdrawn.element, withdrawn.label
+                    withdrawn.withdrawn,
+                    withdrawn.element,
+                    withdrawn.label
                 );
             }
             for rewritten in rewritten {
-                println!(
+                outln!(
                     "rewrote {} as {} in {}",
-                    rewritten.withdrawn, rewritten.label, rewritten.element
+                    rewritten.withdrawn,
+                    rewritten.label,
+                    rewritten.element
                 );
             }
-            println!(
+            outln!(
                 "published sequence {}, state root {}",
-                lock.publish_sequence, lock.state_root
+                lock.publish_sequence,
+                lock.state_root
             );
             if let Some(operation) = finish {
-                println!("to finish: {}", finishing(*operation));
+                outln!("to finish: {}", finishing(*operation));
             }
         }
-        Publication::Unchanged(lock) => println!(
+        Publication::Unchanged(lock) => outln!(
             "nothing changed since publish sequence {}, state root {}",
-            lock.publish_sequence, lock.state_root
+            lock.publish_sequence,
+            lock.state_root
         ),
     }
 }
@@ -173,8 +180,17 @@ const fn finishing(operation: Operation) -> &'static str {
     }
 }
 
+/// The outcome a publication names: `published`, or `unchanged` when nothing changed.
+const fn outcome(publication: &Publication) -> &'static str {
+    match publication {
+        Publication::Published { .. } => "published",
+        Publication::Unchanged(_) => "unchanged",
+    }
+}
+
 fn published(publication: &Publication) -> Value {
-    let (outcome, lock, allocated, rewritten, withdrawn, finish) = match publication {
+    let outcome = outcome(publication);
+    let (lock, allocated, rewritten, withdrawn, finish) = match publication {
         Publication::Published {
             lock,
             allocated,
@@ -183,14 +199,13 @@ fn published(publication: &Publication) -> Value {
             finish,
             ..
         } => (
-            "published",
             lock,
             allocated.as_slice(),
             rewritten.as_slice(),
             withdrawn.as_slice(),
             *finish,
         ),
-        Publication::Unchanged(lock) => ("unchanged", lock, &[][..], &[][..], &[][..], None),
+        Publication::Unchanged(lock) => (lock, &[][..], &[][..], &[][..], None),
     };
     let allocated: Vec<Value> = allocated
         .iter()

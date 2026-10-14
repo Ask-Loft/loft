@@ -21,7 +21,7 @@ requirements:
       - key: a1fb5428-86a2-41a3-b033-0b8e679119e7
         name: "Each text error is reported on its own line."
       - key: aee079f6-ab17-4507-a326-743605188b3a
-        name: "An error that concerns two positions names each as `<path>:<line>:<column>`."
+        name: "An error that concerns positions in two files names each as `<path>:<line>:<column>`."
       - key: 75a0b051-49a7-4645-9a93-9adccfebac87
         name: "Lines and columns are counted from 1."
       - key: ec2de2d7-e0ca-4476-8613-6ce934301e55

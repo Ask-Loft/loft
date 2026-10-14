@@ -14,6 +14,7 @@ use loftspec_store::{DocumentStore as _, FileStore};
 use serde_json::Value;
 use software_plant::GitScenario;
 use software_plant::git::Call;
+use software_plant::real_git::git_output;
 
 /// A directory where `loft init` ran and succeeded.
 fn initialised() -> Scratch {
@@ -264,4 +265,19 @@ fn the_suggestion_writes_nothing_to_the_repository() {
     assert!(suggests_the_driver(&output), "{}", stdout(&output));
     assert_eq!(after, GitScenario::clean_on("main"));
     assert!(!scratch.0.join(".gitattributes").exists());
+}
+
+#[test]
+fn outside_a_repository_init_creates_no_git_repository_with_real_git() {
+    let scratch = Scratch::empty();
+    let output = scratch.loft_under_real_git(&["init"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stdout(&output).contains("git repository"),
+        "{}",
+        stdout(&output)
+    );
+    assert!(!scratch.0.join(".git").exists());
+    let inside = git_output(&scratch.0, &["rev-parse", "--git-dir"]);
+    assert!(!inside.status.success(), "{}", stdout(&inside));
 }

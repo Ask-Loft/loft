@@ -34,6 +34,9 @@ pub struct V1Sidecar {
     pub decisions: BTreeMap<DecisionId, DecisionFacts>,
     /// The v1 node UUID behind each former label a decision names (ADR-13).
     pub former_labels: BTreeMap<Label, Uuid>,
+    /// The v1 name behind each tag name derived from a different one; written only when there is
+    /// one, so a conversion that renames no tag writes the sidecar it always did.
+    pub tag_names: BTreeMap<TagName, String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -110,6 +113,7 @@ impl V1Sidecar {
             tags: BTreeMap::new(),
             decisions: BTreeMap::new(),
             former_labels: BTreeMap::new(),
+            tag_names: BTreeMap::new(),
         }
     }
 
@@ -138,7 +142,7 @@ impl V1Sidecar {
     /// one trailing newline. Equal sidecars give equal bytes (AC-206).
     #[must_use]
     pub fn to_json(&self) -> String {
-        let value = json!({
+        let mut value = json!({
             "formerLabels": object(self.former_labels.iter().map(|(label, node_id)| {
                 (label.to_string(), json!(node_id))
             })),
@@ -165,6 +169,13 @@ impl V1Sidecar {
                 })).collect())
             })),
         });
+        if !self.tag_names.is_empty() {
+            value["tagNames"] = object(
+                self.tag_names
+                    .iter()
+                    .map(|(tag, v1_name)| (tag.to_string(), json!(v1_name))),
+            );
+        }
         let mut text = serde_json::to_string_pretty(&value).unwrap_or_default();
         text.push('\n');
         text

@@ -8,11 +8,12 @@ mod write;
 use std::fmt;
 use std::io;
 use std::path::Path;
-use std::process::ExitCode;
 
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::outln;
 
 use compose::Host;
 
@@ -37,6 +38,7 @@ const SOURCE: &[(&str, &str)] = source![
     "references/lint-findings.md",
     "references/new-document.md",
     "references/publishing-and-merging.md",
+    "references/reconciling.md",
     "references/reviewing.md",
     "references/the-loop.md",
     "references/writing-rules.md",
@@ -84,10 +86,10 @@ pub fn error_json(error: &SkillError) -> serde_json::Value {
 /// (Writing the skill).
 pub fn report(written: &[&str]) {
     for directory in written {
-        println!("installed {directory}");
+        outln!("installed {directory}");
     }
     if !written.is_empty() {
-        println!(
+        outln!(
             "commit {}, so that every clone's coding agents have the skill",
             written.join(" and ")
         );
@@ -96,7 +98,7 @@ pub fn report(written: &[&str]) {
 
 /// `loft skill install`: writes the skill into the current directory and names the directories
 /// it wrote.
-pub fn run(root: &Path, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, as_json: bool) -> Finished {
     match install(root) {
         Ok(written) => {
             if as_json {
@@ -105,7 +107,7 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
             } else {
                 report(&written);
             }
-            ExitCode::SUCCESS
+            Finished::success("installed")
         }
         Err(error) => json::stop(SCHEMA, vec![error_json(&error)], &error, as_json),
     }

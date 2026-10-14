@@ -1,0 +1,129 @@
+key: 01a1383c-2899-72f8-b39a-0a07470f28d1
+slug: loft-reconcile
+name: "`loft reconcile`"
+body: "Compares `loft.trace.yaml` with the tree and with the files that hold the tests, prints the reconciliation findings with an exit code a CI job can gate on, and accepts the links a reviewer has checked."
+tags:
+  - checks-for-updates
+  - reads-tree
+  - sends-telemetry
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a1383c-2899-72f8-b39a-0a080ab13c05
+    statement:
+      form: ubiquitous
+      system: "`loft reconcile`"
+      shall: "print each reconciliation finding."
+    criteria:
+      - key: 01a1383c-2899-72f8-b39a-0a09aa3a6271
+        name: "Each finding is printed on one line with the file, line and column of its node, its severity, its rule, the node's label and its message."
+      - key: 01a1383c-2899-72f8-b39a-0a0a49c31db4
+        name: "A node without a label is printed with `-` as its label."
+      - key: 01a1383c-2899-72f8-b39a-0a0b79eb29dc
+        name: "A finding on a key that no node carries is printed with `loft.trace.yaml` and the line of its link."
+      - key: 01a1383c-2899-72f8-b39a-0a0c4be06732
+        name: "The output ends with the number of nodes in scope, the number a link names, and the number of findings of each rule."
+      - key: 01a1383c-2899-72f8-b39a-0a0da9567a6d
+        name: "Without `--fail-on`, `loft reconcile` exits 0 when only findings exist."
+      - key: 01a1383c-2899-72f8-b39a-0a0e6c309eff
+        name: "Without `--accept` or `--accept-stale`, no file is written."
+      - key: 01a1383c-824c-7052-8566-da7cb51595a8
+        name: "After an accept, the findings printed are those of the trace file as written."
+  - key: 01a1383c-2899-72f8-b39a-0a0f75eb1d7e
+    statement:
+      form: unwanted
+      if: "the trace file breaks its form"
+      system: "`loft reconcile`"
+      shall: "report the error and exit 1."
+    criteria:
+      - key: 01a1383c-2899-72f8-b39a-0a100e03d146
+        name: "The error names `loft.trace.yaml` and the line."
+      - key: 01a1383c-2899-72f8-b39a-0a11ae8ba5da
+        name: "No finding is reported."
+      - key: 01a1383c-2899-72f8-b39a-0a1244b60dd9
+        name: "No file is written."
+  - key: 01a1383c-2899-72f8-b39a-0a13960c9f60
+    statement:
+      form: optional
+      where: "`--fail-on <severity>` is given"
+      system: "`loft reconcile`"
+      shall: "exit 1 on a finding at or above that severity."
+    criteria:
+      - key: 01a1383c-2899-72f8-b39a-0a14539576c3
+        name: "`--fail-on warning` exits 1 on a warning."
+      - key: 01a1383c-2899-72f8-b39a-0a15f65eb114
+        name: "`--fail-on warning` exits 0 when only info findings exist."
+      - key: 01a1383c-2899-72f8-b39a-0a160dddf31c
+        name: "`--fail-on info` exits 1 on an info finding."
+      - key: 01a1383c-2899-72f8-b39a-0a175b1e5f93
+        name: "A severity outside warning, info and hint is a usage error."
+  - key: 01a1383c-2899-72f8-b39a-0a18287c3b4f
+    statement:
+      form: optional
+      where: "`--accept <node>` is given"
+      system: "`loft reconcile`"
+      shall: "accept the link of each named node."
+    criteria:
+      - key: 01a1383c-2899-72f8-b39a-0a19b87e52c6
+        name: "A node is named by its key or by its label."
+      - key: 01a1383c-2899-72f8-b39a-0a1a395db22e
+        name: "`--accept` can be given more than once."
+      - key: 01a1383c-2899-72f8-b39a-0a1bd593b317
+        name: "The trace file is written with the links accepted."
+      - key: 01a1383c-2899-72f8-b39a-0a1c36954ed7
+        name: "The output names each link accepted."
+  - key: 01a1383c-2899-72f8-b39a-0a1d2fe0baeb
+    statement:
+      form: unwanted
+      if: "a node named by `--accept` cannot be accepted"
+      system: "`loft reconcile`"
+      shall: "write nothing and exit 1."
+    criteria:
+      - key: 01a1383c-2899-72f8-b39a-0a1e34253343
+        name: "The error names each node that cannot be accepted and why."
+      - key: 01a1383c-655a-7511-9f70-ed26417e3bc6
+        name: "A key or label that names no node of the tree cannot be accepted."
+      - key: 01a1383c-655a-7511-9f70-ed27eec91a5f
+        name: "A node without a link cannot be accepted."
+      - key: 01a1383c-655a-7511-9f70-ed28922230de
+        name: "A node whose link has a `TR-004` or `TR-005` finding cannot be accepted."
+      - key: 01a1383c-2899-72f8-b39a-0a1f2b01371a
+        name: "No link is accepted, including those of the other nodes named."
+      - key: 01a139d8-bf45-745b-b61d-b7899cd2e749
+        name: "The error names each node as `--accept` gave it."
+      - key: 01a139d8-bf45-745b-b61d-b78a1addb2d9
+        name: "The error for a name that no node carries says whether the name was read as a key or as a label."
+      - key: 01a139d8-bf45-745b-b61d-b78b3266717f
+        name: "A name that is neither a key nor a label cannot be accepted."
+      - key: 01a139d8-bf45-745b-b61d-b78c93f27b7b
+        name: "Names that no node carries and nodes whose links cannot be accepted are reported in one error, in the order `--accept` gave them."
+  - key: 01a1383c-2899-72f8-b39a-0a20225c484a
+    statement:
+      form: optional
+      where: "`--accept-stale` is given"
+      system: "`loft reconcile`"
+      shall: "accept every link that has a `TR-002` or `TR-003` finding and can be accepted."
+    criteria:
+      - key: 01a1383c-2899-72f8-b39a-0a21af41dcc3
+        name: "A link with a `TR-004` finding is left unaccepted and its findings are printed."
+      - key: 01a1383c-2899-72f8-b39a-0a22f02e50e8
+        name: "Where no link is accepted, no file is written."
+  - key: 01a1383c-2899-72f8-b39a-0a23626e032b
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft reconcile`"
+      shall: "list each finding and the counts in its JSON document."
+    criteria:
+      - key: 01a1383c-2899-72f8-b39a-0a24e1a5249d
+        name: "Each finding carries its rule, severity, key, label, file, line, column and message."
+      - key: 01a1383c-2899-72f8-b39a-0a25cf80fc20
+        name: "The label of a node without one is `null`."
+      - key: 01a1383c-2899-72f8-b39a-0a260c535b0a
+        name: "The document carries the number of nodes in scope and the number a link names."
+      - key: 01a1383c-2899-72f8-b39a-0a27b1f95794
+        name: "The document lists the keys of the links accepted."
+      - key: 01a1383c-2899-72f8-b39a-0a28d4846c77
+        name: "The outcome is `passed` when no finding is at or above `--fail-on`."
+      - key: 01a1383c-2899-72f8-b39a-0a29399fe17b
+        name: "The outcome is `failed` when a finding is at or above `--fail-on`."

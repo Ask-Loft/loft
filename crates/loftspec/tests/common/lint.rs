@@ -6,6 +6,11 @@ use loftspec::identity::Key;
 use loftspec::lint::{Finding, LintConfig, RuleId, Severity, lint};
 use loftspec::tree::Requirement;
 
+/// The keys each finding of `rule` names.
+pub fn keys_of(findings: &[Finding], rule: RuleId) -> Vec<Vec<Key>> {
+    of(findings, rule).into_iter().map(keys).collect()
+}
+
 /// The findings of the default configuration.
 pub fn findings(document: &Document) -> Vec<Finding> {
     lint(document, &Sites::default(), &LintConfig::default())

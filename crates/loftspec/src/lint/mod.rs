@@ -1,8 +1,9 @@
 //! The linter (CMP-7, F-19..F-23): the structural rules `SH-001`..`SH-010`, the language
-//! rules `LQ-001`..`LQ-009`, the v2 rules `V2-001`..`V2-004` and the rules of the writing craft
-//! `V2-005`..`V2-008`, each finding a typed record in a stable order. The configuration is
-//! `spec/lint.yaml`, part of the tree the linter is given; no flag, environment variable, clock
-//! or locale changes a finding (RQ-106). The linter changes nothing in the document (CON-9).
+//! rules `LQ-001`..`LQ-009`, the v2 rules `V2-001`..`V2-004` and `V2-009`, and the rules of the
+//! writing craft `V2-005`..`V2-008`, each finding a typed record in a stable order. The
+//! configuration is `spec/lint.yaml`, part of the tree the linter is given; no flag, environment
+//! variable, clock or locale changes a finding (RQ-106). The linter changes nothing in the
+//! document (CON-9).
 
 mod config;
 mod context;
@@ -10,6 +11,7 @@ mod craft;
 mod defaults;
 mod language;
 mod lexicon;
+mod markdown;
 mod similarity;
 mod structural;
 mod text;
@@ -21,7 +23,7 @@ use std::fmt;
 pub use config::{LintConfig, Similarity};
 pub use defaults::defaults_text;
 
-use crate::codec::{Site, Sites};
+use crate::codec::{Site, Sites, write_sites};
 use crate::document::Document;
 use crate::identity::Key;
 use crate::wire::wire_names;
@@ -58,6 +60,7 @@ pub enum RuleId {
     V2006,
     V2007,
     V2008,
+    V2009,
 }
 
 wire_names!(RuleId {
@@ -88,6 +91,7 @@ wire_names!(RuleId {
     V2006 => "V2-006",
     V2007 => "V2-007",
     V2008 => "V2-008",
+    V2009 => "V2-009",
 });
 
 impl fmt::Display for RuleId {
@@ -158,12 +162,11 @@ impl fmt::Display for Finding {
     /// `<path>:<line>:<column>: <severity> <rule>: <message>`, every site the finding names
     /// first (RQ-158), then the term and the body line where the finding has them.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for subject in &self.subjects {
-            match &subject.site {
-                Some(site) => write!(formatter, "{site}: ")?,
-                None => write!(formatter, "{}: ", subject.key)?,
-            }
-        }
+        let sites = self
+            .subjects
+            .iter()
+            .map(|subject| subject.site.as_ref().ok_or(subject.key));
+        write_sites(formatter, sites)?;
         write!(
             formatter,
             "{} {}: {}",

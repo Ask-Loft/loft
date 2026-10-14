@@ -3,27 +3,18 @@
 //! repository's own `spec/` lists the tag; and the converse, that every command that writes a
 //! skill directory lists it.
 
-use std::fs;
 use std::process::Output;
 
-use crate::commands::{COMMANDS, Fixture};
+use crate::commands::{COMMANDS, Fixture, fixture};
 use crate::common::{Scratch, stderr, stdout};
 use crate::conformance::{tagged, tagged_commands};
 use software_plant::GitScenario;
+use software_plant::real_git::{git, git_output};
 
 const TAG: &str = "writes-skill";
 
 /// The skill directories a command writes into a project.
 const SKILL_DIRECTORIES: [&str; 2] = [".claude/skills/loft-spec", ".agents/skills/loft-spec"];
-
-/// A scratch directory for a command: an empty one, or the Reading List.
-fn fixture(fixture: Fixture) -> Scratch {
-    let scratch = Scratch::with_reading_list();
-    if fixture == Fixture::Empty {
-        fs::remove_dir_all(scratch.0.join("spec")).unwrap();
-    }
-    scratch
-}
 
 /// The line of a text output that asks for the skill to be committed.
 fn request(output: &Output) -> Option<String> {
@@ -85,5 +76,32 @@ fn each_command_that_writes_a_skill_directory_lists_writes_skill() {
             tagged.iter().any(|tag| tag == slug),
             "{slug}: writes a skill directory exactly when its Feature lists `{TAG}`"
         );
+    }
+}
+
+/// What a commit would change in the repository under real git: every commit `HEAD` reaches,
+/// and the index.
+fn commits(scratch: &Scratch) -> [Vec<u8>; 2] {
+    [["rev-list", "HEAD"], ["ls-files", "--stage"]].map(|args| {
+        let output = git_output(&scratch.0, &args);
+        assert!(output.status.success(), "git {args:?}: {}", stderr(&output));
+        output.stdout
+    })
+}
+
+#[test]
+fn each_tagged_command_commits_nothing_under_real_git() {
+    for (slug, args, kind) in tagged_commands(TAG) {
+        let scratch = fixture(kind);
+        git(&scratch.0, &["init", "--quiet", "-b", "main"]);
+        git(
+            &scratch.0,
+            &["commit", "--quiet", "--allow-empty", "-m", "base"],
+        );
+        let before = commits(&scratch);
+        let output = scratch.loft_under_real_git(args);
+        assert_eq!(output.status.code(), Some(0), "{slug}: {}", stderr(&output));
+        assert!(request(&output).is_some(), "{slug}: {}", stdout(&output));
+        assert_eq!(commits(&scratch), before, "{slug}: the repository changed");
     }
 }

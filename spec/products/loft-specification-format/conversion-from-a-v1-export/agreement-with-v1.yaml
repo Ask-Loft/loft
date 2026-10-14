@@ -35,11 +35,13 @@ requirements:
       - key: 01a12dad-fb7a-7333-9129-a6b3c3137bec
         name: "A `decidedBy` reference that resolves to no label or key in `spec/` fails the check."
       - key: 01a12dad-fb7a-7333-9129-a6b4c5e6c279
-        name: "A condition other than `subject-external`, `code-span`, `subjects-are-criteria` or `rule` fails the check."
+        name: "A condition other than `subject-external`, `code-span`, `subjects-are-criteria`, `hyphenated-tag` or `rule` fails the check."
       - key: 01a12dca-2b3c-76f6-950a-cd649aeff84e
         name: "The condition `code-span` explains a finding that v1 reports and that loftspec reports once the backticks are removed from the export's text."
       - key: 01a12dda-cece-7462-b240-637034103832
         name: "The condition `subjects-are-criteria` explains a finding every subject of which is a criterion."
+      - key: 01a13a1b-2f3d-70d6-88b6-56e70f3dd3cd
+        name: "The condition `hyphenated-tag` explains a finding that v1 reports for a tag whose v2 name joins with hyphens words that the text joins with spaces."
       - key: 01a12dad-fb7a-7333-9129-a6b5c12b41b8
         name: "An entry that explains no finding on any checked export fails the check as stale."
   - key: 01a12dad-fb7a-7333-9129-a6b6c301f8f1

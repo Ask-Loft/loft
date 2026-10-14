@@ -149,3 +149,6 @@ rules:
     enabled: true
     severity: info
     properNames:
+  - rule: V2-009
+    enabled: true
+    severity: info

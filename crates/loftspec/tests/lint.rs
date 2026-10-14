@@ -1,14 +1,13 @@
-//! The structural and v2 lint rules, findings and reports, and the lint configuration
-//! (F-19, F-21, F-22, F-23).
+//! The structural and v2 lint rules, and the findings they report (F-19, F-21, F-22).
 
 use std::num::NonZeroU64;
 
-use crate::common::lint::{configured, findings, severity};
+use crate::common::lint::{findings, keys_of, severity};
 use crate::common::text::{FEATURE, files, path};
 use crate::common::{
     component, criterion, feature, key, product, requirement, root, small_document,
 };
-use loftspec::codec::{self, Problem};
+use loftspec::codec;
 use loftspec::document::{Document, Edge, TagEntry};
 use loftspec::identity::{Key, LabelPrefix};
 use loftspec::ids::{ComponentId, FeatureId, RequirementId, TagId};
@@ -16,15 +15,6 @@ use loftspec::lint::{Finding, LintConfig, RuleId, Severity, lint};
 use loftspec::names::TagName;
 use loftspec::statement::Statement;
 use loftspec::tree::{Constraint, Details};
-
-/// The keys each finding of `rule` names.
-fn of(findings: &[Finding], rule: RuleId) -> Vec<Vec<Key>> {
-    findings
-        .iter()
-        .filter(|finding| finding.rule == rule)
-        .map(|finding| finding.subjects.iter().map(|s| s.key).collect())
-        .collect()
-}
 
 fn tag(name: &str) -> TagName {
     TagName::parse(name).unwrap()
@@ -47,14 +37,14 @@ fn a_feature_without_a_realizes_edge_is_sh_001() {
     document
         .edges
         .retain(|edge| !matches!(edge, Edge::Realizes { .. }));
-    assert_eq!(of(&findings(&document), RuleId::Sh001), [vec![key(3)]]);
+    assert_eq!(keys_of(&findings(&document), RuleId::Sh001), [vec![key(3)]]);
     assert_eq!(severity(RuleId::Sh001), Severity::Warning);
 }
 
 #[test]
 fn a_feature_with_a_realizes_edge_is_not_sh_001() {
     assert_eq!(
-        of(&findings(&small_document()), RuleId::Sh001),
+        keys_of(&findings(&small_document()), RuleId::Sh001),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -63,7 +53,10 @@ fn a_feature_with_a_realizes_edge_is_not_sh_001() {
 fn a_leaf_component_no_feature_realizes_is_sh_002() {
     let mut document = small_document();
     document.components.push(root(component(key(40), "Unused")));
-    assert_eq!(of(&findings(&document), RuleId::Sh002), [vec![key(40)]]);
+    assert_eq!(
+        keys_of(&findings(&document), RuleId::Sh002),
+        [vec![key(40)]]
+    );
     assert_eq!(severity(RuleId::Sh002), Severity::Info);
 }
 
@@ -78,7 +71,7 @@ fn a_component_with_a_child_or_realized_is_not_sh_002() {
         component: ComponentId::new(key(41)),
     });
     assert_eq!(
-        of(&findings(&document), RuleId::Sh002),
+        keys_of(&findings(&document), RuleId::Sh002),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -88,7 +81,7 @@ fn a_requirement_without_a_criterion_is_sh_003() {
     let mut document = small_document();
     let feature = &mut document.products[0].feature_groups[0].features[0];
     feature.requirements[0].criteria.clear();
-    assert_eq!(of(&findings(&document), RuleId::Sh003), [vec![key(4)]]);
+    assert_eq!(keys_of(&findings(&document), RuleId::Sh003), [vec![key(4)]]);
     assert_eq!(severity(RuleId::Sh003), Severity::Warning);
 }
 
@@ -96,7 +89,7 @@ fn a_requirement_without_a_criterion_is_sh_003() {
 fn complete_parents_raise_no_structural_finding() {
     let all = findings(&small_document());
     for rule in [RuleId::Sh003, RuleId::Sh004, RuleId::Sh005] {
-        assert!(of(&all, rule).is_empty(), "{rule}");
+        assert!(keys_of(&all, rule).is_empty(), "{rule}");
     }
 }
 
@@ -105,7 +98,10 @@ fn a_feature_without_a_requirement_is_sh_004() {
     let mut document = small_document();
     let group = &mut document.products[0].feature_groups[0];
     group.features.push(feature(key(42), "Empty", Vec::new()));
-    assert_eq!(of(&findings(&document), RuleId::Sh004), [vec![key(42)]]);
+    assert_eq!(
+        keys_of(&findings(&document), RuleId::Sh004),
+        [vec![key(42)]]
+    );
     assert_eq!(severity(RuleId::Sh004), Severity::Warning);
 }
 
@@ -114,7 +110,7 @@ fn a_product_or_feature_group_without_children_is_sh_005() {
     let mut document = small_document();
     document.products.push(product(key(43), "Bare"));
     document.products[0].feature_groups[0].features.clear();
-    let mut found = of(&findings(&document), RuleId::Sh005);
+    let mut found = keys_of(&findings(&document), RuleId::Sh005);
     found.sort();
     assert_eq!(found, [vec![key(2)], vec![key(43)]]);
     assert_eq!(severity(RuleId::Sh005), Severity::Info);
@@ -123,7 +119,10 @@ fn a_product_or_feature_group_without_children_is_sh_005() {
 #[test]
 fn a_registry_entry_no_node_lists_is_sh_006() {
     let document = small_document();
-    assert_eq!(of(&findings(&document), RuleId::Sh006), [vec![key(30)]]);
+    assert_eq!(
+        keys_of(&findings(&document), RuleId::Sh006),
+        [vec![key(30)]]
+    );
     assert_eq!(severity(RuleId::Sh006), Severity::Info);
 }
 
@@ -132,7 +131,7 @@ fn a_registry_entry_a_node_lists_is_not_sh_006() {
     let mut document = small_document();
     document.components[0].details.tags.push(tag("identity"));
     assert_eq!(
-        of(&findings(&document), RuleId::Sh006),
+        keys_of(&findings(&document), RuleId::Sh006),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -146,7 +145,7 @@ fn siblings_with_one_name_after_trimming_and_lowercasing_are_sh_007() {
         " every NODE record carries a `key` field. ",
     ));
     assert_eq!(
-        of(&findings(&document), RuleId::Sh007),
+        keys_of(&findings(&document), RuleId::Sh007),
         [vec![key(5), key(44)]]
     );
     assert_eq!(severity(RuleId::Sh007), Severity::Warning);
@@ -161,7 +160,7 @@ fn a_constraint_named_like_a_sibling_feature_is_not_sh_007() {
         .constraints
         .push(keys);
     assert_eq!(
-        of(&findings(&document), RuleId::Sh007),
+        keys_of(&findings(&document), RuleId::Sh007),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -171,7 +170,7 @@ fn equal_names_under_different_parents_are_not_sh_007() {
     let mut document = small_document();
     document.components.push(root(component(key(45), "Keys")));
     assert_eq!(
-        of(&findings(&document), RuleId::Sh007),
+        keys_of(&findings(&document), RuleId::Sh007),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -180,7 +179,10 @@ fn equal_names_under_different_parents_are_not_sh_007() {
 fn a_component_whose_subtree_holds_no_constraint_or_attribute_is_sh_008() {
     let mut document = small_document();
     document.components.push(root(component(key(46), "Loose")));
-    assert_eq!(of(&findings(&document), RuleId::Sh008), [vec![key(46)]]);
+    assert_eq!(
+        keys_of(&findings(&document), RuleId::Sh008),
+        [vec![key(46)]]
+    );
     assert_eq!(severity(RuleId::Sh008), Severity::Info);
 }
 
@@ -190,7 +192,10 @@ fn a_component_inside_a_subtree_that_yields_sh_008_yields_none_of_its_own() {
     let mut parent = component(key(46), "Loose");
     parent.components.push(component(key(47), "Part"));
     document.components.push(root(parent));
-    assert_eq!(of(&findings(&document), RuleId::Sh008), [vec![key(46)]]);
+    assert_eq!(
+        keys_of(&findings(&document), RuleId::Sh008),
+        [vec![key(46)]]
+    );
 }
 
 #[test]
@@ -202,7 +207,7 @@ fn a_constraint_or_attribute_in_the_subtree_clears_sh_008() {
     parent.components.push(child);
     document.components.push(root(parent));
     assert_eq!(
-        of(&findings(&document), RuleId::Sh008),
+        keys_of(&findings(&document), RuleId::Sh008),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -222,7 +227,7 @@ fn a_tag_no_registry_entry_names_is_sh_009_naming_the_node_and_the_tag() {
 #[test]
 fn a_tag_with_a_registry_entry_is_not_sh_009() {
     assert_eq!(
-        of(&findings(&small_document()), RuleId::Sh009),
+        keys_of(&findings(&small_document()), RuleId::Sh009),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -238,7 +243,7 @@ fn a_component_named_like_a_path_is_sh_010() {
     ] {
         document.components.push(root(component(key(n), name)));
     }
-    let mut found = of(&findings(&document), RuleId::Sh010);
+    let mut found = keys_of(&findings(&document), RuleId::Sh010);
     found.sort();
     assert_eq!(found, [vec![key(50)], vec![key(51)], vec![key(52)]]);
     assert_eq!(severity(RuleId::Sh010), Severity::Hint);
@@ -268,7 +273,7 @@ fn each_heading_line_in_a_body_is_v2_001_naming_the_line() {
 #[test]
 fn a_body_without_a_heading_is_not_v2_001() {
     assert_eq!(
-        of(&findings(&small_document()), RuleId::V2001),
+        keys_of(&findings(&small_document()), RuleId::V2001),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -282,7 +287,10 @@ fn a_statement_stored_as_text_is_v2_002() {
         "Keys should mostly work.",
         vec![criterion(key(55), "They work.")],
     ));
-    assert_eq!(of(&findings(&document), RuleId::V2002), [vec![key(54)]]);
+    assert_eq!(
+        keys_of(&findings(&document), RuleId::V2002),
+        [vec![key(54)]]
+    );
     assert_eq!(severity(RuleId::V2002), Severity::Info);
 }
 
@@ -292,7 +300,7 @@ fn a_statement_with_a_form_is_not_v2_002() {
     let statement = &document.products[0].feature_groups[0].features[0].requirements[0].statement;
     assert!(matches!(statement, Statement::Form(_)));
     assert_eq!(
-        of(&findings(&document), RuleId::V2002),
+        keys_of(&findings(&document), RuleId::V2002),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -321,7 +329,7 @@ fn a_label_shaped_text_at_or_above_its_counter_is_not_a_reference() {
         .counters
         .set(LabelPrefix::Product, NonZeroU64::new(2).unwrap());
     assert_eq!(
-        of(&findings(&document), RuleId::V2003),
+        keys_of(&findings(&document), RuleId::V2003),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -334,7 +342,7 @@ fn a_reference_with_its_mentions_edge_is_not_v2_003() {
         target: ComponentId::new(key(6)).into(),
     });
     assert_eq!(
-        of(&findings(&document), RuleId::V2003),
+        keys_of(&findings(&document), RuleId::V2003),
         Vec::<Vec<Key>>::new()
     );
 }
@@ -373,100 +381,6 @@ fn findings_are_ordered_by_path_line_column_rule_and_keys_and_stable() {
 }
 
 #[test]
-fn a_rule_listed_under_rules_can_be_disabled() {
-    let all = configured(
-        &small_document(),
-        "rules:\n  - rule: SH-006\n    enabled: false\n",
-    );
-    assert_eq!(of(&all, RuleId::Sh006), Vec::<Vec<Key>>::new());
-}
-
-#[test]
-fn a_rules_severity_can_be_set() {
-    let all = configured(
-        &small_document(),
-        "rules:\n  - rule: SH-006\n    severity: warning\n",
-    );
-    let finding = all.iter().find(|f| f.rule == RuleId::Sh006).unwrap();
-    assert_eq!(finding.severity, Severity::Warning);
-}
-
-#[test]
-fn a_suppression_names_a_rule_a_key_and_a_reason_and_drops_the_finding() {
-    let yaml = format!(
-        "suppressions:\n  - rule: SH-006\n    key: {}\n    reason: \"Kept for later.\"\n",
-        key(30)
-    );
-    assert_eq!(
-        of(&configured(&small_document(), &yaml), RuleId::Sh006),
-        Vec::<Vec<Key>>::new()
-    );
-}
-
-#[test]
-fn without_a_lint_file_the_defaults_apply() {
-    assert_eq!(LintConfig::read(None).unwrap(), LintConfig::default());
-}
-
-#[test]
-fn the_published_defaults_are_the_codes() {
-    let published = include_str!("../../../testdata/golden/lint-defaults.yaml");
-    assert_eq!(loftspec::lint::defaults_text(), published);
-    let read = LintConfig::read(Some(published.as_bytes())).unwrap();
-    assert_eq!(read, LintConfig::default());
-}
-
-#[test]
-fn an_unknown_rule_is_an_error_at_its_line_and_column_named() {
-    let errors =
-        LintConfig::read(Some(b"rules:\n  - rule: SH-099\n    enabled: false\n")).unwrap_err();
-    assert_eq!(errors.len(), 1);
-    assert_eq!(
-        errors[0].to_string(),
-        "spec/lint.yaml:2:11: `SH-099` is not a rule the Format defines"
-    );
-}
-
-#[test]
-fn a_severity_outside_the_three_is_an_error_naming_the_value() {
-    let errors =
-        LintConfig::read(Some(b"rules:\n  - rule: SH-001\n    severity: error\n")).unwrap_err();
-    assert_eq!(
-        errors[0].to_string(),
-        "spec/lint.yaml:3:15: `error` is not warning, info or hint"
-    );
-}
-
-#[test]
-fn an_option_a_rule_does_not_take_is_an_error_at_its_line_and_column() {
-    let errors = LintConfig::read(Some(
-        b"rules:\n  - rule: SH-001\n    lexicon:\n      extend:\n        - a\n",
-    ));
-    let errors = errors.unwrap_err();
-    assert_eq!(
-        errors[0].problem,
-        Problem::UnknownField("lexicon".to_owned())
-    );
-}
-
-#[test]
-fn a_suppression_without_a_reason_is_refused() {
-    let yaml = format!("suppressions:\n  - rule: SH-006\n    key: {}\n", key(30));
-    let errors = LintConfig::read(Some(yaml.as_bytes())).unwrap_err();
-    assert_eq!(errors[0].problem, Problem::MissingField("reason"));
-}
-
-#[test]
-fn every_rule_has_a_wire_name_and_a_default() {
-    assert_eq!(RuleId::ALL.len(), 27);
-    for rule in RuleId::ALL {
-        assert_eq!(RuleId::parse(rule.as_str()), Some(*rule));
-    }
-    assert!(!RuleId::Lq004.enabled_by_default());
-    assert!(!RuleId::Lq007.enabled_by_default());
-}
-
-#[test]
 fn a_tag_registry_entry_key_is_its_findings_subject() {
     let mut document = small_document();
     document.tags.push(TagEntry {
@@ -474,54 +388,8 @@ fn a_tag_registry_entry_key_is_its_findings_subject() {
         name: tag("spare"),
         definition: "Unused.".to_owned(),
     });
-    let mut found = of(&findings(&document), RuleId::Sh006);
+    let mut found = keys_of(&findings(&document), RuleId::Sh006);
     found.sort();
     assert_eq!(found, [vec![key(30)], vec![key(60)]]);
     let _ = RequirementId::new(key(4));
-}
-
-#[test]
-fn a_list_written_with_no_value_is_empty() {
-    let empty_rules = LintConfig::read(Some(b"rules:\nsuppressions:\n")).unwrap();
-    assert_eq!(empty_rules, LintConfig::default());
-    let yaml = "rules:\n  - rule: LQ-001\n    lexicon:\n      replace:\n";
-    let config = LintConfig::read(Some(yaml.as_bytes())).unwrap();
-    assert_eq!(config.lexicon(RuleId::Lq001), &Vec::<Vec<String>>::new());
-}
-
-#[test]
-fn the_published_defaults_state_every_option() {
-    let published = include_str!("../../../testdata/golden/lint-defaults.yaml");
-    for option in [
-        "lexicon",
-        "modalLexicon",
-        "conjunctionLexicon",
-        "conjunctionThreshold",
-        "minTokens",
-        "threshold",
-        "maxCriteria",
-        "maxBodyWords",
-        "properNames",
-    ] {
-        assert!(published.contains(&format!("    {option}:")), "{option}");
-    }
-}
-
-#[test]
-fn a_count_below_its_least_value_is_an_error_naming_the_value() {
-    for (rule, option, least) in [
-        ("LQ-005", "conjunctionThreshold", 2),
-        ("LQ-008", "minTokens", 1),
-        ("V2-006", "maxCriteria", 1),
-        ("V2-006", "maxBodyWords", 1),
-    ] {
-        let yaml = |value: usize| format!("rules:\n  - rule: {rule}\n    {option}: {value}\n");
-        assert!(
-            LintConfig::read(Some(yaml(least).as_bytes())).is_ok(),
-            "{option}"
-        );
-        let errors = LintConfig::read(Some(yaml(least - 1).as_bytes())).unwrap_err();
-        let message = errors[0].to_string();
-        assert!(message.contains(&format!("at least {least}")), "{message}");
-    }
 }

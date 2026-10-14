@@ -4,14 +4,15 @@
 //! nothing; a query that matches nothing exits 1.
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::codec::{self, Site, Sites};
 use loftspec::document::Document;
 use loftspec::ids::ElementId;
 use serde_json::{Map, Value, json};
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::{errln, outln};
 use crate::stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -26,28 +27,28 @@ struct Match {
     name: String,
 }
 
-pub fn run(root: &Path, query: &str, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, query: &str, as_json: bool) -> Finished {
     let read = stop::read_files(root).and_then(|files| Ok(codec::read_sited(&files)?));
     let (document, sites) = match read {
         Ok(read) => read,
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
     let found = find(&document, &sites, query);
+    let outcome = if found.is_empty() { "none" } else { "found" };
     if as_json {
-        let outcome = if found.is_empty() { "none" } else { "found" };
         let matches: Vec<Value> = found.iter().map(match_json).collect();
         let fields = json!({ "matches": matches });
         json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
     } else {
         for each in &found {
-            println!("{}", line(each));
+            outln!("{}", line(each));
         }
     }
     if found.is_empty() {
-        eprintln!("nothing matches \"{query}\"");
-        return ExitCode::FAILURE;
+        errln!("nothing matches \"{query}\"");
+        return Finished::failure(outcome);
     }
-    ExitCode::SUCCESS
+    Finished::success(outcome)
 }
 
 /// Every node, then every decision, that `query` identifies, in document order.

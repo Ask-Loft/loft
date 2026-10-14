@@ -2,13 +2,14 @@
 //! `--check` the drift reported and nothing written (RQ-140, RQ-142).
 
 use std::path::Path;
-use std::process::ExitCode;
 
 use loftspec::fmt::format;
 use loftspec_store::FileStore;
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::{errln, outln};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -35,7 +36,7 @@ impl Outcome {
     }
 }
 
-pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, check: bool, as_json: bool) -> Finished {
     match attempt(root, check) {
         Ok(outcome) => {
             let name = outcome.name();
@@ -48,13 +49,13 @@ pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
                 json::print(&json::result(SCHEMA, name, fields, Vec::new()));
             } else {
                 for path in &outcome.changed {
-                    println!("{path}");
+                    outln!("{path}");
                 }
             }
             if name == "drift" {
-                ExitCode::FAILURE
+                Finished::failure(name)
             } else {
-                ExitCode::SUCCESS
+                Finished::success(name)
             }
         }
         Err(stop) => stop.exit(SCHEMA, as_json),
@@ -66,7 +67,7 @@ fn attempt(root: &Path, check: bool) -> Result<Outcome, Stop> {
     let formatted = format(&store.read_files()?)?;
     // A key lost by accident drops a binding too, so every drop is told.
     for (label, key) in &formatted.dropped {
-        eprintln!(
+        errln!(
             "spec/labels.yaml: the binding of {label} ({key}) names no node or decision, so \
              `loft fmt` drops it"
         );

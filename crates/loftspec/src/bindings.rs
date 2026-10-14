@@ -226,9 +226,13 @@ impl Bindings {
 
     #[must_use]
     pub fn label_of(&self, element: impl Into<ElementId>) -> Option<Label> {
-        self.entries
-            .get(&element.into().key())
-            .map(|binding| binding.label)
+        self.label_of_key(element.into().key())
+    }
+
+    /// The live label of the element whose key is `key`.
+    #[must_use]
+    pub fn label_of_key(&self, key: Key) -> Option<Label> {
+        self.entries.get(&key).map(|binding| binding.label)
     }
 
     #[must_use]

@@ -1,0 +1,67 @@
+key: 01a13acd-2cac-7382-9410-cf94b7f27de9
+slug: loft-record-install
+name: "`loft record-install`"
+body: "Records, once, how this `loft` executable was installed, for the update notice and the command event. The npm package runs it from its install script; a person who installs `loft` another way may run it by hand. Nothing depends on it having run. It reads no tree, sends no event and asks GitHub nothing."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a13acd-2cac-7382-9410-cfa65c96496b
+requirements:
+  - key: 01a13acd-2cac-7382-9410-cf95126cec5b
+    statement:
+      form: event_driven
+      when: "`loft record-install` runs with `npm`, `cargo` or `release-binary`"
+      system: "`loft record-install`"
+      shall: "record that way for the running executable's own path in `loft/install.json` under the user's configuration directory, and exit 0."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cf96276d5a27
+        name: "The record holds the executable's path, the way, and the version of `loft`."
+      - key: 01a13acd-2cac-7382-9410-cf97682666c1
+        name: "A second record for the same path replaces the first."
+      - key: 01a13acd-2cac-7382-9410-cf9882141061
+        name: "Records for other paths are kept unchanged."
+      - key: 01a13acd-2cac-7382-9410-cf99745e3a14
+        name: "Nothing is written to standard output without `--format json`."
+  - key: 01a13acd-2cac-7382-9410-cf9a90828e45
+    statement:
+      form: unwanted
+      if: "the way given is not `npm`, `cargo` or `release-binary`"
+      system: "`loft record-install`"
+      shall: "exit 2 and write nothing."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cf9bf7f264ca
+        name: "The error names the three ways it accepts."
+      - key: 01a13acd-2cac-7382-9410-cf9cf93086e0
+        name: "`loft/install.json` is unchanged."
+  - key: 01a13acd-2cac-7382-9410-cf9d3f479ee9
+    statement:
+      form: unwanted
+      if: "`loft record-install` cannot write `loft/install.json`"
+      system: "`loft record-install`"
+      shall: "exit 0 and name the path it could not write on standard error."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cf9ecb357917
+        name: "The exit code is 0, so the install that ran it does not fail."
+      - key: 01a13acd-2cac-7382-9410-cf9fa6e63467
+        name: "The message on standard error names the path."
+  - key: 01a13acd-2cac-7382-9410-cfa0d793da59
+    statement:
+      form: ubiquitous
+      system: "`loft record-install`"
+      shall: "open no network connection."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfa1ec43e16b
+        name: "No connection is opened by `loft record-install`."
+  - key: 01a13acd-2cac-7382-9410-cfa2eede8742
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft record-install`"
+      shall: "give whether it wrote the record as its outcome."
+    criteria:
+      - key: 01a13acd-2cac-7382-9410-cfa336dca7b8
+        name: "The outcome is `recorded` when the record was written."
+      - key: 01a13acd-2cac-7382-9410-cfa42e4fdd45
+        name: "The outcome is `unwritten` when the record could not be written."
+      - key: 01a13acd-2cac-7382-9410-cfa537d570dd
+        name: "The document validates against `schemas/record-install.json`."

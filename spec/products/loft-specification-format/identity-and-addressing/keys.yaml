@@ -71,6 +71,8 @@ requirements:
         name: "A node and a decision that carry the same key are an error."
       - key: 2f41a6fc-fe06-493a-890d-f293c9a72001
         name: "Two registry entries that carry the same key are an error."
+      - key: 01a13acc-1f4e-735a-a57f-63f71899e3eb
+        name: "When a conflict record whose field is `record` names the duplicated key, the error says the record was moved in one branch and changed in the other."
   - key: 5c5630ab-727e-47f2-a686-f3ed0c23ac43
     statement:
       form: unwanted

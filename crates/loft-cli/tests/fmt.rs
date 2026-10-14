@@ -7,6 +7,7 @@ use std::process::Output;
 
 use crate::common::{Scratch, stderr, stdout};
 use crate::schema;
+use crate::snapshot::snapshot;
 use serde_json::{Value, json};
 
 const PRODUCT: &str = "products/reading-list/product.yaml";
@@ -201,4 +202,50 @@ fn fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes() {
     assert!(!labels().contains(deleted));
     let check = scratch.loft(&["check"]);
     assert_eq!(check.status.code(), Some(0), "{}", stdout(&check));
+}
+
+#[test]
+fn a_reference_by_name_that_matches_nothing_or_two_elements_changes_no_file() {
+    for (name, renamed) in [("Nothing", None), ("Shelf", Some("Sharing"))] {
+        let scratch = Scratch::with_reading_list();
+        let path = a_decision(&scratch.0);
+        scratch.edit(&path, "title: \"", "title:   \"");
+        if let Some(other) = renamed {
+            scratch.edit(
+                PRODUCT,
+                &format!("name: \"{other}\""),
+                &format!("name: \"{name}\""),
+            );
+        }
+        scratch.edit(
+            PRODUCT,
+            "\nbody: ",
+            &format!("\nmentions:\n  - name: \"{name}\"\nbody: "),
+        );
+        let before = snapshot(&scratch.0);
+        let output = scratch.loft(&["fmt"]);
+        assert_eq!(output.status.code(), Some(1), "{name}: {}", stdout(&output));
+        assert!(stderr(&output).contains(name), "{}", stderr(&output));
+        assert_eq!(snapshot(&scratch.0), before, "{name}: a file changed");
+    }
+}
+
+#[test]
+fn each_dropped_binding_is_reported_on_standard_error_with_its_label_and_key() {
+    let scratch = Scratch::with_reading_list();
+    let deleted = "00000000-0000-4000-8000-00000000002a";
+    scratch.edit(
+        "products/reading-list/shelf/add-a-book.yaml",
+        &format!(
+            "      - key: {deleted}\n        name: \"A book added without a title is refused with an error naming the title.\"\n"
+        ),
+        "",
+    );
+    let output = scratch.loft(&["fmt"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stderr(&output).contains(&format!("the binding of AC-2 ({deleted})")),
+        "{}",
+        stderr(&output)
+    );
 }

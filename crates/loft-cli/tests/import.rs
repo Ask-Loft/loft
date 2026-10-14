@@ -6,6 +6,7 @@ use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{env, fs, process};
 
+use crate::common::isolate;
 use crate::schema;
 use loftspec::codec;
 use loftspec::convert::v1::convert;
@@ -29,12 +30,17 @@ impl Empty {
         Self(root)
     }
 
+    /// The home directory every run is given, beside the directory so it lists no entry there.
+    fn home(&self) -> PathBuf {
+        let mut home = self.0.clone().into_os_string();
+        home.push(".home");
+        PathBuf::from(home)
+    }
+
     fn loft(&self, args: &[&str]) -> Output {
-        Command::new(env!("CARGO_BIN_EXE_loft"))
-            .args(args)
-            .current_dir(&self.0)
-            .output()
-            .unwrap()
+        let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
+        isolate(&mut command, &self.home());
+        command.args(args).current_dir(&self.0).output().unwrap()
     }
 
     fn import(&self, extra: &[&str]) -> Output {
@@ -60,6 +66,7 @@ impl Empty {
 impl Drop for Empty {
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.0);
+        let _ = fs::remove_dir_all(self.home());
     }
 }
 
@@ -104,7 +111,7 @@ fn the_findings_print_as_a_lint_report() {
     assert_eq!(
         stdout(&output),
         "spec/products/reading-list/shelf/remove-a-book.yaml:16:10: info V2-002: The statement \
-         is stored as text, without slots.\nspec/products/reading-list/product.yaml:18:10: info \
+         is stored as text, without slots.\nspec/products/reading-list/product.yaml:19:10: info \
          V2-001: The body holds a heading; use a Section. (body line 3)\n"
     );
 }
@@ -138,7 +145,7 @@ fn a_counters_file_sets_the_prefixes_it_names() {
         "{labels}"
     );
     assert!(
-        labels.contains("  CMP: 5\n"),
+        labels.contains("  CMP: 6\n"),
         "an absent prefix is one above the highest"
     );
     assert!(!stderr(&output).contains("RQ, AC"), "{}", stderr(&output));

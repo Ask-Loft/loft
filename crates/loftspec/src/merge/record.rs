@@ -5,7 +5,7 @@
 
 use super::conflict::Host;
 use super::list::merge_list;
-use super::same::{same, same_conflict};
+use super::same::{holds, same};
 use crate::codec::schema::{Field, Item, Shape};
 use crate::codec::{ConflictRec, Rec, Val, variant_holds};
 
@@ -17,9 +17,10 @@ struct Sides<'a> {
     base_record: bool,
 }
 
-/// Merges a record that holds conflicts: its fields, then the conflicts already on it, merged
-/// as a set, followed by those the merge writes.
-pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
+/// Merges a record that holds conflicts over its own fields, with no list of keyed records in
+/// it: its fields, then the conflicts already on it, merged as a set, followed by those the
+/// merge writes.
+pub(super) fn merge_own(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
     let mut conflicts = carried(base, ours, theirs);
     let mut host = Host::root(&mut conflicts);
     let mut record = merge_fields(base, ours, theirs, &mut host);
@@ -30,12 +31,6 @@ pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
 /// The conflicts the inputs already hold: one on both sides is written once, one that a side
 /// removed is removed, and one that a side added is added.
 fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<ConflictRec> {
-    let holds = |record: &Rec, conflict: &ConflictRec| {
-        record
-            .conflicts
-            .iter()
-            .any(|each| same_conflict(each, conflict))
-    };
     let kept = |conflict: &ConflictRec| match base {
         Some(base) if holds(base, conflict) => holds(ours, conflict) && holds(theirs, conflict),
         _ => true,
@@ -50,12 +45,7 @@ fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<ConflictRec> {
 
 /// Merges the fields of one record; its conflicts go to `host`. A record whose merged fields
 /// form none of its variants keeps its base and conflicts on each field either side changed.
-pub(super) fn merge_fields(
-    base: Option<&Rec>,
-    ours: &Rec,
-    theirs: &Rec,
-    host: &mut Host<'_>,
-) -> Rec {
+fn merge_fields(base: Option<&Rec>, ours: &Rec, theirs: &Rec, host: &mut Host<'_>) -> Rec {
     let kind = ours.kind;
     let mark = host.conflicts.len();
     let mut record = Rec::new(kind);
@@ -69,7 +59,7 @@ pub(super) fn merge_fields(
         return record;
     }
     host.conflicts.truncate(mark);
-    // The host merge sets the record's own conflicts; an unkeyed record holds none.
+    // `merge_own` sets the record's own conflicts; an unkeyed record holds none.
     let record = base.unwrap_or(ours).clone();
     for each in kind.fields() {
         let sides = sides(each, base, ours, theirs);

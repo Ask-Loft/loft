@@ -422,3 +422,19 @@ fn identical_criteria_of_different_requirements_are_not_lq_008() {
         Vec::<&Finding>::new()
     );
 }
+
+#[test]
+fn lq_008_compares_names_with_the_text_of_their_code_spans() {
+    let mut document = small_document();
+    document
+        .components
+        .push(root(component(key(62), "`document model store index`")));
+    document.components.push(root(component(
+        key(63),
+        "`document model store index file`",
+    )));
+    let all = findings(&document);
+    let near = of(&all, RuleId::Lq008);
+    assert_eq!(near.len(), 1);
+    assert_eq!(keys(near[0]), [key(62), key(63)]);
+}

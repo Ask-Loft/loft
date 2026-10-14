@@ -22,6 +22,10 @@ featureGroups:
       - 929999f2-93e0-468b-9e85-5d438ec6b1b7
       - 01a13654-bf86-77e9-8fd5-8dc0ba996254
       - 01a13743-3a3f-7716-90b9-0940f78ac4b8
+      - 01a1383c-2899-72f8-b39a-0a07470f28d1
+      - 01a13a90-3555-73cc-af6c-ca20bdd015c8
+      - 01a13a90-3556-7106-a68c-25f8340f5996
+      - 01a13acd-2cac-7382-9410-cf94b7f27de9
   - key: 1586f1f8-1d67-4051-98c9-3f058c7e1002
     slug: invocation
     name: "Invocation"
@@ -48,3 +52,20 @@ featureGroups:
     features:
       - 01a136db-1a3c-76b9-8641-d0a122869236
       - 01a136db-1a3d-7739-a3f4-9ac908cf3cff
+      - 01a13a90-3556-7106-a68c-2609ebc00b40
+      - 01a13acd-2cac-7382-9410-cfa65c96496b
+  - key: 01a13a90-3556-7106-a68c-262d38cbe27b
+    slug: telemetry
+    name: "Telemetry"
+    body: |
+      What `loft` tells its maintainers about how it is used: one small event at the end of each command run, so that they can see which commands people run, how often they fail and on which release. Telemetry is on until it is switched off, and a notice says so the first time it sends.
+
+      The event is pseudonymous, not anonymous: it carries random tokens that stay the same for one installation and one checkout, and the collector sees the address each event comes from. It never carries the specification, the code, a path, a repository address, a name or an error message.
+
+      The collector that receives the events, and how long it keeps them, lie outside this product. Events about whole workflows, a sample project or an outcome a person confirms are left for a later version.
+    features:
+      - 01a13a90-3556-7106-a68c-262e889837b8
+      - 01a13a90-3556-7106-a68c-2649ed65e219
+      - 01a13a90-3556-7106-a68c-26574c7ad289
+      - 01a13a90-3556-7106-a68c-2668830924fe
+      - 01a13a90-3556-7106-a68c-2695f6f1baaa

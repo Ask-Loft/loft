@@ -550,14 +550,14 @@
     }
   ],
   "authoredStateId": "00000000-0000-4000-8000-000000000002",
-  "contentAddress": "6a99a6ad94411e4cdfb6868b3301b7974683bf6f953da294b711d4607ae0d64a",
-  "graphAddress": "40ac3599bf184e4990c23108dbb6639402d441b1e51f0f0eb99ad777e8c55158",
+  "contentAddress": "6dbdfdf3b33117a51c4e03f29aab218ff68c464ce7c18e194ff300dca6c8e52d",
+  "graphAddress": "bee0a3dbafab1cef321d9e41a8ec99bb7c6ca2d12ed31c366dd07bf2f3537e36",
   "nodes": [
     {
       "body": "Keeps the books a reader means to read.",
       "childrenHashes": [
         {
-          "nodeHash": "c120957b881f2efb3955f0c100207bc72ff663fb3137129f8201d80794cfc453",
+          "nodeHash": "ba41b4806ea491d6f4e87049c885879147a498bc08c085a751e72fbc57f2ec7c",
           "nodeId": "00000000-0000-4000-8000-000000000014"
         },
         {
@@ -575,7 +575,7 @@
       "externalId": "P-1",
       "fateConfirmed": null,
       "name": "Reading List",
-      "nodeHash": "276698f2d92b6d179eec90e4b5b0015b73788da11dd1096041a92f9f43155226",
+      "nodeHash": "827aa5659ab2b94ebc940544ab1d864dcfd0f16225025cb1cdba42c545ff8695",
       "nodeId": "00000000-0000-4000-8000-00000000000a",
       "ordinal": 0,
       "proposedFate": null,
@@ -607,7 +607,7 @@
       "verificationFate": null
     },
     {
-      "body": null,
+      "body": "Books stay on the shelf for their shelf life.",
       "childrenHashes": [
         {
           "nodeHash": "e194d184793dc67638dc8e2991e12496a4fc9328a7fed6c0388ce0f5c62b38f7",
@@ -628,7 +628,7 @@
       "externalId": "FG-1",
       "fateConfirmed": null,
       "name": "Shelf",
-      "nodeHash": "c120957b881f2efb3955f0c100207bc72ff663fb3137129f8201d80794cfc453",
+      "nodeHash": "ba41b4806ea491d6f4e87049c885879147a498bc08c085a751e72fbc57f2ec7c",
       "nodeId": "00000000-0000-4000-8000-000000000014",
       "ordinal": 0,
       "proposedFate": null,
@@ -1125,6 +1125,46 @@
     },
     {
       "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "FT-4",
+      "fateConfirmed": null,
+      "name": "Shelf life",
+      "nodeHash": "ba85b0ad4e22e85dafcf0dcf8a86a128a3775f0154152018bd67603ef8152f33",
+      "nodeId": "00000000-0000-4000-8000-000000000038",
+      "ordinal": 4,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "FacetTag",
+      "verificationFate": null
+    },
+    {
+      "body": null,
+      "childrenHashes": [],
+      "componentScope": null,
+      "conservationKind": null,
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "externalId": "CMP-5",
+      "fateConfirmed": null,
+      "name": "Hosted `storage` bucket",
+      "nodeHash": "1943d74a27a77a1d27d97f838ad7e0ca92fee0843011a83ce160334fa35ef438",
+      "nodeId": "00000000-0000-4000-8000-000000000039",
+      "ordinal": 0,
+      "proposedFate": null,
+      "qaKind": null,
+      "qualityTarget": null,
+      "technicalBinding": null,
+      "tier": null,
+      "type": "Component",
+      "verificationFate": null
+    },
+    {
+      "body": null,
       "childrenHashes": [
         {
           "nodeHash": "0d3c3bff8172241ad54a08c6715130fca64bbd67e0246f9a0809da9de2414b90",
@@ -1141,6 +1181,10 @@
         {
           "nodeHash": "8ff93512dba148835c5f546c5df323a232d26a93f3267ef996709b63f3ce6f75",
           "nodeId": "00000000-0000-4000-8000-00000000003d"
+        },
+        {
+          "nodeHash": "ba85b0ad4e22e85dafcf0dcf8a86a128a3775f0154152018bd67603ef8152f33",
+          "nodeId": "00000000-0000-4000-8000-000000000038"
         }
       ],
       "componentScope": {
@@ -1152,7 +1196,7 @@
       "externalId": "CMP-1",
       "fateConfirmed": null,
       "name": "Shelf store",
-      "nodeHash": "69bc76a2e5baf311e34016eef3a10985c6cdb19a231b429c066e52fd2986859f",
+      "nodeHash": "c883ab5a4aeca66e6317a38b1c789664b2791812e169d5fd147432d515a20e9d",
       "nodeId": "00000000-0000-4000-8000-00000000003c",
       "ordinal": 0,
       "proposedFate": null,
@@ -1258,7 +1302,12 @@
     },
     {
       "body": null,
-      "childrenHashes": [],
+      "childrenHashes": [
+        {
+          "nodeHash": "1943d74a27a77a1d27d97f838ad7e0ca92fee0843011a83ce160334fa35ef438",
+          "nodeId": "00000000-0000-4000-8000-000000000039"
+        }
+      ],
       "componentScope": {
         "kind": "external"
       },
@@ -1267,7 +1316,7 @@
       "externalId": "CMP-3",
       "fateConfirmed": null,
       "name": "Link service",
-      "nodeHash": "095347f514c1a29214517839353bda2ba4357ec02f1d6d0eb00f4b6d283c399d",
+      "nodeHash": "22456cf7cdf9e98947ad92c852dfeada87ea3bf41e268b1a63f15ef7c42984ee",
       "nodeId": "00000000-0000-4000-8000-000000000041",
       "ordinal": 1,
       "proposedFate": null,
@@ -1327,7 +1376,7 @@
     }
   ],
   "technicalConstraintCategoryAddress": "bb2d7e92ceefbc661ce1a36bdcdac424379e4233719da9351560d7a1b9d442aa",
-  "vocabularyAddress": "10e95aad1d38be14583eb593dd52cf9af235f1af4186677bb212ae45fe5184e3",
+  "vocabularyAddress": "df74607658f54b68f1d9e570af886a5e0695e4aa437c9c97b217a779d439da08",
   "vocabularyEntries": [
     {
       "definition": "Behaviour every implementation reproduces.",
@@ -1342,6 +1391,13 @@
       "entryHash": "b5f52f40d7ab94010efdce3c058447c58bb5dcb628ab1ad3ff071aa6e22b2180",
       "entryId": "00000000-0000-4000-8000-000000000004",
       "name": "storage"
+    },
+    {
+      "definition": "How long a book stays on the shelf before it is removed.",
+      "documentId": "00000000-0000-4000-8000-000000000001",
+      "entryHash": "c3d2f597bd0d2cdee8b4e6a66f62a760a2243362b363a296e4f4d86cf1d1ced0",
+      "entryId": "00000000-0000-4000-8000-000000000006",
+      "name": "Shelf life"
     }
   ]
 }

@@ -1,11 +1,13 @@
 //! The rules the v2 text form adds (F-21): a heading inside a body (`V2-001`), a statement stored
 //! as text without slots (`V2-002`), a label reference in prose without its `mentions` edge
-//! (`V2-003`), and a citation of a withdrawn label that a publish cannot rewrite (`V2-004`).
+//! (`V2-003`), a citation of a withdrawn label that a publish cannot rewrite (`V2-004`), and a
+//! Markdown construct in a body outside the Format's subset (`V2-009`).
 //! What a publish does with a citation is the bindings' to say, so lint and the publish agree.
 
 use std::collections::BTreeSet;
 
 use super::context::Context;
+use super::markdown::outside_subset;
 use super::{Raw, RuleId};
 use crate::bindings::Citation;
 use crate::document::Edge;
@@ -34,6 +36,16 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
                     RuleId::V2001,
                     vec![key],
                     "The body holds a heading; use a Section.",
+                )
+                .line(Some(line)),
+            );
+        }
+        for (line, construct) in outside_subset(body) {
+            out.push(
+                Raw::new(
+                    RuleId::V2009,
+                    vec![key],
+                    format!("The body holds {construct}, outside the Markdown subset."),
                 )
                 .line(Some(line)),
             );

@@ -1,8 +1,10 @@
 //! What the reader refuses in a `spec/` tree, and where it says the error is (F-6..F-10,
 //! F-49, F-47).
 
-use crate::common::text::{FEATURE, PRODUCT, edited, files, path};
+use crate::common::key;
+use crate::common::text::{FEATURE, PRODUCT, edited, files, path, with_feature_body};
 use loftspec::codec::{self, Files, Problem, ReadError};
+use loftspec::identity::Key;
 use loftspec::manifest::ManifestError;
 use loftspec::yaml::{Location, Position};
 
@@ -257,4 +259,222 @@ fn an_empty_body_stays_empty() {
     let files = edited(PRODUCT, "body: \"The example.\"", "body: \"\"");
     let document = codec::read(&files).unwrap();
     assert_eq!(document.products[0].details.body.as_deref(), Some(""));
+}
+
+#[test]
+fn a_feature_listed_by_two_groups_is_refused_naming_both_groups() {
+    let files = edited(
+        PRODUCT,
+        "        verificationFate: proved\n",
+        "        verificationFate: proved\n  - key: 00000000-0000-7000-8000-000000000050\n    \
+         slug: other\n    name: \"Other\"\n    features:\n      - \
+         00000000-0000-7000-8000-000000000003\n",
+    );
+    let error = only(&files);
+    assert_eq!(error.sites[0].location, Some(at(21, 9)));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/product.yaml:21:9: the Feature \
+         00000000-0000-7000-8000-000000000003 is listed by two Feature Groups, `identity` and \
+         `other`"
+    );
+}
+
+#[test]
+fn siblings_are_read_in_the_order_the_file_lists_them() {
+    let files = edited(
+        FEATURE,
+        "      - key: 00000000-0000-7000-8000-000000000005\n",
+        "      - key: 00000000-0000-7000-8000-000000000065\n        name: \"Zeta, listed \
+         first.\"\n      - key: 00000000-0000-7000-8000-000000000005\n",
+    );
+    let document = codec::read(&files).unwrap();
+    let requirement = &document.products[0].feature_groups[0].features[0].requirements[0];
+    let keys: Vec<Key> = requirement
+        .criteria
+        .iter()
+        .map(|criterion| criterion.id.unwrap().key())
+        .collect();
+    assert_eq!(keys, [key(0x65), key(5)], "neither key nor name order");
+}
+
+#[test]
+fn a_record_carrying_an_ordinal_is_refused() {
+    let files = edited(FEATURE, "slug: keys\n", "slug: keys\nordinal: 1\n");
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::UnknownField("ordinal".to_owned()));
+    assert_eq!(error.sites[0].location, Some(at(3, 1)));
+}
+
+#[test]
+fn features_are_read_in_the_order_their_group_lists_them() {
+    let mut files = edited(
+        PRODUCT,
+        "      - 00000000-0000-7000-8000-000000000003\n",
+        "      - 00000000-0000-7000-8000-000000000063\n      - \
+         00000000-0000-7000-8000-000000000003\n",
+    );
+    files.insert(
+        path("products/example-product/identity/zeta.yaml"),
+        b"key: 00000000-0000-7000-8000-000000000063\nslug: zeta\nname: \"Zeta\"\n".to_vec(),
+    );
+    let document = codec::read(&files).unwrap();
+    let keys: Vec<Key> = document.products[0].feature_groups[0]
+        .features
+        .iter()
+        .map(|feature| feature.id.unwrap().key())
+        .collect();
+    assert_eq!(keys, [key(0x63), key(3)], "neither file name nor key order");
+}
+
+#[test]
+fn a_product_file_the_manifest_does_not_list_is_refused_naming_the_file() {
+    let mut files = files();
+    files.insert(
+        path("products/other-product/product.yaml"),
+        b"key: 00000000-0000-7000-8000-000000000050\nslug: other-product\nname: \"Other\"\n"
+            .to_vec(),
+    );
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::NotListed("manifest"));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/other-product/product.yaml:1:1: no manifest lists this file's key"
+    );
+}
+
+#[test]
+fn a_product_key_listed_twice_is_refused_naming_the_key() {
+    let listed = "  - 00000000-0000-7000-8000-000000000001\n";
+    let files = edited("loftspec.yaml", listed, &format!("{listed}{listed}"));
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::ListedTwice(key(1)));
+    assert_eq!(
+        error.to_string(),
+        "spec/loftspec.yaml:6:5: the key 00000000-0000-7000-8000-000000000001 is listed twice"
+    );
+}
+
+#[test]
+fn two_records_with_one_key_in_one_file_name_the_file_once_with_each_position() {
+    let files = edited(
+        FEATURE,
+        "          - 00000000-0000-7000-8000-000000000004\n",
+        "          - 00000000-0000-7000-8000-000000000004\n      - key: \
+         00000000-0000-7000-8000-000000000005\n        name: \"The same key again.\"\n",
+    );
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::DuplicateKey(key(5)));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/identity/keys.yaml:14:14, 18:14: the key \
+         00000000-0000-7000-8000-000000000005 is carried twice"
+    );
+}
+
+#[test]
+fn two_registry_entries_with_one_key_are_refused_as_a_duplicate_key() {
+    let two_tags = edited(
+        "tags.yaml",
+        "- key: 00000000-0000-7000-8000-00000000001f",
+        "- key: 00000000-0000-7000-8000-00000000001e",
+    );
+    let error = only(&two_tags);
+    assert_eq!(error.problem, Problem::DuplicateKey(key(30)));
+    let paths: Vec<_> = error.sites.iter().map(|site| site.path.clone()).collect();
+    assert_eq!(paths, [path("tags.yaml"), path("tags.yaml")]);
+    let tag_and_category = edited(
+        "categories.yaml",
+        "- key: 00000000-0000-7000-8000-000000000020",
+        "- key: 00000000-0000-7000-8000-00000000001e",
+    );
+    let error = only(&tag_and_category);
+    assert_eq!(error.problem, Problem::DuplicateKey(key(30)));
+}
+
+#[test]
+fn a_malformed_key_is_refused_at_the_file_line_and_column_of_its_key_field() {
+    let files = edited(
+        FEATURE,
+        "key: 00000000-0000-7000-8000-00000000000a",
+        "key: 0000000000007000800000000000000a",
+    );
+    let error = only(&files);
+    assert_eq!(error.sites[0].location, Some(at(19, 10)));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/identity/keys.yaml:19:10: \
+         `0000000000007000800000000000000a` is not a lowercase hyphenated UUID"
+    );
+}
+
+/// The writer's side, that no written node record carries a label, is `codec_derived`'s scan of
+/// every written field.
+#[test]
+fn a_node_record_carrying_a_label_field_is_refused() {
+    for (from, to, line, column) in [
+        ("slug: keys\n", "slug: keys\nlabel: F-1\n", 3, 1),
+        (
+            "      - key: 00000000-0000-7000-8000-000000000005\n",
+            "      - key: 00000000-0000-7000-8000-000000000005\n        label: AC-1\n",
+            15,
+            9,
+        ),
+    ] {
+        let error = only(&edited(FEATURE, from, to));
+        assert_eq!(error.problem, Problem::UnknownField("label".to_owned()));
+        assert_eq!(error.sites[0].location, Some(at(line, column)), "{to:?}");
+    }
+}
+
+#[test]
+fn a_requirement_without_a_statement_is_refused() {
+    let files = edited(
+        FEATURE,
+        "    statement:\n      form: ubiquitous\n      system: \"The writer\"\n      \
+         shall: \"write a key on every node.\"\n",
+        "",
+    );
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::MissingField("statement"));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/identity/keys.yaml:8:5: the field `statement` is required"
+    );
+}
+
+#[test]
+fn a_form_outside_the_five_is_refused_at_its_file_line_and_column() {
+    let files = edited(FEATURE, "form: ubiquitous", "form: optative");
+    assert_eq!(
+        only(&files).to_string(),
+        "spec/products/example-product/identity/keys.yaml:10:13: `optative` is not a value the \
+         field defines"
+    );
+}
+
+/// The Feature's body as the reader reads it, after writing `body` as a block.
+fn body_read(body: &str) -> String {
+    let document = codec::read(&with_feature_body(body)).unwrap();
+    let feature = &document.products[0].feature_groups[0].features[0];
+    feature.details.body.clone().unwrap()
+}
+
+#[test]
+fn paragraphs_bullet_lists_and_numbered_lists_in_a_body_are_accepted() {
+    let body =
+        "A paragraph.\n\nAnother paragraph.\n\n- A bullet\n- Another\n\n1. First\n2. Second\n";
+    assert_eq!(body_read(body), body);
+}
+
+#[test]
+fn code_spans_and_fenced_code_blocks_in_a_body_are_accepted() {
+    let body = "Run `loft check` first.\n\n```sh\nloft check --fail-on warning\n```\n";
+    assert_eq!(body_read(body), body);
+}
+
+#[test]
+fn emphasis_and_links_in_a_body_are_accepted() {
+    let body = "Keys are *never* reused; see **the** [format](https://example.com).\n";
+    assert_eq!(body_read(body), body);
 }

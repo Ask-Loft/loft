@@ -51,6 +51,8 @@ requirements:
         name: "A new document is routed to `references/new-document.md`."
       - key: 01a13654-6e12-74a1-ad7f-e855af371185
         name: "A change to a product that a specification already describes is routed to `references/changing-a-specified-product.md`."
+      - key: 01a1383e-2e64-72e5-b7f4-bc3e9d01cad6
+        name: "Reconciling the code with the specification is routed to `references/reconciling.md`."
       - key: 01a13654-6e12-74a1-ad7f-e85674355b04
         name: "The router tells the agent to read each reference it selects completely before acting."
       - key: 01a13654-6e12-74a1-ad7f-e8574740ac62

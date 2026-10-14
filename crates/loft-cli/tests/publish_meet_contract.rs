@@ -3,28 +3,19 @@
 //! stop, and Bob finishes with the command it prints. Every scenario that finishes ends with
 //! `loft check --fail-on warning` and `loft verify` passing.
 
+use std::collections::BTreeMap;
 use std::fs;
-use std::process::{Command, Output};
 
-use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout};
 use crate::repo::Repo;
 use crate::snapshot::snapshot;
-use software_plant::Clock;
-use software_plant::real_git::{isolate, real_git};
+use software_plant::real_git::real_git;
 
 const SHARE: &str = "products/reading-list/sharing/share-a-list.yaml";
 const REMOVE: &str = "products/reading-list/shelf/remove-a-book.yaml";
 
-/// Runs `loft` in `repo` with real git on its search path, at [`EPOCH`].
-fn loft(repo: &Repo, args: &[&str]) -> Output {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
-    isolate(&mut command).current_dir(&repo.0.0);
-    Clock::fixed(EPOCH).apply(&mut command);
-    command.args(args).output().unwrap()
-}
-
 fn loft_ok(repo: &Repo, args: &[&str]) -> String {
-    let output = loft(repo, args);
+    let output = repo.0.loft_under_real_git(args);
     assert_eq!(
         output.status.code(),
         Some(0),
@@ -100,9 +91,25 @@ fn pull_stops(repo: &Repo, how: &str) {
     assert!(!output.status.success(), "git pull {how} stops");
 }
 
-/// Settles the stop with `loft publish`, runs the command it prints, and gives what it printed.
+/// What a publish could change in the repository git keeps: every file under `.git`, and the
+/// index and every ref, each by the command that lists it.
+fn repository(repo: &Repo) -> BTreeMap<String, Vec<u8>> {
+    let mut state = snapshot(&repo.0.0.join(".git"));
+    for args in [&["ls-files", "--stage"][..], &["for-each-ref"]] {
+        state.insert(format!("git {}", args.join(" ")), repo.git_ok(args).stdout);
+    }
+    state
+}
+
+/// Settles the stop with `loft publish`, which changes nothing in the repository git keeps,
+/// runs the command it prints, and gives what it printed.
 fn settle(repo: &Repo) -> String {
+    let before = repository(repo);
     let printed = loft_ok(repo, &["publish"]);
+    assert!(
+        repository(repo) == before,
+        "the publish changed the repository"
+    );
     let finish = printed
         .lines()
         .find_map(|line| line.strip_prefix("to finish: "))
@@ -162,6 +169,7 @@ fn a_pull_by_rebase_settles_and_the_next_publish_rewrites_a_later_citation() {
     bob.commit("bob cites his Requirement");
     pull_stops(&bob, "--rebase");
     let printed = settle(&bob);
+    assert!(printed.contains("withdrew RQ-7"), "{printed}");
     assert!(
         printed.contains("to finish: git add -A && git rebase --continue\nfinished: true"),
         "{printed}"
@@ -218,7 +226,7 @@ fn a_conflict_on_the_lock_alone_is_settled_by_a_publish() {
 
 fn refused(repo: &Repo, naming: &str) {
     let before = snapshot(&repo.0.0);
-    let output = loft(repo, &["publish"]);
+    let output = repo.0.loft_under_real_git(&["publish"]);
     assert_eq!(output.status.code(), Some(1));
     assert!(stderr(&output).contains(naming), "{}", stderr(&output));
     assert_eq!(snapshot(&repo.0.0), before, "nothing is written");

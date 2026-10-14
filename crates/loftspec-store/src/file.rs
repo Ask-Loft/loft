@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::document::Document;
 use loftspec::publish::{LOCK, Lock};
+use loftspec::trace::{TRACE, TestFile, TestFiles};
 
 use crate::error::io_error;
 use crate::fs::{SIDECAR, SPEC, hidden};
@@ -93,15 +94,48 @@ impl FileStore {
     ///
     /// The lock is there but cannot be read, or is not a valid lock record.
     pub fn lock(&self) -> Result<Option<Lock>, StoreError> {
-        let path = self.root.join(LOCK);
-        let bytes = match fs::read(&path) {
-            Ok(bytes) => bytes,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
-            Err(error) => return Err(io_error(&path)(error)),
+        let Some(bytes) = self.beside(LOCK)? else {
+            return Ok(None);
         };
         Lock::read(&bytes)
             .map(Some)
-            .map_err(|error| StoreError::Lock(path, error))
+            .map_err(|error| StoreError::Lock(self.root.join(LOCK), error))
+    }
+
+    /// The bytes of the trace file beside `spec/`, or none.
+    ///
+    /// # Errors
+    ///
+    /// The trace file is there but cannot be read.
+    pub fn trace(&self) -> Result<Option<Vec<u8>>, StoreError> {
+        self.beside(TRACE)
+    }
+
+    /// Writes the trace file beside `spec/` in one save.
+    ///
+    /// # Errors
+    ///
+    /// The file cannot be staged or put in place.
+    pub fn write_trace(&self, text: String) -> Result<(), StoreError> {
+        self.write_with_beside(Files::new(), (TRACE, text.into_bytes()))
+    }
+
+    /// The files of the directory that holds `spec/`, where the reconciler finds the tests.
+    #[must_use]
+    pub fn test_files(&self) -> ProjectFiles {
+        ProjectFiles {
+            root: self.root.clone(),
+        }
+    }
+
+    /// The bytes of the file `name` beside `spec/`, or none.
+    fn beside(&self, name: &str) -> Result<Option<Vec<u8>>, StoreError> {
+        let path = self.root.join(name);
+        match fs::read(&path) {
+            Ok(bytes) => Ok(Some(bytes)),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(io_error(&path)(error)),
+        }
     }
 
     /// Writes what a publish gives in one save: the files under `spec/` it changes, and the lock
@@ -123,6 +157,22 @@ impl FileStore {
         let mut changes = Changes::of_tree(files, &[]);
         changes.write.insert(RootPath::beside(name), bytes);
         journal::save(&self.root, &changes)
+    }
+}
+
+/// The files of the directory that holds `spec/`, read as text by their relative paths.
+#[derive(Debug, Clone)]
+pub struct ProjectFiles {
+    root: PathBuf,
+}
+
+impl TestFiles for ProjectFiles {
+    fn read(&self, path: &str) -> TestFile {
+        match fs::read(self.root.join(path)) {
+            Ok(bytes) => String::from_utf8(bytes).map_or(TestFile::NotText, TestFile::Text),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => TestFile::Missing,
+            Err(error) => TestFile::Unreadable(error.to_string()),
+        }
     }
 }
 

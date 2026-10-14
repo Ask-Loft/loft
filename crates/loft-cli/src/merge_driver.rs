@@ -4,7 +4,6 @@
 //! With `--install` it registers itself in the repository instead (RQ-152, RQ-153).
 
 use std::path::{Component, Path, PathBuf};
-use std::process::ExitCode;
 use std::{fs, io};
 
 use loftspec::codec::{ReadError, SpecPath};
@@ -16,7 +15,9 @@ use loftspec_store::merge_driver::{self, ATTRIBUTES};
 use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
+use crate::finish::Finished;
 use crate::json;
+use crate::out::{errln, outln};
 use crate::version::VERSION;
 
 /// The command that starts `loft` where a project has it as an npm dev dependency.
@@ -33,12 +34,12 @@ pub struct Inputs<'a> {
     pub path: &'a str,
 }
 
-pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
+pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> Finished {
     match merge(root, inputs) {
         Ok((conflicts, disputed)) => {
             let merged = conflicts == 0;
+            let outcome = if merged { "merged" } else { "conflicted" };
             if as_json {
-                let outcome = if merged { "merged" } else { "conflicted" };
                 let fields = json!({
                     "path": inputs.path,
                     "conflicts": conflicts,
@@ -47,29 +48,30 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
                 json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
             }
             if merged {
-                return ExitCode::SUCCESS;
+                return Finished::success(outcome);
             }
             let plural = if conflicts == 1 { "" } else { "s" };
-            eprintln!(
+            errln!(
                 "{}: {conflicts} merge conflict{plural} written",
                 inputs.path
             );
             if !disputed.is_empty() {
-                eprintln!("{}: {}", inputs.path, settle_with_publish(&disputed));
+                errln!("{}: {}", inputs.path, settle_with_publish(&disputed));
             }
-            ExitCode::FAILURE
+            Finished::failure(outcome)
         }
         Err(messages) => {
             let mut errors = Vec::new();
             for message in messages {
                 let message = format!("{}{message}", inputs.path);
                 errors.push(json::error("merge", &message, &[]));
-                eprintln!("{message}");
+                errln!("{message}");
             }
+            let finished = Finished::stopped(&errors);
             if as_json {
                 json::print(&json::failure(SCHEMA, errors));
             }
-            ExitCode::FAILURE
+            finished
         }
     }
 }
@@ -93,12 +95,12 @@ fn settle_with_publish(disputed: &[Label]) -> String {
 
 /// Registers the driver started by `launcher`, printing what it wrote, one name to a line, and
 /// warning when the launcher starts another version of `loft`.
-pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
+pub fn install(root: &Path, launcher: &str, as_json: bool) -> Finished {
     match merge_driver::install(&GitCommand::default(), root, launcher) {
         Ok(installed) => {
             let own = format!("loft {VERSION}");
             if installed.version != own {
-                eprintln!(
+                errln!(
                     "loft merge-driver --install: warning: `{launcher}` starts {}, not {own}",
                     installed.version
                 );
@@ -108,22 +110,23 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
                 json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
             } else {
                 for name in &installed.written {
-                    println!("{name}");
+                    outln!("{name}");
                 }
                 if installed.written.iter().any(|name| name == ATTRIBUTES) {
-                    println!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
+                    outln!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
                 }
             }
-            ExitCode::SUCCESS
+            Finished::success("installed")
         }
         Err(error) => {
             let message = format!("loft merge-driver --install: {}", refusal(&error, launcher));
+            let errors = vec![json::error("install", &message, &[])];
+            let finished = Finished::stopped(&errors);
             if as_json {
-                let errors = vec![json::error("install", &message, &[])];
                 json::print(&json::failure(SCHEMA, errors));
             }
-            eprintln!("{message}");
-            ExitCode::FAILURE
+            errln!("{message}");
+            finished
         }
     }
 }
@@ -197,14 +200,28 @@ fn messages(error: MergeError) -> Vec<String> {
                 error.problem
             )]
         }
+        MergeError::Unplaced(key) => {
+            vec![format!(
+                ": no list of the merged file can take the record {key}, as when a side changed \
+                 the kind of the record or of its parent"
+            )]
+        }
     }
 }
 
-/// Where in the file a read error lies, as `:<line>:<column>`, or nothing.
+/// Where in the file a read error lies, as `:<line>:<column>` with every further site after a
+/// comma, as `write_sites` writes sites in one file (AC-251); or nothing. Every site lies in the
+/// one file merged, which the message names by `<path>` rather than by its path under `spec/`.
 fn location(error: &ReadError) -> String {
-    error
+    let locations: Vec<String> = error
         .sites
         .iter()
-        .find_map(|site| site.location)
-        .map_or_else(String::new, |location| format!(":{location}"))
+        .filter_map(|site| site.location)
+        .map(|location| location.to_string())
+        .collect();
+    if locations.is_empty() {
+        String::new()
+    } else {
+        format!(":{}", locations.join(", "))
+    }
 }

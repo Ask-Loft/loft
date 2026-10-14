@@ -6,7 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::codec::schema::{Item, Kind, field};
-use crate::codec::{Content, Rec, Role, Tree, Val, keyed};
+use crate::codec::{Content, Rec, Role, Tree, Val, keyed_records};
 use crate::decision::StateKind;
 use crate::identity::{Key, Label};
 
@@ -31,13 +31,8 @@ pub(super) fn settle(tree: &mut Tree) -> Vec<(Label, Key)> {
 
 /// The keys of every node and decision of the tree.
 fn carried(tree: &Tree) -> BTreeSet<String> {
-    let mut records = Vec::new();
-    for (_, content) in tree.files.values() {
-        for record in content.records() {
-            keyed(record, &mut records);
-        }
-    }
-    records
+    let files = tree.files.values();
+    keyed_records(files.flat_map(|(_, content)| content.records()))
         .into_iter()
         .filter(|record| record.kind == Kind::Decision || record.kind.node_kind().is_some())
         .filter_map(|record| record.text(field::KEY))

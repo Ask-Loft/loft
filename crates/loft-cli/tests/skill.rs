@@ -7,6 +7,7 @@ use std::fs;
 use std::path::Path;
 
 use crate::common::{Scratch, skill_source, stdout};
+use crate::markdown::{rows_by_span, table, tables};
 use loftspec::lint::RuleId;
 use serde_json::Value;
 
@@ -113,6 +114,21 @@ fn checked(files: &[(String, String)]) -> Value {
     serde_json::from_str(&stdout(&scratch.loft(&["check", "--format", "json"]))).unwrap()
 }
 
+/// The JSON document of `loft reconcile` over a tree `loft init` created, `files` written into
+/// it and `loft fmt` run: an example trace file names keys of its own, so only its form is
+/// checked.
+fn reconciled(files: &[(String, String)]) -> Value {
+    let scratch = Scratch::empty();
+    assert_eq!(scratch.loft(&["init", "--no-skill"]).status.code(), Some(0));
+    for (path, text) in files {
+        let at = scratch.0.join(path);
+        fs::create_dir_all(at.parent().unwrap()).unwrap();
+        fs::write(at, text).unwrap();
+    }
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0), "{files:?}");
+    serde_json::from_str(&stdout(&scratch.loft(&["reconcile", "--format", "json"]))).unwrap()
+}
+
 /// The rules of a check document's findings at `severity`, or at any severity.
 fn rules(document: &Value, severity: Option<&str>) -> BTreeSet<String> {
     document["findings"]
@@ -176,6 +192,22 @@ fn the_frontmatter_holds_the_name_and_the_description_alone() {
     let description = frontmatter[1].strip_prefix("description: ").unwrap();
     assert!(description.chars().count() <= 1024, "{}", description.len());
     assert!(skill_md.lines().count() <= 500);
+}
+
+#[test]
+fn the_description_names_writing_changing_and_reviewing_a_specification_with_loft() {
+    let skill_md = text(&skill_source().join("SKILL.md"));
+    let (frontmatter, _) = split(&skill_md);
+    let description = frontmatter[1].strip_prefix("description: ").unwrap();
+    let (first, _) = description.split_once(". ").unwrap();
+    let words: BTreeSet<String> = first
+        .split(|c: char| !c.is_alphanumeric())
+        .map(str::to_lowercase)
+        .collect();
+    for word in ["write", "change", "review", "specification"] {
+        assert!(words.contains(word), "{word}: {first}");
+    }
+    assert!(first.contains("`loft`"), "{first}");
 }
 
 #[test]
@@ -257,6 +289,14 @@ fn each_reference_s_example_tree_passes_check() {
         let document = checked(&examples.tree);
         assert_eq!(document["errors"], Value::Array(Vec::new()), "{name}");
         assert_eq!(rules(&document, Some("warning")), BTreeSet::new(), "{name}");
+        if examples
+            .tree
+            .iter()
+            .any(|(path, _)| path == "loft.trace.yaml")
+        {
+            let reconciled = reconciled(&examples.tree);
+            assert_eq!(reconciled["errors"], Value::Array(Vec::new()), "{name}");
+        }
     }
     assert!(trees >= 2, "the scan found {trees} example trees");
 }
@@ -312,4 +352,61 @@ fn the_lint_guide_describes_each_rule_and_shows_each_rule_an_unpublished_tree_ca
         .filter(|rule| !UNRAISABLE.contains(&rule.as_str()))
         .collect();
     assert_eq!(shown, raisable);
+}
+
+/// Whether a cell says something: a dash or an empty cell does not.
+fn says(cell: &str) -> bool {
+    cell.chars().any(char::is_alphanumeric)
+}
+
+#[test]
+fn each_rule_is_given_its_meaning_and_its_usual_fix() {
+    let guide = &references()["lint-findings.md"];
+    let tables: Vec<_> = tables(guide)
+        .into_iter()
+        .filter(|table| table.header == ["Rule", "Default", "Reports", "Usual fix"])
+        .collect();
+    let rows: BTreeMap<&str, &[String]> = tables.iter().flat_map(rows_by_span).collect();
+    for rule in RuleId::ALL {
+        let row = rows
+            .get(rule.as_str())
+            .unwrap_or_else(|| panic!("no row for {}", rule.as_str()));
+        for cell in &row[2..] {
+            assert!(says(cell), "{}: {cell:?}", rule.as_str());
+        }
+    }
+}
+
+#[test]
+fn each_error_kind_of_the_check_schema_is_described_with_its_usual_fix() {
+    let schema: Value = serde_json::from_str(include_str!("../../../schemas/check.json")).unwrap();
+    let kinds: BTreeSet<&str> = schema["$defs"]["error"]["properties"]["kind"]["enum"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|kind| kind.as_str().unwrap())
+        .collect();
+    let guide = &references()["lint-findings.md"];
+    let errors = table(guide, "`kind`");
+    assert_eq!(errors.header[1..], ["Means", "Usual fix"]);
+    let rows = rows_by_span(&errors);
+    assert_eq!(rows.keys().copied().collect::<BTreeSet<_>>(), kinds);
+    for (kind, row) in rows {
+        assert!(row[1..].iter().all(|cell| says(cell)), "{kind}: {row:?}");
+    }
+}
+
+#[test]
+fn a_fragment_block_is_shown_and_not_run() {
+    // A fragment that would neither read nor check as a file of the tree.
+    let markdown = "Text.\n\n```yaml fragment\nmentions:\n  - name: \"Nothing\"\n```\n";
+    let examples = examples(markdown);
+    assert_eq!(examples.tree, Vec::new());
+    assert_eq!(examples.wrong, BTreeMap::new());
+    let shown = references()
+        .values()
+        .flat_map(|markdown| yaml_blocks(markdown))
+        .filter(|block| block.info == "fragment")
+        .count();
+    assert!(shown >= 1, "no reference shows a fragment");
 }

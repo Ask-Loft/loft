@@ -1,26 +1,44 @@
 //! The `loft` command line (FG-9, FG-10). Exit codes: 0 on success, 1 on an error or a
-//! failed check, 2 on a usage error (RQ-154).
+//! failed check, 2 on a usage error (RQ-154). Every line is written through `out`, which a
+//! closed standard output does not panic.
+#![deny(clippy::print_stdout, clippy::print_stderr)]
 
 mod check;
+mod endpoints;
+mod environment;
 mod find;
+mod finish;
 mod fmt;
 mod import;
 mod init;
+mod install;
 mod json;
 mod merge_driver;
+mod network;
+mod out;
 mod publish;
+mod reconcile;
+mod record_install;
 mod render;
+mod settings;
 mod skill;
 mod stop;
+mod switch_command;
+mod switches;
+mod telemetry;
+mod update_check;
 mod verify;
 mod version;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::time::Instant;
 
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 use loftspec_store::merge_driver::LAUNCHER;
+
+use finish::Finished;
 
 #[derive(Parser)]
 #[command(
@@ -87,6 +105,21 @@ enum Command {
         #[command(flatten)]
         output: Output,
     },
+    /// Compare `loft.trace.yaml` with the tree and the tests that verify it, and accept the
+    /// links a reviewer has checked.
+    Reconcile {
+        /// Exit 1 on a finding at or above this severity.
+        #[arg(long, value_name = "SEVERITY")]
+        fail_on: Option<FailOn>,
+        /// Accept the link of this node, by key or label, once its tests are reviewed.
+        #[arg(long, value_name = "NODE")]
+        accept: Vec<String>,
+        /// Accept every unreviewed or stale link whose tests are found.
+        #[arg(long, conflicts_with = "accept")]
+        accept_stale: bool,
+        #[command(flatten)]
+        output: Output,
+    },
     /// Recompute the roots of `spec/` and compare them with the lock (RQ-148).
     Verify {
         #[command(flatten)]
@@ -121,6 +154,25 @@ enum Command {
         #[command(subcommand)]
         action: SkillAction,
     },
+    /// Record how this `loft` was installed, for the update notice and telemetry. The npm
+    /// package runs it when it installs; run it yourself after installing another way.
+    RecordInstall {
+        /// How this `loft` was installed.
+        way: install::Way,
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Switch telemetry on or off for you on this machine, or report its state.
+    Telemetry {
+        #[command(subcommand)]
+        action: SwitchAction,
+    },
+    /// Switch the check for a newer release on or off for you on this machine, or report its
+    /// state.
+    UpdateCheck {
+        #[command(subcommand)]
+        action: SwitchAction,
+    },
     /// Write the Markdown projection and the canonical JSON export (RQ-143).
     Render {
         /// Where to write the Markdown projection.
@@ -142,6 +194,35 @@ enum SkillAction {
         #[command(flatten)]
         output: Output,
     },
+}
+
+#[derive(Subcommand)]
+enum SwitchAction {
+    /// Switch it on.
+    On {
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Switch it off.
+    Off {
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Report whether it is on, and which switch decided.
+    Status {
+        #[command(flatten)]
+        output: Output,
+    },
+}
+
+impl SwitchAction {
+    fn split(&self) -> (switch_command::Action, bool) {
+        match self {
+            Self::On { output } => (switch_command::Action::On, output.json()),
+            Self::Off { output } => (switch_command::Action::Off, output.json()),
+            Self::Status { output } => (switch_command::Action::Status, output.json()),
+        }
+    }
 }
 
 #[derive(Subcommand)]
@@ -196,7 +277,12 @@ impl Output {
 }
 
 fn main() -> ExitCode {
-    let cli = Cli::parse();
+    let code = run(Cli::parse());
+    out::finish(code)
+}
+
+/// Runs the command the arguments name and gives the code it exits with.
+fn run(cli: Cli) -> ExitCode {
     if cli.version {
         version::run(cli.format == Some(Format::Json));
         return ExitCode::SUCCESS;
@@ -206,6 +292,44 @@ fn main() -> ExitCode {
         let _ = Cli::command().print_help();
         return ExitCode::from(2);
     };
+    let started = Instant::now();
+    let sends = command.event_name();
+    let finished = dispatch(command);
+    let root = Path::new(".");
+    let mut jobs = Vec::new();
+    if let Some(name) = sends {
+        jobs.extend(telemetry::prepare(name, &finished, started, root));
+        jobs.extend(update_check::after_run());
+    }
+    network::run(jobs);
+    finished.code
+}
+
+impl Command {
+    /// The name the command event gives this command, if the command sends one; a command
+    /// that sends one also checks for updates.
+    const fn event_name(&self) -> Option<&'static str> {
+        match self {
+            Self::Init { .. } => Some("init"),
+            Self::Fmt { .. } => Some("fmt"),
+            Self::Check { .. } => Some("check"),
+            Self::Import { .. } => Some("import v1"),
+            Self::Publish { .. } => Some("publish"),
+            Self::Reconcile { .. } => Some("reconcile"),
+            Self::Find { .. } => Some("find"),
+            Self::Verify { .. } => Some("verify"),
+            Self::Render { .. } => Some("render"),
+            Self::Skill { .. } => Some("skill install"),
+            Self::MergeDriver { .. }
+            | Self::RecordInstall { .. }
+            | Self::Telemetry { .. }
+            | Self::UpdateCheck { .. } => None,
+        }
+    }
+}
+
+/// Runs `command` in the current directory.
+fn dispatch(command: Command) -> Finished {
     let root = Path::new(".");
     match command {
         Command::Init { no_skill, output } => init::run(root, !no_skill, output.json()),
@@ -223,6 +347,19 @@ fn main() -> ExitCode {
         } => import::run(root, &export, counters.as_deref(), output.json()),
         Command::Publish { output } => publish::run(root, output.json()),
         Command::Find { query, output } => find::run(root, &query, output.json()),
+        Command::Reconcile {
+            fail_on,
+            accept,
+            accept_stale,
+            output,
+        } => {
+            let options = reconcile::Options {
+                fail_on: fail_on.map(Severity::from),
+                accept: &accept,
+                accept_stale,
+            };
+            reconcile::run(root, &options, output.json())
+        }
         Command::Verify { output } => verify::run(root, output.json()),
         Command::MergeDriver {
             install: true,
@@ -248,7 +385,7 @@ fn main() -> ExitCode {
             output.json(),
         ),
         // Clap requires the four paths unless `--install` is given.
-        Command::MergeDriver { .. } => ExitCode::from(2),
+        Command::MergeDriver { .. } => Finished::usage(),
         Command::Render {
             markdown,
             json,
@@ -257,5 +394,14 @@ fn main() -> ExitCode {
         Command::Skill {
             action: SkillAction::Install { output },
         } => skill::run(root, output.json()),
+        Command::RecordInstall { way, output } => record_install::run(way, output.json()),
+        Command::Telemetry { action } => {
+            let (action, as_json) = action.split();
+            switch_command::telemetry(action, as_json)
+        }
+        Command::UpdateCheck { action } => {
+            let (action, as_json) = action.split();
+            switch_command::update_check(action, as_json)
+        }
     }
 }
