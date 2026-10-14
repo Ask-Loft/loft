@@ -50,6 +50,8 @@ mod roots;
 mod slug;
 mod statement;
 mod statement_parse;
+mod trace_findings;
+mod trace_read;
 mod v1_parity;
 mod validate;
 mod wire_names;

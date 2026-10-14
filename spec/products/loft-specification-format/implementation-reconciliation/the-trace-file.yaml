@@ -66,6 +66,8 @@ requirements:
         name: "A `node` that is not a key is an error."
       - key: 01a1383a-4a94-72cc-9c61-1149e432e243
         name: "A `reviewed` that is not 64 lowercase hexadecimal digits is an error."
+      - key: 01a13846-d25b-7228-bc03-3533134ab902
+        name: "A test without a `file` or a `name`, or with a blank one, is an error."
   - key: 01a1383a-4a94-72cc-9c61-114ad7b84b97
     statement:
       form: ubiquitous
