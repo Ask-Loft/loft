@@ -1,8 +1,11 @@
-//! The npm packages (the Feature "The npm package"): `scripts/npm-packages.sh` assembles them from
-//! a binary for each platform, here the `loft` under test copied for every platform, and the
-//! launcher of `@ask-loft/loft` runs the binary of the platform it is installed on.
+//! The npm packages (the Feature "The npm package"): `scripts/npm-packages.sh` packs them into
+//! tarballs from a binary for each platform, here the `loft` under test copied for every platform,
+//! and the launcher of `@ask-loft/loft` runs the binary of the platform it is installed on.
+//! `scripts/npm-smoke.sh` runs that launcher from the tarballs, as the release does before it
+//! publishes them.
 
 use std::fs;
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
@@ -18,7 +21,8 @@ const PLATFORMS: [&str; 6] = [
     "win32-x64",
 ];
 
-/// The packages assembled in `scratch/out` from the binary under test.
+/// The tarballs packed in `scratch/out` from the binary under test, each copied in without its
+/// execute bits, as a download of the build's artifacts leaves it.
 fn assembled(scratch: &Scratch) -> PathBuf {
     for platform in PLATFORMS {
         let dir = scratch.0.join("binaries").join(platform);
@@ -28,7 +32,9 @@ fn assembled(scratch: &Scratch) -> PathBuf {
         } else {
             "loft"
         };
-        fs::copy(env!("CARGO_BIN_EXE_loft"), dir.join(name)).unwrap();
+        let binary = dir.join(name);
+        fs::copy(env!("CARGO_BIN_EXE_loft"), &binary).unwrap();
+        fs::set_permissions(&binary, fs::Permissions::from_mode(0o644)).unwrap();
     }
     let output = Command::new(workspace().join("scripts/npm-packages.sh"))
         .arg(scratch.0.join("binaries"))
@@ -37,6 +43,25 @@ fn assembled(scratch: &Scratch) -> PathBuf {
         .unwrap();
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     scratch.0.join("out")
+}
+
+/// The package packed as `<out>/<name>.tgz`, extracted into `into` as npm installs it.
+fn unpack(out: &Path, name: &str, into: &Path) -> PathBuf {
+    fs::create_dir_all(into).unwrap();
+    let output = Command::new("tar")
+        .arg("-xzf")
+        .arg(out.join(format!("{name}.tgz")))
+        .args(["--strip-components", "1", "-C"])
+        .arg(into)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{name}: {}", stderr(&output));
+    into.to_path_buf()
+}
+
+/// The package packed as `<out>/<name>.tgz`, extracted in the scratch directory.
+fn unpacked(scratch: &Scratch, out: &Path, name: &str) -> PathBuf {
+    unpack(out, name, &scratch.0.join("unpacked").join(name))
 }
 
 fn manifest(dir: &Path) -> Value {
@@ -53,15 +78,14 @@ fn host() -> String {
 }
 
 /// A project whose `node_modules` holds `@ask-loft/loft` and, with `platform`, this machine's
-/// platform package, as npm installs them.
+/// platform package, extracted from their tarballs as npm installs them.
 fn project(scratch: &Scratch, platform: bool) -> PathBuf {
     let out = assembled(scratch);
     let scope = scratch.0.join("project/node_modules/@ask-loft");
-    fs::create_dir_all(&scope).unwrap();
-    fs::rename(out.join("loft"), scope.join("loft")).unwrap();
+    unpack(&out, "loft", &scope.join("loft"));
     if platform {
         let name = format!("loft-{}", host());
-        fs::rename(out.join(&name), scope.join(&name)).unwrap();
+        unpack(&out, &name, &scope.join(&name));
     }
     scratch.0.join("project")
 }
@@ -81,15 +105,23 @@ fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
         .unwrap()
 }
 
+/// `scripts/npm-smoke.sh` run over the tarballs in `out`.
+fn smoke(out: &Path) -> Output {
+    Command::new(workspace().join("scripts/npm-smoke.sh"))
+        .arg(out)
+        .output()
+        .unwrap()
+}
+
 #[test]
 fn every_package_carries_the_version_of_loft() {
     let scratch = Scratch::empty();
     let out = assembled(&scratch);
-    let main = manifest(&out.join("loft"));
+    let main = manifest(&unpacked(&scratch, &out, "loft"));
     assert_eq!(main["version"], env!("CARGO_PKG_VERSION"));
     let mut optional = json!({});
     for platform in PLATFORMS {
-        let package = manifest(&out.join(format!("loft-{platform}")));
+        let package = manifest(&unpacked(&scratch, &out, &format!("loft-{platform}")));
         assert_eq!(package["version"], env!("CARGO_PKG_VERSION"), "{platform}");
         optional[format!("@ask-loft/loft-{platform}")] = json!(env!("CARGO_PKG_VERSION"));
     }
@@ -101,7 +133,7 @@ fn each_platform_package_declares_its_platform_and_holds_its_binary() {
     let scratch = Scratch::empty();
     let out = assembled(&scratch);
     for platform in PLATFORMS {
-        let dir = out.join(format!("loft-{platform}"));
+        let dir = unpacked(&scratch, &out, &format!("loft-{platform}"));
         let package = manifest(&dir);
         let (os, cpu) = platform.split_once('-').unwrap();
         assert_eq!(package["name"], format!("@ask-loft/loft-{platform}"));
@@ -113,6 +145,10 @@ fn each_platform_package_declares_its_platform_and_holds_its_binary() {
             "bin/loft"
         };
         assert!(dir.join(binary).is_file(), "{platform}");
+        if os != "win32" {
+            let mode = fs::metadata(dir.join(binary)).unwrap().permissions().mode();
+            assert_eq!(mode & 0o111, 0o111, "{platform}: {mode:o}");
+        }
     }
 }
 
@@ -122,7 +158,7 @@ fn no_package_has_an_install_script_and_each_names_the_repository() {
     let out = assembled(&scratch);
     let names = std::iter::once("loft".to_owned()).chain(PLATFORMS.map(|p| format!("loft-{p}")));
     for name in names {
-        let package = manifest(&out.join(&name));
+        let package = manifest(&unpacked(&scratch, &out, &name));
         assert_eq!(package["scripts"], Value::Null, "{name}");
         assert_eq!(
             package["repository"]["url"], "git+https://github.com/Ask-Loft/loft.git",
@@ -130,7 +166,7 @@ fn no_package_has_an_install_script_and_each_names_the_repository() {
         );
     }
     assert_eq!(
-        manifest(&out.join("loft"))["bin"],
+        manifest(&unpacked(&scratch, &out, "loft"))["bin"],
         json!({ "loft": "bin/loft.js" })
     );
 }
@@ -177,4 +213,39 @@ fn a_missing_platform_package_is_named_with_the_optional_dependencies() {
         "{report}"
     );
     assert!(report.contains("optional"), "{report}");
+}
+
+#[test]
+fn the_smoke_check_runs_loft_from_the_tarballs_and_reports_its_version() {
+    let scratch = Scratch::empty();
+    let output = smoke(&assembled(&scratch));
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stdout(&output).contains(env!("CARGO_PKG_VERSION")),
+        "{}",
+        stdout(&output)
+    );
+}
+
+#[test]
+fn the_smoke_check_fails_where_the_packed_binary_cannot_run() {
+    let scratch = Scratch::empty();
+    let out = assembled(&scratch);
+    let name = format!("loft-{}", host());
+    let staged = scratch.0.join("repack");
+    fs::create_dir_all(&staged).unwrap();
+    fs::rename(unpacked(&scratch, &out, &name), staged.join("package")).unwrap();
+    let binary = staged.join("package/bin/loft");
+    fs::set_permissions(&binary, fs::Permissions::from_mode(0o644)).unwrap();
+    let packed = Command::new("tar")
+        .arg("-czf")
+        .arg(out.join(format!("{name}.tgz")))
+        .arg("-C")
+        .arg(&staged)
+        .arg("package")
+        .output()
+        .unwrap();
+    assert_eq!(packed.status.code(), Some(0), "{}", stderr(&packed));
+    let output = smoke(&out);
+    assert_ne!(output.status.code(), Some(0), "{}", stdout(&output));
 }

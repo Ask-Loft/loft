@@ -71,8 +71,9 @@ change, or v1 reverts it.
   package under `skills/loft-spec/`; `.claude-plugin/marketplace.json` and
   `.agents/plugins/marketplace.json` list them.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
-  of the platform it is installed on. A release assembles it, and one package per platform, with
-  `scripts/npm-packages.sh`; `crates/loft-cli/tests/npm.rs` tests both.
+  of the platform it is installed on. A release packs it, and one package per platform, into
+  tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;
+  `crates/loft-cli/tests/npm.rs` tests all three.
 - `spec/` is the specification. `schemas/` holds the JSON schema of each command's output.
   `testdata/` holds synthetic fixtures, the golden vectors under `testdata/golden/` and the v1
   exports the converter is tested on.
@@ -210,14 +211,15 @@ A release happens only with the maintainer's approval, and in this order:
    `develop` carries unpublished candidates. Push `main`.
 3. On `main`, run `scripts/release-check.sh vX.Y.Z`; it checks `HEAD` while the tag does not
    exist. Then tag `vX.Y.Z` on `main` and push the tag.
-4. The tag starts `.github/workflows/release.yml`. It runs the release check and the gate,
-   builds `loft` for each supported platform, assembles the npm packages and checks them with a
-   dry run, then waits for the maintainer to approve: on the run's page, "Review deployments",
-   tick `release`, "Approve and deploy". Once approved, `scripts/publish-crates.sh` publishes the
-   crates to crates.io in dependency order, `scripts/publish-npm.sh` publishes the platform
-   packages and then `@ask-loft/loft`, and the tag gets a GitHub release with the binaries,
-   whose notes are the version's changelog entry. Both registries trust the workflow through
-   Trusted Publishing; no registry token is stored anywhere.
+4. The tag starts `.github/workflows/release.yml`. It runs the release check and the gate, builds
+   `loft` for each supported platform, packs the npm packages into tarballs, runs `loft` through
+   the launcher from them (`scripts/npm-smoke.sh`) and checks them with a dry run, then waits for
+   the maintainer to approve: on the run's page, "Review deployments", tick `release`, "Approve and
+   deploy". Once approved, the publish job runs the tarballs it downloaded once more,
+   `scripts/publish-crates.sh` publishes the crates to crates.io in dependency order,
+   `scripts/publish-npm.sh` publishes the platform packages and then `@ask-loft/loft`, and the tag
+   gets a GitHub release with the binaries, whose notes are the version's changelog entry. Both
+   registries trust the workflow through Trusted Publishing; no registry token is stored anywhere.
 5. Merge `main` back into `develop`, so the allocated labels and the release reach it.
 
 If a step of the publish job fails, fix its cause and choose "Re-run failed jobs" on the run.

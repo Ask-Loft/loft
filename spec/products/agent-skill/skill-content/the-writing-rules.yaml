@@ -123,3 +123,9 @@ requirements:
         name: "The rules tell the agent that a Constraint binds the Component, Feature Group or Product it stands under."
       - key: 01a13754-833e-725b-b941-6359d4f2fdf6
         name: "The rules tell the agent to state a rule for the whole product once, on the Product."
+      - key: 01a13816-ded1-7512-a998-e07ff2515ce7
+        name: "The rules tell the agent never to state what the product leaves out of scope as a Constraint."
+      - key: 01a13816-ded1-7512-a998-e0808ecb7a48
+        name: "The rules tell the agent never to write a criterion whose only content is that an excluded capability is absent."
+      - key: 01a13816-ded1-7512-a998-e0818eaaf9bb
+        name: "The rules tell the agent to record what is out of scope in a decision or in the body of the node it bounds."
