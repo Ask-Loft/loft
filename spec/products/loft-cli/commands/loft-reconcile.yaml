@@ -87,6 +87,14 @@ requirements:
         name: "A node whose link has a `TR-004` or `TR-005` finding cannot be accepted."
       - key: 01a1383c-2899-72f8-b39a-0a1f2b01371a
         name: "No link is accepted, including those of the other nodes named."
+      - key: 01a139d8-bf45-745b-b61d-b7899cd2e749
+        name: "The error names each node as `--accept` gave it."
+      - key: 01a139d8-bf45-745b-b61d-b78a1addb2d9
+        name: "The error for a name that no node carries says whether the name was read as a key or as a label."
+      - key: 01a139d8-bf45-745b-b61d-b78b3266717f
+        name: "A name that is neither a key nor a label cannot be accepted."
+      - key: 01a139d8-bf45-745b-b61d-b78c93f27b7b
+        name: "Names that no node carries and nodes whose links cannot be accepted are reported in one error, in the order `--accept` gave them."
   - key: 01a1383c-2899-72f8-b39a-0a20225c484a
     statement:
       form: optional

@@ -67,6 +67,10 @@ requirements:
     criteria:
       - key: 01a1383a-4a94-72cc-9c61-111bf7203ba1
         name: "A test whose file does not exist yields one `TR-004` finding naming the node, the file and the test."
+      - key: 01a139d8-bf45-745b-b61d-b78d51400b7b
+        name: "A test whose file is not UTF-8 text yields one `TR-004` finding saying so."
+      - key: 01a139d8-bf45-745b-b61d-b78ebcf629b7
+        name: "A test whose file exists but cannot be read yields one `TR-004` finding giving why it cannot be read."
       - key: 01a1383a-4a94-72cc-9c61-111cff7149ea
         name: "A test whose name does not occur in its file as a whole word yields one `TR-004` finding naming the node, the file and the test."
       - key: 01a1383a-4a94-72cc-9c61-111d19f9c40f
