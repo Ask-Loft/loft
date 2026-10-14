@@ -4,6 +4,7 @@
 use std::process::Output;
 
 use crate::common::{Scratch, stderr, stdout};
+use crate::reads_tree::broken;
 use crate::schema;
 use crate::snapshot::snapshot;
 use serde_json::Value;
@@ -126,4 +127,21 @@ fn find_writes_no_file() {
     let before = snapshot(&scratch.0);
     scratch.loft(&["find", "shelf"]);
     assert_eq!(snapshot(&scratch.0), before);
+}
+
+#[test]
+fn a_tree_the_reader_refuses_lists_no_match() {
+    let output = broken().loft(&["find", "shelf"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(stdout(&output), "");
+    let output = broken().loft(&["find", "shelf", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1));
+    let document = json_of(&output);
+    assert_eq!(document["outcome"], "error");
+    assert!(
+        document["matches"]
+            .as_array()
+            .is_none_or(std::vec::Vec::is_empty),
+        "{document}"
+    );
 }

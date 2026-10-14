@@ -12,7 +12,7 @@ const PRODUCT: &str = "products/reading-list/product.yaml";
 const TAG: &str = "reads-tree";
 
 /// A scratch tree whose product file holds a comment, which the reader refuses at line 1.
-fn broken() -> Scratch {
+pub fn broken() -> Scratch {
     let scratch = Scratch::with_reading_list();
     scratch.edit(PRODUCT, "\nslug:", " # a note\nslug:");
     scratch

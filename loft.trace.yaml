@@ -5730,11 +5730,23 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_writes_a_package_for_each_host_where_there_is_no_spec"
+  - node: 01a13654-bf86-77e9-8fd5-8dc99bc8eceb
+    reviewed: 12bb605bc41a6a84f212da43ed1e6c0380aaebf720e0bff7cbd879ccfe27fc2b
+    tests:
+      - file: "crates/loft-cli/src/skill/write.rs"
+        name: "the_package_is_staged_whole_beside_the_skill_directory_which_is_left_untouched"
+  - node: 01a13654-bf86-77e9-8fd5-8dca5c8fb5b6
+    reviewed: 89df9c7085a31e6bd6d8d3da4f48da1652f642eff662bb43ea7f3f878b27b4bf
+    tests:
+      - file: "crates/loft-cli/tests/skill_install.rs"
+        name: "skill_install_renames_a_new_directory_into_each_skill_directory_s_place"
   - node: 01a13654-bf86-77e9-8fd5-8dcb3b697eba
     reviewed: b319e26bf36ff785235c6967b24c1fa8cde364417be156366fd4889c72d12ede
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_replaces_each_directory_whole_and_leaves_no_temporary_directory"
+      - file: "crates/loft-cli/tests/skill_install.rs"
+        name: "a_skill_install_that_fails_leaves_the_skill_directory_as_it_was_and_no_temporary_directory"
   - node: 01a13654-bf86-77e9-8fd5-8dcdad40c3a6
     reviewed: 2e75611f4aab4cc7eb160fc97e2b3a1e5c2305f87589fad36a693d700843730a
     tests:
@@ -5807,6 +5819,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/find.rs"
         name: "a_query_that_matches_nothing_says_so_and_exits_1"
+  - node: 01a13743-3a3f-7716-90b9-094dc4eaa9e3
+    reviewed: 1b4514b7bdbb797ee045f2b489892b94005ff7e44977916584d95af44550821b
+    tests:
+      - file: "crates/loft-cli/tests/find.rs"
+        name: "a_tree_the_reader_refuses_lists_no_match"
   - node: 01a13743-3a3f-7716-90b9-094f8525b2da
     reviewed: 2b0087ac93d583251161fe3501bb357a15537318bcfbc2240f67a1ba18f59765
     tests:

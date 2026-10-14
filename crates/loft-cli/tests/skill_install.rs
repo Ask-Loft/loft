@@ -2,6 +2,7 @@
 //! each host and written into the current directory, each package replacing its directory whole.
 
 use std::fs;
+use std::os::unix::fs::{MetadataExt, symlink};
 
 use crate::common::{Scratch, skill_source, stderr};
 use crate::schema;
@@ -157,4 +158,45 @@ fn the_json_of_a_failed_skill_install_lists_the_error() {
     assert_eq!(document["outcome"], "error");
     let message = document["errors"][0]["message"].as_str().unwrap();
     assert!(message.contains(CLAUDE), "{message}");
+}
+
+#[test]
+fn skill_install_renames_a_new_directory_into_each_skill_directory_s_place() {
+    let scratch = Scratch::empty();
+    let mut before = Vec::new();
+    for directory in [CLAUDE, CODEX] {
+        fs::create_dir_all(scratch.0.join(directory)).unwrap();
+        before.push(fs::metadata(scratch.0.join(directory)).unwrap().ino());
+    }
+    let scratch = install_into(scratch);
+    let composed = installed();
+    for (directory, inode) in [CLAUDE, CODEX].into_iter().zip(before) {
+        let written = scratch.0.join(directory);
+        assert_ne!(fs::metadata(&written).unwrap().ino(), inode, "{directory}");
+        assert_eq!(
+            snapshot(&written),
+            snapshot(&composed.0.join(directory)),
+            "{directory}"
+        );
+    }
+}
+
+#[test]
+fn a_skill_install_that_fails_leaves_the_skill_directory_as_it_was_and_no_temporary_directory() {
+    let scratch = Scratch::empty();
+    let skills = scratch.0.join(".claude/skills");
+    fs::create_dir_all(&skills).unwrap();
+    symlink("nowhere", skills.join("loft-spec")).unwrap();
+    let output = scratch.loft(&["skill", "install"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr(&output).contains(CLAUDE), "{}", stderr(&output));
+    let names: Vec<String> = fs::read_dir(&skills)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+        .collect();
+    assert_eq!(names, ["loft-spec"]);
+    assert_eq!(
+        fs::read_link(skills.join("loft-spec")).unwrap(),
+        std::path::Path::new("nowhere")
+    );
 }
