@@ -56,9 +56,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   marked required or optional, and names every command that writes each file; tests now hold
   the reference to the code.
 - CI builds `loftspec` with the toolchain its declared `rust-version` names.
+- The release workflow's check job runs `loft reconcile --fail-on warning`, as CI does.
 - Library API: `loftspec`'s `RuleId` gains `V2009`; `ConvertError::Tag` gives way to
   `UnderivableTag` and `TagCollision`; `Problem::ListedByTwoGroups` names its groups;
-  `VocabularyEntry.name` is a `String` and `V1Sidecar` gains `tag_names`; `write_sites` is new.
+  `VocabularyEntry.name` is a `String` and `V1Sidecar` gains `tag_names`; `write_sites` is new;
+  `MergeError` gains `DuplicateKey` and `Unplaced`, and `Problem` gains `MovedAndChanged`.
 
 ## 2.0.3 (2026-10-14)
 
