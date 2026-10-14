@@ -204,3 +204,20 @@ fn every_event_has_its_own_random_id() {
     let second = sent(&scratch, &["check"], None);
     assert_ne!(the_event(&first)["eventId"], the_event(&second)["eventId"]);
 }
+
+#[test]
+fn the_readme_s_sample_event_follows_the_schema() {
+    let readme = include_str!("../../../README.md");
+    let section = readme
+        .split_once("## Telemetry and the update check")
+        .unwrap()
+        .1;
+    let sample = section
+        .split_once("```json\n")
+        .unwrap()
+        .1
+        .split_once("```")
+        .unwrap()
+        .0;
+    schema::conforming(sample.as_bytes(), EVENT_SCHEMA);
+}

@@ -19,17 +19,25 @@ jobs:
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo nextest run --workspace
       # The repository's own specification stays canonical and free of errors and warnings.
+      # These runs of `loft` send their events marked internal: `.cargo/config.toml` starts every
+      # process Cargo runs with telemetry off and the collector at a closed port, unless the
+      # environment says otherwise, and only these steps do. The tests keep both off.
       - run: cargo run -q -p loft-cli -- fmt --check
+        env: { LOFT_TELEMETRY: internal, LOFT_TELEMETRY_ENDPOINT: "https://askloft.ai/api/telemetry" }
       - run: cargo run -q -p loft-cli -- check --fail-on warning
+        env: { LOFT_TELEMETRY: internal, LOFT_TELEMETRY_ENDPOINT: "https://askloft.ai/api/telemetry" }
       # Every link in loft.trace.yaml holds: reviewed against its node as it reads now, and its
       # tests found. A node no link names yet is reported, not failed.
       - run: cargo run -q -p loft-cli -- reconcile --fail-on warning
+        env: { LOFT_TELEMETRY: internal, LOFT_TELEMETRY_ENDPOINT: "https://askloft.ai/api/telemetry" }
       # The lock pins the published specification. Only main carries published states;
       # develop and feature branches hold candidates that the next publish makes normative.
       - if: github.ref == 'refs/heads/main'
         run: cargo run -q -p loft-cli -- verify
+        env: { LOFT_TELEMETRY: internal, LOFT_TELEMETRY_ENDPOINT: "https://askloft.ai/api/telemetry" }
       # A second publish of a published tree changes nothing.
       - if: github.ref == 'refs/heads/main'
+        env: { LOFT_TELEMETRY: internal, LOFT_TELEMETRY_ENDPOINT: "https://askloft.ai/api/telemetry" }
         run: |
           cargo run -q -p loft-cli -- publish
           test -z "$(git status --porcelain)"

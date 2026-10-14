@@ -1,7 +1,7 @@
 //! The one binary `loft-cli` ships, and that the tests run that binary as it ships. The manifest
 //! declares a single binary target, `loft`, and nothing Cargo would find as another. No crate
 //! built into it declares a feature or reads the build's configuration, the tests turn on no
-//! feature, the release builds it with no feature flag, and every test that starts `loft` starts
+//! feature, the release's build builds it with no feature flag, and every test that starts `loft` starts
 //! the binary Cargo built for this package.
 
 use crate::common::workspace;
@@ -146,12 +146,12 @@ fn the_tests_run_the_loft_binary_as_it_ships() {
             assert!(!line.contains("features"), "{krate}: {line}");
         }
     }
-    let release = read(".github/workflows/release.yml");
-    let builds: Vec<&str> = release
+    let build = read(".github/workflows/build.yml");
+    let builds: Vec<&str> = build
         .lines()
         .filter(|line| line.contains("cargo build") && line.contains("-p loft-cli"))
         .collect();
-    assert_eq!(builds.len(), 1, "release.yml builds loft {builds:?}");
+    assert_eq!(builds.len(), 1, "build.yml builds loft {builds:?}");
     assert!(!builds[0].contains("features"), "{}", builds[0]);
     assert_the_tests_start_only_the_built_loft();
 }
