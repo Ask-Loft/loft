@@ -78,8 +78,8 @@ pub enum MergeError {
 }
 
 /// Merges one file of a `spec/` tree. An empty base is an absent one, as git gives when both
-/// sides added the file. A record file merges by key: every keyed record merged on its own, with
-/// its place as one merged value, and each list rebuilt in merged order. A registry,
+/// sides added the file. A record file and a registry merge by key: every keyed record merged on
+/// its own, with its place as one merged value, and each list rebuilt in merged order.
 /// `spec/labels.yaml` and `spec/lint.yaml` merge as [`merge_file_legacy`] merges them.
 ///
 /// # Errors
@@ -93,12 +93,12 @@ pub fn merge_file(
     ours: &[u8],
     theirs: &[u8],
 ) -> Result<Merged, MergeError> {
-    merge(path, [base, ours, theirs], Scope::Records)
+    merge(path, [base, ours, theirs], true)
 }
 
 /// Merges one file of a `spec/` tree as [`merge_file`] did before it merged record files by
 /// key: a move pre-pass, then each record merged within its parent's lists. Kept to compare the
-/// two merges until the merge by key covers every file.
+/// two merges until the legacy merge is removed.
 ///
 /// # Errors
 ///
@@ -111,48 +111,20 @@ pub fn merge_file_legacy(
     ours: &[u8],
     theirs: &[u8],
 ) -> Result<Merged, MergeError> {
-    merge(path, [base, ours, theirs], Scope::Nothing)
+    merge(path, [base, ours, theirs], false)
 }
 
-/// Merges one file of a `spec/` tree as [`merge_file`] does, and a registry by key as well.
-///
-/// # Errors
-///
-/// As [`merge_file`].
-#[doc(hidden)]
-pub fn merge_file_by_key(
-    path: &SpecPath,
-    base: &[u8],
-    ours: &[u8],
-    theirs: &[u8],
-) -> Result<Merged, MergeError> {
-    merge(path, [base, ours, theirs], Scope::Registries)
-}
-
-/// The files a merge merges by key; every other file merges as [`merge_file_legacy`] merges it.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum Scope {
-    Nothing,
-    Records,
-    Registries,
-}
-
-impl Scope {
-    fn takes(self, ours: &Content, theirs: &Content) -> bool {
-        match (ours, theirs) {
-            (Content::Record(top), Content::Record(_)) => {
-                self >= Self::Records && top.kind != Kind::Labels
-            }
-            (Content::Registry(_), Content::Registry(_)) => self >= Self::Registries,
-            _ => false,
-        }
-    }
-}
-
-fn merge(path: &SpecPath, inputs: [&[u8]; 3], scope: Scope) -> Result<Merged, MergeError> {
+/// Merges one file, a record file but `spec/labels.yaml` or a registry by key when `by_key`,
+/// and every other file as the legacy merge does.
+fn merge(path: &SpecPath, inputs: [&[u8]; 3], by_key: bool) -> Result<Merged, MergeError> {
     let role = Role::of(path).ok_or(MergeError::NotAFormatFile)?;
     let (base, ours, theirs) = read_inputs(path, &role, inputs)?;
-    if scope.takes(&ours, &theirs) {
+    let keyed = match (&ours, &theirs) {
+        (Content::Record(top), Content::Record(_)) => top.kind != Kind::Labels,
+        (Content::Registry(_), Content::Registry(_)) => true,
+        _ => false,
+    };
+    if by_key && keyed {
         let content = tree::merge(base.as_ref(), &ours, &theirs).map_err(MergeError::Unplaced)?;
         let (bytes, written) = write_back(path, role, content)?;
         if let Some(error) = twice_in(path, &written).into_iter().next() {

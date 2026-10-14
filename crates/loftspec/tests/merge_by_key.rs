@@ -1,16 +1,15 @@
-//! The merge by key (F-32), which `merge_file` is for record files and `merge_file_by_key` for
-//! registries as well: what it does where the legacy merge has no test or gives another result. Each record is merged by its key, its place as one value, and
-//! a record one side deleted is kept only where the other side changed it or the merge keeps a
+//! The merge by key (F-32), which `merge_file` is for record files and registries: what it does
+//! where the legacy merge has no test or gives another result. Each record is merged by its
+//! key, its place as one value, and a record one side deleted is kept only where the other side changed it or the merge keeps a
 //! record beneath it.
 
 use loftspec::codec::{Problem, SpecPath};
 use loftspec::identity::Key;
-use loftspec::merge::{MergeError, merge_file, merge_file_by_key};
+use loftspec::merge::{MergeError, merge_file};
 
 use crate::common::merge::{
     CRITERIA, CRITERION, read_back, requirement, shall, three_requirements, with,
 };
-use crate::common::merge_cases::Engine;
 use crate::common::text::{COMPONENT, DECISION, FEATURE, files, indented, text};
 
 const EDITED: &str = "name: \"Every node record carries one key.\"";
@@ -42,12 +41,7 @@ fn ours_deleted(n: &str, by: &str) -> String {
 
 /// Merges the file at `path` with `merge_file`, which must merge.
 fn merged_at(path: &str, base: &str, ours: &str, theirs: &str) -> (String, usize) {
-    merged_with(merge_file, path, base, ours, theirs)
-}
-
-/// Merges the file at `path` with `merge`, which must merge.
-fn merged_with(merge: Engine, path: &str, base: &str, ours: &str, theirs: &str) -> (String, usize) {
-    let merged = merge(
+    let merged = merge_file(
         &SpecPath::new(path),
         base.as_bytes(),
         ours.as_bytes(),
@@ -137,7 +131,7 @@ fn a_registry_entry_the_sorted_order_moves_when_another_is_renamed_is_unchanged(
     let renamed = entry("b1", "bravo").replace("definition: \"bravo.\"", "definition: \"alpha.\"");
     let ours = with(&base, &[(&alpha, ""), (&beta, &format!("{beta}{renamed}"))]);
     let theirs = with(&base, &[(&beta, "")]);
-    let (text, conflicts) = merged_with(merge_file_by_key, "tags.yaml", &base, &ours, &theirs);
+    let (text, conflicts) = merged_at("tags.yaml", &base, &ours, &theirs);
     assert_eq!(conflicts, 0, "{text}");
     assert!(!text.contains("name: beta"), "{text}");
     assert!(text.starts_with(&format!("{renamed}{gamma}")), "{text}");

@@ -1,16 +1,15 @@
 //! Properties of the file merge over random edits of the full document's files: a Feature
 //! file, a Component file, a Product file and the tag registry. Each case is a base made by
 //! random edits and two sides made from it by independent random edits. Each law runs here
-//! under `merge_file`, and under `merge_file_legacy`, leaving out the classes of case the legacy
-//! merge gets wrong wherever a merge takes it; and in `merge_by_key_props.rs` under
-//! `merge_file_by_key`, leaving out only the asymmetry both keep by design.
+//! under `merge_file`, leaving out only the asymmetry both merges keep by design, and under
+//! `merge_file_legacy`, leaving out as well the classes of case the legacy merge gets wrong.
 
 use loftspec::codec::schema::field;
-use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key, merge_file_legacy};
+use loftspec::merge::{MergeError, Merged, merge_file, merge_file_legacy};
 use proptest::prelude::*;
 use proptest::test_runner::TestCaseError;
 
-use crate::common::edit_tree::{Top, Y, conflicts, read};
+use crate::common::edit_tree::{Y, conflicts, read};
 use crate::common::merge_cases::{Case, Engine, cases, unsettled};
 use crate::common::merge_defects::{
     a_key_changes_kind, a_side_deletes_beneath_a_record_the_other_side_deleted,
@@ -32,14 +31,8 @@ pub const LEGACY: Under = Under {
     legacy: |_| true,
 };
 
-/// `merge_file`, which merges a registry as the legacy merge does until it merges it by key.
 pub const FILE: Under = Under {
     engine: merge_file,
-    legacy: |case| case.fixture.top == Top::Registry,
-};
-
-pub const BY_KEY: Under = Under {
-    engine: merge_file_by_key,
     legacy: |_| false,
 };
 

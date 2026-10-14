@@ -2,7 +2,7 @@
 
 use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Role, SpecPath};
-use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key, merge_file_legacy};
+use loftspec::merge::{MergeError, Merged, merge_file, merge_file_legacy};
 
 use super::edit_tree::Top;
 use super::merge_keys::Versions;
@@ -44,7 +44,7 @@ pub fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
     merge_file(&spec_path, inputs[0], inputs[1], inputs[2]).expect("the file merges")
 }
 
-/// Asserts that `merge_file_by_key` gives `expected`, what `merge_file_legacy` gave, unless the
+/// Asserts that `merge_file` gives `expected`, what `merge_file_legacy` gave, unless the
 /// case is one of the merge by key's known differences.
 pub fn agrees_by_key(path: &str, inputs: [&[u8]; 3], expected: &Result<Merged, MergeError>) {
     let spec_path = SpecPath::new(path);
@@ -52,7 +52,7 @@ pub fn agrees_by_key(path: &str, inputs: [&[u8]; 3], expected: &Result<Merged, M
     if top.is_some_and(|top| known_difference(&Versions::of(top, inputs)).is_some()) {
         return;
     }
-    let by_key = merge_file_by_key(&spec_path, inputs[0], inputs[1], inputs[2]);
+    let by_key = merge_file(&spec_path, inputs[0], inputs[1], inputs[2]);
     let text = |merged: &Result<Merged, MergeError>| match merged {
         Ok(merged) => format!(
             "{} conflicts:\n{}",

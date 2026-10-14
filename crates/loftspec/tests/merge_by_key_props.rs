@@ -1,18 +1,15 @@
-//! The merge properties under `merge_file_by_key`, which `merge_file` now is for record files
-//! and is to become for registries: every law of `merge_props.rs`, leaving out only the
-//! asymmetry both merges keep by design; and the merge by key compared with `merge_file_legacy`,
-//! which must give the same on every case but their known differences.
+//! The merge by key, which `merge_file` now is, compared with `merge_file_legacy`: the two must
+//! give the same on every case but their known differences. The laws of the merge run in
+//! `merge_props.rs`.
 
-use loftspec::merge::{MergeError, Merged, merge_file_by_key, merge_file_legacy};
+use loftspec::merge::{MergeError, Merged, merge_file, merge_file_legacy};
 use proptest::prelude::*;
 use proptest::test_runner::TestCaseError;
 
 use crate::common::merge_cases::{Case, cases};
 use crate::common::merge_keys::Versions;
 use crate::common::merge_known::known_difference;
-use crate::merge_props::{
-    BY_KEY, config, conserves, counts, idempotent, reads_back, refuses_nested_moves, symmetric,
-};
+use crate::merge_props::{config, refuses_nested_moves};
 
 /// Whether both merges give the same for the case's base and the two versions `ours` and
 /// `theirs`, unless it is a known difference.
@@ -25,7 +22,7 @@ fn agree(case: &Case, ours: &[u8], theirs: &[u8]) -> Result<(), TestCaseError> {
     if refuses_nested_moves(&legacy) {
         return Ok(());
     }
-    let by_key = case.merge(merge_file_by_key, &case.base, ours, theirs);
+    let by_key = case.merge(merge_file, &case.base, ours, theirs);
     let text = |merged: &Result<Merged, MergeError>| match merged {
         Ok(merged) => format!(
             "{} conflicts:\n{}",
@@ -48,31 +45,6 @@ fn agree(case: &Case, ours: &[u8], theirs: &[u8]) -> Result<(), TestCaseError> {
 
 proptest! {
     #![proptest_config(config())]
-
-    #[test]
-    fn a_side_merged_with_an_unchanged_side_or_with_itself_is_that_side(case in cases()) {
-        idempotent(&case, BY_KEY)?;
-    }
-
-    #[test]
-    fn a_merge_reads_back_as_a_formatter_fixed_point_carrying_each_key_once(case in cases()) {
-        reads_back(&case, BY_KEY)?;
-    }
-
-    #[test]
-    fn a_merge_counts_the_conflict_records_it_writes(case in cases()) {
-        counts(&case, BY_KEY)?;
-    }
-
-    #[test]
-    fn a_merge_keeps_the_keys_both_sides_hold_or_one_adds_and_drops_those_one_deletes_and_the_other_leaves_untouched(case in cases()) {
-        conserves(&case, BY_KEY)?;
-    }
-
-    #[test]
-    fn swapping_the_sides_keeps_the_conflicts_the_keys_and_each_record_s_parent_and_fields(case in cases()) {
-        symmetric(&case, BY_KEY)?;
-    }
 
     #[test]
     fn the_merge_by_key_gives_what_the_file_merge_gives_but_for_its_known_differences(case in cases()) {
