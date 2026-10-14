@@ -7380,7 +7380,7 @@ links:
   - node: 01a136db-1a3d-7739-a3f4-9acba290bbc3
     reviewed: 43f456f483ca680f6de81e592bf12022db95ecf97784ff23a48b00300d98491e
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
   - node: 01a136db-1a3d-7739-a3f4-9acceaf09b98
     reviewed: 14c79bdf4e71c25445621b0acebbcdad21e36e52addc1413682ce1120108ba6f
@@ -7402,39 +7402,39 @@ links:
   - node: 01a136db-1a3d-7739-a3f4-9acffbe368ae
     reviewed: 2da4bc514a00b0e6d75b327a7d3cad271643b56fc476384eabda818ff7b8f405
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
   - node: 01a13acd-2cac-7382-9410-cfb6ad57bacb
     reviewed: a9a169e9a4662fb516be15429bcb4eee4af9d69ddca8e95542eaaa339ac790ae
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
   - node: 01a13acd-2cac-7382-9410-cfb7d41d9a6e
     reviewed: 1dbbd41157aca799e1b7021a89d297946afba64e6b5784957989d7979b14efb7
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "the_install_script_records_npm_for_the_platform_binary_and_prints_nothing"
       - file: "crates/loft-cli/tests/npm.rs"
         name: "npm_installs_the_platform_binary_executable"
   - node: 01a13acd-2cac-7382-9410-cfb8f4b00d96
     reviewed: c230d465fda76c3bd3e0b4325c0508d422311c8ad0233fc7bacfda7d96cfad50
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "the_install_succeeds_when_the_record_cannot_be_written"
   - node: 01a13acd-2cac-7382-9410-cfb96ea0013a
     reviewed: dda70e7e4c86146d6c85fd7fe687527f1a0a9e56eb03da2302e27a5926dffb84
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "the_install_succeeds_when_the_platform_package_is_missing"
   - node: 01a13acd-2cac-7382-9410-cfba733ae6da
     reviewed: c31b16155edb771996cde766ea69f24d8be7a2ddc3bfd5349cc25944fd000819
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "the_install_script_records_npm_for_the_platform_binary_and_prints_nothing"
   - node: 01a13acd-2cac-7382-9410-cfbb26af04d2
     reviewed: 97bbed8091fad43b0432b3302c0442f79f4f1a47eefd71f25b9ffa19a4be4e73
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did"
   - node: 01a136db-1a3d-7739-a3f4-9ad1daac9b30
     reviewed: e7c0086dcb6f4f417e771077126b69141cce02f432be3e9b6d310a7b60cbc027
@@ -7730,12 +7730,12 @@ links:
   - node: 01a13acd-2cac-7382-9410-cfb227917029
     reviewed: b41f0cde08cbed432b7576066a7192b5af611af45a910145c95a3a4010f9832a
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did"
   - node: 01a13acd-2cac-7382-9410-cfb31f69ffdc
     reviewed: df7832f4e0c47302f89041ba9c2b53278a7c6b595f4e361b588bd6ac48f72c08
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did"
   - node: 01a13acd-2cac-7382-9410-cfb402bd2fed
     reviewed: 3a1cd282484f6bb1cd463bca2855fe462cbb21d8f4b7409239617d12d976cd4e
@@ -7965,7 +7965,7 @@ links:
   - node: 01a13a90-3556-7106-a68c-265d78901344
     reviewed: 2d1968459ac9fcfb94959f377c9c68c31faf3480ab634d4463c6abfa949ac760
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "the_launcher_honours_both_switches"
   - node: 01a13a90-3556-7106-a68c-265f0ddbd183
     reviewed: 710d4782e752ae6167675eda689ca8a2a37a36644181be32b164b18e30aedf15
@@ -9493,9 +9493,9 @@ links:
   - node: 01a136db-1a3c-76b9-8641-d09dc448a2d0
     reviewed: 855b8a234e1314daeede190f9cad1e8a2f583e4680a1f2a111ac2b096859ebc5
     tests:
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "only_the_launcher_package_has_an_install_script_and_each_names_the_repository"
-      - file: "crates/loft-cli/tests/npm.rs"
+      - file: "crates/loft-cli/tests/npm_install.rs"
         name: "the_install_script_records_npm_for_the_platform_binary_and_prints_nothing"
   - node: 01a136db-1a3c-76b9-8641-d09e74566205
     reviewed: 25cb6c54d25827748316f14549341d50dceedd00e30bdb4b51b129125ea2aa74
