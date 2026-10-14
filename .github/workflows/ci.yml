@@ -21,6 +21,9 @@ jobs:
       # The repository's own specification stays canonical and free of errors and warnings.
       - run: cargo run -q -p loft-cli -- fmt --check
       - run: cargo run -q -p loft-cli -- check --fail-on warning
+      # Every link in loft.trace.yaml holds: reviewed against its node as it reads now, and its
+      # tests found. A node no link names yet is reported, not failed.
+      - run: cargo run -q -p loft-cli -- reconcile --fail-on warning
       # The lock pins the published specification. Only main carries published states;
       # develop and feature branches hold candidates that the next publish makes normative.
       - if: github.ref == 'refs/heads/main'

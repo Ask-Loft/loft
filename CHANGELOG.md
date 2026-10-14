@@ -3,6 +3,21 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- `loft reconcile` checks `loft.trace.yaml`, a file beside `spec/` that links each acceptance
+  criterion, and each Constraint and Quality Attribute whose `verificationFate` is `proved`, to
+  the tests that verify it by file and name. Each link holds the content hash its node had when
+  a reviewer last accepted it. `TR-001` reports a node no link names, `TR-002` a link never
+  reviewed, `TR-003` a link reviewed before its node changed, `TR-004` a test that cannot be
+  found as a whole word in its file, and `TR-005` a link whose node is gone or not in scope. No
+  test is run. `--fail-on` gates CI; `--accept <key|label>` and `--accept-stale` record a review.
+  The trace file enters no root, and no publish writes it.
+- The `loft-spec` skill has a new reference, `reconciling.md`, and ends a change to a specified
+  product by linking its tests.
+- This repository traces its own criteria: its trace file is seeded from the test names that cited
+  labels before test names stopped citing them, and CI runs `loft reconcile --fail-on warning`.
+
 ## 2.0.3 (2026-10-14)
 
 - The npm packages run again: 2.0.2's platform packages shipped `loft` without its execute

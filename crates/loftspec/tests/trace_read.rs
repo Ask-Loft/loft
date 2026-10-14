@@ -191,7 +191,10 @@ fn a_written_trace_file_reads_back_and_writes_the_same_bytes() {
     let document = small_document();
     let text = write(&trace, &document);
     assert!(
-        text.starts_with(&format!("format: {FORMAT}\nlinks:\n")),
+        text.starts_with(&format!(
+            "format: {FORMAT}\nlinks:\n  - node: {}\n    reviewed: {DIGEST}\n    tests:\n      - file: ",
+            key(5)
+        )),
         "{text}"
     );
     let again = write(&read(Some(text.as_bytes())).unwrap(), &document);

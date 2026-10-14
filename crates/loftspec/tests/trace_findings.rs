@@ -253,6 +253,7 @@ fn findings_are_ordered_by_node_then_rule() {
     let document = small_document();
     let mut links = vec![tested(7, "missing"), tested(5, "missing")];
     links.push(tested(900, "x"));
+    links.push(tested(800, "x"));
     assert_eq!(
         found(&run(&document, links, &files(SOURCE))),
         [
@@ -261,9 +262,34 @@ fn findings_are_ordered_by_node_then_rule() {
             (TraceRule::Tr001, key(9)),
             (TraceRule::Tr002, key(7)),
             (TraceRule::Tr004, key(7)),
+            (TraceRule::Tr005, key(800)),
             (TraceRule::Tr005, key(900)),
         ]
     );
+}
+
+#[test]
+fn two_missing_tests_of_one_link_are_reported_in_the_link_s_order() {
+    let document = small_document();
+    let mut link = tested(5, "second");
+    let Evidence::Tests(tests) = &mut link.evidence else {
+        unreachable!()
+    };
+    tests.insert(
+        0,
+        Test {
+            file: "tests/a.rs".to_owned(),
+            name: "first".to_owned(),
+        },
+    );
+    let reconciled = run(&document, vec![link], &files(SOURCE));
+    let names: Vec<&str> = reconciled
+        .findings
+        .iter()
+        .filter_map(|finding| finding.test.as_ref())
+        .map(|test| test.name.as_str())
+        .collect();
+    assert_eq!(names, ["first", "second"]);
 }
 
 #[test]

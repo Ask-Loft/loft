@@ -163,6 +163,17 @@ rewritten in every element that mentions its node, and the lock is written anew.
 the git command that finishes, `git add -A && git commit --no-edit` after a merge or
 `git add -A && git rebase --continue` after a rebase; Loft itself never changes the repository.
 
+## Tracing tests to criteria
+
+`loft.trace.yaml`, beside `spec/`, links each acceptance criterion, and each Constraint or
+Quality Attribute whose `verificationFate` is `proved`, to the tests that verify it, by file and
+test name, or says why no test can. Each link holds the content hash its node had when a reviewer
+last accepted it, so a changed criterion shows up as a stale link. `loft reconcile` reports nodes
+no link names, links not yet reviewed or gone stale, tests it cannot find in their files, and
+links to nodes that are gone, without running any test, so it works for any language.
+`loft reconcile --accept <label>` records a review, and CI runs `loft reconcile --fail-on warning`.
+The trace file is not part of the specification: it enters no root and no publish writes it.
+
 ## Software Plant
 
 Loft's commands depend on systems outside Loft: git and the clock. Tests run the real `loft`
