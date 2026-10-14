@@ -21,6 +21,26 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   subset of paragraphs, lists, code spans, fenced code blocks, emphasis and links: raw HTML, a
   block quote, a table, an image, a thematic break, an indented code block, a footnote, a task
   list item or struck-through text, each at its first body line.
+- `loft import v1` converts a v1 tag whose name is not a v2 tag name, such as "MCP tool": the
+  name is lowercased and each run of other characters becomes one hyphen (`mcp-tool`), for the
+  Facet Tag and its Vocabulary Entry alike. A name that derives nothing, or two v1 names that
+  derive one tag name, stop the conversion naming them. The sidecar keeps each v1 name that
+  changed, under `tagNames`.
+- An error or finding that names two sites in one file names the file once:
+  `spec/a.yaml:18:10, 28:10: …`.
+- A Feature listed by two Feature Groups is one error that names both groups.
+- A publish that settles a key which lost its live label raises the label counter above the
+  key's withdrawn labels, so none of them is given out again.
+- A `loft skill install` that fails leaves the skill directory as it was, with no temporary
+  directory beside it.
+- The skill's listing-budget refusal names the combined length and the limit.
+- The `loft-spec` skill's format reference describes every record kind with its fields, each
+  marked required or optional, and names every command that writes each file; tests now hold
+  the reference to the code.
+- CI builds `loftspec` with the toolchain its declared `rust-version` names.
+- Library API: `loftspec`'s `RuleId` gains `V2009`; `ConvertError::Tag` gives way to
+  `UnderivableTag` and `TagCollision`; `Problem::ListedByTwoGroups` names its groups;
+  `VocabularyEntry.name` is a `String` and `V1Sidecar` gains `tag_names`; `write_sites` is new.
 
 ## 2.0.3 (2026-10-14)
 
