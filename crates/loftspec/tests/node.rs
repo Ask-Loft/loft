@@ -1,7 +1,7 @@
 //! The containment table (F-17) and the canonical traversal of the tree (RQ-160).
 
 use crate::common::small_document;
-use loftspec::kind::NodeKind;
+use loftspec::kind::{NodeKind, UnknownKind};
 use loftspec::node::Node;
 
 #[test]
@@ -78,4 +78,19 @@ fn walk_visits_parents_before_children() {
     assert_eq!(kinds[0], NodeKind::Product);
     assert_eq!(kinds[1], NodeKind::FeatureGroup);
     assert!(kinds.contains(&NodeKind::Criterion));
+}
+
+#[test]
+fn a_kind_outside_the_closed_set_is_refused_and_each_kind_in_it_parses() {
+    assert_eq!(
+        "epic".parse::<NodeKind>(),
+        Err(UnknownKind("epic".to_owned()))
+    );
+    assert_eq!(
+        "Product".parse::<NodeKind>(),
+        Err(UnknownKind("Product".to_owned()))
+    );
+    for kind in NodeKind::ALL {
+        assert_eq!(kind.as_str().parse::<NodeKind>(), Ok(kind));
+    }
 }

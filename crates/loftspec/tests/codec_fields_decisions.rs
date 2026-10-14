@@ -195,3 +195,78 @@ fn a_consequence_record_without_its_key_kind_or_statement_is_refused() {
     let (files, _) = without(&full_files(), DECISION, CONSEQUENCE, "subject");
     assert!(codec::read(&files).is_ok(), "a subject is optional");
 }
+
+/// Asserts that the decision in `state` writes its state with the fields `published` in that
+/// order, reads back in it, and is refused without any field after `kind`.
+fn assert_state_fields(state: &DecisionState, published: &[&'static str]) {
+    let files = codec::write(&in_state(state.clone()));
+    assert_eq!(fields(&files, DECISION, STATE), published);
+    assert_eq!(read_state(&files), *state);
+    for field in &published[1..] {
+        assert_required(&files, DECISION, STATE, field);
+    }
+}
+
+#[test]
+fn an_accepted_state_holds_its_kind_selected_option_and_outcome() {
+    let accepted = DecisionState::Accepted {
+        selected_option: OptionId::new(key(23)),
+        outcome: "Chosen.".to_owned(),
+    };
+    assert_state_fields(&accepted, &["kind", "selectedOption", "outcome"]);
+}
+
+#[test]
+fn a_superseded_state_holds_its_kind_selected_option_outcome_and_successor() {
+    let superseded = DecisionState::Superseded {
+        selected_option: OptionId::new(key(23)),
+        outcome: "Chosen.".to_owned(),
+        successor: DecisionId::new(key(50)),
+    };
+    let published = ["kind", "selectedOption", "outcome", "successor"];
+    assert_state_fields(&superseded, &published);
+}
+
+#[test]
+fn a_retired_state_holds_its_kind_selected_option_outcome_and_rationale() {
+    let retired = DecisionState::Retired {
+        selected_option: OptionId::new(key(23)),
+        outcome: "Chosen.".to_owned(),
+        rationale: "No longer needed.".to_owned(),
+    };
+    let published = ["kind", "selectedOption", "outcome", "rationale"];
+    assert_state_fields(&retired, &published);
+}
+
+#[test]
+fn a_subject_records_fields_are_its_role_then_its_node_and_both_are_required() {
+    let subject = ["subjects", "0"];
+    assert_eq!(fields(&full_files(), DECISION, &subject), ["role", "node"]);
+    for field in ["role", "node"] {
+        assert_required(&full_files(), DECISION, &subject, field);
+    }
+}
+
+#[test]
+fn a_decisions_supersession_is_recorded_in_its_state_and_not_as_an_edge() {
+    let superseded = DecisionState::Superseded {
+        selected_option: OptionId::new(key(23)),
+        outcome: "Chosen.".to_owned(),
+        successor: DecisionId::new(key(50)),
+    };
+    let document = in_state(superseded.clone());
+    let files = codec::write(&document);
+    let read = codec::read(&files).unwrap();
+    assert_eq!(read_state(&files), superseded);
+    assert_eq!(read.edges.len(), document.edges.len(), "no edge was added");
+    let successor = key(50).to_string();
+    for field in ["supersedes", "supersededBy"] {
+        let mut carrying = files.clone();
+        let edge = format!("{field}:\n  - {successor}\n");
+        carrying.insert(
+            path(DECISION),
+            (text(&files, DECISION) + &edge).into_bytes(),
+        );
+        assert_eq!(refused(&carrying), Problem::UnknownField(field.to_owned()));
+    }
+}

@@ -13,6 +13,7 @@ mod codec_derived;
 mod codec_fields;
 mod codec_fields_decisions;
 mod codec_fields_files;
+mod codec_layout;
 mod codec_read;
 mod codec_round_trip;
 mod codec_sites;

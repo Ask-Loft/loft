@@ -126,3 +126,27 @@ pub fn full_document() -> Document {
 pub fn full_files() -> loftspec::codec::Files {
     loftspec::codec::write(&full_document())
 }
+
+/// The full document with its nested Component filled as well: a boundary, a Product it is
+/// scoped to, a Component of its own (key 66), a Constraint (key 64) and a Quality Attribute
+/// (key 65).
+pub fn full_nested_document() -> Document {
+    let mut document = full_document();
+    let root = &mut document.components[0].component;
+    let mut constraint = root.constraints[0].clone();
+    constraint.id = Some(ConstraintId::new(key(64)));
+    constraint.details = Details::default();
+    let mut quality = root.quality_attributes[0].clone();
+    quality.id = Some(QualityAttributeId::new(key(65)));
+    quality.details = Details::default();
+    let nested = &mut root.components[0];
+    nested.boundary = Some(Boundary::External);
+    nested.components = vec![component(key(66), "Key reader")];
+    nested.constraints = vec![constraint];
+    nested.quality_attributes = vec![quality];
+    document.edges.push(Edge::ScopedTo {
+        component: ComponentId::new(key(61)),
+        product: ProductId::new(key(1)),
+    });
+    document
+}

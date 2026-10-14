@@ -3,12 +3,12 @@
 //! published list, written out here rather than taken from the record schema the writer
 //! follows.
 
-use crate::common::fields::{assert_required, fields, scalar};
+use crate::common::fields::{assert_required, fields, scalar, scalars};
 use crate::common::full::full_files;
-use crate::common::{key, small_document};
+use crate::common::{key, product, small_document};
 use loftspec::codec;
 use loftspec::document::{CategoryEntry, TagEntry};
-use loftspec::ids::{CategoryId, TagId};
+use loftspec::ids::{CategoryId, ProductId, TagId};
 use loftspec::names::{CategoryName, TagName};
 
 const MANIFEST: &str = "loftspec.yaml";
@@ -94,4 +94,56 @@ fn registry_entries_with_the_same_name_are_written_in_key_order() {
         ];
         assert_eq!(keys, [key(first).to_string(), key(second).to_string()]);
     }
+}
+
+#[test]
+fn the_labels_file_holds_the_counters_then_the_bindings() {
+    assert_eq!(fields(&full_files(), LABELS, &[]), ["counters", "bindings"]);
+}
+
+#[test]
+fn a_bindings_fields_are_written_in_the_published_order() {
+    // The Requirement's binding, the one that holds an alias and a withdrawn label.
+    let label = scalar(&full_files(), LABELS, &["bindings", "3", "label"]);
+    assert_eq!(label, "RQ-2");
+    let published = ["key", "label", "aliases", "withdrawn"];
+    assert_eq!(fields(&full_files(), LABELS, &["bindings", "3"]), published);
+}
+
+#[test]
+fn the_manifest_lists_the_product_keys_in_document_order() {
+    let mut document = small_document();
+    document
+        .products
+        .insert(0, product(key(50), "Second Product"));
+    let files = codec::write(&document);
+    let listed = scalars(&files, MANIFEST, &["products"]);
+    assert_eq!(listed, [key(50).to_string(), key(1).to_string()]);
+    let read: Vec<_> = codec::read(&files)
+        .unwrap()
+        .products
+        .iter()
+        .map(|product| product.id)
+        .collect();
+    assert_eq!(
+        read,
+        [Some(ProductId::new(key(50))), Some(ProductId::new(key(1)))]
+    );
+}
+
+#[test]
+fn the_manifest_names_a_publish_branch_only_when_the_document_has_one() {
+    assert_eq!(
+        scalar(&full_files(), MANIFEST, &["publishBranch"]),
+        "release"
+    );
+    let read = codec::read(&full_files()).unwrap();
+    assert_eq!(read.publish_branch.as_deref(), Some("release"));
+    let small = codec::write(&small_document());
+    let written = fields(&small, MANIFEST, &[]);
+    assert!(
+        !written.iter().any(|field| field == "publishBranch"),
+        "{written:?}"
+    );
+    assert_eq!(codec::read(&small).unwrap().publish_branch, None);
 }

@@ -105,6 +105,21 @@ fn a_nodes_key_is_unchanged_after_its_tags_change() {
 }
 
 #[test]
+fn a_nodes_key_is_unchanged_after_it_is_relabelled() {
+    let files = edited(
+        "labels.yaml",
+        "    label: RQ-2\n    aliases:\n      - RQ-1\n",
+        "    label: RQ-9\n    aliases:\n      - RQ-1\n      - RQ-2\n",
+    );
+    let document = read_formatted(&files);
+    let requirement = &document.products[0].feature_groups[0].features[0].requirements[0];
+    let id = requirement.id.unwrap();
+    assert_eq!(id.key(), key(4));
+    assert_eq!(document.bindings.label_of(id), Label::parse("RQ-9").ok());
+    assert_eq!(text(&formatted(&files), FEATURE), text(&files, FEATURE));
+}
+
+#[test]
 fn a_node_read_without_a_key_has_none_until_the_formatter_mints_one() {
     let files = edited(
         FEATURE,
