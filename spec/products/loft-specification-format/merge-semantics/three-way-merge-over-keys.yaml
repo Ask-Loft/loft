@@ -99,9 +99,11 @@ requirements:
       - key: 01a13070-b1ce-749d-b40a-8afead38048d
         name: "A decision subject is matched by its role and its node."
       - key: 01a13070-322f-7493-9495-407575aee03c
-        name: "When both sides change an assessment or a decision subject to different values, the record that holds its list gains a conflict record for the list."
+        name: "When both sides change an assessment to different values, the record that holds its list gains a conflict record for the list."
       - key: 01a13070-322f-7493-9495-407671410897
-        name: "The element keeps its base value."
+        name: "The assessment keeps its base value."
+      - key: 01a13a1b-2f3d-70d6-88b6-56e858b4b211
+        name: "A decision subject that each side replaces with a different subject is removed, and each side's replacement is kept."
   - key: 01a13070-322f-7493-9495-4077bb5be258
     statement:
       form: event_driven

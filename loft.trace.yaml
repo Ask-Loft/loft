@@ -2013,7 +2013,7 @@ links:
       - file: "crates/loftspec/tests/v1_parity.rs"
         name: "each_register_entry_is_decided_by_a_node_of_the_specification"
   - node: 01a12dad-fb7a-7333-9129-a6b4c5e6c279
-    reviewed: d51c9170b5e6eaf2e477028e5b7ac2bcdb2c7199f75db391a320d486d8717ddf
+    reviewed: 4300d7757efa9410a37d17be6e03e1cee49c01b7f7ce791c38f52c7bdecd7bd7
     tests:
       - file: "crates/loftspec/tests/v1_parity.rs"
         name: "each_register_entry_is_well_formed"
