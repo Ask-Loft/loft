@@ -21,6 +21,7 @@ featureGroups:
       - f40c165f-3936-4241-bced-eeccfd3b4bef
       - 929999f2-93e0-468b-9e85-5d438ec6b1b7
       - 01a13654-bf86-77e9-8fd5-8dc0ba996254
+      - 01a13743-3a3f-7716-90b9-0940f78ac4b8
   - key: 1586f1f8-1d67-4051-98c9-3f058c7e1002
     slug: invocation
     name: "Invocation"
@@ -32,6 +33,7 @@ featureGroups:
       - 46f95a3b-6872-4ccf-a0ee-ae5195d03b93
       - 01a12de5-62d0-763d-b71a-d8f88d7aa2c6
       - 01a12e66-85dc-70ec-b5ed-93d53cc4b7ea
+      - 01a137be-5962-73e4-9623-5116cf275d6d
   - key: 01a12e66-85dc-70ec-b5ed-93dfdc785d95
     slug: storage
     name: "Storage"

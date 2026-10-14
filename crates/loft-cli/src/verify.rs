@@ -5,32 +5,35 @@ use std::path::Path;
 use std::process::ExitCode;
 
 use loftspec::canonical::Digest;
-use loftspec::codec::ReadError;
-use loftspec::publish::{LOCK, ReadTree, Unverified, verify};
+use loftspec::publish::{LOCK, ReadTree, Root, Unverified, verify};
 use loftspec_store::{FileStore, StoreError};
-use serde_json::{Value, json};
+use serde_json::json;
 
 use crate::json;
+use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-verify/1";
 
-/// Why the tree did not verify.
+/// Why the tree did not verify: an error that stops it, or roots that differ.
 enum Failure {
-    Read(Vec<ReadError>),
-    /// The tree or the lock cannot be read, by the JSON error kind that names which.
-    Store(&'static str, String),
-    Unverified(Unverified),
+    Stopped(Stop),
+    Mismatch {
+        root: Root,
+        lock: Digest,
+        tree: Digest,
+    },
 }
 
 impl From<StoreError> for Failure {
     fn from(error: StoreError) -> Self {
+        // An unreadable lock is a `lock` error, any other store error a `store` error.
         let kind = if matches!(error, StoreError::Lock(..)) {
             "lock"
         } else {
             "store"
         };
-        Self::Store(kind, error.to_string())
+        Self::Stopped(Stop::one(kind, error.to_string()))
     }
 }
 
@@ -45,11 +48,17 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
             }
             ExitCode::SUCCESS
         }
-        Err(failure) => {
+        Err(Failure::Stopped(stop)) => stop.exit(SCHEMA, as_json),
+        Err(Failure::Mismatch { root, lock, tree }) => {
             if as_json {
-                json::print(&document(&failure));
+                let fields = json!({
+                    "root": format!("{}Root", root.name()),
+                    "lock": lock.to_string(),
+                    "tree": tree.to_string(),
+                });
+                json::print(&json::result(SCHEMA, "mismatch", fields, Vec::new()));
             }
-            report(&failure);
+            eprintln!("the {root} differs: {LOCK} has {lock}, the tree has {tree}");
             ExitCode::FAILURE
         }
     }
@@ -58,40 +67,13 @@ pub fn run(root: &Path, as_json: bool) -> ExitCode {
 fn attempt(root: &Path) -> Result<Digest, Failure> {
     let store = FileStore::open(root)?;
     let files = store.read_files()?;
-    let tree = ReadTree::read(&files).map_err(Failure::Read)?;
+    let tree = ReadTree::read(&files).map_err(|errors| Failure::Stopped(errors.into()))?;
     let lock = store.lock()?.ok_or_else(|| {
-        Failure::Store(
-            "lock",
-            format!("{LOCK}: there is no lock; `loft publish` writes one"),
-        )
+        let message = format!("{LOCK}: there is no lock; `loft publish` writes one");
+        Failure::Stopped(Stop::one("lock", message))
     })?;
-    verify(&tree, &lock).map_err(Failure::Unverified)
-}
-
-fn report(failure: &Failure) {
-    match failure {
-        Failure::Read(errors) => crate::report(errors),
-        Failure::Store(_, message) => eprintln!("{message}"),
-        Failure::Unverified(Unverified::Invalid(errors)) => crate::report(errors),
-        Failure::Unverified(Unverified::Mismatch { root, lock, tree }) => {
-            eprintln!("the {root} differs: {LOCK} has {lock}, the tree has {tree}");
-        }
-    }
-}
-
-fn document(failure: &Failure) -> Value {
-    let errors = match failure {
-        Failure::Read(errors) => json::read_errors(errors),
-        Failure::Store(kind, message) => vec![json::error(kind, message, &[])],
-        Failure::Unverified(Unverified::Invalid(errors)) => json::validation_errors(errors),
-        Failure::Unverified(Unverified::Mismatch { root, lock, tree }) => {
-            let fields = json!({
-                "root": format!("{}Root", root.name()),
-                "lock": lock.to_string(),
-                "tree": tree.to_string(),
-            });
-            return json::result(SCHEMA, "mismatch", fields, Vec::new());
-        }
-    };
-    json::failure(SCHEMA, errors)
+    verify(&tree, &lock).map_err(|unverified| match unverified {
+        Unverified::Invalid(errors) => Failure::Stopped(Stop::invalid(&errors)),
+        Unverified::Mismatch { root, lock, tree } => Failure::Mismatch { root, lock, tree },
+    })
 }

@@ -2,6 +2,8 @@ key: 929999f2-93e0-468b-9e85-5d438ec6b1b7
 slug: loft-merge-driver
 name: "`loft merge-driver`"
 body: "Runs the merge engine as the git merge driver for `spec/` files, and with `--install` registers that driver in the repository."
+tags:
+  - needs-repository
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -46,6 +48,19 @@ requirements:
         name: "A second `--install` with the same `<command>` changes nothing."
       - key: 01a1315a-f184-73de-a72a-d1506a3e42c9
         name: "An `--install` with another `<command>` replaces `merge.loft.driver`."
+  - key: 01a13751-027d-754b-af03-8654e11f5fe2
+    statement:
+      form: event_driven
+      when: "`loft merge-driver --install` writes `.gitattributes`"
+      system: "`loft merge-driver --install`"
+      shall: "say in its text output that `.gitattributes` is to be committed."
+    criteria:
+      - key: 01a13751-027d-754b-af03-86557633f581
+        name: "The last line of the text output says to commit `.gitattributes`."
+      - key: 01a13751-027d-754b-af03-86562bc4313a
+        name: "No such line is printed when `.gitattributes` already holds the attribute."
+      - key: 01a13751-027d-754b-af03-8657733d9104
+        name: "The JSON document is unchanged."
   - key: 01a1315a-f184-73de-a72a-d151c3e309aa
     statement:
       form: unwanted
@@ -79,17 +94,6 @@ requirements:
         name: "It exits 1 even when the text merge has no conflict."
       - key: 01a1315a-f185-7564-b075-5946fb27f135
         name: "The message names the file and `git checkout -m`."
-  - key: 3cc1c98e-eec3-471f-91cc-d10a3839ba41
-    statement:
-      form: unwanted
-      if: "the working directory is not inside a git repository"
-      system: "`loft merge-driver --install`"
-      shall: "refuse and exit 1."
-    criteria:
-      - key: 6c33928e-bdb8-40e6-ac7d-1ab78fc010ca
-        name: "The error states that a git repository is required."
-      - key: d02ba042-0e3b-425e-bdb0-d1d50f8b87a1
-        name: "Nothing is written."
   - key: 01a13070-322f-7493-9495-407d4cc6ccae
     statement:
       form: unwanted

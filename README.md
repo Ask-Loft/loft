@@ -16,15 +16,37 @@ reports: `SECURITY.md`. Changes: `CHANGELOG.md`.
 
 ## Status
 
-2.0.1; 2.0.0 was the first public release. The format and the command line are specified in this
+Released: the latest version and its changes are in `CHANGELOG.md`; 2.0.0 was the first public
+release. The format and the command line are specified in this
 repository's own `spec/` tree, in the format itself: `loft check` validates and lints it, and
 `loft render` writes a readable projection to `docs/spec.md`.
+
+## Working with a specification
+
+You write a specification by talking to a coding agent, not by editing YAML. The agent writes
+`spec/` with the `loft-spec` skill and the `loft` command line; you decide what goes in it.
+
+- **Your part.** Say what the product is for and where it ends, answer the agent's questions,
+  agree the outline it proposes, choose between the options it lays out, and read what it wrote:
+  the diff, or `docs/spec.md` from `loft render`. Then ask it to commit, and to publish. What the
+  agent writes in your name is yours to understand before you accept it.
+- **The agent's part.** It asks rather than guesses, proposes the outline before writing any
+  criterion, writes the nodes, and runs `loft fmt` and `loft check` after every step until both
+  pass.
+- **Why not by hand.** A change rarely stays in one place: a reworded rule, a split Requirement or
+  a new decision touches criteria, edges and citations elsewhere. The agent follows them, and
+  `loft check` catches what it misses; keys and references stay `loft`'s to keep, and each
+  criterion stays one checkable outcome. A hand edit is still held to the same checks, which
+  suits a typo, not a feature.
+- **The specification first, then the code.** A change goes into `spec/` as its own commit, then
+  into the code, which is checked against the criteria it now has to meet. A gap found while
+  coding goes back into the specification, not around it.
 
 ## Install
 
 ```sh
 npm install --save-dev @ask-loft/loft      # a prebuilt binary, in a project that uses npm
-cargo install loft-cli                     # from crates.io
+cargo install --locked loft-cli            # from crates.io, with the tested dependencies
 cargo install --path crates/loft-cli       # from a clone of this repository
 ```
 
@@ -37,24 +59,33 @@ hashing algorithm.
 ## Quick start
 
 ```sh
-git init my-spec && cd my-spec
+cd my-product                   # the product's git repository, or `git init` a new one
 loft init                       # spec/, and the loft-spec skill for coding agents
-# write Products and Features under spec/products/ without keys, or ask your agent to
-loft fmt                        # canonical layout; mints a key for every new node
-loft check                      # read, validate and lint
 loft merge-driver --install     # once per clone: git merges spec/ by key
-git add -A && git commit -m "spec: first draft"
+git add .gitattributes .claude .agents && git commit -m "Add the Loft specification tools"
+```
+
+Then ask your agent, for example: "Use the loft-spec skill to specify a booking system for small
+venues" (`/loft-spec` in Claude Code, `$loft-spec` in Codex). It interviews you, agrees an outline
+with you, writes `spec/`, runs `loft fmt` and `loft check` until both pass, and commits the draft.
+When the specification reads right, ask it to publish, or run:
+
+```sh
 loft publish                    # on main: labels for new nodes and loft.lock.json
 git add -A && git commit -m "spec: publish"
 loft verify                     # in CI: the tree matches the lock
 ```
 
+`loft init` runs before or after `git init`; its last line says what the merge driver still
+needs.
+
 | Command | What it does |
 |---|---|
 | `loft init [--no-skill]` | Creates an empty document in the current directory, and the agent skill beside it |
-| `loft fmt [--check]` | Rewrites `spec/` in canonical layout and mints missing keys, or reports drift |
+| `loft fmt [--check]` | Rewrites `spec/` in canonical layout, mints missing keys, turns references written by name into keys and drops the label bindings of deleted nodes, or reports drift |
 | `loft check [--fail-on <severity>]` | Reads, validates and lints `spec/` |
 | `loft render` | Writes the Markdown projection and the canonical JSON export |
+| `loft find <query>` | Prints the key, label, kind, file and name of each node or decision a label, slug, key or name identifies |
 | `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
@@ -63,9 +94,9 @@ loft verify                     # in CI: the tree matches the lock
 
 ## Agents
 
-The `loft-spec` skill teaches a coding agent to write, change and review a specification with
-`loft`: the edit loop, the format's files and fields, the writing rules, what each lint finding
-means, review, and publishing. The agent reads one short router, then only the references a task
+The `loft-spec` skill is how a coding agent writes, changes and reviews a specification with
+`loft`, as "Working with a specification" describes: the interview, the edit loop, the format's
+files and fields, the writing rules, what each lint finding means, review, and publishing. The agent reads one short router, then only the references a task
 needs.
 
 `loft init` writes the skill for Claude Code to `.claude/skills/loft-spec/` and for Codex to

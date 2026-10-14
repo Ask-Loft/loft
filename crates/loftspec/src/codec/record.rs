@@ -326,6 +326,10 @@ pub(super) fn check_shape(node: &yaml::Node, shape: Shape, mode: Mode) -> Result
 
 fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located> {
     match item {
+        Item::Scalar(Scalar::Ref(_)) | Item::NodeRef if written_by_name(node) => match mode {
+            Mode::Formatting => check(node, Kind::ByName, mode).map(Val::Record),
+            Mode::Strict => Err(located(node.position, Problem::ByName)),
+        },
         Item::Scalar(scalar) => check_scalar(node, scalar),
         Item::Record(kind) => check(node, kind, mode).map(Val::Record),
         Item::NodeRef => match &node.value {
@@ -333,6 +337,11 @@ fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located>
             _ => check_scalar(node, Scalar::Key),
         },
     }
+}
+
+/// Whether a reference is written as a record naming its target.
+fn written_by_name(node: &yaml::Node) -> bool {
+    matches!(&node.value, Value::Mapping(entries) if entries.iter().any(|entry| entry.key == field::NAME))
 }
 
 pub(super) fn check_scalar(node: &yaml::Node, scalar: Scalar) -> Result<Val, Located> {
@@ -343,7 +352,7 @@ pub(super) fn check_scalar(node: &yaml::Node, scalar: Scalar) -> Result<Val, Loc
     let single_line = value.style != Style::Literal;
     let valid = match scalar {
         Scalar::Text => true,
-        Scalar::Key => single_line && Key::parse(text).is_ok(),
+        Scalar::Key | Scalar::Ref(_) => single_line && Key::parse(text).is_ok(),
         Scalar::Label => single_line && Label::parse(text).is_ok(),
         Scalar::Slug => single_line && Slug::parse(text).is_ok(),
         Scalar::Tag => single_line && TagName::parse(text).is_ok(),
@@ -374,7 +383,7 @@ pub(super) fn check_scalar(node: &yaml::Node, scalar: Scalar) -> Result<Val, Loc
 
 const fn describe(scalar: Scalar) -> &'static str {
     match scalar {
-        Scalar::Key => "a lowercase hyphenated UUID",
+        Scalar::Key | Scalar::Ref(_) => "a lowercase hyphenated UUID",
         Scalar::Label => "a label",
         Scalar::Slug => "a slug",
         Scalar::Tag => "a tag name",

@@ -211,7 +211,7 @@ nodes; text in code spans and code blocks is not prose. `LQ-001`..`LQ-004` take 
 | `LQ-006` | warning | A Quality Attribute with no target; it never fires, since the target is required | — |
 | `LQ-007` | info, off | A statement stored as text that matches none of the five forms | Write it as slots |
 | `LQ-008` | info | Two names of one kind nearly alike (`minTokens`, `threshold`) | Name each for what distinguishes it |
-| `LQ-009` | hint | Prose that uses a tag's name where neither the node nor a node above it lists the tag | List the tag, or reword |
+| `LQ-009` | hint | Prose that uses a tag's name where neither the node nor a node above it lists the tag; a one-word tag matches its word, a hyphenated one only its hyphenated form | List the tag, or reword |
 
 ```yaml rule=LQ-001 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"

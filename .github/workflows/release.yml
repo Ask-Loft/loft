@@ -128,14 +128,9 @@ jobs:
         with:
           node-version: 24
       - run: npm install --global npm@11.6.2
-      # npm exchanges this run's identity for a token itself. `NPM_TOKEN`, an optional secret of
-      # the `release` environment, serves only the first publish of a package, before npm can
-      # name this workflow its trusted publisher.
-      - env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          [ -z "$NPM_TOKEN" ] || npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
-          scripts/publish-npm.sh release/npm
+      # npm exchanges this run's identity for a short-lived token itself. Publishes the platform
+      # packages, then `@ask-loft/loft`, skipping any version npm already holds.
+      - run: scripts/publish-npm.sh release/npm
       # The release notes are the version's entry in the changelog; the binaries are attached.
       - name: GitHub release
         env:
@@ -143,7 +138,7 @@ jobs:
         run: |
           version=${GITHUB_REF_NAME#v}
           awk -v head="## $version " 'index($0, head) == 1 {on = 1; next} /^## / {on = 0} on' \
-            CHANGELOG.md > notes.md
+            CHANGELOG.md | sed '/./,$!d' > notes.md
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
             gh release create "$GITHUB_REF_NAME" --verify-tag --title "Loft $version" \
               --notes-file notes.md

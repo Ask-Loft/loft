@@ -17,12 +17,14 @@ mod snapshot;
 
 mod check;
 mod citations;
+mod find;
 mod fmt;
 mod import;
 mod init;
 mod merge_contract;
 mod merge_driver;
 mod merge_driver_install;
+mod needs_repository;
 mod npm;
 mod plugins;
 mod publish;

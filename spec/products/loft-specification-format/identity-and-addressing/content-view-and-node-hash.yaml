@@ -61,6 +61,10 @@ requirements:
         name: "A node's Sections follow its other children in the list of child content hashes."
       - key: 8291580d-9615-4526-a9bb-f194e9b25c59
         name: "A Feature Group's Features precede its Constraints in its list of child content hashes."
+      - key: 01a13732-a47a-7583-b6e7-cb8650450b11
+        name: "A Product's Feature Groups precede its Constraints in its list of child content hashes."
+      - key: 01a13732-a47a-7583-b6e7-cb879fea6f92
+        name: "A Product without Constraints has the content hash it had before Products could hold Constraints."
       - key: 944ae63e-5bec-4d44-9fe4-310dc15f945f
         name: "A Feature's Requirements precede its Quality Attributes in its list of child content hashes."
       - key: 620096a4-8337-4b79-ae6c-d4bf7f089768

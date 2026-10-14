@@ -207,24 +207,47 @@ A release happens only with the maintainer's approval, and in this order:
 2. On `main`, run `loft publish` over the committed `spec/`, commit `spec/labels.yaml` and
    `loft.lock.json` together as the publish commit, and check that `loft verify` passes. A second
    `loft publish` with nothing changed writes nothing; CI checks both on `main` only, since
-   `develop` carries unpublished candidates.
-3. Run `scripts/release-check.sh vX.Y.Z`, tag `vX.Y.Z` on `main`, and push `main` and the tag.
+   `develop` carries unpublished candidates. Push `main`.
+3. On `main`, run `scripts/release-check.sh vX.Y.Z`; it checks `HEAD` while the tag does not
+   exist. Then tag `vX.Y.Z` on `main` and push the tag.
 4. The tag starts `.github/workflows/release.yml`. It runs the release check and the gate,
    builds `loft` for each supported platform, assembles the npm packages and checks them with a
-   dry run, then waits for the maintainer to approve the `release` environment. Once approved,
-   `scripts/publish-crates.sh` publishes the crates to crates.io in dependency order,
-   `scripts/publish-npm.sh` publishes the platform packages and then `@ask-loft/loft`, each
-   skipping any version its registry already holds, and the tag gets a GitHub release with the
-   binaries, whose notes are the version's changelog entry. Both registries trust the workflow
-   through Trusted Publishing; no registry token is stored in the repository.
+   dry run, then waits for the maintainer to approve: on the run's page, "Review deployments",
+   tick `release`, "Approve and deploy". Once approved, `scripts/publish-crates.sh` publishes the
+   crates to crates.io in dependency order, `scripts/publish-npm.sh` publishes the platform
+   packages and then `@ask-loft/loft`, and the tag gets a GitHub release with the binaries,
+   whose notes are the version's changelog entry. Both registries trust the workflow through
+   Trusted Publishing; no registry token is stored anywhere.
 5. Merge `main` back into `develop`, so the allocated labels and the release reach it.
 
-A new npm package, such as one for a new platform, cannot name its trusted publisher until it
-exists: give the `release` environment a short-lived npm token as the secret `NPM_TOKEN` for the
-release that first publishes it, then register the workflow on npmjs.com and delete the secret.
+If a step of the publish job fails, fix its cause and choose "Re-run failed jobs" on the run.
+Each step skips what its registry or GitHub already holds, so the run publishes only the rest.
 
 `software-plant` is never published (`publish = false`). CI on `main` runs
 `cargo publish --workspace --dry-run`, so a crate that would not package fails before a release.
+
+### Release setup
+
+Set up once, and kept as it is:
+
+- The GitHub environment `release` requires the maintainer's approval, and only tags matching
+  `v*` may deploy to it.
+- On crates.io, each published crate names the trusted publisher `Ask-Loft/loft`, workflow
+  `release.yml`, environment `release`.
+- On npmjs.com, each of `@ask-loft/loft` and its platform packages names the same trusted
+  publisher, with "Allow npm publish" ticked and "Allow npm dist-tag" left off.
+
+A registry names a trusted publisher only for a package that already exists, and npm requires
+2FA for a publish with a token. So a new crate or npm package, such as one for a new platform, is
+published by hand the first time, from what the release run built:
+
+- A crate: `cargo publish -p <crate>` from a checkout of the tag, logged in with `cargo login`.
+- An npm package: `gh run download <run> -n release`, then
+  `scripts/publish-npm.sh release/npm` logged in with `npm login`; npm asks for 2FA for each
+  package it publishes and skips those it holds.
+
+Then register its trusted publisher as above, and choose "Re-run failed jobs" on the run, which
+completes the release.
 
 ## Public hygiene
 

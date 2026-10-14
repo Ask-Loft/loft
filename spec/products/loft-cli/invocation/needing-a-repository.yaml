@@ -1,0 +1,28 @@
+key: 01a137be-5962-73e4-9623-5116cf275d6d
+slug: needing-a-repository
+name: "Needing a repository"
+body: "What a command that works only inside a git repository does outside one: it refuses and writes nothing. A command opts in by listing the tag `needs-repository` on its Feature, and each tagged command is tested against these rules. `loft merge-driver` needs one to install the driver; the driver itself reads only the files git hands it."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 57b80a5e-d695-4a26-8f81-71146008335c
+    statement:
+      form: unwanted
+      if: "the working directory is not inside a git repository"
+      system: "a command tagged `needs-repository`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 07beb53e-4bb7-4114-b073-044ddcfa4aa0
+        name: "The error states that a git repository is required."
+      - key: ce2e849d-bbda-4ec3-9472-b4140e94c65c
+        name: "Nothing is written."
+  - key: 01a137be-5962-73e4-9623-5117320bf7b1
+    statement:
+      form: ubiquitous
+      system: "The Feature of each `loft` command that works only inside a git repository"
+      shall: "list the tag `needs-repository`."
+    criteria:
+      - key: 01a137be-5962-73e4-9623-51187e8af4aa
+        name: "A command that refuses outside a git repository has a Feature that lists `needs-repository`."
+      - key: 01a137be-5962-73e4-9623-5119c4f6314a
+        name: "A command whose Feature lists `needs-repository` refuses outside a git repository."

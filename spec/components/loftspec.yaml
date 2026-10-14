@@ -1,7 +1,7 @@
 key: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
 slug: loftspec
 name: "loftspec"
-body: "The Rust library crate implementing the Format: document model, identity, canonical bytes, hashing, conversion, validation, lint, rendering, publication and merging. It performs no input or output."
+body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the validator, the linter, the renderer, the publisher and the merge engine. It performs no input or output."
 scopedTo:
   - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 components:

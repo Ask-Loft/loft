@@ -19,7 +19,7 @@ pub enum Fixture {
 }
 
 /// Each command by the slug of its Feature, with the arguments that run it and its fixture.
-pub const COMMANDS: [(&str, &[&str], Fixture); 9] = [
+pub const COMMANDS: [(&str, &[&str], Fixture); 10] = [
     ("loft-check", &["check"], Fixture::Unkeyed),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed),
     (
@@ -34,6 +34,7 @@ pub const COMMANDS: [(&str, &[&str], Fixture); 9] = [
     ),
     ("loft-publish", &["publish"], Fixture::Clean),
     ("loft-verify", &["verify"], Fixture::Clean),
+    ("loft-find", &["find", "shelf"], Fixture::Clean),
     // Init refuses any existing `spec/` before reading it.
     ("loft-init", &["init"], Fixture::Empty),
     // The skill is written whether or not there is a tree.

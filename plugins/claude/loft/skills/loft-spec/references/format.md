@@ -30,7 +30,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | Path | Holds | Written by |
 |---|---|---|
 | `spec/loftspec.yaml` | The manifest: format, algorithm, document key, Products in order | `loft init`, `loft fmt` |
-| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft publish` only |
+| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft publish`; `loft fmt` drops a deleted node's binding |
 | `spec/tags.yaml` | The tag registry | you |
 | `spec/categories.yaml` | The category registry for Constraint bindings | you |
 | `spec/lint.yaml` | The lint configuration, optional | you |
@@ -59,8 +59,8 @@ formatted tree, and `loft fmt` writes them.
 | `tags` | optional | `tags` | optional |
 | `mentions` | optional | `mentions` | optional |
 | `featureGroups` | optional | `features` | written by `loft fmt` |
-| `sections` | optional | `constraints` | optional |
-| | | `sections` | optional |
+| `constraints` | optional | `constraints` | optional |
+| `sections` | optional | `sections` | optional |
 
 A Feature Group's slug is the name of its Features' directory; `features` lists their keys in
 order, and `loft fmt` adds each new Feature file to it.
@@ -81,6 +81,8 @@ featureGroups:
           requiredValue: "500"
         conservationKind: cap
         verificationFate: proved
+constraints:
+  - name: "The Reading List shall keep every book in the reader's own storage."
 ```
 
 ## Features and Requirements
@@ -185,7 +187,8 @@ A root Component without `boundary` is `private`; a nested one takes its parent'
 | `verificationFate` | optional: `proved`, `monitored` or `sampled` |
 | `mentions`, `sections` | optional |
 
-A Constraint sits under a Component or a Feature Group; the Shelf group above holds one.
+A Constraint sits under a Component, a Feature Group or a Product, and binds what it sits under:
+the Reading List above holds one for the whole product, and its Shelf group one for the shelf.
 
 ```yaml path=spec/components/shelf-store.yaml
 key: 00000000-0000-7000-8000-000000000001
@@ -243,11 +246,11 @@ digits and hyphens; a category name is such segments joined by dots.
 | `proposed` | nothing |
 | `accepted` | `selectedOption`, `outcome` |
 | `rejected` | `rationale` |
-| `superseded` | `selectedOption`, `outcome`, `successor` (a decision's key) |
+| `superseded` | `selectedOption`, `outcome`, `successor` (a decision) |
 | `retired` | `selectedOption`, `outcome`, `rationale` |
 
 - A driver is `key`, `kind: local`, `label` and `statement`, or `key`, `kind: subject` and
-  `subject` (a node's key).
+  `subject` (a node).
 - An option is `key`, `title` and `description`.
 - An assessment is `option`, `driver`, `rating` (`supports`, `neutral`, `conflicts` or
   `unknown`) and `rationale`.
@@ -260,27 +263,29 @@ title: "Keep the shelf on the device"
 context: "Readers add books on the move, often without a connection."
 state:
   kind: accepted
-  selectedOption: 00000000-0000-7000-8000-000000000011
+  selectedOption:
+    name: "On the device"
   outcome: "The shelf is kept in the device's own storage."
 drivers:
-  - key: 00000000-0000-7000-8000-000000000021
-    kind: local
+  - kind: local
     label: "Offline"
     statement: "A book can be added without a connection."
 options:
-  - key: 00000000-0000-7000-8000-000000000011
-    title: "On the device"
+  - title: "On the device"
     description: "The shelf lives in the device's storage."
-  - key: 00000000-0000-7000-8000-000000000012
-    title: "On a server"
+  - title: "On a server"
     description: "The shelf lives on a server and is fetched when shown."
 assessments:
-  - option: 00000000-0000-7000-8000-000000000011
-    driver: 00000000-0000-7000-8000-000000000021
+  - option:
+      name: "On the device"
+    driver:
+      name: "Offline"
     rating: supports
     rationale: "the device holds the shelf without a connection"
-  - option: 00000000-0000-7000-8000-000000000012
-    driver: 00000000-0000-7000-8000-000000000021
+  - option:
+      name: "On a server"
+    driver:
+      name: "Offline"
     rating: conflicts
     rationale: "adding a book needs the server"
 consequences:
@@ -288,10 +293,15 @@ consequences:
     statement: "A shelf is not shared between a reader's devices."
 subjects:
   - role: affected
-    node: 00000000-0000-7000-8000-000000000001
+    node:
+      name: "Shelf store"
   - role: outcome
-    node: 00000000-0000-7000-8000-000000000002
+    node:
+      name: "When the reader adds a book by its title, the shelf shall hold the book."
 ```
+
+The decision above is written in one pass: its options, drivers and subjects are named, and
+`loft fmt` writes their keys, as the next section says.
 
 ## Edges
 
@@ -302,7 +312,23 @@ subjects:
 | `subjects` | a decision | the nodes it affects or that state its outcome |
 | `mentions` | any node | any node its prose refers to |
 
-Every edge names its target by key.
+Every edge carries its target's key, as does every reference of a decision. While you write, a
+reference may instead name its target, as a record of one field, `name`; `loft fmt` replaces it
+with the key of the one element of the kind the field takes that has that name:
+
+| Reference | Looks for |
+|---|---|
+| `realizes` | a Component, by its name |
+| `scopedTo` | a Product, by its name |
+| `mentions` | a node or a decision, by its name or title |
+| a subject's `node`, a driver's or a consequence's `subject` | a node, by its name |
+| `successor` | a decision, by its title |
+| `selectedOption`, an assessment's `option` | an option of the same decision, by its title |
+| an assessment's `driver` | a driver of the same decision, by its label or its subject's name |
+
+A Requirement's name is its statement as one sentence. A name that matches nothing, or more than
+one element, is an error at the reference, and nothing is formatted. To read a key, run
+`loft find`.
 
 ## Lint configuration
 

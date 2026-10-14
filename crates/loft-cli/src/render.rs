@@ -8,28 +8,15 @@ use std::process::ExitCode;
 
 use loftspec::codec;
 use loftspec::render::render;
-use loftspec_store::{FileStore, fs};
-use serde_json::{Value, json};
+use loftspec_store::fs;
+use serde_json::json;
 
 use crate::json;
+use crate::stop::{self, Stop};
 
 const SCHEMA: &str = "loft-render/1";
 const DEFAULT_MARKDOWN: &str = "docs/spec.md";
 const DEFAULT_JSON: &str = "docs/spec.json";
-
-/// A failure that writes nothing: its errors as JSON and as text lines.
-struct Refusal {
-    errors: Vec<(Value, String)>,
-}
-
-impl Refusal {
-    fn one(kind: &'static str, message: String) -> Self {
-        let error = json::error(kind, &message, &[]);
-        Self {
-            errors: vec![(error, message)],
-        }
-    }
-}
 
 pub fn run(
     root: &Path,
@@ -55,16 +42,7 @@ pub fn run(
             }
             ExitCode::SUCCESS
         }
-        Err(refusal) => {
-            if as_json {
-                let errors: Vec<Value> = refusal.errors.iter().map(|(e, _)| e.clone()).collect();
-                json::print(&json::failure(SCHEMA, errors));
-            }
-            for (_, line) in &refusal.errors {
-                eprintln!("{line}");
-            }
-            ExitCode::FAILURE
-        }
+        Err(stop) => stop.exit(SCHEMA, as_json),
     }
 }
 
@@ -75,7 +53,7 @@ fn write(
     root: &Path,
     markdown: Option<PathBuf>,
     json_path: Option<PathBuf>,
-) -> Result<Outcome, Refusal> {
+) -> Result<Outcome, Stop> {
     let (markdown, json_path) = match (markdown, json_path) {
         (None, None) => (Some(DEFAULT_MARKDOWN.into()), Some(DEFAULT_JSON.into())),
         given => given,
@@ -86,33 +64,22 @@ fn write(
             "{}: a projection is never written under `spec/`",
             inside.display()
         );
-        return Err(Refusal::one("refused", message));
+        return Err(Stop::one("refused", message));
     }
-    let files = FileStore::open(root)
-        .and_then(|store| store.read_files())
-        .map_err(|error| Refusal::one("store", error.to_string()))?;
-    let document = codec::read(&files).map_err(|errors| Refusal {
-        errors: errors
-            .iter()
-            .map(|error| (json::read_error("read", error), error.to_string()))
-            .collect(),
-    })?;
-    let projections = render(&document).map_err(|errors| Refusal {
-        errors: errors
-            .integrity
-            .iter()
-            .map(ToString::to_string)
-            .chain(errors.cycles.iter().map(ToString::to_string))
-            .map(|message| (json::error("integrity", &message, &[]), message))
-            .collect(),
+    let files = stop::read_files(root)?;
+    let document = codec::read(&files)?;
+    let projections = render(&document).map_err(|errors| {
+        let integrity = errors.integrity.iter().map(ToString::to_string);
+        let cycles = errors.cycles.iter().map(ToString::to_string);
+        Stop::all("integrity", integrity.chain(cycles).collect())
     })?;
     let outputs: Vec<(PathBuf, Vec<u8>)> = markdown
         .map(|path| (path, projections.markdown.into_bytes()))
         .into_iter()
         .chain(json_path.map(|path| (path, projections.json)))
         .collect();
-    let written = fs::write_outputs(root, &outputs)
-        .map_err(|error| Refusal::one("store", error.to_string()))?;
+    let written =
+        fs::write_outputs(root, &outputs).map_err(|error| Stop::one("store", error.to_string()))?;
     let unchanged = outputs
         .into_iter()
         .map(|(path, _)| path)

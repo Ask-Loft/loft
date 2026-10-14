@@ -132,7 +132,7 @@ impl Renderer<'_> {
     }
 
     fn heading(&mut self, node: Node<'_>, level: usize) {
-        let name = node_name(node);
+        let name = node.name();
         let label = node
             .id()
             .map_or_else(String::new, |id| self.labels.name(id));
@@ -181,7 +181,7 @@ impl Renderer<'_> {
             self.out,
             "**{label} · {} · {}**\n\n",
             kind_label(node),
-            escape_inline(&node_name(node))
+            escape_inline(&node.name())
         );
         match node {
             Node::Constraint(constraint) => {
@@ -250,28 +250,13 @@ impl Renderer<'_> {
             .nodes
             .get(&id)
             .copied()
-            .map(node_name)
+            .map(|node| node.name().into_owned())
             .unwrap_or_default();
         format!(
             "{} · {}",
             self.labels.name(ElementId::Node(id)),
             escape_inline(&name)
         )
-    }
-}
-
-/// A node's name; a Requirement's is its statement as rendered.
-pub(super) fn node_name(node: Node<'_>) -> String {
-    match node {
-        Node::Product(node) => node.name.clone(),
-        Node::FeatureGroup(node) => node.name.clone(),
-        Node::Feature(node) => node.name.clone(),
-        Node::Requirement(node) => node.statement.render(),
-        Node::Criterion(node) => node.name.clone(),
-        Node::Component(node) => node.name.clone(),
-        Node::Constraint(node) => node.name.clone(),
-        Node::QualityAttribute(node) => node.name.clone(),
-        Node::Section(node) => node.name.clone(),
     }
 }
 

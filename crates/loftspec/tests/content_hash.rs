@@ -257,6 +257,28 @@ fn a_feature_groups_features_precede_its_constraints() {
 }
 
 #[test]
+fn a_products_feature_groups_precede_its_constraints() {
+    let group = FeatureGroup {
+        id: Some(FeatureGroupId::new(key(2))),
+        slug: common::slug("group"),
+        name: "Identity".to_owned(),
+        details: Details::default(),
+        features: Vec::new(),
+        constraints: Vec::new(),
+    };
+    let mut product = common::product(key(1), "Example");
+    product.feature_groups = vec![group.clone()];
+    product.constraints = vec![constraint(3)];
+    assert_eq!(
+        children(&product),
+        vec![
+            group.content_hash().to_string(),
+            constraint(3).content_hash().to_string(),
+        ]
+    );
+}
+
+#[test]
 fn a_features_requirements_precede_its_quality_attributes() {
     let child = requirement(key(2), "The writer shall write a key.", vec![]);
     let mut parent = feature(key(1), "Keys", vec![child.clone()]);

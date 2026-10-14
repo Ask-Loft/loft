@@ -22,6 +22,8 @@ mod convert_v1_reading_list;
 mod convert_v1_sidecar;
 mod digest;
 mod fmt;
+mod fmt_deleted;
+mod fmt_names;
 mod golden;
 mod hash_live;
 mod identity;

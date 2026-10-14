@@ -9,7 +9,6 @@ use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
 use loftspec::lint::Finding;
 use loftspec::yaml::Location;
-use loftspec_store::StoreError;
 use serde_json::{Map, Value, json};
 
 /// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
@@ -104,11 +103,6 @@ pub fn failure(schema: &str, errors: Vec<Value>) -> Value {
     result(schema, "error", json!({}), errors)
 }
 
-/// An error of the store that holds the tree, with no site.
-pub fn store_error(error: &StoreError) -> Value {
-    self::error("store", &error.to_string(), &[])
-}
-
 /// Prints one JSON document on standard output.
 pub fn print(document: &Value) {
     println!(
@@ -120,9 +114,6 @@ pub fn print(document: &Value) {
 /// Stops a command on an error: prints the failure document when JSON was asked for, and the
 /// message on standard error, and exits 1.
 pub fn stop(schema: &str, errors: Vec<Value>, message: &impl Display, as_json: bool) -> ExitCode {
-    if as_json {
-        print(&failure(schema, errors));
-    }
-    eprintln!("{message}");
-    ExitCode::FAILURE
+    let lines = vec![message.to_string()];
+    crate::stop::Stop { errors, lines }.exit(schema, as_json)
 }

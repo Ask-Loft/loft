@@ -2,6 +2,7 @@
 //! failed check, 2 on a usage error (RQ-154).
 
 mod check;
+mod find;
 mod fmt;
 mod import;
 mod init;
@@ -10,6 +11,7 @@ mod merge_driver;
 mod publish;
 mod render;
 mod skill;
+mod stop;
 mod verify;
 mod version;
 
@@ -74,6 +76,14 @@ enum Command {
     },
     /// Allocate labels and write the lock that pins the tree, on the publish branch (RQ-145).
     Publish {
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Find the nodes and decisions a label, slug or key equals, or whose name contains the
+    /// query, with the key a reference to each carries and where it is written.
+    Find {
+        /// A label such as `RQ-12`, a slug, a key, or part of a name.
+        query: String,
         #[command(flatten)]
         output: Output,
     },
@@ -212,6 +222,7 @@ fn main() -> ExitCode {
                 },
         } => import::run(root, &export, counters.as_deref(), output.json()),
         Command::Publish { output } => publish::run(root, output.json()),
+        Command::Find { query, output } => find::run(root, &query, output.json()),
         Command::Verify { output } => verify::run(root, output.json()),
         Command::MergeDriver {
             install: true,
@@ -246,13 +257,5 @@ fn main() -> ExitCode {
         Command::Skill {
             action: SkillAction::Install { output },
         } => skill::run(root, output.json()),
-    }
-}
-
-/// Prints each error on its own line; a read or validation error as
-/// `<path>:<line>:<column>: <message>` (RQ-158).
-fn report(errors: &[impl std::fmt::Display]) {
-    for error in errors {
-        eprintln!("{error}");
     }
 }

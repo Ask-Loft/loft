@@ -12,12 +12,15 @@ use loftspec::identity::Label;
 use loftspec::merge::{Input, MergeError, merge_file};
 use loftspec_store::StoreError;
 use loftspec_store::fs::{SPEC, write_outputs};
-use loftspec_store::merge_driver;
+use loftspec_store::merge_driver::{self, ATTRIBUTES};
 use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
 use crate::json;
 use crate::version::VERSION;
+
+/// The command that starts `loft` where a project has it as an npm dev dependency.
+pub const NPM_COMMAND: &str = "npx --no-install loft";
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-merge-driver/1";
@@ -104,8 +107,11 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
                 let fields = json!({ "written": installed.written, "version": installed.version });
                 json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
             } else {
-                for name in installed.written {
+                for name in &installed.written {
                     println!("{name}");
+                }
+                if installed.written.iter().any(|name| name == ATTRIBUTES) {
+                    println!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
                 }
             }
             ExitCode::SUCCESS
@@ -128,7 +134,7 @@ fn refusal(error: &StoreError, launcher: &str) -> String {
         StoreError::Launcher(_) => format!(
             "git could not run `{launcher} --version` from the top of the working tree, where it \
              runs the driver; give the command that starts loft there with --command, such as \
-             --command \"npx --no-install loft\""
+             --command \"{NPM_COMMAND}\""
         ),
         StoreError::NotARepository(_) => "a git repository is required, and the working \
                                           directory is not inside one"

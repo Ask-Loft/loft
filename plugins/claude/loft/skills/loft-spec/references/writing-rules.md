@@ -115,8 +115,11 @@ at the 95th percentile, adding one book to a shelf of 500" is.
 
 ## Write Constraints
 
-A Constraint is a rule a Component or a Feature Group must keep whatever the Feature: a limit, a
-technology choice, a boundary. Name it as one "shall" sentence. Bind it to a category with a
+A Constraint is a rule a Component, a Feature Group or a Product must keep whatever the Feature: a
+limit, a technology choice, a boundary. It binds what it stands under: a rule for one Component
+goes on the Component, one for a group of Features on the Feature Group, and one for the whole
+product, such as the language all its code is written in, once on the Product. Never copy one
+rule onto several nodes. Name it as one "shall" sentence. Bind it to a category with a
 required value when the value matters on its own, such as a storage limit.
 
 ## Record decisions
@@ -128,14 +131,24 @@ outcome, and the consequences.
 Create a decision in the state that is true. A choice still open is `proposed`, and needs no
 options or assessments yet. A choice already made is `accepted`, and then holds at least two
 options, a driver, an assessment for each option and driver, a selected option, an outcome, a
-consequence, and an `outcome` subject naming the node that carries the decision out. A decision
-is never edited into a different choice: a new decision supersedes it.
+consequence, and an `outcome` subject naming the node that carries the decision out. Write an
+accepted decision in one pass: name its options, drivers and subjects, as `the-loop.md` shows,
+and `loft fmt` writes their keys.
+
+A decision with no label in `spec/labels.yaml` has not been published: correct it in place. Once
+it has a label, it is never edited into a different choice: a new decision supersedes it, and you
+ask the user before writing one.
 
 ## State a shared rule once, with a tag
 
 When the same rule binds several Features, state it once, as a Requirement whose system is "a
 command tagged `reads-tree`" or the like, define the tag in `spec/tags.yaml`, and list the tag on
 each Feature it binds. Never copy the rule into each Feature.
+
+Name a tag as the text writes its term. A one-word tag, such as `offline`, matches that word
+wherever prose uses it; a tag of several words joined by hyphens, such as `shared-rule`, matches
+only text that joins them by hyphens too, so ordinary prose with the same words is not a use of
+the tag (`LQ-009`).
 
 ## Cite a label with a `mentions` edge
 
