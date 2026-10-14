@@ -2,14 +2,13 @@
 //! label withdrawn from a key to that key's live label, in the text of every element whose
 //! `mentions` include the key, and only there.
 
-use crate::common::text::{FEATURE, files, path, text};
+use crate::common::text::{DECISION, FEATURE, files, path, text};
 use crate::common::{key, label};
 use loftspec::codec::{self, Files};
 use loftspec::hash::hash_document;
 use loftspec::publish::rewrite::rewrite;
 use loftspec::publish::{Publication, PublishedAt, ReadTree, Relabel, RepoState, publish};
 
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
 const CRITERION_NAME: &str = "name: \"Every node record carries a `key` field.\"";
 const MENTIONS_4: &str = "        mentions:\n          - 00000000-0000-7000-8000-000000000004\n";
 
@@ -150,6 +149,39 @@ fn a_decision_s_option_text_is_rewritten_by_the_decision_s_mentions() {
 }
 
 #[test]
+fn a_decision_s_driver_and_consequence_text_is_rewritten_by_the_decision_s_mentions() {
+    let driver = (
+        DECISION,
+        "statement: \"Converted and new keys share one syntax.\"",
+        "statement: \"Converted and new keys share one syntax, as RQ-9 asks.\"",
+    );
+    let consequence = (
+        DECISION,
+        "statement: \"A key reveals when it was minted.\"",
+        "statement: \"A key reveals when it was minted, despite RQ-9.\"",
+    );
+    let mentions = (
+        DECISION,
+        "    node: 00000000-0000-7000-8000-000000000004\n",
+        "    node: 00000000-0000-7000-8000-000000000004\nmentions:\n  - 00000000-0000-7000-8000-000000000004\n",
+    );
+    let (_, rewrites) = rewritten_tree(&[WITHDRAWN, driver, consequence, mentions]);
+    let citation = Relabel {
+        element: key(20),
+        withdrawn: label("RQ-9"),
+        label: label("RQ-2"),
+    };
+    assert_eq!(rewrites.rewritten, [citation.clone(), citation]);
+    let decision = String::from_utf8(rewrites.files[&path(DECISION)].clone()).unwrap();
+    assert!(
+        decision.contains("one syntax, as RQ-2 asks.\""),
+        "{decision}"
+    );
+    assert!(decision.contains("minted, despite RQ-2.\""), "{decision}");
+    assert!(!decision.contains("RQ-9"), "{decision}");
+}
+
+#[test]
 fn a_tree_without_a_withdrawn_label_is_not_rewritten() {
     let (from, to) = (CRITERION_NAME, citing("RQ-9").2);
     let (_, rewrites) = rewritten_tree(&[(FEATURE, from, &to)]);
@@ -187,5 +219,79 @@ fn a_publish_writes_the_rewritten_files_and_pins_the_tree_it_writes() {
         written
             .keys()
             .all(|written| *written == path(FEATURE) || *written == path("labels.yaml"))
+    );
+}
+
+/// The Feature's files with a Section appended that mentions `mentions` and cites `RQ-9`.
+fn with_section(mut files: Files, mentions: &str) -> Files {
+    let section = format!(
+        "sections:\n  - key: 00000000-0000-7000-8000-0000000000e1\n    name: \"Detail\"\n    \
+         body: \"Keys follow RQ-9.\"\n    mentions:\n      - {mentions}\n"
+    );
+    let feature = text(&files, FEATURE) + &section;
+    files.insert(path(FEATURE), feature.into_bytes());
+    files
+}
+
+#[test]
+fn a_section_with_its_own_mentions_is_rewritten_by_them_under_a_feature_without_them() {
+    let files = with_section(tree(&[WITHDRAWN]), "00000000-0000-7000-8000-000000000004");
+    let document = codec::read(&files).unwrap();
+    let rewrites = rewrite(&files, &document.bindings);
+    assert_eq!(
+        rewrites.rewritten,
+        [Relabel {
+            element: key(0xe1),
+            withdrawn: label("RQ-9"),
+            label: label("RQ-2"),
+        }]
+    );
+    let feature = String::from_utf8(rewrites.files[&path(FEATURE)].clone()).unwrap();
+    assert!(feature.contains("body: \"Keys follow RQ-2.\""), "{feature}");
+}
+
+#[test]
+fn a_section_or_criterion_whose_own_mentions_leave_out_the_key_is_left_under_a_feature_that_mentions_it()
+ {
+    let realizes = "realizes:\n  - 00000000-0000-7000-8000-000000000006\n";
+    let feature_mentions =
+        format!("{realizes}mentions:\n  - 00000000-0000-7000-8000-000000000004\n");
+    let (from, to) = (CRITERION_NAME, citing("RQ-9").2);
+    let edits = [
+        WITHDRAWN,
+        (FEATURE, realizes, feature_mentions.as_str()),
+        (
+            FEATURE,
+            "body: \"Keys address nodes.\"",
+            "body: \"Keys follow RQ-9.\"",
+        ),
+        (
+            FEATURE,
+            MENTIONS_4,
+            "        mentions:\n          - 00000000-0000-7000-8000-000000000006\n",
+        ),
+        (FEATURE, from, &to),
+    ];
+    let files = with_section(tree(&edits), "00000000-0000-7000-8000-000000000006");
+    let document = codec::read(&files).unwrap();
+    let rewrites = rewrite(&files, &document.bindings);
+    // Only the Feature's own body, which its `mentions` govern, is rewritten.
+    assert_eq!(
+        rewrites.rewritten,
+        [Relabel {
+            element: key(3),
+            withdrawn: label("RQ-9"),
+            label: label("RQ-2"),
+        }]
+    );
+    let feature = String::from_utf8(rewrites.files[&path(FEATURE)].clone()).unwrap();
+    assert!(
+        feature.contains("\nbody: \"Keys follow RQ-2.\""),
+        "{feature}"
+    );
+    assert!(feature.contains("as RQ-9 says."), "{feature}");
+    assert!(
+        feature.contains("    body: \"Keys follow RQ-9.\""),
+        "{feature}"
     );
 }

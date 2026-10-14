@@ -6,6 +6,7 @@ use loftspec::manifest::ALGORITHM;
 use serde_json::json;
 
 use crate::json;
+use crate::out::outln;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-version/1";
@@ -22,8 +23,8 @@ pub fn run(as_json: bool) {
             "algorithm": ALGORITHM,
         }));
     } else {
-        println!("loft {VERSION}");
-        println!("format {FORMAT}");
-        println!("algorithm {ALGORITHM}");
+        outln!("loft {VERSION}");
+        outln!("format {FORMAT}");
+        outln!("algorithm {ALGORITHM}");
     }
 }

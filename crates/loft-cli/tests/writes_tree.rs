@@ -8,16 +8,13 @@ use std::fs;
 use std::path::Path;
 use std::process::Output;
 
-use crate::commands::{COMMANDS, Fixture};
-use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::commands::{COMMANDS, Fixture, PRODUCT, command, fixture};
+use crate::common::{Scratch, stderr, stdout};
 use crate::conformance::{tagged, tagged_commands};
 use crate::snapshot::snapshot;
 use loftspec::codec::SpecPath;
 use loftspec::publish::{LOCK, Lock};
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
-use software_plant::{Clock, GitScenario};
-
-const PRODUCT: &str = "products/reading-list/product.yaml";
 
 const TAG: &str = "writes-tree";
 
@@ -28,15 +25,9 @@ const BESIDE: [&str; 2] = ["v1-sidecar.json", "loft.lock.json"];
 const PLANTED_BODY: &str = "A planted body.";
 const PLANTED_FILE: &str = "planted.yaml";
 
-/// Runs `loft` over `fixture`: in a clean repository on `main` for the clean fixture, with no
-/// `git` otherwise.
+/// Runs `loft` over `fixture`, as [`command`] runs it.
 fn run(scratch: &Scratch, fixture: Fixture, args: &[&str]) -> Output {
-    if fixture == Fixture::Clean {
-        let git = GitScenario::clean_on("main");
-        scratch.loft_with(args, Some(&git), &Clock::fixed(EPOCH))
-    } else {
-        scratch.loft(args)
-    }
+    command(scratch, fixture).args(args).output().unwrap()
 }
 
 /// The lock a planted save puts beside a clean tree: a previous publish at sequence 7, so the
@@ -50,21 +41,6 @@ fn planted_lock() -> Vec<u8> {
         "publishSequence":7,"publishedAt":"2026-01-01T00:00:00Z"}}"#
     );
     Lock::read(text.as_bytes()).unwrap().to_bytes()
-}
-
-/// A scratch directory for a command.
-fn fixture(fixture: Fixture) -> Scratch {
-    let scratch = Scratch::with_reading_list();
-    match fixture {
-        Fixture::Empty => fs::remove_dir_all(scratch.0.join("spec")).unwrap(),
-        Fixture::Unkeyed => scratch.edit(
-            PRODUCT,
-            "      - key: 00000000-0000-4000-8000-000000000032\n        name:",
-            "      - name:",
-        ),
-        Fixture::Clean => {}
-    }
-    scratch
 }
 
 /// Plants an interrupted save, committed or not, that changes what the command reads: in an
@@ -192,5 +168,41 @@ fn each_tagged_command_changes_a_file_of_the_format() {
         let before = format_files(&scratch.0);
         assert_exit(slug, &run(&scratch, kind, args), 0);
         assert_ne!(format_files(&scratch.0), before, "{slug}: wrote nothing");
+    }
+}
+
+/// The document key the manifest under `root` carries, read from its text so that a tree
+/// without every key still answers.
+fn document_key(root: &Path) -> String {
+    let manifest = fs::read_to_string(root.join("spec/loftspec.yaml")).unwrap();
+    let key = manifest
+        .lines()
+        .find_map(|line| line.strip_prefix("documentKey: "));
+    key.expect("the manifest carries a document key").to_owned()
+}
+
+#[test]
+fn no_tagged_command_changes_the_document_key_once_a_tree_is_written() {
+    let commands = tagged_commands(TAG);
+    let (first, later): (Vec<_>, Vec<_>) = commands
+        .into_iter()
+        .partition(|(_, _, kind)| *kind == Fixture::Empty);
+    assert!(!first.is_empty() && !later.is_empty());
+    // Each command that writes the first tree, then every other over the tree it wrote.
+    for (slug, args, kind) in first {
+        let scratch = fixture(kind);
+        assert_exit(slug, &run(&scratch, kind, args), 0);
+        let key = document_key(&scratch.0);
+        for (next, args, kind) in &later {
+            assert_exit(next, &run(&scratch, *kind, args), 0);
+            assert_eq!(document_key(&scratch.0), key, "{next} after {slug}");
+        }
+    }
+    // Each other command over its own fixture.
+    for (slug, args, kind) in later {
+        let scratch = fixture(kind);
+        let key = document_key(&scratch.0);
+        assert_exit(slug, &run(&scratch, kind, args), 0);
+        assert_eq!(document_key(&scratch.0), key, "{slug}");
     }
 }

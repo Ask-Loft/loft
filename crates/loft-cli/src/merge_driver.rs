@@ -17,6 +17,7 @@ use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
 use crate::json;
+use crate::out::{errln, outln};
 use crate::version::VERSION;
 
 /// The command that starts `loft` where a project has it as an npm dev dependency.
@@ -50,12 +51,12 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
                 return ExitCode::SUCCESS;
             }
             let plural = if conflicts == 1 { "" } else { "s" };
-            eprintln!(
+            errln!(
                 "{}: {conflicts} merge conflict{plural} written",
                 inputs.path
             );
             if !disputed.is_empty() {
-                eprintln!("{}: {}", inputs.path, settle_with_publish(&disputed));
+                errln!("{}: {}", inputs.path, settle_with_publish(&disputed));
             }
             ExitCode::FAILURE
         }
@@ -64,7 +65,7 @@ pub fn run(root: &Path, inputs: &Inputs<'_>, as_json: bool) -> ExitCode {
             for message in messages {
                 let message = format!("{}{message}", inputs.path);
                 errors.push(json::error("merge", &message, &[]));
-                eprintln!("{message}");
+                errln!("{message}");
             }
             if as_json {
                 json::print(&json::failure(SCHEMA, errors));
@@ -98,7 +99,7 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
         Ok(installed) => {
             let own = format!("loft {VERSION}");
             if installed.version != own {
-                eprintln!(
+                errln!(
                     "loft merge-driver --install: warning: `{launcher}` starts {}, not {own}",
                     installed.version
                 );
@@ -108,10 +109,10 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
                 json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
             } else {
                 for name in &installed.written {
-                    println!("{name}");
+                    outln!("{name}");
                 }
                 if installed.written.iter().any(|name| name == ATTRIBUTES) {
-                    println!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
+                    outln!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
                 }
             }
             ExitCode::SUCCESS
@@ -122,7 +123,7 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> ExitCode {
                 let errors = vec![json::error("install", &message, &[])];
                 json::print(&json::failure(SCHEMA, errors));
             }
-            eprintln!("{message}");
+            errln!("{message}");
             ExitCode::FAILURE
         }
     }
@@ -195,6 +196,14 @@ fn messages(error: MergeError) -> Vec<String> {
             vec![format!(
                 ": the merged file does not read back: {}",
                 error.problem
+            )]
+        }
+        MergeError::DuplicateKey(key) => {
+            vec![format!(": the merged file would carry the key {key} twice")]
+        }
+        MergeError::Unplaced(key) => {
+            vec![format!(
+                ": the record {key} was moved, and neither side holds a parent for it"
             )]
         }
     }

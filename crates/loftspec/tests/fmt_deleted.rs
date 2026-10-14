@@ -2,13 +2,11 @@
 //! binding of a key no node or decision carries, leaves the counters as they are, and writes a
 //! retired or superseded decision's reference to the deleted node as its former label.
 
-use crate::common::text::{FEATURE, files, path, text};
+use crate::common::text::{COMPONENT, DECISION, FEATURE, files, path, text};
 use loftspec::codec::{self, Files};
 use loftspec::fmt::format;
 
 const LABELS: &str = "labels.yaml";
-const DECISION: &str = "decisions/keys-are-uuids.yaml";
-const COMPONENT: &str = "components/document-model.yaml";
 const REQUIREMENT: &str = "00000000-0000-7000-8000-000000000004";
 const CONSTRAINT: &str = "00000000-0000-7000-8000-000000000007";
 

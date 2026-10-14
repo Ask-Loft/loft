@@ -1,7 +1,7 @@
 key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
 slug: lint-rules-of-v2
 name: "Lint rules of v2"
-body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name."
+body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -133,3 +133,23 @@ requirements:
         name: "`properNames` is empty unless `spec/lint.yaml` lists names."
       - key: 01a13654-f961-7722-b3a5-58f2407d1549
         name: "The default severity of `V2-008` is info."
+  - key: 01a13a11-78da-7221-b9f1-bd855d2f2137
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-009` each Markdown construct in a body that lies outside the Format's Markdown subset."
+    criteria:
+      - key: 01a13a11-78db-72eb-a831-e9d136e5ebb5
+        name: "Each construct in a body outside the subset yields one `V2-009` finding naming the node and the construct's first line."
+      - key: 01a13a11-78db-72eb-a831-e9d28e938ca6
+        name: "Raw HTML, as a block or inline, is outside the subset."
+      - key: 01a13a11-78db-72eb-a831-e9d33122c2ca
+        name: "A block quote, a table, an image, a thematic break, an indented code block, a footnote, a task list item and struck-through text are each outside the subset."
+      - key: 01a13a11-78db-72eb-a831-e9d4cdb5665d
+        name: "A heading yields no `V2-009` finding."
+      - key: 01a13a11-78db-72eb-a831-e9d5021c28e5
+        name: "Text inside a fenced code block or a code span yields no `V2-009` finding."
+      - key: 01a13a11-78db-72eb-a831-e9d64c129f33
+        name: "A body written only in the subset yields no `V2-009` finding."
+      - key: 01a13a11-78db-72eb-a831-e9d730a929df
+        name: "The default severity of `V2-009` is info."

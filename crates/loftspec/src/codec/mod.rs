@@ -14,13 +14,14 @@ mod resolve_conflicts;
 mod resolve_decisions;
 mod resolve_nodes;
 pub mod schema;
+mod strict;
 mod unresolve;
 mod unresolve_parts;
 mod variants;
 
 pub use conflict::{SideShape, side_shape};
-pub use error::{Problem, ReadError, Site, SpecPath};
-pub(crate) use files::keyed;
+pub use error::{Problem, ReadError, Site, SpecPath, write_sites};
+pub(crate) use files::keyed_records;
 pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, Tree};
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
@@ -31,6 +32,7 @@ pub use unresolve::unresolve;
 pub(crate) use canon::canonicalize;
 pub(crate) use files::{read_file, write_files};
 pub(crate) use resolve_nodes::statement_of;
+pub(crate) use strict::Strict;
 
 use crate::document::Document;
 

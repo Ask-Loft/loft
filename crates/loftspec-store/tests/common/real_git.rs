@@ -8,24 +8,8 @@ use loftspec::publish::RepoState;
 use loftspec_store::StoreError;
 use loftspec_store::repository::{GitCommand, Repository as _};
 use software_plant::GitScenario;
-use software_plant::real_git::setup_git;
 
-pub use software_plant::real_git::real_git;
-
-/// Runs a setup command of real git in `dir`, giving its output.
-pub fn git_output(dir: &Path, args: &[&str]) -> Output {
-    setup_git().arg("-C").arg(dir).args(args).output().unwrap()
-}
-
-/// Runs a setup command of real git in `dir`, which succeeds.
-pub fn git(dir: &Path, args: &[&str]) {
-    let output = git_output(dir, args);
-    assert!(
-        output.status.success(),
-        "git {args:?}: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-}
+pub use software_plant::real_git::{git, git_output, real_git};
 
 /// What one call printed and how it exited; the error message only where git exits 128, the
 /// one failure whose message Loft reads.

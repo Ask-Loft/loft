@@ -458,7 +458,7 @@ fn a_suppression_without_a_reason_is_refused() {
 
 #[test]
 fn every_rule_has_a_wire_name_and_a_default() {
-    assert_eq!(RuleId::ALL.len(), 27);
+    assert_eq!(RuleId::ALL.len(), 28);
     for rule in RuleId::ALL {
         assert_eq!(RuleId::parse(rule.as_str()), Some(*rule));
     }

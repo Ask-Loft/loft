@@ -115,3 +115,41 @@ fn a_publish_writes_the_bindings_a_rewritten_file_and_the_lock_in_one_save() {
     unchanged.remove(&format!("spec/{feature}"));
     assert_eq!(after, unchanged);
 }
+
+/// What a publish writes in these tests: new bindings, a rewritten Feature and the lock.
+fn published_files(scratch: &Scratch) -> (Files, Vec<u8>) {
+    let feature = "products/reading-list/shelf/add-a-book.yaml";
+    let mut rewritten = fs::read(scratch.0.join("spec").join(feature)).unwrap();
+    rewritten.extend_from_slice(b"# rewritten\n");
+    let mut files = labels_file(b"bindings\n".to_vec());
+    files.insert(SpecPath::new(feature), rewritten.clone());
+    (files, rewritten)
+}
+
+#[test]
+fn a_publish_that_fails_before_its_journal_is_complete_leaves_every_file_as_it_was() {
+    let (scratch, store) = saved();
+    // The journal lives under `.loft/`, which a file of that name keeps from being created.
+    fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap();
+    let before = scratch.snapshot();
+    let (files, _) = published_files(&scratch);
+    assert!(store.publish(files, &lock()).is_err());
+    assert_eq!(scratch.snapshot(), before);
+}
+
+#[test]
+fn a_publish_that_fails_after_its_journal_is_complete_is_finished_by_the_next_opening() {
+    let (scratch, store) = saved();
+    // A directory where the lock goes keeps the committed save from putting the lock in place.
+    fs::create_dir(scratch.0.join(LOCK)).unwrap();
+    let (files, rewritten) = published_files(&scratch);
+    assert!(store.publish(files, &lock()).is_err());
+    assert!(scratch.0.join(JOURNAL).join("plan.json").is_file());
+    fs::remove_dir(scratch.0.join(LOCK)).unwrap();
+    let reopened = FileStore::open(&scratch.0).unwrap();
+    assert_eq!(reopened.lock().unwrap(), Some(lock()));
+    assert_eq!(labels(&scratch), b"bindings\n");
+    let feature = "spec/products/reading-list/shelf/add-a-book.yaml";
+    assert_eq!(fs::read(scratch.0.join(feature)).unwrap(), rewritten);
+    assert!(!scratch.0.join(JOURNAL).exists());
+}

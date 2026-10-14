@@ -1,6 +1,7 @@
 //! Withdrawn labels (F-2): a label a key lost to a publish that met another is recorded on
 //! the key's binding, resolves to nothing, is never allocated again and enters no root.
 
+use crate::common::fields::{scalar, scalars};
 use crate::common::text::{files, text};
 use crate::common::{key, label, small_document};
 use loftspec::bindings::{BindingError, Bindings, Counters};
@@ -135,4 +136,27 @@ fn unbinding_a_key_returns_its_binding_and_frees_its_labels() {
     assert_eq!(bindings.resolve(label("RQ-1")), None);
     assert_eq!(bindings.resolve(label("RQ-2")), None);
     assert_eq!(bindings.unbind(requirement()), None);
+}
+
+#[test]
+fn a_bindings_withdrawn_labels_are_written_in_the_order_they_were_recorded() {
+    let mut document = small_document();
+    for withdrawn in ["RQ-9", "RQ-7"] {
+        document
+            .bindings
+            .add_withdrawn(requirement(), label(withdrawn))
+            .unwrap();
+    }
+    let files = codec::write(&document);
+    let route = ["bindings", "3", "withdrawn"];
+    assert_eq!(
+        scalar(&files, "labels.yaml", &["bindings", "3", "key"]),
+        key(4).to_string()
+    );
+    assert_eq!(scalars(&files, "labels.yaml", &route), ["RQ-9", "RQ-7"]);
+    let read = codec::read(&files).unwrap();
+    assert_eq!(
+        read.bindings.withdrawn_of(requirement()),
+        [label("RQ-9"), label("RQ-7")]
+    );
 }

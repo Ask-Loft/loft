@@ -89,6 +89,7 @@ needs.
 | `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
+| `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
 | `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
 | `loft skill install` | Writes the agent skill into the current directory, or brings it up to date |
 
@@ -161,6 +162,17 @@ labels are withdrawn and their nodes get fresh ones, citations of a withdrawn la
 rewritten in every element that mentions its node, and the lock is written anew. It then prints
 the git command that finishes, `git add -A && git commit --no-edit` after a merge or
 `git add -A && git rebase --continue` after a rebase; Loft itself never changes the repository.
+
+## Tracing tests to criteria
+
+`loft.trace.yaml`, beside `spec/`, links each acceptance criterion, and each Constraint or
+Quality Attribute whose `verificationFate` is `proved`, to the tests that verify it, by file and
+test name, or says why no test can. Each link holds the content hash its node had when a reviewer
+last accepted it, so a changed criterion shows up as a stale link. `loft reconcile` reports nodes
+no link names, links not yet reviewed or gone stale, tests it cannot find in their files, and
+links to nodes that are gone, without running any test, so it works for any language.
+`loft reconcile --accept <label>` records a review, and CI runs `loft reconcile --fail-on warning`.
+The trace file is not part of the specification: it enters no root and no publish writes it.
 
 ## Software Plant
 

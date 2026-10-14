@@ -180,3 +180,65 @@ fn a_journal_directory_shares_loft_with_other_files() {
     assert_eq!(fs::read(scratch.0.join(".loft/other")).unwrap(), b"kept\n");
     assert!(!scratch.0.join(JOURNAL).exists());
 }
+
+/// The inode of each file staged in the journal, by its bytes.
+#[cfg(unix)]
+fn staged_inodes(scratch: &Scratch) -> BTreeMap<Vec<u8>, u64> {
+    use std::os::unix::fs::MetadataExt;
+    fs::read_dir(scratch.0.join(JOURNAL).join("files"))
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .map(|path| (fs::read(&path).unwrap(), fs::metadata(&path).unwrap().ino()))
+        .collect()
+}
+
+/// A rename moves the staged file itself into place: the file there afterwards is the staged
+/// one, and a reader of the file it replaced still reads the old bytes. A copy over the old file
+/// would change both.
+#[cfg(unix)]
+#[test]
+fn a_save_renames_each_staged_file_into_place() {
+    use std::io::Read;
+    use std::os::unix::fs::MetadataExt;
+    let scratch = tree();
+    let mut reader = fs::File::open(scratch.0.join("spec/tags.yaml")).unwrap();
+    let prepared = journal::prepare(&scratch.0, &changes()).unwrap();
+    let staged = staged_inodes(&scratch);
+    prepared.commit().unwrap().finish().unwrap();
+    assert_eq!(staged.len(), 3);
+    let written = written();
+    for path in [
+        "spec/tags.yaml",
+        "spec/products/b/product.yaml",
+        "v1-sidecar.json",
+    ] {
+        let target = scratch.0.join(path);
+        let inode = fs::metadata(&target).unwrap().ino();
+        assert_eq!(Some(&inode), staged.get(&written[path]), "{path}");
+    }
+    let mut old = String::new();
+    reader.read_to_string(&mut old).unwrap();
+    assert_eq!(old, "tags\n");
+}
+
+/// The file store saves through the journal: a file it writes replaces the file that was there
+/// rather than rewriting it.
+#[cfg(unix)]
+#[test]
+fn the_file_store_replaces_a_file_it_writes_rather_than_rewriting_it() {
+    use std::io::Read;
+    use std::os::unix::fs::MetadataExt;
+    let scratch = tree();
+    let target = scratch.0.join("spec/tags.yaml");
+    let before = fs::metadata(&target).unwrap().ino();
+    let mut reader = fs::File::open(&target).unwrap();
+    let store = loftspec_store::FileStore::open(&scratch.0).unwrap();
+    let files = [(SpecPath::new("tags.yaml"), b"tags 2\n".to_vec())].into();
+    store.write_files(files).unwrap();
+    assert_eq!(fs::read(&target).unwrap(), b"tags 2\n");
+    assert_ne!(fs::metadata(&target).unwrap().ino(), before);
+    let mut old = String::new();
+    reader.read_to_string(&mut old).unwrap();
+    assert_eq!(old, "tags\n");
+    assert!(!scratch.0.join(JOURNAL).exists());
+}

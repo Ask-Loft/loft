@@ -20,6 +20,8 @@ requirements:
         name: "The workflow tells the agent to write the code after the specification's commit."
       - key: 01a13654-6e12-74a1-ad7f-e7d7b8919cdc
         name: "The workflow tells the agent to check that the code meets each new or changed criterion."
+      - key: 01a1383e-2e64-72e5-b7f4-bc2e359b74e8
+        name: "The workflow tells the agent to reconcile the code by `references/reconciling.md` once it is written."
   - key: 01a13654-6e12-74a1-ad7f-e7d87f61c646
     statement:
       form: ubiquitous

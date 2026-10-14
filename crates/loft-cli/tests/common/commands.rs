@@ -2,6 +2,15 @@
 //! `spec/`, the arguments that run it, and the fixture it runs over. The tests that hold every
 //! command to a rule read it; the first argument is the subcommand, which names its schema.
 
+use std::fs;
+use std::process::Command;
+
+use crate::common::{EPOCH, Scratch};
+use software_plant::{Clock, GitScenario};
+
+/// The Product's file, from which the unkeyed fixture leaves a key out.
+pub const PRODUCT: &str = "products/reading-list/product.yaml";
+
 const READING_LIST: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../testdata/v1/reading-list/loft-authored-state.json"
@@ -18,8 +27,30 @@ pub enum Fixture {
     Clean,
 }
 
+/// A scratch directory for a command.
+pub fn fixture(fixture: Fixture) -> Scratch {
+    let scratch = Scratch::with_reading_list();
+    match fixture {
+        Fixture::Empty => fs::remove_dir_all(scratch.0.join("spec")).unwrap(),
+        Fixture::Unkeyed => scratch.edit(
+            PRODUCT,
+            "      - key: 00000000-0000-4000-8000-000000000032\n        name:",
+            "      - name:",
+        ),
+        Fixture::Clean => {}
+    }
+    scratch
+}
+
+/// The `loft` command over `fixture` at [`EPOCH`]: in a clean repository on `main` for the
+/// clean fixture, with no `git` otherwise.
+pub fn command(scratch: &Scratch, fixture: Fixture) -> Command {
+    let git = (fixture == Fixture::Clean).then(|| GitScenario::clean_on("main"));
+    scratch.command(git.as_ref(), &Clock::fixed(EPOCH))
+}
+
 /// Each command by the slug of its Feature, with the arguments that run it and its fixture.
-pub const COMMANDS: [(&str, &[&str], Fixture); 10] = [
+pub const COMMANDS: [(&str, &[&str], Fixture); 11] = [
     ("loft-check", &["check"], Fixture::Unkeyed),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed),
     (
@@ -35,6 +66,7 @@ pub const COMMANDS: [(&str, &[&str], Fixture); 10] = [
     ("loft-publish", &["publish"], Fixture::Clean),
     ("loft-verify", &["verify"], Fixture::Clean),
     ("loft-find", &["find", "shelf"], Fixture::Clean),
+    ("loft-reconcile", &["reconcile"], Fixture::Clean),
     // Init refuses any existing `spec/` before reading it.
     ("loft-init", &["init"], Fixture::Empty),
     // The skill is written whether or not there is a tree.

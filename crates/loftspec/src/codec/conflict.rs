@@ -14,18 +14,22 @@ pub enum SideShape {
     Position,
     /// The record's key, or `null` on a side that deleted it.
     Record,
+    /// The key of the record's parent on that side.
+    Parent,
     /// A value in the shape of the field the path names.
     Field(Shape),
 }
 
-/// What each side of a conflict that `host` holds over `path` holds: `position`, `record`, or
-/// a field of `host`, dotted through the unkeyed records inside it (`statement.shall`). None
-/// for a path that names no such field, or a field whose value holds keyed records.
+/// What each side of a conflict that `host` holds over `path` holds: `position`, `record`,
+/// `parent`, or a field of `host`, dotted through the unkeyed records inside it
+/// (`statement.shall`). None for a path that names no such field, or a field whose value holds
+/// keyed records.
 #[must_use]
 pub fn side_shape(host: Kind, path: &str) -> Option<SideShape> {
     match path {
         field::POSITION => return Some(SideShape::Position),
         field::RECORD => return Some(SideShape::Record),
+        field::PARENT => return Some(SideShape::Parent),
         _ => {}
     }
     let mut kind = host;
@@ -107,7 +111,7 @@ fn check_side(node: &yaml::Node, shape: SideShape, mode: Mode) -> Result<Val, Lo
         SideShape::Record if is_null(node) => Ok(Val::Null {
             position: node.position,
         }),
-        SideShape::Record => record::check_scalar(node, Scalar::Key),
+        SideShape::Record | SideShape::Parent => record::check_scalar(node, Scalar::Key),
         SideShape::Field(shape) => record::check_shape(node, shape, mode),
     }
 }
@@ -150,7 +154,7 @@ fn side_out(value: &Val, shape: SideShape) -> Out {
     match (shape, value) {
         (_, Val::Null { .. }) => Out::Null,
         (SideShape::Field(shape), _) => record::value_out(value, shape),
-        (SideShape::Position | SideShape::Record, _) => {
+        (SideShape::Position | SideShape::Record | SideShape::Parent, _) => {
             Out::Token(value.text().unwrap_or_default().to_owned())
         }
     }

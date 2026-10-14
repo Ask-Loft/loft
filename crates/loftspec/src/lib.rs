@@ -30,6 +30,7 @@ pub mod render;
 pub mod slug;
 pub mod statement;
 pub mod text;
+pub mod trace;
 pub mod tree;
 pub mod validate;
 mod wire;

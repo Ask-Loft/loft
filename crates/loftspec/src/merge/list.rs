@@ -4,7 +4,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::conflict::{Host, conflict};
+use super::conflict::{Host, Side, record_conflict};
 use super::order::{Anchor, merge_order, moved};
 use super::record::merge_host;
 use super::same::{same_value, text};
@@ -56,12 +56,12 @@ fn ident(item: Item, value: &Val) -> Ident {
 }
 
 /// One side's list: each element's id in order, and the element each id names.
-struct Side<'a> {
+struct Listed<'a> {
     ids: Vec<Id>,
     by_id: BTreeMap<Id, &'a Val>,
 }
 
-fn side(item: Item, values: &[Val]) -> Side<'_> {
+fn side(item: Item, values: &[Val]) -> Listed<'_> {
     let mut seen: BTreeMap<Ident, usize> = BTreeMap::new();
     let mut ids = Vec::new();
     let mut by_id = BTreeMap::new();
@@ -73,7 +73,7 @@ fn side(item: Item, values: &[Val]) -> Side<'_> {
         ids.push(id.clone());
         by_id.insert(id, value);
     }
-    Side { ids, by_id }
+    Listed { ids, by_id }
 }
 
 /// Merges a list field whose sides differ; a disagreement over a whole value, or over the place
@@ -131,7 +131,7 @@ struct Merger {
 
 impl Merger {
     /// Every surviving element, merged, by its id.
-    fn elements(&mut self, [base, ours, theirs]: &[Side<'_>; 3]) -> BTreeMap<Id, Val> {
+    fn elements(&mut self, [base, ours, theirs]: &[Listed<'_>; 3]) -> BTreeMap<Id, Val> {
         let ids: BTreeSet<&Id> = base
             .ids
             .iter()
@@ -158,10 +158,10 @@ impl Merger {
         match (base, ours, theirs) {
             (Some(base), Some(ours), Some(theirs)) => Some(self.three(base, ours, theirs)),
             (Some(base), Some(kept), None) => {
-                self.deleted(base, kept, self.moved_by_ours.contains(id), Side3::Theirs)
+                self.deleted(base, kept, self.moved_by_ours.contains(id), Side::Theirs)
             }
             (Some(base), None, Some(kept)) => {
-                self.deleted(base, kept, self.moved_by_theirs.contains(id), Side3::Ours)
+                self.deleted(base, kept, self.moved_by_theirs.contains(id), Side::Ours)
             }
             (None, Some(ours), Some(theirs)) => Some(self.added(ours, theirs)),
             (None, Some(only), None) | (None, None, Some(only)) => Some(only.clone()),
@@ -207,32 +207,17 @@ impl Merger {
     /// An element one side deleted: removed when the other side left it as it was, and
     /// otherwise, for a record with a key, kept as the other side wrote it with a conflict over
     /// the record (AC-473, AC-660).
-    fn deleted(&self, base: &Val, kept: &Val, moved: bool, deleter: Side3) -> Option<Val> {
+    fn deleted(&self, base: &Val, kept: &Val, moved: bool, deleter: Side) -> Option<Val> {
         let unchanged = same_value(base, kept) && !moved;
         match (unchanged, self.kind, kept) {
             (false, Element::Host, Val::Record(record)) => {
                 let mut record = record.clone();
-                let key = record.get(field::KEY).cloned();
-                let null = Val::Null {
-                    position: record.position,
-                };
-                let sides = match deleter {
-                    Side3::Ours => [key.as_ref(), Some(&null), key.as_ref()],
-                    Side3::Theirs => [key.as_ref(), key.as_ref(), Some(&null)],
-                };
-                record.conflicts.push(conflict(field::RECORD, sides));
+                record.conflicts.push(record_conflict(&record, deleter));
                 Some(Val::Record(record))
             }
             _ => None,
         }
     }
-}
-
-/// The side that deleted an element.
-#[derive(Debug, Clone, Copy)]
-enum Side3 {
-    Ours,
-    Theirs,
 }
 
 /// A conflict over where a record goes: each side names the element it follows, or `first`.

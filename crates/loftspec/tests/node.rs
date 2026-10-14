@@ -1,7 +1,7 @@
 //! The containment table (F-17) and the canonical traversal of the tree (RQ-160).
 
 use crate::common::small_document;
-use loftspec::kind::NodeKind;
+use loftspec::kind::{NodeKind, UnknownKind};
 use loftspec::node::Node;
 
 #[test]
@@ -78,4 +78,50 @@ fn walk_visits_parents_before_children() {
     assert_eq!(kinds[0], NodeKind::Product);
     assert_eq!(kinds[1], NodeKind::FeatureGroup);
     assert!(kinds.contains(&NodeKind::Criterion));
+}
+
+#[test]
+fn a_kind_outside_the_closed_set_is_refused_and_each_kind_in_it_parses() {
+    assert_eq!(
+        "epic".parse::<NodeKind>(),
+        Err(UnknownKind("epic".to_owned()))
+    );
+    assert_eq!(
+        "Product".parse::<NodeKind>(),
+        Err(UnknownKind("Product".to_owned()))
+    );
+    for kind in NodeKind::ALL {
+        assert_eq!(kind.as_str().parse::<NodeKind>(), Ok(kind));
+    }
+}
+
+#[test]
+fn the_profile_lets_each_kind_hold_exactly_these_kinds() {
+    use NodeKind::{
+        Component, Constraint, Criterion, Feature, FeatureGroup, Product, QualityAttribute,
+        Requirement, Section,
+    };
+    let allowed: [(NodeKind, &[NodeKind]); 9] = [
+        (Product, &[FeatureGroup, Constraint, Section]),
+        (FeatureGroup, &[Feature, Constraint, Section]),
+        (Feature, &[Requirement, QualityAttribute, Section]),
+        (Requirement, &[Criterion, Section]),
+        (Criterion, &[Section]),
+        (
+            Component,
+            &[Component, Constraint, QualityAttribute, Section],
+        ),
+        (Constraint, &[Section]),
+        (QualityAttribute, &[Section]),
+        (Section, &[Section]),
+    ];
+    for (parent, children) in allowed {
+        for child in NodeKind::ALL {
+            assert_eq!(
+                parent.may_contain(child),
+                children.contains(&child),
+                "{child} under {parent}"
+            );
+        }
+    }
 }

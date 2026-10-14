@@ -90,6 +90,48 @@ fn the_double_quoted_escapes_are_the_formats() {
 }
 
 #[test]
+fn a_character_is_written_as_itself_exactly_when_it_is_printable() {
+    let boundaries = [
+        ('\u{1F}', false),
+        ('\u{20}', true),
+        ('\u{7E}', true),
+        ('\u{7F}', false),
+        ('\u{9F}', false),
+        ('\u{A0}', true),
+        ('\u{2027}', true),
+        ('\u{2028}', false),
+        ('\u{2029}', false),
+        ('\u{202A}', true),
+        ('\u{D7FF}', true),
+        ('\u{E000}', true),
+        ('\u{FEFE}', true),
+        ('\u{FEFF}', false),
+        ('\u{FF00}', true),
+        ('\u{FFFD}', true),
+        ('\u{FFFE}', false),
+        ('\u{FFFF}', false),
+        ('\u{10000}', true),
+        ('\u{10FFFF}', true),
+    ];
+    for (character, printable) in boundaries {
+        let code = u32::from(character);
+        let written = field(text(&character.to_string()));
+        let expected = if printable {
+            format!("a: \"{character}\"\n")
+        } else {
+            format!("a: \"\\u{code:04X}\"\n")
+        };
+        assert_eq!(written, expected, "U+{code:04X}");
+        let literal = format!("a: \"{character}\"\n");
+        assert_eq!(
+            yaml::read(literal.as_bytes()).is_ok(),
+            printable,
+            "U+{code:04X} read as itself"
+        );
+    }
+}
+
+#[test]
 fn a_token_is_plain_unless_a_yaml_reader_would_take_it_for_something_else() {
     for plain in [
         "RQ-12",

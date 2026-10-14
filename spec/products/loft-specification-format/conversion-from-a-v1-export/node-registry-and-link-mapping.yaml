@@ -54,7 +54,7 @@ requirements:
       shall: "turn each Facet Tag node into a tag on its parent."
     criteria:
       - key: 6eba4deb-d002-4fab-9c40-81e2f87e676a
-        name: "The parent lists the tag name."
+        name: "The parent lists the tag name derived from the Facet Tag's name."
       - key: 0171fefe-bed5-4d4d-a743-4ca792d5b134
         name: "The Facet Tag node does not exist in the v2 document."
   - key: 9cc9a284-cde5-44ce-ac9f-4b6ebc4443fa
@@ -66,7 +66,27 @@ requirements:
       - key: ce6fe7cf-1504-4b83-b1f7-6851790d2261
         name: "A registry entry keeps the entry's UUID as key."
       - key: 68528fcc-36dd-417a-b84a-0232d6fb0b3a
-        name: "A registry entry keeps the entry's name and definition."
+        name: "A registry entry's name is the tag name derived from the entry's name."
+      - key: 01a13a12-b540-76e4-949d-eeec114e2f6f
+        name: "A registry entry keeps the entry's definition."
+  - key: 01a13a12-b540-76e4-949d-eeedd61911ba
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "derive each v2 tag name from a v1 name."
+    criteria:
+      - key: 01a13a12-b540-76e4-949d-eeeefaa88bb2
+        name: "A v1 name that is not a v2 tag name derives the name in lowercase, with each run of characters other than ASCII lowercase letters and digits turned into one hyphen."
+      - key: 01a13a12-b540-76e4-949d-eeefe52baa4a
+        name: "A name so derived has no hyphen at its start or its end."
+      - key: 01a13a12-b540-76e4-949d-eef0357457ab
+        name: "A v1 name that is already a v2 tag name is kept as it is."
+      - key: 01a13a12-b540-76e4-949d-eef1ae237548
+        name: "A v1 name whose derived name is empty or does not begin with a letter stops the conversion with an error naming the v1 name."
+      - key: 01a13a12-b540-76e4-949d-eef266fd1426
+        name: "Two v1 names that derive one tag name stop the conversion with an error naming both."
+      - key: 01a13a12-b540-76e4-949d-eef3d2c2e8d4
+        name: "A Facet Tag and a Vocabulary Entry with one v1 name derive one tag name."
   - key: be28f06a-8037-41f1-b4a6-2c5f2be7718f
     statement:
       form: ubiquitous

@@ -1,0 +1,99 @@
+key: 01a1383a-4a93-70fa-a19d-af203e81da90
+slug: nodes-link-to-their-tests-through-a-trace-file
+title: "Nodes link to the tests that verify them through a trace file beside the lock"
+context: "A change to the specification has to reach the code, and a reader has to see which tests verify a criterion. A test cannot name its criterion by label, because a publish can withdraw a label and give its node another, so the link has to name the node by its key. Teams write tests in many languages and run them with many runners, and a link made before its node changed may no longer be true."
+state:
+  kind: accepted
+  selectedOption: 01a1383a-4a93-70fa-a19d-af2520bf6efe
+  outcome: "`loft.trace.yaml` beside `spec/` links each node that tests verify to those tests by file and name, pinned to the content hash its node had when the link was last reviewed; `loft reconcile` checks the links without running a test."
+drivers:
+  - key: 01a1383a-4a93-70fa-a19d-af21d320d3fc
+    kind: local
+    label: "Survives a relabel"
+    statement: "A link stays true when a publish gives its node another label."
+  - key: 01a1383a-4a93-70fa-a19d-af223435314e
+    kind: local
+    label: "Any language"
+    statement: "The links are checked without running a test or reading a runner's report, so they work for every language and runner."
+  - key: 01a1383a-4a93-70fa-a19d-af23ae80d49a
+    kind: local
+    label: "One place to review"
+    statement: "A reviewer sees every link a change adds or alters in one diff."
+  - key: 01a1383a-4a93-70fa-a19d-af2410e48738
+    kind: local
+    label: "A changed node is noticed"
+    statement: "A link reviewed before its node changed is reported until someone reviews it again."
+options:
+  - key: 01a1383a-4a93-70fa-a19d-af2520bf6efe
+    title: "A trace file beside the lock"
+    description: "`loft.trace.yaml` lists, for each node, the tests that verify it by file and name, and the node's content hash when the link was last reviewed."
+  - key: 01a1383a-4a93-70fa-a19d-af262fe4cd32
+    title: "Markers in the test code"
+    description: "Each test carries a comment naming the key of the node it verifies, and the checker searches the repository for the comments."
+  - key: 01a1383a-4a93-70fa-a19d-af271cab7f5e
+    title: "Test reports"
+    description: "The checker reads the reports that test runners write, and matches tests to nodes by a convention in their names."
+assessments:
+  - option: 01a1383a-4a93-70fa-a19d-af2520bf6efe
+    driver: 01a1383a-4a93-70fa-a19d-af21d320d3fc
+    rating: supports
+    rationale: "a link names its node by key"
+  - option: 01a1383a-4a93-70fa-a19d-af2520bf6efe
+    driver: 01a1383a-4a93-70fa-a19d-af223435314e
+    rating: supports
+    rationale: "a test name is found in its file as a whole word"
+  - option: 01a1383a-4a93-70fa-a19d-af2520bf6efe
+    driver: 01a1383a-4a93-70fa-a19d-af23ae80d49a
+    rating: supports
+    rationale: "every link is in one file"
+  - option: 01a1383a-4a93-70fa-a19d-af2520bf6efe
+    driver: 01a1383a-4a93-70fa-a19d-af2410e48738
+    rating: supports
+    rationale: "each link holds the hash it was reviewed against"
+  - option: 01a1383a-4a93-70fa-a19d-af262fe4cd32
+    driver: 01a1383a-4a93-70fa-a19d-af21d320d3fc
+    rating: supports
+    rationale: "a marker names its node by key"
+  - option: 01a1383a-4a93-70fa-a19d-af262fe4cd32
+    driver: 01a1383a-4a93-70fa-a19d-af223435314e
+    rating: supports
+    rationale: "a comment can be found in any source file"
+  - option: 01a1383a-4a93-70fa-a19d-af262fe4cd32
+    driver: 01a1383a-4a93-70fa-a19d-af23ae80d49a
+    rating: conflicts
+    rationale: "the links are spread over every test file"
+  - option: 01a1383a-4a93-70fa-a19d-af262fe4cd32
+    driver: 01a1383a-4a93-70fa-a19d-af2410e48738
+    rating: neutral
+    rationale: "a hash in each comment can do it, at the cost of noise in every test"
+  - option: 01a1383a-4a93-70fa-a19d-af271cab7f5e
+    driver: 01a1383a-4a93-70fa-a19d-af21d320d3fc
+    rating: conflicts
+    rationale: "a naming convention that carries a label breaks when the label is withdrawn"
+  - option: 01a1383a-4a93-70fa-a19d-af271cab7f5e
+    driver: 01a1383a-4a93-70fa-a19d-af223435314e
+    rating: conflicts
+    rationale: "each runner writes its own report format"
+  - option: 01a1383a-4a93-70fa-a19d-af271cab7f5e
+    driver: 01a1383a-4a93-70fa-a19d-af23ae80d49a
+    rating: conflicts
+    rationale: "the links exist only in each run's report"
+  - option: 01a1383a-4a93-70fa-a19d-af271cab7f5e
+    driver: 01a1383a-4a93-70fa-a19d-af2410e48738
+    rating: conflicts
+    rationale: "a report records what ran, not what was reviewed"
+consequences:
+  - key: 01a1383a-4a93-70fa-a19d-af2806b00bbb
+    kind: benefit
+    statement: "A change to the specification yields the list of nodes whose tests need review."
+  - key: 01a1383a-4a93-70fa-a19d-af2943c26f83
+    kind: cost
+    statement: "Each new test is also entered in `loft.trace.yaml`, and each link is accepted after review."
+  - key: 01a1383a-4a93-70fa-a19d-af2a97559ad9
+    kind: obligation
+    statement: "`loft reconcile` reports a link whose node changed after it was reviewed."
+subjects:
+  - role: affected
+    node: 01a1383a-4a94-72cc-9c61-11318846c14a
+  - role: outcome
+    node: 01a1383a-4a94-72cc-9c61-11074c67c6d6

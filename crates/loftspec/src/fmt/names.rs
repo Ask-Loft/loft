@@ -6,7 +6,7 @@
 use std::collections::{BTreeSet, HashMap};
 
 use crate::codec::schema::{Kind, Target, field};
-use crate::codec::{Problem, ReadError, Rec, SpecPath, Tree, Val, keyed, statement_of};
+use crate::codec::{Problem, ReadError, Rec, SpecPath, Tree, Val, keyed_records, statement_of};
 use crate::kind::NodeKind;
 
 /// An element a name may identify.
@@ -25,12 +25,8 @@ struct Index {
 
 impl Index {
     fn of(tree: &Tree) -> Self {
-        let mut records = Vec::new();
-        for (_, content) in tree.files.values() {
-            for record in content.records() {
-                keyed(record, &mut records);
-            }
-        }
+        let files = tree.files.values();
+        let records = keyed_records(files.flat_map(|(_, content)| content.records()));
         let mut index = Self {
             elements: Vec::new(),
             by_name: HashMap::new(),

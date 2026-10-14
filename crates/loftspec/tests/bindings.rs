@@ -1,8 +1,10 @@
 //! Bindings and aliases (F-2): a label changes only by relabelling, which keeps the previous
 //! label as a permanent alias, and the validator refuses aliases that collide.
 
-use crate::common::{key, label};
+use crate::common::fields::{scalar, scalars};
+use crate::common::{key, label, small_document};
 use loftspec::bindings::{BindingError, Bindings};
+use loftspec::codec;
 use loftspec::ids::{ElementId, FeatureId, ProductId, RequirementId, SectionId};
 
 fn requirement(n: u32) -> RequirementId {
@@ -187,4 +189,30 @@ fn a_live_label_resolves_before_an_alias_and_the_lowest_key_resolves_a_clash() {
     assert_eq!(bindings.resolve(label("RQ-5")), Some(requirement(1).into()));
     bindings.relabel(requirement(1), label("RQ-6")).unwrap();
     assert_eq!(bindings.resolve(label("RQ-5")), Some(requirement(2).into()));
+}
+
+#[test]
+fn a_bindings_aliases_are_written_in_the_order_they_were_recorded() {
+    let mut document = small_document();
+    for alias in ["RQ-5", "RQ-3"] {
+        document
+            .bindings
+            .add_alias(requirement(4), label(alias))
+            .unwrap();
+    }
+    let files = codec::write(&document);
+    let route = ["bindings", "3", "aliases"];
+    assert_eq!(
+        scalar(&files, "labels.yaml", &["bindings", "3", "key"]),
+        key(4).to_string()
+    );
+    assert_eq!(
+        scalars(&files, "labels.yaml", &route),
+        ["RQ-1", "RQ-5", "RQ-3"]
+    );
+    let read = codec::read(&files).unwrap();
+    assert_eq!(
+        read.bindings.aliases_of(requirement(4)),
+        [label("RQ-1"), label("RQ-5"), label("RQ-3")]
+    );
 }

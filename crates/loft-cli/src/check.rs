@@ -10,6 +10,7 @@ use loftspec::lint::Severity;
 use serde_json::{Value, json};
 
 use crate::json;
+use crate::out::outln;
 use crate::stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -21,13 +22,8 @@ pub fn run(root: &Path, fail_on: Option<Severity>, as_json: bool) -> ExitCode {
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
     let checked = check(&files);
-    let failed_on = fail_on.is_some_and(|threshold| {
-        checked
-            .findings()
-            .iter()
-            .any(|finding| finding.severity >= threshold)
-    });
-    let failed = checked.has_errors() || failed_on;
+    let severities = checked.findings().iter().map(|finding| finding.severity);
+    let failed = checked.has_errors() || json::fails_on(fail_on, severities);
     if as_json {
         json::print(&document(
             &checked,
@@ -47,7 +43,7 @@ fn print(checked: &Checked) {
     match checked {
         Checked::Unread(errors) => {
             for error in errors {
-                println!("{error}");
+                outln!("{error}");
             }
         }
         Checked::Read {
@@ -56,13 +52,13 @@ fn print(checked: &Checked) {
             findings,
         } => {
             for error in invalid {
-                println!("{error}");
+                outln!("{error}");
             }
             for error in config {
-                println!("{error}");
+                outln!("{error}");
             }
             for finding in findings {
-                println!("{finding}");
+                outln!("{finding}");
             }
         }
     }

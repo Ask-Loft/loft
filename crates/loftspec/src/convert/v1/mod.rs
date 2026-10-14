@@ -4,12 +4,14 @@ pub mod export;
 mod links;
 mod prose;
 pub mod sidecar;
+mod tag_names;
 mod tree;
 
 use uuid::Uuid;
 
 use self::export::{Export, ExternalId};
 use self::sidecar::V1Sidecar;
+use self::tag_names::TagNames;
 use self::tree::Tree;
 use crate::bindings::{BindingError, Counters};
 use crate::document::{CategoryEntry, DerivedFrom, Document, TagEntry};
@@ -17,7 +19,7 @@ use crate::identity::{Label, LabelError};
 use crate::ids::{
     AuthoredStateId, CategoryId, ComponentId, DocumentId, NodeId, RequirementId, TagId,
 };
-use crate::names::NameError;
+use crate::names::TagName;
 use crate::slug::Slug;
 
 /// A converted document and what the converter reported about it.
@@ -82,8 +84,17 @@ pub enum ConvertError {
     },
     #[error("Facet Tag {node} has a body, which a tag does not hold")]
     FacetTagBody { node: ExternalId },
-    #[error("Facet Tag {node}: {source}")]
-    Tag { node: ExternalId, source: NameError },
+    #[error(
+        "the v1 name `{name}` derives no tag name: its derived name is empty or does not begin \
+         with a letter"
+    )]
+    UnderivableTag { name: String },
+    #[error("the v1 names `{first}` and `{second}` both derive the tag name `{tag}`")]
+    TagCollision {
+        first: String,
+        second: String,
+        tag: TagName,
+    },
     #[error(
         "a Realization Link from {feature} to {component} does not join a Feature to a Component"
     )]
@@ -115,13 +126,15 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
         sidecar: V1Sidecar::new(document_id),
         findings: Vec::new(),
     };
-    tree.convert(&mut conversion)?;
+    let mut tag_names = TagNames::default();
+    tree.convert(&mut conversion, &mut tag_names)?;
     links::convert(export, &tree.ids, &mut conversion)?;
     let (mentions, findings) = prose::mentions(export, &tree.ids, &conversion.document.bindings);
     conversion.document.edges.extend(mentions);
     conversion.findings.extend(findings);
     conversion.sidecar.record_highest(export);
-    registries(export, &mut conversion.document);
+    registries(export, &mut conversion.document, &mut tag_names)?;
+    conversion.sidecar.tag_names = tag_names.renamed();
     let document = &mut conversion.document;
     unique_slugs(document);
     document.counters = Counters::above(&document.bindings);
@@ -170,8 +183,13 @@ fn label(external_id: &ExternalId) -> Result<Label, ConvertError> {
     })
 }
 
-/// The source record, the tag registry and the category registry.
-fn registries(export: &Export, document: &mut Document) {
+/// The source record, the tag registry, each entry named by the tag name its v1 name derives,
+/// and the category registry.
+fn registries(
+    export: &Export,
+    document: &mut Document,
+    tag_names: &mut TagNames,
+) -> Result<(), ConvertError> {
     document.derived_from = Some(DerivedFrom {
         authored_state_id: AuthoredStateId::new(export.authored_state_id.into()),
         content_address: export.content_address,
@@ -180,12 +198,14 @@ fn registries(export: &Export, document: &mut Document) {
     document.tags = export
         .vocabulary_entries
         .iter()
-        .map(|entry| TagEntry {
-            id: TagId::new(entry.entry_id.into()),
-            name: entry.name.clone(),
-            definition: entry.definition.clone(),
+        .map(|entry| {
+            Ok(TagEntry {
+                id: TagId::new(entry.entry_id.into()),
+                name: tag_names.derive(&entry.name)?,
+                definition: entry.definition.clone(),
+            })
         })
-        .collect();
+        .collect::<Result<_, ConvertError>>()?;
     document.categories = export
         .technical_constraint_categories
         .iter()
@@ -195,6 +215,7 @@ fn registries(export: &Export, document: &mut Document) {
             definition: category.definition.clone(),
         })
         .collect();
+    Ok(())
 }
 
 /// The one document UUID the export's elements carry.

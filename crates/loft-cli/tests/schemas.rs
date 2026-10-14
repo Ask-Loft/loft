@@ -1,6 +1,8 @@
 //! Each command's JSON result is described by one schema under `schemas/`, named after the
 //! command, that names its version and allows the envelope's result and error shapes; every
-//! schema describes sites and errors alike.
+//! schema describes sites and errors alike. Every object a schema describes is closed, so a field
+//! added to a command's output fails its schema until the schema names it, and every outcome is
+//! named in words.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -123,4 +125,100 @@ fn the_check_schema_lists_exactly_the_rules_the_linter_defines() {
         .map(|rule| rule.as_str())
         .collect();
     assert_eq!(listed, defined);
+}
+
+/// The name of every schema under `schemas/`.
+fn every_schema() -> Vec<String> {
+    let mut names: Vec<String> = fs::read_dir(schemas())
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| {
+            path.extension()
+                .is_some_and(|extension| extension == "json")
+        })
+        .map(|path| path.file_name().unwrap().to_str().unwrap().to_owned())
+        .collect();
+    names.sort();
+    names
+}
+
+/// The JSON pointer of each object `schema` describes that admits a property it does not name;
+/// gives the number of objects it describes.
+fn open_objects(schema: &Value, at: &str, found: &mut Vec<String>) -> usize {
+    match schema {
+        Value::Object(fields) => {
+            let object =
+                fields.get("type") == Some(&json!("object")) || fields.contains_key("properties");
+            if object && fields.get("additionalProperties") != Some(&Value::Bool(false)) {
+                found.push(at.to_owned());
+            }
+            let nested: usize = fields
+                .iter()
+                .map(|(name, field)| open_objects(field, &format!("{at}/{name}"), found))
+                .sum();
+            usize::from(object) + nested
+        }
+        Value::Array(items) => items
+            .iter()
+            .enumerate()
+            .map(|(index, item)| open_objects(item, &format!("{at}/{index}"), found))
+            .sum(),
+        _ => 0,
+    }
+}
+
+#[test]
+fn every_object_a_schema_describes_admits_no_field_it_does_not_name() {
+    let names = every_schema();
+    assert!(names.len() >= 12, "the scan found {names:?}");
+    let mut open = Vec::new();
+    let objects: usize = names
+        .iter()
+        .map(|name| open_objects(&read(name), name, &mut open))
+        .sum();
+    assert!(objects > 30, "the scan found {objects} objects");
+    assert_eq!(open, Vec::<String>::new());
+}
+
+#[test]
+fn an_open_object_in_a_schema_is_found() {
+    let mut open = Vec::new();
+    let schema = json!({
+        "type": "object",
+        "additionalProperties": false,
+        "properties": { "nested": { "type": "object", "properties": {} } },
+    });
+    assert_eq!(open_objects(&schema, "x.json", &mut open), 2);
+    assert_eq!(open, ["x.json/properties/nested"]);
+}
+
+/// Whether `text` is one or more lowercase words, separated by single spaces.
+fn in_words(text: &str) -> bool {
+    !text.is_empty()
+        && text
+            .split(' ')
+            .all(|word| !word.is_empty() && word.chars().all(|c| c.is_ascii_lowercase()))
+}
+
+#[test]
+fn every_outcome_a_schema_allows_is_named_in_words() {
+    for (_, args, _) in COMMANDS {
+        let command = args[0];
+        let schema = read(&format!("{command}.json"));
+        for branch in branches(&schema) {
+            let outcome = &branch["properties"]["outcome"];
+            let named: Vec<&Value> = match (&outcome["const"], &outcome["enum"]) {
+                (Value::Null, Value::Array(options)) => options.iter().collect(),
+                (single, Value::Null) if !single.is_null() => vec![single],
+                _ => panic!("{command}: `outcome` is neither a const nor an enum: {outcome}"),
+            };
+            assert!(!named.is_empty(), "{command}");
+            for name in named {
+                let name = name.as_str().unwrap_or_default();
+                assert!(in_words(name), "{command}: `{name}`");
+            }
+        }
+    }
+    assert!(in_words("passed") && in_words("up to date"));
+    assert!(!in_words("") && !in_words("Passed") && !in_words("exit_1") && !in_words("2"));
 }

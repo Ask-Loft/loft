@@ -167,6 +167,12 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 - Test names say what they prove in words and cite no label: a publish can withdraw a label and
   give its node a new one, and a guard (`crates/loft-cli/tests/citations.rs`) fails on a label
   in a test name.
+- Link each test to the criterion it verifies in `loft.trace.yaml`, by the criterion's key
+  (`loft find <label>` prints it), and run `loft reconcile --accept <label>` once the test is
+  read against the criterion as it now reads. When a criterion changes, its link turns stale
+  (`TR-003`) until the test is reviewed and the link accepted again. A criterion that no test can
+  verify is linked `unverified` with the reason. Nodes no link names yet are reported as
+  `TR-001`; link them as their tests are touched.
 - Each crate's integration tests are one binary, `tests/main.rs`, with a module for each file of
   `tests/` and the modules they share; one binary links once, where a binary per file linked
   dozens of times. Declare a new test file there as `mod <file>;`: Cargo no longer finds it by
@@ -189,6 +195,7 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   cargo nextest run --workspace
   cargo run -q -p loft-cli -- fmt --check
   cargo run -q -p loft-cli -- check --fail-on warning
+  cargo run -q -p loft-cli -- reconcile --fail-on warning
   ```
 
   Install the runner with `cargo install cargo-nextest --locked`. nextest runs no doctests, and

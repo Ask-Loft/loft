@@ -1,7 +1,10 @@
 //! The small document the hashing tests and the golden vectors share. `testdata/golden/README.md`
 //! describes the same document in prose.
 
+pub mod fields;
+pub mod full;
 pub mod lint;
+pub mod merge;
 pub mod parity;
 pub mod text;
 pub mod v1;
@@ -18,14 +21,14 @@ use loftspec::identity::{Key, Label};
 use loftspec::ids::{
     CategoryId, ComponentId, ConsequenceId, ConstraintId, CriterionId, DecisionId, DocumentId,
     DriverId, FeatureGroupId, FeatureId, OptionId, ProductId, QualityAttributeId, RequirementId,
-    TagId,
+    SectionId, TagId,
 };
 use loftspec::names::{CategoryName, TagName};
 use loftspec::slug::Slug;
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, RootComponent,
+    Requirement, RootComponent, Section,
 };
 
 /// A deterministic version 7 key numbered `n`.
@@ -40,6 +43,16 @@ pub fn fresh_key(n: u32) -> Key {
 
 pub fn label(text: &str) -> Label {
     Label::parse(text).unwrap()
+}
+
+/// A Section keyed `n`, named `name`, holding `body` and no child Section.
+pub fn section(n: u32, name: &str, body: &str) -> Section {
+    Section {
+        id: Some(SectionId::new(key(n))),
+        name: name.to_owned(),
+        body: body.to_owned(),
+        sections: Vec::new(),
+    }
 }
 
 pub fn criterion(id: Key, name: &str) -> Criterion {
@@ -355,6 +368,21 @@ pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
     document.decisions = vec![decision(k)];
     bind(&mut document, k);
     document
+}
+
+/// A proposed decision with nothing but its key, slug, title and context.
+pub fn proposed_decision(id: Key, slug_text: &str) -> Decision {
+    Decision {
+        id: DecisionId::new(id),
+        slug: slug(slug_text),
+        title: "A proposal".to_owned(),
+        context: "Nothing is decided yet.".to_owned(),
+        state: DecisionState::Proposed,
+        drivers: Vec::new(),
+        options: Vec::new(),
+        assessments: Vec::new(),
+        consequences: Vec::new(),
+    }
 }
 
 pub fn small_document() -> Document {

@@ -24,3 +24,16 @@ pub fn snapshot(root: &Path) -> BTreeMap<String, Vec<u8>> {
     }
     files
 }
+
+/// The paths of the files that differ between two snapshots: each one `after` holds and `before`
+/// does not hold with the same bytes.
+pub fn changed(
+    before: &BTreeMap<String, Vec<u8>>,
+    after: &BTreeMap<String, Vec<u8>>,
+) -> Vec<String> {
+    after
+        .iter()
+        .filter(|(path, bytes)| before.get(*path) != Some(bytes))
+        .map(|(path, _)| path.clone())
+        .collect()
+}

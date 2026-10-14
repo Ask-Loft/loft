@@ -8,15 +8,20 @@ mod common;
 mod conformance;
 #[path = "common/help.rs"]
 mod help;
+#[path = "common/markdown.rs"]
+mod markdown;
 #[path = "common/repo.rs"]
 mod repo;
 #[path = "common/schema.rs"]
 mod schema;
 #[path = "common/snapshot.rs"]
 mod snapshot;
+#[path = "common/workflow.rs"]
+mod workflow;
 
 mod check;
 mod citations;
+mod closed_output;
 mod find;
 mod fmt;
 mod import;
@@ -31,9 +36,15 @@ mod publish;
 mod publish_meet_contract;
 mod publish_settle;
 mod reads_tree;
+mod reconcile;
+mod release_check;
+mod release_workflow;
 mod render;
 mod schemas;
+mod shipped_binary;
 mod skill;
+mod skill_files;
+mod skill_format;
 mod skill_install;
 mod test_modules;
 mod verify;

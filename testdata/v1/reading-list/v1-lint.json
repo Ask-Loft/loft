@@ -1,6 +1,27 @@
 {
   "findings": [
     {
+      "rule": "LQ-009",
+      "severity": "hint",
+      "subjects": [
+        "00000000-0000-4000-8000-000000000014"
+      ]
+    },
+    {
+      "rule": "LQ-009",
+      "severity": "hint",
+      "subjects": [
+        "00000000-0000-4000-8000-000000000039"
+      ]
+    },
+    {
+      "rule": "SH-002",
+      "severity": "info",
+      "subjects": [
+        "00000000-0000-4000-8000-000000000039"
+      ]
+    },
+    {
       "rule": "SH-002",
       "severity": "info",
       "subjects": [

@@ -4,6 +4,7 @@
 use loftspec::attributes::{
     BandKind, ConservationKind, QaKind, QualityAggregation, QualityBand, VerificationFate,
 };
+use loftspec::codec::schema::{Field, Item, Kind, Scalar};
 use loftspec::decision::{ConsequenceKind, DriverKind, Rating, StateKind};
 use loftspec::document::SubjectRole;
 use loftspec::statement::Form;
@@ -96,4 +97,50 @@ fn a_forms_condition_is_its_first_slot_when_it_has_three() {
         assert_eq!(&slots[slots.len() - 2..], ["system", "shall"]);
         assert_eq!(form.condition(), (slots.len() == 3).then(|| slots[0]));
     }
+}
+
+/// Every field of every record kind but the counters, whose names are the label prefixes.
+fn defined_fields() -> impl Iterator<Item = &'static Field> {
+    Kind::ALL
+        .into_iter()
+        .filter(|kind| *kind != Kind::Counters)
+        .flat_map(Kind::fields)
+}
+
+#[test]
+fn every_field_name_the_format_defines_is_camel_case() {
+    let camel = |name: &str| {
+        name.starts_with(|first: char| first.is_ascii_lowercase())
+            && name
+                .chars()
+                .all(|character| character.is_ascii_alphanumeric())
+    };
+    let names: Vec<&str> = defined_fields().map(|field| field.name).collect();
+    let other: Vec<&&str> = names.iter().filter(|name| !camel(name)).collect();
+    assert!(other.is_empty(), "{other:?}");
+    assert!(names.contains(&"qualityTarget"), "{names:?}");
+}
+
+#[test]
+fn every_enumerated_value_the_format_defines_is_snake_case() {
+    let snake = |value: &str| {
+        value.starts_with(|first: char| first.is_ascii_lowercase())
+            && value.split('_').all(|word| {
+                !word.is_empty()
+                    && word.chars().all(|character| {
+                        character.is_ascii_lowercase() || character.is_ascii_digit()
+                    })
+            })
+    };
+    let values: Vec<&str> = defined_fields()
+        .filter_map(|field| match field.shape.item() {
+            Item::Scalar(Scalar::Enum(values)) => Some(values),
+            _ => None,
+        })
+        .flatten()
+        .copied()
+        .collect();
+    let other: Vec<&&str> = values.iter().filter(|value| !snake(value)).collect();
+    assert!(other.is_empty(), "{other:?}");
+    assert!(values.contains(&"event_driven"), "{values:?}");
 }

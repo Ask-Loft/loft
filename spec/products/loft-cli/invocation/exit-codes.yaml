@@ -17,6 +17,10 @@ requirements:
         name: "A refusal, a failed check or a failed verification exits 1."
       - key: 4dec469b-6118-4297-9434-3ea9b7a45a85
         name: "A failure the command does not expect exits 1 with its message on standard error."
+      - key: 01a13acc-470a-75d5-beed-efe01a7c2865
+        name: "A command whose standard output is closed before it finishes exits with the code it exits with when its output is open."
+      - key: 01a13acc-470a-75d5-beed-efe1276e3676
+        name: "A command whose standard output is closed before it finishes writes nothing to standard error about the closed output."
       - key: 056ca8b3-8d8b-452b-ae95-b65ad73bc229
         name: "An unknown command, an unknown option or a missing argument exits 2."
       - key: 32adb520-d5d3-4649-87ae-72413b41b0a0

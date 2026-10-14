@@ -16,6 +16,7 @@ use loftspec_store::{FileStore, StoreError};
 use serde_json::{Value, json};
 
 use crate::json;
+use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
@@ -117,31 +118,37 @@ fn print(publication: &Publication) {
             ..
         } => {
             for allocated in allocated {
-                println!("{} {}", allocated.label, allocated.element.key());
+                outln!("{} {}", allocated.label, allocated.element.key());
             }
             for withdrawn in withdrawn {
-                println!(
+                outln!(
                     "withdrew {} from {}, which now holds {}",
-                    withdrawn.withdrawn, withdrawn.element, withdrawn.label
+                    withdrawn.withdrawn,
+                    withdrawn.element,
+                    withdrawn.label
                 );
             }
             for rewritten in rewritten {
-                println!(
+                outln!(
                     "rewrote {} as {} in {}",
-                    rewritten.withdrawn, rewritten.label, rewritten.element
+                    rewritten.withdrawn,
+                    rewritten.label,
+                    rewritten.element
                 );
             }
-            println!(
+            outln!(
                 "published sequence {}, state root {}",
-                lock.publish_sequence, lock.state_root
+                lock.publish_sequence,
+                lock.state_root
             );
             if let Some(operation) = finish {
-                println!("to finish: {}", finishing(*operation));
+                outln!("to finish: {}", finishing(*operation));
             }
         }
-        Publication::Unchanged(lock) => println!(
+        Publication::Unchanged(lock) => outln!(
             "nothing changed since publish sequence {}, state root {}",
-            lock.publish_sequence, lock.state_root
+            lock.publish_sequence,
+            lock.state_root
         ),
     }
 }

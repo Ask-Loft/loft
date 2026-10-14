@@ -17,6 +17,7 @@ use loftspec_store::{FileStore, StoreError};
 use serde_json::json;
 
 use crate::merge_driver::NPM_COMMAND;
+use crate::out::outln;
 use crate::stop::Stop;
 use crate::{json, skill};
 
@@ -45,10 +46,10 @@ pub fn run(root: &Path, with_skill: bool, as_json: bool) -> ExitCode {
         let fields = json!({ "created": "spec/", "documentKey": key, "skills": skills });
         json::print(&json::result(SCHEMA, "created", fields, Vec::new()));
     } else {
-        println!("created spec/, document key {key}");
+        outln!("created spec/, document key {key}");
         skill::report(&skills);
         if let Some(suggestion) = merge_driver_suggestion(&GitCommand::default(), root) {
-            println!("{suggestion}");
+            outln!("{suggestion}");
         }
     }
     ExitCode::SUCCESS

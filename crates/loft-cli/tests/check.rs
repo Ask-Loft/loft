@@ -2,10 +2,12 @@
 //! order and form, and the exit code a CI job gates on.
 
 use std::fs;
+use std::process::Command;
 
-use crate::common::{Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
 use serde_json::Value;
+use software_plant::Clock;
 
 const PRODUCT: &str = "products/reading-list/product.yaml";
 const SHARE: &str = "products/reading-list/sharing/share-a-list.yaml";
@@ -227,4 +229,142 @@ fn entries_whose_names_begin_with_a_dot_are_not_part_of_the_tree() {
         stdout(&output)
     );
     assert_eq!(scratch.loft(&["fmt", "--check"]).status.code(), Some(0));
+}
+
+/// The JSON report and the text report of `loft check` run by `command`, each as printed.
+fn reports(command: impl Fn() -> Command) -> (String, String) {
+    let run = |args: &[&str]| stdout(&command().args(args).output().unwrap());
+    (run(&["check", "--format", "json"]), run(&["check"]))
+}
+
+/// The findings of a JSON report.
+fn findings_of(report: &str) -> Vec<Value> {
+    let document: Value = serde_json::from_str(report).unwrap();
+    let findings = document["findings"].as_array().unwrap().clone();
+    assert!(!findings.is_empty(), "the Reading List has findings");
+    findings
+}
+
+#[test]
+fn the_report_does_not_depend_on_the_locale() {
+    let scratch = Scratch::with_reading_list();
+    let under = |locale: &str| {
+        reports(|| {
+            let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+            command
+                .env("LC_ALL", locale)
+                .env("LANG", locale)
+                .env("LC_CTYPE", locale)
+                .env("LC_COLLATE", locale)
+                .env("LC_MESSAGES", locale);
+            command
+        })
+    };
+    let plain = under("C");
+    findings_of(&plain.0);
+    for locale in ["tr_TR.UTF-8", "de_DE.UTF-8", "ja_JP.UTF-8", "en_US.UTF-8"] {
+        assert_eq!(under(locale), plain, "{locale}");
+    }
+}
+
+#[test]
+fn the_report_does_not_depend_on_environment_variables() {
+    let scratch = Scratch::with_reading_list();
+    let bare = reports(|| {
+        let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+        command.env_clear();
+        Clock::fixed(EPOCH).apply(&mut command);
+        command
+    });
+    findings_of(&bare.0);
+    let busy = reports(|| {
+        let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+        command
+            .env("LOFT_CONFIG", "lint.yaml")
+            .env("LOFT_LINT", "off")
+            .env("LOFT_FAIL_ON", "hint")
+            .env("LOFT_FORMAT", "json")
+            .env("NO_COLOR", "1")
+            .env("CLICOLOR_FORCE", "1")
+            .env("TERM", "xterm-256color")
+            .env("COLUMNS", "20")
+            .env("TZ", "Pacific/Kiritimati")
+            .env("RUST_LOG", "trace")
+            .env("HOME", scratch.0.join("home"));
+        command
+    });
+    assert_eq!(busy, bare);
+}
+
+#[test]
+fn no_command_line_option_changes_the_findings() {
+    let scratch = Scratch::with_reading_list();
+    let run = |args: &[&str]| stdout(&scratch.loft(args));
+    let json = findings_of(&run(&["check", "--format", "json"]));
+    let text = run(&["check"]);
+    for severity in ["warning", "info", "hint"] {
+        let failing = run(&["check", "--fail-on", severity, "--format", "json"]);
+        assert_eq!(findings_of(&failing), json, "{severity}");
+        assert_eq!(run(&["check", "--fail-on", severity]), text, "{severity}");
+    }
+    let lines: Vec<&str> = text.lines().collect();
+    assert_eq!(lines.len(), json.len(), "{text}");
+    for (line, finding) in lines.iter().zip(&json) {
+        let said = format!(
+            "{} {}: {}",
+            finding["severity"].as_str().unwrap(),
+            finding["rule"].as_str().unwrap(),
+            finding["message"].as_str().unwrap()
+        );
+        assert!(line.contains(&said), "{line} does not say {said}");
+    }
+}
+
+#[test]
+fn no_file_outside_the_tree_changes_the_findings() {
+    let scratch = Scratch::with_reading_list();
+    let project = scratch.0.join("project");
+    let home = scratch.0.join("home");
+    fs::create_dir_all(&project).unwrap();
+    fs::create_dir_all(&home).unwrap();
+    fs::rename(scratch.0.join("spec"), project.join("spec")).unwrap();
+    let run = || {
+        reports(|| {
+            let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+            command
+                .current_dir(&project)
+                .env("HOME", &home)
+                .env("XDG_CONFIG_HOME", home.join(".config"));
+            command
+        })
+    };
+    let before = run();
+    findings_of(&before.0);
+    for outside in [
+        project.join("lint.yaml"),
+        scratch.0.join("lint.yaml"),
+        scratch.0.join("spec/lint.yaml"),
+        home.join("lint.yaml"),
+        home.join("spec/lint.yaml"),
+        home.join(".config/loft/lint.yaml"),
+    ] {
+        fs::create_dir_all(outside.parent().unwrap()).unwrap();
+        fs::write(&outside, QUIET).unwrap();
+    }
+    assert_eq!(run(), before);
+}
+
+#[test]
+fn a_read_error_or_a_lint_configuration_error_is_a_failed_check_in_json() {
+    let read = Scratch::with_reading_list();
+    read.edit(PRODUCT, "\nslug:", " # a note\nslug:");
+    let lint = Scratch::with_reading_list();
+    fs::write(lint.file("lint.yaml"), "rules:\n  - rule: XX-001\n").unwrap();
+    for (scratch, kind) in [(read, "read"), (lint, "lint")] {
+        let output = scratch.loft(&["check", "--format", "json"]);
+        assert_eq!(output.status.code(), Some(1), "{kind}");
+        let document = json(&output);
+        assert_eq!(document["outcome"], "failed", "{kind}: {document}");
+        assert_ne!(document["errors"], Value::Array(Vec::new()), "{kind}");
+    }
 }

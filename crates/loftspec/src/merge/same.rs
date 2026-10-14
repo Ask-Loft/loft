@@ -52,6 +52,14 @@ pub(super) fn same_conflict(left: &ConflictRec, right: &ConflictRec) -> bool {
             .all(|((_, left), (_, right))| same(left, right))
 }
 
+/// Whether a record holds a conflict the same as `conflict`.
+pub(super) fn holds(record: &Rec, conflict: &ConflictRec) -> bool {
+    record
+        .conflicts
+        .iter()
+        .any(|held| same_conflict(held, conflict))
+}
+
 /// Whether two lists hold the same items in the same order, by `same`.
 fn all_same<T>(left: &[T], right: &[T], same: fn(&T, &T) -> bool) -> bool {
     left.len() == right.len()

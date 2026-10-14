@@ -1,7 +1,8 @@
 //! The conflicts a merge writes: each on the record that holds the field, named by its path
 //! from that record (F-34).
 
-use crate::codec::{ConflictRec, Val};
+use crate::codec::schema::field;
+use crate::codec::{ConflictRec, Rec, Val};
 
 /// Where the conflicts of the record being merged go, and the path from that record to the
 /// unkeyed record whose fields are being merged.
@@ -42,4 +43,25 @@ impl<'a> Host<'a> {
 /// A conflict record over `path`; a side whose value is absent omits its member (AC-859).
 pub(super) fn conflict(path: &str, sides: [Option<&Val>; 3]) -> ConflictRec {
     ConflictRec::new(path, sides.map(|side| super::same::present(side).cloned()))
+}
+
+/// One of the two sides that changed the base: ours or theirs.
+#[derive(Debug, Clone, Copy)]
+pub(super) enum Side {
+    Ours,
+    Theirs,
+}
+
+/// A conflict over `record` on a keyed record that `deleter` deleted and the other side kept:
+/// each side names the record's key, and the deleting side `null` (AC-473).
+pub(super) fn record_conflict(record: &Rec, deleter: Side) -> ConflictRec {
+    let key = record.get(field::KEY);
+    let null = Val::Null {
+        position: record.position,
+    };
+    let sides = match deleter {
+        Side::Ours => [key, Some(&null), key],
+        Side::Theirs => [key, key, Some(&null)],
+    };
+    conflict(field::RECORD, sides)
 }

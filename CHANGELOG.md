@@ -3,6 +3,65 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- `loft reconcile` checks `loft.trace.yaml`, a file beside `spec/` that links each acceptance
+  criterion, and each Constraint and Quality Attribute whose `verificationFate` is `proved`, to
+  the tests that verify it by file and name. Each link holds the content hash its node had when
+  a reviewer last accepted it. `TR-001` reports a node no link names, `TR-002` a link never
+  reviewed, `TR-003` a link reviewed before its node changed, `TR-004` a test that cannot be
+  found as a whole word in its file, and `TR-005` a link whose node is gone or not in scope. No
+  test is run. `--fail-on` gates CI; `--accept <key|label>` and `--accept-stale` record a review.
+  The trace file enters no root, and no publish writes it.
+- The `loft-spec` skill has a new reference, `reconciling.md`, and ends a change to a specified
+  product by linking its tests.
+- This repository traces its own criteria: its trace file is seeded from the test names that cited
+  labels before test names stopped citing them, and CI runs `loft reconcile --fail-on warning`.
+- A new lint rule, `V2-009` (info), reports each Markdown construct in a body outside the Format's
+  subset of paragraphs, lists, code spans, fenced code blocks, emphasis and links: raw HTML, a
+  block quote, a table, an image, a thematic break, an indented code block, a footnote, a task
+  list item or struck-through text, each at its first body line.
+- `loft import v1` converts a v1 tag whose name is not a v2 tag name, such as "MCP tool": the
+  name is lowercased and each run of other characters becomes one hyphen (`mcp-tool`), for the
+  Facet Tag and its Vocabulary Entry alike. A name that derives nothing, or two v1 names that
+  derive one tag name, stop the conversion naming them. The sidecar keeps each v1 name that
+  changed, under `tagNames`.
+- A command whose standard output is closed before it finishes, as by `loft reconcile | head -1`,
+  no longer panics with "failed printing to stdout: Broken pipe" and exit 101: it skips the rest
+  of its output, writes nothing about it to standard error and exits with the code it exits with
+  when its output is open. Any other failure to write standard output exits 1 with its message on
+  standard error.
+- `loft merge-driver` matches a record moved to another parent in the same file, such as a
+  criterion moved to another Requirement or a Constraint moved between Components, with its base
+  record by its key, and writes it once. It used to keep the record at its old parent with a
+  `record` conflict and also insert it at the new one when the other branch edited it, write it
+  twice without a conflict when both branches moved it apart, and lose a deletion made in the
+  other branch. Now the record is at its new parent with the other branch's edit; one both
+  branches moved apart stays at its base parent with a new conflict over `parent`, each side
+  naming the parent's key; and one the other branch deleted is kept where it was moved, with a
+  `record` conflict. The driver refuses, writing nothing, a merge that would carry a key twice.
+  `parent` is reserved beside `conflicts`, `position` and `record`.
+- A key carried twice that a `record` conflict names, as when one branch moved a record to
+  another file and the other changed it, is reported as a record moved in one branch and changed
+  in the other.
+- An error or finding that names two sites in one file names the file once:
+  `spec/a.yaml:18:10, 28:10: …`.
+- A Feature listed by two Feature Groups is one error that names both groups.
+- A publish that settles a key which lost its live label raises the label counter above the
+  key's withdrawn labels, so none of them is given out again.
+- A `loft skill install` that fails leaves the skill directory as it was, with no temporary
+  directory beside it.
+- The skill's listing-budget refusal names the combined length and the limit.
+- The `loft-spec` skill's format reference describes every record kind with its fields, each
+  marked required or optional, and names every command that writes each file; tests now hold
+  the reference to the code.
+- CI builds `loftspec` with the toolchain its declared `rust-version` names.
+- The release workflow's check job runs `loft reconcile --fail-on warning`, as CI does.
+- Library API: `loftspec`'s `RuleId` gains `V2009`; `ConvertError::Tag` gives way to
+  `UnderivableTag` and `TagCollision`; `Problem::ListedByTwoGroups` names its groups;
+  `VocabularyEntry.name` is a `String` and `V1Sidecar` gains `tag_names`; `write_sites` is new;
+  `MergeError` gains `DuplicateKey` and `Unplaced`, and `Problem` gains `MovedAndChanged`.
+
 ## 2.0.3 (2026-10-14)
 
 - The npm packages run again: 2.0.2's platform packages shipped `loft` without its execute

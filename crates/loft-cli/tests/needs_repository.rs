@@ -2,10 +2,9 @@
 //! repository, run against each command whose Feature in this repository's own `spec/` lists the
 //! tag; and the converse, that every command that refuses outside a repository lists it.
 
-use std::fs;
 use std::process::Output;
 
-use crate::commands::{COMMANDS, Fixture};
+use crate::commands::{COMMANDS, fixture};
 use crate::common::{EPOCH, Scratch, stderr};
 use crate::conformance::tagged;
 use crate::snapshot::snapshot;
@@ -21,15 +20,6 @@ fn args_of<'a>(slug: &str, args: &'a [&'a str]) -> &'a [&'a str] {
     } else {
         args
     }
-}
-
-/// A scratch directory for a command: an empty one, or the Reading List.
-fn fixture(fixture: Fixture) -> Scratch {
-    let scratch = Scratch::with_reading_list();
-    if fixture == Fixture::Empty {
-        fs::remove_dir_all(scratch.0.join("spec")).unwrap();
-    }
-    scratch
 }
 
 /// Runs `loft` where git answers that the directory is outside any repository.

@@ -233,26 +233,31 @@ impl Facts {
     }
 }
 
-/// The entry that explains a finding only one side reports.
-fn explains<'a>(
-    register: &'a [Divergence],
-    direction: &str,
-    finding: &Normal,
-    facts: &Facts,
-) -> Option<&'a Divergence> {
-    register.iter().find(|entry| {
-        entry.surface == "lint"
-            && entry.direction == direction
-            && entry.rule == finding.0
-            && match entry.condition.as_str() {
-                "rule" => true,
-                "subject-external" => finding.2.iter().any(|s| facts.external.contains(s)),
-                "code-span" => facts.prose.contains(finding),
-                "hyphenated-tag" => facts.hyphenated.contains(finding),
-                "subjects-are-criteria" => finding.2.iter().all(|s| facts.criteria.contains(s)),
-                _ => false,
+/// Whether an entry explains a finding only one side reports, in `direction`.
+fn explains(entry: &Divergence, direction: &str, finding: &Normal, facts: &Facts) -> bool {
+    entry.surface == "lint"
+        && entry.direction == direction
+        && entry.rule == finding.0
+        && match entry.condition.as_str() {
+            "rule" => true,
+            "subject-external" => finding.2.iter().any(|s| facts.external.contains(s)),
+            "code-span" => facts.prose.contains(finding),
+            "hyphenated-tag" => facts.hyphenated.contains(finding),
+            "subjects-are-criteria" => {
+                // A finding without a subject has no subject that is a criterion.
+                !finding.2.is_empty() && finding.2.iter().all(|s| facts.criteria.contains(s))
             }
-    })
+            _ => false,
+        }
+}
+
+/// Each finding only one side reports, with the direction an entry must name to explain it.
+fn one_sided<'a>(
+    v1: &'a BTreeSet<Normal>,
+    v2: &'a BTreeSet<Normal>,
+) -> impl Iterator<Item = (&'static str, &'a Normal)> {
+    let v1_only = v1.difference(v2).map(|finding| ("v1-only", finding));
+    v1_only.chain(v2.difference(v1).map(|finding| ("v2-only", finding)))
 }
 
 /// The findings only v1 reports and only loftspec reports that no entry explains.
@@ -262,14 +267,37 @@ pub fn unexplained(
     facts: &Facts,
     register: &[Divergence],
 ) -> (Vec<Normal>, Vec<Normal>) {
-    let keep = |direction: &str, only: Vec<&Normal>| -> Vec<Normal> {
-        only.into_iter()
-            .filter(|finding| explains(register, direction, finding, facts).is_none())
-            .cloned()
-            .collect()
-    };
-    (
-        keep("v1-only", v1.difference(v2).collect()),
-        keep("v2-only", v2.difference(v1).collect()),
-    )
+    let (mut missing, mut extra) = (Vec::new(), Vec::new());
+    for (direction, finding) in one_sided(v1, v2) {
+        if register
+            .iter()
+            .any(|entry| explains(entry, direction, finding, facts))
+        {
+            continue;
+        }
+        let into = if direction == "v1-only" {
+            &mut missing
+        } else {
+            &mut extra
+        };
+        into.push(finding.clone());
+    }
+    (missing, extra)
+}
+
+/// The ids of the entries that explain at least one finding only one side reports.
+pub fn explaining<'a>(
+    v1: &BTreeSet<Normal>,
+    v2: &BTreeSet<Normal>,
+    facts: &Facts,
+    register: &'a [Divergence],
+) -> BTreeSet<&'a str> {
+    one_sided(v1, v2)
+        .flat_map(|(direction, finding)| {
+            register
+                .iter()
+                .filter(move |entry| explains(entry, direction, finding, facts))
+        })
+        .map(|entry| entry.id.as_str())
+        .collect()
 }

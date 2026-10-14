@@ -1,29 +1,45 @@
 //! The npm packages (the Feature "The npm package"): `scripts/npm-packages.sh` packs them into
 //! tarballs from a binary for each platform, here the `loft` under test copied for every platform,
-//! and the launcher of `@ask-loft/loft` runs the binary of the platform it is installed on.
+//! or, where a test runs only this machine's, a stand-in for each other one; and the launcher of
+//! `@ask-loft/loft` runs the binary of the platform it is installed on.
 //! `scripts/npm-smoke.sh` runs that launcher from the tarballs, as the release does before it
 //! publishes them.
 
 use std::fs;
+use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 
-use crate::common::{Scratch, stderr, stdout, workspace};
+use crate::common::{PLATFORMS, Scratch, stderr, stdout, workspace};
 use serde_json::{Value, json};
-
-const PLATFORMS: [&str; 6] = [
-    "darwin-arm64",
-    "darwin-x64",
-    "linux-arm64",
-    "linux-x64",
-    "win32-arm64",
-    "win32-x64",
-];
 
 /// The tarballs packed in `scratch/out` from the binary under test, each copied in without its
 /// execute bits, as a download of the build's artifacts leaves it.
 fn assembled(scratch: &Scratch) -> PathBuf {
+    pack(scratch, |_| {
+        Path::new(env!("CARGO_BIN_EXE_loft")).to_owned()
+    })
+}
+
+/// [`assembled`], with `binary` for this machine's platform and a stand-in that never runs for
+/// every other one, so that a test that runs only this machine's packs a single real binary.
+fn assembled_with(scratch: &Scratch, binary: &Path) -> PathBuf {
+    let stand_in = scratch.0.join("stand-in");
+    fs::write(&stand_in, "a binary for another platform\n").unwrap();
+    let host = host();
+    pack(scratch, |platform| {
+        if platform == host {
+            binary.to_owned()
+        } else {
+            stand_in.clone()
+        }
+    })
+}
+
+/// The tarballs packed in `scratch/out` from the file `binary` gives for each platform, each
+/// copied in without its execute bits.
+fn pack(scratch: &Scratch, binary: impl Fn(&str) -> PathBuf) -> PathBuf {
     for platform in PLATFORMS {
         let dir = scratch.0.join("binaries").join(platform);
         fs::create_dir_all(&dir).unwrap();
@@ -32,9 +48,9 @@ fn assembled(scratch: &Scratch) -> PathBuf {
         } else {
             "loft"
         };
-        let binary = dir.join(name);
-        fs::copy(env!("CARGO_BIN_EXE_loft"), &binary).unwrap();
-        fs::set_permissions(&binary, fs::Permissions::from_mode(0o644)).unwrap();
+        let copy = dir.join(name);
+        fs::copy(binary(platform), &copy).unwrap();
+        fs::set_permissions(&copy, fs::Permissions::from_mode(0o644)).unwrap();
     }
     let output = Command::new(workspace().join("scripts/npm-packages.sh"))
         .arg(scratch.0.join("binaries"))
@@ -80,18 +96,22 @@ fn host() -> String {
 /// A project whose `node_modules` holds `@ask-loft/loft` and, with `platform`, this machine's
 /// platform package, extracted from their tarballs as npm installs them.
 fn project(scratch: &Scratch, platform: bool) -> PathBuf {
-    let out = assembled(scratch);
+    project_from(scratch, &assembled(scratch), platform)
+}
+
+/// [`project`], from the tarballs in `out`.
+fn project_from(scratch: &Scratch, out: &Path, platform: bool) -> PathBuf {
     let scope = scratch.0.join("project/node_modules/@ask-loft");
-    unpack(&out, "loft", &scope.join("loft"));
+    unpack(out, "loft", &scope.join("loft"));
     if platform {
         let name = format!("loft-{}", host());
-        unpack(&out, &name, &scope.join(&name));
+        unpack(out, &name, &scope.join(&name));
     }
     scratch.0.join("project")
 }
 
-/// The launcher run with `args` in `project`, with Node first loading `preload` if given.
-fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
+/// The launcher installed in `project`, run there by Node, which first loads `preload` if given.
+fn launcher(project: &Path, preload: Option<&str>) -> Command {
     let mut node = Command::new("node");
     if let Some(script) = preload {
         let path = project.join("preload.js");
@@ -99,10 +119,13 @@ fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
         node.arg("--require").arg(path);
     }
     node.arg(project.join("node_modules/@ask-loft/loft/bin/loft.js"))
-        .args(args)
-        .current_dir(project)
-        .output()
-        .unwrap()
+        .current_dir(project);
+    node
+}
+
+/// The launcher run with `args` in `project`, with Node first loading `preload` if given.
+fn launch(project: &Path, preload: Option<&str>, args: &[&str]) -> Output {
+    launcher(project, preload).args(args).output().unwrap()
 }
 
 /// `scripts/npm-smoke.sh` run over the tarballs in `out`.
@@ -248,4 +271,195 @@ fn the_smoke_check_fails_where_the_packed_binary_cannot_run() {
     assert_eq!(packed.status.code(), Some(0), "{}", stderr(&packed));
     let output = smoke(&out);
     assert_ne!(output.status.code(), Some(0), "{}", stdout(&output));
+}
+
+#[test]
+fn the_binary_reads_the_standard_input_given_to_the_launcher() {
+    let scratch = Scratch::empty();
+    // In place of `loft`, a binary that copies its standard input to its output and its error.
+    let copies = scratch.0.join("copies");
+    let script = "#!/bin/sh\ninput=$(cat)\nprintf '%s' \"$input\"\nprintf '%s' \"$input\" >&2\n";
+    fs::write(&copies, script).unwrap();
+    let project = project_from(&scratch, &assembled_with(&scratch, &copies), true);
+    let mut child = launcher(&project, None)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut input = child.stdin.take().unwrap();
+    input.write_all(b"a tree on standard input").unwrap();
+    drop(input);
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(stdout(&output), "a tree on standard input");
+    assert_eq!(stderr(&output), "a tree on standard input");
+}
+
+#[test]
+fn npm_installs_the_platform_binary_executable() {
+    let scratch = Scratch::empty();
+    let out = assembled_with(&scratch, Path::new(env!("CARGO_BIN_EXE_loft")));
+    let project = scratch.0.join("installed");
+    fs::create_dir_all(&project).unwrap();
+    fs::write(
+        project.join("package.json"),
+        r#"{"name": "installed", "private": true}"#,
+    )
+    .unwrap();
+    let platform = format!("loft-{}", host());
+    let output = Command::new("npm")
+        .args(["install", "--offline", "--no-audit", "--no-fund"])
+        .arg(out.join(format!("{platform}.tgz")))
+        .arg(out.join("loft.tgz"))
+        .env("npm_config_cache", scratch.0.join("npm-cache"))
+        .env("npm_config_userconfig", scratch.0.join("npmrc"))
+        .env("npm_config_update_notifier", "false")
+        .current_dir(&project)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let binary = project.join(format!("node_modules/@ask-loft/{platform}/bin/loft"));
+    let mode = fs::metadata(&binary).unwrap().permissions().mode();
+    assert_eq!(mode & 0o111, 0o111, "{}: {mode:o}", binary.display());
+    let launched = launch(&project, None, &["--version"]);
+    assert_eq!(launched.status.code(), Some(0), "{}", stderr(&launched));
+    assert!(
+        stdout(&launched).contains(env!("CARGO_PKG_VERSION")),
+        "{}",
+        stdout(&launched)
+    );
+}
+
+/// The names of the packages `package` depends on, in each field that lists dependencies.
+fn dependencies(package: &Value) -> Vec<String> {
+    let fields = [
+        "dependencies",
+        "optionalDependencies",
+        "peerDependencies",
+        "bundleDependencies",
+        "bundledDependencies",
+    ];
+    let mut names = Vec::new();
+    for field in fields {
+        match &package[field] {
+            Value::Null | Value::Bool(_) => {}
+            Value::Object(listed) => names.extend(listed.keys().cloned()),
+            Value::Array(listed) => names.extend(
+                listed
+                    .iter()
+                    .map(|name| name.as_str().expect(field).to_owned()),
+            ),
+            other => panic!("{field}: {other}"),
+        }
+    }
+    names
+}
+
+/// The quoted text at the start of `rest`, with a template's leading `${name}` replaced by the
+/// text the script's `const name` holds; a module named by anything but a quote is refused.
+fn quoted(script: &str, rest: &str) -> String {
+    let rest = rest.trim_start();
+    let quote = rest.chars().next().unwrap_or(' ');
+    assert!(
+        ['"', '\'', '`'].contains(&quote),
+        "a module named by an expression: {rest}"
+    );
+    let text = rest[1..].split(quote).next().unwrap().to_owned();
+    let Some(name) = text
+        .strip_prefix("${")
+        .and_then(|after| after.split('}').next())
+    else {
+        return text;
+    };
+    let definition = format!("const {name} = ");
+    let (_, value) = script
+        .split_once(&definition)
+        .unwrap_or_else(|| panic!("no {definition}in the script"));
+    text.replacen(&format!("${{{name}}}"), &quoted(script, value), 1)
+}
+
+/// The module each `require(…)`, `require.resolve(…)` and `import` in `script` names.
+fn required(script: &str) -> Vec<String> {
+    let mut modules = Vec::new();
+    for call in ["require(", "require.resolve(", "import("] {
+        for (at, _) in script.match_indices(call) {
+            modules.push(quoted(script, &script[at + call.len()..]));
+        }
+    }
+    for line in script.lines().map(str::trim_start) {
+        let rest = if line.starts_with("import ") || line.starts_with("} from ") {
+            line.rsplit_once("from ")
+                .map_or(line.strip_prefix("import "), |(_, rest)| Some(rest))
+        } else {
+            None
+        };
+        modules.extend(rest.map(|rest| quoted(script, rest)));
+    }
+    modules
+}
+
+/// Whether `module`, required by the script at `script` in the package at `root`, is a built-in
+/// of Node, a file of the package itself or a package of the `@ask-loft` scope.
+fn within_reach(module: &str, script: &Path, root: &Path) -> bool {
+    if module.starts_with("./") || module.starts_with("../") {
+        let root = fs::canonicalize(root).unwrap();
+        return fs::canonicalize(script.parent().unwrap().join(module))
+            .is_ok_and(|target| target.starts_with(root));
+    }
+    module.starts_with("node:") || module.starts_with("@ask-loft/")
+}
+
+/// Every JavaScript file under `dir`.
+fn scripts(dir: &Path, found: &mut Vec<PathBuf>) {
+    for entry in fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            scripts(&path, found);
+        } else if path
+            .extension()
+            .is_some_and(|extension| ["js", "cjs", "mjs"].contains(&extension.to_str().unwrap()))
+        {
+            found.push(path);
+        }
+    }
+}
+
+#[test]
+fn the_launcher_depends_on_no_package_outside_the_ask_loft_scope() {
+    let scratch = Scratch::empty();
+    let root = unpacked(&scratch, &assembled(&scratch), "loft");
+    let package = manifest(&root);
+    let names = dependencies(&package);
+    assert!(
+        !names.is_empty(),
+        "the launcher lists its platform packages"
+    );
+    for name in names {
+        assert!(name.starts_with("@ask-loft/"), "{name}");
+    }
+    let launcher = root.join(package["bin"]["loft"].as_str().unwrap());
+    assert_eq!(
+        fs::read(&launcher).unwrap(),
+        fs::read(workspace().join("npm/loft/bin/loft.js")).unwrap(),
+        "the packed launcher is npm/loft/bin/loft.js"
+    );
+    let mut found = Vec::new();
+    scripts(&root, &mut found);
+    assert!(found.contains(&launcher), "{found:?}");
+    for script in found {
+        let modules = required(&fs::read_to_string(&script).unwrap());
+        assert!(
+            !modules.is_empty(),
+            "{}: requires nothing",
+            script.display()
+        );
+        for module in modules {
+            assert!(
+                within_reach(&module, &script, &root),
+                "{}: {module}",
+                script.display()
+            );
+        }
+    }
 }

@@ -6,11 +6,12 @@ use std::fmt::Write as _;
 use std::num::NonZeroU64;
 
 use crate::common::text::{files, path};
-use crate::common::{key, label};
+use crate::common::{key, label, small_document};
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::document::Document;
 use loftspec::hash::hash_document;
-use loftspec::ids::ElementId;
+use loftspec::identity::LabelPrefix;
+use loftspec::ids::{ConstraintId, ElementId};
 use loftspec::merge::merge_file;
 use loftspec::publish::{
     Lock, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, RepoState, Stopped,
@@ -19,6 +20,9 @@ use loftspec::publish::{
 
 /// A binding as a labels file lists it: the key's number, its live label and its aliases.
 type Bind = (u32, &'static str, &'static [&'static str]);
+
+/// The labels a key withdrew: the key's number and the labels.
+type Withdrawn = (u32, &'static [&'static str]);
 
 /// The small document's bindings but those of the criterion and the two constraints.
 const KEPT: [Bind; 8] = [
@@ -34,6 +38,12 @@ const KEPT: [Bind; 8] = [
 
 /// A labels file holding the kept bindings and `extra`, sorted by key.
 fn labels(extra: &[Bind]) -> String {
+    withdrawing(extra, &[])
+}
+
+/// A labels file holding the kept bindings and `extra`, sorted by key, each key `withdrawn`
+/// names listing the labels given with it as withdrawn.
+fn withdrawing(extra: &[Bind], withdrawn: &[Withdrawn]) -> String {
     let mut all: Vec<Bind> = KEPT.iter().chain(extra).copied().collect();
     all.sort_by_key(|bind| bind.0);
     let mut text = String::from(
@@ -47,6 +57,12 @@ fn labels(extra: &[Bind]) -> String {
                 let _ = writeln!(text, "      - {alias}");
             }
         }
+        for (_, labels) in withdrawn.iter().filter(|listed| listed.0 == n) {
+            text.push_str("    withdrawn:\n");
+            for label in *labels {
+                let _ = writeln!(text, "      - {label}");
+            }
+        }
     }
     text
 }
@@ -54,10 +70,16 @@ fn labels(extra: &[Bind]) -> String {
 /// The small document's tree, its bindings the merge of `local` and `pulled` from a start that
 /// binds neither constraint nor the criterion, as `operation` hands git's merge driver the sides.
 fn met(operation: Operation, local: &[Bind], pulled: &[Bind]) -> Files {
+    met_files(operation, labels(local), labels(pulled))
+}
+
+/// The small document's tree, its bindings the merge of the labels files `local` and `pulled`
+/// from a start that binds neither constraint nor the criterion, as [`met`] merges them.
+fn met_files(operation: Operation, local: String, pulled: String) -> Files {
     let base = labels(&[]);
     let (ours, theirs) = match operation {
-        Operation::Merge => (labels(local), labels(pulled)),
-        Operation::Rebase => (labels(pulled), labels(local)),
+        Operation::Merge => (local, pulled),
+        Operation::Rebase => (pulled, local),
     };
     let at = SpecPath::new("labels.yaml");
     let merged = merge_file(&at, base.as_bytes(), ours.as_bytes(), theirs.as_bytes()).unwrap();
@@ -214,6 +236,45 @@ fn a_key_both_sides_labelled_apart_keeps_the_pulled_label_and_withdraws_the_othe
 }
 
 #[test]
+fn a_withdrawn_list_only_grows_when_a_key_that_lists_one_withdraws_another() {
+    let earlier: [Withdrawn; 1] = [(0x5, &["AC-1"])];
+    let files = met_files(
+        Operation::Merge,
+        withdrawing(&[(0x5, "AC-2", &[])], &earlier),
+        withdrawing(&[(0x5, "AC-3", &[])], &earlier),
+    );
+    let settled = settled(&files, &stopped(Operation::Merge));
+    let bindings = &settled.document.bindings;
+    let criterion = bindings.resolve(label("AC-3")).unwrap();
+    assert_eq!(criterion.key(), key(5));
+    assert_eq!(
+        bindings.withdrawn_of(criterion),
+        [label("AC-1"), label("AC-2")]
+    );
+}
+
+#[test]
+fn the_counter_is_raised_above_a_withdrawn_label_of_a_key_that_lost_its_live_label() {
+    let earlier: [Withdrawn; 1] = [(0x9, &["CON-12"])];
+    let files = met_files(
+        Operation::Merge,
+        withdrawing(&LOCAL, &earlier),
+        labels(&PULLED),
+    );
+    let settled = settled(&files, &stopped(Operation::Merge));
+    let document = &settled.document;
+    let live = document.bindings.label_of_key(key(9)).unwrap();
+    let constraint = document.bindings.resolve(live).unwrap();
+    assert!(
+        document
+            .bindings
+            .withdrawn_of(constraint)
+            .contains(&label("CON-12"))
+    );
+    assert!(document.counters.next(LabelPrefix::Constraint).get() > 12);
+}
+
+#[test]
 fn a_key_that_lost_only_an_alias_keeps_its_live_label_and_its_other_aliases() {
     let local: [Bind; 1] = [(0x9, "CON-5", &["CON-2", "CON-4"])];
     let files = met(Operation::Merge, &local, &PULLED);
@@ -312,4 +373,54 @@ fn bindings_merged_without_a_conflict_publish_when_only_the_lock_is_unmerged() {
         settle(&files(), &repo),
         Ok(Publication::Published { .. })
     ));
+}
+
+#[test]
+fn the_sequence_is_one_past_the_higher_of_the_two_locks_or_1_without_either() {
+    let files = met(Operation::Merge, &LOCAL, &PULLED);
+    for (head, other, expected) in [
+        (Some(6), Some(4), 7),
+        (Some(4), Some(6), 7),
+        (Some(5), None, 6),
+        (None, Some(5), 6),
+        (None, None, 1),
+    ] {
+        let mut repo = stopped(Operation::Merge);
+        let stopped = repo.stopped.as_mut().unwrap();
+        stopped.head_lock = head.map(lock);
+        stopped.other_lock = other.map(lock);
+        assert_eq!(
+            settled(&files, &repo).lock.publish_sequence.get(),
+            expected,
+            "HEAD at {head:?}, the other commit at {other:?}"
+        );
+    }
+}
+
+#[test]
+fn keys_that_lost_their_live_labels_are_allocated_in_document_order_not_key_order() {
+    // Two more constraints under the Component, after its first: in document order the
+    // constraint keyed 9, under the Product, comes before the Component's, keyed 7.
+    let mut document = small_document();
+    let component = &mut document.components[0].component;
+    for n in [0xb, 0xc] {
+        let mut extra = component.constraints[0].clone();
+        extra.id = Some(ConstraintId::new(key(n)));
+        extra.name = format!("The document model shall reject kind {n}.");
+        component.constraints.push(extra);
+    }
+    let local = labels(&[(0x9, "CON-2", &[]), (0x7, "CON-3", &[])]);
+    let pulled = labels(&[(0xb, "CON-2", &[]), (0xc, "CON-3", &[])]);
+    let base = labels(&[]);
+    let at = SpecPath::new("labels.yaml");
+    let merged = merge_file(&at, base.as_bytes(), local.as_bytes(), pulled.as_bytes()).unwrap();
+    assert!(merged.conflicts > 0, "the sides dispute the labels");
+    let mut files = codec::write(&document);
+    files.insert(path("labels.yaml"), merged.bytes);
+    let settled = settled(&files, &stopped(Operation::Merge));
+    let bindings = &settled.document.bindings;
+    assert_eq!(bindings.label_of_key(key(0x9)), Some(label("CON-4")));
+    assert_eq!(bindings.label_of_key(key(0x7)), Some(label("CON-5")));
+    assert_eq!(bindings.label_of_key(key(0xb)), Some(label("CON-2")));
+    assert_eq!(bindings.label_of_key(key(0xc)), Some(label("CON-3")));
 }

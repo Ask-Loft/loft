@@ -1,12 +1,14 @@
 //! The Reading List export: a small v1 export whose every hash and address the v1 hashing
 //! produced, converted end to end (F-13..F-15). It covers every node kind, all four Component
-//! scopes, Facet Tags, a constraint category, a quality target, decisions in each of the five
-//! states, and prose with a resolvable reference, an unresolvable one and a heading.
+//! scopes, a Component under an external one, Facet Tags, a tag whose v1 name is not a tag name,
+//! a constraint category, a quality target, decisions in each of the five states, and prose with
+//! a resolvable reference, an unresolvable one, a heading and a tag name in a code span.
 
 use std::collections::BTreeMap;
 
 use crate::common::v1::key;
 
+use loftspec::codec;
 use loftspec::convert::v1::export::Export;
 use loftspec::convert::v1::{Conversion, Finding, convert};
 use loftspec::document::Edge;
@@ -22,7 +24,7 @@ const READING_LIST: &str =
 /// where the converter is built with other `serde_json` features, so a canonical form that
 /// depends on the build shows there. A change to it is a deliberate format change, never a
 /// refresh to make a failure disappear.
-const STATE_ROOT: &str = "cdd8ae424e42500c4ab016349a07a6ec4834eab12a1808da6b68dfd5544e3bb4";
+const STATE_ROOT: &str = "48b598fb480c28de10fe7b24351754f6aa855c71e82fc8ad7a7f77a077d9caf3";
 
 fn converted() -> Conversion {
     convert(&Export::from_json(READING_LIST).unwrap()).unwrap()
@@ -32,7 +34,7 @@ fn converted() -> Conversion {
 fn every_node_but_the_facet_tags_and_every_decision_is_bound() {
     let document = converted().document;
     let nodes = document.bindings.len() - document.decisions.len();
-    assert_eq!(nodes, 27, "30 v1 nodes less 3 Facet Tags");
+    assert_eq!(nodes, 28, "32 v1 nodes less 4 Facet Tags");
     assert_eq!(document.decisions.len(), 5);
     assert_eq!(document.products.len(), 1);
     assert_eq!(document.components.len(), 3);
@@ -83,14 +85,31 @@ fn each_counter_is_one_above_the_highest_label_and_facet_tags_count_in_the_sidec
     let next = |prefix| conversion.document.counters.next(prefix).get();
     assert_eq!(next(LabelPrefix::Requirement), 7);
     assert_eq!(next(LabelPrefix::Criterion), 8);
-    assert_eq!(next(LabelPrefix::Component), 5);
+    assert_eq!(next(LabelPrefix::Component), 6);
     assert_eq!(next(LabelPrefix::Decision), 6);
-    assert_eq!(conversion.sidecar.highest["FT"].get(), 3);
+    assert_eq!(conversion.sidecar.highest["FT"].get(), 4);
+}
+
+#[test]
+fn the_sidecar_keeps_the_v1_name_behind_the_one_renamed_tag() {
+    let tag_names = converted().sidecar.tag_names;
+    let renamed: Vec<(&str, &str)> = tag_names
+        .iter()
+        .map(|(tag, v1_name)| (tag.as_str(), v1_name.as_str()))
+        .collect();
+    assert_eq!(renamed, [("shelf-life", "Shelf life")]);
 }
 
 #[test]
 fn two_conversions_write_identical_sidecars() {
     assert_eq!(converted().sidecar.to_json(), converted().sidecar.to_json());
+}
+
+#[test]
+fn two_conversions_write_byte_identical_spec_trees() {
+    let first = codec::write(&converted().document);
+    assert!(first.len() > 10, "the tree holds {} files", first.len());
+    assert_eq!(first, codec::write(&converted().document));
 }
 
 #[test]

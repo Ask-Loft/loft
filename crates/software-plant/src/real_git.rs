@@ -3,7 +3,7 @@
 //! than through a launcher in front of it.
 
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Output};
 use std::sync::OnceLock;
 use std::{env, iter};
 
@@ -71,4 +71,28 @@ pub fn setup_git() -> Command {
         "maintenance.auto=false",
     ]);
     command
+}
+
+/// Runs a setup command of [`setup_git`] in `dir`, giving its output.
+///
+/// # Panics
+///
+/// git cannot be run.
+#[must_use]
+pub fn git_output(dir: &Path, args: &[&str]) -> Output {
+    setup_git().arg("-C").arg(dir).args(args).output().unwrap()
+}
+
+/// Runs a setup command of [`setup_git`] in `dir`, which succeeds.
+///
+/// # Panics
+///
+/// git cannot be run, or the command fails.
+pub fn git(dir: &Path, args: &[&str]) {
+    let output = git_output(dir, args);
+    assert!(
+        output.status.success(),
+        "git {args:?}: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 }

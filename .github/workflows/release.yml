@@ -33,6 +33,7 @@ jobs:
       - run: cargo nextest run --workspace
       - run: cargo run -q -p loft-cli -- fmt --check
       - run: cargo run -q -p loft-cli -- check --fail-on warning
+      - run: cargo run -q -p loft-cli -- reconcile --fail-on warning
       - run: cargo run -q -p loft-cli -- verify
       - run: scripts/publish-crates.sh --dry-run
 

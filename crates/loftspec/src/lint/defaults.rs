@@ -178,7 +178,8 @@ impl RuleId {
             | Self::V2001
             | Self::V2002
             | Self::V2006
-            | Self::V2008 => Severity::Info,
+            | Self::V2008
+            | Self::V2009 => Severity::Info,
             Self::Sh010 | Self::Lq009 => Severity::Hint,
         }
     }

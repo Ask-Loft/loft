@@ -26,7 +26,28 @@ requirements:
       - key: e949ba2e-312d-4e67-803a-fe3957f852ff
         name: "The merged file is in the formatter's canonical layout."
       - key: 01a13070-322f-7493-9495-406b0a698db6
-        name: "A record moved to another parent in one file is merged as a deletion from its base parent and an insertion into its new parent."
+        name: "A record moved to another parent in one file is matched with its base record by its key."
+  - key: 01a13acc-1f4f-759a-b78e-5172e7e8ccac
+    statement:
+      form: event_driven
+      when: "a side moves a record to another parent in the same file"
+      system: "the merge driver"
+      shall: "write the record once."
+    criteria:
+      - key: 01a13acc-1f4f-759a-b78e-51734b0f791e
+        name: "When the other side edits the record, the record is at its new parent and carries the edit."
+      - key: 01a13acc-1f4f-759a-b78e-5174e8a76890
+        name: "When both sides move the record to one parent, the record is at that parent and no conflict record is written for it."
+      - key: 01a13acc-1f4f-759a-b78e-51752b873aa4
+        name: "When the sides move the record to different parents, the record stays at its base parent with a conflict record whose field is `parent`."
+      - key: 01a13acc-1f4f-759a-b78e-51763e2acef6
+        name: "In a `parent` conflict, each side holds the key of the record's parent on that side."
+      - key: 01a13acc-1f4f-759a-b78e-517707b6075a
+        name: "When the other side deletes the record, the record is kept where the moving side put it, with a conflict record whose field is `record` and whose deleting side is `null`."
+      - key: 01a13acc-1f4f-759a-b78e-5178ef058395
+        name: "When the other side deletes the new parent, the new parent is kept with a conflict record whose field is `record`."
+      - key: 01a13acc-1f4f-759a-b78e-51796254cd32
+        name: "The merged file carries each key once."
   - key: 1be4d9f1-799b-4212-bdc9-e2865df2b0dd
     statement:
       form: event_driven
@@ -99,9 +120,11 @@ requirements:
       - key: 01a13070-b1ce-749d-b40a-8afead38048d
         name: "A decision subject is matched by its role and its node."
       - key: 01a13070-322f-7493-9495-407575aee03c
-        name: "When both sides change an assessment or a decision subject to different values, the record that holds its list gains a conflict record for the list."
+        name: "When both sides change an assessment to different values, the record that holds its list gains a conflict record for the list."
       - key: 01a13070-322f-7493-9495-407671410897
-        name: "The element keeps its base value."
+        name: "The assessment keeps its base value."
+      - key: 01a13a1b-2f3d-70d6-88b6-56e858b4b211
+        name: "A decision subject that each side replaces with a different subject is removed, and each side's replacement is kept."
   - key: 01a13070-322f-7493-9495-4077bb5be258
     statement:
       form: event_driven

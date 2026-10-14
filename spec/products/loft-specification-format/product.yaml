@@ -1,7 +1,7 @@
 key: 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 slug: loft-specification-format
 name: "Loft Specification Format"
-body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the validator; the linter; the renderer; the publisher; and the merge driver. A role names an obligation, not a module: one program may fill every role."
+body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the validator; the linter; the renderer; the publisher; the merge driver; and the reconciler, which compares the trace file with the tree and the tests. A role names an obligation, not a module: one program may fill every role."
 tags:
   - portable
 featureGroups:
@@ -103,3 +103,12 @@ featureGroups:
       - 6a3af886-c63d-49a9-8467-0cc33fdcdc50
       - f907e0df-acf0-4a7d-a118-30a71393f290
       - 01a130de-5737-776f-9c39-b9bb261d3fce
+  - key: 01a1383a-4a94-72cc-9c61-114fcb408ec5
+    slug: implementation-reconciliation
+    name: "Implementation reconciliation"
+    body: "The trace file that links nodes to the tests that verify them, and the findings that say which links no longer hold."
+    tags:
+      - portable
+    features:
+      - 01a1383a-4a94-72cc-9c61-11074c67c6d6
+      - 01a1383a-4a94-72cc-9c61-11318846c14a
