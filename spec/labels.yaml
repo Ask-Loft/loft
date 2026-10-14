@@ -1,9 +1,9 @@
 counters:
   P: 5
   FG: 16
-  F: 83
-  RQ: 383
-  AC: 1442
+  F: 84
+  RQ: 386
+  AC: 1458
   CMP: 19
   CON: 23
   QA: 3
@@ -1561,6 +1561,46 @@ bindings:
     label: AC-1410
   - key: 01a137be-5962-73e4-9623-5119c4f6314a
     label: AC-1411
+  - key: 01a13804-d7aa-7131-91ff-bee4ed990cd9
+    label: RQ-385
+  - key: 01a13804-d7aa-7131-91ff-bee5623be056
+    label: AC-1449
+  - key: 01a13804-d7aa-7131-91ff-bee66b0a045e
+    label: AC-1450
+  - key: 01a13804-d7aa-7131-91ff-bee7f5aa4f49
+    label: AC-1451
+  - key: 01a13804-d7aa-7131-91ff-bee8aea3f91b
+    label: AC-1452
+  - key: 01a13804-d7aa-7131-91ff-bee982c65dc1
+    label: AC-1453
+  - key: 01a1380a-9f4a-7222-b52b-7b182889427c
+    label: AC-1454
+  - key: 01a1380a-9f4b-741a-83a5-973429a1c475
+    label: F-83
+  - key: 01a1380a-9f4b-741a-83a5-9735117f77e5
+    label: RQ-383
+  - key: 01a1380a-9f4b-741a-83a5-97365938e9ed
+    label: AC-1442
+  - key: 01a1380a-9f4b-741a-83a5-973716060074
+    label: AC-1443
+  - key: 01a1380a-9f4b-741a-83a5-9738d1f4ccef
+    label: AC-1444
+  - key: 01a1380a-9f4b-741a-83a5-9739770052a7
+    label: AC-1445
+  - key: 01a1380a-9f4b-741a-83a5-973a6a9dc106
+    label: AC-1446
+  - key: 01a1380a-9f4b-741a-83a5-973bef635dc3
+    label: RQ-384
+  - key: 01a1380a-9f4b-741a-83a5-973ce5482179
+    label: AC-1447
+  - key: 01a1380a-9f4b-741a-83a5-973db6faa3be
+    label: AC-1448
+  - key: 01a13816-ded1-7512-a998-e07ff2515ce7
+    label: AC-1455
+  - key: 01a13816-ded1-7512-a998-e0808ecb7a48
+    label: AC-1456
+  - key: 01a13816-ded1-7512-a998-e0818eaaf9bb
+    label: AC-1457
   - key: 01c16dee-867b-4d85-b851-ac07db2a44f2
     label: AC-410
   - key: 01cb4866-fc85-4142-ade6-5a4ae9927beb
