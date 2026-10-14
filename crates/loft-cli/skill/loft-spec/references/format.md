@@ -30,7 +30,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | Path | Holds | Written by |
 |---|---|---|
 | `spec/loftspec.yaml` | The manifest: format, algorithm, document key, Products in order | `loft init`, `loft fmt` |
-| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft publish` only |
+| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft publish`; `loft fmt` drops a deleted node's binding |
 | `spec/tags.yaml` | The tag registry | you |
 | `spec/categories.yaml` | The category registry for Constraint bindings | you |
 | `spec/lint.yaml` | The lint configuration, optional | you |

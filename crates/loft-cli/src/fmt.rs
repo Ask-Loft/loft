@@ -64,6 +64,13 @@ pub fn run(root: &Path, check: bool, as_json: bool) -> ExitCode {
 fn attempt(root: &Path, check: bool) -> Result<Outcome, Stop> {
     let store = FileStore::open(root)?;
     let formatted = format(&store.read_files()?)?;
+    // A key lost by accident drops a binding too, so every drop is told.
+    for (label, key) in &formatted.dropped {
+        eprintln!(
+            "spec/labels.yaml: the binding of {label} ({key}) names no node or decision, so \
+             `loft fmt` drops it"
+        );
+    }
     let changed = formatted.changed.keys().map(ToString::to_string).collect();
     let written = !check && !formatted.changed.is_empty();
     if written {

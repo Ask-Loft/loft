@@ -73,7 +73,8 @@ the order `format.md` gives; `loft fmt` restores the order if you do not.
 
 - Never write or change a `key`. A node keeps its key for life, through every rename and move.
 - Never write a label such as `RQ-12` where a key belongs, and never give a node a label field.
-  Labels live only in `spec/labels.yaml`, which `loft publish` writes. Prose may cite a label;
+  Labels live only in `spec/labels.yaml`, which `loft publish` writes and `loft fmt` clears of
+  deleted nodes. Prose may cite a label;
   `writing-rules.md` says how.
 - Never edit `spec/labels.yaml` or `loft.lock.json`.
 - Never copy a key from one node to another, or from an example into a document.
