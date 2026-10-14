@@ -17,26 +17,12 @@ struct Sides<'a> {
     base_record: bool,
 }
 
-/// Merges a record that holds conflicts: its fields, then the conflicts already on it, merged
-/// as a set, followed by those the merge writes.
-pub(super) fn merge_host(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
-    merge_with(base, ours, theirs, false)
-}
-
-/// Merges a record's own fields, as the merge by key does, which holds no list of keyed
-/// records: as [`merge_host`], but a whole value one side deleted and the other changed keeps
-/// its base value with a conflict over its list.
+/// Merges a record that holds conflicts over its own fields, with no list of keyed records in
+/// it: its fields, then the conflicts already on it, merged as a set, followed by those the
+/// merge writes.
 pub(super) fn merge_own(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Rec {
-    merge_with(base, ours, theirs, true)
-}
-
-fn merge_with(base: Option<&Rec>, ours: &Rec, theirs: &Rec, by_key: bool) -> Rec {
     let mut conflicts = carried(base, ours, theirs);
-    let mut host = if by_key {
-        Host::by_key(&mut conflicts)
-    } else {
-        Host::root(&mut conflicts)
-    };
+    let mut host = Host::root(&mut conflicts);
     let mut record = merge_fields(base, ours, theirs, &mut host);
     record.conflicts = conflicts;
     record
@@ -59,12 +45,7 @@ fn carried(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> Vec<ConflictRec> {
 
 /// Merges the fields of one record; its conflicts go to `host`. A record whose merged fields
 /// form none of its variants keeps its base and conflicts on each field either side changed.
-pub(super) fn merge_fields(
-    base: Option<&Rec>,
-    ours: &Rec,
-    theirs: &Rec,
-    host: &mut Host<'_>,
-) -> Rec {
+fn merge_fields(base: Option<&Rec>, ours: &Rec, theirs: &Rec, host: &mut Host<'_>) -> Rec {
     let kind = ours.kind;
     let mark = host.conflicts.len();
     let mut record = Rec::new(kind);
@@ -78,7 +59,7 @@ pub(super) fn merge_fields(
         return record;
     }
     host.conflicts.truncate(mark);
-    // The host merge sets the record's own conflicts; an unkeyed record holds none.
+    // `merge_own` sets the record's own conflicts; an unkeyed record holds none.
     let record = base.unwrap_or(ours).clone();
     for each in kind.fields() {
         let sides = sides(each, base, ours, theirs);

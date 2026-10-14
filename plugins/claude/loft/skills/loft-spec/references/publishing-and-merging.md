@@ -49,12 +49,14 @@ not run the driver and left text conflict markers, make the driver's command run
 
 A conflict over `position` keeps a record that the branches moved apart within one list at its
 place in the base, each side naming the key of the record it follows there, or `first`. A
-conflict over `parent` keeps a record that the branches moved to different parents in one file
-at its base parent, each side naming the key of the parent it chose; settle it by moving the
-record. A conflict over `record` keeps a record that one branch deleted and the other changed or
-moved, with the deleting side `null`. The driver merges each file alone, so a node moved to
-another file in one branch and changed in the other is written in both files, the old copy with
-a `record` conflict, and `loft check` reports its key carried twice; keep one copy.
+conflict over `parent` keeps a record that the branches put at different parents in one file at
+its base parent, or where git's `ours` side put it when neither branch holds that parent or the
+record is new, each side naming the key of the parent it chose; settle it by moving the record.
+A conflict over `record` keeps a record that one branch deleted and the other changed or moved,
+or beneath which the merge keeps a record, as the other branch wrote it, with the deleting side
+`null`. The driver merges each file alone, so a node moved to another file in one branch and
+changed in the other is written in both files, the old copy with a `record` conflict, and
+`loft check` reports its key carried twice; keep one copy.
 
 ## Settle two publishes that meet
 

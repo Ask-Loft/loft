@@ -11,10 +11,6 @@ use crate::codec::{ConflictRec, Rec, Val};
 pub(super) struct Host<'a> {
     pub(super) prefix: String,
     pub(super) conflicts: &'a mut Vec<ConflictRec>,
-    /// Whether a whole value that one side deleted and the other changed keeps its base value
-    /// with a conflict over its list, as the merge by key has it; the merge of nested records
-    /// drops it.
-    pub(super) keeps_changed_wholes: bool,
 }
 
 impl<'a> Host<'a> {
@@ -23,16 +19,6 @@ impl<'a> Host<'a> {
         Host {
             prefix: String::new(),
             conflicts,
-            keeps_changed_wholes: false,
-        }
-    }
-
-    /// The host for a record the merge by key merges, whose conflicts go to `conflicts`.
-    pub(super) const fn by_key(conflicts: &'a mut Vec<ConflictRec>) -> Self {
-        Host {
-            prefix: String::new(),
-            conflicts,
-            keeps_changed_wholes: true,
         }
     }
 
@@ -46,7 +32,6 @@ impl<'a> Host<'a> {
         Host {
             prefix: format!("{}{name}.", self.prefix),
             conflicts: self.conflicts,
-            keeps_changed_wholes: self.keeps_changed_wholes,
         }
     }
 

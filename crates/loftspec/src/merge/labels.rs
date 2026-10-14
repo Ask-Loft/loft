@@ -6,7 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::conflict::conflict;
-use super::record::merge_host;
+use super::record::merge_own;
 use super::same::same_record;
 use crate::codec::schema::field;
 use crate::codec::{Rec, Val};
@@ -23,7 +23,7 @@ pub(super) fn merge(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> (Rec, Vec<L
         by_key(theirs),
     ];
     let (merged, disputed) = bindings(&sides);
-    // The bindings and counters are merged here; the host merge sees the rest of the record.
+    // The bindings and counters are merged here; the merge of its own fields sees the rest.
     let counters = counters(ours, theirs);
     let rest = |side: &Rec| {
         let mut rest = side.clone();
@@ -31,7 +31,7 @@ pub(super) fn merge(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> (Rec, Vec<L
             .retain(|(name, _)| ![field::BINDINGS, field::COUNTERS].contains(name));
         rest
     };
-    let mut record = merge_host(base.map(rest).as_ref(), &rest(ours), &rest(theirs));
+    let mut record = merge_own(base.map(rest).as_ref(), &rest(ours), &rest(theirs));
     record.set(field::COUNTERS, Val::Record(counters));
     record.set(field::BINDINGS, records(merged.values()));
     if !disputed.is_empty() {

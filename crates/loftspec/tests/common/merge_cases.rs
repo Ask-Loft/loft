@@ -6,13 +6,12 @@ use std::sync::LazyLock;
 
 use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Files, SpecPath};
-use loftspec::merge::{MergeError, Merged};
+use loftspec::merge::{MergeError, Merged, merge_file};
 use proptest::prelude::*;
 
 use super::edit_tree::Top;
 use super::edits::{Edit, Side, edit, edited, growth};
 use super::full::full_nested_document;
-use super::merge_keys::Versions;
 use super::text::{COMPONENT, FEATURE, PRODUCT};
 
 /// A file the cases edit, and what it holds.
@@ -68,33 +67,20 @@ impl fmt::Debug for Case {
     }
 }
 
-/// A file merge: `merge_file`, `merge_file_legacy` or `merge_file_by_key`.
-pub type Engine = fn(&SpecPath, &[u8], &[u8], &[u8]) -> Result<Merged, MergeError>;
-
 impl Case {
-    pub fn merge(
-        &self,
-        engine: Engine,
-        base: &[u8],
-        ours: &[u8],
-        theirs: &[u8],
-    ) -> Result<Merged, MergeError> {
-        engine(&SpecPath::new(self.fixture.path), base, ours, theirs)
+    /// The merge of the case's file from its base and the two versions `ours` and `theirs`.
+    pub fn merge(&self, base: &[u8], ours: &[u8], theirs: &[u8]) -> Result<Merged, MergeError> {
+        merge_file(&SpecPath::new(self.fixture.path), base, ours, theirs)
     }
 
     /// The merge of the case's three versions.
-    pub fn merged(&self, engine: Engine) -> Result<Merged, MergeError> {
-        self.merge(engine, &self.base, &self.ours, &self.theirs)
+    pub fn merged(&self) -> Result<Merged, MergeError> {
+        self.merge(&self.base, &self.ours, &self.theirs)
     }
 
     /// The merge with the sides swapped.
-    pub fn swapped(&self, engine: Engine) -> Result<Merged, MergeError> {
-        self.merge(engine, &self.base, &self.theirs, &self.ours)
-    }
-
-    /// The case's three versions, by key.
-    pub fn versions(&self) -> Versions {
-        Versions::of(self.fixture.top, [&self.base, &self.ours, &self.theirs])
+    pub fn swapped(&self) -> Result<Merged, MergeError> {
+        self.merge(&self.base, &self.theirs, &self.ours)
     }
 }
 

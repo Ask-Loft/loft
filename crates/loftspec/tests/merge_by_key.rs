@@ -1,7 +1,8 @@
-//! The merge by key (F-32), which `merge_file` is for record files and registries: what it does
-//! where the legacy merge has no test or gives another result. Each record is merged by its
-//! key, its place as one value, and a record one side deleted is kept only where the other side changed it or the merge keeps a
-//! record beneath it.
+//! The merge by key (F-32), which `merge_file` is for record files and registries: deletions
+//! beneath a deleted record, moves apart and cycles of moves, assessments, a key carried twice
+//! and changes of kind. Each record is merged by its key, its place as one value, and a record
+//! one side deleted is kept only where the other side changed it or the merge keeps a record
+//! beneath it.
 
 use loftspec::codec::{Problem, SpecPath};
 use loftspec::identity::Key;

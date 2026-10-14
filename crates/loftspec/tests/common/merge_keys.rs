@@ -77,30 +77,6 @@ pub fn flatten(top: Top, bytes: &[u8]) -> Flat {
     flat
 }
 
-/// The three versions of a file, by key.
-#[derive(Debug, Clone)]
-pub struct Versions {
-    pub top: Top,
-    pub base: Flat,
-    pub ours: Flat,
-    pub theirs: Flat,
-}
-
-impl Versions {
-    pub fn of(top: Top, [base, ours, theirs]: [&[u8]; 3]) -> Self {
-        Self {
-            top,
-            base: flatten(top, base),
-            ours: flatten(top, ours),
-            theirs: flatten(top, theirs),
-        }
-    }
-
-    pub fn sides(&self) -> [&Flat; 2] {
-        [&self.ours, &self.theirs]
-    }
-}
-
 impl Flat {
     pub fn keys(&self) -> BTreeSet<&str> {
         self.keyed.keys().map(String::as_str).collect()
@@ -133,7 +109,7 @@ impl Flat {
 
 /// Whether the record keyed `key` is the same in `side` as in `base`: its own fields, its place
 /// and, in a list in authored order, its order among the records of the list that both hold.
-pub fn unchanged(base: &Flat, side: &Flat, key: &str) -> bool {
+fn unchanged(base: &Flat, side: &Flat, key: &str) -> bool {
     let (Some(before), Some(after)) = (base.keyed.get(key), side.keyed.get(key)) else {
         return false;
     };
@@ -164,7 +140,7 @@ pub enum Kept {
     Changed,
 }
 
-pub fn kept(base: &Flat, side: &Flat, key: &str) -> Kept {
+fn kept(base: &Flat, side: &Flat, key: &str) -> Kept {
     if !unchanged(base, side, key) {
         return Kept::Changed;
     }

@@ -1,22 +1,21 @@
-//! The merge of one list field (F-32, F-33): elements matched across the sides by key, a
-//! binding by its key, an assessment by its option and driver, anything else by its value
-//! (AC-471, AC-662); which elements survive; and, for a list in authored order, where each goes.
+//! The merge of one list field of unkeyed values (F-32, F-33): elements matched across the
+//! sides, an assessment by its option and driver, anything else by its value (AC-471, AC-662);
+//! which elements survive; and, for a list in authored order, where each goes. Lists of keyed
+//! records are merged by key, record by record, and never reach this merge.
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::conflict::{Host, Side, position_conflict, record_conflict};
-use super::order::{merge_order, moved};
-use super::record::merge_host;
+use super::conflict::Host;
+use super::order::merge_order;
 use super::same::{same_value, text};
+use crate::codec::Val;
 use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
-use crate::codec::{Rec, Val};
 
 /// What an element is matched by, and how many times its side has held it before.
 type Id = (Ident, usize);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Ident {
-    Key(String),
     Pair(String, String),
     Value(String),
 }
@@ -24,8 +23,6 @@ enum Ident {
 /// How an element of a list merges.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Element {
-    /// A record with a key, which holds its own conflicts and merges field by field.
-    Host,
     /// An assessment, which merges as one value (RQ-119's whole values); bindings, the other
     /// whole values, are merged by the labels merge before any list merge sees them.
     Whole,
@@ -36,7 +33,6 @@ enum Element {
 const fn element(item: Item) -> Element {
     match item {
         Item::Record(Kind::Assessment) => Element::Whole,
-        Item::Record(kind) if kind.hosts_conflicts() => Element::Host,
         _ => Element::Value,
     }
 }
@@ -46,12 +42,9 @@ fn ident(item: Item, value: &Val) -> Ident {
         Val::Record(record) => record.text(name).unwrap_or_default().to_owned(),
         _ => String::new(),
     };
-    match (element(item), item) {
-        (Element::Host | Element::Whole, Item::Record(Kind::Assessment)) => {
-            Ident::Pair(record_text(field::OPTION), record_text(field::DRIVER))
-        }
-        (Element::Host | Element::Whole, _) => Ident::Key(record_text(field::KEY)),
-        (Element::Value, _) => Ident::Value(text(value)),
+    match element(item) {
+        Element::Whole => Ident::Pair(record_text(field::OPTION), record_text(field::DRIVER)),
+        Element::Value => Ident::Value(text(value)),
     }
 }
 
@@ -90,25 +83,13 @@ pub(super) fn merge_list(
     let sides = [side(item, base), side(item, ours), side(item, theirs)];
     let mut merger = Merger {
         kind,
-        moved_by_ours: moved(&sides[0].ids, &sides[1].ids),
-        moved_by_theirs: moved(&sides[0].ids, &sides[2].ids),
-        keeps_changed_wholes: host.keeps_changed_wholes,
         disagree: false,
     };
     let mut elements = merger.elements(&sides);
     let order = if each.order == Order::Authored {
         let survives = |id: &Id| elements.contains_key(id);
         let result = merge_order(&sides[0].ids, &sides[1].ids, &sides[2].ids, &survives);
-        for position in result.conflicts {
-            match elements.get_mut(&position.element) {
-                Some(Val::Record(record)) if kind == Element::Host => {
-                    record
-                        .conflicts
-                        .push(position_conflict(&position, anchor_text));
-                }
-                _ => merger.disagree = true,
-            }
-        }
+        merger.disagree |= !result.conflicts.is_empty();
         result.order
     } else {
         sides[1].ids.iter().chain(&sides[2].ids).cloned().collect()
@@ -127,9 +108,6 @@ pub(super) fn merge_list(
 
 struct Merger {
     kind: Element,
-    moved_by_ours: BTreeSet<Id>,
-    moved_by_theirs: BTreeSet<Id>,
-    keeps_changed_wholes: bool,
     disagree: bool,
 }
 
@@ -146,7 +124,7 @@ impl Merger {
             .filter_map(|id| {
                 let [base, ours, theirs] =
                     [&base.by_id, &ours.by_id, &theirs.by_id].map(|by_id| by_id.get(id).copied());
-                self.element(id, base, ours, theirs)
+                self.element(base, ours, theirs)
                     .map(|value| (id.clone(), value))
             })
             .collect()
@@ -154,20 +132,16 @@ impl Merger {
 
     fn element(
         &mut self,
-        id: &Id,
         base: Option<&Val>,
         ours: Option<&Val>,
         theirs: Option<&Val>,
     ) -> Option<Val> {
         match (base, ours, theirs) {
             (Some(base), Some(ours), Some(theirs)) => Some(self.three(base, ours, theirs)),
-            (Some(base), Some(kept), None) => {
-                self.deleted(base, kept, self.moved_by_ours.contains(id), Side::Theirs)
+            (Some(base), Some(kept), None) | (Some(base), None, Some(kept)) => {
+                self.deleted(base, kept)
             }
-            (Some(base), None, Some(kept)) => {
-                self.deleted(base, kept, self.moved_by_theirs.contains(id), Side::Ours)
-            }
-            (None, Some(ours), Some(theirs)) => Some(self.added(ours, theirs)),
+            (None, Some(ours), Some(theirs)) => Some(self.whole(None, ours, theirs)),
             (None, Some(only), None) | (None, None, Some(only)) => Some(only.clone()),
             (Some(_) | None, None, None) => None,
         }
@@ -175,22 +149,9 @@ impl Merger {
 
     /// An element all three sides hold.
     fn three(&mut self, base: &Val, ours: &Val, theirs: &Val) -> Val {
-        match (self.kind, base, ours, theirs) {
-            (Element::Host, Val::Record(base), Val::Record(ours), Val::Record(theirs)) => {
-                Val::Record(merge_host(Some(base), ours, theirs))
-            }
-            (Element::Whole, ..) => self.whole(Some(base), ours, theirs),
-            _ => base.clone(),
-        }
-    }
-
-    /// An element both sides added.
-    fn added(&mut self, ours: &Val, theirs: &Val) -> Val {
-        match (self.kind, ours, theirs) {
-            (Element::Host, Val::Record(ours), Val::Record(theirs)) => {
-                Val::Record(merge_host(None, ours, theirs))
-            }
-            _ => self.whole(None, ours, theirs),
+        match self.kind {
+            Element::Whole => self.whole(Some(base), ours, theirs),
+            Element::Value => base.clone(),
         }
     }
 
@@ -208,42 +169,14 @@ impl Merger {
         base.unwrap_or(ours).clone()
     }
 
-    /// An element one side deleted: removed when the other side left it as it was, and
-    /// otherwise, for a record with a key, kept as the other side wrote it with a conflict over
-    /// the record (AC-473, AC-660). Under the merge by key, a whole value the other side changed
-    /// keeps its base value with a conflict over the list, as when both sides change it apart.
-    fn deleted(&mut self, base: &Val, kept: &Val, moved: bool, deleter: Side) -> Option<Val> {
-        let unchanged = same_value(base, kept) && !moved;
-        match (unchanged, self.kind, kept) {
-            (false, Element::Host, Val::Record(record)) => {
-                let mut record = record.clone();
-                record.conflicts.push(record_conflict(&record, deleter));
-                Some(Val::Record(record))
-            }
-            (_, Element::Whole, _) if self.keeps_changed_wholes && !same_value(base, kept) => {
-                self.disagree = true;
-                Some(base.clone())
-            }
-            _ => None,
+    /// An element one side deleted: removed when the other side left it as it was; an
+    /// assessment the other side changed keeps its base value with a conflict over the list, as
+    /// when both sides change it apart.
+    fn deleted(&mut self, base: &Val, kept: &Val) -> Option<Val> {
+        if self.kind == Element::Whole && !same_value(base, kept) {
+            self.disagree = true;
+            return Some(base.clone());
         }
+        None
     }
-}
-
-/// The text a `position` conflict names an element by: its key, its value, or an assessment's
-/// option.
-fn anchor_text((ident, _): &Id) -> String {
-    match ident {
-        Ident::Key(key) | Ident::Value(key) | Ident::Pair(key, _) => key.clone(),
-    }
-}
-
-/// The records of a list, to merge as host records of a registry.
-pub(super) fn records(values: Vec<Val>) -> Vec<Rec> {
-    values
-        .into_iter()
-        .filter_map(|value| match value {
-            Val::Record(record) => Some(record),
-            _ => None,
-        })
-        .collect()
 }

@@ -31,16 +31,31 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   of its output, writes nothing about it to standard error and exits with the code it exits with
   when its output is open. Any other failure to write standard output exits 1 with its message on
   standard error.
-- `loft merge-driver` matches a record moved to another parent in the same file, such as a
-  criterion moved to another Requirement or a Constraint moved between Components, with its base
-  record by its key, and writes it once. It used to keep the record at its old parent with a
-  `record` conflict and also insert it at the new one when the other branch edited it, write it
-  twice without a conflict when both branches moved it apart, and lose a deletion made in the
-  other branch. Now the record is at its new parent with the other branch's edit; one both
-  branches moved apart stays at its base parent with a new conflict over `parent`, each side
-  naming the parent's key; and one the other branch deleted is kept where it was moved, with a
-  `record` conflict. The driver refuses, writing nothing, a merge that would carry a key twice.
-  `parent` is reserved beside `conflicts`, `position` and `record`.
+- `loft merge-driver` merges every record of a file by its key, wherever each branch holds it:
+  its fields, its place (its parent and list) as one value, and each list in merged order. A
+  record moved to another parent in the same file, such as a criterion moved to another
+  Requirement or a Constraint moved between Components, is written once, where it was moved and
+  with the other branch's edits. It used to stay at its old parent with a `record` conflict and
+  also appear at the new one when the other branch edited it, appear twice when both branches
+  moved it apart, and lose a deletion made in the other branch.
+- A record the two branches moved to different parents stays at its base parent, or where `ours`
+  put it when neither branch holds that parent, with a new conflict over `parent`, each side
+  naming the parent's key. So does each record of a cycle the two branches' moves would make, and
+  a record both branches added at different parents goes where `ours` put it, with a `parent`
+  conflict. `parent` is reserved beside `conflicts`, `position` and `record`.
+- A record one branch deleted is kept, as the other branch wrote it and with a `record` conflict,
+  when the other branch changed or moved it or when the merge keeps a record beneath it. One the
+  other branch changed only by deleting records beneath it is deleted.
+- A record that a list the Format sorts moves, as renaming a tag moves its neighbours, is not
+  changed by the move: renaming a tag next to one the other branch deleted no longer keeps the
+  deleted tag with a `record` conflict.
+- An assessment one branch deleted and the other changed keeps its base value with a conflict
+  over `assessments`. It used to be dropped silently.
+- A record whose kind one branch changed takes that kind, and its fields that both kinds define
+  alike merge as before; an edit to a field the new kind lacks is dropped. Such a merge used to
+  panic in a debug build.
+- A merge input that carries a key twice is refused as unreadable, naming both sites, and a merge
+  whose result would carry a key twice writes nothing.
 - A key carried twice that a `record` conflict names, as when one branch moved a record to
   another file and the other changed it, is reported as a record moved in one branch and changed
   in the other.
@@ -60,7 +75,7 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - Library API: `loftspec`'s `RuleId` gains `V2009`; `ConvertError::Tag` gives way to
   `UnderivableTag` and `TagCollision`; `Problem::ListedByTwoGroups` names its groups;
   `VocabularyEntry.name` is a `String` and `V1Sidecar` gains `tag_names`; `write_sites` is new;
-  `MergeError` gains `DuplicateKey` and `Unplaced`, and `Problem` gains `MovedAndChanged`.
+  `MergeError` gains `Unplaced`, and `Problem` gains `MovedAndChanged`.
 - Telemetry, on by default: each run of `check`, `find`, `fmt`, `import v1`, `init`, `publish`,
   `reconcile`, `render`, `skill install` and `verify` sends one pseudonymous command event to
   `https://askloft.ai/api/telemetry` after its output, within 500 milliseconds and printing
