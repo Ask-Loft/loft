@@ -17,8 +17,8 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
 # The published crates depend on one another at the release they ship in.
-loftspec = { path = "crates/loftspec", version = "2.0.1" }
-loftspec-store = { path = "crates/loftspec-store", version = "2.0.1" }
+loftspec = { path = "crates/loftspec", version = "2.0.2" }
+loftspec-store = { path = "crates/loftspec-store", version = "2.0.2" }
 clap = { version = "4", features = ["derive"] }
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version
 # change can change a finding.

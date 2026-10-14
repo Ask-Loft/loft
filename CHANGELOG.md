@@ -3,7 +3,7 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## Unreleased
+## 2.0.2 (2026-10-14)
 
 - A Product may hold Constraints, for a rule the whole product keeps. The v1 converter carries
   a Constraint under a Product across. A document that uses this is refused by an older `loft`.
