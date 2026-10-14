@@ -1,6 +1,6 @@
-//! The known differences between `merge_file` and `merge_file_by_key`, which is to replace it:
-//! the classes of case on which the merge by key gives another result on purpose. The
-//! differential tests compare the two merges on every other case.
+//! The known differences between `merge_file_legacy` and the merge by key, which `merge_file`
+//! now is for record files: the classes of case on which the merge by key gives another result
+//! on purpose. The differential tests compare the two merges on every other case.
 
 use loftspec::codec::schema::{Kind, field};
 
@@ -19,48 +19,48 @@ type Class = fn(&Versions) -> bool;
 
 /// Each known difference, by name, with the class of case it covers.
 const KNOWN: [(&str, Class); 10] = [
-    // `merge_file` brings back a record one side deleted when the other deleted or moved out
+    // The legacy merge brings back a record one side deleted when the other deleted or moved out
     // only records beneath it; the merge by key deletes it.
     (
         "a record one side deletes and the other only empties",
         a_side_empties_a_record_the_other_side_deleted,
     ),
-    // `merge_file` sees a registry's re-sorting as a move and keeps a deleted neighbour of a
+    // The legacy merge sees a registry's re-sorting as a move and keeps a deleted neighbour of a
     // renamed entry with a conflict; the merge by key counts no move in a sorted list.
     (
         "a renamed registry entry beside a deleted one",
         a_side_renames_an_entry_and_the_other_deletes_one,
     ),
-    // `merge_file` puts a record the sides moved apart back into one side's version after its
+    // The legacy merge puts a record the sides moved apart back into one side's version after its
     // base predecessor, ahead of the other side's insertions there; the merge by key leaves it
     // at its base position, after them.
     (
         "a record moved apart, back at its base list",
         a_record_both_sides_move_apart,
     ),
-    // `merge_file` takes a record both sides moved into one list out of theirs, so a record
+    // The legacy merge takes a record both sides moved into one list out of theirs, so a record
     // theirs placed right after it there follows its predecessor instead; the merge by key keeps
     // it after the record.
     (
         "a record both sides move into one list",
         a_side_places_a_record_after_one_both_sides_move_alike,
     ),
-    // `merge_file` drops an assessment one side deleted and the other changed; the merge by key
+    // The legacy merge drops an assessment one side deleted and the other changed; the merge by key
     // keeps its base value with a conflict over the list.
     (
         "an assessment deleted and changed",
         an_assessment_one_side_deletes_and_the_other_changes,
     ),
-    // `merge_file` reaches a field the other kind lacks; the merge by key merges the record's
+    // The legacy merge reaches a field the other kind lacks; the merge by key merges the record's
     // own fields as one value.
     ("a key whose kind changes", a_key_changes_kind),
-    // `merge_file` may refuse the key it then carries twice, and is not symmetric; the merge by
+    // The legacy merge may refuse the key it then carries twice, and is not symmetric; the merge by
     // key steps each record of the cycle to its base parent, or else to ours'.
     (
         "moves on the two sides forming a cycle",
         moves_on_the_two_sides_form_a_cycle,
     ),
-    // `merge_file` merges such a side with itself into something else; the merge by key gives
+    // The legacy merge merges such a side with itself into something else; the merge by key gives
     // the side.
     ("a side moving a record into one it held", |versions| {
         either_side(versions, moves_a_record_into_one_it_held)
@@ -69,7 +69,7 @@ const KNOWN: [(&str, Class); 10] = [
         "a side moving a record into a list it also reorders",
         |versions| either_side(versions, moves_a_record_into_a_list_it_also_reorders),
     ),
-    // `merge_file` writes one `record` conflict on the outermost record a side deleted that the
+    // The legacy merge writes one `record` conflict on the outermost record a side deleted that the
     // other side changed anywhere beneath; the merge by key writes one on each record that side
     // deleted which the other changed or which holds a record the merge keeps.
     (

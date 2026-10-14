@@ -67,47 +67,58 @@ pub enum MergeError {
     /// The merged file does not read back; the merge writes nothing rather than a file the
     /// reader refuses.
     Unwritable(ReadError),
-    /// The merged file would carry one key twice, which no tree may (RQ-4); the merge writes
-    /// nothing.
+    /// The legacy merge's result would carry one key twice, which no tree may (RQ-4); the merge
+    /// writes nothing. The merge by key reports such a result as [`MergeError::Unwritable`].
     DuplicateKey(Key),
-    /// A record moved within the file has no parent left on either side to hold it, or, in the
-    /// merge by key, a record no list of the merged file can take, which only a key whose kind
-    /// differs between the versions leaves; the merge writes nothing rather than lose it.
+    /// In the legacy merge, a record moved within the file has no parent left on either side to
+    /// hold it; in the merge by key, a record no list of the merged file can take, which only a
+    /// key whose kind differs between the versions leaves. The merge writes nothing rather than
+    /// lose it.
     Unplaced(Key),
 }
 
 /// Merges one file of a `spec/` tree. An empty base is an absent one, as git gives when both
-/// sides added the file.
+/// sides added the file. A record file merges by key: every keyed record merged on its own, with
+/// its place as one merged value, and each list rebuilt in merged order. A registry,
+/// `spec/labels.yaml` and `spec/lint.yaml` merge as [`merge_file_legacy`] merges them.
 ///
 /// # Errors
 ///
 /// The path names no file of the Format, an input does not read, both sides changed the lint
-/// configuration apart, or the result would not read back.
+/// configuration apart, or the result would not read back; and a record no list of the merged
+/// file can take, which only a key whose kind differs between the versions can leave.
 pub fn merge_file(
     path: &SpecPath,
     base: &[u8],
     ours: &[u8],
     theirs: &[u8],
 ) -> Result<Merged, MergeError> {
-    let role = Role::of(path).ok_or(MergeError::NotAFormatFile)?;
-    let (base, ours, theirs) = read_inputs(path, &role, [base, ours, theirs])?;
-    let (content, disputed) = merge_content(base, ours, theirs)?;
-    let (bytes, written) = write_back(path, role, content)?;
-    if let Some(key) = carried_twice(&written) {
-        return Err(MergeError::DuplicateKey(key));
-    }
-    Ok(merged(bytes, &written, disputed))
+    merge(path, [base, ours, theirs], Scope::Records)
 }
 
-/// Merges one file of a `spec/` tree as one merge by key: every keyed record of a record file
-/// or a registry merged on its own, with its place as one merged value, and each list rebuilt
-/// in merged order. `spec/labels.yaml` and `spec/lint.yaml` merge as [`merge_file`] merges
-/// them. The same contract as [`merge_file`], which it is to replace.
+/// Merges one file of a `spec/` tree as [`merge_file`] did before it merged record files by
+/// key: a move pre-pass, then each record merged within its parent's lists. Kept to compare the
+/// two merges until the merge by key covers every file.
 ///
 /// # Errors
 ///
-/// As [`merge_file`]; and a record no list of the merged file can take, which only a key whose
-/// kind differs between the versions can leave.
+/// As [`merge_file`]; and a merged file that would carry a key twice, or a record moved out of
+/// every parent left on either side.
+#[doc(hidden)]
+pub fn merge_file_legacy(
+    path: &SpecPath,
+    base: &[u8],
+    ours: &[u8],
+    theirs: &[u8],
+) -> Result<Merged, MergeError> {
+    merge(path, [base, ours, theirs], Scope::Nothing)
+}
+
+/// Merges one file of a `spec/` tree as [`merge_file`] does, and a registry by key as well.
+///
+/// # Errors
+///
+/// As [`merge_file`].
 #[doc(hidden)]
 pub fn merge_file_by_key(
     path: &SpecPath,
@@ -115,22 +126,44 @@ pub fn merge_file_by_key(
     ours: &[u8],
     theirs: &[u8],
 ) -> Result<Merged, MergeError> {
+    merge(path, [base, ours, theirs], Scope::Registries)
+}
+
+/// The files a merge merges by key; every other file merges as [`merge_file_legacy`] merges it.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum Scope {
+    Nothing,
+    Records,
+    Registries,
+}
+
+impl Scope {
+    fn takes(self, ours: &Content, theirs: &Content) -> bool {
+        match (ours, theirs) {
+            (Content::Record(top), Content::Record(_)) => {
+                self >= Self::Records && top.kind != Kind::Labels
+            }
+            (Content::Registry(_), Content::Registry(_)) => self >= Self::Registries,
+            _ => false,
+        }
+    }
+}
+
+fn merge(path: &SpecPath, inputs: [&[u8]; 3], scope: Scope) -> Result<Merged, MergeError> {
     let role = Role::of(path).ok_or(MergeError::NotAFormatFile)?;
-    let (base, ours, theirs) = read_inputs(path, &role, [base, ours, theirs])?;
-    let by_key = match (&ours, &theirs) {
-        (Content::Record(top), Content::Record(_)) => top.kind != Kind::Labels,
-        (Content::Registry(_), Content::Registry(_)) => true,
-        _ => false,
-    };
-    let (content, disputed) = if by_key {
+    let (base, ours, theirs) = read_inputs(path, &role, inputs)?;
+    if scope.takes(&ours, &theirs) {
         let content = tree::merge(base.as_ref(), &ours, &theirs).map_err(MergeError::Unplaced)?;
-        (content, Vec::new())
-    } else {
-        merge_content(base, ours, theirs)?
-    };
+        let (bytes, written) = write_back(path, role, content)?;
+        if let Some(error) = twice_in(path, &written).into_iter().next() {
+            return Err(MergeError::Unwritable(error));
+        }
+        return Ok(merged(bytes, &written, Vec::new()));
+    }
+    let (content, disputed) = merge_content(base, ours, theirs)?;
     let (bytes, written) = write_back(path, role, content)?;
-    if let Some(error) = twice_in(path, &written).into_iter().next() {
-        return Err(MergeError::Unwritable(error));
+    if let Some(key) = carried_twice(&written) {
+        return Err(MergeError::DuplicateKey(key));
     }
     Ok(merged(bytes, &written, disputed))
 }

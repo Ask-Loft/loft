@@ -2,7 +2,7 @@
 
 use loftspec::codec::schema::Kind;
 use loftspec::codec::{self, Role, SpecPath};
-use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key};
+use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key, merge_file_legacy};
 
 use super::edit_tree::Top;
 use super::merge_keys::Versions;
@@ -34,17 +34,18 @@ pub fn with(text: &str, edits: &[(&str, &str)]) -> String {
     text
 }
 
-/// Merges the file at `path`, which must merge, and asserts that the merge by key gives the
-/// same unless the case is one of its known differences.
+/// Merges the file at `path` with `merge_file`, which must merge, and asserts that the merge by
+/// key and the legacy merge give the same unless the case is one of their known differences.
 pub fn merge_at(path: &str, base: &str, ours: &str, theirs: &str) -> Merged {
     let inputs = [base, ours, theirs].map(str::as_bytes);
-    let merged = merge_file(&SpecPath::new(path), inputs[0], inputs[1], inputs[2]);
-    agrees_by_key(path, inputs, &merged);
-    merged.expect("the file merges")
+    let spec_path = SpecPath::new(path);
+    let legacy = merge_file_legacy(&spec_path, inputs[0], inputs[1], inputs[2]);
+    agrees_by_key(path, inputs, &legacy);
+    merge_file(&spec_path, inputs[0], inputs[1], inputs[2]).expect("the file merges")
 }
 
-/// Asserts that `merge_file_by_key` gives `expected`, what `merge_file` gave, unless the case
-/// is one of the merge by key's known differences.
+/// Asserts that `merge_file_by_key` gives `expected`, what `merge_file_legacy` gave, unless the
+/// case is one of the merge by key's known differences.
 pub fn agrees_by_key(path: &str, inputs: [&[u8]; 3], expected: &Result<Merged, MergeError>) {
     let spec_path = SpecPath::new(path);
     let top = Role::of(&spec_path).and_then(|role| top(&role));
@@ -62,7 +63,7 @@ pub fn agrees_by_key(path: &str, inputs: [&[u8]; 3], expected: &Result<Merged, M
     };
     assert!(
         by_key == *expected,
-        "the merge by key gives {}\nwhere the file merge gives {}",
+        "the merge by key gives {}\nwhere the legacy merge gives {}",
         text(&by_key),
         text(expected)
     );

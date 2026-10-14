@@ -74,18 +74,26 @@ impl Fits<'_> {
 ///
 /// # Errors
 ///
-/// The key of a record no place can take: every place a version gave it is in a list its
-/// merged parent's kind lacks.
+/// The key of a record the merge surely keeps (`sure`) that no place can take: every place a
+/// version gave it is in a list its merged parent's kind lacks. A record not in `sure` with no
+/// such place is left without one.
 pub(super) fn merge_places(
     sides: &[Flat; 3],
     kinds: &BTreeMap<Key, Kind>,
     top: Option<Kind>,
+    sure: &BTreeSet<Key>,
 ) -> Result<BTreeMap<Key, Placed>, Key> {
     let fits = Fits { kinds, top };
     let mut ladders = BTreeMap::new();
     for key in kinds.keys() {
-        let ladder = ladder(*key, sides, &fits).ok_or(*key)?;
-        ladders.insert(*key, ladder);
+        match ladder(*key, sides, &fits) {
+            Some(ladder) => {
+                ladders.insert(*key, ladder);
+            }
+            // A record the merge may delete needs no place until it is kept.
+            None if !sure.contains(key) => {}
+            None => return Err(*key),
+        }
     }
     settle_cycles(&mut ladders)?;
     Ok(ladders

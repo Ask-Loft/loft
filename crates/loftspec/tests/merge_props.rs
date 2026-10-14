@@ -1,16 +1,16 @@
 //! Properties of the file merge over random edits of the full document's files: a Feature
 //! file, a Component file, a Product file and the tag registry. Each case is a base made by
 //! random edits and two sides made from it by independent random edits. Each law runs here
-//! under `merge_file`, leaving out the classes of case it gets wrong, and in
-//! `merge_by_key_props.rs` under `merge_file_by_key`, leaving out only the asymmetry both keep
-//! by design.
+//! under `merge_file`, and under `merge_file_legacy`, leaving out the classes of case the legacy
+//! merge gets wrong wherever a merge takes it; and in `merge_by_key_props.rs` under
+//! `merge_file_by_key`, leaving out only the asymmetry both keep by design.
 
 use loftspec::codec::schema::field;
-use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key};
+use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key, merge_file_legacy};
 use proptest::prelude::*;
 use proptest::test_runner::TestCaseError;
 
-use crate::common::edit_tree::{Y, conflicts, read};
+use crate::common::edit_tree::{Top, Y, conflicts, read};
 use crate::common::merge_cases::{Case, Engine, cases, unsettled};
 use crate::common::merge_defects::{
     a_key_changes_kind, a_side_deletes_beneath_a_record_the_other_side_deleted,
@@ -19,22 +19,36 @@ use crate::common::merge_defects::{
 };
 use crate::common::merge_keys::{Flat, Kept, deletions, flatten};
 
-/// The merge a law runs, and whether it leaves out the classes of case `merge_file` gets wrong.
+/// The merge a law runs, and the cases it merges as `merge_file_legacy` does, on which the law
+/// leaves out the classes of case the legacy merge gets wrong.
 #[derive(Clone, Copy)]
 pub struct Under {
     pub engine: Engine,
-    pub legacy: bool,
+    pub legacy: fn(&Case) -> bool,
 }
 
 pub const LEGACY: Under = Under {
+    engine: merge_file_legacy,
+    legacy: |_| true,
+};
+
+/// `merge_file`, which merges a registry as the legacy merge does until it merges it by key.
+pub const FILE: Under = Under {
     engine: merge_file,
-    legacy: true,
+    legacy: |case| case.fixture.top == Top::Registry,
 };
 
 pub const BY_KEY: Under = Under {
     engine: merge_file_by_key,
-    legacy: false,
+    legacy: |_| false,
 };
+
+impl Under {
+    /// Whether the law runs the case under the legacy merge.
+    fn legacy(self, case: &Case) -> bool {
+        (self.legacy)(case)
+    }
+}
 
 pub fn config() -> ProptestConfig {
     ProptestConfig {
@@ -65,14 +79,16 @@ proptest! {
 
     #[test]
     fn a_side_merged_with_an_unchanged_side_or_with_itself_is_that_side(case in cases()) {
-        idempotent(&case, LEGACY)?;
+        for under in [FILE, LEGACY] {
+            idempotent(&case, under)?;
+        }
     }
 }
 
 /// A side merged with base either way round, or with itself, is that side.
 pub fn idempotent(case: &Case, under: Under) -> Result<(), TestCaseError> {
     let versions = case.versions();
-    prop_assume!(!under.legacy || !a_key_changes_kind(&versions));
+    prop_assume!(!under.legacy(case) || !a_key_changes_kind(&versions));
     for (side, flat) in [
         (&case.ours, &versions.ours),
         (&case.theirs, &versions.theirs),
@@ -80,7 +96,7 @@ pub fn idempotent(case: &Case, under: Under) -> Result<(), TestCaseError> {
         let mut pairs = vec![(side, &case.base), (&case.base, side)];
         let defect = moves_a_record_into_one_it_held(&versions.base, flat)
             || moves_a_record_into_a_list_it_also_reorders(&versions.base, flat);
-        if !under.legacy || !defect {
+        if !under.legacy(case) || !defect {
             pairs.push((side, side));
         }
         for (ours, theirs) in pairs {
@@ -116,22 +132,22 @@ fn flat(case: &Case, bytes: &[u8]) -> Flat {
     flatten(case.fixture.top, bytes)
 }
 
-/// Today's engine: moves on the two sides that nest records into records moved or deleted
+/// The legacy merge: moves on the two sides that nest records into records moved or deleted
 /// beneath them, short of a cycle, may make the move pre-pass refuse a key it then carries
-/// twice; the merge by key has no such refusal. Lifted when today's engine is removed.
+/// twice; the merge by key has no such refusal. Lifted when the legacy merge is removed.
 pub fn refuses_nested_moves(merged: &Result<Merged, MergeError>) -> bool {
     matches!(merged, Err(MergeError::DuplicateKey(_)))
 }
 
 /// The merge of a case, which must write a file.
 fn merged(case: &Case, under: Under) -> Result<Merged, TestCaseError> {
-    if under.legacy {
+    if under.legacy(case) {
         let versions = case.versions();
         prop_assume!(!a_key_changes_kind(&versions));
         prop_assume!(!moves_on_the_two_sides_form_a_cycle(&versions));
     }
     let merged = case.merged(under.engine);
-    prop_assume!(!under.legacy || !refuses_nested_moves(&merged));
+    prop_assume!(!under.legacy(case) || !refuses_nested_moves(&merged));
     prop_assert!(merged.is_ok(), "{merged:?}\n{case:?}");
     Ok(merged.unwrap())
 }
@@ -209,14 +225,16 @@ fn both_sides_add_a_key_apart(case: &Case) -> bool {
 /// Swapping the sides keeps the conflicts, the keys and, in a merge without conflicts, each
 /// record's parent and fields.
 pub fn symmetric(case: &Case, under: Under) -> Result<(), TestCaseError> {
-    if under.legacy {
+    if under.legacy(case) {
         let versions = case.versions();
         prop_assume!(!a_key_changes_kind(&versions));
         prop_assume!(!moves_on_the_two_sides_form_a_cycle(&versions));
     }
     prop_assume!(!both_sides_add_a_key_apart(case));
     let (one, other) = (case.merged(under.engine), case.swapped(under.engine));
-    prop_assume!(!under.legacy || !(refuses_nested_moves(&one) || refuses_nested_moves(&other)));
+    prop_assume!(
+        !under.legacy(case) || !(refuses_nested_moves(&one) || refuses_nested_moves(&other))
+    );
     prop_assert_eq!(
         one.is_ok(),
         other.is_ok(),
@@ -267,7 +285,7 @@ pub fn counts(case: &Case, under: Under) -> Result<(), TestCaseError> {
 
 /// A merge keeps and drops keys as `keys_conserved` says.
 pub fn conserves(case: &Case, under: Under) -> Result<(), TestCaseError> {
-    if under.legacy {
+    if under.legacy(case) {
         let versions = case.versions();
         prop_assume!(!a_side_deletes_beneath_a_record_the_other_side_deleted(
             &versions
@@ -285,21 +303,29 @@ proptest! {
 
     #[test]
     fn a_merge_reads_back_as_a_formatter_fixed_point_carrying_each_key_once(case in cases()) {
-        reads_back(&case, LEGACY)?;
+        for under in [FILE, LEGACY] {
+            reads_back(&case, under)?;
+        }
     }
 
     #[test]
     fn a_merge_counts_the_conflict_records_it_writes(case in cases()) {
-        counts(&case, LEGACY)?;
+        for under in [FILE, LEGACY] {
+            counts(&case, under)?;
+        }
     }
 
     #[test]
     fn a_merge_keeps_the_keys_both_sides_hold_or_one_adds_and_drops_those_one_deletes_and_the_other_leaves_untouched(case in cases()) {
-        conserves(&case, LEGACY)?;
+        for under in [FILE, LEGACY] {
+            conserves(&case, under)?;
+        }
     }
 
     #[test]
     fn swapping_the_sides_keeps_the_conflicts_the_keys_and_each_record_s_parent_and_fields(case in cases()) {
-        symmetric(&case, LEGACY)?;
+        for under in [FILE, LEGACY] {
+            symmetric(&case, under)?;
+        }
     }
 }

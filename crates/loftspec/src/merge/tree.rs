@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use super::conflict::{Side, hold, position_conflict, record_conflict};
 use super::exist::{Fate, decide};
 use super::flat::{Flat, Parent, Place, order_of, rebuild};
-use super::kind::merge_kinds;
+use super::kind::{merge_kinds, surely_kept};
 use super::order::{merge_order, moved};
 use super::place::{Placed, merge_places};
 use super::record::merge_own;
@@ -20,7 +20,8 @@ use crate::identity::Key;
 ///
 /// # Errors
 ///
-/// The key of a record no place can take (see [`merge_places`]).
+/// The key of a record no place can take (see [`merge_places`]), or that the merge keeps
+/// without a place or a parent.
 pub(super) fn merge(
     base: Option<&Content>,
     ours: &Content,
@@ -35,16 +36,20 @@ pub(super) fn merge(
     let top = ours_top
         .zip(theirs_top)
         .map(|(ours, theirs)| merge_own(base_top, ours, theirs));
-    let mut records = merge_records(&sides);
+    let sure = surely_kept(&sides);
+    let mut records = merge_records(&sides, &sure);
     let kinds = records
         .iter()
         .map(|(key, record)| (*key, record.kind))
         .collect();
     let top_kind = top.as_ref().map(|top| top.kind);
-    let places = merge_places(&sides, &kinds, top_kind)?;
+    let places = merge_places(&sides, &kinds, top_kind, &sure)?;
     let lists = Lists::filtered(&sides, &places, top_kind);
     let fates = decide(&sides, &places, &lists);
     records.retain(|key, _| fates[key].kept());
+    if let Some(key) = unplaced(&records, &places) {
+        return Err(key);
+    }
     for (key, record) in &mut records {
         if let Fate::Despite(deleter) = fates[key] {
             let conflict = record_conflict(record, deleter);
@@ -58,8 +63,20 @@ pub(super) fn merge(
     Ok(rebuild(top, &records, &merged))
 }
 
+/// A record the merge keeps without a place, or whose parent it does not keep: one the merge
+/// left without a place, sure that it would delete it.
+fn unplaced(records: &BTreeMap<Key, Rec>, places: &BTreeMap<Key, Placed>) -> Option<Key> {
+    records.keys().copied().find(|key| match places.get(key) {
+        Some(at) => match at.place.0 {
+            Parent::Key(parent) => !records.contains_key(&parent),
+            Parent::Top => false,
+        },
+        None => true,
+    })
+}
+
 /// The own fields of every record a side holds, merged.
-fn merge_records(sides: &[Flat; 3]) -> BTreeMap<Key, Rec> {
+fn merge_records(sides: &[Flat; 3], sure: &BTreeSet<Key>) -> BTreeMap<Key, Rec> {
     let [base, ours, theirs] = sides;
     let keys: BTreeSet<&Key> = ours.nodes.keys().chain(theirs.nodes.keys()).collect();
     keys.into_iter()
@@ -67,7 +84,7 @@ fn merge_records(sides: &[Flat; 3]) -> BTreeMap<Key, Rec> {
             let [base, ours, theirs] =
                 [base, ours, theirs].map(|side| side.nodes.get(key).map(|node| &node.own));
             let record = match (ours, theirs) {
-                (Some(ours), Some(theirs)) => merge_kinds(*key, sides, base, ours, theirs),
+                (Some(ours), Some(theirs)) => merge_kinds(*key, sides, sure, base, ours, theirs),
                 (Some(only), None) | (None, Some(only)) => only.clone(),
                 (None, None) => unreachable!("a key a side holds"),
             };

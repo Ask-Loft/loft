@@ -68,7 +68,7 @@ impl fmt::Debug for Case {
     }
 }
 
-/// A file merge: `merge_file`, or `merge_file_by_key`, which is to replace it.
+/// A file merge: `merge_file`, `merge_file_legacy` or `merge_file_by_key`.
 pub type Engine = fn(&SpecPath, &[u8], &[u8], &[u8]) -> Result<Merged, MergeError>;
 
 impl Case {

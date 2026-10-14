@@ -1,8 +1,9 @@
-//! The merge properties under `merge_file_by_key`, which is to replace `merge_file`: every law
-//! of `merge_props.rs`, leaving out only the asymmetry both merges keep by design; and the two
-//! merges compared, which must give the same on every case but their known differences.
+//! The merge properties under `merge_file_by_key`, which `merge_file` now is for record files
+//! and is to become for registries: every law of `merge_props.rs`, leaving out only the
+//! asymmetry both merges keep by design; and the merge by key compared with `merge_file_legacy`,
+//! which must give the same on every case but their known differences.
 
-use loftspec::merge::{MergeError, Merged, merge_file, merge_file_by_key};
+use loftspec::merge::{MergeError, Merged, merge_file_by_key, merge_file_legacy};
 use proptest::prelude::*;
 use proptest::test_runner::TestCaseError;
 
@@ -20,8 +21,8 @@ fn agree(case: &Case, ours: &[u8], theirs: &[u8]) -> Result<(), TestCaseError> {
     if known_difference(&versions).is_some() {
         return Ok(());
     }
-    let file_merge = case.merge(merge_file, &case.base, ours, theirs);
-    if refuses_nested_moves(&file_merge) {
+    let legacy = case.merge(merge_file_legacy, &case.base, ours, theirs);
+    if refuses_nested_moves(&legacy) {
         return Ok(());
     }
     let by_key = case.merge(merge_file_by_key, &case.base, ours, theirs);
@@ -34,10 +35,10 @@ fn agree(case: &Case, ours: &[u8], theirs: &[u8]) -> Result<(), TestCaseError> {
         Err(error) => format!("{error:?}"),
     };
     prop_assert!(
-        by_key == file_merge,
-        "the merge by key gives {}\nwhere the file merge gives {}\nof ours\n{}\ntheirs\n{}\n{:?}",
+        by_key == legacy,
+        "the merge by key gives {}\nwhere the legacy merge gives {}\nof ours\n{}\ntheirs\n{}\n{:?}",
         text(&by_key),
-        text(&file_merge),
+        text(&legacy),
         String::from_utf8_lossy(ours),
         String::from_utf8_lossy(theirs),
         case
