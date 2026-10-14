@@ -2444,6 +2444,21 @@ links:
     tests:
       - file: "crates/loft-cli/tests/import.rs"
         name: "the_tree_is_the_converters_output_and_the_sidecar_lies_beside_it"
+  - node: aa514ad5-0a80-4753-899f-c4a356b81ce9
+    reviewed: d2488953f9b121f33523099412d74a187e4e46c47bfcc4a2cd630ab73aa0f37e
+    unverified: "Checked against the v1 implementation outside this repository."
+  - node: 7f7b75c1-eff6-4c55-bec6-de713456de95
+    reviewed: e292295091aef8160677a02f0af3edd108c0cc69c8113377e203ac6abe383ced
+    unverified: "Checked against the v1 implementation outside this repository."
+  - node: 06ce97f2-af32-4a60-ba1b-06f9ef21e846
+    reviewed: d03d7cd84956b7e25be1693a72b07a1fcc000d2dea4ba265d50116157c7fee16
+    unverified: "Checked against the v1 implementation outside this repository."
+  - node: e3202b31-235b-478b-b004-7d6be100cf4e
+    reviewed: 7f6dffd9dbc917b3e3911a8844db53af6d7ed13ae13a7d9ea45ff800b1d17124
+    unverified: "Checked against the v1 implementation outside this repository."
+  - node: 927fa24c-02fa-4f25-8417-cb03f7b06e21
+    reviewed: 04f07126a1c9783e510a1f6553de6e1d5e5c6f0886808ddc6a935105b987ff3e
+    unverified: "Checked against the v1 implementation outside this repository."
   - node: a19fe298-d954-489c-b4cc-31b4c8098194
     reviewed: 3d6f759e49d9d9270ebfdc10cb1d71d0f77b3b30016a72e39592e7047cc3d5bb
     tests:
@@ -2481,6 +2496,21 @@ links:
     tests:
       - file: "crates/loftspec/tests/v1_parity.rs"
         name: "each_register_entry_is_well_formed"
+  - node: 01a13a1b-2f3d-70d6-88b6-56e70f3dd3cd
+    reviewed: 72d7d9c5799621158b3fd514c47a79639b7c9b034cfa7e835b87c2b61f9cbc9c
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "a_hyphenated_tag_v1_matches_in_spaced_prose_is_a_recorded_divergence"
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "the_shared_rules_report_what_v1_reports_apart_from_the_register"
+  - node: 01a12dad-fb7a-7333-9129-a6b5c12b41b8
+    reviewed: 9392a8ba67e20221c263d3cc40176bc54d671e7553545b79d1695f24e713f752
+    tests:
+      - file: "crates/loftspec/tests/v1_parity.rs"
+        name: "every_register_entry_explains_a_finding_on_a_checked_export"
+  - node: 01a12dad-fb7a-7333-9129-a6ba2ff2fa9e
+    reviewed: 5e9f420c42f4bd660db2b73f30cd1f7e7345d2f415d927293e372b70d68d8a2b
+    unverified: "Checked against the v1 implementation outside this repository."
   - node: b8310eca-0d41-4904-9eec-43c553343933
     reviewed: bfcaadcb8af0f4315f07e5c37312a7602271d050665dfca72a189b90eec95bba
     unverified: "Holds by the type system: only the document holds Products, and no node type has a field for one."

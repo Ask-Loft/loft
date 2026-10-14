@@ -104,7 +104,7 @@ fn the_findings_print_as_a_lint_report() {
     assert_eq!(
         stdout(&output),
         "spec/products/reading-list/shelf/remove-a-book.yaml:16:10: info V2-002: The statement \
-         is stored as text, without slots.\nspec/products/reading-list/product.yaml:18:10: info \
+         is stored as text, without slots.\nspec/products/reading-list/product.yaml:19:10: info \
          V2-001: The body holds a heading; use a Section. (body line 3)\n"
     );
 }
@@ -138,7 +138,7 @@ fn a_counters_file_sets_the_prefixes_it_names() {
         "{labels}"
     );
     assert!(
-        labels.contains("  CMP: 5\n"),
+        labels.contains("  CMP: 6\n"),
         "an absent prefix is one above the highest"
     );
     assert!(!stderr(&output).contains("RQ, AC"), "{}", stderr(&output));

@@ -1,14 +1,14 @@
 //! Agreement with v1: on each public v1 export, loftspec's structural and language findings and
 //! its statement forms equal the outputs a v1 implementation wrote beside the export, apart from
-//! the entries of the divergence register; and each entry is well formed and decided by a node of
-//! `spec/`.
+//! the entries of the divergence register; and each entry is well formed, decided by a node of
+//! `spec/` and explains a finding on a checked export.
 
 use std::collections::BTreeSet;
 use std::fs;
 use std::path::Path;
 
 use crate::common::parity::{
-    Facts, converted, register, unexplained, v1_forms, v1_lint, v2_forms, v2_lint,
+    Facts, converted, explaining, register, unexplained, v1_forms, v1_lint, v2_forms, v2_lint,
 };
 
 struct Fixture {
@@ -52,6 +52,30 @@ fn the_shared_rules_report_what_v1_reports_apart_from_the_register() {
             fixture.name
         );
     }
+}
+
+#[test]
+fn every_register_entry_explains_a_finding_on_a_checked_export() {
+    let register = register();
+    let mut explained = BTreeSet::new();
+    for fixture in &FIXTURES {
+        let document = converted(fixture.state);
+        explained.extend(explaining(
+            &v1_lint(fixture.lint),
+            &v2_lint(&document),
+            &Facts::of(&document),
+            &register,
+        ));
+    }
+    let stale: Vec<&str> = register
+        .iter()
+        .map(|entry| entry.id.as_str())
+        .filter(|id| !explained.contains(id))
+        .collect();
+    assert!(
+        stale.is_empty(),
+        "entries that explain no finding: {stale:?}"
+    );
 }
 
 #[test]
