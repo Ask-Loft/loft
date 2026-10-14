@@ -35,10 +35,22 @@ fn off_is_recorded_until_on() {
 
 #[test]
 fn running_the_same_subcommand_twice_leaves_the_same_state() {
+    for action in ["on", "off", "status"] {
+        let scratch = Scratch::empty();
+        let once = UPDATE_CHECK.report(&scratch, None, action);
+        let twice = UPDATE_CHECK.report(&scratch, None, action);
+        assert_eq!(once, twice, "{action}");
+    }
+}
+
+#[test]
+fn status_after_on_reports_the_check_on() {
     let scratch = Scratch::empty();
+    UPDATE_CHECK.report(&scratch, None, "off");
+    UPDATE_CHECK.report(&scratch, None, "on");
     assert_eq!(
-        UPDATE_CHECK.report(&scratch, None, "off"),
-        UPDATE_CHECK.report(&scratch, None, "off")
+        state(&UPDATE_CHECK.report(&scratch, None, "status")),
+        ("on", "loft update-check on")
     );
 }
 

@@ -69,7 +69,7 @@ fn event() -> Value {
 type Scenario = (&'static str, fn(&str) -> Answer);
 
 /// Each scenario of the contract.
-const SCENARIOS: [Scenario; 7] = [
+const SCENARIOS: [Scenario; 9] = [
     ("a valid event", |url| {
         post(url, "application/json", event().to_string().as_bytes())
     }),
@@ -96,13 +96,20 @@ const SCENARIOS: [Scenario; 7] = [
     ("another content type", |url| {
         post(url, "text/plain", event().to_string().as_bytes())
     }),
-    ("a method other than POST", |url| {
-        answer(client().get(url).call())
+    ("a GET", |url| answer(client().get(url).call())),
+    ("a PUT of a valid event", |url| {
+        answer(
+            client()
+                .put(url)
+                .header("Content-Type", "application/json")
+                .send(event().to_string().as_bytes()),
+        )
     }),
+    ("a DELETE", |url| answer(client().delete(url).call())),
 ];
 
 /// The answer the contract states for each scenario.
-const EXPECTED: [u16; 7] = [202, 202, 400, 400, 413, 415, 405];
+const EXPECTED: [u16; 9] = [202, 202, 400, 400, 413, 415, 405, 405, 405];
 
 fn answers(url: &str) -> Vec<(&'static str, Answer)> {
     SCENARIOS

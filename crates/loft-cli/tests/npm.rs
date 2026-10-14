@@ -581,4 +581,14 @@ fn the_launcher_honours_both_switches() {
     run(None);
     assert_eq!(collector.events().len(), 1);
     assert_eq!(feed.requests().len(), 1);
+    for concern in ["telemetry", "update-check"] {
+        let recorded = launcher(&project, &home, None)
+            .args([concern, "off"])
+            .output()
+            .unwrap();
+        assert_eq!(recorded.status.code(), Some(0), "{concern}");
+    }
+    run(None);
+    assert_eq!(collector.events().len(), 1);
+    assert_eq!(feed.requests().len(), 1);
 }

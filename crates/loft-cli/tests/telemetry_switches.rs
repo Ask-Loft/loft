@@ -3,11 +3,11 @@
 
 use std::fs;
 
-use crate::common::telemetry::{TELEMETRY, UPDATE_CHECK, state};
+use crate::common::telemetry::{TELEMETRY, UPDATE_CHECK, sending, state};
 use crate::common::{CLOSED, EPOCH, Scratch, stdout};
 use crate::schema;
 use serde_json::json;
-use software_plant::Clock;
+use software_plant::{Clock, Collector};
 
 #[test]
 fn telemetry_is_on_by_default() {
@@ -39,14 +39,20 @@ fn on_after_off_reports_telemetry_on() {
         state(&TELEMETRY.report(&scratch, None, "on")),
         ("on", "loft telemetry on")
     );
+    assert_eq!(
+        state(&TELEMETRY.report(&scratch, None, "status")),
+        ("on", "loft telemetry on")
+    );
 }
 
 #[test]
 fn running_the_same_subcommand_twice_leaves_the_same_state() {
-    let scratch = Scratch::empty();
-    let once = TELEMETRY.report(&scratch, None, "off");
-    let twice = TELEMETRY.report(&scratch, None, "off");
-    assert_eq!(once, twice);
+    for action in ["on", "off", "status"] {
+        let scratch = Scratch::empty();
+        let once = TELEMETRY.report(&scratch, None, action);
+        let twice = TELEMETRY.report(&scratch, None, action);
+        assert_eq!(once, twice, "{action}");
+    }
 }
 
 #[test]
@@ -91,12 +97,33 @@ fn internal_keeps_telemetry_on() {
 
 #[test]
 fn internal_sends_nothing_after_loft_telemetry_off() {
-    let scratch = Scratch::empty();
+    let scratch = Scratch::with_reading_list();
     TELEMETRY.report(&scratch, None, "off");
     assert_eq!(
         state(&TELEMETRY.report(&scratch, Some("internal"), "status")),
         ("off", "loft telemetry off")
     );
+    assert!(sends(&scratch, "internal").is_empty());
+}
+
+#[test]
+fn the_variable_set_to_off_sends_nothing_after_loft_telemetry_on() {
+    let scratch = Scratch::with_reading_list();
+    TELEMETRY.report(&scratch, None, "on");
+    assert!(sends(&scratch, "off").is_empty());
+}
+
+/// The requests a collector receives from `loft check` run with `LOFT_TELEMETRY` set to
+/// `variable`.
+fn sends(scratch: &Scratch, variable: &str) -> Vec<software_plant::http::Request> {
+    let collector = Collector::accepting();
+    let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+    sending(&mut command, &collector.url())
+        .env("LOFT_TELEMETRY", variable)
+        .arg("check")
+        .output()
+        .unwrap();
+    collector.requests()
 }
 
 #[test]

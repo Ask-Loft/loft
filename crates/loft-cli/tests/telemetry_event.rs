@@ -222,22 +222,8 @@ fn a_run_whose_standard_error_is_a_terminal_is_interactive() {
     let scratch = Scratch::with_reading_list();
     crate::common::telemetry::seen(&scratch);
     let collector = Collector::accepting();
-    let loft = env!("CARGO_BIN_EXE_loft");
-    // `script` runs `loft` on a pseudo-terminal; its two families take their arguments apart.
-    let mut command = Command::new("script");
-    if cfg!(target_os = "linux") {
-        command.args(["-q", "-e", "-c", &format!("'{loft}' check"), "/dev/null"]);
-    } else {
-        command.args(["-q", "/dev/null", loft, "check"]);
-    }
-    isolate(&mut command, &scratch.home());
-    Clock::fixed(EPOCH).apply(&mut command);
-    sending(&mut command, &collector.url());
-    command
-        .current_dir(&scratch.0)
-        .stdin(std::process::Stdio::null())
-        .output()
-        .unwrap();
+    let mut command = scratch.check_on_terminal(&Clock::fixed(EPOCH));
+    sending(&mut command, &collector.url()).output().unwrap();
     assert_eq!(events(&collector)[0]["mode"], json!("interactive"));
 }
 
@@ -294,5 +280,93 @@ fn the_git_remote_and_the_configured_names_never_reach_the_event() {
     );
     for telltale in ["telltale", "acme", "Telltale Person", "secret-plans"] {
         assert!(!body.contains(telltale), "{telltale} in {body}");
+    }
+}
+
+/// Every name, title, statement part, body and other prose the tree under `dir` writes on one
+/// line.
+fn texts(dir: &std::path::Path, found: &mut Vec<String>) {
+    for entry in fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            texts(&path, found);
+            continue;
+        }
+        for line in fs::read_to_string(&path).unwrap().lines() {
+            let line = line.trim_start().trim_start_matches("- ");
+            let Some((field, value)) = line.split_once(": ") else {
+                continue;
+            };
+            let named = [
+                "name",
+                "title",
+                "body",
+                "description",
+                "statement",
+                "system",
+                "when",
+                "while",
+                "where",
+                "if",
+                "shall",
+                "context",
+                "rationale",
+                "definition",
+                "scenario",
+                "environment",
+            ]
+            .contains(&field);
+            let text = value
+                .strip_prefix('"')
+                .and_then(|quoted| quoted.strip_suffix('"'))
+                .unwrap_or(value);
+            if named && !text.is_empty() && !["|", ">", "|-", ">-"].contains(&text) {
+                found.push(text.to_owned());
+            }
+        }
+    }
+}
+
+#[test]
+fn no_marker_value_path_part_or_text_of_the_tree_appears_in_the_event() {
+    let scratch = Scratch::with_reading_list();
+    let markers = [
+        "CLAUDE_CODE_IS_COWORK",
+        "CLAUDE_CODE_ENTRYPOINT",
+        "CODEX_THREAD_ID",
+        "CODEX_SANDBOX",
+        "CODEX_SANDBOX_NETWORK_DISABLED",
+        "CODEX_CI",
+        "AI_AGENT",
+        "AGENT",
+    ];
+    let values: Vec<String> = markers
+        .iter()
+        .map(|name| format!("claude-code-{}-quokka", name.to_lowercase()))
+        .collect();
+    let variables: Vec<(&str, &str)> = markers
+        .iter()
+        .zip(&values)
+        .map(|(name, value)| (*name, value.as_str()))
+        .collect();
+    let sent = sent_with(&scratch, &["check"], None, &variables);
+    let body = serde_json::to_string(the_event(&sent)).unwrap();
+    for value in &values {
+        assert!(!body.contains(value.as_str()), "{value} in {body}");
+    }
+    assert!(!body.contains("quokka"), "{body}");
+    for dir in [scratch.0.clone(), scratch.home()] {
+        for part in dir.components() {
+            let part = part.as_os_str().to_string_lossy();
+            if part.len() > 3 {
+                assert!(!body.contains(part.as_ref()), "{part} in {body}");
+            }
+        }
+    }
+    let mut found = Vec::new();
+    texts(&scratch.0.join("spec"), &mut found);
+    assert!(found.len() > 80, "{}", found.len());
+    for text in found {
+        assert!(!body.contains(&text), "{text} in {body}");
     }
 }

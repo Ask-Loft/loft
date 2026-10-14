@@ -81,7 +81,12 @@ fn a_way_outside_the_three_is_a_usage_error_naming_them_and_nothing_is_written()
     for way in ["npm", "cargo", "release-binary"] {
         assert!(message.contains(way), "{message}");
     }
-    assert!(!scratch.config().join("install.json").exists());
+    let file = scratch.config().join("install.json");
+    assert!(!file.exists());
+    assert_eq!(record(&scratch, &["cargo"]).status.code(), Some(0));
+    let kept = fs::read(&file).unwrap();
+    assert_eq!(record(&scratch, &["brew"]).status.code(), Some(2));
+    assert_eq!(fs::read(&file).unwrap(), kept);
 }
 
 #[test]

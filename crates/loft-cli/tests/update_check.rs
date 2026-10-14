@@ -101,6 +101,18 @@ fn the_notice_is_printed_in_every_mode() {
     }
 }
 
+#[cfg(unix)]
+#[test]
+fn the_notice_is_printed_on_a_terminal_too() {
+    let scratch = Scratch::with_reading_list();
+    let feed = newer();
+    check_at(&scratch, &feed.url(), EPOCH);
+    let mut command = scratch.check_on_terminal(&Clock::fixed(EPOCH + 60));
+    let output = asking(&mut command, &feed.url()).output().unwrap();
+    let shown = String::from_utf8_lossy(&output.stdout);
+    assert!(shown.contains("99.0.0"), "{shown}");
+}
+
 #[test]
 fn the_running_version_or_an_older_one_is_told_of_by_no_notice() {
     for tag in [
@@ -138,7 +150,7 @@ fn a_tag_that_is_not_a_version_is_told_of_by_no_notice() {
     for tag in ["nightly", "99.0.0", "v99.0"] {
         let scratch = Scratch::with_reading_list();
         let feed = ReleaseFeed::listing(vec![Release::published(tag)]);
-        check_at(&scratch, &feed.url(), EPOCH);
+        assert_eq!(stderr(&check_at(&scratch, &feed.url(), EPOCH)), "", "{tag}");
         assert_eq!(
             stderr(&check_at(&scratch, &feed.url(), EPOCH + 60)),
             "",

@@ -28,6 +28,14 @@ fn the_first_run_prints_the_notice_on_standard_error_and_still_sends() {
         assert!(notice.contains(needed), "{needed} in {notice}");
     }
     assert!(!notice.contains("anonymous"), "{notice}");
+    let prose = notice.split_whitespace().collect::<Vec<_>>().join(" ");
+    for sentence in [
+        "Events with tokens are kept for at most 30 days and aggregates without tokens for at \
+         most 90 days.",
+        "the collector also sees the network address each event comes from.",
+    ] {
+        assert!(prose.contains(sentence), "{sentence} in {prose}");
+    }
     assert_eq!(events(&collector).len(), 1);
     let off = scratch
         .command(None, &Clock::fixed(EPOCH))

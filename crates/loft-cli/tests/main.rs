@@ -55,6 +55,7 @@ mod skill_install;
 mod telemetry_event;
 mod telemetry_failures;
 mod telemetry_notice;
+mod telemetry_order;
 mod telemetry_switches;
 mod telemetry_tokens;
 mod test_modules;

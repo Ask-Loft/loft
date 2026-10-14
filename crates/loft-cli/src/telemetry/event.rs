@@ -37,8 +37,8 @@ pub fn build(
         "schema": SCHEMA,
         "eventId": uuid::Uuid::new_v4().to_string(),
         "version": VERSION,
-        "os": os(),
-        "arch": arch(),
+        "os": os(std::env::consts::OS),
+        "arch": arch(std::env::consts::ARCH),
         "installedBy": install::way().as_str(),
         "time": PublishedAt::from_unix_seconds(now - now % 3_600).ok()?.to_string(),
         "installation": installation,
@@ -58,27 +58,24 @@ pub fn build(
     Some(event)
 }
 
-/// The operating system the binary was built for.
-const fn os() -> &'static str {
-    if cfg!(target_os = "linux") {
-        "linux"
-    } else if cfg!(target_os = "macos") {
-        "macos"
-    } else if cfg!(windows) {
-        "windows"
-    } else {
-        "other"
+/// The event's name for the operating system `target_os` names, as Rust names the one a binary
+/// is built for in `std::env::consts::OS`.
+fn os(target_os: &str) -> &'static str {
+    match target_os {
+        "linux" => "linux",
+        "macos" => "macos",
+        "windows" => "windows",
+        _ => "other",
     }
 }
 
-/// The architecture the binary was built for.
-const fn arch() -> &'static str {
-    if cfg!(target_arch = "x86_64") {
-        "x86_64"
-    } else if cfg!(target_arch = "aarch64") {
-        "aarch64"
-    } else {
-        "other"
+/// The event's name for the architecture `target_arch` names, as Rust names the one a binary is
+/// built for in `std::env::consts::ARCH`.
+fn arch(target_arch: &str) -> &'static str {
+    match target_arch {
+        "x86_64" => "x86_64",
+        "aarch64" => "aarch64",
+        _ => "other",
     }
 }
 
@@ -155,7 +152,7 @@ mod tests {
     use std::collections::BTreeMap;
     use std::time::Duration;
 
-    use super::{agent, bucket};
+    use super::{agent, arch, bucket, os};
 
     fn agent_of(set: &[(&str, &str)]) -> &'static str {
         let set: BTreeMap<String, String> = set
@@ -163,6 +160,27 @@ mod tests {
             .map(|(name, value)| ((*name).to_owned(), (*value).to_owned()))
             .collect();
         agent(&|name| set.get(name).cloned())
+    }
+
+    #[test]
+    fn each_operating_system_and_architecture_has_its_name_and_any_other_is_other() {
+        for (target, name) in [
+            ("linux", "linux"),
+            ("macos", "macos"),
+            ("windows", "windows"),
+            ("freebsd", "other"),
+            ("ios", "other"),
+        ] {
+            assert_eq!(os(target), name, "{target}");
+        }
+        for (target, name) in [
+            ("x86_64", "x86_64"),
+            ("aarch64", "aarch64"),
+            ("riscv64", "other"),
+            ("x86", "other"),
+        ] {
+            assert_eq!(arch(target), name, "{target}");
+        }
     }
 
     #[test]

@@ -175,6 +175,24 @@ impl Scratch {
         assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     }
 
+    /// `loft check` in the scratch tree at the time `clock` gives, run by `script` on a
+    /// pseudo-terminal, so that its standard error is a terminal; what it writes comes out on
+    /// the standard output of `script`. The two families of `script` take their arguments apart.
+    #[cfg(unix)]
+    pub fn check_on_terminal(&self, clock: &Clock) -> Command {
+        let loft = env!("CARGO_BIN_EXE_loft");
+        let mut command = Command::new("script");
+        if cfg!(target_os = "linux") {
+            command.args(["-q", "-e", "-c", &format!("'{loft}' check"), "/dev/null"]);
+        } else {
+            command.args(["-q", "/dev/null", loft, "check"]);
+        }
+        clock.apply(&mut command);
+        isolate(&mut command, &self.home());
+        command.current_dir(&self.0).stdin(process::Stdio::null());
+        command
+    }
+
     /// The `loft` command in the scratch tree at the time `clock` gives, run from the binary
     /// under test placed where an npm install puts it, inside `node_modules/@ask-loft/`, so that
     /// `loft` infers that npm installed it. The binary is linked there where the file system
