@@ -3,6 +3,8 @@
 //! under `agents/claude/`, and holds no `agents/` directory; the Codex package keeps
 //! `agents/openai.yaml` alone. No package carries another host's adaptation.
 
+use std::fmt;
+
 /// An agent host the skill is composed for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Host {
@@ -43,10 +45,37 @@ pub enum ComposeError {
     NoFrontmatter,
     /// The fragment defines a field that `SKILL.md` owns.
     Defines(String),
-    /// `description` and `when_to_use` together pass the listing budget.
-    Budget(usize),
+    /// `description` and `when_to_use` together pass the listing budget: their combined length
+    /// and the limit.
+    Budget { length: usize, limit: usize },
     /// The router does not name the anchor bullet exactly once.
     Anchor(usize),
+}
+
+impl fmt::Display for ComposeError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Missing(path) => write!(formatter, "the source holds no `{path}`"),
+            Self::NoFrontmatter => {
+                formatter.write_str("`SKILL.md` does not open with a frontmatter")
+            }
+            Self::Defines(field) => {
+                write!(
+                    formatter,
+                    "the fragment defines `{field}`, which `SKILL.md` owns"
+                )
+            }
+            Self::Budget { length, limit } => write!(
+                formatter,
+                "`description` and `when_to_use` hold {length} characters together, past the \
+                 host's listing limit of {limit}"
+            ),
+            Self::Anchor(count) => write!(
+                formatter,
+                "the router names `{ANCHOR}` {count} times, not once"
+            ),
+        }
+    }
 }
 
 /// A package's files, by path, in the source's order.
@@ -149,14 +178,17 @@ fn budget(frontmatter: &[&str], added: &[&str]) -> Result<(), ComposeError> {
     };
     let length = value(frontmatter, "description") + value(added, "when_to_use");
     if length > LISTING_BUDGET {
-        return Err(ComposeError::Budget(length));
+        return Err(ComposeError::Budget {
+            length,
+            limit: LISTING_BUDGET,
+        });
     }
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{ComposeError, Host, compose};
+    use super::{ComposeError, Host, LISTING_BUDGET, compose};
 
     const SKILL_MD: &str = "---\nname: x\ndescription: d\n---\n\n- Read `references/the-loop.md`\n  first.\n- Read `references/b.md`.\n";
 
@@ -216,10 +248,27 @@ mod tests {
 
     #[test]
     fn a_listing_past_the_budget_is_refused() {
-        let long: &'static str = Box::leak(format!("when_to_use: {}\n", "w".repeat(1536)).into());
+        let long = format!("when_to_use: {}\n", "w".repeat(LISTING_BUDGET));
+        let long: &'static str = Box::leak(long.into());
         assert_eq!(
             compose(Host::ClaudeCode, &source(long)),
-            Err(ComposeError::Budget(1537))
+            Err(ComposeError::Budget {
+                length: LISTING_BUDGET + 1,
+                limit: LISTING_BUDGET,
+            })
+        );
+    }
+
+    #[test]
+    fn the_refusal_names_the_combined_length_and_the_limit() {
+        let error = ComposeError::Budget {
+            length: 1537,
+            limit: 1536,
+        };
+        assert_eq!(
+            error.to_string(),
+            "`description` and `when_to_use` hold 1537 characters together, past the \
+             host's listing limit of 1536"
         );
     }
 }

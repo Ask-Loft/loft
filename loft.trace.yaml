@@ -6631,6 +6631,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "the_codex_package_is_the_source_without_the_claude_code_adaptation"
+  - node: 01a13654-6e11-74fa-a359-258f0c07e90c
+    reviewed: 71b24ce20c811df5cce0e03f0c784183690b47554d0d5c757d34e95bc8c1d530
+    tests:
+      - file: "crates/loft-cli/src/skill/compose.rs"
+        name: "a_listing_past_the_budget_is_refused"
+      - file: "crates/loft-cli/src/skill/compose.rs"
+        name: "the_refusal_names_the_combined_length_and_the_limit"
   - node: 01a13654-6e11-74fa-a359-25929d751eef
     reviewed: 75c780320c53667fa92d07d53bf5619bda89d05d4b8f1f83789e2454249e5b6a
     tests:
