@@ -4797,8 +4797,6 @@ links:
     tests:
       - file: "crates/loftspec/tests/merge_moves.rs"
         name: "the_merged_file_carries_each_key_once"
-      - file: "crates/loftspec/tests/merge_moves.rs"
-        name: "a_merge_whose_result_would_carry_a_key_twice_writes_nothing"
   - node: 56cd2388-3187-42ed-9408-1ff4b39585d8
     reviewed: 551ec76dec08767b92479dca7449c9edc4d3bccd80841dd40a1d1aaa9db48af5
     tests:
@@ -6212,11 +6210,17 @@ links:
     tests:
       - file: "crates/loft-cli/tests/merge_driver.rs"
         name: "an_unreadable_input_is_named_with_where_and_ours_is_unchanged"
+      - file: "crates/loftspec/tests/merge_moves.rs"
+        name: "an_input_that_carries_a_key_twice_is_unreadable_at_both_sites"
+      - file: "crates/loft-cli/tests/merge_driver.rs"
+        name: "an_input_that_carries_a_key_twice_exits_1_naming_it_and_both_sites_and_ours_is_unchanged"
   - node: 3dc02cdb-0451-4827-a2e3-010c6b3a274e
     reviewed: ad65862899318e099892a6fc190a490402205d0066093bc1f8ebbefae7237ca9
     tests:
       - file: "crates/loft-cli/tests/merge_driver.rs"
         name: "an_unreadable_input_is_named_with_where_and_ours_is_unchanged"
+      - file: "crates/loft-cli/tests/merge_driver.rs"
+        name: "an_input_that_carries_a_key_twice_exits_1_naming_it_and_both_sites_and_ours_is_unchanged"
   - node: 22328d0c-1299-463f-8966-069b3229b7af
     reviewed: 15706411927b3f3da3193e86e176cd1336ddb44a3e2d57f5c63aaab6daa2cfdd
     tests:

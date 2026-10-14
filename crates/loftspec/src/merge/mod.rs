@@ -11,14 +11,16 @@ mod places;
 mod record;
 mod same;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
 use crate::codec::schema::{Field, Item, Kind, Order, Shape, field};
 use crate::codec::{
-    Content, Mode, ReadError, Rec, Role, SpecPath, Val, keyed_records, read_file, write_content,
+    Content, Mode, Problem, ReadError, Rec, Role, Site, SpecPath, Val, keyed_records, read_file,
+    write_content,
 };
 use crate::identity::{Key, Label};
+use crate::yaml::{Location, Position};
 
 /// One of the three versions of the file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -52,7 +54,8 @@ pub struct Merged {
 pub enum MergeError {
     /// The path names no file of the Format.
     NotAFormatFile,
-    /// Each input that does not read as a file of the Format, with where (RQ-151).
+    /// Each input that does not read as a file of the Format, or that carries a key twice, with
+    /// where (RQ-151).
     Unreadable(Vec<(Input, ReadError)>),
     /// Both sides changed `spec/lint.yaml` to different contents, which no record can hold.
     BothChanged,
@@ -86,8 +89,13 @@ pub fn merge_file(
         if input == Input::Base && bytes.is_empty() && role != Role::Lint {
             return None;
         }
-        match read_file(path, bytes, Mode::Strict) {
-            Ok((_, content)) => Some(content),
+        let read = read_file(path, bytes, Mode::Strict);
+        match read.map(|(_, content)| (twice_in(path, &content), content)) {
+            Ok((twice, content)) if twice.is_empty() => Some(content),
+            Ok((twice, _)) => {
+                errors.extend(twice.into_iter().map(|error| (input, error)));
+                None
+            }
             Err(error) => {
                 errors.push((input, error));
                 None
@@ -195,6 +203,35 @@ fn lint(base: &[u8], ours: Vec<u8>, theirs: Vec<u8>) -> Result<Vec<u8>, MergeErr
     } else {
         Err(MergeError::BothChanged)
     }
+}
+
+/// Each key that two keyed records of an input carry, at the `key` field of the first and of
+/// the other: the input cannot be read as a file of the Format (RQ-4, RQ-151).
+fn twice_in(path: &SpecPath, content: &Content) -> Vec<ReadError> {
+    let site = |position: Position| Site {
+        path: path.clone(),
+        location: Some(Location::At(position)),
+    };
+    let mut seen = BTreeMap::new();
+    let mut errors = Vec::new();
+    for record in keyed_records(content.records()) {
+        let Some(Val::Scalar { text, position }) = record.get(field::KEY) else {
+            continue;
+        };
+        let Ok(key) = Key::parse(text) else {
+            continue;
+        };
+        match seen.get(&key) {
+            Some(&first) => errors.push(ReadError {
+                sites: vec![site(first), site(*position)],
+                problem: Problem::DuplicateKey(key),
+            }),
+            None => {
+                seen.insert(key, *position);
+            }
+        }
+    }
+    errors
 }
 
 /// A key that two keyed records of the merged file carry, which the merge refuses to write

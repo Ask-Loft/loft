@@ -6,8 +6,10 @@ use crate::common::merge::{
     CRITERIA, CRITERION, merge_at, merged, read_back, requirement, shall, three_requirements, with,
 };
 use crate::common::text::{COMPONENT, FEATURE, PRODUCT, files, indented, text};
-use loftspec::codec::SpecPath;
-use loftspec::merge::{MergeError, merge_file};
+use loftspec::codec::{Problem, ReadError, Site, SpecPath};
+use loftspec::identity::Key;
+use loftspec::merge::{Input, MergeError, merge_file};
+use loftspec::yaml::{Location, Position};
 
 const EDITED: &str = "name: \"Every node record carries one key.\"";
 
@@ -272,7 +274,7 @@ fn a_constraint_moved_from_a_feature_group_to_its_product_and_edited_on_the_othe
 }
 
 #[test]
-fn a_merge_whose_result_would_carry_a_key_twice_writes_nothing() {
+fn an_input_that_carries_a_key_twice_is_unreadable_at_both_sites() {
     let base = three_requirements();
     let after = shall("c2");
     let ours = with(&base, &[(&after, &format!("{after}{CRITERIA}"))]);
@@ -282,8 +284,30 @@ fn a_merge_whose_result_would_carry_a_key_twice_writes_nothing() {
         ours.as_bytes(),
         base.as_bytes(),
     );
-    assert!(
-        matches!(refused, Err(MergeError::DuplicateKey(_))),
-        "{refused:?}"
+    let criterion = "00000000-0000-7000-8000-000000000005";
+    let expected = ReadError {
+        sites: key_sites(&ours, criterion),
+        problem: Problem::DuplicateKey(Key::parse(criterion).unwrap()),
+    };
+    assert_eq!(expected.sites.len(), 2, "{ours}");
+    assert_eq!(
+        refused,
+        Err(MergeError::Unreadable(vec![(Input::Ours, expected)]))
     );
+}
+
+/// The site of each `key` field of the Feature file's text that carries `key`: the line, and
+/// the column its value starts at.
+fn key_sites(text: &str, key: &str) -> Vec<Site> {
+    let field = format!("key: {key}");
+    text.lines()
+        .enumerate()
+        .filter_map(|(index, line)| {
+            let column = line.find(&field)? + "key: ".len() + 1;
+            Some(Site {
+                path: SpecPath::new(FEATURE),
+                location: Some(Location::At(Position::new(index + 1, column))),
+            })
+        })
+        .collect()
 }

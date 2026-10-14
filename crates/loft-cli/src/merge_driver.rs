@@ -211,11 +211,19 @@ fn messages(error: MergeError) -> Vec<String> {
     }
 }
 
-/// Where in the file a read error lies, as `:<line>:<column>`, or nothing.
+/// Where in the file a read error lies, as `:<line>:<column>` with every further site after a
+/// comma, as `write_sites` writes sites in one file (AC-251); or nothing. Every site lies in the
+/// one file merged, which the message names by `<path>` rather than by its path under `spec/`.
 fn location(error: &ReadError) -> String {
-    error
+    let locations: Vec<String> = error
         .sites
         .iter()
-        .find_map(|site| site.location)
-        .map_or_else(String::new, |location| format!(":{location}"))
+        .filter_map(|site| site.location)
+        .map(|location| location.to_string())
+        .collect();
+    if locations.is_empty() {
+        String::new()
+    } else {
+        format!(":{}", locations.join(", "))
+    }
 }
