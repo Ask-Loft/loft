@@ -10,6 +10,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - `loft fmt` turns a reference written by name (`name: "…"`) into its target's key: an option by
   title, a driver by label, a decision by title, a Requirement by its statement, any other node
   by its name. An accepted decision can be written in one pass.
+- `loft fmt` drops the label binding of a deleted node, which `loft check` refused before, and
+  reports each binding it drops; the counters keep the label from being allocated again. A
+  retired or superseded decision's reference to the deleted node becomes its former label.
 - `loft find <query>` prints the key, label, kind, file and name of each node or decision whose
   label, slug or key equals the query or whose name contains it.
 - `LQ-009` matches a hyphenated tag such as `event-details` only in its hyphenated form, not in

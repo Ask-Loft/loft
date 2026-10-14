@@ -82,7 +82,7 @@ needs.
 | Command | What it does |
 |---|---|
 | `loft init [--no-skill]` | Creates an empty document in the current directory, and the agent skill beside it |
-| `loft fmt [--check]` | Rewrites `spec/` in canonical layout, mints missing keys and turns references written by name into keys, or reports drift |
+| `loft fmt [--check]` | Rewrites `spec/` in canonical layout, mints missing keys, turns references written by name into keys and drops the label bindings of deleted nodes, or reports drift |
 | `loft check [--fail-on <severity>]` | Reads, validates and lints `spec/` |
 | `loft render` | Writes the Markdown projection and the canonical JSON export |
 | `loft find <query>` | Prints the key, label, kind, file and name of each node or decision a label, slug, key or name identifies |
