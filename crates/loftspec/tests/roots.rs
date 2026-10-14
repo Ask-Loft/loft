@@ -6,13 +6,14 @@ use crate::common::{
 use loftspec::canonical::Digest;
 use loftspec::decision::DecisionState;
 use loftspec::document::{CategoryEntry, DerivedFrom, Document, Edge};
-use loftspec::hash::{ContentHash, Roots, hash_document};
+use loftspec::hash::{ContentHash, Roots, hash_document, hash_indexed_with_views};
 use loftspec::ids::{
     AuthoredStateId, CategoryId, ComponentId, DecisionId, DocumentId, ElementId, FeatureId,
     OptionId, RequirementId,
 };
 use loftspec::index::IntegrityError;
 use loftspec::names::CategoryName;
+use serde_json::json;
 
 fn roots(document: &Document) -> Roots {
     hash_document(document).expect("the document hashes").roots
@@ -173,6 +174,31 @@ fn fresh_element_keys_leave_the_decision_view_hash() {
         after.decisions[&DecisionId::new(fresh_key(20))]
     );
     assert_eq!(before.roots.decisions, after.roots.decisions);
+}
+
+#[test]
+fn a_superseded_decision_names_its_successor_by_the_successors_decision_view_hash() {
+    let mut document = small_document();
+    let own = |n: u32| {
+        if (20..30).contains(&n) {
+            key(n + 40)
+        } else {
+            key(n)
+        }
+    };
+    let mut successor = small_document_with(&own).decisions.remove(0);
+    successor.title = "Keys are UUIDs, again".to_owned();
+    document.decisions[0].state = DecisionState::Superseded {
+        selected_option: OptionId::new(key(23)),
+        outcome: "New keys are UUID version 7.".to_owned(),
+        successor: successor.id,
+    };
+    let successor_id = successor.id;
+    document.decisions.push(successor);
+    let (hashes, views) = hash_indexed_with_views(&document.index().unwrap());
+    let state = &views.decisions[&DecisionId::new(key(20))][2];
+    assert_eq!(state["kind"], "superseded");
+    assert_eq!(state["successor"], json!(hashes.decisions[&successor_id]));
 }
 
 #[test]

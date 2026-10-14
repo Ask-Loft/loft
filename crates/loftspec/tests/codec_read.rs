@@ -354,3 +354,75 @@ fn a_product_key_listed_twice_is_refused_naming_the_key() {
         "spec/loftspec.yaml:6:5: the key 00000000-0000-7000-8000-000000000001 is listed twice"
     );
 }
+
+#[test]
+fn two_records_with_one_key_in_one_file_name_the_file_once_with_each_position() {
+    let files = edited(
+        FEATURE,
+        "          - 00000000-0000-7000-8000-000000000004\n",
+        "          - 00000000-0000-7000-8000-000000000004\n      - key: \
+         00000000-0000-7000-8000-000000000005\n        name: \"The same key again.\"\n",
+    );
+    let error = only(&files);
+    assert_eq!(error.problem, Problem::DuplicateKey(key(5)));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/identity/keys.yaml:14:14, 18:14: the key \
+         00000000-0000-7000-8000-000000000005 is carried twice"
+    );
+}
+
+#[test]
+fn two_registry_entries_with_one_key_are_refused_as_a_duplicate_key() {
+    let two_tags = edited(
+        "tags.yaml",
+        "- key: 00000000-0000-7000-8000-00000000001f",
+        "- key: 00000000-0000-7000-8000-00000000001e",
+    );
+    let error = only(&two_tags);
+    assert_eq!(error.problem, Problem::DuplicateKey(key(30)));
+    let paths: Vec<_> = error.sites.iter().map(|site| site.path.clone()).collect();
+    assert_eq!(paths, [path("tags.yaml"), path("tags.yaml")]);
+    let tag_and_category = edited(
+        "categories.yaml",
+        "- key: 00000000-0000-7000-8000-000000000020",
+        "- key: 00000000-0000-7000-8000-00000000001e",
+    );
+    let error = only(&tag_and_category);
+    assert_eq!(error.problem, Problem::DuplicateKey(key(30)));
+}
+
+#[test]
+fn a_malformed_key_is_refused_at_the_file_line_and_column_of_its_key_field() {
+    let files = edited(
+        FEATURE,
+        "key: 00000000-0000-7000-8000-00000000000a",
+        "key: 0000000000007000800000000000000a",
+    );
+    let error = only(&files);
+    assert_eq!(error.sites[0].location, Some(at(19, 10)));
+    assert_eq!(
+        error.to_string(),
+        "spec/products/example-product/identity/keys.yaml:19:10: \
+         `0000000000007000800000000000000a` is not a lowercase hyphenated UUID"
+    );
+}
+
+/// The writer's side, that no written node record carries a label, is `codec_derived`'s scan of
+/// every written field.
+#[test]
+fn a_node_record_carrying_a_label_field_is_refused() {
+    for (from, to, line, column) in [
+        ("slug: keys\n", "slug: keys\nlabel: F-1\n", 3, 1),
+        (
+            "      - key: 00000000-0000-7000-8000-000000000005\n",
+            "      - key: 00000000-0000-7000-8000-000000000005\n        label: AC-1\n",
+            15,
+            9,
+        ),
+    ] {
+        let error = only(&edited(FEATURE, from, to));
+        assert_eq!(error.problem, Problem::UnknownField("label".to_owned()));
+        assert_eq!(error.sites[0].location, Some(at(line, column)), "{to:?}");
+    }
+}

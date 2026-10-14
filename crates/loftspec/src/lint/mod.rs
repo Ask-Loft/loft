@@ -21,7 +21,7 @@ use std::fmt;
 pub use config::{LintConfig, Similarity};
 pub use defaults::defaults_text;
 
-use crate::codec::{Site, Sites};
+use crate::codec::{Site, Sites, write_sites};
 use crate::document::Document;
 use crate::identity::Key;
 use crate::wire::wire_names;
@@ -158,12 +158,11 @@ impl fmt::Display for Finding {
     /// `<path>:<line>:<column>: <severity> <rule>: <message>`, every site the finding names
     /// first (RQ-158), then the term and the body line where the finding has them.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for subject in &self.subjects {
-            match &subject.site {
-                Some(site) => write!(formatter, "{site}: ")?,
-                None => write!(formatter, "{}: ", subject.key)?,
-            }
-        }
+        let sites = self
+            .subjects
+            .iter()
+            .map(|subject| subject.site.as_ref().ok_or(subject.key));
+        write_sites(formatter, sites)?;
         write!(
             formatter,
             "{} {}: {}",

@@ -20,6 +20,16 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "a_renamed_node_keeps_its_file"
+  - node: 1040a04a-c1bb-41e5-83bb-6a9591973506
+    reviewed: 2b4000ee2998f33bc18ea68246b2f9e255c654c00ba78e1d9b4c4f2bae0dac28
+    tests:
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "a_nodes_key_is_unchanged_after_its_body_changes"
+  - node: 995c7b31-ea90-428c-8af0-5a69d9ba3426
+    reviewed: 7f4d8ab438ab39aca1dd7d168ce1976898c980713293d8fd5221e386b15e8ef2
+    tests:
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "a_nodes_key_is_unchanged_after_it_moves_to_another_parent"
   - node: ad8ae0e5-c9c6-4591-83d9-a510b33a7ce7
     reviewed: 78fee422e4069c7e32c264daaba87d0e26d8f955ffa25d152f146e4cb321b6bc
     tests:
@@ -27,6 +37,11 @@ links:
         name: "a_promoted_requirement_keeps_its_key_and_its_label_as_an_alias"
       - file: "crates/loftspec/tests/label_allocation.rs"
         name: "a_binding_whose_prefix_is_not_its_kinds_is_read_without_error"
+  - node: 3003a33c-d009-403c-aeb1-ecb58d55db3f
+    reviewed: 10b976029fc71b7cf55c29adce89677dca8758d7b9a8fafb417f7fbdc93d80bf
+    tests:
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "a_nodes_key_is_unchanged_after_its_tags_change"
   - node: fc636463-f9bf-477b-9b3e-b8d386941d55
     reviewed: 8a57e96922a35f394dd103725453b5cb41277edeff837c9f2b080626e58251d2
     tests:
@@ -72,11 +87,21 @@ links:
         name: "a_key_carried_twice_is_refused_naming_both_places"
       - file: "crates/loftspec/tests/roots.rs"
         name: "a_key_carried_twice_is_refused"
+  - node: 604e8ceb-c018-408e-bc46-398e55677c69
+    reviewed: ecbfc708960ff5d72b2a88d21fa8cef35fb80e6043e6b176aac50d2487f5526f
+    tests:
+      - file: "crates/loftspec/tests/codec_read.rs"
+        name: "two_records_with_one_key_in_one_file_name_the_file_once_with_each_position"
   - node: 30c0c3ef-d7e6-41c1-b417-e499fa0d35a9
     reviewed: 94f01295cedb2faa38924db8aa44c31d1b0e7a56481387acdec0e6e91eccabaa
     tests:
       - file: "crates/loftspec/tests/index.rs"
         name: "a_key_carried_by_a_decision_element_and_a_node_is_carried_twice"
+  - node: 2f41a6fc-fe06-493a-890d-f293c9a72001
+    reviewed: a8d0602877de17a4edfd75a20b15678f479d1d363eab90eeac0afba8280f89cb
+    tests:
+      - file: "crates/loftspec/tests/codec_read.rs"
+        name: "two_registry_entries_with_one_key_are_refused_as_a_duplicate_key"
   - node: db4844c7-decd-414d-bffb-ce2600ae56d7
     reviewed: d4444f85efbdb311f580ec9f7212a4744a1352cf90ba0ae0eaffdf12f7690da5
     tests:
@@ -97,6 +122,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_read.rs"
         name: "a_record_without_a_key_is_refused_outside_the_formatter"
+  - node: e21a7e35-1a88-4370-b12d-6c03ea3f6353
+    reviewed: 71e82b0b2fb7ad65eea7af0f70e5c3de9232d6dedc527706e112d193305e1e80
+    tests:
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "a_node_read_without_a_key_has_none_until_the_formatter_mints_one"
   - node: 01a13737-c20a-744c-94d5-08b2e4da9e2b
     reviewed: bde09a14db8431b45cdb87b9f906e2e3a053e0a032d2a363d784b8d172a007bc
     tests:
@@ -163,6 +193,11 @@ links:
         name: "a_key_that_is_not_a_uuid_is_an_error_naming_it"
       - file: "crates/loftspec/tests/identity.rs"
         name: "an_uppercase_key_is_an_error_naming_it"
+  - node: b234b66d-a52b-42ad-8f9a-74225d8a2559
+    reviewed: 607e99778784a6bfb534d17a661f4747bf23f36c0698ffa0951f3fb78c470bb6
+    tests:
+      - file: "crates/loftspec/tests/codec_read.rs"
+        name: "a_malformed_key_is_refused_at_the_file_line_and_column_of_its_key_field"
   - node: 4a7644a9-cd46-4eea-afeb-7d52e0e3ec08
     reviewed: 275f54c9fc13e920a5f19c0b8578e67e5bbaf26405ade70911f995ff4384c7f1
     tests:
@@ -175,11 +210,31 @@ links:
     tests:
       - file: "crates/loftspec/tests/identity.rs"
         name: "a_key_without_hyphens_is_an_error"
+  - node: 5c77c974-d958-41ce-a37c-7f35d96a61f2
+    reviewed: fe58c53e4958b7b362d4626959fdddea1e0e6ba0dfd063d2877528bedb15a038
+    tests:
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "a_decision_without_a_key_has_one_after_formatting"
   - node: 3075d645-8b09-4d90-b75d-0263fbff5eeb
     reviewed: 298658f890c0766aa419788cb35b737f0db24d199ab4395159544d83d9e18b18
     tests:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "an_option_without_a_key_gets_one"
+  - node: 2fc48b34-95e9-41eb-98bf-cc65b476402f
+    reviewed: 7ddc889f58fcabab6924c9f0dc83fca3008b42dbebf6fa409a476f27eb472574
+    tests:
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "a_tag_or_category_entry_without_a_key_has_one_after_formatting"
+  - node: 10c656ac-7d48-4bef-a2af-ccce98fe4cf0
+    reviewed: 500e0d06425e6bec75f2e6c65956b165526c625f873d7f2525d3a4f30229219e
+    tests:
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "the_keyed_records_are_exactly_nodes_decisions_drivers_options_consequences_and_entries"
+  - node: 00f903a2-296f-45d0-a465-5a258efac8cd
+    reviewed: 989b4bacad60475504f8ff1a070e1f4e40ade15e9e3dc7bf75795b2790ff0de2
+    tests:
+      - file: "crates/loftspec/tests/codec_read.rs"
+        name: "a_node_record_carrying_a_label_field_is_refused"
   - node: 901c9c47-7917-436d-ac06-3af365269ed7
     reviewed: e399c351f2e4b9baed65508ac1d193352c464a8d33cdaabfb17334b5926342d5
     tests:
@@ -278,6 +333,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/withdrawn.rs"
         name: "a_withdrawn_label_is_never_allocated_again"
+  - node: 01a130de-5738-756e-a4f4-f94c253aafeb
+    reviewed: 647ee70ee26007346f0bd883a102b12222ce4f724b3fcc33b90fc340280ee4a7
+    tests:
+      - file: "crates/loftspec/tests/publish_settle.rs"
+        name: "a_withdrawn_list_only_grows_when_a_key_that_lists_one_withdraws_another"
   - node: 01a130de-5738-756e-a4f4-f94e21124f57
     reviewed: 70c8f31e6c3c9500e54ac07ae8b4781d0c97b21d0e2f02d810ba1bd9ac7f5411
     tests:
@@ -810,6 +870,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/roots.rs"
         name: "assessment_order_leaves_the_decision_view_hash"
+  - node: 27f952b8-2049-4cea-bec7-24463a1b7c39
+    reviewed: 9778b6148338c119e32eb5588bf2a6f13870b442fb14721254e390528933c561
+    tests:
+      - file: "crates/loftspec/tests/roots.rs"
+        name: "a_superseded_decision_names_its_successor_by_the_successors_decision_view_hash"
   - node: d8f8ba11-7fab-41cf-9256-125ac0fd14c2
     reviewed: 5db02e22cc8fbb69d19b242c6e71e6a0f72e0a44f3fec14ad4d61b9f3eba6d71
     tests:

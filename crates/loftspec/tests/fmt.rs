@@ -11,7 +11,7 @@ use loftspec::identity::Key;
 const GROUP_SLUG: &[&str] = &["featureGroups", "0", "slug"];
 
 /// The files after formatting.
-fn formatted(files: &Files) -> Files {
+pub(crate) fn formatted(files: &Files) -> Files {
     let mut files = files.clone();
     files.extend(format(&files).unwrap().changed);
     files

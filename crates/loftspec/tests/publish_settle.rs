@@ -20,6 +20,9 @@ use loftspec::publish::{
 /// A binding as a labels file lists it: the key's number, its live label and its aliases.
 type Bind = (u32, &'static str, &'static [&'static str]);
 
+/// The labels a key withdrew: the key's number and the labels.
+type Withdrawn = (u32, &'static [&'static str]);
+
 /// The small document's bindings but those of the criterion and the two constraints.
 const KEPT: [Bind; 8] = [
     (0x1, "P-1", &[]),
@@ -34,6 +37,12 @@ const KEPT: [Bind; 8] = [
 
 /// A labels file holding the kept bindings and `extra`, sorted by key.
 fn labels(extra: &[Bind]) -> String {
+    withdrawing(extra, &[])
+}
+
+/// A labels file holding the kept bindings and `extra`, sorted by key, each key `withdrawn`
+/// names listing the labels given with it as withdrawn.
+fn withdrawing(extra: &[Bind], withdrawn: &[Withdrawn]) -> String {
     let mut all: Vec<Bind> = KEPT.iter().chain(extra).copied().collect();
     all.sort_by_key(|bind| bind.0);
     let mut text = String::from(
@@ -47,6 +56,12 @@ fn labels(extra: &[Bind]) -> String {
                 let _ = writeln!(text, "      - {alias}");
             }
         }
+        for (_, labels) in withdrawn.iter().filter(|listed| listed.0 == n) {
+            text.push_str("    withdrawn:\n");
+            for label in *labels {
+                let _ = writeln!(text, "      - {label}");
+            }
+        }
     }
     text
 }
@@ -54,10 +69,16 @@ fn labels(extra: &[Bind]) -> String {
 /// The small document's tree, its bindings the merge of `local` and `pulled` from a start that
 /// binds neither constraint nor the criterion, as `operation` hands git's merge driver the sides.
 fn met(operation: Operation, local: &[Bind], pulled: &[Bind]) -> Files {
+    met_files(operation, labels(local), labels(pulled))
+}
+
+/// The small document's tree, its bindings the merge of the labels files `local` and `pulled`
+/// from a start that binds neither constraint nor the criterion, as [`met`] merges them.
+fn met_files(operation: Operation, local: String, pulled: String) -> Files {
     let base = labels(&[]);
     let (ours, theirs) = match operation {
-        Operation::Merge => (labels(local), labels(pulled)),
-        Operation::Rebase => (labels(pulled), labels(local)),
+        Operation::Merge => (local, pulled),
+        Operation::Rebase => (pulled, local),
     };
     let at = SpecPath::new("labels.yaml");
     let merged = merge_file(&at, base.as_bytes(), ours.as_bytes(), theirs.as_bytes()).unwrap();
@@ -211,6 +232,24 @@ fn a_key_both_sides_labelled_apart_keeps_the_pulled_label_and_withdraws_the_othe
     assert_eq!(criterion.key(), key(5));
     assert_eq!(bindings.withdrawn_of(criterion), [label("AC-2")]);
     assert_eq!(bindings.aliases_of(criterion), []);
+}
+
+#[test]
+fn a_withdrawn_list_only_grows_when_a_key_that_lists_one_withdraws_another() {
+    let earlier: [Withdrawn; 1] = [(0x5, &["AC-1"])];
+    let files = met_files(
+        Operation::Merge,
+        withdrawing(&[(0x5, "AC-2", &[])], &earlier),
+        withdrawing(&[(0x5, "AC-3", &[])], &earlier),
+    );
+    let settled = settled(&files, &stopped(Operation::Merge));
+    let bindings = &settled.document.bindings;
+    let criterion = bindings.resolve(label("AC-3")).unwrap();
+    assert_eq!(criterion.key(), key(5));
+    assert_eq!(
+        bindings.withdrawn_of(criterion),
+        [label("AC-1"), label("AC-2")]
+    );
 }
 
 #[test]

@@ -2,9 +2,12 @@
 //! error stops it before the validator; an error in `spec/lint.yaml` stops it before the linter.
 //! Every error and finding names the sites of the elements it concerns (RQ-158).
 
+use std::convert::Infallible;
 use std::fmt;
 
-use crate::codec::{Files, LABELS, LINT, MANIFEST, ReadError, Site, Sites, SpecPath, read_sited};
+use crate::codec::{
+    Files, LABELS, LINT, MANIFEST, ReadError, Site, Sites, SpecPath, read_sited, write_sites,
+};
 use crate::conflict::ConflictOwner;
 use crate::document::Document;
 use crate::hash::{DocumentHashes, hash_document};
@@ -20,9 +23,7 @@ pub struct Placed {
 
 impl fmt::Display for Placed {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for site in &self.sites {
-            write!(formatter, "{site}: ")?;
-        }
+        write_sites(formatter, self.sites.iter().map(Ok::<_, Infallible>))?;
         self.error.fmt(formatter)
     }
 }

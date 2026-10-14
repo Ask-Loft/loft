@@ -1,5 +1,6 @@
 //! A read error with the file and the positions it concerns (RQ-158).
 
+use std::convert::Infallible;
 use std::fmt;
 
 use crate::identity::Key;
@@ -49,6 +50,44 @@ impl fmt::Display for Site {
     }
 }
 
+/// Writes the sites an error or a finding concerns before its message, each followed by `: `:
+/// a site as `<path>:<line>:<column>`, except that a site in the file of the site before it
+/// names only its line and column, after a comma (AC-251). Where a subject has no site, its
+/// `Err` is written in the site's place.
+///
+/// # Errors
+///
+/// The formatter's.
+pub fn write_sites<'a, D: fmt::Display>(
+    formatter: &mut fmt::Formatter<'_>,
+    sites: impl IntoIterator<Item = Result<&'a Site, D>>,
+) -> fmt::Result {
+    let mut previous: Option<&Site> = None;
+    let mut any = false;
+    for site in sites {
+        let here = site.as_ref().ok().copied();
+        match site {
+            Ok(site) => match (previous, site.location) {
+                (Some(before), Some(location))
+                    if before.path == site.path && before.location.is_some() =>
+                {
+                    write!(formatter, ", {location}")?;
+                }
+                _ if any => write!(formatter, ": {site}")?,
+                _ => write!(formatter, "{site}")?,
+            },
+            Err(other) if any => write!(formatter, ": {other}")?,
+            Err(other) => write!(formatter, "{other}")?,
+        }
+        previous = here;
+        any = true;
+    }
+    if any {
+        formatter.write_str(": ")?;
+    }
+    Ok(())
+}
+
 /// A read error: what is wrong, and every site it concerns (AC-679).
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub struct ReadError {
@@ -58,9 +97,7 @@ pub struct ReadError {
 
 impl fmt::Display for ReadError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for site in &self.sites {
-            write!(formatter, "{site}: ")?;
-        }
+        write_sites(formatter, self.sites.iter().map(Ok::<_, Infallible>))?;
         self.problem.fmt(formatter)
     }
 }
