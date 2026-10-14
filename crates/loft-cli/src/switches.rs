@@ -2,9 +2,7 @@
 //! job or container, and a choice recorded by `loft <command> on|off` for the user on the
 //! machine. Each is read before anything else either does.
 
-use std::env;
-
-use crate::settings;
+use crate::{environment, settings};
 
 /// One switched concern: its variable, the settings file that records its choice, and the
 /// command that records it.
@@ -45,30 +43,29 @@ impl Switch {
     /// concern off, so a mistyped one sends nothing, except that `internal` keeps telemetry on
     /// unless its recorded choice is off.
     pub fn state(&self) -> State {
-        let recorded = self.recorded();
-        let variable = env::var_os(self.variable).filter(|value| !value.is_empty());
-        match variable {
-            Some(value) if self.internal && value == "internal" => match recorded {
-                Some(false) => self.by_choice(false),
-                _ => State {
-                    on: true,
-                    decided_by: self.variable.to_owned(),
-                    internal: true,
-                },
-            },
-            Some(_) => State {
-                on: false,
-                decided_by: self.variable.to_owned(),
+        let variable = environment::value(self.variable);
+        let internal = self.internal && variable.as_deref() == Some("internal".as_ref());
+        if variable.is_some() && !internal {
+            return self.by_variable(false);
+        }
+        match (self.recorded(), internal) {
+            (Some(on), false) => self.by_choice(on),
+            (Some(false), true) => self.by_choice(false),
+            (_, true) => self.by_variable(true),
+            (None, false) => State {
+                on: true,
+                decided_by: "default".to_owned(),
                 internal: false,
             },
-            None => recorded.map_or_else(
-                || State {
-                    on: true,
-                    decided_by: "default".to_owned(),
-                    internal: false,
-                },
-                |on| self.by_choice(on),
-            ),
+        }
+    }
+
+    /// The state the variable decides: on only as internal use.
+    fn by_variable(&self, on: bool) -> State {
+        State {
+            on,
+            decided_by: self.variable.to_owned(),
+            internal: on,
         }
     }
 

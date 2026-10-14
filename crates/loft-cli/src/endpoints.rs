@@ -1,7 +1,7 @@
 //! The addresses of the services `loft` talks to, each replaced by its environment variable
 //! when that is set and not empty.
 
-use std::env;
+use crate::environment;
 
 /// Where the command events go.
 pub const COLLECTOR: &str = "https://askloft.ai/api/telemetry";
@@ -24,8 +24,5 @@ pub fn latest_release() -> String {
 }
 
 fn replaced(variable: &str, default: &str) -> String {
-    env::var(variable)
-        .ok()
-        .filter(|value| !value.is_empty())
-        .unwrap_or_else(|| default.to_owned())
+    environment::text(variable).unwrap_or_else(|| default.to_owned())
 }

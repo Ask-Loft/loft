@@ -5,9 +5,9 @@
 use std::fs;
 use std::path::Path;
 
+use crate::common::telemetry::asking;
 use crate::common::{CLOSED, EPOCH, Scratch};
-use software_plant::Clock;
-use software_plant::http::{Request, Responder, Response, Server};
+use software_plant::{Clock, ReleaseFeed};
 
 fn sources(dir: &Path, found: &mut Vec<(String, String)>) {
     for entry in fs::read_dir(dir).unwrap() {
@@ -40,32 +40,26 @@ fn only_the_network_client_opens_a_connection() {
     }
 }
 
-/// A stand-in proxy: it records each request and answers none of them usefully.
-struct Proxy;
-
-impl Responder for Proxy {
-    fn answer(&mut self, _: &Request) -> Option<Response> {
-        Some(Response::empty(502))
-    }
+/// A stand-in proxy: a server that records each request and answers every one with an error.
+fn proxy() -> ReleaseFeed {
+    ReleaseFeed::failing(502)
 }
 
 /// Runs `loft check` with the update check on, asking a closed port, with `variables` set.
 fn through(variables: &[(&str, &str)]) {
     let scratch = Scratch::with_reading_list();
     let mut command = scratch.command(None, &Clock::fixed(EPOCH));
-    command
-        .env_remove("LOFT_UPDATE_CHECK")
-        .env("LOFT_UPDATE_ENDPOINT", CLOSED);
-    for (name, value) in variables {
-        command.env(name, value);
-    }
-    command.arg("check").output().unwrap();
+    asking(&mut command, CLOSED)
+        .envs(variables.iter().copied())
+        .arg("check")
+        .output()
+        .unwrap();
 }
 
 #[test]
 fn a_named_proxy_carries_the_request() {
     for name in ["ALL_PROXY", "HTTPS_PROXY", "HTTP_PROXY"] {
-        let proxy = Server::start(Proxy);
+        let proxy = proxy();
         through(&[(name, &proxy.url())]);
         let requests = proxy.requests();
         assert_eq!(requests.len(), 1, "{name}");
@@ -79,7 +73,7 @@ fn a_named_proxy_carries_the_request() {
 
 #[test]
 fn the_first_proxy_variable_set_wins() {
-    let (first, later) = (Server::start(Proxy), Server::start(Proxy));
+    let (first, later) = (proxy(), proxy());
     through(&[("ALL_PROXY", &first.url()), ("HTTP_PROXY", &later.url())]);
     assert_eq!(first.requests().len(), 1);
     assert!(later.requests().is_empty());
@@ -87,7 +81,7 @@ fn the_first_proxy_variable_set_wins() {
 
 #[test]
 fn a_host_that_no_proxy_lists_is_reached_directly() {
-    let proxy = Server::start(Proxy);
+    let proxy = proxy();
     through(&[("ALL_PROXY", &proxy.url()), ("NO_PROXY", "127.0.0.1")]);
     assert!(proxy.requests().is_empty());
 }

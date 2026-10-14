@@ -3,7 +3,7 @@
 use std::fs;
 use std::process::Command;
 
-use crate::common::telemetry::{EVENT_SCHEMA, Sent, events, sending, sent, the_event};
+use crate::common::telemetry::{EVENT_SCHEMA, Sent, events, sending, sent, sent_with, the_event};
 use crate::common::{EPOCH, Scratch, isolate, stderr, stdout};
 use crate::repo::Repo;
 use crate::schema;
@@ -13,16 +13,7 @@ use software_plant::{Clock, Collector, GitScenario};
 /// The event of `loft <args>` in the Reading List, with `variables` set.
 fn event_with(args: &[&str], variables: &[(&str, &str)]) -> Value {
     let scratch = Scratch::with_reading_list();
-    crate::common::telemetry::seen(&scratch);
-    let collector = Collector::accepting();
-    let mut command = crate::common::telemetry::command(&scratch, None, &collector);
-    for (name, value) in variables {
-        command.env(name, value);
-    }
-    command.args(args).output().unwrap();
-    let mut events = events(&collector);
-    assert_eq!(events.len(), 1);
-    events.remove(0)
+    the_event(&sent_with(&scratch, args, None, variables)).clone()
 }
 
 #[test]
@@ -174,12 +165,7 @@ fn the_event_carries_no_text_from_the_tree_the_files_the_repository_or_the_envir
 #[test]
 fn an_install_record_sets_installed_by() {
     let scratch = Scratch::with_reading_list();
-    let recorded = scratch
-        .command(None, &Clock::fixed(EPOCH))
-        .args(["record-install", "cargo"])
-        .output()
-        .unwrap();
-    assert_eq!(recorded.status.code(), Some(0));
+    scratch.record_install("cargo");
     let sent: Sent = sent(&scratch, &["check"], None);
     assert_eq!(the_event(&sent)["installedBy"], json!("cargo"));
 }
@@ -188,20 +174,10 @@ fn an_install_record_sets_installed_by() {
 fn an_executable_inside_node_modules_at_ask_loft_is_installed_by_npm() {
     let scratch = Scratch::with_reading_list();
     crate::common::telemetry::seen(&scratch);
-    let bin = scratch.0.join("node_modules/@ask-loft/loft-test/bin");
-    fs::create_dir_all(&bin).unwrap();
-    let copy = bin.join("loft");
-    fs::copy(env!("CARGO_BIN_EXE_loft"), &copy).unwrap();
     let collector = Collector::accepting();
-    let mut command = Command::new(&copy);
-    isolate(&mut command, &scratch.home());
-    Clock::fixed(EPOCH).apply(&mut command);
+    let mut command = scratch.npm_installed(&Clock::fixed(EPOCH));
     sending(&mut command, &collector.url());
-    command
-        .arg("check")
-        .current_dir(&scratch.0)
-        .output()
-        .unwrap();
+    command.arg("check").output().unwrap();
     assert_eq!(events(&collector)[0]["installedBy"], json!("npm"));
 }
 

@@ -6,6 +6,7 @@
 
 use std::time::Duration;
 
+use crate::common::telemetry::client;
 use serde_json::Value;
 use software_plant::releases::{LATEST, Release, ReleaseFeed};
 use ureq::Agent;
@@ -13,17 +14,9 @@ use ureq::Agent;
 /// GitHub's REST API.
 const GITHUB: &str = "https://api.github.com";
 
-fn agent() -> Agent {
-    Agent::config_builder()
-        .http_status_as_error(false)
-        .timeout_global(Some(Duration::from_secs(10)))
-        .build()
-        .into()
-}
-
 /// The status of `GET <api><path>`, with its JSON body.
 fn get(api: &str, path: &str) -> (u16, Value) {
-    let mut response = agent()
+    let mut response = client()
         .get(format!("{api}{path}"))
         .header("Accept", "application/vnd.github+json")
         .header("User-Agent", concat!("loft/", env!("CARGO_PKG_VERSION")))
@@ -112,7 +105,7 @@ fn a_simulator_can_list_a_release_whose_tag_is_not_a_version() {
 #[test]
 fn a_rate_limited_simulator_answers_as_github_does_when_the_limit_is_spent() {
     let feed = ReleaseFeed::rate_limited();
-    let mut response = agent()
+    let mut response = client()
         .get(format!("{}{LATEST}", feed.url()))
         .call()
         .unwrap();
@@ -144,7 +137,7 @@ fn a_silent_simulator_never_answers_and_a_refusing_one_refuses() {
         .build()
         .into();
     assert!(quiet.get(format!("{}{LATEST}", feed.url())).call().is_err());
-    let refused = agent()
+    let refused = client()
         .get(format!("{}{LATEST}", ReleaseFeed::refusing()))
         .call();
     assert!(refused.is_err(), "{refused:?}");

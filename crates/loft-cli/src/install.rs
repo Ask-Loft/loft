@@ -6,20 +6,23 @@ use std::env;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 
+use clap::ValueEnum;
 use serde_json::{Value, json};
 
+use crate::environment;
 use crate::settings::{self, SettingsError};
 use crate::version::VERSION;
 
 /// The settings file that holds the install records.
 const FILE: &str = "install.json";
 
-/// A way of installing `loft`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// A way of installing `loft`; `loft record-install` takes each but the unknown one.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum Way {
     Npm,
     Cargo,
     ReleaseBinary,
+    #[value(skip)]
     Unknown,
 }
 
@@ -34,17 +37,12 @@ impl Way {
     }
 
     fn parse(name: &str) -> Option<Self> {
-        match name {
-            "npm" => Some(Self::Npm),
-            "cargo" => Some(Self::Cargo),
-            "release-binary" => Some(Self::ReleaseBinary),
-            _ => None,
-        }
+        <Self as ValueEnum>::from_str(name, false).ok()
     }
 }
 
 /// The running executable's own path, with every link resolved.
-pub fn executable() -> Option<PathBuf> {
+fn executable() -> Option<PathBuf> {
     env::current_exe()
         .ok()
         .and_then(|path| fs::canonicalize(path).ok())
@@ -115,31 +113,31 @@ fn installed_by_cargo(executable: &Path, home: &Path) -> bool {
     if executable.parent() != Some(bin.as_path()) {
         return false;
     }
-    let Some(name) = executable.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    let listed = fs::read(home.join(".crates2.json"))
-        .ok()
-        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok());
-    listed.is_some_and(|listed| {
-        listed["installs"].as_object().is_some_and(|installs| {
-            installs.iter().any(|(package, install)| {
-                package.starts_with("loft-cli ")
-                    && install["bins"]
-                        .as_array()
-                        .is_some_and(|bins| bins.iter().any(|bin| bin.as_str() == Some(name)))
-            })
-        })
-    })
+    listed_by_cargo(executable, home).unwrap_or(false)
+}
+
+/// Whether cargo's list of installed crates in `home` names `executable` under `loft-cli`, if
+/// the list can be read.
+fn listed_by_cargo(executable: &Path, home: &Path) -> Option<bool> {
+    let name = executable.file_name()?.to_str()?;
+    let listed: Value = serde_json::from_slice(&fs::read(home.join(".crates2.json")).ok()?).ok()?;
+    let installs = listed["installs"].as_object()?;
+    Some(installs.iter().any(|(package, install)| {
+        package.starts_with("loft-cli ")
+            && install["bins"]
+                .as_array()
+                .is_some_and(|bins| bins.iter().any(|bin| bin.as_str() == Some(name)))
+    }))
 }
 
 /// Cargo's home: `CARGO_HOME`, or `.cargo` in the home directory.
 fn cargo_home() -> Option<PathBuf> {
-    let variable = |name: &str| env::var_os(name).filter(|value| !value.is_empty());
-    variable("CARGO_HOME").map(PathBuf::from).or_else(|| {
-        variable(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
-            .map(|home| PathBuf::from(home).join(".cargo"))
-    })
+    environment::value("CARGO_HOME")
+        .map(PathBuf::from)
+        .or_else(|| {
+            environment::value(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
+                .map(|home| PathBuf::from(home).join(".cargo"))
+        })
 }
 
 #[cfg(test)]

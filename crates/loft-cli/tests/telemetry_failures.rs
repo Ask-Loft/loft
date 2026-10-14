@@ -6,7 +6,7 @@
 use std::process::Output;
 use std::time::{Duration, Instant};
 
-use crate::common::telemetry::{seen, sending};
+use crate::common::telemetry::{asking, seen, sending};
 use crate::common::{EPOCH, Scratch, stderr, stdout};
 use software_plant::{Clock, Collector};
 
@@ -61,9 +61,7 @@ fn a_silent_collector_and_a_silent_release_feed_add_at_most_the_time_limit() {
     off.args(["check", "--fail-on", "hint"]).output().unwrap();
     let without = started.elapsed();
     let mut command = scratch.command(None, &Clock::fixed(EPOCH));
-    sending(&mut command, &silent.url())
-        .env_remove("LOFT_UPDATE_CHECK")
-        .env("LOFT_UPDATE_ENDPOINT", feed.url());
+    asking(sending(&mut command, &silent.url()), &feed.url());
     let started = Instant::now();
     command
         .args(["check", "--fail-on", "hint"])

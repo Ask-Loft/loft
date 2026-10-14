@@ -157,6 +157,44 @@ impl Scratch {
         config_under(&self.home())
     }
 
+    /// The settings file `name` under [`Self::config`], or an empty object while there is none.
+    pub fn setting(&self, name: &str) -> serde_json::Value {
+        fs::read(self.config().join(name))
+            .ok()
+            .and_then(|bytes| serde_json::from_slice(&bytes).ok())
+            .unwrap_or_else(|| serde_json::json!({}))
+    }
+
+    /// Records that `way` installed the `loft` under test, as `loft record-install` does.
+    pub fn record_install(&self, way: &str) {
+        let output = self
+            .command(None, &Clock::fixed(EPOCH))
+            .args(["record-install", way])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    }
+
+    /// The `loft` command in the scratch tree at the time `clock` gives, run from the binary
+    /// under test placed where an npm install puts it, inside `node_modules/@ask-loft/`, so that
+    /// `loft` infers that npm installed it. The binary is linked there where the file system
+    /// allows, and copied otherwise.
+    pub fn npm_installed(&self, clock: &Clock) -> Command {
+        let bin = self.0.join("node_modules/@ask-loft/loft-test/bin");
+        let copy = bin.join("loft");
+        if !copy.exists() {
+            fs::create_dir_all(&bin).unwrap();
+            if fs::hard_link(env!("CARGO_BIN_EXE_loft"), &copy).is_err() {
+                fs::copy(env!("CARGO_BIN_EXE_loft"), &copy).unwrap();
+            }
+        }
+        let mut command = Command::new(&copy);
+        clock.apply(&mut command);
+        isolate(&mut command, &self.home());
+        command.current_dir(&self.0);
+        command
+    }
+
     /// The directory beside the scratch tree that holds the simulators' scenarios.
     fn plant(&self) -> PathBuf {
         self.beside(".plant")

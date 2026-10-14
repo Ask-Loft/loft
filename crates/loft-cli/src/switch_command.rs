@@ -2,15 +2,16 @@
 //! choice on the machine, and report the state the switches give. Neither reads a tree, sends
 //! an event or asks GitHub anything.
 
+use loftspec::publish::PublishedAt;
 use serde_json::{Map, Value, json};
 
+use crate::endpoints;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
 use crate::settings;
 use crate::stop::Stop;
 use crate::switches::{Switch, TELEMETRY, UPDATE_CHECK};
-use crate::{endpoints, time};
 
 /// What the command does.
 #[derive(Clone, Copy)]
@@ -122,12 +123,12 @@ fn telemetry_details(kept: &Value) -> Details {
 
 fn update_check_details(kept: &Value) -> Details {
     let mut fields = Map::new();
-    let held = kept["latest"]["version"]
-        .as_str()
-        .zip(kept["receivedAt"].as_u64());
-    let line = match held {
+    let received = kept["receivedAt"]
+        .as_u64()
+        .and_then(|at| PublishedAt::from_unix_seconds(at).ok());
+    let line = match kept["latest"]["version"].as_str().zip(received) {
         Some((version, received)) => {
-            let received = time::rfc3339(received);
+            let received = received.to_string();
             fields.insert(
                 "latest".to_owned(),
                 json!({ "version": version, "receivedAt": received }),

@@ -1,14 +1,26 @@
-//! Sending a command event: the rule every command tagged `sends-telemetry` follows, run
-//! against each command whose Feature in this repository's own `spec/` lists the tag; and the
-//! converse, that every command that sends an event lists it.
+//! Sending a command event: every command whose Feature in this repository's own `spec/` lists
+//! the tag `sends-telemetry` sends exactly one event that follows the event schema and names the
+//! command, every other command sends none, and the schema names exactly the tagged commands.
 
 use crate::commands::{COMMANDS, Fixture, fixture};
-use crate::common::telemetry::{EVENT_SCHEMA, command, seen};
-use crate::conformance::tagged;
+use crate::common::telemetry::{EVENT_SCHEMA, asking, command, seen};
+use crate::conformance::tagged_commands;
 use crate::schema;
+use serde_json::Value;
 use software_plant::{Collector, GitScenario};
 
 const TAG: &str = "sends-telemetry";
+
+/// The name an event gives the command `args` runs: its subcommand, with the second word of a
+/// subcommand that has one, such as `import v1`.
+fn event_name(args: &[&str]) -> String {
+    let words = if ["import", "skill"].contains(&args[0]) {
+        2
+    } else {
+        1
+    };
+    args[..words].join(" ")
+}
 
 /// The requests a run of `args` made of an accepting collector, in a clean repository.
 fn requests(kind: Fixture, args: &[&str]) -> Vec<software_plant::http::Request> {
@@ -24,36 +36,37 @@ fn requests(kind: Fixture, args: &[&str]) -> Vec<software_plant::http::Request> 
 }
 
 #[test]
-fn each_tagged_command_sends_exactly_one_valid_event() {
-    let tagged = tagged(TAG);
+fn a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry() {
+    let tagged = tagged_commands(TAG);
     assert!(!tagged.is_empty(), "no Feature lists `{TAG}`");
-    for (slug, args, kind) in COMMANDS
-        .into_iter()
-        .filter(|(slug, ..)| tagged.contains(&(*slug).to_owned()))
-    {
+    for (slug, args, kind) in COMMANDS {
         let requests = requests(kind, args);
-        assert_eq!(requests.len(), 1, "{slug}");
-        let event = schema::conforming(&requests[0].body, EVENT_SCHEMA);
-        let words = if ["import", "skill"].contains(&args[0]) {
-            2
+        if tagged.iter().any(|(name, ..)| *name == slug) {
+            assert_eq!(requests.len(), 1, "{slug}");
+            let event = schema::conforming(&requests[0].body, EVENT_SCHEMA);
+            assert_eq!(event["command"], event_name(args).as_str(), "{slug}");
         } else {
-            1
-        };
-        assert_eq!(event["command"], args[..words].join(" ").as_str(), "{slug}");
+            assert!(requests.is_empty(), "{slug} sends without `{TAG}`");
+        }
     }
 }
 
 #[test]
-fn each_command_that_sends_an_event_lists_sends_telemetry() {
-    let tagged = tagged(TAG);
-    for (slug, args, kind) in COMMANDS {
-        let sends = !requests(kind, args).is_empty();
-        assert_eq!(
-            sends,
-            tagged.iter().any(|tag| tag == slug),
-            "{slug}: sends {sends}"
-        );
-    }
+fn the_event_schema_names_exactly_the_commands_that_list_sends_telemetry() {
+    let schema: Value = serde_json::from_str(EVENT_SCHEMA).unwrap();
+    let mut listed: Vec<&str> = schema["properties"]["command"]["enum"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|name| name.as_str().unwrap())
+        .collect();
+    listed.sort_unstable();
+    let mut tagged: Vec<String> = tagged_commands(TAG)
+        .into_iter()
+        .map(|(_, args, _)| event_name(args))
+        .collect();
+    tagged.sort();
+    assert_eq!(listed, tagged);
 }
 
 #[test]
@@ -69,9 +82,8 @@ fn the_switch_subcommands_open_no_connection() {
         ["update-check", "on"],
         ["update-check", "status"],
     ] {
-        let output = command(&scratch, None, &collector)
-            .env_remove("LOFT_UPDATE_CHECK")
-            .env("LOFT_UPDATE_ENDPOINT", feed.url())
+        let mut command = command(&scratch, None, &collector);
+        let output = asking(&mut command, &feed.url())
             .args(args)
             .output()
             .unwrap();

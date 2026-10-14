@@ -45,15 +45,14 @@ pub fn after_run() -> Option<Job> {
     if let Some(notice) = due {
         errln!("{notice}");
     }
-    if !stale {
-        return None;
-    }
-    let address = endpoints::latest_release();
-    Some(Box::new(move |left: Duration| {
-        if let Some((200, body)) = network::get_json(&address, left) {
-            keep(&body, now);
-        }
-    }))
+    stale.then(|| -> Job {
+        let address = endpoints::latest_release();
+        Box::new(move |left: Duration| {
+            if let Some((200, body)) = network::get_json(&address, left) {
+                keep(&body, now, kept);
+            }
+        })
+    })
 }
 
 /// The notice for the answer `kept` holds at `now`, if one is due.
@@ -79,17 +78,16 @@ fn notice(kept: &Value, now: u64) -> Option<String> {
     ))
 }
 
-/// Keeps the release that `body`, GitHub's answer, names as the latest, received at `now`.
-/// A draft or a prerelease is not taken as the latest; an answer that does not read leaves
-/// what was kept as it was.
-fn keep(body: &[u8], now: u64) {
+/// Keeps in `kept`, the settings as this run read them, the release that `body`, GitHub's
+/// answer, names as the latest, received at `now`. A draft or a prerelease is not taken as the
+/// latest; an answer that does not read leaves what was kept as it was.
+fn keep(body: &[u8], now: u64, mut kept: Value) {
     let Ok(release) = serde_json::from_slice::<Value>(body) else {
         return;
     };
     let Some(tag) = release["tag_name"].as_str() else {
         return;
     };
-    let mut kept = settings::read(UPDATE_CHECK.file);
     let published = release["draft"] == json!(false) && release["prerelease"] == json!(false);
     if published {
         let version = tag.strip_prefix('v').unwrap_or(tag);

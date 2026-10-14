@@ -80,12 +80,6 @@ impl Collector {
         format!("{}{PATH}", self.server.url())
     }
 
-    /// The address of the server, without the collector's path.
-    #[must_use]
-    pub fn base(&self) -> String {
-        self.server.url()
-    }
-
     /// Each event accepted and recorded, byte for byte, in the order received.
     pub fn events(&self) -> Vec<Vec<u8>> {
         self.accepted

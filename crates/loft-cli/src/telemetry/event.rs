@@ -1,16 +1,16 @@
 //! What one command event says: closed values and random tokens only, never text taken from
 //! the tree, the code, the file system, the repository or the environment.
 
-use std::env;
 use std::io::{self, IsTerminal};
 use std::time::Duration;
 
+use loftspec::publish::PublishedAt;
 use loftspec_store::clock::{Clock, SystemClock};
 use serde_json::{Value, json};
 
+use crate::environment;
 use crate::finish::Finished;
 use crate::install;
-use crate::time;
 use crate::version::VERSION;
 
 /// The schema an event follows, by name and version.
@@ -32,7 +32,7 @@ pub fn build(
     internal: bool,
 ) -> Option<Value> {
     let now = SystemClock::from_env().now().ok()?;
-    let agent = agent(&|name| env::var(name).ok().filter(|value| !value.is_empty()));
+    let agent = agent(&environment::text);
     let mut event = json!({
         "schema": SCHEMA,
         "eventId": uuid::Uuid::new_v4().to_string(),
@@ -40,7 +40,7 @@ pub fn build(
         "os": os(),
         "arch": arch(),
         "installedBy": install::way().as_str(),
-        "time": time::rfc3339(now - now % 3_600),
+        "time": PublishedAt::from_unix_seconds(now - now % 3_600).ok()?.to_string(),
         "installation": installation,
         "mode": mode(internal, agent),
         "agent": agent,
@@ -86,7 +86,7 @@ const fn arch() -> &'static str {
 fn mode(internal: bool, agent: &str) -> &'static str {
     if internal {
         "internal"
-    } else if env::var_os("CI").is_some_and(|value| !value.is_empty()) {
+    } else if environment::value("CI").is_some() {
         "ci"
     } else if agent != "unknown" {
         "agent"

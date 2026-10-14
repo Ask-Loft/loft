@@ -3,15 +3,19 @@
 //! that matches how `loft` was installed.
 
 use std::fs;
-use std::process::{Command, Output};
+use std::process::Output;
 
-use crate::common::{EPOCH, Scratch, isolate, stderr, stdout};
-use serde_json::{Value, json};
+use crate::common::telemetry::asking;
+use crate::common::{EPOCH, Scratch, stderr, stdout};
+use serde_json::json;
 use software_plant::http::{Request, Responder, Response, Server};
 use software_plant::releases::{LATEST, Release};
 use software_plant::{Clock, ReleaseFeed};
 
 const DAY: u64 = 86_400;
+
+/// The settings file the update check keeps its answer in.
+const UPDATE_CHECK_FILE: &str = "update-check.json";
 
 /// `loft check` in the Reading List at `at`, with the update check on and asking `feed`.
 fn check_at(scratch: &Scratch, address: &str, at: u64) -> Output {
@@ -20,31 +24,9 @@ fn check_at(scratch: &Scratch, address: &str, at: u64) -> Output {
     command.arg("check").output().unwrap()
 }
 
-fn asking<'a>(command: &'a mut Command, address: &str) -> &'a mut Command {
-    command
-        .env_remove("LOFT_UPDATE_CHECK")
-        .env("LOFT_UPDATE_ENDPOINT", address)
-}
-
-fn kept(scratch: &Scratch) -> Value {
-    fs::read(scratch.config().join("update-check.json"))
-        .ok()
-        .and_then(|bytes| serde_json::from_slice(&bytes).ok())
-        .unwrap_or_else(|| json!({}))
-}
-
 /// A feed whose latest release is newer than any `loft` under test.
 fn newer() -> ReleaseFeed {
     ReleaseFeed::listing(vec![Release::published("v99.0.0")])
-}
-
-fn record(scratch: &Scratch, way: &str) {
-    let output = scratch
-        .command(None, &Clock::fixed(EPOCH))
-        .args(["record-install", way])
-        .output()
-        .unwrap();
-    assert_eq!(output.status.code(), Some(0));
 }
 
 #[test]
@@ -54,8 +36,14 @@ fn the_latest_release_is_asked_after_the_output_and_kept_with_its_time() {
     let output = check_at(&scratch, &feed.url(), EPOCH);
     assert_eq!(feed.requests().len(), 1);
     assert_eq!(feed.requests()[0].path, LATEST);
-    assert_eq!(kept(&scratch)["latest"]["version"], json!("99.0.0"));
-    assert_eq!(kept(&scratch)["receivedAt"], json!(EPOCH));
+    assert_eq!(
+        scratch.setting(UPDATE_CHECK_FILE)["latest"]["version"],
+        json!("99.0.0")
+    );
+    assert_eq!(
+        scratch.setting(UPDATE_CHECK_FILE)["receivedAt"],
+        json!(EPOCH)
+    );
     assert_eq!(stderr(&output), "");
 }
 
@@ -136,7 +124,11 @@ fn a_draft_or_a_prerelease_is_not_taken_as_the_latest() {
         let scratch = Scratch::with_reading_list();
         let feed = ReleaseFeed::answering(release);
         check_at(&scratch, &feed.url(), EPOCH);
-        assert!(kept(&scratch).get("latest").is_none(), "{}", kept(&scratch));
+        assert!(
+            scratch.setting(UPDATE_CHECK_FILE).get("latest").is_none(),
+            "{}",
+            scratch.setting(UPDATE_CHECK_FILE)
+        );
         assert_eq!(stderr(&check_at(&scratch, &feed.url(), EPOCH + 60)), "");
     }
 }
@@ -172,7 +164,7 @@ fn the_notice_names_the_way_to_update_that_matches_the_install() {
     for (way, line) in cases {
         let scratch = Scratch::with_reading_list();
         if let Some(way) = way {
-            record(&scratch, way);
+            scratch.record_install(way);
         }
         let feed = newer();
         check_at(&scratch, &feed.url(), EPOCH);
@@ -184,21 +176,11 @@ fn the_notice_names_the_way_to_update_that_matches_the_install() {
 #[test]
 fn an_npm_install_whose_script_never_ran_still_names_npm() {
     let scratch = Scratch::with_reading_list();
-    let bin = scratch.0.join("node_modules/@ask-loft/loft-test/bin");
-    fs::create_dir_all(&bin).unwrap();
-    let copy = bin.join("loft");
-    fs::copy(env!("CARGO_BIN_EXE_loft"), &copy).unwrap();
     let feed = newer();
     let run = |at: u64| {
-        let mut command = Command::new(&copy);
-        isolate(&mut command, &scratch.home());
-        Clock::fixed(at).apply(&mut command);
+        let mut command = scratch.npm_installed(&Clock::fixed(at));
         asking(&mut command, &feed.url());
-        command
-            .arg("check")
-            .current_dir(&scratch.0)
-            .output()
-            .unwrap()
+        command.arg("check").output().unwrap()
     };
     run(EPOCH);
     let notice = stderr(&run(EPOCH + 60));
@@ -213,7 +195,7 @@ fn a_feed_that_refuses_fails_rate_limits_or_stays_silent_changes_nothing() {
     let scratch = Scratch::with_reading_list();
     let feed = newer();
     let answered = check_at(&scratch, &feed.url(), EPOCH);
-    let before = kept(&scratch);
+    let before = scratch.setting(UPDATE_CHECK_FILE);
     let failing = ReleaseFeed::failing(500);
     let limited = ReleaseFeed::rate_limited();
     let silent = ReleaseFeed::silent();
@@ -229,7 +211,7 @@ fn a_feed_that_refuses_fails_rate_limits_or_stays_silent_changes_nothing() {
         let output = command.args(["check"]).output().unwrap();
         assert_eq!(output.status.code(), answered.status.code(), "{address}");
         assert_eq!(stdout(&output), stdout(&answered), "{address}");
-        let kept_after = kept(&scratch);
+        let kept_after = scratch.setting(UPDATE_CHECK_FILE);
         assert_eq!(kept_after["latest"], before["latest"], "{address}");
         assert_eq!(kept_after["receivedAt"], before["receivedAt"], "{address}");
     }
@@ -311,7 +293,11 @@ fn a_redirect_is_not_followed() {
     let output = check_at(&scratch, &redirecting.url(), EPOCH);
     assert_eq!(redirecting.requests().len(), 1);
     assert!(target.requests().is_empty());
-    assert!(kept(&scratch).get("latest").is_none(), "{}", kept(&scratch));
+    assert!(
+        scratch.setting(UPDATE_CHECK_FILE).get("latest").is_none(),
+        "{}",
+        scratch.setting(UPDATE_CHECK_FILE)
+    );
     assert_eq!(stderr(&output), "");
 }
 

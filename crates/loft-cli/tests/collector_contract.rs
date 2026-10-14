@@ -8,6 +8,7 @@
 use std::env;
 use std::time::Duration;
 
+use crate::common::telemetry::client;
 use serde_json::{Value, json};
 use software_plant::Collector;
 use software_plant::collector::LIMIT;
@@ -20,14 +21,6 @@ struct Answer {
     status: u16,
     sets_cookie: bool,
     empty: bool,
-}
-
-fn agent() -> Agent {
-    Agent::config_builder()
-        .http_status_as_error(false)
-        .timeout_global(Some(Duration::from_secs(10)))
-        .build()
-        .into()
 }
 
 fn answer(response: Result<ureq::http::Response<ureq::Body>, ureq::Error>) -> Answer {
@@ -43,7 +36,7 @@ fn answer(response: Result<ureq::http::Response<ureq::Body>, ureq::Error>) -> An
 
 fn post(url: &str, content_type: &str, body: &[u8]) -> Answer {
     answer(
-        agent()
+        client()
             .post(url)
             .header("Content-Type", content_type)
             .send(body),
@@ -104,7 +97,7 @@ const SCENARIOS: [Scenario; 7] = [
         post(url, "text/plain", event().to_string().as_bytes())
     }),
     ("a method other than POST", |url| {
-        answer(agent().get(url).call())
+        answer(client().get(url).call())
     }),
 ];
 
@@ -173,7 +166,7 @@ fn a_failing_simulator_answers_every_request_with_its_status() {
 
 #[test]
 fn a_refusing_collector_refuses_the_connection() {
-    let refused = agent()
+    let refused = client()
         .post(&Collector::refusing())
         .header("Content-Type", "application/json")
         .send(event().to_string().as_bytes());

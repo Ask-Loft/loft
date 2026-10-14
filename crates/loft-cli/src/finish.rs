@@ -6,6 +6,7 @@ use std::process::ExitCode;
 use serde_json::Value;
 
 /// How a command finished.
+#[derive(Clone)]
 pub struct Finished {
     pub code: ExitCode,
     pub outcome: &'static str,

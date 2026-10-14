@@ -18,8 +18,7 @@ fn record(scratch: &Scratch, args: &[&str]) -> Output {
 }
 
 fn records(scratch: &Scratch) -> Value {
-    let text = fs::read_to_string(scratch.config().join("install.json")).unwrap();
-    serde_json::from_str(&text).unwrap()
+    scratch.setting("install.json")
 }
 
 /// The path of the binary under test, as `loft` names its own executable.

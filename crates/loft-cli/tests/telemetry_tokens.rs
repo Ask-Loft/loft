@@ -18,10 +18,7 @@ fn the_installation_token_is_kept_and_carried_by_every_later_event() {
     let first = check(&scratch, None)["installation"].clone();
     let second = check(&scratch, None)["installation"].clone();
     assert_eq!(first, second);
-    let kept: Value =
-        serde_json::from_slice(&fs::read(scratch.config().join("telemetry.json")).unwrap())
-            .unwrap();
-    assert_eq!(kept["installation"], first);
+    assert_eq!(scratch.setting("telemetry.json")["installation"], first);
 }
 
 #[test]

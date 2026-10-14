@@ -17,8 +17,16 @@ use crate::switches::TELEMETRY;
 use crate::{endpoints, settings};
 
 /// The work that sends the event of a run of `command` that started at `started` and finished
-/// as `finished` in `root`, or none while telemetry is off.
-pub fn prepare(command: &str, finished: &Finished, started: Instant, root: &Path) -> Option<Job> {
+/// as `finished` in `root`, or none while telemetry is off. Only the switches, the installation
+/// token and the notice are settled before the command returns; reading the checkout's tokens,
+/// which runs git, and building the event are part of the work, within the network client's
+/// time limit.
+pub fn prepare(
+    command: &'static str,
+    finished: &Finished,
+    started: Instant,
+    root: &Path,
+) -> Option<Job> {
     let duration = started.elapsed();
     let state = TELEMETRY.state();
     if !state.on {
@@ -36,17 +44,21 @@ pub fn prepare(command: &str, finished: &Finished, started: Instant, root: &Path
         // A setting that cannot be kept is drawn or printed again on the next run.
         let _ = settings::write(TELEMETRY.file, &kept);
     }
-    let checkout = tokens::checkout(root);
-    let event = event::build(
-        command,
-        finished,
-        duration,
-        &installation,
-        checkout.as_ref(),
-        state.internal,
-    )?;
-    let body = serde_json::to_vec(&event).expect("a JSON value serializes");
+    let (finished, root) = (finished.clone(), root.to_owned());
     Some(Box::new(move |left| {
-        let _ = network::post_json(&address, &body, left);
+        let started = Instant::now();
+        let checkout = tokens::checkout(&root);
+        let built = event::build(
+            command,
+            &finished,
+            duration,
+            &installation,
+            checkout.as_ref(),
+            state.internal,
+        );
+        if let Some(event) = built {
+            let body = serde_json::to_vec(&event).expect("a JSON value serializes");
+            let _ = network::post_json(&address, &body, left.saturating_sub(started.elapsed()));
+        }
     }))
 }
