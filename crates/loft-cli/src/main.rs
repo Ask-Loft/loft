@@ -10,6 +10,7 @@ mod find;
 mod finish;
 mod fmt;
 mod import;
+mod import_openspec;
 mod init;
 mod install;
 mod json;
@@ -87,7 +88,7 @@ enum Command {
         #[command(flatten)]
         output: Output,
     },
-    /// Convert a Loft v1 export into `spec/` (RQ-130).
+    /// Convert a Loft v1 export (RQ-130) or the main specs of an `OpenSpec` project into `spec/`.
     Import {
         #[command(subcommand)]
         source: ImportSource,
@@ -237,6 +238,17 @@ enum ImportSource {
         #[command(flatten)]
         output: Output,
     },
+    /// The main specs of an `OpenSpec` project.
+    Openspec {
+        /// The `OpenSpec` directory.
+        #[arg(default_value = "openspec")]
+        dir: PathBuf,
+        /// The Product's name; by default, the name of the directory that holds `<DIR>`.
+        #[arg(long, value_name = "NAME")]
+        product: Option<String>,
+        #[command(flatten)]
+        output: Output,
+    },
 }
 
 /// The severities `--fail-on` takes; any other is a usage error (AC-533).
@@ -316,6 +328,9 @@ impl Command {
             Self::Import {
                 source: ImportSource::V1 { .. },
             } => Some("import v1"),
+            Self::Import {
+                source: ImportSource::Openspec { .. },
+            } => Some("import openspec"),
             Self::Publish { .. } => Some("publish"),
             Self::Reconcile { .. } => Some("reconcile"),
             Self::Find { .. } => Some("find"),
@@ -330,6 +345,22 @@ impl Command {
     }
 }
 
+/// Runs `loft import` from `source` in `root`.
+fn import(root: &Path, source: ImportSource) -> Finished {
+    match source {
+        ImportSource::V1 {
+            export,
+            counters,
+            output,
+        } => import::run(root, &export, counters.as_deref(), output.json()),
+        ImportSource::Openspec {
+            dir,
+            product,
+            output,
+        } => import_openspec::run(root, &dir, product.as_deref(), output.json()),
+    }
+}
+
 /// Runs `command` in the current directory.
 fn dispatch(command: Command) -> Finished {
     let root = Path::new(".");
@@ -339,14 +370,7 @@ fn dispatch(command: Command) -> Finished {
         Command::Check { fail_on, output } => {
             check::run(root, fail_on.map(Severity::from), output.json())
         }
-        Command::Import {
-            source:
-                ImportSource::V1 {
-                    export,
-                    counters,
-                    output,
-                },
-        } => import::run(root, &export, counters.as_deref(), output.json()),
+        Command::Import { source } => import(root, source),
         Command::Publish { output } => publish::run(root, output.json()),
         Command::Find { query, output } => find::run(root, &query, output.json()),
         Command::Reconcile {

@@ -1,0 +1,146 @@
+key: 01a13fe4-0f95-721d-8c51-f58055604ce8
+slug: loft-import-openspec
+name: "`loft import openspec`"
+body: "Turns the main specs of an OpenSpec project into a `spec/` tree through the OpenSpec converter, writes the provenance sidecar beside it and reports what the converter found."
+tags:
+  - checks-for-updates
+  - sends-telemetry
+  - writes-tree
+realizes:
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a13fe4-0f95-721d-8c51-f581c7051a2d
+    statement:
+      form: ubiquitous
+      system: "`loft import openspec [<dir>]`"
+      shall: "convert the main specs of the OpenSpec project in `<dir>` into `spec/`."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f58200b53af6
+        name: "Without `<dir>`, the project is read from `openspec/` in the current directory."
+      - key: 01a13fe4-0f95-721d-8c51-f5832a6e7037
+        name: "The tree equals the OpenSpec converter's output for the document key the tree holds, in canonical layout."
+      - key: 01a13fe4-0f95-721d-8c51-f58480141e01
+        name: "Each import mints a new document key."
+      - key: 01a13fe4-0f95-721d-8c51-f5859f959a5a
+        name: "The sidecar is written to `openspec-sidecar.json` beside `spec/`."
+      - key: 01a13fe4-0f95-721d-8c51-f586a395de20
+        name: "No label is allocated and no `loft.lock.json` or `loft.trace.yaml` is written."
+  - key: 01a13fe4-0f95-721d-8c51-f5871b899be7
+    statement:
+      form: ubiquitous
+      system: "`loft import openspec`"
+      shall: "give the OpenSpec converter the files of the project it reads."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f588c4e34db5
+        name: "Each file named `spec.md` below `specs/` is given, by its path below `specs/`."
+      - key: 01a13fe4-0f95-721d-8c51-f589c58af44a
+        name: "A `spec.md` reached through a symbolic link is not given."
+      - key: 01a13fe4-0f95-721d-8c51-f58ab4b89783
+        name: "`project.md` and `config.yaml` are given when they exist."
+      - key: 01a13fe4-0f95-721d-8c51-f58bdb089a70
+        name: "Each directory directly under `changes/` other than `archive` is given as an active change."
+      - key: 01a13fe4-0f95-721d-8c51-f58cfb596f95
+        name: "The number of directories in `changes/archive/` and in `archive/` is given as the number of archived changes."
+  - key: 01a13fe4-0f95-721d-8c51-f58d6def906f
+    statement:
+      form: ubiquitous
+      system: "`loft import openspec`"
+      shall: "print each conversion finding on its own line."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f58e2141af07
+        name: "A finding about a source file names the file as `<dir>` joined with its path in the project, and its line."
+      - key: 01a13fe4-0f95-721d-8c51-f58f5b238970
+        name: "A finding about the whole project names no file."
+      - key: 01a13fe4-0f95-721d-8c51-f5900f42b60c
+        name: "Each line names the finding's severity, its code and its message."
+  - key: 01a13fe4-0f95-721d-8c51-f5912575bbb5
+    statement:
+      form: optional
+      where: "`--product <name>` is given"
+      system: "`loft import openspec`"
+      shall: "name the Product `<name>`."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f592a0e8923d
+        name: "The Product's name is `<name>`."
+  - key: 01a13fe4-0f95-721d-8c51-f593c6356d88
+    statement:
+      form: state_driven
+      while: "`--product` is absent"
+      system: "`loft import openspec`"
+      shall: "name the Product after the directory that holds `<dir>`."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f5949d372ea3
+        name: "The Product's name is the name of the directory that holds the OpenSpec directory."
+  - key: 01a13fe4-0f95-721d-8c51-f595d79a067e
+    statement:
+      form: event_driven
+      when: "the converted tree raises a `V2-007` warning"
+      system: "`loft import openspec`"
+      shall: "report the number of `V2-007` warnings and the `spec/lint.yaml` entry that lowers them to info."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f596d3f4bc86
+        name: "The number is the number of `V2-007` warnings `loft check` reports on the converted tree."
+      - key: 01a13fe4-0f95-721d-8c51-f597f9478cdb
+        name: "The entry sets the severity of `V2-007` to `info`."
+      - key: 01a13fe4-0f95-721d-8c51-f5980b463956
+        name: "No `spec/lint.yaml` is written."
+      - key: 01a13fe4-0f95-721d-8c51-f599d06e2028
+        name: "A tree that raises no `V2-007` warning gets no such report."
+  - key: 01a13fe4-0f95-721d-8c51-f59a2895eccd
+    statement:
+      form: unwanted
+      if: "`spec/` is not empty"
+      system: "`loft import openspec`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f59b09682397
+        name: "An entry whose name begins with `.` does not make `spec/` not empty."
+      - key: 01a13fe4-0f95-721d-8c51-f59c3a085b8d
+        name: "The error names the `spec/` path."
+      - key: 01a13fe4-0f95-721d-8c51-f59d1eddf47c
+        name: "Nothing is written."
+  - key: 01a13fe4-0f95-721d-8c51-f59edc951075
+    statement:
+      form: unwanted
+      if: "`<dir>` cannot be read as a directory"
+      system: "`loft import openspec`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f59fcce989c4
+        name: "The error names `<dir>`."
+      - key: 01a13fe4-0f95-721d-8c51-f5a02b482c26
+        name: "Nothing is written."
+  - key: 01a13fe4-0f95-721d-8c51-f5a146aab0f5
+    statement:
+      form: unwanted
+      if: "the project holds no main spec"
+      system: "`loft import openspec`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f5a2c9a515bc
+        name: "The error names each active change the project holds."
+      - key: 01a13fe4-0f95-721d-8c51-f5a33b15570e
+        name: "Nothing is written."
+  - key: 01a13fe4-0f95-721d-8c51-f5a424610412
+    statement:
+      form: unwanted
+      if: "a file it gives the OpenSpec converter is not UTF-8"
+      system: "`loft import openspec`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f5a51a224fe2
+        name: "The error names the file as `<dir>` joined with its path in the project."
+      - key: 01a13fe4-0f95-721d-8c51-f5a6ff31409e
+        name: "Nothing is written."
+  - key: 01a13fe4-0f95-721d-8c51-f5a7611a627f
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft import openspec`"
+      shall: "give the result of the import as its outcome."
+    criteria:
+      - key: 01a13fe4-0f95-721d-8c51-f5a8d44d67a4
+        name: "The outcome is `imported` when the tree and the sidecar were written."
+      - key: 01a13fe4-0f95-721d-8c51-f5a919adc7a2
+        name: "The document lists the files written, the findings and the `V2-007` report."

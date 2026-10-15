@@ -3368,6 +3368,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_openspec_findings.rs"
         name: "active_and_archived_changes_are_reported_with_their_counts"
+  - node: 01a13d02-7211-77f1-a8f1-30a14d580500
+    reviewed: 0c0d1464203fa8138bb23a3b71fb746828efca3eb6842726fa18134ad6cd1d79
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "active_changes_are_the_directories_under_changes_and_archived_ones_are_counted_in_both_places"
   - node: 01a13d02-7211-77f1-a8f1-30a226fc47be
     reviewed: 5410ead8992f93b3788e30f90e96d50c06e55e99a90d65f70b191a5b0b04c0ed
     tests:
@@ -7493,6 +7498,156 @@ links:
         name: "the_json_document_names_the_path_and_the_way_recorded"
       - file: "crates/loft-cli/tests/record_install.rs"
         name: "a_record_that_cannot_be_written_exits_0_and_names_the_path"
+  - node: 01a13fe4-0f95-721d-8c51-f58200b53af6
+    reviewed: d28aa04e43a1fcb94e0a324f468f4522bbb0387a9f882d817b40874118f2fc45
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "without_a_directory_the_project_is_read_from_openspec_and_named_after_its_holder"
+  - node: 01a13fe4-0f95-721d-8c51-f5832a6e7037
+    reviewed: 317d5b966ed7ee78d4534f38c05d6375752ef000be9bb1d8013e6f6ca7d98180
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f58480141e01
+    reviewed: d14c4a3e7a2eccbd6483ae9db098cb70b3409d374b7c4e71b37b8af6dc54cb6a
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "each_import_mints_a_new_document_key"
+  - node: 01a13fe4-0f95-721d-8c51-f5859f959a5a
+    reviewed: cab67f21fde5dfc6aa047b2a196fe862407a7c18456507731db7aabf2a28d631
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f586a395de20
+    reviewed: ab59e069a871f380a3387546c82283c56e28a311dda46108ea92a27bc7a13acd
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "an_import_allocates_no_label_and_writes_no_lock_or_trace"
+  - node: 01a13fe4-0f95-721d-8c51-f588c4e34db5
+    reviewed: a149f01ac1aa96c02c802893b5e593878b7786718e317bd2c2b30e3efcf0a639
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f589c58af44a
+    reviewed: 55db99e5cca5a262ffe349366f17bf7aea3b175253bbfa322bea5868d3eefa1c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_spec_reached_through_a_symbolic_link_is_not_given"
+  - node: 01a13fe4-0f95-721d-8c51-f58ab4b89783
+    reviewed: 46fd2654389cc5ca068a97318792a3358230ebdd3e6260f25702911673b0215b
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f58bdb089a70
+    reviewed: 2da25137cc2449c6701f4769b4f6000f8bd31af1d30c00691a580d175c17f260
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "active_changes_are_the_directories_under_changes_and_archived_ones_are_counted_in_both_places"
+  - node: 01a13fe4-0f95-721d-8c51-f58cfb596f95
+    reviewed: 1ef6edcdfec493f449d02189ff28645959afd5aeb7dd8399f702f655274262b9
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "active_changes_are_the_directories_under_changes_and_archived_ones_are_counted_in_both_places"
+  - node: 01a13fe4-0f95-721d-8c51-f58e2141af07
+    reviewed: 6393dd001d5d67d5a0c433209a5da0ef97dc11dad075a869bb843c78cb173730
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "findings_print_one_per_line_with_their_source_file_and_line"
+  - node: 01a13fe4-0f95-721d-8c51-f58f5b238970
+    reviewed: d9f743da57669a4182fab3ddd21e89b5bc6ef966ef80d654fddf26079420ca1e
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "findings_print_one_per_line_with_their_source_file_and_line"
+  - node: 01a13fe4-0f95-721d-8c51-f5900f42b60c
+    reviewed: e7669312257306588bd63e8a57ac016968fe7c49712cb0dfccbc9fb376b7e714
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "findings_print_one_per_line_with_their_source_file_and_line"
+  - node: 01a13fe4-0f95-721d-8c51-f592a0e8923d
+    reviewed: 6d2adf568b1aeb2beaedfebd893719ade1b7a1c08749643c9d2ab89a54c465f7
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_product_is_named_by_the_product_option"
+  - node: 01a13fe4-0f95-721d-8c51-f5949d372ea3
+    reviewed: 74a02f7cfe422783d0e3cd1aa758959cd0018a8dcb888e8e38633b81ddbda3cd
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "without_a_directory_the_project_is_read_from_openspec_and_named_after_its_holder"
+  - node: 01a13fe4-0f95-721d-8c51-f596d3f4bc86
+    reviewed: 450dd72f56cf21cf72e65fbbafdf195d280890d36bab183e914416aeb1ca7d76
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_report_counts_the_modal_warnings_and_shows_the_entry_that_lowers_them"
+  - node: 01a13fe4-0f95-721d-8c51-f597f9478cdb
+    reviewed: 753e36afd6cf4492b81cce872d3e8a36ee378720f7a812efc6377f91eea209d6
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_report_counts_the_modal_warnings_and_shows_the_entry_that_lowers_them"
+  - node: 01a13fe4-0f95-721d-8c51-f5980b463956
+    reviewed: 608132d0e6935cba563198689b4157f6fe6058fb5150436bf6da94c6a9438624
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_report_counts_the_modal_warnings_and_shows_the_entry_that_lowers_them"
+  - node: 01a13fe4-0f95-721d-8c51-f599d06e2028
+    reviewed: 8df28e8e8c8f7df76019fc87aab78ede2def603e4f504db29fc1965fb10cd78c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_tree_without_modal_warnings_gets_no_report"
+  - node: 01a13fe4-0f95-721d-8c51-f59b09682397
+    reviewed: 76d6ba565ff9d311ea1ddb539d7b9a5f63702d038abcad8908c8958231b207f2
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_hidden_entry_does_not_make_spec_not_empty"
+  - node: 01a13fe4-0f95-721d-8c51-f59c3a085b8d
+    reviewed: b74f948c426292101d2344dbd72e22245e836e1b537e922cec2699d85009a113
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_spec_directory_that_is_not_empty_is_refused_and_nothing_is_written"
+  - node: 01a13fe4-0f95-721d-8c51-f59d1eddf47c
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_spec_directory_that_is_not_empty_is_refused_and_nothing_is_written"
+  - node: 01a13fe4-0f95-721d-8c51-f59fcce989c4
+    reviewed: 52612dc025a309e8392d650a3428ec7fb2cdb3ba9a1fd4905ab35cebdcefbc7e
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_directory_that_cannot_be_read_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a02b482c26
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_directory_that_cannot_be_read_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a2c9a515bc
+    reviewed: 92f839ccba7ed2606486aabce3064122f9f104b18b738d2d9a1ddcc2dfa7756f
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_project_without_main_specs_is_refused_naming_its_active_changes"
+  - node: 01a13fe4-0f95-721d-8c51-f5a33b15570e
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_project_without_main_specs_is_refused_naming_its_active_changes"
+  - node: 01a13fe4-0f95-721d-8c51-f5a51a224fe2
+    reviewed: a31f3c30be77b12fea91f26ce01d0f5bf94bc89532cceb190da503c9c99ecc82
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_file_that_is_not_utf8_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a6ff31409e
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_file_that_is_not_utf8_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a8d44d67a4
+    reviewed: d6d4eb135cc41ecd2737d5bf1faecf1408b9bb8c987b4bd1f87064599f3e3e3f
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "json_output_matches_the_schema"
+  - node: 01a13fe4-0f95-721d-8c51-f5a919adc7a2
+    reviewed: 8526bcbacc39bf12d117769564d094570c4b32ac51a9ba16ecb1f99ca9c47095
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "json_output_matches_the_schema"
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:
@@ -9168,7 +9323,7 @@ links:
       - file: "crates/loft-cli/tests/collector_contract.rs"
         name: "the_simulator_records_an_event_sent_twice_once"
   - node: 01a13af6-c86d-7585-a796-bfccdb2fdbde
-    reviewed: e0e0d2c9af5979c5cf0853944a7144703f28c40e62c2aefaeaac77efeae5e1de
+    reviewed: 98ac6a9f328f0f39f7bc3277f3341824e1100d3758f4f93aa923e8fae0b9d156
     tests:
       - file: "crates/loft-cli/tests/collector_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_states"

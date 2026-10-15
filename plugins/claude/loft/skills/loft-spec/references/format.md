@@ -43,10 +43,12 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | `loft.lock.json`, beside `spec/` | The lock that pins the published tree | `loft publish` only |
 | `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` |
 | `v1-sidecar.json`, beside `spec/` | What a Loft v1 export held that the format has no field for | `loft import v1` only |
+| `openspec-sidecar.json`, beside `spec/` | Where each node imported from an OpenSpec project came from, with the requirement and scenario names | `loft import openspec` only |
 
 `loft fmt` writes each file it names in canonical layout. `loft publish` also rewrites each
 citation of a label it withdrew, in the prose of the node or decision that cites it.
-`loft import v1` writes a whole tree from a Loft v1 export, and the sidecar beside it.
+`loft import v1` writes a whole tree from a Loft v1 export, and `loft import openspec` one from
+the main specs of an OpenSpec project; each writes its sidecar beside the tree.
 `loft skill install` writes this skill beside `spec/`, in a directory for each agent, as
 `loft init` does unless given `--no-skill`.
 

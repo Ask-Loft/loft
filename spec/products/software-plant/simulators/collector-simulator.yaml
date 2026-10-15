@@ -48,7 +48,7 @@ requirements:
       - key: 01a13af6-c86d-7585-a796-bfcb9949fcb4
         name: "A second event with an `eventId` already received is answered `202 Accepted` and recorded once."
       - key: 01a13af6-c86d-7585-a796-bfccdb2fdbde
-        name: "A body that is not a valid `loft-telemetry-event/1` is answered `400 Bad Request` and not recorded."
+        name: "A body that is not a valid `loft-telemetry-event/2` is answered `400 Bad Request` and not recorded."
       - key: 01a13af6-c86d-7585-a796-bfcd09b64b9b
         name: "A body larger than 4 KiB is answered `413 Content Too Large` and not recorded."
       - key: 01a13af6-c86d-7585-a796-bfce104b239c

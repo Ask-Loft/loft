@@ -5,6 +5,17 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loft import openspec [<dir>]` converts the main specs of an OpenSpec project, read from
+  `openspec/` by default, into `spec/`, and writes `openspec-sidecar.json` beside it with the
+  source of each node, including the requirement and scenario names. The Product is named after
+  the directory that holds the OpenSpec directory, or by `--product`. Active and archived changes,
+  `config.yaml`'s `context`, and every place a project departs from OpenSpec's grammar are
+  reported as findings (`OS-001` to `OS-014`) with their source file and line. OpenSpec states
+  obligations in scenario bodies, which become criterion bodies, so the command also reports how
+  many `V2-007` warnings `loft check` will give and the `spec/lint.yaml` entry that lowers them to
+  info; it writes no lint configuration. Its output follows the schema `loft-import-openspec/1`.
+- The command event is now `loft-telemetry-event/2`: its `command` may be `import openspec`.
+
 - `V2-002` names the EARS form a statement stored as text follows. A sentence such as "The
   writer SHALL write keys." follows the ubiquitous form by its words, so `LQ-007` accepts it, as
   v1 does, but the reader keeps slots only for the template's exact wording and stores it as

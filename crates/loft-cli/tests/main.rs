@@ -27,6 +27,7 @@ mod collector_contract;
 mod find;
 mod fmt;
 mod import;
+mod import_openspec;
 mod init;
 mod merge_contract;
 mod merge_driver;

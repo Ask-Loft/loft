@@ -16,6 +16,12 @@ const READING_LIST: &str = concat!(
     "/../../testdata/v1/reading-list/loft-authored-state.json"
 );
 
+/// The `OpenSpec` directory of a faithful `OpenSpec` project.
+const OPENSPEC: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../testdata/openspec/faithful/openspec"
+);
+
 /// What a command runs over.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Fixture {
@@ -49,8 +55,20 @@ pub fn command(scratch: &Scratch, fixture: Fixture) -> Command {
     scratch.command(git.as_ref(), &Clock::fixed(EPOCH))
 }
 
+/// The name of the schema of the command `args` runs: its subcommand, and the source of an
+/// import. `import v1` keeps the name `import`, which it was released under before a second
+/// source existed.
+pub fn schema_name(args: &[&str]) -> String {
+    match args {
+        ["import", "v1", ..] => "import".to_owned(),
+        ["import", source, ..] => format!("import-{source}"),
+        [command, ..] => (*command).to_owned(),
+        [] => unreachable!("a command has a subcommand"),
+    }
+}
+
 /// Each command by the slug of its Feature, with the arguments that run it and its fixture.
-pub const COMMANDS: [(&str, &[&str], Fixture); 14] = [
+pub const COMMANDS: [(&str, &[&str], Fixture); 15] = [
     ("loft-check", &["check"], Fixture::Unkeyed),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed),
     (
@@ -61,6 +79,11 @@ pub const COMMANDS: [(&str, &[&str], Fixture); 14] = [
     (
         "loft-import-v1",
         &["import", "v1", READING_LIST],
+        Fixture::Empty,
+    ),
+    (
+        "loft-import-openspec",
+        &["import", "openspec", OPENSPEC],
         Fixture::Empty,
     ),
     ("loft-publish", &["publish"], Fixture::Clean),

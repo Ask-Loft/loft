@@ -19,7 +19,7 @@ use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
 const TAG: &str = "writes-tree";
 
 /// The files the Format places beside `spec/`.
-const BESIDE: [&str; 2] = ["v1-sidecar.json", "loft.lock.json"];
+const BESIDE: [&str; 3] = ["v1-sidecar.json", "openspec-sidecar.json", "loft.lock.json"];
 
 /// The body a planted save gives the Product, and the file it plants into an empty `spec/`.
 const PLANTED_BODY: &str = "A planted body.";
