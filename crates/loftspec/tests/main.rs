@@ -67,6 +67,7 @@ mod roots;
 mod site_lists;
 mod slug;
 mod statement;
+mod statement_agreement;
 mod statement_parse;
 mod trace_findings;
 mod trace_read;

@@ -1,7 +1,8 @@
 //! The rules the v2 text form adds (F-21): a heading inside a body (`V2-001`), a statement stored
-//! as text without slots (`V2-002`), a label reference in prose without its `mentions` edge
-//! (`V2-003`), a citation of a withdrawn label that a publish cannot rewrite (`V2-004`), and a
-//! Markdown construct in a body outside the Format's subset (`V2-009`).
+//! as text without slots, naming the form it follows if any (`V2-002`), a label reference in
+//! prose without its `mentions` edge (`V2-003`), a citation of a withdrawn label that a publish
+//! cannot rewrite (`V2-004`), and a Markdown construct in a body outside the Format's subset
+//! (`V2-009`).
 //! What a publish does with a citation is the bindings' to say, so lint and the publish agree.
 
 use std::collections::BTreeSet;
@@ -16,6 +17,7 @@ use crate::ids::ElementId;
 use crate::node::Node;
 use crate::prose::{LabelSpan, heading_lines, label_spans};
 use crate::statement::Statement;
+use crate::text::token_ranges;
 
 pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     let mentions: BTreeSet<(ElementId, Key)> = context
@@ -51,13 +53,9 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
             );
         }
         if let Node::Requirement(requirement) = item.node
-            && matches!(requirement.statement, Statement::Text(_))
+            && let Statement::Text(text) = &requirement.statement
         {
-            out.push(Raw::new(
-                RuleId::V2002,
-                vec![key],
-                "The statement is stored as text, without slots.",
-            ));
+            out.push(stored_as_text(text, key));
         }
         let name = item.name();
         let references = label_spans(&name)
@@ -118,6 +116,25 @@ fn finding(
 }
 
 /// The label references of a body, each with its body line.
+/// `V2-002` for a statement stored as `text`. A sentence that follows one of the five forms by
+/// its words names that form as the term, since the reader keeps slots only for the template's
+/// exact wording: a statement's form is read by its words, and its slots keep its exact wording.
+fn stored_as_text(text: &str, key: Key) -> Raw {
+    let Some(parse) = crate::ears::parse(text, &token_ranges(text)) else {
+        return Raw::new(
+            RuleId::V2002,
+            vec![key],
+            "The statement is stored as text, without slots.",
+        );
+    };
+    let form = parse.form.as_str();
+    let message = format!(
+        "The statement is stored as text, without slots; it follows the `{form}` form, and slots \
+         keep only its template's exact wording."
+    );
+    Raw::new(RuleId::V2002, vec![key], message).term(form)
+}
+
 fn body_references(body: &str) -> impl Iterator<Item = (LabelSpan, Option<usize>)> {
     body.lines().enumerate().flat_map(|(index, line)| {
         label_spans(line)
