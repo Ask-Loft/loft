@@ -44,7 +44,9 @@ requirements:
       - key: 01a13d02-7211-77f1-a8f1-30def9323437
         name: "`The system SHALL keep a log.` is stored as the ubiquitous form with the system `The system` and the modal phrase `keep a log.`"
       - key: 01a13d02-7211-77f1-a8f1-30dfab8d01e6
-        name: "`WHEN a user signs in, the system MUST record the time.` is stored as the event-driven form."
+        name: "`When a user signs in, the system MUST record the time.` is stored as the event-driven form."
+      - key: 01a13d12-1e24-70cf-a353-a361e3ccb308
+        name: "`WHEN a user signs in, the system SHALL record the time.` is stored as `text`, since its condition keyword differs from the template's."
       - key: 01a13d02-7211-77f1-a8f1-30e044b95c95
         name: "No word but the first `SHALL` or `MUST` is changed."
       - key: 01a13d02-7211-77f1-a8f1-30e1f6b00d8d
