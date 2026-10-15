@@ -50,7 +50,7 @@ fn prepare(export: &Path, counters: Option<&Path>) -> Result<Imported, String> {
 
 fn write(root: &Path, imported: Imported) -> Result<(Imported, Sites), String> {
     FileStore::open(root)
-        .and_then(|store| store.import(imported.files.clone(), &imported.sidecar))
+        .and_then(|store| store.import(imported.files.clone(), (fs::SIDECAR, &imported.sidecar)))
         .map_err(|error| error.to_string())?;
     let (_, sites) = codec::read_sited(&imported.files).map_err(|errors| {
         errors

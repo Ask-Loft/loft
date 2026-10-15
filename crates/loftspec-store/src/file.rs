@@ -10,7 +10,7 @@ use loftspec::publish::{LOCK, Lock};
 use loftspec::trace::{TRACE, TestFile, TestFiles};
 
 use crate::error::io_error;
-use crate::fs::{SIDECAR, SPEC, hidden};
+use crate::fs::{SPEC, hidden};
 use crate::journal::{self, Changes, RootPath};
 use crate::{DocumentStore, Saved, StoreError};
 
@@ -58,20 +58,20 @@ impl FileStore {
         journal::save(&self.root, &Changes::of_tree(files, &[]))
     }
 
-    /// Writes an imported tree into an empty or missing `spec/`, and the sidecar beside it, in
-    /// one save.
+    /// Writes an imported tree into an empty or missing `spec/`, and the sidecar beside it under
+    /// the name its source gives it, in one save.
     ///
     /// # Errors
     ///
     /// `spec/` holds a file or directory already (RQ-134), in which case nothing is written; or a
     /// file cannot be written.
-    pub fn import(&self, files: Files, sidecar: &[u8]) -> Result<(), StoreError> {
+    pub fn import(&self, files: Files, (name, sidecar): (&str, &[u8])) -> Result<(), StoreError> {
         let spec = self.root.join(SPEC);
         if spec.exists() && holds_entries(&spec)? {
             return Err(StoreError::NotEmpty(spec));
         }
         fs::create_dir_all(&spec).map_err(io_error(&spec))?;
-        self.write_with_beside(files, (SIDECAR, sidecar.to_vec()))
+        self.write_with_beside(files, (name, sidecar.to_vec()))
     }
 
     /// Writes a new tree into a `spec/` that does not exist yet, in one save.

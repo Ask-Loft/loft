@@ -104,3 +104,23 @@ fn a_file_whose_bytes_would_not_change_is_not_rewritten() {
         (before.ino(), before.mtime_nsec(), before.mtime())
     );
 }
+
+#[test]
+fn an_import_writes_its_sidecar_beside_spec_under_the_name_it_is_given() {
+    let scratch = Scratch::new();
+    let store = FileStore::open(&scratch.0).unwrap();
+    store
+        .import(
+            codec::write(&reading_list()),
+            ("source-sidecar.json", b"{}\n"),
+        )
+        .unwrap();
+    let snapshot = scratch.snapshot();
+    assert_eq!(snapshot["source-sidecar.json"], b"{}\n");
+    assert!(
+        !snapshot.contains_key("v1-sidecar.json"),
+        "{:?}",
+        snapshot.keys()
+    );
+    assert!(snapshot.keys().any(|path| path.starts_with("spec/")));
+}
