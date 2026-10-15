@@ -294,7 +294,8 @@ impl Build {
         let at = Some((file, requirement.line));
         let (key, identity) = self.node(Kind::Requirement, parts, at, Some(&requirement.name));
         let split = statement::split(source, requirement.text.clone(), &requirement.name);
-        self.rewritten += usize::from(split.rewritten);
+        self.rewritten += usize::from(split.rewritten.is_some());
+        let modal = split.rewritten.filter(|word| *word == "MUST").map(text);
         let at = |rule, line| Finding::at(rule, file.to_owned(), line, Some(key));
         if repeated {
             self.findings
@@ -322,6 +323,7 @@ impl Build {
                 sections,
                 ext: openspec([
                     ("name", Some(text(&requirement.name))),
+                    ("modal", modal),
                     ("metadata", metadata(split.metadata)),
                 ]),
             },

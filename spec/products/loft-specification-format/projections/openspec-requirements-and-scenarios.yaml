@@ -24,7 +24,7 @@ requirements:
       shall: "write a Requirement's statement as the first paragraph after its heading."
     criteria:
       - key: 01a1402e-d25e-7540-9283-184173273e76
-        name: "A statement stored as slots is written as its rendered sentence with its modal word written `SHALL`."
+        name: "A statement stored as slots is written as its rendered sentence with its modal word written as the Requirement's `ext.openspec.modal` when that is `SHALL` or `MUST`, and as `SHALL` otherwise."
       - key: 01a1402e-d25e-7540-9283-184208bde6c7
         name: "A statement stored as text is written as stored."
       - key: 01a1402e-d25e-7540-9283-1843fc29c716

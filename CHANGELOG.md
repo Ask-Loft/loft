@@ -10,7 +10,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   source of each node, including the requirement and scenario names. Each Requirement keeps its
   OpenSpec name and its metadata lines, such as `**ID**: AUTH-1`, as `{label, value}` entries in
   `ext.openspec`, and each Feature its capability id and any archive placeholder Purpose, so no
-  tool data is left in a body. The Product is named after
+  tool data is left in a body. A statement whose `MUST` was written as `shall` keeps `MUST` in
+  `ext.openspec.modal`. The Product is named after
   the directory that holds the OpenSpec directory, or by `--product`. Active and archived changes,
   `config.yaml`'s `context`, and every place a project departs from OpenSpec's grammar are
   reported as findings (`OS-001` to `OS-014`; `OS-009` is retired) with their source file and line. OpenSpec states
@@ -33,6 +34,12 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - **Breaking (library):** `Details` and `Section` gain `ext`, `Roots` gains `extensions`, and
   `Domain` gains `Extensions`; `loftspec::ext` holds the value model and
   `loftspec::names::Namespace` the namespace.
+- `loftspec::render::openspec::openspec` renders a document's OpenSpec projection: the main
+  specs of one OpenSpec directory per Product, each Feature at its capability path, a render map
+  from each rendered requirement and scenario to its key and label, and findings (`OR-001` to
+  `OR-006`) for what OpenSpec's validator would reject or warn about and for the content the
+  projection leaves out. An imported project renders back to the specs it was read from.
+  `EarsForm::render_with_modal` writes a statement with another modal word.
 - `loftspec::lint::count_body_rule` counts the findings of one lexical rule that reads bodies
   only, such as `V2-007`, without running the rest of the linter.
 

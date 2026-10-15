@@ -70,6 +70,8 @@ mod publish;
 mod publish_rewrite;
 mod publish_settle;
 mod render;
+mod render_openspec;
+mod render_openspec_findings;
 mod roots;
 mod site_lists;
 mod slug;

@@ -27,6 +27,8 @@ requirements:
     criteria:
       - key: 01a1402e-d25e-7540-9283-181855cdb34f
         name: "The capability path of a Feature with an `ext.openspec.capability` is that value."
+      - key: 01a14060-4e7a-7648-a79f-779a599be8f9
+        name: "An `ext.openspec.capability` that is empty, begins with `/`, or holds an empty segment, a `.` or `..` segment or a backslash is treated as absent."
       - key: 01a1402e-d25e-7540-9283-18190c14e09a
         name: "The capability path of any other Feature is its Feature Group's slug and its own slug, joined with `/`."
   - key: 01a1402e-d25e-7540-9283-181a3e5dc7c3

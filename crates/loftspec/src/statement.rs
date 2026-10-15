@@ -118,36 +118,35 @@ impl EarsForm {
     /// The sentence the form's fixed template yields (RQ-40).
     #[must_use]
     pub fn render(&self) -> String {
+        self.render_with_modal("shall")
+    }
+
+    /// The sentence the form's template yields with its modal word written as `modal`, such as
+    /// `SHALL` for a projection whose readers look for the upper-case word.
+    #[must_use]
+    pub fn render_with_modal(&self, modal: &str) -> String {
         match self {
-            Self::Ubiquitous { system, shall } => format!("{system} shall {shall}"),
+            Self::Ubiquitous { system, shall } => format!("{system} {modal} {shall}"),
             Self::EventDriven {
                 when,
                 system,
                 shall,
-            } => {
-                format!("When {when}, {system} shall {shall}")
-            }
+            } => format!("When {when}, {system} {modal} {shall}"),
             Self::StateDriven {
                 r#while,
                 system,
                 shall,
-            } => {
-                format!("While {while}, {system} shall {shall}")
-            }
+            } => format!("While {while}, {system} {modal} {shall}"),
             Self::Unwanted {
                 r#if,
                 system,
                 shall,
-            } => {
-                format!("If {if}, then {system} shall {shall}")
-            }
+            } => format!("If {if}, then {system} {modal} {shall}"),
             Self::Optional {
                 r#where,
                 system,
                 shall,
-            } => {
-                format!("Where {where}, {system} shall {shall}")
-            }
+            } => format!("Where {where}, {system} {modal} {shall}"),
         }
     }
 

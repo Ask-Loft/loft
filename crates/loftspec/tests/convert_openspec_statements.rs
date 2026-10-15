@@ -141,3 +141,19 @@ fn any_other_first_paragraph_is_stored_as_text_verbatim() {
         Statement::Text("Users may export their data at any time.".to_owned())
     );
 }
+
+#[test]
+fn a_must_written_as_shall_is_kept_as_the_ext_modal_and_a_shall_is_not() {
+    let modal = |text: &str| {
+        let spec = format!("## Requirements\n\n### Requirement: The one\n{text}\n");
+        let conversion = converted(&one(&spec));
+        openspec(&requirements(&conversion)[0].details.ext, "modal").cloned()
+    };
+    assert_eq!(
+        modal("The system MUST keep a log."),
+        Some(ExtValue::Text("MUST".to_owned()))
+    );
+    assert_eq!(modal("The system SHALL keep a log."), None);
+    assert_eq!(modal("The system shall keep a log."), None);
+    assert_eq!(modal("WHEN a, the system MUST b."), None);
+}

@@ -11,8 +11,8 @@ use crate::statement::Statement;
 pub(super) struct Split {
     pub statement: Statement,
     pub body: Option<String>,
-    /// Whether the modal word was written as `shall` to give the statement slots.
-    pub rewritten: bool,
+    /// The modal word, `SHALL` or `MUST`, written as `shall` to give the statement slots.
+    pub rewritten: Option<&'static str>,
     /// Each metadata line's label and value, in source order.
     pub metadata: Vec<(String, String)>,
     /// Whether the text, or the name when there is no text, holds `SHALL` or `MUST`.
@@ -60,11 +60,12 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
 }
 
 /// The statement a sentence gives: slots when it renders back from them, or when it does once
-/// its first `SHALL` or `MUST` is written as `shall`; otherwise the sentence as text.
-pub(super) fn statement(sentence: &str) -> (Statement, bool) {
+/// its first `SHALL` or `MUST` is written as `shall`, with the word written; otherwise the
+/// sentence as text.
+pub(super) fn statement(sentence: &str) -> (Statement, Option<&'static str>) {
     let verbatim = Statement::parse(sentence);
     if matches!(verbatim, Statement::Form(_)) {
-        return (verbatim, false);
+        return (verbatim, None);
     }
     if let Some(range) = first_modal(sentence) {
         let rewritten = format!(
@@ -74,14 +75,19 @@ pub(super) fn statement(sentence: &str) -> (Statement, bool) {
         );
         let parsed = Statement::parse(&rewritten);
         if matches!(parsed, Statement::Form(_)) {
-            return (parsed, true);
+            let word = if &sentence[range] == "MUST" {
+                "MUST"
+            } else {
+                "SHALL"
+            };
+            return (parsed, Some(word));
         }
     }
-    (Statement::Text(sentence.to_owned()), false)
+    (Statement::Text(sentence.to_owned()), None)
 }
 
 /// The byte range of the first `SHALL` or `MUST` that stands as a word of its own.
-fn first_modal(text: &str) -> Option<Range<usize>> {
+pub(crate) fn first_modal(text: &str) -> Option<Range<usize>> {
     ["SHALL", "MUST"]
         .into_iter()
         .filter_map(|word| {
@@ -100,7 +106,7 @@ fn stands_alone(text: &str, range: &Range<usize>) -> bool {
 
 /// The label and value of a metadata line: one that, trimmed, begins with a bold label followed
 /// by a colon, such as `**ID**: AUTH-1`. The value is the text after the colon, trimmed.
-fn metadata_entry(line: &str) -> Option<(String, String)> {
+pub(crate) fn metadata_entry(line: &str) -> Option<(String, String)> {
     let (label, after) = line.trim().strip_prefix("**")?.split_once("**")?;
     let value = after.strip_prefix(':')?;
     (!label.is_empty() && !label.contains('*')).then(|| (label.to_owned(), value.trim().to_owned()))

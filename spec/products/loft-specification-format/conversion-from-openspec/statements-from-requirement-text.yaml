@@ -55,6 +55,10 @@ requirements:
         name: "No word but the first `SHALL` or `MUST` is changed."
       - key: 01a13d02-7211-77f1-a8f1-30e1f6b00d8d
         name: "A lower-case `must` is not changed."
+      - key: 01a14060-4e79-76e2-b443-5873863b0993
+        name: "A statement whose `MUST` was written as `shall` keeps `MUST` as the Requirement's `ext.openspec.modal`."
+      - key: 01a14060-4e79-76e2-b443-58745b826391
+        name: "A statement whose `SHALL` was written as `shall` gives the Requirement no `ext.openspec.modal`."
   - key: 01a13d02-7211-77f1-a8f1-30e2d8306641
     statement:
       form: ubiquitous

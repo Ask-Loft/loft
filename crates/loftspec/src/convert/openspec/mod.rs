@@ -6,7 +6,7 @@ mod keys;
 pub mod layout;
 mod read;
 pub mod sidecar;
-mod statement;
+pub(crate) mod statement;
 mod tree;
 
 use std::fmt::Write as _;
