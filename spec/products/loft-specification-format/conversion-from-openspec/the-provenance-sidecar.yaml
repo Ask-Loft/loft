@@ -1,7 +1,7 @@
 key: 01a13d02-7211-77f1-a8f1-31011e2cacdd
 slug: the-provenance-sidecar
 name: "The provenance sidecar"
-body: "The file beside `spec/` that records where each converted node came from in the OpenSpec project, including the requirement names the Format has no field for."
+body: "The file beside `spec/` that records where each converted node came from in the OpenSpec project: its source file and line, and the name the source gives it. The tree keeps what a render needs in each node's `ext.openspec`; the sidecar is provenance only."
 realizes:
   - 01a13d01-545b-761c-83a4-724d8d61cd4b
 requirements:

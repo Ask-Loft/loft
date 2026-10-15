@@ -1,7 +1,7 @@
 key: 01a1402e-d25e-7540-9283-1825c9936bb1
 slug: openspec-render-findings
 name: "OpenSpec render findings"
-body: "What the OpenSpec renderer reports about a projection: each place where OpenSpec's validator would reject or warn about the rendered specs, and the content the projection leaves out. Every finding is info, and none prevents the render. The renderer adds no word to the specification to avoid a finding."
+body: "What the OpenSpec renderer reports about a projection: each place where OpenSpec's validator would reject or warn about the rendered specs, and the content the projection leaves out. Every finding is info, and none prevents the render. The renderer adds no word to the specification to avoid a finding. The findings read a spec as OpenSpec 1.14's reader and validator do; a change to them needs a change to the renderer."
 realizes:
   - dfa057a6-404f-44a0-a9ab-932900198ca4
 requirements:
