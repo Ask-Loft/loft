@@ -5,11 +5,11 @@
 //! RQ-171); a lint finding, a validation error or an `OpenSpec` render finding does not prevent a
 //! render (AC-549, AC-685).
 
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use loftspec::codec;
 use loftspec::index::IndexErrors;
-use loftspec::render::openspec::{Finding, openspec};
+use loftspec::render::openspec::{Finding, RENDER_MAP, openspec};
 use loftspec::render::render;
 use loftspec_store::fs;
 use loftspec_store::openspec::{WriteProjectionError, write_projection};
@@ -83,17 +83,7 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
         (markdown, json_path, _) => (markdown, json_path),
     };
     let paths = [&markdown, &json_path, &targets.openspec];
-    if let Some(inside) = paths
-        .into_iter()
-        .flatten()
-        .find(|path| fs::is_under_spec(root, path))
-    {
-        let message = format!(
-            "{}: a projection is never written under `spec/`",
-            inside.display()
-        );
-        return Err(Stop::one("refused", message));
-    }
+    refuse_under_spec(root, paths.into_iter().flatten())?;
     let files = stop::read_files(root)?;
     let document = codec::read(&files)?;
     let mut outputs: Vec<(PathBuf, Vec<u8>)> = Vec::new();
@@ -105,20 +95,25 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
     let mut rendered = Rendered::default();
     if let Some(dir) = &targets.openspec {
         let mut projection = openspec(&document).map_err(|errors| integrity(&errors))?;
+        let written_to = projection
+            .roots
+            .iter()
+            .map(String::as_str)
+            .chain([RENDER_MAP]);
+        refuse_under_spec(root, written_to.map(|path| dir.join(path)))?;
         rendered.findings = std::mem::take(&mut projection.findings)
             .into_iter()
             .map(|finding| finding.under(dir))
             .collect();
-        let written =
-            write_projection(&root.join(dir), projection, targets.force).map_err(|error| {
-                match error {
-                    WriteProjectionError::NotEmpty(_) | WriteProjectionError::Link(_) => {
-                        Stop::one("refused", error.to_string())
-                    }
-                    WriteProjectionError::Store(error) => Stop::one("store", error.to_string()),
+        let written = write_projection(&tidy(&root.join(dir)), projection, targets.force).map_err(
+            |error| match error {
+                WriteProjectionError::NotEmpty(_) | WriteProjectionError::Link(_) => {
+                    Stop::one("refused", error.to_string())
                 }
-            })?;
-        let here = |paths: Vec<PathBuf>| paths.into_iter().map(|path| dir.join(path)).collect();
+                WriteProjectionError::Store(error) => Stop::one("store", error.to_string()),
+            },
+        )?;
+        let here = |paths: Vec<PathBuf>| paths.iter().map(|path| tidy(&dir.join(path))).collect();
         rendered.written = here(written.written);
         rendered.unchanged = here(written.unchanged);
         rendered.removed = here(written.removed);
@@ -128,6 +123,37 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
     rendered.written.extend(written.written);
     rendered.unchanged.extend(written.unchanged);
     Ok(rendered)
+}
+
+/// `path` without its `.` components, as a path is shown; `.` when nothing else is left.
+fn tidy(path: &Path) -> PathBuf {
+    let tidy: PathBuf = path
+        .components()
+        .filter(|part| *part != Component::CurDir)
+        .collect();
+    if tidy.as_os_str().is_empty() {
+        PathBuf::from(".")
+    } else {
+        tidy
+    }
+}
+
+/// Refuses the first of `paths` that lies under `spec/`.
+fn refuse_under_spec<P: AsRef<Path>>(
+    root: &Path,
+    paths: impl IntoIterator<Item = P>,
+) -> Result<(), Stop> {
+    for path in paths {
+        let path = path.as_ref();
+        if fs::is_under_spec(root, path) {
+            let message = format!(
+                "{}: a projection is never written under `spec/`",
+                path.display()
+            );
+            return Err(Stop::one("refused", message));
+        }
+    }
+    Ok(())
 }
 
 /// A document whose references do not resolve renders nothing.

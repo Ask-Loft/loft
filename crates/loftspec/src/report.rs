@@ -4,7 +4,7 @@
 //! stops the conversion or the projection.
 
 use std::fmt;
-use std::path::Path;
+use std::path::{Component, Path, PathBuf};
 
 use crate::identity::Key;
 use crate::lint::Severity;
@@ -49,12 +49,17 @@ impl<R> InfoFinding<R> {
         }
     }
 
-    /// The finding with its file named by its path under `dir`.
+    /// The finding with its file named by its path under `dir`, without `.` components.
     #[must_use]
     pub fn under(self, dir: &Path) -> Self {
-        let file = self
-            .file
-            .map(|file| dir.join(file).to_string_lossy().into_owned());
+        let file = self.file.map(|file| {
+            let path: PathBuf = dir
+                .join(file)
+                .components()
+                .filter(|part| *part != Component::CurDir)
+                .collect();
+            path.to_string_lossy().into_owned()
+        });
         Self { file, ..self }
     }
 

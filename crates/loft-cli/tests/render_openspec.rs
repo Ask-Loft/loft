@@ -231,3 +231,63 @@ fn elsewhere_put(scratch: &Scratch, path: &str) {
     fs::create_dir_all(target.parent().unwrap()).unwrap();
     fs::write(target, "# Elsewhere\n").unwrap();
 }
+
+#[test]
+fn a_main_specs_directory_of_a_product_that_would_land_under_spec_is_refused() {
+    let scratch = imported();
+    put(
+        &scratch,
+        "spec/products/spec/product.yaml",
+        "slug: spec\nname: \"Spec\"\n",
+    );
+    let minted = scratch.loft(&["fmt"]);
+    assert_eq!(minted.status.code(), Some(0), "{}", stderr(&minted));
+    let before = snapshot(&scratch.0);
+    let output = scratch.loft(&["render", "--openspec", "."]);
+    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
+    assert!(
+        stderr(&output).contains("spec/specs"),
+        "{}",
+        stderr(&output)
+    );
+    assert_eq!(snapshot(&scratch.0), before);
+}
+
+#[test]
+fn an_absolute_path_under_spec_is_refused_for_each_projection() {
+    let scratch = imported();
+    let under = scratch.0.join("spec/out");
+    let under = under.to_str().unwrap();
+    let before = snapshot(&scratch.0);
+    for flag in ["--openspec", "--markdown", "--json"] {
+        let output = scratch.loft(&["render", flag, under]);
+        assert_eq!(output.status.code(), Some(1), "{flag}");
+        assert!(stderr(&output).contains("spec/out"), "{}", stderr(&output));
+        assert_eq!(snapshot(&scratch.0), before, "{flag}");
+    }
+}
+
+#[test]
+fn a_path_under_spec_in_another_letter_case_is_refused_where_the_file_system_ignores_case() {
+    let scratch = imported();
+    if !scratch.0.join("SPEC").exists() {
+        return;
+    }
+    let before = snapshot(&scratch.0);
+    let output = scratch.loft(&["render", "--openspec", "SPEC/out"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(snapshot(&scratch.0), before);
+}
+
+#[test]
+fn paths_under_the_current_directory_are_shown_without_a_leading_dot() {
+    let scratch = imported();
+    let output = scratch.loft(&["render", "--openspec", "."]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let text = stdout(&output);
+    assert!(
+        text.lines().any(|line| line == "specs/auth/spec.md"),
+        "{text}"
+    );
+    assert!(!text.contains("./"), "{text}");
+}

@@ -7003,6 +7003,18 @@ links:
     tests:
       - file: "crates/loft-cli/tests/render_openspec.rs"
         name: "an_openspec_directory_under_spec_is_refused_and_nothing_is_written"
+  - node: 01a14139-e5e4-7047-a160-7955efba7abc
+    reviewed: 8e0567fa313e34716b9d9ec5c6b700bf75b4e089cab16222dafee6d131518951
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "a_path_under_spec_in_another_letter_case_is_refused_where_the_file_system_ignores_case"
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "an_absolute_path_under_spec_is_refused_for_each_projection"
+  - node: 01a14139-e5e4-7047-a160-7956732134d6
+    reviewed: 7f96a75a8f7f98149c5611455af4b0cc8439e901a1ec96dcadeb1be2fe643c5d
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "a_main_specs_directory_of_a_product_that_would_land_under_spec_is_refused"
   - node: 4b141b53-d7ce-489b-b162-cbf9ad383bee
     reviewed: 56dce2c07c224395c3953650ac81acfa5df7830fb3fc8cc8cdadb710fd8dda6d
     tests:
