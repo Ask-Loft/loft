@@ -20,6 +20,7 @@ pub enum Rule {
     ArchivedChanges,
     ConfigContext,
     Store,
+    MetadataInParagraph,
 }
 
 wire_names!(Rule {
@@ -36,6 +37,7 @@ wire_names!(Rule {
     ArchivedChanges => "OS-012",
     ConfigContext => "OS-013",
     Store => "OS-014",
+    MetadataInParagraph => "OS-015",
 });
 
 impl Rule {
@@ -62,6 +64,10 @@ impl Rule {
             Self::ArchivedChanges => "archived changes were not converted",
             Self::ConfigContext => "the context of config.yaml was not converted",
             Self::Store => "config.yaml names a store; the main specs may be kept elsewhere",
+            Self::MetadataInParagraph => {
+                "a metadata line lies inside the statement's paragraph; the lines around it were \
+                 joined into the statement"
+            }
         }
     }
 }

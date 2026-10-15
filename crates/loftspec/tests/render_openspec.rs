@@ -307,11 +307,40 @@ The system keeps a log, as the auditors ask.
 Session: the time a user stays signed in.
 ";
 
+/// A spec with headings above its first level-2 heading, a requirement's child with a heading
+/// of its own, and a `MUST` with a lower-case `shall` after it.
+const NESTED: &str = "# notes Specification
+
+Read this first.
+
+### Requirement: Early
+The system SHALL start.
+
+## Purpose
+
+Notes keep what the team decided and why it decided it, for later readers.
+
+## Requirements
+
+### Requirement: Keep
+The system MUST log what users shall see.
+
+#### Scenario: Logged
+- **THEN** it is logged
+
+#### Notes
+Why.
+
+##### Detail
+More.
+";
+
 #[test]
 fn an_imported_project_renders_to_specs_that_import_to_the_same_document() {
     let first = converted(&loftspec_project(&[
         ("auth/spec.md", ROUND_TRIP),
         ("billing/invoices/spec.md", AUTH),
+        ("notes/spec.md", NESTED),
     ]));
     let projection = rendered(&first.document);
     let specs: Vec<(String, String)> = projection

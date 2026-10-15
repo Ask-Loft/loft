@@ -6,6 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use super::ext;
 use super::findings::{Finding, Rule};
 use super::keys::{Identity, Keys, Kind};
+use super::placeholder::opens_with_marker;
 use super::read::{Child, Part, Requirement as SourceRequirement, Source, Spec};
 use super::sidecar::{OpenspecSidecar, Provenance, SourceFile};
 use super::statement;
@@ -17,10 +18,8 @@ use crate::ids::{
     CriterionId, DocumentId, FeatureGroupId, FeatureId, ProductId, RequirementId, SectionId,
 };
 use crate::slug::Slug;
+use crate::statement::Statement;
 use crate::tree::{Criterion, Details, Feature, FeatureGroup, Product, Requirement, Section};
-
-/// The prefix of the Purpose `OpenSpec`'s archive command writes for a new capability.
-const PLACEHOLDER: &str = "TBD - created by archiving change";
 
 /// The Feature Group of the capabilities whose ids have one segment.
 const FLAT_GROUP: &str = "Capabilities";
@@ -195,7 +194,7 @@ impl Build {
         let Some(text) = source.verbatim(purpose.text.clone()) else {
             return (None, None);
         };
-        if text.trim_start().starts_with(PLACEHOLDER) {
+        if opens_with_marker(&text) {
             let finding = Finding::at(
                 Rule::PlaceholderPurpose,
                 file.to_owned(),
@@ -292,7 +291,18 @@ impl Build {
         let (key, identity) = self.node(Kind::Requirement, parts, at, Some(&requirement.name));
         let split = statement::split(source, requirement.text.clone(), &requirement.name);
         self.rewritten += usize::from(split.rewritten.is_some());
-        let modal = split.rewritten.filter(|word| *word == "MUST");
+        let modal = match (&split.statement, split.rewritten) {
+            (Statement::Form(_), None) => Some("shall"),
+            (_, rewritten) => rewritten.filter(|word| *word == "MUST"),
+        };
+        if let Some(line) = split.joined {
+            self.findings.push(Finding::at(
+                Rule::MetadataInParagraph,
+                file.to_owned(),
+                line,
+                Some(key),
+            ));
+        }
         let at = |rule, line| Finding::at(rule, file.to_owned(), line, Some(key));
         if repeated {
             self.findings

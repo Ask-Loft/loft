@@ -50,7 +50,7 @@ requirements:
       - key: 01a13d02-7211-77f1-a8f1-30f13987642b
         name: "The text of the section `Purpose` becomes the Feature's body verbatim."
       - key: 01a13d02-7211-77f1-a8f1-30f27cbd750c
-        name: "A Purpose that begins with OpenSpec's archive placeholder `TBD - created by archiving change` leaves the Feature's body empty."
+        name: "A Purpose that is a placeholder leaves the Feature's body empty."
       - key: 01a14139-e5e4-7047-a160-7966db4b1728
         name: "A Purpose whose text, trimmed, opens with `TBD` or `TODO` in upper case as a word is a placeholder."
       - key: 01a1413a-4573-7409-8c3e-a1dd1456b9c1
@@ -58,7 +58,7 @@ requirements:
       - key: 01a1413a-4573-7409-8c3e-a1de90e4ba2b
         name: "OpenSpec's archive placeholder `TBD - created by archiving change` is a placeholder."
       - key: 01a14039-8315-7390-a27f-c56458905f77
-        name: "A Purpose that begins with the archive placeholder is kept verbatim as the Feature's `ext.openspec.purpose`."
+        name: "A Purpose that is a placeholder is kept verbatim as the Feature's `ext.openspec.purpose`."
       - key: 01a14039-8315-7390-a27f-c565b09aefb6
         name: "The Feature's `ext.openspec.capability` is the capability id."
   - key: 01a13d02-7211-77f1-a8f1-30f3c1257e4e
@@ -120,6 +120,6 @@ requirements:
       - key: 01a13d02-7211-77f1-a8f1-30ffd5268986
         name: "The Section's name is the child's heading text."
       - key: 01a13d02-7211-77f1-a8f1-31002c79d317
-        name: "The child's text becomes the Section's body verbatim."
+        name: "The child's text up to its first heading becomes the Section's body verbatim."
       - key: 01a14139-e5e4-7047-a160-7968bfbde0be
         name: "Each heading inside the child becomes a Section nested by its level."

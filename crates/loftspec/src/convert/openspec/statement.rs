@@ -15,8 +15,12 @@ pub(super) struct Split {
     pub rewritten: Option<&'static str>,
     /// Each metadata line's label and value, in source order.
     pub metadata: Vec<(String, String)>,
-    /// Whether the text, or the name when there is no text, holds `SHALL` or `MUST`.
+    /// Whether the text holds `SHALL` or `MUST`; when it holds nothing but metadata lines,
+    /// whether they or the name do.
     pub modal: bool,
+    /// The 1-based line of the first metadata line inside the statement's paragraph, whose
+    /// lines around it were joined.
+    pub joined: Option<usize>,
 }
 
 /// Splits the text of a requirement named `name`.
@@ -24,9 +28,14 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
     let mut metadata = Vec::new();
     let mut rest = Vec::new();
     let mut modal = false;
-    for (line, fenced) in source.lines(text) {
+    let mut metadata_modal = false;
+    // Each metadata line's 1-based line and how many other lines came before it.
+    let mut placed = Vec::new();
+    for (index, (line, fenced)) in text.clone().zip(source.lines(text)) {
         if let Some((label, value)) = (!fenced).then(|| metadata_entry(line)).flatten() {
             metadata.push((label.to_owned(), value.to_owned()));
+            metadata_modal |= first_modal(line).is_some();
+            placed.push((index + 1, rest.len()));
             continue;
         }
         modal |= !fenced && first_modal(line).is_some();
@@ -45,8 +54,18 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
             .join(" ");
         (Some(sentence), &rest[first + length..])
     });
+    let joined = first.and_then(|first| {
+        let length = rest[first..]
+            .iter()
+            .position(|line| line.trim().is_empty())
+            .unwrap_or(rest.len() - first);
+        placed
+            .iter()
+            .find(|(_, before)| (first + 1..first + length).contains(before))
+            .map(|(line, _)| *line)
+    });
     let sentence = sentence.unwrap_or_else(|| {
-        modal = first_modal(name).is_some();
+        modal = metadata_modal || first_modal(name).is_some();
         name.to_owned()
     });
     let (statement, rewritten) = statement(&sentence);
@@ -56,6 +75,7 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
         rewritten,
         metadata,
         modal,
+        joined,
     }
 }
 

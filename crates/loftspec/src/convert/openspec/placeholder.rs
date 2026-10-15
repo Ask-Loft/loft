@@ -20,6 +20,12 @@ pub(crate) fn is_placeholder(text: &str) -> bool {
     opens(&prose) || holds_archive_sentence(&prose)
 }
 
+/// Whether `text`, outside fenced code and trimmed, opens with `TBD` or `TODO` as
+/// [`is_placeholder`] reads it.
+pub(crate) fn opens_with_marker(text: &str) -> bool {
+    opens(&prose(text))
+}
+
 /// The lines of `text` outside fenced code, joined and trimmed.
 fn prose(text: &str) -> String {
     let lines: Vec<String> = text.lines().map(str::to_owned).collect();

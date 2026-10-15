@@ -41,8 +41,9 @@ pub(super) struct Requirement {
     pub children: Vec<Child>,
 }
 
-/// A level-4 child of a requirement, as a part without children; `scenario` holds the
-/// scenario's name when it is one.
+/// A level-4 child of a requirement; `scenario` holds the scenario's name when it is one. A
+/// scenario's part holds all its text; any other child's part holds its text up to its first
+/// heading and the headings nested in it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct Child {
     pub scenario: Option<String>,
@@ -145,11 +146,18 @@ impl Source {
             .filter(|title| self.first_line(self.start..title.index).is_none())
             .map_or(self.start, |title| title.index + 1);
         let lead_end = top.first().map_or(end, |heading| heading.index);
+        let inner: Vec<Heading> = headings
+            .iter()
+            .filter(|heading| (lead..lead_end).contains(&heading.index))
+            .filter(|heading| title.is_none_or(|title| heading.index != title.index))
+            .cloned()
+            .collect();
+        let text_end = inner.first().map_or(lead_end, |first| first.index);
         spec.introduction = self.first_line(lead..lead_end).map(|line| Part {
             name: "Introduction".to_owned(),
             line,
-            text: lead..lead_end,
-            children: Vec::new(),
+            text: lead..text_end,
+            children: tree(&inner, lead_end),
         });
         let mut requirements_seen = false;
         for (position, heading) in top.iter().enumerate() {
@@ -259,10 +267,15 @@ fn requirement(name: String, heading: &Heading, nested: &[Heading], end: usize) 
         .enumerate()
         .map(|(position, child)| {
             let child_end = fours.get(position + 1).map_or(end, |next| next.index);
-            Child {
-                scenario: scenario_name(&child.text),
-                part: part(child, child.index + 1..child_end, Vec::new()),
-            }
+            let scenario = scenario_name(&child.text);
+            let inner = between(nested, child.index, child_end);
+            let part = match (&scenario, inner.first()) {
+                (None, Some(first)) => {
+                    part(child, child.index + 1..first.index, tree(inner, child_end))
+                }
+                _ => part(child, child.index + 1..child_end, Vec::new()),
+            };
+            Child { scenario, part }
         })
         .collect();
     Requirement {

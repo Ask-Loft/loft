@@ -257,3 +257,70 @@ Written for reviewers.
         "Written for reviewers."
     );
 }
+
+#[test]
+fn a_purpose_opening_with_a_tbd_or_todo_marker_is_a_placeholder_kept_in_ext() {
+    for placeholder in [
+        "TBD - created by syncing change add-auth. Update Purpose after sync.",
+        "TODO: say what this is for",
+        "tbd.",
+    ] {
+        let conversion = converted(&one(&format!("## Purpose\n{placeholder}\n")));
+        let feature = features(&conversion)[0];
+        assert_eq!(feature.details.body, None, "{placeholder}");
+        let kept = openspec(&feature.details.ext, "purpose");
+        assert_eq!(kept, Some(&ExtValue::Text(placeholder.to_owned())));
+    }
+    let written = "TBDs are tracked in the backlog of the team.";
+    let conversion = converted(&one(&format!("## Purpose\n{written}\n")));
+    assert_eq!(
+        features(&conversion)[0].details.body.as_deref(),
+        Some(written)
+    );
+}
+
+#[test]
+fn the_introductions_headings_become_sections_nested_by_level() {
+    let text = "# T Specification
+
+Read this first.
+
+### Requirement: Early
+The system SHALL start.
+
+#### Scenario: Started
+- **THEN** it runs
+
+## Purpose
+The purpose.
+";
+    let conversion = converted(&one(text));
+    let sections = &features(&conversion)[0].details.sections;
+    assert_eq!(names(sections), ["Introduction"]);
+    assert_eq!(sections[0].body, "Read this first.");
+    assert_eq!(names(&sections[0].sections), ["Requirement: Early"]);
+    let early = &sections[0].sections[0];
+    assert_eq!(early.body, "The system SHALL start.");
+    assert_eq!(names(&early.sections), ["Scenario: Started"]);
+    assert_eq!(early.sections[0].body, "- **THEN** it runs");
+}
+
+#[test]
+fn a_requirement_childs_own_headings_become_its_sections_nested_by_level() {
+    let text = "## Requirements
+
+### Requirement: Reasoned
+The system SHALL keep its reasons.
+
+#### Notes
+Written for reviewers.
+
+##### Detail
+More.
+";
+    let conversion = converted(&one(text));
+    let notes = &requirements(&conversion)[0].details.sections[0];
+    assert_eq!(notes.body, "Written for reviewers.");
+    assert_eq!(names(&notes.sections), ["Detail"]);
+    assert_eq!(notes.sections[0].body, "More.");
+}

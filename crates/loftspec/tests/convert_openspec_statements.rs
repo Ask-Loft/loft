@@ -154,6 +154,17 @@ fn a_must_written_as_shall_is_kept_as_the_ext_modal_and_a_shall_is_not() {
         Some(ExtValue::Text("MUST".to_owned()))
     );
     assert_eq!(modal("The system SHALL keep a log."), None);
-    assert_eq!(modal("The system shall keep a log."), None);
     assert_eq!(modal("WHEN a, the system MUST b."), None);
+}
+
+#[test]
+fn a_lower_case_shall_kept_in_slots_is_kept_as_the_ext_modal() {
+    let modal = |text: &str| {
+        let spec = format!("## Requirements\n\n### Requirement: The one\n{text}\n");
+        let conversion = converted(&one(&spec));
+        openspec(&requirements(&conversion)[0].details.ext, "modal").cloned()
+    };
+    let shall = Some(ExtValue::Text("shall".to_owned()));
+    assert_eq!(modal("The system shall keep a log."), shall);
+    assert_eq!(modal("The system MUST log what users shall see."), shall);
 }

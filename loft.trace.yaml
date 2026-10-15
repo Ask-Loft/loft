@@ -3178,13 +3178,32 @@ links:
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
   - node: 01a13d02-7211-77f1-a8f1-30f27cbd750c
-    reviewed: e19454039fc195cd270bf66466c87714c03c49f5bed5fb7d54cf850397bed0c5
+    reviewed: 0c11b5cee80c64432bdc25d1571951e24f77a7ebeac2e12f2a3e44cce08fea23
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_purpose_opening_with_a_tbd_or_todo_marker_is_a_placeholder_kept_in_ext"
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
+  - node: 01a14139-e5e4-7047-a160-7966db4b1728
+    reviewed: 926c6ce16e4ec7013c1c20eb32de03101dc68e4ac9b58e81fa19054690dc9314
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_purpose_opening_with_a_tbd_or_todo_marker_is_a_placeholder_kept_in_ext"
+  - node: 01a1413a-4573-7409-8c3e-a1dd1456b9c1
+    reviewed: 7c225da3aa318bc8e41c583ae5fe40f940a329aa44b8a264d1392360ddf2d8ec
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_purpose_opening_with_a_tbd_or_todo_marker_is_a_placeholder_kept_in_ext"
+  - node: 01a1413a-4573-7409-8c3e-a1de90e4ba2b
+    reviewed: f32fe44b6a10b56374d834f0029394c387dbdc476f3177d134a460dc2b95c32e
     tests:
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
   - node: 01a14039-8315-7390-a27f-c56458905f77
-    reviewed: 92677801d0bf3b925d92e1dc206d788ed24a6516fc3db30cc6d0fe0be84b983a
+    reviewed: 43ae67ba30a51d46ccefba1578c4e058fdcfb11d2b69e71ffd80a133bcb87dd3
     tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_purpose_opening_with_a_tbd_or_todo_marker_is_a_placeholder_kept_in_ext"
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
   - node: 01a14039-8315-7390-a27f-c565b09aefb6
@@ -3214,6 +3233,11 @@ links:
         name: "other_level_two_sections_become_sections_nested_by_heading_level"
       - file: "crates/loftspec/tests/convert_openspec_reading.rs"
         name: "front_matter_is_skipped_and_an_unclosed_opening_line_is_content"
+  - node: 01a14139-e5e4-7047-a160-796729423aaf
+    reviewed: 4460aa5e3681e4e45b064ca2191a4e79550abb8dcf6b1276382fcbd9d793e8b2
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "the_introductions_headings_become_sections_nested_by_level"
   - node: 01a13d02-7211-77f1-a8f1-30f89aa7442a
     reviewed: 5164a3ed9157038aea279ac3548ff4a43ffc2b0b3e3aa706160e289b3ef9dbe3
     tests:
@@ -3260,10 +3284,17 @@ links:
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "a_child_of_a_requirement_that_is_not_a_scenario_becomes_its_section"
   - node: 01a13d02-7211-77f1-a8f1-31002c79d317
-    reviewed: bf2e34fd292354bd004dca122221bc16348b016a8da23a9f430411843eeba775
+    reviewed: 25c434c1094ffc559068606cea58c8fd15648a2c82d7181a1fb5626ff2688e64
     tests:
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_requirement_childs_own_headings_become_its_sections_nested_by_level"
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "a_child_of_a_requirement_that_is_not_a_scenario_becomes_its_section"
+  - node: 01a14139-e5e4-7047-a160-7968bfbde0be
+    reviewed: 1e0e891a9e6463e23b8272b56485ec3eee7252b13588f767f6c3b0cd15a9aee6
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_requirement_childs_own_headings_become_its_sections_nested_by_level"
   - node: 01a13d02-7211-77f1-a8f1-30d57264e4e4
     reviewed: 577ca46f1899b6d547f75ff7180da8515dc2be96f9083fb56b77a9eb0f37adf7
     tests:
@@ -3341,6 +3372,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_openspec_statements.rs"
         name: "a_must_written_as_shall_is_kept_as_the_ext_modal_and_a_shall_is_not"
+  - node: 01a14139-e5e4-7047-a160-79650be3c076
+    reviewed: 356b4bbfad5b6eb9a24e4b487638c195389ec21b1f944ba86331961ee46f84f3
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "a_lower_case_shall_kept_in_slots_is_kept_as_the_ext_modal"
   - node: 01a13d02-d042-701f-a5b6-c06ce9b48b5c
     reviewed: 4a166669a5790084362114de3e43eb2f04d954cc75171b5df95a89c326a45bee
     tests:
@@ -3503,6 +3539,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_openspec_findings.rs"
         name: "a_requirement_without_an_upper_case_modal_word_is_reported"
+  - node: 01a14139-e5e4-7047-a160-7961b2e9b25f
+    reviewed: eea9f5405f7982e1a6ad0caa551712d6274b62de2c956bfc44589b06c3409b42
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_text_of_metadata_lines_alone_is_read_for_shall_or_must"
   - node: 01a13d02-7211-77f1-a8f1-309976044464
     reviewed: 0d6ddec081d3e9b1f87ce5ce596dea3bc8c35c4254b5d39e855b8429882bc282
     tests:
@@ -3538,6 +3579,16 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_openspec_findings.rs"
         name: "the_context_and_store_of_config_yaml_are_reported_at_their_lines"
+  - node: 01a14139-e5e4-7047-a160-79631971a824
+    reviewed: 16b96607ca372f279c628a22495ef29d7babc28a8da2b1fe8904ed0fd434615c
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_metadata_line_inside_the_statements_paragraph_is_reported_at_its_line"
+  - node: 01a14139-e5e4-7047-a160-7964d153acfa
+    reviewed: 7dc9102d539306c21ef8faea06c2a5a538903435a39eeb228a9cbdf3e7fce8c8
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_metadata_line_inside_the_statements_paragraph_is_reported_at_its_line"
   - node: b8310eca-0d41-4904-9eec-43c553343933
     reviewed: bfcaadcb8af0f4315f07e5c37312a7602271d050665dfca72a189b90eec95bba
     unverified: "Holds by the type system: only the document holds Products, and no node type has a field for one."
