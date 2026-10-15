@@ -313,7 +313,9 @@ impl Command {
             Self::Init { .. } => Some("init"),
             Self::Fmt { .. } => Some("fmt"),
             Self::Check { .. } => Some("check"),
-            Self::Import { .. } => Some("import v1"),
+            Self::Import {
+                source: ImportSource::V1 { .. },
+            } => Some("import v1"),
             Self::Publish { .. } => Some("publish"),
             Self::Reconcile { .. } => Some("reconcile"),
             Self::Find { .. } => Some("find"),
