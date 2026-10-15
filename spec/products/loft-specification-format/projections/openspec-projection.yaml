@@ -1,0 +1,63 @@
+key: 01a1402e-d25e-7540-9283-1811887f7f78
+slug: openspec-projection
+name: "OpenSpec projection"
+body: "The main specs of an OpenSpec project rendered from a document, so that tools and people who read OpenSpec can read the specification. The projection follows OpenSpec 1.14's grammar for main specs; it writes no change, no `project.md` and no `config.yaml`."
+realizes:
+  - dfa057a6-404f-44a0-a9ab-932900198ca4
+requirements:
+  - key: 01a1402e-d25e-7540-9283-181266ba62ec
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "render each Product of a document as the main specs of one OpenSpec directory."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-18134ee12c31
+        name: "The main specs of a document with one Product are written under `specs/` of the directory given."
+      - key: 01a1402e-d25e-7540-9283-181484a0ad7b
+        name: "The main specs of each Product of a document with more than one Product are written under `<product slug>/specs/` of the directory given."
+      - key: 01a1402e-d25e-7540-9283-1815f9374673
+        name: "Each Feature is written as one file named `spec.md`."
+      - key: 01a1402e-d25e-7540-9283-1816e8ff8c16
+        name: "Two renders of one document are byte-identical."
+  - key: 01a1402e-d25e-7540-9283-181704b9c659
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "write each Feature at `specs/<capability path>/spec.md`."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-181855cdb34f
+        name: "The capability path of a Feature with an `ext.openspec.capability` is that value."
+      - key: 01a1402e-d25e-7540-9283-18190c14e09a
+        name: "The capability path of any other Feature is its Feature Group's slug and its own slug, joined with `/`."
+  - key: 01a1402e-d25e-7540-9283-181a3e5dc7c3
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "write a Feature's name, body and Sections into its `spec.md`."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-181be3b05022
+        name: "The file opens with the level-1 heading `<Feature name> Specification`."
+      - key: 01a1402e-d25e-7540-9283-181c929bab00
+        name: "The level-2 section `Purpose` holds the Feature's body verbatim."
+      - key: 01a1402e-d25e-7540-9283-181d55a27346
+        name: "The level-2 section `Purpose` of a Feature without a body holds its `ext.openspec.purpose` verbatim."
+      - key: 01a14039-8315-7390-a27f-c570180394d5
+        name: "The level-2 section `Purpose` of a Feature with neither a body nor an `ext.openspec.purpose` is empty."
+      - key: 01a1402e-d25e-7540-9283-181e06c597fb
+        name: "The level-2 section `Requirements` follows the section `Purpose`."
+      - key: 01a1402e-d25e-7540-9283-181f62d1a532
+        name: "Each Section of the Feature follows the section `Requirements` as a level-2 heading with its name, then its body verbatim."
+      - key: 01a1402e-d25e-7540-9283-1820e93b060c
+        name: "A Section's own Sections follow its body, each one heading level deeper."
+  - key: 01a1402e-d25e-7540-9283-1821962cd363
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "write a render map that names the node each rendered requirement and scenario comes from."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-18225c539ce0
+        name: "The render map is the file `loft-render-map.json` in the directory given."
+      - key: 01a1402e-d25e-7540-9283-18233d953958
+        name: "The render map records each rendered requirement and scenario with its file, the line of its heading and its key."
+      - key: 01a1402e-d25e-7540-9283-182406c96901
+        name: "The render map records the label of each node that has one."

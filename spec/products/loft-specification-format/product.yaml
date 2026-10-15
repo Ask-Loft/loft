@@ -88,6 +88,9 @@ featureGroups:
       - 25ab61fa-598b-483f-bc91-36413a78f4d8
       - f849fd7c-3d89-40f8-9490-fa45636349e0
       - 30c52d77-eca8-4d2c-9e9e-c950db04ef59
+      - 01a1402e-d25e-7540-9283-1811887f7f78
+      - 01a1402e-d25e-7540-9283-1825c9936bb1
+      - 01a1402e-d25e-7540-9283-183bab9eb817
   - key: b440f86a-ade7-45df-bc89-8ee1aadfb367
     slug: publication
     name: "Publication"
