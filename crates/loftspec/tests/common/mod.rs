@@ -11,6 +11,7 @@ pub mod lint;
 pub mod merge;
 pub mod merge_cases;
 pub mod merge_keys;
+pub mod openspec;
 pub mod parity;
 pub mod text;
 pub mod v1;
