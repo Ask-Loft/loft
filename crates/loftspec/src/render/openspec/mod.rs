@@ -4,6 +4,7 @@
 //! `OpenSpec`'s validator would reject and what the projection leaves out. Like every projection
 //! it is derived and deterministic, and no reader takes input from it.
 
+mod checks;
 mod findings;
 mod scan;
 mod spec;
@@ -16,6 +17,7 @@ pub use self::findings::{Finding, Rule};
 use super::Labels;
 use crate::convert::openspec::ext;
 use crate::convert::openspec::layout::{SPEC_FILE, SPECS};
+use crate::convert::openspec::read::without_closing_run;
 use crate::document::Document;
 use crate::identity::Key;
 use crate::ids::{ElementId, FeatureId};
@@ -35,6 +37,18 @@ const PURPOSE_LENGTH: usize = 50;
 /// The longest requirement text, in characters, that `OpenSpec` does not warn about.
 const REQUIREMENT_LENGTH: usize = 500;
 
+/// Why a document renders no `OpenSpec` projection.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+pub enum RenderError {
+    /// The document's references do not resolve.
+    #[error("the document does not index: {0:?}")]
+    Index(IndexErrors),
+    /// Two Features would be written to one path, or to two that differ only in letter case:
+    /// the path, and each Feature by its label or key.
+    #[error("{path}: two Features would be written here, {} and {}", .features[0], .features[1])]
+    Collision { path: String, features: [String; 2] },
+}
+
 /// What one document renders to in `OpenSpec`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpenspecProjection {
@@ -53,15 +67,17 @@ pub struct OpenspecProjection {
 ///
 /// # Errors
 ///
-/// A document whose references do not resolve renders nothing.
-pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> {
-    document.index()?;
+/// A document whose references do not resolve, or in which two Features would be written to one
+/// path, renders nothing.
+pub fn openspec(document: &Document) -> Result<OpenspecProjection, RenderError> {
+    document.index().map_err(RenderError::Index)?;
     let labels = Labels::of(document);
     let several = document.products.len() > 1;
     let mut roots = Vec::new();
     let mut files = BTreeMap::new();
     let mut entries = Vec::new();
     let mut findings = Vec::new();
+    let mut taken: BTreeMap<String, String> = BTreeMap::new();
     for product in &document.products {
         let root = if several {
             format!("{}/{SPECS}", product.slug.as_str())
@@ -69,22 +85,29 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> 
             SPECS.to_owned()
         };
         roots.push(root.clone());
-        for group in &product.feature_groups {
-            for feature in &group.features {
-                let path = format!("{root}/{}/{SPEC_FILE}", capability(group, feature));
-                let spec = spec::write(feature, &labels);
-                findings.extend(feature_findings(feature, &spec, &path));
-                entries.extend(spec.marked.iter().map(|marked| MapEntry {
-                    file: path.clone(),
-                    key: marked.element.map(ElementId::key),
-                    kind: marked.mark,
-                    label: marked.element.and_then(|element| labels.label(element)),
-                    line: marked.line,
-                }));
-                let mut text = spec.lines.join("\n");
-                text.push('\n');
-                files.insert(path, text);
-            }
+        let features = product
+            .feature_groups
+            .iter()
+            .flat_map(|group| group.features.iter().map(move |feature| (group, feature)));
+        for (group, feature) in features {
+            let path = format!("{root}/{}/{SPEC_FILE}", capability(group, feature));
+            let name = feature
+                .id
+                .map_or_else(|| feature.name.clone(), |id| labels.name(id));
+            claim(&mut taken, &path, name)?;
+            let spec = spec::write(feature, &labels);
+            findings.extend(feature_findings(feature, &spec, &path));
+            findings.extend(checks::findings(feature, &spec, &path));
+            entries.extend(spec.marked.iter().map(|marked| MapEntry {
+                file: path.clone(),
+                key: marked.element.map(ElementId::key),
+                kind: marked.mark,
+                label: marked.element.and_then(|element| labels.label(element)),
+                line: marked.line,
+            }));
+            let mut text = spec.lines.join("\n");
+            text.push('\n');
+            files.insert(path, text);
         }
     }
     findings.extend(left_out(document));
@@ -100,6 +123,21 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> 
         map,
         findings,
     })
+}
+
+/// Takes `path` for the Feature named `name`, refusing a path taken already, letter case aside.
+fn claim(
+    taken: &mut BTreeMap<String, String>,
+    path: &str,
+    name: String,
+) -> Result<(), RenderError> {
+    if let Some(first) = taken.get(&path.to_lowercase()) {
+        let features = [first.clone(), name];
+        let path = path.to_owned();
+        return Err(RenderError::Collision { path, features });
+    }
+    taken.insert(path.to_lowercase(), name);
+    Ok(())
 }
 
 /// The render map, its fields in the order JSON's sorted keys give.
@@ -161,7 +199,7 @@ fn feature_findings(feature: &Feature, spec: &spec::Spec, path: &str) -> Vec<Fin
             let detail = Some(format!("{length} characters"));
             findings.push(at(Rule::LongRequirement, detail));
         }
-        if !names.insert(written.name.as_str()) {
+        if !names.insert(without_closing_run(&written.name).trim()) {
             findings.push(at(Rule::DuplicateName, Some(written.name.clone())));
         }
     }

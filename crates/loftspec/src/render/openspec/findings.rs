@@ -14,6 +14,12 @@ pub enum Rule {
     LongRequirement,
     LeftOut,
     DuplicateName,
+    ReadsBack,
+    UnreadableExt,
+    PlaceholderPurpose,
+    NoRequirement,
+    SectionAsRequirement,
+    DeltaSection,
 }
 
 wire_names!(Rule {
@@ -23,6 +29,12 @@ wire_names!(Rule {
     LongRequirement => "OR-004",
     LeftOut => "OR-005",
     DuplicateName => "OR-006",
+    ReadsBack => "OR-007",
+    UnreadableExt => "OR-008",
+    PlaceholderPurpose => "OR-009",
+    NoRequirement => "OR-010",
+    SectionAsRequirement => "OR-011",
+    DeltaSection => "OR-012",
 });
 
 impl Rule {
@@ -31,18 +43,34 @@ impl Rule {
     pub const fn message(self) -> &'static str {
         match self {
             Self::NoModal => {
-                "the requirement text holds neither SHALL nor MUST; OpenSpec rejects it"
+                "the requirement text holds neither SHALL nor MUST; OpenSpec warns about it"
             }
-            Self::NoScenario => "the requirement has no scenario with text; OpenSpec rejects it",
+            Self::NoScenario => {
+                "the requirement has no scenario with text; OpenSpec reports an error"
+            }
             Self::ShortPurpose => {
-                "the Purpose is shorter than 50 characters; OpenSpec warns about it"
+                "the Purpose is shorter than 50 characters; OpenSpec warns about it, or reports an \
+                 error when it is empty"
             }
             Self::LongRequirement => {
                 "the requirement text is longer than 500 characters; OpenSpec warns about it"
             }
             Self::LeftOut => "content OpenSpec has no place for was left out",
             Self::DuplicateName => {
-                "an earlier requirement of the spec has the same name; OpenSpec rejects it"
+                "an earlier requirement of the spec has the same name; OpenSpec reports an error"
+            }
+            Self::ReadsBack => {
+                "content a second import would read differently was written as it is"
+            }
+            Self::UnreadableExt => "an ext.openspec value could not be read and was left out",
+            Self::PlaceholderPurpose => "the Purpose is a placeholder; OpenSpec warns about it",
+            Self::NoRequirement => "the spec has no requirement; OpenSpec reports an error",
+            Self::SectionAsRequirement => {
+                "a Section is written as a requirement heading outside Requirements; OpenSpec \
+                 reports an error"
+            }
+            Self::DeltaSection => {
+                "a Section is written as a delta section heading; OpenSpec reports an error"
             }
         }
     }

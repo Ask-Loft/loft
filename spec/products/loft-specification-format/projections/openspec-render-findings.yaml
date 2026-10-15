@@ -22,7 +22,7 @@ requirements:
       shall: "report a Requirement whose requirement text holds neither `SHALL` nor `MUST` as a word as a finding with the code `OR-001`."
     criteria:
       - key: 01a1402e-d25e-7540-9283-182afa7d9f44
-        name: "The requirement text is the Requirement's lines after its heading and before its first level-4 heading, other than blank lines, lines in fenced code and lines that open with a bold label and a colon."
+        name: "The requirement text is the Requirement's lines after its heading and before the next heading outside fenced code, other than blank lines, lines in fenced code and lines that open with a bold label and a colon."
       - key: 01a14139-e5e5-768a-a902-87296ba2a73c
         name: "A requirement text with no line but lines that open with a bold label and a colon is those lines."
       - key: 01a1402e-d25e-7540-9283-182b8687765c
@@ -36,7 +36,7 @@ requirements:
       - key: 01a1402e-d25e-7540-9283-182dd1ef299e
         name: "A Requirement with a Criterion raises no `OR-002`."
       - key: 01a1402e-d25e-7540-9283-182e4b1c4dc9
-        name: "A Requirement whose only level-4 headings are Sections without a body raises `OR-002`."
+        name: "A Requirement whose only level-4 headings are Sections with neither a body nor Sections of their own raises `OR-002`."
       - key: 01a14139-e5e5-768a-a902-872a489eeb42
         name: "A level-4 heading has text under it when a line before the next heading of level 4 or above is not blank."
   - key: 01a1402e-d25e-7540-9283-182fe0419f45

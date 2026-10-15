@@ -327,7 +327,7 @@ fn heading(line: &str) -> Option<(usize, String)> {
     (!text.is_empty()).then_some((level, text))
 }
 
-fn without_closing_run(text: &str) -> &str {
+pub(crate) fn without_closing_run(text: &str) -> &str {
     let trimmed = text.trim_end_matches([' ', '\t']);
     let without = trimmed.trim_end_matches('#');
     if without.len() < trimmed.len() && without.ends_with([' ', '\t']) {

@@ -4,7 +4,7 @@
 use loftspec::document::Document;
 use loftspec::ext::ExtValue;
 use loftspec::names::Namespace;
-use loftspec::render::openspec::{OpenspecProjection, RENDER_MAP, openspec};
+use loftspec::render::openspec::{OpenspecProjection, RENDER_MAP, RenderError, openspec};
 use loftspec::statement::Statement;
 use serde_json::Value;
 
@@ -94,7 +94,16 @@ fn a_feature_is_written_at_its_ext_capability_or_at_its_group_and_slug() {
         rendered(&document).files.into_keys().collect::<Vec<_>>(),
         ["specs/auth/login/spec.md"]
     );
-    for unsafe_path in ["", "/etc", "a//b", "../out", "a/./b", "a\\b"] {
+    for unsafe_path in [
+        "",
+        "/etc",
+        "a//b",
+        "../out",
+        "a/./b",
+        "a\\b",
+        ".hidden/auth",
+        "a/.b",
+    ] {
         let mut document = small_document();
         set(
             &mut first_feature(&mut document).details.ext,
@@ -178,6 +187,9 @@ fn a_statement_in_slots_is_written_with_its_ext_modal_or_shall_and_text_as_store
     let requirement = &mut first_feature(&mut document).requirements[0];
     set(&mut requirement.details.ext, "modal", "MUST");
     assert!(only(&document).contains("\nThe writer MUST write a key on every node.\n"));
+    let requirement = &mut first_feature(&mut document).requirements[0];
+    set(&mut requirement.details.ext, "modal", "shall");
+    assert!(only(&document).contains("\nThe writer shall write a key on every node.\n"));
     let requirement = &mut first_feature(&mut document).requirements[0];
     set(&mut requirement.details.ext, "modal", "may");
     assert!(only(&document).contains("\nThe writer SHALL write a key on every node.\n"));
@@ -316,4 +328,58 @@ fn an_imported_project_renders_to_specs_that_import_to_the_same_document() {
         .collect();
     let second = converted(&loftspec_project(&paths));
     assert_eq!(second.document, first.document);
+}
+
+#[test]
+fn two_features_written_to_one_path_are_refused_naming_the_path_and_both() {
+    for capability in ["auth", "Auth"] {
+        let mut document = converted(&loftspec_project(&[
+            ("auth/spec.md", AUTH),
+            ("billing/spec.md", AUTH),
+        ]))
+        .document;
+        let billing = &mut document.products[0].feature_groups[0].features[1];
+        set(&mut billing.details.ext, "capability", capability);
+        let Err(RenderError::Collision { path, features }) = openspec(&document) else {
+            panic!("{capability}: a collision")
+        };
+        assert_eq!(path.to_lowercase(), "specs/auth/spec.md", "{capability}");
+        assert_ne!(features[0], features[1]);
+        let error = RenderError::Collision { path, features }.to_string();
+        assert!(
+            error.to_lowercase().contains("specs/auth/spec.md"),
+            "{error}"
+        );
+    }
+}
+
+/// A Section nested `depth` levels below `section`, each named by its depth.
+fn nested(depth: u32) -> loftspec::tree::Section {
+    let mut innermost = section(70 + depth, &format!("Depth {depth}"), "Deep.");
+    for level in (1..depth).rev() {
+        let mut outer = section(70 + level, &format!("Depth {level}"), "Deep.");
+        outer.sections.push(innermost);
+        innermost = outer;
+    }
+    innermost
+}
+
+#[test]
+fn a_section_that_would_be_deeper_than_level_six_is_written_at_level_six() {
+    let mut document = small_document();
+    first_feature(&mut document).details.sections = vec![nested(6)];
+    let text = only(&document);
+    assert!(
+        text.contains("\n###### Depth 5\nDeep.\n\n###### Depth 6\nDeep.\n"),
+        "{text}"
+    );
+    let mut document = small_document();
+    let feature = first_feature(&mut document);
+    feature.details.sections.clear();
+    feature.requirements[0].details.sections = vec![nested(4)];
+    let text = only(&document);
+    assert!(
+        text.contains("\n###### Depth 3\nDeep.\n\n###### Depth 4\nDeep.\n"),
+        "{text}"
+    );
 }

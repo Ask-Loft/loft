@@ -291,3 +291,19 @@ fn paths_under_the_current_directory_are_shown_without_a_leading_dot() {
     );
     assert!(!text.contains("./"), "{text}");
 }
+
+#[test]
+fn two_features_written_to_one_path_are_refused_by_path_and_feature_and_nothing_is_written() {
+    let scratch = imported();
+    let invoices = "spec/products/faithful/billing/invoices.yaml";
+    let text = read(&scratch, invoices)
+        .replace("capability: \"billing/invoices\"", "capability: \"auth\"");
+    put(&scratch, invoices, &text);
+    let before = snapshot(&scratch.0);
+    let output = scratch.loft(&["render", "--openspec", "out", "--markdown", "docs/a.md"]);
+    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
+    let error = stderr(&output);
+    assert!(error.contains("specs/auth/spec.md"), "{error}");
+    assert!(error.contains("two Features"), "{error}");
+    assert_eq!(snapshot(&scratch.0), before);
+}

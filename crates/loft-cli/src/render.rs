@@ -9,7 +9,7 @@ use std::path::{Component, Path, PathBuf};
 
 use loftspec::codec;
 use loftspec::index::IndexErrors;
-use loftspec::render::openspec::{Finding, RENDER_MAP, openspec};
+use loftspec::render::openspec::{Finding, RENDER_MAP, RenderError, openspec};
 use loftspec::render::render;
 use loftspec_store::fs;
 use loftspec_store::openspec::{WriteProjectionError, write_projection};
@@ -94,7 +94,10 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
     }
     let mut rendered = Rendered::default();
     if let Some(dir) = &targets.openspec {
-        let mut projection = openspec(&document).map_err(|errors| integrity(&errors))?;
+        let mut projection = openspec(&document).map_err(|error| match error {
+            RenderError::Index(errors) => integrity(&errors),
+            RenderError::Collision { .. } => Stop::one("refused", error.to_string()),
+        })?;
         let written_to = projection
             .roots
             .iter()
