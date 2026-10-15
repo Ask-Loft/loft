@@ -21,12 +21,16 @@ requirements:
     statement:
       form: ubiquitous
       system: "The OpenSpec converter"
-      shall: "keep each metadata line of a requirement's text out of the statement."
+      shall: "keep each metadata line of a requirement's text in the Requirement's `ext.openspec.metadata`."
     criteria:
       - key: 01a13d02-7211-77f1-a8f1-30d97fc3caa6
         name: "A line that begins with a bold label followed by a colon, such as `**ID**:`, is a metadata line."
       - key: 01a13d02-7211-77f1-a8f1-30da02dbf431
-        name: "The metadata lines open the Requirement's body in source order."
+        name: "Each metadata line becomes an entry of `ext.openspec.metadata` holding its `label` and its `value`, in source order."
+      - key: 01a14039-8314-77a3-bb78-f25a74b613e5
+        name: "The label is the text between the two pairs of asterisks, and the value is the text after the colon, trimmed."
+      - key: 01a14039-8315-7390-a27f-c563745e3dd1
+        name: "A metadata line is left out of the statement and the body."
   - key: 01a13d02-7211-77f1-a8f1-30dbbfb6c7d0
     statement:
       form: ubiquitous

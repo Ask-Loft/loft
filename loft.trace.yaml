@@ -3180,6 +3180,16 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
+  - node: 01a14039-8315-7390-a27f-c56458905f77
+    reviewed: 92677801d0bf3b925d92e1dc206d788ed24a6516fc3db30cc6d0fe0be84b983a
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
+  - node: 01a14039-8315-7390-a27f-c565b09aefb6
+    reviewed: c0fde90e8745e3b17292fcbf2b55f42d7f85ff027e2ad6f6c7895a9048400f6e
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "each_feature_keeps_its_capability_id_and_each_requirement_its_name_in_ext"
   - node: 01a13d02-7211-77f1-a8f1-30f46f23411f
     reviewed: 10a28043bc1e3455e632cc414f53931d8a7e961506bfa3d67a2d7e37377f3415
     tests:
@@ -3227,6 +3237,11 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "requirements_and_their_scenarios_keep_source_order"
+  - node: 01a14039-8315-7390-a27f-c5666726fcdb
+    reviewed: 0908aece14f3698bf5e6b534b22f8116cc87bf2d6cf3d81047f82badccabb198
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "each_feature_keeps_its_capability_id_and_each_requirement_its_name_in_ext"
   - node: 01a13d02-7211-77f1-a8f1-30fcaf1a72b8
     reviewed: b1afd375d350b4f5490675b9f4e552131bdd94d2b96bfb2f15a67c0b194dccb0
     tests:
@@ -3266,12 +3281,24 @@ links:
     reviewed: 02853e072082873dfd176aa9c5dbf09b9fffed68a271d4ea04f2ca34d349de41
     tests:
       - file: "crates/loftspec/tests/convert_openspec_statements.rs"
-        name: "metadata_lines_stay_out_of_the_statement_and_open_the_body"
+        name: "metadata_lines_leave_the_statement_and_the_body_for_ext_in_source_order"
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "a_requirement_without_metadata_lines_has_no_metadata_entry"
   - node: 01a13d02-7211-77f1-a8f1-30da02dbf431
-    reviewed: 95444b3907309499c2c832fd200ae37d364e8af34662cdc23c2e7e2ebbcd8a0d
+    reviewed: 89bebae3344eb8beb2e774fb4723b4758e3328871887676c79d9c58bf90d59ba
     tests:
       - file: "crates/loftspec/tests/convert_openspec_statements.rs"
-        name: "metadata_lines_stay_out_of_the_statement_and_open_the_body"
+        name: "metadata_lines_leave_the_statement_and_the_body_for_ext_in_source_order"
+  - node: 01a14039-8314-77a3-bb78-f25a74b613e5
+    reviewed: 8db979d9195950a57b6129cd2b2ac2272e8d8ac15890bcb7ce554a889fc6ed87
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "metadata_lines_leave_the_statement_and_the_body_for_ext_in_source_order"
+  - node: 01a14039-8315-7390-a27f-c563745e3dd1
+    reviewed: 831b435f7abf3f1d95ad41db226443f6404488956736398beff59b4186b28f86
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "metadata_lines_leave_the_statement_and_the_body_for_ext_in_source_order"
   - node: 01a13d02-7211-77f1-a8f1-30dc7a912c52
     reviewed: a4f883e7d0b105755e97aa7b96701420d405820c096a6ef71138ed8332fcfdf0
     tests:
@@ -3469,11 +3496,6 @@ links:
     tests:
       - file: "crates/loftspec/tests/convert_openspec_findings.rs"
         name: "the_number_of_rewritten_statements_is_reported_once"
-  - node: 01a13d02-7211-77f1-a8f1-309bb026308b
-    reviewed: 16b96607ca372f279c628a22495ef29d7babc28a8da2b1fe8904ed0fd434615c
-    tests:
-      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
-        name: "a_metadata_line_is_reported_at_its_line_with_the_requirements_key"
   - node: 01a13d02-7211-77f1-a8f1-309d97ca3fcd
     reviewed: be8513b36e889899ead5cfd27324e2bc9c1fb28da2fef8621470f4ab04296208
     tests:

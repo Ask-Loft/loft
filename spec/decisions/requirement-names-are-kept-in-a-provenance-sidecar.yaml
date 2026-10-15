@@ -3,9 +3,10 @@ slug: requirement-names-are-kept-in-a-provenance-sidecar
 title: "Requirement names are kept in a provenance sidecar"
 context: "An OpenSpec requirement is known by its name, and a Requirement of the Format has a statement and no name. Scenario names become Criterion names, but requirement names, source paths and source lines have no field in the tree."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a13d04-2b9d-7320-aa86-8a6d1f978a38
   outcome: "The converter writes a sidecar beside `spec/` that records the source of each node it creates."
+  successor: 01a1403a-512d-76c8-b11e-f0f714414b63
 drivers:
   - key: 01a13d04-2b9d-7320-aa86-8a6b99dd66ae
     kind: local

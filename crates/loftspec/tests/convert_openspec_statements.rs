@@ -1,8 +1,9 @@
 //! Statements from `OpenSpec` requirement text: the first paragraph is the statement, the rest
-//! and the metadata lines are the body, and a statement is kept as slots when it renders back
+//! is the body, the metadata lines go to `ext.openspec.metadata`, and a statement is kept as slots when it renders back
 //! from them, with its first `SHALL` or `MUST` written as `shall` where that is what it takes.
 
-use crate::common::openspec::{converted, one, requirements};
+use crate::common::openspec::{converted, one, openspec, requirements};
+use loftspec::ext::ExtValue;
 use loftspec::statement::{Form, Statement};
 
 /// The statement and body of the one requirement whose text is `text`.
@@ -48,15 +49,44 @@ fn a_requirement_without_text_takes_its_name_as_the_statement() {
     assert_eq!(requirement.details.body, None);
 }
 
+/// A metadata entry as `ext.openspec.metadata` holds it.
+fn entry(label: &str, value: &str) -> ExtValue {
+    ExtValue::Map(
+        [("label", label), ("value", value)]
+            .into_iter()
+            .map(|(key, text)| (key.to_owned(), ExtValue::Text(text.to_owned())))
+            .collect(),
+    )
+}
+
 #[test]
-fn metadata_lines_stay_out_of_the_statement_and_open_the_body() {
-    let (statement, body) =
-        split("**ID**: REQ-7\nThe system SHALL keep a log.\n**Priority**: high\n\nMore detail.");
-    assert_eq!(statement.render(), "The system shall keep a log.");
+fn metadata_lines_leave_the_statement_and_the_body_for_ext_in_source_order() {
+    let text =
+        "**ID**:   REQ-7  \nThe system SHALL keep a log.\n  **Priority**: high\n\nMore detail.";
+    let spec = format!("## Requirements\n\n### Requirement: The one\n{text}\n");
+    let conversion = converted(&one(&spec));
+    let requirement = &requirements(&conversion)[0];
     assert_eq!(
-        body.as_deref(),
-        Some("**ID**: REQ-7\n**Priority**: high\n\nMore detail.")
+        requirement.statement.render(),
+        "The system shall keep a log."
     );
+    assert_eq!(requirement.details.body.as_deref(), Some("More detail."));
+    assert_eq!(
+        openspec(&requirement.details.ext, "metadata"),
+        Some(&ExtValue::List(vec![
+            entry("ID", "REQ-7"),
+            entry("Priority", "high")
+        ]))
+    );
+}
+
+#[test]
+fn a_requirement_without_metadata_lines_has_no_metadata_entry() {
+    let conversion = converted(&one(
+        "## Requirements\n\n### Requirement: R\nThe system SHALL r.\n**Not**metadata: x\n",
+    ));
+    let requirement = &requirements(&conversion)[0];
+    assert_eq!(openspec(&requirement.details.ext, "metadata"), None);
 }
 
 #[test]

@@ -10,11 +10,12 @@ use super::sidecar::{OpenspecSidecar, Provenance, SourceFile};
 use super::statement;
 use crate::canonical::digest_bytes;
 use crate::document::Document;
-use crate::ext::Ext;
+use crate::ext::{Ext, ExtValue};
 use crate::identity::Key;
 use crate::ids::{
     CriterionId, DocumentId, FeatureGroupId, FeatureId, ProductId, RequirementId, SectionId,
 };
+use crate::names::Namespace;
 use crate::slug::Slug;
 use crate::tree::{Criterion, Details, Feature, FeatureGroup, Product, Requirement, Section};
 
@@ -154,7 +155,7 @@ impl Build {
             Some(&capability.id),
             title.map(|(text, _)| text.as_str()),
         );
-        let body = self.purpose(&spec, &source, file, key);
+        let (body, placeholder) = self.purpose(&spec, &source, file, key);
         let sections = self.feature_sections(&spec, &source, file, &identity);
         let mut names = BTreeSet::new();
         let requirements = spec
@@ -173,16 +174,30 @@ impl Build {
                 body,
                 tags: Vec::new(),
                 sections,
-                ext: Ext::new(),
+                ext: openspec([
+                    ("capability", Some(text(&capability.id))),
+                    ("purpose", placeholder.map(ExtValue::Text)),
+                ]),
             },
             requirements,
             quality_attributes: Vec::new(),
         }
     }
 
-    fn purpose(&mut self, spec: &Spec, source: &Source, file: &str, key: Key) -> Option<String> {
-        let purpose = spec.purpose.as_ref()?;
-        let text = source.verbatim(purpose.text.clone())?;
+    /// The Feature's body, or the archive placeholder its Purpose holds instead.
+    fn purpose(
+        &mut self,
+        spec: &Spec,
+        source: &Source,
+        file: &str,
+        key: Key,
+    ) -> (Option<String>, Option<String>) {
+        let Some(purpose) = spec.purpose.as_ref() else {
+            return (None, None);
+        };
+        let Some(text) = source.verbatim(purpose.text.clone()) else {
+            return (None, None);
+        };
         if text.trim_start().starts_with(PLACEHOLDER) {
             let finding = Finding::at(
                 Rule::PlaceholderPurpose,
@@ -191,9 +206,9 @@ impl Build {
                 Some(key),
             );
             self.findings.push(finding);
-            return None;
+            return (None, Some(text));
         }
-        Some(text)
+        (Some(text), None)
     }
 
     /// The Feature's Sections in source order: the introduction, the other level-2 sections
@@ -288,9 +303,6 @@ impl Build {
         if !split.modal {
             self.findings.push(at(Rule::NoModal, requirement.line));
         }
-        for line in &split.metadata {
-            self.findings.push(at(Rule::Metadata, *line));
-        }
         let mut criteria = Vec::new();
         let mut sections = Vec::new();
         for child in &requirement.children {
@@ -308,7 +320,10 @@ impl Build {
                 body: split.body,
                 tags: Vec::new(),
                 sections,
-                ext: Ext::new(),
+                ext: openspec([
+                    ("name", Some(text(&requirement.name))),
+                    ("metadata", metadata(split.metadata)),
+                ]),
             },
             criteria,
         }
@@ -406,5 +421,38 @@ fn humanise(segment: &str) -> String {
     let mut characters = spaced.chars();
     characters.next().map_or_else(String::new, |first| {
         first.to_uppercase().chain(characters).collect()
+    })
+}
+
+/// Extension data in the `openspec` namespace holding each entry that has a value.
+fn openspec<const N: usize>(entries: [(&str, Option<ExtValue>); N]) -> Ext {
+    let entries: BTreeMap<String, ExtValue> = entries
+        .into_iter()
+        .filter_map(|(key, value)| Some((key.to_owned(), value?)))
+        .collect();
+    Ext::from([(
+        Namespace::parse("openspec").expect("a namespace"),
+        ExtValue::Map(entries),
+    )])
+}
+
+fn text(value: &str) -> ExtValue {
+    ExtValue::Text(value.to_owned())
+}
+
+/// A requirement's metadata lines as a list of `{label, value}`; none when it has none.
+fn metadata(lines: Vec<(String, String)>) -> Option<ExtValue> {
+    (!lines.is_empty()).then(|| {
+        ExtValue::List(
+            lines
+                .into_iter()
+                .map(|(label, value)| {
+                    ExtValue::Map(BTreeMap::from([
+                        ("label".to_owned(), ExtValue::Text(label)),
+                        ("value".to_owned(), ExtValue::Text(value)),
+                    ]))
+                })
+                .collect(),
+        )
     })
 }

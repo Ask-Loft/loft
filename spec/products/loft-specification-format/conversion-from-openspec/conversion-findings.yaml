@@ -85,15 +85,6 @@ requirements:
     criteria:
       - key: 01a13d02-7211-77f1-a8f1-309976044464
         name: "One finding reports the number for the whole project."
-  - key: 01a13d02-7211-77f1-a8f1-309a3a7c6757
-    statement:
-      form: unwanted
-      if: "a requirement's text holds a metadata line"
-      system: "the OpenSpec converter"
-      shall: "report the metadata it kept in the body as a finding with the code `OS-009`."
-    criteria:
-      - key: 01a13d02-7211-77f1-a8f1-309bb026308b
-        name: "The finding names the file, the line of the metadata line and the Requirement's key."
   - key: 01a13d02-7211-77f1-a8f1-309ce278fb1e
     statement:
       form: unwanted

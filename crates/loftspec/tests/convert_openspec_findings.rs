@@ -57,7 +57,12 @@ fn a_faithful_project_has_no_finding_but_the_count_of_rewritten_statements() {
 #[test]
 fn every_rule_has_its_own_code() {
     let codes: Vec<&str> = Rule::ALL.iter().map(|rule| rule.as_str()).collect();
-    let expected: Vec<String> = (1..=14).map(|n| format!("OS-{n:03}")).collect();
+    // OS-009 reported metadata kept in a body; metadata now goes to `ext`, and the code is
+    // retired, never reused.
+    let expected: Vec<String> = (1..=14)
+        .filter(|n| *n != 9)
+        .map(|n| format!("OS-{n:03}"))
+        .collect();
     assert_eq!(codes, expected);
 }
 
@@ -169,17 +174,6 @@ fn the_number_of_rewritten_statements_is_reported_once() {
     assert_eq!((finding.file.as_deref(), finding.key), (None, None));
     let verbatim = "## Requirements\n\n### Requirement: R\nThe system shall r.\n";
     assert_eq!(of(&converted(&one(verbatim)), Rule::ModalRewritten), []);
-}
-
-#[test]
-fn a_metadata_line_is_reported_at_its_line_with_the_requirements_key() {
-    let text = "## Requirements\n\n### Requirement: R\n**ID**: R-1\nThe system SHALL r.\n";
-    let conversion = converted(&one(text));
-    let requirement = key(&conversion, "requirement", "R");
-    assert_eq!(
-        site(&conversion, Rule::Metadata),
-        (Some(file()), Some(4), Some(requirement))
-    );
 }
 
 #[test]

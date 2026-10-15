@@ -51,6 +51,10 @@ requirements:
         name: "The text of the section `Purpose` becomes the Feature's body verbatim."
       - key: 01a13d02-7211-77f1-a8f1-30f27cbd750c
         name: "A Purpose that begins with OpenSpec's archive placeholder `TBD - created by archiving change` leaves the Feature's body empty."
+      - key: 01a14039-8315-7390-a27f-c56458905f77
+        name: "A Purpose that begins with the archive placeholder is kept verbatim as the Feature's `ext.openspec.purpose`."
+      - key: 01a14039-8315-7390-a27f-c565b09aefb6
+        name: "The Feature's `ext.openspec.capability` is the capability id."
   - key: 01a13d02-7211-77f1-a8f1-30f3c1257e4e
     statement:
       form: ubiquitous
@@ -87,6 +91,8 @@ requirements:
         name: "The Feature holds one Requirement for each requirement of its spec."
       - key: 01a13d02-d042-701f-a5b6-c070dfb6ef09
         name: "The Requirements follow the order of their headings in the spec."
+      - key: 01a14039-8315-7390-a27f-c5666726fcdb
+        name: "The Requirement's `ext.openspec.name` is the requirement name."
   - key: 01a13d02-7211-77f1-a8f1-30fb2baa3ae6
     statement:
       form: ubiquitous

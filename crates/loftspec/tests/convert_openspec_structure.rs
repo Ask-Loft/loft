@@ -2,8 +2,9 @@
 //! segment, a Feature per capability with its name, body and Sections, and Requirements,
 //! Criteria and Sections in source order.
 
-use crate::common::openspec::{AUTH, converted, features, one, project, requirements};
+use crate::common::openspec::{AUTH, converted, features, one, openspec, project, requirements};
 use loftspec::convert::openspec::Project;
+use loftspec::ext::ExtValue;
 use loftspec::tree::Section;
 
 fn names(sections: &[Section]) -> Vec<&str> {
@@ -112,6 +113,38 @@ fn the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none() {
         .map(|feature| feature.details.body.as_deref())
         .collect();
     assert_eq!(bodies, [Some("First line.\n\n  Indented second."), None]);
+    let purposes: Vec<Option<&ExtValue>> = features(&conversion)
+        .iter()
+        .map(|feature| openspec(&feature.details.ext, "purpose"))
+        .collect();
+    let kept = "TBD - created by archiving change add-auth. Update Purpose after archive.";
+    assert_eq!(purposes, [None, Some(&ExtValue::Text(kept.to_owned()))]);
+}
+
+#[test]
+fn each_feature_keeps_its_capability_id_and_each_requirement_its_name_in_ext() {
+    let conversion = converted(&project(&[
+        ("billing/invoices/spec.md", AUTH),
+        ("auth/spec.md", AUTH),
+    ]));
+    let text = |value: Option<&ExtValue>| value.and_then(ExtValue::text).map(str::to_owned);
+    let mut capabilities: Vec<Option<String>> = features(&conversion)
+        .iter()
+        .map(|feature| text(openspec(&feature.details.ext, "capability")))
+        .collect();
+    capabilities.sort();
+    assert_eq!(
+        capabilities,
+        [Some("auth".to_owned()), Some("billing/invoices".to_owned())]
+    );
+    let names: Vec<Option<String>> = requirements(&conversion)
+        .iter()
+        .map(|requirement| text(openspec(&requirement.details.ext, "name")))
+        .collect();
+    assert_eq!(
+        names,
+        [Some("Sign in".to_owned()), Some("Sign out".to_owned())]
+    );
 }
 
 #[test]

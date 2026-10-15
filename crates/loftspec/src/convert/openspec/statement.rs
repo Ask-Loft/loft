@@ -13,20 +13,20 @@ pub(super) struct Split {
     pub body: Option<String>,
     /// Whether the modal word was written as `shall` to give the statement slots.
     pub rewritten: bool,
-    /// The 1-based line of each metadata line.
-    pub metadata: Vec<usize>,
+    /// Each metadata line's label and value, in source order.
+    pub metadata: Vec<(String, String)>,
     /// Whether the text, or the name when there is no text, holds `SHALL` or `MUST`.
     pub modal: bool,
 }
 
 /// Splits the text of a requirement named `name`.
 pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
-    let mut metadata: Vec<(usize, &str)> = Vec::new();
+    let mut metadata = Vec::new();
     let mut rest = Vec::new();
     let mut modal = false;
-    for (index, line, fenced) in source.lines(text) {
-        if !fenced && is_metadata(line.trim()) {
-            metadata.push((index + 1, line.trim()));
+    for (_, line, fenced) in source.lines(text) {
+        if let Some(entry) = (!fenced).then(|| metadata_entry(line)).flatten() {
+            metadata.push(entry);
             continue;
         }
         modal |= !fenced && first_modal(line).is_some();
@@ -50,21 +50,11 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
         name.to_owned()
     });
     let (statement, rewritten) = statement(&sentence);
-    let body = [
-        (!metadata.is_empty()).then(|| {
-            let lines: Vec<&str> = metadata.iter().map(|(_, line)| *line).collect();
-            lines.join("\n")
-        }),
-        verbatim(after),
-    ]
-    .into_iter()
-    .flatten()
-    .collect::<Vec<_>>();
     Split {
         statement,
-        body: (!body.is_empty()).then(|| body.join("\n\n")),
+        body: verbatim(after),
         rewritten,
-        metadata: metadata.iter().map(|(line, _)| *line).collect(),
+        metadata,
         modal,
     }
 }
@@ -108,11 +98,10 @@ fn stands_alone(text: &str, range: &Range<usize>) -> bool {
         && !text[range.end..].chars().next().is_some_and(word)
 }
 
-/// Whether a trimmed line begins with a bold label followed by a colon, such as `**ID**:`.
-fn is_metadata(line: &str) -> bool {
-    line.strip_prefix("**")
-        .and_then(|rest| rest.split_once("**"))
-        .is_some_and(|(label, after)| {
-            !label.is_empty() && !label.contains('*') && after.starts_with(':')
-        })
+/// The label and value of a metadata line: one that, trimmed, begins with a bold label followed
+/// by a colon, such as `**ID**: AUTH-1`. The value is the text after the colon, trimmed.
+fn metadata_entry(line: &str) -> Option<(String, String)> {
+    let (label, after) = line.trim().strip_prefix("**")?.split_once("**")?;
+    let value = after.strip_prefix(':')?;
+    (!label.is_empty() && !label.contains('*')).then(|| (label.to_owned(), value.trim().to_owned()))
 }

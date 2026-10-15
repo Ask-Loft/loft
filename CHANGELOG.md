@@ -7,10 +7,13 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 - `loft import openspec [<dir>]` converts the main specs of an OpenSpec project, read from
   `openspec/` by default, into `spec/`, and writes `openspec-sidecar.json` beside it with the
-  source of each node, including the requirement and scenario names. The Product is named after
+  source of each node, including the requirement and scenario names. Each Requirement keeps its
+  OpenSpec name and its metadata lines, such as `**ID**: AUTH-1`, as `{label, value}` entries in
+  `ext.openspec`, and each Feature its capability id and any archive placeholder Purpose, so no
+  tool data is left in a body. The Product is named after
   the directory that holds the OpenSpec directory, or by `--product`. Active and archived changes,
   `config.yaml`'s `context`, and every place a project departs from OpenSpec's grammar are
-  reported as findings (`OS-001` to `OS-014`) with their source file and line. OpenSpec states
+  reported as findings (`OS-001` to `OS-014`; `OS-009` is retired) with their source file and line. OpenSpec states
   obligations in scenario bodies, which become criterion bodies, so the command also reports how
   many `V2-007` warnings `loft check` will give and the `spec/lint.yaml` entry that lowers them to
   info; it writes no lint configuration. Its output follows the schema `loft-import-openspec/1`.
