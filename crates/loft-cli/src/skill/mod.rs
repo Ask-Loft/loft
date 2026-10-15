@@ -33,6 +33,7 @@ const SOURCE: &[(&str, &str)] = source![
     "agents/claude/frontmatter.yaml",
     "agents/claude/route.md",
     "agents/openai.yaml",
+    "references/adopting-an-openspec-project.md",
     "references/changing-a-specified-product.md",
     "references/format.md",
     "references/lint-findings.md",

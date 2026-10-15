@@ -43,8 +43,8 @@ requirements:
       - key: 01a14175-e444-717b-a0fb-4c410eda0c7d
         name: "The workflow tells the agent to write the projection with `loft render --openspec <dir>`."
       - key: 01a14175-e444-717b-a0fb-4c4276770f0f
-        name: "The workflow tells the agent that each `OR` finding names what `openspec validate --strict` will reject."
+        name: "The workflow tells the agent that an `OR` finding whose message names OpenSpec says what `openspec validate --strict` will reject."
       - key: 01a14175-e444-717b-a0fb-4c439b21fc53
-        name: "The workflow tells the agent to give `--force` to replace the specs an earlier render wrote."
+        name: "The workflow tells the agent to give `--force` to replace the main specs in the directory rendered to."
       - key: 01a14175-e444-717b-a0fb-4c44c5344128
         name: "The workflow names `loft-render-map.json` as the record of the node each rendered requirement and scenario comes from."

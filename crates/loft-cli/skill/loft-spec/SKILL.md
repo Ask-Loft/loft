@@ -32,6 +32,8 @@ no second reading.
 - Read [`references/new-document.md`](references/new-document.md) to start a specification where
   there is no `spec/`, or only what `loft init` wrote, from a conversation with the user or from
   an existing codebase.
+- Read [`references/adopting-an-openspec-project.md`](references/adopting-an-openspec-project.md)
+  to adopt a `spec/` that `loft import openspec` wrote, or to keep an OpenSpec projection of it.
 - Read [`references/changing-a-specified-product.md`](references/changing-a-specified-product.md)
   to change a product that a `spec/` already describes: a new feature, a fix, a removal.
 - Read [`references/reconciling.md`](references/reconciling.md) to link tests to the nodes

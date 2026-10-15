@@ -10511,6 +10511,11 @@ links:
   - node: 01a1383e-2e64-72e5-b7f4-bc3e9d01cad6
     reviewed: d0d86fb5aaab8fa9eb02621f43711076f9f84e065b67b3bef309d2db0d14022f
     unverified: "Routing an intent to a reference is guidance an agent judges; SKILL.md states it in its route bullets, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c45b83475fd
+    reviewed: 43ff2519881af78f4339a0655d5651503bd54cbb37de6304c98518b88199d488
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "the_router_routes_each_reference_once_and_the_loop_first"
   - node: 01a13654-6e12-74a1-ad7f-e85674355b04
     reviewed: aca555277f8eec671cec7dec0cf4cf62b5aaf398f3ab158b2eaa3965a44c5eda
     unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
@@ -10655,6 +10660,51 @@ links:
   - node: 01a1383e-2e64-72e5-b7f4-bc3b649cb1e3
     reviewed: cbe2fc682cb1ce2d13c8c0464d86ce0f2283fd9d9712d3ac78d53bdef333d8cf
     unverified: "The skill text states it in references/reconciling.md; read it there."
+  - node: 01a14175-e444-717b-a0fb-4c359f517bc7
+    reviewed: 367fbad72bf1f177577215c58bb58e9cab25d9ffef418749f5c55d6db6cebcee
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c36ec32f20f
+    reviewed: 8069b1d0a8916766bdc578de594005d9cc8c8655200be198c5eb621f2875aee7
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3722e71362
+    reviewed: ee9ab096faa4be900a583377ac883fdc79adb5bb6be4ba25080ad54a44d0882e
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c38dbf2a568
+    reviewed: bd5c5e9a538266f822c0269dd968388ac59bd84b103c55abdc0a80c9a3bb876c
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3914f3c25c
+    reviewed: db18d672907e42a969b2f152787ed03091ba0f92bfa3698a89cd427283ed519d
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3a8e26e483
+    reviewed: 92581774423c52ca4ce9edb284e7b75e7ca9281aa084895bb1d5f0f57b9b843b
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3bea4d2ed9
+    reviewed: 5b85f4fb766e0e7f778d6800d1fee82c8b7eef259a2c4654242f2f5418b743fc
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3c61cc0d18
+    reviewed: 25f751ffd1a4289e65ad78cafad66cdd29a7c4fc4d99ac094a4152fbd9d09e26
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3d96fd007a
+    reviewed: 243ac93eec03750ab109f12d36211be330b67a5372e36c721f3fe9f71aa517df
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3ed46e3045
+    reviewed: 68f308fa37fcca7ce317169a0ad903114aa0d182766191461e48c1c7b8c93f19
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c3f972c7ee6
+    reviewed: cf633eb3e17c7fa940984286803f6d3ef7e9dadd223954f6e9aec13bbde2112f
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c410eda0c7d
+    reviewed: cee48f2761b4f7d149a0051b4eb748ccfbb8ce2cbb63ef945d8d09af413194f8
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c4276770f0f
+    reviewed: 07ee0ab6df54c89ca01032560064a0b2cb8b963524eca5f19afb697a0bb25bf7
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c439b21fc53
+    reviewed: 9d699c13c0fc425607c0ce226564d61b53f559aeb2b988eaa7f2f70f4c4b86bb
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
+  - node: 01a14175-e444-717b-a0fb-4c44c5344128
+    reviewed: 6e9d5fa6f9cfe15f47ba6cad3332b3462bdc3802818aceb3eeda168e8f8837a1
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/adopting-an-openspec-project.md, read it there."
   - node: 01a13654-6e11-74fa-a359-25781bc106ea
     reviewed: 9145a24f26163cde64013d539598798aeba549a15e34d9336b695a798a73ac33
     tests:
