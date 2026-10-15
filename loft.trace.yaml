@@ -155,6 +155,10 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_read.rs"
         name: "a_record_without_a_key_is_refused_outside_the_formatter"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "a_product_without_a_key_is_written_and_refused_on_reading"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "a_feature_without_a_key_is_written_and_refused_on_reading"
   - node: e21a7e35-1a88-4370-b12d-6c03ea3f6353
     reviewed: 71e82b0b2fb7ad65eea7af0f70e5c3de9232d6dedc527706e112d193305e1e80
     tests:
@@ -2665,6 +2669,8 @@ links:
         name: "a_sentence_the_template_cannot_reproduce_stays_text"
       - file: "crates/loftspec/tests/statement_parse.rs"
         name: "a_ubiquitous_bare_name_with_a_lead_in_clause_stays_text"
+      - file: "crates/loftspec/tests/statement_agreement.rs"
+        name: "the_reader_keeps_slots_only_for_the_templates_exact_wording"
   - node: 142fe64a-ddf9-4a3d-82e7-8d6ebe4c9bc9
     reviewed: 66ce63a7e5a1edbf6b0444cd5e4a6f552b46c8f6ba15ff505249fe48266f8ab1
     tests:
@@ -3485,6 +3491,8 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_language.rs"
         name: "a_text_statement_outside_the_forms_is_lq_007_when_enabled"
+      - file: "crates/loftspec/tests/statement_agreement.rs"
+        name: "the_language_rule_takes_a_sentence_for_a_form_in_any_letter_case"
   - node: 00151e20-e536-4b69-b639-6ef96634dd10
     reviewed: 5124686d2a94b328492cc01598a6a05908617852eb3f133c657e65db5289a5fc
     tests:
@@ -3622,6 +3630,16 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint.rs"
         name: "a_statement_stored_as_text_is_v2_002"
+  - node: 01a13ce8-2c91-7179-aae0-9fa9a74faead
+    reviewed: 0a92f2ddde49cfba7e3bfa7eec0d71e35762f910171dc9b36454222ea3a5ee27
+    tests:
+      - file: "crates/loftspec/tests/statement_agreement.rs"
+        name: "a_text_statement_that_follows_a_form_but_not_its_wording_is_v2_002_naming_the_form"
+  - node: 01a13ce8-2c91-7179-aae0-9faa272ce50e
+    reviewed: 49c65052552b339de3514d7c0d71df594f749b6abdd33928a07a30c8cc14bbe7
+    tests:
+      - file: "crates/loftspec/tests/statement_agreement.rs"
+        name: "a_text_statement_that_follows_no_form_is_v2_002_without_a_term"
   - node: d02368ae-15a6-4161-b884-7aa3bc8e0dca
     reviewed: 60fa5aec6438ae0230b8cf0fac242b787af48b8bdd5757bd6d1d941ed233c5e5
     tests:
@@ -5987,11 +6005,15 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "a_new_product_files_key_is_appended_to_the_manifests_products"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "the_formatter_recovers_every_node_written_without_a_key"
   - node: f85d86b7-cd45-40f9-8036-a5323801b8fc
     reviewed: 93d1b3616231fb3dd2420cc2e998a03d98b5e835f5cf36b11b61527690071377
     tests:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "a_new_feature_files_key_is_appended_to_the_features_of_its_directorys_group"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "the_formatter_recovers_every_node_written_without_a_key"
   - node: f329ee99-de83-42e4-9688-5767c24f7907
     reviewed: d82befddda73045f78363e03dd332b3e823e6233a123fda4cec6aa7ff2a9c011
     tests:
