@@ -19,7 +19,11 @@ fn of(conversion: &Conversion, rule: Rule) -> Vec<Finding> {
 fn site(conversion: &Conversion, rule: Rule) -> (Option<String>, Option<usize>, Option<Key>) {
     let findings = of(conversion, rule);
     let [finding] = findings.as_slice() else {
-        panic!("one finding of {}: {:?}", rule.code(), conversion.findings);
+        panic!(
+            "one finding of {}: {:?}",
+            rule.as_str(),
+            conversion.findings
+        );
     };
     (finding.file.clone(), finding.line, finding.key)
 }
@@ -45,14 +49,14 @@ fn a_faithful_project_has_no_finding_but_the_count_of_rewritten_statements() {
     let codes: Vec<&str> = conversion
         .findings
         .iter()
-        .map(|finding| finding.rule.code())
+        .map(|finding| finding.rule.as_str())
         .collect();
     assert_eq!(codes, ["OS-008"]);
 }
 
 #[test]
 fn every_rule_has_its_own_code() {
-    let codes: Vec<&str> = Rule::ALL.iter().map(|rule| rule.code()).collect();
+    let codes: Vec<&str> = Rule::ALL.iter().map(|rule| rule.as_str()).collect();
     let expected: Vec<String> = (1..=14).map(|n| format!("OS-{n:03}")).collect();
     assert_eq!(codes, expected);
 }

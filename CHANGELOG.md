@@ -15,6 +15,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   many `V2-007` warnings `loft check` will give and the `spec/lint.yaml` entry that lowers them to
   info; it writes no lint configuration. Its output follows the schema `loft-import-openspec/1`.
 - The command event is now `loft-telemetry-event/2`: its `command` may be `import openspec`.
+- `loftspec::lint::count_body_rule` counts the findings of one lexical rule that reads bodies
+  only, such as `V2-007`, without running the rest of the linter.
 
 - `V2-002` names the EARS form a statement stored as text follows. A sentence such as "The
   writer SHALL write keys." follows the ubiquitous form by its words, so `LQ-007` accepts it, as

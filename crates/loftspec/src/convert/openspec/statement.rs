@@ -3,7 +3,7 @@
 
 use std::ops::Range;
 
-use super::read::Source;
+use super::read::{Source, verbatim};
 use crate::statement::Statement;
 
 /// The statement and body a requirement's text gives.
@@ -21,14 +21,12 @@ pub(super) struct Split {
 
 /// Splits the text of a requirement named `name`.
 pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
-    let mut metadata = Vec::new();
-    let mut metadata_lines = Vec::new();
+    let mut metadata: Vec<(usize, &str)> = Vec::new();
     let mut rest = Vec::new();
     let mut modal = false;
     for (index, line, fenced) in source.lines(text) {
         if !fenced && is_metadata(line.trim()) {
-            metadata.push(index + 1);
-            metadata_lines.push(line.trim().to_owned());
+            metadata.push((index + 1, line.trim()));
             continue;
         }
         modal |= !fenced && first_modal(line).is_some();
@@ -53,7 +51,10 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
     });
     let (statement, rewritten) = statement(&sentence);
     let body = [
-        (!metadata_lines.is_empty()).then(|| metadata_lines.join("\n")),
+        (!metadata.is_empty()).then(|| {
+            let lines: Vec<&str> = metadata.iter().map(|(_, line)| *line).collect();
+            lines.join("\n")
+        }),
         verbatim(after),
     ]
     .into_iter()
@@ -63,7 +64,7 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
         statement,
         body: (!body.is_empty()).then(|| body.join("\n\n")),
         rewritten,
-        metadata,
+        metadata: metadata.iter().map(|(line, _)| *line).collect(),
         modal,
     }
 }
@@ -114,11 +115,4 @@ fn is_metadata(line: &str) -> bool {
         .is_some_and(|(label, after)| {
             !label.is_empty() && !label.contains('*') && after.starts_with(':')
         })
-}
-
-/// Lines as written, without leading and trailing blank lines.
-fn verbatim(lines: &[&str]) -> Option<String> {
-    let first = lines.iter().position(|line| !line.trim().is_empty())?;
-    let last = lines.iter().rposition(|line| !line.trim().is_empty())?;
-    Some(lines[first..=last].join("\n"))
 }

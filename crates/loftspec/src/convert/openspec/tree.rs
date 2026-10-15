@@ -25,10 +25,11 @@ const FLAT_GROUP: &str = "Capabilities";
 
 /// One conversion in progress.
 pub(super) struct Build {
+    document: DocumentId,
     keys: Keys,
-    pub findings: Vec<Finding>,
-    pub sidecar: OpenspecSidecar,
-    pub rewritten: usize,
+    findings: Vec<Finding>,
+    sidecar: OpenspecSidecar,
+    rewritten: usize,
 }
 
 /// One capability: its id, the path of its file in the `openspec/` directory, and its text.
@@ -41,6 +42,7 @@ pub(super) struct Capability<'a> {
 impl Build {
     pub fn new(document: DocumentId) -> Self {
         Self {
+            document,
             keys: Keys::new(document),
             findings: Vec::new(),
             sidecar: OpenspecSidecar::new(),
@@ -48,31 +50,34 @@ impl Build {
         }
     }
 
+    /// The sidecar and the findings: first the count of rewritten statements, if any, then
+    /// the findings in the order the build met them.
+    pub fn finish(self) -> (OpenspecSidecar, Vec<Finding>) {
+        let mut findings = Vec::new();
+        if self.rewritten > 0 {
+            let detail = self.rewritten.to_string();
+            findings.push(Finding::about(Rule::ModalRewritten, detail));
+        }
+        findings.extend(self.findings);
+        (self.sidecar, findings)
+    }
+
     /// The document of one Product named `name`, holding `capabilities` in order.
     pub fn document(
         &mut self,
-        document: DocumentId,
         name: &str,
         project_md: Option<&str>,
         capabilities: &[Capability<'_>],
     ) -> Document {
-        let (key, product) = self.keys.derive(Kind::Product, Vec::new());
-        self.provenance(key, Kind::Product, None, None, Some(name));
+        let (key, product) = self.node(Kind::Product, Vec::new(), None, Some(name));
         let mut details = Details::default();
         if let Some(text) = project_md {
             let source = Source::new(text);
             self.source("project.md", text);
             let body = source.verbatim(source.whole());
-            let (key, _) = self
-                .keys
-                .derive(Kind::Section, section_parts(&product, "Project"));
-            self.provenance(
-                key,
-                Kind::Section,
-                Some(("project.md", 1)),
-                None,
-                Some("Project"),
-            );
+            let parts = section_parts(&product, "Project");
+            let at = Some(("project.md", 1));
+            let (key, _) = self.node(Kind::Section, parts, at, Some("Project"));
             details.sections.push(Section {
                 id: Some(SectionId::new(key)),
                 name: "Project".to_owned(),
@@ -98,7 +103,7 @@ impl Build {
             Slug::make_unique(group.features.iter_mut().map(|feature| &mut feature.slug));
         }
         Slug::make_unique(groups.iter_mut().map(|group| &mut group.slug));
-        let mut document = Document::empty(document);
+        let mut document = Document::empty(self.document);
         document.products.push(Product {
             id: Some(ProductId::new(key)),
             slug: Slug::derive(name, "product"),
@@ -112,14 +117,10 @@ impl Build {
 
     fn group(&mut self, segment: Option<&str>) -> FeatureGroup {
         let name = segment.map_or_else(|| FLAT_GROUP.to_owned(), humanise);
-        let (key, _) = self.keys.derive(
+        let parts = vec![segment.unwrap_or_default().to_owned()];
+        let (key, _) = self.node(
             Kind::FeatureGroup,
-            vec![segment.unwrap_or_default().to_owned()],
-        );
-        self.provenance(
-            key,
-            Kind::FeatureGroup,
-            None,
+            parts,
             None,
             segment.or(Some(FLAT_GROUP)),
         );
@@ -201,54 +202,52 @@ impl Build {
         file: &str,
         feature: &Identity,
     ) -> Vec<Section> {
-        let mut parts: Vec<(Rule, Part)> = Vec::new();
-        if let Some(text) = &spec.introduction {
-            let line = source.first_line(text.clone()).unwrap_or(1);
-            let part = Part {
-                name: "Introduction".to_owned(),
-                line,
-                text: text.clone(),
-                children: Vec::new(),
-            };
-            parts.push((Rule::ExtraSection, part));
-        }
-        for (part, delta) in &spec.sections {
+        let mut parts: Vec<(Rule, &Part)> = Vec::new();
+        parts.extend(
+            spec.introduction
+                .iter()
+                .map(|part| (Rule::ExtraSection, part)),
+        );
+        parts.extend(spec.sections.iter().map(|(part, delta)| {
             let rule = if *delta {
                 Rule::DeltaSection
             } else {
                 Rule::ExtraSection
             };
-            parts.push((rule, part.clone()));
-        }
+            (rule, part)
+        }));
         parts.extend(
             spec.stray
                 .iter()
-                .map(|part| (Rule::StrayRequirementsText, part.clone())),
+                .map(|part| (Rule::StrayRequirementsText, part)),
         );
         parts.sort_by_key(|(_, part)| part.line);
         parts
-            .iter()
-            .map(|(rule, part)| {
-                let section = self.section(part, feature, source, file);
-                let key = section.id.map(SectionId::key);
-                self.findings
-                    .push(Finding::at(*rule, file.to_owned(), part.line, key));
-                section
-            })
+            .into_iter()
+            .map(|(rule, part)| self.reported_section(rule, part, feature, source, file))
             .collect()
     }
 
+    /// A Section, with a finding of `rule` at its heading.
+    fn reported_section(
+        &mut self,
+        rule: Rule,
+        part: &Part,
+        parent: &Identity,
+        source: &Source,
+        file: &str,
+    ) -> Section {
+        let section = self.section(part, parent, source, file);
+        let key = section.id.map(SectionId::key);
+        self.findings
+            .push(Finding::at(rule, file.to_owned(), part.line, key));
+        section
+    }
+
     fn section(&mut self, part: &Part, parent: &Identity, source: &Source, file: &str) -> Section {
-        let (key, identity) = self
-            .keys
-            .derive(Kind::Section, section_parts(parent, &part.name));
-        self.provenance(
-            key,
-            Kind::Section,
-            Some((file, part.line)),
-            None,
-            Some(&part.name),
-        );
+        let parts = section_parts(parent, &part.name);
+        let at = Some((file, part.line));
+        let (key, identity) = self.node(Kind::Section, parts, at, Some(&part.name));
         let body = source.verbatim(part.text.clone()).unwrap_or_default();
         let sections = part
             .children
@@ -273,14 +272,8 @@ impl Build {
     ) -> Requirement {
         let mut parts = feature.parts.clone();
         parts.push(requirement.name.clone());
-        let (key, identity) = self.keys.derive(Kind::Requirement, parts);
-        self.provenance(
-            key,
-            Kind::Requirement,
-            Some((file, requirement.line)),
-            None,
-            Some(&requirement.name),
-        );
+        let at = Some((file, requirement.line));
+        let (key, identity) = self.node(Kind::Requirement, parts, at, Some(&requirement.name));
         let split = statement::split(source, requirement.text.clone(), &requirement.name);
         self.rewritten += usize::from(split.rewritten);
         let at = |rule, line| Finding::at(rule, file.to_owned(), line, Some(key));
@@ -300,17 +293,8 @@ impl Build {
             if let Some(name) = &child.scenario {
                 criteria.push(self.criterion(child, name, &identity, source, file));
             } else {
-                let part = Part {
-                    name: child.heading.clone(),
-                    line: child.line,
-                    text: child.text.clone(),
-                    children: Vec::new(),
-                };
-                let section = self.section(&part, &identity, source, file);
-                let key = section.id.map(SectionId::key);
-                let finding = Finding::at(Rule::NonScenarioChild, file.to_owned(), child.line, key);
-                self.findings.push(finding);
-                sections.push(section);
+                let rule = Rule::NonScenarioChild;
+                sections.push(self.reported_section(rule, &child.part, &identity, source, file));
             }
         }
         Requirement {
@@ -336,19 +320,13 @@ impl Build {
         let name = if name.is_empty() { "Scenario" } else { name };
         let mut parts = requirement.parts.clone();
         parts.push(name.to_owned());
-        let (key, _) = self.keys.derive(Kind::Criterion, parts);
-        self.provenance(
-            key,
-            Kind::Criterion,
-            Some((file, child.line)),
-            None,
-            Some(name),
-        );
+        let at = Some((file, child.part.line));
+        let (key, _) = self.node(Kind::Criterion, parts, at, Some(name));
         Criterion {
             id: Some(CriterionId::new(key)),
             name: name.to_owned(),
             details: Details {
-                body: source.verbatim(child.text.clone()),
+                body: source.verbatim(child.part.text.clone()),
                 tags: Vec::new(),
                 sections: Vec::new(),
             },
@@ -360,6 +338,20 @@ impl Build {
             path: path.to_owned(),
             sha256: digest_bytes(text.as_bytes()).to_string(),
         });
+    }
+
+    /// The key of a node of `kind` whose source identity is `parts`, and its identity, with
+    /// where it came from recorded: its file and line where it has them, and its name.
+    fn node(
+        &mut self,
+        kind: Kind,
+        parts: Vec<String>,
+        at: Option<(&str, usize)>,
+        name: Option<&str>,
+    ) -> (Key, Identity) {
+        let (key, identity) = self.keys.derive(kind, parts);
+        self.provenance(key, kind, at, None, name);
+        (key, identity)
     }
 
     /// Records where a node came from: its file and the line of its heading, where it has

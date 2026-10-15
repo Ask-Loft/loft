@@ -5,10 +5,13 @@
 use std::path::{Path, PathBuf};
 use std::{fs, os::unix::fs::symlink};
 
-use crate::common::{Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout, tree};
 use crate::schema;
+use crate::snapshot::snapshot;
 use loftspec::codec;
 use loftspec::convert::openspec::{Project, convert};
+use loftspec::document::Document;
+use loftspec_store::{DocumentStore, FileStore};
 use serde_json::Value;
 
 const SCHEMA: &str = include_str!("../../../schemas/import-openspec.json");
@@ -48,20 +51,18 @@ fn write(scratch: &Scratch, path: &str, bytes: &[u8]) {
     fs::write(target, bytes).unwrap();
 }
 
-fn tree(root: &Path) -> codec::Files {
-    loftspec_store::FileStore::open(root)
-        .unwrap()
-        .read_files()
-        .unwrap()
+fn document(root: &Path) -> Document {
+    FileStore::open(root).unwrap().load().unwrap()
 }
 
-fn document(root: &Path) -> loftspec::document::Document {
-    codec::read(&tree(root)).unwrap()
-}
-
-/// Whether the run wrote nothing: no `spec/` and no sidecar.
-fn wrote_nothing(scratch: &Scratch) -> bool {
-    !scratch.0.join("spec").exists() && !scratch.0.join("openspec-sidecar.json").exists()
+/// Asserts that `loft import openspec` with `args`, run in `scratch`, refuses, exits 1 with an
+/// error that contains `named`, and writes nothing.
+fn refuses(scratch: &Scratch, args: &[&str], named: &str) {
+    let before = snapshot(&scratch.0);
+    let output = scratch.loft(&[&["import", "openspec"], args].concat());
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    assert!(stderr(&output).contains(named), "{}", stderr(&output));
+    assert_eq!(snapshot(&scratch.0), before);
 }
 
 /// The faithful fixture, as the files its `OpenSpec` directory holds.
@@ -239,16 +240,7 @@ fn a_tree_without_modal_warnings_gets_no_report() {
 fn a_spec_directory_that_is_not_empty_is_refused_and_nothing_is_written() {
     let scratch = holding("quiet");
     write(&scratch, "spec/kept.yaml", b"kept\n");
-    let output = scratch.loft(&["import", "openspec"]);
-    assert_eq!(output.status.code(), Some(1));
-    assert!(
-        stderr(&output).contains("./spec: `spec/` is not empty"),
-        "{}",
-        stderr(&output)
-    );
-    let entries: Vec<_> = fs::read_dir(scratch.0.join("spec")).unwrap().collect();
-    assert_eq!(entries.len(), 1);
-    assert!(!scratch.0.join("openspec-sidecar.json").exists());
+    refuses(&scratch, &[], "./spec: `spec/` is not empty");
 }
 
 #[test]
@@ -261,20 +253,12 @@ fn a_hidden_entry_does_not_make_spec_not_empty() {
 
 #[test]
 fn a_directory_that_cannot_be_read_is_refused_by_its_path() {
-    let scratch = Scratch::empty();
-    let output = scratch.loft(&["import", "openspec", "absent"]);
-    assert_eq!(output.status.code(), Some(1));
-    assert!(stderr(&output).contains("absent"), "{}", stderr(&output));
-    assert!(wrote_nothing(&scratch));
+    refuses(&Scratch::empty(), &["absent"], "absent");
 }
 
 #[test]
 fn a_project_without_main_specs_is_refused_naming_its_active_changes() {
-    let scratch = holding("delta-only");
-    let output = scratch.loft(&["import", "openspec"]);
-    assert_eq!(output.status.code(), Some(1));
-    assert!(stderr(&output).contains("add-notes"), "{}", stderr(&output));
-    assert!(wrote_nothing(&scratch));
+    refuses(&holding("delta-only"), &[], "add-notes");
 }
 
 #[test]
@@ -282,10 +266,7 @@ fn a_file_that_is_not_utf8_is_refused_by_its_path() {
     for file in ["openspec/specs/broken/spec.md", "openspec/project.md"] {
         let scratch = holding("quiet");
         write(&scratch, file, &[b'#', b' ', 0xff, b'\n']);
-        let output = scratch.loft(&["import", "openspec"]);
-        assert_eq!(output.status.code(), Some(1), "{file}");
-        assert!(stderr(&output).contains(file), "{}", stderr(&output));
-        assert!(wrote_nothing(&scratch), "{file}");
+        refuses(&scratch, &[], file);
     }
 }
 

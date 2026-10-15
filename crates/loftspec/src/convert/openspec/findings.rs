@@ -4,8 +4,10 @@
 use std::fmt;
 
 use crate::identity::Key;
+use crate::lint::Severity;
+use crate::wire::wire_names;
 
-/// The rule a finding follows, by its code.
+/// The rule a finding follows; its wire name is its code.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Rule {
     FrontMatter,
@@ -24,45 +26,24 @@ pub enum Rule {
     Store,
 }
 
+wire_names!(Rule {
+    FrontMatter => "OS-001",
+    PlaceholderPurpose => "OS-002",
+    ExtraSection => "OS-003",
+    StrayRequirementsText => "OS-004",
+    NonScenarioChild => "OS-005",
+    DeltaSection => "OS-006",
+    NoModal => "OS-007",
+    ModalRewritten => "OS-008",
+    Metadata => "OS-009",
+    DuplicateRequirement => "OS-010",
+    ActiveChanges => "OS-011",
+    ArchivedChanges => "OS-012",
+    ConfigContext => "OS-013",
+    Store => "OS-014",
+});
+
 impl Rule {
-    pub const ALL: [Self; 14] = [
-        Self::FrontMatter,
-        Self::PlaceholderPurpose,
-        Self::ExtraSection,
-        Self::StrayRequirementsText,
-        Self::NonScenarioChild,
-        Self::DeltaSection,
-        Self::NoModal,
-        Self::ModalRewritten,
-        Self::Metadata,
-        Self::DuplicateRequirement,
-        Self::ActiveChanges,
-        Self::ArchivedChanges,
-        Self::ConfigContext,
-        Self::Store,
-    ];
-
-    /// The code the finding carries.
-    #[must_use]
-    pub const fn code(self) -> &'static str {
-        match self {
-            Self::FrontMatter => "OS-001",
-            Self::PlaceholderPurpose => "OS-002",
-            Self::ExtraSection => "OS-003",
-            Self::StrayRequirementsText => "OS-004",
-            Self::NonScenarioChild => "OS-005",
-            Self::DeltaSection => "OS-006",
-            Self::NoModal => "OS-007",
-            Self::ModalRewritten => "OS-008",
-            Self::Metadata => "OS-009",
-            Self::DuplicateRequirement => "OS-010",
-            Self::ActiveChanges => "OS-011",
-            Self::ArchivedChanges => "OS-012",
-            Self::ConfigContext => "OS-013",
-            Self::Store => "OS-014",
-        }
-    }
-
     /// What a finding of the rule says, before its detail.
     #[must_use]
     pub const fn message(self) -> &'static str {
@@ -135,8 +116,9 @@ impl fmt::Display for Finding {
         }
         write!(
             formatter,
-            "info {}: {}",
-            self.rule.code(),
+            "{} {}: {}",
+            Severity::Info.as_str(),
+            self.rule.as_str(),
             self.rule.message()
         )?;
         if let Some(detail) = &self.detail {

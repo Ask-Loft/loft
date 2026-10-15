@@ -78,23 +78,13 @@ pub fn convert(
         return Err(ConvertError::NoMainSpec(project.active_changes.clone()));
     }
     let mut build = Build::new(document);
-    let document = build.document(
-        document,
-        product,
-        project.project_md.as_deref(),
-        &capabilities,
-    );
+    let document = build.document(product, project.project_md.as_deref(), &capabilities);
+    let (sidecar, conversion_findings) = build.finish();
     let mut findings = project_findings(project);
-    if build.rewritten > 0 {
-        findings.push(Finding::about(
-            Rule::ModalRewritten,
-            build.rewritten.to_string(),
-        ));
-    }
-    findings.append(&mut build.findings);
+    findings.extend(conversion_findings);
     Ok(Conversion {
         document,
-        sidecar: build.sidecar,
+        sidecar,
         findings,
     })
 }

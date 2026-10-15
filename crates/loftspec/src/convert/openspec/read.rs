@@ -2,6 +2,7 @@
 //! outside fenced code, front matter skipped, and requirements only from `### Requirement:`
 //! headings inside the section `Requirements`.
 
+use std::borrow::Borrow;
 use std::ops::Range;
 
 /// A main spec's lines, with a byte order mark removed and every line ending read as LF.
@@ -40,13 +41,12 @@ pub(super) struct Requirement {
     pub children: Vec<Child>,
 }
 
-/// A level-4 child of a requirement; `scenario` holds the scenario's name when it is one.
+/// A level-4 child of a requirement, as a part without children; `scenario` holds the
+/// scenario's name when it is one.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct Child {
-    pub heading: String,
     pub scenario: Option<String>,
-    pub line: usize,
-    pub text: Range<usize>,
+    pub part: Part,
 }
 
 /// A main spec as read.
@@ -54,8 +54,9 @@ pub(super) struct Child {
 pub(super) struct Spec {
     /// The first level-1 heading before any level-2 heading, with its line.
     pub title: Option<(String, usize)>,
-    /// Text before the first level-2 heading, other than the title.
-    pub introduction: Option<Range<usize>>,
+    /// Text before the first level-2 heading, other than the title, as the part
+    /// `Introduction` that begins at its first line.
+    pub introduction: Option<Part>,
     pub purpose: Option<Part>,
     /// The level-2 sections other than `Purpose` and `Requirements`, each with whether it is a
     /// delta section.
@@ -93,10 +94,7 @@ impl Source {
     /// The lines of `range` as written, without leading and trailing blank lines; `None` when
     /// nothing else is left.
     pub fn verbatim(&self, range: Range<usize>) -> Option<String> {
-        let lines = &self.lines[range];
-        let first = lines.iter().position(|line| !line.trim().is_empty())?;
-        let last = lines.iter().rposition(|line| !line.trim().is_empty())?;
-        Some(lines[first..=last].join("\n"))
+        verbatim(&self.lines[range])
     }
 
     /// Every line of the source.
@@ -147,30 +145,29 @@ impl Source {
             .filter(|title| self.first_line(self.start..title.index).is_none())
             .map_or(self.start, |title| title.index + 1);
         let lead_end = top.first().map_or(end, |heading| heading.index);
-        if self.first_line(lead..lead_end).is_some() {
-            spec.introduction = Some(lead..lead_end);
-        }
+        spec.introduction = self.first_line(lead..lead_end).map(|line| Part {
+            name: "Introduction".to_owned(),
+            line,
+            text: lead..lead_end,
+            children: Vec::new(),
+        });
         let mut requirements_seen = false;
         for (position, heading) in top.iter().enumerate() {
             let segment_end = top.get(position + 1).map_or(end, |next| next.index);
-            let inner: Vec<Heading> = headings
-                .iter()
-                .filter(|inner| inner.index > heading.index && inner.index < segment_end)
-                .cloned()
-                .collect();
+            let inner = between(&headings, heading.index, segment_end);
             let name = heading.text.to_lowercase();
             if heading.level == 2 && name == "purpose" && spec.purpose.is_none() {
                 let text = heading.index + 1..segment_end;
                 spec.purpose = Some(part(heading, text, Vec::new()));
             } else if heading.level == 2 && name == "requirements" && !requirements_seen {
                 requirements_seen = true;
-                self.requirements(&mut spec, heading.index + 1..segment_end, &inner);
+                self.requirements(&mut spec, heading.index + 1..segment_end, inner);
             } else {
                 let delta = heading.level == 2 && is_delta(&name);
                 let text_end = inner.first().map_or(segment_end, |first| first.index);
                 let text = heading.index + 1..text_end;
                 spec.sections
-                    .push((part(heading, text, tree(&inner, segment_end)), delta));
+                    .push((part(heading, text, tree(inner, segment_end)), delta));
             }
         }
         spec
@@ -192,22 +189,35 @@ impl Source {
             let block_end = threes
                 .get(position + 1)
                 .map_or(range.end, |next| next.index);
-            let nested: Vec<Heading> = inner
-                .iter()
-                .filter(|other| other.index > heading.index && other.index < block_end)
-                .cloned()
-                .collect();
+            let nested = between(inner, heading.index, block_end);
             let text_end = nested.first().map_or(block_end, |first| first.index);
             if let Some(name) = requirement_name(&heading.text) {
                 spec.requirements
-                    .push(requirement(name, heading, &nested, block_end));
+                    .push(requirement(name, heading, nested, block_end));
             } else {
-                let children = tree(&nested, block_end);
+                let children = tree(nested, block_end);
                 spec.stray
                     .push(part(heading, heading.index + 1..text_end, children));
             }
         }
     }
+}
+
+/// The headings of `headings`, which are in line order, that lie after the line `after` and
+/// before the line `before`.
+fn between(headings: &[Heading], after: usize, before: usize) -> &[Heading] {
+    let start = headings.partition_point(|heading| heading.index <= after);
+    let end = headings.partition_point(|heading| heading.index < before);
+    &headings[start..end.max(start)]
+}
+
+/// Lines as written, without leading and trailing blank lines; `None` when nothing else is
+/// left.
+pub(super) fn verbatim<S: Borrow<str>>(lines: &[S]) -> Option<String> {
+    let blank = |line: &S| line.borrow().trim().is_empty();
+    let first = lines.iter().position(|line| !blank(line))?;
+    let last = lines.iter().rposition(|line| !blank(line))?;
+    Some(lines[first..=last].join("\n"))
 }
 
 fn part(heading: &Heading, text: Range<usize>, children: Vec<Part>) -> Part {
@@ -250,10 +260,8 @@ fn requirement(name: String, heading: &Heading, nested: &[Heading], end: usize) 
         .map(|(position, child)| {
             let child_end = fours.get(position + 1).map_or(end, |next| next.index);
             Child {
-                heading: child.text.clone(),
                 scenario: scenario_name(&child.text),
-                line: child.index + 1,
-                text: child.index + 1..child_end,
+                part: part(child, child.index + 1..child_end, Vec::new()),
             }
         })
         .collect();

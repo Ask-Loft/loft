@@ -19,6 +19,22 @@ use software_plant::real_git;
 use software_plant::{Clock, GitScenario, Installed};
 
 /// The time every run reads unless a test gives another: 2026-01-01T00:00:00Z.
+/// The files the Format places beside `spec/`.
+pub const BESIDE: [&str; 4] = [
+    loftspec_store::fs::SIDECAR,
+    loftspec::convert::openspec::SIDECAR,
+    loftspec::publish::LOCK,
+    loftspec::trace::TRACE,
+];
+
+/// Every file under `<root>/spec/`, by its path under `spec/`.
+pub fn tree(root: &Path) -> codec::Files {
+    loftspec_store::FileStore::open(root)
+        .unwrap()
+        .read_files()
+        .unwrap()
+}
+
 pub const EPOCH: u64 = 1_767_225_600;
 
 const READING_LIST: &str =
