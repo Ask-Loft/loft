@@ -144,3 +144,53 @@ requirements:
         name: "The outcome is `imported` when the tree and the sidecar were written."
       - key: 01a13fe4-0f95-721d-8c51-f5a919adc7a2
         name: "The document lists the files written, the findings and the `V2-007` report."
+  - key: 01a14175-e444-717b-a0fb-4c46b9d3aca9
+    statement:
+      form: state_driven
+      while: "`.claude/skills/loft-spec/SKILL.md` or `.agents/skills/loft-spec/SKILL.md` is missing from the current directory"
+      system: "`loft import openspec`"
+      shall: "suggest `loft skill install` in its text output after an import."
+    criteria:
+      - key: 01a14175-e444-717b-a0fb-4c47b98fd6e5
+        name: "The suggestion names `loft skill install`."
+      - key: 01a14175-e444-717b-a0fb-4c48f87a6a38
+        name: "No such suggestion is printed where both files are present."
+      - key: 01a14175-e444-717b-a0fb-4c497e8b374f
+        name: "The JSON document carries no suggestion."
+  - key: 01a14175-e444-717b-a0fb-4c4a8ddd9348
+    statement:
+      form: state_driven
+      while: "the current directory lies in a git repository whose local configuration names no Loft merge driver"
+      system: "`loft import openspec`"
+      shall: "suggest `loft merge-driver --install` in its text output after an import, as `loft init` does."
+    criteria:
+      - key: 01a14175-e444-717b-a0fb-4c4b7d24296f
+        name: "The suggestion names `loft merge-driver --install`."
+      - key: 01a14175-e444-717b-a0fb-4c4ccf2a0b3d
+        name: "No such suggestion is printed where the repository's configuration names the merge driver."
+      - key: 01a14175-e444-717b-a0fb-4c4dc73a919b
+        name: "The JSON document carries no suggestion."
+  - key: 01a14175-e444-717b-a0fb-4c4e9e9d71bc
+    statement:
+      form: state_driven
+      while: "the current directory lies outside any git repository"
+      system: "`loft import openspec`"
+      shall: "suggest putting the project under git and then running `loft merge-driver --install` in its text output after an import."
+    criteria:
+      - key: 01a14175-e444-717b-a0fb-4c4f6d86992e
+        name: "The suggestion says that the merge driver needs a git repository."
+      - key: 01a14175-e444-717b-a0fb-4c5034dfaca5
+        name: "The JSON document carries no suggestion."
+  - key: 01a14175-e444-717b-a0fb-4c510361e232
+    statement:
+      form: event_driven
+      when: "it has imported a project"
+      system: "`loft import openspec`"
+      shall: "suggest in its text output that the coding agent adopt the import with the skill's workflow for it."
+    criteria:
+      - key: 01a14175-e444-717b-a0fb-4c5255c82f65
+        name: "The suggestion names the workflow \"Adopting an OpenSpec project\"."
+      - key: 01a14175-e444-717b-a0fb-4c5349037bfb
+        name: "Each suggestion is printed after the findings."
+      - key: 01a14175-e444-717b-a0fb-4c5452962686
+        name: "The JSON document carries no suggestion."
