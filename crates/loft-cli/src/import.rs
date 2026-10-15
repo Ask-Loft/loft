@@ -8,7 +8,7 @@ use std::{fs as stdfs, io};
 use loftspec::codec::{self, Sites};
 use loftspec::identity::LabelPrefix;
 use loftspec::import::{ImportError, Imported, Reported, import};
-use loftspec_store::{FileStore, fs};
+use loftspec_store::FileStore;
 use serde_json::{Map, Value, json};
 
 use crate::finish::Finished;
@@ -50,7 +50,7 @@ fn prepare(export: &Path, counters: Option<&Path>) -> Result<Imported, String> {
 
 fn write(root: &Path, imported: Imported) -> Result<(Imported, Sites), String> {
     FileStore::open(root)
-        .and_then(|store| store.import(imported.files.clone(), &imported.sidecar))
+        .and_then(|store| store.import(imported.files.clone(), imported.sidecar.clone()))
         .map_err(|error| error.to_string())?;
     let (_, sites) = codec::read_sited(&imported.files).map_err(|errors| {
         errors
@@ -66,12 +66,8 @@ fn report(imported: &Imported, sites: &Sites, as_json: bool) {
     let findings: Vec<Reported> = imported.findings.iter().map(Reported::of).collect();
     let warning = warning(&imported.derived);
     if as_json {
-        let mut written: Vec<String> = imported
-            .files
-            .keys()
-            .map(|path| format!("spec/{path}"))
-            .collect();
-        written.push(fs::SIDECAR.to_owned());
+        let mut written: Vec<String> = imported.files.keys().map(ToString::to_string).collect();
+        written.push(imported.sidecar.name.to_owned());
         let fields = json!({
             "written": written,
             "findings": findings.iter().map(|f| finding(f, sites)).collect::<Vec<_>>(),

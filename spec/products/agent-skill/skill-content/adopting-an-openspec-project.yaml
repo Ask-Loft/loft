@@ -1,0 +1,50 @@
+key: 01a14175-e444-717b-a0fb-4c332c7607e9
+slug: adopting-an-openspec-project
+name: "Adopting an OpenSpec project"
+body: "`references/adopting-an-openspec-project.md`: the workflow that takes a `spec/` written by `loft import openspec` to one that Loft's checks accept, and that keeps an OpenSpec projection of it while a team switches."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a14175-e444-717b-a0fb-4c34958b7911
+    statement:
+      form: event_driven
+      when: "the user asks to adopt a `spec/` that `loft import openspec` wrote"
+      system: "the skill"
+      shall: "direct the agent through the adoption of the imported project."
+    criteria:
+      - key: 01a14175-e444-717b-a0fb-4c359f517bc7
+        name: "The workflow tells the agent to read the findings `loft import openspec` printed before the first edit of `spec/`."
+      - key: 01a14175-e444-717b-a0fb-4c36ec32f20f
+        name: "The workflow gives the `spec/lint.yaml` entry that lowers `V2-007` to info while the criteria are rewritten."
+      - key: 01a14175-e444-717b-a0fb-4c3722e71362
+        name: "The workflow tells the agent to leave `ext.openspec` and `openspec-sidecar.json` as the import wrote them."
+      - key: 01a14175-e444-717b-a0fb-4c38dbf2a568
+        name: "The workflow tells the agent to add the Components that the imported Features realize."
+      - key: 01a14175-e444-717b-a0fb-4c3914f3c25c
+        name: "The workflow tells the agent to rewrite each imported criterion's name as one checkable sentence and keep the scenario's steps as its body."
+      - key: 01a14175-e444-717b-a0fb-4c3a8e26e483
+        name: "The workflow tells the agent to move an obligation stated in a criterion's body into its name."
+      - key: 01a14175-e444-717b-a0fb-4c3bea4d2ed9
+        name: "The workflow tells the agent to write, with the user, the body of each Feature whose Purpose was a placeholder."
+      - key: 01a14175-e444-717b-a0fb-4c3c61cc0d18
+        name: "The workflow tells the agent to propose a Decision for each decision in the archived changes' `design.md` files."
+      - key: 01a14175-e444-717b-a0fb-4c3d96fd007a
+        name: "The workflow tells the agent to propose Constraints for the conventions in `project.md` or the `context` of `config.yaml`."
+      - key: 01a14175-e444-717b-a0fb-4c3ed46e3045
+        name: "The workflow sends the agent to `references/reconciling.md` to link the tests."
+      - key: 01a14175-e444-717b-a0fb-4c3f972c7ee6
+        name: "The workflow tells the agent to remove the `V2-007` entry from `spec/lint.yaml` once the criteria are rewritten."
+  - key: 01a14175-e444-717b-a0fb-4c40eaf04797
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach keeping an OpenSpec projection of the specification while a team switches."
+    criteria:
+      - key: 01a14175-e444-717b-a0fb-4c410eda0c7d
+        name: "The workflow tells the agent to write the projection with `loft render --openspec <dir>`."
+      - key: 01a14175-e444-717b-a0fb-4c4276770f0f
+        name: "The workflow tells the agent that an `OR` finding whose message names OpenSpec says what `openspec validate --strict` will reject."
+      - key: 01a14175-e444-717b-a0fb-4c439b21fc53
+        name: "The workflow tells the agent to give `--force` to replace the main specs in the directory rendered to."
+      - key: 01a14175-e444-717b-a0fb-4c44c5344128
+        name: "The workflow names `loft-render-map.json` as the record of the node each rendered requirement and scenario comes from."

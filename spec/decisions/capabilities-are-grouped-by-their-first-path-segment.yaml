@@ -1,0 +1,64 @@
+key: 01a13d04-2b9d-7320-aa86-8a795b21e217
+slug: capabilities-are-grouped-by-their-first-path-segment
+title: "Capabilities are grouped by the first segment of their path"
+context: "OpenSpec nests capabilities in directories or keeps them flat. The Format places every Feature in a Feature Group of a Product."
+state:
+  kind: accepted
+  selectedOption: 01a13d04-2b9d-7320-aa86-8a76e7d16e56
+  outcome: "The converter makes one Feature Group per first path segment and places capabilities with one segment in a Feature Group named Capabilities."
+drivers:
+  - key: 01a13d04-2b9d-7320-aa86-8a748a4a0151
+    kind: local
+    label: "Recognisable structure"
+    statement: "A team finds its capabilities where its directories put them."
+  - key: 01a13d04-2b9d-7320-aa86-8a757f1039be
+    kind: local
+    label: "No invented structure"
+    statement: "The converter adds only the levels the Format requires."
+options:
+  - key: 01a13d04-2b9d-7320-aa86-8a76e7d16e56
+    title: "One group per first segment, flat capabilities in Capabilities"
+    description: "Nested capabilities group by their first segment; the others share a group named Capabilities."
+  - key: 01a13d04-2b9d-7320-aa86-8a7786bf7e9e
+    title: "One group per first segment, flat capabilities named after the Product"
+    description: "As the first option, with the shared group named after the Product."
+  - key: 01a13d04-2b9d-7320-aa86-8a78bbab0d24
+    title: "Always one group"
+    description: "Every capability is placed in one Feature Group, nesting kept in the slugs."
+assessments:
+  - option: 01a13d04-2b9d-7320-aa86-8a76e7d16e56
+    driver: 01a13d04-2b9d-7320-aa86-8a748a4a0151
+    rating: supports
+    rationale: "directories become groups"
+  - option: 01a13d04-2b9d-7320-aa86-8a76e7d16e56
+    driver: 01a13d04-2b9d-7320-aa86-8a757f1039be
+    rating: supports
+    rationale: "one group is added for flat capabilities"
+  - option: 01a13d04-2b9d-7320-aa86-8a7786bf7e9e
+    driver: 01a13d04-2b9d-7320-aa86-8a748a4a0151
+    rating: supports
+    rationale: "directories become groups"
+  - option: 01a13d04-2b9d-7320-aa86-8a7786bf7e9e
+    driver: 01a13d04-2b9d-7320-aa86-8a757f1039be
+    rating: neutral
+    rationale: "the group repeats the Product's name"
+  - option: 01a13d04-2b9d-7320-aa86-8a78bbab0d24
+    driver: 01a13d04-2b9d-7320-aa86-8a748a4a0151
+    rating: conflicts
+    rationale: "directories are flattened"
+  - option: 01a13d04-2b9d-7320-aa86-8a78bbab0d24
+    driver: 01a13d04-2b9d-7320-aa86-8a757f1039be
+    rating: supports
+    rationale: "one group is added"
+consequences:
+  - key: 01a13d04-2b9d-7320-aa86-8a7a4360609f
+    kind: benefit
+    statement: "A nested project keeps its areas as Feature Groups."
+  - key: 01a13d04-2b9d-7320-aa86-8a7b4dfb2210
+    kind: cost
+    statement: "A path deeper than two segments joins its later segments into the Feature's slug."
+subjects:
+  - role: affected
+    node: 01a13d02-7211-77f1-a8f1-30ed3150e1e5
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-30e808e4a73a

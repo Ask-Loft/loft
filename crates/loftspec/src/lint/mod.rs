@@ -213,6 +213,20 @@ impl Raw {
     }
 }
 
+/// The number of findings `rule` raises on `document` under `config`, for a lexical rule that
+/// reads bodies only (`V2-007`), without running any other rule; zero for any other rule.
+/// It counts what [`lint`] reports for the rule.
+#[must_use]
+pub fn count_body_rule(document: &Document, config: &LintConfig, rule: RuleId) -> usize {
+    let context = Context::new(document);
+    let mut raw = Vec::new();
+    language::body_rule(&context, config, rule, &mut raw);
+    raw.iter()
+        .filter(|finding| config.enabled(finding.rule))
+        .filter(|finding| !config.suppresses(finding.rule, &finding.keys))
+        .count()
+}
+
 /// Lints a document with a configuration, placing each finding at the sites the tree gives.
 /// Disabled rules report nothing; suppressed findings are dropped (AC-675); the findings come
 /// back in report order (RQ-104).

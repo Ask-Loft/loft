@@ -1,6 +1,7 @@
 //! Any node of the tree, borrowed, and its children in canonical order: the one place that says
 //! which list of a node holds which kind of child.
 
+use crate::ext::Ext;
 use std::borrow::Cow;
 
 use crate::document::Document;
@@ -114,6 +115,22 @@ impl<'a> Node<'a> {
             Self::Constraint(node) => &node.details.sections,
             Self::QualityAttribute(node) => &node.details.sections,
             Self::Section(node) => &node.sections,
+        }
+    }
+
+    /// The node's extension data.
+    #[must_use]
+    pub fn ext(self) -> &'a Ext {
+        match self {
+            Self::Product(node) => &node.details.ext,
+            Self::FeatureGroup(node) => &node.details.ext,
+            Self::Feature(node) => &node.details.ext,
+            Self::Requirement(node) => &node.details.ext,
+            Self::Criterion(node) => &node.details.ext,
+            Self::Component(node) => &node.details.ext,
+            Self::Constraint(node) => &node.details.ext,
+            Self::QualityAttribute(node) => &node.details.ext,
+            Self::Section(node) => &node.ext,
         }
     }
 

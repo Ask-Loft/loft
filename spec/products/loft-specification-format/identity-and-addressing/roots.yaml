@@ -81,6 +81,10 @@ requirements:
     criteria:
       - key: abf199fb-6538-437e-9fb4-c6e19dcdaa9c
         name: "The state view holds the format, the algorithm, the document key, the content root, the binding root and the derived-from record."
+      - key: 01a14039-8315-7390-a27f-c567161fd14a
+        name: "The state view of a document in which a node carries `ext` also holds the extensions root."
+      - key: 01a14039-8315-7390-a27f-c568639e2a16
+        name: "A document in which no node carries `ext` has the state root it had before nodes could carry `ext`."
       - key: 75dc8c6e-6e73-4244-8933-5410888d35c4
         name: "Changing any state view field changes the state root."
       - key: 2675e509-709a-4343-9468-5a1eb88c2326
@@ -147,3 +151,17 @@ requirements:
         name: "A driver or consequence that names a node names it by its content hash."
       - key: e87865d3-079e-4ae9-8952-5b1fc0ac71e4
         name: "A driver or consequence that names a former label names it as the object `{\"formerLabel\": <label>}`."
+  - key: 01a14039-8315-7390-a27f-c5695f6ac662
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute the extensions root over the nodes that carry `ext`, each as its key and its `ext`."
+    criteria:
+      - key: 01a14039-8315-7390-a27f-c56acfc13154
+        name: "A node's `ext` enters the extensions root as RFC 8785 canonical JSON."
+      - key: 01a14039-8315-7390-a27f-c56b4415d752
+        name: "The nodes are sorted by key in byte order."
+      - key: 01a14039-8315-7390-a27f-c56c9970df3f
+        name: "Changing a node's `ext` changes the extensions root and the state root."
+      - key: 01a14039-8315-7390-a27f-c56d69fb0e70
+        name: "Changing a node's `ext` leaves its content hash and the content root unchanged."

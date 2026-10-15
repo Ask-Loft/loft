@@ -21,6 +21,7 @@ pub(super) fn same_value(left: &Val, right: &Val) -> bool {
     match (left, right) {
         (Val::Scalar { text: left, .. }, Val::Scalar { text: right, .. }) => left == right,
         (Val::Null { .. }, Val::Null { .. }) => true,
+        (Val::Ext { value: left, .. }, Val::Ext { value: right, .. }) => left == right,
         (Val::List(left), Val::List(right)) => all_same(left, right, same_value),
         (Val::Record(left), Val::Record(right)) => same_record(left, right),
         _ => false,
@@ -83,6 +84,7 @@ pub(super) fn text(value: &Val) -> String {
     match value {
         Val::Scalar { text, .. } => text.clone(),
         Val::Null { .. } => "null".to_owned(),
+        Val::Ext { value, .. } => format!("ext{}", crate::ext::to_json(value)),
         Val::List(items) => format!("[{}]", items.iter().map(text).collect::<Vec<_>>().join(",")),
         Val::Record(record) => {
             let fields = record

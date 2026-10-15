@@ -1,0 +1,67 @@
+key: 01a13d04-2b9d-7320-aa86-8a67f7b4cf7b
+slug: a-leading-shall-or-must-is-written-as-shall
+title: "A leading SHALL or MUST is written as shall when the statement then follows an EARS form"
+context: "OpenSpec writes a requirement's modal word in capitals, as RFC 2119 does, and many projects write MUST where others write SHALL; RFC 2119 gives the two one meaning. The statement reader keeps slots only for the template's exact wording, with `shall` in lower case, so a statement converted verbatim is stored as text."
+state:
+  kind: accepted
+  selectedOption: 01a13d04-2b9d-7320-aa86-8a64e2e75471
+  outcome: "The converter writes the first SHALL or MUST of a statement as shall when the statement then renders back from slots, keeps every other statement verbatim, and reports the number it rewrote."
+drivers:
+  - key: 01a13d04-2b9d-7320-aa86-8a62f8f13249
+    kind: local
+    label: "Statements as slots"
+    statement: "A converted statement that follows an EARS form is stored as slots."
+  - key: 01a13d04-2b9d-7320-aa86-8a63553cba0e
+    kind: local
+    label: "Faithful text"
+    statement: "The converter changes no word of the source that it does not have to."
+options:
+  - key: 01a13d04-2b9d-7320-aa86-8a64e2e75471
+    title: "Write SHALL and MUST as shall when slots result"
+    description: "The first SHALL or MUST becomes shall only when the statement then renders back from slots."
+  - key: 01a13d04-2b9d-7320-aa86-8a65d5b86534
+    title: "Write SHALL only"
+    description: "The first SHALL becomes shall when slots result; MUST is kept."
+  - key: 01a13d04-2b9d-7320-aa86-8a668246b5c9
+    title: "Store every statement verbatim"
+    description: "No word is changed."
+assessments:
+  - option: 01a13d04-2b9d-7320-aa86-8a64e2e75471
+    driver: 01a13d04-2b9d-7320-aa86-8a62f8f13249
+    rating: supports
+    rationale: "both modal words give slots"
+  - option: 01a13d04-2b9d-7320-aa86-8a64e2e75471
+    driver: 01a13d04-2b9d-7320-aa86-8a63553cba0e
+    rating: supports
+    rationale: "one word changes, and only when slots result"
+  - option: 01a13d04-2b9d-7320-aa86-8a65d5b86534
+    driver: 01a13d04-2b9d-7320-aa86-8a62f8f13249
+    rating: conflicts
+    rationale: "statements with MUST stay text"
+  - option: 01a13d04-2b9d-7320-aa86-8a65d5b86534
+    driver: 01a13d04-2b9d-7320-aa86-8a63553cba0e
+    rating: supports
+    rationale: "one word changes, and only when slots result"
+  - option: 01a13d04-2b9d-7320-aa86-8a668246b5c9
+    driver: 01a13d04-2b9d-7320-aa86-8a62f8f13249
+    rating: conflicts
+    rationale: "almost every converted statement is text"
+  - option: 01a13d04-2b9d-7320-aa86-8a668246b5c9
+    driver: 01a13d04-2b9d-7320-aa86-8a63553cba0e
+    rating: supports
+    rationale: "nothing changes"
+consequences:
+  - key: 01a13d04-2b9d-7320-aa86-8a684a7b8f14
+    kind: benefit
+    statement: "Converted statements that follow an EARS form carry slots from the first check."
+  - key: 01a13d04-2b9d-7320-aa86-8a69b5fe0247
+    kind: obligation
+    statement: "The number of rewritten statements is reported."
+  - key: 01a13d04-2b9d-7320-aa86-8a6a90d596ef
+    kind: cost
+    statement: "A rewritten statement differs from its source in the letter case of one word."
+subjects:
+  - role: affected
+    node: 01a13d02-7211-77f1-a8f1-30e2d8306641
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-30ddb4dc0d13

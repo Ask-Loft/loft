@@ -6,6 +6,7 @@
 mod decisions;
 mod json;
 mod markdown;
+pub mod openspec;
 
 use std::collections::BTreeMap;
 

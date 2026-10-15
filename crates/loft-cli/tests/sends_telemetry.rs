@@ -39,7 +39,7 @@ fn requests(kind: Fixture, args: &[&str]) -> Vec<software_plant::http::Request> 
 fn a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry() {
     let tagged = tagged_commands(TAG);
     assert!(!tagged.is_empty(), "no Feature lists `{TAG}`");
-    for (slug, args, kind) in COMMANDS {
+    for (slug, args, kind, _) in COMMANDS {
         let requests = requests(kind, args);
         if tagged.iter().any(|(name, ..)| *name == slug) {
             assert_eq!(requests.len(), 1, "{slug}");
@@ -63,7 +63,7 @@ fn the_event_schema_names_exactly_the_commands_that_list_sends_telemetry() {
     listed.sort_unstable();
     let mut tagged: Vec<String> = tagged_commands(TAG)
         .into_iter()
-        .map(|(_, args, _)| event_name(args))
+        .map(|(_, args, _, _)| event_name(args))
         .collect();
     tagged.sort();
     assert_eq!(listed, tagged);

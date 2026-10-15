@@ -147,7 +147,7 @@ impl Answering {
 fn valid(body: &[u8]) -> Option<String> {
     let event: Event = serde_json::from_slice(body).ok()?;
     let checks = [
-        event.schema == "loft-telemetry-event/1",
+        event.schema == "loft-telemetry-event/2",
         uuid_v4(&event.id),
         uuid_v4(&event.installation),
         event.project.as_deref().is_none_or(uuid_v4),

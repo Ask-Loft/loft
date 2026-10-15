@@ -2,6 +2,8 @@
 //! the label counters taken from a counters file (RQ-131, RQ-132, RQ-173) or set one above the
 //! highest label seen (RQ-133), and the conversion findings and the sidecar beside it.
 
+use crate::convert::SidecarFile;
+use crate::convert::v1::SIDECAR;
 use std::fmt;
 use std::num::NonZeroU64;
 
@@ -77,12 +79,12 @@ impl Reported {
     }
 }
 
-/// A converted tree ready to write: its files, the sidecar's bytes and what the converter
+/// A converted tree ready to write: its files, the sidecar and what the converter
 /// reported.
 #[derive(Debug)]
 pub struct Imported {
     pub files: Files,
-    pub sidecar: Vec<u8>,
+    pub sidecar: SidecarFile,
     pub findings: Vec<Finding>,
     /// The prefixes whose counters were set one above the highest label seen, which the source
     /// may have exceeded (AC-516); empty when a counters file named every prefix.
@@ -211,7 +213,10 @@ pub fn import(export: &str, counters: Option<&[u8]>) -> Result<Imported, ImportE
         .collect();
     Ok(Imported {
         files: codec::write(&conversion.document),
-        sidecar: conversion.sidecar.to_json().into_bytes(),
+        sidecar: SidecarFile {
+            name: SIDECAR,
+            bytes: conversion.sidecar.to_json().into_bytes(),
+        },
         findings: conversion.findings,
         derived,
     })

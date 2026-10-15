@@ -1,0 +1,51 @@
+key: 01a13d04-2b9d-7320-aa86-8a803aa21f91
+slug: an-openspec-import-creates-no-components
+title: "An OpenSpec import creates no Components"
+context: "OpenSpec has no architecture: no component, boundary or realization. The structural rule of the Format reports a Feature that no Component realizes."
+state:
+  kind: accepted
+  selectedOption: 01a13d04-2b9d-7320-aa86-8a7ebcd32560
+  outcome: "The converter creates no Component, and every converted Feature is reported as realized by none until a team adds Components."
+drivers:
+  - key: 01a13d04-2b9d-7320-aa86-8a7c20346618
+    kind: local
+    label: "No invented structure"
+    statement: "Every Component in the tree is one a team stated."
+  - key: 01a13d04-2b9d-7320-aa86-8a7d9c3e88eb
+    kind: local
+    label: "A useful first check"
+    statement: "The first check after an import reports what needs an author."
+options:
+  - key: 01a13d04-2b9d-7320-aa86-8a7ebcd32560
+    title: "No Components"
+    description: "The converter creates none, and the structural finding stands."
+  - key: 01a13d04-2b9d-7320-aa86-8a7f50349ce7
+    title: "One placeholder Component"
+    description: "One Component realizes every Feature."
+assessments:
+  - option: 01a13d04-2b9d-7320-aa86-8a7ebcd32560
+    driver: 01a13d04-2b9d-7320-aa86-8a7c20346618
+    rating: supports
+    rationale: "nothing is invented"
+  - option: 01a13d04-2b9d-7320-aa86-8a7ebcd32560
+    driver: 01a13d04-2b9d-7320-aa86-8a7d9c3e88eb
+    rating: supports
+    rationale: "the finding points at the first adoption step"
+  - option: 01a13d04-2b9d-7320-aa86-8a7f50349ce7
+    driver: 01a13d04-2b9d-7320-aa86-8a7c20346618
+    rating: conflicts
+    rationale: "the Component states nothing true"
+  - option: 01a13d04-2b9d-7320-aa86-8a7f50349ce7
+    driver: 01a13d04-2b9d-7320-aa86-8a7d9c3e88eb
+    rating: conflicts
+    rationale: "the finding that asks for architecture is silenced"
+consequences:
+  - key: 01a13d04-2b9d-7320-aa86-8a81c81fe17d
+    kind: benefit
+    statement: "Every Component in the tree is one a team stated."
+  - key: 01a13d04-2b9d-7320-aa86-8a820e69fbfa
+    kind: cost
+    statement: "The first check reports every converted Feature as realized by no Component."
+subjects:
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-30e4f62297b7

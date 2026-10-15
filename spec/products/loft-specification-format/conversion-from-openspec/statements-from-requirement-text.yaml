@@ -1,0 +1,71 @@
+key: 01a13d02-7211-77f1-a8f1-30d38fd5687a
+slug: statements-from-requirement-text
+name: "Statements from requirement text"
+body: "How the OpenSpec converter splits a requirement's text into the Requirement's statement and body, and when it keeps the statement as EARS slots."
+realizes:
+  - 01a13d01-545b-761c-83a4-724d8d61cd4b
+requirements:
+  - key: 01a13d02-7211-77f1-a8f1-30d49714e885
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "take a Requirement's statement from the first paragraph of the requirement's text."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30d57264e4e4
+        name: "The lines of the first paragraph are trimmed and joined with single spaces."
+      - key: 01a13d02-7211-77f1-a8f1-30d6691894cb
+        name: "The paragraphs after the first become the Requirement's body verbatim."
+      - key: 01a13d02-7211-77f1-a8f1-30d78d9d45db
+        name: "A requirement with no text takes its requirement name as the statement."
+  - key: 01a13d02-7211-77f1-a8f1-30d88fafefe2
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "keep each metadata line of a requirement's text in the Requirement's `ext.openspec.metadata`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30d97fc3caa6
+        name: "A line that begins with a bold label followed by a colon, such as `**ID**:`, is a metadata line."
+      - key: 01a13d02-7211-77f1-a8f1-30da02dbf431
+        name: "Each metadata line becomes an entry of `ext.openspec.metadata` holding its `label` and its `value`, in source order."
+      - key: 01a14039-8314-77a3-bb78-f25a74b613e5
+        name: "The label is the text between the two pairs of asterisks, and the value is the text after the colon, trimmed."
+      - key: 01a14039-8315-7390-a27f-c563745e3dd1
+        name: "A metadata line is left out of the statement and the body."
+  - key: 01a13d02-7211-77f1-a8f1-30dbbfb6c7d0
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "store a statement as slots when its first paragraph renders back from them byte for byte."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30dc7a912c52
+        name: "A first paragraph that renders back from its slots is stored as slots."
+  - key: 01a13d02-7211-77f1-a8f1-30ddb4dc0d13
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "store a statement as slots with the modal word `shall` when the first paragraph, with its first `SHALL` or `MUST` written as `shall`, renders back from them byte for byte."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30def9323437
+        name: "`The system SHALL keep a log.` is stored as the ubiquitous form with the system `The system` and the modal phrase `keep a log.`"
+      - key: 01a13d02-7211-77f1-a8f1-30dfab8d01e6
+        name: "`When a user signs in, the system MUST record the time.` is stored as the event-driven form."
+      - key: 01a13d12-1e24-70cf-a353-a361e3ccb308
+        name: "`WHEN a user signs in, the system SHALL record the time.` is stored as `text`, since its condition keyword differs from the template's."
+      - key: 01a13d02-7211-77f1-a8f1-30e044b95c95
+        name: "No word but the first `SHALL` or `MUST` is changed."
+      - key: 01a13d02-7211-77f1-a8f1-30e1f6b00d8d
+        name: "A lower-case `must` is not changed."
+      - key: 01a14060-4e79-76e2-b443-5873863b0993
+        name: "A statement whose `MUST` was written as `shall` keeps `MUST` as the Requirement's `ext.openspec.modal`."
+      - key: 01a14060-4e79-76e2-b443-58745b826391
+        name: "A statement whose `SHALL` was written as `shall` gives the Requirement no `ext.openspec.modal`."
+      - key: 01a14139-e5e4-7047-a160-79650be3c076
+        name: "A statement stored as slots whose source writes its modal word `shall` keeps `shall` as the Requirement's `ext.openspec.modal`."
+  - key: 01a13d02-7211-77f1-a8f1-30e2d8306641
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "store any other first paragraph as `text`, verbatim."
+    criteria:
+      - key: 01a13d02-d042-701f-a5b6-c06ce9b48b5c
+        name: "A first paragraph that renders back from no slots, before or after its modal word is written as `shall`, is stored as `text` byte for byte."

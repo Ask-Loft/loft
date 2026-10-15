@@ -25,6 +25,8 @@ pub enum StoreError {
     },
     #[error("{0}: a file name that is not UTF-8")]
     NotUtf8(PathBuf),
+    #[error("{0}: the bytes are not UTF-8")]
+    NotText(PathBuf),
     #[error("{0}: `spec/` is not empty")]
     NotEmpty(PathBuf),
     #[error("{0}: `spec/` already exists")]

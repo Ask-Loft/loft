@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loft-import-openspec-1.json",
+  "title": "The result of `loft import openspec --format json`, version 1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "written",
+        "findings",
+        "advice",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-import-openspec/1"
+        },
+        "outcome": {
+          "const": "imported"
+        },
+        "written": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/finding"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        },
+        "advice": {
+          "type": "array",
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/advice"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-import-openspec/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message",
+        "sites"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "refused"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/site"
+          }
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "OS-001",
+            "OS-002",
+            "OS-003",
+            "OS-004",
+            "OS-005",
+            "OS-006",
+            "OS-007",
+            "OS-008",
+            "OS-010",
+            "OS-011",
+            "OS-012",
+            "OS-013",
+            "OS-014",
+            "OS-015"
+          ]
+        },
+        "severity": {
+          "const": "info"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "key": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "advice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "warnings",
+        "lintEntry"
+      ],
+      "properties": {
+        "rule": {
+          "const": "V2-007"
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lintEntry": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

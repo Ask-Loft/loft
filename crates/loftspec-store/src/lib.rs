@@ -9,6 +9,7 @@ pub mod fs;
 pub mod journal;
 pub mod memory;
 pub mod merge_driver;
+pub mod openspec;
 pub mod repository;
 
 use loftspec::codec::{Files, Role, SpecPath};

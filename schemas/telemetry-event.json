@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-telemetry-event-1.json",
-  "title": "The command event `loft` sends to the telemetry collector, version 1",
+  "$id": "loft-telemetry-event-2.json",
+  "title": "The command event `loft` sends to the telemetry collector, version 2",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -22,7 +22,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "loft-telemetry-event/1"
+      "const": "loft-telemetry-event/2"
     },
     "eventId": {
       "type": "string",
@@ -99,6 +99,7 @@
         "check",
         "find",
         "fmt",
+        "import openspec",
         "import v1",
         "init",
         "publish",

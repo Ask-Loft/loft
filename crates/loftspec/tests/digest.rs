@@ -17,6 +17,7 @@ fn the_domain_strings_are_closed() {
             "loftspec/content/1",
             "loftspec/bindings/1",
             "loftspec/state/1",
+            "loftspec/extensions/1",
         ]
     );
 }

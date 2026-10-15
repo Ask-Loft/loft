@@ -3,6 +3,83 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.1.0 (2026-10-15)
+
+- `loft import openspec [<dir>]` converts the main specs of an OpenSpec project, read from
+  `openspec/` by default, into `spec/`, and writes `openspec-sidecar.json` beside it with the
+  source of each node, including the requirement and scenario names. Each Requirement keeps its
+  OpenSpec name and its metadata lines, such as `**ID**: AUTH-1`, as `{label, value}` entries in
+  `ext.openspec`, and each Feature its capability id and any archive placeholder Purpose, so no
+  tool data is left in a body. A Purpose that opens with a `TBD` or `TODO` marker is a
+  placeholder kept there too. A statement whose `MUST` was written as `shall` keeps `MUST` in
+  `ext.openspec.modal`, and one stored with a lower-case `shall` keeps `shall`. Headings above
+  the first level-2 heading, and inside a requirement's child that is not a scenario, become
+  nested Sections. The Product is named after
+  the directory that holds the OpenSpec directory, or by `--product`. Active and archived changes,
+  `config.yaml`'s `context`, and every place a project departs from OpenSpec's grammar are
+  reported as findings (`OS-001` to `OS-015`; `OS-009` is retired) with their source file and line. OpenSpec states
+  obligations in scenario bodies, which become criterion bodies, so the command also reports how
+  many `V2-007` warnings `loft check` will give and the `spec/lint.yaml` entry that lowers them to
+  info; it writes no lint configuration. In text, it ends with `next:` lines: run
+  `loft skill install` where the skill is missing, register the merge driver as `loft init`
+  suggests, and adopt the import with the skill's workflow. Its output follows the schema
+  `loft-import-openspec/1`; the JSON document carries no suggestion.
+- The `loft-spec` skill has a workflow for adopting an OpenSpec project: the import findings
+  that ask for work, the `V2-007` entry for the adoption period, Components, criteria rewritten
+  as checkable sentences, placeholder Purposes, Decisions and Constraints lifted from the
+  project, and an OpenSpec projection kept with `loft render --openspec`.
+- `loft render --openspec <dir>` writes the specification as the main specs of an OpenSpec
+  directory, with `loft-render-map.json` beside them naming the node each requirement and scenario
+  comes from, and prints each render finding (`OR-001` to `OR-012`). It refuses a main specs
+  directory that already holds files other than ones whose names begin with `.`; `--force`
+  replaces the main specs in it once every file is written, prints each one it removes, never
+  removes below an entry beginning with `.`, and changes nothing else. It refuses a symbolic
+  link on the way to a file it writes, two Features that would be written to one path (letter
+  case aside), and any main specs directory that would lie under `spec/`. Without `--markdown`
+  or `--json` it writes neither of the other projections. Its output follows the schema
+  `loft-render/2`, which adds `removed` and `findings`.
+- The command event is now `loft-telemetry-event/2`: its `command` may be `import openspec`.
+- **Breaking (library):** a conversion's sidecar is a `loftspec::convert::SidecarFile`, its
+  name with its bytes. `Imported::sidecar` is one, `FileStore::import` takes one, and the v1
+  sidecar's name moves from `loftspec_store::fs::SIDECAR` to `loftspec::convert::v1::SIDECAR`.
+- `loftspec_store::openspec::read_project` reads an OpenSpec directory into the files the
+  OpenSpec converter takes, and `loftspec::convert::openspec::layout` names its parts.
+- **Format:** every node record may hold `ext`, the data a tool keeps on a node that the Format
+  does not define, under the tool's own namespace: text, integers, `true` and `false`, lists and
+  mappings. No lint rule reads it, no projection but the JSON export shows it, and a merge
+  treats it as one value. It is not part of a node's content hash, so it never makes a trace
+  link stale; the state root holds it through a new extensions root (domain
+  `loftspec/extensions/1`), and a document in which no node carries `ext` keeps the state root
+  it had. A reader from 2.0.4 or earlier refuses a tree that uses `ext`.
+- **Breaking (library):** `Details` and `Section` gain `ext`, `Roots` gains `extensions`, and
+  `Domain` gains `Extensions`; `loftspec::ext` holds the value model and
+  `loftspec::names::Namespace` the namespace.
+- `loftspec::render::openspec::openspec` renders a document's OpenSpec projection: the main
+  specs of one OpenSpec directory per Product, each Feature at its capability path, a render map
+  from each rendered requirement and scenario to its key and label, and findings (`OR-001` to
+  `OR-012`) for what OpenSpec 1.14's validator would reject or warn about, read as it reads a
+  spec, for the content the projection leaves out, for content a second import would read
+  differently and for `ext.openspec` values it cannot read. It returns a `RenderError`, which
+  refuses two Features written to one path. An imported project renders back to the specs it
+  was read from. `EarsForm::render_with_modal` writes a statement with another modal word.
+- `loftspec::lint::count_body_rule` counts the findings of one lexical rule that reads bodies
+  only, such as `V2-007`, without running the rest of the linter.
+
+- `V2-002` names the EARS form a statement stored as text follows. A sentence such as "The
+  writer SHALL write keys." follows the ubiquitous form by its words, so `LQ-007` accepts it, as
+  v1 does, but the reader keeps slots only for the template's exact wording and stores it as
+  text. Its `V2-002` finding now carries the form's name as its term and says so; a sentence
+  that follows no form keeps the finding without a term.
+- **Fixed:** the JSON output of `loft import v1` named each file of the tree with `spec/` twice,
+  as `spec/spec/categories.yaml`; it now names each file at its path from the root.
+- **Fixed:** `loft render` refused a projection under `spec/` only when its path was relative
+  and in the tree's letter case; an absolute path, or on a file system that ignores case another
+  letter case, now is refused too.
+- **Breaking (library):** `loftspec_store::fs::write_outputs` returns a `WrittenOutputs`, the
+  paths it wrote and the paths it left unchanged; `read_project` fails with a `StoreError`, which
+  gains `NotText`; `write_projection` takes the projection by value. The OpenSpec conversion and
+  render findings are both a `loftspec::report::InfoFinding` of their own rule.
+
 ## 2.0.4 (2026-10-14)
 
 - `loft reconcile` checks `loft.trace.yaml`, a file beside `spec/` that links each acceptance

@@ -29,6 +29,8 @@ requirements:
         name: "A Feature renders as a level-5 heading."
       - key: c4caef9a-c40e-4aaa-ab00-b8a135e8d2fe
         name: "A Requirement renders as a level-6 heading with its statement text."
+      - key: 01a14039-8315-7390-a27f-c56f3542a0c1
+        name: "No node's `ext` appears in the rendering."
       - key: 3566d7e4-f71f-4ab0-a914-4bd83a92b7f4
         name: "A node's tags render on one line after its body."
       - key: e9befe96-da46-4923-b9ec-8ec6adb2923e

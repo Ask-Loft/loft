@@ -1,0 +1,85 @@
+key: 01a13d04-2b9d-7320-aa86-8a5eceb55e8a
+slug: an-openspec-import-reads-the-main-specs-only
+title: "An OpenSpec import reads the main specs only"
+context: "An OpenSpec project keeps its current truth in main specs and its intent in flight in active changes, each a set of delta specs with a proposal, a design and tasks. Active changes have no order or dependency between them, and archived changes are history already applied to the main specs."
+state:
+  kind: accepted
+  selectedOption: 01a13d04-2b9d-7320-aa86-8a5b3ece29b5
+  outcome: "The converter reads the main specs only and reports the active and archived changes it did not convert."
+drivers:
+  - key: 01a13d04-2b9d-7320-aa86-8a5844e79c90
+    kind: local
+    label: "Current truth"
+    statement: "The converted document states what the project's specs say now."
+  - key: 01a13d04-2b9d-7320-aa86-8a59ec352af1
+    kind: local
+    label: "Same input, same output"
+    statement: "The same project converts to the same document."
+  - key: 01a13d04-2b9d-7320-aa86-8a5a654229aa
+    kind: local
+    label: "Nothing left out silently"
+    statement: "What is not converted is reported."
+options:
+  - key: 01a13d04-2b9d-7320-aa86-8a5b3ece29b5
+    title: "Main specs only, changes reported"
+    description: "The converter reads `specs/` and reports active and archived changes with their counts."
+  - key: 01a13d04-2b9d-7320-aa86-8a5cc3d52b13
+    title: "Apply active changes on request"
+    description: "An option applies a named change's deltas with the archive command's semantics before converting."
+  - key: 01a13d04-2b9d-7320-aa86-8a5d51c4ea73
+    title: "One git branch per active change"
+    description: "Each active change becomes a git branch holding its applied specs."
+assessments:
+  - option: 01a13d04-2b9d-7320-aa86-8a5b3ece29b5
+    driver: 01a13d04-2b9d-7320-aa86-8a5844e79c90
+    rating: supports
+    rationale: "the main specs are the current truth"
+  - option: 01a13d04-2b9d-7320-aa86-8a5b3ece29b5
+    driver: 01a13d04-2b9d-7320-aa86-8a59ec352af1
+    rating: supports
+    rationale: "one input shape"
+  - option: 01a13d04-2b9d-7320-aa86-8a5b3ece29b5
+    driver: 01a13d04-2b9d-7320-aa86-8a5a654229aa
+    rating: supports
+    rationale: "each change is counted and named"
+  - option: 01a13d04-2b9d-7320-aa86-8a5cc3d52b13
+    driver: 01a13d04-2b9d-7320-aa86-8a5844e79c90
+    rating: conflicts
+    rationale: "the document states intent not yet accepted"
+  - option: 01a13d04-2b9d-7320-aa86-8a5cc3d52b13
+    driver: 01a13d04-2b9d-7320-aa86-8a59ec352af1
+    rating: neutral
+    rationale: "the output depends on the chosen changes"
+  - option: 01a13d04-2b9d-7320-aa86-8a5cc3d52b13
+    driver: 01a13d04-2b9d-7320-aa86-8a5a654229aa
+    rating: supports
+    rationale: "the chosen changes are converted"
+  - option: 01a13d04-2b9d-7320-aa86-8a5d51c4ea73
+    driver: 01a13d04-2b9d-7320-aa86-8a5844e79c90
+    rating: supports
+    rationale: "the main line keeps the current truth"
+  - option: 01a13d04-2b9d-7320-aa86-8a5d51c4ea73
+    driver: 01a13d04-2b9d-7320-aa86-8a59ec352af1
+    rating: conflicts
+    rationale: "the output depends on the repository's branches"
+  - option: 01a13d04-2b9d-7320-aa86-8a5d51c4ea73
+    driver: 01a13d04-2b9d-7320-aa86-8a5a654229aa
+    rating: supports
+    rationale: "each change keeps a place"
+consequences:
+  - key: 01a13d04-2b9d-7320-aa86-8a5f41000d90
+    kind: benefit
+    statement: "The conversion has one input shape and follows no change semantics."
+  - key: 01a13d04-2b9d-7320-aa86-8a60071f408b
+    kind: obligation
+    statement: "Active and archived changes are reported with their counts."
+  - key: 01a13d04-2b9d-7320-aa86-8a6171215ab9
+    kind: cost
+    statement: "A project with active changes only must archive them before it converts."
+subjects:
+  - role: affected
+    node: 01a13d02-7211-77f1-a8f1-30b709626077
+  - role: affected
+    node: 01a13d02-7211-77f1-a8f1-30bdc9503869
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-309ef3e0e368

@@ -1,0 +1,33 @@
+key: 01a13d02-7211-77f1-a8f1-31011e2cacdd
+slug: the-provenance-sidecar
+name: "The provenance sidecar"
+body: "The file beside `spec/` that records where each converted node came from in the OpenSpec project: its source file and line, and the name the source gives it. The tree keeps what a render needs in each node's `ext.openspec`; the sidecar is provenance only."
+realizes:
+  - 01a13d01-545b-761c-83a4-724d8d61cd4b
+requirements:
+  - key: 01a13d02-7211-77f1-a8f1-31021bb0f8ff
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "record in a sidecar the source of each node it creates."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-3103c9ccf3c4
+        name: "The sidecar records each Feature's capability id and source path."
+      - key: 01a13d02-7211-77f1-a8f1-31048a0d999d
+        name: "The sidecar records each Requirement's requirement name and the line of its heading."
+      - key: 01a13d02-7211-77f1-a8f1-3105d338fbab
+        name: "The sidecar records each Criterion's scenario name and the line of its heading."
+      - key: 01a13d02-7211-77f1-a8f1-31060c0de772
+        name: "The sidecar records each Section's heading text and the line of its heading."
+      - key: 01a13d02-7211-77f1-a8f1-31070f1f5c1d
+        name: "The sidecar records the SHA-256 digest of each source file it read."
+  - key: 01a13d02-7211-77f1-a8f1-3108af8ee1ce
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "write the provenance sidecar outside the `spec/` tree."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-3109e870af0f
+        name: "The sidecar is the file `openspec-sidecar.json` beside `spec/`."
+      - key: 01a13d02-7211-77f1-a8f1-310ad7be762e
+        name: "No file under `spec/` records a source path or a source line."

@@ -1,0 +1,48 @@
+key: 01a1403a-512d-76c8-b11e-f0e7e38b88cc
+slug: each-product-renders-as-its-own-openspec-directory
+title: "Each Product renders as its own OpenSpec directory"
+context: "A document may hold more than one Product, and an OpenSpec directory describes one project."
+state:
+  kind: accepted
+  selectedOption: 01a1403a-512d-76c8-b11e-f0ea49c6429f
+  outcome: "A document with one Product renders its main specs under `specs/` of the directory given; a document with more than one renders each Product under `<product slug>/specs/`."
+drivers:
+  - key: 01a1403a-512d-76c8-b11e-f0e8bd15bbbf
+    kind: local
+    label: "One project per directory"
+    statement: "Each rendered directory reads as one OpenSpec project."
+  - key: 01a1403a-512d-76c8-b11e-f0e98b67ab36
+    kind: local
+    label: "Everything renders"
+    statement: "One render writes the whole document."
+options:
+  - key: 01a1403a-512d-76c8-b11e-f0ea49c6429f
+    title: "A directory for each Product"
+    description: "Each Product gets its own OpenSpec directory, named by its slug when there is more than one."
+  - key: 01a1403a-512d-76c8-b11e-f0eb6a90cd05
+    title: "One Product per render"
+    description: "A render of a document with more than one Product names the Product to render."
+assessments:
+  - option: 01a1403a-512d-76c8-b11e-f0ea49c6429f
+    driver: 01a1403a-512d-76c8-b11e-f0e8bd15bbbf
+    rating: supports
+    rationale: "each directory holds one Product"
+  - option: 01a1403a-512d-76c8-b11e-f0ea49c6429f
+    driver: 01a1403a-512d-76c8-b11e-f0e98b67ab36
+    rating: supports
+    rationale: "every Product is written"
+  - option: 01a1403a-512d-76c8-b11e-f0eb6a90cd05
+    driver: 01a1403a-512d-76c8-b11e-f0e8bd15bbbf
+    rating: supports
+    rationale: "each render writes one Product"
+  - option: 01a1403a-512d-76c8-b11e-f0eb6a90cd05
+    driver: 01a1403a-512d-76c8-b11e-f0e98b67ab36
+    rating: conflicts
+    rationale: "a render writes one Product of several"
+consequences:
+  - key: 01a1403a-512d-76c8-b11e-f0ec889785d3
+    kind: cost
+    statement: "Adding a second Product moves the first Product's main specs into a directory of its own."
+subjects:
+  - role: outcome
+    node: 01a1402e-d25e-7540-9283-181266ba62ec

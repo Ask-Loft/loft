@@ -1,7 +1,7 @@
 key: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
 slug: loftspec
 name: "loftspec"
-body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the validator, the linter, the renderer, the publisher, the merge engine and the reconciler. It performs no input or output."
+body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the OpenSpec converter, the validator, the linter, the renderer, the publisher, the merge engine and the reconciler. It performs no input or output."
 scopedTo:
   - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 components:
@@ -34,6 +34,13 @@ components:
     constraints:
       - key: c15d4738-4283-4fd1-8999-300beff7e4f0
         name: "The converter shall take a v1 export file as its only input."
+        verificationFate: proved
+  - key: 01a13d01-545b-761c-83a4-724d8d61cd4b
+    name: "OpenSpec converter"
+    body: "Conversion from the main specs of an OpenSpec project, with the provenance sidecar."
+    constraints:
+      - key: 01a13d01-545b-761c-83a4-724ef2addc5a
+        name: "The OpenSpec converter shall take the files of one `openspec/` directory as its only input."
         verificationFate: proved
   - key: b90f38f9-766c-467f-a29c-d6ae3b796e52
     name: "Validator"

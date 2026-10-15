@@ -89,9 +89,10 @@ needs.
 | `loft init [--no-skill]` | Creates an empty document in the current directory, and the agent skill beside it |
 | `loft fmt [--check]` | Rewrites `spec/` in canonical layout, mints missing keys, turns references written by name into keys and drops the label bindings of deleted nodes, or reports drift |
 | `loft check [--fail-on <severity>]` | Reads, validates and lints `spec/` |
-| `loft render` | Writes the Markdown projection and the canonical JSON export |
+| `loft render [--openspec <dir> [--force]]` | Writes the Markdown projection and the canonical JSON export, or the specification as OpenSpec main specs |
 | `loft find <query>` | Prints the key, label, kind, file and name of each node or decision a label, slug, key or name identifies |
 | `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
+| `loft import openspec [<dir>]` | Converts the main specs of an OpenSpec project into `spec/` |
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
@@ -182,17 +183,17 @@ The trace file is not part of the specification: it enters no root and no publis
 ## Telemetry and the update check
 
 Telemetry is on by default. At the end of each run of `check`, `find`, `fmt`, `import v1`,
-`init`, `publish`, `reconcile`, `render`, `skill install` and `verify`, `loft` sends one command
-event to `https://askloft.ai/api/telemetry`, so that the maintainers learn which commands are
-used, how they end and how long they take. Before the first event leaves a machine, `loft` prints
+`import openspec`, `init`, `publish`, `reconcile`, `render`, `skill install` and `verify`,
+`loft` sends one command event to `https://askloft.ai/api/telemetry`, so that the maintainers
+learn which commands are used, how they end and how long they take. Before the first event leaves a machine, `loft` prints
 a notice on standard error saying what it sends and how to switch it off. An event looks like
 this:
 
 ```json
 {
-  "schema": "loft-telemetry-event/1",
+  "schema": "loft-telemetry-event/2",
   "eventId": "0b9a3c0e-7f4d-4a43-9a52-3f3f2c4b8d11",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "os": "macos",
   "arch": "aarch64",
   "installedBy": "npm",

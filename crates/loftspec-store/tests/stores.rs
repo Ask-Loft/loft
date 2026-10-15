@@ -6,6 +6,7 @@ use std::fs;
 use crate::common::Scratch;
 use crate::fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{self, SpecPath};
+use loftspec::convert::SidecarFile;
 use loftspec::document::Document;
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
 use loftspec_store::{DocumentStore, FileStore, MemoryStore, StoreError};
@@ -103,4 +104,27 @@ fn a_file_whose_bytes_would_not_change_is_not_rewritten() {
         (after.ino(), after.mtime_nsec(), after.mtime()),
         (before.ino(), before.mtime_nsec(), before.mtime())
     );
+}
+
+#[test]
+fn an_import_writes_its_sidecar_beside_spec_under_the_name_it_is_given() {
+    let scratch = Scratch::new();
+    let store = FileStore::open(&scratch.0).unwrap();
+    store
+        .import(
+            codec::write(&reading_list()),
+            SidecarFile {
+                name: "source-sidecar.json",
+                bytes: b"{}\n".to_vec(),
+            },
+        )
+        .unwrap();
+    let snapshot = scratch.snapshot();
+    assert_eq!(snapshot["source-sidecar.json"], b"{}\n");
+    assert!(
+        !snapshot.contains_key("v1-sidecar.json"),
+        "{:?}",
+        snapshot.keys()
+    );
+    assert!(snapshot.keys().any(|path| path.starts_with("spec/")));
 }

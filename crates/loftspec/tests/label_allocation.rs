@@ -174,6 +174,7 @@ fn a_section_takes_no_label() {
         name: "Background".to_owned(),
         body: "Why keys.".to_owned(),
         sections: Vec::new(),
+        ext: loftspec::ext::Ext::new(),
     });
     assert_eq!(allocated(&mut document), ["AC-1"]);
     assert_eq!(document.bindings.label_of(SectionId::new(key(49))), None);
@@ -187,6 +188,7 @@ fn a_label_bound_to_a_section_is_refused_by_the_reader() {
         name: "Background".to_owned(),
         body: "Why keys.".to_owned(),
         sections: Vec::new(),
+        ext: loftspec::ext::Ext::new(),
     });
     let mut files = codec::write(&document);
     let labels = files.get_mut(&SpecPath::new("labels.yaml")).unwrap();

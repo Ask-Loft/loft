@@ -1,0 +1,57 @@
+key: 01a1402e-d25e-7540-9283-183bab9eb817
+slug: openspec-requirements-and-scenarios
+name: "OpenSpec requirements and scenarios"
+body: "How the OpenSpec projection writes a Requirement, its statement, its body and Sections, and its Criteria as scenarios."
+realizes:
+  - dfa057a6-404f-44a0-a9ab-932900198ca4
+requirements:
+  - key: 01a1402e-d25e-7540-9283-183cb91aef9a
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "write each Requirement of a Feature as a level-3 heading `Requirement: <name>` in the section `Requirements`."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-183d9d9b016c
+        name: "The heading names a Requirement with an `ext.openspec.name` by that value."
+      - key: 01a1402e-d25e-7540-9283-183e89141f71
+        name: "The heading names any other Requirement by its label, or by its key when it has no label."
+      - key: 01a1402e-d25e-7540-9283-183fbf49b47f
+        name: "The Requirements follow the Feature's order."
+  - key: 01a1402e-d25e-7540-9283-184045f70275
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "write a Requirement's statement as the first paragraph after its heading."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-184173273e76
+        name: "A statement stored as slots is written as its rendered sentence with its modal word written as the Requirement's `ext.openspec.modal` when that is `SHALL`, `MUST` or `shall`, and as `SHALL` otherwise."
+      - key: 01a1402e-d25e-7540-9283-184208bde6c7
+        name: "A statement stored as text is written as stored."
+      - key: 01a1402e-d25e-7540-9283-1843fc29c716
+        name: "Each entry of the Requirement's `ext.openspec.metadata` follows the statement as the line `**<label>**: <value>`, in order."
+      - key: 01a14039-8315-7390-a27f-c5719d8172d7
+        name: "The Requirement's body follows its statement and metadata lines verbatim."
+  - key: 01a1402e-d25e-7540-9283-18449c5233a3
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "write each Criterion of a Requirement as a level-4 heading `Scenario: <criterion name>`."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-1845adb3bcfd
+        name: "The Criteria follow the statement and body in the Requirement's order."
+      - key: 01a1402e-d25e-7540-9283-18462554e4d6
+        name: "The Criterion's body follows its heading verbatim."
+      - key: 01a1402e-d25e-7540-9283-1847095c9a0c
+        name: "A Criterion without a body is written with the single line `- **THEN** <criterion name>`."
+  - key: 01a1402e-d25e-7540-9283-184896c11fab
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "write each Section of a Requirement as a level-4 heading with its name after the Requirement's Criteria."
+    criteria:
+      - key: 01a1402e-d25e-7540-9283-184978b0b240
+        name: "The Section's body follows its heading verbatim."
+      - key: 01a1402e-d25e-7540-9283-184a347e1969
+        name: "A Section's own Sections follow its body, each one heading level deeper."
+      - key: 01a14139-e5e5-768a-a902-87488141b9d0
+        name: "A Section that would be deeper than level 6 is written at level 6."

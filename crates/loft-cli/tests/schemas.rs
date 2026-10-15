@@ -1,5 +1,5 @@
 //! Each command's JSON result is described by one schema under `schemas/`, named after the
-//! command, that names its version and allows the envelope's result and error shapes; every
+//! command in the command table, that names its version and allows the envelope's result and error shapes; every
 //! schema describes sites and errors alike. Every object a schema describes is closed, so a field
 //! added to a command's output fails its schema until the schema names it, and every outcome is
 //! named in words.
@@ -29,18 +29,31 @@ fn branches(schema: &Value) -> &[Value] {
 }
 
 #[test]
-fn every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown() {
+fn every_subcommand_has_an_entry_in_the_commands_and_no_entry_is_unknown() {
     let mut listed = help::subcommands();
     listed.sort();
-    let mut entries: Vec<&str> = COMMANDS.iter().map(|(_, args, _)| args[0]).collect();
+    let mut entries: Vec<&str> = COMMANDS.iter().map(|(_, args, _, _)| args[0]).collect();
+    entries.sort_unstable();
+    entries.dedup();
+    assert_eq!(listed, entries);
+}
+
+#[test]
+fn every_import_source_has_one_entry_in_the_commands() {
+    let mut listed = help::import_sources();
+    listed.sort();
+    let mut entries: Vec<&str> = COMMANDS
+        .iter()
+        .filter(|(_, args, _, _)| args[0] == "import")
+        .map(|(_, args, _, _)| args[1])
+        .collect();
     entries.sort_unstable();
     assert_eq!(listed, entries);
 }
 
 #[test]
 fn each_command_has_one_schema_named_after_it_that_names_its_version() {
-    for (_, args, _) in COMMANDS {
-        let command = args[0];
+    for (_, _, _, command) in COMMANDS {
         let schema = read(&format!("{command}.json"));
         let name = &branches(&schema)[0]["properties"]["schema"]["const"];
         for branch in branches(&schema) {
@@ -63,8 +76,7 @@ fn each_command_has_one_schema_named_after_it_that_names_its_version() {
 
 #[test]
 fn every_document_carries_schema_outcome_and_errors_and_an_error_carries_only_those() {
-    for (_, args, _) in COMMANDS {
-        let command = args[0];
+    for (_, _, _, command) in COMMANDS {
         let schema = read(&format!("{command}.json"));
         let (error, results) = branches(&schema).split_last().unwrap();
         for result in results {
@@ -125,6 +137,26 @@ fn the_check_schema_lists_exactly_the_rules_the_linter_defines() {
         .map(|rule| rule.as_str())
         .collect();
     assert_eq!(listed, defined);
+}
+
+#[test]
+fn the_openspec_schemas_list_exactly_the_rules_import_and_render_define() {
+    let listed = |name: &str| -> Vec<String> {
+        read(name)["$defs"]["finding"]["properties"]["rule"]["enum"]
+            .as_array()
+            .expect("the rules a finding names")
+            .iter()
+            .map(|rule| rule.as_str().unwrap().to_owned())
+            .collect()
+    };
+    assert_eq!(
+        listed("import-openspec.json"),
+        loftspec::convert::openspec::Rule::NAMES
+    );
+    assert_eq!(
+        listed("render.json"),
+        loftspec::render::openspec::Rule::NAMES
+    );
 }
 
 /// The name of every schema under `schemas/`.
@@ -202,8 +234,7 @@ fn in_words(text: &str) -> bool {
 
 #[test]
 fn every_outcome_a_schema_allows_is_named_in_words() {
-    for (_, args, _) in COMMANDS {
-        let command = args[0];
+    for (_, _, _, command) in COMMANDS {
         let schema = read(&format!("{command}.json"));
         for branch in branches(&schema) {
             let outcome = &branch["properties"]["outcome"];

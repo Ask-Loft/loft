@@ -11,12 +11,17 @@ pub enum Out {
     /// Fields in the order written. An empty mapping as a field's value is the caller's to
     /// omit; at the top level it is an empty file.
     Mapping(Vec<(&'static str, Out)>),
+    /// A mapping whose keys are data, such as extension data's: each key a letter followed by
+    /// letters and digits, as a field's name is.
+    Map(Vec<(String, Out)>),
     Sequence(Vec<Out>),
     /// A key, label, slug, enumerated value, name or identifier: plain unless a YAML reader
     /// would take it for a null, a boolean or a number.
     Token(String),
     /// An integer field, always plain.
     Integer(u64),
+    /// A value written plain whatever it is, such as a signed integer or a boolean.
+    Plain(String),
     /// Free text: a literal block where it reads back exactly, double-quoted otherwise.
     Text(String),
     /// YAML's `null`, written plain.
@@ -25,7 +30,7 @@ pub enum Out {
 
 impl Out {
     fn is_collection(&self) -> bool {
-        matches!(self, Self::Mapping(_) | Self::Sequence(_))
+        matches!(self, Self::Mapping(_) | Self::Map(_) | Self::Sequence(_))
     }
 }
 
@@ -35,6 +40,7 @@ pub fn write(value: &Out) -> String {
     let mut text = String::new();
     match value {
         Out::Mapping(fields) => mapping(&mut text, fields, 0, false),
+        Out::Map(fields) => mapping(&mut text, fields, 0, false),
         Out::Sequence(items) => sequence(&mut text, items, 0),
         scalar => {
             line_value(&mut text, scalar, 0);
@@ -48,12 +54,12 @@ fn indent(text: &mut String, width: usize) {
 }
 
 /// A mapping at `width`; one that is a sequence entry starts on the dash's line.
-fn mapping(text: &mut String, fields: &[(&str, Out)], width: usize, after_dash: bool) {
+fn mapping<K: AsRef<str>>(text: &mut String, fields: &[(K, Out)], width: usize, after_dash: bool) {
     for (index, (key, value)) in fields.iter().enumerate() {
         if index > 0 || !after_dash {
             indent(text, width);
         }
-        text.push_str(key);
+        text.push_str(key.as_ref());
         text.push(':');
         if value.is_collection() {
             text.push('\n');
@@ -71,6 +77,7 @@ fn sequence(text: &mut String, items: &[Out], width: usize) {
         text.push_str("- ");
         match item {
             Out::Mapping(fields) => mapping(text, fields, width + 2, true),
+            Out::Map(fields) => mapping(text, fields, width + 2, true),
             Out::Sequence(_) => {
                 text.pop();
                 text.push('\n');
@@ -84,6 +91,7 @@ fn sequence(text: &mut String, items: &[Out], width: usize) {
 fn nested(text: &mut String, value: &Out, width: usize) {
     match value {
         Out::Mapping(fields) => mapping(text, fields, width, false),
+        Out::Map(fields) => mapping(text, fields, width, false),
         Out::Sequence(items) => sequence(text, items, width),
         _ => unreachable!("only collections nest"),
     }
@@ -97,11 +105,14 @@ fn line_value(text: &mut String, value: &Out, width: usize) {
             let _ = write!(text, "{number}");
         }
         Out::Null => text.push_str("null"),
+        Out::Plain(value) => text.push_str(value),
         Out::Token(token) if is_plain(token) => text.push_str(token),
         Out::Token(token) => double_quoted(text, token),
         Out::Text(string) if is_literal(string) => literal(text, string, width + 2),
         Out::Text(string) => double_quoted(text, string),
-        Out::Mapping(_) | Out::Sequence(_) => unreachable!("collections are not line values"),
+        Out::Mapping(_) | Out::Map(_) | Out::Sequence(_) => {
+            unreachable!("collections are not line values")
+        }
     }
     text.push('\n');
 }

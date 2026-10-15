@@ -1,0 +1,59 @@
+key: 01a1403a-512d-76c8-b11e-f0f714414b63
+slug: openspec-identity-is-kept-in-ext-openspec
+title: "OpenSpec identity is kept in `ext.openspec`"
+context: "An OpenSpec project names each requirement, places each capability at a path, carries metadata lines such as `**ID**:` and may hold the Purpose its archive command writes as a placeholder. Rendering a converted and edited tree back to OpenSpec needs all four, and the provenance sidecar records them only as they were at import."
+state:
+  kind: accepted
+  selectedOption: 01a1403a-512d-76c8-b11e-f0fadae749fb
+  outcome: "The converter writes a Requirement's name and metadata lines and a Feature's capability id and placeholder Purpose into `ext.openspec`, and the OpenSpec renderer reads them from there and from nothing beside `spec/`."
+drivers:
+  - key: 01a1403a-512d-76c8-b11e-f0f872e201e9
+    kind: local
+    label: "Render back after edits"
+    statement: "An edited tree renders back to the OpenSpec names and paths it came from."
+  - key: 01a1403a-512d-76c8-b11e-f0f9fabe6999
+    kind: local
+    label: "Clean bodies"
+    statement: "A body holds the text an author wrote and no tool data."
+options:
+  - key: 01a1403a-512d-76c8-b11e-f0fadae749fb
+    title: "Keep them in `ext.openspec`"
+    description: "The names, paths, metadata lines and placeholder live on the nodes, in the `openspec` namespace."
+  - key: 01a1403a-512d-76c8-b11e-f0fb7d811bd8
+    title: "Keep them in the sidecar"
+    description: "The provenance sidecar records them, and the renderer reads the sidecar."
+assessments:
+  - option: 01a1403a-512d-76c8-b11e-f0fadae749fb
+    driver: 01a1403a-512d-76c8-b11e-f0f872e201e9
+    rating: supports
+    rationale: "the data moves and merges with its node"
+  - option: 01a1403a-512d-76c8-b11e-f0fadae749fb
+    driver: 01a1403a-512d-76c8-b11e-f0f9fabe6999
+    rating: supports
+    rationale: "metadata lines leave the body"
+  - option: 01a1403a-512d-76c8-b11e-f0fb7d811bd8
+    driver: 01a1403a-512d-76c8-b11e-f0f872e201e9
+    rating: conflicts
+    rationale: "the sidecar keeps the state of the import"
+  - option: 01a1403a-512d-76c8-b11e-f0fb7d811bd8
+    driver: 01a1403a-512d-76c8-b11e-f0f9fabe6999
+    rating: neutral
+    rationale: "metadata lines stay in the body"
+consequences:
+  - key: 01a1403a-512d-76c8-b11e-f0fc3e5e4ee2
+    kind: benefit
+    statement: "A fix made in Loft can be sent back to an OpenSpec project in its own names and paths."
+  - key: 01a1403a-512d-76c8-b11e-f0fd3e908d88
+    kind: obligation
+    statement: "The renderer reads the `openspec` namespace and reports a value it cannot read."
+subjects:
+  - role: affected
+    node: 01a1402e-d25e-7540-9283-181704b9c659
+  - role: affected
+    node: 01a1402e-d25e-7540-9283-183cb91aef9a
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-30d88fafefe2
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-30ed3150e1e5
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-30fa1a4a0d47

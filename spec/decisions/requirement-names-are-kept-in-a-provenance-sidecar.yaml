@@ -1,0 +1,68 @@
+key: 01a13d04-2b9d-7320-aa86-8a70c91a2322
+slug: requirement-names-are-kept-in-a-provenance-sidecar
+title: "Requirement names are kept in a provenance sidecar"
+context: "An OpenSpec requirement is known by its name, and a Requirement of the Format has a statement and no name. Scenario names become Criterion names, but requirement names, source paths and source lines have no field in the tree."
+state:
+  kind: superseded
+  selectedOption: 01a13d04-2b9d-7320-aa86-8a6d1f978a38
+  outcome: "The converter writes a sidecar beside `spec/` that records the source of each node it creates."
+  successor: 01a1403a-512d-76c8-b11e-f0f714414b63
+drivers:
+  - key: 01a13d04-2b9d-7320-aa86-8a6b99dd66ae
+    kind: local
+    label: "A traceable import"
+    statement: "A converted node can be traced to the file and heading it came from."
+  - key: 01a13d04-2b9d-7320-aa86-8a6c8600392d
+    kind: local
+    label: "A clean tree"
+    statement: "The tree holds only what the Format defines."
+options:
+  - key: 01a13d04-2b9d-7320-aa86-8a6d1f978a38
+    title: "A sidecar beside spec/"
+    description: "A file beside `spec/` records each node's source path, line and names."
+  - key: 01a13d04-2b9d-7320-aa86-8a6e90c5eb9d
+    title: "Drop the names"
+    description: "Requirement names are used to derive keys and then discarded."
+  - key: 01a13d04-2b9d-7320-aa86-8a6f9c72e7cd
+    title: "The name opens the body"
+    description: "The requirement name becomes the first line of the Requirement's body."
+assessments:
+  - option: 01a13d04-2b9d-7320-aa86-8a6d1f978a38
+    driver: 01a13d04-2b9d-7320-aa86-8a6b99dd66ae
+    rating: supports
+    rationale: "each node maps to its source"
+  - option: 01a13d04-2b9d-7320-aa86-8a6d1f978a38
+    driver: 01a13d04-2b9d-7320-aa86-8a6c8600392d
+    rating: supports
+    rationale: "the tree is unchanged"
+  - option: 01a13d04-2b9d-7320-aa86-8a6e90c5eb9d
+    driver: 01a13d04-2b9d-7320-aa86-8a6b99dd66ae
+    rating: conflicts
+    rationale: "the source of a Requirement cannot be found"
+  - option: 01a13d04-2b9d-7320-aa86-8a6e90c5eb9d
+    driver: 01a13d04-2b9d-7320-aa86-8a6c8600392d
+    rating: supports
+    rationale: "the tree is unchanged"
+  - option: 01a13d04-2b9d-7320-aa86-8a6f9c72e7cd
+    driver: 01a13d04-2b9d-7320-aa86-8a6b99dd66ae
+    rating: supports
+    rationale: "the name stays with its node"
+  - option: 01a13d04-2b9d-7320-aa86-8a6f9c72e7cd
+    driver: 01a13d04-2b9d-7320-aa86-8a6c8600392d
+    rating: conflicts
+    rationale: "every body opens with a heading-like line"
+consequences:
+  - key: 01a13d04-2b9d-7320-aa86-8a71997c3a86
+    kind: benefit
+    statement: "A later re-import or an OpenSpec-shaped rendering can find each node's source."
+  - key: 01a13d04-2b9d-7320-aa86-8a72c06f8c69
+    kind: obligation
+    statement: "The store writes a sidecar named after the source it came from."
+  - key: 01a13d04-2b9d-7320-aa86-8a738ee6a095
+    kind: cost
+    statement: "The sidecar describes the import and is not kept current as the tree is edited."
+subjects:
+  - role: affected
+    node: 01a13d02-7211-77f1-a8f1-3108af8ee1ce
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-31021bb0f8ff

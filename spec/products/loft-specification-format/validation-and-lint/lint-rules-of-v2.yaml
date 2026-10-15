@@ -29,6 +29,10 @@ requirements:
         name: "A statement with `form` yields no `V2-002` finding."
       - key: e82461c3-b158-4409-90fd-2eb77f2b02f5
         name: "The default severity of `V2-002` is info."
+      - key: 01a13ce8-2c91-7179-aae0-9fa9a74faead
+        name: "A text statement that follows one of the five EARS forms but not its template's exact wording yields its `V2-002` finding with that form's name as the term."
+      - key: 01a13ce8-2c91-7179-aae0-9faa272ce50e
+        name: "A text statement that follows none of the five EARS forms yields its `V2-002` finding without a term."
   - key: d0b632ee-a776-418e-91a0-fbbb8997b564
     statement:
       form: ubiquitous

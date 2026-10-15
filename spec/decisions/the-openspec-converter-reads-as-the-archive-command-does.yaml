@@ -1,0 +1,56 @@
+key: 01a13d04-2b9d-7320-aa86-8a879dec4c21
+slug: the-openspec-converter-reads-as-the-archive-command-does
+title: "The OpenSpec converter reads a main spec as OpenSpec's archive command does"
+context: "OpenSpec reads a main spec in two ways. `openspec show --json` takes every child heading of `Requirements` as a requirement; the archive command, which writes the main specs, takes only `### Requirement:` headings and keeps any other heading in the block before it. The JSON also drops the title, the other sections, fenced code and metadata lines."
+state:
+  kind: accepted
+  selectedOption: 01a13d04-2b9d-7320-aa86-8a859537e4aa
+  outcome: "The converter reads the Markdown itself, recognises requirements as the archive command does, and turns the other headings into Sections."
+drivers:
+  - key: 01a13d04-2b9d-7320-aa86-8a8344997756
+    kind: local
+    label: "The source as written"
+    statement: "The converter reads what the archive command wrote."
+  - key: 01a13d04-2b9d-7320-aa86-8a849bef0267
+    kind: local
+    label: "No outside tooling"
+    statement: "Converting needs no OpenSpec installation."
+options:
+  - key: 01a13d04-2b9d-7320-aa86-8a859537e4aa
+    title: "Read the Markdown as the archive command does"
+    description: "The converter parses the files with the archive command's requirement rule."
+  - key: 01a13d04-2b9d-7320-aa86-8a862a83d83a
+    title: "Read the output of openspec show --json"
+    description: "The converter runs OpenSpec and converts its JSON."
+assessments:
+  - option: 01a13d04-2b9d-7320-aa86-8a859537e4aa
+    driver: 01a13d04-2b9d-7320-aa86-8a8344997756
+    rating: supports
+    rationale: "the requirements are those archive applies deltas to"
+  - option: 01a13d04-2b9d-7320-aa86-8a859537e4aa
+    driver: 01a13d04-2b9d-7320-aa86-8a849bef0267
+    rating: supports
+    rationale: "only the files are read"
+  - option: 01a13d04-2b9d-7320-aa86-8a862a83d83a
+    driver: 01a13d04-2b9d-7320-aa86-8a8344997756
+    rating: conflicts
+    rationale: "every child heading becomes a requirement, and sections are dropped"
+  - option: 01a13d04-2b9d-7320-aa86-8a862a83d83a
+    driver: 01a13d04-2b9d-7320-aa86-8a849bef0267
+    rating: conflicts
+    rationale: "OpenSpec must be installed and run"
+consequences:
+  - key: 01a13d04-2b9d-7320-aa86-8a88a0c691ac
+    kind: benefit
+    statement: "Headings OpenSpec keeps as text become Sections rather than Requirements."
+  - key: 01a13d04-2b9d-7320-aa86-8a89d7a76f95
+    kind: obligation
+    statement: "The grammar the converter reads is stated in `spec/`, with OpenSpec 1.14 as its reference."
+  - key: 01a13d04-2b9d-7320-aa86-8a8a9d5dcbc2
+    kind: cost
+    statement: "A change to OpenSpec's grammar needs a change to the converter."
+subjects:
+  - role: affected
+    node: 01a13d02-7211-77f1-a8f1-30cf2652a5d6
+  - role: outcome
+    node: 01a13d02-7211-77f1-a8f1-30ca31638668

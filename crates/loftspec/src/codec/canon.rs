@@ -32,7 +32,7 @@ fn sort_text(value: &Val) -> &str {
             .first()
             .and_then(|(_, first)| first.text())
             .unwrap_or_default(),
-        Val::List(_) | Val::Null { .. } => "",
+        Val::List(_) | Val::Null { .. } | Val::Ext { .. } => "",
     }
 }
 

@@ -1,0 +1,83 @@
+key: 01a1403a-512d-76c8-b11e-f0ed9e44b810
+slug: nodes-carry-tool-data-in-ext
+title: "Nodes carry tool data in `ext`, hashed in its own root"
+context: "Another specification format names things the Format has no field for: OpenSpec gives each requirement a name its later changes refer to, and Spec Kit and Kiro number requirements and criteria. A converter that keeps such data beside `spec/` keeps it only as it was at import, since an edit, a move or a merge of the tree does not reach that file. A field for each such datum would grow the Format with every format it meets."
+state:
+  kind: accepted
+  selectedOption: 01a1403a-512d-76c8-b11e-f0f1fcec3b5e
+  outcome: "Every node record may hold `ext`, a mapping of namespaces to values that are strings, integers, booleans, lists or mappings. The linter reads none of it, no content hash includes it, and the state root holds it through an extensions root, so the lock pins it."
+drivers:
+  - key: 01a1403a-512d-76c8-b11e-f0ee0fcd2173
+    kind: local
+    label: "Data follows the node"
+    statement: "Data a tool keeps on a node survives edits, moves and merges of the tree."
+  - key: 01a1403a-512d-76c8-b11e-f0ef6b88e59c
+    kind: local
+    label: "A small Format"
+    statement: "The Format does not grow a field for each tool it meets."
+  - key: 01a1403a-512d-76c8-b11e-f0f0f06ac9de
+    kind: local
+    label: "Reviews stay current"
+    statement: "Changing tool data leaves a node's content hash, and the trace links reviewed against it, as they were."
+options:
+  - key: 01a1403a-512d-76c8-b11e-f0f1fcec3b5e
+    title: "An `ext` mapping on every node"
+    description: "Each node record may hold `ext`, keyed by a namespace per tool, outside the content view and inside the state root."
+  - key: 01a1403a-512d-76c8-b11e-f0f2127f18c3
+    title: "A field for each datum"
+    description: "The Format gains a field for each datum, such as a Requirement's name."
+  - key: 01a1403a-512d-76c8-b11e-f0f322f4d82d
+    title: "A file beside the tree"
+    description: "A converter keeps its data in a sidecar beside `spec/`."
+assessments:
+  - option: 01a1403a-512d-76c8-b11e-f0f1fcec3b5e
+    driver: 01a1403a-512d-76c8-b11e-f0ee0fcd2173
+    rating: supports
+    rationale: "the data sits on the node it describes"
+  - option: 01a1403a-512d-76c8-b11e-f0f1fcec3b5e
+    driver: 01a1403a-512d-76c8-b11e-f0ef6b88e59c
+    rating: supports
+    rationale: "one field serves every tool"
+  - option: 01a1403a-512d-76c8-b11e-f0f1fcec3b5e
+    driver: 01a1403a-512d-76c8-b11e-f0f0f06ac9de
+    rating: supports
+    rationale: "the content view leaves `ext` out"
+  - option: 01a1403a-512d-76c8-b11e-f0f2127f18c3
+    driver: 01a1403a-512d-76c8-b11e-f0ee0fcd2173
+    rating: supports
+    rationale: "the field sits on the node"
+  - option: 01a1403a-512d-76c8-b11e-f0f2127f18c3
+    driver: 01a1403a-512d-76c8-b11e-f0ef6b88e59c
+    rating: conflicts
+    rationale: "each format adds fields"
+  - option: 01a1403a-512d-76c8-b11e-f0f2127f18c3
+    driver: 01a1403a-512d-76c8-b11e-f0f0f06ac9de
+    rating: conflicts
+    rationale: "a content field changes the content hash"
+  - option: 01a1403a-512d-76c8-b11e-f0f322f4d82d
+    driver: 01a1403a-512d-76c8-b11e-f0ee0fcd2173
+    rating: conflicts
+    rationale: "the file keeps the state of the import"
+  - option: 01a1403a-512d-76c8-b11e-f0f322f4d82d
+    driver: 01a1403a-512d-76c8-b11e-f0ef6b88e59c
+    rating: supports
+    rationale: "the tree is unchanged"
+  - option: 01a1403a-512d-76c8-b11e-f0f322f4d82d
+    driver: 01a1403a-512d-76c8-b11e-f0f0f06ac9de
+    rating: supports
+    rationale: "no hash of the tree includes the file"
+consequences:
+  - key: 01a1403a-512d-76c8-b11e-f0f4f26f486b
+    kind: benefit
+    statement: "A specification converted from another format can be rendered back to it after it is edited."
+  - key: 01a1403a-512d-76c8-b11e-f0f52cea6ce2
+    kind: cost
+    statement: "The state view gains the extensions root once a node carries `ext`."
+  - key: 01a1403a-512d-76c8-b11e-f0f6e0960388
+    kind: obligation
+    statement: "Integers stay within the range canonical JSON writes exactly, and a value has no fraction and no null."
+subjects:
+  - role: outcome
+    node: 01a14039-8315-7390-a27f-c5695f6ac662
+  - role: outcome
+    node: 01a14039-8315-7390-a27f-c5737b3192e8

@@ -11,6 +11,7 @@ pub mod lint;
 pub mod merge;
 pub mod merge_cases;
 pub mod merge_keys;
+pub mod openspec;
 pub mod parity;
 pub mod text;
 pub mod v1;
@@ -58,6 +59,7 @@ pub fn section(n: u32, name: &str, body: &str) -> Section {
         name: name.to_owned(),
         body: body.to_owned(),
         sections: Vec::new(),
+        ext: loftspec::ext::Ext::new(),
     }
 }
 

@@ -4,14 +4,15 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::common::BESIDE;
 use crate::common::{EPOCH, Scratch, stderr};
 use crate::markdown::{rows_by_span, section, table};
 use crate::skill_format::format;
 use crate::snapshot::{self, snapshot};
 use loftspec::codec::{Role, SpecPath};
+use loftspec::convert::v1::SIDECAR;
 use loftspec::publish::LOCK;
 use loftspec::trace::TRACE;
-use loftspec_store::fs::SIDECAR;
 use software_plant::{Clock, GitScenario};
 
 /// A file of each role, its names standing for any: an exhaustive match, so a new role fails
@@ -81,7 +82,7 @@ fn files_table(markdown: &str) -> BTreeMap<String, Vec<String>> {
 fn the_files_table_names_the_file_of_each_kind_of_record() {
     let named: BTreeSet<String> = files_table(&format()).into_keys().collect();
     let mut files: BTreeSet<String> = roles().iter().map(|role| role.path().to_string()).collect();
-    files.extend([LOCK, TRACE, SIDECAR].map(str::to_owned));
+    files.extend(BESIDE.map(str::to_owned));
     assert_eq!(named, files);
 }
 

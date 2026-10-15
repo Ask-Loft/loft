@@ -96,6 +96,8 @@ pub enum Item {
     /// A node's key, or a former label as `{formerLabel: <label>}` (AC-809); while formatting,
     /// also a [`Kind::ByName`] record.
     NodeRef,
+    /// A node's extension data: a mapping of namespaces to free values.
+    Ext,
 }
 
 impl Shape {

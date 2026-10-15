@@ -5,6 +5,7 @@
 mod canon;
 mod conflict;
 mod error;
+mod ext;
 pub mod field;
 mod files;
 mod layout;

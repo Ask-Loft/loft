@@ -19,6 +19,8 @@ requirements:
         name: "The export holds every node's content view."
       - key: 0d5b4a53-07e9-42d0-8a8a-431a1ab2871c
         name: "The export holds each node's key and label beside its content view."
+      - key: 01a14039-8315-7390-a27f-c56ee70cace9
+        name: "The export holds each node's `ext` beside its content view when the node carries one."
       - key: fcaa7c95-1a3b-46e5-bd6b-4783c860c069
         name: "The export names the state root it was rendered from."
       - key: e4fbc2f6-dfc5-456b-a3ff-24fd696a5db3

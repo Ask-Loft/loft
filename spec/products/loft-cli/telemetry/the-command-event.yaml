@@ -6,7 +6,7 @@ body: |
 
   ```json
   {
-    "schema": "loft-telemetry-event/1",
+    "schema": "loft-telemetry-event/2",
     "eventId": "3f0c9a52-6c1e-4f7b-9d41-0b6e2f8a1c77",
     "version": "2.1.0",
     "os": "macos",
@@ -31,7 +31,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The command event"
-      shall: "hold exactly the fields of the schema `loft-telemetry-event/1`."
+      shall: "hold exactly the fields of the schema `loft-telemetry-event/2`."
     criteria:
       - key: 01a13a90-3556-7106-a68c-266a569960f9
         name: "Every event sent validates against `schemas/telemetry-event.json`."

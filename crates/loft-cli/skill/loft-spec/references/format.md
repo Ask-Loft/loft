@@ -21,6 +21,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 - Components and Constraints
 - Quality Attributes
 - Sections and bodies
+- Extension data
 - Tags and categories
 - Decisions
 - Edges
@@ -43,10 +44,12 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | `loft.lock.json`, beside `spec/` | The lock that pins the published tree | `loft publish` only |
 | `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` |
 | `v1-sidecar.json`, beside `spec/` | What a Loft v1 export held that the format has no field for | `loft import v1` only |
+| `openspec-sidecar.json`, beside `spec/` | Where each node imported from an OpenSpec project came from, with the requirement and scenario names | `loft import openspec` only |
 
 `loft fmt` writes each file it names in canonical layout. `loft publish` also rewrites each
 citation of a label it withdrew, in the prose of the node or decision that cites it.
-`loft import v1` writes a whole tree from a Loft v1 export, and the sidecar beside it.
+`loft import v1` writes a whole tree from a Loft v1 export, and `loft import openspec` one from
+the main specs of an OpenSpec project; each writes its sidecar beside the tree.
 `loft skill install` writes this skill beside `spec/`, in a directory for each agent, as
 `loft init` does unless given `--no-skill`.
 
@@ -95,6 +98,7 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 | `body` | optional | `body` | optional |
 | `tags` | optional | `tags` | optional |
 | `mentions` | optional | `mentions` | optional |
+| `ext` | optional | `ext` | optional |
 | `featureGroups` | optional | `features` | optional: Feature keys, which `loft fmt` writes |
 | `constraints` | optional | `constraints` | optional |
 | `sections` | optional | `sections` | optional |
@@ -131,8 +135,9 @@ constraints:
 | `name` | required | `body` | optional | `body` | optional |
 | `body` | optional | `tags` | optional | `tags` | optional |
 | `tags` | optional | `mentions` | optional | `mentions` | optional |
-| `realizes` | optional | `criteria` | optional | `sections` | optional |
-| `mentions` | optional | `sections` | optional | | |
+| `realizes` | optional | `ext` | optional | `ext` | optional |
+| `mentions` | optional | `criteria` | optional | `sections` | optional |
+| `ext` | optional | `sections` | optional | | |
 | `requirements` | optional | | | | |
 | `qualityAttributes` | optional | | | | |
 | `sections` | optional | | | | |
@@ -216,6 +221,7 @@ A statement may instead be `text:` alone, a whole sentence; lint asks for the sl
 | `boundary` | optional: `private` or `external` |
 | `scopedTo` | optional: Product keys |
 | `mentions` | optional |
+| `ext` | optional |
 | `components` | optional: nested Components |
 | `constraints`, `qualityAttributes`, `sections` | optional |
 
@@ -229,7 +235,7 @@ A root Component without `boundary` is `private`; a nested one takes its parent'
 | `constraintBinding` | optional: the category it binds, below |
 | `conservationKind` | optional: `sum_preservation`, `cap` or `operation_identity` |
 | `verificationFate` | optional: `proved`, `monitored` or `sampled` |
-| `mentions`, `sections` | optional |
+| `mentions`, `ext`, `sections` | optional |
 
 | `constraintBinding` field | |
 |---|---|
@@ -256,7 +262,7 @@ A Quality Attribute sits under a Feature or a Component.
 | `qaKind` | required: `latency`, `throughput`, `availability`, `cost`, `testability`, `usability` or `capacity` |
 | `qualityTarget` | required: below |
 | `verificationFate` | optional: `proved`, `monitored` or `sampled` |
-| `mentions`, `sections` | optional |
+| `mentions`, `ext`, `sections` | optional |
 
 | `qualityTarget` field | |
 |---|---|
@@ -284,7 +290,29 @@ a body belongs in a Section instead (`V2-001`).
 | Section field | |
 |---|---|
 | `key`, `name`, `body` | required |
-| `mentions`, `sections` | optional: `sections` nests Sections |
+| `mentions`, `ext`, `sections` | optional: `sections` nests Sections |
+
+## Extension data
+
+`ext` holds what a tool keeps on a node that the format does not define, such as the name an
+OpenSpec requirement had, each tool under its own namespace. No lint rule reads it, it is not
+part of a node's content hash, and the lock pins it. Leave it as the tool wrote it, except when
+you copy a node: a copied Feature keeps its `openspec.capability`, and two Features with one
+capability make `loft render --openspec` refuse, so remove it from the copy.
+
+```yaml fragment
+ext:
+  openspec:
+    name: "Sign in with email"
+    metadata:
+      - label: "ID"
+        value: "AUTH-1"
+```
+
+A namespace is a lowercase letter followed by lowercase letters and digits, and each key of a
+mapping is a letter followed by letters and digits. A value is text in double quotes or a literal
+block, an integer, `true` or `false`, a list or a mapping; neither a list nor a mapping may be
+empty.
 
 ## Tags and categories
 
