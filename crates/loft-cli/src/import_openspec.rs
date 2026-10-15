@@ -8,10 +8,10 @@ use std::path::Path;
 use loftspec::codec;
 use loftspec::convert::openspec::{Finding, SIDECAR, convert};
 use loftspec::ids::DocumentId;
-use loftspec::lint::{LintConfig, RuleId, Severity, count_body_rule};
+use loftspec::lint::{LintConfig, RuleId, count_body_rule};
 use loftspec_store::FileStore;
 use loftspec_store::openspec::read_project;
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 
 use crate::finish::Finished;
 use crate::json;
@@ -135,21 +135,12 @@ fn advice(warnings: usize) -> Option<String> {
 }
 
 fn finding(finding: &Finding) -> Value {
-    let mut fields = Map::new();
-    fields.insert("rule".to_owned(), json!(finding.rule.as_str()));
-    fields.insert("severity".to_owned(), json!(Severity::Info.as_str()));
-    fields.insert("message".to_owned(), json!(finding.rule.message()));
-    if let Some(file) = &finding.file {
-        fields.insert("path".to_owned(), json!(file));
-    }
-    if let Some(line) = finding.line {
-        fields.insert("line".to_owned(), json!(line));
-    }
-    if let Some(key) = finding.key {
-        fields.insert("key".to_owned(), json!(key.to_string()));
-    }
-    if let Some(detail) = &finding.detail {
-        fields.insert("detail".to_owned(), json!(detail));
-    }
-    Value::Object(fields)
+    json::info_finding(
+        finding.rule.as_str(),
+        finding.rule.message(),
+        finding.file.clone(),
+        finding.line,
+        finding.key.map(|key| key.to_string()),
+        finding.detail.as_deref(),
+    )
 }

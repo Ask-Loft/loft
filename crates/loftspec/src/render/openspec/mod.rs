@@ -37,6 +37,9 @@ const REQUIREMENT_LENGTH: usize = 500;
 /// What one document renders to in `OpenSpec`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpenspecProjection {
+    /// Each directory the main specs are written to, one per Product, by its path in the
+    /// directory rendered to.
+    pub roots: Vec<String>,
     /// Each `spec.md`, by its path in the directory rendered to.
     pub files: BTreeMap<String, String>,
     /// The text of the render map, [`RENDER_MAP`].
@@ -54,6 +57,7 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> 
     document.index()?;
     let labels = Labels::of(document);
     let several = document.products.len() > 1;
+    let mut roots = Vec::new();
     let mut files = BTreeMap::new();
     let mut entries = Vec::new();
     let mut findings = Vec::new();
@@ -63,6 +67,7 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> 
         } else {
             SPECS.to_owned()
         };
+        roots.push(root.clone());
         for group in &product.feature_groups {
             for feature in &group.features {
                 let path = format!("{root}/{}/{SPEC_FILE}", capability(group, feature));
@@ -79,6 +84,7 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> 
     let mut map = serde_json::to_string_pretty(&map).expect("a render map serialises");
     map.push('\n');
     Ok(OpenspecProjection {
+        roots,
         files,
         map,
         findings,

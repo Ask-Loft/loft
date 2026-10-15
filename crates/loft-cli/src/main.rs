@@ -174,7 +174,8 @@ enum Command {
         #[command(subcommand)]
         action: SwitchAction,
     },
-    /// Write the Markdown projection and the canonical JSON export (RQ-143).
+    /// Write the Markdown projection, the canonical JSON export, or the `OpenSpec` projection
+    /// (RQ-143).
     Render {
         /// Where to write the Markdown projection.
         #[arg(long, value_name = "PATH")]
@@ -182,6 +183,12 @@ enum Command {
         /// Where to write the canonical JSON export.
         #[arg(long, value_name = "PATH")]
         json: Option<PathBuf>,
+        /// The directory to write the `OpenSpec` projection to: its main specs and a render map.
+        #[arg(long, value_name = "DIR")]
+        openspec: Option<PathBuf>,
+        /// Replace the main specs already in the `OpenSpec` directory.
+        #[arg(long, requires = "openspec")]
+        force: bool,
         #[command(flatten)]
         output: Output,
     },
@@ -415,8 +422,19 @@ fn dispatch(command: Command) -> Finished {
         Command::Render {
             markdown,
             json,
+            openspec,
+            force,
             output,
-        } => render::run(root, markdown, json, output.json()),
+        } => render::run(
+            root,
+            render::Targets {
+                markdown,
+                json,
+                openspec,
+                force,
+            },
+            output.json(),
+        ),
         Command::Skill {
             action: SkillAction::Install { output },
         } => skill::run(root, output.json()),

@@ -47,6 +47,7 @@ fn first_feature(document: &mut Document) -> &mut loftspec::tree::Feature {
 fn one_product_renders_under_specs_and_each_of_several_under_its_slug() {
     let paths = |document: &Document| rendered(document).files.into_keys().collect::<Vec<_>>();
     assert_eq!(paths(&small_document()), ["specs/identity/keys/spec.md"]);
+    assert_eq!(rendered(&small_document()).roots, ["specs"]);
     let mut document = small_document();
     let mut second = document.products[0].clone();
     second.id = Some(loftspec::ids::ProductId::new(key(90)));
@@ -68,6 +69,10 @@ fn one_product_renders_under_specs_and_each_of_several_under_its_slug() {
             "example-product/specs/identity/keys/spec.md",
             "second/specs/identity/keys/spec.md"
         ]
+    );
+    assert_eq!(
+        rendered(&document).roots,
+        ["example-product/specs", "second/specs"]
     );
 }
 

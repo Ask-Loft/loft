@@ -77,6 +77,8 @@ requirements:
     criteria:
       - key: 01a1402e-d25d-7745-8833-e408443031a8
         name: "The error names the directory."
+      - key: 01a1406d-98b1-756b-9b4d-defce8ef8b2c
+        name: "An entry whose name begins with `.` does not make a directory not empty."
       - key: 01a1402e-d25d-7745-8833-e409557eebd0
         name: "No projection is written."
   - key: 01a1402e-d25d-7745-8833-e40a8c05dc58

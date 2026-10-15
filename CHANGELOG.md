@@ -18,6 +18,12 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   obligations in scenario bodies, which become criterion bodies, so the command also reports how
   many `V2-007` warnings `loft check` will give and the `spec/lint.yaml` entry that lowers them to
   info; it writes no lint configuration. Its output follows the schema `loft-import-openspec/1`.
+- `loft render --openspec <dir>` writes the specification as the main specs of an OpenSpec
+  directory, with `loft-render-map.json` beside them naming the node each requirement and scenario
+  comes from, and prints each render finding (`OR-001` to `OR-006`). It refuses a main specs
+  directory that already holds files; `--force` replaces the main specs in it and changes nothing
+  else. Without `--markdown` or `--json` it writes neither of the other projections. Its output
+  follows the schema `loft-render/2`, which adds `removed` and `findings`.
 - The command event is now `loft-telemetry-event/2`: its `command` may be `import openspec`.
 - **Breaking (library):** a conversion's sidecar is a `loftspec::convert::SidecarFile`, its
   name with its bytes. `Imported::sidecar` is one, `FileStore::import` takes one, and the v1

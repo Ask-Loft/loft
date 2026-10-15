@@ -5040,6 +5040,8 @@ links:
     tests:
       - file: "crates/loftspec/tests/render_openspec.rs"
         name: "the_render_map_records_each_requirement_and_scenario_with_its_file_line_key_and_label"
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "openspec_alone_writes_the_main_specs_and_the_render_map_and_no_other_projection"
   - node: 01a1402e-d25e-7540-9283-18233d953958
     reviewed: f4bd6d34dcc6d7b26602b66f7c3e78f2844ccbd5e197af46d4d0122de8fe35c8
     tests:
@@ -6994,6 +6996,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/render.rs"
         name: "an_output_under_spec_is_refused_and_nothing_is_written"
+  - node: 01a1402e-d25d-7745-8833-e3ff71372972
+    reviewed: eec6d7773237ccef66a7e94b3d66c0567ab972c2882f9e623ec69ac9cd0d573e
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "an_openspec_directory_under_spec_is_refused_and_nothing_is_written"
   - node: 4b141b53-d7ce-489b-b162-cbf9ad383bee
     reviewed: 56dce2c07c224395c3953650ac81acfa5df7830fb3fc8cc8cdadb710fd8dda6d
     tests:
@@ -7006,6 +7013,56 @@ links:
         name: "a_render_that_writes_its_projections_or_finds_them_current_is_rendered_in_json"
       - file: "crates/loft-cli/tests/render.rs"
         name: "an_unchanged_projection_is_not_rewritten"
+  - node: 01a1402e-d25d-7745-8833-e40024191bb5
+    reviewed: 26d323b60d4d25367a15faea9970ab3cc5db645ba2bb880e7c5215c3055a5751
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "json_output_lists_the_files_written_and_each_finding"
+  - node: 01a1402e-d25d-7745-8833-e402e68f4d82
+    reviewed: 9adf84cecaf8da8a947fca0ae2aea7b4034b8ba81e22bc2440493b993617050b
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "openspec_alone_writes_the_main_specs_and_the_render_map_and_no_other_projection"
+  - node: 01a1402e-d25d-7745-8833-e40359e9497b
+    reviewed: 837653079b56c97043dcaf7c212a62963595c615ef97945ce887fa431d5ccf29
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "openspec_with_markdown_writes_both_and_not_the_json_export"
+  - node: 01a1402e-d25d-7745-8833-e405fa497955
+    reviewed: bf9271b3a6095efd3c88d80160b75bb040dda2eec009b25114d4eeea2388045f
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "each_finding_is_printed_on_its_own_line_and_none_prevents_the_render"
+  - node: 01a1402e-d25d-7745-8833-e40641c7657c
+    reviewed: cb1e7b9df2ea9ee52b8e888a437a850ac9046a6d728d179658fe73118a385d33
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "each_finding_is_printed_on_its_own_line_and_none_prevents_the_render"
+  - node: 01a1402e-d25d-7745-8833-e408443031a8
+    reviewed: 2e75611f4aab4cc7eb160fc97e2b3a1e5c2305f87589fad36a693d700843730a
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "a_main_specs_directory_that_is_not_empty_is_refused_by_name_and_nothing_is_written"
+  - node: 01a1406d-98b1-756b-9b4d-defce8ef8b2c
+    reviewed: 266f6b284cfc68ff691d037ea41be0d75111955e79d95ebd00dbe28a82fbc35c
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "a_hidden_entry_does_not_make_the_main_specs_directory_not_empty"
+  - node: 01a1402e-d25d-7745-8833-e409557eebd0
+    reviewed: 56dce2c07c224395c3953650ac81acfa5df7830fb3fc8cc8cdadb710fd8dda6d
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "a_main_specs_directory_that_is_not_empty_is_refused_by_name_and_nothing_is_written"
+  - node: 01a1402e-d25d-7745-8833-e40bd72d0de6
+    reviewed: 18b44d6937216241976a59a524f5ef778119c07a31dd4be793a48b02ff604dc3
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "force_removes_each_spec_it_does_not_write_and_changes_nothing_else"
+  - node: 01a1402e-d25d-7745-8833-e40c2d97a038
+    reviewed: cf876a659dee8f8767ec5d1e74e38e0de94856e1b887a71750f439e08f72d477
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "force_removes_each_spec_it_does_not_write_and_changes_nothing_else"
   - node: f413650f-ee5c-43cd-8588-d54a8b53aa65
     reviewed: 4b3134c2bdea023834a8876c216f10ac7994d4427fd13945042f6908c24bccbc
     tests:

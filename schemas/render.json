@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-render-1.json",
-  "title": "The result of `loft render --format json`, version 1",
+  "$id": "loft-render-2.json",
+  "title": "The result of `loft render --format json`, version 2",
   "oneOf": [
     {
       "type": "object",
@@ -11,11 +11,13 @@
         "outcome",
         "written",
         "unchanged",
+        "removed",
+        "findings",
         "errors"
       ],
       "properties": {
         "schema": {
-          "const": "loft-render/1"
+          "const": "loft-render/2"
         },
         "outcome": {
           "const": "rendered"
@@ -30,6 +32,18 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/finding"
           }
         },
         "errors": {
@@ -50,7 +64,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-render/1"
+          "const": "loft-render/2"
         },
         "outcome": {
           "const": "error"
@@ -132,6 +146,47 @@
           "items": {
             "$ref": "#/$defs/site"
           }
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "OR-001",
+            "OR-002",
+            "OR-003",
+            "OR-004",
+            "OR-005",
+            "OR-006"
+          ]
+        },
+        "severity": {
+          "const": "info"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "key": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
         }
       }
     }
