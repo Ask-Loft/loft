@@ -2331,6 +2331,8 @@ links:
     reviewed: 86c57f7523421963e4d6d6846cb2754bd590dc26c7ba03fd443d762964231727
     tests:
       - file: "crates/loftspec/tests/ext.rs"
+        name: "a_merge_keeps_an_ext_every_side_shares_without_a_conflict"
+      - file: "crates/loftspec/tests/ext.rs"
         name: "a_merge_takes_one_sides_ext_and_records_a_conflict_when_both_differ"
   - node: 01a14051-942d-7713-99cb-d5acb802c400
     reviewed: 24574f5608a153200a96f634962bbf64b7329ad8b57a5ae5bd2d21d9702a53f6

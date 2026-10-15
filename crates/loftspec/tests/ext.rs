@@ -324,6 +324,28 @@ fn a_merge_takes_one_sides_ext_and_records_a_conflict_when_both_differ() {
 }
 
 #[test]
+fn a_merge_keeps_an_ext_every_side_shares_without_a_conflict() {
+    let with = |requirement_body: Option<&str>, feature_body: &str| {
+        let mut document = small_document();
+        document.products[0].feature_groups[0].features[0]
+            .details
+            .body = Some(feature_body.to_owned());
+        let requirement = first_requirement(&mut document);
+        requirement.details.ext = sample();
+        requirement.details.body = requirement_body.map(str::to_owned);
+        codec::write(&document)
+    };
+    let base = with(None, "Keys address nodes.");
+    let (path, _) = feature_file(&base);
+    let ours = with(Some("Ours."), "Keys address nodes.");
+    let theirs = with(None, "Keys address every node.");
+    let merged = merge_file(&path, &base[&path], &ours[&path], &theirs[&path]).unwrap();
+    assert_eq!(merged.conflicts, 0);
+    let both = with(Some("Ours."), "Keys address every node.");
+    assert_eq!(merged.bytes, both[&path]);
+}
+
+#[test]
 fn the_extensions_root_is_the_digest_of_each_extended_node_key_and_ext_sorted_by_key() {
     let mut document = full_nested_document();
     let mut walked = 0;
