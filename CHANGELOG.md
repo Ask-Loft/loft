@@ -3,7 +3,7 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## Unreleased
+## 2.1.0 (2026-10-15)
 
 - `loft import openspec [<dir>]` converts the main specs of an OpenSpec project, read from
   `openspec/` by default, into `spec/`, and writes `openspec-sidecar.json` beside it with the

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "loft",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "Teaches a coding agent to write, change and review a Loft specification in spec/ with the loft command line.",
   "author": {
     "name": "Locap Ventures FZCO",
