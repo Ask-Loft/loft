@@ -59,6 +59,7 @@ pub fn section(n: u32, name: &str, body: &str) -> Section {
         name: name.to_owned(),
         body: body.to_owned(),
         sections: Vec::new(),
+        ext: loftspec::ext::Ext::new(),
     }
 }
 

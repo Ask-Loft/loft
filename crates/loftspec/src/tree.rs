@@ -15,17 +15,19 @@ use crate::ids::{
 };
 use std::ops::{Deref, DerefMut};
 
+use crate::ext::Ext;
 use crate::names::TagName;
 use crate::slug::Slug;
 use crate::statement::Statement;
 
 /// What every node kind but the Section carries besides its name and children: a body, the tags
-/// applied to it, and its Sections.
+/// applied to it, its Sections and its extension data.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Details {
     pub body: Option<String>,
     pub tags: Vec<TagName>,
     pub sections: Vec<Section>,
+    pub ext: Ext,
 }
 
 impl Details {
@@ -143,4 +145,5 @@ pub struct Section {
     pub name: String,
     pub body: String,
     pub sections: Vec<Section>,
+    pub ext: Ext,
 }

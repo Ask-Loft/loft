@@ -4,7 +4,8 @@
 //!
 //! ```text
 //! { "format", "stateRoot",
-//!   "nodes":      [{ "key", "label", "kind", "view" }],      in document order
+//!   "nodes":      [{ "key", "label", "kind", "view", "ext"? }], in document order; `ext` only
+//!                                                            on a node that carries it
 //!   "decisions":  [{ "key", "label", "view" }],              by key
 //!   "edges":      [{ "type", "source", "target", "role" }],  by canonical bytes
 //!   "tags":       [{ "key", "name", "definition" }],         by name
@@ -27,17 +28,7 @@ pub(super) fn render(
     views: &Views,
     labels: &Labels,
 ) -> Vec<u8> {
-    let mut nodes = Vec::new();
-    document.walk(&mut |node| {
-        if let Some(id) = node.id() {
-            nodes.push(json!({
-                "key": id.key(),
-                "label": labels.label(id),
-                "kind": id.kind().as_str(),
-                "view": views.nodes[&id],
-            }));
-        }
-    });
+    let nodes = nodes(document, views, labels);
     let decisions: Vec<Value> = views
         .decisions
         .iter()
@@ -104,4 +95,25 @@ pub(super) fn render(
         "tags": tags,
         "categories": categories,
     }))
+}
+
+/// Each keyed node in document order: its key, label, kind and view, and its `ext` when it
+/// carries one.
+fn nodes(document: &Document, views: &Views, labels: &Labels) -> Vec<Value> {
+    let mut nodes = Vec::new();
+    document.walk(&mut |node| {
+        if let Some(id) = node.id() {
+            let mut entry = json!({
+                "key": id.key(),
+                "label": labels.label(id),
+                "kind": id.kind().as_str(),
+                "view": views.nodes[&id],
+            });
+            if !node.ext().is_empty() {
+                entry["ext"] = crate::ext::to_json(node.ext());
+            }
+            nodes.push(entry);
+        }
+    });
+    nodes
 }

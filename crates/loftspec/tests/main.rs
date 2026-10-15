@@ -35,6 +35,7 @@ mod convert_v1_reading_list;
 mod convert_v1_sidecar;
 mod convert_v1_tag_names;
 mod digest;
+mod ext;
 mod fmt;
 mod fmt_deleted;
 mod fmt_keys;

@@ -12,6 +12,7 @@ pub mod convert;
 pub mod decision;
 pub mod document;
 mod ears;
+pub mod ext;
 pub mod fmt;
 pub mod hash;
 pub mod identity;

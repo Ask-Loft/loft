@@ -64,6 +64,7 @@ fn value(val: &Val) -> ConflictValue {
     match val {
         Val::Null { .. } => ConflictValue::Deleted,
         Val::Scalar { text, .. } => ConflictValue::Scalar(text.clone()),
+        Val::Ext { value, .. } => ConflictValue::Ext(value.clone()),
         Val::List(items) => ConflictValue::List(items.iter().map(value).collect()),
         Val::Record(record) => ConflictValue::Record(
             record
@@ -114,6 +115,10 @@ fn rec(conflict: &Conflict, host: Kind) -> ConflictRec {
 fn side_val(side: &ConflictValue, shape: SideShape) -> Val {
     match (shape, side) {
         (_, ConflictValue::Deleted) => Val::Null {
+            position: crate::yaml::Position::new(1, 1),
+        },
+        (_, ConflictValue::Ext(value)) => Val::Ext {
+            value: value.clone(),
             position: crate::yaml::Position::new(1, 1),
         },
         (SideShape::Field(Shape::List(item)), ConflictValue::List(items)) => {

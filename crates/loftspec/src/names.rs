@@ -20,6 +20,11 @@ pub enum NameError {
          by lowercase letters, digits and hyphens"
     )]
     Category(String),
+    #[error(
+        "`{0}` is not an extension namespace: a lowercase letter followed by lowercase letters \
+         and digits"
+    )]
+    Namespace(String),
 }
 
 /// A lowercase letter followed by lowercase letters, digits and hyphens.
@@ -27,6 +32,14 @@ fn is_segment(text: &str) -> bool {
     let mut bytes = text.bytes();
     bytes.next().is_some_and(|first| first.is_ascii_lowercase())
         && bytes.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+}
+
+/// A lowercase letter followed by lowercase letters and digits: a segment a YAML key of the text
+/// form can spell.
+fn is_namespace(text: &str) -> bool {
+    let mut bytes = text.bytes();
+    bytes.next().is_some_and(|first| first.is_ascii_lowercase())
+        && bytes.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
 }
 
 macro_rules! registry_names {
@@ -73,4 +86,6 @@ registry_names! {
     TagName, is_segment, NameError::Tag;
     /// The name of a constraint category, as a technical binding names it.
     CategoryName, |name| name.split('.').all(is_segment), NameError::Category;
+    /// The namespace a tool keeps its extension data under in a node's `ext`.
+    Namespace, is_namespace, NameError::Namespace;
 }

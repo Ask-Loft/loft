@@ -40,6 +40,7 @@ fn each_construct_outside_the_subset_is_one_v2_009_naming_the_node_and_its_first
             name: "Notes".to_owned(),
             body: "Text.\n\n| a | b |\n|---|---|\n| 1 | 2 |\n".to_owned(),
             sections: Vec::new(),
+            ext: loftspec::ext::Ext::new(),
         });
     let all = findings(&document);
     let found: Vec<_> = of(&all, RuleId::V2009)

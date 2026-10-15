@@ -44,6 +44,7 @@ pub const KIND: &str = "kind";
 pub const LABEL: &str = "label";
 pub const LOWER: &str = "lower";
 pub const MENTIONS: &str = "mentions";
+pub const EXT: &str = "ext";
 pub const METRIC: &str = "metric";
 pub const NAME: &str = "name";
 pub const NODE: &str = "node";

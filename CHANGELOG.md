@@ -20,6 +20,16 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   sidecar's name moves from `loftspec_store::fs::SIDECAR` to `loftspec::convert::v1::SIDECAR`.
 - `loftspec_store::openspec::read_project` reads an OpenSpec directory into the files the
   OpenSpec converter takes, and `loftspec::convert::openspec::layout` names its parts.
+- **Format:** every node record may hold `ext`, the data a tool keeps on a node that the Format
+  does not define, under the tool's own namespace: text, integers, `true` and `false`, lists and
+  mappings. No lint rule reads it, no projection but the JSON export shows it, and a merge
+  treats it as one value. It is not part of a node's content hash, so it never makes a trace
+  link stale; the state root holds it through a new extensions root (domain
+  `loftspec/extensions/1`), and a document in which no node carries `ext` keeps the state root
+  it had. A reader from 2.0.4 or earlier refuses a tree that uses `ext`.
+- **Breaking (library):** `Details` and `Section` gain `ext`, `Roots` gains `extensions`, and
+  `Domain` gains `Extensions`; `loftspec::ext` holds the value model and
+  `loftspec::names::Namespace` the namespace.
 - `loftspec::lint::count_body_rule` counts the findings of one lexical rule that reads bodies
   only, such as `V2-007`, without running the rest of the linter.
 

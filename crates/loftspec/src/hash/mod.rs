@@ -15,6 +15,7 @@ pub use tree::ContentHash;
 use crate::FORMAT;
 use crate::canonical::{Digest, Domain, canonical_bytes, digest, digest_array};
 use crate::document::{DerivedFrom, Document, Edge, EdgeTarget, SubjectRole};
+use crate::ext;
 use crate::identity::{Key, Label};
 use crate::ids::{DecisionId, ElementId, NodeId};
 use crate::index::{IndexErrors, Indexed};
@@ -39,6 +40,8 @@ pub struct Roots {
     pub decisions: Digest,
     pub content: Digest,
     pub bindings: Digest,
+    /// The extensions root; none for a document in which no node carries `ext`.
+    pub extensions: Option<Digest>,
     pub state: Digest,
 }
 
@@ -197,11 +200,14 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         Domain::Bindings,
         &bindings_view(document, &resolve),
     );
+    let extended = extensions_view(document);
+    let extensions = (!extended.is_empty())
+        .then(|| root(&mut views, "extensions", Domain::Extensions, &extended));
     let state = root(
         &mut views,
         "state",
         Domain::State,
-        &state_view(document, content, bindings),
+        &state_view(document, content, bindings, extensions),
     );
     if let Some(views) = views {
         views.decisions = decision_views;
@@ -218,9 +224,24 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
             decisions: decisions_root,
             content,
             bindings,
+            extensions,
             state,
         },
     }
+}
+
+/// Each node that carries `ext`, as its key and its `ext`, sorted by key.
+fn extensions_view(document: &Document) -> Vec<(Key, Value)> {
+    let mut extended = Vec::new();
+    document.walk(&mut |node| {
+        if let Some(id) = node.id()
+            && !node.ext().is_empty()
+        {
+            extended.push((id.key(), ext::to_json(node.ext())));
+        }
+    });
+    extended.sort_by_key(|(key, _)| *key);
+    extended
 }
 
 /// How a view names a node the document no longer holds: `{"formerLabel": <label>}` (ADR-13).
@@ -295,8 +316,13 @@ fn bindings_view<'a>(
 }
 
 /// The state view: format, algorithm, document key, content root, binding root and the
-/// derived-from record (AC-62).
-fn state_view(document: &Document, content: Digest, bindings: Digest) -> Value {
+/// derived-from record (AC-62), then the extensions root when there is one.
+fn state_view(
+    document: &Document,
+    content: Digest,
+    bindings: Digest,
+    extensions: Option<Digest>,
+) -> Value {
     let derived_from = document.derived_from.as_ref().map(
         |DerivedFrom {
              authored_state_id,
@@ -310,12 +336,16 @@ fn state_view(document: &Document, content: Digest, bindings: Digest) -> Value {
             })
         },
     );
-    json!([
+    let mut view = json!([
         FORMAT,
         ALGORITHM,
         document.id,
         content,
         bindings,
         derived_from
-    ])
+    ]);
+    if let (Some(extensions), Value::Array(fields)) = (extensions, &mut view) {
+        fields.push(json!(extensions));
+    }
+    view
 }

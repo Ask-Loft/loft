@@ -1,7 +1,7 @@
 //! Node records as typed nodes, with the edges they carry (RQ-168).
 
 use super::error::ReadError;
-use super::record::Rec;
+use super::record::{Rec, Val};
 use super::resolve::{Resolver, checked, key, optional, slug, text};
 use super::schema::field;
 use crate::attributes::{
@@ -9,6 +9,7 @@ use crate::attributes::{
     TechnicalBinding, VerificationFate,
 };
 use crate::document::Edge;
+use crate::ext::Ext;
 use crate::ids::{
     ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, NodeId,
     ProductId, QualityAttributeId, RequirementId, SectionId,
@@ -19,6 +20,14 @@ use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
     Requirement, RootComponent, Section,
 };
+
+/// A record's extension data; empty when it has no `ext`.
+fn ext(record: &Rec) -> Ext {
+    match record.get(field::EXT) {
+        Some(Val::Ext { value, .. }) => value.clone(),
+        _ => Ext::new(),
+    }
+}
 
 impl Resolver<'_> {
     /// A node's body, tags and Sections, and its `mentions` edges.
@@ -33,6 +42,7 @@ impl Resolver<'_> {
             body: record.text(field::BODY).map(str::to_owned),
             tags,
             sections: self.sections(record)?,
+            ext: ext(record),
         })
     }
 
@@ -47,6 +57,7 @@ impl Resolver<'_> {
                     name: text(section, field::NAME),
                     body: text(section, field::BODY),
                     sections: self.sections(section)?,
+                    ext: ext(section),
                 })
             })
             .collect()

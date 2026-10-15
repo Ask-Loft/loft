@@ -10,6 +10,7 @@ use super::sidecar::{OpenspecSidecar, Provenance, SourceFile};
 use super::statement;
 use crate::canonical::digest_bytes;
 use crate::document::Document;
+use crate::ext::Ext;
 use crate::identity::Key;
 use crate::ids::{
     CriterionId, DocumentId, FeatureGroupId, FeatureId, ProductId, RequirementId, SectionId,
@@ -83,6 +84,7 @@ impl Build {
                 name: "Project".to_owned(),
                 body: body.unwrap_or_default(),
                 sections: Vec::new(),
+                ext: Ext::new(),
             });
         }
         let mut groups: Vec<FeatureGroup> = Vec::new();
@@ -171,6 +173,7 @@ impl Build {
                 body,
                 tags: Vec::new(),
                 sections,
+                ext: Ext::new(),
             },
             requirements,
             quality_attributes: Vec::new(),
@@ -259,6 +262,7 @@ impl Build {
             name: part.name.clone(),
             body,
             sections,
+            ext: Ext::new(),
         }
     }
 
@@ -304,6 +308,7 @@ impl Build {
                 body: split.body,
                 tags: Vec::new(),
                 sections,
+                ext: Ext::new(),
             },
             criteria,
         }
@@ -329,6 +334,7 @@ impl Build {
                 body: source.verbatim(child.part.text.clone()),
                 tags: Vec::new(),
                 sections: Vec::new(),
+                ext: Ext::new(),
             },
         }
     }

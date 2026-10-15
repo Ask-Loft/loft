@@ -1,0 +1,63 @@
+key: 01a14039-8315-7390-a27f-c57235f47c73
+slug: extension-data
+name: "Extension data"
+body: "Data a tool keeps on a node of the tree that the Format does not define, such as the name another specification format gives a requirement. Each tool keeps its data under its own namespace of a node's `ext`. Extension data is not normative: no rule of the Format reads it, and it does not enter a node's content hash, but the lock pins it."
+realizes:
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+requirements:
+  - key: 01a14039-8315-7390-a27f-c5737b3192e8
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "read a node record's `ext` as a mapping of namespaces to values."
+    criteria:
+      - key: 01a14039-8315-7390-a27f-c574c0013e2d
+        name: "Every node record may hold `ext`."
+      - key: 01a14039-8315-7390-a27f-c5759b12fa50
+        name: "A decision record holding `ext` is an error at the field."
+      - key: 01a14039-8315-7390-a27f-c57680599d5c
+        name: "A namespace that is not a lowercase letter followed by lowercase letters and digits is an error at the namespace."
+      - key: 01a14039-8315-7390-a27f-c57721c697af
+        name: "A value is text, an integer, `true`, `false`, a list of values or a mapping whose keys are each a letter followed by letters and digits."
+      - key: 01a1404e-87ec-748c-a2aa-c6d1c336ac0c
+        name: "Text is written in double quotes or as a literal block."
+      - key: 01a1404e-87ec-748c-a2aa-c6d23d1ae342
+        name: "A plain scalar other than an integer, `true` or `false` is an error at its site."
+      - key: 01a14039-8315-7390-a27f-c5789a10605d
+        name: "An integer outside the range from -9007199254740991 to 9007199254740991 is an error at its site."
+      - key: 01a14039-8315-7390-a27f-c5792661d514
+        name: "A number with a fraction or an exponent is an error at its site."
+      - key: 01a14039-8315-7390-a27f-c57ad727b362
+        name: "A field with no value is an error at its site."
+  - key: 01a14039-8315-7390-a27f-c57bd04ad954
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write `ext` in canonical layout."
+    criteria:
+      - key: 01a14039-8315-7390-a27f-c57cf5f04312
+        name: "The keys of each mapping in `ext` are written in UTF-8 byte order."
+      - key: 01a14039-8315-7390-a27f-c57d91dd57d7
+        name: "The elements of a list in `ext` are written in the order read."
+      - key: 01a14039-8315-7390-a27f-c57eb2fedf02
+        name: "Reading and writing a node's `ext` gives back the same value."
+  - key: 01a14039-8315-7390-a27f-c57f549a7875
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "read no `ext`."
+    criteria:
+      - key: 01a14039-8315-7390-a27f-c58057b8d9ab
+        name: "A term a lint rule reports in prose raises no finding when it appears only in `ext`."
+      - key: 01a14039-8315-7390-a27f-c581ba1f990e
+        name: "Adding `ext` to a node changes no lint finding."
+  - key: 01a14051-942d-7713-99cb-d5aa4770d5f8
+    statement:
+      form: ubiquitous
+      system: "The merge driver"
+      shall: "merge a node's `ext` as one value."
+    criteria:
+      - key: 01a14051-942d-7713-99cb-d5abab4af7ad
+        name: "A side that changes a node's `ext` while the other side leaves it as the base holds it gives the merge that side's `ext`."
+      - key: 01a14051-942d-7713-99cb-d5acb802c400
+        name: "Two sides that change a node's `ext` to different values give a conflict record whose field is `ext`."
