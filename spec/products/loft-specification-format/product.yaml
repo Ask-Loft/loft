@@ -1,7 +1,7 @@
 key: 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 slug: loft-specification-format
 name: "Loft Specification Format"
-body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the validator; the linter; the renderer; the publisher; the merge driver; and the reconciler, which compares the trace file with the tree and the tests. A role names an obligation, not a module: one program may fill every role."
+body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the OpenSpec converter, from the main specs of an OpenSpec project; the validator; the linter; the renderer; the publisher; the merge driver; and the reconciler, which compares the trace file with the tree and the tests. A role names an obligation, not a module: one program may fill every role."
 tags:
   - portable
 featureGroups:
@@ -54,6 +54,17 @@ featureGroups:
       - 3d945f7b-7d24-474a-b6b4-ae3621fc7db4
       - 6498001d-fe27-46ee-97a2-c3db59a22a24
       - 01a12dad-fb7a-7333-9129-a6a99935b250
+  - key: 01a13d02-7211-77f1-a8f1-310b82be1f48
+    slug: conversion-from-openspec
+    name: "Conversion from OpenSpec"
+    body: "How the main specs of an OpenSpec project become a v2 document: the files read and their grammar, the structure mapping, statements from requirement text, identity and determinism, the provenance sidecar and the conversion findings."
+    features:
+      - 01a13d02-7211-77f1-a8f1-30b6248b679a
+      - 01a13d02-7211-77f1-a8f1-30e3f559e2bc
+      - 01a13d02-7211-77f1-a8f1-30d38fd5687a
+      - 01a13d02-7211-77f1-a8f1-30a7051bea54
+      - 01a13d02-7211-77f1-a8f1-31011e2cacdd
+      - 01a13d02-7211-77f1-a8f1-3086368387f1
   - key: a1b27be0-dd76-47d1-9406-1a2c394df762
     slug: validation-and-lint
     name: "Validation and lint"

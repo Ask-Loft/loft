@@ -1,0 +1,141 @@
+key: 01a13d02-7211-77f1-a8f1-3086368387f1
+slug: conversion-findings
+name: "Conversion findings"
+body: "What the OpenSpec converter reports about the project it converts. Each finding has a code and the severity `info`, names the source file and line it concerns where it has one, and names the key of the node it concerns where there is one. No finding stops the conversion."
+realizes:
+  - 01a13d01-545b-761c-83a4-724d8d61cd4b
+requirements:
+  - key: 01a13d02-7211-77f1-a8f1-3087105be5e0
+    statement:
+      form: unwanted
+      if: "a main spec opens with YAML front matter"
+      system: "the OpenSpec converter"
+      shall: "report the skipped front matter as a finding with the code `OS-001`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-3088dde1a1c9
+        name: "The finding names the file and the line that closes the front matter."
+  - key: 01a13d02-7211-77f1-a8f1-3089c124dea9
+    statement:
+      form: unwanted
+      if: "a Purpose begins with OpenSpec's archive placeholder"
+      system: "the OpenSpec converter"
+      shall: "report the empty Feature body as a finding with the code `OS-002`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-308a374931eb
+        name: "The finding names the file, the line of the Purpose heading and the Feature's key."
+  - key: 01a13d02-7211-77f1-a8f1-308b52eec474
+    statement:
+      form: unwanted
+      if: "a spec holds a level-2 section other than `Purpose`, `Requirements` or a delta section"
+      system: "the OpenSpec converter"
+      shall: "report the Section it became as a finding with the code `OS-003`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-308c4c8ab932
+        name: "The finding names the file, the line of the heading and the Section's key."
+  - key: 01a13d02-7211-77f1-a8f1-308dc71d949e
+    statement:
+      form: unwanted
+      if: "the section `Requirements` holds text outside every requirement"
+      system: "the OpenSpec converter"
+      shall: "report each Section that text became as a finding with the code `OS-004`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-308ec06517e7
+        name: "The finding names the file, the line where the text begins and the Section's key."
+  - key: 01a13d02-7211-77f1-a8f1-308f75e02cac
+    statement:
+      form: unwanted
+      if: "a requirement holds a level-4 child that is not a scenario"
+      system: "the OpenSpec converter"
+      shall: "report the Section the child became as a finding with the code `OS-005`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-309050a6e3eb
+        name: "The finding names the file, the line of the child's heading and the Section's key."
+  - key: 01a13d02-7211-77f1-a8f1-309113b885e4
+    statement:
+      form: unwanted
+      if: "a main spec holds a delta section such as `## ADDED Requirements`"
+      system: "the OpenSpec converter"
+      shall: "report the Section it became as a finding with the code `OS-006`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30921facc607
+        name: "A level-2 heading `ADDED`, `MODIFIED`, `REMOVED` or `RENAMED` followed by `Requirements` is a delta section, without regard to letter case."
+      - key: 01a13d02-7211-77f1-a8f1-30930d07113f
+        name: "The finding names the file, the line of the heading and the Section's key."
+      - key: 01a13d02-7211-77f1-a8f1-30948efe8221
+        name: "A delta section is not reported as another level-2 section."
+  - key: 01a13d02-7211-77f1-a8f1-30957f2cf0e7
+    statement:
+      form: unwanted
+      if: "a requirement's text holds neither `SHALL` nor `MUST`"
+      system: "the OpenSpec converter"
+      shall: "report the Requirement as a finding with the code `OS-007`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-3096663e1c12
+        name: "The finding names the file, the line of the requirement's heading and the Requirement's key."
+      - key: 01a13d02-7211-77f1-a8f1-3097a1e8e83c
+        name: "A text holding `shall` or `must` in lower case only is reported."
+  - key: 01a13d02-7211-77f1-a8f1-30982620171e
+    statement:
+      form: unwanted
+      if: "the converter wrote a statement's `SHALL` or `MUST` as `shall`"
+      system: "the OpenSpec converter"
+      shall: "report the number of statements it rewrote as a finding with the code `OS-008`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-309976044464
+        name: "One finding reports the number for the whole project."
+  - key: 01a13d02-7211-77f1-a8f1-309a3a7c6757
+    statement:
+      form: unwanted
+      if: "a requirement's text holds a metadata line"
+      system: "the OpenSpec converter"
+      shall: "report the metadata it kept in the body as a finding with the code `OS-009`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-309bb026308b
+        name: "The finding names the file, the line of the metadata line and the Requirement's key."
+  - key: 01a13d02-7211-77f1-a8f1-309ce278fb1e
+    statement:
+      form: unwanted
+      if: "two requirements of one capability have the same name"
+      system: "the OpenSpec converter"
+      shall: "report the second Requirement as a finding with the code `OS-010`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-309d97ca3fcd
+        name: "The finding names the file, the line of the second heading and the second Requirement's key."
+  - key: 01a13d02-7211-77f1-a8f1-309ef3e0e368
+    statement:
+      form: unwanted
+      if: "the project holds active changes"
+      system: "the OpenSpec converter"
+      shall: "report the changes it did not convert as a finding with the code `OS-011`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-309f6d4d5002
+        name: "The finding names the number of active changes and each change's id."
+  - key: 01a13d02-7211-77f1-a8f1-30a04faf248c
+    statement:
+      form: unwanted
+      if: "the project holds archived changes"
+      system: "the OpenSpec converter"
+      shall: "report the archive it did not convert as a finding with the code `OS-012`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30a14d580500
+        name: "Archived changes are counted in `changes/archive/` and in `archive/`."
+      - key: 01a13d02-7211-77f1-a8f1-30a226fc47be
+        name: "The finding names the number of archived changes."
+  - key: 01a13d02-7211-77f1-a8f1-30a3c8e5079e
+    statement:
+      form: unwanted
+      if: "`config.yaml` holds a `context` entry"
+      system: "the OpenSpec converter"
+      shall: "report the context it did not convert as a finding with the code `OS-013`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30a491ffd75a
+        name: "The finding names the file and the line of the entry."
+  - key: 01a13d02-7211-77f1-a8f1-30a55eb26e49
+    statement:
+      form: unwanted
+      if: "`config.yaml` holds a `store` entry"
+      system: "the OpenSpec converter"
+      shall: "report that the main specs may be kept in another repository as a finding with the code `OS-014`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30a6cc9f0fe8
+        name: "The finding names the file and the line of the entry."
