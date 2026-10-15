@@ -149,6 +149,22 @@ pub fn digest_array(domain: Domain, elements: &[Vec<u8>]) -> Digest {
     writer.finish()
 }
 
+/// The SHA-256 digest of `parts`, each followed by one zero byte. It addresses nothing in a
+/// document: a converter derives from it the key of a node whose source has none.
+pub(crate) fn digest_parts<'a>(parts: impl IntoIterator<Item = &'a str>) -> Digest {
+    let mut hasher = Sha256::new();
+    for part in parts {
+        hasher.update(part.as_bytes());
+        hasher.update([0_u8]);
+    }
+    Digest(hasher.finalize().into())
+}
+
+/// The SHA-256 digest of `bytes` as they are, which records a source file a converter read.
+pub(crate) fn digest_bytes(bytes: &[u8]) -> Digest {
+    Digest(Sha256::digest(bytes).into())
+}
+
 /// A SHA-256 hash seeded with a domain string and one zero byte, into which canonical bytes are
 /// written.
 struct HashWriter(Sha256);

@@ -1,12 +1,12 @@
 //! `loft import v1` as a process (F-37): the tree and sidecar it writes, its findings and
 //! counters warning, and the refusals that write nothing.
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{env, fs, process};
 
-use crate::common::isolate;
+use crate::common::{isolate, tree};
 use crate::schema;
 use loftspec::codec;
 use loftspec::convert::v1::convert;
@@ -76,14 +76,6 @@ fn stdout(output: &Output) -> String {
 
 fn stderr(output: &Output) -> String {
     String::from_utf8(output.stderr.clone()).unwrap()
-}
-
-/// Every file under `<root>/spec/`, by its path under `spec/`.
-fn tree(root: &Path) -> codec::Files {
-    loftspec_store::FileStore::open(root)
-        .unwrap()
-        .read_files()
-        .unwrap()
 }
 
 fn converted() -> loftspec::convert::v1::Conversion {

@@ -14,7 +14,7 @@ use crate::install;
 use crate::version::VERSION;
 
 /// The schema an event follows, by name and version.
-pub const SCHEMA: &str = "loft-telemetry-event/1";
+pub const SCHEMA: &str = "loft-telemetry-event/2";
 
 /// What the event says of the checkout it ran in.
 pub struct Checkout {

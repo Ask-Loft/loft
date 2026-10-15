@@ -1,0 +1,92 @@
+key: 01a13d02-7211-77f1-a8f1-30b6248b679a
+slug: reading-an-openspec-project
+name: "Reading an OpenSpec project"
+body: "Which files of an `openspec/` directory the OpenSpec converter reads, and how it reads a main spec. The reference is the grammar of OpenSpec 1.14 as its archive command reads it."
+realizes:
+  - 01a13d01-545b-761c-83a4-724d8d61cd4b
+requirements:
+  - key: 01a13d02-7211-77f1-a8f1-30b709626077
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "read each file named `spec.md` below `specs/` as one capability."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30b8453f1db5
+        name: "A `spec.md` at any depth below `specs/` is read."
+      - key: 01a13d02-7211-77f1-a8f1-30b9a980cea3
+        name: "The capability id is the path of the file's directory below `specs/`, its segments joined with `/`."
+      - key: 01a13d02-7211-77f1-a8f1-30bacc1731ed
+        name: "A `spec.md` below a directory whose name begins with `.` is not read."
+      - key: 01a13d02-7211-77f1-a8f1-30bba2fa07b7
+        name: "A `spec.md` directly in `specs/` is not read."
+      - key: 01a13d02-7211-77f1-a8f1-30bcaf188bd8
+        name: "Capabilities are read in the byte order of their capability ids."
+  - key: 01a13d02-7211-77f1-a8f1-30bdc9503869
+    statement:
+      form: unwanted
+      if: "the project holds no main spec"
+      system: "the OpenSpec converter"
+      shall: "refuse the project."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30beab481093
+        name: "The refusal names each active change the project holds."
+      - key: 01a13d02-7211-77f1-a8f1-30bf73a88766
+        name: "Nothing is converted."
+  - key: 01a13d02-7211-77f1-a8f1-30c046ca5806
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "read a main spec with a leading byte order mark removed and each CRLF line ending read as LF."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30c1953f0f81
+        name: "A main spec that opens with a byte order mark converts as it does without it."
+      - key: 01a13d02-7211-77f1-a8f1-30c23abff988
+        name: "A main spec with CRLF line endings converts as it does with LF line endings."
+  - key: 01a13d02-7211-77f1-a8f1-30c33fef785e
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "read no heading inside fenced code."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30c4d68541f4
+        name: "A line inside a fence opened by three backticks or three tildes is not read as a heading."
+      - key: 01a13d02-7211-77f1-a8f1-30c5ee409a5d
+        name: "A fence left open runs to the end of the file."
+      - key: 01a13d02-7211-77f1-a8f1-30c60b773a78
+        name: "Fenced code is kept verbatim in the text that holds it."
+  - key: 01a13d02-7211-77f1-a8f1-30c7000cd61b
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "skip YAML front matter at the start of a main spec."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30c80aab9a1e
+        name: "Lines from a first line `---` to the next line `---` are not read as content."
+      - key: 01a13d02-7211-77f1-a8f1-30c93a782aa8
+        name: "A first line `---` with no closing line `---` is read as content."
+  - key: 01a13d02-7211-77f1-a8f1-30ca31638668
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "read a requirement only from a level-3 heading `Requirement:` inside the level-2 section `Requirements`."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30cb5fa45da7
+        name: "The headings `## Purpose`, `## Requirements` and `### Requirement:` are matched without regard to letter case."
+      - key: 01a13d02-7211-77f1-a8f1-30cc1f20983f
+        name: "The requirement name is the heading text after `Requirement:`, with a closing run of `#` removed and the rest trimmed."
+      - key: 01a13d02-7211-77f1-a8f1-30cddb2325ba
+        name: "A requirement's block runs to the next level-3 heading or to the next heading of level 2 or 1."
+      - key: 01a13d02-7211-77f1-a8f1-30ceaadbb967
+        name: "A `### Requirement:` heading outside the section `Requirements` is not read as a requirement."
+  - key: 01a13d02-7211-77f1-a8f1-30cf2652a5d6
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "read each level-4 heading in a requirement's block as a child of that requirement."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30d04657806c
+        name: "A child whose heading begins with `Scenario:` is a scenario named by the rest of the heading, trimmed."
+      - key: 01a13d02-7211-77f1-a8f1-30d1e57f18e4
+        name: "Any other level-4 child is kept under its heading as written."
+      - key: 01a13d02-7211-77f1-a8f1-30d2a02cba86
+        name: "A child's text runs to the next heading of level 4 or above."

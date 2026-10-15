@@ -1,0 +1,109 @@
+key: 01a13d02-7211-77f1-a8f1-30e3f559e2bc
+slug: structure-mapping
+name: "Structure mapping"
+body: "How an OpenSpec project's capabilities, requirements and scenarios become one Product with its Feature Groups, Features, Requirements, Criteria and Sections."
+realizes:
+  - 01a13d01-545b-761c-83a4-724d8d61cd4b
+requirements:
+  - key: 01a13d02-7211-77f1-a8f1-30e4f62297b7
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "convert an OpenSpec project into a document holding one Product."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30e53135b381
+        name: "The Product's name is the product name given to the converter."
+      - key: 01a13d02-7211-77f1-a8f1-30e62f96b3d5
+        name: "The document holds no Component, Constraint, Quality Attribute or Decision."
+      - key: 01a13d02-7211-77f1-a8f1-30e70a96043f
+        name: "A legacy `project.md` becomes a Section of the Product named `Project`, with its text as the body verbatim."
+  - key: 01a13d02-7211-77f1-a8f1-30e808e4a73a
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "place each capability in the Feature Group of the first segment of its capability id."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30e94f1dd630
+        name: "Capabilities whose ids share a first segment are placed in one Feature Group."
+      - key: 01a13d02-7211-77f1-a8f1-30ea86b63fee
+        name: "The Feature Group's name is its segment with each hyphen and underscore read as a space and the first letter in upper case."
+      - key: 01a13d02-7211-77f1-a8f1-30ebcf271398
+        name: "A capability whose id has one segment is placed in a Feature Group named `Capabilities`."
+      - key: 01a13d02-7211-77f1-a8f1-30ec7ba15a65
+        name: "Feature Groups follow the order of their first capabilities."
+  - key: 01a13d02-7211-77f1-a8f1-30ed3150e1e5
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "convert each capability into one Feature."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30eeaa1e279f
+        name: "The Feature's slug derives from the segments of the capability id after the first, or from the id when it has one segment."
+      - key: 01a13d02-7211-77f1-a8f1-30ef49372386
+        name: "The Feature's name is the spec's first level-1 heading with a trailing ` Specification` removed."
+      - key: 01a13d02-7211-77f1-a8f1-30f0ccdd0a8b
+        name: "A spec with no level-1 heading names the Feature after the last segment of its capability id."
+      - key: 01a13d02-d042-701f-a5b6-c06de4351b6b
+        name: "A spec whose level-1 heading equals its capability id names the Feature after the last segment of the id."
+      - key: 01a13d02-d042-701f-a5b6-c06ebf4711de
+        name: "A Feature named after a segment reads each hyphen and underscore of it as a space and puts its first letter in upper case."
+      - key: 01a13d02-7211-77f1-a8f1-30f13987642b
+        name: "The text of the section `Purpose` becomes the Feature's body verbatim."
+      - key: 01a13d02-7211-77f1-a8f1-30f27cbd750c
+        name: "A Purpose that begins with OpenSpec's archive placeholder `TBD - created by archiving change` leaves the Feature's body empty."
+  - key: 01a13d02-7211-77f1-a8f1-30f3c1257e4e
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "convert each level-2 section of a spec other than `Purpose` and `Requirements` into a Section of the Feature."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30f46f23411f
+        name: "The Section's name is the section's heading text."
+      - key: 01a13d02-7211-77f1-a8f1-30f5da49ca55
+        name: "The section's text up to its first heading becomes the Section's body verbatim."
+      - key: 01a13d02-7211-77f1-a8f1-30f63389770b
+        name: "Each heading inside the section becomes a Section nested by its level."
+      - key: 01a13d0b-7c8f-75f7-9e59-1aa4542c3ff6
+        name: "Text between the level-1 heading and the first level-2 heading becomes a Section of the Feature named `Introduction`."
+  - key: 01a13d02-7211-77f1-a8f1-30f7e234a973
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "convert the text of the section `Requirements` that no requirement holds into Sections of the Feature."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30f89aa7442a
+        name: "Text before the first level-3 heading becomes a Section named `Requirements`."
+      - key: 01a13d02-7211-77f1-a8f1-30f931e827b9
+        name: "A level-3 heading that is not a requirement heading becomes a Section named by its heading text, with its text up to its first heading as the body."
+      - key: 01a13d0b-7c8f-75f7-9e59-1aa569ac4247
+        name: "Each heading inside such a Section, up to the next level-3 heading, becomes a Section nested in it by its level."
+  - key: 01a13d02-7211-77f1-a8f1-30fa1a4a0d47
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "convert each requirement into one Requirement of its capability's Feature, in source order."
+    criteria:
+      - key: 01a13d02-d042-701f-a5b6-c06f4856a357
+        name: "The Feature holds one Requirement for each requirement of its spec."
+      - key: 01a13d02-d042-701f-a5b6-c070dfb6ef09
+        name: "The Requirements follow the order of their headings in the spec."
+  - key: 01a13d02-7211-77f1-a8f1-30fb2baa3ae6
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "convert each scenario into one Criterion of its requirement's Requirement, in source order."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30fcaf1a72b8
+        name: "The Criterion's name is the scenario name."
+      - key: 01a13d02-7211-77f1-a8f1-30fd8970e42e
+        name: "The scenario's text becomes the Criterion's body verbatim."
+  - key: 01a13d02-7211-77f1-a8f1-30fe9bb6455d
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "convert each level-4 child of a requirement that is not a scenario into a Section of the Requirement."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30ffd5268986
+        name: "The Section's name is the child's heading text."
+      - key: 01a13d02-7211-77f1-a8f1-31002c79d317
+        name: "The child's text becomes the Section's body verbatim."

@@ -55,6 +55,32 @@ const LEXICAL: [(RuleId, Scope, &str); 5] = [
     ),
 ];
 
+/// The findings of `rule` alone, when it is a lexical rule that reads bodies only; nothing
+/// for any other rule.
+pub(super) fn body_rule(
+    context: &Context<'_>,
+    config: &LintConfig,
+    rule: RuleId,
+    out: &mut Vec<Raw>,
+) {
+    let Some((_, scope, message)) = LEXICAL
+        .into_iter()
+        .find(|(lexical, scope, _)| *lexical == rule && *scope == Scope::Body)
+    else {
+        return;
+    };
+    for item in context.items.iter().filter(|item| item.body().is_some()) {
+        lexical(
+            &Texts::read(item, false, false),
+            rule,
+            scope,
+            message,
+            config,
+            out,
+        );
+    }
+}
+
 pub(super) fn check(context: &Context<'_>, config: &LintConfig, out: &mut Vec<Raw>) {
     let terms = terms(context);
     for item in &context.items {

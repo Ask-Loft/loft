@@ -46,7 +46,7 @@ fn post(url: &str, content_type: &str, body: &[u8]) -> Answer {
 /// A valid command event with a fresh event id.
 fn event() -> Value {
     json!({
-        "schema": "loft-telemetry-event/1",
+        "schema": "loft-telemetry-event/2",
         "eventId": uuid::Uuid::new_v4().to_string(),
         "version": env!("CARGO_PKG_VERSION"),
         "os": "linux",

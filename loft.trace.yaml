@@ -2889,6 +2889,505 @@ links:
   - node: 01a12dad-fb7a-7333-9129-a6ba2ff2fa9e
     reviewed: 5e9f420c42f4bd660db2b73f30cd1f7e7345d2f415d927293e372b70d68d8a2b
     unverified: "Checked against the v1 implementation outside this repository."
+  - node: 01a13d02-7211-77f1-a8f1-30b8453f1db5
+    reviewed: e628b6f45f7f6838d2655d655501f04330834817a34d0ef1cc8a5bf62c204034
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_spec_at_any_depth_is_a_capability_named_by_its_directory_path"
+  - node: 01a13d02-7211-77f1-a8f1-30b9a980cea3
+    reviewed: 4b6a58646ca3aff149e5211eca34c9b22c0afa52c46a19e6812d8d6fced1200d
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_spec_at_any_depth_is_a_capability_named_by_its_directory_path"
+  - node: 01a13d02-7211-77f1-a8f1-30bacc1731ed
+    reviewed: d60ce0a710ffdbcaa7a84e7f4567294022909a6b156dd7fbcdcee4772b6abdc9
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_spec_below_a_dot_directory_or_directly_in_specs_is_not_read"
+  - node: 01a13d02-7211-77f1-a8f1-30bba2fa07b7
+    reviewed: c2ccb44f7811bbec314b27fe387fcb340284b053e7d9745ff6d0bf62cd10b17b
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_spec_below_a_dot_directory_or_directly_in_specs_is_not_read"
+  - node: 01a13d02-7211-77f1-a8f1-30bcaf188bd8
+    reviewed: d2df5a9a25cb85818578cf7f8a42dcd1ed8b64df27e86d83a7a7bfbade2cca8e
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "capabilities_are_read_in_the_byte_order_of_their_ids"
+  - node: 01a13d02-7211-77f1-a8f1-30beab481093
+    reviewed: 4f6199e527850038b2cbd9c29bb2b24511ba14f6852ed1b79c566c23d371c35d
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_project_without_a_main_spec_is_refused_naming_its_active_changes"
+  - node: 01a13d02-7211-77f1-a8f1-30bf73a88766
+    reviewed: b50f7026d5199626bb457b064f7d39bc42b42e4dbae5c566010a7f5625ce93f5
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_project_without_a_main_spec_is_refused_naming_its_active_changes"
+  - node: 01a13d02-7211-77f1-a8f1-30c1953f0f81
+    reviewed: 8ae473a02b03d1b3ac76bac357a0cff22e10c13bc35100088114a648b971bb9f
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_byte_order_mark_and_crlf_line_endings_convert_as_without_them"
+  - node: 01a13d02-7211-77f1-a8f1-30c23abff988
+    reviewed: c41fb8d0dfddd23f0c744bd5b1d36130698e49296501a73881d6dd45948befe4
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_byte_order_mark_and_crlf_line_endings_convert_as_without_them"
+  - node: 01a13d02-7211-77f1-a8f1-30c4d68541f4
+    reviewed: fffecb73d33734540ca2d17d329d73a24e61c2d3a394979bb4d88b4959baa0fb
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "no_heading_inside_fenced_code_is_read_and_the_code_is_kept_verbatim"
+  - node: 01a13d02-7211-77f1-a8f1-30c5ee409a5d
+    reviewed: aaea1bc98ef23a530d0c00a13d9bb4bd415d6f48e524625a2813b8b08174b91a
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_fence_left_open_runs_to_the_end_of_the_file"
+  - node: 01a13d02-7211-77f1-a8f1-30c60b773a78
+    reviewed: e074ec8362d269a91721c7f27d7036f65b306c9b67849061a1e2cf355f88b73c
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "no_heading_inside_fenced_code_is_read_and_the_code_is_kept_verbatim"
+  - node: 01a13d02-7211-77f1-a8f1-30c80aab9a1e
+    reviewed: 154f792508c8b01ec9fada0dfa54a659aaaaa45956e20a51b6ae08cc086b3b49
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "front_matter_is_skipped_and_an_unclosed_opening_line_is_content"
+  - node: 01a13d02-7211-77f1-a8f1-30c93a782aa8
+    reviewed: f3efd0a6c81e1f02d4e6f7ae8fbc3025869b178b97f25ab1c25ccb6bedc2878f
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "front_matter_is_skipped_and_an_unclosed_opening_line_is_content"
+  - node: 01a13d02-7211-77f1-a8f1-30cb5fa45da7
+    reviewed: b166ee424b06257696d347449d6e633958efe62914546f83f4014c5f34b782fd
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "requirement_headings_are_matched_without_regard_to_letter_case"
+  - node: 01a13d02-7211-77f1-a8f1-30cc1f20983f
+    reviewed: b0020ef665976a2160c77a5164030988f96a19d01357c9021942766644551afb
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "requirement_headings_are_matched_without_regard_to_letter_case"
+  - node: 01a13d02-7211-77f1-a8f1-30cddb2325ba
+    reviewed: f58dfd8c7602adbb375a46489ca45a0769e57ab6403888e28ed56701308da61f
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_requirement_heading_outside_requirements_is_not_a_requirement"
+  - node: 01a13d02-7211-77f1-a8f1-30ceaadbb967
+    reviewed: 2fe7aecb1340364bb6659d4123d5317f9860703ed9d75d0a1da4519098d51a83
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "a_requirement_heading_outside_requirements_is_not_a_requirement"
+  - node: 01a13d02-7211-77f1-a8f1-30d04657806c
+    reviewed: 23a86f54989a7a8e7fb2cead3bec8c932ee1522bad83a5a0870b7b646bbc19e0
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "each_level_four_heading_is_a_child_and_a_scenario_heading_names_a_scenario"
+  - node: 01a13d02-7211-77f1-a8f1-30d1e57f18e4
+    reviewed: 2665b738297d91b08eb62088684723e4e4fceac4363b51f645e3688b45206c51
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "each_level_four_heading_is_a_child_and_a_scenario_heading_names_a_scenario"
+  - node: 01a13d02-7211-77f1-a8f1-30d2a02cba86
+    reviewed: 8aba6a9718cc89f3b5fb6e1ab45b0e46104f5813ca17f4038c1d608a18d7199d
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "each_level_four_heading_is_a_child_and_a_scenario_heading_names_a_scenario"
+  - node: 01a13d02-7211-77f1-a8f1-30e53135b381
+    reviewed: 310b724a79527fddac98798123a3d980f87a6fad00ca6c941dda78804cef209a
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_project_becomes_one_product_with_no_architecture_or_decisions"
+  - node: 01a13d02-7211-77f1-a8f1-30e62f96b3d5
+    reviewed: 79d9f84d7424b670a5d299f591bf6a85f0e41a3ce1ba2fd834fc8bbabeda9b79
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_project_becomes_one_product_with_no_architecture_or_decisions"
+  - node: 01a13d02-7211-77f1-a8f1-30e70a96043f
+    reviewed: 288024a05c9a054d015f035db0416e0f318115f8a15df08a8c1eec83cdfc5947
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_legacy_project_md_becomes_the_products_section_project_verbatim"
+  - node: 01a13d02-7211-77f1-a8f1-30e94f1dd630
+    reviewed: 53b7bd350480b9950d4d390b2e240c372f1b725e5dee67a26e865268825d9691
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "capabilities_are_grouped_by_their_first_segment_and_flat_ones_in_capabilities"
+  - node: 01a13d02-7211-77f1-a8f1-30ea86b63fee
+    reviewed: 5310a84298217457904994464ee6a70eb69c5e32f581bf286015c6f0ea33e7a5
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "capabilities_are_grouped_by_their_first_segment_and_flat_ones_in_capabilities"
+  - node: 01a13d02-7211-77f1-a8f1-30ebcf271398
+    reviewed: 33326d2ae9105d5e0547f3ae7bd1af12fb3dd415c955dfddeee8537896d5f26c
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "capabilities_are_grouped_by_their_first_segment_and_flat_ones_in_capabilities"
+  - node: 01a13d02-7211-77f1-a8f1-30ec7ba15a65
+    reviewed: 735b3ae8d4a78fcc499b71be34f5d8ba52f521ba803653eed0d00fe9765ef44b
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "capabilities_are_grouped_by_their_first_segment_and_flat_ones_in_capabilities"
+  - node: 01a13d02-7211-77f1-a8f1-30eeaa1e279f
+    reviewed: 5be74fd5650e5bea74f8efabe08a7ea744e13386ef9bd204334f73bd365269ed
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_features_slug_derives_from_the_segments_after_the_first"
+  - node: 01a13d02-7211-77f1-a8f1-30ef49372386
+    reviewed: 558e742b5942bd2f1656403395642dce4706f7827c97e88cd55f1432b2f1fdac
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_feature_is_named_by_its_title_or_by_its_last_segment_made_readable"
+  - node: 01a13d02-7211-77f1-a8f1-30f0ccdd0a8b
+    reviewed: f1eae8dc4d24af85b19cb9fd0cddf66110ba99aadcd858d737204492012f7cdb
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_feature_is_named_by_its_title_or_by_its_last_segment_made_readable"
+  - node: 01a13d02-d042-701f-a5b6-c06de4351b6b
+    reviewed: bf61f14dea9cc98386271fe12c3ed0d563e8bbb955a5da392ab21af12608e753
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_feature_is_named_by_its_title_or_by_its_last_segment_made_readable"
+  - node: 01a13d02-d042-701f-a5b6-c06ebf4711de
+    reviewed: ba4a2241b815675c9a09a02b661b3cd35d65e150c59901d670eff2a0c26ad858
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_feature_is_named_by_its_title_or_by_its_last_segment_made_readable"
+  - node: 01a13d02-7211-77f1-a8f1-30f13987642b
+    reviewed: 24d530e8c31de893112b3b6c70e84760319d802014b7a2b7d509abb3e959ca3a
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
+  - node: 01a13d02-7211-77f1-a8f1-30f27cbd750c
+    reviewed: e19454039fc195cd270bf66466c87714c03c49f5bed5fb7d54cf850397bed0c5
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none"
+  - node: 01a13d02-7211-77f1-a8f1-30f46f23411f
+    reviewed: 10a28043bc1e3455e632cc414f53931d8a7e961506bfa3d67a2d7e37377f3415
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "other_level_two_sections_become_sections_nested_by_heading_level"
+  - node: 01a13d02-7211-77f1-a8f1-30f5da49ca55
+    reviewed: 701e25beda0cb236b1eb628dc23764917da66ee0ac78b865a0ee2d73dabaa84b
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "other_level_two_sections_become_sections_nested_by_heading_level"
+  - node: 01a13d02-7211-77f1-a8f1-30f63389770b
+    reviewed: 335083b4a2541e4e98999548de7fb21f344ca4a8dc5234ab7c2ada5830cc5673
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "other_level_two_sections_become_sections_nested_by_heading_level"
+  - node: 01a13d0b-7c8f-75f7-9e59-1aa4542c3ff6
+    reviewed: 9110a6e5c3c584c1b9410dc9e8239d3f6324e5e656c63e0411b325aa4eb993c0
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "other_level_two_sections_become_sections_nested_by_heading_level"
+      - file: "crates/loftspec/tests/convert_openspec_reading.rs"
+        name: "front_matter_is_skipped_and_an_unclosed_opening_line_is_content"
+  - node: 01a13d02-7211-77f1-a8f1-30f89aa7442a
+    reviewed: 5164a3ed9157038aea279ac3548ff4a43ffc2b0b3e3aa706160e289b3ef9dbe3
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "text_of_requirements_outside_every_requirement_becomes_sections"
+  - node: 01a13d02-7211-77f1-a8f1-30f931e827b9
+    reviewed: aea4b160045aca2e3e82036b4c830e407ab13243093b2e710d75050c73da3728
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "text_of_requirements_outside_every_requirement_becomes_sections"
+  - node: 01a13d0b-7c8f-75f7-9e59-1aa569ac4247
+    reviewed: 12ba2528a50abce55447ebda2dbd176529b43dcb7153209c811377597ffe23ec
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "text_of_requirements_outside_every_requirement_becomes_sections"
+  - node: 01a13d02-d042-701f-a5b6-c06f4856a357
+    reviewed: 5fd36e40118d48c90af718d97e413c2071d4efbcf02f1531dc4b30434649aa1d
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "requirements_and_their_scenarios_keep_source_order"
+  - node: 01a13d02-d042-701f-a5b6-c070dfb6ef09
+    reviewed: 54cc81d5b5605f3888861c03ac0606da32671d64892e2c7f9e31241bf35abe85
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "requirements_and_their_scenarios_keep_source_order"
+  - node: 01a13d02-7211-77f1-a8f1-30fcaf1a72b8
+    reviewed: b1afd375d350b4f5490675b9f4e552131bdd94d2b96bfb2f15a67c0b194dccb0
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "requirements_and_their_scenarios_keep_source_order"
+  - node: 01a13d02-7211-77f1-a8f1-30fd8970e42e
+    reviewed: 7e80a930994aa30486a1a5d31690e622c74728fa1553119c51c92bf6b28f82e7
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "requirements_and_their_scenarios_keep_source_order"
+  - node: 01a13d02-7211-77f1-a8f1-30ffd5268986
+    reviewed: 1c070b407cf8ac6b9fcdb663d02910ccb1670dea4e3da9bb6cf6b1d33723982d
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_child_of_a_requirement_that_is_not_a_scenario_becomes_its_section"
+  - node: 01a13d02-7211-77f1-a8f1-31002c79d317
+    reviewed: bf2e34fd292354bd004dca122221bc16348b016a8da23a9f430411843eeba775
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_child_of_a_requirement_that_is_not_a_scenario_becomes_its_section"
+  - node: 01a13d02-7211-77f1-a8f1-30d57264e4e4
+    reviewed: 577ca46f1899b6d547f75ff7180da8515dc2be96f9083fb56b77a9eb0f37adf7
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "the_first_paragraph_is_the_statement_and_the_rest_the_body"
+  - node: 01a13d02-7211-77f1-a8f1-30d6691894cb
+    reviewed: 2f826a093df4c4d40db89a45020b7298736e51a9368e68f38f746d27e0c813b8
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "the_first_paragraph_is_the_statement_and_the_rest_the_body"
+  - node: 01a13d02-7211-77f1-a8f1-30d78d9d45db
+    reviewed: ee7928af11bd1f79ec9025ef9b651bd1a1de8ab348c931a1f962762c259f4462
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "a_requirement_without_text_takes_its_name_as_the_statement"
+  - node: 01a13d02-7211-77f1-a8f1-30d97fc3caa6
+    reviewed: 02853e072082873dfd176aa9c5dbf09b9fffed68a271d4ea04f2ca34d349de41
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "metadata_lines_stay_out_of_the_statement_and_open_the_body"
+  - node: 01a13d02-7211-77f1-a8f1-30da02dbf431
+    reviewed: 95444b3907309499c2c832fd200ae37d364e8af34662cdc23c2e7e2ebbcd8a0d
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "metadata_lines_stay_out_of_the_statement_and_open_the_body"
+  - node: 01a13d02-7211-77f1-a8f1-30dc7a912c52
+    reviewed: a4f883e7d0b105755e97aa7b96701420d405820c096a6ef71138ed8332fcfdf0
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "a_statement_that_renders_back_is_kept_as_slots"
+  - node: 01a13d02-7211-77f1-a8f1-30def9323437
+    reviewed: 3b1c11b8c31eb88bc4c37ef991c3830234eb62afb85b32879c3a1654832070b6
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "an_upper_case_modal_word_is_written_as_shall_when_that_gives_slots"
+  - node: 01a13d02-7211-77f1-a8f1-30dfab8d01e6
+    reviewed: 42071fe2ec7989d6ab1009830d99adc952eb9ee37844290dcdb450ca16b76a6a
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "an_upper_case_modal_word_is_written_as_shall_when_that_gives_slots"
+  - node: 01a13d12-1e24-70cf-a353-a361e3ccb308
+    reviewed: c13a34501212e9bc580b65036fac7964b4e9a3f444d424489faa4b0cf4a3a1ee
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "an_upper_case_condition_keyword_or_a_lower_case_must_stays_text"
+  - node: 01a13d02-7211-77f1-a8f1-30e044b95c95
+    reviewed: 6d12e2ead20c4d257d6d9984c23162be176c6b6eeed425c3a2f1aed0ceb81fa3
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "only_the_first_modal_word_is_changed"
+  - node: 01a13d02-7211-77f1-a8f1-30e1f6b00d8d
+    reviewed: 997fe5e8590dfacd0914165808578c028e6a89f45934e67deb232120435d75f8
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "an_upper_case_condition_keyword_or_a_lower_case_must_stays_text"
+  - node: 01a13d02-d042-701f-a5b6-c06ce9b48b5c
+    reviewed: 4a166669a5790084362114de3e43eb2f04d954cc75171b5df95a89c326a45bee
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "any_other_first_paragraph_is_stored_as_text_verbatim"
+      - file: "crates/loftspec/tests/convert_openspec_statements.rs"
+        name: "an_upper_case_condition_keyword_or_a_lower_case_must_stays_text"
+  - node: 01a13d02-7211-77f1-a8f1-30a9b4471e67
+    reviewed: 18b262faf23aa573324c162907ad211cb0e54a7ce426bc91c4cbdecd2a4aee37
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d02-7211-77f1-a8f1-30aaf398419d
+    reviewed: 98b5018a9a22f01ddab86b607530f8f456497d9a7337ab663b444cb524da6cca
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d02-7211-77f1-a8f1-30ab07ded98f
+    reviewed: 3d4bfa133eec843d6808218a0d511d42fb6412d96853ddf7bf9733b283088768
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d02-7211-77f1-a8f1-30ac084e2260
+    reviewed: 32fcceb41a5e048a5b3adcddc1539702d747834f4dd2eb4a4826f6034154fa07
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d02-7211-77f1-a8f1-30ad877f97d6
+    reviewed: e22eddc671d4941c12d51d5425131779f8cbca831ca6de13b912a76562d66699
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d02-7211-77f1-a8f1-30ae6d7911cc
+    reviewed: 66ad632c07e6edf5dd6287fe2101caabd27a4455432e589c53b8307fb89990f0
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d02-7211-77f1-a8f1-30af19b97723
+    reviewed: a3261511500a98b18812f3a2fad9717acdc62438e5ebbd8542143b41847d913a
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "a_repeated_identity_adds_its_ordinal_and_its_children_start_from_it"
+  - node: 01a13d02-7211-77f1-a8f1-30b0146318f6
+    reviewed: 79b1d44fa9f72a8514bc953ca38a00af256ee26fafc4ca68f0b2883eb6cf7c8f
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "another_document_key_gives_other_keys"
+  - node: 01a13d0b-545f-73be-a8d8-20929e26bd42
+    reviewed: 15131ac21ebe32650029564c38c352e86a48ff1f4fcdda6c225306f88c1cd7fe
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d0b-545f-73be-a8d8-20936384bf94
+    reviewed: 044e4304b0fe20828b606eddfb904e37a5f7405c6a1a0127f6aa8407fd09bff3
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "each_nodes_key_derives_from_the_document_key_its_kind_and_its_source_identity"
+  - node: 01a13d02-7211-77f1-a8f1-30b26fa4496c
+    reviewed: 35c488411f0021fb0ebf1533522e980f1dd8eb2aa428c814908f835492e80ad4
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "identical_input_and_document_key_give_byte_identical_trees_and_sidecars"
+  - node: 01a13d02-7211-77f1-a8f1-30b4fc212f21
+    reviewed: c94bad88737b21bf2f1604b3f0af64a55140f5744e031a2b9462c1a98ede9303
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_tree_binds_no_label_and_its_counters_hold_their_starting_values"
+  - node: 01a13d02-7211-77f1-a8f1-30b58d3e7bf1
+    reviewed: cc09c5f5db08403325368c5ebeded15a205faf621ce21266528a5c0e6c71c040
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_tree_binds_no_label_and_its_counters_hold_their_starting_values"
+  - node: 01a13d02-7211-77f1-a8f1-3103c9ccf3c4
+    reviewed: 612db73902f46a3aa5c4220e5bdc119f482df940fd1473b2244046c45cfbd19b
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_sidecar_records_each_nodes_source"
+  - node: 01a13d02-7211-77f1-a8f1-31048a0d999d
+    reviewed: 129d4dbaee762bae0fc038efd01972224d7f51970f812465561c8cf7f39046bc
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_sidecar_records_each_nodes_source"
+  - node: 01a13d02-7211-77f1-a8f1-3105d338fbab
+    reviewed: c67e690f3e753f6a03cc6d3371c716d1933379b963aa8c512288e4c5d9beb77e
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_sidecar_records_each_nodes_source"
+  - node: 01a13d02-7211-77f1-a8f1-31060c0de772
+    reviewed: 847904c650c3bf55d1cfe80166a2d937e75019315ee07ded4470e16a1e0d3e56
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_sidecar_records_each_nodes_source"
+  - node: 01a13d02-7211-77f1-a8f1-31070f1f5c1d
+    reviewed: dad26b040962129f462ac1dd914946a8ae800f8f57059b978f9a967463131265
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_sidecar_records_each_nodes_source"
+  - node: 01a13d02-7211-77f1-a8f1-3109e870af0f
+    reviewed: 6458c30a4434920dd544c56800872efbb8e6a25ccb31536b5cc88c9a5fc3d67e
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_sidecar_lies_beside_spec_and_no_file_of_the_tree_records_a_source"
+  - node: 01a13d02-7211-77f1-a8f1-310ad7be762e
+    reviewed: ae74f82674e3c95de63d87408430d938c489bf0e11212d57b5243e6140837487
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_identity.rs"
+        name: "the_sidecar_lies_beside_spec_and_no_file_of_the_tree_records_a_source"
+  - node: 01a13d02-7211-77f1-a8f1-3088dde1a1c9
+    reviewed: 27cd6684f9f0a5894af7bf55b0542eaaac81965eb1d4b66387975a5f79ec970d
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "skipped_front_matter_is_reported_at_the_line_that_closes_it"
+  - node: 01a13d02-7211-77f1-a8f1-308a374931eb
+    reviewed: d3ffe42704f9c9fa68b4a812c7a5937c16285e73c6e23fe738abedbf7e40f42e
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_placeholder_purpose_is_reported_at_its_heading_with_the_features_key"
+  - node: 01a13d02-7211-77f1-a8f1-308c4c8ab932
+    reviewed: 318c86fc7616fade22b6e17f29b12be93ba42a6554ee3cec2996f01f590551af
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "another_level_two_section_and_an_introduction_are_reported_with_their_keys"
+  - node: 01a13d0b-7c8e-775c-b1b2-13990ec24409
+    reviewed: ec8d6d3dd3dd0557579b2e5d5cdb291a5f6afb656a1cbbef6878b40e84829437
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "another_level_two_section_and_an_introduction_are_reported_with_their_keys"
+  - node: 01a13d02-7211-77f1-a8f1-308ec06517e7
+    reviewed: 3862c5d7956100421d01dbe3e8385e6414726ca0b1051d6a6e923f9fdb0634b7
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "text_of_requirements_outside_every_requirement_is_reported_with_its_section"
+  - node: 01a13d02-7211-77f1-a8f1-309050a6e3eb
+    reviewed: d87a5642f5a6504067be7854007dc252b171c9e60ae782075a571768d606fda2
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_child_that_is_not_a_scenario_is_reported_with_its_section"
+  - node: 01a13d02-7211-77f1-a8f1-30921facc607
+    reviewed: 4dccdc7ad2a01ea7134a88d93a895ba8538791b7ae25e92d2886e579be7702fa
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_delta_section_is_reported_as_one_and_not_as_another_section"
+  - node: 01a13d02-7211-77f1-a8f1-30930d07113f
+    reviewed: 318c86fc7616fade22b6e17f29b12be93ba42a6554ee3cec2996f01f590551af
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_delta_section_is_reported_as_one_and_not_as_another_section"
+  - node: 01a13d02-7211-77f1-a8f1-30948efe8221
+    reviewed: 85e552a20cd831b8a697c7aa1c02ea36b61212ac49fa13d2653d5b684a3219ec
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_delta_section_is_reported_as_one_and_not_as_another_section"
+  - node: 01a13d02-7211-77f1-a8f1-3096663e1c12
+    reviewed: 3836d8a33411cb4d47b9c53bd5389b47ee1430cedd953b2061c58cd554b01230
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_requirement_without_an_upper_case_modal_word_is_reported"
+  - node: 01a13d02-7211-77f1-a8f1-3097a1e8e83c
+    reviewed: 605c0ad8f177084c93759fd8802681daec9b27fcd547e591b118908efd237931
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_requirement_without_an_upper_case_modal_word_is_reported"
+  - node: 01a13d02-7211-77f1-a8f1-309976044464
+    reviewed: 0d6ddec081d3e9b1f87ce5ce596dea3bc8c35c4254b5d39e855b8429882bc282
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "the_number_of_rewritten_statements_is_reported_once"
+  - node: 01a13d02-7211-77f1-a8f1-309bb026308b
+    reviewed: 16b96607ca372f279c628a22495ef29d7babc28a8da2b1fe8904ed0fd434615c
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_metadata_line_is_reported_at_its_line_with_the_requirements_key"
+  - node: 01a13d02-7211-77f1-a8f1-309d97ca3fcd
+    reviewed: be8513b36e889899ead5cfd27324e2bc9c1fb28da2fef8621470f4ab04296208
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "a_second_requirement_of_one_name_is_reported"
+  - node: 01a13d02-7211-77f1-a8f1-309f6d4d5002
+    reviewed: 530b34d3740d19f42688c7c5018a61d8021e89b325b12843835e443173edf35e
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "active_and_archived_changes_are_reported_with_their_counts"
+  - node: 01a13d02-7211-77f1-a8f1-30a14d580500
+    reviewed: 0c0d1464203fa8138bb23a3b71fb746828efca3eb6842726fa18134ad6cd1d79
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "active_changes_are_the_directories_under_changes_and_archived_ones_are_counted_in_both_places"
+  - node: 01a13d02-7211-77f1-a8f1-30a226fc47be
+    reviewed: 5410ead8992f93b3788e30f90e96d50c06e55e99a90d65f70b191a5b0b04c0ed
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "active_and_archived_changes_are_reported_with_their_counts"
+  - node: 01a13d02-7211-77f1-a8f1-30a491ffd75a
+    reviewed: 316f43e33445024313c2ae52041e76fa55e72227c3d7ab8ff38826594fccfdfd
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "the_context_and_store_of_config_yaml_are_reported_at_their_lines"
+  - node: 01a13d02-7211-77f1-a8f1-30a6cc9f0fe8
+    reviewed: 316f43e33445024313c2ae52041e76fa55e72227c3d7ab8ff38826594fccfdfd
+    tests:
+      - file: "crates/loftspec/tests/convert_openspec_findings.rs"
+        name: "the_context_and_store_of_config_yaml_are_reported_at_their_lines"
   - node: b8310eca-0d41-4904-9eec-43c553343933
     reviewed: bfcaadcb8af0f4315f07e5c37312a7602271d050665dfca72a189b90eec95bba
     unverified: "Holds by the type system: only the document holds Products, and no node type has a field for one."
@@ -6999,6 +7498,156 @@ links:
         name: "the_json_document_names_the_path_and_the_way_recorded"
       - file: "crates/loft-cli/tests/record_install.rs"
         name: "a_record_that_cannot_be_written_exits_0_and_names_the_path"
+  - node: 01a13fe4-0f95-721d-8c51-f58200b53af6
+    reviewed: d28aa04e43a1fcb94e0a324f468f4522bbb0387a9f882d817b40874118f2fc45
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "without_a_directory_the_project_is_read_from_openspec_and_named_after_its_holder"
+  - node: 01a13fe4-0f95-721d-8c51-f5832a6e7037
+    reviewed: 317d5b966ed7ee78d4534f38c05d6375752ef000be9bb1d8013e6f6ca7d98180
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f58480141e01
+    reviewed: d14c4a3e7a2eccbd6483ae9db098cb70b3409d374b7c4e71b37b8af6dc54cb6a
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "each_import_mints_a_new_document_key"
+  - node: 01a13fe4-0f95-721d-8c51-f5859f959a5a
+    reviewed: cab67f21fde5dfc6aa047b2a196fe862407a7c18456507731db7aabf2a28d631
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f586a395de20
+    reviewed: ab59e069a871f380a3387546c82283c56e28a311dda46108ea92a27bc7a13acd
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "an_import_allocates_no_label_and_writes_no_lock_or_trace"
+  - node: 01a13fe4-0f95-721d-8c51-f588c4e34db5
+    reviewed: a149f01ac1aa96c02c802893b5e593878b7786718e317bd2c2b30e3efcf0a639
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f589c58af44a
+    reviewed: 55db99e5cca5a262ffe349366f17bf7aea3b175253bbfa322bea5868d3eefa1c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_spec_reached_through_a_symbolic_link_is_not_given"
+  - node: 01a13fe4-0f95-721d-8c51-f58ab4b89783
+    reviewed: 46fd2654389cc5ca068a97318792a3358230ebdd3e6260f25702911673b0215b
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_tree_is_the_converters_output_for_its_document_key_and_the_sidecar_lies_beside_it"
+  - node: 01a13fe4-0f95-721d-8c51-f58bdb089a70
+    reviewed: 2da25137cc2449c6701f4769b4f6000f8bd31af1d30c00691a580d175c17f260
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "active_changes_are_the_directories_under_changes_and_archived_ones_are_counted_in_both_places"
+  - node: 01a13fe4-0f95-721d-8c51-f58cfb596f95
+    reviewed: 1ef6edcdfec493f449d02189ff28645959afd5aeb7dd8399f702f655274262b9
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "active_changes_are_the_directories_under_changes_and_archived_ones_are_counted_in_both_places"
+  - node: 01a13fe4-0f95-721d-8c51-f58e2141af07
+    reviewed: 6393dd001d5d67d5a0c433209a5da0ef97dc11dad075a869bb843c78cb173730
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "findings_print_one_per_line_with_their_source_file_and_line"
+  - node: 01a13fe4-0f95-721d-8c51-f58f5b238970
+    reviewed: d9f743da57669a4182fab3ddd21e89b5bc6ef966ef80d654fddf26079420ca1e
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "findings_print_one_per_line_with_their_source_file_and_line"
+  - node: 01a13fe4-0f95-721d-8c51-f5900f42b60c
+    reviewed: e7669312257306588bd63e8a57ac016968fe7c49712cb0dfccbc9fb376b7e714
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "findings_print_one_per_line_with_their_source_file_and_line"
+  - node: 01a13fe4-0f95-721d-8c51-f592a0e8923d
+    reviewed: 6d2adf568b1aeb2beaedfebd893719ade1b7a1c08749643c9d2ab89a54c465f7
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_product_is_named_by_the_product_option"
+  - node: 01a13fe4-0f95-721d-8c51-f5949d372ea3
+    reviewed: 74a02f7cfe422783d0e3cd1aa758959cd0018a8dcb888e8e38633b81ddbda3cd
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "without_a_directory_the_project_is_read_from_openspec_and_named_after_its_holder"
+  - node: 01a13fe4-0f95-721d-8c51-f596d3f4bc86
+    reviewed: 450dd72f56cf21cf72e65fbbafdf195d280890d36bab183e914416aeb1ca7d76
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_report_counts_the_modal_warnings_and_shows_the_entry_that_lowers_them"
+  - node: 01a13fe4-0f95-721d-8c51-f597f9478cdb
+    reviewed: 753e36afd6cf4492b81cce872d3e8a36ee378720f7a812efc6377f91eea209d6
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_report_counts_the_modal_warnings_and_shows_the_entry_that_lowers_them"
+  - node: 01a13fe4-0f95-721d-8c51-f5980b463956
+    reviewed: 608132d0e6935cba563198689b4157f6fe6058fb5150436bf6da94c6a9438624
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "the_report_counts_the_modal_warnings_and_shows_the_entry_that_lowers_them"
+  - node: 01a13fe4-0f95-721d-8c51-f599d06e2028
+    reviewed: 8df28e8e8c8f7df76019fc87aab78ede2def603e4f504db29fc1965fb10cd78c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_tree_without_modal_warnings_gets_no_report"
+  - node: 01a13fe4-0f95-721d-8c51-f59b09682397
+    reviewed: 76d6ba565ff9d311ea1ddb539d7b9a5f63702d038abcad8908c8958231b207f2
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_hidden_entry_does_not_make_spec_not_empty"
+  - node: 01a13fe4-0f95-721d-8c51-f59c3a085b8d
+    reviewed: b74f948c426292101d2344dbd72e22245e836e1b537e922cec2699d85009a113
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_spec_directory_that_is_not_empty_is_refused_and_nothing_is_written"
+  - node: 01a13fe4-0f95-721d-8c51-f59d1eddf47c
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_spec_directory_that_is_not_empty_is_refused_and_nothing_is_written"
+  - node: 01a13fe4-0f95-721d-8c51-f59fcce989c4
+    reviewed: 52612dc025a309e8392d650a3428ec7fb2cdb3ba9a1fd4905ab35cebdcefbc7e
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_directory_that_cannot_be_read_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a02b482c26
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_directory_that_cannot_be_read_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a2c9a515bc
+    reviewed: 92f839ccba7ed2606486aabce3064122f9f104b18b738d2d9a1ddcc2dfa7756f
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_project_without_main_specs_is_refused_naming_its_active_changes"
+  - node: 01a13fe4-0f95-721d-8c51-f5a33b15570e
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_project_without_main_specs_is_refused_naming_its_active_changes"
+  - node: 01a13fe4-0f95-721d-8c51-f5a51a224fe2
+    reviewed: a31f3c30be77b12fea91f26ce01d0f5bf94bc89532cceb190da503c9c99ecc82
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_file_that_is_not_utf8_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a6ff31409e
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "a_file_that_is_not_utf8_is_refused_by_its_path"
+  - node: 01a13fe4-0f95-721d-8c51-f5a8d44d67a4
+    reviewed: d6d4eb135cc41ecd2737d5bf1faecf1408b9bb8c987b4bd1f87064599f3e3e3f
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "json_output_matches_the_schema"
+  - node: 01a13fe4-0f95-721d-8c51-f5a919adc7a2
+    reviewed: 8526bcbacc39bf12d117769564d094570c4b32ac51a9ba16ecb1f99ca9c47095
+    tests:
+      - file: "crates/loft-cli/tests/import_openspec.rs"
+        name: "json_output_matches_the_schema"
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:
@@ -7973,14 +8622,14 @@ links:
       - file: "crates/loft-cli/tests/sends_telemetry.rs"
         name: "the_switch_subcommands_open_no_connection"
       - file: "crates/loft-cli/tests/schemas.rs"
-        name: "every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown"
+        name: "every_subcommand_has_an_entry_in_the_commands_and_no_entry_is_unknown"
   - node: 01a13a90-3556-7106-a68c-264f419f9d9d
     reviewed: 920c4341ec094bb33d98d7ca5c33d61c097b848fc634155e8e921510e073730a
     tests:
       - file: "crates/loft-cli/tests/sends_telemetry.rs"
         name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
       - file: "crates/loft-cli/tests/schemas.rs"
-        name: "every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown"
+        name: "every_subcommand_has_an_entry_in_the_commands_and_no_entry_is_unknown"
   - node: 01a13a90-3556-7106-a68c-265029868ddb
     reviewed: 4e9c44032f77a59bff7eded34629566684072e2d9fd98ef65e5adaf1e334e0a9
     tests:
@@ -8674,7 +9323,7 @@ links:
       - file: "crates/loft-cli/tests/collector_contract.rs"
         name: "the_simulator_records_an_event_sent_twice_once"
   - node: 01a13af6-c86d-7585-a796-bfccdb2fdbde
-    reviewed: e0e0d2c9af5979c5cf0853944a7144703f28c40e62c2aefaeaac77efeae5e1de
+    reviewed: 98ac6a9f328f0f39f7bc3277f3341824e1100d3758f4f93aa923e8fae0b9d156
     tests:
       - file: "crates/loft-cli/tests/collector_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_states"
@@ -9552,6 +10201,9 @@ links:
   - node: c15d4738-4283-4fd1-8999-300beff7e4f0
     reviewed: abef02564376fce399e65b312d03f2fc7ea7d0a84759c7de3e1e38a7cd93736f
     unverified: "Holds by the type system: the converter's one entry point takes the parsed v1 export as its only argument."
+  - node: 01a13d01-545b-761c-83a4-724ef2addc5a
+    reviewed: f92c66ba8ac16c223b0a234c22ad2b75241a46781c91550e6a72e3a48062c353
+    unverified: "Holds by the type system: the converter's one entry point takes the texts of the directory's files as its only input, and the crate performs no input or output."
   - node: 321b94fc-e737-483f-b37f-d2257898662b
     reviewed: addaf9ffaf83c5f8e70ffcccd5f0331712294c93f4c644d05dd0017257d3d123
     unverified: "Holds by the type system: the validator takes the document by shared reference."

@@ -4,7 +4,7 @@
 use crate::common::lint::{added, configured, findings, keys, of, severity};
 use crate::common::{criterion, key, requirement, section, small_document};
 use loftspec::document::Document;
-use loftspec::lint::{Finding, LintConfig, RuleId, Severity};
+use loftspec::lint::{Finding, LintConfig, RuleId, Severity, count_body_rule};
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::Criterion;
 
@@ -242,6 +242,27 @@ fn the_lexicon_of_v2_007_is_edited_in_the_lint_configuration() {
         .map(|finding| finding.term.clone().unwrap())
         .collect();
     assert_eq!(terms, ["should"]);
+}
+
+#[test]
+fn counting_one_body_rule_counts_what_the_linter_reports_for_it() {
+    let mut document = with_criterion("The key is written.");
+    added(&mut document).details.body = Some("The writer must sort keys.".to_owned());
+    added(&mut document).criteria[0].details.sections =
+        vec![section(62, "Notes", "It must stop.\nIt must, it must.\n")];
+    let config = LintConfig::default();
+    let reported = of(&findings(&document), RuleId::V2007).len();
+    assert_eq!(reported, 4);
+    assert_eq!(count_body_rule(&document, &config, RuleId::V2007), reported);
+}
+
+#[test]
+fn counting_a_rule_that_does_not_read_bodies_alone_counts_nothing() {
+    let mut document = with_criterion("The key is written.");
+    added(&mut document).details.body = Some("The writer sorts many keys.".to_owned());
+    let config = LintConfig::default();
+    assert_eq!(of(&findings(&document), RuleId::Lq002).len(), 1);
+    assert_eq!(count_body_rule(&document, &config, RuleId::Lq002), 0);
 }
 
 /// The small document with one more Requirement whose statement's system is `system`.

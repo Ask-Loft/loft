@@ -1,0 +1,51 @@
+key: 01a13d02-7211-77f1-a8f1-30a7051bea54
+slug: identity-and-determinism
+name: "Identity and determinism"
+body: "How the OpenSpec converter keys the nodes it creates, so that the same project converts to the same tree, and why the tree carries no labels."
+realizes:
+  - 01a13d01-545b-761c-83a4-724d8d61cd4b
+requirements:
+  - key: 01a13d02-7211-77f1-a8f1-30a8d19b137b
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "derive each node's key from the document key, the node's kind and the node's source identity."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30a9b4471e67
+        name: "A Product's source identity is empty."
+      - key: 01a13d02-7211-77f1-a8f1-30aaf398419d
+        name: "A Feature Group's source identity is its path segment, and the Feature Group `Capabilities` has an empty source identity."
+      - key: 01a13d02-7211-77f1-a8f1-30ab07ded98f
+        name: "A Feature's source identity is its capability id."
+      - key: 01a13d02-7211-77f1-a8f1-30ac084e2260
+        name: "A Requirement's source identity is its capability id and its requirement name."
+      - key: 01a13d02-7211-77f1-a8f1-30ad877f97d6
+        name: "A Criterion's source identity is its requirement's identity and its scenario name."
+      - key: 01a13d02-7211-77f1-a8f1-30ae6d7911cc
+        name: "A Section's source identity is its parent's kind, its parent's source identity and its heading text."
+      - key: 01a13d02-7211-77f1-a8f1-30af19b97723
+        name: "A node whose kind and source identity repeat an earlier node's adds its ordinal among those nodes, from 2, and its children's identities start from that."
+      - key: 01a13d02-7211-77f1-a8f1-30b0146318f6
+        name: "The same source identity under another document key gives another key."
+      - key: 01a13d0b-545f-73be-a8d8-20929e26bd42
+        name: "The key is the version 8 UUID made from the first 16 bytes of the SHA-256 digest of `loft-openspec-key/1`, the document key, the kind and each part of the source identity, each followed by a zero byte."
+      - key: 01a13d0b-545f-73be-a8d8-20936384bf94
+        name: "The kinds are written `product`, `feature-group`, `feature`, `requirement`, `criterion` and `section`."
+  - key: 01a13d02-7211-77f1-a8f1-30b10678c043
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "produce identical output for identical input and document key."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30b26fa4496c
+        name: "Two conversions of the same files under the same document key give byte-identical trees and sidecars."
+  - key: 01a13d02-7211-77f1-a8f1-30b3f098d23b
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec converter"
+      shall: "bind no label."
+    criteria:
+      - key: 01a13d02-7211-77f1-a8f1-30b4fc212f21
+        name: "`spec/labels.yaml` holds no binding."
+      - key: 01a13d02-7211-77f1-a8f1-30b58d3e7bf1
+        name: "Every counter holds its starting value."
