@@ -20,7 +20,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   reported as findings (`OS-001` to `OS-015`; `OS-009` is retired) with their source file and line. OpenSpec states
   obligations in scenario bodies, which become criterion bodies, so the command also reports how
   many `V2-007` warnings `loft check` will give and the `spec/lint.yaml` entry that lowers them to
-  info; it writes no lint configuration. Its output follows the schema `loft-import-openspec/1`.
+  info; it writes no lint configuration. In text, it ends with `next:` lines: run
+  `loft skill install` where the skill is missing, register the merge driver as `loft init`
+  suggests, and adopt the import with the skill's workflow. Its output follows the schema
+  `loft-import-openspec/1`; the JSON document carries no suggestion.
+- The `loft-spec` skill has a workflow for adopting an OpenSpec project: the import findings
+  that ask for work, the `V2-007` entry for the adoption period, Components, criteria rewritten
+  as checkable sentences, placeholder Purposes, Decisions and Constraints lifted from the
+  project, and an OpenSpec projection kept with `loft render --openspec`.
 - `loft render --openspec <dir>` writes the specification as the main specs of an OpenSpec
   directory, with `loft-render-map.json` beside them naming the node each requirement and scenario
   comes from, and prints each render finding (`OR-001` to `OR-012`). It refuses a main specs

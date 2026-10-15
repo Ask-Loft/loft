@@ -1,7 +1,7 @@
 //! `loft import openspec`: the main specs of an `OpenSpec` project converted into `spec/`, the
 //! provenance sidecar beside it, the conversion findings, and the number of `V2-007` warnings
-//! the new tree raises with the `spec/lint.yaml` entry that lowers them. Any refusal writes
-//! nothing.
+//! the new tree raises with the `spec/lint.yaml` entry that lowers them, and in text the next
+//! steps: the skill, the merge driver and the adoption workflow. Any refusal writes nothing.
 
 use std::path::Path;
 
@@ -11,22 +11,27 @@ use loftspec::ids::DocumentId;
 use loftspec::lint::{LintConfig, RuleId, count_body_rule};
 use loftspec_store::FileStore;
 use loftspec_store::openspec::read_project;
+use loftspec_store::repository::GitCommand;
 use serde_json::json;
 
 use crate::finish::Finished;
-use crate::json;
 use crate::out::{errln, outln};
 use crate::stop::Stop;
+use crate::{json, merge_driver, skill};
 
 const SCHEMA: &str = "loft-import-openspec/1";
 
 /// The `spec/lint.yaml` entry that lowers `V2-007` to info.
 const LOWER_V2_007: &str = "rules:\n  - rule: V2-007\n    severity: info\n";
 
+/// The suggestion to adopt the import with the skill's workflow.
+const ADOPT: &str = "next: have the coding agent adopt the import with the loft-spec skill's \
+                     workflow \"Adopting an OpenSpec project\"";
+
 pub fn run(root: &Path, dir: &Path, product: Option<&str>, as_json: bool) -> Finished {
     match import(root, dir, product) {
         Ok(imported) => {
-            report(dir, imported, as_json);
+            report(root, dir, imported, as_json);
             Finished::success("imported")
         }
         Err(message) => Stop::one("refused", message).exit(SCHEMA, as_json),
@@ -83,7 +88,7 @@ fn holder_name(dir: &Path) -> Result<String, String> {
         })
 }
 
-fn report(dir: &Path, imported: Imported, as_json: bool) {
+fn report(root: &Path, dir: &Path, imported: Imported, as_json: bool) {
     let findings: Vec<Finding> = imported
         .findings
         .into_iter()
@@ -108,10 +113,28 @@ fn report(dir: &Path, imported: Imported, as_json: bool) {
         for finding in &findings {
             outln!("{finding}");
         }
+        for suggestion in suggestions(root) {
+            outln!("{suggestion}");
+        }
     }
     if let Some(advice) = advice(warnings) {
         errln!("{advice}");
     }
+}
+
+/// What to do after the import: install the skill where it is missing, register the merge
+/// driver as `loft init` suggests, and adopt the import.
+fn suggestions(root: &Path) -> Vec<String> {
+    let skill = (!skill::installed(root)).then(|| {
+        "next: run `loft skill install`, so the project's coding agents have the loft-spec skill"
+            .to_owned()
+    });
+    let driver = merge_driver::suggestion(&GitCommand::default(), root);
+    skill
+        .into_iter()
+        .chain(driver)
+        .chain([ADOPT.to_owned()])
+        .collect()
 }
 
 /// The report of the `V2-007` warnings the tree raises, if it raises any.

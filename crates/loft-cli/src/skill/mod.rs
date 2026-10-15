@@ -78,6 +78,13 @@ pub fn install(root: &Path) -> Result<Vec<&'static str>, SkillError> {
     Ok(written)
 }
 
+/// Whether each host's package of the skill lies under `root`.
+pub fn installed(root: &Path) -> bool {
+    Host::ALL
+        .iter()
+        .all(|host| root.join(host.directory()).join("SKILL.md").is_file())
+}
+
 /// An error of the skill as JSON, of kind `install`.
 pub fn error_json(error: &SkillError) -> serde_json::Value {
     json::error("install", &error.to_string(), &[])

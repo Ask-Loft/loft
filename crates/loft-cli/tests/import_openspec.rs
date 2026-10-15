@@ -13,6 +13,7 @@ use loftspec::convert::openspec::{Project, convert};
 use loftspec::document::Document;
 use loftspec_store::{DocumentStore, FileStore};
 use serde_json::Value;
+use software_plant::GitScenario;
 
 const SCHEMA: &str = include_str!("../../../schemas/import-openspec.json");
 
@@ -188,13 +189,98 @@ fn active_changes_are_the_directories_under_changes_and_archived_ones_are_counte
 fn findings_print_one_per_line_with_their_source_file_and_line() {
     let scratch = holding("faithful");
     let output = scratch.loft(&["import", "openspec"]);
-    assert_eq!(
-        stdout(&output),
-        "info OS-011: active changes were not converted: 1 (add-refunds)\n\
-         info OS-012: archived changes were not converted: 2\n\
-         openspec/config.yaml:2: info OS-013: the context of config.yaml was not converted\n\
-         info OS-008: statements whose SHALL or MUST was written as shall: 3\n"
+    let text = stdout(&output);
+    assert!(
+        text.starts_with(
+            "info OS-011: active changes were not converted: 1 (add-refunds)\n\
+             info OS-012: archived changes were not converted: 2\n\
+             openspec/config.yaml:2: info OS-013: the context of config.yaml was not converted\n\
+             info OS-008: statements whose SHALL or MUST was written as shall: 3\n\
+             next: "
+        ),
+        "{text}"
     );
+}
+
+/// The `next:` lines of `loft import openspec` run in `scratch` with the git simulator answering
+/// from `scenario`, after asserting that they follow every other line.
+fn suggestions(scratch: &Scratch, scenario: &GitScenario) -> Vec<String> {
+    let (output, _) = scratch.loft_in(&["import", "openspec"], scenario);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let text = stdout(&output);
+    let first = text.lines().position(|line| line.starts_with("next: "));
+    let lines: Vec<String> = text
+        .lines()
+        .skip(first.unwrap())
+        .map(str::to_owned)
+        .collect();
+    assert!(
+        lines.iter().all(|line| line.starts_with("next: ")),
+        "{text}"
+    );
+    lines
+}
+
+#[test]
+fn after_the_findings_the_import_suggests_the_skill_the_merge_driver_and_the_adoption() {
+    let lines = suggestions(&holding("faithful"), &GitScenario::clean_on("main"));
+    assert_eq!(lines.len(), 3, "{lines:?}");
+    assert!(lines[0].contains("`loft skill install`"), "{lines:?}");
+    assert!(
+        lines[1].contains("`loft merge-driver --install`"),
+        "{lines:?}"
+    );
+    assert!(
+        lines[2].contains("\"Adopting an OpenSpec project\""),
+        "{lines:?}"
+    );
+}
+
+#[test]
+fn the_import_does_not_suggest_the_skill_where_it_is_installed() {
+    let scratch = holding("quiet");
+    let installed = scratch.loft(&["skill", "install"]);
+    assert_eq!(installed.status.code(), Some(0), "{}", stderr(&installed));
+    let lines = suggestions(&scratch, &GitScenario::clean_on("main"));
+    assert!(
+        lines
+            .iter()
+            .all(|line| !line.contains("loft skill install")),
+        "{lines:?}"
+    );
+}
+
+#[test]
+fn the_import_does_not_suggest_the_driver_where_the_repository_names_it() {
+    let scenario = GitScenario::clean_on("main").with_config("merge.loft.driver", "loft");
+    let lines = suggestions(&holding("quiet"), &scenario);
+    assert!(
+        lines.iter().all(|line| !line.contains("merge-driver")),
+        "{lines:?}"
+    );
+}
+
+#[test]
+fn outside_a_repository_the_import_suggests_git_and_then_the_driver() {
+    let lines = suggestions(&holding("quiet"), &GitScenario::outside_repository());
+    let driver = lines.iter().find(|line| line.contains("merge-driver"));
+    assert!(
+        driver.is_some_and(|line| line.contains("git repository")),
+        "{lines:?}"
+    );
+}
+
+#[test]
+fn the_json_document_of_an_import_carries_no_suggestion() {
+    let scratch = holding("faithful");
+    let (output, _) = scratch.loft_in(
+        &["import", "openspec", "--format", "json"],
+        &GitScenario::clean_on("main"),
+    );
+    let document: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(document["outcome"], "imported");
+    assert!(!stdout(&output).contains("next:"), "{}", stdout(&output));
+    assert!(!stderr(&output).contains("next:"), "{}", stderr(&output));
 }
 
 /// The `V2-007` warnings `loft check` reports on the tree in `scratch`.
