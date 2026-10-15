@@ -53,3 +53,5 @@ requirements:
         name: "The Section's body follows its heading verbatim."
       - key: 01a1402e-d25e-7540-9283-184a347e1969
         name: "A Section's own Sections follow its body, each one heading level deeper."
+      - key: 01a14139-e5e5-768a-a902-87488141b9d0
+        name: "A Section that would be deeper than level 6 is written at level 6."

@@ -40,6 +40,10 @@ requirements:
         name: "The error names the path."
       - key: 01a1402e-d25d-7745-8833-e3ff71372972
         name: "An `--openspec` directory under `spec/` is refused."
+      - key: 01a14139-e5e4-7047-a160-7955efba7abc
+        name: "A path under `spec/` is refused whether it is given relative or absolute, and whatever its letter case on a file system that ignores case."
+      - key: 01a14139-e5e4-7047-a160-7956732134d6
+        name: "Each main specs directory and the render map that `--openspec` would write are checked, not only `<dir>`."
       - key: 4b141b53-d7ce-489b-b162-cbf9ad383bee
         name: "No projection is written."
   - key: 01a1354e-bca0-714b-8727-09ba81818211
@@ -79,6 +83,8 @@ requirements:
         name: "The error names the directory."
       - key: 01a1406d-98b1-756b-9b4d-defce8ef8b2c
         name: "An entry whose name begins with `.` does not make a directory not empty."
+      - key: 01a14139-e5e4-7047-a160-7957e3fe43b8
+        name: "Without `--force`, no file is removed."
       - key: 01a1402e-d25d-7745-8833-e409557eebd0
         name: "No projection is written."
   - key: 01a1402e-d25d-7745-8833-e40a8c05dc58
@@ -92,3 +98,31 @@ requirements:
         name: "A `spec.md` the projection does not write is removed from that directory."
       - key: 01a1402e-d25d-7745-8833-e40c2d97a038
         name: "No file outside those directories and the render map is changed."
+      - key: 01a14139-e5e4-7047-a160-7958d961a71a
+        name: "No entry whose name begins with `.`, and nothing below one, is removed."
+      - key: 01a14139-e5e4-7047-a160-7959ee18b695
+        name: "The main specs the projection does not write are removed only after every file it writes was written."
+      - key: 01a14139-e5e4-7047-a160-795a92989a09
+        name: "Each file removed is printed on its own line."
+  - key: 01a14139-e5e4-7047-a160-795bc3871bba
+    statement:
+      form: unwanted
+      if: "a symbolic link inside `<dir>` lies on the path to a file the OpenSpec projection writes"
+      system: "`loft render`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a14139-e5e4-7047-a160-795c706bb835
+        name: "The error names the symbolic link."
+      - key: 01a14139-e5e4-7047-a160-795d49d4466d
+        name: "No projection is written and no file is removed."
+  - key: 01a14139-e5e4-7047-a160-795e910b30e4
+    statement:
+      form: unwanted
+      if: "two Features would be written to one OpenSpec path"
+      system: "`loft render`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a14139-e5e4-7047-a160-795fbf3e8973
+        name: "The error names the path and both Features."
+      - key: 01a14139-e5e4-7047-a160-7960214c24f3
+        name: "No projection is written."

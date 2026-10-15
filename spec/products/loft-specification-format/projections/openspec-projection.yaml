@@ -31,6 +31,17 @@ requirements:
         name: "An `ext.openspec.capability` that is empty, begins with `/`, or holds an empty segment, a `.` or `..` segment or a backslash is treated as absent."
       - key: 01a1402e-d25e-7540-9283-18190c14e09a
         name: "The capability path of any other Feature is its Feature Group's slug and its own slug, joined with `/`."
+  - key: 01a14139-e5e5-768a-a902-8725d5ae50b9
+    statement:
+      form: unwanted
+      if: "two Features of a document would be written to one path"
+      system: "the OpenSpec renderer"
+      shall: "refuse to render the document."
+    criteria:
+      - key: 01a14139-e5e5-768a-a902-87260009c835
+        name: "Two paths that differ only in letter case are one path."
+      - key: 01a14139-e5e5-768a-a902-872749a35084
+        name: "The refusal names the path and both Features."
   - key: 01a1402e-d25e-7540-9283-181a3e5dc7c3
     statement:
       form: ubiquitous
@@ -51,6 +62,8 @@ requirements:
         name: "Each Section of the Feature follows the section `Requirements` as a level-2 heading with its name, then its body verbatim."
       - key: 01a1402e-d25e-7540-9283-1820e93b060c
         name: "A Section's own Sections follow its body, each one heading level deeper."
+      - key: 01a14139-e5e5-768a-a902-8728d8583e18
+        name: "A Section that would be deeper than level 6 is written at level 6."
   - key: 01a1402e-d25e-7540-9283-1821962cd363
     statement:
       form: ubiquitous

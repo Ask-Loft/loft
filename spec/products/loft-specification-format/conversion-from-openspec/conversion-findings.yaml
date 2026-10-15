@@ -17,7 +17,7 @@ requirements:
   - key: 01a13d02-7211-77f1-a8f1-3089c124dea9
     statement:
       form: unwanted
-      if: "a Purpose begins with OpenSpec's archive placeholder"
+      if: "a Purpose is a placeholder"
       system: "the OpenSpec converter"
       shall: "report the empty Feature body as a finding with the code `OS-002`."
     criteria:
@@ -76,6 +76,8 @@ requirements:
         name: "The finding names the file, the line of the requirement's heading and the Requirement's key."
       - key: 01a13d02-7211-77f1-a8f1-3097a1e8e83c
         name: "A text holding `shall` or `must` in lower case only is reported."
+      - key: 01a14139-e5e4-7047-a160-7961b2e9b25f
+        name: "A text with no line but metadata lines is read for `SHALL` or `MUST` in those lines."
   - key: 01a13d02-7211-77f1-a8f1-30982620171e
     statement:
       form: unwanted
@@ -132,3 +134,14 @@ requirements:
     criteria:
       - key: 01a13d02-7211-77f1-a8f1-30a6cc9f0fe8
         name: "The finding names the file and the line of the entry."
+  - key: 01a14139-e5e4-7047-a160-796228711527
+    statement:
+      form: unwanted
+      if: "a metadata line lies inside the first paragraph of a requirement's text"
+      system: "the OpenSpec converter"
+      shall: "report the Requirement as a finding with the code `OS-015`."
+    criteria:
+      - key: 01a14139-e5e4-7047-a160-79631971a824
+        name: "The finding names the file, the line of the metadata line and the Requirement's key."
+      - key: 01a14139-e5e4-7047-a160-7964d153acfa
+        name: "The lines of the paragraph around the metadata line are joined into the statement."

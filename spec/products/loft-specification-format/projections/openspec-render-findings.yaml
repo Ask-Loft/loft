@@ -23,6 +23,8 @@ requirements:
     criteria:
       - key: 01a1402e-d25e-7540-9283-182afa7d9f44
         name: "The requirement text is the Requirement's lines after its heading and before its first level-4 heading, other than blank lines, lines in fenced code and lines that open with a bold label and a colon."
+      - key: 01a14139-e5e5-768a-a902-87296ba2a73c
+        name: "A requirement text with no line but lines that open with a bold label and a colon is those lines."
       - key: 01a1402e-d25e-7540-9283-182b8687765c
         name: "A requirement text that holds `SHALL` or `MUST` as a word raises no `OR-001`."
   - key: 01a1402e-d25e-7540-9283-182c02f45295
@@ -35,6 +37,8 @@ requirements:
         name: "A Requirement with a Criterion raises no `OR-002`."
       - key: 01a1402e-d25e-7540-9283-182e4b1c4dc9
         name: "A Requirement whose only level-4 headings are Sections without a body raises `OR-002`."
+      - key: 01a14139-e5e5-768a-a902-872a489eeb42
+        name: "A level-4 heading has text under it when a line before the next heading of level 4 or above is not blank."
   - key: 01a1402e-d25e-7540-9283-182fe0419f45
     statement:
       form: ubiquitous
@@ -75,3 +79,85 @@ requirements:
     criteria:
       - key: 01a1402e-d25e-7540-9283-183aeb33116c
         name: "Requirements of different Features may share a name without a finding."
+      - key: 01a14139-e5e5-768a-a902-872b2c776f64
+        name: "Two names are compared after a closing run of `#` that follows a space or a tab is removed and each name is trimmed."
+  - key: 01a14139-e5e5-768a-a902-872cd4b995f3
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "report each node whose content a second import would read differently as a finding with the code `OR-007`."
+    criteria:
+      - key: 01a14139-e5e5-768a-a902-872dc643d894
+        name: "A line of a body that is a heading outside fenced code is reported."
+      - key: 01a14139-e5e5-768a-a902-872e43cac79b
+        name: "A line of a Requirement's body that opens with a bold label and a colon is reported."
+      - key: 01a14139-e5e5-768a-a902-872fc6400ef0
+        name: "A name or a statement stored as text that holds a line break is reported."
+      - key: 01a14139-e5e5-768a-a902-873023e736e2
+        name: "A Section that would be deeper than level 6 is reported."
+      - key: 01a14139-e5e5-768a-a902-873169fdec3a
+        name: "A node raises one finding for each kind of content it holds that will not read back, and the finding names that kind."
+      - key: 01a14139-e5e5-768a-a902-87323644dfe1
+        name: "A node whose content all reads back raises no `OR-007`."
+  - key: 01a14139-e5e5-768a-a902-873342008506
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "report each `ext.openspec` value it cannot read as a finding with the code `OR-008`."
+    criteria:
+      - key: 01a14139-e5e5-768a-a902-8734082c16da
+        name: "A capability, name or purpose that is not text is reported."
+      - key: 01a14139-e5e5-768a-a902-873587e061e2
+        name: "A capability that the renderer treats as absent is reported."
+      - key: 01a14139-e5e5-768a-a902-8736dfeee30a
+        name: "A modal other than `SHALL`, `MUST` or `shall` is reported."
+      - key: 01a14139-e5e5-768a-a902-87376ccabb83
+        name: "A metadata value that is not a list, or that holds an entry without a text `label` and a text `value`, is reported."
+      - key: 01a14139-e5e5-768a-a902-873895613077
+        name: "The finding names the node's key and the field."
+      - key: 01a14139-e5e5-768a-a902-8739adbddd9b
+        name: "A node whose `ext.openspec` values all read raises no `OR-008`."
+  - key: 01a14139-e5e5-768a-a902-873a7cb9f5e9
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "report a Feature whose written Purpose is a placeholder as a finding with the code `OR-009`."
+    criteria:
+      - key: 01a14139-e5e5-768a-a902-873b33602996
+        name: "A Purpose whose text outside fenced code, trimmed, opens with `TBD` or `TODO` in upper case as a word is a placeholder."
+      - key: 01a14139-e5e5-768a-a902-873c78378295
+        name: "A Purpose whose text outside fenced code, trimmed, opens with `TBD` or `TODO` in any case followed by a line's end or punctuation is a placeholder."
+      - key: 01a14139-e5e5-768a-a902-873db1acb812
+        name: "A Purpose that holds OpenSpec's archive placeholder sentence is a placeholder."
+      - key: 01a14139-e5e5-768a-a902-873ef7549b69
+        name: "A Purpose that opens with a longer word such as `TBDs` raises no `OR-009`."
+  - key: 01a14139-e5e5-768a-a902-873f080e1185
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "report a Feature with no Requirement as a finding with the code `OR-010`."
+    criteria:
+      - key: 01a14139-e5e5-768a-a902-8740501e99db
+        name: "The finding names the Feature's key and its file."
+      - key: 01a14139-e5e5-768a-a902-8741ddb11fbb
+        name: "A Feature with a Requirement raises no `OR-010`."
+  - key: 01a14139-e5e5-768a-a902-8742d90a6a6b
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "report a Section written as a level-3 heading that opens with `Requirement:` as a finding with the code `OR-011`."
+    criteria:
+      - key: 01a14139-e5e5-768a-a902-8743b3702b12
+        name: "The heading is matched without regard to letter case."
+      - key: 01a14139-e5e5-768a-a902-8744d434123f
+        name: "A Section written at another level raises no `OR-011`."
+  - key: 01a14139-e5e5-768a-a902-874533f99c92
+    statement:
+      form: ubiquitous
+      system: "The OpenSpec renderer"
+      shall: "report a Section written as a level-2 heading named as a delta section as a finding with the code `OR-012`."
+    criteria:
+      - key: 01a14139-e5e5-768a-a902-8746d0e485d5
+        name: "A name of `ADDED`, `MODIFIED`, `REMOVED` or `RENAMED` followed by `Requirements` names a delta section, without regard to letter case."
+      - key: 01a14139-e5e5-768a-a902-8747f4db0d41
+        name: "A Section with such a name written at another level raises no `OR-012`."

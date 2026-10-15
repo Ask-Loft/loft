@@ -59,6 +59,8 @@ requirements:
         name: "A statement whose `MUST` was written as `shall` keeps `MUST` as the Requirement's `ext.openspec.modal`."
       - key: 01a14060-4e79-76e2-b443-58745b826391
         name: "A statement whose `SHALL` was written as `shall` gives the Requirement no `ext.openspec.modal`."
+      - key: 01a14139-e5e4-7047-a160-79650be3c076
+        name: "A statement stored as slots whose source writes its modal word `shall` keeps `shall` as the Requirement's `ext.openspec.modal`."
   - key: 01a13d02-7211-77f1-a8f1-30e2d8306641
     statement:
       form: ubiquitous
