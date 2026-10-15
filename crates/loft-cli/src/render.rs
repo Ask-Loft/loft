@@ -54,6 +54,9 @@ pub fn run(root: &Path, targets: Targets, as_json: bool) -> Finished {
                 for path in &rendered.written {
                     outln!("{}", path.display());
                 }
+                for path in &rendered.removed {
+                    outln!("removed {}", path.display());
+                }
                 for finding in &rendered.findings {
                     outln!("{finding}");
                 }
@@ -109,7 +112,9 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
         let written =
             write_projection(&root.join(dir), projection, targets.force).map_err(|error| {
                 match error {
-                    WriteProjectionError::NotEmpty(_) => Stop::one("refused", error.to_string()),
+                    WriteProjectionError::NotEmpty(_) | WriteProjectionError::Link(_) => {
+                        Stop::one("refused", error.to_string())
+                    }
                     WriteProjectionError::Store(error) => Stop::one("store", error.to_string()),
                 }
             })?;

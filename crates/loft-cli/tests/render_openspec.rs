@@ -157,3 +157,77 @@ fn json_output_lists_the_files_written_and_each_finding() {
     assert!(findings.iter().any(|finding| finding["rule"] == "OR-005"));
     assert!(findings.iter().all(|finding| finding["severity"] == "info"));
 }
+
+#[test]
+fn without_force_nothing_is_removed_even_below_a_hidden_entry() {
+    let scratch = imported();
+    put(&scratch, "out/specs/.archive/old/spec.md", "# Old\n");
+    let output = scratch.loft(&["render", "--openspec", "out", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let document = schema::conforming(&output.stdout, include_str!("../../../schemas/render.json"));
+    assert_eq!(document["removed"], serde_json::json!([]));
+    assert_eq!(read(&scratch, "out/specs/.archive/old/spec.md"), "# Old\n");
+}
+
+#[test]
+fn force_removes_nothing_below_an_entry_whose_name_begins_with_a_dot() {
+    let scratch = imported();
+    put(&scratch, "out/specs/.archive/old/spec.md", "# Old\n");
+    put(&scratch, "out/specs/.spec.md", "# Hidden\n");
+    let output = scratch.loft(&["render", "--openspec", "out", "--force"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(read(&scratch, "out/specs/.archive/old/spec.md"), "# Old\n");
+    assert_eq!(read(&scratch, "out/specs/.spec.md"), "# Hidden\n");
+}
+
+#[test]
+fn force_removes_stale_specs_only_after_every_file_is_written() {
+    let scratch = imported();
+    put(&scratch, "out/specs/gone/spec.md", "# Gone\n");
+    // A directory where the projection writes a file makes that write fail.
+    fs::create_dir_all(scratch.0.join("out/specs/auth/spec.md")).unwrap();
+    let output = scratch.loft(&["render", "--openspec", "out", "--force"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(read(&scratch, "out/specs/gone/spec.md"), "# Gone\n");
+}
+
+#[test]
+fn text_output_names_each_file_force_removes() {
+    let scratch = imported();
+    put(&scratch, "out/specs/gone/spec.md", "# Gone\n");
+    let output = scratch.loft(&["render", "--openspec", "out", "--force"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stdout(&output)
+            .lines()
+            .any(|line| line == "removed out/specs/gone/spec.md"),
+        "{}",
+        stdout(&output)
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn a_symbolic_link_on_the_way_to_a_written_file_is_refused_by_name_and_nothing_changes() {
+    use std::os::unix::fs::symlink;
+    for (link, target_holds) in [("out/specs", "zzz/spec.md"), ("out/specs/auth", "spec.md")] {
+        let scratch = imported();
+        let elsewhere = Scratch::empty();
+        elsewhere_put(&elsewhere, target_holds);
+        let at = scratch.0.join(link);
+        fs::create_dir_all(at.parent().unwrap()).unwrap();
+        symlink(&elsewhere.0, &at).unwrap();
+        let (before, outside) = (snapshot(&scratch.0), snapshot(&elsewhere.0));
+        let output = scratch.loft(&["render", "--openspec", "out", "--force"]);
+        assert_eq!(output.status.code(), Some(1), "{link}");
+        assert!(stderr(&output).contains(link), "{}", stderr(&output));
+        assert_eq!(snapshot(&scratch.0), before, "{link}");
+        assert_eq!(snapshot(&elsewhere.0), outside, "{link}");
+    }
+}
+
+fn elsewhere_put(scratch: &Scratch, path: &str) {
+    let target = scratch.0.join(path);
+    fs::create_dir_all(target.parent().unwrap()).unwrap();
+    fs::write(target, "# Elsewhere\n").unwrap();
+}

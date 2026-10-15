@@ -7050,6 +7050,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/render_openspec.rs"
         name: "a_hidden_entry_does_not_make_the_main_specs_directory_not_empty"
+  - node: 01a14139-e5e4-7047-a160-7957e3fe43b8
+    reviewed: ad11638ade8f29f2e1621d0397896c0c1080b8ea1f7aecbcc4395cffde6757cd
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "without_force_nothing_is_removed_even_below_a_hidden_entry"
   - node: 01a1402e-d25d-7745-8833-e409557eebd0
     reviewed: 56dce2c07c224395c3953650ac81acfa5df7830fb3fc8cc8cdadb710fd8dda6d
     tests:
@@ -7065,6 +7070,31 @@ links:
     tests:
       - file: "crates/loft-cli/tests/render_openspec.rs"
         name: "force_removes_each_spec_it_does_not_write_and_changes_nothing_else"
+  - node: 01a14139-e5e4-7047-a160-7958d961a71a
+    reviewed: 0817b05da2d796b302d254c61917eaa29278bc69477a7de8df1a948030525062
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "force_removes_nothing_below_an_entry_whose_name_begins_with_a_dot"
+  - node: 01a14139-e5e4-7047-a160-7959ee18b695
+    reviewed: 0d06c0bdf26f7335f054dcc34b5510b4dd5b4d3fbdb2be449681ad632fddb088
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "force_removes_stale_specs_only_after_every_file_is_written"
+  - node: 01a14139-e5e4-7047-a160-795a92989a09
+    reviewed: a566020b33341393f8fffeeb4dde2a177f680da26ddec55991f8785ac19b84c1
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "text_output_names_each_file_force_removes"
+  - node: 01a14139-e5e4-7047-a160-795c706bb835
+    reviewed: b0327d18908f299447630223e76dfa123449c167fed7b393432ffc7eb5117b28
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "a_symbolic_link_on_the_way_to_a_written_file_is_refused_by_name_and_nothing_changes"
+  - node: 01a14139-e5e4-7047-a160-795d49d4466d
+    reviewed: aef4d85bf5afd8f4b0bf36bde140521bd7a5b72e5084a5bf371a9f21d08a8733
+    tests:
+      - file: "crates/loft-cli/tests/render_openspec.rs"
+        name: "a_symbolic_link_on_the_way_to_a_written_file_is_refused_by_name_and_nothing_changes"
   - node: f413650f-ee5c-43cd-8588-d54a8b53aa65
     reviewed: 4b3134c2bdea023834a8876c216f10ac7994d4427fd13945042f6908c24bccbc
     tests:
