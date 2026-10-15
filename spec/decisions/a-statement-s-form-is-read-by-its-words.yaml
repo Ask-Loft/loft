@@ -1,0 +1,85 @@
+key: 01a13ce8-2c8f-740b-b5aa-ba63624ee65f
+slug: a-statement-s-form-is-read-by-its-words
+title: "A statement's form is read by its words, and its slots keep its exact wording"
+context: "Two readings of a sentence decide whether it is an EARS form. The language rule that reports a statement outside the five forms compares words without regard to letter case, as v1 does, so it takes \"The writer SHALL write keys.\" for the ubiquitous form. The statement reader keeps slots only when the form's fixed template renders them back to the sentence byte for byte, so it stores the same sentence as text. Nothing tells the author why such a sentence was not stored as slots."
+state:
+  kind: accepted
+  selectedOption: 01a13ce8-2c8f-740b-b5aa-ba6711839464
+  outcome: "The language rule keeps reading the form by its words, the reader keeps storing slots only for the template's exact wording, and the finding for a statement stored as text names the form when the sentence follows one."
+drivers:
+  - key: 01a13ce8-2c8f-740b-b5aa-ba64718f4c54
+    kind: local
+    label: "Exact round trip"
+    statement: "A converted name must render back from its slots byte for byte."
+  - key: 01a13ce8-2c8f-740b-b5aa-ba65581ed9d2
+    kind: local
+    label: "Agreement with v1"
+    statement: "A rule v1 shares reports what v1 reports."
+  - key: 01a13ce8-2c8f-740b-b5aa-ba66f225cfef
+    kind: local
+    label: "An author is told why"
+    statement: "A statement left as text says what keeps it from slots."
+options:
+  - key: 01a13ce8-2c8f-740b-b5aa-ba6711839464
+    title: "Words decide the form; the exact wording decides the slots"
+    description: "The language rule and the reader stay as they are; the finding for a statement stored as text names the form it follows."
+  - key: 01a13ce8-2c8f-740b-b5aa-ba684ce09447
+    title: "Store slots for any letter case"
+    description: "The reader stores slots for a sentence that differs from the template only in letter case, and the template rewrites its case."
+  - key: 01a13ce8-2c8f-740b-b5aa-ba69c1e909ac
+    title: "Read the form by the exact wording everywhere"
+    description: "The language rule reports a sentence that differs from the template in letter case as outside the five forms."
+assessments:
+  - option: 01a13ce8-2c8f-740b-b5aa-ba6711839464
+    driver: 01a13ce8-2c8f-740b-b5aa-ba64718f4c54
+    rating: supports
+    rationale: "slots still render back byte for byte"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba6711839464
+    driver: 01a13ce8-2c8f-740b-b5aa-ba65581ed9d2
+    rating: supports
+    rationale: "the shared rule is unchanged"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba6711839464
+    driver: 01a13ce8-2c8f-740b-b5aa-ba66f225cfef
+    rating: supports
+    rationale: "the finding names the form the sentence follows"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba684ce09447
+    driver: 01a13ce8-2c8f-740b-b5aa-ba64718f4c54
+    rating: conflicts
+    rationale: "the rendering rewrites the letter case of the name"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba684ce09447
+    driver: 01a13ce8-2c8f-740b-b5aa-ba65581ed9d2
+    rating: neutral
+    rationale: "the shared rule is unchanged"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba684ce09447
+    driver: 01a13ce8-2c8f-740b-b5aa-ba66f225cfef
+    rating: neutral
+    rationale: "the sentence is stored as slots, so nothing needs telling"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba69c1e909ac
+    driver: 01a13ce8-2c8f-740b-b5aa-ba64718f4c54
+    rating: supports
+    rationale: "slots still render back byte for byte"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba69c1e909ac
+    driver: 01a13ce8-2c8f-740b-b5aa-ba65581ed9d2
+    rating: conflicts
+    rationale: "the shared rule reports what v1 accepts"
+  - option: 01a13ce8-2c8f-740b-b5aa-ba69c1e909ac
+    driver: 01a13ce8-2c8f-740b-b5aa-ba66f225cfef
+    rating: neutral
+    rationale: "the rule says the sentence is outside the forms, not why"
+consequences:
+  - key: 01a13ce8-2c8f-740b-b5aa-ba6a89f34c9f
+    kind: benefit
+    statement: "The language rule and the reader each keep one meaning, and v1 conversion stays exact."
+  - key: 01a13ce8-2c8f-740b-b5aa-ba6b639cc02c
+    kind: obligation
+    statement: "The finding for a statement stored as text names the form a sentence follows when the reader could not keep its slots."
+  - key: 01a13ce8-2c8f-740b-b5aa-ba6c19862702
+    kind: cost
+    statement: "A converted name whose anchor word differs from the template in letter case stays text until an author rewrites it as slots."
+subjects:
+  - role: affected
+    node: 1b31841d-e3be-4359-a408-5b28671ba78f
+  - role: affected
+    node: 5c79dcd9-ef53-43ec-957c-58a22a59bc2a
+  - role: outcome
+    node: 4a2be88c-bc64-4eea-ac05-25220225d800
