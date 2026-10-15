@@ -50,7 +50,7 @@ fn import(root: &Path, dir: &Path, product: Option<&str>) -> Result<Imported, St
         .map_err(|error| format!("{}: {error}", dir.display()))?;
     let files = codec::write(&conversion.document);
     let sidecar = conversion.sidecar_file();
-    let mut written: Vec<String> = files.keys().map(|path| format!("spec/{path}")).collect();
+    let mut written: Vec<String> = files.keys().map(ToString::to_string).collect();
     written.push(sidecar.name.to_owned());
     FileStore::open(root)
         .and_then(|store| store.import(files, sidecar))

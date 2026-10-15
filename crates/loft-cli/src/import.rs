@@ -66,11 +66,7 @@ fn report(imported: &Imported, sites: &Sites, as_json: bool) {
     let findings: Vec<Reported> = imported.findings.iter().map(Reported::of).collect();
     let warning = warning(&imported.derived);
     if as_json {
-        let mut written: Vec<String> = imported
-            .files
-            .keys()
-            .map(|path| format!("spec/{path}"))
-            .collect();
+        let mut written: Vec<String> = imported.files.keys().map(ToString::to_string).collect();
         written.push(imported.sidecar.name.to_owned());
         let fields = json!({
             "written": written,

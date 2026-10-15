@@ -284,6 +284,13 @@ fn json_output_matches_the_schema() {
             .unwrap()
             .contains(&"openspec-sidecar.json".into())
     );
+    for path in document["written"].as_array().unwrap() {
+        let path = path.as_str().unwrap();
+        assert!(
+            scratch.0.join(path).is_file(),
+            "{path} names no file written"
+        );
+    }
     assert_eq!(document["advice"][0]["warnings"], 4);
     let refused = scratch.loft(&["import", "openspec", "--format", "json"]);
     assert_eq!(refused.status.code(), Some(1));

@@ -54,6 +54,12 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   v1 does, but the reader keeps slots only for the template's exact wording and stores it as
   text. Its `V2-002` finding now carries the form's name as its term and says so; a sentence
   that follows no form keeps the finding without a term.
+- **Fixed:** the JSON output of `loft import v1` named each file of the tree with `spec/` twice,
+  as `spec/spec/categories.yaml`; it now names each file at its path from the root.
+- **Breaking (library):** `loftspec_store::fs::write_outputs` returns a `WrittenOutputs`, the
+  paths it wrote and the paths it left unchanged; `read_project` fails with a `StoreError`, which
+  gains `NotText`; `write_projection` takes the projection by value. The OpenSpec conversion and
+  render findings are both a `loftspec::report::InfoFinding` of their own rule.
 
 ## 2.0.4 (2026-10-14)
 
