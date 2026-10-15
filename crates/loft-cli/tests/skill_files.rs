@@ -10,9 +10,9 @@ use crate::markdown::{rows_by_span, section, table};
 use crate::skill_format::format;
 use crate::snapshot::{self, snapshot};
 use loftspec::codec::{Role, SpecPath};
+use loftspec::convert::v1::SIDECAR;
 use loftspec::publish::LOCK;
 use loftspec::trace::TRACE;
-use loftspec_store::fs::SIDECAR;
 use software_plant::{Clock, GitScenario};
 
 /// A file of each role, its names standing for any: an exhaustive match, so a new role fails

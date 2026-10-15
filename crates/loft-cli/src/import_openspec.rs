@@ -51,9 +51,8 @@ fn import(root: &Path, dir: &Path, product: Option<&str>) -> Result<Imported, St
     let files = codec::write(&conversion.document);
     let mut written: Vec<String> = files.keys().map(|path| format!("spec/{path}")).collect();
     written.push(SIDECAR.to_owned());
-    let sidecar = conversion.sidecar.to_json();
     FileStore::open(root)
-        .and_then(|store| store.import(files, (SIDECAR, sidecar.as_bytes())))
+        .and_then(|store| store.import(files, conversion.sidecar_file()))
         .map_err(|error| error.to_string())?;
     // A new tree has no `spec/lint.yaml`, so `loft check` lints it under the defaults, which
     // make every `V2-007` finding a warning.

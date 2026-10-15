@@ -8,7 +8,7 @@ use std::{fs as stdfs, io};
 use loftspec::codec::{self, Sites};
 use loftspec::identity::LabelPrefix;
 use loftspec::import::{ImportError, Imported, Reported, import};
-use loftspec_store::{FileStore, fs};
+use loftspec_store::FileStore;
 use serde_json::{Map, Value, json};
 
 use crate::finish::Finished;
@@ -50,7 +50,7 @@ fn prepare(export: &Path, counters: Option<&Path>) -> Result<Imported, String> {
 
 fn write(root: &Path, imported: Imported) -> Result<(Imported, Sites), String> {
     FileStore::open(root)
-        .and_then(|store| store.import(imported.files.clone(), (fs::SIDECAR, &imported.sidecar)))
+        .and_then(|store| store.import(imported.files.clone(), imported.sidecar.clone()))
         .map_err(|error| error.to_string())?;
     let (_, sites) = codec::read_sited(&imported.files).map_err(|errors| {
         errors
@@ -71,7 +71,7 @@ fn report(imported: &Imported, sites: &Sites, as_json: bool) {
             .keys()
             .map(|path| format!("spec/{path}"))
             .collect();
-        written.push(fs::SIDECAR.to_owned());
+        written.push(imported.sidecar.name.to_owned());
         let fields = json!({
             "written": written,
             "findings": findings.iter().map(|f| finding(f, sites)).collect::<Vec<_>>(),

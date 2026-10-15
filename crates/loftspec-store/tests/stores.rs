@@ -6,6 +6,7 @@ use std::fs;
 use crate::common::Scratch;
 use crate::fixtures::{LINT_CONFIG, converted, with_lint};
 use loftspec::codec::{self, SpecPath};
+use loftspec::convert::SidecarFile;
 use loftspec::document::Document;
 use loftspec_store::journal::{self, Changes, JOURNAL, RootPath};
 use loftspec_store::{DocumentStore, FileStore, MemoryStore, StoreError};
@@ -112,7 +113,10 @@ fn an_import_writes_its_sidecar_beside_spec_under_the_name_it_is_given() {
     store
         .import(
             codec::write(&reading_list()),
-            ("source-sidecar.json", b"{}\n"),
+            SidecarFile {
+                name: "source-sidecar.json",
+                bytes: b"{}\n".to_vec(),
+            },
         )
         .unwrap();
     let snapshot = scratch.snapshot();

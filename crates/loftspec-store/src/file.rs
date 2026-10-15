@@ -5,6 +5,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use loftspec::codec::{self, Files, SpecPath};
+use loftspec::convert::SidecarFile;
 use loftspec::document::Document;
 use loftspec::publish::{LOCK, Lock};
 use loftspec::trace::{TRACE, TestFile, TestFiles};
@@ -65,13 +66,13 @@ impl FileStore {
     ///
     /// `spec/` holds a file or directory already (RQ-134), in which case nothing is written; or a
     /// file cannot be written.
-    pub fn import(&self, files: Files, (name, sidecar): (&str, &[u8])) -> Result<(), StoreError> {
+    pub fn import(&self, files: Files, sidecar: SidecarFile) -> Result<(), StoreError> {
         let spec = self.root.join(SPEC);
         if spec.exists() && holds_entries(&spec)? {
             return Err(StoreError::NotEmpty(spec));
         }
         fs::create_dir_all(&spec).map_err(io_error(&spec))?;
-        self.write_with_beside(files, (name, sidecar.to_vec()))
+        self.write_with_beside(files, (sidecar.name, sidecar.bytes))
     }
 
     /// Writes a new tree into a `spec/` that does not exist yet, in one save.
