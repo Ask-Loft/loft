@@ -29,10 +29,24 @@ fn branches(schema: &Value) -> &[Value] {
 }
 
 #[test]
-fn every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown() {
+fn every_subcommand_has_an_entry_in_the_commands_and_no_entry_is_unknown() {
     let mut listed = help::subcommands();
     listed.sort();
     let mut entries: Vec<&str> = COMMANDS.iter().map(|(_, args, _)| args[0]).collect();
+    entries.sort_unstable();
+    entries.dedup();
+    assert_eq!(listed, entries);
+}
+
+#[test]
+fn every_import_source_has_one_entry_in_the_commands() {
+    let mut listed = help::import_sources();
+    listed.sort();
+    let mut entries: Vec<&str> = COMMANDS
+        .iter()
+        .filter(|(_, args, _)| args[0] == "import")
+        .map(|(_, args, _)| args[1])
+        .collect();
     entries.sort_unstable();
     assert_eq!(listed, entries);
 }

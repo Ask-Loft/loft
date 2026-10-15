@@ -7973,14 +7973,14 @@ links:
       - file: "crates/loft-cli/tests/sends_telemetry.rs"
         name: "the_switch_subcommands_open_no_connection"
       - file: "crates/loft-cli/tests/schemas.rs"
-        name: "every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown"
+        name: "every_subcommand_has_an_entry_in_the_commands_and_no_entry_is_unknown"
   - node: 01a13a90-3556-7106-a68c-264f419f9d9d
     reviewed: 920c4341ec094bb33d98d7ca5c33d61c097b848fc634155e8e921510e073730a
     tests:
       - file: "crates/loft-cli/tests/sends_telemetry.rs"
         name: "a_command_sends_one_valid_event_exactly_when_its_feature_lists_sends_telemetry"
       - file: "crates/loft-cli/tests/schemas.rs"
-        name: "every_subcommand_has_one_entry_in_the_commands_and_no_entry_is_unknown"
+        name: "every_subcommand_has_an_entry_in_the_commands_and_no_entry_is_unknown"
   - node: 01a13a90-3556-7106-a68c-265029868ddb
     reviewed: 4e9c44032f77a59bff7eded34629566684072e2d9fd98ef65e5adaf1e334e0a9
     tests:
