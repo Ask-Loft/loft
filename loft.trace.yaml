@@ -155,6 +155,10 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_read.rs"
         name: "a_record_without_a_key_is_refused_outside_the_formatter"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "a_product_without_a_key_is_written_and_refused_on_reading"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "a_feature_without_a_key_is_written_and_refused_on_reading"
   - node: e21a7e35-1a88-4370-b12d-6c03ea3f6353
     reviewed: 71e82b0b2fb7ad65eea7af0f70e5c3de9232d6dedc527706e112d193305e1e80
     tests:
@@ -6001,11 +6005,15 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "a_new_product_files_key_is_appended_to_the_manifests_products"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "the_formatter_recovers_every_node_written_without_a_key"
   - node: f85d86b7-cd45-40f9-8036-a5323801b8fc
     reviewed: 93d1b3616231fb3dd2420cc2e998a03d98b5e835f5cf36b11b61527690071377
     tests:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "a_new_feature_files_key_is_appended_to_the_features_of_its_directorys_group"
+      - file: "crates/loftspec/tests/codec_keyless.rs"
+        name: "the_formatter_recovers_every_node_written_without_a_key"
   - node: f329ee99-de83-42e4-9688-5767c24f7907
     reviewed: d82befddda73045f78363e03dd332b3e823e6233a123fda4cec6aa7ff2a9c011
     tests:
