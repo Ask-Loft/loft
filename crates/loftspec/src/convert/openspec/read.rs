@@ -146,10 +146,10 @@ impl Source {
             .filter(|title| self.first_line(self.start..title.index).is_none())
             .map_or(self.start, |title| title.index + 1);
         let lead_end = top.first().map_or(end, |heading| heading.index);
+        // A title after text lies in the introduction and nests in it like any other heading.
         let inner: Vec<Heading> = headings
             .iter()
             .filter(|heading| (lead..lead_end).contains(&heading.index))
-            .filter(|heading| title.is_none_or(|title| heading.index != title.index))
             .cloned()
             .collect();
         let text_end = inner.first().map_or(lead_end, |first| first.index);

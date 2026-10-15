@@ -341,6 +341,10 @@ fn an_imported_project_renders_to_specs_that_import_to_the_same_document() {
         ("auth/spec.md", ROUND_TRIP),
         ("billing/invoices/spec.md", AUTH),
         ("notes/spec.md", NESTED),
+        (
+            "lead/spec.md",
+            "Lead text.\n\n# lead Specification\n\n## Purpose\nThe purpose.\n",
+        ),
     ]));
     let projection = rendered(&first.document);
     let specs: Vec<(String, String)> = projection

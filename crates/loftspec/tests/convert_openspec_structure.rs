@@ -324,3 +324,15 @@ More.
     assert_eq!(names(&notes.sections), ["Detail"]);
     assert_eq!(notes.sections[0].body, "More.");
 }
+
+#[test]
+fn a_title_after_text_nests_in_the_introduction_as_its_section() {
+    let text = "Lead text.\n\n# T Specification\n\nAfter the title.\n\n## Purpose\nThe purpose.\n";
+    let conversion = converted(&one(text));
+    let feature = features(&conversion)[0];
+    assert_eq!(feature.name, "T");
+    let introduction = &feature.details.sections[0];
+    assert_eq!(introduction.body, "Lead text.");
+    assert_eq!(names(&introduction.sections), ["T Specification"]);
+    assert_eq!(introduction.sections[0].body, "After the title.");
+}

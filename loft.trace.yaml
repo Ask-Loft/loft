@@ -3237,6 +3237,8 @@ links:
     reviewed: 4460aa5e3681e4e45b064ca2191a4e79550abb8dcf6b1276382fcbd9d793e8b2
     tests:
       - file: "crates/loftspec/tests/convert_openspec_structure.rs"
+        name: "a_title_after_text_nests_in_the_introduction_as_its_section"
+      - file: "crates/loftspec/tests/convert_openspec_structure.rs"
         name: "the_introductions_headings_become_sections_nested_by_level"
   - node: 01a13d02-7211-77f1-a8f1-30f89aa7442a
     reviewed: 5164a3ed9157038aea279ac3548ff4a43ffc2b0b3e3aa706160e289b3ef9dbe3
