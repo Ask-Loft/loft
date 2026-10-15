@@ -3,6 +3,14 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- `V2-002` names the EARS form a statement stored as text follows. A sentence such as "The
+  writer SHALL write keys." follows the ubiquitous form by its words, so `LQ-007` accepts it, as
+  v1 does, but the reader keeps slots only for the template's exact wording and stores it as
+  text. Its `V2-002` finding now carries the form's name as its term and says so; a sentence
+  that follows no form keeps the finding without a term.
+
 ## 2.0.4 (2026-10-14)
 
 - `loft reconcile` checks `loft.trace.yaml`, a file beside `spec/` that links each acceptance
