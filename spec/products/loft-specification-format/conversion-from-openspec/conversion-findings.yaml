@@ -32,6 +32,8 @@ requirements:
     criteria:
       - key: 01a13d02-7211-77f1-a8f1-308c4c8ab932
         name: "The finding names the file, the line of the heading and the Section's key."
+      - key: 01a13d0b-7c8e-775c-b1b2-13990ec24409
+        name: "The Section `Introduction` is reported as such a Section, at the line where its text begins."
   - key: 01a13d02-7211-77f1-a8f1-308dc71d949e
     statement:
       form: unwanted

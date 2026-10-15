@@ -63,6 +63,8 @@ requirements:
         name: "The section's text up to its first heading becomes the Section's body verbatim."
       - key: 01a13d02-7211-77f1-a8f1-30f63389770b
         name: "Each heading inside the section becomes a Section nested by its level."
+      - key: 01a13d0b-7c8f-75f7-9e59-1aa4542c3ff6
+        name: "Text between the level-1 heading and the first level-2 heading becomes a Section of the Feature named `Introduction`."
   - key: 01a13d02-7211-77f1-a8f1-30f7e234a973
     statement:
       form: ubiquitous
@@ -72,7 +74,9 @@ requirements:
       - key: 01a13d02-7211-77f1-a8f1-30f89aa7442a
         name: "Text before the first level-3 heading becomes a Section named `Requirements`."
       - key: 01a13d02-7211-77f1-a8f1-30f931e827b9
-        name: "A level-3 heading that is not a requirement heading becomes a Section named by its heading text, with its text up to the next level-3 heading as the body."
+        name: "A level-3 heading that is not a requirement heading becomes a Section named by its heading text, with its text up to its first heading as the body."
+      - key: 01a13d0b-7c8f-75f7-9e59-1aa569ac4247
+        name: "Each heading inside such a Section, up to the next level-3 heading, becomes a Section nested in it by its level."
   - key: 01a13d02-7211-77f1-a8f1-30fa1a4a0d47
     statement:
       form: ubiquitous
