@@ -296,7 +296,9 @@ a body belongs in a Section instead (`V2-001`).
 
 `ext` holds what a tool keeps on a node that the format does not define, such as the name an
 OpenSpec requirement had, each tool under its own namespace. No lint rule reads it, it is not
-part of a node's content hash, and the lock pins it. Leave it as the tool wrote it.
+part of a node's content hash, and the lock pins it. Leave it as the tool wrote it, except when
+you copy a node: a copied Feature keeps its `openspec.capability`, and two Features with one
+capability make `loft render --openspec` refuse, so remove it from the copy.
 
 ```yaml fragment
 ext:

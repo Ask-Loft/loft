@@ -139,6 +139,26 @@ fn the_check_schema_lists_exactly_the_rules_the_linter_defines() {
     assert_eq!(listed, defined);
 }
 
+#[test]
+fn the_openspec_schemas_list_exactly_the_rules_import_and_render_define() {
+    let listed = |name: &str| -> Vec<String> {
+        read(name)["$defs"]["finding"]["properties"]["rule"]["enum"]
+            .as_array()
+            .expect("the rules a finding names")
+            .iter()
+            .map(|rule| rule.as_str().unwrap().to_owned())
+            .collect()
+    };
+    assert_eq!(
+        listed("import-openspec.json"),
+        loftspec::convert::openspec::Rule::NAMES
+    );
+    assert_eq!(
+        listed("render.json"),
+        loftspec::render::openspec::Rule::NAMES
+    );
+}
+
 /// The name of every schema under `schemas/`.
 fn every_schema() -> Vec<String> {
     let mut names: Vec<String> = fs::read_dir(schemas())
