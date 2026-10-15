@@ -111,9 +111,9 @@ impl Source {
             .map(|position| start + position + 1)
     }
 
-    /// Each line of `range` with its 0-based index and whether fenced code holds it.
-    pub fn lines(&self, range: Range<usize>) -> impl Iterator<Item = (usize, &str, bool)> {
-        range.map(|index| (index, self.lines[index].as_str(), self.fenced[index]))
+    /// Each line of `range` and whether fenced code holds it.
+    pub fn lines(&self, range: Range<usize>) -> impl Iterator<Item = (&str, bool)> {
+        range.map(|index| (self.lines[index].as_str(), self.fenced[index]))
     }
 
     fn headings(&self) -> Vec<Heading> {
@@ -276,7 +276,7 @@ fn requirement(name: String, heading: &Heading, nested: &[Heading], end: usize) 
 /// Which lines fenced code holds, its opening and closing lines included: a fence opens with a
 /// run of three or more backticks or tildes and closes with a run of the same character at
 /// least as long and nothing else; a fence left open runs to the end.
-fn fence_mask(lines: &[String]) -> Vec<bool> {
+pub(crate) fn fence_mask(lines: &[String]) -> Vec<bool> {
     let mut mask = vec![false; lines.len()];
     let mut open: Option<(char, usize)> = None;
     for (index, line) in lines.iter().enumerate() {
@@ -313,18 +313,17 @@ fn fence_run(line: &str) -> Option<(char, usize, bool)> {
     })
 }
 
-/// An ATX heading's level and text: one to six `#` at the start of the line, whitespace, and
-/// text with a closing run of `#` after a space or tab removed.
-fn heading(line: &str) -> Option<(usize, String)> {
+/// An ATX heading's level: one to six `#` at the start of the line followed by whitespace.
+pub(crate) fn heading_level(line: &str) -> Option<usize> {
     let level = line.chars().take_while(|c| *c == '#').count();
-    if !(1..=6).contains(&level) {
-        return None;
-    }
-    let rest = &line[level..];
-    if !rest.starts_with(char::is_whitespace) {
-        return None;
-    }
-    let text = without_closing_run(rest).trim().to_owned();
+    ((1..=6).contains(&level) && line[level..].starts_with(char::is_whitespace)).then_some(level)
+}
+
+/// An ATX heading's level and text: its [`heading_level`], and text with a closing run of `#`
+/// after a space or tab removed.
+fn heading(line: &str) -> Option<(usize, String)> {
+    let level = heading_level(line)?;
+    let text = without_closing_run(&line[level..]).trim().to_owned();
     (!text.is_empty()).then_some((level, text))
 }
 

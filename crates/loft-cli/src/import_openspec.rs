@@ -6,12 +6,12 @@
 use std::path::Path;
 
 use loftspec::codec;
-use loftspec::convert::openspec::{Finding, SIDECAR, convert};
+use loftspec::convert::openspec::{Finding, convert};
 use loftspec::ids::DocumentId;
 use loftspec::lint::{LintConfig, RuleId, count_body_rule};
 use loftspec_store::FileStore;
 use loftspec_store::openspec::read_project;
-use serde_json::{Value, json};
+use serde_json::json;
 
 use crate::finish::Finished;
 use crate::json;
@@ -26,7 +26,7 @@ const LOWER_V2_007: &str = "rules:\n  - rule: V2-007\n    severity: info\n";
 pub fn run(root: &Path, dir: &Path, product: Option<&str>, as_json: bool) -> Finished {
     match import(root, dir, product) {
         Ok(imported) => {
-            report(dir, &imported, as_json);
+            report(dir, imported, as_json);
             Finished::success("imported")
         }
         Err(message) => Stop::one("refused", message).exit(SCHEMA, as_json),
@@ -49,10 +49,11 @@ fn import(root: &Path, dir: &Path, product: Option<&str>) -> Result<Imported, St
     let conversion = convert(&project, DocumentId::mint(), &product)
         .map_err(|error| format!("{}: {error}", dir.display()))?;
     let files = codec::write(&conversion.document);
+    let sidecar = conversion.sidecar_file();
     let mut written: Vec<String> = files.keys().map(|path| format!("spec/{path}")).collect();
-    written.push(SIDECAR.to_owned());
+    written.push(sidecar.name.to_owned());
     FileStore::open(root)
-        .and_then(|store| store.import(files, conversion.sidecar_file()))
+        .and_then(|store| store.import(files, sidecar))
         .map_err(|error| error.to_string())?;
     // A new tree has no `spec/lint.yaml`, so `loft check` lints it under the defaults, which
     // make every `V2-007` finding a warning.
@@ -82,11 +83,11 @@ fn holder_name(dir: &Path) -> Result<String, String> {
         })
 }
 
-fn report(dir: &Path, imported: &Imported, as_json: bool) {
+fn report(dir: &Path, imported: Imported, as_json: bool) {
     let findings: Vec<Finding> = imported
         .findings
-        .iter()
-        .map(|finding| from_here(dir, finding))
+        .into_iter()
+        .map(|finding| finding.under(dir))
         .collect();
     let warnings = imported.modal_warnings;
     if as_json {
@@ -99,7 +100,7 @@ fn report(dir: &Path, imported: &Imported, as_json: bool) {
         });
         let fields = json!({
             "written": imported.written,
-            "findings": findings.iter().map(finding).collect::<Vec<_>>(),
+            "findings": findings.iter().map(json::info_finding).collect::<Vec<_>>(),
             "advice": advice.into_iter().collect::<Vec<_>>(),
         });
         json::print(&json::result(SCHEMA, "imported", fields, Vec::new()));
@@ -113,15 +114,6 @@ fn report(dir: &Path, imported: &Imported, as_json: bool) {
     }
 }
 
-/// The finding with its file named by its path from the current directory.
-fn from_here(dir: &Path, finding: &Finding) -> Finding {
-    let mut finding = finding.clone();
-    finding.file = finding
-        .file
-        .map(|file| dir.join(file).to_string_lossy().into_owned());
-    finding
-}
-
 /// The report of the `V2-007` warnings the tree raises, if it raises any.
 fn advice(warnings: usize) -> Option<String> {
     (warnings > 0).then(|| {
@@ -132,15 +124,4 @@ fn advice(warnings: usize) -> Option<String> {
             if warnings == 1 { "" } else { "s" }
         )
     })
-}
-
-fn finding(finding: &Finding) -> Value {
-    json::info_finding(
-        finding.rule.as_str(),
-        finding.rule.message(),
-        finding.file.clone(),
-        finding.line,
-        finding.key.map(|key| key.to_string()),
-        finding.detail.as_deref(),
-    )
 }

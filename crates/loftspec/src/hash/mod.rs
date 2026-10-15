@@ -15,7 +15,7 @@ pub use tree::ContentHash;
 use crate::FORMAT;
 use crate::canonical::{Digest, Domain, canonical_bytes, digest, digest_array};
 use crate::document::{DerivedFrom, Document, Edge, EdgeTarget, SubjectRole};
-use crate::ext;
+use crate::ext::Ext;
 use crate::identity::{Key, Label};
 use crate::ids::{DecisionId, ElementId, NodeId};
 use crate::index::{IndexErrors, Indexed};
@@ -231,13 +231,13 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
 }
 
 /// Each node that carries `ext`, as its key and its `ext`, sorted by key.
-fn extensions_view(document: &Document) -> Vec<(Key, Value)> {
+fn extensions_view(document: &Document) -> Vec<(Key, &Ext)> {
     let mut extended = Vec::new();
     document.walk(&mut |node| {
         if let Some(id) = node.id()
             && !node.ext().is_empty()
         {
-            extended.push((id.key(), ext::to_json(node.ext())));
+            extended.push((id.key(), node.ext()));
         }
     });
     extended.sort_by_key(|(key, _)| *key);
@@ -336,16 +336,14 @@ fn state_view(
             })
         },
     );
-    let mut view = json!([
-        FORMAT,
-        ALGORITHM,
-        document.id,
-        content,
-        bindings,
-        derived_from
-    ]);
-    if let (Some(extensions), Value::Array(fields)) = (extensions, &mut view) {
-        fields.push(json!(extensions));
-    }
-    view
+    let mut view = vec![
+        json!(FORMAT),
+        json!(ALGORITHM),
+        json!(document.id),
+        json!(content),
+        json!(bindings),
+        json!(derived_from),
+    ];
+    view.extend(extensions.map(|extensions| json!(extensions)));
+    Value::Array(view)
 }

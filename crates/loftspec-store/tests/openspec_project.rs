@@ -4,7 +4,8 @@ use std::fs;
 use std::os::unix::fs::symlink;
 
 use crate::common::Scratch;
-use loftspec_store::openspec::{ReadProjectError, read_project};
+use loftspec_store::StoreError;
+use loftspec_store::openspec::read_project;
 
 /// A scratch directory holding one main spec at `specs/notes/spec.md`.
 fn project() -> Scratch {
@@ -72,7 +73,7 @@ fn a_directory_that_cannot_be_read_is_an_error_naming_it() {
     let scratch = Scratch::new();
     let absent = scratch.0.join("absent");
     let error = read_project(&absent).unwrap_err();
-    assert!(matches!(&error, ReadProjectError::Io { path, .. } if *path == absent));
+    assert!(matches!(&error, StoreError::Io { path, .. } if *path == absent));
 }
 
 #[test]
@@ -84,7 +85,7 @@ fn a_file_that_is_not_utf8_is_an_error_naming_it() {
         fs::write(&target, [b'#', b' ', 0xff, b'\n']).unwrap();
         let error = read_project(&scratch.0).unwrap_err();
         assert!(
-            matches!(&error, ReadProjectError::NotText(path) if *path == target),
+            matches!(&error, StoreError::NotText(path) if *path == target),
             "{error}"
         );
     }

@@ -2,10 +2,7 @@
 //! warn about the rendered specs, and the content the projection leaves out. Every finding has
 //! the severity info; none prevents the render.
 
-use std::fmt;
-
-use crate::identity::Key;
-use crate::lint::Severity;
+use crate::report::{InfoFinding, InfoRule};
 use crate::wire::wire_names;
 
 /// The rule a finding follows; its wire name is its code.
@@ -51,37 +48,15 @@ impl Rule {
     }
 }
 
-/// One finding: its rule, the rendered file and the 1-based line of the heading it concerns
-/// where it has one, the key of the node it concerns where there is one, and a detail such as
-/// a count.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Finding {
-    pub rule: Rule,
-    pub file: Option<String>,
-    pub line: Option<usize>,
-    pub key: Option<Key>,
-    pub detail: Option<String>,
-}
+impl InfoRule for Rule {
+    fn code(self) -> &'static str {
+        self.as_str()
+    }
 
-impl fmt::Display for Finding {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(file) = &self.file {
-            write!(formatter, "{file}:")?;
-            if let Some(line) = self.line {
-                write!(formatter, "{line}:")?;
-            }
-            formatter.write_str(" ")?;
-        }
-        write!(
-            formatter,
-            "{} {}: {}",
-            Severity::Info.as_str(),
-            self.rule.as_str(),
-            self.rule.message()
-        )?;
-        if let Some(detail) = &self.detail {
-            write!(formatter, ": {detail}")?;
-        }
-        Ok(())
+    fn message(self) -> &'static str {
+        Self::message(self)
     }
 }
+
+/// A finding of one of the rules.
+pub type Finding = InfoFinding<Rule>;

@@ -3,6 +3,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use super::ext;
 use super::findings::{Finding, Rule};
 use super::keys::{Identity, Keys, Kind};
 use super::read::{Child, Part, Requirement as SourceRequirement, Source, Spec};
@@ -10,12 +11,11 @@ use super::sidecar::{OpenspecSidecar, Provenance, SourceFile};
 use super::statement;
 use crate::canonical::digest_bytes;
 use crate::document::Document;
-use crate::ext::{Ext, ExtValue};
+use crate::ext::Ext;
 use crate::identity::Key;
 use crate::ids::{
     CriterionId, DocumentId, FeatureGroupId, FeatureId, ProductId, RequirementId, SectionId,
 };
-use crate::names::Namespace;
 use crate::slug::Slug;
 use crate::tree::{Criterion, Details, Feature, FeatureGroup, Product, Requirement, Section};
 
@@ -174,10 +174,7 @@ impl Build {
                 body,
                 tags: Vec::new(),
                 sections,
-                ext: openspec([
-                    ("capability", Some(text(&capability.id))),
-                    ("purpose", placeholder.map(ExtValue::Text)),
-                ]),
+                ext: ext::feature(&capability.id, placeholder),
             },
             requirements,
             quality_attributes: Vec::new(),
@@ -295,7 +292,7 @@ impl Build {
         let (key, identity) = self.node(Kind::Requirement, parts, at, Some(&requirement.name));
         let split = statement::split(source, requirement.text.clone(), &requirement.name);
         self.rewritten += usize::from(split.rewritten.is_some());
-        let modal = split.rewritten.filter(|word| *word == "MUST").map(text);
+        let modal = split.rewritten.filter(|word| *word == "MUST");
         let at = |rule, line| Finding::at(rule, file.to_owned(), line, Some(key));
         if repeated {
             self.findings
@@ -321,11 +318,7 @@ impl Build {
                 body: split.body,
                 tags: Vec::new(),
                 sections,
-                ext: openspec([
-                    ("name", Some(text(&requirement.name))),
-                    ("modal", modal),
-                    ("metadata", metadata(split.metadata)),
-                ]),
+                ext: ext::requirement(&requirement.name, modal, split.metadata),
             },
             criteria,
         }
@@ -423,38 +416,5 @@ fn humanise(segment: &str) -> String {
     let mut characters = spaced.chars();
     characters.next().map_or_else(String::new, |first| {
         first.to_uppercase().chain(characters).collect()
-    })
-}
-
-/// Extension data in the `openspec` namespace holding each entry that has a value.
-fn openspec<const N: usize>(entries: [(&str, Option<ExtValue>); N]) -> Ext {
-    let entries: BTreeMap<String, ExtValue> = entries
-        .into_iter()
-        .filter_map(|(key, value)| Some((key.to_owned(), value?)))
-        .collect();
-    Ext::from([(
-        Namespace::parse("openspec").expect("a namespace"),
-        ExtValue::Map(entries),
-    )])
-}
-
-fn text(value: &str) -> ExtValue {
-    ExtValue::Text(value.to_owned())
-}
-
-/// A requirement's metadata lines as a list of `{label, value}`; none when it has none.
-fn metadata(lines: Vec<(String, String)>) -> Option<ExtValue> {
-    (!lines.is_empty()).then(|| {
-        ExtValue::List(
-            lines
-                .into_iter()
-                .map(|(label, value)| {
-                    ExtValue::Map(BTreeMap::from([
-                        ("label".to_owned(), ExtValue::Text(label)),
-                        ("value".to_owned(), ExtValue::Text(value)),
-                    ]))
-                })
-                .collect(),
-        )
     })
 }

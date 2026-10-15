@@ -1,10 +1,7 @@
 //! What the converter reports about the project it converts. Every finding has a code and the
 //! severity info; none stops the conversion.
 
-use std::fmt;
-
-use crate::identity::Key;
-use crate::lint::Severity;
+use crate::report::{InfoFinding, InfoRule};
 use crate::wire::wire_names;
 
 /// The rule a finding follows; its wire name is its code.
@@ -69,58 +66,15 @@ impl Rule {
     }
 }
 
-/// One finding: its rule, the source file and 1-based line it concerns where it has one, the
-/// key of the node it concerns where there is one, and a detail such as a count.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Finding {
-    pub rule: Rule,
-    pub file: Option<String>,
-    pub line: Option<usize>,
-    pub key: Option<Key>,
-    pub detail: Option<String>,
-}
-
-impl Finding {
-    pub(super) const fn at(rule: Rule, file: String, line: usize, key: Option<Key>) -> Self {
-        Self {
-            rule,
-            file: Some(file),
-            line: Some(line),
-            key,
-            detail: None,
-        }
+impl InfoRule for Rule {
+    fn code(self) -> &'static str {
+        self.as_str()
     }
 
-    pub(super) const fn about(rule: Rule, detail: String) -> Self {
-        Self {
-            rule,
-            file: None,
-            line: None,
-            key: None,
-            detail: Some(detail),
-        }
+    fn message(self) -> &'static str {
+        Self::message(self)
     }
 }
 
-impl fmt::Display for Finding {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(file) = &self.file {
-            write!(formatter, "{file}:")?;
-            if let Some(line) = self.line {
-                write!(formatter, "{line}:")?;
-            }
-            formatter.write_str(" ")?;
-        }
-        write!(
-            formatter,
-            "{} {}: {}",
-            Severity::Info.as_str(),
-            self.rule.as_str(),
-            self.rule.message()
-        )?;
-        if let Some(detail) = &self.detail {
-            write!(formatter, ": {detail}")?;
-        }
-        Ok(())
-    }
-}
+/// A finding of one of the rules.
+pub type Finding = InfoFinding<Rule>;

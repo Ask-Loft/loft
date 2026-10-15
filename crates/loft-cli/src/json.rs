@@ -7,6 +7,7 @@ use std::fmt::Display;
 use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
 use loftspec::lint::{Finding, Severity};
+use loftspec::report::{InfoFinding, InfoRule};
 use loftspec::yaml::Location;
 use serde_json::{Map, Value, json};
 
@@ -143,23 +144,16 @@ pub fn stop(schema: &str, errors: Vec<Value>, message: &impl Display, as_json: b
 
 /// A conversion or render finding: its code, the severity info, its message, and the path,
 /// line, key and detail it has.
-pub fn info_finding(
-    rule: &str,
-    message: &str,
-    path: Option<String>,
-    line: Option<usize>,
-    key: Option<String>,
-    detail: Option<&str>,
-) -> Value {
+pub fn info_finding<R: InfoRule>(finding: &InfoFinding<R>) -> Value {
     let mut fields = Map::new();
-    fields.insert("rule".to_owned(), json!(rule));
+    fields.insert("rule".to_owned(), json!(finding.rule.code()));
     fields.insert("severity".to_owned(), json!(Severity::Info.as_str()));
-    fields.insert("message".to_owned(), json!(message));
+    fields.insert("message".to_owned(), json!(finding.rule.message()));
     let optional = [
-        ("path", path.map(Value::from)),
-        ("line", line.map(Value::from)),
-        ("key", key.map(Value::from)),
-        ("detail", detail.map(Value::from)),
+        ("path", finding.file.clone().map(Value::from)),
+        ("line", finding.line.map(Value::from)),
+        ("key", finding.key.map(|key| Value::from(key.to_string()))),
+        ("detail", finding.detail.clone().map(Value::from)),
     ];
     for (name, value) in optional {
         if let Some(value) = value {

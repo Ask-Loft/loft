@@ -72,6 +72,14 @@ fn the_requirement_text_leaves_out_blank_lines_fenced_code_and_metadata_lines() 
     requirement.details.body = Some("```\nThe writer SHALL\n```\n\n**Rule**: MUST".to_owned());
     assert_eq!(of(&document, Rule::NoModal).len(), 1);
     let requirement = &mut document.products[0].feature_groups[0].features[0].requirements[0];
+    let tilde_inside = "````\n~~~\nThe writer SHALL\n```\nMUST\n````";
+    requirement.details.body = Some(tilde_inside.to_owned());
+    assert_eq!(
+        of(&document, Rule::NoModal).len(),
+        1,
+        "one fence holds it all"
+    );
+    let requirement = &mut document.products[0].feature_groups[0].features[0].requirements[0];
     requirement.details.body = Some("Keys MUST be unique.".to_owned());
     assert_eq!(of(&document, Rule::NoModal), []);
 }

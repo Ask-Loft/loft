@@ -73,6 +73,13 @@ macro_rules! registry_names {
             }
         }
 
+        /// A name is looked up by its text, which orders, compares and hashes as the name does.
+        impl std::borrow::Borrow<str> for $name {
+            fn borrow(&self) -> &str {
+                &self.0
+            }
+        }
+
         impl fmt::Display for $name {
             fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str(&self.0)

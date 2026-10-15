@@ -28,6 +28,7 @@ pub mod node;
 pub mod prose;
 pub mod publish;
 pub mod render;
+pub mod report;
 pub mod slug;
 pub mod statement;
 pub mod text;

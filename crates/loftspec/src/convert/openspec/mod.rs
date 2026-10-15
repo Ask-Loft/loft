@@ -1,10 +1,11 @@
 //! Conversion from the main specs of an `OpenSpec` project, read as `OpenSpec` 1.14's archive
 //! command reads them, into one Product, with a provenance sidecar and findings.
 
+pub(crate) mod ext;
 mod findings;
 mod keys;
 pub mod layout;
-mod read;
+pub(crate) mod read;
 pub mod sidecar;
 pub(crate) mod statement;
 mod tree;

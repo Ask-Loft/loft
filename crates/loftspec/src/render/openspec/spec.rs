@@ -3,28 +3,21 @@
 
 use std::ops::Range;
 
-use super::ext;
-use crate::ext::ExtValue;
+use serde::Serialize;
+
+use crate::convert::openspec::ext;
 use crate::identity::Key;
 use crate::ids::{ElementId, RequirementId};
 use crate::render::Labels;
 use crate::statement::Statement;
 use crate::tree::{Feature, Requirement, Section};
 
-/// A heading the render map records.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// A heading the render map records, by the name the map gives it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub(super) enum Mark {
     Requirement,
     Scenario,
-}
-
-impl Mark {
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Requirement => "requirement",
-            Self::Scenario => "scenario",
-        }
-    }
 }
 
 /// A rendered requirement or scenario heading: what it renders, its 1-based line and its node.
@@ -45,7 +38,6 @@ pub(super) struct Written {
 
 /// A Feature's `spec.md` and what the renderer reports from it.
 pub(super) struct Spec {
-    pub text: String,
     pub lines: Vec<String>,
     pub purpose_line: usize,
     pub marked: Vec<Marked>,
@@ -65,7 +57,7 @@ pub(super) fn write(feature: &Feature, labels: &Labels) -> Spec {
         .details
         .body
         .as_deref()
-        .or_else(|| ext::openspec(&feature.details.ext, "purpose").and_then(ExtValue::text));
+        .or_else(|| ext::purpose(&feature.details.ext));
     writer.text(purpose.unwrap_or_default());
     writer.heading(2, "Requirements");
     for requirement in &feature.requirements {
@@ -74,10 +66,7 @@ pub(super) fn write(feature: &Feature, labels: &Labels) -> Spec {
     for section in &feature.details.sections {
         writer.section(section, 2);
     }
-    let mut text = writer.lines.join("\n");
-    text.push('\n');
     Spec {
-        text,
         lines: writer.lines,
         purpose_line,
         marked: writer.marked,
@@ -123,10 +112,12 @@ impl Writer<'_> {
         let line = self.heading(3, &format!("Requirement: {name}"));
         self.mark(Mark::Requirement, line, requirement.id.map(ElementId::from));
         let start = self.lines.len();
-        self.text(&match &requirement.statement {
-            Statement::Form(form) => form.render_with_modal(ext::modal(&requirement.details.ext)),
-            Statement::Text(text) => text.clone(),
-        });
+        match &requirement.statement {
+            Statement::Form(form) => {
+                self.text(&form.render_with_modal(ext::modal(&requirement.details.ext)));
+            }
+            Statement::Text(text) => self.text(text),
+        }
         for (label, value) in ext::metadata(&requirement.details.ext) {
             self.lines.push(format!("**{label}**: {value}"));
         }
@@ -156,8 +147,7 @@ impl Writer<'_> {
     /// The name a Requirement's heading gives: its `ext.openspec.name`, else its label, else
     /// its key; a Requirement with none of them is named by its statement.
     fn name(&self, requirement: &Requirement) -> String {
-        if let Some(name) = ext::openspec(&requirement.details.ext, "name").and_then(ExtValue::text)
-        {
+        if let Some(name) = ext::name(&requirement.details.ext) {
             return name.to_owned();
         }
         requirement

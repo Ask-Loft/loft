@@ -24,9 +24,9 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
     let mut metadata = Vec::new();
     let mut rest = Vec::new();
     let mut modal = false;
-    for (_, line, fenced) in source.lines(text) {
-        if let Some(entry) = (!fenced).then(|| metadata_entry(line)).flatten() {
-            metadata.push(entry);
+    for (line, fenced) in source.lines(text) {
+        if let Some((label, value)) = (!fenced).then(|| metadata_entry(line)).flatten() {
+            metadata.push((label.to_owned(), value.to_owned()));
             continue;
         }
         modal |= !fenced && first_modal(line).is_some();
@@ -106,8 +106,8 @@ fn stands_alone(text: &str, range: &Range<usize>) -> bool {
 
 /// The label and value of a metadata line: one that, trimmed, begins with a bold label followed
 /// by a colon, such as `**ID**: AUTH-1`. The value is the text after the colon, trimmed.
-pub(crate) fn metadata_entry(line: &str) -> Option<(String, String)> {
+pub(crate) fn metadata_entry(line: &str) -> Option<(&str, &str)> {
     let (label, after) = line.trim().strip_prefix("**")?.split_once("**")?;
     let value = after.strip_prefix(':')?;
-    (!label.is_empty() && !label.contains('*')).then(|| (label.to_owned(), value.trim().to_owned()))
+    (!label.is_empty() && !label.contains('*')).then(|| (label, value.trim()))
 }

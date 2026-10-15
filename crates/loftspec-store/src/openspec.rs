@@ -14,21 +14,9 @@ use loftspec::convert::openspec::Project;
 use loftspec::render::openspec::{OpenspecProjection, RENDER_MAP};
 
 use crate::StoreError;
-use crate::fs::{hidden, write_outputs};
+use crate::error::io_error;
+use crate::fs::{holds_entries, write_outputs};
 use loftspec::convert::openspec::layout::{ARCHIVE, CHANGES, CONFIG, PROJECT_MD, SPEC_FILE, SPECS};
-
-/// A directory or a file of the project that cannot be read as the converter needs it.
-#[derive(Debug, thiserror::Error)]
-pub enum ReadProjectError {
-    #[error("{path}: {source}")]
-    Io {
-        path: PathBuf,
-        #[source]
-        source: io::Error,
-    },
-    #[error("{0}: the bytes are not UTF-8")]
-    NotText(PathBuf),
-}
 
 /// The files of the `OpenSpec` directory `dir` that the converter takes.
 ///
@@ -36,7 +24,7 @@ pub enum ReadProjectError {
 ///
 /// `dir` cannot be read as a directory, or a file the converter takes cannot be read or is not
 /// UTF-8.
-pub fn read_project(dir: &Path) -> Result<Project, ReadProjectError> {
+pub fn read_project(dir: &Path) -> Result<Project, StoreError> {
     fs::read_dir(dir).map_err(io_error(dir))?;
     let mut specs = Vec::new();
     walk(&dir.join(SPECS), "", &mut specs)?;
@@ -55,11 +43,7 @@ pub fn read_project(dir: &Path) -> Result<Project, ReadProjectError> {
 
 /// Each `spec.md` below `dir`, by its path below the walk's start, never through a symbolic
 /// link.
-fn walk(
-    dir: &Path,
-    prefix: &str,
-    specs: &mut Vec<(String, String)>,
-) -> Result<(), ReadProjectError> {
+fn walk(dir: &Path, prefix: &str, specs: &mut Vec<(String, String)>) -> Result<(), StoreError> {
     let Ok(entries) = fs::read_dir(dir) else {
         return Ok(());
     };
@@ -80,7 +64,7 @@ fn walk(
     Ok(())
 }
 
-fn optional(path: &Path) -> Result<Option<String>, ReadProjectError> {
+fn optional(path: &Path) -> Result<Option<String>, StoreError> {
     if path.is_file() {
         text(path).map(Some)
     } else {
@@ -88,9 +72,9 @@ fn optional(path: &Path) -> Result<Option<String>, ReadProjectError> {
     }
 }
 
-fn text(path: &Path) -> Result<String, ReadProjectError> {
+fn text(path: &Path) -> Result<String, StoreError> {
     let bytes = fs::read(path).map_err(io_error(path))?;
-    String::from_utf8(bytes).map_err(|_| ReadProjectError::NotText(path.to_path_buf()))
+    String::from_utf8(bytes).map_err(|_| StoreError::NotText(path.to_path_buf()))
 }
 
 /// The names of the directories directly in `dir`, sorted; none when `dir` does not exist.
@@ -104,13 +88,6 @@ fn directories(dir: &Path) -> impl Iterator<Item = String> {
         .collect();
     names.sort();
     names.into_iter()
-}
-
-fn io_error(path: &Path) -> impl FnOnce(io::Error) -> ReadProjectError + '_ {
-    move |source| ReadProjectError::Io {
-        path: path.to_path_buf(),
-        source,
-    }
 }
 
 /// What writing a projection did, each path inside the directory written to.
@@ -137,54 +114,41 @@ pub enum WriteProjectionError {
 ///
 /// # Errors
 ///
-/// A root that is not empty without `replace`, or a file that cannot be written or removed.
+/// A root that is not empty without `replace`, or a root that cannot be read, or a file that
+/// cannot be written or removed.
 pub fn write_projection(
     dir: &Path,
-    projection: &OpenspecProjection,
+    projection: OpenspecProjection,
     replace: bool,
 ) -> Result<WrittenProjection, WriteProjectionError> {
     let roots: Vec<PathBuf> = projection.roots.iter().map(|root| dir.join(root)).collect();
-    if !replace && let Some(root) = roots.iter().find(|root| !is_empty(root)) {
-        return Err(WriteProjectionError::NotEmpty(root.clone()));
+    if !replace {
+        for root in &roots {
+            if root.exists() && holds_entries(root)? {
+                return Err(WriteProjectionError::NotEmpty(root.clone()));
+            }
+        }
     }
     let mut outputs: Vec<(PathBuf, Vec<u8>)> = projection
         .files
-        .iter()
-        .map(|(path, text)| (PathBuf::from(path), text.clone().into_bytes()))
+        .into_iter()
+        .map(|(path, text)| (PathBuf::from(path), text.into_bytes()))
         .collect();
-    outputs.push((
-        PathBuf::from(RENDER_MAP),
-        projection.map.clone().into_bytes(),
-    ));
+    outputs.push((PathBuf::from(RENDER_MAP), projection.map.into_bytes()));
     let kept: BTreeSet<PathBuf> = outputs.iter().map(|(path, _)| dir.join(path)).collect();
     let mut removed = Vec::new();
     for root in &roots {
-        remove_others(root, &kept, &mut removed).map_err(crate::error::io_error(root))?;
+        remove_others(root, &kept, &mut removed).map_err(io_error(root))?;
     }
-    let written = write_outputs(dir, &outputs)?;
-    let unchanged = outputs
-        .into_iter()
-        .map(|(path, _)| path)
-        .filter(|path| !written.contains(path))
-        .collect();
+    let outputs = write_outputs(dir, &outputs)?;
     let inside = |path: PathBuf| {
         path.strip_prefix(dir)
-            .map_or(path.clone(), Path::to_path_buf)
+            .map_or_else(|_| path.clone(), Path::to_path_buf)
     };
     Ok(WrittenProjection {
-        written,
-        unchanged,
+        written: outputs.written,
+        unchanged: outputs.unchanged,
         removed: removed.into_iter().map(inside).collect(),
-    })
-}
-
-/// Whether `dir` holds no entry whose name does not begin with `.`; a directory that does not
-/// exist is empty.
-fn is_empty(dir: &Path) -> bool {
-    fs::read_dir(dir).map_or(true, |entries| {
-        entries
-            .flatten()
-            .all(|entry| hidden(&entry.file_name().to_string_lossy()))
     })
 }
 

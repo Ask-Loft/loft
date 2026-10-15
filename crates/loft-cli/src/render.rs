@@ -13,7 +13,7 @@ use loftspec::render::openspec::{Finding, openspec};
 use loftspec::render::render;
 use loftspec_store::fs;
 use loftspec_store::openspec::{WriteProjectionError, write_projection};
-use serde_json::{Value, json};
+use serde_json::json;
 
 use crate::finish::Finished;
 use crate::json;
@@ -47,7 +47,7 @@ pub fn run(root: &Path, targets: Targets, as_json: bool) -> Finished {
                     "written": names(&rendered.written),
                     "unchanged": names(&rendered.unchanged),
                     "removed": names(&rendered.removed),
-                    "findings": rendered.findings.iter().map(finding).collect::<Vec<_>>(),
+                    "findings": rendered.findings.iter().map(json::info_finding).collect::<Vec<_>>(),
                 });
                 json::print(&json::result(SCHEMA, "rendered", fields, Vec::new()));
             } else {
@@ -93,12 +93,21 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
     }
     let files = stop::read_files(root)?;
     let document = codec::read(&files)?;
-    let projections = render(&document).map_err(|errors| integrity(&errors))?;
+    let mut outputs: Vec<(PathBuf, Vec<u8>)> = Vec::new();
+    if markdown.is_some() || json_path.is_some() {
+        let projections = render(&document).map_err(|errors| integrity(&errors))?;
+        outputs.extend(markdown.map(|path| (path, projections.markdown.into_bytes())));
+        outputs.extend(json_path.map(|path| (path, projections.json)));
+    }
     let mut rendered = Rendered::default();
     if let Some(dir) = &targets.openspec {
-        let projection = openspec(&document).map_err(|errors| integrity(&errors))?;
+        let mut projection = openspec(&document).map_err(|errors| integrity(&errors))?;
+        rendered.findings = std::mem::take(&mut projection.findings)
+            .into_iter()
+            .map(|finding| finding.under(dir))
+            .collect();
         let written =
-            write_projection(&root.join(dir), &projection, targets.force).map_err(|error| {
+            write_projection(&root.join(dir), projection, targets.force).map_err(|error| {
                 match error {
                     WriteProjectionError::NotEmpty(_) => Stop::one("refused", error.to_string()),
                     WriteProjectionError::Store(error) => Stop::one("store", error.to_string()),
@@ -108,31 +117,11 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
         rendered.written = here(written.written);
         rendered.unchanged = here(written.unchanged);
         rendered.removed = here(written.removed);
-        rendered.findings = projection
-            .findings
-            .into_iter()
-            .map(|mut finding| {
-                finding.file = finding
-                    .file
-                    .map(|file| dir.join(file).display().to_string());
-                finding
-            })
-            .collect();
     }
-    let outputs: Vec<(PathBuf, Vec<u8>)> = markdown
-        .map(|path| (path, projections.markdown.into_bytes()))
-        .into_iter()
-        .chain(json_path.map(|path| (path, projections.json)))
-        .collect();
     let written =
         fs::write_outputs(root, &outputs).map_err(|error| Stop::one("store", error.to_string()))?;
-    rendered.unchanged.extend(
-        outputs
-            .into_iter()
-            .map(|(path, _)| path)
-            .filter(|path| !written.contains(path)),
-    );
-    rendered.written.extend(written);
+    rendered.written.extend(written.written);
+    rendered.unchanged.extend(written.unchanged);
     Ok(rendered)
 }
 
@@ -141,15 +130,4 @@ fn integrity(errors: &IndexErrors) -> Stop {
     let integrity = errors.integrity.iter().map(ToString::to_string);
     let cycles = errors.cycles.iter().map(ToString::to_string);
     Stop::all("integrity", integrity.chain(cycles).collect())
-}
-
-fn finding(finding: &Finding) -> Value {
-    json::info_finding(
-        finding.rule.as_str(),
-        finding.rule.message(),
-        finding.file.clone(),
-        finding.line,
-        finding.key.map(|key| key.to_string()),
-        finding.detail.as_deref(),
-    )
 }

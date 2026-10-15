@@ -11,7 +11,7 @@ use loftspec::publish::{LOCK, Lock};
 use loftspec::trace::{TRACE, TestFile, TestFiles};
 
 use crate::error::io_error;
-use crate::fs::{SPEC, hidden};
+use crate::fs::{SPEC, hidden, holds_entries};
 use crate::journal::{self, Changes, RootPath};
 use crate::{DocumentStore, Saved, StoreError};
 
@@ -198,17 +198,6 @@ impl DocumentStore for FileStore {
         journal::save(&self.root, &Changes::of_tree(next, &saved.removed))?;
         Ok(saved)
     }
-}
-
-/// Whether `dir` holds an entry that is not hidden.
-fn holds_entries(dir: &Path) -> Result<bool, StoreError> {
-    for entry in fs::read_dir(dir).map_err(io_error(dir))? {
-        let entry = entry.map_err(io_error(dir))?;
-        if !entry.file_name().to_str().is_some_and(hidden) {
-            return Ok(true);
-        }
-    }
-    Ok(false)
 }
 
 fn collect(dir: &Path, prefix: &str, files: &mut Files) -> Result<(), StoreError> {

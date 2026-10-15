@@ -28,9 +28,16 @@ pub fn is_under_spec(root: &Path, path: &Path) -> bool {
     normal(&root.join(path)).starts_with(normal(&root.join(SPEC)))
 }
 
+/// What [`write_outputs`] did with each output: wrote it, or left it as the file already held
+/// its bytes.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct WrittenOutputs {
+    pub written: Vec<PathBuf>,
+    pub unchanged: Vec<PathBuf>,
+}
+
 /// Writes each output whose bytes differ from the file at its path, through a temporary file
-/// beside it and a rename, and returns the paths written (AC-548). Relative paths are taken
-/// under `root`.
+/// beside it and a rename (AC-548). Relative paths are taken under `root`.
 ///
 /// # Errors
 ///
@@ -38,11 +45,12 @@ pub fn is_under_spec(root: &Path, path: &Path) -> bool {
 pub fn write_outputs(
     root: &Path,
     outputs: &[(PathBuf, Vec<u8>)],
-) -> Result<Vec<PathBuf>, StoreError> {
-    let mut written = Vec::new();
+) -> Result<WrittenOutputs, StoreError> {
+    let mut done = WrittenOutputs::default();
     for (path, bytes) in outputs {
         let target = root.join(path);
         if fs::read(&target).is_ok_and(|current| current == *bytes) {
+            done.unchanged.push(path.clone());
             continue;
         }
         if let Some(parent) = target.parent() {
@@ -54,9 +62,24 @@ pub fn write_outputs(
         let temporary = target.with_file_name(format!(".{name}.loft-{}", process::id()));
         fs::write(&temporary, bytes).map_err(io_error(&temporary))?;
         fs::rename(&temporary, &target).map_err(io_error(&target))?;
-        written.push(path.clone());
+        done.written.push(path.clone());
     }
-    Ok(written)
+    Ok(done)
+}
+
+/// Whether `dir` holds an entry that is not [`hidden`].
+///
+/// # Errors
+///
+/// `dir` or one of its entries cannot be read.
+pub(crate) fn holds_entries(dir: &Path) -> Result<bool, StoreError> {
+    for entry in fs::read_dir(dir).map_err(io_error(dir))? {
+        let entry = entry.map_err(io_error(dir))?;
+        if !entry.file_name().to_str().is_some_and(hidden) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// Whether an entry under `spec/` is left out of the tree: its name begins with `.`, as an

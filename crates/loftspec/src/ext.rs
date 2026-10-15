@@ -4,7 +4,8 @@
 
 use std::collections::BTreeMap;
 
-use serde_json::{Map, Value};
+use serde::{Serialize, Serializer};
+use serde_json::Value;
 
 use crate::names::Namespace;
 
@@ -32,18 +33,7 @@ impl ExtValue {
     /// The value as JSON.
     #[must_use]
     pub fn to_json(&self) -> Value {
-        match self {
-            Self::Text(text) => Value::String(text.clone()),
-            Self::Integer(number) => Value::from(*number),
-            Self::Boolean(flag) => Value::Bool(*flag),
-            Self::List(items) => Value::Array(items.iter().map(Self::to_json).collect()),
-            Self::Map(entries) => Value::Object(
-                entries
-                    .iter()
-                    .map(|(key, value)| (key.clone(), value.to_json()))
-                    .collect(),
-            ),
-        }
+        serde_json::to_value(self).expect("an extension value serialises")
     }
 
     /// The entry `key` of a mapping; none for any other value.
@@ -65,12 +55,21 @@ impl ExtValue {
     }
 }
 
+/// The value as JSON writes it: a string, a number, a boolean, an array or an object.
+impl Serialize for ExtValue {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Self::Text(text) => serializer.serialize_str(text),
+            Self::Integer(number) => serializer.serialize_i64(*number),
+            Self::Boolean(flag) => serializer.serialize_bool(*flag),
+            Self::List(items) => items.serialize(serializer),
+            Self::Map(entries) => entries.serialize(serializer),
+        }
+    }
+}
+
 /// A node's extension data as a JSON object of its namespaces.
 #[must_use]
 pub fn to_json(ext: &Ext) -> Value {
-    Value::Object(
-        ext.iter()
-            .map(|(namespace, value)| (namespace.to_string(), value.to_json()))
-            .collect::<Map<_, _>>(),
-    )
+    serde_json::to_value(ext).expect("extension data serialises")
 }

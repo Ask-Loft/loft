@@ -4,20 +4,21 @@
 //! `OpenSpec`'s validator would reject and what the projection leaves out. Like every projection
 //! it is derived and deterministic, and no reader takes input from it.
 
-mod ext;
 mod findings;
 mod scan;
 mod spec;
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde_json::{Value, json};
+use serde::Serialize;
 
 pub use self::findings::{Finding, Rule};
 use super::Labels;
+use crate::convert::openspec::ext;
 use crate::convert::openspec::layout::{SPEC_FILE, SPECS};
 use crate::document::Document;
-use crate::ids::FeatureId;
+use crate::identity::Key;
+use crate::ids::{ElementId, FeatureId};
 use crate::index::IndexErrors;
 use crate::node::Node;
 use crate::tree::{Feature, FeatureGroup};
@@ -73,14 +74,24 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> 
                 let path = format!("{root}/{}/{SPEC_FILE}", capability(group, feature));
                 let spec = spec::write(feature, &labels);
                 findings.extend(feature_findings(feature, &spec, &path));
-                let entry = |marked| map_entry(&path, marked, &labels);
-                entries.extend(spec.marked.iter().map(entry));
-                files.insert(path, spec.text);
+                entries.extend(spec.marked.iter().map(|marked| MapEntry {
+                    file: path.clone(),
+                    key: marked.element.map(ElementId::key),
+                    kind: marked.mark,
+                    label: marked.element.and_then(|element| labels.label(element)),
+                    line: marked.line,
+                }));
+                let mut text = spec.lines.join("\n");
+                text.push('\n');
+                files.insert(path, text);
             }
         }
     }
     findings.extend(left_out(document));
-    let map = json!({ "schema": MAP_SCHEMA, "entries": entries });
+    let map = RenderMap {
+        entries,
+        schema: MAP_SCHEMA,
+    };
     let mut map = serde_json::to_string_pretty(&map).expect("a render map serialises");
     map.push('\n');
     Ok(OpenspecProjection {
@@ -91,20 +102,24 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, IndexErrors> 
     })
 }
 
-/// The render map's entry for a rendered requirement or scenario heading of the file at `path`.
-fn map_entry(path: &str, marked: &spec::Marked, labels: &Labels) -> Value {
-    let mut entry = json!({
-        "file": path,
-        "line": marked.line,
-        "kind": marked.mark.as_str(),
-    });
-    if let Some(element) = marked.element {
-        entry["key"] = json!(element.key().to_string());
-        if let Some(label) = labels.label(element) {
-            entry["label"] = json!(label);
-        }
-    }
-    entry
+/// The render map, its fields in the order JSON's sorted keys give.
+#[derive(Serialize)]
+struct RenderMap<'a> {
+    entries: Vec<MapEntry<'a>>,
+    schema: &'static str,
+}
+
+/// The render map's entry for a rendered requirement or scenario heading: its file, its node's
+/// key and label where it has them, what it renders and its 1-based line.
+#[derive(Serialize)]
+struct MapEntry<'a> {
+    file: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    key: Option<Key>,
+    kind: spec::Mark,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    label: Option<&'a str>,
+    line: usize,
 }
 
 /// The path of a Feature's capability: its `ext.openspec.capability`, else its Feature Group's
@@ -118,13 +133,8 @@ fn capability(group: &FeatureGroup, feature: &Feature) -> String {
 
 /// The findings of one Feature's `spec.md` at `path`.
 fn feature_findings(feature: &Feature, spec: &spec::Spec, path: &str) -> Vec<Finding> {
-    let at = |rule, line, key, detail| Finding {
-        rule,
-        file: Some(path.to_owned()),
-        line: Some(line),
-        key,
-        detail,
-    };
+    let at =
+        |rule, line, key, detail| Finding::at(rule, path.to_owned(), line, key).with_detail(detail);
     let mut findings = Vec::new();
     let purpose = feature
         .details
@@ -146,8 +156,9 @@ fn feature_findings(feature: &Feature, spec: &spec::Spec, path: &str) -> Vec<Fin
         if !read.scenario {
             findings.push(at(Rule::NoScenario, None));
         }
-        if read.length() > REQUIREMENT_LENGTH {
-            let detail = Some(format!("{} characters", read.length()));
+        let length = read.length();
+        if length > REQUIREMENT_LENGTH {
+            let detail = Some(format!("{length} characters"));
             findings.push(at(Rule::LongRequirement, detail));
         }
         if !names.insert(written.name.as_str()) {
@@ -176,12 +187,6 @@ fn left_out(document: &Document) -> Vec<Finding> {
     ]
     .into_iter()
     .filter(|(_, count)| *count > 0)
-    .map(|(kind, count)| Finding {
-        rule: Rule::LeftOut,
-        file: None,
-        line: None,
-        key: None,
-        detail: Some(format!("{count} {kind}")),
-    })
+    .map(|(kind, count)| Finding::about(Rule::LeftOut, format!("{count} {kind}")))
     .collect()
 }
