@@ -3,14 +3,14 @@
 //! the new tree raises with the `spec/lint.yaml` entry that lowers them. Any refusal writes
 //! nothing.
 
-use std::fs;
 use std::path::Path;
 
 use loftspec::codec;
-use loftspec::convert::openspec::{Finding, Project, SIDECAR, convert};
+use loftspec::convert::openspec::{Finding, SIDECAR, convert};
 use loftspec::ids::DocumentId;
 use loftspec::lint::{LintConfig, RuleId, Severity, count_body_rule};
 use loftspec_store::FileStore;
+use loftspec_store::openspec::read_project;
 use serde_json::{Map, Value, json};
 
 use crate::finish::Finished;
@@ -41,7 +41,7 @@ struct Imported {
 }
 
 fn import(root: &Path, dir: &Path, product: Option<&str>) -> Result<Imported, String> {
-    let project = read_project(dir)?;
+    let project = read_project(dir).map_err(|error| error.to_string())?;
     let product = match product {
         Some(name) => name.to_owned(),
         None => holder_name(dir)?,
@@ -81,74 +81,6 @@ fn holder_name(dir: &Path) -> Result<String, String> {
                 dir.display()
             )
         })
-}
-
-/// The files of the project that the converter takes.
-fn read_project(dir: &Path) -> Result<Project, String> {
-    fs::read_dir(dir).map_err(|error| format!("{}: {error}", dir.display()))?;
-    let mut specs = Vec::new();
-    walk(&dir.join("specs"), "", &mut specs)?;
-    Ok(Project {
-        specs,
-        project_md: optional(&dir.join("project.md"))?,
-        config_yaml: optional(&dir.join("config.yaml"))?,
-        active_changes: directories(&dir.join("changes"))
-            .into_iter()
-            .filter(|name| name != "archive")
-            .collect(),
-        archived_changes: directories(&dir.join("changes").join("archive")).len()
-            + directories(&dir.join("archive")).len(),
-    })
-}
-
-/// Each `spec.md` below `dir`, by its path below the walk's start, never through a symbolic
-/// link.
-fn walk(dir: &Path, prefix: &str, specs: &mut Vec<(String, String)>) -> Result<(), String> {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return Ok(());
-    };
-    let mut entries: Vec<_> = entries.flatten().collect();
-    entries.sort_by_key(fs::DirEntry::file_name);
-    for entry in entries {
-        let Ok(kind) = entry.file_type() else {
-            continue;
-        };
-        let name = entry.file_name().to_string_lossy().into_owned();
-        let path = format!("{prefix}{name}");
-        if kind.is_dir() {
-            walk(&entry.path(), &format!("{path}/"), specs)?;
-        } else if kind.is_file() && name == "spec.md" {
-            specs.push((path, text(&entry.path())?));
-        }
-    }
-    Ok(())
-}
-
-fn optional(path: &Path) -> Result<Option<String>, String> {
-    if path.is_file() {
-        text(path).map(Some)
-    } else {
-        Ok(None)
-    }
-}
-
-fn text(path: &Path) -> Result<String, String> {
-    let bytes = fs::read(path).map_err(|error| format!("{}: {error}", path.display()))?;
-    String::from_utf8(bytes).map_err(|_| format!("{}: the bytes are not UTF-8", path.display()))
-}
-
-/// The names of the directories directly in `dir`, sorted; none when `dir` does not exist.
-fn directories(dir: &Path) -> Vec<String> {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return Vec::new();
-    };
-    let mut names: Vec<String> = entries
-        .flatten()
-        .filter(|entry| entry.path().is_dir())
-        .map(|entry| entry.file_name().to_string_lossy().into_owned())
-        .collect();
-    names.sort();
-    names
 }
 
 fn report(dir: &Path, imported: &Imported, as_json: bool) {

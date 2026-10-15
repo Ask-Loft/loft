@@ -13,6 +13,7 @@ mod git_contract;
 mod git_contract_stopped;
 mod journal;
 mod live_export;
+mod openspec_project;
 mod publish_save;
 mod simulators;
 mod stores;
