@@ -80,7 +80,7 @@ fn plain(node: &yaml::Node, text: &str) -> Result<ExtValue, Located> {
     }
     text.parse::<i64>()
         .ok()
-        .filter(|number| number.abs() <= MAX_INTEGER)
+        .filter(|number| (-MAX_INTEGER..=MAX_INTEGER).contains(number))
         .map(ExtValue::Integer)
         .ok_or_else(|| invalid(INTEGER))
 }

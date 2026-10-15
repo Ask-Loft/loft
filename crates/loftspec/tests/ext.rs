@@ -191,8 +191,14 @@ fn a_plain_scalar_other_than_an_integer_or_a_boolean_is_an_error() {
 
 #[test]
 fn an_integer_out_of_range_is_an_error_and_the_bounds_read() {
-    let errors = errors_with("  openspec:\n    value: 9007199254740992\n");
-    assert!(errors.contains("9007199254740992"), "{errors}");
+    for outside in [
+        "9007199254740992",
+        "-9007199254740992",
+        "-9223372036854775808",
+    ] {
+        let errors = errors_with(&format!("  openspec:\n    value: {outside}\n"));
+        assert!(errors.contains(outside), "{errors}");
+    }
     for bound in ["9007199254740991", "-9007199254740991"] {
         let mut files = codec::write(&small_document());
         let (path, text) = feature_file(&files);
