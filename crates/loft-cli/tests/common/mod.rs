@@ -21,7 +21,7 @@ use software_plant::{Clock, GitScenario, Installed};
 /// The time every run reads unless a test gives another: 2026-01-01T00:00:00Z.
 /// The files the Format places beside `spec/`.
 pub const BESIDE: [&str; 4] = [
-    loftspec_store::fs::SIDECAR,
+    loftspec::convert::v1::SIDECAR,
     loftspec::convert::openspec::SIDECAR,
     loftspec::publish::LOCK,
     loftspec::trace::TRACE,

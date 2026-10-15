@@ -6,7 +6,7 @@ use std::path::Path;
 use loftspec::node::Node;
 use loftspec_store::{DocumentStore, FileStore};
 
-use crate::commands::{COMMANDS, Fixture};
+use crate::commands::{COMMANDS, Entry};
 
 /// The slugs of the Features in this repository's `spec/` that list `tag`.
 pub fn tagged(tag: &str) -> Vec<String> {
@@ -25,13 +25,13 @@ pub fn tagged(tag: &str) -> Vec<String> {
 }
 
 /// The command of each Feature that lists `tag`, each with its arguments and fixture.
-pub fn tagged_commands(tag: &str) -> Vec<(&'static str, &'static [&'static str], Fixture)> {
+pub fn tagged_commands(tag: &str) -> Vec<Entry> {
     tagged(tag)
         .into_iter()
         .map(|slug| {
             COMMANDS
                 .into_iter()
-                .find(|(name, _, _)| *name == slug)
+                .find(|(name, ..)| *name == slug)
                 .unwrap_or_else(|| panic!("{slug} lists `{tag}` but COMMANDS has no entry"))
         })
         .collect()

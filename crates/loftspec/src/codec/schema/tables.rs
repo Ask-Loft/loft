@@ -72,6 +72,7 @@ const NAME: Field = req(field::NAME, S::Text);
 const BODY: Field = opt(field::BODY, S::Text);
 const TAGS: Field = scalars(field::TAGS, S::Tag);
 const MENTIONS: Field = edges(field::MENTIONS, Target::NodeOrDecision);
+const EXT: Field = spec(field::EXT, false, Shape::One(Item::Ext));
 const SECTIONS: Field = records(field::SECTIONS, K::Section);
 const FATE: Field = opt(field::VERIFICATION_FATE, S::Enum(VerificationFate::NAMES));
 
@@ -132,6 +133,7 @@ const PRODUCT_FIELDS: &[Field] = &[
     BODY,
     TAGS,
     MENTIONS,
+    EXT,
     records(field::FEATURE_GROUPS, K::FeatureGroup),
     records(field::CONSTRAINTS, K::Constraint),
     SECTIONS,
@@ -144,6 +146,7 @@ const FEATURE_GROUP_FIELDS: &[Field] = &[
     BODY,
     TAGS,
     MENTIONS,
+    EXT,
     scalars(field::FEATURES, S::Key),
     records(field::CONSTRAINTS, K::Constraint),
     SECTIONS,
@@ -157,6 +160,7 @@ const FEATURE_FIELDS: &[Field] = &[
     TAGS,
     edges(field::REALIZES, Target::Component),
     MENTIONS,
+    EXT,
     records(field::REQUIREMENTS, K::Requirement),
     records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
@@ -168,6 +172,7 @@ const REQUIREMENT_FIELDS: &[Field] = &[
     BODY,
     TAGS,
     MENTIONS,
+    EXT,
     records(field::CRITERIA, K::Criterion),
     SECTIONS,
 ];
@@ -183,7 +188,7 @@ const STATEMENT_FIELDS: &[Field] = &[
     opt(field::SHALL, S::Text),
 ];
 
-const CRITERION_FIELDS: &[Field] = &[KEY, NAME, BODY, TAGS, MENTIONS, SECTIONS];
+const CRITERION_FIELDS: &[Field] = &[KEY, NAME, BODY, TAGS, MENTIONS, EXT, SECTIONS];
 
 const CONSTRAINT_FIELDS: &[Field] = &[
     KEY,
@@ -194,6 +199,7 @@ const CONSTRAINT_FIELDS: &[Field] = &[
     opt(field::CONSERVATION_KIND, S::Enum(ConservationKind::NAMES)),
     FATE,
     MENTIONS,
+    EXT,
     SECTIONS,
 ];
 
@@ -211,6 +217,7 @@ const QUALITY_ATTRIBUTE_FIELDS: &[Field] = &[
     record(field::QUALITY_TARGET, true, K::QualityTarget),
     FATE,
     MENTIONS,
+    EXT,
     SECTIONS,
 ];
 
@@ -230,7 +237,14 @@ const BAND_FIELDS: &[Field] = &[
     opt(field::VALUE, S::Text),
 ];
 
-const SECTION_FIELDS: &[Field] = &[KEY, NAME, req(field::BODY, S::Text), MENTIONS, SECTIONS];
+const SECTION_FIELDS: &[Field] = &[
+    KEY,
+    NAME,
+    req(field::BODY, S::Text),
+    MENTIONS,
+    EXT,
+    SECTIONS,
+];
 
 const DECISION_FIELDS: &[Field] = &[
     KEY,
@@ -294,7 +308,7 @@ const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
 
 const BY_NAME_FIELDS: &[Field] = &[req(field::NAME, S::Text)];
 
-const COMPONENT: [Field; 11] = [
+const COMPONENT: [Field; 12] = [
     KEY,
     NAME,
     BODY,
@@ -302,14 +316,15 @@ const COMPONENT: [Field; 11] = [
     opt(field::BOUNDARY, S::Enum(Boundary::NAMES)),
     edges(field::SCOPED_TO, Target::Product),
     MENTIONS,
+    EXT,
     records(field::COMPONENTS, K::Component),
     records(field::CONSTRAINTS, K::Constraint),
     records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
 ];
 /// A root Component: `slug` after `key`, then a Component's fields (AC-757).
-const ROOT_COMPONENT: [Field; 12] = {
-    let mut fields = [KEY; 12];
+const ROOT_COMPONENT: [Field; 13] = {
+    let mut fields = [KEY; 13];
     fields[1] = SLUG;
     let mut index = 1;
     while index < COMPONENT.len() {

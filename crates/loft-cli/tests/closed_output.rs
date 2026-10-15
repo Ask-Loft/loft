@@ -57,7 +57,7 @@ impl Case {
 fn cases() -> Vec<Case> {
     let mut cases: Vec<Case> = COMMANDS
         .iter()
-        .map(|(slug, args, fixture)| {
+        .map(|(slug, args, fixture, _)| {
             let mut args = args.to_vec();
             args.extend(["--format", "json"]);
             Case::new(slug, &args, *fixture)

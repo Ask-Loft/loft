@@ -1,8 +1,10 @@
 //! `OpenSpec` projects written for the converter's tests, and the conversion of them.
 
 use loftspec::convert::openspec::{Conversion, ConvertError, Project, convert};
+use loftspec::ext::{Ext, ExtValue};
 use loftspec::identity::Key;
 use loftspec::ids::DocumentId;
+use loftspec::names::Namespace;
 use loftspec::tree::{Feature, Requirement};
 
 /// The document key the tests convert under.
@@ -79,4 +81,9 @@ pub fn features(conversion: &Conversion) -> Vec<&Feature> {
 /// The first Feature's Requirements.
 pub fn requirements(conversion: &Conversion) -> &[Requirement] {
     &conversion.document.products[0].feature_groups[0].features[0].requirements
+}
+
+/// The value `field` holds in a node's `ext.openspec`.
+pub fn openspec<'a>(ext: &'a Ext, field: &str) -> Option<&'a ExtValue> {
+    ext.get(&Namespace::parse("openspec").unwrap())?.get(field)
 }

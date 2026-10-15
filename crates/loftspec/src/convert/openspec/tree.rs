@@ -3,22 +3,23 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use super::ext;
 use super::findings::{Finding, Rule};
 use super::keys::{Identity, Keys, Kind};
+use super::placeholder::opens_with_marker;
 use super::read::{Child, Part, Requirement as SourceRequirement, Source, Spec};
 use super::sidecar::{OpenspecSidecar, Provenance, SourceFile};
 use super::statement;
 use crate::canonical::digest_bytes;
 use crate::document::Document;
+use crate::ext::Ext;
 use crate::identity::Key;
 use crate::ids::{
     CriterionId, DocumentId, FeatureGroupId, FeatureId, ProductId, RequirementId, SectionId,
 };
 use crate::slug::Slug;
+use crate::statement::Statement;
 use crate::tree::{Criterion, Details, Feature, FeatureGroup, Product, Requirement, Section};
-
-/// The prefix of the Purpose `OpenSpec`'s archive command writes for a new capability.
-const PLACEHOLDER: &str = "TBD - created by archiving change";
 
 /// The Feature Group of the capabilities whose ids have one segment.
 const FLAT_GROUP: &str = "Capabilities";
@@ -83,6 +84,7 @@ impl Build {
                 name: "Project".to_owned(),
                 body: body.unwrap_or_default(),
                 sections: Vec::new(),
+                ext: Ext::new(),
             });
         }
         let mut groups: Vec<FeatureGroup> = Vec::new();
@@ -152,7 +154,7 @@ impl Build {
             Some(&capability.id),
             title.map(|(text, _)| text.as_str()),
         );
-        let body = self.purpose(&spec, &source, file, key);
+        let (body, placeholder) = self.purpose(&spec, &source, file, key);
         let sections = self.feature_sections(&spec, &source, file, &identity);
         let mut names = BTreeSet::new();
         let requirements = spec
@@ -171,16 +173,28 @@ impl Build {
                 body,
                 tags: Vec::new(),
                 sections,
+                ext: ext::feature(&capability.id, placeholder),
             },
             requirements,
             quality_attributes: Vec::new(),
         }
     }
 
-    fn purpose(&mut self, spec: &Spec, source: &Source, file: &str, key: Key) -> Option<String> {
-        let purpose = spec.purpose.as_ref()?;
-        let text = source.verbatim(purpose.text.clone())?;
-        if text.trim_start().starts_with(PLACEHOLDER) {
+    /// The Feature's body, or the archive placeholder its Purpose holds instead.
+    fn purpose(
+        &mut self,
+        spec: &Spec,
+        source: &Source,
+        file: &str,
+        key: Key,
+    ) -> (Option<String>, Option<String>) {
+        let Some(purpose) = spec.purpose.as_ref() else {
+            return (None, None);
+        };
+        let Some(text) = source.verbatim(purpose.text.clone()) else {
+            return (None, None);
+        };
+        if opens_with_marker(&text) {
             let finding = Finding::at(
                 Rule::PlaceholderPurpose,
                 file.to_owned(),
@@ -188,9 +202,9 @@ impl Build {
                 Some(key),
             );
             self.findings.push(finding);
-            return None;
+            return (None, Some(text));
         }
-        Some(text)
+        (Some(text), None)
     }
 
     /// The Feature's Sections in source order: the introduction, the other level-2 sections
@@ -259,6 +273,7 @@ impl Build {
             name: part.name.clone(),
             body,
             sections,
+            ext: Ext::new(),
         }
     }
 
@@ -275,7 +290,19 @@ impl Build {
         let at = Some((file, requirement.line));
         let (key, identity) = self.node(Kind::Requirement, parts, at, Some(&requirement.name));
         let split = statement::split(source, requirement.text.clone(), &requirement.name);
-        self.rewritten += usize::from(split.rewritten);
+        self.rewritten += usize::from(split.rewritten.is_some());
+        let modal = match (&split.statement, split.rewritten) {
+            (Statement::Form(_), None) => Some("shall"),
+            (_, rewritten) => rewritten.filter(|word| *word == "MUST"),
+        };
+        if let Some(line) = split.joined {
+            self.findings.push(Finding::at(
+                Rule::MetadataInParagraph,
+                file.to_owned(),
+                line,
+                Some(key),
+            ));
+        }
         let at = |rule, line| Finding::at(rule, file.to_owned(), line, Some(key));
         if repeated {
             self.findings
@@ -283,9 +310,6 @@ impl Build {
         }
         if !split.modal {
             self.findings.push(at(Rule::NoModal, requirement.line));
-        }
-        for line in &split.metadata {
-            self.findings.push(at(Rule::Metadata, *line));
         }
         let mut criteria = Vec::new();
         let mut sections = Vec::new();
@@ -304,6 +328,7 @@ impl Build {
                 body: split.body,
                 tags: Vec::new(),
                 sections,
+                ext: ext::requirement(&requirement.name, modal, split.metadata),
             },
             criteria,
         }
@@ -329,6 +354,7 @@ impl Build {
                 body: source.verbatim(child.part.text.clone()),
                 tags: Vec::new(),
                 sections: Vec::new(),
+                ext: Ext::new(),
             },
         }
     }

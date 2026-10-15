@@ -25,7 +25,7 @@ fn output_text(output: &std::process::Output) -> String {
 
 #[test]
 fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
-    for (slug, args, _) in tagged_commands(TAG) {
+    for (slug, args, _, _) in tagged_commands(TAG) {
         let scratch = broken();
         let before = snapshot(&scratch.0);
         let output = scratch.loft(args);
@@ -43,7 +43,7 @@ fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
 #[test]
 fn each_command_that_reports_a_read_error_lists_reads_tree() {
     let tagged = tagged(TAG);
-    for (slug, args, _) in COMMANDS {
+    for (slug, args, _, _) in COMMANDS {
         let output = broken().loft(args);
         let reports = output_text(&output)
             .lines()

@@ -32,6 +32,7 @@ featureGroups:
       - e150cbbd-0ddf-431d-a985-4ddb99cb2a5b
       - d86939c2-1936-4c22-9fd4-745591491545
       - 01f53bdc-8ad5-4e3a-a0f0-2fd7604c4e21
+      - 01a14039-8315-7390-a27f-c57235f47c73
   - key: b5ab6511-566c-4d3d-8068-5b942487936f
     slug: statements-and-bodies
     name: "Statements and bodies"
@@ -88,6 +89,9 @@ featureGroups:
       - 25ab61fa-598b-483f-bc91-36413a78f4d8
       - f849fd7c-3d89-40f8-9490-fa45636349e0
       - 30c52d77-eca8-4d2c-9e9e-c950db04ef59
+      - 01a1402e-d25e-7540-9283-1811887f7f78
+      - 01a1402e-d25e-7540-9283-1825c9936bb1
+      - 01a1402e-d25e-7540-9283-183bab9eb817
   - key: b440f86a-ade7-45df-bc89-8ee1aadfb367
     slug: publication
     name: "Publication"

@@ -27,6 +27,7 @@ fn details(n: u32) -> Details {
         body: Some("A body.".to_owned()),
         tags: vec![TagName::parse("identity").unwrap()],
         sections: vec![notes(n)],
+        ext: loftspec::ext::Ext::new(),
     }
 }
 

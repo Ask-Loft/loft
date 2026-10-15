@@ -55,45 +55,51 @@ pub fn command(scratch: &Scratch, fixture: Fixture) -> Command {
     scratch.command(git.as_ref(), &Clock::fixed(EPOCH))
 }
 
-/// The name of the schema of the command `args` runs: its subcommand, and the source of an
-/// import. `import v1` keeps the name `import`, which it was released under before a second
-/// source existed.
-pub fn schema_name(args: &[&str]) -> String {
-    match args {
-        ["import", "v1", ..] => "import".to_owned(),
-        ["import", source, ..] => format!("import-{source}"),
-        [command, ..] => (*command).to_owned(),
-        [] => unreachable!("a command has a subcommand"),
-    }
-}
+/// A command: the slug of its Feature, the arguments that run it, its fixture, and the name of
+/// its schema under `schemas/`.
+pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
-/// Each command by the slug of its Feature, with the arguments that run it and its fixture.
-pub const COMMANDS: [(&str, &[&str], Fixture); 15] = [
-    ("loft-check", &["check"], Fixture::Unkeyed),
-    ("loft-fmt", &["fmt"], Fixture::Unkeyed),
+/// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
+/// schema. `import v1` keeps the schema `import`, released before a second import source existed.
+pub const COMMANDS: [Entry; 15] = [
+    ("loft-check", &["check"], Fixture::Unkeyed, "check"),
+    ("loft-fmt", &["fmt"], Fixture::Unkeyed, "fmt"),
     (
         "loft-render",
         &["render", "--markdown", "out/spec.md"],
         Fixture::Unkeyed,
+        "render",
     ),
     (
         "loft-import-v1",
         &["import", "v1", READING_LIST],
         Fixture::Empty,
+        "import",
     ),
     (
         "loft-import-openspec",
         &["import", "openspec", OPENSPEC],
         Fixture::Empty,
+        "import-openspec",
     ),
-    ("loft-publish", &["publish"], Fixture::Clean),
-    ("loft-verify", &["verify"], Fixture::Clean),
-    ("loft-find", &["find", "shelf"], Fixture::Clean),
-    ("loft-reconcile", &["reconcile"], Fixture::Clean),
+    ("loft-publish", &["publish"], Fixture::Clean, "publish"),
+    ("loft-verify", &["verify"], Fixture::Clean, "verify"),
+    ("loft-find", &["find", "shelf"], Fixture::Clean, "find"),
+    (
+        "loft-reconcile",
+        &["reconcile"],
+        Fixture::Clean,
+        "reconcile",
+    ),
     // Init refuses any existing `spec/` before reading it.
-    ("loft-init", &["init"], Fixture::Empty),
+    ("loft-init", &["init"], Fixture::Empty, "init"),
     // The skill is written whether or not there is a tree.
-    ("loft-skill-install", &["skill", "install"], Fixture::Empty),
+    (
+        "loft-skill-install",
+        &["skill", "install"],
+        Fixture::Empty,
+        "skill",
+    ),
     // The driver reads the three files git hands it, never the tree, so inputs that do not
     // exist report against the path they name and write nothing.
     (
@@ -106,17 +112,25 @@ pub const COMMANDS: [(&str, &[&str], Fixture); 15] = [
             "spec/loftspec.yaml",
         ],
         Fixture::Unkeyed,
+        "merge-driver",
     ),
     // The install record and the switches read and write the user's settings, never the tree.
     (
         "loft-record-install",
         &["record-install", "release-binary"],
         Fixture::Empty,
+        "record-install",
     ),
-    ("loft-telemetry", &["telemetry", "status"], Fixture::Empty),
+    (
+        "loft-telemetry",
+        &["telemetry", "status"],
+        Fixture::Empty,
+        "telemetry",
+    ),
     (
         "loft-update-check",
         &["update-check", "status"],
         Fixture::Empty,
+        "update-check",
     ),
 ];

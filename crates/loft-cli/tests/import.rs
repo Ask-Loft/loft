@@ -268,6 +268,10 @@ fn json_output_matches_the_schema() {
             .unwrap()
             .contains(&"v1-sidecar.json".into())
     );
+    for path in document["written"].as_array().unwrap() {
+        let path = path.as_str().unwrap();
+        assert!(dir.0.join(path).is_file(), "{path} names no file written");
+    }
     let refused = dir.import(&["--format", "json"]);
     assert_eq!(refused.status.code(), Some(1));
     let document = schema::conforming(&refused.stdout, schema);

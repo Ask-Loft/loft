@@ -5,6 +5,7 @@
 use super::error::{Located, Problem};
 use super::schema::{Field, Item, Kind, Scalar, Shape, field};
 use crate::canonical::Digest;
+use crate::ext::Ext;
 use crate::identity::{Key, Label};
 use crate::names::{CategoryName, TagName};
 use crate::slug::Slug;
@@ -88,6 +89,11 @@ pub enum Val {
     Null {
         position: Position,
     },
+    /// A node's extension data.
+    Ext {
+        value: Ext,
+        position: Position,
+    },
 }
 
 impl Val {
@@ -136,7 +142,9 @@ impl Val {
     #[must_use]
     pub const fn position(&self) -> Option<Position> {
         match self {
-            Self::Scalar { position, .. } | Self::Null { position } => Some(*position),
+            Self::Scalar { position, .. }
+            | Self::Null { position }
+            | Self::Ext { position, .. } => Some(*position),
             Self::Record(record) => Some(record.position),
             Self::List(_) => None,
         }
@@ -339,6 +347,7 @@ fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located>
         },
         Item::Scalar(scalar) => check_scalar(node, scalar),
         Item::Record(kind) => check(node, kind, mode).map(Val::Record),
+        Item::Ext => super::ext::check(node),
         Item::NodeRef => match &node.value {
             Value::Mapping(_) => check(node, Kind::FormerLabel, mode).map(Val::Record),
             _ => check_scalar(node, Scalar::Key),
@@ -442,6 +451,7 @@ fn item_out(value: &Val, item: Item) -> Out {
             _ => Out::Token(text.clone()),
         },
         Val::Null { .. } => Out::Null,
+        Val::Ext { value, .. } => super::ext::ext_out(value),
         Val::List(_) => unreachable!("lists do not nest"),
     }
 }

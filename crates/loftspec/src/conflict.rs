@@ -2,6 +2,7 @@
 //! and the value each side gave that field. The validator reports every conflict until it is
 //! removed (RQ-126), and no hash reads it.
 
+use crate::ext::Ext;
 use std::fmt;
 
 use crate::identity::Key;
@@ -84,6 +85,8 @@ pub enum ConflictValue {
     List(Vec<Self>),
     /// An unkeyed record: its fields in the Format's order.
     Record(Vec<(String, Self)>),
+    /// A node's extension data.
+    Ext(Ext),
 }
 
 /// A conflict: the field two sides changed to different values, and each side's value; a side

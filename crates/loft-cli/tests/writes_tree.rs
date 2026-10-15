@@ -104,7 +104,7 @@ fn assert_exit(slug: &str, output: &Output, code: i32) {
 
 #[test]
 fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
-    for (slug, args, kind) in tagged_commands(TAG) {
+    for (slug, args, kind, _) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         plant(&scratch, kind, true);
         // In an empty directory the finished save leaves `spec/` not empty, which the command
@@ -127,7 +127,7 @@ fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
 
 #[test]
 fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
-    for (slug, args, kind) in tagged_commands(TAG) {
+    for (slug, args, kind, _) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         plant(&scratch, kind, false);
         assert_exit(slug, &run(&scratch, kind, args), 0);
@@ -145,7 +145,7 @@ fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
 #[test]
 fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
     let tagged = tagged(TAG);
-    for (slug, args, kind) in COMMANDS {
+    for (slug, args, kind, _) in COMMANDS {
         let scratch = fixture(kind);
         let before = format_files(&scratch.0);
         run(&scratch, kind, args);
@@ -160,7 +160,7 @@ fn each_command_that_changes_a_file_of_the_format_lists_writes_tree() {
 
 #[test]
 fn each_tagged_command_changes_a_file_of_the_format() {
-    for (slug, args, kind) in tagged_commands(TAG) {
+    for (slug, args, kind, _) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         let before = format_files(&scratch.0);
         assert_exit(slug, &run(&scratch, kind, args), 0);
@@ -183,20 +183,20 @@ fn no_tagged_command_changes_the_document_key_once_a_tree_is_written() {
     let commands = tagged_commands(TAG);
     let (first, later): (Vec<_>, Vec<_>) = commands
         .into_iter()
-        .partition(|(_, _, kind)| *kind == Fixture::Empty);
+        .partition(|(_, _, kind, _)| *kind == Fixture::Empty);
     assert!(!first.is_empty() && !later.is_empty());
     // Each command that writes the first tree, then every other over the tree it wrote.
-    for (slug, args, kind) in first {
+    for (slug, args, kind, _) in first {
         let scratch = fixture(kind);
         assert_exit(slug, &run(&scratch, kind, args), 0);
         let key = document_key(&scratch.0);
-        for (next, args, kind) in &later {
+        for (next, args, kind, _) in &later {
             assert_exit(next, &run(&scratch, *kind, args), 0);
             assert_eq!(document_key(&scratch.0), key, "{next} after {slug}");
         }
     }
     // Each other command over its own fixture.
-    for (slug, args, kind) in later {
+    for (slug, args, kind, _) in later {
         let scratch = fixture(kind);
         let key = document_key(&scratch.0);
         assert_exit(slug, &run(&scratch, kind, args), 0);

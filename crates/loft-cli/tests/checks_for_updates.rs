@@ -28,7 +28,7 @@ fn asked(kind: Fixture, args: &[&str]) -> usize {
 fn a_command_asks_github_once_exactly_when_its_feature_lists_checks_for_updates() {
     let tagged = tagged_commands(TAG);
     assert!(!tagged.is_empty(), "no Feature lists `{TAG}`");
-    for (slug, args, kind) in COMMANDS {
+    for (slug, args, kind, _) in COMMANDS {
         let expected = usize::from(tagged.iter().any(|(name, ..)| *name == slug));
         assert_eq!(asked(kind, args), expected, "{slug}");
     }

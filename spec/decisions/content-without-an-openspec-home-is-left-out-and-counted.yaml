@@ -1,0 +1,48 @@
+key: 01a1403a-512c-740c-a471-20e3b06af76b
+slug: content-without-an-openspec-home-is-left-out-and-counted
+title: "Content without an OpenSpec home is left out and counted"
+context: "Components, Constraints, Quality Attributes, Decisions, edges and tags have no place in an OpenSpec main spec."
+state:
+  kind: accepted
+  selectedOption: 01a1403a-512d-76c8-b11e-f0e442f3eccc
+  outcome: "The OpenSpec projection leaves them out and reports the number of each kind, and the render map ties each rendered requirement and scenario to its node."
+drivers:
+  - key: 01a1403a-512d-76c8-b11e-f0e2b01c8676
+    kind: local
+    label: "Specs agents can read"
+    statement: "A rendered spec holds what OpenSpec's grammar defines."
+  - key: 01a1403a-512d-76c8-b11e-f0e30c405869
+    kind: local
+    label: "Nothing lost silently"
+    statement: "The projection says what it does not show."
+options:
+  - key: 01a1403a-512d-76c8-b11e-f0e442f3eccc
+    title: "Leave out and count"
+    description: "Leave the content out and report how much of each kind there is."
+  - key: 01a1403a-512d-76c8-b11e-f0e5f3e7dce3
+    title: "Extra sections"
+    description: "Write the content as level-2 sections OpenSpec does not read."
+assessments:
+  - option: 01a1403a-512d-76c8-b11e-f0e442f3eccc
+    driver: 01a1403a-512d-76c8-b11e-f0e2b01c8676
+    rating: supports
+    rationale: "the specs hold only OpenSpec's sections"
+  - option: 01a1403a-512d-76c8-b11e-f0e442f3eccc
+    driver: 01a1403a-512d-76c8-b11e-f0e30c405869
+    rating: supports
+    rationale: "each kind left out is reported"
+  - option: 01a1403a-512d-76c8-b11e-f0e5f3e7dce3
+    driver: 01a1403a-512d-76c8-b11e-f0e2b01c8676
+    rating: conflicts
+    rationale: "the specs carry sections OpenSpec does not define"
+  - option: 01a1403a-512d-76c8-b11e-f0e5f3e7dce3
+    driver: 01a1403a-512d-76c8-b11e-f0e30c405869
+    rating: supports
+    rationale: "nothing is left out"
+consequences:
+  - key: 01a1403a-512d-76c8-b11e-f0e60fca979b
+    kind: cost
+    statement: "A team that works only in OpenSpec does not see the architecture or the decisions."
+subjects:
+  - role: outcome
+    node: 01a1402e-d25e-7540-9283-18358f42d44e

@@ -37,7 +37,7 @@ fn refused(output: &Output) -> bool {
 fn each_tagged_command_refuses_outside_a_repository_and_writes_nothing() {
     let tagged = tagged(TAG);
     assert!(!tagged.is_empty(), "no Feature lists `{TAG}`");
-    for (slug, args, kind) in COMMANDS
+    for (slug, args, kind, _) in COMMANDS
         .into_iter()
         .filter(|(slug, ..)| tagged.contains(&(*slug).to_owned()))
     {
@@ -52,7 +52,7 @@ fn each_tagged_command_refuses_outside_a_repository_and_writes_nothing() {
 #[test]
 fn each_command_that_refuses_outside_a_repository_lists_needs_repository() {
     let tagged = tagged(TAG);
-    for (slug, args, kind) in COMMANDS {
+    for (slug, args, kind, _) in COMMANDS {
         let output = outside(&fixture(kind), args_of(slug, args));
         assert_eq!(
             refused(&output),

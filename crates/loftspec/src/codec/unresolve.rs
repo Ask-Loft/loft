@@ -2,6 +2,7 @@
 //! each edge in its source's record (RQ-168), and no derived value anywhere (RQ-29).
 
 use super::schema::field;
+use crate::ext::Ext;
 use std::collections::BTreeMap;
 
 use super::files::{Content, Role, Tree};
@@ -242,6 +243,7 @@ impl Edges {
             Val::List(details.tags.iter().map(Val::scalar).collect()),
         );
         self.mentions(record, id.map(ElementId::Node));
+        set_ext(record, &details.ext);
         record.set(
             "sections",
             records(details.sections.iter().map(|section| self.section(section))),
@@ -265,6 +267,7 @@ impl Edges {
         record.set_text(field::NAME, section.name.as_str());
         record.set_text(field::BODY, section.body.as_str());
         self.mentions(&mut record, id.map(ElementId::Node));
+        set_ext(&mut record, &section.ext);
         record.set(
             "sections",
             records(section.sections.iter().map(|child| self.section(child))),
@@ -438,5 +441,18 @@ impl Edges {
         record.set(field::SUBJECTS, records(subjects));
         self.mentions(&mut record, Some(decision.id.into()));
         record
+    }
+}
+
+/// Sets a record's `ext`, which an empty map leaves out.
+fn set_ext(record: &mut Rec, ext: &Ext) {
+    if !ext.is_empty() {
+        record.set(
+            field::EXT,
+            Val::Ext {
+                value: ext.clone(),
+                position: record.position,
+            },
+        );
     }
 }

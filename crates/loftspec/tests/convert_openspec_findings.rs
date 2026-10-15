@@ -57,7 +57,12 @@ fn a_faithful_project_has_no_finding_but_the_count_of_rewritten_statements() {
 #[test]
 fn every_rule_has_its_own_code() {
     let codes: Vec<&str> = Rule::ALL.iter().map(|rule| rule.as_str()).collect();
-    let expected: Vec<String> = (1..=14).map(|n| format!("OS-{n:03}")).collect();
+    // OS-009 reported metadata kept in a body; metadata now goes to `ext`, and the code is
+    // retired, never reused.
+    let expected: Vec<String> = (1..=15)
+        .filter(|n| *n != 9)
+        .map(|n| format!("OS-{n:03}"))
+        .collect();
     assert_eq!(codes, expected);
 }
 
@@ -172,17 +177,6 @@ fn the_number_of_rewritten_statements_is_reported_once() {
 }
 
 #[test]
-fn a_metadata_line_is_reported_at_its_line_with_the_requirements_key() {
-    let text = "## Requirements\n\n### Requirement: R\n**ID**: R-1\nThe system SHALL r.\n";
-    let conversion = converted(&one(text));
-    let requirement = key(&conversion, "requirement", "R");
-    assert_eq!(
-        site(&conversion, Rule::Metadata),
-        (Some(file()), Some(4), Some(requirement))
-    );
-}
-
-#[test]
 fn a_second_requirement_of_one_name_is_reported() {
     let text = "## Requirements\n\n### Requirement: Twin\nThe system SHALL a.\n\n### Requirement: Twin\nThe system SHALL b.\n";
     let conversion = converted(&one(text));
@@ -239,4 +233,47 @@ fn the_context_and_store_of_config_yaml_are_reported_at_their_lines() {
         ..one(AUTH)
     };
     assert_eq!(of(&converted(&plain), Rule::ConfigContext), []);
+}
+
+#[test]
+fn a_metadata_line_inside_the_statements_paragraph_is_reported_at_its_line() {
+    let spec = "## Requirements\n\n### Requirement: R\nThe system SHALL log.\n**ID**: R-1\ncontinued line.\n\n#### Scenario: S\n- **THEN** logged\n";
+    let conversion = converted(&one(spec));
+    let found: Vec<_> = conversion
+        .findings
+        .iter()
+        .filter(|finding| finding.rule == Rule::MetadataInParagraph)
+        .collect();
+    assert_eq!(found.len(), 1);
+    assert_eq!(found[0].line, Some(5));
+    assert!(found[0].key.is_some());
+    let requirement =
+        &conversion.document.products[0].feature_groups[0].features[0].requirements[0];
+    assert_eq!(
+        requirement.statement.render(),
+        "The system shall log. continued line."
+    );
+    let apart =
+        "## Requirements\n\n### Requirement: R\nThe system SHALL log.\n**ID**: R-1\n\nMore.\n";
+    let quiet = converted(&one(apart));
+    assert!(
+        quiet
+            .findings
+            .iter()
+            .all(|finding| finding.rule != Rule::MetadataInParagraph)
+    );
+}
+
+#[test]
+fn a_text_of_metadata_lines_alone_is_read_for_shall_or_must() {
+    let rule = |text: &str| {
+        let spec = format!("## Requirements\n\n### Requirement: R\n{text}\n");
+        converted(&one(&spec))
+            .findings
+            .iter()
+            .filter(|finding| finding.rule == Rule::NoModal)
+            .count()
+    };
+    assert_eq!(rule("**Rule**: The system SHALL log."), 0);
+    assert_eq!(rule("**Rule**: The system logs."), 1);
 }

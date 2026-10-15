@@ -12,7 +12,7 @@ requirements:
       shall: "write each Product record with the Product fields in the Format's order."
     criteria:
       - key: 75a35a7c-a76b-4e23-9e97-877edcedfa8d
-        name: "A Product record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `featureGroups`, `constraints` and `sections`."
+        name: "A Product record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `ext`, `featureGroups`, `constraints` and `sections`."
       - key: d655ff82-d634-4657-a7fc-be907a1471a0
         name: "A Product record requires `key`, `slug` and `name`."
   - key: 25012989-b874-4fee-8e0a-dd47c3078dc4
@@ -22,7 +22,7 @@ requirements:
       shall: "write each Feature Group record with the Feature Group fields in the Format's order."
     criteria:
       - key: a3c78911-ca55-4b53-a93f-c37db333a56f
-        name: "A Feature Group record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `features`, `constraints` and `sections`."
+        name: "A Feature Group record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `ext`, `features`, `constraints` and `sections`."
       - key: 37207046-b14f-4170-b6b8-72cb2be25202
         name: "A Feature Group record requires `key`, `slug` and `name`."
   - key: 331154e5-37e4-434b-bc13-3ec0a4030502
@@ -32,7 +32,7 @@ requirements:
       shall: "write each Feature record with the Feature fields in the Format's order."
     criteria:
       - key: c491ef69-943a-4236-b477-f5421254b040
-        name: "A Feature record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `realizes`, `mentions`, `requirements`, `qualityAttributes` and `sections`."
+        name: "A Feature record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `realizes`, `mentions`, `ext`, `requirements`, `qualityAttributes` and `sections`."
       - key: 1f80c0ab-6f0d-48cb-b161-404a25f6dbb3
         name: "A Feature record requires `key`, `slug` and `name`."
   - key: 2fc3126f-2add-4a90-b540-e668bf7e9be4
@@ -42,7 +42,7 @@ requirements:
       shall: "write each Requirement record with the Requirement fields in the Format's order."
     criteria:
       - key: e7dc77a2-7271-4771-9a81-9c15d313dcbd
-        name: "A Requirement record's fields are, in order, `key`, `statement`, `body`, `tags`, `mentions`, `criteria` and `sections`."
+        name: "A Requirement record's fields are, in order, `key`, `statement`, `body`, `tags`, `mentions`, `ext`, `criteria` and `sections`."
       - key: 87666050-867f-4485-811c-1a2da466a5ea
         name: "A Requirement record requires `key` and `statement`."
   - key: b10a38cc-09f6-4555-bbe2-df97df1f1497
@@ -62,7 +62,7 @@ requirements:
       shall: "write each criterion record with the criterion fields in the Format's order."
     criteria:
       - key: 0ef5f3ea-6b77-441e-972b-33585444e715
-        name: "A criterion record's fields are, in order, `key`, `name`, `body`, `tags`, `mentions` and `sections`."
+        name: "A criterion record's fields are, in order, `key`, `name`, `body`, `tags`, `mentions`, `ext` and `sections`."
       - key: 21357707-509c-47c7-aa74-7d4123699107
         name: "A criterion record requires `key` and `name`."
   - key: a60fa7b3-57f9-4a4d-8f1f-bbdd7b05686e
@@ -72,7 +72,7 @@ requirements:
       shall: "write each Component record with the Component fields in the Format's order."
     criteria:
       - key: 8ec0e58b-a8c9-49ef-b308-8a3c272d42d6
-        name: "A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `boundary`, `scopedTo`, `mentions`, `components`, `constraints`, `qualityAttributes` and `sections`."
+        name: "A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `boundary`, `scopedTo`, `mentions`, `ext`, `components`, `constraints`, `qualityAttributes` and `sections`."
       - key: 703326e4-5939-4d27-a9f2-760234c35deb
         name: "A Component record requires `key` and `name`."
       - key: 0e4a5ccf-6223-4c83-ad2c-1d930ae21b5b
@@ -86,7 +86,7 @@ requirements:
       shall: "write each Constraint record with the Constraint fields in the Format's order."
     criteria:
       - key: 20508d40-d75a-445c-a759-9bfaecbd0eee
-        name: "A Constraint record's fields are, in order, `key`, `name`, `body`, `tags`, `constraintBinding`, `conservationKind`, `verificationFate`, `mentions` and `sections`."
+        name: "A Constraint record's fields are, in order, `key`, `name`, `body`, `tags`, `constraintBinding`, `conservationKind`, `verificationFate`, `mentions`, `ext` and `sections`."
       - key: 0382db93-36b8-4305-8895-1dbf16566010
         name: "A Constraint record requires `key` and `name`."
       - key: 255a177e-61e1-4f34-8893-1d5ebf00ff4f
@@ -98,7 +98,7 @@ requirements:
       shall: "write each Quality Attribute record with the Quality Attribute fields in the Format's order."
     criteria:
       - key: a4e50cd6-4f62-4646-b50d-df5545e25c96
-        name: "A Quality Attribute record's fields are, in order, `key`, `name`, `body`, `tags`, `qaKind`, `qualityTarget`, `verificationFate`, `mentions` and `sections`."
+        name: "A Quality Attribute record's fields are, in order, `key`, `name`, `body`, `tags`, `qaKind`, `qualityTarget`, `verificationFate`, `mentions`, `ext` and `sections`."
       - key: bebadb74-d7b5-4405-b03d-b1ca56f8b8aa
         name: "A Quality Attribute record requires `key`, `name`, `qaKind` and `qualityTarget`."
       - key: 89c0f36d-8b7f-4bf4-8627-3be18a05346b
@@ -112,7 +112,7 @@ requirements:
       shall: "write each Section record with the Section fields in the Format's order."
     criteria:
       - key: 11c3ab62-c7fc-4250-b5ef-d3060af1a457
-        name: "A Section record's fields are, in order, `key`, `name`, `body`, `mentions` and `sections`."
+        name: "A Section record's fields are, in order, `key`, `name`, `body`, `mentions`, `ext` and `sections`."
       - key: 305f223f-f6f4-4ef5-8217-9a6dfa052902
         name: "A Section record requires `key`, `name` and `body`."
   - key: e0966b97-6a03-4609-88b0-36d057fb1ab8

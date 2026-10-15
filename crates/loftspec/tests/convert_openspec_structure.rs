@@ -2,8 +2,9 @@
 //! segment, a Feature per capability with its name, body and Sections, and Requirements,
 //! Criteria and Sections in source order.
 
-use crate::common::openspec::{AUTH, converted, features, one, project, requirements};
+use crate::common::openspec::{AUTH, converted, features, one, openspec, project, requirements};
 use loftspec::convert::openspec::Project;
+use loftspec::ext::ExtValue;
 use loftspec::tree::Section;
 
 fn names(sections: &[Section]) -> Vec<&str> {
@@ -112,6 +113,38 @@ fn the_purpose_is_the_body_verbatim_and_the_archive_placeholder_leaves_none() {
         .map(|feature| feature.details.body.as_deref())
         .collect();
     assert_eq!(bodies, [Some("First line.\n\n  Indented second."), None]);
+    let purposes: Vec<Option<&ExtValue>> = features(&conversion)
+        .iter()
+        .map(|feature| openspec(&feature.details.ext, "purpose"))
+        .collect();
+    let kept = "TBD - created by archiving change add-auth. Update Purpose after archive.";
+    assert_eq!(purposes, [None, Some(&ExtValue::Text(kept.to_owned()))]);
+}
+
+#[test]
+fn each_feature_keeps_its_capability_id_and_each_requirement_its_name_in_ext() {
+    let conversion = converted(&project(&[
+        ("billing/invoices/spec.md", AUTH),
+        ("auth/spec.md", AUTH),
+    ]));
+    let text = |value: Option<&ExtValue>| value.and_then(ExtValue::text).map(str::to_owned);
+    let mut capabilities: Vec<Option<String>> = features(&conversion)
+        .iter()
+        .map(|feature| text(openspec(&feature.details.ext, "capability")))
+        .collect();
+    capabilities.sort();
+    assert_eq!(
+        capabilities,
+        [Some("auth".to_owned()), Some("billing/invoices".to_owned())]
+    );
+    let names: Vec<Option<String>> = requirements(&conversion)
+        .iter()
+        .map(|requirement| text(openspec(&requirement.details.ext, "name")))
+        .collect();
+    assert_eq!(
+        names,
+        [Some("Sign in".to_owned()), Some("Sign out".to_owned())]
+    );
 }
 
 #[test]
@@ -223,4 +256,83 @@ Written for reviewers.
         requirement.details.sections[0].body,
         "Written for reviewers."
     );
+}
+
+#[test]
+fn a_purpose_opening_with_a_tbd_or_todo_marker_is_a_placeholder_kept_in_ext() {
+    for placeholder in [
+        "TBD - created by syncing change add-auth. Update Purpose after sync.",
+        "TODO: say what this is for",
+        "tbd.",
+    ] {
+        let conversion = converted(&one(&format!("## Purpose\n{placeholder}\n")));
+        let feature = features(&conversion)[0];
+        assert_eq!(feature.details.body, None, "{placeholder}");
+        let kept = openspec(&feature.details.ext, "purpose");
+        assert_eq!(kept, Some(&ExtValue::Text(placeholder.to_owned())));
+    }
+    let written = "TBDs are tracked in the backlog of the team.";
+    let conversion = converted(&one(&format!("## Purpose\n{written}\n")));
+    assert_eq!(
+        features(&conversion)[0].details.body.as_deref(),
+        Some(written)
+    );
+}
+
+#[test]
+fn the_introductions_headings_become_sections_nested_by_level() {
+    let text = "# T Specification
+
+Read this first.
+
+### Requirement: Early
+The system SHALL start.
+
+#### Scenario: Started
+- **THEN** it runs
+
+## Purpose
+The purpose.
+";
+    let conversion = converted(&one(text));
+    let sections = &features(&conversion)[0].details.sections;
+    assert_eq!(names(sections), ["Introduction"]);
+    assert_eq!(sections[0].body, "Read this first.");
+    assert_eq!(names(&sections[0].sections), ["Requirement: Early"]);
+    let early = &sections[0].sections[0];
+    assert_eq!(early.body, "The system SHALL start.");
+    assert_eq!(names(&early.sections), ["Scenario: Started"]);
+    assert_eq!(early.sections[0].body, "- **THEN** it runs");
+}
+
+#[test]
+fn a_requirement_childs_own_headings_become_its_sections_nested_by_level() {
+    let text = "## Requirements
+
+### Requirement: Reasoned
+The system SHALL keep its reasons.
+
+#### Notes
+Written for reviewers.
+
+##### Detail
+More.
+";
+    let conversion = converted(&one(text));
+    let notes = &requirements(&conversion)[0].details.sections[0];
+    assert_eq!(notes.body, "Written for reviewers.");
+    assert_eq!(names(&notes.sections), ["Detail"]);
+    assert_eq!(notes.sections[0].body, "More.");
+}
+
+#[test]
+fn a_title_after_text_nests_in_the_introduction_as_its_section() {
+    let text = "Lead text.\n\n# T Specification\n\nAfter the title.\n\n## Purpose\nThe purpose.\n";
+    let conversion = converted(&one(text));
+    let feature = features(&conversion)[0];
+    assert_eq!(feature.name, "T");
+    let introduction = &feature.details.sections[0];
+    assert_eq!(introduction.body, "Lead text.");
+    assert_eq!(names(&introduction.sections), ["T Specification"]);
+    assert_eq!(introduction.sections[0].body, "After the title.");
 }

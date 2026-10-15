@@ -89,9 +89,10 @@ needs.
 | `loft init [--no-skill]` | Creates an empty document in the current directory, and the agent skill beside it |
 | `loft fmt [--check]` | Rewrites `spec/` in canonical layout, mints missing keys, turns references written by name into keys and drops the label bindings of deleted nodes, or reports drift |
 | `loft check [--fail-on <severity>]` | Reads, validates and lints `spec/` |
-| `loft render` | Writes the Markdown projection and the canonical JSON export |
+| `loft render [--openspec <dir> [--force]]` | Writes the Markdown projection and the canonical JSON export, or the specification as OpenSpec main specs |
 | `loft find <query>` | Prints the key, label, kind, file and name of each node or decision a label, slug, key or name identifies |
 | `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
+| `loft import openspec [<dir>]` | Converts the main specs of an OpenSpec project into `spec/` |
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |

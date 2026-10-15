@@ -28,7 +28,7 @@ fn request(output: &Output) -> Option<String> {
 fn each_tagged_command_asks_for_the_skill_directories_it_wrote_to_be_committed() {
     let commands = tagged_commands(TAG);
     assert!(!commands.is_empty(), "no Feature lists `{TAG}`");
-    for (slug, args, kind) in commands {
+    for (slug, args, kind, _) in commands {
         let scratch = fixture(kind);
         let (output, after) = scratch.loft_in(args, &GitScenario::clean_on("main"));
         assert_eq!(output.status.code(), Some(0), "{slug}: {}", stderr(&output));
@@ -43,7 +43,7 @@ fn each_tagged_command_asks_for_the_skill_directories_it_wrote_to_be_committed()
 
 #[test]
 fn a_tagged_command_s_json_document_carries_no_request() {
-    for (slug, args, kind) in tagged_commands(TAG) {
+    for (slug, args, kind, _) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         let output = scratch.loft(&[args, &["--format", "json"][..]].concat());
         assert_eq!(output.status.code(), Some(0), "{slug}: {}", stderr(&output));
@@ -65,7 +65,7 @@ fn init_with_no_skill_asks_for_no_commit() {
 #[test]
 fn each_command_that_writes_a_skill_directory_lists_writes_skill() {
     let tagged = tagged(TAG);
-    for (slug, args, kind) in COMMANDS {
+    for (slug, args, kind, _) in COMMANDS {
         let scratch = fixture(kind);
         scratch.loft(args);
         let writes = SKILL_DIRECTORIES
@@ -91,7 +91,7 @@ fn commits(scratch: &Scratch) -> [Vec<u8>; 2] {
 
 #[test]
 fn each_tagged_command_commits_nothing_under_real_git() {
-    for (slug, args, kind) in tagged_commands(TAG) {
+    for (slug, args, kind, _) in tagged_commands(TAG) {
         let scratch = fixture(kind);
         git(&scratch.0, &["init", "--quiet", "-b", "main"]);
         git(

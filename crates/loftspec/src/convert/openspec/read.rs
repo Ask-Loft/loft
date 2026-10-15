@@ -41,8 +41,9 @@ pub(super) struct Requirement {
     pub children: Vec<Child>,
 }
 
-/// A level-4 child of a requirement, as a part without children; `scenario` holds the
-/// scenario's name when it is one.
+/// A level-4 child of a requirement; `scenario` holds the scenario's name when it is one. A
+/// scenario's part holds all its text; any other child's part holds its text up to its first
+/// heading and the headings nested in it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct Child {
     pub scenario: Option<String>,
@@ -111,9 +112,9 @@ impl Source {
             .map(|position| start + position + 1)
     }
 
-    /// Each line of `range` with its 0-based index and whether fenced code holds it.
-    pub fn lines(&self, range: Range<usize>) -> impl Iterator<Item = (usize, &str, bool)> {
-        range.map(|index| (index, self.lines[index].as_str(), self.fenced[index]))
+    /// Each line of `range` and whether fenced code holds it.
+    pub fn lines(&self, range: Range<usize>) -> impl Iterator<Item = (&str, bool)> {
+        range.map(|index| (self.lines[index].as_str(), self.fenced[index]))
     }
 
     fn headings(&self) -> Vec<Heading> {
@@ -145,11 +146,18 @@ impl Source {
             .filter(|title| self.first_line(self.start..title.index).is_none())
             .map_or(self.start, |title| title.index + 1);
         let lead_end = top.first().map_or(end, |heading| heading.index);
+        // A title after text lies in the introduction and nests in it like any other heading.
+        let inner: Vec<Heading> = headings
+            .iter()
+            .filter(|heading| (lead..lead_end).contains(&heading.index))
+            .cloned()
+            .collect();
+        let text_end = inner.first().map_or(lead_end, |first| first.index);
         spec.introduction = self.first_line(lead..lead_end).map(|line| Part {
             name: "Introduction".to_owned(),
             line,
-            text: lead..lead_end,
-            children: Vec::new(),
+            text: lead..text_end,
+            children: tree(&inner, lead_end),
         });
         let mut requirements_seen = false;
         for (position, heading) in top.iter().enumerate() {
@@ -259,10 +267,15 @@ fn requirement(name: String, heading: &Heading, nested: &[Heading], end: usize) 
         .enumerate()
         .map(|(position, child)| {
             let child_end = fours.get(position + 1).map_or(end, |next| next.index);
-            Child {
-                scenario: scenario_name(&child.text),
-                part: part(child, child.index + 1..child_end, Vec::new()),
-            }
+            let scenario = scenario_name(&child.text);
+            let inner = between(nested, child.index, child_end);
+            let part = match (&scenario, inner.first()) {
+                (None, Some(first)) => {
+                    part(child, child.index + 1..first.index, tree(inner, child_end))
+                }
+                _ => part(child, child.index + 1..child_end, Vec::new()),
+            };
+            Child { scenario, part }
         })
         .collect();
     Requirement {
@@ -276,7 +289,7 @@ fn requirement(name: String, heading: &Heading, nested: &[Heading], end: usize) 
 /// Which lines fenced code holds, its opening and closing lines included: a fence opens with a
 /// run of three or more backticks or tildes and closes with a run of the same character at
 /// least as long and nothing else; a fence left open runs to the end.
-fn fence_mask(lines: &[String]) -> Vec<bool> {
+pub(crate) fn fence_mask(lines: &[String]) -> Vec<bool> {
     let mut mask = vec![false; lines.len()];
     let mut open: Option<(char, usize)> = None;
     for (index, line) in lines.iter().enumerate() {
@@ -313,22 +326,21 @@ fn fence_run(line: &str) -> Option<(char, usize, bool)> {
     })
 }
 
-/// An ATX heading's level and text: one to six `#` at the start of the line, whitespace, and
-/// text with a closing run of `#` after a space or tab removed.
-fn heading(line: &str) -> Option<(usize, String)> {
+/// An ATX heading's level: one to six `#` at the start of the line followed by whitespace.
+pub(crate) fn heading_level(line: &str) -> Option<usize> {
     let level = line.chars().take_while(|c| *c == '#').count();
-    if !(1..=6).contains(&level) {
-        return None;
-    }
-    let rest = &line[level..];
-    if !rest.starts_with(char::is_whitespace) {
-        return None;
-    }
-    let text = without_closing_run(rest).trim().to_owned();
+    ((1..=6).contains(&level) && line[level..].starts_with(char::is_whitespace)).then_some(level)
+}
+
+/// An ATX heading's level and text: its [`heading_level`], and text with a closing run of `#`
+/// after a space or tab removed.
+fn heading(line: &str) -> Option<(usize, String)> {
+    let level = heading_level(line)?;
+    let text = without_closing_run(&line[level..]).trim().to_owned();
     (!text.is_empty()).then_some((level, text))
 }
 
-fn without_closing_run(text: &str) -> &str {
+pub(crate) fn without_closing_run(text: &str) -> &str {
     let trimmed = text.trim_end_matches([' ', '\t']);
     let without = trimmed.trim_end_matches('#');
     if without.len() < trimmed.len() && without.ends_with([' ', '\t']) {

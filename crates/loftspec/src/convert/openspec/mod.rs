@@ -1,18 +1,23 @@
 //! Conversion from the main specs of an `OpenSpec` project, read as `OpenSpec` 1.14's archive
 //! command reads them, into one Product, with a provenance sidecar and findings.
 
+pub(crate) mod ext;
 mod findings;
 mod keys;
-mod read;
+pub mod layout;
+pub(crate) mod placeholder;
+pub(crate) mod read;
 pub mod sidecar;
-mod statement;
+pub(crate) mod statement;
 mod tree;
 
 use std::fmt::Write as _;
 
 pub use self::findings::{Finding, Rule};
+use self::layout::{CONFIG, SPEC_FILE, SPECS};
 pub use self::sidecar::{OpenspecSidecar, Provenance, SIDECAR, SourceFile};
 use self::tree::{Build, Capability};
+use super::SidecarFile;
 use crate::document::Document;
 use crate::ids::DocumentId;
 
@@ -39,6 +44,17 @@ pub struct Conversion {
     pub document: Document,
     pub sidecar: OpenspecSidecar,
     pub findings: Vec<Finding>,
+}
+
+impl Conversion {
+    /// The provenance sidecar, named, as the store writes it beside `spec/`.
+    #[must_use]
+    pub fn sidecar_file(&self) -> SidecarFile {
+        SidecarFile {
+            name: SIDECAR,
+            bytes: self.sidecar.to_json().into_bytes(),
+        }
+    }
 }
 
 /// A project the converter refuses.
@@ -96,11 +112,11 @@ fn capabilities(project: &Project) -> Vec<Capability<'_>> {
         .specs
         .iter()
         .filter_map(|(path, text)| {
-            let id = path.strip_suffix("/spec.md")?;
+            let id = path.strip_suffix(SPEC_FILE)?.strip_suffix('/')?;
             let hidden = id.split('/').any(|segment| segment.starts_with('.'));
             (!hidden && !id.is_empty()).then(|| Capability {
                 id: id.to_owned(),
-                file: format!("specs/{path}"),
+                file: format!("{SPECS}/{path}"),
                 text,
             })
         })
@@ -133,7 +149,7 @@ fn project_findings(project: &Project) -> Vec<Finding> {
             } else {
                 continue;
             };
-            findings.push(Finding::at(rule, "config.yaml".to_owned(), index + 1, None));
+            findings.push(Finding::at(rule, CONFIG.to_owned(), index + 1, None));
         }
     }
     findings

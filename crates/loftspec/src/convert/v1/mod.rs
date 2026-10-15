@@ -4,6 +4,9 @@ pub mod export;
 mod links;
 mod prose;
 pub mod sidecar;
+
+/// The file beside `spec/` that keeps the v1 facts the content view excludes (AC-508, AC-703).
+pub const SIDECAR: &str = "v1-sidecar.json";
 mod tag_names;
 mod tree;
 

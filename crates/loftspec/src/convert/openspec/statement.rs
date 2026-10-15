@@ -11,22 +11,31 @@ use crate::statement::Statement;
 pub(super) struct Split {
     pub statement: Statement,
     pub body: Option<String>,
-    /// Whether the modal word was written as `shall` to give the statement slots.
-    pub rewritten: bool,
-    /// The 1-based line of each metadata line.
-    pub metadata: Vec<usize>,
-    /// Whether the text, or the name when there is no text, holds `SHALL` or `MUST`.
+    /// The modal word, `SHALL` or `MUST`, written as `shall` to give the statement slots.
+    pub rewritten: Option<&'static str>,
+    /// Each metadata line's label and value, in source order.
+    pub metadata: Vec<(String, String)>,
+    /// Whether the text holds `SHALL` or `MUST`; when it holds nothing but metadata lines,
+    /// whether they or the name do.
     pub modal: bool,
+    /// The 1-based line of the first metadata line inside the statement's paragraph, whose
+    /// lines around it were joined.
+    pub joined: Option<usize>,
 }
 
 /// Splits the text of a requirement named `name`.
 pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
-    let mut metadata: Vec<(usize, &str)> = Vec::new();
+    let mut metadata = Vec::new();
     let mut rest = Vec::new();
     let mut modal = false;
-    for (index, line, fenced) in source.lines(text) {
-        if !fenced && is_metadata(line.trim()) {
-            metadata.push((index + 1, line.trim()));
+    let mut metadata_modal = false;
+    // Each metadata line's 1-based line and how many other lines came before it.
+    let mut placed = Vec::new();
+    for (index, (line, fenced)) in text.clone().zip(source.lines(text)) {
+        if let Some((label, value)) = (!fenced).then(|| metadata_entry(line)).flatten() {
+            metadata.push((label.to_owned(), value.to_owned()));
+            metadata_modal |= first_modal(line).is_some();
+            placed.push((index + 1, rest.len()));
             continue;
         }
         modal |= !fenced && first_modal(line).is_some();
@@ -45,36 +54,38 @@ pub(super) fn split(source: &Source, text: Range<usize>, name: &str) -> Split {
             .join(" ");
         (Some(sentence), &rest[first + length..])
     });
+    let joined = first.and_then(|first| {
+        let length = rest[first..]
+            .iter()
+            .position(|line| line.trim().is_empty())
+            .unwrap_or(rest.len() - first);
+        placed
+            .iter()
+            .find(|(_, before)| (first + 1..first + length).contains(before))
+            .map(|(line, _)| *line)
+    });
     let sentence = sentence.unwrap_or_else(|| {
-        modal = first_modal(name).is_some();
+        modal = metadata_modal || first_modal(name).is_some();
         name.to_owned()
     });
     let (statement, rewritten) = statement(&sentence);
-    let body = [
-        (!metadata.is_empty()).then(|| {
-            let lines: Vec<&str> = metadata.iter().map(|(_, line)| *line).collect();
-            lines.join("\n")
-        }),
-        verbatim(after),
-    ]
-    .into_iter()
-    .flatten()
-    .collect::<Vec<_>>();
     Split {
         statement,
-        body: (!body.is_empty()).then(|| body.join("\n\n")),
+        body: verbatim(after),
         rewritten,
-        metadata: metadata.iter().map(|(line, _)| *line).collect(),
+        metadata,
         modal,
+        joined,
     }
 }
 
 /// The statement a sentence gives: slots when it renders back from them, or when it does once
-/// its first `SHALL` or `MUST` is written as `shall`; otherwise the sentence as text.
-pub(super) fn statement(sentence: &str) -> (Statement, bool) {
+/// its first `SHALL` or `MUST` is written as `shall`, with the word written; otherwise the
+/// sentence as text.
+pub(super) fn statement(sentence: &str) -> (Statement, Option<&'static str>) {
     let verbatim = Statement::parse(sentence);
     if matches!(verbatim, Statement::Form(_)) {
-        return (verbatim, false);
+        return (verbatim, None);
     }
     if let Some(range) = first_modal(sentence) {
         let rewritten = format!(
@@ -84,14 +95,19 @@ pub(super) fn statement(sentence: &str) -> (Statement, bool) {
         );
         let parsed = Statement::parse(&rewritten);
         if matches!(parsed, Statement::Form(_)) {
-            return (parsed, true);
+            let word = if &sentence[range] == "MUST" {
+                "MUST"
+            } else {
+                "SHALL"
+            };
+            return (parsed, Some(word));
         }
     }
-    (Statement::Text(sentence.to_owned()), false)
+    (Statement::Text(sentence.to_owned()), None)
 }
 
 /// The byte range of the first `SHALL` or `MUST` that stands as a word of its own.
-fn first_modal(text: &str) -> Option<Range<usize>> {
+pub(crate) fn first_modal(text: &str) -> Option<Range<usize>> {
     ["SHALL", "MUST"]
         .into_iter()
         .filter_map(|word| {
@@ -108,11 +124,10 @@ fn stands_alone(text: &str, range: &Range<usize>) -> bool {
         && !text[range.end..].chars().next().is_some_and(word)
 }
 
-/// Whether a trimmed line begins with a bold label followed by a colon, such as `**ID**:`.
-fn is_metadata(line: &str) -> bool {
-    line.strip_prefix("**")
-        .and_then(|rest| rest.split_once("**"))
-        .is_some_and(|(label, after)| {
-            !label.is_empty() && !label.contains('*') && after.starts_with(':')
-        })
+/// The label and value of a metadata line: one that, trimmed, begins with a bold label followed
+/// by a colon, such as `**ID**: AUTH-1`. The value is the text after the colon, trimmed.
+pub(crate) fn metadata_entry(line: &str) -> Option<(&str, &str)> {
+    let (label, after) = line.trim().strip_prefix("**")?.split_once("**")?;
+    let value = after.strip_prefix(':')?;
+    (!label.is_empty() && !label.contains('*')).then(|| (label, value.trim()))
 }

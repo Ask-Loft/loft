@@ -1,0 +1,59 @@
+key: 01a1403a-512d-76c8-b11e-f0fe98f5219e
+slug: the-openspec-projection-reports-what-openspec-rejects
+title: "The OpenSpec projection reports what OpenSpec would reject, and adds no words"
+context: "A tree can hold what OpenSpec's validator rejects or warns about: a statement without `SHALL` or `MUST`, a Requirement without scenarios, a Feature without a body or with a short one, a long requirement text. The renderer can refuse, fill the gap, or render and report."
+state:
+  kind: accepted
+  selectedOption: 01a1403a-512d-76c8-b11e-f101c331fa0d
+  outcome: "The renderer writes what the tree holds and reports each predicted rejection as an info finding; it adds no modal word, no Purpose and no scenario of its own, apart from a criterion's name as the outcome of a scenario without a body."
+drivers:
+  - key: 01a1403a-512d-76c8-b11e-f0ffd5bda2e3
+    kind: local
+    label: "The author's words"
+    statement: "The projection states only what the tree states."
+  - key: 01a1403a-512d-76c8-b11e-f100614ba4d9
+    kind: local
+    label: "A render always completes"
+    statement: "One gap does not keep the rest of the specification from being rendered."
+options:
+  - key: 01a1403a-512d-76c8-b11e-f101c331fa0d
+    title: "Render and report"
+    description: "Write the projection as the tree gives it and report each predicted rejection."
+  - key: 01a1403a-512d-76c8-b11e-f102e65467ec
+    title: "Refuse"
+    description: "Exit with an error while any predicted rejection remains."
+  - key: 01a1403a-512d-76c8-b11e-f103dac28f05
+    title: "Fill the gaps"
+    description: "Insert a modal word, a Purpose or a scenario where OpenSpec needs one."
+assessments:
+  - option: 01a1403a-512d-76c8-b11e-f101c331fa0d
+    driver: 01a1403a-512d-76c8-b11e-f0ffd5bda2e3
+    rating: supports
+    rationale: "nothing is added"
+  - option: 01a1403a-512d-76c8-b11e-f101c331fa0d
+    driver: 01a1403a-512d-76c8-b11e-f100614ba4d9
+    rating: supports
+    rationale: "findings do not stop the render"
+  - option: 01a1403a-512d-76c8-b11e-f102e65467ec
+    driver: 01a1403a-512d-76c8-b11e-f0ffd5bda2e3
+    rating: supports
+    rationale: "nothing is added"
+  - option: 01a1403a-512d-76c8-b11e-f102e65467ec
+    driver: 01a1403a-512d-76c8-b11e-f100614ba4d9
+    rating: conflicts
+    rationale: "one gap stops the render"
+  - option: 01a1403a-512d-76c8-b11e-f103dac28f05
+    driver: 01a1403a-512d-76c8-b11e-f0ffd5bda2e3
+    rating: conflicts
+    rationale: "the renderer writes words nobody wrote"
+  - option: 01a1403a-512d-76c8-b11e-f103dac28f05
+    driver: 01a1403a-512d-76c8-b11e-f100614ba4d9
+    rating: supports
+    rationale: "the output validates"
+consequences:
+  - key: 01a1403a-512d-76c8-b11e-f104e06b328b
+    kind: cost
+    statement: "A projection with findings fails `openspec validate` where the findings say it will."
+subjects:
+  - role: outcome
+    node: 01a1402e-d25e-7540-9283-1826cb8964cf
