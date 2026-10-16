@@ -34,6 +34,7 @@ mod convert_v1_links;
 mod convert_v1_reading_list;
 mod convert_v1_sidecar;
 mod convert_v1_tag_names;
+mod diff;
 mod digest;
 mod ext;
 mod fmt;
