@@ -12,6 +12,10 @@ use loftspec::publish::{LOCK, Operation, RepoState, Stopped};
 use crate::StoreError;
 use crate::fs::{SPEC, hidden};
 
+mod base;
+
+pub use base::{BATCH, LIST_TREE, MERGE_BASE, MergeBase};
+
 /// The working directory's path from the repository's top level.
 pub const SHOW_PREFIX: [&str; 2] = ["rev-parse", "--show-prefix"];
 /// The checked-out branch; exit 1 on a detached HEAD.
