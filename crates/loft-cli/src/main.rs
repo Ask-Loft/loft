@@ -14,6 +14,7 @@ mod import_openspec;
 mod init;
 mod install;
 mod json;
+mod locate;
 mod merge_driver;
 mod network;
 mod out;

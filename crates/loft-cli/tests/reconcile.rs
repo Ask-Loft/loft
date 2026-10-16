@@ -10,13 +10,13 @@ use crate::schema;
 use crate::snapshot::snapshot;
 use serde_json::Value;
 
-const AC_1: &str = "00000000-0000-4000-8000-000000000029";
-const AC_2: &str = "00000000-0000-4000-8000-00000000002a";
+pub(crate) const AC_1: &str = "00000000-0000-4000-8000-000000000029";
+pub(crate) const AC_2: &str = "00000000-0000-4000-8000-00000000002a";
 const ADD_A_BOOK: &str = "products/reading-list/shelf/add-a-book.yaml";
-const TEST_FILE: &str = "tests/shelf.rs";
+pub(crate) const TEST_FILE: &str = "tests/shelf.rs";
 
 /// The Reading List with `tests/shelf.rs` holding the test `a_book_is_added`.
-fn project() -> Scratch {
+pub(crate) fn project() -> Scratch {
     let scratch = Scratch::with_reading_list();
     fs::create_dir_all(scratch.0.join("tests")).unwrap();
     fs::write(scratch.0.join(TEST_FILE), "fn a_book_is_added() {}\n").unwrap();
@@ -24,26 +24,26 @@ fn project() -> Scratch {
 }
 
 /// A link to `node` verified by `name` in `tests/shelf.rs`.
-fn link(node: &str, name: &str) -> String {
+pub(crate) fn link(node: &str, name: &str) -> String {
     link_in(node, TEST_FILE, name)
 }
 
 /// A link to `node` verified by `name` in `file`.
-fn link_in(node: &str, file: &str, name: &str) -> String {
+pub(crate) fn link_in(node: &str, file: &str, name: &str) -> String {
     format!("  - node: {node}\n    tests:\n      - file: {file}\n        name: {name}\n")
 }
 
-fn write_trace(scratch: &Scratch, links: &[String]) {
+pub(crate) fn write_trace(scratch: &Scratch, links: &[String]) {
     let text = format!("format: loft-trace/1\nlinks:\n{}", links.concat());
     fs::write(scratch.0.join("loft.trace.yaml"), text).unwrap();
 }
 
-fn trace_text(scratch: &Scratch) -> String {
+pub(crate) fn trace_text(scratch: &Scratch) -> String {
     fs::read_to_string(scratch.0.join("loft.trace.yaml")).unwrap()
 }
 
 /// The rule and label of each finding line, in order.
-fn findings(output: &Output) -> Vec<(String, String)> {
+pub(crate) fn findings(output: &Output) -> Vec<(String, String)> {
     stdout(output)
         .lines()
         .filter_map(|line| {
@@ -57,7 +57,7 @@ fn findings(output: &Output) -> Vec<(String, String)> {
         .collect()
 }
 
-fn json_of(output: &Output) -> Value {
+pub(crate) fn json_of(output: &Output) -> Value {
     schema::conforming(
         &output.stdout,
         include_str!("../../../schemas/reconcile.json"),
@@ -81,7 +81,8 @@ fn without_a_trace_file_each_node_in_scope_is_reported_unlinked_and_nothing_is_w
     let last = stdout(&output).lines().last().unwrap().to_owned();
     assert_eq!(
         last,
-        "0 of 8 nodes in scope linked; TR-001 8, TR-002 0, TR-003 0, TR-004 0, TR-005 0"
+        "0 of 8 nodes in scope linked; TR-001 8, TR-002 0, TR-003 0, TR-004 0, TR-005 0, \
+         TR-006 0, TR-007 0, TR-008 0"
     );
     assert!(snapshot(&scratch.0) == before, "a file changed");
 }

@@ -1,11 +1,12 @@
-//! Accepting a link: its `reviewed` becomes its node's current content hash, which states that a
-//! reviewer has checked its tests against the node as it now reads. A link with a `TR-004` or
-//! `TR-005` finding is never accepted.
+//! Accepting a link: its `reviewed` becomes its node's current content hash, and the `body` of
+//! each of its located tests the test's digest, which states that a reviewer has checked its tests
+//! against the node as it now reads. A link with a `TR-004` or `TR-005` finding is never accepted.
+//! Whenever links are accepted, a located test that has no `body` gets its digest as its `body`.
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
-use super::{Place, TestFiles, Trace, TraceRule, places, reconcile};
+use super::{Evidence, Found, Place, Reconciled, TestFiles, Trace, TraceRule, places, reconcile};
 use crate::document::Document;
 use crate::hash::DocumentHashes;
 use crate::identity::Key;
@@ -54,7 +55,8 @@ pub fn accept(
     files: &impl TestFiles,
 ) -> Result<(), Vec<Refusal>> {
     let places = places(document);
-    let untrue = untrue(trace, document, hashes, files);
+    let reconciled = reconcile(document, hashes, trace, files);
+    let untrue = untrue(&reconciled);
     let linked: HashSet<Key> = trace.links.iter().map(|link| link.node).collect();
     let refusals: Vec<Refusal> = keys
         .iter()
@@ -71,12 +73,12 @@ pub fn accept(
     if !refusals.is_empty() {
         return Err(refusals);
     }
-    stamp(trace, keys, &places, hashes);
+    stamp(trace, keys, &places, hashes, &reconciled);
     Ok(())
 }
 
-/// Accepts every link with a `TR-002` or `TR-003` finding and no `TR-004` or `TR-005` finding,
-/// and gives the nodes whose links it accepted, in the order of the links.
+/// Accepts every link with a `TR-002`, `TR-003` or `TR-006` finding and no `TR-004` or `TR-005`
+/// finding, and gives the nodes whose links it accepted, in the order of the links.
 pub fn accept_stale(
     trace: &mut Trace,
     document: &Document,
@@ -99,31 +101,43 @@ pub fn accept_stale(
         .map(|link| link.node)
         .filter(|key| asks_review.contains(key) && !refused.contains(key))
         .collect();
-    stamp(trace, &stale, &places(document), hashes);
+    stamp(trace, &stale, &places(document), hashes, &reconciled);
     stale
 }
 
-/// Writes each named node's current content hash into its link's `reviewed`.
-fn stamp(trace: &mut Trace, keys: &[Key], places: &HashMap<Key, Place>, hashes: &DocumentHashes) {
+/// Writes each named node's current content hash into its link's `reviewed`, and the digest of
+/// each of its located tests into the test's `body`; records the digest of every other located
+/// test that has no `body`. `reconciled` is what reconciling `trace` found.
+fn stamp(
+    trace: &mut Trace,
+    keys: &[Key],
+    places: &HashMap<Key, Place>,
+    hashes: &DocumentHashes,
+    reconciled: &Reconciled,
+) {
     let keys: HashSet<&Key> = keys.iter().collect();
-    for link in trace
-        .links
-        .iter_mut()
-        .filter(|link| keys.contains(&link.node))
-    {
-        link.reviewed = Some(hashes.nodes[&places[&link.node].id]);
+    for (link, found) in trace.links.iter_mut().zip(&reconciled.found) {
+        let accepted = keys.contains(&link.node);
+        if accepted {
+            link.reviewed = Some(hashes.nodes[&places[&link.node].id]);
+        }
+        let Evidence::Tests(tests) = &mut link.evidence else {
+            continue;
+        };
+        for (test, found) in tests.iter_mut().zip(found) {
+            if let Found::Located { digest, .. } = found
+                && (accepted || test.body.is_none())
+            {
+                test.body = Some(*digest);
+            }
+        }
     }
 }
 
 /// The first rule of a finding that refuses accepting each node's link.
-fn untrue(
-    trace: &Trace,
-    document: &Document,
-    hashes: &DocumentHashes,
-    files: &impl TestFiles,
-) -> HashMap<Key, TraceRule> {
+fn untrue(reconciled: &Reconciled) -> HashMap<Key, TraceRule> {
     let mut untrue = HashMap::new();
-    for finding in reconcile(document, hashes, trace, files).findings {
+    for finding in &reconciled.findings {
         if finding.rule.refuses_accept() {
             untrue.entry(finding.node).or_insert(finding.rule);
         }

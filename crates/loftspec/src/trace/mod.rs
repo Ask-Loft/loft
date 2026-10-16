@@ -1,17 +1,20 @@
 //! Implementation reconciliation (the Feature group of that name): the trace file,
 //! `loft.trace.yaml` beside `spec/`, links each node in scope to the tests that verify it, pinned
-//! to the content hash its node had when the link was last reviewed; the reconciler reports which
-//! links no longer hold and accepts the links a reviewer has checked. The trace file enters no
-//! root. The reconciler reads no file itself: its caller gives it the trace file's bytes and a
-//! [`TestFiles`] port to the files that hold the tests.
+//! to the content hash its node had when the link was last reviewed, and records the digest each
+//! test had when it was last recorded; the reconciler reports which links no longer hold and
+//! accepts the links a reviewer has checked. The trace file enters no root. The reconciler reads
+//! and parses no file itself: its caller gives it the trace file's bytes and a [`TestFiles`] port
+//! to the files that hold the tests and to the tests each file holds.
 
 mod accept;
 mod findings;
+mod found;
 mod read;
 mod write;
 
 pub use accept::{Refusal, accept, accept_stale};
-pub use findings::{Reconciled, TestFile, TestFiles, TraceFinding, TraceRule, reconcile};
+pub use findings::{Reconciled, TraceFinding, TraceRule, reconcile};
+pub use found::{Found, Lines, LocatedTest, TestFile, TestFiles, Untracked};
 pub use read::{FILE_FIELDS, LINK_FIELDS, TEST_FIELDS, read};
 pub use write::write;
 
@@ -30,8 +33,11 @@ use crate::yaml::{Location, Position};
 /// The trace file's name, in the directory that holds `spec/`.
 pub const TRACE: &str = "loft.trace.yaml";
 
-/// The trace file's `format`, versioned with its fields.
-pub const FORMAT: &str = "loft-trace/1";
+/// The trace file's `format`, versioned with its fields; the writer writes this one.
+pub const FORMAT: &str = "loft-trace/2";
+
+/// The `format` of a trace file written before tests had a `body`; it is still read.
+pub const FORMAT_1: &str = "loft-trace/1";
 
 /// The links of a trace file, in the order read or to be written.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -63,6 +69,8 @@ pub enum Evidence {
 pub struct Test {
     pub file: String,
     pub name: String,
+    /// The test's digest when it was last recorded; none before it was first located.
+    pub body: Option<Digest>,
 }
 
 /// An error in the trace file, at its line and column where it has one.
@@ -108,6 +116,19 @@ fn places(document: &Document) -> HashMap<Key, Place> {
         }
     });
     places
+}
+
+/// The name of each node in scope, by key.
+fn names(document: &Document) -> HashMap<Key, String> {
+    let mut names = HashMap::new();
+    document.walk(&mut |node| {
+        if let Some(id) = node.id()
+            && in_scope(node)
+        {
+            names.insert(id.key(), node.name().into_owned());
+        }
+    });
+    names
 }
 
 /// Whether the reconciler expects a link for `node`: every acceptance criterion, and every

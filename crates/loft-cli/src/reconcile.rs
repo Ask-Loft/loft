@@ -1,7 +1,8 @@
 //! `loft reconcile` (the `loft reconcile` Feature): `loft.trace.yaml` compared with the tree and
 //! with the files that hold the tests, each reconciliation finding one line with an exit code a
-//! CI job can gate on, and the links a reviewer has checked accepted. It writes only the trace
-//! file, and only when it accepts a link; a node that cannot be accepted writes nothing.
+//! CI job can gate on, and the links a reviewer has checked accepted. Each test file is parsed by
+//! the test locator. It writes only the trace file, and only when it accepts a link; a node that
+//! cannot be accepted writes nothing.
 
 use std::fmt;
 use std::path::Path;
@@ -14,8 +15,8 @@ use loftspec::identity::{Key, Label};
 use loftspec::ids::ElementId;
 use loftspec::lint::Severity;
 use loftspec::trace::{
-    self, Reconciled, TRACE, TestFiles, Trace, TraceFinding, TraceRule, accept, accept_stale,
-    reconcile,
+    self, Evidence, Found, Reconciled, TRACE, TestFiles, Trace, TraceFinding, TraceRule, accept,
+    accept_stale, reconcile,
 };
 use loftspec::yaml::Location;
 use loftspec_store::FileStore;
@@ -23,11 +24,12 @@ use serde_json::{Map, Value, json};
 
 use crate::finish::Finished;
 use crate::json;
+use crate::locate::Parsed;
 use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-reconcile/1";
+const SCHEMA: &str = "loft-reconcile/2";
 
 /// What the command was asked to do beyond reporting.
 pub struct Options<'a> {
@@ -60,7 +62,7 @@ pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
         &read.document,
         &read.hashes,
         &read.trace,
-        &read.store.test_files(),
+        &Parsed(read.store.test_files()),
     );
     let severities = reconciled.findings.iter().map(TraceFinding::severity);
     let failed = json::fails_on(options.fail_on, severities);
@@ -70,7 +72,7 @@ pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
     };
     let outcome = if failed { "failed" } else { "passed" };
     if as_json {
-        json::print(&report.document(&reconciled, &accepted, outcome));
+        json::print(&report.document(&read.trace, &reconciled, &accepted, outcome));
     } else {
         report.print(&reconciled, &accepted);
     }
@@ -98,7 +100,7 @@ fn read(root: &Path) -> Result<Read, Stop> {
 /// Accepts the links the options name and writes the trace file when any is accepted, giving
 /// the nodes whose links it accepted.
 fn accepted(read: &mut Read, options: &Options<'_>) -> Result<Vec<Key>, Stop> {
-    let files = read.store.test_files();
+    let files = Parsed(read.store.test_files());
     let keys = if options.accept_stale {
         accept_stale(&mut read.trace, &read.document, &read.hashes, &files)
     } else if options.accept.is_empty() {
@@ -231,7 +233,13 @@ impl Report<'_> {
         outln!("{}", summary(reconciled));
     }
 
-    fn document(&self, reconciled: &Reconciled, accepted: &[Key], outcome: &str) -> Value {
+    fn document(
+        &self,
+        trace: &Trace,
+        reconciled: &Reconciled,
+        accepted: &[Key],
+        outcome: &str,
+    ) -> Value {
         let findings: Vec<Value> = reconciled
             .findings
             .iter()
@@ -257,9 +265,38 @@ impl Report<'_> {
             "inScope": reconciled.in_scope,
             "linked": reconciled.linked,
             "accepted": accepted,
+            "tests": tests(trace, reconciled),
         });
         json::result(SCHEMA, outcome, fields, Vec::new())
     }
+}
+
+/// Each test of each link, in the order of the trace file: its node, file and name, whether it
+/// was located, and the first and last line of each of its locations.
+fn tests(trace: &Trace, reconciled: &Reconciled) -> Vec<Value> {
+    let mut listed = Vec::new();
+    for (link, found) in trace.links.iter().zip(&reconciled.found) {
+        let Evidence::Tests(tests) = &link.evidence else {
+            continue;
+        };
+        for (test, found) in tests.iter().zip(found) {
+            let mut fields = json!({
+                "key": link.node.to_string(),
+                "file": test.file,
+                "name": test.name,
+                "located": matches!(found, Found::Located { .. }),
+            });
+            if let Found::Located { lines, .. } = found {
+                let locations: Vec<Value> = lines
+                    .iter()
+                    .map(|lines| json!({ "firstLine": lines.first, "lastLine": lines.last }))
+                    .collect();
+                fields["locations"] = json!(locations);
+            }
+            listed.push(fields);
+        }
+    }
+    listed
 }
 /// The counts: nodes in scope, how many a link names, and the findings of each rule.
 fn summary(reconciled: &Reconciled) -> String {

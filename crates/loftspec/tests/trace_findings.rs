@@ -2,100 +2,21 @@
 //! over the small document: its nodes in scope are criterion 5, CON-2 (9) and CON-1 (7); QA-1
 //! (8) and QA-2 (10) are sampled, and every other node is of another kind.
 
-use std::collections::HashMap;
-
+use crate::common::trace::{
+    Files, SOURCE, all_reviewed, files, found, hashes, reviewed, run, test, tested, tests_of,
+};
 use crate::common::{key, label, small_document};
 use loftspec::attributes::VerificationFate;
-use loftspec::document::Document;
-use loftspec::hash::{DocumentHashes, hash_document};
 use loftspec::identity::Key;
-use loftspec::ids::{CriterionId, NodeId};
+use loftspec::ids::CriterionId;
 use loftspec::lint::Severity;
-use loftspec::trace::{
-    Evidence, Link, Reconciled, Refusal, Test, TestFile, TestFiles, Trace, TraceRule, accept,
-    accept_stale, reconcile,
-};
+use loftspec::trace::{Refusal, TestFile, Trace, TraceRule, accept, accept_stale};
+use sha2::{Digest as _, Sha256};
 
-/// Test files held in memory; a path not held is missing.
-#[derive(Default)]
-struct Files(HashMap<String, TestFile>);
-
-impl TestFiles for Files {
-    fn read(&self, path: &str) -> TestFile {
-        self.0.get(path).cloned().unwrap_or(TestFile::Missing)
-    }
+/// The digest of a test whose canonical text is `canonical`.
+fn digest_of(canonical: &str) -> loftspec::canonical::Digest {
+    format!("{:x}", Sha256::digest(canonical)).parse().unwrap()
 }
-
-/// One file, `tests/a.rs`, holding `text`.
-fn files(text: &str) -> Files {
-    Files(HashMap::from([(
-        "tests/a.rs".to_owned(),
-        TestFile::Text(text.to_owned()),
-    )]))
-}
-
-fn hashes(document: &Document) -> DocumentHashes {
-    hash_document(document).unwrap()
-}
-
-/// The content hash of node `n` of the small document.
-fn hash_of(document: &Document, id: NodeId) -> loftspec::canonical::Digest {
-    hashes(document).nodes[&id]
-}
-
-fn criterion_id() -> NodeId {
-    CriterionId::new(key(5)).into()
-}
-
-/// A link to node `n`, verified by the test `name` in `tests/a.rs`.
-fn tested(n: u32, name: &str) -> Link {
-    Link {
-        node: key(n),
-        reviewed: None,
-        evidence: Evidence::Tests(vec![Test {
-            file: "tests/a.rs".to_owned(),
-            name: name.to_owned(),
-        }]),
-        position: None,
-    }
-}
-
-/// A link to node `n` reviewed against its current hash.
-fn reviewed(document: &Document, n: u32, name: &str) -> Link {
-    let mut link = tested(n, name);
-    let id = hashes(document)
-        .nodes
-        .keys()
-        .copied()
-        .find(|id| id.key() == key(n))
-        .unwrap();
-    link.reviewed = Some(hash_of(document, id));
-    link
-}
-
-fn run(document: &Document, links: Vec<Link>, files: &Files) -> Reconciled {
-    reconcile(document, &hashes(document), &Trace { links }, files)
-}
-
-/// The rule and node of each finding, in order.
-fn found(reconciled: &Reconciled) -> Vec<(TraceRule, Key)> {
-    reconciled
-        .findings
-        .iter()
-        .map(|finding| (finding.rule, finding.node))
-        .collect()
-}
-
-/// The three nodes in scope, each linked to a test that `tests/a.rs` holds and reviewed.
-fn all_reviewed(document: &Document) -> Vec<Link> {
-    vec![
-        reviewed(document, 5, "five"),
-        reviewed(document, 9, "nine"),
-        reviewed(document, 7, "seven"),
-    ]
-}
-
-const SOURCE: &str = "fn five() {}\nfn nine() {}\nfn seven() {}\n";
 
 #[test]
 fn a_reviewed_link_to_a_found_test_for_every_node_in_scope_yields_no_finding() {
@@ -177,9 +98,7 @@ fn a_link_whose_node_changed_only_its_label_is_not_tr_003() {
 fn a_test_whose_file_does_not_exist_is_tr_004_naming_the_file_and_test() {
     let document = small_document();
     let mut links = all_reviewed(&document);
-    let Evidence::Tests(tests) = &mut links[1].evidence else {
-        unreachable!()
-    };
+    let tests = tests_of(&mut links[1]);
     tests[0].file = "tests/gone.rs".to_owned();
     let reconciled = run(&document, links, &files(SOURCE));
     assert_eq!(found(&reconciled), [(TraceRule::Tr004, key(9))]);
@@ -194,9 +113,7 @@ fn a_test_file_that_is_not_text_or_cannot_be_read_is_tr_004_saying_why() {
     let document = small_document();
     let mut links = all_reviewed(&document);
     for (link, file) in [(1, "tests/binary.rs"), (2, "tests/locked.rs")] {
-        let Evidence::Tests(tests) = &mut links[link].evidence else {
-            unreachable!()
-        };
+        let tests = tests_of(&mut links[link]);
         tests[0].file = file.to_owned();
     }
     let mut files = files(SOURCE);
@@ -230,7 +147,11 @@ fn a_test_name_found_only_inside_a_longer_word_is_tr_004() {
     let source = "fn five_more() {}\nfn renine() {}\nfn seven() {}\n";
     assert_eq!(
         found(&run(&document, all_reviewed(&document), &files(source))),
-        [(TraceRule::Tr004, key(5)), (TraceRule::Tr004, key(9))]
+        [
+            (TraceRule::Tr004, key(5)),
+            (TraceRule::Tr008, key(5)),
+            (TraceRule::Tr004, key(9))
+        ]
     );
 }
 
@@ -240,11 +161,15 @@ fn a_test_name_with_spaces_is_found_where_no_word_character_adjoins_it() {
     let mut links = all_reviewed(&document);
     links[0] = reviewed(&document, 5, "prints the root");
     let source = format!("{SOURCE}it(\"prints the root\", () => {{}});\n");
-    assert_eq!(found(&run(&document, links.clone(), &files(&source))), []);
+    // The stand-in grammar locates no call, so the test is found only as a word.
+    assert_eq!(
+        found(&run(&document, links.clone(), &files(&source))),
+        [(TraceRule::Tr007, key(5))]
+    );
     let joined = format!("{SOURCE}it(\"reprints the roots\");\n");
     assert_eq!(
         found(&run(&document, links, &files(&joined))),
-        [(TraceRule::Tr004, key(5))]
+        [(TraceRule::Tr004, key(5)), (TraceRule::Tr008, key(5))]
     );
 }
 
@@ -252,9 +177,7 @@ fn a_test_name_with_spaces_is_found_where_no_word_character_adjoins_it() {
 fn a_test_file_outside_the_project_is_tr_004() {
     let document = small_document();
     let mut links = all_reviewed(&document);
-    let Evidence::Tests(tests) = &mut links[2].evidence else {
-        unreachable!()
-    };
+    let tests = tests_of(&mut links[2]);
     tests[0].file = "../elsewhere/tests/a.rs".to_owned();
     let mut files = files(SOURCE);
     let elsewhere = TestFile::Text(SOURCE.to_owned());
@@ -294,6 +217,7 @@ fn findings_are_ordered_by_node_then_rule() {
         [
             (TraceRule::Tr002, key(5)),
             (TraceRule::Tr004, key(5)),
+            (TraceRule::Tr008, key(5)),
             (TraceRule::Tr001, key(9)),
             (TraceRule::Tr002, key(7)),
             (TraceRule::Tr004, key(7)),
@@ -307,16 +231,8 @@ fn findings_are_ordered_by_node_then_rule() {
 fn two_missing_tests_of_one_link_are_reported_in_the_link_s_order() {
     let document = small_document();
     let mut link = tested(5, "second");
-    let Evidence::Tests(tests) = &mut link.evidence else {
-        unreachable!()
-    };
-    tests.insert(
-        0,
-        Test {
-            file: "tests/a.rs".to_owned(),
-            name: "first".to_owned(),
-        },
-    );
+    let tests = tests_of(&mut link);
+    tests.insert(0, test("first"));
     let reconciled = run(&document, vec![link], &files(SOURCE));
     let names: Vec<&str> = reconciled
         .findings
@@ -328,12 +244,11 @@ fn two_missing_tests_of_one_link_are_reported_in_the_link_s_order() {
 }
 
 #[test]
-fn accepting_a_link_sets_reviewed_to_the_node_s_hash_and_changes_nothing_else() {
+fn accepting_a_link_sets_reviewed_and_its_tests_bodies_and_changes_nothing_else() {
     let document = small_document();
     let mut trace = Trace {
-        links: vec![tested(5, "five"), tested(9, "nine")],
+        links: vec![tested(5, "five")],
     };
-    let before = trace.clone();
     accept(
         &mut trace,
         &[key(5)],
@@ -342,12 +257,30 @@ fn accepting_a_link_sets_reviewed_to_the_node_s_hash_and_changes_nothing_else() 
         &files(SOURCE),
     )
     .unwrap();
-    assert_eq!(
-        trace.links[0].reviewed,
-        Some(hash_of(&document, criterion_id()))
-    );
-    assert_eq!(trace.links[0].evidence, before.links[0].evidence);
-    assert_eq!(trace.links[1], before.links[1]);
+    let mut expected = reviewed(&document, 5, "five");
+    tests_of(&mut expected)[0].body = Some(digest_of("fn five() { key }"));
+    assert_eq!(trace.links, [expected]);
+}
+
+#[test]
+fn accepting_a_link_changes_no_other_link_but_records_a_body_a_test_lacks() {
+    let document = small_document();
+    let mut recorded = tested(7, "seven");
+    tests_of(&mut recorded)[0].body = Some(digest_of("an older seven"));
+    let mut trace = Trace {
+        links: vec![tested(5, "five"), tested(9, "nine"), recorded.clone()],
+    };
+    accept(
+        &mut trace,
+        &[key(5)],
+        &document,
+        &hashes(&document),
+        &files(SOURCE),
+    )
+    .unwrap();
+    let mut nine = tested(9, "nine");
+    tests_of(&mut nine)[0].body = Some(digest_of("fn nine() {}"));
+    assert_eq!(trace.links[1..], [nine, recorded]);
 }
 
 #[test]

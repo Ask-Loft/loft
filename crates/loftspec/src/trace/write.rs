@@ -28,10 +28,14 @@ fn link(link: &Link) -> Out {
     fields.push(match &link.evidence {
         Evidence::Tests(tests) => {
             let tests = tests.iter().map(|test| {
-                Out::Mapping(vec![
+                let mut fields = vec![
                     ("file", Out::Text(test.file.clone())),
                     ("name", Out::Text(test.name.clone())),
-                ])
+                ];
+                if let Some(body) = test.body {
+                    fields.push(("body", Out::Token(body.to_string())));
+                }
+                Out::Mapping(fields)
             });
             ("tests", Out::Sequence(tests.collect()))
         }

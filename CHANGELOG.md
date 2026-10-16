@@ -26,6 +26,30 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   `--no-skill` leaves the file out too.
 - Both plugin marketplaces are now named `ask-loft`: install with `/plugin install loft@ask-loft`
   in Claude Code and `codex plugin add loft@ask-loft` in Codex.
+- `loft reconcile` locates each linked test in its file's syntax tree, parsed with tree-sitter,
+  for Rust (a function, also inside a macro such as `proptest!`), TypeScript, TSX and JavaScript
+  (a call to `it`, `test`, `describe`, `context`, `specify` or `bench`, also through `.only`,
+  `.each(…)`, `.skipIf(…)` and the like), Python (a function or class with its decorators) and Go
+  (a function, a method, or a `t.Run` subtest). It records each located test's digest, the
+  SHA-256 of its tokens without comments, as the test's `body` in the trace file, so a test
+  rewritten after its link was accepted is reported:
+  - `TR-006` (warning): a located test whose digest differs from its `body`. Whitespace between
+    tokens does not count; `--accept-stale` accepts it.
+  - `TR-007` (info): a test found only as a word, in a file no grammar parses or under a name no
+    test of the file carries, whose content is not tracked.
+  - `TR-008` (info): a literal in backticks in the node's name that the source of none of its
+    tests holds.
+
+  Accepting a link records its tests' bodies, and any accept also records the body of every
+  located test that has none, so an existing trace file needs no review to adopt it.
+- The trace file's format is now `loft-trace/2`, which adds a test's `body`; `loft-trace/1` is
+  still read and is rewritten as `loft-trace/2` on the next accept. An older `loft` refuses a
+  `loft-trace/2` file, so everyone who reconciles a project needs this release.
+- `loft reconcile --format json` writes the schema `loft-reconcile/2`: the rules `TR-006` to
+  `TR-008`, and a `tests` list with each linked test's node, file and name, whether it was
+  located, and the first and last line of each location.
+- `loftspec`: `TestFiles` gains `tests`, which gives the tests a file holds, none by default;
+  `Test` gains `body`, and `Reconciled` gains `found`, what was found of each test.
 
 ## 2.1.0 (2026-10-15)
 

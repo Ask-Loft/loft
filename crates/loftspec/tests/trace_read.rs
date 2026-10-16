@@ -3,7 +3,7 @@
 
 use crate::common::{key, small_document};
 use loftspec::codec::Problem;
-use loftspec::trace::{Evidence, FORMAT, Link, Test, Trace, TraceError, read, write};
+use loftspec::trace::{Evidence, Link, Test, Trace, TraceError, read, write};
 
 const DIGEST: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -33,6 +33,7 @@ fn tests(names: &[&str]) -> Evidence {
             .map(|name| Test {
                 file: "tests/a.rs".to_owned(),
                 name: (*name).to_owned(),
+                body: None,
             })
             .collect(),
     )
@@ -46,7 +47,7 @@ fn no_trace_file_holds_no_link() {
 #[test]
 fn a_link_reads_its_node_review_and_tests() {
     let text = format!(
-        "format: loft-trace/1\nlinks:\n  - node: {}\n    reviewed: {DIGEST}\n    tests:\n      - file: \"tests/a.rs\"\n        name: \"a_test\"\n",
+        "format: loft-trace/2\nlinks:\n  - node: {}\n    reviewed: {DIGEST}\n    tests:\n      - file: \"tests/a.rs\"\n        name: \"a_test\"\n        body: {DIGEST}\n      - file: \"tests/a.rs\"\n        name: \"b_test\"\n",
         key(5)
     );
     let trace = read(Some(text.as_bytes())).unwrap();
@@ -54,8 +55,43 @@ fn a_link_reads_its_node_review_and_tests() {
     let link = &trace.links[0];
     assert_eq!(link.node, key(5));
     assert_eq!(link.reviewed.unwrap().to_string(), DIGEST);
-    assert_eq!(link.evidence, tests(&["a_test"]));
+    let Evidence::Tests(read) = &link.evidence else {
+        panic!("{link:?}")
+    };
+    assert_eq!(read[0].body.unwrap().to_string(), DIGEST);
+    assert_eq!(read[1].body, None);
     assert_eq!(link.position.unwrap().line, 3);
+}
+
+#[test]
+fn a_loft_trace_1_file_reads_as_one_whose_tests_have_no_body() {
+    let text = format!(
+        "format: loft-trace/1\nlinks:\n  - node: {}\n    tests:\n      - file: \"tests/a.rs\"\n        name: \"a_test\"\n",
+        key(5)
+    );
+    let trace = read(Some(text.as_bytes())).unwrap();
+    assert_eq!(trace.links[0].evidence, tests(&["a_test"]));
+}
+
+#[test]
+fn a_body_in_a_loft_trace_1_file_is_an_error() {
+    let text = format!(
+        "format: loft-trace/1\nlinks:\n  - node: {}\n    tests:\n      - file: a\n        name: b\n        body: {DIGEST}\n",
+        key(5)
+    );
+    assert_eq!(
+        one_error(&text).problem,
+        Problem::UnknownField("body".to_owned())
+    );
+}
+
+#[test]
+fn a_body_that_is_not_64_lowercase_hexadecimal_digits_is_an_error() {
+    let text = format!(
+        "format: loft-trace/2\nlinks:\n  - node: {}\n    tests:\n      - file: a\n        name: b\n        body: ABC\n",
+        key(5)
+    );
+    assert!(one_error(&text).to_string().contains("hexadecimal"));
 }
 
 #[test]
@@ -91,8 +127,8 @@ fn a_field_the_trace_file_does_not_define_is_an_error() {
 }
 
 #[test]
-fn a_format_other_than_loft_trace_1_is_an_error() {
-    let error = one_error("format: loft-trace/2\nlinks:\n");
+fn a_format_other_than_loft_trace_1_or_loft_trace_2_is_an_error() {
+    let error = one_error("format: loft-trace/3\nlinks:\n");
     assert!(matches!(error.problem, Problem::Invalid { .. }), "{error}");
     assert_eq!(
         one_error("links:\n").problem,
@@ -182,6 +218,9 @@ fn links_are_written_in_the_document_order_of_their_nodes_with_unknown_keys_last
 fn a_written_trace_file_reads_back_and_writes_the_same_bytes() {
     let mut reviewed = link(5, tests(&["first", "second test"]));
     reviewed.reviewed = Some(DIGEST.parse().unwrap());
+    if let Evidence::Tests(tests) = &mut reviewed.evidence {
+        tests[0].body = Some(DIGEST.parse().unwrap());
+    }
     let trace = Trace {
         links: vec![
             reviewed,
@@ -192,7 +231,7 @@ fn a_written_trace_file_reads_back_and_writes_the_same_bytes() {
     let text = write(&trace, &document);
     assert!(
         text.starts_with(&format!(
-            "format: {FORMAT}\nlinks:\n  - node: {}\n    reviewed: {DIGEST}\n    tests:\n      - file: ",
+            "format: loft-trace/2\nlinks:\n  - node: {}\n    reviewed: {DIGEST}\n    tests:\n      - file: \"tests/a.rs\"\n        name: \"first\"\n        body: {DIGEST}\n      - file: ",
             key(5)
         )),
         "{text}"
