@@ -29,6 +29,8 @@ requirements:
         name: "Without `--accept` or `--accept-stale`, no file is written."
       - key: 01a1383c-824c-7052-8566-da7cb51595a8
         name: "After an accept, the findings printed are those of the trace file as written."
+      - key: 01a14625-1534-77d8-bbe8-b4c5ab9e52ab
+        name: "The output gives the number of tests whose body was recorded, when any was."
   - key: 01a1383c-2899-72f8-b39a-0a0f75eb1d7e
     statement:
       form: unwanted
@@ -107,7 +109,11 @@ requirements:
       - key: 01a1383c-2899-72f8-b39a-0a21af41dcc3
         name: "A link with a `TR-004` finding is left unaccepted and its findings are printed."
       - key: 01a1383c-2899-72f8-b39a-0a22f02e50e8
-        name: "Where no link is accepted, no file is written."
+        name: "Where no link is accepted and no body is recorded, no file is written."
+      - key: 01a14625-1534-77d8-bbe8-b4c6789669d6
+        name: "A link with a `TR-006` finding is accepted, and the `body` of each of its located tests is recorded."
+      - key: 01a14625-1534-77d8-bbe8-b4c7d4214fa9
+        name: "Where no link is accepted but a body is recorded, the trace file is written."
   - key: 01a1383c-2899-72f8-b39a-0a23626e032b
     statement:
       form: optional
@@ -123,6 +129,8 @@ requirements:
         name: "The document carries the number of nodes in scope and the number a link names."
       - key: 01a1383c-2899-72f8-b39a-0a27b1f95794
         name: "The document lists the keys of the links accepted."
+      - key: 01a14625-1534-77d8-bbe8-b4c848d63e11
+        name: "The document carries the number of tests whose body was recorded."
       - key: 01a145e9-aa7e-77cd-b10e-a73b0377b054
         name: "The document lists each test of each link, in the order of the trace file, with its file and name and whether it was located."
       - key: 01a145e9-aa7f-769e-a7f5-f215af23521b

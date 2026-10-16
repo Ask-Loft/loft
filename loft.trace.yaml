@@ -8455,7 +8455,7 @@ links:
         name: "a_python_function_or_class_is_a_test_with_its_decorators"
         body: c79c237a890d50b9273b70db42c0e9382434470df7bbc97a560f9733633c06fa
   - node: 01a145e9-aa7f-769e-a7f5-f22d7150ebe0
-    reviewed: 8a9d8b5886beabb86eea23a28b7f3c23084e73c1764f7d19564e6e8de9891c0c
+    reviewed: 655b162006af6e5e64893cb3a46131116d43d9e04af940baed9d9ad4fb4c774b
     tests:
       - file: "crates/loft-cli/src/locate/tests/languages.rs"
         name: "a_go_function_and_a_subtest_are_tests"
@@ -8502,21 +8502,6 @@ links:
       - file: "crates/loft-cli/src/locate/tests/canonical.rs"
         name: "a_literal_is_one_token_written_as_in_the_file"
         body: f880cccb980f82a612fe38b2f1b94d1b8ccc2fcac0d9538b367af6e4c772f74e
-  - node: 01a145e9-aa7f-769e-a7f5-f235c46cfb4d
-    reviewed: ead9631a590b4143708a3fdd27731c18eb602f5262240c36b40dd821a6a96482
-    tests:
-      - file: "crates/loft-cli/src/locate/tests/languages.rs"
-        name: "a_python_line_s_indentation_is_part_of_the_canonical_text"
-        body: 9c073535e192ef147a09adb9fdd01152aedcbe6459b50a009db206915e8a166c
-  - node: 01a145e9-aa7f-769e-a7f5-f236238e83b4
-    reviewed: ee18027b1ae9b277ff2f24a1fab59168e3aa733690bf566bac25f632879a25d7
-    tests:
-      - file: "crates/loftspec/tests/trace_located.rs"
-        name: "whitespace_between_tokens_leaves_the_digest_and_raises_no_tr_006"
-        body: 7ad1a41b7f548812c98a32a247e3813ec7ee9c43f4f3fbb908bf709e188d5987
-      - file: "crates/loft-cli/src/locate/tests/canonical.rs"
-        name: "whitespace_between_tokens_leaves_the_canonical_text_unchanged"
-        body: 4155607f2d1c8f2c67662c3680e3ec71dc620efe15bb2252aba923ae62450bbf
   - node: 01a145e9-aa7f-769e-a7f5-f238d62398b6
     reviewed: 4bf759bfeabea5b7654d40d4cca5445b06bf39d086272757a3b9a4961acdddfe
     tests:
@@ -10124,12 +10109,6 @@ links:
         body: 52d448aaf488a023aa2dd606e03b60c62d4cf833458eca2557e73c1a6aefafbe
   - node: 01a1383c-2899-72f8-b39a-0a21af41dcc3
     reviewed: 5f4264aa1fa2142a490fefd4a998c70f811a2cb435e4b39f05d3b72acc5a26e8
-    tests:
-      - file: "crates/loft-cli/tests/reconcile.rs"
-        name: "accepting_the_stale_links_leaves_a_link_whose_test_is_missing"
-        body: 302c9591e1feb1b4d9075f82a8a2b58c448c85360a3eebe0146d2033d9c15a35
-  - node: 01a1383c-2899-72f8-b39a-0a22f02e50e8
-    reviewed: a3508d7a3df3e1d3f88ab07d7e6d0ac8cb97b762ead2376db55c1bd7471cbd53
     tests:
       - file: "crates/loft-cli/tests/reconcile.rs"
         name: "accepting_the_stale_links_leaves_a_link_whose_test_is_missing"

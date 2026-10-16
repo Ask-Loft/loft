@@ -168,6 +168,8 @@ requirements:
       system: "the reconciler"
       shall: "set the link's `reviewed` to its node's current content hash, and the `body` of each of its located tests to the test's digest."
     criteria:
+      - key: 01a14625-1535-7161-b749-350d0b59f214
+        name: "Accepting a link sets the `body` of each of its located tests to the test's digest."
       - key: 01a1383a-4a94-72cc-9c61-112c2538aff7
         name: "Accepting a link changes no field of the link other than `reviewed` and its tests' `body`."
       - key: 01a1383a-4a94-72cc-9c61-112d8124fa61

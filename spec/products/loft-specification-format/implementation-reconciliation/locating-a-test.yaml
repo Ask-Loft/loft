@@ -38,6 +38,10 @@ requirements:
         name: "The attributes written directly before the function are part of the test."
       - key: 01a145e9-aa7f-769e-a7f5-f22168a00758
         name: "Inside a macro invocation, the tokens from `fn` and the test's name through the next group in braces are the test, with the attributes written directly before them."
+      - key: 01a14625-1535-7161-b749-3504b5fbd4e1
+        name: "Inside a macro invocation, `pub`, `async`, `unsafe`, `const` and `extern` written between the attributes and `fn` are part of the test."
+      - key: 01a14625-1535-7161-b749-35056801059f
+        name: "Inside a macro invocation, a `fn` followed by `;` before any group in braces is not a test."
   - key: 01a145e9-aa7f-769e-a7f5-f2226bff6c72
     statement:
       form: ubiquitous
@@ -54,6 +58,10 @@ requirements:
         name: "A placeholder such as `%s` in the test's name is compared as written."
       - key: 01a145e9-aa7f-769e-a7f5-f2275f43dd5d
         name: "Of calls nested in one another, the outermost that carries the test's name is the test."
+      - key: 01a14625-1535-7161-b749-35067e0393b1
+        name: "An escape in a JavaScript or TypeScript string, such as `\\n`, `\\u00e9`, `\\u{1F600}` or `\\x41`, is read as the character it stands for."
+      - key: 01a14625-1535-7161-b749-35074160a574
+        name: "A comment before a call's first argument is not its first argument."
   - key: 01a145e9-aa7f-769e-a7f5-f228d2bdf5a7
     statement:
       form: ubiquitous
@@ -70,12 +78,16 @@ requirements:
     statement:
       form: ubiquitous
       system: "The test locator"
-      shall: "locate a Go test as the function or the subtest that the test's name names."
+      shall: "locate a Go test as the function, the method or the subtest that the test's name names."
     criteria:
       - key: 01a145e9-aa7f-769e-a7f5-f22d7150ebe0
-        name: "A function whose name is the test's name is the test."
+        name: "A function or a method whose name is the test's name is the test."
       - key: 01a145e9-aa7f-769e-a7f5-f22e4792189e
         name: "A call to a method `Run` whose first argument is a string literal equal to the test's name is the test."
+      - key: 01a14625-1535-7161-b749-35087ab1cfc6
+        name: "An escape in a Go string, such as `\\n`, `\\u00e9`, `\\U0001F600`, `\\x41` or `\\101`, is read as the character it stands for."
+      - key: 01a14625-1535-7161-b749-35098bb8d485
+        name: "A comment before the first argument of `Run` is not its first argument."
   - key: 01a145e9-aa7f-769e-a7f5-f22f09f4fb8b
     statement:
       form: ubiquitous
@@ -93,9 +105,15 @@ requirements:
       - key: 01a145e9-aa7f-769e-a7f5-f234d503d09c
         name: "A string, character or template literal is one token of the canonical text, written as in the file."
       - key: 01a145e9-aa7f-769e-a7f5-f235c46cfb4d
-        name: "In Python, a token that starts a line is preceded in the canonical text by a line break and the line's indentation."
+        name: "In Python, a token that starts a line outside any bracket is preceded in the canonical text by a line break and the line's indentation as written."
       - key: 01a145e9-aa7f-769e-a7f5-f236238e83b4
-        name: "Whitespace between two tokens, other than a Python line's indentation, leaves the canonical text unchanged."
+        name: "Whitespace between two tokens, other than the indentation of a Python line that starts outside any bracket, leaves the canonical text unchanged."
+      - key: 01a14625-1535-7161-b749-350a75694b01
+        name: "In Python, a backslash that continues a line is not a token of the canonical text."
+      - key: 01a14625-1535-7161-b749-350bfa809c4c
+        name: "A comma directly before `)`, `]` or `}` is not a token of the canonical text, except in Python."
+      - key: 01a14625-1535-7161-b749-350cf0014804
+        name: "A line break written as CR LF is read as LF, in the canonical text and in a test's name."
   - key: 01a145e9-aa7f-769e-a7f5-f23774dc6c4b
     statement:
       form: ubiquitous
