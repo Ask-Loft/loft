@@ -3,6 +3,9 @@
 /docs/spec.md
 /docs/spec.json
 .DS_Store
+# Written by Claude Code each time it loads the plugin from this folder.
+/plugins/claude/loft/.claude-plugin/types/
+node_modules/
 __pycache__/
 *.py[cod]
 /.loft/

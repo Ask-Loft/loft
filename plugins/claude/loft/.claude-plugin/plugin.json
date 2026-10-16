@@ -1,7 +1,7 @@
 {
   "name": "loft",
   "version": "2.1.0",
-  "description": "Teaches a coding agent to write, change and review a Loft specification in spec/ with the loft command line.",
+  "description": "Teaches a coding agent to write, change and review a Loft specification in spec/ with the loft command line, and shows the Loft status pane while it works.",
   "author": {
     "name": "Locap Ventures FZCO",
     "url": "https://askloft.ai"
@@ -9,5 +9,20 @@
   "homepage": "https://askloft.ai",
   "repository": "https://github.com/Ask-Loft/loft",
   "license": "Apache-2.0",
-  "keywords": ["specification", "requirements", "ears", "loft"]
+  "keywords": ["specification", "requirements", "ears", "loft"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "baseBranch": {
+      "type": "string",
+      "title": "Base branch",
+      "description": "The revision the Loft status pane compares the tree with, as `loft status --base` takes it.",
+      "default": "develop"
+    },
+    "loftCommand": {
+      "type": "string",
+      "title": "loft command",
+      "description": "The command that runs loft, such as `loft`, `npx --no-install loft` or `pnpm exec loft`.",
+      "default": "loft"
+    }
+  }
 }

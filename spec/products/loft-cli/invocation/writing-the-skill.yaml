@@ -1,7 +1,7 @@
 key: 01a1380a-9f4b-741a-83a5-973429a1c475
 slug: writing-the-skill
 name: "Writing the skill"
-body: "What a command that writes the `loft-spec` skill into a project says once it has: commit the skill directories, so that every clone's coding agents find the skill. A command opts in by listing the tag `writes-skill` on its Feature, and each tagged command is tested against these rules."
+body: "What a command that writes the `loft-spec` skill into a project does beside it and says once it has: it enables the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`, so that Claude Code offers the Loft status pane to everyone who trusts the project, and it asks for the skill directories and that file to be committed, so that every clone's coding agents find them. A command opts in by listing the tag `writes-skill` on its Feature, and each tagged command is tested against these rules."
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -32,3 +32,39 @@ requirements:
         name: "A command that writes a skill directory has a Feature that lists `writes-skill`."
       - key: 01a1380a-9f4b-741a-83a5-973db6faa3be
         name: "A command whose Feature lists `writes-skill` writes a skill directory."
+  - key: 01a14545-579b-7242-998f-2f3a641f9d23
+    statement:
+      form: event_driven
+      when: "a command tagged `writes-skill` writes the skill"
+      system: "the command"
+      shall: "enable the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`."
+    criteria:
+      - key: 01a14545-579b-7242-998f-2f3b46cfe99b
+        name: "`extraKnownMarketplaces` names the marketplace `ask-loft` with the GitHub source `Ask-Loft/loft`."
+      - key: 01a14545-579b-7242-998f-2f3cf4e8c25d
+        name: "`enabledPlugins` sets `loft@ask-loft` to `true`."
+      - key: 01a14545-579b-7242-998f-2f3d805266c4
+        name: "Where the file does not exist, it is created with these two entries alone."
+      - key: 01a14545-579b-7242-998f-2f3e0dc7c685
+        name: "Every other entry of the file is kept, in the order the file gives it."
+      - key: 01a14545-579b-7242-998f-2f3f4ddd7ec6
+        name: "A marketplace `ask-loft` that the file already names is kept as it is."
+      - key: 01a14545-579b-7242-998f-2f405a1edf81
+        name: "A `loft@ask-loft` entry that the file already holds is kept as it is, `false` included."
+      - key: 01a14545-579b-7242-998f-2f4124a177d4
+        name: "A file that already holds both entries is not written."
+      - key: 01a14545-579b-7242-998f-2f4249089083
+        name: "The request to commit names `.claude/settings.json` where the command wrote it."
+  - key: 01a14545-579b-7242-998f-2f430611cb07
+    statement:
+      form: unwanted
+      if: "`.claude/settings.json` does not hold a JSON object"
+      system: "a command tagged `writes-skill`"
+      shall: "leave the file as it is and say how to enable the plugin by hand."
+    criteria:
+      - key: 01a14545-579b-7242-998f-2f44e95f8ddb
+        name: "The file's bytes are unchanged."
+      - key: 01a14545-579b-7242-998f-2f45dbfa8231
+        name: "The text output names the file and the two entries to add."
+      - key: 01a14545-579b-7242-998f-2f467423ed95
+        name: "The command's exit code is the one it would give without the file."

@@ -3,7 +3,7 @@
 //! as git would take it.
 
 use std::fs::OpenOptions;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 use std::path::Path;
 use std::process::ExitCode;
 
@@ -16,7 +16,11 @@ fn main() -> ExitCode {
         .collect();
     let (code, stdout, stderr) = match GitScenario::from_env() {
         Ok(scenario) => {
-            let reply = scenario.answer(&args);
+            let mut input = Vec::new();
+            if GitScenario::reads_input(&args) {
+                let _ = io::stdin().read_to_end(&mut input);
+            }
+            let reply = scenario.answer_with(&args, &input);
             if let Some((name, value)) = &reply.set {
                 save(&scenario.with_config(name, value));
             }

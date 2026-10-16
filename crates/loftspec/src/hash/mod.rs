@@ -114,6 +114,19 @@ fn hash_trees(document: &Document, mut views: Option<&mut BTreeMap<NodeId, Value
     }
 }
 
+/// The content view of every keyed node of a document without the hashes of its children: what
+/// the node itself says. The document need not index, since no view follows a reference.
+pub(crate) fn own_views(document: &Document) -> BTreeMap<NodeId, Value> {
+    let mut views = BTreeMap::new();
+    hash_trees(document, Some(&mut views));
+    for view in views.values_mut() {
+        if let Value::Array(fields) = view {
+            fields.pop();
+        }
+    }
+    views
+}
+
 /// Indexes a document, then computes every content hash, decision view hash and root.
 ///
 /// # Errors

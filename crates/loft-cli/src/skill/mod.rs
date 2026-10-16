@@ -1,8 +1,9 @@
 //! The `loft-spec` skill (the Agent Skill Product): its host-neutral source, embedded in `loft`,
 //! composed for each agent host and written into a project by `loft skill install` and
-//! `loft init`.
+//! `loft init`, which also enable the Claude Code plugin `loft@ask-loft` beside it.
 
 mod compose;
+mod settings;
 mod write;
 
 use std::fmt;
@@ -16,6 +17,8 @@ use crate::json;
 use crate::out::outln;
 
 use compose::Host;
+pub use settings::Enabled;
+use settings::SETTINGS;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-skill/1";
@@ -55,17 +58,28 @@ pub struct SkillError {
 impl fmt::Display for SkillError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self { directory, error } = self;
-        write!(formatter, "{directory}: cannot write the skill: {error}")
+        if *directory == SETTINGS {
+            write!(formatter, "{directory}: cannot enable the plugin: {error}")
+        } else {
+            write!(formatter, "{directory}: cannot write the skill: {error}")
+        }
     }
 }
 
-/// Writes each host's package into its directory under `root`, one after the other, and names
-/// the directories written.
+/// What writing the skill wrote: the skill directories, and what it did to the settings.
+pub struct Installed {
+    pub skills: Vec<&'static str>,
+    pub settings: Enabled,
+}
+
+/// Writes each host's package into its directory under `root`, one after the other, then
+/// enables the plugin in `.claude/settings.json`, and names what it wrote.
 ///
 /// # Errors
 ///
-/// A directory that cannot be written; a directory not yet reached is left as it was.
-pub fn install(root: &Path) -> Result<Vec<&'static str>, SkillError> {
+/// A directory or the settings file that cannot be written; one not yet reached is left as it
+/// was.
+pub fn install(root: &Path) -> Result<Installed, SkillError> {
     let mut written = Vec::new();
     for host in Host::ALL {
         // The source is embedded, and its tests compose it for every host.
@@ -75,7 +89,14 @@ pub fn install(root: &Path) -> Result<Vec<&'static str>, SkillError> {
             .map_err(|error| SkillError { directory, error })?;
         written.push(directory);
     }
-    Ok(written)
+    let settings = settings::enable(root).map_err(|error| SkillError {
+        directory: SETTINGS,
+        error,
+    })?;
+    Ok(Installed {
+        skills: written,
+        settings,
+    })
 }
 
 /// Whether each host's package of the skill lies under `root`.
@@ -90,17 +111,32 @@ pub fn error_json(error: &SkillError) -> serde_json::Value {
     json::error("install", &error.to_string(), &[])
 }
 
-/// Prints the line for each skill directory written, then asks for them to be committed
-/// (Writing the skill).
-pub fn report(written: &[&str]) {
-    for directory in written {
+/// Prints the line for each skill directory written and for the settings, then asks for what
+/// was written to be committed (Writing the skill).
+pub fn report(installed: &Installed) {
+    for directory in &installed.skills {
         outln!("installed {directory}");
     }
-    if !written.is_empty() {
-        outln!(
-            "commit {}, so that every clone's coding agents have the skill",
-            written.join(" and ")
-        );
+    let mut written: Vec<&str> = installed.skills.clone();
+    match installed.settings {
+        Enabled::Written => {
+            outln!(
+                "enabled the Claude Code plugin {} in {SETTINGS}",
+                settings::PLUGIN
+            );
+            written.push(SETTINGS);
+        }
+        Enabled::Unchanged => {}
+        Enabled::NotAnObject => outln!("{}", settings::by_hand()),
+    }
+    if !installed.skills.is_empty() {
+        let last = written.pop().expect("a skill directory was written");
+        let listed = if written.is_empty() {
+            last.to_owned()
+        } else {
+            format!("{} and {last}", written.join(", "))
+        };
+        outln!("commit {listed}, so that every clone's coding agents have the skill");
     }
 }
 
@@ -108,12 +144,12 @@ pub fn report(written: &[&str]) {
 /// it wrote.
 pub fn run(root: &Path, as_json: bool) -> Finished {
     match install(root) {
-        Ok(written) => {
+        Ok(installed) => {
             if as_json {
-                let fields = json!({ "skills": written });
+                let fields = json!({ "skills": installed.skills });
                 json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
             } else {
-                report(&written);
+                report(&installed);
             }
             Finished::success("installed")
         }

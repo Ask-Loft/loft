@@ -157,11 +157,25 @@ fn each_feature_of_the_plant_that_stands_in_for_an_external_system_lists_the_tag
 #[test]
 fn only_the_repository_port_runs_git() {
     let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
-    for entry in std::fs::read_dir(&src).unwrap() {
-        let path = entry.unwrap().path();
-        let text = std::fs::read_to_string(&path).unwrap();
-        let runs = text.contains("Command::new(") || text.contains("process::Command");
-        let name = path.file_name().unwrap().to_string_lossy().into_owned();
-        assert!(!runs || name == "repository.rs", "{name} runs a command");
+    let mut dirs = vec![src.clone()];
+    while let Some(dir) = dirs.pop() {
+        for entry in std::fs::read_dir(&dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                dirs.push(path);
+                continue;
+            }
+            let text = std::fs::read_to_string(&path).unwrap();
+            let runs = text.contains("Command::new(")
+                || text.contains("process::Command")
+                || text.contains(".spawn()");
+            let name = path
+                .strip_prefix(&src)
+                .unwrap()
+                .to_string_lossy()
+                .into_owned();
+            let port = name == "repository.rs" || name.starts_with("repository/");
+            assert!(!runs || port, "{name} runs a command");
+        }
     }
 }

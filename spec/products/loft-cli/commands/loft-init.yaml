@@ -83,6 +83,8 @@ requirements:
     criteria:
       - key: 01a13654-bf86-77e9-8fd5-8dbe4d28651c
         name: "Neither `.claude/skills/loft-spec/` nor `.agents/skills/loft-spec/` is written."
+      - key: 01a14545-579a-7115-b608-84149670ee2a
+        name: "`.claude/settings.json` is not written."
       - key: 01a13654-bf86-77e9-8fd5-8dbf78af83af
         name: "`spec/` is created as it is without the option."
   - key: 01a13711-d7d2-7100-8424-b9644093d3f8

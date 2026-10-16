@@ -26,6 +26,7 @@ clap.workspace = true
 hmac.workspace = true
 loftspec.workspace = true
 loftspec-store.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 ureq.workspace = true

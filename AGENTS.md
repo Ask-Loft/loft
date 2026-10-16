@@ -69,7 +69,13 @@ change, or v1 reverts it.
   `loft init` write into a project.
 - `plugins/claude/loft/` and `plugins/codex/loft/` are the plugins, each holding its host's
   package under `skills/loft-spec/`; `.claude-plugin/marketplace.json` and
-  `.agents/plugins/marketplace.json` list them.
+  `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft
+  status pane, a hooks module written by hand: `hooks/` (`register.tsx`, its pure `model.ts`
+  and its tone table `ui.tsx`), its state contract `types/index.d.ts` and its tests `tests/`.
+  It learns of the tree only from `loft … --format json` (the accepted decision "The status
+  pane reads Loft only through the command line's JSON"). CI does not run its tests: after a
+  change to it, run `claude plugin validate plugins/claude/loft` and
+  `claude plugin test plugins/claude/loft`, and type-check it with TypeScript.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
   of the platform it is installed on. A release packs it, and one package per platform, into
   tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;
