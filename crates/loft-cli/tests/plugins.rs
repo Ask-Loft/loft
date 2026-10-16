@@ -1,6 +1,7 @@
 //! The plugins for Claude Code and Codex: each committed package equals the composition `loft`
 //! writes for its host, each marketplace lists the plugin `loft` at its host's plugin root, and
-//! every manifest carries the version of `loft`.
+//! every manifest carries the version of `loft`; the Claude Code plugin also names the hooks
+//! module and the type contract of the Loft status pane, and declares its settings.
 
 use std::fs;
 
@@ -85,4 +86,46 @@ fn the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_categ
     for field in ["description", "author"] {
         assert!(!manifest[field].is_null(), "{field}");
     }
+}
+
+#[test]
+fn the_claude_code_plugins_hooks_json_names_its_hooks_module_which_lies_beside_it() {
+    let hooks = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
+    assert_eq!(hooks["modules"], json!(["./register.tsx"]));
+    assert!(
+        workspace()
+            .join(CLAUDE_ROOT)
+            .join("hooks/register.tsx")
+            .is_file()
+    );
+}
+
+#[test]
+fn the_claude_code_manifest_names_the_panes_type_contract_which_lies_in_the_plugin() {
+    let manifest = read(&format!("{CLAUDE_ROOT}/.claude-plugin/plugin.json"));
+    assert_eq!(manifest["types"], "./types/index.d.ts");
+    assert!(
+        workspace()
+            .join(CLAUDE_ROOT)
+            .join("types/index.d.ts")
+            .is_file()
+    );
+}
+
+#[test]
+fn the_claude_code_manifest_declares_the_base_branch_and_loft_command_settings_with_their_defaults()
+{
+    let manifest = read(&format!("{CLAUDE_ROOT}/.claude-plugin/plugin.json"));
+    let settings = &manifest["userConfig"];
+    for (name, default) in [("baseBranch", "develop"), ("loftCommand", "loft")] {
+        assert_eq!(settings[name]["type"], "string", "{name}");
+        assert_eq!(settings[name]["default"], default, "{name}");
+        assert!(settings[name]["description"].is_string(), "{name}");
+    }
+}
+
+#[test]
+fn the_claude_code_plugins_hooks_json_holds_an_empty_hooks_record_for_a_host_without_modules() {
+    let hooks = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
+    assert_eq!(hooks["hooks"], json!({}));
 }
