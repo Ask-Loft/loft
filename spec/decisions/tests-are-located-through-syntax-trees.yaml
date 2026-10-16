@@ -3,7 +3,9 @@ slug: tests-are-located-through-syntax-trees
 title: "`loft` locates a linked test in the syntax tree of its file, parsed with tree-sitter"
 context: "A link stays accepted while its test is rewritten, because the reconciler finds a test only as a word in its file and records nothing of what the test does. Recording a test's content needs the test's extent, from the start of its definition to its end, and a word search cannot give it. Teams write tests in many languages, and the libraries are published and take light dependencies."
 state:
-  kind: proposed
+  kind: accepted
+  selectedOption: 01a145e8-28eb-73cf-bca6-000b76ff41f5
+  outcome: "`loft` parses each test file with tree-sitter and its pinned grammars, behind the reconciler's port; the libraries take no parser, and the release build compiles the grammars' C for all six platforms, each Linux binary on its own architecture with musl's compiler."
 drivers:
   - key: 01a145e8-28eb-7d80-9180-92d101f9a21b
     kind: local
