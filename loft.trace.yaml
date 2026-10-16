@@ -13746,6 +13746,9 @@ links:
   - node: 01a1383e-2e64-72e5-b7f4-bc3116dbb317
     reviewed: 11dc138cf37e33b13da23eb0b0952f3c18a10cde948eb22551416200b5be0371
     unverified: "The skill text states it in references/reconciling.md; read it there."
+  - node: 01a1383e-2e64-72e5-b7f4-bc320fedb2e9
+    reviewed: df85c5647ba93e175d6f3ed120a92a075c7914ecde960c01d3d09b43292cf316
+    unverified: "The skill text states it in references/reconciling.md; read it there."
   - node: 01a1383e-2e64-72e5-b7f4-bc337a3e0a65
     reviewed: 8b65f8980a102d2b93ff779f1e6bbf82323866516a82c8d67b5b6811ed4bf270
     unverified: "The skill text states it in references/reconciling.md; read it there."
@@ -13757,6 +13760,9 @@ links:
     unverified: "The skill text states it in references/reconciling.md; read it there."
   - node: 01a1383e-2e64-72e5-b7f4-bc361984a9a7
     reviewed: bcb37d2001fafea587bd4e5ec318cee5958f7f44369eda318a86819e77037da8
+    unverified: "The skill text states it in references/reconciling.md; read it there."
+  - node: 01a1383e-2e64-72e5-b7f4-bc37a8e347c5
+    reviewed: a9f96c26156e62f36d03e9b6bce6f0791de4f4bc5bb1aaa8fdc0283e3a960dbe
     unverified: "The skill text states it in references/reconciling.md; read it there."
   - node: 01a1383e-2e64-72e5-b7f4-bc39c30eb8f5
     reviewed: 2905b0be165b11f058b04f8fceb682c2cd111f387cb341ecdbe8c5c00092bcb7

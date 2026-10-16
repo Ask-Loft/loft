@@ -22,9 +22,10 @@ acceptance criterion, and each Constraint and Quality Attribute whose `verificat
 `proved`. Each line names a finding's node by its file, line, label and message, and the last
 line counts the nodes in scope, the nodes a link names, and the findings of each rule.
 
-The work is every `TR-001`, `TR-002` and `TR-003` finding on a node the change touches: a node
-with no test yet, a link never reviewed, and a link reviewed before its node changed. Fix every
-`TR-004` and `TR-005` finding wherever it is: each says a link is no longer true.
+The work is every `TR-001`, `TR-002`, `TR-003` and `TR-006` finding on a node the change touches:
+a node with no test yet, a link never reviewed, a link reviewed before its node changed, and a
+test changed after it was recorded. Fix every `TR-004` and `TR-005` finding wherever it is: each
+says a link is no longer true.
 
 ## Link a test to its node
 
@@ -32,7 +33,7 @@ Write the test first, then its link. Read the node's key with `loft find <label>
 entry under `links`, or a test to the node's existing entry:
 
 ```yaml path=loft.trace.yaml
-format: loft-trace/1
+format: loft-trace/2
 links:
   - node: 01a13900-0000-7000-8000-000000000001
     tests:
@@ -44,20 +45,24 @@ links:
 
 - `node` is the node's key, never its label: a publish may give the node another label.
 - `file` is the test's path from the directory that holds `spec/`; `name` is the test's name as
-  its file writes it, a function name or a test's title. `loft reconcile` finds it as a whole
-  word in the file and never runs it.
+  its file writes it, a function name or a test's title. `loft reconcile` never runs it: in Rust,
+  TypeScript, JavaScript, Python and Go it locates the test in the file's syntax tree, and
+  elsewhere it finds the name as a whole word.
+- Leave out a test's `body`: accepting writes it.
 - Where no test can verify a node, write `unverified` with the reason instead of `tests`.
 - Order does not matter; `loft reconcile --accept` writes the links in the document's order.
 
 ## Accept a link after review
 
-Accepting a link records that a reviewer read its tests against the node as it now reads. Read
-each test of the link against every part of the node's words first; then run
-`loft reconcile --accept <label>`, once per node or with `--accept` repeated. A link whose test
-cannot be found, or whose node is not in scope, is refused, and nothing is written.
+Accepting a link records that a reviewer read its tests against the node as it now reads, and
+records each located test's `body`, the digest of its tokens. Read each test of the link against
+every part of the node's words first; run the project's formatter, since one that adds or removes
+a token such as a trailing comma changes the digest; then run `loft reconcile --accept <label>`,
+once per node or with `--accept` repeated. A link whose test cannot be found, or whose node is not
+in scope, is refused, and nothing is written.
 
-`loft reconcile --accept-stale` accepts every unreviewed and stale link at once. It states a
-review of each, so run it only when the user asks for it.
+`loft reconcile --accept-stale` accepts every unreviewed and stale link, and every link whose test
+changed, at once. It states a review of each, so run it only when the user asks for it.
 
 ## Fix each finding
 
@@ -68,10 +73,14 @@ review of each, so run it only when the user asks for it.
 | `TR-003` | The node changed after the link was reviewed | Read the node's new words; change the test where it no longer verifies them; accept it |
 | `TR-004` | A test's file does not exist, lies outside the project, is not UTF-8 text, cannot be read, or does not hold its name | Correct the path or the name, or remove the test from the link; the message says which |
 | `TR-005` | The link's node is gone, or is not in scope | Remove the link, or link the node that replaced it |
+| `TR-006` | A test changed after its `body` was recorded | Read the test against the node; change it where it no longer verifies the node; accept the link |
+| `TR-007` | A test is found only as a word, so a change to it goes unreported | Where its language is one `loft` parses, link the test by its function's name or its title; otherwise leave it |
+| `TR-008` | A literal in backticks in the node's name occurs in none of its tests | Check that the link names the tests that verify the node; add a check of the literal where no test makes one |
 
 Never weaken a node's words to fit a test; change the test, or report the gap.
 
 ## Commit the trace file with the code
 
 Commit `loft.trace.yaml` in the same commit as the tests it names. A CI job runs
-`loft reconcile --fail-on warning`, which fails on every finding but `TR-001`.
+`loft reconcile --fail-on warning`, which fails on every finding but `TR-001`, `TR-007` and
+`TR-008`.
