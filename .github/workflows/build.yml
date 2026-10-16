@@ -14,7 +14,6 @@ permissions:
 jobs:
   build:
     strategy:
-      fail-fast: false
       matrix:
         include:
           - { platform: darwin-arm64, target: aarch64-apple-darwin, runner: macos-latest }
