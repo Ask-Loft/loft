@@ -30,5 +30,5 @@ fn subtest(node: Node<'_>, text: &str) -> Option<String> {
         return None;
     }
     let arguments = node.child_by_field_name("arguments")?;
-    strings::value(arguments.named_child(0)?, text)
+    strings::value(strings::first_argument(arguments)?, text)
 }

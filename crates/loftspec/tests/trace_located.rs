@@ -188,16 +188,37 @@ fn a_test_with_tr_004_has_no_source_and_an_unverified_link_has_no_tr_008() {
 
 #[test]
 fn a_link_out_of_scope_yields_no_tr_006_tr_007_or_tr_008() {
-    let document = small_document();
+    // QA-1 (8) is sampled, so out of scope; its link has a stale body, a test found only as a
+    // word, and a literal its tests do not hold.
+    let mut document = small_document();
+    let quality = &mut document.components[0].component.quality_attributes[0];
+    "The `absent` literal holds.".clone_into(&mut quality.name);
     let mut link = tested(8, "nine");
-    tests_of(&mut link).push(test("absent word"));
-    tests_of(&mut link)[0].body = Some(digest_of("older"));
-    let reconciled = run(&document, vec![link], &files(SOURCE));
-    let rules: Vec<_> = found(&reconciled)
-        .into_iter()
-        .filter(|(_, node)| *node == key(8))
-        .collect();
-    assert_eq!(rules, [(TraceRule::Tr005, key(8))]);
+    tests_of(&mut link)[0].body = Some(digest_of("an older body"));
+    let mut word = test("five");
+    word.file = "tests/a.py".to_owned();
+    tests_of(&mut link).push(word);
+    let files = with(files(SOURCE), "tests/a.py", "five\n");
+    let on_eight = |document: &loftspec::document::Document| -> Vec<TraceRule> {
+        found(&run(document, vec![link.clone()], &files))
+            .into_iter()
+            .filter(|(_, node)| *node == key(8))
+            .map(|(rule, _)| rule)
+            .collect()
+    };
+    assert_eq!(on_eight(&document), [TraceRule::Tr005]);
+    // In scope, the same link yields each of them.
+    document.components[0].component.quality_attributes[0].verification_fate =
+        Some(loftspec::attributes::VerificationFate::Proved);
+    assert_eq!(
+        on_eight(&document),
+        [
+            TraceRule::Tr002,
+            TraceRule::Tr006,
+            TraceRule::Tr007,
+            TraceRule::Tr008
+        ]
+    );
 }
 
 #[test]

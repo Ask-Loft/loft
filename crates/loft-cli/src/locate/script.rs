@@ -3,6 +3,8 @@
 //! first argument is a string, or a template literal without a substitution, that names it. Of
 //! calls nested in one another that carry one name, the outermost is the test.
 
+use std::collections::HashMap;
+
 use tree_sitter::Node;
 
 use super::{Candidate, each, strings, text_of};
@@ -34,7 +36,7 @@ fn registered(node: Node<'_>, text: &str) -> Option<String> {
         return None;
     }
     let arguments = node.child_by_field_name("arguments")?;
-    strings::value(arguments.named_child(0)?, text)
+    strings::value(strings::first_argument(arguments)?, text)
 }
 
 /// Whether calling `callee` registers a test.
@@ -62,17 +64,22 @@ fn registers(callee: Node<'_>, text: &str) -> bool {
     }
 }
 
-/// `found` without each test that lies within another test of the same name.
+/// `found` without each test that lies within another test of the same name; only tests of one
+/// name are compared.
 fn outermost(found: Vec<Candidate>) -> Vec<Candidate> {
-    let within = |inner: &Candidate, outer: &Candidate| {
-        inner.name == outer.name
-            && outer.start <= inner.start
-            && inner.end <= outer.end
-            && (outer.start, outer.end) != (inner.start, inner.end)
-    };
+    let mut by_name: HashMap<&str, Vec<(usize, usize)>> = HashMap::new();
+    for candidate in &found {
+        let spans = by_name.entry(candidate.name.as_str()).or_default();
+        spans.push((candidate.start, candidate.end));
+    }
     let kept: Vec<bool> = found
         .iter()
-        .map(|candidate| !found.iter().any(|other| within(candidate, other)))
+        .map(|candidate| {
+            let span = (candidate.start, candidate.end);
+            !by_name[candidate.name.as_str()]
+                .iter()
+                .any(|&(start, end)| start <= span.0 && span.1 <= end && (start, end) != span)
+        })
         .collect();
     found
         .into_iter()

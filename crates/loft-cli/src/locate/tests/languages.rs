@@ -151,3 +151,63 @@ fn a_go_function_and_a_subtest_are_tests() {
         ]
     );
 }
+
+#[test]
+fn a_python_continuation_line_is_whitespace_inside_brackets_and_after_a_backslash() {
+    let wrapped =
+        "def test_same():\n    total = add(1,\n                2)\n    other = 1 + \\\n        2\n";
+    let flat = "def test_same():\n    total = add(1, 2)\n    other = 1 + 2\n";
+    assert_eq!(
+        canonical("a.py", wrapped, "test_same"),
+        canonical("a.py", flat, "test_same")
+    );
+    assert_eq!(
+        canonical("a.py", flat, "test_same"),
+        "def test_same ( ) :\n    total = add ( 1 , 2 )\n    other = 1 + 2"
+    );
+}
+
+const QUALIFIED: &str = r#"
+proptest! {
+    #[test]
+    async fn waits(a in 0..1) {}
+
+    #[test]
+    pub(crate) fn shared(a in 0..1) {}
+
+    fn declared(&self) -> u32;
+
+    #[test]
+    #[ignore]
+    pub unsafe extern "C" fn after_a_declaration() { body(); }
+}
+"#;
+
+#[test]
+fn qualifiers_in_a_macro_keep_the_attributes_and_a_declaration_is_no_test() {
+    let tests = located("tests/a.rs", QUALIFIED);
+    assert_eq!(
+        tests,
+        [
+            ("waits".to_owned(), 3, 4),
+            ("shared".to_owned(), 6, 7),
+            ("after_a_declaration".to_owned(), 11, 13),
+        ]
+    );
+    assert_eq!(
+        canonical("tests/a.rs", QUALIFIED, "waits"),
+        "# [ test ] async fn waits ( a in 0 .. 1 ) { }"
+    );
+    let last = canonical("tests/a.rs", QUALIFIED, "after_a_declaration");
+    assert!(
+        last.starts_with("# [ test ] # [ ignore ] pub unsafe extern \"C\" fn"),
+        "{last}"
+    );
+}
+
+#[test]
+fn an_escaped_or_commented_go_subtest_name_is_read_as_written_to_run() {
+    let go = "func TestNames(t *testing.T) {\n\tt.Run(\"caf\\u00e9\", nil)\n\tt.Run(\"\\101\\x42\\U0001F600\", nil)\n\tt.Run(/* why */ \"commented\", nil)\n}\n";
+    let names = names("a_test.go", go);
+    assert_eq!(names, ["TestNames", "café", "AB😀", "commented"]);
+}

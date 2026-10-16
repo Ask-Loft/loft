@@ -163,3 +163,25 @@ fn the_json_document_carries_the_number_of_bodies_recorded() {
     let again = json_of(&scratch.loft(&["reconcile", "--format", "json"]));
     assert_eq!(again["recorded"], json!(0));
 }
+
+#[test]
+fn rewrapping_a_python_call_raises_no_tr_006() {
+    let scratch = project();
+    let test_file = scratch.0.join("tests/test_shelf.py");
+    fs::write(&test_file, "def test_added():\n    assert add(1, 2) == 3\n").unwrap();
+    write_trace(
+        &scratch,
+        &[link_in(AC_1, "tests/test_shelf.py", "test_added")],
+    );
+    scratch.loft(&["reconcile", "--accept", "AC-1"]);
+    fs::write(
+        &test_file,
+        "def test_added():\n    assert add(\n        1,\n        2\n    ) == 3\n",
+    )
+    .unwrap();
+    let rewrapped = scratch.loft(&["reconcile", "--fail-on", "warning"]);
+    assert_eq!(rewrapped.status.code(), Some(0), "{}", stdout(&rewrapped));
+    fs::write(&test_file, "def test_added():\n    assert add(1, 2) == 4\n").unwrap();
+    let changed = scratch.loft(&["reconcile", "--fail-on", "warning"]);
+    assert!(findings(&changed).contains(&("TR-006".to_owned(), "AC-1".to_owned())));
+}

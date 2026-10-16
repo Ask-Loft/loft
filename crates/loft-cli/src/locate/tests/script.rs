@@ -90,3 +90,29 @@ fn a_test_located_twice_has_one_location_for_each() {
         ]
     );
 }
+
+#[test]
+fn a_plain_test_and_every_modifier_register_a_test() {
+    let spec = "test(\"plain\", () => {});\nit.todo(\"todo\");\nit.sequential(\"sequential\", () => {});\nit.fails(\"fails\", () => {});\nit.runIf(true)(\"run if\", () => {});\ndescribe.skipIf(false)(\"skip if\", () => {});\n";
+    assert_eq!(
+        names("a.test.js", spec),
+        ["plain", "todo", "sequential", "fails", "run if", "skip if"]
+    );
+}
+
+#[test]
+fn an_escape_in_a_name_is_read_as_its_character_and_a_comment_is_no_argument() {
+    let spec = "it(\"caf\\u00e9\", () => {});\nit('\\x41\\u{1F600}\\n', () => {});\nit(/* why */ \"commented\", () => {});\n";
+    assert_eq!(names("a.test.ts", spec), ["café", "A😀\n", "commented"]);
+}
+
+#[test]
+fn a_tsx_file_is_parsed_as_typescript_with_jsx() {
+    let spec = "test(\"typed\", () => {\n  const pane = render<Props>(<Pane title={\"x\" as string} />);\n  const size: number = 1;\n});\n";
+    assert_eq!(names("pane.test.tsx", spec), ["typed"]);
+    assert!(super::parses_cleanly("pane.test.tsx", spec));
+    // The JavaScript grammar cannot read the type annotations.
+    assert!(!super::parses_cleanly("pane.test.jsx", spec));
+    let text = canonical("pane.test.tsx", spec, "typed");
+    assert!(text.contains("render < Props > ( < Pane"), "{text}");
+}

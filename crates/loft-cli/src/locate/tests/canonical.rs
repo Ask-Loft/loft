@@ -35,10 +35,101 @@ fn whitespace_between_tokens_leaves_the_canonical_text_unchanged() {
         canonical("a.rs", tight, "same"),
         canonical("a.rs", loose, "same")
     );
-    let added = "#[test] fn same() { let a = vec![1, 2,]; }\n";
+    let changed = "#[test] fn same() { let a = vec![1, 3]; }\n";
     assert_ne!(
         canonical("a.rs", tight, "same"),
-        canonical("a.rs", added, "same")
+        canonical("a.rs", changed, "same")
+    );
+}
+
+#[test]
+fn a_comma_before_a_closing_bracket_is_not_a_token_except_in_python() {
+    let pairs = [
+        (
+            "a.rs",
+            "fn same() { f(1, 2); let v = [1, 2]; }\n",
+            "fn same() {\n    f(\n        1,\n        2,\n    );\n    let v = [1, 2,];\n}\n",
+        ),
+        (
+            "a.test.ts",
+            "it(\"same\", () => { f({ a: 1 }, [2]) })\n",
+            "it(\"same\", () => { f({ a: 1, }, [2,],) },)\n",
+        ),
+        (
+            "a_test.go",
+            "func same() { f(T{a: 1}) }\n",
+            "func same() {\n\tf(T{\n\t\ta: 1,\n\t},)\n}\n",
+        ),
+    ];
+    for (path, without, with) in pairs {
+        assert_eq!(
+            canonical(path, without, "same"),
+            canonical(path, with, "same"),
+            "{path}"
+        );
+    }
+    let tuple = "def same():\n    return (1,)\n";
+    let number = "def same():\n    return (1)\n";
+    assert_ne!(
+        canonical("a.py", tuple, "same"),
+        canonical("a.py", number, "same")
+    );
+}
+
+#[test]
+fn a_line_break_written_as_cr_lf_is_read_as_lf() {
+    let pairs = [
+        ("a.rs", "#[test]\nfn same() {\n    let s = r\"x\ny\";\n}\n"),
+        (
+            "a.test.js",
+            "it(\"same\", () => {\n  const t = `x\ny`;\n});\n",
+        ),
+        (
+            "a.py",
+            "def same():\n    s = \"\"\"x\ny\"\"\"\n    z = 1 + \\\n        2\n",
+        ),
+        ("a_test.go", "func same() {\n\ts := `x\ny`\n}\n"),
+    ];
+    for (path, unix) in pairs {
+        let windows = unix.replace('\n', "\r\n");
+        assert_eq!(
+            canonical(path, unix, "same"),
+            canonical(path, &windows, "same"),
+            "{path}"
+        );
+    }
+    let name = "it('a \\\r\nb', () => {});\r\n";
+    assert_eq!(super::names("a.test.js", name), ["a b"]);
+}
+
+#[test]
+fn locating_takes_time_in_proportion_to_the_file() {
+    use std::fmt::Write as _;
+    use std::time::Instant;
+    let file = |tests: usize| -> String {
+        let mut text = String::new();
+        for at in 0..tests {
+            writeln!(text, "def test_{at}(value):\n    assert value == {at}\n").unwrap();
+        }
+        text
+    };
+    let fastest = |tests: usize| {
+        let text = file(tests);
+        (0..3)
+            .map(|_| {
+                let started = Instant::now();
+                assert_eq!(super::super::locate("a.py", &text).unwrap().len(), tests);
+                started.elapsed()
+            })
+            .min()
+            .unwrap()
+    };
+    let (small, large) = (fastest(1_000), fastest(4_000));
+    // Four times the tests: about four times the time where locating is linear, sixteen times
+    // where each test walked the whole file.
+    assert!(
+        large < small * 10,
+        "1,000 tests: {small:?}; 4,000 tests: {large:?}"
     );
 }
 

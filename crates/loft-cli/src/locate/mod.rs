@@ -114,9 +114,17 @@ impl Candidate {
 }
 
 /// The tests that `text`, the file at `path`, holds, in the order of the file; none where no
-/// grammar parses the file.
+/// grammar parses the file. A line break written as CR LF is read as LF, so a checkout's line
+/// endings change no digest.
 pub fn locate(path: &str, text: &str) -> Option<Vec<LocatedTest>> {
     let grammar = Grammar::of(path)?;
+    let unix;
+    let text = if text.contains("\r\n") {
+        unix = text.replace("\r\n", "\n");
+        unix.as_str()
+    } else {
+        text
+    };
     let mut parser = Parser::new();
     parser.set_language(&grammar.language()).ok()?;
     let tree = parser.parse(text, None)?;
