@@ -88,7 +88,7 @@ requirements:
       - key: 01a1383c-655a-7511-9f70-ed27eec91a5f
         name: "A node without a link cannot be accepted."
       - key: 01a1383c-655a-7511-9f70-ed28922230de
-        name: "A node whose link has a `TR-004` or `TR-005` finding cannot be accepted."
+        name: "A node whose link has a `TR-004`, `TR-005` or `TR-010` finding cannot be accepted."
       - key: 01a1383c-2899-72f8-b39a-0a1f2b01371a
         name: "No link is accepted, including those of the other nodes named."
       - key: 01a139d8-bf45-745b-b61d-b7899cd2e749
@@ -104,7 +104,7 @@ requirements:
       form: optional
       where: "`--accept-stale` is given"
       system: "`loft reconcile`"
-      shall: "accept every link that has a `TR-002`, `TR-003` or `TR-006` finding and can be accepted."
+      shall: "accept every link that has a `TR-002`, `TR-003`, `TR-006` or `TR-009` finding and can be accepted."
     criteria:
       - key: 01a1383c-2899-72f8-b39a-0a21af41dcc3
         name: "A link with a `TR-004` finding is left unaccepted and its findings are printed."
@@ -114,6 +114,10 @@ requirements:
         name: "A link with a `TR-006` finding is accepted, and the `body` of each of its located tests is recorded."
       - key: 01a14625-1534-77d8-bbe8-b4c7d4214fa9
         name: "Where no link is accepted but a body is recorded, the trace file is written."
+      - key: 01a146cb-3d3f-758c-b919-c8e5b162787b
+        name: "A link with a `TR-009` finding is accepted, and the `body` of each of its tests found only as a whole word is removed."
+      - key: 01a146cb-3d40-749f-b9bb-1cc06b560fad
+        name: "A link with a `TR-010` finding is left unaccepted and its findings are printed."
   - key: 01a1383c-2899-72f8-b39a-0a23626e032b
     statement:
       form: optional

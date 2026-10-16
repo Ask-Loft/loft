@@ -43,9 +43,9 @@ requirements:
       - key: 01a144ee-c59e-7325-802c-d72c09cbf679
         name: "Spec committed passes when `loft status` lists no uncommitted path under `spec/`."
       - key: 01a144ee-c59e-7325-802c-d72d1c30d09b
-        name: "Trace does not pass while a criterion that the branch added or changed has a `TR-001`, `TR-002`, `TR-003` or `TR-006` finding."
+        name: "Trace does not pass while a criterion that the branch added or changed has a `TR-001`, `TR-002`, `TR-003`, `TR-006` or `TR-009` finding."
       - key: 01a144ef-6ca2-72ca-be59-5704e4bee58c
-        name: "Trace does not pass while a `TR-004` or `TR-005` finding stands anywhere in the trace."
+        name: "Trace does not pass while a `TR-004`, `TR-005` or `TR-010` finding stands anywhere in the trace."
       - key: 01a144ee-c59e-7325-802c-d72eed8c141c
         name: "Lock passes when `loft status` reports that the tree matches the lock, and otherwise says that the tree holds unpublished changes."
       - key: 01a144ee-c59e-7325-802c-d72f00f4a28d
@@ -87,7 +87,7 @@ requirements:
       shall: "list as the criteria to verify each criterion that the branch added or changed, with whether its tests are reviewed."
     criteria:
       - key: 01a144ee-c59e-7325-802c-d73c0ea40657
-        name: "A criterion with no `TR-001`, `TR-002`, `TR-003` or `TR-006` finding is marked as reviewed."
+        name: "A criterion with no `TR-001`, `TR-002`, `TR-003`, `TR-006` or `TR-009` finding is marked as reviewed."
       - key: 01a144ee-c59e-7325-802c-d73dedb5bd58
         name: "The first criterion that is not reviewed is marked as the current one."
       - key: 01a144ee-c59e-7325-802c-d73edddbaeb1

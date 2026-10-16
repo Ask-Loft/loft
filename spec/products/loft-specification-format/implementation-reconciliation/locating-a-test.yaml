@@ -42,6 +42,8 @@ requirements:
         name: "Inside a macro invocation, `pub`, `async`, `unsafe`, `const` and `extern` written between the attributes and `fn` are part of the test."
       - key: 01a14625-1535-7161-b749-35056801059f
         name: "Inside a macro invocation, a `fn` followed by `;` before any group in braces is not a test."
+      - key: 01a146cb-3d40-749f-b9bb-1cc111bc2bc0
+        name: "Inside a macro invocation, a comment among the attributes, the qualifiers and `fn` does not end the attributes of the test."
   - key: 01a145e9-aa7f-769e-a7f5-f2226bff6c72
     statement:
       form: ubiquitous
@@ -62,6 +64,12 @@ requirements:
         name: "An escape in a JavaScript or TypeScript string, such as `\\n`, `\\u00e9`, `\\u{1F600}` or `\\x41`, is read as the character it stands for."
       - key: 01a14625-1535-7161-b749-35074160a574
         name: "A comment before a call's first argument is not its first argument."
+      - key: 01a146cb-3d40-749f-b9bb-1cc2bacfaf24
+        name: "Two `\\u` escapes in a JavaScript or TypeScript string that form a surrogate pair are read as the one character they stand for."
+      - key: 01a146cb-3d40-749f-b9bb-1cc3989f464e
+        name: "A backslash before a line break in a JavaScript or TypeScript string, whether LF, CR, CR LF, U+2028 or U+2029, continues the string and is not part of the test's name."
+      - key: 01a146cb-3d40-749f-b9bb-1cc4f310c794
+        name: "A function in parentheses, such as `(test)(…)`, registers a test as the function does."
   - key: 01a145e9-aa7f-769e-a7f5-f228d2bdf5a7
     statement:
       form: ubiquitous
@@ -85,9 +93,13 @@ requirements:
       - key: 01a145e9-aa7f-769e-a7f5-f22e4792189e
         name: "A call to a method `Run` whose first argument is a string literal equal to the test's name is the test."
       - key: 01a14625-1535-7161-b749-35087ab1cfc6
-        name: "An escape in a Go string, such as `\\n`, `\\u00e9`, `\\U0001F600`, `\\x41` or `\\101`, is read as the character it stands for."
+        name: "An escape in a Go string, such as `\\n`, `\\u00e9` or `\\U0001F600`, is read as the character it stands for, and `\\x` and octal escapes such as `\\xc3\\xa9` or `\\303\\251` as bytes, read together as UTF-8."
       - key: 01a14625-1535-7161-b749-35098bb8d485
         name: "A comment before the first argument of `Run` is not its first argument."
+      - key: 01a146cb-3d40-749f-b9bb-1cc57f8d9c61
+        name: "A carriage return in a Go raw string is not part of the test's name."
+      - key: 01a146cb-3d40-749f-b9bb-1cc644e4f41a
+        name: "A method `Run` in parentheses, such as `(t.Run)(…)`, runs a subtest as the method does."
   - key: 01a145e9-aa7f-769e-a7f5-f22f09f4fb8b
     statement:
       form: ubiquitous
@@ -104,6 +116,8 @@ requirements:
         name: "A comment is not a token of the canonical text."
       - key: 01a145e9-aa7f-769e-a7f5-f234d503d09c
         name: "A string, character or template literal is one token of the canonical text, written as in the file."
+      - key: 01a146cb-3d40-749f-b9bb-1cc70ed1d3b8
+        name: "Text between JSX tags is one token of the canonical text, read as JSX reads it: each line trimmed where it meets a line break, a line left empty dropped, and the lines left joined by one space."
       - key: 01a145e9-aa7f-769e-a7f5-f235c46cfb4d
         name: "In Python, a token that starts a line outside any bracket is preceded in the canonical text by a line break and the line's indentation as written."
       - key: 01a145e9-aa7f-769e-a7f5-f236238e83b4
@@ -137,3 +151,18 @@ requirements:
         name: "A test whose name no test of its parsed file carries is looked for as a whole word."
       - key: 01a145e9-aa7f-769e-a7f5-f23db8b80330
         name: "A test found only as a whole word has no digest."
+  - key: 01a146cb-3d40-749f-b9bb-1cc803103901
+    statement:
+      form: unwanted
+      if: "a test file holds a part that its grammar does not parse"
+      system: "the reconciler"
+      shall: "not take as located a test that holds that part, or that the part follows before the next test of the file starts."
+    criteria:
+      - key: 01a146cb-3d40-749f-b9bb-1cc9702c589a
+        name: "A test that holds a part of its file that the grammar does not parse is not located."
+      - key: 01a146cb-3d40-749f-b9bb-1cca5022e939
+        name: "A test followed by a part that the grammar does not parse, before the next test of the file starts, is not located."
+      - key: 01a146cb-3d40-749f-b9bb-1ccbed7b7859
+        name: "A test that neither holds nor is followed by a part that the grammar does not parse is located, though another part of its file does not parse."
+      - key: 01a146cb-3d40-749f-b9bb-1ccc349038b9
+        name: "Each part that the grammar does not parse is given by its line and its column, counted from 1, and by its text or the token that the grammar found missing."
