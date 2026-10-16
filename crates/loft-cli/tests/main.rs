@@ -69,4 +69,5 @@ mod update_check_switches;
 mod verify;
 mod version;
 mod writes_skill;
+mod writes_skill_settings;
 mod writes_tree;

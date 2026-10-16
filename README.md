@@ -108,14 +108,20 @@ files and fields, the writing rules, what each lint finding means, review, and p
 needs.
 
 `loft init` writes the skill for Claude Code to `.claude/skills/loft-spec/` and for Codex to
-`.agents/skills/loft-spec/`; `--no-skill` leaves it out. `loft skill install` writes it into any
-project, and after an upgrade of `loft` brings it to the new version. Commit both directories so
-that everyone working on the project has the skill.
+`.agents/skills/loft-spec/`, and enables the Claude Code plugin `loft@ask-loft` in
+`.claude/settings.json`, keeping every other entry of that file; `--no-skill` leaves all three
+out. `loft skill install` writes it into any
+project, and after an upgrade of `loft` brings it to the new version, enabling the plugin the
+same way. Commit both directories and `.claude/settings.json` so that everyone working on the
+project has the skill and is offered the plugin.
 
 The skill is also a plugin, for an agent that works across projects:
 
-- Claude Code: `/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@loft`.
-- Codex: `codex plugin marketplace add Ask-Loft/loft`, then `codex plugin add loft@loft`, or
+- Claude Code: `/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@ask-loft`.
+  In a project where `loft init` or `loft skill install` ran, the committed `.claude/settings.json`
+  already names the marketplace and enables `loft@ask-loft`, so Claude Code offers the plugin
+  to whoever trusts the project.
+- Codex: `codex plugin marketplace add Ask-Loft/loft`, then `codex plugin add loft@ask-loft`, or
   choose it in `/plugins`.
 
 The plugin teaches the agent; it does not install `loft`, which the skill expects on the path.

@@ -445,6 +445,7 @@ dependencies = [
  "hmac",
  "loftspec",
  "loftspec-store",
+ "serde",
  "serde_json",
  "sha2",
  "software-plant",

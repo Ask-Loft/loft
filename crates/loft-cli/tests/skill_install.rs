@@ -108,7 +108,7 @@ fn skill_install_replaces_each_directory_whole_and_leaves_no_temporary_directory
 }
 
 #[test]
-fn skill_install_writes_nothing_outside_the_two_skill_directories() {
+fn skill_install_writes_nothing_outside_the_two_skill_directories_and_the_claude_settings() {
     let scratch = Scratch::empty();
     fs::write(scratch.0.join("README.md"), "readme").unwrap();
     let scratch = install_into(scratch);
@@ -116,7 +116,7 @@ fn skill_install_writes_nothing_outside_the_two_skill_directories() {
         .into_keys()
         .filter(|path| !path.starts_with(CLAUDE) && !path.starts_with(CODEX))
         .collect();
-    assert_eq!(outside, ["README.md"]);
+    assert_eq!(outside, [".claude/settings.json", "README.md"]);
 }
 
 /// A directory where `.claude` is a file, so the Claude Code package cannot be written, and the

@@ -18,6 +18,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   touched that still lack a reviewed test, the file the agent is writing, and a status-line
   entry. `/loft-status [<revision>|auto]` opens it; the settings `baseBranch` and `loftCommand`
   choose the base and the command that runs `loft`. It needs a `loft` with `loft status`.
+- `loft init` and `loft skill install` also enable the Claude Code plugin `loft@ask-loft` in the
+  project's `.claude/settings.json`: the marketplace `ask-loft`, from GitHub's `Ask-Loft/loft`, and
+  the plugin on, so Claude Code offers the plugin to whoever trusts the project. Every other
+  entry of the file is kept in its order, an entry it already sets is kept (an opt-out
+  included), and a file that is not a JSON object is left alone with the entries to add by hand.
+  `--no-skill` leaves the file out too.
+- Both plugin marketplaces are now named `ask-loft`: install with `/plugin install loft@ask-loft`
+  in Claude Code and `codex plugin add loft@ask-loft` in Codex.
 
 ## 2.1.0 (2026-10-15)
 

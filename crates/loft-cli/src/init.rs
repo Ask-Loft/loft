@@ -29,23 +29,28 @@ pub fn run(root: &Path, with_skill: bool, as_json: bool) -> Finished {
     {
         return Stop::from(error).exit(SCHEMA, as_json);
     }
-    let skills = if with_skill {
+    let installed = if with_skill {
         match skill::install(root) {
-            Ok(skills) => skills,
+            Ok(installed) => Some(installed),
             Err(error) => {
                 return json::stop(SCHEMA, vec![skill::error_json(&error)], &error, as_json);
             }
         }
     } else {
-        Vec::new()
+        None
     };
+    let skills = installed
+        .as_ref()
+        .map_or_else(Vec::new, |installed| installed.skills.clone());
     let key = document.id.to_string();
     if as_json {
         let fields = json!({ "created": "spec/", "documentKey": key, "skills": skills });
         json::print(&json::result(SCHEMA, "created", fields, Vec::new()));
     } else {
         outln!("created spec/, document key {key}");
-        skill::report(&skills);
+        if let Some(installed) = &installed {
+            skill::report(installed);
+        }
         if let Some(suggestion) = merge_driver::suggestion(&GitCommand::default(), root) {
             outln!("{suggestion}");
         }

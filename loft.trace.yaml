@@ -6771,6 +6771,11 @@ links:
     tests:
       - file: "crates/loft-cli/tests/init.rs"
         name: "init_with_no_skill_writes_no_skill_and_the_same_tree"
+  - node: 01a14545-579a-7115-b608-84149670ee2a
+    reviewed: 827f130319c0f459ea9652bb2abc41fbd7dda6bbb8ba1a2772bd9ac809c52629
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "init_with_no_skill_writes_no_settings"
   - node: 01a13654-bf86-77e9-8fd5-8dbf78af83af
     reviewed: 1259c2517aaeb36983a376584b3b0cc7d42ddc22c62f2e3d2c8a60a56d39f092
     tests:
@@ -7684,10 +7689,10 @@ links:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_replaces_each_directory_whole_and_leaves_no_temporary_directory"
   - node: 01a13654-bf86-77e9-8fd5-8dc69b2cc428
-    reviewed: 2ba2ce579635dc0cf48bd96999e23ab1b6e4894e1725d15ffbba132d187f7d1a
+    reviewed: 114845ec79866ff852e88a2b542eeb16b6dd1cde96f03fd76d8d3422bfc31c85
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
-        name: "skill_install_writes_nothing_outside_the_two_skill_directories"
+        name: "skill_install_writes_nothing_outside_the_two_skill_directories_and_the_claude_settings"
   - node: 01a13654-bf86-77e9-8fd5-8dc705e61e20
     reviewed: 2b35e467a5a61e48c16cd4b866cada38180ca2f1733b9b56ad5d18875d695acd
     tests:
@@ -8906,6 +8911,63 @@ links:
     tests:
       - file: "crates/loft-cli/tests/writes_skill.rs"
         name: "each_command_that_writes_a_skill_directory_lists_writes_skill"
+  - node: 01a14545-579b-7242-998f-2f3b46cfe99b
+    reviewed: 65bdb1e7812b680214c23d325109dd653bf520c102fa44a63ca3aeb4ed31db42
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "a_project_without_settings_gets_the_marketplace_and_the_plugin_alone"
+  - node: 01a14545-579b-7242-998f-2f3cf4e8c25d
+    reviewed: a553b500a8abaf62db0c175ea22833ef26f453f59511c360aba6861e4bd1179d
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "a_project_without_settings_gets_the_marketplace_and_the_plugin_alone"
+  - node: 01a14545-579b-7242-998f-2f3d805266c4
+    reviewed: 5ac3df78de4d42067809fe122bae71146b0d8f59eb8069e9fa5dc52164fd0b2e
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "a_project_without_settings_gets_the_marketplace_and_the_plugin_alone"
+  - node: 01a14545-579b-7242-998f-2f3e0dc7c685
+    reviewed: 67d69227db4cb37475c6a8ee0980bc42db3ca93f07cc77795d5846108d163222
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "every_other_entry_of_the_settings_is_kept_in_its_order"
+  - node: 01a14545-579b-7242-998f-2f3f4ddd7ec6
+    reviewed: 86696be80651b5550f4f9be79df4817628d9a6f51ae0f411f8fc7acb78e42834
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "a_marketplace_ask_loft_the_settings_already_name_is_kept_as_it_is"
+  - node: 01a14545-579b-7242-998f-2f405a1edf81
+    reviewed: e58efe54bf9ffaa7eada4a097dfd8b14de03a7e3bf05eb23af80ac67f891d4a7
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "a_plugin_entry_the_settings_already_hold_is_kept_false_included"
+  - node: 01a14545-579b-7242-998f-2f4124a177d4
+    reviewed: 24c9b9ed3fa9d7f04345cbbb3949c486a59bef414e4f727e05a15a8fcd8242e7
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "settings_that_hold_both_entries_are_not_written_and_not_asked_to_be_committed"
+  - node: 01a14545-579b-7242-998f-2f4249089083
+    reviewed: 14bd6cd16177ad759f3f42cd1a407ba111918061d6f361c96d2a191a382f200c
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "the_request_to_commit_names_the_settings_where_the_command_wrote_them"
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "settings_that_hold_both_entries_are_not_written_and_not_asked_to_be_committed"
+  - node: 01a14545-579b-7242-998f-2f44e95f8ddb
+    reviewed: 2fad5f60f46ffff750366a18bc1442e42e5a21c4ee2b60891f34e98d766d5ccd
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by_hand"
+  - node: 01a14545-579b-7242-998f-2f45dbfa8231
+    reviewed: fbec2fd6cea4237c58941972cc609d96e5880b07efb71dcbefebf818e8461256
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by_hand"
+  - node: 01a14545-579b-7242-998f-2f467423ed95
+    reviewed: 77a47e2810caec6e0ce438aac25b2a439841237e854d92849ad4d3726bd3a95d
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by_hand"
   - node: 01a12e66-85dc-70ec-b5ed-93e254c4d234
     reviewed: 66cc6c26ad69647b264578f3a3c80a5c1ccc711c9704d65b25e8d83484bec700
     tests:
@@ -11040,7 +11102,7 @@ links:
       - file: "crates/loft-cli/src/skill/compose.rs"
         name: "the_refusal_names_the_combined_length_and_the_limit"
   - node: 01a13654-6e11-74fa-a359-25929d751eef
-    reviewed: 75c780320c53667fa92d07d53bf5619bda89d05d4b8f1f83789e2454249e5b6a
+    reviewed: e297c5d4ca71e39249d0b9cf05b9e05a495bb11cbab0f41c00da1f0871f736f2
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_claude_code_marketplace_lists_the_plugin_loft_at_its_root"
@@ -11092,7 +11154,7 @@ links:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_claude_code_manifest_declares_the_base_branch_and_loft_command_settings_with_their_defaults"
   - node: 01a13654-6e11-74fa-a359-259bfc5eb8f6
-    reviewed: 54ec4eca2d8b6410181ebdb2e2baa093c413a21af6b32c68376607f0e4f29b75
+    reviewed: 3f97fe7742b34f95783e86f5e651651af7a41800bffc14cfbdc04e1bd0f0f728
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"

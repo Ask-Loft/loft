@@ -1,5 +1,5 @@
 //! The plugins for Claude Code and Codex: each committed package equals the composition `loft`
-//! writes for its host, each marketplace lists the plugin `loft` at its host's plugin root, and
+//! writes for its host, each marketplace, `ask-loft`, lists the plugin `loft` at its host's plugin root, and
 //! every manifest carries the version of `loft`; the Claude Code plugin also names the hooks
 //! module and the type contract of the Loft status pane, and declares its settings.
 
@@ -47,7 +47,7 @@ fn each_manifest_carries_the_version_of_loft() {
 #[test]
 fn the_claude_code_marketplace_lists_the_plugin_loft_at_its_root() {
     let marketplace = read(".claude-plugin/marketplace.json");
-    assert_eq!(marketplace["name"], "loft");
+    assert_eq!(marketplace["name"], "ask-loft");
     assert!(marketplace["owner"]["name"].is_string());
     let [entry] = marketplace["plugins"].as_array().unwrap().as_slice() else {
         panic!("one plugin");
@@ -64,7 +64,7 @@ fn the_claude_code_marketplace_lists_the_plugin_loft_at_its_root() {
 #[test]
 fn the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category() {
     let marketplace = read(".agents/plugins/marketplace.json");
-    assert_eq!(marketplace["name"], "loft");
+    assert_eq!(marketplace["name"], "ask-loft");
     let [entry] = marketplace["plugins"].as_array().unwrap().as_slice() else {
         panic!("one plugin");
     };
