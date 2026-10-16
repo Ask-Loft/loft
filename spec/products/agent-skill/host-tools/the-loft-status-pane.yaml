@@ -151,6 +151,8 @@ requirements:
         name: "The base is the revision `/loft-status` gave, or else the `baseBranch` setting, `develop` by default."
       - key: 01a144ee-c59e-7325-802c-d74feafc44ae
         name: "`loftCommand` is `loft` by default."
+      - key: 01a14513-e2ad-7110-87c4-91882f2f5d6a
+        name: "Each command runs with `LOFT_TELEMETRY` and `LOFT_UPDATE_CHECK` set to `off`, so that a read sends no command event and asks for no update."
       - key: 01a144ef-0347-75ee-9c2b-bc9704f76e1a
         name: "A `loftCommand` of more than one word, such as `pnpm exec loft`, runs its first word with the others as its first arguments."
   - key: 01a144ee-c59e-7325-802c-d750584e014a

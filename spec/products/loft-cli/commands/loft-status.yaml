@@ -1,12 +1,10 @@
 key: 01a144ee-c59f-7034-9c62-3c4adf1f3011
 slug: loft-status
 name: "`loft status`"
-body: "Reports where the tree stands: the lock it was last published as and whether it still matches it, the state of the git repository that holds it, and, against a base revision, the nodes that were added, changed and removed since the branch left it. It is a report for an agent host or a person to read between edits, so it exits 0 whatever it finds."
+body: "Reports where the tree stands: the lock it was last published as and whether it still matches it, the state of the git repository that holds it, and, against a base revision, the nodes that were added, changed and removed since the branch left it. It is a report for an agent host or a person to read between edits, so it exits 0 whatever it finds, and, since a host may run it every few seconds, it sends no command event and asks for no update."
 tags:
-  - checks-for-updates
   - needs-repository
   - reads-tree
-  - sends-telemetry
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
