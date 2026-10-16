@@ -95,7 +95,7 @@ test('the nodes a file holds are the added and changed nodes whose path it is', 
 })
 
 test('the status line names the branch and gives the counts of the delta, the check and the trace', () => {
-  expect(statusLine(readWith())).toBe('Loft: feature/basket · +1 ~2 −1 · check 0e/1w · trace 1/2')
+  expect(statusLine(readWith())).toBe('feature/basket · +1 ~2 −1 · check 0e/1w · trace 1/2')
 })
 
 test('a list longer than its room ends with a count of what it leaves out', () => {

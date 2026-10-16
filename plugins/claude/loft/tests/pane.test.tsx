@@ -269,7 +269,7 @@ test('no read starts while another runs, and one asked for meanwhile runs after 
 test('the status line sums up the branch', async ($, on) => {
   const { state } = world(on)
   await start($)
-  expect(state.statuses.at(-1)).toBe('Loft: feature/basket · +1 ~2 −1 · check 0e/1w · trace 1/2')
+  expect(state.statuses.at(-1)).toBe('feature/basket · +1 ~2 −1 · check 0e/1w · trace 1/2')
 })
 
 test('a loftCommand that cannot be run shows a notice naming the setting and no check', async ($, on) => {

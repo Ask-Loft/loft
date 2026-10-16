@@ -258,7 +258,7 @@ export function statusLine(read: LoftRead): string {
   const toVerify = criteriaToVerify(read)
   const reviewed = toVerify.filter(each => !each.open).length
   return [
-    `Loft: ${read.status.branch ?? 'detached HEAD'}`,
+    read.status.branch ?? 'detached HEAD',
     delta,
     `check ${read.checkErrors}e/${checkWarnings(read)}w`,
     `trace ${reviewed}/${toVerify.length}`,
