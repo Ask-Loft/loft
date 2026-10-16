@@ -1,7 +1,7 @@
 key: 01a1383a-4a94-72cc-9c61-11318846c14a
 slug: the-trace-file
 name: "The trace file"
-body: "`loft.trace.yaml`, beside `spec/`, links each node that tests verify to those tests by file and name, and pins each link to the content hash its node had when the link was last reviewed. It lies outside `spec/`: it enters no root, and no publish writes it."
+body: "`loft.trace.yaml`, beside `spec/`, links each node that tests verify to those tests by file and name, pins each link to the content hash its node had when the link was last reviewed, and records the digest each test had when it was last recorded. It lies outside `spec/`: it enters no root, and no publish writes it."
 realizes:
   - 01a1383a-4a92-778a-b49d-e3efdabc7f04
 requirements:
@@ -28,7 +28,9 @@ requirements:
       - key: 01a1383a-4a94-72cc-9c61-1138adf76dd7
         name: "The trace file's fields are, in order, `format` and `links`."
       - key: 01a1383a-4a94-72cc-9c61-113970c25dfa
-        name: "`format` is `loft-trace/1`."
+        name: "`format` is `loft-trace/2`."
+      - key: 01a145e9-aa7f-769e-a7f5-f2550afd06af
+        name: "A trace file whose `format` is `loft-trace/1` is read as one whose tests have no `body`."
       - key: 01a1383a-4a94-72cc-9c61-113a51df9c8c
         name: "A link's fields are, in order, `node`, `reviewed`, `tests` and `unverified`."
       - key: 01a1383a-4a94-72cc-9c61-113bfd17caac
@@ -38,7 +40,11 @@ requirements:
       - key: 01a1383a-4a94-72cc-9c61-113d2dcde1c2
         name: "A link without `reviewed` has not been reviewed."
       - key: 01a1383a-4a94-72cc-9c61-113e5f1e727c
-        name: "`tests` lists the tests that verify the node, each with the fields `file` and `name`, in that order."
+        name: "`tests` lists the tests that verify the node, each with the fields `file`, `name` and `body`, in that order."
+      - key: 01a145e9-aa7f-769e-a7f5-f25695020b99
+        name: "`body` is the digest, in 64 lowercase hexadecimal digits, that the test had when it was last recorded."
+      - key: 01a145e9-aa7f-769e-a7f5-f2578ba07597
+        name: "A test without `body` has no recorded digest."
       - key: 01a1383a-4a94-72cc-9c61-113f7fd4bdbf
         name: "`unverified` gives the reason why no test verifies the node."
   - key: 01a1383a-4a94-72cc-9c61-1140605946ed
@@ -51,7 +57,7 @@ requirements:
       - key: 01a1383a-4a94-72cc-9c61-1141c18d6640
         name: "A field the trace file does not define is an error."
       - key: 01a1383a-4a94-72cc-9c61-11423830223a
-        name: "A `format` other than `loft-trace/1` is an error."
+        name: "A `format` other than `loft-trace/1` or `loft-trace/2` is an error."
       - key: 01a1383a-4a94-72cc-9c61-1143e0f26555
         name: "A link that holds both `tests` and `unverified` is an error."
       - key: 01a1383a-4a94-72cc-9c61-1144b94fbd76
@@ -68,6 +74,10 @@ requirements:
         name: "A `reviewed` that is not 64 lowercase hexadecimal digits is an error."
       - key: 01a13846-d25b-7228-bc03-3533134ab902
         name: "A test without a `file` or a `name`, or with a blank one, is an error."
+      - key: 01a145e9-aa7f-769e-a7f5-f2583e0ae7f8
+        name: "A `body` that is not 64 lowercase hexadecimal digits is an error."
+      - key: 01a145e9-aa7f-769e-a7f5-f259895512f9
+        name: "A `body` in a trace file whose `format` is `loft-trace/1` is an error."
   - key: 01a1383a-4a94-72cc-9c61-114ad7b84b97
     statement:
       form: ubiquitous

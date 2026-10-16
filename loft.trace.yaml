@@ -6512,16 +6512,6 @@ links:
     tests:
       - file: "crates/loftspec/tests/trace_findings.rs"
         name: "two_missing_tests_of_one_link_are_reported_in_the_link_s_order"
-  - node: 01a1383a-4a94-72cc-9c61-112c2538aff7
-    reviewed: 3890d5ce7b3e807464ec256b51a9ab7ff88f96aa3d09ec8edaba1d1d1134e1ca
-    tests:
-      - file: "crates/loftspec/tests/trace_findings.rs"
-        name: "accepting_a_link_sets_reviewed_to_the_node_s_hash_and_changes_nothing_else"
-  - node: 01a1383a-4a94-72cc-9c61-112d8124fa61
-    reviewed: d54fd5db5e558704b6da1565f43714f5ebab696d71320bcd912952b5c07db54a
-    tests:
-      - file: "crates/loftspec/tests/trace_findings.rs"
-        name: "accepting_a_link_sets_reviewed_to_the_node_s_hash_and_changes_nothing_else"
   - node: 01a1383a-4a94-72cc-9c61-112f69f65a33
     reviewed: ac03d9f83c09313f3b42731b3df384daa2d568f81768ed0db32b77661fc84990
     tests:
@@ -6555,11 +6545,6 @@ links:
     tests:
       - file: "crates/loftspec/tests/trace_read.rs"
         name: "a_written_trace_file_reads_back_and_writes_the_same_bytes"
-  - node: 01a1383a-4a94-72cc-9c61-113970c25dfa
-    reviewed: 2afe44ef1526aa76531a976254d83e18c2fdd70c4bc1438a8ec73eb2c3d29c90
-    tests:
-      - file: "crates/loftspec/tests/trace_read.rs"
-        name: "a_format_other_than_loft_trace_1_is_an_error"
   - node: 01a1383a-4a94-72cc-9c61-113a51df9c8c
     reviewed: 82d92a221515800e63d1bfad2ad6f96ab8142179121d5977d62d40776996183a
     tests:
@@ -6584,11 +6569,6 @@ links:
         name: "a_link_without_reviewed_reads_as_not_reviewed"
       - file: "crates/loftspec/tests/trace_findings.rs"
         name: "a_link_without_reviewed_is_tr_002_and_not_tr_003"
-  - node: 01a1383a-4a94-72cc-9c61-113e5f1e727c
-    reviewed: 0ea52f238df9ae7e5e1789b8135f71c3a2a20bf101303640bf5d8373aba0fabb
-    tests:
-      - file: "crates/loftspec/tests/trace_read.rs"
-        name: "a_link_reads_its_node_review_and_tests"
   - node: 01a1383a-4a94-72cc-9c61-113f7fd4bdbf
     reviewed: b105da13c299a61e3b5976968506684596f410ac211c9851d0c6806cb4c7c251
     tests:
@@ -6599,11 +6579,6 @@ links:
     tests:
       - file: "crates/loftspec/tests/trace_read.rs"
         name: "a_field_the_trace_file_does_not_define_is_an_error"
-  - node: 01a1383a-4a94-72cc-9c61-11423830223a
-    reviewed: ffc96d4b6a93ff0f165720a2665a2e5b2dfd0aca365784d5aede603e5938d730
-    tests:
-      - file: "crates/loftspec/tests/trace_read.rs"
-        name: "a_format_other_than_loft_trace_1_is_an_error"
   - node: 01a1383a-4a94-72cc-9c61-1143e0f26555
     reviewed: a136254246d9f356142584ce9ca0ac229aac4a197b5e2dea2866c31b820678c1
     tests:
@@ -10944,9 +10919,6 @@ links:
   - node: 01a1383e-2e64-72e5-b7f4-bc3116dbb317
     reviewed: 11dc138cf37e33b13da23eb0b0952f3c18a10cde948eb22551416200b5be0371
     unverified: "The skill text states it in references/reconciling.md; read it there."
-  - node: 01a1383e-2e64-72e5-b7f4-bc320fedb2e9
-    reviewed: 5f6b43390bd31419aeece069d7bedd10093b3bb0cbe3f6e6d4642c246dc6c503
-    unverified: "The skill text states it in references/reconciling.md; read it there."
   - node: 01a1383e-2e64-72e5-b7f4-bc337a3e0a65
     reviewed: 8b65f8980a102d2b93ff779f1e6bbf82323866516a82c8d67b5b6811ed4bf270
     unverified: "The skill text states it in references/reconciling.md; read it there."
@@ -10958,9 +10930,6 @@ links:
     unverified: "The skill text states it in references/reconciling.md; read it there."
   - node: 01a1383e-2e64-72e5-b7f4-bc361984a9a7
     reviewed: bcb37d2001fafea587bd4e5ec318cee5958f7f44369eda318a86819e77037da8
-    unverified: "The skill text states it in references/reconciling.md; read it there."
-  - node: 01a1383e-2e64-72e5-b7f4-bc37a8e347c5
-    reviewed: 56763434b9866d4a8b4e04b4bba705a0cbe5e87ba7af3a3fa333ad992fddb9fa
     unverified: "The skill text states it in references/reconciling.md; read it there."
   - node: 01a1383e-2e64-72e5-b7f4-bc39c30eb8f5
     reviewed: 2905b0be165b11f058b04f8fceb682c2cd111f387cb341ecdbe8c5c00092bcb7

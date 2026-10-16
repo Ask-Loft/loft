@@ -102,7 +102,7 @@ requirements:
       form: optional
       where: "`--accept-stale` is given"
       system: "`loft reconcile`"
-      shall: "accept every link that has a `TR-002` or `TR-003` finding and can be accepted."
+      shall: "accept every link that has a `TR-002`, `TR-003` or `TR-006` finding and can be accepted."
     criteria:
       - key: 01a1383c-2899-72f8-b39a-0a21af41dcc3
         name: "A link with a `TR-004` finding is left unaccepted and its findings are printed."
@@ -123,6 +123,10 @@ requirements:
         name: "The document carries the number of nodes in scope and the number a link names."
       - key: 01a1383c-2899-72f8-b39a-0a27b1f95794
         name: "The document lists the keys of the links accepted."
+      - key: 01a145e9-aa7e-77cd-b10e-a73b0377b054
+        name: "The document lists each test of each link, in the order of the trace file, with its file and name and whether it was located."
+      - key: 01a145e9-aa7f-769e-a7f5-f215af23521b
+        name: "Each located test in the document carries the first and last line of each of its locations."
       - key: 01a1383c-2899-72f8-b39a-0a28d4846c77
         name: "The outcome is `passed` when no finding is at or above `--fail-on`."
       - key: 01a1383c-2899-72f8-b39a-0a29399fe17b

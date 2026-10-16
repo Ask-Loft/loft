@@ -1,7 +1,7 @@
 key: 01a1383a-4a94-72cc-9c61-11074c67c6d6
 slug: reconciliation-findings
 name: "Reconciliation findings"
-body: "What the reconciler reports when it compares the trace file with the tree and with the files that hold the tests. `TR-001` is a node that no link names; `TR-002` a link not yet reviewed; `TR-003` a link reviewed before its node changed; `TR-004` a test that cannot be found; `TR-005` a link whose node is not in scope. Accepting a link records that a reviewer has checked its tests against the node as it now reads."
+body: "What the reconciler reports when it compares the trace file with the tree and with the files that hold the tests. `TR-001` is a node that no link names; `TR-002` a link not yet reviewed; `TR-003` a link reviewed before its node changed; `TR-004` a test that cannot be found; `TR-005` a link whose node is not in scope; `TR-006` a test whose content changed after it was recorded; `TR-007` a test found only as a word, whose content is not tracked; `TR-008` a node whose name holds a literal that none of its tests holds. Accepting a link records that a reviewer has checked its tests against the node as it now reads."
 realizes:
   - 01a1383a-4a92-778a-b49d-e3efdabc7f04
 requirements:
@@ -93,6 +93,54 @@ requirements:
         name: "A link with a `TR-005` finding yields no `TR-002` or `TR-003` finding."
       - key: 01a1383a-4a94-72cc-9c61-1124d0ad3e2e
         name: "The default severity of `TR-005` is warning."
+      - key: 01a145e9-aa7f-769e-a7f5-f23ec15b3cf4
+        name: "A link with a `TR-005` finding yields no `TR-006`, `TR-007` or `TR-008` finding."
+  - key: 01a145e9-aa7f-769e-a7f5-f23fd1946f6e
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-006` a located test whose digest differs from its `body`."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f2403f2bfe58
+        name: "Each located test whose digest differs from its `body` yields one `TR-006` finding naming the node, the file and the test."
+      - key: 01a145e9-aa7f-769e-a7f5-f241d45f2fc6
+        name: "A test without `body` yields no `TR-006` finding."
+      - key: 01a145e9-aa7f-769e-a7f5-f242bb7f357c
+        name: "A test found only as a whole word yields no `TR-006` finding."
+      - key: 01a145e9-aa7f-769e-a7f5-f2437956f10a
+        name: "The default severity of `TR-006` is warning."
+  - key: 01a145e9-aa7f-769e-a7f5-f244a7725db8
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-007` a test found only as a whole word."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f2450ca21da2
+        name: "Each test that the test locator does not locate but whose name occurs in its file as a whole word yields one `TR-007` finding naming the node, the file and the test."
+      - key: 01a145e9-aa7f-769e-a7f5-f2465e63eb1a
+        name: "The message of a `TR-007` finding says whether no grammar parses the file or no test in it carries the name."
+      - key: 01a145e9-aa7f-769e-a7f5-f2473148f163
+        name: "The default severity of `TR-007` is info."
+  - key: 01a145e9-aa7f-769e-a7f5-f2482fd4a578
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-008` a node whose name holds a literal that the source of none of its link's tests holds."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f249ac584650
+        name: "A literal is the text between two backticks in the node's name."
+      - key: 01a145e9-aa7f-769e-a7f5-f24abd5d2c55
+        name: "Each node whose name holds a literal that occurs in the source of none of its link's tests yields one `TR-008` finding naming those literals in the order of the name."
+      - key: 01a145e9-aa7f-769e-a7f5-f24bfa88f33d
+        name: "The source of a located test is the text of its locations."
+      - key: 01a145e9-aa7f-769e-a7f5-f24ce50c9be6
+        name: "The source of a test found only as a whole word is its whole file."
+      - key: 01a145e9-aa7f-769e-a7f5-f24de3e7ea33
+        name: "A test with a `TR-004` finding has no source."
+      - key: 01a145e9-aa7f-769e-a7f5-f24e0bf4caf0
+        name: "A link with `unverified` yields no `TR-008` finding."
+      - key: 01a145e9-aa7f-769e-a7f5-f24ffbd2024a
+        name: "The default severity of `TR-008` is info."
   - key: 01a1383a-4a94-72cc-9c61-1125f06ff01f
     statement:
       form: ubiquitous
@@ -118,12 +166,27 @@ requirements:
       form: event_driven
       when: "a link is accepted"
       system: "the reconciler"
-      shall: "set the link's `reviewed` to its node's current content hash."
+      shall: "set the link's `reviewed` to its node's current content hash, and the `body` of each of its located tests to the test's digest."
     criteria:
       - key: 01a1383a-4a94-72cc-9c61-112c2538aff7
-        name: "Accepting a link changes no other field of the link."
+        name: "Accepting a link changes no field of the link other than `reviewed` and its tests' `body`."
       - key: 01a1383a-4a94-72cc-9c61-112d8124fa61
-        name: "Accepting a link changes no other link."
+        name: "Accepting a link changes no other link, except to record the `body` of a test that has none."
+      - key: 01a145e9-aa7f-769e-a7f5-f250bf7287b9
+        name: "A test found only as a whole word keeps its `body` when its link is accepted."
+  - key: 01a145e9-aa7f-769e-a7f5-f251e5bfbd1b
+    statement:
+      form: event_driven
+      when: "the reconciler writes the trace file"
+      system: "the reconciler"
+      shall: "record the digest of each located test that has no `body`."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f25249286d3e
+        name: "A located test without `body` is written with its digest as its `body`."
+      - key: 01a145e9-aa7f-769e-a7f5-f2535b939482
+        name: "A test that has a `body` keeps it unless its link is accepted."
+      - key: 01a145e9-aa7f-769e-a7f5-f2540f59e42f
+        name: "A test found only as a whole word is written without a `body` it did not have."
   - key: 01a1383a-4a94-72cc-9c61-112e2331d26f
     statement:
       form: unwanted

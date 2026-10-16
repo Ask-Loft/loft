@@ -1,0 +1,119 @@
+key: 01a145e8-28eb-75e5-a920-d02b58cfcb78
+slug: tests-are-located-through-syntax-trees
+title: "`loft` locates a linked test in the syntax tree of its file, parsed with tree-sitter"
+context: "A link stays accepted while its test is rewritten, because the reconciler finds a test only as a word in its file and records nothing of what the test does. Recording a test's content needs the test's extent, from the start of its definition to its end, and a word search cannot give it. Teams write tests in many languages, and the libraries are published and take light dependencies."
+state:
+  kind: proposed
+drivers:
+  - key: 01a145e8-28eb-7d80-9180-92d101f9a21b
+    kind: local
+    label: "Many languages"
+    statement: "Tests in each mainstream language are located the same way, and a language is added without new parsing code."
+  - key: 01a145e8-28eb-70fa-8413-03a6949bbfa4
+    kind: local
+    label: "Exact extent"
+    statement: "A located test runs from the start of its definition to its end, whatever strings, comments or macros it holds."
+  - key: 01a145e8-28eb-77a5-959e-c2532e86dfdb
+    kind: local
+    label: "Light dependencies"
+    statement: "A published library takes no C code, and `loft` takes no large tree of dependencies."
+  - key: 01a145e8-28eb-7b4e-8969-5a9c0856759b
+    kind: local
+    label: "Offline and repeatable"
+    statement: "Locating a test runs no test, no compiler and no network call, and gives the same answer for the same bytes."
+options:
+  - key: 01a145e8-28eb-73cf-bca6-000b76ff41f5
+    title: "tree-sitter in the command line"
+    description: "`loft` parses each test file with tree-sitter and its grammars for Rust, TypeScript, JavaScript, Python and Go, behind a port that `loftspec` defines; the libraries take no parser."
+  - key: 01a145e8-28eb-7b08-8621-da1b9c2a09d4
+    title: "A lexer of our own for each language"
+    description: "`loft` splits each language into tokens with a lexer of its own and finds a test's extent by matching brackets."
+  - key: 01a145e8-28eb-7b5c-96cc-68c4c3f72000
+    title: "Parsers written in Rust"
+    description: "`loft` parses Rust with `syn`, and JavaScript and TypeScript with `oxc`."
+  - key: 01a145e8-28eb-7f8a-93db-1efcc1fe1166
+    title: "The whole word only"
+    description: "The reconciler goes on finding a test as a word in its file and records nothing of its content."
+assessments:
+  - option: 01a145e8-28eb-73cf-bca6-000b76ff41f5
+    driver: 01a145e8-28eb-7d80-9180-92d101f9a21b
+    rating: supports
+    rationale: "a maintained grammar exists for each mainstream language, and every grammar is read through one query language"
+  - option: 01a145e8-28eb-73cf-bca6-000b76ff41f5
+    driver: 01a145e8-28eb-70fa-8413-03a6949bbfa4
+    rating: supports
+    rationale: "the test is a node of the syntax tree"
+  - option: 01a145e8-28eb-73cf-bca6-000b76ff41f5
+    driver: 01a145e8-28eb-77a5-959e-c2532e86dfdb
+    rating: neutral
+    rationale: "the grammars add C code and size to the `loft` binary only; the libraries take none"
+  - option: 01a145e8-28eb-73cf-bca6-000b76ff41f5
+    driver: 01a145e8-28eb-7b4e-8969-5a9c0856759b
+    rating: supports
+    rationale: "a grammar parses the file's bytes in the process, and each grammar is pinned to one version"
+  - option: 01a145e8-28eb-7b08-8621-da1b9c2a09d4
+    driver: 01a145e8-28eb-7d80-9180-92d101f9a21b
+    rating: conflicts
+    rationale: "each language needs a lexer of its own"
+  - option: 01a145e8-28eb-7b08-8621-da1b9c2a09d4
+    driver: 01a145e8-28eb-70fa-8413-03a6949bbfa4
+    rating: neutral
+    rationale: "brackets are matched over tokens, but JavaScript's regular expressions and templates are hard to split into tokens"
+  - option: 01a145e8-28eb-7b08-8621-da1b9c2a09d4
+    driver: 01a145e8-28eb-77a5-959e-c2532e86dfdb
+    rating: supports
+    rationale: "it adds no dependency"
+  - option: 01a145e8-28eb-7b08-8621-da1b9c2a09d4
+    driver: 01a145e8-28eb-7b4e-8969-5a9c0856759b
+    rating: supports
+    rationale: "a lexer reads the file's bytes in the process"
+  - option: 01a145e8-28eb-7b5c-96cc-68c4c3f72000
+    driver: 01a145e8-28eb-7d80-9180-92d101f9a21b
+    rating: conflicts
+    rationale: "a parser written in Rust exists for few languages, each with its own syntax tree"
+  - option: 01a145e8-28eb-7b5c-96cc-68c4c3f72000
+    driver: 01a145e8-28eb-70fa-8413-03a6949bbfa4
+    rating: supports
+    rationale: "each gives a full syntax tree"
+  - option: 01a145e8-28eb-7b5c-96cc-68c4c3f72000
+    driver: 01a145e8-28eb-77a5-959e-c2532e86dfdb
+    rating: conflicts
+    rationale: "`oxc` brings a large tree of dependencies"
+  - option: 01a145e8-28eb-7b5c-96cc-68c4c3f72000
+    driver: 01a145e8-28eb-7b4e-8969-5a9c0856759b
+    rating: supports
+    rationale: "each parses the file's bytes in the process"
+  - option: 01a145e8-28eb-7f8a-93db-1efcc1fe1166
+    driver: 01a145e8-28eb-7d80-9180-92d101f9a21b
+    rating: supports
+    rationale: "a word is found in a file of any language"
+  - option: 01a145e8-28eb-7f8a-93db-1efcc1fe1166
+    driver: 01a145e8-28eb-70fa-8413-03a6949bbfa4
+    rating: conflicts
+    rationale: "a word has no extent"
+  - option: 01a145e8-28eb-7f8a-93db-1efcc1fe1166
+    driver: 01a145e8-28eb-77a5-959e-c2532e86dfdb
+    rating: supports
+    rationale: "it adds no dependency"
+  - option: 01a145e8-28eb-7f8a-93db-1efcc1fe1166
+    driver: 01a145e8-28eb-7b4e-8969-5a9c0856759b
+    rating: supports
+    rationale: "a word search reads the file's bytes in the process"
+consequences:
+  - key: 01a145e8-28eb-74f4-864d-798bd9a9e3e7
+    kind: benefit
+    statement: "A test rewritten after its link was reviewed is reported until someone reviews it again."
+  - key: 01a145e8-28eb-733b-b879-b30b38f3efbf
+    kind: cost
+    statement: "The `loft` binary compiles C code for tree-sitter and each grammar, and grows with each language added."
+  - key: 01a145e8-28eb-7ecf-89db-960a28b92103
+    kind: obligation
+    statement: "Each grammar is pinned to one version, and a test fails when a change of version moves the digest of a known test."
+  - key: 01a145e8-28eb-7b0a-b9a4-4c1c41a5ccd4
+    kind: obligation
+    statement: "A test that no grammar locates is still found as a whole word, so links in any language keep working, and the reconciler reports that its content is not tracked."
+subjects:
+  - role: affected
+    node: 01a1383a-4a94-72cc-9c61-11318846c14a
+  - role: outcome
+    node: 01a145e8-28eb-78f4-aed0-150e241ef329
