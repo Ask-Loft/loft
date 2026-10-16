@@ -81,6 +81,7 @@ mod statement_agreement;
 mod statement_parse;
 mod trace_findings;
 mod trace_located;
+mod trace_lost;
 mod trace_read;
 mod v1_parity;
 mod validate;

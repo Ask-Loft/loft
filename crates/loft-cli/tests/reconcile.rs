@@ -82,7 +82,7 @@ fn without_a_trace_file_each_node_in_scope_is_reported_unlinked_and_nothing_is_w
     assert_eq!(
         last,
         "0 of 8 nodes in scope linked; TR-001 8, TR-002 0, TR-003 0, TR-004 0, TR-005 0, \
-         TR-006 0, TR-007 0, TR-008 0"
+         TR-006 0, TR-007 0, TR-008 0, TR-009 0, TR-010 0"
     );
     assert!(snapshot(&scratch.0) == before, "a file changed");
 }
@@ -384,5 +384,32 @@ fn a_test_file_that_is_not_text_or_cannot_be_read_is_reported_saying_why() {
     assert!(
         messages[1].starts_with("the file `tests/folder.rs` cannot be read: "),
         "{messages:?}"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn a_test_file_path_that_names_a_named_pipe_is_reported_without_waiting_on_it() {
+    let scratch = project();
+    let status = std::process::Command::new("mkfifo")
+        .arg(scratch.0.join("tests/pipe.rs"))
+        .status()
+        .unwrap();
+    assert!(status.success());
+    write_trace(
+        &scratch,
+        &[link_in(AC_1, "tests/pipe.rs", "a_book_is_added")],
+    );
+    let json = json_of(&scratch.loft(&["reconcile", "--format", "json"]));
+    let messages: Vec<&str> = json["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|finding| finding["rule"] == "TR-004")
+        .map(|finding| finding["message"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        messages,
+        ["the file `tests/pipe.rs` cannot be read: it is not a regular file"]
     );
 }

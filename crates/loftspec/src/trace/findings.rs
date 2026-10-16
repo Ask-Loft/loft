@@ -2,8 +2,9 @@
 //! yet reviewed, `TR-003` a link reviewed before its node changed, `TR-004` a test that cannot be
 //! found, `TR-005` a link whose node is not in scope, `TR-006` a test whose content changed after
 //! it was recorded, `TR-007` a test found only as a whole word, `TR-008` a node whose name holds a
-//! literal that none of its tests holds. The reconciler runs no test and reads no runner's
-//! report.
+//! literal that none of its tests holds, `TR-009` a test whose content was recorded but that is
+//! found only as a whole word, `TR-010` a test that a part of its file that the grammar does not
+//! parse may cut short. The reconciler runs no test and reads no runner's report.
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -30,6 +31,8 @@ pub enum TraceRule {
     Tr006,
     Tr007,
     Tr008,
+    Tr009,
+    Tr010,
 }
 
 wire_names!(TraceRule {
@@ -41,6 +44,8 @@ wire_names!(TraceRule {
     Tr006 => "TR-006",
     Tr007 => "TR-007",
     Tr008 => "TR-008",
+    Tr009 => "TR-009",
+    Tr010 => "TR-010",
 });
 
 impl TraceRule {
@@ -50,23 +55,27 @@ impl TraceRule {
     pub const fn severity(self) -> Severity {
         match self {
             Self::Tr001 | Self::Tr007 | Self::Tr008 => Severity::Info,
-            Self::Tr002 | Self::Tr003 | Self::Tr004 | Self::Tr005 | Self::Tr006 => {
-                Severity::Warning
-            }
+            Self::Tr002
+            | Self::Tr003
+            | Self::Tr004
+            | Self::Tr005
+            | Self::Tr006
+            | Self::Tr009
+            | Self::Tr010 => Severity::Warning,
         }
     }
 
-    /// Whether the rule asks for a review: `TR-002`, `TR-003` and `TR-006`.
+    /// Whether the rule asks for a review: `TR-002`, `TR-003`, `TR-006` and `TR-009`.
     #[must_use]
     pub const fn asks_review(self) -> bool {
-        matches!(self, Self::Tr002 | Self::Tr003 | Self::Tr006)
+        matches!(self, Self::Tr002 | Self::Tr003 | Self::Tr006 | Self::Tr009)
     }
 
-    /// Whether the rule says the link is not true, so it cannot be accepted: `TR-004` and
-    /// `TR-005`.
+    /// Whether the rule says the link cannot be accepted: `TR-004` and `TR-005`, which say it is
+    /// not true, and `TR-010`, which says its test cannot be read.
     #[must_use]
     pub const fn refuses_accept(self) -> bool {
-        matches!(self, Self::Tr004 | Self::Tr005)
+        matches!(self, Self::Tr004 | Self::Tr005 | Self::Tr010)
     }
 }
 
@@ -81,7 +90,7 @@ impl fmt::Display for TraceRule {
 pub struct TraceFinding {
     pub rule: TraceRule,
     pub node: Key,
-    /// The test a `TR-004`, `TR-006` or `TR-007` finding is about.
+    /// The test a `TR-004`, `TR-006`, `TR-007`, `TR-009` or `TR-010` finding is about.
     pub test: Option<Test>,
     /// Where the node's link is written in the trace file, for a finding on a link read from it.
     pub link: Option<Position>,
@@ -202,7 +211,8 @@ impl Checked<'_> {
         }
     }
 
-    /// `TR-002` and `TR-003` on the link, then `TR-004`, `TR-006` and `TR-007` on its tests.
+    /// `TR-002` and `TR-003` on the link, then `TR-004`, `TR-006`, `TR-007`, `TR-009` and
+    /// `TR-010` on its tests.
     fn findings(&self, findings: &mut Vec<TraceFinding>, hash: Digest) {
         match self.link.reviewed {
             None => findings.push(self.finding(
@@ -220,7 +230,24 @@ impl Checked<'_> {
         for (test, found) in self.tests.iter().zip(self.found) {
             let (rule, message) = match found {
                 Found::Missing(wrong) => (TraceRule::Tr004, wrong.clone()),
-                Found::Word(why) => (TraceRule::Tr007, untracked(test, *why)),
+                Found::Word(why) if test.body.is_some() => (
+                    TraceRule::Tr009,
+                    format!(
+                        "`{}` in `{}` was recorded but is found only as a whole word, so its \
+                         content cannot be checked: {}",
+                        test.name,
+                        test.file,
+                        reason(why)
+                    ),
+                ),
+                Found::Word(why) => (TraceRule::Tr007, untracked(test, why)),
+                Found::Unparsed(error) => (
+                    TraceRule::Tr010,
+                    format!(
+                        "`{}` in `{}` cannot be located: the file does not parse at {error}",
+                        test.name, test.file
+                    ),
+                ),
                 Found::Located { digest, .. } if test.body.is_some_and(|body| body != *digest) => (
                     TraceRule::Tr006,
                     format!(
@@ -267,13 +294,22 @@ impl Checked<'_> {
 }
 
 /// The message of the `TR-007` finding on `test`, found only as a word.
-fn untracked(test: &Test, why: Untracked) -> String {
-    let why = match why {
-        Untracked::NoGrammar => "no grammar parses the file",
-        Untracked::NoTest => "no test in the file carries the name",
-    };
+fn untracked(test: &Test, why: &Untracked) -> String {
     format!(
-        "`{}` is found in `{}` only as a whole word, so its content is not tracked: {why}",
-        test.name, test.file
+        "`{}` is found in `{}` only as a whole word, so its content is not tracked: {}",
+        test.name,
+        test.file,
+        reason(why)
     )
+}
+
+/// Why a test found only as a word was not located.
+fn reason(why: &Untracked) -> String {
+    match why {
+        Untracked::NoGrammar => "no grammar parses the file".to_owned(),
+        Untracked::NoTest(None) => "no test in the file carries the name".to_owned(),
+        Untracked::NoTest(Some(error)) => {
+            format!("no test in the file carries the name, and the file does not parse at {error}")
+        }
+    }
 }

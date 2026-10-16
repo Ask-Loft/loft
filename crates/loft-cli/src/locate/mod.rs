@@ -1,7 +1,8 @@
 //! The test locator (the Feature "Locating a test"): the part of `loft` that parses a test file
-//! with tree-sitter and gives the reconciler the tests it holds, each with its lines, its
-//! canonical text and its text in the file. A grammar is chosen by the file's extension; a file
-//! of any other extension is not parsed, and the reconciler then looks for its tests as words.
+//! with tree-sitter and gives the reconciler the tests it holds, each with its lines, its bytes,
+//! its canonical text and its text in the file, and the parts of the file the grammar does not
+//! parse. A grammar is chosen by the file's extension; a file of any other extension is not
+//! parsed, and the reconciler then looks for its tests as words.
 
 mod canonical;
 mod go;
@@ -15,14 +16,14 @@ mod tests;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use loftspec::trace::{Lines, LocatedTest, TestFile, TestFiles};
+use loftspec::trace::{Lines, LocatedTest, ParseError, ParsedFile, TestFile, TestFiles};
 use tree_sitter::{Language, Node, Parser};
 
 /// The test files `files` reads, each parsed by the test locator once, however often the
 /// reconciler asks: the files do not change during a run.
 pub struct Parsed<F> {
     files: F,
-    parsed: RefCell<HashMap<String, Option<Vec<LocatedTest>>>>,
+    parsed: RefCell<HashMap<String, Option<ParsedFile>>>,
 }
 
 impl<F> Parsed<F> {
@@ -39,7 +40,7 @@ impl<F: TestFiles> TestFiles for Parsed<F> {
         self.files.read(path)
     }
 
-    fn tests(&self, path: &str, text: &str) -> Option<Vec<LocatedTest>> {
+    fn tests(&self, path: &str, text: &str) -> Option<ParsedFile> {
         self.parsed
             .borrow_mut()
             .entry(path.to_owned())
@@ -113,10 +114,10 @@ impl Candidate {
     }
 }
 
-/// The tests that `text`, the file at `path`, holds, in the order of the file; none where no
-/// grammar parses the file. A line break written as CR LF is read as LF, so a checkout's line
-/// endings change no digest.
-pub fn locate(path: &str, text: &str) -> Option<Vec<LocatedTest>> {
+/// The tests that `text`, the file at `path`, holds, in the order of the file, and the parts of it
+/// the grammar does not parse; none where no grammar parses the file. A line break written as
+/// CR LF is read as LF, so a checkout's line endings change no digest.
+pub fn locate(path: &str, text: &str) -> Option<ParsedFile> {
     let grammar = Grammar::of(path)?;
     let unix;
     let text = if text.contains("\r\n") {
@@ -137,19 +138,55 @@ pub fn locate(path: &str, text: &str) -> Option<Vec<LocatedTest>> {
     };
     candidates.sort_by_key(|candidate| (candidate.start, candidate.end));
     let python = grammar == Grammar::Python;
-    Some(
-        candidates
-            .into_iter()
-            .map(|candidate| {
-                LocatedTest::new(
-                    candidate.name,
-                    Lines::new(candidate.first_row + 1, candidate.last_row + 1),
-                    canonical::text(root, text, candidate.start..candidate.end, python),
-                    text[candidate.start..candidate.end].to_owned(),
-                )
-            })
-            .collect(),
-    )
+    let tests = candidates
+        .into_iter()
+        .map(|candidate| {
+            let bytes = candidate.start..candidate.end;
+            LocatedTest::new(
+                candidate.name,
+                Lines::new(candidate.first_row + 1, candidate.last_row + 1),
+                bytes.clone(),
+                canonical::text(root, text, bytes.clone(), python),
+                text[bytes].to_owned(),
+            )
+        })
+        .collect();
+    Some(ParsedFile::new(tests, errors(root, text)))
+}
+
+/// The longest start of a part that does not parse that is given, in characters.
+const SHOWN: usize = 40;
+
+/// The parts of the tree under `root` that the grammar does not parse, in the order of the file:
+/// each node it could not read, without the parts inside it, and each token it found missing.
+fn errors(root: Node<'_>, text: &str) -> Vec<ParseError> {
+    let mut errors = Vec::new();
+    let mut cursor = root.walk();
+    let mut stack = vec![root];
+    while let Some(node) = stack.pop() {
+        if node.is_error() || node.is_missing() {
+            errors.push(error(node, text));
+        } else if node.has_error() {
+            let children: Vec<Node<'_>> = node.children(&mut cursor).collect();
+            stack.extend(children.into_iter().rev());
+        }
+    }
+    errors
+}
+
+/// The part `node` that the grammar does not parse: where it starts, and its first line, or the
+/// token found missing.
+fn error(node: Node<'_>, text: &str) -> ParseError {
+    let at = node.start_byte();
+    let start = node.start_position();
+    let column = text[at - start.column..at].chars().count() + 1;
+    let (shown, missing) = if node.is_missing() {
+        (node.kind().to_owned(), true)
+    } else {
+        let first = text_of(node, text).lines().next().unwrap_or_default();
+        (first.chars().take(SHOWN).collect(), false)
+    };
+    ParseError::new(at, start.row + 1, column, shown, missing)
 }
 
 /// The text of `node` in `text`.

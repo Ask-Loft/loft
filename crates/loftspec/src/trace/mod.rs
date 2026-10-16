@@ -14,7 +14,9 @@ mod write;
 
 pub use accept::{Refusal, accept, accept_stale};
 pub use findings::{Reconciled, TraceFinding, TraceRule, reconcile};
-pub use found::{Found, Lines, LocatedTest, TestFile, TestFiles, Untracked};
+pub use found::{
+    Found, Lines, LocatedTest, ParseError, ParsedFile, TestFile, TestFiles, Untracked,
+};
 pub use read::{FILE_FIELDS, LINK_FIELDS, TEST_FIELDS, read};
 pub use write::write;
 

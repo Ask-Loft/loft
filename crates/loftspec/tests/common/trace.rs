@@ -9,13 +9,14 @@ use loftspec::document::Document;
 use loftspec::hash::{DocumentHashes, hash_document};
 use loftspec::identity::Key;
 use loftspec::trace::{
-    Evidence, Lines, Link, LocatedTest, Reconciled, Test, TestFile, TestFiles, Trace, TraceRule,
-    reconcile,
+    Evidence, Lines, Link, LocatedTest, ParseError, ParsedFile, Reconciled, Test, TestFile,
+    TestFiles, Trace, TraceRule, reconcile,
 };
 
 /// Test files held in memory; a path not held is missing. A stand-in grammar parses each file
 /// ending in `.rs`: every line that starts with `fn <name>(` is a test named `<name>`, its
-/// canonical text the line's words joined by one space.
+/// canonical text the line's words joined by one space, and each `// unparsed` is a part the
+/// grammar does not parse, from there to the end of its line.
 #[derive(Default)]
 pub struct Files(pub HashMap<String, TestFile>);
 
@@ -24,24 +25,43 @@ impl TestFiles for Files {
         self.0.get(path).cloned().unwrap_or(TestFile::Missing)
     }
 
-    fn tests(&self, path: &str, text: &str) -> Option<Vec<LocatedTest>> {
+    fn tests(&self, path: &str, text: &str) -> Option<ParsedFile> {
         let rust = std::path::Path::new(path)
             .extension()
             .is_some_and(|extension| extension == "rs");
-        rust.then(|| {
-            text.lines()
-                .enumerate()
-                .filter_map(|(at, line)| {
-                    let name = line.strip_prefix("fn ")?.split('(').next()?;
-                    Some(LocatedTest::new(
-                        name.to_owned(),
-                        Lines::new(at + 1, at + 1),
-                        line.split_whitespace().collect::<Vec<_>>().join(" "),
-                        line.to_owned(),
-                    ))
-                })
-                .collect()
-        })
+        if !rust {
+            return None;
+        }
+        let mut tests = Vec::new();
+        let mut errors = Vec::new();
+        let mut start = 0;
+        for (at, line) in text.split_inclusive('\n').enumerate() {
+            let written = line.trim_end_matches('\n');
+            if let Some(column) = written.find("// unparsed") {
+                let unparsed = written[column..].to_owned();
+                errors.push(ParseError::new(
+                    start + column,
+                    at + 1,
+                    column + 1,
+                    unparsed,
+                    false,
+                ));
+            }
+            if let Some(name) = written
+                .strip_prefix("fn ")
+                .and_then(|rest| rest.split('(').next())
+            {
+                tests.push(LocatedTest::new(
+                    name.to_owned(),
+                    Lines::new(at + 1, at + 1),
+                    start..start + written.len(),
+                    written.split_whitespace().collect::<Vec<_>>().join(" "),
+                    written.to_owned(),
+                ));
+            }
+            start += line.len();
+        }
+        Some(ParsedFile::new(tests, errors))
     }
 }
 

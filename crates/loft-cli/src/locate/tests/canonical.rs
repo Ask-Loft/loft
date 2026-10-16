@@ -118,7 +118,10 @@ fn locating_takes_time_in_proportion_to_the_file() {
         (0..3)
             .map(|_| {
                 let started = Instant::now();
-                assert_eq!(super::super::locate("a.py", &text).unwrap().len(), tests);
+                assert_eq!(
+                    super::super::locate("a.py", &text).unwrap().tests.len(),
+                    tests
+                );
                 started.elapsed()
             })
             .min()

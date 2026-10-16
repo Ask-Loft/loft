@@ -185,3 +185,112 @@ fn rewrapping_a_python_call_raises_no_tr_006() {
     let changed = scratch.loft(&["reconcile", "--fail-on", "warning"]);
     assert!(findings(&changed).contains(&("TR-006".to_owned(), "AC-1".to_owned())));
 }
+
+#[test]
+fn a_recorded_test_renamed_is_tr_009_until_accepting_removes_its_body() {
+    let scratch = project();
+    write_trace(&scratch, &[link(AC_1, "a_book_is_added")]);
+    scratch.loft(&["reconcile", "--accept", "AC-1"]);
+    // The test is renamed, and its old name is left in a comment.
+    fs::write(
+        scratch.0.join(TEST_FILE),
+        "// was a_book_is_added\nfn a_book_is_shelved() {}\n",
+    )
+    .unwrap();
+    let lost = scratch.loft(&["reconcile", "--fail-on", "warning"]);
+    assert_eq!(lost.status.code(), Some(1), "{}", stdout(&lost));
+    assert!(
+        stdout(&lost).contains(
+            "warning TR-009: AC-1: `a_book_is_added` in `tests/shelf.rs` was recorded but is \
+             found only as a whole word, so its content cannot be checked: no test in the file \
+             carries the name"
+        ),
+        "{}",
+        stdout(&lost)
+    );
+    let accepted = scratch.loft(&["reconcile", "--accept-stale"]);
+    assert!(
+        stdout(&accepted).contains("accepted AC-1"),
+        "{}",
+        stdout(&accepted)
+    );
+    assert!(
+        !trace_text(&scratch).contains("body:"),
+        "{}",
+        trace_text(&scratch)
+    );
+    let untracked = scratch.loft(&["reconcile", "--fail-on", "warning"]);
+    assert_eq!(untracked.status.code(), Some(0), "{}", stdout(&untracked));
+    assert!(findings(&untracked).contains(&("TR-007".to_owned(), "AC-1".to_owned())));
+}
+
+#[test]
+fn a_python_test_that_a_part_that_does_not_parse_cuts_short_is_tr_010_and_cannot_be_accepted() {
+    let scratch = project();
+    // Valid Python that the grammar does not parse: a line inside brackets less indented than
+    // the line it continues.
+    fs::write(
+        scratch.0.join("tests/suite.py"),
+        "def target():\n    assert (1 ==\n1)\ntarget()\n",
+    )
+    .unwrap();
+    write_trace(&scratch, &[link_in(AC_1, "tests/suite.py", "target")]);
+    let output = scratch.loft(&["reconcile", "--fail-on", "warning"]);
+    assert_eq!(output.status.code(), Some(1), "{}", stdout(&output));
+    assert!(
+        stdout(&output).contains(
+            "warning TR-010: AC-1: `target` in `tests/suite.py` cannot be located: the file does \
+             not parse at 2:5, at `assert (1 ==`"
+        ),
+        "{}",
+        stdout(&output)
+    );
+    let refused = scratch.loft(&["reconcile", "--accept", "AC-1"]);
+    assert_eq!(refused.status.code(), Some(1), "{}", stdout(&refused));
+    assert!(!trace_text(&scratch).contains("reviewed:"));
+    let stale = scratch.loft(&["reconcile", "--accept-stale"]);
+    assert!(
+        !stdout(&stale).contains("accepted AC-1"),
+        "{}",
+        stdout(&stale)
+    );
+    assert!(findings(&stale).contains(&("TR-010".to_owned(), "AC-1".to_owned())));
+    assert!(!trace_text(&scratch).contains("reviewed:"));
+}
+
+#[test]
+fn a_part_that_does_not_parse_inside_a_group_cuts_short_the_group_and_the_test_before_it() {
+    let scratch = project();
+    fs::write(
+        scratch.0.join("tests/shelf.test.js"),
+        "describe(\"the shelf\", () => {\n  it(\"opens\", () => {});\n  let = ;\n});\n\
+         it(\"closes\", () => {});\n",
+    )
+    .unwrap();
+    let both = format!(
+        "{}      - file: tests/shelf.test.js\n        name: opens\n",
+        link_in(AC_1, "tests/shelf.test.js", "the shelf")
+    );
+    write_trace(
+        &scratch,
+        &[both, link_in(AC_2, "tests/shelf.test.js", "closes")],
+    );
+    let document = json_of(&scratch.loft(&["reconcile", "--format", "json"]));
+    let unparsed: Vec<&str> = document["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|finding| finding["rule"] == "TR-010")
+        .map(|finding| finding["message"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        unparsed,
+        [
+            "`the shelf` in `tests/shelf.test.js` cannot be located: the file does not parse at \
+             3:7, at `=`",
+            "`opens` in `tests/shelf.test.js` cannot be located: the file does not parse at 3:7, \
+             at `=`",
+        ]
+    );
+    assert_eq!(document["tests"][2]["located"], json!(true));
+}

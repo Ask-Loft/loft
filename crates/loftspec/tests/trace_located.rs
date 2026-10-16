@@ -99,12 +99,10 @@ fn a_test_without_body_is_not_tr_006() {
 }
 
 #[test]
-fn a_test_found_only_as_a_word_is_tr_007_and_never_tr_006() {
+fn a_test_found_only_as_a_word_without_body_is_tr_007_and_never_tr_006() {
     let document = small_document();
     let mut links = all_reviewed(&document);
-    let tests = tests_of(&mut links[1]);
-    tests[0].file = "tests/a.py".to_owned();
-    tests[0].body = Some(digest_of("an older body"));
+    tests_of(&mut links[1])[0].file = "tests/a.py".to_owned();
     links[2] = reviewed(&document, 7, "a call");
     let files = with(
         files(&format!("{SOURCE}it(\"a call\");\n")),
@@ -222,7 +220,7 @@ fn a_link_out_of_scope_yields_no_tr_006_tr_007_or_tr_008() {
 }
 
 #[test]
-fn accepting_a_link_keeps_the_body_of_a_test_found_only_as_a_word() {
+fn accepting_a_link_removes_the_body_of_a_test_found_only_as_a_word() {
     let document = small_document();
     let mut link = tested(5, "five");
     let tests = tests_of(&mut link);
@@ -230,10 +228,16 @@ fn accepting_a_link_keeps_the_body_of_a_test_found_only_as_a_word() {
     tests[0].body = Some(digest_of("older"));
     let mut trace = Trace { links: vec![link] };
     let files = with(Files::default(), "tests/a.py", "five key\n");
-    accept(&mut trace, &[key(5)], &document, &hashes(&document), &files).unwrap();
     assert_eq!(
-        tests_of(&mut trace.links[0])[0].body,
-        Some(digest_of("older"))
+        on_five(&run(&document, trace.links.clone(), &files)),
+        [TraceRule::Tr002, TraceRule::Tr009]
+    );
+    accept(&mut trace, &[key(5)], &document, &hashes(&document), &files).unwrap();
+    assert_eq!(tests_of(&mut trace.links[0])[0].body, None);
+    // The test then states nothing of its content, and is reported as untracked.
+    assert_eq!(
+        on_five(&run(&document, trace.links, &files)),
+        [TraceRule::Tr007]
     );
 }
 

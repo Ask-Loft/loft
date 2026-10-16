@@ -26,7 +26,9 @@ export type Variant = {
   warnings?: number
   open?: string[]
   changed?: string[]
+  lost?: string[]
   broken?: boolean
+  unparsed?: boolean
   matches?: boolean
   added?: object[]
 }
@@ -84,7 +86,13 @@ export const check = (errors = 0, warnings = 1) => ({
   })),
 })
 
-export const reconcile = (open: string[] = ['k-added'], broken = false, changed: string[] = []) => ({
+export const reconcile = (
+  open: string[] = ['k-added'],
+  broken = false,
+  changed: string[] = [],
+  lost: string[] = [],
+  unparsed = false,
+) => ({
   schema: 'loft-reconcile/2',
   outcome: 'passed',
   inScope: 10,
@@ -107,6 +115,17 @@ export const reconcile = (open: string[] = ['k-added'], broken = false, changed:
       path: FEATURE,
       message: 'the test changed after it was recorded',
     })),
+    ...lost.map(key => ({
+      rule: 'TR-009',
+      severity: 'warning',
+      key,
+      label: null,
+      path: FEATURE,
+      message: 'the test was recorded but is found only as a whole word',
+    })),
+    ...(unparsed
+      ? [{ rule: 'TR-010', severity: 'warning', key: 'k-other', label: 'AC-1', path: 'spec/x.yaml', message: 'the file does not parse at 3:1' }]
+      : []),
     ...(broken
       ? [{ rule: 'TR-004', severity: 'warning', key: 'k-other', label: 'AC-1', path: 'spec/x.yaml', message: 'the test is missing' }]
       : []),
@@ -120,5 +139,11 @@ export const documents = (variant: Variant = {}) => ({
   status: status(variant),
   fmt: fmt(variant.canonical ?? true),
   check: check(variant.checkErrors ?? 0, variant.warnings ?? 1),
-  reconcile: reconcile(variant.open ?? ['k-added'], variant.broken ?? false, variant.changed ?? []),
+  reconcile: reconcile(
+    variant.open ?? ['k-added'],
+    variant.broken ?? false,
+    variant.changed ?? [],
+    variant.lost ?? [],
+    variant.unparsed ?? false,
+  ),
 })
