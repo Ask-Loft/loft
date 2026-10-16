@@ -199,7 +199,9 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   read against the criterion as it now reads. When a criterion changes, its link turns stale
   (`TR-003`) until the test is reviewed and the link accepted again; when a linked test's tokens
   change, it is reported as changed (`TR-006`), so accept its link in the same commit as the
-  change, after `cargo fmt`. A criterion that no test can
+  change, after `cargo fmt`; a renamed test whose old name still occurs is `TR-009`, so correct
+  its link. A test that a part of its file the grammar does not parse may cut short is `TR-010`
+  and cannot be accepted: make the file parse there. A criterion that no test can
   verify is linked `unverified` with the reason. Nodes no link names yet are reported as
   `TR-001`; link them as their tests are touched.
 - Each crate's integration tests are one binary, `tests/main.rs`, with a module for each file of

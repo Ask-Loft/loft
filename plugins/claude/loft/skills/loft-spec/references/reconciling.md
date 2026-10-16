@@ -22,10 +22,11 @@ acceptance criterion, and each Constraint and Quality Attribute whose `verificat
 `proved`. Each line names a finding's node by its file, line, label and message, and the last
 line counts the nodes in scope, the nodes a link names, and the findings of each rule.
 
-The work is every `TR-001`, `TR-002`, `TR-003` and `TR-006` finding on a node the change touches:
-a node with no test yet, a link never reviewed, a link reviewed before its node changed, and a
-test changed after it was recorded. Fix every `TR-004` and `TR-005` finding wherever it is: each
-says a link is no longer true.
+The work is every `TR-001`, `TR-002`, `TR-003`, `TR-006` and `TR-009` finding on a node the change
+touches: a node with no test yet, a link never reviewed, a link reviewed before its node changed,
+a test changed after it was recorded, and a recorded test no longer located. Fix every `TR-004`,
+`TR-005` and `TR-010` finding wherever it is: each says a link is no longer true, or that its test
+cannot be read.
 
 ## Link a test to its node
 
@@ -55,14 +56,16 @@ links:
 ## Accept a link after review
 
 Accepting a link records that a reviewer read its tests against the node as it now reads, and
-records each located test's `body`, the digest of its tokens. Whitespace, a trailing comma and
-line endings do not count; any other change of a token does. Read each test of the link against
+records each located test's `body`, the digest of its tokens. Whitespace, comments, a trailing
+comma and line endings do not count; any other change of a token does. Accepting also removes the
+`body` of a test found only as a word. Read each test of the link against
 every part of the node's words first; then run `loft reconcile --accept <label>`, once per node
 or with `--accept` repeated. A link whose test cannot be found, or whose node is not in scope, is
-refused, and nothing is written.
+refused, and so is a link whose test a part of its file that does not parse may cut short
+(`TR-010`); nothing is written.
 
-`loft reconcile --accept-stale` accepts every unreviewed and stale link, and every link whose test
-changed, at once, and records the body of each located test that has none. It states a review of
+`loft reconcile --accept-stale` accepts every unreviewed and stale link, every link whose test
+changed, and every link whose recorded test is no longer located, at once, and records the body of each located test that has none. It states a review of
 each link it accepts, so run it only when the user asks for it.
 
 ## Fix each finding
@@ -77,6 +80,8 @@ each link it accepts, so run it only when the user asks for it.
 | `TR-006` | A test changed after its `body` was recorded | Read the test against the node; change it where it no longer verifies the node; accept the link |
 | `TR-007` | A test is found only as a word, so a change to it goes unreported | Where its language is one `loft` parses, link the test by its function's name or its title; otherwise leave it |
 | `TR-008` | A literal in backticks in the node's name occurs in none of its tests | Check that the link names the tests that verify the node; add a check of the literal where no test makes one |
+| `TR-009` | A test whose `body` was recorded is now found only as a word, as when it was renamed and its old name left in a comment | Link the test by its present name; or, where it cannot be located any more, review it and accept the link, which removes its `body` |
+| `TR-010` | A part of the test's file that the grammar does not parse lies in the test or after it, before the next test, so the test may be cut short | Make the file parse at the line and column the message gives; where the code is valid and only the grammar fails, report it and rewrite the line |
 
 Never weaken a node's words to fit a test; change the test, or report the gap.
 

@@ -30,19 +30,30 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   for Rust (a function, also inside a macro such as `proptest!`), TypeScript, TSX and JavaScript
   (a call to `it`, `test`, `describe`, `context`, `specify` or `bench`, also through `.only`,
   `.each(…)`, `.skipIf(…)` and the like), Python (a function or class with its decorators) and Go
-  (a function, a method, or a `t.Run` subtest); an escape in a name is read as its character. It
+  (a function, a method, or a `t.Run` subtest), in parentheses or not; an escape in a name is
+  read as the language reads it, so a JavaScript surrogate pair is one character and Go's `\x` and
+  octal escapes are bytes read as UTF-8. It
   records each located test's digest, the SHA-256 of its tokens without comments, as the test's
   `body` in the trace file, so a test rewritten after its link was accepted is reported. What a
   formatter changes does not count: whitespace between tokens, a comma directly before a closing
   bracket (except in Python, where `(x,)` is a tuple), a Python line broken inside brackets or
-  after a backslash, and CR LF line endings. A line break that changes what JavaScript means,
-  such as one after `return`, is not seen either.
+  after a backslash, CR LF line endings, and comments, also inside a macro. JSX text is read as
+  JSX reads it, so spaces within a line count and the indentation around a line break does not.
+  A line break that changes what JavaScript means, such as one after `return`, is not seen
+  either.
   - `TR-006` (warning): a located test whose digest differs from its `body`; `--accept-stale`
     accepts it.
   - `TR-007` (info): a test found only as a word, in a file no grammar parses or under a name no
     test of the file carries, whose content is not tracked.
   - `TR-008` (info): a literal in backticks in the node's name that the source of none of its
     tests holds.
+  - `TR-009` (warning): a test whose body was recorded but that is now found only as a word, as
+    when it was renamed and its old name is left in a comment; accepting its link removes the
+    body, after which the test is `TR-007`. `--accept-stale` accepts it.
+  - `TR-010` (warning): a test that holds, or is followed before the next test by, a part of its
+    file the grammar does not parse, given by line, column and text, or the token missing. The
+    grammar may have cut the test short, so its link cannot be accepted until the file parses
+    there; the other tests of the file are unaffected.
 
   Accepting a link records its tests' bodies, and any accept also records the body of every
   located test that has none. `--accept-stale` writes the trace file when it records a body even
@@ -52,18 +63,24 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   still read and is rewritten as `loft-trace/2` on the next accept. An older `loft` refuses a
   `loft-trace/2` file, so everyone who reconciles a project needs this release.
 - `loft reconcile --format json` writes the schema `loft-reconcile/2`: the rules `TR-006` to
-  `TR-008`, `recorded`, the number of bodies recorded, and a `tests` list with each linked test's
+  `TR-010`, `recorded`, the number of bodies recorded, and a `tests` list with each linked test's
   node, file and name, whether it was located, and the first and last line of each location.
 - A test file path that steps up and back inside the project, such as `tests/../tests/a.rs`, is
-  found, and a test name is found as a whole word where it overlaps a part of a word.
+  found, and a test name is found as a whole word where it overlaps a part of a word. A path that
+  names something other than a regular file, such as a named pipe, is `TR-004` at once instead of
+  waiting on it.
 
 ### Breaking for library users
 
 - `loftspec::trace`: `Test` gains `body` and is built with `Test::new`; `Reconciled` gains
-  `found`, what was found of each test; `TraceRule` gains `Tr006` to `Tr008`; `FILE_FIELDS`,
-  `LINK_FIELDS` and `TEST_FIELDS` are slices; `TestFiles` gains `tests`, the tests a file holds,
-  none by default. `TraceRule`, `Test`, `Reconciled` and the new `LocatedTest`, `Lines`, `Found`
-  and `Untracked` are `#[non_exhaustive]`, so a later rule, field or outcome breaks no caller.
+  `found`, what was found of each test; `TraceRule` gains `Tr006` to `Tr010`; `FILE_FIELDS`,
+  `LINK_FIELDS` and `TEST_FIELDS` are slices; `TestFiles` gains `tests`, which gives a
+  `ParsedFile`, the tests a file holds, each with its `bytes`, and the `ParseError`s of the parts
+  its grammar does not parse, none by default. `Found` has the outcomes `Located`, `Word`,
+  `Unparsed` and `Missing`, and `Untracked::NoTest` carries the file's first `ParseError`.
+  `TraceRule`, `Test`, `Reconciled` and the new `ParsedFile`, `LocatedTest`, `Lines`,
+  `ParseError`, `Found` and `Untracked` are `#[non_exhaustive]`, so a later rule, field or outcome
+  breaks no caller.
 
 ## 2.1.0 (2026-10-15)
 

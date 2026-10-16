@@ -194,8 +194,9 @@ last accepted it, so a changed criterion shows up as a stale link, and each test
 its tokens when it was last recorded, so a rewritten test shows up too. `loft reconcile` locates
 each test in its file's syntax tree for Rust, TypeScript, JavaScript, Python and Go, and as a
 whole word elsewhere, without running it, so it works for any language. It reports nodes no link
-names, links not yet reviewed or gone stale, tests changed since they were recorded, tests it
-cannot find in their files, and links to nodes that are gone.
+names, links not yet reviewed or gone stale, tests changed since they were recorded, recorded
+tests it can no longer locate, tests that a part of their file it cannot parse may cut short,
+tests it cannot find in their files, and links to nodes that are gone.
 `loft reconcile --accept <label>` records a review, and CI runs `loft reconcile --fail-on warning`.
 The trace file is not part of the specification: it enters no root and no publish writes it.
 
