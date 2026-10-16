@@ -12,7 +12,7 @@ requirements:
       shall: "list the plugin `loft` at `./plugins/codex/loft`."
     criteria:
       - key: 01a13654-6e11-74fa-a359-259bfc5eb8f6
-        name: "The marketplace is named `loft`."
+        name: "The marketplace is named `ask-loft`."
       - key: 01a13654-6e11-74fa-a359-259c47fce600
         name: "The plugin entry is named `loft`."
       - key: 01a13654-6e11-74fa-a359-259da6905e8d
