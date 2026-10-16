@@ -13,6 +13,7 @@
         "inScope",
         "linked",
         "accepted",
+        "recorded",
         "tests",
         "errors"
       ],
@@ -45,6 +46,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "recorded": {
+          "type": "integer",
+          "minimum": 0
         },
         "tests": {
           "type": "array",
@@ -160,50 +165,79 @@
       }
     },
     "test": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "file",
-        "name",
-        "located"
-      ],
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "file": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "located": {
-          "type": "boolean"
-        },
-        "locations": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "firstLine",
-              "lastLine"
-            ],
-            "properties": {
-              "firstLine": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "lastLine": {
-                "type": "integer",
-                "minimum": 1
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "file",
+            "name",
+            "located",
+            "locations"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "file": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "located": {
+              "const": true
+            },
+            "locations": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "firstLine",
+                  "lastLine"
+                ],
+                "properties": {
+                  "firstLine": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "lastLine": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
               }
             }
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "file",
+            "name",
+            "located"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "file": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "located": {
+              "const": false
+            }
+          }
         }
-      }
+      ]
     },
     "site": {
       "type": "object",

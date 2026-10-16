@@ -18,8 +18,9 @@ use crate::lint::Severity;
 use crate::wire::wire_names;
 use crate::yaml::Position;
 
-/// A reconciliation rule.
+/// A reconciliation rule; a later version may add rules.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
 pub enum TraceRule {
     Tr001,
     Tr002,
@@ -89,6 +90,7 @@ pub struct TraceFinding {
 
 /// What the reconciler found, and how many nodes in scope a link names.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Reconciled {
     pub findings: Vec<TraceFinding>,
     pub in_scope: usize,

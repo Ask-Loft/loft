@@ -42,7 +42,7 @@ fn a_located_test_s_digest_is_the_sha_256_of_its_canonical_text() {
     let document = small_document();
     let reconciled = run(&document, all_reviewed(&document), &files(SOURCE));
     let expected = Found::Located {
-        lines: vec![Lines { first: 1, last: 1 }],
+        lines: vec![Lines::new(1, 1)],
         digest: digest_of("fn five() { key }"),
     };
     assert_eq!(reconciled.found[0], [expected]);
@@ -60,7 +60,7 @@ fn a_test_located_twice_has_both_locations_and_one_digest_over_both() {
     let source = format!("{SOURCE}fn five() {{ again }}\n");
     let reconciled = run(&document, all_reviewed(&document), &files(&source));
     let expected = Found::Located {
-        lines: vec![Lines { first: 1, last: 1 }, Lines { first: 4, last: 4 }],
+        lines: vec![Lines::new(1, 1), Lines::new(4, 4)],
         digest: digest_of("fn five() { key }\nfn five() { again }"),
     };
     assert_eq!(reconciled.found[0], [expected]);
@@ -268,4 +268,32 @@ fn a_file_is_read_once_for_all_its_tests() {
     };
     loftspec::trace::reconcile(&document, &hashes(&document), &trace, &counting);
     assert_eq!(counting.0.borrow()["tests/a.rs"], 1);
+}
+
+#[test]
+fn a_name_is_found_as_a_whole_word_where_it_overlaps_a_part_of_a_word() {
+    let document = small_document();
+    let mut link = reviewed(&document, 5, "go to go");
+    tests_of(&mut link)[0].file = "tests/a.txt".to_owned();
+    let files = with(Files::default(), "tests/a.txt", "ergo to go to go key\n");
+    assert_eq!(
+        on_five(&run(&document, vec![link], &files)),
+        [TraceRule::Tr007]
+    );
+}
+
+#[test]
+fn a_path_that_steps_up_and_back_inside_the_project_is_inside_it() {
+    let document = small_document();
+    let mut inside = reviewed(&document, 5, "five");
+    tests_of(&mut inside)[0].file = "tests/../tests/a.rs".to_owned();
+    let up_and_back = with(files(SOURCE), "tests/../tests/a.rs", SOURCE);
+    assert_eq!(on_five(&run(&document, vec![inside], &up_and_back)), []);
+    let mut outside = reviewed(&document, 5, "five");
+    tests_of(&mut outside)[0].file = "tests/../../a.rs".to_owned();
+    let up_and_out = with(files(SOURCE), "tests/../../a.rs", SOURCE);
+    assert_eq!(
+        on_five(&run(&document, vec![outside], &up_and_out)),
+        [TraceRule::Tr004, TraceRule::Tr008]
+    );
 }

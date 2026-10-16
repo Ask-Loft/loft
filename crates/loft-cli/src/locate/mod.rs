@@ -12,19 +12,39 @@ mod strings;
 #[cfg(test)]
 mod tests;
 
+use std::cell::RefCell;
+use std::collections::HashMap;
+
 use loftspec::trace::{Lines, LocatedTest, TestFile, TestFiles};
 use tree_sitter::{Language, Node, Parser};
 
-/// The test files `files` reads, each parsed by the test locator.
-pub struct Parsed<F>(pub F);
+/// The test files `files` reads, each parsed by the test locator once, however often the
+/// reconciler asks: the files do not change during a run.
+pub struct Parsed<F> {
+    files: F,
+    parsed: RefCell<HashMap<String, Option<Vec<LocatedTest>>>>,
+}
+
+impl<F> Parsed<F> {
+    pub fn new(files: F) -> Self {
+        Self {
+            files,
+            parsed: RefCell::default(),
+        }
+    }
+}
 
 impl<F: TestFiles> TestFiles for Parsed<F> {
     fn read(&self, path: &str) -> TestFile {
-        self.0.read(path)
+        self.files.read(path)
     }
 
     fn tests(&self, path: &str, text: &str) -> Option<Vec<LocatedTest>> {
-        locate(path, text)
+        self.parsed
+            .borrow_mut()
+            .entry(path.to_owned())
+            .or_insert_with(|| locate(path, text))
+            .clone()
     }
 }
 
@@ -112,14 +132,13 @@ pub fn locate(path: &str, text: &str) -> Option<Vec<LocatedTest>> {
     Some(
         candidates
             .into_iter()
-            .map(|candidate| LocatedTest {
-                lines: Lines {
-                    first: candidate.first_row + 1,
-                    last: candidate.last_row + 1,
-                },
-                canonical: canonical::text(root, text, candidate.start..candidate.end, python),
-                source: text[candidate.start..candidate.end].to_owned(),
-                name: candidate.name,
+            .map(|candidate| {
+                LocatedTest::new(
+                    candidate.name,
+                    Lines::new(candidate.first_row + 1, candidate.last_row + 1),
+                    canonical::text(root, text, candidate.start..candidate.end, python),
+                    text[candidate.start..candidate.end].to_owned(),
+                )
             })
             .collect(),
     )

@@ -117,3 +117,49 @@ fn the_json_document_lists_each_test_with_its_locations() {
         ])
     );
 }
+
+/// The project with AC-1's link reviewed in a `loft-trace/1` file, its test with no `body`.
+fn reviewed_without_bodies() -> crate::common::Scratch {
+    let scratch = project();
+    write_trace(&scratch, &[link(AC_1, "a_book_is_added")]);
+    scratch.loft(&["reconcile", "--accept", "AC-1"]);
+    let mut reviewed = String::new();
+    for line in trace_text(&scratch).lines() {
+        if !line.trim_start().starts_with("body:") {
+            reviewed.push_str(line);
+            reviewed.push('\n');
+        }
+    }
+    let first = reviewed.replacen("format: loft-trace/2", "format: loft-trace/1", 1);
+    fs::write(scratch.0.join("loft.trace.yaml"), first).unwrap();
+    scratch
+}
+
+#[test]
+fn accepting_the_stale_links_records_the_bodies_of_a_reviewed_trace_file() {
+    let scratch = reviewed_without_bodies();
+    let output = scratch.loft(&["reconcile", "--accept-stale"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stdout(&output));
+    assert_eq!(
+        stdout(&output).lines().next(),
+        Some("recorded the body of 1 test")
+    );
+    assert!(!stdout(&output).contains("accepted "));
+    let written = trace_text(&scratch);
+    assert!(written.starts_with("format: loft-trace/2\n"), "{written}");
+    let body = digest_of("fn a_book_is_added ( ) { }");
+    assert!(
+        written.contains(&format!("        body: {body}\n")),
+        "{written}"
+    );
+}
+
+#[test]
+fn the_json_document_carries_the_number_of_bodies_recorded() {
+    let scratch = reviewed_without_bodies();
+    let document = json_of(&scratch.loft(&["reconcile", "--accept-stale", "--format", "json"]));
+    assert_eq!(document["recorded"], json!(1));
+    assert_eq!(document["accepted"], json!([]));
+    let again = json_of(&scratch.loft(&["reconcile", "--format", "json"]));
+    assert_eq!(again["recorded"], json!(0));
+}

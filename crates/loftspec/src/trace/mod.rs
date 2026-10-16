@@ -66,11 +66,24 @@ pub enum Evidence {
 
 /// A test, by the file that holds it, relative to the directory that holds `spec/`, and its name.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Test {
     pub file: String,
     pub name: String,
     /// The test's digest when it was last recorded; none before it was first located.
     pub body: Option<Digest>,
+}
+
+impl Test {
+    /// The test `name` in `file`, with no digest recorded.
+    #[must_use]
+    pub fn new(file: impl Into<String>, name: impl Into<String>) -> Self {
+        Self {
+            file: file.into(),
+            name: name.into(),
+            body: None,
+        }
+    }
 }
 
 /// An error in the trace file, at its line and column where it has one.

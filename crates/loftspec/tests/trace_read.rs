@@ -30,11 +30,7 @@ fn tests(names: &[&str]) -> Evidence {
     Evidence::Tests(
         names
             .iter()
-            .map(|name| Test {
-                file: "tests/a.rs".to_owned(),
-                name: (*name).to_owned(),
-                body: None,
-            })
+            .map(|name| Test::new("tests/a.rs", *name))
             .collect(),
     )
 }

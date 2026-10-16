@@ -33,15 +33,12 @@ impl TestFiles for Files {
                 .enumerate()
                 .filter_map(|(at, line)| {
                     let name = line.strip_prefix("fn ")?.split('(').next()?;
-                    Some(LocatedTest {
-                        name: name.to_owned(),
-                        lines: Lines {
-                            first: at + 1,
-                            last: at + 1,
-                        },
-                        canonical: line.split_whitespace().collect::<Vec<_>>().join(" "),
-                        source: line.to_owned(),
-                    })
+                    Some(LocatedTest::new(
+                        name.to_owned(),
+                        Lines::new(at + 1, at + 1),
+                        line.split_whitespace().collect::<Vec<_>>().join(" "),
+                        line.to_owned(),
+                    ))
                 })
                 .collect()
         })
@@ -65,11 +62,7 @@ pub fn hashes(document: &Document) -> DocumentHashes {
 
 /// A test named `name` in `tests/a.rs`, with no `body`.
 pub fn test(name: &str) -> Test {
-    Test {
-        file: "tests/a.rs".to_owned(),
-        name: name.to_owned(),
-        body: None,
-    }
+    Test::new("tests/a.rs", name)
 }
 
 /// A link to node `n`, verified by the test `name` in `tests/a.rs`.

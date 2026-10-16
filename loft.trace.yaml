@@ -7935,6 +7935,9 @@ links:
   - node: 01a1383a-4a94-72cc-9c61-111d19f9c40f
     reviewed: f6eaf4ead319fcc8dab4958a54f1b20587d47ad91c689cf9bdb007cdd7cf5cc1
     tests:
+      - file: "crates/loftspec/tests/trace_located.rs"
+        name: "a_name_is_found_as_a_whole_word_where_it_overlaps_a_part_of_a_word"
+        body: c2aba93c3e9e77c9afca57c1966b2d72fdef2d3b5c13d8d344e785d629f426a2
       - file: "crates/loftspec/tests/trace_findings.rs"
         name: "a_test_name_found_only_inside_a_longer_word_is_tr_004"
         body: 0428674695c12e9420166bd0c077a5dcfc224b1b668e791b6827558925cd23a3
@@ -7944,6 +7947,9 @@ links:
   - node: 01a1383a-4a94-72cc-9c61-111e9852b7bc
     reviewed: b74a57600b5862f2d32d3e1d45f1e6fbdc439fc2d62043cad211d3e4bc82daf6
     tests:
+      - file: "crates/loftspec/tests/trace_located.rs"
+        name: "a_path_that_steps_up_and_back_inside_the_project_is_inside_it"
+        body: 483990679abb233f31e6ef31b6a600f53e4db0ec16d5298a361c734b9e0c9c4b
       - file: "crates/loftspec/tests/trace_findings.rs"
         name: "a_test_file_outside_the_project_is_tr_004"
         body: 2e5e80843f25a3d595065307eb3c62e95534eadbaa942d504046cdfd65ab18a0
@@ -8091,6 +8097,15 @@ links:
       - file: "crates/loftspec/tests/trace_findings.rs"
         name: "two_missing_tests_of_one_link_are_reported_in_the_link_s_order"
         body: c54fec34d40dc3b68cd297be6b042039a5b5151cfd201f8b5610a570f6460ec8
+  - node: 01a14625-1535-7161-b749-350d0b59f214
+    reviewed: 0d0dc8c87234c625897922d957bc2cc5514ca20519817456282be701cd625596
+    tests:
+      - file: "crates/loftspec/tests/trace_located.rs"
+        name: "accepting_the_stale_links_accepts_a_test_that_changed_and_records_its_body"
+        body: 150cd1189cce96836da43632fdbce5e9f2efbc6865c3f4b135e97357fa48b5c1
+      - file: "crates/loftspec/tests/trace_findings.rs"
+        name: "accepting_a_link_sets_reviewed_and_its_tests_bodies_and_changes_nothing_else"
+        body: fde3254c3b8819dad96cca65b3391af94bc6270723ee8dafc09c539851491b16
   - node: 01a1383a-4a94-72cc-9c61-112c2538aff7
     reviewed: 25a6db5c095eaa667b15b9e262f213fd7376e202db30207ea4720f3b0d6127aa
     tests:
@@ -8480,7 +8495,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/trace_located.rs"
         name: "a_test_located_twice_has_both_locations_and_one_digest_over_both"
-        body: b7bfe7ea0a551ea4ea0f8111a376250dfa0820266ca2842cf3d23aff69c4daff
+        body: 2f19741bb87f13e4a9a4bde8f5fe76000ec4f0e6c93e4cfc4fe0fd762d5ac09c
       - file: "crates/loft-cli/src/locate/tests/script.rs"
         name: "a_test_located_twice_has_one_location_for_each"
         body: 806ff392a0cc5a8dbc01c4c3618c072f8697c0874592ba2c37efc371691340ed
@@ -8510,13 +8525,13 @@ links:
         body: 424f35cf43de3cf6e895dcb42be2b764d928f1451fccae74c345673ab119e018
       - file: "crates/loftspec/tests/trace_located.rs"
         name: "a_located_test_s_digest_is_the_sha_256_of_its_canonical_text"
-        body: 44a0cb8f53ff89e88c7dc2663aa354a5d0a94801fe8c2f43d077fa0fb7c07336
+        body: 0f18810de5b2b9bd72e5e684cd64628f655da6b3075fe3ef1f4f19297e543a4e
   - node: 01a145e9-aa7f-769e-a7f5-f23971eee416
     reviewed: fdfdd261fc3e66fb473d256e3c787e78fe139b4e6fade910f8ae6635fb5c86dd
     tests:
       - file: "crates/loftspec/tests/trace_located.rs"
         name: "a_located_test_s_digest_is_the_sha_256_of_its_canonical_text"
-        body: 44a0cb8f53ff89e88c7dc2663aa354a5d0a94801fe8c2f43d077fa0fb7c07336
+        body: 0f18810de5b2b9bd72e5e684cd64628f655da6b3075fe3ef1f4f19297e543a4e
   - node: 01a145e9-aa7f-769e-a7f5-f23b402698cf
     reviewed: 64db162f94a1f3be41f41c65d68e2a3e017cb16caf1e7088e9ab368fa6dabe8c
     tests:
@@ -9984,6 +9999,12 @@ links:
       - file: "crates/loft-cli/tests/reconcile.rs"
         name: "accepting_a_link_by_label_writes_its_review_and_reports_the_trace_file_as_written"
         body: 20a6ed77f21e85d4c9a3216d5bf5d9ee5edcedd68bf8d4022aed35ed22246ca5
+  - node: 01a14625-1534-77d8-bbe8-b4c5ab9e52ab
+    reviewed: 2bbc34245f44c87f05ed4d21db34ff94704677e50fde6824e7f7d470851ce1e9
+    tests:
+      - file: "crates/loft-cli/tests/reconcile_located.rs"
+        name: "accepting_the_stale_links_records_the_bodies_of_a_reviewed_trace_file"
+        body: 3dff83ca1ff00e6e20941a11498310fad0a628bbb2312dd67cf4d7fed0b8f3fe
   - node: 01a1383c-2899-72f8-b39a-0a100e03d146
     reviewed: 9f583ad502bde3b163ded96ef087937f94dc4319369e53617c777c2b30b201b4
     tests:
@@ -10113,6 +10134,27 @@ links:
       - file: "crates/loft-cli/tests/reconcile.rs"
         name: "accepting_the_stale_links_leaves_a_link_whose_test_is_missing"
         body: 302c9591e1feb1b4d9075f82a8a2b58c448c85360a3eebe0146d2033d9c15a35
+  - node: 01a1383c-2899-72f8-b39a-0a22f02e50e8
+    reviewed: b4d4def9b3bb812d906f41c6df1dd1a80866f4aa845a616a6bde10d4ced1df02
+    tests:
+      - file: "crates/loft-cli/tests/reconcile.rs"
+        name: "accepting_the_stale_links_leaves_a_link_whose_test_is_missing"
+        body: 302c9591e1feb1b4d9075f82a8a2b58c448c85360a3eebe0146d2033d9c15a35
+  - node: 01a14625-1534-77d8-bbe8-b4c6789669d6
+    reviewed: 4dac4679424b3d89795b64c153464ef5411865cfbe75542b622c0deee80c5369
+    tests:
+      - file: "crates/loftspec/tests/trace_located.rs"
+        name: "accepting_the_stale_links_accepts_a_test_that_changed_and_records_its_body"
+        body: 150cd1189cce96836da43632fdbce5e9f2efbc6865c3f4b135e97357fa48b5c1
+      - file: "crates/loft-cli/tests/reconcile_located.rs"
+        name: "a_test_rewritten_after_it_was_recorded_is_tr_006_until_accepted_again"
+        body: 0bb5eaaad77812d8f75a5ac046a7deb3d8c1a411fce11b1bfe613d87ca19fbed
+  - node: 01a14625-1534-77d8-bbe8-b4c7d4214fa9
+    reviewed: d3345a1a98797ebca9bb975b85333109201d3ba9e5b86e61b28cb00dbf6a77a5
+    tests:
+      - file: "crates/loft-cli/tests/reconcile_located.rs"
+        name: "accepting_the_stale_links_records_the_bodies_of_a_reviewed_trace_file"
+        body: 3dff83ca1ff00e6e20941a11498310fad0a628bbb2312dd67cf4d7fed0b8f3fe
   - node: 01a1383c-2899-72f8-b39a-0a24e1a5249d
     reviewed: b904ef10edaeed267076487e30d032200737d4220ec5f1136af357bfc20a9353
     tests:
@@ -10137,6 +10179,12 @@ links:
       - file: "crates/loft-cli/tests/reconcile.rs"
         name: "the_json_document_carries_each_finding_the_counts_and_the_accepted_keys"
         body: 2774a74853f707ab51647b2fdbe0a672da5dbe687e166090727b6dc0933837bf
+  - node: 01a14625-1534-77d8-bbe8-b4c848d63e11
+    reviewed: de94302dbad2037c156e25df2422d22ef35018b89dfb5957b85993967e88e310
+    tests:
+      - file: "crates/loft-cli/tests/reconcile_located.rs"
+        name: "the_json_document_carries_the_number_of_bodies_recorded"
+        body: 5679392cfe3b93221f905abc852e625756491850edf1905a6e44d023b654de0a
   - node: 01a145e9-aa7e-77cd-b10e-a73b0377b054
     reviewed: d1f7fe8eb290dbdd0b131d725db719a7184fb4f56b5bde6296895fe33f5ab737
     tests:
@@ -13385,7 +13433,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_format.rs"
         name: "the_trace_file_and_each_of_its_fields_are_described"
-        body: 8b4942adeaf685a96ff8ae089b3ead890ac77db16119d579188e46d8ee6d6a25
+        body: 92f8ffae3e2d6d286ad379e70063de154e58426b998ef42fd18f32d3acd3943e
   - node: 01a13654-6e12-74a1-ad7f-e81f36179b75
     reviewed: fc06e19c13cc30e4b93a6adacccb7a76c92500ffee8524ea0d67d3e74db50d52
     tests:

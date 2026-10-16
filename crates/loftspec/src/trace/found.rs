@@ -36,6 +36,7 @@ pub enum TestFile {
 
 /// One test that a parsed file holds.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct LocatedTest {
     pub name: String,
     pub lines: Lines,
@@ -45,15 +46,36 @@ pub struct LocatedTest {
     pub source: String,
 }
 
+impl LocatedTest {
+    #[must_use]
+    pub const fn new(name: String, lines: Lines, canonical: String, source: String) -> Self {
+        Self {
+            name,
+            lines,
+            canonical,
+            source,
+        }
+    }
+}
+
 /// The first and last line of a test's location, counted from 1.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Lines {
     pub first: usize,
     pub last: usize,
 }
 
-/// What the reconciler found of one test.
+impl Lines {
+    #[must_use]
+    pub const fn new(first: usize, last: usize) -> Self {
+        Self { first, last }
+    }
+}
+
+/// What the reconciler found of one test; a later version may add outcomes.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Found {
     /// Located: the lines of each location, in the order of the file, and the test's digest.
     Located { lines: Vec<Lines>, digest: Digest },
@@ -63,8 +85,9 @@ pub enum Found {
     Missing(String),
 }
 
-/// Why a test found as a whole word was not located.
+/// Why a test found as a whole word was not located; a later version may add reasons.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Untracked {
     /// No grammar parses the file.
     NoGrammar,
@@ -173,21 +196,39 @@ fn named<'a>(
 }
 
 /// Whether `path` names a file under the directory that holds `spec/`: relative, and never
-/// stepping up out of it.
+/// stepping up out of it, though it may step up and back down inside it.
 fn inside(path: &str) -> bool {
-    Path::new(path)
-        .components()
-        .all(|part| matches!(part, Component::Normal(_) | Component::CurDir))
+    let mut depth = 0_usize;
+    Path::new(path).components().all(|part| match part {
+        Component::Normal(_) => {
+            depth += 1;
+            true
+        }
+        Component::CurDir => true,
+        Component::ParentDir => depth.checked_sub(1).map(|up| depth = up).is_some(),
+        Component::RootDir | Component::Prefix(_) => false,
+    })
 }
 
-/// Whether `name` occurs in `text` where no letter, digit or underscore adjoins either end.
+/// Whether `name` occurs in `text` where no letter, digit or underscore adjoins either end. Every
+/// place it starts is tried, those that overlap an earlier one included.
 fn occurs_whole(text: &str, name: &str) -> bool {
+    if name.is_empty() {
+        return false;
+    }
     let word = |character: char| character.is_alphanumeric() || character == '_';
-    text.match_indices(name).any(|(at, _)| {
+    let mut from = 0;
+    while let Some(found) = text[from..].find(name) {
+        let at = from + found;
         let before = text[..at].chars().next_back();
         let after = text[at + name.len()..].chars().next();
-        !before.is_some_and(word) && !after.is_some_and(word)
-    })
+        if !before.is_some_and(word) && !after.is_some_and(word) {
+            return true;
+        }
+        // The next place it may start is one character on, so an overlapping one is tried.
+        from = at + text[at..].chars().next().map_or(1, char::len_utf8);
+    }
+    false
 }
 
 /// The literals of a node's name: the texts between two backticks, each once, in the order of

@@ -117,7 +117,8 @@ enum Command {
         /// Accept the link of this node, by key or label, once its tests are reviewed.
         #[arg(long, value_name = "NODE")]
         accept: Vec<String>,
-        /// Accept every unreviewed or stale link whose tests are found.
+        /// Accept every unreviewed, stale or changed link whose tests are found, and record the
+        /// body of each located test that has none.
         #[arg(long, conflicts_with = "accept")]
         accept_stale: bool,
         #[command(flatten)]

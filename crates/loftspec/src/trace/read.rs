@@ -12,16 +12,16 @@ use crate::identity::Key;
 use crate::yaml::{self, Entry, Location, Node, Position};
 
 /// The fields of the trace file, in the order the writer writes them.
-pub const FILE_FIELDS: [&str; 2] = ["format", "links"];
+pub const FILE_FIELDS: &[&str] = &["format", "links"];
 
 /// The fields of a link, in the order the writer writes them.
-pub const LINK_FIELDS: [&str; 4] = ["node", "reviewed", "tests", "unverified"];
+pub const LINK_FIELDS: &[&str] = &["node", "reviewed", "tests", "unverified"];
 
 /// The fields of a test, in the order the writer writes them.
-pub const TEST_FIELDS: [&str; 3] = ["file", "name", "body"];
+pub const TEST_FIELDS: &[&str] = &["file", "name", "body"];
 
 /// The fields of a test in a `loft-trace/1` file, which has no `body`.
-const TEST_FIELDS_1: [&str; 2] = ["file", "name"];
+const TEST_FIELDS_1: &[&str] = &["file", "name"];
 
 /// Reads the trace file; no file holds no link.
 ///
@@ -74,7 +74,7 @@ impl Strict for Reader {
 
 impl Reader {
     fn file(&mut self, root: &Node) -> Trace {
-        let fields = self.fields(root, &FILE_FIELDS);
+        let fields = self.fields(root, FILE_FIELDS);
         if let Some(format) = self.required(root, fields, "format") {
             let expected = "`loft-trace/1` or `loft-trace/2`";
             let first = self.parsed(&format.value, expected, |text| match text {
@@ -92,7 +92,7 @@ impl Reader {
     }
 
     fn link(&mut self, item: &Node) -> Option<Link> {
-        let fields = self.fields(item, &LINK_FIELDS);
+        let fields = self.fields(item, LINK_FIELDS);
         let node = self
             .required(item, fields, "node")
             .and_then(|node| self.parsed(&node.value, "a key", |text| Key::parse(text).ok()));
@@ -148,10 +148,10 @@ impl Reader {
     }
 
     fn test(&mut self, item: &Node) -> Option<Test> {
-        let allowed: &[&str] = if self.first {
-            &TEST_FIELDS_1
+        let allowed = if self.first {
+            TEST_FIELDS_1
         } else {
-            &TEST_FIELDS
+            TEST_FIELDS
         };
         let fields = self.fields(item, allowed);
         let mut required = |name: &'static str, expected| {

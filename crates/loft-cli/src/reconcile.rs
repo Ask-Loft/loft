@@ -7,6 +7,7 @@
 use std::fmt;
 use std::path::Path;
 
+use loftspec::canonical::Digest;
 use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites};
 use loftspec::document::Document;
@@ -54,16 +55,15 @@ pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
         Ok(read) => read,
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
-    let accepted = match accepted(&mut read, options) {
+    let files = Parsed::new(read.store.test_files());
+    let Accepted {
+        keys: accepted,
+        recorded,
+    } = match accepted(&mut read, options, &files) {
         Ok(accepted) => accepted,
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
-    let reconciled = reconcile(
-        &read.document,
-        &read.hashes,
-        &read.trace,
-        &Parsed(read.store.test_files()),
-    );
+    let reconciled = reconcile(&read.document, &read.hashes, &read.trace, &files);
     let severities = reconciled.findings.iter().map(TraceFinding::severity);
     let failed = json::fails_on(options.fail_on, severities);
     let report = Report {
@@ -72,9 +72,9 @@ pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
     };
     let outcome = if failed { "failed" } else { "passed" };
     if as_json {
-        json::print(&report.document(&read.trace, &reconciled, &accepted, outcome));
+        json::print(&report.document(&read.trace, &reconciled, &accepted, recorded, outcome));
     } else {
-        report.print(&reconciled, &accepted);
+        report.print(&reconciled, &accepted, recorded);
     }
     if failed {
         Finished::failure(outcome)
@@ -97,22 +97,53 @@ fn read(root: &Path) -> Result<Read, Stop> {
     })
 }
 
-/// Accepts the links the options name and writes the trace file when any is accepted, giving
-/// the nodes whose links it accepted.
-fn accepted(read: &mut Read, options: &Options<'_>) -> Result<Vec<Key>, Stop> {
-    let files = Parsed(read.store.test_files());
+/// The nodes whose links were accepted, and the number of tests whose body was recorded.
+struct Accepted {
+    keys: Vec<Key>,
+    recorded: usize,
+}
+
+/// Accepts the links the options name, and writes the trace file when any is accepted or a body
+/// is recorded.
+fn accepted(
+    read: &mut Read,
+    options: &Options<'_>,
+    files: &impl TestFiles,
+) -> Result<Accepted, Stop> {
+    let before = read.trace.clone();
     let keys = if options.accept_stale {
-        accept_stale(&mut read.trace, &read.document, &read.hashes, &files)
+        accept_stale(&mut read.trace, &read.document, &read.hashes, files)
     } else if options.accept.is_empty() {
         Vec::new()
     } else {
-        accept_named(read, options.accept, &files)?
+        accept_named(read, options.accept, files)?
     };
-    if !keys.is_empty() {
+    let recorded = recorded(&before, &read.trace);
+    if !keys.is_empty() || recorded > 0 {
         let text = trace::write(&read.trace, &read.document);
         read.store.write_trace(text)?;
     }
-    Ok(keys)
+    Ok(Accepted { keys, recorded })
+}
+
+/// The number of tests that had no `body` in `before` and have one in `after`, the same trace
+/// with links accepted.
+fn recorded(before: &Trace, after: &Trace) -> usize {
+    let tests = |trace: &Trace| -> Vec<Option<Digest>> {
+        trace
+            .links
+            .iter()
+            .flat_map(|link| match &link.evidence {
+                Evidence::Tests(tests) => tests.iter().map(|test| test.body).collect(),
+                Evidence::Unverified(_) => Vec::new(),
+            })
+            .collect()
+    };
+    tests(before)
+        .into_iter()
+        .zip(tests(after))
+        .filter(|(before, after)| before.is_none() && after.is_some())
+        .count()
 }
 
 /// Accepts the links of the nodes `names` gives, each by its key or its label; any name that
@@ -216,9 +247,13 @@ impl Report<'_> {
         }
     }
 
-    fn print(&self, reconciled: &Reconciled, accepted: &[Key]) {
+    fn print(&self, reconciled: &Reconciled, accepted: &[Key], recorded: usize) {
         for key in accepted {
             outln!("accepted {}", self.name(*key));
+        }
+        if recorded > 0 {
+            let tests = if recorded == 1 { "test" } else { "tests" };
+            outln!("recorded the body of {recorded} {tests}");
         }
         for finding in &reconciled.findings {
             let label = self.label(finding.node).unwrap_or_else(|| "-".to_owned());
@@ -238,6 +273,7 @@ impl Report<'_> {
         trace: &Trace,
         reconciled: &Reconciled,
         accepted: &[Key],
+        recorded: usize,
         outcome: &str,
     ) -> Value {
         let findings: Vec<Value> = reconciled
@@ -265,6 +301,7 @@ impl Report<'_> {
             "inScope": reconciled.in_scope,
             "linked": reconciled.linked,
             "accepted": accepted,
+            "recorded": recorded,
             "tests": tests(trace, reconciled),
         });
         json::result(SCHEMA, outcome, fields, Vec::new())
