@@ -23,6 +23,7 @@ mod record_install;
 mod render;
 mod settings;
 mod skill;
+mod status;
 mod stop;
 mod switch_command;
 mod switches;
@@ -123,6 +124,15 @@ enum Command {
     },
     /// Recompute the roots of `spec/` and compare them with the lock (RQ-148).
     Verify {
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Report the lock and whether the tree matches it, the repository's state, and the nodes
+    /// added, changed and removed since HEAD left a base revision.
+    Status {
+        /// The revision whose merge base with HEAD the tree is compared with, such as `develop`.
+        #[arg(long, value_name = "REVISION")]
+        base: Option<String>,
         #[command(flatten)]
         output: Output,
     },
@@ -345,6 +355,7 @@ impl Command {
             Self::Render { .. } => Some("render"),
             Self::Skill { .. } => Some("skill install"),
             Self::MergeDriver { .. }
+            | Self::Status { .. }
             | Self::RecordInstall { .. }
             | Self::Telemetry { .. }
             | Self::UpdateCheck { .. } => None,
@@ -394,6 +405,7 @@ fn dispatch(command: Command) -> Finished {
             reconcile::run(root, &options, output.json())
         }
         Command::Verify { output } => verify::run(root, output.json()),
+        Command::Status { base, output } => status::run(root, base.as_deref(), output.json()),
         Command::MergeDriver {
             install: true,
             command,

@@ -61,7 +61,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 15] = [
+pub const COMMANDS: [Entry; 16] = [
     ("loft-check", &["check"], Fixture::Unkeyed, "check"),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed, "fmt"),
     (
@@ -84,6 +84,7 @@ pub const COMMANDS: [Entry; 15] = [
     ),
     ("loft-publish", &["publish"], Fixture::Clean, "publish"),
     ("loft-verify", &["verify"], Fixture::Clean, "verify"),
+    ("loft-status", &["status"], Fixture::Clean, "status"),
     ("loft-find", &["find", "shelf"], Fixture::Clean, "find"),
     (
         "loft-reconcile",
