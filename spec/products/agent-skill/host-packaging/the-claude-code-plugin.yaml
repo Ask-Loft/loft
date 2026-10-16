@@ -31,6 +31,8 @@ requirements:
         name: "The plugin's skill lies at `skills/loft-spec/`."
       - key: 01a144ee-c59e-7325-802c-d71d0cf0947c
         name: "The plugin's `hooks/hooks.json` names its hooks module, `./register.tsx`, which lies beside it."
+      - key: 01a14522-b2c9-7634-a3b0-225e35d97412
+        name: "The plugin's `hooks/hooks.json` holds an empty `hooks` record, so that a Claude Code that runs no hooks module still loads the plugin and its skill."
       - key: 01a144ee-c59e-7325-802c-d71e478c6971
         name: "The manifest names the pane's type contract, `./types/index.d.ts`, which lies in the plugin."
       - key: 01a144ee-c59e-7325-802c-d71f80f7853c
