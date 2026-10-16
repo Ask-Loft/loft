@@ -1,13 +1,14 @@
 //! A JavaScript or TypeScript test: a call to `it`, `test`, `describe`, `context`, `specify` or
-//! `bench`, directly or through a modifier such as `.only` or a call such as `.each(…)`, whose
-//! first argument is a string, or a template literal without a substitution, that names it. Of
-//! calls nested in one another that carry one name, the outermost is the test.
+//! `bench`, directly or through a modifier such as `.only` or a call such as `.each(…)`, and in
+//! parentheses or not, whose first argument is a string, or a template literal without a
+//! substitution, that names it. Of calls nested in one another that carry one name, the outermost
+//! is the test.
 
 use std::collections::HashMap;
 
 use tree_sitter::Node;
 
-use super::{Candidate, each, strings, text_of};
+use super::{Candidate, each, strings, text_of, unparenthesized};
 
 /// The functions that register a test or a group of tests.
 const REGISTERS: [&str; 6] = ["it", "test", "describe", "context", "specify", "bench"];
@@ -41,6 +42,7 @@ fn registered(node: Node<'_>, text: &str) -> Option<String> {
 
 /// Whether calling `callee` registers a test.
 fn registers(callee: Node<'_>, text: &str) -> bool {
+    let callee = unparenthesized(callee);
     let property = |node: Node<'_>| {
         node.child_by_field_name("property")
             .map(|property| text_of(property, text))

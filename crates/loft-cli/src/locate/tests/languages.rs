@@ -211,3 +211,47 @@ fn an_escaped_or_commented_go_subtest_name_is_read_as_written_to_run() {
     let names = names("a_test.go", go);
     assert_eq!(names, ["TestNames", "café", "AB😀", "commented"]);
 }
+
+#[test]
+fn go_byte_escapes_are_read_together_as_utf_8_and_a_raw_string_drops_carriage_returns() {
+    let go = "func TestNames(t *testing.T) {\n\tt.Run(\"\\xc3\\xa9\", nil)\n\tt.Run(\"\\303\\251\", nil)\n\tt.Run(\"\\xf0\\x9f\\x98\\x80\", nil)\n\tt.Run(`tar\rget`, nil)\n\tt.Run(\"\\xff\", nil)\n}\n";
+    // Bytes that are not UTF-8 leave the name as written.
+    assert_eq!(
+        names("a_test.go", go),
+        ["TestNames", "é", "é", "😀", "target", "\\xff"]
+    );
+}
+
+#[test]
+fn a_go_subtest_run_through_parentheses_is_a_test() {
+    let go = "func TestAll(t *testing.T) {\n\t(t.Run)(\"wrapped\", func(t *testing.T) {})\n}\n";
+    assert_eq!(names("a_test.go", go), ["TestAll", "wrapped"]);
+}
+
+#[test]
+fn a_comment_in_a_macro_does_not_end_a_test_s_attributes() {
+    let read =
+        |macro_body: &str| canonical("a.rs", &format!("suite! {{ {macro_body} }}\n"), "target");
+    let plain = read("#[test] fn target() { assert!(true); }");
+    // A comment changes nothing.
+    assert_eq!(
+        read("#[test] /* why */ fn target() { assert!(true); }"),
+        plain
+    );
+    assert_eq!(
+        read("#[test]\n    // why\n    fn target() { assert!(true); }"),
+        plain
+    );
+    // An attribute or a qualifier before the comment is part of the test.
+    let ignored = read("#[test] #[ignore] /* why */ fn target() { assert!(true); }");
+    assert_ne!(ignored, plain);
+    assert!(
+        ignored.starts_with("# [ test ] # [ ignore ] fn target"),
+        "{ignored}"
+    );
+    let crate_wide = read("#[test] pub(crate) /// why\n fn target() { assert!(true); }");
+    assert!(
+        crate_wide.starts_with("# [ test ] pub ( crate ) fn"),
+        "{crate_wide}"
+    );
+}

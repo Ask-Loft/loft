@@ -76,7 +76,32 @@ fn a_tsx_file_holds_tests_beside_jsx() {
         [("renders the pane".to_owned(), 1, 4)]
     );
     let text = canonical("tests/pane.test.tsx", spec, "renders the pane");
-    assert!(text.contains("> some text </"), "{text}");
+    // JSX keeps the spaces that open the text's first line and trims the rest where it breaks.
+    assert!(text.contains(">   some text  </"), "{text}");
+}
+
+#[test]
+fn jsx_text_is_read_as_jsx_reads_it() {
+    let read = |body: &str| {
+        let spec = format!("test(\"t\", () => {{\n  check(<p>{body}</p>);\n}});\n");
+        canonical("a.test.jsx", &spec, "t")
+    };
+    // Spaces within a line are text.
+    assert_ne!(read("hello world"), read("hello  world"));
+    // Where the text breaks across lines, the indentation around each break is not.
+    assert_eq!(
+        read("\n    hello\n    world\n  "),
+        read("\n  hello\n        world\n")
+    );
+    assert_eq!(read("\n    hello\n    world\n  "), read("hello world"));
+    assert_eq!(
+        canonical(
+            "a.test.tsx",
+            "test(\"t\", () => <p>hello  world</p>);\n",
+            "t"
+        ),
+        "test ( \"t\" , ( ) => < p > hello  world </ p > )"
+    );
 }
 
 #[test]
@@ -115,4 +140,23 @@ fn a_tsx_file_is_parsed_as_typescript_with_jsx() {
     assert!(!super::parses_cleanly("pane.test.jsx", spec));
     let text = canonical("pane.test.tsx", spec, "typed");
     assert!(text.contains("render < Props > ( < Pane"), "{text}");
+}
+
+#[test]
+fn a_surrogate_pair_is_one_character_and_a_backslash_before_any_line_break_continues() {
+    let spec = "it(\"\\ud83d\\ude00\", () => {});\nit(\"lone \\ud83d\", () => {});\nit(\"\\a\\U\", () => {});\n";
+    assert_eq!(names("a.test.js", spec), ["😀", "lone \\ud83d", "aU"]);
+    for line_break in ["\n", "\r", "\r\n", "\u{2028}", "\u{2029}"] {
+        let spec = format!("it(\"tar\\{line_break}get\", () => {{}});\n");
+        assert_eq!(names("a.test.js", &spec), ["target"], "{line_break:?}");
+    }
+}
+
+#[test]
+fn a_registering_function_in_parentheses_registers_a_test() {
+    let spec = "(test)(\"wrapped\", () => {});\n((it.only))(\"twice wrapped\", () => {});\n(describe).each([1])(\"called\", () => {});\n";
+    assert_eq!(
+        names("a.test.ts", spec),
+        ["wrapped", "twice wrapped", "called"]
+    );
 }

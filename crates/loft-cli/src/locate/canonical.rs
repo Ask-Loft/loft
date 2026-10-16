@@ -1,7 +1,7 @@
 //! A test's canonical text: its tokens in the order of the file, joined by one space, without
 //! comments. A string, character, raw string, regular expression or template literal is one
 //! token, written as in the file, so that whitespace inside it counts. Text between JSX tags is one
-//! token with its whitespace collapsed. A comma directly before `)`, `]` or `}` is dropped, since
+//! token, read as JSX reads it. A comma directly before `)`, `]` or `}` is dropped, since
 //! formatters add and remove it, except in Python, where `(x,)` is a tuple. In Python, where
 //! indentation is syntax, a token that starts a line outside any bracket is preceded by a line
 //! break and the line's indentation as written instead of a space, and a backslash that continues
@@ -90,10 +90,10 @@ impl Canonical<'_> {
 
     fn token(&mut self, node: Node<'_>) {
         let written = &self.text[node.byte_range()];
-        let collapsed;
+        let read;
         let token = if node.kind() == "jsx_text" {
-            collapsed = written.split_whitespace().collect::<Vec<_>>().join(" ");
-            collapsed.as_str()
+            read = jsx(written);
+            read.as_str()
         } else {
             written
         };
@@ -135,4 +135,27 @@ impl Canonical<'_> {
         }
         self.continued = false;
     }
+}
+
+/// Text between JSX tags as JSX reads it: each line trimmed of spaces and tabs where it meets a
+/// line break, a line left empty dropped, and the lines left joined by one space. Spaces within a
+/// line are kept, since they are part of the text.
+fn jsx(text: &str) -> String {
+    let lines: Vec<&str> = text.split(['\n', '\r']).collect();
+    let last = lines.len() - 1;
+    let kept: Vec<&str> = lines
+        .iter()
+        .enumerate()
+        .filter_map(|(at, line)| {
+            let mut line = *line;
+            if at > 0 {
+                line = line.trim_start_matches([' ', '\t']);
+            }
+            if at < last {
+                line = line.trim_end_matches([' ', '\t']);
+            }
+            (!line.is_empty()).then_some(line)
+        })
+        .collect();
+    kept.join(" ")
 }

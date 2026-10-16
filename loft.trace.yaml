@@ -8462,7 +8462,7 @@ links:
         body: c978b32605fa4be4d146720ad2fe9c918ecdf974b66cb745384872f860deab37
       - file: "crates/loft-cli/src/locate/tests/script.rs"
         name: "a_tsx_file_holds_tests_beside_jsx"
-        body: 5be47d17bf33918d0d5a2454f02d482aab663ab9c6b60802692685ca44708ddc
+        body: 0a1224254cdb40d9d5dbe7e48b961a3680c4b62f4fb192cb218bf232ed9681d2
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
         body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
@@ -8523,6 +8523,12 @@ links:
       - file: "crates/loft-cli/src/locate/tests/languages.rs"
         name: "qualifiers_in_a_macro_keep_the_attributes_and_a_declaration_is_no_test"
         body: 698133006c246e257ac315da2b9dd3f7f32af98d21dd191fe40fb7fe5d13b5e9
+  - node: 01a146cb-3d40-749f-b9bb-1cc111bc2bc0
+    reviewed: d9568de28d0c57d6f9097e91c69d0399ab73be6088f37db2faadfc8dabb2f350
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/languages.rs"
+        name: "a_comment_in_a_macro_does_not_end_a_test_s_attributes"
+        body: 79c7edfa4d1949a91a06c5e0f54c8132513ec7fe10bf2eeb6a5ad90eeb4f2204
   - node: 01a145e9-aa7f-769e-a7f5-f223aa545efa
     reviewed: b5c963207997838041d3f2fcd1c29a1acdb22be49acc4137c8e0849144771e5b
     tests:
@@ -8574,6 +8580,24 @@ links:
       - file: "crates/loft-cli/src/locate/tests/script.rs"
         name: "an_escape_in_a_name_is_read_as_its_character_and_a_comment_is_no_argument"
         body: 214010490f56e2f269f1a03175f87fceb455b559a39569cb6b4ea66224d5f049
+  - node: 01a146cb-3d40-749f-b9bb-1cc2bacfaf24
+    reviewed: 6dfb02a109e13de402e0e90114b023c0ff79e3d013823bfae6b5d8184210d72d
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/script.rs"
+        name: "a_surrogate_pair_is_one_character_and_a_backslash_before_any_line_break_continues"
+        body: dac61eb577f69d82b198a85ba17ffec8473cb462bad78140e27868211aae7343
+  - node: 01a146cb-3d40-749f-b9bb-1cc3989f464e
+    reviewed: b64ecf1b2ead18f79ff1382eed291be90cabceeeb93db5fac67123f5fc70b676
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/script.rs"
+        name: "a_surrogate_pair_is_one_character_and_a_backslash_before_any_line_break_continues"
+        body: dac61eb577f69d82b198a85ba17ffec8473cb462bad78140e27868211aae7343
+  - node: 01a146cb-3d40-749f-b9bb-1cc4f310c794
+    reviewed: 1fdb2ecdae2f026a9e18f282f98d900727047e66205cb25b523fd48ac276b41b
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/script.rs"
+        name: "a_registering_function_in_parentheses_registers_a_test"
+        body: 741b11fe16c260485405c2c4676c1148b045c97830c07bf7ca2cb4b6932e827b
   - node: 01a145e9-aa7f-769e-a7f5-f229fdc044bb
     reviewed: 254a616977c1e94d833c8aaa4d510a7bc3d0492f203d3674524afd6b774fb11f
     tests:
@@ -8604,12 +8628,33 @@ links:
       - file: "crates/loft-cli/src/locate/tests/languages.rs"
         name: "a_go_function_and_a_subtest_are_tests"
         body: d8a8e5f4a0464a0490268d609adf8f0b40a04d408a2c4eabf1611e4c65395016
+  - node: 01a14625-1535-7161-b749-35087ab1cfc6
+    reviewed: e4575c46e402b3aceb8812bd969f5d20b79fc5e7398ad89ff121e48852988cca
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/languages.rs"
+        name: "go_byte_escapes_are_read_together_as_utf_8_and_a_raw_string_drops_carriage_returns"
+        body: eb5c2fdaa719b975e8b5b796bfe3f843e109d9da3022e3596fe7e30e561cd36a
+      - file: "crates/loft-cli/src/locate/tests/languages.rs"
+        name: "an_escaped_or_commented_go_subtest_name_is_read_as_written_to_run"
+        body: 44fc0866b46b2966842ddf43765f790dcc722a068a73b62668e6018a20d21dc2
   - node: 01a14625-1535-7161-b749-35098bb8d485
     reviewed: 72a2941bcbc8dc36a251e9c7493f85855fb2e2eb8aebc79b174cb97428279230
     tests:
       - file: "crates/loft-cli/src/locate/tests/languages.rs"
         name: "an_escaped_or_commented_go_subtest_name_is_read_as_written_to_run"
         body: 44fc0866b46b2966842ddf43765f790dcc722a068a73b62668e6018a20d21dc2
+  - node: 01a146cb-3d40-749f-b9bb-1cc57f8d9c61
+    reviewed: 61f787420ce5a704515d4346bf915addd45c17e2a23fb09e99197ef142b7c0ed
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/languages.rs"
+        name: "go_byte_escapes_are_read_together_as_utf_8_and_a_raw_string_drops_carriage_returns"
+        body: eb5c2fdaa719b975e8b5b796bfe3f843e109d9da3022e3596fe7e30e561cd36a
+  - node: 01a146cb-3d40-749f-b9bb-1cc644e4f41a
+    reviewed: 8eb1779727732a8bd86877735cf1bdd0afc5d5d40185c2d669da5996ab03fcdc
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/languages.rs"
+        name: "a_go_subtest_run_through_parentheses_is_a_test"
+        body: 31522dd283693db3a265c91b5d20f50436f31d8df51bab29ff7065b1d4abec71
   - node: 01a145e9-aa7f-769e-a7f5-f230a810aa75
     reviewed: 6a9abc4502b2d8454ac3b3ce1896af3ce2c4c7f8feca0e28d8c857221825cc94
     tests:
@@ -8618,7 +8663,7 @@ links:
         body: e8459f2f29b6bec70c52c187a56beb07821a55634eee7383348111404315b852
       - file: "crates/loft-cli/src/locate/tests/script.rs"
         name: "a_tsx_file_holds_tests_beside_jsx"
-        body: 5be47d17bf33918d0d5a2454f02d482aab663ab9c6b60802692685ca44708ddc
+        body: 0a1224254cdb40d9d5dbe7e48b961a3680c4b62f4fb192cb218bf232ed9681d2
   - node: 01a145e9-aa7f-769e-a7f5-f231666f035d
     reviewed: 448e222dbcb69c7abf91fbb88fa27bb3f3fb12dbecba317492553b0283eed448
     tests:
@@ -8646,6 +8691,15 @@ links:
       - file: "crates/loft-cli/src/locate/tests/canonical.rs"
         name: "a_literal_is_one_token_written_as_in_the_file"
         body: f880cccb980f82a612fe38b2f1b94d1b8ccc2fcac0d9538b367af6e4c772f74e
+  - node: 01a146cb-3d40-749f-b9bb-1cc70ed1d3b8
+    reviewed: 25bfe909e808a2bd4be44724a7213fc1a7886ca2a780dadb0eefd10cddf79678
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/script.rs"
+        name: "a_tsx_file_holds_tests_beside_jsx"
+        body: 0a1224254cdb40d9d5dbe7e48b961a3680c4b62f4fb192cb218bf232ed9681d2
+      - file: "crates/loft-cli/src/locate/tests/script.rs"
+        name: "jsx_text_is_read_as_jsx_reads_it"
+        body: 55074c8312068b04563cdb3d244bcaf4135c6fa4b16daddeb701f1127ac13699
   - node: 01a145e9-aa7f-769e-a7f5-f235c46cfb4d
     reviewed: 7a508cfc467c6bb5fe7327cf0e6c4759976606f30e55e359e1cf48a77ee40ae0
     tests:

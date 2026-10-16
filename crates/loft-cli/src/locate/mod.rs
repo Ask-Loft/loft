@@ -189,6 +189,21 @@ fn error(node: Node<'_>, text: &str) -> ParseError {
     ParseError::new(at, start.row + 1, column, shown, missing)
 }
 
+/// `node` without the parentheses around it, however many.
+fn unparenthesized(mut node: Node<'_>) -> Node<'_> {
+    while node.kind() == "parenthesized_expression" {
+        let mut cursor = node.walk();
+        let inner = node
+            .named_children(&mut cursor)
+            .find(|inner| !inner.kind().ends_with("comment"));
+        match inner {
+            Some(inner) => node = inner,
+            None => break,
+        }
+    }
+    node
+}
+
 /// The text of `node` in `text`.
 fn text_of<'a>(node: Node<'_>, text: &'a str) -> &'a str {
     &text[node.byte_range()]

@@ -1,8 +1,8 @@
 //! A Rust test: a function, at any depth of modules, implementations and functions, with the
 //! attributes written directly before it; and, inside a macro invocation such as `proptest!`,
 //! the tokens from `fn` and its name through the next group in braces, with the qualifiers such as
-//! `pub` and `async` and the attributes written directly before them. A `fn` followed by `;`
-//! before any group in braces declares no test.
+//! `pub` and `async` and the attributes written directly before them, whatever comments lie among
+//! them. A `fn` followed by `;` before any group in braces declares no test.
 
 use tree_sitter::Node;
 
@@ -34,10 +34,14 @@ fn function(node: Node<'_>, text: &str) -> Option<Candidate> {
     Some(Candidate::between(name, first, node))
 }
 
-/// The functions written as tokens directly in the group `node` of a macro invocation.
+/// The functions written as tokens directly in the group `node` of a macro invocation; its
+/// comments are passed over.
 fn in_macro(node: Node<'_>, text: &str) -> Vec<Candidate> {
     let mut cursor = node.walk();
-    let tokens: Vec<Node<'_>> = node.children(&mut cursor).collect();
+    let tokens: Vec<Node<'_>> = node
+        .children(&mut cursor)
+        .filter(|token| !token.kind().ends_with("comment"))
+        .collect();
     let mut found = Vec::new();
     for (at, token) in tokens.iter().enumerate() {
         if text_of(*token, text) != "fn" {
