@@ -48,6 +48,8 @@ test('Spec committed passes when loft status lists no uncommitted path under spe
 test('Trace does not pass while a criterion the branch added or changed has an open finding', () => {
   expect(checkOf({ open: ['k-added'] }, 'trace').passes).toBe(false)
   expect(checkOf({ open: [] }, 'trace').passes).toBe(true)
+  // A test changed after it was recorded asks for its review again.
+  expect(checkOf({ open: [], changed: ['k-added'] }, 'trace').passes).toBe(false)
   // A finding on a node the branch did not touch is not this branch's work.
   expect(checkOf({ open: ['k-elsewhere'] }, 'trace').passes).toBe(true)
 })
@@ -82,6 +84,10 @@ test('the criteria to verify are the criteria the branch added or changed, in fi
   expect(toVerify.map(each => each.node.key)).toEqual(['k-changed', 'k-added'])
   expect(toVerify[0]!.open).toBeUndefined()
   expect(toVerify[1]!.open?.message).toBe('no link names this node')
+  // A criterion whose test changed after it was recorded is not reviewed.
+  const changed = criteriaToVerify(readWith({ open: [], changed: ['k-changed'] }))
+  expect(changed[0]!.open?.rule).toBe('TR-006')
+  expect(changed[1]!.open).toBeUndefined()
 })
 
 test('the nodes a file holds are the added and changed nodes whose path it is', () => {

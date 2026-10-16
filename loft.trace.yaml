@@ -14110,11 +14110,11 @@ links:
         name: "Spec committed passes when loft status lists no uncommitted path under spec"
         body: 7569f5b3f1bb3997a888024d470d78ed70089187d511e718c8265cc6a8f2bdfd
   - node: 01a144ee-c59e-7325-802c-d72d1c30d09b
-    reviewed: 1de24270bd9a727805fdde16e8d29cca65bfd1ee2ae3b620bf1183537b7ce20e
+    reviewed: 3d225105b19abf6608f76f3a263beb8be129a649efcc9637e75036f1f1f896be
     tests:
       - file: "plugins/claude/loft/tests/model.test.ts"
         name: "Trace does not pass while a criterion the branch added or changed has an open finding"
-        body: 56e8e9175f6b6d24b45873c8847e5d631fbbba26c979a777ebdb1838d0b72d06
+        body: 8deea7cad1e36304325603716984d05979d7b38db884a82d1940fbebe3b13d3c
   - node: 01a144ef-6ca2-72ca-be59-5704e4bee58c
     reviewed: d8d4efce71a2830d2a5e2c3c83acb49ccf7c1ad5f2a88f2f3b8bcc8db2ec3145
     tests:
@@ -14194,14 +14194,14 @@ links:
         name: "a list longer than its room ends with a count of what it leaves out"
         body: e03f6eef809a1cda10ed69c50493fa23f3a9953778ecc8a6503bce0ea4833358
   - node: 01a144ee-c59e-7325-802c-d73c0ea40657
-    reviewed: 0ece6e54e78a0722ebf81ee85a29a37cda9438f634123110da37de3ed0c54b81
+    reviewed: 2ed9b25fcb070cfb673f6603736c867296d7e868c4b17657a495f6cbba2fdb0d
     tests:
       - file: "plugins/claude/loft/tests/pane.test.tsx"
         name: "the criteria to verify mark the reviewed, the current one and the message of an open one"
         body: 6e52271def62d80e3d7cf263e196d2bd76c26c5b3c8f29b811d51c88881fa5c5
       - file: "plugins/claude/loft/tests/model.test.ts"
         name: "the criteria to verify are the criteria the branch added or changed, in file order"
-        body: 8330e278245548b306215bc0cdd34ca4db5bddffa984f4110d27fdaebe35467a
+        body: fe3f9238c8c07d561ceded30c89795042e130569a48dc0071161dd152a3551c7
   - node: 01a144ee-c59e-7325-802c-d73dedb5bd58
     reviewed: a8bc2ebeb22277132b0ddb7716310565d2d526e66f1bb202c75c478a29e6a0db
     tests:

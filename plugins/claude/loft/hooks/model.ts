@@ -142,7 +142,7 @@ export function isLoftSpecSkill(name: string | undefined): boolean {
   return name !== undefined && /(^|:)loft-spec$/.test(name)
 }
 
-const TRACE_WORK = new Set(['TR-001', 'TR-002', 'TR-003'])
+const TRACE_WORK = new Set(['TR-001', 'TR-002', 'TR-003', 'TR-006'])
 const TRACE_BROKEN = new Set(['TR-004', 'TR-005'])
 
 /** A criterion the branch added or changed, with the finding that leaves it unreviewed. */

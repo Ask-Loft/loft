@@ -25,6 +25,7 @@ export type Variant = {
   checkErrors?: number
   warnings?: number
   open?: string[]
+  changed?: string[]
   broken?: boolean
   matches?: boolean
   added?: object[]
@@ -83,8 +84,8 @@ export const check = (errors = 0, warnings = 1) => ({
   })),
 })
 
-export const reconcile = (open: string[] = ['k-added'], broken = false) => ({
-  schema: 'loft-reconcile/1',
+export const reconcile = (open: string[] = ['k-added'], broken = false, changed: string[] = []) => ({
+  schema: 'loft-reconcile/2',
   outcome: 'passed',
   inScope: 10,
   linked: 9,
@@ -98,10 +99,19 @@ export const reconcile = (open: string[] = ['k-added'], broken = false) => ({
       path: FEATURE,
       message: 'no link names this node',
     })),
+    ...changed.map(key => ({
+      rule: 'TR-006',
+      severity: 'warning',
+      key,
+      label: null,
+      path: FEATURE,
+      message: 'the test changed after it was recorded',
+    })),
     ...(broken
       ? [{ rule: 'TR-004', severity: 'warning', key: 'k-other', label: 'AC-1', path: 'spec/x.yaml', message: 'the test is missing' }]
       : []),
   ],
+  tests: [],
   errors: [],
 })
 
@@ -110,5 +120,5 @@ export const documents = (variant: Variant = {}) => ({
   status: status(variant),
   fmt: fmt(variant.canonical ?? true),
   check: check(variant.checkErrors ?? 0, variant.warnings ?? 1),
-  reconcile: reconcile(variant.open ?? ['k-added'], variant.broken ?? false),
+  reconcile: reconcile(variant.open ?? ['k-added'], variant.broken ?? false, variant.changed ?? []),
 })
