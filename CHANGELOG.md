@@ -3,6 +3,22 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- `loft status [--base <revision>]` reports where the tree stands: the lock's publish sequence,
+  publication time and state root, and the first root of the tree that differs from it; the
+  branch, the uncommitted paths under `spec/` and a stopped merge or rebase; and with `--base`
+  the nodes added, changed and removed since HEAD left the revision, each with its key, label,
+  kind, file, line, column and name. A node changed when its own content changed, so an edit is
+  not a change of each of its ancestors, and a move is no change. It writes nothing, exits 0
+  whatever it finds, and sends no command event, since an agent host may run it every few
+  seconds. Its output follows the schema `loft-status/1`.
+- The Claude Code plugin shows the Loft status pane in a project that holds `spec/`: the checks
+  of the loop with the next step, the nodes the branch changed since its base, the criteria it
+  touched that still lack a reviewed test, the file the agent is writing, and a status-line
+  entry. `/loft-status [<revision>|auto]` opens it; the settings `baseBranch` and `loftCommand`
+  choose the base and the command that runs `loft`. It needs a `loft` with `loft status`.
+
 ## 2.1.0 (2026-10-15)
 
 - `loft import openspec [<dir>]` converts the main specs of an OpenSpec project, read from

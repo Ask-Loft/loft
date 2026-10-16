@@ -322,7 +322,7 @@ test('every text the pane draws takes a tone of the table, and none is dimmed', 
   }
 })
 
-test('the pane runs no command but loft, and reads and writes no file', async ($, on) => {
+test('the pane runs no command but loft, each with --format json, and reads and writes no file', async ($, on) => {
   const { clock, state } = world(on)
   await start($)
   await $.tool.call({ tool: 'Write', file_path: `${ROOT}/${FEATURE}`, content: 'x' })
@@ -334,5 +334,6 @@ test('the pane runs no command but loft, and reads and writes no file', async ($
   await ui.unmount()
   expect(state.runs.length).toBeGreaterThan(8)
   expect(state.runs.every(run => run.argv[0] === 'loft')).toBe(true)
+  expect(state.runs.every(run => run.argv.slice(-2).join(' ') === '--format json')).toBe(true)
   expect(state.files).toEqual([])
 })
