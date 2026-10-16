@@ -1,0 +1,68 @@
+key: 01a144ee-c59d-7512-b23e-0aafe92132a1
+slug: the-status-pane-reads-loft-only-through-its-json
+title: "The status pane reads Loft only through the command line's JSON"
+context: "The Loft status pane needs the state of a specification: its findings, its layout, its trace and what a branch changed in it. The Format, its reader and its rules belong to `loftspec` and `loft`, and each `loft` command prints one JSON document whose shape its schema fixes. A pane in an agent host is written in that host's language and released with the plugin, not with `loft`."
+state:
+  kind: accepted
+  selectedOption: 01a144ee-c59e-7325-802c-d718444afde2
+  outcome: "The pane runs `loft` commands with `--format json` and draws from their documents alone; what it needs that no command reports becomes a command of `loft` first, as `loft status` did."
+drivers:
+  - key: 01a144ee-c59e-7325-802c-d7153f4c3289
+    kind: local
+    label: "One reader"
+    statement: "The tree is read, validated and compared by one implementation."
+  - key: 01a144ee-c59e-7325-802c-d716ab6daa27
+    kind: local
+    label: "A stable seam"
+    statement: "A change to the Format's files does not break the pane."
+  - key: 01a144ee-c59e-7325-802c-d717557fc068
+    kind: local
+    label: "Useful beyond one host"
+    statement: "What the pane learns is available to any agent host and to a person at a terminal."
+options:
+  - key: 01a144ee-c59e-7325-802c-d718444afde2
+    title: "The commands' JSON documents"
+    description: "The pane runs `loft` commands with `--format json` and parses their documents, each held to its schema."
+  - key: 01a144ee-c59e-7325-802c-d719398a0832
+    title: "The pane reads the files"
+    description: "The pane parses `spec/`, `spec/labels.yaml`, `loft.lock.json` and `loft.trace.yaml` itself, and asks git for the base commit's files."
+assessments:
+  - option: 01a144ee-c59e-7325-802c-d718444afde2
+    driver: 01a144ee-c59e-7325-802c-d7153f4c3289
+    rating: supports
+    rationale: "`loft` reads the tree for the pane"
+  - option: 01a144ee-c59e-7325-802c-d718444afde2
+    driver: 01a144ee-c59e-7325-802c-d716ab6daa27
+    rating: supports
+    rationale: "each document is versioned by its schema"
+  - option: 01a144ee-c59e-7325-802c-d718444afde2
+    driver: 01a144ee-c59e-7325-802c-d717557fc068
+    rating: supports
+    rationale: "the same commands serve every host"
+  - option: 01a144ee-c59e-7325-802c-d719398a0832
+    driver: 01a144ee-c59e-7325-802c-d7153f4c3289
+    rating: conflicts
+    rationale: "a second reader, in another language, of the Format's files"
+  - option: 01a144ee-c59e-7325-802c-d719398a0832
+    driver: 01a144ee-c59e-7325-802c-d716ab6daa27
+    rating: conflicts
+    rationale: "the pane follows every change to the files"
+  - option: 01a144ee-c59e-7325-802c-d719398a0832
+    driver: 01a144ee-c59e-7325-802c-d717557fc068
+    rating: conflicts
+    rationale: "what the pane works out stays in the pane"
+consequences:
+  - key: 01a144ee-c59e-7325-802c-d71a0082436a
+    kind: obligation
+    statement: "`loft status` reports the nodes a branch added, changed and removed, which no other command reports."
+  - key: 01a144ee-c59e-7325-802c-d71b0b9ee080
+    kind: cost
+    statement: "The pane needs a `loft` that has every command it runs, so a newer pane can need a newer `loft`."
+  - key: 01a144ee-c59e-7325-802c-d71c78cba61a
+    kind: benefit
+    statement: "The pane holds no rule of the Format, so a custom lint configuration or a later Format version needs no change to it."
+subjects:
+  - role: affected
+    node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - role: outcome
+    node: 01a144ee-c59d-7512-b23e-0aad7d296257

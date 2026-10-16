@@ -1,0 +1,19 @@
+key: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+slug: loft-status-pane
+name: "Loft status pane"
+body: "The Claude Code hooks module under `plugins/claude/loft/hooks/` that draws the Loft status pane: its hooks, which ask for a read and record what the agent works on; its model, pure functions from `loft`'s JSON documents to the pane's checks, lists and status line; and its tone table."
+scopedTo:
+  - 01a13653-2d9b-714a-a6f3-7183cacff8d8
+constraints:
+  - key: 01a144ee-c59d-7512-b23e-0aad7d296257
+    name: "The pane shall learn of the specification only from documents that `loft` prints with `--format json`."
+    verificationFate: proved
+  - key: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
+    name: "The pane shall run no command but the one that its `loftCommand` setting names."
+    verificationFate: proved
+  - key: 01a144ef-6ca1-721a-b6f1-e990b4e77cf7
+    name: "The pane shall read no file of `spec/`."
+    verificationFate: proved
+  - key: 01a144ee-c59d-7512-b23e-0aae339f7844
+    name: "The pane shall write no file."
+    verificationFate: proved

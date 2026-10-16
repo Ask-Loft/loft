@@ -1,0 +1,187 @@
+key: 01a144ee-c59e-7325-802c-d7207db4ca1b
+slug: the-loft-status-pane
+name: "The Loft status pane"
+body: "A pane in Claude Code that keeps track of the work on a specification while the agent does it: which checks of the loop pass, what the branch has added, changed and removed since it left its base, which of the criteria it touched still lack a reviewed test, and which file the agent is writing. It reads everything from `loft`'s JSON output and changes nothing."
+realizes:
+  - 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+requirements:
+  - key: 01a144ee-c59e-7325-802c-d72108b537c5
+    statement:
+      form: event_driven
+      when: "the person runs `/loft-status`"
+      system: "the Loft status pane"
+      shall: "open, or come forward when it is open."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d72278d3a03d
+        name: "`/loft-status` opens the pane at any terminal width."
+      - key: 01a144ee-c59e-7325-802c-d723209e6bcf
+        name: "`/loft-status <revision>` makes the revision the base for the rest of the session."
+      - key: 01a144ee-c59e-7325-802c-d724f43ae318
+        name: "`/loft-status auto` makes the `baseBranch` setting the base again."
+      - key: 01a144ee-c59e-7325-802c-d7257265f4fb
+        name: "The command's answer names the base that the pane follows."
+  - key: 01a144ee-c59e-7325-802c-d7266b6c8865
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "follow the specification in the nearest directory at or above the session's working directory that holds `spec/loftspec.yaml`."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d7270052d627
+        name: "A session started in a directory below the specification's directory follows that specification."
+      - key: 01a144ee-c59e-7325-802c-d728814fe87c
+        name: "Where no such directory exists, the pane says that it found no Loft specification and runs no `loft` command."
+  - key: 01a144ee-c59e-7325-802c-d72910b36ae9
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "show the checks of the loop in the order Format, Check, Spec committed, Trace and Lock, each marked as passing or not."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d72a8ee66b6c
+        name: "Format passes when `loft fmt --check` reports the outcome `canonical`."
+      - key: 01a144ee-c59e-7325-802c-d72bb8ed6d8d
+        name: "Check passes when `loft check` reports no error and no finding at warning, and shows the count of each."
+      - key: 01a144ee-c59e-7325-802c-d72c09cbf679
+        name: "Spec committed passes when `loft status` lists no uncommitted path under `spec/`."
+      - key: 01a144ee-c59e-7325-802c-d72d1c30d09b
+        name: "Trace does not pass while a criterion that the branch added or changed has a `TR-001`, `TR-002` or `TR-003` finding."
+      - key: 01a144ef-6ca2-72ca-be59-5704e4bee58c
+        name: "Trace does not pass while a `TR-004` or `TR-005` finding stands anywhere in the trace."
+      - key: 01a144ee-c59e-7325-802c-d72eed8c141c
+        name: "Lock passes when `loft status` reports that the tree matches the lock, and otherwise says that the tree holds unpublished changes."
+      - key: 01a144ee-c59e-7325-802c-d72f00f4a28d
+        name: "Each check carries a glyph and a word that say whether it passes, besides its colour."
+  - key: 01a144ee-c59e-7325-802c-d730e0878e3f
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "show as its next step the action that the first check that does not pass asks for."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d73157c6fa39
+        name: "When Format fails, the next step is to run `loft fmt`."
+      - key: 01a144ee-c59e-7325-802c-d73249c597d7
+        name: "When Check fails, the next step is to fix what `loft check` reports."
+      - key: 01a144ee-c59e-7325-802c-d7338717f9a4
+        name: "When Spec committed fails, the next step is to commit `spec/`."
+      - key: 01a144ee-c59e-7325-802c-d734692ac779
+        name: "When Trace fails, the next step is to link and review the tests of the criteria to verify."
+      - key: 01a144ee-c59e-7325-802c-d735f96fc52f
+        name: "When only Lock fails, the next step is to merge the branch and publish on the publish branch."
+      - key: 01a144ee-c59e-7325-802c-d736d111ffb6
+        name: "When every check passes, the pane says that nothing is left to do."
+  - key: 01a144ee-c59e-7325-802c-d73742ec3d12
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "list the nodes that `loft status --base` reports added, changed and removed since the base."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d7384f86290f
+        name: "The pane gives the count of the nodes added, changed and removed."
+      - key: 01a144ee-c59e-7325-802c-d739c681a61b
+        name: "Each listed node shows a glyph for its change, its label, or `new` without one, and its name."
+      - key: 01a144ee-c59e-7325-802c-d73a8abb2e91
+        name: "A list longer than the pane's height ends with a line that counts the nodes it leaves out."
+  - key: 01a144ee-c59e-7325-802c-d73b8796c642
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "list as the criteria to verify each criterion that the branch added or changed, with whether its tests are reviewed."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d73c0ea40657
+        name: "A criterion with no `TR-001`, `TR-002` or `TR-003` finding is marked as reviewed."
+      - key: 01a144ee-c59e-7325-802c-d73dedb5bd58
+        name: "The first criterion that is not reviewed is marked as the current one."
+      - key: 01a144ee-c59e-7325-802c-d73edddbaeb1
+        name: "A criterion that is not reviewed shows the message of its finding."
+      - key: 01a144ee-c59e-7325-802c-d73f70319629
+        name: "The pane gives the count of the reviewed criteria out of the criteria to verify."
+  - key: 01a144ee-c59e-7325-802c-d7400b070e38
+    statement:
+      form: event_driven
+      when: "the agent writes or edits a file under `spec/`"
+      system: "the Loft status pane"
+      shall: "show that file as the one being worked on."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d741c35a5c51
+        name: "The pane shows the file's path from the specification's directory."
+      - key: 01a144ee-c59e-7325-802c-d74274c4bfa1
+        name: "The pane lists the added and changed nodes that the file holds."
+  - key: 01a144ee-c59e-7325-802c-d743261c1042
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "keep an entry in the status line that sums up the branch."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d74402eb756a
+        name: "The entry names the branch."
+      - key: 01a144ef-6ca2-72ca-be59-5705380d0760
+        name: "The entry gives the counts of the nodes added, changed and removed."
+      - key: 01a144ef-6ca2-72ca-be59-5706eccc151e
+        name: "The entry gives the counts of the errors and warnings that `loft check` reports."
+      - key: 01a144ef-6ca2-72ca-be59-57074c9a4e94
+        name: "The entry gives the count of the reviewed criteria out of the criteria to verify."
+      - key: 01a144ee-c59e-7325-802c-d745301ae2b4
+        name: "The entry is cleared where the pane follows no specification."
+  - key: 01a144ee-c59e-7325-802c-d74671d089a6
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "read the specification's state again after each event that can change it."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d747ce906a88
+        name: "A write or an edit of a file under `spec/` or of `loft.trace.yaml` starts a read."
+      - key: 01a144ee-c59e-7325-802c-d748d5d58c5b
+        name: "A shell command that runs `loft` or `git` starts a read once it ends."
+      - key: 01a144ee-c59e-7325-802c-d7493bb1942c
+        name: "A run of the `loft-spec` skill starts a read."
+      - key: 01a144ee-c59e-7325-802c-d74ab10e1e5f
+        name: "The end of each turn starts a read."
+      - key: 01a144ee-c59e-7325-802c-d74b5bf146fb
+        name: "A read starts every 10 seconds, so that edits made outside the agent show."
+      - key: 01a144ee-c59e-7325-802c-d74c501359d3
+        name: "No read starts while another runs."
+      - key: 01a144ef-0347-75ee-9c2b-bc96dfc0b0ff
+        name: "A read asked for while another runs starts when that one ends."
+  - key: 01a144ee-c59e-7325-802c-d74d4c0b5ef5
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "read the specification's state with `status --base <base>`, `fmt --check`, `check` and `reconcile`, each with `--format json`, run by the `loftCommand` setting."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d74e9d6ff3a8
+        name: "The base is the revision `/loft-status` gave, or else the `baseBranch` setting, `develop` by default."
+      - key: 01a144ee-c59e-7325-802c-d74feafc44ae
+        name: "`loftCommand` is `loft` by default."
+      - key: 01a144ef-0347-75ee-9c2b-bc9704f76e1a
+        name: "A `loftCommand` of more than one word, such as `pnpm exec loft`, runs its first word with the others as its first arguments."
+  - key: 01a144ee-c59e-7325-802c-d750584e014a
+    statement:
+      form: unwanted
+      if: "the `loftCommand` setting cannot be run, or runs a `loft` that has no `status` command"
+      system: "the Loft status pane"
+      shall: "show a notice that names the setting, and no check."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d751ebcda633
+        name: "A command that cannot be run is reported with the command."
+      - key: 01a144ee-c59e-7325-802c-d75240327fec
+        name: "A `loft` that answers `status` with a usage error is reported as too old for the pane."
+  - key: 01a144ee-c59e-7325-802c-d7535fa0301f
+    statement:
+      form: unwanted
+      if: "a `loft` command stops on an error"
+      system: "the Loft status pane"
+      shall: "show the error and keep what its last complete read showed."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d7549e4dff1e
+        name: "The pane shows the message of each error, with its file and line where it has one."
+      - key: 01a144ee-c59e-7325-802c-d7556a974e60
+        name: "The checks and lists keep the values of the last read in which every command ran."
+  - key: 01a144ee-c59e-7325-802c-d756d741e39f
+    statement:
+      form: ubiquitous
+      system: "The Loft status pane"
+      shall: "draw each piece of text in a colour of the person's theme chosen by what the text means."
+    criteria:
+      - key: 01a144ee-c59e-7325-802c-d75720adf30f
+        name: "Every text the pane draws takes its colour and weight from one table of tones, each a key of the theme."
+      - key: 01a144ee-c59e-7325-802c-d7584a8bd108
+        name: "No text the pane draws is dimmed."

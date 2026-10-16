@@ -1,7 +1,7 @@
 key: 01a13653-2d9b-714a-a6f3-7183cacff8d8
 slug: agent-skill
 name: "Agent Skill"
-body: "The `loft-spec` skill, which teaches a coding agent to write, change and review a specification in this Format with `loft`, and the packages that put it in front of each agent host."
+body: "The `loft-spec` skill, which teaches a coding agent to write, change and review a specification in this Format with `loft`, the packages that put it in front of each agent host, and the tools a host's plugin adds beside it."
 featureGroups:
   - key: 01a13653-2d9c-760d-846c-c5f958b37166
     slug: skill-content
@@ -32,3 +32,9 @@ featureGroups:
       - 01a13654-6e11-74fa-a359-2590f18ff9d5
       - 01a13654-6e11-74fa-a359-25996138a11d
       - 01a13654-6e11-74fa-a359-25a5e0990497
+  - key: 01a144ee-c59f-7034-9c62-3c494ebe90ec
+    slug: host-tools
+    name: "Host tools"
+    body: "What a plugin adds beside the skill in an agent host that can run it: the Loft status pane in Claude Code."
+    features:
+      - 01a144ee-c59e-7325-802c-d7207db4ca1b

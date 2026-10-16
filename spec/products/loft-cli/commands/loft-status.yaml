@@ -1,0 +1,127 @@
+key: 01a144ee-c59f-7034-9c62-3c4adf1f3011
+slug: loft-status
+name: "`loft status`"
+body: "Reports where the tree stands: the lock it was last published as and whether it still matches it, the state of the git repository that holds it, and, against a base revision, the nodes that were added, changed and removed since the branch left it. It is a report for an agent host or a person to read between edits, so it exits 0 whatever it finds."
+tags:
+  - checks-for-updates
+  - needs-repository
+  - reads-tree
+  - sends-telemetry
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a144ee-c59f-7034-9c62-3c4b4347d3be
+    statement:
+      form: ubiquitous
+      system: "`loft status`"
+      shall: "report the lock beside `spec/` and whether the tree matches it."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c4c7f6eec67
+        name: "The report gives the lock's publish sequence, its publication time and its state root."
+      - key: 01a144ee-c59f-7034-9c62-3c4de28837e7
+        name: "The report says that the tree matches the lock when every root matches."
+      - key: 01a144ee-c59f-7034-9c62-3c4ecfad2426
+        name: "The report names the first root that differs from the lock when one differs."
+      - key: 01a144ee-c59f-7034-9c62-3c4f7bd37fd3
+        name: "Without a lock, the report says that the tree has not been published and exits 0."
+      - key: 01a144ee-c59f-7034-9c62-3c500f7f8853
+        name: "No file is written."
+  - key: 01a144ee-c59f-7034-9c62-3c51770bdee0
+    statement:
+      form: ubiquitous
+      system: "`loft status`"
+      shall: "report the state of the git repository that holds the tree."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c52e93273b2
+        name: "The report names the current branch, or says that HEAD is detached."
+      - key: 01a144ee-c59f-7034-9c62-3c53f5418ad8
+        name: "The report lists each path under `spec/` that has uncommitted changes."
+      - key: 01a144ee-c59f-7034-9c62-3c54569f2119
+        name: "The report names a merge or a rebase that stopped on a conflict."
+  - key: 01a144ee-c59f-7034-9c62-3c550e5499a9
+    statement:
+      form: optional
+      where: "`--base <revision>` is given"
+      system: "`loft status`"
+      shall: "report the nodes added, changed and removed between the commit where HEAD left the revision and the tree."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c56a97f4505
+        name: "The report names the base revision and the commit that `git merge-base HEAD <revision>` gives."
+      - key: 01a144ee-c59f-7034-9c62-3c576bf8dd14
+        name: "A node whose key the tree holds and the base commit does not is listed as added."
+      - key: 01a144ee-c59f-7034-9c62-3c5885848e03
+        name: "A node whose key the base commit holds and the tree does not is listed as removed."
+      - key: 01a144ee-c59f-7034-9c62-3c594efd3235
+        name: "A node whose own content differs from the base commit's is listed as changed."
+      - key: 01a144ee-c59f-7034-9c62-3c5ac76d8026
+        name: "A node whose descendant changed and whose own content did not is not listed as changed."
+      - key: 01a144ee-c59f-7034-9c62-3c5b29c96166
+        name: "A node that only moved to another parent or file is not listed as changed."
+      - key: 01a144ee-c59f-7034-9c62-3c5c3885a63d
+        name: "Each listed node carries its key, label, kind, file, line, column and name."
+      - key: 01a144ef-6ca2-72ca-be59-57080abf3fc4
+        name: "A removed node carries the label, file, line and column that the base commit gives it."
+      - key: 01a144ee-c59f-7034-9c62-3c5d6e2d5850
+        name: "The base commit's nodes are read from git, not from the working tree."
+  - key: 01a144ee-c59f-7034-9c62-3c5ed9bde8fb
+    statement:
+      form: unwanted
+      if: "the base revision names no commit"
+      system: "`loft status`"
+      shall: "exit 1 and list no node."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c5f959d6c4f
+        name: "The error names the revision."
+      - key: 01a144ee-c59f-7034-9c62-3c603cd3dbc5
+        name: "The output lists no added, changed or removed node."
+  - key: 01a144ef-eff1-7484-ae9e-e06e787d8d00
+    statement:
+      form: unwanted
+      if: "HEAD and the base revision have no common ancestor"
+      system: "`loft status`"
+      shall: "exit 1 and list no node."
+    criteria:
+      - key: 01a144ef-eff1-7484-ae9e-e06f4fa8b6a0
+        name: "The error names the revision and says that it shares no history with HEAD."
+  - key: 01a144ee-c59f-7034-9c62-3c61301e239e
+    statement:
+      form: unwanted
+      if: "the tree at the base commit does not read"
+      system: "`loft status`"
+      shall: "exit 1 and list no node."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c62991ec700
+        name: "The error names the base commit and the file and line of the reader's error."
+  - key: 01a144ee-c59f-7034-9c62-3c6338a4062c
+    statement:
+      form: unwanted
+      if: "the reader reports an error"
+      system: "`loft status`"
+      shall: "report nothing."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c64af1a3510
+        name: "The output names no root and lists no node."
+  - key: 01a144ee-c59f-7034-9c62-3c6536d676be
+    statement:
+      form: unwanted
+      if: "the tree holds a conflict record"
+      system: "`loft status`"
+      shall: "report nothing and exit 1."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c66e0f6ad8e
+        name: "The error names the file and the key of each conflict record."
+  - key: 01a144ee-c59f-7034-9c62-3c67b1510591
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft status`"
+      shall: "give the report in its JSON document."
+    criteria:
+      - key: 01a144ee-c59f-7034-9c62-3c6817da911e
+        name: "The outcome is `reported`."
+      - key: 01a144ee-c59f-7034-9c62-3c69dce03771
+        name: "The lock is `null` when the tree has not been published."
+      - key: 01a144ee-c59f-7034-9c62-3c6afc9372d1
+        name: "The label of a node without one is `null`."
+      - key: 01a144ee-c59f-7034-9c62-3c6b64e2ece5
+        name: "The base's added, changed and removed lists are left out when `--base` is not given."

@@ -1,7 +1,7 @@
 key: 01a13654-6e11-74fa-a359-2590f18ff9d5
 slug: the-claude-code-plugin
 name: "The Claude Code plugin"
-body: "The repository is a Claude Code marketplace that holds one plugin, `loft`, whose skill is the Claude Code package."
+body: "The repository is a Claude Code marketplace that holds one plugin, `loft`, whose skill is the Claude Code package and whose hooks module draws the Loft status pane."
 realizes:
   - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
 requirements:
@@ -29,3 +29,9 @@ requirements:
         name: "The manifest gives the version, a description, the author, the repository and the licence."
       - key: 01a13654-6e11-74fa-a359-2598f5b72114
         name: "The plugin's skill lies at `skills/loft-spec/`."
+      - key: 01a144ee-c59e-7325-802c-d71d0cf0947c
+        name: "The plugin's `hooks/hooks.json` names its hooks module, `./register.tsx`, which lies beside it."
+      - key: 01a144ee-c59e-7325-802c-d71e478c6971
+        name: "The manifest names the pane's type contract, `./types/index.d.ts`, which lies in the plugin."
+      - key: 01a144ee-c59e-7325-802c-d71f80f7853c
+        name: "The manifest declares the settings `baseBranch`, `develop` by default, and `loftCommand`, `loft` by default."
