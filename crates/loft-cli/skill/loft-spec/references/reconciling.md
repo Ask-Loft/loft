@@ -55,14 +55,15 @@ links:
 ## Accept a link after review
 
 Accepting a link records that a reviewer read its tests against the node as it now reads, and
-records each located test's `body`, the digest of its tokens. Read each test of the link against
-every part of the node's words first; run the project's formatter, since one that adds or removes
-a token such as a trailing comma changes the digest; then run `loft reconcile --accept <label>`,
-once per node or with `--accept` repeated. A link whose test cannot be found, or whose node is not
-in scope, is refused, and nothing is written.
+records each located test's `body`, the digest of its tokens. Whitespace, a trailing comma and
+line endings do not count; any other change of a token does. Read each test of the link against
+every part of the node's words first; then run `loft reconcile --accept <label>`, once per node
+or with `--accept` repeated. A link whose test cannot be found, or whose node is not in scope, is
+refused, and nothing is written.
 
 `loft reconcile --accept-stale` accepts every unreviewed and stale link, and every link whose test
-changed, at once. It states a review of each, so run it only when the user asks for it.
+changed, at once, and records the body of each located test that has none. It states a review of
+each link it accepts, so run it only when the user asks for it.
 
 ## Fix each finding
 
