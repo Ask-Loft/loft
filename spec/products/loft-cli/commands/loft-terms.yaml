@@ -2,6 +2,10 @@ key: 01a14b3e-5b57-704d-a82e-5e58b2051c60
 slug: loft-terms
 name: "`loft terms`"
 body: "Prints the term report over the tree: the groups of names that may denote one concept, and the subjects of each Product's statements, for the author to decide in the term list. It never fails on a group, since a group is a candidate and not a defect."
+tags:
+  - checks-for-updates
+  - reads-tree
+  - sends-telemetry
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:

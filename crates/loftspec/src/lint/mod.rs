@@ -9,9 +9,11 @@ mod config;
 mod context;
 mod craft;
 mod defaults;
+mod groups;
 mod language;
 mod lexicon;
 mod markdown;
+pub mod report;
 mod similarity;
 mod structural;
 mod terms;
@@ -22,7 +24,9 @@ use std::cmp::Ordering;
 use std::fmt;
 
 pub use config::{LintConfig, Similarity};
-pub use defaults::defaults_text;
+pub use defaults::{FUNCTION_WORDS, defaults_text};
+pub use groups::Groups;
+pub use report::{TermReport, term_report};
 
 use crate::codec::{Site, Sites, write_sites};
 use crate::document::Document;
@@ -64,6 +68,9 @@ pub enum RuleId {
     V2007,
     V2008,
     V2009,
+    Td001,
+    Td002,
+    Td003,
 }
 
 wire_names!(RuleId {
@@ -97,7 +104,15 @@ wire_names!(RuleId {
     V2007 => "V2-007",
     V2008 => "V2-008",
     V2009 => "V2-009",
+    Td001 => "TD-001",
+    Td002 => "TD-002",
+    Td003 => "TD-003",
 });
+
+impl RuleId {
+    /// The rules of the term report, which only `loft terms` runs.
+    pub const TERM_REPORT: [Self; 3] = [Self::Td001, Self::Td002, Self::Td003];
+}
 
 impl fmt::Display for RuleId {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

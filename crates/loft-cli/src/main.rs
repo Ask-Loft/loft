@@ -29,6 +29,7 @@ mod stop;
 mod switch_command;
 mod switches;
 mod telemetry;
+mod terms;
 mod update_check;
 mod verify;
 mod version;
@@ -105,6 +106,12 @@ enum Command {
     Find {
         /// A label such as `RQ-12`, a slug, a key, or part of a name.
         query: String,
+        #[command(flatten)]
+        output: Output,
+    },
+    /// List the names the specification may be using for one concept, and the subjects of each
+    /// Product's statements, for the term list to decide.
+    Terms {
         #[command(flatten)]
         output: Output,
     },
@@ -352,6 +359,7 @@ impl Command {
             } => Some("import openspec"),
             Self::Publish { .. } => Some("publish"),
             Self::Reconcile { .. } => Some("reconcile"),
+            Self::Terms { .. } => Some("terms"),
             Self::Find { .. } => Some("find"),
             Self::Verify { .. } => Some("verify"),
             Self::Render { .. } => Some("render"),
@@ -393,6 +401,7 @@ fn dispatch(command: Command) -> Finished {
         Command::Import { source } => import(root, source),
         Command::Publish { output } => publish::run(root, output.json()),
         Command::Find { query, output } => find::run(root, &query, output.json()),
+        Command::Terms { output } => terms::run(root, output.json()),
         Command::Reconcile {
             fail_on,
             accept,

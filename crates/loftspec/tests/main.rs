@@ -80,6 +80,7 @@ mod slug;
 mod statement;
 mod statement_agreement;
 mod statement_parse;
+mod term_report;
 mod terms;
 mod trace_findings;
 mod trace_located;

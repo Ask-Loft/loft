@@ -32,6 +32,7 @@ raises its rule, and no other rule at warning.
 - Language rules
 - Rules of the text form
 - Rules of the writing craft
+- Rules of the term report
 
 ## Errors
 
@@ -507,4 +508,33 @@ requirements:
       shall: "keep the note."
     criteria:
       - name: "The note is listed after it is saved."
+```
+
+## Rules of the term report
+
+`loft terms` runs these rules, and `loft check` never does. A group is a candidate: names that
+may denote one concept, which the user decides. `writing-rules.md` says how to put a group to
+the user and record the choice in `spec/terms.yaml`; a group whose every phrase is then a term's
+name or alias is not reported again. The rules read the names, statements and bodies of every
+node, without code, and count runs of one to three words that neither begin nor end with a
+function word.
+
+| Rule | Default | Reports | Usual fix |
+|---|---|---|---|
+| `TD-001` | hint | One qualifier followed by head nouns of one noun group, such as `audit entry` and `audit row`, used three times or more in all (`nounGroups`: record, view, identifier, failure, request, document, system) | Choose one head noun and make the others aliases, or define each as a term of its own |
+| `TD-002` | hint | One name written as one word and as two or more, such as `change set` and `changeset`, used three times or more in all; a camel-case word is an identifier written as prose | Write one spelling and make the other an alias; put an identifier in a code span |
+| `TD-003` | hint | One phrase written with an abbreviation and in full, such as `tenant admin` and `tenant administrator` (`pairs`: the short form and its long forms) | Write one form and make the other an alias |
+
+`spec/lint.yaml` edits `nounGroups` and `pairs` with `replace`, or with `extend` and `remove`,
+each entry a `name` and its `words`; `remove` without `words` drops the whole group:
+
+```yaml fragment
+rules:
+  - rule: TD-001
+    nounGroups:
+      remove:
+        - name: "identifier"
+          words:
+            - "key"
+            - "label"
 ```

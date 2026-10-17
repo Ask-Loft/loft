@@ -17,6 +17,8 @@ requirements:
         name: "Text in a code span or a fenced code block is not read."
       - key: 01a14b3d-fd78-7612-94d1-5e016bedc4e1
         name: "A phrase is a run of one to three words with no punctuation between them."
+      - key: 01a14b55-e07b-70dc-a3b6-4aec0cf47acf
+        name: "A possessive, or a word that does not begin with a letter, ends a run."
       - key: 01a14b3d-fd78-7612-94d1-5e02415372d5
         name: "A phrase neither begins nor ends with a function word."
       - key: 01a14b3d-fd78-7612-94d1-5e032ea80298
@@ -64,7 +66,9 @@ requirements:
       shall: "report as `TD-003` one phrase written with an abbreviation and in full."
     criteria:
       - key: 01a14b3d-fd78-7612-94d1-5e131e8074a3
-        name: "Two phrases of two or three words that are equal once one word is swapped for its long form in `pairs` form one `TD-003` group."
+        name: "Two phrases of two or three words, none of them a function word, that are equal once one word is swapped for its long form in `pairs` form one `TD-003` group."
+      - key: 01a14b55-e07b-70dc-a3b6-4aedc97df0ac
+        name: "A phrase of three words forms no `TD-003` group where two of its words, the swapped one among them, form one."
       - key: 01a14b3d-fd78-7612-94d1-5e14c997f777
         name: "A single word and its long form form no `TD-003` group."
       - key: 01a14b3d-fd78-7612-94d1-5e15c6570870
