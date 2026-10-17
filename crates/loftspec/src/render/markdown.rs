@@ -210,12 +210,33 @@ impl Renderer<'_> {
                 let _ = write!(self.out, "### {name}\n\n{}\n\n", entry.definition);
             }
         }
+        self.glossary();
         self.out.push_str("## Technical Constraint Categories\n\n");
         let mut categories: Vec<_> = self.document.categories.iter().collect();
         categories.sort_by_key(|entry| (entry.name.as_str(), entry.id));
         if !self.none_if_empty(categories.is_empty()) {
             for entry in categories {
                 let _ = write!(self.out, "### {}\n\n{}\n\n", entry.name, entry.definition);
+            }
+        }
+    }
+
+    /// The term list, after the tag registry; no section for a document without a term.
+    fn glossary(&mut self) {
+        if self.document.terms.is_empty() {
+            return;
+        }
+        self.out.push_str("## Glossary\n\n");
+        let mut terms: Vec<_> = self.document.terms.iter().collect();
+        terms.sort_by_key(|term| (term.name.as_str(), term.id));
+        for term in terms {
+            let name = escape_inline(&term.name);
+            let _ = write!(self.out, "### {name}\n\n{}\n\n", term.definition);
+            if !term.aliases.is_empty() {
+                let mut aliases: Vec<String> =
+                    term.aliases.iter().map(|a| escape_inline(a)).collect();
+                aliases.sort_unstable();
+                let _ = write!(self.out, "Aliases: {}\n\n", aliases.join(", "));
             }
         }
     }

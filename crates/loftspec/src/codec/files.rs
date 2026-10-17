@@ -15,6 +15,7 @@ pub const MANIFEST: &str = "loftspec.yaml";
 pub const LABELS: &str = "labels.yaml";
 pub const TAGS: &str = "tags.yaml";
 pub const CATEGORIES: &str = "categories.yaml";
+pub const TERMS: &str = "terms.yaml";
 pub const LINT: &str = "lint.yaml";
 
 /// What a file is, from its path.
@@ -24,6 +25,7 @@ pub enum Role {
     Labels,
     Tags,
     Categories,
+    Terms,
     Lint,
     Product {
         product: String,
@@ -52,6 +54,7 @@ impl Role {
             [LABELS] => Self::Labels,
             [TAGS] => Self::Tags,
             [CATEGORIES] => Self::Categories,
+            [TERMS] => Self::Terms,
             [LINT] => Self::Lint,
             ["products", product, "product.yaml"] => Self::Product {
                 product: (*product).to_owned(),
@@ -79,6 +82,7 @@ impl Role {
             Self::Labels => LABELS.to_owned(),
             Self::Tags => TAGS.to_owned(),
             Self::Categories => CATEGORIES.to_owned(),
+            Self::Terms => TERMS.to_owned(),
             Self::Lint => LINT.to_owned(),
             Self::Product { product } => format!("products/{product}/product.yaml"),
             Self::Feature {
@@ -117,6 +121,7 @@ impl Role {
             Self::Labels => Some(Kind::Labels),
             Self::Tags => Some(Kind::TagEntry),
             Self::Categories => Some(Kind::CategoryEntry),
+            Self::Terms => Some(Kind::TermEntry),
             Self::Lint => None,
             Self::Product { .. } => Some(Kind::Product),
             Self::Feature { .. } => Some(Kind::Feature),
@@ -127,7 +132,7 @@ impl Role {
 
     /// Whether the file holds a sequence of records rather than one.
     const fn is_registry(&self) -> bool {
-        matches!(self, Self::Tags | Self::Categories)
+        matches!(self, Self::Tags | Self::Categories | Self::Terms)
     }
 }
 

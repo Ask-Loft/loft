@@ -57,7 +57,9 @@ fn sort(record: &mut Rec) {
         let (_, field) = kind.field(name).expect("a field the schema defines");
         match field.order {
             Order::Authored => {}
-            Order::ByKey => items.sort_by(|left, right| sort_text(left).cmp(sort_text(right))),
+            Order::ByKey | Order::ByText => {
+                items.sort_by(|left, right| sort_text(left).cmp(sort_text(right)));
+            }
             Order::ByRoleThenTarget => {
                 items.sort_by(|left, right| subject_order(left).cmp(&subject_order(right)));
             }

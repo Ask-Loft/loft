@@ -68,9 +68,11 @@ requirements:
       - key: 01a14b3f-6fb8-7393-a618-9fab0898a3f4
         name: "The term list is `spec/terms.yaml`."
       - key: 01a14b3f-6fb8-7393-a618-9facabe31c8f
-        name: "A term list with no entries is not written, and an existing `spec/terms.yaml` is removed."
+        name: "A document whose term list holds no entry is written without `spec/terms.yaml`."
       - key: 01a14b3f-6fb8-7393-a618-9fad00f1c1b9
         name: "A tree without `spec/terms.yaml` holds an empty term list."
+      - key: 01a14b44-9e15-71ec-9d5e-de5ee1705428
+        name: "An empty `spec/terms.yaml` reads as an empty term list."
       - key: d20bd20d-8736-4d08-ab9d-71f5b26e87a4
         name: "The bindings are `spec/labels.yaml`."
       - key: 79b36dc6-6ccc-424d-9ee6-df48bc2559dd

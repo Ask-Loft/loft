@@ -345,6 +345,21 @@ links:
       - file: "crates/loftspec/tests/fmt_keys.rs"
         name: "a_tag_or_category_entry_without_a_key_has_one_after_formatting"
         body: 76091255a47293eff23e0dfebd915bdbabfd52acc496e8c55618a220c3253f3d
+  - node: 01a14b3f-6fb7-70d5-842f-807b619dfc4b
+    reviewed: 103832d14e5021d4ad54194ac531caef7657e40317339081ea38e5e2fe21534f
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_term_entry_without_a_key_has_one_after_formatting"
+        body: 5b26c926e74bc9249ba17362a5f34fa0b73a12ce2edc4e3de842ae8a5bb5629e
+  - node: 10c656ac-7d48-4bef-a2af-ccce98fe4cf0
+    reviewed: b3832959c909017e1af67f503e76338c06c8f7469e417830222c4fedcdf4600c
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_term_entry_without_a_key_has_one_after_formatting"
+        body: 5b26c926e74bc9249ba17362a5f34fa0b73a12ce2edc4e3de842ae8a5bb5629e
+      - file: "crates/loftspec/tests/fmt_keys.rs"
+        name: "the_keyed_records_are_exactly_nodes_decisions_drivers_options_consequences_and_entries"
+        body: 47a3e2dbe0649f56a629b49d1b651c14ae2ecefa3a899d29203c06a1ac7ca651
   - node: 00f903a2-296f-45d0-a465-5a258efac8cd
     reviewed: 989b4bacad60475504f8ff1a070e1f4e40ade15e9e3dc7bf75795b2790ff0de2
     tests:
@@ -978,6 +993,21 @@ links:
       - file: "crates/loftspec/tests/roots.rs"
         name: "root_components_are_sorted_by_content_hash"
         body: e77df4cf3c111c1be2eb133c17b546458ca1589f441fddfbc666c1c64032af6e
+  - node: 01a14b3f-6fb7-70d5-842f-807c36ac96c5
+    reviewed: e5622944814324b396ba41680a7909aac749e414882554f414ecb2b39a1acf28
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_term_list_root_follows_the_decisions_root_in_the_content_view"
+        body: 1c34429a53b7c99bed96e32086b7896c0faee4e26153d52fed8b20f056fed76c
+  - node: 01a14b3f-6fb7-70d5-842f-807debc32884
+    reviewed: ceb8340acb27f0897c049f3659c3ad7f5a6e6c05f370f747db98d4a23ea6e626
+    tests:
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_small_document_vectors_are_reproduced_byte_for_byte"
+        body: 23fa10cfbf534d39b3f7f37f308d674d60c13bb86f8034eb57dd9ea8a974c97a
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_document_without_a_term_has_no_term_list_root_and_its_content_view_is_unchanged"
+        body: f12a80fde7ed1d57beaf586f6ec747457e58b48b838074facdd15f0fe3f9d2bb
   - node: fb197598-98ce-4ae1-9374-c62c17f0e3b7
     reviewed: 348a59670fbec429d6e47e0e9377d1a07f81c6690b78509c97e9facc1f4bedb6
     tests:
@@ -1083,6 +1113,18 @@ links:
       - file: "crates/loftspec/tests/roots.rs"
         name: "registry_roots_are_over_entries_sorted_by_name"
         body: 89ee9f0e5be3c538677eab938ff4c7f5618c0e26d88ceaf58468dc382de980ec
+  - node: 01a14b3f-6fb7-70d5-842f-807e8e38af7f
+    reviewed: b3070648b8a6d5ae3afff351b9faf0870d8cede3d13fb47819fd2091f0747bf0
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_term_list_root_view_begins_with_terms_and_holds_the_sorted_entries"
+        body: c3c33f28c638e486d7347e77ccef7056a09cf3ee319c5957c91b3f972e0903bb
+  - node: 01a14b3f-6fb7-70d5-842f-807f9ed43476
+    reviewed: 0cf1e016d38d26eced57f1788d614ed3714815067c82e49407b74adb97635344
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "changing_a_terms_alias_changes_the_term_list_root"
+        body: bc128d932978aeff0ef8574041c4e45947aa6f4dc7cd1e5b2daa45af84f35077
   - node: 32081899-e591-4f44-b36f-77efe894fbe7
     reviewed: f56cfb19dfb7ed3789187d1f72203256f1fd094ff30530d7ac0e41295587be8b
     tests:
@@ -1095,6 +1137,15 @@ links:
       - file: "crates/loftspec/tests/roots.rs"
         name: "registry_roots_are_over_entries_sorted_by_name"
         body: 89ee9f0e5be3c538677eab938ff4c7f5618c0e26d88ceaf58468dc382de980ec
+  - node: df4a2f67-e867-4b1a-b3c2-295cbfdb9533
+    reviewed: 4017d1d76f10af7b082d6ab0113f79b2f3ae51b866655c664f0d850c40229a6f
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_term_list_root_view_begins_with_terms_and_holds_the_sorted_entries"
+        body: c3c33f28c638e486d7347e77ccef7056a09cf3ee319c5957c91b3f972e0903bb
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_small_document_vectors_are_reproduced_byte_for_byte"
+        body: 23fa10cfbf534d39b3f7f37f308d674d60c13bb86f8034eb57dd9ea8a974c97a
   - node: a9809fee-2b6f-4acf-98d3-b1c547854c89
     reviewed: d0c945c7e65a26d87d55f39e287ab912e3ef3a74888b73244633a5221642ad88
     tests:
@@ -1479,6 +1530,30 @@ links:
       - file: "crates/loft-cli/tests/init.rs"
         name: "the_registries_are_created_empty"
         body: 91e84e5a4ee945ffb6629438dc4214dc437341becf32e12fe5eaacbd2648b6b4
+  - node: 01a14b3f-6fb8-7393-a618-9fab0898a3f4
+    reviewed: 92fe3eefcb46bdee28dc038c63d25ff090c8441746d0586759a306440fdf0e40
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_term_list_is_written_to_spec_terms_yaml"
+        body: 51694ac54d3e394e2b7ae6605b4d8f02adbc3433a3f7a4e55505b74fe50767f3
+  - node: 01a14b3f-6fb8-7393-a618-9facabe31c8f
+    reviewed: 883629e64934e026852c981369c540e10dac9ca4d9bb7e4f905b31e1bbfb64ad
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_document_without_a_term_is_written_without_spec_terms_yaml"
+        body: 03cd5e67b35f3f9e1fde2ef8c2e2d78db2e7b28d01e0a05f40d09656a765de7e
+  - node: 01a14b3f-6fb8-7393-a618-9fad00f1c1b9
+    reviewed: b02cc1fef83a7a50ed1b3ffff94854e40b3261559da1c424e91313f48359cc17
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_tree_without_spec_terms_yaml_or_with_an_empty_one_holds_an_empty_term_list"
+        body: f26fe076c2472000e22446f1695851d426f787d0e30f82eacd55c276b1b9fae0
+  - node: 01a14b44-9e15-71ec-9d5e-de5ee1705428
+    reviewed: 1d8172f9a93da2b5a2ba806767bcb62a71659613f5ac01584e38bf83f7747993
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_tree_without_spec_terms_yaml_or_with_an_empty_one_holds_an_empty_term_list"
+        body: f26fe076c2472000e22446f1695851d426f787d0e30f82eacd55c276b1b9fae0
   - node: d20bd20d-8736-4d08-ab9d-71f5b26e87a4
     reviewed: 562b10809684c7ef4c3c3b3fd5dadef3dfc1d75ad38cbf0388952f9c0ea3461c
     tests:
@@ -2181,6 +2256,18 @@ links:
       - file: "crates/loftspec/tests/fmt.rs"
         name: "the_formatter_writes_constraint_categories_sorted_by_name"
         body: f0568966c5f271440991ff447ebae3f370594ee5fe922ab6e06fe8378d3e201e
+  - node: 01a14b3f-6fb8-7393-a618-9fb4316b5e62
+    reviewed: 3412ddd1ba59d539bcf7f5a89a0a6617ac1d287489155ce4ee6960ff70d88f32
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_formatter_sorts_term_entries_by_name_and_each_entrys_aliases"
+        body: de164d9abaebb8883905341c039159e7ccf5b6aa3cc4a9d7ebcdb4b4284c8e71
+  - node: 01a14b3f-6fb8-7393-a618-9fb51924fa14
+    reviewed: 78941d3a5c1996b4289fc58f3a37b80bfafe159b1e84fe113014bb41b117ba82
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_formatter_sorts_term_entries_by_name_and_each_entrys_aliases"
+        body: de164d9abaebb8883905341c039159e7ccf5b6aa3cc4a9d7ebcdb4b4284c8e71
   - node: d2ef5bea-65d1-4d5f-8f32-600d5e5ee899
     reviewed: d10e13e554b5a09c10efa34cdf9d649908bedc20a380a18d594600a541ea2962
     tests:
@@ -2625,6 +2712,36 @@ links:
       - file: "crates/loftspec/tests/yaml_write.rs"
         name: "an_empty_top_level_collection_is_an_empty_file"
         body: c7d0d9e07b800dfc8a007f8ed20ab45edf812b2229077b5644030a1c55b36afe
+  - node: 01a14b3f-6fb8-7393-a618-9faff220afb3
+    reviewed: 9b0fc37ac19c3e93e10053a4c5fac4ad0841b44b0fb980e77a0e1f0b4845464d
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_term_entrys_fields_are_key_name_definition_and_aliases_in_that_order"
+        body: 90591d1301b414cdd62c4a622a060e716c507ddd793ab795dc3589fa4e206511
+  - node: 01a14b3f-6fb8-7393-a618-9fb095450d6d
+    reviewed: 1f1f8f2095acd76796a192445e1cc9f2693b1f87f6ae6fc3bac219e5bfba5d81
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_term_entry_without_its_key_name_or_definition_is_refused"
+        body: 2c5e0b65952ce627c626746d398b133228b944d83a59a242c0d6a800efe79102
+  - node: 01a14b3f-6fb8-7393-a618-9fb13062ea1b
+    reviewed: ba72f9f00f255d46dfb56f5dfeed1ab54871e910d941ccbf73ff315935494c96
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_term_entry_without_aliases_omits_the_field"
+        body: 0eaa3a965c69fcfc4484c77c7d72b82e3678825d2e50325690dba60e8634361e
+  - node: 01a14b3f-6fb8-7393-a618-9fb2c3c2c632
+    reviewed: cce7279a2c2bf248e01397786d4a8454e1bc4e08beb33535fca57143df146d3b
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "an_alias_that_is_not_a_string_is_refused"
+        body: 0947ced0570fb5af9a328f2f0d59d7cb8df5c5cc4790e1bcd51945b5fa4fe48e
+  - node: 01a14b3f-6fb8-7393-a618-9fb3b3c35941
+    reviewed: 784ccbfbbac4208cf653fc3194f6b47676490fe3995bbe7b36f6cf7740a5008a
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "a_blank_name_or_alias_is_an_error_naming_its_file_line_and_column"
+        body: f78c96ecce3fe9a03e2f644c92c021cbd462af44d97b4f50481bf977317b0473
   - node: e6e438c1-17b4-43ee-bb10-cfc6349512de
     reviewed: 5df78bfdf2c3e375b4ac02b1731632c54def715defe1e1f95538b16db1cd8978
     tests:
@@ -5943,6 +6060,18 @@ links:
       - file: "crates/loftspec/tests/render.rs"
         name: "components_decisions_tags_and_realizes_edges_follow_the_products"
         body: 53b3feaec0c945ad895a0cb0e040befbaf712f78f7b731539f9cd5a78a1a64b6
+  - node: 01a14b3f-6fb8-7393-a618-9fa9cfed4664
+    reviewed: 8a0bc8105bda1235d273684e46ab7cbae8e417210e7dc3eeee7af98ebb53992d
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_term_list_renders_as_a_glossary_after_the_tag_registry"
+        body: 43f9e18331c0398c2f32adab0a184591d4c67c47ac0b66661a4c85ffc8fa86d5
+  - node: 01a14b3f-6fb8-7393-a618-9faafb33e333
+    reviewed: e016c97be8c133bf391eb1987475ecfa6f86c7dfea34520ea70efca4f2964f09
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_term_list_renders_as_a_glossary_after_the_tag_registry"
+        body: 43f9e18331c0398c2f32adab0a184591d4c67c47ac0b66661a4c85ffc8fa86d5
   - node: 6aeb1e9e-d068-465e-a232-cc0ab630f3f0
     reviewed: a9db41567fd6280f950c40d9694ec13ee40fd3ad75d6a7ce7f5ea6887df2268e
     tests:
@@ -6084,6 +6213,12 @@ links:
       - file: "crates/loftspec/tests/render.rs"
         name: "the_export_holds_edges_decisions_and_registries"
         body: 2c24bb891d6eeea32d45d4776005c9e8fe94ae54af7d1db6f32a653aaf98e3e1
+  - node: 01a14b3f-6fb8-7393-a618-9fa8a419cb66
+    reviewed: 7742aa98c839cb1e10fff96a71904ab982163982720a736cf08a62bbec61cc85
+    tests:
+      - file: "crates/loftspec/tests/terms.rs"
+        name: "the_export_holds_the_term_list_only_when_it_has_an_entry"
+        body: f76c9fc942c876584f3cd07776180fa531767f7312d9815772fe16016601ddca
   - node: ac2b5c68-fdec-4a4b-bc00-9f48bbcf1f72
     reviewed: dc1ad308aa164c0dde94a63857473ce643d4b1f2578410174524af56ce23791f
     tests:
@@ -8829,6 +8964,12 @@ links:
       - file: "crates/loft-cli/tests/init.rs"
         name: "the_registries_are_created_empty"
         body: 91e84e5a4ee945ffb6629438dc4214dc437341becf32e12fe5eaacbd2648b6b4
+  - node: 01a14b3f-6fb6-7766-b652-c1cbc2f180ca
+    reviewed: c7b73265e148befb92670e835a4c20f58607c538f6f217241fc724954a367e79
+    tests:
+      - file: "crates/loft-cli/tests/init.rs"
+        name: "no_term_list_is_created"
+        body: 81f305817ab91d4d8d309852699c39bf089ab53cc86d59ace4caf460363f2912
   - node: 0c9f2a29-d819-4e45-b1e4-c315b5e2185d
     reviewed: 1a64522937daa81c335d374744ba55b66abb2f2cb0661d7319b8dade3000629b
     tests:

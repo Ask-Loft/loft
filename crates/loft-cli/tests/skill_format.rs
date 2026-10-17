@@ -30,6 +30,7 @@ fn title(kind: Kind) -> &'static str {
         Kind::Binding => "Binding",
         Kind::TagEntry => "Tag",
         Kind::CategoryEntry => "Category",
+        Kind::TermEntry => "Term",
         Kind::Product => "Product",
         Kind::FeatureGroup => "Feature Group",
         Kind::Feature => "Feature",

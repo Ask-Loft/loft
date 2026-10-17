@@ -79,6 +79,7 @@ mod slug;
 mod statement;
 mod statement_agreement;
 mod statement_parse;
+mod terms;
 mod trace_findings;
 mod trace_located;
 mod trace_lost;
