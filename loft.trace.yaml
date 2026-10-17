@@ -5031,6 +5031,30 @@ links:
       - file: "crates/loftspec/tests/lint.rs"
         name: "a_component_named_like_a_path_is_sh_010"
         body: aaca58483bb5a4f9a8bb31d5bbacd825a42f4e90a7708625b73ac2595a5f8837
+  - node: 01a14b3f-6fb8-7393-a618-9fc412125daf
+    reviewed: 8f3106db800756c38df0f2a50bc595a55d8860ab9a8ef9883bb056e592f7933b
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "a_name_or_alias_two_terms_carry_yields_one_finding_naming_both"
+        body: cb840a023bfa742ff90aaea9750706c33f5202874096d3cafc5a4f5c65ca3050
+  - node: 01a14b3f-6fb8-7393-a618-9fc5ae611681
+    reviewed: 3939edc28ff08fc52f7623f7730ac4f63236e98e7042caad07e8c05ac954d2ef
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "an_alias_equal_to_its_own_terms_name_yields_one_finding_naming_the_term"
+        body: 77b03dc37dd2b02b409419488259a90e16ae0e1834e94daadfcc6994c4bd8d60
+  - node: 01a14b3f-6fb8-7393-a618-9fc6d59560f1
+    reviewed: f860269d628fb2f418986fc9d1db920e318126bf1af7dec16a1b9e54e9a03131
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "names_and_aliases_are_compared_in_any_case_and_with_or_without_a_plural"
+        body: 5cdb7d23755d78be85b753106d802f3a29761b5f46c4441ac36a4ac6d6f39fd5
+  - node: 01a14b3f-6fb8-7393-a618-9fc7c52df4d6
+    reviewed: 9a959c27021859ec4d3bde8c60da9ac24d1e104326d1d5851fd77d2a0d453cd2
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "a_name_or_alias_two_terms_carry_yields_one_finding_naming_both"
+        body: cb840a023bfa742ff90aaea9750706c33f5202874096d3cafc5a4f5c65ca3050
   - node: 07483c2d-60d2-4be4-aca4-94a08918d6bd
     reviewed: 832afdfca195150501e722deb3ecdd49eb67c847c9f52e89ee62cde5477cf283
     tests:
@@ -5373,6 +5397,54 @@ links:
       - file: "crates/loftspec/tests/lint_language.rs"
         name: "a_registry_term_the_node_does_not_list_is_lq_009"
         body: 0444fc3ff8e0b800b87e416a9ba06311224e7fe14210a88bf2d604c3257d1dbd
+  - node: 01a14b3f-6fb8-7393-a618-9fb715ef45c6
+    reviewed: 74e953d7eaafefe1c469ca45d6908ae8aaf04df6f8bf9720d48a242a4edb3082
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "an_alias_in_prose_yields_one_finding_per_node_and_alias_naming_the_term"
+        body: 9f1ab1eac079fd8ee1c0a4bf514b4105c165321c8cbce7901f7611818c520920
+  - node: 01a14b3f-6fb8-7393-a618-9fb813450688
+    reviewed: 7ae753a57089966cb78b43eeca107c4d96661ede6fc26003ffaa3d58af3a497c
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "the_name_and_body_of_every_node_and_each_statement_are_read"
+        body: 54bb5f550162b89fdf0eefef8288c510ca20a85bcd71da1855cd83adb98d959d
+  - node: 01a14b3f-6fb8-7393-a618-9fb9e19f76b5
+    reviewed: c9dc27a7f985667b6410847135490b33993765d684bfd49687b078e5bf26ae72
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "an_alias_matches_whole_words_in_any_case_with_or_without_a_plural"
+        body: 4867b1c0ef1d0ed5f35419f78c043b26a86264bf6a3ca8841a8a277e86105c42
+  - node: 01a14b3f-6fb8-7393-a618-9fba50cea61c
+    reviewed: 6197338847bb26656e969cb5566ee6e0abeed72c56dbb31fa4e5d99241bade92
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "an_alias_of_two_words_matches_them_across_any_run_of_spaces"
+        body: fe84fb89fb7fbfcf113e935f22115658ea2b4421465241b1b381c226cf66c306
+  - node: 01a14b3f-6fb8-7393-a618-9fbb97eb8bc4
+    reviewed: 20a6b0db9ddb01422b5bfd1cefe634994f4e8d2eed1b3a7b80f7f0bfe305c844
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "an_alias_in_a_code_span_or_code_block_is_not_reported"
+        body: 7a3ffea7119318d7cc47ca9fa76ea3965fddd7f5a0720d1aa35f6f01b74895c2
+  - node: 01a14b3f-6fb8-7393-a618-9fbc41fd4a32
+    reviewed: aa5cfd1c2e59228790ff24cf344c3db9a307fab6cc07835001122b03bf22983c
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "a_terms_own_name_in_prose_is_not_reported"
+        body: cc61f4446b0777f9728d34049433ff100d516097387b701d2dc79726e81c57d7
+  - node: 01a14b3f-6fb8-7393-a618-9fbda84baad7
+    reviewed: e849f842ebcb7d949064cb935fccdf7aff1ac219e3eed519cf7bbd8f69735e90
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "an_empty_term_list_yields_no_alias_finding"
+        body: cedebbb489ddd7e8abb5814f1727276b5d1b581374dcf11c31646fb0d38f58d5
+  - node: 01a14b3f-6fb8-7393-a618-9fbe31ec166b
+    reviewed: 0b1f3689ee3141b6b7551d16cfea0aecc5f10e94afcb5d7154cd5587fd9b6433
+    tests:
+      - file: "crates/loftspec/tests/lint_terms.rs"
+        name: "an_alias_in_prose_yields_one_finding_per_node_and_alias_naming_the_term"
+        body: 9f1ab1eac079fd8ee1c0a4bf514b4105c165321c8cbce7901f7611818c520920
   - node: bafdd3ca-8bac-44c2-bb6a-1973d4db3575
     reviewed: 98e008d0721bec926d5c5793c0260a5489f8182b3622f9e7af9c1b8091bc0586
     tests:

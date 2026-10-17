@@ -159,10 +159,12 @@ impl RuleId {
             | Self::Sh004
             | Self::Sh007
             | Self::Sh009
+            | Self::Sh011
             | Self::Lq001
             | Self::Lq002
             | Self::Lq003
             | Self::Lq006
+            | Self::Lq010
             | Self::V2003
             | Self::V2004
             | Self::V2005

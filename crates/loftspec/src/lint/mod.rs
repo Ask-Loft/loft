@@ -1,5 +1,5 @@
-//! The linter (CMP-7, F-19..F-23): the structural rules `SH-001`..`SH-010`, the language
-//! rules `LQ-001`..`LQ-009`, the v2 rules `V2-001`..`V2-004` and `V2-009`, and the rules of the
+//! The linter (CMP-7, F-19..F-23): the structural rules `SH-001`..`SH-011`, the language
+//! rules `LQ-001`..`LQ-010`, the v2 rules `V2-001`..`V2-004` and `V2-009`, and the rules of the
 //! writing craft `V2-005`..`V2-008`, each finding a typed record in a stable order. The
 //! configuration is `spec/lint.yaml`, part of the tree the linter is given; no flag, environment
 //! variable, clock or locale changes a finding (RQ-106). The linter changes nothing in the
@@ -14,6 +14,7 @@ mod lexicon;
 mod markdown;
 mod similarity;
 mod structural;
+mod terms;
 mod text;
 mod v2;
 
@@ -43,6 +44,7 @@ pub enum RuleId {
     Sh008,
     Sh009,
     Sh010,
+    Sh011,
     Lq001,
     Lq002,
     Lq003,
@@ -52,6 +54,7 @@ pub enum RuleId {
     Lq007,
     Lq008,
     Lq009,
+    Lq010,
     V2001,
     V2002,
     V2003,
@@ -74,6 +77,7 @@ wire_names!(RuleId {
     Sh008 => "SH-008",
     Sh009 => "SH-009",
     Sh010 => "SH-010",
+    Sh011 => "SH-011",
     Lq001 => "LQ-001",
     Lq002 => "LQ-002",
     Lq003 => "LQ-003",
@@ -83,6 +87,7 @@ wire_names!(RuleId {
     Lq007 => "LQ-007",
     Lq008 => "LQ-008",
     Lq009 => "LQ-009",
+    Lq010 => "LQ-010",
     V2001 => "V2-001",
     V2002 => "V2-002",
     V2003 => "V2-003",
@@ -236,6 +241,7 @@ pub fn lint(document: &Document, sites: &Sites, config: &LintConfig) -> Vec<Find
     let mut raw = Vec::new();
     structural::check(&context, &mut raw);
     language::check(&context, config, &mut raw);
+    terms::check(&context, &mut raw);
     v2::check(&context, &mut raw);
     craft::check(&context, config, &mut raw);
     let mut findings: Vec<Finding> = raw

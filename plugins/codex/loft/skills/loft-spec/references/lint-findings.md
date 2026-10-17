@@ -93,6 +93,7 @@ requirements:
 | `SH-008` | info | A root Component with no Constraint or Quality Attribute in its subtree | State the rules it keeps |
 | `SH-009` | warning | A node lists a tag that the registry does not define | Define it in `spec/tags.yaml` |
 | `SH-010` | hint | A Component named like a file path | Name the part, not the file |
+| `SH-011` | warning | A name or alias that two terms of `spec/terms.yaml` carry, or an alias equal to its own term's name | Keep the name on the one term it denotes |
 
 ```yaml rule=SH-001 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"
@@ -186,6 +187,17 @@ requirements:
       - name: "The note is listed after it is saved."
 ```
 
+```yaml rule=SH-011 path=spec/terms.yaml
+- name: "note"
+  definition: "A short text the user keeps."
+  aliases:
+    - "jotting"
+- name: "reminder"
+  definition: "A note with a time to show it."
+  aliases:
+    - "jotting"
+```
+
 ```yaml rule=SH-010 path=spec/components/note-store.yaml
 key: 00000000-0000-7000-8000-000000000101
 name: "src/note_store.rs"
@@ -212,6 +224,7 @@ nodes; text in code spans and code blocks is not prose. `LQ-001`..`LQ-004` take 
 | `LQ-007` | info, off | A statement stored as text that matches none of the five forms | Write it as slots |
 | `LQ-008` | info | Two names of one kind nearly alike (`minTokens`, `threshold`) | Name each for what distinguishes it |
 | `LQ-009` | hint | Prose that uses a tag's name where neither the node nor a node above it lists the tag; a one-word tag matches its word, a hyphenated one only its hyphenated form | List the tag, or reword |
+| `LQ-010` | warning | An alias of a term from `spec/terms.yaml` in the name, statement or body of any node, in any case and with or without a final plural | Write the term's name; if the alias names another concept, ask the user and make it a term of its own |
 
 ```yaml rule=LQ-001 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"
@@ -345,6 +358,21 @@ requirements:
 ```yaml rule=LQ-009 path=spec/products/notes/product.yaml
 name: "Notes"
 body: "A place to keep short notes, offline as well."
+featureGroups:
+  - name: "Writing"
+    body: "Creating and changing notes."
+```
+
+```yaml rule=LQ-010 path=spec/terms.yaml
+- name: "note"
+  definition: "A short text the user keeps."
+  aliases:
+    - "memo"
+```
+
+```yaml rule=LQ-010 path=spec/products/notes/product.yaml
+name: "Notes"
+body: "A place to keep short memos."
 featureGroups:
   - name: "Writing"
     body: "Creating and changing notes."

@@ -29,6 +29,9 @@ rules:
   - rule: SH-010
     enabled: true
     severity: hint
+  - rule: SH-011
+    enabled: true
+    severity: warning
   - rule: LQ-001
     enabled: true
     severity: warning
@@ -118,6 +121,9 @@ rules:
   - rule: LQ-009
     enabled: true
     severity: hint
+  - rule: LQ-010
+    enabled: true
+    severity: warning
   - rule: V2-001
     enabled: true
     severity: info
