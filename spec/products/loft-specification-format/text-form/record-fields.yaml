@@ -229,6 +229,22 @@ requirements:
         name: "Entries with the same name are sorted by key."
       - key: e360b9d4-a4d6-4885-b7b0-373e1a8098ef
         name: "A registry with no entries is written as an empty file."
+  - key: 01a14b3f-6fb8-7393-a618-9faefc5ed991
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write the term list as a sequence of entries."
+    criteria:
+      - key: 01a14b3f-6fb8-7393-a618-9faff220afb3
+        name: "A term entry's fields are, in order, `key`, `name`, `definition` and `aliases`."
+      - key: 01a14b3f-6fb8-7393-a618-9fb095450d6d
+        name: "A term entry requires `key`, `name` and `definition`."
+      - key: 01a14b3f-6fb8-7393-a618-9fb13062ea1b
+        name: "A term entry without aliases omits `aliases`."
+      - key: 01a14b3f-6fb8-7393-a618-9fb2c3c2c632
+        name: "Each alias is a string of one or more words."
+      - key: 01a14b3f-6fb8-7393-a618-9fb3b3c35941
+        name: "A blank name or alias is an error naming its file, line and column."
   - key: 5e700d25-4601-4a1c-976e-7677b9960373
     statement:
       form: ubiquitous

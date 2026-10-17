@@ -63,6 +63,10 @@ requirements:
         name: "Tag registry entries are sorted by name."
       - key: 70ca09fb-3889-437c-b6de-bd749169c340
         name: "Constraint categories are sorted by name."
+      - key: 01a14b3f-6fb8-7393-a618-9fb4316b5e62
+        name: "Term entries are sorted by name."
+      - key: 01a14b3f-6fb8-7393-a618-9fb51924fa14
+        name: "A term entry's aliases are sorted in UTF-8 byte order."
       - key: d2ef5bea-65d1-4d5f-8f32-600d5e5ee899
         name: "Bindings are sorted by key."
   - key: 915187fb-46cd-4429-8f34-376171cf154d

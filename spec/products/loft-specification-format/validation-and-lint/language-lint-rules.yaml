@@ -1,7 +1,7 @@
 key: 85dd847b-3c5e-4c3c-bb45-a25f85080156
 slug: language-lint-rules
 name: "Language lint rules"
-body: "The nine language rules, LQ-001 to LQ-009, and the texts they read: what each one reports and its default severity."
+body: "The ten language rules, LQ-001 to LQ-010, and the texts they read: what each one reports and its default severity."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -171,3 +171,25 @@ requirements:
         name: "A tag name whose words are joined by hyphens matches only text that joins the same words by hyphens."
       - key: 01a1374b-8812-7647-9f20-123d27471c25
         name: "A tag name of one word matches that word wherever it stands in the text."
+  - key: 01a14b3f-6fb8-7393-a618-9fb60109f789
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `LQ-010` an alias of a term used in prose."
+    criteria:
+      - key: 01a14b3f-6fb8-7393-a618-9fb715ef45c6
+        name: "Each alias in the prose of a node yields one `LQ-010` finding naming the node, the alias and its term."
+      - key: 01a14b3f-6fb8-7393-a618-9fb813450688
+        name: "`LQ-010` reads the name and the body of every node and the slots of every statement."
+      - key: 01a14b3f-6fb8-7393-a618-9fb9e19f76b5
+        name: "An alias is matched as whole words, in any letter case and with or without a final plural."
+      - key: 01a14b3f-6fb8-7393-a618-9fba50cea61c
+        name: "An alias of two or more words matches the same words with any run of spaces between them."
+      - key: 01a14b3f-6fb8-7393-a618-9fbb97eb8bc4
+        name: "An alias inside a code span or a code block yields no `LQ-010` finding."
+      - key: 01a14b3f-6fb8-7393-a618-9fbc41fd4a32
+        name: "A term's name in prose yields no `LQ-010` finding."
+      - key: 01a14b3f-6fb8-7393-a618-9fbda84baad7
+        name: "An empty term list yields no `LQ-010` finding."
+      - key: 01a14b3f-6fb8-7393-a618-9fbe31ec166b
+        name: "The default severity of `LQ-010` is warning."

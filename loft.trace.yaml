@@ -345,12 +345,6 @@ links:
       - file: "crates/loftspec/tests/fmt_keys.rs"
         name: "a_tag_or_category_entry_without_a_key_has_one_after_formatting"
         body: 76091255a47293eff23e0dfebd915bdbabfd52acc496e8c55618a220c3253f3d
-  - node: 10c656ac-7d48-4bef-a2af-ccce98fe4cf0
-    reviewed: 500e0d06425e6bec75f2e6c65956b165526c625f873d7f2525d3a4f30229219e
-    tests:
-      - file: "crates/loftspec/tests/fmt_keys.rs"
-        name: "the_keyed_records_are_exactly_nodes_decisions_drivers_options_consequences_and_entries"
-        body: 47a3e2dbe0649f56a629b49d1b651c14ae2ecefa3a899d29203c06a1ac7ca651
   - node: 00f903a2-296f-45d0-a465-5a258efac8cd
     reviewed: 989b4bacad60475504f8ff1a070e1f4e40ade15e9e3dc7bf75795b2790ff0de2
     tests:
@@ -1101,12 +1095,6 @@ links:
       - file: "crates/loftspec/tests/roots.rs"
         name: "registry_roots_are_over_entries_sorted_by_name"
         body: 89ee9f0e5be3c538677eab938ff4c7f5618c0e26d88ceaf58468dc382de980ec
-  - node: df4a2f67-e867-4b1a-b3c2-295cbfdb9533
-    reviewed: 7696be774aa598611587c8a0cf004618ad9da60f307fb734200fd81a54cc74e3
-    tests:
-      - file: "crates/loftspec/tests/golden.rs"
-        name: "the_small_document_vectors_are_reproduced_byte_for_byte"
-        body: 23fa10cfbf534d39b3f7f37f308d674d60c13bb86f8034eb57dd9ea8a974c97a
   - node: a9809fee-2b6f-4acf-98d3-b1c547854c89
     reviewed: d0c945c7e65a26d87d55f39e287ab912e3ef3a74888b73244633a5221642ad88
     tests:

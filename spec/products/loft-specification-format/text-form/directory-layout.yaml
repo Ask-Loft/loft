@@ -65,6 +65,12 @@ requirements:
         name: "The tag registry is `spec/tags.yaml`."
       - key: eca12dce-fd5e-4966-9701-fb25001087f4
         name: "The constraint categories are `spec/categories.yaml`."
+      - key: 01a14b3f-6fb8-7393-a618-9fab0898a3f4
+        name: "The term list is `spec/terms.yaml`."
+      - key: 01a14b3f-6fb8-7393-a618-9facabe31c8f
+        name: "A term list with no entries is not written, and an existing `spec/terms.yaml` is removed."
+      - key: 01a14b3f-6fb8-7393-a618-9fad00f1c1b9
+        name: "A tree without `spec/terms.yaml` holds an empty term list."
       - key: d20bd20d-8736-4d08-ab9d-71f5b26e87a4
         name: "The bindings are `spec/labels.yaml`."
       - key: 79b36dc6-6ccc-424d-9ee6-df48bc2559dd

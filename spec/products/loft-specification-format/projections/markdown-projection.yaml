@@ -19,6 +19,10 @@ requirements:
         name: "A criterion renders as a bold paragraph `<label> · Acceptance Criterion · <text>`."
       - key: 26c8c2ee-5918-4d1d-a378-fce2b5a60ad0
         name: "Components, decisions, the tag registry and `realizes` edges render in their own sections after the Products."
+      - key: 01a14b3f-6fb8-7393-a618-9fa9cfed4664
+        name: "The term list renders as a Glossary section after the tag registry, each term with its definition and its aliases."
+      - key: 01a14b3f-6fb8-7393-a618-9faafb33e333
+        name: "A document with no term entry renders no Glossary section."
       - key: 6aeb1e9e-d068-465e-a232-cc0ab630f3f0
         name: "An unlabelled node renders with its key in place of a label."
       - key: 01a12ded-9feb-76f6-b7f4-d37d9a1ca8ed
