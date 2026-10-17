@@ -14589,6 +14589,24 @@ links:
   - node: 01a13754-833e-725b-b941-6356f7d9e260
     reviewed: 3728e72759a94ff9b966b664938bf1491f552b411678e6caabea48431bdaf5f7
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a14b40-25a7-707a-a0e7-fd3fc05e2e8b
+    reviewed: ff47540357c62b92697ae200393f877bfe1ca044e553c4bf285b6e34cbbcea22
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a14b40-25a7-707a-a0e7-fd4011c3553c
+    reviewed: 1e9bc4ff9a50a7b338b963194cd602efe24e8713c62f47bde25a60c7a28a9fb5
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a14b40-25a7-707a-a0e7-fd41068538c2
+    reviewed: d8567d32d2cc2742a329f84c889ee7b8241d3b6ff5f4fb4dcc5033ab36448892
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a14b40-25a7-707a-a0e7-fd42edccef76
+    reviewed: 5a9d8dee1af4dee66791abba035f5674d46c1395ccdd7a6090361cebb215bcc7
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a14b40-25a7-707a-a0e7-fd439e970167
+    reviewed: 10fec50fd30eaa41fb1976d09bdce5e7fb35fc83f1f94bf932b60a645561bd60
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a14b40-25a7-707a-a0e7-fd441cfa81db
+    reviewed: 0d1a23fac2766cdc119281cbd7878673ae9b0825bded67a30b672b1ef7f1a7aa
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
   - node: 01a13654-6e12-74a1-ad7f-e87c34b09979
     reviewed: 4df239fd9c31141e77248e25e21d0eedf9b243304810cf0c419bc7159e8bd87e
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
