@@ -142,8 +142,8 @@ export function isLoftSpecSkill(name: string | undefined): boolean {
   return name !== undefined && /(^|:)loft-spec$/.test(name)
 }
 
-const TRACE_WORK = new Set(['TR-001', 'TR-002', 'TR-003'])
-const TRACE_BROKEN = new Set(['TR-004', 'TR-005'])
+const TRACE_WORK = new Set(['TR-001', 'TR-002', 'TR-003', 'TR-006', 'TR-009'])
+const TRACE_BROKEN = new Set(['TR-004', 'TR-005', 'TR-010'])
 
 /** A criterion the branch added or changed, with the finding that leaves it unreviewed. */
 export type ToVerify = { node: LoftNode; open: LoftFinding | undefined }

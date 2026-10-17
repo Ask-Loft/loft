@@ -48,12 +48,17 @@ test('Spec committed passes when loft status lists no uncommitted path under spe
 test('Trace does not pass while a criterion the branch added or changed has an open finding', () => {
   expect(checkOf({ open: ['k-added'] }, 'trace').passes).toBe(false)
   expect(checkOf({ open: [] }, 'trace').passes).toBe(true)
+  // A test changed after it was recorded asks for its review again.
+  expect(checkOf({ open: [], changed: ['k-added'] }, 'trace').passes).toBe(false)
+  // So does a recorded test that is no longer located.
+  expect(checkOf({ open: [], lost: ['k-added'] }, 'trace').passes).toBe(false)
   // A finding on a node the branch did not touch is not this branch's work.
   expect(checkOf({ open: ['k-elsewhere'] }, 'trace').passes).toBe(true)
 })
 
-test('Trace does not pass while a TR-004 or TR-005 finding stands anywhere in the trace', () => {
+test('Trace does not pass while a TR-004, TR-005 or TR-010 finding stands anywhere in the trace', () => {
   expect(checkOf({ open: [], broken: true }, 'trace').passes).toBe(false)
+  expect(checkOf({ open: [], unparsed: true }, 'trace').passes).toBe(false)
 })
 
 test('Lock passes when the tree matches the lock, and otherwise says the tree holds unpublished changes', () => {
@@ -82,6 +87,13 @@ test('the criteria to verify are the criteria the branch added or changed, in fi
   expect(toVerify.map(each => each.node.key)).toEqual(['k-changed', 'k-added'])
   expect(toVerify[0]!.open).toBeUndefined()
   expect(toVerify[1]!.open?.message).toBe('no link names this node')
+  // A criterion whose test changed after it was recorded is not reviewed.
+  const changed = criteriaToVerify(readWith({ open: [], changed: ['k-changed'] }))
+  expect(changed[0]!.open?.rule).toBe('TR-006')
+  expect(changed[1]!.open).toBeUndefined()
+  // Nor is one whose recorded test is no longer located.
+  const lost = criteriaToVerify(readWith({ open: [], lost: ['k-changed'] }))
+  expect(lost[0]!.open?.rule).toBe('TR-009')
 })
 
 test('the nodes a file holds are the added and changed nodes whose path it is', () => {

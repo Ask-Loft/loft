@@ -1,7 +1,7 @@
 key: 01a1383a-4a94-72cc-9c61-11074c67c6d6
 slug: reconciliation-findings
 name: "Reconciliation findings"
-body: "What the reconciler reports when it compares the trace file with the tree and with the files that hold the tests. `TR-001` is a node that no link names; `TR-002` a link not yet reviewed; `TR-003` a link reviewed before its node changed; `TR-004` a test that cannot be found; `TR-005` a link whose node is not in scope. Accepting a link records that a reviewer has checked its tests against the node as it now reads."
+body: "What the reconciler reports when it compares the trace file with the tree and with the files that hold the tests. `TR-001` is a node that no link names; `TR-002` a link not yet reviewed; `TR-003` a link reviewed before its node changed; `TR-004` a test that cannot be found; `TR-005` a link whose node is not in scope; `TR-006` a test whose content changed after it was recorded; `TR-007` a test found only as a word, whose content is not tracked; `TR-008` a node whose name holds a literal that none of its tests holds; `TR-009` a test whose content was recorded but that is no longer located; `TR-010` a test that a part of its file that does not parse may cut short. Accepting a link records that a reviewer has checked its tests against the node as it now reads."
 realizes:
   - 01a1383a-4a92-778a-b49d-e3efdabc7f04
 requirements:
@@ -77,6 +77,8 @@ requirements:
         name: "A name occurs as a whole word where no letter, digit or underscore adjoins either of its ends."
       - key: 01a1383a-4a94-72cc-9c61-111e9852b7bc
         name: "A test file path that leaves the directory holding `spec/` yields one `TR-004` finding."
+      - key: 01a146cb-3d40-749f-b9bb-1ccdf137965e
+        name: "A test file path that names something other than a regular file, such as a directory or a named pipe, yields one `TR-004` finding, without waiting on it."
       - key: 01a1383a-4a94-72cc-9c61-111f48ec67b6
         name: "The default severity of `TR-004` is warning."
   - key: 01a1383a-4a94-72cc-9c61-112072c7f632
@@ -93,6 +95,82 @@ requirements:
         name: "A link with a `TR-005` finding yields no `TR-002` or `TR-003` finding."
       - key: 01a1383a-4a94-72cc-9c61-1124d0ad3e2e
         name: "The default severity of `TR-005` is warning."
+      - key: 01a145e9-aa7f-769e-a7f5-f23ec15b3cf4
+        name: "A link with a `TR-005` finding yields no `TR-006`, `TR-007` or `TR-008` finding."
+  - key: 01a145e9-aa7f-769e-a7f5-f23fd1946f6e
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-006` a located test whose digest differs from its `body`."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f2403f2bfe58
+        name: "Each located test whose digest differs from its `body` yields one `TR-006` finding naming the node, the file and the test."
+      - key: 01a145e9-aa7f-769e-a7f5-f241d45f2fc6
+        name: "A test without `body` yields no `TR-006` finding."
+      - key: 01a145e9-aa7f-769e-a7f5-f242bb7f357c
+        name: "A test found only as a whole word yields no `TR-006` finding."
+      - key: 01a145e9-aa7f-769e-a7f5-f2437956f10a
+        name: "The default severity of `TR-006` is warning."
+  - key: 01a145e9-aa7f-769e-a7f5-f244a7725db8
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-007` a test found only as a whole word that has no `body`."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f2450ca21da2
+        name: "Each test without `body` that the test locator does not locate but whose name occurs in its file as a whole word yields one `TR-007` finding naming the node, the file and the test."
+      - key: 01a145e9-aa7f-769e-a7f5-f2465e63eb1a
+        name: "The message of a `TR-007` finding says whether no grammar parses the file or no test in it carries the name, and where the file does not parse when a part of it does not."
+      - key: 01a145e9-aa7f-769e-a7f5-f2473148f163
+        name: "The default severity of `TR-007` is info."
+  - key: 01a145e9-aa7f-769e-a7f5-f2482fd4a578
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-008` a node whose name holds a literal that the source of none of its link's tests holds."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f249ac584650
+        name: "A literal is the text between two backticks in the node's name."
+      - key: 01a145e9-aa7f-769e-a7f5-f24abd5d2c55
+        name: "Each node whose name holds a literal that occurs in the source of none of its link's tests yields one `TR-008` finding naming those literals in the order of the name."
+      - key: 01a145e9-aa7f-769e-a7f5-f24bfa88f33d
+        name: "The source of a located test is the text of its locations."
+      - key: 01a145e9-aa7f-769e-a7f5-f24ce50c9be6
+        name: "The source of a test found only as a whole word is its whole file."
+      - key: 01a145e9-aa7f-769e-a7f5-f24de3e7ea33
+        name: "A test with a `TR-004` finding has no source."
+      - key: 01a145e9-aa7f-769e-a7f5-f24e0bf4caf0
+        name: "A link with `unverified` yields no `TR-008` finding."
+      - key: 01a145e9-aa7f-769e-a7f5-f24ffbd2024a
+        name: "The default severity of `TR-008` is info."
+  - key: 01a146cb-3d40-749f-b9bb-1cce028ba8ba
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-009` a test that has a `body` but is found only as a whole word."
+    criteria:
+      - key: 01a146cb-3d40-749f-b9bb-1ccf8b88e807
+        name: "Each test with a `body` that the test locator does not locate but whose name occurs in its file as a whole word yields one `TR-009` finding naming the node, the file and the test."
+      - key: 01a146cb-3d40-749f-b9bb-1cd01580aa56
+        name: "The message of a `TR-009` finding says why the test is not located."
+      - key: 01a146cb-3d40-749f-b9bb-1cd1f6e75ece
+        name: "A test with a `TR-009` finding yields no `TR-007` finding."
+      - key: 01a146cb-3d40-749f-b9bb-1cd2995d14ee
+        name: "The default severity of `TR-009` is warning."
+  - key: 01a146cb-3d40-749f-b9bb-1cd3478913b9
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "report as `TR-010` a test that a part of its file that the grammar does not parse may cut short."
+    criteria:
+      - key: 01a146cb-3d40-749f-b9bb-1cd476c44dae
+        name: "Each test that holds, or is followed before the next test by, a part of its file that the grammar does not parse yields one `TR-010` finding naming the node, the file and the test."
+      - key: 01a146cb-3d40-749f-b9bb-1cd5a552771f
+        name: "The message of a `TR-010` finding gives the line, the column and the text of the first such part, or the token that the grammar found missing."
+      - key: 01a146cb-3d40-749f-b9bb-1cd68fa4504d
+        name: "A test with a `TR-010` finding yields no `TR-006`, `TR-007` or `TR-009` finding."
+      - key: 01a146cb-3d40-749f-b9bb-1cd7e1320573
+        name: "The default severity of `TR-010` is warning."
   - key: 01a1383a-4a94-72cc-9c61-1125f06ff01f
     statement:
       form: ubiquitous
@@ -118,16 +196,33 @@ requirements:
       form: event_driven
       when: "a link is accepted"
       system: "the reconciler"
-      shall: "set the link's `reviewed` to its node's current content hash."
+      shall: "set the link's `reviewed` to its node's current content hash, and the `body` of each of its located tests to the test's digest."
     criteria:
+      - key: 01a14625-1535-7161-b749-350d0b59f214
+        name: "Accepting a link sets the `body` of each of its located tests to the test's digest."
       - key: 01a1383a-4a94-72cc-9c61-112c2538aff7
-        name: "Accepting a link changes no other field of the link."
+        name: "Accepting a link changes no field of the link other than `reviewed` and its tests' `body`."
       - key: 01a1383a-4a94-72cc-9c61-112d8124fa61
-        name: "Accepting a link changes no other link."
+        name: "Accepting a link changes no other link, except to record the `body` of a test that has none."
+      - key: 01a145e9-aa7f-769e-a7f5-f250bf7287b9
+        name: "Accepting a link removes the `body` of each of its tests that is found only as a whole word."
+  - key: 01a145e9-aa7f-769e-a7f5-f251e5bfbd1b
+    statement:
+      form: event_driven
+      when: "the reconciler writes the trace file"
+      system: "the reconciler"
+      shall: "record the digest of each located test that has no `body`."
+    criteria:
+      - key: 01a145e9-aa7f-769e-a7f5-f25249286d3e
+        name: "A located test without `body` is written with its digest as its `body`."
+      - key: 01a145e9-aa7f-769e-a7f5-f2535b939482
+        name: "A test that has a `body` keeps it unless its link is accepted."
+      - key: 01a145e9-aa7f-769e-a7f5-f2540f59e42f
+        name: "A test found only as a whole word is written without a `body` it did not have."
   - key: 01a1383a-4a94-72cc-9c61-112e2331d26f
     statement:
       form: unwanted
-      if: "a link to be accepted has a `TR-004` or `TR-005` finding"
+      if: "a link to be accepted has a `TR-004`, `TR-005` or `TR-010` finding"
       system: "the reconciler"
       shall: "not accept the link."
     criteria:
@@ -135,3 +230,5 @@ requirements:
         name: "A link with a `TR-004` finding keeps its `reviewed`."
       - key: 01a1383a-4a94-72cc-9c61-113097bffe15
         name: "A link with a `TR-005` finding keeps its `reviewed`."
+      - key: 01a146cb-3d40-749f-b9bb-1cd8faabc801
+        name: "A link with a `TR-010` finding keeps its `reviewed` and the `body` of each of its tests."

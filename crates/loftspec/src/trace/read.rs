@@ -1,23 +1,27 @@
 //! The strict reading of the trace file: a field it does not define, a `format` other than
-//! `loft-trace/1`, a link with both or neither of `tests` and `unverified`, an empty `tests`, a
-//! blank reason and two links to one node are each an error at its line and column.
+//! `loft-trace/1` or `loft-trace/2`, a link with both or neither of `tests` and `unverified`, an
+//! empty `tests`, a blank reason and two links to one node are each an error at its line and
+//! column. A `loft-trace/1` file is read as one whose tests have no `body`, a field it lacks.
 
 use std::collections::HashSet;
 
-use super::{Evidence, FORMAT, Link, Test, Trace, TraceError};
+use super::{Evidence, FORMAT, FORMAT_1, Link, Test, Trace, TraceError};
 use crate::canonical::Digest;
 use crate::codec::{Problem, Strict};
 use crate::identity::Key;
 use crate::yaml::{self, Entry, Location, Node, Position};
 
 /// The fields of the trace file, in the order the writer writes them.
-pub const FILE_FIELDS: [&str; 2] = ["format", "links"];
+pub const FILE_FIELDS: &[&str] = &["format", "links"];
 
 /// The fields of a link, in the order the writer writes them.
-pub const LINK_FIELDS: [&str; 4] = ["node", "reviewed", "tests", "unverified"];
+pub const LINK_FIELDS: &[&str] = &["node", "reviewed", "tests", "unverified"];
 
 /// The fields of a test, in the order the writer writes them.
-pub const TEST_FIELDS: [&str; 2] = ["file", "name"];
+pub const TEST_FIELDS: &[&str] = &["file", "name", "body"];
+
+/// The fields of a test in a `loft-trace/1` file, which has no `body`.
+const TEST_FIELDS_1: &[&str] = &["file", "name"];
 
 /// Reads the trace file; no file holds no link.
 ///
@@ -48,10 +52,15 @@ pub fn read(bytes: Option<&[u8]>) -> Result<Trace, Vec<TraceError>> {
     }
 }
 
+/// A field whose value did not parse; its error is recorded.
+struct Unread;
+
 #[derive(Default)]
 struct Reader {
     errors: Vec<TraceError>,
     nodes: HashSet<Key>,
+    /// Whether the file is `loft-trace/1`, whose tests have no `body`.
+    first: bool,
 }
 
 impl Strict for Reader {
@@ -65,12 +74,15 @@ impl Strict for Reader {
 
 impl Reader {
     fn file(&mut self, root: &Node) -> Trace {
-        let fields = self.fields(root, &FILE_FIELDS);
+        let fields = self.fields(root, FILE_FIELDS);
         if let Some(format) = self.required(root, fields, "format") {
-            let expected = "`loft-trace/1`";
-            self.parsed(&format.value, expected, |text| {
-                (text == FORMAT).then_some(())
+            let expected = "`loft-trace/1` or `loft-trace/2`";
+            let first = self.parsed(&format.value, expected, |text| match text {
+                FORMAT => Some(false),
+                FORMAT_1 => Some(true),
+                _ => None,
             });
+            self.first = first.unwrap_or(false);
         }
         let items = fields
             .get("links")
@@ -80,19 +92,12 @@ impl Reader {
     }
 
     fn link(&mut self, item: &Node) -> Option<Link> {
-        let fields = self.fields(item, &LINK_FIELDS);
+        let fields = self.fields(item, LINK_FIELDS);
         let node = self
             .required(item, fields, "node")
             .and_then(|node| self.parsed(&node.value, "a key", |text| Key::parse(text).ok()));
         // A `reviewed` that does not parse leaves the link unread; none leaves it unreviewed.
-        let reviewed = match fields.get("reviewed") {
-            None => Some(None),
-            Some(reviewed) => {
-                let expected = "64 lowercase hexadecimal digits";
-                let parse = |text: &str| text.parse::<Digest>().ok();
-                self.parsed(&reviewed.value, expected, parse).map(Some)
-            }
-        };
+        let reviewed = self.digest(fields.get("reviewed"));
         let evidence = self.evidence(item, fields.get("tests"), fields.get("unverified"));
         if let Some(node) = node
             && !self.nodes.insert(node)
@@ -102,7 +107,7 @@ impl Reader {
         }
         Some(Link {
             node: node?,
-            reviewed: reviewed?,
+            reviewed: reviewed.ok()?,
             evidence: evidence?,
             position: Some(item.position),
         })
@@ -143,16 +148,36 @@ impl Reader {
     }
 
     fn test(&mut self, item: &Node) -> Option<Test> {
-        let fields = self.fields(item, &TEST_FIELDS);
+        let allowed = if self.first {
+            TEST_FIELDS_1
+        } else {
+            TEST_FIELDS
+        };
+        let fields = self.fields(item, allowed);
         let mut required = |name: &'static str, expected| {
             let entry = self.required(item, fields, name)?;
             self.text(&entry.value, expected)
         };
         let file = required("file", "a path");
         let name = required("name", "a test's name");
+        let body = self.digest(fields.get("body"));
         Some(Test {
             file: file?,
             name: name?,
+            body: body.ok()?,
         })
+    }
+
+    /// An optional digest: none when the field is absent; [`Unread`], with its error recorded,
+    /// when it does not parse.
+    fn digest(&mut self, entry: Option<&Entry>) -> Result<Option<Digest>, Unread> {
+        let Some(entry) = entry else {
+            return Ok(None);
+        };
+        let expected = "64 lowercase hexadecimal digits";
+        let parse = |text: &str| text.parse::<Digest>().ok();
+        self.parsed(&entry.value, expected, parse)
+            .map(Some)
+            .ok_or(Unread)
     }
 }

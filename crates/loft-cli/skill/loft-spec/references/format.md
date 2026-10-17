@@ -479,8 +479,9 @@ says when to write it.
 
 | Trace file field | | Test field | |
 |---|---|---|---|
-| `format` | required: `loft-trace/1` | `file` | required: its path from the directory that holds `spec/` |
+| `format` | required: `loft-trace/2` | `file` | required: its path from the directory that holds `spec/` |
 | `links` | optional | `name` | required: the test's name |
+| | | `body` | optional: the test's digest when it was last recorded; `loft reconcile --accept` writes it |
 
 | Link field | |
 |---|---|
@@ -489,4 +490,5 @@ says when to write it.
 | `tests` | optional: the tests that verify the node |
 | `unverified` | optional: the reason no test verifies the node |
 
-A link holds exactly one of `tests` and `unverified`, and no two links name one node.
+A link holds exactly one of `tests` and `unverified`, and no two links name one node. A file
+whose `format` is `loft-trace/1` is still read; its tests have no `body`.
