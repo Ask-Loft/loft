@@ -15,7 +15,7 @@ requirements:
       - key: 01a1383e-2e64-72e5-b7f4-bc3116dbb317
         name: "The workflow tells the agent to run `loft reconcile` to list the nodes whose tests need work."
       - key: 01a1383e-2e64-72e5-b7f4-bc320fedb2e9
-        name: "The workflow tells the agent that `TR-001`, `TR-002`, `TR-003` and `TR-006` findings are the work to do."
+        name: "The workflow tells the agent that `TR-001`, `TR-002`, `TR-003`, `TR-006` and `TR-009` findings are the work to do."
       - key: 01a1383e-2e64-72e5-b7f4-bc337a3e0a65
         name: "The workflow tells the agent to add a link to `loft.trace.yaml` for each node it writes a test for."
       - key: 01a1383e-2e64-72e5-b7f4-bc3437e33fb8
@@ -25,7 +25,7 @@ requirements:
       - key: 01a1383e-2e64-72e5-b7f4-bc361984a9a7
         name: "The workflow tells the agent to commit `loft.trace.yaml` with the code it traces."
       - key: 01a1383e-2e64-72e5-b7f4-bc37a8e347c5
-        name: "The workflow describes each rule from `TR-001` to `TR-008` with its fix."
+        name: "The workflow describes each rule from `TR-001` to `TR-010` with its fix."
   - key: 01a1383e-2e64-72e5-b7f4-bc38474f8841
     statement:
       form: ubiquitous
