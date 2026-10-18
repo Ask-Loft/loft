@@ -190,7 +190,9 @@ impl Builder {
 
     fn registries(&mut self, document: &Document) {
         let tags = document.tags.iter().map(|tag| tag.id.key());
-        for key in tags.chain(document.categories.iter().map(|entry| entry.id.key())) {
+        let categories = document.categories.iter().map(|entry| entry.id.key());
+        let terms = document.terms.iter().map(|entry| entry.id.key());
+        for key in tags.chain(categories).chain(terms) {
             self.carry(key);
         }
     }

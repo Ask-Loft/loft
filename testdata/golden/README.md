@@ -59,6 +59,10 @@ equal tuples both appear.
 `registryName` is `tags` or `categories`. Entries are `[name, definition]`, sorted by name and
 then definition, by UTF-8 bytes. Entry keys are not in the view.
 
+The term list root view is `["terms", [[name, definition, aliases], …]]`, the aliases sorted and
+the entries sorted by name, then definition, then aliases, by UTF-8 bytes. A document whose term
+list is empty has no term list root.
+
 ### Decision
 
 - `state` is `{kind: "proposed"}`, `{kind: "accepted", selectedOption, outcome}`,
@@ -79,7 +83,9 @@ of decision view hashes.
 ### Content, binding and state roots
 
 `productHashes` are the Product content hashes in the manifest's order; `componentHashes` are the
-root Component content hashes sorted. Binding rows are sorted by key; `aliases` keep the order in
+root Component content hashes sorted. The content view is `[productHashes, componentHashes,
+edgesRoot, tagsRoot, categoriesRoot, decisionsRoot]`, followed by the term list root when the
+document has a term. Binding rows are sorted by key; `aliases` keep the order in
 which they were recorded; `contentHash` is computed from the tree, never read from a file. The
 state view's `format` is `loftspec/1`, its `algorithm` `sha256-jcs/1`, and `derivedFrom` is
 `{authoredStateId, contentAddress, publishSequence}` or `null`.
@@ -126,5 +132,12 @@ The canonical JSON export of `small-document`, RFC 8785 bytes. Its top level is 
 node has none), `decisions` (each `{key, label, view}` by key), `edges` (each `{type, source,
 target, role}` sorted by canonical bytes; `role` is `null` except on `subject` edges, and a
 `subject` edge to a node the document no longer holds has the target `{formerLabel}`), `tags`
-and `categories` (each `{key, name, definition}` by name). Every `view` is the content view or
-decision view the hasher digests.
+and `categories` (each `{key, name, definition}` by name), then `terms` (each `{key, name,
+definition, aliases}` by name, its aliases sorted) only when the document has a term. Every
+`view` is the content view or decision view the hasher digests.
+
+## `function-words.txt`
+
+The words a phrase of the term report neither begins nor ends with, one a line, sorted by UTF-8
+bytes. The term report reads every run of one to three words between punctuation, code and
+possessives, and leaves out a run that begins or ends with one of them.

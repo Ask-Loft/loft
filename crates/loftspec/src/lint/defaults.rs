@@ -60,6 +60,248 @@ pub(super) const CONJUNCTIONS: &[&str] = &["and", "or"];
 /// The words `V2-007` reads as normative in a body.
 pub(super) const NORMATIVE_WORDS: &[&str] = &["shall", "must"];
 
+/// The noun groups of `TD-001`: head nouns that a text may use for one another after the same
+/// qualifier.
+pub(super) const NOUN_GROUPS: &[(&str, &[&str])] = &[
+    (
+        "record",
+        &[
+            "record", "entry", "item", "row", "object", "entity", "element",
+        ],
+    ),
+    (
+        "view",
+        &["view", "page", "screen", "panel", "pane", "tab", "surface"],
+    ),
+    (
+        "identifier",
+        &[
+            "id",
+            "identifier",
+            "key",
+            "label",
+            "ref",
+            "reference",
+            "handle",
+            "slug",
+        ],
+    ),
+    (
+        "failure",
+        &["error", "failure", "refusal", "rejection", "fault"],
+    ),
+    (
+        "request",
+        &[
+            "request",
+            "call",
+            "invocation",
+            "operation",
+            "command",
+            "action",
+        ],
+    ),
+    ("document", &["document", "doc", "spec", "specification"]),
+    (
+        "system",
+        &[
+            "service",
+            "server",
+            "engine",
+            "subsystem",
+            "module",
+            "layer",
+            "system",
+            "backend",
+            "adapter",
+            "worker",
+            "daemon",
+        ],
+    ),
+];
+
+/// The abbreviations of `TD-003`, each named by its short form, with its long forms.
+pub(super) const PAIRS: &[(&str, &[&str])] = &[
+    ("admin", &["administrator", "administration"]),
+    ("app", &["application"]),
+    ("arg", &["argument"]),
+    ("config", &["configuration"]),
+    ("db", &["database"]),
+    ("dev", &["development"]),
+    ("dir", &["directory"]),
+    ("doc", &["document"]),
+    ("env", &["environment"]),
+    ("id", &["identifier"]),
+    ("impl", &["implementation"]),
+    ("info", &["information"]),
+    ("msg", &["message"]),
+    ("param", &["parameter"]),
+    ("prod", &["production"]),
+    ("repo", &["repository"]),
+    ("spec", &["specification"]),
+];
+
+/// The words a phrase of the term report neither begins nor ends with, published as
+/// `testdata/golden/function-words.txt`.
+pub const FUNCTION_WORDS: &[&str] = &[
+    "a",
+    "about",
+    "across",
+    "after",
+    "against",
+    "all",
+    "also",
+    "although",
+    "am",
+    "among",
+    "an",
+    "and",
+    "another",
+    "any",
+    "are",
+    "as",
+    "at",
+    "be",
+    "because",
+    "been",
+    "before",
+    "being",
+    "between",
+    "both",
+    "but",
+    "by",
+    "can",
+    "cannot",
+    "could",
+    "did",
+    "different",
+    "do",
+    "does",
+    "done",
+    "down",
+    "during",
+    "each",
+    "eight",
+    "either",
+    "else",
+    "every",
+    "few",
+    "first",
+    "five",
+    "for",
+    "four",
+    "from",
+    "given",
+    "had",
+    "has",
+    "have",
+    "having",
+    "he",
+    "her",
+    "here",
+    "his",
+    "how",
+    "i",
+    "if",
+    "in",
+    "into",
+    "is",
+    "it",
+    "its",
+    "just",
+    "last",
+    "least",
+    "less",
+    "many",
+    "may",
+    "me",
+    "might",
+    "more",
+    "most",
+    "must",
+    "my",
+    "neither",
+    "new",
+    "next",
+    "nine",
+    "no",
+    "nor",
+    "not",
+    "of",
+    "off",
+    "on",
+    "once",
+    "one",
+    "only",
+    "onto",
+    "or",
+    "other",
+    "our",
+    "out",
+    "over",
+    "own",
+    "per",
+    "previous",
+    "same",
+    "seven",
+    "shall",
+    "she",
+    "should",
+    "since",
+    "six",
+    "so",
+    "some",
+    "such",
+    "ten",
+    "than",
+    "that",
+    "the",
+    "their",
+    "them",
+    "then",
+    "there",
+    "these",
+    "they",
+    "this",
+    "those",
+    "though",
+    "three",
+    "through",
+    "to",
+    "two",
+    "under",
+    "unless",
+    "until",
+    "up",
+    "upon",
+    "us",
+    "very",
+    "via",
+    "was",
+    "we",
+    "were",
+    "what",
+    "when",
+    "where",
+    "whether",
+    "which",
+    "while",
+    "who",
+    "whole",
+    "whom",
+    "whose",
+    "why",
+    "will",
+    "with",
+    "within",
+    "without",
+    "would",
+    "yet",
+    "you",
+    "your",
+    "zero",
+];
+
 /// What an option holds, and its default.
 pub(super) enum Kind {
     /// A lexicon, edited by `replace` or by `extend` and `remove`.
@@ -74,11 +316,13 @@ pub(super) enum Kind {
     Millionths(u32),
     /// A list of names, none of them blank; none by default.
     Names,
+    /// Named groups of words, edited by `replace` or by `extend` and `remove`.
+    Groups(&'static [(&'static str, &'static [&'static str])]),
 }
 
 /// Every option a rule takes beside `enabled` and `severity`, by rule and key, in the order the
 /// published defaults state them.
-pub(super) const OPTIONS: [(RuleId, &str, Kind); 13] = [
+pub(super) const OPTIONS: [(RuleId, &str, Kind); 15] = [
     (RuleId::Lq001, "lexicon", Kind::Lexicon(WEAK_TERMS)),
     (RuleId::Lq002, "lexicon", Kind::Lexicon(VAGUE_QUANTIFIERS)),
     (RuleId::Lq003, "lexicon", Kind::Lexicon(ESCAPE_CLAUSES)),
@@ -133,6 +377,8 @@ pub(super) const OPTIONS: [(RuleId, &str, Kind); 13] = [
     ),
     (RuleId::V2007, "lexicon", Kind::Lexicon(NORMATIVE_WORDS)),
     (RuleId::V2008, "properNames", Kind::Names),
+    (RuleId::Td001, "nounGroups", Kind::Groups(NOUN_GROUPS)),
+    (RuleId::Td003, "pairs", Kind::Groups(PAIRS)),
 ];
 
 /// The option `key` of `rule`, where the rule takes it.
@@ -159,10 +405,12 @@ impl RuleId {
             | Self::Sh004
             | Self::Sh007
             | Self::Sh009
+            | Self::Sh011
             | Self::Lq001
             | Self::Lq002
             | Self::Lq003
             | Self::Lq006
+            | Self::Lq010
             | Self::V2003
             | Self::V2004
             | Self::V2005
@@ -180,7 +428,7 @@ impl RuleId {
             | Self::V2006
             | Self::V2008
             | Self::V2009 => Severity::Info,
-            Self::Sh010 | Self::Lq009 => Severity::Hint,
+            Self::Sh010 | Self::Lq009 | Self::Td001 | Self::Td002 | Self::Td003 => Severity::Hint,
         }
     }
 }
@@ -222,6 +470,15 @@ fn option_text(text: &mut String, key: &str, kind: &Kind) {
         // No names: a list written with no value.
         Kind::Names => {
             let _ = writeln!(text, "    {key}:");
+        }
+        Kind::Groups(groups) => {
+            let _ = writeln!(text, "    {key}:\n      replace:");
+            for (name, words) in *groups {
+                let _ = writeln!(text, "        - name: \"{name}\"\n          words:");
+                for word in *words {
+                    let _ = writeln!(text, "            - \"{word}\"");
+                }
+            }
         }
     }
 }

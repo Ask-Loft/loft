@@ -17,8 +17,8 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
 # The published crates depend on one another at the release they ship in.
-loftspec = { path = "crates/loftspec", version = "2.1.0" }
-loftspec-store = { path = "crates/loftspec-store", version = "2.1.0" }
+loftspec = { path = "crates/loftspec", version = "2.2.0" }
+loftspec-store = { path = "crates/loftspec-store", version = "2.2.0" }
 clap = { version = "4", features = ["derive"] }
 hmac = "0.12"
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version
@@ -30,6 +30,14 @@ serde_json = "1"
 serde_json_canonicalizer = "0.3"
 sha2 = "0.10"
 thiserror = "2"
+# Pinned: a test's digest is its tokens as these grammars split them, so a version change can move
+# the digest of every test it parses and report each as changed.
+tree-sitter = "=0.27.1"
+tree-sitter-go = "=0.25.0"
+tree-sitter-javascript = "=0.25.0"
+tree-sitter-python = "=0.25.0"
+tree-sitter-rust = "=0.24.2"
+tree-sitter-typescript = "=0.23.2"
 # Pinned: the tokenizer the Format publishes splits on these Unicode tables, so a version change
 # can change a finding or a parsed statement.
 unicode-properties = { version = "=0.1.4", default-features = false, features = ["general-category"] }

@@ -10,6 +10,7 @@ pub mod codec;
 pub mod conflict;
 pub mod convert;
 pub mod decision;
+pub mod diff;
 pub mod document;
 mod ears;
 pub mod ext;

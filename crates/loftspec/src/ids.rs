@@ -63,6 +63,8 @@ domain_ids! {
     TagId,
     /// The key of a constraint category registry entry.
     CategoryId,
+    /// The key of a term list entry.
+    TermId,
     /// The UUID of a Loft v1 Authored State a document was derived from.
     AuthoredStateId,
 }

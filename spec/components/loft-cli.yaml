@@ -29,6 +29,13 @@ components:
           scenario: "One command run that sends its event and fetches the latest release, against a collector and a release feed that accept the connection and never answer"
           environment: "A stand-in collector and release feed on the machine that runs the test"
         verificationFate: sampled
+  - key: 01a145e8-28eb-7b67-9fe2-edb5e0af3358
+    name: "Test locator"
+    body: "The part of `loft` that parses a test file with tree-sitter and finds in it the test a link names, for the reconciler's port."
+    constraints:
+      - key: 01a145e8-28eb-7721-8fd0-99ea28e0c58a
+        name: "The test locator shall be the only part of `loft` that parses a programming language."
+        verificationFate: proved
 constraints:
   - key: 58f9679b-7e68-44c5-a566-39c56384ffdd
     name: "`loft-cli` shall expose exactly one binary, named `loft`."

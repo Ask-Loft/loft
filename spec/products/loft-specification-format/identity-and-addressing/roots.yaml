@@ -55,6 +55,10 @@ requirements:
         name: "Changing a decision changes the content root."
       - key: dff9c2bc-a436-4ab5-9414-8b001729f563
         name: "The root Component roots are sorted by their content hash."
+      - key: 01a14b3f-6fb7-70d5-842f-807c36ac96c5
+        name: "The content view of a document with a term entry holds the term list root after the decisions root."
+      - key: 01a14b3f-6fb7-70d5-842f-807debc32884
+        name: "A document with no term entry has the content root it had before the term list existed."
   - key: 77ccd1ef-a335-48b8-8f70-7fc1d80707d8
     statement:
       form: ubiquitous
@@ -105,12 +109,16 @@ requirements:
         name: "The tag registry root is computed over the entries sorted by name in UTF-8 byte order."
       - key: 76416e28-c076-4c69-ac92-33fcd0104941
         name: "The constraint category root is computed over the categories sorted by name in UTF-8 byte order."
+      - key: 01a14b3f-6fb7-70d5-842f-807e8e38af7f
+        name: "The term list root is computed over the entries sorted by name in UTF-8 byte order, each with its definition and its sorted aliases."
+      - key: 01a14b3f-6fb7-70d5-842f-807f9ed43476
+        name: "Changing a term's alias changes the term list root."
       - key: 32081899-e591-4f44-b36f-77efe894fbe7
         name: "Changing an entry's definition changes its registry root."
       - key: 421b1a75-b729-476a-b441-158338853733
         name: "Reordering the entries in the file leaves the registry root unchanged."
       - key: df4a2f67-e867-4b1a-b3c2-295cbfdb9533
-        name: "A registry root view begins with the registry's name, `tags` or `categories`."
+        name: "A registry root view begins with the registry's name, `tags`, `categories` or `terms`."
       - key: a9809fee-2b6f-4acf-98d3-b1c547854c89
         name: "Two registries with equal entries have different roots."
   - key: 369819ea-896d-4912-9cc5-9a38edd3fe10

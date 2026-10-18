@@ -14,6 +14,7 @@ mod import_openspec;
 mod init;
 mod install;
 mod json;
+mod locate;
 mod merge_driver;
 mod network;
 mod out;
@@ -23,10 +24,12 @@ mod record_install;
 mod render;
 mod settings;
 mod skill;
+mod status;
 mod stop;
 mod switch_command;
 mod switches;
 mod telemetry;
+mod terms;
 mod update_check;
 mod verify;
 mod version;
@@ -106,6 +109,12 @@ enum Command {
         #[command(flatten)]
         output: Output,
     },
+    /// List the names the specification may be using for one concept, and the subjects of each
+    /// Product's statements, for the term list to decide.
+    Terms {
+        #[command(flatten)]
+        output: Output,
+    },
     /// Compare `loft.trace.yaml` with the tree and the tests that verify it, and accept the
     /// links a reviewer has checked.
     Reconcile {
@@ -115,7 +124,8 @@ enum Command {
         /// Accept the link of this node, by key or label, once its tests are reviewed.
         #[arg(long, value_name = "NODE")]
         accept: Vec<String>,
-        /// Accept every unreviewed or stale link whose tests are found.
+        /// Accept every unreviewed, stale or changed link whose tests are found, and record the
+        /// body of each located test that has none.
         #[arg(long, conflicts_with = "accept")]
         accept_stale: bool,
         #[command(flatten)]
@@ -123,6 +133,15 @@ enum Command {
     },
     /// Recompute the roots of `spec/` and compare them with the lock (RQ-148).
     Verify {
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Report the lock and whether the tree matches it, the repository's state, and the nodes
+    /// added, changed and removed since HEAD left a base revision.
+    Status {
+        /// The revision whose merge base with HEAD the tree is compared with, such as `develop`.
+        #[arg(long, value_name = "REVISION")]
+        base: Option<String>,
         #[command(flatten)]
         output: Output,
     },
@@ -340,11 +359,13 @@ impl Command {
             } => Some("import openspec"),
             Self::Publish { .. } => Some("publish"),
             Self::Reconcile { .. } => Some("reconcile"),
+            Self::Terms { .. } => Some("terms"),
             Self::Find { .. } => Some("find"),
             Self::Verify { .. } => Some("verify"),
             Self::Render { .. } => Some("render"),
             Self::Skill { .. } => Some("skill install"),
             Self::MergeDriver { .. }
+            | Self::Status { .. }
             | Self::RecordInstall { .. }
             | Self::Telemetry { .. }
             | Self::UpdateCheck { .. } => None,
@@ -380,6 +401,7 @@ fn dispatch(command: Command) -> Finished {
         Command::Import { source } => import(root, source),
         Command::Publish { output } => publish::run(root, output.json()),
         Command::Find { query, output } => find::run(root, &query, output.json()),
+        Command::Terms { output } => terms::run(root, output.json()),
         Command::Reconcile {
             fail_on,
             accept,
@@ -394,6 +416,7 @@ fn dispatch(command: Command) -> Finished {
             reconcile::run(root, &options, output.json())
         }
         Command::Verify { output } => verify::run(root, output.json()),
+        Command::Status { base, output } => status::run(root, base.as_deref(), output.json()),
         Command::MergeDriver {
             install: true,
             command,

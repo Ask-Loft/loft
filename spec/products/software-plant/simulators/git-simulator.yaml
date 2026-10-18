@@ -107,3 +107,19 @@ requirements:
         name: "`-c alias.loft-launcher=!<command> --version loft-launcher` prints the version the scenario gives the command."
       - key: 01a1315a-f185-7564-b075-5949a6ff12f3
         name: "`-c alias.loft-launcher=!<command> --version loft-launcher` exits 127 for a command the scenario does not give."
+  - key: 01a144ee-c5a0-7459-bcd4-bd53e30dd595
+    statement:
+      form: ubiquitous
+      system: "The git simulator"
+      shall: "answer the calls with which `loft status --base` reads the tree at the base commit as its scenario scripts them."
+    criteria:
+      - key: 01a144ee-c5a0-7459-bcd4-bd545a594e0a
+        name: "`merge-base HEAD <revision>` prints the base commit the scenario gives the revision."
+      - key: 01a144ee-c5a0-7459-bcd4-bd5529685dd9
+        name: "`merge-base HEAD <revision>` exits 1 and prints nothing for a revision the scenario gives no common ancestor."
+      - key: 01a144ee-c5a0-7459-bcd4-bd56b2c62163
+        name: "`merge-base HEAD <revision>` exits 128 with git's `Not a valid object name` message for a revision the scenario does not name."
+      - key: 01a144ee-c5a0-7459-bcd4-bd570cd64c69
+        name: "`ls-tree -r -z <commit> -- spec` prints a record for each file under `spec/` that the scenario gives the base commit."
+      - key: 01a144ee-c5a0-7459-bcd4-bd58ca3ef26e
+        name: "`cat-file --batch` prints each blob whose object id it reads on standard input, after a header with its object id, type and size."

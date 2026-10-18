@@ -6,6 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::defaults::{self, Kind, OPTIONS};
+use super::groups::{self, Groups};
 use super::lexicon::{self, Edits, Lexicon};
 use super::{RuleId, Severity};
 use crate::codec::{LINT, Problem, ReadError, SpecPath, Strict};
@@ -27,6 +28,7 @@ enum Setting {
     Count(usize),
     Millionths(u32),
     Names(Vec<String>),
+    Groups(Groups),
 }
 
 impl Setting {
@@ -38,6 +40,9 @@ impl Setting {
             Kind::Count { default, .. } => Self::Count(*default),
             Kind::Millionths(default) => Self::Millionths(*default),
             Kind::Names => Self::Names(Vec::new()),
+            Kind::Groups(defaults) => {
+                Self::Groups(groups::effective(defaults, None).expect("valid default groups"))
+            }
         }
     }
 }
@@ -163,6 +168,25 @@ impl LintConfig {
             unreachable!("`properNames` is a list of names");
         };
         names
+    }
+
+    /// `TD-001`'s noun groups.
+    #[must_use]
+    pub fn noun_groups(&self) -> &Groups {
+        self.groups_at(RuleId::Td001, "nounGroups")
+    }
+
+    /// `TD-003`'s abbreviations, each group named by its short form and holding its long forms.
+    #[must_use]
+    pub fn pairs(&self) -> &Groups {
+        self.groups_at(RuleId::Td003, "pairs")
+    }
+
+    fn groups_at(&self, rule: RuleId, key: &'static str) -> &Groups {
+        let Setting::Groups(groups) = &self.options[&(rule, key)] else {
+            unreachable!("`{key}` is a group option");
+        };
+        groups
     }
 
     // Each option holds the setting of its kind: the defaults and the reader both follow
@@ -302,6 +326,7 @@ impl Reader {
                     .map(Setting::Millionths)
             }
             Kind::Names => self.names(node).map(Setting::Names),
+            Kind::Groups(defaults) => self.groups(node, defaults).map(Setting::Groups),
         }
     }
 
@@ -336,6 +361,45 @@ impl Reader {
         lexicon::effective(defaults, Some(&edits))
             .map_err(|problem| self.fail(Some(node.position), Problem::Shape(problem)))
             .ok()
+    }
+
+    /// A group option: `replace`, or `extend` and `remove`, each a list of `name` and `words`.
+    fn groups(&mut self, node: &Node, defaults: &[(&str, &[&str])]) -> Option<Groups> {
+        let mut edits = groups::Edits::default();
+        for entry in self.entries(node) {
+            let written: Vec<_> = self
+                .items(&entry.value)
+                .iter()
+                .filter_map(|item| self.group(item))
+                .collect();
+            match entry.key.as_str() {
+                "replace" => edits.replace = Some(written),
+                "extend" => edits.extend = written,
+                "remove" => edits.remove = written,
+                other => {
+                    let unknown = Problem::UnknownField(other.to_owned());
+                    self.fail(Some(entry.key_position), unknown);
+                }
+            }
+        }
+        groups::effective(defaults, Some(&edits))
+            .map_err(|problem| self.fail(Some(node.position), Problem::Shape(problem)))
+            .ok()
+    }
+
+    /// One group as written: its `name`, and its `words` where it lists them.
+    fn group(&mut self, item: &Node) -> Option<(String, Option<Vec<String>>)> {
+        let fields = self.fields(item, &["name", "words"]);
+        let name = self.required(item, fields, "name")?;
+        let name = self.text(&name.value, "a group name")?;
+        let words = fields.get("words").map(|words| {
+            let items = self.items(&words.value);
+            items
+                .iter()
+                .filter_map(|word| self.text(word, "a word"))
+                .collect()
+        });
+        Some((name, words))
     }
 
     fn suppression(&mut self, item: &Node, config: &mut LintConfig) {

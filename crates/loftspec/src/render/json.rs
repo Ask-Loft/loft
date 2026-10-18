@@ -1,6 +1,6 @@
 //! The canonical JSON export (F-25): RFC 8785 canonical JSON of the content view, with each
-//! node's and decision's key and label beside its view, every edge, both registries, and the
-//! state root it was rendered from. Its layout is published with the golden vectors (AC-655):
+//! node's and decision's key and label beside its view, every edge, both registries, the term
+//! list when it has an entry, and the state root it was rendered from. Its layout is published with the golden vectors (AC-655):
 //!
 //! ```text
 //! { "format", "stateRoot",
@@ -9,7 +9,9 @@
 //!   "decisions":  [{ "key", "label", "view" }],              by key
 //!   "edges":      [{ "type", "source", "target", "role" }],  by canonical bytes
 //!   "tags":       [{ "key", "name", "definition" }],         by name
-//!   "categories": [{ "key", "name", "definition" }] }        by name
+//!   "categories": [{ "key", "name", "definition" }],         by name
+//!   "terms"?:     [{ "key", "name", "definition", "aliases" }] } by name; only when the
+//!                                                            document has a term
 //! ```
 //!
 //! A label or role that is absent is `null`; a `subject` edge to a node the document no longer
@@ -86,7 +88,7 @@ pub(super) fn render(
             })
             .collect(),
     );
-    canonical_bytes(&json!({
+    let mut export = json!({
         "format": crate::FORMAT,
         "stateRoot": state_root(hashes),
         "nodes": nodes,
@@ -94,7 +96,30 @@ pub(super) fn render(
         "edges": edges.into_iter().map(|(_, edge)| edge).collect::<Vec<_>>(),
         "tags": tags,
         "categories": categories,
-    }))
+    });
+    if !document.terms.is_empty() {
+        export["terms"] = terms(document);
+    }
+    canonical_bytes(&export)
+}
+
+/// The term list, sorted by name and then key, each entry's aliases sorted.
+fn terms(document: &Document) -> Value {
+    let mut terms: Vec<_> = document.terms.iter().collect();
+    terms.sort_by_key(|term| (term.name.as_str(), term.id));
+    terms
+        .into_iter()
+        .map(|term| {
+            let mut aliases: Vec<&str> = term.aliases.iter().map(String::as_str).collect();
+            aliases.sort_unstable();
+            json!({
+                "key": term.id.key(),
+                "name": term.name,
+                "definition": term.definition,
+                "aliases": aliases,
+            })
+        })
+        .collect()
 }
 
 /// Each keyed node in document order: its key, label, kind and view, and its `ext` when it

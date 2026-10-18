@@ -95,6 +95,8 @@ needs.
 | `loft import openspec [<dir>]` | Converts the main specs of an OpenSpec project into `spec/` |
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
+| `loft status [--base <revision>]` | Reports the lock and whether the tree matches it, the repository's branch and uncommitted paths under `spec/`, and the nodes added, changed and removed since HEAD left the revision; it sends no telemetry |
+| `loft terms` | Lists the names the specification may be using for one concept, and the subjects of each Product's statements, for the term list to decide |
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
 | `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
 | `loft skill install` | Writes the agent skill into the current directory, or brings it up to date |
@@ -107,17 +109,32 @@ files and fields, the writing rules, what each lint finding means, review, and p
 needs.
 
 `loft init` writes the skill for Claude Code to `.claude/skills/loft-spec/` and for Codex to
-`.agents/skills/loft-spec/`; `--no-skill` leaves it out. `loft skill install` writes it into any
-project, and after an upgrade of `loft` brings it to the new version. Commit both directories so
-that everyone working on the project has the skill.
+`.agents/skills/loft-spec/`, and enables the Claude Code plugin `loft@ask-loft` in
+`.claude/settings.json`, keeping every other entry of that file; `--no-skill` leaves all three
+out. `loft skill install` writes it into any
+project, and after an upgrade of `loft` brings it to the new version, enabling the plugin the
+same way. Commit both directories and `.claude/settings.json` so that everyone working on the
+project has the skill and is offered the plugin.
 
 The skill is also a plugin, for an agent that works across projects:
 
-- Claude Code: `/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@loft`.
-- Codex: `codex plugin marketplace add Ask-Loft/loft`, then `codex plugin add loft@loft`, or
+- Claude Code: `/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@ask-loft`.
+  In a project where `loft init` or `loft skill install` ran, the committed `.claude/settings.json`
+  already names the marketplace and enables `loft@ask-loft`, so Claude Code offers the plugin
+  to whoever trusts the project.
+- Codex: `codex plugin marketplace add Ask-Loft/loft`, then `codex plugin add loft@ask-loft`, or
   choose it in `/plugins`.
 
 The plugin teaches the agent; it does not install `loft`, which the skill expects on the path.
+
+In Claude Code the plugin also shows the Loft status pane in a project that holds `spec/`: the
+checks of the loop (format, check, `spec/` committed, trace, lock) and the next step, the nodes
+the branch added, changed and removed since its base, the criteria it touched that still lack a
+reviewed test, and the file the agent is writing. `/loft-status` opens it; `/loft-status
+<revision>` compares with another base for the session, and `/loft-status auto` returns to the
+`baseBranch` setting (`develop` by default). The pane runs `loft status`, `loft fmt --check`,
+`loft check` and `loft reconcile` with telemetry and the update check off; where `loft` is not on
+the path, set the plugin's `loftCommand` setting, for example to `pnpm exec loft`.
 
 ## Exit codes and JSON
 
@@ -174,16 +191,20 @@ the git command that finishes, `git add -A && git commit --no-edit` after a merg
 `loft.trace.yaml`, beside `spec/`, links each acceptance criterion, and each Constraint or
 Quality Attribute whose `verificationFate` is `proved`, to the tests that verify it, by file and
 test name, or says why no test can. Each link holds the content hash its node had when a reviewer
-last accepted it, so a changed criterion shows up as a stale link. `loft reconcile` reports nodes
-no link names, links not yet reviewed or gone stale, tests it cannot find in their files, and
-links to nodes that are gone, without running any test, so it works for any language.
+last accepted it, so a changed criterion shows up as a stale link, and each test the digest of
+its tokens when it was last recorded, so a rewritten test shows up too. `loft reconcile` locates
+each test in its file's syntax tree for Rust, TypeScript, JavaScript, Python and Go, and as a
+whole word elsewhere, without running it, so it works for any language. It reports nodes no link
+names, links not yet reviewed or gone stale, tests changed since they were recorded, recorded
+tests it can no longer locate, tests that a part of their file it cannot parse may cut short,
+tests it cannot find in their files, and links to nodes that are gone.
 `loft reconcile --accept <label>` records a review, and CI runs `loft reconcile --fail-on warning`.
 The trace file is not part of the specification: it enters no root and no publish writes it.
 
 ## Telemetry and the update check
 
 Telemetry is on by default. At the end of each run of `check`, `find`, `fmt`, `import v1`,
-`import openspec`, `init`, `publish`, `reconcile`, `render`, `skill install` and `verify`,
+`import openspec`, `init`, `publish`, `reconcile`, `render`, `skill install`, `terms` and `verify`,
 `loft` sends one command event to `https://askloft.ai/api/telemetry`, so that the maintainers
 learn which commands are used, how they end and how long they take. Before the first event leaves a machine, `loft` prints
 a notice on standard error saying what it sends and how to switch it off. An event looks like
@@ -193,7 +214,7 @@ this:
 {
   "schema": "loft-telemetry-event/2",
   "eventId": "0b9a3c0e-7f4d-4a43-9a52-3f3f2c4b8d11",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "os": "macos",
   "arch": "aarch64",
   "installedBy": "npm",

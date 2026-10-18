@@ -39,3 +39,5 @@ requirements:
         name: "The export holds every decision's view with its key and label."
       - key: f5d30383-ecd0-43cd-b346-e349bf62038a
         name: "The export holds the tag registry and the constraint categories."
+      - key: 01a14b3f-6fb8-7393-a618-9fa8a419cb66
+        name: "The export holds the term list when it has an entry, and has no `terms` member otherwise."

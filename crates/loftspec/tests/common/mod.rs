@@ -14,6 +14,7 @@ pub mod merge_keys;
 pub mod openspec;
 pub mod parity;
 pub mod text;
+pub mod trace;
 pub mod v1;
 
 use loftspec::attributes::{

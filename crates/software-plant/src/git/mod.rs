@@ -7,9 +7,11 @@ use std::{env, fs};
 
 use serde::{Deserialize, Serialize};
 
+mod base;
 mod launcher;
 mod stopped;
 
+pub use base::{Base, BaseCall, BaseFile};
 pub use launcher::ALIAS as LAUNCHER_ALIAS;
 pub use stopped::{IndexEntry, LockBlob, Operation, Stopped, StoppedCall};
 
@@ -72,6 +74,9 @@ pub struct Repository {
     /// `.git` under the top level when unset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub git_dir: Option<String>,
+    /// What `git merge-base HEAD <revision>` gives each revision, by the revision.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub bases: BTreeMap<String, Base>,
 }
 
 /// One entry of the porcelain v1 status: its two-letter code and its path, and for a rename or
@@ -101,6 +106,8 @@ pub enum Call {
     ConfigSet,
     /// A call that reads a stopped merge or rebase.
     Stopped(StoppedCall),
+    /// A call that reads the tree at a base commit.
+    Base(BaseCall),
     /// `git -c alias.loft-launcher=!<command> --version loft-launcher`
     Launcher,
 }
@@ -159,6 +166,7 @@ impl GitScenario {
                 config: BTreeMap::new(),
                 stopped: None,
                 git_dir: None,
+                bases: BTreeMap::new(),
             }),
             failures: Vec::new(),
             launchers: BTreeMap::new(),
@@ -294,7 +302,7 @@ impl GitScenario {
         self
     }
 
-    fn repository_mut(&mut self) -> &mut Repository {
+    pub(crate) fn repository_mut(&mut self) -> &mut Repository {
         self.repository
             .as_mut()
             .expect("a scenario inside a repository")
@@ -334,6 +342,18 @@ impl GitScenario {
     /// Answers one call, given its arguments after `git`.
     #[must_use]
     pub fn answer(&self, args: &[String]) -> Reply {
+        self.answer_with(args, &[])
+    }
+
+    /// Whether the call that `args` make reads its standard input, as `cat-file --batch` does.
+    #[must_use]
+    pub fn reads_input(args: &[String]) -> bool {
+        matches!(parse(args), Some((Call::Base(BaseCall::Batch), _)))
+    }
+
+    /// Answers one call, given its arguments after `git` and what it reads on standard input.
+    #[must_use]
+    pub fn answer_with(&self, args: &[String], input: &[u8]) -> Reply {
         let Some((call, operands)) = parse(args) else {
             return Reply::fail(
                 UNSCRIPTED,
@@ -374,6 +394,7 @@ impl GitScenario {
             },
             Call::Launcher => launcher::answer(&self.launchers, operands[0]),
             Call::Stopped(call) => stopped::answer(call, &operands, repository),
+            Call::Base(call) => base::answer(call, &operands, repository, input),
         }
     }
 }
@@ -448,6 +469,7 @@ fn parse(args: &[String]) -> Option<(Call, Vec<&str>)> {
             .map(|command| (Call::Launcher, vec![command]))
             .or_else(|| {
                 stopped::parse(rest).map(|(call, operands)| (Call::Stopped(call), operands))
-            }),
+            })
+            .or_else(|| base::parse(rest).map(|(call, operands)| (Call::Base(call), operands))),
     }
 }

@@ -64,6 +64,11 @@ fn the_registries_are_created_empty() {
 }
 
 #[test]
+fn no_term_list_is_created() {
+    assert!(!initialised().file("terms.yaml").exists());
+}
+
+#[test]
 fn the_created_tree_reads_validates_and_lints_clean() {
     let scratch = initialised();
     assert_eq!(

@@ -6,7 +6,7 @@ use crate::ext::Ext;
 use std::fmt;
 
 use crate::identity::Key;
-use crate::ids::{CategoryId, ConsequenceId, DriverId, ElementId, OptionId, TagId};
+use crate::ids::{CategoryId, ConsequenceId, DriverId, ElementId, OptionId, TagId, TermId};
 
 /// The record that holds a conflict: a node, a decision or a part of one with its own key, a
 /// registry entry, or the manifest or the bindings record, which carry no key.
@@ -18,6 +18,7 @@ pub enum ConflictOwner {
     Consequence(ConsequenceId),
     Tag(TagId),
     Category(CategoryId),
+    Term(TermId),
     Manifest,
     Labels,
 }
@@ -33,6 +34,7 @@ impl ConflictOwner {
             Self::Consequence(consequence) => consequence.key(),
             Self::Tag(tag) => tag.key(),
             Self::Category(category) => category.key(),
+            Self::Term(term) => term.key(),
             Self::Manifest | Self::Labels => return None,
         })
     }
@@ -47,6 +49,7 @@ impl fmt::Display for ConflictOwner {
             Self::Consequence(consequence) => write!(formatter, "consequence {consequence}"),
             Self::Tag(tag) => write!(formatter, "tag entry {tag}"),
             Self::Category(category) => write!(formatter, "category entry {category}"),
+            Self::Term(term) => write!(formatter, "term entry {term}"),
             Self::Manifest => formatter.write_str("the manifest"),
             Self::Labels => formatter.write_str("the bindings"),
         }

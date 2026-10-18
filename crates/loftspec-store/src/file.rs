@@ -168,8 +168,14 @@ pub struct ProjectFiles {
 }
 
 impl TestFiles for ProjectFiles {
+    /// The file at `path`; a path that names something other than a regular file, such as a
+    /// directory or a named pipe, is not read, so reading never waits on it.
     fn read(&self, path: &str) -> TestFile {
-        match fs::read(self.root.join(path)) {
+        let file = self.root.join(path);
+        if fs::metadata(&file).is_ok_and(|metadata| !metadata.is_file()) {
+            return TestFile::Unreadable("it is not a regular file".to_owned());
+        }
+        match fs::read(file) {
             Ok(bytes) => String::from_utf8(bytes).map_or(TestFile::NotText, TestFile::Text),
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => TestFile::Missing,
             Err(error) => TestFile::Unreadable(error.to_string()),

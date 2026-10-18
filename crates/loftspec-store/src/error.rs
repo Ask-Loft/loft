@@ -42,6 +42,8 @@ pub enum StoreError {
     Launcher(String),
     #[error("git cannot be run: {0}")]
     GitUnavailable(String),
+    #[error("`{0}` names no commit")]
+    UnknownRevision(String),
     #[error("`git {call}` failed: {message}")]
     Git { call: String, message: String },
     #[error("SOURCE_DATE_EPOCH is {0:?}, not a whole number of seconds")]

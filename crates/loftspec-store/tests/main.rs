@@ -10,6 +10,7 @@ mod real_git;
 mod clock_contract;
 mod conformance;
 mod git_contract;
+mod git_contract_base;
 mod git_contract_stopped;
 mod journal;
 mod live_export;

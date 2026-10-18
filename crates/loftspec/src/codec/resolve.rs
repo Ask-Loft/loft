@@ -6,14 +6,16 @@ use super::schema::field;
 use std::collections::BTreeMap;
 
 use super::error::{Problem, ReadError, SpecPath};
-use super::files::{CATEGORIES, LABELS, MANIFEST, Role, TAGS, Tree};
+use super::files::{CATEGORIES, LABELS, MANIFEST, Role, TAGS, TERMS, Tree};
 use super::record::{Rec, Val};
 use super::schema::Kind;
 use crate::canonical::Digest;
 use crate::decision::NodeRef;
-use crate::document::{CategoryEntry, DerivedFrom, Document, Edge, TagEntry};
+use crate::document::{CategoryEntry, DerivedFrom, Document, Edge, TagEntry, TermEntry};
 use crate::identity::{Key, Label, LabelPrefix};
-use crate::ids::{AuthoredStateId, CategoryId, DecisionId, DocumentId, ElementId, NodeId, TagId};
+use crate::ids::{
+    AuthoredStateId, CategoryId, DecisionId, DocumentId, ElementId, NodeId, TagId, TermId,
+};
 use crate::names::{CategoryName, TagName};
 use crate::slug::Slug;
 use crate::yaml::Position;
@@ -82,6 +84,22 @@ fn index(tree: &Tree) -> BTreeMap<Key, ElementId> {
                 _ => return None,
             };
             Some((key, element))
+        })
+        .collect()
+}
+
+/// The position of a term entry's name and of each of its aliases that hold no word.
+fn blanks(entry: &Rec) -> Vec<(Position, &'static str)> {
+    let name = entry.get(field::NAME).map(|name| (name, "term name"));
+    let aliases = entry
+        .list(field::ALIASES)
+        .iter()
+        .map(|alias| (alias, "alias"));
+    name.into_iter()
+        .chain(aliases)
+        .filter_map(|(value, what)| match value {
+            Val::Scalar { text, position } if text.trim().is_empty() => Some((*position, what)),
+            _ => None,
         })
         .collect()
 }
@@ -200,6 +218,26 @@ impl<'t> Resolver<'t> {
                 definition: text(entry, field::DEFINITION),
             });
         }
+        self.terms();
+    }
+
+    /// The term list, each name and alias required to hold a word.
+    fn terms(&mut self) {
+        let path = std::mem::replace(&mut self.path, SpecPath::new(TERMS));
+        for entry in self.tree.registry(TERMS) {
+            for (position, what) in blanks(entry) {
+                let error = self.fail(Some(position), format!("a blank {what}"));
+                self.errors.push(error);
+            }
+            let aliases = entry.list(field::ALIASES).iter().filter_map(Val::text);
+            self.document.terms.push(TermEntry {
+                id: TermId::new(key(entry, field::KEY)),
+                name: text(entry, field::NAME),
+                definition: text(entry, field::DEFINITION),
+                aliases: aliases.map(str::to_owned).collect(),
+            });
+        }
+        self.path = path;
     }
 
     /// The file a listed key names; a read tree has one for every listed key (AC-99, AC-699).

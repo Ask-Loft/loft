@@ -1,7 +1,7 @@
 key: 048729dd-e1d4-40aa-839f-ef9ec59515b0
 slug: structural-lint-rules
 name: "Structural lint rules"
-body: "The ten structural rules, SH-001 to SH-010: the shape each one reports and its default severity."
+body: "The eleven structural rules, SH-001 to SH-011: the shape each one reports and its default severity."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -145,3 +145,17 @@ requirements:
         name: "A Component name with neither yields no `SH-010` finding."
       - key: c82f7f1d-7a85-4b8e-930c-edd28e2e8039
         name: "The default severity of `SH-010` is hint."
+  - key: 01a14b3f-6fb8-7393-a618-9fc323b57695
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `SH-011` a name or alias that two entries of the term list carry."
+    criteria:
+      - key: 01a14b3f-6fb8-7393-a618-9fc412125daf
+        name: "A name or alias that is also another term's name or alias yields one `SH-011` finding naming both terms."
+      - key: 01a14b3f-6fb8-7393-a618-9fc5ae611681
+        name: "An alias equal to its own term's name yields one `SH-011` finding naming the term."
+      - key: 01a14b3f-6fb8-7393-a618-9fc6d59560f1
+        name: "Names and aliases are compared in any letter case and with or without a final plural."
+      - key: 01a14b3f-6fb8-7393-a618-9fc7c52df4d6
+        name: "The default severity of `SH-011` is warning."

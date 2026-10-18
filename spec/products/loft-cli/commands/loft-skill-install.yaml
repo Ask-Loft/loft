@@ -25,7 +25,7 @@ requirements:
       - key: 01a13654-bf86-77e9-8fd5-8dc58145c4bd
         name: "A file that a skill directory held and its package does not is removed."
       - key: 01a13654-bf86-77e9-8fd5-8dc69b2cc428
-        name: "No file outside the two skill directories is written."
+        name: "No file outside the two skill directories and `.claude/settings.json` is written."
       - key: 01a13654-bf86-77e9-8fd5-8dc705e61e20
         name: "The command writes the skill where there is no `spec/`."
   - key: 01a13654-bf86-77e9-8fd5-8dc8af39c9d9

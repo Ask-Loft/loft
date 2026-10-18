@@ -3,6 +3,114 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.2.0 (2026-10-18)
+
+- `loft status [--base <revision>]` reports where the tree stands: the lock's publish sequence,
+  publication time and state root, and the first root of the tree that differs from it; the
+  branch, the uncommitted paths under `spec/` and a stopped merge or rebase; and with `--base`
+  the nodes added, changed and removed since HEAD left the revision, each with its key, label,
+  kind, file, line, column and name. A node changed when its own content changed, so an edit is
+  not a change of each of its ancestors, and a move is no change. It writes nothing, exits 0
+  whatever it finds, and sends no command event, since an agent host may run it every few
+  seconds. Its output follows the schema `loft-status/1`.
+- The Claude Code plugin shows the Loft status pane in a project that holds `spec/`: the checks
+  of the loop with the next step, the nodes the branch changed since its base, the criteria it
+  touched that still lack a reviewed test, the file the agent is writing, and a status-line
+  entry. `/loft-status [<revision>|auto]` opens it; the settings `baseBranch` and `loftCommand`
+  choose the base and the command that runs `loft`. It needs a `loft` with `loft status`.
+- `loft init` and `loft skill install` also enable the Claude Code plugin `loft@ask-loft` in the
+  project's `.claude/settings.json`: the marketplace `ask-loft`, from GitHub's `Ask-Loft/loft`, and
+  the plugin on, so Claude Code offers the plugin to whoever trusts the project. Every other
+  entry of the file is kept in its order, an entry it already sets is kept (an opt-out
+  included), and a file that is not a JSON object is left alone with the entries to add by hand.
+  `--no-skill` leaves the file out too.
+- Both plugin marketplaces are now named `ask-loft`: install with `/plugin install loft@ask-loft`
+  in Claude Code and `codex plugin add loft@ask-loft` in Codex.
+- `loft reconcile` locates each linked test in its file's syntax tree, parsed with tree-sitter,
+  for Rust (a function, also inside a macro such as `proptest!`), TypeScript, TSX and JavaScript
+  (a call to `it`, `test`, `describe`, `context`, `specify` or `bench`, also through `.only`,
+  `.each(…)`, `.skipIf(…)` and the like), Python (a function or class with its decorators) and Go
+  (a function, a method, or a `t.Run` subtest), in parentheses or not; an escape in a name is
+  read as the language reads it, so a JavaScript surrogate pair is one character and Go's `\x` and
+  octal escapes are bytes read as UTF-8. It
+  records each located test's digest, the SHA-256 of its tokens without comments, as the test's
+  `body` in the trace file, so a test rewritten after its link was accepted is reported. What a
+  formatter changes does not count: whitespace between tokens, a comma directly before a closing
+  bracket (except in Python, where `(x,)` is a tuple), a Python line broken inside brackets or
+  after a backslash, CR LF line endings, and comments, also inside a macro. JSX text is read as
+  JSX reads it, so spaces within a line count and the indentation around a line break does not.
+  A line break that changes what JavaScript means, such as one after `return`, is not seen
+  either.
+  - `TR-006` (warning): a located test whose digest differs from its `body`; `--accept-stale`
+    accepts it.
+  - `TR-007` (info): a test found only as a word, in a file no grammar parses or under a name no
+    test of the file carries, whose content is not tracked.
+  - `TR-008` (info): a literal in backticks in the node's name that the source of none of its
+    tests holds.
+  - `TR-009` (warning): a test whose body was recorded but that is now found only as a word, as
+    when it was renamed and its old name is left in a comment; accepting its link removes the
+    body, after which the test is `TR-007`. `--accept-stale` accepts it.
+  - `TR-010` (warning): a test that holds, or is followed before the next test by, a part of its
+    file the grammar does not parse, given by line, column and text, or the token missing. The
+    grammar may have cut the test short, so its link cannot be accepted until the file parses
+    there; the other tests of the file are unaffected.
+
+  Accepting a link records its tests' bodies, and any accept also records the body of every
+  located test that has none. `--accept-stale` writes the trace file when it records a body even
+  if it accepts no link, so a reviewed project adopts bodies with no new review; the output gives
+  the number recorded.
+- The trace file's format is now `loft-trace/2`, which adds a test's `body`; `loft-trace/1` is
+  still read and is rewritten as `loft-trace/2` on the next accept. An older `loft` refuses a
+  `loft-trace/2` file, so everyone who reconciles a project needs this release.
+- `loft reconcile --format json` writes the schema `loft-reconcile/2`: the rules `TR-006` to
+  `TR-010`, `recorded`, the number of bodies recorded, and a `tests` list with each linked test's
+  node, file and name, whether it was located, and the first and last line of each location.
+- A test file path that steps up and back inside the project, such as `tests/../tests/a.rs`, is
+  found, and a test name is found as a whole word where it overlaps a part of a word. A path that
+  names something other than a regular file, such as a named pipe, is `TR-004` at once instead of
+  waiting on it.
+- A specification can name its concepts in a term list, `spec/terms.yaml`: each term a `name`,
+  a `definition` and the `aliases` the prose should not use for it. The file is optional, and a
+  document without terms keeps its content and state roots. With terms, the content view holds
+  a term list root after the decisions root, the JSON export a `terms` member, and the Markdown
+  projection a Glossary after the Domain Vocabulary. An older `loft` refuses a tree with
+  `spec/terms.yaml`, so everyone working on a project needs this release once it adds one.
+- `LQ-010` (warning) reports an alias of a term in the name, statement or body of a node, in any
+  case and with or without a final plural. `SH-011` (warning) reports a name or alias that two
+  terms carry, or an alias equal to its own term's name. A project without terms sees neither.
+- `loft terms [--format json]` prints the term report: groups of names that may denote one
+  concept, for the user to decide in the term list, and the subjects of each Product's
+  statements. `TD-001` finds one qualifier before head nouns of one noun group ("audit entry",
+  "audit row"), `TD-002` one name written as one word and as two ("change set", "changeset", or
+  an identifier such as `ChangeSet` written as prose), and `TD-003` one phrase with an
+  abbreviation and in full ("tenant admin", "tenant administrator"). A group whose every name is
+  a term or an alias is not listed again. The command exits 0 whatever it lists and writes
+  nothing; its output follows the schema `loft-terms/1`, and its command event names `terms`.
+  `loft check` never runs these rules.
+- `spec/lint.yaml` configures `TD-001`..`TD-003` like the lint rules. The noun groups
+  (`nounGroups`) and the abbreviations (`pairs`) are a new kind of option, named groups of words,
+  edited by `replace`, or by `extend` and `remove`. The defaults are published with the other
+  lint defaults, and the function words a phrase neither begins nor ends with as
+  `testdata/golden/function-words.txt`.
+- The `loft-spec` skill teaches the agent to read the term list before writing, to run
+  `loft terms` after writing, and to put each group to the user and record the answer.
+
+### Breaking for library users
+
+- `loftspec`: `Document` gains `terms`, `Roots` gains `terms`, `Role` gains `Terms`,
+  `ConflictOwner` gains `Term`, `Order` gains `ByText` and `RuleId` gains `Sh011`, `Lq010` and
+  `Td001` to `Td003`. `loftspec::lint::report` holds the term report.
+
+- `loftspec::trace`: `Test` gains `body` and is built with `Test::new`; `Reconciled` gains
+  `found`, what was found of each test; `TraceRule` gains `Tr006` to `Tr010`; `FILE_FIELDS`,
+  `LINK_FIELDS` and `TEST_FIELDS` are slices; `TestFiles` gains `tests`, which gives a
+  `ParsedFile`, the tests a file holds, each with its `bytes`, and the `ParseError`s of the parts
+  its grammar does not parse, none by default. `Found` has the outcomes `Located`, `Word`,
+  `Unparsed` and `Missing`, and `Untracked::NoTest` carries the file's first `ParseError`.
+  `TraceRule`, `Test`, `Reconciled` and the new `ParsedFile`, `LocatedTest`, `Lines`,
+  `ParseError`, `Found` and `Untracked` are `#[non_exhaustive]`, so a later rule, field or outcome
+  breaks no caller.
+
 ## 2.1.0 (2026-10-15)
 
 - `loft import openspec [<dir>]` converts the main specs of an OpenSpec project, read from

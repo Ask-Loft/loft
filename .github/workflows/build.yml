@@ -18,8 +18,9 @@ jobs:
         include:
           - { platform: darwin-arm64, target: aarch64-apple-darwin, runner: macos-latest }
           - { platform: darwin-x64, target: x86_64-apple-darwin, runner: macos-latest }
-          # Linked statically by the linker Rust ships, so it runs whatever C library a system has.
-          - { platform: linux-arm64, target: aarch64-unknown-linux-musl, runner: ubuntu-latest }
+          # Linked statically by the linker Rust ships, so it runs whatever C library a system has;
+          # each built on its own architecture, where musl's compiler and headers are installed.
+          - { platform: linux-arm64, target: aarch64-unknown-linux-musl, runner: ubuntu-24.04-arm }
           - { platform: linux-x64, target: x86_64-unknown-linux-musl, runner: ubuntu-latest }
           - { platform: win32-arm64, target: aarch64-pc-windows-msvc, runner: windows-latest }
           - { platform: win32-x64, target: x86_64-pc-windows-msvc, runner: windows-latest }
@@ -27,19 +28,14 @@ jobs:
     env:
       CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: rust-lld
       CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER: rust-lld
-      # The TLS library's C code for Linux is compiled by clang, since the runner has no musl
-      # compiler and clang needs no sysroot for arm64, and archived by LLVM's archiver, which
-      # reads objects of either architecture.
-      CC_x86_64_unknown_linux_musl: clang
-      CFLAGS_x86_64_unknown_linux_musl: --target=x86_64-unknown-linux-musl
-      AR_x86_64_unknown_linux_musl: llvm-ar
-      CC_aarch64_unknown_linux_musl: clang
-      CFLAGS_aarch64_unknown_linux_musl: --target=aarch64-unknown-linux-musl
-      AR_aarch64_unknown_linux_musl: llvm-ar
+      # The C code for Linux, the TLS library's and the test locator's grammars, is compiled by
+      # musl's compiler against musl's headers, on a runner of the target's architecture.
+      CC_x86_64_unknown_linux_musl: musl-gcc
+      CC_aarch64_unknown_linux_musl: musl-gcc
     steps:
       - uses: actions/checkout@v7
       - if: runner.os == 'Linux'
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq clang llvm
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq musl-tools
       - run: rustup toolchain install
       - run: rustup target add ${{ matrix.target }}
       - run: cargo build --release --locked -p loft-cli --target ${{ matrix.target }}

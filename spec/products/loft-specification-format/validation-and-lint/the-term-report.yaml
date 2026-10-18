@@ -1,0 +1,133 @@
+key: 01a14b3d-fd78-7612-94d1-5dfd823a0275
+slug: the-term-report
+name: "The term report"
+body: "The names a document may be using for one concept, listed so that its author can choose one. `TD-001` finds one qualifier followed by head nouns of one noun group, such as `audit entry` and `audit row`; `TD-002` one name written as two words and as one, such as `change set` and `ChangeSet`; `TD-003` one name written with an abbreviation and in full, such as `tenant admin` and `tenant administrator`. The report also counts the subjects of each Product's statements. A group is a candidate, not a defect: the author decides it in the term list, as aliases of one term or as separate terms, and a decided group is not reported again."
+realizes:
+  - 01a14b3d-fd75-739b-8004-dcb4799398f2
+requirements:
+  - key: 01a14b3d-fd78-7612-94d1-5dfe4fa680e8
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "read the prose of every node of the document, with code left out."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5dff091ebae2
+        name: "The term reporter reads the name and the body of every node and the slots of every statement."
+      - key: 01a14b3d-fd78-7612-94d1-5e0017c12138
+        name: "Text in a code span or a fenced code block is not read."
+      - key: 01a14b3d-fd78-7612-94d1-5e016bedc4e1
+        name: "A phrase is a run of one to three words with no punctuation between them."
+      - key: 01a14b55-e07b-70dc-a3b6-4aec0cf47acf
+        name: "A possessive, or a word that does not begin with a letter, ends a run."
+      - key: 01a14b3d-fd78-7612-94d1-5e02415372d5
+        name: "A phrase neither begins nor ends with a function word."
+      - key: 01a14b3d-fd78-7612-94d1-5e032ea80298
+        name: "The function words are the list the Format publishes with its golden vectors."
+      - key: 01a14b3d-fd78-7612-94d1-5e042520a56f
+        name: "Two phrases that differ only in letter case or in a final plural are one phrase."
+  - key: 01a14b3d-fd78-7612-94d1-5e05ab9930f8
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "report as `TD-001` one qualifier followed by two or more head nouns of one noun group."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5e06aa92d21c
+        name: "Phrases of two words whose first words are equal and whose second words belong to one noun group form one `TD-001` group."
+      - key: 01a14b3d-fd78-7612-94d1-5e071d28a779
+        name: "A `TD-001` group whose phrases occur fewer than three times in all is not reported."
+      - key: 01a14b3d-fd78-7612-94d1-5e086099d5c2
+        name: "A qualifier that is itself a word of a noun group forms no `TD-001` group."
+      - key: 01a14b3d-fd78-7612-94d1-5e091e759afc
+        name: "A `TD-001` finding names its noun group."
+      - key: 01a14b3d-fd78-7612-94d1-5e0a140ca8b7
+        name: "The noun groups are record, view, identifier, failure, request, document and system unless `spec/lint.yaml` edits `nounGroups`."
+      - key: 01a14b3d-fd78-7612-94d1-5e0bb040f5da
+        name: "The default severity of `TD-001` is hint."
+  - key: 01a14b3d-fd78-7612-94d1-5e0c6371130c
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "report as `TD-002` one name written both as one word and as two or more."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5e0d4a9194ac
+        name: "Phrases that are equal once their spaces and hyphens are removed form one `TD-002` group when one of them is a single word and another is not."
+      - key: 01a14b3d-fd78-7612-94d1-5e0e73ddb908
+        name: "A `TD-002` group whose phrases occur fewer than three times in all is not reported."
+      - key: 01a14b3d-fd78-7612-94d1-5e0f3b7b851a
+        name: "Two phrases that differ only by a hyphen in place of a space form no `TD-002` group."
+      - key: 01a14b3d-fd78-7612-94d1-5e1028246ca0
+        name: "A `TD-002` finding whose single word is written in camel case says that it is an identifier written as prose."
+      - key: 01a14b3d-fd78-7612-94d1-5e112b68b087
+        name: "The default severity of `TD-002` is hint."
+  - key: 01a14b3d-fd78-7612-94d1-5e122b17c5b7
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "report as `TD-003` one phrase written with an abbreviation and in full."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5e131e8074a3
+        name: "Two phrases of two or three words, none of them a function word, that are equal once one word is swapped for its long form in `pairs` form one `TD-003` group."
+      - key: 01a14b55-e07b-70dc-a3b6-4aedc97df0ac
+        name: "A phrase of three words forms no `TD-003` group where two of its words, the swapped one among them, form one."
+      - key: 01a14b3d-fd78-7612-94d1-5e14c997f777
+        name: "A single word and its long form form no `TD-003` group."
+      - key: 01a14b3d-fd78-7612-94d1-5e15c6570870
+        name: "The pairs are the abbreviations the Format publishes, each with its long forms, unless `spec/lint.yaml` edits `pairs`."
+      - key: 01a14b3d-fd78-7612-94d1-5e16623d7142
+        name: "The default severity of `TD-003` is hint."
+  - key: 01a14b3d-fd78-7612-94d1-5e17a418c07c
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "leave out each group that the term list decides."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5e1836c2c804
+        name: "A group whose every phrase is the name or an alias of a term is not reported."
+      - key: 01a14b3d-fd78-7612-94d1-5e19ef37062c
+        name: "A group of which one phrase is neither a term's name nor an alias is reported."
+      - key: 01a14b3d-fd78-7612-94d1-5e1a342cd734
+        name: "A phrase is matched against the term list in any letter case and with or without a final plural."
+  - key: 01a14b3d-fd78-7612-94d1-5e1b87b2ca49
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "give each group with the use count of each of its phrases."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5e1c0ed13378
+        name: "Each phrase of a group is given with the number of times it occurs."
+      - key: 01a14b3d-fd78-7612-94d1-5e1d6d17c40f
+        name: "Each phrase is given with up to three nodes that use it, in document order."
+      - key: 01a14b3d-fd78-7612-94d1-5e1e0ab0b634
+        name: "Groups are ordered by the use count of the phrase ranked second in them, highest first, and then by their first phrase."
+      - key: 01a14b3d-fd78-7612-94d1-5e1f3ac47bde
+        name: "A group's phrases are ordered by use count, highest first, and then by text."
+  - key: 01a14b3d-fd78-7612-94d1-5e20ac58ad21
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "count the subjects of the statements of each Product."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5e215a480a6a
+        name: "The subjects of a Product are the `system` slots of the statements of the Requirements beneath it."
+      - key: 01a14b3d-fd78-7612-94d1-5e22de8220a0
+        name: "Two subjects that differ only in letter case or in a leading `the` are one subject."
+      - key: 01a14b3d-fd78-7612-94d1-5e2338da2dfd
+        name: "Each subject is given with the number of statements that name it."
+      - key: 01a14b3d-fd78-7612-94d1-5e24bfd00161
+        name: "A subject that is a term's name, a term's alias or a node's name is marked as such."
+      - key: 01a14b3d-fd78-7612-94d1-5e25b1ec4584
+        name: "Subjects are ordered by count, highest first, and then by text."
+  - key: 01a14b3d-fd78-7612-94d1-5e264b0af302
+    statement:
+      form: ubiquitous
+      system: "The term reporter"
+      shall: "produce the same report for the same tree and configuration on any machine."
+    criteria:
+      - key: 01a14b3d-fd78-7612-94d1-5e27c3836d02
+        name: "The report does not depend on the machine's locale, its environment variables or any file outside the tree."
+      - key: 01a14b3d-fd78-7612-94d1-5e28051064fe
+        name: "Two runs over one tree give byte-identical reports."
+      - key: 01a14b3d-fd78-7612-94d1-5e293a9c74c2
+        name: "`TD-001`, `TD-002` and `TD-003` are configured in `spec/lint.yaml` like the lint rules."
+      - key: 01a14b3d-fd78-7612-94d1-5e2a5b2618fe
+        name: "`loft check` reports no `TD-001`, `TD-002` or `TD-003` finding."

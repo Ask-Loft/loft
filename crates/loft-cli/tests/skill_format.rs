@@ -30,6 +30,7 @@ fn title(kind: Kind) -> &'static str {
         Kind::Binding => "Binding",
         Kind::TagEntry => "Tag",
         Kind::CategoryEntry => "Category",
+        Kind::TermEntry => "Term",
         Kind::Product => "Product",
         Kind::FeatureGroup => "Feature Group",
         Kind::Feature => "Feature",
@@ -355,7 +356,7 @@ fn the_trace_file_and_each_of_its_fields_are_described() {
     let trace = section(&markdown, "The trace file");
     assert!(trace.contains(&format!("`{TRACE}`")));
     let tables = field_tables(trace);
-    let records = [&FILE_FIELDS[..], &LINK_FIELDS[..], &TEST_FIELDS[..]];
+    let records = [FILE_FIELDS, LINK_FIELDS, TEST_FIELDS];
     for (title, fields) in TRACE_TABLES.into_iter().zip(records) {
         let table = tables
             .get(title)

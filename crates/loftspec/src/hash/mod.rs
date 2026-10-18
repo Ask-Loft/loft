@@ -37,6 +37,8 @@ pub struct Roots {
     pub edges: Digest,
     pub tags: Digest,
     pub categories: Digest,
+    /// The term list root; none for a document whose term list is empty.
+    pub terms: Option<Digest>,
     pub decisions: Digest,
     pub content: Digest,
     pub bindings: Digest,
@@ -114,6 +116,19 @@ fn hash_trees(document: &Document, mut views: Option<&mut BTreeMap<NodeId, Value
     }
 }
 
+/// The content view of every keyed node of a document without the hashes of its children: what
+/// the node itself says. The document need not index, since no view follows a reference.
+pub(crate) fn own_views(document: &Document) -> BTreeMap<NodeId, Value> {
+    let mut views = BTreeMap::new();
+    hash_trees(document, Some(&mut views));
+    for view in views.values_mut() {
+        if let Value::Array(fields) = view {
+            fields.pop();
+        }
+    }
+    views
+}
+
 /// Indexes a document, then computes every content hash, decision view hash and root.
 ///
 /// # Errors
@@ -185,14 +200,17 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
     let mut decision_hashes: Vec<Digest> = decisions.values().copied().collect();
     decision_hashes.sort_unstable();
     let decisions_root = root(&mut views, "decisions", Domain::Decisions, &decision_hashes);
-    let content_view = (
-        &trees.products,
-        &trees.components,
-        edges,
-        tags,
-        categories,
-        decisions_root,
-    );
+    let terms = (!document.terms.is_empty())
+        .then(|| root(&mut views, "terms", Domain::Registry, &terms_view(document)));
+    let mut content_view = vec![
+        json!(trees.products),
+        json!(trees.components),
+        json!(edges),
+        json!(tags),
+        json!(categories),
+        json!(decisions_root),
+    ];
+    content_view.extend(terms.map(|terms| json!(terms)));
     let content = root(&mut views, "content", Domain::Content, &content_view);
     let bindings = root(
         &mut views,
@@ -221,6 +239,7 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
             edges,
             tags,
             categories,
+            terms,
             decisions: decisions_root,
             content,
             bindings,
@@ -293,6 +312,25 @@ fn registry_view<'a>(
     let mut rows: Vec<[&str; 2]> = entries.collect();
     rows.sort_unstable();
     (name, rows)
+}
+
+/// A term as its root view holds it: its name, its definition and its sorted aliases.
+type TermRow<'a> = (&'a str, &'a str, Vec<&'a str>);
+
+/// The term list root view: `terms` and each entry as its name, its definition and its aliases,
+/// sorted by name, then definition, then aliases; entry keys are not content (RQ-61).
+fn terms_view(document: &Document) -> (&'static str, Vec<TermRow<'_>>) {
+    let mut rows: Vec<_> = document
+        .terms
+        .iter()
+        .map(|term| {
+            let mut aliases: Vec<&str> = term.aliases.iter().map(String::as_str).collect();
+            aliases.sort_unstable();
+            (term.name.as_str(), term.definition.as_str(), aliases)
+        })
+        .collect();
+    rows.sort_unstable();
+    ("terms", rows)
 }
 
 /// The binding root view: key, live label, aliases and computed hash, sorted by key (RQ-15,

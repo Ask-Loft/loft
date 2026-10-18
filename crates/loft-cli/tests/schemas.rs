@@ -4,6 +4,7 @@
 //! added to a command's output fails its schema until the schema names it, and every outcome is
 //! named in words.
 
+use loftspec::lint::RuleId;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -133,6 +134,23 @@ fn the_check_schema_lists_exactly_the_rules_the_linter_defines() {
         .map(|rule| rule.as_str().unwrap())
         .collect();
     let defined: Vec<&str> = loftspec::lint::RuleId::ALL
+        .iter()
+        .filter(|rule| !RuleId::TERM_REPORT.contains(rule))
+        .map(|rule| rule.as_str())
+        .collect();
+    assert_eq!(listed, defined);
+}
+
+#[test]
+fn the_terms_schema_lists_exactly_the_rules_of_the_term_report() {
+    let schema = read("terms.json");
+    let listed: Vec<&str> = schema["$defs"]["group"]["properties"]["rule"]["enum"]
+        .as_array()
+        .expect("the rules a group names")
+        .iter()
+        .map(|rule| rule.as_str().unwrap())
+        .collect();
+    let defined: Vec<&str> = RuleId::TERM_REPORT
         .iter()
         .map(|rule| rule.as_str())
         .collect();

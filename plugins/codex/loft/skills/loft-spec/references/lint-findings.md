@@ -32,6 +32,7 @@ raises its rule, and no other rule at warning.
 - Language rules
 - Rules of the text form
 - Rules of the writing craft
+- Rules of the term report
 
 ## Errors
 
@@ -93,6 +94,7 @@ requirements:
 | `SH-008` | info | A root Component with no Constraint or Quality Attribute in its subtree | State the rules it keeps |
 | `SH-009` | warning | A node lists a tag that the registry does not define | Define it in `spec/tags.yaml` |
 | `SH-010` | hint | A Component named like a file path | Name the part, not the file |
+| `SH-011` | warning | A name or alias that two terms of `spec/terms.yaml` carry, or an alias equal to its own term's name | Keep the name on the one term it denotes |
 
 ```yaml rule=SH-001 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"
@@ -186,6 +188,17 @@ requirements:
       - name: "The note is listed after it is saved."
 ```
 
+```yaml rule=SH-011 path=spec/terms.yaml
+- name: "note"
+  definition: "A short text the user keeps."
+  aliases:
+    - "jotting"
+- name: "reminder"
+  definition: "A note with a time to show it."
+  aliases:
+    - "jotting"
+```
+
 ```yaml rule=SH-010 path=spec/components/note-store.yaml
 key: 00000000-0000-7000-8000-000000000101
 name: "src/note_store.rs"
@@ -212,6 +225,7 @@ nodes; text in code spans and code blocks is not prose. `LQ-001`..`LQ-004` take 
 | `LQ-007` | info, off | A statement stored as text that matches none of the five forms | Write it as slots |
 | `LQ-008` | info | Two names of one kind nearly alike (`minTokens`, `threshold`) | Name each for what distinguishes it |
 | `LQ-009` | hint | Prose that uses a tag's name where neither the node nor a node above it lists the tag; a one-word tag matches its word, a hyphenated one only its hyphenated form | List the tag, or reword |
+| `LQ-010` | warning | An alias of a term from `spec/terms.yaml` in the name, statement or body of any node, in any case and with or without a final plural | Write the term's name; if the alias names another concept, ask the user and make it a term of its own |
 
 ```yaml rule=LQ-001 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"
@@ -350,6 +364,21 @@ featureGroups:
     body: "Creating and changing notes."
 ```
 
+```yaml rule=LQ-010 path=spec/terms.yaml
+- name: "note"
+  definition: "A short text the user keeps."
+  aliases:
+    - "memo"
+```
+
+```yaml rule=LQ-010 path=spec/products/notes/product.yaml
+name: "Notes"
+body: "A place to keep short memos."
+featureGroups:
+  - name: "Writing"
+    body: "Creating and changing notes."
+```
+
 ## Rules of the text form
 
 | Rule | Default | Reports | Usual fix |
@@ -479,4 +508,33 @@ requirements:
       shall: "keep the note."
     criteria:
       - name: "The note is listed after it is saved."
+```
+
+## Rules of the term report
+
+`loft terms` runs these rules, and `loft check` never does. A group is a candidate: names that
+may denote one concept, which the user decides. `writing-rules.md` says how to put a group to
+the user and record the choice in `spec/terms.yaml`; a group whose every phrase is then a term's
+name or alias is not reported again. The rules read the names, statements and bodies of every
+node, without code, and count runs of one to three words that neither begin nor end with a
+function word.
+
+| Rule | Default | Reports | Usual fix |
+|---|---|---|---|
+| `TD-001` | hint | One qualifier followed by head nouns of one noun group, such as `audit entry` and `audit row`, used three times or more in all (`nounGroups`: record, view, identifier, failure, request, document, system) | Choose one head noun and make the others aliases, or define each as a term of its own |
+| `TD-002` | hint | One name written as one word and as two or more, such as `change set` and `changeset`, used three times or more in all; a camel-case word is an identifier written as prose | Write one spelling and make the other an alias; put an identifier in a code span |
+| `TD-003` | hint | One phrase written with an abbreviation and in full, such as `tenant admin` and `tenant administrator` (`pairs`: the short form and its long forms) | Write one form and make the other an alias |
+
+`spec/lint.yaml` edits `nounGroups` and `pairs` with `replace`, or with `extend` and `remove`,
+each entry a `name` and its `words`; `remove` without `words` drops the whole group:
+
+```yaml fragment
+rules:
+  - rule: TD-001
+    nounGroups:
+      remove:
+        - name: "identifier"
+          words:
+            - "key"
+            - "label"
 ```

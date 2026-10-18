@@ -16,8 +16,10 @@ const BUILT_IN: [&str; 3] = ["loft-cli", "loftspec", "loftspec-store"];
 /// packages, the release check, copied into a scratch repository, the built `loft` itself placed
 /// where an npm install puts it, which only `Scratch::npm_installed` starts, to show how `loft`
 /// tells it was installed by npm; `whoami` and `hostname`, whose answers a test plants as text the command
-/// event must never carry; and `script`, which runs the built `loft` on a pseudo-terminal.
-const OTHER_PROGRAMS: [&str; 10] = [
+/// event must never carry; `script`, which runs the built `loft` on a pseudo-terminal; and
+/// `mkfifo`, which makes the named pipe that a test file path names.
+const OTHER_PROGRAMS: [&str; 11] = [
+    "\"mkfifo\"",
     "&copy",
     "\"script\"",
     "\"whoami\"",

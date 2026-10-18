@@ -29,6 +29,9 @@ rules:
   - rule: SH-010
     enabled: true
     severity: hint
+  - rule: SH-011
+    enabled: true
+    severity: warning
   - rule: LQ-001
     enabled: true
     severity: warning
@@ -118,6 +121,9 @@ rules:
   - rule: LQ-009
     enabled: true
     severity: hint
+  - rule: LQ-010
+    enabled: true
+    severity: warning
   - rule: V2-001
     enabled: true
     severity: info
@@ -152,3 +158,130 @@ rules:
   - rule: V2-009
     enabled: true
     severity: info
+  - rule: TD-001
+    enabled: true
+    severity: hint
+    nounGroups:
+      replace:
+        - name: "record"
+          words:
+            - "record"
+            - "entry"
+            - "item"
+            - "row"
+            - "object"
+            - "entity"
+            - "element"
+        - name: "view"
+          words:
+            - "view"
+            - "page"
+            - "screen"
+            - "panel"
+            - "pane"
+            - "tab"
+            - "surface"
+        - name: "identifier"
+          words:
+            - "id"
+            - "identifier"
+            - "key"
+            - "label"
+            - "ref"
+            - "reference"
+            - "handle"
+            - "slug"
+        - name: "failure"
+          words:
+            - "error"
+            - "failure"
+            - "refusal"
+            - "rejection"
+            - "fault"
+        - name: "request"
+          words:
+            - "request"
+            - "call"
+            - "invocation"
+            - "operation"
+            - "command"
+            - "action"
+        - name: "document"
+          words:
+            - "document"
+            - "doc"
+            - "spec"
+            - "specification"
+        - name: "system"
+          words:
+            - "service"
+            - "server"
+            - "engine"
+            - "subsystem"
+            - "module"
+            - "layer"
+            - "system"
+            - "backend"
+            - "adapter"
+            - "worker"
+            - "daemon"
+  - rule: TD-002
+    enabled: true
+    severity: hint
+  - rule: TD-003
+    enabled: true
+    severity: hint
+    pairs:
+      replace:
+        - name: "admin"
+          words:
+            - "administrator"
+            - "administration"
+        - name: "app"
+          words:
+            - "application"
+        - name: "arg"
+          words:
+            - "argument"
+        - name: "config"
+          words:
+            - "configuration"
+        - name: "db"
+          words:
+            - "database"
+        - name: "dev"
+          words:
+            - "development"
+        - name: "dir"
+          words:
+            - "directory"
+        - name: "doc"
+          words:
+            - "document"
+        - name: "env"
+          words:
+            - "environment"
+        - name: "id"
+          words:
+            - "identifier"
+        - name: "impl"
+          words:
+            - "implementation"
+        - name: "info"
+          words:
+            - "information"
+        - name: "msg"
+          words:
+            - "message"
+        - name: "param"
+          words:
+            - "parameter"
+        - name: "prod"
+          words:
+            - "production"
+        - name: "repo"
+          words:
+            - "repository"
+        - name: "spec"
+          words:
+            - "specification"
