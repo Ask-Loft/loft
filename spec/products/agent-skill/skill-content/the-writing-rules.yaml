@@ -105,6 +105,24 @@ requirements:
         name: "The rules tell the agent to state a shared rule once and list its tag on each Feature it binds."
       - key: 01a13754-833e-725b-b941-6356f7d9e260
         name: "The rules tell the agent to name a tag as the text writes its term."
+  - key: 01a14b40-25a7-707a-a0e7-fd3e6f952d22
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that the document names each concept by one term."
+    criteria:
+      - key: 01a14b40-25a7-707a-a0e7-fd3fc05e2e8b
+        name: "The rules tell the agent to read `spec/terms.yaml` before writing prose."
+      - key: 01a14b40-25a7-707a-a0e7-fd4011c3553c
+        name: "The rules tell the agent to write a term's name and never one of its aliases."
+      - key: 01a14b40-25a7-707a-a0e7-fd41068538c2
+        name: "The rules tell the agent to run `loft terms` once a change to the prose is written."
+      - key: 01a14b40-25a7-707a-a0e7-fd42edccef76
+        name: "The rules tell the agent to put each group that `loft terms` reports to the user."
+      - key: 01a14b40-25a7-707a-a0e7-fd439e970167
+        name: "The rules tell the agent to record the user's choice as aliases of one term, or as separate terms each with its definition."
+      - key: 01a14b40-25a7-707a-a0e7-fd441cfa81db
+        name: "The rules tell the agent to add no term or alias that the user has not agreed."
   - key: 01a13654-6e12-74a1-ad7f-e87b983077ea
     statement:
       form: ubiquitous

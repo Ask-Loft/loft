@@ -326,9 +326,9 @@ fn raises_only(name: &str, rule: &str, tree: &[(String, String)], files: &[(Stri
     assert_eq!(warnings, BTreeSet::new(), "{name}: {rule}");
 }
 
-/// The rules an unpublished tree cannot raise: a Quality Attribute always holds a target, and
-/// the label rules need labels.
-const UNRAISABLE: [&str; 3] = ["LQ-006", "V2-003", "V2-004"];
+/// The rules an unpublished tree cannot raise under `loft check`: a Quality Attribute always
+/// holds a target, the label rules need labels, and only `loft terms` runs the term report's.
+const UNRAISABLE: [&str; 6] = ["LQ-006", "V2-003", "V2-004", "TD-001", "TD-002", "TD-003"];
 
 #[test]
 fn the_lint_guide_describes_each_rule_and_shows_each_rule_an_unpublished_tree_can_raise() {
@@ -341,7 +341,7 @@ fn the_lint_guide_describes_each_rule_and_shows_each_rule_an_unpublished_tree_ca
         .split(|c: char| !(c.is_ascii_alphanumeric() || c == '-'))
         .filter(|word| {
             let (prefix, number) = word.split_once('-').unwrap_or_default();
-            matches!(prefix, "SH" | "LQ" | "V2") && number.len() == 3
+            matches!(prefix, "SH" | "LQ" | "V2" | "TD") && number.len() == 3
         })
         .map(str::to_owned)
         .collect();

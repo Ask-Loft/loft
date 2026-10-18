@@ -13,6 +13,7 @@ pub enum Kind {
     Binding,
     TagEntry,
     CategoryEntry,
+    TermEntry,
     Product,
     FeatureGroup,
     Feature,
@@ -131,6 +132,8 @@ pub enum Order {
     ByKey,
     /// By role, then by target (AC-808).
     ByRoleThenTarget,
+    /// By text in UTF-8 byte order: a term's aliases.
+    ByText,
 }
 
 /// How the formatter supplies a required field a record lacks (RQ-59, RQ-213, RQ-218).
@@ -164,7 +167,7 @@ use crate::kind::NodeKind;
 
 impl Kind {
     /// Every kind of record.
-    pub const ALL: [Self; 30] = [
+    pub const ALL: [Self; 31] = [
         Self::Manifest,
         Self::DerivedFrom,
         Self::Labels,
@@ -172,6 +175,7 @@ impl Kind {
         Self::Binding,
         Self::TagEntry,
         Self::CategoryEntry,
+        Self::TermEntry,
         Self::Product,
         Self::FeatureGroup,
         Self::Feature,

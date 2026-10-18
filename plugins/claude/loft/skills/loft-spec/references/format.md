@@ -23,6 +23,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 - Sections and bodies
 - Extension data
 - Tags and categories
+- The term list
 - Decisions
 - Edges
 - Lint configuration
@@ -36,6 +37,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft init` and `loft publish`; `loft fmt` drops a deleted node's binding |
 | `spec/tags.yaml` | The tag registry | `loft init`, empty; then you and `loft fmt` |
 | `spec/categories.yaml` | The category registry for Constraint bindings | `loft init`, empty; then you and `loft fmt` |
+| `spec/terms.yaml` | The term list, optional | you and `loft fmt` |
 | `spec/lint.yaml` | The lint configuration, optional | you |
 | `spec/products/<product>/product.yaml` | A Product and its Feature Groups | you and `loft fmt` |
 | `spec/products/<product>/<group>/<feature>.yaml` | One Feature, in its group's directory | you and `loft fmt` |
@@ -55,7 +57,7 @@ the main specs of an OpenSpec project; each writes its sidecar beside the tree.
 
 A file's name is its slug: lowercase letters, digits and hyphens. No other path under `spec/` is
 allowed, but files and directories whose names start with `.` are ignored. A registry with no
-entries is an empty file.
+entries is an empty file, apart from the term list, which is left out.
 
 Fields are written in the order the tables below give; an optional field that is absent, or a
 list that is empty, is left out. Each field is marked required or optional; `key` and `slug` are
@@ -332,6 +334,26 @@ Both registries are lists of entries.
 ```yaml path=spec/categories.yaml
 - name: storage.limit
   definition: "A limit on how much the product stores."
+```
+
+## The term list
+
+The term list names each concept once: the name the prose uses, its definition, and the aliases
+the prose does not use for it. `LQ-010` reports an alias in prose, and `loft terms` lists the
+names that may still mean one concept. A tree without `spec/terms.yaml` has an empty list.
+
+| Term field | |
+|---|---|
+| `key` | required |
+| `name` | required: the words the prose uses |
+| `definition` | required |
+| `aliases` | optional: other words for the concept, each to be replaced by `name` |
+
+```yaml path=spec/terms.yaml
+- name: "shelf"
+  definition: "A named group of books in the reader's list."
+  aliases:
+    - "bookcase"
 ```
 
 ## Decisions

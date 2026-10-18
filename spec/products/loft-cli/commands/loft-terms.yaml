@@ -1,0 +1,59 @@
+key: 01a14b3e-5b57-704d-a82e-5e58b2051c60
+slug: loft-terms
+name: "`loft terms`"
+body: "Prints the term report over the tree: the groups of names that may denote one concept, and the subjects of each Product's statements, for the author to decide in the term list. It never fails on a group, since a group is a candidate and not a defect."
+tags:
+  - checks-for-updates
+  - reads-tree
+  - sends-telemetry
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a14b3e-5b57-704d-a82e-5e599796c710
+    statement:
+      form: ubiquitous
+      system: "`loft terms`"
+      shall: "print the term report of the tree."
+    criteria:
+      - key: 01a14b3e-5b57-704d-a82e-5e5a5817f111
+        name: "Each group is printed with its severity, its rule and its phrases, each phrase followed by its use count."
+      - key: 01a14b3e-5b57-704d-a82e-5e5b1d35196a
+        name: "Each group is followed by the labels of the nodes that use each phrase."
+      - key: 01a14b3e-5b57-704d-a82e-5e5cf9a74573
+        name: "The subjects of each Product are printed under the Product's label and name, each with its count and its mark."
+      - key: 01a14b3e-5b57-704d-a82e-5e5d1058ed60
+        name: "The output ends with the number of groups of each rule."
+      - key: 01a14b3e-5b57-704d-a82e-5e5e99b5c628
+        name: "`loft terms` exits 0 when groups are reported."
+      - key: 01a14b3e-5b57-704d-a82e-5e5f57c16649
+        name: "`loft terms` writes no file."
+  - key: 01a14b3e-5b57-704d-a82e-5e60af23a12a
+    statement:
+      form: unwanted
+      if: "`spec/lint.yaml` is in error"
+      system: "`loft terms`"
+      shall: "report the error and exit 1."
+    criteria:
+      - key: 01a14b3e-5b57-704d-a82e-5e61232254f7
+        name: "The error names `spec/lint.yaml`, the line and the column."
+      - key: 01a14b3e-5b57-704d-a82e-5e62ef7ea0c8
+        name: "No group is reported."
+  - key: 01a14b3e-5b57-704d-a82e-5e632dfce01b
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft terms`"
+      shall: "list each group and each Product's subjects in its JSON document."
+    criteria:
+      - key: 01a14b3e-5b57-704d-a82e-5e6489f419bd
+        name: "The outcome is `reported`."
+      - key: 01a14b3e-5b57-704d-a82e-5e65af392425
+        name: "Each group carries its rule, its severity, its message and its phrases."
+      - key: 01a14b3e-5b57-704d-a82e-5e661cf7a494
+        name: "Each phrase carries its text, its use count and the keys and labels of the nodes that use it."
+      - key: 01a14b3e-5b57-704d-a82e-5e67a4491bed
+        name: "Each Product carries its key, its label and its subjects."
+      - key: 01a14b3e-5b57-704d-a82e-5e68d2e1df6b
+        name: "Each subject carries its text, its count and its mark, which is `term`, `alias`, `node` or `null`."
+      - key: 01a14b3e-5b57-704d-a82e-5e698044791f
+        name: "A subject marked `alias` carries the name of its term."

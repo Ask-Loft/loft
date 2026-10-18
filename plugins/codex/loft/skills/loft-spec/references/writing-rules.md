@@ -13,6 +13,7 @@ judgement that lint cannot make.
 - Break a product down
 - Choose a statement form
 - Name the system
+- Name each concept by one term
 - Write criteria that are atomic and complete
 - Give each rule of a catalogue its own Requirement
 - Promote an oversized Requirement to a Feature
@@ -63,6 +64,25 @@ The `system` slot names who holds the obligation.
   `V2-008`'s `properNames`, and lint reports an article before one of them.
 - Capitalise the system at the start of a `ubiquitous` statement; after a condition it follows a
   comma and keeps its own case.
+
+## Name each concept by one term
+
+A specification that calls one thing by two names reads as two things. Read `spec/terms.yaml`
+before you write prose, if the project has one, and write each term's `name`, never one of its
+`aliases` (`LQ-010` reports an alias).
+
+Once a change to the prose is written, run `loft terms --format json`. It lists groups of names
+that may denote one concept, such as "audit entry" beside "audit row", and the subjects of each
+Product's statements. A group is a question, not a fault: put each group to the user, with the
+nodes that use each name, and ask whether the names mean one concept.
+
+- **One concept:** record the name the user chooses as a term, with a definition, and the other
+  names as its `aliases`; then reword the prose that uses an alias.
+- **Separate concepts:** record each as a term with its own definition, so that the difference is
+  written down.
+
+Either way the group is decided and `loft terms` stops listing it. Add no term and no alias the
+user has not agreed: the list records the project's vocabulary, not your guess at it.
 
 ## Write criteria that are atomic and complete
 

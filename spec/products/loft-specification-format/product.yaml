@@ -1,7 +1,7 @@
 key: 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 slug: loft-specification-format
 name: "Loft Specification Format"
-body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the OpenSpec converter, from the main specs of an OpenSpec project; the validator; the linter; the renderer; the publisher; the merge driver; and the reconciler, which compares the trace file with the tree and the tests. A role names an obligation, not a module: one program may fill every role."
+body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the OpenSpec converter, from the main specs of an OpenSpec project; the validator; the linter; the renderer; the publisher; the merge driver; the reconciler, which compares the trace file with the tree and the tests; and the term reporter, which lists the names a document may be using for one concept. A role names an obligation, not a module: one program may fill every role."
 tags:
   - portable
 featureGroups:
@@ -81,6 +81,7 @@ featureGroups:
       - c8438a49-a6bd-4e16-9380-fc2983c776b8
       - 717019e9-87c6-4d11-88ba-76131d45fc97
       - 7423387f-468f-4155-965a-a5893ff1e43c
+      - 01a14b3d-fd78-7612-94d1-5dfd823a0275
   - key: 04e8ae21-1edb-4170-a13f-ec1101ec3306
     slug: projections
     name: "Projections"

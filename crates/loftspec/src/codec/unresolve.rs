@@ -49,6 +49,19 @@ pub fn unresolve(document: &Document) -> Tree {
         Role::Categories,
         Content::Registry(categories.collect()),
     );
+    // The term list is written only when it holds an entry, so that a tree written before it
+    // existed is written unchanged.
+    if !document.terms.is_empty() {
+        let terms = document.terms.iter().map(|term| {
+            let mut record = entry(Kind::TermEntry, term.id.key(), &term.name, &term.definition);
+            if !term.aliases.is_empty() {
+                let aliases = term.aliases.iter().map(Val::scalar).collect();
+                record.set(field::ALIASES, Val::List(aliases));
+            }
+            record
+        });
+        put(&mut tree, Role::Terms, Content::Registry(terms.collect()));
+    }
     for product in &document.products {
         products(&mut tree, &edges, product);
     }

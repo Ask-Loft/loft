@@ -96,6 +96,7 @@ needs.
 | `loft publish` | Allocates labels and writes the lock, on the publish branch |
 | `loft verify` | Recomputes the roots and compares them with the lock |
 | `loft status [--base <revision>]` | Reports the lock and whether the tree matches it, the repository's branch and uncommitted paths under `spec/`, and the nodes added, changed and removed since HEAD left the revision; it sends no telemetry |
+| `loft terms` | Lists the names the specification may be using for one concept, and the subjects of each Product's statements, for the term list to decide |
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
 | `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
 | `loft skill install` | Writes the agent skill into the current directory, or brings it up to date |
@@ -203,7 +204,7 @@ The trace file is not part of the specification: it enters no root and no publis
 ## Telemetry and the update check
 
 Telemetry is on by default. At the end of each run of `check`, `find`, `fmt`, `import v1`,
-`import openspec`, `init`, `publish`, `reconcile`, `render`, `skill install` and `verify`,
+`import openspec`, `init`, `publish`, `reconcile`, `render`, `skill install`, `terms` and `verify`,
 `loft` sends one command event to `https://askloft.ai/api/telemetry`, so that the maintainers
 learn which commands are used, how they end and how long they take. Before the first event leaves a machine, `loft` prints
 a notice on standard error saying what it sends and how to switch it off. An event looks like

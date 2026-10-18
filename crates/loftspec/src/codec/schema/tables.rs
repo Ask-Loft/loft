@@ -126,6 +126,13 @@ const CATEGORY_ENTRY_FIELDS: &[Field] = &[
     req(field::DEFINITION, S::Text),
 ];
 
+const TERM_ENTRY_FIELDS: &[Field] = &[
+    KEY,
+    req(field::NAME, S::Text),
+    req(field::DEFINITION, S::Text),
+    ordered(scalars(field::ALIASES, S::Text), Order::ByText),
+];
+
 const PRODUCT_FIELDS: &[Field] = &[
     KEY,
     SLUG,
@@ -344,6 +351,7 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::Binding => BINDING_FIELDS,
         Kind::TagEntry => TAG_ENTRY_FIELDS,
         Kind::CategoryEntry => CATEGORY_ENTRY_FIELDS,
+        Kind::TermEntry => TERM_ENTRY_FIELDS,
         Kind::Product => PRODUCT_FIELDS,
         Kind::FeatureGroup => FEATURE_GROUP_FIELDS,
         Kind::Feature => FEATURE_FIELDS,

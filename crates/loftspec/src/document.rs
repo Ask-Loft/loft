@@ -1,5 +1,6 @@
 //! A whole document (CMP-2): the Products in the manifest's order, the root Components, the
-//! typed edges, the two registries, the decisions, the bindings and the record of a v1 source.
+//! typed edges, the two registries, the term list, the decisions, the bindings and the record of
+//! a v1 source.
 
 use crate::conflict::Conflict;
 use crate::wire::wire_names;
@@ -11,7 +12,7 @@ use crate::decision::{Decision, NodeRef};
 use crate::identity::Label;
 use crate::ids::{
     AuthoredStateId, CategoryId, ComponentId, DecisionId, DocumentId, ElementId, FeatureId,
-    ProductId, TagId,
+    ProductId, TagId, TermId,
 };
 use crate::names::{CategoryName, TagName};
 use crate::tree::{Product, RootComponent};
@@ -147,6 +148,17 @@ pub struct CategoryEntry {
     pub definition: String,
 }
 
+/// An entry of the term list: the name the document uses for a concept, its definition, and the
+/// other names it should not use for it. A term's name is prose, not a reference, so it is text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TermEntry {
+    pub id: TermId,
+    pub name: String,
+    pub definition: String,
+    /// The aliases, sorted in UTF-8 byte order.
+    pub aliases: Vec<String>,
+}
+
 /// The v1 Authored State a converted document was derived from: carried in the manifest and
 /// copied into every lock (RQ-17, RQ-20).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -167,6 +179,8 @@ pub struct Document {
     pub edges: Vec<Edge>,
     pub tags: Vec<TagEntry>,
     pub categories: Vec<CategoryEntry>,
+    /// The term list; empty for a tree without `spec/terms.yaml`.
+    pub terms: Vec<TermEntry>,
     pub decisions: Vec<Decision>,
     pub bindings: Bindings,
     pub counters: Counters,
@@ -187,6 +201,7 @@ impl Document {
             edges: Vec::new(),
             tags: Vec::new(),
             categories: Vec::new(),
+            terms: Vec::new(),
             decisions: Vec::new(),
             bindings: Bindings::default(),
             counters: Counters::default(),

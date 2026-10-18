@@ -26,6 +26,8 @@ requirements:
         name: "`spec/labels.yaml` is created with every counter at its first value."
       - key: 08ee3e34-ad9c-4ea7-a444-4f83dcb34a2c
         name: "The registries are created empty."
+      - key: 01a14b3f-6fb6-7766-b652-c1cbc2f180ca
+        name: "No `spec/terms.yaml` is created."
       - key: 0c9f2a29-d819-4e45-b1e4-c315b5e2185d
         name: "The created tree is read back by the reader without error."
       - key: d7863851-11ea-4799-99c4-bcb0053c0353

@@ -69,8 +69,37 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   found, and a test name is found as a whole word where it overlaps a part of a word. A path that
   names something other than a regular file, such as a named pipe, is `TR-004` at once instead of
   waiting on it.
+- A specification can name its concepts in a term list, `spec/terms.yaml`: each term a `name`,
+  a `definition` and the `aliases` the prose should not use for it. The file is optional, and a
+  document without terms keeps its content and state roots. With terms, the content view holds
+  a term list root after the decisions root, the JSON export a `terms` member, and the Markdown
+  projection a Glossary after the Domain Vocabulary. An older `loft` refuses a tree with
+  `spec/terms.yaml`, so everyone working on a project needs this release once it adds one.
+- `LQ-010` (warning) reports an alias of a term in the name, statement or body of a node, in any
+  case and with or without a final plural. `SH-011` (warning) reports a name or alias that two
+  terms carry, or an alias equal to its own term's name. A project without terms sees neither.
+- `loft terms [--format json]` prints the term report: groups of names that may denote one
+  concept, for the user to decide in the term list, and the subjects of each Product's
+  statements. `TD-001` finds one qualifier before head nouns of one noun group ("audit entry",
+  "audit row"), `TD-002` one name written as one word and as two ("change set", "changeset", or
+  an identifier such as `ChangeSet` written as prose), and `TD-003` one phrase with an
+  abbreviation and in full ("tenant admin", "tenant administrator"). A group whose every name is
+  a term or an alias is not listed again. The command exits 0 whatever it lists and writes
+  nothing; its output follows the schema `loft-terms/1`, and its command event names `terms`.
+  `loft check` never runs these rules.
+- `spec/lint.yaml` configures `TD-001`..`TD-003` like the lint rules. The noun groups
+  (`nounGroups`) and the abbreviations (`pairs`) are a new kind of option, named groups of words,
+  edited by `replace`, or by `extend` and `remove`. The defaults are published with the other
+  lint defaults, and the function words a phrase neither begins nor ends with as
+  `testdata/golden/function-words.txt`.
+- The `loft-spec` skill teaches the agent to read the term list before writing, to run
+  `loft terms` after writing, and to put each group to the user and record the answer.
 
 ### Breaking for library users
+
+- `loftspec`: `Document` gains `terms`, `Roots` gains `terms`, `Role` gains `Terms`,
+  `ConflictOwner` gains `Term`, `Order` gains `ByText` and `RuleId` gains `Sh011`, `Lq010` and
+  `Td001` to `Td003`. `loftspec::lint::report` holds the term report.
 
 - `loftspec::trace`: `Test` gains `body` and is built with `Test::new`; `Reconciled` gains
   `found`, what was found of each test; `TraceRule` gains `Tr006` to `Tr010`; `FILE_FIELDS`,

@@ -11,7 +11,7 @@ use super::schema::{Item, Kind, Shape, field};
 use crate::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
 use crate::identity::Key;
 use crate::ids::{
-    CategoryId, ConsequenceId, DecisionId, DriverId, ElementId, NodeId, OptionId, TagId,
+    CategoryId, ConsequenceId, DecisionId, DriverId, ElementId, NodeId, OptionId, TagId, TermId,
 };
 
 /// Every conflict the tree holds, in file order and then in the order each record lists them.
@@ -56,6 +56,7 @@ fn owner(record: &Rec) -> Option<ConflictOwner> {
         (Kind::Consequence, _) => ConflictOwner::Consequence(ConsequenceId::new(key()?)),
         (Kind::TagEntry, _) => ConflictOwner::Tag(TagId::new(key()?)),
         (Kind::CategoryEntry, _) => ConflictOwner::Category(CategoryId::new(key()?)),
+        (Kind::TermEntry, _) => ConflictOwner::Term(TermId::new(key()?)),
         _ => return None,
     })
 }

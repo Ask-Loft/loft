@@ -174,5 +174,7 @@ requirements:
         name: "A driver, an option or a consequence without `key` has one after formatting."
       - key: 2fc48b34-95e9-41eb-98bf-cc65b476402f
         name: "A tag or category entry without `key` has one after formatting."
+      - key: 01a14b3f-6fb7-70d5-842f-807b619dfc4b
+        name: "A term entry without `key` has one after formatting."
       - key: 10c656ac-7d48-4bef-a2af-ccce98fe4cf0
-        name: "The keyed records are nodes, decisions, drivers, options, consequences, tag entries and category entries."
+        name: "The keyed records are nodes, decisions, drivers, options, consequences, tag entries, category entries and term entries."

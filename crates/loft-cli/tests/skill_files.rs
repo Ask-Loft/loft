@@ -20,7 +20,12 @@ use software_plant::{Clock, GitScenario};
 fn placeholder(role: &Role) -> Role {
     let any = |name: &str| format!("<{name}>");
     match role {
-        Role::Manifest | Role::Labels | Role::Tags | Role::Categories | Role::Lint => role.clone(),
+        Role::Manifest
+        | Role::Labels
+        | Role::Tags
+        | Role::Categories
+        | Role::Terms
+        | Role::Lint => role.clone(),
         Role::Product { .. } => Role::Product {
             product: any("product"),
         },
@@ -45,6 +50,7 @@ fn roles() -> Vec<Role> {
         Role::Labels,
         Role::Tags,
         Role::Categories,
+        Role::Terms,
         Role::Lint,
         Role::Product { product: slug() },
         Role::Feature {

@@ -64,6 +64,7 @@ mod telemetry_notice;
 mod telemetry_order;
 mod telemetry_switches;
 mod telemetry_tokens;
+mod terms;
 mod test_locator;
 mod test_modules;
 mod update_check;
