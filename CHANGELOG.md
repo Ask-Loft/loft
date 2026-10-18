@@ -3,7 +3,7 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## Unreleased
+## 2.2.0 (2026-10-18)
 
 - `loft status [--base <revision>]` reports where the tree stands: the lock's publish sequence,
   publication time and state root, and the first root of the tree that differs from it; the
