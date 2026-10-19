@@ -174,7 +174,22 @@ requirements:
       - key: 1c63b84c-aa01-4dcb-b349-0ec785d8db7c
         name: "An export whose elements carry two document UUIDs is refused with an error naming both."
       - key: 81239df2-9066-4c0d-ad9a-5ca38bdcc69e
-        name: "An export with no node, registry entry or decision is refused."
+        name: "Without a document key named by the caller, an export with no node, registry entry or decision is refused."
+  - key: 01a154d3-cbfb-74fc-9749-edc32f6df803
+    statement:
+      form: event_driven
+      when: "the caller names a document key"
+      system: "the converter"
+      shall: "key the document by the named key."
+    criteria:
+      - key: 01a154d3-cbfb-74fc-9749-edc4f460071c
+        name: "An export with no node, registry entry or decision converts to a document that holds none, keyed by the named key."
+      - key: 01a154d3-cbfb-74fc-9749-edc527753666
+        name: "The empty document derives from the export's Authored State."
+      - key: 01a154d3-cbfb-74fc-9749-edc6b06f170f
+        name: "An export whose elements carry a document UUID other than the named key is refused with an error naming both."
+      - key: 01a154d3-cbfb-74fc-9749-edc7f0deab30
+        name: "An export whose elements carry the named key converts to the document it converts to without one."
   - key: 732ad96d-1e55-4a5b-95c2-1ea08d456803
     statement:
       form: ubiquitous
