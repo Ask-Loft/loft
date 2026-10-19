@@ -28,6 +28,7 @@ pub mod names;
 pub mod node;
 pub mod prose;
 pub mod publish;
+pub mod query;
 pub mod render;
 pub mod report;
 pub mod review;

@@ -10,9 +10,10 @@ use loftspec::check::hashed;
 use loftspec::codec::{self, Sites};
 use loftspec::document::Document;
 use loftspec::ids::NodeId;
+use loftspec::query::named_nodes;
 use loftspec::review::{Assertion, Change, Fact, Holder, Linked, Packet, Unit, WithCriteria, pack};
 use loftspec_store::repository::GitCommand;
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 
 use crate::finish::Finished;
 use crate::json;
@@ -77,55 +78,31 @@ fn attempt(root: &Path, options: &Options) -> Result<Paged, Stop> {
         .node
         .map(|query| named(&document, query))
         .transpose()?;
-    let base = match options.base {
-        Some(revision) => Some(read_base(root, revision)?),
-        None => None,
-    };
-    let packet = pack(
-        &document,
-        base.as_ref().map(|(_, document, _)| document),
-        node,
-    )
-    .expect("a tree with every key packs");
+    let base = options
+        .base
+        .map(|revision| base::read_tree(&GitCommand::default(), root, revision))
+        .transpose()?;
+    let packet = pack(&document, base.as_ref().map(|base| &base.document), node)
+        .expect("a tree with every key packs");
     let render = Render {
         sites: &sites,
-        base_sites: base.as_ref().map(|(_, _, sites)| sites),
+        base_sites: base.as_ref().map(|base| &base.sites),
     };
     let provenance = json!({
         "loft": version::VERSION,
         "stateRoot": state_root.to_string(),
-        "base": base.as_ref().map(|((revision, commit), ..)| {
-            json!({ "revision": revision, "commit": commit })
+        "base": base.as_ref().map(|base| {
+            json!({ "revision": base.revision, "commit": base.commit })
         }),
         "node": options.node,
     });
     page(render.packet(&packet), options, provenance)
 }
 
-/// The base revision's name and commit, and its tree.
-type Base = ((String, String), Document, Sites);
-
-fn read_base(root: &Path, revision: &str) -> Result<Base, Stop> {
-    let base = base::read(&GitCommand::default(), root, revision)?;
-    let (document, sites) =
-        codec::read_sited(&base.files).map_err(|errors| base::unread(&base.commit, &errors))?;
-    Ok(((revision.to_owned(), base.commit), document, sites))
-}
-
-/// The one node `query` names by its key, its slug or its label, the label in any case.
+/// The one node `query` names by its key, its slug or its label, the key and the label in any
+/// case.
 fn named(document: &Document, query: &str) -> Result<NodeId, Stop> {
-    let mut found = Vec::new();
-    document.walk(&mut |node| {
-        let Some(id) = node.id() else { return };
-        let label = document.bindings.label_of(id);
-        let identified = id.key().to_string() == query
-            || node.slug().is_some_and(|slug| slug.as_str() == query)
-            || label.is_some_and(|label| label.to_string().eq_ignore_ascii_case(query));
-        if identified {
-            found.push(id);
-        }
-    });
-    match found.as_slice() {
+    match named_nodes(document, query).as_slice() {
         [id] => Ok(*id),
         [] => Err(Stop::one("node", format!("`{query}` names no node"))),
         many => {
@@ -261,14 +238,14 @@ impl Render<'_> {
             _ => self.sites,
         };
         let key = fact.id.key();
-        let mut fields = Map::new();
-        fields.insert("key".to_owned(), json!(key.to_string()));
-        fields.insert("label".to_owned(), json!(fact.label.map(|l| l.to_string())));
-        fields.insert("kind".to_owned(), json!(fact.kind().as_str()));
-        if let Some(site) = sites.get(key) {
-            fields.extend(json::site(site));
-        }
-        fields.insert("name".to_owned(), json!(fact.name));
+        let label = fact.label.map(|label| label.to_string());
+        let mut fields = json::element(
+            &key.to_string(),
+            label.as_deref(),
+            fact.kind().as_str(),
+            sites.get(key),
+            &fact.name,
+        );
         fields.insert("view".to_owned(), fact.view.clone());
         fields.insert("change".to_owned(), json!(fact.change.map(Change::as_str)));
         Value::Object(fields)

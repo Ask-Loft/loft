@@ -138,15 +138,13 @@ fn base_report(
     document: &Document,
     sites: &Sites,
 ) -> Result<BaseReport, Stop> {
-    let base::Base { commit, files } = base::read(git, root, revision)?;
-    let (before, before_sites) =
-        codec::read_sited(&files).map_err(|errors| base::unread(&commit, &errors))?;
-    let changes = content_changes(&before, document);
+    let base = base::read_tree(git, root, revision)?;
+    let changes = content_changes(&base.document, document);
     let now = Nodes::of(document, sites);
-    let then = Nodes::of(&before, &before_sites);
+    let then = Nodes::of(&base.document, &base.sites);
     Ok(BaseReport {
-        revision: revision.to_owned(),
-        commit,
+        revision: base.revision,
+        commit: base.commit,
         added: changes.added.iter().map(|id| now.listed(*id)).collect(),
         changed: changes.changed.iter().map(|id| now.listed(*id)).collect(),
         removed: changes.removed.iter().map(|id| then.listed(*id)).collect(),

@@ -5,7 +5,8 @@
 
 use std::path::Path;
 
-use loftspec::codec::Files;
+use loftspec::codec::{self, Files, Sites};
+use loftspec::document::Document;
 use loftspec_store::StoreError;
 use loftspec_store::repository::{GitCommand, MergeBase};
 
@@ -44,6 +45,26 @@ pub fn read(git: &GitCommand, root: &Path, revision: &str) -> Result<Base, Stop>
     };
     let files = git.spec_files_at(root, &commit)?;
     Ok(Base { commit, files })
+}
+
+/// The tree at a base, read: the revision named, the commit, and its document and sites.
+pub struct Tree {
+    pub revision: String,
+    pub commit: String,
+    pub document: Document,
+    pub sites: Sites,
+}
+
+/// The tree at the commit where HEAD left `revision`, read.
+pub fn read_tree(git: &GitCommand, root: &Path, revision: &str) -> Result<Tree, Stop> {
+    let Base { commit, files } = read(git, root, revision)?;
+    let (document, sites) = codec::read_sited(&files).map_err(|errors| unread(&commit, &errors))?;
+    Ok(Tree {
+        revision: revision.to_owned(),
+        commit,
+        document,
+        sites,
+    })
 }
 
 /// The base's read errors, each naming the commit, as errors of kind `base`.
