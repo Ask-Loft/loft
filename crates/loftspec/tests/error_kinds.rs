@@ -1,50 +1,72 @@
-//! The kinds of the converter's refusals and of the reader's problems: one name for each kind of
+//! The kinds of the converter's refusals and of an export's errors: one name for each kind of
 //! error, the same however its message is filled, so that a report can count errors by kind.
+//! The reader's problems are held to the same in `src/codec/error.rs`, where their type can be
+//! matched without a wildcard.
 
 use std::collections::BTreeSet;
 
 use loftspec::bindings::BindingError;
-use loftspec::codec::Problem;
 use loftspec::convert::v1::ConvertError;
 use loftspec::convert::v1::export::{Export, ExternalId};
-use loftspec::identity::{Key, LabelError};
+use loftspec::identity::LabelError;
 use loftspec::ids::{ElementId, ProductId};
-use loftspec::manifest::ManifestError;
 use loftspec::names::TagName;
-use loftspec::yaml::ErrorKind;
 use uuid::Uuid;
+
+use crate::common::key;
 
 fn id(text: &str) -> ExternalId {
     ExternalId::parse(text).unwrap()
 }
 
-fn uuid(n: u128) -> Uuid {
-    Uuid::from_u128(n)
+fn uuid(n: u32) -> Uuid {
+    key(n).uuid()
 }
 
-fn key(n: u128) -> Key {
-    Key::from(uuid(n))
+/// The place of each variant among [`every_refusal`]'s samples: a match with no wildcard, so
+/// that a variant added to the type does not compile here until it is sampled.
+const fn place(refusal: &ConvertError) -> usize {
+    match refusal {
+        ConvertError::NoDocument => 0,
+        ConvertError::TwoDocuments { .. } => 1,
+        ConvertError::OtherDocument { .. } => 2,
+        ConvertError::Annotations => 3,
+        ConvertError::UnknownChild { .. } => 4,
+        ConvertError::TwoParents { .. } => 5,
+        ConvertError::Orphan { .. } => 6,
+        ConvertError::Containment { .. } => 7,
+        ConvertError::Missing { .. } => 8,
+        ConvertError::Label { .. } => 9,
+        ConvertError::FacetTagBody { .. } => 10,
+        ConvertError::UnderivableTag { .. } => 11,
+        ConvertError::TagCollision { .. } => 12,
+        ConvertError::Link { .. } => 13,
+        ConvertError::Scope { .. } => 14,
+        ConvertError::DecisionSubject { .. } => 15,
+        ConvertError::DecisionElement { .. } => 16,
+        ConvertError::Binding(_) => 17,
+    }
 }
 
 /// A refusal of each kind, its values numbered `n`.
 fn every_refusal(n: u32) -> Vec<ConvertError> {
     let node = id(&format!("RQ-{n}"));
     let other = id(&format!("F-{n}"));
-    let element = ElementId::Node(ProductId::new(key(n.into())).into());
+    let element = ElementId::Node(ProductId::new(key(n)).into());
     vec![
         ConvertError::NoDocument,
         ConvertError::TwoDocuments {
-            first: uuid(n.into()),
+            first: uuid(n),
             second: uuid(2),
         },
         ConvertError::OtherDocument {
-            carried: uuid(n.into()),
+            carried: uuid(n),
             named: uuid(2),
         },
         ConvertError::Annotations,
         ConvertError::UnknownChild {
             parent: other.clone(),
-            child: uuid(n.into()),
+            child: uuid(n),
         },
         ConvertError::TwoParents {
             child: node.clone(),
@@ -74,73 +96,35 @@ fn every_refusal(n: u32) -> Vec<ConvertError> {
             tag: TagName::parse(&format!("tag-{n}")).unwrap(),
         },
         ConvertError::Link {
-            feature: uuid(n.into()),
+            feature: uuid(n),
             component: uuid(2),
         },
         ConvertError::Scope {
             node: node.clone(),
-            product: uuid(n.into()),
+            product: uuid(n),
         },
         ConvertError::DecisionSubject {
             decision: id(&format!("ADR-{n}")),
-            subject: uuid(n.into()),
+            subject: uuid(n),
         },
         ConvertError::DecisionElement {
             decision: id(&format!("ADR-{n}")),
-            element: uuid(n.into()),
+            element: uuid(n),
             reason: "is not an option",
         },
         ConvertError::Binding(BindingError::Unbound(element)),
     ]
 }
 
-/// A problem of each kind, its values numbered `n`.
-fn every_problem(n: u32) -> Vec<Problem> {
-    let text = format!("value-{n}");
-    vec![
-        Problem::Syntax(ErrorKind::NotPrintable(n)),
-        Problem::UnknownField(text.clone()),
-        Problem::MissingField("key"),
-        Problem::Expected("a list"),
-        Problem::Invalid {
-            value: text.clone(),
-            expected: "a key",
-        },
-        Problem::Shape(text.clone()),
-        Problem::UnknownFile,
-        Problem::MissingManifest,
-        Problem::Unsupported(ManifestError::UnknownFormat(text.clone())),
-        Problem::SlugMismatch {
-            slug: text.clone(),
-            name: format!("Value {n}"),
-        },
-        Problem::DuplicateKey(key(n.into())),
-        Problem::MovedAndChanged(key(n.into())),
-        Problem::ListedWithoutFile(key(n.into())),
-        Problem::NotListed("Feature Group"),
-        Problem::ListedTwice(key(n.into())),
-        Problem::ListedByTwoGroups {
-            feature: key(n.into()),
-            first: text.clone(),
-            second: "other".to_owned(),
-        },
-        Problem::WrongDirectory(text.clone()),
-        Problem::Model(text.clone()),
-        Problem::ByName,
-        Problem::NameUnresolved {
-            name: text.clone(),
-            wanted: "decision",
-        },
-        Problem::NameAmbiguous {
-            name: text,
-            keys: vec![key(n.into()).to_string()],
-        },
-    ]
-}
-
 /// The kinds of `kinds`, each once, and how many there were.
 fn distinct(kinds: &[&'static str]) -> (usize, BTreeSet<&'static str>) {
     (kinds.len(), kinds.iter().copied().collect())
+}
+
+#[test]
+fn every_kind_of_refusal_is_sampled_once_in_order() {
+    let places: Vec<usize> = every_refusal(1).iter().map(place).collect();
+    assert_eq!(places, (0..places.len()).collect::<Vec<_>>());
 }
 
 #[test]
@@ -158,26 +142,6 @@ fn a_refusals_kind_name_does_not_depend_on_the_values_its_message_quotes() {
     let quoted = every_refusal(1)
         .iter()
         .zip(every_refusal(7))
-        .filter(|(one, other)| one.to_string() != other.to_string())
-        .count();
-    assert!(quoted > 10, "the samples hardly differ: {quoted}");
-}
-
-#[test]
-fn each_kind_of_problem_has_a_kind_name_of_its_own() {
-    let kinds: Vec<&str> = every_problem(1).iter().map(Problem::kind).collect();
-    let (count, set) = distinct(&kinds);
-    assert_eq!(set.len(), count, "{kinds:?}");
-}
-
-#[test]
-fn a_problems_kind_name_does_not_depend_on_the_values_its_message_quotes() {
-    for (one, other) in every_problem(1).iter().zip(every_problem(7)) {
-        assert_eq!(one.kind(), other.kind());
-    }
-    let quoted = every_problem(1)
-        .iter()
-        .zip(every_problem(7))
         .filter(|(one, other)| one.to_string() != other.to_string())
         .count();
     assert!(quoted > 10, "the samples hardly differ: {quoted}");

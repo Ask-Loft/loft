@@ -174,3 +174,47 @@ fn a_mentions_edge_between_any_two_elements_is_accepted() {
         hash_document(&document).unwrap().roots
     );
 }
+
+/// Every (parent, child) pair of kinds the full document holds once read back from its files,
+/// Sections left out, and whether each node's children come in the order `child_kinds` names
+/// their kinds.
+fn held_pairs(document: &Document) -> (BTreeSet<(NodeKind, NodeKind)>, Vec<String>) {
+    let mut pairs = BTreeSet::new();
+    let mut out_of_order = Vec::new();
+    document.walk(&mut |node| {
+        let order = node.kind().child_kinds();
+        let places: Vec<usize> = node
+            .children()
+            .iter()
+            .filter(|child| child.kind() != NodeKind::Section)
+            .map(|child| {
+                pairs.insert((node.kind(), child.kind()));
+                order
+                    .iter()
+                    .position(|kind| *kind == child.kind())
+                    .unwrap_or(usize::MAX)
+            })
+            .collect();
+        if !places.is_sorted() {
+            out_of_order.push(format!("{} {}", node.kind(), node.name()));
+        }
+    });
+    (pairs, out_of_order)
+}
+
+#[test]
+fn the_tables_of_the_text_form_and_the_kinds_name_the_same_children_in_the_same_order() {
+    let document = codec::read(&full_files()).unwrap();
+    let (held, out_of_order) = held_pairs(&document);
+    let allowed: BTreeSet<(NodeKind, NodeKind)> = NodeKind::ALL
+        .into_iter()
+        .flat_map(|parent| {
+            parent
+                .child_kinds()
+                .iter()
+                .map(move |child| (parent, *child))
+        })
+        .collect();
+    assert_eq!(held, allowed, "the full document read back");
+    assert_eq!(out_of_order, Vec::<String>::new());
+}

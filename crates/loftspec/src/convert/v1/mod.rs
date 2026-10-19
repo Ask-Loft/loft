@@ -121,7 +121,7 @@ pub enum ConvertError {
 impl ConvertError {
     /// The kind of the refusal, one name for each variant, which stays the same from release to
     /// release and never depends on the values the message quotes, so a report can count
-    /// refusals by kind.
+    /// refusals by kind. `tests/error_kinds.rs` holds every variant to a name of its own.
     #[must_use]
     pub const fn kind(&self) -> &'static str {
         match self {
@@ -150,9 +150,7 @@ impl ConvertError {
 /// Converts a v1 export into a document. The document key is the v1 document UUID that every
 /// element of the export carries.
 pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
-    if !export.annotations.is_empty() {
-        return Err(ConvertError::Annotations);
-    }
+    refuse_annotations(export)?;
     convert_as(export, DocumentId::new(document_uuid(export)?.into()))
 }
 
@@ -160,9 +158,7 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
 /// first published state can be, becomes an empty document under that key, and an export whose
 /// elements carry another document is refused.
 pub fn convert_keyed(export: &Export, named: DocumentId) -> Result<Conversion, ConvertError> {
-    if !export.annotations.is_empty() {
-        return Err(ConvertError::Annotations);
-    }
+    refuse_annotations(export)?;
     match document_uuid(export) {
         Ok(carried) if carried != named.key().uuid() => Err(ConvertError::OtherDocument {
             carried,
@@ -170,6 +166,16 @@ pub fn convert_keyed(export: &Export, named: DocumentId) -> Result<Conversion, C
         }),
         Ok(_) | Err(ConvertError::NoDocument) => convert_as(export, named),
         Err(other) => Err(other),
+    }
+}
+
+/// The refusal both entry points make before any other: an export that carries annotations,
+/// which the Format has no place for.
+fn refuse_annotations(export: &Export) -> Result<(), ConvertError> {
+    if export.annotations.is_empty() {
+        Ok(())
+    } else {
+        Err(ConvertError::Annotations)
     }
 }
 

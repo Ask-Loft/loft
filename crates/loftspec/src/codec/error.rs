@@ -198,7 +198,7 @@ pub enum Problem {
 impl Problem {
     /// The kind of the problem, one name for each variant, which stays the same from release to
     /// release and never depends on the values the message quotes, so a report can count
-    /// problems by kind.
+    /// problems by kind. The tests below hold every variant to a name of its own.
     #[must_use]
     pub const fn kind(&self) -> &'static str {
         match self {
@@ -224,5 +224,119 @@ impl Problem {
             Self::NameUnresolved { .. } => "name-unresolved",
             Self::NameAmbiguous { .. } => "name-ambiguous",
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeSet;
+
+    use uuid::Uuid;
+
+    use super::Problem;
+    use crate::identity::Key;
+    use crate::manifest::ManifestError;
+    use crate::yaml::ErrorKind;
+
+    fn key(n: u32) -> Key {
+        Key::from(Uuid::from_u128(n.into()))
+    }
+
+    /// The place of each variant among [`every_problem`]'s samples: a match with no wildcard,
+    /// so that a variant added to the type does not compile here until it is sampled.
+    const fn place(problem: &Problem) -> usize {
+        match problem {
+            Problem::Syntax(_) => 0,
+            Problem::UnknownField(_) => 1,
+            Problem::MissingField(_) => 2,
+            Problem::Expected(_) => 3,
+            Problem::Invalid { .. } => 4,
+            Problem::Shape(_) => 5,
+            Problem::UnknownFile => 6,
+            Problem::MissingManifest => 7,
+            Problem::Unsupported(_) => 8,
+            Problem::SlugMismatch { .. } => 9,
+            Problem::DuplicateKey(_) => 10,
+            Problem::MovedAndChanged(_) => 11,
+            Problem::ListedWithoutFile(_) => 12,
+            Problem::NotListed(_) => 13,
+            Problem::ListedTwice(_) => 14,
+            Problem::ListedByTwoGroups { .. } => 15,
+            Problem::WrongDirectory(_) => 16,
+            Problem::Model(_) => 17,
+            Problem::ByName => 18,
+            Problem::NameUnresolved { .. } => 19,
+            Problem::NameAmbiguous { .. } => 20,
+        }
+    }
+
+    /// A problem of each kind, its values numbered `n`.
+    fn every_problem(n: u32) -> Vec<Problem> {
+        let text = format!("value-{n}");
+        vec![
+            Problem::Syntax(ErrorKind::NotPrintable(n)),
+            Problem::UnknownField(text.clone()),
+            Problem::MissingField("key"),
+            Problem::Expected("a list"),
+            Problem::Invalid {
+                value: text.clone(),
+                expected: "a key",
+            },
+            Problem::Shape(text.clone()),
+            Problem::UnknownFile,
+            Problem::MissingManifest,
+            Problem::Unsupported(ManifestError::UnknownFormat(text.clone())),
+            Problem::SlugMismatch {
+                slug: text.clone(),
+                name: format!("Value {n}"),
+            },
+            Problem::DuplicateKey(key(n)),
+            Problem::MovedAndChanged(key(n)),
+            Problem::ListedWithoutFile(key(n)),
+            Problem::NotListed("Feature Group"),
+            Problem::ListedTwice(key(n)),
+            Problem::ListedByTwoGroups {
+                feature: key(n),
+                first: text.clone(),
+                second: "other".to_owned(),
+            },
+            Problem::WrongDirectory(text.clone()),
+            Problem::Model(text.clone()),
+            Problem::ByName,
+            Problem::NameUnresolved {
+                name: text.clone(),
+                wanted: "decision",
+            },
+            Problem::NameAmbiguous {
+                name: text,
+                keys: vec![key(n).to_string()],
+            },
+        ]
+    }
+
+    #[test]
+    fn every_kind_of_problem_is_sampled_once_in_order() {
+        let places: Vec<usize> = every_problem(1).iter().map(place).collect();
+        assert_eq!(places, (0..places.len()).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn each_kind_of_problem_has_a_kind_name_of_its_own() {
+        let kinds: Vec<&str> = every_problem(1).iter().map(Problem::kind).collect();
+        let distinct: BTreeSet<&str> = kinds.iter().copied().collect();
+        assert_eq!(distinct.len(), kinds.len(), "{kinds:?}");
+    }
+
+    #[test]
+    fn a_problems_kind_name_does_not_depend_on_the_values_its_message_quotes() {
+        for (one, other) in every_problem(1).iter().zip(every_problem(7)) {
+            assert_eq!(one.kind(), other.kind());
+        }
+        let quoted = every_problem(1)
+            .iter()
+            .zip(every_problem(7))
+            .filter(|(one, other)| one.to_string() != other.to_string())
+            .count();
+        assert!(quoted > 10, "the samples hardly differ: {quoted}");
     }
 }

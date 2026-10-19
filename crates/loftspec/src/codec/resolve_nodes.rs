@@ -30,6 +30,19 @@ fn ext(record: &Rec) -> Ext {
 }
 
 impl Resolver<'_> {
+    /// Each record of `record`'s field `name`, resolved by `resolve`.
+    fn each<T>(
+        &mut self,
+        record: &Rec,
+        name: &str,
+        resolve: fn(&mut Self, &Rec) -> Result<T, ReadError>,
+    ) -> Result<Vec<T>, ReadError> {
+        record
+            .records(name)
+            .map(|child| resolve(self, child))
+            .collect()
+    }
+
     /// A node's body, tags and Sections, and its `mentions` edges.
     fn details(&mut self, record: &Rec, id: NodeId) -> Result<Details, ReadError> {
         self.mentions(record, ElementId::Node(id))?;
@@ -70,14 +83,8 @@ impl Resolver<'_> {
             slug: slug(record),
             name: text(record, field::NAME),
             details: self.details(record, id.into())?,
-            feature_groups: record
-                .records(field::FEATURE_GROUPS)
-                .map(|group| self.feature_group(group))
-                .collect::<Result<_, _>>()?,
-            constraints: record
-                .records(field::CONSTRAINTS)
-                .map(|constraint| self.constraint(constraint))
-                .collect::<Result<_, _>>()?,
+            feature_groups: self.each(record, field::FEATURE_GROUPS, Self::feature_group)?,
+            constraints: self.each(record, field::CONSTRAINTS, Self::constraint)?,
         })
     }
 
@@ -96,14 +103,12 @@ impl Resolver<'_> {
             name: text(record, field::NAME),
             details: self.details(record, id.into())?,
             features,
-            constraints: record
-                .records(field::CONSTRAINTS)
-                .map(|constraint| self.constraint(constraint))
-                .collect::<Result<_, _>>()?,
-            quality_attributes: record
-                .records(field::QUALITY_ATTRIBUTES)
-                .map(|quality| self.quality_attribute(quality))
-                .collect::<Result<_, _>>()?,
+            constraints: self.each(record, field::CONSTRAINTS, Self::constraint)?,
+            quality_attributes: self.each(
+                record,
+                field::QUALITY_ATTRIBUTES,
+                Self::quality_attribute,
+            )?,
         })
     }
 
@@ -124,14 +129,12 @@ impl Resolver<'_> {
             slug: slug(record),
             name: text(record, field::NAME),
             details: self.details(record, id.into())?,
-            requirements: record
-                .records(field::REQUIREMENTS)
-                .map(|requirement| self.requirement(requirement))
-                .collect::<Result<_, _>>()?,
-            quality_attributes: record
-                .records(field::QUALITY_ATTRIBUTES)
-                .map(|quality| self.quality_attribute(quality))
-                .collect::<Result<_, _>>()?,
+            requirements: self.each(record, field::REQUIREMENTS, Self::requirement)?,
+            quality_attributes: self.each(
+                record,
+                field::QUALITY_ATTRIBUTES,
+                Self::quality_attribute,
+            )?,
         })
     }
 
@@ -182,18 +185,13 @@ impl Resolver<'_> {
             name: text(record, field::NAME),
             details: self.details(record, id.into())?,
             boundary: optional(Boundary::parse, record, field::BOUNDARY),
-            components: record
-                .records(field::COMPONENTS)
-                .map(|component| self.component(component))
-                .collect::<Result<_, _>>()?,
-            constraints: record
-                .records(field::CONSTRAINTS)
-                .map(|constraint| self.constraint(constraint))
-                .collect::<Result<_, _>>()?,
-            quality_attributes: record
-                .records(field::QUALITY_ATTRIBUTES)
-                .map(|quality| self.quality_attribute(quality))
-                .collect::<Result<_, _>>()?,
+            components: self.each(record, field::COMPONENTS, Self::component)?,
+            constraints: self.each(record, field::CONSTRAINTS, Self::constraint)?,
+            quality_attributes: self.each(
+                record,
+                field::QUALITY_ATTRIBUTES,
+                Self::quality_attribute,
+            )?,
         })
     }
 

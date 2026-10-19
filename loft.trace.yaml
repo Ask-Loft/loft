@@ -2103,13 +2103,16 @@ links:
   - node: 01a154d3-cbfb-74fc-9749-edcfa052e753
     reviewed: f6fe09c301ee5f27f9e5e10636a886927f6efd2b4808f27254981a52b9d4d01e
     tests:
-      - file: "crates/loftspec/tests/error_kinds.rs"
+      - file: "crates/loftspec/src/codec/error.rs"
+        name: "every_kind_of_problem_is_sampled_once_in_order"
+        body: 60d845f55cbb2350ff88c8af3c400c954e5484d492db88b1ca558ce75197926f
+      - file: "crates/loftspec/src/codec/error.rs"
         name: "each_kind_of_problem_has_a_kind_name_of_its_own"
-        body: 2e0089569e73002b41ab6f13a49569c88fb1b22e199c4466e9db7fbcdfe4d56d
+        body: f312e39437d6597934aadaf742a87bdc2564934069bf923609825c6bfd6cbab9
   - node: 01a154d3-cbfb-74fc-9749-edd00ec3b844
     reviewed: 22ea099418b7d94300fe3593e155b539b3b5ca4c2ebe801c5992d868de0a432f
     tests:
-      - file: "crates/loftspec/tests/error_kinds.rs"
+      - file: "crates/loftspec/src/codec/error.rs"
         name: "a_problems_kind_name_does_not_depend_on_the_values_its_message_quotes"
         body: af189162d378b05a90ea791882ea29f2006f62cc46d04bfeaa10a40c512f78e9
   - node: b83d6062-babd-432c-83b1-62feeeb9b253
@@ -3564,6 +3567,9 @@ links:
   - node: 01a154d3-cbfb-74fc-9749-edc946ec1897
     reviewed: 5caf9275c3a602f99517f3d58d7ace1565a312b969e58d48739387b778c5b609
     tests:
+      - file: "crates/loftspec/tests/error_kinds.rs"
+        name: "every_kind_of_refusal_is_sampled_once_in_order"
+        body: c1171e00699a6f8e593918f14359063fd1ccc32599f215130d2a81d6412cb50f
       - file: "crates/loftspec/tests/error_kinds.rs"
         name: "each_kind_of_refusal_has_a_kind_name_of_its_own"
         body: 47ebb6406fb81c8707f013883a5a222492349895da63e86a42856f054759661f

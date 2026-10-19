@@ -20,6 +20,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   kind that stays the same from release to release (`containment`, `missing`, `no-document`,
   `duplicate-key`, …; `syntax`, `eof` or `data` for an export that is not a v1 export), so a tool
   that runs the converter or the reader over many inputs can count what went wrong by kind.
+- The library also gives `loftspec::diff::content_changes`, the added, changed and removed nodes
+  without the moved, which spares indexing both trees; `loftspec::query`, how a key, slug or
+  label names an element, which `loft find` and `loft review --node` share, so a key now names a
+  node in any case for both; `Finding::identity`, what makes a finding of one tree the same as one
+  of another; and `DecisionState::outcome`.
 - `loft init --no-plugin` and `loft skill install --no-plugin` write the skill and leave
   `.claude/settings.json` as it is: not created, not read, and not named in the request to
   commit. It suits a project that runs a skill built from source rather than the released
