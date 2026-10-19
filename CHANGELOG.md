@@ -31,6 +31,16 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   of at most 50000 characters unless `--max-chars` says otherwise, and the text output is an
   index of the page. It follows the schema `loft-review/1`, and the command event names
   `review`.
+- The `loft-spec` skill asks for fewer approvals: within a specification task the user asked
+  for, edits of `spec/`, the `loft` checks and reviews and commits on the working branch need
+  none; questions that change the content are asked once, up front; and only a push, a merge
+  into a shared branch, a publish, deleting a branch, rewriting history or superseding an
+  accepted decision is asked each time. Its review of a change starts from `loft check
+  --baseline` and `loft review --base`, adds precedence to the contradictions it looks for,
+  disposes of each finding, and fixes a large review in waves. The writing rules add ownership
+  apart from realization, guarantees rather than provisioning and the document's conventions;
+  changing a product and publishing add their git practice; and a new reference, "Choosing the
+  next change", finds and plans what to build next from the published states.
 
 ## 2.2.0 (2026-10-18)
 
