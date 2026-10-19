@@ -1,0 +1,66 @@
+key: 01a154b1-8bbe-7341-b8af-b8c6e9e6c31a
+slug: the-review-packet-carries-context-and-no-judgement
+title: "The review packet carries context and no judgement"
+context: "A review of a specification reads each assertion against the nodes around it: the Feature it sits in, the Requirements beside it, the Constraints above it, the Components it uses, the decisions that name it and the terms it uses. Gathering those by hand is slow and misses some, while weighing them, for coverage, contradiction or ambiguity, is the reviewer's work, a person's or a coding agent's. `loft check` already reports what a rule can decide."
+state:
+  kind: accepted
+  selectedOption: 01a154b1-8bbf-728e-b35c-d6efbf306728
+  outcome: "`loft review` gathers the context of each assertion under review and adds no finding, score or verdict; what a rule can decide is a lint rule of `loft check`, and the rest is the reviewer's."
+drivers:
+  - key: 01a154b1-8bbf-728e-b35c-d6ec7b5dc1d1
+    kind: local
+    label: "One home for each judgement"
+    statement: "A judgement a rule can make is made by the linter, and the reviewer makes the rest."
+  - key: 01a154b1-8bbf-728e-b35c-d6eddc2420b6
+    kind: local
+    label: "The same packet every run"
+    statement: "The same tree, base and options give the same packet."
+  - key: 01a154b1-8bbf-728e-b35c-d6ee14da9e53
+    kind: local
+    label: "No borrowed authority"
+    statement: "Nothing in the packet reads as a verdict that no one made."
+options:
+  - key: 01a154b1-8bbf-728e-b35c-d6efbf306728
+    title: "Context alone"
+    description: "The packet holds nodes, links, terms and the base's text, and nothing that weighs them."
+  - key: 01a154b1-8bbf-728e-b35c-d6f0795f07ba
+    title: "Context with hints"
+    description: "The packet also scores each assertion, by similarity to its neighbours or by heuristics for gaps and contradictions, and ranks the likely problems."
+assessments:
+  - option: 01a154b1-8bbf-728e-b35c-d6efbf306728
+    driver: 01a154b1-8bbf-728e-b35c-d6ec7b5dc1d1
+    rating: supports
+    rationale: "a rule that can decide lives in the linter"
+  - option: 01a154b1-8bbf-728e-b35c-d6efbf306728
+    driver: 01a154b1-8bbf-728e-b35c-d6eddc2420b6
+    rating: supports
+    rationale: "gathering is a function of the tree"
+  - option: 01a154b1-8bbf-728e-b35c-d6efbf306728
+    driver: 01a154b1-8bbf-728e-b35c-d6ee14da9e53
+    rating: supports
+    rationale: "the packet claims nothing"
+  - option: 01a154b1-8bbf-728e-b35c-d6f0795f07ba
+    driver: 01a154b1-8bbf-728e-b35c-d6ec7b5dc1d1
+    rating: conflicts
+    rationale: "a second, unchecked set of rules beside the linter"
+  - option: 01a154b1-8bbf-728e-b35c-d6f0795f07ba
+    driver: 01a154b1-8bbf-728e-b35c-d6eddc2420b6
+    rating: neutral
+    rationale: "heuristics can be deterministic, at the cost of fixing their tuning"
+  - option: 01a154b1-8bbf-728e-b35c-d6f0795f07ba
+    driver: 01a154b1-8bbf-728e-b35c-d6ee14da9e53
+    rating: conflicts
+    rationale: "a score reads as a finding though no rule stands behind it"
+consequences:
+  - key: 01a154b1-8bbf-728e-b35c-d6f17da450ff
+    kind: obligation
+    statement: "A check that a review keeps making by hand becomes a rule of `loft check`, not a field of the packet."
+  - key: 01a154b1-8bbf-728e-b35c-d6f258060558
+    kind: cost
+    statement: "The reviewer reads every unit, with no ranking to start from."
+  - key: 01a154b1-8bbf-728e-b35c-d6f3e30f176a
+    kind: benefit
+    statement: "Two runs give the same bytes, so a packet can be cited and compared."
+subjects:
+  - role: outcome
+    node: 01a154b0-f757-7647-acce-6bda786af643

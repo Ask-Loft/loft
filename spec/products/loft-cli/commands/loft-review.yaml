@@ -1,0 +1,241 @@
+key: 01a154b0-f757-7647-acce-6bda786af643
+slug: loft-review
+name: "`loft review`"
+body: "Gathers what a reviewer reads a specification's assertions against, and judges nothing. Each Requirement, criterion, Constraint and Quality Attribute under review lands in the unit of its scope, the Feature or the node that holds it, with the nodes above that scope, the Requirements beside it, the Components it realizes, the decisions that name it and the terms it uses. With `--base <revision>`, only what the branch added, changed, moved or removed since it left the revision is reviewed, each changed assertion beside its text at the base. The packet is JSON, paged by whole units so that an agent can read it in parts; the text output is an index of the page."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a154b0-f757-7647-acce-6bdbda3cf8c3
+    statement:
+      form: ubiquitous
+      system: "`loft review`"
+      shall: "group the assertions it reviews into one unit for each scope."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bdc631a7d10
+        name: "An assertion is a Requirement, a criterion, a Constraint or a Quality Attribute."
+      - key: 01a154b0-f757-7647-acce-6bdd107b5b6e
+        name: "The scope of a Requirement or a criterion is the Feature that holds it."
+      - key: 01a154b0-f757-7647-acce-6bde7c05fa1f
+        name: "The scope of a Quality Attribute is the Feature or the Component that holds it."
+      - key: 01a154b0-f757-7647-acce-6bdff8cffa5a
+        name: "The scope of a Constraint is the Product, the Feature Group or the Component that holds it."
+      - key: 01a154b0-f757-7647-acce-6be02cd564a0
+        name: "Units follow the document order of their scopes."
+      - key: 01a154b0-f757-7647-acce-6be12e09a54c
+        name: "A unit's assertions follow document order, then the removed ones in the base's order."
+  - key: 01a154b0-f757-7647-acce-6be261139829
+    statement:
+      form: ubiquitous
+      system: "`loft review`"
+      shall: "give each unit the nodes its assertions are read against."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6be34498c82d
+        name: "The unit names each node above its scope, the root first, with the Constraints and Quality Attributes each holds."
+      - key: 01a154b0-f757-7647-acce-6be4a8ca9b93
+        name: "The unit gives the Constraints and Quality Attributes its scope holds."
+      - key: 01a154b0-f757-7647-acce-6be55de4d9aa
+        name: "The unit of a Feature gives every Requirement of the Feature with all its criteria."
+      - key: 01a154b0-f757-7647-acce-6be6b91da35f
+        name: "The unit of a Feature gives each Component the Feature realizes, with its Constraints and Quality Attributes."
+      - key: 01a154b0-f757-7647-acce-6be70f95e6b8
+        name: "Each realized Component comes with the Components above it and their Constraints and Quality Attributes."
+      - key: 01a154b0-f757-7647-acce-6be8df642ce4
+        name: "Each node carries its key, label, kind, file, line, column, name and own content view."
+  - key: 01a154b0-f757-7647-acce-6be96e745ff9
+    statement:
+      form: ubiquitous
+      system: "`loft review`"
+      shall: "list in each unit the decisions and the terms its assertions bear on."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6beae7b5291a
+        name: "A decision is listed where it names an assertion or the scope as a subject."
+      - key: 01a154b1-2343-70db-b6cc-612f4b6af6f1
+        name: "A decision is listed where one of its drivers or consequences names an assertion or the scope."
+      - key: 01a154b1-2343-70db-b6cc-6130a4904113
+        name: "A decision is listed where it mentions an assertion or the scope, or one of them mentions it."
+      - key: 01a154b0-f757-7647-acce-6beb0b9b1d9d
+        name: "Each link of a decision says how it links: `subject:outcome`, `subject:affected`, `driver`, `consequence` or `mentions`."
+      - key: 01a154b0-f757-7647-acce-6bec68352d54
+        name: "Each decision carries its key, label, title, state and outcome."
+      - key: 01a154b0-f757-7647-acce-6bed8aa38a56
+        name: "A term is listed where its name or one of its aliases occurs in the name or the body of an assertion."
+      - key: 01a154b0-f757-7647-acce-6bee91b57273
+        name: "Decisions follow their labels, then their keys, and terms follow their names."
+  - key: 01a154b0-f757-7647-acce-6befb2af7824
+    statement:
+      form: ubiquitous
+      system: "`loft review`"
+      shall: "give the same output for the same tree, base and options."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bf0ee0ed70c
+        name: "Two runs over the same tree, base and options print the same bytes."
+      - key: 01a154b0-f757-7647-acce-6bf1cf73a8a1
+        name: "No file is written."
+  - key: 01a154b0-f757-7647-acce-6bf21149e35b
+    statement:
+      form: optional
+      where: "`--base <revision>` is not given"
+      system: "`loft review`"
+      shall: "review every assertion of the tree."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bf31bcb6e68
+        name: "Every assertion of the tree lands in a unit."
+      - key: 01a154b0-f757-7647-acce-6bf4571c5c59
+        name: "No assertion carries a change."
+  - key: 01a154b0-f757-7647-acce-6bf5ca053fe3
+    statement:
+      form: optional
+      where: "`--base <revision>` is given"
+      system: "`loft review`"
+      shall: "review the assertions added, changed, moved or removed since HEAD left the revision."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bf6e51fcb9a
+        name: "The base is the commit that `git merge-base HEAD <revision>` gives, read from git."
+      - key: 01a154b0-f757-7647-acce-6bf7a99e2e9e
+        name: "An assertion only the tree holds is `added`."
+      - key: 01a154b0-f757-7647-acce-6bf86ced5501
+        name: "An assertion whose own content differs from the base's is `changed`."
+      - key: 01a154b0-f757-7647-acce-6bf980680196
+        name: "An assertion whose own content is the base's and whose parent is not is `moved`."
+      - key: 01a154b0-f757-7647-acce-6bfa7e8f4371
+        name: "An assertion only the base holds is `removed`, and lands in the unit of its scope at the base."
+      - key: 01a154b0-f757-7647-acce-6bfba506e16e
+        name: "A changed, moved or removed assertion carries the base's node as `before`."
+      - key: 01a154b0-f757-7647-acce-6bfc86b66757
+        name: "An assertion that is the same at both sides is not reviewed."
+  - key: 01a154b0-f757-7647-acce-6bfdc47fe57b
+    statement:
+      form: optional
+      where: "`--node <node>` is given"
+      system: "`loft review`"
+      shall: "review only the assertions at or below the node."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bfe250c412d
+        name: "The node is named by its key, its slug or its label, the label in any case."
+      - key: 01a154b0-f757-7647-acce-6bffe46ec281
+        name: "With `--base`, the assertions reviewed are those at or below the node that the branch added, changed, moved or removed."
+  - key: 01a154b0-f757-7647-acce-6c00a00098e6
+    statement:
+      form: ubiquitous
+      system: "`loft review`"
+      shall: "fill each page with whole units, up to the number of characters `--max-chars` gives."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c01a14c2dea
+        name: "The compact JSON of a page's units together takes no more characters than the limit."
+      - key: 01a154b0-f757-7647-acce-6c0272c7b5c7
+        name: "Without `--max-chars`, a page takes at most 50000 characters."
+      - key: 01a154b0-f757-7647-acce-6c03659a2f87
+        name: "Units fill the pages in order, each page taking every next unit that fits."
+      - key: 01a154b0-f757-7647-acce-6c04dcdf56cf
+        name: "A unit longer than the limit stands alone on its page and is marked `oversized`."
+      - key: 01a154b0-f757-7647-acce-6c05806b8eed
+        name: "No unit is cut short."
+  - key: 01a154b0-f757-7647-acce-6c06f9af39f8
+    statement:
+      form: optional
+      where: "`--page <number>` is given"
+      system: "`loft review`"
+      shall: "give the page of that number, counted from 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c07633cb841
+        name: "Without `--page`, the first page is given."
+  - key: 01a154b0-f757-7647-acce-6c086c268aea
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft review`"
+      shall: "give the page of the packet in its JSON document."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c094ced98ec
+        name: "The outcome is `packed` when the page holds a unit."
+      - key: 01a154b0-f757-7647-acce-6c0a9bc32708
+        name: "The outcome is `empty` when there is nothing to review."
+      - key: 01a154b0-f757-7647-acce-6c0b13140cc8
+        name: "The document names the version of `loft`, the tree's state root, the base revision and commit, and the node, `null` for an option not given."
+      - key: 01a154b0-f757-7647-acce-6c0c33af94fa
+        name: "The document names the page's number, the number of pages and the limit of characters."
+  - key: 01a154b0-f757-7647-acce-6c0d5063b310
+    statement:
+      form: optional
+      where: "`--format json` is not given"
+      system: "`loft review`"
+      shall: "print an index of the page."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c0e44f8fb84
+        name: "Each unit of the page is one line naming its scope's label, its scope's name, its number of assertions and its number of characters."
+      - key: 01a154b0-f757-7647-acce-6c0fdc349164
+        name: "The last line names the page's number and the number of pages."
+  - key: 01a154b0-f757-7647-acce-6c102c2a13d7
+    statement:
+      form: unwanted
+      if: "a node of the tree has no key"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c1106475814
+        name: "The error, of kind `unkeyed`, names the kind and the name of each node without a key."
+      - key: 01a154b0-f757-7647-acce-6c1205ff5fb9
+        name: "The error says that `loft fmt` mints the missing keys."
+  - key: 01a154b0-f757-7647-acce-6c134693b5f2
+    statement:
+      form: unwanted
+      if: "the tree holds a conflict record"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c14aca98864
+        name: "The error names the file and the key of each conflict record."
+  - key: 01a154b0-f757-7647-acce-6c152387dae1
+    statement:
+      form: unwanted
+      if: "`--node` names no node of the tree"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c1663e3dea9
+        name: "The error, of kind `node`, names the query."
+  - key: 01a154b0-f757-7647-acce-6c17bbd160d7
+    statement:
+      form: unwanted
+      if: "`--node` names more than one node of the tree"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c1887baaeed
+        name: "The error, of kind `node`, names the key of each node the query names."
+  - key: 01a154b0-f757-7647-acce-6c194831a4e0
+    statement:
+      form: unwanted
+      if: "`--page` is past the last page"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c1ac91ac7cb
+        name: "The error, of kind `page`, names the number of pages."
+  - key: 01a154b0-f757-7647-acce-6c1bcff9e992
+    statement:
+      form: unwanted
+      if: "`--base` is given outside a git repository"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c1c9ea0adbd
+        name: "The error, of kind `base`, says that the base revision needs a git repository."
+  - key: 01a154b0-f757-7647-acce-6c1da7253515
+    statement:
+      form: unwanted
+      if: "the revision `--base` gives names no commit or shares no history with HEAD"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c1e42a7ac95
+        name: "The error, of kind `base`, names the revision."
+  - key: 01a154b0-f757-7647-acce-6c1f4eb9f795
+    statement:
+      form: unwanted
+      if: "the tree at the base commit does not read"
+      system: "`loft review`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c2087906214
+        name: "Each error, of kind `base`, names the base commit and the file and line of the reader's error."
