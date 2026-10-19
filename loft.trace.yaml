@@ -16164,3 +16164,42 @@ links:
   - node: 01a154c3-a606-7743-88db-27e6178f52f8
     reviewed: 7f5ed53b3d615f1945eab729797a46b9d65e208eb65d7d13da7a6583dbe0056a
     unverified: "Guidance an agent reads and acts on; the skill text states it in agents/claude/claude-host.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4badaf0dc62
+    reviewed: 5b43cebb1fad3e53bc17ce7b891e2e2f6dde2025453f3c0ae957b2180ce85bf1
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4bbe827dc5f
+    reviewed: c4612b6d49e1000dd81dc88cf693386048b8307b1d996f5b7503adf5e2378253
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4bc19f2c1fe
+    reviewed: 91db01d4067fb120e33ddbfce97acccf510289a7335eda37d9042fb56e8bfe30
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4bde17444f1
+    reviewed: 65e56616fe6f34b237dca8f4df66798a81d152b158e23d9b794f7718e532d3b8
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4bef53a0272
+    reviewed: ba231bf47ddc87af0c8cb078d662f707e8a383badb1c208e56276329bd83a851
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c0769ced2c
+    reviewed: d5fc1e93a0fef945c697c63eba11bb1b1b5c7df2bd61cd62197ac858fc171eed
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c1a4566b3a
+    reviewed: d14dab433ee1a2936b5bcba95022f2cb16cf1cfd53a8a803b4c2a78916d9a496
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c2bd3d437e
+    reviewed: 77c30edcffa63ed46b798bab8876947d993b0e40be86420b9f9869ff47d43713
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c4a11131f9
+    reviewed: 4780f41aeb4e5dd9c1108fd9e98dbbe2b5743e0a865571b4110b641d0196ae1a
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c50dfca1bd
+    reviewed: 83ab9372ba02a805583eb2bbf49a87098bc1c7083ed57adec8d5ea17daabdffc
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c7ea980d18
+    reviewed: cac5c9d84eeccc49fa2ff0d758a5cbbf92814a1163b48e2bafa7646afec15f0e
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c81f3a6527
+    reviewed: b4eb44105956b3adcb561759b251d0ff1d188394c8a4f38dd4eedbecc49ed3c6
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4c97ab27ab8
+    reviewed: 37a47b33528fae518bf216c5e6721a4a354df6d5177b649a3774c1cf67d5c2f7
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/writing-rules.md, read it there."
