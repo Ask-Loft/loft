@@ -26,7 +26,7 @@ requirements:
       - key: 748d5f95-2d7e-49ad-a10c-640ef8348b75
         name: "A `constraint` is accepted only under a `component`, a `feature_group` or a `product`."
       - key: e15dc002-88bb-4dd2-8532-042fa21b2842
-        name: "A `quality_attribute` is accepted only under a `component` or a `feature`."
+        name: "A `quality_attribute` is accepted only under a `component`, a `feature_group` or a `feature`."
       - key: f3e0cf5f-9e01-4286-aff0-30be5b0fd863
         name: "A `section` is accepted wherever a body is accepted."
       - key: ab6e9c6c-316d-4adb-972b-b502e34f7936

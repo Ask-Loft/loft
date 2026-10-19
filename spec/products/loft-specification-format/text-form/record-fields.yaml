@@ -22,7 +22,7 @@ requirements:
       shall: "write each Feature Group record with the Feature Group fields in the Format's order."
     criteria:
       - key: a3c78911-ca55-4b53-a93f-c37db333a56f
-        name: "A Feature Group record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `ext`, `features`, `constraints` and `sections`."
+        name: "A Feature Group record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `ext`, `features`, `constraints`, `qualityAttributes` and `sections`."
       - key: 37207046-b14f-4170-b6b8-72cb2be25202
         name: "A Feature Group record requires `key`, `slug` and `name`."
   - key: 331154e5-37e4-434b-bc13-3ec0a4030502
