@@ -89,6 +89,17 @@ requirements:
         name: "`.claude/settings.json` is not written."
       - key: 01a13654-bf86-77e9-8fd5-8dbf78af83af
         name: "`spec/` is created as it is without the option."
+  - key: 01a1549d-6653-72d3-930f-ce5a4f53b32c
+    statement:
+      form: unwanted
+      if: "both `--no-skill` and `--no-plugin` are given"
+      system: "`loft init`"
+      shall: "refuse them as a usage error and exit 2."
+    criteria:
+      - key: 01a1549d-6653-72d3-930f-ce5bf72933db
+        name: "Nothing is written."
+      - key: 01a1549d-6653-72d3-930f-ce5c1574c82f
+        name: "The error names both options."
   - key: 01a13711-d7d2-7100-8424-b9644093d3f8
     statement:
       form: state_driven
