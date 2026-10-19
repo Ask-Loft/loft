@@ -194,3 +194,35 @@ pub enum Problem {
     #[error("\"{name}\" names more than one element: {}", keys.join(", "))]
     NameAmbiguous { name: String, keys: Vec<String> },
 }
+
+impl Problem {
+    /// The kind of the problem, one name for each variant, which stays the same from release to
+    /// release and never depends on the values the message quotes, so a report can count
+    /// problems by kind.
+    #[must_use]
+    pub const fn kind(&self) -> &'static str {
+        match self {
+            Self::Syntax(_) => "syntax",
+            Self::UnknownField(_) => "unknown-field",
+            Self::MissingField(_) => "missing-field",
+            Self::Expected(_) => "expected",
+            Self::Invalid { .. } => "invalid",
+            Self::Shape(_) => "shape",
+            Self::UnknownFile => "unknown-file",
+            Self::MissingManifest => "missing-manifest",
+            Self::Unsupported(_) => "unsupported",
+            Self::SlugMismatch { .. } => "slug-mismatch",
+            Self::DuplicateKey(_) => "duplicate-key",
+            Self::MovedAndChanged(_) => "moved-and-changed",
+            Self::ListedWithoutFile(_) => "listed-without-file",
+            Self::NotListed(_) => "not-listed",
+            Self::ListedTwice(_) => "listed-twice",
+            Self::ListedByTwoGroups { .. } => "listed-by-two-groups",
+            Self::WrongDirectory(_) => "wrong-directory",
+            Self::Model(_) => "model",
+            Self::ByName => "by-name",
+            Self::NameUnresolved { .. } => "name-unresolved",
+            Self::NameAmbiguous { .. } => "name-ambiguous",
+        }
+    }
+}

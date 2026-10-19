@@ -2100,6 +2100,18 @@ links:
       - file: "crates/loftspec/tests/codec_fields_decisions.rs"
         name: "a_decisions_supersession_is_recorded_in_its_state_and_not_as_an_edge"
         body: 30a62dfefb6cbf9c57e888ae1b8561261ddd9952cad6071637bb00ad230ba7ce
+  - node: 01a154d3-cbfb-74fc-9749-edcfa052e753
+    reviewed: f6fe09c301ee5f27f9e5e10636a886927f6efd2b4808f27254981a52b9d4d01e
+    tests:
+      - file: "crates/loftspec/tests/error_kinds.rs"
+        name: "each_kind_of_problem_has_a_kind_name_of_its_own"
+        body: 2e0089569e73002b41ab6f13a49569c88fb1b22e199c4466e9db7fbcdfe4d56d
+  - node: 01a154d3-cbfb-74fc-9749-edd00ec3b844
+    reviewed: 22ea099418b7d94300fe3593e155b539b3b5ca4c2ebe801c5992d868de0a432f
+    tests:
+      - file: "crates/loftspec/tests/error_kinds.rs"
+        name: "a_problems_kind_name_does_not_depend_on_the_values_its_message_quotes"
+        body: af189162d378b05a90ea791882ea29f2006f62cc46d04bfeaa10a40c512f78e9
   - node: b83d6062-babd-432c-83b1-62feeeb9b253
     reviewed: 35f07ddc61ad549de7f31fae9e2cade6d9949155e3ee30542c1cffa327b59ead
     tests:
@@ -3549,6 +3561,24 @@ links:
       - file: "crates/loftspec/tests/convert_v1_keyed.rs"
         name: "an_export_carrying_the_named_key_converts_as_it_does_without_one"
         body: b8467eaf6348c1a0d23980914f0c9d508cc09f15716d45da4ee005f9d95e42f5
+  - node: 01a154d3-cbfb-74fc-9749-edc946ec1897
+    reviewed: 5caf9275c3a602f99517f3d58d7ace1565a312b969e58d48739387b778c5b609
+    tests:
+      - file: "crates/loftspec/tests/error_kinds.rs"
+        name: "each_kind_of_refusal_has_a_kind_name_of_its_own"
+        body: 47ebb6406fb81c8707f013883a5a222492349895da63e86a42856f054759661f
+  - node: 01a154d3-cbfb-74fc-9749-edcac5029930
+    reviewed: 7f44fb8e18f119847185ad580944576a76cd2c7ac8672a9d115d81c257edaea0
+    tests:
+      - file: "crates/loftspec/tests/error_kinds.rs"
+        name: "a_refusals_kind_name_does_not_depend_on_the_values_its_message_quotes"
+        body: 94b764c896711971be1975d25bac07ff606eec4f8db0a740c87948a714244892
+  - node: 01a154d3-cbfb-74fc-9749-edcb6057a504
+    reviewed: 6c32cf1be330e98407dd4b5733b38959e9e6e9ae6874184abb539974c595bebe
+    tests:
+      - file: "crates/loftspec/tests/error_kinds.rs"
+        name: "an_export_that_is_not_a_v1_export_is_named_by_what_is_wrong_with_its_text"
+        body: ced30be73782c8c53f3ee5bb25a98e4b8d2519e05fb46b0cc21e64892349aff8
   - node: 1832ec07-0475-4856-82d5-b8aa3483d3c7
     reviewed: 4327eb6af2cbd3a32314dc0847b641c97da02c8841a548b6602c193d983fd09d
     tests:

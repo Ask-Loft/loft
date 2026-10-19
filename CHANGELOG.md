@@ -16,6 +16,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   state can be, becomes an empty document under that key, derived from the export's state; an
   export whose elements carry another document is refused as `OtherDocument`, naming both.
   `convert` still refuses an empty export, which names no document.
+- `ConvertError::kind`, `ExportError::kind` and the reader's `Problem::kind` name each error by a
+  kind that stays the same from release to release (`containment`, `missing`, `no-document`,
+  `duplicate-key`, …; `syntax`, `eof` or `data` for an export that is not a v1 export), so a tool
+  that runs the converter or the reader over many inputs can count what went wrong by kind.
 - `loft init --no-plugin` and `loft skill install --no-plugin` write the skill and leave
   `.claude/settings.json` as it is: not created, not read, and not named in the request to
   commit. It suits a project that runs a skill built from source rather than the released

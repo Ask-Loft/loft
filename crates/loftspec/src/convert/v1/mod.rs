@@ -118,6 +118,35 @@ pub enum ConvertError {
     Binding(#[from] BindingError),
 }
 
+impl ConvertError {
+    /// The kind of the refusal, one name for each variant, which stays the same from release to
+    /// release and never depends on the values the message quotes, so a report can count
+    /// refusals by kind.
+    #[must_use]
+    pub const fn kind(&self) -> &'static str {
+        match self {
+            Self::NoDocument => "no-document",
+            Self::TwoDocuments { .. } => "two-documents",
+            Self::OtherDocument { .. } => "other-document",
+            Self::Annotations => "annotations",
+            Self::UnknownChild { .. } => "unknown-child",
+            Self::TwoParents { .. } => "two-parents",
+            Self::Orphan { .. } => "orphan",
+            Self::Containment { .. } => "containment",
+            Self::Missing { .. } => "missing",
+            Self::Label { .. } => "label",
+            Self::FacetTagBody { .. } => "facet-tag-body",
+            Self::UnderivableTag { .. } => "underivable-tag",
+            Self::TagCollision { .. } => "tag-collision",
+            Self::Link { .. } => "link",
+            Self::Scope { .. } => "scope",
+            Self::DecisionSubject { .. } => "decision-subject",
+            Self::DecisionElement { .. } => "decision-element",
+            Self::Binding(_) => "binding",
+        }
+    }
+}
+
 /// Converts a v1 export into a document. The document key is the v1 document UUID that every
 /// element of the export carries.
 pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {

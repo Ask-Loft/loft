@@ -22,6 +22,21 @@ use crate::names::CategoryName;
 #[error("not a Loft v1 Authored State export: {0}")]
 pub struct ExportError(#[from] serde_json::Error);
 
+impl ExportError {
+    /// The kind of the refusal, which stays the same from release to release: `syntax` for text
+    /// that is not JSON, `eof` for text that ends early, `data` for JSON that holds the wrong
+    /// data, and `io` for a failure to read it.
+    #[must_use]
+    pub fn kind(&self) -> &'static str {
+        match self.0.classify() {
+            serde_json::error::Category::Syntax => "syntax",
+            serde_json::error::Category::Eof => "eof",
+            serde_json::error::Category::Data => "data",
+            serde_json::error::Category::Io => "io",
+        }
+    }
+}
+
 /// A whole v1 Authored State.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

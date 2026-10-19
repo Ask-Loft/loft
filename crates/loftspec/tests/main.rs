@@ -38,6 +38,7 @@ mod convert_v1_sidecar;
 mod convert_v1_tag_names;
 mod diff;
 mod digest;
+mod error_kinds;
 mod ext;
 mod fmt;
 mod fmt_deleted;
