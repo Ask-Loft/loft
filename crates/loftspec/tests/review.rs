@@ -3,13 +3,11 @@
 //! Component CMP-1 (6) with CON-1 (7) and QA-1 (8), realized by F-1; ADR-1 (20) names RQ-2 as
 //! its outcome, through a driver and a consequence, and CMP-1 as affected.
 
-use crate::common::{component, criterion, key, small_document};
+use crate::common::{component, criterion, key, small_document, term};
 use loftspec::decision::DecisionState;
-use loftspec::document::{Document, Edge, TermEntry};
+use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
-use loftspec::ids::{
-    ComponentId, ConstraintId, CriterionId, DecisionId, FeatureId, NodeId, TermId,
-};
+use loftspec::ids::{ComponentId, ConstraintId, CriterionId, DecisionId, FeatureId, NodeId};
 use loftspec::kind::NodeKind;
 use loftspec::review::{Change, Packet, Unit, Via, pack};
 use loftspec::tree::{Constraint, Details};
@@ -260,15 +258,6 @@ fn decisions_follow_their_labels_then_their_keys() {
         document.decisions[1].state,
         DecisionState::Proposed
     ));
-}
-
-fn term(n: u32, name: &str, aliases: &[&str]) -> TermEntry {
-    TermEntry {
-        id: TermId::new(key(n)),
-        name: name.to_owned(),
-        definition: format!("What {name} means."),
-        aliases: aliases.iter().map(|alias| (*alias).to_owned()).collect(),
-    }
 }
 
 #[test]

@@ -411,3 +411,13 @@ pub fn with_hyphenated_tag(body: &str) -> Document {
     document.products[0].details.body = Some(body.to_owned());
     document
 }
+
+/// A term of the term list keyed `n`, with `name`, a definition built from it, and `aliases`.
+pub fn term(n: u32, name: &str, aliases: &[&str]) -> loftspec::document::TermEntry {
+    loftspec::document::TermEntry {
+        id: loftspec::ids::TermId::new(key(n)),
+        name: name.to_owned(),
+        definition: format!("What {name} means."),
+        aliases: aliases.iter().map(|alias| (*alias).to_owned()).collect(),
+    }
+}

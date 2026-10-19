@@ -31,12 +31,11 @@ pub fn run(root: &Path, skill: Option<skill::Plugin>, as_json: bool) -> Finished
     {
         return Stop::from(error).exit(SCHEMA, as_json);
     }
-    let installed = match skill.map(|plugin| skill::install(root, plugin)) {
-        Some(Ok(installed)) => Some(installed),
-        Some(Err(error)) => {
+    let installed = match skill.map(|plugin| skill::install(root, plugin)).transpose() {
+        Ok(installed) => installed,
+        Err(error) => {
             return json::stop(SCHEMA, vec![skill::error_json(&error)], &error, as_json);
         }
-        None => None,
     };
     let skills = installed
         .as_ref()
