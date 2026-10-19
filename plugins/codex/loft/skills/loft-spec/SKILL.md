@@ -39,6 +39,8 @@ no second reading.
 - Read [`references/reconciling.md`](references/reconciling.md) to link tests to the nodes
   they verify with `loft reconcile`, after changing the code or when the user asks which tests
   verify the specification.
+- Read [`references/choosing-the-next-change.md`](references/choosing-the-next-change.md) to
+  find what to build next from the published specification, and to plan it, before any code.
 - Also read [`references/format.md`](references/format.md) for the files, fields and statement
   forms of any node you write.
 - Also read [`references/writing-rules.md`](references/writing-rules.md) whenever you write or

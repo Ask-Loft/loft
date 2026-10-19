@@ -39,6 +39,7 @@ const SOURCE: &[(&str, &str)] = source![
     "agents/openai.yaml",
     "references/adopting-an-openspec-project.md",
     "references/changing-a-specified-product.md",
+    "references/choosing-the-next-change.md",
     "references/format.md",
     "references/lint-findings.md",
     "references/new-document.md",
