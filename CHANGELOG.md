@@ -3,6 +3,13 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- `loft init --no-plugin` and `loft skill install --no-plugin` write the skill and leave
+  `.claude/settings.json` as it is: not created, not read, and not named in the request to
+  commit. It suits a project that runs a skill built from source rather than the released
+  plugin. `loft init` refuses `--no-plugin` with `--no-skill` as a usage error.
+
 ## 2.2.0 (2026-10-18)
 
 - `loft status [--base <revision>]` reports where the tree stands: the lock's publish sequence,

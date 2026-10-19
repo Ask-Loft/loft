@@ -9432,6 +9432,18 @@ links:
       - file: "crates/loft-cli/tests/init.rs"
         name: "init_with_no_skill_writes_no_skill_and_the_same_tree"
         body: 1d17c5a55b992bf3a23f8a57a1f3ad9c2325f8ad8db90e8d7c63f72d54f7eaaf
+  - node: 01a1549d-6653-72d3-930f-ce5bf72933db
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/init.rs"
+        name: "init_refuses_no_skill_with_no_plugin_as_a_usage_error_naming_both_and_writes_nothing"
+        body: 81bc0f7bb6849ec838bbc11389e7026602eb21c4c3aa307a6360e16e5cdbd217
+  - node: 01a1549d-6653-72d3-930f-ce5c1574c82f
+    reviewed: 8aff81ec47276d4973e8f0ad3bb991f9b2782cd236082e4c5668e3486a7b3fe1
+    tests:
+      - file: "crates/loft-cli/tests/init.rs"
+        name: "init_refuses_no_skill_with_no_plugin_as_a_usage_error_naming_both_and_writes_nothing"
+        body: 81bc0f7bb6849ec838bbc11389e7026602eb21c4c3aa307a6360e16e5cdbd217
   - node: 01a13711-d7d2-7100-8424-b96531bdfd6e
     reviewed: de04bbf2f2c5f22759fe462eb901d10bb5c6a7f6acfcf5594d052b093d145490
     tests:
@@ -10545,6 +10557,12 @@ links:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_writes_nothing_outside_the_two_skill_directories_and_the_claude_settings"
         body: 815843a5a0c25b5a4089628ecb2e9ba55f2f21ad1bed35ff69281c7991ae2c85
+  - node: 01a1549d-6653-72d3-930f-ce5d71b3edcf
+    reviewed: 443fb62df511cfaef645e577d508866ec7e1737e14368b82bcdce2c8ba106c56
+    tests:
+      - file: "crates/loft-cli/tests/skill_install.rs"
+        name: "skill_install_with_no_plugin_writes_nothing_outside_the_two_skill_directories"
+        body: 2fbb6dd311c0f29e682fc449457fba089d1af0837897b9a461ef71acf4a0ca9e
   - node: 01a13654-bf86-77e9-8fd5-8dc705e61e20
     reviewed: 2b35e467a5a61e48c16cd4b866cada38180ca2f1733b9b56ad5d18875d695acd
     tests:
@@ -12258,6 +12276,36 @@ links:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by_hand"
         body: e073f08b0aa44fc52f8de60a4251533adb9807a514de8bed85f12ff7d17b93f8
+  - node: 01a1549d-6654-707a-b9b6-7420f871de8d
+    reviewed: 006aa0215cf6b9b14b62a025877ee6c4ba6da53fe4c7935bf5dbe84a1dc30f87
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "with_no_plugin_settings_are_left_byte_for_byte_whether_or_not_they_are_an_object"
+        body: c2031435d767a690b06203e79e4a96c9fd464c2e60ec47bcd2cd6a5f1679a41d
+  - node: 01a1549d-6654-707a-b9b6-7421b2bf079a
+    reviewed: 99fc4183c52d63df56c667daa82a0c3eb76f16c9f958514f9ed1589a242895ad
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "with_no_plugin_absent_settings_are_not_created"
+        body: 30652d6ccc76c21debb170ef553f46848326c46036ef569f96236be1814a608c
+  - node: 01a1549d-6654-707a-b9b6-7422e3c3d3c0
+    reviewed: 2c26339087e520e81dc5732a7c0a79bb13af977c4b10645520c812f7423316aa
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "with_no_plugin_the_text_names_no_plugin_and_gives_nothing_to_add_by_hand"
+        body: ff974ca3bbb350e6d04bfae314549c8914910b77888b73dc561b1b979d5f48ae
+  - node: 01a1549d-6654-707a-b9b6-742379d9a25f
+    reviewed: ba535cdd95e68bd042d09f055dfab0c5d593c2f5563d12691beb6d9ea6f602ce
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "with_no_plugin_the_request_to_commit_names_the_skill_directories_alone"
+        body: 6afdf4c3675c4884a11b2b68b572ddd6115faec41da64819df2c3b96d430ede7
+  - node: 01a1549d-6654-707a-b9b6-74240a1efe6b
+    reviewed: a2bd77aa547250605c9ff695ecf575943b28004c33d9f7e1b3913f74fe7432f6
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "with_no_plugin_the_skill_directories_are_written_as_without_it"
+        body: a99602de8f33098395e9db4aa949addf87abf75452447ee158b9835ec2e89509
   - node: 01a12e66-85dc-70ec-b5ed-93e254c4d234
     reviewed: 66cc6c26ad69647b264578f3a3c80a5c1ccc711c9704d65b25e8d83484bec700
     tests:

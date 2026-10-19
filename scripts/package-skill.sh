@@ -8,8 +8,8 @@ cd "$root"
 cargo build --quiet --release -p loft-cli
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
-# Packaging is not a use of `loft`: it sends no event and asks for no update.
-(cd "$scratch" && LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off "$root/target/release/loft" skill install >/dev/null)
+# Packaging is not a use of `loft`: it sends no event, asks for no update and needs no settings.
+(cd "$scratch" && LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off "$root/target/release/loft" skill install --no-plugin >/dev/null)
 for pair in "claude:.claude/skills/loft-spec" "codex:.agents/skills/loft-spec"; do
   host=${pair%%:*}
   package=${pair#*:}

@@ -201,6 +201,24 @@ fn init_with_no_skill_writes_no_skill_and_the_same_tree() {
     }
 }
 
+#[test]
+fn init_refuses_no_skill_with_no_plugin_as_a_usage_error_naming_both_and_writes_nothing() {
+    let scratch = Scratch::empty();
+    let output = scratch.loft(&["init", "--no-skill", "--no-plugin"]);
+    assert_eq!(output.status.code(), Some(2), "{}", stderr(&output));
+    let error = stderr(&output);
+    assert!(
+        error.contains("--no-skill") && error.contains("--no-plugin"),
+        "{error}"
+    );
+    assert!(error.contains("cannot be used with"), "{error}");
+    assert!(
+        snapshot(&scratch.0).is_empty(),
+        "{:?}",
+        snapshot(&scratch.0)
+    );
+}
+
 /// `loft init` run with `args` and the git simulator answering from `scenario`; it succeeds.
 fn init_in(scenario: &GitScenario, args: &[&str]) -> Output {
     let (output, _) = Scratch::empty().loft_in(&[&["init"][..], args].concat(), scenario);

@@ -44,7 +44,7 @@ use clap::{CommandFactory, Parser};
 use loftspec::lint::Severity;
 use loftspec_store::merge_driver::LAUNCHER;
 
-use cli::{Cli, Command, Format, ImportSource, SkillAction};
+use cli::{Cli, Command, Format, ImportSource, MergeDriverArgs, SkillAction};
 use finish::Finished;
 
 fn main() -> ExitCode {
@@ -92,11 +92,58 @@ fn import(root: &Path, source: ImportSource) -> Finished {
     }
 }
 
+/// Runs `loft merge-driver` with `args` in `root`.
+fn merge_driver(root: &Path, args: MergeDriverArgs) -> Finished {
+    match args {
+        MergeDriverArgs {
+            install: true,
+            command,
+            output,
+            ..
+        } => merge_driver::install(root, command.as_deref().unwrap_or(LAUNCHER), output.json()),
+        MergeDriverArgs {
+            base: Some(base),
+            ours: Some(ours),
+            theirs: Some(theirs),
+            path: Some(path),
+            output,
+            ..
+        } => merge_driver::run(
+            root,
+            &merge_driver::Inputs {
+                base: &base,
+                ours: &ours,
+                theirs: &theirs,
+                path: &path,
+            },
+            output.json(),
+        ),
+        // Clap requires the four paths unless `--install` is given.
+        MergeDriverArgs { .. } => Finished::usage(),
+    }
+}
+
+/// Whether writing the skill enables the plugin, given `--no-plugin`.
+const fn plugin(no_plugin: bool) -> skill::Plugin {
+    if no_plugin {
+        skill::Plugin::Leave
+    } else {
+        skill::Plugin::Enable
+    }
+}
+
 /// Runs `command` in the current directory.
 fn dispatch(command: Command) -> Finished {
     let root = Path::new(".");
     match command {
-        Command::Init { no_skill, output } => init::run(root, !no_skill, output.json()),
+        Command::Init {
+            no_skill,
+            no_plugin,
+            output,
+        } => {
+            let skill = (!no_skill).then_some(plugin(no_plugin));
+            init::run(root, skill, output.json())
+        }
         Command::Fmt { check, output } => fmt::run(root, check, output.json()),
         Command::Check { fail_on, output } => {
             check::run(root, fail_on.map(Severity::from), output.json())
@@ -120,31 +167,7 @@ fn dispatch(command: Command) -> Finished {
         }
         Command::Verify { output } => verify::run(root, output.json()),
         Command::Status { base, output } => status::run(root, base.as_deref(), output.json()),
-        Command::MergeDriver {
-            install: true,
-            command,
-            output,
-            ..
-        } => merge_driver::install(root, command.as_deref().unwrap_or(LAUNCHER), output.json()),
-        Command::MergeDriver {
-            base: Some(base),
-            ours: Some(ours),
-            theirs: Some(theirs),
-            path: Some(path),
-            output,
-            ..
-        } => merge_driver::run(
-            root,
-            &merge_driver::Inputs {
-                base: &base,
-                ours: &ours,
-                theirs: &theirs,
-                path: &path,
-            },
-            output.json(),
-        ),
-        // Clap requires the four paths unless `--install` is given.
-        Command::MergeDriver { .. } => Finished::usage(),
+        Command::MergeDriver(args) => merge_driver(root, args),
         Command::Render {
             markdown,
             json,
@@ -162,8 +185,8 @@ fn dispatch(command: Command) -> Finished {
             output.json(),
         ),
         Command::Skill {
-            action: SkillAction::Install { output },
-        } => skill::run(root, output.json()),
+            action: SkillAction::Install { no_plugin, output },
+        } => skill::run(root, plugin(no_plugin), output.json()),
         Command::RecordInstall { way, output } => record_install::run(way, output.json()),
         Command::Telemetry { action } => {
             let (action, as_json) = action.split();

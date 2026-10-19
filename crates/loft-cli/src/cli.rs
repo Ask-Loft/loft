@@ -36,6 +36,9 @@ pub enum Command {
         /// Write only `spec/`, without the skill for coding agents.
         #[arg(long)]
         no_skill: bool,
+        /// Write the skill without enabling the Claude Code plugin in `.claude/settings.json`.
+        #[arg(long, conflicts_with = "no_skill")]
+        no_plugin: bool,
         #[command(flatten)]
         output: Output,
     },
@@ -110,29 +113,7 @@ pub enum Command {
         output: Output,
     },
     /// Merge one file of `spec/` as git's merge driver, writing the result to `<ours>` (RQ-150).
-    MergeDriver {
-        /// Register the driver in the repository instead of merging (RQ-152).
-        #[arg(long, conflicts_with_all = ["base", "ours", "theirs", "path"])]
-        install: bool,
-        /// With `--install`, the shell command that starts `loft` where git runs the driver, such
-        /// as `npx --no-install loft` for a dev dependency; `loft` unless given.
-        #[arg(long, requires = "install", value_name = "COMMAND")]
-        command: Option<String>,
-        /// The common ancestor's version (git's `%O`).
-        #[arg(required_unless_present = "install")]
-        base: Option<PathBuf>,
-        /// This side's version, which the merge overwrites (git's `%A`).
-        #[arg(required_unless_present = "install")]
-        ours: Option<PathBuf>,
-        /// The other side's version (git's `%B`).
-        #[arg(required_unless_present = "install")]
-        theirs: Option<PathBuf>,
-        /// The path of the file being merged, as git names it (git's `%P`).
-        #[arg(required_unless_present = "install")]
-        path: Option<String>,
-        #[command(flatten)]
-        output: Output,
-    },
+    MergeDriver(MergeDriverArgs),
     /// Manage the `loft-spec` skill that teaches coding agents to write a specification.
     Skill {
         #[command(subcommand)]
@@ -177,11 +158,40 @@ pub enum Command {
     },
 }
 
+/// The arguments of `loft merge-driver`: `--install`, or the four paths git passes a driver.
+#[derive(Args)]
+pub struct MergeDriverArgs {
+    /// Register the driver in the repository instead of merging (RQ-152).
+    #[arg(long, conflicts_with_all = ["base", "ours", "theirs", "path"])]
+    pub install: bool,
+    /// With `--install`, the shell command that starts `loft` where git runs the driver, such
+    /// as `npx --no-install loft` for a dev dependency; `loft` unless given.
+    #[arg(long, requires = "install", value_name = "COMMAND")]
+    pub command: Option<String>,
+    /// The common ancestor's version (git's `%O`).
+    #[arg(required_unless_present = "install")]
+    pub base: Option<PathBuf>,
+    /// This side's version, which the merge overwrites (git's `%A`).
+    #[arg(required_unless_present = "install")]
+    pub ours: Option<PathBuf>,
+    /// The other side's version (git's `%B`).
+    #[arg(required_unless_present = "install")]
+    pub theirs: Option<PathBuf>,
+    /// The path of the file being merged, as git names it (git's `%P`).
+    #[arg(required_unless_present = "install")]
+    pub path: Option<String>,
+    #[command(flatten)]
+    pub output: Output,
+}
+
 #[derive(Subcommand)]
 pub enum SkillAction {
     /// Write the skill for Claude Code and Codex into the current directory, replacing any
     /// earlier version.
     Install {
+        /// Leave `.claude/settings.json` as it is, without enabling the Claude Code plugin.
+        #[arg(long)]
+        no_plugin: bool,
         #[command(flatten)]
         output: Output,
     },
@@ -299,7 +309,7 @@ impl Command {
             Self::Verify { .. } => Some("verify"),
             Self::Render { .. } => Some("render"),
             Self::Skill { .. } => Some("skill install"),
-            Self::MergeDriver { .. }
+            Self::MergeDriver(..)
             | Self::Status { .. }
             | Self::RecordInstall { .. }
             | Self::Telemetry { .. }

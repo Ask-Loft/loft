@@ -119,6 +119,19 @@ fn skill_install_writes_nothing_outside_the_two_skill_directories_and_the_claude
     assert_eq!(outside, [".claude/settings.json", "README.md"]);
 }
 
+#[test]
+fn skill_install_with_no_plugin_writes_nothing_outside_the_two_skill_directories() {
+    let scratch = Scratch::empty();
+    fs::write(scratch.0.join("README.md"), "readme").unwrap();
+    let output = scratch.loft(&["skill", "install", "--no-plugin"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let outside: Vec<String> = snapshot(&scratch.0)
+        .into_keys()
+        .filter(|path| !path.starts_with(CLAUDE) && !path.starts_with(CODEX))
+        .collect();
+    assert_eq!(outside, ["README.md"]);
+}
+
 /// A directory where `.claude` is a file, so the Claude Code package cannot be written, and the
 /// Codex directory holds a file of its own.
 fn unwritable() -> Scratch {
