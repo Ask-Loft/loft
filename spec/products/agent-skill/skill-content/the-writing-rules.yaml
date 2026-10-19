@@ -87,6 +87,16 @@ requirements:
         name: "The rules tell the agent that a target names a metric, a band, a unit, an aggregation, a scenario and an environment."
       - key: 01a154c3-02c1-74da-a483-d4bde17444f1
         name: "The rules tell the agent that an adjective with no metric and no bounds is not a target."
+  - key: 01a154db-110e-709b-ab99-faaf8f67ad2c
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach where a Quality Attribute stands."
+    criteria:
+      - key: 01a154db-110e-709b-ab99-fab0fa565578
+        name: "The rules tell the agent that a Quality Attribute stands under the Feature, Feature Group or Component it measures."
+      - key: 01a154db-110e-709b-ab99-fab168526aca
+        name: "The rules tell the agent that a Product holds no Quality Attribute."
   - key: 01a13654-6e12-74a1-ad7f-e8767b4cf84b
     statement:
       form: ubiquitous
