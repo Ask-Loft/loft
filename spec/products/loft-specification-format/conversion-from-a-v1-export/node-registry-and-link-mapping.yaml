@@ -190,6 +190,18 @@ requirements:
         name: "An export whose elements carry a document UUID other than the named key is refused with an error naming both."
       - key: 01a154d3-cbfb-74fc-9749-edc7f0deab30
         name: "An export whose elements carry the named key converts to the document it converts to without one."
+  - key: 01a154d3-cbfb-74fc-9749-edc81a85e46e
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "name each refusal by a kind that stays the same from release to release."
+    criteria:
+      - key: 01a154d3-cbfb-74fc-9749-edc946ec1897
+        name: "Each kind of refusal has a kind name that no other kind of refusal has."
+      - key: 01a154d3-cbfb-74fc-9749-edcac5029930
+        name: "A refusal's kind name does not depend on the values its message quotes."
+      - key: 01a154d3-cbfb-74fc-9749-edcb6057a504
+        name: "An export that is not a v1 export is named by whether its text is not JSON, ends early or holds the wrong data."
   - key: 732ad96d-1e55-4a5b-95c2-1ea08d456803
     statement:
       form: ubiquitous
