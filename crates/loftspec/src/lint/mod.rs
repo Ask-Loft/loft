@@ -164,7 +164,29 @@ pub struct Finding {
     pub message: String,
 }
 
+/// What makes a finding of one tree the same as a finding of another (the `loft check` Feature):
+/// its rule, the keys it names in any order, and its term. Its site, body line and message are
+/// left out, since a moved node changes the one and a count the other.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Identity {
+    pub rule: RuleId,
+    pub keys: Vec<Key>,
+    pub term: Option<String>,
+}
+
 impl Finding {
+    /// The finding's identity across trees.
+    #[must_use]
+    pub fn identity(&self) -> Identity {
+        let mut keys: Vec<Key> = self.subjects.iter().map(|subject| subject.key).collect();
+        keys.sort_unstable();
+        Identity {
+            rule: self.rule,
+            keys,
+            term: self.term.clone(),
+        }
+    }
+
     /// The order of a report: file path, line, column, rule, then the keys the finding names
     /// (AC-420); then the body line and the term, so that no two findings tie.
     fn order(&self, other: &Self) -> Ordering {

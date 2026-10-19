@@ -9884,7 +9884,7 @@ links:
         body: f820c90f3c4a0defe451f97ce9f07bcafec76ad74390a93a3945bc73e98088b4
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "a_vague_quantifier_added_to_a_statement_is_introduced"
-        body: 0cb03c0ae4c03578ad21483f84241ded9c589cf23f5d69497ecbf923b29eba8c
+        body: bf8ccd070d0d7ea5db5740ae74a827f7b8bd53695db09924a7696ef051e44497
       - file: "crates/loft-cli/tests/check_baseline.rs"
         name: "each_finding_carries_its_change_and_the_base_is_named"
         body: 40cbc6c11d168ce38bd5f13d231695df7d54c2b1b2155169003ae254c5253a6f
@@ -9902,7 +9902,7 @@ links:
         body: 760aa3858b41e30f0d024b83e253ad25bfa8ce972e4aac3eed46de5818af1031
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "a_tree_checked_against_itself_holds_no_introduced_and_no_resolved_finding"
-        body: ff5a0fca70a379b451679b368413a4f913b00e8dd80c1f11878d74ec790f7a54
+        body: 5acf46224339a28f4f24800825823ef61cb5a58c0fa4653c4768e57dfc2d7a26
       - file: "crates/loft-cli/tests/check_baseline.rs"
         name: "the_base_tree_is_read_from_git_not_from_the_working_tree"
         body: 81f136e60f3fe153b50e1a0a14dcf7f498de57c915e1fb5a3c004a9b9504892d
@@ -9911,7 +9911,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "the_base_is_linted_under_the_working_tree_s_configuration"
-        body: ce2d5391754df185e58373fed2887b855eee35fe469e61807b0b2b20bc8687dd
+        body: 6f7e4ac9cadd9ceb0227350e595737fd5724c71f63be2ddc0ec3b82268528fc3
   - node: 01a154a3-4f92-72c0-97ef-6357cbd4ef3d
     reviewed: c2a8599d6b2a321a9f07eff44a5c4c0a5057994d21015aa12103df4cd6f5c774
     tests:
@@ -10002,6 +10002,9 @@ links:
   - node: 01a154a3-4f92-72c0-97ef-63649ad1a9ac
     reviewed: fbc5f3a297974e1e9e52bd4d386349872269957466a800d28605cefcc150b438
     tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "each_configuration_file_is_digested_by_its_bytes_and_an_absent_one_is_none"
+        body: 86bfb37e1ff6510b9a225d256988b245ad5959e7142d519245d2e143862ce7a5
       - file: "crates/loft-cli/tests/check_baseline.rs"
         name: "the_lint_configurations_are_named_by_digest_and_compared"
         body: 00852b54115fb527602184822aa6b951259d8bd72c9b36427fefd5df4ff07c6f
@@ -10010,7 +10013,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "the_configurations_are_the_same_exactly_when_both_files_give_one"
-        body: 71e74689a97cc5f6ca7eae7af54ccb85a341540ffe3b17a6adce0fc47aa8204d
+        body: 89993d5d3d017c48895b56469f5b2cf10dfbc6043501f57564c1c5939f40704e
       - file: "crates/loft-cli/tests/check_baseline.rs"
         name: "the_lint_configurations_are_named_by_digest_and_compared"
         body: 00852b54115fb527602184822aa6b951259d8bd72c9b36427fefd5df4ff07c6f

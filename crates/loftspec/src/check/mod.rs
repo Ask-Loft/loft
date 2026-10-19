@@ -18,7 +18,7 @@ use crate::hash::{DocumentHashes, hash_document};
 use crate::lint::{Finding, LintConfig, lint};
 use crate::validate::{ValidationError, conflict_errors, index_errors, validate};
 
-pub use baseline::{Baselined, Change, Split, check_against, split};
+pub use baseline::{Baselined, Change, LintConfigs, Split, check_against, split};
 
 /// A validation error placed at the sites of the elements it names.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -73,18 +73,21 @@ impl Checked {
 /// Checks a `spec/` tree.
 #[must_use]
 pub fn check(files: &Files) -> Checked {
-    checked_under(files).0
+    checked_under(files, lint_config(files)).0
 }
 
-/// Checks a `spec/` tree, and gives the lint configuration it was linted under, where the tree
-/// reads and its configuration does.
-fn checked_under(files: &Files) -> (Checked, Option<LintConfig>) {
+/// Checks a `spec/` tree under `config`, its lint configuration as read, and gives the
+/// configuration back where the tree reads and the configuration does.
+fn checked_under(
+    files: &Files,
+    config: Result<LintConfig, Vec<ReadError>>,
+) -> (Checked, Option<LintConfig>) {
     let (document, sites) = match read_sited(files) {
         Ok(read) => read,
         Err(errors) => return (Checked::Unread(errors), None),
     };
     let invalid = placed(validate(&document), &sites);
-    let (config, findings, used) = match lint_config(files) {
+    let (config, findings, used) = match config {
         Ok(config) => (Vec::new(), lint(&document, &sites, &config), Some(config)),
         Err(errors) => (errors, Vec::new(), None),
     };

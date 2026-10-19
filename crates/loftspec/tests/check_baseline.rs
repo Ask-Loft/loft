@@ -136,7 +136,7 @@ fn lq_002(changes: &[Change], findings: &[Finding]) -> Vec<Change> {
 #[test]
 fn a_tree_checked_against_itself_holds_no_introduced_and_no_resolved_finding() {
     let baselined = check_against(&files(), &files()).unwrap();
-    let split = baselined.split.unwrap();
+    let split = baselined.split;
     assert_ne!(baselined.checked.findings(), []);
     assert!(
         split
@@ -150,7 +150,7 @@ fn a_tree_checked_against_itself_holds_no_introduced_and_no_resolved_finding() {
 #[test]
 fn a_vague_quantifier_added_to_a_statement_is_introduced() {
     let baselined = check_against(&tree(VAGUE, None), &tree(PLAIN, None)).unwrap();
-    let split = baselined.split.unwrap();
+    let split = baselined.split;
     assert_eq!(
         lq_002(&split.changes, baselined.checked.findings()),
         [Change::Introduced]
@@ -160,13 +160,37 @@ fn a_vague_quantifier_added_to_a_statement_is_introduced() {
 #[test]
 fn the_base_is_linted_under_the_working_tree_s_configuration() {
     let baselined = check_against(&tree(VAGUE, None), &tree(VAGUE, Some(NO_LQ_002))).unwrap();
-    let split = baselined.split.unwrap();
+    let split = baselined.split;
     assert_eq!(
         lq_002(&split.changes, baselined.checked.findings()),
         [Change::Preexisting]
     );
     let quiet = check_against(&tree(VAGUE, Some(NO_LQ_002)), &tree(VAGUE, None)).unwrap();
-    assert_eq!(quiet.split.unwrap().resolved, []);
+    assert_eq!(quiet.split.resolved, []);
+}
+
+#[test]
+fn each_configuration_file_is_digested_by_its_bytes_and_an_absent_one_is_none() {
+    let quoted = NO_LQ_002.replace("LQ-002", "\"LQ-002\"");
+    let configs = check_against(
+        &tree(PLAIN, Some(NO_LQ_002)),
+        &tree(PLAIN, Some(quoted.as_str())),
+    )
+    .unwrap()
+    .lint_configs;
+    assert!(configs.same, "{configs:?}");
+    assert_ne!(configs.tree, configs.base);
+    assert!(
+        configs
+            .tree
+            .as_deref()
+            .is_some_and(|d| d.starts_with("sha256:"))
+    );
+    let absent = check_against(&tree(PLAIN, None), &tree(PLAIN, None)).unwrap();
+    assert_eq!(
+        (absent.lint_configs.tree, absent.lint_configs.base),
+        (None, None)
+    );
 }
 
 #[test]
@@ -175,7 +199,8 @@ fn the_configurations_are_the_same_exactly_when_both_files_give_one() {
     let same = |tree_lint, base_lint| {
         check_against(&tree(PLAIN, tree_lint), &tree(PLAIN, base_lint))
             .unwrap()
-            .same_config
+            .lint_configs
+            .same
     };
     assert!(same(None, None));
     assert!(same(Some(NO_LQ_002), Some(NO_LQ_002)));

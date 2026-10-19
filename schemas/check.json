@@ -285,6 +285,7 @@
           "type": "string"
         },
         "lintConfig": {
+          "description": "Each tree's spec/lint.yaml: the digests are of the files' bytes, and same is true when both give the same configuration once read, so a change of quoting alone gives two digests and same true.",
           "type": "object",
           "additionalProperties": false,
           "required": [
