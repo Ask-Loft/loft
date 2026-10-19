@@ -14,6 +14,8 @@ requirements:
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e805fab6c72b
         name: "The workflow tells the agent to report the findings of `loft check --format json` first."
+      - key: 01a154c3-02c1-74da-a483-d48f1df72447
+        name: "The workflow tells the agent to run `loft check --baseline` against the base of a change under review and to report its introduced findings apart from its preexisting ones."
   - key: 01a13654-6e12-74a1-ad7f-e8061b5c1bb6
     statement:
       form: ubiquitous
@@ -28,6 +30,16 @@ requirements:
         name: "The workflow tells the agent to check that each Feature holds one capability."
       - key: 01a13654-6e12-74a1-ad7f-e80a59b52d15
         name: "The workflow tells the agent to check that each accepted decision is complete."
+      - key: 01a154c3-02c1-74da-a483-d49022a72a78
+        name: "The workflow names precedence, where two assertions both apply and nothing says which wins, as a kind of contradiction."
+      - key: 01a154c3-02c1-74da-a483-d4918e7d5c40
+        name: "The workflow tells the agent to compare numeric limits by their exact comparators."
+      - key: 01a154c3-02c1-74da-a483-d492ec4ee33c
+        name: "The workflow tells the agent to look for a violation of the kind a Constraint's `conservationKind` names."
+      - key: 01a154c3-02c1-74da-a483-d4939703e6cf
+        name: "The workflow tells the agent that similar wording does not establish coverage."
+      - key: 01a154c3-02c1-74da-a483-d4943837bce3
+        name: "The workflow tells the agent to say what a lint finding means for the text rather than repeat its message."
   - key: 01a13654-6e12-74a1-ad7f-e80b547d12bf
     statement:
       form: ubiquitous
@@ -40,3 +52,50 @@ requirements:
         name: "The workflow tells the agent to report only findings it can show in the text."
       - key: 01a13654-6e12-74a1-ad7f-e80ef947241e
         name: "The workflow tells the agent to change nothing unless the user asks for fixes."
+      - key: 01a154c3-02c1-74da-a483-d4958f6d9702
+        name: "The workflow tells the agent to give the smallest edit that removes each finding."
+      - key: 01a154c3-02c1-74da-a483-d49683b7747a
+        name: "The workflow tells the agent to say what it did not examine."
+      - key: 01a154c3-02c1-74da-a483-d497e9b941ee
+        name: "The workflow tells the agent never to manufacture a finding."
+      - key: 01a154c3-02c1-74da-a483-d4989f10c7df
+        name: "The workflow tells the agent to record the `loft` version, the commit and the lint configuration of a review."
+      - key: 01a154c3-02c1-74da-a483-d499d6cb0dbc
+        name: "The workflow tells the agent never to compare reports made with different `loft` versions or lint configurations."
+      - key: 01a154c3-02c1-74da-a483-d49a36e19015
+        name: "The workflow tells the agent that a check which found nothing is no proof that nothing is there."
+  - key: 01a154c3-02c1-74da-a483-d49bd60a0231
+    statement:
+      form: event_driven
+      when: "the user asks for a review of a change on a branch"
+      system: "the skill"
+      shall: "direct the agent to review the change against the context `loft review` gives."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d49c308e15cf
+        name: "The workflow tells the agent to take the assertions under review from `loft review --base`."
+      - key: 01a154c3-02c1-74da-a483-d49da8915a5a
+        name: "The workflow tells the agent to read each changed assertion against its whole unit, unchanged nodes included."
+      - key: 01a154c3-02c1-74da-a483-d49e45bfb7c3
+        name: "The workflow tells the agent to name the base it reviewed against."
+  - key: 01a154c3-02c1-74da-a483-d49f932495e5
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach how a finding is disposed of."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4a041349c8a
+        name: "The workflow names three dispositions, a fix, a node kept with a reason, and a suppression of the exact rule at the exact node with a reason."
+      - key: 01a154c3-02c1-74da-a483-d4a185ba64d7
+        name: "The workflow tells the agent to propose a suppression in its final report rather than ask for it during the review."
+      - key: 01a154c3-02c1-74da-a483-d4a268edbef6
+        name: "The workflow tells the agent never to weaken a node's meaning to satisfy a rule."
+  - key: 01a154c3-02c1-74da-a483-d4a32bb8d371
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a large fix is made in waves."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4a4cd7e5b0c
+        name: "The workflow tells the agent to make a large set of fixes in waves, each on its own branch, merged and published before the next starts."
+      - key: 01a154c3-02c1-74da-a483-d4a5fda38e99
+        name: "The workflow tells the agent to check each wave against the latest published state before starting it."

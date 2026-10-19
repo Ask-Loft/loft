@@ -41,6 +41,8 @@ requirements:
         name: "The rules name failures, refusals, empty states and ordering as conditions to cover."
       - key: 01a13654-6e12-74a1-ad7f-e86a2426d348
         name: "The rules tell the agent that a criterion which only repeats its Requirement covers nothing."
+      - key: 01a154c3-02c1-74da-a483-d4badaf0dc62
+        name: "The rules tell the agent to check the criteria a change keeps for uncovered conditions, as well as the ones it adds."
   - key: 01a13654-6e12-74a1-ad7f-e86b92745177
     statement:
       form: ubiquitous
@@ -59,6 +61,8 @@ requirements:
         name: "The rules tell the agent to promote a Requirement that holds more than one concern to a Feature."
       - key: 01a13654-6e12-74a1-ad7f-e86fac4d1522
         name: "The rules tell the agent not to split such a Requirement into siblings that repeat one condition."
+      - key: 01a154c3-02c1-74da-a483-d4bbe827dc5f
+        name: "The rules tell the agent to agree the new outline with the user before writing its criteria."
   - key: 01a13654-6e12-74a1-ad7f-e870a74c4ec6
     statement:
       form: ubiquitous
@@ -71,6 +75,8 @@ requirements:
         name: "The rules tell the agent to state an obligation in a statement, a criterion, a Constraint or a decision."
       - key: 01a13654-6e12-74a1-ad7f-e873e2b02140
         name: "The rules tell the agent to put prose that needs headings in a Section."
+      - key: 01a154c3-02c1-74da-a483-d4bc19f2c1fe
+        name: "The rules tell the agent to fix a criterion that no statement covers by widening the statement or moving the criterion, never by completing the body."
   - key: 01a13654-6e12-74a1-ad7f-e874276c0e47
     statement:
       form: ubiquitous
@@ -79,6 +85,8 @@ requirements:
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e875e4f2a1b7
         name: "The rules tell the agent that a target names a metric, a band, a unit, an aggregation, a scenario and an environment."
+      - key: 01a154c3-02c1-74da-a483-d4bde17444f1
+        name: "The rules tell the agent that an adjective with no metric and no bounds is not a target."
   - key: 01a13654-6e12-74a1-ad7f-e8767b4cf84b
     statement:
       form: ubiquitous
@@ -95,6 +103,8 @@ requirements:
         name: "The rules tell the agent to edit in place a decision that has no label yet."
       - key: 01a13754-833e-725b-b941-6355848f9798
         name: "The rules tell the agent to supersede a decision that has a label only after asking the user."
+      - key: 01a154c3-02c1-74da-a483-d4bef53a0272
+        name: "The rules tell the agent to link a decision's subjects by name and never to copy their prose into the decision."
   - key: 01a13654-6e12-74a1-ad7f-e879924837c8
     statement:
       form: ubiquitous
@@ -147,3 +157,37 @@ requirements:
         name: "The rules tell the agent never to write a criterion whose only content is that an excluded capability is absent."
       - key: 01a13816-ded1-7512-a998-e0818eaaf9bb
         name: "The rules tell the agent to record what is out of scope in a decision or in the body of the node it bounds."
+  - key: 01a154c3-02c1-74da-a483-d4bf9baab7f9
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that owning a Component and using it are separate relations."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4c0769ced2c
+        name: "The rules tell the agent that `scopedTo` names whose a Component is."
+      - key: 01a154c3-02c1-74da-a483-d4c1a4566b3a
+        name: "The rules tell the agent that `realizes` names each Feature that uses a Component."
+      - key: 01a154c3-02c1-74da-a483-d4c2bd3d437e
+        name: "The rules tell the agent to reuse a Component across Products rather than copy it."
+  - key: 01a154c3-02c1-74da-a483-d4c3effaec16
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a specification states guarantees and not provisioning."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4c4a11131f9
+        name: "The rules tell the agent to state the behaviour and the targets the product guarantees."
+      - key: 01a154c3-02c1-74da-a483-d4c50dfca1bd
+        name: "The rules tell the agent never to state a sizing or capacity choice as a node."
+  - key: 01a154c3-02c1-74da-a483-d4c6672fa2a8
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a change follows the conventions of its document."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4c7ea980d18
+        name: "The rules tell the agent to follow the conventions the document already keeps."
+      - key: 01a154c3-02c1-74da-a483-d4c81f3a6527
+        name: "The rules tell the agent not to reword a published Requirement the user did not ask about."
+      - key: 01a154c3-02c1-74da-a483-d4c97ab27ab8
+        name: "The rules tell the agent to report once a departure from the rules that runs through the whole document."

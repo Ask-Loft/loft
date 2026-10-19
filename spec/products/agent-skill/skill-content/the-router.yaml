@@ -63,6 +63,8 @@ requirements:
         name: "A `spec/` that holds only what `loft init` wrote is routed as a new document."
       - key: 01a13754-833e-725b-b941-63521f349f0d
         name: "The router tells the agent not to read again a reference it read earlier in the conversation."
+      - key: 01a154c3-02c1-74da-a483-d4ae65db940d
+        name: "Choosing the next change to build from the published specification is routed to `references/choosing-the-next-change.md`."
   - key: 01a13654-6e12-74a1-ad7f-e8583ffd796c
     statement:
       form: ubiquitous
@@ -79,3 +81,29 @@ requirements:
         name: "The router tells the agent to finish with `loft fmt --check` and `loft check --fail-on warning` passing."
       - key: 01a13654-6e12-74a1-ad7f-e85dc7da5922
         name: "The router tells the agent to report what it changed."
+      - key: 01a154c3-02c1-74da-a483-d4af1b246341
+        name: "The router tells the agent to leave other branches, and uncommitted work it did not make, as they are."
+      - key: 01a154c3-02c1-74da-a483-d4b01aea0f9b
+        name: "The router tells the agent that the last published state is the contract and that work on a branch is a candidate."
+      - key: 01a154c3-02c1-74da-a483-d4b1b2043249
+        name: "The router tells the agent never to rewrite the history of a published state, and to supersede or revert it instead."
+      - key: 01a154c3-02c1-74da-a483-d4b26ac4b932
+        name: "The router tells the agent to quote labels, keys and commits exactly."
+  - key: 01a154c3-02c1-74da-a483-d4b36e6d537f
+    statement:
+      form: ubiquitous
+      system: "The router"
+      shall: "state which steps of a specification task need the user's approval."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4b48b965e33
+        name: "The router tells the agent that editing `spec/`, running `loft fmt`, `loft check`, `loft review` and `loft reconcile`, and committing on the working branch are part of the specification task the user asked for."
+      - key: 01a154c3-02c1-74da-a483-d4b5323f9267
+        name: "The router tells the agent to ask every question that would change the content once, before the work starts."
+      - key: 01a154c3-02c1-74da-a483-d4b6a19dd39d
+        name: "The router tells the agent that a plan the user approved covers the commits it lists on the working branch."
+      - key: 01a154c3-02c1-74da-a483-d4b77091d61c
+        name: "The router tells the agent to ask before each push, each merge into a shared branch, each `loft publish`, each deletion of a branch, each rewrite of history and each supersession of an accepted decision."
+      - key: 01a154c3-02c1-74da-a483-d4b834d5008f
+        name: "The router tells the agent that one approval covers only the steps it names."
+      - key: 01a154c3-02c1-74da-a483-d4b92beca55d
+        name: "The router tells the agent to list proposed suppressions and edits to published Requirements the user did not ask about together in its final report."

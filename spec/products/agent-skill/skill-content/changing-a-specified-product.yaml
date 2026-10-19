@@ -34,6 +34,10 @@ requirements:
         name: "The workflow tells the agent that `loft render` writes a Markdown projection to search by name."
       - key: 01a13754-833e-725b-b941-633d59fd0a4f
         name: "The workflow tells the agent that `loft find` prints a node's key, label and file from its label, slug or name."
+      - key: 01a154c3-02c1-74da-a483-d4713dd09a57
+        name: "The workflow tells the agent to confirm a found node's name and kind in its file before editing it."
+      - key: 01a154c3-02c1-74da-a483-d472ab94d30c
+        name: "The workflow tells the agent to find every reference to a Product or a tag by name before deleting it."
   - key: 01a13654-6e12-74a1-ad7f-e7db3840bd52
     statement:
       form: ubiquitous
@@ -50,3 +54,15 @@ requirements:
         name: "The workflow tells the agent that a deleted node's label is never allocated again."
       - key: 01a137a8-ae5b-7395-a025-0da60323e0f6
         name: "The workflow tells the agent that `loft fmt` drops a deleted node's binding and writes a retired or superseded decision's reference to it as its former label."
+  - key: 01a154c3-02c1-74da-a483-d47342dd5547
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach that a branch and a commit each carry one intent."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d474fb43cfdb
+        name: "The workflow tells the agent to keep one intent to a branch and to a commit."
+      - key: 01a154c3-02c1-74da-a483-d475bc6e1d6a
+        name: "The workflow tells the agent to compare `git diff` with the intent, node by node, before committing."
+      - key: 01a154c3-02c1-74da-a483-d4767ccbc2cf
+        name: "The workflow tells the agent that a clean `loft check` does not show that the change means what was intended."

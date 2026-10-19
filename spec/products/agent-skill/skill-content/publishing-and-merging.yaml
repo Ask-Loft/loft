@@ -49,3 +49,17 @@ requirements:
         name: "The workflow tells the agent to run `loft publish` in the stopped merge or rebase of the publish branch."
       - key: 01a13654-6e12-74a1-ad7f-e80246ce001b
         name: "The workflow tells the agent to run the command that the settling publish prints."
+  - key: 01a154c3-02c1-74da-a483-d48a9564ec1c
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the base a branch starts from and merges into."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d48b4b885bfc
+        name: "The workflow tells the agent to name the base of a branch explicitly."
+      - key: 01a154c3-02c1-74da-a483-d48ca373f015
+        name: "The workflow tells the agent to start a branch from the latest published state of the publish branch."
+      - key: 01a154c3-02c1-74da-a483-d48d9b959e08
+        name: "The workflow tells the agent to rebase or merge with the merge driver installed and to settle each conflict once."
+      - key: 01a154c3-02c1-74da-a483-d48efa6494da
+        name: "The workflow tells the agent never to retry a failed git step that discards work without asking the user."
