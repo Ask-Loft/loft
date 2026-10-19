@@ -9747,6 +9747,78 @@ links:
       - file: "crates/loft-cli/tests/check.rs"
         name: "a_finding_at_or_above_fail_on_is_a_failed_check_in_json"
         body: 05379f43fdb3339c5c269e7b6594d7a7fc440cd1ba5d7376d093c632b0efbbbb
+  - node: 01a154a3-4f92-72c0-97ef-6350ca1051b8
+    reviewed: 3f1653aecfceab962fb699e11198ba55a0ac7af6000652ee1e9dfc1737b34503
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_finding_of_the_same_rule_subjects_and_term_is_preexisting"
+        body: 912dbd15aeed44062e738a94147f0132bc9c98e46820da87ea92989edfacf9b5
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_finding_of_another_rule_subject_or_term_is_introduced_and_the_base_s_resolved"
+        body: b9058dea1b7d57743729bef29cab345bc08784f8cff67823c9ed2c729a2be669
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_order_of_a_finding_s_subjects_does_not_tell_it_apart"
+        body: f0da4588dd67d91a3447cd2164e96311dc0970011a97a080ef14e86e79b0e8c1
+  - node: 01a154a3-4f92-72c0-97ef-6351a295b879
+    reviewed: d9b4e00da43742502cc0ba82d3cdfca9046af8f3337ee7e37862195f92e1ca38
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_finding_whose_node_lies_at_another_file_or_line_is_preexisting"
+        body: 511f996bab6d2c5f7a29c6ab54c08d6764cb855f672ea94de31dc146a7a1c1eb
+  - node: 01a154a3-4f92-72c0-97ef-63524f50b744
+    reviewed: 5659238bc69ad05767b47728315b03832f8254ce9cfe71850957ca8b178fd0b6
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_finding_whose_message_gives_another_count_is_preexisting"
+        body: a1ee14639b1e2ec0e181372a1af0571a1d1ddcb926c82f100db08b0904186c9d
+  - node: 01a154a3-4f92-72c0-97ef-6353eeda5dec
+    reviewed: 79856dbcc50c367deb521a6d0210ee733065f2c33f2249b5c1824deae3b51621
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "two_findings_where_the_base_had_one_give_one_introduced"
+        body: f820c90f3c4a0defe451f97ce9f07bcafec76ad74390a93a3945bc73e98088b4
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_vague_quantifier_added_to_a_statement_is_introduced"
+        body: 0cb03c0ae4c03578ad21483f84241ded9c589cf23f5d69497ecbf923b29eba8c
+  - node: 01a154a3-4f92-72c0-97ef-6354cc3bd3f1
+    reviewed: 1ff10f8115e83c100ab8b29d8518fde72eb5be784eae67a41bfa6a6cec8eba8d
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "repeated_findings_pair_with_the_base_s_at_the_same_body_line_first"
+        body: 919a86a252b03435b577b6c406d9972d3bb64a454a778e4b20a1a3f3c7e16795
+  - node: 01a154a3-4f92-72c0-97ef-6355c0bbc50e
+    reviewed: abea8b945092168f44158cf3c093306d15734641c46a36abd044e4be2e1f9678
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_finding_only_the_base_holds_is_resolved_as_the_base_reports_it"
+        body: 760aa3858b41e30f0d024b83e253ad25bfa8ce972e4aac3eed46de5818af1031
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_tree_checked_against_itself_holds_no_introduced_and_no_resolved_finding"
+        body: ff5a0fca70a379b451679b368413a4f913b00e8dd80c1f11878d74ec790f7a54
+  - node: 01a154a3-4f92-72c0-97ef-63560b33d579
+    reviewed: 22f884f73a3292814491d7eb6ed43037d1bb9b05a53f6444f7aad82ddc18951a
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_base_is_linted_under_the_working_tree_s_configuration"
+        body: ce2d5391754df185e58373fed2887b855eee35fe469e61807b0b2b20bc8687dd
+  - node: 01a154a3-4f92-72c0-97ef-6357cbd4ef3d
+    reviewed: c2a8599d6b2a321a9f07eff44a5c4c0a5057994d21015aa12103df4cd6f5c774
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_base_tree_s_validation_errors_are_not_reported"
+        body: 07ecc52b7789d5111455ecc42ecc640a1c30fed78dfc75aff234eeb498ce9568
+  - node: 01a154a3-4f92-72c0-97ef-6365ceb51b96
+    reviewed: 16a6ae92b71f30004a98cd5dea1ce657d43aadd97238ef7b168f5ce94ae2c681
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_configurations_are_the_same_exactly_when_both_files_give_one"
+        body: 71e74689a97cc5f6ca7eae7af54ccb85a341540ffe3b17a6adce0fc47aa8204d
+  - node: 01a154a3-4f92-72c0-97ef-636f699ec154
+    reviewed: 67995fd5c15257f191eab1da550b631eaaa564cd979df00c236185fc0518e7a0
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "a_base_tree_that_does_not_read_is_an_error"
+        body: c3cce8b8500a16699c7614201b5bc6d26a2b7a2bcc1fc2fbf1888dd4c696d192
   - node: 100cafc9-84e3-4a71-95d6-ca65a8f81771
     reviewed: bc4014a69c9013acbc6753b8eba9b8afb6a0bef3b29c927ad713c2c4ae08b275
     tests:

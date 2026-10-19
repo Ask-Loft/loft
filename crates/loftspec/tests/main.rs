@@ -8,6 +8,7 @@ mod oracle;
 
 mod bindings;
 mod boundary;
+mod check_baseline;
 mod codec_bodies;
 mod codec_conflicts;
 mod codec_derived;
