@@ -15,7 +15,7 @@ import {
   touchesSpecification,
   window,
 } from '../hooks/model'
-import { FEATURE, ROOT, type Variant, documents } from './fixtures'
+import { FEATURE, ROOT, type Variant, checkAgainstBase, documents } from './fixtures'
 
 const readWith = (variant: Variant = {}) => {
   const d = documents(variant)
@@ -38,6 +38,16 @@ test('Check passes when loft check reports no error and no finding at warning, a
   expect(checkOf({ checkErrors: 0, warnings: 1 }, 'check').passes).toBe(false)
   expect(checkOf({ checkErrors: 2, warnings: 0 }, 'check').passes).toBe(false)
   expect(checkOf({ checkErrors: 2, warnings: 1 }, 'check').detail).toBe('2 errors · 1 warning')
+})
+
+test('a loft-check/2 document is read alike whether or not it marks its findings against a base', () => {
+  const d = documents({ checkErrors: 1, warnings: 2 })
+  const plain = readOf(d.status, d.fmt, d.check, d.reconcile)
+  const marked = readOf(d.status, d.fmt, checkAgainstBase(1, 2), d.reconcile)
+  expect(d.check.schema).toBe('loft-check/2')
+  expect(marked.checkErrors).toBe(plain.checkErrors)
+  expect(marked.checkFindings).toEqual(plain.checkFindings)
+  expect(checks(marked)).toEqual(checks(plain))
 })
 
 test('Spec committed passes when loft status lists no uncommitted path under spec', () => {

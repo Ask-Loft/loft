@@ -64,7 +64,7 @@ export const fmt = (canonical = true) => ({
 })
 
 export const check = (errors = 0, warnings = 1) => ({
-  schema: 'loft-check/1',
+  schema: 'loft-check/2',
   outcome: errors > 0 || warnings > 0 ? 'failed' : 'passed',
   findings: [
     ...Array.from({ length: warnings }, () => ({
@@ -85,6 +85,22 @@ export const check = (errors = 0, warnings = 1) => ({
     sites: [{ path: FEATURE, line: 3 }],
   })),
 })
+
+/** `check`, as `loft check --baseline <revision>` writes it: each finding marked against the base, with what the base held alone and the base itself. */
+export const checkAgainstBase = (errors = 0, warnings = 1) => {
+  const plain = check(errors, warnings)
+  return {
+    ...plain,
+    findings: plain.findings.map((finding, index) => ({ ...finding, change: index === 0 ? 'introduced' : 'preexisting' })),
+    resolved: [{ rule: 'LQ-001', severity: 'warning', message: 'The text contains a weak term.', subjects: [{ key: 'k-gone' }] }],
+    baseline: {
+      revision: 'develop',
+      commit: '0000000000000000000000000000000000000001',
+      loft: '2.2.0',
+      lintConfig: { tree: null, base: null, same: true },
+    },
+  }
+}
 
 export const reconcile = (
   open: string[] = ['k-added'],
