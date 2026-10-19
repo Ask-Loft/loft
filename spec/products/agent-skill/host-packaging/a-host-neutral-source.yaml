@@ -17,3 +17,15 @@ requirements:
         name: "The Claude Code adaptation is the directory `agents/claude/`, holding a frontmatter fragment, a route bullet and a host reference."
       - key: 01a13654-6e11-74fa-a359-257ad4b67436
         name: "The guard fails on a host's name in `SKILL.md` or in a reference."
+  - key: 01a154c3-a606-7743-88db-27e3ba6c1a69
+    statement:
+      form: ubiquitous
+      system: "The Claude Code host reference"
+      shall: "teach how `loft` is run and its output read on that host."
+    criteria:
+      - key: 01a154c3-a606-7743-88db-27e46be5feac
+        name: "The host reference tells the agent that the `loft` commands of a specification task the user asked for run without asking, and that the steps the router names are asked first."
+      - key: 01a154c3-a606-7743-88db-27e5c95047d5
+        name: "The host reference tells the agent to write a large `--format json` document to a file and read it through a filter such as `jq`."
+      - key: 01a154c3-a606-7743-88db-27e6178f52f8
+        name: "The host reference tells the agent to keep running notes in a file during a long review."

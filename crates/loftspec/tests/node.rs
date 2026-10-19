@@ -13,7 +13,7 @@ fn each_kind_holds_only_the_kinds_the_profile_allows() {
     assert!(Product.may_contain(FeatureGroup));
     assert!(!Product.may_contain(Feature));
     assert!(FeatureGroup.may_contain(Constraint));
-    assert!(!FeatureGroup.may_contain(QualityAttribute));
+    assert!(FeatureGroup.may_contain(QualityAttribute));
     assert!(Feature.may_contain(QualityAttribute));
     assert!(Component.may_contain(Component));
     assert!(!Requirement.may_contain(Requirement));
@@ -29,6 +29,14 @@ fn a_product_holds_constraints_and_no_quality_attribute() {
     assert!(!Product.may_contain(QualityAttribute));
     assert!(!Feature.may_contain(Constraint));
     assert!(!Requirement.may_contain(Constraint));
+}
+
+#[test]
+fn a_feature_group_holds_quality_attributes_and_a_product_none() {
+    use NodeKind::{FeatureGroup, Product, QualityAttribute, Requirement};
+    assert!(FeatureGroup.may_contain(QualityAttribute));
+    assert!(!Product.may_contain(QualityAttribute));
+    assert!(!Requirement.may_contain(QualityAttribute));
 }
 
 #[test]
@@ -103,7 +111,10 @@ fn the_profile_lets_each_kind_hold_exactly_these_kinds() {
     };
     let allowed: [(NodeKind, &[NodeKind]); 9] = [
         (Product, &[FeatureGroup, Constraint, Section]),
-        (FeatureGroup, &[Feature, Constraint, Section]),
+        (
+            FeatureGroup,
+            &[Feature, Constraint, QualityAttribute, Section],
+        ),
         (Feature, &[Requirement, QualityAttribute, Section]),
         (Requirement, &[Criterion, Section]),
         (Criterion, &[Section]),

@@ -2,19 +2,9 @@
 //! alias in prose (F-19, F-20).
 
 use crate::common::lint::{added, findings, keys, of, severity};
-use crate::common::{criterion, key, requirement, small_document};
+use crate::common::{criterion, key, requirement, small_document, term};
 use loftspec::document::{Document, TermEntry};
-use loftspec::ids::TermId;
 use loftspec::lint::{RuleId, Severity};
-
-fn term(n: u32, name: &str, aliases: &[&str]) -> TermEntry {
-    TermEntry {
-        id: TermId::new(key(n)),
-        name: name.to_owned(),
-        definition: format!("What {name} means."),
-        aliases: aliases.iter().map(|alias| (*alias).to_owned()).collect(),
-    }
-}
 
 /// The small document with the term "record" (alias "entry") and one more Requirement under
 /// F-1 whose statement is `text` and whose criterion is `criterion_name`.

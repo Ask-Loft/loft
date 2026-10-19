@@ -3,6 +3,65 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## Unreleased
+
+- A Feature Group may hold Quality Attributes, for a quality its Features share; its record
+  writes them after its Constraints. A Product holds none. A Feature Group without them keeps its
+  content hash, so the Format stays `loftspec/1`: every tree written before reads and hashes as
+  before, and a tree that uses this is refused by an older `loft`. The v1 converter carries a
+  Quality Attribute under a Feature Group tier section across, and still refuses one under a
+  Product or a Requirement, and a Constraint under a Feature, naming both nodes.
+- `loftspec::convert::v1::convert_keyed` converts a v1 export under a document key the caller
+  names. An export with no node, registry entry or decision, as a document's first published
+  state can be, becomes an empty document under that key, derived from the export's state; an
+  export whose elements carry another document is refused as `OtherDocument`, naming both.
+  `convert` still refuses an empty export, which names no document.
+- `ConvertError::kind`, `ExportError::kind` and the reader's `Problem::kind` name each error by a
+  kind that stays the same from release to release (`containment`, `missing`, `no-document`,
+  `duplicate-key`, …; `syntax`, `eof` or `data` for an export that is not a v1 export), so a tool
+  that runs the converter or the reader over many inputs can count what went wrong by kind.
+- The library also gives `loftspec::diff::content_changes`, the added, changed and removed nodes
+  without the moved, which spares indexing both trees; `loftspec::query`, how a key, slug or
+  label names an element, which `loft find` and `loft review --node` share, so a key now names a
+  node in any case for both; `Finding::identity`, what makes a finding of one tree the same as one
+  of another; and `DecisionState::outcome`.
+- `loft init --no-plugin` and `loft skill install --no-plugin` write the skill and leave
+  `.claude/settings.json` as it is: not created, not read, and not named in the request to
+  commit. It suits a project that runs a skill built from source rather than the released
+  plugin. `loft init` refuses `--no-plugin` with `--no-skill` as a usage error.
+- `loft check --baseline <revision>` lints the tree at the commit where HEAD left the revision
+  too, under the working tree's `spec/lint.yaml`, and marks each finding `introduced` or
+  `preexisting`; the base's findings the tree no longer holds are listed as `resolved`. A
+  finding is the same at both sides when its rule, subject keys and term are, so a moved node or
+  a changed count in a message is no new finding, and repeated findings pair by body line first.
+  `--fail-on` then gates on introduced findings only, and the text prints only those, then a
+  count. The output follows the schema `loft-check/2`: each finding may carry `change`, and the
+  document `resolved` and `baseline` (the revision, the commit, the `loft` version and the
+  digests of both lint configurations, and whether they agree). A base it cannot read is an
+  error of the new kind `base`.
+- `loft review [--base <revision>] [--node <node>] [--max-chars <n>] [--page <k>]` gathers the
+  context each assertion (a Requirement, criterion, Constraint or Quality Attribute) is read
+  against, and judges nothing. Each assertion lands in the unit of its scope, the Feature or the
+  node that holds it, with the nodes above the scope and their Constraints and Quality
+  Attributes, a Feature's Requirements with their criteria, the Components it realizes with
+  those above them, the decisions that name, are driven by, bear on or mention an assertion or
+  the scope, and the terms the assertions use. With `--base`, only the assertions the branch
+  added, changed, moved or removed are reviewed, each beside its node at the base. `--node`
+  narrows the review to a subtree by key, slug or label. The packet is JSON, paged by whole units
+  of at most 50000 characters unless `--max-chars` says otherwise, and the text output is an
+  index of the page. It follows the schema `loft-review/1`, and the command event names
+  `review`.
+- The `loft-spec` skill asks for fewer approvals: within a specification task the user asked
+  for, edits of `spec/`, the `loft` checks and reviews and commits on the working branch need
+  none; questions that change the content are asked once, up front; and only a push, a merge
+  into a shared branch, a publish, deleting a branch, rewriting history or superseding an
+  accepted decision is asked each time. Its review of a change starts from `loft check
+  --baseline` and `loft review --base`, adds precedence to the contradictions it looks for,
+  disposes of each finding, and fixes a large review in waves. The writing rules add ownership
+  apart from realization, guarantees rather than provisioning and the document's conventions;
+  changing a product and publishing add their git practice; and a new reference, "Choosing the
+  next change", finds and plans what to build next from the published states.
+
 ## 2.2.0 (2026-10-18)
 
 - `loft status [--base <revision>]` reports where the tree stands: the lock's publish sequence,

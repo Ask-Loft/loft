@@ -21,6 +21,7 @@ featureGroups:
       - 01a13654-6e12-74a1-ad7f-e85eaf10c334
       - 01a1383e-2e64-72e5-b7f4-bc2fa9a246d7
       - 01a14175-e444-717b-a0fb-4c332c7607e9
+      - 01a154c3-02c1-74da-a483-d477d02772fe
   - key: 01a13653-2d9c-760d-846c-c5fa77747e93
     slug: host-packaging
     name: "Host packaging"

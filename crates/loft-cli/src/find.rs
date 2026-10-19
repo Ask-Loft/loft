@@ -8,7 +8,8 @@ use std::path::Path;
 use loftspec::codec::{self, Site, Sites};
 use loftspec::document::Document;
 use loftspec::ids::ElementId;
-use serde_json::{Map, Value, json};
+use loftspec::query::identifies;
+use serde_json::{Value, json};
 
 use crate::finish::Finished;
 use crate::json;
@@ -57,21 +58,13 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
     let mut found = Vec::new();
     let mut consider = |element: ElementId, kind: &'static str, slug: Option<&str>, name: &str| {
         let key = element.key();
-        let text = key.to_string();
-        let label = document
-            .bindings
-            .label_of(element)
-            .map(|label| label.to_string());
-        let identified = label
-            .as_deref()
-            .is_some_and(|label| label.eq_ignore_ascii_case(query))
-            || slug == Some(query)
-            || text == wanted
-            || name.to_lowercase().contains(&wanted);
+        let label = document.bindings.label_of(element);
+        let identified =
+            identifies(query, key, label, slug) || name.to_lowercase().contains(&wanted);
         if identified {
             found.push(Match {
-                key: text,
-                label,
+                key: key.to_string(),
+                label: label.map(|label| label.to_string()),
                 kind,
                 site: sites
                     .get(key)
@@ -104,11 +97,11 @@ fn line(found: &Match) -> String {
 }
 
 fn match_json(found: &Match) -> Value {
-    let mut fields = Map::new();
-    fields.insert("key".to_owned(), json!(found.key));
-    fields.insert("label".to_owned(), json!(found.label));
-    fields.insert("kind".to_owned(), json!(found.kind));
-    fields.extend(json::site(&found.site));
-    fields.insert("name".to_owned(), json!(found.name));
-    Value::Object(fields)
+    Value::Object(json::element(
+        &found.key,
+        found.label.as_deref(),
+        found.kind,
+        Some(&found.site),
+        &found.name,
+    ))
 }

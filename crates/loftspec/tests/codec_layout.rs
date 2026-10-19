@@ -33,6 +33,7 @@ fn the_product_file_holds_its_feature_groups_in_document_order() {
         details: Details::default(),
         features: Vec::new(),
         constraints: Vec::new(),
+        quality_attributes: Vec::new(),
     };
     document.products[0].feature_groups.insert(0, group);
     let files = codec::write(&document);

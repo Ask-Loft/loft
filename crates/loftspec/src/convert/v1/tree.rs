@@ -311,6 +311,11 @@ impl<'a> Builder<'_, 'a> {
             details,
             features: self.each(&mut children, NodeKind::Feature, Self::feature)?,
             constraints: self.each(&mut children, NodeKind::Constraint, Self::constraint)?,
+            quality_attributes: self.each(
+                &mut children,
+                NodeKind::QualityAttribute,
+                Self::quality_attribute,
+            )?,
         })
     }
 

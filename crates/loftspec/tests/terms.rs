@@ -2,24 +2,14 @@
 //! projections show it.
 
 use crate::common::text::{files, path, text};
-use crate::common::{key, small_document};
+use crate::common::{key, small_document, term};
 use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem, TERMS};
 use loftspec::document::{Document, TermEntry};
 use loftspec::fmt::format;
 use loftspec::hash::{Views, hash_document, hash_indexed_with_views};
-use loftspec::ids::TermId;
 use loftspec::render::render;
 use serde_json::{Value, json};
-
-fn term(n: u32, name: &str, aliases: &[&str]) -> TermEntry {
-    TermEntry {
-        id: TermId::new(key(n)),
-        name: name.to_owned(),
-        definition: format!("What {name} means."),
-        aliases: aliases.iter().map(|alias| (*alias).to_owned()).collect(),
-    }
-}
 
 /// The small document with a term list.
 fn with_terms(terms: Vec<TermEntry>) -> Document {

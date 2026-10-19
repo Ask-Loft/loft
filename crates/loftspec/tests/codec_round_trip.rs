@@ -46,6 +46,21 @@ fn a_products_constraints_are_written_in_its_record_and_read_back() {
     assert_eq!(back.products[0].constraints, vec![constraint]);
 }
 
+#[test]
+fn a_feature_groups_quality_attributes_are_written_in_its_record_and_read_back() {
+    let mut document = small_document();
+    let group = &mut document.products[0].feature_groups[0];
+    let mut quality = group.features[0].quality_attributes[0].clone();
+    quality.id = Some(loftspec::ids::QualityAttributeId::new(common::key(91)));
+    group.quality_attributes = vec![quality.clone()];
+    let files = assert_same_roots(&document);
+    let back = read_back(&files);
+    assert_eq!(
+        back.products[0].feature_groups[0].quality_attributes,
+        vec![quality]
+    );
+}
+
 fn assert_same_roots(document: &Document) -> Files {
     let (files, back) = round_trip(document);
     assert_roots_match(document, &back);

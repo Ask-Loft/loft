@@ -56,6 +56,7 @@ fn a_feature_group_records_fields_are_written_in_the_published_order() {
         "mentions",
         "features",
         "constraints",
+        "qualityAttributes",
         "sections",
     ];
     assert_eq!(fields(&full_files(), PRODUCT, GROUP), published);

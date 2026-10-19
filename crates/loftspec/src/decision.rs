@@ -86,6 +86,17 @@ impl DecisionState {
             Self::Retired { .. } => StateKind::Retired,
         }
     }
+
+    /// The outcome the state records, where it selected an option.
+    #[must_use]
+    pub fn outcome(&self) -> Option<&str> {
+        match self {
+            Self::Accepted { outcome, .. }
+            | Self::Superseded { outcome, .. }
+            | Self::Retired { outcome, .. } => Some(outcome),
+            Self::Proposed | Self::Rejected { .. } => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

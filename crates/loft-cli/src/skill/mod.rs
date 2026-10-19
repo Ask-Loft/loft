@@ -1,6 +1,7 @@
 //! The `loft-spec` skill (the Agent Skill Product): its host-neutral source, embedded in `loft`,
 //! composed for each agent host and written into a project by `loft skill install` and
-//! `loft init`, which also enable the Claude Code plugin `loft@ask-loft` beside it.
+//! `loft init`, which also enable the Claude Code plugin `loft@ask-loft` beside it unless
+//! `--no-plugin` is given.
 
 mod compose;
 mod settings;
@@ -38,6 +39,7 @@ const SOURCE: &[(&str, &str)] = source![
     "agents/openai.yaml",
     "references/adopting-an-openspec-project.md",
     "references/changing-a-specified-product.md",
+    "references/choosing-the-next-change.md",
     "references/format.md",
     "references/lint-findings.md",
     "references/new-document.md",
@@ -66,20 +68,30 @@ impl fmt::Display for SkillError {
     }
 }
 
-/// What writing the skill wrote: the skill directories, and what it did to the settings.
+/// Whether writing the skill enables the plugin beside it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Plugin {
+    Enable,
+    /// `--no-plugin`: `.claude/settings.json` is neither read nor written.
+    Leave,
+}
+
+/// What writing the skill wrote: the skill directories, and what it did to the settings, if it
+/// enabled the plugin.
 pub struct Installed {
     pub skills: Vec<&'static str>,
-    pub settings: Enabled,
+    pub settings: Option<Enabled>,
 }
 
 /// Writes each host's package into its directory under `root`, one after the other, then
-/// enables the plugin in `.claude/settings.json`, and names what it wrote.
+/// enables the plugin in `.claude/settings.json` where `plugin` says so, and names what it
+/// wrote.
 ///
 /// # Errors
 ///
 /// A directory or the settings file that cannot be written; one not yet reached is left as it
 /// was.
-pub fn install(root: &Path) -> Result<Installed, SkillError> {
+pub fn install(root: &Path, plugin: Plugin) -> Result<Installed, SkillError> {
     let mut written = Vec::new();
     for host in Host::ALL {
         // The source is embedded, and its tests compose it for every host.
@@ -89,10 +101,13 @@ pub fn install(root: &Path) -> Result<Installed, SkillError> {
             .map_err(|error| SkillError { directory, error })?;
         written.push(directory);
     }
-    let settings = settings::enable(root).map_err(|error| SkillError {
-        directory: SETTINGS,
-        error,
-    })?;
+    let settings = match plugin {
+        Plugin::Enable => Some(settings::enable(root).map_err(|error| SkillError {
+            directory: SETTINGS,
+            error,
+        })?),
+        Plugin::Leave => None,
+    };
     Ok(Installed {
         skills: written,
         settings,
@@ -119,15 +134,15 @@ pub fn report(installed: &Installed) {
     }
     let mut written: Vec<&str> = installed.skills.clone();
     match installed.settings {
-        Enabled::Written => {
+        Some(Enabled::Written) => {
             outln!(
                 "enabled the Claude Code plugin {} in {SETTINGS}",
                 settings::PLUGIN
             );
             written.push(SETTINGS);
         }
-        Enabled::Unchanged => {}
-        Enabled::NotAnObject => outln!("{}", settings::by_hand()),
+        Some(Enabled::Unchanged) | None => {}
+        Some(Enabled::NotAnObject) => outln!("{}", settings::by_hand()),
     }
     if !installed.skills.is_empty() {
         let last = written.pop().expect("a skill directory was written");
@@ -142,8 +157,8 @@ pub fn report(installed: &Installed) {
 
 /// `loft skill install`: writes the skill into the current directory and names the directories
 /// it wrote.
-pub fn run(root: &Path, as_json: bool) -> Finished {
-    match install(root) {
+pub fn run(root: &Path, plugin: Plugin, as_json: bool) -> Finished {
+    match install(root, plugin) {
         Ok(installed) => {
             if as_json {
                 let fields = json!({ "skills": installed.skills });

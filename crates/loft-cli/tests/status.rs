@@ -3,16 +3,15 @@
 //! removed since HEAD left it, over the Reading List.
 
 use std::fs;
-use std::path::Path;
 use std::process::Output;
 
+use crate::base::{COMMIT, based_on_now};
 use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
 use crate::snapshot::snapshot;
 use serde_json::Value;
 use software_plant::{Clock, GitScenario};
 
-const COMMIT: &str = "c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00";
 const FEATURE: &str = "products/reading-list/shelf/remove-a-book.yaml";
 /// The criterion AC-4 of the Feature "Remove a book", under RQ-3.
 const ABSENT: &str = "00000000-0000-4000-8000-00000000002f";
@@ -22,35 +21,6 @@ const ADDED: &str = "00000000-0000-4000-8000-0000000000aa";
 
 fn json(output: &Output) -> Value {
     schema::conforming(&output.stdout, include_str!("../../../schemas/status.json"))
-}
-
-/// Every file under `dir`, by its path from `dir`.
-fn files(dir: &Path, prefix: &str, into: &mut Vec<(String, String)>) {
-    let mut entries: Vec<_> = fs::read_dir(dir)
-        .unwrap()
-        .map(|e| e.unwrap().path())
-        .collect();
-    entries.sort();
-    for path in entries {
-        let name = path.file_name().unwrap().to_string_lossy().into_owned();
-        let relative = format!("{prefix}{name}");
-        if path.is_dir() {
-            files(&path, &format!("{relative}/"), into);
-        } else {
-            into.push((relative, fs::read_to_string(&path).unwrap()));
-        }
-    }
-}
-
-/// A clean repository on `feature` whose base for `develop` holds the tree as it now is.
-fn based_on_now(scratch: &Scratch) -> GitScenario {
-    let mut held = Vec::new();
-    files(&scratch.0.join("spec"), "spec/", &mut held);
-    let mut scenario = GitScenario::clean_on("feature").base("develop", COMMIT);
-    for (number, (path, text)) in held.iter().enumerate() {
-        scenario = scenario.file_at("develop", path, &format!("{number:040x}"), text);
-    }
-    scenario
 }
 
 fn status(scratch: &Scratch, args: &[&str], git: &GitScenario) -> Output {

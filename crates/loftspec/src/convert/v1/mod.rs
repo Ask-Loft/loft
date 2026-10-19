@@ -58,6 +58,8 @@ pub enum ConvertError {
     NoDocument,
     #[error("the export names two documents, {first} and {second}")]
     TwoDocuments { first: Uuid, second: Uuid },
+    #[error("the export names the document {carried}, not the named document {named}")]
+    OtherDocument { carried: Uuid, named: Uuid },
     #[error("the export carries annotations, which the Format does not hold")]
     Annotations,
     #[error("{parent} lists child {child}, which the export does not hold")]
@@ -116,13 +118,69 @@ pub enum ConvertError {
     Binding(#[from] BindingError),
 }
 
+impl ConvertError {
+    /// The kind of the refusal, one name for each variant, which stays the same from release to
+    /// release and never depends on the values the message quotes, so a report can count
+    /// refusals by kind. `tests/error_kinds.rs` holds every variant to a name of its own.
+    #[must_use]
+    pub const fn kind(&self) -> &'static str {
+        match self {
+            Self::NoDocument => "no-document",
+            Self::TwoDocuments { .. } => "two-documents",
+            Self::OtherDocument { .. } => "other-document",
+            Self::Annotations => "annotations",
+            Self::UnknownChild { .. } => "unknown-child",
+            Self::TwoParents { .. } => "two-parents",
+            Self::Orphan { .. } => "orphan",
+            Self::Containment { .. } => "containment",
+            Self::Missing { .. } => "missing",
+            Self::Label { .. } => "label",
+            Self::FacetTagBody { .. } => "facet-tag-body",
+            Self::UnderivableTag { .. } => "underivable-tag",
+            Self::TagCollision { .. } => "tag-collision",
+            Self::Link { .. } => "link",
+            Self::Scope { .. } => "scope",
+            Self::DecisionSubject { .. } => "decision-subject",
+            Self::DecisionElement { .. } => "decision-element",
+            Self::Binding(_) => "binding",
+        }
+    }
+}
+
 /// Converts a v1 export into a document. The document key is the v1 document UUID that every
 /// element of the export carries.
 pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
-    if !export.annotations.is_empty() {
-        return Err(ConvertError::Annotations);
+    refuse_annotations(export)?;
+    convert_as(export, DocumentId::new(document_uuid(export)?.into()))
+}
+
+/// Converts a v1 export into the document `named`: an export with no element, as a document's
+/// first published state can be, becomes an empty document under that key, and an export whose
+/// elements carry another document is refused.
+pub fn convert_keyed(export: &Export, named: DocumentId) -> Result<Conversion, ConvertError> {
+    refuse_annotations(export)?;
+    match document_uuid(export) {
+        Ok(carried) if carried != named.key().uuid() => Err(ConvertError::OtherDocument {
+            carried,
+            named: named.key().uuid(),
+        }),
+        Ok(_) | Err(ConvertError::NoDocument) => convert_as(export, named),
+        Err(other) => Err(other),
     }
-    let document_id = DocumentId::new(document_uuid(export)?.into());
+}
+
+/// The refusal both entry points make before any other: an export that carries annotations,
+/// which the Format has no place for.
+fn refuse_annotations(export: &Export) -> Result<(), ConvertError> {
+    if export.annotations.is_empty() {
+        Ok(())
+    } else {
+        Err(ConvertError::Annotations)
+    }
+}
+
+/// Converts `export` into a document keyed `document_id`.
+fn convert_as(export: &Export, document_id: DocumentId) -> Result<Conversion, ConvertError> {
     let tree = Tree::new(export)?;
     let mut conversion = Conversion {
         document: Document::empty(document_id),

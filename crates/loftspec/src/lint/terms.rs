@@ -116,6 +116,31 @@ fn aliases_in(item: &Item<'_>, aliases: &[(&TermEntry, &str, Vec<String>)], out:
     }
 }
 
+/// A node's name and body as words, as `LQ-010` reads them, read once to look for many
+/// phrases in.
+pub(crate) struct Prose {
+    name: Vec<String>,
+    body: Vec<String>,
+}
+
+impl Prose {
+    pub fn of(name: &str, body: Option<&str>) -> Self {
+        let (name, _) = words(&without_code_spans(name));
+        let body = body.map(|body| Body::read(body).words().0);
+        Self {
+            name,
+            body: body.unwrap_or_default(),
+        }
+    }
+
+    /// Whether the name or alias `phrase`, as [`phrase`] gives it, occurs in the name or the
+    /// body, compared as `LQ-010` compares it.
+    pub fn uses(&self, phrase: &[String]) -> bool {
+        !phrase.is_empty()
+            && (occurs(&self.name, phrase).is_some() || occurs(&self.body, phrase).is_some())
+    }
+}
+
 /// Where `phrase` first occurs in `tokens`, its last word with or without a final plural.
 fn occurs(tokens: &[String], phrase: &[String]) -> Option<usize> {
     let (last, lead) = phrase.split_last()?;

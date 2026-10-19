@@ -1,7 +1,7 @@
 key: 01a137be-5962-73e4-9623-5116cf275d6d
 slug: needing-a-repository
 name: "Needing a repository"
-body: "What a command that works only inside a git repository does outside one: it refuses and writes nothing. A command opts in by listing the tag `needs-repository` on its Feature, and each tagged command is tested against these rules. `loft merge-driver` needs one to install the driver; the driver itself reads only the files git hands it."
+body: "What a command that works only inside a git repository does outside one: it refuses and writes nothing. A command opts in by listing the tag `needs-repository` on its Feature, and each tagged command is tested against these rules. `loft merge-driver` needs one to install the driver; the driver itself reads only the files git hands it. `loft check --baseline` and `loft review --base` need one only for the option, so neither lists the tag, and each states the refusal in its own Feature."
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:

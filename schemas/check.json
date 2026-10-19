@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-check-1.json",
-  "title": "The result of `loft check --format json`, version 1",
+  "$id": "loft-check-2.json",
+  "title": "The result of `loft check --format json`, version 2",
   "oneOf": [
     {
       "type": "object",
@@ -14,7 +14,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-check/1"
+          "const": "loft-check/2"
         },
         "outcome": {
           "type": "string",
@@ -28,6 +28,16 @@
           "items": {
             "$ref": "#/$defs/finding"
           }
+        },
+        "resolved": {
+          "description": "With `--baseline`: the base's findings the tree no longer holds, as the base reports them.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/finding"
+          }
+        },
+        "baseline": {
+          "$ref": "#/$defs/baseline"
         },
         "errors": {
           "type": "array",
@@ -47,7 +57,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-check/1"
+          "const": "loft-check/2"
         },
         "outcome": {
           "const": "error"
@@ -102,6 +112,7 @@
             "read",
             "validation",
             "lint-config",
+            "base",
             "refused",
             "integrity"
           ]
@@ -212,6 +223,14 @@
             "hint"
           ]
         },
+        "change": {
+          "description": "With `--baseline`: whether the tree introduced the finding or kept it from the base.",
+          "type": "string",
+          "enum": [
+            "introduced",
+            "preexisting"
+          ]
+        },
         "message": {
           "type": "string"
         },
@@ -241,6 +260,65 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/subject"
+          }
+        }
+      }
+    },
+    "baseline": {
+      "description": "With `--baseline`: where the comparison came from.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "commit",
+        "loft",
+        "lintConfig"
+      ],
+      "properties": {
+        "revision": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "loft": {
+          "type": "string"
+        },
+        "lintConfig": {
+          "description": "Each tree's spec/lint.yaml: the digests are of the files' bytes, and same is true when both give the same configuration once read, so a change of quoting alone gives two digests and same true.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tree",
+            "base",
+            "same"
+          ],
+          "properties": {
+            "tree": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "base": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "same": {
+              "type": "boolean"
+            }
           }
         }
       }

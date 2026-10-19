@@ -9,15 +9,16 @@ use std::path::Path;
 
 use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites};
-use loftspec::diff::node_changes;
+use loftspec::diff::content_changes;
 use loftspec::document::Document;
 use loftspec::identity::Key;
 use loftspec::ids::NodeId;
 use loftspec::publish::{LOCK, Lock, Operation, RepoState, Root};
-use loftspec_store::repository::{GitCommand, MergeBase, Repository as _};
+use loftspec_store::repository::{GitCommand, Repository as _};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::{Map, Value, json};
 
+use crate::base;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -137,31 +138,13 @@ fn base_report(
     document: &Document,
     sites: &Sites,
 ) -> Result<BaseReport, Stop> {
-    let commit = match git.merge_base(root, revision) {
-        Ok(MergeBase::Commit(commit)) => commit,
-        Ok(MergeBase::Unrelated) => {
-            let message = format!("`{revision}` shares no history with HEAD");
-            return Err(Stop::one("base", message));
-        }
-        Err(StoreError::UnknownRevision(revision)) => {
-            return Err(Stop::one("base", format!("`{revision}` names no commit")));
-        }
-        Err(error) => return Err(error.into()),
-    };
-    let files = git.spec_files_at(root, &commit)?;
-    let (before, before_sites) = codec::read_sited(&files).map_err(|errors| {
-        let messages = errors
-            .iter()
-            .map(|error| format!("the tree at {commit} does not read: {error}"))
-            .collect();
-        Stop::all("base", messages)
-    })?;
-    let changes = node_changes(&before, document);
+    let base = base::read_tree(git, root, revision)?;
+    let changes = content_changes(&base.document, document);
     let now = Nodes::of(document, sites);
-    let then = Nodes::of(&before, &before_sites);
+    let then = Nodes::of(&base.document, &base.sites);
     Ok(BaseReport {
-        revision: revision.to_owned(),
-        commit,
+        revision: base.revision,
+        commit: base.commit,
         added: changes.added.iter().map(|id| now.listed(*id)).collect(),
         changed: changes.changed.iter().map(|id| now.listed(*id)).collect(),
         removed: changes.removed.iter().map(|id| then.listed(*id)).collect(),

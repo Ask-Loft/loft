@@ -182,6 +182,7 @@ fn the_kind_is_content() {
         details: Details::default(),
         features: Vec::new(),
         constraints: Vec::new(),
+        quality_attributes: Vec::new(),
     };
     assert_ne!(feature_node.content_hash(), group.content_hash());
 }
@@ -237,12 +238,34 @@ fn a_feature_groups_features_precede_its_constraints() {
         details: Details::default(),
         features: vec![child.clone()],
         constraints: vec![constraint(3)],
+        quality_attributes: Vec::new(),
     };
     assert_eq!(
         children(&group),
         vec![
             child.content_hash().to_string(),
             constraint(3).content_hash().to_string(),
+        ]
+    );
+}
+
+#[test]
+fn a_feature_groups_constraints_precede_its_quality_attributes() {
+    let quality = quality(4);
+    let group = FeatureGroup {
+        id: Some(FeatureGroupId::new(key(1))),
+        slug: common::slug("group"),
+        name: "Identity".to_owned(),
+        details: Details::default(),
+        features: Vec::new(),
+        constraints: vec![constraint(3)],
+        quality_attributes: vec![quality.clone()],
+    };
+    assert_eq!(
+        children(&group),
+        vec![
+            constraint(3).content_hash().to_string(),
+            quality.content_hash().to_string(),
         ]
     );
 }
@@ -256,6 +279,7 @@ fn a_products_feature_groups_precede_its_constraints() {
         details: Details::default(),
         features: Vec::new(),
         constraints: Vec::new(),
+        quality_attributes: Vec::new(),
     };
     let mut product = common::product(key(1), "Example");
     product.feature_groups = vec![group.clone()];

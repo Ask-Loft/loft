@@ -14,6 +14,26 @@ use serde_json::{Map, Value, json};
 use crate::finish::Finished;
 use crate::out::outln;
 
+/// The fields that name an element, as `loft find` and `loft review` give it: its key, label and
+/// kind, its site where it has one, and its name.
+pub fn element(
+    key: &str,
+    label: Option<&str>,
+    kind: &str,
+    site: Option<&Site>,
+    name: &str,
+) -> Map<String, Value> {
+    let mut fields = Map::new();
+    fields.insert("key".to_owned(), json!(key));
+    fields.insert("label".to_owned(), json!(label));
+    fields.insert("kind".to_owned(), json!(kind));
+    if let Some(site) = site {
+        fields.extend(self::site(site));
+    }
+    fields.insert("name".to_owned(), json!(name));
+    fields
+}
+
 /// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
 pub fn site(site: &Site) -> Map<String, Value> {
     site_at(&site.path, site.location)

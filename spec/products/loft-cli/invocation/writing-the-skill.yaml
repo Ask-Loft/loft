@@ -1,7 +1,7 @@
 key: 01a1380a-9f4b-741a-83a5-973429a1c475
 slug: writing-the-skill
 name: "Writing the skill"
-body: "What a command that writes the `loft-spec` skill into a project does beside it and says once it has: it enables the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`, so that Claude Code offers the Loft status pane to everyone who trusts the project, and it asks for the skill directories and that file to be committed, so that every clone's coding agents find them. A command opts in by listing the tag `writes-skill` on its Feature, and each tagged command is tested against these rules."
+body: "What a command that writes the `loft-spec` skill into a project does beside it and says once it has: it enables the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`, so that Claude Code offers the Loft status pane to everyone who trusts the project, and it asks for the skill directories and that file to be committed, so that every clone's coding agents find them. With `--no-plugin`, it writes the skill alone and leaves `.claude/settings.json` as it is, for a project that runs a skill built from source rather than the released plugin. A command opts in by listing the tag `writes-skill` on its Feature, and each tagged command is tested against these rules."
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -35,7 +35,7 @@ requirements:
   - key: 01a14545-579b-7242-998f-2f3a641f9d23
     statement:
       form: event_driven
-      when: "a command tagged `writes-skill` writes the skill"
+      when: "a command tagged `writes-skill` writes the skill without `--no-plugin`"
       system: "the command"
       shall: "enable the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`."
     criteria:
@@ -58,7 +58,7 @@ requirements:
   - key: 01a14545-579b-7242-998f-2f430611cb07
     statement:
       form: unwanted
-      if: "`.claude/settings.json` does not hold a JSON object"
+      if: "`.claude/settings.json` does not hold a JSON object where a command tagged `writes-skill` writes the skill without `--no-plugin`"
       system: "a command tagged `writes-skill`"
       shall: "leave the file as it is and say how to enable the plugin by hand."
     criteria:
@@ -68,3 +68,20 @@ requirements:
         name: "The text output names the file and the two entries to add."
       - key: 01a14545-579b-7242-998f-2f467423ed95
         name: "The command's exit code is the one it would give without the file."
+  - key: 01a1549d-6654-707a-b9b6-741fb1bb1beb
+    statement:
+      form: optional
+      where: "`--no-plugin` is given"
+      system: "a command tagged `writes-skill`"
+      shall: "write the skill and leave `.claude/settings.json` as it is."
+    criteria:
+      - key: 01a1549d-6654-707a-b9b6-7420f871de8d
+        name: "The bytes of an existing `.claude/settings.json` are unchanged, whether or not it holds a JSON object."
+      - key: 01a1549d-6654-707a-b9b6-7421b2bf079a
+        name: "Where `.claude/settings.json` does not exist, it is not created."
+      - key: 01a1549d-6654-707a-b9b6-7422e3c3d3c0
+        name: "The text output names no plugin and gives no entry to add by hand."
+      - key: 01a1549d-6654-707a-b9b6-742379d9a25f
+        name: "The request to commit names the skill directories alone."
+      - key: 01a1549d-6654-707a-b9b6-74240a1efe6b
+        name: "The skill directories are written as they are without the option."

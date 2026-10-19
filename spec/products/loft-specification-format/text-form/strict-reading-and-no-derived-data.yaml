@@ -109,3 +109,13 @@ requirements:
         name: "An edge of any other type is an error naming the file, line and column."
       - key: 90e432ba-1513-4064-83e1-8444087f0bfb
         name: "A decision's supersession is recorded in its state, not as an edge."
+  - key: 01a154d3-cbfb-74fc-9749-edceff0b6ea8
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "name the problem of each read error by a kind that stays the same from release to release."
+    criteria:
+      - key: 01a154d3-cbfb-74fc-9749-edcfa052e753
+        name: "Each kind of problem has a kind name that no other kind of problem has."
+      - key: 01a154d3-cbfb-74fc-9749-edd00ec3b844
+        name: "A problem's kind name does not depend on the values its message quotes."

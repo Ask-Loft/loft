@@ -23,6 +23,10 @@ requirements:
         name: "A Constraint under a Product tier section becomes a Constraint of the converted Product."
       - key: 2c0b93d3-d76d-4f6c-9339-1a26825d7a80
         name: "A Quality Attribute maps to a `quality_attribute` with its kind and its quality target kept field for field."
+      - key: 01a154d3-cbfa-720f-9d7a-e3bfad10cfc9
+        name: "A Quality Attribute under a Feature Group tier section becomes a Quality Attribute of the converted Feature Group."
+      - key: 01a154d3-cbfa-720f-9d7a-e3c0492e8c8b
+        name: "A node under a parent whose kind the containment profile does not allow it under is refused with an error naming both."
       - key: 033aa134-4eb4-48cc-8b73-bd81a658e8ef
         name: "The v2 node count equals the v1 node count less the Facet Tag nodes."
   - key: f397bfad-6a2f-4c34-a7c3-35a426c73987
@@ -170,7 +174,34 @@ requirements:
       - key: 1c63b84c-aa01-4dcb-b349-0ec785d8db7c
         name: "An export whose elements carry two document UUIDs is refused with an error naming both."
       - key: 81239df2-9066-4c0d-ad9a-5ca38bdcc69e
-        name: "An export with no node, registry entry or decision is refused."
+        name: "Without a document key named by the caller, an export with no node, registry entry or decision is refused."
+  - key: 01a154d3-cbfb-74fc-9749-edc32f6df803
+    statement:
+      form: event_driven
+      when: "the caller names a document key"
+      system: "the converter"
+      shall: "key the document by the named key."
+    criteria:
+      - key: 01a154d3-cbfb-74fc-9749-edc4f460071c
+        name: "An export with no node, registry entry or decision converts to a document that holds none, keyed by the named key."
+      - key: 01a154d3-cbfb-74fc-9749-edc527753666
+        name: "The empty document derives from the export's Authored State."
+      - key: 01a154d3-cbfb-74fc-9749-edc6b06f170f
+        name: "An export whose elements carry a document UUID other than the named key is refused with an error naming both."
+      - key: 01a154d3-cbfb-74fc-9749-edc7f0deab30
+        name: "An export whose elements carry the named key converts to the document it converts to without one."
+  - key: 01a154d3-cbfb-74fc-9749-edc81a85e46e
+    statement:
+      form: ubiquitous
+      system: "The converter"
+      shall: "name each refusal by a kind that stays the same from release to release."
+    criteria:
+      - key: 01a154d3-cbfb-74fc-9749-edc946ec1897
+        name: "Each kind of refusal has a kind name that no other kind of refusal has."
+      - key: 01a154d3-cbfb-74fc-9749-edcac5029930
+        name: "A refusal's kind name does not depend on the values its message quotes."
+      - key: 01a154d3-cbfb-74fc-9749-edcb6057a504
+        name: "An export that is not a v1 export is named by whether its text is not JSON, ends early or holds the wrong data."
   - key: 732ad96d-1e55-4a5b-95c2-1ea08d456803
     statement:
       form: ubiquitous

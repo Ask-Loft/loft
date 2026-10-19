@@ -1,9 +1,8 @@
 //! The term report: the phrases it reads, the groups `TD-001`, `TD-002` and `TD-003` form, the
 //! groups the term list decides, the order of the report, and the subjects of each Product.
 
-use crate::common::{criterion, key, requirement, small_document};
-use loftspec::document::{Document, TermEntry};
-use loftspec::ids::TermId;
+use crate::common::{criterion, key, requirement, small_document, term};
+use loftspec::document::Document;
 use loftspec::lint::report::{Group, Mark, Subject};
 use loftspec::lint::{FUNCTION_WORDS, LintConfig, RuleId, Severity, term_report};
 use loftspec::statement::{EarsForm, Statement};
@@ -56,15 +55,6 @@ fn pairs(list: &[(&str, usize)]) -> Vec<(String, usize)> {
     list.iter()
         .map(|(text, n)| ((*text).to_owned(), *n))
         .collect()
-}
-
-fn term(n: u32, name: &str, aliases: &[&str]) -> TermEntry {
-    TermEntry {
-        id: TermId::new(key(n)),
-        name: name.to_owned(),
-        definition: format!("What {name} means."),
-        aliases: aliases.iter().map(|alias| (*alias).to_owned()).collect(),
-    }
 }
 
 const AUDIT: [&str; 3] = [

@@ -133,6 +133,7 @@ impl Build {
             details: Details::default(),
             features: Vec::new(),
             constraints: Vec::new(),
+            quality_attributes: Vec::new(),
         }
     }
 

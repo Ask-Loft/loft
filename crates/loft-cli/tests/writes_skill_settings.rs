@@ -1,6 +1,6 @@
 //! Writing the skill enables the Claude Code plugin `loft@ask-loft` in the project's
-//! `.claude/settings.json`, run against each command whose Feature in this repository's own
-//! `spec/` lists the tag `writes-skill`.
+//! `.claude/settings.json`, and leaves the file alone with `--no-plugin`, run against each command
+//! whose Feature in this repository's own `spec/` lists the tag `writes-skill`.
 
 use std::fs;
 use std::process::Output;
@@ -8,6 +8,8 @@ use std::process::Output;
 use crate::commands::{Fixture, fixture};
 use crate::common::{Scratch, stderr, stdout};
 use crate::conformance::tagged_commands;
+use crate::skill_install::{CLAUDE, CODEX};
+use crate::snapshot::snapshot;
 
 const TAG: &str = "writes-skill";
 const SETTINGS: &str = ".claude/settings.json";
@@ -31,6 +33,19 @@ const CREATED: &str = r#"{
 /// Runs each tagged command over a fresh fixture whose settings file holds `settings`, or none,
 /// and gives each command's slug, its output and the settings file it left.
 fn each_with(settings: Option<&str>) -> Vec<(&'static str, Output, Option<String>)> {
+    each_run(settings, &[])
+        .into_iter()
+        .map(|(slug, output, scratch)| {
+            let left = fs::read_to_string(scratch.0.join(SETTINGS)).ok();
+            (slug, output, left)
+        })
+        .collect()
+}
+
+/// Runs each tagged command, with `extra` after its arguments, over a fresh fixture whose
+/// settings file holds `settings`, or none, and gives each command's slug, its output and the
+/// directory it ran in.
+fn each_run(settings: Option<&str>, extra: &[&str]) -> Vec<(&'static str, Output, Scratch)> {
     let commands = tagged_commands(TAG);
     assert!(!commands.is_empty(), "no Feature lists `{TAG}`");
     commands
@@ -40,10 +55,10 @@ fn each_with(settings: Option<&str>) -> Vec<(&'static str, Output, Option<String
             if let Some(text) = settings {
                 put(&scratch, text);
             }
-            let output = scratch.loft(args);
+            let args: Vec<&str> = args.iter().chain(extra).copied().collect();
+            let output = scratch.loft(&args);
             assert_eq!(output.status.code(), Some(0), "{slug}: {}", stderr(&output));
-            let left = fs::read_to_string(scratch.0.join(SETTINGS)).ok();
-            (slug, output, left)
+            (slug, output, scratch)
         })
         .collect()
 }
@@ -202,4 +217,66 @@ fn init_with_no_skill_writes_no_settings() {
     let output = scratch.loft(&["init", "--no-skill"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     assert!(!scratch.0.join(SETTINGS).exists());
+}
+
+const NO_PLUGIN: &[&str] = &["--no-plugin"];
+
+#[test]
+fn with_no_plugin_settings_are_left_byte_for_byte_whether_or_not_they_are_an_object() {
+    for settings in [
+        "{\n  \"model\": \"sonnet\"\n}\n",
+        "[1, 2]\n",
+        "{ not json\n",
+    ] {
+        for (slug, _, scratch) in each_run(Some(settings), NO_PLUGIN) {
+            let left = fs::read_to_string(scratch.0.join(SETTINGS)).unwrap();
+            assert_eq!(left, settings, "{slug}");
+        }
+    }
+}
+
+#[test]
+fn with_no_plugin_absent_settings_are_not_created() {
+    for (slug, _, scratch) in each_run(None, NO_PLUGIN) {
+        assert!(!scratch.0.join(SETTINGS).exists(), "{slug}");
+    }
+}
+
+#[test]
+fn with_no_plugin_the_text_names_no_plugin_and_gives_nothing_to_add_by_hand() {
+    for settings in [None, Some("[1, 2]\n")] {
+        for (slug, output, _) in each_run(settings, NO_PLUGIN) {
+            let text = stdout(&output);
+            assert!(!text.contains("loft@ask-loft"), "{slug}: {text}");
+            assert!(!text.contains(SETTINGS), "{slug}: {text}");
+        }
+    }
+}
+
+#[test]
+fn with_no_plugin_the_request_to_commit_names_the_skill_directories_alone() {
+    for (slug, output, _) in each_run(None, NO_PLUGIN) {
+        assert_eq!(
+            request(&output),
+            format!(
+                "commit {CLAUDE} and {CODEX}, so that every clone's coding agents have the skill"
+            ),
+            "{slug}"
+        );
+    }
+}
+
+#[test]
+fn with_no_plugin_the_skill_directories_are_written_as_without_it() {
+    let with = each_run(None, &[]);
+    let without = each_run(None, NO_PLUGIN);
+    for ((slug, _, plugin), (_, _, alone)) in with.iter().zip(&without) {
+        for directory in [CLAUDE, CODEX] {
+            assert_eq!(
+                snapshot(&alone.0.join(directory)),
+                snapshot(&plugin.0.join(directory)),
+                "{slug}: {directory}"
+            );
+        }
+    }
 }

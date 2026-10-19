@@ -81,3 +81,13 @@ requirements:
         name: "The loop tells the agent that a dropped binding of a node it did not delete means a key was lost from a file."
       - key: 01a137bc-e40d-749f-8570-9ef91001c2a9
         name: "The loop tells the agent to restore a lost key and `spec/labels.yaml` from git and run `loft fmt` again."
+  - key: 01a154c3-02c1-74da-a483-d4ab6b706cc8
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach the check of a branch against its base."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4ac0f10fdb4
+        name: "The loop tells the agent to run `loft check --baseline <base>` on a branch to see the findings the change introduced."
+      - key: 01a154c3-02c1-74da-a483-d4ad1b8ea68f
+        name: "The loop tells the agent that CI checks the whole tree, so findings the branch did not introduce still fail it."

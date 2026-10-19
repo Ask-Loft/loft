@@ -58,6 +58,7 @@ pub struct FeatureGroup {
     pub details: Details,
     pub features: Vec<Feature>,
     pub constraints: Vec<Constraint>,
+    pub quality_attributes: Vec<QualityAttribute>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

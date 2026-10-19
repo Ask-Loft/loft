@@ -37,3 +37,17 @@ requirements:
         name: "The guide tells the agent never to reword text only to silence a finding."
       - key: 01a13654-6e12-74a1-ad7f-e8347de65155
         name: "The guide tells the agent that a suppression in `spec/lint.yaml` carries the reason the finding does not apply."
+  - key: 01a154c3-02c1-74da-a483-d4a636cbf9db
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach how a finding is matched against a base."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4a7e2ea57fd
+        name: "The guide tells the agent that a finding is the same at both sides when its rule, the keys of its subjects and its term agree."
+      - key: 01a154c3-02c1-74da-a483-d4a8e31a0abb
+        name: "The guide tells the agent that a finding of a node that only moved is preexisting."
+      - key: 01a154c3-02c1-74da-a483-d4a9f989190f
+        name: "The guide tells the agent that both sides are linted with the working tree's `spec/lint.yaml`."
+      - key: 01a154c3-02c1-74da-a483-d4aa3ef75caf
+        name: "The guide tells the agent that `--fail-on` with `--baseline` counts only the introduced findings."

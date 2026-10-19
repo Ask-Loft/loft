@@ -107,6 +107,7 @@ fn group(n: u32, name: &str, features: Vec<Feature>) -> FeatureGroup {
         details: Details::default(),
         features,
         constraints: Vec::new(),
+        quality_attributes: Vec::new(),
     }
 }
 

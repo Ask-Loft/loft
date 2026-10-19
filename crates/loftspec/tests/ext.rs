@@ -92,6 +92,9 @@ fn every_node(document: &mut Document, set: &mut impl FnMut(&mut Ext)) {
             for constraint in &mut group.constraints {
                 details(&mut constraint.details, set);
             }
+            for quality in &mut group.quality_attributes {
+                details(&mut quality.details, set);
+            }
             for feature in &mut group.features {
                 self::feature(feature, set);
             }

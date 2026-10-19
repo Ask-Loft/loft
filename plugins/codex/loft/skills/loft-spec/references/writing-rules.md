@@ -20,9 +20,12 @@ judgement that lint cannot make.
 - Keep obligations out of bodies
 - Make a Quality Attribute measurable
 - Write Constraints
+- Separate owning a Component from using it
+- State guarantees, not provisioning
 - Record decisions
 - State a shared rule once, with a tag
 - Cite a label with a `mentions` edge
+- Follow the document's conventions
 
 ## Break a product down
 
@@ -98,6 +101,9 @@ Together, the criteria cover the whole Requirement. To check:
 3. Write a criterion for each condition left uncovered, and question each criterion that maps to
    no condition: it is usually scope that belongs elsewhere.
 
+Sweep the criteria a change keeps as well as the ones it adds: a new condition in a statement can
+leave an old criterion incomplete.
+
 A criterion that only repeats its Requirement covers nothing. "The book is added" under "When
 the reader adds a book, the shelf shall hold it" is an echo; "The book appears on the shelf" and
 "A book already on the shelf is not added twice" are outcomes.
@@ -128,10 +134,16 @@ statement or move the criterion; never complete the body instead.
 
 ## Make a Quality Attribute measurable
 
+A Quality Attribute stands under what it measures: a Feature, a Feature Group whose Features
+share it, or a Component. A Product holds none; a quality that seems to hold for the whole product
+is placed on the Feature Groups or Components it is measured on.
+
 A Quality Attribute's name states the target in one sentence, and its `qualityTarget` makes it
 measurable: a metric, a band with its bounds, a unit, an aggregation, the scenario that is
-measured and the environment it is measured in. "Fast" is not a target; "within 200 milliseconds
-at the 95th percentile, adding one book to a shelf of 500" is.
+measured and the environment it is measured in. An adjective with no metric and no bounds, such
+as "fast", is not a target; "within 200 milliseconds at the 95th percentile, adding one book to a
+shelf of 500" is. The scenario and the environment are written measurement scope, never left to
+whatever setting the measurement happens to run in.
 
 ## Write Constraints
 
@@ -147,11 +159,24 @@ binds nothing and goes stale with the next version. Nor is it a criterion: "the 
 no QR code" only restates an exclusion. Record a choice to leave something out as a decision, and
 state the edge of scope in the body of the Product or Feature it bounds.
 
+## Separate owning a Component from using it
+
+`scopedTo` says whose a Component is: the Product it belongs to, or none for one the whole
+document shares. `realizes` says which Features use it. A Component that a Feature of another
+Product uses is realized by that Feature too; reuse the Component, never copy it.
+
+## State guarantees, not provisioning
+
+A specification states the behaviour the product guarantees and the targets it meets. How much
+is provisioned to meet them, such as a machine size, a disk or a number of replicas, is a choice
+of the deployment and goes stale with it; write it in the deployment's own files, not as a node.
+
 ## Record decisions
 
 Record a choice that shaped the product as a decision: its context, the drivers that weigh, at
 least two options, an assessment of each option against each driver, the selected option, the
-outcome, and the consequences.
+outcome, and the consequences. Name each subject, driver and consequence's node by its name, and
+never copy that node's prose into the decision: the decision records why, and the node what.
 
 Create a decision in the state that is true. A choice still open is `proposed`, and needs no
 options or assessments yet. A choice already made is `accepted`, and then holds at least two
@@ -180,3 +205,11 @@ the tag (`LQ-009`).
 Prose may cite a published label, such as `RQ-12`. Add a `mentions` edge from the node to the
 labelled node's key, so that the citation follows the node when labels change (`V2-003`). Prefer
 the node's name in prose that does not need the label.
+
+## Follow the document's conventions
+
+A change follows the conventions the document already keeps: its terms, its statement forms, how
+it names its systems and how it breaks its Products down. Reword a published Requirement only
+when the user asks; an improvement you notice goes in the final report. A departure from these
+rules that runs through the whole document is reported once, with a few examples, not once for
+each node.

@@ -1,0 +1,56 @@
+key: 01a154c3-02c1-74da-a483-d477d02772fe
+slug: choosing-the-next-change
+name: "Choosing the next change"
+body: "The workflow for finding what to build next from a specification's published states, and for planning it, before any code is written."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+requirements:
+  - key: 01a154c3-02c1-74da-a483-d478fd3a5f38
+    statement:
+      form: event_driven
+      when: "the user asks what to build next from the specification"
+      system: "the skill"
+      shall: "direct the agent to choose the change from the published states."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4790239a65e
+        name: "The workflow tells the agent that choosing the next change reads and changes nothing."
+      - key: 01a154c3-02c1-74da-a483-d47a90e71619
+        name: "The workflow tells the agent to read `loft.lock.json` first."
+      - key: 01a154c3-02c1-74da-a483-d47b50e50d9b
+        name: "The workflow tells the agent that the published states are contracts and not a queue of tasks."
+      - key: 01a154c3-02c1-74da-a483-d47c82e95a2e
+        name: "The workflow tells the agent to choose a state the user names, or else the earliest published change the code does not yet meet."
+      - key: 01a154c3-02c1-74da-a483-d47d722807a7
+        name: "The workflow tells the agent never to choose a state because it is the latest."
+      - key: 01a154c3-02c1-74da-a483-d47e8620353b
+        name: "The workflow tells the agent to list what a publish changed with `loft status --base` against the commit of the publish before it."
+      - key: 01a154c3-02c1-74da-a483-d47fe708568e
+        name: "The workflow tells the agent that uncommitted or unmerged edits of `spec/` are not the contract."
+  - key: 01a154c3-02c1-74da-a483-d4805118db49
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach how the chosen change is planned."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d48122c708bd
+        name: "The workflow tells the agent to build the change by the keys of its nodes."
+      - key: 01a154c3-02c1-74da-a483-d4827f8aee57
+        name: "The workflow tells the agent to plan scenarios for the identity of a node as it is created, renamed, removed, recreated and reverted."
+      - key: 01a154c3-02c1-74da-a483-d4834b49c457
+        name: "The workflow tells the agent to plan scenarios for absent, null and empty values where the specification tells them apart."
+      - key: 01a154c3-02c1-74da-a483-d4846fb2bf5e
+        name: "The workflow tells the agent to plan a scenario that changes a value and changes it back."
+      - key: 01a154c3-02c1-74da-a483-d4853e5373dc
+        name: "The workflow tells the agent to map each scenario to every criterion it covers."
+      - key: 01a154c3-02c1-74da-a483-d486f37c7595
+        name: "The workflow tells the agent to report an ambiguity in the specification rather than invent behaviour."
+  - key: 01a154c3-02c1-74da-a483-d4872971a2e7
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach what the report of the chosen change holds."
+    criteria:
+      - key: 01a154c3-02c1-74da-a483-d4884299af17
+        name: "The workflow names the parts of the report, the pinned state, the chosen change and why, the nodes it touches, the code read, the proposed work with its criteria, the open questions and the next action."
+      - key: 01a154c3-02c1-74da-a483-d489169e9961
+        name: "The workflow tells the agent to stop after the report when the user asked only what to build next."

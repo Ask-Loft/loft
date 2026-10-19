@@ -2,6 +2,8 @@
 //! this one, and the modules they share. One binary is linked once, and checked once by the
 //! operating system before its first run.
 
+#[path = "common/base.rs"]
+mod base;
 #[path = "common/commands.rs"]
 mod commands;
 mod common;
@@ -20,6 +22,7 @@ mod snapshot;
 mod workflow;
 
 mod check;
+mod check_baseline;
 mod checks_for_updates;
 mod citations;
 mod closed_output;
@@ -49,6 +52,7 @@ mod release_feed_contract;
 mod release_workflow;
 mod render;
 mod render_openspec;
+mod review;
 mod schemas;
 mod sends_telemetry;
 mod shipped_binary;

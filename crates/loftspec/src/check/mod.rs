@@ -1,6 +1,10 @@
 //! `loft check` as a function (F-38): the tree read, then validated, then linted. A read
 //! error stops it before the validator; an error in `spec/lint.yaml` stops it before the linter.
-//! Every error and finding names the sites of the elements it concerns (RQ-158).
+//! Every error and finding names the sites of the elements it concerns (RQ-158). With a base
+//! tree, [`check_against`] also splits the findings into those the tree introduced and those it
+//! kept.
+
+mod baseline;
 
 use std::convert::Infallible;
 use std::fmt;
@@ -13,6 +17,8 @@ use crate::document::Document;
 use crate::hash::{DocumentHashes, hash_document};
 use crate::lint::{Finding, LintConfig, lint};
 use crate::validate::{ValidationError, conflict_errors, index_errors, validate};
+
+pub use baseline::{Baselined, Change, LintConfigs, Split, check_against, split};
 
 /// A validation error placed at the sites of the elements it names.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -67,21 +73,35 @@ impl Checked {
 /// Checks a `spec/` tree.
 #[must_use]
 pub fn check(files: &Files) -> Checked {
+    checked_under(files, lint_config(files)).0
+}
+
+/// Checks a `spec/` tree under `config`, its lint configuration as read, and gives the
+/// configuration back where the tree reads and the configuration does.
+fn checked_under(
+    files: &Files,
+    config: Result<LintConfig, Vec<ReadError>>,
+) -> (Checked, Option<LintConfig>) {
     let (document, sites) = match read_sited(files) {
         Ok(read) => read,
-        Err(errors) => return Checked::Unread(errors),
+        Err(errors) => return (Checked::Unread(errors), None),
     };
     let invalid = placed(validate(&document), &sites);
-    let config = LintConfig::read(files.get(&SpecPath::new(LINT)).map(Vec::as_slice));
-    let (config, findings) = match config {
-        Ok(config) => (Vec::new(), lint(&document, &sites, &config)),
-        Err(errors) => (errors, Vec::new()),
+    let (config, findings, used) = match config {
+        Ok(config) => (Vec::new(), lint(&document, &sites, &config), Some(config)),
+        Err(errors) => (errors, Vec::new(), None),
     };
-    Checked::Read {
+    let checked = Checked::Read {
         invalid,
         config,
         findings,
-    }
+    };
+    (checked, used)
+}
+
+/// The lint configuration `spec/lint.yaml` gives, or the defaults without the file.
+fn lint_config(files: &Files) -> Result<LintConfig, Vec<ReadError>> {
+    LintConfig::read(files.get(&SpecPath::new(LINT)).map(Vec::as_slice))
 }
 
 /// The hashes of a document read from a tree with the sites `sites`.

@@ -103,6 +103,7 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 | `ext` | optional | `ext` | optional |
 | `featureGroups` | optional | `features` | optional: Feature keys, which `loft fmt` writes |
 | `constraints` | optional | `constraints` | optional |
+| | | `qualityAttributes` | optional |
 | `sections` | optional | `sections` | optional |
 
 A Feature Group's slug is the name of its Features' directory; `features` lists their keys in
@@ -255,7 +256,8 @@ body: "Where the shelf is kept, in the device's own storage."
 
 ## Quality Attributes
 
-A Quality Attribute sits under a Feature or a Component.
+A Quality Attribute sits under a Feature, a Feature Group or a Component, never under a
+Product or a Requirement.
 
 | Quality Attribute field | |
 |---|---|
