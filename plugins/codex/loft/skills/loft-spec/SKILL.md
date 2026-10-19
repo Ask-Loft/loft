@@ -50,11 +50,32 @@ no second reading.
 - Read [`references/publishing-and-merging.md`](references/publishing-and-merging.md) for
   `loft publish`, `loft verify`, merging `spec/` in git, or two publishes that meet.
 
-## Preserve authorization boundaries
+## Keep to the approvals
 
 Edit `spec/` only when the user's intent includes it; a review or a question changes nothing.
-Run `loft publish` only when the user asks for a publish. Preserve unrelated work in the
-repository.
+Within a specification task the user asked for ("write", "change", "review and fix"), these are
+the task itself and need no further approval: editing `spec/`, running `loft fmt`, `loft check`,
+`loft review` and `loft reconcile`, and committing on the working branch, one commit for each
+step or wave.
+
+- Ask every question that would change the content (the scope, a reading the text leaves open, a
+  choice between designs) once, before the work starts, so the rest runs without stopping. A plan
+  the user approves covers the commits it lists on the working branch.
+- Ask before each step that reaches other people or rewrites what they rely on: a push, a merge
+  into a shared branch such as `develop` or `main`, `loft publish`, deleting a branch, rewriting
+  history, and superseding an accepted decision. One approval may name several of them, such as
+  "merge and publish"; it covers only the steps it names.
+- Propose a lint suppression, or an edit to a published Requirement the user did not ask about,
+  in the final report, all of them together for one decision; never stop to ask for each.
+
+## Keep the contract and other work intact
+
+- The last published state, the one `loft.lock.json` pins, is the contract. Work on a branch is a
+  candidate until a publish makes it normative. Never rewrite the history of a published state:
+  supersede a decision, or revert a change, instead.
+- Leave other branches, and uncommitted work you did not make, as they are.
+- Quote labels, keys and commits exactly as `loft` and git print them. A paraphrase of an
+  identity is not evidence of it.
 
 ## Respect what `loft` owns
 

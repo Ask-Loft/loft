@@ -16125,3 +16125,42 @@ links:
       - file: "crates/software-plant/tests/published.rs"
         name: "no_published_crate_depends_on_software_plant"
         body: 095754942003458ec89cffa65a57dd56e4b0ce9cd33a5ad044f3661cb5658beb
+  - node: 01a154c3-02c1-74da-a483-d4af1b246341
+    reviewed: ca8afcab7d4160006cb2e837fad848196ba2cecad12c6a1a87ed28e667ee5650
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b01aea0f9b
+    reviewed: 45b73bc7a0a6eca57f83bb58f82b8bf2c0a099353cf1ab21286eb79dce0ee4d4
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b1b2043249
+    reviewed: df2ea571c2ef8a3aad4181e74f93321cce5e81af46ab79d38ccce83b7ec454c8
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b26ac4b932
+    reviewed: 601b0488b6db922e6b1f95d2adcb87a8cc6ebfc2f81499a58fa588f024958880
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b48b965e33
+    reviewed: 2a96f0d94e5c8ba7916a8215c20963f2bbbcd341d758e25c32e203eef0af22d8
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b5323f9267
+    reviewed: 058cb863bc62549460425b8f2b7214cd829006c89f363b6d27dc3962b4c5b9bd
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b6a19dd39d
+    reviewed: 2c4df21a996ce6c845ae54ba0200457edf3ae8910dcdb04c36dd0685f352aede
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b77091d61c
+    reviewed: 67c06413905f78611835ce721555033399d72a9a5ce96763cf923b1d8e33e1be
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b834d5008f
+    reviewed: d8d6986208d26203375aaa6335166c1287387e8ac2ab6eb368c131923b75b2d1
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-02c1-74da-a483-d4b92beca55d
+    reviewed: b04f88f4ece94890ab53e535804c9c5599b40046afe4f4dd96bc24bf308f7805
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a154c3-a606-7743-88db-27e46be5feac
+    reviewed: 96dd46ac6a08bed5ded54bffa92ec0ac24a3561c4bda5697732f1e43910979ba
+    unverified: "Guidance an agent reads and acts on; the skill text states it in agents/claude/claude-host.md, read it there."
+  - node: 01a154c3-a606-7743-88db-27e5c95047d5
+    reviewed: 76342dcaf42b5c4211e9b5aeab14ef27fac1609a664ac5ee92c0345fb8740dd1
+    unverified: "Guidance an agent reads and acts on; the skill text states it in agents/claude/claude-host.md, read it there."
+  - node: 01a154c3-a606-7743-88db-27e6178f52f8
+    reviewed: 7f5ed53b3d615f1945eab729797a46b9d65e208eb65d7d13da7a6583dbe0056a
+    unverified: "Guidance an agent reads and acts on; the skill text states it in agents/claude/claude-host.md, read it there."

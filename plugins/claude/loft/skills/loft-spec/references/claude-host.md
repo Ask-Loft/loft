@@ -14,16 +14,26 @@ or override them here.
 
 ## Run `loft`
 
-Run `loft` with the Bash tool from the directory that holds `spec/`. `loft --version`,
-`loft check`, `loft fmt --check` and `loft verify` change nothing and run without asking; every
-other command writes and asks first. Edit the files of `spec/` with the Edit and Write tools,
-never with shell redirection.
+Run `loft` with the Bash tool from the directory that holds `spec/`. Within a specification task
+the user asked for, its commands run without asking: `loft fmt`, `loft check`, `loft review`,
+`loft find`, `loft terms`, `loft verify` and `loft reconcile`, `--accept` included. Ask first only
+for the steps the router names, `loft publish` among them. Edit the files of `spec/` with the
+Edit and Write tools, never with shell redirection.
 
 ## Read its output
 
 Pass `--format json` when you will act on the result: the document goes to standard output and
-messages to standard error. A large document is best read through a filter, such as
-`loft check --format json | jq '.findings[] | select(.severity == "warning")'`, rather than whole.
+messages to standard error. Write a large document to a file and read it through a filter, rather
+than whole:
+
+```
+loft review --base develop --format json > /tmp/review.json
+jq '.units[] | .scope.node.name' /tmp/review.json
+loft check --baseline develop --format json | jq '.findings[] | select(.change == "introduced")'
+```
+
+During a long review, keep running notes in a file, one line for each unit read and each finding,
+so that the report can be assembled from them.
 
 ## Report progress
 
