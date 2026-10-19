@@ -52,6 +52,7 @@ mod release_feed_contract;
 mod release_workflow;
 mod render;
 mod render_openspec;
+mod review;
 mod schemas;
 mod sends_telemetry;
 mod shipped_binary;

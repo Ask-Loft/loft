@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 
-use crate::{install, switch_command};
+use crate::{install, review, switch_command};
 
 #[derive(Parser)]
 #[command(
@@ -117,6 +117,9 @@ pub enum Command {
         #[command(flatten)]
         output: Output,
     },
+    /// Gather the context each assertion under review is read against, as a paged JSON packet,
+    /// and judge nothing.
+    Review(ReviewArgs),
     /// Merge one file of `spec/` as git's merge driver, writing the result to `<ours>` (RQ-150).
     MergeDriver(MergeDriverArgs),
     /// Manage the `loft-spec` skill that teaches coding agents to write a specification.
@@ -161,6 +164,37 @@ pub enum Command {
         #[command(flatten)]
         output: Output,
     },
+}
+
+/// The arguments of `loft review`.
+#[derive(Args)]
+pub struct ReviewArgs {
+    /// Review only what changed since HEAD left this revision, such as `develop`.
+    #[arg(long, value_name = "REVISION")]
+    pub base: Option<String>,
+    /// Review only the assertions at or below the node with this key, slug or label.
+    #[arg(long, value_name = "NODE")]
+    pub node: Option<String>,
+    /// The most characters of compact JSON a page's units take; a longer unit stands alone.
+    #[arg(long, value_name = "N", default_value_t = 50_000)]
+    pub max_chars: usize,
+    /// The page to print, counted from 1.
+    #[arg(long, value_name = "K", default_value_t = 1, value_parser = clap::value_parser!(u64).range(1..))]
+    pub page: u64,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+impl ReviewArgs {
+    /// What the arguments ask `loft review` for.
+    pub fn options(&self) -> review::Options<'_> {
+        review::Options {
+            base: self.base.as_deref(),
+            node: self.node.as_deref(),
+            max_chars: self.max_chars,
+            page: usize::try_from(self.page).unwrap_or(usize::MAX),
+        }
+    }
 }
 
 /// The arguments of `loft merge-driver`: `--install`, or the four paths git passes a driver.
@@ -311,6 +345,7 @@ impl Command {
             Self::Reconcile { .. } => Some("reconcile"),
             Self::Terms { .. } => Some("terms"),
             Self::Find { .. } => Some("find"),
+            Self::Review(..) => Some("review"),
             Self::Verify { .. } => Some("verify"),
             Self::Render { .. } => Some("render"),
             Self::Skill { .. } => Some("skill install"),

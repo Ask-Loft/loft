@@ -19,6 +19,18 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   document `resolved` and `baseline` (the revision, the commit, the `loft` version and the
   digests of both lint configurations, and whether they agree). A base it cannot read is an
   error of the new kind `base`.
+- `loft review [--base <revision>] [--node <node>] [--max-chars <n>] [--page <k>]` gathers the
+  context each assertion (a Requirement, criterion, Constraint or Quality Attribute) is read
+  against, and judges nothing. Each assertion lands in the unit of its scope, the Feature or the
+  node that holds it, with the nodes above the scope and their Constraints and Quality
+  Attributes, a Feature's Requirements with their criteria, the Components it realizes with
+  those above them, the decisions that name, are driven by, bear on or mention an assertion or
+  the scope, and the terms the assertions use. With `--base`, only the assertions the branch
+  added, changed, moved or removed are reviewed, each beside its node at the base. `--node`
+  narrows the review to a subtree by key, slug or label. The packet is JSON, paged by whole units
+  of at most 50000 characters unless `--max-chars` says otherwise, and the text output is an
+  index of the page. It follows the schema `loft-review/1`, and the command event names
+  `review`.
 
 ## 2.2.0 (2026-10-18)
 

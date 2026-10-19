@@ -183,7 +183,8 @@ pub fn pack(
 }
 
 /// Every node of `document` without a key, in document order.
-fn unkeyed(document: &Document) -> Vec<Unkeyed> {
+#[must_use]
+pub fn unkeyed(document: &Document) -> Vec<Unkeyed> {
     let mut found = Vec::new();
     document.walk(&mut |node| {
         if node.id().is_none() {

@@ -12060,6 +12060,9 @@ links:
       - file: "crates/loftspec/tests/review.rs"
         name: "each_node_carries_its_label_kind_name_and_own_content_view"
         body: 67230629ee11b17683c91216a9a9c19bf4068b0a472161b28be7f574b5fa722d
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "each_node_carries_its_key_label_kind_site_name_and_view"
+        body: de0f141496d727d7766b8ebda45a8117b1ed5353f9e16ef7c3f796cabf611d08
   - node: 01a154b0-f757-7647-acce-6beae7b5291a
     reviewed: f466581561428f5834e11d077feb86a1313f598caa96c4fae6301ac05d4b5704
     tests:
@@ -12117,18 +12120,39 @@ links:
       - file: "crates/loftspec/tests/review.rs"
         name: "the_same_tree_and_base_give_the_same_packet"
         body: a9f430a207383a3204547404f6aa168aa211f07b374819843e8e7c805050568f
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "two_runs_print_the_same_bytes_and_write_nothing"
+        body: 6275d7d279d679bdc58b8ff87c3de63e07013d9db768d79e683e26796a0e4dd8
+  - node: 01a154b0-f757-7647-acce-6bf1cf73a8a1
+    reviewed: 5fcdd4d9ffdc8504f0fb6295ac82278a2b938f17a61dd492ad32dc355a19cc94
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "two_runs_print_the_same_bytes_and_write_nothing"
+        body: 6275d7d279d679bdc58b8ff87c3de63e07013d9db768d79e683e26796a0e4dd8
   - node: 01a154b0-f757-7647-acce-6bf31bcb6e68
     reviewed: df8fb929a1ab320f3afae6d352836fac507286020bb4b27bcefd602563a2c9b1
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
         body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "without_a_base_every_assertion_is_reviewed_with_no_change"
+        body: 2d0ae5d13f69c4bc0ede04fcd6689e334a04055605ca8492070830d108c12d11
   - node: 01a154b0-f757-7647-acce-6bf4571c5c59
     reviewed: a39abbebb9728ed65cc0a27f6f1e618c988d2ee0443fa929fa8aef74542a1abd
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
         body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "without_a_base_every_assertion_is_reviewed_with_no_change"
+        body: 2d0ae5d13f69c4bc0ede04fcd6689e334a04055605ca8492070830d108c12d11
+  - node: 01a154b0-f757-7647-acce-6bf6e51fcb9a
+    reviewed: 674825df118a13199259fdb73ee6b2299dcbefce969ea8f27021c8376d5bbcde
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node"
+        body: a7f355d09373dadfabfb13e9c57181412002499e684f2cb455bc389edb220981
   - node: 01a154b0-f757-7647-acce-6bf7a99e2e9e
     reviewed: f641ddbbad4f9ea1e66ab1152d348008cd887c934a18fcb82f8a5bcb83b5e310
     tests:
@@ -12141,6 +12165,9 @@ links:
       - file: "crates/loftspec/tests/review.rs"
         name: "with_a_base_only_a_changed_assertion_is_reviewed_beside_the_base_s_node"
         body: c656fc7cb815a6b71b0234ab2e83ce226f2932dfee2f4682ad3fd302bcf5ee08
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node"
+        body: a7f355d09373dadfabfb13e9c57181412002499e684f2cb455bc389edb220981
   - node: 01a154b0-f757-7647-acce-6bf980680196
     reviewed: 54ca177b323c19abd9f5b658574bab7d2e00965baa9111d4e73b696d042cf700
     tests:
@@ -12159,6 +12186,9 @@ links:
       - file: "crates/loftspec/tests/review.rs"
         name: "a_removed_assertion_lands_in_the_unit_of_its_scope_at_the_base"
         body: b8e95ccb0e6c609cc4d36fd7c70ea930a35dc42e47021e3d5e1a310c938a3d4c
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_removed_assertion_carries_the_base_s_node_and_site"
+        body: c245b5479ae675d90da27aec17760b06a371a84ea5882cd3508af751d21d9ee2
   - node: 01a154b0-f757-7647-acce-6bfba506e16e
     reviewed: 3927f57ddac54445c55bb3057689b1cd3e75f9ac8492594b672b591231e1d225
     tests:
@@ -12171,24 +12201,171 @@ links:
       - file: "crates/loftspec/tests/review.rs"
         name: "a_removed_assertion_lands_in_the_unit_of_its_scope_at_the_base"
         body: b8e95ccb0e6c609cc4d36fd7c70ea930a35dc42e47021e3d5e1a310c938a3d4c
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node"
+        body: a7f355d09373dadfabfb13e9c57181412002499e684f2cb455bc389edb220981
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_removed_assertion_carries_the_base_s_node_and_site"
+        body: c245b5479ae675d90da27aec17760b06a371a84ea5882cd3508af751d21d9ee2
   - node: 01a154b0-f757-7647-acce-6bfc86b66757
     reviewed: cd0210194f75562d5b9606c296487481d7f3a2884d42b7e10fcc179e1e0e7fe4
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "with_a_base_only_a_changed_assertion_is_reviewed_beside_the_base_s_node"
         body: c656fc7cb815a6b71b0234ab2e83ce226f2932dfee2f4682ad3fd302bcf5ee08
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_tree_the_same_as_its_base_gives_an_empty_packet"
+        body: b568b40d19f1509c812c4b96813631bd5f17509d8683c729aad7180861b34fc9
+  - node: 01a154b0-f757-7647-acce-6bfe250c412d
+    reviewed: 1f4926820fcd7c67d43a1ed59b3a98f68a3af33d2a2935cea30a8a76fbb136de
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_node_is_named_by_its_key_its_slug_or_its_label_in_any_case"
+        body: e88dcf6dceb8f1e825cf5ad3935e0ec392fca574283b7f0b2c4c5a10fe321072
   - node: 01a154b0-f757-7647-acce-6bffe46ec281
     reviewed: 6304c27813b0fb8404775381e639f0d8228a1ebfb67302b99335a7f23ab7369b
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "a_node_narrows_the_review_to_the_assertions_at_or_below_it"
         body: 517763d22b9c5701404bf94ef996e660c92856602d7933363c33248c52df523f
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "against_a_base_a_node_narrows_the_review_to_what_changed_below_it"
+        body: 9a2c5074a862c848d712d41c339eed00aa0715bd8307799d98424eb658b25679
+  - node: 01a154b0-f757-7647-acce-6c01a14c2dea
+    reviewed: 763e3e8493cf059734986878d446b27f2869c32c1567d38e8f43977310723a66
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "pages_take_whole_units_in_order_up_to_the_limit"
+        body: e0e18afc0bab361301dbdc8291e045c802de4081867fb778835dde1f99b30b60
+  - node: 01a154b0-f757-7647-acce-6c0272c7b5c7
+    reviewed: 81c5f4023337cfe06e7aa841d8863199402c7e40dad794439cc297922c6964ec
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "the_packet_names_its_provenance_and_its_page"
+        body: 7cf0ed5aa498bc6bc54528f96d35b07971722d779714da8a313dd581d656f8b9
+  - node: 01a154b0-f757-7647-acce-6c03659a2f87
+    reviewed: 4fe3644bdf60db996f9e699097b52aca24ba6b54298afa6afa752ae6a01f22e8
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "pages_take_whole_units_in_order_up_to_the_limit"
+        body: e0e18afc0bab361301dbdc8291e045c802de4081867fb778835dde1f99b30b60
+  - node: 01a154b0-f757-7647-acce-6c04dcdf56cf
+    reviewed: 67acfe6cacca9cfd47aeb167937e4c88d2a97493309edfb3027ed288c6079b68
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_unit_longer_than_the_limit_stands_alone_whole_and_marked_oversized"
+        body: 7c52130218d786d39905dfbaac5c0376fd37defa731caf60935889e0df9e6ea2
+  - node: 01a154b0-f757-7647-acce-6c05806b8eed
+    reviewed: 741a010281c7041c95c5f31ba50e64eaa11e816d00f703ad781ea1e8cc5384fc
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_unit_longer_than_the_limit_stands_alone_whole_and_marked_oversized"
+        body: 7c52130218d786d39905dfbaac5c0376fd37defa731caf60935889e0df9e6ea2
+  - node: 01a154b0-f757-7647-acce-6c07633cb841
+    reviewed: d9fa20e8932348e72e28a943b7a8bfd9db0bfbd7c089fdcbb69735081fb73fce
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "the_packet_names_its_provenance_and_its_page"
+        body: 7cf0ed5aa498bc6bc54528f96d35b07971722d779714da8a313dd581d656f8b9
+  - node: 01a154b0-f757-7647-acce-6c094ced98ec
+    reviewed: eca3ed85fa2d1219e1f740af269fefe06a2dd33ddfcc62c25246f57a5ef521d5
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "the_packet_names_its_provenance_and_its_page"
+        body: 7cf0ed5aa498bc6bc54528f96d35b07971722d779714da8a313dd581d656f8b9
+  - node: 01a154b0-f757-7647-acce-6c0a9bc32708
+    reviewed: e54d1b772547f28657f5a229527b5b18c555a7768cccb0cf28e4217300cf3e7f
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_tree_the_same_as_its_base_gives_an_empty_packet"
+        body: b568b40d19f1509c812c4b96813631bd5f17509d8683c729aad7180861b34fc9
+  - node: 01a154b0-f757-7647-acce-6c0b13140cc8
+    reviewed: 741e14290853b163787d89ebae5eb4a0de1bf835c1651723bee6841594b932cd
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "the_packet_names_its_provenance_and_its_page"
+        body: 7cf0ed5aa498bc6bc54528f96d35b07971722d779714da8a313dd581d656f8b9
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node"
+        body: a7f355d09373dadfabfb13e9c57181412002499e684f2cb455bc389edb220981
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_node_is_named_by_its_key_its_slug_or_its_label_in_any_case"
+        body: e88dcf6dceb8f1e825cf5ad3935e0ec392fca574283b7f0b2c4c5a10fe321072
+  - node: 01a154b0-f757-7647-acce-6c0c33af94fa
+    reviewed: 7ce40ef3c877f5c974145776c9ba8f45012a1c02188f7abb95b70ccbc98001dd
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "the_packet_names_its_provenance_and_its_page"
+        body: 7cf0ed5aa498bc6bc54528f96d35b07971722d779714da8a313dd581d656f8b9
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "pages_take_whole_units_in_order_up_to_the_limit"
+        body: e0e18afc0bab361301dbdc8291e045c802de4081867fb778835dde1f99b30b60
+  - node: 01a154b0-f757-7647-acce-6c0e44f8fb84
+    reviewed: 2a89116b2f74c8a8d66a229f8b2db5a4bb4bc148356d8809b65a59ffb9062eb8
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "the_text_is_an_index_of_the_page"
+        body: 7e44a08f799360fe5a789a2f9a6297936c6c4787147e781dfd0529dc62057f81
+  - node: 01a154b0-f757-7647-acce-6c0fdc349164
+    reviewed: 1df57e3edec594c0e93447196a8410b4c28a36ae7a4fb84e2a5039da06679a3e
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "the_text_is_an_index_of_the_page"
+        body: 7e44a08f799360fe5a789a2f9a6297936c6c4787147e781dfd0529dc62057f81
   - node: 01a154b0-f757-7647-acce-6c1106475814
-    reviewed: 1f7a698d1cb3487a9b05b70c59f925181de3c75799ff48eca57573598668db06
+    reviewed: 8c92e72b61cc088ef6eb847cf32c494a6a66666195cbe017256aa7abf82b5ac7
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "a_node_without_a_key_is_refused_by_kind_and_name"
         body: 225e1f96f7a26d4f3417adf776843568f36ad9eca3f1cd9d7dbec6cc8c65328d
+  - node: 01a154b0-f757-7647-acce-6c1205ff5fb9
+    reviewed: 56525c1a002340ab189feb2a14969a0cd07223df2df878ca3cc2e94164d23791
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_node_without_a_key_is_refused_at_its_file_line_and_column"
+        body: 2e06d0412baa159bdfc632c6e873555f7a779a3850d48e4b6c1b7e21659e5324
+  - node: 01a154b0-f757-7647-acce-6c14aca98864
+    reviewed: 92193916b9b3c74513a5149be9b52a687e2df65e02ad5d098119c12db7fea6cc
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_conflict_record_is_refused_naming_its_file_and_key"
+        body: 1f05954bb68a6ae0c6632fc27f55025c62b940a153f9e05e372faa8bbcfb2af8
+  - node: 01a154b0-f757-7647-acce-6c1663e3dea9
+    reviewed: 4a935b701762607d838a28cba14a7326e33134b2cf1c74e4f0c21e3df6d4c638
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_node_that_names_nothing_is_refused_naming_the_query"
+        body: 095799f4df49d169d4a7f4b3119f7112159c41b281cd0ea8b502657fd1d51357
+  - node: 01a154b0-f757-7647-acce-6c1887baaeed
+    reviewed: 8d0c7f4453a8aabb881e4614f565356f538f9b652ee49d27d62dd9b6c472a13c
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_node_that_names_two_nodes_is_refused_naming_each_key"
+        body: f4e54f083d0e61d9c4e6b802e451c8446dc66427ea1f3aa93e429352982a977f
+  - node: 01a154b0-f757-7647-acce-6c1ac91ac7cb
+    reviewed: 6693a894cc8732b1bf234491d9af0f90493b7969b4d4f78345045a875f5c81bd
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_page_past_the_last_is_refused_naming_the_number_of_pages"
+        body: 1e85d298b47eb49d5d7008a7e3c14481e41516356032d93dba1825d8e681a520
+  - node: 01a154b0-f757-7647-acce-6c1c9ea0adbd
+    reviewed: a1587167915f91486897c1028a2ba7ef024f9d16acfe89a5225baef82d0c9278
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "outside_a_repository_a_base_is_refused"
+        body: 93e93f98b032c4057ae3c7ca49b15efb526e11b8dbf8bbc2313e719bab474932
+  - node: 01a154b0-f757-7647-acce-6c1e42a7ac95
+    reviewed: 583c89ece0a600b81de2660b55f62afe08998248a1d5bafa2addbb195a1fbf33
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_base_that_names_no_commit_or_shares_no_history_is_refused_naming_it"
+        body: 83314613781ec9dbcbc237a46a7070be7a6e4c32f9dd179aad645211aec509a4
+  - node: 01a154b0-f757-7647-acce-6c2087906214
+    reviewed: 67995fd5c15257f191eab1da550b631eaaa564cd979df00c236185fc0518e7a0
+    tests:
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_base_tree_that_does_not_read_is_refused_naming_the_commit_and_the_place"
+        body: 6f9a0b882564c715d3df029685e87b17ab74b945da28ea0642c09eb259ba832c
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:

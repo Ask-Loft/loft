@@ -2,6 +2,10 @@ key: 01a154b0-f757-7647-acce-6bda786af643
 slug: loft-review
 name: "`loft review`"
 body: "Gathers what a reviewer reads a specification's assertions against, and judges nothing. Each Requirement, criterion, Constraint and Quality Attribute under review lands in the unit of its scope, the Feature or the node that holds it, with the nodes above that scope, the Requirements beside it, the Components it realizes, the decisions that name it and the terms it uses. With `--base <revision>`, only what the branch added, changed, moved or removed since it left the revision is reviewed, each changed assertion beside its text at the base. The packet is JSON, paged by whole units so that an agent can read it in parts; the text output is an index of the page."
+tags:
+  - checks-for-updates
+  - reads-tree
+  - sends-telemetry
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -173,9 +177,9 @@ requirements:
       shall: "refuse and exit 1."
     criteria:
       - key: 01a154b0-f757-7647-acce-6c1106475814
-        name: "The error, of kind `unkeyed`, names the kind and the name of each node without a key."
+        name: "No packet is made of a document that holds a node without a key."
       - key: 01a154b0-f757-7647-acce-6c1205ff5fb9
-        name: "The error says that `loft fmt` mints the missing keys."
+        name: "The error names the file, line and column of the node without a key."
   - key: 01a154b0-f757-7647-acce-6c134693b5f2
     statement:
       form: unwanted

@@ -24,6 +24,7 @@ mod publish;
 mod reconcile;
 mod record_install;
 mod render;
+mod review;
 mod settings;
 mod skill;
 mod status;
@@ -174,6 +175,7 @@ fn dispatch(command: Command) -> Finished {
             reconcile::run(root, &options, output.json())
         }
         Command::Verify { output } => verify::run(root, output.json()),
+        Command::Review(args) => review::run(root, &args.options(), args.output.json()),
         Command::Status { base, output } => status::run(root, base.as_deref(), output.json()),
         Command::MergeDriver(args) => merge_driver(root, args),
         Command::Render {
