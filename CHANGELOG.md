@@ -9,6 +9,16 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   `.claude/settings.json` as it is: not created, not read, and not named in the request to
   commit. It suits a project that runs a skill built from source rather than the released
   plugin. `loft init` refuses `--no-plugin` with `--no-skill` as a usage error.
+- `loft check --baseline <revision>` lints the tree at the commit where HEAD left the revision
+  too, under the working tree's `spec/lint.yaml`, and marks each finding `introduced` or
+  `preexisting`; the base's findings the tree no longer holds are listed as `resolved`. A
+  finding is the same at both sides when its rule, subject keys and term are, so a moved node or
+  a changed count in a message is no new finding, and repeated findings pair by body line first.
+  `--fail-on` then gates on introduced findings only, and the text prints only those, then a
+  count. The output follows the schema `loft-check/2`: each finding may carry `change`, and the
+  document `resolved` and `baseline` (the revision, the commit, the `loft` version and the
+  digests of both lint configurations, and whether they agree). A base it cannot read is an
+  error of the new kind `base`.
 
 ## 2.2.0 (2026-10-18)
 

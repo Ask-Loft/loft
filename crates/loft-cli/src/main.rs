@@ -145,8 +145,16 @@ fn dispatch(command: Command) -> Finished {
             init::run(root, skill, output.json())
         }
         Command::Fmt { check, output } => fmt::run(root, check, output.json()),
-        Command::Check { fail_on, output } => {
-            check::run(root, fail_on.map(Severity::from), output.json())
+        Command::Check {
+            fail_on,
+            baseline,
+            output,
+        } => {
+            let options = check::Options {
+                fail_on: fail_on.map(Severity::from),
+                baseline: baseline.as_deref(),
+            };
+            check::run(root, &options, output.json())
         }
         Command::Import { source } => import(root, source),
         Command::Publish { output } => publish::run(root, output.json()),

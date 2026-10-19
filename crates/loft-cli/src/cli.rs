@@ -52,9 +52,14 @@ pub enum Command {
     },
     /// Read, validate and lint `spec/` (RQ-136).
     Check {
-        /// Exit 1 on a finding at or above this severity (RQ-139).
+        /// Exit 1 on a finding at or above this severity (RQ-139); with `--baseline`, on an
+        /// introduced one.
         #[arg(long, value_name = "SEVERITY")]
         fail_on: Option<FailOn>,
+        /// Mark each finding introduced or preexisting against the tree where HEAD left this
+        /// revision, such as `develop`, and list the findings the tree resolved.
+        #[arg(long, value_name = "REVISION")]
+        baseline: Option<String>,
         #[command(flatten)]
         output: Output,
     },

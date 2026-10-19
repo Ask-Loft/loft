@@ -19,6 +19,18 @@ pub struct Base {
 
 /// The tree at the commit where HEAD left `revision`.
 pub fn read(git: &GitCommand, root: &Path, revision: &str) -> Result<Base, Stop> {
+    if let Err(error) = git.prefix(root) {
+        return Err(match error {
+            StoreError::NotARepository(root) => Stop::one(
+                "base",
+                format!(
+                    "{}: not inside a git repository, which a base revision needs",
+                    root.display()
+                ),
+            ),
+            error => error.into(),
+        });
+    }
     let commit = match git.merge_base(root, revision) {
         Ok(MergeBase::Commit(commit)) => commit,
         Ok(MergeBase::Unrelated) => {

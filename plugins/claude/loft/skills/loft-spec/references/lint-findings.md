@@ -44,6 +44,7 @@ raises its rule, and no other rule at warning.
 | `store` | `spec/` cannot be read: missing, unreadable, or not a tree | Run `loft` from the directory that holds `spec/` |
 | `refused` | The command refused to act, such as `loft init` over an existing `spec/` | Read the message; it names what to change |
 | `integrity` | The tree and the lock disagree | Only `loft verify` and `loft publish` report it; see `publishing-and-merging.md` |
+| `base` | The `--baseline` revision names no commit, shares no history with HEAD, or its tree does not read, or the command ran outside a git repository | Name a revision HEAD descends from, such as `develop`, or fix the base's file at the line given |
 
 ## The small document
 

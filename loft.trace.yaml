@@ -9747,6 +9747,18 @@ links:
       - file: "crates/loft-cli/tests/check.rs"
         name: "a_finding_at_or_above_fail_on_is_a_failed_check_in_json"
         body: 05379f43fdb3339c5c269e7b6594d7a7fc440cd1ba5d7376d093c632b0efbbbb
+  - node: 01a154a3-4f92-72c0-97ef-634ef4f745dd
+    reviewed: 7ad54bf610d93c1d06ac4ca8f76b42d354d2f6793c8fe1c161fb8373ab408ba3
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "each_finding_carries_its_change_and_the_base_is_named"
+        body: 40cbc6c11d168ce38bd5f13d231695df7d54c2b1b2155169003ae254c5253a6f
+  - node: 01a154a3-4f92-72c0-97ef-634fd4f2e741
+    reviewed: 5b9c8328594d9a8c6b2230e4f075b7ea8da2e8db6ac5504fc2cee558f08bc842
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "the_base_tree_is_read_from_git_not_from_the_working_tree"
+        body: 81f136e60f3fe153b50e1a0a14dcf7f498de57c915e1fb5a3c004a9b9504892d
   - node: 01a154a3-4f92-72c0-97ef-6350ca1051b8
     reviewed: 3f1653aecfceab962fb699e11198ba55a0ac7af6000652ee1e9dfc1737b34503
     tests:
@@ -9780,6 +9792,9 @@ links:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "a_vague_quantifier_added_to_a_statement_is_introduced"
         body: 0cb03c0ae4c03578ad21483f84241ded9c589cf23f5d69497ecbf923b29eba8c
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "each_finding_carries_its_change_and_the_base_is_named"
+        body: 40cbc6c11d168ce38bd5f13d231695df7d54c2b1b2155169003ae254c5253a6f
   - node: 01a154a3-4f92-72c0-97ef-6354cc3bd3f1
     reviewed: 1ff10f8115e83c100ab8b29d8518fde72eb5be784eae67a41bfa6a6cec8eba8d
     tests:
@@ -9795,6 +9810,9 @@ links:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "a_tree_checked_against_itself_holds_no_introduced_and_no_resolved_finding"
         body: ff5a0fca70a379b451679b368413a4f913b00e8dd80c1f11878d74ec790f7a54
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "the_base_tree_is_read_from_git_not_from_the_working_tree"
+        body: 81f136e60f3fe153b50e1a0a14dcf7f498de57c915e1fb5a3c004a9b9504892d
   - node: 01a154a3-4f92-72c0-97ef-63560b33d579
     reviewed: 22f884f73a3292814491d7eb6ed43037d1bb9b05a53f6444f7aad82ddc18951a
     tests:
@@ -9807,18 +9825,141 @@ links:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "the_base_tree_s_validation_errors_are_not_reported"
         body: 07ecc52b7789d5111455ecc42ecc640a1c30fed78dfc75aff234eeb498ce9568
+  - node: 01a154a3-4f92-72c0-97ef-635820cd8e8b
+    reviewed: ca832a91423f3502c0fcf003fa5c3f171a23a2abbe384b92bec4f3abb7fdd8bd
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "an_unchanged_tree_prints_no_finding_and_counts_each_one_preexisting"
+        body: 9e0c9590573316914b711fef6142530e87f95c61e98e79ee8bf9d180f29f2cba
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "an_introduced_finding_is_printed_and_preexisting_ones_are_not"
+        body: dd3a78237d0aab9477dac16c30cf4da34c117861b1c05d059ee6a4c7c9a8d1d8
+  - node: 01a154a3-4f92-72c0-97ef-63590eac4367
+    reviewed: e1f835e49ace22ef9823dd5aae2ceeaa9941349fe3144b5366ee2854918d7aac
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "an_unchanged_tree_prints_no_finding_and_counts_each_one_preexisting"
+        body: 9e0c9590573316914b711fef6142530e87f95c61e98e79ee8bf9d180f29f2cba
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "an_introduced_finding_is_printed_and_preexisting_ones_are_not"
+        body: dd3a78237d0aab9477dac16c30cf4da34c117861b1c05d059ee6a4c7c9a8d1d8
+  - node: 01a154a3-8688-7584-95b3-c4ba13f57292
+    reviewed: b311b542f2644fdfad08c9da001ce3af60b680c4c805238d508106251231e330
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "an_unchanged_tree_prints_no_finding_and_counts_each_one_preexisting"
+        body: 9e0c9590573316914b711fef6142530e87f95c61e98e79ee8bf9d180f29f2cba
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "an_introduced_finding_is_printed_and_preexisting_ones_are_not"
+        body: dd3a78237d0aab9477dac16c30cf4da34c117861b1c05d059ee6a4c7c9a8d1d8
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "the_base_tree_is_read_from_git_not_from_the_working_tree"
+        body: 81f136e60f3fe153b50e1a0a14dcf7f498de57c915e1fb5a3c004a9b9504892d
+  - node: 01a154a3-4f92-72c0-97ef-635bf5400eea
+    reviewed: 21a9d7c45f1188e22c6c9113e44aaaf5c02abda7a1f7b981f21bbade978dccfc
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "fail_on_counts_introduced_findings_alone"
+        body: 5e41ac41a46587b9549f4c27b9cdb87ad435ff58503a7b3143f54eaf595a69f1
+  - node: 01a154a3-4f92-72c0-97ef-635c3dfd3b69
+    reviewed: 659719e685680e6b7fb34d4ef49563fa7ede747264c645ad384f5e7e5d228a81
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "fail_on_counts_introduced_findings_alone"
+        body: 5e41ac41a46587b9549f4c27b9cdb87ad435ff58503a7b3143f54eaf595a69f1
+  - node: 01a154a3-4f92-72c0-97ef-635d121d198e
+    reviewed: 523804ca31b01b16e49fca1cb080703bb73fe76fb0f699c9cfaa1e81f65ba625
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "a_working_tree_error_still_exits_1_against_a_base"
+        body: ae081c12935cf0c9e44e3b1327816d2ed064be7002b5dff1dbd5f64c4bec7341
+  - node: 01a154a3-4f92-72c0-97ef-635e099f6c1d
+    reviewed: a2f64e6d83c4f4a7f4e68962fa685a42b8ae4f48925d40de7a97a58a729b6097
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "fail_on_counts_introduced_findings_alone"
+        body: 5e41ac41a46587b9549f4c27b9cdb87ad435ff58503a7b3143f54eaf595a69f1
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "a_working_tree_error_still_exits_1_against_a_base"
+        body: ae081c12935cf0c9e44e3b1327816d2ed064be7002b5dff1dbd5f64c4bec7341
+  - node: 01a154a3-4f92-72c0-97ef-6360c4b22f43
+    reviewed: b8efb91779698a056591b785f72321d687472c07b1cdeac6f3c978b23e18994e
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "each_finding_carries_its_change_and_the_base_is_named"
+        body: 40cbc6c11d168ce38bd5f13d231695df7d54c2b1b2155169003ae254c5253a6f
+  - node: 01a154a3-4f92-72c0-97ef-63611cdd4a16
+    reviewed: d43ddd48015a3b215397302797ee043dd06cab66f9da1a815ad7f572b55386c4
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "the_base_tree_is_read_from_git_not_from_the_working_tree"
+        body: 81f136e60f3fe153b50e1a0a14dcf7f498de57c915e1fb5a3c004a9b9504892d
+  - node: 01a154a3-4f92-72c0-97ef-63628a749cad
+    reviewed: 090dd002b766a1dbb6ff175fd6009c81cba5a75bbff1ecfc673cf8e8a80bd7dc
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "each_finding_carries_its_change_and_the_base_is_named"
+        body: 40cbc6c11d168ce38bd5f13d231695df7d54c2b1b2155169003ae254c5253a6f
+  - node: 01a154a3-4f92-72c0-97ef-6363267d1724
+    reviewed: 6e25d059700130b210b0ecb99357f72290e03f394794dc358e96711e9fb8780a
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "each_finding_carries_its_change_and_the_base_is_named"
+        body: 40cbc6c11d168ce38bd5f13d231695df7d54c2b1b2155169003ae254c5253a6f
+  - node: 01a154a3-4f92-72c0-97ef-63649ad1a9ac
+    reviewed: fbc5f3a297974e1e9e52bd4d386349872269957466a800d28605cefcc150b438
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "the_lint_configurations_are_named_by_digest_and_compared"
+        body: 00852b54115fb527602184822aa6b951259d8bd72c9b36427fefd5df4ff07c6f
   - node: 01a154a3-4f92-72c0-97ef-6365ceb51b96
     reviewed: 16a6ae92b71f30004a98cd5dea1ce657d43aadd97238ef7b168f5ce94ae2c681
     tests:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "the_configurations_are_the_same_exactly_when_both_files_give_one"
         body: 71e74689a97cc5f6ca7eae7af54ccb85a341540ffe3b17a6adce0fc47aa8204d
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "the_lint_configurations_are_named_by_digest_and_compared"
+        body: 00852b54115fb527602184822aa6b951259d8bd72c9b36427fefd5df4ff07c6f
+  - node: 01a154a3-4f92-72c0-97ef-6366e8040d7d
+    reviewed: 7f8cbc0c7d0489f99d05d8bced147428e144293b4cafe4a06dbb2dbc5b5e3b78
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "without_baseline_the_document_carries_no_change_resolved_or_baseline"
+        body: 1a458890fcc06b136c9941a5d518d0e828d718ce0f1e84eb3b509c5c20fb4519
+  - node: 01a154a3-4f92-72c0-97ef-636801ca25c8
+    reviewed: a1587167915f91486897c1028a2ba7ef024f9d16acfe89a5225baef82d0c9278
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "outside_a_repository_a_baseline_is_refused"
+        body: 2047d5d17ea5f6a1f1f21788a6f08ef2f464de456432b5ab0557e5f2fee4e0dc
+  - node: 01a154a3-4f92-72c0-97ef-6369f8f76d6b
+    reviewed: 3edc6429ded6f99e5b2f0a8281c053591d4a5d41c8e681483bf6f52c56dac80c
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "outside_a_repository_a_baseline_is_refused"
+        body: 2047d5d17ea5f6a1f1f21788a6f08ef2f464de456432b5ab0557e5f2fee4e0dc
+  - node: 01a154a3-4f92-72c0-97ef-636b046be64e
+    reviewed: 583c89ece0a600b81de2660b55f62afe08998248a1d5bafa2addbb195a1fbf33
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "a_baseline_that_names_no_commit_is_refused_naming_it"
+        body: fb43467bad9cdab121a69bb02694163ff2228477faf2c5ef4b663858b922e4d5
+  - node: 01a154a3-4f92-72c0-97ef-636d15377987
+    reviewed: a8412183764acc4a6257b481d8f1343a3f726d97cfb3a1416fc799333a94cfab
+    tests:
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "a_baseline_without_a_common_ancestor_is_refused_and_says_so"
+        body: 18c4966e057c0dbb9df3a166510922901fa5762e0fe665e5d93c5d806f479045
   - node: 01a154a3-4f92-72c0-97ef-636f699ec154
     reviewed: 67995fd5c15257f191eab1da550b631eaaa564cd979df00c236185fc0518e7a0
     tests:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "a_base_tree_that_does_not_read_is_an_error"
         body: c3cce8b8500a16699c7614201b5bc6d26a2b7a2bcc1fc2fbf1888dd4c696d192
+      - file: "crates/loft-cli/tests/check_baseline.rs"
+        name: "a_base_tree_that_does_not_read_is_refused_naming_the_commit_and_the_place"
+        body: 8a5ec40475bf75be8b50fd59ce6a89ced7b9de447c7ee7abf01daa748eeef6d2
   - node: 100cafc9-84e3-4a71-95d6-ca65a8f81771
     reviewed: bc4014a69c9013acbc6753b8eba9b8afb6a0bef3b29c927ad713c2c4ae08b275
     tests:
