@@ -27,6 +27,7 @@ raises its rule, and no other rule at warning.
 ## Contents
 
 - Errors
+- Against a base
 - The small document
 - Structural rules
 - Language rules
@@ -45,6 +46,19 @@ raises its rule, and no other rule at warning.
 | `refused` | The command refused to act, such as `loft init` over an existing `spec/` | Read the message; it names what to change |
 | `integrity` | The tree and the lock disagree | Only `loft verify` and `loft publish` report it; see `publishing-and-merging.md` |
 | `base` | The `--baseline` revision names no commit, shares no history with HEAD, or its tree does not read, or the command ran outside a git repository | Name a revision HEAD descends from, such as `develop`, or fix the base's file at the line given |
+
+## Against a base
+
+`loft check --baseline <revision>` lints two trees, the working tree and the one at
+`git merge-base HEAD <revision>`, both with the working tree's `spec/lint.yaml`, and marks each
+finding `introduced` or `preexisting`; those only the base has are listed as `resolved`. The
+document's `baseline` names the base commit and whether the base's lint configuration was the
+same.
+
+A finding is the same at both sides when its rule, the keys of its subjects and its term agree;
+for a rule that a body can raise twice, its line in the body pairs them first. So a finding of a
+node that only moved, or whose key is kept through a rename that leaves the reported term as it
+was, is `preexisting`. `--fail-on` with `--baseline` counts only the introduced findings.
 
 ## The small document
 

@@ -9,6 +9,7 @@ override them here.
 ## Contents
 
 - Write, format, check, commit
+- Check a branch against its base
 - Reference another node
 - Expect `loft fmt` to reshape the file
 - Write the YAML the reader accepts
@@ -29,6 +30,14 @@ override them here.
 5. Commit `spec/` once `loft fmt --check` and `loft check --fail-on warning` pass.
 
 `loft fmt` changes only layout and identity, never your words. Run it as often as you like.
+
+## Check a branch against its base
+
+On a branch, `loft check --baseline <base>` marks each finding `introduced` by the branch or
+`preexisting` at the commit where it left the base, and `--fail-on` counts only the introduced
+ones. Run it, as in `loft check --baseline develop --fail-on warning`, to see what your change
+added. It does not replace step 5: CI checks the whole tree, so a finding your branch did not
+introduce still fails it there.
 
 ## Reference another node
 
