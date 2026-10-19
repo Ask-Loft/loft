@@ -11,6 +11,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   before, and a tree that uses this is refused by an older `loft`. The v1 converter carries a
   Quality Attribute under a Feature Group tier section across, and still refuses one under a
   Product or a Requirement, and a Constraint under a Feature, naming both nodes.
+- `loftspec::convert::v1::convert_keyed` converts a v1 export under a document key the caller
+  names. An export with no node, registry entry or decision, as a document's first published
+  state can be, becomes an empty document under that key, derived from the export's state; an
+  export whose elements carry another document is refused as `OtherDocument`, naming both.
+  `convert` still refuses an empty export, which names no document.
 - `loft init --no-plugin` and `loft skill install --no-plugin` write the skill and leave
   `.claude/settings.json` as it is: not created, not read, and not named in the request to
   commit. It suits a project that runs a skill built from source rather than the released

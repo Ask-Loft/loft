@@ -58,6 +58,8 @@ pub enum ConvertError {
     NoDocument,
     #[error("the export names two documents, {first} and {second}")]
     TwoDocuments { first: Uuid, second: Uuid },
+    #[error("the export names the document {carried}, not the named document {named}")]
+    OtherDocument { carried: Uuid, named: Uuid },
     #[error("the export carries annotations, which the Format does not hold")]
     Annotations,
     #[error("{parent} lists child {child}, which the export does not hold")]
@@ -122,7 +124,28 @@ pub fn convert(export: &Export) -> Result<Conversion, ConvertError> {
     if !export.annotations.is_empty() {
         return Err(ConvertError::Annotations);
     }
-    let document_id = DocumentId::new(document_uuid(export)?.into());
+    convert_as(export, DocumentId::new(document_uuid(export)?.into()))
+}
+
+/// Converts a v1 export into the document `named`: an export with no element, as a document's
+/// first published state can be, becomes an empty document under that key, and an export whose
+/// elements carry another document is refused.
+pub fn convert_keyed(export: &Export, named: DocumentId) -> Result<Conversion, ConvertError> {
+    if !export.annotations.is_empty() {
+        return Err(ConvertError::Annotations);
+    }
+    match document_uuid(export) {
+        Ok(carried) if carried != named.key().uuid() => Err(ConvertError::OtherDocument {
+            carried,
+            named: named.key().uuid(),
+        }),
+        Ok(_) | Err(ConvertError::NoDocument) => convert_as(export, named),
+        Err(other) => Err(other),
+    }
+}
+
+/// Converts `export` into a document keyed `document_id`.
+fn convert_as(export: &Export, document_id: DocumentId) -> Result<Conversion, ConvertError> {
     let tree = Tree::new(export)?;
     let mut conversion = Conversion {
         document: Document::empty(document_id),

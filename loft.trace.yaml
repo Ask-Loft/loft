@@ -3520,11 +3520,35 @@ links:
         name: "an_export_naming_two_documents_is_refused"
         body: 10531c30241d454e3cbfcbc6c59a755b76563c76b9ee418169a0acc0cd351cca
   - node: 81239df2-9066-4c0d-ad9a-5ca38bdcc69e
-    reviewed: 1cd2035cd2343872f1c320989c9b427314c022a5a95c5f63fe63efb1580132eb
+    reviewed: be2d28943125668e64cda3381baecf4ba75281c50f33c682a0fbb4b921a5de85
     tests:
       - file: "crates/loftspec/tests/convert_v1.rs"
         name: "an_export_naming_no_document_is_refused"
         body: 6266c559a57d8f37f3c161941b2d13e0a8fa47a1b8c2e4bcec3b0276404bafad
+  - node: 01a154d3-cbfb-74fc-9749-edc4f460071c
+    reviewed: 65bbfdf150f51063e13457c78066cc7e44954ed54a15190b18deed5f6e5a409d
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_keyed.rs"
+        name: "an_empty_export_converts_to_an_empty_document_under_the_named_key"
+        body: 1d9f8894411f13ca86b678fac85beea284699d65258b3c1cca4122e68229b6f7
+  - node: 01a154d3-cbfb-74fc-9749-edc527753666
+    reviewed: 339cb8495048e5b4005c3493354a8fd5fb0346e5753590d1b8da0063bc8989e1
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_keyed.rs"
+        name: "the_empty_document_derives_from_the_exports_state"
+        body: 438fe3b355b8b42c6879821d86163386a84f1cf3e0dec2feecb7087fa119fda6
+  - node: 01a154d3-cbfb-74fc-9749-edc6b06f170f
+    reviewed: 427131f953770e93aba03da06034a46846aacfc9bd754721aa87d1099c77249d
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_keyed.rs"
+        name: "an_export_carrying_another_document_than_the_named_key_is_refused_naming_both"
+        body: 6b203f6f85fb44656370c48d5b71d37e43ff4597263d3bc774bed499d0537e38
+  - node: 01a154d3-cbfb-74fc-9749-edc7f0deab30
+    reviewed: db6606ae6a652434d53c3f550c3caa2d62989807e62da5d6f19ecb1b72d32e92
+    tests:
+      - file: "crates/loftspec/tests/convert_v1_keyed.rs"
+        name: "an_export_carrying_the_named_key_converts_as_it_does_without_one"
+        body: b8467eaf6348c1a0d23980914f0c9d508cc09f15716d45da4ee005f9d95e42f5
   - node: 1832ec07-0475-4856-82d5-b8aa3483d3c7
     reviewed: 4327eb6af2cbd3a32314dc0847b641c97da02c8841a548b6602c193d983fd09d
     tests:

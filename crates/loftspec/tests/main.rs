@@ -31,6 +31,7 @@ mod convert_openspec_structure;
 mod convert_v1;
 mod convert_v1_d11;
 mod convert_v1_export;
+mod convert_v1_keyed;
 mod convert_v1_links;
 mod convert_v1_reading_list;
 mod convert_v1_sidecar;
