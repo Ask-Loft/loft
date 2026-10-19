@@ -134,6 +134,10 @@ statement or move the criterion; never complete the body instead.
 
 ## Make a Quality Attribute measurable
 
+A Quality Attribute stands under what it measures: a Feature, a Feature Group whose Features
+share it, or a Component. A Product holds none; a quality that seems to hold for the whole product
+is placed on the Feature Groups or Components it is measured on.
+
 A Quality Attribute's name states the target in one sentence, and its `qualityTarget` makes it
 measurable: a metric, a band with its bounds, a unit, an aggregation, the scenario that is
 measured and the environment it is measured in. An adjective with no metric and no bounds, such

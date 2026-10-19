@@ -170,6 +170,7 @@ fn product_tree(k: &dyn Fn(u32) -> Key) -> Product {
             conservation_kind: None,
             verification_fate: Some(VerificationFate::Proved),
         }],
+        quality_attributes: Vec::new(),
     };
     let mut product = product(k(1), "Example Product");
     product.details = Details {

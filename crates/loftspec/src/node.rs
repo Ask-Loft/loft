@@ -147,6 +147,7 @@ impl<'a> Node<'a> {
             Self::FeatureGroup(node) => {
                 children.extend(node.features.iter().map(Self::Feature));
                 children.extend(node.constraints.iter().map(Self::Constraint));
+                children.extend(node.quality_attributes.iter().map(Self::QualityAttribute));
             }
             Self::Feature(node) => {
                 children.extend(node.requirements.iter().map(Self::Requirement));

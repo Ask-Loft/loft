@@ -309,6 +309,15 @@ impl Edges {
                 field::CONSTRAINTS,
                 records(group.constraints.iter().map(|each| self.constraint(each))),
             );
+            record.set(
+                field::QUALITY_ATTRIBUTES,
+                records(
+                    group
+                        .quality_attributes
+                        .iter()
+                        .map(|each| self.quality(each)),
+                ),
+            );
             record
         });
         record.set(field::FEATURE_GROUPS, records(groups));

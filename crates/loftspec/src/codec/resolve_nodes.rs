@@ -100,6 +100,10 @@ impl Resolver<'_> {
                 .records(field::CONSTRAINTS)
                 .map(|constraint| self.constraint(constraint))
                 .collect::<Result<_, _>>()?,
+            quality_attributes: record
+                .records(field::QUALITY_ATTRIBUTES)
+                .map(|quality| self.quality_attribute(quality))
+                .collect::<Result<_, _>>()?,
         })
     }
 

@@ -2,7 +2,8 @@
 //! parentage and order, Facet Tags, the registries, statements and the label counters.
 
 use crate::common::v1::{
-    constraint, export, key, live_export, named, node, read, tier, tree, uuid, with_identity_entry,
+    constraint, export, key, live_export, named, node, quality, read, tier, tree, uuid,
+    with_identity_entry,
 };
 use loftspec::convert::v1::{Conversion, ConvertError, Finding, convert};
 use loftspec::hash::hash_document;
@@ -77,6 +78,84 @@ fn a_constraint_under_a_product_becomes_the_products_constraint() {
         .document;
     let product = &document.products[0];
     assert_eq!(product.constraints[0].id, Some(ConstraintId::new(key(20))));
+}
+
+#[test]
+fn a_quality_attribute_under_a_feature_group_becomes_the_groups_quality_attribute() {
+    let mut nodes = tree();
+    nodes[1] = named(
+        node(
+            2,
+            "TierSection",
+            &tier("FeatureGroup"),
+            "FG-1",
+            &[3, 11, 20],
+        ),
+        "Identity",
+        0,
+    );
+    nodes.push(quality(20, "QA-20"));
+    let document = convert(&read(&with_identity_entry(export(&nodes, &[]))))
+        .unwrap()
+        .document;
+    let group = &document.products[0].feature_groups[0];
+    assert_eq!(
+        group.quality_attributes[0].id,
+        Some(QualityAttributeId::new(key(20)))
+    );
+}
+
+/// The message of the refusal when `child`, node 20, is listed under the tree's node at index
+/// `parent`, replaced by `with`, which lists it.
+fn refused_under(parent: usize, with: serde_json::Value, child: serde_json::Value) -> String {
+    let mut nodes = tree();
+    nodes[parent] = with;
+    nodes.push(child);
+    let error = convert(&read(&with_identity_entry(export(&nodes, &[])))).unwrap_err();
+    assert!(matches!(error, ConvertError::Containment { .. }), "{error}");
+    error.to_string()
+}
+
+#[test]
+fn a_quality_attribute_under_a_product_is_refused_naming_both() {
+    let product = named(
+        node(1, "TierSection", &tier("Product"), "P-1", &[2, 9, 20]),
+        "Example",
+        0,
+    );
+    let message = refused_under(0, product, quality(20, "QA-20"));
+    assert!(
+        message.contains("P-1") && message.contains("QA-20"),
+        "{message}"
+    );
+}
+
+#[test]
+fn a_quality_attribute_under_a_requirement_is_refused_naming_both() {
+    let requirement = named(
+        node(4, "TierSection", &tier("Requirement"), "RQ-1", &[5, 20]),
+        "The writer shall write a key on every node.",
+        0,
+    );
+    let message = refused_under(3, requirement, quality(20, "QA-20"));
+    assert!(
+        message.contains("RQ-1") && message.contains("QA-20"),
+        "{message}"
+    );
+}
+
+#[test]
+fn a_constraint_under_a_feature_is_refused_naming_both() {
+    let feature = named(
+        node(3, "TierSection", &tier("Feature"), "F-1", &[13, 4, 12, 20]),
+        "Keys",
+        0,
+    );
+    let message = refused_under(2, feature, constraint(20, "CON-20"));
+    assert!(
+        message.contains("F-1") && message.contains("CON-20"),
+        "{message}"
+    );
 }
 
 #[test]

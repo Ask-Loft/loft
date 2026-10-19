@@ -29,10 +29,16 @@ const COMPONENT_CHILDREN: &[&str] = &["components", "constraints", "qualityAttri
 
 /// Each keyed record of the full document's files: what it is, its file, its key, and the child
 /// fields the profile lets its kind hold.
-const RECORDS: [(&str, &str, u32, &[&str]); 13] = [
+const RECORDS: [(&str, &str, u32, &[&str]); 14] = [
     ("product", PRODUCT, 1, &["featureGroups", "constraints"]),
-    ("feature group", PRODUCT, 2, &["features", "constraints"]),
+    (
+        "feature group",
+        PRODUCT,
+        2,
+        &["features", "constraints", "qualityAttributes"],
+    ),
     ("constraint of a product", PRODUCT, 42, &[]),
+    ("quality attribute of a feature group", PRODUCT, 80, &[]),
     ("section", PRODUCT, 40, &[]),
     (
         "feature",

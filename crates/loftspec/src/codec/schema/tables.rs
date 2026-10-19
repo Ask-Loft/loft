@@ -156,6 +156,7 @@ const FEATURE_GROUP_FIELDS: &[Field] = &[
     EXT,
     scalars(field::FEATURES, S::Key),
     records(field::CONSTRAINTS, K::Constraint),
+    records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
 ];
 

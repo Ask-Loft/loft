@@ -5,6 +5,12 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- A Feature Group may hold Quality Attributes, for a quality its Features share; its record
+  writes them after its Constraints. A Product holds none. A Feature Group without them keeps its
+  content hash, so the Format stays `loftspec/1`: every tree written before reads and hashes as
+  before, and a tree that uses this is refused by an older `loft`. The v1 converter carries a
+  Quality Attribute under a Feature Group tier section across, and still refuses one under a
+  Product or a Requirement, and a Constraint under a Feature, naming both nodes.
 - `loft init --no-plugin` and `loft skill install --no-plugin` write the skill and leave
   `.claude/settings.json` as it is: not created, not read, and not named in the request to
   commit. It suits a project that runs a skill built from source rather than the released

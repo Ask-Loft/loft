@@ -42,6 +42,10 @@ fn fill_products(document: &mut Document) {
     product.constraints = vec![constraint];
     let group = &mut product.feature_groups[0];
     group.details = details(45);
+    let mut quality = group.features[0].quality_attributes[0].clone();
+    quality.id = Some(QualityAttributeId::new(key(80)));
+    quality.details = details(81);
+    group.quality_attributes = vec![quality];
     let feature = &mut group.features[0];
     feature.details = details(47);
     feature.quality_attributes[0].details = details(49);

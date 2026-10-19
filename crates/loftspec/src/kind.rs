@@ -60,7 +60,7 @@ impl NodeKind {
     pub const fn child_kinds(self) -> &'static [Self] {
         match self {
             Self::Product => &[Self::FeatureGroup, Self::Constraint],
-            Self::FeatureGroup => &[Self::Feature, Self::Constraint],
+            Self::FeatureGroup => &[Self::Feature, Self::Constraint, Self::QualityAttribute],
             Self::Feature => &[Self::Requirement, Self::QualityAttribute],
             Self::Requirement => &[Self::Criterion],
             Self::Component => &[Self::Component, Self::Constraint, Self::QualityAttribute],
