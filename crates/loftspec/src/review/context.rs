@@ -3,7 +3,6 @@
 
 use std::collections::BTreeMap;
 
-use crate::document::Edge;
 use crate::ids::NodeId;
 use crate::kind::NodeKind;
 use crate::node::Node;
@@ -33,16 +32,9 @@ fn scope_of(side: &Side<'_>, id: NodeId) -> NodeId {
 }
 
 /// The assertions grouped by scope, the tree's scopes in its order, then those only the base
-/// holds in the base's.
+/// holds in the base's. The side a scope is placed by always holds it: the tree where it does,
+/// and otherwise the base, whose assertion it lies above.
 pub(super) fn group(sides: &Pair<'_>, reviewed: Vec<(Which, Assertion)>) -> Vec<Grouped> {
-    let position = |which: Which, id: NodeId| {
-        let order = &sides.side(which).order;
-        let at = order
-            .iter()
-            .position(|each| *each == id)
-            .unwrap_or(order.len());
-        (which == Which::Base, at)
-    };
     let mut units: BTreeMap<(bool, usize), Grouped> = BTreeMap::new();
     for (which, assertion) in reviewed {
         let scope = scope_of(sides.side(which), assertion.id);
@@ -51,39 +43,14 @@ pub(super) fn group(sides: &Pair<'_>, reviewed: Vec<(Which, Assertion)>) -> Vec<
         } else {
             which
         };
+        let place = (holder == Which::Base, sides.side(holder).ordinal(scope));
         units
-            .entry(position(holder, scope))
+            .entry(place)
             .or_insert_with(|| ((holder, scope), Vec::new()))
             .1
             .push(assertion);
     }
     units.into_values().collect()
-}
-
-/// The facts of the keyed nodes among `nodes`.
-fn facts<'a>(side: &Side<'a>, nodes: impl IntoIterator<Item = Node<'a>>) -> Vec<Fact> {
-    nodes
-        .into_iter()
-        .filter_map(Node::id)
-        .map(|id| side.fact(id))
-        .collect()
-}
-
-/// The node `id` with the Constraints and Quality Attributes it holds.
-fn holder(side: &Side<'_>, id: NodeId) -> Holder {
-    let children = side.node(id).children();
-    let of = |kind: NodeKind| {
-        let nodes = children
-            .iter()
-            .copied()
-            .filter(|child| child.kind() == kind);
-        facts(side, nodes)
-    };
-    Holder {
-        node: side.fact(id),
-        constraints: of(NodeKind::Constraint),
-        quality_attributes: of(NodeKind::QualityAttribute),
-    }
 }
 
 /// The holders above `id`, the root first.
@@ -92,7 +59,7 @@ fn above(side: &Side<'_>, id: NodeId) -> Vec<Holder> {
     ancestors.reverse();
     ancestors
         .into_iter()
-        .map(|each| holder(side, each))
+        .map(|each| side.holder(each))
         .collect()
 }
 
@@ -106,7 +73,12 @@ fn requirements(side: &Side<'_>, scope: NodeId) -> Vec<WithCriteria> {
         .iter()
         .filter_map(|requirement| {
             let id = requirement.id?.into();
-            let criteria = facts(side, requirement.criteria.iter().map(Node::Criterion));
+            let criteria: Vec<Fact> = requirement
+                .criteria
+                .iter()
+                .filter_map(|criterion| Node::Criterion(criterion).id())
+                .map(|criterion| side.fact(criterion))
+                .collect();
             Some(WithCriteria {
                 requirement: side.fact(id),
                 criteria,
@@ -117,18 +89,9 @@ fn requirements(side: &Side<'_>, scope: NodeId) -> Vec<WithCriteria> {
 
 /// Each Component the Feature `scope` realizes, with the Components above it.
 fn realizes(side: &Side<'_>, scope: NodeId) -> Vec<Realized> {
-    side.document
-        .edges
-        .iter()
-        .filter_map(|edge| match edge {
-            Edge::Realizes { feature, component } if NodeId::from(*feature) == scope => {
-                Some(NodeId::from(*component))
-            }
-            _ => None,
-        })
-        .filter(|component| side.holds(*component))
+    side.realized(scope)
         .map(|component| Realized {
-            component: holder(side, component),
+            component: side.holder(component),
             above: above(side, component),
         })
         .collect()
@@ -143,12 +106,12 @@ pub(super) fn unit(sides: &Pair<'_>, (which, scope): Scope, assertions: Vec<Asse
         .iter()
         .map(|assertion| sides.node_anywhere(assertion.id));
     Unit {
-        scope: holder(side, scope),
+        scope: side.holder(scope),
         ancestors: above(side, scope),
         requirements: requirements(side, scope),
         realizes: realizes(side, scope),
-        decisions: links::decisions(side.document, &bearing),
-        terms: links::terms(&sides.tree.document.terms, prose),
+        decisions: links::decisions(side.document, &side.links, &bearing),
+        terms: links::terms(&sides.phrases, prose),
         assertions,
     }
 }

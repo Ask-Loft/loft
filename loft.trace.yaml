@@ -12152,7 +12152,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "each_node_carries_its_label_kind_name_and_own_content_view"
-        body: 67230629ee11b17683c91216a9a9c19bf4068b0a472161b28be7f574b5fa722d
+        body: 3c3983cbb4f46c7a4de63babff7dec82968c71f0fa6bc84673e8b16498ae981a
       - file: "crates/loft-cli/tests/review.rs"
         name: "each_node_carries_its_key_label_kind_site_name_and_view"
         body: de0f141496d727d7766b8ebda45a8117b1ed5353f9e16ef7c3f796cabf611d08

@@ -3,7 +3,7 @@
 //! with CON-2 (9) under FG-1 and QA-2 (10) under F-1.
 
 use crate::common::{criterion, key, small_document};
-use loftspec::diff::{NodeChanges, node_changes};
+use loftspec::diff::{NodeChanges, content_changes, node_changes};
 use loftspec::document::Document;
 use loftspec::ids::{ConstraintId, CriterionId, FeatureId, NodeId};
 use loftspec::tree::Requirement;
@@ -127,4 +127,23 @@ fn a_node_that_moved_and_changed_is_changed_and_not_moved() {
     let changes = node_changes(&small_document(), &document);
     assert_eq!(changes.changed, vec![ConstraintId::new(key(9)).into()]);
     assert_eq!(changes.moved, Vec::<NodeId>::new());
+}
+
+#[test]
+fn the_changes_of_content_alone_are_those_of_every_change_without_the_moved() {
+    let mut document = small_document();
+    let product = &mut document.products[0];
+    let moved = product.feature_groups[0].constraints.remove(0);
+    product.constraints.push(moved);
+    requirement(&mut document).criteria[0].name = "Every record carries a key.".to_owned();
+    let every = node_changes(&small_document(), &document);
+    let content = content_changes(&small_document(), &document);
+    assert_eq!(every.moved, vec![ConstraintId::new(key(9)).into()]);
+    assert_eq!(
+        content,
+        NodeChanges {
+            moved: Vec::new(),
+            ..every
+        }
+    );
 }

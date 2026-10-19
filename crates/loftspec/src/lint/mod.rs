@@ -27,7 +27,7 @@ pub use config::{LintConfig, Similarity};
 pub use defaults::{FUNCTION_WORDS, defaults_text};
 pub use groups::Groups;
 pub use report::{TermReport, term_report};
-pub(crate) use terms::occurs_in;
+pub(crate) use terms::{Prose, phrase};
 
 use crate::codec::{Site, Sites, write_sites};
 use crate::document::Document;

@@ -162,7 +162,7 @@ fn each_node_carries_its_label_kind_name_and_own_content_view() {
         requirement.label.map(|label| label.to_string()).as_deref(),
         Some("RQ-2")
     );
-    assert_eq!(requirement.kind, NodeKind::Requirement);
+    assert_eq!(requirement.kind(), NodeKind::Requirement);
     assert_eq!(
         requirement.name,
         "The writer shall write a key on every node."

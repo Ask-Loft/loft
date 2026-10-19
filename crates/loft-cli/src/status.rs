@@ -9,7 +9,7 @@ use std::path::Path;
 
 use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites};
-use loftspec::diff::node_changes;
+use loftspec::diff::content_changes;
 use loftspec::document::Document;
 use loftspec::identity::Key;
 use loftspec::ids::NodeId;
@@ -141,7 +141,7 @@ fn base_report(
     let base::Base { commit, files } = base::read(git, root, revision)?;
     let (before, before_sites) =
         codec::read_sited(&files).map_err(|errors| base::unread(&commit, &errors))?;
-    let changes = node_changes(&before, document);
+    let changes = content_changes(&before, document);
     let now = Nodes::of(document, sites);
     let then = Nodes::of(&before, &before_sites);
     Ok(BaseReport {

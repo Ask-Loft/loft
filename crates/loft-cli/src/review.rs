@@ -50,7 +50,7 @@ pub fn run(root: &Path, options: &Options, as_json: bool) -> Finished {
         "packed"
     };
     if as_json {
-        let units: Vec<Value> = paged.units.iter().map(|(unit, _)| unit.clone()).collect();
+        let units: Vec<Value> = paged.units.into_iter().map(|(unit, _)| unit).collect();
         let fields = json!({
             "provenance": paged.provenance,
             "page": { "number": paged.number, "of": paged.of, "maxChars": options.max_chars },
@@ -99,7 +99,7 @@ fn attempt(root: &Path, options: &Options) -> Result<Paged, Stop> {
         }),
         "node": options.node,
     });
-    page(&render.packet(&packet), options, provenance)
+    page(render.packet(&packet), options, provenance)
 }
 
 /// The base revision's name and commit, and its tree.
@@ -136,22 +136,20 @@ fn named(document: &Document, query: &str) -> Result<NodeId, Stop> {
     }
 }
 
-/// The page `options` asks for: whole units, each page taking every next unit that fits.
-fn page(units: &[Value], options: &Options, provenance: Value) -> Result<Paged, Stop> {
+/// The page `options` asks for: whole units, each page taking every next unit that fits, the
+/// units moved and none copied.
+fn page(units: Vec<Value>, options: &Options, provenance: Value) -> Result<Paged, Stop> {
     let mut pages: Vec<Vec<(Value, usize)>> = Vec::new();
     let mut taken = 0;
-    for unit in units {
-        let size = serde_json::to_string(unit)
+    for mut unit in units {
+        let size = serde_json::to_string(&unit)
             .expect("a unit serializes")
             .chars()
             .count();
-        let fits =
-            pages.last().is_some_and(|last| !last.is_empty()) && taken + size <= options.max_chars;
-        if !fits {
+        if pages.is_empty() || taken + size > options.max_chars {
             pages.push(Vec::new());
             taken = 0;
         }
-        let mut unit = unit.clone();
         if size > options.max_chars {
             unit["oversized"] = Value::Bool(true);
         }
@@ -266,7 +264,7 @@ impl Render<'_> {
         let mut fields = Map::new();
         fields.insert("key".to_owned(), json!(key.to_string()));
         fields.insert("label".to_owned(), json!(fact.label.map(|l| l.to_string())));
-        fields.insert("kind".to_owned(), json!(fact.kind.as_str()));
+        fields.insert("kind".to_owned(), json!(fact.kind().as_str()));
         if let Some(site) = sites.get(key) {
             fields.extend(json::site(site));
         }
@@ -279,7 +277,7 @@ impl Render<'_> {
     fn assertion(&self, assertion: &Assertion) -> Value {
         json!({
             "key": assertion.id.key().to_string(),
-            "kind": assertion.kind.as_str(),
+            "kind": assertion.kind().as_str(),
             "change": assertion.change.map(Change::as_str),
             "before": assertion.before.as_ref().map(|before| self.fact(before)),
         })

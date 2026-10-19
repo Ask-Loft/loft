@@ -43,7 +43,6 @@ impl Change {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fact {
     pub id: NodeId,
-    pub kind: NodeKind,
     pub label: Option<Label>,
     pub name: String,
     /// The node's own content view, its children's hashes left out.
@@ -80,9 +79,24 @@ pub struct Realized {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Assertion {
     pub id: NodeId,
-    pub kind: NodeKind,
     pub change: Option<Change>,
     pub before: Option<Fact>,
+}
+
+impl Fact {
+    /// The node's kind, which its key's type carries.
+    #[must_use]
+    pub const fn kind(&self) -> NodeKind {
+        self.id.kind()
+    }
+}
+
+impl Assertion {
+    /// The assertion's kind, which its key's type carries.
+    #[must_use]
+    pub const fn kind(&self) -> NodeKind {
+        self.id.kind()
+    }
 }
 
 /// How a decision links to an assertion or a scope.
@@ -202,7 +216,7 @@ pub fn unkeyed(document: &Document) -> Vec<Unkeyed> {
 fn reviewed(sides: &side::Pair<'_>, node: Option<NodeId>) -> Vec<(Which, Assertion)> {
     let tree = &sides.tree;
     let mut reviewed: Vec<(Which, Assertion)> = tree
-        .order
+        .order()
         .iter()
         .filter(|id| is_assertion(id.kind()))
         .filter(|id| sides.base.is_none() || tree.change(**id).is_some())
@@ -210,7 +224,7 @@ fn reviewed(sides: &side::Pair<'_>, node: Option<NodeId>) -> Vec<(Which, Asserti
         .collect();
     if let Some(base) = &sides.base {
         reviewed.extend(
-            base.order
+            base.order()
                 .iter()
                 .filter(|id| is_assertion(id.kind()) && !tree.holds(**id))
                 .map(|id| (Which::Base, sides.assertion(*id, Which::Base))),
