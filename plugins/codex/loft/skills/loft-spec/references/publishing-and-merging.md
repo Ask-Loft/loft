@@ -1,16 +1,27 @@
 # Publishing and merging
 
-Use this workflow for `loft publish`, `loft verify`, merging `spec/` in git, and two publishes
-that meet. It owns the publish branch, the lock and the merge driver. The edit cycle belongs to
+Use this workflow for starting and updating a branch, `loft publish`, `loft verify`, merging
+`spec/` in git, and two publishes that meet. It owns a branch's base, the publish branch, the lock
+and the merge driver. The edit cycle belongs to
 `the-loop.md`; what an error means to `lint-findings.md`. Never restate or override them here.
 
 ## Contents
 
+- Start a branch and bring it up to date
 - Publish
 - Verify in CI
 - Merge with the merge driver
 - Settle a conflict record
 - Settle two publishes that meet
+
+## Start a branch and bring it up to date
+
+- Name the base of every branch explicitly, and start it from the latest published state of the
+  publish branch, or from the branch the user names.
+- When the base moves on, rebase onto it or merge it in with the merge driver installed, below,
+  and settle each conflict once.
+- When a git step that discards work fails, such as a reset, a checkout over changes or a forced
+  push, stop and report it; never retry it without asking the user.
 
 ## Publish
 

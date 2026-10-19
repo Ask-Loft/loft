@@ -2,7 +2,8 @@
 
 Use this workflow for a feature, a fix or a removal in a product that a `spec/` already
 describes: the specification changes first, in its own commit, and the code follows it. It owns
-finding the nodes a change touches, the edits that keep identity, and the order of the commits.
+finding the nodes a change touches, the edits that keep identity, what a branch and a commit
+carry, and the order of the commits.
 Starting a document where there is none belongs to `new-document.md`; the edit cycle to
 `the-loop.md`; the wording to `writing-rules.md`. Never restate or override them here.
 
@@ -11,6 +12,7 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
 - Find the nodes the change touches
 - Edit the specification first
 - Keep identity through edits
+- Keep one intent to a branch and a commit
 - Commit the specification, then the code
 - Check the code against the criteria
 
@@ -24,6 +26,9 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
   never edit it, and never commit it unless the project does.
 - Read the Feature that holds the behaviour, its Requirements and criteria, the Components it
   realizes, the decisions whose subjects include it, and every node that `mentions` it.
+- Open the file `loft find` names and confirm the node's name and kind there before you edit it.
+- Before deleting a Product or a tag, find every reference to it by name: a tag is listed on each
+  Feature it marks, and a Product's Components are realized from elsewhere.
 
 ## Edit the specification first
 
@@ -50,6 +55,13 @@ document.
   a mapping whose single field `formerLabel` holds the label. `loft fmt` writes it when it drops
   the node's binding; a live decision that names a deleted node is an error to resolve with the
   user.
+
+## Keep one intent to a branch and a commit
+
+A branch carries one intent, and each of its commits one coherent step of it. Before committing,
+read `git diff` against the intent, node by node: every node it changes is one the intent
+touches, and every node the intent touches is changed as intended. A clean `loft check` shows the
+tree is well formed, not that it means what was intended.
 
 ## Commit the specification, then the code
 
