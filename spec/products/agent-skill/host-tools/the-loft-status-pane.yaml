@@ -155,6 +155,8 @@ requirements:
         name: "Each command runs with `LOFT_TELEMETRY` and `LOFT_UPDATE_CHECK` set to `off`, so that a read sends no command event and asks for no update."
       - key: 01a144ef-0347-75ee-9c2b-bc9704f76e1a
         name: "A `loftCommand` of more than one word, such as `pnpm exec loft`, runs its first word with the others as its first arguments."
+      - key: 01a154ce-d0dd-757d-a359-9c854b89774d
+        name: "A `loft check` document of the schema `loft-check/2` is read alike whether or not it marks its findings against a base."
   - key: 01a144ee-c59e-7325-802c-d750584e014a
     statement:
       form: unwanted
