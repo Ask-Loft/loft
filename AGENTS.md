@@ -236,6 +236,9 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
   CI with it.
 - For docs-only work, run only the checks relevant to the changed documents.
 - For a focused loop, use `cargo nextest run -p <crate> <test-name>`.
+- Run the workspace suite at most once per commit, and never in a loop: a branch's commits are
+  not re-tested one by one, and no two workspace runs share a machine at once, however many agents
+  are working. A review reads the diff; it builds and tests nothing and creates no worktree.
 
 ## Releasing
 
