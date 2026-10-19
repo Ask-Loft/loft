@@ -11982,6 +11982,213 @@ links:
       - file: "crates/loft-cli/tests/terms.rs"
         name: "a_subject_carries_its_mark_and_an_alias_its_term"
         body: 34348f90e9bdf9c5dece56502194f5f8ba6e7dd88047f0c1b1804e8a8f2b28c3
+  - node: 01a154b0-f757-7647-acce-6bdc631a7d10
+    reviewed: 1cfd56c6f5c0820d5a3087ac6b0377c947adacd929c6d676069e119d17f5d806
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+  - node: 01a154b0-f757-7647-acce-6bdd107b5b6e
+    reviewed: a40d49c1598a774c49b9187b109c0d27ea427beb2da8cec501121a28f132e5b2
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+  - node: 01a154b0-f757-7647-acce-6bde7c05fa1f
+    reviewed: 841151deea67aaa89ad3f1985893ed95a1601e38d5ebb92d7cca39e11ec470fd
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+  - node: 01a154b0-f757-7647-acce-6bdff8cffa5a
+    reviewed: 2a69e4ead728f351c6cc2f68fb4fdd26f1cbe2a71329e355621773b7d4fc2528
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node"
+        body: 2564c5d9c344a7ead3dd6aaeb38530195119d7864f6607c4e83b536383801396
+  - node: 01a154b0-f757-7647-acce-6be02cd564a0
+    reviewed: 47716950996c6629836007d5ee904a02f9119914e313f26e71059528859a0aa6
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+  - node: 01a154b0-f757-7647-acce-6be12e09a54c
+    reviewed: 4a2324411aff6c345b6c23e51bf7673712f5a63aa043e27105702ddfc9709cba
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_removed_assertion_lands_in_the_unit_of_its_scope_at_the_base"
+        body: b8e95ccb0e6c609cc4d36fd7c70ea930a35dc42e47021e3d5e1a310c938a3d4c
+  - node: 01a154b0-f757-7647-acce-6be34498c82d
+    reviewed: 974e4eb08f0838fe359c73c3a367b688176b64bb37234b01d33df0b3c80726b4
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_feature_s_unit_gives_its_ancestors_requirements_qualities_and_realized_components"
+        body: 13919a8b1decfc4c9ce07a0e676ddb5badae5effc122d3d97f8fdfbfecf2e649
+  - node: 01a154b0-f757-7647-acce-6be4a8ca9b93
+    reviewed: 33d6b9d1e2cf92c678a03884fde70eb6554fac45a9d05b2a4f7d834860116cc7
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_feature_s_unit_gives_its_ancestors_requirements_qualities_and_realized_components"
+        body: 13919a8b1decfc4c9ce07a0e676ddb5badae5effc122d3d97f8fdfbfecf2e649
+  - node: 01a154b0-f757-7647-acce-6be55de4d9aa
+    reviewed: 15c6076fcafb28a08d8d39cdbc3f74f1d71e0f67fb8a647c3d06908a1ae9db69
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_feature_s_unit_gives_its_ancestors_requirements_qualities_and_realized_components"
+        body: 13919a8b1decfc4c9ce07a0e676ddb5badae5effc122d3d97f8fdfbfecf2e649
+  - node: 01a154b0-f757-7647-acce-6be6b91da35f
+    reviewed: ba36044e434b89e13bbea99df778eb08f20afbc1924f274ae3d64229418e0b8e
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_feature_s_unit_gives_its_ancestors_requirements_qualities_and_realized_components"
+        body: 13919a8b1decfc4c9ce07a0e676ddb5badae5effc122d3d97f8fdfbfecf2e649
+  - node: 01a154b0-f757-7647-acce-6be70f95e6b8
+    reviewed: 74896cc6f5f354fa071655d7d213935f703b48ac31509593caaacc24457e88d1
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_realized_component_comes_with_the_components_above_it"
+        body: fa9953b65a343bdd5a5fa22879fe1f15146f63e9a798fdfbf3af329e3a1fb79b
+  - node: 01a154b0-f757-7647-acce-6be8df642ce4
+    reviewed: 2d2e24a727dacd63ac1da5280c684eace2fa76bec079b575109932f69beda76e
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "each_node_carries_its_label_kind_name_and_own_content_view"
+        body: 67230629ee11b17683c91216a9a9c19bf4068b0a472161b28be7f574b5fa722d
+  - node: 01a154b0-f757-7647-acce-6beae7b5291a
+    reviewed: f466581561428f5834e11d077feb86a1313f598caa96c4fae6301ac05d4b5704
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_decision_links_by_subject_driver_consequence_and_mention"
+        body: 874f695d0a340ed9bc876d2b7f88a49099a96ecb667616a538dda9eb15c42a89
+  - node: 01a154b1-2343-70db-b6cc-612f4b6af6f1
+    reviewed: 0910235794935eeb5fcfecda1238ca366b8257e2aafe9d60a3da4aca6986bb2e
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_decision_links_by_subject_driver_consequence_and_mention"
+        body: 874f695d0a340ed9bc876d2b7f88a49099a96ecb667616a538dda9eb15c42a89
+  - node: 01a154b1-2343-70db-b6cc-6130a4904113
+    reviewed: 08d246ed1eaf5d447c892c9f4813afe6019d3f953195be00134b896cda31fd29
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_decision_links_by_subject_driver_consequence_and_mention"
+        body: 874f695d0a340ed9bc876d2b7f88a49099a96ecb667616a538dda9eb15c42a89
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_node_that_mentions_a_decision_links_it"
+        body: 716e69dcbc4a4387ba56f683728a0e07dc5f9b01c0bb6db3f0d840589350dab9
+  - node: 01a154b0-f757-7647-acce-6beb0b9b1d9d
+    reviewed: ac49da99943edd355fd6b88447e7f629d5a0534f4d6f760903bf386b46493bb8
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_decision_links_by_subject_driver_consequence_and_mention"
+        body: 874f695d0a340ed9bc876d2b7f88a49099a96ecb667616a538dda9eb15c42a89
+  - node: 01a154b0-f757-7647-acce-6bec68352d54
+    reviewed: a7abb13798afab4ad980c40b0e0337146759420d603f587cf28298ab9c4a5d6b
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_decision_carries_its_label_title_state_and_outcome"
+        body: ca67650d69218ff379b84a398134d29887cd38e717f1619b199ed04ab27435be
+      - file: "crates/loftspec/tests/review.rs"
+        name: "decisions_follow_their_labels_then_their_keys"
+        body: aaaf4ae5fbb39af2fe53834be3ade1dd18a149313b2362508b05ff04606e7e7b
+  - node: 01a154b0-f757-7647-acce-6bed8aa38a56
+    reviewed: d31a20cad2974efd9e4ea67aff357a8345622bd7548f07a0d31a4a598d5e0eab
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_term_whose_name_or_alias_occurs_in_an_assertion_is_listed_by_name"
+        body: 15bc9b04cf8495f5f68d23ec9036e5547206231be1f2ae37fcd62a17b134fd1e
+  - node: 01a154b0-f757-7647-acce-6bee91b57273
+    reviewed: 983e5e18c611fa187d6d0471e8ddc3f8118dd950797029b905a30c7ee77cf948
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "decisions_follow_their_labels_then_their_keys"
+        body: aaaf4ae5fbb39af2fe53834be3ade1dd18a149313b2362508b05ff04606e7e7b
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_term_whose_name_or_alias_occurs_in_an_assertion_is_listed_by_name"
+        body: 15bc9b04cf8495f5f68d23ec9036e5547206231be1f2ae37fcd62a17b134fd1e
+  - node: 01a154b0-f757-7647-acce-6bf0ee0ed70c
+    reviewed: 452770a9e73f4478f25f71a6ec12f4d607e8647c844093d4dcbe88a4b4e1b198
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "the_same_tree_and_base_give_the_same_packet"
+        body: a9f430a207383a3204547404f6aa168aa211f07b374819843e8e7c805050568f
+  - node: 01a154b0-f757-7647-acce-6bf31bcb6e68
+    reviewed: df8fb929a1ab320f3afae6d352836fac507286020bb4b27bcefd602563a2c9b1
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+  - node: 01a154b0-f757-7647-acce-6bf4571c5c59
+    reviewed: a39abbebb9728ed65cc0a27f6f1e618c988d2ee0443fa929fa8aef74542a1abd
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "without_a_base_every_assertion_lands_in_the_unit_of_its_scope_in_document_order"
+        body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
+  - node: 01a154b0-f757-7647-acce-6bf7a99e2e9e
+    reviewed: f641ddbbad4f9ea1e66ab1152d348008cd887c934a18fcb82f8a5bcb83b5e310
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "an_added_assertion_is_reviewed_with_nothing_before_it"
+        body: 9fb8a1cf5fe0ae0a7f3aefb440bae024c89adbb69274a8a1a35fbf424a858746
+  - node: 01a154b0-f757-7647-acce-6bf86ced5501
+    reviewed: 08d3b5e2ef788cdc0b915307ee3e3fd45151004aad16d74198c7fc0f65d1e4f9
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "with_a_base_only_a_changed_assertion_is_reviewed_beside_the_base_s_node"
+        body: c656fc7cb815a6b71b0234ab2e83ce226f2932dfee2f4682ad3fd302bcf5ee08
+  - node: 01a154b0-f757-7647-acce-6bf980680196
+    reviewed: 54ca177b323c19abd9f5b658574bab7d2e00965baa9111d4e73b696d042cf700
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node"
+        body: 2564c5d9c344a7ead3dd6aaeb38530195119d7864f6607c4e83b536383801396
+      - file: "crates/loftspec/tests/diff.rs"
+        name: "a_node_whose_content_is_the_base_s_and_whose_parent_is_not_is_moved"
+        body: a78ff12bc5b422eded099b5c72b486d460923e2d1c8792e3ae52bb21541fa537
+      - file: "crates/loftspec/tests/diff.rs"
+        name: "a_node_that_moved_and_changed_is_changed_and_not_moved"
+        body: 38a5b0b61cffe52777aa08dc983ce0343d59cb9cfc6732cd1879188505da880c
+  - node: 01a154b0-f757-7647-acce-6bfa7e8f4371
+    reviewed: 1d4add0061db44c4835c047deb506e5d92d1bf7cda2531829198b98ebc36d784
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_removed_assertion_lands_in_the_unit_of_its_scope_at_the_base"
+        body: b8e95ccb0e6c609cc4d36fd7c70ea930a35dc42e47021e3d5e1a310c938a3d4c
+  - node: 01a154b0-f757-7647-acce-6bfba506e16e
+    reviewed: 3927f57ddac54445c55bb3057689b1cd3e75f9ac8492594b672b591231e1d225
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "with_a_base_only_a_changed_assertion_is_reviewed_beside_the_base_s_node"
+        body: c656fc7cb815a6b71b0234ab2e83ce226f2932dfee2f4682ad3fd302bcf5ee08
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node"
+        body: 2564c5d9c344a7ead3dd6aaeb38530195119d7864f6607c4e83b536383801396
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_removed_assertion_lands_in_the_unit_of_its_scope_at_the_base"
+        body: b8e95ccb0e6c609cc4d36fd7c70ea930a35dc42e47021e3d5e1a310c938a3d4c
+  - node: 01a154b0-f757-7647-acce-6bfc86b66757
+    reviewed: cd0210194f75562d5b9606c296487481d7f3a2884d42b7e10fcc179e1e0e7fe4
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "with_a_base_only_a_changed_assertion_is_reviewed_beside_the_base_s_node"
+        body: c656fc7cb815a6b71b0234ab2e83ce226f2932dfee2f4682ad3fd302bcf5ee08
+  - node: 01a154b0-f757-7647-acce-6bffe46ec281
+    reviewed: 6304c27813b0fb8404775381e639f0d8228a1ebfb67302b99335a7f23ab7369b
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_node_narrows_the_review_to_the_assertions_at_or_below_it"
+        body: 517763d22b9c5701404bf94ef996e660c92856602d7933363c33248c52df523f
+  - node: 01a154b0-f757-7647-acce-6c1106475814
+    reviewed: 1f7a698d1cb3487a9b05b70c59f925181de3c75799ff48eca57573598668db06
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "a_node_without_a_key_is_refused_by_kind_and_name"
+        body: 225e1f96f7a26d4f3417adf776843568f36ad9eca3f1cd9d7dbec6cc8c65328d
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:

@@ -116,6 +116,18 @@ fn aliases_in(item: &Item<'_>, aliases: &[(&TermEntry, &str, Vec<String>)], out:
     }
 }
 
+/// Whether the name or alias `phrase` occurs in `name` or `body`, compared as `LQ-010` compares
+/// it.
+pub(crate) fn occurs_in(name: &str, body: Option<&str>, phrase_text: &str) -> bool {
+    let phrase = phrase(phrase_text);
+    if phrase.is_empty() {
+        return false;
+    }
+    let (name, _) = words(&without_code_spans(name));
+    occurs(&name, &phrase).is_some()
+        || body.is_some_and(|body| occurs(&Body::read(body).words().0, &phrase).is_some())
+}
+
 /// Where `phrase` first occurs in `tokens`, its last word with or without a final plural.
 fn occurs(tokens: &[String], phrase: &[String]) -> Option<usize> {
     let (last, lead) = phrase.split_last()?;

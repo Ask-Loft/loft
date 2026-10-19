@@ -106,3 +106,25 @@ fn the_added_and_changed_follow_the_document_and_the_removed_follow_the_base() {
     assert_eq!(changes.changed, vec![criterion_id(5)]);
     assert_eq!(changes.removed, vec![ConstraintId::new(key(9)).into()]);
 }
+
+#[test]
+fn a_node_whose_content_is_the_base_s_and_whose_parent_is_not_is_moved() {
+    let mut document = small_document();
+    let product = &mut document.products[0];
+    let moved = product.feature_groups[0].constraints.remove(0);
+    product.constraints.push(moved);
+    let changes = node_changes(&small_document(), &document);
+    assert_eq!(changes.moved, vec![ConstraintId::new(key(9)).into()]);
+}
+
+#[test]
+fn a_node_that_moved_and_changed_is_changed_and_not_moved() {
+    let mut document = small_document();
+    let product = &mut document.products[0];
+    let mut moved = product.feature_groups[0].constraints.remove(0);
+    moved.name = "The part shall be bounded twice.".to_owned();
+    product.constraints.push(moved);
+    let changes = node_changes(&small_document(), &document);
+    assert_eq!(changes.changed, vec![ConstraintId::new(key(9)).into()]);
+    assert_eq!(changes.moved, Vec::<NodeId>::new());
+}

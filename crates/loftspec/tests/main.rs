@@ -75,6 +75,7 @@ mod publish_settle;
 mod render;
 mod render_openspec;
 mod render_openspec_findings;
+mod review;
 mod roots;
 mod site_lists;
 mod slug;
