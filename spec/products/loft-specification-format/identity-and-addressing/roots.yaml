@@ -195,6 +195,30 @@ requirements:
         name: "A driver or consequence that names a node names it by its content hash."
       - key: e87865d3-079e-4ae9-8952-5b1fc0ac71e4
         name: "A driver or consequence that names a former label names it as the object `{\"formerLabel\": <label>}`."
+  - key: 01a156be-e2a7-7461-9a70-a039e8af92d6
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute each decision's history hash over its decision view with each node and decision it names given by key."
+    criteria:
+      - key: 01a156be-e2a7-7461-9a70-a03a6eea7bda
+        name: "The decision history view is the decision view in which each node that a driver or a consequence names is named by its key."
+      - key: 01a156be-e2a7-7461-9a70-a03bc14b6d88
+        name: "In the decision history view, a successor decision is named by its key."
+      - key: 01a156be-e2a7-7461-9a70-a03c1df47abc
+        name: "A former label is named in the decision history view as it is in the decision view."
+      - key: 01a156be-e2a7-7461-9a70-a03daff383c0
+        name: "The decision history hash is the digest of the decision history view under `loftspec/decision/1`."
+      - key: 01a156be-e2a7-7461-9a70-a03e8733ea95
+        name: "Editing a node that a driver or a consequence names leaves the decision history hash unchanged."
+      - key: 01a156be-e2a7-7461-9a70-a03fbce11e4c
+        name: "Naming another node in a driver or a consequence changes the decision history hash."
+      - key: 01a156be-e2a7-7461-9a70-a0408d17e2af
+        name: "Editing the successor decision leaves the decision history hash unchanged."
+      - key: 01a156be-e2a7-7461-9a70-a0411a0a9406
+        name: "A decision that names no node and no successor has a decision history hash equal to its decision view hash."
+      - key: 01a156be-e2a7-7461-9a70-a0429f97f850
+        name: "The decision history hash enters no root."
   - key: 01a14039-8315-7390-a27f-c5695f6ac662
     statement:
       form: ubiquitous

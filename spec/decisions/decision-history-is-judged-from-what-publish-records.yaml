@@ -5,7 +5,7 @@ context: "An accepted decision is changed by a new decision that supersedes it, 
 state:
   kind: accepted
   selectedOption: 01a156a4-172f-7126-a641-8f034aee7c85
-  outcome: "Each publish records in a decision's binding the kind of its state and, for a resolved decision, its decision view hash; two lint rules compare the tree's decisions with those records and report an edit to a resolved decision's meaning and a change of state the record does not allow; neither refuses a publish."
+  outcome: "Each publish records in a decision's binding the kind of its state and, for a resolved decision, a decision history hash that names the nodes and the successor it weighs by key, so that an edit to such a node is not an edit to the decision; two lint rules compare the tree's decisions with those records and report an edit to a resolved decision's meaning, a change of state the record does not allow, and a resolved decision deleted where it should be retired; neither refuses a publish."
 drivers:
   - key: 01a156a4-172f-7126-a641-8eff3f835218
     kind: local
@@ -26,7 +26,7 @@ drivers:
 options:
   - key: 01a156a4-172f-7126-a641-8f034aee7c85
     title: "Records in the bindings file"
-    description: "Each publish records each decision's state kind and view hash in its binding, and lint rules compare the tree with them."
+    description: "Each publish records each decision's state kind and history hash in its binding, and lint rules compare the tree with them."
   - key: 01a156a4-172f-7126-a641-8f046ce8653b
     title: "Git history"
     description: "A lint rule compares each decision with its file at the last publish commit, read from git."
@@ -109,11 +109,11 @@ consequences:
     kind: cost
     statement: "Each binding of a decision holds two more fields that enter no root."
   - key: 01a156a4-172f-7126-a641-8f09df2e55d3
-    kind: risk
-    statement: "A decision's view hash names a node that a driver or consequence weighs by the node's content hash, so an edit to that node is reported as a change to the decision."
+    kind: cost
+    statement: "The history hash is a second digest of each resolved decision, beside its decision view hash, that every implementation computes alike."
   - key: 01a156a4-172f-7126-a641-8f0ad2577490
     kind: obligation
-    statement: "A decision edited and published anyway is judged against the record of that publish from then on."
+    statement: "A decision edited and published anyway is judged against the record of that publish from then on, and a resolved decision deleted and published is no longer reported."
 subjects:
   - role: affected
     node: 845fe937-28e9-4c37-883a-1fbdf18c4a1f
