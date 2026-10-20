@@ -54,6 +54,44 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - `loft publish --format json` writes the schema `loft-publish/2`, whose `givenBack` lists each
   label a publish gave back to a key that came back to its document, with its key. A connected
   document is published only through its remote, so `loft publish` refuses one.
+- A lock may name the state view its state root was computed under, in `stateView`. State view 2
+  adds the text of `spec/lint.yaml`, digested under `loftspec/lint/1`, to the state root, so a
+  lock proves which lint configuration a state was published with. A tree without the file has
+  the same state root under both views, and its lock names none. `loft publish` writes view 2 for
+  a tree that has the file, so the first publish of such a tree after upgrading advances its
+  publish sequence once. `loft verify` checks each lock under the view it names, so every lock
+  published before still verifies, and refuses a lock that names a view it does not compute,
+  naming that view and the highest it computes. `StateView` names the views.
+- `spec/loftspec.yaml` may say `connected: true`: the document's labels and locks come from its
+  remote. The field enters no root.
+- A key that leaves the tree keeps its binding: `loft fmt` and `loft publish` mark it `departed`,
+  with its labels and the counters as they were, so its labels are never given to another key. A
+  retired or superseded decision that names such a node names it by its former label. When the
+  key comes back, the publish gives it its label back, listed in `givenBack`, and the decision
+  names it by its key again. A publish that would give back a label a decision still names under
+  `formerLabel` is refused, and `loft fmt` settles it. At each publish a decision's binding also
+  records `publishedState` and `publishedHistory`, which the decision-history rules read. None of
+  these fields enters a root, and a binding's departure and records merge apart from its label.
+- `loftspec::publish::publish` takes the repository state as an option, so a tree held in memory
+  publishes without git, and says whether the publish is made as the document's remote:
+  `Made::AsRemote`, the one publisher that allocates a connected document's labels, or
+  `Made::NotAsRemote`. It gives `Publication::Published`, with the lock, the files to write, the
+  labels given back and allocated, and the `Base` it was made after (sequence 0 and no state root
+  without a previous lock); `Unchanged`, with the previous lock; or, for a connected document's
+  publish not made as its remote, `Prepared`: the validated tree, its roots and its state root,
+  and no lock. `publish_labels` and `record_decisions` give two of its steps apart.
+- `loftspec::merge::merge_tree` merges three whole `spec/` trees, pairing records by key across
+  files: a record moved to another file on one side and changed on the other comes out once, in
+  the file the moving side gave it, with the change, and a record the two sides moved to different
+  places is a `parent` conflict. The git merge driver still merges one file at a time.
+- Each conflict record is named by an identifier, `ConflictId`: SHA-256 under
+  `loftspec/conflict/1` over its holder, its field and its three sides, each side as the conflict
+  record writes it, every scalar as text. It is derived, never stored, so two merges that write one
+  conflict name it alike, and resolving another leaves it as it is. The validator lists a tree's
+  conflict records in document order and names each by its identifier; `Conflict::id` gives it,
+  and `Conflict::view` the JSON it is computed over.
+- `loftspec::hash::decision_history_hash` and `decision_history_view` give a decision's history
+  hash, under `loftspec/decision-history/1`, and the view it is computed over. No root holds it.
 - A Feature Group may hold Quality Attributes, for a quality its Features share; its record
   writes them after its Constraints. A Product holds none. A Feature Group without them keeps its
   content hash, so the Format stays `loftspec/1`: every tree written before reads and hashes as
