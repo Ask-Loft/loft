@@ -25,6 +25,16 @@ requirements:
         name: "A conflict record of `spec/labels.yaml` has the holder `spec/labels.yaml`."
       - key: 01a156a6-de49-70a4-a6bb-372a8ff3aaa3
         name: "A side on which the field is absent enters the array as `null`."
+      - key: 01a15938-bed7-7602-8b06-3c455164867d
+        name: "A side that the conflict record writes as deleted enters the array as `null`."
+      - key: 01a15938-bed7-7602-8b06-3c465b968a92
+        name: "A scalar side enters the array as a JSON string of its text as the conflict record writes it, a number or a flag included."
+      - key: 01a15938-bed7-7602-8b06-3c4751872d51
+        name: "A sequence side enters the array as a JSON array of its items, in the order the conflict record writes them."
+      - key: 01a15938-bed7-7602-8b06-3c48a98ff06f
+        name: "A mapping side enters the array as a JSON object from each field name the conflict record writes to that field's value."
+      - key: 01a15938-bed7-7602-8b06-3c49ee9cc682
+        name: "A side of extension data enters the array as the JSON value that the extension data holds."
       - key: 01a156a6-de49-70a4-a6bb-372b223edc5d
         name: "The identifier is written as 64 lowercase hexadecimal digits."
       - key: 01a156a6-de49-70a4-a6bb-372c6fee4571
