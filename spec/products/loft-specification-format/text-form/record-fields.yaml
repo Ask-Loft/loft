@@ -194,9 +194,13 @@ requirements:
       shall: "write the manifest with the manifest fields in the Format's order."
     criteria:
       - key: 5da704a2-97eb-429e-bd69-04d1613a7167
-        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `products` and `derivedFrom`."
+        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `connected`, `products` and `derivedFrom`."
       - key: 4783e5ae-9990-4606-a8d1-fe92b68d5792
         name: "The manifest requires `format`, `algorithm` and `documentKey`."
+      - key: 01a156ac-0a95-726f-ab84-01aeeecf16d8
+        name: "A manifest of a document that is not connected omits `connected`."
+      - key: 01a156ac-0a95-726f-ab84-01af31c44897
+        name: "A manifest whose `connected` holds a value other than `true` is a read error naming the file, line and column."
       - key: 069a4c14-1826-4f2f-a0ae-fd8aae922b97
         name: "`derivedFrom` holds, in order, `authoredStateId`, `contentAddress` and `publishSequence`, and requires all three."
   - key: ca2b29a1-09e5-4e6f-b4d7-1aa56a952393

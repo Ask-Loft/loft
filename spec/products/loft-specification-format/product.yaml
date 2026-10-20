@@ -109,6 +109,7 @@ featureGroups:
       - 01a130de-5737-776f-9c39-b9c7aec2fc26
       - 01a130de-5737-776f-9c39-b9e3793de847
       - 01a156a8-d774-72b1-91b6-523f27f07207
+      - 01a156ac-0a95-726f-ab84-01a1d6715dce
   - key: 1be50284-6f97-4abd-ac76-7333de756f2a
     slug: merge-semantics
     name: "Merge semantics"

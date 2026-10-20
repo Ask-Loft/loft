@@ -1,0 +1,48 @@
+key: 01a156ac-0a95-726f-ab84-01a1d6715dce
+slug: connected-publication
+name: "Connected publication"
+body: "A document whose manifest marks it `connected: true` publishes through its remote, a server that holds its published states in order and is the only source of its labels. A publish of such a document sends what changed since the remote's head and applies what the remote returns. Labels are still given only at publish, and counters never rewind; settling the labels that two clones gave apart stays the way of a document that is not connected."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+mentions:
+  - 01a130de-573a-77b2-b40b-d44300846d1a
+requirements:
+  - key: 01a156ac-0a95-726f-ab84-01a2464753ea
+    statement:
+      form: state_driven
+      while: "a document is connected"
+      system: "the publisher"
+      shall: "take every label of the document from its remote."
+    criteria:
+      - key: 01a156ac-0a95-726f-ab84-01a3dc3b79d7
+        name: "The bindings and the label counters of a connected document are those its remote returns with its lock."
+      - key: 01a156ac-0a95-726f-ab84-01a427c8c552
+        name: "The publisher allocates no label for a connected document."
+  - key: 01a156ac-0a95-726f-ab84-01a5872fcc23
+    statement:
+      form: unwanted
+      if: "a publish of a connected document would allocate a label without its remote"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a156ac-0a95-726f-ab84-01a69c305960
+        name: "The refusal says that the document is connected and that its labels come from its remote."
+      - key: 01a156ac-0a95-726f-ab84-01a797ed9404
+        name: "A connected document is not published by settling two publishes in a stopped merge or rebase."
+      - key: 01a156ac-0a95-726f-ab84-01a8444581b7
+        name: "Nothing is written."
+  - key: 01a156ac-0a95-726f-ab84-01a903ee2020
+    statement:
+      form: unwanted
+      if: "the lock of a connected document is not its remote's head"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a156ac-0a95-726f-ab84-01aaf3d838ae
+        name: "A lock is the head when its publish sequence and its state root are the head's."
+      - key: 01a156ac-0a95-726f-ab84-01ab6e89bdcf
+        name: "A connected document without a lock is at the head of a remote that holds no published state."
+      - key: 01a156ac-0a95-726f-ab84-01ac0fe3b3f2
+        name: "The refusal names the lock's publish sequence and the head's."
+      - key: 01a156ac-0a95-726f-ab84-01adbbb4699f
+        name: "Nothing is written."

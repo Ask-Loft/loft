@@ -1,7 +1,7 @@
 key: 568bbe91-b941-4eba-92a9-c134546ea5db
 slug: loft-publish
 name: "`loft publish`"
-body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused."
+body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused. A connected document is published through its remote: `loft publish` sends the change from the remote's head as a delta and writes what the remote returns, once the roots it recomputes agree with the returned lock."
 tags:
   - checks-for-updates
   - needs-repository
@@ -14,6 +14,7 @@ realizes:
 mentions:
   - 01a12ff0-f5e5-7095-8fa8-24b707fdee97
   - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
 requirements:
   - key: 6f07a2ab-ce4b-4f91-9669-8980600cda7f
     statement:
@@ -102,3 +103,103 @@ requirements:
         name: "The outcome is `unchanged` when nothing changed since the last publish."
       - key: 01a1354e-bca0-714b-8727-09b992ab7df5
         name: "A refusal has the outcome `error` and is listed among the document's errors."
+  - key: 01a156ac-9752-749b-be81-dee76686630d
+    statement:
+      form: optional
+      where: "the document is connected"
+      system: "`loft publish`"
+      shall: "send its remote the change from the remote's head as a delta."
+    criteria:
+      - key: 01a156ac-9752-749b-be81-dee8fd3d7b65
+        name: "`loft publish` asks the remote for its head before it builds the delta."
+      - key: 01a156ac-9752-749b-be81-dee96f266f8b
+        name: "The path and the SHA-256 digest of each file of the head come from the remote."
+      - key: 01a156ac-9752-749b-be81-deea3ecbdfa5
+        name: "Only files under `spec/` enter the delta."
+      - key: 01a156ac-9752-749b-be81-deeb088727f6
+        name: "The delta leaves out `spec/labels.yaml`, whose bindings the remote writes."
+      - key: 01a156ac-9752-749b-be81-deec83e82871
+        name: "Each file that the head does not hold is sent as added, with its text."
+      - key: 01a156ac-9752-749b-be81-deedf1da0eca
+        name: "Each file whose digest differs from the head's is sent as changed, with its text."
+      - key: 01a156ac-9752-749b-be81-deeeadacb058
+        name: "Each file that the head holds and the tree does not is sent as removed, by its path alone."
+      - key: 01a156ac-9752-749b-be81-deefbed26d35
+        name: "A file whose digest equals the head's is not sent."
+      - key: 01a156ac-9752-749b-be81-def005a2c826
+        name: "The request names the head's publish sequence and state root as its base."
+      - key: 01a156ac-9752-749b-be81-def1c1aaf547
+        name: "The request carries as its retry key the SHA-256 digest of the RFC 8785 canonical JSON of the array of the document key, the base's state root and the delta."
+      - key: 01a156ac-9752-749b-be81-def20bba9b1f
+        name: "Two attempts at one publish over the same tree send the same retry key."
+      - key: 01a156ac-9752-749b-be81-def383e41453
+        name: "A tree whose state root equals the head's sends nothing and reports that nothing changed."
+  - key: 01a156ac-9752-749b-be81-def42467342e
+    statement:
+      form: event_driven
+      when: "the remote accepts a connected publish"
+      system: "`loft publish`"
+      shall: "apply the labels, the rewritten files and the lock that the remote returns."
+    criteria:
+      - key: 01a156ac-9752-749b-be81-def5819471f0
+        name: "Each file that the remote returns replaces the tree's file at its path."
+      - key: 01a156ac-9752-749b-be81-def60d9a315b
+        name: "The lock that the remote returns is written to `loft.lock.json`."
+      - key: 01a156ac-9752-749b-be81-def76432f6f4
+        name: "`loft publish` recomputes the roots of the tree with the returned files applied before it writes anything."
+      - key: 01a156ac-9752-749b-be81-def876a3b42e
+        name: "Nothing is written when a recomputed root differs from the returned lock's."
+      - key: 01a156ac-9752-749b-be81-def97431b062
+        name: "A recomputed root that differs from the returned lock's is an error that names the root and exits 1."
+      - key: 01a156ac-9752-749b-be81-defa33caf241
+        name: "The returned files and the lock are written in one journaled save."
+      - key: 01a156ac-9752-749b-be81-defbc80815a0
+        name: "Each label that the remote allocated is printed with its key."
+  - key: 01a156ac-9752-749b-be81-defc01210c0a
+    statement:
+      form: event_driven
+      when: "the remote answers a connected publish as the replay of one it accepted before"
+      system: "`loft publish`"
+      shall: "apply the publish the remote returns as it applies an accepted one."
+    criteria:
+      - key: 01a156ac-9752-749b-be81-defd52d8dd77
+        name: "The files and the lock of the replay are applied as for an accepted publish."
+      - key: 01a156ac-9752-749b-be81-defee2b75736
+        name: "A replay of a publish whose lock `loft.lock.json` already holds writes nothing."
+  - key: 01a156ac-9752-749b-be81-deff2eb5b17a
+    statement:
+      form: unwanted
+      if: "the remote answers that its head is no longer the base the request names"
+      system: "`loft publish`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ac-9752-749b-be81-df00cf74cda8
+        name: "The error names the head's publish sequence and state root."
+      - key: 01a156ac-9752-749b-be81-df01d461acc3
+        name: "The error says that `loft pull` brings the tree to the head."
+      - key: 01a156ac-9752-749b-be81-df028febefa1
+        name: "Nothing is written."
+  - key: 01a156ac-9752-749b-be81-df03740c9619
+    statement:
+      form: unwanted
+      if: "the remote answers that the request is invalid"
+      system: "`loft publish`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ac-9752-749b-be81-df049b4aa818
+        name: "The error names each path that the remote names."
+      - key: 01a156ac-9752-749b-be81-df0513fadc87
+        name: "Nothing is written."
+  - key: 01a156ac-9752-749b-be81-df062d1433ce
+    statement:
+      form: unwanted
+      if: "the document is connected and its remote cannot be reached"
+      system: "`loft publish`"
+      shall: "refuse to publish and exit 1."
+    criteria:
+      - key: 01a156ac-9752-749b-be81-df07b88105bf
+        name: "The error says that a connected document is published only through its remote."
+      - key: 01a156ac-9752-749b-be81-df08da741635
+        name: "No label is allocated."
+      - key: 01a156ac-9752-749b-be81-df09527d973e
+        name: "Nothing is written."

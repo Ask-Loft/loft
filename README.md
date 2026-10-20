@@ -2,7 +2,8 @@
 
 The Loft Specification Format and its reference implementation: a specification document model
 that a person or a small team edits in a git repository and controls with the `loft` command
-line, with no server.
+line. It needs no server; a document can opt in to publishing through one, as a connected
+document.
 
 - `crates/loftspec` — the format: document model, identity, canonical bytes, hashing, conversion
   from the v1 export
