@@ -33,6 +33,7 @@ raises its rule, and no other rule at warning.
 - Language rules
 - Rules of the text form
 - Rules of the writing craft
+- Rules of decision history
 - Rules of the term report
 
 ## Errors
@@ -524,6 +525,19 @@ requirements:
     criteria:
       - name: "The note is listed after it is saved."
 ```
+
+## Rules of decision history
+
+Each publish records in a decision's binding in `spec/labels.yaml` the kind of its state and,
+for a resolved decision, its history hash. These rules compare the tree's decisions with those
+records, so they arise only in a published tree. Editing a node a decision names, or its subjects
+and mentions, is no edit to the decision. Neither rule refuses a publish; once a publish records
+an edited decision, it is judged against that record.
+
+| Rule | Default | Reports | Usual fix |
+|---|---|---|---|
+| `V2-010` | warning | A decision published as accepted, rejected, superseded or retired whose meaning has changed since: its title, context, drivers, options, assessments, consequences or what its state records | Undo the edit, and record the new choice as a new decision that supersedes it, as `writing-rules.md` says |
+| `V2-011` | warning | A decision whose state moved in a way its published state does not allow: only a proposed decision may be accepted or rejected, and only an accepted one superseded or retired; or a resolved decision deleted from the tree | Restore the decision as it was published; end an accepted one by superseding or retiring it, and record any other change as a new decision |
 
 ## Rules of the term report
 

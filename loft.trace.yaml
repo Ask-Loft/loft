@@ -6231,6 +6231,177 @@ links:
       - file: "crates/loftspec/tests/lint_markdown.rs"
         name: "v2_009_is_info_by_default"
         body: 551d5ccc3880ee4543947282c1b0e7545d97d9d403b6288853e1374e799b1a3d
+  - node: 01a156a4-1732-7428-aee4-d3abb890ebde
+    reviewed: 7a40e0be7f74203629a0bb56fd3b1508025c2da6393e0a58b773227bdb7eea2f
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "an_edit_to_a_decision_in_the_state_it_was_published_in_is_one_v2_010"
+        body: edd62dd996a545612c77a8127dfd944495a7bfa48c7bb790fea0db55fd12e19a
+  - node: 01a156a4-1732-7428-aee4-d3ac97ec0382
+    reviewed: ac8c586338444797974bc26e123c95fa2b2daf49dc970e53cb20600f24f1f0e0
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_retired_or_superseded_after_an_edit_is_one_v2_010"
+        body: 74bfdda269048be207fd760d74d16d035b7764bd676fae3e073791142f83715e
+  - node: 01a156a4-1732-7428-aee4-d3ad80519777
+    reviewed: f37a1ad7d735d43ac88d0e38b0548a325e5727bdd2d1ac4a3761935814e792e3
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_whose_history_hash_is_the_published_one_is_not_v2_010"
+        body: e21324c9055cf4c2e1c6c169d80b930831aae0c3b801a8a7da6a4a89c08b72f7
+  - node: 01a156be-e2a8-72d8-9748-ae10ab28bc6c
+    reviewed: a82f976fc2021464df81f6d13758c40a0cba6d46ec5c6a3e2ac7f06625395d42
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "an_edit_to_a_node_a_decision_weighs_is_not_v2_010"
+        body: 11de7678a9e05508f2af94e3edf8b1e227533f922d8a5e16bd64b99cdc16a0fe
+  - node: 01a156a4-1732-7428-aee4-d3ae49ca8d2a
+    reviewed: 410f62cf71e52a7eb42ba328374e7fbe4625e4818c6876dc971773981b809ee8
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_retired_or_superseded_with_nothing_else_changed_is_not_v2_010"
+        body: 382693519b0ac3ad36d26c92920eeae54750b5c37c7065576eaa61ba86951383
+  - node: 01a156a4-1732-7428-aee4-d3af7db13293
+    reviewed: 70801b61b64fdd0bf3d9d89c2281d25c23b9279fadea717d506f4fe42c29d09f
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_change_to_a_decision_s_subjects_or_mentions_alone_is_not_v2_010"
+        body: b0ad4d5c66b1f8107d7db87ba5420af5167f0c83bfae0a07404e5309e526abee
+  - node: 01a156a4-1732-7428-aee4-d3b01ae3c6cb
+    reviewed: 64191da3462f28fc65f44d883d1dc167d61210285fd82a64587c690d3700e34d
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_without_a_published_history_or_a_binding_is_not_v2_010"
+        body: b9827b55e442f1abd7775447a8e2cee2db971367fdbb3c5dab825b0da87c0f15
+  - node: 01a156a4-1732-7428-aee4-d3b17f8f6d6f
+    reviewed: 86dd3d51211f57bd020989a6be561cb451fee8294e8b7bb3f2193c344d1c5c33
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_without_a_published_history_or_a_binding_is_not_v2_010"
+        body: b9827b55e442f1abd7775447a8e2cee2db971367fdbb3c5dab825b0da87c0f15
+  - node: 01a156a4-1732-7428-aee4-d3b2838ac69e
+    reviewed: 40ff76d12124e690a88e8552b269e5f1fbe7a8026ad8a42520db9fc6d61f3c33
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_v2_010_finding_names_the_decision_and_its_published_state"
+        body: a0d77d52230a8677e54a8b524a530ac5e55af680c5e0c36c76fd08cd6d10deac
+  - node: 01a156a4-1732-7428-aee4-d3b3bd21fab6
+    reviewed: db678323de4b7a1db1e36c339318958312aedbd385ea2f87ba66739f6f128f23
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "v2_010_and_v2_011_are_warnings_by_default"
+        body: 8775ac8328fcc1f2fefd6cb81edf66361e14252ff25e64f6638d393a989105eb
+  - node: 01a156a4-1732-7428-aee4-d3b5361227cf
+    reviewed: cd36c01db0d6997530b1382f00dc85acf05e7158bf73430e796886e2d06f7caf
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "an_accepted_decision_now_superseded_or_retired_is_not_v2_011"
+        body: ac05200383c4df19ed45a6f1446723c93e91aef24f9f984bee2f048c65d142a5
+  - node: 01a156a4-1732-7428-aee4-d3b6e40d47e3
+    reviewed: fad077d01a804920368f2c9dfdf3c30a8afc4e2b1bcf0f64d2baceaa1e6000c1
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_proposed_decision_now_accepted_or_rejected_is_not_v2_011"
+        body: e5a3edea9b66380224b65a2378d3002e0cef04014fc2e29eca7310a9fe1abb93
+  - node: 01a156a4-1732-7428-aee4-d3b7b2b5e275
+    reviewed: 10c6426dc471fc5c055b459014e07b2f846873cdee27e06b922bb4b7fec70f12
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_proposed_decision_now_superseded_or_retired_is_one_v2_011"
+        body: 6ab9b0aee068f5012424b10f5d6ca8554c650af862ffd5fd9024642c97d13685
+  - node: 01a156a4-1732-7428-aee4-d3b892c107f3
+    reviewed: c6890460f1b193374ed854fac6ce586e9a82fa525bd7aaa56db1b248be096074
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "an_accepted_decision_now_proposed_or_rejected_is_one_v2_011"
+        body: c406da91ed2d688ff215180004cfa01f19cd7011a950c2e69838fa27aaca9366
+  - node: 01a156a4-1732-7428-aee4-d3b9669cd0e1
+    reviewed: a5338fff71727ce5baf9f715ce649d7963723421c24fda3a2200949cc656bd6c
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_rejected_superseded_or_retired_decision_whose_state_has_another_kind_is_one_v2_011"
+        body: fc58755e819ca1ca4f105a76f15b735045b605a232187da8db79315b3921f4f3
+  - node: 01a156a4-1732-7428-aee4-d3ba8495c403
+    reviewed: 0f56b5df7ea7b17098801b233c3bfd4c3d283c7c70caab2f3d0f724156cd9481
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_rejected_superseded_or_retired_decision_whose_state_has_another_kind_is_one_v2_011"
+        body: fc58755e819ca1ca4f105a76f15b735045b605a232187da8db79315b3921f4f3
+  - node: 01a156a4-1732-7428-aee4-d3bbba3e52df
+    reviewed: 80dcc049f89ecf3dff78d48802250722cfcd614943a16a5e80d7dd57596ac6ce
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_rejected_superseded_or_retired_decision_whose_state_has_another_kind_is_one_v2_011"
+        body: fc58755e819ca1ca4f105a76f15b735045b605a232187da8db79315b3921f4f3
+  - node: 01a156a4-1732-7428-aee4-d3bc3e6d9500
+    reviewed: 13eb268bdc83d47c7a5e98eb5a818bdfdfe336adea969885e57f419682986a09
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_in_the_kind_of_state_it_was_published_in_is_not_v2_011"
+        body: 826dad87aef1bc96ed934e0c69fc6f2b91b759cf8ec092c56053d507b6ac228c
+  - node: 01a156a4-1732-7428-aee4-d3bd21d556c2
+    reviewed: 6369f7873b63842cf2af6755caab933341e4a31587eb9b9eabc046adbf57967f
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_whose_binding_records_no_published_state_is_not_v2_011"
+        body: c20a54b24e9612cba0cd7883302d433d01d51ce9f04597780d97a31760c14955
+  - node: 01a156be-e2a8-72d8-9748-ae11471f89cd
+    reviewed: df99922f4d848b9a029975f183e030f1e0e04eea7f6f27bce41206946f0f31cb
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_departed_decision_published_resolved_is_one_v2_011_naming_its_key_and_label"
+        body: 4b5a8857847b800ef56b0b5b3a59646f2fad8eca3bf8ab4fef79f89310ac0d86
+  - node: 01a156be-e2a8-72d8-9748-ae128b93ff65
+    reviewed: 4dec6e4a279331aa5a4ace6b6897c8585663bd33ddaf023161ea7d20bf82828f
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_departed_decision_published_proposed_is_not_v2_011"
+        body: 0cc97d8b60d0a590de09782e1f8380f747c174b06f66acbf46f65fc15d25a69b
+  - node: 01a156be-e2a8-72d8-9748-ae134ca50e36
+    reviewed: 08b5834228b1acc7921c094af8f1c10ba90da05dcdb708b3a411417811be1d26
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "the_finding_for_a_departed_decision_says_retiring_it_is_the_way_to_end_it"
+        body: c2b6a67fc10d381d46205a0ef09b6ccd596bc554153ca007e2bf861aa86fa1fe
+  - node: 01a156a4-1732-7428-aee4-d3be4176eaa5
+    reviewed: 83c56115773fb330a12390ac490cead0de47dae7e700a3a33fe5980b9128c5e1
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_v2_011_finding_names_the_decision_its_published_state_and_its_state_now"
+        body: c7fa18d1f2782983c3f24b4fc9da7ed2f81f19e20fccd28dbf82197130c29d2f
+  - node: 01a156a4-1732-7428-aee4-d3bfc015f81c
+    reviewed: db07c2aedd66c306fa4599926e4d44ae5ad2403a9ec452874754401f93e25ac8
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "v2_010_and_v2_011_are_warnings_by_default"
+        body: 8775ac8328fcc1f2fefd6cb81edf66361e14252ff25e64f6638d393a989105eb
+  - node: 01a156a4-1732-7428-aee4-d3c18d6645de
+    reviewed: 712629d34ba7d48eb36bcfef52df33316ffaa5e908414a2866c1123239c48b7f
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "decision_history_is_judged_from_the_bindings_file_of_the_tree_alone"
+        body: 9eb8ba22bc4e1814383d7118b5b5bc990e8bd09edaa63a3acb602787581d73ea
+  - node: 01a156a4-1732-7428-aee4-d3c27f9c4b50
+    reviewed: 6e36b735c6ca502479353d551b59e42912ccb64655cf7752c66b58e01cca5029
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "decision_history_is_judged_from_the_bindings_file_of_the_tree_alone"
+        body: 9eb8ba22bc4e1814383d7118b5b5bc990e8bd09edaa63a3acb602787581d73ea
+      - file: "crates/loft-cli/tests/check.rs"
+        name: "an_edit_to_a_published_decision_is_reported_with_no_repository"
+        body: 07e1a7192060069a406cff90f0cb7ba2c12ed371fce51390cd2f3035deebbb60
+  - node: 01a156a4-1732-7428-aee4-d3c3c61e0af9
+    reviewed: 27b70798f4be345fc79741a64a0f74caaf8d29cab573a60cc18760f12d1aea3a
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_tree_that_v2_010_and_v2_011_report_is_published"
+        body: 5c1889ba7f2752ec41ce269e98b41254a633b48355bc3fab59d4bc86475a91fd
+  - node: 01a156a4-1732-7428-aee4-d3c4630c6d89
+    reviewed: d7ff50bb287a1656b4744c671ecc41e0de0289781bbbed222d195535d4b620e1
+    tests:
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "the_validator_reports_no_error_for_a_decision_v2_010_or_v2_011_reports"
+        body: 7fecad916309bafe12673e03cc9e79757aeaf8fc54fffb65eadac2da2fd03917
   - node: add44f32-26a2-4513-b7aa-9daef87e8a0d
     reviewed: 3668e5999079c9295b1cdeb1c4bf24219069cb3c89ee5a3acb3f45bc5b11eec9
     tests:

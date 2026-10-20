@@ -5,6 +5,15 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Two lint rules of decision history, both warnings that refuse no publish. `V2-010` reports a
+  decision published as accepted, rejected, superseded or retired whose meaning has changed
+  since, judged by its decision history hash against the `publishedHistory` its binding records,
+  so an edit to a node it names is no edit to it; a decision superseded or retired since it was
+  published as accepted is compared as if still accepted. `V2-011` reports a change of state that
+  the recorded `publishedState` does not allow (only a proposal may be accepted or rejected, and
+  only an accepted decision superseded or retired) and a resolved decision deleted rather than
+  retired. Both read only `spec/labels.yaml`, never a repository's history; `RuleId` gains
+  `V2010` and `V2011`, and the schema `loft-check/2` lists both.
 - `loftspec::check::lint_against` lints a tree and a base, two documents held in memory, under
   the tree's lint configuration, and splits the tree's findings against the base's as
   `loft check --baseline` does, with no path and no repository; `check_against` runs it over two

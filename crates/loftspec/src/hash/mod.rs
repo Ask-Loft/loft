@@ -15,6 +15,7 @@ pub use state::{StateView, lint_digest, state_root, state_view};
 pub use tree::ContentHash;
 
 use crate::canonical::{Digest, Domain, canonical_bytes, digest, digest_array};
+use crate::decision::Decision;
 use crate::document::{Document, Edge, EdgeTarget, SubjectRole};
 use crate::ext::Ext;
 use crate::identity::{Key, Label};
@@ -167,10 +168,17 @@ pub fn decision_history_views(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Val
 /// decision history view under `loftspec/decision-history/1`. No root holds it.
 #[must_use]
 pub fn decision_history_hashes(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Digest> {
-    decision_history_views(indexed)
-        .into_iter()
-        .map(|(id, view)| (id, digest(Domain::DecisionHistory, &view)))
+    let decisions = &indexed.document().decisions;
+    decisions
+        .iter()
+        .map(|decision| (decision.id, decision_history_hash(decision)))
         .collect()
+}
+
+/// The decision history hash of one decision. Its view names every node and decision by key and
+/// follows no reference, so the decision need not belong to a document that indexes.
+pub(crate) fn decision_history_hash(decision: &Decision) -> Digest {
+    digest(Domain::DecisionHistory, &decisions::history_view(decision))
 }
 
 /// Digests a root view, keeping it as a value when views are kept.

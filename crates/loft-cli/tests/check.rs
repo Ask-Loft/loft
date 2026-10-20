@@ -7,7 +7,7 @@ use std::process::Command;
 use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
 use serde_json::Value;
-use software_plant::Clock;
+use software_plant::{Clock, GitScenario};
 
 const PRODUCT: &str = "products/reading-list/product.yaml";
 const SHARE: &str = "products/reading-list/sharing/share-a-list.yaml";
@@ -367,4 +367,27 @@ fn a_read_error_or_a_lint_configuration_error_is_a_failed_check_in_json() {
         assert_eq!(document["outcome"], "failed", "{kind}: {document}");
         assert_ne!(document["errors"], Value::Array(Vec::new()), "{kind}");
     }
+}
+
+/// The number of findings of `rule` that `loft check` reports, run with no `git` on its search
+/// path.
+fn reported(scratch: &Scratch, rule: &str) -> usize {
+    let document = json(&scratch.loft(&["check", "--format", "json"]));
+    let findings = document["findings"].as_array().unwrap().iter();
+    findings.filter(|finding| finding["rule"] == rule).count()
+}
+
+#[test]
+fn an_edit_to_a_published_decision_is_reported_with_no_repository() {
+    let scratch = Scratch::with_reading_list();
+    let git = GitScenario::clean_on("main");
+    let published = scratch.loft_with(&["publish"], Some(&git), &Clock::fixed(EPOCH));
+    assert_eq!(published.status.code(), Some(0), "{}", stderr(&published));
+    assert_eq!(reported(&scratch, "V2-010"), 0);
+    scratch.edit(
+        "decisions/store-a-shelf-in-one-file.yaml",
+        "context: \"A shelf is small and read whole.\"",
+        "context: \"A shelf is small, and it is read whole.\"",
+    );
+    assert_eq!(reported(&scratch, "V2-010"), 1);
 }
