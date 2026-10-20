@@ -72,6 +72,8 @@ mod merge_lists;
 mod merge_moves;
 mod merge_order;
 mod merge_props;
+mod merge_tree;
+mod merge_tree_moves;
 mod names;
 mod node;
 mod package;

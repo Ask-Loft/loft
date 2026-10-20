@@ -32,20 +32,38 @@ pub(super) fn merge(
         Flat::of(ours),
         Flat::of(theirs),
     ];
+    let merged = merge_flat(&sides)?;
+    Ok(rebuild(merged.top, merged.records, &merged.lists))
+}
+
+/// The merge of three versions by key: the top record's own fields, every record the merge
+/// keeps with its own fields and its conflicts, and every list that holds one, in merged order.
+pub(super) struct ByKey {
+    pub(super) top: Option<Rec>,
+    pub(super) records: BTreeMap<Key, Rec>,
+    pub(super) lists: BTreeMap<Place, Vec<Key>>,
+}
+
+/// Merges three versions, each by key.
+///
+/// # Errors
+///
+/// As [`merge`].
+pub(super) fn merge_flat(sides: &[Flat; 3]) -> Result<ByKey, Key> {
     let [base_top, ours_top, theirs_top] = sides.each_ref().map(|side| side.top.as_ref());
     let top = ours_top
         .zip(theirs_top)
         .map(|(ours, theirs)| merge_own(base_top, ours, theirs));
-    let sure = surely_kept(&sides);
-    let mut records = merge_records(&sides, &sure);
+    let sure = surely_kept(sides);
+    let mut records = merge_records(sides, &sure);
     let kinds = records
         .iter()
         .map(|(key, record)| (*key, record.kind))
         .collect();
     let top_kind = top.as_ref().map(|top| top.kind);
-    let places = merge_places(&sides, &kinds, top_kind, &sure)?;
-    let lists = Lists::filtered(&sides, &places, top_kind);
-    let fates = decide(&sides, &places, &lists);
+    let places = merge_places(sides, &kinds, top_kind, &sure)?;
+    let lists = Lists::filtered(sides, &places, top_kind);
+    let fates = decide(sides, &places, &lists);
     records.retain(|key, _| fates[key].kept());
     if let Some(key) = unplaced(&records, &places) {
         return Err(key);
@@ -59,8 +77,12 @@ pub(super) fn merge(
             hold(record, conflict.clone());
         }
     }
-    let merged = lists.merge(&places, &mut records);
-    Ok(rebuild(top, records, &merged))
+    let lists = lists.merge(&places, &mut records);
+    Ok(ByKey {
+        top,
+        records,
+        lists,
+    })
 }
 
 /// A record the merge keeps without a place, or whose parent it does not keep: one the merge

@@ -13,6 +13,7 @@ mod place;
 mod record;
 mod same;
 mod tree;
+mod whole;
 
 use std::collections::BTreeMap;
 use std::fmt;
@@ -24,6 +25,8 @@ use crate::codec::{
 };
 use crate::identity::{Key, Label};
 use crate::yaml::{Location, Position};
+
+pub use whole::{MergedTree, TreeMergeError, merge_tree};
 
 /// One of the three versions of the file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -139,7 +142,7 @@ fn read_inputs(
 
 /// The merged content: the labels file on its own terms, a record file or a registry by key,
 /// and the lint configuration as one value.
-fn merge_content(
+pub(super) fn merge_content(
     base: Option<Content>,
     ours: Content,
     theirs: Content,
@@ -164,18 +167,18 @@ fn merge_content(
                 Some(Content::Lint(base)) => base,
                 _ => Vec::new(),
             };
-            Ok((Content::Lint(lint(&base, ours, theirs)?), Vec::new()))
+            Ok((Content::Lint(one_value(&base, ours, theirs)?), Vec::new()))
         }
         _ => Err(MergeError::NotAFormatFile),
     }
 }
 
-/// The lint configuration, which no record holds: one side's change wins, and equal changes
-/// coalesce.
-fn lint(base: &[u8], ours: Vec<u8>, theirs: Vec<u8>) -> Result<Vec<u8>, MergeError> {
-    if ours == theirs || theirs == base {
+/// A value merged whole, as the lint configuration is, which no record holds: one side's change
+/// wins, and equal changes coalesce.
+pub(super) fn one_value<T: PartialEq>(base: &T, ours: T, theirs: T) -> Result<T, MergeError> {
+    if ours == theirs || theirs == *base {
         Ok(ours)
-    } else if ours == base {
+    } else if ours == *base {
         Ok(theirs)
     } else {
         Err(MergeError::BothChanged)
@@ -212,6 +215,6 @@ fn twice_in(path: &SpecPath, content: &Content) -> Vec<ReadError> {
 }
 
 /// The conflict records a record and every record inside it hold.
-fn count(record: &Rec) -> usize {
+pub(super) fn count(record: &Rec) -> usize {
     record.conflicts.len() + record.children().map(count).sum::<usize>()
 }

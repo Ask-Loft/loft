@@ -7,7 +7,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::flat::{Flat, Parent, keyed_list};
+use super::flat::{Flat, Parent, holds_list};
 use super::record::merge_own;
 use crate::codec::schema::Kind;
 use crate::codec::{Rec, side_shape, variant_holds};
@@ -79,7 +79,7 @@ fn merged_kind(key: Key, sides: &[Flat; 3], sure: &BTreeSet<Key>) -> Kind {
         .filter(|(_, child)| sure.contains(child))
         .map(|(name, _)| name)
         .collect();
-    let holds = |kind: &Kind| beneath.iter().all(|name| keyed_list(*kind, name).is_some());
+    let holds = |kind: &Kind| beneath.iter().all(|name| holds_list(*kind, name));
     versions.into_iter().find(holds).unwrap_or(versions[0])
 }
 
