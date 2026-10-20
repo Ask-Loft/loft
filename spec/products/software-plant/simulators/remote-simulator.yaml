@@ -125,3 +125,29 @@ requirements:
         name: "A publish the remote cannot apply is answered `422 Unprocessable Content` with `error` set to `invalid` and `paths` listing each path at fault."
       - key: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
         name: "A replay is answered before the base is compared with the head."
+  - key: 01a156af-5308-7015-abac-1425df49d7cf
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <origin>/.well-known/loft-skill.json`"
+      system: "the remote simulator"
+      shall: "answer `200 OK` with the skill manifest its scenario names."
+    criteria:
+      - key: 01a156af-5308-7015-abac-1426805386cd
+        name: "The body is a JSON object holding `name`, `version`, `package`, `sha256` and `length`."
+      - key: 01a156af-5308-7015-abac-14277763e6d4
+        name: "The path is taken from the origin of the address, whatever path the address holds."
+      - key: 01a156af-5308-7015-abac-142828644161
+        name: "A scenario with no skill package answers `404 Not Found`."
+  - key: 01a156af-5308-7015-abac-142964978780
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET` for the path its manifest names in `package`"
+      system: "the remote simulator"
+      shall: "answer `200 OK` with the package's bytes."
+    criteria:
+      - key: 01a156af-5308-7015-abac-142af2b71304
+        name: "The answer has `Content-Type: application/gzip`."
+      - key: 01a156af-5308-7015-abac-142beee199a5
+        name: "An accepting scenario serves the package byte for byte."
+      - key: 01a156af-a712-7288-bba5-d7b63a343de9
+        name: "A tampering scenario serves other bytes under the same manifest."

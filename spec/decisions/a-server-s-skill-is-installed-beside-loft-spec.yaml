@@ -1,0 +1,85 @@
+key: 01a156af-a70e-7312-b223-97939caa51c0
+slug: a-server-s-skill-is-installed-beside-loft-spec
+title: "A server's skill is installed beside `loft-spec`, checked before it is written"
+context: "A server that a team publishes through can offer an agent skill of its own, for the work it adds beside the Format. `loft skill install` already writes `loft-spec` as `loft` embeds it, replaces a skill directory whole through a rename, and enables the Claude Code plugin in `.claude/settings.json`. A package fetched over the network is code that an agent will follow."
+state:
+  kind: accepted
+  selectedOption: 01a156af-a70f-7595-8509-c73f4736f657
+  outcome: "`loft skill install --server <origin>` reads the server's manifest, checks the package's digest and length before it writes anything, refuses an entry outside the package's own skill directory, writes that directory beside `loft-spec` through a rename, enables no plugin, and reaches only an `https` origin or a loopback `http` one."
+drivers:
+  - key: 01a156af-a70f-7595-8509-c73cbf70f60d
+    kind: local
+    label: "`loft-spec` stays as shipped"
+    statement: "The skill `loft` embeds is never replaced by another."
+  - key: 01a156af-a70f-7595-8509-c73d02284af7
+    kind: local
+    label: "Nothing unchecked is written"
+    statement: "No byte of a package reaches the project before it is checked."
+  - key: 01a156af-a70f-7595-8509-c73e388d5b73
+    kind: local
+    label: "No host setting changes unasked"
+    statement: "Installing a server's skill changes no setting of the agent host."
+options:
+  - key: 01a156af-a70f-7595-8509-c73f4736f657
+    title: "Its own directory, checked first"
+    description: "The package goes into a skill directory named by the manifest, after its digest and length are checked, and no plugin is enabled."
+  - key: 01a156af-a70f-7595-8509-c740b036f90e
+    title: "Over `loft-spec`"
+    description: "The server's package replaces the `loft-spec` skill directories."
+  - key: 01a156af-a70f-7595-8509-c7414d94fe90
+    title: "As an enabled plugin"
+    description: "The package is installed as a plugin and enabled in the host's settings, checked as it is unpacked."
+assessments:
+  - option: 01a156af-a70f-7595-8509-c73f4736f657
+    driver: 01a156af-a70f-7595-8509-c73cbf70f60d
+    rating: supports
+    rationale: "the name `loft-spec` is refused"
+  - option: 01a156af-a70f-7595-8509-c73f4736f657
+    driver: 01a156af-a70f-7595-8509-c73d02284af7
+    rating: supports
+    rationale: "the digest and the length are checked before any write"
+  - option: 01a156af-a70f-7595-8509-c73f4736f657
+    driver: 01a156af-a70f-7595-8509-c73e388d5b73
+    rating: supports
+    rationale: "no settings file is written"
+  - option: 01a156af-a70f-7595-8509-c740b036f90e
+    driver: 01a156af-a70f-7595-8509-c73cbf70f60d
+    rating: conflicts
+    rationale: "the embedded skill is replaced"
+  - option: 01a156af-a70f-7595-8509-c740b036f90e
+    driver: 01a156af-a70f-7595-8509-c73d02284af7
+    rating: neutral
+    rationale: "the check can come first, though nothing requires it"
+  - option: 01a156af-a70f-7595-8509-c740b036f90e
+    driver: 01a156af-a70f-7595-8509-c73e388d5b73
+    rating: supports
+    rationale: "no settings file is written"
+  - option: 01a156af-a70f-7595-8509-c7414d94fe90
+    driver: 01a156af-a70f-7595-8509-c73cbf70f60d
+    rating: supports
+    rationale: "the plugin lies apart from `loft-spec`"
+  - option: 01a156af-a70f-7595-8509-c7414d94fe90
+    driver: 01a156af-a70f-7595-8509-c73d02284af7
+    rating: conflicts
+    rationale: "entries are written while the archive is still being checked"
+  - option: 01a156af-a70f-7595-8509-c7414d94fe90
+    driver: 01a156af-a70f-7595-8509-c73e388d5b73
+    rating: conflicts
+    rationale: "the host's settings are changed"
+consequences:
+  - key: 01a156af-a70f-7595-8509-c742e29c9b91
+    kind: benefit
+    statement: "A team gets its server's skill with one command, and `loft-spec` stays the one `loft` ships."
+  - key: 01a156af-a70f-7595-8509-c743e68f54e3
+    kind: cost
+    statement: "A person who wants the server's skill as a plugin enables it in the host."
+  - key: 01a156af-a70f-7595-8509-c744406b9688
+    kind: risk
+    statement: "A server that is compromised serves a package that matches its own manifest; the check proves integrity in transit, not the server's intent."
+subjects:
+  - role: affected
+    node: 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+  - role: outcome
+    node: 01a156af-5306-73ab-a0e4-ce9ba1b99a5f
+  - role: outcome
+    node: 01a156af-5306-73ab-a0e4-cea4ef635765
