@@ -9256,7 +9256,7 @@ links:
         name: "a_withdrawn_label_puts_no_binding_in_dispute"
         body: 042f969b56f197897e6b0f7654d5a9fd0da372853cc6800bb48eb78b95792677
   - node: 01a130de-5737-776f-9c39-b9c6be4b9d04
-    reviewed: 05aa2e37d78b80350a58b32fd900993182d35f5d895ef091b060aed24153cd47
+    reviewed: 9dfd2768a0eee108c078a8862c4151ddfb7e8e051c2e7387b2281cb5c3e53488
     tests:
       - file: "crates/loftspec/tests/merge_labels.rs"
         name: "only_the_disputed_bindings_leave_and_the_others_merge"
@@ -9264,6 +9264,45 @@ links:
       - file: "crates/loftspec/tests/merge_labels.rs"
         name: "bindings_two_publishes_give_apart_without_colliding_are_both_kept"
         body: e97fcf01d18004bd11e36b8348dfa5f9e1988248a99b47e6dec74495810b2eea
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_binding_one_side_relabelled_takes_that_sides_label_aliases_and_withdrawn_labels_whole"
+        body: cf9d049dbd994cb5dc161d8815871e1d1af0b550ff62c69644e65aff5364b30b
+  - node: 01a1597e-ac86-7077-a8ab-9d5c638b9f16
+    reviewed: f50f0e1e3b5cbbf63636a265a626cbfd95352ed8af439ff0497b0fdcf2f850c5
+    tests:
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_binding_whose_sides_differ_only_in_its_departure_and_records_is_not_in_dispute"
+        body: d21bed8f1a159388b437249a5f03a345fc77b41dd2182936846c4becbebf1c1c
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_binding_whose_departure_alone_changed_is_not_put_in_dispute_by_a_label_another_key_takes"
+        body: 70dfad0efef6302a580f440c5803f1c190dee0c1797f29e894f4c3cc4f73fc3d
+  - node: 01a1597e-ac86-7077-a8ab-9d5df7427178
+    reviewed: 016a0724482a54d5c9b5c3190cc7e7f86dfa1a37b1df28e824db954b15e3b471
+    tests:
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_departure_and_records_only_one_side_changed_take_that_sides_values"
+        body: 10f8e755c0664d7d926b2f758f8336b3f0dd5bde29fdbed62f379f70ea39deff
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_binding_whose_sides_differ_only_in_its_departure_and_records_is_not_in_dispute"
+        body: d21bed8f1a159388b437249a5f03a345fc77b41dd2182936846c4becbebf1c1c
+  - node: 01a1597e-ac86-7077-a8ab-9d5edd8ae784
+    reviewed: 846b51e5a71776f107927fd8220db0d128bfd30c7dea514bb7a63d778b883d5f
+    unverified: "`departed` is `true` or absent, so two sides that both change it from base give it the same value, and no three versions hold a departure changed apart; the merge gives `true` should they."
+  - node: 01a1597e-ac86-7077-a8ab-9d5fee4a7623
+    reviewed: 4acef98e35f722b97cf7e8b8f6e59089046e60922f993fa741e95dafd4eb8ef8
+    tests:
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "records_the_two_sides_changed_apart_leave_both_fields_absent"
+        body: 767b9f50c2fd2a2eccde7243289ff9abbd28030fae5426c7b4f6f57353b66f0a
+  - node: 01a1597e-ac86-7077-a8ab-9d600b134f77
+    reviewed: cce67e493b2f5429526f7a5560b293887d6a32ce9257eaad9e34cee7d67d1220
+    tests:
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_binding_whose_sides_differ_only_in_its_departure_and_records_is_not_in_dispute"
+        body: d21bed8f1a159388b437249a5f03a345fc77b41dd2182936846c4becbebf1c1c
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "records_the_two_sides_changed_apart_leave_both_fields_absent"
+        body: 767b9f50c2fd2a2eccde7243289ff9abbd28030fae5426c7b4f6f57353b66f0a
   - node: 01a156a6-de49-70a4-a6bb-3726463ffe2b
     reviewed: 1b99745a6006b217135b7ab14874b99c6657f991c5ace1fc49824ba3d0b83187
     tests:

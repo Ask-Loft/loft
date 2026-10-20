@@ -1,13 +1,15 @@
 //! The merge of `spec/labels.yaml` (F-32, F-60): each label counter
 //! takes the higher of the two sides' values, and the bindings that two publishes gave apart
 //! leave the merged bindings for one conflict record over `bindings` that lists only them. A
-//! publish run in the stopped merge or rebase settles them.
+//! publish run in the stopped merge or rebase settles them. What a publish records in a binding
+//! beside its label, its departure and its decision's state and history, merges apart from the
+//! label and puts no binding in dispute.
 
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::conflict::conflict;
 use super::record::merge_own;
-use super::same::same_record;
+use super::same::{same, same_record};
 use crate::codec::schema::field;
 use crate::codec::{Rec, Val};
 use crate::identity::Label;
@@ -22,7 +24,14 @@ pub(super) fn merge(base: Option<&Rec>, ours: &Rec, theirs: &Rec) -> (Rec, Vec<L
         by_key(ours),
         by_key(theirs),
     ];
-    let (merged, disputed) = bindings(&sides);
+    let labelled = sides.each_ref().map(|side| {
+        let parts = side
+            .iter()
+            .map(|(key, binding)| (key.clone(), label_part(binding)));
+        parts.collect::<ByKey>()
+    });
+    let (mut merged, disputed) = bindings(&labelled);
+    records_apart(&sides, &mut merged, &disputed);
     // The bindings and counters are merged here; the merge of its own fields sees the rest.
     let counters = counters(ours, theirs);
     let rest = |side: &Rec| {
@@ -56,6 +65,69 @@ fn by_key(labels: &Rec) -> ByKey {
 
 fn records<'a>(bindings: impl Iterator<Item = &'a Rec>) -> Val {
     Val::List(bindings.cloned().map(Val::Record).collect())
+}
+
+/// The fields a publish records in a binding beside its label.
+const RECORDED: [&str; 3] = [
+    field::DEPARTED,
+    field::PUBLISHED_STATE,
+    field::PUBLISHED_HISTORY,
+];
+
+/// A binding without the fields a publish records beside its label.
+fn label_part(binding: &Rec) -> Rec {
+    let mut part = binding.clone();
+    part.fields.retain(|(name, _)| !RECORDED.contains(name));
+    part
+}
+
+/// Gives each merged binding the fields a publish records, merged apart from its label: a field
+/// only one side changed takes that side's value, a departure the two sides changed apart is
+/// `true`, and a decision state or history they changed apart leaves both absent, for the next
+/// publish to record. A disputed binding the merge keeps is base's, whole.
+fn records_apart(sides: &[ByKey; 3], merged: &mut ByKey, disputed: &BTreeSet<String>) {
+    let departed = Val::scalar("true");
+    for (key, binding) in merged.iter_mut() {
+        if disputed.contains(key) {
+            binding.clone_from(&sides[0][key]);
+            continue;
+        }
+        let value = |name| three_way(sides.each_ref().map(|side| side.get(key)?.get(name)));
+        let (state, history) = match (
+            value(field::PUBLISHED_STATE),
+            value(field::PUBLISHED_HISTORY),
+        ) {
+            (ThreeWay::Kept(state), ThreeWay::Kept(history)) => (state, history),
+            _ => (None, None),
+        };
+        let values = match value(field::DEPARTED) {
+            ThreeWay::Kept(kept) => [kept, state, history],
+            ThreeWay::Apart => [Some(&departed), state, history],
+        };
+        for (name, value) in RECORDED.into_iter().zip(values) {
+            if let Some(value) = value {
+                binding.set(name, value.clone());
+            }
+        }
+    }
+}
+
+/// A field's value merged three ways.
+enum ThreeWay<'a> {
+    /// The value of the side that changed it, or of both where they changed it alike.
+    Kept(Option<&'a Val>),
+    /// The two sides changed it apart.
+    Apart,
+}
+
+fn three_way([base, ours, theirs]: [Option<&Val>; 3]) -> ThreeWay<'_> {
+    if same(ours, theirs) || same(theirs, base) {
+        ThreeWay::Kept(ours)
+    } else if same(ours, base) {
+        ThreeWay::Kept(theirs)
+    } else {
+        ThreeWay::Apart
+    }
 }
 
 /// Each counter at the higher of the values the two sides give it.
