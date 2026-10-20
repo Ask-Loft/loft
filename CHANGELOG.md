@@ -5,6 +5,12 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- With `--format json`, each read error of the tree names the reader's problem by its stable kind
+  in `problem` (`syntax`, `unknown-field`, `duplicate-key`, …), beside the `kind` `read`; an
+  error of any other kind has none. The schemas of the commands that read the tree state it,
+  and those a release published name a new version: `loft-find/2`, `loft-fmt/2`,
+  `loft-reconcile/3`, `loft-render/3`, `loft-status/2`, `loft-terms/2` and `loft-verify/2`;
+  `loft-check/2`, `loft-publish/2` and `loft-review/1`, not yet released, state it too.
 - `loftspec::edit` edits a document held in memory by key. `find` gives the node or decision a
   key names. `detach` takes a node out with every node beneath it and the edges they write, as a
   `Subtree`; `insert` puts a subtree under a parent, a node or the document's root, at a position

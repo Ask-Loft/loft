@@ -13,7 +13,7 @@ use crate::out::{errln, outln};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-fmt/1";
+const SCHEMA: &str = "loft-fmt/2";
 
 /// What a run did: the files that change, the keys minted, and whether it wrote them.
 struct Outcome {

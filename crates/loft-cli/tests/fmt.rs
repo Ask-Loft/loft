@@ -139,7 +139,7 @@ fn the_json_document_lists_the_files_rewritten_and_the_keys_minted() {
     changed.sort();
     let document = |outcome: &str, changed: &[String], minted: usize, written: bool| {
         json!({
-            "schema": "loft-fmt/1",
+            "schema": "loft-fmt/2",
             "outcome": outcome,
             "changed": changed,
             "minted": minted,

@@ -14,7 +14,7 @@ use crate::out::{errln, outln};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-verify/1";
+const SCHEMA: &str = "loft-verify/2";
 
 /// Why the tree did not verify: an error that stops it, or roots that differ.
 enum Failure {

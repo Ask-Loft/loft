@@ -19,7 +19,7 @@ use crate::out::outln;
 use crate::stop::{self, Stop};
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-terms/1";
+const SCHEMA: &str = "loft-terms/2";
 
 pub fn run(root: &Path, as_json: bool) -> Finished {
     let read = stop::read_files(root).and_then(|files| {

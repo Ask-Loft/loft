@@ -30,7 +30,7 @@ use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-reconcile/2";
+const SCHEMA: &str = "loft-reconcile/3";
 
 /// What the command was asked to do beyond reporting.
 pub struct Options<'a> {

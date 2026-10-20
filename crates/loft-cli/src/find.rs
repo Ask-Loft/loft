@@ -18,7 +18,7 @@ use crate::out::{errln, outln};
 use crate::stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-find/1";
+const SCHEMA: &str = "loft-find/2";
 
 /// An element the query identifies.
 struct Match {

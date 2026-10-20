@@ -9,6 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::commands::COMMANDS;
+use crate::conformance::tagged_commands;
 use crate::help;
 use serde_json::{Value, json};
 
@@ -102,11 +103,14 @@ fn every_document_carries_schema_outcome_and_errors_and_an_error_carries_only_th
 }
 
 #[test]
-fn every_schema_describes_sites_and_errors_alike_but_for_the_error_kinds() {
+fn every_schema_describes_sites_and_errors_alike_but_for_the_error_kinds_and_problem() {
     let reference = read("verify.json");
     let without_kinds = |defs: &Value| {
         let mut defs = defs.clone();
         defs["error"]["properties"]["kind"]["enum"] = Value::Null;
+        if let Some(properties) = defs["error"]["properties"].as_object_mut() {
+            properties.remove("problem");
+        }
         defs
     };
     for entry in fs::read_dir(schemas()).unwrap() {
@@ -120,6 +124,67 @@ fn every_schema_describes_sites_and_errors_alike_but_for_the_error_kinds() {
             without_kinds(defs)["error"],
             without_kinds(&reference["$defs"])["error"],
             "{name}"
+        );
+    }
+}
+
+/// The last version of each schema of a command tagged `reads-tree` that a release published
+/// without `problem`; zero for a schema no release has published.
+const PUBLISHED_WITHOUT_PROBLEM: [(&str, u32); 10] = [
+    ("check", 1),
+    ("find", 1),
+    ("fmt", 1),
+    ("publish", 1),
+    ("reconcile", 2),
+    ("render", 2),
+    ("review", 0),
+    ("status", 1),
+    ("terms", 1),
+    ("verify", 1),
+];
+
+/// The version a command's schema names.
+fn version(command: &str) -> u32 {
+    let schema = read(&format!("{command}.json"));
+    let name = branches(&schema)[0]["properties"]["schema"]["const"].clone();
+    let name = name.as_str().unwrap().to_owned();
+    name.rsplit_once('/').unwrap().1.parse().unwrap()
+}
+
+#[test]
+fn the_schema_of_each_command_tagged_reads_tree_and_only_those_states_problem_as_text() {
+    let tagged: Vec<&str> = tagged_commands("reads-tree")
+        .into_iter()
+        .map(|(_, _, _, schema)| schema)
+        .collect();
+    assert!(tagged.len() >= 10, "{tagged:?}");
+    for (_, _, _, command) in COMMANDS {
+        let problem = &read(&format!("{command}.json"))["$defs"]["error"]["properties"]["problem"];
+        if tagged.contains(&command) {
+            assert_eq!(problem, &json!({ "type": "string" }), "{command}");
+        } else {
+            assert_eq!(problem, &Value::Null, "{command}");
+        }
+    }
+}
+
+#[test]
+fn the_schema_of_each_command_tagged_reads_tree_that_a_release_published_names_a_new_version() {
+    let mut tagged: Vec<&str> = tagged_commands("reads-tree")
+        .into_iter()
+        .map(|(_, _, _, schema)| schema)
+        .collect();
+    tagged.sort_unstable();
+    let listed: Vec<&str> = PUBLISHED_WITHOUT_PROBLEM
+        .iter()
+        .map(|(name, _)| *name)
+        .collect();
+    assert_eq!(listed, tagged);
+    for (command, published) in PUBLISHED_WITHOUT_PROBLEM {
+        assert!(
+            version(command) > published,
+            "{command}: {}",
+            version(command)
         );
     }
 }

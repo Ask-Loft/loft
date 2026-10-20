@@ -175,6 +175,9 @@
         "message": {
           "type": "string"
         },
+        "problem": {
+          "type": "string"
+        },
         "path": {
           "type": "string"
         },

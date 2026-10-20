@@ -20,7 +20,7 @@ use crate::json;
 use crate::out::outln;
 use crate::stop::{self, Stop};
 
-const SCHEMA: &str = "loft-render/2";
+const SCHEMA: &str = "loft-render/3";
 const DEFAULT_MARKDOWN: &str = "docs/spec.md";
 const DEFAULT_JSON: &str = "docs/spec.json";
 

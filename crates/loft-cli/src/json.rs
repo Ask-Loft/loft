@@ -44,11 +44,16 @@ pub fn read_error(kind: &str, error: &ReadError) -> Value {
     self::error(kind, &error.problem.to_string(), &error.sites)
 }
 
-/// Read errors of the tree as JSON.
+/// Read errors of the tree as JSON: each of the kind `read`, naming its problem's kind in
+/// `problem`.
 pub fn read_errors(errors: &[ReadError]) -> Vec<Value> {
     errors
         .iter()
-        .map(|error| read_error("read", error))
+        .map(|error| {
+            let mut value = read_error("read", error);
+            value["problem"] = json!(error.problem.kind());
+            value
+        })
         .collect()
 }
 

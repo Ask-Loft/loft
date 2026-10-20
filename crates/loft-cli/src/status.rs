@@ -26,7 +26,7 @@ use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-status/1";
+const SCHEMA: &str = "loft-status/2";
 const OUTCOME: &str = "reported";
 
 /// Where the tree stands.
