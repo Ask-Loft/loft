@@ -89,12 +89,12 @@ pub(super) fn files(
     }
 }
 
-/// Refuses a node that `landed` places in a file that a node of `document` other than those
-/// `leaving` holds, or that another node of `landed` takes.
+/// Refuses a node that `landed` places in a file that a node of `document` holds, other than the
+/// files `leaving` its nodes leave, keyed or not, or that another node of `landed` takes.
 pub(super) fn check_files(
     document: &Document,
     landed: Vec<(SpecPath, Option<NodeId>)>,
-    leaving: &BTreeSet<NodeId>,
+    leaving: &BTreeSet<SpecPath>,
 ) -> Result<(), Refusal> {
     let mut held = Vec::new();
     for product in &document.products {
@@ -106,7 +106,7 @@ pub(super) fn check_files(
     }
     let mut occupied: BTreeMap<SpecPath, Option<NodeId>> = held
         .into_iter()
-        .filter(|(_, id)| id.is_none_or(|id| !leaving.contains(&id)))
+        .filter(|(path, _)| !leaving.contains(path))
         .collect();
     for (path, id) in landed {
         if let Some(&holder) = occupied.get(&path) {

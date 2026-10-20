@@ -16308,6 +16308,9 @@ links:
       - file: "crates/loftspec/tests/edit_written.rs"
         name: "a_moved_node_keeps_its_slug"
         body: f8cba7d35533708d4ffd9f67212b9652f2d19e072fdeb8d3101fab7f6c795197
+      - file: "crates/loftspec/tests/edit_written.rs"
+        name: "a_move_that_writes_a_keyless_node_beneath_it_in_the_file_it_held_is_taken"
+        body: 8c2b9953c987a6b4227e58b79804021a30c9394b092fa9aa7367290ef9bba940
   - node: 01a158da-f4e0-7007-be0e-59083026582e
     reviewed: 7fc59fa2f2ff864ef503e57ae3f6fbb3631026cb0f8ffec317af021c9d6ee858
     tests:

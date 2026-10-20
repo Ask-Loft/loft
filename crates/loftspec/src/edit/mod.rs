@@ -187,10 +187,13 @@ pub fn move_node(
     }
     check_position(position, length)?;
     let moved = at(document, &from).expect("the node was found");
+    let slug = root_slug(document, &from);
+    let mut leaving = Vec::new();
+    files::files(moved, slug, &Under::of(document, siblings), &mut leaving);
     let landing = Landing {
         node: moved,
-        slug: root_slug(document, &from),
-        leaving: ids_beneath(moved).into_iter().collect(),
+        slug,
+        leaving: leaving.into_iter().map(|(path, _)| path).collect(),
     };
     landing.check(document, &parent, &to)?;
     let owned = take(document, &from);
@@ -223,11 +226,11 @@ fn check_insert(
 }
 
 /// A node about to stand under a new parent: the node, its slug as a root Component, and the
-/// nodes that leave their files to go with it.
+/// files it and the nodes beneath it leave to go with it.
 struct Landing<'a> {
     node: Node<'a>,
     slug: Option<&'a Slug>,
-    leaving: BTreeSet<NodeId>,
+    leaving: BTreeSet<SpecPath>,
 }
 
 impl Landing<'_> {

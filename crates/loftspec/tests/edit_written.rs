@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 
 use crate::common::editing::{
-    INNER, LABELS, NESTED, PRODUCT, ROOT, SLUGS, STORAGE, editable, feature_id,
+    GROUP, INNER, LABELS, NESTED, PRODUCT, ROOT, SLUGS, STORAGE, editable, feature_id,
 };
 use crate::common::text::path;
 use crate::common::{key, slug};
@@ -145,4 +145,21 @@ fn an_insert_or_a_move_to_the_root_takes_the_slug_its_caller_gives_where_the_nod
     )
     .unwrap();
     assert_eq!(document.products[1].slug.as_str(), "shelf");
+}
+
+#[test]
+fn a_move_that_writes_a_keyless_node_beneath_it_in_the_file_it_held_is_taken() {
+    let mut document = editable();
+    document.products[0].feature_groups[0].features[0].id = None;
+    let keys = path("products/example-product/identity/keys.yaml");
+    let before = codec::write(&document)[&keys].clone();
+    let identity = FeatureGroupId::new(key(GROUP)).into();
+    let product = ProductId::new(key(PRODUCT));
+    edit::move_node(&mut document, identity, Parent::Node(product.into()), 1).unwrap();
+    assert_eq!(
+        document.products[0].feature_groups[1].slug.as_str(),
+        "identity"
+    );
+    edit::move_node(&mut document, product.into(), Parent::ROOT, 0).unwrap();
+    assert_eq!(codec::write(&document)[&keys], before);
 }
