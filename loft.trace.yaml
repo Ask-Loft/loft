@@ -690,6 +690,24 @@ links:
       - file: "crates/loftspec/tests/departed.rs"
         name: "a_departed_label_is_never_allocated_to_another_key"
         body: 5e6d772db0e53c1dfeef26797bb32966c6ba328a76a2816e596ddcd109cadc7d
+  - node: 01a156a4-1731-7679-a162-b75b8ddc073b
+    reviewed: 63e19001d9e67b3beaa2814e923ca3f9c105dc2f1bb7d101a07ebb39346002ae
+    tests:
+      - file: "crates/loftspec/tests/departed.rs"
+        name: "a_departed_label_that_another_key_holds_is_an_error_naming_both_keys_and_the_label"
+        body: ae44d91f71b3f673a1af3ace58de929b34572e062a39f13364a36044c8c3e2bf
+  - node: 01a156a4-1731-7679-a162-b75cb3a8ace9
+    reviewed: e5763296ffc501cf47bd6ce7152d7784091561bf4645f85fae6e57ce580af2d4
+    tests:
+      - file: "crates/loftspec/tests/departed.rs"
+        name: "a_departed_label_that_another_key_holds_is_an_error_naming_both_keys_and_the_label"
+        body: ae44d91f71b3f673a1af3ace58de929b34572e062a39f13364a36044c8c3e2bf
+  - node: 01a156a4-1731-7679-a162-b75d1f6cbfbc
+    reviewed: 09a77d42e36ff6ac131b803c1f1f6d20bf88d28191a15ebf7e0ab79225cce580
+    tests:
+      - file: "crates/loftspec/tests/departed.rs"
+        name: "a_departed_label_that_no_other_key_carries_is_no_error"
+        body: ac169495cecd9020d6dc2bbc84f15f3d7bec1977b6bef40696580ae9bf849d0d
   - node: d599579d-db5f-43e8-a8bf-cd736c4fa99a
     reviewed: 0416f7df2f9998ecf2489171475b92782f30df759dadf2120a7ddfd9ab283474
     tests:

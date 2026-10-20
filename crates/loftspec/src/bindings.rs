@@ -111,6 +111,12 @@ pub enum BindingError {
     },
     #[error("label {label} is withdrawn from {element}, which still holds it")]
     WithdrawnIsOwnLabel { element: ElementId, label: Label },
+    #[error("label {label}, which departed with {departed}, is held by {holder}")]
+    DepartedLabelHeld {
+        label: Label,
+        departed: ElementId,
+        holder: ElementId,
+    },
 }
 
 fn check_prefix(element: ElementId, label: Label) -> Result<(), BindingError> {
@@ -415,7 +421,25 @@ impl Bindings {
                     label: *label,
                 })
         }));
+        errors.extend(self.departed_labels_held());
         errors
+    }
+
+    /// Each departed label that another key holds, live or as an alias, as an alias is checked.
+    fn departed_labels_held(&self) -> impl Iterator<Item = BindingError> + '_ {
+        let departed = self.iter().filter(|binding| binding.departed);
+        departed.flat_map(move |binding| {
+            let label = binding.label;
+            let live = self.live_keys.get(&label).into_iter().flatten();
+            let aliased = self.alias_keys.get(&label).into_iter().flatten();
+            live.chain(aliased)
+                .filter(move |key| **key != binding.element.key())
+                .map(move |key| BindingError::DepartedLabelHeld {
+                    label,
+                    departed: binding.element,
+                    holder: self.entries[key].element,
+                })
+        })
     }
 
     fn aliases(&self) -> impl Iterator<Item = (ElementId, Label)> {

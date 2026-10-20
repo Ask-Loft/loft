@@ -4,12 +4,14 @@
 
 use crate::common::full::full_document;
 use crate::common::{key, label, proposed_decision, small_document};
+use loftspec::bindings::{BindingError, Bindings};
 use loftspec::canonical::Digest;
 use loftspec::codec;
 use loftspec::decision::StateKind;
 use loftspec::hash::hash_document;
 use loftspec::ids::{DecisionId, RequirementId};
 use loftspec::publish::allocate;
+use loftspec::validate::{ValidationError, validate};
 
 #[test]
 fn a_departed_binding_enters_no_root() {
@@ -82,4 +84,53 @@ fn a_departed_label_is_never_allocated_to_another_key() {
         .find(|given| given.element == DecisionId::new(key(91)).into());
     assert_eq!(given.map(|given| given.label), Some(label("ADR-6")));
     assert_eq!(document.bindings.label_of(gone), None);
+}
+
+/// Bindings in which the departed key 90 left with `RQ-5`, and the Requirement holds `RQ-1`
+/// live and `RQ-2` as an alias.
+fn departed_with(departed: &str) -> Bindings {
+    let mut bindings = Bindings::default();
+    let gone = RequirementId::new(key(90));
+    bindings.bind(gone, label(departed)).unwrap();
+    bindings.depart(gone).unwrap();
+    bindings
+        .bind(RequirementId::new(key(4)), label("RQ-2"))
+        .unwrap();
+    bindings
+        .relabel(RequirementId::new(key(4)), label("RQ-1"))
+        .unwrap();
+    bindings
+}
+
+#[test]
+fn a_departed_label_that_another_key_holds_is_an_error_naming_both_keys_and_the_label() {
+    for held in ["RQ-1", "RQ-2"] {
+        let expected = BindingError::DepartedLabelHeld {
+            label: label(held),
+            departed: RequirementId::new(key(90)).into(),
+            holder: RequirementId::new(key(4)).into(),
+        };
+        assert_eq!(
+            departed_with(held).validate(),
+            std::slice::from_ref(&expected),
+            "{held}"
+        );
+        let message = expected.to_string();
+        for named in [held.to_owned(), key(90).to_string(), key(4).to_string()] {
+            assert!(message.contains(&named), "{message}");
+        }
+    }
+}
+
+#[test]
+fn a_departed_label_that_no_other_key_carries_is_no_error() {
+    assert_eq!(departed_with("RQ-5").validate(), Vec::new());
+    let document = full_document();
+    let errors = validate(&document);
+    assert!(
+        !errors
+            .iter()
+            .any(|error| matches!(error, ValidationError::Binding(_))),
+        "{errors:?}"
+    );
 }

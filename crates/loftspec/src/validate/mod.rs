@@ -126,6 +126,9 @@ fn binding_keys(error: &BindingError) -> Vec<Key> {
             label_element,
             ..
         } => vec![alias_element.key(), label_element.key()],
+        BindingError::DepartedLabelHeld {
+            departed, holder, ..
+        } => vec![departed.key(), holder.key()],
     }
 }
 
