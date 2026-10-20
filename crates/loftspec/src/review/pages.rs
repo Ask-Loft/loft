@@ -3,6 +3,7 @@
 //! limit of characters. Every caller pages alike, so the same versions, node and limit give
 //! pages of the same bytes.
 
+use std::io;
 use std::num::NonZeroUsize;
 
 use serde_json::Value;
@@ -73,38 +74,56 @@ pub fn page(
         sites: tree.sites,
         base_sites: base.map(|base| base.sites),
     };
-    let pages = paginate(render.packet(&packet), limit);
-    let of = pages.len().max(1);
     let number = number.get();
+    let (units, of) = paginate(render.packet(&packet), limit, number);
+    let of = of.max(1);
     if number > of {
         return Err(Refused::PastLast { of });
     }
-    let units = pages.into_iter().nth(number - 1).unwrap_or_default();
     Ok(Page { units, number, of })
 }
 
-/// Whole units into pages: each page takes every next unit that fits, and a unit longer than
-/// the limit stands alone, marked `oversized`.
-fn paginate(units: Vec<Value>, limit: usize) -> Vec<Vec<PagedUnit>> {
-    let mut pages: Vec<Vec<PagedUnit>> = Vec::new();
+/// Whole units into pages, page `number` of them kept, with the number of pages: each page takes
+/// every next unit that fits, and a unit longer than the limit stands alone, marked `oversized`.
+fn paginate(units: Vec<Value>, limit: usize, number: usize) -> (Vec<PagedUnit>, usize) {
+    let mut page = Vec::new();
+    let mut of = 0;
     let mut taken = 0;
     for mut unit in units {
-        let chars = serde_json::to_string(&unit)
-            .expect("a unit serializes")
-            .chars()
-            .count();
-        if pages.is_empty() || taken + chars > limit {
-            pages.push(Vec::new());
+        let chars = chars_of(&unit);
+        if of == 0 || taken + chars > limit {
+            of += 1;
             taken = 0;
         }
-        if chars > limit {
-            unit["oversized"] = Value::Bool(true);
+        if of == number {
+            if chars > limit {
+                unit["oversized"] = Value::Bool(true);
+            }
+            page.push(PagedUnit { unit, chars });
         }
-        pages
-            .last_mut()
-            .expect("a page was opened")
-            .push(PagedUnit { unit, chars });
         taken += chars;
     }
-    pages
+    (page, of)
+}
+
+/// The characters of a unit's compact JSON, counted as it is written.
+fn chars_of(unit: &Value) -> usize {
+    let mut chars = Chars(0);
+    serde_json::to_writer(&mut chars, unit).expect("a unit serializes");
+    chars.0
+}
+
+/// A sink that counts the characters of the UTF-8 written to it: every byte but a continuation
+/// byte starts one.
+struct Chars(usize);
+
+impl io::Write for Chars {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        self.0 += bytes.iter().filter(|byte| **byte & 0xC0 != 0x80).count();
+        Ok(bytes.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
 }
