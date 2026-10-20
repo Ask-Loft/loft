@@ -28,11 +28,22 @@ pub(super) fn settle(tree: &mut Tree) -> Vec<(Label, Key)> {
     if departed.gone.is_empty() && departed.returned.is_empty() {
         return Vec::new();
     }
-    for (_, content) in tree.files.values_mut() {
-        for record in content.records_mut() {
-            former_labels(record, &departed.gone, false);
-            returned_keys(record, &departed.returned);
-        }
+    // Only a decision holds a node reference: in its drivers, its consequences and its subjects.
+    let decisions = tree
+        .files
+        .values_mut()
+        .filter_map(|(role, content)| match role {
+            Role::Decision { .. } => Some(content),
+            _ => None,
+        });
+    for record in decisions.flat_map(Content::records_mut) {
+        let in_settled = record.kind == Kind::Decision && settled(record);
+        each_node_ref(record, &mut |item| {
+            if in_settled {
+                former_label(item, &departed.gone);
+            }
+            returned_key(item, &departed.returned);
+        });
     }
     // The reader checked each binding's label and key.
     newly
@@ -109,11 +120,9 @@ fn settled(decision: &Rec) -> bool {
     matches!(kind, Some(StateKind::Retired | StateKind::Superseded))
 }
 
-/// The items of each node reference field of a record, and each other record the record holds.
-fn node_refs(record: &mut Rec) -> (Vec<&mut Val>, Vec<&mut Rec>) {
+/// Calls `each` on the items of each node reference field of a record and of every record in it.
+fn each_node_ref(record: &mut Rec, each: &mut impl FnMut(&mut Val)) {
     let kind = record.kind;
-    let mut references = Vec::new();
-    let mut children = Vec::new();
     for (name, value) in &mut record.fields {
         let node_ref = kind
             .field(name)
@@ -124,56 +133,34 @@ fn node_refs(record: &mut Rec) -> (Vec<&mut Val>, Vec<&mut Rec>) {
         };
         for item in items {
             if node_ref {
-                references.push(item);
+                each(item);
             } else if let Val::Record(child) = item {
-                children.push(child);
+                each_node_ref(child, each);
             }
         }
     }
-    (references, children)
 }
 
-/// Writes each node reference to a key of `gone` in a record and everything in it as the
-/// node's former label, where the record is, or sits in, a retired or superseded decision.
-fn former_labels(record: &mut Rec, gone: &BTreeMap<String, String>, in_settled: bool) {
-    let in_settled = in_settled || (record.kind == Kind::Decision && settled(record));
-    let (references, children) = node_refs(record);
-    for child in children {
-        former_labels(child, gone, in_settled);
-    }
-    if !in_settled {
+/// Writes a node reference to a key of `gone` as the node's former label, `{formerLabel:
+/// <label>}` (AC-809).
+fn former_label(item: &mut Val, gone: &BTreeMap<String, String>) {
+    let Some(label) = item.text().and_then(|key| gone.get(key)) else {
         return;
-    }
-    for item in references {
-        if let Some(label) = item.text().and_then(|key| gone.get(key)) {
-            *item = former_label(label);
-        }
-    }
-}
-
-/// Writes each reference to a former label of `returned` in a record and everything in it as
-/// the key of the node that came back.
-fn returned_keys(record: &mut Rec, returned: &BTreeMap<String, String>) {
-    let (references, children) = node_refs(record);
-    for child in children {
-        returned_keys(child, returned);
-    }
-    for item in references {
-        let key = match &*item {
-            Val::Record(former) => former
-                .text(field::FORMER_LABEL)
-                .and_then(|label| returned.get(label)),
-            _ => None,
-        };
-        if let Some(key) = key {
-            *item = Val::scalar(key);
-        }
-    }
-}
-
-/// `{formerLabel: <label>}` (AC-809).
-fn former_label(label: &str) -> Val {
+    };
     let mut record = Rec::new(Kind::FormerLabel);
     record.set_text(field::FORMER_LABEL, label);
-    Val::Record(record)
+    *item = Val::Record(record);
+}
+
+/// Writes a reference to a former label of `returned` as the key of the node that came back.
+fn returned_key(item: &mut Val, returned: &BTreeMap<String, String>) {
+    let key = match &*item {
+        Val::Record(former) => former
+            .text(field::FORMER_LABEL)
+            .and_then(|label| returned.get(label)),
+        _ => None,
+    };
+    if let Some(key) = key {
+        *item = Val::scalar(key);
+    }
 }
