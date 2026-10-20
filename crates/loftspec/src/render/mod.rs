@@ -33,8 +33,8 @@ pub fn render(document: &Document) -> Result<Projections, IndexErrors> {
 }
 
 /// Renders the Markdown projection and canonical JSON export of a tree's document, given the
-/// text of the tree's `spec/lint.yaml`: each is stamped with the tree's state root, under state
-/// view 2.
+/// text of the tree's `spec/lint.yaml`: each is stamped with the tree's state root, under the
+/// highest state view.
 ///
 /// # Errors
 ///
@@ -42,7 +42,7 @@ pub fn render(document: &Document) -> Result<Projections, IndexErrors> {
 pub fn render_tree(document: &Document, lint: Option<&str>) -> Result<Projections, IndexErrors> {
     let indexed = document.index()?;
     let (hashes, views) = hash_indexed_with_views(&indexed);
-    let state = state_root(document, &hashes.roots, StateView::Two, lint).to_string();
+    let state = state_root(document, &hashes.roots, StateView::HIGHEST, lint).to_string();
     let labels = Labels::of(document);
     Ok(Projections {
         markdown: markdown::render(document, &state, &labels),

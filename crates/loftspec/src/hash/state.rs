@@ -32,6 +32,18 @@ impl StateView {
         }
     }
 
+    /// The state view a lock of a tree names: the highest where the tree holds
+    /// `spec/lint.yaml`, whose text is `lint`, and state view 1 without the file, under which
+    /// the state root is the same.
+    #[must_use]
+    pub const fn of(lint: Option<&str>) -> Self {
+        if lint.is_some() {
+            Self::HIGHEST
+        } else {
+            Self::One
+        }
+    }
+
     /// The view numbered `number`; none for a view this implementation does not compute.
     #[must_use]
     pub const fn from_number(number: u64) -> Option<Self> {

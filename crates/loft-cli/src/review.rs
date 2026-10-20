@@ -7,11 +7,9 @@
 use std::num::NonZeroUsize;
 use std::path::Path;
 
-use loftspec::check::hashed;
-use loftspec::codec;
 use loftspec::document::Document;
-use loftspec::hash::{StateView, state_root};
 use loftspec::ids::NodeId;
+use loftspec::publish::ReadTree;
 use loftspec::query::named_nodes;
 use loftspec::review::{Page, PagedUnit, Refused, Version, page};
 use loftspec_store::repository::GitCommand;
@@ -65,24 +63,18 @@ pub fn run(root: &Path, options: &Options, as_json: bool) -> Finished {
 /// the base revision where one is given, with where it came from.
 fn attempt(root: &Path, options: &Options) -> Result<(Value, Page), Stop> {
     let files = stop::read_files(root)?;
-    let (document, sites) = codec::read_sited(&files)?;
-    let roots = hashed(&document, &sites)
-        .map_err(|errors| Stop::invalid(&errors))?
-        .roots;
-    let lint = codec::lint_configuration(&files).map_err(|error| vec![error])?;
-    let state_root = state_root(&document, &roots, StateView::Two, lint);
+    let read = ReadTree::read(&files)?;
+    let (document, sites) = (read.document(), read.sites());
+    let (_, state_root) = read.roots().map_err(|errors| Stop::invalid(&errors))?;
     let node = options
         .node
-        .map(|query| named(&document, query))
+        .map(|query| named(document, query))
         .transpose()?;
     let base = options
         .base
         .map(|revision| base::read_tree(&GitCommand::default(), root, revision))
         .transpose()?;
-    let tree = Version {
-        document: &document,
-        sites: &sites,
-    };
+    let tree = Version { document, sites };
     let against = base.as_ref().map(|base| Version {
         document: &base.document,
         sites: &base.sites,

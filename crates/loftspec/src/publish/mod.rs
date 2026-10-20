@@ -67,6 +67,30 @@ impl<'a> ReadTree<'a> {
             lint,
         })
     }
+
+    /// The tree's document.
+    #[must_use]
+    pub const fn document(&self) -> &Document {
+        &self.document
+    }
+
+    /// Where each of the tree's elements sits.
+    #[must_use]
+    pub const fn sites(&self) -> &Sites {
+        &self.sites
+    }
+
+    /// The tree's roots and its state root under the highest state view, the one a publish
+    /// records.
+    ///
+    /// # Errors
+    ///
+    /// The tree holds a merge conflict, or its references do not resolve, so it has no roots.
+    pub fn roots(&self) -> Result<(Roots, Digest), Vec<Placed>> {
+        let roots = hashed(&self.document, &self.sites)?.roots;
+        let state = state_root(&self.document, &roots, StateView::HIGHEST, self.lint);
+        Ok((roots, state))
+    }
 }
 
 /// What a publish decided.
@@ -92,7 +116,7 @@ pub enum Publication {
         base: Base,
     },
     /// A connected document's publish not made as its remote: the validated tree, unchanged,
-    /// its roots, its state root under state view 2, and the state the publish is based on. Its
+    /// its roots, its state root under the highest state view, and the state the publish is based on. Its
     /// labels and its lock come from the remote, so no label is given, no binding changes and no
     /// lock is made.
     Prepared {
@@ -232,12 +256,9 @@ pub fn publish(
     }
     // The records of the decisions are of the text the publish pins, and enter no root.
     record_decisions(&mut document);
-    let roots = hash_document(&document)
-        .expect("a document the validator accepts indexes")
-        .roots;
-    // Every lock is computed under state view 2, which it names only where the tree holds
-    // `spec/lint.yaml`: without the file both views give the same roots.
-    let state = state_root(&document, &roots, StateView::Two, lint);
+    // Every lock is computed under the highest state view, which it names only where the tree
+    // holds `spec/lint.yaml`: without the file every view gives the same roots.
+    let (roots, state) = rooted(&document, lint);
     // A departed binding enters no root, so a tree whose bindings the publish gives back or
     // marks departed has changed since the lock even where the roots after the publish equal it.
     let settled = given_back.is_empty() && departed.is_empty();
@@ -251,11 +272,7 @@ pub fn publish(
     Ok(Publication::Published {
         lock: Lock {
             document_key: document.id,
-            state_view: if lint.is_some() {
-                StateView::Two
-            } else {
-                StateView::One
-            },
+            state_view: StateView::of(lint),
             state_root: state,
             content_root: roots.content,
             binding_root: roots.bindings,
@@ -278,15 +295,23 @@ pub fn publish(
 /// The publish of a connected document not made as its remote, stopped short of a lock: the
 /// validated tree as it was read, its roots and its base, for the remote to publish.
 fn prepared(document: Document, lint: Option<&str>, previous: Option<&Lock>) -> Publication {
-    let roots = hash_document(&document)
-        .expect("a document the validator accepts indexes")
-        .roots;
+    let (roots, state_root) = rooted(&document, lint);
     Publication::Prepared {
-        state_root: state_root(&document, &roots, StateView::Two, lint),
+        state_root,
         roots,
         document: Box::new(document),
         base: Base::of(previous),
     }
+}
+
+/// The roots of a document the validator accepts, and its state root under the highest state
+/// view, given the text of the tree's `spec/lint.yaml`.
+fn rooted(document: &Document, lint: Option<&str>) -> (Roots, Digest) {
+    let roots = hash_document(document)
+        .expect("a document the validator accepts indexes")
+        .roots;
+    let state = state_root(document, &roots, StateView::HIGHEST, lint);
+    (roots, state)
 }
 
 /// What the preconditions that read the repository give a publish: its sequence, what settling
@@ -411,14 +436,26 @@ pub fn verify(tree: &ReadTree<'_>, lock: &Lock) -> Result<Digest, Unverified> {
         .map_err(Unverified::Invalid)?
         .roots;
     let state = state_root(&tree.document, &roots, lock.state_view, tree.lint);
-    for (root, lock, tree) in [
+    match first_difference(lock, &roots, state) {
+        Some((root, lock, tree)) => Err(Unverified::Mismatch { root, lock, tree }),
+        None => Ok(state),
+    }
+}
+
+/// The first root a lock records that differs from the tree's, in the order verification
+/// compares them (AC-469, AC-678), with the lock's value and the tree's: `roots` are the tree's
+/// roots and `state` its state root under the view in question.
+#[must_use]
+pub fn first_difference(
+    lock: &Lock,
+    roots: &Roots,
+    state: Digest,
+) -> Option<(Root, Digest, Digest)> {
+    [
         (Root::Content, lock.content_root, roots.content),
         (Root::Binding, lock.binding_root, roots.bindings),
         (Root::State, lock.state_root, state),
-    ] {
-        if lock != tree {
-            return Err(Unverified::Mismatch { root, lock, tree });
-        }
-    }
-    Ok(state)
+    ]
+    .into_iter()
+    .find(|(_, lock, tree)| lock != tree)
 }
