@@ -10,8 +10,10 @@ use super::super::flat::{
 };
 use super::super::tree::ByKey;
 use super::TreeMergeError;
-use super::sides::listed;
-use crate::codec::{Content, MANIFEST, Rec, Role, SpecPath, Tree, Val, canonicalize, field};
+
+use crate::codec::{
+    Content, MANIFEST, Rec, Role, SpecPath, Tree, Val, canonicalize, field, listed,
+};
 use crate::identity::Key;
 
 /// The merged tree in canonical layout: the single files and every record file.

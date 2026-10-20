@@ -9,7 +9,7 @@ use super::super::flat::{
     COMPONENT_FILES, DECISION_FILES, FEATURE_FILES, Flat, PRODUCT_FILES, Parent,
 };
 use super::TreeMergeError;
-use crate::codec::{Content, Files, MANIFEST, Rec, Role, SpecPath, Tree, field, read_tree};
+use crate::codec::{Content, Files, Rec, Role, SpecPath, Tree, filed_in_order, read_tree};
 use crate::identity::Key;
 
 /// The three trees, read; none for an empty base.
@@ -70,24 +70,13 @@ impl Trees {
 /// the decisions. The reader checked that every Product and Feature is listed once.
 fn flat(tree: &Tree) -> Flat {
     let mut flat = Flat::default();
-    let products = tops(tree, |role| matches!(role, Role::Product { .. }));
-    let features = tops(tree, |role| matches!(role, Role::Feature { .. }));
-    let manifest = tree.record(&SpecPath::new(MANIFEST));
-    for product in manifest
-        .into_iter()
-        .flat_map(|manifest| listed(manifest, field::PRODUCTS))
-    {
-        let Some(record) = products.get(&product) else {
-            continue;
-        };
-        flat.node(record, (Parent::Top, PRODUCT_FILES));
-        for group in record.records(field::FEATURE_GROUPS) {
-            let Some(group_key) = group.key() else {
-                continue;
-            };
-            let listed = listed(group, field::FEATURES);
-            for feature in listed.iter().filter_map(|feature| features.get(feature)) {
-                flat.node(feature, (Parent::Key(group_key), FEATURE_FILES));
+    for filed in filed_in_order(tree) {
+        match filed.group {
+            None => flat.node(filed.record, (Parent::Top, PRODUCT_FILES)),
+            Some(group) => {
+                if let Some(group) = group.key() {
+                    flat.node(filed.record, (Parent::Key(group), FEATURE_FILES));
+                }
             }
         }
     }
@@ -104,14 +93,5 @@ fn flat(tree: &Tree) -> Flat {
 fn tops(tree: &Tree, wanted: impl Fn(&Role) -> bool + 'static) -> BTreeMap<Key, &Rec> {
     tree.records(wanted)
         .filter_map(|(_, _, record)| Some((record.key()?, record)))
-        .collect()
-}
-
-/// The keys a list field of keys holds, in order.
-pub(super) fn listed(record: &Rec, name: &str) -> Vec<Key> {
-    record
-        .list(name)
-        .iter()
-        .filter_map(|value| Key::parse(value.text()?).ok())
         .collect()
 }

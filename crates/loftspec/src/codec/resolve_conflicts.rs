@@ -6,7 +6,8 @@ use std::collections::BTreeMap;
 
 use super::conflict::{SideShape, side_shape};
 use super::error::SpecPath;
-use super::files::{MANIFEST, Role, Tree};
+use super::files::{Role, Tree};
+use super::node_files::filed_in_order;
 use super::record::{ConflictRec, Rec, Val};
 use super::schema::{Item, Kind, Shape, field};
 use crate::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
@@ -21,6 +22,14 @@ use crate::ids::{
 /// bindings' last; within one file, in the order the file holds them.
 pub(super) fn collect(tree: &Tree) -> Vec<Conflict> {
     let mut conflicts = Vec::new();
+    let records = || {
+        tree.files
+            .values()
+            .flat_map(|(_, content)| content.records())
+    };
+    if !records().any(holds_conflict) {
+        return conflicts;
+    }
     for path in in_document_order(tree) {
         for record in tree.files[path].1.records() {
             collect_from(record, &mut conflicts);
@@ -29,10 +38,17 @@ pub(super) fn collect(tree: &Tree) -> Vec<Conflict> {
     conflicts
 }
 
+/// Whether a record, or a record inside it, holds a conflict.
+fn holds_conflict(record: &Rec) -> bool {
+    !record.conflicts.is_empty() || record.children().any(holds_conflict)
+}
+
 /// The tree's paths in document order. A Product or Feature file that no list reaches, which
 /// only a tree the reader refuses holds, follows the others in path order.
 fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
-    let filed = filed_in_order(tree);
+    let filed: BTreeMap<&SpecPath, usize> = (filed_in_order(tree).into_iter().enumerate())
+        .map(|(at, filed)| (filed.path, at))
+        .collect();
     let mut paths: Vec<&SpecPath> = tree.files.keys().collect();
     paths.sort_by_key(|path| {
         let rank = match &tree.files[*path].0 {
@@ -49,49 +65,6 @@ fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
         (rank, filed.get(*path).copied().unwrap_or(usize::MAX), *path)
     });
     paths
-}
-
-/// The place of each Product and Feature file in document order: the Products as the manifest
-/// lists them, each followed by the Features its Feature Groups list.
-fn filed_in_order(tree: &Tree) -> BTreeMap<&SpecPath, usize> {
-    let by_key = |wanted: fn(&Role) -> bool| -> BTreeMap<Key, &SpecPath> {
-        tree.records(wanted)
-            .filter_map(|(path, _, record)| Some((record.key()?, path)))
-            .collect()
-    };
-    let products = by_key(|role| matches!(role, Role::Product { .. }));
-    let features = by_key(|role| matches!(role, Role::Feature { .. }));
-    let keys = |record: &Rec, name: &str| -> Vec<Key> {
-        let texts = record.list(name).iter().filter_map(Val::text);
-        texts.filter_map(|text| Key::parse(text).ok()).collect()
-    };
-    let mut order = Vec::new();
-    let manifest = tree.record(&SpecPath::new(MANIFEST));
-    for product in manifest
-        .map(|manifest| keys(manifest, field::PRODUCTS))
-        .unwrap_or_default()
-    {
-        let Some(path) = products.get(&product) else {
-            continue;
-        };
-        order.push(*path);
-        let groups = tree
-            .record(path)
-            .into_iter()
-            .flat_map(|record| record.records(field::FEATURE_GROUPS));
-        for group in groups {
-            order.extend(
-                keys(group, field::FEATURES)
-                    .iter()
-                    .filter_map(|key| features.get(key)),
-            );
-        }
-    }
-    order
-        .into_iter()
-        .enumerate()
-        .map(|(at, path)| (path, at))
-        .collect()
 }
 
 /// The conflicts of `record` and of every record inside it, in the order the file holds them: a

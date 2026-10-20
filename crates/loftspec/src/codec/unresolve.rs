@@ -6,6 +6,7 @@ use crate::ext::Ext;
 use std::collections::BTreeMap;
 
 use super::files::{Content, Role, Tree};
+use super::node_files::{Under, node_files};
 use super::record::{Rec, Val};
 use super::schema::Kind;
 use super::unresolve_parts::{decision_fields, node_ref, statement, target};
@@ -13,6 +14,7 @@ use crate::decision::Decision;
 use crate::document::{Document, Edge};
 use crate::identity::{Key, LabelPrefix};
 use crate::ids::{ElementId, NodeId};
+use crate::node::Node;
 use crate::tree::{Component, Constraint, Details, Feature, Product, QualityAttribute, Section};
 
 /// The record tree of a document.
@@ -69,17 +71,26 @@ pub fn unresolve(document: &Document) -> Tree {
 pub(crate) fn unresolve_elements(document: &Document) -> Tree {
     let edges = Edges::of(document);
     let mut tree = Tree::default();
-    for product in &document.products {
-        products(&mut tree, &edges, product);
-    }
-    for root in &document.components {
-        let mut record = edges.component(&root.component);
-        record.kind = Kind::RootComponent;
-        record.set_text(field::SLUG, root.slug.to_string());
-        let role = Role::Component {
-            slug: root.slug.to_string(),
+    let mut file = |role: Role, node: Node<'_>| {
+        let record = match (&role, node) {
+            (Role::Component { slug }, Node::Component(component)) => {
+                let mut record = edges.component(component);
+                record.kind = Kind::RootComponent;
+                record.set_text(field::SLUG, slug.as_str());
+                record
+            }
+            (_, Node::Product(product)) => edges.product(product),
+            (_, Node::Feature(feature)) => edges.feature(feature),
+            _ => unreachable!("only a Product, a Feature and a root Component have a file"),
         };
         put(&mut tree, role, Content::Record(record));
+    };
+    for product in &document.products {
+        node_files(Node::Product(product), None, &Under::Root, &mut file);
+    }
+    for root in &document.components {
+        let node = Node::Component(&root.component);
+        node_files(node, Some(&root.slug), &Under::Root, &mut file);
     }
     for decision in &document.decisions {
         let role = Role::Decision {
@@ -100,23 +111,6 @@ pub(crate) fn unresolve_labels(document: &Document) -> Tree {
 
 fn put(tree: &mut Tree, role: Role, content: Content) {
     tree.files.insert(role.path(), (role, content));
-}
-
-/// A Product's file and each of its Features' files.
-fn products(tree: &mut Tree, edges: &Edges, product: &Product) {
-    let dir = product.slug.to_string();
-    for group in &product.feature_groups {
-        for feature in &group.features {
-            let role = Role::Feature {
-                product: dir.clone(),
-                group: group.slug.to_string(),
-                feature: feature.slug.to_string(),
-            };
-            put(tree, role, Content::Record(edges.feature(feature)));
-        }
-    }
-    let role = Role::Product { product: dir };
-    put(tree, role, Content::Record(edges.product(product)));
 }
 
 fn keys(items: impl IntoIterator<Item = Key>) -> Val {

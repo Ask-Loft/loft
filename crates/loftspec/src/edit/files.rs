@@ -1,9 +1,9 @@
 //! The files that the nodes with a file of their own are written in, each Product, Feature and
-//! root Component, as the directory layout places them by their parents' slugs and their own.
+//! root Component, as the writer places them, and the files an edit would make two nodes share.
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::codec::{Role, SpecPath};
+use crate::codec::{SpecPath, Under, node_files};
 use crate::document::Document;
 use crate::ids::NodeId;
 use crate::node::Node;
@@ -12,81 +12,32 @@ use crate::slug::Slug;
 use super::Refusal;
 use super::place::{Step, at};
 
-/// What a node stands under, as far as its file is concerned.
-pub(super) enum Under<'a> {
-    Root,
-    Product(&'a Slug),
-    Group {
-        product: &'a Slug,
-        group: &'a Slug,
-    },
-    /// A node of a kind whose children are written in its own file.
-    Elsewhere,
-}
-
-impl<'a> Under<'a> {
-    /// Where the steps place a child.
-    pub(super) fn of(document: &'a Document, steps: &[Step]) -> Self {
-        let top = steps.first().and_then(|step| at(document, &[*step]));
-        match (top, at(document, steps), steps.len()) {
-            (_, _, 0) => Self::Root,
-            (Some(Node::Product(product)), _, 1) => Self::Product(&product.slug),
-            (Some(Node::Product(product)), Some(Node::FeatureGroup(group)), 2) => Self::Group {
-                product: &product.slug,
-                group: &group.slug,
-            },
-            _ => Self::Elsewhere,
-        }
+/// Where the steps place a child, as far as its file is concerned.
+pub(super) fn under<'a>(document: &'a Document, steps: &[Step]) -> Under<'a> {
+    let top = steps.first().and_then(|step| at(document, &[*step]));
+    match (top, at(document, steps), steps.len()) {
+        (_, _, 0) => Under::Root,
+        (Some(Node::Product(product)), _, 1) => Under::Product(&product.slug),
+        (Some(Node::Product(product)), Some(Node::FeatureGroup(group)), 2) => Under::Group {
+            product: &product.slug,
+            group: &group.slug,
+        },
+        _ => Under::Elsewhere,
     }
 }
 
 /// The file of `node` standing under `under`, and of every node beneath it that has one, with
-/// the node each holds; `slug` is the slug of a Component at the root.
+/// the node each holds, as the writer places them; `slug` is the slug of a Component at the
+/// root.
 pub(super) fn files(
     node: Node<'_>,
     slug: Option<&Slug>,
     under: &Under<'_>,
     found: &mut Vec<(SpecPath, Option<NodeId>)>,
 ) {
-    let id = node.id();
-    match (node, under) {
-        (Node::Product(product), Under::Root) => {
-            let role = Role::Product {
-                product: product.slug.to_string(),
-            };
-            found.push((role.path(), id));
-            let under = Under::Product(&product.slug);
-            for group in &product.feature_groups {
-                files(Node::FeatureGroup(group), None, &under, found);
-            }
-        }
-        (Node::FeatureGroup(group), Under::Product(product)) => {
-            let under = Under::Group {
-                product,
-                group: &group.slug,
-            };
-            for feature in &group.features {
-                files(Node::Feature(feature), None, &under, found);
-            }
-        }
-        (Node::Feature(feature), Under::Group { product, group }) => {
-            let role = Role::Feature {
-                product: product.to_string(),
-                group: group.to_string(),
-                feature: feature.slug.to_string(),
-            };
-            found.push((role.path(), id));
-        }
-        (Node::Component(_), Under::Root) => {
-            if let Some(slug) = slug {
-                let role = Role::Component {
-                    slug: slug.to_string(),
-                };
-                found.push((role.path(), id));
-            }
-        }
-        _ => {}
-    }
+    node_files(node, slug, under, &mut |role, node| {
+        found.push((role.path(), node.id()));
+    });
 }
 
 /// Refuses a node that `landed` places in a file that a node of `document` holds, other than the

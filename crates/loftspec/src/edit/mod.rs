@@ -24,7 +24,7 @@ use crate::kind::{NodeKind, ParentKind};
 use crate::node::Node;
 use crate::slug::Slug;
 use crate::tree::RootComponent;
-use files::{Under, check_files};
+use files::{check_files, under};
 use place::{ListMut, Step, at, length, path};
 use subtree::{ids_beneath, sourced_in};
 
@@ -198,7 +198,7 @@ pub fn move_node(
     let moved = at(document, &from).expect("the node was found");
     let slug = root_slug(document, &from);
     let mut leaving = Vec::new();
-    files::files(moved, slug, &Under::of(document, siblings), &mut leaving);
+    files::files(moved, slug, &under(document, siblings), &mut leaving);
     let landing = Landing {
         node: moved,
         slug,
@@ -251,7 +251,7 @@ impl Landing<'_> {
             return Err(Refusal::NoSlug(component.id));
         }
         let mut landed = Vec::new();
-        files::files(self.node, slug, &Under::of(document, to), &mut landed);
+        files::files(self.node, slug, &under(document, to), &mut landed);
         check_files(document, landed, &self.leaving)
     }
 }
