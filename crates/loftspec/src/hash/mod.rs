@@ -153,36 +153,18 @@ pub fn hash_indexed_with_views(indexed: &Indexed<'_>) -> (DocumentHashes, Views)
     (hashes, views)
 }
 
-/// The decision history view of every decision of an indexed document: its decision view with
-/// each node and successor it names given by key.
+/// The decision history view of one decision: its decision view with each node and successor
+/// it names given by key.
 #[must_use]
-pub fn decision_history_views(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Value> {
-    let decisions = &indexed.document().decisions;
-    decisions
-        .iter()
-        .map(|decision| {
-            (
-                decision.id,
-                decisions::history_view(decision, &decision.state),
-            )
-        })
-        .collect()
+pub fn decision_history_view(decision: &Decision) -> Value {
+    decisions::history_view(decision, &decision.state)
 }
 
-/// The decision history hash of every decision of an indexed document: the digest of its
-/// decision history view under `loftspec/decision-history/1`. No root holds it.
+/// The decision history hash of one decision: the digest of its decision history view under
+/// `loftspec/decision-history/1`; no root holds it. Its view names every node and decision by
+/// key and follows no reference, so the decision need not belong to a document that indexes.
 #[must_use]
-pub fn decision_history_hashes(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Digest> {
-    let decisions = &indexed.document().decisions;
-    decisions
-        .iter()
-        .map(|decision| (decision.id, decision_history_hash(decision)))
-        .collect()
-}
-
-/// The decision history hash of one decision. Its view names every node and decision by key and
-/// follows no reference, so the decision need not belong to a document that indexes.
-pub(crate) fn decision_history_hash(decision: &Decision) -> Digest {
+pub fn decision_history_hash(decision: &Decision) -> Digest {
     decision_history_hash_in(decision, &decision.state)
 }
 

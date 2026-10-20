@@ -4,10 +4,10 @@
 
 use crate::common::{key, label, small_document, small_document_with};
 use loftspec::canonical::{Digest, Domain, digest};
-use loftspec::decision::{DecisionState, NodeRef};
+use loftspec::decision::{Decision, DecisionState, NodeRef};
 use loftspec::document::Document;
 use loftspec::hash::{
-    decision_history_hashes, decision_history_views, hash_document, hash_indexed_with_views,
+    decision_history_hash, decision_history_view, hash_document, hash_indexed_with_views,
 };
 use loftspec::ids::{ComponentId, DecisionId, OptionId};
 use serde_json::{Value, json};
@@ -17,11 +17,18 @@ fn decision() -> DecisionId {
 }
 
 fn history(document: &Document) -> Digest {
-    decision_history_hashes(&document.index().unwrap())[&decision()]
+    decision_history_hash(the_decision(document))
 }
 
 fn view(document: &Document) -> Value {
-    decision_history_views(&document.index().unwrap())[&decision()].clone()
+    decision_history_view(the_decision(document))
+}
+
+/// The decision of a document that indexes.
+fn the_decision(document: &Document) -> &Decision {
+    let indexed = document.index().unwrap();
+    let decisions = &indexed.document().decisions;
+    decisions.iter().find(|each| each.id == decision()).unwrap()
 }
 
 /// The small document with its decision superseded by a copy of it whose element keys are

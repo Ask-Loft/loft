@@ -7,7 +7,7 @@ use loftspec::canonical::Digest;
 use loftspec::codec::{self, Files, LABELS, SpecPath};
 use loftspec::decision::{DecisionState, StateKind};
 use loftspec::document::Document;
-use loftspec::hash::decision_history_hashes;
+use loftspec::hash::decision_history_hash;
 use loftspec::ids::DecisionId;
 use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, RepoState, publish};
 
@@ -49,7 +49,9 @@ fn record(files: &Files, decision: DecisionId) -> (Option<StateKind>, Option<Dig
 }
 
 fn history(document: &Document, decision: DecisionId) -> Digest {
-    decision_history_hashes(&document.index().unwrap())[&decision]
+    let indexed = document.index().unwrap();
+    let decisions = &indexed.document().decisions;
+    decision_history_hash(decisions.iter().find(|each| each.id == decision).unwrap())
 }
 
 /// The small document with a proposed decision beside its accepted one, and that decision's ID.
