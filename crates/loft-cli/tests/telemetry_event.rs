@@ -2,11 +2,13 @@
 
 use std::fs;
 use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::common::telemetry::{EVENT_SCHEMA, Sent, events, sending, sent, sent_with, the_event};
 use crate::common::{EPOCH, Scratch, isolate, stderr, stdout};
 use crate::repo::Repo;
 use crate::schema;
+use loftspec::publish::PublishedAt;
 use serde_json::{Value, json};
 use software_plant::{Clock, Collector, GitScenario};
 
@@ -51,15 +53,50 @@ fn the_platform_is_the_one_the_binary_was_built_for() {
     assert_eq!(event["arch"], json!(std::env::consts::ARCH));
 }
 
-#[test]
-fn the_time_is_the_hour_in_utc() {
+/// The `time` of the event of `loft check` run with `clock`, and the hours of the system clock
+/// just before and just after the run, as an event writes them.
+fn time_of_a_run(clock: &Clock) -> (Value, [Value; 2]) {
     let scratch = Scratch::with_reading_list();
     crate::common::telemetry::seen(&scratch);
     let collector = Collector::accepting();
-    let mut command = scratch.command(None, &Clock::fixed(EPOCH + 3_725));
+    let mut command = scratch.command(None, clock);
     sending(&mut command, &collector.url());
+    let before = system_seconds();
     command.arg("check").output().unwrap();
-    assert_eq!(events(&collector)[0]["time"], json!("2026-01-01T01:00:00Z"));
+    let after = system_seconds();
+    (
+        events(&collector)[0]["time"].clone(),
+        [before, after].map(hour),
+    )
+}
+
+fn system_seconds() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+}
+
+/// The hour `seconds` since the Unix epoch falls in, written as an event writes its `time`.
+fn hour(seconds: u64) -> Value {
+    json!(
+        PublishedAt::from_unix_seconds(seconds - seconds % 3_600)
+            .unwrap()
+            .to_string()
+    )
+}
+
+#[test]
+fn the_time_is_the_hour_in_utc() {
+    let (time, hours) = time_of_a_run(&Clock::system());
+    assert!(hours.contains(&time), "{time} is not one of {hours:?}");
+    assert!(time.as_str().unwrap().ends_with(":00:00Z"), "{time}");
+}
+
+#[test]
+fn the_time_is_the_system_clocks_whatever_the_publish_time() {
+    let (time, hours) = time_of_a_run(&Clock::fixed(EPOCH + 3_725));
+    assert!(hours.contains(&time), "{time} is not one of {hours:?}");
 }
 
 #[test]

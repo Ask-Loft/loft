@@ -31,7 +31,8 @@ pub fn build(
     checkout: Option<&Checkout>,
     internal: bool,
 ) -> Option<Value> {
-    let now = SystemClock::from_env().now().ok()?;
+    // The system clock alone: `SOURCE_DATE_EPOCH` names a publish time, not when the run finished.
+    let now = SystemClock::default().now().ok()?;
     let agent = agent(&environment::text);
     let mut event = json!({
         "schema": SCHEMA,

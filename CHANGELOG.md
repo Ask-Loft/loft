@@ -5,6 +5,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- A command event's `time` is the hour of the system clock. It no longer follows
+  `SOURCE_DATE_EPOCH`, which names the time of a publish, so a build or a test that fixes that
+  time no longer sends events dated to it.
 - With `--format json`, each read error of the tree names the reader's problem by its stable kind
   in `problem` (`syntax`, `unknown-field`, `duplicate-key`, …), beside the `kind` `read`; an
   error of any other kind has none. The schemas of the commands that read the tree state it,

@@ -15668,13 +15668,19 @@ links:
     tests:
       - file: "crates/loft-cli/tests/telemetry_event.rs"
         name: "the_time_is_the_hour_in_utc"
-        body: 2d8f1522d7f7ad39201bc26fe5275e749d698d1b0edb2bff031867fc60961729
+        body: d9d6646fbd9fb9753d7d51697620918d180ef9e451fc9d7a0e163230e54c96c1
   - node: 01a13a90-3556-7106-a68c-267796809678
     reviewed: d2d9a8ed3a8a94dbf5a8e29fa86a63aff8546d251a8be2c3aa97015c2c9f23bc
     tests:
       - file: "crates/loft-cli/tests/telemetry_event.rs"
         name: "the_time_is_the_hour_in_utc"
-        body: 2d8f1522d7f7ad39201bc26fe5275e749d698d1b0edb2bff031867fc60961729
+        body: d9d6646fbd9fb9753d7d51697620918d180ef9e451fc9d7a0e163230e54c96c1
+  - node: 01a15b71-2af4-733e-a666-12afd9df803b
+    reviewed: 72a5f869ccb24dd17ecbe4466c8c2ecdfab9b87746dd36bf80968cf29e119ec4
+    tests:
+      - file: "crates/loft-cli/tests/telemetry_event.rs"
+        name: "the_time_is_the_system_clocks_whatever_the_publish_time"
+        body: 34879503143a2861c0a3c9a839555adcc972a7277379870f7cf437b35627543d
   - node: 01a13a90-3556-7106-a68c-2679db317325
     reviewed: de34bf02e563009b3f33bf5026246991e6ce6ee4a9abb4fef453c5b5ee3e9a2e
     tests:
