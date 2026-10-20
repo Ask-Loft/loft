@@ -44,21 +44,21 @@ impl StateView {
 }
 
 /// The digest of a lint configuration: its whole text, as stored, as one JSON string, under
-/// `loftspec/lint/1`. A configuration that is not UTF-8, which the linter refuses to read, is
-/// taken with each invalid sequence replaced.
+/// `loftspec/lint/1`. The reader refuses a configuration that is not UTF-8, so every one it
+/// accepts has a text.
 #[must_use]
-pub fn lint_digest(lint: &[u8]) -> Digest {
-    digest(Domain::Lint, &String::from_utf8_lossy(lint))
+pub fn lint_digest(lint: &str) -> Digest {
+    digest(Domain::Lint, &lint)
 }
 
-/// The state view of a document with the roots `roots` under `view`, given the bytes of the
+/// The state view of a document with the roots `roots` under `view`, given the text of the
 /// tree's `spec/lint.yaml`, none for a tree without the file.
 #[must_use]
 pub fn state_view(
     document: &Document,
     roots: &Roots,
     view: StateView,
-    lint: Option<&[u8]>,
+    lint: Option<&str>,
 ) -> Value {
     let mut fields = view_one(document, roots.content, roots.bindings, roots.extensions);
     if let (StateView::Two, Some(lint)) = (view, lint) {
@@ -67,7 +67,7 @@ pub fn state_view(
     Value::Array(fields)
 }
 
-/// The state root of a document with the roots `roots` under `view`, given the bytes of the
+/// The state root of a document with the roots `roots` under `view`, given the text of the
 /// tree's `spec/lint.yaml`. Under state view 1, and for a tree without the file, it is
 /// `roots.state`.
 #[must_use]
@@ -75,7 +75,7 @@ pub fn state_root(
     document: &Document,
     roots: &Roots,
     view: StateView,
-    lint: Option<&[u8]>,
+    lint: Option<&str>,
 ) -> Digest {
     match (view, lint) {
         (StateView::Two, Some(_)) => {

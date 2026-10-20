@@ -94,7 +94,7 @@ const STATE_VIEW_2: &str =
 #[test]
 fn the_small_documents_state_view_2_vectors_are_reproduced_byte_for_byte() {
     let golden: Value = serde_json::from_str(STATE_VIEW_2).unwrap();
-    let lint = golden["lintConfiguration"].as_str().unwrap().as_bytes();
+    let lint = golden["lintConfiguration"].as_str().unwrap();
     let document = small_document();
     let roots = hash_document(&document).unwrap().roots;
     let view = state_view(&document, &roots, StateView::Two, Some(lint));
@@ -104,9 +104,8 @@ fn the_small_documents_state_view_2_vectors_are_reproduced_byte_for_byte() {
     assert_eq!(views[0]["digest"], lint_digest(lint).to_string().as_str());
     let state = state_root(&document, &roots, StateView::Two, Some(lint));
     assert_eq!(views[1]["digest"], state.to_string().as_str());
-    let text = std::str::from_utf8(lint).unwrap();
     assert_eq!(
         views[0]["canonical"],
-        String::from_utf8(canonical_bytes(&text)).unwrap().as_str()
+        String::from_utf8(canonical_bytes(&lint)).unwrap().as_str()
     );
 }

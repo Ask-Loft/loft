@@ -1229,10 +1229,10 @@ links:
     tests:
       - file: "crates/loftspec/tests/state_view.rs"
         name: "the_lint_digest_is_over_the_files_whole_text_as_one_json_string"
-        body: 1b316f7bc6a7bf785f53182c0857a5dbcf9451908a38dda5076ad2d755036893
+        body: db05fdc3dbf0c88678fc5782b7d4f19409eabc658619eb29a9d7eaf57011ab8c
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_documents_state_view_2_vectors_are_reproduced_byte_for_byte"
-        body: e0c1902a5902ae1cd73cb8cec503a78bd83518ebb288ceb065519307e7927af6
+        body: eae009878c48c87b19274df96fa1649b3a23314073c0f3dcd5eede903ba1a0f9
   - node: 01a156a1-0a9f-763f-9aaa-d3dd085ab7e6
     reviewed: d672c98865bedf5a88387278121a1c33cb11a1745c7c8ef22d8abaff8448b187
     tests:
@@ -1244,19 +1244,19 @@ links:
     tests:
       - file: "crates/loftspec/tests/state_view.rs"
         name: "under_state_view_2_any_change_of_the_lint_configuration_changes_the_state_root"
-        body: 9da539c84a49861770ddea7045f423db52b24477f860cdf40d9f7e0d4d4207a9
+        body: 0a10522472edb3a9db4e1820952f0c15817755f6b4fb75cb3af4c8c2ac1519ea
   - node: 01a156a1-0a9f-763f-9aaa-d3df274d6fd3
     reviewed: 62f7a95d47cf6b932d194e7538f2321d998ae5d79fdbb329d1566d390d9e7c9a
     tests:
       - file: "crates/loftspec/tests/state_view.rs"
         name: "under_state_view_2_any_change_of_the_lint_configuration_changes_the_state_root"
-        body: 9da539c84a49861770ddea7045f423db52b24477f860cdf40d9f7e0d4d4207a9
+        body: 0a10522472edb3a9db4e1820952f0c15817755f6b4fb75cb3af4c8c2ac1519ea
   - node: 01a156a1-0a9f-763f-9aaa-d3e0e6f78ebc
     reviewed: 1903a47106531b995bb83e3e11e9a176b4b76c823ab5c899e1c6ab5dac7fa221
     tests:
       - file: "crates/loftspec/tests/state_view.rs"
         name: "under_state_view_2_any_change_of_the_lint_configuration_changes_the_state_root"
-        body: 9da539c84a49861770ddea7045f423db52b24477f860cdf40d9f7e0d4d4207a9
+        body: 0a10522472edb3a9db4e1820952f0c15817755f6b4fb75cb3af4c8c2ac1519ea
   - node: 01a156a1-0a9f-763f-9aaa-d3e1488be969
     reviewed: 840b03fee1165c1e4be602f766569cbd2b2c539e75161c15142337d22c666b0a
     tests:
@@ -2265,12 +2265,18 @@ links:
       - file: "crates/loftspec/tests/yaml_read.rs"
         name: "bytes_that_are_not_utf8_are_refused_at_their_offset"
         body: 917ad0d3d91f3628d910c91013b5f058337dd127290cfb6b7003325fb1c5a75d
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_lint_configuration_that_is_not_utf8_is_refused_naming_the_file_and_the_byte_offset"
+        body: 0cd3bca2c2fbf8c3e71b72ba39ee5127553da2f0c3aa529c243655ab5e4d63d4
   - node: 1e1f704f-b3e0-4dca-84b8-108719c84fbf
     reviewed: a843bc9147dea340568be6e2a04f9cdda37b650a20c84f566ef5670fc8c7bb46
     tests:
       - file: "crates/loftspec/tests/yaml_read.rs"
         name: "bytes_that_are_not_utf8_are_refused_at_their_offset"
         body: 917ad0d3d91f3628d910c91013b5f058337dd127290cfb6b7003325fb1c5a75d
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_lint_configuration_that_is_not_utf8_is_refused_naming_the_file_and_the_byte_offset"
+        body: 0cd3bca2c2fbf8c3e71b72ba39ee5127553da2f0c3aa529c243655ab5e4d63d4
   - node: 5e6f0a1f-0dd4-4fab-9a2a-9ce95ae79bd3
     reviewed: ca676b21afc8de8e4c36ec120e2a03cfca2287e6841d49becea717a3cb06b41f
     tests:

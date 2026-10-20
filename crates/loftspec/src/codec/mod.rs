@@ -23,7 +23,9 @@ mod variants;
 pub use conflict::{SideShape, side_shape};
 pub use error::{Problem, ReadError, Site, SpecPath, write_sites};
 pub(crate) use files::keyed_records;
-pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, TERMS, Tree};
+pub use files::{
+    CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, TERMS, Tree, lint_configuration,
+};
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
 pub use record::{ConflictRec, Mode, Rec, Val};

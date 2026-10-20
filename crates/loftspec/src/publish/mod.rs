@@ -21,7 +21,9 @@ use settle::Settlement;
 
 use crate::canonical::Digest;
 use crate::check::{Placed, hashed, placed};
-use crate::codec::{self, Files, LABELS, LINT, ReadError, Sites, SpecPath, read_sited};
+use crate::codec::{
+    self, Files, LABELS, ReadError, Sites, SpecPath, lint_configuration, read_sited,
+};
 use crate::document::Document;
 use crate::hash::{StateView, hash_document, state_root};
 use crate::identity::{Key, Label};
@@ -42,6 +44,8 @@ pub struct ReadTree<'a> {
     files: &'a Files,
     document: Document,
     sites: Sites,
+    /// The text of `spec/lint.yaml`; none for a tree without the file.
+    lint: Option<&'a str>,
 }
 
 impl<'a> ReadTree<'a> {
@@ -52,10 +56,12 @@ impl<'a> ReadTree<'a> {
     /// Every read error the tree holds.
     pub fn read(files: &'a Files) -> Result<Self, Vec<ReadError>> {
         let (document, sites) = read_sited(files)?;
+        let lint = lint_configuration(files).map_err(|error| vec![error])?;
         Ok(Self {
             files,
             document,
             sites,
+            lint,
         })
     }
 }
@@ -124,6 +130,7 @@ pub fn publish(
         files,
         mut document,
         sites,
+        lint,
     } = tree;
     let branch = document.publish_branch.as_deref().unwrap_or("main");
     let (sequence, settlement) = if let Some(stopped) = &repo.stopped {
@@ -164,7 +171,6 @@ pub fn publish(
         .roots;
     // Every lock is computed under state view 2, which it names only where the tree holds
     // `spec/lint.yaml`: without the file both views give the same roots.
-    let lint = lint_configuration(files);
     let state = state_root(&document, &roots, StateView::Two, lint);
     if let Some(previous) = previous.filter(|lock| lock.state_root == state) {
         return Ok(Publication::Unchanged(previous.clone()));
@@ -194,12 +200,6 @@ pub fn publish(
         withdrawn,
         finish: repo.stopped.as_ref().map(|stopped| stopped.operation),
     })
-}
-
-/// The bytes of the tree's `spec/lint.yaml`; none for a tree without the file.
-#[must_use]
-pub fn lint_configuration(files: &Files) -> Option<&[u8]> {
-    files.get(&SpecPath::new(LINT)).map(Vec::as_slice)
 }
 
 /// Refuses an uncommitted change under `spec/`, then a branch other than `branch`.
@@ -282,8 +282,7 @@ pub fn verify(tree: &ReadTree<'_>, lock: &Lock) -> Result<Digest, Unverified> {
     let roots = hashed(&tree.document, &tree.sites)
         .map_err(Unverified::Invalid)?
         .roots;
-    let lint = lint_configuration(tree.files);
-    let state = state_root(&tree.document, &roots, lock.state_view, lint);
+    let state = state_root(&tree.document, &roots, lock.state_view, tree.lint);
     for (root, lock, tree) in [
         (Root::Content, lock.content_root, roots.content),
         (Root::Binding, lock.binding_root, roots.bindings),

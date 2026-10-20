@@ -5,25 +5,25 @@ use std::collections::BTreeMap;
 
 use crate::common::small_document;
 use loftspec::canonical::{Domain, digest};
-use loftspec::codec::{self, Files, LINT as LINT_FILE, SpecPath};
+use loftspec::codec::{self, Files, LINT as LINT_FILE, Problem, SpecPath, lint_configuration};
 use loftspec::document::Document;
 use loftspec::ext::ExtValue;
 use loftspec::hash::{StateView, hash_document, lint_digest, state_root, state_view};
 use loftspec::names::Namespace;
 use loftspec::publish::{
-    Lock, Publication, PublishedAt, ReadTree, RepoState, Root, Unverified, lint_configuration,
-    publish, verify,
+    Lock, Publication, PublishedAt, ReadTree, RepoState, Root, Unverified, publish, verify,
 };
+use loftspec::yaml::{ErrorKind, Location};
 use serde_json::{Value, json};
 
-const LINT: &[u8] = b"rules:\n  - rule: LQ-005\n    enabled: false\n";
+const LINT: &str = "rules:\n  - rule: LQ-005\n    enabled: false\n";
 /// Another lint configuration.
-const OTHER: &[u8] = b"rules:\n  - rule: LQ-005\n    enabled: true\n";
+const OTHER: &str = "rules:\n  - rule: LQ-005\n    enabled: true\n";
 
 fn root_of(
     document: &Document,
     view: StateView,
-    lint: Option<&[u8]>,
+    lint: Option<&str>,
 ) -> loftspec::canonical::Digest {
     let roots = hash_document(document).unwrap().roots;
     state_root(document, &roots, view, lint)
@@ -65,8 +65,7 @@ fn a_state_view_of_a_tree_with_a_lint_configuration_ends_with_its_digest() {
 
 #[test]
 fn the_lint_digest_is_over_the_files_whole_text_as_one_json_string() {
-    let text = std::str::from_utf8(LINT).unwrap();
-    assert_eq!(lint_digest(LINT), digest(Domain::Lint, &json!(text)));
+    assert_eq!(lint_digest(LINT), digest(Domain::Lint, &json!(LINT)));
     assert_eq!(Domain::Lint.as_str(), "loftspec/lint/1");
 }
 
@@ -84,8 +83,7 @@ fn under_state_view_2_any_change_of_the_lint_configuration_changes_the_state_roo
     let with = root_of(&document, StateView::Two, Some(LINT));
     let without = root_of(&document, StateView::Two, None);
     assert_ne!(with, without, "adding or removing the file");
-    let mut relaid = LINT.to_vec();
-    relaid.insert(LINT.len() - 1, b' ');
+    let relaid = format!("{} \n", LINT.trim_end());
     let changed = root_of(&document, StateView::Two, Some(&relaid));
     assert_ne!(changed, with, "a trailing space");
 }
@@ -131,10 +129,10 @@ fn clean_main() -> RepoState {
 }
 
 /// `files` with `spec/lint.yaml` holding `lint`, or without the file.
-fn linted(files: &Files, lint: Option<&[u8]>) -> Files {
+fn linted(files: &Files, lint: Option<&str>) -> Files {
     let mut files = files.clone();
     match lint {
-        Some(lint) => files.insert(SpecPath::new(LINT_FILE), lint.to_vec()),
+        Some(lint) => files.insert(SpecPath::new(LINT_FILE), lint.as_bytes().to_vec()),
         None => files.remove(&SpecPath::new(LINT_FILE)),
     };
     files
@@ -167,7 +165,7 @@ fn view_one_lock(files: &Files) -> (Lock, Files) {
     let (publication, tree) = publish_after(&linted(files, None), None);
     let lock = published(publication);
     assert_eq!(lock.state_view, StateView::One);
-    let ours = linted(&tree, lint_configuration(files));
+    let ours = linted(&tree, lint_configuration(files).unwrap());
     (lock, ours)
 }
 
@@ -265,4 +263,22 @@ fn a_lock_of_state_view_2_is_verified_under_state_view_2() {
         "{changed:?}"
     );
     assert!(!verifies(&linted(&tree, None), &lock));
+}
+
+#[test]
+fn a_lint_configuration_that_is_not_utf8_is_refused_naming_the_file_and_the_byte_offset() {
+    let mut files = codec::write(&small_document());
+    let invalid = b"rules:\n  - rule: \xff\n".to_vec();
+    files.insert(SpecPath::new(LINT_FILE), invalid);
+    let refused = |errors: Vec<codec::ReadError>| {
+        assert_eq!(errors.len(), 1, "{errors:?}");
+        assert_eq!(errors[0].sites[0].path, SpecPath::new(LINT_FILE));
+        assert_eq!(errors[0].sites[0].location, Some(Location::Byte(17)));
+        assert_eq!(errors[0].problem, Problem::Syntax(ErrorKind::InvalidUtf8));
+    };
+    refused(ReadTree::read(&files).err().unwrap());
+    refused(vec![lint_configuration(&files).unwrap_err()]);
+    let good = linted(&files, Some(LINT));
+    assert_eq!(lint_configuration(&good).unwrap(), Some(LINT));
+    assert_eq!(lint_configuration(&linted(&files, None)).unwrap(), None);
 }
