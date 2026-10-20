@@ -91,6 +91,34 @@ impl NodeKind {
     }
 }
 
+/// What a node stands under: the document's root, or a node of a kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ParentKind {
+    Root,
+    Node(NodeKind),
+}
+
+impl ParentKind {
+    /// Whether a node of `child`'s kind may stand under a parent of this kind: a Product or a
+    /// Component at the root, and under a node what [`NodeKind::may_contain`] allows (RQ-74).
+    #[must_use]
+    pub fn may_contain(self, child: NodeKind) -> bool {
+        match self {
+            Self::Root => matches!(child, NodeKind::Product | NodeKind::Component),
+            Self::Node(kind) => kind.may_contain(child),
+        }
+    }
+}
+
+impl fmt::Display for ParentKind {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Root => formatter.write_str("the document's root"),
+            Self::Node(kind) => fmt::Display::fmt(kind, formatter),
+        }
+    }
+}
+
 impl fmt::Display for NodeKind {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str(self.as_str())

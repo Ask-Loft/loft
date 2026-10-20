@@ -5,6 +5,16 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::edit` edits a document held in memory by key. `find` gives the node or decision a
+  key names. `detach` takes a node out with every node beneath it and the edges they write, as a
+  `Subtree`; `insert` puts a subtree under a parent, a node or the document's root, at a position
+  in its list of nodes of that kind; and `move_node` moves a node, keeping its key and its
+  subtree. Each refuses, with a typed `Refusal` and the document unchanged, a key the document
+  does not hold, a kind the parent cannot hold, a key it already carries, a position past the end
+  of the list, a move beneath the node itself, and a Component without a slug at the root. No
+  edit sets a slug: `codec::write` writes each node where its new parent and its slug place it.
+  `kind::ParentKind` names what a node stands under, and `Index::carries` whether any element or
+  entry carries a key.
 - `loftspec::review::page` gives a page of the review packet of a tree and a base held in
   memory, each a document with the sites of its keys: the units as JSON, every next whole unit
   that fits under a limit of characters, a longer unit alone and marked `oversized`, with the

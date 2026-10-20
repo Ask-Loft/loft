@@ -4,6 +4,7 @@
 pub mod decisions;
 pub mod edit_tree;
 pub mod edit_values;
+pub mod editing;
 pub mod edits;
 pub mod fields;
 pub mod full;

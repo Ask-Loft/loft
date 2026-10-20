@@ -48,6 +48,8 @@ pub struct SupersessionCycle(pub Vec<DecisionId>);
 pub struct Index {
     elements: BTreeMap<Key, ElementId>,
     parents: BTreeMap<NodeId, NodeId>,
+    /// Every key carried, of elements and of decision elements and registry entries alike.
+    carried: BTreeSet<Key>,
 }
 
 impl Index {
@@ -55,6 +57,12 @@ impl Index {
     #[must_use]
     pub fn element(&self, key: Key) -> Option<ElementId> {
         self.elements.get(&key).copied()
+    }
+
+    /// Whether an element, a decision element or a registry entry of the document carries `key`.
+    #[must_use]
+    pub fn carries(&self, key: Key) -> bool {
+        self.carried.contains(&key)
     }
 
     /// Whether the document holds `element`: its key, carried by an element of that kind.
@@ -140,14 +148,12 @@ impl Document {
 #[derive(Default)]
 struct Builder {
     index: Index,
-    /// Every key seen, of elements and of decision elements and registry entries alike.
-    seen: BTreeSet<Key>,
     errors: Vec<IntegrityError>,
 }
 
 impl Builder {
     fn carry(&mut self, key: Key) {
-        if !self.seen.insert(key) {
+        if !self.index.carried.insert(key) {
             self.errors.push(IntegrityError::DuplicateKey(key));
         }
     }
