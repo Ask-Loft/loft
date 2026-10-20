@@ -207,8 +207,36 @@ requirements:
       - 07b7e7a2-fdcb-4557-9b99-8d24d9c7dd4e
     criteria:
       - key: 01a158da-f4df-76ee-9125-8f790ee51e52
-        name: "No edit in memory sets or changes a slug."
+        name: "No edit in memory sets or changes a slug that its caller does not give."
       - key: 01a158da-f4df-76ee-9125-8f7aa6cc3f53
-        name: "A moved node keeps its slug."
+        name: "A moved node that is written in a file of its own keeps its slug."
       - key: 01a158da-f4e0-7007-be0e-59083026582e
         name: "A node moved to another parent is written in the file that its new parent and its slug place it in."
+      - key: 01a15958-a358-72fb-a82d-d8a80bcdb40d
+        name: "An insert or a move of a node to the document's root takes the slug its caller gives, where the node has none."
+      - key: 01a15958-a358-72fb-a82d-d8a9f6896c95
+        name: "A root Component moved under a Component is written in its root Component's file and keeps no slug."
+  - key: 01a15958-a358-72fb-a82d-d8aa27742978
+    statement:
+      form: unwanted
+      if: "an insert or a move would put a node with no slug at the document's root, and its caller gives none"
+      system: "`loftspec`"
+      shall: "refuse the edit."
+    criteria:
+      - key: 01a15958-a358-72fb-a82d-d8abbc5aae33
+        name: "The refusal names the node's key."
+      - key: 01a15958-a358-72fb-a82d-d8ac99aa2da0
+        name: "The document is unchanged after the refusal."
+  - key: 01a15958-a358-72fb-a82d-d8adfdb824d8
+    statement:
+      form: unwanted
+      if: "an insert or a move would place a node in a file that its new parent and its slug give another node already"
+      system: "`loftspec`"
+      shall: "refuse the edit."
+    criteria:
+      - key: 01a15958-a358-72fb-a82d-d8ae07bbc31b
+        name: "The refusal names the file."
+      - key: 01a15958-a358-72fb-a82d-d8afd4704b87
+        name: "The refusal names the key of the node that the file already holds."
+      - key: 01a15958-a358-72fb-a82d-d8b09bb4ab97
+        name: "The document is unchanged after the refusal."
