@@ -270,7 +270,7 @@ the user's configuration directory (`~/.config` on Linux, `~/Library/Application
 macOS, `%APPDATA%` on Windows); when they cannot be written, `loft` does not check for updates
 at all, rather than ask and tell again on every run. Neither address accepts plain `http` except
 on the loopback interface. Both requests go through the proxy named by the first of
-`ALL_PROXY`, `HTTPS_PROXY` and `HTTP_PROXY` that is set, unless `NO_PROXY` lists the host. `LOFT_TELEMETRY=internal` marks runs by Loft's own maintainers and CI.
+`ALL_PROXY`, `HTTPS_PROXY` and `HTTP_PROXY` that is set, unless `NO_PROXY` lists the host. `LOFT_TELEMETRY=internal` marks runs by Loft's own maintainers.
 
 ## Software Plant
 

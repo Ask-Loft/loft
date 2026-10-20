@@ -2,7 +2,7 @@
 # begins with telemetry and the update check off and both services at a closed loopback port,
 # so that no test reaches a real service or the user's own settings. A test that exercises
 # either switches it on and points it at a Software Plant simulator. A variable already set in
-# the environment, such as `LOFT_TELEMETRY=internal` in CI, is left as it is.
+# the environment, such as a maintainer's `LOFT_TELEMETRY=internal`, is left as it is.
 [env]
 LOFT_TELEMETRY = "off"
 LOFT_UPDATE_CHECK = "off"
