@@ -11,6 +11,7 @@ mod source;
 
 pub use emit::{Out, write};
 pub use error::{Error, ErrorKind, Location, Position};
+pub(crate) use source::utf8;
 
 /// A value with the position of its first character.
 #[derive(Debug, Clone, PartialEq, Eq)]

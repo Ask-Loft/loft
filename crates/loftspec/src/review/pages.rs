@@ -10,11 +10,10 @@ use serde_json::Value;
 
 use super::json::Render;
 use super::{Unkeyed, pack};
-use crate::check::{Placed, placed};
+use crate::check::{Placed, conflicted};
 use crate::codec::Sites;
 use crate::document::Document;
 use crate::ids::NodeId;
-use crate::validate::conflict_errors;
 
 /// A version as the review packer is given it: the document, and where its keys are written,
 /// which is empty for a document that no tree holds.
@@ -64,10 +63,7 @@ pub fn page(
     limit: usize,
     number: NonZeroUsize,
 ) -> Result<Page, Refused> {
-    let conflicts = conflict_errors(tree.document);
-    if !conflicts.is_empty() {
-        return Err(Refused::Conflicted(placed(conflicts, tree.sites)));
-    }
+    conflicted(tree.document, tree.sites).map_err(Refused::Conflicted)?;
     let packet =
         pack(tree.document, base.map(|base| base.document), node).map_err(Refused::Unkeyed)?;
     let render = Render {

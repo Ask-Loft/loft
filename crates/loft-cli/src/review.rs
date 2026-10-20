@@ -80,7 +80,7 @@ fn attempt(root: &Path, options: &Options) -> Result<(Value, Page), Stop> {
         sites: &base.sites,
     });
     let page = page(tree, against, node, options.max_chars, options.page)
-        .map_err(|why| refused(why, options.page))?;
+        .map_err(|why| refused(&why, options.page))?;
     let provenance = json!({
         "loft": version::VERSION,
         "stateRoot": state_root.to_string(),
@@ -95,17 +95,13 @@ fn attempt(root: &Path, options: &Options) -> Result<(Value, Page), Stop> {
 /// What stops a review the review packer refuses, page `number` being asked for. A tree read
 /// from its files holds every key, and is hashed, which refuses a conflict record, before it is
 /// packed.
-fn refused(refused: Refused, number: NonZeroUsize) -> Stop {
-    match refused {
-        Refused::PastLast { of } => {
-            let pages = if of == 1 { "page" } else { "pages" };
-            let message =
-                format!("page {number} is past the last page; the packet has {of} {pages}");
-            Stop::one("page", message)
-        }
-        Refused::Conflicted(errors) => Stop::invalid(&errors),
-        Refused::Unkeyed(_) => unreachable!("a tree read from its files holds every key"),
-    }
+fn refused(refused: &Refused, number: NonZeroUsize) -> Stop {
+    let &Refused::PastLast { of } = refused else {
+        unreachable!("a tree read from its files and hashed holds every key and no conflict");
+    };
+    let pages = if of == 1 { "page" } else { "pages" };
+    let message = format!("page {number} is past the last page; the packet has {of} {pages}");
+    Stop::one("page", message)
 }
 
 /// The one node `query` names by its key, its slug or its label, the key and the label in any

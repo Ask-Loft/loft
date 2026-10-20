@@ -118,11 +118,22 @@ fn lint_config(files: &Files) -> Result<LintConfig, Vec<ReadError>> {
 /// The document holds a merge conflict, or does not index, so it has no hashes: each error at
 /// the sites of the elements it names.
 pub fn hashed(document: &Document, sites: &Sites) -> Result<DocumentHashes, Vec<Placed>> {
-    let conflicts = conflict_errors(document);
-    if !conflicts.is_empty() {
-        return Err(placed(conflicts, sites));
-    }
+    conflicted(document, sites)?;
     hash_document(document).map_err(|errors| placed(index_errors(errors), sites))
+}
+
+/// Refuses a document that holds a merge conflict.
+///
+/// # Errors
+///
+/// Each conflict the document holds, at the site of the record that holds it.
+pub(crate) fn conflicted(document: &Document, sites: &Sites) -> Result<(), Vec<Placed>> {
+    let conflicts = conflict_errors(document);
+    if conflicts.is_empty() {
+        Ok(())
+    } else {
+        Err(placed(conflicts, sites))
+    }
 }
 
 /// Validation errors, each placed at the sites of the elements it names.

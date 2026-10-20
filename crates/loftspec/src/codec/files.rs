@@ -296,11 +296,5 @@ pub fn lint_configuration(files: &Files) -> Result<Option<&str>, ReadError> {
     let Some(bytes) = files.get(&path) else {
         return Ok(None);
     };
-    std::str::from_utf8(bytes).map(Some).map_err(|error| {
-        let invalid = yaml::Error {
-            location: yaml::Location::Byte(error.valid_up_to()),
-            kind: yaml::ErrorKind::InvalidUtf8,
-        };
-        ReadError::yaml(&path, invalid)
-    })
+    (yaml::utf8(bytes).map(Some)).map_err(|error| ReadError::yaml(&path, error))
 }
