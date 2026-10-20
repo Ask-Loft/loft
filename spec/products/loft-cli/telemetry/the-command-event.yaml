@@ -93,6 +93,8 @@ requirements:
         name: "`time` is the hour in which the run finished, with zero minutes and seconds."
       - key: 01a13a90-3556-7106-a68c-267796809678
         name: "`time` is written in UTC with the suffix `Z`."
+      - key: 01a15b71-2af4-733e-a666-12afd9df803b
+        name: "`time` is read from the system clock even when `SOURCE_DATE_EPOCH` names another time."
   - key: 01a13a90-3556-7106-a68c-2678cfb6553a
     statement:
       form: ubiquitous
