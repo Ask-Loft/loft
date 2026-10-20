@@ -34,10 +34,12 @@ requirements:
         name: "Every other field of the manifest is left as it was."
       - key: 01a1587a-dee2-7262-8c7b-8952a0933c30
         name: "The output names the remote's head once the document is connected, by its publish sequence and state root."
+      - key: 01a1587e-87ac-73f3-b49f-67749717142d
+        name: "After a connect, the output says `Commit spec/loftspec.yaml: it now marks the document connected.`"
   - key: 01a1587a-dee2-7262-8c7b-89533f511ebd
     statement:
       form: event_driven
-      when: "the remote creates the document of a repository that has published it"
+      when: "the remote holds no published state of a document that the repository has published"
       system: "`loft remote set`"
       shall: "import every state that the repository has published, from publish sequence 1."
     criteria:
@@ -49,6 +51,10 @@ requirements:
         name: "Each state's files are every file under `spec/`, `spec/labels.yaml` included, as the earliest commit of the history that holds its lock holds them."
       - key: 01a1587a-dee2-7262-8c7b-8957bdbf34a7
         name: "Every state goes in one import request."
+      - key: 01a1587e-87ac-73f3-b49f-6775c31091f4
+        name: "A document that the remote has just created holds no published state."
+      - key: 01a1587e-87ac-73f3-b49f-67766fe6bc05
+        name: "A document whose create the remote refuses as a `conflict` with publish sequence `0` and state root `null` holds no published state, and is imported into."
   - key: 01a1587a-dee2-7262-8c7b-8958dac9405d
     statement:
       form: event_driven
@@ -80,7 +86,7 @@ requirements:
   - key: 01a1587a-dee2-7262-8c7b-8961227227f7
     statement:
       form: unwanted
-      if: "the remote already holds the document key with a head other than the one `loft.lock.json` names"
+      if: "the remote holds a published state of the document and its head is not the one `loft.lock.json` names"
       system: "`loft remote set`"
       shall: "refuse and exit 1."
     criteria:
@@ -117,7 +123,7 @@ requirements:
       - key: 01a1587a-dee2-7262-8c7b-896ca45d4a6c
         name: "The error names the call that the remote refused, with its status and its code."
       - key: 01a1587a-dee2-7262-8c7b-896dd9fd6611
-        name: "An import refused after the create leaves the remote holding the document with no published state, and the error says so."
+        name: "An import refused after the create leaves the remote holding the document with no published state, and the error says that running `loft remote set` again imports into it."
       - key: 01a1587a-dee2-7262-8c7b-896ec3692b8d
         name: "Nothing is written."
   - key: 01a1587a-dee2-7262-8c7b-896fb7e313c5

@@ -41,7 +41,7 @@ requirements:
       shall: "write the published state of that sequence over the working tree."
     criteria:
       - key: 01a156ad-1b9f-72a4-9f6c-304e88138b93
-        name: "Each file of the state is written as the state holds it."
+        name: "Each file of the state is written as the state holds it, but for the manifest's `connected`."
       - key: 01a156ad-1b9f-72a4-9f6c-304f0b06ac6b
         name: "A file that the working tree holds under `spec/` and the state does not is removed."
       - key: 01a156ad-1b9f-72a4-9f6c-30500e27d20e
@@ -54,11 +54,39 @@ requirements:
       shall: "write the draft that the remote holds under that branch name over the working tree."
     criteria:
       - key: 01a156ad-1b9f-72a4-9f6c-30523dd3fdc6
-        name: "Each file of the draft is written as the draft holds it."
+        name: "Each file of the draft is written as the draft holds it, but for the manifest's `connected`."
       - key: 01a156ad-1b9f-72a4-9f6c-30530f8c5b62
         name: "A file that the working tree holds under `spec/` and the draft does not is removed."
       - key: 01a156ad-1b9f-72a4-9f6c-3054f77348df
         name: "`loft.lock.json` is left as it was."
+  - key: 01a1587e-87ab-73be-a232-87288f2eea7e
+    statement:
+      form: ubiquitous
+      system: "`loft pull`"
+      shall: "keep the working tree's `connected` in `spec/loftspec.yaml`, never the pulled state's."
+    criteria:
+      - key: 01a1587e-87ab-73be-a232-8729b68331db
+        name: "After a pull of the head, the manifest's `connected` is the working tree's."
+      - key: 01a1587e-87ab-73be-a232-872a2a91bf9d
+        name: "After a pull with `--sequence`, the manifest's `connected` is the working tree's."
+      - key: 01a1587e-87ab-73be-a232-872b01c8fe72
+        name: "After a pull with `--branch`, the manifest's `connected` is the working tree's."
+      - key: 01a1587e-87ab-73be-a232-872cc76c518b
+        name: "A pulled manifest without `connected` leaves `connected: true` in the working tree."
+  - key: 01a1587e-87ab-73be-a232-872d2f8b2a3d
+    statement:
+      form: ubiquitous
+      system: "`loft pull`"
+      shall: "ask the remote for its head before any other request, in every mode."
+    criteria:
+      - key: 01a1587e-87ab-73be-a232-872edef84407
+        name: "A pull of the head asks for the head before the state that `loft.lock.json` names."
+      - key: 01a1587e-87ab-73be-a232-872f15a496b9
+        name: "A pull with `--sequence` asks for the head before the state."
+      - key: 01a1587e-87ab-73be-a232-87306b70e5d3
+        name: "A pull with `--branch` asks for the head before the draft."
+      - key: 01a1587e-87ab-73be-a232-873184c1ba9b
+        name: "A `not_found` for a state or a draft, once the head is answered, means only that the remote holds no such state or draft."
   - key: 01a156ad-1b9f-72a4-9f6c-3055b3a8ecb6
     statement:
       form: ubiquitous

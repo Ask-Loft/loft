@@ -5,7 +5,7 @@ context: "A document is often published for a while from its repository before i
 state:
   kind: accepted
   selectedOption: 01a1587a-dee0-75cd-aa69-f457948cc7a4
-  outcome: "`loft remote set` connects a document that is not yet connected: it reads every published state from the repository's history, asks the remote to create the document under the manifest's key, imports the states from publish sequence 1 with their locks and files, and only then records the remote and marks the manifest `connected: true`. A remote that already holds the key at the lock's head connects without an import, one at another head is refused, and a document never published imports nothing."
+  outcome: "`loft remote set` connects a document that is not yet connected: it reads every published state from the repository's history, asks the remote to create the document under the manifest's key, imports the states from publish sequence 1 with their locks and files, and only then records the remote and marks the manifest `connected: true`. A remote that already holds the key at the lock's head connects without an import, one that holds the key with no published state is imported into, one at another head is refused, and a document never published imports nothing. The remote's import still refuses a document that holds a draft or a branch."
 drivers:
   - key: 01a1587a-dee0-75cd-aa69-f454b49d61f7
     kind: local
@@ -74,8 +74,8 @@ consequences:
     kind: cost
     statement: "Connecting a published document needs the repository's history of every published state."
   - key: 01a1587a-dee0-75cd-aa69-f45ceaa45b92
-    kind: risk
-    statement: "A connect whose import is refused after the create leaves the remote holding the document with no published state."
+    kind: benefit
+    statement: "A connect whose import is refused after the create is finished by running `loft remote set` again, which imports into the document that the remote holds with no published state."
   - key: 01a1587a-dee0-75cd-aa69-f45d49696691
     kind: obligation
     statement: "The remote's contract holds `create` and `import`, and its stand-in in the Software Plant answers both."
