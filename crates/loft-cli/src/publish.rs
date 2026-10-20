@@ -111,12 +111,16 @@ fn print(publication: &Publication) {
     match publication {
         Publication::Published {
             lock,
+            given_back,
             allocated,
             rewritten,
             withdrawn,
             finish,
             ..
         } => {
+            for given in given_back {
+                outln!("{} {} (given back)", given.label, given.element.key());
+            }
             for allocated in allocated {
                 outln!("{} {}", allocated.label, allocated.element.key());
             }

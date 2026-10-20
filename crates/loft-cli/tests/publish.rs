@@ -397,3 +397,30 @@ fn a_publish_whose_journal_cannot_be_written_changes_no_file() {
     );
     assert!(stderr(&output).contains(".loft"), "{}", stderr(&output));
 }
+
+#[test]
+fn a_node_deleted_formatted_restored_and_formatted_again_is_published_with_its_label_back() {
+    let scratch = Scratch::with_reading_list();
+    let feature = scratch.file("products/reading-list/shelf/add-a-book.yaml");
+    let original = fs::read_to_string(&feature).unwrap();
+    let deleted = "00000000-0000-4000-8000-00000000002a";
+    let criterion = format!(
+        "      - key: {deleted}\n        name: \"A book added without a title is refused with an error naming the title.\"\n"
+    );
+    fs::write(&feature, original.replace(&criterion, "")).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    fs::write(&feature, &original).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    let output = on_main(&scratch, &["publish"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stdout(&output).contains(&format!("AC-2 {deleted} (given back)\n")),
+        "{}",
+        stdout(&output)
+    );
+    let labels = fs::read_to_string(scratch.file("labels.yaml")).unwrap();
+    assert!(
+        labels.contains(&format!("  - key: {deleted}\n    label: AC-2\n  - key: ")),
+        "{labels}"
+    );
+}

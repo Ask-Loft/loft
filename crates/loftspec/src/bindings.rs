@@ -256,6 +256,38 @@ impl Bindings {
         Ok(())
     }
 
+    /// Gives a departed binding back to `element`, the element that carries its key again, perhaps
+    /// as another kind: its labels name it once more.
+    pub fn restore(&mut self, element: impl Into<ElementId>) -> Result<(), BindingError> {
+        let element = element.into();
+        let key = element.key();
+        let binding = self
+            .entries
+            .get_mut(&key)
+            .ok_or(BindingError::Unbound(element))?;
+        if !binding.departed {
+            return Ok(());
+        }
+        binding.departed = false;
+        binding.element = element;
+        index(&mut self.live_keys, binding.label, key);
+        for alias in &binding.aliases {
+            index(&mut self.alias_keys, *alias, key);
+        }
+        for withdrawn in &binding.withdrawn {
+            index(&mut self.withdrawn_keys, *withdrawn, key);
+        }
+        Ok(())
+    }
+
+    /// Whether the binding of `key` is departed.
+    #[must_use]
+    pub fn is_departed(&self, key: Key) -> bool {
+        self.entries
+            .get(&key)
+            .is_some_and(|binding| binding.departed)
+    }
+
     /// Records in an element's binding the kind of the state a publish saw and its history hash.
     pub fn record_published(
         &mut self,

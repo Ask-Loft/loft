@@ -12,7 +12,7 @@ mod time;
 use std::fmt;
 use std::num::NonZeroU64;
 
-pub use labels::{Allocated, allocate};
+pub use labels::{Allocated, Allocation, allocate, publish_labels};
 pub use lock::{LOCK, Lock, LockError};
 pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
@@ -71,14 +71,16 @@ impl<'a> ReadTree<'a> {
 pub enum Publication {
     /// Nothing changed since the previous lock, which stands (RQ-117).
     Unchanged(Lock),
-    /// A new lock, the labels it allocated, the citations of withdrawn labels it rewrote, and
-    /// the files under `spec/` to write: `spec/labels.yaml` where it differs from the tree's,
-    /// and the files whose citations it rewrote, the only files a publish changes (AC-460).
+    /// A new lock, the labels it gave back to keys that came back, the labels it allocated, the
+    /// citations of withdrawn labels it rewrote, and the files under `spec/` to write:
+    /// `spec/labels.yaml` where it differs from the tree's, and the files whose citations it
+    /// rewrote, the only files a publish changes (AC-460).
     /// A publish run in a stopped merge or rebase also gives the labels it withdrew and what
     /// stopped, which the user finishes.
     Published {
         lock: Lock,
         files: Files,
+        given_back: Vec<Allocated>,
         allocated: Vec<Allocated>,
         rewritten: Vec<Relabel>,
         withdrawn: Vec<Relabel>,
@@ -155,7 +157,11 @@ pub fn publish(
     }
     // Allocation gives only fresh labels of each element's own prefix, so the document stays
     // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
-    let allocated = allocate(&mut document);
+    let Allocation {
+        given_back,
+        allocated,
+        ..
+    } = publish_labels(&mut document);
     let withdrawn = settlement.reattach(&mut document.bindings);
     let rewrites = rewrite::rewrite(files, &document.bindings);
     let mut written = rewrites.files;
@@ -195,6 +201,7 @@ pub fn publish(
             derived_from: document.derived_from,
         },
         files: written,
+        given_back,
         allocated,
         rewritten: rewrites.rewritten,
         withdrawn,

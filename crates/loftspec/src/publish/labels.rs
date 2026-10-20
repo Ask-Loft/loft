@@ -1,10 +1,13 @@
 //! Label allocation at publish (F-28, RQ-7, RQ-8, RQ-63): every node of a kind that takes a
 //! label prefix, and every decision, gets the next label of its prefix, in document order, from
-//! counters that never rewind and never give out a label again.
+//! counters that never rewind and never give out a label again. A key that came back takes back
+//! the label it departed with, and the binding of a key that left is marked departed.
+
+use std::collections::BTreeSet;
 
 use crate::bindings::Binding;
 use crate::document::Document;
-use crate::identity::{Label, LabelPrefix};
+use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::ElementId;
 use crate::node::Node;
 use crate::validate::decisions::all_former_labels;
@@ -16,8 +19,65 @@ pub struct Allocated {
     pub element: ElementId,
 }
 
+/// What a publish did to the labels: each label it gave back to a key that came back, each label
+/// it allocated, and each binding it marked departed, in the order it did them.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Allocation {
+    pub given_back: Vec<Allocated>,
+    pub allocated: Vec<Allocated>,
+    pub departed: Vec<Allocated>,
+}
+
+/// Settles every binding a publish settles: gives each key that came back its departed label,
+/// allocates as [`allocate`] does, then marks departed the binding of each key the document no
+/// longer holds. No binding is removed.
+pub fn publish_labels(document: &mut Document) -> Allocation {
+    let elements = elements_in_order(document);
+    let mut given_back = Vec::new();
+    for element in &elements {
+        let key = element.key();
+        if !document.bindings.is_departed(key) {
+            continue;
+        }
+        document
+            .bindings
+            .restore(*element)
+            .expect("a departed binding is bound");
+        let label = document.bindings.label_of_key(key);
+        if let Some(label) = label.filter(|label| Some(label.prefix()) == element.label_prefix()) {
+            given_back.push(Allocated {
+                label,
+                element: *element,
+            });
+        }
+    }
+    let allocated = allocate_in(document, &elements);
+    let held: BTreeSet<Key> = elements.iter().map(|element| element.key()).collect();
+    let leaving: Vec<Allocated> = document
+        .bindings
+        .live()
+        .filter(|binding| !held.contains(&binding.element.key()))
+        .map(|binding| Allocated {
+            label: binding.label,
+            element: binding.element,
+        })
+        .collect();
+    for gone in &leaving {
+        document
+            .bindings
+            .depart(gone.element)
+            .expect("a live binding is bound");
+    }
+    Allocation {
+        given_back,
+        allocated,
+        departed: leaving,
+    }
+}
+
 /// Gives each element without a label of its kind's prefix the next label of that prefix, and
-/// reports what it gave, in the order given.
+/// reports what it gave, in the order given. An element whose binding is departed is given that
+/// binding back first, as [`publish_labels`] gives it.
 ///
 /// The counters are first raised above every live label, alias and former label, so a counter
 /// never rewinds and no label is given out twice (AC-25, AC-26, AC-722). Nodes come in document
@@ -25,9 +85,23 @@ pub struct Allocated {
 /// AC-262), each parent before its children; the decisions follow by file name. An element whose
 /// label has another kind's prefix is relabelled, its previous label kept as an alias (RQ-63).
 pub fn allocate(document: &mut Document) -> Vec<Allocated> {
+    let elements = elements_in_order(document);
+    for element in &elements {
+        if document.bindings.is_departed(element.key()) {
+            document
+                .bindings
+                .restore(*element)
+                .expect("a departed binding is bound");
+        }
+    }
+    allocate_in(document, &elements)
+}
+
+/// Allocates over `elements`, in their order, none of whose bindings is departed.
+fn allocate_in(document: &mut Document, elements: &[ElementId]) -> Vec<Allocated> {
     raise_counters(document);
     let mut allocated = Vec::new();
-    for element in elements_in_order(document) {
+    for &element in elements {
         let Some(prefix) = element.label_prefix() else {
             continue;
         };
