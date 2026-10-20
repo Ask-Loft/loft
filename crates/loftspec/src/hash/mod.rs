@@ -152,6 +152,27 @@ pub fn hash_indexed_with_views(indexed: &Indexed<'_>) -> (DocumentHashes, Views)
     (hashes, views)
 }
 
+/// The decision history view of every decision of an indexed document: its decision view with
+/// each node and successor it names given by key.
+#[must_use]
+pub fn decision_history_views(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Value> {
+    let decisions = &indexed.document().decisions;
+    decisions
+        .iter()
+        .map(|decision| (decision.id, decisions::history_view(decision)))
+        .collect()
+}
+
+/// The decision history hash of every decision of an indexed document: the digest of its
+/// decision history view under `loftspec/decision-history/1`. No root holds it.
+#[must_use]
+pub fn decision_history_hashes(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Digest> {
+    decision_history_views(indexed)
+        .into_iter()
+        .map(|(id, view)| (id, digest(Domain::DecisionHistory, &view)))
+        .collect()
+}
+
 /// Digests a root view, keeping it as a value when views are kept.
 fn root<T: Serialize>(
     views: &mut Option<&mut Views>,

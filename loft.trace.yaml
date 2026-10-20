@@ -1407,6 +1407,54 @@ links:
       - file: "crates/loftspec/tests/convert_v1_links.rs"
         name: "a_former_label_enters_the_edges_root_and_the_decision_view_as_an_object"
         body: 2112b64f0012820f8e37ed050889331d6299371ce0168e719a682128c15796a9
+  - node: 01a156be-e2a7-7461-9a70-a03a6eea7bda
+    reviewed: 7511bfec7e758b976786b8a60278e189bd7e9607e305f104c67788c3cc1de715
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "the_history_view_is_the_decision_view_with_each_named_node_given_by_key"
+        body: 81a0ffee0ade4ec7fd3c41c6052675f1683d357bc57d40ff466c7c6b945d6bcd
+  - node: 01a156be-e2a7-7461-9a70-a03bc14b6d88
+    reviewed: 0ed29d8fc4ef0516c834af66f16c29baaf3c2765ace081fad0163af3d390f28c
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "the_history_view_names_a_successor_by_its_key"
+        body: e422362d0cc2308b06e6d7e9ac263cf9f815a40e44e5ddb9546e05147337afc4
+  - node: 01a156be-e2a7-7461-9a70-a03c1df47abc
+    reviewed: a759aeb4a7f01551b9115de3bf1878dc6b8cde5e000b08d6b4b5351ffc9b4f3b
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "the_history_view_names_a_former_label_as_the_decision_view_does"
+        body: 75b76434df428da1f9d79b52047e276fd6d9bf6e4053b697f1901be54ed405b2
+  - node: 01a156be-e2a7-7461-9a70-a03daff383c0
+    reviewed: 9ea8626b3c650c27fb6accd2d6f4a08112b899a29d1b67e20dc2f91528e7c590
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "the_history_hash_is_the_digest_of_the_history_view_under_its_domain"
+        body: a7107a2d237b860095c07d5d6ce6e0ca0aa896fffb9e565b8e2d1ec2fb959abe
+  - node: 01a156be-e2a7-7461-9a70-a03e8733ea95
+    reviewed: 8900b04af036e100eafcf6fd2cccb28c43a0033e2898afaef3c720c7297b3510
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "editing_a_node_the_decision_names_leaves_its_history_hash"
+        body: d56008f8c0382ee65c7dbde81d6eafea9959c602e1eda796586105fdc707715d
+  - node: 01a156be-e2a7-7461-9a70-a03fbce11e4c
+    reviewed: 1dc9d46c367664395e2005bb9738d7d50bef95d4e470dc210c583480258ad7ad
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "naming_another_node_changes_the_history_hash"
+        body: a20071fb300ccc63fede091bb3b76f06430dcdfd6e1272dedeb58294a88752ec
+  - node: 01a156be-e2a7-7461-9a70-a0408d17e2af
+    reviewed: 43388dcba18ceaa9920c25f733f1511e7b89bcc88d25e078b51878292f1b2d84
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "editing_the_successor_leaves_the_history_hash"
+        body: f56f0d5b9db6af0f5d5664d090fcb1cc53c604934a473d8c6b865e3c03913453
+  - node: 01a156be-e2a7-7461-9a70-a0429f97f850
+    reviewed: 3c481240c7ea59f629aa2213aa26124ad8a884f9dc0ad4f75e580adf906b8543
+    tests:
+      - file: "crates/loftspec/tests/decision_history.rs"
+        name: "the_history_hash_enters_no_root"
+        body: 49be680e1b666ee329d1bf6a8c0db49087e0c5e728e680fe42a038c82451f093
   - node: 01a14039-8315-7390-a27f-c56acfc13154
     reviewed: f3a394110aa25bb02883a49c76d11a23e430bf0356777ca408117dca71517868
     tests:
