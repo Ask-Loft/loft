@@ -180,28 +180,46 @@ impl Builder {
 
     fn decisions(&mut self, decisions: &[Decision]) {
         for decision in decisions {
-            self.carry(decision.id.key());
             self.index
                 .elements
                 .insert(decision.id.key(), decision.id.into());
-            let elements = decision.drivers.iter().map(|driver| driver.id.key());
-            let elements = elements
-                .chain(decision.options.iter().map(|option| option.id.key()))
-                .chain(decision.consequences.iter().map(|item| item.id.key()));
-            for key in elements {
+            for key in decision_keys(decision) {
                 self.carry(key);
             }
         }
     }
 
     fn registries(&mut self, document: &Document) {
-        let tags = document.tags.iter().map(|tag| tag.id.key());
-        let categories = document.categories.iter().map(|entry| entry.id.key());
-        let terms = document.terms.iter().map(|entry| entry.id.key());
-        for key in tags.chain(categories).chain(terms) {
+        for key in registry_keys(document) {
             self.carry(key);
         }
     }
+}
+
+/// Every key the document carries, as [`Index::carries`] answers, without building the index.
+pub(crate) fn carried_keys(document: &Document) -> BTreeSet<Key> {
+    let mut keys = BTreeSet::new();
+    document.walk(&mut |node| keys.extend(node.id().map(NodeId::key)));
+    keys.extend(document.decisions.iter().flat_map(decision_keys));
+    keys.extend(registry_keys(document));
+    keys
+}
+
+/// The keys a decision carries: its own, then its drivers', options' and consequences'.
+fn decision_keys(decision: &Decision) -> impl Iterator<Item = Key> + '_ {
+    let drivers = decision.drivers.iter().map(|driver| driver.id.key());
+    std::iter::once(decision.id.key())
+        .chain(drivers)
+        .chain(decision.options.iter().map(|option| option.id.key()))
+        .chain(decision.consequences.iter().map(|item| item.id.key()))
+}
+
+/// The keys of the registry entries: the tags', the categories' and the terms'.
+fn registry_keys(document: &Document) -> impl Iterator<Item = Key> + '_ {
+    let tags = document.tags.iter().map(|tag| tag.id.key());
+    let categories = document.categories.iter().map(|entry| entry.id.key());
+    let terms = document.terms.iter().map(|entry| entry.id.key());
+    tags.chain(categories).chain(terms)
 }
 
 /// Every edge endpoint, binding and decision reference that names nothing the document holds.

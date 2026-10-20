@@ -277,11 +277,11 @@ const fn check_position(position: usize, length: usize) -> Result<(), Refusal> {
 
 /// Refuses a subtree that carries a key the document carries, or one key twice.
 fn check_keys(document: &Document, subtree: &Subtree) -> Result<(), Refusal> {
-    let (index, _, _) = crate::index::Index::build(document);
+    let carried = crate::index::carried_keys(document);
     let mut seen = BTreeSet::new();
     for id in subtree.ids() {
         let key = id.key();
-        if index.carries(key) || !seen.insert(key) {
+        if carried.contains(&key) || !seen.insert(key) {
             return Err(Refusal::KeyHeld(key));
         }
     }
