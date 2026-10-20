@@ -125,6 +125,12 @@ requirements:
         name: "`labels` lists each label the publish allocated as an object of `key` and `label`."
       - key: 01a156ae-6a51-7230-a9a1-faaf2a2086bf
         name: "A publish whose `retryKey` the remote accepted before is answered `200 OK` with the answer it gave then and `outcome` set to `replayed`."
+      - key: 01a15878-9878-727b-8fd9-ff5ddb0250fd
+        name: "A publish whose delta leaves the head's state root as it is is answered `200 OK` with `outcome` set to `unchanged`, the head's `lock`, and `files` and `labels` empty."
+      - key: 01a15878-9878-727b-8fd9-ff5e04380f14
+        name: "A publish answered as `unchanged` allocates no label and adds no published state."
+      - key: 01a15878-9878-727b-8fd9-ff5ff436c40a
+        name: "`outcome` is one of `published`, `replayed` and `unchanged`."
       - key: 01a156ae-6a51-7230-a9a1-fab0b8cd1853
         name: "A publish whose `base` is not the head is answered `409 Conflict` with the code `conflict` and a member `head` holding the head's `publishSequence` and `stateRoot`."
       - key: 01a156ae-6a51-7230-a9a1-fab14d0480ff

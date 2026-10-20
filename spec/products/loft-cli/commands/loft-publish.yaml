@@ -166,6 +166,23 @@ requirements:
         name: "The files and the lock of the replay are applied as for an accepted publish."
       - key: 01a156ac-9752-749b-be81-defee2b75736
         name: "A replay of a publish whose lock `loft.lock.json` already holds writes nothing."
+  - key: 01a15878-9876-7306-b015-b043b0f3a49c
+    statement:
+      form: event_driven
+      when: "the remote answers a connected publish as unchanged"
+      system: "`loft publish`"
+      shall: "report that there is nothing to publish and write nothing."
+    criteria:
+      - key: 01a15878-9876-7306-b015-b044757c459d
+        name: "The output says `nothing to publish`."
+      - key: 01a15878-9876-7306-b015-b0451a324976
+        name: "Nothing is written, `loft.lock.json` included."
+      - key: 01a15878-9876-7306-b015-b0465e0efb28
+        name: "No label is printed."
+      - key: 01a15878-9876-7306-b015-b047340105f8
+        name: "It exits 0."
+      - key: 01a15878-9876-7306-b015-b048b09d4dfa
+        name: "With `--format json`, the outcome is `unchanged`."
   - key: 01a156ac-9752-749b-be81-deff2eb5b17a
     statement:
       form: unwanted
