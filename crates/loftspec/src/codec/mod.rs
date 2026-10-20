@@ -10,6 +10,7 @@ pub mod field;
 mod files;
 mod layout;
 mod record;
+mod records;
 mod resolve;
 mod resolve_conflicts;
 mod resolve_decisions;
@@ -29,6 +30,7 @@ pub use files::{
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
 pub use record::{ConflictRec, Mode, Rec, Val};
+pub(crate) use records::records;
 pub use resolve::resolve;
 pub use unresolve::unresolve;
 

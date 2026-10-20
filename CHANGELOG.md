@@ -5,6 +5,13 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::diff::compare` compares two versions of a document held in memory, each with the
+  text of its `spec/lint.yaml`, matching nodes and decisions by key. Each node is reported added,
+  changed, moved, removed or reordered, and each decision added, changed or removed, with its
+  whole record in each version that holds it, as the text form writes it; a node's record leaves
+  out the nodes beneath it, whose order is reported apart. The Products' order, and which of the
+  tag and category registries, the term list, the lint configuration and the bindings differ,
+  are reported too. A version that holds a node without a key or a conflict record is refused.
 - Two lint rules of decision history, both warnings that refuse no publish. `V2-010` reports a
   decision published as accepted, rejected, superseded or retired whose meaning has changed
   since, judged by its decision history hash against the `publishedHistory` its binding records,

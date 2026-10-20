@@ -20,6 +20,8 @@ mod codec_layout;
 mod codec_read;
 mod codec_round_trip;
 mod codec_sites;
+mod compare;
+mod compare_parts;
 mod conflicts;
 mod containment;
 mod content_hash;

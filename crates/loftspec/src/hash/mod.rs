@@ -181,6 +181,34 @@ pub(crate) fn decision_history_hash(decision: &Decision) -> Digest {
     digest(Domain::DecisionHistory, &decisions::history_view(decision))
 }
 
+/// The roots of a document's tag registry, its category registry and its term list, none for an
+/// empty term list. No registry entry names an element, so the document need not index.
+pub(crate) fn registry_roots(document: &Document) -> (Digest, Digest, Option<Digest>) {
+    let terms =
+        (!document.terms.is_empty()).then(|| digest(Domain::Registry, &terms_view(document)));
+    (
+        digest(Domain::Registry, &tags_view(document)),
+        digest(Domain::Registry, &categories_view(document)),
+        terms,
+    )
+}
+
+fn tags_view(document: &Document) -> (&str, Vec<[&str; 2]>) {
+    let rows = document
+        .tags
+        .iter()
+        .map(|tag| [tag.name.as_str(), tag.definition.as_str()]);
+    registry_view("tags", rows)
+}
+
+fn categories_view(document: &Document) -> (&str, Vec<[&str; 2]>) {
+    let rows = document
+        .categories
+        .iter()
+        .map(|category| [category.name.as_str(), category.definition.as_str()]);
+    registry_view("categories", rows)
+}
+
 /// Digests a root view, keeping it as a value when views are kept.
 fn root<T: Serialize>(
     views: &mut Option<&mut Views>,
@@ -206,25 +234,12 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         ElementId::Decision(id) => decisions[&id],
     };
     let edges = edges_root(&document.edges, &resolve, &mut views);
-    let tag_rows = document
-        .tags
-        .iter()
-        .map(|tag| [tag.name.as_str(), tag.definition.as_str()]);
-    let tags = root(
-        &mut views,
-        "tags",
-        Domain::Registry,
-        &registry_view("tags", tag_rows),
-    );
-    let category_rows = document
-        .categories
-        .iter()
-        .map(|category| [category.name.as_str(), category.definition.as_str()]);
+    let tags = root(&mut views, "tags", Domain::Registry, &tags_view(document));
     let categories = root(
         &mut views,
         "categories",
         Domain::Registry,
-        &registry_view("categories", category_rows),
+        &categories_view(document),
     );
     let mut decision_hashes: Vec<Digest> = decisions.values().copied().collect();
     decision_hashes.sort_unstable();
