@@ -1,0 +1,7 @@
+key: 01a156aa-d52e-75b0-9a73-cb9538029bb3
+slug: remote
+name: "Remote"
+body: "A server that a connected document publishes through. It holds the document's published states in the order of their publish sequences, allocates their labels, and keeps drafts under branch names. `loft` reaches it over HTTPS, with a bearer token, at an address the user configures for the document's key, through the network client; it is not a remote of the repository that holds the tree. How it stores documents and whom it admits are specified outside this repository, and it is built against the contract suite that holds the Software Plant's stand-in for it."
+boundary: external
+scopedTo:
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8

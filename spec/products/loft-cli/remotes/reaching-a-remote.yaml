@@ -1,0 +1,129 @@
+key: 01a156aa-d531-70a7-88e0-0bebdc0a9327
+slug: reaching-a-remote
+name: "Reaching a remote"
+body: "Where `loft` finds the address and the token of a connected document's remote, which addresses it accepts, how it forms each request, and what it never does with the token. The address names one origin and path and is used whole, so that one server can hold many documents under addresses of its own choosing. A call to the remote is what a connected command exists to make, so the switches of telemetry and of the update check leave it alone."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+mentions:
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+requirements:
+  - key: 01a156aa-d531-70a7-88e0-0beccfa4575e
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "find the remote of a connected document in `loft/remotes.json` under the user's configuration directory, by the document's key."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0bedf3069d9e
+        name: "`loft/remotes.json` lies in the user's configuration directory, beside `loft/telemetry.json`."
+      - key: 01a156aa-d531-70a7-88e0-0bee8609fdec
+        name: "The file is a JSON object whose `remotes` maps each document key to an object of `address` and `token`."
+      - key: 01a156aa-d531-70a7-88e0-0befdde18d29
+        name: "A document key that the file does not name has no remote in the file."
+  - key: 01a156aa-d531-70a7-88e0-0bf010f56964
+    statement:
+      form: optional
+      where: "`LOFT_REMOTE_ENDPOINT` is set to a non-empty address"
+      system: "Loft"
+      shall: "reach the remote at that address in place of the file's."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0bf17dfd5808
+        name: "Every request for the remote goes to the address `LOFT_REMOTE_ENDPOINT` names."
+      - key: 01a156aa-d531-70a7-88e0-0bf23f38c853
+        name: "The file's address for the document key is not contacted."
+  - key: 01a156aa-d531-70a7-88e0-0bf313bb10c5
+    statement:
+      form: optional
+      where: "`LOFT_REMOTE_TOKEN` is set to a non-empty value"
+      system: "Loft"
+      shall: "send that token in place of the file's."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0bf438c4c43c
+        name: "Every request for the remote carries the token `LOFT_REMOTE_TOKEN` names."
+      - key: 01a156aa-d531-70a7-88e0-0bf57d3524de
+        name: "With both `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` set, `loft/remotes.json` is not read."
+  - key: 01a156aa-d531-70a7-88e0-0bf6e06c5184
+    statement:
+      form: unwanted
+      if: "a command finds no address or no token for a connected document's key"
+      system: "Loft"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0bf7778e83f4
+        name: "The error names the document key."
+      - key: 01a156aa-d531-70a7-88e0-0bf86cb4aff4
+        name: "The error names `loft/remotes.json`, `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`."
+      - key: 01a156aa-d531-70a7-88e0-0bf9810a25c3
+        name: "No connection is opened."
+      - key: 01a156aa-d531-70a7-88e0-0bfae3b7a232
+        name: "Nothing is written."
+  - key: 01a156aa-d531-70a7-88e0-0bfbf98318c6
+    statement:
+      form: unwanted
+      if: "the remote's address is neither an `https` address nor an `http` address on the loopback interface"
+      system: "Loft"
+      shall: "refuse to reach it and exit 1."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0bfcfa55f191
+        name: "An `https` address is accepted."
+      - key: 01a156aa-d531-70a7-88e0-0bfd5e674087
+        name: "An `http` address on the loopback interface is accepted."
+      - key: 01a156aa-d531-70a7-88e0-0bfefa81f2c4
+        name: "An `http` address off the loopback interface is never contacted."
+      - key: 01a156aa-d531-70a7-88e0-0bffbc9b38d9
+        name: "The error names the address."
+  - key: 01a156aa-d531-70a7-88e0-0c007335154d
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "send each request for the remote to the address as it is given, followed by the endpoint's path."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0c0166ab1840
+        name: "Each endpoint's path is appended to the address with one `/` between them."
+      - key: 01a156aa-d531-70a7-88e0-0c02ba35365e
+        name: "Loft changes no part of the address."
+      - key: 01a156aa-d531-70a7-88e0-0c03bc5c267a
+        name: "A redirect from the remote is not followed."
+  - key: 01a156aa-d531-70a7-88e0-0c04e34b34d1
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "send the token only in the `Authorization` header of a request to the remote."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0c05ea347c84
+        name: "Each request to the remote carries `Authorization: Bearer <token>`."
+      - key: 01a156aa-d531-70a7-88e0-0c062e417478
+        name: "No request to another address carries the token."
+      - key: 01a156aa-d531-70a7-88e0-0c071fca5250
+        name: "No output of `loft`, on standard output or standard error, holds the token."
+      - key: 01a156aa-d531-70a7-88e0-0c08d2fa38da
+        name: "No command event holds the token."
+      - key: 01a156aa-d531-70a7-88e0-0c09b9011e9a
+        name: "No command event holds the remote's address."
+  - key: 01a156aa-d531-70a7-88e0-0c0a0d967b3c
+    statement:
+      form: state_driven
+      while: "telemetry or the update check is switched off"
+      system: "Loft"
+      shall: "still make each call to the remote that a command exists to make."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0c0b11c55446
+        name: "A connected publish with telemetry and the update check both switched off reaches the remote."
+      - key: 01a156aa-d531-70a7-88e0-0c0c4af6b5d3
+        name: "A connected publish with both switched off sends no command event."
+      - key: 01a156aa-d531-70a7-88e0-0c0d90587e0c
+        name: "A connected publish with both switched off asks GitHub nothing."
+  - key: 01a156aa-d531-70a7-88e0-0c0ee34ab3bf
+    statement:
+      form: unwanted
+      if: "the remote refuses the connection, does not answer, or gives an answer that the command does not act on"
+      system: "Loft"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156aa-d531-70a7-88e0-0c0fd212c2b6
+        name: "The error names the remote's address."
+      - key: 01a156aa-d531-70a7-88e0-0c1021a20f3a
+        name: "The error names the status the remote gave, where it gave one."
+      - key: 01a156aa-d531-70a7-88e0-0c117276d1e1
+        name: "An answer `401 Unauthorized` is reported as a refused token for the document key."
+      - key: 01a156aa-d531-70a7-88e0-0c121baaa69d
+        name: "Nothing is written."

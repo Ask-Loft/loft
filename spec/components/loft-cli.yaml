@@ -7,7 +7,7 @@ scopedTo:
 components:
   - key: 01a13a90-3554-7631-bb13-097e6805bffe
     name: "Network client"
-    body: "The part of `loft` that talks to a service over the network: it sends the command event to the telemetry collector and asks GitHub for the latest release. Both happen after a command's own work is done, under one time limit."
+    body: "The part of `loft` that talks to a service over the network: it sends the command event to the telemetry collector and asks GitHub for the latest release, both after a command's own work is done and under one time limit, and it makes the calls to a connected document's remote that the command exists to make."
     constraints:
       - key: 01a13a90-3554-7631-bb13-097fbc9045c0
         name: "The network client shall be the only part of `loft` that opens a network connection."
@@ -17,7 +17,7 @@ components:
         verificationFate: proved
     qualityAttributes:
       - key: 01a13a90-3554-7631-bb13-09808cdac81a
-        name: "The network client shall add at most 500 milliseconds to a command run, whether or not a service answers."
+        name: "The network client shall add at most 500 milliseconds to a command run for the command event and the update check, whether or not a service answers."
         qaKind: latency
         qualityTarget:
           metric: "network.added_latency"
