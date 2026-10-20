@@ -79,13 +79,22 @@ pub enum Refusal {
     Position { position: usize, length: usize },
     #[error("{node} cannot be moved beneath itself, under {parent}")]
     BeneathItself { node: NodeId, parent: NodeId },
-    #[error("a Component without a slug, and given none, cannot stand at the root")]
+    #[error("{}", no_slug(*.0))]
     NoSlug(Option<ComponentId>),
     #[error("the file {path} already holds {}", holder.map_or_else(|| "a node".to_owned(), |id| id.to_string()))]
     FileHeld {
         path: SpecPath,
         holder: Option<NodeId>,
     },
+}
+
+/// The refusal of a Component at the root without a slug, naming its key where it has one.
+fn no_slug(component: Option<ComponentId>) -> String {
+    let rest = "without a slug, and given none, cannot stand at the root";
+    component.map_or_else(
+        || format!("a Component without a key, {rest}"),
+        |id| format!("the Component {id}, {rest}"),
+    )
 }
 
 /// An insert the document refused, with the subtree it was given.

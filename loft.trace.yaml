@@ -16337,13 +16337,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/edit_refusals.rs"
         name: "a_node_with_no_slug_at_the_root_and_given_none_is_refused_naming_its_key"
-        body: c264f058eadb4e2d0bacf5b1bcbc0f71e062221a190237c77bab25941c57d459
+        body: 6224a9bd79b2c9c30ce98bb04028871021bb419a4a68883a07b1cbee068f9186
   - node: 01a15958-a358-72fb-a82d-d8ac99aa2da0
     reviewed: e96a7640fe6954d75ab95a676b5d41604e2d2c8899a1a900f946b4a892252767
     tests:
       - file: "crates/loftspec/tests/edit_refusals.rs"
         name: "a_node_with_no_slug_at_the_root_and_given_none_is_refused_naming_its_key"
-        body: c264f058eadb4e2d0bacf5b1bcbc0f71e062221a190237c77bab25941c57d459
+        body: 6224a9bd79b2c9c30ce98bb04028871021bb419a4a68883a07b1cbee068f9186
   - node: 01a15958-a358-72fb-a82d-d8ae07bbc31b
     reviewed: c44fe3899f72014d9f7099ecd614698f03bf442f07b868daade834b14ee70734
     tests:

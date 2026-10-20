@@ -233,7 +233,11 @@ fn a_node_with_no_slug_at_the_root_and_given_none_is_refused_naming_its_key() {
     let fresh = crate::common::component(key(200), "Store");
     let refusal = insert_refused(Parent::ROOT, 0, Subtree::new(fresh));
     assert_eq!(refusal, Refusal::NoSlug(Some(ComponentId::new(key(200)))));
-    assert!(refusal.to_string().contains("without a slug"));
+    assert!(refusal.to_string().contains("without a slug"), "{refusal}");
+    assert!(
+        refusal.to_string().contains(&key(200).to_string()),
+        "{refusal}"
+    );
     let refusal = move_refused(component(NESTED), Parent::ROOT, 1);
     let nested = Some(ComponentId::new(key(NESTED)));
     assert_eq!(refusal, Refusal::NoSlug(nested));
