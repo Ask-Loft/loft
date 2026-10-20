@@ -1,0 +1,85 @@
+key: 01a156c0-e478-7517-a896-162069fcc2ac
+slug: a-remote-s-token-is-kept-private-to-the-user
+title: "A remote's token is kept in the user's configuration, private to the user"
+context: "A connected document's remote admits a request by a bearer token, which grants whatever the remote lets its holder do. A token on a command line lands in the shell's history and in the list of running processes, and a token in the repository is shared with everyone who clones it."
+state:
+  kind: accepted
+  selectedOption: 01a156c0-e478-7517-a896-162499954686
+  outcome: "`loft remote set` reads the token from standard input and writes it, under the document key, to `loft/remotes.json` in the user's configuration directory with permission for its owner alone; `loft` refuses to read that file when it is not private to the user, as SSH refuses a key, and environment variables override it for one run."
+drivers:
+  - key: 01a156c0-e478-7517-a896-1621e4c9388a
+    kind: local
+    label: "Kept between runs"
+    statement: "A person sets the token once for a document, not in every shell."
+  - key: 01a156c0-e478-7517-a896-162257515a85
+    kind: local
+    label: "Out of sight"
+    statement: "The token reaches no shell history, process list, repository or output."
+  - key: 01a156c0-e478-7517-a896-162354601e13
+    kind: local
+    label: "No extra service"
+    statement: "Every platform `loft` runs on keeps the token without a service beside it."
+options:
+  - key: 01a156c0-e478-7517-a896-162499954686
+    title: "A private file that `loft remote` writes"
+    description: "The token is read from standard input and kept in the user's configuration directory, in a file that only its owner may read."
+  - key: 01a156c0-e478-7517-a896-1625a82fd9a8
+    title: "Environment variables only"
+    description: "The address and the token come from the environment of each run."
+  - key: 01a156c0-e478-7517-a896-1626574542a9
+    title: "The system's keychain"
+    description: "The token is kept in the platform's credential store."
+assessments:
+  - option: 01a156c0-e478-7517-a896-162499954686
+    driver: 01a156c0-e478-7517-a896-1621e4c9388a
+    rating: supports
+    rationale: "the file outlives the shell"
+  - option: 01a156c0-e478-7517-a896-162499954686
+    driver: 01a156c0-e478-7517-a896-162257515a85
+    rating: supports
+    rationale: "standard input in, a private file at rest, and the token printed nowhere"
+  - option: 01a156c0-e478-7517-a896-162499954686
+    driver: 01a156c0-e478-7517-a896-162354601e13
+    rating: supports
+    rationale: "a file is enough"
+  - option: 01a156c0-e478-7517-a896-1625a82fd9a8
+    driver: 01a156c0-e478-7517-a896-1621e4c9388a
+    rating: conflicts
+    rationale: "each shell or job sets them again"
+  - option: 01a156c0-e478-7517-a896-1625a82fd9a8
+    driver: 01a156c0-e478-7517-a896-162257515a85
+    rating: neutral
+    rationale: "safe in a CI secret, exposed in a shell's startup file"
+  - option: 01a156c0-e478-7517-a896-1625a82fd9a8
+    driver: 01a156c0-e478-7517-a896-162354601e13
+    rating: supports
+    rationale: "nothing is kept"
+  - option: 01a156c0-e478-7517-a896-1626574542a9
+    driver: 01a156c0-e478-7517-a896-1621e4c9388a
+    rating: supports
+    rationale: "the store outlives the shell"
+  - option: 01a156c0-e478-7517-a896-1626574542a9
+    driver: 01a156c0-e478-7517-a896-162257515a85
+    rating: supports
+    rationale: "the platform guards the token"
+  - option: 01a156c0-e478-7517-a896-1626574542a9
+    driver: 01a156c0-e478-7517-a896-162354601e13
+    rating: conflicts
+    rationale: "a headless Linux machine or a container often has no credential store"
+consequences:
+  - key: 01a156c0-e478-7517-a896-162766208f87
+    kind: benefit
+    statement: "A token is set once, read from standard input, and kept where only its owner can read it."
+  - key: 01a156c0-e478-7517-a896-1628a1fb8b28
+    kind: risk
+    statement: "On a file system without POSIX permissions the file is not checked."
+  - key: 01a156c0-e478-7517-a896-16299e164352
+    kind: obligation
+    statement: "Every write of `loft/remotes.json` leaves it private to its owner."
+subjects:
+  - role: affected
+    node: 01a13a90-3554-7631-bb13-097e6805bffe
+  - role: outcome
+    node: 01a156c0-0b79-7756-9d01-b05aa4e3f82b
+  - role: outcome
+    node: 01a156c0-0b7a-76b6-9a6a-68511699e4cb
