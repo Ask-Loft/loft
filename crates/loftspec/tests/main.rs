@@ -74,6 +74,7 @@ mod node;
 mod package;
 mod prose;
 mod publish;
+mod publish_connected;
 mod publish_departed;
 mod publish_records;
 mod publish_rewrite;

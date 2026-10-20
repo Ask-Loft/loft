@@ -11,7 +11,7 @@ use loftspec::ext::ExtValue;
 use loftspec::hash::{StateView, hash_document, lint_digest, state_root, state_view};
 use loftspec::names::Namespace;
 use loftspec::publish::{
-    Lock, Publication, PublishedAt, ReadTree, RepoState, Root, Unverified, publish, verify,
+    Lock, Made, Publication, PublishedAt, ReadTree, RepoState, Root, Unverified, publish, verify,
 };
 use loftspec::yaml::{ErrorKind, Location};
 use serde_json::{Value, json};
@@ -141,7 +141,14 @@ fn linted(files: &Files, lint: Option<&str>) -> Files {
 /// Publishes `files` after `previous`: the publication, and the tree with what it wrote.
 fn publish_after(files: &Files, previous: Option<&Lock>) -> (Publication, Files) {
     let at = PublishedAt::from_unix_seconds(1_000).unwrap();
-    let publication = publish(ReadTree::read(files).unwrap(), &clean_main(), previous, at).unwrap();
+    let publication = publish(
+        ReadTree::read(files).unwrap(),
+        Some(&clean_main()),
+        previous,
+        at,
+        Made::NotAsRemote,
+    )
+    .unwrap();
     let mut tree = files.clone();
     if let Publication::Published { files: written, .. } = &publication {
         tree.extend(written.clone());

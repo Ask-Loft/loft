@@ -424,3 +424,30 @@ fn a_node_deleted_formatted_restored_and_formatted_again_is_published_with_its_l
         "{labels}"
     );
 }
+
+#[test]
+fn loft_publish_never_publishes_as_the_remote_so_a_connected_document_it_would_label_is_refused() {
+    let scratch = Scratch::with_reading_list();
+    let manifest = scratch.file("loftspec.yaml");
+    let text = fs::read_to_string(&manifest).unwrap();
+    fs::write(
+        &manifest,
+        text.replacen("products:\n", "connected: true\nproducts:\n", 1),
+    )
+    .unwrap();
+    unlabel(&scratch, "AC-2");
+    let before = snapshot(&scratch.0);
+    let output = on_main(&scratch, &["publish", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    let document = json(&output);
+    assert_eq!(document["outcome"], "error");
+    let message = document["errors"][0]["message"].as_str().unwrap();
+    assert!(
+        message.contains("connected") && message.contains("labels come from its remote"),
+        "{message}"
+    );
+    assert_eq!(
+        changed(&before, &snapshot(&scratch.0)),
+        Vec::<String>::new()
+    );
+}

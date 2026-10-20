@@ -8,7 +8,9 @@ use std::path::Path;
 
 use loftspec::check::Placed;
 use loftspec::codec::ReadError;
-use loftspec::publish::{Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, publish};
+use loftspec::publish::{
+    Made, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, publish,
+};
 use loftspec_store::clock::{Clock as _, SystemClock};
 use loftspec_store::repository::{GitCommand, Repository as _};
 use loftspec_store::{FileStore, StoreError};
@@ -63,7 +65,9 @@ fn attempt(root: &Path) -> Result<Publication, Failure> {
     };
     let at = PublishedAt::from_unix_seconds(SystemClock::from_env().now()?)
         .map_err(|error| Failure::Refused(format!("SOURCE_DATE_EPOCH: {error}")))?;
-    let publication = publish(tree, &repo, previous.as_ref(), at).map_err(refusal)?;
+    // `loft publish` never publishes as the document's remote.
+    let publication =
+        publish(tree, Some(&repo), previous.as_ref(), at, Made::NotAsRemote).map_err(refusal)?;
     if let Publication::Published { lock, files, .. } = &publication {
         store.publish(files.clone(), lock)?;
     }
@@ -104,6 +108,11 @@ fn refusal(refusal: Refusal) -> Failure {
         Refusal::Lock { revision, message } => Failure::Refused(format!(
             "the lock at {revision} is not a lock record: {message}"
         )),
+        Refusal::Connected => Failure::Refused(
+            "the document is connected, so its labels come from its remote: a publish that \
+             gives a label, or one in a stopped merge or rebase, is made only through the remote"
+                .to_owned(),
+        ),
     }
 }
 

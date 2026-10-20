@@ -12,7 +12,8 @@ use loftspec::document::{DerivedFrom, Document, Edge, SubjectRole};
 use loftspec::hash::hash_document;
 use loftspec::ids::{AuthoredStateId, DecisionId};
 use loftspec::publish::{
-    Lock, Publication, PublishedAt, ReadTree, Refusal, RepoState, Root, Unverified, publish, verify,
+    Lock, Made, Publication, PublishedAt, ReadTree, Refusal, RepoState, Root, Unverified, publish,
+    verify,
 };
 
 /// Publishes a tree that reads.
@@ -22,7 +23,13 @@ fn publish_files(
     previous: Option<&Lock>,
     at: PublishedAt,
 ) -> Result<Publication, Refusal> {
-    publish(ReadTree::read(files).unwrap(), repo, previous, at)
+    publish(
+        ReadTree::read(files).unwrap(),
+        Some(repo),
+        previous,
+        at,
+        Made::NotAsRemote,
+    )
 }
 
 /// Verifies a tree that reads.

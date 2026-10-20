@@ -7,7 +7,7 @@ use crate::common::{key, label};
 use loftspec::codec::{self, Files};
 use loftspec::hash::hash_document;
 use loftspec::publish::rewrite::rewrite;
-use loftspec::publish::{Publication, PublishedAt, ReadTree, Relabel, RepoState, publish};
+use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, Relabel, RepoState, publish};
 
 const CRITERION_NAME: &str = "name: \"Every node record carries a `key` field.\"";
 const MENTIONS_4: &str = "        mentions:\n          - 00000000-0000-7000-8000-000000000004\n";
@@ -199,7 +199,14 @@ fn a_publish_writes_the_rewritten_files_and_pins_the_tree_it_writes() {
         stopped: None,
     };
     let at = PublishedAt::from_unix_seconds(0).unwrap();
-    let published = publish(ReadTree::read(&files).unwrap(), &repo, None, at).unwrap();
+    let published = publish(
+        ReadTree::read(&files).unwrap(),
+        Some(&repo),
+        None,
+        at,
+        Made::NotAsRemote,
+    )
+    .unwrap();
     let Publication::Published {
         lock,
         files: written,

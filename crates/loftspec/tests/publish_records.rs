@@ -9,7 +9,7 @@ use loftspec::decision::{DecisionState, StateKind};
 use loftspec::document::Document;
 use loftspec::hash::decision_history_hashes;
 use loftspec::ids::DecisionId;
-use loftspec::publish::{Publication, PublishedAt, ReadTree, RepoState, publish};
+use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, RepoState, publish};
 
 fn clean_main() -> RepoState {
     RepoState {
@@ -22,7 +22,14 @@ fn clean_main() -> RepoState {
 /// The tree after a publish of `files`.
 fn published(files: &Files) -> Files {
     let at = PublishedAt::from_unix_seconds(1_000).unwrap();
-    let publication = publish(ReadTree::read(files).unwrap(), &clean_main(), None, at).unwrap();
+    let publication = publish(
+        ReadTree::read(files).unwrap(),
+        Some(&clean_main()),
+        None,
+        at,
+        Made::NotAsRemote,
+    )
+    .unwrap();
     let Publication::Published { files: written, .. } = publication else {
         panic!("the tree is published");
     };

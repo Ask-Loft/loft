@@ -9,7 +9,7 @@ use loftspec::fmt::format;
 use loftspec::identity::LabelPrefix;
 use loftspec::ids::{ConstraintId, RequirementId};
 use loftspec::publish::{
-    Allocated, Publication, PublishedAt, ReadTree, RepoState, publish, publish_labels,
+    Allocated, Made, Publication, PublishedAt, ReadTree, RepoState, publish, publish_labels,
 };
 
 const CONSTRAINT: &str = "00000000-0000-7000-8000-000000000007";
@@ -42,7 +42,14 @@ fn clean_main() -> RepoState {
 
 fn publication_of(files: &Files) -> Publication {
     let at = PublishedAt::from_unix_seconds(1_000).unwrap();
-    publish(ReadTree::read(files).unwrap(), &clean_main(), None, at).unwrap()
+    publish(
+        ReadTree::read(files).unwrap(),
+        Some(&clean_main()),
+        None,
+        at,
+        Made::NotAsRemote,
+    )
+    .unwrap()
 }
 
 /// The tree after a first publish.
@@ -142,4 +149,35 @@ fn a_binding_already_departed_is_left_as_it_is_by_a_publish() {
     let again = publish_labels(&mut document);
     assert_eq!(again.departed, []);
     assert_eq!(document.bindings, before);
+}
+
+#[test]
+fn a_publish_after_a_lock_that_gives_a_label_back_is_a_publish() {
+    let first = published(&files());
+    let at = PublishedAt::from_unix_seconds(2_000).unwrap();
+    let Publication::Published { lock, .. } = publication_of(&files()) else {
+        panic!("the tree is published");
+    };
+    let gone = formatted(without_constraint(&first));
+    let mut back = gone.clone();
+    back.insert(path(COMPONENT), first[&path(COMPONENT)].clone());
+    let back = formatted(back);
+    let repo = clean_main();
+    let again = publish(
+        ReadTree::read(&back).unwrap(),
+        Some(&repo),
+        Some(&lock),
+        at,
+        Made::NotAsRemote,
+    );
+    let Ok(Publication::Published {
+        given_back,
+        lock: next,
+        ..
+    }) = again
+    else {
+        panic!("a label given back is published: {again:?}");
+    };
+    assert_eq!(given_back.len(), 1);
+    assert_eq!(next.publish_sequence.get(), 2);
 }

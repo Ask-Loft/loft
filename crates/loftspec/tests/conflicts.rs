@@ -8,7 +8,7 @@ use loftspec::codec::{self, Files};
 use loftspec::conflict::{ConflictOwner, ConflictValue, FieldPath};
 use loftspec::hash::hash_document;
 use loftspec::publish::{
-    Publication, PublishedAt, ReadTree, RepoState, Unverified, publish, verify,
+    Made, Publication, PublishedAt, ReadTree, RepoState, Unverified, publish, verify,
 };
 
 fn conflicted() -> Files {
@@ -107,7 +107,14 @@ fn a_tree_that_holds_a_conflict_compares_no_root_and_does_not_verify() {
         stopped: None,
     };
     let at = PublishedAt::from_unix_seconds(0).unwrap();
-    let published = publish(ReadTree::read(&files()).unwrap(), &repo, None, at).unwrap();
+    let published = publish(
+        ReadTree::read(&files()).unwrap(),
+        Some(&repo),
+        None,
+        at,
+        Made::NotAsRemote,
+    )
+    .unwrap();
     let (Publication::Published { lock, .. } | Publication::Unchanged(lock)) = published;
     let files = conflicted();
     let refused = verify(&ReadTree::read(&files).unwrap(), &lock);
