@@ -19,7 +19,7 @@ pub use lock::{LOCK, Lock, LockError};
 pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
 
-use labels::named_as_former;
+use labels::{elements_in_order, named_as_former, publish_labels_in};
 use settle::Settlement;
 
 use crate::canonical::Digest;
@@ -233,7 +233,8 @@ pub fn publish(
     if from_remote {
         return Ok(prepared(document, lint, previous));
     }
-    let named = named_as_former(&document);
+    let elements = elements_in_order(&document);
+    let named = named_as_former(&document, &elements);
     if !named.is_empty() {
         return Err(Refusal::NamedAsFormer(named));
     }
@@ -243,16 +244,13 @@ pub fn publish(
         given_back,
         allocated,
         departed,
-    } = publish_labels(&mut document);
+    } = publish_labels_in(&mut document, &elements);
     let withdrawn = settlement.reattach(&mut document.bindings);
     let rewrites = rewrite::rewrite(files, &document.bindings);
     let mut written = rewrites.files;
     if !written.is_empty() {
         // The rewritten text changes the roots, so the tree is read back as it will be written.
-        write_labels(&mut written, files, &document);
-        let mut next = files.clone();
-        next.extend(written.clone());
-        document = codec::read(&next).expect("rewritten citations read back");
+        document = read_back(files, &written, document);
     }
     // The records of the decisions are of the text the publish pins, and enter no root.
     record_decisions(&mut document);
@@ -370,14 +368,29 @@ fn begin(
     Ok(unsettled(next))
 }
 
+/// The tree read back with the files a publish rewrote, as it will be written, keeping what the
+/// publish settled in `settled`: its bindings, its counters and its conflicts, which the labels
+/// it writes last will hold.
+fn read_back(files: &Files, written: &Files, settled: Document) -> Document {
+    let mut next = files.clone();
+    next.extend(
+        written
+            .iter()
+            .map(|(path, bytes)| (path.clone(), bytes.clone())),
+    );
+    let mut document = codec::read(&next).expect("rewritten citations read back");
+    document.bindings = settled.bindings;
+    document.counters = settled.counters;
+    document.conflicts = settled.conflicts;
+    document
+}
+
 /// Puts `spec/labels.yaml` among the files a publish writes where the bindings of `document`,
-/// the tree after allocation, differ from the tree's, and leaves it out where they do not.
+/// the tree after allocation, differ from the tree's.
 fn write_labels(written: &mut Files, files: &Files, document: &Document) {
     let path = SpecPath::new(LABELS);
     let labels = codec::write_labels(document);
-    if files.get(&path) == Some(&labels) {
-        written.remove(&path);
-    } else {
+    if files.get(&path) != Some(&labels) {
         written.insert(path, labels);
     }
 }

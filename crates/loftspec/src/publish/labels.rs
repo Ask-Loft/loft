@@ -13,7 +13,7 @@ use crate::hash::decision_history_hash;
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::{DecisionId, ElementId};
 use crate::node::Node;
-use crate::validate::decisions::{all_former_labels, former_labels_of};
+use crate::validate::decisions::{all_former_labels, edge_subjects, former_labels_of};
 
 /// A label a publish gave an element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,21 +54,21 @@ impl fmt::Display for NamedAsFormer {
 }
 
 /// Each label a publish of `document` would give back that a decision names under
-/// `formerLabel`, in label order, with the decisions that name it in document order.
-pub(super) fn named_as_former(document: &Document) -> Vec<NamedAsFormer> {
-    let carried: BTreeSet<Key> = elements_in_order(document)
-        .iter()
-        .map(|element| element.key())
-        .collect();
-    let returning: BTreeSet<Label> = document
-        .bindings
-        .iter()
-        .filter(|binding| binding.departed && carried.contains(&binding.element.key()))
+/// `formerLabel`, in label order, with the decisions that name it in document order; `elements`
+/// are the document's elements in the order labels are allocated.
+pub(super) fn named_as_former(document: &Document, elements: &[ElementId]) -> Vec<NamedAsFormer> {
+    let carried: BTreeSet<Key> = elements.iter().map(|element| element.key()).collect();
+    let returning: BTreeSet<Label> = (document.bindings.departed())
+        .filter(|binding| carried.contains(&binding.element.key()))
         .flat_map(Binding::labels)
         .collect();
+    if returning.is_empty() {
+        return Vec::new();
+    }
+    let subjects = edge_subjects(&document.edges);
     let mut named: BTreeMap<Label, Vec<DecisionId>> = BTreeMap::new();
     for decision in &document.decisions {
-        for label in former_labels_of(document, decision).filter(|label| returning.contains(label))
+        for label in former_labels_of(&subjects, decision).filter(|label| returning.contains(label))
         {
             let decisions = named.entry(label).or_default();
             if !decisions.contains(&decision.id) {
@@ -87,8 +87,14 @@ pub(super) fn named_as_former(document: &Document) -> Vec<NamedAsFormer> {
 /// longer holds. No binding is removed.
 pub fn publish_labels(document: &mut Document) -> Allocation {
     let elements = elements_in_order(document);
-    let given_back = restore_departed(document, &elements);
-    let allocated = allocate_in(document, &elements);
+    publish_labels_in(document, &elements)
+}
+
+/// Settles every binding as [`publish_labels`] does, given the document's elements in the order
+/// labels are allocated.
+pub(super) fn publish_labels_in(document: &mut Document, elements: &[ElementId]) -> Allocation {
+    let given_back = restore_departed(document, elements);
+    let allocated = allocate_in(document, elements);
     let held: BTreeSet<Key> = elements.iter().map(|element| element.key()).collect();
     let leaving: Vec<Allocated> = document
         .bindings
@@ -181,11 +187,9 @@ pub fn record_decisions(document: &mut Document) {
             .record_published(decision.id, Some(kind), history);
         recorded.expect("every decision has a binding after allocation");
     }
-    let departed: Vec<ElementId> = document
-        .bindings
-        .iter()
-        .filter(|binding| binding.departed && matches!(binding.element, ElementId::Decision(_)))
+    let departed: Vec<ElementId> = (document.bindings.departed())
         .map(|binding| binding.element)
+        .filter(|element| matches!(element, ElementId::Decision(_)))
         .collect();
     for element in departed {
         let cleared = document.bindings.record_published(element, None, None);
