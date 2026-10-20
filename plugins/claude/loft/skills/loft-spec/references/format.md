@@ -34,7 +34,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | Path | Holds | Written by |
 |---|---|---|
 | `spec/loftspec.yaml` | The manifest: format, algorithm, document key, Products in order | `loft init`; `loft fmt` adds each new Product |
-| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft init` and `loft publish`; `loft fmt` drops a deleted node's binding |
+| `spec/labels.yaml` | Label counters and the bindings of labels to keys | `loft init` and `loft publish`; `loft fmt` marks a deleted node's binding departed |
 | `spec/tags.yaml` | The tag registry | `loft init`, empty; then you and `loft fmt` |
 | `spec/categories.yaml` | The category registry for Constraint bindings | `loft init`, empty; then you and `loft fmt` |
 | `spec/terms.yaml` | The term list, optional | you and `loft fmt` |
@@ -75,6 +75,7 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 | `algorithm` | required: the hash algorithm | `contentAddress` | required |
 | `documentKey` | required: the document's key | `publishSequence` | required |
 | `publishBranch` | optional: the branch publishes run on, where it is not `main` | | |
+| `connected` | optional: `true` once the document is connected to a remote | | |
 | `products` | optional: the Products' keys, in order | | |
 | `derivedFrom` | optional: the Loft v1 Authored State an imported document derives from | | |
 
@@ -87,8 +88,11 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 |---|---|
 | `key` | required: a node's or a decision's key |
 | `label` | required: its live label |
+| `departed` | optional: `true` once its key has left the document; its labels then name nothing |
 | `aliases` | optional: the labels it carried before |
 | `withdrawn` | optional: the labels withdrawn from it |
+| `publishedState` | optional: a decision's state at the last publish, `proposed`, `accepted`, `rejected`, `superseded` or `retired` |
+| `publishedHistory` | optional: the decision's history hash at the last publish |
 
 ## Products and Feature Groups
 

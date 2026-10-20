@@ -15136,7 +15136,7 @@ links:
     reviewed: 621962abc577c6d26ff2e3d3dcd7ced7e358db4263526c52f9170d9698abce46
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/changing-a-specified-product.md, read it there."
   - node: 01a137a8-ae5b-7395-a025-0da60323e0f6
-    reviewed: 59f30a529f7125c0bf088457bdedcf3b9c4201ddcb8785bbbe666d39a1cc14f1
+    reviewed: 828ca947f52c3d133a48306a2a04bdeb9352e77d468205e8f6662eec4fd08322
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/changing-a-specified-product.md, read it there."
   - node: 01a154c3-02c1-74da-a483-d474fb43cfdb
     reviewed: d269e4a8cfc489d3e26af6eb2e16dad8ce6da05dfacab570306251fe7dda2a26
@@ -15577,10 +15577,10 @@ links:
     reviewed: afa3407cdf988fac2e80add9fd70307dfb38826f8c92ec52c81faec5a172d656
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/the-loop.md, read it there."
   - node: 01a137bc-e40d-749f-8570-9ef7849c1f23
-    reviewed: a51be1445ab26a624254969f258e4d7fc3bee0ebdfe65eb3747ad7456efc6a84
+    reviewed: 2f9b7cc5a7bc8e4dc491e21fe14f820f52a73979aada7ee265cd53741abe1997
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/the-loop.md, read it there."
   - node: 01a137bc-e40d-749f-8570-9ef85dd4b6ae
-    reviewed: 4a086b464df2c8e8e7383829844015a76afcc15d7172b475c0d2d505afef1bb1
+    reviewed: 75484b316a09735552cb5b626316782d08effdfe50d23bd3efaf4a14d9d163be
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/the-loop.md, read it there."
   - node: 01a137bc-e40d-749f-8570-9ef91001c2a9
     reviewed: 39ff29cd19fb26ae8eddf378003fda1b2288004baa487d27162cf45fa5cc7819

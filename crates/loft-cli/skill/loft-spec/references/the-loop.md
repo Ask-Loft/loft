@@ -65,10 +65,11 @@ line first, quotes that YAML does not need are dropped, fields move into the For
 each reference by name becomes a key. Read a file again after `loft fmt` before you edit it; an
 edit prepared against the text you wrote may no longer match.
 
-`loft fmt` also drops from `spec/labels.yaml` the binding of each node or decision the tree no
-longer holds, and reports each on standard error with its label and key. That is right for a
-node you deleted. For any other node it means a key was lost from a file: restore the key and
-`spec/labels.yaml` from git (`git checkout -- spec/labels.yaml`), then run `loft fmt` again.
+`loft fmt` also marks departed in `spec/labels.yaml` the binding of each node or decision the
+tree no longer holds, and reports each binding it newly marks departed on standard error with
+its label and key. That is right for a node you deleted. For any other node it means a key was
+lost from a file: restore the key and `spec/labels.yaml` from git
+(`git checkout -- spec/labels.yaml`), then run `loft fmt` again.
 
 ## Write the YAML the reader accepts
 
