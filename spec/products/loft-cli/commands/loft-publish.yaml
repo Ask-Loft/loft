@@ -1,7 +1,7 @@
 key: 568bbe91-b941-4eba-92a9-c134546ea5db
 slug: loft-publish
 name: "`loft publish`"
-body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused. A connected document is published through its remote: `loft publish` sends the change from the remote's head as a delta and writes what the remote returns, once the roots it recomputes agree with the returned lock."
+body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused. A connected document is published through its remote: `loft publish` sends the change from the state its lock names as a delta and writes what the remote returns, once the roots it recomputes agree with the returned lock. A publish whose answer was lost is sent again by the next run over the same tree, against the same base and with the same retry key, and the remote answers it as a replay."
 tags:
   - checks-for-updates
   - needs-repository
@@ -108,32 +108,38 @@ requirements:
       form: optional
       where: "the document is connected"
       system: "`loft publish`"
-      shall: "send its remote the change from the remote's head as a delta."
+      shall: "send its remote the change from the state its lock names as a delta."
     criteria:
       - key: 01a156ac-9752-749b-be81-dee8fd3d7b65
         name: "`loft publish` asks the remote for its head before it builds the delta."
       - key: 01a156ac-9752-749b-be81-dee96f266f8b
-        name: "The path and the SHA-256 digest of each file of the head come from the remote."
+        name: "Where the head is the state the lock names, the path and the SHA-256 digest of each file of the base come from the head."
+      - key: 01a158a2-54b2-753e-8e7f-9341fcde5d65
+        name: "Where the head is not the state the lock names, `loft publish` fetches `GET <address>/states/<sequence>` for the lock's publish sequence, and the path and the SHA-256 digest of each file of the base come from that state."
+      - key: 01a158a2-54b2-753e-8e7f-9342c45c6637
+        name: "A document without a lock has an empty base."
       - key: 01a156ac-9752-749b-be81-deea3ecbdfa5
         name: "Only files under `spec/` enter the delta."
       - key: 01a156ac-9752-749b-be81-deeb088727f6
         name: "The delta leaves out `spec/labels.yaml`, whose bindings the remote writes."
       - key: 01a156ac-9752-749b-be81-deec83e82871
-        name: "Each file that the head does not hold is sent as added, with its text."
+        name: "Each file that the base does not hold is sent as added, with its text."
       - key: 01a156ac-9752-749b-be81-deedf1da0eca
-        name: "Each file whose digest differs from the head's is sent as changed, with its text."
+        name: "Each file whose digest differs from the base's is sent as changed, with its text."
       - key: 01a156ac-9752-749b-be81-deeeadacb058
-        name: "Each file that the head holds and the tree does not is sent as removed, by its path alone."
+        name: "Each file that the base holds and the tree does not is sent as removed, by its path alone."
       - key: 01a156ac-9752-749b-be81-deefbed26d35
-        name: "A file whose digest equals the head's is not sent."
+        name: "A file whose digest equals the base's is not sent."
       - key: 01a156ac-9752-749b-be81-def005a2c826
-        name: "The request names the head's publish sequence and state root as its base."
+        name: "The request names the lock's publish sequence and state root as its base."
+      - key: 01a158a2-aeb8-74ed-9681-2f99054f840d
+        name: "The base of a document without a lock is publish sequence `0` and state root `null`."
       - key: 01a156ac-9752-749b-be81-def1c1aaf547
         name: "The request carries as its retry key the SHA-256 digest of the RFC 8785 canonical JSON of the array of the document key, the base's state root and the delta."
       - key: 01a156ac-9752-749b-be81-def20bba9b1f
         name: "Two attempts at one publish over the same tree send the same retry key."
       - key: 01a156ac-9752-749b-be81-def383e41453
-        name: "A tree whose state root equals the head's sends nothing and reports that nothing changed."
+        name: "A tree whose state root equals the head's, under a lock that names the head, sends nothing and reports that nothing changed."
   - key: 01a156ac-9752-749b-be81-def42467342e
     statement:
       form: event_driven
@@ -166,6 +172,8 @@ requirements:
         name: "The files and the lock of the replay are applied as for an accepted publish."
       - key: 01a156ac-9752-749b-be81-defee2b75736
         name: "A replay of a publish whose lock `loft.lock.json` already holds writes nothing."
+      - key: 01a158a2-54b2-753e-8e7f-9343938d72f1
+        name: "A replay of a publish whose answer was lost moves `loft.lock.json` to the lock it returns, past the head the lock named before."
   - key: 01a15878-9876-7306-b015-b043b0f3a49c
     statement:
       form: event_driven
@@ -212,6 +220,23 @@ requirements:
       - key: 01a15896-4080-7475-b51a-3c368b4d0459
         name: "The error does not say to run `loft pull`."
       - key: 01a15896-4080-7475-b51a-3c371ecb470f
+        name: "Nothing is written."
+  - key: 01a158a2-54b2-753e-8e7f-93444946ac87
+    statement:
+      form: unwanted
+      if: "the remote holds no published state that the lock of a connected document names"
+      system: "`loft publish`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a158a2-54b2-753e-8e7f-9345692c6f8b
+        name: "A problem document with the code `not_found` for the lock's state is such an answer."
+      - key: 01a158a2-54b2-753e-8e7f-93467cd7e1cc
+        name: "A state of the lock's publish sequence whose state root is not the lock's is such an answer."
+      - key: 01a158a2-54b2-753e-8e7f-9347653ab42c
+        name: "The error names the lock's publish sequence and state root."
+      - key: 01a158a2-54b2-753e-8e7f-93488be38a93
+        name: "The error says that `loft pull` brings the tree to the head."
+      - key: 01a158a2-54b2-753e-8e7f-9349edf387e2
         name: "Nothing is written."
   - key: 01a156ac-9752-749b-be81-df03740c9619
     statement:

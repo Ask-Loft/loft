@@ -1,7 +1,7 @@
 key: 01a156ac-0a95-726f-ab84-01a1d6715dce
 slug: connected-publication
 name: "Connected publication"
-body: "A document whose manifest marks it `connected: true`, which `loft remote set` writes once it has connected the document, publishes through its remote, a server that holds its published states in order and is the only source of its labels. A publish of such a document sends what changed since the remote's head and applies what the remote returns. Labels are still given only at publish, and counters never rewind; settling the labels that two clones gave apart stays the way of a document that is not connected."
+body: "A document whose manifest marks it `connected: true`, which `loft remote set` writes once it has connected the document, publishes through its remote, a server that holds its published states in order and is the only source of its labels. A publish of such a document sends what changed since the state its lock names and applies what the remote returns; the remote, not the publisher, decides whether a lock behind its head carries a publish it already made. Labels are still given only at publish, and counters never rewind; settling the labels that two clones gave apart stays the way of a document that is not connected."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 mentions:
@@ -31,21 +31,25 @@ requirements:
         name: "A publish of a connected document during a stopped merge or rebase is refused, whatever the settling of two publishes would do."
       - key: 01a156ac-0a95-726f-ab84-01a8444581b7
         name: "Nothing is written."
-  - key: 01a156ac-0a95-726f-ab84-01a903ee2020
+  - key: 01a158a2-54b4-745a-ba6f-6f4a00083b47
     statement:
-      form: unwanted
-      if: "the lock of a connected document is not its remote's head"
+      form: state_driven
+      while: "a document is connected"
       system: "the publisher"
-      shall: "refuse to publish."
+      shall: "base each publish on the state its lock names, and leave to the remote whether the publish is taken."
     criteria:
-      - key: 01a156ac-0a95-726f-ab84-01aaf3d838ae
-        name: "A lock is the head when its publish sequence and its state root are the head's."
-      - key: 01a156ac-0a95-726f-ab84-01ab6e89bdcf
-        name: "A connected document without a lock is at the head of a remote that holds no published state."
-      - key: 01a156ac-0a95-726f-ab84-01ac0fe3b3f2
-        name: "The refusal names the lock's publish sequence and the head's."
-      - key: 01a156ac-0a95-726f-ab84-01adbbb4699f
-        name: "Nothing is written."
+      - key: 01a158a2-54b4-745a-ba6f-6f4b956b3b6f
+        name: "The base of a publish is the publish sequence and the state root of the lock."
+      - key: 01a158a2-54b4-745a-ba6f-6f4cda0254a7
+        name: "A connected document without a lock is based on publish sequence `0` and state root `null`."
+      - key: 01a158a2-54b4-745a-ba6f-6f4dde7c7c49
+        name: "The publisher refuses no publish because its lock is not the remote's head."
+      - key: 01a158a2-54b4-745a-ba6f-6f4e1a02f50f
+        name: "The remote takes a publish whose base is its head."
+      - key: 01a158a2-54b4-745a-ba6f-6f4f80b6a5b8
+        name: "The remote answers a publish whose retry key matches one it already made as a replay, whatever its base."
+      - key: 01a158a2-54b4-745a-ba6f-6f5071bd6c9c
+        name: "The remote refuses any other publish whose base is not its head as a `conflict` that names its head."
   - key: 01a156bd-fa42-71d5-a635-bd64710e15a8
     statement:
       form: optional

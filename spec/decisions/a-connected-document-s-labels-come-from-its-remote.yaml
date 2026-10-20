@@ -5,7 +5,7 @@ context: "Labels are given at publish from counters that never rewind. Two clone
 state:
   kind: accepted
   selectedOption: 01a156ac-44be-7182-93e2-156ce268ff87
-  outcome: "The remote of a connected document allocates every label, at publish, and returns the bindings with the lock; the publisher allocates none for such a document and refuses a publish that would, and a document that is not connected keeps the settling of two publishes."
+  outcome: "The remote of a connected document allocates every label, at publish, and returns the bindings with the lock; the publisher allocates none for such a document and refuses a publish that would, and a document that is not connected keeps the settling of two publishes. Each publish is built against the state its lock names and carries a retry key; the remote takes one whose base is its head, replays one whose key it has accepted, whatever its base, and refuses any other as a conflict, so a publish whose answer was lost is applied by the next run."
 drivers:
   - key: 01a156ac-44be-7182-93e2-15698b6a970a
     kind: local
@@ -76,6 +76,12 @@ consequences:
   - key: 01a156ac-44be-7182-93e2-15714efea465
     kind: obligation
     statement: "The remote returns the bindings and the counters with every lock it accepts."
+  - key: 01a158a2-54b0-7412-9977-ceea15e2261b
+    kind: benefit
+    statement: "A publish whose answer was lost is not published twice: the next run sends it again with the same retry key and applies the remote's replay."
+  - key: 01a158a2-54b0-7412-9977-ceeb3a9be60f
+    kind: obligation
+    statement: "The remote keeps the answer of every publish it accepted under its retry key, and serves every published state a lock may name."
 subjects:
   - role: affected
     node: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
@@ -83,5 +89,7 @@ subjects:
     node: 01a156ac-0a95-726f-ab84-01a2464753ea
   - role: outcome
     node: 01a156ac-0a95-726f-ab84-01a5872fcc23
+  - role: outcome
+    node: 01a158a2-54b4-745a-ba6f-6f4a00083b47
 mentions:
   - 01a130de-573a-77b2-b40b-d44300846d1a
