@@ -3,6 +3,8 @@
 use std::convert::Infallible;
 use std::fmt;
 
+use serde_json::{Map, Value, json};
+
 use crate::identity::Key;
 use crate::manifest::ManifestError;
 use crate::yaml::{self, Location, Position};
@@ -39,6 +41,34 @@ impl fmt::Display for SpecPath {
 pub struct Site {
     pub path: SpecPath,
     pub location: Option<Location>,
+}
+
+impl Site {
+    /// The site as a command's JSON gives it (RQ-158): see [`site_fields`].
+    #[must_use]
+    pub fn fields(&self) -> Map<String, Value> {
+        site_fields(&self.path, self.location)
+    }
+}
+
+/// The fields of a site at `location` in the file `path`, which may lie outside `spec/`:
+/// `path`, then `line` and `column`, or `byte` for bytes that are not UTF-8, where it has a
+/// location.
+#[must_use]
+pub fn site_fields(path: &impl fmt::Display, location: Option<Location>) -> Map<String, Value> {
+    let mut fields = Map::new();
+    fields.insert("path".to_owned(), json!(path.to_string()));
+    match location {
+        Some(Location::At(position)) => {
+            fields.insert("line".to_owned(), json!(position.line));
+            fields.insert("column".to_owned(), json!(position.column));
+        }
+        Some(Location::Byte(offset)) => {
+            fields.insert("byte".to_owned(), json!(offset));
+        }
+        None => {}
+    }
+    fields
 }
 
 impl fmt::Display for Site {

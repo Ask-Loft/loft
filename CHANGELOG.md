@@ -5,6 +5,13 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::review::page` gives a page of the review packet of a tree and a base held in
+  memory, each a document with the sites of its keys: the units as JSON, every next whole unit
+  that fits under a limit of characters, a longer unit alone and marked `oversized`, with the
+  page's number and the number of pages. It refuses a tree that holds a conflict record or a node
+  without a key, and a page past the last. `loft review` prints the page it gives, so its output
+  is unchanged; `loftspec::codec::site_fields`, `Site::fields` and
+  `loftspec::query::element_fields` give the JSON fields of a site and of an element.
 - `loftspec::diff::compare` compares two versions of a document held in memory, each with the
   text of its `spec/lint.yaml`, matching nodes and decisions by key. Each node is reported added,
   changed, moved, removed or reordered, and each decision added, changed or removed, with its

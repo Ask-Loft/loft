@@ -7,8 +7,9 @@ use std::path::Path;
 
 use loftspec::codec::{self, Site, Sites};
 use loftspec::document::Document;
+use loftspec::identity::{Key, Label};
 use loftspec::ids::ElementId;
-use loftspec::query::identifies;
+use loftspec::query::{element_fields, identifies};
 use serde_json::{Value, json};
 
 use crate::finish::Finished;
@@ -21,8 +22,8 @@ const SCHEMA: &str = "loft-find/1";
 
 /// An element the query identifies.
 struct Match {
-    key: String,
-    label: Option<String>,
+    key: Key,
+    label: Option<Label>,
     kind: &'static str,
     site: Site,
     name: String,
@@ -63,8 +64,8 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
             identifies(query, key, label, slug) || name.to_lowercase().contains(&wanted);
         if identified {
             found.push(Match {
-                key: key.to_string(),
-                label: label.map(|label| label.to_string()),
+                key,
+                label,
                 kind,
                 site: sites
                     .get(key)
@@ -89,7 +90,9 @@ fn find(document: &Document, sites: &Sites, query: &str) -> Vec<Match> {
 
 /// A match as one line: key, label, kind, site and name, two spaces apart.
 fn line(found: &Match) -> String {
-    let label = found.label.as_deref().unwrap_or("-");
+    let label = found
+        .label
+        .map_or_else(|| "-".to_owned(), |label| label.to_string());
     format!(
         "{}  {label}  {}  {}  {}",
         found.key, found.kind, found.site, found.name
@@ -97,9 +100,9 @@ fn line(found: &Match) -> String {
 }
 
 fn match_json(found: &Match) -> Value {
-    Value::Object(json::element(
-        &found.key,
-        found.label.as_deref(),
+    Value::Object(element_fields(
+        found.key,
+        found.label,
         found.kind,
         Some(&found.site),
         &found.name,
