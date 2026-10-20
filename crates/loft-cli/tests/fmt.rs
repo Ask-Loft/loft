@@ -139,7 +139,7 @@ fn the_json_document_lists_the_files_rewritten_and_the_keys_minted() {
     changed.sort();
     let document = |outcome: &str, changed: &[String], minted: usize, written: bool| {
         json!({
-            "schema": "loft-fmt/1",
+            "schema": "loft-fmt/2",
             "outcome": outcome,
             "changed": changed,
             "minted": minted,
@@ -174,7 +174,7 @@ fn a_read_error_is_listed_in_the_json_document_with_its_file_line_and_column() {
 }
 
 #[test]
-fn fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes() {
+fn fmt_marks_departed_the_binding_of_a_deleted_node_so_that_check_passes() {
     let scratch = Scratch::with_reading_list();
     let deleted = "00000000-0000-4000-8000-00000000002a";
     let labels = || fs::read_to_string(scratch.file("labels.yaml")).unwrap();
@@ -199,7 +199,8 @@ fn fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes() {
         "{}",
         stderr(&output)
     );
-    assert!(!labels().contains(deleted));
+    let departed = format!("  - key: {deleted}\n    label: AC-2\n    departed: true\n");
+    assert!(labels().contains(&departed), "{}", labels());
     let check = scratch.loft(&["check"]);
     assert_eq!(check.status.code(), Some(0), "{}", stdout(&check));
 }
@@ -231,7 +232,7 @@ fn a_reference_by_name_that_matches_nothing_or_two_elements_changes_no_file() {
 }
 
 #[test]
-fn each_dropped_binding_is_reported_on_standard_error_with_its_label_and_key() {
+fn each_binding_newly_marked_departed_is_reported_on_standard_error_with_its_label_and_key() {
     let scratch = Scratch::with_reading_list();
     let deleted = "00000000-0000-4000-8000-00000000002a";
     scratch.edit(
@@ -247,5 +248,17 @@ fn each_dropped_binding_is_reported_on_standard_error_with_its_label_and_key() {
         stderr(&output).contains(&format!("the binding of AC-2 ({deleted})")),
         "{}",
         stderr(&output)
+    );
+    assert!(
+        stderr(&output).contains("marks it departed"),
+        "{}",
+        stderr(&output)
+    );
+    let again = scratch.loft(&["fmt"]);
+    assert_eq!(again.status.code(), Some(0), "{}", stderr(&again));
+    assert!(
+        !stderr(&again).contains("the binding of"),
+        "{}",
+        stderr(&again)
     );
 }

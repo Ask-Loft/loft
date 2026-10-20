@@ -5,6 +5,7 @@
 use std::fmt::Write as _;
 use std::num::NonZeroU64;
 
+use crate::common::publishing::clean_main;
 use crate::common::text::{files, path};
 use crate::common::{key, label, small_document};
 use loftspec::codec::{self, Files, SpecPath};
@@ -14,8 +15,8 @@ use loftspec::identity::LabelPrefix;
 use loftspec::ids::{ConstraintId, ElementId};
 use loftspec::merge::merge_file;
 use loftspec::publish::{
-    Lock, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, RepoState, Stopped,
-    publish,
+    Lock, Made, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, RepoState,
+    Stopped, publish,
 };
 
 /// A binding as a labels file lists it: the key's number, its live label and its aliases.
@@ -91,14 +92,15 @@ fn met_files(operation: Operation, local: String, pulled: String) -> Files {
 
 /// A lock of the small document with publish sequence `sequence`.
 fn lock(sequence: u64) -> Vec<u8> {
-    let repo = RepoState {
-        branch: Some("main".to_owned()),
-        ..RepoState::default()
-    };
+    let repo = clean_main();
     let at = PublishedAt::from_unix_seconds(0).unwrap();
-    let Ok(Publication::Published { lock, .. }) =
-        publish(ReadTree::read(&files()).unwrap(), &repo, None, at)
-    else {
+    let Ok(Publication::Published { lock, .. }) = publish(
+        ReadTree::read(&files()).unwrap(),
+        Some(&repo),
+        None,
+        at,
+        Made::NotAsRemote,
+    ) else {
         panic!("the small document publishes");
     };
     Lock {
@@ -126,7 +128,13 @@ fn stopped(operation: Operation) -> RepoState {
 
 fn settle(files: &Files, repo: &RepoState) -> Result<Publication, Refusal> {
     let at = PublishedAt::from_unix_seconds(100).unwrap();
-    publish(ReadTree::read(files).unwrap(), repo, None, at)
+    publish(
+        ReadTree::read(files).unwrap(),
+        Some(repo),
+        None,
+        at,
+        Made::NotAsRemote,
+    )
 }
 
 /// What a publish gave, and the tree with the files it wrote.
@@ -307,9 +315,10 @@ fn a_second_publish_of_the_settled_tree_changes_nothing() {
     let at = PublishedAt::from_unix_seconds(200).unwrap();
     let again = publish(
         ReadTree::read(&first.tree).unwrap(),
-        &repo,
+        Some(&repo),
         Some(&first.lock),
         at,
+        Made::NotAsRemote,
     );
     assert_eq!(again, Ok(Publication::Unchanged(first.lock)));
 }
@@ -423,4 +432,18 @@ fn keys_that_lost_their_live_labels_are_allocated_in_document_order_not_key_orde
     assert_eq!(bindings.label_of_key(key(0x7)), Some(label("CON-5")));
     assert_eq!(bindings.label_of_key(key(0xb)), Some(label("CON-2")));
     assert_eq!(bindings.label_of_key(key(0xc)), Some(label("CON-3")));
+}
+
+#[test]
+fn a_publish_given_no_repository_state_settles_no_labels_of_two_publishes() {
+    let files = met(Operation::Merge, &LOCAL, &PULLED);
+    let at = PublishedAt::from_unix_seconds(100).unwrap();
+    let refused = publish(
+        ReadTree::read(&files).unwrap(),
+        None,
+        None,
+        at,
+        Made::NotAsRemote,
+    );
+    assert!(matches!(refused, Err(Refusal::Invalid(_))), "{refused:?}");
 }

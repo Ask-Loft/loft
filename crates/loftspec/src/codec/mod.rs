@@ -9,7 +9,9 @@ mod ext;
 pub mod field;
 mod files;
 mod layout;
+mod node_files;
 mod record;
+mod records;
 mod resolve;
 mod resolve_conflicts;
 mod resolve_decisions;
@@ -21,12 +23,16 @@ mod unresolve_parts;
 mod variants;
 
 pub use conflict::{SideShape, side_shape};
-pub use error::{Problem, ReadError, Site, SpecPath, write_sites};
+pub use error::{Problem, ReadError, Site, SpecPath, site_fields, write_sites};
 pub(crate) use files::keyed_records;
-pub use files::{CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, TERMS, Tree};
+pub use files::{
+    CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, TERMS, Tree, lint_configuration,
+};
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
+pub(crate) use node_files::{Under, filed_in_order, listed, node_files};
 pub use record::{ConflictRec, Mode, Rec, Val};
+pub(crate) use records::records;
 pub use resolve::resolve;
 pub use unresolve::unresolve;
 

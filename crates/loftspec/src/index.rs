@@ -48,6 +48,8 @@ pub struct SupersessionCycle(pub Vec<DecisionId>);
 pub struct Index {
     elements: BTreeMap<Key, ElementId>,
     parents: BTreeMap<NodeId, NodeId>,
+    /// Every key carried, of elements and of decision elements and registry entries alike.
+    carried: BTreeSet<Key>,
 }
 
 impl Index {
@@ -55,6 +57,12 @@ impl Index {
     #[must_use]
     pub fn element(&self, key: Key) -> Option<ElementId> {
         self.elements.get(&key).copied()
+    }
+
+    /// Whether an element, a decision element or a registry entry of the document carries `key`.
+    #[must_use]
+    pub fn carries(&self, key: Key) -> bool {
+        self.carried.contains(&key)
     }
 
     /// Whether the document holds `element`: its key, carried by an element of that kind.
@@ -67,6 +75,11 @@ impl Index {
     #[must_use]
     pub fn parent(&self, node: NodeId) -> Option<NodeId> {
         self.parents.get(&node).copied()
+    }
+
+    /// Each keyed node's parent.
+    pub(crate) const fn parents(&self) -> &BTreeMap<NodeId, NodeId> {
+        &self.parents
     }
 
     /// The nodes above `node`, nearest first.
@@ -140,14 +153,12 @@ impl Document {
 #[derive(Default)]
 struct Builder {
     index: Index,
-    /// Every key seen, of elements and of decision elements and registry entries alike.
-    seen: BTreeSet<Key>,
     errors: Vec<IntegrityError>,
 }
 
 impl Builder {
     fn carry(&mut self, key: Key) {
-        if !self.seen.insert(key) {
+        if !self.index.carried.insert(key) {
             self.errors.push(IntegrityError::DuplicateKey(key));
         }
     }
@@ -174,28 +185,46 @@ impl Builder {
 
     fn decisions(&mut self, decisions: &[Decision]) {
         for decision in decisions {
-            self.carry(decision.id.key());
             self.index
                 .elements
                 .insert(decision.id.key(), decision.id.into());
-            let elements = decision.drivers.iter().map(|driver| driver.id.key());
-            let elements = elements
-                .chain(decision.options.iter().map(|option| option.id.key()))
-                .chain(decision.consequences.iter().map(|item| item.id.key()));
-            for key in elements {
+            for key in decision_keys(decision) {
                 self.carry(key);
             }
         }
     }
 
     fn registries(&mut self, document: &Document) {
-        let tags = document.tags.iter().map(|tag| tag.id.key());
-        let categories = document.categories.iter().map(|entry| entry.id.key());
-        let terms = document.terms.iter().map(|entry| entry.id.key());
-        for key in tags.chain(categories).chain(terms) {
+        for key in registry_keys(document) {
             self.carry(key);
         }
     }
+}
+
+/// Every key the document carries, as [`Index::carries`] answers, without building the index.
+pub(crate) fn carried_keys(document: &Document) -> BTreeSet<Key> {
+    let mut keys = BTreeSet::new();
+    document.walk(&mut |node| keys.extend(node.id().map(NodeId::key)));
+    keys.extend(document.decisions.iter().flat_map(decision_keys));
+    keys.extend(registry_keys(document));
+    keys
+}
+
+/// The keys a decision carries: its own, then its drivers', options' and consequences'.
+fn decision_keys(decision: &Decision) -> impl Iterator<Item = Key> + '_ {
+    let drivers = decision.drivers.iter().map(|driver| driver.id.key());
+    std::iter::once(decision.id.key())
+        .chain(drivers)
+        .chain(decision.options.iter().map(|option| option.id.key()))
+        .chain(decision.consequences.iter().map(|item| item.id.key()))
+}
+
+/// The keys of the registry entries: the tags', the categories' and the terms'.
+fn registry_keys(document: &Document) -> impl Iterator<Item = Key> + '_ {
+    let tags = document.tags.iter().map(|tag| tag.id.key());
+    let categories = document.categories.iter().map(|entry| entry.id.key());
+    let terms = document.terms.iter().map(|entry| entry.id.key());
+    tags.chain(categories).chain(terms)
 }
 
 /// Every edge endpoint, binding and decision reference that names nothing the document holds.
@@ -212,7 +241,7 @@ fn references(document: &Document, index: &Index) -> Vec<IntegrityError> {
             }
         }
     }
-    for binding in document.bindings.iter() {
+    for binding in document.bindings.live() {
         if !index.holds(binding.element) {
             errors.push(IntegrityError::UnknownBindingElement(binding.element));
         }

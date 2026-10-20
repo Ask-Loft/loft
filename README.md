@@ -2,7 +2,8 @@
 
 The Loft Specification Format and its reference implementation: a specification document model
 that a person or a small team edits in a git repository and controls with the `loft` command
-line, with no server.
+line. It needs no server; a document can opt in to publishing through one, as a connected
+document.
 
 - `crates/loftspec` — the format: document model, identity, canonical bytes, hashing, conversion
   from the v1 export
@@ -147,10 +148,11 @@ human-readable text goes to standard error, and the exit code is the same as wit
 Every document carries `schema`, `outcome` and `errors`. `outcome` names the result in words,
 including the results that exit 1 without an error: `failed` for `check`, `drift` for
 `fmt --check`, `conflicted` for a merge and `mismatch` for `verify`. A command that stops on an
-error has the outcome `error`, and its document then holds only those three fields:
+error has the outcome `error`, and its document then holds only those three fields. A read
+error of the tree names the kind of the reader's problem in `problem`, such as `syntax`:
 
 ```json
-{"schema": "loft-fmt/1", "outcome": "error", "errors": [{"kind": "read", "message": "...", "path": "spec/...", "line": 1, "column": 3, "sites": [...]}]}
+{"schema": "loft-fmt/2", "outcome": "error", "errors": [{"kind": "read", "problem": "syntax", "message": "...", "path": "spec/...", "line": 1, "column": 3, "sites": [...]}]}
 ```
 
 ## Publishing and merging

@@ -60,6 +60,8 @@ pub enum Scalar {
     Enum(&'static [&'static str]),
     /// An identifier such as a format or algorithm name, written plain where it can be.
     Identifier,
+    /// A flag that is set: `true`, written plain. A flag that is not set is left out.
+    Flag,
     /// Free text: double-quoted or a literal block, never plain (AC-831).
     Text,
 }

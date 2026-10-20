@@ -4,8 +4,10 @@ use crate::common;
 use crate::common::small_document;
 use loftspec::canonical::canonical_bytes;
 use loftspec::codec;
-use loftspec::hash::{hash_document, hash_indexed_with_views};
-use loftspec::render::{Projections, render};
+use loftspec::hash::{
+    StateView, hash_document, hash_indexed_with_views, state_root as state_root_under,
+};
+use loftspec::render::{Projections, render, render_tree};
 use serde_json::Value;
 
 fn projections() -> Projections {
@@ -186,4 +188,19 @@ fn a_bar_in_a_code_span_is_still_escaped() {
     document.products[0].feature_groups[0].name = "The `a|b` form".to_owned();
     let markdown = render(&document).unwrap().markdown;
     assert!(markdown.contains("The `a\\|b` form"), "{markdown}");
+}
+
+#[test]
+fn the_projections_of_a_tree_with_a_lint_configuration_name_its_state_root_under_state_view_2() {
+    let document = small_document();
+    let lint = "rules:\n  - rule: LQ-005\n    enabled: false\n";
+    let roots = hash_document(&document).unwrap().roots;
+    let root = state_root_under(&document, &roots, StateView::Two, Some(lint)).to_string();
+    assert_ne!(root, state_root());
+    let linted = render_tree(&document, Some(lint)).unwrap();
+    let export: Value = serde_json::from_slice(&linted.json).unwrap();
+    assert_eq!(export["stateRoot"], root);
+    let header = format!("state root `{root}`\n");
+    assert!(linted.markdown.contains(&header), "{}", linted.markdown);
+    assert_eq!(render_tree(&document, None).unwrap(), projections());
 }

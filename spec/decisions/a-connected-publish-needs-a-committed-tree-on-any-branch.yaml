@@ -1,0 +1,80 @@
+key: 01a156bd-fa3e-75fa-aef5-dc09f6eb5482
+slug: a-connected-publish-needs-a-committed-tree-on-any-branch
+title: "A connected publish needs a committed tree, on any branch"
+context: "A publish of a document that is not connected is refused off the publish branch, because labels are allocated on that branch and two clones settle them there. A connected document's remote allocates its labels and orders its publishes, and `loft publish` runs inside a repository whose committed tree is what a person reviewed."
+state:
+  kind: accepted
+  selectedOption: 01a156bd-fa3e-75fa-aef5-dc0dd0fa7a3c
+  outcome: "A publish of a connected document is refused neither off the publish branch nor on a detached HEAD; uncommitted changes under `spec/` still refuse it, and `loft publish` still needs a git repository."
+drivers:
+  - key: 01a156bd-fa3e-75fa-aef5-dc0a94a0a267
+    kind: local
+    label: "The remote orders publishes"
+    statement: "A connected document's publishes are ordered where its labels are allocated."
+  - key: 01a156bd-fa3e-75fa-aef5-dc0be96bfd13
+    kind: local
+    label: "What is published is committed"
+    statement: "The tree a publish pins is one that git holds."
+  - key: 01a156bd-fa3e-75fa-aef5-dc0c8571102b
+    kind: local
+    label: "One command for both kinds"
+    statement: "`loft publish` keeps one set of rules about where it runs."
+options:
+  - key: 01a156bd-fa3e-75fa-aef5-dc0dd0fa7a3c
+    title: "Drop the branch check only"
+    description: "A connected publish runs on any branch, from a committed tree, inside a repository."
+  - key: 01a156bd-fa3e-75fa-aef5-dc0ea5d17107
+    title: "Keep every repository precondition"
+    description: "A connected publish runs only on the publish branch, as any other publish does."
+  - key: 01a156bd-fa3e-75fa-aef5-dc0fbe00bc35
+    title: "Drop both checks"
+    description: "A connected publish runs on any branch and from uncommitted changes."
+assessments:
+  - option: 01a156bd-fa3e-75fa-aef5-dc0dd0fa7a3c
+    driver: 01a156bd-fa3e-75fa-aef5-dc0a94a0a267
+    rating: supports
+    rationale: "no local branch stands in for the remote's order"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0dd0fa7a3c
+    driver: 01a156bd-fa3e-75fa-aef5-dc0be96bfd13
+    rating: supports
+    rationale: "the committed-tree check stays"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0dd0fa7a3c
+    driver: 01a156bd-fa3e-75fa-aef5-dc0c8571102b
+    rating: neutral
+    rationale: "one rule differs between the two kinds of document"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0ea5d17107
+    driver: 01a156bd-fa3e-75fa-aef5-dc0a94a0a267
+    rating: conflicts
+    rationale: "a branch check guards an order the remote already keeps"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0ea5d17107
+    driver: 01a156bd-fa3e-75fa-aef5-dc0be96bfd13
+    rating: supports
+    rationale: "the committed-tree check stays"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0ea5d17107
+    driver: 01a156bd-fa3e-75fa-aef5-dc0c8571102b
+    rating: supports
+    rationale: "the same rules for every document"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0fbe00bc35
+    driver: 01a156bd-fa3e-75fa-aef5-dc0a94a0a267
+    rating: supports
+    rationale: "no local branch stands in for the remote's order"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0fbe00bc35
+    driver: 01a156bd-fa3e-75fa-aef5-dc0be96bfd13
+    rating: conflicts
+    rationale: "a tree nobody committed can be pinned"
+  - option: 01a156bd-fa3e-75fa-aef5-dc0fbe00bc35
+    driver: 01a156bd-fa3e-75fa-aef5-dc0c8571102b
+    rating: conflicts
+    rationale: "two rules differ between the two kinds of document"
+consequences:
+  - key: 01a156bd-fa3e-75fa-aef5-dc10879d9579
+    kind: benefit
+    statement: "A team publishes a connected document from a feature branch, with its change committed."
+  - key: 01a156bd-fa3e-75fa-aef5-dc11bef66756
+    kind: cost
+    statement: "`publishBranch` means nothing for a connected document."
+subjects:
+  - role: affected
+    node: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+  - role: outcome
+    node: 0edce68c-8576-4978-ab4e-d4d2b1a3c1aa

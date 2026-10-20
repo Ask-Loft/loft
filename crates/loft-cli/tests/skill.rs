@@ -327,8 +327,11 @@ fn raises_only(name: &str, rule: &str, tree: &[(String, String)], files: &[(Stri
 }
 
 /// The rules an unpublished tree cannot raise under `loft check`: a Quality Attribute always
-/// holds a target, the label rules need labels, and only `loft terms` runs the term report's.
-const UNRAISABLE: [&str; 6] = ["LQ-006", "V2-003", "V2-004", "TD-001", "TD-002", "TD-003"];
+/// holds a target, the label rules need labels, the rules of decision history need what a
+/// publish records, and only `loft terms` runs the term report's.
+const UNRAISABLE: [&str; 8] = [
+    "LQ-006", "V2-003", "V2-004", "V2-010", "V2-011", "TD-001", "TD-002", "TD-003",
+];
 
 #[test]
 fn the_lint_guide_describes_each_rule_and_shows_each_rule_an_unpublished_tree_can_raise() {

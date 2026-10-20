@@ -13,6 +13,7 @@ mod place;
 mod record;
 mod same;
 mod tree;
+mod whole;
 
 use std::collections::BTreeMap;
 use std::fmt;
@@ -24,6 +25,8 @@ use crate::codec::{
 };
 use crate::identity::{Key, Label};
 use crate::yaml::{Location, Position};
+
+pub use whole::{MergedTree, TreeMergeError, merge_tree};
 
 /// One of the three versions of the file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,7 +93,7 @@ pub fn merge_file(
 ) -> Result<Merged, MergeError> {
     let role = Role::of(path).ok_or(MergeError::NotAFormatFile)?;
     let (base, ours, theirs) = read_inputs(path, &role, [base, ours, theirs])?;
-    let (content, disputed) = merge_content(base, ours, theirs)?;
+    let (content, disputed) = merge_content(base.as_ref(), &ours, &theirs)?;
     let bytes = write_content(path, role, content);
     let (_, written) = read_file(path, &bytes, Mode::Strict).map_err(MergeError::Unwritable)?;
     if let Some(error) = twice_in(path, &written).into_iter().next() {
@@ -139,10 +142,10 @@ fn read_inputs(
 
 /// The merged content: the labels file on its own terms, a record file or a registry by key,
 /// and the lint configuration as one value.
-fn merge_content(
-    base: Option<Content>,
-    ours: Content,
-    theirs: Content,
+pub(super) fn merge_content(
+    base: Option<&Content>,
+    ours: &Content,
+    theirs: &Content,
 ) -> Result<(Content, Vec<Label>), MergeError> {
     match (base, ours, theirs) {
         (base, Content::Record(ours), Content::Record(theirs)) if ours.kind == Kind::Labels => {
@@ -150,35 +153,46 @@ fn merge_content(
                 Some(Content::Record(base)) => Some(base),
                 _ => None,
             };
-            let (record, disputed) = labels::merge(base.as_ref(), &ours, &theirs);
+            let (record, disputed) = labels::merge(base, ours, theirs);
             Ok((Content::Record(record), disputed))
         }
         (base, ours @ Content::Record(_), theirs @ Content::Record(_))
         | (base, ours @ Content::Registry(_), theirs @ Content::Registry(_)) => {
-            let merged =
-                tree::merge(base.as_ref(), &ours, &theirs).map_err(MergeError::Unplaced)?;
+            let merged = tree::merge(base, ours, theirs).map_err(MergeError::Unplaced)?;
             Ok((merged, Vec::new()))
         }
         (base, Content::Lint(ours), Content::Lint(theirs)) => {
             let base = match base {
-                Some(Content::Lint(base)) => base,
-                _ => Vec::new(),
+                Some(Content::Lint(base)) => base.as_slice(),
+                _ => &[],
             };
-            Ok((Content::Lint(lint(&base, ours, theirs)?), Vec::new()))
+            let kept = one_value(&base, ours.as_slice(), theirs.as_slice())?;
+            Ok((Content::Lint(kept.to_vec()), Vec::new()))
         }
         _ => Err(MergeError::NotAFormatFile),
     }
 }
 
-/// The lint configuration, which no record holds: one side's change wins, and equal changes
-/// coalesce.
-fn lint(base: &[u8], ours: Vec<u8>, theirs: Vec<u8>) -> Result<Vec<u8>, MergeError> {
-    if ours == theirs || theirs == base {
-        Ok(ours)
-    } else if ours == base {
-        Ok(theirs)
+/// A value merged whole, as the lint configuration is, which no record holds: one side's change
+/// wins, and equal changes coalesce.
+pub(super) fn one_value<T: PartialEq>(base: &T, ours: T, theirs: T) -> Result<T, MergeError> {
+    three_way(base, ours, theirs, T::eq).ok_or(MergeError::BothChanged)
+}
+
+/// A value merged three ways, by `same`: the value of the side that changed it, or of ours where
+/// both changed it alike; none where the two sides changed it apart.
+pub(super) fn three_way<T>(
+    base: &T,
+    ours: T,
+    theirs: T,
+    same: impl Fn(&T, &T) -> bool,
+) -> Option<T> {
+    if same(&ours, &theirs) || same(&theirs, base) {
+        Some(ours)
+    } else if same(&ours, base) {
+        Some(theirs)
     } else {
-        Err(MergeError::BothChanged)
+        None
     }
 }
 
@@ -212,6 +226,6 @@ fn twice_in(path: &SpecPath, content: &Content) -> Vec<ReadError> {
 }
 
 /// The conflict records a record and every record inside it hold.
-fn count(record: &Rec) -> usize {
+pub(super) fn count(record: &Rec) -> usize {
     record.conflicts.len() + record.children().map(count).sum::<usize>()
 }

@@ -1,0 +1,283 @@
+key: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
+slug: remote-simulator
+name: "Remote simulator"
+body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+requirements:
+  - key: 01a156ae-6a51-7230-a9a1-fa884a1417e2
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "record each request it receives, in the order received."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa89ad72769f
+        name: "A test reads the method, the path, the headers and the body of every request a run made."
+      - key: 01a156ae-6a51-7230-a9a1-fa8a0dd64809
+        name: "A test reads each request's body exactly as it was sent."
+      - key: 01a156ae-6a51-7230-a9a1-fa8b7a788ec2
+        name: "A scenario in which no run makes a request records no request."
+  - key: 01a156ae-6a51-7230-a9a1-fa8ccb317ead
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "behave toward each request as its scenario names: as the remote's contract states, by refusing the connection, with one error status, or with silence."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa8dd1af6cb5
+        name: "An accepting scenario answers each request as the remote's contract states."
+      - key: 01a156ae-6a51-7230-a9a1-fa8eadb760d9
+        name: "A refusing scenario refuses each connection."
+      - key: 01a156ae-6a51-7230-a9a1-fa8fc7335358
+        name: "An error scenario answers each request with the status it names."
+      - key: 01a15877-f752-735c-b2ba-16ff4694bc3a
+        name: "An error scenario that names a code answers with a problem document of that code, which may lie outside the closed set."
+      - key: 01a15877-f752-735c-b2ba-1700069c23fa
+        name: "An error scenario that names no code answers with a body that is not a problem document."
+      - key: 01a15877-f752-735c-b2ba-1701e5e79fb0
+        name: "An error scenario that names a `Retry-After` value sends that header with each answer."
+      - key: 01a156ae-6a51-7230-a9a1-fa90c436319f
+        name: "A silent scenario accepts each connection and sends no answer."
+  - key: 01a156ae-6a51-7230-a9a1-fa91e68ffcfc
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "admit a request under a document's address only with the bearer token its scenario names."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa92a3b72eb7
+        name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the code `unauthenticated`."
+      - key: 01a156ae-6a51-7230-a9a1-fa93388fd0b9
+        name: "A request whose bearer token is not the scenario's is answered `401 Unauthorized` with the code `unauthenticated`."
+      - key: 01a156ae-6a51-7230-a9a1-fa9467a2d6a1
+        name: "Every answer under a document's address with a body that is not a problem document has `Content-Type: application/json`."
+      - key: 01a158a1-f02a-75c4-bdf5-1df762d46ddb
+        name: "A request for the skill manifest or the skill package is answered without a token."
+      - key: 01a158a1-f02a-75c4-bdf5-1df8354840b5
+        name: "The skill manifest is answered with `Content-Type: application/json`."
+      - key: 01a156ae-6a51-7230-a9a1-fa958644e55a
+        name: "No answer sets a cookie."
+      - key: 01a156ae-6a51-7230-a9a1-fa96a711a7fc
+        name: "A request to a path the contract does not name is answered `404 Not Found` with the code `not_found`."
+      - key: 01a156ae-6a51-7230-a9a1-fa97091dc743
+        name: "A request with a method its path does not take is answered `405 Method Not Allowed` with the code `method_not_allowed`."
+  - key: 01a1587a-dee4-70f8-999e-e54dfb782624
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "answer every call but `create` for a document it does not hold with `404 Not Found` and the code `not_found`."
+    criteria:
+      - key: 01a1587a-dee4-70f8-999e-e54ec8bd682d
+        name: "`GET <address>/head` for a document it does not hold is answered `404 Not Found` with the code `not_found`."
+      - key: 01a1587a-dee4-70f8-999e-e54ff21bc264
+        name: "`POST <address>/publish` for a document it does not hold is answered `404 Not Found` with the code `not_found`."
+      - key: 01a1587a-dee4-70f8-999e-e550327e7576
+        name: "`POST <address>/import` for a document it does not hold is answered `404 Not Found` with the code `not_found`."
+      - key: 01a1587a-dee4-70f8-999e-e551b4c3a9d5
+        name: "`POST <address>/create` for a document it does not hold creates it."
+  - key: 01a156ae-6a51-7230-a9a1-fa98e9f27f25
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <address>/head`"
+      system: "the remote simulator"
+      shall: "answer `200 OK` with the document's key and its head."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa99b930ac7d
+        name: "The body is a JSON object holding `documentKey` and `head`."
+      - key: 01a156ae-6a51-7230-a9a1-fa9a03ea62f8
+        name: "`head` holds `publishSequence`, `stateRoot`, `lock` and `files`."
+      - key: 01a156ae-6a51-7230-a9a1-fa9bbfc7ffab
+        name: "`lock` is the head's lock record as `loft.lock.json` holds it."
+      - key: 01a156ae-6a51-7230-a9a1-fa9c46a30d56
+        name: "`files` lists each file of the head under `spec/` as an object of `path` and `sha256`, the SHA-256 digest of its bytes in lowercase hexadecimal."
+      - key: 01a156ae-6a51-7230-a9a1-fa9dd9eca86a
+        name: "`files` is sorted by `path` in byte order."
+      - key: 01a156ae-6a51-7230-a9a1-fa9eeca09c90
+        name: "A remote that holds no published state answers `head` as `null`."
+  - key: 01a156ae-6a51-7230-a9a1-fa9fed1b57ab
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <address>/states/<sequence>`"
+      system: "the remote simulator"
+      shall: "answer with the published state of that sequence."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-faa0f64b4e60
+        name: "A state it holds is answered `200 OK` with a JSON object holding `documentKey`, `lock` and `files`."
+      - key: 01a156ae-6a51-7230-a9a1-faa1f96edfa4
+        name: "`files` lists each file of the state under `spec/` as an object of `path` and `text`, sorted by `path` in byte order."
+      - key: 01a156ae-6a51-7230-a9a1-faa2c30e4b40
+        name: "A sequence it holds no state of is answered `404 Not Found` with the code `not_found`."
+  - key: 01a156ae-6a51-7230-a9a1-faa3d18274b3
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <address>/drafts/<branch>`"
+      system: "the remote simulator"
+      shall: "answer with the draft it holds under that branch name."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-faa432338d21
+        name: "The branch name is one path segment, percent-encoded."
+      - key: 01a156ae-6a51-7230-a9a1-faa5e7043ec6
+        name: "A draft it holds is answered `200 OK` with a JSON object holding `documentKey`, `branch` and `files`."
+      - key: 01a156ae-6a51-7230-a9a1-faa60b681469
+        name: "`files` lists each file of the draft under `spec/` as an object of `path` and `text`, sorted by `path` in byte order."
+      - key: 01a156ae-6a51-7230-a9a1-faa73fee2430
+        name: "A branch it holds no draft under is answered `404 Not Found` with the code `not_found`."
+  - key: 01a156ae-6a51-7230-a9a1-faa80f67f886
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `POST <address>/publish`"
+      system: "the remote simulator"
+      shall: "answer the publish as its scenario names."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-faa90b156169
+        name: "The request's body is a JSON object holding `documentKey`, `retryKey`, `base`, `added`, `changed` and `removed`."
+      - key: 01a156ae-6a51-7230-a9a1-faaac92962c2
+        name: "`base` holds `publishSequence` and `stateRoot`, `0` and `null` for a document with no published state."
+      - key: 01a156ae-6a51-7230-a9a1-faab380d861e
+        name: "`added` and `changed` each list an object of `path` and `text` for each file."
+      - key: 01a156ae-91a5-70fb-906e-2a3592ecdbaa
+        name: "`removed` lists the path of each file removed."
+      - key: 01a156ae-6a51-7230-a9a1-faac01603bc4
+        name: "An accepted publish is answered `200 OK` with a JSON object holding `outcome` set to `published`, `lock`, `files` and `labels`."
+      - key: 01a156ae-6a51-7230-a9a1-faade7f66720
+        name: "`files` lists each file the publish rewrote, `spec/labels.yaml` included, as an object of `path` and `text`."
+      - key: 01a156ae-6a51-7230-a9a1-faaeda24191f
+        name: "`labels` lists each label the publish allocated as an object of `key` and `label`."
+      - key: 01a156ae-6a51-7230-a9a1-faaf2a2086bf
+        name: "A publish whose `retryKey` the remote accepted before is answered `200 OK` with the answer it gave then and `outcome` set to `replayed`."
+      - key: 01a15878-9878-727b-8fd9-ff5ddb0250fd
+        name: "A publish whose delta leaves the head's state root as it is is answered `200 OK` with `outcome` set to `unchanged`, the head's `lock`, and `files` and `labels` empty."
+      - key: 01a15878-9878-727b-8fd9-ff5e04380f14
+        name: "A publish answered as `unchanged` allocates no label and adds no published state."
+      - key: 01a15878-9878-727b-8fd9-ff5ff436c40a
+        name: "`outcome` is one of `published`, `replayed` and `unchanged`."
+      - key: 01a156ae-6a51-7230-a9a1-fab0b8cd1853
+        name: "A publish whose `base` is not the head is answered `409 Conflict` with the code `conflict` and a member `head` holding the head's `publishSequence` and `stateRoot`."
+      - key: 01a15896-4082-762d-9155-4afc5ad26671
+        name: "A publish that its scenario refuses for a reason other than a moved head, such as a document that takes no more writes, is answered `409 Conflict` with the code `conflict`, the unchanged `head` and a `detail` that gives the reason."
+      - key: 01a156ae-6a51-7230-a9a1-fab14d0480ff
+        name: "A publish whose body is not a valid request, or whose delta the remote cannot apply, is answered `400 Bad Request` with the code `invalid_request` and a member `paths` listing each path at fault."
+      - key: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
+        name: "A replay is answered before the base is compared with the head."
+      - key: 01a158a2-54b4-745a-ba6f-6f5123977eed
+        name: "A publish whose `base` is a state behind the head, with a `retryKey` the remote accepted before, is answered as a replay."
+  - key: 01a1587a-dee4-70f8-999e-e5528698e471
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `POST <address>/create`"
+      system: "the remote simulator"
+      shall: "create the document under the key and the name the request gives, as its scenario names."
+    criteria:
+      - key: 01a1587a-dee4-70f8-999e-e553cef19f54
+        name: "The request's body is a JSON object holding exactly `documentKey` and `name`."
+      - key: 01a1587a-dee4-70f8-999e-e5545c14c37e
+        name: "A created document is answered `200 OK` with a JSON object holding `documentKey` and `head` set to `null`."
+      - key: 01a1587a-dee4-70f8-999e-e5555d0a2ec5
+        name: "After a create, `GET <address>/head` answers as the create did."
+      - key: 01a1587a-dee4-70f8-999e-e556bb2702fb
+        name: "A key that the remote already holds a document under is answered `409 Conflict` with the code `conflict` and the `head` of that document."
+      - key: 01a15896-4082-762d-9155-4afd9ae89188
+        name: "A create is answered with the code `conflict` only for a key that the remote already holds a document under."
+      - key: 01a1587a-dee4-70f8-999e-e557da3f39fd
+        name: "A `documentKey` other than the address's is answered `400 Bad Request` with the code `invalid_request` and `paths` empty."
+      - key: 01a1587a-dee4-70f8-999e-e5584ba5df9e
+        name: "A name that is blank, or longer than 200 Unicode scalar values, is answered `400 Bad Request` with the code `invalid_request`, `paths` empty and a `detail` that names the field."
+      - key: 01a1587a-dee4-70f8-999e-e559d421bdfa
+        name: "A token that its scenario does not let create a document is answered `403 Forbidden` with the code `forbidden`."
+  - key: 01a1587a-dee4-70f8-999e-e55aa6f750e0
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `POST <address>/import`"
+      system: "the remote simulator"
+      shall: "take the published states the request gives as the document's history, as its scenario names."
+    criteria:
+      - key: 01a1587a-dee4-70f8-999e-e55b57e62d99
+        name: "The request's body is a JSON object holding `documentKey` and `states`."
+      - key: 01a1587a-dee4-70f8-999e-e55c7023d491
+        name: "`states` lists each state as an object of `lock` and `files`, from publish sequence 1 upward."
+      - key: 01a1587a-dee4-70f8-999e-e55de4a2a02c
+        name: "Each state's `lock` is its lock record as `loft.lock.json` holds it."
+      - key: 01a1587a-dee4-70f8-999e-e55ed7280421
+        name: "Each state's `files` lists every file of the state under `spec/`, `spec/labels.yaml` included, as an object of `path` and `text`, sorted by `path` in byte order."
+      - key: 01a1587a-dee4-70f8-999e-e55faa7d255c
+        name: "An accepted import is answered `200 OK` with the document's key and its head, as `GET <address>/head` answers them after the import."
+      - key: 01a1587a-dee4-70f8-999e-e56075698d22
+        name: "The head after an accepted import is the last state of `states`."
+      - key: 01a1587a-dee4-70f8-999e-e5614a15a9d1
+        name: "A document that already holds a published state, a draft that is not empty or an open branch is answered `409 Conflict` with the code `conflict` and `head`."
+      - key: 01a1587a-dee4-70f8-999e-e5621f30ae41
+        name: "A state whose files do not verify against its lock is answered `400 Bad Request` with the code `invalid_request` and `paths` naming the files at fault, or empty."
+      - key: 01a1587a-dee4-70f8-999e-e563e27eb69d
+        name: "States whose publish sequences do not run 1, 2, 3 and on are answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e56439d37898
+        name: "States whose publish times go backwards are answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e565957a55be
+        name: "A state whose lock names another document key is answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e566ed963097
+        name: "A `documentKey` other than the address's is answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e56720992d1f
+        name: "A state over its scenario's limit for one state, or a body over its limit for an import, is answered `413 Content Too Large` with the code `payload_too_large`."
+      - key: 01a1587a-dee4-70f8-999e-e56805b97bb6
+        name: "A token that its scenario does not let import is answered `403 Forbidden` with the code `forbidden`."
+  - key: 01a156af-5308-7015-abac-1425df49d7cf
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <origin>/.well-known/loft-skill.json`"
+      system: "the remote simulator"
+      shall: "answer `200 OK` with the skill manifest its scenario names."
+    criteria:
+      - key: 01a156af-5308-7015-abac-1426805386cd
+        name: "The body is a JSON object holding `name`, `version`, `package`, `sha256` and `length`."
+      - key: 01a156af-5308-7015-abac-14277763e6d4
+        name: "The path is taken from the origin of the address, whatever path the address holds."
+      - key: 01a156af-5308-7015-abac-142828644161
+        name: "A scenario with no skill package answers `404 Not Found` with the code `not_found`."
+  - key: 01a156af-5308-7015-abac-142964978780
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET` for the path its manifest names in `package`"
+      system: "the remote simulator"
+      shall: "answer `200 OK` with the package's bytes."
+    criteria:
+      - key: 01a156af-5308-7015-abac-142af2b71304
+        name: "The answer has `Content-Type: application/gzip`."
+      - key: 01a156af-5308-7015-abac-142beee199a5
+        name: "An accepting scenario serves the package byte for byte."
+      - key: 01a156af-a712-7288-bba5-d7b63a343de9
+        name: "A tampering scenario serves other bytes under the same manifest."
+  - key: 01a156bc-e91e-73aa-8be6-4da2868dcd8c
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "answer every refusal with an RFC 9457 problem document whose `code` comes from a closed set."
+    criteria:
+      - key: 01a156bc-e91e-73aa-8be6-4da37da04d79
+        name: "A refusal's body is a JSON object with `Content-Type: application/problem+json`."
+      - key: 01a156bc-e91e-73aa-8be6-4da4b520db73
+        name: "The problem document holds `type`, `title`, `status` and `code`, and may hold `detail`."
+      - key: 01a156bc-e91e-73aa-8be6-4da6c0bd0ce3
+        name: "`status` is the status of the answer."
+      - key: 01a156bc-e91e-73aa-8be6-4da71036d86a
+        name: "`code` is one of `invalid_request`, `unauthenticated`, `forbidden`, `not_found`, `method_not_allowed`, `not_acceptable`, `conflict`, `quota_exceeded`, `payload_too_large`, `rate_limited`, `internal_error`, `corrupt_state` and `service_unavailable`."
+      - key: 01a15877-f752-735c-b2ba-1702302b067d
+        name: "The codes of a request at fault are answered with their statuses: `invalid_request` 400, `unauthenticated` 401, `forbidden` 403, `not_found` 404, `method_not_allowed` 405 and `not_acceptable` 406."
+      - key: 01a15877-f752-735c-b2ba-1703a7c0e136
+        name: "The codes of a request the remote cannot take now are answered with their statuses: `conflict` 409, `quota_exceeded` 409, `payload_too_large` 413 and `rate_limited` 429."
+      - key: 01a15877-f752-735c-b2ba-170449f3aaf8
+        name: "The codes of a fault of the remote are answered with their statuses: `internal_error` 500, `corrupt_state` 500 and `service_unavailable` 503."
+      - key: 01a15877-f752-735c-b2ba-17059ded7113
+        name: "A refusal whose code is `rate_limited` carries a `Retry-After` header."
+      - key: 01a156bc-e91e-73aa-8be6-4da849115550
+        name: "Every problem document whose code is `conflict` holds `head`, an object of the head's `publishSequence` and `stateRoot`."
+      - key: 01a15877-f752-735c-b2ba-1706bead447b
+        name: "The `head` of a document with no published state holds `publishSequence` `0` and `stateRoot` `null`."
+      - key: 01a156bc-e91e-73aa-8be6-4da98b734a08
+        name: "Every problem document whose code is `invalid_request` holds `paths`, a list of the paths at fault that may be empty."
+  - key: 01a15877-f752-735c-b2ba-1707dfe44215
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "answer each refusal with more than the contract names, as a server may."
+    criteria:
+      - key: 01a15877-f752-735c-b2ba-1708ebfec1b5
+        name: "Each refusal's `type` is a URI other than `about:blank`."
+      - key: 01a15877-f752-735c-b2ba-1709116c2e79
+        name: "Each refusal holds at least one member that the contract does not name."

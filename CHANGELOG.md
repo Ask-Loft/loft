@@ -5,6 +5,55 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- With `--format json`, each read error of the tree names the reader's problem by its stable kind
+  in `problem` (`syntax`, `unknown-field`, `duplicate-key`, …), beside the `kind` `read`; an
+  error of any other kind has none. The schemas of the commands that read the tree state it,
+  and those a release published name a new version: `loft-find/2`, `loft-fmt/2`,
+  `loft-reconcile/3`, `loft-render/3`, `loft-status/2`, `loft-terms/2` and `loft-verify/2`;
+  `loft-check/2`, `loft-publish/2` and `loft-review/1`, not yet released, state it too.
+- `loftspec::edit` edits a document held in memory by key. `find` gives the node or decision a
+  key names. `detach` takes a node out with every node beneath it and the edges they write, as a
+  `Subtree`; `insert` puts a subtree under a parent, a node or the document's root, at a position
+  in its list of nodes of that kind; and `move_node` moves a node, keeping its key and its
+  subtree. A Component put at the root without a slug takes the one given with the root,
+  `Parent::Root(Some(slug))`, and a root Component put under a Component leaves its slug. Each
+  edit refuses, with a typed `Refusal` and the document unchanged, a key the document does not
+  hold, a kind the parent cannot hold, a key it already carries, a position past the end of the
+  list, a move beneath the node itself, a Component at the root with no slug and none given, and
+  a node that would be written in a file another node holds, naming the file and its holder. No
+  edit sets a slug its caller does not give: `codec::write` writes each node where its new parent
+  and its slug place it. `kind::ParentKind` names what a node stands under, and `Index::carries`
+  whether any element or entry carries a key.
+- `loftspec::review::page` gives a page of the review packet of a tree and a base held in
+  memory, each a document with the sites of its keys: the units as JSON, every next whole unit
+  that fits under a limit of characters, a longer unit alone and marked `oversized`, with the
+  page's number and the number of pages. It refuses a tree that holds a conflict record or a node
+  without a key, and a page past the last. `loft review` prints the page it gives, so its output
+  is unchanged; `loftspec::codec::site_fields`, `Site::fields` and
+  `loftspec::query::element_fields` give the JSON fields of a site and of an element.
+- `loftspec::diff::compare` compares two versions of a document held in memory, each with the
+  text of its `spec/lint.yaml`, matching nodes and decisions by key. Each node is reported added,
+  changed, moved, removed or reordered, and each decision added, changed or removed, with its
+  whole record in each version that holds it, as the text form writes it; a node's record leaves
+  out the nodes beneath it, whose order is reported apart. The Products' order, and which of the
+  tag and category registries, the term list, the lint configuration and the bindings differ,
+  are reported too. A version that holds a node without a key or a conflict record is refused.
+- Two lint rules of decision history, both warnings that refuse no publish. `V2-010` reports a
+  decision published as accepted, rejected, superseded or retired whose meaning has changed
+  since, judged by its decision history hash against the `publishedHistory` its binding records,
+  so an edit to a node it names is no edit to it; a decision superseded or retired since it was
+  published as accepted is compared as if still accepted. `V2-011` reports a change of state that
+  the recorded `publishedState` does not allow (only a proposal may be accepted or rejected, and
+  only an accepted decision superseded or retired) and a resolved decision deleted rather than
+  retired. Both read only `spec/labels.yaml`, never a repository's history; `RuleId` gains
+  `V2010` and `V2011`, and the schema `loft-check/2` lists both.
+- `loftspec::check::lint_against` lints a tree and a base, two documents held in memory, under
+  the tree's lint configuration, and splits the tree's findings against the base's as
+  `loft check --baseline` does, with no path and no repository; `check_against` runs it over two
+  trees read from their files.
+- `loft publish --format json` writes the schema `loft-publish/2`, whose `givenBack` lists each
+  label a publish gave back to a key that came back to its document, with its key. A connected
+  document is published only through its remote, so `loft publish` refuses one.
 - A Feature Group may hold Quality Attributes, for a quality its Features share; its record
   writes them after its Constraints. A Product holds none. A Feature Group without them keeps its
   content hash, so the Format stays `loftspec/1`: every tree written before reads and hashes as

@@ -5,7 +5,7 @@ use std::fmt::Write as _;
 use std::path::Path;
 use std::{fs as stdfs, io};
 
-use loftspec::codec::{self, Sites};
+use loftspec::codec::{self, Site, Sites};
 use loftspec::identity::LabelPrefix;
 use loftspec::import::{ImportError, Imported, Reported, import};
 use loftspec_store::FileStore;
@@ -113,7 +113,7 @@ fn line(reported: &Reported, sites: &Sites) -> String {
 }
 
 fn finding(reported: &Reported, sites: &Sites) -> Value {
-    let mut fields = sites.get(reported.key).map_or_else(Map::new, json::site);
+    let mut fields = sites.get(reported.key).map_or_else(Map::new, Site::fields);
     if let Some(rule) = reported.rule {
         fields.insert("rule".to_owned(), json!(rule.as_str()));
     }

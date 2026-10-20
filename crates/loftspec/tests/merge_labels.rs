@@ -224,3 +224,94 @@ fn a_bindings_conflict_both_inputs_hold_is_written_once() {
     assert_eq!(text.matches("field: bindings").count(), 1, "{text}");
     assert_eq!(merged.conflicts, 1);
 }
+
+/// The binding of key `0…0a<n>` with `label`, marked departed where `departed` is, and
+/// recording the decision state `state` with a history hash of the digit `history`.
+fn recorded(n: u32, label: &str, departed: bool, state: Option<(&str, char)>) -> String {
+    let departed = if departed { "    departed: true\n" } else { "" };
+    let published = state.map_or_else(String::new, |(state, history)| {
+        let history = history.to_string().repeat(64);
+        format!("    publishedState: {state}\n    publishedHistory: {history}\n")
+    });
+    format!("{}{departed}{published}", binding(n, label, &[], &[]))
+}
+
+/// The small document's labels file with `binding` appended.
+fn holding(binding: String) -> String {
+    with(&counter(&labels_file(), "ADR", 51), &[binding])
+}
+
+#[test]
+fn a_binding_whose_sides_differ_only_in_its_departure_and_records_is_not_in_dispute() {
+    let base = holding(recorded(1, "ADR-50", false, Some(("proposed", 'a'))));
+    let ours = holding(recorded(1, "ADR-50", true, Some(("proposed", 'a'))));
+    let theirs = holding(recorded(1, "ADR-50", false, Some(("accepted", 'b'))));
+    let (text, merged) = merge(&base, &ours, &theirs);
+    assert_eq!((merged.conflicts, disputed(&merged)), (0, Vec::new()));
+    assert!(!text.contains("conflicts:"), "{text}");
+    assert!(
+        text.ends_with(&recorded(1, "ADR-50", true, Some(("accepted", 'b')))),
+        "{text}"
+    );
+}
+
+#[test]
+fn a_departure_and_records_only_one_side_changed_take_that_sides_values() {
+    let base = holding(recorded(1, "ADR-50", true, Some(("accepted", 'a'))));
+    let came_back = holding(recorded(1, "ADR-50", false, Some(("accepted", 'a'))));
+    let retired = recorded(1, "ADR-50", true, Some(("retired", 'c')));
+    let (text, _) = merge(&base, &came_back, &base);
+    assert!(
+        text.ends_with(&recorded(1, "ADR-50", false, Some(("accepted", 'a')))),
+        "{text}"
+    );
+    let (text, _) = merge(&base, &base, &holding(retired.clone()));
+    assert!(text.ends_with(&retired), "{text}");
+}
+
+#[test]
+fn records_the_two_sides_changed_apart_leave_both_fields_absent() {
+    let base = holding(recorded(1, "ADR-50", false, Some(("proposed", 'a'))));
+    let accepted = holding(recorded(1, "ADR-50", false, Some(("accepted", 'b'))));
+    let rejected = holding(recorded(1, "ADR-50", false, Some(("rejected", 'c'))));
+    let edited = holding(recorded(1, "ADR-50", false, Some(("proposed", 'd'))));
+    for theirs in [&rejected, &edited] {
+        let (text, merged) = merge(&base, &accepted, theirs);
+        assert!(
+            text.ends_with(&recorded(1, "ADR-50", false, None)),
+            "{text}"
+        );
+        assert_eq!((merged.conflicts, disputed(&merged)), (0, Vec::new()));
+    }
+}
+
+#[test]
+fn a_binding_whose_departure_alone_changed_is_not_put_in_dispute_by_a_label_another_key_takes() {
+    let base = holding(binding(1, "ADR-50", &[], &[]));
+    let ours = holding(recorded(1, "ADR-50", true, None));
+    let theirs = with(&base, &[binding(2, "ADR-51", &["ADR-50"], &[])]);
+    let (text, merged) = merge(&base, &ours, &theirs);
+    assert!(text.contains(&recorded(1, "ADR-50", true, None)), "{text}");
+    assert!(!bindings_part(&text).contains("0000000000a2"), "{text}");
+    assert_eq!(merged.conflicts, 1);
+}
+
+#[test]
+fn a_binding_one_side_relabelled_takes_that_sides_label_aliases_and_withdrawn_labels_whole() {
+    let base = with(
+        &counter(&labels_file(), "RQ", 51),
+        &[binding(1, "RQ-50", &[], &[])],
+    );
+    for changed in [
+        binding(1, "RQ-51", &["RQ-50"], &[]),
+        binding(1, "RQ-51", &[], &["RQ-50"]),
+    ] {
+        let ours = with(
+            &counter(&labels_file(), "RQ", 52),
+            std::slice::from_ref(&changed),
+        );
+        let (text, merged) = merge(&base, &ours, &base);
+        assert!(text.ends_with(&changed), "{text}");
+        assert_eq!(merged.conflicts, 0);
+    }
+}

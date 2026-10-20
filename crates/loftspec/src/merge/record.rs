@@ -6,6 +6,7 @@
 use super::conflict::Host;
 use super::list::merge_list;
 use super::same::{holds, same};
+use super::three_way;
 use crate::codec::schema::{Field, Item, Shape};
 use crate::codec::{ConflictRec, Rec, Val, variant_holds};
 
@@ -80,14 +81,9 @@ fn sides<'a>(each: &Field, base: Option<&'a Rec>, ours: &'a Rec, theirs: &'a Rec
 }
 
 fn merge_field(each: &Field, sides: &Sides<'_>, host: &mut Host<'_>) -> Option<Val> {
-    if same(sides.ours, sides.theirs) {
-        return sides.ours.cloned();
-    }
-    if same(sides.ours, sides.base) {
-        return sides.theirs.cloned();
-    }
-    if same(sides.theirs, sides.base) {
-        return sides.ours.cloned();
+    let alike = |left: &_, right: &_| same(*left, *right);
+    if let Some(kept) = three_way(&sides.base, sides.ours, sides.theirs, alike) {
+        return kept.cloned();
     }
     match (each.shape, sides.base, sides.ours, sides.theirs) {
         (Shape::List(_), base, ours, theirs) => Some(Val::List(merge_list(

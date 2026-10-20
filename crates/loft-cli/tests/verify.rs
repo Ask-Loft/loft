@@ -6,6 +6,7 @@ use std::process::Output;
 
 use crate::common::{EPOCH, Scratch, stderr, stdout};
 use crate::schema;
+use loftspec::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
 use loftspec::publish::{LOCK, Lock};
 use serde_json::Value;
 use software_plant::{Clock, GitScenario};
@@ -138,9 +139,20 @@ fn a_tree_that_holds_a_conflict_record_compares_no_root_and_exits_1() {
     let output = scratch.loft(&["verify"]);
     assert_eq!(output.status.code(), Some(1));
     assert_eq!(stdout(&output), "");
+    let conflict = Conflict {
+        owner: ConflictOwner::Manifest,
+        field: FieldPath::new("format"),
+        base: None,
+        ours: Some(ConflictValue::Scalar("loftspec/2".to_owned())),
+        theirs: None,
+    };
     assert_eq!(
         stderr(&output),
-        "spec/loftspec.yaml: the manifest holds an unresolved merge conflict over `format`\n"
+        format!(
+            "spec/loftspec.yaml: the manifest holds the unresolved merge conflict {} over \
+             `format`\n",
+            conflict.id()
+        )
     );
 }
 

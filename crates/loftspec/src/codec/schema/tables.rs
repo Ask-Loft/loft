@@ -92,6 +92,7 @@ const MANIFEST_FIELDS: &[Field] = &[
     req(field::ALGORITHM, S::Identifier),
     req(field::DOCUMENT_KEY, S::Key),
     opt(field::PUBLISH_BRANCH, S::Identifier),
+    opt(field::CONNECTED, S::Flag),
     scalars(field::PRODUCTS, S::Key),
     record(field::DERIVED_FROM, false, K::DerivedFrom),
 ];
@@ -110,8 +111,11 @@ const LABELS_FIELDS: &[Field] = &[
 const BINDING_FIELDS: &[Field] = &[
     req(field::KEY, S::Key),
     req(field::LABEL, S::Label),
+    opt(field::DEPARTED, S::Flag),
     scalars(field::ALIASES, S::Label),
     scalars(field::WITHDRAWN, S::Label),
+    opt(field::PUBLISHED_STATE, S::Enum(StateKind::NAMES)),
+    opt(field::PUBLISHED_HISTORY, S::Digest),
 ];
 
 const TAG_ENTRY_FIELDS: &[Field] = &[

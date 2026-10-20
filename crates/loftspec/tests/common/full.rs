@@ -3,6 +3,7 @@
 
 use loftspec::attributes::{Boundary, ConservationKind};
 use loftspec::canonical::Digest;
+use loftspec::decision::StateKind;
 use loftspec::document::{DerivedFrom, Document, Edge};
 use loftspec::ids::{
     AuthoredStateId, ComponentId, ConstraintId, DecisionId, ElementId, FeatureGroupId, FeatureId,
@@ -99,14 +100,17 @@ fn mentions() -> Vec<Edge> {
 /// The small document with every optional field of every record kind filled: each node has a
 /// body, a tag, a Section with a child Section and a mention; the root Component holds a nested
 /// Component and a boundary; a Constraint has a conservation kind; the decision mentions a node;
-/// the manifest names a publish branch and the state it was derived from; and the Requirement's
-/// binding holds a withdrawn label.
+/// the manifest names a publish branch, marks the document connected and names the state it was
+/// derived from; the Requirement's binding holds a withdrawn label; and a departed decision's
+/// binding (key 90, `ADR-5`) holds an alias, a withdrawn label and the state its last publish
+/// recorded.
 pub fn full_document() -> Document {
     let mut document = small_document();
     fill_products(&mut document);
     fill_components(&mut document);
     document.edges.extend(mentions());
     document.publish_branch = Some("release".to_owned());
+    document.connected = true;
     document.derived_from = Some(DerivedFrom {
         authored_state_id: AuthoredStateId::new(key(70)),
         content_address: "ab".repeat(32).parse::<Digest>().unwrap(),
@@ -116,7 +120,23 @@ pub fn full_document() -> Document {
         .bindings
         .add_withdrawn(RequirementId::new(key(4)), label("RQ-7"))
         .unwrap();
+    depart_a_decision(&mut document);
     document
+}
+
+/// Binds key 90 as the decision `ADR-5`, aliased `ADR-4` and withdrawn `ADR-3`, accepted with the
+/// history `cd…cd` at its last publish, then marks it departed.
+fn depart_a_decision(document: &mut Document) {
+    let gone = DecisionId::new(key(90));
+    let bindings = &mut document.bindings;
+    bindings.bind(gone, label("ADR-5")).unwrap();
+    bindings.add_alias(gone, label("ADR-4")).unwrap();
+    bindings.add_withdrawn(gone, label("ADR-3")).unwrap();
+    let history = "cd".repeat(32).parse::<Digest>().unwrap();
+    bindings
+        .record_published(gone, Some(StateKind::Accepted), Some(history))
+        .unwrap();
+    bindings.depart(gone).unwrap();
 }
 
 /// The full document's files.

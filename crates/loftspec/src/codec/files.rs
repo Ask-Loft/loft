@@ -131,7 +131,7 @@ impl Role {
     }
 
     /// Whether the file holds a sequence of records rather than one.
-    const fn is_registry(&self) -> bool {
+    pub(crate) const fn is_registry(&self) -> bool {
         matches!(self, Self::Tags | Self::Categories | Self::Terms)
     }
 }
@@ -283,4 +283,18 @@ fn keyed<'a>(record: &'a Rec, found: &mut Vec<&'a Rec>) {
     for child in record.children() {
         keyed(child, found);
     }
+}
+
+/// The text of a tree's `spec/lint.yaml`; none for a tree without the file.
+///
+/// # Errors
+///
+/// The file is not UTF-8: the error names it and the byte offset of the first invalid sequence,
+/// as the reader names it (RQ-65).
+pub fn lint_configuration(files: &Files) -> Result<Option<&str>, ReadError> {
+    let path = SpecPath::new(LINT);
+    let Some(bytes) = files.get(&path) else {
+        return Ok(None);
+    };
+    (yaml::utf8(bytes).map(Some)).map_err(|error| ReadError::yaml(&path, error))
 }

@@ -18,6 +18,9 @@ fn the_domain_strings_are_closed() {
             "loftspec/bindings/1",
             "loftspec/state/1",
             "loftspec/extensions/1",
+            "loftspec/lint/1",
+            "loftspec/conflict/1",
+            "loftspec/decision-history/1",
         ]
     );
 }

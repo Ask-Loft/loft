@@ -170,7 +170,8 @@ pub struct DerivedFrom {
 
 /// A whole document. Products are in the manifest's order (AC-241); root Components, edges,
 /// registry entries and decisions are in no meaningful order. The publish branch is named only
-/// when it is not `main` (AC-276).
+/// when it is not `main` (AC-276). A connected document publishes through its remote; the mark
+/// enters no root.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Document {
     pub id: DocumentId,
@@ -186,6 +187,7 @@ pub struct Document {
     pub counters: Counters,
     pub derived_from: Option<DerivedFrom>,
     pub publish_branch: Option<String>,
+    pub connected: bool,
     /// The merge conflicts the tree holds, which the validator reports until removed (RQ-126).
     pub conflicts: Vec<Conflict>,
 }
@@ -207,6 +209,7 @@ impl Document {
             counters: Counters::default(),
             derived_from: None,
             publish_branch: None,
+            connected: false,
             conflicts: Vec::new(),
         }
     }

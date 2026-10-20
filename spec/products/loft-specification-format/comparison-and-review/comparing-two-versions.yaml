@@ -1,0 +1,127 @@
+key: 01a156a5-b76b-7233-8659-69ea71d1e598
+slug: comparing-two-versions
+name: "Comparing two versions"
+body: "What the comparer reports between an older and a newer version of one document: each node and each decision that was added, changed, moved or removed, matched by key, with its whole record in each version, and whether the registries, the term list, the lint configuration and the label bindings differ. A caller shows a change from the report, or finds what a change touches. The comparer judges nothing. A node's record is what the text form writes for the node itself: its own fields, its edges included, without the records of the nodes beneath it or the list of their keys, whose order the comparer reports apart."
+realizes:
+  - 01a156a5-b768-75b1-8d89-8844486ea580
+requirements:
+  - key: 01a156a5-b76b-7233-8659-69eb7659d81f
+    statement:
+      form: ubiquitous
+      system: "The comparer"
+      shall: "match the nodes of two versions of a document by key."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-69ec661fc3e6
+        name: "A node whose key only the newer version holds is reported `added`, with its record in the newer version."
+      - key: 01a156a5-b76b-7233-8659-69ed28189f4e
+        name: "A node whose key only the older version holds is reported `removed`, with its record in the older version."
+      - key: 01a156a5-b76b-7233-8659-69ee78c6da68
+        name: "A node whose record differs between the versions is reported `changed`, with its record in each version."
+      - key: 01a156a5-b76b-7233-8659-69ef98c81a4e
+        name: "A node whose record is the same in both versions and whose parent differs is reported `moved`, with its record in each version."
+      - key: 01a156a5-b76b-7233-8659-69f084bd2781
+        name: "A node whose record and parent are the same in both versions is not reported for a difference beneath it."
+      - key: 01a156a5-b76b-7233-8659-69f1a32bee1d
+        name: "Each reported node names its parent's key in each version that holds it, and `null` for a Product or a root Component."
+      - key: 01a156a5-b76b-7233-8659-69f24e960c53
+        name: "A node's record holds its own fields as the text form writes them, its `realizes`, `scopedTo` and `mentions` included."
+      - key: 01a156a5-b76b-7233-8659-69f36d0ed968
+        name: "A node's record holds neither the records of the nodes beneath it nor a list of their keys."
+  - key: 01a156a5-b76b-7233-8659-69f499a1f397
+    statement:
+      form: ubiquitous
+      system: "The comparer"
+      shall: "report each node whose children, of those both versions hold, stand in another order."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-69f5487db69f
+        name: "A node whose record and parent are the same and whose children stand in another order is reported `reordered`."
+      - key: 01a156a5-b76b-7233-8659-69f68627180b
+        name: "A node reported `changed` or `moved` whose children stand in another order also carries their order."
+      - key: 01a156a5-b76b-7233-8659-69f712c0c1d4
+        name: "The order is given as the keys of the children both versions hold, in the order of each version."
+      - key: 01a156a5-b76b-7233-8659-69f83f2f6d3c
+        name: "A node whose children were only added or removed is not reported for their order."
+      - key: 01a156a5-b76b-7233-8659-69f9fb47e89c
+        name: "Another order of the Products in the manifest is reported as a reordering of the document."
+  - key: 01a156a5-b76b-7233-8659-69fa1eafc4e5
+    statement:
+      form: ubiquitous
+      system: "The comparer"
+      shall: "report each decision that differs between the two versions, matched by its key."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-69fb7214a21c
+        name: "A decision whose key only the newer version holds is reported `added`, with its record in the newer version."
+      - key: 01a156a5-b76b-7233-8659-69fc82bf7aa8
+        name: "A decision whose key only the older version holds is reported `removed`, with its record in the older version."
+      - key: 01a156a5-b76b-7233-8659-69fdd7c59f82
+        name: "A decision whose record differs between the versions is reported `changed`, with its record in each version."
+      - key: 01a156a5-b76b-7233-8659-69fe84b15ef6
+        name: "A decision whose record is the same in both versions is not reported."
+      - key: 01a156a5-b76b-7233-8659-69ff435d1c9d
+        name: "A decision's record holds every field the text form writes for it, its subjects and mentions included."
+      - key: 01a156a5-b76b-7233-8659-6a001730b017
+        name: "A decision is never reported `moved`, since it has no parent."
+  - key: 01a156a5-b76b-7233-8659-6a0137968f60
+    statement:
+      form: ubiquitous
+      system: "The comparer"
+      shall: "say whether the registries, the term list, the lint configuration and the label bindings differ between the versions."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-6a0262fd6941
+        name: "`tags` is true exactly when the two tag registries have different roots."
+      - key: 01a156a5-b76b-7233-8659-6a0319c6eb6d
+        name: "`categories` is true exactly when the two category registries have different roots."
+      - key: 01a156a5-b76b-7233-8659-6a04623abea2
+        name: "`terms` is true exactly when the two term lists have different roots, a version without `spec/terms.yaml` holding an empty list."
+      - key: 01a156a5-b76b-7233-8659-6a05472340b0
+        name: "`lintConfiguration` is true exactly when the texts of the two versions' `spec/lint.yaml` differ."
+      - key: 01a156a5-b76b-7233-8659-6a06313eab6a
+        name: "`lintConfiguration` is true when only one of the versions holds `spec/lint.yaml`."
+      - key: 01a156a5-b76b-7233-8659-6a07805eedb9
+        name: "`bindings` is true exactly when a counter or a field of a binding of `spec/labels.yaml` differs between the versions."
+  - key: 01a156a5-b76b-7233-8659-6a086fa033af
+    statement:
+      form: ubiquitous
+      system: "The comparer"
+      shall: "list what it reports in a stable order."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-6a09b27fed83
+        name: "Nodes are listed in the newer version's document order, then the removed nodes in the older version's document order."
+      - key: 01a156a5-b76b-7233-8659-6a0ab7c79a2d
+        name: "Decisions are listed in the byte order of their keys."
+      - key: 01a156a5-b76b-7233-8659-6a0be177aff6
+        name: "Two comparisons of the same two versions give equal reports."
+      - key: 01a156a5-b76b-7233-8659-6a0c726e22e6
+        name: "A version compared with itself yields no node, no decision and no flag that is true."
+  - key: 01a156a5-b76b-7233-8659-6a0da23c331c
+    statement:
+      form: ubiquitous
+      system: "The comparer"
+      shall: "decide from the two versions it is given alone."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-6a0e1d3596b1
+        name: "Each version is given in memory, with no file and no repository."
+      - key: 01a156a5-b76b-7233-8659-6a0f50fd63b8
+        name: "An empty older version yields every node and every decision of the newer version as `added`."
+  - key: 01a156a5-b76b-7233-8659-6a10b2687f66
+    statement:
+      form: unwanted
+      if: "a version holds a node without a key"
+      system: "the comparer"
+      shall: "refuse to compare the versions."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-6a11479b45a3
+        name: "The refusal names the version and the file of each node without a key."
+      - key: 01a156a5-b76b-7233-8659-6a129260048d
+        name: "No difference is reported."
+  - key: 01a156a5-b76b-7233-8659-6a1379cac873
+    statement:
+      form: unwanted
+      if: "a version holds a conflict record"
+      system: "the comparer"
+      shall: "refuse to compare the versions."
+    criteria:
+      - key: 01a156a5-b76b-7233-8659-6a14c0e88d3d
+        name: "The refusal names the version and the key of each record that holds a conflict record."
+      - key: 01a156a5-b76b-7233-8659-6a15898da89a
+        name: "No difference is reported."

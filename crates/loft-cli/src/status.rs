@@ -7,13 +7,12 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use loftspec::check::hashed;
-use loftspec::codec::{self, Site, Sites};
+use loftspec::codec::{Site, Sites};
 use loftspec::diff::content_changes;
 use loftspec::document::Document;
 use loftspec::identity::Key;
 use loftspec::ids::NodeId;
-use loftspec::publish::{LOCK, Lock, Operation, RepoState, Root};
+use loftspec::publish::{LOCK, Lock, Operation, ReadTree, RepoState, Root, first_difference};
 use loftspec_store::repository::{GitCommand, Repository as _};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::{Map, Value, json};
@@ -25,7 +24,7 @@ use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-status/1";
+const SCHEMA: &str = "loft-status/2";
 const OUTCOME: &str = "reported";
 
 /// Where the tree stands.
@@ -77,28 +76,21 @@ pub fn run(root: &Path, base: Option<&str>, as_json: bool) -> Finished {
 fn attempt(root: &Path, base: Option<&str>) -> Result<Report, Stop> {
     let store = FileStore::open(root)?;
     let files = store.read_files()?;
-    let (document, sites) = codec::read_sited(&files)?;
-    let roots = hashed(&document, &sites)
-        .map_err(|errors| Stop::invalid(&errors))?
-        .roots;
+    let tree = ReadTree::read(&files)?;
+    let (document, sites) = (tree.document(), tree.sites());
+    // The tree's own state root, which a publish would record, is under the highest view.
+    let (roots, state) = tree.roots().map_err(|errors| Stop::invalid(&errors))?;
     let lock = store
         .lock()
         .map_err(|error| lock_error(&error))?
         .map(|lock| {
-            let differs = [
-                (Root::Content, lock.content_root, roots.content),
-                (Root::Binding, lock.binding_root, roots.bindings),
-                (Root::State, lock.state_root, roots.state),
-            ]
-            .into_iter()
-            .find(|(_, locked, tree)| locked != tree)
-            .map(|(root, ..)| root);
+            let differs = first_difference(&lock, &roots, state).map(|(root, ..)| root);
             LockReport { lock, differs }
         });
     let git = GitCommand::default();
     let repository = git.state(root).map_err(repository_error)?;
     let base = match base {
-        Some(revision) => Some(base_report(&git, root, revision, &document, &sites)?),
+        Some(revision) => Some(base_report(&git, root, revision, document, sites)?),
         None => None,
     };
     Ok(Report {
@@ -247,7 +239,7 @@ fn listed_json(listed: &Listed) -> Value {
     fields.insert("key".to_owned(), json!(listed.key));
     fields.insert("label".to_owned(), json!(listed.label));
     fields.insert("kind".to_owned(), json!(listed.kind));
-    fields.extend(json::site(&listed.site));
+    fields.extend(listed.site.fields());
     fields.insert("name".to_owned(), json!(listed.name));
     Value::Object(fields)
 }

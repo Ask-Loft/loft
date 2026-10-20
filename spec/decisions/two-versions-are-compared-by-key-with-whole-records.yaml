@@ -1,0 +1,82 @@
+key: 01a156a6-1fdd-72fb-9cc8-c03d38f0e7f8
+slug: two-versions-are-compared-by-key-with-whole-records
+title: "Two versions are compared by key, with whole records"
+context: "A caller that shows a change, or finds what a change touches, needs to know which nodes and decisions differ between two versions of a document. Keys survive every rename and move, files do not, and a caller other than `loft` may be written in another language."
+state:
+  kind: accepted
+  selectedOption: 01a156a6-1fdd-72fb-9cc8-c0415eeac0e9
+  outcome: "The comparer matches nodes and decisions by key and reports each one added, changed, moved, removed or reordered with its whole record in each version, and flags whether the registries, the term list, the lint configuration and the label bindings differ."
+drivers:
+  - key: 01a156a6-1fdd-72fb-9cc8-c03e726dd109
+    kind: local
+    label: "Any view of a change"
+    statement: "A caller can show a change in whatever form it needs."
+  - key: 01a156a6-1fdd-72fb-9cc8-c03f96d3bf27
+    kind: local
+    label: "Stable across moves"
+    statement: "A node renamed or moved to another file is the same node."
+  - key: 01a156a6-1fdd-72fb-9cc8-c0408a9681f9
+    kind: local
+    label: "One report everywhere"
+    statement: "Two implementations report the same differences for the same versions."
+options:
+  - key: 01a156a6-1fdd-72fb-9cc8-c0415eeac0e9
+    title: "Whole records by key"
+    description: "Each node or decision that differs is reported by key with its record before and after."
+  - key: 01a156a6-1fdd-72fb-9cc8-c042b0b7a88f
+    title: "Field patches by key"
+    description: "Each node or decision that differs is reported by key with the fields that changed and their values."
+  - key: 01a156a6-1fdd-72fb-9cc8-c04321f0fa93
+    title: "A text diff of the files"
+    description: "The files of the two trees are compared line by line."
+assessments:
+  - option: 01a156a6-1fdd-72fb-9cc8-c0415eeac0e9
+    driver: 01a156a6-1fdd-72fb-9cc8-c03e726dd109
+    rating: supports
+    rationale: "the caller holds both records and derives what it shows"
+  - option: 01a156a6-1fdd-72fb-9cc8-c0415eeac0e9
+    driver: 01a156a6-1fdd-72fb-9cc8-c03f96d3bf27
+    rating: supports
+    rationale: "records are matched by key"
+  - option: 01a156a6-1fdd-72fb-9cc8-c0415eeac0e9
+    driver: 01a156a6-1fdd-72fb-9cc8-c0408a9681f9
+    rating: supports
+    rationale: "a record is what the text form writes, which the Format fixes"
+  - option: 01a156a6-1fdd-72fb-9cc8-c042b0b7a88f
+    driver: 01a156a6-1fdd-72fb-9cc8-c03e726dd109
+    rating: neutral
+    rationale: "a caller that shows the whole node has to ask for it again"
+  - option: 01a156a6-1fdd-72fb-9cc8-c042b0b7a88f
+    driver: 01a156a6-1fdd-72fb-9cc8-c03f96d3bf27
+    rating: supports
+    rationale: "records are matched by key"
+  - option: 01a156a6-1fdd-72fb-9cc8-c042b0b7a88f
+    driver: 01a156a6-1fdd-72fb-9cc8-c0408a9681f9
+    rating: conflicts
+    rationale: "two implementations can patch a list in different steps"
+  - option: 01a156a6-1fdd-72fb-9cc8-c04321f0fa93
+    driver: 01a156a6-1fdd-72fb-9cc8-c03e726dd109
+    rating: conflicts
+    rationale: "a line says nothing of the node it belongs to"
+  - option: 01a156a6-1fdd-72fb-9cc8-c04321f0fa93
+    driver: 01a156a6-1fdd-72fb-9cc8-c03f96d3bf27
+    rating: conflicts
+    rationale: "a moved node is a removal and an addition"
+  - option: 01a156a6-1fdd-72fb-9cc8-c04321f0fa93
+    driver: 01a156a6-1fdd-72fb-9cc8-c0408a9681f9
+    rating: neutral
+    rationale: "diff algorithms differ, though canonical layout narrows them"
+consequences:
+  - key: 01a156a6-1fdd-72fb-9cc8-c0440ff2039c
+    kind: benefit
+    statement: "A caller other than `loft` shows a change without reading the text form."
+  - key: 01a156a6-1fdd-72fb-9cc8-c04534bfffde
+    kind: cost
+    statement: "A report carries a node's whole record even when one field changed."
+subjects:
+  - role: affected
+    node: 01a156a5-b768-75b1-8d89-8844486ea580
+  - role: outcome
+    node: 01a156a5-b76b-7233-8659-69eb7659d81f
+  - role: outcome
+    node: 01a156a5-b76b-7233-8659-69fa1eafc4e5

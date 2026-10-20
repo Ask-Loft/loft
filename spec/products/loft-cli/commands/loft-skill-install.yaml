@@ -1,18 +1,22 @@
 key: 01a13654-bf86-77e9-8fd5-8dc0ba996254
 slug: loft-skill-install
 name: "`loft skill install`"
-body: "Writes the `loft-spec` skill into a project, or brings it to the version of the installed `loft`."
+body: "Writes the `loft-spec` skill into a project, or brings it to the version of the installed `loft`. With `--server <origin>`, it installs instead the skill package that a server publishes, such as a connected document's remote, into a skill directory of its own beside `loft-spec`, after checking the package against the server's manifest."
 tags:
   - checks-for-updates
   - sends-telemetry
   - writes-skill
 realizes:
   - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+  - 01a13a90-3554-7631-bb13-097e6805bffe
   - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
 requirements:
   - key: 01a13654-bf86-77e9-8fd5-8dc1dbb50264
     statement:
-      form: ubiquitous
+      form: optional
+      where: "`--server` is not given"
       system: "`loft skill install`"
       shall: "write the `loft-spec` skill into the current directory."
     criteria:
@@ -66,3 +70,104 @@ requirements:
         name: "The outcome is `installed` when both skill directories were written."
       - key: 01a13654-bf86-77e9-8fd5-8dd2a7db3828
         name: "An error is listed among the document's errors."
+  - key: 01a156af-5306-73ab-a0e4-ce9ba1b99a5f
+    statement:
+      form: optional
+      where: "`--server <origin>` is given"
+      system: "`loft skill install`"
+      shall: "install the skill package that the server publishes into a skill directory of its own."
+    criteria:
+      - key: 01a156af-5306-73ab-a0e4-ce9c87899113
+        name: "The command reads the server's skill manifest from `<origin>/.well-known/loft-skill.json`."
+      - key: 01a156af-5306-73ab-a0e4-ce9d02c3b2c6
+        name: "The manifest is a JSON object holding `name`, `version`, `package`, `sha256` and `length`."
+      - key: 01a156af-5306-73ab-a0e4-ce9e81baa675
+        name: "`package` is the path, on the same origin, of the package, a gzip-compressed tar archive."
+      - key: 01a156af-5306-73ab-a0e4-ce9f412d731b
+        name: "The package is written to `.claude/skills/<name>/` and to `.agents/skills/<name>/`, where `<name>` is the manifest's."
+      - key: 01a156af-5306-73ab-a0e4-cea066dfb2d7
+        name: "The `loft-spec` skill directories are left as they were."
+      - key: 01a156af-5306-73ab-a0e4-cea1d0f3b1d2
+        name: "`.claude/settings.json` is not written."
+      - key: 01a156af-5306-73ab-a0e4-cea241df3b60
+        name: "No plugin is enabled."
+      - key: 01a156af-5306-73ab-a0e4-cea362fca286
+        name: "The server is reached whatever the telemetry and update-check switches say."
+  - key: 01a156af-5306-73ab-a0e4-cea4ef635765
+    statement:
+      form: unwanted
+      if: "the package's SHA-256 digest or its length is not the one the manifest gives"
+      system: "`loft skill install`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156af-5306-73ab-a0e4-cea59735e3ab
+        name: "The digest and the length are checked before any file is written."
+      - key: 01a156af-5306-73ab-a0e4-cea61f7d1693
+        name: "The error names the digest the manifest gives and the digest of the package received."
+      - key: 01a156af-5306-73ab-a0e4-cea73d01177d
+        name: "Nothing is written."
+  - key: 01a156af-5306-73ab-a0e4-cea86c99db76
+    statement:
+      form: unwanted
+      if: "an entry of the package lies outside its skill directory"
+      system: "`loft skill install`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156af-5306-73ab-a0e4-cea9c25c537a
+        name: "An entry with an absolute path is refused."
+      - key: 01a156af-5306-73ab-a0e4-ceaa4a2541d9
+        name: "An entry whose path holds a `..` segment is refused."
+      - key: 01a156af-5306-73ab-a0e4-ceab7ab49d82
+        name: "A symbolic link or a hard link entry is refused."
+      - key: 01a156af-5306-73ab-a0e4-ceacf8fcbc3d
+        name: "The error names the entry."
+      - key: 01a156af-5306-73ab-a0e4-cead8bd7d9ae
+        name: "Nothing is written."
+  - key: 01a156af-5306-73ab-a0e4-ceaeec66c69f
+    statement:
+      form: unwanted
+      if: "the manifest's `name` is `loft-spec` or is not a slug"
+      system: "`loft skill install`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156af-5306-73ab-a0e4-ceaf3797e1ea
+        name: "A name of lowercase letters, digits and hyphens other than `loft-spec` is accepted."
+      - key: 01a156af-5306-73ab-a0e4-ceb0df1795a4
+        name: "The error names the name."
+      - key: 01a156af-5306-73ab-a0e4-ceb198d92b2a
+        name: "Nothing is written."
+  - key: 01a156af-5306-73ab-a0e4-ceb2d56151ff
+    statement:
+      form: unwanted
+      if: "`<origin>` is neither an `https` origin nor an `http` origin on the loopback interface"
+      system: "`loft skill install`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156af-5306-73ab-a0e4-ceb37e080cce
+        name: "An `http` origin off the loopback interface is never contacted."
+      - key: 01a156af-5306-73ab-a0e4-ceb44e711618
+        name: "The error names the origin."
+      - key: 01a156af-5306-73ab-a0e4-ceb5ad22917a
+        name: "Nothing is written."
+  - key: 01a156af-5307-7725-b0b7-f7c193b23fb6
+    statement:
+      form: unwanted
+      if: "`<origin>` holds a path, a query or a fragment"
+      system: "`loft skill install`"
+      shall: "refuse as a usage error and exit 2."
+    criteria:
+      - key: 01a156af-5307-7725-b0b7-f7c23066d56e
+        name: "The error names the origin."
+      - key: 01a156af-5307-7725-b0b7-f7c3e1c0bab7
+        name: "No connection is opened."
+  - key: 01a156af-5307-7725-b0b7-f7c4510ac446
+    statement:
+      form: unwanted
+      if: "the server refuses the connection, does not answer, or gives a manifest that does not read"
+      system: "`loft skill install`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156af-5307-7725-b0b7-f7c581e6b6fa
+        name: "The error names the origin."
+      - key: 01a156af-5307-7725-b0b7-f7c6ccc9dcf4
+        name: "Nothing is written."

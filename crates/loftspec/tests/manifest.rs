@@ -26,3 +26,12 @@ fn an_unknown_algorithm_is_refused_naming_it() {
     );
     assert!(error.to_string().contains("blake3-jcs/1"));
 }
+
+#[test]
+fn the_connected_mark_enters_no_root() {
+    let plain = crate::common::small_document();
+    let mut connected = plain.clone();
+    connected.connected = true;
+    let hashed = |document| loftspec::hash::hash_document(document).unwrap().roots;
+    assert_eq!(hashed(&connected), hashed(&plain));
+}

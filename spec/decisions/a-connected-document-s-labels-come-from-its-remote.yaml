@@ -1,0 +1,94 @@
+key: 01a156ac-44be-7182-93e2-1568ed5ca531
+slug: a-connected-document-s-labels-come-from-its-remote
+title: "A connected document's labels come from its remote"
+context: "Labels are given at publish from counters that never rewind. Two clones that publish apart give one label to two nodes, and the next publish settles that by withdrawing the colliding labels of the side that pulled, so a label that side published changes. A document that publishes through a remote has one place that orders its publishes."
+state:
+  kind: accepted
+  selectedOption: 01a156ac-44be-7182-93e2-156ce268ff87
+  outcome: "The remote of a connected document allocates every label, at publish, by publishing the document as its remote with the format's publisher, which allocates as it does for a document that is not connected, and returns the bindings with the lock; the publisher allocates none in a publish of such a document that is not made as its remote and refuses one that would, and a document that is not connected keeps the settling of two publishes. Each publish is built against the state its lock names and carries a retry key; the remote takes one whose base is its head, replays one whose key it has accepted, whatever its base, and refuses any other as a conflict, so a publish whose answer was lost is applied by the next run."
+drivers:
+  - key: 01a156ac-44be-7182-93e2-15698b6a970a
+    kind: local
+    label: "Published labels stay"
+    statement: "A label once published keeps its node."
+  - key: 01a156ac-44be-7182-93e2-156a646382b3
+    kind: local
+    label: "No label twice"
+    statement: "No label is held by two nodes or given out again."
+  - key: 01a156ac-44be-7182-93e2-156b2ed7dee1
+    kind: local
+    label: "Publishing offline"
+    statement: "A publish needs no network."
+options:
+  - key: 01a156ac-44be-7182-93e2-156ce268ff87
+    title: "Labels from the remote"
+    description: "The remote allocates the labels of each publish, in the order it accepts publishes."
+  - key: 01a156ac-44be-7182-93e2-156dc7ec1356
+    title: "Local labels, settled later"
+    description: "Each clone allocates labels as a document that is not connected does, and a later publish settles the collisions."
+  - key: 01a156ac-44be-7182-93e2-156e2d2bcbc3
+    title: "Reserved ranges"
+    description: "Each clone reserves a range of each counter from the remote and allocates from it locally."
+assessments:
+  - option: 01a156ac-44be-7182-93e2-156ce268ff87
+    driver: 01a156ac-44be-7182-93e2-15698b6a970a
+    rating: supports
+    rationale: "one allocator, so nothing collides"
+  - option: 01a156ac-44be-7182-93e2-156ce268ff87
+    driver: 01a156ac-44be-7182-93e2-156a646382b3
+    rating: supports
+    rationale: "each label is allocated once"
+  - option: 01a156ac-44be-7182-93e2-156ce268ff87
+    driver: 01a156ac-44be-7182-93e2-156b2ed7dee1
+    rating: conflicts
+    rationale: "a publish needs the remote"
+  - option: 01a156ac-44be-7182-93e2-156dc7ec1356
+    driver: 01a156ac-44be-7182-93e2-15698b6a970a
+    rating: conflicts
+    rationale: "a published label of the side that pulled is withdrawn"
+  - option: 01a156ac-44be-7182-93e2-156dc7ec1356
+    driver: 01a156ac-44be-7182-93e2-156a646382b3
+    rating: supports
+    rationale: "settling withdraws every collision"
+  - option: 01a156ac-44be-7182-93e2-156dc7ec1356
+    driver: 01a156ac-44be-7182-93e2-156b2ed7dee1
+    rating: supports
+    rationale: "no network is needed"
+  - option: 01a156ac-44be-7182-93e2-156e2d2bcbc3
+    driver: 01a156ac-44be-7182-93e2-15698b6a970a
+    rating: supports
+    rationale: "ranges do not overlap"
+  - option: 01a156ac-44be-7182-93e2-156e2d2bcbc3
+    driver: 01a156ac-44be-7182-93e2-156a646382b3
+    rating: supports
+    rationale: "each range is reserved once"
+  - option: 01a156ac-44be-7182-93e2-156e2d2bcbc3
+    driver: 01a156ac-44be-7182-93e2-156b2ed7dee1
+    rating: neutral
+    rationale: "a publish needs the network only when its range runs out"
+consequences:
+  - key: 01a156ac-44be-7182-93e2-156f3eafbef3
+    kind: benefit
+    statement: "A label of a connected document never changes after it is published."
+  - key: 01a158d6-455b-7509-b30b-45ab8736ceb6
+    kind: benefit
+    statement: "The labels of a connected document follow the same allocation rules as those of a document that is not connected, since the remote allocates them with the same publisher."
+  - key: 01a158d6-455b-7509-b30b-45ac27122a2b
+    kind: obligation
+    statement: "The publisher is told whether it publishes as the document's remote, and only the remote says that it does."
+  - key: 01a158a2-54b0-7412-9977-ceeb3a9be60f
+    kind: obligation
+    statement: "The remote keeps the answer of every publish it accepted under its retry key, and serves every published state a lock may name."
+subjects:
+  - role: affected
+    node: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+  - role: outcome
+    node: 01a156ac-0a95-726f-ab84-01a2464753ea
+  - role: outcome
+    node: 01a156ac-0a95-726f-ab84-01a5872fcc23
+  - role: outcome
+    node: 01a158a2-54b4-745a-ba6f-6f4a00083b47
+  - role: outcome
+    node: 01a158d6-455f-75f3-9093-bda951ae1b45
+mentions:
+  - 01a130de-573a-77b2-b40b-d44300846d1a

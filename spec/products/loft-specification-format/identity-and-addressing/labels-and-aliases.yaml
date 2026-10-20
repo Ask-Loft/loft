@@ -1,7 +1,7 @@
 key: c788db27-2701-47f8-a74c-8fe6d13ab8c6
 slug: labels-and-aliases
 name: "Labels and aliases"
-body: "Human-readable labels allocated at publish from per-prefix counters, recorded in the bindings file, preserved as aliases when a node's label changes, and recorded as withdrawn when a key loses a label that two publishes gave apart."
+body: "Human-readable labels allocated at publish from per-prefix counters, recorded in the bindings file, preserved as aliases when a node's label changes, and recorded as withdrawn when a key loses a label that two publishes gave apart. A key that leaves the document keeps its binding, marked departed, so that a node restored by a revert, or moved out and back, takes back its label at the next publish. Each decision's binding also records the state the last publish saw it in, with a hash that names the nodes the decision weighs by key, which the lint rules of decision history compare with the tree. None of these records enters a root."
 realizes:
   - e1ab75a5-f206-4760-970f-bee0653c4f2a
 requirements:
@@ -158,22 +158,28 @@ requirements:
       form: event_driven
       when: "formatting finds a binding whose key no node or decision carries"
       system: "the formatter"
-      shall: "drop that binding from the bindings file."
+      shall: "mark that binding departed in the bindings file."
     criteria:
       - key: 01a137a8-ae5b-7395-a025-0da98138cce8
-        name: "After formatting, the bindings file lists no key that no node or decision carries."
+        name: "After formatting, each binding whose key no node or decision carries is marked departed."
       - key: 01a137a8-ae5b-7395-a025-0daa86467cff
-        name: "Formatting leaves the label counters unchanged, so no label of a dropped binding is allocated again."
+        name: "Formatting leaves the label counters unchanged, so no label of a departed binding is allocated to another key."
       - key: 01a137a8-ae5b-7395-a025-0dab7b5cf623
         name: "A binding whose key a node or decision carries is kept."
       - key: 01a137b5-8a69-7480-9b93-21a71fd2a1cc
-        name: "The formatter gives the label and key of each binding it drops."
+        name: "The formatter gives the label and key of each binding it marks departed."
+      - key: 01a156a4-1731-7679-a162-b74dc98399e5
+        name: "A departed binding keeps its label, its aliases and its withdrawn labels."
+      - key: 01a156a4-1731-7679-a162-b74ec679ed74
+        name: "A binding already marked departed is left as it is."
+      - key: 01a156a4-1731-7679-a162-b74f5eb839a5
+        name: "Formatting removes no binding from the bindings file."
   - key: 01a137a8-ae5b-7395-a025-0dac26f000aa
     statement:
       form: event_driven
-      when: "formatting drops the binding of a node that a retired or superseded decision names"
+      when: "formatting marks departed the binding of a node that a retired or superseded decision names"
       system: "the formatter"
-      shall: "write that reference as the binding's live label under `formerLabel`."
+      shall: "write that reference as the binding's label under `formerLabel`."
     criteria:
       - key: 01a137a8-ae5b-7395-a025-0dadf1a91a7f
         name: "A `subject` edge of such a decision to the node is written as the node's former label."
@@ -183,3 +189,66 @@ requirements:
         name: "A consequence of such a decision that names the node names its former label."
       - key: 01a137a8-ae5b-7395-a025-0db0d44d55b4
         name: "A decision that is neither retired nor superseded and names the node keeps the key, which the reader refuses."
+  - key: 01a156a4-1731-7679-a162-b75085aa7440
+    statement:
+      form: event_driven
+      when: "formatting finds a node whose key a departed binding names"
+      system: "the formatter"
+      shall: "write each reference to that binding's label under `formerLabel` as the node's key."
+    criteria:
+      - key: 01a156a4-1731-7679-a162-b7517d51b8d5
+        name: "A `subject` edge to the former label is written as the node's key."
+      - key: 01a156a4-1731-7679-a162-b7529e395d9a
+        name: "A driver that names the former label names the node's key."
+      - key: 01a156a4-1731-7679-a162-b7536e96322b
+        name: "A consequence that names the former label names the node's key."
+      - key: 01a156a4-1731-7679-a162-b754e32b9774
+        name: "The binding stays departed until the next publish."
+  - key: 01a156a4-1731-7679-a162-b7554118e7de
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "keep in the bindings file the binding of each key that has left the document, marked departed."
+    criteria:
+      - key: 01a156a4-1731-7679-a162-b7560b9f04ca
+        name: "A departed binding is written with `departed: true`."
+      - key: 01a156a4-1731-7679-a162-b7570da9d731
+        name: "A departed binding's label is the live label its key carried when it left the document."
+      - key: 01a156a4-1731-7679-a162-b7582312736d
+        name: "A departed label resolves to no element."
+      - key: 01a156a4-1731-7679-a162-b75940af5e98
+        name: "A departed label is never allocated to another key."
+  - key: 01a156a4-1731-7679-a162-b75a3449880e
+    statement:
+      form: unwanted
+      if: "a departed label is the live label or an alias of another key"
+      system: "the validator"
+      shall: "report an error."
+    criteria:
+      - key: 01a156a4-1731-7679-a162-b75b8ddc073b
+        name: "The error names both keys."
+      - key: 01a156a4-1731-7679-a162-b75cb3a8ace9
+        name: "The error names the label."
+      - key: 01a156a4-1731-7679-a162-b75d1f6cbfbc
+        name: "A departed label that no other key carries raises no such error."
+  - key: 01a156a4-1731-7679-a162-b75e7ec263c6
+    statement:
+      form: event_driven
+      when: "publishing"
+      system: "the publisher"
+      shall: "record in each decision's binding the kind of the decision's state, with its decision history hash for a decision that is accepted, rejected, superseded or retired."
+    criteria:
+      - key: 01a156a4-1731-7679-a162-b75fbc529428
+        name: "After a publish, each decision's binding holds `publishedState`, the kind of the decision's state at that publish."
+      - key: 01a156a4-1731-7679-a162-b760bd36f69b
+        name: "After a publish, the binding of each accepted, rejected, superseded or retired decision holds `publishedHistory`, the decision's history hash at that publish."
+      - key: 01a156a4-1731-7679-a162-b7612ef77e0f
+        name: "After a publish, the binding of a proposed decision holds no `publishedHistory`."
+      - key: 01a156a4-1731-7679-a162-b7629d767e6f
+        name: "`publishedHistory` is written in lowercase hexadecimal."
+      - key: 01a156a4-1731-7679-a162-b76372802144
+        name: "A binding that the formatter marks departed keeps the `publishedState` and `publishedHistory` it held."
+      - key: 01a156be-e2a7-7461-9a70-a0385099c003
+        name: "A publish removes `publishedState` and `publishedHistory` from the binding of each departed decision."
+      - key: 01a156a4-1731-7679-a162-b764694a5b4a
+        name: "The record of a decision is what the last publish that held the decision wrote."

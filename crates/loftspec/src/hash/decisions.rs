@@ -1,6 +1,8 @@
 //! Decision views (RQ-161): every reference inside a decision is by position or by content hash,
-//! never by key, so fresh element keys leave the view unchanged (AC-611, AC-612). The decisions
-//! come from an indexed document, so every reference resolves and successors form no cycle.
+//! never by key, so fresh element keys leave the view unchanged (AC-611, AC-612). The decision
+//! history view is the decision view with each node and successor it names given by key, so
+//! that editing a node a decision weighs leaves it unchanged. The decisions come from an indexed
+//! document, so every reference resolves and successors form no cycle.
 
 use std::collections::BTreeMap;
 
@@ -50,62 +52,83 @@ impl<'a> DecisionHasher<'a> {
             return *hash;
         }
         let decision = self.decisions[&key];
-        let state = self.state_view(decision);
-        let view = decision_view(decision, &state, self.nodes);
+        let state = state_view(decision, &decision.state, &mut |successor| {
+            json!(self.hash(successor))
+        });
+        let nodes = self.nodes;
+        let node = |subject: NodeRef| match subject {
+            NodeRef::Held(node) => json!(super::node_hash(nodes, node)),
+            NodeRef::Former(label) => super::former(label),
+        };
+        let view = decision_view(decision, &state, &node);
         let hash = digest(Domain::Decision, &view);
         self.hashes.insert(key, hash);
         self.views.insert(key, view);
         hash
     }
+}
 
-    fn state_view(&mut self, decision: &Decision) -> Value {
-        let option = |selected: OptionId| option_position(decision, selected);
-        let kind = decision.state.kind().as_str();
-        match &decision.state {
-            DecisionState::Proposed => json!({ "kind": kind }),
-            DecisionState::Accepted {
-                selected_option,
-                outcome,
-            } => json!({
-                "kind": kind,
-                "selectedOption": option(*selected_option),
-                "outcome": outcome,
-            }),
-            DecisionState::Rejected { rationale } => {
-                json!({ "kind": kind, "rationale": rationale })
-            }
-            DecisionState::Superseded {
-                selected_option,
-                outcome,
-                successor,
-            } => json!({
-                "kind": kind,
-                "selectedOption": option(*selected_option),
-                "outcome": outcome,
-                "successor": self.hash(*successor),
-            }),
-            DecisionState::Retired {
-                selected_option,
-                outcome,
-                rationale,
-            } => json!({
-                "kind": kind,
-                "selectedOption": option(*selected_option),
-                "outcome": outcome,
-                "rationale": rationale,
-            }),
+/// The decision history view of a decision in `state`, its own or one it is taken back to: its
+/// decision view with each node a driver or a consequence names, and its successor, given by
+/// key; a former label as the decision view gives it.
+pub(crate) fn history_view(decision: &Decision, state: &DecisionState) -> Value {
+    let state = state_view(decision, state, &mut |successor| json!(successor.key()));
+    let node = |subject: NodeRef| match subject {
+        NodeRef::Held(node) => json!(node.key()),
+        NodeRef::Former(label) => super::former(label),
+    };
+    decision_view(decision, &state, &node)
+}
+
+/// The view of a decision's state, its successor given by `successor`.
+fn state_view(
+    decision: &Decision,
+    state: &DecisionState,
+    successor: &mut dyn FnMut(DecisionId) -> Value,
+) -> Value {
+    let option = |selected: OptionId| option_position(decision, selected);
+    let kind = state.kind().as_str();
+    match state {
+        DecisionState::Proposed => json!({ "kind": kind }),
+        DecisionState::Accepted {
+            selected_option,
+            outcome,
+        } => json!({
+            "kind": kind,
+            "selectedOption": option(*selected_option),
+            "outcome": outcome,
+        }),
+        DecisionState::Rejected { rationale } => {
+            json!({ "kind": kind, "rationale": rationale })
         }
+        DecisionState::Superseded {
+            selected_option,
+            outcome,
+            successor: next,
+        } => json!({
+            "kind": kind,
+            "selectedOption": option(*selected_option),
+            "outcome": outcome,
+            "successor": successor(*next),
+        }),
+        DecisionState::Retired {
+            selected_option,
+            outcome,
+            rationale,
+        } => json!({
+            "kind": kind,
+            "selectedOption": option(*selected_option),
+            "outcome": outcome,
+            "rationale": rationale,
+        }),
     }
 }
 
 /// The decision view: title, context, state, drivers, options, assessments and consequences, in
-/// that order (AC-610). Options and drivers keep their authored order; an assessment names its
-/// option and driver by position and the assessments are sorted by those positions.
-fn decision_view(decision: &Decision, state: &Value, nodes: &NodeIndex) -> Value {
-    let node = |subject: NodeRef| match subject {
-        NodeRef::Held(node) => json!(super::node_hash(nodes, node)),
-        NodeRef::Former(label) => super::former(label),
-    };
+/// that order (AC-610), each node named as `node` names it. Options and drivers keep their
+/// authored order; an assessment names its option and driver by position and the assessments
+/// are sorted by those positions.
+fn decision_view(decision: &Decision, state: &Value, node: &dyn Fn(NodeRef) -> Value) -> Value {
     let drivers = decision
         .drivers
         .iter()

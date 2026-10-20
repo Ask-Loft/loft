@@ -8,7 +8,7 @@ pub(crate) mod decisions;
 mod nodes;
 
 use crate::bindings::BindingError;
-use crate::conflict::{ConflictOwner, FieldPath};
+use crate::conflict::{ConflictId, ConflictOwner, FieldPath};
 use crate::document::Document;
 use crate::identity::{Key, Label};
 use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, NodeId, OptionId};
@@ -66,9 +66,10 @@ pub enum ValidationError {
     /// An accepted, superseded or retired decision without an `outcome` subject (AC-740).
     #[error("decision {0} has no `subject` edge of role `outcome`")]
     NoOutcomeSubject(DecisionId),
-    /// A merge conflict that is not yet resolved (RQ-126).
-    #[error("{owner} holds an unresolved merge conflict over `{field}`")]
+    /// A merge conflict that is not yet resolved (RQ-126), with its identifier.
+    #[error("{owner} holds the unresolved merge conflict {id} over `{field}`")]
     Conflict {
+        id: ConflictId,
         owner: ConflictOwner,
         field: FieldPath,
     },
@@ -126,6 +127,9 @@ fn binding_keys(error: &BindingError) -> Vec<Key> {
             label_element,
             ..
         } => vec![alias_element.key(), label_element.key()],
+        BindingError::DepartedLabelHeld {
+            departed, holder, ..
+        } => vec![departed.key(), holder.key()],
     }
 }
 
@@ -157,13 +161,15 @@ pub fn validate(document: &Document) -> Vec<ValidationError> {
     errors
 }
 
-/// One error for each merge conflict the document holds (RQ-126).
+/// One error for each merge conflict the document holds (RQ-126), in the order it holds them,
+/// which for a document read from a tree is document order.
 #[must_use]
 pub fn conflict_errors(document: &Document) -> Vec<ValidationError> {
     document
         .conflicts
         .iter()
         .map(|conflict| ValidationError::Conflict {
+            id: conflict.id(),
             owner: conflict.owner,
             field: conflict.field.clone(),
         })

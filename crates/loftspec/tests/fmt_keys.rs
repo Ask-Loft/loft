@@ -2,8 +2,8 @@
 //! when one is missing.
 
 use crate::common::key;
+use crate::common::text::formatted;
 use crate::common::text::{COMPONENT, DECISION, FEATURE, PRODUCT, edited, files, path, text};
-use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem};
 use loftspec::document::Document;
 use loftspec::fmt::format;
@@ -138,7 +138,7 @@ fn a_decision_without_a_key_has_one_after_formatting() {
     let result = format(&files).unwrap();
     assert_eq!(result.minted, 1);
     let adr = Label::parse("ADR-1").unwrap();
-    assert_eq!(result.dropped, [(adr, key(20))], "the old key's binding");
+    assert_eq!(result.departed, [(adr, key(20))], "the old key's binding");
     let document = codec::read(&formatted(&files)).unwrap();
     assert_minted(document.decisions[0].id.key(), 20);
 }

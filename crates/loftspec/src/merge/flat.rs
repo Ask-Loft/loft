@@ -84,7 +84,9 @@ impl Flat {
         }
     }
 
-    fn node(&mut self, record: &Rec, place: Place) {
+    /// Adds the keyed record `record` at `place`, after the records the list holds already, and
+    /// each record inside it beneath it.
+    pub(super) fn node(&mut self, record: &Rec, place: Place) {
         let key = record
             .key()
             .expect("a keyed record carries a key the reader checked");
@@ -115,8 +117,35 @@ impl Flat {
     }
 }
 
+/// The lists of a whole tree in which each record file's top record sits: no file holds them,
+/// and the tree merger alone places records in them. Each is named apart from every field, so
+/// that the merge keeps for it no order of its own: the manifest and each Feature Group list
+/// their records by key, and the merge of those lists sets their order.
+pub(super) const PRODUCT_FILES: &str = "product files";
+pub(super) const FEATURE_FILES: &str = "feature files";
+pub(super) const COMPONENT_FILES: &str = "component files";
+pub(super) const DECISION_FILES: &str = "decision files";
+
+/// The kind of record that a list of a whole tree holds in a file of its own: Products and root
+/// Components and decisions at the top of the tree, and Features in a Feature Group.
+fn filed(parent: Option<Kind>, name: &str) -> Option<Kind> {
+    match (parent, name) {
+        (None, PRODUCT_FILES) => Some(Kind::Product),
+        (None, COMPONENT_FILES) => Some(Kind::RootComponent),
+        (None, DECISION_FILES) => Some(Kind::Decision),
+        (Some(Kind::FeatureGroup), FEATURE_FILES) => Some(Kind::Feature),
+        _ => None,
+    }
+}
+
+/// Whether a record of `kind` holds a list named `name` of keyed records, in its file or in the
+/// files of a whole tree.
+pub(super) fn holds_list(kind: Kind, name: &str) -> bool {
+    keyed_list(kind, name).is_some() || filed(Some(kind), name).is_some()
+}
+
 /// The kind of keyed record a field of a record of `kind` lists; none for any other field.
-pub(super) fn keyed_list(kind: Kind, name: &str) -> Option<Kind> {
+fn keyed_list(kind: Kind, name: &str) -> Option<Kind> {
     match kind.field(name)?.1.shape {
         Shape::List(Item::Record(item)) if item.is_keyed() => Some(item),
         _ => None,
@@ -131,12 +160,15 @@ pub(super) fn order_of(parent: Option<Kind>, name: &str) -> Order {
         .map_or(Order::ByKey, |(_, field)| field.order)
 }
 
-/// Whether a list of a record of `parent` (none for a registry's top) takes a record of `kind`.
+/// Whether a list of a record of `parent` (none for a registry's top, or a whole tree's) takes a
+/// record of `kind`.
 pub(super) fn accepts(parent: Option<Kind>, name: &str, kind: Kind) -> bool {
-    match parent {
-        Some(parent) => keyed_list(parent, name) == Some(kind),
-        None => name == field::ENTRIES,
-    }
+    let filed = filed(parent, name) == Some(kind);
+    filed
+        || match parent {
+            Some(parent) => keyed_list(parent, name) == Some(kind),
+            None => name == field::ENTRIES,
+        }
 }
 
 /// The merged records and lists, built back into a file's content: each list's records, each
@@ -147,19 +179,39 @@ pub(super) fn rebuild(
     nodes: BTreeMap<Key, Rec>,
     lists: &BTreeMap<Place, Vec<Key>>,
 ) -> Content {
-    let mut build = Build { nodes, lists };
+    let mut build = Build::new(nodes, lists);
     match top {
         Some(top) => Content::Record(build.fill(top, Parent::Top)),
         None => Content::Registry(build.records(&(Parent::Top, field::ENTRIES))),
     }
 }
 
-struct Build<'a> {
+/// Merged records, built back into record trees as merged lists hold them.
+pub(super) struct Build<'a> {
     nodes: BTreeMap<Key, Rec>,
     lists: &'a BTreeMap<Place, Vec<Key>>,
 }
 
-impl Build<'_> {
+impl<'a> Build<'a> {
+    pub(super) const fn new(
+        nodes: BTreeMap<Key, Rec>,
+        lists: &'a BTreeMap<Place, Vec<Key>>,
+    ) -> Self {
+        Self { nodes, lists }
+    }
+
+    /// The record keyed `key`, with each of its lists of keyed records; none where it was
+    /// taken already or the merge kept none.
+    pub(super) fn take(&mut self, key: Key) -> Option<Rec> {
+        let record = self.nodes.remove(&key)?;
+        Some(self.fill(record, Parent::Key(key)))
+    }
+
+    /// The record keyed `key` without its lists, to change before it is taken.
+    pub(super) fn get_mut(&mut self, key: Key) -> Option<&mut Rec> {
+        self.nodes.get_mut(&key)
+    }
+
     /// `record` with each of its lists of keyed records, as `parent` holds them.
     fn fill(&mut self, mut record: Rec, parent: Parent) -> Rec {
         for each in record.kind.fields() {

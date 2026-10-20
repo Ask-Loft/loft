@@ -1,14 +1,15 @@
-//! `loft check --baseline` as a function (the `loft check` Feature): the tree's findings split
-//! against those of a base tree, both linted under the tree's configuration, so the split
-//! measures the change of content alone. A finding is the same at both sides when its
-//! [`Identity`] is. Findings of one identity pair as a multiset, those at the same body line
-//! first, then the rest in report order.
+//! Findings against a base: the linter's findings of a tree split against those of a base
+//! version, both linted under the tree's configuration, so the split measures the change of
+//! content alone; and `loft check --baseline` as a function over two trees (the `loft check`
+//! Feature). A finding is the same at both sides when its [`Identity`] is. Findings of one
+//! identity pair as a multiset, those at the same body line first, then the rest in report order.
 
 use std::collections::BTreeMap;
 
 use crate::canonical::digest_bytes;
-use crate::codec::{Files, LINT, ReadError, SpecPath, read_sited};
-use crate::lint::{Finding, Identity, lint};
+use crate::codec::{Files, LINT, ReadError, Sites, SpecPath, read_sited};
+use crate::document::Document;
+use crate::lint::{Finding, Identity, LintConfig, lint};
 
 use super::{Checked, checked_under, lint_config};
 
@@ -58,6 +59,31 @@ pub struct Baselined {
     pub lint_configs: LintConfigs,
 }
 
+/// The tree's findings, and their split against a base's.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Against {
+    /// The tree's findings, in report order.
+    pub findings: Vec<Finding>,
+    pub split: Split,
+}
+
+/// The linter against a base: lints `tree` and `base`, two documents held in memory, under
+/// `config`, the tree's own lint configuration, and splits the tree's findings against the
+/// base's. Each finding is placed at the sites its document's `sites` give, which are empty for a
+/// document no tree holds. The base is not validated.
+#[must_use]
+pub fn lint_against(
+    tree: &Document,
+    tree_sites: &Sites,
+    base: &Document,
+    base_sites: &Sites,
+    config: &LintConfig,
+) -> Against {
+    let findings = lint(tree, tree_sites, config);
+    let split = split(&findings, &lint(base, base_sites, config));
+    Against { findings, split }
+}
+
 /// Checks the tree `files`, and splits its findings against those of `base` linted under the
 /// tree's configuration. The base's validation errors are not reported.
 ///
@@ -71,13 +97,10 @@ pub fn check_against(files: &Files, base: &Files) -> Result<Baselined, Vec<ReadE
         (&config, &lint_config(base)),
         (Ok(now), Ok(then)) if now == then
     );
-    let (checked, used) = checked_under(files, config);
-    let split = used.map_or_else(Split::default, |config| {
-        split(checked.findings(), &lint(&before, &before_sites, &config))
-    });
+    let (checked, split) = checked_under(files, config, Some((&before, &before_sites)));
     Ok(Baselined {
         checked,
-        split,
+        split: split.unwrap_or_default(),
         lint_configs: LintConfigs {
             tree: digest(files),
             base: digest(base),

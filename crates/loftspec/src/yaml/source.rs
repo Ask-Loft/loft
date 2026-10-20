@@ -16,13 +16,18 @@ pub fn is_printable(character: char) -> bool {
         && !matches!(character, '\u{2028}' | '\u{2029}' | '\u{FEFF}')
 }
 
+/// The bytes as UTF-8 text, refused at the byte offset of the first sequence that is not UTF-8.
+pub(crate) fn utf8(bytes: &[u8]) -> Result<&str, Error> {
+    std::str::from_utf8(bytes).map_err(|error| Error {
+        location: Location::Byte(error.valid_up_to()),
+        kind: ErrorKind::InvalidUtf8,
+    })
+}
+
 /// The file's text, refused at the first byte that is not UTF-8, at a byte order mark, at a
 /// carriage return or at a character that is not printable.
 pub(super) fn decode(bytes: &[u8]) -> Result<&str, Error> {
-    let text = std::str::from_utf8(bytes).map_err(|error| Error {
-        location: Location::Byte(error.valid_up_to()),
-        kind: ErrorKind::InvalidUtf8,
-    })?;
+    let text = utf8(bytes)?;
     let mut line = 1;
     let mut column = 1;
     for character in text.chars() {

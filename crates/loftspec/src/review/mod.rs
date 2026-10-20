@@ -1,11 +1,14 @@
-//! The review packet (the `loft review` Feature): the assertions under review, each in the unit
-//! of its scope with the nodes it is read against, and nothing that weighs them (the decision
-//! "The review packet carries context and no judgement"). An assertion is a Requirement, a
-//! criterion, a Constraint or a Quality Attribute. Without a base every assertion is reviewed;
-//! against a base, those the tree added, changed, moved or removed, each beside the base's node.
+//! The review packer (The review packet): the assertions under review, each in the unit of its
+//! scope with the nodes it is read against, and nothing that weighs them (the decision "The
+//! review packet carries context and no judgement"). An assertion is a Requirement, a criterion,
+//! a Constraint or a Quality Attribute. Without a base every assertion is reviewed; against a
+//! base, those the tree added, changed, moved or removed, each beside the base's node. [`pack`]
+//! gives the packet; [`page`] gives a page of its units as JSON, as every caller pages them.
 
 mod context;
+mod json;
 mod links;
+mod pages;
 mod side;
 
 use serde_json::Value;
@@ -15,6 +18,8 @@ use crate::document::{Document, TermEntry};
 use crate::identity::Label;
 use crate::ids::{DecisionId, NodeId};
 use crate::kind::NodeKind;
+
+pub use self::pages::{Page, PagedUnit, Refused, Version, page};
 
 use self::side::{Side, Which};
 

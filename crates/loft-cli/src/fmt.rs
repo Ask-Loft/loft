@@ -13,7 +13,7 @@ use crate::out::{errln, outln};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-fmt/1";
+const SCHEMA: &str = "loft-fmt/2";
 
 /// What a run did: the files that change, the keys minted, and whether it wrote them.
 struct Outcome {
@@ -65,11 +65,12 @@ pub fn run(root: &Path, check: bool, as_json: bool) -> Finished {
 fn attempt(root: &Path, check: bool) -> Result<Outcome, Stop> {
     let store = FileStore::open(root)?;
     let formatted = format(&store.read_files()?)?;
-    // A key lost by accident drops a binding too, so every drop is told.
-    for (label, key) in &formatted.dropped {
+    // A key lost by accident marks a binding departed too, so every binding newly marked is
+    // told.
+    for (label, key) in &formatted.departed {
         errln!(
             "spec/labels.yaml: the binding of {label} ({key}) names no node or decision, so \
-             `loft fmt` drops it"
+             `loft fmt` marks it departed"
         );
     }
     let changed = formatted.changed.keys().map(ToString::to_string).collect();

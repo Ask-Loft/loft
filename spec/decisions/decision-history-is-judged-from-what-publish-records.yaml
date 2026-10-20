@@ -1,0 +1,125 @@
+key: 01a156a4-172f-7126-a641-8efe5986ad88
+slug: decision-history-is-judged-from-what-publish-records
+title: "Decision history is judged from what each publish records in the tree"
+context: "An accepted decision is changed by a new decision that supersedes it, never by an edit, but nothing reported an edit: the linter saw only the tree as it stands. Findings depend only on the tree and `spec/lint.yaml`, a publish is refused only by a validation error, and a tree may be published where no repository is given."
+state:
+  kind: accepted
+  selectedOption: 01a156a4-172f-7126-a641-8f034aee7c85
+  outcome: "Each publish records in a decision's binding the kind of its state and, for a resolved decision, a decision history hash that names the nodes and the successor it weighs by key, so that an edit to such a node is not an edit to the decision; two lint rules compare the tree's decisions with those records and report an edit to a resolved decision's meaning, a change of state the record does not allow, and a resolved decision deleted where it should be retired; neither refuses a publish."
+drivers:
+  - key: 01a156a4-172f-7126-a641-8eff3f835218
+    kind: local
+    label: "Judged from the tree"
+    statement: "The findings depend only on the tree and its lint configuration."
+  - key: 01a156a4-172f-7126-a641-8f000556ba24
+    kind: local
+    label: "A publish is not blocked"
+    statement: "Only a validation error refuses a publish."
+  - key: 01a156a4-172f-7126-a641-8f0143ae13f2
+    kind: local
+    label: "Without git"
+    statement: "The rule works where the tree is given without a repository."
+  - key: 01a156a4-172f-7126-a641-8f02323d070e
+    kind: local
+    label: "Caught without a reviewer"
+    statement: "An edit to a resolved decision is reported whether or not a reviewer notices it."
+options:
+  - key: 01a156a4-172f-7126-a641-8f034aee7c85
+    title: "Records in the bindings file"
+    description: "Each publish records each decision's state kind and history hash in its binding, and lint rules compare the tree with them."
+  - key: 01a156a4-172f-7126-a641-8f046ce8653b
+    title: "Git history"
+    description: "A lint rule compares each decision with its file at the last publish commit, read from git."
+  - key: 01a156a4-172f-7126-a641-8f05780a35ff
+    title: "A validation error"
+    description: "The validator compares each decision with a record and refuses a publish over an edited resolved decision."
+  - key: 01a156a4-172f-7126-a641-8f064f62b12a
+    title: "Review alone"
+    description: "Nothing records the published state, and a reviewer reads each decision's diff."
+assessments:
+  - option: 01a156a4-172f-7126-a641-8f034aee7c85
+    driver: 01a156a4-172f-7126-a641-8eff3f835218
+    rating: supports
+    rationale: "`spec/labels.yaml` is part of the tree"
+  - option: 01a156a4-172f-7126-a641-8f034aee7c85
+    driver: 01a156a4-172f-7126-a641-8f000556ba24
+    rating: supports
+    rationale: "a lint finding refuses no publish"
+  - option: 01a156a4-172f-7126-a641-8f034aee7c85
+    driver: 01a156a4-172f-7126-a641-8f0143ae13f2
+    rating: supports
+    rationale: "the record travels with the tree"
+  - option: 01a156a4-172f-7126-a641-8f034aee7c85
+    driver: 01a156a4-172f-7126-a641-8f02323d070e
+    rating: supports
+    rationale: "the rule reports the edit"
+  - option: 01a156a4-172f-7126-a641-8f046ce8653b
+    driver: 01a156a4-172f-7126-a641-8eff3f835218
+    rating: conflicts
+    rationale: "the findings depend on the repository's history"
+  - option: 01a156a4-172f-7126-a641-8f046ce8653b
+    driver: 01a156a4-172f-7126-a641-8f000556ba24
+    rating: supports
+    rationale: "a lint finding refuses no publish"
+  - option: 01a156a4-172f-7126-a641-8f046ce8653b
+    driver: 01a156a4-172f-7126-a641-8f0143ae13f2
+    rating: conflicts
+    rationale: "no repository, no history"
+  - option: 01a156a4-172f-7126-a641-8f046ce8653b
+    driver: 01a156a4-172f-7126-a641-8f02323d070e
+    rating: supports
+    rationale: "the rule reports the edit"
+  - option: 01a156a4-172f-7126-a641-8f05780a35ff
+    driver: 01a156a4-172f-7126-a641-8eff3f835218
+    rating: supports
+    rationale: "the record can be kept in the tree"
+  - option: 01a156a4-172f-7126-a641-8f05780a35ff
+    driver: 01a156a4-172f-7126-a641-8f000556ba24
+    rating: conflicts
+    rationale: "the edit refuses the publish"
+  - option: 01a156a4-172f-7126-a641-8f05780a35ff
+    driver: 01a156a4-172f-7126-a641-8f0143ae13f2
+    rating: supports
+    rationale: "the record can be kept in the tree"
+  - option: 01a156a4-172f-7126-a641-8f05780a35ff
+    driver: 01a156a4-172f-7126-a641-8f02323d070e
+    rating: supports
+    rationale: "the validator reports the edit"
+  - option: 01a156a4-172f-7126-a641-8f064f62b12a
+    driver: 01a156a4-172f-7126-a641-8eff3f835218
+    rating: supports
+    rationale: "nothing is read"
+  - option: 01a156a4-172f-7126-a641-8f064f62b12a
+    driver: 01a156a4-172f-7126-a641-8f000556ba24
+    rating: supports
+    rationale: "nothing refuses"
+  - option: 01a156a4-172f-7126-a641-8f064f62b12a
+    driver: 01a156a4-172f-7126-a641-8f0143ae13f2
+    rating: neutral
+    rationale: "a reviewer needs some earlier version to compare with"
+  - option: 01a156a4-172f-7126-a641-8f064f62b12a
+    driver: 01a156a4-172f-7126-a641-8f02323d070e
+    rating: conflicts
+    rationale: "an edit no reviewer reads goes unreported"
+consequences:
+  - key: 01a156a4-172f-7126-a641-8f07964217ec
+    kind: benefit
+    statement: "An edit to an accepted decision is reported in CI by `loft check --fail-on warning`."
+  - key: 01a156a4-172f-7126-a641-8f0888631c67
+    kind: cost
+    statement: "Each binding of a decision holds two more fields that enter no root."
+  - key: 01a156a4-172f-7126-a641-8f09df2e55d3
+    kind: cost
+    statement: "The history hash is a second digest of each resolved decision, beside its decision view hash, that every implementation computes alike."
+  - key: 01a156a4-172f-7126-a641-8f0ad2577490
+    kind: obligation
+    statement: "A decision edited and published anyway is judged against the record of that publish from then on, and a resolved decision deleted and published is no longer reported."
+subjects:
+  - role: affected
+    node: 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+  - role: outcome
+    node: 01a156a4-1731-7679-a162-b75e7ec263c6
+  - role: outcome
+    node: 01a156a4-1732-7428-aee4-d3aa5722790a
+  - role: outcome
+    node: 01a156a4-1732-7428-aee4-d3b4554c6b03

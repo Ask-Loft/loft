@@ -2,12 +2,13 @@
 //! label withdrawn from a key to that key's live label, in the text of every element whose
 //! `mentions` include the key, and only there.
 
+use crate::common::publishing::clean_main;
 use crate::common::text::{DECISION, FEATURE, files, path, text};
 use crate::common::{key, label};
 use loftspec::codec::{self, Files};
 use loftspec::hash::hash_document;
 use loftspec::publish::rewrite::rewrite;
-use loftspec::publish::{Publication, PublishedAt, ReadTree, Relabel, RepoState, publish};
+use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, Relabel, publish};
 
 const CRITERION_NAME: &str = "name: \"Every node record carries a `key` field.\"";
 const MENTIONS_4: &str = "        mentions:\n          - 00000000-0000-7000-8000-000000000004\n";
@@ -193,13 +194,16 @@ fn a_tree_without_a_withdrawn_label_is_not_rewritten() {
 fn a_publish_writes_the_rewritten_files_and_pins_the_tree_it_writes() {
     let (from, to) = (CRITERION_NAME, citing("RQ-9").2);
     let files = tree(&[WITHDRAWN, (FEATURE, from, &to)]);
-    let repo = RepoState {
-        branch: Some("main".to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    };
+    let repo = clean_main();
     let at = PublishedAt::from_unix_seconds(0).unwrap();
-    let published = publish(ReadTree::read(&files).unwrap(), &repo, None, at).unwrap();
+    let published = publish(
+        ReadTree::read(&files).unwrap(),
+        Some(&repo),
+        None,
+        at,
+        Made::NotAsRemote,
+    )
+    .unwrap();
     let Publication::Published {
         lock,
         files: written,

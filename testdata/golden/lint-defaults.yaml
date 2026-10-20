@@ -158,6 +158,12 @@ rules:
   - rule: V2-009
     enabled: true
     severity: info
+  - rule: V2-010
+    enabled: true
+    severity: warning
+  - rule: V2-011
+    enabled: true
+    severity: warning
   - rule: TD-001
     enabled: true
     severity: hint

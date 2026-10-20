@@ -1,0 +1,89 @@
+key: 01a156a6-de49-70a4-a6bb-37249d7bb3d3
+slug: conflict-identifiers
+name: "Conflict identifiers"
+body: "A name for each conflict record that every reader derives from the record alone, so that a person, an agent or a server can point at one conflict, and two merges that write the same conflict agree on its name. The identifier is never written into a file: removing a conflict record removes its identifier with it."
+tags:
+  - portable
+realizes:
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+  - b90f38f9-766c-467f-a29c-d6ae3b796e52
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+requirements:
+  - key: 01a156a6-de49-70a4-a6bb-37256c76c23f
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute each conflict record's identifier from the record and its holder alone."
+    criteria:
+      - key: 01a156a6-de49-70a4-a6bb-3726463ffe2b
+        name: "The identifier is SHA-256 over the domain string `loftspec/conflict/1`, one zero byte and the RFC 8785 canonical JSON of the array of the holder, the field, `base`, `ours` and `theirs`."
+      - key: 01a156a6-de49-70a4-a6bb-37279f71574f
+        name: "The holder of a conflict record is the key of the record whose `conflicts` list holds it."
+      - key: 01a156a6-de49-70a4-a6bb-372856410aaf
+        name: "A conflict record of the manifest has the holder `spec/loftspec.yaml`."
+      - key: 01a156a6-de49-70a4-a6bb-372924106abd
+        name: "A conflict record of `spec/labels.yaml` has the holder `spec/labels.yaml`."
+      - key: 01a156a6-de49-70a4-a6bb-372a8ff3aaa3
+        name: "A side on which the field is absent enters the array as `null`."
+      - key: 01a15938-bed7-7602-8b06-3c455164867d
+        name: "A side that the conflict record writes as deleted enters the array as `null`."
+      - key: 01a15938-bed7-7602-8b06-3c465b968a92
+        name: "A scalar side enters the array as a JSON string of its text as the conflict record writes it, a number or a flag included."
+      - key: 01a15938-bed7-7602-8b06-3c4751872d51
+        name: "A sequence side enters the array as a JSON array of its items, in the order the conflict record writes them."
+      - key: 01a15938-bed7-7602-8b06-3c48a98ff06f
+        name: "A mapping side enters the array as a JSON object from each field name the conflict record writes to that field's value."
+      - key: 01a15938-bed7-7602-8b06-3c49ee9cc682
+        name: "A side of extension data enters the array as the JSON value that the extension data holds."
+      - key: 01a156a6-de49-70a4-a6bb-372b223edc5d
+        name: "The identifier is written as 64 lowercase hexadecimal digits."
+      - key: 01a156a6-de49-70a4-a6bb-372c6fee4571
+        name: "Changing the holder, the field or any side changes the identifier."
+      - key: 01a156a6-de49-70a4-a6bb-372df202de8f
+        name: "Moving the conflict record within its `conflicts` list leaves its identifier unchanged."
+      - key: 01a156a6-de49-70a4-a6bb-372ecf6bb476
+        name: "Adding or removing another conflict record leaves the identifier unchanged."
+      - key: 01a156a6-de49-70a4-a6bb-372f2f36dc99
+        name: "Two merges that write the same conflict record under the same holder give it the same identifier."
+  - key: 01a156a6-de49-70a4-a6bb-37303895737b
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write no conflict identifier into a file."
+    criteria:
+      - key: 01a156a6-de49-70a4-a6bb-37313dd5baba
+        name: "No conflict record holds its identifier."
+      - key: 01a156a6-de49-70a4-a6bb-37326db7de7c
+        name: "No file of the Format holds a conflict identifier."
+  - key: 01a156a6-de49-70a4-a6bb-37335d1c1bc6
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "report each conflict record with its identifier, its holder and its field."
+    criteria:
+      - key: 01a156a6-de49-70a4-a6bb-37340aae9e24
+        name: "The error for a conflict record names the record's identifier."
+      - key: 01a156a6-de49-70a4-a6bb-3735a8f4fcae
+        name: "The error for a conflict record names its holder."
+      - key: 01a156a6-de49-70a4-a6bb-373675e3ce80
+        name: "The error for a conflict record names its field."
+  - key: 01a156a6-de49-70a4-a6bb-3737d8901099
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "list the conflict records of a tree in document order."
+    criteria:
+      - key: 01a156a6-de49-70a4-a6bb-3738b2a3370a
+        name: "The conflict records of `spec/loftspec.yaml` are listed first."
+      - key: 01a156a6-de49-70a4-a6bb-3739c83a5f9b
+        name: "The conflict records of the Product files come next, each Product file followed by its Feature files in document order."
+      - key: 01a156a6-de49-70a4-a6bb-373aae0c7418
+        name: "The conflict records of the root Component files follow, in the order of their file names."
+      - key: 01a156a6-de49-70a4-a6bb-373b1b80f433
+        name: "The conflict records of the decision files follow, in the order of their file names."
+      - key: 01a156a6-de49-70a4-a6bb-373c078c0650
+        name: "The conflict records of `spec/tags.yaml`, `spec/categories.yaml` and `spec/terms.yaml` follow, in that order."
+      - key: 01a156a6-de49-70a4-a6bb-373ddba92d72
+        name: "The conflict records of `spec/labels.yaml` are listed last."
+      - key: 01a156a6-de49-70a4-a6bb-373e71fc1dc0
+        name: "Within one file, conflict records are listed in the order in which they appear in the file."

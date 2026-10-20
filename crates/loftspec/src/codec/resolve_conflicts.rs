@@ -5,7 +5,9 @@
 use std::collections::BTreeMap;
 
 use super::conflict::{SideShape, side_shape};
-use super::files::Tree;
+use super::error::SpecPath;
+use super::files::{Role, Tree};
+use super::node_files::filed_in_order;
 use super::record::{ConflictRec, Rec, Val};
 use super::schema::{Item, Kind, Shape, field};
 use crate::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
@@ -14,18 +16,63 @@ use crate::ids::{
     CategoryId, ConsequenceId, DecisionId, DriverId, ElementId, NodeId, OptionId, TagId, TermId,
 };
 
-/// Every conflict the tree holds, in file order and then in the order each record lists them.
+/// Every conflict the tree holds, in document order: the manifest's, each Product file's
+/// followed by its Feature files' in document order, the root Component files' and the decision
+/// files' in the order of their file names, the tag, category and term registries', and the
+/// bindings' last; within one file, in the order the file holds them.
 pub(super) fn collect(tree: &Tree) -> Vec<Conflict> {
     let mut conflicts = Vec::new();
-    for (_, content) in tree.files.values() {
-        for record in content.records() {
+    let records = || {
+        tree.files
+            .values()
+            .flat_map(|(_, content)| content.records())
+    };
+    if !records().any(holds_conflict) {
+        return conflicts;
+    }
+    for path in in_document_order(tree) {
+        for record in tree.files[path].1.records() {
             collect_from(record, &mut conflicts);
         }
     }
     conflicts
 }
 
+/// Whether a record, or a record inside it, holds a conflict.
+fn holds_conflict(record: &Rec) -> bool {
+    !record.conflicts.is_empty() || record.children().any(holds_conflict)
+}
+
+/// The tree's paths in document order. A Product or Feature file that no list reaches, which
+/// only a tree the reader refuses holds, follows the others in path order.
+fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
+    let filed: BTreeMap<&SpecPath, usize> = (filed_in_order(tree).into_iter().enumerate())
+        .map(|(at, filed)| (filed.path, at))
+        .collect();
+    let mut paths: Vec<&SpecPath> = tree.files.keys().collect();
+    paths.sort_by_key(|path| {
+        let rank = match &tree.files[*path].0 {
+            Role::Manifest => 0,
+            Role::Product { .. } | Role::Feature { .. } => 1,
+            Role::Component { .. } => 2,
+            Role::Decision { .. } => 3,
+            Role::Tags => 4,
+            Role::Categories => 5,
+            Role::Terms => 6,
+            Role::Labels => 7,
+            Role::Lint => 8,
+        };
+        (rank, filed.get(*path).copied().unwrap_or(usize::MAX), *path)
+    });
+    paths
+}
+
+/// The conflicts of `record` and of every record inside it, in the order the file holds them: a
+/// record writes its `conflicts` after every other field, so after those of the records inside it.
 fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
+    for child in record.children() {
+        collect_from(child, conflicts);
+    }
     if let Some(owner) = owner(record) {
         for conflict in &record.conflicts {
             let [base, ours, theirs] = conflict.sides().map(|(_, side)| side.map(value));
@@ -37,9 +84,6 @@ fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
                 theirs,
             });
         }
-    }
-    for child in record.children() {
-        collect_from(child, conflicts);
     }
 }
 

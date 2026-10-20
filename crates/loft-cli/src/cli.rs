@@ -1,6 +1,7 @@
 //! The arguments `loft` takes: every command, its options and the values they accept, as clap
 //! parses them. A usage error exits 2 (RQ-154).
 
+use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
@@ -192,7 +193,10 @@ impl ReviewArgs {
             base: self.base.as_deref(),
             node: self.node.as_deref(),
             max_chars: self.max_chars,
-            page: usize::try_from(self.page).unwrap_or(usize::MAX),
+            page: usize::try_from(self.page)
+                .ok()
+                .and_then(NonZeroUsize::new)
+                .unwrap_or(NonZeroUsize::MAX),
         }
     }
 }

@@ -2,14 +2,13 @@
 //! the record that holds it until it is removed (RQ-126), it survives a write and a read, no
 //! hash reads it, and a tree that holds one does not verify.
 
+use crate::common::publishing::clean_main;
 use crate::common::text::{FEATURE, SHALL_CONFLICT, edited, files, on_requirement, path, text};
 use loftspec::check::{Checked, check};
 use loftspec::codec::{self, Files};
 use loftspec::conflict::{ConflictOwner, ConflictValue, FieldPath};
 use loftspec::hash::hash_document;
-use loftspec::publish::{
-    Publication, PublishedAt, ReadTree, RepoState, Unverified, publish, verify,
-};
+use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, Unverified, publish, verify};
 
 fn conflicted() -> Files {
     on_requirement(SHALL_CONFLICT)
@@ -25,12 +24,13 @@ fn errors(files: &Files) -> Vec<String> {
 
 #[test]
 fn a_conflict_record_is_an_error_naming_the_file_and_the_key() {
-    let errors = errors(&conflicted());
+    let files = conflicted();
+    let id = codec::read(&files).unwrap().conflicts[0].id();
     assert_eq!(
-        errors,
+        errors(&files),
         [format!(
-            "spec/{FEATURE}:8:10: requirement 00000000-0000-7000-8000-000000000004 holds an \
-             unresolved merge conflict over `statement.shall`"
+            "spec/{FEATURE}:8:10: requirement 00000000-0000-7000-8000-000000000004 holds the \
+             unresolved merge conflict {id} over `statement.shall`"
         )]
     );
 }
@@ -90,25 +90,32 @@ fn a_conflict_on_the_manifest_is_placed_at_its_file() {
         path("loftspec.yaml"),
         format!("{manifest}conflicts:\n  - field: publishBranch\n    ours: release\n").into_bytes(),
     );
+    let id = codec::read(&files).unwrap().conflicts[0].id();
     assert_eq!(
         errors(&files),
-        [
-            "spec/loftspec.yaml: the manifest holds an unresolved merge conflict over `publishBranch`"
-        ]
+        [format!(
+            "spec/loftspec.yaml: the manifest holds the unresolved merge conflict {id} over \
+             `publishBranch`"
+        )]
     );
     assert_eq!(codec::write(&codec::read(&files).unwrap()), files);
 }
 
 #[test]
 fn a_tree_that_holds_a_conflict_compares_no_root_and_does_not_verify() {
-    let repo = RepoState {
-        branch: Some("main".to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    };
+    let repo = clean_main();
     let at = PublishedAt::from_unix_seconds(0).unwrap();
-    let published = publish(ReadTree::read(&files()).unwrap(), &repo, None, at).unwrap();
-    let (Publication::Published { lock, .. } | Publication::Unchanged(lock)) = published;
+    let published = publish(
+        ReadTree::read(&files()).unwrap(),
+        Some(&repo),
+        None,
+        at,
+        Made::NotAsRemote,
+    )
+    .unwrap();
+    let (Publication::Published { lock, .. } | Publication::Unchanged(lock)) = published else {
+        panic!("a document that is not connected is published");
+    };
     let files = conflicted();
     let refused = verify(&ReadTree::read(&files).unwrap(), &lock);
     let Err(Unverified::Invalid(errors)) = refused else {
@@ -117,7 +124,7 @@ fn a_tree_that_holds_a_conflict_compares_no_root_and_does_not_verify() {
     assert!(
         errors[0]
             .to_string()
-            .contains("holds an unresolved merge conflict"),
+            .contains("holds the unresolved merge conflict"),
         "{}",
         errors[0]
     );

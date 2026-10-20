@@ -3,6 +3,7 @@
 //! hasher takes an indexed document, so every reference it follows resolves.
 
 mod decisions;
+mod state;
 mod tree;
 
 use std::collections::BTreeMap;
@@ -10,16 +11,16 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 use serde_json::{Value, json};
 
+pub use state::{StateView, lint_digest, state_root, state_view};
 pub use tree::ContentHash;
 
-use crate::FORMAT;
 use crate::canonical::{Digest, Domain, canonical_bytes, digest, digest_array};
-use crate::document::{DerivedFrom, Document, Edge, EdgeTarget, SubjectRole};
+use crate::decision::{Decision, DecisionState};
+use crate::document::{Document, Edge, EdgeTarget, SubjectRole};
 use crate::ext::Ext;
 use crate::identity::{Key, Label};
 use crate::ids::{DecisionId, ElementId, NodeId};
 use crate::index::{IndexErrors, Indexed};
-use crate::manifest::ALGORITHM;
 
 /// The content hash of every keyed node, by key.
 pub(crate) type NodeIndex = BTreeMap<Key, Digest>;
@@ -152,6 +153,57 @@ pub fn hash_indexed_with_views(indexed: &Indexed<'_>) -> (DocumentHashes, Views)
     (hashes, views)
 }
 
+/// The decision history view of one decision: its decision view with each node and successor
+/// it names given by key.
+#[must_use]
+pub fn decision_history_view(decision: &Decision) -> Value {
+    decisions::history_view(decision, &decision.state)
+}
+
+/// The decision history hash of one decision: the digest of its decision history view under
+/// `loftspec/decision-history/1`; no root holds it. Its view names every node and decision by
+/// key and follows no reference, so the decision need not belong to a document that indexes.
+#[must_use]
+pub fn decision_history_hash(decision: &Decision) -> Digest {
+    decision_history_hash_in(decision, &decision.state)
+}
+
+/// The decision history hash of one decision as it would be in `state`.
+pub(crate) fn decision_history_hash_in(decision: &Decision, state: &DecisionState) -> Digest {
+    digest(
+        Domain::DecisionHistory,
+        &decisions::history_view(decision, state),
+    )
+}
+
+/// The roots of a document's tag registry, its category registry and its term list, none for an
+/// empty term list. No registry entry names an element, so the document need not index.
+pub(crate) fn registry_roots(document: &Document) -> (Digest, Digest, Option<Digest>) {
+    let terms =
+        (!document.terms.is_empty()).then(|| digest(Domain::Registry, &terms_view(document)));
+    (
+        digest(Domain::Registry, &tags_view(document)),
+        digest(Domain::Registry, &categories_view(document)),
+        terms,
+    )
+}
+
+fn tags_view(document: &Document) -> (&str, Vec<[&str; 2]>) {
+    let rows = document
+        .tags
+        .iter()
+        .map(|tag| [tag.name.as_str(), tag.definition.as_str()]);
+    registry_view("tags", rows)
+}
+
+fn categories_view(document: &Document) -> (&str, Vec<[&str; 2]>) {
+    let rows = document
+        .categories
+        .iter()
+        .map(|category| [category.name.as_str(), category.definition.as_str()]);
+    registry_view("categories", rows)
+}
+
 /// Digests a root view, keeping it as a value when views are kept.
 fn root<T: Serialize>(
     views: &mut Option<&mut Views>,
@@ -177,25 +229,12 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         ElementId::Decision(id) => decisions[&id],
     };
     let edges = edges_root(&document.edges, &resolve, &mut views);
-    let tag_rows = document
-        .tags
-        .iter()
-        .map(|tag| [tag.name.as_str(), tag.definition.as_str()]);
-    let tags = root(
-        &mut views,
-        "tags",
-        Domain::Registry,
-        &registry_view("tags", tag_rows),
-    );
-    let category_rows = document
-        .categories
-        .iter()
-        .map(|category| [category.name.as_str(), category.definition.as_str()]);
+    let tags = root(&mut views, "tags", Domain::Registry, &tags_view(document));
     let categories = root(
         &mut views,
         "categories",
         Domain::Registry,
-        &registry_view("categories", category_rows),
+        &categories_view(document),
     );
     let mut decision_hashes: Vec<Digest> = decisions.values().copied().collect();
     decision_hashes.sort_unstable();
@@ -225,7 +264,7 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         &mut views,
         "state",
         Domain::State,
-        &state_view(document, content, bindings, extensions),
+        &state::view_one(document, content, bindings, extensions),
     );
     if let Some(views) = views {
         views.decisions = decision_views;
@@ -334,14 +373,14 @@ fn terms_view(document: &Document) -> (&'static str, Vec<TermRow<'_>>) {
 }
 
 /// The binding root view: key, live label, aliases and computed hash, sorted by key (RQ-15,
-/// AC-240).
+/// AC-240). A departed binding names nothing, so it is left out.
 fn bindings_view<'a>(
     document: &'a Document,
     resolve: &impl Fn(ElementId) -> Digest,
 ) -> Vec<(Key, Label, &'a [Label], Digest)> {
     document
         .bindings
-        .iter()
+        .live()
         .map(|binding| {
             (
                 binding.element.key(),
@@ -351,37 +390,4 @@ fn bindings_view<'a>(
             )
         })
         .collect()
-}
-
-/// The state view: format, algorithm, document key, content root, binding root and the
-/// derived-from record (AC-62), then the extensions root when there is one.
-fn state_view(
-    document: &Document,
-    content: Digest,
-    bindings: Digest,
-    extensions: Option<Digest>,
-) -> Value {
-    let derived_from = document.derived_from.as_ref().map(
-        |DerivedFrom {
-             authored_state_id,
-             content_address,
-             publish_sequence,
-         }| {
-            json!({
-                "authoredStateId": authored_state_id,
-                "contentAddress": content_address,
-                "publishSequence": publish_sequence,
-            })
-        },
-    );
-    let mut view = vec![
-        json!(FORMAT),
-        json!(ALGORITHM),
-        json!(document.id),
-        json!(content),
-        json!(bindings),
-        json!(derived_from),
-    ];
-    view.extend(extensions.map(|extensions| json!(extensions)));
-    Value::Array(view)
 }

@@ -10,7 +10,7 @@ use std::path::{Component, Path, PathBuf};
 use loftspec::codec;
 use loftspec::index::IndexErrors;
 use loftspec::render::openspec::{Finding, RENDER_MAP, RenderError, openspec};
-use loftspec::render::render;
+use loftspec::render::render_tree;
 use loftspec_store::fs;
 use loftspec_store::openspec::{WriteProjectionError, write_projection};
 use serde_json::json;
@@ -20,7 +20,7 @@ use crate::json;
 use crate::out::outln;
 use crate::stop::{self, Stop};
 
-const SCHEMA: &str = "loft-render/2";
+const SCHEMA: &str = "loft-render/3";
 const DEFAULT_MARKDOWN: &str = "docs/spec.md";
 const DEFAULT_JSON: &str = "docs/spec.json";
 
@@ -88,7 +88,8 @@ fn write(root: &Path, targets: Targets) -> Result<Rendered, Stop> {
     let document = codec::read(&files)?;
     let mut outputs: Vec<(PathBuf, Vec<u8>)> = Vec::new();
     if markdown.is_some() || json_path.is_some() {
-        let projections = render(&document).map_err(|errors| integrity(&errors))?;
+        let lint = codec::lint_configuration(&files).map_err(|error| vec![error])?;
+        let projections = render_tree(&document, lint).map_err(|errors| integrity(&errors))?;
         outputs.extend(markdown.map(|path| (path, projections.markdown.into_bytes())));
         outputs.extend(json_path.map(|path| (path, projections.json)));
     }

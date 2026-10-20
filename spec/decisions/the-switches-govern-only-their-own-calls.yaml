@@ -1,0 +1,87 @@
+key: 01a156ab-1b30-71e9-abf9-d5a631e02b7e
+slug: the-switches-govern-only-their-own-calls
+title: "The telemetry and update-check switches govern only their own calls"
+context: "The decision that gave the update check its own switch accepted that a person who sets both switches has no network use from `loft`. A connected document publishes and pulls through its remote, a call the command exists to make; that decision stays as it was taken, for a document that is not connected."
+state:
+  kind: accepted
+  selectedOption: 01a156ab-1b30-71e9-abf9-d5aa6d3b12a8
+  outcome: "Switching telemetry or the update check off stops only the command event or the update check; a connected command reaches its remote whatever the switches say, and a document that is not connected still has no network use with both switches off."
+drivers:
+  - key: 01a156ab-1b30-71e9-abf9-d5a7c8caa69a
+    kind: local
+    label: "A command does what it is run for"
+    statement: "A command whose purpose is to reach a remote reaches it when it is run."
+  - key: 01a156ab-1b30-71e9-abf9-d5a8e3fb0b08
+    kind: local
+    label: "One place to stop the network"
+    statement: "A person can stop every network call of `loft` without reading each command's Feature."
+  - key: 01a156ab-1b30-71e9-abf9-d5a9d51808b6
+    kind: local
+    label: "Few switches"
+    statement: "A person sets as few switches as possible."
+options:
+  - key: 01a156ab-1b30-71e9-abf9-d5aa6d3b12a8
+    title: "Each switch governs its own call"
+    description: "The telemetry switches stop the command event, the update-check switches stop the update check, and neither touches a call to a remote."
+  - key: 01a156ab-1b30-71e9-abf9-d5ab37dc3833
+    title: "Both switches stop every call"
+    description: "With both switches off, a connected command refuses rather than reach its remote."
+  - key: 01a156ab-1b30-71e9-abf9-d5ac1b9fe517
+    title: "A third switch for every call"
+    description: "A new switch stops every network call, a connected command's included, and the two switches keep their own calls."
+assessments:
+  - option: 01a156ab-1b30-71e9-abf9-d5aa6d3b12a8
+    driver: 01a156ab-1b30-71e9-abf9-d5a7c8caa69a
+    rating: supports
+    rationale: "a connected publish always reaches its remote"
+  - option: 01a156ab-1b30-71e9-abf9-d5aa6d3b12a8
+    driver: 01a156ab-1b30-71e9-abf9-d5a8e3fb0b08
+    rating: conflicts
+    rationale: "a connected document reaches its remote with both switches off"
+  - option: 01a156ab-1b30-71e9-abf9-d5aa6d3b12a8
+    driver: 01a156ab-1b30-71e9-abf9-d5a9d51808b6
+    rating: supports
+    rationale: "no switch is added"
+  - option: 01a156ab-1b30-71e9-abf9-d5ab37dc3833
+    driver: 01a156ab-1b30-71e9-abf9-d5a7c8caa69a
+    rating: conflicts
+    rationale: "a person who refuses telemetry cannot publish a connected document"
+  - option: 01a156ab-1b30-71e9-abf9-d5ab37dc3833
+    driver: 01a156ab-1b30-71e9-abf9-d5a8e3fb0b08
+    rating: supports
+    rationale: "both switches stop everything"
+  - option: 01a156ab-1b30-71e9-abf9-d5ab37dc3833
+    driver: 01a156ab-1b30-71e9-abf9-d5a9d51808b6
+    rating: supports
+    rationale: "no switch is added"
+  - option: 01a156ab-1b30-71e9-abf9-d5ac1b9fe517
+    driver: 01a156ab-1b30-71e9-abf9-d5a7c8caa69a
+    rating: supports
+    rationale: "only the new switch refuses a connected call"
+  - option: 01a156ab-1b30-71e9-abf9-d5ac1b9fe517
+    driver: 01a156ab-1b30-71e9-abf9-d5a8e3fb0b08
+    rating: supports
+    rationale: "one switch stops everything"
+  - option: 01a156ab-1b30-71e9-abf9-d5ac1b9fe517
+    driver: 01a156ab-1b30-71e9-abf9-d5a9d51808b6
+    rating: conflicts
+    rationale: "a third switch to learn"
+consequences:
+  - key: 01a156ab-1b30-71e9-abf9-d5adb116565b
+    kind: cost
+    statement: "Setting both switches no longer means that `loft` makes no network call, for a connected document."
+  - key: 01a156ab-1b30-71e9-abf9-d5ae62ba45ef
+    kind: benefit
+    statement: "A person who refuses telemetry can still work with a connected document."
+  - key: 01a156ab-1b30-71e9-abf9-d5af68da671b
+    kind: obligation
+    statement: "Each command that reaches a remote says so in its Feature."
+subjects:
+  - role: affected
+    node: 01a13a90-3554-7631-bb13-097e6805bffe
+  - role: affected
+    node: 01a13a90-3556-7106-a68c-26574c7ad289
+  - role: outcome
+    node: 01a156aa-d531-70a7-88e0-0c0a0d967b3c
+mentions:
+  - 01a13a90-3554-7631-bb13-09a4ff829ed2

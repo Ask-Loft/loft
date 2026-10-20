@@ -37,8 +37,8 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
 - A changed behaviour is the same Requirement or criterion with new words. Change the statement
   or the criterion in place.
 - A removed behaviour is a removed node. Remove its file, or its entry in its parent's list, then
-  run `loft fmt`, which drops its binding from `spec/labels.yaml`. Remove every other reference
-  to its key that `loft check` reports.
+  run `loft fmt`, which marks its binding departed in `spec/labels.yaml`. Remove every other
+  reference to its key that `loft check` reports.
 - A behaviour that contradicts a decision needs a new decision that supersedes the old one; ask
   the user before making it.
 
@@ -52,9 +52,9 @@ document.
   node.
 - A deleted node's label is never allocated again; a later publish gives new nodes new labels.
 - A retired or superseded decision that names a deleted node names it by its former label, as
-  a mapping whose single field `formerLabel` holds the label. `loft fmt` writes it when it drops
-  the node's binding; a live decision that names a deleted node is an error to resolve with the
-  user.
+  a mapping whose single field `formerLabel` holds the label. `loft fmt` writes it when it marks
+  the node's binding departed; a live decision that names a deleted node is an error to resolve
+  with the user.
 
 ## Keep one intent to a branch and a commit
 

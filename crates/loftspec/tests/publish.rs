@@ -4,6 +4,7 @@
 use std::num::NonZeroU64;
 
 use crate::common;
+use crate::common::publishing::{at, clean_on, publish_files};
 use crate::common::{key, small_document};
 use loftspec::canonical::Digest;
 use loftspec::codec::{self, Files, LABELS, SpecPath};
@@ -12,34 +13,12 @@ use loftspec::document::{DerivedFrom, Document, Edge, SubjectRole};
 use loftspec::hash::hash_document;
 use loftspec::ids::{AuthoredStateId, DecisionId};
 use loftspec::publish::{
-    Lock, Publication, PublishedAt, ReadTree, Refusal, RepoState, Root, Unverified, publish, verify,
+    Lock, Publication, ReadTree, Refusal, RepoState, Root, Unverified, verify,
 };
-
-/// Publishes a tree that reads.
-fn publish_files(
-    files: &Files,
-    repo: &RepoState,
-    previous: Option<&Lock>,
-    at: PublishedAt,
-) -> Result<Publication, Refusal> {
-    publish(ReadTree::read(files).unwrap(), repo, previous, at)
-}
 
 /// Verifies a tree that reads.
 fn verify_files(files: &Files, lock: &Lock) -> Result<Digest, Unverified> {
     verify(&ReadTree::read(files).unwrap(), lock)
-}
-
-fn clean_on(branch: &str) -> RepoState {
-    RepoState {
-        branch: Some(branch.to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    }
-}
-
-fn at(seconds: u64) -> PublishedAt {
-    PublishedAt::from_unix_seconds(seconds).unwrap()
 }
 
 fn derived() -> Document {
@@ -56,7 +35,7 @@ fn derived() -> Document {
 fn first(files: &Files) -> (Lock, Vec<u8>) {
     match publish_files(files, &clean_on("main"), None, at(1_000)).unwrap() {
         Publication::Published { lock, files, .. } => (lock, files[&SpecPath::new(LABELS)].clone()),
-        Publication::Unchanged(_) => panic!("a first publish publishes"),
+        other => panic!("a first publish publishes: {other:?}"),
     }
 }
 
@@ -194,6 +173,7 @@ fn a_publish_labels_every_node_and_changes_only_the_bindings() {
     });
     let mut expected = small_document();
     loftspec::publish::allocate(&mut expected);
+    loftspec::publish::record_decisions(&mut expected);
     assert_eq!(labels, codec::write(&expected)[&SpecPath::new(LABELS)]);
 }
 

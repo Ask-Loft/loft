@@ -1,12 +1,14 @@
-//! `loft check --baseline` as a function (the `loft check` Feature): the findings of a tree split
-//! into those it introduced and those it kept against a base tree linted under the tree's own
+//! Findings against a base, and `loft check --baseline` as a function: the findings of a tree
+//! split into those it introduced and those it kept against a base linted under the tree's own
 //! configuration, and the base's findings it resolved.
 
-use crate::common::key;
 use crate::common::text::{FEATURE, edited, files, path};
-use loftspec::check::{Change, check_against, split};
-use loftspec::codec::{Files, LINT, Site};
-use loftspec::lint::{Finding, RuleId, Severity, Subject};
+use crate::common::{key, small_document};
+use loftspec::check::{Change, check_against, lint_against, split};
+use loftspec::codec::{Files, LINT, Site, Sites};
+use loftspec::document::Document;
+use loftspec::lint::{Finding, LintConfig, RuleId, Severity, Subject};
+use loftspec::statement::{EarsForm, Statement};
 
 /// A finding of `rule` naming the keys `subjects`, about `term`, on body line `body_line`.
 fn finding(
@@ -231,4 +233,48 @@ fn a_base_tree_that_does_not_read_is_an_error() {
     base.insert(path(FEATURE), b"name: [\n".to_vec());
     let errors = check_against(&files(), &base).unwrap_err();
     assert_ne!(errors, []);
+}
+
+/// The small document, held in memory alone, with its Requirement shall `shall`.
+fn document(shall: &str) -> Document {
+    let mut document = small_document();
+    document.products[0].feature_groups[0].features[0].requirements[0].statement =
+        Statement::Form(EarsForm::Ubiquitous {
+            system: "The writer".to_owned(),
+            shall: shall.to_owned(),
+        });
+    document
+}
+
+#[test]
+fn the_linter_against_a_base_takes_the_tree_and_the_base_as_documents_in_memory() {
+    let (vague, plain) = (document(VAGUE), document(PLAIN));
+    let none = Sites::default();
+    let config = LintConfig::default();
+    let against = lint_against(&vague, &none, &plain, &none, &config);
+    assert_eq!(
+        lq_002(&against.split.changes, &against.findings),
+        [Change::Introduced]
+    );
+    let back = lint_against(&plain, &none, &vague, &none, &config);
+    assert_eq!(lq_002(&back.split.changes, &back.findings), []);
+    let resolved = back.split.resolved.iter();
+    assert_eq!(resolved.filter(|f| f.rule == RuleId::Lq002).count(), 1);
+}
+
+#[test]
+fn the_linter_against_a_base_judges_the_base_under_the_configuration_it_is_given() {
+    let vague = document(VAGUE);
+    let none = Sites::default();
+    let quiet = LintConfig::read(Some(NO_LQ_002.as_bytes())).unwrap();
+    let against = lint_against(&document(PLAIN), &none, &vague, &none, &quiet);
+    assert_eq!(against.split.resolved, []);
+    let loud = lint_against(
+        &document(PLAIN),
+        &none,
+        &vague,
+        &none,
+        &LintConfig::default(),
+    );
+    assert_ne!(loud.split.resolved, []);
 }

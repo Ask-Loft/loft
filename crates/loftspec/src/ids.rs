@@ -163,6 +163,24 @@ impl ElementId {
             Self::Decision(_) => Some(LabelPrefix::Decision),
         }
     }
+
+    /// The element of the kind that labels of `prefix` name, under `key`: what the binding of a
+    /// key the document no longer holds names.
+    #[must_use]
+    pub const fn labelled(prefix: LabelPrefix, key: Key) -> Self {
+        let kind = match prefix {
+            LabelPrefix::Decision => return Self::Decision(DecisionId::new(key)),
+            LabelPrefix::Product => NodeKind::Product,
+            LabelPrefix::FeatureGroup => NodeKind::FeatureGroup,
+            LabelPrefix::Feature => NodeKind::Feature,
+            LabelPrefix::Requirement => NodeKind::Requirement,
+            LabelPrefix::Criterion => NodeKind::Criterion,
+            LabelPrefix::Component => NodeKind::Component,
+            LabelPrefix::Constraint => NodeKind::Constraint,
+            LabelPrefix::QualityAttribute => NodeKind::QualityAttribute,
+        };
+        Self::Node(NodeId::new(kind, key))
+    }
 }
 
 impl fmt::Display for NodeId {

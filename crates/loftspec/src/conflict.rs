@@ -1,8 +1,12 @@
 //! A typed merge conflict in the model (F-34): which record holds it, the field it names,
 //! and the value each side gave that field. The validator reports every conflict until it is
-//! removed (RQ-126), and no hash reads it.
+//! removed (RQ-126), and no hash of the document reads it. Each conflict is named by an
+//! identifier derived from it alone, which no file holds.
 
+use crate::canonical::{Digest, Domain, digest};
+use crate::codec::{LABELS, MANIFEST, SpecPath};
 use crate::ext::Ext;
+use serde_json::{Value, json};
 use std::fmt;
 
 use crate::identity::Key;
@@ -37,6 +41,22 @@ impl ConflictOwner {
             Self::Term(term) => term.key(),
             Self::Manifest | Self::Labels => return None,
         })
+    }
+}
+
+impl ConflictOwner {
+    /// The holder a conflict's identifier names: the key of the record whose `conflicts` list
+    /// holds it, `spec/loftspec.yaml` for the manifest and `spec/labels.yaml` for the bindings.
+    #[must_use]
+    pub fn holder(self) -> String {
+        match self {
+            Self::Manifest => SpecPath::new(MANIFEST).to_string(),
+            Self::Labels => SpecPath::new(LABELS).to_string(),
+            other => other
+                .key()
+                .expect("every other holder carries a key")
+                .to_string(),
+        }
     }
 }
 
@@ -101,4 +121,63 @@ pub struct Conflict {
     pub base: Option<ConflictValue>,
     pub ours: Option<ConflictValue>,
     pub theirs: Option<ConflictValue>,
+}
+
+/// A conflict record's identifier: SHA-256 under `loftspec/conflict/1` over the canonical JSON
+/// of the array of its holder, its field, `base`, `ours` and `theirs`, written as 64 lowercase
+/// hexadecimal digits. It is derived from the record and its holder alone and never stored, so
+/// two merges that write one conflict name it alike, and resolving another leaves it as it is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ConflictId(Digest);
+
+impl ConflictId {
+    #[must_use]
+    pub const fn digest(self) -> Digest {
+        self.0
+    }
+}
+
+impl fmt::Display for ConflictId {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(formatter)
+    }
+}
+
+impl Conflict {
+    /// The conflict's identifier. Each side enters the view as the conflict record writes it: a
+    /// scalar as its text, a number or a flag included, a sequence as an array, a mapping as an
+    /// object, extension data as the JSON it holds, and a side that deleted the record or lacks
+    /// the field as `null`.
+    #[must_use]
+    pub fn id(&self) -> ConflictId {
+        ConflictId(digest(Domain::Conflict, &self.view()))
+    }
+
+    /// The view the identifier digests: the array of the holder, the field, `base`, `ours` and
+    /// `theirs`.
+    #[must_use]
+    pub fn view(&self) -> Value {
+        let side = |side: &Option<ConflictValue>| side.as_ref().map_or(Value::Null, written);
+        json!([
+            self.owner.holder(),
+            self.field.as_str(),
+            side(&self.base),
+            side(&self.ours),
+            side(&self.theirs),
+        ])
+    }
+}
+
+/// A side as JSON, as the conflict record writes it.
+fn written(side: &ConflictValue) -> Value {
+    match side {
+        ConflictValue::Deleted => Value::Null,
+        ConflictValue::Scalar(text) => Value::String(text.clone()),
+        ConflictValue::List(items) => items.iter().map(written).collect(),
+        ConflictValue::Record(fields) => fields
+            .iter()
+            .map(|(name, value)| (name.clone(), written(value)))
+            .collect(),
+        ConflictValue::Ext(ext) => crate::ext::to_json(ext),
+    }
 }

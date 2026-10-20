@@ -1,14 +1,18 @@
 //! Former labels (RQ-179, RQ-180) and the completeness a decision's state requires (RQ-184,
 //! RQ-185). References inside a decision and its successors are checked by the index.
 
+use std::collections::BTreeMap;
+
 use super::ValidationError;
 use crate::decision::{Decision, DriverPayload, NodeRef, StateKind};
 use crate::document::{Document, Edge, SubjectRole};
 use crate::identity::Label;
+use crate::ids::DecisionId;
 
 pub(super) fn check(document: &Document, errors: &mut Vec<ValidationError>) {
+    let subjects = edge_subjects(&document.edges);
     for decision in &document.decisions {
-        former_labels(document, decision, errors);
+        former_labels(document, &subjects, decision, errors);
         completeness(document, decision, errors);
     }
 }
@@ -39,20 +43,31 @@ pub(crate) fn all_former_labels<'a>(
     })
 }
 
-/// Every former label a decision names: in its `subject` edges, its drivers and its
-/// consequences.
-fn former_labels_of<'a>(
-    document: &'a Document,
+/// The subjects of the `subject` edges, by the decision each leaves, in the order the document
+/// holds the edges.
+pub(crate) type EdgeSubjects = BTreeMap<DecisionId, Vec<NodeRef>>;
+
+/// The subjects of the `subject` edges `edges` holds, by decision, in one pass.
+pub(crate) fn edge_subjects(edges: &[Edge]) -> EdgeSubjects {
+    let mut subjects = EdgeSubjects::new();
+    for edge in edges {
+        if let Edge::Subject {
+            decision, subject, ..
+        } = *edge
+        {
+            subjects.entry(decision).or_default().push(subject);
+        }
+    }
+    subjects
+}
+
+/// Every former label a decision names: in its `subject` edges, whose subjects `edges` gives,
+/// its drivers and its consequences.
+pub(crate) fn former_labels_of<'a>(
+    edges: &'a EdgeSubjects,
     decision: &'a Decision,
 ) -> impl Iterator<Item = Label> + 'a {
-    let edges = document.edges.iter().filter_map(move |edge| match *edge {
-        Edge::Subject {
-            decision: from,
-            subject,
-            ..
-        } if from == decision.id => Some(subject),
-        _ => None,
-    });
+    let edges = edges.get(&decision.id).into_iter().flatten().copied();
     let drivers = decision
         .drivers
         .iter()
@@ -70,10 +85,15 @@ fn former_labels_of<'a>(
         })
 }
 
-fn former_labels(document: &Document, decision: &Decision, errors: &mut Vec<ValidationError>) {
+fn former_labels(
+    document: &Document,
+    subjects: &EdgeSubjects,
+    decision: &Decision,
+    errors: &mut Vec<ValidationError>,
+) {
     let kind = decision.state.kind();
     let terminal = matches!(kind, StateKind::Retired | StateKind::Superseded);
-    for label in former_labels_of(document, decision) {
+    for label in former_labels_of(subjects, decision) {
         if !terminal {
             errors.push(ValidationError::FormerLabelInLiveDecision {
                 decision: decision.id,

@@ -1,7 +1,7 @@
 key: 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 slug: loft-specification-format
 name: "Loft Specification Format"
-body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the OpenSpec converter, from the main specs of an OpenSpec project; the validator; the linter; the renderer; the publisher; the merge driver; the reconciler, which compares the trace file with the tree and the tests; and the term reporter, which lists the names a document may be using for one concept. A role names an obligation, not a module: one program may fill every role."
+body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the OpenSpec converter, from the main specs of an OpenSpec project; the validator; the linter; the renderer; the publisher; the merge driver; the reconciler, which compares the trace file with the tree and the tests; the term reporter, which lists the names a document may be using for one concept; the comparer, which reports what changed between two versions of a document; and the review packer, which gathers what a reviewer reads a change against. A role names an obligation, not a module: one program may fill every role."
 tags:
   - portable
 featureGroups:
@@ -82,6 +82,7 @@ featureGroups:
       - 717019e9-87c6-4d11-88ba-76131d45fc97
       - 7423387f-468f-4155-965a-a5893ff1e43c
       - 01a14b3d-fd78-7612-94d1-5dfd823a0275
+      - 01a156a9-2bee-7416-a139-23543d833c52
   - key: 04e8ae21-1edb-4170-a13f-ec1101ec3306
     slug: projections
     name: "Projections"
@@ -107,6 +108,8 @@ featureGroups:
       - e05fa615-2708-4b59-8d22-f4119bedef5a
       - 01a130de-5737-776f-9c39-b9c7aec2fc26
       - 01a130de-5737-776f-9c39-b9e3793de847
+      - 01a156a8-d774-72b1-91b6-523f27f07207
+      - 01a156ac-0a95-726f-ab84-01a1d6715dce
   - key: 1be50284-6f97-4abd-ac76-7333de756f2a
     slug: merge-semantics
     name: "Merge semantics"
@@ -119,6 +122,8 @@ featureGroups:
       - 6a3af886-c63d-49a9-8467-0cc33fdcdc50
       - f907e0df-acf0-4a7d-a118-30a71393f290
       - 01a130de-5737-776f-9c39-b9bb261d3fce
+      - 01a156a6-de49-70a4-a6bb-37249d7bb3d3
+      - 01a158d8-c6e0-708e-a3c7-63f8a21ac92b
   - key: 01a1383a-4a94-72cc-9c61-114fcb408ec5
     slug: implementation-reconciliation
     name: "Implementation reconciliation"
@@ -129,3 +134,12 @@ featureGroups:
       - 01a1383a-4a94-72cc-9c61-11074c67c6d6
       - 01a1383a-4a94-72cc-9c61-11318846c14a
       - 01a145e8-28eb-78f4-aed0-150e241ef329
+  - key: 01a156a5-b76c-74b1-a3b2-6d532509a47b
+    slug: comparison-and-review
+    name: "Comparison and review"
+    body: "What a caller learns from two versions of a document without judging them: what changed between them, by key, and the packet a reviewer reads a change against."
+    tags:
+      - portable
+    features:
+      - 01a156a5-b76b-7233-8659-69ea71d1e598
+      - 01a156a8-d773-72ae-a006-09cc9d538bb3

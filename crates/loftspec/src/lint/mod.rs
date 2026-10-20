@@ -1,6 +1,7 @@
 //! The linter (CMP-7, F-19..F-23): the structural rules `SH-001`..`SH-011`, the language
-//! rules `LQ-001`..`LQ-010`, the v2 rules `V2-001`..`V2-004` and `V2-009`, and the rules of the
-//! writing craft `V2-005`..`V2-008`, each finding a typed record in a stable order. The
+//! rules `LQ-001`..`LQ-010`, the v2 rules `V2-001`..`V2-004` and `V2-009`, the rules of the
+//! writing craft `V2-005`..`V2-008`, and the rules of decision history `V2-010` and `V2-011`,
+//! each finding a typed record in a stable order. The
 //! configuration is `spec/lint.yaml`, part of the tree the linter is given; no flag, environment
 //! variable, clock or locale changes a finding (RQ-106). The linter changes nothing in the
 //! document (CON-9).
@@ -10,6 +11,7 @@ mod context;
 mod craft;
 mod defaults;
 mod groups;
+mod history;
 mod language;
 mod lexicon;
 mod markdown;
@@ -69,6 +71,8 @@ pub enum RuleId {
     V2007,
     V2008,
     V2009,
+    V2010,
+    V2011,
     Td001,
     Td002,
     Td003,
@@ -105,6 +109,8 @@ wire_names!(RuleId {
     V2007 => "V2-007",
     V2008 => "V2-008",
     V2009 => "V2-009",
+    V2010 => "V2-010",
+    V2011 => "V2-011",
     Td001 => "TD-001",
     Td002 => "TD-002",
     Td003 => "TD-003",
@@ -281,6 +287,7 @@ pub fn lint(document: &Document, sites: &Sites, config: &LintConfig) -> Vec<Find
     language::check(&context, config, &mut raw);
     terms::check(&context, &mut raw);
     v2::check(&context, &mut raw);
+    history::check(&context, &mut raw);
     craft::check(&context, config, &mut raw);
     let mut findings: Vec<Finding> = raw
         .into_iter()

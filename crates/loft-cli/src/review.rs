@@ -4,14 +4,14 @@
 //! nothing and judges nothing (the decision "The review packet carries context and no
 //! judgement").
 
+use std::num::NonZeroUsize;
 use std::path::Path;
 
-use loftspec::check::hashed;
-use loftspec::codec::{self, Sites};
 use loftspec::document::Document;
 use loftspec::ids::NodeId;
+use loftspec::publish::ReadTree;
 use loftspec::query::named_nodes;
-use loftspec::review::{Assertion, Change, Fact, Holder, Linked, Packet, Unit, WithCriteria, pack};
+use loftspec::review::{Page, PagedUnit, Refused, Version, page};
 use loftspec_store::repository::GitCommand;
 use serde_json::{Value, json};
 
@@ -29,65 +29,58 @@ pub struct Options<'a> {
     pub base: Option<&'a str>,
     pub node: Option<&'a str>,
     pub max_chars: usize,
-    pub page: usize,
-}
-
-/// The page of the packet asked for, with where it came from.
-struct Paged {
-    provenance: Value,
-    units: Vec<(Value, usize)>,
-    number: usize,
-    of: usize,
+    pub page: NonZeroUsize,
 }
 
 pub fn run(root: &Path, options: &Options, as_json: bool) -> Finished {
-    let paged = match attempt(root, options) {
+    let (provenance, page) = match attempt(root, options) {
         Ok(paged) => paged,
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
-    let outcome = if paged.units.is_empty() {
+    let outcome = if page.units.is_empty() {
         "empty"
     } else {
         "packed"
     };
     if as_json {
-        let units: Vec<Value> = paged.units.into_iter().map(|(unit, _)| unit).collect();
+        let units: Vec<Value> = page.units.into_iter().map(|paged| paged.unit).collect();
         let fields = json!({
-            "provenance": paged.provenance,
-            "page": { "number": paged.number, "of": paged.of, "maxChars": options.max_chars },
+            "provenance": provenance,
+            "page": { "number": page.number, "of": page.of, "maxChars": options.max_chars },
             "units": units,
         });
         json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
     } else {
-        for (unit, size) in &paged.units {
-            outln!("{}", index_line(unit, *size));
+        for paged in &page.units {
+            outln!("{}", index_line(paged));
         }
-        outln!("page {} of {}", paged.number, paged.of);
+        outln!("page {} of {}", page.number, page.of);
     }
     Finished::success(outcome)
 }
 
-fn attempt(root: &Path, options: &Options) -> Result<Paged, Stop> {
+/// The page the review packer gives of the tree under `root`, against the tree where HEAD left
+/// the base revision where one is given, with where it came from.
+fn attempt(root: &Path, options: &Options) -> Result<(Value, Page), Stop> {
     let files = stop::read_files(root)?;
-    let (document, sites) = codec::read_sited(&files)?;
-    let state_root = hashed(&document, &sites)
-        .map_err(|errors| Stop::invalid(&errors))?
-        .roots
-        .state;
+    let read = ReadTree::read(&files)?;
+    let (document, sites) = (read.document(), read.sites());
+    let (_, state_root) = read.roots().map_err(|errors| Stop::invalid(&errors))?;
     let node = options
         .node
-        .map(|query| named(&document, query))
+        .map(|query| named(document, query))
         .transpose()?;
     let base = options
         .base
         .map(|revision| base::read_tree(&GitCommand::default(), root, revision))
         .transpose()?;
-    let packet = pack(&document, base.as_ref().map(|base| &base.document), node)
-        .expect("a tree with every key packs");
-    let render = Render {
-        sites: &sites,
-        base_sites: base.as_ref().map(|base| &base.sites),
-    };
+    let tree = Version { document, sites };
+    let against = base.as_ref().map(|base| Version {
+        document: &base.document,
+        sites: &base.sites,
+    });
+    let page = page(tree, against, node, options.max_chars, options.page)
+        .map_err(|why| refused(&why, options.page))?;
     let provenance = json!({
         "loft": version::VERSION,
         "stateRoot": state_root.to_string(),
@@ -96,7 +89,19 @@ fn attempt(root: &Path, options: &Options) -> Result<Paged, Stop> {
         }),
         "node": options.node,
     });
-    page(render.packet(&packet), options, provenance)
+    Ok((provenance, page))
+}
+
+/// What stops a review the review packer refuses, page `number` being asked for. A tree read
+/// from its files holds every key, and is hashed, which refuses a conflict record, before it is
+/// packed.
+fn refused(refused: &Refused, number: NonZeroUsize) -> Stop {
+    let &Refused::PastLast { of } = refused else {
+        unreachable!("a tree read from its files and hashed holds every key and no conflict");
+    };
+    let pages = if of == 1 { "page" } else { "pages" };
+    let message = format!("page {number} is past the last page; the packet has {of} {pages}");
+    Stop::one("page", message)
 }
 
 /// The one node `query` names by its key, its slug or its label, the key and the label in any
@@ -113,166 +118,16 @@ fn named(document: &Document, query: &str) -> Result<NodeId, Stop> {
     }
 }
 
-/// The page `options` asks for: whole units, each page taking every next unit that fits, the
-/// units moved and none copied.
-fn page(units: Vec<Value>, options: &Options, provenance: Value) -> Result<Paged, Stop> {
-    let mut pages: Vec<Vec<(Value, usize)>> = Vec::new();
-    let mut taken = 0;
-    for mut unit in units {
-        let size = serde_json::to_string(&unit)
-            .expect("a unit serializes")
-            .chars()
-            .count();
-        if pages.is_empty() || taken + size > options.max_chars {
-            pages.push(Vec::new());
-            taken = 0;
-        }
-        if size > options.max_chars {
-            unit["oversized"] = Value::Bool(true);
-        }
-        pages
-            .last_mut()
-            .expect("a page was opened")
-            .push((unit, size));
-        taken += size;
-    }
-    let of = pages.len().max(1);
-    if options.page > of {
-        let pages = if of == 1 { "page" } else { "pages" };
-        let message = format!(
-            "page {} is past the last page; the packet has {of} {pages}",
-            options.page
-        );
-        return Err(Stop::one("page", message));
-    }
-    let units = pages.into_iter().nth(options.page - 1).unwrap_or_default();
-    Ok(Paged {
-        provenance,
-        units,
-        number: options.page,
-        of,
-    })
-}
-
 /// A unit as one line of the index: its scope's label and name, its number of assertions and
 /// its number of characters.
-fn index_line(unit: &Value, size: usize) -> String {
+fn index_line(paged: &PagedUnit) -> String {
+    let unit = &paged.unit;
     let scope = &unit["scope"]["node"];
     let label = scope["label"].as_str().unwrap_or("-");
     let name = scope["name"].as_str().unwrap_or_default();
     let count = unit["assertions"].as_array().map_or(0, Vec::len);
-    format!("{label}  {name}  {count} assertions  {size} characters")
-}
-
-/// The JSON of a packet, each node at its site in the tree or, where only the base holds it, in
-/// the base.
-struct Render<'a> {
-    sites: &'a Sites,
-    base_sites: Option<&'a Sites>,
-}
-
-impl Render<'_> {
-    fn packet(&self, packet: &Packet) -> Vec<Value> {
-        packet.units.iter().map(|unit| self.unit(unit)).collect()
-    }
-
-    fn unit(&self, unit: &Unit) -> Value {
-        let holders = |holders: &[Holder]| -> Vec<Value> {
-            holders.iter().map(|holder| self.holder(holder)).collect()
-        };
-        let requirements: Vec<Value> = unit
-            .requirements
-            .iter()
-            .map(|WithCriteria { requirement, criteria }| {
-                json!({ "requirement": self.fact(requirement), "criteria": self.facts(criteria) })
-            })
-            .collect();
-        let realizes: Vec<Value> = unit
-            .realizes
-            .iter()
-            .map(|realized| {
-                json!({
-                    "component": self.holder(&realized.component),
-                    "above": holders(&realized.above),
-                })
-            })
-            .collect();
-        let terms: Vec<Value> = unit
-            .terms
-            .iter()
-            .map(|term| {
-                json!({
-                    "key": term.id.key().to_string(),
-                    "name": term.name,
-                    "definition": term.definition,
-                    "aliases": term.aliases,
-                })
-            })
-            .collect();
-        json!({
-            "scope": self.holder(&unit.scope),
-            "ancestors": holders(&unit.ancestors),
-            "requirements": requirements,
-            "realizes": realizes,
-            "assertions": unit.assertions.iter().map(|a| self.assertion(a)).collect::<Vec<_>>(),
-            "decisions": unit.decisions.iter().map(decision).collect::<Vec<_>>(),
-            "terms": terms,
-        })
-    }
-
-    fn holder(&self, holder: &Holder) -> Value {
-        json!({
-            "node": self.fact(&holder.node),
-            "constraints": self.facts(&holder.constraints),
-            "qualityAttributes": self.facts(&holder.quality_attributes),
-        })
-    }
-
-    fn facts(&self, facts: &[Fact]) -> Vec<Value> {
-        facts.iter().map(|fact| self.fact(fact)).collect()
-    }
-
-    fn fact(&self, fact: &Fact) -> Value {
-        let sites = match (fact.from_base, self.base_sites) {
-            (true, Some(base)) => base,
-            _ => self.sites,
-        };
-        let key = fact.id.key();
-        let label = fact.label.map(|label| label.to_string());
-        let mut fields = json::element(
-            &key.to_string(),
-            label.as_deref(),
-            fact.kind().as_str(),
-            sites.get(key),
-            &fact.name,
-        );
-        fields.insert("view".to_owned(), fact.view.clone());
-        fields.insert("change".to_owned(), json!(fact.change.map(Change::as_str)));
-        Value::Object(fields)
-    }
-
-    fn assertion(&self, assertion: &Assertion) -> Value {
-        json!({
-            "key": assertion.id.key().to_string(),
-            "kind": assertion.kind().as_str(),
-            "change": assertion.change.map(Change::as_str),
-            "before": assertion.before.as_ref().map(|before| self.fact(before)),
-        })
-    }
-}
-
-fn decision(linked: &Linked) -> Value {
-    let links: Vec<Value> = linked
-        .links
-        .iter()
-        .map(|(node, via)| json!({ "node": node.key().to_string(), "via": via.as_str() }))
-        .collect();
-    json!({
-        "key": linked.id.key().to_string(),
-        "label": linked.label.map(|label| label.to_string()),
-        "title": linked.title,
-        "state": linked.state.as_str(),
-        "outcome": linked.outcome,
-        "links": links,
-    })
+    format!(
+        "{label}  {name}  {count} assertions  {} characters",
+        paged.chars
+    )
 }

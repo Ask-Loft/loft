@@ -120,6 +120,9 @@
         "message": {
           "type": "string"
         },
+        "problem": {
+          "type": "string"
+        },
         "path": {
           "type": "string"
         },
@@ -212,7 +215,9 @@
             "V2-006",
             "V2-007",
             "V2-008",
-            "V2-009"
+            "V2-009",
+            "V2-010",
+            "V2-011"
           ]
         },
         "severity": {

@@ -1,6 +1,7 @@
 //! The small document's `spec/` tree, for the reader and formatter tests.
 
 use loftspec::codec::{self, Files, ReadError, SpecPath};
+use loftspec::fmt::format;
 
 use super::small_document;
 
@@ -37,6 +38,68 @@ pub fn edited(at: &str, from: &str, to: &str) -> Files {
     let current = text(&files, at);
     assert!(current.contains(from), "{from:?} in {at}");
     files.insert(path(at), current.replacen(from, to, 1).into_bytes());
+    files
+}
+
+/// The files with the first `from` replaced by `to` in the file at `at`.
+pub fn replaced(files: &Files, at: &str, from: &str, to: &str) -> Files {
+    let current = text(files, at);
+    assert!(current.contains(from), "{from:?} in {at}");
+    let mut files = files.clone();
+    files.insert(path(at), current.replacen(from, to, 1).into_bytes());
+    files
+}
+
+/// The files with the text between `from` and `to` in the file at `at` removed, `from`
+/// included and `to` kept.
+pub fn cut(files: &Files, at: &str, from: &str, to: &str) -> Files {
+    let current = text(files, at);
+    let start = current
+        .find(from)
+        .unwrap_or_else(|| panic!("{from:?} in {at}"));
+    let end = start
+        + current[start..]
+            .find(to)
+            .unwrap_or_else(|| panic!("{to:?} in {at}"));
+    let mut files = files.clone();
+    let edited = format!("{}{}", &current[..start], &current[end..]);
+    files.insert(path(at), edited.into_bytes());
+    files
+}
+
+/// The files after formatting.
+pub fn formatted(files: &Files) -> Files {
+    let mut files = files.clone();
+    files.extend(format(&files).unwrap().changed);
+    files
+}
+
+/// The tree `files` with the Constraint `CON-1` deleted from its Component.
+pub fn without_constraint(files: &Files) -> Files {
+    cut(files, COMPONENT, "constraints:\n", "qualityAttributes:\n")
+}
+
+/// The small document's tree with the Requirement `RQ-2` and its criterion deleted from their
+/// Feature, and the decision that names it in the state `kind`, with any lines that state needs
+/// after it.
+pub fn without_requirement(kind: &str) -> Files {
+    let files = cut(&files(), FEATURE, "requirements:\n", "qualityAttributes:\n");
+    replaced(
+        &files,
+        DECISION,
+        "  kind: accepted\n",
+        &format!("  kind: {kind}\n"),
+    )
+}
+
+/// `files` with `spec/lint.yaml` holding `lint`, or without the file.
+pub fn linted(files: &Files, lint: Option<&str>) -> Files {
+    let mut files = files.clone();
+    let path = SpecPath::new(codec::LINT);
+    match lint {
+        Some(lint) => files.insert(path, lint.as_bytes().to_vec()),
+        None => files.remove(&path),
+    };
     files
 }
 

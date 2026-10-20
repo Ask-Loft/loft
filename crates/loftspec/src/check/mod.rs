@@ -2,7 +2,7 @@
 //! error stops it before the validator; an error in `spec/lint.yaml` stops it before the linter.
 //! Every error and finding names the sites of the elements it concerns (RQ-158). With a base
 //! tree, [`check_against`] also splits the findings into those the tree introduced and those it
-//! kept.
+//! kept, as [`lint_against`] does for two documents held in memory.
 
 mod baseline;
 
@@ -18,7 +18,9 @@ use crate::hash::{DocumentHashes, hash_document};
 use crate::lint::{Finding, LintConfig, lint};
 use crate::validate::{ValidationError, conflict_errors, index_errors, validate};
 
-pub use baseline::{Baselined, Change, LintConfigs, Split, check_against, split};
+pub use baseline::{
+    Against, Baselined, Change, LintConfigs, Split, check_against, lint_against, split,
+};
 
 /// A validation error placed at the sites of the elements it names.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -73,30 +75,35 @@ impl Checked {
 /// Checks a `spec/` tree.
 #[must_use]
 pub fn check(files: &Files) -> Checked {
-    checked_under(files, lint_config(files)).0
+    checked_under(files, lint_config(files), None).0
 }
 
-/// Checks a `spec/` tree under `config`, its lint configuration as read, and gives the
-/// configuration back where the tree reads and the configuration does.
+/// Checks a `spec/` tree under `config`, its lint configuration as read, and splits its findings
+/// against those of `base` where one is given, the tree and its configuration reading.
 fn checked_under(
     files: &Files,
     config: Result<LintConfig, Vec<ReadError>>,
-) -> (Checked, Option<LintConfig>) {
+    base: Option<(&Document, &Sites)>,
+) -> (Checked, Option<Split>) {
     let (document, sites) = match read_sited(files) {
         Ok(read) => read,
         Err(errors) => return (Checked::Unread(errors), None),
     };
     let invalid = placed(validate(&document), &sites);
-    let (config, findings, used) = match config {
-        Ok(config) => (Vec::new(), lint(&document, &sites, &config), Some(config)),
-        Err(errors) => (errors, Vec::new(), None),
+    let (config, findings, split) = match (config, base) {
+        (Ok(config), None) => (Vec::new(), lint(&document, &sites, &config), None),
+        (Ok(config), Some((base, base_sites))) => {
+            let against = lint_against(&document, &sites, base, base_sites, &config);
+            (Vec::new(), against.findings, Some(against.split))
+        }
+        (Err(errors), _) => (errors, Vec::new(), None),
     };
     let checked = Checked::Read {
         invalid,
         config,
         findings,
     };
-    (checked, used)
+    (checked, split)
 }
 
 /// The lint configuration `spec/lint.yaml` gives, or the defaults without the file.
@@ -111,11 +118,22 @@ fn lint_config(files: &Files) -> Result<LintConfig, Vec<ReadError>> {
 /// The document holds a merge conflict, or does not index, so it has no hashes: each error at
 /// the sites of the elements it names.
 pub fn hashed(document: &Document, sites: &Sites) -> Result<DocumentHashes, Vec<Placed>> {
-    let conflicts = conflict_errors(document);
-    if !conflicts.is_empty() {
-        return Err(placed(conflicts, sites));
-    }
+    conflicted(document, sites)?;
     hash_document(document).map_err(|errors| placed(index_errors(errors), sites))
+}
+
+/// Refuses a document that holds a merge conflict.
+///
+/// # Errors
+///
+/// Each conflict the document holds, at the site of the record that holds it.
+pub(crate) fn conflicted(document: &Document, sites: &Sites) -> Result<(), Vec<Placed>> {
+    let conflicts = conflict_errors(document);
+    if conflicts.is_empty() {
+        Ok(())
+    } else {
+        Err(placed(conflicts, sites))
+    }
 }
 
 /// Validation errors, each placed at the sites of the elements it names.

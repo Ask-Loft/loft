@@ -2,8 +2,8 @@
 //! name its target instead of carrying its key, and the formatter writes the key in its place.
 
 use crate::common::small_document;
+use crate::common::text::formatted;
 use crate::common::text::{COMPONENT, DECISION, FEATURE, PRODUCT, path, text};
-use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem, Site};
 use loftspec::fmt::format;
 use loftspec::yaml::{Location, Position};

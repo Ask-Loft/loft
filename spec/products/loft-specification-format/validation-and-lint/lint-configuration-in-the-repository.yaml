@@ -1,7 +1,7 @@
 key: 717019e9-87c6-4d11-88ba-76131d45fc97
 slug: lint-configuration-in-the-repository
 name: "Lint configuration in the repository"
-body: "The `spec/lint.yaml` file, which disables rules, sets severities, adjusts lexicons and records suppressions, and the guarantee that findings depend only on the tree and that file."
+body: "The `spec/lint.yaml` file, which disables rules, sets severities, adjusts lexicons and records suppressions, and the guarantee that findings depend only on the tree and that file. The lock of a tree that holds the file names state view 2 and pins the file's bytes with the tree, so a published state carries the configuration its findings were made under."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -74,3 +74,16 @@ requirements:
         name: "No finding is reported from a tree whose lint configuration is in error."
       - key: 82583ede-1fd1-4725-808c-11da7876ee0e
         name: "An option the named rule does not take is an error naming the file, line and column."
+  - key: 01a156a1-0a9f-763f-9aaa-d3f2d34dc318
+    statement:
+      form: optional
+      where: "a tree that holds `spec/lint.yaml` is published under state view 2"
+      system: "the publisher"
+      shall: "pin `spec/lint.yaml` in the lock with the tree."
+    criteria:
+      - key: 01a156a1-0a9f-763f-9aaa-d3f32fbb20f3
+        name: "Changing `spec/lint.yaml` after the publish makes the lock fail verification."
+      - key: 01a156a1-0a9f-763f-9aaa-d3f4ca641e5e
+        name: "Removing `spec/lint.yaml` after the publish makes the lock fail verification."
+      - key: 01a156a1-0a9f-763f-9aaa-d3f52066ea43
+        name: "Adding `spec/lint.yaml` to a tree whose lock carries no `stateView` leaves that lock verifying."

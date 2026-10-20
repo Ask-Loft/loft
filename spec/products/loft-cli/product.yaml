@@ -30,6 +30,8 @@ featureGroups:
       - 01a144ee-c59f-7034-9c62-3c4adf1f3011
       - 01a14b3e-5b57-704d-a82e-5e58b2051c60
       - 01a154b0-f757-7647-acce-6bda786af643
+      - 01a156ad-1b9f-72a4-9f6c-30439b4be9df
+      - 01a156c0-0b79-7756-9d01-b059f21d61c7
   - key: 1586f1f8-1d67-4051-98c9-3f058c7e1002
     slug: invocation
     name: "Invocation"
@@ -73,3 +75,16 @@ featureGroups:
       - 01a13a90-3556-7106-a68c-26574c7ad289
       - 01a13a90-3556-7106-a68c-2668830924fe
       - 01a13a90-3556-7106-a68c-2695f6f1baaa
+  - key: 01a156a9-87a5-7158-a2c2-dc800d7c0679
+    slug: library
+    name: "Library"
+    body: "What the reference implementation's crates offer a caller other than `loft`, such as a server that holds documents outside a repository and publishes them through the Format's roles."
+    features:
+      - 01a156a9-87a5-7158-a2c2-dc723ceb5f04
+  - key: 01a156aa-d531-70a7-88e0-0beac0beb365
+    slug: remotes
+    name: "Remotes"
+    body: "How `loft` connects a document to a remote and reaches the remote of a connected document. A document is connected only when its manifest says so, which `loft remote set` writes once the remote holds the document; every other document needs no server."
+    features:
+      - 01a156aa-d531-70a7-88e0-0bebdc0a9327
+      - 01a1587a-dee2-7262-8c7b-89499e59ce55

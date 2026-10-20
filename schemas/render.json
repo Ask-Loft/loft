@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-render-2.json",
-  "title": "The result of `loft render --format json`, version 2",
+  "$id": "loft-render-3.json",
+  "title": "The result of `loft render --format json`, version 3",
   "oneOf": [
     {
       "type": "object",
@@ -17,7 +17,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-render/2"
+          "const": "loft-render/3"
         },
         "outcome": {
           "const": "rendered"
@@ -64,7 +64,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-render/2"
+          "const": "loft-render/3"
         },
         "outcome": {
           "const": "error"
@@ -124,6 +124,9 @@
           ]
         },
         "message": {
+          "type": "string"
+        },
+        "problem": {
           "type": "string"
         },
         "path": {

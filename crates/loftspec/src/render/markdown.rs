@@ -6,15 +6,14 @@
 use std::collections::BTreeMap;
 use std::fmt::Write;
 
-use super::{Labels, decisions, state_root};
+use super::{Labels, decisions};
 use crate::attributes::{QualityBand, QualityTarget, TechnicalBinding, VerificationFate};
 use crate::document::{Document, Edge};
-use crate::hash::DocumentHashes;
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
 use crate::tree::{Component, Section};
 
-pub(super) fn render(document: &Document, hashes: &DocumentHashes, labels: &Labels) -> String {
+pub(super) fn render(document: &Document, state: &str, labels: &Labels) -> String {
     let title = document
         .products
         .first()
@@ -23,7 +22,7 @@ pub(super) fn render(document: &Document, hashes: &DocumentHashes, labels: &Labe
         "# {}\n\n> {} · state root `{}`\n\n",
         escape_inline(title),
         crate::FORMAT,
-        state_root(hashes)
+        state
     );
     let mut nodes = BTreeMap::new();
     document.walk(&mut |node| {

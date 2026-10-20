@@ -13,6 +13,7 @@ pub mod decision;
 pub mod diff;
 pub mod document;
 mod ears;
+pub mod edit;
 pub mod ext;
 pub mod fmt;
 pub mod hash;

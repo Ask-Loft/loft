@@ -30,3 +30,22 @@ requirements:
         name: "A command that reports a read error has a Feature that lists `reads-tree`."
       - key: 01a12de5-62d0-763d-b71a-d8ffb506966c
         name: "A command whose Feature lists `reads-tree` follows the rules for a reader error."
+  - key: 01a158dc-1dc8-716d-843f-dbf85ed34261
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "a command tagged `reads-tree`"
+      shall: "name, in each read error of its JSON document, the kind of the reader's problem."
+    mentions:
+      - 01a154d3-cbfb-74fc-9749-edceff0b6ea8
+    criteria:
+      - key: 01a158dc-1dc8-716d-843f-dbf99bad5bbf
+        name: "Each read error in the JSON document has the `kind` `read`."
+      - key: 01a158dc-1dc8-716d-843f-dbfa7e306ca5
+        name: "Each read error in the JSON document has a field `problem` that holds the kind name the reader gives its problem."
+      - key: 01a158dc-1dc8-716d-843f-dbfba6594875
+        name: "An error whose `kind` is not `read` has no `problem`."
+      - key: 01a158dc-1dc8-716d-843f-dbfcac4fa10e
+        name: "The schema of each command tagged `reads-tree` states `problem` as a text field of an error."
+      - key: 01a158dc-1dc8-716d-843f-dbfd0b6f1a3b
+        name: "The schema of each command tagged `reads-tree` that a release has published names a new version."

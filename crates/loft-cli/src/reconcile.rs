@@ -9,7 +9,7 @@ use std::path::Path;
 
 use loftspec::canonical::Digest;
 use loftspec::check::hashed;
-use loftspec::codec::{self, Site, Sites};
+use loftspec::codec::{self, Site, Sites, site_fields};
 use loftspec::document::Document;
 use loftspec::hash::DocumentHashes;
 use loftspec::identity::{Key, Label};
@@ -30,7 +30,7 @@ use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-reconcile/2";
+const SCHEMA: &str = "loft-reconcile/3";
 
 /// What the command was asked to do beyond reporting.
 pub struct Options<'a> {
@@ -207,8 +207,8 @@ enum Place<'a> {
 impl Place<'_> {
     fn fields(&self) -> Map<String, Value> {
         match self {
-            Self::Node(site) => json::site(site),
-            Self::Link(location) => json::site_at(&TRACE, *location),
+            Self::Node(site) => site.fields(),
+            Self::Link(location) => site_fields(&TRACE, *location),
         }
     }
 }

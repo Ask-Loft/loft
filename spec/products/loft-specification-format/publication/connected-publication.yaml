@@ -1,0 +1,69 @@
+key: 01a156ac-0a95-726f-ab84-01a1d6715dce
+slug: connected-publication
+name: "Connected publication"
+body: "A document whose manifest marks it `connected: true`, which `loft remote set` writes once it has connected the document, publishes through its remote, a server that holds its published states in order and is the only source of its labels. The remote publishes the document with this same publisher, as its remote, and that publish allocates labels as the publish of any document does; every other publish of the document takes its labels from the remote: it sends what changed since the state its lock names and applies what the remote returns; the remote, not the publisher, decides whether a lock behind its head carries a publish it already made. Labels are still given only at publish, and counters never rewind; settling the labels that two clones gave apart stays the way of a document that is not connected."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+mentions:
+  - 01a130de-573a-77b2-b40b-d44300846d1a
+requirements:
+  - key: 01a156ac-0a95-726f-ab84-01a2464753ea
+    statement:
+      form: state_driven
+      while: "a document is connected"
+      system: "the publisher"
+      shall: "take every label of a publish not made as the document's remote from that remote."
+    criteria:
+      - key: 01a156ac-0a95-726f-ab84-01a3dc3b79d7
+        name: "The bindings and the label counters after a publish of a connected document not made as its remote are those the remote returns with its lock."
+      - key: 01a156ac-0a95-726f-ab84-01a427c8c552
+        name: "The publisher allocates no label in a publish of a connected document not made as its remote."
+  - key: 01a156ac-0a95-726f-ab84-01a5872fcc23
+    statement:
+      form: unwanted
+      if: "a publish of a connected document not made as its remote would allocate a label without the remote"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a156ac-0a95-726f-ab84-01a69c305960
+        name: "The refusal says that the document is connected and that its labels come from its remote."
+      - key: 01a156ac-0a95-726f-ab84-01a797ed9404
+        name: "A publish of a connected document not made as its remote during a stopped merge or rebase is refused, whatever the settling of two publishes would do."
+      - key: 01a156ac-0a95-726f-ab84-01a8444581b7
+        name: "Nothing is written."
+  - key: 01a158d6-455f-75f3-9093-bda951ae1b45
+    statement:
+      form: event_driven
+      when: "a connected document is published as its remote"
+      system: "the publisher"
+      shall: "allocate the publish's labels as a publish of a document that is not connected allocates them."
+    mentions:
+      - d22ef71f-0e46-414d-9da2-5da8d9347ac2
+    criteria:
+      - key: 01a158d6-455f-75f3-9093-bdaa8d3f4b3c
+        name: "Each node without a label is given the next value of the counter of its kind prefix."
+      - key: 01a158d6-455f-75f3-9093-bdab02470708
+        name: "Each counter advances to the next unallocated value."
+      - key: 01a158d6-455f-75f3-9093-bdac480d7a63
+        name: "A key whose binding is departed is given back its departed label."
+      - key: 01a158d6-455f-75f3-9093-bdad5ed5c64e
+        name: "The binding of each key the tree no longer holds is marked departed."
+      - key: 01a158d6-455f-75f3-9093-bdae033332f5
+        name: "The publisher reports each label it allocated or gave back, with its key."
+      - key: 01a158d6-455f-75f3-9093-bdaf5cd74be6
+        name: "The publish is not refused because the document is connected."
+      - key: 01a158d6-455f-75f3-9093-bdb0441f20a2
+        name: "A publish of a document that is not connected allocates the same labels whether or not it is made as the document's remote."
+  - key: 01a158a2-54b4-745a-ba6f-6f4a00083b47
+    statement:
+      form: state_driven
+      while: "a document is connected"
+      system: "the publisher"
+      shall: "base each publish on the state its lock names."
+    criteria:
+      - key: 01a158a2-54b4-745a-ba6f-6f4b956b3b6f
+        name: "The base of a publish is the publish sequence and the state root of the lock."
+      - key: 01a158a2-54b4-745a-ba6f-6f4cda0254a7
+        name: "A connected document without a lock is based on publish sequence `0` and state root `null`."
+      - key: 01a158a2-54b4-745a-ba6f-6f4dde7c7c49
+        name: "The publisher refuses no publish because its lock is not the remote's head."

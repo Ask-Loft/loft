@@ -1,0 +1,80 @@
+key: 01a156c0-e477-7502-bbf7-3affbf8f4ac7
+slug: a-call-to-the-remote-waits-30-seconds
+title: "A call to the remote waits at most 30 seconds"
+context: "The network client gives the command event and the update check 500 milliseconds in all, since neither is what the command was run for. A connected publish or pull sends or fetches a whole delta or state, over whatever network the person has, and a CI job must not hang on a remote that never answers."
+state:
+  kind: accepted
+  selectedOption: 01a156c0-e477-7502-bbf7-3b034ec33361
+  outcome: "A call to the remote is abandoned as not answered after 30 seconds, and `LOFT_REMOTE_TIMEOUT` sets another whole number of seconds."
+drivers:
+  - key: 01a156c0-e477-7502-bbf7-3b00af8bcbe0
+    kind: local
+    label: "Large calls finish"
+    statement: "A publish or a pull of a large document completes on an ordinary connection."
+  - key: 01a156c0-e477-7502-bbf7-3b016126449e
+    kind: local
+    label: "No hang"
+    statement: "A remote that never answers does not hold a command or a CI job without end."
+  - key: 01a156c0-e477-7502-bbf7-3b020c410e2b
+    kind: local
+    label: "Slow networks"
+    statement: "A person on a slow network can give the remote longer."
+options:
+  - key: 01a156c0-e477-7502-bbf7-3b034ec33361
+    title: "30 seconds, overridable"
+    description: "A fixed limit of 30 seconds that an environment variable replaces."
+  - key: 01a156c0-e477-7502-bbf7-3b0461ed816e
+    title: "The 500 millisecond limit"
+    description: "Calls to the remote share the limit of the command event and the update check."
+  - key: 01a156c0-e477-7502-bbf7-3b053b41fb87
+    title: "No limit"
+    description: "A call waits until the remote answers or the connection drops."
+assessments:
+  - option: 01a156c0-e477-7502-bbf7-3b034ec33361
+    driver: 01a156c0-e477-7502-bbf7-3b00af8bcbe0
+    rating: supports
+    rationale: "30 seconds carries a large delta on an ordinary connection"
+  - option: 01a156c0-e477-7502-bbf7-3b034ec33361
+    driver: 01a156c0-e477-7502-bbf7-3b016126449e
+    rating: supports
+    rationale: "every call ends"
+  - option: 01a156c0-e477-7502-bbf7-3b034ec33361
+    driver: 01a156c0-e477-7502-bbf7-3b020c410e2b
+    rating: supports
+    rationale: "`LOFT_REMOTE_TIMEOUT` raises the limit"
+  - option: 01a156c0-e477-7502-bbf7-3b0461ed816e
+    driver: 01a156c0-e477-7502-bbf7-3b00af8bcbe0
+    rating: conflicts
+    rationale: "a large delta does not cross in half a second"
+  - option: 01a156c0-e477-7502-bbf7-3b0461ed816e
+    driver: 01a156c0-e477-7502-bbf7-3b016126449e
+    rating: supports
+    rationale: "every call ends"
+  - option: 01a156c0-e477-7502-bbf7-3b0461ed816e
+    driver: 01a156c0-e477-7502-bbf7-3b020c410e2b
+    rating: conflicts
+    rationale: "nothing raises it"
+  - option: 01a156c0-e477-7502-bbf7-3b053b41fb87
+    driver: 01a156c0-e477-7502-bbf7-3b00af8bcbe0
+    rating: supports
+    rationale: "nothing cuts a call short"
+  - option: 01a156c0-e477-7502-bbf7-3b053b41fb87
+    driver: 01a156c0-e477-7502-bbf7-3b016126449e
+    rating: conflicts
+    rationale: "a silent remote holds the command"
+  - option: 01a156c0-e477-7502-bbf7-3b053b41fb87
+    driver: 01a156c0-e477-7502-bbf7-3b020c410e2b
+    rating: supports
+    rationale: "nothing cuts a call short"
+consequences:
+  - key: 01a156c0-e477-7502-bbf7-3b06d30cfa16
+    kind: benefit
+    statement: "A connected command against a silent remote fails within a known time."
+  - key: 01a156c0-e477-7502-bbf7-3b07b6e1285e
+    kind: cost
+    statement: "A very large publish on a slow link needs `LOFT_REMOTE_TIMEOUT` raised."
+subjects:
+  - role: affected
+    node: 01a13a90-3554-7631-bb13-097e6805bffe
+  - role: outcome
+    node: 01a156c0-0b7a-76b6-9a6a-684a5505830b

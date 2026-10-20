@@ -1,19 +1,30 @@
 //! The bindings between elements, labels and aliases (F-2), held in `spec/labels.yaml`.
 
-use std::collections::{BTreeMap, BTreeSet};
-use std::num::NonZeroU64;
+mod counters;
 
-use crate::identity::{Key, Label, LabelPrefix};
+use std::collections::{BTreeMap, BTreeSet};
+
+pub use counters::Counters;
+
+use crate::canonical::Digest;
+use crate::decision::StateKind;
+use crate::identity::{Key, Label};
 use crate::ids::ElementId;
 
 /// An element's live label, every label it held before in the order they were replaced, and the
 /// labels it lost to a publish that met another (RQ-70's withdrawn labels), which name nothing.
+/// A departed binding is the binding of a key that left the document: it keeps its labels, and
+/// none of them names anything. A decision's binding records the kind of the state its last
+/// publish saw, with the decision's history hash; neither record enters a root.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Binding {
     pub element: ElementId,
     pub label: Label,
+    pub departed: bool,
     pub aliases: Vec<Label>,
     pub withdrawn: Vec<Label>,
+    pub published_state: Option<StateKind>,
+    pub published_history: Option<Digest>,
 }
 
 impl Binding {
@@ -34,11 +45,11 @@ impl Binding {
 pub struct Bindings {
     entries: BTreeMap<Key, Binding>,
     /// The keys whose live label each label is; more than one only in bindings that break RQ-70.
-    live_keys: BTreeMap<Label, BTreeSet<Key>>,
+    live_keys: LabelIndex,
     /// The keys listing each label as an alias.
-    alias_keys: BTreeMap<Label, BTreeSet<Key>>,
+    alias_keys: LabelIndex,
     /// The keys each label was withdrawn from.
-    withdrawn_keys: BTreeMap<Label, BTreeSet<Key>>,
+    withdrawn_keys: LabelIndex,
 }
 
 /// What the next publish does with a citation of a label in an element, given the keys the
@@ -56,13 +67,16 @@ pub enum Citation {
     Ambiguous,
 }
 
+/// The keys each label is recorded under, in one way of holding it.
+type LabelIndex = BTreeMap<Label, BTreeSet<Key>>;
+
 /// Records `key` under `label` in a label index.
-fn index(keys: &mut BTreeMap<Label, BTreeSet<Key>>, label: Label, key: Key) {
+fn index(keys: &mut LabelIndex, label: Label, key: Key) {
     keys.entry(label).or_default().insert(key);
 }
 
 /// Removes `key` from under `label` in a label index.
-fn unindex(keys: &mut BTreeMap<Label, BTreeSet<Key>>, label: Label, key: Key) {
+fn unindex(keys: &mut LabelIndex, label: Label, key: Key) {
     if let Some(holders) = keys.get_mut(&label) {
         holders.remove(&key);
         if holders.is_empty() {
@@ -100,6 +114,12 @@ pub enum BindingError {
     },
     #[error("label {label} is withdrawn from {element}, which still holds it")]
     WithdrawnIsOwnLabel { element: ElementId, label: Label },
+    #[error("label {label}, which departed with {departed}, is held by {holder}")]
+    DepartedLabelHeld {
+        label: Label,
+        departed: ElementId,
+        holder: ElementId,
+    },
 }
 
 fn check_prefix(element: ElementId, label: Label) -> Result<(), BindingError> {
@@ -143,8 +163,11 @@ impl Bindings {
                 entry.insert(Binding {
                     element,
                     label,
+                    departed: false,
                     aliases: Vec::new(),
                     withdrawn: Vec::new(),
+                    published_state: None,
+                    published_history: None,
                 });
                 index(&mut self.live_keys, label, element.key());
                 Ok(())
@@ -162,10 +185,7 @@ impl Bindings {
     ) -> Result<(), BindingError> {
         let element = element.into();
         check_prefix(element, label)?;
-        let binding = self
-            .entries
-            .get_mut(&element.key())
-            .ok_or(BindingError::Unbound(element))?;
+        let binding = self.entry_mut(element)?;
         binding.element = element;
         if binding.label != label {
             let previous = std::mem::replace(&mut binding.label, label);
@@ -185,12 +205,11 @@ impl Bindings {
         alias: Label,
     ) -> Result<(), BindingError> {
         let element = element.into();
-        let binding = self
-            .entries
-            .get_mut(&element.key())
-            .ok_or(BindingError::Unbound(element))?;
+        let binding = self.entry_mut(element)?;
         binding.aliases.push(alias);
-        index(&mut self.alias_keys, alias, element.key());
+        if !binding.departed {
+            index(&mut self.alias_keys, alias, element.key());
+        }
         Ok(())
     }
 
@@ -201,27 +220,85 @@ impl Bindings {
         label: Label,
     ) -> Result<(), BindingError> {
         let element = element.into();
-        let binding = self
-            .entries
-            .get_mut(&element.key())
-            .ok_or(BindingError::Unbound(element))?;
+        let binding = self.entry_mut(element)?;
         binding.withdrawn.push(label);
-        index(&mut self.withdrawn_keys, label, element.key());
+        if !binding.departed {
+            index(&mut self.withdrawn_keys, label, element.key());
+        }
+        Ok(())
+    }
+
+    /// Marks an element's binding departed: its labels stay with it and name nothing.
+    pub fn depart(&mut self, element: impl Into<ElementId>) -> Result<(), BindingError> {
+        let element = element.into();
+        let binding = self.entry_mut(element)?;
+        if binding.departed {
+            return Ok(());
+        }
+        binding.departed = true;
+        self.reindex(element.key(), unindex);
+        Ok(())
+    }
+
+    /// Gives a departed binding back to `element`, the element that carries its key again, perhaps
+    /// as another kind: its labels name it once more.
+    pub fn restore(&mut self, element: impl Into<ElementId>) -> Result<(), BindingError> {
+        let element = element.into();
+        let binding = self.entry_mut(element)?;
+        if !binding.departed {
+            return Ok(());
+        }
+        binding.departed = false;
+        binding.element = element;
+        self.reindex(element.key(), index);
+        Ok(())
+    }
+
+    /// The binding of `element`'s key.
+    fn entry_mut(&mut self, element: ElementId) -> Result<&mut Binding, BindingError> {
+        (self.entries.get_mut(&element.key())).ok_or(BindingError::Unbound(element))
+    }
+
+    /// Records every label of the binding of `key` in its index, or removes it, by `change`.
+    fn reindex(&mut self, key: Key, change: fn(&mut LabelIndex, Label, Key)) {
+        let binding = &self.entries[&key];
+        change(&mut self.live_keys, binding.label, key);
+        for alias in &binding.aliases {
+            change(&mut self.alias_keys, *alias, key);
+        }
+        for withdrawn in &binding.withdrawn {
+            change(&mut self.withdrawn_keys, *withdrawn, key);
+        }
+    }
+
+    /// Whether the binding of `key` is departed.
+    #[must_use]
+    pub fn is_departed(&self, key: Key) -> bool {
+        self.entries
+            .get(&key)
+            .is_some_and(|binding| binding.departed)
+    }
+
+    /// Records in an element's binding the kind of the state a publish saw and its history hash.
+    pub fn record_published(
+        &mut self,
+        element: impl Into<ElementId>,
+        state: Option<StateKind>,
+        history: Option<Digest>,
+    ) -> Result<(), BindingError> {
+        let binding = self.entry_mut(element.into())?;
+        binding.published_state = state;
+        binding.published_history = history;
         Ok(())
     }
 
     /// Removes an element's binding and returns it, freeing its live label and its aliases.
     pub fn unbind(&mut self, element: impl Into<ElementId>) -> Option<Binding> {
         let key = element.into().key();
-        let binding = self.entries.remove(&key)?;
-        unindex(&mut self.live_keys, binding.label, key);
-        for alias in &binding.aliases {
-            unindex(&mut self.alias_keys, *alias, key);
+        if self.entries.contains_key(&key) {
+            self.reindex(key, unindex);
         }
-        for withdrawn in &binding.withdrawn {
-            unindex(&mut self.withdrawn_keys, *withdrawn, key);
-        }
-        Some(binding)
+        self.entries.remove(&key)
     }
 
     #[must_use]
@@ -229,31 +306,34 @@ impl Bindings {
         self.label_of_key(element.into().key())
     }
 
-    /// The live label of the element whose key is `key`.
+    /// The live label of the element whose key is `key`; none where its binding is departed.
     #[must_use]
     pub fn label_of_key(&self, key: Key) -> Option<Label> {
-        self.entries.get(&key).map(|binding| binding.label)
+        self.held(key).map(|binding| binding.label)
     }
 
     #[must_use]
     pub fn aliases_of(&self, element: impl Into<ElementId>) -> &[Label] {
-        self.entries
-            .get(&element.into().key())
+        self.held(element.into().key())
             .map_or(&[], |binding| binding.aliases.as_slice())
     }
 
     #[must_use]
     pub fn withdrawn_of(&self, element: impl Into<ElementId>) -> &[Label] {
-        self.entries
-            .get(&element.into().key())
+        self.held(element.into().key())
             .map_or(&[], |binding| binding.withdrawn.as_slice())
+    }
+
+    /// The binding of `key` where it is not departed.
+    fn held(&self, key: Key) -> Option<&Binding> {
+        self.entries.get(&key).filter(|binding| !binding.departed)
     }
 
     /// The element a live label or an alias names (AC-29): a live label before an alias, and the
     /// lowest key where bindings that break RQ-70 give a label to several.
     #[must_use]
     pub fn resolve(&self, label: Label) -> Option<ElementId> {
-        let first = |keys: &BTreeMap<Label, BTreeSet<Key>>| keys.get(&label)?.first().copied();
+        let first = |keys: &LabelIndex| keys.get(&label)?.first().copied();
         let key = first(&self.live_keys).or_else(|| first(&self.alias_keys))?;
         self.entries.get(&key).map(|binding| binding.element)
     }
@@ -291,9 +371,19 @@ impl Bindings {
         Citation::Rewritten(self.entries[&key].label)
     }
 
-    /// Every binding, in key order.
+    /// Every binding, departed or not, in key order.
     pub fn iter(&self) -> impl Iterator<Item = &Binding> {
         self.entries.values()
+    }
+
+    /// Every departed binding, in key order.
+    pub fn departed(&self) -> impl Iterator<Item = &Binding> {
+        self.iter().filter(|binding| binding.departed)
+    }
+
+    /// Every binding that is not departed, in key order.
+    pub fn live(&self) -> impl Iterator<Item = &Binding> {
+        self.iter().filter(|binding| !binding.departed)
     }
 
     #[must_use]
@@ -312,7 +402,7 @@ impl Bindings {
     pub fn validate(&self) -> Vec<BindingError> {
         let mut live: BTreeMap<Label, ElementId> = BTreeMap::new();
         let mut errors = Vec::new();
-        for binding in self.iter() {
+        for binding in self.live() {
             let first = *live.entry(binding.label).or_insert(binding.element);
             if first != binding.element {
                 errors.push(BindingError::LabelUnderTwoKeys {
@@ -340,7 +430,7 @@ impl Bindings {
                 });
             }
         }
-        errors.extend(self.iter().flat_map(|binding| {
+        errors.extend(self.live().flat_map(|binding| {
             binding
                 .withdrawn
                 .iter()
@@ -350,7 +440,24 @@ impl Bindings {
                     label: *label,
                 })
         }));
+        errors.extend(self.departed_labels_held());
         errors
+    }
+
+    /// Each departed label that another key holds, live or as an alias, as an alias is checked.
+    fn departed_labels_held(&self) -> impl Iterator<Item = BindingError> + '_ {
+        self.departed().flat_map(move |binding| {
+            let label = binding.label;
+            let live = self.live_keys.get(&label).into_iter().flatten();
+            let aliased = self.alias_keys.get(&label).into_iter().flatten();
+            live.chain(aliased)
+                .filter(move |key| **key != binding.element.key())
+                .map(move |key| BindingError::DepartedLabelHeld {
+                    label,
+                    departed: binding.element,
+                    holder: self.entries[key].element,
+                })
+        })
     }
 
     fn aliases(&self) -> impl Iterator<Item = (ElementId, Label)> {
@@ -360,66 +467,5 @@ impl Bindings {
                 .iter()
                 .map(move |alias| (binding.element, *alias))
         })
-    }
-}
-
-/// The next label value of each kind prefix (RQ-7), held beside the bindings in
-/// `spec/labels.yaml`. Every prefix has a counter; a counter never rewinds.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Counters(BTreeMap<LabelPrefix, NonZeroU64>);
-
-impl Default for Counters {
-    /// Every counter at its first value, 1.
-    fn default() -> Self {
-        Self(
-            LabelPrefix::ALL
-                .into_iter()
-                .map(|prefix| (prefix, NonZeroU64::MIN))
-                .collect(),
-        )
-    }
-}
-
-impl Counters {
-    /// The value the next label of `prefix` receives.
-    #[must_use]
-    pub fn next(&self, prefix: LabelPrefix) -> NonZeroU64 {
-        self.0.get(&prefix).copied().unwrap_or(NonZeroU64::MIN)
-    }
-
-    /// Counters one above the highest live, alias or withdrawn label of each prefix, and 1 for a
-    /// prefix no label carries (RQ-176, AC-702).
-    #[must_use]
-    pub fn above(bindings: &Bindings) -> Self {
-        let mut counters = Self::default();
-        counters.raise_all(bindings.iter().flat_map(Binding::every_label));
-        counters
-    }
-
-    /// Whether `label` lies below its prefix's counter, so that it was allocated at some point;
-    /// a label-shaped text at or above the counter is not a reference (AC-890, AC-891).
-    #[must_use]
-    pub fn has_allocated(&self, label: Label) -> bool {
-        label.number() < self.next(label.prefix())
-    }
-
-    /// Sets the next value of `prefix`, as `spec/labels.yaml` states it (AC-23).
-    pub fn set(&mut self, prefix: LabelPrefix, next: NonZeroU64) {
-        self.0.insert(prefix, next);
-    }
-
-    /// Raises each counter above every label of its prefix in `labels`.
-    pub fn raise_all(&mut self, labels: impl IntoIterator<Item = Label>) {
-        for label in labels {
-            self.raise(label);
-        }
-    }
-
-    /// Raises the counter of `label`'s prefix above `label`, so the value is never allocated
-    /// again; a counter already above it is unchanged.
-    pub fn raise(&mut self, label: Label) {
-        let next = label.number().saturating_add(1);
-        let counter = self.0.entry(label.prefix()).or_insert(NonZeroU64::MIN);
-        *counter = (*counter).max(next);
     }
 }

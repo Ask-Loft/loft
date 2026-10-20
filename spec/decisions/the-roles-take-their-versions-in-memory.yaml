@@ -1,0 +1,84 @@
+key: 01a156a9-d318-7608-a62c-2e1df9090458
+slug: the-roles-take-their-versions-in-memory
+title: "The roles take their versions in memory, and `loft` wraps them with git"
+context: "A caller other than `loft`, such as a server, holds documents outside any repository and needs the same findings against a base, the same review pages and the same publish as `loft`. `loftspec` performs no input or output, and `loft` reads a base revision from git."
+state:
+  kind: accepted
+  selectedOption: 01a156a9-d318-7608-a62c-2e2121954484
+  outcome: "The linter against a base, the review packer and the publisher each decide from the versions they are given in memory, the publisher with the repository state optional; the review packer owns the paging; `loft check --baseline`, `loft review --base` and `loft publish` read git and give the roles what they read."
+drivers:
+  - key: 01a156a9-d318-7608-a62c-2e1e8e82d3e4
+    kind: local
+    label: "One behaviour for every caller"
+    statement: "Two callers that give the same versions get the same findings, pages and lock."
+  - key: 01a156a9-d318-7608-a62c-2e1f746c3efc
+    kind: local
+    label: "No input or output in the library"
+    statement: "`loftspec` reads no file and runs no command."
+  - key: 01a156a9-d318-7608-a62c-2e20e9a15a9a
+    kind: local
+    label: "Callers without a repository"
+    statement: "A caller that holds its documents outside a repository can use every role."
+options:
+  - key: 01a156a9-d318-7608-a62c-2e2121954484
+    title: "Roles over versions in memory"
+    description: "Each role takes the versions it decides from as documents, and `loft` reads them from git."
+  - key: 01a156a9-d318-7608-a62c-2e224ab24248
+    title: "Roles that read git"
+    description: "The roles take a repository and a revision and read the versions themselves."
+  - key: 01a156a9-d318-7608-a62c-2e23815386b8
+    title: "Each caller its own"
+    description: "The roles stay inside `loft`, and another caller writes its own comparison, paging and publish."
+assessments:
+  - option: 01a156a9-d318-7608-a62c-2e2121954484
+    driver: 01a156a9-d318-7608-a62c-2e1e8e82d3e4
+    rating: supports
+    rationale: "every caller runs the same role"
+  - option: 01a156a9-d318-7608-a62c-2e2121954484
+    driver: 01a156a9-d318-7608-a62c-2e1f746c3efc
+    rating: supports
+    rationale: "the versions arrive in memory"
+  - option: 01a156a9-d318-7608-a62c-2e2121954484
+    driver: 01a156a9-d318-7608-a62c-2e20e9a15a9a
+    rating: supports
+    rationale: "no role needs a repository"
+  - option: 01a156a9-d318-7608-a62c-2e224ab24248
+    driver: 01a156a9-d318-7608-a62c-2e1e8e82d3e4
+    rating: supports
+    rationale: "every caller runs the same role"
+  - option: 01a156a9-d318-7608-a62c-2e224ab24248
+    driver: 01a156a9-d318-7608-a62c-2e1f746c3efc
+    rating: conflicts
+    rationale: "the library runs git"
+  - option: 01a156a9-d318-7608-a62c-2e224ab24248
+    driver: 01a156a9-d318-7608-a62c-2e20e9a15a9a
+    rating: conflicts
+    rationale: "a caller has to make a repository first"
+  - option: 01a156a9-d318-7608-a62c-2e23815386b8
+    driver: 01a156a9-d318-7608-a62c-2e1e8e82d3e4
+    rating: conflicts
+    rationale: "two implementations drift apart"
+  - option: 01a156a9-d318-7608-a62c-2e23815386b8
+    driver: 01a156a9-d318-7608-a62c-2e1f746c3efc
+    rating: supports
+    rationale: "the library is unchanged"
+  - option: 01a156a9-d318-7608-a62c-2e23815386b8
+    driver: 01a156a9-d318-7608-a62c-2e20e9a15a9a
+    rating: neutral
+    rationale: "possible, at the cost of writing it again"
+consequences:
+  - key: 01a156a9-d318-7608-a62c-2e24df27b468
+    kind: benefit
+    statement: "A server's findings, review pages and locks are those `loft` gives for the same versions."
+  - key: 01a156a9-d318-7608-a62c-2e250bb75bf8
+    kind: obligation
+    statement: "Each role's entry point stays public in `loftspec`, so that a caller can rely on it."
+subjects:
+  - role: affected
+    node: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
+  - role: outcome
+    node: 01a156a8-d773-72ae-a006-09cd8178dc99
+  - role: outcome
+    node: 01a156a8-d774-72b1-91b6-524067fe853a
+  - role: outcome
+    node: 01a156a9-2bee-7416-a139-2355ae942b6b

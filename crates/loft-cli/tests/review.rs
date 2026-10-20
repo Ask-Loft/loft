@@ -6,7 +6,7 @@ use std::fs;
 use std::process::Output;
 
 use crate::base::{COMMIT, based_on_now};
-use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, stderr, stdout, tree};
 use crate::schema;
 use crate::snapshot::snapshot;
 use serde_json::Value;
@@ -379,4 +379,36 @@ fn a_base_tree_that_does_not_read_is_refused_naming_the_commit_and_the_place() {
         )),
         "{text}"
     );
+}
+
+/// The units of page `number` that the review packer gives of the tree under `scratch` with no
+/// base, under `limit`.
+fn packer_units(scratch: &Scratch, limit: usize, number: usize) -> Vec<Value> {
+    let files = tree(&scratch.0);
+    let (document, sites) = loftspec::codec::read_sited(&files).unwrap();
+    let version = loftspec::review::Version {
+        document: &document,
+        sites: &sites,
+    };
+    let number = std::num::NonZeroUsize::new(number).unwrap();
+    let page = loftspec::review::page(version, None, None, limit, number).unwrap();
+    page.units.into_iter().map(|paged| paged.unit).collect()
+}
+
+#[test]
+fn loft_review_prints_the_review_packer_s_page_under_the_max_chars_it_names() {
+    let scratch = Scratch::with_reading_list();
+    let whole = packet(&scratch, &[], None);
+    assert_eq!(units(&whole), &packer_units(&scratch, 50_000, 1));
+    let limit = serde_json::to_string(&units(&whole)[0])
+        .unwrap()
+        .chars()
+        .count();
+    let narrow = packet(
+        &scratch,
+        &["--max-chars", &limit.to_string(), "--page", "2"],
+        None,
+    );
+    assert_eq!(narrow["page"]["maxChars"], limit);
+    assert_eq!(units(&narrow), &packer_units(&scratch, limit, 2));
 }

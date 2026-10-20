@@ -1,0 +1,242 @@
+key: 01a156a9-87a5-7158-a2c2-dc723ceb5f04
+slug: library-entry-points
+name: "Library entry points"
+body: "The roles that a caller other than `loft` relies on calling in `loftspec` directly, each over versions it holds in memory, and the edits such a caller makes to a document it holds in memory, finding, detaching, inserting and moving nodes by key, before the codec writes it. `loft` reaches the same roles through its git-revision wrappers, `loft check --baseline` and `loft review --base`, and through `loft publish`."
+realizes:
+  - dfad8a1a-ce19-4364-be3c-81af2fd2baaf
+requirements:
+  - key: 01a156a9-87a5-7158-a2c2-dc738bf12af7
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the comparer as an entry point over two versions held in memory."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc74bfa1dcc4
+        name: "The comparer's entry point is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc751b135291
+        name: "The comparer's entry point takes each version as a document, with no path and no repository."
+  - key: 01a156a9-87a5-7158-a2c2-dc766556b5ae
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the review packer as an entry point over a tree, a base, a node and a limit held in memory."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc778d84f5a2
+        name: "The review packer's entry point is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc78323e9d84
+        name: "The review packer's entry point takes the tree and the base each as a document, with no path and no repository."
+      - key: 01a156a9-87a5-7158-a2c2-dc790bec316e
+        name: "The review packer's entry point returns the page asked for and the number of pages."
+  - key: 01a156a9-87a5-7158-a2c2-dc7a014c6880
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the linter against a base as an entry point over a tree and a base held in memory."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc7ba33024a3
+        name: "The entry point of the linter against a base is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc7cdc541a30
+        name: "The entry point of the linter against a base takes the tree and the base each as a document, with no path and no repository."
+  - key: 01a156a9-87a5-7158-a2c2-dc7ded506b19
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the publisher as an entry point that is given no repository state."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc7e3034a82d
+        name: "The publisher's entry point is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc7fed214368
+        name: "The publisher's entry point takes the tree and the previous lock, with the repository state optional."
+      - key: 01a158d6-455e-70a9-83d3-66ac5cf5679d
+        name: "The publisher's entry point takes whether the publish is made as the document's remote."
+  - key: 01a158da-f4df-76ee-9125-8f43b82fd983
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer finding a node or a decision by its key in a document held in memory."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f4457dea52a
+        name: "Finding by key is public in `loftspec`."
+      - key: 01a158da-f4df-76ee-9125-8f45298d0785
+        name: "A node's key finds that node."
+      - key: 01a158da-f4df-76ee-9125-8f46d99e391f
+        name: "A decision's key finds that decision."
+      - key: 01a158da-f4df-76ee-9125-8f4777b3cbf4
+        name: "A key the document does not hold finds nothing."
+      - key: 01a158da-f4df-76ee-9125-8f480aa7fd07
+        name: "Finding changes nothing in the document."
+  - key: 01a158da-f4df-76ee-9125-8f49e3f271c7
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer detaching a node, with every node beneath it, from a document held in memory."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f4a836271a8
+        name: "Detaching is public in `loftspec`."
+      - key: 01a158da-f4df-76ee-9125-8f4b5b6c1d05
+        name: "The detached node is returned with every node beneath it."
+      - key: 01a158da-f4df-76ee-9125-8f4c500c8142
+        name: "The document holds neither the detached node nor any node beneath it after the detach."
+      - key: 01a158da-f4df-76ee-9125-8f4d64906203
+        name: "Every detached node keeps its key."
+      - key: 01a158da-f4df-76ee-9125-8f4e5f71ccbb
+        name: "The detached node's former siblings keep their order."
+      - key: 01a158da-f4df-76ee-9125-8f4fe37ebacb
+        name: "No other node and no decision is changed by a detach."
+  - key: 01a158da-f4df-76ee-9125-8f500932a6d4
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer inserting a node, with every node beneath it, under a parent at a given position of a document held in memory."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f518748edcd
+        name: "Inserting is public in `loftspec`."
+      - key: 01a158da-f4df-76ee-9125-8f524c087eab
+        name: "The inserted node is at the given position in its parent's list of nodes of its kind."
+      - key: 01a158da-f4df-76ee-9125-8f5382150dcb
+        name: "The parent of an inserted Product or root Component is the document's root."
+      - key: 01a158da-f4df-76ee-9125-8f54b21c6416
+        name: "Every node beneath the inserted node is inserted with it."
+      - key: 01a158da-f4df-76ee-9125-8f550fae4141
+        name: "Every inserted node keeps its key."
+      - key: 01a158da-f4df-76ee-9125-8f56ae265390
+        name: "The nodes that followed the position in the parent's list follow the inserted node, in their order."
+      - key: 01a158da-f4df-76ee-9125-8f5711701a9f
+        name: "A position equal to the length of the parent's list appends the node to it."
+  - key: 01a158da-f4df-76ee-9125-8f589c5fbdef
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer moving a node to another parent or position of a document held in memory, keeping its key and every node beneath it."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f599ddd9d16
+        name: "Moving is public in `loftspec`."
+      - key: 01a158da-f4df-76ee-9125-8f5adddb1094
+        name: "The moved node is at the given position in its new parent's list of nodes of its kind."
+      - key: 01a158da-f4df-76ee-9125-8f5bdce20512
+        name: "The moved node keeps its key."
+      - key: 01a158da-f4df-76ee-9125-8f5cfc2795c8
+        name: "Every node beneath the moved node stays beneath it and keeps its key."
+      - key: 01a158da-f4df-76ee-9125-8f5dd973338a
+        name: "A position under the node's own parent counts the parent's list without the moved node."
+      - key: 01a158da-f4df-76ee-9125-8f5e09a8a98b
+        name: "No other node and no decision is changed by a move."
+  - key: 01a158da-f4df-76ee-9125-8f5f81944253
+    statement:
+      form: unwanted
+      if: "a detach, an insert or a move names a node or a parent by a key the document does not hold"
+      system: "`loftspec`"
+      shall: "refuse the edit."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f60dfd442a8
+        name: "A detach of a key the document does not hold is refused."
+      - key: 01a158da-f4df-76ee-9125-8f61bc6811f8
+        name: "A move of a key the document does not hold is refused."
+      - key: 01a158da-f4df-76ee-9125-8f6294843533
+        name: "An insert or a move under a parent the document does not hold is refused."
+      - key: 01a158da-f4df-76ee-9125-8f634bbf6c12
+        name: "The refusal names the key."
+      - key: 01a158da-f4df-76ee-9125-8f649478573e
+        name: "The document is unchanged after the refusal."
+  - key: 01a158da-f4df-76ee-9125-8f6583df2fa6
+    statement:
+      form: unwanted
+      if: "an insert or a move would put a node under a parent whose kind the containment profile does not allow it under"
+      system: "`loftspec`"
+      shall: "refuse the edit."
+    mentions:
+      - 89359cc6-c4d7-428e-9535-0224c7a12449
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f668d5ae21c
+        name: "An insert under a parent whose kind cannot hold the node's kind is refused."
+      - key: 01a158da-f4df-76ee-9125-8f67ace23059
+        name: "A move under a parent whose kind cannot hold the node's kind is refused."
+      - key: 01a158da-f4df-76ee-9125-8f6804de0636
+        name: "The refusal names the node's kind and the parent's kind."
+      - key: 01a158da-f4df-76ee-9125-8f69331ad987
+        name: "The document is unchanged after the refusal."
+  - key: 01a158da-f4df-76ee-9125-8f6a1be9b9ce
+    statement:
+      form: unwanted
+      if: "an insert would add a key the document already holds"
+      system: "`loftspec`"
+      shall: "refuse the insert."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f6b8db5dedb
+        name: "An inserted node whose key a node of the document carries is refused."
+      - key: 01a158da-f4df-76ee-9125-8f6c0eaf9fe5
+        name: "An inserted node whose key a decision of the document carries is refused."
+      - key: 01a158da-f4df-76ee-9125-8f6d1716ea59
+        name: "An inserted node beneath which a node carries a key the document holds is refused."
+      - key: 01a158da-f4df-76ee-9125-8f6efb5d1719
+        name: "The refusal names the key."
+      - key: 01a158da-f4df-76ee-9125-8f6f197312fb
+        name: "The document is unchanged after the refusal."
+  - key: 01a158da-f4df-76ee-9125-8f7058a87b56
+    statement:
+      form: unwanted
+      if: "an insert or a move names a position beyond the end of the parent's list of nodes of the node's kind"
+      system: "`loftspec`"
+      shall: "refuse the edit."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f71e5c513e4
+        name: "A position greater than the length of the parent's list is refused."
+      - key: 01a158da-f4df-76ee-9125-8f72725cb118
+        name: "The refusal names the position and the length of the list."
+      - key: 01a158da-f4df-76ee-9125-8f73a08b2f1b
+        name: "The document is unchanged after the refusal."
+  - key: 01a158da-f4df-76ee-9125-8f74223cdf03
+    statement:
+      form: unwanted
+      if: "a move would put a node beneath itself"
+      system: "`loftspec`"
+      shall: "refuse the move."
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f750e859085
+        name: "A move of a node under itself is refused."
+      - key: 01a158da-f4df-76ee-9125-8f76a9e48e45
+        name: "A move of a node under a node beneath it is refused."
+      - key: 01a158da-f4df-76ee-9125-8f7799ee6e76
+        name: "The document is unchanged after the refusal."
+  - key: 01a158da-f4df-76ee-9125-8f78dfe38cf4
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "leave each slug and the file of each node to the codec when a document edited in memory is written."
+    mentions:
+      - 07b7e7a2-fdcb-4557-9b99-8d24d9c7dd4e
+    criteria:
+      - key: 01a158da-f4df-76ee-9125-8f790ee51e52
+        name: "No edit in memory sets or changes a slug that its caller does not give."
+      - key: 01a158da-f4df-76ee-9125-8f7aa6cc3f53
+        name: "A moved node that is written in a file of its own keeps its slug."
+      - key: 01a158da-f4e0-7007-be0e-59083026582e
+        name: "A node moved to another parent is written in the file that its new parent and its slug place it in."
+      - key: 01a15958-a358-72fb-a82d-d8a80bcdb40d
+        name: "An insert or a move of a node to the document's root takes the slug its caller gives, where the node has none."
+      - key: 01a15958-a358-72fb-a82d-d8a9f6896c95
+        name: "A root Component moved under a Component is written in its root Component's file and keeps no slug."
+  - key: 01a15958-a358-72fb-a82d-d8aa27742978
+    statement:
+      form: unwanted
+      if: "an insert or a move would put a node with no slug at the document's root, and its caller gives none"
+      system: "`loftspec`"
+      shall: "refuse the edit."
+    criteria:
+      - key: 01a15958-a358-72fb-a82d-d8abbc5aae33
+        name: "The refusal names the node's key."
+      - key: 01a15958-a358-72fb-a82d-d8ac99aa2da0
+        name: "The document is unchanged after the refusal."
+  - key: 01a15958-a358-72fb-a82d-d8adfdb824d8
+    statement:
+      form: unwanted
+      if: "an insert or a move would place a node in a file that its new parent and its slug give another node already"
+      system: "`loftspec`"
+      shall: "refuse the edit."
+    criteria:
+      - key: 01a15958-a358-72fb-a82d-d8ae07bbc31b
+        name: "The refusal names the file."
+      - key: 01a15958-a358-72fb-a82d-d8afd4704b87
+        name: "The refusal names the key of the node that the file already holds."
+      - key: 01a15958-a358-72fb-a82d-d8b09bb4ab97
+        name: "The document is unchanged after the refusal."

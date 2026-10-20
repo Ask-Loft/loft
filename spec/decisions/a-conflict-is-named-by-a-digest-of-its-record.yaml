@@ -1,0 +1,82 @@
+key: 01a156a6-de46-77ad-82ba-5bf6af2c9b0d
+slug: a-conflict-is-named-by-a-digest-of-its-record
+title: "A conflict is named by a digest of its record"
+context: "A merge leaves typed conflict records in the tree, and a person, an agent or a server that resolves them needs to point at one of them: to show it, to say which side was chosen, or to tell that it is still open. The record holds only `field`, `base`, `ours` and `theirs`, and two merges of the same versions write the same record."
+state:
+  kind: accepted
+  selectedOption: 01a156a6-de46-77ad-82ba-5bfaba97b758
+  outcome: "Each conflict record is named by SHA-256 under `loftspec/conflict/1` over the canonical JSON of its holder, field, base, ours and theirs, derived from the record and never stored, and the validator lists the records in document order with that identifier."
+drivers:
+  - key: 01a156a6-de46-77ad-82ba-5bf7900a79f6
+    kind: local
+    label: "Two merges agree"
+    statement: "Two merges, or two implementations, that write the same conflict give it the same name."
+  - key: 01a156a6-de46-77ad-82ba-5bf8c720032c
+    kind: local
+    label: "Nothing more in the file"
+    statement: "A conflict record holds only what a person reads to resolve it."
+  - key: 01a156a6-de46-77ad-82ba-5bf9db888da8
+    kind: local
+    label: "Stable while others resolve"
+    statement: "Resolving one conflict leaves the names of the others unchanged."
+options:
+  - key: 01a156a6-de46-77ad-82ba-5bfaba97b758
+    title: "A digest of the record"
+    description: "The identifier is a digest of the holder and the record, computed by whoever reads it."
+  - key: 01a156a6-de46-77ad-82ba-5bfb1bf847d2
+    title: "A stored random identifier"
+    description: "The merge driver writes a random identifier into each conflict record."
+  - key: 01a156a6-de46-77ad-82ba-5bfcdd381a63
+    title: "Its position"
+    description: "A conflict is named by its file and its place among the file's conflict records."
+assessments:
+  - option: 01a156a6-de46-77ad-82ba-5bfaba97b758
+    driver: 01a156a6-de46-77ad-82ba-5bf7900a79f6
+    rating: supports
+    rationale: "the same record gives the same digest"
+  - option: 01a156a6-de46-77ad-82ba-5bfaba97b758
+    driver: 01a156a6-de46-77ad-82ba-5bf8c720032c
+    rating: supports
+    rationale: "nothing is stored"
+  - option: 01a156a6-de46-77ad-82ba-5bfaba97b758
+    driver: 01a156a6-de46-77ad-82ba-5bf9db888da8
+    rating: supports
+    rationale: "the digest reads no other record"
+  - option: 01a156a6-de46-77ad-82ba-5bfb1bf847d2
+    driver: 01a156a6-de46-77ad-82ba-5bf7900a79f6
+    rating: conflicts
+    rationale: "each merge draws its own"
+  - option: 01a156a6-de46-77ad-82ba-5bfb1bf847d2
+    driver: 01a156a6-de46-77ad-82ba-5bf8c720032c
+    rating: conflicts
+    rationale: "each record carries a field that no person reads"
+  - option: 01a156a6-de46-77ad-82ba-5bfb1bf847d2
+    driver: 01a156a6-de46-77ad-82ba-5bf9db888da8
+    rating: supports
+    rationale: "a stored value does not move"
+  - option: 01a156a6-de46-77ad-82ba-5bfcdd381a63
+    driver: 01a156a6-de46-77ad-82ba-5bf7900a79f6
+    rating: supports
+    rationale: "the same merge writes the same positions"
+  - option: 01a156a6-de46-77ad-82ba-5bfcdd381a63
+    driver: 01a156a6-de46-77ad-82ba-5bf8c720032c
+    rating: supports
+    rationale: "nothing is stored"
+  - option: 01a156a6-de46-77ad-82ba-5bfcdd381a63
+    driver: 01a156a6-de46-77ad-82ba-5bf9db888da8
+    rating: conflicts
+    rationale: "resolving one conflict renumbers the ones after it"
+consequences:
+  - key: 01a156a6-de46-77ad-82ba-5bfd04ed1771
+    kind: benefit
+    statement: "A server and a command line name the same conflict alike without sharing state."
+  - key: 01a156a6-de46-77ad-82ba-5bfeae8ef20d
+    kind: risk
+    statement: "Two conflict records of one holder and field with equal sides would share a name, which a merge never writes."
+subjects:
+  - role: affected
+    node: 540397b6-7607-4ca9-aaa1-529d0fab1811
+  - role: outcome
+    node: 01a156a6-de49-70a4-a6bb-37256c76c23f
+  - role: outcome
+    node: 01a156a6-de49-70a4-a6bb-37335d1c1bc6

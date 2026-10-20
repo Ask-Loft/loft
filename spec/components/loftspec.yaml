@@ -1,7 +1,7 @@
 key: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
 slug: loftspec
 name: "loftspec"
-body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the OpenSpec converter, the validator, the linter, the renderer, the publisher, the merge engine, the reconciler and the term reporter. It performs no input or output."
+body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the OpenSpec converter, the validator, the linter, the renderer, the publisher, the merge engine, the tree merger, the reconciler, the term reporter, the comparer and the review packer. It performs no input or output."
 scopedTo:
   - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 components:
@@ -51,7 +51,7 @@ components:
         verificationFate: proved
   - key: 845fe937-28e9-4c37-883a-1fbdf18c4a1f
     name: "Linter"
-    body: "Structural, language and v2 lint rules, their findings and reports, and the lint configuration kept in the repository. The linter takes `spec/lint.yaml` as part of the tree it is given and reads no file itself."
+    body: "Structural, language and v2 lint rules, their findings and reports, and the lint configuration kept in the repository. The linter takes `spec/lint.yaml` as part of the tree it is given and reads no file itself, and takes a base version, where it is given one, in memory as well."
     constraints:
       - key: 1eda8d1e-9912-4986-86ce-1549c052be78
         name: "The linter shall change nothing in the document it lints."
@@ -65,7 +65,7 @@ components:
         verificationFate: proved
   - key: 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
     name: "Publisher"
-    body: "Publication preconditions, label allocation, the lock and its verification. The publisher decides from the tree, the repository state and the previous lock it is given, and yields the lock and the bindings to write; reading the repository and writing files belong to a store outside this crate."
+    body: "Publication preconditions, label allocation, the lock and its verification. The publisher decides from the tree, the previous lock and, where it is given one, the repository state, and yields the lock and the bindings to write; reading the repository and writing files belong to a store outside this crate."
     constraints:
       - key: 9e28f2b4-3700-40b5-b304-9952c1f34e93
         name: "The publisher shall compute every root it writes with the hasher."
@@ -76,6 +76,13 @@ components:
     constraints:
       - key: 6fcc6939-eb09-4d3c-802d-35a42f1d02e0
         name: "The merge engine shall take as input only the base, ours and theirs versions of one file."
+        verificationFate: proved
+  - key: 01a158d9-8050-73cc-817c-05870bfe179e
+    name: "Tree merger"
+    body: "The three-way merge of three whole trees, which pairs each record by its key across files and merges each pair by the merge engine's rules."
+    constraints:
+      - key: 01a158d9-a96c-744c-b744-4e38427a541f
+        name: "The tree merger shall take as input only the base, ours and theirs versions of one tree."
         verificationFate: proved
   - key: 01a1383a-4a92-778a-b49d-e3efdabc7f04
     name: "Reconciler"
@@ -90,6 +97,20 @@ components:
     constraints:
       - key: 01a14b3d-fd75-739b-8004-dcb5308626ad
         name: "The term reporter shall change nothing in the document it is given."
+        verificationFate: proved
+  - key: 01a156a5-b768-75b1-8d89-8844486ea580
+    name: "Comparer"
+    body: "The comparison of two versions of a document by key. The comparer decides from the two versions it is given, in memory, and reads no file itself."
+    constraints:
+      - key: 01a156a5-b768-75b1-8d89-8845e5b58be1
+        name: "The comparer shall change nothing in the versions it is given."
+        verificationFate: proved
+  - key: 01a156a8-d770-7010-b103-3e5b59fb62be
+    name: "Review packer"
+    body: "The review packet: the assertions under review, grouped into units with the context they are read against, and the pages they fill. The review packer decides from the tree, the base, the node and the limit it is given, in memory, and reads no file itself."
+    constraints:
+      - key: 01a156a8-d770-7010-b103-3e5c2c5f84b8
+        name: "The review packer shall change nothing in the versions it is given."
         verificationFate: proved
 constraints:
   - key: 7ff6bd2b-7a21-4020-83aa-ad8aedec10a2

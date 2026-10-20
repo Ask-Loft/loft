@@ -3,8 +3,8 @@
 //! mints the key and lists the file, after which the node reads back.
 
 use crate::common::small_document;
+use crate::common::text::formatted;
 use crate::common::text::{path, text};
-use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem};
 use loftspec::document::{Document, Edge};
 

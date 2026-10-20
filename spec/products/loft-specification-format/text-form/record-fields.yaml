@@ -194,9 +194,13 @@ requirements:
       shall: "write the manifest with the manifest fields in the Format's order."
     criteria:
       - key: 5da704a2-97eb-429e-bd69-04d1613a7167
-        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `products` and `derivedFrom`."
+        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `connected`, `products` and `derivedFrom`."
       - key: 4783e5ae-9990-4606-a8d1-fe92b68d5792
         name: "The manifest requires `format`, `algorithm` and `documentKey`."
+      - key: 01a156ac-0a95-726f-ab84-01aeeecf16d8
+        name: "A manifest of a document that is not connected omits `connected`."
+      - key: 01a156ac-0a95-726f-ab84-01af31c44897
+        name: "A manifest whose `connected` holds a value other than `true` is a read error naming the file, line and column."
       - key: 069a4c14-1826-4f2f-a0ae-fd8aae922b97
         name: "`derivedFrom` holds, in order, `authoredStateId`, `contentAddress` and `publishSequence`, and requires all three."
   - key: ca2b29a1-09e5-4e6f-b4d7-1aa56a952393
@@ -208,7 +212,7 @@ requirements:
       - key: c5ed56ff-4332-4905-a67e-a3fcfe3c2a0b
         name: "`counters` is required and maps each of the nine label prefixes to its next value, in the order `P`, `FG`, `F`, `RQ`, `AC`, `CMP`, `CON`, `QA`, `ADR`."
       - key: 480910d9-f626-4e77-927c-72008061a372
-        name: "A binding's fields are, in order, `key`, `label`, `aliases` and `withdrawn`."
+        name: "A binding's fields are, in order, `key`, `label`, `departed`, `aliases`, `withdrawn`, `publishedState` and `publishedHistory`."
       - key: 01a12dec-ba4c-7741-b3ca-9e8f125b4997
         name: "A binding's `key` and `label` are required."
       - key: a3d3edaf-117b-4b44-82cd-951405f69ee0
@@ -217,6 +221,12 @@ requirements:
         name: "A binding's withdrawn labels are written in the order they were recorded."
       - key: 01a130de-5738-756e-a4f4-f951a95a6e17
         name: "A binding without a withdrawn label omits `withdrawn`."
+      - key: 01a156a4-1732-7428-aee4-d3a781982b6c
+        name: "A binding that is not departed omits `departed`."
+      - key: 01a156a4-1732-7428-aee4-d3a8dc82ee94
+        name: "A binding without a recorded state omits `publishedState` and `publishedHistory`."
+      - key: 01a156a4-1732-7428-aee4-d3a97196e76b
+        name: "`publishedState` is one of `proposed`, `accepted`, `rejected`, `superseded` and `retired`."
   - key: 10c0f6db-a0f3-4d58-9559-b4a70c47c339
     statement:
       form: ubiquitous

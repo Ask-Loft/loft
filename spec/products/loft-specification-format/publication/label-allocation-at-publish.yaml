@@ -1,7 +1,7 @@
 key: d22ef71f-0e46-414d-9da2-5da8d9347ac2
 slug: label-allocation-at-publish
 name: "Label allocation at publish"
-body: "How a publish gives each unlabelled node the next label of its kind prefix while advancing the counters in `spec/labels.yaml`."
+body: "How a publish gives each unlabelled node the next label of its kind prefix while advancing the counters in `spec/labels.yaml`, gives a key that came back to its document the label it departed with, and marks departed the binding of each key that left."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -24,3 +24,48 @@ requirements:
         name: "Every decision has a binding after a publish."
       - key: 4dbbe95a-8d28-458a-8289-ff33b34d3cef
         name: "No label that a decision carries as a former label is allocated."
+  - key: 01a156a4-1732-7428-aee4-d39d2f60c95e
+    statement:
+      form: event_driven
+      when: "publishing a tree that holds a key whose binding is departed"
+      system: "the publisher"
+      shall: "give the key back its departed label."
+    criteria:
+      - key: 01a156a4-1732-7428-aee4-d39e3e3dc8f1
+        name: "The key's binding is no longer departed after the publish."
+      - key: 01a156a4-1732-7428-aee4-d39f1cddd4b7
+        name: "The key's live label is the label it carried when it left the document."
+      - key: 01a156a4-1732-7428-aee4-d3a0bc216d04
+        name: "No label counter advances for a key that takes back its label."
+      - key: 01a156a4-1732-7428-aee4-d3a1978f5579
+        name: "A key that comes back as a node of another kind keeps its departed label as an alias and is allocated the next label of its new kind's prefix."
+      - key: 01a156a4-1732-7428-aee4-d3a29f3d72ee
+        name: "The publisher reports each label it gives back, with its key."
+  - key: 01a15980-a24e-7747-9a99-89e607c39e18
+    statement:
+      form: unwanted
+      if: "a decision of the tree names under `formerLabel` a label that the publish would give back"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a15980-a251-72a2-8b36-803d0c79bc4d
+        name: "The refusal names the label."
+      - key: 01a15980-a251-72a2-8b36-803ec89b21b1
+        name: "The refusal names the key of each decision that names the label under `formerLabel`."
+      - key: 01a15980-a251-72a2-8b36-803fcb03c5c9
+        name: "The refusal says that formatting writes each such reference as the node's key."
+      - key: 01a15980-a251-72a2-8b36-80407d7b9a78
+        name: "Nothing is written."
+  - key: 01a156a4-1732-7428-aee4-d3a325d43e4d
+    statement:
+      form: event_driven
+      when: "publishing a tree that no longer holds a key that the bindings file binds"
+      system: "the publisher"
+      shall: "mark the key's binding departed."
+    criteria:
+      - key: 01a156a4-1732-7428-aee4-d3a4cf64e208
+        name: "The binding is marked departed after the publish."
+      - key: 01a156a4-1732-7428-aee4-d3a5ebd6e35f
+        name: "No binding is removed by a publish."
+      - key: 01a156a4-1732-7428-aee4-d3a6c4746d8b
+        name: "A binding that is already departed is left as it is."

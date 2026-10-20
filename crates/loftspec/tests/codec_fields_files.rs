@@ -5,11 +5,13 @@
 
 use crate::common::fields::{assert_required, fields, scalar, scalars};
 use crate::common::full::full_files;
+use crate::common::text::{path, text};
 use crate::common::{key, product, small_document};
-use loftspec::codec;
+use loftspec::codec::{self, Problem};
 use loftspec::document::{CategoryEntry, TagEntry};
 use loftspec::ids::{CategoryId, ProductId, TagId};
 use loftspec::names::{CategoryName, TagName};
+use loftspec::yaml::{Location, Position};
 
 const MANIFEST: &str = "loftspec.yaml";
 const LABELS: &str = "labels.yaml";
@@ -24,6 +26,7 @@ fn the_manifests_fields_are_written_in_the_published_order() {
         "algorithm",
         "documentKey",
         "publishBranch",
+        "connected",
         "products",
         "derivedFrom",
     ];
@@ -101,13 +104,70 @@ fn the_labels_file_holds_the_counters_then_the_bindings() {
     assert_eq!(fields(&full_files(), LABELS, &[]), ["counters", "bindings"]);
 }
 
+/// The position in the bindings list of the binding whose live label is `label`.
+fn binding_of(files: &codec::Files, label: &str) -> String {
+    let count = codec::read(files).unwrap().bindings.len();
+    (0..count)
+        .map(|index| index.to_string())
+        .find(|index| scalar(files, LABELS, &["bindings", index, "label"]) == label)
+        .unwrap()
+}
+
 #[test]
 fn a_bindings_fields_are_written_in_the_published_order() {
-    // The Requirement's binding, the one that holds an alias and a withdrawn label.
-    let label = scalar(&full_files(), LABELS, &["bindings", "3", "label"]);
-    assert_eq!(label, "RQ-2");
-    let published = ["key", "label", "aliases", "withdrawn"];
-    assert_eq!(fields(&full_files(), LABELS, &["bindings", "3"]), published);
+    // The departed decision's binding, the one that fills every field of a binding.
+    let files = full_files();
+    let at = binding_of(&files, "ADR-5");
+    let published = [
+        "key",
+        "label",
+        "departed",
+        "aliases",
+        "withdrawn",
+        "publishedState",
+        "publishedHistory",
+    ];
+    assert_eq!(fields(&files, LABELS, &["bindings", &at]), published);
+}
+
+#[test]
+fn a_binding_that_is_not_departed_and_records_no_state_omits_those_fields() {
+    let files = full_files();
+    let at = binding_of(&files, "RQ-2");
+    let written = fields(&files, LABELS, &["bindings", &at]);
+    assert_eq!(written, ["key", "label", "aliases", "withdrawn"]);
+}
+
+#[test]
+fn a_departed_binding_is_written_with_departed_true_and_read_back() {
+    let files = full_files();
+    let at = binding_of(&files, "ADR-5");
+    assert_eq!(
+        scalar(&files, LABELS, &["bindings", &at, "departed"]),
+        "true"
+    );
+    assert!(text(&files, LABELS).contains("\n    departed: true\n"));
+    let read = codec::read(&files).unwrap();
+    assert_eq!(codec::write(&read), files);
+}
+
+#[test]
+fn a_published_state_is_one_of_the_five_kinds_of_a_decisions_state() {
+    for kind in ["proposed", "accepted", "rejected", "superseded", "retired"] {
+        let mut files = full_files();
+        let labels = text(&files, LABELS).replace(
+            "publishedState: accepted",
+            &format!("publishedState: {kind}"),
+        );
+        files.insert(path(LABELS), labels.into_bytes());
+        assert!(codec::read(&files).is_ok(), "{kind}");
+    }
+    let mut files = full_files();
+    let labels = text(&files, LABELS).replace("publishedState: accepted", "publishedState: open");
+    files.insert(path(LABELS), labels.into_bytes());
+    let errors = codec::read(&files).unwrap_err();
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(matches!(errors[0].problem, Problem::Invalid { .. }));
 }
 
 #[test]
@@ -146,4 +206,36 @@ fn the_manifest_names_a_publish_branch_only_when_the_document_has_one() {
         "{written:?}"
     );
     assert_eq!(codec::read(&small).unwrap().publish_branch, None);
+}
+
+#[test]
+fn a_manifest_of_a_document_that_is_not_connected_omits_connected() {
+    assert_eq!(scalar(&full_files(), MANIFEST, &["connected"]), "true");
+    assert!(codec::read(&full_files()).unwrap().connected);
+    let small = codec::write(&small_document());
+    let written = fields(&small, MANIFEST, &[]);
+    assert!(
+        !written.iter().any(|field| field == "connected"),
+        "{written:?}"
+    );
+    assert!(!codec::read(&small).unwrap().connected);
+}
+
+#[test]
+fn a_manifest_whose_connected_is_not_true_is_refused_naming_the_file_line_and_column() {
+    for value in ["false", "\"true\"", "yes", "1"] {
+        let mut files = full_files();
+        let manifest =
+            text(&files, MANIFEST).replace("connected: true", &format!("connected: {value}"));
+        files.insert(path(MANIFEST), manifest.into_bytes());
+        let errors = codec::read(&files).expect_err(value);
+        assert_eq!(errors.len(), 1, "{value}: {errors:?}");
+        assert!(
+            matches!(errors[0].problem, Problem::Invalid { .. }),
+            "{value}"
+        );
+        assert_eq!(errors[0].sites[0].path, path(MANIFEST), "{value}");
+        let at = Location::At(Position::new(5, 12));
+        assert_eq!(errors[0].sites[0].location, Some(at), "{value}");
+    }
 }

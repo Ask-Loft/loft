@@ -84,7 +84,8 @@ impl<'a> Side<'a> {
         let mut tree = Self::of(document, Which::Tree);
         let base = base.map(|base| {
             let mut side = Self::of(base, Which::Base);
-            let changes = changes(&side.keyed, &tree.keyed, Some((&side.index, &tree.index)));
+            let parents = (side.index.parents(), tree.index.parents());
+            let changes = changes(&side.keyed, &tree.keyed, Some(parents));
             for (ids, change) in [
                 (&changes.added, Change::Added),
                 (&changes.changed, Change::Changed),

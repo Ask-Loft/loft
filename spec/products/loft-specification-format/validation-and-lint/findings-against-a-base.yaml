@@ -1,0 +1,32 @@
+key: 01a156a9-2bee-7416-a139-23543d833c52
+slug: findings-against-a-base
+name: "Findings against a base"
+body: "How the linter marks the findings of a tree against a base version given to it in memory, so that a review of a change reads the findings the change brought in apart from those it inherited, whoever holds the two versions. A finding is the same at both sides when its rule, its subjects and its term are, wherever its node now lies and whatever count its message gives. `loft check --baseline` reads the base from the repository and gives it to the linter."
+realizes:
+  - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+requirements:
+  - key: 01a156a9-2bee-7416-a139-2355ae942b6b
+    statement:
+      form: optional
+      where: "a base version is given"
+      system: "the linter"
+      shall: "mark each finding of the tree introduced or preexisting against the base, and list the findings the tree resolved."
+    criteria:
+      - key: 01a154a3-4f92-72c0-97ef-6350ca1051b8
+        name: "A finding is preexisting where the base has a finding of the same rule, the same subject keys and the same term."
+      - key: 01a154a3-4f92-72c0-97ef-6351a295b879
+        name: "A finding whose node lies at another file or line than at the base is preexisting."
+      - key: 01a154a3-4f92-72c0-97ef-63524f50b744
+        name: "A finding whose message differs from the base's only in a count it gives is preexisting."
+      - key: 01a154a3-4f92-72c0-97ef-6353eeda5dec
+        name: "Where the tree holds more findings of one rule, subject keys and term than the base, the excess are introduced."
+      - key: 01a154a3-4f92-72c0-97ef-6354cc3bd3f1
+        name: "Findings of one rule, subject keys and term pair with the base's at the same body line first."
+      - key: 01a154a3-4f92-72c0-97ef-6355c0bbc50e
+        name: "A finding the base holds and the tree does not is listed as resolved, at the base commit's site."
+      - key: 01a154a3-4f92-72c0-97ef-6357cbd4ef3d
+        name: "The base tree's validation errors are not reported."
+      - key: 01a156a9-2bee-7416-a139-2356cc1b84fb
+        name: "The base's findings are judged under the tree's own lint configuration, not the base's."
+      - key: 01a156a9-2bee-7416-a139-2357c875ebc0
+        name: "The base is given as a document in memory, with no repository."

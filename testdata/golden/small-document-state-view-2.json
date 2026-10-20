@@ -1,0 +1,19 @@
+{
+  "fixture": "small-document",
+  "stateView": 2,
+  "lintConfiguration": "rules:\n  - rule: LQ-005\n    enabled: false\n",
+  "views": [
+    {
+      "name": "lint",
+      "domain": "loftspec/lint/1",
+      "canonical": "\"rules:\\n  - rule: LQ-005\\n    enabled: false\\n\"",
+      "digest": "e4d93959b6fe3feae1a1a180d634c1d4707b7cf897ae3e904ef3c3b7be55acc2"
+    },
+    {
+      "name": "root:state",
+      "domain": "loftspec/state/1",
+      "canonical": "[\"loftspec/1\",\"sha256-jcs/1\",\"00000000-0000-7000-8000-000000000000\",\"af3c1e068a59ca0444ff1ae9b561828856dcd432722552d90aacb1e8240dd09a\",\"5351d55201591dd601a718bbd7106f88807171ad6935c18bc32e063eba667947\",null,{\"lintConfiguration\":\"e4d93959b6fe3feae1a1a180d634c1d4707b7cf897ae3e904ef3c3b7be55acc2\"}]",
+      "digest": "3b79a206259ad85babbb48cf674223deb4f8998492b78b594308c3bae81bea91"
+    }
+  ]
+}

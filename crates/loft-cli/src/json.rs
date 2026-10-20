@@ -8,57 +8,14 @@ use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
 use loftspec::lint::{Finding, Severity};
 use loftspec::report::{InfoFinding, InfoRule};
-use loftspec::yaml::Location;
 use serde_json::{Map, Value, json};
 
 use crate::finish::Finished;
 use crate::out::outln;
 
-/// The fields that name an element, as `loft find` and `loft review` give it: its key, label and
-/// kind, its site where it has one, and its name.
-pub fn element(
-    key: &str,
-    label: Option<&str>,
-    kind: &str,
-    site: Option<&Site>,
-    name: &str,
-) -> Map<String, Value> {
-    let mut fields = Map::new();
-    fields.insert("key".to_owned(), json!(key));
-    fields.insert("label".to_owned(), json!(label));
-    fields.insert("kind".to_owned(), json!(kind));
-    if let Some(site) = site {
-        fields.extend(self::site(site));
-    }
-    fields.insert("name".to_owned(), json!(name));
-    fields
-}
-
-/// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
-pub fn site(site: &Site) -> Map<String, Value> {
-    site_at(&site.path, site.location)
-}
-
-/// The fields of a site at `location` in the file `path`, which may lie outside `spec/`.
-pub fn site_at(path: &impl Display, location: Option<Location>) -> Map<String, Value> {
-    let mut fields = Map::new();
-    fields.insert("path".to_owned(), json!(path.to_string()));
-    match location {
-        Some(Location::At(position)) => {
-            fields.insert("line".to_owned(), json!(position.line));
-            fields.insert("column".to_owned(), json!(position.column));
-        }
-        Some(Location::Byte(offset)) => {
-            fields.insert("byte".to_owned(), json!(offset));
-        }
-        None => {}
-    }
-    fields
-}
-
 /// An error: its kind and message, its first site's fields, and every site.
 pub fn error(kind: &str, message: &str, sites: &[Site]) -> Value {
-    error_at(kind, message, sites.iter().map(site).collect())
+    error_at(kind, message, sites.iter().map(Site::fields).collect())
 }
 
 /// An error at `sites`, each given as its fields.
@@ -76,11 +33,16 @@ pub fn read_error(kind: &str, error: &ReadError) -> Value {
     self::error(kind, &error.problem.to_string(), &error.sites)
 }
 
-/// Read errors of the tree as JSON.
+/// Read errors of the tree as JSON: each of the kind `read`, naming its problem's kind in
+/// `problem`.
 pub fn read_errors(errors: &[ReadError]) -> Vec<Value> {
     errors
         .iter()
-        .map(|error| read_error("read", error))
+        .map(|error| {
+            let mut value = read_error("read", error);
+            value["problem"] = json!(error.problem.kind());
+            value
+        })
         .collect()
 }
 
@@ -99,7 +61,7 @@ pub fn finding(finding: &Finding) -> Value {
         .subjects
         .first()
         .and_then(|subject| subject.site.as_ref())
-        .map(site)
+        .map(Site::fields)
         .unwrap_or_default();
     fields.insert("rule".to_owned(), json!(finding.rule.as_str()));
     fields.insert("severity".to_owned(), json!(finding.severity.as_str()));
@@ -111,7 +73,7 @@ pub fn finding(finding: &Finding) -> Value {
         fields.insert("bodyLine".to_owned(), json!(line));
     }
     let subjects = finding.subjects.iter().map(|subject| {
-        let mut fields = subject.site.as_ref().map(site).unwrap_or_default();
+        let mut fields = subject.site.as_ref().map(Site::fields).unwrap_or_default();
         fields.insert("key".to_owned(), json!(subject.key.to_string()));
         Value::Object(fields)
     });

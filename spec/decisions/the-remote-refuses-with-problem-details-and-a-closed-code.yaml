@@ -1,0 +1,126 @@
+key: 01a156bd-7aba-76c8-93f1-8b36b4899de4
+slug: the-remote-refuses-with-problem-details-and-a-closed-code
+title: "The remote refuses with problem details and a closed code"
+context: "`loft` acts on a remote's refusals: a moved head sends the person to `loft pull`, an invalid request names the paths at fault, a refused token names the document key. A remote may be written by another team in another language, on a framework that writes problem documents of its own with a `type` URI and members such as a request identifier, and a proxy or a load balancer in front of it may answer with the same statuses. Some refusals end the attempt, and others, such as a rate limit or an outage, pass if the person tries again later."
+state:
+  kind: accepted
+  selectedOption: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+  outcome: "Every refusal of the remote is an RFC 9457 problem document, `application/problem+json`, holding `type`, `title`, `status` and `code`, and optionally `detail`, whose `type` may be any URI and which may hold other members. Its `code` comes from a closed set of thirteen, each with its status; every `conflict` carries the head's sequence and state root, `0` and `null` for a document with no published state, every `invalid_request` the paths at fault, which may be none, and every `rate_limited` a `Retry-After`. `loft` decides by the code alone, ignores every other member, reports each refusal with its status and code, says to try again later for a rate limit, an outage or a fault of the remote, and acts on no answer outside the profile."
+drivers:
+  - key: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    kind: local
+    label: "A known shape"
+    statement: "A remote's refusals follow a published standard that its authors' tools already produce."
+  - key: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    kind: local
+    label: "A closed set to act on"
+    statement: "The client acts on a fixed set of refusals and treats every other answer as one it does not act on."
+  - key: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    kind: local
+    label: "Not fooled by a status"
+    statement: "An answer from something in front of the remote is not mistaken for the remote's own refusal."
+  - key: 01a15877-f74e-70f9-95f4-2e3d796c197b
+    kind: local
+    label: "Room for a server's own members"
+    statement: "A remote's framework may give a refusal its own `type` and members beside those the client reads."
+options:
+  - key: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    title: "Problem details with a closed code"
+    description: "RFC 9457 problem documents, with any `type`, a `code` member from a closed set, members of its own for the codes that carry data, and room for members the contract does not name."
+  - key: 01a15877-f74e-70f9-95f4-2e3efe32aabf
+    title: "A strict problem profile"
+    description: "RFC 9457 problem documents whose `type` is `about:blank` and which hold no member beyond those the contract names."
+  - key: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    title: "Ad hoc error bodies"
+    description: "A JSON body of the remote's own with an `error` member."
+  - key: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    title: "Statuses alone"
+    description: "The client acts on the status, with a body only where data is needed."
+assessments:
+  - option: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    driver: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    rating: supports
+    rationale: "RFC 9457 is the standard shape"
+  - option: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    driver: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    rating: supports
+    rationale: "the codes are listed in the contract"
+  - option: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    driver: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    rating: supports
+    rationale: "a proxy's answer carries no code from the set"
+  - option: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    driver: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    rating: conflicts
+    rationale: "a shape of this contract alone"
+  - option: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    driver: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    rating: supports
+    rationale: "the values can be listed"
+  - option: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    driver: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    rating: supports
+    rationale: "a proxy's answer carries no such body"
+  - option: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    driver: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    rating: neutral
+    rationale: "statuses are standard, the bodies are not"
+  - option: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    driver: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    rating: conflicts
+    rationale: "one status can mean several refusals"
+  - option: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    driver: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    rating: conflicts
+    rationale: "a proxy's 404 reads as a missing state"
+  - option: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    driver: 01a15877-f74e-70f9-95f4-2e3d796c197b
+    rating: supports
+    rationale: "the client reads the code and ignores the rest"
+  - option: 01a15877-f74e-70f9-95f4-2e3efe32aabf
+    driver: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    rating: supports
+    rationale: "RFC 9457 is the standard shape"
+  - option: 01a15877-f74e-70f9-95f4-2e3efe32aabf
+    driver: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    rating: supports
+    rationale: "the codes are listed in the contract"
+  - option: 01a15877-f74e-70f9-95f4-2e3efe32aabf
+    driver: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    rating: supports
+    rationale: "a proxy's answer carries no code from the set"
+  - option: 01a15877-f74e-70f9-95f4-2e3efe32aabf
+    driver: 01a15877-f74e-70f9-95f4-2e3d796c197b
+    rating: conflicts
+    rationale: "a framework's own `type` or request identifier breaks the profile"
+  - option: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    driver: 01a15877-f74e-70f9-95f4-2e3d796c197b
+    rating: neutral
+    rationale: "the body is the remote's own, and nothing standard fills it"
+  - option: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    driver: 01a15877-f74e-70f9-95f4-2e3d796c197b
+    rating: supports
+    rationale: "the client reads no body"
+consequences:
+  - key: 01a156bd-7aba-76c8-93f1-8b3df7c21f0c
+    kind: benefit
+    statement: "A remote written elsewhere refuses in a shape its own tools produce, and `loft` tells each refusal apart by one member."
+  - key: 01a156bd-7aba-76c8-93f1-8b3e3c39f5ce
+    kind: obligation
+    statement: "A new refusal that the client acts on is a new code in the contract and in the simulator."
+  - key: 01a15877-f74e-70f9-95f4-2e3f2c11aba4
+    kind: benefit
+    statement: "A remote built on a framework that writes its own problem documents meets the contract without rewriting them."
+  - key: 01a15877-f74e-70f9-95f4-2e404c9a0134
+    kind: cost
+    statement: "The client cannot tell a remote that sends members the contract does not name from one that keeps to it."
+  - key: 01a15877-f74e-70f9-95f4-2e41155e99c4
+    kind: obligation
+    statement: "The simulator answers with a `type` other than `about:blank` and with members the contract does not name, so that the client is tested against them."
+subjects:
+  - role: affected
+    node: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
+  - role: outcome
+    node: 01a156bc-e91e-73aa-8be6-4da2868dcd8c
+  - role: outcome
+    node: 01a156bd-30c9-7688-a529-f458909b400c

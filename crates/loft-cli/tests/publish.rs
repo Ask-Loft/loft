@@ -335,7 +335,7 @@ fn the_json_of_a_publish_lists_the_citations_it_rewrote() {
         "F-9 removes them.",
     );
     let document = json(&on_main(&scratch, &["publish", "--format", "json"]));
-    assert_eq!(document["schema"], "loft-publish/1");
+    assert_eq!(document["schema"], "loft-publish/2");
     assert_eq!(
         document["rewritten"],
         serde_json::json!([{
@@ -396,4 +396,87 @@ fn a_publish_whose_journal_cannot_be_written_changes_no_file() {
         |scratch| on_main(scratch, &["publish"]),
     );
     assert!(stderr(&output).contains(".loft"), "{}", stderr(&output));
+}
+
+#[test]
+fn a_node_deleted_formatted_restored_and_formatted_again_is_published_with_its_label_back() {
+    let scratch = Scratch::with_reading_list();
+    let feature = scratch.file("products/reading-list/shelf/add-a-book.yaml");
+    let original = fs::read_to_string(&feature).unwrap();
+    let deleted = "00000000-0000-4000-8000-00000000002a";
+    let criterion = format!(
+        "      - key: {deleted}\n        name: \"A book added without a title is refused with an error naming the title.\"\n"
+    );
+    fs::write(&feature, original.replace(&criterion, "")).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    fs::write(&feature, &original).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    let output = on_main(&scratch, &["publish"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert!(
+        stdout(&output).contains(&format!("AC-2 {deleted} (given back)\n")),
+        "{}",
+        stdout(&output)
+    );
+    let labels = fs::read_to_string(scratch.file("labels.yaml")).unwrap();
+    assert!(
+        labels.contains(&format!("  - key: {deleted}\n    label: AC-2\n  - key: ")),
+        "{labels}"
+    );
+}
+
+/// The Reading List marked connected.
+fn connected() -> Scratch {
+    let scratch = Scratch::with_reading_list();
+    let manifest = scratch.file("loftspec.yaml");
+    let text = fs::read_to_string(&manifest).unwrap();
+    let marked = text.replacen("products:\n", "connected: true\nproducts:\n", 1);
+    fs::write(&manifest, marked).unwrap();
+    scratch
+}
+
+#[test]
+fn loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused() {
+    for unlabelled in [false, true] {
+        let scratch = connected();
+        if unlabelled {
+            unlabel(&scratch, "AC-2");
+        }
+        let before = snapshot(&scratch.0);
+        let output = on_main(&scratch, &["publish", "--format", "json"]);
+        assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+        let document = json(&output);
+        assert_eq!(document["outcome"], "error");
+        let message = document["errors"][0]["message"].as_str().unwrap();
+        for said in [
+            "connected",
+            "only through its remote",
+            "labels come from its remote",
+        ] {
+            assert!(message.contains(said), "{message}");
+        }
+        assert_eq!(
+            changed(&before, &snapshot(&scratch.0)),
+            Vec::<String>::new()
+        );
+    }
+}
+
+#[test]
+fn the_json_of_a_publish_lists_each_label_it_gave_back_with_its_key() {
+    let scratch = Scratch::with_reading_list();
+    let feature = scratch.file("products/reading-list/shelf/add-a-book.yaml");
+    let original = fs::read_to_string(&feature).unwrap();
+    let deleted = "00000000-0000-4000-8000-00000000002a";
+    let criterion = format!(
+        "      - key: {deleted}\n        name: \"A book added without a title is refused with an error naming the title.\"\n"
+    );
+    fs::write(&feature, original.replace(&criterion, "")).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    fs::write(&feature, &original).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    let document = json(&on_main(&scratch, &["publish", "--format", "json"]));
+    assert_eq!(document["schema"], "loft-publish/2");
+    let given = serde_json::json!([{ "label": "AC-2", "key": deleted }]);
+    assert_eq!(document["givenBack"], given);
 }
