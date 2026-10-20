@@ -15,12 +15,15 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   key names. `detach` takes a node out with every node beneath it and the edges they write, as a
   `Subtree`; `insert` puts a subtree under a parent, a node or the document's root, at a position
   in its list of nodes of that kind; and `move_node` moves a node, keeping its key and its
-  subtree. Each refuses, with a typed `Refusal` and the document unchanged, a key the document
-  does not hold, a kind the parent cannot hold, a key it already carries, a position past the end
-  of the list, a move beneath the node itself, and a Component without a slug at the root. No
-  edit sets a slug: `codec::write` writes each node where its new parent and its slug place it.
-  `kind::ParentKind` names what a node stands under, and `Index::carries` whether any element or
-  entry carries a key.
+  subtree. A Component put at the root without a slug takes the one given with the root,
+  `Parent::Root(Some(slug))`, and a root Component put under a Component leaves its slug. Each
+  edit refuses, with a typed `Refusal` and the document unchanged, a key the document does not
+  hold, a kind the parent cannot hold, a key it already carries, a position past the end of the
+  list, a move beneath the node itself, a Component at the root with no slug and none given, and
+  a node that would be written in a file another node holds, naming the file and its holder. No
+  edit sets a slug its caller does not give: `codec::write` writes each node where its new parent
+  and its slug place it. `kind::ParentKind` names what a node stands under, and `Index::carries`
+  whether any element or entry carries a key.
 - `loftspec::review::page` gives a page of the review packet of a tree and a base held in
   memory, each a document with the sites of its keys: the units as JSON, every next whole unit
   that fits under a limit of characters, a longer unit alone and marked `oversized`, with the

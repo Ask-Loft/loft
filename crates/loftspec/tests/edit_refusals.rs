@@ -3,6 +3,7 @@
 //! list, and a move beneath the node itself. A refused edit leaves the document unchanged.
 
 use crate::common::editing::{GROUP, INNER, KEYS, NESTED, ROOT, STORAGE, editable, feature_id};
+use crate::common::text::path;
 use crate::common::{criterion, feature, key, requirement};
 use loftspec::document::Document;
 use loftspec::edit::{self, InsertRefused, Parent, Refusal, Subtree};
@@ -99,7 +100,7 @@ fn an_insert_under_a_parent_whose_kind_cannot_hold_the_nodes_kind_is_refused_nam
         kind: NodeKind::Requirement,
         parent: ParentKind::Root,
     };
-    assert_eq!(insert_refused(Parent::Root, 0, requirement), at_root);
+    assert_eq!(insert_refused(Parent::ROOT, 0, requirement), at_root);
     let criterion = Subtree::new(criterion(key(202), "A check."));
     let under_feature = Parent::Node(feature_id(KEYS));
     let refusal = insert_refused(under_feature, 0, criterion);
@@ -120,7 +121,7 @@ fn a_move_under_a_parent_whose_kind_cannot_hold_the_nodes_kind_is_refused_naming
         parent: ParentKind::Node(NodeKind::Component),
     };
     assert_eq!(refusal, expected);
-    let refusal = move_refused(feature_id(KEYS), Parent::Root, 0);
+    let refusal = move_refused(feature_id(KEYS), Parent::ROOT, 0);
     assert_eq!(
         refusal.to_string(),
         "a feature cannot stand under the document's root"
@@ -228,20 +229,66 @@ fn a_refused_edit_leaves_the_document_unchanged() {
 }
 
 #[test]
-fn a_component_without_a_slug_is_refused_at_the_root() {
+fn a_node_with_no_slug_at_the_root_and_given_none_is_refused_naming_its_key() {
     let fresh = crate::common::component(key(200), "Store");
-    let refusal = insert_refused(Parent::Root, 0, Subtree::new(fresh));
+    let refusal = insert_refused(Parent::ROOT, 0, Subtree::new(fresh));
     assert_eq!(refusal, Refusal::NoSlug(Some(ComponentId::new(key(200)))));
-    let refusal = move_refused(component(NESTED), Parent::Root, 1);
-    assert_eq!(
-        refusal,
-        Refusal::NoSlug(Some(ComponentId::new(key(NESTED))))
+    assert!(refusal.to_string().contains("without a slug"));
+    let refusal = move_refused(component(NESTED), Parent::ROOT, 1);
+    let nested = Some(ComponentId::new(key(NESTED)));
+    assert_eq!(refusal, Refusal::NoSlug(nested));
+}
+
+/// A new Feature keyed `n` and named `name`, whose slug its name derives.
+fn named_feature(n: u32, name: &str) -> Subtree {
+    Subtree::new(feature(key(n), name, Vec::new()))
+}
+
+#[test]
+fn an_edit_that_would_write_a_node_in_a_file_another_node_holds_is_refused_naming_both() {
+    let refusal = insert_refused(group(GROUP), 3, named_feature(200, "Keys"));
+    let keys = "products/example-product/identity/keys.yaml";
+    let expected = Refusal::FileHeld {
+        path: path(keys),
+        holder: Some(feature_id(KEYS)),
+    };
+    assert_eq!(refusal, expected);
+    assert!(refusal.to_string().contains(keys), "{refusal}");
+    assert!(
+        refusal.to_string().contains(&key(KEYS).to_string()),
+        "{refusal}"
     );
-    let rooted = Subtree::new(crate::common::root(crate::common::component(
-        key(200),
-        "Store",
-    )));
+    let shadow = crate::common::root(crate::common::component(key(201), "Document model"));
+    let refusal = insert_refused(Parent::ROOT, 1, Subtree::new(shadow));
+    assert!(
+        matches!(refusal, Refusal::FileHeld { holder: Some(holder), .. }
+        if holder == component(ROOT))
+    );
+    let product = Subtree::new(crate::common::product(key(202), "Example Product"));
+    let refusal = insert_refused(Parent::ROOT, 1, product);
+    assert!(
+        matches!(refusal, Refusal::FileHeld { holder: Some(holder), .. }
+        if holder == ProductId::new(key(1)).into())
+    );
+}
+
+#[test]
+fn a_move_that_would_write_a_node_in_a_file_another_node_holds_is_refused_naming_both() {
     let mut document = editable();
-    edit::insert(&mut document, Parent::Root, 1, rooted).unwrap();
-    assert_eq!(document.components[1].slug.as_str(), "store");
+    edit::insert(&mut document, group(STORAGE), 0, named_feature(200, "Keys")).unwrap();
+    let before = document.clone();
+    let refusal = edit::move_node(&mut document, feature_id(KEYS), group(STORAGE), 0);
+    let expected = Refusal::FileHeld {
+        path: path("products/example-product/storage/keys.yaml"),
+        holder: Some(feature_id(200)),
+    };
+    assert_eq!(refusal, Err(expected));
+    let named = Parent::Root(Some(crate::common::slug("document-model")));
+    let refusal = edit::move_node(&mut document, component(NESTED), named, 1);
+    assert!(
+        matches!(refusal, Err(Refusal::FileHeld { holder: Some(holder), .. })
+        if holder == component(ROOT))
+    );
+    assert_eq!(document, before);
+    edit::move_node(&mut document, feature_id(KEYS), group(GROUP), 2).unwrap();
 }

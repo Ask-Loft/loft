@@ -1,12 +1,13 @@
 //! Editing a document held in memory by key: finding a node or a decision, detaching a node with
 //! every node beneath it, inserting such a subtree under a parent at a position, and moving a
 //! node to another parent or position. Each edit is checked whole before it changes anything,
-//! so a refused edit leaves the document as it was. No edit sets or changes a slug: the codec
-//! writes each node where its parent and its slug place it.
+//! so a refused edit leaves the document as it was. No edit sets or changes a slug its caller
+//! does not give: the codec writes each node where its parent and its slug place it.
 //!
 //! A decision is found by its key but stands in no parent's list, so no edit detaches, inserts
 //! or moves one; nor does an edit change one.
 
+mod files;
 mod place;
 mod subtree;
 
@@ -14,13 +15,17 @@ use std::collections::BTreeSet;
 
 pub use subtree::{OwnedNode, Subtree};
 
+use crate::codec::SpecPath;
 use crate::decision::Decision;
 use crate::document::Document;
 use crate::identity::Key;
 use crate::ids::{ComponentId, NodeId};
 use crate::kind::{NodeKind, ParentKind};
 use crate::node::Node;
-use place::{ListMut, Step, length, path};
+use crate::slug::Slug;
+use crate::tree::RootComponent;
+use files::{Under, check_files};
+use place::{ListMut, Step, at, length, path};
 use subtree::{ids_beneath, sourced_in};
 
 /// What a key finds in a document.
@@ -31,25 +36,36 @@ pub enum Found<'a> {
 }
 
 /// What a node is inserted or moved under: the document's root, which holds the Products and the
-/// root Components, or a node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+/// root Components, with the slug a Component that has none takes there; or a node.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Parent {
-    Root,
+    Root(Option<Slug>),
     Node(NodeId),
 }
 
 impl Parent {
+    /// The document's root, giving no slug.
+    pub const ROOT: Self = Self::Root(None);
+
     #[must_use]
-    pub const fn kind(self) -> ParentKind {
+    pub const fn kind(&self) -> ParentKind {
         match self {
-            Self::Root => ParentKind::Root,
+            Self::Root(_) => ParentKind::Root,
             Self::Node(id) => ParentKind::Node(id.kind()),
+        }
+    }
+
+    /// The slug the caller gives a node at the root.
+    const fn given_slug(&self) -> Option<&Slug> {
+        match self {
+            Self::Root(slug) => slug.as_ref(),
+            Self::Node(_) => None,
         }
     }
 }
 
 /// Why the document cannot take an edit.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum Refusal {
     #[error("the document holds no {0}")]
     UnknownNode(NodeId),
@@ -63,8 +79,13 @@ pub enum Refusal {
     Position { position: usize, length: usize },
     #[error("{node} cannot be moved beneath itself, under {parent}")]
     BeneathItself { node: NodeId, parent: NodeId },
-    #[error("a Component without a slug cannot stand at the root")]
+    #[error("a Component without a slug, and given none, cannot stand at the root")]
     NoSlug(Option<ComponentId>),
+    #[error("the file {path} already holds {}", holder.map_or_else(|| "a node".to_owned(), |id| id.to_string()))]
+    FileHeld {
+        path: SpecPath,
+        holder: Option<NodeId>,
+    },
 }
 
 /// An insert the document refused, with the subtree it was given.
@@ -109,36 +130,41 @@ pub fn detach(document: &mut Document, node: NodeId) -> Result<Subtree, Refusal>
 }
 
 /// Puts `subtree` under `parent` at `position` in its list of nodes of the subtree's kind, the
-/// nodes that followed that position following it, and adds the subtree's edges.
+/// nodes that followed that position following it, and adds the subtree's edges. A Component
+/// without a slug takes the slug given with the root.
 ///
 /// # Errors
 ///
 /// The refusal, with the subtree, when the document does not hold `parent`, the parent cannot
-/// hold the subtree's kind, the document already carries a key of the subtree, or `position` is
-/// beyond the end of the list.
+/// hold the subtree's kind, the document already carries a key of the subtree, `position` is
+/// beyond the end of the list, a Component at the root has no slug, or a node of the subtree
+/// would be written in a file another node holds.
 pub fn insert(
     document: &mut Document,
     parent: Parent,
     position: usize,
     subtree: Subtree,
 ) -> Result<(), InsertRefused> {
-    if let Err(refusal) = check_insert(document, parent, position, &subtree) {
+    if let Err(refusal) = check_insert(document, &parent, position, &subtree) {
         return Err(InsertRefused { refusal, subtree });
     }
     let (node, edges) = subtree.into_parts();
-    let steps = parent_steps(document, parent).expect("the parent was checked");
-    put(document, &steps, position, node);
+    let steps = parent_steps(document, &parent).expect("the parent was checked");
+    put(document, &steps, position, rooted(node, parent));
     document.edges.extend(edges);
     Ok(())
 }
 
 /// Moves `node`, keeping its key and every node beneath it, to `position` in `parent`'s list of
-/// nodes of its kind. Under its own parent, the position counts the list without it.
+/// nodes of its kind. Under its own parent, the position counts the list without it. A root
+/// Component moved under a Component leaves its slug; a Component moved to the root without one
+/// takes the slug given with the root.
 ///
 /// # Errors
 ///
 /// When the document does not hold `node` or `parent`, `parent` is `node` or beneath it, the
-/// parent cannot hold the node's kind, or `position` is beyond the end of the list.
+/// parent cannot hold the node's kind, `position` is beyond the end of the list, a Component at
+/// the root has no slug, or a node moved would be written in a file another node holds.
 pub fn move_node(
     document: &mut Document,
     node: NodeId,
@@ -146,50 +172,79 @@ pub fn move_node(
     position: usize,
 ) -> Result<(), Refusal> {
     let from = path(document, node).ok_or(Refusal::UnknownNode(node))?;
-    let to = parent_steps(document, parent)?;
+    let to = parent_steps(document, &parent)?;
     if let Parent::Node(parent) = parent
         && to.starts_with(&from)
     {
         return Err(Refusal::BeneathItself { node, parent });
     }
     let kind = node.kind();
-    check_containment(kind, parent)?;
+    check_containment(kind, &parent)?;
     let siblings = &from[..from.len() - 1];
     let mut length = length(document, &to, kind);
     if to == siblings {
         length -= 1;
     }
     check_position(position, length)?;
-    // A Component under a Component has no slug to stand at the root under.
-    if parent == Parent::Root && kind == NodeKind::Component && !siblings.is_empty() {
-        return Err(Refusal::NoSlug(Some(ComponentId::new(node.key()))));
-    }
+    let moved = at(document, &from).expect("the node was found");
+    let landing = Landing {
+        node: moved,
+        slug: root_slug(document, &from),
+        leaving: ids_beneath(moved).into_iter().collect(),
+    };
+    landing.check(document, &parent, &to)?;
     let owned = take(document, &from);
-    let to = parent_steps(document, parent).expect("the parent is not beneath the node");
-    put(document, &to, position, owned);
+    let to = parent_steps(document, &parent).expect("the parent is not beneath the node");
+    put(document, &to, position, rooted(owned, parent));
     Ok(())
 }
 
 fn check_insert(
     document: &Document,
-    parent: Parent,
+    parent: &Parent,
     position: usize,
     subtree: &Subtree,
 ) -> Result<(), Refusal> {
-    let steps = parent_steps(document, parent)?;
+    let to = parent_steps(document, parent)?;
     let kind = subtree.kind();
     check_containment(kind, parent)?;
     check_keys(document, subtree)?;
-    check_position(position, length(document, &steps, kind))?;
-    match subtree.owned() {
-        OwnedNode::Component(component) if parent == Parent::Root => {
-            Err(Refusal::NoSlug(component.id))
+    check_position(position, length(document, &to, kind))?;
+    let slug = match subtree.owned() {
+        OwnedNode::RootComponent(root) => Some(&root.slug),
+        _ => None,
+    };
+    let landing = Landing {
+        node: subtree.node(),
+        slug,
+        leaving: BTreeSet::new(),
+    };
+    landing.check(document, parent, &to)
+}
+
+/// A node about to stand under a new parent: the node, its slug as a root Component, and the
+/// nodes that leave their files to go with it.
+struct Landing<'a> {
+    node: Node<'a>,
+    slug: Option<&'a Slug>,
+    leaving: BTreeSet<NodeId>,
+}
+
+impl Landing<'_> {
+    /// Refuses a Component at the root with no slug of its own and none given, and a node that
+    /// would be written in a file another node holds, under the parent the steps `to` lead to.
+    fn check(&self, document: &Document, parent: &Parent, to: &[Step]) -> Result<(), Refusal> {
+        let slug = self.slug.or_else(|| parent.given_slug());
+        if let (Parent::Root(_), Node::Component(component), None) = (parent, self.node, slug) {
+            return Err(Refusal::NoSlug(component.id));
         }
-        _ => Ok(()),
+        let mut landed = Vec::new();
+        files::files(self.node, slug, &Under::of(document, to), &mut landed);
+        check_files(document, landed, &self.leaving)
     }
 }
 
-fn check_containment(kind: NodeKind, parent: Parent) -> Result<(), Refusal> {
+fn check_containment(kind: NodeKind, parent: &Parent) -> Result<(), Refusal> {
     if parent.kind().may_contain(kind) {
         Ok(())
     } else {
@@ -222,10 +277,29 @@ fn check_keys(document: &Document, subtree: &Subtree) -> Result<(), Refusal> {
 }
 
 /// The steps to `parent`; none for the root.
-fn parent_steps(document: &Document, parent: Parent) -> Result<Vec<Step>, Refusal> {
+fn parent_steps(document: &Document, parent: &Parent) -> Result<Vec<Step>, Refusal> {
     match parent {
-        Parent::Root => Ok(Vec::new()),
-        Parent::Node(id) => path(document, id).ok_or(Refusal::UnknownParent(id)),
+        Parent::Root(_) => Ok(Vec::new()),
+        Parent::Node(id) => path(document, *id).ok_or(Refusal::UnknownParent(*id)),
+    }
+}
+
+/// The slug of the root Component the steps lead to; none for any other node.
+fn root_slug<'a>(document: &'a Document, steps: &[Step]) -> Option<&'a Slug> {
+    match steps {
+        [(NodeKind::Component, position)] => Some(&document.components[*position].slug),
+        _ => None,
+    }
+}
+
+/// `node`, as a root Component under the slug given with the root when it is a Component
+/// without one going there.
+fn rooted(node: OwnedNode, parent: Parent) -> OwnedNode {
+    match (node, parent) {
+        (OwnedNode::Component(component), Parent::Root(Some(slug))) => {
+            OwnedNode::RootComponent(RootComponent { slug, component })
+        }
+        (node, _) => node,
     }
 }
 

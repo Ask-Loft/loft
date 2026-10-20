@@ -3,12 +3,14 @@
 
 use std::collections::BTreeMap;
 
-use crate::common::editing::{INNER, LABELS, PRODUCT, ROOT, SLUGS, STORAGE, editable, feature_id};
-use crate::common::key;
+use crate::common::editing::{
+    INNER, LABELS, NESTED, PRODUCT, ROOT, SLUGS, STORAGE, editable, feature_id,
+};
 use crate::common::text::path;
+use crate::common::{key, slug};
 use loftspec::codec;
 use loftspec::document::Document;
-use loftspec::edit::{self, Parent};
+use loftspec::edit::{self, Parent, Refusal, Subtree};
 use loftspec::ids::{ComponentId, FeatureGroupId, NodeId, ProductId, RequirementId};
 use loftspec::slug::Slug;
 
@@ -30,11 +32,13 @@ fn slugs(document: &Document) -> BTreeMap<NodeId, Slug> {
     slugs
 }
 
-/// The document with its edges and registries sorted, since their order means nothing.
+/// The document with its edges, registries and root Components sorted, since their order means
+/// nothing.
 fn unordered(mut document: Document) -> Document {
     document.edges.sort_by_key(|edge| format!("{edge:?}"));
     document.tags.sort_by(|a, b| a.name.cmp(&b.name));
     document.categories.sort_by(|a, b| a.name.cmp(&b.name));
+    document.components.sort_by(|a, b| a.slug.cmp(&b.slug));
     document
 }
 
@@ -54,7 +58,7 @@ fn no_edit_in_memory_sets_or_changes_a_slug() {
     edit::insert(&mut document, group(STORAGE), 0, slugs_feature).unwrap();
     edit::move_node(&mut document, feature_id(LABELS), group(STORAGE), 0).unwrap();
     let root = edit::detach(&mut document, ComponentId::new(key(ROOT)).into()).unwrap();
-    edit::insert(&mut document, Parent::Root, 0, root).unwrap();
+    edit::insert(&mut document, Parent::ROOT, 0, root).unwrap();
     let storage = FeatureGroupId::new(key(STORAGE)).into();
     let product = Parent::Node(ProductId::new(key(PRODUCT)).into());
     edit::move_node(&mut document, storage, product, 0).unwrap();
@@ -100,15 +104,45 @@ fn a_node_moved_to_another_parent_is_written_in_the_file_its_new_parent_and_slug
 }
 
 #[test]
-fn a_root_component_moved_under_a_component_is_written_in_its_new_parents_file() {
+fn a_root_component_moved_under_a_component_is_written_in_its_root_components_file_and_keeps_no_slug()
+ {
     let mut document = editable();
     let store = crate::common::root(crate::common::component(key(200), "Store"));
-    edit::insert(&mut document, Parent::Root, 1, store.into()).unwrap();
+    edit::insert(&mut document, Parent::ROOT, 1, store.into()).unwrap();
     assert!(codec::write(&document).contains_key(&path("components/store.yaml")));
     let root = Parent::Node(ComponentId::new(key(ROOT)).into());
-    edit::move_node(&mut document, ComponentId::new(key(200)).into(), root, 0).unwrap();
+    let store = ComponentId::new(key(200)).into();
+    edit::move_node(&mut document, store, root, 0).unwrap();
     let files = round_trip(&document);
     assert!(!files.contains_key(&path("components/store.yaml")));
     let text = String::from_utf8(files[&path("components/document-model.yaml")].clone()).unwrap();
     assert!(text.contains(&format!("key: {}", key(200))));
+    let back = edit::move_node(&mut document, store, Parent::ROOT, 1);
+    assert_eq!(back, Err(Refusal::NoSlug(Some(ComponentId::new(key(200))))));
+}
+
+#[test]
+fn an_insert_or_a_move_to_the_root_takes_the_slug_its_caller_gives_where_the_node_has_none() {
+    let mut document = editable();
+    let store = Subtree::new(crate::common::component(key(200), "Store"));
+    edit::insert(&mut document, Parent::Root(Some(slug("shelf"))), 1, store).unwrap();
+    assert_eq!(document.components[1].slug.as_str(), "shelf");
+    let nested = ComponentId::new(key(NESTED)).into();
+    edit::move_node(&mut document, nested, Parent::Root(Some(slug("parser"))), 2).unwrap();
+    assert_eq!(document.components[2].slug.as_str(), "parser");
+    let files = round_trip(&document);
+    assert!(files.contains_key(&path("components/shelf.yaml")));
+    assert!(files.contains_key(&path("components/parser.yaml")));
+    let root = ComponentId::new(key(ROOT)).into();
+    edit::move_node(&mut document, root, Parent::Root(Some(slug("ignored"))), 2).unwrap();
+    assert_eq!(document.components[2].slug.as_str(), "document-model");
+    let product = Subtree::new(crate::common::product(key(201), "Shelf"));
+    edit::insert(
+        &mut document,
+        Parent::Root(Some(slug("ignored"))),
+        1,
+        product,
+    )
+    .unwrap();
+    assert_eq!(document.products[1].slug.as_str(), "shelf");
 }

@@ -71,9 +71,9 @@ fn a_position_equal_to_the_length_of_the_list_appends_the_node() {
 fn the_parent_of_an_inserted_product_or_root_component_is_the_documents_root() {
     let mut document = editable();
     let shelf = Subtree::new(product(key(200), "Shelf"));
-    edit::insert(&mut document, Parent::Root, 0, shelf).unwrap();
+    edit::insert(&mut document, Parent::ROOT, 0, shelf).unwrap();
     let root = edit::detach(&mut document, component(ROOT)).unwrap();
-    edit::insert(&mut document, Parent::Root, 0, root).unwrap();
+    edit::insert(&mut document, Parent::ROOT, 0, root).unwrap();
     let products: Vec<u32> = document
         .products
         .iter()
@@ -177,9 +177,9 @@ fn a_move_changes_no_other_node_and_no_decision() {
 fn a_product_moved_at_the_root_keeps_its_place_among_the_products() {
     let mut document = editable();
     let shelf = Subtree::new(product(key(200), "Shelf"));
-    edit::insert(&mut document, Parent::Root, 1, shelf).unwrap();
+    edit::insert(&mut document, Parent::ROOT, 1, shelf).unwrap();
     let example = ProductId::new(key(1)).into();
-    edit::move_node(&mut document, example, Parent::Root, 1).unwrap();
+    edit::move_node(&mut document, example, Parent::ROOT, 1).unwrap();
     let products: Vec<u32> = document
         .products
         .iter()
