@@ -343,7 +343,8 @@ fn a_record_both_sides_move_apart_exits_1_with_a_parent_conflict_that_verify_nam
     let verified = scratch.loft(&["verify"]);
     assert_eq!(verified.status.code(), Some(1));
     assert!(
-        stderr(&verified).contains("holds an unresolved merge conflict over `parent`"),
+        stderr(&verified).contains("unresolved merge conflict ")
+            && stderr(&verified).contains(" over `parent`"),
         "{}",
         stderr(&verified)
     );

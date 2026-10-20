@@ -25,6 +25,7 @@ Absent values are `null`; an empty string is not absent.
 | Content root | `loftspec/content/1` | `[productHashes, componentHashes, edgesRoot, tagsRoot, categoriesRoot, decisionsRoot]` |
 | Binding root | `loftspec/bindings/1` | `[[key, label, aliases, contentHash], …]` |
 | State root | `loftspec/state/1` | `[format, algorithm, documentKey, contentRoot, bindingRoot, derivedFrom]` |
+| Conflict | `loftspec/conflict/1` | `[holder, field, base, ours, theirs]` |
 
 ### Node
 
@@ -90,6 +91,17 @@ which they were recorded; `contentHash` is computed from the tree, never read fr
 state view's `format` is `loftspec/1`, its `algorithm` `sha256-jcs/1`, and `derivedFrom` is
 `{authoredStateId, contentAddress, publishSequence}` or `null`.
 
+### Conflict
+
+A conflict record's identifier is the digest of its view; no file holds it. `holder` is the key
+of the record whose `conflicts` list holds the record, `spec/loftspec.yaml` for the manifest and
+`spec/labels.yaml` for the bindings. `field` is the record's `field` as written. Each side is
+JSON as the conflict record writes it, so that it is computed from the record alone: every
+scalar a string of its text, a number or a flag included; a sequence an array of its items in
+written order; a mapping an object of its fields; extension data the JSON value it holds; and
+`null` for a side written as deleted or on which the field is absent. The rules apply within
+sequences and mappings too.
+
 ## `small-document.json`
 
 One Product, `Example Product` (body `The example.`, tag `portable`), holds the Feature Group
@@ -116,6 +128,16 @@ under `loftspec/lint/1`; the vector `root:state` is the state view of `small-doc
 followed by `{"lintConfiguration": <lint digest>}`, digested under `loftspec/state/1`. Under state
 view 1, and under state view 2 for a tree without `spec/lint.yaml`, the state view is the one
 `small-document.json` gives.
+
+## `conflict-identifiers.json`
+
+The identifiers of seven conflict records, each written alone into the tree of `small-document`:
+`yaml` is inserted into the file at `path` after the line `after`, or at its end where `after` is
+`null`. They cover a field of an unkeyed record inside a Requirement, a `record` conflict with a
+deleting side, manifest conflicts with absent sides, over text and over a flag, a counter of
+`spec/labels.yaml`, a Requirement's `ext`, and a decision's `assessments` with a list of records on
+each side. Each
+vector gives the conflict view's canonical JSON and its digest under `loftspec/conflict/1`.
 
 ## `lint-defaults.yaml`
 

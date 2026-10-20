@@ -4,6 +4,7 @@
 
 use crate::common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
+use loftspec::codec::{self, SpecPath};
 use loftspec::hash::{
     StateView, hash_document, hash_indexed_with_views, lint_digest, state_root, state_view,
 };
@@ -108,4 +109,36 @@ fn the_small_documents_state_view_2_vectors_are_reproduced_byte_for_byte() {
         views[0]["canonical"],
         String::from_utf8(canonical_bytes(&lint)).unwrap().as_str()
     );
+}
+
+const CONFLICT_IDENTIFIERS: &str =
+    include_str!("../../../testdata/golden/conflict-identifiers.json");
+
+#[test]
+fn the_conflict_identifier_vectors_are_reproduced_byte_for_byte() {
+    let golden: Value = serde_json::from_str(CONFLICT_IDENTIFIERS).unwrap();
+    assert_eq!(golden["domain"], Domain::Conflict.as_str());
+    for vector in golden["conflicts"].as_array().unwrap() {
+        let name = &vector["name"];
+        let path = SpecPath::new(vector["path"].as_str().unwrap());
+        let block = vector["yaml"].as_str().unwrap();
+        let mut files = codec::write(&small_document());
+        let text = String::from_utf8(files[&path].clone()).unwrap();
+        let text = match vector["after"].as_str() {
+            Some(after) => text.replacen(after, &format!("{after}{block}"), 1),
+            None => format!("{text}{block}"),
+        };
+        files.insert(path, text.into_bytes());
+        let read = codec::read(&files).unwrap_or_else(|errors| panic!("{name}: {errors:?}"));
+        let [conflict] = read.conflicts.as_slice() else {
+            panic!("{name}: one conflict in {:?}", read.conflicts);
+        };
+        let canonical = String::from_utf8(canonical_bytes(&conflict.view())).unwrap();
+        assert_eq!(vector["canonical"], canonical.as_str(), "{name}");
+        assert_eq!(
+            vector["digest"],
+            conflict.id().to_string().as_str(),
+            "{name}"
+        );
+    }
 }

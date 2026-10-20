@@ -25,12 +25,13 @@ fn errors(files: &Files) -> Vec<String> {
 
 #[test]
 fn a_conflict_record_is_an_error_naming_the_file_and_the_key() {
-    let errors = errors(&conflicted());
+    let files = conflicted();
+    let id = codec::read(&files).unwrap().conflicts[0].id();
     assert_eq!(
-        errors,
+        errors(&files),
         [format!(
-            "spec/{FEATURE}:8:10: requirement 00000000-0000-7000-8000-000000000004 holds an \
-             unresolved merge conflict over `statement.shall`"
+            "spec/{FEATURE}:8:10: requirement 00000000-0000-7000-8000-000000000004 holds the \
+             unresolved merge conflict {id} over `statement.shall`"
         )]
     );
 }
@@ -90,11 +91,13 @@ fn a_conflict_on_the_manifest_is_placed_at_its_file() {
         path("loftspec.yaml"),
         format!("{manifest}conflicts:\n  - field: publishBranch\n    ours: release\n").into_bytes(),
     );
+    let id = codec::read(&files).unwrap().conflicts[0].id();
     assert_eq!(
         errors(&files),
-        [
-            "spec/loftspec.yaml: the manifest holds an unresolved merge conflict over `publishBranch`"
-        ]
+        [format!(
+            "spec/loftspec.yaml: the manifest holds the unresolved merge conflict {id} over \
+             `publishBranch`"
+        )]
     );
     assert_eq!(codec::write(&codec::read(&files).unwrap()), files);
 }
@@ -126,7 +129,7 @@ fn a_tree_that_holds_a_conflict_compares_no_root_and_does_not_verify() {
     assert!(
         errors[0]
             .to_string()
-            .contains("holds an unresolved merge conflict"),
+            .contains("holds the unresolved merge conflict"),
         "{}",
         errors[0]
     );

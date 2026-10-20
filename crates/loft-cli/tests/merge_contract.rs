@@ -197,7 +197,7 @@ fn one_statement_edited_apart_conflicts_until_the_record_is_removed() {
     assert_eq!(check.status.code(), Some(1));
     let report = printed(&check);
     assert!(
-        report.contains("unresolved merge conflict over `statement.shall`"),
+        report.contains("unresolved merge conflict ") && report.contains(" over `statement.shall`"),
         "{report}"
     );
     repo.0.edit(SHARE, conflict, "");

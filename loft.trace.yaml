@@ -8735,7 +8735,7 @@ links:
         body: af8abf1d6bbb396377cfae00d8f2623f6e79fbed15326061b1d5a4f8c336a134
       - file: "crates/loft-cli/tests/merge_driver.rs"
         name: "a_record_both_sides_move_apart_exits_1_with_a_parent_conflict_that_verify_names"
-        body: 8693cd3926a3017178781350bae5e056bee73507df8cad45f3418e1a4b3cd4e9
+        body: 089714cd6ef371ed262329c2e5af18ecd38618fadc23e0ae833e9aee81ecdd42
   - node: 01a13acc-1f4f-759a-b78e-51763e2acef6
     reviewed: 9ece32bb04d171be9abd2c34ef40b560428fda71e495b2918cdd9424cead9dc3
     tests:
@@ -9014,7 +9014,7 @@ links:
         body: ac2482da7546d190d6df8e3d924b484704b2941c7708efa33b1f5b99030199c5
       - file: "crates/loft-cli/tests/merge_contract.rs"
         name: "one_statement_edited_apart_conflicts_until_the_record_is_removed"
-        body: c2db0f8514350bd2d7064644c0af50ff39c3667361cd20b4808333c6a111ed9d
+        body: 51d997e632def7913a3a7d93e703009cbfd7fb29fac8165f0bad04978a242bb1
   - node: e39b5d19-68e5-4773-b0f3-1932c110aa23
     reviewed: b2e5878a9483829758082bf937e9545160ded9e791877bd0b3b1786e049ba63c
     tests:
@@ -9035,7 +9035,7 @@ links:
         body: dcc5f0f4fbcf9abf023869e66da8de9f7a68a0766aa7afe82ba8a514d386e804
       - file: "crates/loft-cli/tests/merge_contract.rs"
         name: "one_statement_edited_apart_conflicts_until_the_record_is_removed"
-        body: c2db0f8514350bd2d7064644c0af50ff39c3667361cd20b4808333c6a111ed9d
+        body: 51d997e632def7913a3a7d93e703009cbfd7fb29fac8165f0bad04978a242bb1
   - node: 36b1cc8b-51b0-4d2d-8414-80878eaf9978
     reviewed: 319ad6d9ce2d592f9e27e350b0dcef7a21e884b78e1ae75620aa0e951e330e15
     tests:
@@ -9050,7 +9050,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/conflicts.rs"
         name: "a_conflict_record_is_an_error_naming_the_file_and_the_key"
-        body: 3beb63dfa05961a4f0865d5ae76da470adc71106e4a2540a7d1b65f2d58b1e93
+        body: 4803d682d80ce07ad6f686977963d2b99ce81fe7461328a673f5634646d2b393
   - node: 8e6056f4-ceff-488d-8927-ff0b7fdf6c51
     reviewed: 37116baaaef0d6dd0ac85460d8b413ce1d1295c34eaba5074fc48b97a0364d08
     tests:
@@ -9086,7 +9086,7 @@ links:
         body: ac2482da7546d190d6df8e3d924b484704b2941c7708efa33b1f5b99030199c5
       - file: "crates/loft-cli/tests/merge_contract.rs"
         name: "one_statement_edited_apart_conflicts_until_the_record_is_removed"
-        body: c2db0f8514350bd2d7064644c0af50ff39c3667361cd20b4808333c6a111ed9d
+        body: 51d997e632def7913a3a7d93e703009cbfd7fb29fac8165f0bad04978a242bb1
   - node: 01a13070-322e-74de-b959-5a95c9e981d5
     reviewed: aa12789235a6319355d2b7105c86e3243244ffbf59c2320f893fe8231655ae3e
     tests:
@@ -9173,13 +9173,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/merge_contract.rs"
         name: "one_statement_edited_apart_conflicts_until_the_record_is_removed"
-        body: c2db0f8514350bd2d7064644c0af50ff39c3667361cd20b4808333c6a111ed9d
+        body: 51d997e632def7913a3a7d93e703009cbfd7fb29fac8165f0bad04978a242bb1
   - node: 96b57712-6562-4544-ba62-e87b7e9c75c4
     reviewed: 376838960990277b0a9a9c518c319b5d9c005be5d8ea0783d5beef2c7c3a1029
     tests:
       - file: "crates/loft-cli/tests/merge_contract.rs"
         name: "one_statement_edited_apart_conflicts_until_the_record_is_removed"
-        body: c2db0f8514350bd2d7064644c0af50ff39c3667361cd20b4808333c6a111ed9d
+        body: 51d997e632def7913a3a7d93e703009cbfd7fb29fac8165f0bad04978a242bb1
   - node: 26b41aff-d4b9-45fc-abc8-21616b68fbbf
     reviewed: adb8e1e0ed353262fcdaf1a7179f914a125d8b2ecd9f76388397da835d0e346c
     tests:
@@ -9264,6 +9264,141 @@ links:
       - file: "crates/loftspec/tests/merge_labels.rs"
         name: "bindings_two_publishes_give_apart_without_colliding_are_both_kept"
         body: e97fcf01d18004bd11e36b8348dfa5f9e1988248a99b47e6dec74495810b2eea
+  - node: 01a156a6-de49-70a4-a6bb-3726463ffe2b
+    reviewed: 1b99745a6006b217135b7ab14874b99c6657f991c5ace1fc49824ba3d0b83187
+    tests:
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_conflict_identifier_vectors_are_reproduced_byte_for_byte"
+        body: 313c9191fedd55a907736b0d8d92fe51ceeb8ec2e9794f518e03c99ef2c39aeb
+  - node: 01a156a6-de49-70a4-a6bb-37279f71574f
+    reviewed: ca587d5428e2358b0a18d6d8579f550e50720ef8f51420f8a3c41f87f27eab6e
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_holder_of_a_conflict_record_is_the_key_of_the_record_that_lists_it"
+        body: 8fe06819c9329b95acabc8e172e2a8de7f66afade8ebdc78ee1c71e5f2ebccd6
+  - node: 01a156a6-de49-70a4-a6bb-372856410aaf
+    reviewed: 3427c7591a8af3a33b64ca299824f6918708919d6e61aa70c170a75ee5b29fbc
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_conflict_record_of_the_manifest_has_the_holder_spec_loftspec_yaml"
+        body: 858134d7ce35f616d289a2160d1b9f7e11cae0d8a7b658ab34e4a82f363adba6
+  - node: 01a156a6-de49-70a4-a6bb-372924106abd
+    reviewed: 7966f53d3cd212f70f5eb0616b12e865f69c2a8ce273ec782c6467e8577bc900
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_conflict_record_of_the_bindings_has_the_holder_spec_labels_yaml"
+        body: a70f1a7d4b5dc9487c4bbb25fcff4183e4ef9c97ba0139fe5a1bc7bbe13a5f77
+  - node: 01a156a6-de49-70a4-a6bb-372a8ff3aaa3
+    reviewed: 4684c2843cb2f0d8e9e39bb2268cf04d0d2fcca1a01d2e1bdb0a05b558c0b74e
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_side_on_which_the_field_is_absent_enters_the_view_as_null"
+        body: b9177cc8e6b999aa79b3a016075f3d6248393a615164b42206b59c961ae0d477
+  - node: 01a15938-bed7-7602-8b06-3c455164867d
+    reviewed: b0816adcbf239d61828d17a32f27782762237a4a0b5b6611da453cc56f065381
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_side_written_as_deleted_enters_the_view_as_null"
+        body: 1f2d63ab402bf9f7ad02f13e2be602b1658bbf6cdd5ada72c9142cb8305a1af3
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_conflict_identifier_vectors_are_reproduced_byte_for_byte"
+        body: 313c9191fedd55a907736b0d8d92fe51ceeb8ec2e9794f518e03c99ef2c39aeb
+  - node: 01a15938-bed7-7602-8b06-3c465b968a92
+    reviewed: 7cd8a64b561201bac497d0885dd27586cc2c59bd6b84ec66dcb50a8abbe0c1e6
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_scalar_side_enters_the_view_as_its_text_a_number_or_a_flag_included"
+        body: 04b439903853c6603ad0233507f7ee6bd5a79b909826e3e151bc6de43ba3fd1f
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_conflict_identifier_vectors_are_reproduced_byte_for_byte"
+        body: 313c9191fedd55a907736b0d8d92fe51ceeb8ec2e9794f518e03c99ef2c39aeb
+  - node: 01a15938-bed7-7602-8b06-3c4751872d51
+    reviewed: 650efb845548c4c49f1573e84e2b50985e0c4684c094d9a5cb27c1b06a56dc1a
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_sequence_side_enters_the_view_as_an_array_in_written_order"
+        body: 78a5ef02e65f11840fd2ee333e3df3172fe268e80025717b6e052af5aeec18e3
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_conflict_identifier_vectors_are_reproduced_byte_for_byte"
+        body: 313c9191fedd55a907736b0d8d92fe51ceeb8ec2e9794f518e03c99ef2c39aeb
+  - node: 01a15938-bed7-7602-8b06-3c48a98ff06f
+    reviewed: e0572344716b10b2f1b2d809297e486fb747b57881059f10704b1ff161041823
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_mapping_side_enters_the_view_as_an_object_of_its_written_fields"
+        body: bf02265427a373acee7976d9bd21f9a95f94b30b4a3408dc4db678146e362cfa
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_conflict_identifier_vectors_are_reproduced_byte_for_byte"
+        body: 313c9191fedd55a907736b0d8d92fe51ceeb8ec2e9794f518e03c99ef2c39aeb
+  - node: 01a15938-bed7-7602-8b06-3c49ee9cc682
+    reviewed: 1f87a4dda4d0233daee9e2aabc4796afddb74a6724f4f794edda87c956b3e27d
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "a_side_of_extension_data_enters_the_view_as_the_json_it_holds"
+        body: 7bd13db70cff52df370be49b60c6d4be66b0e83f984daf915da84515dc6c573e
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_conflict_identifier_vectors_are_reproduced_byte_for_byte"
+        body: 313c9191fedd55a907736b0d8d92fe51ceeb8ec2e9794f518e03c99ef2c39aeb
+  - node: 01a156a6-de49-70a4-a6bb-372b223edc5d
+    reviewed: da27dc0c4b3d1879a9d2f3a20f15c62d7ae0a341c0fb6fc22d3c2e33ee44c58f
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_identifier_is_written_as_64_lowercase_hexadecimal_digits"
+        body: c5f89554ad55386bf43c26486df3c87cd87b61ec9651902a2a8a1a6180bbd4d3
+  - node: 01a156a6-de49-70a4-a6bb-372c6fee4571
+    reviewed: 409c206c044bd1556477a1fc3c50342c498034c44318ca8bbaa3739ab440cc9d
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "changing_the_holder_the_field_or_any_side_changes_the_identifier"
+        body: 71340649a31c6b08d9e5a2bedacdeb0d46987fc9cd4ce172d1a2eae5e2d1710b
+  - node: 01a156a6-de49-70a4-a6bb-372df202de8f
+    reviewed: de19ed51e9d42a2092db16a71e10ebee56f0c3cecd7b59af78725a46e6805b77
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "moving_a_conflict_record_within_its_list_leaves_its_identifier_unchanged"
+        body: cdc41c521654c70ea719dcc34c1f213dc8d292e3ac4722f47754bfcf55a4dddf
+  - node: 01a156a6-de49-70a4-a6bb-372ecf6bb476
+    reviewed: e8d8d0b75079b875c6db7237dbd1a1458cb8896cfaa48a26898a8d30e97eb968
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "adding_or_removing_another_conflict_record_leaves_the_identifier_unchanged"
+        body: 52f51827274a01d13c4e6338e6e745c9afb907d90bb416f6c28c09f871d0d4c6
+  - node: 01a156a6-de49-70a4-a6bb-372f2f36dc99
+    reviewed: 866860c2a866f678c5b872f194066186438e2f19f6628b502cb05a5c8cff4acb
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "two_merges_that_write_one_conflict_record_under_one_holder_give_it_one_identifier"
+        body: c00c5625533cf0a49a125226821dbb8c2f976bd0a739731995a078a0e6084ddc
+  - node: 01a156a6-de49-70a4-a6bb-37313dd5baba
+    reviewed: ec2848cc50d47d45b98356007c15097e4cf68ef5cf2c9770d3cc5d1c91729dec
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "no_conflict_record_holds_its_identifier"
+        body: a61dd255c5326d6d6fac98c479f0f231c60cf59ddb2af233b90a660cdf7228ed
+  - node: 01a156a6-de49-70a4-a6bb-37326db7de7c
+    reviewed: ab44c04c00af4ff7897fa33d845b87bbf585e1723fd7b8a11b6931e757a8c1c1
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "no_file_of_the_format_holds_a_conflict_identifier"
+        body: ca3ba6daf8c1d31a8d51cb394232d31dbe3b23d3c69ae245dd125c8190156122
+  - node: 01a156a6-de49-70a4-a6bb-37340aae9e24
+    reviewed: 7c2c582232e0c16dcaed6173be193202622c36514271f90758675e3667c88520
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_error_for_a_conflict_record_names_its_identifier"
+        body: e86aac0c551f7ae92f8ba139501007e05cfaf774efe3fdd45e2d36200fd993e6
+  - node: 01a156a6-de49-70a4-a6bb-3735a8f4fcae
+    reviewed: 6291d1a80c76801211bfe314c35e6ee757f4cfe08f10ba7e9e75bfffdbb836e8
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_error_for_a_conflict_record_names_its_holder"
+        body: 7a984432a896f31776dddf5fc20a46266a2440b7a7dc7ba1dd723c272e96e758
+  - node: 01a156a6-de49-70a4-a6bb-373675e3ce80
+    reviewed: 5ab0944dc6db7c1b750707a46dd62feba9f2d3f34b23e60e13b28de5c517bade
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_error_for_a_conflict_record_names_its_field"
+        body: bacc06c44f9aa734182ca8abc9d03160b42eee1d1fcb5112b0ece2f171dd947a
   - node: 01a156a6-de49-70a4-a6bb-3738b2a3370a
     reviewed: 3c30a468cf47d4e40490298b9855133e082640cf2609cba36b9af8198712f1c7
     tests:
@@ -12209,7 +12344,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/verify.rs"
         name: "a_tree_that_holds_a_conflict_record_compares_no_root_and_exits_1"
-        body: df82caf97d98e34e04e636ad1943a0857d483f0d2bf155337b57d9e9210e51b6
+        body: 40fa69aa0b7c145f67d4d98af31cec6e8cdd55cded9f5516aa1cccaf157fc5ef
   - node: 01a1354e-bca0-714b-8727-09bd96bb5298
     reviewed: febc8e501e5e6f16f01cb78c09bc524944c9b4e785cf60d974e3532a2ca78f8b
     tests:

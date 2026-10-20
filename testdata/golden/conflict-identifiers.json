@@ -1,0 +1,62 @@
+{
+  "fixture": "small-document",
+  "domain": "loftspec/conflict/1",
+  "conflicts": [
+    {
+      "name": "requirement-statement-shall",
+      "path": "products/example-product/identity/keys.yaml",
+      "after": "          - 00000000-0000-7000-8000-000000000004\n",
+      "yaml": "    conflicts:\n      - field: statement.shall\n        base: \"write a key on every node.\"\n        ours: \"write a key on each node.\"\n        theirs: \"write one key on every node.\"\n",
+      "canonical": "[\"00000000-0000-7000-8000-000000000004\",\"statement.shall\",\"write a key on every node.\",\"write a key on each node.\",\"write one key on every node.\"]",
+      "digest": "e26616fed30bb2f10bc69214f9a5549e29cdb513347e775b50ca22e76b64ed81"
+    },
+    {
+      "name": "requirement-record",
+      "path": "products/example-product/identity/keys.yaml",
+      "after": "          - 00000000-0000-7000-8000-000000000004\n",
+      "yaml": "    conflicts:\n      - field: record\n        base: 00000000-0000-7000-8000-000000000004\n        ours: 00000000-0000-7000-8000-000000000004\n        theirs: null\n",
+      "canonical": "[\"00000000-0000-7000-8000-000000000004\",\"record\",\"00000000-0000-7000-8000-000000000004\",\"00000000-0000-7000-8000-000000000004\",null]",
+      "digest": "c157b689166a86753788c4d3ad0262d2d4f32b61a2467232cd42ec10a5a56dd0"
+    },
+    {
+      "name": "manifest-format",
+      "path": "loftspec.yaml",
+      "after": null,
+      "yaml": "conflicts:\n  - field: format\n    ours: loftspec/2\n",
+      "canonical": "[\"spec/loftspec.yaml\",\"format\",null,\"loftspec/2\",null]",
+      "digest": "5cd4bd6d40a400a2f54f460e9d816de07da026bbfe16f249c94d0d8ccffe2660"
+    },
+    {
+      "name": "manifest-connected",
+      "path": "loftspec.yaml",
+      "after": null,
+      "yaml": "conflicts:\n  - field: connected\n    theirs: true\n",
+      "canonical": "[\"spec/loftspec.yaml\",\"connected\",null,null,\"true\"]",
+      "digest": "6dce1ea55a4ed4565706932d2d24ebfaa0f79e5e40a911edf2a5f7ebcbf11e74"
+    },
+    {
+      "name": "labels-counter",
+      "path": "labels.yaml",
+      "after": null,
+      "yaml": "conflicts:\n  - field: counters.F\n    base: 2\n    ours: 3\n    theirs: 4\n",
+      "canonical": "[\"spec/labels.yaml\",\"counters.F\",\"2\",\"3\",\"4\"]",
+      "digest": "ac9415d282f133b596fb8ab4454562cabc9dedfa96414813d10f81c5ac059ddd"
+    },
+    {
+      "name": "requirement-ext",
+      "path": "products/example-product/identity/keys.yaml",
+      "after": "          - 00000000-0000-7000-8000-000000000004\n",
+      "yaml": "    conflicts:\n      - field: ext\n        ours:\n          openspec:\n            draft: true\n            order: -3\n        theirs:\n          openspec:\n            name: \"A\"\n",
+      "canonical": "[\"00000000-0000-7000-8000-000000000004\",\"ext\",null,{\"openspec\":{\"draft\":true,\"order\":-3}},{\"openspec\":{\"name\":\"A\"}}]",
+      "digest": "16c8f281ccfef1abeb284dc0ca7e045edc60399951d6b82fb8221b158edf0937"
+    },
+    {
+      "name": "decision-assessments",
+      "path": "decisions/keys-are-uuids.yaml",
+      "after": null,
+      "yaml": "conflicts:\n  - field: assessments\n    base:\n      - option: 00000000-0000-7000-8000-000000000018\n        driver: 00000000-0000-7000-8000-000000000016\n        rating: neutral\n        rationale: \"Either can be written.\"\n    ours:\n      - option: 00000000-0000-7000-8000-000000000018\n        driver: 00000000-0000-7000-8000-000000000016\n        rating: supports\n        rationale: \"Either can be written.\"\n    theirs:\n      - option: 00000000-0000-7000-8000-000000000018\n        driver: 00000000-0000-7000-8000-000000000016\n        rating: conflicts\n        rationale: \"Either can be written.\"\n",
+      "canonical": "[\"00000000-0000-7000-8000-000000000014\",\"assessments\",[{\"driver\":\"00000000-0000-7000-8000-000000000016\",\"option\":\"00000000-0000-7000-8000-000000000018\",\"rating\":\"neutral\",\"rationale\":\"Either can be written.\"}],[{\"driver\":\"00000000-0000-7000-8000-000000000016\",\"option\":\"00000000-0000-7000-8000-000000000018\",\"rating\":\"supports\",\"rationale\":\"Either can be written.\"}],[{\"driver\":\"00000000-0000-7000-8000-000000000016\",\"option\":\"00000000-0000-7000-8000-000000000018\",\"rating\":\"conflicts\",\"rationale\":\"Either can be written.\"}]]",
+      "digest": "cc390f39027763927bdb5aac3c40d67aceadbacae151883176c21a25fa3b6829"
+    }
+  ]
+}
