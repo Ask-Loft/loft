@@ -1,0 +1,126 @@
+key: 01a158d8-c6e0-708e-a3c7-63f8a21ac92b
+slug: merging-whole-trees
+name: "Merging whole trees"
+body: "How the tree merger merges base, ours and theirs as three whole `spec/` trees, pairing every record by its key whatever file holds it on each side. A record changes file when one side gives it a parent in another file, such as a Requirement moved to another Feature, or a new slug, which names another file or directory. Merged one file at a time, such a record is kept in the file it left, because the other side changed it there, and also written in the file it went to, so the merged tree carries its key twice and the reader refuses it. The git merge driver keeps merging one file at a time, since git hands it one file; a caller that holds the three trees, such as a server that hosts documents, merges them with the tree merger."
+realizes:
+  - 01a158d9-8050-73cc-817c-05870bfe179e
+mentions:
+  - 01a130de-5737-776f-9c39-b9bb261d3fce
+  - 07b7e7a2-fdcb-4557-9b99-8d24d9c7dd4e
+  - 35f9c8f7-2632-4aa4-8e7f-c2a9d520bece
+  - 6a3af886-c63d-49a9-8467-0cc33fdcdc50
+  - b32e384b-ec53-45c5-bc3b-86bf862a97b1
+requirements:
+  - key: 01a158d8-c6e0-708e-a3c7-63f9d3c394b8
+    statement:
+      form: ubiquitous
+      system: "The tree merger"
+      shall: "pair each record of base, ours and theirs by its key, whatever file holds it on each side."
+    criteria:
+      - key: 01a158d8-c6e0-708e-a3c7-63fafc734b23
+        name: "A record that two sides hold in different files is one record of the merge."
+      - key: 01a158d8-c6e0-708e-a3c7-63fb1a94d91f
+        name: "A record that both sides moved to one place is at that place, with no conflict record for its place."
+      - key: 01a158d8-c6e0-708e-a3c7-63fcea54b2c7
+        name: "Each record of the result is written in the file that its merged parent and slug place it in, as the directory layout places it."
+      - key: 01a158d8-c6e0-708e-a3c7-63fd1d2722f4
+        name: "A file that holds no record of the result is absent from it."
+      - key: 01a158d8-c6e0-708e-a3c7-63fe8cf9c658
+        name: "An empty base tree is merged as a base that holds no record."
+  - key: 01a158d8-c6e0-708e-a3c7-63ffedde31b1
+    statement:
+      form: event_driven
+      when: "one side moves a record to another file and the other side leaves its place as base holds it"
+      system: "the tree merger"
+      shall: "write the record once, in the file and under the parent where the moving side put it."
+    criteria:
+      - key: 01a158d8-c6e0-708e-a3c7-640098f23736
+        name: "The record appears once in the result."
+      - key: 01a158d8-c6e0-708e-a3c7-64011c924dd2
+        name: "The record is under the parent, at the position and in the file where the moving side put it."
+      - key: 01a158d8-c6e0-708e-a3c7-64026a297d20
+        name: "When the other side changes the record, the record carries that change."
+      - key: 01a158d8-c6e0-708e-a3c7-640389d3fd45
+        name: "When the other side changes the record, no conflict record whose field is `record` is written for it."
+      - key: 01a158d8-c6e0-708e-a3c7-640454eb30e0
+        name: "Each record beneath the moved record that the other side changed is beneath it in the result and carries the change."
+      - key: 01a158d8-c6e0-708e-a3c7-640556525cf1
+        name: "Each record that the other side added beneath the moved record is beneath it in the result."
+      - key: 01a158d8-c6e0-708e-a3c7-640649d304c8
+        name: "When the other side deletes the record, the record is kept where the moving side put it, with a conflict record whose field is `record` and whose deleting side is `null`."
+      - key: 01a158d8-c6e0-708e-a3c7-6407537cd3b2
+        name: "When the other side deletes the record's new parent, the new parent is kept with a conflict record whose field is `record`."
+  - key: 01a158d8-c6e0-708e-a3c7-64085328f7e2
+    statement:
+      form: unwanted
+      if: "the two sides move one record to different places"
+      system: "the tree merger"
+      shall: "write the record once, with a conflict record over its place."
+    criteria:
+      - key: 01a158d8-c6e0-708e-a3c7-64095469a0fe
+        name: "The record appears once in the result."
+      - key: 01a158d8-c6e0-708e-a3c7-640aa2e6b92c
+        name: "When the sides give the record different parents, the record stays at its base parent, with a conflict record whose field is `parent`."
+      - key: 01a158d8-c6e0-708e-a3c7-640b9de1c401
+        name: "When the sides give the record different parents and neither side holds its base parent, the record is where ours put it, with a conflict record whose field is `parent`."
+      - key: 01a158d8-c6e0-708e-a3c7-640cdc54a480
+        name: "When both sides add a record with one key at different parents, the record is where ours put it, with a conflict record whose field is `parent` and no `base`."
+      - key: 01a158d8-c6e0-708e-a3c7-640ddacca98d
+        name: "When the sides give the record different slugs, the record keeps its base slug, and the file it names, with a conflict record whose field is `slug`."
+      - key: 01a158d8-c6e0-708e-a3c7-640e742bb9f7
+        name: "When the sides' moves would place a record beneath itself, each record of the cycle stays at its base parent, with a conflict record whose field is `parent`."
+  - key: 01a158d8-c6e0-708e-a3c7-640f621b8694
+    statement:
+      form: ubiquitous
+      system: "The tree merger"
+      shall: "merge each pair of records by the rules that the merge driver applies to a record within one file."
+    criteria:
+      - key: 01a158d8-c6e0-708e-a3c7-64100155daf9
+        name: "The fields of a record are merged as the merge driver merges them."
+      - key: 01a158d8-c6e0-708e-a3c7-6411593f892c
+        name: "An ordered list is merged as the merge driver merges it."
+      - key: 01a158d8-c6e0-708e-a3c7-641232bb8af4
+        name: "Each conflict is written as the typed conflict record that the merge driver writes for it."
+      - key: 01a158d8-c6e0-708e-a3c7-64137f53cf5e
+        name: "Where no record changes file on either side, each file of the result holds the bytes that the merge driver writes for that file."
+  - key: 01a158d8-c6e0-708e-a3c7-64141c8ce881
+    statement:
+      form: ubiquitous
+      system: "The tree merger"
+      shall: "merge the manifest, `spec/labels.yaml` and `spec/lint.yaml` as the merge driver merges each of them."
+    mentions:
+      - 01a13070-322f-7493-9495-407d4cc6ccae
+    criteria:
+      - key: 01a158d8-c6e0-708e-a3c7-641582cff74d
+        name: "The manifest of the result is the file that the merge driver writes for the three manifests."
+      - key: 01a158d8-c6e0-708e-a3c7-6416f502cef2
+        name: "`spec/labels.yaml` of the result is the file that the merge driver writes for the three label files."
+      - key: 01a158d8-c6e0-708e-a3c7-641791398247
+        name: "`spec/lint.yaml` that one side changed is that side's file in the result."
+      - key: 01a158d8-c6e0-708e-a3c7-64181f771baa
+        name: "`spec/lint.yaml` that both sides changed to the same contents is those contents in the result."
+  - key: 01a158d8-c6e0-708e-a3c7-6419ecf17696
+    statement:
+      form: unwanted
+      if: "both sides change `spec/lint.yaml` to different contents"
+      system: "the tree merger"
+      shall: "refuse the merge."
+    criteria:
+      - key: 01a158d8-c6e0-708e-a3c7-641a8aafa64a
+        name: "The refusal names `spec/lint.yaml`."
+      - key: 01a158d8-c6e0-708e-a3c7-641b4ac68da5
+        name: "No merged tree is returned."
+  - key: 01a158d8-c6e0-708e-a3c7-641c6268fbeb
+    statement:
+      form: ubiquitous
+      system: "The tree merger"
+      shall: "return a tree that carries each key once."
+    mentions:
+      - 5469d0a1-b027-4474-ae19-8af16748d1d4
+    criteria:
+      - key: 01a158d8-c6e0-708e-a3c7-641d8b6fcf3a
+        name: "The result is read without a read error whose problem has the kind `moved-and-changed`."
+      - key: 01a158d8-c6e0-708e-a3c7-641e399b0634
+        name: "The result is read without a read error whose problem has the kind `duplicate-key`."
+      - key: 01a158d8-c6e0-708e-a3c7-641f747becf4
+        name: "Each file of the result is in the formatter's canonical layout."

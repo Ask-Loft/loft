@@ -1,7 +1,7 @@
 key: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
 slug: loftspec
 name: "loftspec"
-body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the OpenSpec converter, the validator, the linter, the renderer, the publisher, the merge engine, the reconciler, the term reporter, the comparer and the review packer. It performs no input or output."
+body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the OpenSpec converter, the validator, the linter, the renderer, the publisher, the merge engine, the tree merger, the reconciler, the term reporter, the comparer and the review packer. It performs no input or output."
 scopedTo:
   - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 components:
@@ -76,6 +76,13 @@ components:
     constraints:
       - key: 6fcc6939-eb09-4d3c-802d-35a42f1d02e0
         name: "The merge engine shall take as input only the base, ours and theirs versions of one file."
+        verificationFate: proved
+  - key: 01a158d9-8050-73cc-817c-05870bfe179e
+    name: "Tree merger"
+    body: "The three-way merge of three whole trees, which pairs each record by its key across files and merges each pair by the merge engine's rules."
+    constraints:
+      - key: 01a158d9-a96c-744c-b744-4e38427a541f
+        name: "The tree merger shall take as input only the base, ours and theirs versions of one tree."
         verificationFate: proved
   - key: 01a1383a-4a92-778a-b49d-e3efdabc7f04
     name: "Reconciler"
