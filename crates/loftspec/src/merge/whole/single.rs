@@ -30,7 +30,7 @@ pub(super) fn merge(trees: &Trees) -> Result<Singles, TreeMergeError> {
     for name in [MANIFEST, LABELS, TAGS, CATEGORIES, TERMS, LINT] {
         let path = SpecPath::new(name);
         let role = Role::of(&path).expect("a single file of the Format");
-        let versions = trees.file(&path).map(Option::<&Content>::cloned);
+        let versions = trees.file(&path);
         let refused = |error| TreeMergeError::File {
             path: path.clone(),
             error,
@@ -52,25 +52,22 @@ type Merged = Option<(Content, Vec<Label>)>;
 /// as one value: one side's change wins.
 fn merged(
     role: &Role,
-    [base, ours, theirs]: [Option<Content>; 3],
+    [base, ours, theirs]: [Option<&Content>; 3],
 ) -> Result<Merged, super::super::MergeError> {
-    let registry = matches!(role, Role::Tags | Role::Categories | Role::Terms);
+    let whole = |kept: Option<&Content>| kept.map(|content| (content.clone(), Vec::new()));
     if *role == Role::Lint {
-        return Ok(one_value(&base, ours, theirs)?.map(|content| (content, Vec::new())));
+        return Ok(whole(one_value(&base, ours, theirs)?));
     }
     match (ours, theirs) {
         (Some(ours), Some(theirs)) => merge_content(base, ours, theirs).map(Some),
         (None, None) => Ok(None),
-        (ours, theirs) if registry => {
-            let empty = || Content::Registry(Vec::new());
-            let (content, disputed) = merge_content(
-                base,
-                ours.unwrap_or_else(empty),
-                theirs.unwrap_or_else(empty),
-            )?;
+        (ours, theirs) if role.is_registry() => {
+            let empty = Content::Registry(Vec::new());
+            let (content, disputed) =
+                merge_content(base, ours.unwrap_or(&empty), theirs.unwrap_or(&empty))?;
             let holds = content.records().next().is_some();
             Ok(holds.then_some((content, disputed)))
         }
-        (ours, theirs) => Ok(one_value(&base, ours, theirs)?.map(|content| (content, Vec::new()))),
+        (ours, theirs) => Ok(whole(one_value(&base, ours, theirs)?)),
     }
 }

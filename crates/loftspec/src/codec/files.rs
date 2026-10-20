@@ -131,7 +131,7 @@ impl Role {
     }
 
     /// Whether the file holds a sequence of records rather than one.
-    const fn is_registry(&self) -> bool {
+    pub(crate) const fn is_registry(&self) -> bool {
         matches!(self, Self::Tags | Self::Categories | Self::Terms)
     }
 }
