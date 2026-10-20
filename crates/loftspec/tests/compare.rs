@@ -413,3 +413,11 @@ fn a_record_is_json_as_the_text_form_writes_it() {
     assert_eq!(record["slug"], json!("example-product"));
     assert_eq!(record["tags"], json!(["portable"]));
 }
+
+#[test]
+fn the_comparer_changes_nothing_in_the_versions_it_is_given() {
+    let (older, newer) = (small_document(), with_second_requirement());
+    let (older_before, newer_before) = (older.clone(), newer.clone());
+    let _ = compared(&older, &newer);
+    assert_eq!((older, newer), (older_before, newer_before));
+}

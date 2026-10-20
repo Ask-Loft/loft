@@ -18426,6 +18426,18 @@ links:
       - file: "crates/loftspec/tests/term_report.rs"
         name: "the_term_reporter_changes_nothing_in_the_document"
         body: 3911966f98784f3cad18cd5c3ac646ca62abcf95cb6f6b278e1fc068df014934
+  - node: 01a156a5-b768-75b1-8d89-8845e5b58be1
+    reviewed: 6cf45fc0df0eb85605720639c9aa9a3f9d06fb5ecd3df28522d1d7d8be772a90
+    tests:
+      - file: "crates/loftspec/tests/compare.rs"
+        name: "the_comparer_changes_nothing_in_the_versions_it_is_given"
+        body: e26dcaf292eea51da35c41d81de444488663123259df0221b56b17e176b8d6bc
+  - node: 01a156a8-d770-7010-b103-3e5c2c5f84b8
+    reviewed: aed7a4c59ecb676d780cab5ebd5ff52bdc3a965d0bedd5bfcf4ededd42cd0c27
+    tests:
+      - file: "crates/loftspec/tests/review_pages.rs"
+        name: "the_review_packer_changes_nothing_in_the_versions_it_is_given"
+        body: 68c2d0b13b970c87e3db5208ac1b39fcf2f5a9a03afa57579ecc79dcf594f6d8
   - node: 7ff6bd2b-7a21-4020-83aa-ad8aedec10a2
     reviewed: 2e8eb653635e879018d283f254ac40e357714f1a26b49437a557cae9b911f3b0
     tests:

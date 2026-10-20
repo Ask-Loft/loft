@@ -170,3 +170,19 @@ fn a_tree_that_holds_a_node_without_a_key_is_refused() {
     let refused = page(version(&document, &sites), None, None, 50_000, number(1));
     assert!(matches!(refused, Err(Refused::Unkeyed(unkeyed)) if unkeyed.len() == 1));
 }
+
+#[test]
+fn the_review_packer_changes_nothing_in_the_versions_it_is_given() {
+    let (tree, base, none) = (edited(), small_document(), Sites::default());
+    let (tree_before, base_before) = (tree.clone(), base.clone());
+    let tree_version = version(&tree, &none);
+    let _ = page(
+        tree_version,
+        Some(version(&base, &none)),
+        None,
+        100,
+        number(1),
+    );
+    assert_eq!((tree, base), (tree_before, base_before));
+    assert_eq!(none, Sites::default());
+}
