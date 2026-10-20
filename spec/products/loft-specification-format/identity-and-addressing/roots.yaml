@@ -1,7 +1,7 @@
 key: 61d7c512-16c1-44b2-a625-62d581fffd97
 slug: roots
 name: "Roots"
-body: "The edges root, the content root, the binding root, the registry roots, the decisions root and the state root, and what each of them is sensitive to. A lock names the state view its state root was computed under: state view 1 is the state view as it stood before the lint configuration entered it, and state view 2 adds the digest of `spec/lint.yaml`, so that a lock pins the configuration the linter reads with the tree."
+body: "The edges root, the content root, the binding root, the registry roots, the decisions root and the state root, and what each of them is sensitive to. A lock names the state view its state root was computed under: state view 1 is the state view as it stood before the lint configuration entered it, and state view 2 adds the digest of `spec/lint.yaml`, so that a lock pins the configuration the linter reads with the tree. A tree without the file has the same roots under both views, and its lock names no view."
 tags:
   - portable
 realizes:

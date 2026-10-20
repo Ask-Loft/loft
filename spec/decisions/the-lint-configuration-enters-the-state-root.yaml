@@ -5,7 +5,7 @@ context: "A lock pins the tree, but the findings of `loft check` also depend on 
 state:
   kind: accepted
   selectedOption: 01a156a1-0a9c-776b-a863-a472092e6ab6
-  outcome: "A lock names the state view its roots were computed under, absent meaning view 1; under view 2 the state view also holds the digest of `spec/lint.yaml`'s text when the tree holds the file; verification checks each lock under its own view, and the publisher writes view 2."
+  outcome: "A lock names the state view its roots were computed under, absent meaning view 1; under view 2 the state view also holds the digest of `spec/lint.yaml`'s text when the tree holds the file; verification checks each lock under its own view, and the publisher writes `stateView: 2` only on the lock of a tree that holds the file, so that every other lock stays readable by an older `loft`."
 drivers:
   - key: 01a156a1-0a9c-776b-a863-a46f7d890b8c
     kind: local
@@ -93,7 +93,10 @@ consequences:
     statement: "The first publish after an upgrade advances the publish sequence of a tree that holds `spec/lint.yaml` once."
   - key: 01a156a1-0a9c-776b-a863-a479d8d4449f
     kind: risk
-    statement: "An older `loft` refuses a lock of state view 2."
+    statement: "An older `loft` refuses the lock of a tree that holds `spec/lint.yaml`."
+  - key: 01a156c1-8cdc-740d-abe5-fdb06f028d9d
+    kind: cost
+    statement: "The lock of a tree without `spec/lint.yaml` does not pin the file's absence: adding one leaves that lock verifying until the next publish."
 subjects:
   - role: affected
     node: 845fe937-28e9-4c37-883a-1fbdf18c4a1f

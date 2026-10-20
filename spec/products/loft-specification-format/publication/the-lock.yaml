@@ -1,7 +1,7 @@
 key: e74d3409-8e24-4790-9285-8568ef81453d
 slug: the-lock
 name: "The lock"
-body: "The lock record a publish writes to `loft.lock.json`, together with the label changes and the rewritten citations that are the only edits a publish makes under `spec/`. A tree that holds `spec/lint.yaml` and was last published under state view 1 has a new state root under state view 2, so the first publish after an upgrade advances its publish sequence once, with no other change."
+body: "The lock record a publish writes to `loft.lock.json`, together with the label changes and the rewritten citations that are the only edits a publish makes under `spec/`. A tree that holds `spec/lint.yaml` and was last published under state view 1 has a new state root under state view 2, so the first publish after an upgrade advances its publish sequence once, with no other change. A lock names state view 2 only where the tree holds `spec/lint.yaml`; every other lock has the same roots under both views, carries no `stateView`, and stays readable by an older `loft`."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -49,7 +49,11 @@ requirements:
       shall: "compute the roots of every lock it writes under state view 2."
     criteria:
       - key: 01a156a1-0a9f-763f-9aaa-d3e745d21d97
-        name: "Every lock the publisher writes carries `stateView` with the value 2."
+        name: "The lock of a tree that holds `spec/lint.yaml` carries `stateView` with the value 2."
+      - key: 01a156c1-8ce0-753c-a269-20dbd23a4f4d
+        name: "The lock of a tree without `spec/lint.yaml` carries no `stateView`."
+      - key: 01a156c1-8ce0-753c-a269-20dcea71ef15
+        name: "A reader that implements state view 1 alone reads the lock of a tree without `spec/lint.yaml`."
       - key: 01a156a1-0a9f-763f-9aaa-d3e823c32bd8
         name: "The state root a lock records is the hasher's state root of the published tree under state view 2."
   - key: 01a156a1-0a9f-763f-9aaa-d3e927a2671d
