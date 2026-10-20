@@ -41,7 +41,7 @@ pub(crate) fn all_former_labels<'a>(
 
 /// Every former label a decision names: in its `subject` edges, its drivers and its
 /// consequences.
-fn former_labels_of<'a>(
+pub(crate) fn former_labels_of<'a>(
     document: &'a Document,
     decision: &'a Decision,
 ) -> impl Iterator<Item = Label> + 'a {

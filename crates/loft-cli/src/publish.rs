@@ -157,6 +157,13 @@ fn refusal(refusal: Refusal) -> Failure {
         Refusal::Connected => Failure::Refused(format!(
             "{CONNECTED}, so a stopped merge or rebase settles no labels of it"
         )),
+        Refusal::NamedAsFormer(named) => {
+            let named: Vec<String> = named.iter().map(ToString::to_string).collect();
+            Failure::Refused(format!(
+                "{}; run `loft fmt` and publish again",
+                named.join("; ")
+            ))
+        }
     }
 }
 

@@ -2,14 +2,17 @@
 //! back the label it departed with, or keeps it as an alias where it came back as another kind,
 //! and the binding of a key that left is marked departed; no binding is removed.
 
-use crate::common::text::{COMPONENT, files, path, text};
+use crate::common::decisions::decision_id;
+use crate::common::text::{COMPONENT, DECISION, FEATURE, files, path, text};
 use crate::common::{key, label, small_document};
+use loftspec::check::check;
 use loftspec::codec::{self, Files, LABELS};
 use loftspec::fmt::format;
 use loftspec::identity::LabelPrefix;
 use loftspec::ids::{ConstraintId, RequirementId};
 use loftspec::publish::{
-    Allocated, Made, Publication, PublishedAt, ReadTree, RepoState, publish, publish_labels,
+    Allocated, Made, NamedAsFormer, Publication, PublishedAt, ReadTree, Refusal, RepoState,
+    publish, publish_labels,
 };
 
 const CONSTRAINT: &str = "00000000-0000-7000-8000-000000000007";
@@ -40,7 +43,7 @@ fn clean_main() -> RepoState {
     }
 }
 
-fn publication_of(files: &Files) -> Publication {
+fn attempt(files: &Files) -> Result<Publication, Refusal> {
     let at = PublishedAt::from_unix_seconds(1_000).unwrap();
     publish(
         ReadTree::read(files).unwrap(),
@@ -49,7 +52,10 @@ fn publication_of(files: &Files) -> Publication {
         at,
         Made::NotAsRemote,
     )
-    .unwrap()
+}
+
+fn publication_of(files: &Files) -> Publication {
+    attempt(files).unwrap()
 }
 
 /// The tree after a first publish.
@@ -180,4 +186,65 @@ fn a_publish_after_a_lock_that_gives_a_label_back_is_a_publish() {
     };
     assert_eq!(given_back.len(), 1);
     assert_eq!(next.publish_sequence.get(), 2);
+}
+
+/// The tree with the Requirement `RQ-2` and its criterion deleted from their Feature, and the
+/// decision that names it retired, as `loft fmt` leaves it: the decision names `RQ-2` under
+/// `formerLabel`.
+fn without_requirement_formatted() -> Files {
+    let feature = text(&files(), FEATURE);
+    let start = feature.find("requirements:\n").unwrap();
+    let end = feature.find("qualityAttributes:\n").unwrap();
+    let mut files = files();
+    let edited = format!("{}{}", &feature[..start], &feature[end..]);
+    files.insert(path(FEATURE), edited.into_bytes());
+    let decision = text(&files, DECISION).replacen(
+        "  kind: accepted\n",
+        "  kind: retired\n  rationale: \"Gone.\"\n",
+        1,
+    );
+    files.insert(path(DECISION), decision.into_bytes());
+    let files = formatted(files);
+    assert!(text(&files, DECISION).contains("formerLabel: RQ-2\n"));
+    files
+}
+
+/// The tree published without `RQ-2`, then its Feature restored as it was and not formatted.
+fn restored_unformatted() -> Files {
+    let mut back = published(&without_requirement_formatted());
+    back.insert(path(FEATURE), files()[&path(FEATURE)].clone());
+    back
+}
+
+#[test]
+fn a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused() {
+    let refused = attempt(&restored_unformatted());
+    let Err(Refusal::NamedAsFormer(named)) = refused else {
+        panic!("the publish is refused: {refused:?}");
+    };
+    let expected = NamedAsFormer {
+        label: label("RQ-2"),
+        decisions: vec![decision_id()],
+    };
+    assert_eq!(named, [expected]);
+    let message = named[0].to_string();
+    assert!(message.contains("RQ-2"), "{message}");
+    assert!(
+        message.contains(&decision_id().key().to_string()),
+        "{message}"
+    );
+    assert!(message.contains("formatting writes"), "{message}");
+    assert!(message.contains("as the node's key"), "{message}");
+}
+
+#[test]
+fn the_tree_formatted_after_that_refusal_is_published_and_checks_clean() {
+    let back = formatted(restored_unformatted());
+    assert!(!text(&back, DECISION).contains("formerLabel"));
+    let after = published(&back);
+    let checked = check(&after);
+    assert!(!checked.has_errors(), "{checked:?}");
+    let document = codec::read(&after).unwrap();
+    let requirement = RequirementId::new(key(4));
+    assert_eq!(document.bindings.label_of(requirement), Some(label("RQ-2")));
 }

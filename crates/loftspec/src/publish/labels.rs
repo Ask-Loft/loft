@@ -3,16 +3,17 @@
 //! counters that never rewind and never give out a label again. A key that came back takes back
 //! the label it departed with, and the binding of a key that left is marked departed.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
+use std::fmt;
 
 use crate::bindings::Binding;
 use crate::decision::StateKind;
 use crate::document::Document;
 use crate::hash::decision_history_hash;
 use crate::identity::{Key, Label, LabelPrefix};
-use crate::ids::ElementId;
+use crate::ids::{DecisionId, ElementId};
 use crate::node::Node;
-use crate::validate::decisions::all_former_labels;
+use crate::validate::decisions::{all_former_labels, former_labels_of};
 
 /// A label a publish gave an element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,6 +29,57 @@ pub struct Allocation {
     pub given_back: Vec<Allocated>,
     pub allocated: Vec<Allocated>,
     pub departed: Vec<Allocated>,
+}
+
+/// A label a publish would give back to a key that came back, which decisions of the tree still
+/// name under `formerLabel`: given back, the label would name the node again, and each such
+/// reference with it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NamedAsFormer {
+    pub label: Label,
+    pub decisions: Vec<DecisionId>,
+}
+
+impl fmt::Display for NamedAsFormer {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let keys: Vec<String> = self.decisions.iter().map(ToString::to_string).collect();
+        write!(
+            formatter,
+            "the publish would give back {}, which the decision {} names under `formerLabel`; \
+             formatting writes each such reference as the node's key",
+            self.label,
+            keys.join(", ")
+        )
+    }
+}
+
+/// Each label a publish of `document` would give back that a decision names under
+/// `formerLabel`, in label order, with the decisions that name it in document order.
+pub(super) fn named_as_former(document: &Document) -> Vec<NamedAsFormer> {
+    let carried: BTreeSet<Key> = elements_in_order(document)
+        .iter()
+        .map(|element| element.key())
+        .collect();
+    let returning: BTreeSet<Label> = document
+        .bindings
+        .iter()
+        .filter(|binding| binding.departed && carried.contains(&binding.element.key()))
+        .flat_map(Binding::labels)
+        .collect();
+    let mut named: BTreeMap<Label, Vec<DecisionId>> = BTreeMap::new();
+    for decision in &document.decisions {
+        for label in former_labels_of(document, decision).filter(|label| returning.contains(label))
+        {
+            let decisions = named.entry(label).or_default();
+            if !decisions.contains(&decision.id) {
+                decisions.push(decision.id);
+            }
+        }
+    }
+    named
+        .into_iter()
+        .map(|(label, decisions)| NamedAsFormer { label, decisions })
+        .collect()
 }
 
 /// Settles every binding a publish settles: gives each key that came back its departed label,

@@ -7875,6 +7875,9 @@ links:
       - file: "crates/loft-cli/tests/publish.rs"
         name: "a_node_deleted_formatted_restored_and_formatted_again_is_published_with_its_label_back"
         body: af63a5111f661a5823caa06b4eed1dab150a959f7a16c5a4c6d1f64853f3bbe6
+      - file: "crates/loftspec/tests/publish_departed.rs"
+        name: "the_tree_formatted_after_that_refusal_is_published_and_checks_clean"
+        body: 0bfabe0ecb95bf382708dd3643c3c5fb5a037f6e9f16d6d6489c5b7566e41be3
   - node: 01a156a4-1732-7428-aee4-d3a0bc216d04
     reviewed: 9aa0a79f9273477f2cf7e9eb99c64e6af51b001e8c6492d4eb6d2fdee9794e77
     tests:
@@ -7899,6 +7902,39 @@ links:
       - file: "crates/loft-cli/tests/publish.rs"
         name: "the_json_of_a_publish_lists_each_label_it_gave_back_with_its_key"
         body: 4cef6c11711b184f8167b7975c23cc5d81380fd3c051e5835987d7f4db790de9
+  - node: 01a15980-a251-72a2-8b36-803d0c79bc4d
+    reviewed: 7d865597ba55f5f692ef7ee94a72b1b53f42519f1ebaa885458b87e5b175c05d
+    tests:
+      - file: "crates/loftspec/tests/publish_departed.rs"
+        name: "a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused"
+        body: c07d2d89c65d9a7cb5603d8e9b854882988bef42d15e49bde787b8f188fcc9a3
+      - file: "crates/loft-cli/tests/publish_former.rs"
+        name: "a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused_writing_nothing"
+        body: f16b12cff748c90bede7ad1295787db6c355dcf6e5ce3d6cee4ea801d78c1f44
+  - node: 01a15980-a251-72a2-8b36-803ec89b21b1
+    reviewed: cac600b0128a47f0c720fb5af43ee99e78094e44654725b41621845d70d864eb
+    tests:
+      - file: "crates/loftspec/tests/publish_departed.rs"
+        name: "a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused"
+        body: c07d2d89c65d9a7cb5603d8e9b854882988bef42d15e49bde787b8f188fcc9a3
+      - file: "crates/loft-cli/tests/publish_former.rs"
+        name: "a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused_writing_nothing"
+        body: f16b12cff748c90bede7ad1295787db6c355dcf6e5ce3d6cee4ea801d78c1f44
+  - node: 01a15980-a251-72a2-8b36-803fcb03c5c9
+    reviewed: 26f2c2fc2980091c47dec8699b7e072c0ad324c85ed6b23af6fbc2a3d89f285e
+    tests:
+      - file: "crates/loftspec/tests/publish_departed.rs"
+        name: "a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused"
+        body: c07d2d89c65d9a7cb5603d8e9b854882988bef42d15e49bde787b8f188fcc9a3
+      - file: "crates/loft-cli/tests/publish_former.rs"
+        name: "a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused_writing_nothing"
+        body: f16b12cff748c90bede7ad1295787db6c355dcf6e5ce3d6cee4ea801d78c1f44
+  - node: 01a15980-a251-72a2-8b36-80407d7b9a78
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/publish_former.rs"
+        name: "a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused_writing_nothing"
+        body: f16b12cff748c90bede7ad1295787db6c355dcf6e5ce3d6cee4ea801d78c1f44
   - node: 01a156a4-1732-7428-aee4-d3a4cf64e208
     reviewed: d7b122bbe7252957fd124f7f43bdcd3e6f716669ccbb56d5d468bab4aea0023c
     tests:

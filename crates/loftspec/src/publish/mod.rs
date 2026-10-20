@@ -12,11 +12,14 @@ mod time;
 use std::fmt;
 use std::num::NonZeroU64;
 
-pub use labels::{Allocated, Allocation, allocate, publish_labels, record_decisions};
+pub use labels::{
+    Allocated, Allocation, NamedAsFormer, allocate, publish_labels, record_decisions,
+};
 pub use lock::{LOCK, Lock, LockError};
 pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
 
+use labels::named_as_former;
 use settle::Settlement;
 
 use crate::canonical::Digest;
@@ -125,6 +128,9 @@ pub enum Refusal {
     /// The document is connected and the publish is not made as its remote, in a stopped merge
     /// or rebase: its labels come from that remote, so no settling of two publishes applies.
     Connected,
+    /// The publish would give back labels that decisions of the tree name under `formerLabel`,
+    /// which formatting writes as the node's key.
+    NamedAsFormer(Vec<NamedAsFormer>),
 }
 
 /// Whether a publish is made as the document's remote, the one publisher of a connected
@@ -166,7 +172,8 @@ impl Base {
 /// it refuses on an uncommitted change under `spec/` or, for a publish whose labels it
 /// allocates, a branch other than the publish branch; in one it refuses as
 /// [`settle::preconditions`] says and settles the labels two publishes gave apart. Then it
-/// refuses on a validation error; otherwise gives back departed labels, allocates labels, marks
+/// refuses on a validation error, and on a label it would give back that a decision names under
+/// `formerLabel`; otherwise gives back departed labels, allocates labels, marks
 /// departed the bindings of keys that left, rewrites citations of withdrawn labels, records each
 /// decision's state, and reports the previous lock when the state root equals it, or gives the
 /// new lock and the files to write. A connected document's publish not made as its remote is
@@ -201,6 +208,10 @@ pub fn publish(
     }
     if from_remote {
         return Ok(prepared(document, lint, previous));
+    }
+    let named = named_as_former(&document);
+    if !named.is_empty() {
+        return Err(Refusal::NamedAsFormer(named));
     }
     // Allocation gives only fresh labels of each element's own prefix, so the document stays
     // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
