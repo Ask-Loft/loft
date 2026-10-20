@@ -195,10 +195,23 @@ requirements:
       - key: 01a156ac-9752-749b-be81-df01d461acc3
         name: "The error says that `loft pull` brings the tree to the head."
       - key: 01a156bd-30c8-76c9-86b7-8c5c9b6d9ee9
-        name: "A problem document with the code `conflict` is such an answer."
+        name: "A problem document with the code `conflict` whose `head` differs from the base the request names is such an answer."
       - key: 01a15877-f750-769a-9e28-ba6538d8ab62
         name: "A `409` refusal whose code is not `conflict`, such as `quota_exceeded`, is not such an answer."
       - key: 01a156ac-9752-749b-be81-df028febefa1
+        name: "Nothing is written."
+  - key: 01a15896-4080-7475-b51a-3c34a182719a
+    statement:
+      form: unwanted
+      if: "the remote refuses a connected publish as a `conflict` whose `head` is the base the request names"
+      system: "`loft publish`"
+      shall: "report the refusal with its `detail` and exit 1."
+    criteria:
+      - key: 01a15896-4080-7475-b51a-3c352b4d8aca
+        name: "The error holds the problem document's `detail`, where it has one."
+      - key: 01a15896-4080-7475-b51a-3c368b4d0459
+        name: "The error does not say to run `loft pull`."
+      - key: 01a15896-4080-7475-b51a-3c371ecb470f
         name: "Nothing is written."
   - key: 01a156ac-9752-749b-be81-df03740c9619
     statement:

@@ -77,6 +77,8 @@ requirements:
     criteria:
       - key: 01a1587a-dee2-7262-8c7b-895d46943611
         name: "The remote's head is the one that a `conflict` refusal of the create names."
+      - key: 01a15896-4080-7475-b51a-3c3819a265aa
+        name: "A `conflict` refusal of the create means that the remote already holds the document key."
       - key: 01a1587a-dee2-7262-8c7b-895e23847314
         name: "A head of publish sequence `0` and state root `null` is the one that a document without a lock names."
       - key: 01a1587a-dee2-7262-8c7b-895f0c899c76
@@ -122,6 +124,8 @@ requirements:
     criteria:
       - key: 01a1587a-dee2-7262-8c7b-896ca45d4a6c
         name: "The error names the call that the remote refused, with its status and its code."
+      - key: 01a15896-4080-7475-b51a-3c39282e4f1b
+        name: "A create refused as `invalid_request` for its name is reported with the paths the remote names, `name` among them."
       - key: 01a1587a-dee2-7262-8c7b-896dd9fd6611
         name: "An import refused after the create leaves the remote holding the document with no published state, and the error says that running `loft remote set` again imports into it."
       - key: 01a1587a-dee2-7262-8c7b-896ec3692b8d

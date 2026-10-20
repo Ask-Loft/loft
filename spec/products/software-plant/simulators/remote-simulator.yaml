@@ -147,6 +147,8 @@ requirements:
         name: "`outcome` is one of `published`, `replayed` and `unchanged`."
       - key: 01a156ae-6a51-7230-a9a1-fab0b8cd1853
         name: "A publish whose `base` is not the head is answered `409 Conflict` with the code `conflict` and a member `head` holding the head's `publishSequence` and `stateRoot`."
+      - key: 01a15896-4082-762d-9155-4afc5ad26671
+        name: "A publish that its scenario refuses for a reason other than a moved head, such as a document that takes no more writes, is answered `409 Conflict` with the code `conflict`, the unchanged `head` and a `detail` that gives the reason."
       - key: 01a156ae-6a51-7230-a9a1-fab14d0480ff
         name: "A publish whose body is not a valid request, or whose delta the remote cannot apply, is answered `400 Bad Request` with the code `invalid_request` and a member `paths` listing each path at fault."
       - key: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
@@ -166,10 +168,12 @@ requirements:
         name: "After a create, `GET <address>/head` answers as the create did."
       - key: 01a1587a-dee4-70f8-999e-e556bb2702fb
         name: "A key that the remote already holds a document under is answered `409 Conflict` with the code `conflict` and the `head` of that document."
+      - key: 01a15896-4082-762d-9155-4afd9ae89188
+        name: "A create is answered with the code `conflict` only for a key that the remote already holds a document under."
       - key: 01a1587a-dee4-70f8-999e-e557da3f39fd
         name: "A `documentKey` other than the address's is answered `400 Bad Request` with the code `invalid_request` and `paths` empty."
       - key: 01a1587a-dee4-70f8-999e-e5584ba5df9e
-        name: "A name that is blank, or longer than 200 Unicode scalar values, is answered `400 Bad Request` with the code `invalid_request` and `paths` empty."
+        name: "A name that is blank, or longer than 200 Unicode scalar values, is answered `400 Bad Request` with the code `invalid_request` and `paths` naming `name`."
       - key: 01a1587a-dee4-70f8-999e-e559d421bdfa
         name: "A token that its scenario does not let create a document is answered `403 Forbidden` with the code `forbidden`."
   - key: 01a1587a-dee4-70f8-999e-e55aa6f750e0
