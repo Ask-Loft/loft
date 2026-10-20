@@ -11,7 +11,7 @@ pub mod openspec;
 use std::collections::BTreeMap;
 
 use crate::document::Document;
-use crate::hash::{DocumentHashes, hash_indexed_with_views};
+use crate::hash::{StateView, hash_indexed_with_views, state_root};
 use crate::ids::ElementId;
 use crate::index::IndexErrors;
 
@@ -22,18 +22,31 @@ pub struct Projections {
     pub json: Vec<u8>,
 }
 
-/// Renders a document's Markdown projection and canonical JSON export.
+/// Renders a document's Markdown projection and canonical JSON export, for a tree without
+/// `spec/lint.yaml`.
 ///
 /// # Errors
 ///
 /// A document whose references do not resolve has no state root to stamp, and renders nothing.
 pub fn render(document: &Document) -> Result<Projections, IndexErrors> {
+    render_tree(document, None)
+}
+
+/// Renders the Markdown projection and canonical JSON export of a tree's document, given the
+/// text of the tree's `spec/lint.yaml`: each is stamped with the tree's state root, under state
+/// view 2.
+///
+/// # Errors
+///
+/// A document whose references do not resolve has no state root to stamp, and renders nothing.
+pub fn render_tree(document: &Document, lint: Option<&str>) -> Result<Projections, IndexErrors> {
     let indexed = document.index()?;
     let (hashes, views) = hash_indexed_with_views(&indexed);
+    let state = state_root(document, &hashes.roots, StateView::Two, lint).to_string();
     let labels = Labels::of(document);
     Ok(Projections {
-        markdown: markdown::render(document, &hashes, &labels),
-        json: json::render(document, &hashes, &views, &labels),
+        markdown: markdown::render(document, &state, &labels),
+        json: json::render(document, &state, &views, &labels),
     })
 }
 
@@ -62,9 +75,4 @@ impl Labels {
         self.label(element)
             .map_or_else(|| element.key().to_string(), str::to_owned)
     }
-}
-
-/// The state root a projection is stamped with.
-fn state_root(hashes: &DocumentHashes) -> String {
-    hashes.roots.state.to_string()
 }

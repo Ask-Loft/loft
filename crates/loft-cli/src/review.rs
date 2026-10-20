@@ -9,6 +9,7 @@ use std::path::Path;
 use loftspec::check::hashed;
 use loftspec::codec::{self, Sites};
 use loftspec::document::Document;
+use loftspec::hash::{StateView, state_root};
 use loftspec::ids::NodeId;
 use loftspec::query::named_nodes;
 use loftspec::review::{Assertion, Change, Fact, Holder, Linked, Packet, Unit, WithCriteria, pack};
@@ -70,10 +71,11 @@ pub fn run(root: &Path, options: &Options, as_json: bool) -> Finished {
 fn attempt(root: &Path, options: &Options) -> Result<Paged, Stop> {
     let files = stop::read_files(root)?;
     let (document, sites) = codec::read_sited(&files)?;
-    let state_root = hashed(&document, &sites)
+    let roots = hashed(&document, &sites)
         .map_err(|errors| Stop::invalid(&errors))?
-        .roots
-        .state;
+        .roots;
+    let lint = codec::lint_configuration(&files).map_err(|error| vec![error])?;
+    let state_root = state_root(&document, &roots, StateView::Two, lint);
     let node = options
         .node
         .map(|query| named(&document, query))

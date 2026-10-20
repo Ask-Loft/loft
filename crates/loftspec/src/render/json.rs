@@ -19,17 +19,12 @@
 
 use serde_json::{Value, json};
 
-use super::{Labels, state_root};
+use super::Labels;
 use crate::canonical::canonical_bytes;
 use crate::document::{Document, EdgeTarget, SubjectRole};
-use crate::hash::{DocumentHashes, Views};
+use crate::hash::Views;
 
-pub(super) fn render(
-    document: &Document,
-    hashes: &DocumentHashes,
-    views: &Views,
-    labels: &Labels,
-) -> Vec<u8> {
+pub(super) fn render(document: &Document, state: &str, views: &Views, labels: &Labels) -> Vec<u8> {
     let nodes = nodes(document, views, labels);
     let decisions: Vec<Value> = views
         .decisions
@@ -90,7 +85,7 @@ pub(super) fn render(
     );
     let mut export = json!({
         "format": crate::FORMAT,
-        "stateRoot": state_root(hashes),
+        "stateRoot": state,
         "nodes": nodes,
         "decisions": decisions,
         "edges": edges.into_iter().map(|(_, edge)| edge).collect::<Vec<_>>(),

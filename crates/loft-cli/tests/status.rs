@@ -432,3 +432,21 @@ fn the_outcome_is_reported_and_the_base_is_left_out_without_base() {
     assert_eq!(document["outcome"], "reported");
     assert!(document.get("base").is_none());
 }
+
+#[test]
+fn the_tree_is_compared_with_the_lock_by_its_state_root_under_state_view_2() {
+    let scratch = published();
+    fs::write(
+        scratch.file("lint.yaml"),
+        "rules:\n  - rule: LQ-005\n    enabled: false\n",
+    )
+    .unwrap();
+    let document = json(&status(
+        &scratch,
+        &["--format", "json"],
+        &GitScenario::clean_on("main"),
+    ));
+    assert_eq!(document["lock"]["differs"], "stateRoot");
+    let verify = scratch.loft(&["verify"]);
+    assert_eq!(verify.status.code(), Some(0), "{}", stderr(&verify));
+}

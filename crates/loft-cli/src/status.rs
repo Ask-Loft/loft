@@ -11,7 +11,7 @@ use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites, lint_configuration};
 use loftspec::diff::content_changes;
 use loftspec::document::Document;
-use loftspec::hash::state_root;
+use loftspec::hash::{StateView, state_root};
 use loftspec::identity::Key;
 use loftspec::ids::NodeId;
 use loftspec::publish::{LOCK, Lock, Operation, RepoState, Root};
@@ -87,7 +87,8 @@ fn attempt(root: &Path, base: Option<&str>) -> Result<Report, Stop> {
         .lock()
         .map_err(|error| lock_error(&error))?
         .map(|lock| {
-            let state = state_root(&document, &roots, lock.state_view, lint);
+            // The tree's own state root, which a publish would record, is under state view 2.
+            let state = state_root(&document, &roots, StateView::Two, lint);
             let differs = [
                 (Root::Content, lock.content_root, roots.content),
                 (Root::Binding, lock.binding_root, roots.bindings),
