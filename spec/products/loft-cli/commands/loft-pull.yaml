@@ -128,6 +128,8 @@ requirements:
     criteria:
       - key: 01a156ad-1b9f-72a4-9f6c-3068430359a2
         name: "The error names the publish sequence."
+      - key: 01a156bd-30c9-7688-a529-f455107b36ef
+        name: "A problem document with the code `not_found` for the state is such an answer."
       - key: 01a156ad-1b9f-72a4-9f6c-3069a91e2c57
         name: "Nothing is written."
   - key: 01a156ad-9165-750a-a0ca-c07bcfa94436
@@ -139,6 +141,8 @@ requirements:
     criteria:
       - key: 01a156ad-9165-750a-a0ca-c07c01460ce4
         name: "The error names the lock's publish sequence and state root."
+      - key: 01a156bd-30c9-7688-a529-f4565db070df
+        name: "A problem document with the code `not_found` for the lock's state is such an answer."
       - key: 01a156ad-9165-750a-a0ca-c07de947e62a
         name: "Nothing is written."
   - key: 01a156ad-1b9f-72a4-9f6c-306ae0c9274e
@@ -150,6 +154,8 @@ requirements:
     criteria:
       - key: 01a156ad-1b9f-72a4-9f6c-306b440f9444
         name: "The error names the branch."
+      - key: 01a156bd-30c9-7688-a529-f457826f4c3f
+        name: "A problem document with the code `not_found` for the draft is such an answer."
       - key: 01a156ad-1b9f-72a4-9f6c-306c203212ed
         name: "Nothing is written."
   - key: 01a156ad-1b9f-72a4-9f6c-306d6b0528b0

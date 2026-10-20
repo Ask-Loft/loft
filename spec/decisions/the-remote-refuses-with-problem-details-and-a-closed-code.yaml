@@ -1,0 +1,82 @@
+key: 01a156bd-7aba-76c8-93f1-8b36b4899de4
+slug: the-remote-refuses-with-problem-details-and-a-closed-code
+title: "The remote refuses with problem details and a closed code"
+context: "`loft` acts on a remote's refusals: a moved head sends the person to `loft pull`, an invalid request names the paths at fault, a refused token names the document key. A remote may be written by another team in another language, and a proxy or a load balancer in front of it may answer with the same statuses."
+state:
+  kind: accepted
+  selectedOption: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+  outcome: "Every refusal of the remote is an RFC 9457 problem document, `application/problem+json`, whose `code` is one of `unauthenticated`, `not_found`, `method_not_allowed`, `conflict` and `invalid_request`; `conflict` carries the head's sequence and state root and `invalid_request` the paths at fault, and `loft` decides by the code alone."
+drivers:
+  - key: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    kind: local
+    label: "A known shape"
+    statement: "A remote's refusals follow a published standard that its authors' tools already produce."
+  - key: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    kind: local
+    label: "A closed set to act on"
+    statement: "The client acts on a fixed set of refusals and treats every other answer as one it does not act on."
+  - key: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    kind: local
+    label: "Not fooled by a status"
+    statement: "An answer from something in front of the remote is not mistaken for the remote's own refusal."
+options:
+  - key: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    title: "Problem details with a closed code"
+    description: "RFC 9457 problem documents, with a `code` member from a closed set and members of its own for the codes that carry data."
+  - key: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    title: "Ad hoc error bodies"
+    description: "A JSON body of the remote's own with an `error` member."
+  - key: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    title: "Statuses alone"
+    description: "The client acts on the status, with a body only where data is needed."
+assessments:
+  - option: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    driver: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    rating: supports
+    rationale: "RFC 9457 is the standard shape"
+  - option: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    driver: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    rating: supports
+    rationale: "the codes are listed in the contract"
+  - option: 01a156bd-7aba-76c8-93f1-8b3aab11e397
+    driver: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    rating: supports
+    rationale: "a proxy's answer carries no code from the set"
+  - option: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    driver: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    rating: conflicts
+    rationale: "a shape of this contract alone"
+  - option: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    driver: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    rating: supports
+    rationale: "the values can be listed"
+  - option: 01a156bd-7aba-76c8-93f1-8b3b73d7545f
+    driver: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    rating: supports
+    rationale: "a proxy's answer carries no such body"
+  - option: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    driver: 01a156bd-7aba-76c8-93f1-8b378cfafde4
+    rating: neutral
+    rationale: "statuses are standard, the bodies are not"
+  - option: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    driver: 01a156bd-7aba-76c8-93f1-8b389dcbc095
+    rating: conflicts
+    rationale: "one status can mean several refusals"
+  - option: 01a156bd-7aba-76c8-93f1-8b3cb6558bb0
+    driver: 01a156bd-7aba-76c8-93f1-8b39f86afb7d
+    rating: conflicts
+    rationale: "a proxy's 404 reads as a missing state"
+consequences:
+  - key: 01a156bd-7aba-76c8-93f1-8b3df7c21f0c
+    kind: benefit
+    statement: "A remote written elsewhere refuses in a shape its own tools produce, and `loft` tells each refusal apart by one member."
+  - key: 01a156bd-7aba-76c8-93f1-8b3e3c39f5ce
+    kind: obligation
+    statement: "A new refusal that the client acts on is a new code in the contract and in the simulator."
+subjects:
+  - role: affected
+    node: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
+  - role: outcome
+    node: 01a156bc-e91e-73aa-8be6-4da2868dcd8c
+  - role: outcome
+    node: 01a156bd-30c9-7688-a529-f458909b400c

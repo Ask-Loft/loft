@@ -1,7 +1,7 @@
 key: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
 slug: remote-simulator
 name: "Remote simulator"
-body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, scripts the published states, the drafts and the answer to each publish, and reads the requests it received. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path and is given whole. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
+body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, scripts the published states, the drafts and the answer to each publish, and reads the requests it received. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path and is given whole, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
 realizes:
   - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
 requirements:
@@ -38,17 +38,17 @@ requirements:
       shall: "admit a request only with the bearer token its scenario names."
     criteria:
       - key: 01a156ae-6a51-7230-a9a1-fa92a3b72eb7
-        name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the body `{\"error\": \"unauthorized\"}`."
+        name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the code `unauthenticated`."
       - key: 01a156ae-6a51-7230-a9a1-fa93388fd0b9
-        name: "A request whose bearer token is not the scenario's is answered `401 Unauthorized` with the body `{\"error\": \"unauthorized\"}`."
+        name: "A request whose bearer token is not the scenario's is answered `401 Unauthorized` with the code `unauthenticated`."
       - key: 01a156ae-6a51-7230-a9a1-fa9467a2d6a1
-        name: "Every answer with a body has `Content-Type: application/json`."
+        name: "Every answer with a body that is not a problem document has `Content-Type: application/json`."
       - key: 01a156ae-6a51-7230-a9a1-fa958644e55a
         name: "No answer sets a cookie."
       - key: 01a156ae-6a51-7230-a9a1-fa96a711a7fc
-        name: "A request to a path the contract does not name is answered `404 Not Found`."
+        name: "A request to a path the contract does not name is answered `404 Not Found` with the code `not_found`."
       - key: 01a156ae-6a51-7230-a9a1-fa97091dc743
-        name: "A request with a method its path does not take is answered `405 Method Not Allowed`."
+        name: "A request with a method its path does not take is answered `405 Method Not Allowed` with the code `method_not_allowed`."
   - key: 01a156ae-6a51-7230-a9a1-fa98e9f27f25
     statement:
       form: event_driven
@@ -80,7 +80,7 @@ requirements:
       - key: 01a156ae-6a51-7230-a9a1-faa1f96edfa4
         name: "`files` lists each file of the state under `spec/` as an object of `path` and `text`, sorted by `path` in byte order."
       - key: 01a156ae-6a51-7230-a9a1-faa2c30e4b40
-        name: "A sequence it holds no state of is answered `404 Not Found` with the body `{\"error\": \"not-found\"}`."
+        name: "A sequence it holds no state of is answered `404 Not Found` with the code `not_found`."
   - key: 01a156ae-6a51-7230-a9a1-faa3d18274b3
     statement:
       form: event_driven
@@ -95,7 +95,7 @@ requirements:
       - key: 01a156ae-6a51-7230-a9a1-faa60b681469
         name: "`files` lists each file of the draft under `spec/` as an object of `path` and `text`, sorted by `path` in byte order."
       - key: 01a156ae-6a51-7230-a9a1-faa73fee2430
-        name: "A branch it holds no draft under is answered `404 Not Found` with the body `{\"error\": \"not-found\"}`."
+        name: "A branch it holds no draft under is answered `404 Not Found` with the code `not_found`."
   - key: 01a156ae-6a51-7230-a9a1-faa80f67f886
     statement:
       form: event_driven
@@ -120,9 +120,9 @@ requirements:
       - key: 01a156ae-6a51-7230-a9a1-faaf2a2086bf
         name: "A publish whose `retryKey` the remote accepted before is answered `200 OK` with the answer it gave then and `outcome` set to `replayed`."
       - key: 01a156ae-6a51-7230-a9a1-fab0b8cd1853
-        name: "A publish whose `base` is not the head is answered `409 Conflict` with `error` set to `conflict` and a `head` holding the head's `publishSequence` and `stateRoot`."
+        name: "A publish whose `base` is not the head is answered `409 Conflict` with the code `conflict` and a member `head` holding the head's `publishSequence` and `stateRoot`."
       - key: 01a156ae-6a51-7230-a9a1-fab14d0480ff
-        name: "A publish the remote cannot apply is answered `422 Unprocessable Content` with `error` set to `invalid` and `paths` listing each path at fault."
+        name: "A publish whose body is not a valid request, or whose delta the remote cannot apply, is answered `400 Bad Request` with the code `invalid_request` and a member `paths` listing each path at fault."
       - key: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
         name: "A replay is answered before the base is compared with the head."
   - key: 01a156af-5308-7015-abac-1425df49d7cf
@@ -137,7 +137,7 @@ requirements:
       - key: 01a156af-5308-7015-abac-14277763e6d4
         name: "The path is taken from the origin of the address, whatever path the address holds."
       - key: 01a156af-5308-7015-abac-142828644161
-        name: "A scenario with no skill package answers `404 Not Found`."
+        name: "A scenario with no skill package answers `404 Not Found` with the code `not_found`."
   - key: 01a156af-5308-7015-abac-142964978780
     statement:
       form: event_driven
@@ -151,3 +151,25 @@ requirements:
         name: "An accepting scenario serves the package byte for byte."
       - key: 01a156af-a712-7288-bba5-d7b63a343de9
         name: "A tampering scenario serves other bytes under the same manifest."
+  - key: 01a156bc-e91e-73aa-8be6-4da2868dcd8c
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "answer every refusal with an RFC 9457 problem document whose `code` comes from a closed set."
+    criteria:
+      - key: 01a156bc-e91e-73aa-8be6-4da37da04d79
+        name: "A refusal's body is a JSON object with `Content-Type: application/problem+json`."
+      - key: 01a156bc-e91e-73aa-8be6-4da4b520db73
+        name: "The problem document holds `type`, `title`, `status` and `code`, and may hold `detail`."
+      - key: 01a156bc-e91e-73aa-8be6-4da5c3bdab2a
+        name: "`type` is `about:blank`."
+      - key: 01a156bc-e91e-73aa-8be6-4da6c0bd0ce3
+        name: "`status` is the status of the answer."
+      - key: 01a156bc-e91e-73aa-8be6-4da71036d86a
+        name: "`code` is one of `unauthenticated`, `not_found`, `method_not_allowed`, `conflict` and `invalid_request`."
+      - key: 01a156bc-e91e-73aa-8be6-4da849115550
+        name: "Only a problem document whose code is `conflict` holds `head`."
+      - key: 01a156bc-e91e-73aa-8be6-4da98b734a08
+        name: "Only a problem document whose code is `invalid_request` holds `paths`."
+      - key: 01a156bc-e91e-73aa-8be6-4daa6a2001bf
+        name: "A problem document holds no other member."

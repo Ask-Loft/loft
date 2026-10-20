@@ -124,6 +124,18 @@ requirements:
       - key: 01a156aa-d531-70a7-88e0-0c1021a20f3a
         name: "The error names the status the remote gave, where it gave one."
       - key: 01a156aa-d531-70a7-88e0-0c117276d1e1
-        name: "An answer `401 Unauthorized` is reported as a refused token for the document key."
+        name: "A problem document with the code `unauthenticated` is reported as a refused token for the document key."
       - key: 01a156aa-d531-70a7-88e0-0c121baaa69d
         name: "Nothing is written."
+  - key: 01a156bd-30c9-7688-a529-f458909b400c
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "tell the remote's refusals apart by the `code` of their problem document alone."
+    criteria:
+      - key: 01a156bd-30c9-7688-a529-f4596e10b53a
+        name: "Loft reads neither `type` nor `title` to decide what a refusal means."
+      - key: 01a156bd-30c9-7688-a529-f45a2854d139
+        name: "A refusal that is not a problem document is an answer the command does not act on."
+      - key: 01a156bd-30c9-7688-a529-f45bc35131f8
+        name: "A refusal whose code the command does not act on is reported with its status and its code."

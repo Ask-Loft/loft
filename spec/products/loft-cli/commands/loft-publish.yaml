@@ -177,6 +177,8 @@ requirements:
         name: "The error names the head's publish sequence and state root."
       - key: 01a156ac-9752-749b-be81-df01d461acc3
         name: "The error says that `loft pull` brings the tree to the head."
+      - key: 01a156bd-30c8-76c9-86b7-8c5c9b6d9ee9
+        name: "A problem document with the code `conflict` is such an answer."
       - key: 01a156ac-9752-749b-be81-df028febefa1
         name: "Nothing is written."
   - key: 01a156ac-9752-749b-be81-df03740c9619
@@ -188,6 +190,8 @@ requirements:
     criteria:
       - key: 01a156ac-9752-749b-be81-df049b4aa818
         name: "The error names each path that the remote names."
+      - key: 01a156bd-30c8-76c9-86b7-8c5d04414972
+        name: "A problem document with the code `invalid_request` is such an answer."
       - key: 01a156ac-9752-749b-be81-df0513fadc87
         name: "Nothing is written."
   - key: 01a156ac-9752-749b-be81-df062d1433ce
