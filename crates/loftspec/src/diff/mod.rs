@@ -47,7 +47,8 @@ impl NodeChanges {
 pub fn node_changes(base: &Document, document: &Document) -> NodeChanges {
     let (then, _, _) = Index::build(base);
     let (now, _, _) = Index::build(document);
-    changes(&Keyed::of(base), &Keyed::of(document), Some((&then, &now)))
+    let parents = (then.parents(), now.parents());
+    changes(&Keyed::of(base), &Keyed::of(document), Some(parents))
 }
 
 /// The nodes `document` added, changed and removed against `base`, as [`node_changes`] gives
@@ -66,31 +67,66 @@ pub(crate) struct Keyed {
 
 impl Keyed {
     pub fn of(document: &Document) -> Self {
-        let mut order = Vec::new();
-        document.walk(&mut |node| order.extend(node.id()));
         Self {
             views: own_views(document),
-            order,
+            order: Self::order_of(document),
         }
+    }
+
+    /// A document's keyed nodes in order, parents before children.
+    pub fn order_of(document: &Document) -> Vec<NodeId> {
+        let mut order = Vec::new();
+        document.walk(&mut |node| order.extend(node.id()));
+        order
+    }
+}
+
+/// Each keyed node's parent, the nearest keyed node above it; none for a Product or a root
+/// Component.
+pub(crate) type Parents = BTreeMap<NodeId, NodeId>;
+
+/// How a version holds a node it holds against another version.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum NodeChange {
+    Added,
+    Changed,
+    /// Its own content is the other version's and its parent is not.
+    Moved,
+}
+
+/// How `after` holds the node `id` it holds against `before`, telling a move only where both
+/// sides' parents are given; none where it holds the node as `before` does.
+pub(crate) fn change_of(
+    before: &Keyed,
+    after: &Keyed,
+    parents: Option<(&Parents, &Parents)>,
+    id: NodeId,
+) -> Option<NodeChange> {
+    let moved = parents.is_some_and(|(then, now)| then.get(&id) != now.get(&id));
+    match before.views.get(&id) {
+        None => Some(NodeChange::Added),
+        Some(view) if after.views.get(&id) != Some(view) => Some(NodeChange::Changed),
+        Some(_) if moved => Some(NodeChange::Moved),
+        Some(_) => None,
     }
 }
 
 /// The nodes `after` added, changed and removed against `before`, and the moved where both
-/// sides' indexes, `parents`, are given.
+/// sides' parents are given.
 pub(crate) fn changes(
     before: &Keyed,
     after: &Keyed,
-    parents: Option<(&Index, &Index)>,
+    parents: Option<(&Parents, &Parents)>,
 ) -> NodeChanges {
-    let moved = |id: NodeId| parents.is_some_and(|(then, now)| then.parent(id) != now.parent(id));
     let mut changes = NodeChanges::default();
     for id in &after.order {
-        match before.views.get(id) {
-            None => changes.added.push(*id),
-            Some(view) if after.views.get(id) != Some(view) => changes.changed.push(*id),
-            Some(_) if moved(*id) => changes.moved.push(*id),
-            Some(_) => {}
-        }
+        let list = match change_of(before, after, parents, *id) {
+            Some(NodeChange::Added) => &mut changes.added,
+            Some(NodeChange::Changed) => &mut changes.changed,
+            Some(NodeChange::Moved) => &mut changes.moved,
+            None => continue,
+        };
+        list.push(*id);
     }
     changes.removed = before
         .order

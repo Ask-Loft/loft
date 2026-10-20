@@ -11,7 +11,7 @@ use super::canon::canonicalize;
 use super::files::keyed_records;
 use super::record::{Rec, Val};
 use super::schema::{Field, Item, Kind, Scalar, field};
-use super::unresolve::unresolve;
+use super::unresolve::unresolve_elements;
 use crate::document::Document;
 use crate::ids::{DecisionId, NodeId};
 
@@ -26,7 +26,7 @@ pub(crate) struct Records {
 
 /// The records the writer writes for `document`, in canonical layout.
 pub(crate) fn records(document: &Document) -> Records {
-    let mut tree = unresolve(document);
+    let mut tree = unresolve_elements(document);
     canonicalize(&mut tree);
     let mut records = Records::default();
     for (path, (_, content)) in &tree.files {

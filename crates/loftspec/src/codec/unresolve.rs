@@ -18,8 +18,7 @@ use crate::tree::{Component, Constraint, Details, Feature, Product, QualityAttri
 /// The record tree of a document.
 #[must_use]
 pub fn unresolve(document: &Document) -> Tree {
-    let edges = Edges::of(document);
-    let mut tree = Tree::default();
+    let mut tree = unresolve_elements(document);
     put(
         &mut tree,
         Role::Manifest,
@@ -62,6 +61,14 @@ pub fn unresolve(document: &Document) -> Tree {
         });
         put(&mut tree, Role::Terms, Content::Registry(terms.collect()));
     }
+    super::resolve_conflicts::attach(&mut tree, &document.conflicts);
+    tree
+}
+
+/// The files of a document's nodes and decisions alone, without their conflicts.
+pub(crate) fn unresolve_elements(document: &Document) -> Tree {
+    let edges = Edges::of(document);
+    let mut tree = Tree::default();
     for product in &document.products {
         products(&mut tree, &edges, product);
     }
@@ -80,7 +87,6 @@ pub fn unresolve(document: &Document) -> Tree {
         };
         put(&mut tree, role, Content::Record(edges.decision(decision)));
     }
-    super::resolve_conflicts::attach(&mut tree, &document.conflicts);
     tree
 }
 

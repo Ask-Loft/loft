@@ -10,13 +10,12 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
 
-use super::{Keyed, changes};
+use super::{Keyed, NodeChange, Parents, change_of};
 use crate::codec::{SpecPath, records};
 use crate::conflict::ConflictOwner;
 use crate::document::Document;
 use crate::hash::registry_roots;
 use crate::ids::{DecisionId, NodeId};
-use crate::index::Index;
 use crate::wire::wire_names;
 
 /// One version of a document as the comparer is given it: the document, and the text of its
@@ -182,7 +181,7 @@ pub fn compare(older: Version<'_>, newer: Version<'_>) -> Result<Comparison, Vec
 struct Read {
     keyed: Keyed,
     decisions: BTreeMap<DecisionId, Value>,
-    index: Index,
+    parents: Parents,
     children: BTreeMap<NodeId, Vec<NodeId>>,
 }
 
@@ -197,27 +196,28 @@ impl Read {
             version: which,
             owner: conflict.owner,
         }));
-        let mut order = Vec::new();
-        let mut children = BTreeMap::new();
+        let mut children: BTreeMap<NodeId, Vec<NodeId>> = BTreeMap::new();
         document.walk(&mut |node| {
             if let Some(id) = node.id() {
-                order.push(id);
-                children.insert(
-                    id,
-                    node.children()
-                        .iter()
-                        .filter_map(|child| child.id())
-                        .collect(),
-                );
+                let keyed = node
+                    .children()
+                    .iter()
+                    .filter_map(|child| child.id())
+                    .collect();
+                children.insert(id, keyed);
             }
         });
+        // A version compared holds no node without a key, so each node's children are keyed.
+        let parents = (children.iter())
+            .flat_map(|(parent, ids)| ids.iter().map(|child| (*child, *parent)))
+            .collect();
         Self {
             keyed: Keyed {
                 views: records.nodes,
-                order,
+                order: Keyed::order_of(document),
             },
             decisions: records.decisions,
-            index: Index::build(document).0,
+            parents,
             children,
         }
     }
@@ -225,32 +225,26 @@ impl Read {
     fn side(&self, id: NodeId) -> Option<Side> {
         let record = self.keyed.views.get(&id)?.clone();
         Some(Side {
-            parent: self.index.parent(id),
+            parent: self.parents.get(&id).copied(),
             record,
         })
     }
 }
 
 fn nodes(then: &Read, now: &Read) -> Vec<NodeDifference> {
-    let found = changes(&then.keyed, &now.keyed, Some((&then.index, &now.index)));
-    let set = |ids: &[NodeId]| ids.iter().copied().collect::<BTreeSet<_>>();
-    let (added, changed, moved) = (set(&found.added), set(&found.changed), set(&found.moved));
+    let parents = Some((&then.parents, &now.parents));
     let mut nodes = Vec::new();
     for id in &now.keyed.order {
         let order = then
             .children
             .get(id)
             .and_then(|older| reordering(older, &now.children[id]));
-        let difference = if added.contains(id) {
-            Difference::Added
-        } else if changed.contains(id) {
-            Difference::Changed
-        } else if moved.contains(id) {
-            Difference::Moved
-        } else if order.is_some() {
-            Difference::Reordered
-        } else {
-            continue;
+        let difference = match (change_of(&then.keyed, &now.keyed, parents, *id), &order) {
+            (Some(NodeChange::Added), _) => Difference::Added,
+            (Some(NodeChange::Changed), _) => Difference::Changed,
+            (Some(NodeChange::Moved), _) => Difference::Moved,
+            (None, Some(_)) => Difference::Reordered,
+            (None, None) => continue,
         };
         nodes.push(NodeDifference {
             id: *id,
@@ -260,7 +254,12 @@ fn nodes(then: &Read, now: &Read) -> Vec<NodeDifference> {
             order,
         });
     }
-    nodes.extend(found.removed.iter().map(|id| NodeDifference {
+    let removed = then
+        .keyed
+        .order
+        .iter()
+        .filter(|id| !now.keyed.views.contains_key(id));
+    nodes.extend(removed.map(|id| NodeDifference {
         id: *id,
         difference: Difference::Removed,
         older: then.side(*id),

@@ -77,6 +77,11 @@ impl Index {
         self.parents.get(&node).copied()
     }
 
+    /// Each keyed node's parent.
+    pub(crate) const fn parents(&self) -> &BTreeMap<NodeId, NodeId> {
+        &self.parents
+    }
+
     /// The nodes above `node`, nearest first.
     pub fn ancestors(&self, node: NodeId) -> impl Iterator<Item = NodeId> + '_ {
         std::iter::successors(self.parent(node), |above| self.parent(*above))
