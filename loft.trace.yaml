@@ -859,11 +859,11 @@ links:
         name: "a_components_children_are_grouped_by_kind"
         body: eea15c01e4884f553a06e2e91554879ee125164f081325b546c9510b434ff49c
   - node: ec8d0d1b-6c2a-4ff1-ae2c-bd1d0e1ebf68
-    reviewed: 336903de86b5abcc1805c5ddf4a820585536003bb81940cc54dc5894ba27285d
+    reviewed: 831cf4711297961c52997eec8e9de0907a81b1149c21dfdc01cff68f7c317927
     tests:
       - file: "crates/loftspec/tests/digest.rs"
         name: "the_domain_strings_are_closed"
-        body: 4843e428aae6bf7c8dbb6c86da5d89b46e332e665ba9c43a947466b0b6e49818
+        body: c106f6dd594b27928656f608d07896ba9bb4fb06b01f78d00ccc13c066167666
   - node: f9e8c0b8-fd34-41bb-98a2-8854d25bfaea
     reviewed: 656773db7a1b8f5b77f16165dbc1500f5a74dd2733ee09aa796c87788c7bd8fc
     tests:
