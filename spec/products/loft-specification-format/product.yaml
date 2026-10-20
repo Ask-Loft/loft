@@ -1,7 +1,7 @@
 key: 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 slug: loft-specification-format
 name: "Loft Specification Format"
-body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the OpenSpec converter, from the main specs of an OpenSpec project; the validator; the linter; the renderer; the publisher; the merge driver; the reconciler, which compares the trace file with the tree and the tests; and the term reporter, which lists the names a document may be using for one concept. A role names an obligation, not a module: one program may fill every role."
+body: "The portable document model and the rules that every implementation follows, so that two implementations agree on a document's content root. Obligations fall on roles — the reader, which turns a `spec/` tree into a document; the writer, which turns a document into a `spec/` tree; the formatter, the writer in canonical layout; the hasher; the converter from a Loft v1 export; the OpenSpec converter, from the main specs of an OpenSpec project; the validator; the linter; the renderer; the publisher; the merge driver; the reconciler, which compares the trace file with the tree and the tests; the term reporter, which lists the names a document may be using for one concept; and the comparer, which reports what changed between two versions of a document. A role names an obligation, not a module: one program may fill every role."
 tags:
   - portable
 featureGroups:
@@ -129,3 +129,11 @@ featureGroups:
       - 01a1383a-4a94-72cc-9c61-11074c67c6d6
       - 01a1383a-4a94-72cc-9c61-11318846c14a
       - 01a145e8-28eb-78f4-aed0-150e241ef329
+  - key: 01a156a5-b76c-74b1-a3b2-6d532509a47b
+    slug: comparison-and-review
+    name: "Comparison and review"
+    body: "What a caller learns from two versions of a document: what changed between them, by key, without judging it."
+    tags:
+      - portable
+    features:
+      - 01a156a5-b76b-7233-8659-69ea71d1e598

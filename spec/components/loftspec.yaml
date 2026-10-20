@@ -1,7 +1,7 @@
 key: dfad8a1a-ce19-4364-be3c-81af2fd2baaf
 slug: loftspec
 name: "loftspec"
-body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the OpenSpec converter, the validator, the linter, the renderer, the publisher, the merge engine, the reconciler and the term reporter. It performs no input or output."
+body: "The Rust library crate implementing the Format, in the Components below: the document model, the hasher, the reader and writer, the converter, the OpenSpec converter, the validator, the linter, the renderer, the publisher, the merge engine, the reconciler, the term reporter and the comparer. It performs no input or output."
 scopedTo:
   - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
 components:
@@ -90,6 +90,13 @@ components:
     constraints:
       - key: 01a14b3d-fd75-739b-8004-dcb5308626ad
         name: "The term reporter shall change nothing in the document it is given."
+        verificationFate: proved
+  - key: 01a156a5-b768-75b1-8d89-8844486ea580
+    name: "Comparer"
+    body: "The comparison of two versions of a document by key. The comparer decides from the two versions it is given, in memory, and reads no file itself."
+    constraints:
+      - key: 01a156a5-b768-75b1-8d89-8845e5b58be1
+        name: "The comparer shall change nothing in the versions it is given."
         verificationFate: proved
 constraints:
   - key: 7ff6bd2b-7a21-4020-83aa-ad8aedec10a2
