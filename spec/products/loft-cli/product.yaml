@@ -73,3 +73,9 @@ featureGroups:
       - 01a13a90-3556-7106-a68c-26574c7ad289
       - 01a13a90-3556-7106-a68c-2668830924fe
       - 01a13a90-3556-7106-a68c-2695f6f1baaa
+  - key: 01a156a9-87a5-7158-a2c2-dc800d7c0679
+    slug: library
+    name: "Library"
+    body: "What the reference implementation's crates offer a caller other than `loft`, such as a server that holds documents outside a repository and publishes them through the Format's roles."
+    features:
+      - 01a156a9-87a5-7158-a2c2-dc723ceb5f04

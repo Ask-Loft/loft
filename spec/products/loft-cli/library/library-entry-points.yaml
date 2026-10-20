@@ -1,0 +1,49 @@
+key: 01a156a9-87a5-7158-a2c2-dc723ceb5f04
+slug: library-entry-points
+name: "Library entry points"
+body: "The roles that a caller other than `loft` relies on calling in `loftspec` directly, each over versions it holds in memory. `loft` reaches the same roles through its git-revision wrappers, `loft check --baseline` and `loft review --base`, and through `loft publish`."
+realizes:
+  - dfad8a1a-ce19-4364-be3c-81af2fd2baaf
+requirements:
+  - key: 01a156a9-87a5-7158-a2c2-dc738bf12af7
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the comparer as an entry point over two versions held in memory."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc74bfa1dcc4
+        name: "The comparer's entry point is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc751b135291
+        name: "The comparer's entry point takes each version as a document, with no path and no repository."
+  - key: 01a156a9-87a5-7158-a2c2-dc766556b5ae
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the review packer as an entry point over a tree, a base, a node and a limit held in memory."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc778d84f5a2
+        name: "The review packer's entry point is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc78323e9d84
+        name: "The review packer's entry point takes the tree and the base each as a document, with no path and no repository."
+      - key: 01a156a9-87a5-7158-a2c2-dc790bec316e
+        name: "The review packer's entry point returns the page asked for and the number of pages."
+  - key: 01a156a9-87a5-7158-a2c2-dc7a014c6880
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the linter against a base as an entry point over a tree and a base held in memory."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc7ba33024a3
+        name: "The entry point of the linter against a base is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc7cdc541a30
+        name: "The entry point of the linter against a base takes the tree and the base each as a document, with no path and no repository."
+  - key: 01a156a9-87a5-7158-a2c2-dc7ded506b19
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer the publisher as an entry point that is given no repository state."
+    criteria:
+      - key: 01a156a9-87a5-7158-a2c2-dc7e3034a82d
+        name: "The publisher's entry point is public in `loftspec`."
+      - key: 01a156a9-87a5-7158-a2c2-dc7fed214368
+        name: "The publisher's entry point takes the tree and the previous lock, with the repository state optional."

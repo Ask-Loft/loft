@@ -1,0 +1,160 @@
+key: 01a156a8-d773-72ae-a006-09cc9d538bb3
+slug: the-review-packet
+name: "The review packet"
+body: "What the review packer gathers for a reviewer from a tree and, where it is given one, a base version, both in memory: each assertion under review in the unit of its scope, with the nodes, decisions and terms it is read against, paged by whole units. Every caller pages alike, so that `loft review` and a server give the same pages for the same versions. The packet carries context and judges nothing."
+realizes:
+  - 01a156a8-d770-7010-b103-3e5b59fb62be
+mentions:
+  - 01a154b1-8bbe-7341-b8af-b8c6e9e6c31a
+requirements:
+  - key: 01a156a8-d773-72ae-a006-09cd8178dc99
+    statement:
+      form: ubiquitous
+      system: "The review packer"
+      shall: "make the packet from the versions it is given in memory."
+    criteria:
+      - key: 01a156a8-d773-72ae-a006-09ce98fe1dad
+        name: "The tree and the base are each given as a document in memory."
+      - key: 01a156a8-d773-72ae-a006-09cfdc0f82bf
+        name: "A caller that holds no repository gets a packet of its tree."
+  - key: 01a156a8-d773-72ae-a006-09d03a315365
+    statement:
+      form: ubiquitous
+      system: "The review packer"
+      shall: "give every caller the same pages for the same tree, base, node and limit."
+    criteria:
+      - key: 01a156a8-d773-72ae-a006-09d14b900403
+        name: "Two callers that give the same tree, base, node and limit get pages of the same bytes."
+      - key: 01a156a8-d773-72ae-a006-09d2cc8592b6
+        name: "`loft review` gets its pages from the review packer as any other caller does."
+  - key: 01a154b0-f757-7647-acce-6bdbda3cf8c3
+    statement:
+      form: ubiquitous
+      system: "The review packer"
+      shall: "group the assertions it reviews into one unit for each scope."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bdc631a7d10
+        name: "An assertion is a Requirement, a criterion, a Constraint or a Quality Attribute."
+      - key: 01a154b0-f757-7647-acce-6bdd107b5b6e
+        name: "The scope of a Requirement or a criterion is the Feature that holds it."
+      - key: 01a154b0-f757-7647-acce-6bde7c05fa1f
+        name: "The scope of a Quality Attribute is the Feature or the Component that holds it."
+      - key: 01a154b0-f757-7647-acce-6bdff8cffa5a
+        name: "The scope of a Constraint is the Product, the Feature Group or the Component that holds it."
+      - key: 01a154b0-f757-7647-acce-6be02cd564a0
+        name: "Units follow the document order of their scopes."
+      - key: 01a154b0-f757-7647-acce-6be12e09a54c
+        name: "A unit's assertions follow document order, then the removed ones in the base's order."
+  - key: 01a154b0-f757-7647-acce-6be261139829
+    statement:
+      form: ubiquitous
+      system: "The review packer"
+      shall: "give each unit the nodes its assertions are read against."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6be34498c82d
+        name: "The unit names each node above its scope, the root first, with the Constraints and Quality Attributes each holds."
+      - key: 01a154b0-f757-7647-acce-6be4a8ca9b93
+        name: "The unit gives the Constraints and Quality Attributes its scope holds."
+      - key: 01a154b0-f757-7647-acce-6be55de4d9aa
+        name: "The unit of a Feature gives every Requirement of the Feature with all its criteria."
+      - key: 01a154b0-f757-7647-acce-6be6b91da35f
+        name: "The unit of a Feature gives each Component the Feature realizes, with its Constraints and Quality Attributes."
+      - key: 01a154b0-f757-7647-acce-6be70f95e6b8
+        name: "Each realized Component comes with the Components above it and their Constraints and Quality Attributes."
+      - key: 01a154b0-f757-7647-acce-6be8df642ce4
+        name: "Each node carries its key, label, kind, file, line, column, name and own content view."
+  - key: 01a154b0-f757-7647-acce-6be96e745ff9
+    statement:
+      form: ubiquitous
+      system: "The review packer"
+      shall: "list in each unit the decisions and the terms its assertions bear on."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6beae7b5291a
+        name: "A decision is listed where it names an assertion or the scope as a subject."
+      - key: 01a154b1-2343-70db-b6cc-612f4b6af6f1
+        name: "A decision is listed where one of its drivers or consequences names an assertion or the scope."
+      - key: 01a154b1-2343-70db-b6cc-6130a4904113
+        name: "A decision is listed where it mentions an assertion or the scope, or one of them mentions it."
+      - key: 01a154b0-f757-7647-acce-6beb0b9b1d9d
+        name: "Each link of a decision says how it links: `subject:outcome`, `subject:affected`, `driver`, `consequence` or `mentions`."
+      - key: 01a154b0-f757-7647-acce-6bec68352d54
+        name: "Each decision carries its key, label, title, state and outcome."
+      - key: 01a154b0-f757-7647-acce-6bed8aa38a56
+        name: "A term is listed where its name or one of its aliases occurs in the name or the body of an assertion."
+      - key: 01a154b0-f757-7647-acce-6bee91b57273
+        name: "Decisions follow their labels, then their keys, and terms follow their names."
+  - key: 01a154b0-f757-7647-acce-6bf21149e35b
+    statement:
+      form: optional
+      where: "no base is given"
+      system: "the review packer"
+      shall: "review every assertion of the tree."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bf31bcb6e68
+        name: "Every assertion of the tree lands in a unit."
+      - key: 01a154b0-f757-7647-acce-6bf4571c5c59
+        name: "No assertion carries a change."
+  - key: 01a154b0-f757-7647-acce-6bf5ca053fe3
+    statement:
+      form: optional
+      where: "a base is given"
+      system: "the review packer"
+      shall: "review the assertions added, changed, moved or removed since the base."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6bf7a99e2e9e
+        name: "An assertion only the tree holds is `added`."
+      - key: 01a154b0-f757-7647-acce-6bf86ced5501
+        name: "An assertion whose own content differs from the base's is `changed`."
+      - key: 01a154b0-f757-7647-acce-6bf980680196
+        name: "An assertion whose own content is the base's and whose parent is not is `moved`."
+      - key: 01a154b0-f757-7647-acce-6bfa7e8f4371
+        name: "An assertion only the base holds is `removed`, and lands in the unit of its scope at the base."
+      - key: 01a154b0-f757-7647-acce-6bfba506e16e
+        name: "A changed, moved or removed assertion carries the base's node as `before`."
+      - key: 01a154b0-f757-7647-acce-6bfc86b66757
+        name: "An assertion that is the same at both sides is not reviewed."
+  - key: 01a154b0-f757-7647-acce-6bfdc47fe57b
+    statement:
+      form: optional
+      where: "a node is given"
+      system: "the review packer"
+      shall: "review only the assertions at or below the node."
+    criteria:
+      - key: 01a156a8-d773-72ae-a006-09d3de22bee8
+        name: "An assertion that is neither the node nor below it is not reviewed."
+      - key: 01a156a8-d773-72ae-a006-09d40c06c993
+        name: "Each assertion at or below the node that the packet would review without the node is reviewed."
+  - key: 01a154b0-f757-7647-acce-6c00a00098e6
+    statement:
+      form: ubiquitous
+      system: "The review packer"
+      shall: "fill each page with whole units, up to the number of characters it is given as the limit."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c01a14c2dea
+        name: "The compact JSON of a page's units together takes no more characters than the limit."
+      - key: 01a154b0-f757-7647-acce-6c03659a2f87
+        name: "Units fill the pages in order, each page taking every next unit that fits."
+      - key: 01a154b0-f757-7647-acce-6c04dcdf56cf
+        name: "A unit longer than the limit stands alone on its page and is marked `oversized`."
+      - key: 01a154b0-f757-7647-acce-6c05806b8eed
+        name: "No unit is cut short."
+  - key: 01a154b0-f757-7647-acce-6c102c2a13d7
+    statement:
+      form: unwanted
+      if: "a node of the tree has no key"
+      system: "the review packer"
+      shall: "refuse to make a packet."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c1106475814
+        name: "No packet is made of a document that holds a node without a key."
+      - key: 01a154b0-f757-7647-acce-6c1205ff5fb9
+        name: "The error names the file, line and column of the node without a key."
+  - key: 01a154b0-f757-7647-acce-6c134693b5f2
+    statement:
+      form: unwanted
+      if: "the tree holds a conflict record"
+      system: "the review packer"
+      shall: "refuse to make a packet."
+    criteria:
+      - key: 01a154b0-f757-7647-acce-6c14aca98864
+        name: "The error names the file and the key of each conflict record."

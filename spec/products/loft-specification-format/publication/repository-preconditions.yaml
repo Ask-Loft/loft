@@ -1,0 +1,50 @@
+key: 01a156a8-d774-72b1-91b6-523f27f07207
+slug: repository-preconditions
+name: "Repository preconditions"
+body: "The conditions that refuse a publish from the state of the git repository that holds the tree: uncommitted changes under `spec/`, and a branch other than the publish branch. The publisher decides from what it is given: `loft publish` gives it the repository's state, and a caller that holds a tree outside a repository, such as a server, gives it none, so that only the preconditions that always apply refuse its publish."
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+requirements:
+  - key: 5c65bd93-dce3-4231-a105-42c0c1e080f8
+    statement:
+      form: unwanted
+      if: "the working tree has uncommitted changes under `spec/` while no merge or rebase is stopped"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: a5f0848b-6b06-40a3-8ea7-a5aab48e8ecb
+        name: "The refusal names the modified paths."
+      - key: 4c6946ba-9b0e-4ca1-be0d-2ae3f73617ca
+        name: "No lock is written."
+  - key: 0edce68c-8576-4978-ab4e-d4d2b1a3c1aa
+    statement:
+      form: unwanted
+      if: "the current branch is not the publish branch"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 014a28d1-4cd5-40fb-ae34-796d3886913c
+        name: "The publish branch is `main` unless the manifest names another."
+      - key: 108f63c4-94af-4efd-9e35-4f5fceea4493
+        name: "The refusal names the current branch and the publish branch."
+      - key: 83dcf58f-6f76-4b68-9c98-37b2c2aba984
+        name: "A detached HEAD is refused as not being on the publish branch."
+  - key: 01a156a8-d774-72b1-91b6-524067fe853a
+    statement:
+      form: optional
+      where: "the publisher is given no repository state"
+      system: "the publisher"
+      shall: "decide the publish from the tree and the previous lock alone."
+    criteria:
+      - key: 01a156a8-d774-72b1-91b6-52416875b6b9
+        name: "Uncommitted changes refuse no publish that is given no repository state."
+      - key: 01a156a8-d774-72b1-91b6-5242295408b8
+        name: "The publish branch refuses no publish that is given no repository state."
+      - key: 01a156a8-d774-72b1-91b6-5243b4bf3006
+        name: "A validation error refuses a publish that is given no repository state."
+      - key: 01a156a8-d774-72b1-91b6-52442eaab1d2
+        name: "A lock that is not a valid lock record refuses a publish that is given no repository state."
+      - key: 01a156a8-d774-72b1-91b6-524512350fef
+        name: "A publish that is given no repository state allocates labels as any other publish does."
+      - key: 01a156a8-d774-72b1-91b6-524658a3d394
+        name: "A publish that is given no repository state settles no labels of two publishes, which only a stopped merge or rebase gives."

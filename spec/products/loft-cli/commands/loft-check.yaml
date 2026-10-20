@@ -1,7 +1,7 @@
 key: 668e0630-0adc-4eca-bf61-b32dbaece7d0
 slug: loft-check
 name: "`loft check`"
-body: "Runs the validator and then the linter over the tree, with an exit code a CI job can gate on. With `--baseline <revision>` it also lints the tree at the commit where HEAD left the revision and marks each finding as introduced by the branch or preexisting, so that a review of a change reads the findings the change brought in apart from those it inherited. A finding is the same at both sides when its rule, its subjects and its term are, wherever its node now lies and whatever count its message gives."
+body: "Runs the validator and then the linter over the tree, with an exit code a CI job can gate on. With `--baseline <revision>` it gives the linter the tree at the commit where HEAD left the revision, read from git, as the base against which the linter marks each finding as introduced by the branch or preexisting, so that a review of a change reads the findings the change brought in apart from those it inherited. A finding is the same at both sides when its rule, its subjects and its term are, wherever its node now lies and whatever count its message gives."
 tags:
   - checks-for-updates
   - reads-tree
@@ -82,28 +82,14 @@ requirements:
       form: optional
       where: "`--baseline <revision>` is given"
       system: "`loft check`"
-      shall: "mark each finding introduced or preexisting against the commit where HEAD left the revision, and list the findings the tree resolved."
+      shall: "give the linter the tree at the commit where HEAD left the revision as its base, and print the findings the tree introduced."
     criteria:
       - key: 01a154a3-4f92-72c0-97ef-634ef4f745dd
         name: "The base is the commit that `git merge-base HEAD <revision>` gives."
       - key: 01a154a3-4f92-72c0-97ef-634fd4f2e741
         name: "The base commit's tree is read from git, not from the working tree."
-      - key: 01a154a3-4f92-72c0-97ef-6350ca1051b8
-        name: "A finding is preexisting where the base has a finding of the same rule, the same subject keys and the same term."
-      - key: 01a154a3-4f92-72c0-97ef-6351a295b879
-        name: "A finding whose node lies at another file or line than at the base is preexisting."
-      - key: 01a154a3-4f92-72c0-97ef-63524f50b744
-        name: "A finding whose message differs from the base's only in a count it gives is preexisting."
-      - key: 01a154a3-4f92-72c0-97ef-6353eeda5dec
-        name: "Where the tree holds more findings of one rule, subject keys and term than the base, the excess are introduced."
-      - key: 01a154a3-4f92-72c0-97ef-6354cc3bd3f1
-        name: "Findings of one rule, subject keys and term pair with the base's at the same body line first."
-      - key: 01a154a3-4f92-72c0-97ef-6355c0bbc50e
-        name: "A finding the base holds and the tree does not is listed as resolved, at the base commit's site."
       - key: 01a154a3-4f92-72c0-97ef-63560b33d579
         name: "Both trees are linted under the working tree's `spec/lint.yaml`."
-      - key: 01a154a3-4f92-72c0-97ef-6357cbd4ef3d
-        name: "The base tree's validation errors are not reported."
       - key: 01a154a3-4f92-72c0-97ef-635820cd8e8b
         name: "The text output prints each introduced finding and no preexisting one."
       - key: 01a154a3-4f92-72c0-97ef-63590eac4367
