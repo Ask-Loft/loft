@@ -159,7 +159,7 @@ fn publish_after(files: &Files, previous: Option<&Lock>) -> (Publication, Files)
 fn published(publication: Publication) -> Lock {
     match publication {
         Publication::Published { lock, .. } => lock,
-        Publication::Unchanged(_) => panic!("the tree is published"),
+        other => panic!("the tree is published: {other:?}"),
     }
 }
 

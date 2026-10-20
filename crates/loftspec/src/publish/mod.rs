@@ -25,7 +25,7 @@ use crate::codec::{
     self, Files, LABELS, ReadError, Sites, SpecPath, lint_configuration, read_sited,
 };
 use crate::document::Document;
-use crate::hash::{StateView, hash_document, state_root};
+use crate::hash::{Roots, StateView, hash_document, state_root};
 use crate::identity::{Key, Label};
 use crate::validate::validate;
 
@@ -88,6 +88,16 @@ pub enum Publication {
         /// The state the publish is based on, the one the previous lock names.
         base: Base,
     },
+    /// A connected document's publish not made as its remote: the validated tree, unchanged,
+    /// its roots, its state root under state view 2, and the state the publish is based on. Its
+    /// labels and its lock come from the remote, so no label is given, no binding changes and no
+    /// lock is made.
+    Prepared {
+        document: Box<Document>,
+        roots: Roots,
+        state_root: Digest,
+        base: Base,
+    },
 }
 
 /// Why a publish refused before it wrote anything (F-27).
@@ -112,8 +122,8 @@ pub enum Refusal {
         revision: &'static str,
         message: String,
     },
-    /// The document is connected and the publish is not made as its remote, so its labels come
-    /// from that remote: the publish would allocate a label, or a merge or rebase is stopped.
+    /// The document is connected and the publish is not made as its remote, in a stopped merge
+    /// or rebase: its labels come from that remote, so no settling of two publishes applies.
     Connected,
 }
 
@@ -160,7 +170,8 @@ impl Base {
 /// departed the bindings of keys that left, rewrites citations of withdrawn labels, records each
 /// decision's state, and reports the previous lock when the state root equals it, or gives the
 /// new lock and the files to write. A connected document's publish not made as its remote is
-/// refused where it would give a label, or in a stopped merge or rebase.
+/// refused in a stopped merge or rebase, and otherwise stops short of a lock, as
+/// [`Publication::Prepared`].
 ///
 /// # Errors
 ///
@@ -188,6 +199,9 @@ pub fn publish(
     if !invalid.is_empty() {
         return Err(Refusal::Invalid(invalid));
     }
+    if from_remote {
+        return Ok(prepared(document, lint, previous));
+    }
     // Allocation gives only fresh labels of each element's own prefix, so the document stays
     // valid; when it gives none and rewrites nothing, the roots are the tree's own (AC-640).
     let Allocation {
@@ -195,9 +209,6 @@ pub fn publish(
         allocated,
         departed,
     } = publish_labels(&mut document);
-    if from_remote && !(given_back.is_empty() && allocated.is_empty()) {
-        return Err(Refusal::Connected);
-    }
     let withdrawn = settlement.reattach(&mut document.bindings);
     let rewrites = rewrite::rewrite(files, &document.bindings);
     let mut written = rewrites.files;
@@ -251,6 +262,20 @@ pub fn publish(
             .map(|stopped| stopped.operation),
         base: Base::of(previous),
     })
+}
+
+/// The publish of a connected document not made as its remote, stopped short of a lock: the
+/// validated tree as it was read, its roots and its base, for the remote to publish.
+fn prepared(document: Document, lint: Option<&str>, previous: Option<&Lock>) -> Publication {
+    let roots = hash_document(&document)
+        .expect("a document the validator accepts indexes")
+        .roots;
+    Publication::Prepared {
+        state_root: state_root(&document, &roots, StateView::Two, lint),
+        roots,
+        document: Box::new(document),
+        base: Base::of(previous),
+    }
 }
 
 /// What the preconditions that read the repository give a publish: its sequence, what settling

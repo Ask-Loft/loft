@@ -1,7 +1,7 @@
 //! The publisher given no repository state, and the publish of a connected document (Repository
 //! preconditions, Connected publication): only the preconditions that always apply refuse a
-//! publish given no repository state; a connected document's publish not made as its remote is
-//! refused where it would give a label, and is made on any branch; one made as its remote
+//! publish given no repository state; a connected document's publish not made as its remote
+//! stops short of a lock, gives no label and is prepared on any branch; one made as its remote
 //! allocates as any publish does; and each publish is based on the state its lock names.
 
 use std::num::NonZeroU64;
@@ -11,6 +11,7 @@ use loftspec::canonical::Digest;
 use loftspec::codec::{self, Files};
 use loftspec::decision::NodeRef;
 use loftspec::document::{Document, Edge, SubjectRole};
+use loftspec::hash::{Roots, hash_document};
 use loftspec::ids::{ConstraintId, DecisionId};
 use loftspec::publish::{
     Allocated, Base, Lock, Made, Operation, Publication, PublishedAt, ReadTree, Refusal, RepoState,
@@ -66,7 +67,7 @@ fn connected() -> (Files, Lock) {
 fn allocated(publication: &Publication) -> Vec<Allocated> {
     match publication {
         Publication::Published { allocated, .. } => allocated.clone(),
-        Publication::Unchanged(_) => Vec::new(),
+        other => panic!("a publish that allocates: {other:?}"),
     }
 }
 
@@ -109,42 +110,56 @@ fn a_publish_given_no_repository_state_allocates_as_any_other_publish() {
     assert_ne!(allocated(&without), []);
 }
 
+/// The prepared publish a publication is; panics on any other.
+fn prepared(publication: Result<Publication, Refusal>) -> (Document, Roots, Digest, Base) {
+    match publication {
+        Ok(Publication::Prepared {
+            document,
+            roots,
+            state_root,
+            base,
+        }) => (*document, roots, state_root, base),
+        other => panic!("a prepared publish: {other:?}"),
+    }
+}
+
 #[test]
-fn a_connected_documents_publish_not_made_as_its_remote_is_made_on_any_branch() {
+fn a_connected_documents_publish_not_made_as_its_remote_is_prepared_on_any_branch() {
     let (files, lock) = connected();
     let files = changed(&files);
     for branch in [Some("feature"), None] {
-        let publication = run(&files, Some(&on(branch)), Some(&lock), Made::NotAsRemote);
-        assert!(
-            matches!(publication, Ok(Publication::Published { .. })),
-            "{branch:?}"
-        );
-        assert_eq!(allocated(&publication.unwrap()), []);
+        prepared(run(
+            &files,
+            Some(&on(branch)),
+            Some(&lock),
+            Made::NotAsRemote,
+        ));
     }
     let mut document = codec::read(&files).unwrap();
     document.publish_branch = Some("release".to_owned());
     let release = codec::write(&document);
-    let publication = run(
+    prepared(run(
         &release,
         Some(&on(Some("main"))),
         Some(&lock),
         Made::NotAsRemote,
-    );
-    assert!(
-        matches!(publication, Ok(Publication::Published { .. })),
-        "{publication:?}"
-    );
+    ));
 }
 
 #[test]
-fn a_connected_documents_publish_not_made_as_its_remote_that_would_give_a_label_is_refused() {
+fn a_connected_documents_publish_not_made_as_its_remote_stops_short_of_a_lock() {
     let (files, lock) = connected();
     let mut document = codec::read(&files).unwrap();
     document.bindings.unbind(ConstraintId::new(key(7)));
     let unlabelled = codec::write(&document);
     for repo in [None, Some(on(Some("main")))] {
-        let refused = run(&unlabelled, repo.as_ref(), Some(&lock), Made::NotAsRemote);
-        assert_eq!(refused, Err(Refusal::Connected), "{repo:?}");
+        let publication = run(&unlabelled, repo.as_ref(), Some(&lock), Made::NotAsRemote);
+        let (tree, roots, state, base) = prepared(publication);
+        let read = codec::read(&unlabelled).unwrap();
+        assert_eq!(tree, read, "no label is given and no record is made");
+        assert_eq!(roots, hash_document(&read).unwrap().roots);
+        assert_eq!(state, roots.state);
+        assert_eq!(base, Base::of(Some(&lock)));
     }
     let as_remote = run(&unlabelled, None, Some(&lock), Made::AsRemote).unwrap();
     let given = Allocated {
@@ -202,8 +217,8 @@ fn a_publish_made_as_the_remote_gives_back_a_departed_label() {
     let constraint = ConstraintId::new(key(7));
     document.bindings.depart(constraint).unwrap();
     let departed = codec::write(&document);
-    let refused = run(&departed, None, Some(&lock), Made::NotAsRemote);
-    assert_eq!(refused, Err(Refusal::Connected));
+    let (tree, ..) = prepared(run(&departed, None, Some(&lock), Made::NotAsRemote));
+    assert!(tree.bindings.is_departed(key(7)));
     let Publication::Published { given_back, .. } =
         run(&departed, None, Some(&lock), Made::AsRemote).unwrap()
     else {
@@ -225,17 +240,18 @@ fn a_publish_is_based_on_the_publish_sequence_and_state_root_of_its_lock() {
         state_root: "ab".repeat(32).parse::<Digest>().unwrap(),
         ..lock
     };
-    let publication = run(&files, None, Some(&behind), Made::NotAsRemote).unwrap();
-    let Publication::Published { base, lock, .. } = publication else {
-        panic!("a lock behind the head refuses no publish");
+    let (.., base) = prepared(run(&files, None, Some(&behind), Made::NotAsRemote));
+    let expected = Base {
+        publish_sequence: 5,
+        state_root: Some(behind.state_root),
     };
-    assert_eq!(
-        base,
-        Base {
-            publish_sequence: 5,
-            state_root: Some(behind.state_root),
-        }
-    );
+    assert_eq!(base, expected, "a lock behind the head refuses no publish");
+    let Publication::Published { base, lock, .. } =
+        run(&files, None, Some(&behind), Made::AsRemote).unwrap()
+    else {
+        panic!("a lock behind the head refuses no publish as the remote");
+    };
+    assert_eq!(base, expected);
     assert_eq!(lock.publish_sequence.get(), 6);
 }
 
@@ -253,5 +269,6 @@ fn a_connected_document_without_a_lock_is_based_on_sequence_0_and_no_state_root(
         state_root: None,
     };
     assert_eq!(base, none);
-    assert_eq!(Base::of(None), none);
+    let (.., prepared_base) = prepared(run(&files, None, None, Made::NotAsRemote));
+    assert_eq!(prepared_base, none);
 }

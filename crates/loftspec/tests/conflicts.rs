@@ -115,7 +115,9 @@ fn a_tree_that_holds_a_conflict_compares_no_root_and_does_not_verify() {
         Made::NotAsRemote,
     )
     .unwrap();
-    let (Publication::Published { lock, .. } | Publication::Unchanged(lock)) = published;
+    let (Publication::Published { lock, .. } | Publication::Unchanged(lock)) = published else {
+        panic!("a document that is not connected is published");
+    };
     let files = conflicted();
     let refused = verify(&ReadTree::read(&files).unwrap(), &lock);
     let Err(Unverified::Invalid(errors)) = refused else {

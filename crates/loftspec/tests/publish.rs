@@ -63,7 +63,7 @@ fn derived() -> Document {
 fn first(files: &Files) -> (Lock, Vec<u8>) {
     match publish_files(files, &clean_on("main"), None, at(1_000)).unwrap() {
         Publication::Published { lock, files, .. } => (lock, files[&SpecPath::new(LABELS)].clone()),
-        Publication::Unchanged(_) => panic!("a first publish publishes"),
+        other => panic!("a first publish publishes: {other:?}"),
     }
 }
 
