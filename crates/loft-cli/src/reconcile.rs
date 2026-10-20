@@ -9,7 +9,7 @@ use std::path::Path;
 
 use loftspec::canonical::Digest;
 use loftspec::check::hashed;
-use loftspec::codec::{self, Site, Sites};
+use loftspec::codec::{self, Site, Sites, site_fields};
 use loftspec::document::Document;
 use loftspec::hash::DocumentHashes;
 use loftspec::identity::{Key, Label};
@@ -207,8 +207,8 @@ enum Place<'a> {
 impl Place<'_> {
     fn fields(&self) -> Map<String, Value> {
         match self {
-            Self::Node(site) => json::site(site),
-            Self::Link(location) => json::site_at(&TRACE, *location),
+            Self::Node(site) => site.fields(),
+            Self::Link(location) => site_fields(&TRACE, *location),
         }
     }
 }

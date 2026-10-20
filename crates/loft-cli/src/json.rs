@@ -8,25 +8,14 @@ use loftspec::check::Placed;
 use loftspec::codec::{ReadError, Site};
 use loftspec::lint::{Finding, Severity};
 use loftspec::report::{InfoFinding, InfoRule};
-use loftspec::yaml::Location;
 use serde_json::{Map, Value, json};
 
 use crate::finish::Finished;
 use crate::out::outln;
 
-/// A site's fields: the path, then the line and column where it has them (AC-593, AC-594).
-pub fn site(site: &Site) -> Map<String, Value> {
-    site.fields()
-}
-
-/// The fields of a site at `location` in the file `path`, which may lie outside `spec/`.
-pub fn site_at(path: &impl Display, location: Option<Location>) -> Map<String, Value> {
-    loftspec::codec::site_fields(path, location)
-}
-
 /// An error: its kind and message, its first site's fields, and every site.
 pub fn error(kind: &str, message: &str, sites: &[Site]) -> Value {
-    error_at(kind, message, sites.iter().map(site).collect())
+    error_at(kind, message, sites.iter().map(Site::fields).collect())
 }
 
 /// An error at `sites`, each given as its fields.
@@ -72,7 +61,7 @@ pub fn finding(finding: &Finding) -> Value {
         .subjects
         .first()
         .and_then(|subject| subject.site.as_ref())
-        .map(site)
+        .map(Site::fields)
         .unwrap_or_default();
     fields.insert("rule".to_owned(), json!(finding.rule.as_str()));
     fields.insert("severity".to_owned(), json!(finding.severity.as_str()));
@@ -84,7 +73,7 @@ pub fn finding(finding: &Finding) -> Value {
         fields.insert("bodyLine".to_owned(), json!(line));
     }
     let subjects = finding.subjects.iter().map(|subject| {
-        let mut fields = subject.site.as_ref().map(site).unwrap_or_default();
+        let mut fields = subject.site.as_ref().map(Site::fields).unwrap_or_default();
         fields.insert("key".to_owned(), json!(subject.key.to_string()));
         Value::Object(fields)
     });

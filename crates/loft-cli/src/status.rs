@@ -239,7 +239,7 @@ fn listed_json(listed: &Listed) -> Value {
     fields.insert("key".to_owned(), json!(listed.key));
     fields.insert("label".to_owned(), json!(listed.label));
     fields.insert("kind".to_owned(), json!(listed.kind));
-    fields.extend(json::site(&listed.site));
+    fields.extend(listed.site.fields());
     fields.insert("name".to_owned(), json!(listed.name));
     Value::Object(fields)
 }
