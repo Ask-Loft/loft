@@ -332,7 +332,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt_keys.rs"
         name: "a_decision_without_a_key_has_one_after_formatting"
-        body: 42346d8832956c5db8d0548c0baa97590e5b1aa70fa7b3e01bc0343405464251
+        body: 6c1f3a3c370aa73550e5f9a0e583f8c5c274ae021e49fdcbd2609414a363ca39
   - node: 3075d645-8b09-4d90-b75d-0263fbff5eeb
     reviewed: 298658f890c0766aa419788cb35b737f0db24d199ab4395159544d83d9e18b18
     tests:
@@ -593,7 +593,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_retired_decision_names_a_deleted_node_by_its_former_label"
-        body: f9d28198bd5ac2fe8543891fcc294ebc746c2f1147f5714dfb089533d9bf0291
+        body: be16a6ca9ad86f99c3bd4b71d05c2cede6bec33f3e3d2afe92e28659917165b3
   - node: ee6a574b-4d71-4993-8b34-6df1f407df30
     reviewed: edd25d357f040f2163494cb79359deaf68a652c8f9be630494f121d5d05e16e9
     tests:
@@ -611,7 +611,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_retired_decision_names_a_deleted_node_by_its_former_label"
-        body: f9d28198bd5ac2fe8543891fcc294ebc746c2f1147f5714dfb089533d9bf0291
+        body: be16a6ca9ad86f99c3bd4b71d05c2cede6bec33f3e3d2afe92e28659917165b3
   - node: 194a6572-6bb8-4baf-8a61-b721694f5d20
     reviewed: 9c05f27ea241509e238bcfdccf21750228fbb55c6617b7b17dce5564022aecf1
     tests:
@@ -619,14 +619,17 @@ links:
         name: "a_former_label_reads_as_a_former_label"
         body: 8b55dfb2152ccd88d8bb4c9daeb583b9da3fc32e0e8843842eb64017a375b2f2
   - node: 01a137a8-ae5b-7395-a025-0da98138cce8
-    reviewed: 7080e23eb05eac7ec1c02288852d0e2d7259d6816f882e86efb3bef315cde3ba
+    reviewed: 6bacba778bb9dbab0f60ca6b9fe4db00e5386aebcae3a2b381231737cf884502
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
-        name: "formatting_drops_the_binding_of_a_deleted_node"
-        body: dc15097f5c4bda0572e139a0f0a8d4f60de883f218b91253e0c5511871a91658
+        name: "formatting_marks_departed_the_binding_of_a_deleted_node"
+        body: f387cad2d9fe1342e05858749935d8b7bcea6a7d34c482779471fe18621d6606
       - file: "crates/loft-cli/tests/fmt.rs"
-        name: "fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes"
-        body: c25085f749eed22211bef4cc2fb6cdb0c7209f2ceaae3fa98b15d0f40a38d7d2
+        name: "fmt_marks_departed_the_binding_of_a_deleted_node_so_that_check_passes"
+        body: d4249eb7fc9f5c78dcc01e25c7809e0c4b6935b644e8d60e08523486a7f83abd
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "formatting_removes_no_binding"
+        body: f95cd3408bcceaad8091ce124fb0881a36eb46e2fcf9d680866ac9cadc709000
   - node: 01a137a8-ae5b-7395-a025-0daa86467cff
     reviewed: 97256472c1b8fb6d49634b630aff681c5b99d3a95ff3766711b50258eaff7f3d
     tests:
@@ -643,14 +646,32 @@ links:
     reviewed: e65089940bd56e8a6ec81a3f7500c92fc16849a646bb8f8ec836c8a40124c073
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
-        name: "the_formatter_gives_the_label_and_key_of_each_binding_it_drops"
-        body: fa038e623e69a3b0bbdf4ef99a719fab18041d1d01e0eeec5638bbd7e06592e5
+        name: "the_formatter_gives_the_label_and_key_of_each_binding_it_marks_departed"
+        body: cdc931fe337c3140450e4450a96210874b4daebdc15dc1d790c217a18e0f36dd
+  - node: 01a156a4-1731-7679-a162-b74dc98399e5
+    reviewed: 8b08317f5050e103d36c72730c24d9026ab371704f608866b71261cd2c1a4be3
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "a_departed_binding_keeps_its_label_its_aliases_and_its_withdrawn_labels"
+        body: a4cfb9e60eeebeb7e6d74ef0bde589c1f20a0d1800ba2182af75da2449d2a0f3
+  - node: 01a156a4-1731-7679-a162-b74ec679ed74
+    reviewed: 14dd7c5d37ae90da84efc9b06303a3aa2c82d09195d7355d6cc7791104b9a0ec
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "a_binding_already_marked_departed_is_left_as_it_is"
+        body: e277a6788ae9649ec9371ad6b43e2875d3d6ad0f6c6ad06a942832f3b95aaa1a
+  - node: 01a156a4-1731-7679-a162-b74f5eb839a5
+    reviewed: cea9045f74f7413976fc476aaca20ea45d7cd42109850d0e7255618a2605f17c
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "formatting_removes_no_binding"
+        body: f95cd3408bcceaad8091ce124fb0881a36eb46e2fcf9d680866ac9cadc709000
   - node: 01a137a8-ae5b-7395-a025-0dadf1a91a7f
     reviewed: 227b29b7e72c816b3fee87baa77291cd9011e2a74e07e0741301a5e6d43b6cb3
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_retired_decision_names_a_deleted_node_by_its_former_label"
-        body: f9d28198bd5ac2fe8543891fcc294ebc746c2f1147f5714dfb089533d9bf0291
+        body: be16a6ca9ad86f99c3bd4b71d05c2cede6bec33f3e3d2afe92e28659917165b3
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_superseded_decision_names_a_deleted_node_by_its_former_label"
         body: 486b6fed35b4c0bf448329e8b97e1ab7c5efa7322df2a0d3a419af540ecff9dc
@@ -659,25 +680,55 @@ links:
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_retired_decision_names_a_deleted_node_by_its_former_label"
-        body: f9d28198bd5ac2fe8543891fcc294ebc746c2f1147f5714dfb089533d9bf0291
+        body: be16a6ca9ad86f99c3bd4b71d05c2cede6bec33f3e3d2afe92e28659917165b3
   - node: 01a137a8-ae5b-7395-a025-0dafcfc9d8c0
     reviewed: b2caee25af9630fe8f6f5ae512196362e4de57bab72e1a3874a61950c0254770
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_retired_decision_names_a_deleted_node_by_its_former_label"
-        body: f9d28198bd5ac2fe8543891fcc294ebc746c2f1147f5714dfb089533d9bf0291
+        body: be16a6ca9ad86f99c3bd4b71d05c2cede6bec33f3e3d2afe92e28659917165b3
   - node: 01a137a8-ae5b-7395-a025-0db0d44d55b4
     reviewed: e436d6bc4fb7049b6170479e635fa3da6cc9b84cdcf98c4087c36c6977812520
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_live_decision_keeps_the_key_of_a_deleted_node_which_the_reader_refuses"
         body: 780bd21bbf2715e13abf5f1ad14e2c0a7f91f924f15203480f98a76e05e2de47
+  - node: 01a156a4-1731-7679-a162-b7517d51b8d5
+    reviewed: 29b94a0230ca113b996c0df8259aff936714180159fafd67bcd256fe5a7cdded
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "a_node_that_comes_back_is_named_by_its_key_where_its_former_label_stood"
+        body: 9e67e7e8412c06481b5623baa6c16b6ba9f973c7b32c56c898de8728f5765bf6
+  - node: 01a156a4-1731-7679-a162-b7529e395d9a
+    reviewed: 1fe9deed36798529d4332cc94425700465df063b00eab35a539c20620c389648
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "a_node_that_comes_back_is_named_by_its_key_where_its_former_label_stood"
+        body: 9e67e7e8412c06481b5623baa6c16b6ba9f973c7b32c56c898de8728f5765bf6
+  - node: 01a156a4-1731-7679-a162-b7536e96322b
+    reviewed: 7396dc58b35c591f6d3f78a2999b6f8715a99521f27e2ea7561bbb14bd6e0479
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "a_node_that_comes_back_is_named_by_its_key_where_its_former_label_stood"
+        body: 9e67e7e8412c06481b5623baa6c16b6ba9f973c7b32c56c898de8728f5765bf6
+  - node: 01a156a4-1731-7679-a162-b754e32b9774
+    reviewed: 6cbe2d17abb83357d134821da0599d2e103c36475d6e2a8065154fa82f4ef0b0
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "a_node_that_comes_back_is_named_by_its_key_where_its_former_label_stood"
+        body: 9e67e7e8412c06481b5623baa6c16b6ba9f973c7b32c56c898de8728f5765bf6
   - node: 01a156a4-1731-7679-a162-b7560b9f04ca
     reviewed: 96a88fba62ed759c54cf8de17309c4c6246d2b4b258cd8f5f3a0976aa32d665f
     tests:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_departed_binding_is_written_with_departed_true_and_read_back"
         body: 9a02c56bda96252eb38ee8114a3e206b12c5b7d2ffc36be9c10f038b8e2fa40d
+  - node: 01a156a4-1731-7679-a162-b7570da9d731
+    reviewed: 06a32da79d1907a55e7cfc4196b48ebc3e2b45eb396a1d372add1fcfb6113433
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "formatting_marks_departed_the_binding_of_a_deleted_node"
+        body: f387cad2d9fe1342e05858749935d8b7bcea6a7d34c482779471fe18621d6606
   - node: 01a156a4-1731-7679-a162-b7582312736d
     reviewed: 6d282768edea2ce9f5ff8f0661f24e5f86ede1c1353612469706f29b9a87dc77
     tests:
@@ -708,6 +759,12 @@ links:
       - file: "crates/loftspec/tests/departed.rs"
         name: "a_departed_label_that_no_other_key_carries_is_no_error"
         body: ac169495cecd9020d6dc2bbc84f15f3d7bec1977b6bef40696580ae9bf849d0d
+  - node: 01a156a4-1731-7679-a162-b76372802144
+    reviewed: 2086198981edf07e1bf8454f33c64160ac8301d2319e0d891bdae59be69a410b
+    tests:
+      - file: "crates/loftspec/tests/fmt_deleted.rs"
+        name: "a_departed_decision_keeps_the_state_and_history_its_last_publish_recorded"
+        body: ea6ef3116e59e80f7b91f92649bdc8805944e5874f31e42bbc93dbf8f059a758
   - node: d599579d-db5f-43e8-a8bf-cd736c4fa99a
     reviewed: 0416f7df2f9998ecf2489171475b92782f30df759dadf2120a7ddfd9ab283474
     tests:
@@ -1657,8 +1714,8 @@ links:
         name: "a_band_holds_its_kind_and_then_the_bounds_its_kind_takes_in_order"
         body: 6aa4dfeceacfacdc918e6e6f44cdce3c779139a11358f3b42bcc8471d80cd643
       - file: "crates/loftspec/tests/fmt_deleted.rs"
-        name: "formatting_drops_the_binding_of_a_deleted_node"
-        body: dc15097f5c4bda0572e139a0f0a8d4f60de883f218b91253e0c5511871a91658
+        name: "formatting_marks_departed_the_binding_of_a_deleted_node"
+        body: f387cad2d9fe1342e05858749935d8b7bcea6a7d34c482779471fe18621d6606
   - node: 650c0fef-43bd-466c-9562-0b7a4863751c
     reviewed: 8012363383bff3e1bd2d5b1e0a2ee46c42e4fddc3eb645c4746ec59c620da9b6
     tests:
@@ -1673,7 +1730,7 @@ links:
         body: 32dfcfc0dcb67093d46afeb27b77fb77ca40bade3e1703224d1deb0d3a6dcdd6
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_retired_decision_names_a_deleted_node_by_its_former_label"
-        body: f9d28198bd5ac2fe8543891fcc294ebc746c2f1147f5714dfb089533d9bf0291
+        body: be16a6ca9ad86f99c3bd4b71d05c2cede6bec33f3e3d2afe92e28659917165b3
   - node: 41265bf9-84de-4634-a17f-f466e32bc15b
     reviewed: 3394efe994fd3099ee150575731a11559a20fd4c761910ca188c842494c5083b
     tests:
@@ -10597,17 +10654,17 @@ links:
         name: "fmt_writes_the_key_of_a_reference_written_by_name_which_check_refuses"
         body: 8cd3facfc3b7c870eef103ec6e589dce96f2f67be5123c6509b14e9c038aa0ac
   - node: 01a137a8-ae5b-7395-a025-0da7f7b88277
-    reviewed: 13bc4d1302b03f5f9dad97164132d5276b0b7cd682691a04efd569dff3a893fa
+    reviewed: b721b40629c1dd62909a443d272ab646b79d24b8c6e9c65bdb85ca7ffd2c37fa
     tests:
       - file: "crates/loft-cli/tests/fmt.rs"
-        name: "fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes"
-        body: c25085f749eed22211bef4cc2fb6cdb0c7209f2ceaae3fa98b15d0f40a38d7d2
+        name: "fmt_marks_departed_the_binding_of_a_deleted_node_so_that_check_passes"
+        body: d4249eb7fc9f5c78dcc01e25c7809e0c4b6935b644e8d60e08523486a7f83abd
   - node: 01a137b5-8a69-7480-9b93-21a620ee90f2
-    reviewed: c407e84ff5c5494768ca2cd02efa2f74f35194ba550430dbaded38add221b392
+    reviewed: 0e8b515d5c832f0880f383749d82d3b5cdd4c37aefce10dbfdccafc4cd289857
     tests:
       - file: "crates/loft-cli/tests/fmt.rs"
-        name: "each_dropped_binding_is_reported_on_standard_error_with_its_label_and_key"
-        body: 5d0941674b4c61eda5f17c59181786634601e1a15389d2f0c3e76f07a5564f13
+        name: "each_binding_newly_marked_departed_is_reported_on_standard_error_with_its_label_and_key"
+        body: 890c029020dd3764e1142b03f0b7bc3452c57410cbc7eeb64044d1c85a5a1452
   - node: 12065dff-4eff-49fb-a77e-3c09a0d27e66
     reviewed: 2d57705a129914124927ca1e522a2743eb61dff26c4ee16c776635e88194e122
     tests:
@@ -10615,8 +10672,8 @@ links:
         name: "fmt_rewrites_a_drifting_file_and_then_checks_clean"
         body: 4ea8df6a06628c07d2909f3f26884e00d02d35cd347d091b5b84dc75382617f1
       - file: "crates/loft-cli/tests/fmt.rs"
-        name: "fmt_drops_the_binding_of_a_deleted_node_so_that_check_passes"
-        body: c25085f749eed22211bef4cc2fb6cdb0c7209f2ceaae3fa98b15d0f40a38d7d2
+        name: "fmt_marks_departed_the_binding_of_a_deleted_node_so_that_check_passes"
+        body: d4249eb7fc9f5c78dcc01e25c7809e0c4b6935b644e8d60e08523486a7f83abd
   - node: 8a8155a7-3a89-4bb6-8013-c95862ec770e
     reviewed: ab83aaea24700276ed436638c34a6ce70b3cf82f4728d8c1e0373b90cc99db6a
     tests:
