@@ -67,15 +67,9 @@ assessments:
     rating: conflicts
     rationale: "a headless Linux machine or a container often has no credential store"
 consequences:
-  - key: 01a156c0-e478-7517-a896-162766208f87
-    kind: benefit
-    statement: "A token is set once, read from standard input, and kept where only its owner can read it."
   - key: 01a156c0-e478-7517-a896-1628a1fb8b28
     kind: risk
     statement: "On a file system without POSIX permissions the file is not checked."
-  - key: 01a156c0-e478-7517-a896-16299e164352
-    kind: obligation
-    statement: "Every write of `loft/remotes.json` leaves it private to its owner."
 subjects:
   - role: affected
     node: 01a13a90-3554-7631-bb13-097e6805bffe

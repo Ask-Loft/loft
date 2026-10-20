@@ -36,7 +36,7 @@ requirements:
       form: state_driven
       while: "a document is connected"
       system: "the publisher"
-      shall: "base each publish on the state its lock names, and leave to the remote whether the publish is taken."
+      shall: "base each publish on the state its lock names."
     criteria:
       - key: 01a158a2-54b4-745a-ba6f-6f4b956b3b6f
         name: "The base of a publish is the publish sequence and the state root of the lock."
@@ -44,26 +44,3 @@ requirements:
         name: "A connected document without a lock is based on publish sequence `0` and state root `null`."
       - key: 01a158a2-54b4-745a-ba6f-6f4dde7c7c49
         name: "The publisher refuses no publish because its lock is not the remote's head."
-      - key: 01a158a2-54b4-745a-ba6f-6f4e1a02f50f
-        name: "The remote takes a publish whose base is its head."
-      - key: 01a158a2-54b4-745a-ba6f-6f4f80b6a5b8
-        name: "The remote answers a publish whose retry key matches one it already made as a replay, whatever its base."
-      - key: 01a158a2-54b4-745a-ba6f-6f5071bd6c9c
-        name: "The remote refuses any other publish whose base is not its head as a `conflict` that names its head."
-  - key: 01a156bd-fa42-71d5-a635-bd64710e15a8
-    statement:
-      form: optional
-      where: "a document is connected"
-      system: "the publisher"
-      shall: "refuse no publish for the branch that the repository is on."
-    criteria:
-      - key: 01a156bd-fa42-71d5-a635-bd655ca9cccf
-        name: "A connected document is published from a branch other than the publish branch."
-      - key: 01a156bd-fa42-71d5-a635-bd66881c9499
-        name: "A connected document is published from a detached HEAD."
-      - key: 01a156bd-fa42-71d5-a635-bd677f82b39e
-        name: "A `publishBranch` in the manifest of a connected document refuses no publish."
-      - key: 01a156bd-fa42-71d5-a635-bd68f3546318
-        name: "Uncommitted changes under `spec/` still refuse a publish of a connected document."
-      - key: 01a156bd-fa42-71d5-a635-bd69f731cf46
-        name: "`loft publish` of a connected document outside a git repository is still refused."

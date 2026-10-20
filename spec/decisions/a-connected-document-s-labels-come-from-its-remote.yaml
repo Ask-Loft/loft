@@ -70,15 +70,6 @@ consequences:
   - key: 01a156ac-44be-7182-93e2-156f3eafbef3
     kind: benefit
     statement: "A label of a connected document never changes after it is published."
-  - key: 01a156ac-44be-7182-93e2-1570db33b6ef
-    kind: cost
-    statement: "A connected document cannot be published without its remote."
-  - key: 01a156ac-44be-7182-93e2-15714efea465
-    kind: obligation
-    statement: "The remote returns the bindings and the counters with every lock it accepts."
-  - key: 01a158a2-54b0-7412-9977-ceea15e2261b
-    kind: benefit
-    statement: "A publish whose answer was lost is not published twice: the next run sends it again with the same retry key and applies the remote's replay."
   - key: 01a158a2-54b0-7412-9977-ceeb3a9be60f
     kind: obligation
     statement: "The remote keeps the answer of every publish it accepted under its retry key, and serves every published state a lock may name."

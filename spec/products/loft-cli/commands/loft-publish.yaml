@@ -1,7 +1,7 @@
 key: 568bbe91-b941-4eba-92a9-c134546ea5db
 slug: loft-publish
 name: "`loft publish`"
-body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused. A connected document is published through its remote: `loft publish` sends the change from the state its lock names as a delta and writes what the remote returns, once the roots it recomputes agree with the returned lock. A publish whose answer was lost is sent again by the next run over the same tree, against the same base and with the same retry key, and the remote answers it as a replay."
+body: "Runs the publisher over the tree inside a git repository and prints what it allocated and the new state root, or why it refused. A connected document is published through its remote: `loft publish` sends the change from the state its lock names as a delta and writes what the remote returns, once the roots it recomputes agree with the returned lock. A publish whose answer was lost is sent again by the next run over the same tree, against the same base and with the same retry key, and the remote answers it as a replay. A remote that holds no state that the lock names refuses the publish by the shared rule of reaching a remote."
 tags:
   - checks-for-updates
   - needs-repository
@@ -15,6 +15,7 @@ mentions:
   - 01a12ff0-f5e5-7095-8fa8-24b707fdee97
   - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
   - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - 01a156ad-9165-750a-a0ca-c07bcfa94436
 requirements:
   - key: 6f07a2ab-ce4b-4f91-9669-8980600cda7f
     statement:
@@ -222,23 +223,6 @@ requirements:
       - key: 01a15896-4080-7475-b51a-3c368b4d0459
         name: "The error does not say to run `loft pull`."
       - key: 01a15896-4080-7475-b51a-3c371ecb470f
-        name: "Nothing is written."
-  - key: 01a158a2-54b2-753e-8e7f-93444946ac87
-    statement:
-      form: unwanted
-      if: "the remote holds no published state that the lock of a connected document names"
-      system: "`loft publish`"
-      shall: "refuse and exit 1."
-    criteria:
-      - key: 01a158a2-54b2-753e-8e7f-9345692c6f8b
-        name: "A problem document with the code `not_found` for the lock's state is such an answer."
-      - key: 01a158a2-54b2-753e-8e7f-93467cd7e1cc
-        name: "A state of the lock's publish sequence whose state root is not the lock's is such an answer."
-      - key: 01a158a2-54b2-753e-8e7f-9347653ab42c
-        name: "The error names the lock's publish sequence and state root."
-      - key: 01a158a2-54b2-753e-8e7f-93488be38a93
-        name: "The error says that `loft pull` brings the tree to the head."
-      - key: 01a158a2-54b2-753e-8e7f-9349edf387e2
         name: "Nothing is written."
   - key: 01a156ac-9752-749b-be81-df03740c9619
     statement:

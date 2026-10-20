@@ -1,7 +1,7 @@
 key: 01a156ad-1b9f-72a4-9f6c-30439b4be9df
 slug: loft-pull
 name: "`loft pull`"
-body: "Brings a connected document's tree to its remote's head by a three-way merge, or writes an earlier published state or a branch's draft from the remote over a clean tree. Conflicts are written as the merge engine writes them, every file in its canonical bytes and through one journaled save. The command reads and writes the tree, sends a command event and checks for updates as other commands do; its Feature lists the tags `reads-tree`, `writes-tree`, `sends-telemetry` and `checks-for-updates` once the command exists, since the suites that each tag brings run every tagged command."
+body: "Brings a connected document's tree to its remote's head by a three-way merge, or writes an earlier published state or a branch's draft from the remote over a clean tree. Conflicts are written as the merge engine writes them, every file in its canonical bytes and through one journaled save. The command reads and writes the tree, sends a command event and checks for updates as other commands do. A remote that holds no state that the lock names refuses a pull by the shared rule of reaching a remote. Its Feature lists the tags `reads-tree`, `writes-tree`, `sends-telemetry` and `checks-for-updates` once the command exists, since the suites that each tag brings run every tagged command."
 realizes:
   - 01a13a90-3554-7631-bb13-097e6805bffe
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
@@ -9,6 +9,7 @@ realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 mentions:
   - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - 01a156ad-9165-750a-a0ca-c07bcfa94436
 requirements:
   - key: 01a156ad-1b9f-72a4-9f6c-3044ca9b756a
     statement:
@@ -43,7 +44,7 @@ requirements:
       shall: "write the published state of that sequence over the working tree."
     criteria:
       - key: 01a156ad-1b9f-72a4-9f6c-304e88138b93
-        name: "Each file of the state is written as the state holds it, but for the manifest's `connected`."
+        name: "Each file of the state is written as the state holds it."
       - key: 01a156ad-1b9f-72a4-9f6c-304f0b06ac6b
         name: "A file that the working tree holds under `spec/` and the state does not is removed."
       - key: 01a156ad-1b9f-72a4-9f6c-30500e27d20e
@@ -56,7 +57,7 @@ requirements:
       shall: "write the draft that the remote holds under that branch name over the working tree."
     criteria:
       - key: 01a156ad-1b9f-72a4-9f6c-30523dd3fdc6
-        name: "Each file of the draft is written as the draft holds it, but for the manifest's `connected`."
+        name: "Each file of the draft is written as the draft holds it."
       - key: 01a156ad-1b9f-72a4-9f6c-30530f8c5b62
         name: "A file that the working tree holds under `spec/` and the draft does not is removed."
       - key: 01a156ad-1b9f-72a4-9f6c-3054f77348df
@@ -68,11 +69,7 @@ requirements:
       shall: "keep the working tree's `connected` in `spec/loftspec.yaml`, never the pulled state's."
     criteria:
       - key: 01a1587e-87ab-73be-a232-8729b68331db
-        name: "After a pull of the head, the manifest's `connected` is the working tree's."
-      - key: 01a1587e-87ab-73be-a232-872a2a91bf9d
-        name: "After a pull with `--sequence`, the manifest's `connected` is the working tree's."
-      - key: 01a1587e-87ab-73be-a232-872b01c8fe72
-        name: "After a pull with `--branch`, the manifest's `connected` is the working tree's."
+        name: "In every mode, the manifest's `connected` after a pull is the working tree's."
       - key: 01a1587e-87ab-73be-a232-872cc76c518b
         name: "A pulled manifest without `connected` leaves `connected: true` in the working tree."
   - key: 01a1587e-87ab-73be-a232-872d2f8b2a3d
@@ -161,19 +158,6 @@ requirements:
       - key: 01a156bd-30c9-7688-a529-f455107b36ef
         name: "A problem document with the code `not_found` for the state is such an answer."
       - key: 01a156ad-1b9f-72a4-9f6c-3069a91e2c57
-        name: "Nothing is written."
-  - key: 01a156ad-9165-750a-a0ca-c07bcfa94436
-    statement:
-      form: unwanted
-      if: "the remote holds no published state with the publish sequence and the state root that `loft.lock.json` names"
-      system: "`loft pull`"
-      shall: "refuse and exit 1."
-    criteria:
-      - key: 01a156ad-9165-750a-a0ca-c07c01460ce4
-        name: "The error names the lock's publish sequence and state root."
-      - key: 01a156bd-30c9-7688-a529-f4565db070df
-        name: "A problem document with the code `not_found` for the lock's state is such an answer."
-      - key: 01a156ad-9165-750a-a0ca-c07de947e62a
         name: "Nothing is written."
   - key: 01a156ad-1b9f-72a4-9f6c-306ae0c9274e
     statement:

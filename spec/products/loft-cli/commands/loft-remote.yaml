@@ -1,11 +1,13 @@
 key: 01a156c0-0b79-7756-9d01-b059f21d61c7
 slug: loft-remote
 name: "`loft remote`"
-body: "Sets and removes the address and the token of the current document's remote in `loft/remotes.json`, the file `loft` reads them from, so that a token passes through neither a command line nor a file of the repository. It takes the document key from the manifest. `loft remote set` first connects a document that is not yet connected, as the Feature \"Connecting a document to a remote\" states, and only then records the remote and marks the manifest `connected: true`; `loft remote remove` opens no network connection and leaves the manifest alone. Like `loft telemetry`, it sends no command event and asks for no update. It reads the tree and writes the manifest, and its Feature lists the tags `reads-tree` and `writes-tree` once the command exists, since the suites that the tags bring run every tagged command."
+body: "Sets and removes the address and the token of the current document's remote in `loft/remotes.json`, the file `loft` reads them from, so that a token passes through neither a command line nor a file of the repository. It takes the document key from the manifest. `loft remote set` first connects a document that is not yet connected, as the Feature \"Connecting a document to a remote\" states, and only then records the remote and marks the manifest `connected: true`; `loft remote remove` opens no network connection and leaves the manifest alone. The address it is given and the privacy of `loft/remotes.json` are held to the shared rules of reaching a remote. Like `loft telemetry`, it sends no command event and asks for no update. It reads the tree and writes the manifest, and its Feature lists the tags `reads-tree` and `writes-tree` once the command exists, since the suites that the tags bring run every tagged command."
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 mentions:
   - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - 01a156aa-d531-70a7-88e0-0bfbf98318c6
+  - 01a156c0-0b7a-76b6-9a6a-68511699e4cb
   - 01a1587a-dee2-7262-8c7b-89499e59ce55
 requirements:
   - key: 01a156c0-0b79-7756-9d01-b05aa4e3f82b
@@ -73,16 +75,16 @@ requirements:
   - key: 01a156c0-0b7a-76b6-9a6a-6836111cfa3a
     statement:
       form: unwanted
-      if: "the address given to `loft remote set` is neither an `https` address nor an `http` address on the loopback interface"
+      if: "a shared rule of reaching a remote refuses the address or the `loft/remotes.json` that `loft remote set` meets"
       system: "`loft remote`"
       shall: "refuse and exit 1."
     criteria:
-      - key: 01a156c0-0b7a-76b6-9a6a-683752e217e3
-        name: "The error names the address."
       - key: 01a156c0-0b7a-76b6-9a6a-6838b170019a
         name: "Nothing is written."
       - key: 01a1587a-dee2-7262-8c7b-89437126fee2
         name: "No connection is opened."
+      - key: 01a156c0-0b7a-76b6-9a6a-683f82d16c8a
+        name: "An existing `loft/remotes.json` is left as it was."
   - key: 01a156c0-0b7a-76b6-9a6a-683918f8a7ec
     statement:
       form: unwanted
@@ -97,19 +99,6 @@ requirements:
       - key: 01a156c0-0b7a-76b6-9a6a-683ccce78607
         name: "Nothing is written."
       - key: 01a1587a-dee2-7262-8c7b-8944681da017
-        name: "No connection is opened."
-  - key: 01a156c0-0b7a-76b6-9a6a-683d8bd9e329
-    statement:
-      form: unwanted
-      if: "an existing `loft/remotes.json` is not private to the user who runs `loft`"
-      system: "`loft remote`"
-      shall: "refuse and exit 1."
-    criteria:
-      - key: 01a156c0-0b7a-76b6-9a6a-683e57dec0bc
-        name: "The error names the file and says that only its owner may read or write it."
-      - key: 01a156c0-0b7a-76b6-9a6a-683f82d16c8a
-        name: "The file is left as it was."
-      - key: 01a1587a-dee2-7262-8c7b-89456ec60012
         name: "No connection is opened."
   - key: 01a156c0-0b7a-76b6-9a6a-6840cd066e37
     statement:

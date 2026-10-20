@@ -253,8 +253,6 @@ requirements:
         name: "A refusal's body is a JSON object with `Content-Type: application/problem+json`."
       - key: 01a156bc-e91e-73aa-8be6-4da4b520db73
         name: "The problem document holds `type`, `title`, `status` and `code`, and may hold `detail`."
-      - key: 01a156bc-e91e-73aa-8be6-4da5c3bdab2a
-        name: "`type` is a URI, which may be `about:blank` or any other."
       - key: 01a156bc-e91e-73aa-8be6-4da6c0bd0ce3
         name: "`status` is the status of the answer."
       - key: 01a156bc-e91e-73aa-8be6-4da71036d86a
@@ -273,8 +271,6 @@ requirements:
         name: "The `head` of a document with no published state holds `publishSequence` `0` and `stateRoot` `null`."
       - key: 01a156bc-e91e-73aa-8be6-4da98b734a08
         name: "Every problem document whose code is `invalid_request` holds `paths`, a list of the paths at fault that may be empty."
-      - key: 01a156bc-e91e-73aa-8be6-4daa6a2001bf
-        name: "A problem document may hold members that the contract does not name."
   - key: 01a15877-f752-735c-b2ba-1707dfe44215
     statement:
       form: ubiquitous

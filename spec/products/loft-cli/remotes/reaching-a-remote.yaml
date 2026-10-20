@@ -144,6 +144,23 @@ requirements:
         name: "The error says that `loft remote set` connects the document to its remote."
       - key: 01a1587b-106c-7784-8c2e-ba45a359704e
         name: "Nothing is written."
+  - key: 01a156ad-9165-750a-a0ca-c07bcfa94436
+    statement:
+      form: unwanted
+      if: "the remote holds no published state with the publish sequence and the state root that `loft.lock.json` names, for a connected command that asks for it"
+      system: "Loft"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ad-9165-750a-a0ca-c07c01460ce4
+        name: "The error names the lock's publish sequence and state root."
+      - key: 01a156bd-30c9-7688-a529-f4565db070df
+        name: "A problem document with the code `not_found` for the lock's state is such an answer."
+      - key: 01a158a2-54b2-753e-8e7f-93467cd7e1cc
+        name: "A state of the lock's publish sequence whose state root is not the lock's is such an answer."
+      - key: 01a158a2-54b2-753e-8e7f-93488be38a93
+        name: "The error of `loft publish` says that `loft pull` brings the tree to the head."
+      - key: 01a156ad-9165-750a-a0ca-c07de947e62a
+        name: "Nothing is written."
   - key: 01a156bd-30c9-7688-a529-f458909b400c
     statement:
       form: ubiquitous
