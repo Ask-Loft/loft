@@ -115,7 +115,9 @@ requirements:
       - key: 01a156ac-9752-749b-be81-dee96f266f8b
         name: "Where the head is the state the lock names, the path and the SHA-256 digest of each file of the base come from the head."
       - key: 01a158a2-54b2-753e-8e7f-9341fcde5d65
-        name: "Where the head is not the state the lock names, `loft publish` fetches `GET <address>/states/<sequence>` for the lock's publish sequence, and the path and the SHA-256 digest of each file of the base come from that state."
+        name: "Where the head is not the state the lock names, the path and the SHA-256 digest of each file of the base come from the earliest commit of the repository's history that holds the lock, as a connect reads a published state."
+      - key: 01a158b8-9e7d-7694-aa7c-3df9b00de61c
+        name: "Where no commit of the history holds the lock, `loft publish` fetches `GET <address>/states/<sequence>` for the lock's publish sequence, and the base comes from that state."
       - key: 01a158a2-54b2-753e-8e7f-9342c45c6637
         name: "A document without a lock has an empty base."
       - key: 01a156ac-9752-749b-be81-deea3ecbdfa5

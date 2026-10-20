@@ -18,7 +18,7 @@ requirements:
       shall: "merge the head into the working tree three ways."
     criteria:
       - key: 01a156ad-1b9f-72a4-9f6c-3045b9c89a71
-        name: "The base of the merge is the published state that `loft.lock.json` names, fetched from the remote by its publish sequence."
+        name: "The base of the merge is the published state that `loft.lock.json` names, fetched from the remote by its publish sequence when the head is not that state."
       - key: 01a156ad-1b9f-72a4-9f6c-30460d9dbd80
         name: "Ours is the working tree."
       - key: 01a156ad-1b9f-72a4-9f6c-30475919d2e0
@@ -32,7 +32,9 @@ requirements:
       - key: 01a156ad-1b9f-72a4-9f6c-304bebeac6f1
         name: "`loft.lock.json` holds the head's lock after the pull."
       - key: 01a156ad-1b9f-72a4-9f6c-304c831f0c75
-        name: "A pull of a tree already at the head with no change since writes nothing and reports that nothing changed."
+        name: "A pull of a head whose state root is the lock's writes nothing and reports `unchanged`."
+      - key: 01a158b8-9e7d-7694-aa7c-3dfa7e9ef794
+        name: "A pull of a head whose state root is the lock's fetches no state from the remote."
   - key: 01a156ad-1b9f-72a4-9f6c-304dc9554919
     statement:
       form: optional
