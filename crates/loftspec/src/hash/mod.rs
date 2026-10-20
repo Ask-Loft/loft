@@ -15,7 +15,7 @@ pub use state::{StateView, lint_digest, state_root, state_view};
 pub use tree::ContentHash;
 
 use crate::canonical::{Digest, Domain, canonical_bytes, digest, digest_array};
-use crate::decision::Decision;
+use crate::decision::{Decision, DecisionState};
 use crate::document::{Document, Edge, EdgeTarget, SubjectRole};
 use crate::ext::Ext;
 use crate::identity::{Key, Label};
@@ -160,7 +160,12 @@ pub fn decision_history_views(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Val
     let decisions = &indexed.document().decisions;
     decisions
         .iter()
-        .map(|decision| (decision.id, decisions::history_view(decision)))
+        .map(|decision| {
+            (
+                decision.id,
+                decisions::history_view(decision, &decision.state),
+            )
+        })
         .collect()
 }
 
@@ -178,7 +183,15 @@ pub fn decision_history_hashes(indexed: &Indexed<'_>) -> BTreeMap<DecisionId, Di
 /// The decision history hash of one decision. Its view names every node and decision by key and
 /// follows no reference, so the decision need not belong to a document that indexes.
 pub(crate) fn decision_history_hash(decision: &Decision) -> Digest {
-    digest(Domain::DecisionHistory, &decisions::history_view(decision))
+    decision_history_hash_in(decision, &decision.state)
+}
+
+/// The decision history hash of one decision as it would be in `state`.
+pub(crate) fn decision_history_hash_in(decision: &Decision, state: &DecisionState) -> Digest {
+    digest(
+        Domain::DecisionHistory,
+        &decisions::history_view(decision, state),
+    )
 }
 
 /// The roots of a document's tag registry, its category registry and its term list, none for an

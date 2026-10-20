@@ -52,7 +52,9 @@ impl<'a> DecisionHasher<'a> {
             return *hash;
         }
         let decision = self.decisions[&key];
-        let state = state_view(decision, &mut |successor| json!(self.hash(successor)));
+        let state = state_view(decision, &decision.state, &mut |successor| {
+            json!(self.hash(successor))
+        });
         let nodes = self.nodes;
         let node = |subject: NodeRef| match subject {
             NodeRef::Held(node) => json!(super::node_hash(nodes, node)),
@@ -66,11 +68,11 @@ impl<'a> DecisionHasher<'a> {
     }
 }
 
-/// The decision history view of a decision: its decision view with each node a driver or a
-/// consequence names, and its successor, given by key; a former label as the decision view
-/// gives it.
-pub(crate) fn history_view(decision: &Decision) -> Value {
-    let state = state_view(decision, &mut |successor| json!(successor.key()));
+/// The decision history view of a decision in `state`, its own or one it is taken back to: its
+/// decision view with each node a driver or a consequence names, and its successor, given by
+/// key; a former label as the decision view gives it.
+pub(crate) fn history_view(decision: &Decision, state: &DecisionState) -> Value {
+    let state = state_view(decision, state, &mut |successor| json!(successor.key()));
     let node = |subject: NodeRef| match subject {
         NodeRef::Held(node) => json!(node.key()),
         NodeRef::Former(label) => super::former(label),
@@ -79,10 +81,14 @@ pub(crate) fn history_view(decision: &Decision) -> Value {
 }
 
 /// The view of a decision's state, its successor given by `successor`.
-fn state_view(decision: &Decision, successor: &mut dyn FnMut(DecisionId) -> Value) -> Value {
+fn state_view(
+    decision: &Decision,
+    state: &DecisionState,
+    successor: &mut dyn FnMut(DecisionId) -> Value,
+) -> Value {
     let option = |selected: OptionId| option_position(decision, selected);
-    let kind = decision.state.kind().as_str();
-    match &decision.state {
+    let kind = state.kind().as_str();
+    match state {
         DecisionState::Proposed => json!({ "kind": kind }),
         DecisionState::Accepted {
             selected_option,

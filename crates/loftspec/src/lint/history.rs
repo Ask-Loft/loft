@@ -11,7 +11,7 @@ use super::{Raw, RuleId};
 use crate::bindings::Binding;
 use crate::canonical::Digest;
 use crate::decision::{Decision, DecisionState, StateKind};
-use crate::hash::decision_history_hash;
+use crate::hash::{decision_history_hash, decision_history_hash_in};
 use crate::ids::{DecisionId, ElementId};
 
 pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
@@ -46,7 +46,7 @@ fn edited(decision: &Decision, recorded: StateKind, history: Option<Digest>) -> 
     let hash = if now == recorded {
         decision_history_hash(decision)
     } else if recorded == StateKind::Accepted {
-        decision_history_hash(&as_accepted(decision)?)
+        decision_history_hash_in(decision, &as_accepted(decision)?)
     } else {
         return None;
     };
@@ -60,9 +60,9 @@ fn edited(decision: &Decision, recorded: StateKind, history: Option<Digest>) -> 
     })
 }
 
-/// A superseded or retired decision with its state taken back to accepted, under the same
+/// The state of a superseded or retired decision taken back to accepted, under the same
 /// selected option and outcome.
-fn as_accepted(decision: &Decision) -> Option<Decision> {
+fn as_accepted(decision: &Decision) -> Option<DecisionState> {
     let (DecisionState::Superseded {
         selected_option,
         outcome,
@@ -76,12 +76,10 @@ fn as_accepted(decision: &Decision) -> Option<Decision> {
     else {
         return None;
     };
-    let mut accepted = decision.clone();
-    accepted.state = DecisionState::Accepted {
+    Some(DecisionState::Accepted {
         selected_option: *selected_option,
         outcome: outcome.clone(),
-    };
-    Some(accepted)
+    })
 }
 
 /// `V2-011` for a decision whose state has changed since the publish that recorded it in
