@@ -28,7 +28,7 @@ requirements:
       - key: 01a156ac-0a95-726f-ab84-01a69c305960
         name: "The refusal says that the document is connected and that its labels come from its remote."
       - key: 01a156ac-0a95-726f-ab84-01a797ed9404
-        name: "A connected document is not published by settling two publishes in a stopped merge or rebase."
+        name: "A publish of a connected document during a stopped merge or rebase is refused, whatever the settling of two publishes would do."
       - key: 01a156ac-0a95-726f-ab84-01a8444581b7
         name: "Nothing is written."
   - key: 01a156ac-0a95-726f-ab84-01a903ee2020
