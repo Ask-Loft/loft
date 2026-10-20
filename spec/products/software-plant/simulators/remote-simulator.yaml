@@ -173,7 +173,7 @@ requirements:
       - key: 01a1587a-dee4-70f8-999e-e557da3f39fd
         name: "A `documentKey` other than the address's is answered `400 Bad Request` with the code `invalid_request` and `paths` empty."
       - key: 01a1587a-dee4-70f8-999e-e5584ba5df9e
-        name: "A name that is blank, or longer than 200 Unicode scalar values, is answered `400 Bad Request` with the code `invalid_request` and `paths` naming `name`."
+        name: "A name that is blank, or longer than 200 Unicode scalar values, is answered `400 Bad Request` with the code `invalid_request`, `paths` empty and a `detail` that names the field."
       - key: 01a1587a-dee4-70f8-999e-e559d421bdfa
         name: "A token that its scenario does not let create a document is answered `403 Forbidden` with the code `forbidden`."
   - key: 01a1587a-dee4-70f8-999e-e55aa6f750e0
