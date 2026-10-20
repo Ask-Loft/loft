@@ -5,6 +5,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::check::lint_against` lints a tree and a base, two documents held in memory, under
+  the tree's lint configuration, and splits the tree's findings against the base's as
+  `loft check --baseline` does, with no path and no repository; `check_against` runs it over two
+  trees read from their files.
 - `loft publish --format json` writes the schema `loft-publish/2`, whose `givenBack` lists each
   label a publish gave back to a key that came back to its document, with its key. A connected
   document is published only through its remote, so `loft publish` refuses one.

@@ -6888,6 +6888,21 @@ links:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "the_base_tree_s_validation_errors_are_not_reported"
         body: 07ecc52b7789d5111455ecc42ecc640a1c30fed78dfc75aff234eeb498ce9568
+  - node: 01a156a9-2bee-7416-a139-2356cc1b84fb
+    reviewed: ef1a7761fbb36d71b4a744ec5570efbbe9c64256d05c418e0066d97744cd00e0
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_base_is_linted_under_the_working_tree_s_configuration"
+        body: 6f7e4ac9cadd9ceb0227350e595737fd5724c71f63be2ddc0ec3b82268528fc3
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_linter_against_a_base_judges_the_base_under_the_configuration_it_is_given"
+        body: 6262463eb39fc0146270309a6a524d933463ef83351f7412cf1483f2626cdd98
+  - node: 01a156a9-2bee-7416-a139-2357c875ebc0
+    reviewed: fbc6dcd031cbe900241d08793f9a90df5fb86b4e8be73748ec91b4d3e8a9501b
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_linter_against_a_base_takes_the_tree_and_the_base_as_documents_in_memory"
+        body: 6ba1e5c34416a2761fd4e5b3b8ec5a0676b65542ab6f0e7fa5a6e26455e33010
   - node: b2ee5722-bf7f-4ecf-81dc-ae89f54def58
     reviewed: fbdc40484ac341f30ac4a3014ad6480c0c99941c908614052610bc1b84457097
     tests:
@@ -14970,6 +14985,18 @@ links:
       - file: "crates/loft-cli/tests/telemetry_notice.rs"
         name: "a_notice_that_cannot_be_recorded_is_printed_again_and_the_event_still_sent"
         body: c825905f11038f6e94ab10f1b06a84ced0f4518b1f32aca8d5deefddde41042e
+  - node: 01a156a9-87a5-7158-a2c2-dc7ba33024a3
+    reviewed: a71e925a1fdd5da167bb0003a93d59ff866594a16614864ca2bb5bb27adfcf93
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_linter_against_a_base_takes_the_tree_and_the_base_as_documents_in_memory"
+        body: 6ba1e5c34416a2761fd4e5b3b8ec5a0676b65542ab6f0e7fa5a6e26455e33010
+  - node: 01a156a9-87a5-7158-a2c2-dc7cdc541a30
+    reviewed: a44548aa3640fc51f43ed700c805abfa69fb0d4ea1c925ec8c2704411c2abe15
+    tests:
+      - file: "crates/loftspec/tests/check_baseline.rs"
+        name: "the_linter_against_a_base_takes_the_tree_and_the_base_as_documents_in_memory"
+        body: 6ba1e5c34416a2761fd4e5b3b8ec5a0676b65542ab6f0e7fa5a6e26455e33010
   - node: 01a156a9-87a5-7158-a2c2-dc7e3034a82d
     reviewed: 36d2f011b6f4a5fea3780345fa36db73b395c0ba8a4e92fc43c280829a846825
     tests:
