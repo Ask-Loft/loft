@@ -47,6 +47,7 @@ mod edit;
 mod edit_insert;
 mod edit_refusals;
 mod edit_written;
+mod entry_points;
 mod error_kinds;
 mod ext;
 mod fmt;

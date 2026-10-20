@@ -15858,24 +15858,36 @@ links:
       - file: "crates/loftspec/tests/compare.rs"
         name: "each_version_is_given_in_memory_and_an_empty_older_one_makes_everything_added"
         body: 56651fb6df71e6096ded0c2444af9c9358b308fb32a64cc1432305c7e1177216
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a156a9-87a5-7158-a2c2-dc751b135291
     reviewed: 500d1821392a2705c00e99ffe0ca6377145602fcc95823092a292238bef81984
     tests:
       - file: "crates/loftspec/tests/compare.rs"
         name: "each_version_is_given_in_memory_and_an_empty_older_one_makes_everything_added"
         body: 56651fb6df71e6096ded0c2444af9c9358b308fb32a64cc1432305c7e1177216
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a156a9-87a5-7158-a2c2-dc778d84f5a2
     reviewed: 0770b253c2abbc732faf29a7e627300c4b1704c45ac97ddc2b874f5f1b18a2ea
     tests:
       - file: "crates/loftspec/tests/review_pages.rs"
         name: "the_tree_and_the_base_are_each_given_as_a_document_in_memory"
         body: e7174593dea88dd0b17639f5444b585d426ce38e3b7a81896e34e6f8a6a67450
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a156a9-87a5-7158-a2c2-dc78323e9d84
     reviewed: 2ad122d44984518bef2aee13516d2462e4929813a8ceb63ccda117962ffb6b1a
     tests:
       - file: "crates/loftspec/tests/review_pages.rs"
         name: "the_tree_and_the_base_are_each_given_as_a_document_in_memory"
         body: e7174593dea88dd0b17639f5444b585d426ce38e3b7a81896e34e6f8a6a67450
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a156a9-87a5-7158-a2c2-dc790bec316e
     reviewed: 1ad0ddc7db780175dbcb330cc6ffb24979ef4060c78ae630100732c18427ece7
     tests:
@@ -15888,18 +15900,27 @@ links:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "the_linter_against_a_base_takes_the_tree_and_the_base_as_documents_in_memory"
         body: 6ba1e5c34416a2761fd4e5b3b8ec5a0676b65542ab6f0e7fa5a6e26455e33010
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a156a9-87a5-7158-a2c2-dc7cdc541a30
     reviewed: a44548aa3640fc51f43ed700c805abfa69fb0d4ea1c925ec8c2704411c2abe15
     tests:
       - file: "crates/loftspec/tests/check_baseline.rs"
         name: "the_linter_against_a_base_takes_the_tree_and_the_base_as_documents_in_memory"
         body: 6ba1e5c34416a2761fd4e5b3b8ec5a0676b65542ab6f0e7fa5a6e26455e33010
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a156a9-87a5-7158-a2c2-dc7e3034a82d
     reviewed: 36d2f011b6f4a5fea3780345fa36db73b395c0ba8a4e92fc43c280829a846825
     tests:
       - file: "crates/loftspec/tests/publish_connected.rs"
         name: "a_publish_given_no_repository_state_is_refused_on_no_branch_or_change"
         body: db6e387d7932429cad770229294fe1eacae45d94946f06b121b74c7b93ea95b3
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a156a9-87a5-7158-a2c2-dc7fed214368
     reviewed: eb206b8d5607270de957dbb79f4c6289efa2e5ad6c6d205be46e3992a461edcd
     tests:
@@ -15909,6 +15930,9 @@ links:
       - file: "crates/loftspec/tests/publish_connected.rs"
         name: "a_publish_given_no_repository_state_allocates_as_any_other_publish"
         body: d1dbf929b0c512ca43aa9e86318e50ec6b264151179a9c773b3bd5519322cfc7
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a158d6-455e-70a9-83d3-66ac5cf5679d
     reviewed: bb3f49c1f0fd16e2477f98481cd9ab9c4e3b2d1e7ed8304400a0109c616ab046
     tests:
@@ -15921,6 +15945,9 @@ links:
       - file: "crates/loftspec/tests/edit.rs"
         name: "a_nodes_key_finds_that_node_at_any_depth"
         body: f5340990fcca2b44ca70c722dc2b797ae84bdaf380269dcfabafbda17984cc65
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a158da-f4df-76ee-9125-8f45298d0785
     reviewed: 8383289f45d3433d596777d86b19ddfaa3040d77a48b19592b19842bf2eb6dbd
     tests:
@@ -15951,6 +15978,9 @@ links:
       - file: "crates/loftspec/tests/edit.rs"
         name: "the_detached_node_is_returned_with_every_node_beneath_it_and_the_edges_they_write"
         body: 7e8c19cf2aa6c0c1e63255dd031d12115a4031b182098617a3ec5c27df86f015
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a158da-f4df-76ee-9125-8f4b5b6c1d05
     reviewed: 9f11d9d636dc3bb04a069be0d40649cef99704c13a6e1e3f4529e8622725c33e
     tests:
@@ -15987,6 +16017,9 @@ links:
       - file: "crates/loftspec/tests/edit_insert.rs"
         name: "the_inserted_node_is_at_the_given_position_in_its_parents_list"
         body: f2084dabccc5bfdebee6e808ef358253037d4650b7fd92527f28f6a2be465f11
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a158da-f4df-76ee-9125-8f524c087eab
     reviewed: 4649c2c8dc89bf01d2acd2af17632d21f531a90d76587aa5ae37503af39c2d4a
     tests:
@@ -16029,6 +16062,9 @@ links:
       - file: "crates/loftspec/tests/edit_insert.rs"
         name: "the_moved_node_is_at_the_given_position_in_its_new_parents_list"
         body: f4a68bf418d8e040aa7aaee3cc50387886ed16c5255247937a3256b7b56ea22f
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_is_public_and_takes_only_what_is_held_in_memory"
+        body: 90d85b38552e178f7e3391590602090ecfbb74e26896dded3de7f612d6ab1dfa
   - node: 01a158da-f4df-76ee-9125-8f5adddb1094
     reviewed: a7449fefd75b35aab20ed92ece6594cab043d93d968db968fb664c9a095629aa
     tests:
