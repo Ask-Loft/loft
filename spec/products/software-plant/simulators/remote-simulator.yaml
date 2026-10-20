@@ -1,0 +1,127 @@
+key: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
+slug: remote-simulator
+name: "Remote simulator"
+body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, scripts the published states, the drafts and the answer to each publish, and reads the requests it received. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path and is given whole. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+requirements:
+  - key: 01a156ae-6a51-7230-a9a1-fa884a1417e2
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "record each request it receives, in the order received."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa89ad72769f
+        name: "A test reads the method, the path, the headers and the body of every request a run made."
+      - key: 01a156ae-6a51-7230-a9a1-fa8a0dd64809
+        name: "A test reads each request's body exactly as it was sent."
+      - key: 01a156ae-6a51-7230-a9a1-fa8b7a788ec2
+        name: "A scenario in which no run makes a request records no request."
+  - key: 01a156ae-6a51-7230-a9a1-fa8ccb317ead
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "behave toward each request as its scenario names: as the remote's contract states, by refusing the connection, with one error status, or with silence."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa8dd1af6cb5
+        name: "An accepting scenario answers each request as the remote's contract states."
+      - key: 01a156ae-6a51-7230-a9a1-fa8eadb760d9
+        name: "A refusing scenario refuses each connection."
+      - key: 01a156ae-6a51-7230-a9a1-fa8fc7335358
+        name: "An error scenario answers each request with the status it names."
+      - key: 01a156ae-6a51-7230-a9a1-fa90c436319f
+        name: "A silent scenario accepts each connection and sends no answer."
+  - key: 01a156ae-6a51-7230-a9a1-fa91e68ffcfc
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "admit a request only with the bearer token its scenario names."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa92a3b72eb7
+        name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the body `{\"error\": \"unauthorized\"}`."
+      - key: 01a156ae-6a51-7230-a9a1-fa93388fd0b9
+        name: "A request whose bearer token is not the scenario's is answered `401 Unauthorized` with the body `{\"error\": \"unauthorized\"}`."
+      - key: 01a156ae-6a51-7230-a9a1-fa9467a2d6a1
+        name: "Every answer with a body has `Content-Type: application/json`."
+      - key: 01a156ae-6a51-7230-a9a1-fa958644e55a
+        name: "No answer sets a cookie."
+      - key: 01a156ae-6a51-7230-a9a1-fa96a711a7fc
+        name: "A request to a path the contract does not name is answered `404 Not Found`."
+      - key: 01a156ae-6a51-7230-a9a1-fa97091dc743
+        name: "A request with a method its path does not take is answered `405 Method Not Allowed`."
+  - key: 01a156ae-6a51-7230-a9a1-fa98e9f27f25
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <address>/head`"
+      system: "the remote simulator"
+      shall: "answer `200 OK` with the document's key and its head."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-fa99b930ac7d
+        name: "The body is a JSON object holding `documentKey` and `head`."
+      - key: 01a156ae-6a51-7230-a9a1-fa9a03ea62f8
+        name: "`head` holds `publishSequence`, `stateRoot`, `lock` and `files`."
+      - key: 01a156ae-6a51-7230-a9a1-fa9bbfc7ffab
+        name: "`lock` is the head's lock record as `loft.lock.json` holds it."
+      - key: 01a156ae-6a51-7230-a9a1-fa9c46a30d56
+        name: "`files` lists each file of the head under `spec/` as an object of `path` and `sha256`, the SHA-256 digest of its bytes in lowercase hexadecimal."
+      - key: 01a156ae-6a51-7230-a9a1-fa9dd9eca86a
+        name: "`files` is sorted by `path` in byte order."
+      - key: 01a156ae-6a51-7230-a9a1-fa9eeca09c90
+        name: "A remote that holds no published state answers `head` as `null`."
+  - key: 01a156ae-6a51-7230-a9a1-fa9fed1b57ab
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <address>/states/<sequence>`"
+      system: "the remote simulator"
+      shall: "answer with the published state of that sequence."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-faa0f64b4e60
+        name: "A state it holds is answered `200 OK` with a JSON object holding `documentKey`, `lock` and `files`."
+      - key: 01a156ae-6a51-7230-a9a1-faa1f96edfa4
+        name: "`files` lists each file of the state under `spec/` as an object of `path` and `text`, sorted by `path` in byte order."
+      - key: 01a156ae-6a51-7230-a9a1-faa2c30e4b40
+        name: "A sequence it holds no state of is answered `404 Not Found` with the body `{\"error\": \"not-found\"}`."
+  - key: 01a156ae-6a51-7230-a9a1-faa3d18274b3
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <address>/drafts/<branch>`"
+      system: "the remote simulator"
+      shall: "answer with the draft it holds under that branch name."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-faa432338d21
+        name: "The branch name is one path segment, percent-encoded."
+      - key: 01a156ae-6a51-7230-a9a1-faa5e7043ec6
+        name: "A draft it holds is answered `200 OK` with a JSON object holding `documentKey`, `branch` and `files`."
+      - key: 01a156ae-6a51-7230-a9a1-faa60b681469
+        name: "`files` lists each file of the draft under `spec/` as an object of `path` and `text`, sorted by `path` in byte order."
+      - key: 01a156ae-6a51-7230-a9a1-faa73fee2430
+        name: "A branch it holds no draft under is answered `404 Not Found` with the body `{\"error\": \"not-found\"}`."
+  - key: 01a156ae-6a51-7230-a9a1-faa80f67f886
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `POST <address>/publish`"
+      system: "the remote simulator"
+      shall: "answer the publish as its scenario names."
+    criteria:
+      - key: 01a156ae-6a51-7230-a9a1-faa90b156169
+        name: "The request's body is a JSON object holding `documentKey`, `retryKey`, `base`, `added`, `changed` and `removed`."
+      - key: 01a156ae-6a51-7230-a9a1-faaac92962c2
+        name: "`base` holds `publishSequence` and `stateRoot`, `0` and `null` for a document with no published state."
+      - key: 01a156ae-6a51-7230-a9a1-faab380d861e
+        name: "`added` and `changed` each list an object of `path` and `text` for each file."
+      - key: 01a156ae-91a5-70fb-906e-2a3592ecdbaa
+        name: "`removed` lists the path of each file removed."
+      - key: 01a156ae-6a51-7230-a9a1-faac01603bc4
+        name: "An accepted publish is answered `200 OK` with a JSON object holding `outcome` set to `published`, `lock`, `files` and `labels`."
+      - key: 01a156ae-6a51-7230-a9a1-faade7f66720
+        name: "`files` lists each file the publish rewrote, `spec/labels.yaml` included, as an object of `path` and `text`."
+      - key: 01a156ae-6a51-7230-a9a1-faaeda24191f
+        name: "`labels` lists each label the publish allocated as an object of `key` and `label`."
+      - key: 01a156ae-6a51-7230-a9a1-faaf2a2086bf
+        name: "A publish whose `retryKey` the remote accepted before is answered `200 OK` with the answer it gave then and `outcome` set to `replayed`."
+      - key: 01a156ae-6a51-7230-a9a1-fab0b8cd1853
+        name: "A publish whose `base` is not the head is answered `409 Conflict` with `error` set to `conflict` and a `head` holding the head's `publishSequence` and `stateRoot`."
+      - key: 01a156ae-6a51-7230-a9a1-fab14d0480ff
+        name: "A publish the remote cannot apply is answered `422 Unprocessable Content` with `error` set to `invalid` and `paths` listing each path at fault."
+      - key: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
+        name: "A replay is answered before the base is compared with the head."
