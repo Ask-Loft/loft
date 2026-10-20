@@ -241,14 +241,14 @@ requirements:
       - key: 01a156a4-1731-7679-a162-b75fbc529428
         name: "After a publish, each decision's binding holds `publishedState`, the kind of the decision's state at that publish."
       - key: 01a156a4-1731-7679-a162-b760bd36f69b
-        name: "After a publish, the binding of each accepted, rejected, superseded or retired decision holds `publishedView`, the decision's history hash at that publish."
+        name: "After a publish, the binding of each accepted, rejected, superseded or retired decision holds `publishedHistory`, the decision's history hash at that publish."
       - key: 01a156a4-1731-7679-a162-b7612ef77e0f
-        name: "After a publish, the binding of a proposed decision holds no `publishedView`."
+        name: "After a publish, the binding of a proposed decision holds no `publishedHistory`."
       - key: 01a156a4-1731-7679-a162-b7629d767e6f
-        name: "`publishedView` is written in lowercase hexadecimal."
+        name: "`publishedHistory` is written in lowercase hexadecimal."
       - key: 01a156a4-1731-7679-a162-b76372802144
-        name: "A binding that the formatter marks departed keeps the `publishedState` and `publishedView` it held."
+        name: "A binding that the formatter marks departed keeps the `publishedState` and `publishedHistory` it held."
       - key: 01a156be-e2a7-7461-9a70-a0385099c003
-        name: "A publish removes `publishedState` and `publishedView` from the binding of each departed decision."
+        name: "A publish removes `publishedState` and `publishedHistory` from the binding of each departed decision."
       - key: 01a156a4-1731-7679-a162-b764694a5b4a
         name: "The record of a decision is what the last publish that held the decision wrote."

@@ -164,11 +164,11 @@ requirements:
       shall: "report as `V2-010` a decision published as accepted, rejected, superseded or retired whose meaning has changed since that publish."
     criteria:
       - key: 01a156a4-1732-7428-aee4-d3abb890ebde
-        name: "A decision whose state has the kind its binding records in `publishedState` yields one `V2-010` finding when its decision history hash differs from `publishedView`."
+        name: "A decision whose state has the kind its binding records in `publishedState` yields one `V2-010` finding when its decision history hash differs from `publishedHistory`."
       - key: 01a156a4-1732-7428-aee4-d3ac97ec0382
-        name: "A superseded or retired decision recorded as `accepted` yields one `V2-010` finding when its decision history view, with its state taken back to `accepted` under the same selected option and outcome, hashes to other than `publishedView`."
+        name: "A superseded or retired decision recorded as `accepted` yields one `V2-010` finding when its decision history view, with its state taken back to `accepted` under the same selected option and outcome, hashes to other than `publishedHistory`."
       - key: 01a156a4-1732-7428-aee4-d3ad80519777
-        name: "A decision whose decision history hash equals `publishedView` yields no `V2-010` finding."
+        name: "A decision whose decision history hash equals `publishedHistory` yields no `V2-010` finding."
       - key: 01a156be-e2a8-72d8-9748-ae10ab28bc6c
         name: "An edit to a node that one of the decision's drivers or consequences names yields no `V2-010` finding."
       - key: 01a156a4-1732-7428-aee4-d3ae49ca8d2a
@@ -176,7 +176,7 @@ requirements:
       - key: 01a156a4-1732-7428-aee4-d3af7db13293
         name: "A change to a decision's subjects or mentions alone yields no `V2-010` finding."
       - key: 01a156a4-1732-7428-aee4-d3b01ae3c6cb
-        name: "A decision whose binding holds no `publishedView` yields no `V2-010` finding."
+        name: "A decision whose binding holds no `publishedHistory` yields no `V2-010` finding."
       - key: 01a156a4-1732-7428-aee4-d3b17f8f6d6f
         name: "A decision without a binding yields no `V2-010` finding."
       - key: 01a156a4-1732-7428-aee4-d3b2838ac69e

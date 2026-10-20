@@ -74,7 +74,7 @@ requirements:
       - key: 01a156a4-1731-7679-a162-b7650bdb578f
         name: "A departed binding enters no root."
       - key: 01a156a4-1731-7679-a162-b7665a3e45b0
-        name: "A binding's `publishedState` and `publishedView` enter no root."
+        name: "A binding's `publishedState` and `publishedHistory` enter no root."
       - key: 81c66bbd-5c2f-4bcb-b2b7-3949c04282f0
         name: "A node's binding carries the node's content hash."
       - key: b5d58ba7-c21b-40c8-8792-3cee2d34a793
@@ -208,15 +208,13 @@ requirements:
       - key: 01a156be-e2a7-7461-9a70-a03c1df47abc
         name: "A former label is named in the decision history view as it is in the decision view."
       - key: 01a156be-e2a7-7461-9a70-a03daff383c0
-        name: "The decision history hash is the digest of the decision history view under `loftspec/decision/1`."
+        name: "The decision history hash is the digest of the decision history view under `loftspec/decision-history/1`."
       - key: 01a156be-e2a7-7461-9a70-a03e8733ea95
         name: "Editing a node that a driver or a consequence names leaves the decision history hash unchanged."
       - key: 01a156be-e2a7-7461-9a70-a03fbce11e4c
         name: "Naming another node in a driver or a consequence changes the decision history hash."
       - key: 01a156be-e2a7-7461-9a70-a0408d17e2af
         name: "Editing the successor decision leaves the decision history hash unchanged."
-      - key: 01a156be-e2a7-7461-9a70-a0411a0a9406
-        name: "A decision that names no node and no successor has a decision history hash equal to its decision view hash."
       - key: 01a156be-e2a7-7461-9a70-a0429f97f850
         name: "The decision history hash enters no root."
   - key: 01a14039-8315-7390-a27f-c5695f6ac662
