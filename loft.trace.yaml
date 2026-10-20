@@ -6352,13 +6352,13 @@ links:
         name: "a_decision_whose_binding_records_no_published_state_is_not_v2_011"
         body: c20a54b24e9612cba0cd7883302d433d01d51ce9f04597780d97a31760c14955
   - node: 01a156be-e2a8-72d8-9748-ae11471f89cd
-    reviewed: df99922f4d848b9a029975f183e030f1e0e04eea7f6f27bce41206946f0f31cb
+    reviewed: e19dfddffe13e0e36469701565601c0657d3d48bf997c22cb8dac91bb8c08b0a
     tests:
       - file: "crates/loftspec/tests/lint_history.rs"
         name: "a_departed_decision_published_resolved_is_one_v2_011_naming_its_key_and_label"
         body: 4b5a8857847b800ef56b0b5b3a59646f2fad8eca3bf8ab4fef79f89310ac0d86
   - node: 01a156be-e2a8-72d8-9748-ae128b93ff65
-    reviewed: 4dec6e4a279331aa5a4ace6b6897c8585663bd33ddaf023161ea7d20bf82828f
+    reviewed: 48908bb243fce4b1ba2d2995817f9a2142c7833d908e299dcfcb24b3dfab2599
     tests:
       - file: "crates/loftspec/tests/lint_history.rs"
         name: "a_departed_decision_published_proposed_is_not_v2_011"
@@ -9291,9 +9291,6 @@ links:
       - file: "crates/loftspec/tests/merge_labels.rs"
         name: "a_binding_whose_sides_differ_only_in_its_departure_and_records_is_not_in_dispute"
         body: d21bed8f1a159388b437249a5f03a345fc77b41dd2182936846c4becbebf1c1c
-  - node: 01a1597e-ac86-7077-a8ab-9d5edd8ae784
-    reviewed: 846b51e5a71776f107927fd8220db0d128bfd30c7dea514bb7a63d778b883d5f
-    unverified: "`departed` is `true` or absent, so two sides that both change it from base give it the same value, and no three versions hold a departure changed apart; the merge gives `true` should they."
   - node: 01a1597e-ac86-7077-a8ab-9d5fee4a7623
     reviewed: 4acef98e35f722b97cf7e8b8f6e59089046e60922f993fa741e95dafd4eb8ef8
     tests:
