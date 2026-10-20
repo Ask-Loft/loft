@@ -759,12 +759,48 @@ links:
       - file: "crates/loftspec/tests/departed.rs"
         name: "a_departed_label_that_no_other_key_carries_is_no_error"
         body: ac169495cecd9020d6dc2bbc84f15f3d7bec1977b6bef40696580ae9bf849d0d
+  - node: 01a156a4-1731-7679-a162-b75fbc529428
+    reviewed: 645512139c158ca2a9ff5f5f4590d2a5140f713d7f215ab7ce548c6d76f3f25a
+    tests:
+      - file: "crates/loftspec/tests/publish_records.rs"
+        name: "after_a_publish_each_decisions_binding_holds_the_kind_of_its_state"
+        body: b58a6d5a0d69979ca9e074560792cfe39d0df360e5bba734caa011bec433f64a
+  - node: 01a156a4-1731-7679-a162-b760bd36f69b
+    reviewed: 30d7b64b3bda9adc538e6d5ed54cd52fe28e4c804152b9f699986c5019ac1eeb
+    tests:
+      - file: "crates/loftspec/tests/publish_records.rs"
+        name: "a_decision_that_is_not_proposed_records_its_history_hash_and_a_proposed_one_none"
+        body: 57265ab29ec98b8e6e364ae9037116f523b38c48dfab357dc3c325ebf6314154
+  - node: 01a156a4-1731-7679-a162-b7612ef77e0f
+    reviewed: c66650c737bbd73b2be6f07a0b51b1ea247ca02819fdc5b531672748d644e1e4
+    tests:
+      - file: "crates/loftspec/tests/publish_records.rs"
+        name: "a_decision_that_is_not_proposed_records_its_history_hash_and_a_proposed_one_none"
+        body: 57265ab29ec98b8e6e364ae9037116f523b38c48dfab357dc3c325ebf6314154
+  - node: 01a156a4-1731-7679-a162-b7629d767e6f
+    reviewed: 0b96d1f5507f04eebd249f4a24bb88047f97c6fbf13409e3f1826ec147aa03c4
+    tests:
+      - file: "crates/loftspec/tests/publish_records.rs"
+        name: "a_published_history_is_written_in_lowercase_hexadecimal"
+        body: 10c5c4ede5e3245aec8b837b4c21ff009fa23f14ee308ed4212067484a67d5cf
   - node: 01a156a4-1731-7679-a162-b76372802144
     reviewed: 2086198981edf07e1bf8454f33c64160ac8301d2319e0d891bdae59be69a410b
     tests:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_departed_decision_keeps_the_state_and_history_its_last_publish_recorded"
         body: ea6ef3116e59e80f7b91f92649bdc8805944e5874f31e42bbc93dbf8f059a758
+  - node: 01a156be-e2a7-7461-9a70-a0385099c003
+    reviewed: 9befcc339b932c325a1f78bd3d35a708348ced71275fb88747743667709ced39
+    tests:
+      - file: "crates/loftspec/tests/publish_records.rs"
+        name: "a_publish_removes_the_record_of_a_departed_decision"
+        body: 4cbed32c9f976d41637bed161a4e1f14bf1e88a4ac483dbbc62107c0dfaf7fd3
+  - node: 01a156a4-1731-7679-a162-b764694a5b4a
+    reviewed: a9e61d716da0ecb52886ece65e58a365163f5183e24191d3e11bab3c24261f07
+    tests:
+      - file: "crates/loftspec/tests/publish_records.rs"
+        name: "the_record_of_a_decision_is_what_the_last_publish_that_held_it_wrote"
+        body: 0da9da33236b16c9ac09262336fc60a2c1282e54765d7a250dc983d1d012aabf
   - node: d599579d-db5f-43e8-a8bf-cd736c4fa99a
     reviewed: 0416f7df2f9998ecf2489171475b92782f30df759dadf2120a7ddfd9ab283474
     tests:
@@ -7574,7 +7610,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/publish.rs"
         name: "a_publish_labels_every_node_and_changes_only_the_bindings"
-        body: a8b9f9e50056b45e864bd9abcec8e7b9a2d651b24e0f778bea8457790067b28f
+        body: fdd8f24a30cee857ffb7807aa01043aec9bea53b0907356f8c2744f7f47fbb7d
       - file: "crates/loftspec/tests/label_allocation.rs"
         name: "every_node_of_a_kind_that_takes_a_prefix_has_a_binding_after_a_publish"
         body: 0d4fdf52f80c0e2e2d854985a92e37892dcbd26a9e9da7857582eeff6b3f1ceb
@@ -7685,7 +7721,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/publish.rs"
         name: "a_publish_labels_every_node_and_changes_only_the_bindings"
-        body: a8b9f9e50056b45e864bd9abcec8e7b9a2d651b24e0f778bea8457790067b28f
+        body: fdd8f24a30cee857ffb7807aa01043aec9bea53b0907356f8c2744f7f47fbb7d
       - file: "crates/loftspec-store/tests/publish_save.rs"
         name: "a_publish_without_new_bindings_changes_no_file_under_spec"
         body: 38edacf6d80a42a8eee8874c8372576aa1fae197a833a5425faaeb17d200d60b

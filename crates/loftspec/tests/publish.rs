@@ -194,6 +194,7 @@ fn a_publish_labels_every_node_and_changes_only_the_bindings() {
     });
     let mut expected = small_document();
     loftspec::publish::allocate(&mut expected);
+    loftspec::publish::record_decisions(&mut expected);
     assert_eq!(labels, codec::write(&expected)[&SpecPath::new(LABELS)]);
 }
 

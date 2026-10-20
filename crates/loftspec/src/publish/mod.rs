@@ -12,7 +12,7 @@ mod time;
 use std::fmt;
 use std::num::NonZeroU64;
 
-pub use labels::{Allocated, Allocation, allocate, publish_labels};
+pub use labels::{Allocated, Allocation, allocate, publish_labels, record_decisions};
 pub use lock::{LOCK, Lock, LockError};
 pub use repo::{Operation, RepoState, Stopped};
 pub use time::{PublishedAt, TimeError};
@@ -172,6 +172,8 @@ pub fn publish(
         next.extend(written.clone());
         document = codec::read(&next).expect("rewritten citations read back");
     }
+    // The records of the decisions are of the text the publish pins, and enter no root.
+    record_decisions(&mut document);
     let roots = hash_document(&document)
         .expect("a document the validator accepts indexes")
         .roots;
@@ -223,15 +225,14 @@ fn preconditions(repo: &RepoState, branch: &str) -> Result<(), Refusal> {
     Ok(())
 }
 
-/// Adds `spec/labels.yaml` to the files a publish writes, once, where the bindings of
-/// `document`, the tree after allocation, differ from the tree's.
+/// Puts `spec/labels.yaml` among the files a publish writes where the bindings of `document`,
+/// the tree after allocation, differ from the tree's, and leaves it out where they do not.
 fn write_labels(written: &mut Files, files: &Files, document: &Document) {
     let path = SpecPath::new(LABELS);
-    if written.contains_key(&path) {
-        return;
-    }
     let labels = codec::write_labels(document);
-    if files.get(&path) != Some(&labels) {
+    if files.get(&path) == Some(&labels) {
+        written.remove(&path);
+    } else {
         written.insert(path, labels);
     }
 }

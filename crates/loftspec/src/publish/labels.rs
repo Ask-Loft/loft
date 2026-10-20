@@ -6,7 +6,9 @@
 use std::collections::BTreeSet;
 
 use crate::bindings::Binding;
+use crate::decision::StateKind;
 use crate::document::Document;
+use crate::hash::decision_history_hashes;
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::ElementId;
 use crate::node::Node;
@@ -118,6 +120,34 @@ fn allocate_in(document: &mut Document, elements: &[ElementId]) -> Vec<Allocated
         allocated.push(Allocated { label, element });
     }
     allocated
+}
+
+/// Records in each decision's binding the kind of its state, with its decision history hash for
+/// a decision that is not proposed, and removes both from the binding of each departed decision.
+///
+/// # Panics
+///
+/// The document does not index: a publish records only a document the validator accepts.
+pub fn record_decisions(document: &mut Document) {
+    let histories = decision_history_hashes(&document.index().expect("a valid document indexes"));
+    for decision in &document.decisions {
+        let kind = decision.state.kind();
+        let history = (kind != StateKind::Proposed).then(|| histories[&decision.id]);
+        let recorded = document
+            .bindings
+            .record_published(decision.id, Some(kind), history);
+        recorded.expect("every decision has a binding after allocation");
+    }
+    let departed: Vec<ElementId> = document
+        .bindings
+        .iter()
+        .filter(|binding| binding.departed && matches!(binding.element, ElementId::Decision(_)))
+        .map(|binding| binding.element)
+        .collect();
+    for element in departed {
+        let cleared = document.bindings.record_published(element, None, None);
+        cleared.expect("a departed binding is bound");
+    }
 }
 
 fn raise_counters(document: &mut Document) {

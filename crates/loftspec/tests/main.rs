@@ -75,6 +75,7 @@ mod package;
 mod prose;
 mod publish;
 mod publish_departed;
+mod publish_records;
 mod publish_rewrite;
 mod publish_settle;
 mod query;
