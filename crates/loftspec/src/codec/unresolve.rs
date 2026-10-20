@@ -137,6 +137,9 @@ fn manifest(document: &Document) -> Rec {
     if let Some(branch) = &document.publish_branch {
         record.set_text(field::PUBLISH_BRANCH, branch.as_str());
     }
+    if document.connected {
+        record.set_text(field::CONNECTED, "true");
+    }
     let products = document.products.iter().filter_map(|product| product.id);
     record.set(
         field::PRODUCTS,

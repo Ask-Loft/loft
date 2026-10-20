@@ -1283,7 +1283,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_manifests_fields_are_written_in_the_published_order"
-        body: 557a9db8663f7b9bb38903f039bb7d96badc76e2d00f88275cacaf7f77b5d2c6
+        body: 9cbf7172fa9b05d24eaee47bea8662f9727f2810a751b64c31845ee1bbf3daa4
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_manifest_without_its_format_algorithm_or_document_key_is_refused"
         body: 2b1632a5d98e9050cbe70c9faa3587078bbdc5a019acc16eeb0b009abf43fce4
@@ -1311,6 +1311,12 @@ links:
       - file: "crates/loftspec/tests/convert_v1_links.rs"
         name: "the_derived_from_record_names_the_source_state"
         body: ad6268a02abe3462e2d9021527810ee0a4295de137a5c3e5523f36963b16f5cf
+  - node: 01a156ac-0a94-7459-afe0-230dcc3abd51
+    reviewed: 5390a6de1de6c765424a83aba4a9bcea4b54387283326cb70627e62d49313505
+    tests:
+      - file: "crates/loftspec/tests/manifest.rs"
+        name: "the_connected_mark_enters_no_root"
+        body: 32c75b5157af09a302c3594edb06a7a18baa9d791c4722234ebb4b150ba68cdb
   - node: b3eea94a-c54b-4b6a-ae7a-053fe11608ee
     reviewed: 0cba42f09e59f5023ebbd1f9110a5f1ec6941b8b428ef069d84118603d6c34fb
     tests:
@@ -2204,7 +2210,7 @@ links:
         body: ebc25140d1d3d33c85e9af6ff0da914913c00e71834427d9ef627f316b32d940
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_manifests_fields_are_written_in_the_published_order"
-        body: 557a9db8663f7b9bb38903f039bb7d96badc76e2d00f88275cacaf7f77b5d2c6
+        body: 9cbf7172fa9b05d24eaee47bea8662f9727f2810a751b64c31845ee1bbf3daa4
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_labels_file_holds_the_counters_then_the_bindings"
         body: b64ae5b7833cb01c238152c5d8d2bdafb9eb8a543f656ae2d0e991b4421c7fd7
@@ -2668,17 +2674,29 @@ links:
         name: "a_subject_records_fields_are_its_role_then_its_node_and_both_are_required"
         body: ebc25140d1d3d33c85e9af6ff0da914913c00e71834427d9ef627f316b32d940
   - node: 5da704a2-97eb-429e-bd69-04d1613a7167
-    reviewed: 1c39c752be0d656a0dd45ae6d5c9701d75e44128d3d424615a4b2ec47f9d3d0d
+    reviewed: f8e0fc5adf4f759d26d5eacef284b7cf950416753fd7b1a3dd79caac997c0423
     tests:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_manifests_fields_are_written_in_the_published_order"
-        body: 557a9db8663f7b9bb38903f039bb7d96badc76e2d00f88275cacaf7f77b5d2c6
+        body: 9cbf7172fa9b05d24eaee47bea8662f9727f2810a751b64c31845ee1bbf3daa4
   - node: 4783e5ae-9990-4606-a8d1-fe92b68d5792
     reviewed: bf3a96cc28822f0ca3a9ff1e38b22909ece481be545be98ff88ac983f6d40b5b
     tests:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_manifest_without_its_format_algorithm_or_document_key_is_refused"
         body: 2b1632a5d98e9050cbe70c9faa3587078bbdc5a019acc16eeb0b009abf43fce4
+  - node: 01a156ac-0a95-726f-ab84-01aeeecf16d8
+    reviewed: 56e5fecbbed23c1ab2bfc77850807a4fcfd309f1d8560130b1a4afc66dc8a720
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_manifest_of_a_document_that_is_not_connected_omits_connected"
+        body: 82eabec8c42fbdd69b3ae61b5872a53baf96351da614a062badb7cdd8a41e579
+  - node: 01a156ac-0a95-726f-ab84-01af31c44897
+    reviewed: 5dd7fe8da9d52321cb473983d0fcea21bb58e2577506d93428c921482ca62bcd
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_manifest_whose_connected_is_not_true_is_refused_naming_the_file_line_and_column"
+        body: 7d311b75cdea3ab4217250632aa1ead60804868e0cecfdb218f98f8aea1e3a59
   - node: 069a4c14-1826-4f2f-a0ae-fd8aae922b97
     reviewed: b3e80170e6a1fc671a162e80bbdd5dc9666f08c6b007c6e594c6a1fb2f9063f3
     tests:

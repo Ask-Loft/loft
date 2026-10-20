@@ -14,6 +14,7 @@ pub const BOUNDARY: &str = "boundary";
 pub const CATEGORY: &str = "category";
 pub const COMPONENTS: &str = "components";
 pub const CONFLICTS: &str = "conflicts";
+pub const CONNECTED: &str = "connected";
 pub const CONSEQUENCES: &str = "consequences";
 pub const CONSERVATION_KIND: &str = "conservationKind";
 pub const CONSTRAINTS: &str = "constraints";

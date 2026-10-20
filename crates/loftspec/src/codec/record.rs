@@ -381,6 +381,7 @@ pub(super) fn check_scalar(node: &yaml::Node, scalar: Scalar) -> Result<Val, Loc
         }
         Scalar::Enum(values) => single_line && values.contains(&text.as_str()),
         Scalar::Identifier => single_line && !text.is_empty() && !text.contains('\n'),
+        Scalar::Flag => value.style == Style::Plain && text == "true",
     };
     if !valid {
         return Err(located(
@@ -408,6 +409,7 @@ const fn describe(scalar: Scalar) -> &'static str {
         Scalar::Integer => "a positive integer",
         Scalar::Enum(_) => "a value the field defines",
         Scalar::Identifier => "an identifier",
+        Scalar::Flag => "`true`",
         Scalar::Text => "text",
     }
 }
@@ -448,6 +450,7 @@ fn item_out(value: &Val, item: Item) -> Out {
         Val::Scalar { text, .. } => match item {
             Item::Scalar(Scalar::Text) => Out::Text(text.clone()),
             Item::Scalar(Scalar::Integer) => Out::Integer(text.parse().expect("a checked integer")),
+            Item::Scalar(Scalar::Flag) => Out::Plain(text.clone()),
             _ => Out::Token(text.clone()),
         },
         Val::Null { .. } => Out::Null,

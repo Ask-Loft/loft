@@ -5,11 +5,13 @@
 
 use crate::common::fields::{assert_required, fields, scalar, scalars};
 use crate::common::full::full_files;
+use crate::common::text::{path, text};
 use crate::common::{key, product, small_document};
-use loftspec::codec;
+use loftspec::codec::{self, Problem};
 use loftspec::document::{CategoryEntry, TagEntry};
 use loftspec::ids::{CategoryId, ProductId, TagId};
 use loftspec::names::{CategoryName, TagName};
+use loftspec::yaml::{Location, Position};
 
 const MANIFEST: &str = "loftspec.yaml";
 const LABELS: &str = "labels.yaml";
@@ -24,6 +26,7 @@ fn the_manifests_fields_are_written_in_the_published_order() {
         "algorithm",
         "documentKey",
         "publishBranch",
+        "connected",
         "products",
         "derivedFrom",
     ];
@@ -146,4 +149,36 @@ fn the_manifest_names_a_publish_branch_only_when_the_document_has_one() {
         "{written:?}"
     );
     assert_eq!(codec::read(&small).unwrap().publish_branch, None);
+}
+
+#[test]
+fn a_manifest_of_a_document_that_is_not_connected_omits_connected() {
+    assert_eq!(scalar(&full_files(), MANIFEST, &["connected"]), "true");
+    assert!(codec::read(&full_files()).unwrap().connected);
+    let small = codec::write(&small_document());
+    let written = fields(&small, MANIFEST, &[]);
+    assert!(
+        !written.iter().any(|field| field == "connected"),
+        "{written:?}"
+    );
+    assert!(!codec::read(&small).unwrap().connected);
+}
+
+#[test]
+fn a_manifest_whose_connected_is_not_true_is_refused_naming_the_file_line_and_column() {
+    for value in ["false", "\"true\"", "yes", "1"] {
+        let mut files = full_files();
+        let manifest =
+            text(&files, MANIFEST).replace("connected: true", &format!("connected: {value}"));
+        files.insert(path(MANIFEST), manifest.into_bytes());
+        let errors = codec::read(&files).expect_err(value);
+        assert_eq!(errors.len(), 1, "{value}: {errors:?}");
+        assert!(
+            matches!(errors[0].problem, Problem::Invalid { .. }),
+            "{value}"
+        );
+        assert_eq!(errors[0].sites[0].path, path(MANIFEST), "{value}");
+        let at = Location::At(Position::new(5, 12));
+        assert_eq!(errors[0].sites[0].location, Some(at), "{value}");
+    }
 }

@@ -99,7 +99,8 @@ fn mentions() -> Vec<Edge> {
 /// The small document with every optional field of every record kind filled: each node has a
 /// body, a tag, a Section with a child Section and a mention; the root Component holds a nested
 /// Component and a boundary; a Constraint has a conservation kind; the decision mentions a node;
-/// the manifest names a publish branch and the state it was derived from; and the Requirement's
+/// the manifest names a publish branch, marks the document connected and names the state it was
+/// derived from; and the Requirement's
 /// binding holds a withdrawn label.
 pub fn full_document() -> Document {
     let mut document = small_document();
@@ -107,6 +108,7 @@ pub fn full_document() -> Document {
     fill_components(&mut document);
     document.edges.extend(mentions());
     document.publish_branch = Some("release".to_owned());
+    document.connected = true;
     document.derived_from = Some(DerivedFrom {
         authored_state_id: AuthoredStateId::new(key(70)),
         content_address: "ab".repeat(32).parse::<Digest>().unwrap(),

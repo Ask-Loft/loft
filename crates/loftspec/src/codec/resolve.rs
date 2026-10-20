@@ -190,6 +190,7 @@ impl<'t> Resolver<'t> {
 
     fn manifest(&mut self, manifest: &Rec) -> Result<(), ReadError> {
         self.document.publish_branch = manifest.text(field::PUBLISH_BRANCH).map(str::to_owned);
+        self.document.connected = manifest.get(field::CONNECTED).is_some();
         if let Some(source) = manifest.record(field::DERIVED_FROM) {
             let address = text(source, field::CONTENT_ADDRESS);
             self.document.derived_from = Some(DerivedFrom {
