@@ -179,6 +179,8 @@ requirements:
         name: "The error says that `loft pull` brings the tree to the head."
       - key: 01a156bd-30c8-76c9-86b7-8c5c9b6d9ee9
         name: "A problem document with the code `conflict` is such an answer."
+      - key: 01a15877-f750-769a-9e28-ba6538d8ab62
+        name: "A `409` refusal whose code is not `conflict`, such as `quota_exceeded`, is not such an answer."
       - key: 01a156ac-9752-749b-be81-df028febefa1
         name: "Nothing is written."
   - key: 01a156ac-9752-749b-be81-df03740c9619

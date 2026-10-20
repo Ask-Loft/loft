@@ -29,6 +29,12 @@ requirements:
         name: "A refusing scenario refuses each connection."
       - key: 01a156ae-6a51-7230-a9a1-fa8fc7335358
         name: "An error scenario answers each request with the status it names."
+      - key: 01a15877-f752-735c-b2ba-16ff4694bc3a
+        name: "An error scenario that names a code answers with a problem document of that code, which may lie outside the closed set."
+      - key: 01a15877-f752-735c-b2ba-1700069c23fa
+        name: "An error scenario that names no code answers with a body that is not a problem document."
+      - key: 01a15877-f752-735c-b2ba-1701e5e79fb0
+        name: "An error scenario that names a `Retry-After` value sends that header with each answer."
       - key: 01a156ae-6a51-7230-a9a1-fa90c436319f
         name: "A silent scenario accepts each connection and sends no answer."
   - key: 01a156ae-6a51-7230-a9a1-fa91e68ffcfc
@@ -162,14 +168,34 @@ requirements:
       - key: 01a156bc-e91e-73aa-8be6-4da4b520db73
         name: "The problem document holds `type`, `title`, `status` and `code`, and may hold `detail`."
       - key: 01a156bc-e91e-73aa-8be6-4da5c3bdab2a
-        name: "`type` is `about:blank`."
+        name: "`type` is a URI, which may be `about:blank` or any other."
       - key: 01a156bc-e91e-73aa-8be6-4da6c0bd0ce3
         name: "`status` is the status of the answer."
       - key: 01a156bc-e91e-73aa-8be6-4da71036d86a
-        name: "`code` is one of `unauthenticated`, `not_found`, `method_not_allowed`, `conflict` and `invalid_request`."
+        name: "`code` is one of `invalid_request`, `unauthenticated`, `forbidden`, `not_found`, `method_not_allowed`, `not_acceptable`, `conflict`, `quota_exceeded`, `payload_too_large`, `rate_limited`, `internal_error`, `corrupt_state` and `service_unavailable`."
+      - key: 01a15877-f752-735c-b2ba-1702302b067d
+        name: "The codes of a request at fault are answered with their statuses: `invalid_request` 400, `unauthenticated` 401, `forbidden` 403, `not_found` 404, `method_not_allowed` 405 and `not_acceptable` 406."
+      - key: 01a15877-f752-735c-b2ba-1703a7c0e136
+        name: "The codes of a request the remote cannot take now are answered with their statuses: `conflict` 409, `quota_exceeded` 409, `payload_too_large` 413 and `rate_limited` 429."
+      - key: 01a15877-f752-735c-b2ba-170449f3aaf8
+        name: "The codes of a fault of the remote are answered with their statuses: `internal_error` 500, `corrupt_state` 500 and `service_unavailable` 503."
+      - key: 01a15877-f752-735c-b2ba-17059ded7113
+        name: "A refusal whose code is `rate_limited` carries a `Retry-After` header."
       - key: 01a156bc-e91e-73aa-8be6-4da849115550
-        name: "Only a problem document whose code is `conflict` holds `head`."
+        name: "Every problem document whose code is `conflict` holds `head`, an object of the head's `publishSequence` and `stateRoot`."
+      - key: 01a15877-f752-735c-b2ba-1706bead447b
+        name: "The `head` of a document with no published state holds `publishSequence` `0` and `stateRoot` `null`."
       - key: 01a156bc-e91e-73aa-8be6-4da98b734a08
-        name: "Only a problem document whose code is `invalid_request` holds `paths`."
+        name: "Every problem document whose code is `invalid_request` holds `paths`, a list of the paths at fault that may be empty."
       - key: 01a156bc-e91e-73aa-8be6-4daa6a2001bf
-        name: "A problem document holds no other member."
+        name: "A problem document may hold members that the contract does not name."
+  - key: 01a15877-f752-735c-b2ba-1707dfe44215
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "answer each refusal with more than the contract names, as a server may."
+    criteria:
+      - key: 01a15877-f752-735c-b2ba-1708ebfec1b5
+        name: "Each refusal's `type` is a URI other than `about:blank`."
+      - key: 01a15877-f752-735c-b2ba-1709116c2e79
+        name: "Each refusal holds at least one member that the contract does not name."

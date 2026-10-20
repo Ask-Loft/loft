@@ -1,7 +1,7 @@
 key: 01a156aa-d531-70a7-88e0-0bebdc0a9327
 slug: reaching-a-remote
 name: "Reaching a remote"
-body: "Where `loft` finds the address and the token of a connected document's remote, which `loft remote` records in a file private to the user, which addresses it accepts, how it forms each request, and what it never does with the token. The address names one origin and path and is used whole, so that one server can hold many documents under addresses of its own choosing. A call to the remote is what a connected command exists to make, so the switches of telemetry and of the update check leave it alone."
+body: "Where `loft` finds the address and the token of a connected document's remote, which `loft remote` records in a file private to the user, which addresses it accepts, how it forms each request, and what it never does with the token. The address names one origin and path and is used whole, so that one server can hold many documents under addresses of its own choosing. A call to the remote is what a connected command exists to make, so the switches of telemetry and of the update check leave it alone. A refusal that the remote may lift, such as a rate limit, is reported as one to try again later, and `LOFT_REMOTE_WAIT` lets a run wait out a short one."
 realizes:
   - 01a13a90-3554-7631-bb13-097e6805bffe
 mentions:
@@ -123,6 +123,8 @@ requirements:
         name: "The error names the remote's address."
       - key: 01a156aa-d531-70a7-88e0-0c1021a20f3a
         name: "The error names the status the remote gave, where it gave one."
+      - key: 01a15877-f751-7779-991e-11832c2b6931
+        name: "The error names the code of a problem document, where the remote gave one."
       - key: 01a156aa-d531-70a7-88e0-0c117276d1e1
         name: "A problem document with the code `unauthenticated` is reported as a refused token for the document key."
       - key: 01a156aa-d531-70a7-88e0-0c121baaa69d
@@ -135,10 +137,66 @@ requirements:
     criteria:
       - key: 01a156bd-30c9-7688-a529-f4596e10b53a
         name: "Loft reads neither `type` nor `title` to decide what a refusal means."
+      - key: 01a15877-f751-7779-991e-1184783aba81
+        name: "A member of a problem document that the contract does not name changes nothing that Loft does."
       - key: 01a156bd-30c9-7688-a529-f45a2854d139
         name: "A refusal that is not a problem document is an answer the command does not act on."
+      - key: 01a15877-f751-7779-991e-1185184540ec
+        name: "A problem document whose code lies outside the closed set is an answer the command does not act on."
+  - key: 01a15877-f751-7779-991e-1186537bd2c4
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "report every refusal of the remote with its status, and with its code where the refusal is a problem document."
+    criteria:
+      - key: 01a15877-f751-7779-991e-1187fbed50b9
+        name: "A refusal that the command acts on is reported with its status and its code."
       - key: 01a156bd-30c9-7688-a529-f45bc35131f8
         name: "A refusal whose code the command does not act on is reported with its status and its code."
+      - key: 01a15877-f751-7779-991e-118893af25ff
+        name: "A problem document whose code lies outside the closed set is reported with its status and its code."
+      - key: 01a15877-f751-7779-991e-1189b3626598
+        name: "An answer that is not a problem document is reported with its status."
+  - key: 01a15877-f751-7779-991e-118ab4b07b02
+    statement:
+      form: unwanted
+      if: "the remote refuses with the code `rate_limited`, `service_unavailable`, `internal_error` or `corrupt_state`"
+      system: "Loft"
+      shall: "refuse, say to try again later, and exit 1."
+    criteria:
+      - key: 01a15877-f751-7779-991e-118b450b985c
+        name: "A refusal with the code `rate_limited` says to try again later."
+      - key: 01a15877-f751-7779-991e-118cda592bd7
+        name: "A refusal with the code `service_unavailable` says to try again later."
+      - key: 01a15877-f751-7779-991e-118db782c32f
+        name: "A refusal with the code `internal_error` says to try again later."
+      - key: 01a15877-f751-7779-991e-118eb8ed2243
+        name: "A refusal with the code `corrupt_state` says to try again later."
+      - key: 01a15877-f751-7779-991e-118f5498a7d0
+        name: "A refusal with any other code, or one that is not a problem document, does not say to try again later."
+      - key: 01a15877-f751-7779-991e-1190fb0f7e0f
+        name: "Nothing is written."
+  - key: 01a15877-f751-7779-991e-119140f65f76
+    statement:
+      form: optional
+      where: "`LOFT_REMOTE_WAIT` is set to a positive whole number of seconds"
+      system: "Loft"
+      shall: "wait as long as a refusal's `Retry-After` asks, up to that number of seconds, and then make the call once more."
+    criteria:
+      - key: 01a15877-f751-7779-991e-11928649e459
+        name: "A refusal with one of the codes that say to try again later, whose `Retry-After` asks for no more than `LOFT_REMOTE_WAIT` seconds, is followed by the same call once more after that wait."
+      - key: 01a15877-f751-7779-991e-11939be89503
+        name: "A `Retry-After` given as an HTTP date asks for the time from the refusal to that date."
+      - key: 01a15877-f751-7779-991e-1194540120aa
+        name: "A refusal whose `Retry-After` asks for more than `LOFT_REMOTE_WAIT` seconds is reported without a wait."
+      - key: 01a15877-f751-7779-991e-11952f2054b8
+        name: "A refusal without `Retry-After` is reported without a wait."
+      - key: 01a15877-f751-7779-991e-11969ba1a3af
+        name: "A refusal of the call made once more is reported without a second wait."
+      - key: 01a15877-f751-7779-991e-1197d6ad3fd2
+        name: "The wait counts toward the time limit of neither call."
+      - key: 01a15877-f751-7779-991e-119834e86c70
+        name: "Without `LOFT_REMOTE_WAIT`, no refusal is followed by a wait."
   - key: 01a156c0-0b7a-76b6-9a6a-684a5505830b
     statement:
       form: ubiquitous
@@ -154,12 +212,12 @@ requirements:
   - key: 01a156c0-0b7a-76b6-9a6a-684e1d6f409f
     statement:
       form: unwanted
-      if: "`LOFT_REMOTE_TIMEOUT` is set to a value that is not a positive whole number of seconds"
+      if: "`LOFT_REMOTE_TIMEOUT` or `LOFT_REMOTE_WAIT` is set to a value that is not a positive whole number of seconds"
       system: "Loft"
       shall: "refuse and exit 1."
     criteria:
       - key: 01a156c0-0b7a-76b6-9a6a-684f2a7ff2c0
-        name: "The error names `LOFT_REMOTE_TIMEOUT` and its value."
+        name: "The error names the variable at fault and its value."
       - key: 01a156c0-0b7a-76b6-9a6a-6850232f9215
         name: "No connection is opened."
   - key: 01a156c0-0b7a-76b6-9a6a-68511699e4cb
