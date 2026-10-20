@@ -1,7 +1,7 @@
 key: 01a156a8-d774-72b1-91b6-523f27f07207
 slug: repository-preconditions
 name: "Repository preconditions"
-body: "The conditions that refuse a publish from the state of the git repository that holds the tree: uncommitted changes under `spec/`, and, for a publish whose labels the publisher allocates, a branch other than the publish branch; a connected document's labels come from its remote, so its publish is refused on no branch. The publisher decides from what it is given: `loft publish` gives it the repository's state, and a caller that holds a tree outside a repository, such as a server, gives it none, so that only the preconditions that always apply refuse its publish."
+body: "The conditions that refuse a publish from the state of the git repository that holds the tree: uncommitted changes under `spec/`, and, for a publish whose labels the publisher allocates, a branch other than the publish branch; a connected document's labels come from its remote, so a publish of it not made as the remote is refused on no branch. The publisher decides from what it is given: `loft publish` gives it the repository's state, and a caller that holds a tree outside a repository, such as a server, gives it none, so that only the preconditions that always apply refuse its publish."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -30,11 +30,11 @@ requirements:
       - key: 83dcf58f-6f76-4b68-9c98-37b2c2aba984
         name: "A detached HEAD is refused as not being on the publish branch."
       - key: 01a156bd-fa42-71d5-a635-bd655ca9cccf
-        name: "A connected document is published from a branch other than the publish branch."
+        name: "A publish of a connected document not made as its remote is made from a branch other than the publish branch."
       - key: 01a156bd-fa42-71d5-a635-bd66881c9499
-        name: "A connected document is published from a detached HEAD."
+        name: "A publish of a connected document not made as its remote is made from a detached HEAD."
       - key: 01a156bd-fa42-71d5-a635-bd677f82b39e
-        name: "A `publishBranch` in the manifest of a connected document refuses no publish."
+        name: "A `publishBranch` in the manifest of a connected document refuses no publish not made as its remote."
   - key: 01a156a8-d774-72b1-91b6-524067fe853a
     statement:
       form: optional

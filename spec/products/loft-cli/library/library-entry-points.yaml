@@ -47,3 +47,5 @@ requirements:
         name: "The publisher's entry point is public in `loftspec`."
       - key: 01a156a9-87a5-7158-a2c2-dc7fed214368
         name: "The publisher's entry point takes the tree and the previous lock, with the repository state optional."
+      - key: 01a158d6-455e-70a9-83d3-66ac5cf5679d
+        name: "The publisher's entry point takes whether the publish is made as the document's remote."

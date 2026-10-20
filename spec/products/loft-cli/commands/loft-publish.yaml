@@ -125,6 +125,8 @@ requirements:
         name: "Only files under `spec/` enter the delta."
       - key: 01a156ac-9752-749b-be81-deeb088727f6
         name: "The delta leaves out `spec/labels.yaml`, whose bindings the remote writes."
+      - key: 01a158d6-455d-7581-b73d-d739018c23b8
+        name: "`loft publish` never runs the publisher as the document's remote."
       - key: 01a156ac-9752-749b-be81-deec83e82871
         name: "Each file that the base does not hold is sent as added, with its text."
       - key: 01a156ac-9752-749b-be81-deedf1da0eca
