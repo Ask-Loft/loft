@@ -208,9 +208,9 @@ requirements:
       - key: 01a156a4-1732-7428-aee4-d3bd21d556c2
         name: "A decision whose binding records no `publishedState` yields no `V2-011` finding."
       - key: 01a156be-e2a8-72d8-9748-ae11471f89cd
-        name: "A departed decision binding whose `publishedState` is `accepted`, `rejected`, `superseded` or `retired` yields one `V2-011` finding naming the decision's key and label."
+        name: "A departed decision binding whose key no decision of the tree carries and whose `publishedState` is `accepted`, `rejected`, `superseded` or `retired` yields one `V2-011` finding naming the decision's key and label."
       - key: 01a156be-e2a8-72d8-9748-ae128b93ff65
-        name: "A departed decision binding whose `publishedState` is `proposed` yields no `V2-011` finding."
+        name: "A departed decision binding whose key no decision of the tree carries and whose `publishedState` is `proposed` yields no `V2-011` finding."
       - key: 01a156be-e2a8-72d8-9748-ae134ca50e36
         name: "The finding for a departed decision says that retiring the decision is the way to end it."
       - key: 01a156a4-1732-7428-aee4-d3be4176eaa5
