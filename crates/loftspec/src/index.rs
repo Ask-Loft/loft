@@ -212,7 +212,7 @@ fn references(document: &Document, index: &Index) -> Vec<IntegrityError> {
             }
         }
     }
-    for binding in document.bindings.iter() {
+    for binding in document.bindings.live() {
         if !index.holds(binding.element) {
             errors.push(IntegrityError::UnknownBindingElement(binding.element));
         }

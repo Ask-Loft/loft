@@ -3,17 +3,25 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZeroU64;
 
+use crate::canonical::Digest;
+use crate::decision::StateKind;
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::ElementId;
 
 /// An element's live label, every label it held before in the order they were replaced, and the
 /// labels it lost to a publish that met another (RQ-70's withdrawn labels), which name nothing.
+/// A departed binding is the binding of a key that left the document: it keeps its labels, and
+/// none of them names anything. A decision's binding records the kind of the state its last
+/// publish saw, with the decision's history hash; neither record enters a root.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Binding {
     pub element: ElementId,
     pub label: Label,
+    pub departed: bool,
     pub aliases: Vec<Label>,
     pub withdrawn: Vec<Label>,
+    pub published_state: Option<StateKind>,
+    pub published_history: Option<Digest>,
 }
 
 impl Binding {
@@ -143,8 +151,11 @@ impl Bindings {
                 entry.insert(Binding {
                     element,
                     label,
+                    departed: false,
                     aliases: Vec::new(),
                     withdrawn: Vec::new(),
+                    published_state: None,
+                    published_history: None,
                 });
                 index(&mut self.live_keys, label, element.key());
                 Ok(())
@@ -190,7 +201,9 @@ impl Bindings {
             .get_mut(&element.key())
             .ok_or(BindingError::Unbound(element))?;
         binding.aliases.push(alias);
-        index(&mut self.alias_keys, alias, element.key());
+        if !binding.departed {
+            index(&mut self.alias_keys, alias, element.key());
+        }
         Ok(())
     }
 
@@ -206,7 +219,48 @@ impl Bindings {
             .get_mut(&element.key())
             .ok_or(BindingError::Unbound(element))?;
         binding.withdrawn.push(label);
-        index(&mut self.withdrawn_keys, label, element.key());
+        if !binding.departed {
+            index(&mut self.withdrawn_keys, label, element.key());
+        }
+        Ok(())
+    }
+
+    /// Marks an element's binding departed: its labels stay with it and name nothing.
+    pub fn depart(&mut self, element: impl Into<ElementId>) -> Result<(), BindingError> {
+        let element = element.into();
+        let key = element.key();
+        let binding = self
+            .entries
+            .get_mut(&key)
+            .ok_or(BindingError::Unbound(element))?;
+        if binding.departed {
+            return Ok(());
+        }
+        binding.departed = true;
+        unindex(&mut self.live_keys, binding.label, key);
+        for alias in &binding.aliases {
+            unindex(&mut self.alias_keys, *alias, key);
+        }
+        for withdrawn in &binding.withdrawn {
+            unindex(&mut self.withdrawn_keys, *withdrawn, key);
+        }
+        Ok(())
+    }
+
+    /// Records in an element's binding the kind of the state a publish saw and its history hash.
+    pub fn record_published(
+        &mut self,
+        element: impl Into<ElementId>,
+        state: Option<StateKind>,
+        history: Option<Digest>,
+    ) -> Result<(), BindingError> {
+        let element = element.into();
+        let binding = self
+            .entries
+            .get_mut(&element.key())
+            .ok_or(BindingError::Unbound(element))?;
+        binding.published_state = state;
+        binding.published_history = history;
         Ok(())
     }
 
@@ -229,24 +283,27 @@ impl Bindings {
         self.label_of_key(element.into().key())
     }
 
-    /// The live label of the element whose key is `key`.
+    /// The live label of the element whose key is `key`; none where its binding is departed.
     #[must_use]
     pub fn label_of_key(&self, key: Key) -> Option<Label> {
-        self.entries.get(&key).map(|binding| binding.label)
+        self.held(key).map(|binding| binding.label)
     }
 
     #[must_use]
     pub fn aliases_of(&self, element: impl Into<ElementId>) -> &[Label] {
-        self.entries
-            .get(&element.into().key())
+        self.held(element.into().key())
             .map_or(&[], |binding| binding.aliases.as_slice())
     }
 
     #[must_use]
     pub fn withdrawn_of(&self, element: impl Into<ElementId>) -> &[Label] {
-        self.entries
-            .get(&element.into().key())
+        self.held(element.into().key())
             .map_or(&[], |binding| binding.withdrawn.as_slice())
+    }
+
+    /// The binding of `key` where it is not departed.
+    fn held(&self, key: Key) -> Option<&Binding> {
+        self.entries.get(&key).filter(|binding| !binding.departed)
     }
 
     /// The element a live label or an alias names (AC-29): a live label before an alias, and the
@@ -291,9 +348,14 @@ impl Bindings {
         Citation::Rewritten(self.entries[&key].label)
     }
 
-    /// Every binding, in key order.
+    /// Every binding, departed or not, in key order.
     pub fn iter(&self) -> impl Iterator<Item = &Binding> {
         self.entries.values()
+    }
+
+    /// Every binding that is not departed, in key order.
+    pub fn live(&self) -> impl Iterator<Item = &Binding> {
+        self.iter().filter(|binding| !binding.departed)
     }
 
     #[must_use]
@@ -312,7 +374,7 @@ impl Bindings {
     pub fn validate(&self) -> Vec<BindingError> {
         let mut live: BTreeMap<Label, ElementId> = BTreeMap::new();
         let mut errors = Vec::new();
-        for binding in self.iter() {
+        for binding in self.live() {
             let first = *live.entry(binding.label).or_insert(binding.element);
             if first != binding.element {
                 errors.push(BindingError::LabelUnderTwoKeys {
@@ -340,7 +402,7 @@ impl Bindings {
                 });
             }
         }
-        errors.extend(self.iter().flat_map(|binding| {
+        errors.extend(self.live().flat_map(|binding| {
             binding
                 .withdrawn
                 .iter()

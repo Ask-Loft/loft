@@ -104,13 +104,70 @@ fn the_labels_file_holds_the_counters_then_the_bindings() {
     assert_eq!(fields(&full_files(), LABELS, &[]), ["counters", "bindings"]);
 }
 
+/// The position in the bindings list of the binding whose live label is `label`.
+fn binding_of(files: &codec::Files, label: &str) -> String {
+    let count = codec::read(files).unwrap().bindings.len();
+    (0..count)
+        .map(|index| index.to_string())
+        .find(|index| scalar(files, LABELS, &["bindings", index, "label"]) == label)
+        .unwrap()
+}
+
 #[test]
 fn a_bindings_fields_are_written_in_the_published_order() {
-    // The Requirement's binding, the one that holds an alias and a withdrawn label.
-    let label = scalar(&full_files(), LABELS, &["bindings", "3", "label"]);
-    assert_eq!(label, "RQ-2");
-    let published = ["key", "label", "aliases", "withdrawn"];
-    assert_eq!(fields(&full_files(), LABELS, &["bindings", "3"]), published);
+    // The departed decision's binding, the one that fills every field of a binding.
+    let files = full_files();
+    let at = binding_of(&files, "ADR-5");
+    let published = [
+        "key",
+        "label",
+        "departed",
+        "aliases",
+        "withdrawn",
+        "publishedState",
+        "publishedHistory",
+    ];
+    assert_eq!(fields(&files, LABELS, &["bindings", &at]), published);
+}
+
+#[test]
+fn a_binding_that_is_not_departed_and_records_no_state_omits_those_fields() {
+    let files = full_files();
+    let at = binding_of(&files, "RQ-2");
+    let written = fields(&files, LABELS, &["bindings", &at]);
+    assert_eq!(written, ["key", "label", "aliases", "withdrawn"]);
+}
+
+#[test]
+fn a_departed_binding_is_written_with_departed_true_and_read_back() {
+    let files = full_files();
+    let at = binding_of(&files, "ADR-5");
+    assert_eq!(
+        scalar(&files, LABELS, &["bindings", &at, "departed"]),
+        "true"
+    );
+    assert!(text(&files, LABELS).contains("\n    departed: true\n"));
+    let read = codec::read(&files).unwrap();
+    assert_eq!(codec::write(&read), files);
+}
+
+#[test]
+fn a_published_state_is_one_of_the_five_kinds_of_a_decisions_state() {
+    for kind in ["proposed", "accepted", "rejected", "superseded", "retired"] {
+        let mut files = full_files();
+        let labels = text(&files, LABELS).replace(
+            "publishedState: accepted",
+            &format!("publishedState: {kind}"),
+        );
+        files.insert(path(LABELS), labels.into_bytes());
+        assert!(codec::read(&files).is_ok(), "{kind}");
+    }
+    let mut files = full_files();
+    let labels = text(&files, LABELS).replace("publishedState: accepted", "publishedState: open");
+    files.insert(path(LABELS), labels.into_bytes());
+    let errors = codec::read(&files).unwrap_err();
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(matches!(errors[0].problem, Problem::Invalid { .. }));
 }
 
 #[test]

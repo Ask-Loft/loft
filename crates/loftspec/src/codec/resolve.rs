@@ -10,7 +10,7 @@ use super::files::{CATEGORIES, LABELS, MANIFEST, Role, TAGS, TERMS, Tree};
 use super::record::{Rec, Val};
 use super::schema::Kind;
 use crate::canonical::Digest;
-use crate::decision::NodeRef;
+use crate::decision::{NodeRef, StateKind};
 use crate::document::{CategoryEntry, DerivedFrom, Document, Edge, TagEntry, TermEntry};
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::{
@@ -308,7 +308,14 @@ impl<'t> Resolver<'t> {
     }
 
     fn binding(&mut self, binding: &Rec) -> Result<(), ReadError> {
-        let element = self.element(binding.get(field::KEY).expect("a checked key"))?;
+        let label = Label::parse(&text(binding, field::LABEL)).expect("a checked label");
+        let departed = binding.get(field::DEPARTED).is_some();
+        // A departed binding may name a key no element carries; its label gives its kind.
+        let element = match self.index.get(&key(binding, field::KEY)) {
+            Some(element) if departed => *element,
+            None if departed => ElementId::labelled(label.prefix(), key(binding, field::KEY)),
+            _ => self.element(binding.get(field::KEY).expect("a checked key"))?,
+        };
         let fail = |error: crate::bindings::BindingError| {
             ReadError::at(
                 &self.path,
@@ -316,7 +323,6 @@ impl<'t> Resolver<'t> {
                 Problem::Model(error.to_string()),
             )
         };
-        let label = Label::parse(&text(binding, field::LABEL)).expect("a checked label");
         let bindings = &mut self.document.bindings;
         bindings.bind_as_written(element, label).map_err(fail)?;
         for alias in binding.list(field::ALIASES) {
@@ -327,6 +333,17 @@ impl<'t> Resolver<'t> {
             let withdrawn =
                 Label::parse(withdrawn.text().unwrap_or_default()).expect("a checked label");
             bindings.add_withdrawn(element, withdrawn).map_err(fail)?;
+        }
+        let state = binding
+            .text(field::PUBLISHED_STATE)
+            .and_then(StateKind::parse);
+        let history = binding.text(field::PUBLISHED_HISTORY);
+        let history = history.map(|text| text.parse().expect("a checked digest"));
+        bindings
+            .record_published(element, state, history)
+            .map_err(fail)?;
+        if departed {
+            bindings.depart(element).map_err(fail)?;
         }
         Ok(())
     }

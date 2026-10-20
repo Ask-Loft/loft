@@ -167,6 +167,9 @@ fn labels(document: &Document) -> Rec {
         let mut record = Rec::new(Kind::Binding);
         record.set_text(field::KEY, binding.element.key().to_string());
         record.set_text(field::LABEL, binding.label.to_string());
+        if binding.departed {
+            record.set_text(field::DEPARTED, "true");
+        }
         record.set(
             field::ALIASES,
             Val::List(binding.aliases.iter().map(Val::scalar).collect()),
@@ -175,6 +178,12 @@ fn labels(document: &Document) -> Rec {
             field::WITHDRAWN,
             Val::List(binding.withdrawn.iter().map(Val::scalar).collect()),
         );
+        if let Some(state) = binding.published_state {
+            record.set_text(field::PUBLISHED_STATE, state.as_str());
+        }
+        if let Some(history) = binding.published_history {
+            record.set_text(field::PUBLISHED_HISTORY, history.to_string());
+        }
         record
     });
     let mut record = Rec::new(Kind::Labels);

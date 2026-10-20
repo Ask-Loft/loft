@@ -672,6 +672,24 @@ links:
       - file: "crates/loftspec/tests/fmt_deleted.rs"
         name: "a_live_decision_keeps_the_key_of_a_deleted_node_which_the_reader_refuses"
         body: 780bd21bbf2715e13abf5f1ad14e2c0a7f91f924f15203480f98a76e05e2de47
+  - node: 01a156a4-1731-7679-a162-b7560b9f04ca
+    reviewed: 96a88fba62ed759c54cf8de17309c4c6246d2b4b258cd8f5f3a0976aa32d665f
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_departed_binding_is_written_with_departed_true_and_read_back"
+        body: 9a02c56bda96252eb38ee8114a3e206b12c5b7d2ffc36be9c10f038b8e2fa40d
+  - node: 01a156a4-1731-7679-a162-b7582312736d
+    reviewed: 6d282768edea2ce9f5ff8f0661f24e5f86ede1c1353612469706f29b9a87dc77
+    tests:
+      - file: "crates/loftspec/tests/departed.rs"
+        name: "a_departed_label_resolves_to_no_element"
+        body: c1469ed85f47a9ceb3ad62458f70bfa19de9c4035f31604cff13a7ea0d38109b
+  - node: 01a156a4-1731-7679-a162-b75940af5e98
+    reviewed: 3de5b80d80e1c1899458ececccb29e59ca656cfb58bc0581b3e91570cac65845
+    tests:
+      - file: "crates/loftspec/tests/departed.rs"
+        name: "a_departed_label_is_never_allocated_to_another_key"
+        body: 5e6d772db0e53c1dfeef26797bb32966c6ba328a76a2816e596ddcd109cadc7d
   - node: d599579d-db5f-43e8-a8bf-cd736c4fa99a
     reviewed: 0416f7df2f9998ecf2489171475b92782f30df759dadf2120a7ddfd9ab283474
     tests:
@@ -1038,6 +1056,18 @@ links:
       - file: "crates/loftspec/tests/withdrawn.rs"
         name: "a_withdrawn_label_enters_no_root"
         body: f5c11d9b67dec98ed4f80d05c7e0b763e75be114b78a6cbf894b931c9f2d8966
+  - node: 01a156a4-1731-7679-a162-b7650bdb578f
+    reviewed: 7785b15b71ecac73e11bd179ab0fe9f87678b546f04f69d78402003a495a2093
+    tests:
+      - file: "crates/loftspec/tests/departed.rs"
+        name: "a_departed_binding_enters_no_root"
+        body: 5d2b690322c56b5f2d9afe166e014aa33ed5e7e4df0eedff56b7662192fd4d39
+  - node: 01a156a4-1731-7679-a162-b7665a3e45b0
+    reviewed: b799d207ead73605efb502d883ed30ef096c4d9c33c58dda1dacc8a8a95d89e9
+    tests:
+      - file: "crates/loftspec/tests/departed.rs"
+        name: "a_bindings_published_state_and_history_enter_no_root"
+        body: 5ecff79ac81a0175cd29852e07aecdbfc6c4c3f1aaa02419ab15753fe6bfb493
   - node: 81c66bbd-5c2f-4bcb-b2b7-3949c04282f0
     reviewed: 593488be27a54412792bce7ea88a201af8528b6158b8de4d8dc254342345787c
     tests:
@@ -2216,7 +2246,7 @@ links:
         body: b64ae5b7833cb01c238152c5d8d2bdafb9eb8a543f656ae2d0e991b4421c7fd7
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_bindings_fields_are_written_in_the_published_order"
-        body: 0ee58c6094c57001f35381138e5386cdaaf212f1d934d63ab60a16f6152f30df
+        body: 7a0b434ec9776a2676398ce6e6e1f96035347bca8750ae22f3e7e58e632a846e
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_registry_entrys_fields_are_written_in_the_published_order_and_all_are_required"
         body: 4c39d3a1c6f21441213ff2cbd29b5de3e98c1f6b36ad08274a1897673c1b0210
@@ -2710,11 +2740,11 @@ links:
         name: "the_counters_are_required_and_written_for_the_nine_prefixes_in_the_published_order"
         body: 9d78311b9ef55f51826cb7c7a83b4698c490c1b917ba81d3a30c9736cc667497
   - node: 480910d9-f626-4e77-927c-72008061a372
-    reviewed: 2d33f3da2b585e4e0438fbe22c9c4c9832b03ba0b48af5702167ff9bbef52749
+    reviewed: ed19cb4d7e77495c98c2ee98b08fff91854db82ecf87db0b8cbf0689b8e03121
     tests:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_bindings_fields_are_written_in_the_published_order"
-        body: 0ee58c6094c57001f35381138e5386cdaaf212f1d934d63ab60a16f6152f30df
+        body: 7a0b434ec9776a2676398ce6e6e1f96035347bca8750ae22f3e7e58e632a846e
   - node: 01a12dec-ba4c-7741-b3ca-9e8f125b4997
     reviewed: 57e9c55e634877a582f721f733b58ec01862176646dbdb5a2fefe3954117a0b8
     tests:
@@ -2739,6 +2769,24 @@ links:
       - file: "crates/loftspec/tests/withdrawn.rs"
         name: "a_binding_without_a_withdrawn_label_omits_withdrawn"
         body: 596f27c39719cc86cbc71b97785425f6b99dd1205551d1c0df00ff12150d3845
+  - node: 01a156a4-1732-7428-aee4-d3a781982b6c
+    reviewed: 0d9a9195305dd22e1e6088efd23a7978649a9df331b829b1b4e4480caac14398
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_binding_that_is_not_departed_and_records_no_state_omits_those_fields"
+        body: d5e784828fc5c65486356ba3124258338afe13bafcb06df669af451947309389
+  - node: 01a156a4-1732-7428-aee4-d3a8dc82ee94
+    reviewed: 9a7272dc2dcc55e565441e0f893e3f871050c5e0ca5db562e89ea754ad5ac1e2
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_binding_that_is_not_departed_and_records_no_state_omits_those_fields"
+        body: d5e784828fc5c65486356ba3124258338afe13bafcb06df669af451947309389
+  - node: 01a156a4-1732-7428-aee4-d3a97196e76b
+    reviewed: 9bbe39dea7f09471c3568274a5f747dcd6a1e17b6dbdeecd81f80c1bc2026abb
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_published_state_is_one_of_the_five_kinds_of_a_decisions_state"
+        body: 018d23ce9a14860d1b79d57ebd6f1a7c2ef92237749d94a53cfcb22f2879ef8c
   - node: 5890ac4b-cf40-4cc0-a055-38fc7cb3b109
     reviewed: 094014de68c2bcd1890c634091593785be6cf82ecdb93355f45cd110d6573694
     tests:

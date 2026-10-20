@@ -334,14 +334,14 @@ fn terms_view(document: &Document) -> (&'static str, Vec<TermRow<'_>>) {
 }
 
 /// The binding root view: key, live label, aliases and computed hash, sorted by key (RQ-15,
-/// AC-240).
+/// AC-240). A departed binding names nothing, so it is left out.
 fn bindings_view<'a>(
     document: &'a Document,
     resolve: &impl Fn(ElementId) -> Digest,
 ) -> Vec<(Key, Label, &'a [Label], Digest)> {
     document
         .bindings
-        .iter()
+        .live()
         .map(|binding| {
             (
                 binding.element.key(),
