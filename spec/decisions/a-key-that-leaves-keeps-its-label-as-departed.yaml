@@ -1,0 +1,87 @@
+key: 01a156a4-172e-7493-b8f3-3c5a7687e20f
+slug: a-key-that-leaves-keeps-its-label-as-departed
+title: "A key that leaves its document keeps its label, marked departed"
+context: "The formatter dropped the binding of a key the tree no longer held, and counters never rewind, so a node that came back, restored by a revert or moved out of the tree and back, was given a new label at the next publish, and every citation of its old label went stale. A label once published may be cited outside the repository."
+state:
+  kind: accepted
+  selectedOption: 01a156a4-172e-7493-b8f3-3c5e4ddc8333
+  outcome: "The formatter and the publisher mark the binding of a key that left the document departed instead of removing it; the label stays with that key and no other; a key that comes back takes back its departed label at the next publish, and the formatter writes former-label references to it as its key again."
+drivers:
+  - key: 01a156a4-172e-7493-b8f3-3c5bf955523b
+    kind: local
+    label: "A returning node keeps its label"
+    statement: "A node that leaves the document and comes back carries the label it had."
+  - key: 01a156a4-172e-7493-b8f3-3c5c7dfeec79
+    kind: local
+    label: "No label twice"
+    statement: "No label is held by two keys or given to another key."
+  - key: 01a156a4-172e-7493-b8f3-3c5d42d1100b
+    kind: local
+    label: "A short bindings file"
+    statement: "`spec/labels.yaml` holds no more than the document needs."
+options:
+  - key: 01a156a4-172e-7493-b8f3-3c5e4ddc8333
+    title: "Keep the binding, marked departed"
+    description: "The binding stays with its label, marked departed, and a returning key takes the label back."
+  - key: 01a156a4-172e-7493-b8f3-3c5fc45faaa0
+    title: "Drop the binding"
+    description: "The binding is removed, and a returning key is labelled as a new node."
+  - key: 01a156a4-172e-7493-b8f3-3c60b59677c5
+    title: "Withdraw the label"
+    description: "The label is recorded as withdrawn from the key, and a returning key is labelled as a new node."
+assessments:
+  - option: 01a156a4-172e-7493-b8f3-3c5e4ddc8333
+    driver: 01a156a4-172e-7493-b8f3-3c5bf955523b
+    rating: supports
+    rationale: "the departed label is given back to its key"
+  - option: 01a156a4-172e-7493-b8f3-3c5e4ddc8333
+    driver: 01a156a4-172e-7493-b8f3-3c5c7dfeec79
+    rating: supports
+    rationale: "the label stays bound to its key"
+  - option: 01a156a4-172e-7493-b8f3-3c5e4ddc8333
+    driver: 01a156a4-172e-7493-b8f3-3c5d42d1100b
+    rating: conflicts
+    rationale: "the file keeps a binding for every key that ever left"
+  - option: 01a156a4-172e-7493-b8f3-3c5fc45faaa0
+    driver: 01a156a4-172e-7493-b8f3-3c5bf955523b
+    rating: conflicts
+    rationale: "a returning node is given a new label"
+  - option: 01a156a4-172e-7493-b8f3-3c5fc45faaa0
+    driver: 01a156a4-172e-7493-b8f3-3c5c7dfeec79
+    rating: supports
+    rationale: "counters never rewind"
+  - option: 01a156a4-172e-7493-b8f3-3c5fc45faaa0
+    driver: 01a156a4-172e-7493-b8f3-3c5d42d1100b
+    rating: supports
+    rationale: "the file holds only the keys the tree carries"
+  - option: 01a156a4-172e-7493-b8f3-3c60b59677c5
+    driver: 01a156a4-172e-7493-b8f3-3c5bf955523b
+    rating: conflicts
+    rationale: "a withdrawn label is never given back"
+  - option: 01a156a4-172e-7493-b8f3-3c60b59677c5
+    driver: 01a156a4-172e-7493-b8f3-3c5c7dfeec79
+    rating: supports
+    rationale: "a withdrawn label is never allocated again"
+  - option: 01a156a4-172e-7493-b8f3-3c60b59677c5
+    driver: 01a156a4-172e-7493-b8f3-3c5d42d1100b
+    rating: conflicts
+    rationale: "the file keeps a binding for every key that ever left"
+consequences:
+  - key: 01a156a4-172e-7493-b8f3-3c61baee8274
+    kind: benefit
+    statement: "A node restored by a revert keeps its label, and citations of it stay true."
+  - key: 01a156a4-172e-7493-b8f3-3c622fac4aee
+    kind: cost
+    statement: "`spec/labels.yaml` keeps a binding for every key that has left the document."
+  - key: 01a156a4-172e-7493-b8f3-3c6371e47970
+    kind: obligation
+    statement: "A departed label is checked against every live label and alias, as an alias is."
+subjects:
+  - role: affected
+    node: e1ab75a5-f206-4760-970f-bee0653c4f2a
+  - role: outcome
+    node: 01a137a8-ae5b-7395-a025-0da856cebdef
+  - role: outcome
+    node: 01a156a4-1731-7679-a162-b75085aa7440
+  - role: outcome
+    node: 01a156a4-1732-7428-aee4-d39d2f60c95e

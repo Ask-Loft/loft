@@ -1,7 +1,7 @@
 key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
 slug: lint-rules-of-v2
 name: "Lint rules of v2"
-body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset."
+body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset. `V2-010` and `V2-011` concern decision history: an edit to the meaning of a decision that was published resolved, and a change of state that its published state does not allow. Both judge from the state the last publish recorded in `spec/labels.yaml`, which is part of the tree, so they read no history of a repository; a decision is changed by a new decision that supersedes it, never by an edit."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -157,3 +157,69 @@ requirements:
         name: "A body written only in the subset yields no `V2-009` finding."
       - key: 01a13a11-78db-72eb-a831-e9d730a929df
         name: "The default severity of `V2-009` is info."
+  - key: 01a156a4-1732-7428-aee4-d3aa5722790a
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-010` a decision published as accepted, rejected, superseded or retired whose meaning has changed since that publish."
+    criteria:
+      - key: 01a156a4-1732-7428-aee4-d3abb890ebde
+        name: "A decision whose state has the kind its binding records in `publishedState` yields one `V2-010` finding when its decision view hash differs from `publishedView`."
+      - key: 01a156a4-1732-7428-aee4-d3ac97ec0382
+        name: "A superseded or retired decision recorded as `accepted` yields one `V2-010` finding when its view, with its state taken back to `accepted` under the same selected option and outcome, hashes to other than `publishedView`."
+      - key: 01a156a4-1732-7428-aee4-d3ad80519777
+        name: "A decision whose decision view hash equals `publishedView` yields no `V2-010` finding."
+      - key: 01a156a4-1732-7428-aee4-d3ae49ca8d2a
+        name: "A superseded or retired decision whose view, its state aside, is unchanged since it was recorded as `accepted` yields no `V2-010` finding."
+      - key: 01a156a4-1732-7428-aee4-d3af7db13293
+        name: "A change to a decision's subjects or mentions alone yields no `V2-010` finding."
+      - key: 01a156a4-1732-7428-aee4-d3b01ae3c6cb
+        name: "A decision whose binding holds no `publishedView` yields no `V2-010` finding."
+      - key: 01a156a4-1732-7428-aee4-d3b17f8f6d6f
+        name: "A decision without a binding yields no `V2-010` finding."
+      - key: 01a156a4-1732-7428-aee4-d3b2838ac69e
+        name: "The finding names the decision and the state its binding records."
+      - key: 01a156a4-1732-7428-aee4-d3b3bd21fab6
+        name: "The default severity of `V2-010` is warning."
+  - key: 01a156a4-1732-7428-aee4-d3b4554c6b03
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-011` a decision whose state has changed since the last publish in a way the published state does not allow."
+    criteria:
+      - key: 01a156a4-1732-7428-aee4-d3b5361227cf
+        name: "A decision recorded as `accepted` and now superseded or retired yields no `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3b6e40d47e3
+        name: "A decision recorded as `proposed` and now accepted or rejected yields no `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3b7b2b5e275
+        name: "A decision recorded as `proposed` and now superseded or retired yields one `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3b892c107f3
+        name: "A decision recorded as `accepted` and now proposed or rejected yields one `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3b9669cd0e1
+        name: "A decision recorded as `rejected` whose state now has another kind yields one `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3ba8495c403
+        name: "A decision recorded as `superseded` whose state now has another kind yields one `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3bbba3e52df
+        name: "A decision recorded as `retired` whose state now has another kind yields one `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3bc3e6d9500
+        name: "A decision whose state has the kind its binding records yields no `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3bd21d556c2
+        name: "A decision whose binding records no `publishedState` yields no `V2-011` finding."
+      - key: 01a156a4-1732-7428-aee4-d3be4176eaa5
+        name: "The finding names the decision, the state its binding records and the state it has now."
+      - key: 01a156a4-1732-7428-aee4-d3bfc015f81c
+        name: "The default severity of `V2-011` is warning."
+  - key: 01a156a4-1732-7428-aee4-d3c0db6d9cbd
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "judge decision history from the tree alone."
+    criteria:
+      - key: 01a156a4-1732-7428-aee4-d3c18d6645de
+        name: "`V2-010` and `V2-011` read the published state of a decision only from `spec/labels.yaml`."
+      - key: 01a156a4-1732-7428-aee4-d3c27f9c4b50
+        name: "Neither `V2-010` nor `V2-011` reads the history of a repository or any file outside the tree."
+      - key: 01a156a4-1732-7428-aee4-d3c3c61e0af9
+        name: "A `V2-010` or `V2-011` finding refuses no publish."
+      - key: 01a156a4-1732-7428-aee4-d3c4630c6d89
+        name: "The validator reports no error for a decision that `V2-010` or `V2-011` reports."
