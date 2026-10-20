@@ -3,6 +3,7 @@
 //! hasher takes an indexed document, so every reference it follows resolves.
 
 mod decisions;
+mod state;
 mod tree;
 
 use std::collections::BTreeMap;
@@ -10,16 +11,15 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 use serde_json::{Value, json};
 
+pub use state::{StateView, lint_digest, state_root, state_view};
 pub use tree::ContentHash;
 
-use crate::FORMAT;
 use crate::canonical::{Digest, Domain, canonical_bytes, digest, digest_array};
-use crate::document::{DerivedFrom, Document, Edge, EdgeTarget, SubjectRole};
+use crate::document::{Document, Edge, EdgeTarget, SubjectRole};
 use crate::ext::Ext;
 use crate::identity::{Key, Label};
 use crate::ids::{DecisionId, ElementId, NodeId};
 use crate::index::{IndexErrors, Indexed};
-use crate::manifest::ALGORITHM;
 
 /// The content hash of every keyed node, by key.
 pub(crate) type NodeIndex = BTreeMap<Key, Digest>;
@@ -225,7 +225,7 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         &mut views,
         "state",
         Domain::State,
-        &state_view(document, content, bindings, extensions),
+        &state::view_one(document, content, bindings, extensions),
     );
     if let Some(views) = views {
         views.decisions = decision_views;
@@ -351,37 +351,4 @@ fn bindings_view<'a>(
             )
         })
         .collect()
-}
-
-/// The state view: format, algorithm, document key, content root, binding root and the
-/// derived-from record (AC-62), then the extensions root when there is one.
-fn state_view(
-    document: &Document,
-    content: Digest,
-    bindings: Digest,
-    extensions: Option<Digest>,
-) -> Value {
-    let derived_from = document.derived_from.as_ref().map(
-        |DerivedFrom {
-             authored_state_id,
-             content_address,
-             publish_sequence,
-         }| {
-            json!({
-                "authoredStateId": authored_state_id,
-                "contentAddress": content_address,
-                "publishSequence": publish_sequence,
-            })
-        },
-    );
-    let mut view = vec![
-        json!(FORMAT),
-        json!(ALGORITHM),
-        json!(document.id),
-        json!(content),
-        json!(bindings),
-        json!(derived_from),
-    ];
-    view.extend(extensions.map(|extensions| json!(extensions)));
-    Value::Array(view)
 }

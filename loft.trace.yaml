@@ -1161,6 +1161,66 @@ links:
       - file: "crates/loftspec/tests/publish.rs"
         name: "the_lock_carries_the_source_state_of_a_derived_document"
         body: 7249a3f8cc47cb8c624158ee1bc0360ffb564b8ff142240088f732fd5eca173f
+  - node: 01a156a1-0a9f-763f-9aaa-d3db715f9644
+    reviewed: d550cda0b1b097dd95bfbae95491ee5cc9658e6cf371a9f0d5494843ab6c446e
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_state_view_of_a_tree_with_a_lint_configuration_ends_with_its_digest"
+        body: 101f66df555b5ed239cb5487cea9b4c64b5e3729b16bb101f2b3c209556a0e94
+  - node: 01a156a1-0a9f-763f-9aaa-d3dc5d715464
+    reviewed: fd8be207d017a37a1b599f8c0fe79f0d55ea9b767f0db5ee53b670f23165247a
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "the_lint_digest_is_over_the_files_whole_text_as_one_json_string"
+        body: 1b316f7bc6a7bf785f53182c0857a5dbcf9451908a38dda5076ad2d755036893
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_small_documents_state_view_2_vectors_are_reproduced_byte_for_byte"
+        body: e0c1902a5902ae1cd73cb8cec503a78bd83518ebb288ceb065519307e7927af6
+  - node: 01a156a1-0a9f-763f-9aaa-d3dd085ab7e6
+    reviewed: d672c98865bedf5a88387278121a1c33cb11a1745c7c8ef22d8abaff8448b187
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_tree_without_a_lint_configuration_has_one_state_root_under_both_views"
+        body: 6ae4c2b8856a91f96ee96c3a926e58c8d32428073199842981298b40bc567859
+  - node: 01a156a1-0a9f-763f-9aaa-d3dea81f8d9d
+    reviewed: 9e8d854d794813684f2d83c3b8d2eee7a25e2b8020f1ebfde2ca4a4e63c74bab
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "under_state_view_2_any_change_of_the_lint_configuration_changes_the_state_root"
+        body: 9da539c84a49861770ddea7045f423db52b24477f860cdf40d9f7e0d4d4207a9
+  - node: 01a156a1-0a9f-763f-9aaa-d3df274d6fd3
+    reviewed: 62f7a95d47cf6b932d194e7538f2321d998ae5d79fdbb329d1566d390d9e7c9a
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "under_state_view_2_any_change_of_the_lint_configuration_changes_the_state_root"
+        body: 9da539c84a49861770ddea7045f423db52b24477f860cdf40d9f7e0d4d4207a9
+  - node: 01a156a1-0a9f-763f-9aaa-d3e0e6f78ebc
+    reviewed: 1903a47106531b995bb83e3e11e9a176b4b76c823ab5c899e1c6ab5dac7fa221
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "under_state_view_2_any_change_of_the_lint_configuration_changes_the_state_root"
+        body: 9da539c84a49861770ddea7045f423db52b24477f860cdf40d9f7e0d4d4207a9
+  - node: 01a156a1-0a9f-763f-9aaa-d3e1488be969
+    reviewed: 840b03fee1165c1e4be602f766569cbd2b2c539e75161c15142337d22c666b0a
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "the_lint_configuration_leaves_the_content_and_binding_roots_unchanged"
+        body: 602b475759801369108f8b12613f17d7a5a52184c1668e9c01714e1c9f50a010
+  - node: 01a156a1-0a9f-763f-9aaa-d3e31796a5eb
+    reviewed: 53ee5a7c4b25a6cf86be942054bfb0e14290bd40c63289901934f78de55e8f51
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "under_state_view_1_the_lint_configuration_leaves_the_state_root_unchanged"
+        body: 8ba2352a8924efec631bd2735ca215f0f46246ffb001c91ce594396e16cc4b9a
+  - node: 01a156a1-0a9f-763f-9aaa-d3e4117beb9d
+    reviewed: 7dc173388ed582cffada60742b7f8331442614fa716383e3950f9c27ad579717
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "under_state_view_1_the_lint_configuration_leaves_the_state_root_unchanged"
+        body: 8ba2352a8924efec631bd2735ca215f0f46246ffb001c91ce594396e16cc4b9a
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_small_document_roots_match_their_vectors"
+        body: 76c7f332bfb607a080891d12d108a64f511f7a6b5d8bc40b54465855775cd94e
   - node: de051f91-ee1f-4458-8a19-90548afa005f
     reviewed: 430d6fa6c896131cd380d56462b333ae5adcaf44092092ec7ffd86091b53029e
     tests:
@@ -1425,6 +1485,48 @@ links:
       - file: "crates/loftspec/tests/lock.rs"
         name: "a_lock_that_names_an_unknown_format_or_algorithm_is_not_valid"
         body: 357b12ef6fa6729d9e0057a723dae74fc9647f628f74f87de34f506435718389
+  - node: 01a156a1-0a9f-763f-9aaa-d3d2684192a2
+    reviewed: 96f6e10e6e671250dac9db145f55002599790fd8eb37958249a09a2be379050d
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "a_lock_names_its_state_view_only_where_the_view_is_not_1"
+        body: ef7b396a75581934b1f7088557fca60a7a7f34881fbd6142338175b40a3a1059
+  - node: 01a156a1-0a9f-763f-9aaa-d3d3745d09c8
+    reviewed: 6c6a3afed469e0df573d0f29baa1b93410548bf11a34e0a3edcc44b2ed3e6385
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "a_lock_without_a_state_view_is_a_lock_of_state_view_1"
+        body: 3816a4de93b888a7e06d2b0c075102abade9f3838e5acbca94ada5d9cd11c2dc
+  - node: 01a156a1-0a9f-763f-9aaa-d3d4353c2364
+    reviewed: 07b02543ddb0db976065eefd5a5d0862d07fb046b95a7513161bf55c2c1de814
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "a_lock_whose_state_view_is_not_a_positive_whole_number_is_not_valid"
+        body: 74cf45f37d81a119fafc0595872426f404ab0c9c2af96f57c9696b4a7f23f034
+  - node: 01a156a1-0a9f-763f-9aaa-d3d50c2db021
+    reviewed: 69b50789d8511fc767af4edd9e699a58174513981b0c1ef7788d5a30358bd1a1
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "a_lock_of_a_state_view_the_reader_does_not_implement_is_refused_naming_both_views"
+        body: f17b7d5e0be5f799895a3866ed1a359670b1a8e545177c0e523b8008be4bfa3b
+  - node: 01a156a1-0a9f-763f-9aaa-d3d7b28c23dc
+    reviewed: b2574c0c7c331d50235f3329b9d793c9f46866d0c73a6df65531ef241e0fc287
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "a_lock_of_a_state_view_the_reader_does_not_implement_is_refused_naming_both_views"
+        body: f17b7d5e0be5f799895a3866ed1a359670b1a8e545177c0e523b8008be4bfa3b
+  - node: 01a156a1-0a9f-763f-9aaa-d3d8ae6b5e7e
+    reviewed: c3cf96c622fbf44819394ad5474928ee3fe290a1317efc3d78fa317cd19600d5
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "a_lock_of_a_state_view_the_reader_does_not_implement_is_refused_naming_both_views"
+        body: f17b7d5e0be5f799895a3866ed1a359670b1a8e545177c0e523b8008be4bfa3b
+  - node: 01a156a1-0a9f-763f-9aaa-d3d934c5c7b7
+    reviewed: e5bcbc230d3c77cafc7c4de57147185746063a207c6df8359c0b5851b8d3deae
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "a_lock_of_a_state_view_the_reader_does_not_implement_is_refused_naming_both_views"
+        body: f17b7d5e0be5f799895a3866ed1a359670b1a8e545177c0e523b8008be4bfa3b
   - node: 9c8fecc4-1b3d-4eee-961f-a4075fa48921
     reviewed: 96f0ba4a2d5dfa9ad9fec36c0f0d9e7116de010e279ab5b51c4ede734795cfd0
     tests:
@@ -7444,7 +7546,7 @@ links:
         name: "a_publish_that_fails_after_its_journal_is_complete_is_finished_by_the_next_opening"
         body: 8cf9e57cc90fc8614b0e5d3e8fafdfe56310c9a18de2899cd75b5b9ce8c1877f
   - node: 01a12ff0-f5e5-7095-8fa8-24fc60a2cac0
-    reviewed: a5b16e6ea97db9a5916a6a42e038b7ef83091a78e406cc718e8dd54b5c1534ad
+    reviewed: 4f03ac126834d8b3ffa2609c43652dcf0a753422c01fdbbc4214a0ffb4a38e50
     tests:
       - file: "crates/loftspec/tests/lock.rs"
         name: "the_lock_carries_its_fields_in_the_formats_order_indented_by_two_spaces"
@@ -7473,6 +7575,54 @@ links:
       - file: "crates/loftspec/tests/lock.rs"
         name: "the_publish_time_is_written_in_utc_to_the_second"
         body: 7f3e5af010411bccc296ff55d1d0eb3f083c0dcedc67d53d11068fd345512350
+  - node: 01a156a1-0a9f-763f-9aaa-d3e5542afe37
+    reviewed: 2d7ff2938ebee806dbbc95159087861c0c118780d830326a367b74bf4a77aba3
+    tests:
+      - file: "crates/loftspec/tests/lock.rs"
+        name: "the_lock_carries_its_fields_in_the_formats_order_indented_by_two_spaces"
+        body: e823d5ec6613a0d878ff3aa3b71b9edba25c49b9af1ba15971d06474b7b8cf3e
+  - node: 01a156a1-0a9f-763f-9aaa-d3e745d21d97
+    reviewed: 3b61e3d235c2cb26e3b4ad996644974f4d17c9dfe103a9476540be149ae778ac
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "the_lock_of_a_tree_with_a_lint_configuration_names_state_view_2_and_its_view_2_root"
+        body: 769aefbb7d5fab6639c04c4915ca225a23b2f281b0e021e84410e9510cf7d593
+  - node: 01a156c1-8ce0-753c-a269-20dbd23a4f4d
+    reviewed: b01350aa4a47c3ae235ad36e8deda5ea3c94a6156a1fa45d37440368286d8dbd
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "the_lock_of_a_tree_without_a_lint_configuration_names_no_state_view"
+        body: 5a1c54bf264623f8d70ad51cf5d72811f20f9045d8f0f267d9e5f4d51c8ecd3a
+  - node: 01a156c1-8ce0-753c-a269-20dcea71ef15
+    reviewed: 49096f28b97f7656b1953f352b4879cf486075803bcc763b09b16c9bd8ca51f2
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "the_lock_of_a_tree_without_a_lint_configuration_names_no_state_view"
+        body: 5a1c54bf264623f8d70ad51cf5d72811f20f9045d8f0f267d9e5f4d51c8ecd3a
+  - node: 01a156a1-0a9f-763f-9aaa-d3e823c32bd8
+    reviewed: 3a9e40bc00bf99e9c88e81075f386e839ac05a74b9b141708b09c2c6b48361ee
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "the_lock_of_a_tree_with_a_lint_configuration_names_state_view_2_and_its_view_2_root"
+        body: 769aefbb7d5fab6639c04c4915ca225a23b2f281b0e021e84410e9510cf7d593
+  - node: 01a156a1-0a9f-763f-9aaa-d3ea430ca328
+    reviewed: 5f6bb57eacf38b801b05ba80f8d19e684c111248f33719ae31cc493952645d8c
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_tree_with_a_lint_configuration_published_under_state_view_1_is_published_once_more"
+        body: a91b7e96dc687983864fec7ef228fb7041b7177af682e22e5b3ff418ace8e2f6
+  - node: 01a156a1-0a9f-763f-9aaa-d3ebf90a71f1
+    reviewed: 8fde6352f443a576feedd9fc69b96f7795ef79b87f69a07f30863e507a040e2f
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_tree_with_a_lint_configuration_published_under_state_view_1_is_published_once_more"
+        body: a91b7e96dc687983864fec7ef228fb7041b7177af682e22e5b3ff418ace8e2f6
+  - node: 01a156a1-0a9f-763f-9aaa-d3ecdf587536
+    reviewed: e673c1e461bec0c80e3bd1cf3266c2add813409afceee43d74fe0f63e56e05d0
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_tree_without_a_lint_configuration_published_under_state_view_1_is_not_published_again"
+        body: 967247a31757ea158a6ba9c772b3efacc56b5a3985c1a21a97d2009181f1eb17
   - node: 7ce60f65-a31c-4090-af1b-dab1bfec4709
     reviewed: 9cb50772315f08b11b1bf979301981dea31d4ff36eecd0f587bafc44522a51ad
     tests:
@@ -7542,6 +7692,30 @@ links:
       - file: "crates/loftspec/tests/publish.rs"
         name: "a_relabel_alone_fails_on_the_binding_root"
         body: 7df0490528ab3fb4a78d80399476d86c6d129c63e43cfa707a5f9dfb913aeb1e
+  - node: 01a156a1-0a9f-763f-9aaa-d3ee8d25d9e0
+    reviewed: a8891577569865afd2bf37556ced8955d9cbde45f87d2e287e5e1f672affad3f
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_lock_without_a_state_view_is_verified_under_state_view_1_whatever_its_lint_configuration"
+        body: 3a98e0d98cdadec0b3e4ed882ea30d76cccc53bbe937dbdc7ef8c15790d4dbe3
+  - node: 01a156a1-0a9f-763f-9aaa-d3ef2659adcc
+    reviewed: 031f162024d8564314c1d01b1d05e051a38557de55eafc0dcf5b70da71d89f68
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_lock_of_state_view_2_is_verified_under_state_view_2"
+        body: b2aabf3467a31381fe6ca1fa8eabc9104a62bcf908afd1222a79063c99afc683
+  - node: 01a156a1-0a9f-763f-9aaa-d3f090a1b770
+    reviewed: fbb37d555545bbad377ba5016c9414a8b8eaa11c0856ebf877204fbcccb82f97
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_lock_without_a_state_view_is_verified_under_state_view_1_whatever_its_lint_configuration"
+        body: 3a98e0d98cdadec0b3e4ed882ea30d76cccc53bbe937dbdc7ef8c15790d4dbe3
+  - node: 01a156a1-0a9f-763f-9aaa-d3f1a2c8dc0e
+    reviewed: 11846394d0f830fee177df52e2c1c8de0eaa6cf63f50f7cbcbd39d86e0771a58
+    tests:
+      - file: "crates/loftspec/tests/state_view.rs"
+        name: "a_lock_without_a_state_view_is_verified_under_state_view_1_whatever_its_lint_configuration"
+        body: 3a98e0d98cdadec0b3e4ed882ea30d76cccc53bbe937dbdc7ef8c15790d4dbe3
   - node: 01a130de-5737-776f-9c39-b9c9ad39d7c3
     reviewed: b3af640844f1b47fbd77770a370df7126098bb46632dea6e6734144fe3c796e4
     tests:

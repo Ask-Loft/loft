@@ -21,9 +21,9 @@ use settle::Settlement;
 
 use crate::canonical::Digest;
 use crate::check::{Placed, hashed, placed};
-use crate::codec::{self, Files, LABELS, ReadError, Sites, SpecPath, read_sited};
+use crate::codec::{self, Files, LABELS, LINT, ReadError, Sites, SpecPath, read_sited};
 use crate::document::Document;
-use crate::hash::hash_document;
+use crate::hash::{StateView, hash_document, state_root};
 use crate::identity::{Key, Label};
 use crate::validate::validate;
 
@@ -162,7 +162,11 @@ pub fn publish(
     let roots = hash_document(&document)
         .expect("a document the validator accepts indexes")
         .roots;
-    if let Some(previous) = previous.filter(|lock| lock.state_root == roots.state) {
+    // Every lock is computed under state view 2, which it names only where the tree holds
+    // `spec/lint.yaml`: without the file both views give the same roots.
+    let lint = lint_configuration(files);
+    let state = state_root(&document, &roots, StateView::Two, lint);
+    if let Some(previous) = previous.filter(|lock| lock.state_root == state) {
         return Ok(Publication::Unchanged(previous.clone()));
     }
     if unrecorded {
@@ -172,7 +176,12 @@ pub fn publish(
     Ok(Publication::Published {
         lock: Lock {
             document_key: document.id,
-            state_root: roots.state,
+            state_view: if lint.is_some() {
+                StateView::Two
+            } else {
+                StateView::One
+            },
+            state_root: state,
             content_root: roots.content,
             binding_root: roots.bindings,
             publish_sequence: sequence,
@@ -185,6 +194,12 @@ pub fn publish(
         withdrawn,
         finish: repo.stopped.as_ref().map(|stopped| stopped.operation),
     })
+}
+
+/// The bytes of the tree's `spec/lint.yaml`; none for a tree without the file.
+#[must_use]
+pub fn lint_configuration(files: &Files) -> Option<&[u8]> {
+    files.get(&SpecPath::new(LINT)).map(Vec::as_slice)
 }
 
 /// Refuses an uncommitted change under `spec/`, then a branch other than `branch`.
@@ -255,7 +270,8 @@ pub enum Unverified {
 }
 
 /// Recomputes the roots of a tree that reads and compares them with the lock's: the content
-/// root, then the binding root, then the state root (RQ-118, AC-678). A tree that does not read
+/// root, then the binding root, then the state root under the state view the lock names
+/// (RQ-118, AC-678). A tree that does not read
 /// never gets this far, and a tree that holds a merge conflict compares no root, so no root is
 /// compared for either (RQ-149). It writes nothing (AC-470).
 ///
@@ -266,14 +282,16 @@ pub fn verify(tree: &ReadTree<'_>, lock: &Lock) -> Result<Digest, Unverified> {
     let roots = hashed(&tree.document, &tree.sites)
         .map_err(Unverified::Invalid)?
         .roots;
+    let lint = lint_configuration(tree.files);
+    let state = state_root(&tree.document, &roots, lock.state_view, lint);
     for (root, lock, tree) in [
         (Root::Content, lock.content_root, roots.content),
         (Root::Binding, lock.binding_root, roots.bindings),
-        (Root::State, lock.state_root, roots.state),
+        (Root::State, lock.state_root, state),
     ] {
         if lock != tree {
             return Err(Unverified::Mismatch { root, lock, tree });
         }
     }
-    Ok(roots.state)
+    Ok(state)
 }

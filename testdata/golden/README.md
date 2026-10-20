@@ -108,6 +108,15 @@ the Requirement), two options, four assessments and two consequences. Ten bindin
 Requirement's with one alias. Key `n` is `00000000-0000-7000-8000-` followed by `n` as twelve
 hexadecimal digits; the document key is key 0.
 
+## `small-document-state-view-2.json`
+
+The state root of `small-document` under state view 2, for a tree whose `spec/lint.yaml` holds
+the text `lintConfiguration` gives. The vector `lint` is that text as one JSON string, digested
+under `loftspec/lint/1`; the vector `root:state` is the state view of `small-document.json`
+followed by `{"lintConfiguration": <lint digest>}`, digested under `loftspec/state/1`. Under state
+view 1, and under state view 2 for a tree without `spec/lint.yaml`, the state view is the one
+`small-document.json` gives.
+
 ## `lint-defaults.yaml`
 
 The linter's default configuration, written as a `spec/lint.yaml` that states every default: each

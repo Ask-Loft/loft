@@ -83,6 +83,7 @@ mod review;
 mod roots;
 mod site_lists;
 mod slug;
+mod state_view;
 mod statement;
 mod statement_agreement;
 mod statement_parse;

@@ -11,9 +11,10 @@ use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites};
 use loftspec::diff::content_changes;
 use loftspec::document::Document;
+use loftspec::hash::state_root;
 use loftspec::identity::Key;
 use loftspec::ids::NodeId;
-use loftspec::publish::{LOCK, Lock, Operation, RepoState, Root};
+use loftspec::publish::{LOCK, Lock, Operation, RepoState, Root, lint_configuration};
 use loftspec_store::repository::{GitCommand, Repository as _};
 use loftspec_store::{FileStore, StoreError};
 use serde_json::{Map, Value, json};
@@ -85,10 +86,12 @@ fn attempt(root: &Path, base: Option<&str>) -> Result<Report, Stop> {
         .lock()
         .map_err(|error| lock_error(&error))?
         .map(|lock| {
+            let lint = lint_configuration(&files);
+            let state = state_root(&document, &roots, lock.state_view, lint);
             let differs = [
                 (Root::Content, lock.content_root, roots.content),
                 (Root::Binding, lock.binding_root, roots.bindings),
-                (Root::State, lock.state_root, roots.state),
+                (Root::State, lock.state_root, state),
             ]
             .into_iter()
             .find(|(_, locked, tree)| locked != tree)

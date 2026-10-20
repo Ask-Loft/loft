@@ -1,6 +1,7 @@
 //! The lock record a publish writes to `loft.lock.json` beside `spec/` (RQ-19, AC-666): the
-//! format and algorithm, the document key, the state, content and binding roots, the publish
-//! sequence and time, and for a document derived from a Loft v1 export the source state (RQ-20).
+//! format and algorithm, the document key, the state view its state root was computed under
+//! where that view is not 1, the state, content and binding roots, the publish sequence and
+//! time, and for a document derived from a Loft v1 export the source state (RQ-20).
 
 use std::num::NonZeroU64;
 
@@ -9,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::FORMAT;
 use crate::canonical::Digest;
 use crate::document::DerivedFrom;
+use crate::hash::StateView;
 use crate::identity::Key;
 use crate::ids::{AuthoredStateId, DocumentId};
 use crate::manifest::{ALGORITHM, ManifestError, check_identifiers};
@@ -21,6 +23,7 @@ pub const LOCK: &str = "loft.lock.json";
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Lock {
     pub document_key: DocumentId,
+    pub state_view: StateView,
     pub state_root: Digest,
     pub content_root: Digest,
     pub binding_root: Digest,
@@ -38,6 +41,11 @@ pub enum LockError {
     Identifier(#[from] ManifestError),
     #[error(transparent)]
     Time(#[from] TimeError),
+    #[error(
+        "the lock names state view {view}; the highest this implementation computes is state view {}",
+        highest.number()
+    )]
+    UnknownStateView { view: u64, highest: StateView },
 }
 
 /// The lock as it is written: its fields in the Format's order, no other field.
@@ -47,6 +55,12 @@ struct Wire {
     format: String,
     algorithm: String,
     document_key: Key,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present"
+    )]
+    state_view: Option<NonZeroU64>,
     state_root: Digest,
     content_root: Digest,
     binding_root: Digest,
@@ -54,6 +68,24 @@ struct Wire {
     published_at: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     derived_from: Option<WireDerivedFrom>,
+}
+
+/// A field that is present holds its value: `null` is no value of it.
+fn present<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<NonZeroU64>, D::Error> {
+    NonZeroU64::deserialize(deserializer).map(Some)
+}
+
+/// The state view a lock names; state view 1 where it names none.
+fn state_view(named: Option<NonZeroU64>) -> Result<StateView, LockError> {
+    let Some(view) = named else {
+        return Ok(StateView::One);
+    };
+    StateView::from_number(view.get()).ok_or(LockError::UnknownStateView {
+        view: view.get(),
+        highest: StateView::HIGHEST,
+    })
 }
 
 #[derive(Serialize, Deserialize)]
@@ -66,8 +98,8 @@ struct WireDerivedFrom {
 
 impl Lock {
     /// Reads a lock record, refusing one that lacks a lock field, holds another field, names a
-    /// format or an algorithm this implementation does not implement, or holds a malformed
-    /// value.
+    /// format, an algorithm or a state view this implementation does not implement, or holds a
+    /// malformed value.
     ///
     /// # Errors
     ///
@@ -78,6 +110,7 @@ impl Lock {
         check_identifiers(&wire.format, &wire.algorithm)?;
         Ok(Self {
             document_key: DocumentId::new(wire.document_key),
+            state_view: state_view(wire.state_view)?,
             state_root: wire.state_root,
             content_root: wire.content_root,
             binding_root: wire.binding_root,
@@ -99,6 +132,9 @@ impl Lock {
             format: FORMAT.to_owned(),
             algorithm: ALGORITHM.to_owned(),
             document_key: self.document_key.key(),
+            state_view: (self.state_view != StateView::One).then(|| {
+                NonZeroU64::new(self.state_view.number()).expect("a view numbered from 1")
+            }),
             state_root: self.state_root,
             content_root: self.content_root,
             binding_root: self.binding_root,

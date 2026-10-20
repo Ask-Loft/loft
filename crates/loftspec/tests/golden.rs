@@ -4,7 +4,9 @@
 
 use crate::common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
-use loftspec::hash::{hash_document, hash_indexed_with_views};
+use loftspec::hash::{
+    StateView, hash_document, hash_indexed_with_views, lint_digest, state_root, state_view,
+};
 use serde_json::Value;
 
 const SMALL_DOCUMENT: &str = include_str!("../../../testdata/golden/small-document.json");
@@ -84,4 +86,27 @@ fn the_small_document_roots_match_their_vectors() {
     assert_eq!(roots.content.to_string(), vector("root:content"));
     assert_eq!(roots.bindings.to_string(), vector("root:bindings"));
     assert_eq!(roots.state.to_string(), vector("root:state"));
+}
+
+const STATE_VIEW_2: &str =
+    include_str!("../../../testdata/golden/small-document-state-view-2.json");
+
+#[test]
+fn the_small_documents_state_view_2_vectors_are_reproduced_byte_for_byte() {
+    let golden: Value = serde_json::from_str(STATE_VIEW_2).unwrap();
+    let lint = golden["lintConfiguration"].as_str().unwrap().as_bytes();
+    let document = small_document();
+    let roots = hash_document(&document).unwrap().roots;
+    let view = state_view(&document, &roots, StateView::Two, Some(lint));
+    let views = golden["views"].as_array().unwrap();
+    let canonical = String::from_utf8(canonical_bytes(&view)).unwrap();
+    assert_eq!(views[1]["canonical"], canonical.as_str());
+    assert_eq!(views[0]["digest"], lint_digest(lint).to_string().as_str());
+    let state = state_root(&document, &roots, StateView::Two, Some(lint));
+    assert_eq!(views[1]["digest"], state.to_string().as_str());
+    let text = std::str::from_utf8(lint).unwrap();
+    assert_eq!(
+        views[0]["canonical"],
+        String::from_utf8(canonical_bytes(&text)).unwrap().as_str()
+    );
 }

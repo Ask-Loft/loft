@@ -4,6 +4,7 @@ use std::num::NonZeroU64;
 
 use loftspec::canonical::Digest;
 use loftspec::document::DerivedFrom;
+use loftspec::hash::StateView;
 use loftspec::identity::Key;
 use loftspec::ids::{AuthoredStateId, DocumentId};
 use loftspec::publish::{Lock, LockError, PublishedAt, TimeError};
@@ -12,9 +13,11 @@ fn digest(byte: char) -> Digest {
     byte.to_string().repeat(64).parse().unwrap()
 }
 
+/// A lock of state view 2, derived or not.
 fn lock(derived: bool) -> Lock {
     Lock {
         document_key: DocumentId::new(Key::parse("31c36546-9554-426c-980b-a501a32aa506").unwrap()),
+        state_view: StateView::Two,
         state_root: digest('a'),
         content_root: digest('b'),
         binding_root: digest('c'),
@@ -34,6 +37,7 @@ const DERIVED: &str = r#"{
   "format": "loftspec/1",
   "algorithm": "sha256-jcs/1",
   "documentKey": "31c36546-9554-426c-980b-a501a32aa506",
+  "stateView": 2,
   "stateRoot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "contentRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "bindingRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -132,6 +136,59 @@ fn a_lock_with_a_malformed_value_is_not_valid() {
         assert_ne!(text, DERIVED, "{to}");
         assert!(Lock::read(text.as_bytes()).is_err(), "{to}");
     }
+}
+
+#[test]
+fn a_lock_names_its_state_view_only_where_the_view_is_not_1() {
+    let one = Lock {
+        state_view: StateView::One,
+        ..lock(true)
+    };
+    let text = String::from_utf8(one.to_bytes()).unwrap();
+    assert_eq!(text, DERIVED.replace("  \"stateView\": 2,\n", ""));
+    assert!(DERIVED.contains("\n  \"stateView\": 2,\n"));
+}
+
+#[test]
+fn a_lock_without_a_state_view_is_a_lock_of_state_view_1() {
+    let read = Lock::read(without("stateView").as_bytes()).unwrap();
+    assert_eq!(read.state_view, StateView::One);
+    let explicit = DERIVED.replace("\"stateView\": 2", "\"stateView\": 1");
+    assert_eq!(
+        Lock::read(explicit.as_bytes()).unwrap().state_view,
+        StateView::One
+    );
+    assert_eq!(
+        Lock::read(DERIVED.as_bytes()).unwrap().state_view,
+        StateView::Two
+    );
+}
+
+#[test]
+fn a_lock_whose_state_view_is_not_a_positive_whole_number_is_not_valid() {
+    for value in ["0", "-1", "1.5", "2.0", "\"2\"", "null", "true"] {
+        let text = DERIVED.replace("\"stateView\": 2", &format!("\"stateView\": {value}"));
+        let error = Lock::read(text.as_bytes()).unwrap_err();
+        assert!(matches!(error, LockError::Shape(_)), "{value}: {error}");
+    }
+}
+
+#[test]
+fn a_lock_of_a_state_view_the_reader_does_not_implement_is_refused_naming_both_views() {
+    let text = DERIVED.replace("\"stateView\": 2", "\"stateView\": 3");
+    let error = Lock::read(text.as_bytes()).unwrap_err();
+    assert_eq!(
+        error,
+        LockError::UnknownStateView {
+            view: 3,
+            highest: StateView::Two
+        }
+    );
+    let message = error.to_string();
+    assert!(
+        message.contains("state view 3") && message.contains("state view 2"),
+        "{message}"
+    );
 }
 
 #[test]
