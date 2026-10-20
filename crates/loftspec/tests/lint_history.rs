@@ -310,6 +310,31 @@ fn the_finding_for_a_departed_decision_says_retiring_it_is_the_way_to_end_it() {
     assert!(found[0].message.contains("retir"), "{}", found[0].message);
 }
 
+/// The small document published, with its decision's binding still marked departed, as the
+/// formatter leaves the binding of a decision that came back.
+fn came_back() -> Document {
+    let mut document = published();
+    document.bindings.depart(decision_id()).unwrap();
+    document
+}
+
+#[test]
+fn a_decision_back_in_the_tree_is_judged_as_present_though_its_binding_is_departed() {
+    assert_eq!(found(&came_back(), RuleId::V2011), []);
+    let mut edited = came_back();
+    decision(&mut edited).context.push_str(" Edited.");
+    assert_eq!(found(&edited, RuleId::V2010).len(), 1);
+    let mut moved = came_back();
+    set_state(&mut moved, rejected());
+    let found = found(&moved, RuleId::V2011);
+    assert_eq!(found.len(), 1);
+    assert!(
+        found[0].message.contains("`rejected`"),
+        "{}",
+        found[0].message
+    );
+}
+
 #[test]
 fn the_validator_reports_no_error_for_a_decision_v2_010_or_v2_011_reports() {
     let mut edited = published();

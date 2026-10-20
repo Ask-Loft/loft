@@ -26,11 +26,12 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
         else {
             continue;
         };
-        if binding.departed {
-            out.extend(departed(binding, recorded));
-        } else if let Some(decision) = decisions.get(&id) {
+        // A departed binding whose decision the tree carries again is judged as present.
+        if let Some(decision) = decisions.get(&id) {
             out.extend(edited(decision, recorded, binding.published_history));
             out.extend(moved(decision, recorded));
+        } else if binding.departed {
+            out.extend(departed(binding, recorded));
         }
     }
 }

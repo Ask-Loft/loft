@@ -6237,6 +6237,9 @@ links:
       - file: "crates/loftspec/tests/lint_history.rs"
         name: "an_edit_to_a_decision_in_the_state_it_was_published_in_is_one_v2_010"
         body: edd62dd996a545612c77a8127dfd944495a7bfa48c7bb790fea0db55fd12e19a
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_back_in_the_tree_is_judged_as_present_though_its_binding_is_departed"
+        body: 94c62e17ab1469330152e6de89a2ec984cf0b161f8b56eddc3646893232a4fae
   - node: 01a156a4-1732-7428-aee4-d3ac97ec0382
     reviewed: ac8c586338444797974bc26e123c95fa2b2daf49dc970e53cb20600f24f1f0e0
     tests:
@@ -6315,6 +6318,9 @@ links:
       - file: "crates/loftspec/tests/lint_history.rs"
         name: "an_accepted_decision_now_proposed_or_rejected_is_one_v2_011"
         body: c406da91ed2d688ff215180004cfa01f19cd7011a950c2e69838fa27aaca9366
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_back_in_the_tree_is_judged_as_present_though_its_binding_is_departed"
+        body: 94c62e17ab1469330152e6de89a2ec984cf0b161f8b56eddc3646893232a4fae
   - node: 01a156a4-1732-7428-aee4-d3b9669cd0e1
     reviewed: a5338fff71727ce5baf9f715ce649d7963723421c24fda3a2200949cc656bd6c
     tests:
@@ -6339,6 +6345,9 @@ links:
       - file: "crates/loftspec/tests/lint_history.rs"
         name: "a_decision_in_the_kind_of_state_it_was_published_in_is_not_v2_011"
         body: 826dad87aef1bc96ed934e0c69fc6f2b91b759cf8ec092c56053d507b6ac228c
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_back_in_the_tree_is_judged_as_present_though_its_binding_is_departed"
+        body: 94c62e17ab1469330152e6de89a2ec984cf0b161f8b56eddc3646893232a4fae
   - node: 01a156a4-1732-7428-aee4-d3bd21d556c2
     reviewed: 6369f7873b63842cf2af6755caab933341e4a31587eb9b9eabc046adbf57967f
     tests:
