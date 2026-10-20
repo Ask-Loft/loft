@@ -6587,7 +6587,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/check.rs"
         name: "the_report_does_not_depend_on_environment_variables"
-        body: 0866838dde0467339aa0e342caf092229ef1ce0f32f4faa4417dd58daf81f4ba
+        body: fb3dc818fb6fe5114db1eb5fcff5fff9ad319f8b35fbf92df3a00ea81b2fb71f
   - node: 50317b21-3db1-4fa0-82f9-66460b420846
     reviewed: 820a915df33f02aa3607f714404c83d530271ce6129f7a3ef9ffb6f0272bce7c
     tests:
@@ -6983,7 +6983,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/terms.rs"
         name: "the_report_depends_on_neither_the_locale_nor_the_environment"
-        body: 6c5422f007c3eccc9cf8a19ebd8ac54725f2b8e36ba22870d0431dafa58ca29d
+        body: 091c75244e5c7c7661a7fdf12432edbb42ee6c39ed80c35d5efd6185746ef9f3
   - node: 01a14b3d-fd78-7612-94d1-5e28051064fe
     reviewed: 3390d5ad11d60ff5d563edb7a2df417d3b693ee691de90f423fb1346d9ddf94c
     tests:
@@ -6992,7 +6992,7 @@ links:
         body: 85f53d264ff1b3f7403f2eb94778ddef8767f94f7d3e2c705208a58f7047b11f
       - file: "crates/loft-cli/tests/terms.rs"
         name: "the_report_depends_on_neither_the_locale_nor_the_environment"
-        body: 6c5422f007c3eccc9cf8a19ebd8ac54725f2b8e36ba22870d0431dafa58ca29d
+        body: 091c75244e5c7c7661a7fdf12432edbb42ee6c39ed80c35d5efd6185746ef9f3
   - node: 01a14b3d-fd78-7612-94d1-5e293a9c74c2
     reviewed: 62f1ee3992a472e3e8d2eb926fd676cba25492afe21355ba90b5b657ca4a8d34
     tests:

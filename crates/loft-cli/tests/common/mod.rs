@@ -312,11 +312,19 @@ pub fn isolate(command: &mut Command, home: &Path) {
     command
         .env("HOME", home)
         .env("USERPROFILE", home)
-        .env("APPDATA", home.join("AppData/Roaming"))
+        .env("APPDATA", home.join("AppData/Roaming"));
+    offline(command);
+}
+
+/// Switches telemetry and the update check off for `command` and points both services at a
+/// closed port on the loopback interface, as `.cargo/config.toml` does for every process Cargo
+/// starts. A test that clears the environment calls it again, since clearing removes them too.
+pub fn offline(command: &mut Command) -> &mut Command {
+    command
         .env("LOFT_TELEMETRY", "off")
         .env("LOFT_UPDATE_CHECK", "off")
         .env("LOFT_TELEMETRY_ENDPOINT", CLOSED)
-        .env("LOFT_UPDATE_ENDPOINT", CLOSED);
+        .env("LOFT_UPDATE_ENDPOINT", CLOSED)
 }
 
 /// An address on the loopback interface where nothing listens.

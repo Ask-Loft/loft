@@ -4,7 +4,7 @@
 use std::fs;
 use std::process::Command;
 
-use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{EPOCH, Scratch, offline, stderr, stdout};
 use crate::schema;
 use crate::snapshot::snapshot;
 use serde_json::Value;
@@ -191,7 +191,7 @@ fn the_report_depends_on_neither_the_locale_nor_the_environment() {
     }
     let bare = reports(|| {
         let mut command = scratch.command(None, &Clock::fixed(EPOCH));
-        command.env_clear();
+        offline(command.env_clear());
         Clock::fixed(EPOCH).apply(&mut command);
         command
     });
