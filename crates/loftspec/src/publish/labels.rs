@@ -35,24 +35,7 @@ pub struct Allocation {
 /// longer holds. No binding is removed.
 pub fn publish_labels(document: &mut Document) -> Allocation {
     let elements = elements_in_order(document);
-    let mut given_back = Vec::new();
-    for element in &elements {
-        let key = element.key();
-        if !document.bindings.is_departed(key) {
-            continue;
-        }
-        document
-            .bindings
-            .restore(*element)
-            .expect("a departed binding is bound");
-        let label = document.bindings.label_of_key(key);
-        if let Some(label) = label.filter(|label| Some(label.prefix()) == element.label_prefix()) {
-            given_back.push(Allocated {
-                label,
-                element: *element,
-            });
-        }
-    }
+    let given_back = restore_departed(document, &elements);
     let allocated = allocate_in(document, &elements);
     let held: BTreeSet<Key> = elements.iter().map(|element| element.key()).collect();
     let leaving: Vec<Allocated> = document
@@ -88,15 +71,28 @@ pub fn publish_labels(document: &mut Document) -> Allocation {
 /// label has another kind's prefix is relabelled, its previous label kept as an alias (RQ-63).
 pub fn allocate(document: &mut Document) -> Vec<Allocated> {
     let elements = elements_in_order(document);
-    for element in &elements {
-        if document.bindings.is_departed(element.key()) {
-            document
-                .bindings
-                .restore(*element)
-                .expect("a departed binding is bound");
+    restore_departed(document, &elements);
+    allocate_in(document, &elements)
+}
+
+/// Gives each of `elements` whose binding is departed that binding back, and reports each label
+/// it gave back that has the element's own prefix: one of another prefix is relabelled by
+/// allocation.
+fn restore_departed(document: &mut Document, elements: &[ElementId]) -> Vec<Allocated> {
+    let mut given_back = Vec::new();
+    for &element in elements {
+        let key = element.key();
+        if !document.bindings.is_departed(key) {
+            continue;
+        }
+        let restored = document.bindings.restore(element);
+        restored.expect("a departed binding is bound");
+        let label = document.bindings.label_of_key(key);
+        if let Some(label) = label.filter(|label| Some(label.prefix()) == element.label_prefix()) {
+            given_back.push(Allocated { label, element });
         }
     }
-    allocate_in(document, &elements)
+    given_back
 }
 
 /// Allocates over `elements`, in their order, none of whose bindings is departed.
