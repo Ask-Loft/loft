@@ -35,4 +35,20 @@ requirements:
       - key: 01a130de-5737-776f-9c39-b9c58774ac2e
         name: "A withdrawn label puts no binding in dispute."
       - key: 01a130de-5737-776f-9c39-b9c6be4b9d04
-        name: "A binding that is not in dispute is merged as one value."
+        name: "A binding that is not in dispute is merged as one value of its label, its aliases and its withdrawn labels."
+  - key: 01a1597e-ac86-7077-a8ab-9d5b4c115ee9
+    statement:
+      form: ubiquitous
+      system: "the merge driver"
+      shall: "merge a binding's `departed`, `publishedState` and `publishedHistory` apart from its label."
+    criteria:
+      - key: 01a1597e-ac86-7077-a8ab-9d5c638b9f16
+        name: "A binding whose two sides differ only in `departed`, `publishedState` or `publishedHistory` is not in dispute."
+      - key: 01a1597e-ac86-7077-a8ab-9d5df7427178
+        name: "Each of these fields that only one side changed takes that side's value."
+      - key: 01a1597e-ac86-7077-a8ab-9d5edd8ae784
+        name: "A `departed` that the two sides changed apart is `true` in the merged binding."
+      - key: 01a1597e-ac86-7077-a8ab-9d5fee4a7623
+        name: "A `publishedState` or `publishedHistory` that the two sides changed apart leaves both fields absent from the merged binding, so the next publish records them afresh."
+      - key: 01a1597e-ac86-7077-a8ab-9d600b134f77
+        name: "No conflict record is written for these fields."
