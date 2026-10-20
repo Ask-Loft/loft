@@ -1,7 +1,7 @@
 key: 01a156a8-d774-72b1-91b6-523f27f07207
 slug: repository-preconditions
 name: "Repository preconditions"
-body: "The conditions that refuse a publish from the state of the git repository that holds the tree: uncommitted changes under `spec/`, and a branch other than the publish branch. The publisher decides from what it is given: `loft publish` gives it the repository's state, and a caller that holds a tree outside a repository, such as a server, gives it none, so that only the preconditions that always apply refuse its publish."
+body: "The conditions that refuse a publish from the state of the git repository that holds the tree: uncommitted changes under `spec/`, and, for a document that is not connected, a branch other than the publish branch. The publisher decides from what it is given: `loft publish` gives it the repository's state, and a caller that holds a tree outside a repository, such as a server, gives it none, so that only the preconditions that always apply refuse its publish."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -19,7 +19,7 @@ requirements:
   - key: 0edce68c-8576-4978-ab4e-d4d2b1a3c1aa
     statement:
       form: unwanted
-      if: "the current branch is not the publish branch"
+      if: "the current branch is not the publish branch of a document that is not connected"
       system: "the publisher"
       shall: "refuse to publish."
     criteria:
