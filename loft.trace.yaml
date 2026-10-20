@@ -11460,24 +11460,6 @@ links:
       - file: "crates/loft-cli/tests/publish.rs"
         name: "loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused"
         body: 81bbac27a17bc35691f3f261c17cfd620bf4d7f5d36fc09e7e5c4d7cae9b34b0
-  - node: 01a156ac-9752-749b-be81-df07b88105bf
-    reviewed: 8134d287bdc2825b4de921735d34e27ab9d4e083ad71315d08dfd4aa508600c1
-    tests:
-      - file: "crates/loft-cli/tests/publish.rs"
-        name: "loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused"
-        body: 81bbac27a17bc35691f3f261c17cfd620bf4d7f5d36fc09e7e5c4d7cae9b34b0
-  - node: 01a156ac-9752-749b-be81-df08da741635
-    reviewed: 826abe1a9f77a9fdc3547b3a77ce8e3cfe6a6393da64e4c22cdb98ce7491ab12
-    tests:
-      - file: "crates/loft-cli/tests/publish.rs"
-        name: "loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused"
-        body: 81bbac27a17bc35691f3f261c17cfd620bf4d7f5d36fc09e7e5c4d7cae9b34b0
-  - node: 01a156ac-9752-749b-be81-df09527d973e
-    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
-    tests:
-      - file: "crates/loft-cli/tests/publish.rs"
-        name: "loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused"
-        body: 81bbac27a17bc35691f3f261c17cfd620bf4d7f5d36fc09e7e5c4d7cae9b34b0
   - node: 36ea9839-0d28-4140-bf9d-28523d58675e
     reviewed: 0f0564ca3f2bc9a46febb338fe00a03a54607e5a8e019b79990be4f0a8535e95
     tests:
