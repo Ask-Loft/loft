@@ -1797,9 +1797,6 @@ links:
       - file: "crates/loftspec/tests/codec_fields.rs"
         name: "a_band_holds_its_kind_and_then_the_bounds_its_kind_takes_in_order"
         body: 6aa4dfeceacfacdc918e6e6f44cdce3c779139a11358f3b42bcc8471d80cd643
-      - file: "crates/loftspec/tests/fmt_deleted.rs"
-        name: "formatting_marks_departed_the_binding_of_a_deleted_node"
-        body: f387cad2d9fe1342e05858749935d8b7bcea6a7d34c482779471fe18621d6606
   - node: 650c0fef-43bd-466c-9562-0b7a4863751c
     reviewed: 8012363383bff3e1bd2d5b1e0a2ee46c42e4fddc3eb645c4746ec59c620da9b6
     tests:
@@ -8551,8 +8548,8 @@ links:
     reviewed: d321ff9d3b64843d59aab6eb254baef80e42d249fcf48dabd98b415dee340c5a
     tests:
       - file: "crates/loftspec/tests/publish_connected.rs"
-        name: "a_publish_made_as_the_remote_allocates_as_a_publish_of_a_document_not_connected"
-        body: 33abae3e51b23792f4b91813925f7041c301a349c5e8fa4f14d5d93072817e51
+        name: "a_publish_made_as_the_remote_advances_each_counter_to_the_next_unallocated_value"
+        body: 60f60b0cfb0032ad38518cded9bc0a2c3a2f9ab81b4b5b9fba84abc58dfb3d49
   - node: 01a158d6-455f-75f3-9093-bdac480d7a63
     reviewed: cbf821e36681c7863b8daceedc8d4cc649f0a039982e69b57c595b39bbe8a3e4
     tests:
@@ -8562,9 +8559,9 @@ links:
   - node: 01a158d6-455f-75f3-9093-bdad5ed5c64e
     reviewed: 31796fd0bee249eee7d2950664c0883a0f6cbf5729027b827c834265b3dab82b
     tests:
-      - file: "crates/loftspec/tests/publish_departed.rs"
-        name: "the_binding_of_a_key_that_left_is_marked_departed_and_none_is_removed"
-        body: c2e110dce0cc623661a08f581ac65336d671b9c424cc3eea484b0b023947ed20
+      - file: "crates/loftspec/tests/publish_connected.rs"
+        name: "a_publish_made_as_the_remote_marks_departed_the_binding_of_a_key_that_left"
+        body: d8456d6a00fdc9e30f9f91c433733c69f82cfa040b5b3bc5f4138809da0e9823
   - node: 01a158d6-455f-75f3-9093-bdae033332f5
     reviewed: 5c6bc984899cdbc9921da09d05bbcb7fa02ec46d6c6f17ac4bc740901876925b
     tests:

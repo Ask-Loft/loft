@@ -7,11 +7,14 @@
 use std::num::NonZeroU64;
 
 use crate::common::{key, label, small_document};
+use loftspec::bindings::Binding;
 use loftspec::canonical::Digest;
 use loftspec::codec::{self, Files};
 use loftspec::decision::NodeRef;
 use loftspec::document::{Document, Edge, SubjectRole};
+use loftspec::fmt::format;
 use loftspec::hash::{Roots, hash_document};
+use loftspec::identity::LabelPrefix;
 use loftspec::ids::{ConstraintId, DecisionId};
 use loftspec::publish::{
     Allocated, Base, Lock, Made, Operation, Publication, PublishedAt, ReadTree, Refusal, RepoState,
@@ -229,6 +232,55 @@ fn a_publish_made_as_the_remote_gives_back_a_departed_label() {
         element: constraint.into(),
     };
     assert_eq!(given_back, [back]);
+}
+
+#[test]
+fn a_publish_made_as_the_remote_advances_each_counter_to_the_next_unallocated_value() {
+    let (files, lock) = connected();
+    let mut document = codec::read(&files).unwrap();
+    document.bindings.unbind(ConstraintId::new(key(7)));
+    let unlabelled = codec::write(&document);
+    let before = document.counters.next(LabelPrefix::Constraint).get();
+    let publication = run(&unlabelled, None, Some(&lock), Made::AsRemote).unwrap();
+    let (after, _) = applied(&unlabelled, publication);
+    let published = codec::read(&after).unwrap();
+    assert_eq!(
+        published.counters.next(LabelPrefix::Constraint).get(),
+        before + 1
+    );
+    for prefix in LabelPrefix::ALL {
+        let labels = published.bindings.iter().flat_map(Binding::every_label);
+        let highest = labels
+            .filter(|label| label.prefix() == prefix)
+            .map(|label| label.number().get())
+            .max()
+            .unwrap_or(0);
+        assert_eq!(
+            published.counters.next(prefix).get(),
+            highest + 1,
+            "{prefix:?}"
+        );
+    }
+}
+
+#[test]
+fn a_publish_made_as_the_remote_marks_departed_the_binding_of_a_key_that_left() {
+    let (files, lock) = connected();
+    let mut document = codec::read(&files).unwrap();
+    document.components[0].component.constraints.clear();
+    // The reader refuses a live binding whose key no element carries, so the tree a publish
+    // reads is formatted first, as `loft fmt` leaves it.
+    let mut without = codec::write(&document);
+    without.extend(format(&without).unwrap().changed);
+    let publication = run(&without, None, Some(&lock), Made::AsRemote).unwrap();
+    let (after, _) = applied(&without, publication);
+    let published = codec::read(&after).unwrap();
+    assert!(published.bindings.is_departed(key(7)));
+    let binding = published
+        .bindings
+        .iter()
+        .find(|b| b.element.key() == key(7));
+    assert_eq!(binding.map(|binding| binding.label), Some(label("CON-1")));
 }
 
 #[test]
