@@ -41,14 +41,18 @@ requirements:
     statement:
       form: ubiquitous
       system: "The remote simulator"
-      shall: "admit a request only with the bearer token its scenario names."
+      shall: "admit a request under a document's address only with the bearer token its scenario names."
     criteria:
       - key: 01a156ae-6a51-7230-a9a1-fa92a3b72eb7
         name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the code `unauthenticated`."
       - key: 01a156ae-6a51-7230-a9a1-fa93388fd0b9
         name: "A request whose bearer token is not the scenario's is answered `401 Unauthorized` with the code `unauthenticated`."
       - key: 01a156ae-6a51-7230-a9a1-fa9467a2d6a1
-        name: "Every answer with a body that is not a problem document has `Content-Type: application/json`."
+        name: "Every answer under a document's address with a body that is not a problem document has `Content-Type: application/json`."
+      - key: 01a158a1-f02a-75c4-bdf5-1df762d46ddb
+        name: "A request for the skill manifest or the skill package is answered without a token."
+      - key: 01a158a1-f02a-75c4-bdf5-1df8354840b5
+        name: "The skill manifest is answered with `Content-Type: application/json`."
       - key: 01a156ae-6a51-7230-a9a1-fa958644e55a
         name: "No answer sets a cookie."
       - key: 01a156ae-6a51-7230-a9a1-fa96a711a7fc
