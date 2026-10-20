@@ -5,7 +5,8 @@
 use std::collections::BTreeMap;
 
 use super::conflict::{SideShape, side_shape};
-use super::files::Tree;
+use super::error::SpecPath;
+use super::files::{MANIFEST, Role, Tree};
 use super::record::{ConflictRec, Rec, Val};
 use super::schema::{Item, Kind, Shape, field};
 use crate::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
@@ -14,18 +15,91 @@ use crate::ids::{
     CategoryId, ConsequenceId, DecisionId, DriverId, ElementId, NodeId, OptionId, TagId, TermId,
 };
 
-/// Every conflict the tree holds, in file order and then in the order each record lists them.
+/// Every conflict the tree holds, in document order: the manifest's, each Product file's
+/// followed by its Feature files' in document order, the root Component files' and the decision
+/// files' in the order of their file names, the tag, category and term registries', and the
+/// bindings' last; within one file, in the order the file holds them.
 pub(super) fn collect(tree: &Tree) -> Vec<Conflict> {
     let mut conflicts = Vec::new();
-    for (_, content) in tree.files.values() {
-        for record in content.records() {
+    for path in in_document_order(tree) {
+        for record in tree.files[path].1.records() {
             collect_from(record, &mut conflicts);
         }
     }
     conflicts
 }
 
+/// The tree's paths in document order. A Product or Feature file that no list reaches, which
+/// only a tree the reader refuses holds, follows the others in path order.
+fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
+    let filed = filed_in_order(tree);
+    let mut paths: Vec<&SpecPath> = tree.files.keys().collect();
+    paths.sort_by_key(|path| {
+        let rank = match &tree.files[*path].0 {
+            Role::Manifest => 0,
+            Role::Product { .. } | Role::Feature { .. } => 1,
+            Role::Component { .. } => 2,
+            Role::Decision { .. } => 3,
+            Role::Tags => 4,
+            Role::Categories => 5,
+            Role::Terms => 6,
+            Role::Labels => 7,
+            Role::Lint => 8,
+        };
+        (rank, filed.get(*path).copied().unwrap_or(usize::MAX), *path)
+    });
+    paths
+}
+
+/// The place of each Product and Feature file in document order: the Products as the manifest
+/// lists them, each followed by the Features its Feature Groups list.
+fn filed_in_order(tree: &Tree) -> BTreeMap<&SpecPath, usize> {
+    let by_key = |wanted: fn(&Role) -> bool| -> BTreeMap<Key, &SpecPath> {
+        tree.records(wanted)
+            .filter_map(|(path, _, record)| Some((record.key()?, path)))
+            .collect()
+    };
+    let products = by_key(|role| matches!(role, Role::Product { .. }));
+    let features = by_key(|role| matches!(role, Role::Feature { .. }));
+    let keys = |record: &Rec, name: &str| -> Vec<Key> {
+        let texts = record.list(name).iter().filter_map(Val::text);
+        texts.filter_map(|text| Key::parse(text).ok()).collect()
+    };
+    let mut order = Vec::new();
+    let manifest = tree.record(&SpecPath::new(MANIFEST));
+    for product in manifest
+        .map(|manifest| keys(manifest, field::PRODUCTS))
+        .unwrap_or_default()
+    {
+        let Some(path) = products.get(&product) else {
+            continue;
+        };
+        order.push(*path);
+        let groups = tree
+            .record(path)
+            .into_iter()
+            .flat_map(|record| record.records(field::FEATURE_GROUPS));
+        for group in groups {
+            order.extend(
+                keys(group, field::FEATURES)
+                    .iter()
+                    .filter_map(|key| features.get(key)),
+            );
+        }
+    }
+    order
+        .into_iter()
+        .enumerate()
+        .map(|(at, path)| (path, at))
+        .collect()
+}
+
+/// The conflicts of `record` and of every record inside it, in the order the file holds them: a
+/// record writes its `conflicts` after every other field, so after those of the records inside it.
 fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
+    for child in record.children() {
+        collect_from(child, conflicts);
+    }
     if let Some(owner) = owner(record) {
         for conflict in &record.conflicts {
             let [base, ours, theirs] = conflict.sides().map(|(_, side)| side.map(value));
@@ -37,9 +111,6 @@ fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
                 theirs,
             });
         }
-    }
-    for child in record.children() {
-        collect_from(child, conflicts);
     }
 }
 

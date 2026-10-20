@@ -22,6 +22,7 @@ mod codec_round_trip;
 mod codec_sites;
 mod compare;
 mod compare_parts;
+mod conflict_ids;
 mod conflicts;
 mod containment;
 mod content_hash;

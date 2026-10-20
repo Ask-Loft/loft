@@ -9264,6 +9264,48 @@ links:
       - file: "crates/loftspec/tests/merge_labels.rs"
         name: "bindings_two_publishes_give_apart_without_colliding_are_both_kept"
         body: e97fcf01d18004bd11e36b8348dfa5f9e1988248a99b47e6dec74495810b2eea
+  - node: 01a156a6-de49-70a4-a6bb-3738b2a3370a
+    reviewed: 3c30a468cf47d4e40490298b9855133e082640cf2609cba36b9af8198712f1c7
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_conflict_records_of_a_tree_are_listed_in_document_order"
+        body: 7bfc56faf4b63ecca78c0096d270e4e821554a9fe170cfd02ac4be72819c0e24
+  - node: 01a156a6-de49-70a4-a6bb-3739c83a5f9b
+    reviewed: e3289ac093e5443d4d13bd2cdbbc189831286d6344aa0bd8604b01e3abd43a3a
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_conflict_records_of_a_tree_are_listed_in_document_order"
+        body: 7bfc56faf4b63ecca78c0096d270e4e821554a9fe170cfd02ac4be72819c0e24
+  - node: 01a156a6-de49-70a4-a6bb-373aae0c7418
+    reviewed: 2c8a5389b854d21196cb450bebecea9cb2e53ad802d9882702abe01efb9f1a6c
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_conflict_records_of_a_tree_are_listed_in_document_order"
+        body: 7bfc56faf4b63ecca78c0096d270e4e821554a9fe170cfd02ac4be72819c0e24
+  - node: 01a156a6-de49-70a4-a6bb-373b1b80f433
+    reviewed: 36b3dcbed08892900a6a72e242e97048558aac7df1a278c1498535babe85868a
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_conflict_records_of_a_tree_are_listed_in_document_order"
+        body: 7bfc56faf4b63ecca78c0096d270e4e821554a9fe170cfd02ac4be72819c0e24
+  - node: 01a156a6-de49-70a4-a6bb-373c078c0650
+    reviewed: 36b6a7984dafa146487cb29bcd77bb0de32a56cf0151211eaa913b274119fc89
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_conflict_records_of_a_tree_are_listed_in_document_order"
+        body: 7bfc56faf4b63ecca78c0096d270e4e821554a9fe170cfd02ac4be72819c0e24
+  - node: 01a156a6-de49-70a4-a6bb-373ddba92d72
+    reviewed: 62f41cf9fc9a9e9dd2f4e4421896efd49262b2d46f1b0b89c1bf6f81bb5f43f6
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "the_conflict_records_of_a_tree_are_listed_in_document_order"
+        body: 7bfc56faf4b63ecca78c0096d270e4e821554a9fe170cfd02ac4be72819c0e24
+  - node: 01a156a6-de49-70a4-a6bb-373e71fc1dc0
+    reviewed: 466b7c099cc9dbccc0ffe08979a42e551445e0a99186fd1a7a7527e72f29601c
+    tests:
+      - file: "crates/loftspec/tests/conflict_ids.rs"
+        name: "within_one_file_conflict_records_are_listed_in_the_order_they_appear_in_it"
+        body: 53ba5e913666c21c494be3cac425e13451ddd6b4c4d7027a5f132b341f2efc38
   - node: 01a158d8-c6e0-708e-a3c7-63fafc734b23
     reviewed: 7512d96b279451f2d6ad96a52e5a2d1a4f2bf14719c587cb12931f3ef330e344
     tests:
