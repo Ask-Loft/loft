@@ -5,6 +5,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loft publish --format json` writes the schema `loft-publish/2`, whose `givenBack` lists each
+  label a publish gave back to a key that came back to its document, with its key. A connected
+  document is published only through its remote, so `loft publish` refuses one.
 - A Feature Group may hold Quality Attributes, for a quality its Features share; its record
   writes them after its Constraints. A Product holds none. A Feature Group without them keeps its
   content hash, so the Format stays `loftspec/1`: every tree written before reads and hashes as

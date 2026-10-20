@@ -335,7 +335,7 @@ fn the_json_of_a_publish_lists_the_citations_it_rewrote() {
         "F-9 removes them.",
     );
     let document = json(&on_main(&scratch, &["publish", "--format", "json"]));
-    assert_eq!(document["schema"], "loft-publish/1");
+    assert_eq!(document["schema"], "loft-publish/2");
     assert_eq!(
         document["rewritten"],
         serde_json::json!([{
@@ -460,4 +460,23 @@ fn loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused
             Vec::<String>::new()
         );
     }
+}
+
+#[test]
+fn the_json_of_a_publish_lists_each_label_it_gave_back_with_its_key() {
+    let scratch = Scratch::with_reading_list();
+    let feature = scratch.file("products/reading-list/shelf/add-a-book.yaml");
+    let original = fs::read_to_string(&feature).unwrap();
+    let deleted = "00000000-0000-4000-8000-00000000002a";
+    let criterion = format!(
+        "      - key: {deleted}\n        name: \"A book added without a title is refused with an error naming the title.\"\n"
+    );
+    fs::write(&feature, original.replace(&criterion, "")).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    fs::write(&feature, &original).unwrap();
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    let document = json(&on_main(&scratch, &["publish", "--format", "json"]));
+    assert_eq!(document["schema"], "loft-publish/2");
+    let given = serde_json::json!([{ "label": "AC-2", "key": deleted }]);
+    assert_eq!(document["givenBack"], given);
 }

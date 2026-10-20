@@ -7704,6 +7704,9 @@ links:
       - file: "crates/loft-cli/tests/publish.rs"
         name: "a_node_deleted_formatted_restored_and_formatted_again_is_published_with_its_label_back"
         body: af63a5111f661a5823caa06b4eed1dab150a959f7a16c5a4c6d1f64853f3bbe6
+      - file: "crates/loft-cli/tests/publish.rs"
+        name: "the_json_of_a_publish_lists_each_label_it_gave_back_with_its_key"
+        body: 4cef6c11711b184f8167b7975c23cc5d81380fd3c051e5835987d7f4db790de9
   - node: 01a156a4-1732-7428-aee4-d3a4cf64e208
     reviewed: d7b122bbe7252957fd124f7f43bdcd3e6f716669ccbb56d5d468bab4aea0023c
     tests:
@@ -8210,7 +8213,7 @@ links:
         body: 0ec050e3cfe9a0c52e31e455fa85bda040a931ca8324f1c07edfc4e979277c27
       - file: "crates/loft-cli/tests/publish.rs"
         name: "the_json_of_a_publish_lists_the_citations_it_rewrote"
-        body: 8fa6ae20c0ef5afab825012c486e22d4ceb2ee0464fb87657aca8bd33cdf59be
+        body: 5faf7da3e480608f6d7514941a20cf69899adb54d3cd1667e2148f2ebcc6d425
       - file: "crates/loft-cli/tests/publish.rs"
         name: "a_publish_prints_and_writes_each_citation_of_a_withdrawn_label_it_rewrites"
         body: af1605eb706ca517ca84b1c402c6f19020638346cca5ca79a85c0fc83c238d63

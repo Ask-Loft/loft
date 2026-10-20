@@ -22,7 +22,7 @@ use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-publish/1";
+const SCHEMA: &str = "loft-publish/2";
 
 /// What `loft publish` reports: a lock it wrote or that stands, and what the publish did.
 struct Report {
@@ -231,6 +231,7 @@ const fn finishing(operation: Operation) -> &'static str {
 
 fn published(report: &Report) -> Value {
     let mut fields = json!({
+        "givenBack": labels(&report.given_back),
         "allocated": labels(&report.allocated),
         "rewritten": relabels(&report.rewritten),
         "withdrawn": relabels(&report.withdrawn),

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-publish-1.json",
-  "title": "The result of `loft publish --format json`, version 1",
+  "$id": "loft-publish-2.json",
+  "title": "The result of `loft publish --format json`, version 2",
   "oneOf": [
     {
       "type": "object",
@@ -9,6 +9,7 @@
       "required": [
         "schema",
         "outcome",
+        "givenBack",
         "allocated",
         "rewritten",
         "withdrawn",
@@ -18,7 +19,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-publish/1"
+          "const": "loft-publish/2"
         },
         "outcome": {
           "type": "string",
@@ -26,6 +27,12 @@
             "published",
             "unchanged"
           ]
+        },
+        "givenBack": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/allocated"
+          }
         },
         "allocated": {
           "type": "array",
@@ -73,7 +80,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-publish/1"
+          "const": "loft-publish/2"
         },
         "outcome": {
           "const": "error"
