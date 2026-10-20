@@ -1,7 +1,7 @@
 key: e05fa615-2708-4b59-8d22-f4119bedef5a
 slug: verification
 name: "Verification"
-body: "A read-only check that the roots recomputed from `spec/` match the roots a lock records."
+body: "A read-only check that the roots recomputed from `spec/` match the roots a lock records. Each lock is checked under the state view it names, so a lock written before the lint configuration entered the state root keeps verifying against its tree."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -21,3 +21,17 @@ requirements:
         name: "Verification writes nothing."
       - key: fe7a139a-76e5-4e40-8221-98904ef6003d
         name: "The roots are compared in the order content root, binding root, state root."
+  - key: 01a156a1-0a9f-763f-9aaa-d3ed8cac9371
+    statement:
+      form: ubiquitous
+      system: "The publisher"
+      shall: "verify each lock under the state view that the lock names."
+    criteria:
+      - key: 01a156a1-0a9f-763f-9aaa-d3ee8d25d9e0
+        name: "A lock without `stateView` is verified under state view 1."
+      - key: 01a156a1-0a9f-763f-9aaa-d3ef2659adcc
+        name: "A lock that names state view 2 is verified under state view 2."
+      - key: 01a156a1-0a9f-763f-9aaa-d3f090a1b770
+        name: "A lock of state view 1 still verifies after `spec/lint.yaml` is added to its tree."
+      - key: 01a156a1-0a9f-763f-9aaa-d3f1a2c8dc0e
+        name: "A lock of state view 1 still verifies after its tree's `spec/lint.yaml` is changed or removed."

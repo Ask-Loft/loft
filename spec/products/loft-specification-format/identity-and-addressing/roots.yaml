@@ -1,7 +1,7 @@
 key: 61d7c512-16c1-44b2-a625-62d581fffd97
 slug: roots
 name: "Roots"
-body: "The edges root, the content root, the binding root, the registry roots, the decisions root and the state root, and what each of them is sensitive to."
+body: "The edges root, the content root, the binding root, the registry roots, the decisions root and the state root, and what each of them is sensitive to. A lock names the state view its state root was computed under: state view 1 is the state view as it stood before the lint configuration entered it, and state view 2 adds the digest of `spec/lint.yaml`, so that a lock pins the configuration the linter reads with the tree."
 tags:
   - portable
 realizes:
@@ -99,6 +99,38 @@ requirements:
         name: "A document that is not derived has `null` as its derived-from record."
       - key: 64e542ae-cfb5-4d3b-a9fb-c28672221b7c
         name: "The derived-from record is read from `spec/loftspec.yaml`."
+  - key: 01a156a1-0a9f-763f-9aaa-d3dad8a10f11
+    statement:
+      form: optional
+      where: "a state root is computed under state view 2"
+      system: "the hasher"
+      shall: "cover the bytes of `spec/lint.yaml` in the state view whenever the tree holds that file."
+    criteria:
+      - key: 01a156a1-0a9f-763f-9aaa-d3db715f9644
+        name: "The state view of a tree that holds `spec/lint.yaml` ends with the object `{\"lintConfiguration\": <digest>}`, after the extensions root where there is one."
+      - key: 01a156a1-0a9f-763f-9aaa-d3dc5d715464
+        name: "The digest of `spec/lint.yaml` is taken under the domain string `loftspec/lint/1` over a view that is the file's whole text, as stored, as one JSON string."
+      - key: 01a156a1-0a9f-763f-9aaa-d3dd085ab7e6
+        name: "A tree without `spec/lint.yaml` has the same state root under state view 2 as under state view 1."
+      - key: 01a156a1-0a9f-763f-9aaa-d3dea81f8d9d
+        name: "Changing any byte of `spec/lint.yaml`, its layout included, changes the state root."
+      - key: 01a156a1-0a9f-763f-9aaa-d3df274d6fd3
+        name: "Adding `spec/lint.yaml` to a tree changes the state root."
+      - key: 01a156a1-0a9f-763f-9aaa-d3e0e6f78ebc
+        name: "Removing `spec/lint.yaml` from a tree changes the state root."
+      - key: 01a156a1-0a9f-763f-9aaa-d3e1488be969
+        name: "Changing `spec/lint.yaml` leaves the content root and the binding root unchanged."
+  - key: 01a156a1-0a9f-763f-9aaa-d3e24bf2decb
+    statement:
+      form: optional
+      where: "a state root is computed under state view 1"
+      system: "the hasher"
+      shall: "leave `spec/lint.yaml` out of the state view."
+    criteria:
+      - key: 01a156a1-0a9f-763f-9aaa-d3e31796a5eb
+        name: "Under state view 1, adding, changing or removing `spec/lint.yaml` leaves the state root unchanged."
+      - key: 01a156a1-0a9f-763f-9aaa-d3e4117beb9d
+        name: "The state view under state view 1 is the state view of the Format before `spec/lint.yaml` entered it."
   - key: 3763d0ec-da5c-4c93-bc86-852891f548bb
     statement:
       form: ubiquitous

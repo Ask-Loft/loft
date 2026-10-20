@@ -82,7 +82,7 @@ requirements:
       shall: "derive each digest as SHA-256 over a domain string, one zero byte and the RFC 8785 canonical JSON of the view."
     criteria:
       - key: ec8d0d1b-6c2a-4ff1-ae2c-bd1d0e1ebf68
-        name: "The domain strings are `loftspec/node/1`, `loftspec/edges/1`, `loftspec/registry/1`, `loftspec/decision/1`, `loftspec/decisions/1`, `loftspec/content/1`, `loftspec/bindings/1`, `loftspec/state/1` and `loftspec/extensions/1`."
+        name: "The domain strings are `loftspec/node/1`, `loftspec/edges/1`, `loftspec/registry/1`, `loftspec/decision/1`, `loftspec/decisions/1`, `loftspec/content/1`, `loftspec/bindings/1`, `loftspec/state/1`, `loftspec/extensions/1` and `loftspec/lint/1`."
       - key: f9e8c0b8-fd34-41bb-98a2-8854d25bfaea
         name: "The same view hashed under two domain strings yields two different digests."
       - key: ccd68fa9-cf0b-4766-87bf-65b05eef84e4

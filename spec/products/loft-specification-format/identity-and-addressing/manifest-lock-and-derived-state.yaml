@@ -1,7 +1,7 @@
 key: 6ad0f26e-00c0-48f6-8886-cd0fb742ac48
 slug: manifest-lock-and-derived-state
 name: "Manifest, lock and derived state"
-body: "The manifest that names the format and the algorithm, the lock that pins the roots at publish, and the record of the source state for a document derived from a Loft v1 export."
+body: "The manifest that names the format and the algorithm, the lock that pins the roots at publish and names the state view they were computed under, and the record of the source state for a document derived from a Loft v1 export."
 realizes:
   - e1ab75a5-f206-4760-970f-bee0653c4f2a
 requirements:
@@ -56,6 +56,27 @@ requirements:
         name: "A lock that holds a field other than the lock fields is not a valid lock record."
       - key: 01a12ff0-f5e5-7095-8fa8-250a1958b798
         name: "A lock that names a format or an algorithm that the reader does not implement is not a valid lock record."
+      - key: 01a156a1-0a9f-763f-9aaa-d3d2684192a2
+        name: "`loft.lock.json` carries `stateView`, the number of the state view its state root was computed under, wherever that view is not 1."
+      - key: 01a156a1-0a9f-763f-9aaa-d3d3745d09c8
+        name: "A lock without `stateView` is a valid lock record of state view 1."
+      - key: 01a156a1-0a9f-763f-9aaa-d3d4353c2364
+        name: "A lock whose `stateView` is not a positive whole number is not a valid lock record."
+      - key: 01a156a1-0a9f-763f-9aaa-d3d50c2db021
+        name: "A lock whose `stateView` names a view the reader does not implement is not a valid lock record."
+  - key: 01a156a1-0a9f-763f-9aaa-d3d6435f59a6
+    statement:
+      form: unwanted
+      if: "a lock names a state view that the reader does not implement"
+      system: "the reader"
+      shall: "name the state view in its refusal of the lock."
+    criteria:
+      - key: 01a156a1-0a9f-763f-9aaa-d3d7b28c23dc
+        name: "The refusal names the lock's state view."
+      - key: 01a156a1-0a9f-763f-9aaa-d3d8ae6b5e7e
+        name: "The refusal names the highest state view the reader implements."
+      - key: 01a156a1-0a9f-763f-9aaa-d3d934c5c7b7
+        name: "A reader that implements state views 1 and 2 refuses a lock of state view 3."
   - key: 035cf58a-5fd2-410a-bff7-093f40abd24f
     statement:
       form: optional

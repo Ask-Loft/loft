@@ -1,7 +1,7 @@
 key: e74d3409-8e24-4790-9285-8568ef81453d
 slug: the-lock
 name: "The lock"
-body: "The lock record a publish writes to `loft.lock.json`, together with the label changes and the rewritten citations that are the only edits a publish makes under `spec/`."
+body: "The lock record a publish writes to `loft.lock.json`, together with the label changes and the rewritten citations that are the only edits a publish makes under `spec/`. A tree that holds `spec/lint.yaml` and was last published under state view 1 has a new state root under state view 2, so the first publish after an upgrade advances its publish sequence once, with no other change."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:
@@ -33,10 +33,35 @@ requirements:
       shall: "write the lock as a JSON object with its fields in the Format's order."
     criteria:
       - key: 01a12ff0-f5e5-7095-8fa8-24fc60a2cac0
-        name: "The lock's fields are, in order, `format`, `algorithm`, `documentKey`, `stateRoot`, `contentRoot`, `bindingRoot`, `publishSequence`, `publishedAt` and `derivedFrom`."
+        name: "The lock's fields are, in order, `format`, `algorithm`, `documentKey`, `stateView`, `stateRoot`, `contentRoot`, `bindingRoot`, `publishSequence`, `publishedAt` and `derivedFrom`."
       - key: 01a12ff0-f5e5-7095-8fa8-24fdc9331a2e
         name: "The lock is indented by two spaces and ends with one newline."
       - key: 01a12ff0-f5e5-7095-8fa8-24fe3923692d
         name: "Each root in the lock is written in lowercase hexadecimal."
       - key: 01a12ff0-f5e5-7095-8fa8-24ffa23bc72a
         name: "`publishedAt` is written in the RFC 3339 form in UTC to the second, ending in `Z`."
+      - key: 01a156a1-0a9f-763f-9aaa-d3e5542afe37
+        name: "`stateView` is written as a JSON number."
+  - key: 01a156a1-0a9f-763f-9aaa-d3e6b002f192
+    statement:
+      form: ubiquitous
+      system: "The publisher"
+      shall: "compute the roots of every lock it writes under state view 2."
+    criteria:
+      - key: 01a156a1-0a9f-763f-9aaa-d3e745d21d97
+        name: "Every lock the publisher writes carries `stateView` with the value 2."
+      - key: 01a156a1-0a9f-763f-9aaa-d3e823c32bd8
+        name: "The state root a lock records is the hasher's state root of the published tree under state view 2."
+  - key: 01a156a1-0a9f-763f-9aaa-d3e927a2671d
+    statement:
+      form: event_driven
+      when: "publishing a tree whose last lock names state view 1"
+      system: "the publisher"
+      shall: "compare the tree's state root under state view 2 with the lock's state root."
+    criteria:
+      - key: 01a156a1-0a9f-763f-9aaa-d3ea430ca328
+        name: "A tree that holds `spec/lint.yaml` and is otherwise unchanged since that lock is published again, with the publish sequence advanced by one."
+      - key: 01a156a1-0a9f-763f-9aaa-d3ebf90a71f1
+        name: "A second publish after that one, over the same tree, writes nothing."
+      - key: 01a156a1-0a9f-763f-9aaa-d3ecdf587536
+        name: "A tree without `spec/lint.yaml` that is unchanged since that lock is not published again."

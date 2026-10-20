@@ -1,0 +1,107 @@
+key: 01a156a1-0a9c-776b-a863-a46ede87f65f
+slug: the-lint-configuration-enters-the-state-root
+title: "The lint configuration enters the state root under a new state view"
+context: "A lock pins the tree, but the findings of `loft check` also depend on `spec/lint.yaml`, which no root covered: two people could hold the same lock and read different findings. Locks already published must keep verifying, and every implementation must compute the same root for the same tree."
+state:
+  kind: accepted
+  selectedOption: 01a156a1-0a9c-776b-a863-a472092e6ab6
+  outcome: "A lock names the state view its roots were computed under, absent meaning view 1; under view 2 the state view also holds the digest of `spec/lint.yaml`'s text when the tree holds the file; verification checks each lock under its own view, and the publisher writes view 2."
+drivers:
+  - key: 01a156a1-0a9c-776b-a863-a46f7d890b8c
+    kind: local
+    label: "Findings pinned"
+    statement: "A published state fixes the configuration its findings are made under."
+  - key: 01a156a1-0a9c-776b-a863-a470c2e1a382
+    kind: local
+    label: "Old locks verify"
+    statement: "A lock published before the change still verifies against its unchanged tree."
+  - key: 01a156a1-0a9c-776b-a863-a4713368679f
+    kind: local
+    label: "Portable"
+    statement: "Two implementations compute the same root without interpreting the file."
+options:
+  - key: 01a156a1-0a9c-776b-a863-a472092e6ab6
+    title: "A numbered state view over the file's text"
+    description: "The lock names its state view; view 2 adds the digest of the file's text, only when the file exists."
+  - key: 01a156a1-0a9c-776b-a863-a4739c84ed38
+    title: "Change the state view for every lock"
+    description: "The state view gains the digest at once, with no view number in the lock."
+  - key: 01a156a1-0a9c-776b-a863-a4748f4c3912
+    title: "A numbered state view over the parsed configuration"
+    description: "The lock names its state view; view 2 adds a digest of the configuration as the linter reads it, rules and suppressions sorted."
+  - key: 01a156a1-0a9c-776b-a863-a47586af6273
+    title: "Leave the configuration out of every root"
+    description: "The lock pins the tree alone, as before."
+assessments:
+  - option: 01a156a1-0a9c-776b-a863-a472092e6ab6
+    driver: 01a156a1-0a9c-776b-a863-a46f7d890b8c
+    rating: supports
+    rationale: "any change to the file changes the state root"
+  - option: 01a156a1-0a9c-776b-a863-a472092e6ab6
+    driver: 01a156a1-0a9c-776b-a863-a470c2e1a382
+    rating: supports
+    rationale: "a lock without a view is checked under view 1"
+  - option: 01a156a1-0a9c-776b-a863-a472092e6ab6
+    driver: 01a156a1-0a9c-776b-a863-a4713368679f
+    rating: supports
+    rationale: "the digest is taken over the text as stored"
+  - option: 01a156a1-0a9c-776b-a863-a4739c84ed38
+    driver: 01a156a1-0a9c-776b-a863-a46f7d890b8c
+    rating: supports
+    rationale: "any change to the file changes the state root"
+  - option: 01a156a1-0a9c-776b-a863-a4739c84ed38
+    driver: 01a156a1-0a9c-776b-a863-a470c2e1a382
+    rating: conflicts
+    rationale: "a published tree that holds the file fails verification"
+  - option: 01a156a1-0a9c-776b-a863-a4739c84ed38
+    driver: 01a156a1-0a9c-776b-a863-a4713368679f
+    rating: supports
+    rationale: "the digest is taken over the text as stored"
+  - option: 01a156a1-0a9c-776b-a863-a4748f4c3912
+    driver: 01a156a1-0a9c-776b-a863-a46f7d890b8c
+    rating: supports
+    rationale: "a change that alters the configuration changes the state root"
+  - option: 01a156a1-0a9c-776b-a863-a4748f4c3912
+    driver: 01a156a1-0a9c-776b-a863-a470c2e1a382
+    rating: supports
+    rationale: "a lock without a view is checked under view 1"
+  - option: 01a156a1-0a9c-776b-a863-a4748f4c3912
+    driver: 01a156a1-0a9c-776b-a863-a4713368679f
+    rating: conflicts
+    rationale: "every implementation has to parse and normalise the file the same way"
+  - option: 01a156a1-0a9c-776b-a863-a47586af6273
+    driver: 01a156a1-0a9c-776b-a863-a46f7d890b8c
+    rating: conflicts
+    rationale: "the configuration can change under an unchanged lock"
+  - option: 01a156a1-0a9c-776b-a863-a47586af6273
+    driver: 01a156a1-0a9c-776b-a863-a470c2e1a382
+    rating: supports
+    rationale: "nothing changes"
+  - option: 01a156a1-0a9c-776b-a863-a47586af6273
+    driver: 01a156a1-0a9c-776b-a863-a4713368679f
+    rating: supports
+    rationale: "nothing changes"
+consequences:
+  - key: 01a156a1-0a9c-776b-a863-a476df0f4a36
+    kind: benefit
+    statement: "A published state carries the configuration its findings were made under."
+  - key: 01a156a1-0a9c-776b-a863-a47797e1430b
+    kind: cost
+    statement: "A change of layout alone in `spec/lint.yaml` changes the state root."
+  - key: 01a156a1-0a9c-776b-a863-a478603d25c6
+    kind: cost
+    statement: "The first publish after an upgrade advances the publish sequence of a tree that holds `spec/lint.yaml` once."
+  - key: 01a156a1-0a9c-776b-a863-a479d8d4449f
+    kind: risk
+    statement: "An older `loft` refuses a lock of state view 2."
+subjects:
+  - role: affected
+    node: 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+  - role: affected
+    node: e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+  - role: outcome
+    node: 01a156a1-0a9f-763f-9aaa-d3dad8a10f11
+  - role: outcome
+    node: 01a156a1-0a9f-763f-9aaa-d3e6b002f192
+  - role: outcome
+    node: 01a156a1-0a9f-763f-9aaa-d3ed8cac9371
