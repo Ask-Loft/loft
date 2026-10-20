@@ -41,6 +41,21 @@ requirements:
         name: "A key that comes back as a node of another kind keeps its departed label as an alias and is allocated the next label of its new kind's prefix."
       - key: 01a156a4-1732-7428-aee4-d3a29f3d72ee
         name: "The publisher reports each label it gives back, with its key."
+  - key: 01a15980-a24e-7747-9a99-89e607c39e18
+    statement:
+      form: unwanted
+      if: "a decision of the tree names under `formerLabel` a label that the publish would give back"
+      system: "the publisher"
+      shall: "refuse to publish."
+    criteria:
+      - key: 01a15980-a251-72a2-8b36-803d0c79bc4d
+        name: "The refusal names the label."
+      - key: 01a15980-a251-72a2-8b36-803ec89b21b1
+        name: "The refusal names the key of each decision that names the label under `formerLabel`."
+      - key: 01a15980-a251-72a2-8b36-803fcb03c5c9
+        name: "The refusal says that formatting writes each such reference as the node's key."
+      - key: 01a15980-a251-72a2-8b36-80407d7b9a78
+        name: "Nothing is written."
   - key: 01a156a4-1732-7428-aee4-d3a325d43e4d
     statement:
       form: event_driven
