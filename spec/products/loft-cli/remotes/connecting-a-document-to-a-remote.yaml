@@ -1,0 +1,144 @@
+key: 01a1587a-dee2-7262-8c7b-89499e59ce55
+slug: connecting-a-document-to-a-remote
+name: "Connecting a document to a remote"
+body: "What `loft remote set` does with a remote before it records it. A document whose remote holds nothing under its key is created there under the manifest's document key, and every state the repository has published is imported into it from the repository's history, so that the remote starts at the head the repository already holds and every published label keeps its node. Only then does the manifest mark the document connected. The command reads every published state before it asks the remote anything, through the repository port of `loftspec-store`, which already reads the lock that a revision holds and the files under `spec/` that a commit holds, as `loft publish` and `loft status --base` do; locating the commit of each publish sequence is a call that the port gains with the code, and the git simulator with it. The command needs a git repository only to import a published state, so `loft remote` lists no `needs-repository` tag and the refusal is stated here. Since the connect reads and writes the tree, the Feature of `loft remote` lists the tags `reads-tree` and `writes-tree` once the connect exists, as the suites they bring run every tagged command; like the rest of `loft remote`, it sends no command event and asks for no update."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - 01a156c0-0b79-7756-9d01-b059f21d61c7
+requirements:
+  - key: 01a1587a-dee2-7262-8c7b-894adc257b05
+    statement:
+      form: event_driven
+      when: "a person runs `loft remote set <address>` for a document whose manifest does not mark it connected"
+      system: "`loft remote set`"
+      shall: "connect the document to the remote before it records the remote."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-894b0f327e5a
+        name: "`loft remote set` asks the remote to create the document under the manifest's document key."
+      - key: 01a1587a-dee2-7262-8c7b-894cd6ebbf44
+        name: "The document is named as the manifest's first Product is named, or by its document key where the manifest names no Product."
+      - key: 01a1587a-dee2-7262-8c7b-894d6812bbee
+        name: "The connect reaches the address given to `loft remote set` and sends the token read from standard input, whatever `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` hold."
+      - key: 01a1587a-dee2-7262-8c7b-894ecc301971
+        name: "The address and the token are recorded in `loft/remotes.json` only after the document is connected."
+      - key: 01a1587a-dee2-7262-8c7b-894fde643c53
+        name: "`spec/loftspec.yaml` carries `connected: true` only after the document is connected."
+      - key: 01a1587a-dee2-7262-8c7b-8950b83d6d7f
+        name: "`spec/loftspec.yaml` is written in one journaled save."
+      - key: 01a1587a-dee2-7262-8c7b-8951abd5db23
+        name: "Every other field of the manifest is left as it was."
+      - key: 01a1587a-dee2-7262-8c7b-8952a0933c30
+        name: "The output names the remote's head once the document is connected, by its publish sequence and state root."
+  - key: 01a1587a-dee2-7262-8c7b-89533f511ebd
+    statement:
+      form: event_driven
+      when: "the remote creates the document of a repository that has published it"
+      system: "`loft remote set`"
+      shall: "import every state that the repository has published, from publish sequence 1."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-895446eb275e
+        name: "The import lists one state for each publish sequence from 1 to that of `loft.lock.json`, in that order."
+      - key: 01a1587a-dee2-7262-8c7b-89553eaa6db9
+        name: "Each state's lock is the lock that the repository's history holds for its publish sequence."
+      - key: 01a1587a-dee2-7262-8c7b-8956cd201cfe
+        name: "Each state's files are every file under `spec/`, `spec/labels.yaml` included, as the earliest commit of the history that holds its lock holds them."
+      - key: 01a1587a-dee2-7262-8c7b-8957bdbf34a7
+        name: "Every state goes in one import request."
+  - key: 01a1587a-dee2-7262-8c7b-8958dac9405d
+    statement:
+      form: event_driven
+      when: "the remote creates the document of a repository that has never published it"
+      system: "`loft remote set`"
+      shall: "import nothing."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-8959302356ef
+        name: "A document without `loft.lock.json` has never been published."
+      - key: 01a1587a-dee2-7262-8c7b-895a8c4cc255
+        name: "No import request is sent."
+      - key: 01a1587a-dee2-7262-8c7b-895b3494da5f
+        name: "The output says that the remote holds no published state of the document."
+  - key: 01a1587a-dee2-7262-8c7b-895cac0b8130
+    statement:
+      form: event_driven
+      when: "the remote already holds the document key with the head that `loft.lock.json` names"
+      system: "`loft remote set`"
+      shall: "connect the document without an import."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-895d46943611
+        name: "The remote's head is the one that a `conflict` refusal of the create names."
+      - key: 01a1587a-dee2-7262-8c7b-895e23847314
+        name: "A head of publish sequence `0` and state root `null` is the one that a document without a lock names."
+      - key: 01a1587a-dee2-7262-8c7b-895f0c899c76
+        name: "No import request is sent."
+      - key: 01a1587a-dee2-7262-8c7b-8960890043f7
+        name: "The remote is recorded, and the manifest marked connected, as after an import."
+  - key: 01a1587a-dee2-7262-8c7b-8961227227f7
+    statement:
+      form: unwanted
+      if: "the remote already holds the document key with a head other than the one `loft.lock.json` names"
+      system: "`loft remote set`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-8962dec3d01e
+        name: "The error names the remote's head and the lock's, each by its publish sequence and state root."
+      - key: 01a1587a-dee2-7262-8c7b-8963a91182ad
+        name: "No import request is sent."
+      - key: 01a1587a-dee2-7262-8c7b-8964fde8c8ee
+        name: "Nothing is written."
+  - key: 01a1587a-dee2-7262-8c7b-8965ac3bf58b
+    statement:
+      form: unwanted
+      if: "the repository's history cannot give the files of a state that the document has published"
+      system: "`loft remote set`"
+      shall: "refuse before it sends the remote a request, and exit 1."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-8966c39b960f
+        name: "A document with a lock is refused outside a git repository."
+      - key: 01a1587a-dee2-7262-8c7b-896740e810f5
+        name: "A publish sequence whose lock no commit of the history holds is refused, and the error names the sequence."
+      - key: 01a1587a-dee2-7262-8c7b-896831f228ef
+        name: "A state whose files' roots differ from its lock's is refused, and the error names its publish sequence."
+      - key: 01a1587a-dee2-7262-8c7b-8969dcb4a49b
+        name: "No request is sent to the remote."
+      - key: 01a1587a-dee2-7262-8c7b-896a831c773d
+        name: "Nothing is written."
+  - key: 01a1587a-dee2-7262-8c7b-896b4809733f
+    statement:
+      form: unwanted
+      if: "the remote refuses the import, or refuses the create other than as a `conflict`"
+      system: "`loft remote set`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-896ca45d4a6c
+        name: "The error names the call that the remote refused, with its status and its code."
+      - key: 01a1587a-dee2-7262-8c7b-896dd9fd6611
+        name: "An import refused after the create leaves the remote holding the document with no published state, and the error says so."
+      - key: 01a1587a-dee2-7262-8c7b-896ec3692b8d
+        name: "Nothing is written."
+  - key: 01a1587a-dee2-7262-8c7b-896fb7e313c5
+    statement:
+      form: unwanted
+      if: "the head that the import answers is not the one `loft.lock.json` names"
+      system: "`loft remote set`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-8970f5168251
+        name: "The error names both heads, each by its publish sequence and state root."
+      - key: 01a1587a-dee2-7262-8c7b-89711ef252b2
+        name: "Nothing is written."
+  - key: 01a1587a-dee2-7262-8c7b-89726ae77ee2
+    statement:
+      form: event_driven
+      when: "a person runs `loft remote set <address>` for a document whose manifest already marks it connected"
+      system: "`loft remote set`"
+      shall: "record the remote without connecting the document again."
+    criteria:
+      - key: 01a1587a-dee2-7262-8c7b-8973b5580080
+        name: "No request is sent to the remote."
+      - key: 01a1587a-dee2-7262-8c7b-8974362040f4
+        name: "The manifest is left as it was."

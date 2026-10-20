@@ -27,7 +27,7 @@ requirements:
       shall: "reach the remote at that address in place of the file's."
     criteria:
       - key: 01a156aa-d531-70a7-88e0-0bf17dfd5808
-        name: "Every request for the remote goes to the address `LOFT_REMOTE_ENDPOINT` names."
+        name: "Every request for the remote but those of `loft remote set` goes to the address `LOFT_REMOTE_ENDPOINT` names."
       - key: 01a156aa-d531-70a7-88e0-0bf23f38c853
         name: "The file's address for the document key is not contacted."
   - key: 01a156aa-d531-70a7-88e0-0bf313bb10c5
@@ -38,7 +38,7 @@ requirements:
       shall: "send that token in place of the file's."
     criteria:
       - key: 01a156aa-d531-70a7-88e0-0bf438c4c43c
-        name: "Every request for the remote carries the token `LOFT_REMOTE_TOKEN` names."
+        name: "Every request for the remote but those of `loft remote set` carries the token `LOFT_REMOTE_TOKEN` names."
       - key: 01a156aa-d531-70a7-88e0-0bf57d3524de
         name: "With both `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` set, `loft/remotes.json` is not read."
   - key: 01a156aa-d531-70a7-88e0-0bf6e06c5184
@@ -128,6 +128,21 @@ requirements:
       - key: 01a156aa-d531-70a7-88e0-0c117276d1e1
         name: "A problem document with the code `unauthenticated` is reported as a refused token for the document key."
       - key: 01a156aa-d531-70a7-88e0-0c121baaa69d
+        name: "Nothing is written."
+  - key: 01a1587b-106c-7784-8c2e-ba410e7ec31b
+    statement:
+      form: unwanted
+      if: "the remote holds no document under a connected document's key"
+      system: "Loft"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1587b-106c-7784-8c2e-ba42824b9735
+        name: "A problem document with the code `not_found` for the head is such an answer."
+      - key: 01a1587b-106c-7784-8c2e-ba4355d7f7c9
+        name: "The error names the document key."
+      - key: 01a1587b-106c-7784-8c2e-ba447bd53626
+        name: "The error says that `loft remote set` connects the document to its remote."
+      - key: 01a1587b-106c-7784-8c2e-ba45a359704e
         name: "Nothing is written."
   - key: 01a156bd-30c9-7688-a529-f458909b400c
     statement:

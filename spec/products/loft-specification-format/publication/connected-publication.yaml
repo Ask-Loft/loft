@@ -1,7 +1,7 @@
 key: 01a156ac-0a95-726f-ab84-01a1d6715dce
 slug: connected-publication
 name: "Connected publication"
-body: "A document whose manifest marks it `connected: true` publishes through its remote, a server that holds its published states in order and is the only source of its labels. A publish of such a document sends what changed since the remote's head and applies what the remote returns. Labels are still given only at publish, and counters never rewind; settling the labels that two clones gave apart stays the way of a document that is not connected."
+body: "A document whose manifest marks it `connected: true`, which `loft remote set` writes once it has connected the document, publishes through its remote, a server that holds its published states in order and is the only source of its labels. A publish of such a document sends what changed since the remote's head and applies what the remote returns. Labels are still given only at publish, and counters never rewind; settling the labels that two clones gave apart stays the way of a document that is not connected."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 mentions:

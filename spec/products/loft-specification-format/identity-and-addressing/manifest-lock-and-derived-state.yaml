@@ -26,7 +26,7 @@ requirements:
       - key: b1c3b192-77a6-41c1-8c45-4a7b1638937f
         name: "`spec/loftspec.yaml` carries `derivedFrom` for a document derived from a Loft v1 export."
       - key: 01a156ac-0a94-7459-afe0-230cbbb0a3b3
-        name: "`spec/loftspec.yaml` carries `connected: true` for a connected document."
+        name: "`spec/loftspec.yaml` carries `connected: true` once `loft remote set` has connected the document to its remote."
       - key: 01a156ac-0a94-7459-afe0-230dcc3abd51
         name: "`connected` enters no root."
   - key: 1e5c52a9-c0ec-4081-a444-76999b1a73d0

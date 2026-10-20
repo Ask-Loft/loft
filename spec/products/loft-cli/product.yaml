@@ -84,6 +84,7 @@ featureGroups:
   - key: 01a156aa-d531-70a7-88e0-0beac0beb365
     slug: remotes
     name: "Remotes"
-    body: "How `loft` reaches the remote of a connected document. A document is connected only when its manifest says so; every other document needs no server."
+    body: "How `loft` connects a document to a remote and reaches the remote of a connected document. A document is connected only when its manifest says so, which `loft remote set` writes once the remote holds the document; every other document needs no server."
     features:
       - 01a156aa-d531-70a7-88e0-0bebdc0a9327
+      - 01a1587a-dee2-7262-8c7b-89499e59ce55

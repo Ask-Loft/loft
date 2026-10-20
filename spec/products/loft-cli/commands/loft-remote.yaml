@@ -1,11 +1,12 @@
 key: 01a156c0-0b79-7756-9d01-b059f21d61c7
 slug: loft-remote
 name: "`loft remote`"
-body: "Sets and removes the address and the token of the current document's remote in `loft/remotes.json`, the file `loft` reads them from, so that a token passes through neither a command line nor a file of the repository. It takes the document key from the manifest, opens no network connection and writes nothing under `spec/`; like `loft telemetry`, it sends no command event and asks for no update. It reads the tree, and its Feature lists the tag `reads-tree` once the command exists, since the suite that the tag brings runs every tagged command."
+body: "Sets and removes the address and the token of the current document's remote in `loft/remotes.json`, the file `loft` reads them from, so that a token passes through neither a command line nor a file of the repository. It takes the document key from the manifest. `loft remote set` first connects a document that is not yet connected, as the Feature \"Connecting a document to a remote\" states, and only then records the remote and marks the manifest `connected: true`; `loft remote remove` opens no network connection and leaves the manifest alone. Like `loft telemetry`, it sends no command event and asks for no update. It reads the tree and writes the manifest, and its Feature lists the tags `reads-tree` and `writes-tree` once the command exists, since the suites that the tags bring run every tagged command."
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 mentions:
   - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - 01a1587a-dee2-7262-8c7b-89499e59ce55
 requirements:
   - key: 01a156c0-0b79-7756-9d01-b05aa4e3f82b
     statement:
@@ -51,16 +52,24 @@ requirements:
         name: "A file that holds no entry for the document key is left unchanged."
       - key: 01a156c0-0b7a-76b6-9a6a-68321248b588
         name: "A missing file is not created."
+      - key: 01a1587a-dee2-7262-8c7b-893f8d0d729c
+        name: "The manifest is left as it was, `connected` included."
   - key: 01a156c0-0b7a-76b6-9a6a-6833d5e9ea55
     statement:
       form: ubiquitous
       system: "`loft remote`"
-      shall: "open no network connection and write no file of the Format."
+      shall: "reach the remote and write the tree only to connect a document."
     criteria:
       - key: 01a156c0-0b7a-76b6-9a6a-6834aa682276
-        name: "No subcommand of `loft remote` opens a network connection."
+        name: "`loft remote remove` opens no network connection."
+      - key: 01a1587a-dee2-7262-8c7b-89405469cf59
+        name: "`loft remote set` for a document already connected opens no network connection."
       - key: 01a156c0-0b7a-76b6-9a6a-6835e981a488
-        name: "No file under `spec/` or beside it is written."
+        name: "No file under `spec/` but `spec/loftspec.yaml` is written."
+      - key: 01a1587a-dee2-7262-8c7b-8941d30b3661
+        name: "No file beside `spec/` is written."
+      - key: 01a1587a-dee2-7262-8c7b-894281a3e011
+        name: "`loft remote remove` writes no file under `spec/`."
   - key: 01a156c0-0b7a-76b6-9a6a-6836111cfa3a
     statement:
       form: unwanted
@@ -72,6 +81,8 @@ requirements:
         name: "The error names the address."
       - key: 01a156c0-0b7a-76b6-9a6a-6838b170019a
         name: "Nothing is written."
+      - key: 01a1587a-dee2-7262-8c7b-89437126fee2
+        name: "No connection is opened."
   - key: 01a156c0-0b7a-76b6-9a6a-683918f8a7ec
     statement:
       form: unwanted
@@ -85,6 +96,8 @@ requirements:
         name: "The error says that the token is read from standard input."
       - key: 01a156c0-0b7a-76b6-9a6a-683ccce78607
         name: "Nothing is written."
+      - key: 01a1587a-dee2-7262-8c7b-8944681da017
+        name: "No connection is opened."
   - key: 01a156c0-0b7a-76b6-9a6a-683d8bd9e329
     statement:
       form: unwanted
@@ -96,6 +109,8 @@ requirements:
         name: "The error names the file and says that only its owner may read or write it."
       - key: 01a156c0-0b7a-76b6-9a6a-683f82d16c8a
         name: "The file is left as it was."
+      - key: 01a1587a-dee2-7262-8c7b-89456ec60012
+        name: "No connection is opened."
   - key: 01a156c0-0b7a-76b6-9a6a-6840cd066e37
     statement:
       form: unwanted
@@ -107,6 +122,8 @@ requirements:
         name: "The error names the expected path."
       - key: 01a156c0-0b7a-76b6-9a6a-68424473b56c
         name: "Nothing is written."
+      - key: 01a1587a-dee2-7262-8c7b-894647091530
+        name: "No connection is opened."
   - key: 01a156c0-0b7a-76b6-9a6a-6843069eec48
     statement:
       form: optional
@@ -115,13 +132,17 @@ requirements:
       shall: "give the result of the subcommand as its outcome."
     criteria:
       - key: 01a156c0-0b7a-76b6-9a6a-68445e67a1a5
-        name: "The outcome of `loft remote set` is `set`."
+        name: "The outcome of `loft remote set` is `set` when the manifest already marked the document connected."
+      - key: 01a1587a-dee2-7262-8c7b-894754a95f9a
+        name: "The outcome of `loft remote set` is `connected` when it connected the document."
       - key: 01a156c0-0b7a-76b6-9a6a-684562209106
         name: "The outcome of `loft remote remove` is `removed` when it removed an entry."
       - key: 01a156c0-0b7a-76b6-9a6a-684673407366
         name: "The outcome of `loft remote remove` is `unchanged` when there was no entry to remove."
       - key: 01a156c0-0b7a-76b6-9a6a-6847bf3c1c6e
         name: "The document names the document key, and the address after `loft remote set`."
+      - key: 01a1587a-dee2-7262-8c7b-89480fb5e133
+        name: "After a connect, the document names the remote's head by its publish sequence and state root."
       - key: 01a156c0-0b7a-76b6-9a6a-6848de1e913a
         name: "The document holds no token."
       - key: 01a156c0-0b7a-76b6-9a6a-68493a5b9580

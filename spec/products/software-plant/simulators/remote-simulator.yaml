@@ -1,7 +1,7 @@
 key: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
 slug: remote-simulator
 name: "Remote simulator"
-body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, scripts the published states, the drafts and the answer to each publish, and reads the requests it received. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path and is given whole, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
+body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
 realizes:
   - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
 requirements:
@@ -55,6 +55,20 @@ requirements:
         name: "A request to a path the contract does not name is answered `404 Not Found` with the code `not_found`."
       - key: 01a156ae-6a51-7230-a9a1-fa97091dc743
         name: "A request with a method its path does not take is answered `405 Method Not Allowed` with the code `method_not_allowed`."
+  - key: 01a1587a-dee4-70f8-999e-e54dfb782624
+    statement:
+      form: ubiquitous
+      system: "The remote simulator"
+      shall: "answer every call but `create` for a document it does not hold with `404 Not Found` and the code `not_found`."
+    criteria:
+      - key: 01a1587a-dee4-70f8-999e-e54ec8bd682d
+        name: "`GET <address>/head` for a document it does not hold is answered `404 Not Found` with the code `not_found`."
+      - key: 01a1587a-dee4-70f8-999e-e54ff21bc264
+        name: "`POST <address>/publish` for a document it does not hold is answered `404 Not Found` with the code `not_found`."
+      - key: 01a1587a-dee4-70f8-999e-e550327e7576
+        name: "`POST <address>/import` for a document it does not hold is answered `404 Not Found` with the code `not_found`."
+      - key: 01a1587a-dee4-70f8-999e-e551b4c3a9d5
+        name: "`POST <address>/create` for a document it does not hold creates it."
   - key: 01a156ae-6a51-7230-a9a1-fa98e9f27f25
     statement:
       form: event_driven
@@ -137,6 +151,62 @@ requirements:
         name: "A publish whose body is not a valid request, or whose delta the remote cannot apply, is answered `400 Bad Request` with the code `invalid_request` and a member `paths` listing each path at fault."
       - key: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
         name: "A replay is answered before the base is compared with the head."
+  - key: 01a1587a-dee4-70f8-999e-e5528698e471
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `POST <address>/create`"
+      system: "the remote simulator"
+      shall: "create the document under the key and the name the request gives, as its scenario names."
+    criteria:
+      - key: 01a1587a-dee4-70f8-999e-e553cef19f54
+        name: "The request's body is a JSON object holding exactly `documentKey` and `name`."
+      - key: 01a1587a-dee4-70f8-999e-e5545c14c37e
+        name: "A created document is answered `200 OK` with a JSON object holding `documentKey` and `head` set to `null`."
+      - key: 01a1587a-dee4-70f8-999e-e5555d0a2ec5
+        name: "After a create, `GET <address>/head` answers as the create did."
+      - key: 01a1587a-dee4-70f8-999e-e556bb2702fb
+        name: "A key that the remote already holds a document under is answered `409 Conflict` with the code `conflict` and the `head` of that document."
+      - key: 01a1587a-dee4-70f8-999e-e557da3f39fd
+        name: "A `documentKey` other than the address's is answered `400 Bad Request` with the code `invalid_request` and `paths` empty."
+      - key: 01a1587a-dee4-70f8-999e-e5584ba5df9e
+        name: "A name that is blank, or longer than 200 Unicode scalar values, is answered `400 Bad Request` with the code `invalid_request` and `paths` empty."
+      - key: 01a1587a-dee4-70f8-999e-e559d421bdfa
+        name: "A token that its scenario does not let create a document is answered `403 Forbidden` with the code `forbidden`."
+  - key: 01a1587a-dee4-70f8-999e-e55aa6f750e0
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `POST <address>/import`"
+      system: "the remote simulator"
+      shall: "take the published states the request gives as the document's history, as its scenario names."
+    criteria:
+      - key: 01a1587a-dee4-70f8-999e-e55b57e62d99
+        name: "The request's body is a JSON object holding `documentKey` and `states`."
+      - key: 01a1587a-dee4-70f8-999e-e55c7023d491
+        name: "`states` lists each state as an object of `lock` and `files`, from publish sequence 1 upward."
+      - key: 01a1587a-dee4-70f8-999e-e55de4a2a02c
+        name: "Each state's `lock` is its lock record as `loft.lock.json` holds it."
+      - key: 01a1587a-dee4-70f8-999e-e55ed7280421
+        name: "Each state's `files` lists every file of the state under `spec/`, `spec/labels.yaml` included, as an object of `path` and `text`, sorted by `path` in byte order."
+      - key: 01a1587a-dee4-70f8-999e-e55faa7d255c
+        name: "An accepted import is answered `200 OK` with the document's key and its head, as `GET <address>/head` answers them after the import."
+      - key: 01a1587a-dee4-70f8-999e-e56075698d22
+        name: "The head after an accepted import is the last state of `states`."
+      - key: 01a1587a-dee4-70f8-999e-e5614a15a9d1
+        name: "A document that already holds a published state, a draft that is not empty or an open branch is answered `409 Conflict` with the code `conflict` and `head`."
+      - key: 01a1587a-dee4-70f8-999e-e5621f30ae41
+        name: "A state whose files do not verify against its lock is answered `400 Bad Request` with the code `invalid_request` and `paths` naming the files at fault, or empty."
+      - key: 01a1587a-dee4-70f8-999e-e563e27eb69d
+        name: "States whose publish sequences do not run 1, 2, 3 and on are answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e56439d37898
+        name: "States whose publish times go backwards are answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e565957a55be
+        name: "A state whose lock names another document key is answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e566ed963097
+        name: "A `documentKey` other than the address's is answered `400 Bad Request` with the code `invalid_request`."
+      - key: 01a1587a-dee4-70f8-999e-e56720992d1f
+        name: "A state over its scenario's limit for one state, or a body over its limit for an import, is answered `413 Content Too Large` with the code `payload_too_large`."
+      - key: 01a1587a-dee4-70f8-999e-e56805b97bb6
+        name: "A token that its scenario does not let import is answered `403 Forbidden` with the code `forbidden`."
   - key: 01a156af-5308-7015-abac-1425df49d7cf
     statement:
       form: event_driven

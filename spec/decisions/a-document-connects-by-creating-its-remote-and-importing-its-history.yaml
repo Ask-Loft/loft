@@ -1,0 +1,90 @@
+key: 01a1587a-dee0-75cd-aa69-f4537c66b0dd
+slug: a-document-connects-by-creating-its-remote-and-importing-its-history
+title: "A document connects by creating its remote and importing its history"
+context: "A document is often published for a while from its repository before it gets a remote. Its published states, their locks and their labels lie in the repository's history, and a connected document takes every later label from its remote, so the remote has to start at the head the repository already holds. The remote's publish takes a delta from its head, and a person sets the remote from the command line with `loft remote set`."
+state:
+  kind: accepted
+  selectedOption: 01a1587a-dee0-75cd-aa69-f457948cc7a4
+  outcome: "`loft remote set` connects a document that is not yet connected: it reads every published state from the repository's history, asks the remote to create the document under the manifest's key, imports the states from publish sequence 1 with their locks and files, and only then records the remote and marks the manifest `connected: true`. A remote that already holds the key at the lock's head connects without an import, one at another head is refused, and a document never published imports nothing."
+drivers:
+  - key: 01a1587a-dee0-75cd-aa69-f454b49d61f7
+    kind: local
+    label: "History kept"
+    statement: "The remote holds every state the repository has published, in order, with the labels as they were published."
+  - key: 01a1587a-dee0-75cd-aa69-f4554d95cca3
+    kind: local
+    label: "From the command line"
+    statement: "A person connects a document without leaving the terminal that holds the repository."
+  - key: 01a1587a-dee0-75cd-aa69-f456fd71aaa3
+    kind: local
+    label: "One meaning per call"
+    statement: "Each call to the remote does one thing that the contract suite can check alone."
+options:
+  - key: 01a1587a-dee0-75cd-aa69-f457948cc7a4
+    title: "Create and import"
+    description: "`loft remote set` creates the document on the remote and imports the published states that the repository's history holds, in one request each."
+  - key: 01a1587a-dee0-75cd-aa69-f4583b0f8d82
+    title: "A first publish that sends the whole history"
+    description: "The first `loft publish` of a document that its remote does not hold sends every published state with the delta."
+  - key: 01a1587a-dee0-75cd-aa69-f4596ed52575
+    title: "Connecting through a browser only"
+    description: "A person creates the document and uploads its history in the remote's own pages, and `loft remote set` only records the address and the token."
+assessments:
+  - option: 01a1587a-dee0-75cd-aa69-f457948cc7a4
+    driver: 01a1587a-dee0-75cd-aa69-f454b49d61f7
+    rating: supports
+    rationale: "every published state is imported with its lock and files"
+  - option: 01a1587a-dee0-75cd-aa69-f457948cc7a4
+    driver: 01a1587a-dee0-75cd-aa69-f4554d95cca3
+    rating: supports
+    rationale: "one command connects the document"
+  - option: 01a1587a-dee0-75cd-aa69-f457948cc7a4
+    driver: 01a1587a-dee0-75cd-aa69-f456fd71aaa3
+    rating: supports
+    rationale: "create, import and publish each do one thing"
+  - option: 01a1587a-dee0-75cd-aa69-f4583b0f8d82
+    driver: 01a1587a-dee0-75cd-aa69-f454b49d61f7
+    rating: supports
+    rationale: "the first publish carries every state"
+  - option: 01a1587a-dee0-75cd-aa69-f4583b0f8d82
+    driver: 01a1587a-dee0-75cd-aa69-f4554d95cca3
+    rating: supports
+    rationale: "`loft publish` connects the document"
+  - option: 01a1587a-dee0-75cd-aa69-f4583b0f8d82
+    driver: 01a1587a-dee0-75cd-aa69-f456fd71aaa3
+    rating: conflicts
+    rationale: "a publish would mean a delta or a whole history by what the remote holds"
+  - option: 01a1587a-dee0-75cd-aa69-f4596ed52575
+    driver: 01a1587a-dee0-75cd-aa69-f454b49d61f7
+    rating: unknown
+    rationale: "the history reaches the remote only if the person uploads every state by hand"
+  - option: 01a1587a-dee0-75cd-aa69-f4596ed52575
+    driver: 01a1587a-dee0-75cd-aa69-f4554d95cca3
+    rating: conflicts
+    rationale: "the person leaves the terminal to connect"
+  - option: 01a1587a-dee0-75cd-aa69-f4596ed52575
+    driver: 01a1587a-dee0-75cd-aa69-f456fd71aaa3
+    rating: neutral
+    rationale: "the client makes no call to connect"
+consequences:
+  - key: 01a1587a-dee0-75cd-aa69-f45a40972c3e
+    kind: benefit
+    statement: "A document published before it had a remote keeps its states and its labels on the remote."
+  - key: 01a1587a-dee0-75cd-aa69-f45b82c7b1ba
+    kind: cost
+    statement: "Connecting a published document needs the repository's history of every published state."
+  - key: 01a1587a-dee0-75cd-aa69-f45ceaa45b92
+    kind: risk
+    statement: "A connect whose import is refused after the create leaves the remote holding the document with no published state."
+  - key: 01a1587a-dee0-75cd-aa69-f45d49696691
+    kind: obligation
+    statement: "The remote's contract holds `create` and `import`, and its stand-in in the Software Plant answers both."
+subjects:
+  - role: affected
+    node: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
+  - role: affected
+    node: 01a156c0-0b79-7756-9d01-b059f21d61c7
+  - role: outcome
+    node: 01a1587a-dee2-7262-8c7b-894adc257b05
+  - role: outcome
+    node: 01a1587a-dee2-7262-8c7b-89533f511ebd
