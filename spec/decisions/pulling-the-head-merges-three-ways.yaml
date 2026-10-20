@@ -1,0 +1,80 @@
+key: 01a156ad-e7d3-71e5-9fad-e99117885936
+slug: pulling-the-head-merges-three-ways
+title: "Pulling the head merges three ways, from the state the lock names"
+context: "A connected document's tree may hold work that is not yet published when its remote's head moves on. The merge engine already merges three versions of a `spec/` file into typed conflict records, and the lock names the published state the working tree started from."
+state:
+  kind: accepted
+  selectedOption: 01a156ad-e7d3-71e5-9fad-e9952b99975d
+  outcome: "`loft pull` merges the head into the working tree with the state the lock names as the base, writes conflicts as typed records and moves the lock to the head; pulling an earlier state or a draft needs a working tree that is the lock's state, and a draft writes no lock."
+drivers:
+  - key: 01a156ad-e7d3-71e5-9fad-e99203779dd2
+    kind: local
+    label: "Local work survives"
+    statement: "A pull keeps the changes the working tree holds."
+  - key: 01a156ad-e7d3-71e5-9fad-e9933fd69554
+    kind: local
+    label: "Conflicts as in git"
+    statement: "A pull's conflicts are the ones a merge of the same versions in git writes."
+  - key: 01a156ad-e7d3-71e5-9fad-e99483273cb6
+    kind: local
+    label: "The lock says where the tree stands"
+    statement: "After a pull, the lock names the published state the tree builds on."
+options:
+  - key: 01a156ad-e7d3-71e5-9fad-e9952b99975d
+    title: "A three-way merge from the lock's state"
+    description: "Base is the state the lock names, ours the working tree, theirs the head."
+  - key: 01a156ad-e7d3-71e5-9fad-e99644103747
+    title: "Overwrite with the head"
+    description: "The head replaces the tree, and a tree with changes is refused."
+  - key: 01a156ad-e7d3-71e5-9fad-e9975f2f8057
+    title: "A two-way merge"
+    description: "The working tree and the head are merged with no base."
+assessments:
+  - option: 01a156ad-e7d3-71e5-9fad-e9952b99975d
+    driver: 01a156ad-e7d3-71e5-9fad-e99203779dd2
+    rating: supports
+    rationale: "the merge keeps each change of the working tree"
+  - option: 01a156ad-e7d3-71e5-9fad-e9952b99975d
+    driver: 01a156ad-e7d3-71e5-9fad-e9933fd69554
+    rating: supports
+    rationale: "the same merge engine over the same three versions"
+  - option: 01a156ad-e7d3-71e5-9fad-e9952b99975d
+    driver: 01a156ad-e7d3-71e5-9fad-e99483273cb6
+    rating: supports
+    rationale: "the lock moves to the head"
+  - option: 01a156ad-e7d3-71e5-9fad-e99644103747
+    driver: 01a156ad-e7d3-71e5-9fad-e99203779dd2
+    rating: conflicts
+    rationale: "unpublished work has to be put aside first"
+  - option: 01a156ad-e7d3-71e5-9fad-e99644103747
+    driver: 01a156ad-e7d3-71e5-9fad-e9933fd69554
+    rating: neutral
+    rationale: "no conflict arises"
+  - option: 01a156ad-e7d3-71e5-9fad-e99644103747
+    driver: 01a156ad-e7d3-71e5-9fad-e99483273cb6
+    rating: supports
+    rationale: "the lock is the head's"
+  - option: 01a156ad-e7d3-71e5-9fad-e9975f2f8057
+    driver: 01a156ad-e7d3-71e5-9fad-e99203779dd2
+    rating: neutral
+    rationale: "a deletion on either side cannot be told from an addition on the other"
+  - option: 01a156ad-e7d3-71e5-9fad-e9975f2f8057
+    driver: 01a156ad-e7d3-71e5-9fad-e9933fd69554
+    rating: conflicts
+    rationale: "git merges three ways"
+  - option: 01a156ad-e7d3-71e5-9fad-e9975f2f8057
+    driver: 01a156ad-e7d3-71e5-9fad-e99483273cb6
+    rating: supports
+    rationale: "the lock is the head's"
+consequences:
+  - key: 01a156ad-e7d3-71e5-9fad-e9983a4fa17c
+    kind: benefit
+    statement: "Work in progress survives a pull, and its conflicts read as those of a git merge."
+  - key: 01a156ad-e7d3-71e5-9fad-e999ac105af7
+    kind: cost
+    statement: "The remote serves every published state a lock may name, not the head alone."
+subjects:
+  - role: affected
+    node: 540397b6-7607-4ca9-aaa1-529d0fab1811
+  - role: outcome
+    node: 01a156ad-1b9f-72a4-9f6c-3044ca9b756a

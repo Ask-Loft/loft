@@ -1,0 +1,184 @@
+key: 01a156ad-1b9f-72a4-9f6c-30439b4be9df
+slug: loft-pull
+name: "`loft pull`"
+body: "Brings a connected document's tree to its remote's head by a three-way merge, or writes an earlier published state or a branch's draft from the remote over a clean tree. Conflicts are written as the merge engine writes them, every file in its canonical bytes and through one journaled save. The command reads and writes the tree, sends a command event and checks for updates as other commands do; its Feature lists the tags `reads-tree`, `writes-tree`, `sends-telemetry` and `checks-for-updates` once the command exists, since the suites that each tag brings run every tagged command."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+requirements:
+  - key: 01a156ad-1b9f-72a4-9f6c-3044ca9b756a
+    statement:
+      form: event_driven
+      when: "pulling the head of a connected document"
+      system: "`loft pull`"
+      shall: "merge the head into the working tree three ways."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-3045b9c89a71
+        name: "The base of the merge is the published state that `loft.lock.json` names, fetched from the remote by its publish sequence."
+      - key: 01a156ad-1b9f-72a4-9f6c-30460d9dbd80
+        name: "Ours is the working tree."
+      - key: 01a156ad-1b9f-72a4-9f6c-30475919d2e0
+        name: "Theirs is the head."
+      - key: 01a156ad-1b9f-72a4-9f6c-3048854a3890
+        name: "A document without a lock is merged from an empty base."
+      - key: 01a156ad-1b9f-72a4-9f6c-3049dc4cde0c
+        name: "Each conflict is written as a typed conflict record, as the merge engine writes it."
+      - key: 01a156ad-1b9f-72a4-9f6c-304a2b0727f8
+        name: "`spec/labels.yaml` is written as the head holds it."
+      - key: 01a156ad-1b9f-72a4-9f6c-304bebeac6f1
+        name: "`loft.lock.json` holds the head's lock after the pull."
+      - key: 01a156ad-1b9f-72a4-9f6c-304c831f0c75
+        name: "A pull of a tree already at the head with no change since writes nothing and reports that nothing changed."
+  - key: 01a156ad-1b9f-72a4-9f6c-304dc9554919
+    statement:
+      form: optional
+      where: "`--sequence <number>` is given"
+      system: "`loft pull`"
+      shall: "write the published state of that sequence over the working tree."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-304e88138b93
+        name: "Each file of the state is written as the state holds it."
+      - key: 01a156ad-1b9f-72a4-9f6c-304f0b06ac6b
+        name: "A file that the working tree holds under `spec/` and the state does not is removed."
+      - key: 01a156ad-1b9f-72a4-9f6c-30500e27d20e
+        name: "`loft.lock.json` holds that state's lock after the pull."
+  - key: 01a156ad-1b9f-72a4-9f6c-3051b3da9d5f
+    statement:
+      form: optional
+      where: "`--branch <name>` is given"
+      system: "`loft pull`"
+      shall: "write the draft that the remote holds under that branch name over the working tree."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-30523dd3fdc6
+        name: "Each file of the draft is written as the draft holds it."
+      - key: 01a156ad-1b9f-72a4-9f6c-30530f8c5b62
+        name: "A file that the working tree holds under `spec/` and the draft does not is removed."
+      - key: 01a156ad-1b9f-72a4-9f6c-3054f77348df
+        name: "`loft.lock.json` is left as it was."
+  - key: 01a156ad-1b9f-72a4-9f6c-3055b3a8ecb6
+    statement:
+      form: ubiquitous
+      system: "`loft pull`"
+      shall: "write what it pulls in canonical bytes, in one journaled save."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-3056c12166ca
+        name: "Each file it writes holds the bytes the formatter writes for it."
+      - key: 01a156ad-1b9f-72a4-9f6c-305794cf7373
+        name: "Every file of a pull, the lock included, is written in one journaled save."
+  - key: 01a156ad-1b9f-72a4-9f6c-3058a88b2259
+    statement:
+      form: unwanted
+      if: "the working tree is not the state that `loft.lock.json` names when an earlier state or a draft is pulled"
+      system: "`loft pull`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-30598f5aa935
+        name: "A working tree is the state the lock names when its state root is the lock's."
+      - key: 01a156ad-1b9f-72a4-9f6c-305aca1dbe66
+        name: "A working tree without a lock refuses such a pull."
+      - key: 01a156ad-1b9f-72a4-9f6c-305bb99799ac
+        name: "The error says that the pull would overwrite changes in the working tree."
+      - key: 01a156ad-1b9f-72a4-9f6c-305cee1d6309
+        name: "Nothing is written."
+  - key: 01a156ad-1b9f-72a4-9f6c-305df09a6330
+    statement:
+      form: unwanted
+      if: "`--sequence` and `--branch` are both given"
+      system: "`loft pull`"
+      shall: "refuse as a usage error and exit 2."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-305edb9ab6c3
+        name: "The error names both options."
+      - key: 01a156ad-1b9f-72a4-9f6c-305f0f930a2e
+        name: "No connection is opened."
+  - key: 01a156ad-1b9f-72a4-9f6c-306088787930
+    statement:
+      form: unwanted
+      if: "the document key of the pulled state is not the manifest's"
+      system: "`loft pull`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-3061cc9b319d
+        name: "The error names both document keys."
+      - key: 01a156ad-1b9f-72a4-9f6c-30623b55fafe
+        name: "Nothing is written."
+  - key: 01a156ad-1b9f-72a4-9f6c-30638f1fe5c2
+    statement:
+      form: unwanted
+      if: "the manifest does not mark the document connected"
+      system: "`loft pull`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-3064162629d6
+        name: "The error says that only a connected document is pulled."
+      - key: 01a156ad-1b9f-72a4-9f6c-3065f5777442
+        name: "No connection is opened."
+      - key: 01a156ad-1b9f-72a4-9f6c-3066a9d266b0
+        name: "Nothing is written."
+  - key: 01a156ad-1b9f-72a4-9f6c-3067bbbf15a5
+    statement:
+      form: unwanted
+      if: "the remote holds no published state of the sequence asked for"
+      system: "`loft pull`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-3068430359a2
+        name: "The error names the publish sequence."
+      - key: 01a156ad-1b9f-72a4-9f6c-3069a91e2c57
+        name: "Nothing is written."
+  - key: 01a156ad-9165-750a-a0ca-c07bcfa94436
+    statement:
+      form: unwanted
+      if: "the remote holds no published state with the publish sequence and the state root that `loft.lock.json` names"
+      system: "`loft pull`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ad-9165-750a-a0ca-c07c01460ce4
+        name: "The error names the lock's publish sequence and state root."
+      - key: 01a156ad-9165-750a-a0ca-c07de947e62a
+        name: "Nothing is written."
+  - key: 01a156ad-1b9f-72a4-9f6c-306ae0c9274e
+    statement:
+      form: unwanted
+      if: "the remote holds no draft under the branch name given"
+      system: "`loft pull`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-306b440f9444
+        name: "The error names the branch."
+      - key: 01a156ad-1b9f-72a4-9f6c-306c203212ed
+        name: "Nothing is written."
+  - key: 01a156ad-1b9f-72a4-9f6c-306d6b0528b0
+    statement:
+      form: event_driven
+      when: "a pull writes a conflict record"
+      system: "`loft pull`"
+      shall: "report each conflict and exit 1."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-306eaa1e7603
+        name: "Each conflict is reported with its identifier, its holder and its field."
+      - key: 01a156ad-1b9f-72a4-9f6c-306fbc47599b
+        name: "The conflicts are reported in document order."
+      - key: 01a156ad-1b9f-72a4-9f6c-3070c8e48df2
+        name: "The tree, the conflict records and the lock are written."
+  - key: 01a156ad-1b9f-72a4-9f6c-3071dc28ee23
+    statement:
+      form: optional
+      where: "`--format json` is given"
+      system: "`loft pull`"
+      shall: "give the result of the pull as its outcome."
+    criteria:
+      - key: 01a156ad-1b9f-72a4-9f6c-30728c042288
+        name: "The outcome is `pulled` when the pull wrote the tree without a conflict."
+      - key: 01a156ad-1b9f-72a4-9f6c-3073903b7bc1
+        name: "The outcome is `conflicted` when the pull wrote a conflict record."
+      - key: 01a156ad-1b9f-72a4-9f6c-30748bad3867
+        name: "The outcome is `unchanged` when the pull wrote nothing."
+      - key: 01a156ad-1b9f-72a4-9f6c-30752b358427
+        name: "The document names the publish sequence and state root it pulled, or the branch."
+      - key: 01a156ad-1b9f-72a4-9f6c-30762d330764
+        name: "A refusal has the outcome `error` and is listed among the document's errors."
