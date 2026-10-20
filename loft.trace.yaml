@@ -6357,6 +6357,9 @@ links:
       - file: "crates/loftspec/tests/lint_history.rs"
         name: "a_departed_decision_published_resolved_is_one_v2_011_naming_its_key_and_label"
         body: 4b5a8857847b800ef56b0b5b3a59646f2fad8eca3bf8ab4fef79f89310ac0d86
+      - file: "crates/loftspec/tests/lint_history.rs"
+        name: "a_decision_back_in_the_tree_is_judged_as_present_though_its_binding_is_departed"
+        body: 94c62e17ab1469330152e6de89a2ec984cf0b161f8b56eddc3646893232a4fae
   - node: 01a156be-e2a8-72d8-9748-ae128b93ff65
     reviewed: 48908bb243fce4b1ba2d2995817f9a2142c7833d908e299dcfcb24b3dfab2599
     tests:
