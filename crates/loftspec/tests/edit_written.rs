@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 
 use crate::common::editing::{
-    GROUP, INNER, LABELS, NESTED, PRODUCT, ROOT, SLUGS, STORAGE, editable, feature_id,
+    GROUP, INNER, LABELS, NESTED, PRODUCT, ROOT, SLUGS, STORAGE, editable, feature_id, group,
 };
 use crate::common::text::path;
 use crate::common::{key, slug};
@@ -13,10 +13,6 @@ use loftspec::document::Document;
 use loftspec::edit::{self, Parent, Refusal, Subtree};
 use loftspec::ids::{ComponentId, FeatureGroupId, NodeId, ProductId, RequirementId};
 use loftspec::slug::Slug;
-
-fn group(n: u32) -> Parent {
-    Parent::Node(FeatureGroupId::new(key(n)).into())
-}
 
 /// The slug of every node that carries one, by its ID.
 fn slugs(document: &Document) -> BTreeMap<NodeId, Slug> {

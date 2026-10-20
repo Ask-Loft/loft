@@ -2,8 +2,8 @@
 //! when one is missing.
 
 use crate::common::key;
+use crate::common::text::formatted;
 use crate::common::text::{COMPONENT, DECISION, FEATURE, PRODUCT, edited, files, path, text};
-use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem};
 use loftspec::document::Document;
 use loftspec::fmt::format;

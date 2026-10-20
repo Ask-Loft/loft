@@ -9,6 +9,7 @@ use loftspec::ids::RequirementId;
 use loftspec::merge::{MergedTree, merge_file, merge_tree};
 use loftspec::tree::{Feature, Requirement};
 
+use super::text::linted;
 use super::{criterion, feature, key, requirement, small_document};
 
 /// The Feature file of the third Feature, `Aliases`.
@@ -139,7 +140,5 @@ pub fn driver(path: &str, base: &Files, ours: &Files, theirs: &Files) -> Vec<u8>
 
 /// The tree of `document` with `spec/lint.yaml` holding `text`.
 pub fn with_lint(document: &Document, text: &str) -> Files {
-    let mut files = codec::write(document);
-    files.insert(SpecPath::new(codec::LINT), text.as_bytes().to_vec());
-    files
+    linted(&codec::write(document), Some(text))
 }

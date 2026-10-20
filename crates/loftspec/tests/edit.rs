@@ -2,21 +2,13 @@
 //! its key, and detaching a node with every node beneath it.
 
 use crate::common::editing::{
-    GROUP, KEYS, LABELS, NESTED, SLUGS, beneath, changes, editable, feature_id, features, number,
+    GROUP, KEYS, LABELS, NESTED, SLUGS, beneath, changes, editable, feature_id, features,
+    found_node, number,
 };
 use crate::common::key;
 use loftspec::document::{Document, Edge};
 use loftspec::edit::{self, Found};
 use loftspec::ids::{ComponentId, NodeId};
-use loftspec::node::Node;
-
-/// The node `n` finds, which must be a node.
-fn found_node(document: &Document, n: u32) -> Node<'_> {
-    match edit::find(document, key(n)) {
-        Some(Found::Node(node)) => node,
-        other => panic!("key {n} found {other:?}"),
-    }
-}
 
 /// The edges of `document` whose source is one of `numbers`.
 fn edges_from(document: &Document, numbers: &[u32]) -> Vec<Edge> {

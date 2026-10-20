@@ -3,29 +3,13 @@
 //! node beneath it.
 
 use crate::common::editing::{
-    GROUP, INNER, KEYS, LABELS, NESTED, ROOT, SLUGS, STORAGE, beneath, changes, editable,
-    feature_id, features, number,
+    GROUP, INNER, KEYS, LABELS, NESTED, ROOT, SLUGS, STORAGE, beneath, changes, component,
+    editable, feature_id, features, found_node, group, number,
 };
 use crate::common::{key, product};
 use loftspec::document::{Document, Edge};
-use loftspec::edit::{self, Found, Parent, Refusal, Subtree};
-use loftspec::ids::{ComponentId, FeatureGroupId, NodeId, ProductId};
-use loftspec::node::Node;
-
-fn group(n: u32) -> Parent {
-    Parent::Node(FeatureGroupId::new(key(n)).into())
-}
-
-fn component(n: u32) -> NodeId {
-    ComponentId::new(key(n)).into()
-}
-
-fn found_node(document: &Document, n: u32) -> Node<'_> {
-    match edit::find(document, key(n)) {
-        Some(Found::Node(node)) => node,
-        other => panic!("key {n} found {other:?}"),
-    }
-}
+use loftspec::edit::{self, Parent, Refusal, Subtree};
+use loftspec::ids::{ComponentId, ProductId};
 
 /// The edges as a sorted list of their debug forms, whose order means nothing.
 fn edge_set(document: &Document) -> Vec<String> {

@@ -2,14 +2,13 @@
 //! the record that holds it until it is removed (RQ-126), it survives a write and a read, no
 //! hash reads it, and a tree that holds one does not verify.
 
+use crate::common::publishing::clean_main;
 use crate::common::text::{FEATURE, SHALL_CONFLICT, edited, files, on_requirement, path, text};
 use loftspec::check::{Checked, check};
 use loftspec::codec::{self, Files};
 use loftspec::conflict::{ConflictOwner, ConflictValue, FieldPath};
 use loftspec::hash::hash_document;
-use loftspec::publish::{
-    Made, Publication, PublishedAt, ReadTree, RepoState, Unverified, publish, verify,
-};
+use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, Unverified, publish, verify};
 
 fn conflicted() -> Files {
     on_requirement(SHALL_CONFLICT)
@@ -104,11 +103,7 @@ fn a_conflict_on_the_manifest_is_placed_at_its_file() {
 
 #[test]
 fn a_tree_that_holds_a_conflict_compares_no_root_and_does_not_verify() {
-    let repo = RepoState {
-        branch: Some("main".to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    };
+    let repo = clean_main();
     let at = PublishedAt::from_unix_seconds(0).unwrap();
     let published = publish(
         ReadTree::read(&files()).unwrap(),

@@ -5,6 +5,7 @@
 
 use crate::common::decisions::{add_decision, decision, decision_id, set_state, superseded};
 use crate::common::lint::{findings, keys, of, severity};
+use crate::common::publishing::clean_main;
 use crate::common::text::{path, text};
 use crate::common::{key, label, small_document};
 use loftspec::canonical::Digest;
@@ -14,9 +15,7 @@ use loftspec::decision::{DecisionState, StateKind};
 use loftspec::document::{Document, Edge};
 use loftspec::ids::{DecisionId, OptionId, RequirementId};
 use loftspec::lint::{Finding, RuleId, Severity};
-use loftspec::publish::{
-    Made, Publication, PublishedAt, ReadTree, RepoState, publish, record_decisions,
-};
+use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, publish, record_decisions};
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::validate::validate;
 
@@ -391,11 +390,7 @@ fn decision_history_is_judged_from_the_bindings_file_of_the_tree_alone() {
 fn a_tree_that_v2_010_and_v2_011_report_is_published() {
     let files = edited_and_departed();
     assert_eq!(history_rules(&files).len(), 2);
-    let repo = RepoState {
-        branch: Some("main".to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    };
+    let repo = clean_main();
     let at = PublishedAt::from_unix_seconds(1_000).unwrap();
     let publication = publish(
         ReadTree::read(&files).unwrap(),

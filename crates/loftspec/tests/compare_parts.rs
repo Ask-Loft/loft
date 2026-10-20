@@ -2,23 +2,13 @@
 //! term list, the lint configuration and the bindings differ, and the versions it refuses to
 //! compare.
 
+use crate::common::comparing::{compared, version};
 use crate::common::{key, label, small_document, term};
 use loftspec::codec::SpecPath;
 use loftspec::conflict::{Conflict, ConflictOwner, FieldPath};
-use loftspec::diff::{Comparison, Part, Refusal, Version, Which, compare};
+use loftspec::diff::{Part, Refusal, Version, Which, compare};
 use loftspec::document::Document;
 use loftspec::ids::RequirementId;
-
-fn version(document: &Document) -> Version<'_> {
-    Version {
-        document,
-        lint: None,
-    }
-}
-
-fn compared(older: &Document, newer: &Document) -> Comparison {
-    compare(version(older), version(newer)).unwrap()
-}
 
 /// The flags of comparing the small document with itself edited by `edit`.
 fn flags(edit: impl Fn(&mut Document)) -> [bool; 5] {

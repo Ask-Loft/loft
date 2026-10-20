@@ -5,6 +5,7 @@
 use std::fmt::Write as _;
 use std::num::NonZeroU64;
 
+use crate::common::publishing::clean_main;
 use crate::common::text::{files, path};
 use crate::common::{key, label, small_document};
 use loftspec::codec::{self, Files, SpecPath};
@@ -91,10 +92,7 @@ fn met_files(operation: Operation, local: String, pulled: String) -> Files {
 
 /// A lock of the small document with publish sequence `sequence`.
 fn lock(sequence: u64) -> Vec<u8> {
-    let repo = RepoState {
-        branch: Some("main".to_owned()),
-        ..RepoState::default()
-    };
+    let repo = clean_main();
     let at = PublishedAt::from_unix_seconds(0).unwrap();
     let Ok(Publication::Published { lock, .. }) = publish(
         ReadTree::read(&files()).unwrap(),

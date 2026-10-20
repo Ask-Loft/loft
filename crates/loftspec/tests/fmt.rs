@@ -2,20 +2,13 @@
 
 use crate::common::fields::scalar;
 use crate::common::small_document;
-use crate::common::text::{FEATURE, PRODUCT, edited, files as small_files, path, text};
+use crate::common::text::{FEATURE, PRODUCT, edited, files as small_files, formatted, path, text};
 use crate::common::v1::{convert_value, full_export};
 use loftspec::codec::{self, Files, Problem};
 use loftspec::fmt::format;
 use loftspec::identity::Key;
 
 const GROUP_SLUG: &[&str] = &["featureGroups", "0", "slug"];
-
-/// The files after formatting.
-pub(crate) fn formatted(files: &Files) -> Files {
-    let mut files = files.clone();
-    files.extend(format(&files).unwrap().changed);
-    files
-}
 
 #[test]
 fn a_canonical_tree_formats_to_itself() {

@@ -2,7 +2,9 @@
 //! a kind its parent cannot hold, a key it already carries, a position beyond the end of the
 //! list, and a move beneath the node itself. A refused edit leaves the document unchanged.
 
-use crate::common::editing::{GROUP, INNER, KEYS, NESTED, ROOT, STORAGE, editable, feature_id};
+use crate::common::editing::{
+    GROUP, INNER, KEYS, NESTED, ROOT, STORAGE, component, editable, feature_id, group,
+};
 use crate::common::text::path;
 use crate::common::{criterion, feature, key, requirement};
 use loftspec::document::Document;
@@ -11,14 +13,6 @@ use loftspec::ids::{ComponentId, FeatureGroupId, NodeId, ProductId, RequirementI
 use loftspec::kind::{NodeKind, ParentKind};
 
 const UNHELD: u32 = 0x1ff;
-
-fn group(n: u32) -> Parent {
-    Parent::Node(FeatureGroupId::new(key(n)).into())
-}
-
-fn component(n: u32) -> NodeId {
-    ComponentId::new(key(n)).into()
-}
 
 /// The refusal of inserting `subtree`, which must hand the subtree back and leave the document
 /// unchanged.

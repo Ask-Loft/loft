@@ -3,69 +3,16 @@
 //! as they are, writes a retired or superseded decision's reference to the deleted node as its
 //! former label, and writes such a reference as the node's key again once the node comes back.
 
-use crate::common::text::{COMPONENT, DECISION, FEATURE, files, path, text};
+use crate::common::text::{
+    DECISION, FEATURE, cut, files, formatted, path, replaced, text, without_constraint,
+    without_requirement,
+};
 use loftspec::codec::{self, Files};
 use loftspec::fmt::format;
 
 const LABELS: &str = "labels.yaml";
 const REQUIREMENT: &str = "00000000-0000-7000-8000-000000000004";
 const CONSTRAINT: &str = "00000000-0000-7000-8000-000000000007";
-
-/// The files with the text between `from` and `to` in the file at `at` removed, `from`
-/// included and `to` kept.
-fn cut(files: &Files, at: &str, from: &str, to: &str) -> Files {
-    let current = text(files, at);
-    let start = current
-        .find(from)
-        .unwrap_or_else(|| panic!("{from:?} in {at}"));
-    let end = start
-        + current[start..]
-            .find(to)
-            .unwrap_or_else(|| panic!("{to:?} in {at}"));
-    let mut files = files.clone();
-    let edited = format!("{}{}", &current[..start], &current[end..]);
-    files.insert(path(at), edited.into_bytes());
-    files
-}
-
-/// The files with the first `from` replaced by `to` in the file at `at`.
-fn replaced(files: &Files, at: &str, from: &str, to: &str) -> Files {
-    let current = text(files, at);
-    assert!(current.contains(from), "{from:?} in {at}");
-    let mut files = files.clone();
-    files.insert(path(at), current.replacen(from, to, 1).into_bytes());
-    files
-}
-
-/// The tree with the Constraint `CON-1` deleted from its Component.
-fn without_constraint() -> Files {
-    cut(
-        &files(),
-        COMPONENT,
-        "constraints:\n",
-        "qualityAttributes:\n",
-    )
-}
-
-/// The tree with the Requirement `RQ-2` and its criterion deleted from their Feature, and the
-/// decision that names it in the state `kind`, with any lines that state needs after it.
-fn without_requirement(kind: &str) -> Files {
-    let files = cut(&files(), FEATURE, "requirements:\n", "qualityAttributes:\n");
-    replaced(
-        &files,
-        DECISION,
-        "  kind: accepted\n",
-        &format!("  kind: {kind}\n"),
-    )
-}
-
-/// The tree after formatting.
-fn formatted(files: Files) -> Files {
-    let result = format(&files).unwrap();
-    let mut files = files;
-    files.extend(result.changed);
-    files
-}
 
 /// The counters block of the bindings file.
 fn counters(files: &Files) -> String {
@@ -85,7 +32,7 @@ fn binding(files: &Files, key: &str) -> String {
 
 #[test]
 fn formatting_marks_departed_the_binding_of_a_deleted_node() {
-    let files = formatted(without_constraint());
+    let files = formatted(&without_constraint(&files()));
     let departed = binding(&files, CONSTRAINT);
     assert_eq!(
         departed,
@@ -103,9 +50,9 @@ fn formatting_marks_departed_the_binding_of_a_deleted_node() {
 fn formatting_removes_no_binding() {
     let count = |files: &Files| text(files, LABELS).matches("  - key: ").count();
     let before = files();
-    let after = formatted(without_requirement("retired\n  rationale: \"Gone.\""));
+    let after = formatted(&without_requirement("retired\n  rationale: \"Gone.\""));
     assert_eq!(count(&after), count(&before));
-    assert_eq!(count(&formatted(after)), count(&before));
+    assert_eq!(count(&formatted(&after)), count(&before));
 }
 
 #[test]
@@ -116,14 +63,14 @@ fn a_departed_binding_keeps_its_label_its_aliases_and_its_withdrawn_labels() {
         "      - RQ-1\n",
         "      - RQ-1\n    withdrawn:\n      - RQ-7\n",
     );
-    let departed = binding(&formatted(files), REQUIREMENT);
+    let departed = binding(&formatted(&files), REQUIREMENT);
     let expected = "    label: RQ-2\n    departed: true\n    aliases:\n      - RQ-1\n    withdrawn:\n      - RQ-7\n";
     assert!(departed.ends_with(expected), "{departed}");
 }
 
 #[test]
 fn a_binding_already_marked_departed_is_left_as_it_is() {
-    let once = formatted(without_constraint());
+    let once = formatted(&without_constraint(&files()));
     let again = format(&once).unwrap();
     assert!(again.changed.is_empty(), "{:?}", again.changed.keys());
     assert_eq!(again.departed, []);
@@ -142,7 +89,7 @@ fn a_departed_decision_keeps_the_state_and_history_its_last_publish_recorded() {
     );
     files.remove(&path(DECISION));
     let files = cut(&files, FEATURE, "requirements:\n", "qualityAttributes:\n");
-    let departed = binding(&formatted(files), decision);
+    let departed = binding(&formatted(&files), decision);
     assert!(
         departed.ends_with(&format!("    departed: true\n{record}")),
         "{departed}"
@@ -152,14 +99,14 @@ fn a_departed_decision_keeps_the_state_and_history_its_last_publish_recorded() {
 #[test]
 fn formatting_leaves_the_counters_as_they_are() {
     let before = files();
-    let after = formatted(without_constraint());
+    let after = formatted(&without_constraint(&files()));
     assert_eq!(counters(&after), counters(&before));
 }
 
 #[test]
 fn a_binding_whose_key_an_element_carries_is_kept() {
     let before = text(&files(), LABELS);
-    let after = text(&formatted(without_constraint()), LABELS);
+    let after = text(&formatted(&without_constraint(&files())), LABELS);
     let kept = |labels: &str| -> Vec<String> {
         labels
             .lines()
@@ -173,7 +120,7 @@ fn a_binding_whose_key_an_element_carries_is_kept() {
 
 #[test]
 fn a_retired_decision_names_a_deleted_node_by_its_former_label() {
-    let files = formatted(without_requirement(
+    let files = formatted(&without_requirement(
         "retired\n  rationale: \"Keys moved to the store.\"",
     ));
     let decision = text(&files, DECISION);
@@ -206,7 +153,7 @@ fn a_superseded_decision_names_a_deleted_node_by_its_former_label() {
         "  outcome:",
         &format!("{successor}  outcome:"),
     );
-    let decision = text(&formatted(files), DECISION);
+    let decision = text(&formatted(&files), DECISION);
     assert!(!decision.contains(REQUIREMENT), "{decision}");
     assert!(decision.contains("formerLabel: RQ-2\n"), "{decision}");
 }
@@ -234,7 +181,7 @@ fn a_live_decision_keeps_the_key_of_a_deleted_node_which_the_reader_refuses() {
 
 #[test]
 fn the_formatter_gives_the_label_and_key_of_each_binding_it_marks_departed() {
-    let result = format(&without_constraint()).unwrap();
+    let result = format(&without_constraint(&files())).unwrap();
     let departed: Vec<String> = result
         .departed
         .iter()
@@ -246,11 +193,11 @@ fn the_formatter_gives_the_label_and_key_of_each_binding_it_marks_departed() {
 
 #[test]
 fn a_node_that_comes_back_is_named_by_its_key_where_its_former_label_stood() {
-    let gone = formatted(without_requirement("retired\n  rationale: \"Gone.\""));
+    let gone = formatted(&without_requirement("retired\n  rationale: \"Gone.\""));
     assert!(text(&gone, DECISION).contains("formerLabel: RQ-2\n"));
     let mut back = gone.clone();
     back.insert(path(FEATURE), files()[&path(FEATURE)].clone());
-    let back = formatted(back);
+    let back = formatted(&back);
     let decision = text(&back, DECISION);
     assert!(!decision.contains("formerLabel"), "{decision}");
     assert!(

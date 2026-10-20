@@ -3,79 +3,39 @@
 //! and the binding of a key that left is marked departed; no binding is removed.
 
 use crate::common::decisions::decision_id;
-use crate::common::text::{COMPONENT, DECISION, FEATURE, files, path, text};
+use crate::common::publishing::{at, clean_main, publish_files, published};
+use crate::common::text::{
+    COMPONENT, DECISION, FEATURE, files, formatted, path, text, without_constraint,
+    without_requirement,
+};
 use crate::common::{key, label, small_document};
 use loftspec::check::check;
 use loftspec::codec::{self, Files, LABELS};
-use loftspec::fmt::format;
 use loftspec::identity::LabelPrefix;
 use loftspec::ids::{ConstraintId, RequirementId};
 use loftspec::publish::{
-    Allocated, Made, NamedAsFormer, Publication, PublishedAt, ReadTree, Refusal, RepoState,
-    publish, publish_labels,
+    Allocated, Made, NamedAsFormer, Publication, PublishedAt, ReadTree, Refusal, publish,
+    publish_labels,
 };
 
 const CONSTRAINT: &str = "00000000-0000-7000-8000-000000000007";
 
-fn formatted(files: Files) -> Files {
-    let result = format(&files).unwrap();
-    let mut files = files;
-    files.extend(result.changed);
-    files
-}
-
-/// The tree with its Component's Constraint `CON-1` removed.
-fn without_constraint(files: &Files) -> Files {
-    let component = text(files, COMPONENT);
-    let start = component.find("constraints:\n").unwrap();
-    let end = component.find("qualityAttributes:\n").unwrap();
-    let mut files = files.clone();
-    let edited = format!("{}{}", &component[..start], &component[end..]);
-    files.insert(path(COMPONENT), edited.into_bytes());
-    files
-}
-
-fn clean_main() -> RepoState {
-    RepoState {
-        branch: Some("main".to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    }
-}
-
 fn attempt(files: &Files) -> Result<Publication, Refusal> {
-    let at = PublishedAt::from_unix_seconds(1_000).unwrap();
-    publish(
-        ReadTree::read(files).unwrap(),
-        Some(&clean_main()),
-        None,
-        at,
-        Made::NotAsRemote,
-    )
+    publish_files(files, &clean_main(), None, at(1_000))
 }
 
 fn publication_of(files: &Files) -> Publication {
     attempt(files).unwrap()
 }
 
-/// The tree after a first publish.
-fn published(files: &Files) -> Files {
-    let Publication::Published { files: written, .. } = publication_of(files) else {
-        panic!("the tree is published");
-    };
-    let mut after = files.clone();
-    after.extend(written);
-    after
-}
-
 #[test]
 fn a_node_deleted_and_restored_between_publishes_takes_back_its_label() {
     // Delete the node, format, restore it, format again, then publish.
-    let gone = formatted(without_constraint(&files()));
+    let gone = formatted(&without_constraint(&files()));
     assert!(text(&gone, LABELS).contains("    label: CON-1\n    departed: true\n"));
     let mut back = gone.clone();
     back.insert(path(COMPONENT), files()[&path(COMPONENT)].clone());
-    let back = formatted(back);
+    let back = formatted(&back);
     let Publication::Published {
         given_back,
         allocated,
@@ -164,10 +124,10 @@ fn a_publish_after_a_lock_that_gives_a_label_back_is_a_publish() {
     let Publication::Published { lock, .. } = publication_of(&files()) else {
         panic!("the tree is published");
     };
-    let gone = formatted(without_constraint(&first));
+    let gone = formatted(&without_constraint(&first));
     let mut back = gone.clone();
     back.insert(path(COMPONENT), first[&path(COMPONENT)].clone());
-    let back = formatted(back);
+    let back = formatted(&back);
     let repo = clean_main();
     let again = publish(
         ReadTree::read(&back).unwrap(),
@@ -192,19 +152,7 @@ fn a_publish_after_a_lock_that_gives_a_label_back_is_a_publish() {
 /// decision that names it retired, as `loft fmt` leaves it: the decision names `RQ-2` under
 /// `formerLabel`.
 fn without_requirement_formatted() -> Files {
-    let feature = text(&files(), FEATURE);
-    let start = feature.find("requirements:\n").unwrap();
-    let end = feature.find("qualityAttributes:\n").unwrap();
-    let mut files = files();
-    let edited = format!("{}{}", &feature[..start], &feature[end..]);
-    files.insert(path(FEATURE), edited.into_bytes());
-    let decision = text(&files, DECISION).replacen(
-        "  kind: accepted\n",
-        "  kind: retired\n  rationale: \"Gone.\"\n",
-        1,
-    );
-    files.insert(path(DECISION), decision.into_bytes());
-    let files = formatted(files);
+    let files = formatted(&without_requirement("retired\n  rationale: \"Gone.\""));
     assert!(text(&files, DECISION).contains("formerLabel: RQ-2\n"));
     files
 }
@@ -239,7 +187,7 @@ fn a_publish_that_would_give_back_a_label_a_decision_names_as_former_is_refused(
 
 #[test]
 fn the_tree_formatted_after_that_refusal_is_published_and_checks_clean() {
-    let back = formatted(restored_unformatted());
+    let back = formatted(&restored_unformatted());
     assert!(!text(&back, DECISION).contains("formerLabel"));
     let after = published(&back);
     let checked = check(&after);

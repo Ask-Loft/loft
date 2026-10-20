@@ -3,16 +3,16 @@
 
 use std::collections::BTreeMap;
 
+use crate::common::publishing::publish_after;
 use crate::common::small_document;
+use crate::common::text::linted;
 use loftspec::canonical::{Domain, digest};
 use loftspec::codec::{self, Files, LINT as LINT_FILE, Problem, SpecPath, lint_configuration};
 use loftspec::document::Document;
 use loftspec::ext::ExtValue;
 use loftspec::hash::{StateView, hash_document, lint_digest, state_root, state_view};
 use loftspec::names::Namespace;
-use loftspec::publish::{
-    Lock, Made, Publication, PublishedAt, ReadTree, RepoState, Root, Unverified, publish, verify,
-};
+use loftspec::publish::{Lock, Publication, ReadTree, Root, Unverified, verify};
 use loftspec::yaml::{ErrorKind, Location};
 use serde_json::{Value, json};
 
@@ -118,42 +118,6 @@ fn the_state_views_are_numbered_one_and_two() {
     ] {
         assert_eq!(StateView::from_number(number), view);
     }
-}
-
-fn clean_main() -> RepoState {
-    RepoState {
-        branch: Some("main".to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    }
-}
-
-/// `files` with `spec/lint.yaml` holding `lint`, or without the file.
-fn linted(files: &Files, lint: Option<&str>) -> Files {
-    let mut files = files.clone();
-    match lint {
-        Some(lint) => files.insert(SpecPath::new(LINT_FILE), lint.as_bytes().to_vec()),
-        None => files.remove(&SpecPath::new(LINT_FILE)),
-    };
-    files
-}
-
-/// Publishes `files` after `previous`: the publication, and the tree with what it wrote.
-fn publish_after(files: &Files, previous: Option<&Lock>) -> (Publication, Files) {
-    let at = PublishedAt::from_unix_seconds(1_000).unwrap();
-    let publication = publish(
-        ReadTree::read(files).unwrap(),
-        Some(&clean_main()),
-        previous,
-        at,
-        Made::NotAsRemote,
-    )
-    .unwrap();
-    let mut tree = files.clone();
-    if let Publication::Published { files: written, .. } = &publication {
-        tree.extend(written.clone());
-    }
-    (publication, tree)
 }
 
 fn published(publication: Publication) -> Lock {

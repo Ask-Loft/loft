@@ -1,9 +1,9 @@
 //! The term list: its file, its entries' fields and order, its keys, its root, and how the
 //! projections show it.
 
+use crate::common::text::formatted;
 use crate::common::text::{files, path, text};
 use crate::common::{key, small_document, term};
-use crate::fmt::formatted;
 use loftspec::codec::{self, Files, Problem, TERMS};
 use loftspec::document::{Document, TermEntry};
 use loftspec::fmt::format;

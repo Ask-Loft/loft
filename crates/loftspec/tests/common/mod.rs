@@ -1,6 +1,7 @@
 //! The small document the hashing tests and the golden vectors share. `testdata/golden/README.md`
 //! describes the same document in prose.
 
+pub mod comparing;
 pub mod decisions;
 pub mod edit_tree;
 pub mod edit_values;
@@ -15,6 +16,7 @@ pub mod merge_keys;
 pub mod merge_tree;
 pub mod openspec;
 pub mod parity;
+pub mod publishing;
 pub mod text;
 pub mod trace;
 pub mod v1;

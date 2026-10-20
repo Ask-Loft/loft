@@ -6,6 +6,7 @@
 
 use std::num::NonZeroU64;
 
+use crate::common::publishing::{at, clean_main, clean_on};
 use crate::common::{key, label, small_document};
 use loftspec::bindings::Binding;
 use loftspec::canonical::Digest;
@@ -17,13 +18,9 @@ use loftspec::hash::{Roots, hash_document};
 use loftspec::identity::LabelPrefix;
 use loftspec::ids::{ConstraintId, DecisionId};
 use loftspec::publish::{
-    Allocated, Base, Lock, Made, Operation, Publication, PublishedAt, ReadTree, Refusal, RepoState,
-    Stopped, publish,
+    Allocated, Base, Lock, Made, Operation, Publication, ReadTree, Refusal, RepoState, Stopped,
+    publish,
 };
-
-fn at() -> PublishedAt {
-    PublishedAt::from_unix_seconds(1_000).unwrap()
-}
 
 fn on(branch: Option<&str>) -> RepoState {
     RepoState {
@@ -39,7 +36,13 @@ fn run(
     previous: Option<&Lock>,
     made: Made,
 ) -> Result<Publication, Refusal> {
-    publish(ReadTree::read(files).unwrap(), repo, previous, at(), made)
+    publish(
+        ReadTree::read(files).unwrap(),
+        repo,
+        previous,
+        at(1_000),
+        made,
+    )
 }
 
 /// The tree with what a publish wrote, and its lock.
@@ -108,7 +111,7 @@ fn a_validation_error_refuses_a_publish_given_no_repository_state() {
 fn a_publish_given_no_repository_state_allocates_as_any_other_publish() {
     let files = codec::write(&small_document());
     let without = run(&files, None, None, Made::NotAsRemote).unwrap();
-    let with = run(&files, Some(&on(Some("main"))), None, Made::NotAsRemote).unwrap();
+    let with = run(&files, Some(&clean_main()), None, Made::NotAsRemote).unwrap();
     assert_eq!(without, with);
     assert_ne!(allocated(&without), []);
 }
@@ -143,7 +146,7 @@ fn a_connected_documents_publish_not_made_as_its_remote_is_prepared_on_any_branc
     let release = codec::write(&document);
     prepared(run(
         &release,
-        Some(&on(Some("main"))),
+        Some(&clean_main()),
         Some(&lock),
         Made::NotAsRemote,
     ));
@@ -155,7 +158,7 @@ fn a_connected_documents_publish_not_made_as_its_remote_stops_short_of_a_lock() 
     let mut document = codec::read(&files).unwrap();
     document.bindings.unbind(ConstraintId::new(key(7)));
     let unlabelled = codec::write(&document);
-    for repo in [None, Some(on(Some("main")))] {
+    for repo in [None, Some(clean_main())] {
         let publication = run(&unlabelled, repo.as_ref(), Some(&lock), Made::NotAsRemote);
         let (tree, roots, state, base) = prepared(publication);
         let read = codec::read(&unlabelled).unwrap();
@@ -184,7 +187,7 @@ fn a_connected_documents_publish_not_made_as_its_remote_in_a_stopped_merge_is_re
                 other_lock: Some(lock.to_bytes()),
                 unmerged: Vec::new(),
             }),
-            ..on(Some("main"))
+            ..clean_main()
         };
         let refused = run(&files, Some(&repo), Some(&lock), Made::NotAsRemote);
         assert_eq!(refused, Err(Refusal::Connected), "{operation:?}");
@@ -202,7 +205,7 @@ fn a_publish_made_as_the_remote_allocates_as_a_publish_of_a_document_not_connect
         allocated(&run(&plain, None, None, Made::AsRemote).unwrap()),
         reference
     );
-    let as_remote = run(&linked, Some(&on(Some("feature"))), None, Made::AsRemote);
+    let as_remote = run(&linked, Some(&clean_on("feature")), None, Made::AsRemote);
     assert!(
         matches!(as_remote, Err(Refusal::Branch { .. })),
         "{as_remote:?}"

@@ -3,23 +3,12 @@
 //! record in each version that holds it, and whether the registries, the term list, the lint
 //! configuration and the label bindings differ.
 
+use crate::common::comparing::compared;
 use crate::common::{criterion, key, product, requirement, section, small_document};
-use loftspec::diff::{Comparison, DecisionChange, Difference, NodeDifference, Version, compare};
+use loftspec::diff::{Comparison, DecisionChange, Difference, NodeDifference};
 use loftspec::document::{Document, Edge};
 use loftspec::ids::{ConstraintId, DecisionId, NodeId, ProductId, RequirementId};
 use serde_json::{Value, json};
-
-fn version(document: &Document) -> Version<'_> {
-    Version {
-        document,
-        lint: None,
-    }
-}
-
-/// The comparison of `older` with `newer`, neither holding `spec/lint.yaml`.
-fn compared(older: &Document, newer: &Document) -> Comparison {
-    compare(version(older), version(newer)).unwrap()
-}
 
 /// The difference reported for the node keyed `n`.
 fn node(comparison: &Comparison, n: u32) -> Option<&NodeDifference> {

@@ -2,6 +2,7 @@
 //! a decision that is not proposed its decision history hash, in its binding; a departed
 //! decision's binding loses both.
 
+use crate::common::publishing::published;
 use crate::common::{key, label, proposed_decision, small_document};
 use loftspec::canonical::Digest;
 use loftspec::codec::{self, Files, LABELS, SpecPath};
@@ -9,34 +10,6 @@ use loftspec::decision::{DecisionState, StateKind};
 use loftspec::document::Document;
 use loftspec::hash::decision_history_hash;
 use loftspec::ids::DecisionId;
-use loftspec::publish::{Made, Publication, PublishedAt, ReadTree, RepoState, publish};
-
-fn clean_main() -> RepoState {
-    RepoState {
-        branch: Some("main".to_owned()),
-        modified: Vec::new(),
-        stopped: None,
-    }
-}
-
-/// The tree after a publish of `files`.
-fn published(files: &Files) -> Files {
-    let at = PublishedAt::from_unix_seconds(1_000).unwrap();
-    let publication = publish(
-        ReadTree::read(files).unwrap(),
-        Some(&clean_main()),
-        None,
-        at,
-        Made::NotAsRemote,
-    )
-    .unwrap();
-    let Publication::Published { files: written, .. } = publication else {
-        panic!("the tree is published");
-    };
-    let mut after = files.clone();
-    after.extend(written);
-    after
-}
 
 fn record(files: &Files, decision: DecisionId) -> (Option<StateKind>, Option<Digest>) {
     let document = codec::read(files).unwrap();

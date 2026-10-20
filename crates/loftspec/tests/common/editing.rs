@@ -2,7 +2,8 @@
 
 use loftspec::diff::{NodeChanges, node_changes};
 use loftspec::document::Document;
-use loftspec::ids::{FeatureGroupId, FeatureId, NodeId};
+use loftspec::edit::{self, Found, Parent};
+use loftspec::ids::{ComponentId, FeatureGroupId, FeatureId, NodeId};
 use loftspec::node::Node;
 use loftspec::tree::{Details, FeatureGroup};
 
@@ -100,5 +101,23 @@ pub fn changes(before: &Document, after: &Document) -> Changes {
         changed: numbers(changed),
         moved: numbers(moved),
         removed: numbers(removed),
+    }
+}
+
+/// The Feature Group keyed `n`, as a parent.
+pub fn group(n: u32) -> Parent {
+    Parent::Node(FeatureGroupId::new(key(n)).into())
+}
+
+/// The Component keyed `n`.
+pub fn component(n: u32) -> NodeId {
+    ComponentId::new(key(n)).into()
+}
+
+/// The node `n` finds, which must be a node.
+pub fn found_node(document: &Document, n: u32) -> Node<'_> {
+    match edit::find(document, key(n)) {
+        Some(Found::Node(node)) => node,
+        other => panic!("key {n} found {other:?}"),
     }
 }
