@@ -8909,7 +8909,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
-        body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
   - node: 01a145e9-aa7f-769e-a7f5-f21898074b83
     reviewed: d4b646099ceda7005c05ea4fa5750d48c3a0a5fdfb4d92e5c8f229b855c83531
     tests:
@@ -8918,7 +8918,7 @@ links:
         body: d9a5114a8e30c91eaf14589d9626da4857366ff680815466945424189075bfcf
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
-        body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
   - node: 01a145e9-aa7f-769e-a7f5-f2191aff4a39
     reviewed: 30137abe2b60548a64770a260bcc43b56a7cd9f72922c402f39651f196b1be85
     tests:
@@ -8930,7 +8930,7 @@ links:
         body: 0a1224254cdb40d9d5dbe7e48b961a3680c4b62f4fb192cb218bf232ed9681d2
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
-        body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
   - node: 01a145e9-aa7f-769e-a7f5-f21aa0d76d55
     reviewed: cae75570cfbdddd38a255a6e39d6f80c3a912a5c88e0f26156d561b66ad059c2
     tests:
@@ -8939,25 +8939,31 @@ links:
         body: d9a5114a8e30c91eaf14589d9626da4857366ff680815466945424189075bfcf
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
-        body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
   - node: 01a145e9-aa7f-769e-a7f5-f21bead47cb7
     reviewed: 8145e49c87ab3fc4b6550258589fa4a8f89b806e12de9355c40a6848c35135b2
     tests:
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
-        body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
   - node: 01a145e9-aa7f-769e-a7f5-f21cc9798933
     reviewed: b7e67b5ebedcf1a9a029612bf6b44094c3b8286bca60f66f18ffb2c514892f07
     tests:
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
-        body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
+  - node: 01a15f55-b936-7155-95fa-439b29107106
+    reviewed: b7970cc15f0cf42244a327225e88b9d96790ed9a42cecf289f7d14c27bfcd71b
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/mod.rs"
+        name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
   - node: 01a145e9-aa7f-769e-a7f5-f21d918624ea
     reviewed: bd5b3da27599b4d2741790272c6d70a860c5ca6054d9ccd386fb8560b1db3325
     tests:
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "each_extension_chooses_its_grammar_and_any_other_is_not_parsed"
-        body: 6bff5bffdac32e04e89d6a60a5d1c63d74a3757c6b4cff231ffac9dbc89362f6
+        body: 7fe9cb4d11e232df4064af83d36696a8782f2ee3b8242715c74f89e6a733951c
   - node: 01a145e9-aa7f-769e-a7f5-f21f06bd5ce3
     reviewed: a3bef1f0885c276aea19b1614c02ccaf81f713de8dbdda82499d7c705f67e662
     tests:
@@ -9120,6 +9126,24 @@ links:
       - file: "crates/loft-cli/src/locate/tests/languages.rs"
         name: "a_go_subtest_run_through_parentheses_is_a_test"
         body: 31522dd283693db3a265c91b5d20f50436f31d8df51bab29ff7065b1d4abec71
+  - node: 01a15f55-b936-7155-95fa-439d8362af31
+    reviewed: 4050d754c050b5c8d01cc89cd6424bbb33b2b5f9cb53086689c0e50474bcec38
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/java.rs"
+        name: "a_java_method_is_a_test_inside_classes_interfaces_enums_and_records"
+        body: aa2fcafd8e80f3db1a08e9c30a32e33f2098c204e7915a74f3065b0d01549f96
+  - node: 01a15f55-b936-7155-95fa-439ec328a838
+    reviewed: c13d42e52603dd4f253e4f869a1688749d20b151205c8b8e12d2bd9e46f7f84d
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/java.rs"
+        name: "a_java_class_is_a_test_nested_or_not"
+        body: 34d351dedbf7bb590596ab32d59d25536cbc8928ca101e065ed0063fb0af1f2b
+  - node: 01a15f55-b936-7155-95fa-439f297d5696
+    reviewed: 16d1c8324a731f0fef67921fbb07ac1a4f22e441d5d346558bbd6b7223848739
+    tests:
+      - file: "crates/loft-cli/src/locate/tests/java.rs"
+        name: "the_annotations_and_modifiers_before_a_java_method_or_class_are_part_of_the_test"
+        body: 524b15cee34468df0cde5cdb7de99b3a9bab70ff21c831e06d89f0580d5669ae
   - node: 01a145e9-aa7f-769e-a7f5-f230a810aa75
     reviewed: 6a9abc4502b2d8454ac3b3ce1896af3ce2c4c7f8feca0e28d8c857221825cc94
     tests:

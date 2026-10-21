@@ -138,7 +138,7 @@ fn locating_takes_time_in_proportion_to_the_file() {
 
 /// One test in each grammar, and the SHA-256 of its canonical text. A new version of a grammar
 /// that changes one of them would report every such test as changed after it was recorded.
-const GOLDEN: [(&str, &str, &str, &str); 6] = [
+const GOLDEN: [(&str, &str, &str, &str); 7] = [
     (
         "a.rs",
         "#[test]\nfn adds() {\n    assert_eq!(add(1, 2), 3, \"sum\");\n}\n",
@@ -174,6 +174,12 @@ const GOLDEN: [(&str, &str, &str, &str); 6] = [
         "func TestAdds(t *testing.T) {\n\tif add(1, 2) != 3 {\n\t\tt.Fatal(\"sum\")\n\t}\n}\n",
         "TestAdds",
         "8ea84b8efd14f6205844ed363e0c0bc97da063b267aa7ee0e29f6acea8556de3",
+    ),
+    (
+        "AddsTest.java",
+        "class AddsTest {\n    @Test\n    void adds() {\n        assertEquals(3, add(1, 2), \"sum\");\n    }\n}\n",
+        "adds",
+        "81d26749628cf3c6d5023da98ea64cf56689b95a5b58b927bf26636a0734c61c",
     ),
 ];
 
