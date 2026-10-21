@@ -132,6 +132,8 @@ requirements:
     criteria:
       - key: 01a15fb5-ece7-757a-9d44-fd0b904fe57e
         name: "The result reads into a document without a read error."
+      - key: 01a16016-9eb8-73bc-b469-7d34ab4f2fb3
+        name: "The tree merger gives the document that reading the result gives, beside the result's files."
       - key: 01a15fb5-ece7-757a-9d44-fd0cce145eac
         name: "A record that one side deleted and that a record of the result references, in its own file or in another, is kept as the other side holds it."
       - key: 01a15fc1-0cc0-7730-926f-50c853daaadd
