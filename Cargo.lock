@@ -454,7 +454,7 @@ checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
 name = "loft-cli"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "clap",
  "hmac",
@@ -477,7 +477,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "proptest",
  "pulldown-cmark",
@@ -494,7 +494,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec-store"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "loftspec",
  "serde",
@@ -849,7 +849,7 @@ checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 
 [[package]]
 name = "software-plant"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "serde",
  "serde_json",

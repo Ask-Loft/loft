@@ -3,7 +3,7 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## Unreleased
+## 2.2.1 (2026-10-21)
 
 - `loft reconcile` locates a linked test in a `.java` file in its syntax tree, parsed with the
   pinned tree-sitter Java grammar: a method or a class, at any depth of classes, interfaces,
