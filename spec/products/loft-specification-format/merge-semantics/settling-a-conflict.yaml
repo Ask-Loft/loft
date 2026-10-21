@@ -1,0 +1,147 @@
+key: 01a15fdc-a1db-756d-9d40-05f0f7b9f0dd
+slug: settling-a-conflict
+name: "Settling a conflict"
+body: "How a tool that holds a document in memory settles one conflict record, named by its identifier: by taking base's, ours' or theirs' side, or, for a conflict over a field, a value its caller gives. Settling gives a new document that reads, without the conflict record; it changes no other conflict record. A conflict over `record` takes a side only, keeping or deleting the record; so do a conflict over `parent`, which moves the record under the parent that side names, and one over `position`, which moves it after the record that side names."
+realizes:
+  - 540397b6-7607-4ca9-aaa1-529d0fab1811
+requirements:
+  - key: 01a15fdc-a1db-756d-9d40-05f186d0ceed
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "settle a conflict of a document held in memory, named by its identifier, by a side or by a value, giving a document without its conflict record."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-05f2edfc79d9
+        name: "Settling a conflict is public in `loftspec`."
+      - key: 01a15fdc-a1db-756d-9d40-05f371aaacbf
+        name: "The settled document holds no conflict record with the settled identifier."
+      - key: 01a15fdc-a1db-756d-9d40-05f44c31c663
+        name: "The settled document holds every other conflict record of the document, each with its identifier."
+      - key: 01a15fdc-a1db-756d-9d40-05f5bd472ab3
+        name: "The document given is unchanged."
+  - key: 01a15fdc-a1db-756d-9d40-05f6f19c0d51
+    statement:
+      form: event_driven
+      when: "a conflict over a field is settled by a side"
+      system: "`loftspec`"
+      shall: "give the field the value that side holds."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-05f7e074bec3
+        name: "Settling by base, ours or theirs gives the field that side's value."
+      - key: 01a15fdc-a1db-756d-9d40-05f854b153f2
+        name: "Settling by a side on which the field is absent leaves the field out."
+      - key: 01a15fdc-a1db-756d-9d40-05f95f3b2330
+        name: "A field named by a dotted path is set in the unkeyed record the path leads through."
+      - key: 01a15fdc-a1db-756d-9d40-05fa82835486
+        name: "A conflict of the manifest or of `spec/labels.yaml` is settled in that file's record."
+  - key: 01a15fdc-a1db-756d-9d40-05fb394608bb
+    statement:
+      form: event_driven
+      when: "a conflict over a field is settled by a value"
+      system: "`loftspec`"
+      shall: "give the field that value."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-05fc9de726f2
+        name: "The field holds the value given."
+      - key: 01a15fdc-a1db-756d-9d40-05fdc765d79c
+        name: "A value given in the shape of the conflict's sides is accepted."
+  - key: 01a15fdc-a1db-756d-9d40-05fe5db94d56
+    statement:
+      form: event_driven
+      when: "a conflict over `record` is settled by a side"
+      system: "`loftspec`"
+      shall: "keep the record where that side holds its key, and delete it where that side holds `null`."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-05ff56f36257
+        name: "A side that holds the record's key keeps the record as the document holds it."
+      - key: 01a15fdc-a1db-756d-9d40-06001db491e5
+        name: "A side that holds `null` deletes the record and every record beneath it."
+      - key: 01a15fdc-a1db-756d-9d40-06018c2d7b84
+        name: "Each element a deletion takes out has its binding marked departed."
+  - key: 01a15fdc-a1db-756d-9d40-0602834c77be
+    statement:
+      form: event_driven
+      when: "a conflict over `parent` is settled by a side"
+      system: "`loftspec`"
+      shall: "move the record under the parent that side names, after the records of its kind there."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-06034fd74043
+        name: "The record is the last of its kind under the parent the side names."
+      - key: 01a15fdc-a1db-756d-9d40-06040e0ebb45
+        name: "A record that the side holds at its present parent stays where it is."
+      - key: 01a15fdc-a1db-756d-9d40-06053511f495
+        name: "Every record beneath the moved record moves with it."
+  - key: 01a15fdc-a1db-756d-9d40-0606134067b5
+    statement:
+      form: event_driven
+      when: "a conflict over `position` is settled by a side"
+      system: "`loftspec`"
+      shall: "move the record within its list to after the record that side names, or first."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-06076c62a1ed
+        name: "A side that names a record puts the record right after it."
+      - key: 01a15fdc-a1db-756d-9d40-0608e79f0820
+        name: "A side that holds `first` puts the record first in its list."
+  - key: 01a15fdc-a1db-756d-9d40-060982a46012
+    statement:
+      form: unwanted
+      if: "a settlement gives a value for a conflict over `record`, `parent` or `position`"
+      system: "`loftspec`"
+      shall: "refuse the settlement."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-060ae70cd390
+        name: "A value for a conflict over `record` is refused."
+      - key: 01a15fdc-a1db-756d-9d40-060ba01ea81a
+        name: "A value for a conflict over `parent` is refused."
+      - key: 01a15fdc-a1db-756d-9d40-060c8e630298
+        name: "A value for a conflict over `position` is refused."
+      - key: 01a15fdc-a1db-756d-9d40-060dc1a3f7c0
+        name: "The refusal names the conflict's field."
+  - key: 01a15fdc-a1db-756d-9d40-060e1d0c3b0f
+    statement:
+      form: unwanted
+      if: "a settlement gives a value that does not fit the shape of the conflict's field"
+      system: "`loftspec`"
+      shall: "refuse the settlement."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-060fbc27756c
+        name: "A list given for a field that holds one value is refused."
+      - key: 01a15fdc-a1db-756d-9d40-061039bdfa24
+        name: "A scalar given for a field that holds a list is refused."
+      - key: 01a15fdc-a1db-756d-9d40-0611435f7ff4
+        name: "A record given for a field that holds a scalar is refused."
+      - key: 01a15fdc-a1db-756d-9d40-0612d22afa00
+        name: "A record given with a field its kind does not define is refused."
+      - key: 01a15fdc-a1db-756d-9d40-061356440551
+        name: "The refusal names the conflict's field."
+  - key: 01a15fdc-a1db-756d-9d40-061465106585
+    statement:
+      form: unwanted
+      if: "a settlement cannot be made as the side asks"
+      system: "`loftspec`"
+      shall: "refuse the settlement."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-0615e7f8a5bd
+        name: "An identifier that no conflict record of the document has is refused, naming it."
+      - key: 01a15fdc-a1db-756d-9d40-0616e53a8e48
+        name: "A side on which a conflict over `record`, `parent` or `position` holds nothing is refused, naming the side."
+      - key: 01a15fdc-a1db-756d-9d40-0617c6c05672
+        name: "A conflict over `position` whose side names a record its list does not hold is refused, naming that record."
+      - key: 01a15fdc-a1db-756d-9d40-06180068b08a
+        name: "A settlement whose document would not read is refused with the read errors that reading it gives."
+  - key: 01a15fdc-a1db-756d-9d40-06193cf7af38
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "give the owner of the conflicts that a record holds, and the own record of the owner where it has one."
+    criteria:
+      - key: 01a15fdc-a1db-756d-9d40-061ad02d8c2b
+        name: "The owner of a keyed record's conflicts is the node, the decision, the part of a decision or the registry entry that its kind and key name."
+      - key: 01a15fdc-a1db-756d-9d40-061bb5540be9
+        name: "The owner of the manifest's conflicts is the manifest, and of the bindings record's the bindings."
+      - key: 01a15fdc-a1db-756d-9d40-061cc55a8363
+        name: "A record that holds no conflicts has no owner."
+      - key: 01a15fdc-a1db-756d-9d40-061df8f028d5
+        name: "The owner of a node's, a decision's or a registry entry's conflicts names the kind and key of that record's own record view."
+      - key: 01a15fdc-a1db-756d-9d40-061eaba1d0c1
+        name: "The owner of a decision part's conflicts, of the manifest's and of the bindings' names no own record view."

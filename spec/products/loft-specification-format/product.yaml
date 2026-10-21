@@ -114,7 +114,7 @@ featureGroups:
   - key: 1be50284-6f97-4abd-ac76-7333de756f2a
     slug: merge-semantics
     name: "Merge semantics"
-    body: "How a merge driver combines two sides' edits to a `spec/` tree record by record, writing a typed conflict record wherever they disagree."
+    body: "How a merge driver combines two sides' edits to a `spec/` tree record by record, writing a typed conflict record wherever they disagree, and how a conflict record is settled."
     tags:
       - git
     features:
@@ -125,6 +125,7 @@ featureGroups:
       - 01a130de-5737-776f-9c39-b9bb261d3fce
       - 01a156a6-de49-70a4-a6bb-37249d7bb3d3
       - 01a158d8-c6e0-708e-a3c7-63f8a21ac92b
+      - 01a15fdc-a1db-756d-9d40-05f0f7b9f0dd
   - key: 01a1383a-4a94-72cc-9c61-114fcb408ec5
     slug: implementation-reconciliation
     name: "Implementation reconciliation"
