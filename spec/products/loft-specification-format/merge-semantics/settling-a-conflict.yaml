@@ -34,6 +34,8 @@ requirements:
         name: "A field named by a dotted path is set in the unkeyed record the path leads through."
       - key: 01a15fdc-a1db-756d-9d40-05fa82835486
         name: "A conflict of the manifest or of `spec/labels.yaml` is settled in that file's record."
+      - key: 01a15fe2-8d46-766d-ad08-7aba3facd31f
+        name: "A conflict over the bindings of `spec/labels.yaml` adds the side's bindings to those the file holds, each in place of a binding of the same key."
   - key: 01a15fdc-a1db-756d-9d40-05fb394608bb
     statement:
       form: event_driven
