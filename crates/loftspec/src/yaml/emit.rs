@@ -63,7 +63,7 @@ struct Keys {
 
 impl Keys {
     /// Records `key`, whose value starts where the text now ends.
-    fn found(&mut self, text: &str, key: &str) {
+    fn record(&mut self, text: &str, key: &str) {
         for (offset, byte) in text.bytes().enumerate().skip(self.counted) {
             if byte == b'\n' {
                 self.lines += 1;
@@ -117,7 +117,7 @@ fn mapping<K: AsRef<str>>(
         } else {
             text.push(' ');
             if let (Some(found), "key", Out::Token(token)) = (keys.as_mut(), key.as_ref(), value) {
-                found.found(text, token);
+                found.record(text, token);
             }
             line_value(text, value, width);
         }

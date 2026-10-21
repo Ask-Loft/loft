@@ -10322,7 +10322,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/settle_structure.rs"
         name: "a_settlement_whose_document_would_not_read_is_refused_with_the_read_errors"
-        body: 958ebdcade2288f3963ca4c82e73b1f80dbd8c1043d93dbb8cfb08d62bab9c4f
+        body: ff06fa1b779b332705ced4292f5d8f32a1b837c9225231e4cecbfcf0c396d4e0
   - node: 01a15fdc-a1db-756d-9d40-061ad02d8c2b
     reviewed: 14257c4484ac3f9ab52d85ae9cb399eb7f6ecc040321da72adefe1734c765619
     tests:

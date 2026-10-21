@@ -75,6 +75,15 @@ wire_names!(StateKind {
     Retired => "retired",
 });
 
+impl StateKind {
+    /// Whether a decision of this state is settled, so that it may name a node it no longer
+    /// holds by its former label (ADR-13): retired or superseded.
+    #[must_use]
+    pub const fn is_settled(self) -> bool {
+        matches!(self, Self::Retired | Self::Superseded)
+    }
+}
+
 impl DecisionState {
     #[must_use]
     pub const fn kind(&self) -> StateKind {

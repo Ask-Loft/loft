@@ -105,6 +105,8 @@ pub(super) struct Edges {
     scoped: BTreeMap<NodeId, Vec<Key>>,
     mentions: BTreeMap<ElementId, Vec<Key>>,
     subjects: BTreeMap<ElementId, Vec<Rec>>,
+    /// Whether a record is built without the nodes it holds, for its own record view.
+    own: bool,
 }
 
 impl Edges {
@@ -114,6 +116,7 @@ impl Edges {
             scoped: BTreeMap::new(),
             mentions: BTreeMap::new(),
             subjects: BTreeMap::new(),
+            own: false,
         };
         for edge in all {
             match *edge {
@@ -166,6 +169,20 @@ impl Edges {
         record
     }
 
+    /// These edges, building each record without the nodes it holds.
+    pub(super) const fn own(mut self) -> Self {
+        self.own = true;
+        self
+    }
+
+    /// The records of the nodes a record holds; none where the record is built alone.
+    fn nested(&self, items: impl IntoIterator<Item = Rec>) -> Val {
+        if self.own {
+            return Val::List(Vec::new());
+        }
+        records(items)
+    }
+
     fn details(&self, record: &mut Rec, id: Option<NodeId>, details: &Details) {
         if let Some(body) = &details.body {
             record.set_text(field::BODY, body.as_str());
@@ -178,7 +195,7 @@ impl Edges {
         set_ext(record, &details.ext);
         record.set(
             "sections",
-            records(details.sections.iter().map(|section| self.section(section))),
+            self.nested(details.sections.iter().map(|section| self.section(section))),
         );
     }
 
@@ -202,7 +219,7 @@ impl Edges {
         set_ext(&mut record, &section.ext);
         record.set(
             "sections",
-            records(section.sections.iter().map(|child| self.section(child))),
+            self.nested(section.sections.iter().map(|child| self.section(child))),
         );
         record
     }
@@ -216,10 +233,10 @@ impl Edges {
         );
         record.set_text(field::SLUG, product.slug.to_string());
         let groups = product.feature_groups.iter().map(|group| self.group(group));
-        record.set(field::FEATURE_GROUPS, records(groups));
+        record.set(field::FEATURE_GROUPS, self.nested(groups));
         record.set(
             field::CONSTRAINTS,
-            records(product.constraints.iter().map(|each| self.constraint(each))),
+            self.nested(product.constraints.iter().map(|each| self.constraint(each))),
         );
         record
     }
@@ -232,12 +249,12 @@ impl Edges {
         let features = features.map(crate::ids::FeatureId::key);
         record.set(field::FEATURES, keys(features));
         let constraints = group.constraints.iter().map(|each| self.constraint(each));
-        record.set(field::CONSTRAINTS, records(constraints));
+        record.set(field::CONSTRAINTS, self.nested(constraints));
         let qualities = group
             .quality_attributes
             .iter()
             .map(|each| self.quality(each));
-        record.set(field::QUALITY_ATTRIBUTES, records(qualities));
+        record.set(field::QUALITY_ATTRIBUTES, self.nested(qualities));
         record
     }
 
@@ -252,10 +269,10 @@ impl Edges {
         record.set(field::REALIZES, keys(realizes));
         let requirements = feature.requirements.iter();
         let requirements = requirements.map(|requirement| self.requirement(requirement));
-        record.set(field::REQUIREMENTS, records(requirements));
+        record.set(field::REQUIREMENTS, self.nested(requirements));
         record.set(
             "qualityAttributes",
-            records(
+            self.nested(
                 feature
                     .quality_attributes
                     .iter()
@@ -273,7 +290,7 @@ impl Edges {
         let criteria = requirement.criteria.iter();
         record.set(
             field::CRITERIA,
-            records(criteria.map(|each| self.criterion(each))),
+            self.nested(criteria.map(|each| self.criterion(each))),
         );
         record
     }
@@ -306,7 +323,7 @@ impl Edges {
         record.set(field::SCOPED_TO, keys(scoped));
         record.set(
             "components",
-            records(
+            self.nested(
                 component
                     .components
                     .iter()
@@ -315,7 +332,7 @@ impl Edges {
         );
         record.set(
             "constraints",
-            records(
+            self.nested(
                 component
                     .constraints
                     .iter()
@@ -324,7 +341,7 @@ impl Edges {
         );
         record.set(
             "qualityAttributes",
-            records(
+            self.nested(
                 component
                     .quality_attributes
                     .iter()

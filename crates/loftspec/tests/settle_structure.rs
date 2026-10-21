@@ -7,51 +7,18 @@ use loftspec::document::Document;
 use loftspec::ids::{ElementId, RequirementId};
 use loftspec::merge::Input;
 
-use crate::common::merge_tree::{merged, moved, read, requirements, three_features, two_features};
-use crate::common::{key, label, requirement, small_document};
-
-const SECOND: u32 = 60;
-const THIRD: u32 = 61;
-
-fn merge(base: &Document, ours: &Document, theirs: &Document) -> Document {
-    read(&merged(base, ours, theirs))
-}
-
-fn over<'d>(document: &'d Document, field: &str) -> &'d Conflict {
-    let mut found = document
-        .conflicts
-        .iter()
-        .filter(|conflict| conflict.field.as_str() == field);
-    let conflict = found
-        .next()
-        .unwrap_or_else(|| panic!("a conflict over {field}: {:?}", document.conflicts));
-    assert!(found.next().is_none(), "{:?}", document.conflicts);
-    conflict
-}
-
-fn settled(document: &Document, field: &str, settlement: &Settlement) -> Document {
-    settle(document, over(document, field).id(), settlement)
-        .unwrap_or_else(|refusal| panic!("{refusal:?}"))
-}
-
-fn with_requirements(document: &Document, at: usize, keys: &[u32]) -> Document {
-    let mut document = document.clone();
-    for &n in keys {
-        let added = requirement(key(n), "The writer shall write a slug.", Vec::new());
-        requirements(&mut document, at).push(added);
-    }
-    document
-}
+use crate::common::merge_tree::{moved, requirements, three_features, two_features};
+use crate::common::settle::{
+    SECOND, THIRD, merge, over, refusal, settled, three_requirements, with_requirements,
+};
+use crate::common::{key, key_number, label, requirement, small_document};
 
 /// The keys of the Requirements of the group's Feature at `at`.
 fn keys_at(document: &Document, at: usize) -> Vec<u32> {
     let mut document = document.clone();
     requirements(&mut document, at)
         .iter()
-        .map(|each| {
-            let text = each.id.unwrap().key().to_string();
-            u32::from_str_radix(&text[text.len() - 8..], 16).unwrap()
-        })
+        .map(|each| key_number(each.id.unwrap().key()))
         .collect()
 }
 
@@ -68,11 +35,6 @@ fn ordered(document: &Document, keys: &[u32]) -> Document {
         list.push(held.remove(at));
     }
     document
-}
-
-/// The small document with two more Requirements in `Keys`: 4, 60, 61.
-fn three_requirements() -> Document {
-    with_requirements(&small_document(), 0, &[SECOND, THIRD])
 }
 
 /// A conflict over the position of the Requirement keyed 61, which ours put first and theirs
@@ -265,7 +227,7 @@ fn a_settlement_whose_document_would_not_read_is_refused_with_the_read_errors() 
     let second = RequirementId::new(key(SECOND));
     document.decisions[0].consequences[1].subject = Some(second.into());
     let document = loftspec::codec::read(&loftspec::codec::write(&document)).unwrap();
-    let refused = settled_err(&document, "record", &Settlement::Theirs);
+    let refused = refusal(&document, "record", &Settlement::Theirs);
     let SettleError::Unreadable(errors) = refused else {
         panic!("{refused:?}");
     };
@@ -276,10 +238,6 @@ fn a_settlement_whose_document_would_not_read_is_refused_with_the_read_errors() 
     deleted.conflicts.clear();
     let expected = loftspec::codec::read(&loftspec::codec::write(&deleted)).unwrap_err();
     assert_eq!(errors, expected);
-}
-
-fn settled_err(document: &Document, field: &str, settlement: &Settlement) -> SettleError {
-    settle(document, over(document, field).id(), settlement).expect_err("refused")
 }
 
 #[test]
@@ -295,10 +253,7 @@ fn consequences(document: &Document, at: usize) -> Vec<u32> {
     document.decisions[at]
         .consequences
         .iter()
-        .map(|each| {
-            let text = each.id.key().to_string();
-            u32::from_str_radix(&text[text.len() - 8..], 16).unwrap()
-        })
+        .map(|each| key_number(each.id.key()))
         .collect()
 }
 
@@ -318,11 +273,7 @@ fn decisions() -> Document {
 fn reorder_consequences(document: &Document, keys: &[u32]) -> Document {
     let mut document = document.clone();
     let list = &mut document.decisions[0].consequences;
-    list.sort_by_key(|each| {
-        let text = each.id.key().to_string();
-        let n = u32::from_str_radix(&text[text.len() - 8..], 16).unwrap();
-        keys.iter().position(|each| *each == n)
-    });
+    list.sort_by_key(|each| keys.iter().position(|n| *n == key_number(each.id.key())));
     document
 }
 

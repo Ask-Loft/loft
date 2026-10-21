@@ -13,8 +13,8 @@ use super::conflict::Side;
 use super::exist::{Fate, keep};
 use super::flat::Parent;
 use super::place::Placed;
-use crate::codec::schema::{Item, Scalar, Shape, Target};
-use crate::codec::{ConflictRec, Rec, SideShape, Val, side_shape, variant_holds};
+use crate::codec::schema::{Item, Shape, Target};
+use crate::codec::{ConflictRec, Rec, SideShape, Val, holder_path, side_shape, variant_holds};
 use crate::identity::Key;
 
 /// Keeps every record a side deleted that a record the merge keeps references, and gives ours'
@@ -96,7 +96,7 @@ fn placed(key: Key, fates: &BTreeMap<Key, Fate>, places: &BTreeMap<Key, Placed>)
 
 /// The keys that a record's own fields reference and that the reader resolves: the nodes and
 /// decisions its edges and node references name. A former label names no record.
-pub(super) fn references(record: &Rec) -> Vec<Key> {
+fn references(record: &Rec) -> Vec<Key> {
     let mut keys = Vec::new();
     fields_of(record, &mut keys);
     keys
@@ -129,11 +129,8 @@ fn value_of(value: &Val, shape: Shape, keys: &mut Vec<Key>) {
 /// node reference. A decision's option, driver or successor it leaves to the validator.
 const fn resolved(item: Item) -> bool {
     matches!(
-        item,
-        Item::NodeRef
-            | Item::Scalar(Scalar::Ref(
-                Target::Node | Target::Component | Target::Product | Target::NodeOrDecision
-            ))
+        item.target(),
+        Some(Target::Node | Target::Component | Target::Product | Target::NodeOrDecision)
     )
 }
 
@@ -179,9 +176,4 @@ fn names_gone(record: &Rec, conflict: &ConflictRec, gone: &impl Fn(&Key) -> bool
     let mut keys = Vec::new();
     value_of(value, shape, &mut keys);
     keys.iter().any(gone)
-}
-
-/// The path of the record that holds the field at `path`; empty for the record itself.
-fn holder_path(path: &str) -> &str {
-    path.rsplit_once('.').map_or("", |(parent, _)| parent)
 }

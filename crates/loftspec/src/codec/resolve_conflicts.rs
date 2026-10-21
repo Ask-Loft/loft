@@ -151,7 +151,7 @@ fn attach_to(record: &mut Rec, by_owner: &BTreeMap<ConflictOwner, Vec<&Conflict>
 }
 
 /// A conflict as the record its host holds.
-fn rec(conflict: &Conflict, host: Kind) -> ConflictRec {
+pub(super) fn rec(conflict: &Conflict, host: Kind) -> ConflictRec {
     let shape = side_shape(host, conflict.field.as_str()).expect("a conflict the reader checked");
     let sides = [&conflict.base, &conflict.ours, &conflict.theirs];
     ConflictRec::new(

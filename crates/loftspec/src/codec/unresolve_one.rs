@@ -1,7 +1,7 @@
 //! One record of a document as the writer writes it, built alone: a node with the edges it
 //! writes, a decision, a registry entry or a binding, each found by its kind and key, in
-//! canonical layout. Only the record's own edges are gathered, and only the records it holds
-//! are built with it.
+//! canonical layout. Only the record's own edges are gathered, and the nodes it holds are left
+//! out of it, as its own record view leaves them out.
 
 use super::canon::sort;
 use super::own_record::RecordKind;
@@ -38,29 +38,25 @@ pub(super) fn written_record(document: &Document, kind: RecordKind, key: Key) ->
     Some(record)
 }
 
-/// The edges the element keyed `key` writes.
+/// The edges the element keyed `key` writes, building its record without the nodes it holds.
 fn edges_of(document: &Document, key: Key) -> Edges {
-    Edges::of(
-        document
-            .edges
-            .iter()
-            .filter(|edge| edge.source().key() == key),
-    )
+    let written = document.edges.iter();
+    Edges::of(written.filter(|edge| edge.source().key() == key)).own()
 }
 
 fn node_record(document: &Document, kind: NodeKind, key: Key) -> Option<Rec> {
-    let edges = || edges_of(document, key);
     let root = document.components.iter().find(|root| {
         kind == NodeKind::Component && root.component.id.is_some_and(|id| id.key() == key)
     });
     if let Some(root) = root {
-        let mut record = edges().component(&root.component);
+        let mut record = edges_of(document, key).component(&root.component);
         record.kind = Kind::RootComponent;
         record.set_text(field::SLUG, root.slug.as_str());
         return Some(record);
     }
-    let edges = edges();
-    Some(match find(document, kind, key)? {
+    let node = find(document, kind, key)?;
+    let edges = edges_of(document, key);
+    Some(match node {
         Node::Product(product) => edges.product(product),
         Node::FeatureGroup(group) => edges.group(group),
         Node::Feature(feature) => edges.feature(feature),

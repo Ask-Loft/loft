@@ -10,49 +10,9 @@ use loftspec::document::Document;
 use loftspec::ids::{ElementId, RequirementId};
 use loftspec::statement::{EarsForm, Statement};
 
-use crate::common::merge_tree::{edited, merged, read, requirement_4, requirements};
-use crate::common::{key, label, requirement, small_document};
-
-/// The second and third Requirements of `Keys`, after the Requirement keyed 4.
-const SECOND: u32 = 60;
-const THIRD: u32 = 61;
-
-/// The small document with two more Requirements in `Keys`: 4, 60, 61.
-fn three_requirements() -> Document {
-    let mut document = small_document();
-    for n in [SECOND, THIRD] {
-        let added = requirement(key(n), "The writer shall write a slug.", Vec::new());
-        requirements(&mut document, 0).push(added);
-    }
-    document
-}
-
-/// The document a tree merge of the three gives.
-fn merge(base: &Document, ours: &Document, theirs: &Document) -> Document {
-    read(&merged(base, ours, theirs))
-}
-
-/// The one conflict of `document` over `field`.
-fn over<'d>(document: &'d Document, field: &str) -> &'d Conflict {
-    let mut found = document
-        .conflicts
-        .iter()
-        .filter(|conflict| conflict.field.as_str() == field);
-    let conflict = found
-        .next()
-        .unwrap_or_else(|| panic!("a conflict over {field}: {:?}", document.conflicts));
-    assert!(found.next().is_none(), "{:?}", document.conflicts);
-    conflict
-}
-
-fn settled(document: &Document, field: &str, settlement: &Settlement) -> Document {
-    settle(document, over(document, field).id(), settlement)
-        .unwrap_or_else(|refusal| panic!("{refusal:?}"))
-}
-
-fn refusal(document: &Document, field: &str, settlement: &Settlement) -> SettleError {
-    settle(document, over(document, field).id(), settlement).expect_err("the settlement is refused")
-}
+use crate::common::merge_tree::{edited, requirement_4};
+use crate::common::settle::{SECOND, THIRD, merge, over, refusal, settled, three_requirements};
+use crate::common::{key, label, small_document};
 
 fn bodied(document: &Document, body: &str) -> Document {
     edited(document, body)

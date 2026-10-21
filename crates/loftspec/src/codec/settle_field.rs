@@ -12,10 +12,10 @@ use super::files::write_files;
 use super::layout::{check_tree, parse_files};
 use super::record::{Mode, Rec, Val};
 use super::resolve::resolve;
-use super::resolve_conflicts::conflict_owner;
+use super::resolve_conflicts::{conflict_owner, rec};
 use super::schema::{Item, Kind, Shape, field};
 use super::unresolve::unresolve;
-use crate::conflict::{ConflictOwner, ConflictValue};
+use crate::conflict::{Conflict, ConflictOwner, ConflictValue};
 use crate::document::Document;
 
 /// Why a conflict's field could not be settled.
@@ -29,22 +29,24 @@ pub(crate) enum FieldRefusal {
     Unreadable(Vec<ReadError>),
 }
 
-/// The document with the field at `path` of the record that `owner` names set to `value`, or
-/// left out for none, as the strict reader reads it: the records read as they were written, or,
+/// The document with the field `conflict` names, in the record that owns it, set to `value`, or
+/// left out for none, and without the conflict record, as the strict reader reads it: the records read as they were written, or,
 /// where a slug moved the files it names, the document written again and read.
 pub(crate) fn settle_field(
     document: &Document,
-    owner: ConflictOwner,
-    path: &str,
+    conflict: &Conflict,
     value: Option<&ConflictValue>,
 ) -> Result<Document, FieldRefusal> {
+    let path = conflict.field.as_str();
     let mut tree = unresolve(document);
     let record = tree
         .files
         .values_mut()
         .flat_map(|(_, content)| content.records_mut())
-        .find_map(|record| owned_by(record, owner))
+        .find_map(|record| owned_by(record, conflict.owner))
         .ok_or(FieldRefusal::NoField)?;
+    let settled = rec(conflict, record.kind);
+    record.conflicts.retain(|each| *each != settled);
     let Some(SideShape::Field(shape)) = side_shape(record.kind, path) else {
         return Err(FieldRefusal::NoField);
     };

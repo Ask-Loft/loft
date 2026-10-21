@@ -141,7 +141,7 @@ fn value_from(json: &Value, path: &str) -> Result<ExtValue, FromJsonError> {
             }
             number
                 .as_i64()
-                .filter(|integer| (-MAX_INTEGER..=MAX_INTEGER).contains(integer))
+                .filter(|integer| in_range(*integer))
                 .map(ExtValue::Integer)
                 .ok_or_else(|| refused(JsonProblem::OutOfRange))
         }
@@ -185,7 +185,7 @@ pub(crate) fn held(ext: &Ext) -> bool {
 fn value_held(value: &ExtValue) -> bool {
     match value {
         ExtValue::Text(_) | ExtValue::Boolean(_) => true,
-        ExtValue::Integer(integer) => (-MAX_INTEGER..=MAX_INTEGER).contains(integer),
+        ExtValue::Integer(integer) => in_range(*integer),
         ExtValue::List(items) => !items.is_empty() && items.iter().all(value_held),
         ExtValue::Map(entries) => {
             !entries.is_empty()
@@ -196,13 +196,16 @@ fn value_held(value: &ExtValue) -> bool {
     }
 }
 
-/// Whether a mapping key is one the text form writes as a field name: an ASCII letter followed
-/// by ASCII letters and digits.
+/// Whether a mapping key is one the text form writes as a field name, as the YAML reader reads
+/// a key.
 fn is_field_name(key: &str) -> bool {
-    key.starts_with(|character: char| character.is_ascii_alphabetic())
-        && key
-            .chars()
-            .all(|character| character.is_ascii_alphanumeric())
+    crate::yaml::is_key(key)
+}
+
+/// Whether an integer is within ±[`MAX_INTEGER`], the bound of canonical JSON that the text
+/// form holds.
+pub(crate) fn in_range(integer: i64) -> bool {
+    (-MAX_INTEGER..=MAX_INTEGER).contains(&integer)
 }
 
 /// The JSON Pointer of `token` under `path`, with `~` and `/` escaped.

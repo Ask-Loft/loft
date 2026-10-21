@@ -92,7 +92,7 @@ fn former_labels(
     errors: &mut Vec<ValidationError>,
 ) {
     let kind = decision.state.kind();
-    let terminal = matches!(kind, StateKind::Retired | StateKind::Superseded);
+    let terminal = kind.is_settled();
     for label in former_labels_of(subjects, decision) {
         if !terminal {
             errors.push(ValidationError::FormerLabelInLiveDecision {

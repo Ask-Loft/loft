@@ -117,7 +117,7 @@ fn settled(decision: &Rec) -> bool {
         .record(field::STATE)
         .and_then(|state| state.text(field::KIND))
         .and_then(StateKind::parse);
-    matches!(kind, Some(StateKind::Retired | StateKind::Superseded))
+    kind.is_some_and(StateKind::is_settled)
 }
 
 /// Calls `each` on the items of each node reference field of a record and of every record in it.

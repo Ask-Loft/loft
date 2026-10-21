@@ -7,6 +7,9 @@ mod references;
 mod settle;
 mod structure;
 
+/// The side of a conflict over `position` that puts the record first in its list.
+pub(crate) const FIRST: &str = "first";
+
 pub use settle::{SettleError, Settlement, settle};
 
 use crate::canonical::{Digest, Domain, digest};

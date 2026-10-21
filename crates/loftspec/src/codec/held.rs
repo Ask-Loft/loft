@@ -6,11 +6,11 @@
 //! are read, so that every error is the reader's own, at its site.
 
 use super::error::ReadError;
-use super::files::{Files, Tree, keyed_records, read_file, write_files_keyed};
+use super::files::{Files, Tree, keyed_records, read_file};
 use super::layout::{Sites, check_tree};
 use super::record::{Mode, Rec};
 use super::resolve::resolve;
-use super::{canonical_tree, read_sited};
+use super::{read_sited, written};
 use crate::document::Document;
 
 /// The document and the sites reading a tree gives, or every read error it holds.
@@ -18,9 +18,7 @@ pub(crate) type Read = Result<(Document, Sites), Vec<ReadError>>;
 
 /// The files the writer writes for `document`, and what reading them back gives.
 pub(crate) fn write_and_read(document: &Document) -> (Files, Read) {
-    let mut tree = canonical_tree(document);
-    let (files, keys) = write_files_keyed(&tree);
-    let sites = Sites::written(keys);
+    let (mut tree, files, sites) = written(document);
     let held = (strictly_held(document, &tree) && read_conflicted(&mut tree, &files))
         .then(|| check_tree(&tree).and_then(|()| resolve(&tree)))
         .and_then(Result::ok);

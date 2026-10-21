@@ -20,6 +20,7 @@ pub mod openspec;
 pub mod own;
 pub mod parity;
 pub mod publishing;
+pub mod settle;
 pub mod text;
 pub mod trace;
 pub mod v1;
@@ -49,6 +50,12 @@ use loftspec::tree::{
 /// A deterministic version 7 key numbered `n`.
 pub fn key(n: u32) -> Key {
     Key::parse(&format!("00000000-0000-7000-8000-{n:012x}")).unwrap()
+}
+
+/// The number `n` that [`key`] makes `key` from.
+pub fn key_number(key: Key) -> u32 {
+    let text = key.to_string();
+    u32::from_str_radix(&text[text.len() - 12..], 16).expect("a key that `key` made")
 }
 
 /// A different deterministic key for every `n`, to build the same document with fresh keys.

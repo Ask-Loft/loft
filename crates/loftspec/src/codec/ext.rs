@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 
 use super::error::{Located, Problem};
 use super::record::Val;
-use crate::ext::{Ext, ExtValue, MAX_INTEGER};
+use crate::ext::{Ext, ExtValue, in_range};
 use crate::names::Namespace;
 use crate::yaml::{self, Out, Style, Value};
 
@@ -80,7 +80,7 @@ fn plain(node: &yaml::Node, text: &str) -> Result<ExtValue, Located> {
     }
     text.parse::<i64>()
         .ok()
-        .filter(|number| (-MAX_INTEGER..=MAX_INTEGER).contains(number))
+        .filter(|number| in_range(*number))
         .map(ExtValue::Integer)
         .ok_or_else(|| invalid(INTEGER))
 }

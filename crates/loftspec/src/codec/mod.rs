@@ -39,6 +39,7 @@ pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
 pub(crate) use node_files::{Under, filed_in_order, listed, node_files};
 pub use own_record::{OwnRecord, RecordKind, own_record, own_record_digest, own_records};
+pub(crate) use path::holder_path;
 pub use record::{ConflictRec, Mode, Rec, Val};
 pub(crate) use records::records;
 pub use resolve::resolve;
@@ -91,9 +92,17 @@ pub(crate) fn canonical_tree(document: &Document) -> Tree {
 /// those files back gives it, without reading them.
 #[must_use]
 pub fn write_sited(document: &Document) -> (Files, Sites) {
+    let (_, files, sites) = written(document);
+    (files, sites)
+}
+
+/// A document's canonical tree, the files the writer writes from it and the sites of the keys
+/// they carry.
+pub(crate) fn written(document: &Document) -> (Tree, Files, Sites) {
     let tree = canonical_tree(document);
     let (files, keys) = files::write_files_keyed(&tree);
-    (files, Sites::written(keys))
+    let sites = Sites::written(keys);
+    (tree, files, sites)
 }
 
 /// The site of every key the files the writer writes for a document carry, as reading those

@@ -42,14 +42,19 @@ impl Rec {
     /// that the path leads through.
     #[must_use]
     pub(crate) fn holder_of(&self, path: &str) -> Option<&Self> {
-        match path.rsplit_once('.') {
-            None => Some(self),
-            Some((parent, _)) => match self.at_path(parent)? {
+        match holder_path(path) {
+            "" => Some(self),
+            parent => match self.at_path(parent)? {
                 Val::Record(inner) => Some(inner),
                 _ => None,
             },
         }
     }
+}
+
+/// The path of the record that holds the field at `path`; empty for the record itself.
+pub(crate) fn holder_path(path: &str) -> &str {
+    path.rsplit_once('.').map_or("", |(parent, _)| parent)
 }
 
 /// The first segment of a path, and the rest after its dot.

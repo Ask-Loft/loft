@@ -4,15 +4,15 @@
 //! departed. A decision that is not settled and still names a node it took out keeps that name,
 //! so the settled document does not read.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
-use crate::decision::{Decision, DriverPayload, NodeRef, StateKind};
+use crate::decision::{Decision, DriverPayload, NodeRef};
 use crate::document::{Document, Edge, EdgeTarget};
 use crate::identity::Label;
-use crate::ids::{DecisionId, ElementId, NodeId};
+use crate::ids::{ElementId, NodeId};
 
 /// Forgets the elements `gone`, which a deletion took out of `document`.
-pub(super) fn forget_elements(document: &mut Document, gone: &[ElementId]) {
+pub(super) fn forget_elements(document: &mut Document, gone: &BTreeSet<ElementId>) {
     if gone.is_empty() {
         return;
     }
@@ -23,20 +23,19 @@ pub(super) fn forget_elements(document: &mut Document, gone: &[ElementId]) {
             ElementId::Decision(_) => None,
         })
         .collect();
-    let settled: Vec<DecisionId> = (document.decisions.iter())
-        .filter(|decision| is_settled(decision))
-        .map(|decision| decision.id)
-        .collect();
+    let settled = |decision: &Decision| decision.state.kind().is_settled();
+    let mut named_formerly = BTreeSet::new();
     for decision in &mut document.decisions {
-        if settled.contains(&decision.id) {
+        if settled(decision) {
             name_formerly(decision, &labels);
+            named_formerly.insert(decision.id);
         }
     }
     for edge in &mut document.edges {
         if let Edge::Subject {
             decision, subject, ..
         } = edge
-            && settled.contains(decision)
+            && named_formerly.contains(decision)
         {
             formerly(subject, &labels);
         }
@@ -51,13 +50,6 @@ pub(super) fn forget_elements(document: &mut Document, gone: &[ElementId]) {
                 .expect("a bound element departs");
         }
     }
-}
-
-fn is_settled(decision: &Decision) -> bool {
-    matches!(
-        decision.state.kind(),
-        StateKind::Retired | StateKind::Superseded
-    )
 }
 
 /// Names each node of `labels` that `decision`'s consequences and drivers hold by its label.

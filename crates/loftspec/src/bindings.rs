@@ -154,27 +154,21 @@ impl Bindings {
     /// The binding's element is bound already, or its kind takes no label; the bindings are
     /// unchanged.
     pub fn record(&mut self, binding: Binding) -> Result<(), BindingError> {
-        let Binding {
-            element,
-            label,
-            departed,
-            aliases,
-            withdrawn,
-            published_state,
-            published_history,
-        } = binding;
-        self.bind_as_written(element, label)?;
-        let recorded = self.entry_mut(element)?;
-        recorded.aliases = aliases;
-        recorded.withdrawn = withdrawn;
-        recorded.published_state = published_state;
-        recorded.published_history = published_history;
-        if departed {
-            self.depart(element)
-        } else {
-            self.reindex(element.key(), index);
-            Ok(())
+        let element = binding.element;
+        if element.label_prefix().is_none() {
+            let label = binding.label;
+            return Err(BindingError::PrefixMismatch { element, label });
         }
+        let key = element.key();
+        if self.entries.contains_key(&key) {
+            return Err(BindingError::AlreadyBound(element));
+        }
+        let departed = binding.departed;
+        self.entries.insert(key, binding);
+        if !departed {
+            self.reindex(key, index);
+        }
+        Ok(())
     }
 
     /// Records a binding's element and label as `spec/labels.yaml` holds them. A label whose
@@ -185,28 +179,15 @@ impl Bindings {
         element: impl Into<ElementId>,
         label: Label,
     ) -> Result<(), BindingError> {
-        let element = element.into();
-        if element.label_prefix().is_none() {
-            return Err(BindingError::PrefixMismatch { element, label });
-        }
-        match self.entries.entry(element.key()) {
-            std::collections::btree_map::Entry::Occupied(_) => {
-                Err(BindingError::AlreadyBound(element))
-            }
-            std::collections::btree_map::Entry::Vacant(entry) => {
-                entry.insert(Binding {
-                    element,
-                    label,
-                    departed: false,
-                    aliases: Vec::new(),
-                    withdrawn: Vec::new(),
-                    published_state: None,
-                    published_history: None,
-                });
-                index(&mut self.live_keys, label, element.key());
-                Ok(())
-            }
-        }
+        self.record(Binding {
+            element: element.into(),
+            label,
+            departed: false,
+            aliases: Vec::new(),
+            withdrawn: Vec::new(),
+            published_state: None,
+            published_history: None,
+        })
     }
 
     /// Replaces an element's live label and records the previous one as a permanent alias

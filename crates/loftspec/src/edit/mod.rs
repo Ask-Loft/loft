@@ -289,6 +289,25 @@ fn check_keys(document: &Document, subtree: &Subtree) -> Result<(), Refusal> {
 }
 
 /// The steps to `parent`; none for the root.
+/// The parent of `node` and the keys of the nodes of its kind there, in order, `node`'s among
+/// them; none when the document does not hold it.
+pub(crate) fn siblings(document: &Document, node: NodeId) -> Option<(Parent, Vec<Option<Key>>)> {
+    let steps = path(document, node)?;
+    let above = &steps[..steps.len() - 1];
+    let (parent, nodes) = if above.is_empty() {
+        (Parent::ROOT, document.root_nodes().collect())
+    } else {
+        let holder = at(document, above)?;
+        (Parent::Node(holder.id()?), holder.children())
+    };
+    let keys = nodes
+        .into_iter()
+        .filter(|each| each.kind() == node.kind())
+        .map(|each| each.id().map(NodeId::key))
+        .collect();
+    Some((parent, keys))
+}
+
 fn parent_steps(document: &Document, parent: &Parent) -> Result<Vec<Step>, Refusal> {
     match parent {
         Parent::Root(_) => Ok(Vec::new()),

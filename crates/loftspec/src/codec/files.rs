@@ -254,8 +254,8 @@ pub fn write_files(tree: &Tree) -> Files {
     tree.files
         .iter()
         .map(|(path, (_, content))| match out(content) {
-            Some(out) => (path.clone(), yaml::write(&out).into_bytes()),
-            None => (path.clone(), lint_bytes(content)),
+            Ok(out) => (path.clone(), yaml::write(&out).into_bytes()),
+            Err(bytes) => (path.clone(), bytes.to_vec()),
         })
         .collect()
 }
@@ -271,9 +271,12 @@ pub(super) fn write_files_keyed(tree: &Tree) -> (Files, Vec<WrittenKey<'_>>) {
     let mut files = Files::new();
     let mut keys = Vec::new();
     for (path, (role, content)) in &tree.files {
-        let Some(out) = out(content) else {
-            files.insert(path.clone(), lint_bytes(content));
-            continue;
+        let out = match out(content) {
+            Ok(out) => out,
+            Err(bytes) => {
+                files.insert(path.clone(), bytes.to_vec());
+                continue;
+            }
         };
         let (text, found) = yaml::write_keyed(&out);
         if *role != Role::Labels {
@@ -284,20 +287,13 @@ pub(super) fn write_files_keyed(tree: &Tree) -> (Files, Vec<WrittenKey<'_>>) {
     (files, keys)
 }
 
-/// A record file's or a registry's content as the writer lays it out; none for the lint
+/// A record file's or a registry's content as the writer lays it out, or the bytes of the lint
 /// configuration, which is written as it was read.
-fn out(content: &Content) -> Option<Out> {
+fn out(content: &Content) -> Result<Out, &[u8]> {
     match content {
-        Content::Record(record) => Some(to_out(record)),
-        Content::Registry(entries) => Some(Out::Sequence(entries.iter().map(to_out).collect())),
-        Content::Lint(_) => None,
-    }
-}
-
-fn lint_bytes(content: &Content) -> Vec<u8> {
-    match content {
-        Content::Lint(bytes) => bytes.clone(),
-        _ => unreachable!("only the lint configuration is written as read"),
+        Content::Record(record) => Ok(to_out(record)),
+        Content::Registry(entries) => Ok(Out::Sequence(entries.iter().map(to_out).collect())),
+        Content::Lint(bytes) => Err(bytes),
     }
 }
 

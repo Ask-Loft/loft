@@ -60,39 +60,40 @@ pub fn settle(
     id: ConflictId,
     settlement: &Settlement,
 ) -> Result<Document, SettleError> {
-    let conflict = document
-        .conflicts
-        .iter()
-        .find(|each| each.id() == id)
+    let at = (document.conflicts.iter())
+        .position(|each| each.id() == id)
         .ok_or(SettleError::Unknown(id))?;
-    let mut settled = document.clone();
-    settled.conflicts.retain(|each| each.id() != id);
-    let path = conflict.field.as_str();
-    let structural = matches!(path, field::RECORD | field::PARENT | field::POSITION);
-    let side = match settlement {
-        Settlement::Base => Some((Input::Base, &conflict.base)),
-        Settlement::Ours => Some((Input::Ours, &conflict.ours)),
-        Settlement::Theirs => Some((Input::Theirs, &conflict.theirs)),
-        Settlement::Value(_) => None,
-    };
-    if structural {
-        let Some((input, value)) = side else {
+    let conflict = &document.conflicts[at];
+    let structural = matches!(
+        conflict.field.as_str(),
+        field::RECORD | field::PARENT | field::POSITION
+    );
+    let (input, side) = match settlement {
+        Settlement::Value(_) if structural => {
             return Err(SettleError::SideOnly(conflict.field.clone()));
-        };
-        let value = value.as_ref().ok_or_else(|| SettleError::NoSide {
-            side: input,
-            field: conflict.field.clone(),
-        })?;
-        structure::settle(&mut settled, conflict, value)?;
-        return read_back(&settled);
-    }
-    let value = match (settlement, side) {
-        (Settlement::Value(value), _) => Some(value),
-        (_, Some((_, value))) => value.as_ref(),
-        (_, None) => None,
+        }
+        Settlement::Value(value) => {
+            return codec::settle_field(document, conflict, Some(value))
+                .map_err(|refusal| refused(conflict, refusal));
+        }
+        Settlement::Base => (Input::Base, conflict.base.as_ref()),
+        Settlement::Ours => (Input::Ours, conflict.ours.as_ref()),
+        Settlement::Theirs => (Input::Theirs, conflict.theirs.as_ref()),
     };
-    codec::settle_field(&settled, conflict.owner, path, value)
-        .map_err(|refusal| refused(conflict, refusal))
+    if !structural {
+        return codec::settle_field(document, conflict, side)
+            .map_err(|refusal| refused(conflict, refusal));
+    }
+    let side = side.ok_or_else(|| SettleError::NoSide {
+        side: input,
+        field: conflict.field.clone(),
+    })?;
+    let mut settled = document.clone();
+    settled.conflicts.remove(at);
+    structure::settle(&mut settled, conflict, side)?;
+    let (_, read) = codec::write_and_read(&settled);
+    read.map(|(document, _)| document)
+        .map_err(SettleError::Unreadable)
 }
 
 fn refused(conflict: &Conflict, refusal: FieldRefusal) -> SettleError {
@@ -101,9 +102,4 @@ fn refused(conflict: &Conflict, refusal: FieldRefusal) -> SettleError {
         FieldRefusal::Shape => SettleError::Shape(conflict.field.clone()),
         FieldRefusal::Unreadable(errors) => SettleError::Unreadable(errors),
     }
-}
-
-/// The settled document as its files read back.
-fn read_back(document: &Document) -> Result<Document, SettleError> {
-    codec::read(&codec::write(document)).map_err(SettleError::Unreadable)
 }

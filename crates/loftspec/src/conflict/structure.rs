@@ -1,16 +1,17 @@
 //! The settlement of a conflict over `record`, `parent` or `position`, made on the document: a
 //! record kept or deleted, moved under another parent, or moved within its list.
 
+use std::collections::BTreeSet;
+
 use super::references::forget_elements;
 use super::settle::SettleError;
-use super::{Conflict, ConflictOwner, ConflictValue};
+use super::{Conflict, ConflictOwner, ConflictValue, FIRST};
 use crate::codec::schema::field;
-use crate::decision::Decision;
+use crate::decision::{Consequence, Decision, DecisionOption, Driver};
 use crate::document::Document;
 use crate::edit::{self, Parent};
 use crate::identity::Key;
-use crate::ids::{ElementId, NodeId};
-use crate::node::Node;
+use crate::ids::ElementId;
 
 /// Settles `conflict` by the side's value `side`.
 ///
@@ -31,9 +32,7 @@ pub(super) fn settle(
             reparent(document, owner, key(parent, owner)?)
         }
         (field::POSITION, ConflictValue::Scalar(anchor)) => {
-            let anchor = (anchor != "first")
-                .then(|| key(anchor, owner))
-                .transpose()?;
+            let anchor = (anchor != FIRST).then(|| key(anchor, owner)).transpose()?;
             reposition(document, owner, anchor)
         }
         _ => Err(SettleError::Unsettleable(owner)),
@@ -45,11 +44,13 @@ fn key(text: &str, owner: ConflictOwner) -> Result<Key, SettleError> {
     Key::parse(text).map_err(|_| SettleError::Unsettleable(owner))
 }
 
-/// Deletes the record `owner` names, with every record beneath it and the edges they write, and
-/// then what names them, as [`forget`] forgets it.
+/// Deletes the record `owner` names, with every record beneath it, the edges they write and the
+/// conflict records of each record it takes out, and forgets what names the elements it takes
+/// out, as [`forget_elements`] forgets them.
 fn delete(document: &mut Document, owner: ConflictOwner) -> Result<(), SettleError> {
     let missing = || SettleError::Unsettleable(owner);
-    let taken = match owner {
+    let mut owners = BTreeSet::from([owner]);
+    let gone: BTreeSet<ElementId> = match owner {
         ConflictOwner::Element(ElementId::Node(node)) => {
             let subtree = edit::detach(document, node).map_err(SettleError::Edit)?;
             subtree.ids().into_iter().map(ElementId::Node).collect()
@@ -61,80 +62,124 @@ fn delete(document: &mut Document, owner: ConflictOwner) -> Result<(), SettleErr
             let removed = document.decisions.remove(at);
             let gone = ElementId::Decision(decision);
             document.edges.retain(|edge| edge.source() != gone);
-            forget(document, &parts(&removed));
-            vec![gone]
+            owners.extend(parts(&removed));
+            BTreeSet::from([gone])
         }
         ConflictOwner::Option(_) | ConflictOwner::Driver(_) | ConflictOwner::Consequence(_) => {
-            let removed = document
-                .decisions
-                .iter_mut()
-                .any(|decision| take_part(decision, owner));
-            if !removed {
-                return Err(missing());
-            }
-            Vec::new()
+            take_held(document, owner)?;
+            BTreeSet::new()
         }
-        ConflictOwner::Tag(tag) => retain(&mut document.tags, |entry| entry.id != tag, owner)?,
-        ConflictOwner::Category(category) => retain(
-            &mut document.categories,
-            |entry| entry.id != category,
-            owner,
-        )?,
-        ConflictOwner::Term(term) => retain(&mut document.terms, |entry| entry.id != term, owner)?,
+        ConflictOwner::Tag(tag) => {
+            remove(&mut document.tags, |entry| entry.id == tag, owner)?;
+            BTreeSet::new()
+        }
+        ConflictOwner::Category(category) => {
+            remove(
+                &mut document.categories,
+                |entry| entry.id == category,
+                owner,
+            )?;
+            BTreeSet::new()
+        }
+        ConflictOwner::Term(term) => {
+            remove(&mut document.terms, |entry| entry.id == term, owner)?;
+            BTreeSet::new()
+        }
         ConflictOwner::Manifest | ConflictOwner::Labels => return Err(missing()),
     };
-    let owners: Vec<ConflictOwner> = taken.iter().copied().map(ConflictOwner::Element).collect();
-    forget(document, &[owners, vec![owner]].concat());
-    forget_elements(document, &taken);
+    owners.extend(gone.iter().copied().map(ConflictOwner::Element));
+    document
+        .conflicts
+        .retain(|conflict| !owners.contains(&conflict.owner));
+    forget_elements(document, &gone);
     Ok(())
 }
 
 /// The owners of the conflicts of a decision's options, drivers and consequences.
-fn parts(decision: &Decision) -> Vec<ConflictOwner> {
-    let options = decision
-        .options
-        .iter()
-        .map(|each| ConflictOwner::Option(each.id));
-    let drivers = decision
-        .drivers
-        .iter()
-        .map(|each| ConflictOwner::Driver(each.id));
+fn parts(decision: &Decision) -> impl Iterator<Item = ConflictOwner> + '_ {
+    let options = (decision.options.iter()).map(|each| ConflictOwner::Option(each.id));
+    let drivers = (decision.drivers.iter()).map(|each| ConflictOwner::Driver(each.id));
     let consequences =
         (decision.consequences.iter()).map(|each| ConflictOwner::Consequence(each.id));
-    options.chain(drivers).chain(consequences).collect()
+    options.chain(drivers).chain(consequences)
 }
 
-/// Takes out every conflict record of the records `owners` name, which a deletion took out.
-fn forget(document: &mut Document, owners: &[ConflictOwner]) {
-    document
-        .conflicts
-        .retain(|conflict| !owners.contains(&conflict.owner));
-}
-
-/// Keeps the entries `kept` accepts, refusing where it accepts every one.
-fn retain<T>(
+/// Removes the entry `named` picks, refusing where it picks none.
+fn remove<T>(
     entries: &mut Vec<T>,
-    kept: impl Fn(&T) -> bool,
+    named: impl Fn(&T) -> bool,
     owner: ConflictOwner,
-) -> Result<Vec<ElementId>, SettleError> {
-    let before = entries.len();
-    entries.retain(kept);
-    if entries.len() == before {
-        return Err(SettleError::Unsettleable(owner));
-    }
-    Ok(Vec::new())
+) -> Result<(), SettleError> {
+    let at = (entries.iter())
+        .position(named)
+        .ok_or(SettleError::Unsettleable(owner))?;
+    entries.remove(at);
+    Ok(())
 }
 
-/// Takes out of `decision` the option, driver or consequence `owner` names; whether it held it.
-fn take_part(decision: &mut Decision, owner: ConflictOwner) -> bool {
-    let before = decision.options.len() + decision.drivers.len() + decision.consequences.len();
-    match owner {
-        ConflictOwner::Option(id) => decision.options.retain(|each| each.id != id),
-        ConflictOwner::Driver(id) => decision.drivers.retain(|each| each.id != id),
-        ConflictOwner::Consequence(id) => decision.consequences.retain(|each| each.id != id),
-        _ => {}
+/// A decision's option, driver or consequence, taken out of its list.
+enum Part {
+    Option(DecisionOption),
+    Driver(Driver),
+    Consequence(Consequence),
+}
+
+/// Takes the part `owner` names out of `decision`, with its position in its list; none where
+/// the decision does not hold it.
+fn take(decision: &mut Decision, owner: ConflictOwner) -> Option<(Part, usize)> {
+    fn out<T>(list: &mut Vec<T>, named: impl Fn(&T) -> bool) -> Option<(T, usize)> {
+        let at = list.iter().position(named)?;
+        Some((list.remove(at), at))
     }
-    before != decision.options.len() + decision.drivers.len() + decision.consequences.len()
+    Some(match owner {
+        ConflictOwner::Option(id) => {
+            let (part, at) = out(&mut decision.options, |each| each.id == id)?;
+            (Part::Option(part), at)
+        }
+        ConflictOwner::Driver(id) => {
+            let (part, at) = out(&mut decision.drivers, |each| each.id == id)?;
+            (Part::Driver(part), at)
+        }
+        ConflictOwner::Consequence(id) => {
+            let (part, at) = out(&mut decision.consequences, |each| each.id == id)?;
+            (Part::Consequence(part), at)
+        }
+        _ => return None,
+    })
+}
+
+/// Puts `part` into its list of `decision` at `at`, or at the end for none.
+fn put(decision: &mut Decision, part: Part, at: Option<usize>) {
+    fn into<T>(list: &mut Vec<T>, part: T, at: Option<usize>) {
+        list.insert(at.unwrap_or(list.len()), part);
+    }
+    match part {
+        Part::Option(part) => into(&mut decision.options, part, at),
+        Part::Driver(part) => into(&mut decision.drivers, part, at),
+        Part::Consequence(part) => into(&mut decision.consequences, part, at),
+    }
+}
+
+/// The keys of the list of `decision` that holds parts of `part`'s kind, in order.
+fn keys(decision: &Decision, part: &Part) -> Vec<Key> {
+    match part {
+        Part::Option(_) => decision.options.iter().map(|each| each.id.key()).collect(),
+        Part::Driver(_) => decision.drivers.iter().map(|each| each.id.key()).collect(),
+        Part::Consequence(_) => (decision.consequences.iter())
+            .map(|each| each.id.key())
+            .collect(),
+    }
+}
+
+/// The part `owner` names, taken out of the decision that holds it, with that decision's place
+/// among the decisions and the part's position in its list.
+fn take_held(
+    document: &mut Document,
+    owner: ConflictOwner,
+) -> Result<(usize, Part, usize), SettleError> {
+    (document.decisions.iter_mut().enumerate())
+        .find_map(|(holder, decision)| take(decision, owner).map(|(part, at)| (holder, part, at)))
+        .ok_or(SettleError::Unsettleable(owner))
 }
 
 /// Moves the record `owner` names under the record keyed `parent`, after the records of its
@@ -143,39 +188,21 @@ fn reparent(document: &mut Document, owner: ConflictOwner, parent: Key) -> Resul
     let ConflictOwner::Element(ElementId::Node(node)) = owner else {
         return move_part(document, owner, parent);
     };
-    let target = match edit::find(document, parent) {
-        Some(edit::Found::Node(found)) => found.id().ok_or(SettleError::NoRecord(parent))?,
-        _ => return Err(SettleError::NoRecord(parent)),
+    let Some(edit::Found::Node(found)) = edit::find(document, parent) else {
+        return Err(SettleError::NoRecord(parent));
     };
-    let (present, _) = siblings(document, node).ok_or(SettleError::Unsettleable(owner))?;
-    let target = Parent::Node(target);
+    let target = Parent::Node(found.id().ok_or(SettleError::NoRecord(parent))?);
+    let children = found.children().into_iter();
+    let length = children.filter(|child| child.kind() == node.kind()).count();
+    let (present, _) = edit::siblings(document, node).ok_or(SettleError::Unsettleable(owner))?;
     if present == target {
         return Ok(());
     }
-    let length = kind_count(document, &target, node);
     edit::move_node(document, node, target, length).map_err(SettleError::Edit)
 }
 
-/// The number of nodes of `node`'s kind under `parent`.
-fn kind_count(document: &Document, parent: &Parent, node: NodeId) -> usize {
-    let Parent::Node(parent) = parent else {
-        return 0;
-    };
-    let mut count = 0;
-    document.walk(&mut |each| {
-        if each.id() == Some(*parent) {
-            count = each
-                .children()
-                .iter()
-                .filter(|child| child.kind() == node.kind())
-                .count();
-        }
-    });
-    count
-}
-
 /// Moves an option, a driver or a consequence to the end of its list in the decision keyed
-/// `parent`.
+/// `parent`; one that decision holds already stays where it is.
 fn move_part(
     document: &mut Document,
     owner: ConflictOwner,
@@ -190,43 +217,10 @@ fn move_part(
     let to = (document.decisions.iter())
         .position(|decision| decision.id.key() == parent)
         .ok_or(SettleError::NoRecord(parent))?;
-    let from = (document.decisions.iter())
-        .position(|decision| holds_part(decision, owner))
-        .ok_or(SettleError::Unsettleable(owner))?;
-    if from == to {
-        return Ok(());
-    }
-    let mut moved = document.decisions[from].clone();
-    let source = &mut document.decisions[from];
-    take_part(source, owner);
-    keep_only(&mut moved, owner);
-    let target = &mut document.decisions[to];
-    target.options.extend(moved.options);
-    target.drivers.extend(moved.drivers);
-    target.consequences.extend(moved.consequences);
+    let (from, part, at) = take_held(document, owner)?;
+    let at = (from == to).then_some(at);
+    put(&mut document.decisions[to], part, at);
     Ok(())
-}
-
-fn holds_part(decision: &Decision, owner: ConflictOwner) -> bool {
-    match owner {
-        ConflictOwner::Option(id) => decision.options.iter().any(|each| each.id == id),
-        ConflictOwner::Driver(id) => decision.drivers.iter().any(|each| each.id == id),
-        ConflictOwner::Consequence(id) => decision.consequences.iter().any(|each| each.id == id),
-        _ => false,
-    }
-}
-
-/// Leaves `decision` holding only the part `owner` names.
-fn keep_only(decision: &mut Decision, owner: ConflictOwner) {
-    decision
-        .options
-        .retain(|each| owner == ConflictOwner::Option(each.id));
-    decision
-        .drivers
-        .retain(|each| owner == ConflictOwner::Driver(each.id));
-    decision
-        .consequences
-        .retain(|each| owner == ConflictOwner::Consequence(each.id));
 }
 
 /// Moves the record `owner` names within its list to right after the record keyed `anchor`, or
@@ -239,105 +233,39 @@ fn reposition(
     let ConflictOwner::Element(ElementId::Node(node)) = owner else {
         return reposition_part(document, owner, anchor);
     };
-    let (parent, siblings) = siblings(document, node).ok_or(SettleError::Unsettleable(owner))?;
-    let position = position_after(&siblings, anchor)?;
+    let (parent, siblings) =
+        edit::siblings(document, node).ok_or(SettleError::Unsettleable(owner))?;
+    let others = siblings
+        .into_iter()
+        .filter(|each| *each != Some(node.key()));
+    let position = position_after(others, anchor)?;
     edit::move_node(document, node, parent, position).map_err(SettleError::Edit)
 }
 
 /// Where a record goes in a list of `keys` that leaves it out: right after `anchor`, or first.
-fn position_after(keys: &[Option<Key>], anchor: Option<Key>) -> Result<usize, SettleError> {
+fn position_after(
+    keys: impl IntoIterator<Item = Option<Key>>,
+    anchor: Option<Key>,
+) -> Result<usize, SettleError> {
     let Some(anchor) = anchor else {
         return Ok(0);
     };
-    keys.iter()
-        .position(|each| *each == Some(anchor))
+    (keys.into_iter())
+        .position(|each| each == Some(anchor))
         .map(|at| at + 1)
         .ok_or(SettleError::NoRecord(anchor))
 }
 
-/// Moves an option, a driver or a consequence within its decision's list.
+/// Moves an option, a driver or a consequence within its decision's list, putting it back where
+/// it was when the list does not hold the anchor.
 fn reposition_part(
     document: &mut Document,
     owner: ConflictOwner,
     anchor: Option<Key>,
 ) -> Result<(), SettleError> {
-    let decision = (document.decisions.iter_mut())
-        .find(|decision| holds_part(decision, owner))
-        .ok_or(SettleError::Unsettleable(owner))?;
-    match owner {
-        ConflictOwner::Option(id) => reorder(
-            &mut decision.options,
-            |each| each.id.key(),
-            id.key(),
-            anchor,
-        ),
-        ConflictOwner::Driver(id) => reorder(
-            &mut decision.drivers,
-            |each| each.id.key(),
-            id.key(),
-            anchor,
-        ),
-        ConflictOwner::Consequence(id) => reorder(
-            &mut decision.consequences,
-            |each| each.id.key(),
-            id.key(),
-            anchor,
-        ),
-        _ => Err(SettleError::Unsettleable(owner)),
-    }
-}
-
-/// Moves the entry keyed `moved` of `entries` to right after the one keyed `anchor`, or first.
-fn reorder<T>(
-    entries: &mut Vec<T>,
-    key_of: impl Fn(&T) -> Key,
-    moved: Key,
-    anchor: Option<Key>,
-) -> Result<(), SettleError> {
-    let from = entries
-        .iter()
-        .position(|each| key_of(each) == moved)
-        .expect("the decision holds the part");
-    let entry = entries.remove(from);
-    let keys: Vec<Option<Key>> = entries.iter().map(|each| Some(key_of(each))).collect();
-    match position_after(&keys, anchor) {
-        Ok(at) => {
-            entries.insert(at, entry);
-            Ok(())
-        }
-        Err(refusal) => {
-            entries.insert(from, entry);
-            Err(refusal)
-        }
-    }
-}
-
-/// The parent of `node` and the keys of the other nodes of its kind there, in order.
-fn siblings(document: &Document, node: NodeId) -> Option<(Parent, Vec<Option<Key>>)> {
-    let others = |nodes: Vec<Node<'_>>| -> Option<Vec<Option<Key>>> {
-        let mut found = false;
-        let keys = nodes
-            .into_iter()
-            .filter(|each| each.kind() == node.kind())
-            .filter_map(|each| {
-                let id = each.id();
-                found |= id == Some(node);
-                (id != Some(node)).then(|| id.map(NodeId::key))
-            })
-            .collect();
-        found.then_some(keys)
-    };
-    if let Some(keys) = others(document.root_nodes().collect()) {
-        return Some((Parent::ROOT, keys));
-    }
-    let mut held = None;
-    document.walk(&mut |parent| {
-        if held.is_none()
-            && let Some(id) = parent.id()
-            && let Some(keys) = others(parent.children())
-        {
-            held = Some((Parent::Node(id), keys));
-        }
-    });
-    held
+    let (holder, part, from) = take_held(document, owner)?;
+    let decision = &mut document.decisions[holder];
+    let position = position_after(keys(decision, &part).into_iter().map(Some), anchor);
+    put(decision, part, Some(*position.as_ref().unwrap_or(&from)));
+    position.map(|_| ())
 }
