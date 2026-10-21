@@ -5,6 +5,62 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Settling a conflict of a document held in memory. `loftspec::conflict::settle` takes a
+  document, a conflict's identifier and a `Settlement` (`Base`, `Ours`, `Theirs`, or
+  `Value(ConflictValue)`) and gives a new document without that conflict record, as the reader
+  reads it: a field takes the side's value, or the value given, checked against the field's
+  shape; a conflict over the bindings adds the side's bindings to those the labels file holds;
+  a conflict over `record` keeps the record or deletes it with everything beneath it, departing
+  their bindings, removing every edge that names what it deleted, naming a node a retired or
+  superseded decision references by its former label, and taking the deleted records' conflict
+  records with them; a conflict over `parent` or `position` moves the record where the side puts
+  it. Those three take a side only. Every refusal is a `SettleError`, including the reader's
+  errors for a settlement whose document would not read. `codec::conflict_owner` gives the owner
+  of the conflicts a record holds, and `ConflictOwner::own_record` the kind and key of the own
+  record view it names.
+- Functions on a document held in memory, without writing it and reading its files back.
+  `loftspec::check::validated` validates a document at the sites its caller gives, without
+  linting it, and `check::linted` lints it under the bytes of its `spec/lint.yaml`, without
+  validating it, or gives the configuration's errors; for a document as the reader reads its
+  written tree, each gives what `check` gives that tree. `codec::sites` gives the sites of the
+  keys the files the writer writes carry, and `codec::write_sited` those files with them, without
+  reading the files: the writer records where each key's value lands as it writes it.
+  `publish::ReadTree::of_document` builds a publishable tree from a document and the text of its
+  `spec/lint.yaml`: the tree `ReadTree::read` reads from the written files, its document in the
+  order the reader reads it, or the same read errors. A document whose records hold only what the
+  strict reader accepts is resolved from the records the writer builds, without parsing its
+  files.
+- `loftspec::codec::own_record` gives one record's own record view and digest by its
+  `RecordKind` and key, without building any other record's: in a document that carries each key
+  once, it is the entry `own_records` gives that record. A node is found by a walk that stops at
+  it, with only the edges it writes; a binding by the key of the element it binds, departed or
+  not. A kind and key no record carries give none.
+- `loftspec::bindings::Bindings::record` records a binding whole, as `spec/labels.yaml` holds
+  it: its label, kept where its prefix is no longer its element's kind prefix, as a promoted
+  record keeps its label; its aliases and withdrawn labels in order; its departure; and the state
+  and history a publish recorded in it. Recording each binding a labels file holds gives the
+  bindings reading the file gives, which the reader now builds the same way. A binding of an
+  element bound already, or of a kind that takes no label, is refused and changes nothing.
+- `loftspec::ext::from_json` reads extension data back from the JSON `ext::to_json` writes it
+  as, its exact inverse: it refuses, as a `FromJsonError` naming the JSON Pointer of the value
+  and its `JsonProblem`, JSON that is not an object of namespaces, `null`, a number with a
+  fraction or an exponent, an integer beyond ±9007199254740991, an empty array or object, and a
+  mapping key that is not a letter followed by letters and digits, none of which the text form
+  holds. `canonical::Digest::from_bytes` makes a digest from its 32 bytes, which `as_bytes`
+  gives back, and `publish::PublishedAt` is ordered by the instant it names.
+- The tree merger's result always reads. Where one side deletes a record and leaves it otherwise
+  as it was, while a record the merge keeps references it, `merge_tree` keeps the record as the
+  other side holds it, with every record beneath it, and gives it a conflict record over `record`
+  whose deleting side is `null`, named by the identifier its holder, field and sides give it; a
+  record it references is kept by the same rule. Before, it deleted the record and the result
+  named a key that no record carried. Where both sides changed a field apart and its base value
+  names a record both deleted, the field holds ours' value beside its conflict record. The merge
+  driver, which sees one file, still deletes such a record and leaves the reference for
+  `loft check` to report. A record that no place in the result can take, because a side changed
+  the kind of its parent, is not kept, and `merge_tree` now refuses with
+  `TreeMergeError::Unwritable` any result whose references do not resolve, where before it
+  returned it. `MergedTree::document` is the document the result reads into, so a caller need
+  not read the merged files again.
 - `loftspec::codec::own_records` gives each keyed node, decision, registry entry and binding of
   a document its own record view and digest, by `RecordKind` and key: a stable identity of the
   record's own content, for tools that store or compare records one at a time. The view is the

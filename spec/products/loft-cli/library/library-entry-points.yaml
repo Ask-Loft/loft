@@ -240,3 +240,116 @@ requirements:
         name: "The refusal names the key of the node that the file already holds."
       - key: 01a15958-a358-72fb-a82d-d8b09bb4ab97
         name: "The document is unchanged after the refusal."
+  - key: 01a15fc3-9f7d-73a2-b34d-d72a16a6a4f1
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "order publish times by the instant each names."
+    criteria:
+      - key: 01a15fc3-9f7d-73a2-b34d-d72bcae58317
+        name: "An earlier publish time orders before a later one."
+      - key: 01a15fc3-9f7d-73a2-b34d-d72c72524bbb
+        name: "Two publish times of one instant are equal."
+      - key: 01a15fc3-9f7d-73a2-b34d-d72d3a9f2550
+        name: "Publish times read from their RFC 3339 text order as the instants they name."
+  - key: 01a15fc3-9f7d-73a2-b34d-d72e13a75781
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer a digest made from its 32 bytes and the 32 bytes of a digest."
+    criteria:
+      - key: 01a15fc3-9f7d-73a2-b34d-d72fffcbd204
+        name: "A digest made from 32 bytes gives back those bytes."
+      - key: 01a15fc3-9f7d-73a2-b34d-d730c943ec9d
+        name: "A digest made from the bytes of a digest is that digest."
+      - key: 01a15fc3-9f7d-73a2-b34d-d731894760fd
+        name: "A digest made from 32 bytes is written as two lowercase hexadecimal digits for each byte, in order."
+  - key: 01a15fc7-f853-74b5-a66e-87b0d6349ba5
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer recording a binding, whole, as `spec/labels.yaml` holds it."
+    criteria:
+      - key: 01a15fc7-f854-7339-bd59-8a2449c4aee6
+        name: "Recording a binding is public in `loftspec`."
+      - key: 01a15fc7-f854-7339-bd59-8a254b475079
+        name: "A recorded binding keeps a label whose prefix is not its element's kind prefix."
+      - key: 01a15fc7-f854-7339-bd59-8a26b3ebe7a3
+        name: "A recorded binding keeps its aliases and its withdrawn labels, in their order."
+      - key: 01a15fc7-f854-7339-bd59-8a275dbb9b9a
+        name: "A recorded binding keeps whether it is departed."
+      - key: 01a15fc7-f854-7339-bd59-8a2858b6fd6b
+        name: "A recorded binding keeps the kind of the state a publish saw and the decision history hash it recorded."
+      - key: 01a15fc7-f854-7339-bd59-8a295a9d6e25
+        name: "Recording each binding of a labels file read from disk, one at a time, gives the bindings that reading the file gives."
+  - key: 01a15fc7-f854-7339-bd59-8a2a2471d342
+    statement:
+      form: unwanted
+      if: "a binding being recorded names an element that is bound already, or one whose kind takes no label"
+      system: "`loftspec`"
+      shall: "refuse the binding."
+    criteria:
+      - key: 01a15fc7-f854-7339-bd59-8a2b9c215187
+        name: "A binding of an element that is bound already is refused."
+      - key: 01a15fc7-f854-7339-bd59-8a2c1d8ca7b1
+        name: "A binding of an element whose kind takes no label is refused."
+      - key: 01a15fc7-f854-7339-bd59-8a2de71eb465
+        name: "The bindings are unchanged after the refusal."
+  - key: 01a15fd0-f426-701e-8f43-009a26dc5c10
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer validating a document held in memory, at the sites its caller gives, without linting it."
+    criteria:
+      - key: 01a15fd0-f426-701e-8f43-009b96819ee5
+        name: "Validating a document held in memory is public in `loftspec`."
+      - key: 01a15fd0-f426-701e-8f43-009cdc75005b
+        name: "For a document as the reader reads the tree the writer writes for it, the errors are the validation errors that checking that tree gives."
+      - key: 01a15fd0-f426-701e-8f43-009de24c782a
+        name: "Each error names the sites that the caller gives for the keys it names."
+      - key: 01a15fd0-f426-701e-8f43-009e2a297fc4
+        name: "Validating a document gives no lint finding."
+  - key: 01a15fd0-f427-715f-bf7b-9fb9d73642d2
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer linting a document held in memory under the bytes of its lint configuration, at the sites its caller gives, without validating it."
+    criteria:
+      - key: 01a15fd0-f427-715f-bf7b-9fba294e635c
+        name: "Linting a document held in memory is public in `loftspec`."
+      - key: 01a15fd0-f427-715f-bf7b-9fbb12131fbb
+        name: "For a document as the reader reads the tree the writer writes for it, the findings are those that checking that tree with the same `spec/lint.yaml` gives."
+      - key: 01a15fd0-f427-715f-bf7b-9fbc2db223f6
+        name: "A lint configuration in error gives its errors and no finding."
+      - key: 01a15fd0-f427-715f-bf7b-9fbd9366479e
+        name: "A document that the validator refuses is linted all the same."
+  - key: 01a15fd0-f427-715f-bf7b-9fbe19b4c81f
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "give the sites of the files the writer writes for a document without reading those files back."
+    criteria:
+      - key: 01a15fd0-f427-715f-bf7b-9fbf70f28cb6
+        name: "For a document whose written files read, the sites equal those that reading the written files gives."
+      - key: 01a15fd0-f427-715f-bf7b-9fc04afbc422
+        name: "Each site names the file of the key and the line and column of the key's value."
+      - key: 01a15fd0-f427-715f-bf7b-9fc1caf24395
+        name: "Writing a document with its sites gives the files that writing the document gives."
+  - key: 01a15fd0-f427-715f-bf7b-9fc27dc69d3f
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "build a publishable tree from a document held in memory and the text of its lint configuration, equal to the tree that reading the document's written files gives."
+    criteria:
+      - key: 01a15fd0-f427-715f-bf7b-9fc35186d8ef
+        name: "The tree's files are those the writer writes for the document, with `spec/lint.yaml` holding the text given."
+      - key: 01a15fd0-f427-715f-bf7b-9fc4d4658632
+        name: "The tree's document and sites equal those of the written files read back, the document in the order the reader reads it."
+      - key: 01a15fd0-f427-715f-bf7b-9fc5be88fdd6
+        name: "The tree's roots and state root equal those of the written files read back."
+      - key: 01a15fd0-f427-715f-bf7b-9fc630de3a05
+        name: "Publishing the tree gives what publishing the written files read back gives."
+      - key: 01a15fd6-c6de-7041-8c7b-2ee86141771f
+        name: "A document whose written files do not read is refused with the read errors that reading them gives."
+      - key: 01a15fd6-c6de-7041-8c7b-2ee906393715
+        name: "A document whose records hold only what the strict reader accepts is built into a tree without parsing its written files."

@@ -3,7 +3,17 @@
 //! removed (RQ-126), and no hash of the document reads it. Each conflict is named by an
 //! identifier derived from it alone, which no file holds.
 
+mod references;
+mod settle;
+mod structure;
+
+/// The side of a conflict over `position` that puts the record first in its list.
+pub(crate) const FIRST: &str = "first";
+
+pub use settle::{SettleError, Settlement, settle};
+
 use crate::canonical::{Digest, Domain, digest};
+use crate::codec::RecordKind;
 use crate::codec::{LABELS, MANIFEST, SpecPath};
 use crate::ext::Ext;
 use serde_json::{Value, json};
@@ -45,6 +55,27 @@ impl ConflictOwner {
 }
 
 impl ConflictOwner {
+    /// The own record of the conflicts' owner, by its kind and key, as `codec::own_records` keys
+    /// it: a node's, a decision's or a registry entry's; none for a decision's option, driver or
+    /// consequence, whose decision's own record holds it, and for the manifest and the bindings.
+    #[must_use]
+    pub const fn own_record(self) -> Option<(RecordKind, Key)> {
+        Some(match self {
+            Self::Element(ElementId::Node(node)) => (RecordKind::Node(node.kind()), node.key()),
+            Self::Element(ElementId::Decision(decision)) => (RecordKind::Decision, decision.key()),
+            Self::Tag(tag) => (RecordKind::Tag, tag.key()),
+            Self::Category(category) => (RecordKind::Category, category.key()),
+            Self::Term(term) => (RecordKind::Term, term.key()),
+            Self::Option(_)
+            | Self::Driver(_)
+            | Self::Consequence(_)
+            | Self::Manifest
+            | Self::Labels => {
+                return None;
+            }
+        })
+    }
+
     /// The holder a conflict's identifier names: the key of the record whose `conflicts` list
     /// holds it, `spec/loftspec.yaml` for the manifest and `spec/labels.yaml` for the bindings.
     #[must_use]

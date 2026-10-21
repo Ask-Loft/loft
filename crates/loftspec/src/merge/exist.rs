@@ -54,13 +54,33 @@ pub(super) fn decide(
         .into_iter()
         .map(|key| (key, seed(key, sides, lists)))
         .collect();
+    settle(&mut fates, places);
+    fates
+}
+
+/// Keeps each record of `kept`, which `side` deleted and the other side left as it was,
+/// despite that deletion, and then the records above and beneath it as [`decide`] keeps them.
+pub(super) fn keep(
+    fates: &mut BTreeMap<Key, Fate>,
+    places: &BTreeMap<Key, Placed>,
+    kept: impl IntoIterator<Item = (Key, Side)>,
+) {
+    fates.extend(
+        kept.into_iter()
+            .map(|(key, side)| (key, Fate::Despite(side))),
+    );
+    settle(fates, places);
+}
+
+/// Keeps each record a side deleted above a record the merge keeps, and beneath one kept
+/// despite a deletion.
+fn settle(fates: &mut BTreeMap<Key, Fate>, places: &BTreeMap<Key, Placed>) {
     let parent = |key: &Key| match places.get(key).map(|placed| placed.place.0) {
         Some(Parent::Key(parent)) => Some(parent),
         _ => None,
     };
-    promote(&mut fates, &parent);
-    keep_beneath(&mut fates, &parent);
-    fates
+    promote(fates, &parent);
+    keep_beneath(fates, &parent);
 }
 
 /// Bottom up: each record a side deleted that holds a record the merge keeps is kept despite

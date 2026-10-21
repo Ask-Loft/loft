@@ -61,3 +61,29 @@ requirements:
         name: "A side that changes a node's `ext` while the other side leaves it as the base holds it gives the merge that side's `ext`."
       - key: 01a14051-942d-7713-99cb-d5acb802c400
         name: "Two sides that change a node's `ext` to different values give a conflict record whose field is `ext`."
+  - key: 01a15fc3-9f7e-74bc-87ca-25dd1fd8519d
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "read extension data back from the JSON it writes it as, refusing JSON that the text form cannot hold."
+    criteria:
+      - key: 01a15fc3-9f7e-74bc-87ca-25de189b1e38
+        name: "Extension data written as JSON and read back from that JSON is the extension data it was."
+      - key: 01a15fc3-9f7e-74bc-87ca-25df0d866f5a
+        name: "JSON read as extension data and written back as JSON is the JSON it was."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e05405a662
+        name: "JSON that is not an object is refused."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e193563764
+        name: "An object key that is not an extension namespace is refused."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e22c00496a
+        name: "A `null` is refused."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e3a27bda82
+        name: "A number with a fraction or an exponent is refused."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e42fc2d745
+        name: "An integer outside the range from -9007199254740991 to 9007199254740991 is refused."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e5e035cb36
+        name: "An empty array or an empty object as a value is refused."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e6410a055c
+        name: "A mapping key that is not a letter followed by letters and digits is refused."
+      - key: 01a15fc3-9f7e-74bc-87ca-25e7033518c8
+        name: "A refusal names the path from the extension data to the value it refuses."

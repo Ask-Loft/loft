@@ -74,6 +74,12 @@ pub struct Digest([u8; 32]);
 pub struct DigestError(pub String);
 
 impl Digest {
+    /// The digest whose 32 bytes are `bytes`.
+    #[must_use]
+    pub const fn from_bytes(bytes: [u8; 32]) -> Self {
+        Self(bytes)
+    }
+
     #[must_use]
     pub const fn as_bytes(&self) -> &[u8; 32] {
         &self.0

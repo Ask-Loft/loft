@@ -6,11 +6,11 @@ use std::collections::BTreeMap;
 
 use serde_json::Value;
 
-use super::canon::canonicalize;
+use super::canonical_tree;
 use super::record::Rec;
 use super::records::own_view;
 use super::schema::Kind;
-use super::unresolve::unresolve;
+use super::unresolve_one::written_record;
 use crate::canonical::{Digest, Domain, digest};
 use crate::document::Document;
 use crate::identity::Key;
@@ -65,8 +65,7 @@ pub struct OwnRecord {
 /// records of one kind share a key, the first the writer writes is kept.
 #[must_use]
 pub fn own_records(document: &Document) -> BTreeMap<(RecordKind, Key), OwnRecord> {
-    let mut tree = unresolve(document);
-    canonicalize(&mut tree);
+    let tree = canonical_tree(document);
     let mut records = BTreeMap::new();
     for (_, content) in tree.files.values() {
         for record in content.records() {
@@ -74,6 +73,18 @@ pub fn own_records(document: &Document) -> BTreeMap<(RecordKind, Key), OwnRecord
         }
     }
     records
+}
+
+/// The own record of the record of kind `kind` keyed `key`, built alone: the entry
+/// [`own_records`] gives it in a document that carries each key once, without building the own
+/// record view of any other record. None where the document holds no record of that kind under
+/// that key. A binding is found by the key of the element it binds.
+#[must_use]
+pub fn own_record(document: &Document, kind: RecordKind, key: Key) -> Option<OwnRecord> {
+    let record = written_record(document, kind, key)?;
+    let view = own_view(&record);
+    let digest = own_record_digest(&view);
+    Some(OwnRecord { kind, view, digest })
 }
 
 /// The digest of an own record view, under `loftspec/own-record/1`.

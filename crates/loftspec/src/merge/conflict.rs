@@ -91,7 +91,7 @@ pub(super) fn parent_conflict(sides: [Option<Val>; 3]) -> ConflictRec {
 pub(super) fn position_conflict(position: &PositionConflict<Key>) -> ConflictRec {
     let anchor = |anchor: &Option<Anchor<Key>>| {
         anchor.as_ref().map(|anchor| match anchor {
-            Anchor::First => Val::scalar("first"),
+            Anchor::First => Val::scalar(crate::conflict::FIRST),
             Anchor::After(key) => Val::scalar(key),
         })
     };

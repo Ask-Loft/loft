@@ -9,8 +9,8 @@ const LAST: u64 = 253_402_300_799;
 
 const SECONDS_PER_DAY: u64 = 86_400;
 
-/// When a publish happened.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// When a publish happened, ordered by the instant it names.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PublishedAt(u64);
 
 /// A time that is not one the lock can carry.

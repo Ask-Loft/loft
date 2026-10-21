@@ -9,6 +9,7 @@ pub mod rewrite;
 pub mod settle;
 mod time;
 
+use std::borrow::Cow;
 use std::fmt;
 use std::num::NonZeroU64;
 
@@ -25,7 +26,7 @@ use settle::Settlement;
 use crate::canonical::Digest;
 use crate::check::{Placed, hashed, placed};
 use crate::codec::{
-    self, Files, LABELS, ReadError, Sites, SpecPath, lint_configuration, read_sited,
+    self, Files, LABELS, LINT, ReadError, Sites, SpecPath, lint_configuration, read_sited,
 };
 use crate::document::Document;
 use crate::hash::{Roots, StateView, hash_document, state_root};
@@ -44,7 +45,7 @@ pub struct Relabel {
 /// A tree read for a publish or a verification: its files, its document and where each of its
 /// elements sits. Reading it first is what makes a read error come before every other answer.
 pub struct ReadTree<'a> {
-    files: &'a Files,
+    files: Cow<'a, Files>,
     document: Document,
     sites: Sites,
     /// The text of `spec/lint.yaml`; none for a tree without the file.
@@ -61,7 +62,29 @@ impl<'a> ReadTree<'a> {
         let (document, sites) = read_sited(files)?;
         let lint = lint_configuration(files).map_err(|error| vec![error])?;
         Ok(Self {
-            files,
+            files: Cow::Borrowed(files),
+            document,
+            sites,
+            lint,
+        })
+    }
+
+    /// The tree of the files the writer writes for a document held in memory, `spec/lint.yaml`
+    /// holding `lint` where it is given: the tree [`ReadTree::read`] reads from those files, its
+    /// document in the order the reader reads it. A document whose records hold only what the
+    /// strict reader accepts is read without parsing its files.
+    ///
+    /// # Errors
+    ///
+    /// Every read error the written files hold, as [`ReadTree::read`] gives them.
+    pub fn of_document(document: &Document, lint: Option<&'a str>) -> Result<Self, Vec<ReadError>> {
+        let (mut files, read) = codec::write_and_read(document);
+        let (document, sites) = read?;
+        if let Some(text) = lint {
+            files.insert(SpecPath::new(LINT), text.as_bytes().to_vec());
+        }
+        Ok(Self {
+            files: Cow::Owned(files),
             document,
             sites,
             lint,
@@ -246,6 +269,7 @@ pub fn publish(
         departed,
     } = publish_labels_in(&mut document, &elements);
     let withdrawn = settlement.reattach(&mut document.bindings);
+    let files = &*files;
     let rewrites = rewrite::rewrite(files, &document.bindings);
     let mut written = rewrites.files;
     if !written.is_empty() {

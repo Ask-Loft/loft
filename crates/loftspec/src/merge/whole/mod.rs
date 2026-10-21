@@ -10,16 +10,19 @@ mod write;
 
 use std::fmt;
 
-use super::tree::merge_flat;
+use super::tree::{Referenced, merge_flat};
 use super::{Input, MergeError, count};
 use crate::codec::{Files, ReadError, SpecPath, read_tree};
+use crate::document::Document;
 use crate::identity::{Key, Label};
 
-/// The merged tree, every file in canonical layout, how many conflict records it holds, and the
-/// labels that two publishes gave apart.
+/// The merged tree, every file in canonical layout, the document it reads into, how many conflict
+/// records it holds, and the labels that two publishes gave apart.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MergedTree {
     pub files: Files,
+    /// The document that reading `files` gives.
+    pub document: Document,
     pub conflicts: usize,
     pub disputed: Vec<Label>,
 }
@@ -86,10 +89,11 @@ pub fn merge_tree(
     let trees = sides::read([base, ours, theirs])?;
     let singles = single::merge(&trees)?;
     let flats = trees.flats();
-    let by_key = merge_flat(&flats).map_err(TreeMergeError::Unplaced)?;
+    let by_key = merge_flat(&flats, Referenced::Kept).map_err(TreeMergeError::Unplaced)?;
     let tree = write::tree(singles.files, by_key, &flats)?;
     let files = crate::codec::write_files(&tree);
     let read = read_tree(&files).map_err(TreeMergeError::Unwritable)?;
+    let document = crate::codec::resolve(&read).map_err(TreeMergeError::Unwritable)?;
     let conflicts = read
         .files
         .values()
@@ -98,6 +102,7 @@ pub fn merge_tree(
         .sum();
     Ok(MergedTree {
         files,
+        document,
         conflicts,
         disputed: singles.disputed,
     })

@@ -106,6 +106,31 @@ fn checked_under(
     (checked, split)
 }
 
+/// Validates a document held in memory, without linting it: each error at the sites `sites`
+/// gives the keys it names. For a document as the reader reads the tree the writer writes for
+/// it, with that tree's sites, these are the validation errors [`check`] gives that tree.
+#[must_use]
+pub fn validated(document: &Document, sites: &Sites) -> Vec<Placed> {
+    placed(validate(document), sites)
+}
+
+/// Lints a document held in memory under the bytes of its `spec/lint.yaml`, the defaults where
+/// it has none, without validating it: a document the validator refuses is linted all the same.
+/// For a document as the reader reads the tree the writer writes for it, with that tree's sites,
+/// these are the findings [`check`] gives that tree with the same configuration.
+///
+/// # Errors
+///
+/// The errors of the lint configuration, which gives no finding then.
+pub fn linted(
+    document: &Document,
+    sites: &Sites,
+    configuration: Option<&[u8]>,
+) -> Result<Vec<Finding>, Vec<ReadError>> {
+    let config = LintConfig::read(configuration)?;
+    Ok(lint(document, sites, &config))
+}
+
 /// The lint configuration `spec/lint.yaml` gives, or the defaults without the file.
 fn lint_config(files: &Files) -> Result<LintConfig, Vec<ReadError>> {
     LintConfig::read(files.get(&SpecPath::new(LINT)).map(Vec::as_slice))

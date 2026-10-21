@@ -87,3 +87,19 @@ requirements:
         name: "The same record in two documents has the same own record digest."
       - key: 01a15f00-828a-71f7-be8f-7a9db295f65c
         name: "The own record digest enters no root."
+  - key: 01a15fcc-0e12-734e-9d2f-6a0e85bf51bf
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "give one record's own record view and digest by the record's kind and key, without building the own record view of any other record."
+    criteria:
+      - key: 01a15fcc-0e12-734e-9d2f-6a0f0ec2d6f5
+        name: "In a document that carries each key once, the own record found by a record's kind and key equals the one the own records of the whole document give that record."
+      - key: 01a15fcc-0e12-734e-9d2f-6a10df68bf4d
+        name: "A kind and key that no record of the document carries give no own record."
+      - key: 01a15fcc-0e12-734e-9d2f-6a1184b76248
+        name: "A key that a record of another kind carries gives no own record for the kind asked."
+      - key: 01a15fcc-0e12-734e-9d2f-6a12d61f84c1
+        name: "A binding's own record is found by the key of the element it binds, departed or not."
+      - key: 01a15fcc-0e12-734e-9d2f-6a1328bc4e6c
+        name: "Finding one record's own record builds the own record view of no other record."
