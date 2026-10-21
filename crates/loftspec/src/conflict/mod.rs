@@ -3,6 +3,7 @@
 //! removed (RQ-126), and no hash of the document reads it. Each conflict is named by an
 //! identifier derived from it alone, which no file holds.
 
+mod references;
 mod settle;
 mod structure;
 

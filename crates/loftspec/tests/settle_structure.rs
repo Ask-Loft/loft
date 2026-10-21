@@ -261,28 +261,18 @@ fn a_position_side_that_names_a_record_its_list_lacks_is_refused_naming_that_rec
 
 #[test]
 fn a_settlement_whose_document_would_not_read_is_refused_with_the_read_errors() {
-    let base = small_document();
-    let mut ours = base.clone();
-    let mut storage = crate::common::component(key(90), "Storage");
-    storage.details.body = Some("Base.".to_owned());
-    let mut with_storage = base.clone();
-    with_storage.components.push(crate::common::root(storage));
-    ours.clone_from(&with_storage);
-    ours.edges.push(loftspec::document::Edge::Realizes {
-        feature: loftspec::ids::FeatureId::new(key(3)),
-        component: loftspec::ids::ComponentId::new(key(90)),
-    });
-    let document = merge(&with_storage, &ours, &base);
+    let mut document = kept_for_a_mention();
+    let second = RequirementId::new(key(SECOND));
+    document.decisions[0].consequences[1].subject = Some(second.into());
+    let document = loftspec::codec::read(&loftspec::codec::write(&document)).unwrap();
     let refused = settled_err(&document, "record", &Settlement::Theirs);
     let SettleError::Unreadable(errors) = refused else {
         panic!("{refused:?}");
     };
     let mut deleted = document.clone();
-    loftspec::edit::detach(
-        &mut deleted,
-        loftspec::ids::ComponentId::new(key(90)).into(),
-    )
-    .ok();
+    loftspec::edit::detach(&mut deleted, second.into()).unwrap();
+    deleted.edges.retain(|edge| !names(edge, SECOND));
+    deleted.bindings.depart(second).unwrap();
     deleted.conflicts.clear();
     let expected = loftspec::codec::read(&loftspec::codec::write(&deleted)).unwrap_err();
     assert_eq!(errors, expected);
@@ -363,4 +353,119 @@ fn settling_a_parent_conflict_of_a_decisions_part_moves_it_to_the_sides_decision
     let theirs = settled(&document, "parent", &Settlement::Theirs);
     assert_eq!(consequences(&theirs, 0), [25, 26]);
     assert_eq!(consequences(&theirs, 2), [27]);
+}
+
+/// A conflict over the existence of the Requirement keyed 60, bound to `RQ-3`, that the tree
+/// merger kept because ours made the criterion keyed 5 mention it while theirs deleted it.
+fn kept_for_a_mention() -> Document {
+    let mut base = three_requirements();
+    let second = RequirementId::new(key(SECOND));
+    base.bindings.bind(second, label("RQ-3")).unwrap();
+    let mut ours = base.clone();
+    ours.edges.push(loftspec::document::Edge::Mentions {
+        source: loftspec::ids::CriterionId::new(key(5)).into(),
+        target: second.into(),
+    });
+    let mut theirs = base.clone();
+    requirements(&mut theirs, 0).remove(1);
+    merge(&base, &ours, &theirs)
+}
+
+fn names(edge: &loftspec::document::Edge, n: u32) -> bool {
+    edge.target()
+        == loftspec::document::EdgeTarget::Element(ElementId::Node(
+            RequirementId::new(key(n)).into(),
+        ))
+}
+
+#[test]
+fn settling_a_record_conflict_by_deletion_removes_every_edge_that_names_what_it_deletes() {
+    let document = kept_for_a_mention();
+    assert!(document.edges.iter().any(|edge| names(edge, SECOND)));
+    let deleted = settled(&document, "record", &Settlement::Theirs);
+    assert_eq!(keys_at(&deleted, 0), [4, THIRD]);
+    assert!(!deleted.edges.iter().any(|edge| names(edge, SECOND)));
+    assert_eq!(deleted.edges.len(), document.edges.len() - 1);
+}
+
+/// [`kept_for_a_mention`] with a retired decision keyed 82 whose consequence and subject name the
+/// Requirement keyed 60.
+fn named_by_a_retired_decision() -> Document {
+    let mut document = kept_for_a_mention();
+    let mut retired = crate::common::proposed_decision(key(82), "retired-decision");
+    let mut option = document.decisions[0].options[0].clone();
+    option.id = loftspec::ids::OptionId::new(key(83));
+    retired.state = loftspec::decision::DecisionState::Retired {
+        selected_option: option.id,
+        outcome: "Kept for a while.".to_owned(),
+        rationale: "No longer needed.".to_owned(),
+    };
+    retired.options = vec![option];
+    let mut consequence = document.decisions[0].consequences[1].clone();
+    consequence.id = loftspec::ids::ConsequenceId::new(key(84));
+    consequence.subject = Some(RequirementId::new(key(SECOND)).into());
+    retired.consequences = vec![consequence];
+    document.edges.push(loftspec::document::Edge::Subject {
+        decision: retired.id,
+        subject: RequirementId::new(key(SECOND)).into(),
+        role: loftspec::document::SubjectRole::Affected,
+    });
+    document.decisions.push(retired);
+    loftspec::codec::read(&loftspec::codec::write(&document)).expect("the document reads")
+}
+
+#[test]
+fn settling_by_deletion_names_a_node_a_retired_decision_references_by_its_former_label() {
+    let document = named_by_a_retired_decision();
+    let deleted = settled(&document, "record", &Settlement::Theirs);
+    let former = loftspec::decision::NodeRef::Former(label("RQ-3"));
+    let retired = deleted
+        .decisions
+        .iter()
+        .find(|each| each.id.key() == key(82));
+    assert_eq!(retired.unwrap().consequences[0].subject, Some(former));
+    let subject = loftspec::document::Edge::Subject {
+        decision: loftspec::ids::DecisionId::new(key(82)),
+        subject: former,
+        role: loftspec::document::SubjectRole::Affected,
+    };
+    assert!(deleted.edges.contains(&subject), "{:?}", deleted.edges);
+}
+
+#[test]
+fn settling_by_deletion_takes_the_conflict_records_of_what_it_deletes_with_them() {
+    let mut document = with_requirements(&small_document(), 0, &[SECOND]);
+    let criterion = crate::common::criterion(key(62), "A slug is written.");
+    requirements(&mut document, 0)[1].criteria.push(criterion);
+    let owner = |n: u32, kind: fn(loftspec::identity::Key) -> loftspec::ids::NodeId| {
+        loftspec::conflict::ConflictOwner::Element(ElementId::Node(kind(key(n))))
+    };
+    let held = || Some(ConflictValue::Scalar(key(SECOND).to_string()));
+    document.conflicts = vec![
+        Conflict {
+            owner: owner(SECOND, |key| RequirementId::new(key).into()),
+            field: loftspec::conflict::FieldPath::new("record"),
+            base: held(),
+            ours: held(),
+            theirs: Some(ConflictValue::Deleted),
+        },
+        Conflict {
+            owner: owner(62, |key| loftspec::ids::CriterionId::new(key).into()),
+            field: loftspec::conflict::FieldPath::new("name"),
+            base: None,
+            ours: Some(ConflictValue::Scalar("Ours.".to_owned())),
+            theirs: Some(ConflictValue::Scalar("Theirs.".to_owned())),
+        },
+        Conflict {
+            owner: owner(4, |key| RequirementId::new(key).into()),
+            field: loftspec::conflict::FieldPath::new("body"),
+            base: None,
+            ours: Some(ConflictValue::Scalar("Ours.".to_owned())),
+            theirs: None,
+        },
+    ];
+    let document = loftspec::codec::read(&loftspec::codec::write(&document)).unwrap();
+    let kept = over(&document, "body").clone();
+    let deleted = settled(&document, "record", &Settlement::Theirs);
+    assert_eq!(deleted.conflicts, [kept]);
 }

@@ -11,7 +11,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   reads it: a field takes the side's value, or the value given, checked against the field's
   shape; a conflict over the bindings adds the side's bindings to those the labels file holds;
   a conflict over `record` keeps the record or deletes it with everything beneath it, departing
-  their bindings; a conflict over `parent` or `position` moves the record where the side puts
+  their bindings, removing every edge that names what it deleted, naming a node a retired or
+  superseded decision references by its former label, and taking the deleted records' conflict
+  records with them; a conflict over `parent` or `position` moves the record where the side puts
   it. Those three take a side only. Every refusal is a `SettleError`, including the reader's
   errors for a settlement whose document would not read. `codec::conflict_owner` gives the owner
   of the conflicts a record holds, and `ConflictOwner::own_record` the kind and key of the own

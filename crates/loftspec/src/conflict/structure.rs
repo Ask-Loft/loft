@@ -1,6 +1,7 @@
 //! The settlement of a conflict over `record`, `parent` or `position`, made on the document: a
 //! record kept or deleted, moved under another parent, or moved within its list.
 
+use super::references::forget_elements;
 use super::settle::SettleError;
 use super::{Conflict, ConflictOwner, ConflictValue};
 use crate::codec::schema::field;
@@ -44,11 +45,11 @@ fn key(text: &str, owner: ConflictOwner) -> Result<Key, SettleError> {
     Key::parse(text).map_err(|_| SettleError::Unsettleable(owner))
 }
 
-/// Deletes the record `owner` names, with every record beneath it and the edges they write,
-/// and departs the binding of each element it takes out.
+/// Deletes the record `owner` names, with every record beneath it and the edges they write, and
+/// then what names them, as [`forget`] forgets it.
 fn delete(document: &mut Document, owner: ConflictOwner) -> Result<(), SettleError> {
     let missing = || SettleError::Unsettleable(owner);
-    let gone: Vec<ElementId> = match owner {
+    let taken = match owner {
         ConflictOwner::Element(ElementId::Node(node)) => {
             let subtree = edit::detach(document, node).map_err(SettleError::Edit)?;
             subtree.ids().into_iter().map(ElementId::Node).collect()
@@ -57,9 +58,10 @@ fn delete(document: &mut Document, owner: ConflictOwner) -> Result<(), SettleErr
             let at = (document.decisions.iter())
                 .position(|each| each.id == decision)
                 .ok_or_else(missing)?;
-            document.decisions.remove(at);
+            let removed = document.decisions.remove(at);
             let gone = ElementId::Decision(decision);
             document.edges.retain(|edge| edge.source() != gone);
+            forget(document, &parts(&removed));
             vec![gone]
         }
         ConflictOwner::Option(_) | ConflictOwner::Driver(_) | ConflictOwner::Consequence(_) => {
@@ -67,7 +69,10 @@ fn delete(document: &mut Document, owner: ConflictOwner) -> Result<(), SettleErr
                 .decisions
                 .iter_mut()
                 .any(|decision| take_part(decision, owner));
-            return if removed { Ok(()) } else { Err(missing()) };
+            if !removed {
+                return Err(missing());
+            }
+            Vec::new()
         }
         ConflictOwner::Tag(tag) => retain(&mut document.tags, |entry| entry.id != tag, owner)?,
         ConflictOwner::Category(category) => retain(
@@ -78,15 +83,32 @@ fn delete(document: &mut Document, owner: ConflictOwner) -> Result<(), SettleErr
         ConflictOwner::Term(term) => retain(&mut document.terms, |entry| entry.id != term, owner)?,
         ConflictOwner::Manifest | ConflictOwner::Labels => return Err(missing()),
     };
-    for element in gone {
-        if document.bindings.label_of(element).is_some() {
-            document
-                .bindings
-                .depart(element)
-                .expect("a bound element departs");
-        }
-    }
+    let owners: Vec<ConflictOwner> = taken.iter().copied().map(ConflictOwner::Element).collect();
+    forget(document, &[owners, vec![owner]].concat());
+    forget_elements(document, &taken);
     Ok(())
+}
+
+/// The owners of the conflicts of a decision's options, drivers and consequences.
+fn parts(decision: &Decision) -> Vec<ConflictOwner> {
+    let options = decision
+        .options
+        .iter()
+        .map(|each| ConflictOwner::Option(each.id));
+    let drivers = decision
+        .drivers
+        .iter()
+        .map(|each| ConflictOwner::Driver(each.id));
+    let consequences =
+        (decision.consequences.iter()).map(|each| ConflictOwner::Consequence(each.id));
+    options.chain(drivers).chain(consequences).collect()
+}
+
+/// Takes out every conflict record of the records `owners` name, which a deletion took out.
+fn forget(document: &mut Document, owners: &[ConflictOwner]) {
+    document
+        .conflicts
+        .retain(|conflict| !owners.contains(&conflict.owner));
 }
 
 /// Keeps the entries `kept` accepts, refusing where it accepts every one.
