@@ -9874,11 +9874,14 @@ links:
         name: "a_conflict_on_a_moved_record_is_the_typed_record_the_merge_driver_writes"
         body: 323e9a686761992d5a4e384f18a377b58e536e8135eeadead351bdada9be4ccb
   - node: 01a158d8-c6e0-708e-a3c7-64137f53cf5e
-    reviewed: ce7f053cb6b3a192bfa886f129c22939c1da60587760809eb7b96f34af8b7748
+    reviewed: db2263b0229a82ffe8e96b13ff60b00c1bf254b862c7bd59828b53ffa2efc652
     tests:
       - file: "crates/loftspec/tests/merge_tree.rs"
         name: "where_no_record_changes_file_each_file_holds_the_bytes_the_merge_driver_writes"
         body: de381af88e14aef96dfe982e70276c433f45aab38c29d9337442100dbb644bd1
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "the_merge_driver_deletes_a_record_one_side_deleted_that_the_tree_merger_keeps_for_a_reference"
+        body: cdead80489b506b93a4f16b37f71b4abc50fe2de18847b8af33968719490abcf
   - node: 01a158d8-c6e0-708e-a3c7-641582cff74d
     reviewed: d7a2e223f91eb02f60e27ed5331cf26ce0fbd19116fef1274027c1594cd8dfbc
     tests:
@@ -9933,6 +9936,60 @@ links:
       - file: "crates/loftspec/tests/merge_tree.rs"
         name: "each_file_of_the_result_is_in_the_formatter_s_canonical_layout"
         body: 7dd71752ad40212151d412d0345f1018e43ffa4b5d41ab9bf74871e34cbce8ea
+  - node: 01a15fb5-ece7-757a-9d44-fd0b904fe57e
+    reviewed: 60dd4d0f819a17c25de0fbe3e23896fcfc10fd8ef4bf6a54477aaacad891d6f8
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_record_one_side_deleted_that_the_other_side_starts_to_reference_is_kept_and_the_result_reads"
+        body: 54bad4a9b4200630186f1db395687b49a0bbf56f8bc312efb6f41ef25194049b
+      - file: "crates/loftspec/tests/merge_tree_props.rs"
+        name: "every_tree_the_merger_gives_for_edited_files_reads"
+        body: be1e7abb641219936582f8498b16d9e841499692786039115e9fc98f822c4395
+      - file: "crates/loftspec/tests/merge_tree_props.rs"
+        name: "every_tree_the_merger_gives_for_edited_documents_reads"
+        body: 4fe16e3bd162a15858a02a45f1f1935c6fab7b9fe49b8dfa5324cd256131ee0d
+  - node: 01a15fb5-ece7-757a-9d44-fd0cce145eac
+    reviewed: b48a780688f61c4bf9e527b6728a4b771f07f2658beaba7f97f7243d6b4a2ae9
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_record_one_side_deleted_that_the_other_side_starts_to_reference_is_kept_and_the_result_reads"
+        body: 54bad4a9b4200630186f1db395687b49a0bbf56f8bc312efb6f41ef25194049b
+  - node: 01a15fc1-0cc0-7730-926f-50c853daaadd
+    reviewed: 6ac97574a207c0f751df3ae82954f3e84809ea326f63b6b269a2dab3250f7e56
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_record_one_side_deleted_that_nothing_in_the_result_references_is_still_deleted"
+        body: fed5db6ca2369c75b52721dc31fd9a64abb391619a7ba0d57b49cdef9d91222c
+  - node: 01a15fb6-1cea-733d-9449-53595630d86e
+    reviewed: e1b5e6a00ec3855f74e7032a610596bfbadadd0949594fcaf40e1ec89faba6ca
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_record_kept_for_a_reference_holds_a_conflict_over_record_whose_deleting_side_is_null"
+        body: 715af88e78b0f6c1d46f00cdfe8939a21969a7b23b7af6a6ea8e90555c308206
+  - node: 01a15fb5-ece7-757a-9d44-fd0d0a1bdc46
+    reviewed: 82885519185e977e20569de44dbca7bdc1c9f12c541147d5e28d8057b91212d0
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_record_kept_for_a_reference_keeps_each_record_beneath_it_that_the_other_side_holds"
+        body: 791b01e44d5abd038283817768489eba512a80217165c5659ec6a7648c7145a0
+  - node: 01a15fb5-ece7-757a-9d44-fd0ec1ee128b
+    reviewed: df6885c28ee22e40a3ab90b4bfd7c06d78964fb392c1aaef86866b9903c4c721
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_record_that_a_record_kept_for_a_reference_references_is_kept_by_the_same_rule"
+        body: a0037ee693a7d03e4196437399698cc5339e35f06a4e056b4a883f64531b2f17
+  - node: 01a15fb5-ece7-757a-9d44-fd0f688cdb8b
+    reviewed: b09a38878ce8526c209a11f4bd5a2e730504764530c98594584d16b26cb70e5f
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_field_both_sides_changed_apart_whose_base_value_names_a_record_both_deleted_holds_ours"
+        body: 2e693f5cfd5c3ac118acc55d115a1fe95e8fc2c80b1c3c963de53deb4881a2b0
+  - node: 01a15fb5-ece7-757a-9d44-fd10c97c68aa
+    reviewed: b55e9ef2582d8b08811504ea8c569b3aefa45b147e8f0d41b24c4f1b58a4efec
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "merging_the_same_trees_twice_names_the_conflict_of_a_record_kept_for_a_reference_alike"
+        body: 92056780c540448cd837cdf3daf3dde842dceee1ebf642d930a4984309fda4ed
   - node: 01a1383a-4a94-72cc-9c61-1109df5d0b90
     reviewed: 52403572a91d90a1d05a8f0d5523518fb5435207313302352ab781712cbae6e3
     tests:

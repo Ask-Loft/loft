@@ -11,6 +11,7 @@ mod files;
 mod layout;
 mod node_files;
 mod own_record;
+mod path;
 mod record;
 mod records;
 mod resolve;

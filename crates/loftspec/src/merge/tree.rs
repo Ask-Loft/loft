@@ -12,6 +12,7 @@ use super::kind::{merge_kinds, surely_kept};
 use super::order::{merge_order, moved};
 use super::place::{Placed, merge_places};
 use super::record::merge_own;
+use super::references::keep_referenced;
 use crate::codec::schema::{Kind, Order};
 use crate::codec::{Content, Rec};
 use crate::identity::Key;
@@ -32,7 +33,7 @@ pub(super) fn merge(
         Flat::of(ours),
         Flat::of(theirs),
     ];
-    let merged = merge_flat(&sides)?;
+    let merged = merge_flat(&sides, Referenced::Deleted)?;
     Ok(rebuild(merged.top, merged.records, &merged.lists))
 }
 
@@ -44,12 +45,23 @@ pub(super) struct ByKey {
     pub(super) lists: BTreeMap<Place, Vec<Key>>,
 }
 
+/// What becomes of a record one side deleted and the other left as it was, while a record the
+/// merge keeps references it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum Referenced {
+    /// Deleted, as the merge driver deletes it, leaving the reference for `loft check` to
+    /// report: the driver sees one file.
+    Deleted,
+    /// Kept, with a conflict over `record`, as the tree merger keeps it so that its result reads.
+    Kept,
+}
+
 /// Merges three versions, each by key.
 ///
 /// # Errors
 ///
 /// As [`merge`].
-pub(super) fn merge_flat(sides: &[Flat; 3]) -> Result<ByKey, Key> {
+pub(super) fn merge_flat(sides: &[Flat; 3], referenced: Referenced) -> Result<ByKey, Key> {
     let [base_top, ours_top, theirs_top] = sides.each_ref().map(|side| side.top.as_ref());
     let top = ours_top
         .zip(theirs_top)
@@ -63,7 +75,11 @@ pub(super) fn merge_flat(sides: &[Flat; 3]) -> Result<ByKey, Key> {
     let top_kind = top.as_ref().map(|top| top.kind);
     let places = merge_places(sides, &kinds, top_kind, &sure)?;
     let lists = Lists::filtered(sides, &places, top_kind);
-    let fates = decide(sides, &places, &lists);
+    let mut fates = decide(sides, &places, &lists);
+    let mut top = top;
+    if referenced == Referenced::Kept {
+        keep_referenced(top.as_mut(), &mut records, &mut fates, &places);
+    }
     records.retain(|key, _| fates[key].kept());
     if let Some(key) = unplaced(&records, &places) {
         return Err(key);

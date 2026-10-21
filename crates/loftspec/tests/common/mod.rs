@@ -3,6 +3,7 @@
 
 pub mod comparing;
 pub mod decisions;
+pub mod doc_edits;
 pub mod edit_tree;
 pub mod edit_values;
 pub mod editing;

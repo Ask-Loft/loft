@@ -5,6 +5,15 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- The tree merger's result always reads. Where one side deletes a record and leaves it otherwise
+  as it was, while a record the merge keeps references it, `merge_tree` keeps the record as the
+  other side holds it, with every record beneath it, and gives it a conflict record over `record`
+  whose deleting side is `null`, named by the identifier its holder, field and sides give it; a
+  record it references is kept by the same rule. Before, it deleted the record and the result
+  named a key that no record carried. Where both sides changed a field apart and its base value
+  names a record both deleted, the field holds ours' value beside its conflict record. The merge
+  driver, which sees one file, still deletes such a record and leaves the reference for
+  `loft check` to report.
 - `loftspec::codec::own_records` gives each keyed node, decision, registry entry and binding of
   a document its own record view and digest, by `RecordKind` and key: a stable identity of the
   record's own content, for tools that store or compare records one at a time. The view is the

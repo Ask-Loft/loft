@@ -214,8 +214,55 @@ fn delete(top: Top, root: &mut Y, record: Index) {
         .filter(|at| !at.path.is_empty() && !lists_features(node(root, &at.path)))
         .collect();
     if let Some(at) = pick(&candidates, record) {
-        take(top, root, &at.path);
+        let taken = take(top, root, &at.path);
+        let mut gone = Vec::new();
+        keys_in(&taken, &mut gone);
+        unreference(root, &gone);
     }
+}
+
+/// The fields that hold edges: keys the reader resolves.
+const EDGES: [&str; 3] = [field::MENTIONS, field::REALIZES, field::SCOPED_TO];
+
+/// Every key a record and the records inside it carry.
+fn keys_in(value: &Y, keys: &mut Vec<String>) {
+    match value {
+        Y::Map(fields) => {
+            for (name, value) in fields {
+                match value.text() {
+                    Some(key) if *name == field::KEY => keys.push(key.to_owned()),
+                    _ => keys_in(value, keys),
+                }
+            }
+        }
+        Y::Seq(items) => items.iter().for_each(|item| keys_in(item, keys)),
+        Y::Plain(_) | Y::Text(_) => {}
+    }
+}
+
+/// Takes every edge to a key of `gone` out of the tree, as a side that deletes a record takes
+/// the references to it, and drops an edge list left empty; the file then reads.
+fn unreference(value: &mut Y, gone: &[String]) {
+    match value {
+        Y::Map(fields) => {
+            for (name, value) in fields.iter_mut() {
+                if EDGES.contains(name) {
+                    value.items_mut().retain(|item| !names_one_of(item, gone));
+                } else {
+                    unreference(value, gone);
+                }
+            }
+            fields.retain(|(name, value)| !EDGES.contains(name) || !value.items().is_empty());
+        }
+        Y::Seq(items) => items.iter_mut().for_each(|item| unreference(item, gone)),
+        Y::Plain(_) | Y::Text(_) => {}
+    }
+}
+
+/// Whether a scalar names one of the keys `keys`.
+fn names_one_of(item: &Y, keys: &[String]) -> bool {
+    item.text()
+        .is_some_and(|text| keys.iter().any(|key| key == text))
 }
 
 fn insert(top: Top, root: &mut Y, slot: Index, at: Index, key: &str, text: usize) {
