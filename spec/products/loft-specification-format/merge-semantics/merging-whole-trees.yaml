@@ -142,6 +142,8 @@ requirements:
         name: "A record kept because the result references it keeps each record beneath it that the other side holds."
       - key: 01a15fb5-ece7-757a-9d44-fd0ec1ee128b
         name: "A record that a record kept for a reference references is kept by the same rule."
+      - key: 01a15ff9-7815-7465-989c-2413d141102b
+        name: "A record that one side deleted and that no place in the result can take, because a side changed the kind of its parent, is not kept for a reference, and the merge is refused as one whose result does not read."
       - key: 01a15fb5-ece7-757a-9d44-fd0f688cdb8b
         name: "A field that both sides changed apart, whose base value names a record that both sides deleted, holds ours' value beside its conflict record."
       - key: 01a15fb5-ece7-757a-9d44-fd10c97c68aa

@@ -1,7 +1,7 @@
 key: 01a15fdc-a1db-756d-9d40-05f0f7b9f0dd
 slug: settling-a-conflict
 name: "Settling a conflict"
-body: "How a tool that holds a document in memory settles one conflict record, named by its identifier: by taking base's, ours' or theirs' side, or, for a conflict over a field, a value its caller gives. Settling gives a new document that reads, without the conflict record; it changes no other conflict record. A conflict over `record` takes a side only, keeping or deleting the record; so do a conflict over `parent`, which moves the record under the parent that side names, and one over `position`, which moves it after the record that side names."
+body: "How a tool that holds a document in memory settles one conflict record, named by its identifier: by taking base's, ours' or theirs' side, or, for a conflict over a field, a value its caller gives. Settling gives a new document that reads, without the conflict record; it changes no other conflict record. A conflict over `record` takes a side only, keeping or deleting the record, and a deletion takes with it the edges that name what it deletes, as `loft fmt` names a node a settled decision references by its former label; so do a conflict over `parent`, which moves the record under the parent that side names, and one over `position`, which moves it after the record that side names."
 realizes:
   - 540397b6-7607-4ca9-aaa1-529d0fab1811
 requirements:
@@ -16,7 +16,7 @@ requirements:
       - key: 01a15fdc-a1db-756d-9d40-05f371aaacbf
         name: "The settled document holds no conflict record with the settled identifier."
       - key: 01a15fdc-a1db-756d-9d40-05f44c31c663
-        name: "The settled document holds every other conflict record of the document, each with its identifier."
+        name: "The settled document holds every other conflict record of the document, each with its identifier, but those of the records a deletion takes out."
       - key: 01a15fdc-a1db-756d-9d40-05f5bd472ab3
         name: "The document given is unchanged."
   - key: 01a15fdc-a1db-756d-9d40-05f6f19c0d51
@@ -60,6 +60,12 @@ requirements:
         name: "A side that holds `null` deletes the record and every record beneath it."
       - key: 01a15fdc-a1db-756d-9d40-06018c2d7b84
         name: "Each element a deletion takes out has its binding marked departed."
+      - key: 01a15ff9-7815-7465-989c-24148643d36b
+        name: "Every edge that names a record the deletion takes out is removed."
+      - key: 01a15ff9-7815-7465-989c-24150fbac2df
+        name: "A retired or superseded decision's reference to a node the deletion takes out names that node's former label."
+      - key: 01a15ff9-7815-7465-989c-24167bcd081c
+        name: "The conflict records of the records the deletion takes out go with them."
   - key: 01a15fdc-a1db-756d-9d40-0602834c77be
     statement:
       form: event_driven
