@@ -339,13 +339,17 @@ requirements:
     statement:
       form: ubiquitous
       system: "`loftspec`"
-      shall: "build a publishable tree from a document held in memory and the text of its lint configuration, without reading the tree's files back."
+      shall: "build a publishable tree from a document held in memory and the text of its lint configuration, equal to the tree that reading the document's written files gives."
     criteria:
       - key: 01a15fd0-f427-715f-bf7b-9fc35186d8ef
         name: "The tree's files are those the writer writes for the document, with `spec/lint.yaml` holding the text given."
       - key: 01a15fd0-f427-715f-bf7b-9fc4d4658632
-        name: "For a document as the reader reads its written files, the tree's document and sites equal those of the written files read back."
+        name: "The tree's document and sites equal those of the written files read back, the document in the order the reader reads it."
       - key: 01a15fd0-f427-715f-bf7b-9fc5be88fdd6
-        name: "For a document as the reader reads its written files, the tree's roots and state root equal those of the written files read back."
+        name: "The tree's roots and state root equal those of the written files read back."
       - key: 01a15fd0-f427-715f-bf7b-9fc630de3a05
-        name: "For a document as the reader reads its written files, publishing the tree gives what publishing the written files read back gives."
+        name: "Publishing the tree gives what publishing the written files read back gives."
+      - key: 01a15fd6-c6de-7041-8c7b-2ee86141771f
+        name: "A document whose written files do not read is refused with the read errors that reading them gives."
+      - key: 01a15fd6-c6de-7041-8c7b-2ee906393715
+        name: "A document whose records hold only what the strict reader accepts is built into a tree without parsing its written files."
