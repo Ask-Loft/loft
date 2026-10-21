@@ -264,3 +264,34 @@ requirements:
         name: "A digest made from the bytes of a digest is that digest."
       - key: 01a15fc3-9f7d-73a2-b34d-d731894760fd
         name: "A digest made from 32 bytes is written as two lowercase hexadecimal digits for each byte, in order."
+  - key: 01a15fc7-f853-74b5-a66e-87b0d6349ba5
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer recording a binding, whole, as `spec/labels.yaml` holds it."
+    criteria:
+      - key: 01a15fc7-f854-7339-bd59-8a2449c4aee6
+        name: "Recording a binding is public in `loftspec`."
+      - key: 01a15fc7-f854-7339-bd59-8a254b475079
+        name: "A recorded binding keeps a label whose prefix is not its element's kind prefix."
+      - key: 01a15fc7-f854-7339-bd59-8a26b3ebe7a3
+        name: "A recorded binding keeps its aliases and its withdrawn labels, in their order."
+      - key: 01a15fc7-f854-7339-bd59-8a275dbb9b9a
+        name: "A recorded binding keeps whether it is departed."
+      - key: 01a15fc7-f854-7339-bd59-8a2858b6fd6b
+        name: "A recorded binding keeps the kind of the state a publish saw and the decision history hash it recorded."
+      - key: 01a15fc7-f854-7339-bd59-8a295a9d6e25
+        name: "Recording each binding of a labels file read from disk, one at a time, gives the bindings that reading the file gives."
+  - key: 01a15fc7-f854-7339-bd59-8a2a2471d342
+    statement:
+      form: unwanted
+      if: "a binding being recorded names an element that is bound already, or one whose kind takes no label"
+      system: "`loftspec`"
+      shall: "refuse the binding."
+    criteria:
+      - key: 01a15fc7-f854-7339-bd59-8a2b9c215187
+        name: "A binding of an element that is bound already is refused."
+      - key: 01a15fc7-f854-7339-bd59-8a2c1d8ca7b1
+        name: "A binding of an element whose kind takes no label is refused."
+      - key: 01a15fc7-f854-7339-bd59-8a2de71eb465
+        name: "The bindings are unchanged after the refusal."
