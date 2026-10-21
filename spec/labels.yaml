@@ -2,8 +2,8 @@ counters:
   P: 5
   FG: 20
   F: 117
-  RQ: 615
-  AC: 2396
+  RQ: 616
+  AC: 2400
   CMP: 27
   CON: 33
   QA: 4
@@ -4091,6 +4091,16 @@ bindings:
     label: AC-2143
   - key: 01a14b55-e07b-70dc-a3b6-4aedc97df0ac
     label: AC-2159
+  - key: 01a15f55-b936-7155-95fa-439b29107106
+    label: AC-2396
+  - key: 01a15f55-b936-7155-95fa-439cb09f5e2f
+    label: RQ-615
+  - key: 01a15f55-b936-7155-95fa-439d8362af31
+    label: AC-2397
+  - key: 01a15f55-b936-7155-95fa-439ec328a838
+    label: AC-2398
+  - key: 01a15f55-b936-7155-95fa-439f297d5696
+    label: AC-2399
   - key: 01c16dee-867b-4d85-b851-ac07db2a44f2
     label: AC-410
   - key: 01cb4866-fc85-4142-ade6-5a4ae9927beb
