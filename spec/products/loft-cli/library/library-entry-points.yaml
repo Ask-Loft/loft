@@ -295,3 +295,57 @@ requirements:
         name: "A binding of an element whose kind takes no label is refused."
       - key: 01a15fc7-f854-7339-bd59-8a2de71eb465
         name: "The bindings are unchanged after the refusal."
+  - key: 01a15fd0-f426-701e-8f43-009a26dc5c10
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer validating a document held in memory, at the sites its caller gives, without linting it."
+    criteria:
+      - key: 01a15fd0-f426-701e-8f43-009b96819ee5
+        name: "Validating a document held in memory is public in `loftspec`."
+      - key: 01a15fd0-f426-701e-8f43-009cdc75005b
+        name: "For a document as the reader reads the tree the writer writes for it, the errors are the validation errors that checking that tree gives."
+      - key: 01a15fd0-f426-701e-8f43-009de24c782a
+        name: "Each error names the sites that the caller gives for the keys it names."
+      - key: 01a15fd0-f426-701e-8f43-009e2a297fc4
+        name: "Validating a document gives no lint finding."
+  - key: 01a15fd0-f427-715f-bf7b-9fb9d73642d2
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer linting a document held in memory under the bytes of its lint configuration, at the sites its caller gives, without validating it."
+    criteria:
+      - key: 01a15fd0-f427-715f-bf7b-9fba294e635c
+        name: "Linting a document held in memory is public in `loftspec`."
+      - key: 01a15fd0-f427-715f-bf7b-9fbb12131fbb
+        name: "For a document as the reader reads the tree the writer writes for it, the findings are those that checking that tree with the same `spec/lint.yaml` gives."
+      - key: 01a15fd0-f427-715f-bf7b-9fbc2db223f6
+        name: "A lint configuration in error gives its errors and no finding."
+      - key: 01a15fd0-f427-715f-bf7b-9fbd9366479e
+        name: "A document that the validator refuses is linted all the same."
+  - key: 01a15fd0-f427-715f-bf7b-9fbe19b4c81f
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "give the sites of the files the writer writes for a document without reading those files back."
+    criteria:
+      - key: 01a15fd0-f427-715f-bf7b-9fbf70f28cb6
+        name: "For a document whose written files read, the sites equal those that reading the written files gives."
+      - key: 01a15fd0-f427-715f-bf7b-9fc04afbc422
+        name: "Each site names the file of the key and the line and column of the key's value."
+      - key: 01a15fd0-f427-715f-bf7b-9fc1caf24395
+        name: "Writing a document with its sites gives the files that writing the document gives."
+  - key: 01a15fd0-f427-715f-bf7b-9fc27dc69d3f
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "build a publishable tree from a document held in memory and the text of its lint configuration, without reading the tree's files back."
+    criteria:
+      - key: 01a15fd0-f427-715f-bf7b-9fc35186d8ef
+        name: "The tree's files are those the writer writes for the document, with `spec/lint.yaml` holding the text given."
+      - key: 01a15fd0-f427-715f-bf7b-9fc4d4658632
+        name: "For a document as the reader reads its written files, the tree's document and sites equal those of the written files read back."
+      - key: 01a15fd0-f427-715f-bf7b-9fc5be88fdd6
+        name: "For a document as the reader reads its written files, the tree's roots and state root equal those of the written files read back."
+      - key: 01a15fd0-f427-715f-bf7b-9fc630de3a05
+        name: "For a document as the reader reads its written files, publishing the tree gives what publishing the written files read back gives."
