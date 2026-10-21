@@ -15,6 +15,7 @@ pub mod merge_cases;
 pub mod merge_keys;
 pub mod merge_tree;
 pub mod openspec;
+pub mod own;
 pub mod parity;
 pub mod publishing;
 pub mod text;

@@ -24,10 +24,11 @@ pub enum Domain {
     Lint,
     Conflict,
     DecisionHistory,
+    OwnRecord,
 }
 
 impl Domain {
-    pub const ALL: [Self; 12] = [
+    pub const ALL: [Self; 13] = [
         Self::Node,
         Self::Edges,
         Self::Registry,
@@ -40,6 +41,7 @@ impl Domain {
         Self::Lint,
         Self::Conflict,
         Self::DecisionHistory,
+        Self::OwnRecord,
     ];
 
     #[must_use]
@@ -57,6 +59,7 @@ impl Domain {
             Self::Lint => "loftspec/lint/1",
             Self::Conflict => "loftspec/conflict/1",
             Self::DecisionHistory => "loftspec/decision-history/1",
+            Self::OwnRecord => "loftspec/own-record/1",
         }
     }
 }

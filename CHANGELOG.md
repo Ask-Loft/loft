@@ -5,6 +5,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::codec::own_records` gives each keyed node, decision, registry entry and binding of
+  a document its own record view and digest, by `RecordKind` and key: a stable identity of the
+  record's own content, for tools that store or compare records one at a time. The view is the
+  record as the writer writes it in canonical layout, as a JSON object of its fields, without its
+  key, the records it holds and its conflicts; a binding is keyed by the key of the element it
+  binds. `own_record_digest` digests a view under the new domain `loftspec/own-record/1`. Neither
+  a record's children, its place among its siblings, its parent nor its key moves its digest, and
+  no root holds it, so no content root, state root or golden vector changes.
 - A command event's `time` is the hour of the system clock. It no longer follows
   `SOURCE_DATE_EPOCH`, which names the time of a publish, so a build or a test that fixes that
   time no longer sends events dated to it.
