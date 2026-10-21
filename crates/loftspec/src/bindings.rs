@@ -305,6 +305,11 @@ impl Bindings {
         }
     }
 
+    /// The binding of `key`, departed or not.
+    pub(crate) fn get(&self, key: Key) -> Option<&Binding> {
+        self.entries.get(&key)
+    }
+
     /// Whether the binding of `key` is departed.
     #[must_use]
     pub fn is_departed(&self, key: Key) -> bool {

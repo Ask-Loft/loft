@@ -1923,6 +1923,36 @@ links:
       - file: "crates/loftspec/tests/own_record_digest.rs"
         name: "the_own_record_digest_enters_no_root"
         body: 5e0e1b176bd7ddc8e6168c0b135be5108128b82cfca594856a623f33ff69a87b
+  - node: 01a15fcc-0e12-734e-9d2f-6a0f0ec2d6f5
+    reviewed: 5d44be71bff26298e97d72fb01b8da62871c926c9dbcabdb3aaf81fe2ffe46a6
+    tests:
+      - file: "crates/loftspec/tests/own_record_one.rs"
+        name: "each_records_own_record_found_by_its_kind_and_key_is_the_whole_documents_entry"
+        body: a562ae5af16ac934a256e22e9ae293eeebf87214aeebb41fa92253cfe61b637c
+      - file: "crates/loftspec/tests/own_record_one.rs"
+        name: "every_record_of_the_rich_document_is_found_by_its_kind_and_key"
+        body: 2e58de040b8bc668101ae70db789c432ce09f4e7949adf9e440f5eadb888fd53
+  - node: 01a15fcc-0e12-734e-9d2f-6a10df68bf4d
+    reviewed: a9bfdb397cf9cfb0321c662aa651ab50ff72fb24566371a455eafa846647bf4d
+    tests:
+      - file: "crates/loftspec/tests/own_record_one.rs"
+        name: "a_kind_and_key_no_record_carries_give_no_own_record"
+        body: 62542e7e89019b9958cc7e4920107bc179b2d3d022600f84bded9fc253c80550
+  - node: 01a15fcc-0e12-734e-9d2f-6a1184b76248
+    reviewed: eea0c32b8ed77f663b0632c16a5fac590188e2fd9ec9030689c93479c36a96f4
+    tests:
+      - file: "crates/loftspec/tests/own_record_one.rs"
+        name: "a_key_another_kind_of_record_carries_gives_no_own_record_for_the_kind_asked"
+        body: 12fa429e10635cf8c4a9830c0a34b97f17b51ad0925023c8bd2446be2f9e60b6
+  - node: 01a15fcc-0e12-734e-9d2f-6a12d61f84c1
+    reviewed: 0f36a0874bc7200b56d952635689517049ea474d08ed166dad05ca067a7096df
+    tests:
+      - file: "crates/loftspec/tests/own_record_one.rs"
+        name: "a_bindings_own_record_is_found_by_the_key_of_the_element_it_binds_departed_or_not"
+        body: 4b7705f13d7adb8f4b715db74b8fe6d0de017fa968ca3472acace7b7c2eec88e
+  - node: 01a15fcc-0e12-734e-9d2f-6a1328bc4e6c
+    reviewed: ac4b5648b999d9d97d86461a9c5df1e09bdde69be3497dcc6c1db53262508bf0
+    unverified: "A cost, read from the code: the record is found by a walk that stops at it, only the edges it writes are gathered, and only the records it holds are built with it."
   - node: 49517bba-8ab2-4c80-86ce-28a27c0388cd
     reviewed: 2c527e95b48221b2b903c780002b4d4924b32de49ef219865b646059f558de80
     tests:

@@ -47,7 +47,8 @@ fn subject_order(subject: &Val) -> (&str, &str) {
     }
 }
 
-fn sort(record: &mut Rec) {
+/// Sorts every list the canonical layout orders in one record and the records inside it.
+pub(super) fn sort(record: &mut Rec) {
     let kind = record.kind;
     for (name, value) in &mut record.fields {
         value.records_mut().for_each(sort);

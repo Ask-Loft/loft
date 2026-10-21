@@ -87,6 +87,7 @@ mod merge_tree_props;
 mod names;
 mod node;
 mod own_record_digest;
+mod own_record_one;
 mod own_record_views;
 mod package;
 mod prose;

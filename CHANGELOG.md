@@ -5,6 +5,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::codec::own_record` gives one record's own record view and digest by its
+  `RecordKind` and key, without building any other record's: in a document that carries each key
+  once, it is the entry `own_records` gives that record. A node is found by a walk that stops at
+  it, with only the edges it writes; a binding by the key of the element it binds, departed or
+  not. A kind and key no record carries give none.
 - `loftspec::bindings::Bindings::record` records a binding whole, as `spec/labels.yaml` holds
   it: its label, kept where its prefix is no longer its element's kind prefix, as a promoted
   record keeps its label; its aliases and withdrawn labels in order; its departure; and the state
