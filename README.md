@@ -196,11 +196,11 @@ Quality Attribute whose `verificationFate` is `proved`, to the tests that verify
 test name, or says why no test can. Each link holds the content hash its node had when a reviewer
 last accepted it, so a changed criterion shows up as a stale link, and each test the digest of
 its tokens when it was last recorded, so a rewritten test shows up too. `loft reconcile` locates
-each test in its file's syntax tree for Rust, TypeScript, JavaScript, Python and Go, and as a
-whole word elsewhere, without running it, so it works for any language. It reports nodes no link
-names, links not yet reviewed or gone stale, tests changed since they were recorded, recorded
-tests it can no longer locate, tests that a part of their file it cannot parse may cut short,
-tests it cannot find in their files, and links to nodes that are gone.
+each test in its file's syntax tree for Rust, TypeScript, JavaScript, Python, Go and Java, and
+as a whole word elsewhere, without running it, so it works for any language. It reports nodes no
+link names, links not yet reviewed or gone stale, tests changed since they were recorded,
+recorded tests it can no longer locate, tests that a part of their file it cannot parse may cut
+short, tests it cannot find in their files, and links to nodes that are gone.
 `loft reconcile --accept <label>` records a review, and CI runs `loft reconcile --fail-on warning`.
 The trace file is not part of the specification: it enters no root and no publish writes it.
 
@@ -217,7 +217,7 @@ this:
 {
   "schema": "loft-telemetry-event/2",
   "eventId": "0b9a3c0e-7f4d-4a43-9a52-3f3f2c4b8d11",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "os": "macos",
   "arch": "aarch64",
   "installedBy": "npm",

@@ -454,7 +454,7 @@ checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
 name = "loft-cli"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "clap",
  "hmac",
@@ -466,6 +466,7 @@ dependencies = [
  "software-plant",
  "tree-sitter",
  "tree-sitter-go",
+ "tree-sitter-java",
  "tree-sitter-javascript",
  "tree-sitter-python",
  "tree-sitter-rust",
@@ -476,7 +477,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "proptest",
  "pulldown-cmark",
@@ -493,7 +494,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec-store"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "loftspec",
  "serde",
@@ -848,7 +849,7 @@ checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 
 [[package]]
 name = "software-plant"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -964,6 +965,16 @@ name = "tree-sitter-go"
 version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8560a4d2f835cc0d4d2c2e03cbd0dde2f6114b43bc491164238d333e28b16ea"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-java"
+version = "0.23.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0aa6cbcdc8c679b214e616fd3300da67da0e492e066df01bcf5a5921a71e90d6"
 dependencies = [
  "cc",
  "tree-sitter-language",

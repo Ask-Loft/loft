@@ -269,6 +269,12 @@ A release happens only with the maintainer's approval, and in this order:
    registries trust the workflow through Trusted Publishing; no registry token is stored anywhere.
 5. Merge `main` back into `develop`, so the allocated labels and the release reach it.
 
+When `develop` holds work that is not ready to go out, a release is cut from `main` instead:
+branch from `main`, run step 0 on that branch (`gh workflow run build.yml --ref <branch>`), make
+the version change of step 1 on it and merge it into `main` alone, then go on from step 2. Step 5
+brings the release into `develop`, where `## Unreleased` stays above the new version's entry in
+`CHANGELOG.md`.
+
 If a step of the publish job fails, fix its cause and choose "Re-run failed jobs" on the run.
 Each step skips what its registry or GitHub already holds, so the run publishes only the rest.
 

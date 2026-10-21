@@ -1,6 +1,7 @@
 //! The test locator over small files of each language.
 
 mod canonical;
+mod java;
 mod languages;
 mod script;
 
@@ -59,6 +60,7 @@ fn each_extension_chooses_its_grammar_and_any_other_is_not_parsed() {
         ("a.jsx", Grammar::JavaScript),
         ("a.py", Grammar::Python),
         ("a.go", Grammar::Go),
+        ("a.java", Grammar::Java),
     ];
     for (path, grammar) in chosen {
         assert_eq!(Grammar::of(path), Some(grammar), "{path}");

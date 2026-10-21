@@ -6,6 +6,7 @@
 
 mod canonical;
 mod go;
+mod java;
 mod python;
 mod rust;
 mod script;
@@ -58,6 +59,7 @@ enum Grammar {
     JavaScript,
     Python,
     Go,
+    Java,
 }
 
 impl Grammar {
@@ -71,6 +73,7 @@ impl Grammar {
             "js" | "mjs" | "cjs" | "jsx" => Self::JavaScript,
             "py" => Self::Python,
             "go" => Self::Go,
+            "java" => Self::Java,
             _ => return None,
         })
     }
@@ -83,6 +86,7 @@ impl Grammar {
             Self::JavaScript => tree_sitter_javascript::LANGUAGE.into(),
             Self::Python => tree_sitter_python::LANGUAGE.into(),
             Self::Go => tree_sitter_go::LANGUAGE.into(),
+            Self::Java => tree_sitter_java::LANGUAGE.into(),
         }
     }
 }
@@ -135,6 +139,7 @@ pub fn locate(path: &str, text: &str) -> Option<ParsedFile> {
         Grammar::TypeScript | Grammar::Tsx | Grammar::JavaScript => script::tests(root, text),
         Grammar::Python => python::tests(root, text),
         Grammar::Go => go::tests(root, text),
+        Grammar::Java => java::tests(root, text),
     };
     candidates.sort_by_key(|candidate| (candidate.start, candidate.end));
     let python = grammar == Grammar::Python;

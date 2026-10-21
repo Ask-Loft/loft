@@ -1,7 +1,7 @@
 key: 01a145e8-28eb-78f4-aed0-150e241ef329
 slug: locating-a-test
 name: "Locating a test"
-body: "How `loft` finds, in the file a link names, the syntax node of the test the link names, and the digest of that test's content that the trace file records. The reconciler asks through a port; `loft` answers it with tree-sitter for Rust, TypeScript, JavaScript, Python and Go. A test that no grammar locates is still looked for as a whole word."
+body: "How `loft` finds, in the file a link names, the syntax node of the test the link names, and the digest of that test's content that the trace file records. The reconciler asks through a port; `loft` answers it with tree-sitter for Rust, TypeScript, JavaScript, Python, Go and Java. A test that no grammar locates is still looked for as a whole word."
 realizes:
   - 01a1383a-4a92-778a-b49d-e3efdabc7f04
   - 01a145e8-28eb-7b67-9fe2-edb5e0af3358
@@ -24,6 +24,8 @@ requirements:
         name: "A file ending in `.py` is parsed as Python."
       - key: 01a145e9-aa7f-769e-a7f5-f21cc9798933
         name: "A file ending in `.go` is parsed as Go."
+      - key: 01a15f55-b936-7155-95fa-439b29107106
+        name: "A file ending in `.java` is parsed as Java."
       - key: 01a145e9-aa7f-769e-a7f5-f21d918624ea
         name: "A file with any other extension is not parsed, and no test is located in it."
   - key: 01a145e9-aa7f-769e-a7f5-f21eb92a1b6c
@@ -100,6 +102,18 @@ requirements:
         name: "A carriage return in a Go raw string is not part of the test's name."
       - key: 01a146cb-3d40-749f-b9bb-1cc644e4f41a
         name: "A method `Run` in parentheses, such as `(t.Run)(…)`, runs a subtest as the method does."
+  - key: 01a15f55-b936-7155-95fa-439cb09f5e2f
+    statement:
+      form: ubiquitous
+      system: "The test locator"
+      shall: "locate a Java test as the method or the class that the test's name names."
+    criteria:
+      - key: 01a15f55-b936-7155-95fa-439d8362af31
+        name: "A method whose name is the test's name is the test, inside classes, nested classes, interfaces, enums and records."
+      - key: 01a15f55-b936-7155-95fa-439ec328a838
+        name: "A class whose name is the test's name is the test, nested or not."
+      - key: 01a15f55-b936-7155-95fa-439f297d5696
+        name: "The annotations and modifiers written before a method or a class are part of the test."
   - key: 01a145e9-aa7f-769e-a7f5-f22f09f4fb8b
     statement:
       form: ubiquitous

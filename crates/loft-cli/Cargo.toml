@@ -1,6 +1,6 @@
 [package]
 name = "loft-cli"
-version = "2.2.0"
+version = "2.2.1"
 description = "The loft command line: author, check, format, render and publish a specification in a git repository"
 edition.workspace = true
 rust-version.workspace = true
@@ -31,6 +31,7 @@ serde_json.workspace = true
 sha2.workspace = true
 tree-sitter.workspace = true
 tree-sitter-go.workspace = true
+tree-sitter-java.workspace = true
 tree-sitter-javascript.workspace = true
 tree-sitter-python.workspace = true
 tree-sitter-rust.workspace = true

@@ -47,7 +47,7 @@ links:
 - `node` is the node's key, never its label: a publish may give the node another label.
 - `file` is the test's path from the directory that holds `spec/`; `name` is the test's name as
   its file writes it, a function name or a test's title. `loft reconcile` never runs it: in Rust,
-  TypeScript, JavaScript, Python and Go it locates the test in the file's syntax tree, and
+  TypeScript, JavaScript, Python, Go and Java it locates the test in the file's syntax tree, and
   elsewhere it finds the name as a whole word.
 - Leave out a test's `body`: accepting writes it.
 - Where no test can verify a node, write `unverified` with the reason instead of `tests`.

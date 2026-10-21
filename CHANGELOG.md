@@ -160,6 +160,15 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   changing a product and publishing add their git practice; and a new reference, "Choosing the
   next change", finds and plans what to build next from the published states.
 
+## 2.2.1 (2026-10-21)
+
+- `loft reconcile` locates a linked test in a `.java` file in its syntax tree, parsed with the
+  pinned tree-sitter Java grammar: a method or a class, at any depth of classes, interfaces,
+  enums and records, with the annotations and modifiers written before it. Its digest is recorded
+  as for any other located test, so a Java test rewritten after its link was accepted is reported.
+  A Java test that was found only as a word before now reports `TR-010` where a part of its file
+  that the grammar does not parse may cut it short.
+
 ## 2.2.0 (2026-10-18)
 
 - `loft status [--base <revision>]` reports where the tree stands: the lock's publish sequence,
