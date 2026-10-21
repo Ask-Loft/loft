@@ -3564,6 +3564,72 @@ links:
       - file: "crates/loftspec/tests/ext.rs"
         name: "a_merge_takes_one_sides_ext_and_records_a_conflict_when_both_differ"
         body: be893ef1b80eb7d0a122181ee970f722e0e6ccb81a36d58101654cef2327c34c
+  - node: 01a15fc3-9f7e-74bc-87ca-25de189b1e38
+    reviewed: 1b3872cefa8122d767a87faad0be0ccb59d36ff8947010f4c00972a7bc112250
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "extension_data_written_as_json_reads_back_as_it_was"
+        body: b89de57524c7200345b936ff49fdc4a648cbac309e060eed11f7209eda4907d9
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "an_empty_object_is_extension_data_with_no_namespace"
+        body: 5c2fc136efb7ab233420433944615f2ab256053a1194372c33f4ed92998dc481
+  - node: 01a15fc3-9f7e-74bc-87ca-25df0d866f5a
+    reviewed: f2b908997902bc71d90d3278bf80b214eb56b0a00573df1b472191b5063fcfa7
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "json_read_as_extension_data_writes_back_as_it_was"
+        body: abb410be4f9f6ab42facd7aad110958fe55574019ff5e800b33eb814da580799
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "json_read_as_extension_data_is_held_by_the_text_form"
+        body: a223cc15cc338282b72b88c77634b1a419fbaa02e77aa32b6656ab51ca7d102f
+  - node: 01a15fc3-9f7e-74bc-87ca-25e05405a662
+    reviewed: 49474e378f6ddbb47ba361593bdf5b14ceb47e3478fe02ead754690d94c109e7
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "json_that_is_not_an_object_is_refused"
+        body: d052c49bd63b26f21ff6aeb562d03b0ad88324194fafbf032a682a4775a0ace5
+  - node: 01a15fc3-9f7e-74bc-87ca-25e193563764
+    reviewed: 9223c09323cfb5bd508c50e066d3d03047525c0ba8866bbdb0fa0761b9ab50c4
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "an_object_key_that_is_not_an_extension_namespace_is_refused"
+        body: c6cd2f83e99a687f702469613a6c273f8e0d6bd5a2c5619db16136169de0aec8
+  - node: 01a15fc3-9f7e-74bc-87ca-25e22c00496a
+    reviewed: 5d3e49969227abe3a93111fc0c278f2f12e3f7fcac4234f1dc11874b76540eb1
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "a_null_is_refused"
+        body: e35d5311921c81f772bd96ee87f030a8978de4fd1910ec59bbef8468f41e74c8
+  - node: 01a15fc3-9f7e-74bc-87ca-25e3a27bda82
+    reviewed: 70dfe564bd2825cd2030251485dcd162043bf3e13e5c43651ce78bee9a263bd1
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "a_number_with_a_fraction_or_an_exponent_is_refused"
+        body: 7bf788a24fd65213f1e97ba057a5cfe554dea4fba9258112eac1baf201bc4b35
+  - node: 01a15fc3-9f7e-74bc-87ca-25e42fc2d745
+    reviewed: 19114baa3af5833757782f816cc517ac4683e77229b8f77f8a838bd4130b0d02
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "an_integer_outside_the_canonical_json_bound_is_refused_and_the_bounds_read"
+        body: 5eb93a80bb558da9329d8252f343ae212a676a65f629d47780ab746411575e96
+  - node: 01a15fc3-9f7e-74bc-87ca-25e5e035cb36
+    reviewed: 85e1763689b3b0c8c108f65302675b72933c2dcadaaa1513b17995163ebf98fc
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "an_empty_array_or_object_is_refused"
+        body: 133654235210a0664dfe70bc96bf69fa37df95b932762c56cadb8d71ee8c7355
+  - node: 01a15fc3-9f7e-74bc-87ca-25e6410a055c
+    reviewed: a24723ea26b6715d8e562a5fab211080136094f641318d7547d965ad32110abe
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "a_mapping_key_that_is_not_a_field_name_is_refused"
+        body: 1413165b6265bd5a445ff72ef549284b5ac4237b589887ee61460f929a21db5a
+  - node: 01a15fc3-9f7e-74bc-87ca-25e7033518c8
+    reviewed: 046763eb589b1bab70f5b410d2922c04ec592c531689b1475765528c76f33a46
+    tests:
+      - file: "crates/loftspec/tests/ext_json.rs"
+        name: "a_refusal_names_the_json_pointer_of_the_value_it_refuses"
+        body: 0d8df8ba6a83243bfbb244bebf2929dc9ebf0553ca0474ef163cc9942c640461
   - node: a0200741-8714-4201-9d3e-684f98091664
     reviewed: b605b04c7b98319242cfb9ba6d5fe34d220837eb3c264231dc96e8aad1a00aff
     tests:
@@ -16701,6 +16767,42 @@ links:
       - file: "crates/loftspec/tests/edit_refusals.rs"
         name: "a_move_that_would_write_a_node_in_a_file_another_node_holds_is_refused_naming_both"
         body: d3ad95b61aae5a096a9a348ce9f03bcbc66b63a603d6adf4c2dca72560faa312
+  - node: 01a15fc3-9f7d-73a2-b34d-d72bcae58317
+    reviewed: d24bcce433d458d516145782107bdd2207c0a4151081ca133520d41b51b34e15
+    tests:
+      - file: "crates/loftspec/tests/value_types.rs"
+        name: "an_earlier_publish_time_orders_before_a_later_one"
+        body: 2b5353b57bbe770dbeffff7cb38414acb5a67e6fefef4b8c50ccd8608d26e394
+  - node: 01a15fc3-9f7d-73a2-b34d-d72c72524bbb
+    reviewed: 2cbbe40f2f1fae871edf593f1a5ec5cc13425a44c119b63c8804379df16eb351
+    tests:
+      - file: "crates/loftspec/tests/value_types.rs"
+        name: "two_publish_times_of_one_instant_are_equal"
+        body: c1689a85995203da03f752250955e5226bb0233b749b0fa1765c83ad060f3705
+  - node: 01a15fc3-9f7d-73a2-b34d-d72d3a9f2550
+    reviewed: e588e9571dd028dfe341dfef3ca653afffb664a5c845b3842cb163d19f7ee1ab
+    tests:
+      - file: "crates/loftspec/tests/value_types.rs"
+        name: "publish_times_read_from_their_text_order_as_their_instants"
+        body: 40e891cbd26b664cb7a7ad0039889f83f8ad9f0a95fc15d8022acbb6d9fde6a2
+  - node: 01a15fc3-9f7d-73a2-b34d-d72fffcbd204
+    reviewed: 81664d563a0a366e4ad3317e44f10405d5a187918b07292c4186d62fdf7ce84f
+    tests:
+      - file: "crates/loftspec/tests/value_types.rs"
+        name: "a_digest_made_from_32_bytes_gives_back_those_bytes"
+        body: 5931c13e0ba78532fd938cb3f1e98b319709a0fc04b84f13391b517ceeff420d
+  - node: 01a15fc3-9f7d-73a2-b34d-d730c943ec9d
+    reviewed: 66fb79b7d41c8179360cd6a5be9d2837e71d50b3d3b5cd76cd258bd81ba4e6b9
+    tests:
+      - file: "crates/loftspec/tests/value_types.rs"
+        name: "a_digest_made_from_the_bytes_of_a_digest_is_that_digest"
+        body: f87071d58baa47ae5f8a64b4bb2d7e4e4b98c7d7e14269dd34aa7b4c0cb9621d
+  - node: 01a15fc3-9f7d-73a2-b34d-d731894760fd
+    reviewed: 21776ec2268a0eae245d9b0fd3c3131f381a6e68badd16f33ea8c158c844fcbb
+    tests:
+      - file: "crates/loftspec/tests/value_types.rs"
+        name: "a_digest_made_from_32_bytes_is_written_as_their_hexadecimal_digits"
+        body: 150bec27c2072f9dda2da44eef5cf278329fbcea4d3d896e911121318fbe554f
   - node: 01a12ff0-f5e5-7095-8fa8-24edcc9b44db
     reviewed: c9ede49992a2253856d8f616d48fe2158f53e2cde7efc752806243cecfbc79e6
     tests:

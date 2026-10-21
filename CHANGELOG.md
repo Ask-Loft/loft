@@ -5,6 +5,13 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::ext::from_json` reads extension data back from the JSON `ext::to_json` writes it
+  as, its exact inverse: it refuses, as a `FromJsonError` naming the JSON Pointer of the value
+  and its `JsonProblem`, JSON that is not an object of namespaces, `null`, a number with a
+  fraction or an exponent, an integer beyond ±9007199254740991, an empty array or object, and a
+  mapping key that is not a letter followed by letters and digits, none of which the text form
+  holds. `canonical::Digest::from_bytes` makes a digest from its 32 bytes, which `as_bytes`
+  gives back, and `publish::PublishedAt` is ordered by the instant it names.
 - The tree merger's result always reads. Where one side deletes a record and leaves it otherwise
   as it was, while a record the merge keeps references it, `merge_tree` keeps the record as the
   other side holds it, with every record beneath it, and gives it a conflict record over `record`

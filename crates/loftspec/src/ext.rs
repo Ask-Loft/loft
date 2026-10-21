@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Serialize, Serializer};
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use crate::names::Namespace;
 
@@ -72,4 +72,120 @@ impl Serialize for ExtValue {
 #[must_use]
 pub fn to_json(ext: &Ext) -> Value {
     serde_json::to_value(ext).expect("extension data serialises")
+}
+
+/// Why JSON is not extension data the text form can hold, at the JSON Pointer (RFC 6901) of the
+/// value refused: empty for the whole JSON.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("{problem} at `{path}`")]
+pub struct FromJsonError {
+    pub path: String,
+    pub problem: JsonProblem,
+}
+
+/// What the text form cannot hold of a JSON value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum JsonProblem {
+    #[error("extension data is an object of namespaces")]
+    NotAnObject,
+    #[error("a namespace is a lowercase letter followed by lowercase letters and digits")]
+    Namespace,
+    #[error("an extension value is never null")]
+    Null,
+    #[error("an extension number is an integer, with no fraction and no exponent")]
+    NotAnInteger,
+    #[error("an extension integer lies from -9007199254740991 to 9007199254740991")]
+    OutOfRange,
+    #[error("an extension list or mapping holds an entry")]
+    Empty,
+    #[error("a mapping key is a letter followed by letters and digits")]
+    Key,
+}
+
+/// Extension data from the JSON [`to_json`] writes it as: its exact inverse. JSON the text form
+/// cannot hold is refused, so that what this gives writes and reads back as it is.
+///
+/// # Errors
+///
+/// JSON that is not an object of namespaces; `null`; a number with a fraction or an exponent, or
+/// an integer beyond ±[`MAX_INTEGER`]; an empty array or object; or a mapping key that is not a
+/// letter followed by letters and digits: each at its JSON Pointer.
+pub fn from_json(json: &Value) -> Result<Ext, FromJsonError> {
+    let refused = |path: String, problem| FromJsonError { path, problem };
+    let Value::Object(namespaces) = json else {
+        return Err(refused(String::new(), JsonProblem::NotAnObject));
+    };
+    namespaces
+        .iter()
+        .map(|(name, value)| {
+            let path = pointer("", name);
+            let namespace = Namespace::parse(name)
+                .map_err(|_| refused(path.clone(), JsonProblem::Namespace))?;
+            Ok((namespace, value_from(value, &path)?))
+        })
+        .collect()
+}
+
+fn value_from(json: &Value, path: &str) -> Result<ExtValue, FromJsonError> {
+    let refused = |problem| FromJsonError {
+        path: path.to_owned(),
+        problem,
+    };
+    match json {
+        Value::Null => Err(refused(JsonProblem::Null)),
+        Value::Bool(flag) => Ok(ExtValue::Boolean(*flag)),
+        Value::String(text) => Ok(ExtValue::Text(text.clone())),
+        Value::Number(number) => {
+            if !(number.is_i64() || number.is_u64()) {
+                return Err(refused(JsonProblem::NotAnInteger));
+            }
+            number
+                .as_i64()
+                .filter(|integer| (-MAX_INTEGER..=MAX_INTEGER).contains(integer))
+                .map(ExtValue::Integer)
+                .ok_or_else(|| refused(JsonProblem::OutOfRange))
+        }
+        Value::Array(items) if items.is_empty() => Err(refused(JsonProblem::Empty)),
+        Value::Array(items) => items
+            .iter()
+            .enumerate()
+            .map(|(at, item)| value_from(item, &pointer(path, &at.to_string())))
+            .collect::<Result<_, _>>()
+            .map(ExtValue::List),
+        Value::Object(entries) if entries.is_empty() => Err(refused(JsonProblem::Empty)),
+        Value::Object(entries) => entries_from(entries, path).map(ExtValue::Map),
+    }
+}
+
+fn entries_from(
+    entries: &Map<String, Value>,
+    path: &str,
+) -> Result<BTreeMap<String, ExtValue>, FromJsonError> {
+    entries
+        .iter()
+        .map(|(key, value)| {
+            let path = pointer(path, key);
+            if !is_field_name(key) {
+                return Err(FromJsonError {
+                    path,
+                    problem: JsonProblem::Key,
+                });
+            }
+            Ok((key.clone(), value_from(value, &path)?))
+        })
+        .collect()
+}
+
+/// Whether a mapping key is one the text form writes as a field name: an ASCII letter followed
+/// by ASCII letters and digits.
+fn is_field_name(key: &str) -> bool {
+    key.starts_with(|character: char| character.is_ascii_alphabetic())
+        && key
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric())
+}
+
+/// The JSON Pointer of `token` under `path`, with `~` and `/` escaped.
+fn pointer(path: &str, token: &str) -> String {
+    format!("{path}/{}", token.replace('~', "~0").replace('/', "~1"))
 }
