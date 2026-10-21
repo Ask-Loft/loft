@@ -240,3 +240,27 @@ requirements:
         name: "The refusal names the key of the node that the file already holds."
       - key: 01a15958-a358-72fb-a82d-d8b09bb4ab97
         name: "The document is unchanged after the refusal."
+  - key: 01a15fc3-9f7d-73a2-b34d-d72a16a6a4f1
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "order publish times by the instant each names."
+    criteria:
+      - key: 01a15fc3-9f7d-73a2-b34d-d72bcae58317
+        name: "An earlier publish time orders before a later one."
+      - key: 01a15fc3-9f7d-73a2-b34d-d72c72524bbb
+        name: "Two publish times of one instant are equal."
+      - key: 01a15fc3-9f7d-73a2-b34d-d72d3a9f2550
+        name: "Publish times read from their RFC 3339 text order as the instants they name."
+  - key: 01a15fc3-9f7d-73a2-b34d-d72e13a75781
+    statement:
+      form: ubiquitous
+      system: "`loftspec`"
+      shall: "offer a digest made from its 32 bytes and the 32 bytes of a digest."
+    criteria:
+      - key: 01a15fc3-9f7d-73a2-b34d-d72fffcbd204
+        name: "A digest made from 32 bytes gives back those bytes."
+      - key: 01a15fc3-9f7d-73a2-b34d-d730c943ec9d
+        name: "A digest made from the bytes of a digest is that digest."
+      - key: 01a15fc3-9f7d-73a2-b34d-d731894760fd
+        name: "A digest made from 32 bytes is written as two lowercase hexadecimal digits for each byte, in order."
