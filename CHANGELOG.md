@@ -5,6 +5,17 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Settling a conflict of a document held in memory. `loftspec::conflict::settle` takes a
+  document, a conflict's identifier and a `Settlement` (`Base`, `Ours`, `Theirs`, or
+  `Value(ConflictValue)`) and gives a new document without that conflict record, as the reader
+  reads it: a field takes the side's value, or the value given, checked against the field's
+  shape; a conflict over the bindings adds the side's bindings to those the labels file holds;
+  a conflict over `record` keeps the record or deletes it with everything beneath it, departing
+  their bindings; a conflict over `parent` or `position` moves the record where the side puts
+  it. Those three take a side only. Every refusal is a `SettleError`, including the reader's
+  errors for a settlement whose document would not read. `codec::conflict_owner` gives the owner
+  of the conflicts a record holds, and `ConflictOwner::own_record` the kind and key of the own
+  record view it names.
 - Functions on a document held in memory, without writing it and reading its files back.
   `loftspec::check::validated` validates a document at the sites its caller gives, without
   linting it, and `check::linted` lints it under the bytes of its `spec/lint.yaml`, without

@@ -10086,6 +10086,246 @@ links:
       - file: "crates/loftspec/tests/merge_references.rs"
         name: "merging_the_same_trees_twice_names_the_conflict_of_a_record_kept_for_a_reference_alike"
         body: 92056780c540448cd837cdf3daf3dde842dceee1ebf642d930a4984309fda4ed
+  - node: 01a15fdc-a1db-756d-9d40-05f2edfc79d9
+    reviewed: cbeb9812b3d8077f3851dd883fef86f778d0317c6d0a8bcbc518d779d739a77b
+    tests:
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "settling_a_conflict_and_the_owner_of_a_records_conflicts_are_public"
+        body: bfff12941c247b31fd7abf2dbac035c41d05431d383a0967b460512ac08c7f27
+  - node: 01a15fdc-a1db-756d-9d40-05f371aaacbf
+    reviewed: 39b29b4ac9fa8b9ddddd427dac7a568c6bf6c86f8d6c29a5de59b762097e0e08
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_conflict_gives_a_document_without_its_conflict_record"
+        body: eb96cac1a09d726a3d5fcf7e3e569f61378cfe975fd944840836745e4b515b84
+  - node: 01a15fdc-a1db-756d-9d40-05f44c31c663
+    reviewed: 2b73aed857795ea184a74c89c95b513d3347934ee9cfeabc2a0be5987f77c406
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_conflict_keeps_every_other_conflict_record"
+        body: f03569660a7b0aa53375d4dfb4e0c27982a87d22bb51b164827b8c72924fd0fa
+  - node: 01a15fdc-a1db-756d-9d40-05f5bd472ab3
+    reviewed: f8de098c1a754f3ecd8c680f3d83179fe34ec19076af61e7be6eed7c0b321053
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_conflict_leaves_the_document_given_unchanged"
+        body: 92e5bd28da744e514da2b7ebed5275d884bbfbc0e5c59b77f33079df3a04320f
+  - node: 01a15fdc-a1db-756d-9d40-05f7e074bec3
+    reviewed: dd2e8177d802e7dbc49de3bcbba8f6b1feff049c39834cba568ba14ecf9f68b5
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_field_by_a_side_gives_it_that_sides_value"
+        body: 1402ad641bc85565afed72f05f0c2802bebde362ead4fb32c50d4a4a3e6c8f11
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_slug_by_a_side_gives_the_record_that_slug_and_its_file_the_path_it_names"
+        body: 3d9996fae776de0373f7822125ba5cc77044d2653f33709f3c22a3a9eb1efe72
+  - node: 01a15fdc-a1db-756d-9d40-05f854b153f2
+    reviewed: 11027a0b367eed2c861f046de209817a2f0e0032edcb514d2d76b48d4e4b278c
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_field_by_a_side_that_lacks_it_leaves_the_field_out"
+        body: 21684767cc3451b7a55a426d59bda67405aae978589afb299a867cc4221c8f15
+  - node: 01a15fdc-a1db-756d-9d40-05f95f3b2330
+    reviewed: 1c2bdbc31814b248c84095cd2fb9ba953c758ba8f2c2607df3cf70fe74d8e50c
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_dotted_field_sets_it_in_the_record_the_path_leads_through"
+        body: a23fa36ca8cf3340704fbff4eb6a413d89453a1c21d9f4481aa6a833e7168012
+  - node: 01a15fdc-a1db-756d-9d40-05fa82835486
+    reviewed: f0ca0a9aad60b5b39bbe7cc5ac8a0a4098781725dbb541a1b40d81268456ffd1
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_conflict_of_the_manifest_is_settled_in_the_manifest"
+        body: e7d968699120787f59a4a857c49a0bfd3db1cd1c395393c260f89358c72f919f
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_conflict_of_the_labels_file_is_settled_in_its_record"
+        body: 06629127b0337fb80d7daebace0c5b80a9ba540f95b234a7e6104c6bd7752c4b
+  - node: 01a15fe2-8d46-766d-ad08-7aba3facd31f
+    reviewed: 23faf2aa709746cbaaf83825c63f05a57ce355b3c6e5826532338f8451dbf3b4
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_conflict_over_bindings_adds_the_sides_bindings_to_those_the_file_holds"
+        body: cc5b9794b5e4509a526fe40db9bb84ba49ce3c5cb23c0dea9d15d9e8a04ee3ba
+  - node: 01a15fdc-a1db-756d-9d40-05fc9de726f2
+    reviewed: 836ce3abe9dcce5a4c6360f58cd6bf1d72d22ac383c0b47864099776ab07cff6
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "settling_a_field_by_a_value_gives_it_that_value"
+        body: 8a6adc4378114127d015c2eae2c97263b5abc8c8edfdb7edbb22f927e10c7399
+  - node: 01a15fdc-a1db-756d-9d40-05fdc765d79c
+    reviewed: 1a29f8c18511e11e9d540dcbbbfb85c3ae214ac12846b0ebbb1efc976e405137
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_value_in_the_shape_of_the_conflicts_sides_is_accepted"
+        body: dc19577398cd74aac071527c9a0413ba821f213475f3decbf82d1b17f0d1f9f6
+  - node: 01a15fdc-a1db-756d-9d40-05ff56f36257
+    reviewed: 4ff830dedde06d3d7dbe912d89b0d53e49a892c458d875dc8be66fb7c55afde1
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_record_conflict_by_a_side_that_holds_its_key_keeps_the_record_as_it_is"
+        body: 001ac88f538551dbf5e8ada6b6b9be2426ac25f649b8dfe70a3f482897d8e0b2
+  - node: 01a15fdc-a1db-756d-9d40-06001db491e5
+    reviewed: d240cbdbd98edf65d2210cb41a636f049aa3b74bcc47258e7265d398bdbf9371
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_record_conflict_by_a_side_that_holds_null_deletes_the_record"
+        body: c812e64a6ceff8e114f7b8a236bdb758a9f52c4bc1ee39414deb6364b5da8adc
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_record_conflict_by_deletion_deletes_every_record_beneath_it"
+        body: 370ac5566e0cdb349f4958dca5db8b3cf8268528a25b345a07021390b82306cb
+  - node: 01a15fdc-a1db-756d-9d40-06018c2d7b84
+    reviewed: 0018a0494df3735453686b59ff77a484c0602d46ff3209df533a9f173519092d
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_record_conflict_by_deletion_departs_the_binding_of_each_element_it_takes_out"
+        body: 13f4e71121ea51fd9446a5789179281080187573aaf0589b454e6851a9485933
+  - node: 01a15fdc-a1db-756d-9d40-06034fd74043
+    reviewed: 4ae84c6aa7bae81106ae1781e08096dede94070ebd60460fc4d8de216cbde1d8
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_parent_conflict_moves_the_record_last_of_its_kind_under_the_sides_parent"
+        body: 5b267567058857ef29348bc63a6617cb2917e2a17ff8ff0551cce3f3b23da598
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_parent_conflict_of_a_decisions_part_moves_it_to_the_sides_decision"
+        body: e10d18ec14330430bc6cdf18263e88564956c9cae41d2bf7de30bb97bb40933b
+  - node: 01a15fdc-a1db-756d-9d40-06040e0ebb45
+    reviewed: 641bec2c89420d2e26f6d11581fda1a08bd504faf26c6ab15b762749548edacf
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_parent_conflict_by_the_side_of_its_present_parent_leaves_the_record_in_place"
+        body: 832f3de48532cb47cc962241b566e882dceb7c0e6f79647f9e415b363deb4eeb
+  - node: 01a15fdc-a1db-756d-9d40-06053511f495
+    reviewed: 6ebb8df529eb7ff03845d92faf7bd6c3f165bb8ca2b215813160334732dad877
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_parent_conflict_moves_every_record_beneath_the_record_with_it"
+        body: 0375a1779519ba3814a79980504c88b883aaabf949a215a08d0e18e5a6327dce
+  - node: 01a15fdc-a1db-756d-9d40-06076c62a1ed
+    reviewed: 229fdbd62dc68d6d58b9df62cdbdf9b97cd4f2ef3c6d1d7dc0d82ac44e8ebf97
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_position_conflict_puts_the_record_right_after_the_one_the_side_names"
+        body: 0cc09a1bd232d00d250477523395258159c242d298e0a5df4cd6f2078af03ec1
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_position_conflict_of_a_decisions_part_moves_it_within_its_list"
+        body: faf12c73f9158a89e6e4021f7863affab56dc8d1dda68a469898ff933e9496d9
+  - node: 01a15fdc-a1db-756d-9d40-0608e79f0820
+    reviewed: 7682907a5622f9571da8a0e1716fc2d49b7c028689aa10f57d958826b259e8be
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "settling_a_position_conflict_by_a_side_that_holds_first_puts_the_record_first"
+        body: 3d5abc62ae1b5e7a2e3e53802833b6c38c8e998ac497991bc687497c80e8eab4
+  - node: 01a15fdc-a1db-756d-9d40-060ae70cd390
+    reviewed: fd348cc76ea32854dff09449de7104afc3094d0aec2213d6f80f8790e36fb917
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "a_value_for_a_conflict_over_record_parent_or_position_is_refused_naming_its_field"
+        body: 0be731b28757784d0ae252a1374e6e132b986f1839c494d1be56b2182dd307f4
+  - node: 01a15fdc-a1db-756d-9d40-060ba01ea81a
+    reviewed: fe9159c49e834daf01f7e4a5fe05033a8e3db2424f5f64092fa7f3b71742e6bc
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "a_value_for_a_conflict_over_record_parent_or_position_is_refused_naming_its_field"
+        body: 0be731b28757784d0ae252a1374e6e132b986f1839c494d1be56b2182dd307f4
+  - node: 01a15fdc-a1db-756d-9d40-060c8e630298
+    reviewed: a834f5d9bf75a9bb6b819965475cd0464eef15533c5e68ffe04150a88477c4cd
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "a_value_for_a_conflict_over_record_parent_or_position_is_refused_naming_its_field"
+        body: 0be731b28757784d0ae252a1374e6e132b986f1839c494d1be56b2182dd307f4
+  - node: 01a15fdc-a1db-756d-9d40-060dc1a3f7c0
+    reviewed: cc59508bba453902b7b89c389c10da6d4402e26fddc0d16cf5cce15cd5162192
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "a_value_for_a_conflict_over_record_parent_or_position_is_refused_naming_its_field"
+        body: 0be731b28757784d0ae252a1374e6e132b986f1839c494d1be56b2182dd307f4
+  - node: 01a15fdc-a1db-756d-9d40-060fbc27756c
+    reviewed: 14563394f1b3f59c5e78807eaa4419287718dc1e45a9f575ce079d00e5ad8187
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_list_given_for_a_field_that_holds_one_value_is_refused_naming_the_field"
+        body: 6a90e8dd5d7b47f966add30fc03c677b55cc1133c369548d78077d638a8228c8
+  - node: 01a15fdc-a1db-756d-9d40-061039bdfa24
+    reviewed: 1cb43b9d460bb2c2ce84dabed1f8df43362a8f2b272c5e3cbb58ea77fd678d56
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_scalar_given_for_a_field_that_holds_a_list_is_refused_naming_the_field"
+        body: 60659a1a72566f3db9ed553c39862a1bc4ad2ea5345eb701bfcf091b91bac8ac
+  - node: 01a15fdc-a1db-756d-9d40-0611435f7ff4
+    reviewed: 3f5ea35f76b8c1c8ea49483fbd0634584407d60924901a3415cd9d2520f095ae
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_record_given_for_a_field_that_holds_a_scalar_is_refused_naming_the_field"
+        body: e972bedae70dd26e6033d61070dac0cf02d7488e4c1561a55a32dede82fd7e80
+  - node: 01a15fdc-a1db-756d-9d40-0612d22afa00
+    reviewed: b951ea18734818939b992c94c3f6c89e98a43dfb8378d223a9e18f006be2a1d3
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_record_given_with_a_field_its_kind_does_not_define_is_refused_naming_the_field"
+        body: c2945263eddff0845613c5c79b3bfe685a707c411c8bcba1c737bf12ec597ad5
+  - node: 01a15fdc-a1db-756d-9d40-061356440551
+    reviewed: cc59508bba453902b7b89c389c10da6d4402e26fddc0d16cf5cce15cd5162192
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_list_given_for_a_field_that_holds_one_value_is_refused_naming_the_field"
+        body: 6a90e8dd5d7b47f966add30fc03c677b55cc1133c369548d78077d638a8228c8
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "a_scalar_given_for_a_field_that_holds_a_list_is_refused_naming_the_field"
+        body: 60659a1a72566f3db9ed553c39862a1bc4ad2ea5345eb701bfcf091b91bac8ac
+  - node: 01a15fdc-a1db-756d-9d40-0615e7f8a5bd
+    reviewed: 273436161a03217b8be0fa973d6b8fda04abb6bf441fa550380d4306d71bdc99
+    tests:
+      - file: "crates/loftspec/tests/settle_conflicts.rs"
+        name: "an_identifier_that_no_conflict_record_has_is_refused_naming_it"
+        body: fa8975aa3347024d3e94a201cacb16c1f8919a333df0eefb9e72b5f6856a0f82
+  - node: 01a15fdc-a1db-756d-9d40-0616e53a8e48
+    reviewed: 80ef04d773ecbe9d945caf1649d81b596fb553577066f438fdd0c834fa81e8a5
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "a_side_that_holds_nothing_for_a_conflict_over_a_records_place_is_refused_naming_the_side"
+        body: a8bb1e8123c287ceee17e611e341bf1c17f6c3b83caa25628a1292c97dd11d1b
+  - node: 01a15fdc-a1db-756d-9d40-0617c6c05672
+    reviewed: caa586d078f3e2ebc4dff684602732b778332a4a5e84baac92dc5733569cf625
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "a_position_side_that_names_a_record_its_list_lacks_is_refused_naming_that_record"
+        body: da382b647473eee4883f6632177ad8ed422ca2f95f391f7a8ab07af37b8c41e6
+  - node: 01a15fdc-a1db-756d-9d40-06180068b08a
+    reviewed: d7d6c9113ffb1ec33977ae14b3f5d396b568d92fc1d563b9825f9ad850ff7668
+    tests:
+      - file: "crates/loftspec/tests/settle_structure.rs"
+        name: "a_settlement_whose_document_would_not_read_is_refused_with_the_read_errors"
+        body: a586c2b826c6b0210757dd8840e6699b73e22a571156820af8d4bd89c92233ac
+  - node: 01a15fdc-a1db-756d-9d40-061ad02d8c2b
+    reviewed: 14257c4484ac3f9ab52d85ae9cb399eb7f6ecc040321da72adefe1734c765619
+    tests:
+      - file: "crates/loftspec/tests/conflict_owners.rs"
+        name: "the_owner_of_a_keyed_records_conflicts_is_what_its_kind_and_key_name"
+        body: 044f338da6633365981fc367929b309bc028e1ba04231d31626ce4f9c472cc40
+  - node: 01a15fdc-a1db-756d-9d40-061bb5540be9
+    reviewed: 4f62fc12567028724bb336a21f3f9f8a05bdede06f8015c8b5b9e5a75304489b
+    tests:
+      - file: "crates/loftspec/tests/conflict_owners.rs"
+        name: "the_owner_of_the_manifests_and_the_bindings_conflicts_is_that_record"
+        body: 2b7b0aee4e82cd2ed9159d3f74a233055068bb7732eae7bfe8d3a055a088323a
+  - node: 01a15fdc-a1db-756d-9d40-061cc55a8363
+    reviewed: 7997d50062457a4ca771e623bb1d64120058f458ae1ddb9282f52c3e32df0cf8
+    tests:
+      - file: "crates/loftspec/tests/conflict_owners.rs"
+        name: "a_record_that_holds_no_conflicts_has_no_owner"
+        body: f9765607ba920a88c2f6a921b94ac3678de39ec823a7d89e07343eb79a4da802
+  - node: 01a15fdc-a1db-756d-9d40-061df8f028d5
+    reviewed: d456da92e0c0f8dbd0a639aae6c5e0404bd2edfe1d4e6ef8346386e2bfafe57c
+    tests:
+      - file: "crates/loftspec/tests/conflict_owners.rs"
+        name: "the_owner_of_a_nodes_a_decisions_or_an_entrys_conflicts_names_its_own_record_view"
+        body: 1c00723c0efaa9cce3d7d98991770de92ba1bd41a0753464a92b356efcd73ed8
+  - node: 01a15fdc-a1db-756d-9d40-061eaba1d0c1
+    reviewed: 3087dbfcc55c1fa62826aa9c90e67d7b8c1a7f23d04788571074b2407058284a
+    tests:
+      - file: "crates/loftspec/tests/conflict_owners.rs"
+        name: "the_owner_of_a_decision_parts_the_manifests_and_the_bindings_conflicts_names_no_view"
+        body: d9608ed3dd9adb81cf00b096926567fed3d41cdb66ba65d9327a2baaf07ed432
   - node: 01a1383a-4a94-72cc-9c61-1109df5d0b90
     reviewed: 52403572a91d90a1d05a8f0d5523518fb5435207313302352ab781712cbae6e3
     tests:

@@ -20,6 +20,7 @@ mod resolve_conflicts;
 mod resolve_decisions;
 mod resolve_nodes;
 pub mod schema;
+mod settle_field;
 mod strict;
 mod unresolve;
 mod unresolve_one;
@@ -41,6 +42,8 @@ pub use own_record::{OwnRecord, RecordKind, own_record, own_record_digest, own_r
 pub use record::{ConflictRec, Mode, Rec, Val};
 pub(crate) use records::records;
 pub use resolve::resolve;
+pub use resolve_conflicts::conflict_owner;
+pub(crate) use settle_field::{FieldRefusal, settle_field};
 pub use unresolve::unresolve;
 
 pub(crate) use canon::canonicalize;

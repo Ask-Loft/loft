@@ -99,3 +99,35 @@ fn each_entry_point_on_a_document_held_in_memory_is_public() {
     let tree = of_document(&document, None).unwrap();
     assert_eq!(tree.sites(), &sites);
 }
+
+type Settle = fn(
+    &Document,
+    loftspec::conflict::ConflictId,
+    &loftspec::conflict::Settlement,
+) -> Result<Document, loftspec::conflict::SettleError>;
+type Owner = fn(&loftspec::codec::Rec) -> Option<loftspec::conflict::ConflictOwner>;
+
+#[test]
+fn settling_a_conflict_and_the_owner_of_a_records_conflicts_are_public() {
+    let settle: Settle = loftspec::conflict::settle;
+    let owner: Owner = loftspec::codec::conflict_owner;
+    let document = crate::common::small_document();
+    let unknown = loftspec::conflict::Conflict {
+        owner: loftspec::conflict::ConflictOwner::Manifest,
+        field: loftspec::conflict::FieldPath::new("publishBranch"),
+        base: None,
+        ours: None,
+        theirs: None,
+    }
+    .id();
+    let refused = settle(&document, unknown, &loftspec::conflict::Settlement::Ours);
+    assert_eq!(
+        refused,
+        Err(loftspec::conflict::SettleError::Unknown(unknown))
+    );
+    let manifest = loftspec::codec::Rec::new(loftspec::codec::schema::Kind::Manifest);
+    assert_eq!(
+        owner(&manifest),
+        Some(loftspec::conflict::ConflictOwner::Manifest)
+    );
+}

@@ -73,7 +73,7 @@ fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
     for child in record.children() {
         collect_from(child, conflicts);
     }
-    if let Some(owner) = owner(record) {
+    if let Some(owner) = conflict_owner(record) {
         for conflict in &record.conflicts {
             let [base, ours, theirs] = conflict.sides().map(|(_, side)| side.map(value));
             conflicts.push(Conflict {
@@ -87,8 +87,11 @@ fn collect_from(record: &Rec, conflicts: &mut Vec<Conflict>) {
     }
 }
 
-/// The owner a record that may hold conflicts is, by its kind and its key.
-fn owner(record: &Rec) -> Option<ConflictOwner> {
+/// The owner of the conflicts a record holds, by its kind and its key: the node, the decision,
+/// the part of a decision or the registry entry it is, the manifest or the bindings; none for a
+/// record of a kind that holds no conflicts, or a keyed record without a key.
+#[must_use]
+pub fn conflict_owner(record: &Rec) -> Option<ConflictOwner> {
     let key = || Key::parse(record.text(field::KEY)?).ok();
     Some(match (record.kind, record.kind.node_kind()) {
         (Kind::Manifest, _) => ConflictOwner::Manifest,
@@ -138,7 +141,7 @@ pub(super) fn attach(tree: &mut Tree, conflicts: &[Conflict]) {
 }
 
 fn attach_to(record: &mut Rec, by_owner: &BTreeMap<ConflictOwner, Vec<&Conflict>>) {
-    if let Some(list) = owner(record).and_then(|owner| by_owner.get(&owner)) {
+    if let Some(list) = conflict_owner(record).and_then(|owner| by_owner.get(&owner)) {
         let kind = record.kind;
         record.conflicts = list.iter().map(|conflict| rec(conflict, kind)).collect();
     }
