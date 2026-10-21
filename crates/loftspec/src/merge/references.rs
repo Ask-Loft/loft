@@ -7,7 +7,7 @@
 //! place can take, which leaves the result unreadable. The merge driver,
 //! which sees one file, keeps no record for a reference.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use super::conflict::Side;
 use super::exist::{Fate, keep};
@@ -18,40 +18,63 @@ use crate::codec::{ConflictRec, Rec, SideShape, Val, side_shape, variant_holds};
 use crate::identity::Key;
 
 /// Keeps every record a side deleted that a record the merge keeps references, and gives ours'
-/// value to every field whose base value names a record both sides deleted, until neither
-/// changes anything.
+/// value to every field whose base value names a record both sides deleted. The records both
+/// deleted stay deleted, so each kept record is looked at once: those the merge keeps first, and
+/// then, pass by pass, those a pass kept, until a pass keeps none.
 pub(super) fn keep_referenced(
     top: Option<&mut Rec>,
     records: &mut BTreeMap<Key, Rec>,
     fates: &mut BTreeMap<Key, Fate>,
     places: &BTreeMap<Key, Placed>,
 ) {
-    let mut top = top;
-    loop {
-        let gone = |key: &Key| matches!(fates.get(key), Some(Fate::Gone));
-        let mut changed = top.as_deref_mut().is_some_and(|top| take_ours(top, &gone));
-        for (key, record) in records.iter_mut() {
-            changed |= fates[key].kept() && take_ours(record, &gone);
+    let gone: BTreeSet<Key> = fates
+        .iter()
+        .filter(|(_, fate)| matches!(fate, Fate::Gone))
+        .map(|(key, _)| *key)
+        .collect();
+    let gone = |key: &Key| gone.contains(key);
+    let tentative = |fates: &BTreeMap<Key, Fate>| {
+        fates
+            .values()
+            .any(|fate| matches!(fate, Fate::Tentative(_)))
+    };
+    let mut referenced = Vec::new();
+    if let Some(top) = top {
+        take_ours(top, &gone);
+        referenced.extend(references(top));
+    }
+    let mut work: Vec<Key> = kept(fates).collect();
+    while !work.is_empty() {
+        let scan = tentative(fates);
+        for key in &work {
+            let record = records.get_mut(key).expect("a fate is a record's");
+            take_ours(record, &gone);
+            if scan {
+                referenced.extend(references(record));
+            }
         }
-        let kept = records
-            .iter()
-            .filter(|(key, _)| fates[*key].kept())
-            .map(|(_, record)| record);
-        let referenced: Vec<(Key, Side)> = top
-            .as_deref()
-            .into_iter()
-            .chain(kept)
-            .flat_map(references)
+        let deleted: Vec<(Key, Side)> = referenced
+            .drain(..)
             .filter_map(|key| match fates.get(&key) {
                 Some(Fate::Tentative(side)) if placed(key, fates, places) => Some((key, *side)),
                 _ => None,
             })
             .collect();
-        if referenced.is_empty() && !changed {
+        if deleted.is_empty() {
             return;
         }
-        keep(fates, places, referenced);
+        let before: BTreeSet<Key> = kept(fates).collect();
+        keep(fates, places, deleted);
+        work = kept(fates).filter(|key| !before.contains(key)).collect();
     }
+}
+
+/// The keys of the records `fates` keeps.
+fn kept(fates: &BTreeMap<Key, Fate>) -> impl Iterator<Item = Key> + '_ {
+    fates
+        .iter()
+        .filter(|(_, fate)| fate.kept())
+        .map(|(key, _)| *key)
 }
 
 /// Whether the record `key` has a place, and so has each record above it that a side deleted:
@@ -116,11 +139,10 @@ const fn resolved(item: Item) -> bool {
 
 /// Gives ours' value to each field of `record` whose conflict kept a base value naming a record
 /// that `gone` says both sides deleted, and to every field the sides changed apart in the
-/// unkeyed record that holds it where that record then forms none of its variants; whether the
-/// record changed. A side's own value names no record that side deleted, so ours' names none
-/// that both did, unless ours does not read.
-fn take_ours(record: &mut Rec, gone: &impl Fn(&Key) -> bool) -> bool {
-    let before = record.clone();
+/// unkeyed record that holds it where that record then forms none of its variants. A side's own
+/// value names no record that side deleted, so ours' names none that both did, unless ours does
+/// not read.
+fn take_ours(record: &mut Rec, gone: &impl Fn(&Key) -> bool) {
     let dangling: Vec<ConflictRec> = record
         .conflicts
         .iter()
@@ -143,7 +165,6 @@ fn take_ours(record: &mut Rec, gone: &impl Fn(&Key) -> bool) -> bool {
             record.set_at_path(&sibling.field, sibling.ours);
         }
     }
-    *record != before
 }
 
 /// Whether the value `record` holds at the field `conflict` names references a record `gone`

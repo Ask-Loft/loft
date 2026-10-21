@@ -6,11 +6,10 @@ use std::collections::BTreeMap;
 
 use serde_json::Value;
 
-use super::canon::canonicalize;
+use super::canonical_tree;
 use super::record::Rec;
 use super::records::own_view;
 use super::schema::Kind;
-use super::unresolve::unresolve;
 use super::unresolve_one::written_record;
 use crate::canonical::{Digest, Domain, digest};
 use crate::document::Document;
@@ -66,8 +65,7 @@ pub struct OwnRecord {
 /// records of one kind share a key, the first the writer writes is kept.
 #[must_use]
 pub fn own_records(document: &Document) -> BTreeMap<(RecordKind, Key), OwnRecord> {
-    let mut tree = unresolve(document);
-    canonicalize(&mut tree);
+    let tree = canonical_tree(document);
     let mut records = BTreeMap::new();
     for (_, content) in tree.files.values() {
         for record in content.records() {

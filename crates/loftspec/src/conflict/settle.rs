@@ -91,9 +91,8 @@ pub fn settle(
         (_, Some((_, value))) => value.as_ref(),
         (_, None) => None,
     };
-    let written = codec::settle_field(&settled, conflict.owner, path, value)
-        .map_err(|refusal| refused(conflict, refusal))?;
-    read_back(&written)
+    codec::settle_field(&settled, conflict.owner, path, value)
+        .map_err(|refusal| refused(conflict, refusal))
 }
 
 fn refused(conflict: &Conflict, refusal: FieldRefusal) -> SettleError {

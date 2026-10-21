@@ -77,17 +77,21 @@ pub fn read_sited(files: &Files) -> Result<(Document, Sites), Vec<ReadError>> {
 /// Writes a document as the files of its `spec/` tree, in canonical layout.
 #[must_use]
 pub fn write(document: &Document) -> Files {
+    write_files(&canonical_tree(document))
+}
+
+/// The tree of a document's records in canonical layout, as the writer writes them.
+pub(crate) fn canonical_tree(document: &Document) -> Tree {
     let mut tree = unresolve(document);
     canonicalize(&mut tree);
-    write_files(&tree)
+    tree
 }
 
 /// Writes a document as [`write`] does, with the site of every key its files carry, as reading
 /// those files back gives it, without reading them.
 #[must_use]
 pub fn write_sited(document: &Document) -> (Files, Sites) {
-    let mut tree = unresolve(document);
-    canonicalize(&mut tree);
+    let tree = canonical_tree(document);
     let (files, keys) = files::write_files_keyed(&tree);
     (files, Sites::written(keys))
 }

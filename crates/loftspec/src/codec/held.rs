@@ -5,14 +5,12 @@
 //! is read on its own, since the reader checks a conflict's field and sides. Otherwise the files
 //! are read, so that every error is the reader's own, at its site.
 
-use super::canon::canonicalize;
 use super::error::ReadError;
 use super::files::{Files, Tree, keyed_records, read_file, write_files_keyed};
 use super::layout::{Sites, check_tree};
-use super::read_sited;
 use super::record::{Mode, Rec};
 use super::resolve::resolve;
-use super::unresolve::unresolve;
+use super::{canonical_tree, read_sited};
 use crate::document::Document;
 
 /// The document and the sites reading a tree gives, or every read error it holds.
@@ -20,8 +18,7 @@ pub(crate) type Read = Result<(Document, Sites), Vec<ReadError>>;
 
 /// The files the writer writes for `document`, and what reading them back gives.
 pub(crate) fn write_and_read(document: &Document) -> (Files, Read) {
-    let mut tree = unresolve(document);
-    canonicalize(&mut tree);
+    let mut tree = canonical_tree(document);
     let (files, keys) = write_files_keyed(&tree);
     let sites = Sites::written(keys);
     let held = (strictly_held(document, &tree) && read_conflicted(&mut tree, &files))
@@ -56,7 +53,7 @@ fn strictly_held(document: &Document, tree: &Tree) -> bool {
         .is_none_or(|source| source.publish_sequence > 0);
     let mut ext = true;
     document.walk(&mut |node| {
-        ext &= crate::ext::from_json(&crate::ext::to_json(node.ext())).is_ok();
+        ext = ext && crate::ext::held(node.ext());
     });
     keyed && branch && sequence && ext
 }

@@ -30,7 +30,8 @@ pub(crate) enum FieldRefusal {
 }
 
 /// The document with the field at `path` of the record that `owner` names set to `value`, or
-/// left out for none, as the strict reader reads it.
+/// left out for none, as the strict reader reads it: the records read as they were written, or,
+/// where a slug moved the files it names, the document written again and read.
 pub(crate) fn settle_field(
     document: &Document,
     owner: ConflictOwner,
@@ -61,16 +62,24 @@ pub(crate) fn settle_field(
     canonicalize(&mut tree);
     let parsed =
         parse_files(&write_files(&tree), Mode::Strict).map_err(FieldRefusal::Unreadable)?;
-    if let Err(errors) = check_tree(&parsed) {
-        let errors: Vec<ReadError> = errors
-            .into_iter()
-            .filter(|error| !placement(&error.problem))
-            .collect();
-        if !errors.is_empty() {
-            return Err(FieldRefusal::Unreadable(errors));
+    let misplaced = match check_tree(&parsed) {
+        Ok(()) => false,
+        Err(errors) => {
+            let errors: Vec<ReadError> = errors
+                .into_iter()
+                .filter(|error| !placement(&error.problem))
+                .collect();
+            if !errors.is_empty() {
+                return Err(FieldRefusal::Unreadable(errors));
+            }
+            true
         }
+    };
+    let settled = resolve(&parsed).map_err(FieldRefusal::Unreadable)?;
+    if !misplaced {
+        return Ok(settled);
     }
-    resolve(&parsed).map_err(FieldRefusal::Unreadable)
+    super::read(&super::write(&settled)).map_err(FieldRefusal::Unreadable)
 }
 
 /// The bindings of the labels record with those `given` added, each in place of a binding of the

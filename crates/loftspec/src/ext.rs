@@ -176,6 +176,26 @@ fn entries_from(
         .collect()
 }
 
+/// Whether the text form holds `ext`, as [`from_json`] reads its JSON back: every integer within
+/// ±[`MAX_INTEGER`], every list and mapping holding an entry, and every mapping key a field name.
+pub(crate) fn held(ext: &Ext) -> bool {
+    ext.values().all(value_held)
+}
+
+fn value_held(value: &ExtValue) -> bool {
+    match value {
+        ExtValue::Text(_) | ExtValue::Boolean(_) => true,
+        ExtValue::Integer(integer) => (-MAX_INTEGER..=MAX_INTEGER).contains(integer),
+        ExtValue::List(items) => !items.is_empty() && items.iter().all(value_held),
+        ExtValue::Map(entries) => {
+            !entries.is_empty()
+                && entries
+                    .iter()
+                    .all(|(key, value)| is_field_name(key) && value_held(value))
+        }
+    }
+}
+
 /// Whether a mapping key is one the text form writes as a field name: an ASCII letter followed
 /// by ASCII letters and digits.
 fn is_field_name(key: &str) -> bool {
