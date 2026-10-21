@@ -9,6 +9,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   pinned tree-sitter Java grammar: a method or a class, at any depth of classes, interfaces,
   enums and records, with the annotations and modifiers written before it. Its digest is recorded
   as for any other located test, so a Java test rewritten after its link was accepted is reported.
+  A Java test that was found only as a word before now reports `TR-010` where a part of its file
+  that the grammar does not parse may cut it short.
 
 ## 2.2.0 (2026-10-18)
 
