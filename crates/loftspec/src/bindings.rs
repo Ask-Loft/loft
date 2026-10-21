@@ -1,6 +1,7 @@
 //! The bindings between elements, labels and aliases (F-2), held in `spec/labels.yaml`.
 
 mod counters;
+mod validate;
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -143,9 +144,42 @@ impl Bindings {
         self.bind_as_written(element, label)
     }
 
-    /// Records a binding as `spec/labels.yaml` holds it. A label whose prefix is no longer its
-    /// element's kind prefix is kept, for the next publish to replace (RQ-63); an element whose
-    /// kind takes no prefix, or an element bound twice, is refused.
+    /// Records a binding whole, as `spec/labels.yaml` holds it: its label, kept where its prefix
+    /// is no longer its element's kind prefix, for the next publish to replace (RQ-63); its
+    /// aliases and withdrawn labels in order; its departure; and what a publish recorded in it.
+    /// Recording each binding a labels file holds gives the bindings reading the file gives.
+    ///
+    /// # Errors
+    ///
+    /// The binding's element is bound already, or its kind takes no label; the bindings are
+    /// unchanged.
+    pub fn record(&mut self, binding: Binding) -> Result<(), BindingError> {
+        let Binding {
+            element,
+            label,
+            departed,
+            aliases,
+            withdrawn,
+            published_state,
+            published_history,
+        } = binding;
+        self.bind_as_written(element, label)?;
+        let recorded = self.entry_mut(element)?;
+        recorded.aliases = aliases;
+        recorded.withdrawn = withdrawn;
+        recorded.published_state = published_state;
+        recorded.published_history = published_history;
+        if departed {
+            self.depart(element)
+        } else {
+            self.reindex(element.key(), index);
+            Ok(())
+        }
+    }
+
+    /// Records a binding's element and label as `spec/labels.yaml` holds them. A label whose
+    /// prefix is no longer its element's kind prefix is kept, for the next publish to replace
+    /// (RQ-63); an element whose kind takes no prefix, or an element bound twice, is refused.
     pub(crate) fn bind_as_written(
         &mut self,
         element: impl Into<ElementId>,
@@ -394,78 +428,5 @@ impl Bindings {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
-    }
-
-    /// The label and alias rules the validator applies (RQ-70, RQ-10, RQ-66), each error once,
-    /// in key order.
-    #[must_use]
-    pub fn validate(&self) -> Vec<BindingError> {
-        let mut live: BTreeMap<Label, ElementId> = BTreeMap::new();
-        let mut errors = Vec::new();
-        for binding in self.live() {
-            let first = *live.entry(binding.label).or_insert(binding.element);
-            if first != binding.element {
-                errors.push(BindingError::LabelUnderTwoKeys {
-                    label: binding.label,
-                    first,
-                    second: binding.element,
-                });
-            }
-        }
-        let mut first_owner: BTreeMap<Label, ElementId> = BTreeMap::new();
-        for (element, alias) in self.aliases() {
-            if let Some(owner) = live.get(&alias).filter(|owner| **owner != element) {
-                errors.push(BindingError::AliasIsLiveLabel {
-                    alias,
-                    alias_element: element,
-                    label_element: *owner,
-                });
-            }
-            let first = *first_owner.entry(alias).or_insert(element);
-            if first != element {
-                errors.push(BindingError::AliasUnderTwoKeys {
-                    alias,
-                    first,
-                    second: element,
-                });
-            }
-        }
-        errors.extend(self.live().flat_map(|binding| {
-            binding
-                .withdrawn
-                .iter()
-                .filter(|label| binding.labels().any(|held| held == **label))
-                .map(|label| BindingError::WithdrawnIsOwnLabel {
-                    element: binding.element,
-                    label: *label,
-                })
-        }));
-        errors.extend(self.departed_labels_held());
-        errors
-    }
-
-    /// Each departed label that another key holds, live or as an alias, as an alias is checked.
-    fn departed_labels_held(&self) -> impl Iterator<Item = BindingError> + '_ {
-        self.departed().flat_map(move |binding| {
-            let label = binding.label;
-            let live = self.live_keys.get(&label).into_iter().flatten();
-            let aliased = self.alias_keys.get(&label).into_iter().flatten();
-            live.chain(aliased)
-                .filter(move |key| **key != binding.element.key())
-                .map(move |key| BindingError::DepartedLabelHeld {
-                    label,
-                    departed: binding.element,
-                    holder: self.entries[key].element,
-                })
-        })
-    }
-
-    fn aliases(&self) -> impl Iterator<Item = (ElementId, Label)> {
-        self.iter().flat_map(|binding| {
-            binding
-                .aliases
-                .iter()
-                .map(move |alias| (binding.element, *alias))
-        })
     }
 }

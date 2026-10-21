@@ -5,6 +5,12 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loftspec::bindings::Bindings::record` records a binding whole, as `spec/labels.yaml` holds
+  it: its label, kept where its prefix is no longer its element's kind prefix, as a promoted
+  record keeps its label; its aliases and withdrawn labels in order; its departure; and the state
+  and history a publish recorded in it. Recording each binding a labels file holds gives the
+  bindings reading the file gives, which the reader now builds the same way. A binding of an
+  element bound already, or of a kind that takes no label, is refused and changes nothing.
 - `loftspec::ext::from_json` reads extension data back from the JSON `ext::to_json` writes it
   as, its exact inverse: it refuses, as a `FromJsonError` naming the JSON Pointer of the value
   and its `JsonProblem`, JSON that is not an object of namespaces, `null`, a number with a

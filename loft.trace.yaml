@@ -16803,6 +16803,63 @@ links:
       - file: "crates/loftspec/tests/value_types.rs"
         name: "a_digest_made_from_32_bytes_is_written_as_their_hexadecimal_digits"
         body: 150bec27c2072f9dda2da44eef5cf278329fbcea4d3d896e911121318fbe554f
+  - node: 01a15fc7-f854-7339-bd59-8a2449c4aee6
+    reviewed: 7589501088218e5ff4f725b64cb655be8ed9447abd1a255af7455bd633762699
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "recording_each_binding_a_labels_file_holds_gives_the_bindings_reading_it_gives"
+        body: 50ab18442d9a24453cb2aac0a2c59f89f2200ec897bb8a67f0dac52d0dfd4669
+  - node: 01a15fc7-f854-7339-bd59-8a254b475079
+    reviewed: fae6b81653dabf4fe1bd2096bfed6d71861c149baf158ccfc584c99d34c33b35
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_keeps_a_label_whose_prefix_is_not_its_kinds"
+        body: 76523553f2c04fc0f2fe07c2f28799bf7b821bc89da0dcf5b575e6e88a503df6
+  - node: 01a15fc7-f854-7339-bd59-8a26b3ebe7a3
+    reviewed: 8900df534e24421dd92442b0077c99f740c0eb7fb5e7c4ed18fe0eaca10e1f73
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_keeps_its_aliases_and_withdrawn_labels_in_order"
+        body: 1ac713955c5c2342714da6adf36c12bb756545ecacc4043576fbf9b48d10dd4c
+  - node: 01a15fc7-f854-7339-bd59-8a275dbb9b9a
+    reviewed: 55f8b6bbccd2c684457fe51d24dc1ab1c2fb840dd0d35684b2e8cb62d106f557
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_keeps_whether_it_is_departed"
+        body: 850b854f7031f25ffda4064c0af5ae60afd688c0b25fc1f0a56768e76fb3429a
+  - node: 01a15fc7-f854-7339-bd59-8a2858b6fd6b
+    reviewed: b81aa28aac61b1259a0f9f37dee3c2cf51d62f68ce33c3aa09a2ac97b29b7b3b
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_keeps_what_a_publish_recorded_in_it"
+        body: 960025d164592cd3e573989ee6aac0270ddb536624d5518c18ac3bc5c3e1ee59
+  - node: 01a15fc7-f854-7339-bd59-8a295a9d6e25
+    reviewed: d2e2dab5502c2c459e9bcae80659bcae66d1acfc2ca55922c12273b501c54f95
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "recording_each_binding_a_labels_file_holds_gives_the_bindings_reading_it_gives"
+        body: 50ab18442d9a24453cb2aac0a2c59f89f2200ec897bb8a67f0dac52d0dfd4669
+  - node: 01a15fc7-f854-7339-bd59-8a2b9c215187
+    reviewed: 27ee4cea9ce9a05a86cfa52ef2037fd46960c48f20ca5a26217203ba1a672c8a
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_of_an_element_bound_already_is_refused_and_changes_nothing"
+        body: 0c82e563ec441be5fbd1f2ac4abf5f16f4302943085d375f954a336bdefc83f0
+  - node: 01a15fc7-f854-7339-bd59-8a2c1d8ca7b1
+    reviewed: 512f17a00422435a19756d16ee039f9e2689640c4329d48b73c090bec5fa0aac
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_of_a_kind_that_takes_no_label_is_refused_and_changes_nothing"
+        body: b581a14e3dcd5eaff639ea42dde2456ad1223e6e7aefddd6754c62229b653a54
+  - node: 01a15fc7-f854-7339-bd59-8a2de71eb465
+    reviewed: ba31c48b79e9f8c261f5384ad1f314a64a390348e160c3153466f28bec679224
+    tests:
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_of_an_element_bound_already_is_refused_and_changes_nothing"
+        body: 0c82e563ec441be5fbd1f2ac4abf5f16f4302943085d375f954a336bdefc83f0
+      - file: "crates/loftspec/tests/bindings_recorded.rs"
+        name: "a_recorded_binding_of_a_kind_that_takes_no_label_is_refused_and_changes_nothing"
+        body: b581a14e3dcd5eaff639ea42dde2456ad1223e6e7aefddd6754c62229b653a54
   - node: 01a12ff0-f5e5-7095-8fa8-24edcc9b44db
     reviewed: c9ede49992a2253856d8f616d48fe2158f53e2cde7efc752806243cecfbc79e6
     tests:

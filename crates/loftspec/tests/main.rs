@@ -7,6 +7,7 @@ mod common;
 mod oracle;
 
 mod bindings;
+mod bindings_recorded;
 mod boundary;
 mod check_baseline;
 mod codec_bodies;
