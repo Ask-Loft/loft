@@ -31,6 +31,10 @@ fn own_spec() -> Files {
     fn walk(root: &Path, dir: &Path, files: &mut Files) {
         for entry in fs::read_dir(dir).unwrap() {
             let path = entry.unwrap().path();
+            let hidden = path.file_name().unwrap().to_str().unwrap().starts_with('.');
+            if hidden {
+                continue;
+            }
             if path.is_dir() {
                 walk(root, &path, files);
             } else {
