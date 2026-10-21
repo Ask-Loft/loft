@@ -19,8 +19,6 @@ requirements:
         name: "A record deleted on one side and unchanged on the other is deleted, unless a record of the merged file references it."
       - key: 01a15fb5-ece7-757a-9d44-fd118407ef72
         name: "A record deleted on one side and unchanged on the other that a record of the merged file references is kept as the other side wrote it, with a conflict record whose field is `record` and whose deleting side is `null`."
-      - key: 01a15fb5-ece7-757a-9d44-fd1257ae963e
-        name: "A field that both sides changed apart, whose base value names a record that both sides deleted, holds ours' value beside its conflict record."
       - key: 8a65c76a-0ddb-4871-a7ae-e76457d57e28
         name: "A record deleted on one side and changed on the other is kept as the changing side wrote it, with a conflict record whose field is `record` and whose deleting side is `null`."
       - key: 01a13b3a-594a-7413-a3dc-4059514edb86
