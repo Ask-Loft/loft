@@ -8,7 +8,7 @@ use super::schema::field;
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::error::{Problem, ReadError, Site, SpecPath};
-use super::files::{Files, MANIFEST, Role, Tree, keyed_records, read_file};
+use super::files::{Files, MANIFEST, Role, Tree, WrittenKey, keyed_records, read_file};
 use super::record::{Mode, Rec, Val};
 use crate::identity::Key;
 use crate::manifest::check_identifiers;
@@ -317,6 +317,16 @@ impl Sites {
                 .map(|(key, path, position, _)| (key, site(path, position)))
                 .collect(),
         )
+    }
+
+    /// The sites of the keys a writer found where it wrote them, each file's in path order and
+    /// within a file in the order written; a key found twice has the site of the last, as
+    /// [`Sites::of`] gives it.
+    pub(super) fn written<'p>(found: impl IntoIterator<Item = WrittenKey<'p>>) -> Self {
+        let keys = found.into_iter().filter_map(|(path, text, position)| {
+            Some((Key::parse(&text).ok()?, site(path, position)))
+        });
+        Self(keys.collect())
     }
 
     /// The site of `key`, if the tree carries it.

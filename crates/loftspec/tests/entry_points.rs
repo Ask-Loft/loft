@@ -75,3 +75,27 @@ fn each_entry_point_is_public_and_takes_only_what_is_held_in_memory() {
     insert(&mut edited, Parent::ROOT, 0, product).unwrap();
     assert_eq!(edited.products.len(), 1);
 }
+
+type Validated = fn(&Document, &Sites) -> Vec<loftspec::check::Placed>;
+type Linted = fn(
+    &Document,
+    &Sites,
+    Option<&[u8]>,
+) -> Result<Vec<loftspec::lint::Finding>, Vec<loftspec::codec::ReadError>>;
+type OfDocument = fn(
+    &Document,
+    Option<&'static str>,
+) -> Result<ReadTree<'static>, Vec<loftspec::codec::ReadError>>;
+
+#[test]
+fn each_entry_point_on_a_document_held_in_memory_is_public() {
+    let validated: Validated = loftspec::check::validated;
+    let linted: Linted = loftspec::check::linted;
+    let of_document: OfDocument = ReadTree::of_document;
+    let document = crate::common::small_document();
+    let sites = loftspec::codec::sites(&document);
+    assert_eq!(validated(&document, &sites), []);
+    assert!(linted(&document, &sites, None).is_ok());
+    let tree = of_document(&document, None).unwrap();
+    assert_eq!(tree.sites(), &sites);
+}

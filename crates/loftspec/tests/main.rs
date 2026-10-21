@@ -58,6 +58,7 @@ mod fmt_keys;
 mod fmt_names;
 mod golden;
 mod hash_live;
+mod held_documents;
 mod identity;
 mod index;
 mod label_allocation;

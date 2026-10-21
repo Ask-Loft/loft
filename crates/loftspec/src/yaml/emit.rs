@@ -3,6 +3,7 @@
 
 use std::fmt::Write as _;
 
+use super::error::Position;
 use super::source::is_printable;
 
 /// A value as the writer lays it out.
@@ -37,11 +38,52 @@ impl Out {
 /// The file text for `value`: nothing for an empty top-level collection.
 #[must_use]
 pub fn write(value: &Out) -> String {
+    emit(value, &mut None)
+}
+
+/// The file text for `value`, as [`write`] gives it, with the text and the position of the value
+/// of every field named `key` of a mapping of fields, in the order written: where a reader of the
+/// text finds each key.
+#[must_use]
+pub(crate) fn write_keyed(value: &Out) -> (String, Vec<(String, Position)>) {
+    let mut keys = Some(Keys::default());
+    let text = emit(value, &mut keys);
+    (text, keys.map(|keys| keys.found).unwrap_or_default())
+}
+
+/// The positions of the keys written so far, and how far the text is counted.
+#[derive(Default)]
+struct Keys {
+    found: Vec<(String, Position)>,
+    counted: usize,
+    /// The lines before the line being written.
+    lines: usize,
+    line_start: usize,
+}
+
+impl Keys {
+    /// Records `key`, whose value starts where the text now ends.
+    fn found(&mut self, text: &str, key: &str) {
+        for (offset, byte) in text.bytes().enumerate().skip(self.counted) {
+            if byte == b'\n' {
+                self.lines += 1;
+                self.line_start = offset + 1;
+            }
+        }
+        self.counted = text.len();
+        let column = text[self.line_start..].chars().count() + 1;
+        self.found
+            .push((key.to_owned(), Position::new(self.lines + 1, column)));
+    }
+}
+
+/// The text for `value`, recording the keys in `keys` where it is given.
+fn emit(value: &Out, keys: &mut Option<Keys>) -> String {
     let mut text = String::new();
     match value {
-        Out::Mapping(fields) => mapping(&mut text, fields, 0, false),
-        Out::Map(fields) => mapping(&mut text, fields, 0, false),
-        Out::Sequence(items) => sequence(&mut text, items, 0),
+        Out::Mapping(fields) => mapping(&mut text, fields, 0, false, keys),
+        Out::Map(fields) => mapping(&mut text, fields, 0, false, &mut None),
+        Out::Sequence(items) => sequence(&mut text, items, 0, keys),
         scalar => {
             line_value(&mut text, scalar, 0);
         }
@@ -53,8 +95,16 @@ fn indent(text: &mut String, width: usize) {
     text.extend(std::iter::repeat_n(' ', width));
 }
 
-/// A mapping at `width`; one that is a sequence entry starts on the dash's line.
-fn mapping<K: AsRef<str>>(text: &mut String, fields: &[(K, Out)], width: usize, after_dash: bool) {
+/// A mapping at `width`; one that is a sequence entry starts on the dash's line. The value of a
+/// field named `key` is recorded in `keys`; a mapping whose keys are data records none, and
+/// passes none on.
+fn mapping<K: AsRef<str>>(
+    text: &mut String,
+    fields: &[(K, Out)],
+    width: usize,
+    after_dash: bool,
+    keys: &mut Option<Keys>,
+) {
     for (index, (key, value)) in fields.iter().enumerate() {
         if index > 0 || !after_dash {
             indent(text, width);
@@ -63,36 +113,39 @@ fn mapping<K: AsRef<str>>(text: &mut String, fields: &[(K, Out)], width: usize, 
         text.push(':');
         if value.is_collection() {
             text.push('\n');
-            nested(text, value, width + 2);
+            nested(text, value, width + 2, keys);
         } else {
             text.push(' ');
+            if let (Some(found), "key", Out::Token(token)) = (keys.as_mut(), key.as_ref(), value) {
+                found.found(text, token);
+            }
             line_value(text, value, width);
         }
     }
 }
 
-fn sequence(text: &mut String, items: &[Out], width: usize) {
+fn sequence(text: &mut String, items: &[Out], width: usize, keys: &mut Option<Keys>) {
     for item in items {
         indent(text, width);
         text.push_str("- ");
         match item {
-            Out::Mapping(fields) => mapping(text, fields, width + 2, true),
-            Out::Map(fields) => mapping(text, fields, width + 2, true),
+            Out::Mapping(fields) => mapping(text, fields, width + 2, true, keys),
+            Out::Map(fields) => mapping(text, fields, width + 2, true, &mut None),
             Out::Sequence(_) => {
                 text.pop();
                 text.push('\n');
-                nested(text, item, width + 2);
+                nested(text, item, width + 2, keys);
             }
             scalar => line_value(text, scalar, width),
         }
     }
 }
 
-fn nested(text: &mut String, value: &Out, width: usize) {
+fn nested(text: &mut String, value: &Out, width: usize, keys: &mut Option<Keys>) {
     match value {
-        Out::Mapping(fields) => mapping(text, fields, width, false),
-        Out::Map(fields) => mapping(text, fields, width, false),
-        Out::Sequence(items) => sequence(text, items, width),
+        Out::Mapping(fields) => mapping(text, fields, width, false, keys),
+        Out::Map(fields) => mapping(text, fields, width, false, &mut None),
+        Out::Sequence(items) => sequence(text, items, width, keys),
         _ => unreachable!("only collections nest"),
     }
 }

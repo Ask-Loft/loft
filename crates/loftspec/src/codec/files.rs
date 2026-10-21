@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use super::error::{Problem, ReadError, SpecPath};
 use super::record::{Mode, Rec, check, to_out};
 use super::schema::Kind;
-use crate::yaml::{self, Out, Value};
+use crate::yaml::{self, Out, Position, Value};
 
 /// The bytes of each file under `spec/`, by path.
 pub type Files = BTreeMap<SpecPath, Vec<u8>>;
@@ -253,17 +253,52 @@ pub(crate) fn read_file(
 pub fn write_files(tree: &Tree) -> Files {
     tree.files
         .iter()
-        .map(|(path, (_, content))| {
-            let bytes = match content {
-                Content::Record(record) => yaml::write(&to_out(record)).into_bytes(),
-                Content::Registry(entries) => {
-                    yaml::write(&Out::Sequence(entries.iter().map(to_out).collect())).into_bytes()
-                }
-                Content::Lint(bytes) => bytes.clone(),
-            };
-            (path.clone(), bytes)
+        .map(|(path, (_, content))| match out(content) {
+            Some(out) => (path.clone(), yaml::write(&out).into_bytes()),
+            None => (path.clone(), lint_bytes(content)),
         })
         .collect()
+}
+
+/// A key where the writer wrote it: its file, its text and the position of its value.
+pub(super) type WrittenKey<'p> = (&'p SpecPath, String, Position);
+
+/// Each file of the tree in canonical layout, as [`write_files`] writes it, with the text and
+/// the position of every key a keyed record of each file carries, file by file in path order and
+/// within a file in the order written. `spec/labels.yaml` names keys that its bindings bind,
+/// which no record of it carries, and gives none.
+pub(super) fn write_files_keyed(tree: &Tree) -> (Files, Vec<WrittenKey<'_>>) {
+    let mut files = Files::new();
+    let mut keys = Vec::new();
+    for (path, (role, content)) in &tree.files {
+        let Some(out) = out(content) else {
+            files.insert(path.clone(), lint_bytes(content));
+            continue;
+        };
+        let (text, found) = yaml::write_keyed(&out);
+        if *role != Role::Labels {
+            keys.extend(found.into_iter().map(|(key, at)| (path, key, at)));
+        }
+        files.insert(path.clone(), text.into_bytes());
+    }
+    (files, keys)
+}
+
+/// A record file's or a registry's content as the writer lays it out; none for the lint
+/// configuration, which is written as it was read.
+fn out(content: &Content) -> Option<Out> {
+    match content {
+        Content::Record(record) => Some(to_out(record)),
+        Content::Registry(entries) => Some(Out::Sequence(entries.iter().map(to_out).collect())),
+        Content::Lint(_) => None,
+    }
+}
+
+fn lint_bytes(content: &Content) -> Vec<u8> {
+    match content {
+        Content::Lint(bytes) => bytes.clone(),
+        _ => unreachable!("only the lint configuration is written as read"),
+    }
 }
 
 /// Every keyed record of the record trees `roots`, with its key when it has one, depth first.

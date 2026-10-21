@@ -9,6 +9,7 @@ mod parse;
 mod scalar;
 mod source;
 
+pub(crate) use emit::write_keyed;
 pub use emit::{Out, write};
 pub use error::{Error, ErrorKind, Location, Position};
 pub(crate) use source::utf8;

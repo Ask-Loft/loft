@@ -8,6 +8,7 @@ mod error;
 mod ext;
 pub mod field;
 mod files;
+mod held;
 mod layout;
 mod node_files;
 mod own_record;
@@ -32,6 +33,7 @@ pub(crate) use files::keyed_records;
 pub use files::{
     CATEGORIES, Content, Files, LABELS, LINT, MANIFEST, Role, TAGS, TERMS, Tree, lint_configuration,
 };
+pub(crate) use held::write_and_read;
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
 pub(crate) use node_files::{Under, filed_in_order, listed, node_files};
@@ -75,6 +77,23 @@ pub fn write(document: &Document) -> Files {
     let mut tree = unresolve(document);
     canonicalize(&mut tree);
     write_files(&tree)
+}
+
+/// Writes a document as [`write`] does, with the site of every key its files carry, as reading
+/// those files back gives it, without reading them.
+#[must_use]
+pub fn write_sited(document: &Document) -> (Files, Sites) {
+    let mut tree = unresolve(document);
+    canonicalize(&mut tree);
+    let (files, keys) = files::write_files_keyed(&tree);
+    (files, Sites::written(keys))
+}
+
+/// The site of every key the files the writer writes for a document carry, as reading those
+/// files back gives it, without reading them.
+#[must_use]
+pub fn sites(document: &Document) -> Sites {
+    write_sited(document).1
 }
 
 /// One file's content in canonical layout, exactly as [`write`] writes that file.

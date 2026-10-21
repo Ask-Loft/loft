@@ -16890,6 +16890,135 @@ links:
       - file: "crates/loftspec/tests/bindings_recorded.rs"
         name: "a_recorded_binding_of_a_kind_that_takes_no_label_is_refused_and_changes_nothing"
         body: b581a14e3dcd5eaff639ea42dde2456ad1223e6e7aefddd6754c62229b653a54
+  - node: 01a15fd0-f426-701e-8f43-009b96819ee5
+    reviewed: e92288ccc61fee99f588a76eb1cb47aea44d38e8b089892c22ab2cc5af4052e0
+    tests:
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_on_a_document_held_in_memory_is_public"
+        body: 6b4ef064ffa62ced59f63f8997bf07ffc9b74770d5a0e67ed89772f6b4a1f451
+  - node: 01a15fd0-f426-701e-8f43-009cdc75005b
+    reviewed: 222363a0e8e3bddde027569866ecd6420a2054827f7febe1cc59306643a8972d
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_generated_document_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 228ecd040f42b29f97bb9d4cc11133010e35a29e49ff84dc6d20370d28f356ba
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "this_repositorys_own_spec_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 2523d9976554632318fe7e406f87ebefb756a68a9bd045307aa4b0338fe00087
+  - node: 01a15fd0-f426-701e-8f43-009de24c782a
+    reviewed: 616b85132b89412cde932448e76118b2248734fd6d1be3abe3283e3daedf5ea7
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "each_validation_error_of_a_held_document_names_the_sites_its_caller_gives"
+        body: 548d53ad00423112e41b521d9f14c49eb86d5c13d1524458dca6bdb460795407
+  - node: 01a15fd0-f426-701e-8f43-009e2a297fc4
+    reviewed: 055fb3dca51d6099536fa0cea5784bc4cc32c68b437b43c85b96b2d6eaae86e2
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "validating_a_held_document_gives_no_lint_finding"
+        body: 70bfea2b8f438989f81f005b84ffe6c64e80959acc9c017fe7fdd0fcd4aa3522
+  - node: 01a15fd0-f427-715f-bf7b-9fba294e635c
+    reviewed: f486a0635e161f16eda8121fd900e7d6259bab4a4da390d89623628180002de4
+    tests:
+      - file: "crates/loftspec/tests/entry_points.rs"
+        name: "each_entry_point_on_a_document_held_in_memory_is_public"
+        body: 6b4ef064ffa62ced59f63f8997bf07ffc9b74770d5a0e67ed89772f6b4a1f451
+  - node: 01a15fd0-f427-715f-bf7b-9fbb12131fbb
+    reviewed: dc99dce7efa9c5774dbb0b36297ee7278706bc1d792a0751205f618ba9307bb6
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_generated_document_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 228ecd040f42b29f97bb9d4cc11133010e35a29e49ff84dc6d20370d28f356ba
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "this_repositorys_own_spec_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 2523d9976554632318fe7e406f87ebefb756a68a9bd045307aa4b0338fe00087
+  - node: 01a15fd0-f427-715f-bf7b-9fbc2db223f6
+    reviewed: c6b2f6cfd0999ea161ea989c8d1048f64747cf49d0a33bc095cf8bb09418830e
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_lint_configuration_in_error_gives_its_errors_and_no_finding"
+        body: 01b5266fce30da07b4ca8032fe83bb13843db6218a93cbbeb84104153fb54aef
+  - node: 01a15fd0-f427-715f-bf7b-9fbd9366479e
+    reviewed: 8077093e305aa9f700bbb84ae3808d717fde2e6fdf09e811b80d07a17a48220a
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_held_document_the_validator_refuses_is_linted_all_the_same"
+        body: 9f1dcafe326f75ff156a8f2d6857023682b00dc2219e4438082921e34734f011
+  - node: 01a15fd0-f427-715f-bf7b-9fbf70f28cb6
+    reviewed: 6d5095067346f73bb74a737866f76c6e9f39593a816ada63c42f1e37578f61ac
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_generated_document_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 228ecd040f42b29f97bb9d4cc11133010e35a29e49ff84dc6d20370d28f356ba
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "this_repositorys_own_spec_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 2523d9976554632318fe7e406f87ebefb756a68a9bd045307aa4b0338fe00087
+  - node: 01a15fd0-f427-715f-bf7b-9fc04afbc422
+    reviewed: 2cdf3297d9847815e0b2c8192c036bffa517e02b38ff2b637269ea73d9013926
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "each_held_site_names_the_file_and_the_line_and_column_of_the_keys_value"
+        body: 9bb5345e61262ec3c86682a765908caf5baa77367193f3f7ac317e7d081c0932
+  - node: 01a15fd0-f427-715f-bf7b-9fc1caf24395
+    reviewed: 770924836d9cbec1b5541ad8e5e7435a4dba0eca99936258443ded3b789277f8
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_generated_document_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 228ecd040f42b29f97bb9d4cc11133010e35a29e49ff84dc6d20370d28f356ba
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "this_repositorys_own_spec_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 2523d9976554632318fe7e406f87ebefb756a68a9bd045307aa4b0338fe00087
+  - node: 01a15fd0-f427-715f-bf7b-9fc35186d8ef
+    reviewed: ad1e0fda70d06962b3b8264bf89ca0acf897b049cb004d9e500d7fbe3dee98b1
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_a_held_document_holds_its_written_files_and_its_lint_text"
+        body: 2da2ff6076c5d2e800450ea8448899cd7a8eb3cd3dd3f32197270175dbb9f147
+  - node: 01a15fd0-f427-715f-bf7b-9fc4d4658632
+    reviewed: 7287ad90a9f17b21a55d5a606bebd1c7f85c7372677642ef3f344edff8241182
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_any_edited_document_held_is_its_written_files_read_back"
+        body: 0f8774fc8fec8a02400dd7996ca7019885062fdaf8da34eef80c4690577cd8d3
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_a_held_document_holds_it_in_the_order_the_reader_reads_it"
+        body: f641a8d3f92b04c690b84fb86dd98904712a9f84e283f0f459135693ddca1b25
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_generated_document_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 228ecd040f42b29f97bb9d4cc11133010e35a29e49ff84dc6d20370d28f356ba
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "this_repositorys_own_spec_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 2523d9976554632318fe7e406f87ebefb756a68a9bd045307aa4b0338fe00087
+  - node: 01a15fd0-f427-715f-bf7b-9fc5be88fdd6
+    reviewed: 0cf142fcaf03a074045792a8120578e25eaa9c094074f244ed84bf40550d247c
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_any_edited_document_held_is_its_written_files_read_back"
+        body: 0f8774fc8fec8a02400dd7996ca7019885062fdaf8da34eef80c4690577cd8d3
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_generated_document_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 228ecd040f42b29f97bb9d4cc11133010e35a29e49ff84dc6d20370d28f356ba
+  - node: 01a15fd0-f427-715f-bf7b-9fc630de3a05
+    reviewed: 77b1b80fff9eedfd00a39877683222dcf8acb24b3d95a9fb276901cba23ff918
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_any_edited_document_held_is_its_written_files_read_back"
+        body: 0f8774fc8fec8a02400dd7996ca7019885062fdaf8da34eef80c4690577cd8d3
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_a_held_document_holds_its_written_files_and_its_lint_text"
+        body: 2da2ff6076c5d2e800450ea8448899cd7a8eb3cd3dd3f32197270175dbb9f147
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "this_repositorys_own_spec_held_checks_places_and_publishes_as_its_files_read_back"
+        body: 2523d9976554632318fe7e406f87ebefb756a68a9bd045307aa4b0338fe00087
+  - node: 01a15fd6-c6de-7041-8c7b-2ee86141771f
+    reviewed: 633c9fa39c44ad42c9ff70600c46d4dc0788553d914bf99c17c86cb475cf3838
+    tests:
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_held_document_whose_written_files_do_not_read_is_refused_with_their_read_errors"
+        body: fb9f98f7e0e3ea3fc3f65d6647b395227bd36c017cef35e323c8a1ba860c50d5
+  - node: 01a15fd6-c6de-7041-8c7b-2ee906393715
+    reviewed: e414e29d7e15493240ea096f48e956c794f7b77c29d370267a923bea97f1e2b0
+    unverified: "A cost, read from the code: the records the writer builds are checked and resolved as they are, and only a document whose records the strict reader would refuse has its files parsed."
   - node: 01a12ff0-f5e5-7095-8fa8-24edcc9b44db
     reviewed: c9ede49992a2253856d8f616d48fe2158f53e2cde7efc752806243cecfbc79e6
     tests:

@@ -5,6 +5,18 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Functions on a document held in memory, without writing it and reading its files back.
+  `loftspec::check::validated` validates a document at the sites its caller gives, without
+  linting it, and `check::linted` lints it under the bytes of its `spec/lint.yaml`, without
+  validating it, or gives the configuration's errors; for a document as the reader reads its
+  written tree, each gives what `check` gives that tree. `codec::sites` gives the sites of the
+  keys the files the writer writes carry, and `codec::write_sited` those files with them, without
+  reading the files: the writer records where each key's value lands as it writes it.
+  `publish::ReadTree::of_document` builds a publishable tree from a document and the text of its
+  `spec/lint.yaml`: the tree `ReadTree::read` reads from the written files, its document in the
+  order the reader reads it, or the same read errors. A document whose records hold only what the
+  strict reader accepts is resolved from the records the writer builds, without parsing its
+  files.
 - `loftspec::codec::own_record` gives one record's own record view and digest by its
   `RecordKind` and key, without building any other record's: in a document that carries each key
   once, it is the entry `own_records` gives that record. A node is found by a walk that stops at
