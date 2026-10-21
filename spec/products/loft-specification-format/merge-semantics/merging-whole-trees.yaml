@@ -124,3 +124,23 @@ requirements:
         name: "The result is read without a read error whose problem has the kind `duplicate-key`."
       - key: 01a158d8-c6e0-708e-a3c7-641f747becf4
         name: "Each file of the result is in the formatter's canonical layout."
+  - key: 01a15fb5-ece6-72c7-bc01-d22c2fb877d9
+    statement:
+      form: ubiquitous
+      system: "The tree merger"
+      shall: "return a tree that the reader reads into a document."
+    criteria:
+      - key: 01a15fb5-ece7-757a-9d44-fd0b904fe57e
+        name: "The result reads into a document without a read error."
+      - key: 01a15fb5-ece7-757a-9d44-fd0cce145eac
+        name: "A record that one side deleted and that a record of the result references, in its own file or in another, is kept as the other side holds it."
+      - key: 01a15fb6-1cea-733d-9449-53595630d86e
+        name: "A record kept because the result references it holds a conflict record whose field is `record`, whose deleting side is `null`."
+      - key: 01a15fb5-ece7-757a-9d44-fd0d0a1bdc46
+        name: "A record kept because the result references it keeps each record beneath it that the other side holds."
+      - key: 01a15fb5-ece7-757a-9d44-fd0ec1ee128b
+        name: "A record that a record kept for a reference references is kept by the same rule."
+      - key: 01a15fb5-ece7-757a-9d44-fd0f688cdb8b
+        name: "A field that both sides changed apart, whose base value names a record that both sides deleted, holds ours' value beside its conflict record."
+      - key: 01a15fb5-ece7-757a-9d44-fd10c97c68aa
+        name: "Merging the same three trees twice gives the conflict record of a record kept for a reference the same identifier."
