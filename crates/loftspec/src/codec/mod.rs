@@ -10,6 +10,7 @@ pub mod field;
 mod files;
 mod layout;
 mod node_files;
+mod own_record;
 mod record;
 mod records;
 mod resolve;
@@ -31,6 +32,7 @@ pub use files::{
 pub use layout::{Sites, read_tree};
 pub(crate) use layout::{check_tree, parse_files};
 pub(crate) use node_files::{Under, filed_in_order, listed, node_files};
+pub use own_record::{OwnRecord, RecordKind, own_record_digest, own_records};
 pub use record::{ConflictRec, Mode, Rec, Val};
 pub(crate) use records::records;
 pub use resolve::resolve;

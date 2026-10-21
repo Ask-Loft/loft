@@ -55,6 +55,15 @@ impl Records {
     }
 }
 
+/// A record's own record view: its own record as JSON, without its key (Own record views).
+pub(super) fn own_view(record: &Rec) -> Value {
+    let mut view = json(record, true);
+    if let Value::Object(fields) = &mut view {
+        fields.remove(field::KEY);
+    }
+    view
+}
+
 /// A record as JSON, its fields as the writer writes them, an empty list left out; with `own`,
 /// without the fields that hold the nodes beneath it.
 fn json(record: &Rec, own: bool) -> Value {

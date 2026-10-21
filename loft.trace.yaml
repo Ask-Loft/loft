@@ -988,11 +988,11 @@ links:
         name: "a_components_children_are_grouped_by_kind"
         body: eea15c01e4884f553a06e2e91554879ee125164f081325b546c9510b434ff49c
   - node: ec8d0d1b-6c2a-4ff1-ae2c-bd1d0e1ebf68
-    reviewed: 831cf4711297961c52997eec8e9de0907a81b1149c21dfdc01cff68f7c317927
+    reviewed: 00695d5dd41aeb39ea87fac870e010ffb2cf54f122e1899384c8c5da06f2ae7c
     tests:
       - file: "crates/loftspec/tests/digest.rs"
         name: "the_domain_strings_are_closed"
-        body: c106f6dd594b27928656f608d07896ba9bb4fb06b01f78d00ccc13c066167666
+        body: 9b06e72ff9a52dad3a6c837e0e8dbf608d8ef5ec210431e3ddd5e987db774f96
   - node: f9e8c0b8-fd34-41bb-98a2-8854d25bfaea
     reviewed: 656773db7a1b8f5b77f16165dbc1500f5a74dd2733ee09aa796c87788c7bd8fc
     tests:
@@ -1713,6 +1713,216 @@ links:
       - file: "crates/loftspec/tests/codec_read.rs"
         name: "a_tree_without_a_manifest_is_refused_naming_its_path"
         body: 63c09e6d36a3ac6e8acfe9a22163a8486f4489fc642407402ca4270eed54f2bf
+  - node: 01a15f00-828a-71f7-be8f-7a7ee49aeefb
+    reviewed: be3f1dcdc8858259d78af72171fdd62a15dff9ee6cb67744d041c6f3309c186c
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "every_keyed_node_and_every_decision_has_one_own_record_view"
+        body: 955c1944bed5462bbdcca15b90140fc148063b011b24435d56fdabc0c6b344fc
+  - node: 01a15f00-828a-71f7-be8f-7a7fcb051c6a
+    reviewed: 628a82dcaa219a9629749903b93569fc69d8fc6c4ee56d151e2ea9c56efb02dc
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "every_registry_entry_has_one_own_record_view"
+        body: a377c3e70857433f39b6b1f5f0768d9d4990c3def8409da4cefb8d4acb0f3c82
+  - node: 01a15f00-828a-71f7-be8f-7a80360f8dcd
+    reviewed: b01b8dda482d9225a77e2e9708517beca0c9565767111aad688b67c4ad64faaa
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "every_binding_departed_or_not_has_one_own_record_view_beside_its_elements"
+        body: c43b2e868dc003217e8c3fc15f4a7a581ee604d9297f18415eebc18f51b48997
+  - node: 01a15f00-828a-71f7-be8f-7a812e18232b
+    reviewed: ed11bcda0a4b549812b7cabe1408e1318a819be5620f736dcde7e372d0f4a9e0
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "a_node_without_a_key_has_no_own_record_view"
+        body: 14db2d9050c30e41f5ab90d112aa76c41027ec6b488c32dbd92cbcdaa96a459b
+  - node: 01a15f00-828a-71f7-be8f-7a82defe6df2
+    reviewed: 629305d6a982ff6b00c0eca7f0d3c1a2d6724cf7a5e387acb62cd85866f05379
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "a_decisions_drivers_options_and_consequences_have_no_own_record_view"
+        body: dadbc00d744c0701114675e7fe40b01a592078e55f48293a55afdca675d71727
+  - node: 01a15f00-828a-71f7-be8f-7a94283da652
+    reviewed: a02285e7de842044e077a50cb19fdc72e2fb3e6ecf6d7b43c37faf5e9b41cf95
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "a_document_written_as_files_and_read_back_has_the_own_record_views_it_had"
+        body: dc5b70f091236ceca0ea46e60188ddbeff595f6ce93468c4bd1035d7a9b1f380
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "own_records_never_panics_and_survives_a_write_and_a_read"
+        body: 92fafad8c356b6067856e8baf919dcffde3384e009f31d4cd554f458341c1e53
+  - node: 01a15f00-828a-71f7-be8f-7a83bf99a79e
+    reviewed: 3d9b4d2c982e7b12023d508909b49269ab1508aacdb90e6511289591bf3298a7
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_is_an_object_of_the_fields_the_writer_writes_by_name"
+        body: f814000a6973954d3364f80bcb8d2e56283128a5c447928213b1fbe539d72197
+  - node: 01a15f00-828a-71f7-be8f-7a843b89decd
+    reviewed: 70262f2dbb8dc1b3fed5e909fe0893dd27e258427096f5e77a366beb38c15156
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "an_empty_list_the_writer_leaves_out_is_left_out_of_the_own_record_view"
+        body: 081c70825284233587ac7acd8aba5dde7dfee255ecf870c0c48b6133d79d2e34
+  - node: 01a15f00-828a-71f7-be8f-7a85333800e3
+    reviewed: 2d7d439968486a01136d423feefd22157de7a37fcf9849af640efb045c8607a1
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "no_own_record_view_holds_its_records_key"
+        body: 1485e59a4bbbaa1f2a3226d64be761206681358f6ad61ed95f099dbd45d68b6d
+  - node: 01a15f00-828a-71f7-be8f-7a8635326610
+    reviewed: d9e085bea79beda4c0c10ef9931d485349754bafc9175381b2fb41a46b85ec1b
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_leaves_out_the_records_of_the_nodes_the_record_holds"
+        body: b02ac206ca911801e66377f2a93e441b3ed01c9e3f8792cb1fa3959a30cd4ad7
+  - node: 01a15f00-828a-71f7-be8f-7a87bbd40671
+    reviewed: 4f19d2c75da80ec135fa324092abf02da2ec2594e6e158968417a339dc31bdce
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "a_feature_groups_own_record_view_leaves_out_its_features_keys"
+        body: fd6df817ef22fea1550f5da9e6ad047d75da980b7cb778eaf7438f71974f4c76
+  - node: 01a15f00-828a-71f7-be8f-7a88af51cff5
+    reviewed: edadf38ef3887891bb1a961807c411bdba87a59f33916e212fd8ca593e940ec9
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_leaves_out_the_conflicts_its_record_carries"
+        body: 5f5bcf5a67dffe29a20c600ce7d55ecfb51bdc74ff9542b9776785c36f427464
+  - node: 01a15f00-828a-71f7-be8f-7a8998d49e1b
+    reviewed: e65ddf69a35cb5b56e1994cdb2aec98a4bc2a2a521d0de3c8746498f3c10cf7a
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_the_slug_of_each_record_that_has_one"
+        body: 175c943d62cd801efa5c41ea5b3f854c44a622795c278fac1b47bb5107ea52a7
+  - node: 01a15f00-828a-71f7-be8f-7a8a0ba4028f
+    reviewed: 52a76a06a4b4ea14fe2dff93fbe3dfbfd513a8f42dec6b4287c036cb5ef02810
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_a_nodes_name_and_body"
+        body: db8ef066c3643f178672db41d8c566fc6ed8acde059efd9892e684d0935cb2a4
+  - node: 01a15f00-828a-71f7-be8f-7a8b31f482ef
+    reviewed: b283fe5d8b8d03f0f14f8ed5773ab22f143c1aa3e2f31db8b812221d0419cf01
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_a_requirements_statement_as_the_writer_writes_it"
+        body: ef1d0b2442b7b4dd4d41c02ffe79fd3adad1e30e0450d903da7b3da3db4866bd
+  - node: 01a15f00-828a-71f7-be8f-7a8c25396cc0
+    reviewed: 73cf903ca150ac41bfd3813d826e259ddcca68272b9d65fa8267bfbb1c86dc8a
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_tags_in_the_authored_order_with_duplicates"
+        body: 6aedc876edf1e636b714aba606c23d5f839b02e36cdf8d6fbf424b2e7dea834c
+  - node: 01a15f00-828a-71f7-be8f-7a8d62afbc2d
+    reviewed: 94d7064b7052334fff27cd6a8f06cbf8250c42b05b54fed4630849ac8d425ae2
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_the_edges_its_record_writes"
+        body: 82dd6a51c65d424069fe505a17f9a11dc4fee4ae39919b895630d702db8bdb88
+  - node: 01a15f00-828a-71f7-be8f-7a8ec31cc3d2
+    reviewed: 2f08a427bb2493ad484135ab0ed85635d4436a678d02aef0c38fa4a8a0dbfe24
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_a_nodes_ext"
+        body: b2e51540fad85bdf6c63de727c3141b13a62c771a2d82fb8082f2aa0c4708f53
+  - node: 01a15f00-828a-71f7-be8f-7a8f93a05e52
+    reviewed: 772675b81c9b33ccd5fd804f9cdc969ecc6e5c356fa926a35f72421fa301605a
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_the_typed_attributes_the_writer_writes"
+        body: fb2c92fd2ed6fad8542cbc07c15468dab422d702eb9142f7de33997f483952dd
+  - node: 01a15f00-828a-71f7-be8f-7a90e134cbbd
+    reviewed: 2de8fe2398841e0a323aaf837f047a766fd448d617da082b6def6bfe83da1823
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_a_decisions_title_context_and_state"
+        body: 9c661c502ccce1d86dbdac5a76f788a0bd6249d331b4293a25bd37e9acc2a5a9
+  - node: 01a15f00-ef22-77f2-8b0a-47a5511cfeb3
+    reviewed: cfb3475f9296249deb7c9c243306364db405d053245a8f8a110191e3a4f6d45f
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_a_decisions_parts_with_their_keys"
+        body: 55ab44db8144497665d93adab9a1f29d9dd8e40393b0e603d5588f28081849eb
+  - node: 01a15f00-828a-71f7-be8f-7a91d5acd586
+    reviewed: fb9fce7cb15adb6f4082addcc1f991223cd7bd1b7275eba2c4d1d8334bd42eb3
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_a_registry_entrys_name_definition_and_sorted_aliases"
+        body: 654b3c890492cb3d92454d96493dde87d2983abe901edef196e4710e33eb26fa
+  - node: 01a15f00-828a-71f7-be8f-7a92277315f1
+    reviewed: e42a2285217a60076f4a546e571cfb24eab670dfea93c74aed269b2351a0095e
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "the_own_record_view_holds_a_bindings_fields_as_the_writer_writes_them"
+        body: c46c54205a5ef65c01c4a0b6245600bb3c1d91e19bf2423a1d519d937360817d
+  - node: 01a15f00-828a-71f7-be8f-7a93601c3140
+    reviewed: 986c0145bdf8f9a8f017067a896c56e408f7e4c4d533f73b747329ae270566bf
+    tests:
+      - file: "crates/loftspec/tests/own_record_views.rs"
+        name: "outside_ext_every_scalar_of_an_own_record_view_is_a_string_or_true"
+        body: ad9ff6723a4557025be5fc41d3264b3b8e9cf33f28e0e26ad22b99c605abfcaf
+  - node: 01a15f00-828a-71f7-be8f-7a9626cbc6b2
+    reviewed: 4fecb9c0232a8d27b850981b36f6d9e67da624fb5ed563bc9ccfe4a3c6e50c15
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "the_own_record_digest_is_the_digest_of_its_view_under_its_domain"
+        body: 922f8a0f8b986d8b57af120eb80a4fef257ba40fed634c6bbd59fef1d2663cb6
+  - node: 01a15f00-828a-71f7-be8f-7a9702ce0d3e
+    reviewed: dbeb66559d6ffb383f7f99209082c5449a6c10148ef659b1c02cd168de5419f4
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "a_change_to_a_nodes_slug_name_body_or_statement_changes_its_digest"
+        body: 06ebefa6d025813cd5bd6bb5b83929e50a313fe5d96662572da30d94befe52f9
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "a_change_to_a_nodes_tags_or_ext_changes_its_digest"
+        body: 1f5327fb7989d7cf0fd81587d1e90b0ab231861e6df483958a4818f05696e795
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "a_change_to_an_edge_a_record_writes_changes_its_digest"
+        body: 51956f08b9bb5d0d4c8977877da1957f7ca42f520ceadcd22181c5251c0e4fcf
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "a_change_to_a_typed_attribute_changes_its_digest"
+        body: 143a5f52eb62b78b15ac1f8b0b9025358a209c78c0e0f1a8913f8b1c7673f4cc
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "a_change_to_a_decision_or_one_of_its_parts_changes_its_digest"
+        body: 80124b8a69078ea3057af9e44f0ee4f6c41226cd1c347b9fdef472b4bc728843
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "a_change_to_a_registry_entry_or_a_binding_changes_its_digest"
+        body: a7ff359bb6b830a0a7f0c184c4971c3037d845b2bbea74479c4dea033a341c79
+  - node: 01a15f00-828a-71f7-be8f-7a98c83b27cc
+    reviewed: 73f603830ea0b9163bf6261a7878806a79cfde032749b978e804f0dd92b2c982
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "adding_removing_or_editing_a_record_a_record_holds_leaves_the_holders_digest"
+        body: 279901de50a43cbb319d9a0ae935de57f3129b424ba4524b065159402443053c
+  - node: 01a15f00-828a-71f7-be8f-7a997254b035
+    reviewed: dbf4053dd429f2a97a7c13d5edb814e4ff38f105532310dab4440b8c1cc00aa1
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "moving_a_record_among_its_siblings_leaves_its_digest"
+        body: 05b1603a144f96adc694f45714489eb29a15ae8875681ce726f3ae220e88dba5
+  - node: 01a15f00-828a-71f7-be8f-7a9a88109c10
+    reviewed: d1f940700717b2801a0303d5768b81f29be45879746d70330d1e26c034408ec1
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "moving_a_record_to_another_parent_leaves_its_digest"
+        body: 2f6a234cd4e798e5bbcd627c4d6721057c3166377083d535891690f3adc667a0
+  - node: 01a15f00-828a-71f7-be8f-7a9b63275146
+    reviewed: d8f3dbc7099fd36cfb354e12ea1756df5eca38918fd315d429c7b73a8c550a1a
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "two_records_with_the_same_content_and_different_keys_have_the_same_digest"
+        body: 5923ba50484e0a6c6aea3f6401a43c2010175461810b4175da6976cc4ab4acb7
+  - node: 01a15f00-828a-71f7-be8f-7a9c267d218c
+    reviewed: b4e74efce51a2a54d853f1c79373acc94f0ba7401c24c1e3c29666f3c5920054
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "the_same_record_in_two_documents_has_the_same_digest"
+        body: 16a316bdf96fdf6b9f7342eda2fd3cf82d2a65bc48bd82ea158c259b7f3ac46b
+  - node: 01a15f00-828a-71f7-be8f-7a9db295f65c
+    reviewed: 35a64102f917a4406bea7ceb67dbb6525044f216c5a60d23d880db44adfb8f49
+    tests:
+      - file: "crates/loftspec/tests/own_record_digest.rs"
+        name: "the_own_record_digest_enters_no_root"
+        body: 5e0e1b176bd7ddc8e6168c0b135be5108128b82cfca594856a623f33ff69a87b
   - node: 49517bba-8ab2-4c80-86ce-28a27c0388cd
     reviewed: 2c527e95b48221b2b903c780002b4d4924b32de49ef219865b646059f558de80
     tests:

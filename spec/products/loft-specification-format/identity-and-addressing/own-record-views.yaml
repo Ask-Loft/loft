@@ -1,0 +1,89 @@
+key: 01a15f00-828a-71f7-be8f-7a7c629f8f31
+slug: own-record-views
+name: "Own record views"
+body: "A stable identity for each keyed record's own content, for tools that store or compare records one at a time: the record as the writer writes it, without its key and without the records it holds, and the digest of that view. A record's own record digest follows what its file says about it alone, so neither its children, its place among its siblings, its parent nor its key moves it. No root holds it, so it changes no content root, state root or lock."
+realizes:
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+requirements:
+  - key: 01a15f00-828a-71f7-be8f-7a7d6a85a764
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "give each keyed node, each decision, each registry entry and each binding one own record view, its record as the writer writes it in canonical layout."
+    criteria:
+      - key: 01a15f00-828a-71f7-be8f-7a7ee49aeefb
+        name: "Each keyed node and each decision has one own record view."
+      - key: 01a15f00-828a-71f7-be8f-7a7fcb051c6a
+        name: "Each entry of the tag registry, the category registry and the term list has one own record view."
+      - key: 01a15f00-828a-71f7-be8f-7a80360f8dcd
+        name: "Each binding, departed or not, has one own record view, apart from the own record view of the element it binds."
+      - key: 01a15f00-828a-71f7-be8f-7a812e18232b
+        name: "A node without a key has no own record view."
+      - key: 01a15f00-828a-71f7-be8f-7a82defe6df2
+        name: "A decision's drivers, options and consequences have no own record view of their own."
+      - key: 01a15f00-828a-71f7-be8f-7a94283da652
+        name: "A document written as files and read back has the own record views it had."
+  - key: 01a15f00-ef21-767a-a022-df87e6be2be6
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "build an own record view from the fields the writer writes for the record, leaving out its key and the records it holds."
+    criteria:
+      - key: 01a15f00-828a-71f7-be8f-7a83bf99a79e
+        name: "The own record view is a JSON object holding each field the writer writes for the record, by field name."
+      - key: 01a15f00-828a-71f7-be8f-7a843b89decd
+        name: "The own record view leaves out a list field the writer leaves out because it is empty."
+      - key: 01a15f00-828a-71f7-be8f-7a85333800e3
+        name: "The own record view excludes the record's `key`."
+      - key: 01a15f00-828a-71f7-be8f-7a8635326610
+        name: "The own record view excludes the records of the nodes the record holds."
+      - key: 01a15f00-828a-71f7-be8f-7a87bbd40671
+        name: "A Feature Group's own record view excludes the list of its Features' keys."
+      - key: 01a15f00-828a-71f7-be8f-7a88af51cff5
+        name: "The own record view excludes the conflicts the record carries."
+      - key: 01a15f00-828a-71f7-be8f-7a8998d49e1b
+        name: "A Product's, a Feature Group's, a Feature's, a root Component's and a decision's own record view holds its `slug`."
+      - key: 01a15f00-828a-71f7-be8f-7a8a0ba4028f
+        name: "A node's own record view holds its `name` and its `body`."
+      - key: 01a15f00-828a-71f7-be8f-7a8b31f482ef
+        name: "A Requirement's own record view holds its statement as the writer writes it: its form and parts, or its text."
+      - key: 01a15f00-828a-71f7-be8f-7a8c25396cc0
+        name: "A node's own record view holds its tags in the order the author wrote them, duplicates kept."
+      - key: 01a15f00-828a-71f7-be8f-7a8d62afbc2d
+        name: "A record's own record view holds the edges the writer writes in it: `realizes`, `scopedTo`, `mentions` and a decision's `subjects`, in canonical order."
+      - key: 01a15f00-828a-71f7-be8f-7a8ec31cc3d2
+        name: "A node's own record view holds its `ext`."
+      - key: 01a15f00-828a-71f7-be8f-7a8f93a05e52
+        name: "A Component's, a Constraint's and a Quality Attribute's own record view holds the typed attributes the writer writes for it."
+      - key: 01a15f00-828a-71f7-be8f-7a90e134cbbd
+        name: "A decision's own record view holds its title, its context and its state."
+      - key: 01a15f00-ef22-77f2-8b0a-47a5511cfeb3
+        name: "A decision's own record view holds its drivers, options, assessments and consequences, each driver, option and consequence with its key."
+      - key: 01a15f00-828a-71f7-be8f-7a91d5acd586
+        name: "A registry entry's own record view holds its name and definition, and a term's its aliases sorted."
+      - key: 01a15f00-828a-71f7-be8f-7a92277315f1
+        name: "A binding's own record view holds its `label`, `departed`, `aliases`, `withdrawn`, `publishedState` and `publishedHistory` as the writer writes them."
+      - key: 01a15f00-828a-71f7-be8f-7a93601c3140
+        name: "Outside `ext`, a flag is `true` in the own record view and every other scalar is the string the writer writes."
+  - key: 01a15f00-828a-71f7-be8f-7a95e84cb365
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "compute each own record digest as the digest of its own record view under `loftspec/own-record/1`."
+    criteria:
+      - key: 01a15f00-828a-71f7-be8f-7a9626cbc6b2
+        name: "The own record digest is the digest of the own record view under `loftspec/own-record/1`."
+      - key: 01a15f00-828a-71f7-be8f-7a9702ce0d3e
+        name: "Changing a field in a record's own record view changes its own record digest."
+      - key: 01a15f00-828a-71f7-be8f-7a98c83b27cc
+        name: "Adding, removing or editing a record that a record holds leaves the holder's own record digest unchanged."
+      - key: 01a15f00-828a-71f7-be8f-7a997254b035
+        name: "Moving a record to another place among its siblings leaves its own record digest unchanged."
+      - key: 01a15f00-828a-71f7-be8f-7a9a88109c10
+        name: "Moving a record to another parent of the same kind leaves its own record digest unchanged."
+      - key: 01a15f00-828a-71f7-be8f-7a9b63275146
+        name: "Two records with the same content and different keys have the same own record digest."
+      - key: 01a15f00-828a-71f7-be8f-7a9c267d218c
+        name: "The same record in two documents has the same own record digest."
+      - key: 01a15f00-828a-71f7-be8f-7a9db295f65c
+        name: "The own record digest enters no root."
