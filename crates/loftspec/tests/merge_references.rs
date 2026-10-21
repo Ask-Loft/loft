@@ -249,3 +249,37 @@ fn the_merge_driver_deletes_a_record_one_side_deleted_that_the_tree_merger_keeps
     let document = codec::read(&tree.files).expect("the merged tree reads");
     assert_eq!(document.conflicts, [kept_against_theirs(owner, SECOND)]);
 }
+
+#[test]
+fn a_record_no_place_can_take_is_not_kept_for_a_reference_and_the_merge_is_refused_as_unreadable() {
+    let base = small_document();
+    let mut ours = base.clone();
+    ours.edges.push(Edge::Mentions {
+        source: component_id(6).into(),
+        target: loftspec::ids::CriterionId::new(key(5)).into(),
+    });
+    let mut theirs = base.clone();
+    let feature = &mut theirs.products[0].feature_groups[0].features[0];
+    let requirement = feature.requirements.remove(0);
+    theirs
+        .edges
+        .retain(|edge| edge.source() != loftspec::ids::CriterionId::new(key(5)).into());
+    let promoted = loftspec::tree::Feature {
+        id: Some(requirement.id.unwrap().promote()),
+        slug: crate::common::slug("promoted"),
+        name: "Promoted".to_owned(),
+        details: loftspec::tree::Details::default(),
+        requirements: Vec::new(),
+        quality_attributes: Vec::new(),
+    };
+    theirs.products[0].feature_groups[0].features.push(promoted);
+    let [base, ours, theirs] = [&base, &ours, &theirs].map(codec::write);
+    for side in [&base, &ours, &theirs] {
+        codec::read(side).expect("each side reads");
+    }
+    let refused = merge_tree(&base, &ours, &theirs).map(|_| ());
+    assert!(
+        matches!(refused, Err(loftspec::merge::TreeMergeError::Unwritable(_))),
+        "{refused:?}"
+    );
+}

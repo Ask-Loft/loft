@@ -5,7 +5,7 @@
 //! that each side adds.
 
 use loftspec::codec::{self, Files, SpecPath};
-use loftspec::merge::merge_tree;
+use loftspec::merge::{TreeMergeError, merge_tree};
 use proptest::prelude::*;
 use proptest::test_runner::TestCaseError;
 
@@ -20,14 +20,25 @@ fn with_file(path: &str, bytes: &[u8]) -> Files {
     files
 }
 
-/// Asserts that a merge of three trees that each read gives a tree that reads, whenever it
-/// gives one.
-fn reads(base: &Files, ours: &Files, theirs: &Files) -> Result<(), TestCaseError> {
+/// Asserts that a merge of three trees that each read gives a tree that reads, and never refuses
+/// its result as one that does not read. `refusals` says whether the merge may refuse the trees
+/// otherwise: a random edit of a file may change a record's kind or slug, so that no place takes
+/// a record or two records fall in one file; an edit of a document in memory does neither.
+fn reads(base: &Files, ours: &Files, theirs: &Files, refusals: bool) -> Result<(), TestCaseError> {
     for side in [base, ours, theirs] {
         prop_assume!(codec::read(side).is_ok());
     }
-    let Ok(merged) = merge_tree(base, ours, theirs) else {
-        return Ok(());
+    let merged = match merge_tree(base, ours, theirs) {
+        Ok(merged) => merged,
+        Err(TreeMergeError::Unwritable(errors)) => {
+            return Err(TestCaseError::fail(format!(
+                "the result does not read: {errors:?}"
+            )));
+        }
+        Err(refusal) => {
+            prop_assert!(refusals, "{refusal}");
+            return Ok(());
+        }
     };
     let read = codec::read(&merged.files);
     prop_assert!(read.is_ok(), "{:?}", read.err());
@@ -42,6 +53,7 @@ proptest! {
             &with_file(path, &case.base),
             &with_file(path, &case.ours),
             &with_file(path, &case.theirs),
+            true,
         )?;
     }
 
@@ -53,6 +65,6 @@ proptest! {
     ) {
         let base = doc_edited(&full_nested_document(), &grown);
         let [ours, theirs] = [ours, theirs].map(|edits| doc_edited(&base, &edits));
-        reads(&codec::write(&base), &codec::write(&ours), &codec::write(&theirs))?;
+        reads(&codec::write(&base), &codec::write(&ours), &codec::write(&theirs), false)?;
     }
 }

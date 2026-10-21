@@ -90,6 +90,7 @@ pub fn merge_tree(
     let tree = write::tree(singles.files, by_key, &flats)?;
     let files = crate::codec::write_files(&tree);
     let read = read_tree(&files).map_err(TreeMergeError::Unwritable)?;
+    crate::codec::resolve(&read).map_err(TreeMergeError::Unwritable)?;
     let conflicts = read
         .files
         .values()

@@ -3,13 +3,15 @@
 //! conflict over `record`, while a record the merge keeps references it; and a field both sides
 //! changed apart, whose base value names a record both sides deleted, holds ours' value beside
 //! its conflict. Either may make the merge keep a record that references another, so both run to
-//! a fixed point, after which every reference names a record the merge keeps. The merge driver,
+//! a fixed point, after which every reference names a record the merge keeps, but one that no
+//! place can take, which leaves the result unreadable. The merge driver,
 //! which sees one file, keeps no record for a reference.
 
 use std::collections::BTreeMap;
 
 use super::conflict::Side;
 use super::exist::{Fate, keep};
+use super::flat::Parent;
 use super::place::Placed;
 use crate::codec::schema::{Item, Scalar, Shape, Target};
 use crate::codec::{ConflictRec, Rec, SideShape, Val, side_shape, variant_holds};
@@ -41,7 +43,7 @@ pub(super) fn keep_referenced(
             .chain(kept)
             .flat_map(references)
             .filter_map(|key| match fates.get(&key) {
-                Some(Fate::Tentative(side)) => Some((key, *side)),
+                Some(Fate::Tentative(side)) if placed(key, fates, places) => Some((key, *side)),
                 _ => None,
             })
             .collect();
@@ -49,6 +51,23 @@ pub(super) fn keep_referenced(
             return;
         }
         keep(fates, places, referenced);
+    }
+}
+
+/// Whether the record `key` has a place, and so has each record above it that a side deleted:
+/// a record that a side changed the kind of its parent may have none, and is not kept.
+fn placed(key: Key, fates: &BTreeMap<Key, Fate>, places: &BTreeMap<Key, Placed>) -> bool {
+    let mut at = key;
+    loop {
+        let Some(here) = places.get(&at) else {
+            return false;
+        };
+        match here.place.0 {
+            Parent::Key(parent) if matches!(fates.get(&parent), Some(Fate::Tentative(_))) => {
+                at = parent;
+            }
+            _ => return true,
+        }
     }
 }
 

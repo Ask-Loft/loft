@@ -10040,10 +10040,10 @@ links:
         body: 54bad4a9b4200630186f1db395687b49a0bbf56f8bc312efb6f41ef25194049b
       - file: "crates/loftspec/tests/merge_tree_props.rs"
         name: "every_tree_the_merger_gives_for_edited_files_reads"
-        body: be1e7abb641219936582f8498b16d9e841499692786039115e9fc98f822c4395
+        body: 28a8a7e356c368d3f2d27a43e629d283757e734ebf4433de126c22af4ede3453
       - file: "crates/loftspec/tests/merge_tree_props.rs"
         name: "every_tree_the_merger_gives_for_edited_documents_reads"
-        body: 4fe16e3bd162a15858a02a45f1f1935c6fab7b9fe49b8dfa5324cd256131ee0d
+        body: dee2e39cc9138154303949b5e6bcf07f9ee01eb814237275917caa6c5c54ddf1
   - node: 01a15fb5-ece7-757a-9d44-fd0cce145eac
     reviewed: b48a780688f61c4bf9e527b6728a4b771f07f2658beaba7f97f7243d6b4a2ae9
     tests:
@@ -10074,6 +10074,12 @@ links:
       - file: "crates/loftspec/tests/merge_references.rs"
         name: "a_record_that_a_record_kept_for_a_reference_references_is_kept_by_the_same_rule"
         body: a0037ee693a7d03e4196437399698cc5339e35f06a4e056b4a883f64531b2f17
+  - node: 01a15ff9-7815-7465-989c-2413d141102b
+    reviewed: c34089574c1fbb0e12560a35494ee6529a039b29c7ffb05a6d4d03fd8e727e2e
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "a_record_no_place_can_take_is_not_kept_for_a_reference_and_the_merge_is_refused_as_unreadable"
+        body: f11a70c61c6ef647bb1883b2e7fdbb3faacd59aba68664763a99c99507e5c88b
   - node: 01a15fb5-ece7-757a-9d44-fd0f688cdb8b
     reviewed: b09a38878ce8526c209a11f4bd5a2e730504764530c98594584d16b26cb70e5f
     tests:
@@ -10099,7 +10105,7 @@ links:
         name: "settling_a_conflict_gives_a_document_without_its_conflict_record"
         body: eb96cac1a09d726a3d5fcf7e3e569f61378cfe975fd944840836745e4b515b84
   - node: 01a15fdc-a1db-756d-9d40-05f44c31c663
-    reviewed: 2b73aed857795ea184a74c89c95b513d3347934ee9cfeabc2a0be5987f77c406
+    reviewed: bb55317d853683ca9ca216f0ded4aefabe3e2182eba173ce87950f308f8fee21
     tests:
       - file: "crates/loftspec/tests/settle_conflicts.rs"
         name: "settling_a_conflict_keeps_every_other_conflict_record"
