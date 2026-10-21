@@ -10044,6 +10044,12 @@ links:
       - file: "crates/loftspec/tests/merge_tree_props.rs"
         name: "every_tree_the_merger_gives_for_edited_documents_reads"
         body: dee2e39cc9138154303949b5e6bcf07f9ee01eb814237275917caa6c5c54ddf1
+  - node: 01a16016-9eb8-73bc-b469-7d34ab4f2fb3
+    reviewed: ce571dc008517e931bcd9cd41da1df43a198bda560a3448a2a389ecd233d5ed6
+    tests:
+      - file: "crates/loftspec/tests/merge_references.rs"
+        name: "the_tree_merger_gives_the_document_its_result_reads_into"
+        body: b9be78eec2873d50ed685c34813150166be65c798aa5c51d2e66479c0c50caf3
   - node: 01a15fb5-ece7-757a-9d44-fd0cce145eac
     reviewed: b48a780688f61c4bf9e527b6728a4b771f07f2658beaba7f97f7243d6b4a2ae9
     tests:

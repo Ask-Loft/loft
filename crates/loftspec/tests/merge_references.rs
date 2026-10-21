@@ -283,3 +283,12 @@ fn a_record_no_place_can_take_is_not_kept_for_a_reference_and_the_merge_is_refus
         "{refused:?}"
     );
 }
+
+#[test]
+fn the_tree_merger_gives_the_document_its_result_reads_into() {
+    let base = with_storage();
+    let ours = realizing(&base, STORAGE);
+    let theirs = deleted(&base, component_id(STORAGE));
+    let merged = merged(&base, &ours, &theirs);
+    assert_eq!(merged.document, read(&merged));
+}

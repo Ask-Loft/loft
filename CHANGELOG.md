@@ -59,7 +59,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   `loft check` to report. A record that no place in the result can take, because a side changed
   the kind of its parent, is not kept, and `merge_tree` now refuses with
   `TreeMergeError::Unwritable` any result whose references do not resolve, where before it
-  returned it.
+  returned it. `MergedTree::document` is the document the result reads into, so a caller need
+  not read the merged files again.
 - `loftspec::codec::own_records` gives each keyed node, decision, registry entry and binding of
   a document its own record view and digest, by `RecordKind` and key: a stable identity of the
   record's own content, for tools that store or compare records one at a time. The view is the
