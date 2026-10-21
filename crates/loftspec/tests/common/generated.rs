@@ -49,7 +49,8 @@ fn file_edited(
     codec::read(&files).ok()
 }
 
-/// A generated document; none where an edit left one that does not read.
+/// A generated document that writes and reads back as it is; none where an edit left one that
+/// does not.
 pub fn generated() -> impl Strategy<Value = Option<Document>> {
     let files = (
         0..FIXTURES.len(),

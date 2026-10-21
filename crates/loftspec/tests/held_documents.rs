@@ -1,15 +1,18 @@
 //! A document held in memory, checked, placed and published without writing and reading its
 //! files back: validating without linting, linting without validating, the sites of the files the
 //! writer writes, and a publishable tree. Each equals what writing the document and reading the
-//! files back gives, for a generated document and for this repository's own `spec/`.
+//! files back gives, for a generated document, which reads, and for this repository's own
+//! `spec/`; the publishable tree also for documents whose written files the reader refuses or
+//! reads otherwise: edited at random, holding conflict sides of any text, and each way listed.
 
 use std::fs;
 use std::path::Path;
 
 use loftspec::check::{Checked, check, linted, validated};
 use loftspec::codec::{self, Files, LINT, SpecPath, read_sited};
+use loftspec::conflict::{Conflict, ConflictOwner, ConflictValue, FieldPath};
 use loftspec::document::{Document, Edge};
-use loftspec::ids::{ComponentId, FeatureId};
+use loftspec::ids::{ComponentId, ElementId, FeatureId, RequirementId};
 use loftspec::publish::{Made, PublishedAt, ReadTree, publish};
 use loftspec::yaml::{Location, Position};
 use proptest::prelude::*;
@@ -105,6 +108,20 @@ fn tree_agrees(
     Ok(())
 }
 
+/// Conflict side values of a scalar field, some of which the reader refuses for a field: a key,
+/// `first`, a tag name, `null`, and short text that may be empty or span lines. The writer writes
+/// only a side in its field's shape, so no other shape is given.
+fn conflict_value() -> impl Strategy<Value = ConflictValue> {
+    let scalar = prop_oneof![
+        Just(key(5).to_string()),
+        Just("first".to_owned()),
+        Just("portable".to_owned()),
+        "[a-z \n]{0,6}",
+    ]
+    .prop_map(ConflictValue::Scalar);
+    prop_oneof![4 => scalar, 1 => Just(ConflictValue::Deleted)]
+}
+
 proptest! {
     #[test]
     fn a_tree_built_from_any_edited_document_held_is_its_written_files_read_back(
@@ -114,6 +131,25 @@ proptest! {
         let document = doc_edited(&rich_document(), &edits);
         let lint = configured.then_some(LINT_TEXT);
         tree_agrees(&document, lint, &written(&document, lint))?;
+    }
+
+    #[test]
+    fn a_tree_built_from_a_document_held_with_any_conflict_sides_is_its_written_files_read_back(
+        field in prop_oneof![
+            Just("parent"), Just("position"), Just("record"), Just("body"),
+            Just("statement.shall"),
+        ],
+        sides in proptest::collection::vec(proptest::option::of(conflict_value()), 3),
+    ) {
+        let mut document = small_document();
+        document.conflicts.push(Conflict {
+            owner: ConflictOwner::Element(ElementId::Node(RequirementId::new(key(4)).into())),
+            field: FieldPath::new(field),
+            base: sides[0].clone(),
+            ours: sides[1].clone(),
+            theirs: sides[2].clone(),
+        });
+        tree_agrees(&document, None, &written(&document, None))?;
     }
 
     #[test]
@@ -263,6 +299,20 @@ fn a_tree_built_from_a_held_document_holds_it_in_the_order_the_reader_reads_it()
     assert_eq!(tree.document(), &read);
 }
 
+/// The small document with a conflict over `field` of the Requirement keyed 4 whose ours side
+/// is `ours`.
+fn with_conflict(field: &str, ours: &str) -> Document {
+    let mut document = small_document();
+    document.conflicts.push(Conflict {
+        owner: ConflictOwner::Element(ElementId::Node(RequirementId::new(key(4)).into())),
+        field: FieldPath::new(field),
+        base: None,
+        ours: Some(ConflictValue::Scalar(ours.to_owned())),
+        theirs: None,
+    });
+    document
+}
+
 /// The ways a document held in memory may hold what its written files cannot be read as.
 fn unreadable() -> Vec<(&'static str, Document)> {
     let mut keyless = small_document();
@@ -291,6 +341,8 @@ fn unreadable() -> Vec<(&'static str, Document)> {
     });
     let mut blank = small_document();
     blank.terms = vec![crate::common::term(70, " ", &[])];
+    let parent = with_conflict("parent", "x");
+    let position = with_conflict("position", "");
     vec![
         ("a node without a key", keyless),
         ("a reference to no element", dangling),
@@ -299,6 +351,8 @@ fn unreadable() -> Vec<(&'static str, Document)> {
         ("an empty publish branch", branch),
         ("a publish sequence of zero", sequence),
         ("a blank term name", blank),
+        ("a parent conflict whose side names no key", parent),
+        ("a position conflict whose side is empty", position),
     ]
 }
 

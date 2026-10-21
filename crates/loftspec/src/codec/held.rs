@@ -1,14 +1,16 @@
 //! A document's written tree read without parsing its files: the records the writer builds are
 //! the records the strict reader would read from the files it writes, but for their positions,
 //! so where they hold only what that reader accepts they are checked and resolved as they are,
-//! and the sites of their keys come from the writer. Otherwise the files are read, so that every
-//! error is the reader's own, at its site.
+//! and the sites of their keys come from the writer; a file whose records hold conflict records
+//! is read on its own, since the reader checks a conflict's field and sides. Otherwise the files
+//! are read, so that every error is the reader's own, at its site.
 
 use super::canon::canonicalize;
 use super::error::ReadError;
-use super::files::{Files, keyed_records, write_files_keyed};
+use super::files::{Files, Tree, keyed_records, read_file, write_files_keyed};
 use super::layout::{Sites, check_tree};
 use super::read_sited;
+use super::record::{Mode, Rec};
 use super::resolve::resolve;
 use super::unresolve::unresolve;
 use crate::document::Document;
@@ -21,11 +23,12 @@ pub(crate) fn write_and_read(document: &Document) -> (Files, Read) {
     let mut tree = unresolve(document);
     canonicalize(&mut tree);
     let (files, keys) = write_files_keyed(&tree);
-    let held = strictly_held(document, &tree)
+    let sites = Sites::written(keys);
+    let held = (strictly_held(document, &tree) && read_conflicted(&mut tree, &files))
         .then(|| check_tree(&tree).and_then(|()| resolve(&tree)))
         .and_then(Result::ok);
     let read = match held {
-        Some(read) => Ok((read, Sites::written(keys))),
+        Some(read) => Ok((read, sites)),
         None => read_sited(&files),
     };
     (files, read)
@@ -35,7 +38,7 @@ pub(crate) fn write_and_read(document: &Document) -> (Files, Read) {
 /// field's value, beyond what the document's types ensure: a key on every keyed record, a publish
 /// branch that is a one-line identifier, a positive publish sequence, and extension data the
 /// text form holds.
-fn strictly_held(document: &Document, tree: &super::files::Tree) -> bool {
+fn strictly_held(document: &Document, tree: &Tree) -> bool {
     let records = tree
         .files
         .values()
@@ -56,4 +59,29 @@ fn strictly_held(document: &Document, tree: &super::files::Tree) -> bool {
         ext &= crate::ext::from_json(&crate::ext::to_json(node.ext())).is_ok();
     });
     keyed && branch && sequence && ext
+}
+
+/// Reads on its own each written file whose records hold a conflict record, in place of the
+/// writer's records: the reader checks a conflict's field and the shape of its sides, which the
+/// document's types leave open, and reads a side as its field's shape reads it. Whether each
+/// such file read.
+fn read_conflicted(tree: &mut Tree, files: &Files) -> bool {
+    for (path, file) in &mut tree.files {
+        if !file.1.records().any(holds_conflicts) {
+            continue;
+        }
+        match files
+            .get(path)
+            .map(|bytes| read_file(path, bytes, Mode::Strict))
+        {
+            Some(Ok(read)) => *file = read,
+            _ => return false,
+        }
+    }
+    true
+}
+
+/// Whether `record` or a record inside it holds a conflict record.
+fn holds_conflicts(record: &Rec) -> bool {
+    !record.conflicts.is_empty() || record.children().any(holds_conflicts)
 }

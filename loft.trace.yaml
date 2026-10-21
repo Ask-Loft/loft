@@ -17229,6 +17229,9 @@ links:
       - file: "crates/loftspec/tests/held_documents.rs"
         name: "this_repositorys_own_spec_held_checks_places_and_publishes_as_its_files_read_back"
         body: 2523d9976554632318fe7e406f87ebefb756a68a9bd045307aa4b0338fe00087
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_a_document_held_with_any_conflict_sides_is_its_written_files_read_back"
+        body: 57aa38ba074990ad18c857df84b44fd1b940bcce1d9d5ef6f8eac4a37e99cecc
   - node: 01a15fd0-f427-715f-bf7b-9fc5be88fdd6
     reviewed: 0cf142fcaf03a074045792a8120578e25eaa9c094074f244ed84bf40550d247c
     tests:
@@ -17256,6 +17259,9 @@ links:
       - file: "crates/loftspec/tests/held_documents.rs"
         name: "a_held_document_whose_written_files_do_not_read_is_refused_with_their_read_errors"
         body: fb9f98f7e0e3ea3fc3f65d6647b395227bd36c017cef35e323c8a1ba860c50d5
+      - file: "crates/loftspec/tests/held_documents.rs"
+        name: "a_tree_built_from_a_document_held_with_any_conflict_sides_is_its_written_files_read_back"
+        body: 57aa38ba074990ad18c857df84b44fd1b940bcce1d9d5ef6f8eac4a37e99cecc
   - node: 01a15fd6-c6de-7041-8c7b-2ee906393715
     reviewed: e414e29d7e15493240ea096f48e956c794f7b77c29d370267a923bea97f1e2b0
     unverified: "A cost, read from the code: the records the writer builds are checked and resolved as they are, and only a document whose records the strict reader would refuse has its files parsed."
