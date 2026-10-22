@@ -123,6 +123,16 @@ requirements:
         name: "`ls-tree -r -z <commit> -- spec` prints a record for each file under `spec/` that the scenario gives the base commit."
       - key: 01a144ee-c5a0-7459-bcd4-bd58ca3ef26e
         name: "`cat-file --batch` prints each blob whose object id it reads on standard input, after a header with its object id, type and size."
+  - key: 01a16571-d769-7590-94aa-9781dfb65102
+    statement:
+      form: ubiquitous
+      system: "The git simulator"
+      shall: "answer the call with which a `publish` view finds the commit that last wrote `loft.lock.json` as its scenario scripts it."
+    criteria:
+      - key: 01a16571-d769-7590-94aa-978297cb7f3b
+        name: "`log -1 --format=%H -- loft.lock.json` prints the commit the scenario gives as the last to write the lock."
+      - key: 01a16571-d769-7590-94aa-97835a642760
+        name: "`log -1 --format=%H -- loft.lock.json` exits 0 and prints nothing where the scenario gives no commit that wrote the lock."
   - key: 01a164cf-8fd5-7533-a02e-c04d04f5c5a9
     statement:
       form: ubiquitous
