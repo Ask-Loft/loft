@@ -17,6 +17,8 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb2339a1f113
         name: "Each repository is named by the top of its main worktree."
+      - key: 01a1660b-dd8a-760c-ade4-a7dfa7044f96
+        name: "A repository's main worktree, whose folder is the repository's own, is named once, in the list and among what waits on the person."
       - key: 01a1646f-546d-7042-befd-eb24d506d9d2
         name: "Each listed branch shows its worktree, its name and its Yard Log's title."
       - key: 01a1646f-546d-7042-befd-eb25f7e1f2d7

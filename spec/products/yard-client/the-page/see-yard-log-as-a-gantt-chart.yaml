@@ -51,6 +51,8 @@ requirements:
         name: "Each stretch of a stage's time during a turn with no active task, no Loft run and no wait on the person is drawn as agent work."
       - key: 01a1646f-546d-7042-befd-eb78faca6f3a
         name: "Time outside the main agent's turns is idle, and an idle stretch longer than 45 seconds is folded to a fixed width that is labelled with its length."
+      - key: 01a1660b-dd8a-760c-ade4-a7e027922586
+        name: "The label of a folded idle stretch at an edge of the chart lies inside the chart."
       - key: 01a1646f-546d-7042-befd-eb79bfb93e3a
         name: "A bar above the chart divides the time not idle into active tasks, Loft runs, waits on the person and agent work, each with its length and its share."
       - key: 01a1646f-546d-7042-befd-eb7ae5af3ff4
