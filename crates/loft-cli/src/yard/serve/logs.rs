@@ -51,6 +51,15 @@ fn served_tree(home: &Home, named: Option<&str>) -> Result<PathBuf, Response> {
     }
 }
 
+/// The base branch a request on `tree` checks a merge against: the one it names, else the one
+/// the tree was registered with, else the default.
+fn base_for(home: &Home, tree: &Path, named: Option<&str>) -> String {
+    named
+        .map(ToOwned::to_owned)
+        .or_else(|| super::trees::base_of(home, tree))
+        .unwrap_or_else(|| DEFAULT_BASE.to_owned())
+}
+
 /// The answer to a request that failed.
 fn answer_failure(failure: Failure, schema: &str) -> Response {
     match failure {
@@ -83,7 +92,7 @@ pub fn read(
         return Response::refused(400, "branch", "the request names no branch");
     };
     let beyond = Beyond {
-        base: base.unwrap_or(DEFAULT_BASE).to_owned(),
+        base: base_for(home, &tree, base),
         port,
     };
     let read = if place.branch.as_deref() == Some(branch.as_str()) {
@@ -198,7 +207,7 @@ pub fn answer(home: &Home, body: &[u8], port: u16) -> Response {
         Err(refused) => return refused,
     };
     let beyond = Beyond {
-        base: sent["base"].as_str().unwrap_or(DEFAULT_BASE).to_owned(),
+        base: base_for(home, &tree, sent["base"].as_str()),
         port,
     };
     let branch = match Branch::locate(&tree, beyond) {

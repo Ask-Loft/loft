@@ -99,7 +99,10 @@ fn a_tree_that_no_longer_exists_is_dropped_from_those_served() {
     assert!(!Path::new(&path).exists());
     let listing = served.get("/api/trees").json();
     assert_eq!(listing["repositories"], json!([]));
-    assert_eq!(yard.home_file("trees.json")["trees"], json!([]));
+    // `trees.json` is read without its lock and pruned at the next registration.
+    let own = tree(&yard.scratch);
+    served.post_as_mod("/api/register", &json!({ "tree": own }));
+    assert_eq!(yard.home_file("trees.json")["trees"], json!([own]));
 }
 
 #[test]

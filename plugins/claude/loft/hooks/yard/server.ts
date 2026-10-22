@@ -23,7 +23,7 @@ export function serverOf(): Server {
  * says it serves, its loop runs on after this resolves, and ends with the child.
  */
 export function serve($: EngineInterface, settings: Settings, server: Server, session: string, tree: string) {
-  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, '--port', String(settings.port)], false)
+  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, '--base', settings.base, '--port', String(settings.port)], false)
   const stream = $.process.spawn({ argv, cwd: tree, env: QUIET })
   return new Promise<string | undefined>(settled => {
     let stdout = ''

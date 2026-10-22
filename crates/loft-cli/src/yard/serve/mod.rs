@@ -127,7 +127,7 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
         sessions::heard(&home, session, now()?)?;
     }
     if let Some(tree) = &args.tree {
-        trees::register(&home, tree)?;
+        trees::register(&home, tree, args.base.as_deref())?;
     }
     let lock = match take_over(&home)? {
         Ok(lock) => lock,

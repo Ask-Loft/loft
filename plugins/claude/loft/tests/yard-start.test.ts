@@ -142,7 +142,7 @@ test('every five seconds the mod runs loft yard serve for the session and its tr
   await start($)
   const serves = () => w.state.runs.filter(run => run.argv.includes('serve'))
   expect(serves()).toHaveLength(1)
-  expect(serves()[0]!.argv).toEqual(['loft', 'yard', 'serve', '--session', SESSION, '--tree', TREE, '--port', '7411', '--format', 'json'])
+  expect(serves()[0]!.argv).toEqual(['loft', 'yard', 'serve', '--session', SESSION, '--tree', TREE, '--base', 'develop', '--port', '7411', '--format', 'json'])
   await w.clock.advance(15000)
   expect(serves()).toHaveLength(1)
   w.state.serverStops.resolve()
@@ -224,4 +224,12 @@ test('with Yard Client off, the notice asks loftCommand alone for its version', 
     ['pnpm', 'exec', 'loft', '--version'],
   ])
   for (const run of w.state.runs) expect(run.env).toEqual({ LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' })
+})
+
+test('the mod registers its tree with the baseBranch setting, against which the page checks a merge', { options: { baseBranch: 'main' } }, async ($, on) => {
+  const w = world(on)
+  await start($)
+  const serve = w.state.runs.find(run => run.argv.includes('serve'))!
+  expect(flagOf(serve.argv, '--base')).toBe('main')
+  expect(flagOf(serve.argv, '--tree')).toBe(TREE)
 })

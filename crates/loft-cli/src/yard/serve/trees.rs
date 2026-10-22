@@ -19,59 +19,88 @@ use crate::yard::failure::Failure;
 use crate::yard::page;
 use crate::yard::render::{act, actor};
 
-/// The trees `~/.yard/trees.json` names, as written.
-fn named(bytes: Option<&[u8]>) -> Vec<String> {
-    bytes
-        .and_then(|bytes| serde_json::from_slice::<Value>(bytes).ok())
-        .and_then(|file| {
-            file["trees"].as_array().map(|trees| {
-                trees
+/// What `~/.yard/trees.json` holds: the trees served, and the base branch each was registered
+/// with, where one was.
+#[derive(Default)]
+struct Registry {
+    trees: Vec<String>,
+    bases: BTreeMap<String, String>,
+}
+
+impl Registry {
+    fn read(bytes: Option<&[u8]>) -> Self {
+        let file = bytes
+            .and_then(|bytes| serde_json::from_slice::<Value>(bytes).ok())
+            .unwrap_or(Value::Null);
+        let trees = file["trees"].as_array().map_or_else(Vec::new, |trees| {
+            trees
+                .iter()
+                .filter_map(Value::as_str)
+                .map(ToOwned::to_owned)
+                .collect()
+        });
+        let bases = file["bases"]
+            .as_object()
+            .map_or_else(BTreeMap::new, |bases| {
+                bases
                     .iter()
-                    .filter_map(Value::as_str)
-                    .map(ToOwned::to_owned)
+                    .filter_map(|(tree, base)| Some((tree.clone(), base.as_str()?.to_owned())))
                     .collect()
-            })
-        })
-        .unwrap_or_default()
+            });
+        Self { trees, bases }
+    }
+
+    fn bytes(&self) -> Vec<u8> {
+        let mut text = serde_json::to_string_pretty(&json!({
+            "trees": self.trees,
+            "bases": self.bases,
+        }))
+        .expect("a JSON value serializes");
+        text.push('\n');
+        text.into_bytes()
+    }
 }
 
-fn file(trees: &[String]) -> Vec<u8> {
-    let mut text =
-        serde_json::to_string_pretty(&json!({ "trees": trees })).expect("a JSON value serializes");
-    text.push('\n');
-    text.into_bytes()
-}
-
-/// Adds the worktree that holds `dir` to the trees served, once; gives its top.
-pub fn register(home: &Home, dir: &Path) -> Result<PathBuf, Failure> {
+/// Adds the worktree that holds `dir` to the trees served, once, with the base branch the mod
+/// follows there where `base` names one; drops the trees that no longer exist; gives its top.
+pub fn register(home: &Home, dir: &Path, base: Option<&str>) -> Result<PathBuf, Failure> {
     let dir = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
     let tree = YardGit::default().top_level(&dir)?;
     let shown = tree.display().to_string();
     home.update(HomeFile::Trees, |bytes| {
-        let mut trees = named(bytes.as_deref());
-        if trees.contains(&shown) {
-            return None;
+        let mut registry = Registry::read(bytes.as_deref());
+        let before = registry.bytes();
+        registry.trees.retain(|tree| Path::new(tree).is_dir());
+        registry.bases.retain(|tree, _| Path::new(tree).is_dir());
+        if !registry.trees.contains(&shown) {
+            registry.trees.push(shown.clone());
+            registry.trees.sort();
         }
-        trees.push(shown);
-        trees.sort();
-        Some(file(&trees))
+        if let Some(base) = base {
+            registry.bases.insert(shown.clone(), base.to_owned());
+        }
+        let after = registry.bytes();
+        (after != before).then_some(after)
     })?;
     Ok(tree)
 }
 
-/// The trees served, those that no longer exist dropped from `~/.yard/trees.json`.
+/// The trees served that still exist. The file is read without its lock: it is only ever
+/// replaced whole, by a rename, so a read sees one whole version of it.
 pub fn served(home: &Home) -> Result<Vec<PathBuf>, Failure> {
-    let mut kept = Vec::new();
-    home.update(HomeFile::Trees, |bytes| {
-        let trees = named(bytes.as_deref());
-        kept = trees
-            .iter()
-            .filter(|tree| Path::new(tree).is_dir())
-            .cloned()
-            .collect();
-        (kept.len() != trees.len()).then(|| file(&kept))
-    })?;
-    Ok(kept.into_iter().map(PathBuf::from).collect())
+    let registry = Registry::read(home.read(HomeFile::Trees)?.as_deref());
+    Ok(registry
+        .trees
+        .into_iter()
+        .map(PathBuf::from)
+        .filter(|tree| tree.is_dir())
+        .collect())
+}
+
+/// The base branch `tree` was registered with, where it was registered with one.
+pub fn base_of(home: &Home, tree: &Path) -> Option<String> {
+    let registry = Registry::read(home.read(HomeFile::Trees).ok()?.as_deref());
+    registry.bases.get(&tree.display().to_string()).cloned()
 }
 
 /// Whether `tree` is one the page server serves.

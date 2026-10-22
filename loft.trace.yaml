@@ -21194,19 +21194,25 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+        body: 3e5276ba78cd47226c877a52ddbc27420bd09e8d7a4246bfe4a690c734dc1966
+  - node: 01a165fb-8537-775f-9fca-0d5d7807b5fd
+    reviewed: 30f228a2eaf224819321045c7c6200d30a2643c72bac146aa8bde4e5a8c1b4c5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the mod registers its tree with the baseBranch setting, against which the page checks a merge"
+        body: 0c1a34d3e253d87060381fb1857cbaab4494528bcd650b055232063ce43aa50a
   - node: 01a1646f-546c-7521-9643-bc5f9317855f
     reviewed: 3652bfa2bb06bb29c8aa69b032e0661c587fd251a6874d3251dd7bfd219f12e5
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+        body: 3e5276ba78cd47226c877a52ddbc27420bd09e8d7a4246bfe4a690c734dc1966
   - node: 01a1646f-546d-7042-befd-ea8e5a514259
     reviewed: 5b17d1cb84271dd77eabad6cc8e0527fbd2b4c949ebcb9213b3f76d035ec2e68
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+        body: 3e5276ba78cd47226c877a52ddbc27420bd09e8d7a4246bfe4a690c734dc1966
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "each tool runs its command in the session directory with the base branch and the page server port"
         body: 424ea4b1b8579454fd01eea1416dc29b7373b2ae8c1675ba60d4b57457e33dbf
@@ -21224,7 +21230,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+        body: 3e5276ba78cd47226c877a52ddbc27420bd09e8d7a4246bfe4a690c734dc1966
   - node: 01a1646f-546d-7042-befd-ea91076e0f8d
     reviewed: 6d9a8cbbdb32d648ebae9f998f7a185dd521a56436102231ba5a70ae8edc02a0
     tests:
@@ -21260,7 +21266,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "a_tree_that_no_longer_exists_is_dropped_from_those_served"
-        body: 3df1a4b57028f0ee91b59b222a2c30bc8f6bf54f568ffb461c606d49ce2ccfc1
+        body: a80c1514c00baa4bfd0ddd5c6c98ef607b0741ef75ef566e522311329ba4e387
+  - node: 01a165fb-8537-775f-9fca-0d5ebe05cb94
+    reviewed: 297e0f6e1c213b067efe5e8df80bcd9cce264ddf2ce2cf3a34b5f566c501ba2c
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_base.rs"
+        name: "the_page_server_checks_the_merge_against_the_base_branch_its_tree_was_registered_with"
+        body: c58512a3eae5f0547c7895fb2c7a4d65a6ddc0dec3df30137f450d2404a2ec49
   - node: 01a1649f-62ef-71e6-98de-e108efc946c7
     reviewed: 17b9eba85270fe6caa4b0743db123a6b9b6773fba9763fddf7f2d843e37a0847
     tests:
@@ -21272,7 +21284,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+        body: 3e5276ba78cd47226c877a52ddbc27420bd09e8d7a4246bfe4a690c734dc1966
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a page server another session runs is heard from at every beat"
         body: 11e54f1de7b7d2f257aa58ac1dd0f10c0aa14614c16a95f1373f434ef9bff19c

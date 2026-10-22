@@ -105,7 +105,11 @@ fn register(server: &Server, body: &[u8]) -> Response {
     let Some(tree) = sent["tree"].as_str() else {
         return Response::refused(400, "tree", "the request names no tree");
     };
-    match trees::register(&server.home, std::path::Path::new(tree)) {
+    match trees::register(
+        &server.home,
+        std::path::Path::new(tree),
+        sent["base"].as_str(),
+    ) {
         Ok(tree) => {
             server.changes.fetch_add(1, Ordering::SeqCst);
             Response::json(200, &json!({ "tree": tree.display().to_string() }))

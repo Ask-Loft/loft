@@ -57,6 +57,10 @@ pub struct ServeArgs {
     /// A directory of a worktree whose Yard Logs the page server is to serve.
     #[arg(long, value_name = "DIR")]
     pub tree: Option<PathBuf>,
+    /// The base branch followed in `--tree`, against which the page checks whether a branch's
+    /// Yard Log was closed by its merge.
+    #[arg(long, value_name = "BRANCH", requires = "tree")]
+    pub base: Option<String>,
     #[command(flatten)]
     pub output: Output,
 }
