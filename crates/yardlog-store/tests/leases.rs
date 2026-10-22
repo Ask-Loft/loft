@@ -41,3 +41,27 @@ fn a_lease_is_free_once_the_process_that_holds_it_is_killed() {
     assert!(!place.is_leased(key).unwrap());
     assert!(place.lease(key).unwrap().is_some());
 }
+
+#[test]
+fn a_lease_s_holder_is_named_while_it_holds_it_and_its_name_goes_with_it() {
+    let tree = Tree::new();
+    let place = tree.place(&tree.on("main"), &tree.top()).unwrap();
+    let key = SubmissionKey::mint();
+    let named = place.lease_path(key).with_extension("holder");
+    let first = place
+        .lease_as(key, b"first")
+        .unwrap()
+        .expect("the lease is free");
+    assert_eq!(std::fs::read(&named).unwrap(), b"first");
+    drop(first);
+    assert!(
+        !named.exists(),
+        "the name of a holder that let go stays behind"
+    );
+    let second = place
+        .lease_as(key, b"second")
+        .unwrap()
+        .expect("the lease is free");
+    assert_eq!(std::fs::read(&named).unwrap(), b"second");
+    drop(second);
+}

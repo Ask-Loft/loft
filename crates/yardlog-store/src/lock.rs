@@ -3,7 +3,8 @@
 //! Each is the operating system's lock on an open file, so it is free the moment the process
 //! that holds it ends, however it ends, and a lock left by a process that ended needs no
 //! clearing. The files stay where they are, empty; removing one could part two processes that
-//! each think they hold it.
+//! each think they hold it. The file beside a lease that names its holder is removed when the
+//! holder lets go; only a holder that was killed leaves its name, for the next to replace.
 
 use std::fs::{self, File, OpenOptions, TryLockError};
 use std::io;
@@ -18,6 +19,9 @@ use crate::YardStoreError;
 pub struct Locked {
     file: File,
     path: PathBuf,
+    /// The file that names the holder, where [`try_lock_as`] wrote one: removed before the lock
+    /// is let go, so that a later holder's name is never read as this one's.
+    named: Option<PathBuf>,
 }
 
 impl Locked {
@@ -30,6 +34,9 @@ impl Locked {
 
 impl Drop for Locked {
     fn drop(&mut self) {
+        if let Some(named) = &self.named {
+            let _ = fs::remove_file(named);
+        }
         let _ = self.file.unlock();
     }
 }
@@ -58,6 +65,7 @@ pub fn lock(path: &Path) -> Result<Locked, YardStoreError> {
     Ok(Locked {
         file,
         path: path.to_owned(),
+        named: None,
     })
 }
 
@@ -72,6 +80,7 @@ pub fn try_lock(path: &Path) -> Result<Option<Locked>, YardStoreError> {
         Ok(()) => Ok(Some(Locked {
             file,
             path: path.to_owned(),
+            named: None,
         })),
         Err(TryLockError::WouldBlock) => Ok(None),
         Err(TryLockError::Error(error)) => Err(io_error(path)(error).into()),
@@ -100,11 +109,16 @@ fn holder_path(path: &Path) -> PathBuf {
 ///
 /// The file cannot be locked, or its holder's file cannot be written.
 pub fn try_lock_as(path: &Path, holder: &[u8]) -> Result<Option<Locked>, YardStoreError> {
-    let Some(locked) = try_lock(path)? else {
+    let Some(mut locked) = try_lock(path)? else {
         return Ok(None);
     };
+    // Written whole beside the name and renamed over it, so that a reader sees one holder's
+    // name or the one before, never half of either.
     let named = holder_path(path);
-    fs::write(&named, holder).map_err(io_error(&named))?;
+    let beside = named.with_extension("holder.new");
+    fs::write(&beside, holder).map_err(io_error(&beside))?;
+    fs::rename(&beside, &named).map_err(io_error(&named))?;
+    locked.named = Some(named);
     Ok(Some(locked))
 }
 

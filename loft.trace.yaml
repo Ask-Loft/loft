@@ -20874,6 +20874,12 @@ links:
       - file: "crates/loft-cli/tests/yard_wait.rs"
         name: "the_lease_is_a_lock_in_git_s_own_directory_and_nothing_of_it_is_under_yard"
         body: 5e6f9b7e3e73012aae956ef58db15c3dc13d9c497f9f2a9fed8c4298e969f291
+  - node: 01a16602-592c-71d8-ab1f-2b84c7f0da5e
+    reviewed: 4b095ab781ae61b1449d62db17fd53a085b1ee9b8f1f14e3b25e4212daa0bac0
+    tests:
+      - file: "crates/yardlog-store/tests/leases.rs"
+        name: "a_lease_s_holder_is_named_while_it_holds_it_and_its_name_goes_with_it"
+        body: 186963e8ad3f4819fc31c22204d53f8478483b561881d1c0ebd908ceb91df300
   - node: 01a1647c-e680-7753-bf17-f17296e2f008
     reviewed: e353df661c19027bec47c6ca9ee6a767f698a7c1d926bf0c6f38363be9582221
     tests:
