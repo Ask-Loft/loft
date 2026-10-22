@@ -21801,6 +21801,9 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "a_change_that_git_makes_reaches_open_pages"
         body: c1686f774b9b3f51c9e9e8383809d36e27f5064beb0e525cf27d0172d6de30c4
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "a_checkout_that_rewrites_the_tree_s_head_reaches_open_pages"
+        body: 2719b59f2c671f18be53c3995cc22762ac4787088164323d3a2e20a8b1729a3f
   - node: 01a1646f-546d-7042-befd-eb57085a1ead
     reviewed: 7ca4a201916a9d2867f8a0bb74877f8a87f713db324ee8af7624230601b269db
     tests:

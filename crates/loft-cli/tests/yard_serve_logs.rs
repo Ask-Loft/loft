@@ -417,3 +417,30 @@ fn served_both(first: &Yard, second: &Yard) -> Served {
     assert_eq!(served.post_as_mod("/api/register", &other).status, 200);
     served
 }
+
+#[test]
+fn a_checkout_that_rewrites_the_tree_s_head_reaches_open_pages() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let head = yard.scratch.0.join(".git/HEAD");
+    fs::create_dir_all(head.parent().unwrap()).unwrap();
+    fs::write(&head, format!("ref: refs/heads/{BRANCH}\n")).unwrap();
+    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
+    let mut stream = TcpStream::connect(("127.0.0.1", served.port)).unwrap();
+    let request = format!(
+        "GET /api/stream HTTP/1.1\r\nhost: 127.0.0.1:{}\r\n\r\n",
+        served.port
+    );
+    stream.write_all(request.as_bytes()).unwrap();
+    stream
+        .set_read_timeout(Some(Duration::from_secs(2)))
+        .unwrap();
+    let mut reader = BufReader::new(stream);
+    assert!(stream_until(&mut reader, "hello"));
+    std::thread::sleep(Duration::from_millis(600));
+    fs::write(&head, "ref: refs/heads/another-branch\n").unwrap();
+    assert!(
+        stream_until(&mut reader, "change"),
+        "no change within 2 seconds"
+    );
+}

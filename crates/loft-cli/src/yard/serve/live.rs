@@ -3,10 +3,11 @@
 //! and exiting; and the files of every Yard Log it serves, whoever changes them, a `loft yard`
 //! command or git, each change of which it counts so that open pages hear of it.
 
+use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 
@@ -30,6 +31,7 @@ const FINISHING: Duration = Duration::from_millis(600);
 pub fn follow(server: &Server) -> ! {
     let clock = clock();
     let mut last = None;
+    let mut heads = HashMap::new();
     let mut tick: u64 = 0;
     loop {
         clock.wait(TICK);
@@ -38,7 +40,7 @@ pub fn follow(server: &Server) -> ! {
         }
         tick += 1;
         if tick.is_multiple_of(2) {
-            let now = fingerprint(&server.home);
+            let now = fingerprint(&server.home, &mut heads);
             if last.is_some_and(|last| last != now) {
                 server.changes.fetch_add(1, Ordering::SeqCst);
             }
@@ -60,18 +62,33 @@ fn stop(server: &Server) -> ! {
     std::process::exit(0)
 }
 
-/// A digest of what the page shows: the trees served, the branch each is on, and the size and
-/// time of every file under each tree's `.yard/`.
-pub fn fingerprint(home: &Home) -> u64 {
+/// A digest of what the page shows: the trees served, the size and time of each one's HEAD
+/// file, which a checkout or a commit rewrites, and those of every file under its `.yard/`.
+/// Where each tree's HEAD file lies is asked of git once, through its port, and kept in `heads`,
+/// so that a look runs no git command.
+pub fn fingerprint(home: &Home, heads: &mut HashMap<PathBuf, Option<PathBuf>>) -> u64 {
     let mut hasher = DefaultHasher::new();
     home.read(HomeFile::Trees).ok().flatten().hash(&mut hasher);
-    let git = YardGit::default();
     for tree in trees::served(home).unwrap_or_default() {
         tree.hash(&mut hasher);
-        git.branch(&tree).ok().flatten().hash(&mut hasher);
+        let head = heads
+            .entry(tree.clone())
+            .or_insert_with(|| YardGit::default().git_path(&tree, "HEAD").ok());
+        if let Some(head) = head {
+            stamp(head, &mut hasher);
+        }
         files(&tree.join(YARD), &mut hasher);
     }
     hasher.finish()
+}
+
+/// Hashes the size and modification time of the file at `path`, where there is one.
+fn stamp(path: &Path, hasher: &mut DefaultHasher) {
+    if let Ok(meta) = fs::metadata(path) {
+        meta.len().hash(hasher);
+        // The file's own stamp, as the file system keeps it: not a reading of the clock.
+        format!("{:?}", meta.modified().ok()).hash(hasher);
+    }
 }
 
 fn files(dir: &Path, hasher: &mut DefaultHasher) {
@@ -85,10 +102,8 @@ fn files(dir: &Path, hasher: &mut DefaultHasher) {
         path.hash(hasher);
         if path.is_dir() {
             files(&path, hasher);
-        } else if let Ok(meta) = entry.metadata() {
-            meta.len().hash(hasher);
-            // The file's own stamp, as the file system keeps it: not a reading of the clock.
-            format!("{:?}", meta.modified().ok()).hash(hasher);
+        } else {
+            stamp(&path, hasher);
         }
     }
 }
