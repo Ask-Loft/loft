@@ -1,14 +1,17 @@
 //! The plugins for Claude Code and Codex: each committed package equals the composition `loft`
 //! writes for its host, each marketplace, `ask-loft`, lists the plugin `loft` at its host's plugin root, and
 //! every manifest carries the version of `loft`; the Claude Code plugin also names the hooks
-//! module and the type contract of the Loft status pane, and declares its settings, and its mod
-//! names the version of `loft` and the yard protocol `loft` speaks.
+//! module and the type contract of the Loft status pane, and declares its settings, its mod
+//! names the version of `loft` and the yard protocol `loft` speaks, and it holds the `loft-spec`
+//! and `yard` skills; CI tests the mod under a pinned Claude Code and the Yard page in a DOM
+//! emulator.
 
 use std::fs;
 
 use crate::common::{Scratch, workspace};
 use crate::skill_install::{CLAUDE, CODEX, installed};
 use crate::snapshot::snapshot;
+use crate::workflow::job;
 use serde_json::{Value, json};
 
 fn read(path: &str) -> Value {
@@ -190,4 +193,36 @@ fn the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks() {
 fn the_claude_code_plugins_hooks_json_holds_an_empty_hooks_record_for_a_host_without_modules() {
     let hooks = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
     assert_eq!(hooks["hooks"], json!({}));
+}
+
+/// The oldest Claude Code the mod runs under, as the Loft mod's Component states it.
+const OLDEST_CLAUDE_CODE: [u32; 3] = [2, 1, 287];
+
+#[test]
+fn ci_tests_the_mod_under_a_pinned_claude_code_and_the_page_in_a_dom_emulator() {
+    let ci = fs::read_to_string(workspace().join(".github/workflows/ci.yml")).unwrap();
+    let plugin = job(&ci, "plugin").runs();
+    let install = plugin
+        .iter()
+        .find_map(|run| run.strip_prefix("npm install --global @anthropic-ai/claude-code@"))
+        .expect("the plugin job installs Claude Code");
+    let pinned: Vec<u32> = install
+        .split('.')
+        .map(|part| part.parse().expect("an exact version"))
+        .collect();
+    assert!(
+        pinned.as_slice() >= OLDEST_CLAUDE_CODE.as_slice(),
+        "{install}"
+    );
+    let script = plugin.join("\n");
+    for command in [
+        "claude plugin validate plugins/claude/loft",
+        "claude plugin test plugins/claude/loft",
+    ] {
+        assert!(script.lines().any(|line| line == command), "{command}");
+    }
+    assert_eq!(
+        job(&ci, "page").runs(),
+        ["npm ci", "npm test", "npm run types"]
+    );
 }

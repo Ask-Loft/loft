@@ -40,6 +40,42 @@ jobs:
       # holds is only a warning here.
       - if: github.ref == 'refs/heads/main'
         run: cargo publish --workspace --dry-run
+  # The Loft mod is tested by Claude Code's own test kit, under a Claude Code pinned no older than
+  # the mod needs; the pin is raised on purpose, in a change of its own. The kit loads the mod and
+  # fires events through its hooks with no session, no sign-in and no network, and the tests stub
+  # every process the mod would run, so no `loft` is built here.
+  plugin:
+    runs-on: ubuntu-latest
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install --global @anthropic-ai/claude-code@2.1.309
+      # An empty home: the tests read no settings, sign-in or plugin of the runner's.
+      - run: |
+          export HOME="$(mktemp -d)"
+          claude plugin validate plugins/claude/loft
+          claude plugin test plugins/claude/loft
+  # The Yard page's own logic, in a DOM emulator, and its types. The suite that drives the page in
+  # a real browser runs on demand only.
+  page:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crates/loft-cli/yard-page-tests
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: crates/loft-cli/yard-page-tests/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run types
   # loftspec builds on stable Rust at its declared rust-version, the workspace's, and not only on
   # the newer toolchain rust-toolchain.toml pins: `+<version>` overrides that file. The library
   # alone is built, since its tests may use what a newer toolchain brings.
