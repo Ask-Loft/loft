@@ -123,3 +123,23 @@ requirements:
         name: "`ls-tree -r -z <commit> -- spec` prints a record for each file under `spec/` that the scenario gives the base commit."
       - key: 01a144ee-c5a0-7459-bcd4-bd58ca3ef26e
         name: "`cat-file --batch` prints each blob whose object id it reads on standard input, after a header with its object id, type and size."
+  - key: 01a164cf-8fd5-7533-a02e-c04d04f5c5a9
+    statement:
+      form: ubiquitous
+      system: "The git simulator"
+      shall: "answer the calls with which `yardlog-store` finds a worktree's Yard Log as its scenario scripts them."
+    criteria:
+      - key: 01a164cf-8fd5-7533-a02e-c04e713e8be1
+        name: "`rev-parse --show-toplevel` prints the top of the worktree that holds the directory the call runs in, resolved on disk."
+      - key: 01a164cf-8fd5-7533-a02e-c04f57f25aa8
+        name: "`rev-parse --git-common-dir` prints the repository's common directory as git prints it from the directory the call runs in, or the path the scenario gives it for a linked worktree."
+      - key: 01a164cf-8fd5-7533-a02e-c0500b520607
+        name: "`rev-parse --git-path yard` prints `yard` under the worktree's own git directory."
+      - key: 01a164cf-8fd5-7533-a02e-c051c6c67714
+        name: "`check-ignore -q <path>` exits 0 for a path the scenario ignores and 1 for any other."
+      - key: 01a164cf-8fd5-7533-a02e-c0521d4db6c6
+        name: "`config --get <name>` prints the value of a name the scenario sets, and exits 1 and prints nothing for one it does not set."
+      - key: 01a164cf-8fd5-7533-a02e-c053f8d7d124
+        name: "`rev-parse -q --verify <revision>:<path>` prints the object id the scenario gives the path at the revision, and exits 1 and prints nothing where it gives none."
+      - key: 01a164cf-8fd5-7533-a02e-c054dfca0a97
+        name: "Each of these calls run outside a repository exits 128 with git's message, except `config --get`, which exits 1."
