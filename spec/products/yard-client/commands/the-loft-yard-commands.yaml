@@ -61,7 +61,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-ea59dc5f73ee
         name: "The address is that of the page server `~/.yard/server.json` names, with the tree and the branch."
       - key: 01a1646f-546d-7042-befd-ea5a9fa982c1
-        name: "Where `~/.yard/server.json` names no page server whose process runs, the result says that the page is unavailable and names the port."
+        name: "Where `~/.yard/server.json` names no page server that holds the lock on `~/.yard/server.lock`, the result says that the page is unavailable and names the port."
       - key: 01a1649f-62ef-71e6-98de-e104038deca7
         name: "A command learns whether a page server runs without opening a connection."
       - key: 01a1646f-546d-7042-befd-ea9efc9e224f

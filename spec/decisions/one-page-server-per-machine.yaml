@@ -5,7 +5,7 @@ context: "The person reads every branch being worked on at one address. A mod li
 state:
   kind: accepted
   selectedOption: 01a1646f-5467-7025-8a88-4e68f97d272a
-  outcome: "Each mod runs `loft yard serve` at the start of its session and every 5 seconds after, which records that the session was heard and starts a page server only where `~/.yard/server.json` names none whose process runs; the mod then registers its tree. A page server lives as long as the mod that started it, or until a `loft yard serve` of a newer version stops it by its process id and takes the port."
+  outcome: "Each mod runs `loft yard serve` at the start of its session and every 5 seconds after, which records that the session was heard and starts a page server only where no page server holds the lock on `~/.yard/server.lock`; the mod then registers its tree. A page server lives as long as the mod that started it, or until a `loft yard serve` of a newer version asks it to stop through a request in `~/.yard/stop.json`, which it reads while it polls, and takes the port once its lock is free. Neither signals nor connections pass between the two, so it works alike on every platform `loft` is built for."
 drivers:
   - key: 01a1646f-5467-7025-8a88-4e6576a5059b
     kind: local
