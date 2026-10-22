@@ -19,7 +19,7 @@ use super::args::PublishedArgs;
 use super::branch::{Branch, revision_of};
 use super::caller::Caller;
 use super::failure::{self, Failure};
-use super::views::Views;
+use super::views::{Views, spec_root};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -87,8 +87,9 @@ fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
     if matches!(held, Held::Absent) {
         return Err(refused(&branch, &held, absent()));
     }
+    let spec = spec_root(dir, &branch.place().tree);
     let views = Views {
-        tree: &branch.place().tree,
+        tree: &spec,
         base: &base,
         at,
     };

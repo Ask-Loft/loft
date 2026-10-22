@@ -193,3 +193,16 @@ fn a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole() {
     assert_eq!(report["counts"]["status.base.added"], 1_001);
     assert_eq!(report["leftOut"]["status.base.added"], 1);
 }
+
+#[test]
+fn a_view_is_computed_over_the_specification_below_the_top_of_the_worktree() {
+    let mut yard = Yard::with_spec();
+    yard.git = yard.git.clone().below("pkg/");
+    let named = r#", "decision": "store-a-shelf-in-one-file""#;
+    let body = recorded(&yard, "decision", named);
+    let found = yard.loft(&["find", "store-a-shelf-in-one-file"]);
+    assert_eq!(
+        body["report"]["decision"]["key"],
+        found["matches"][0]["key"]
+    );
+}

@@ -9,7 +9,7 @@ mod decision;
 mod graph;
 mod trace;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use loftspec_store::repository::{GitCommand, MergeBase, Repository as _};
 use serde_json::{Map, Value, json};
@@ -24,6 +24,21 @@ use crate::{check, status, version};
 
 /// The most items of one list a report keeps.
 pub const MOST: usize = 1_000;
+
+/// The directory whose `spec/` the views read: the nearest of `dir` and the directories above it,
+/// up to the worktree's `top`, that holds a `spec/` directory, as `loft` itself is run where its
+/// specification lies, below the top of the worktree or at it; `dir` where none does, so that
+/// the view says it finds no specification.
+#[must_use]
+pub fn spec_root(dir: &Path, top: &Path) -> PathBuf {
+    let dir = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
+    let top = top.canonicalize().unwrap_or_else(|_| top.to_owned());
+    dir.ancestors()
+        .take_while(|each| each.starts_with(&top))
+        .find(|each| each.join("spec").is_dir())
+        .unwrap_or(&dir)
+        .to_owned()
+}
 
 /// Computes the `loft` views of a batch over the tree under `tree`, at `at`, comparing with
 /// `base` where a view names no base revision.

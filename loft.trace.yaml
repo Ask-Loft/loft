@@ -22101,8 +22101,14 @@ links:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_publish_view_holds_what_loft_status_prints"
         body: 31ce0663ed5cfbd910b552f68ceb2726d67f6c2f4a3a1fa1a6142b71ed2c94e5
+  - node: 01a165f7-a4b1-74a9-8047-9b9fd0a3c605
+    reviewed: add91a56429b20a806d53883a30fdaec7235816b8b98ecdafeba400427dbafc2
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_is_computed_over_the_specification_below_the_top_of_the_worktree"
+        body: ffc20a5db96620eab7b0a44c85080ec2d16130cd1bbfa35eb66ed3ee68519e70
   - node: 01a1646f-546d-7042-befd-eaa4fdf28e1d
-    reviewed: df35c1661d33ebbfe6f3ca57f6b611da365d5e3d0db1bef8b9e965cf908c7455
+    reviewed: 7e92c05a8a7fbca4c08120b5f44fdb9b3cd96899cf6608850b9aead88c3ccd4f
     tests:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_block_records_the_commit_branch_uncommitted_changes_loft_version_and_time_of_its_report"
@@ -22206,6 +22212,12 @@ links:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole"
         body: 687be064bf9a404d88fd59d2bc8d911e7ca896fc7ffdcad4b1e228344755c677
+  - node: 01a1646f-546d-7042-befd-eab5b5f31064
+    reviewed: 4d05f6305d42448c5fb9f46ca62737959da7e08733d0ccb98fa6fe9bf0eb7aa4
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_block_records_the_commit_branch_uncommitted_changes_loft_version_and_time_of_its_report"
+        body: 0958b3af28b45d09462e597fa5401df44dbc2500622b20912368bb6213dff999
   - node: 01a1646f-546d-7042-befd-eab87ad2fa8b
     reviewed: e1b9f4fca3d37767aeeb549d5eaeb1e5a8ad0412bc00f4f83640f29ef869c41c
     tests:

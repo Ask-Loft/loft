@@ -3,10 +3,14 @@
 //! submission of its questions, approvals and plans. Yard Log in an older format is written in
 //! this `loft`'s format with the batch, as one write.
 
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use serde_json::{Value, json};
-use yardlog::input::{Fault, read_batch};
+use yardlog::body::Recorded;
+use yardlog::datum::Datum;
+use yardlog::input::{Fault, Request, read_batch};
+use yardlog::keys::Handle;
 use yardlog::write::{Context, Refusal, Written};
 use yardlog::{Format, YardLog};
 use yardlog_store::home::Home;
@@ -17,13 +21,16 @@ use super::branch::{Branch, log_of, revision_of};
 use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::render;
-use super::views::Views;
+use super::views::{Views, spec_root};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-write/1";
 const OUTCOME: &str = "written";
+
+/// A view's report, or why it could not be computed.
+type Reported = Result<(Recorded, Datum), String>;
 
 pub fn run(root: &Path, args: WriteArgs) -> Finished {
     let as_json = args.output.json();
@@ -85,18 +92,26 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         send: args.send,
     };
     let branch_name = branch.store.branch().to_owned();
+    let spec = spec_root(dir, &branch.place().tree);
     let views = Views {
-        tree: &branch.place().tree,
+        tree: &spec,
         base: &branch.beyond.base,
         at,
     };
+    // The views read the specification and git, and need nothing of Yard Log: each is computed
+    // before Yard Log's lock is taken, so that no other command waits on them.
+    let reports: BTreeMap<Handle, Reported> = inputs
+        .iter()
+        .filter_map(|input| match &input.request {
+            Request::Loft(request) => Some((input.id.clone(), views.report(&input.id, request))),
+            _ => None,
+        })
+        .collect();
     let applied = branch.store.update(|current| {
         let mut log = current.unwrap_or_else(|| YardLog::open(&branch_name, at, agent.clone()));
         let upgraded_from = upgrade(&mut log);
         let written = log
-            .write(&inputs, &context, &mut |block, request| {
-                views.report(block, request)
-            })
+            .write(&inputs, &context, &mut |block, _| reports[block].clone())
             .map_err(Unwritten::Refused)?;
         Ok::<_, Unwritten>((
             log,
