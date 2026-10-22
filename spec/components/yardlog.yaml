@@ -11,3 +11,6 @@ constraints:
   - key: 01a16469-559e-73c4-85f2-71bbf8853b2b
     name: "`yardlog` shall depend on no store and on no crate of `loft-cli`."
     verificationFate: proved
+  - key: 01a164dc-6a5a-7238-aa6a-3edf192ec694
+    name: "`yardlog` shall not depend on `loftspec`."
+    verificationFate: proved
