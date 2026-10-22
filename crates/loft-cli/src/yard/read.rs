@@ -25,7 +25,7 @@ const OUTCOME: &str = "read";
 
 pub fn run(root: &Path, args: ReadArgs) -> Finished {
     let as_json = args.output.json();
-    match attempt(root, args) {
+    match document(root, args) {
         Ok(fields) => {
             if as_json {
                 json::print(&json::result(SCHEMA, OUTCOME, fields, Vec::new()));
@@ -62,7 +62,7 @@ fn detached(place: &Place, port: u16) -> Value {
     })
 }
 
-fn attempt(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
+pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     let caller = Caller::new(args.agent);
     let git = YardGit::default();
     let place = Place::locate(&git, dir)?;

@@ -41,6 +41,24 @@ pub enum YardAction {
     },
     /// Bring every open Yard Log under the tree's `.yard/` up to this `loft`'s format.
     Upgrade(UpgradeArgs),
+    /// Run the page server on the loopback interface, unless one of this `loft`'s version or a
+    /// newer one already serves the port; record the session as heard and its tree as served.
+    Serve(ServeArgs),
+}
+
+#[derive(Args)]
+pub struct ServeArgs {
+    /// The port to serve the page on.
+    #[arg(long, value_name = "PORT", default_value_t = DEFAULT_PORT)]
+    pub port: u16,
+    /// The session whose mod runs the command, recorded as heard.
+    #[arg(long, value_name = "ID")]
+    pub session: Option<String>,
+    /// A directory of a worktree whose Yard Logs the page server is to serve.
+    #[arg(long, value_name = "DIR")]
+    pub tree: Option<PathBuf>,
+    #[command(flatten)]
+    pub output: Output,
 }
 
 /// The agent that runs a command, as a host names it.

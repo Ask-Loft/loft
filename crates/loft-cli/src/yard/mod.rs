@@ -1,7 +1,8 @@
 //! `loft yard` (the `loft yard` commands Feature): Yard Client's one way in. Each command acts
 //! on the Yard Log of the branch that the worktree holding its directory is on, but `protocol`,
-//! which needs no repository, and `upgrade`, which acts on every branch's under the tree. None
-//! sends a command event or asks for an update.
+//! which needs no repository, `upgrade`, which acts on every branch's under the tree, and
+//! `serve`, the page server, which serves every tree registered with it. None sends a command
+//! event or asks for an update.
 
 mod answer;
 mod answer_input;
@@ -20,6 +21,7 @@ mod read;
 mod render;
 mod render_loft;
 mod render_log;
+mod serve;
 mod sessions;
 mod standing;
 mod upgrade;
@@ -50,6 +52,7 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Answer(args) => answer::run(root, args),
         YardAction::Protocol { output } => protocol::run(output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),
+        YardAction::Serve(args) => serve::run(&args),
     }
 }
 

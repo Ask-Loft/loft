@@ -24,6 +24,7 @@ path = "src/main.rs"
 [dependencies]
 clap.workspace = true
 hmac.workspace = true
+httparse.workspace = true
 loft-ports.workspace = true
 loftspec.workspace = true
 loftspec-store.workspace = true

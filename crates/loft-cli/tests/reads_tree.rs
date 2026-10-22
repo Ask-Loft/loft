@@ -54,8 +54,10 @@ fn each_tagged_command_reports_the_error_changes_no_file_and_exits_1() {
 #[test]
 fn each_command_that_reports_a_read_error_lists_reads_tree() {
     let tagged = tagged(TAG);
-    for (slug, args, _, _) in COMMANDS {
-        let output = broken().loft(args);
+    for (slug, args, kind, _) in COMMANDS {
+        let scratch = broken();
+        crate::commands::prepare(&scratch, kind);
+        let output = scratch.loft(args);
         let reports = output_text(&output)
             .lines()
             .any(|line| line.starts_with(&format!("spec/{PRODUCT}:1:")));

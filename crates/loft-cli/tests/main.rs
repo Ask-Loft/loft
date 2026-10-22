@@ -16,6 +16,8 @@ mod markdown;
 mod repo;
 #[path = "common/schema.rs"]
 mod schema;
+#[path = "common/served.rs"]
+mod served;
 #[path = "common/snapshot.rs"]
 mod snapshot;
 #[path = "common/workflow.rs"]
@@ -92,6 +94,10 @@ mod yard_newer;
 mod yard_protocol;
 mod yard_published;
 mod yard_read;
+mod yard_serve;
+mod yard_serve_access;
+mod yard_serve_events;
+mod yard_serve_logs;
 mod yard_settle;
 mod yard_take_up;
 mod yard_upgrade;

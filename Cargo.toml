@@ -29,6 +29,8 @@ yardlog = { path = "crates/yardlog", version = "2.2.1" }
 yardlog-store = { path = "crates/yardlog-store", version = "2.2.1" }
 clap = { version = "4", features = ["derive"] }
 hmac = "0.12"
+# The page server reads each request it is sent with it; it is already in the lock through ureq.
+httparse = "1.10"
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version
 # change can change a finding.
 pulldown-cmark = { version = "=0.13.4", default-features = false }

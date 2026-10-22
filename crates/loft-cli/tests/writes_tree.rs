@@ -46,7 +46,7 @@ fn planted_lock() -> Vec<u8> {
 /// be an uncommitted change that refuses a publish; otherwise the Product's body.
 fn plant(scratch: &Scratch, fixture: Fixture, committed: bool) {
     let (path, bytes) = match fixture {
-        Fixture::Empty => (
+        Fixture::Empty | Fixture::Served => (
             RootPath::in_spec(&SpecPath::new(PLANTED_FILE)),
             b"planted\n".to_vec(),
         ),
@@ -72,7 +72,7 @@ fn plant(scratch: &Scratch, fixture: Fixture, committed: bool) {
 /// Whether the planted save took effect.
 fn planted(scratch: &Scratch, fixture: Fixture) -> bool {
     match fixture {
-        Fixture::Empty => scratch.file(PLANTED_FILE).exists(),
+        Fixture::Empty | Fixture::Served => scratch.file(PLANTED_FILE).exists(),
         Fixture::Clean => {
             let lock = Lock::read(&fs::read(scratch.0.join(LOCK)).unwrap()).unwrap();
             lock.publish_sequence.get() == 8

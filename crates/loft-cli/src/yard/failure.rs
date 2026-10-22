@@ -94,6 +94,7 @@ pub fn store_error(error: &YardStoreError) -> Value {
         YardStoreError::NotARepository(_) => self::error("repository", &message),
         YardStoreError::Detached(_) => self::error("detached", &message),
         YardStoreError::Branch(_) => self::error("branch", &message),
+        YardStoreError::Session(_) => self::error("session", &message),
         YardStoreError::Unreadable { folder, error } => {
             let path = format!("{folder}/{}", error.file);
             let at = error

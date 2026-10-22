@@ -43,13 +43,16 @@ pub enum Fixture {
     Unkeyed,
     /// The Reading List as converted, in a clean repository on `main`.
     Clean,
+    /// An empty directory, on a machine where a page server of this `loft`'s version already
+    /// runs: `loft yard serve` leaves it serving and exits, as every command here exits.
+    Served,
 }
 
 /// A scratch directory for a command.
 pub fn fixture(fixture: Fixture) -> Scratch {
     let scratch = Scratch::with_reading_list();
     match fixture {
-        Fixture::Empty => fs::remove_dir_all(scratch.0.join("spec")).unwrap(),
+        Fixture::Empty | Fixture::Served => fs::remove_dir_all(scratch.0.join("spec")).unwrap(),
         Fixture::Unkeyed => scratch.edit(
             PRODUCT,
             "      - key: 00000000-0000-4000-8000-000000000032\n        name:",
@@ -57,7 +60,29 @@ pub fn fixture(fixture: Fixture) -> Scratch {
         ),
         Fixture::Clean => {}
     }
+    prepare(&scratch, fixture);
     scratch
+}
+
+/// Readies the machine `scratch` stands for as `fixture` needs it, beyond its files: for
+/// [`Fixture::Served`], a page server of this `loft`'s version named in `~/.yard/server.json`,
+/// whose lock this test process takes and keeps until it ends.
+pub fn prepare(scratch: &Scratch, fixture: Fixture) {
+    if fixture != Fixture::Served {
+        return;
+    }
+    let dir = scratch.home().join(".yard");
+    fs::create_dir_all(&dir).unwrap();
+    let server = serde_json::json!({
+        "port": 7411,
+        "pid": 1,
+        "version": env!("CARGO_PKG_VERSION"),
+        "formats": ["yardlog/1"],
+    });
+    fs::write(dir.join("server.json"), server.to_string()).unwrap();
+    let held = yardlog_store::lock::lock(&dir.join("server.lock")).unwrap();
+    // The lock stands for a page server that runs for as long as the test does.
+    std::mem::forget(held);
 }
 
 /// The `loft` command over `fixture` at [`EPOCH`]: in a clean repository on `main` for the
@@ -73,7 +98,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 27] = [
+pub const COMMANDS: [Entry; 28] = [
     ("loft-check", &["check"], Fixture::Unkeyed, "check"),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed, "fmt"),
     (
@@ -237,5 +262,12 @@ pub const COMMANDS: [Entry; 27] = [
         &["yard", "upgrade"],
         Fixture::Clean,
         "yard-upgrade",
+    ),
+    // Where a page server of this version already runs, `serve` leaves it serving and exits.
+    (
+        "serve-the-page",
+        &["yard", "serve", "--session", "s1"],
+        Fixture::Served,
+        "yard-serve",
     ),
 ];
