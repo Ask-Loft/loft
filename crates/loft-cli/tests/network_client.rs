@@ -25,7 +25,7 @@ fn sources(dir: &Path, found: &mut Vec<(String, String)>) {
 fn only_the_network_client_opens_a_connection() {
     let mut found = Vec::new();
     let crates = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-    for built_in in ["loft-cli", "loftspec-store"] {
+    for built_in in ["loft-cli", "loft-ports", "loftspec-store"] {
         sources(&crates.join(built_in).join("src"), &mut found);
     }
     assert!(found.len() > 10);

@@ -7,6 +7,7 @@ use std::path::Path;
 use std::process::{Command, Output};
 use std::{fs, io};
 
+use loft_ports::git::{self, Git};
 use loftspec::publish::{LOCK, Operation, RepoState, Stopped};
 
 use crate::StoreError;
@@ -67,9 +68,9 @@ pub trait Repository {
     fn state(&self, root: &Path) -> Result<RepoState, StoreError>;
 }
 
-/// The repository read by running `git`.
+/// The repository read by running `git` through `loft-ports`' runner.
 pub struct GitCommand {
-    command: Box<dyn Fn() -> Command>,
+    git: Git,
 }
 
 impl Default for GitCommand {
@@ -83,24 +84,12 @@ impl GitCommand {
     /// Runs the git command that `command` starts, with the arguments of each call added.
     pub fn from_command(command: impl Fn() -> Command + 'static) -> Self {
         Self {
-            command: Box::new(command),
+            git: Git::from_command(command),
         }
     }
 
     fn run(&self, root: &Path, call: &[&str]) -> Result<Output, StoreError> {
-        (self.command)()
-            .arg("-C")
-            .arg(root)
-            .args(call)
-            .env("GIT_OPTIONAL_LOCKS", "0")
-            .output()
-            .map_err(|error| match error.kind() {
-                io::ErrorKind::NotFound => StoreError::GitUnavailable(error.to_string()),
-                _ => StoreError::Git {
-                    call: call.join(" "),
-                    message: error.to_string(),
-                },
-            })
+        Ok(self.git.run(root, call)?)
     }
 
     /// The working directory's path from the repository's top level.
@@ -295,25 +284,12 @@ fn unmerged(listed: &[u8], prefix: &str) -> Vec<String> {
 }
 
 fn succeeded(call: &[&str], output: Output) -> Result<Vec<u8>, StoreError> {
-    if output.status.success() {
-        Ok(output.stdout)
-    } else {
-        Err(StoreError::Git {
-            call: call.join(" "),
-            message: String::from_utf8_lossy(&output.stderr)
-                .trim_end()
-                .to_owned(),
-        })
-    }
+    Ok(git::succeeded(call, output)?)
 }
 
 /// The first line of a call's output.
 fn text(stdout: &[u8]) -> String {
-    String::from_utf8_lossy(stdout)
-        .lines()
-        .next()
-        .unwrap_or_default()
-        .to_owned()
+    git::first_line(stdout)
 }
 
 /// The paths of porcelain v1 `-z` records, from the directory whose path from the top level is

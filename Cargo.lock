@@ -476,6 +476,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "loft-ports"
+version = "2.2.1"
+dependencies = [
+ "serde",
+ "serde_json",
+ "software-plant",
+ "thiserror",
+]
+
+[[package]]
 name = "loftspec"
 version = "2.2.1"
 dependencies = [
@@ -496,6 +506,7 @@ dependencies = [
 name = "loftspec-store"
 version = "2.2.1"
 dependencies = [
+ "loft-ports",
  "loftspec",
  "serde",
  "serde_json",

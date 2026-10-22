@@ -1,0 +1,33 @@
+[package]
+name = "loft-ports"
+version = "2.2.1"
+description = "The ports Loft's stores share: a journaled save, the git command runner and the clock"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "../../README.md"
+keywords.workspace = true
+categories = ["development-tools", "filesystem"]
+# The tests use the repository's own scratch directories, which are not published, so they run
+# from the repository only.
+exclude = ["tests"]
+# The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
+# checked by the operating system once each.
+autotests = false
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+software-plant = { path = "../software-plant" }
+
+[lints]
+workspace = true
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"

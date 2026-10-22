@@ -12942,6 +12942,9 @@ links:
       - file: "crates/loft-cli/tests/publish.rs"
         name: "an_epoch_that_is_not_a_whole_number_of_seconds_refuses_naming_it"
         body: 783b1ecf7bf0631da60c90b61c295717267f93140c31c9a74a99059d9f37c61d
+      - file: "crates/loft-ports/tests/clock.rs"
+        name: "an_epoch_that_is_not_whole_seconds_is_refused"
+        body: 183688613592692212ce61c2812a5eba8637adc1cc63d4d95f791c053f986445
   - node: 01a12ff0-f5e5-7095-8fa8-250683ee361f
     reviewed: b2b513ed7ca52c8a4a6393c3a44f032d189e93e6ba260ab737f774db933f3bb5
     tests:
@@ -12969,6 +12972,9 @@ links:
       - file: "crates/loftspec-store/tests/git_contract.rs"
         name: "reading_the_state_changes_no_file_of_the_repository"
         body: 89e08873c842604bd415a93a36dcfdba40a084b1011a50e3ab0700b76614e5f7
+      - file: "crates/loft-ports/tests/git.rs"
+        name: "a_call_takes_none_of_git_s_optional_locks"
+        body: c080ca2b3cd6ec22bca58c23d5662181709aa12c1f02133f627c9d5cb7295306
   - node: 01a130de-573a-77b2-b40b-d432f2cff1fb
     reviewed: 0a0890675eb1c8a6d3133a0f692c12e12a1fb8d019b1fbe3e6c21ecaccb04768
     tests:
@@ -20024,7 +20030,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/network_client.rs"
         name: "only_the_network_client_opens_a_connection"
-        body: f0e97dd988deffd106bec8aeb9eabe76d72e96cbee12482ec19f5a4867f2dc4e
+        body: d1e18520235e09f2cc9165f6782a3a9d6ef2c7e8710bd0608d5bd16ec5223d0a
       - file: "crates/loftspec/tests/package.rs"
         name: "the_library_uses_no_file_network_process_or_environment"
         body: 01c3f9239a31f5c3d2d4e8797b2b9d124428147885a803b5118c1c1a94b46577
@@ -20045,7 +20051,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/test_locator.rs"
         name: "only_the_test_locator_parses_a_programming_language"
-        body: a8250a3531b3596aec5b5f8ee2616f23f9b046bc942be26060fbd2268e0c4508
+        body: 3a6162d7d2dd712332cf01094e14321b8f910eb1ce5f5b38d08165f9281b6b6b
   - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
     reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
     tests:
@@ -20076,6 +20082,15 @@ links:
       - file: "plugins/claude/loft/tests/pane.test.tsx"
         name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
         body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
+  - node: 01a1649f-62ea-7225-80e1-a3d5bf4de21c
+    reviewed: eb4056dd9ec58a44693ce237cffdfb6f09f9c4ee4d3bad8a6e2208955d856170
+    tests:
+      - file: "crates/loft-ports/tests/boundary.rs"
+        name: "the_ports_depend_on_no_crate_of_the_format_and_on_no_store"
+        body: f6583ebc6ec70c94af64988dc5a51e9096fe6258cb5c701a1846a28a1bd06b7b
+      - file: "crates/loft-ports/tests/boundary.rs"
+        name: "no_source_of_the_ports_names_an_item_of_the_format_or_a_store"
+        body: 9c4ee1f044e6843620c4c7e0ca5f4f42d8682d10d5fab2da6e559277aa6f8bba
   - node: 01a13653-3ec0-76e7-bf76-fc75dd4de6c2
     reviewed: 70a99dbf0ea4710f444c9260b91542d3c9cd24a974b92cfdc4d02dbfe1944394
     tests:

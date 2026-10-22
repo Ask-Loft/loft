@@ -2,10 +2,8 @@
 //! the revision, as `git merge-base` gives it, and the files under `spec/` that the commit
 //! holds, listed by `git ls-tree` and read in one `git cat-file --batch`.
 
-use std::io::Write;
 use std::path::Path;
-use std::process::{Output, Stdio};
-use std::{io, thread};
+use std::process::Output;
 
 use loftspec::codec::{Files, SpecPath};
 
@@ -84,37 +82,14 @@ impl GitCommand {
         Ok(files)
     }
 
-    /// Runs one call with `input` on its standard input, written from another thread so that a
-    /// call that answers while it reads cannot stall on a full pipe.
+    /// Runs one call with `input` on its standard input.
     fn run_with_input(
         &self,
         root: &Path,
         call: &[&str],
         input: &[u8],
     ) -> Result<Output, StoreError> {
-        let failed = |error: io::Error| match error.kind() {
-            io::ErrorKind::NotFound => StoreError::GitUnavailable(error.to_string()),
-            _ => StoreError::Git {
-                call: call.join(" "),
-                message: error.to_string(),
-            },
-        };
-        let mut child = (self.command)()
-            .arg("-C")
-            .arg(root)
-            .args(call)
-            .env("GIT_OPTIONAL_LOCKS", "0")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(failed)?;
-        let mut stdin = child.stdin.take().expect("the input is piped");
-        thread::scope(|scope| {
-            scope.spawn(move || stdin.write_all(input));
-            child.wait_with_output()
-        })
-        .map_err(failed)
+        Ok(self.git.run_with_input(root, call, input)?)
     }
 }
 
