@@ -1,0 +1,64 @@
+key: 01a16488-d2a3-7188-9662-db71eb9a9aeb
+slug: the-page-is-held-to-a-real-browser-on-demand
+title: "The page is held to a real browser on demand"
+context: "The web browser calls the page server, so the page is held by tests that run it in a browser rather than by a simulator. A real browser in every CI run is slow and heavy; a DOM emulator runs fast but proves only what it emulates."
+state:
+  kind: accepted
+  selectedOption: 01a16488-d2a3-7188-9662-db744eb61ee1
+  outcome: "A suite drives the real page in a headless browser against `loft yard serve`, marked `#[ignore]` and run with `--run-ignored only`, as the suites of remote services are; the page's own logic is unit-tested in a DOM emulator in CI."
+drivers:
+  - key: 01a16488-d2a3-7188-9662-db723a1def6e
+    kind: local
+    label: "Proved in a browser"
+    statement: "Something shows that the page works in a real browser."
+  - key: 01a16488-d2a3-7188-9662-db739ba4f579
+    kind: local
+    label: "Fast CI"
+    statement: "Ordinary CI runs stay as fast as they are."
+options:
+  - key: 01a16488-d2a3-7188-9662-db744eb61ee1
+    title: "A headless browser, on demand"
+    description: "A browser suite run on demand, beside unit tests in a DOM emulator in CI."
+  - key: 01a16488-d2a3-7188-9662-db75ec838383
+    title: "A DOM emulator only"
+    description: "Unit tests in a DOM emulator, with the criteria that need a browser linked `unverified`."
+  - key: 01a16488-d2a3-7188-9662-db76fdd29e3e
+    title: "A headless browser in every run"
+    description: "The browser suite runs in every CI run."
+assessments:
+  - option: 01a16488-d2a3-7188-9662-db744eb61ee1
+    driver: 01a16488-d2a3-7188-9662-db723a1def6e
+    rating: supports
+    rationale: "the suite runs the real page in a browser"
+  - option: 01a16488-d2a3-7188-9662-db744eb61ee1
+    driver: 01a16488-d2a3-7188-9662-db739ba4f579
+    rating: supports
+    rationale: "ordinary runs skip it"
+  - option: 01a16488-d2a3-7188-9662-db75ec838383
+    driver: 01a16488-d2a3-7188-9662-db723a1def6e
+    rating: conflicts
+    rationale: "nothing runs in a browser"
+  - option: 01a16488-d2a3-7188-9662-db75ec838383
+    driver: 01a16488-d2a3-7188-9662-db739ba4f579
+    rating: supports
+    rationale: "an emulator runs fast"
+  - option: 01a16488-d2a3-7188-9662-db76fdd29e3e
+    driver: 01a16488-d2a3-7188-9662-db723a1def6e
+    rating: supports
+    rationale: "every run proves it"
+  - option: 01a16488-d2a3-7188-9662-db76fdd29e3e
+    driver: 01a16488-d2a3-7188-9662-db739ba4f579
+    rating: conflicts
+    rationale: "every run starts a browser"
+consequences:
+  - key: 01a16488-d2a3-7188-9662-db779b54d1c1
+    kind: obligation
+    statement: "The browser suite is run before each release, and after each change to the page or the page server."
+  - key: 01a16488-d2a3-7188-9662-db78dd840732
+    kind: risk
+    statement: "A change that breaks the page in a browser and not in the emulator passes ordinary CI."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b6feef7573
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ab037336a6
