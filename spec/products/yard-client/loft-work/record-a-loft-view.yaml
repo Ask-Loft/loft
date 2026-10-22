@@ -20,8 +20,10 @@ requirements:
         name: "A `loft` block holds its view, one of `spec-change`, `decision`, `trace`, `findings` and `publish`, and an optional note in Markdown."
       - key: 01a1646f-546d-7042-befd-eaa32ea3a711
         name: "The report is computed by the `loft` that runs `loft yard write`, and no other `loft` is run or looked for."
+      - key: 01a165f7-a4b1-74a9-8047-9b9fd0a3c605
+        name: "The report is computed over the specification in the nearest directory, from the one the command runs in up to the top of the worktree, that holds `spec/`."
       - key: 01a1646f-546d-7042-befd-eaa4fdf28e1d
-        name: "The block records the commit, the branch, whether the working tree held changes not committed, the `loft` version and the time of the report."
+        name: "The block records the commit, the branch, whether `spec/` held changes not committed, as `loft status` reports them, the `loft` version and the time of the report."
       - key: 01a1646f-546d-7042-befd-eaa53eef3437
         name: "The report names each node of the specification by its key, with its label where it has one and its name."
       - key: 01a1646f-546d-7042-befd-eaa67d3a1c9e
@@ -77,4 +79,4 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eab4b5519175
         name: "Each view names its commit, its branch, the `loft` version and when it was recorded."
       - key: 01a1646f-546d-7042-befd-eab5b5f31064
-        name: "A view recorded from a working tree that held changes not committed says so."
+        name: "A view recorded while `spec/` held changes not committed says so."
