@@ -4,7 +4,7 @@ name: "Serve the page"
 body: |
   `loft yard serve` runs the page server: it serves the page's files, which `loft` holds within itself, answers the page's reads, takes the person's answers and decisions and the mod's events, and tells open pages of each change.
 
-  The page server is reached only from this machine, and a request that would change Yard Log is taken only from the page it served, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead.
+  The page server is reached only from this machine, and a request that would change Yard Log, register a tree or record an event is taken only from the page it served, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead. A request that only reads, as the browser's own request for the page, needs neither.
 tags:
   - yard-command
 realizes:
@@ -46,7 +46,7 @@ requirements:
   - key: 01a1646f-546d-7042-befd-eb8b5685370d
     statement:
       form: unwanted
-      if: "a request that would change Yard Log carries an `Origin` other than the page server's own"
+      if: "a request that would change Yard Log, register a tree or record an event carries an `Origin` other than the page server's own"
       system: "the page server"
       shall: "refuse the request."
     criteria:
@@ -57,12 +57,14 @@ requirements:
   - key: 01a1646f-546d-7042-befd-eb8e6120339d
     statement:
       form: unwanted
-      if: "a request with no `Origin`, as from the mod, does not carry the control token"
+      if: "a request that would change Yard Log, register a tree or record an event carries no `Origin`, as from the mod, and not the control token"
       system: "the page server"
       shall: "refuse the request."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb8f6176fd0a
         name: "A request with no `Origin` and the control token is accepted."
+      - key: 01a16546-4ccd-7709-be08-a2e22db3f10a
+        name: "A request that only reads, as the browser's request for the page, is answered with neither an `Origin` nor the control token."
       - key: 01a1646f-546d-7042-befd-eb90ce200547
         name: "The control token is kept in `~/.yard/token`, readable only by the person's own account."
       - key: 01a1646f-546d-7042-befd-eb91a90fe38b
