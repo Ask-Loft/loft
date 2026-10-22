@@ -23217,6 +23217,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read"
         body: b2257aa349af519711a17711de4be57cdd7f28745680f2c01237a8dead203020
+  - node: 01a1646f-546c-7521-9643-bc72fc00b830
+    reviewed: 3c22ab6158564ca67cff544ff4612d677892041251f9a69865347c1148796832
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_claude_code_plugin_holds_the_loft_spec_and_yard_skills_and_the_codex_plugin_loft_spec_alone"
+        body: f1c36f27a2c483dac4b61b44604e3bd4eb6f7c6993101d68574ca2a31a5e787a
   - node: 01a1646f-546c-7521-9643-bc79310dc188
     reviewed: 6b78279cd801a6199015b6f861a145645ff5b94d9055d33cde72098e7a1ad48d
     tests:
@@ -23235,6 +23241,180 @@ links:
       - file: "plugins/claude/loft/tests/pane.test.tsx"
         name: "a loftCommand that cannot be run shows a notice naming the setting and no check"
         body: ff38b04e057aff4589f1830a05322a5c54f54028def2e540fcc0a027101ced38
+  - node: 01a1646f-546c-7521-9643-bc7ef0cedbda
+    reviewed: 3679a51b373fd3765c880777a300284c799c3ac633b9f6d67c8b3410c7a00455
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_open_yard_log_as_the_work_begins"
+        body: dcc7164a7dbb1b319131c1f121fe14d8d36db94a63c59a53fa2cf884f5f33f74
+  - node: 01a1646f-546c-7521-9643-bc7fa40988ca
+    reviewed: d30c13fc49dbd69b2d4519fcaccd0e6215d5ed6bb3da0e41145b82e18239d4df
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_open_yard_log_as_the_work_begins"
+        body: dcc7164a7dbb1b319131c1f121fe14d8d36db94a63c59a53fa2cf884f5f33f74
+  - node: 01a1646f-546c-7521-9643-bc8124f7fe40
+    reviewed: 679c06bc25475fcd8a488fdfe6bd6d86013fc42aa2229a1e3ef7fc91ab788c8c
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_open_a_stage_for_each_step_and_end_it"
+        body: 19ade9a527359c6f4f5b29038f207cc983a6e3e48d6c533b026b11b949174489
+  - node: 01a1646f-546c-7521-9643-bc82fcce2ab4
+    reviewed: ba6acfeb2de8963d37eba95b3f356ee40880132b3364b4ab09c5cd51f463ea24
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_open_a_stage_for_each_step_and_end_it"
+        body: 19ade9a527359c6f4f5b29038f207cc983a6e3e48d6c533b026b11b949174489
+  - node: 01a1646f-546c-7521-9643-bc84f5266332
+    reviewed: b8609f0b2217298079f1ddb6dae75832693bf8a751a570cc0872b0720c660659
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_build_only_once_the_person_asks_for_the_build"
+        body: 32bfc52af4403c6fc1c61cafd2cbf016f1610fdbfdd07f896dd1065a7630d361
+  - node: 01a1646f-546c-7521-9643-bc85d7803b6e
+    reviewed: b938d629bbce8faca6e4f7f1943b1c4ce802ae8f3e65fd450cf868830b467244
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_build_only_once_the_person_asks_for_the_build"
+        body: 32bfc52af4403c6fc1c61cafd2cbf016f1610fdbfdd07f896dd1065a7630d361
+  - node: 01a1646f-546c-7521-9643-bc86e32bb596
+    reviewed: 5f6a75f6b66b6de07e14166955fdd874881f959b323fa1aa53edf885553aac8a
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_build_only_once_the_person_asks_for_the_build"
+        body: 32bfc52af4403c6fc1c61cafd2cbf016f1610fdbfdd07f896dd1065a7630d361
+  - node: 01a1646f-546c-7521-9643-bc883a0f6321
+    reviewed: dc3409a578535a28fe18ab3e7ef79b2866afa71e5b681ddb373a58d8df9f56b8
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
+        body: af4352dc0376582e84a9ff47753ddc509b826650e3810c95e36597e1f7be2cf1
+  - node: 01a1646f-546c-7521-9643-bc89c5da80bc
+    reviewed: 580ac8c509a5c316f4774b1b8e4185dc3d6bce7b4ea24deb4b38c412ddb68ce0
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
+        body: af4352dc0376582e84a9ff47753ddc509b826650e3810c95e36597e1f7be2cf1
+  - node: 01a1646f-546c-7521-9643-bc8a0a4ac1b9
+    reviewed: c7bd6b0f07a5caa9e0166ccda37b1b64d24ba4ebfb0f594aca72a01ec7aed8d9
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
+        body: af4352dc0376582e84a9ff47753ddc509b826650e3810c95e36597e1f7be2cf1
+  - node: 01a1646f-546c-7521-9643-bc8c8bcecb29
+    reviewed: 2cf88a911ee30f7117b0e1398fa84e3d4a4edcf489171e5da710748fea51141c
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_send_a_decision_point_s_questions_together_and_wait"
+        body: b492781488803ac7f2845dbaf8080044f069e755de14dec6aceb250591135b99
+  - node: 01a1646f-546c-7521-9643-bc8d97b79456
+    reviewed: c9ccfe5e874d2ff183f53f265b3817cdd5b6c7f682ef862c046662816526c2f1
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_send_a_decision_point_s_questions_together_and_wait"
+        body: b492781488803ac7f2845dbaf8080044f069e755de14dec6aceb250591135b99
+  - node: 01a1646f-546c-7521-9643-bc8e6414b455
+    reviewed: 1c097d75bfe6b8e1557c3bcbe9661570a17351b08ba7d35693706ee3d642e2d4
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_send_a_decision_point_s_questions_together_and_wait"
+        body: b492781488803ac7f2845dbaf8080044f069e755de14dec6aceb250591135b99
+  - node: 01a1646f-546c-7521-9643-bc90aff52ee8
+    reviewed: 3dadf95050ff0ef572837890759fdea6d89e961811b56813a27bd225ac3852de
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_write_what_each_stage_produced_in_markdown"
+        body: ac118a05c0c2d0f7dedcf5c080f5ab2d5321ce90234dfec625fc0088274e2bad
+  - node: 01a1646f-546c-7521-9643-bc92617d867b
+    reviewed: a22e4c1bb03d05f49858b3e19451d0870613466cb53205999cf9d80222318f33
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_plan_the_build_in_plan_mode_once_the_spec_is_written"
+        body: a2e58ff5dd1b6c47484186e508e595e0572b82c5d102204579d4978bb5310b4c
+  - node: 01a1646f-546c-7521-9643-bc935d3e9837
+    reviewed: 98843e318ac389a17c84e94d0149a3b13e8128c267d0b23e3062e874300b463a
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_plan_the_build_in_plan_mode_once_the_spec_is_written"
+        body: a2e58ff5dd1b6c47484186e508e595e0572b82c5d102204579d4978bb5310b4c
+  - node: 01a1646f-546c-7521-9643-bc946d49d602
+    reviewed: 6d0c0e6c7f2e925813864ff61c2eccbf6872a99c08040c944f94b3e6de9a80f6
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_plan_the_build_in_plan_mode_once_the_spec_is_written"
+        body: a2e58ff5dd1b6c47484186e508e595e0572b82c5d102204579d4978bb5310b4c
+  - node: 01a1646f-546c-7521-9643-bc9624480b9b
+    reviewed: d82b12a8b4089e7d8be25cd19345ed122c2cf8d5d6be126e14fd438107326e54
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_record_loft_s_views_rather_than_retell_them"
+        body: 1d51027aa8a490d8126f0c1d65255ac8b1c07431e34421649613d4dec3999226
+  - node: 01a1646f-546c-7521-9643-bc9709f3a295
+    reviewed: de6f31e4afe76649b458f69635f7191bd4e9765ff140b766dbf3a053153f214a
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_record_loft_s_views_rather_than_retell_them"
+        body: 1d51027aa8a490d8126f0c1d65255ac8b1c07431e34421649613d4dec3999226
+  - node: 01a1646f-546c-7521-9643-bc9864856f4d
+    reviewed: 228005f55055ee4dd8045d6e8c689e7793be89960af7fa61dad4b7b772adface
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_record_loft_s_views_rather_than_retell_them"
+        body: 1d51027aa8a490d8126f0c1d65255ac8b1c07431e34421649613d4dec3999226
+  - node: 01a1646f-546c-7521-9643-bc99ceffd819
+    reviewed: 101e55dc5f6ad66198594dfef7816de30dc72ba831fcf16e5c63dac4280b6316
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_record_loft_s_views_rather_than_retell_them"
+        body: 1d51027aa8a490d8126f0c1d65255ac8b1c07431e34421649613d4dec3999226
+  - node: 01a1646f-546c-7521-9643-bc9a6840e738
+    reviewed: e7d77b6519ded19fa3fa1181da5c3ef12ab8f12cdd1b4e1515fabee5c1a13c24
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_record_loft_s_views_rather_than_retell_them"
+        body: 1d51027aa8a490d8126f0c1d65255ac8b1c07431e34421649613d4dec3999226
+  - node: 01a1646f-546c-7521-9643-bc9c02796387
+    reviewed: 6b50970942b52b31cc499f84a070e64b81f47e5d9c630abe61e6819dd7636fbb
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_record_each_choice_as_a_decision_linked_to_its_question"
+        body: 752739ffa5b57a2a03e17f74816d1a62e8827f7f94f06222dd464881df3d3e2c
+  - node: 01a1646f-546c-7521-9643-bc9e7078f833
+    reviewed: ade0c390695f110e46df01dd1499a42189fb5f6547b27ebf7a9dba26929c34c0
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_commit_the_yard_folder_with_the_work_unless_git_ignores_it"
+        body: ac291e8cab9051e05e84a70bc8814aa9cd29095087c3eec2994448dcc022be39
+  - node: 01a1646f-546c-7521-9643-bc9f66547934
+    reviewed: fa33a16e64577df54bb34a4a66615d2c48b66e705a5523e49a8adc6af3543dc6
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_commit_the_yard_folder_with_the_work_unless_git_ignores_it"
+        body: ac291e8cab9051e05e84a70bc8814aa9cd29095087c3eec2994448dcc022be39
+  - node: 01a1646f-546c-7521-9643-bca03b27536e
+    reviewed: bb143a2f87254837b96406abc0884c552a85ac248896798042df08c5523bcb37
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_commit_the_yard_folder_with_the_work_unless_git_ignores_it"
+        body: ac291e8cab9051e05e84a70bc8814aa9cd29095087c3eec2994448dcc022be39
+  - node: 01a1646f-546c-7521-9643-bca2340d1b0d
+    reviewed: 5d18b8f0d8c442e35a05777c1d9dd73d87a619896ff7674a007290279062ca67
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_close_and_commit_yard_log_before_the_merge"
+        body: e89f4f04455dbcb04d4c3c9b14bbe70d16674537fe9cf967c973481edeac9e03
+  - node: 01a1646f-546c-7521-9643-bca4c27950b3
+    reviewed: d5c3ead8c99292b3dbff56f6be9c0e90db8bf19c61045d89c81931f68e7704d1
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_read_what_changed_and_base_each_write_on_it"
+        body: 458a420c5bccf13885e3dc7fdc4cd657f4efb1e86307ac9ee743f258148cba61
+  - node: 01a1646f-546c-7521-9643-bca57d50a238
+    reviewed: fee05bee062daf21affab9dbc660103c7cc63016e09dbf50fb6881b99e8ee25c
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_read_what_changed_and_base_each_write_on_it"
+        body: 458a420c5bccf13885e3dc7fdc4cd657f4efb1e86307ac9ee743f258148cba61
   - node: 01a1646f-546c-7521-9643-bca80176474a
     reviewed: 913de329f798b46a0229348fddc3516d31e1de1282021c565a383121f1071beb
     tests:
@@ -23817,6 +23997,12 @@ links:
       - file: "crates/software-plant/tests/published.rs"
         name: "no_published_crate_depends_on_software_plant"
         body: 095754942003458ec89cffa65a57dd56e4b0ce9cd33a5ad044f3661cb5658beb
+  - node: 01a16469-559e-73c4-85f2-71b8ff75fdc3
+    reviewed: 046b1af44631ea79745ac78d8e5eab4767d5275148263675556353ddea8cbd62
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_is_one_file_of_at_most_500_lines_whose_frontmatter_holds_its_name_and_description_alone"
+        body: 3c03b449d53c29c945effeee46d034144cb635a501e9625b98a084ca0431ebb4
   - node: 01a16469-559e-73c4-85f2-71b4a2bf4563
     reviewed: 5f7092c37644dda0481bb5d8f636b7be8a1369dc5a8e1e6e84c2674644fb87c0
     tests:

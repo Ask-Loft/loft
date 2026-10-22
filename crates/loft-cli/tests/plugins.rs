@@ -31,6 +31,23 @@ fn each_committed_package_equals_the_composition_for_its_host() {
     }
 }
 
+/// The skills a plugin's package holds, by their folder names.
+fn skills(root: &str) -> Vec<String> {
+    let mut found: Vec<String> = fs::read_dir(workspace().join(root).join("skills"))
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    found.sort();
+    found
+}
+
+#[test]
+fn the_claude_code_plugin_holds_the_loft_spec_and_yard_skills_and_the_codex_plugin_loft_spec_alone()
+{
+    assert_eq!(skills(CLAUDE_ROOT), ["loft-spec", "yard"]);
+    assert_eq!(skills(CODEX_ROOT), ["loft-spec"]);
+}
+
 #[test]
 fn each_manifest_carries_the_version_of_loft() {
     for manifest in [
