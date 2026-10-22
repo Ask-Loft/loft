@@ -5,6 +5,7 @@ members = [
     "crates/loftspec",
     "crates/loftspec-store",
     "crates/yardlog",
+    "crates/yardlog-store",
     "crates/loft-cli",
     "crates/software-plant",
 ]
@@ -23,6 +24,7 @@ loft-ports = { path = "crates/loft-ports", version = "2.2.1" }
 loftspec = { path = "crates/loftspec", version = "2.2.1" }
 loftspec-store = { path = "crates/loftspec-store", version = "2.2.1" }
 yardlog = { path = "crates/yardlog", version = "2.2.1" }
+yardlog-store = { path = "crates/yardlog-store", version = "2.2.1" }
 clap = { version = "4", features = ["derive"] }
 hmac = "0.12"
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version

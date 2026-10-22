@@ -1314,6 +1314,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "yardlog-store"
+version = "2.2.1"
+dependencies = [
+ "loft-ports",
+ "serde_json",
+ "software-plant",
+ "thiserror",
+ "yardlog",
+]
+
+[[package]]
 name = "zeroize"
 version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

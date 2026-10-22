@@ -17598,6 +17598,51 @@ links:
       - file: "crates/loftspec-store/tests/git_contract_base.rs"
         name: "the_simulator_answers_each_call_of_a_base_read_as_real_git_does"
         body: 278d0a15a88e990d60f96bcea98678e88db131f49953c0f9d0c7973edd05d9fe
+  - node: 01a164cf-8fd5-7533-a02e-c04e713e8be1
+    reviewed: 0d184df92107330cc479bbda8f4ab32e5064034f4dcdf36789a9f693c258849b
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a164cf-8fd5-7533-a02e-c04f57f25aa8
+    reviewed: 985f8f1d3834315defd14094c73e00913a7c9ad39ccc6782d92c77e24afb9f30
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a164cf-8fd5-7533-a02e-c0500b520607
+    reviewed: 6c19f3a2451d1926a47ccedd97bb7742701e459b19b5fa9a00b1dd8efb1016fc
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a164cf-8fd5-7533-a02e-c051c6c67714
+    reviewed: 10fcc32eaf94e24c7dfb872b54cc7687974c371fa148763ffa7216a410c16282
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a164cf-8fd5-7533-a02e-c0521d4db6c6
+    reviewed: fe6cdddfa20bd4bc2c868a1a0c68c514a9fc2bff6dbdd91f73c9d65f87a7f235
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a164cf-8fd5-7533-a02e-c053f8d7d124
+    reviewed: 9266829e50e59ff0a159f4c36fd96f1e57620eefe784f9500d8eb217b67fea19
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "a_revision_that_names_nothing_holds_no_path"
+        body: 34966e7fa20dbd32aa38d49d5ee0cb8241b83bff765586065c09aad30381b507
+  - node: 01a164cf-8fd5-7533-a02e-c054dfca0a97
+    reviewed: 1d4ae9bd14566f60d682d8e65ea2a2103014cfbc1652933ed01c5c86eadd5c7f
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
   - node: 01a12ff0-f5e5-7095-8fa8-24dd2eb01c49
     reviewed: f242e11af895fe661c626344f19b35f1a330d1c3ce1931da8fa14b1878d5343c
     tests:
@@ -19275,18 +19320,75 @@ links:
       - file: "crates/yardlog/tests/answers.rs"
         name: "closing_withdraws_every_open_submission_and_refuses_answers_after"
         body: 1911167d7c2d1a98b32c90c91ae01fa50140a368397f5b1e73787674a4de0c02
+  - node: 01a1646f-546e-76cb-8b4f-f238965d2062
+    reviewed: 1e995eeecb938caedb395429a1c03b7ca210fdea50cfda0f774f76825201ee7c
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "the_first_write_on_a_branch_opens_its_yard_log_with_a_key_its_branch_and_its_title"
+        body: 140a0cbfd2c53f4cb17819baa89fcd741b497ed7a0ef24a3139ce9c45c55c5b8
   - node: 01a1646f-546e-76cb-8b4f-f2396e6f8d9d
     reviewed: e8419c7d65be3d07b785a9d325071acd1ab5b744333caf93d5c4cc54f84f7398
     tests:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "the_first_write_opens_yard_log_titled_with_its_branch"
         body: be720bf1e46cd64c21ae97d122c90c4404efe77ebcec63875488b3dbe2e9c9bd
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_later_write_on_the_same_branch_reaches_the_same_yard_log"
+        body: 45aa07b0b0d8e132172ad64afa90a907d83ac834ce98fadce4086404458fb790
   - node: 01a1646f-546e-76cb-8b4f-f23ab3a81452
     reviewed: d953d17c2acd6ff1ca276eca226e88a2a8a52962219b5fac3b1f1b6f6e701ec0
     tests:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "the_first_write_opens_yard_log_titled_with_its_branch"
         body: be720bf1e46cd64c21ae97d122c90c4404efe77ebcec63875488b3dbe2e9c9bd
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "the_first_write_on_a_branch_opens_its_yard_log_with_a_key_its_branch_and_its_title"
+        body: 140a0cbfd2c53f4cb17819baa89fcd741b497ed7a0ef24a3139ce9c45c55c5b8
+  - node: 01a1646f-546e-76cb-8b4f-f23bae400c69
+    reviewed: 77c89b58ceae1deed2649ff8dbbf342199a53b6aff61af5111639f8a07019cc0
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_later_write_on_the_same_branch_reaches_the_same_yard_log"
+        body: 45aa07b0b0d8e132172ad64afa90a907d83ac834ce98fadce4086404458fb790
+  - node: 01a1646f-546e-76cb-8b4f-f23c5a81ffbf
+    reviewed: 8ddb445a72fa8577ca58d6ebebc3045884df288b9aba8f9f6809c0d61144be3a
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_write_on_another_branch_opens_that_branch_s_own_yard_log"
+        body: fa4b4027e398a5811da43c5de362c75692f0a2f558fe8ad399db82803e841150
+  - node: 01a1646f-546e-76cb-8b4f-f23e7f3714f6
+    reviewed: 5ceb527877310eb763e0baffe353307cf36e74a00f766eeca9005f888d15522f
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_call_below_the_top_of_the_worktree_reaches_the_yard_log_at_the_top"
+        body: d87a7b7c1245862d8f16bd3c9d22a9f6d4beee94e099a663e933cf685139638a
+  - node: 01a1646f-546e-76cb-8b4f-f23fc9082902
+    reviewed: 5cdc0188268b68820b178a23c21051972e1d08fff551c738f7e12a6cca24c245
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_call_in_a_linked_worktree_reaches_that_worktree_s_own_yard_log"
+        body: 599d8e0577e6efc791e1a1a8f83fbb21681d5f52fbb2aec5a55cecb643b2f1c0
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "a_linked_worktree_is_its_own_tree_with_its_own_git_directory_and_the_repository_s_common_one"
+        body: 1c98ee30362ffe42215ec9de93681341db634157d433f4130c5a4b0266ab5c4b
+  - node: 01a1646f-546e-76cb-8b4f-f24183348aa3
+    reviewed: d32f160b1af52a8fa034f294de165a84ef5e745411ca98eadfa63380c727096b
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_write_on_a_detached_head_is_refused_and_writes_nothing_under_yard"
+        body: cb56bcc897699f4e287be6cd9f7d2078548f2f187a68770db1f49672a11afe00
+  - node: 01a1646f-546e-76cb-8b4f-f244354e02ab
+    reviewed: 457d378cb2835adad12a0f69a3ae9d4b483410870f584d18a7dc98c128517f8c
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_renamed_branch_keeps_its_yard_log_s_key_and_records_its_new_name"
+        body: a791b84f095476d5f3f8adf4799713e020afc46682a466aae05c8b64cdeef543
+  - node: 01a1646f-546e-76cb-8b4f-f245fce36890
+    reviewed: 0bff12d6d981ea6b3c85453d09c8b10ed04a6e1ee4340deba0ae75b7baf28082
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_renamed_branch_keeps_its_yard_log_s_key_and_records_its_new_name"
+        body: a791b84f095476d5f3f8adf4799713e020afc46682a466aae05c8b64cdeef543
   - node: 01a1646f-546e-76cb-8b4f-f26345298538
     reviewed: 6a5285d0744b53a6d070c49d2262aa4141bd8adb964bd26d9f4e3035321d26ad
     tests:
@@ -19839,30 +19941,75 @@ links:
       - file: "crates/yardlog/tests/files.rs"
         name: "each_stage_s_file_is_named_by_its_key_and_holds_its_blocks_in_order"
         body: 0f3a90455df7982026fa98b7b8c0ef45c7db7863b56e2f2edb72abd18baa6d44
+      - file: "crates/yardlog-store/tests/files.rs"
+        name: "yard_log_is_a_root_and_one_file_for_each_stage_named_by_its_key"
+        body: fa51eaaf09f9e6c03983e4b8d0ac571a4b0adea6847633de87544c8245cf0732
+  - node: 01a1649f-62f0-7320-902c-7d8bb078f994
+    reviewed: 719002b2e5cb5d59ec48f46c164da8768e49768be1c4ff9c4dfdf17b1d03cb6a
+    tests:
+      - file: "crates/yardlog-store/tests/files.rs"
+        name: "a_stage_keeps_its_file_when_its_id_changes"
+        body: 0e4f1f32989d7304e4a255798ed9f71d1bfbbf421e2f1342071c208a1df052ac
   - node: 01a1646f-546d-7042-befd-ebcb46f81df5
     reviewed: 639dd717186756675c44eedfd3bb89e2e20d1e44a7b3f00551e97c4cca3cfe3b
     tests:
       - file: "crates/yardlog/tests/files.rs"
         name: "yard_log_reads_back_from_its_files_as_it_was_written"
         body: 75a1ab6dc388d29adaa62a3219e8e193a09a50460d339dda00bbe17ec82e2cdf
+      - file: "crates/yardlog-store/tests/files.rs"
+        name: "every_version_of_a_block_is_kept_in_its_stage_s_file"
+        body: 6209dc349eacfbddfb11691731bfc2461184bb561ba302501586ed055ce55f4a
   - node: 01a1646f-546d-7042-befd-ebcda23e7abb
     reviewed: e07ad9907977bb79889438dc05c721feb054f0e0c4c4710bfeaf5ba42786a81f
     tests:
       - file: "crates/yardlog/tests/files.rs"
         name: "writing_yard_log_that_has_not_changed_gives_the_same_bytes"
         body: 1096c9db973e8a478eb137ac3ee0137d589ecde616287b93c759d3e4713a1d53
+      - file: "crates/yardlog-store/tests/files.rs"
+        name: "writing_yard_log_that_has_not_changed_leaves_its_bytes_as_they_were"
+        body: 06a9c43254f59c2f1ebd4bba2fc93c8498a7cb2976c4e0f2dcb0029e1ff49f12
   - node: 01a1646f-546d-7042-befd-ebce62c22acb
     reviewed: 1786f4a37a995c9f75615d4d0e0591449a375b8ccbb39976f2cf74f3ddb24eec
     tests:
       - file: "crates/yardlog/tests/files.rs"
         name: "a_change_to_one_block_rewrites_only_its_stage_s_file_and_the_root"
         body: eacc82ab24535bc20529a4aa40d5e29cf45136f89d059423d1a7c8eaf69f87cc
+      - file: "crates/yardlog-store/tests/files.rs"
+        name: "a_change_to_one_block_rewrites_only_its_stage_s_file_and_the_root"
+        body: 3a267f00746e1323255be9cd8bf16f23ae8976137a970cae3548032aba507f8e
   - node: 01a1646f-546d-7042-befd-ebcf584141d9
     reviewed: 44a2bcfcad6d89b716972003e70d827ac04381a208c935ffe9c3ac2c5880da2e
     tests:
       - file: "crates/yardlog/tests/files.rs"
         name: "the_files_hold_no_comments_anchors_aliases_tags_or_flow_collections"
         body: 0636e3b280289660e44481523702fb3f26ce468152dd48d2e4366d07ebf30005
+  - node: 01a1646f-546e-76cb-8b4f-f1ec3c4ff3b2
+    reviewed: d5ec9d0c54f512be8a7a61ce5c6af15ddefb5b6bc445d7137f5c22d0ace616d6
+    tests:
+      - file: "crates/yardlog-store/tests/home.rs"
+        name: "each_file_of_the_machine_has_its_name_in_the_home_directory"
+        body: 5cfbad21659d1aebbab6e52e51b62655de73b25d954d8f664fb3c8e259513900
+      - file: "crates/yardlog-store/tests/home.rs"
+        name: "the_control_token_is_readable_only_by_the_person_s_own_account"
+        body: b072363ee5f0a444c496f4339c071c3b036bbc0fda68bf9c598df72e241c1112
+  - node: 01a1649f-62f0-7320-902c-7d8fc94401ef
+    reviewed: db79e23a228af47e0d74764652f10e6da4aee21b606991616d503236bfa4e27d
+    tests:
+      - file: "crates/yardlog-store/tests/home.rs"
+        name: "a_file_is_written_whole_through_a_temporary_file_renamed_into_place"
+        body: f0b77f6507baac8cb085b21a8986ed10665187de7790d5f1833a8e0e87102834
+      - file: "crates/yardlog-store/tests/home.rs"
+        name: "a_file_that_cannot_be_renamed_into_place_leaves_no_temporary_file_and_the_old_file_as_it_was"
+        body: db584449999ea4c0a842d0b25344851dc486eeda045949795c6f8a37cf55d7f1
+  - node: 01a1646f-546e-76cb-8b4f-f1ee570d4cd2
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/yardlog-store/tests/files.rs"
+        name: "files_that_do_not_read_refuse_every_write_naming_the_file_and_line"
+        body: 1f50e4dcbcab87f2de8e6176eb031360b3fd7e39d082232e7ac120306c8ea7f5
+      - file: "crates/yardlog-store/tests/files.rs"
+        name: "a_root_that_does_not_read_refuses_every_write"
+        body: 96cdfc1ebfd2e370af841635d606351caba0bb8313843f2735d47ba271ea1ce5
   - node: 01a1646f-546c-7521-9643-bbd850b7f2ba
     reviewed: 26b456c78c1f823b0b7c504cc7582b4a026e625c91dcebe1abd6a0729ad083eb
     tests:
@@ -19941,6 +20088,78 @@ links:
       - file: "crates/yardlog/tests/answers.rs"
         name: "withdrawing_a_submission_that_is_not_open_is_refused_with_its_state"
         body: dc01741ed409065846f1d93384b9f6ef5498c4d85f55f4b664626ef188688ed3
+  - node: 01a1646f-546d-7042-befd-ea676a927ac1
+    reviewed: 1fe41b1833ba84196aea173f04f6f3450d9041556d3d6415e9333cf49a7ec2f0
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_call_below_the_top_of_the_worktree_reaches_the_yard_log_at_the_top"
+        body: d87a7b7c1245862d8f16bd3c9d22a9f6d4beee94e099a663e933cf685139638a
+  - node: 01a1646f-546d-7042-befd-ea6848223efc
+    reviewed: 297533d63f899d60ce7858a70ca43eae8815914c9221cdfce7ff0d33876a2dfb
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_call_in_a_linked_worktree_reaches_that_worktree_s_own_yard_log"
+        body: 599d8e0577e6efc791e1a1a8f83fbb21681d5f52fbb2aec5a55cecb643b2f1c0
+  - node: 01a1646f-546d-7042-befd-ea70497a2092
+    reviewed: 5fcdd4d9ffdc8504f0fb6295ac82278a2b938f17a61dd492ad32dc355a19cc94
+    tests:
+      - file: "crates/yardlog-store/tests/addressing.rs"
+        name: "a_call_outside_any_repository_is_refused_as_needing_one"
+        body: 3c2a9c1ef740537676bc54ac2b39d688ac8eaab2539edde0d701dd1a12f8de5a
+  - node: 01a1646f-546d-7042-befd-ea76bdcf3e6e
+    reviewed: f696f5608e29012789c6852b583adc897156083f402b53889fadb19c2344caab
+    tests:
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "writes_that_come_at_once_from_many_agents_are_each_applied_one_after_the_other"
+        body: 951061b471f27569003beff40ed9b11251c1b9335df19a85ab9d24719bf06199
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "writes_from_two_processes_at_once_are_each_applied"
+        body: 506e56b149515f8ae3fb70f4efcbbe4939ba7491f7319ff7ea70d6a5cbab493c
+  - node: 01a1646f-546d-7042-befd-ebd2fe7be62d
+    reviewed: 20853d81958ef16a4a6ea09c9ee29f05d5e4227ad563170ff04b6b43a17a388e
+    tests:
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "the_lock_and_the_journal_lie_under_git_s_own_directory_for_the_worktree"
+        body: 1211abf8efc42c9673ec2a5b3e41b0b26570a3d235c9264143dfd3a4f13baacf
+  - node: 01a1646f-546d-7042-befd-ea77f8efc7c8
+    reviewed: 36b59b77821c44425827c7ba4c5c252affc12906512ab4341f3db90b3beafd71
+    tests:
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "a_write_to_one_yard_log_never_waits_on_the_lock_of_another"
+        body: 4ec411435988391f1cb1ad085af91437b3807c2d2e4e74bab818dfe44cdbf633
+  - node: 01a1646f-546d-7042-befd-ea7877e241c6
+    reviewed: 7e2feb8e316380f2fa1f73c0bebb6651994e54298f81c1b63649ca1f24fc9513
+    tests:
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "the_lock_is_held_while_a_write_is_applied_and_only_then"
+        body: 86ea0bf7e10cc8cb0431d8c0de128f97b9d442f7b7293ce0745f8baa824d4013
+  - node: 01a1646f-546d-7042-befd-ea79fed9c718
+    reviewed: 43f0e9b4eebe1f80ebf549342f911d653fcaa6fbeb640522f0872a85e5b4b194
+    tests:
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "a_lock_left_by_a_process_that_ended_is_taken_over_by_the_next_write"
+        body: 693aa23a2db14ba20de7b90c14c92ccfe49e4d2fa036fdb34e52721763bc7e33
+  - node: 01a1646f-546d-7042-befd-ea7ad8dc3944
+    reviewed: 49f9d739bdf96174f68158ef018d57c2ee9237a841f63f6fd881544a5f22f5a4
+    tests:
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "a_write_interrupted_after_its_commit_is_finished_by_the_next_write"
+        body: 9fba98abb0cd3141d2180a00a8d31a55d861ebb380d45522beed693c5991bc5b
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "a_write_interrupted_before_its_commit_is_undone_by_the_next_write"
+        body: e9b3229be3a3c1f9502592e122499810bb07c22cebafb110ba3b795c70c5e26b
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "a_read_finishes_a_write_interrupted_after_its_commit"
+        body: 02572c48941daadf1158cdfef3be1b6e0e0cac7f00741553dd90798e0e852773
+      - file: "crates/loft-ports/tests/journal.rs"
+        name: "a_save_interrupted_after_its_commit_is_finished_by_recovery"
+        body: aa141b2d96c16a2827eb5a72c5a993cfb3c0a6125a5e81ab866f7916740b385e
+      - file: "crates/loft-ports/tests/journal.rs"
+        name: "a_save_interrupted_before_its_commit_is_discarded_by_recovery"
+        body: 82fe977004cff3fd8e09cd6cc61d9f1e3f118ed98c9529fdbd6fbf4efc39957f
+      - file: "crates/loft-ports/tests/journal.rs"
+        name: "a_journal_elsewhere_puts_nothing_of_itself_under_the_root"
+        body: c7799ef06151b4a47ea576db82e800d498a1569ac126cba81904f690fdf26fdc
   - node: 01a1646f-546d-7042-befd-ea7d2e438301
     reviewed: 9e3092ff3776741b560c06a684ac417c4348054b0350eff70aabff227bd2dcfb
     tests:
@@ -20030,7 +20249,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/network_client.rs"
         name: "only_the_network_client_opens_a_connection"
-        body: d1e18520235e09f2cc9165f6782a3a9d6ef2c7e8710bd0608d5bd16ec5223d0a
+        body: 592479c3456265bec3a658aab3f104c8455d4395a7490799f99901ee1901298a
       - file: "crates/loftspec/tests/package.rs"
         name: "the_library_uses_no_file_network_process_or_environment"
         body: 01c3f9239a31f5c3d2d4e8797b2b9d124428147885a803b5118c1c1a94b46577
@@ -20051,7 +20270,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/test_locator.rs"
         name: "only_the_test_locator_parses_a_programming_language"
-        body: 3a6162d7d2dd712332cf01094e14321b8f910eb1ce5f5b38d08165f9281b6b6b
+        body: 133ce0d8dd8f2f302f976127a4f0a57e393cde53c662b7600956ff7f57c17cd4
   - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
     reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
     tests:
@@ -20253,6 +20472,33 @@ links:
       - file: "crates/software-plant/tests/published.rs"
         name: "no_published_crate_depends_on_software_plant"
         body: 095754942003458ec89cffa65a57dd56e4b0ce9cd33a5ad044f3661cb5658beb
+  - node: 01a16469-559e-73c4-85f2-71b4a2bf4563
+    reviewed: b65d4119c2eb50db3dcfb0ac7887541d90c57ac887d60bd4b169b06709a65c75
+    tests:
+      - file: "crates/yardlog-store/tests/boundary.rs"
+        name: "the_store_of_yard_log_writes_its_files_only_through_the_ports_journal"
+        body: 3da225665701f8df78d835e352f063755c452fd07634464fdddc65e77ae58848
+  - node: 01a16469-559e-73c4-85f2-71b51acd97b7
+    reviewed: 30d8926af04ea1cf57b993a0acd04dae94b36e8ce99513e83612fa4061e10e32
+    tests:
+      - file: "crates/yardlog-store/tests/concurrent_writes.rs"
+        name: "the_lock_and_the_journal_lie_under_git_s_own_directory_for_the_worktree"
+        body: 1211abf8efc42c9673ec2a5b3e41b0b26570a3d235c9264143dfd3a4f13baacf
+      - file: "crates/yardlog-store/tests/leases.rs"
+        name: "a_lease_is_a_lock_in_git_s_own_directory_for_the_worktree"
+        body: ef808314f9602430ff5a4e89924ae5bb0d9bd68eaca107547643620c6630ac95
+  - node: 01a1649f-62ea-7225-80e1-a3d706544da2
+    reviewed: 0912b3812494e194dd348fac4d0abb864bcff67d53f2c0dff15bf8d919a26ba8
+    tests:
+      - file: "crates/yardlog-store/tests/boundary.rs"
+        name: "the_store_of_yard_log_depends_on_no_crate_of_the_format_and_not_on_the_document_store"
+        body: d68b89cccfb152fc2fa4f146bf8539a8a52f6d1e23fbc055a040be7c635fd757
+  - node: 01a1649f-62ea-7225-80e1-a3d8f986ff4a
+    reviewed: f0673fb3932fe57412670389e0ac49e4f00f812950021cab16fc02eb9494ec6c
+    tests:
+      - file: "crates/yardlog-store/tests/boundary.rs"
+        name: "the_store_of_yard_log_reaches_git_only_through_the_ports_runner"
+        body: f9a25a032a49ca7a00f245519bb505a62480cd100c5ed7cb265d53399c2099a2
   - node: 01a16469-559e-73c4-85f2-71ba22a63b12
     reviewed: 8855c8be858749e46fb59d5d77f65bee8be84b09fd59d2da761b307b53e4032f
     tests:

@@ -10,10 +10,12 @@ use serde::{Deserialize, Serialize};
 mod base;
 mod launcher;
 mod stopped;
+mod yard;
 
 pub use base::{Base, BaseCall, BaseFile};
 pub use launcher::ALIAS as LAUNCHER_ALIAS;
 pub use stopped::{IndexEntry, LockBlob, Operation, Stopped, StoppedCall};
+pub use yard::{Yard, YardCall};
 
 /// The environment variable that names the scenario file the simulator reads.
 pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_GIT_SCENARIO";
@@ -77,6 +79,9 @@ pub struct Repository {
     /// What `git merge-base HEAD <revision>` gives each revision, by the revision.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub bases: BTreeMap<String, Base>,
+    /// What Yard Client's calls read.
+    #[serde(default, skip_serializing_if = "Yard::is_empty")]
+    pub yard: Yard,
 }
 
 /// One entry of the porcelain v1 status: its two-letter code and its path, and for a rename or
@@ -110,6 +115,8 @@ pub enum Call {
     Base(BaseCall),
     /// `git -c alias.loft-launcher=!<command> --version loft-launcher`
     Launcher,
+    /// A call of Yard Client's store.
+    Yard(YardCall),
 }
 
 /// A call that fails with a scripted exit code and message.
@@ -167,6 +174,7 @@ impl GitScenario {
                 stopped: None,
                 git_dir: None,
                 bases: BTreeMap::new(),
+                yard: Yard::default(),
             }),
             failures: Vec::new(),
             launchers: BTreeMap::new(),
@@ -371,6 +379,7 @@ impl GitScenario {
                 // git runs a shell alias outside a repository too.
                 Call::Launcher => launcher::answer(&self.launchers, operands[0]),
                 Call::ConfigGet | Call::ConfigSet => Reply::fail(128, LOCAL_OUTSIDE_A_REPOSITORY),
+                Call::Yard(call) => yard::outside(call),
                 _ => Reply::fail(128, NOT_A_REPOSITORY),
             };
         };
@@ -395,6 +404,7 @@ impl GitScenario {
             Call::Launcher => launcher::answer(&self.launchers, operands[0]),
             Call::Stopped(call) => stopped::answer(call, &operands, repository),
             Call::Base(call) => base::answer(call, &operands, repository, input),
+            Call::Yard(call) => yard::answer(call, &operands, repository, &yard::directory(args)),
         }
     }
 }
@@ -470,6 +480,7 @@ fn parse(args: &[String]) -> Option<(Call, Vec<&str>)> {
             .or_else(|| {
                 stopped::parse(rest).map(|(call, operands)| (Call::Stopped(call), operands))
             })
-            .or_else(|| base::parse(rest).map(|(call, operands)| (Call::Base(call), operands))),
+            .or_else(|| base::parse(rest).map(|(call, operands)| (Call::Base(call), operands)))
+            .or_else(|| yard::parse(rest).map(|(call, operands)| (Call::Yard(call), operands))),
     }
 }

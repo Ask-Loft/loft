@@ -23,6 +23,7 @@ fn only_the_test_locator_parses_a_programming_language() {
         "loftspec-store",
         "software-plant",
         "yardlog",
+        "yardlog-store",
     ] {
         let manifest = workspace().join("crates").join(library).join("Cargo.toml");
         let manifest = fs::read_to_string(manifest).unwrap();

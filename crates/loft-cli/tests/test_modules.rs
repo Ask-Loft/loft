@@ -40,7 +40,7 @@ fn every_test_file_is_declared_in_its_crate_s_test_binary() {
                 .map(|stem| format!("{shown}/{stem}.rs")),
         );
     }
-    assert_eq!(crates, 6, "the scan found {crates} crates with tests");
+    assert_eq!(crates, 7, "the scan found {crates} crates with tests");
     assert_eq!(missing, Vec::<String>::new());
 }
 
