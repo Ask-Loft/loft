@@ -59,7 +59,7 @@ requirements:
       form: event_driven
       when: "an agent reads Yard Log"
       system: "`loft yard read`"
-      shall: "record the revision it read as the one that agent last read, in the machine-local state of `loft`'s settings directory."
+      shall: "record the revision it read as the one that agent last read, in `~/.yard/last-read.json`."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f257965fff0c
         name: "The revision last read is kept for each agent apart, by its session and agent ids."

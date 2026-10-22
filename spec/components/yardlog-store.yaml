@@ -1,0 +1,21 @@
+key: 01a16469-559e-73c4-85f2-71b305365c69
+slug: yardlog-store
+name: "yardlog-store"
+body: "The `yardlog-store` crate. It reads and writes a branch's Yard Log in the files under `.yard/<branch>/`, through the journaled save of `loft-ports`, one write at a time for each branch's Yard Log, under a lock kept in git's own directory for the worktree. It holds the leases of waits and the machine's state in `~/.yard/`, and settles Yard Log after a merge."
+tags:
+  - git
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77
+constraints:
+  - key: 01a16469-559e-73c4-85f2-71b4a2bf4563
+    name: "`yardlog-store` shall write the files of each branch's Yard Log only through the journaled save of `loft-ports`."
+    verificationFate: proved
+  - key: 01a16469-559e-73c4-85f2-71b51acd97b7
+    name: "`yardlog-store` shall keep its locks, leases and journals under git's own directory for the worktree, never in the working tree."
+    verificationFate: proved
+  - key: 01a1649f-62ea-7225-80e1-a3d706544da2
+    name: "`yardlog-store` shall depend on no crate of the Format and not on `loftspec-store`."
+    verificationFate: proved
+  - key: 01a1649f-62ea-7225-80e1-a3d8f986ff4a
+    name: "`yardlog-store` shall reach git only through `loft-ports`."
+    verificationFate: proved

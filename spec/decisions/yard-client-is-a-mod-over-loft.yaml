@@ -5,7 +5,7 @@ context: "Yard Client has four parts with a fixed home or language: the part Cla
 state:
   kind: accepted
   selectedOption: 01a1646f-5467-7025-8a88-4ec8d87c5ef0
-  outcome: "The Loft mod registers Yard Client's tools and hooks, and reaches Yard Log only through `loft yard` commands and the page server; `loft` owns the yardlog format, the yard store, the `loft` views and the page server. There is no MCP server and no Node program."
+  outcome: "The Loft mod registers Yard Client's tools and hooks, and reaches Yard Log only through `loft yard` commands and the page server; `loft` owns the yardlog format, `yardlog-store`, the `loft` views and the page server. There is no MCP server and no Node program."
 drivers:
   - key: 01a1646f-5467-7025-8a88-4ec5e4f432fb
     kind: local

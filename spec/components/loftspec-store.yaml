@@ -4,23 +4,13 @@ name: "loftspec-store"
 body: "Memory and file stores for documents."
 scopedTo:
   - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
-components:
-  - key: 01a16469-559e-73c4-85f2-71b305365c69
-    name: "Yard store"
-    body: "Reads and writes a branch's Yard Log in the files under `.yard/<branch>/`, through the same journaled save and git port as the document store, one write at a time for each branch's Yard Log, under a lock kept in git's own directory for the worktree."
-    tags:
-      - git
-    constraints:
-      - key: 01a16469-559e-73c4-85f2-71b4a2bf4563
-        name: "The yard store shall write the files of each branch's Yard Log only through the journaled save."
-        verificationFate: proved
-      - key: 01a16469-559e-73c4-85f2-71b51acd97b7
-        name: "The yard store shall keep its locks and journals under git's own directory for the worktree, never in the working tree."
-        verificationFate: proved
 constraints:
   - key: 9908f127-794b-4463-a680-0639741cc37a
     name: "`loftspec-store` shall write a `spec/` tree through a temporary directory and a rename."
     verificationFate: proved
   - key: 01a12ff0-f5e5-7095-8fa8-250890794446
     name: "`loftspec-store` shall reach git only through its repository port."
+    verificationFate: proved
+  - key: 01a1649f-62ea-7225-80e1-a3d6f1031098
+    name: "`loftspec-store` shall depend on no crate of Yard Client."
     verificationFate: proved

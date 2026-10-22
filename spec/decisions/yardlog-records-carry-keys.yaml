@@ -54,7 +54,7 @@ assessments:
 consequences:
   - key: 01a1646f-5467-7025-8a88-4ef7fc5b3bfe
     kind: obligation
-    statement: "The yard store maps each id to its key, and refuses a write that would give one id two keys in one Yard Log."
+    statement: "`yardlog-store` maps each id to its key, and refuses a write that would give one id two keys in one Yard Log."
   - key: 01a1646f-5467-7025-8a88-4ef82dfcff1d
     kind: benefit
     statement: "A `loft` view names the specification's nodes by their keys, so that a server joins Yard Log with the published specification."

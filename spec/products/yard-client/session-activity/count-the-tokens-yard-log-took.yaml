@@ -34,5 +34,9 @@ requirements:
         name: "The totals file of a session that made no counted request is not written."
       - key: 01a1646f-546d-7042-befd-eaeda64b3661
         name: "Writing the totals leaves Yard Log's revision as it was."
+      - key: 01a1649f-62ef-71e6-98de-e10987602e54
+        name: "The totals file is written to a temporary file and renamed into place, outside Yard Log's lock."
+      - key: 01a1649f-62ef-71e6-98de-e10a33359db8
+        name: "No request is counted once Yard Log is closed."
       - key: 01a1646f-546d-7042-befd-eaee2c0b5e00
         name: "A request whose agent works in another worktree is counted in the totals file of that worktree's Yard Log."

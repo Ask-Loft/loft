@@ -55,7 +55,7 @@ requirements:
       form: unwanted
       if: "a question of the send was answered elsewhere first"
       system: "the page server"
-      shall: "keep the first answer and tell the person that the question was answered elsewhere."
+      shall: "refuse the later answer to that question as answered elsewhere."
     criteria:
       - key: 01a1646f-546c-7521-9643-bbd850b7f2ba
         name: "The first answer is kept unchanged."

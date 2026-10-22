@@ -4,7 +4,7 @@ name: "Share one page server"
 body: |
   One page server on the machine serves the page for every tree whose sessions use Yard Client, in every repository. The first mod that needs it starts it, every other mod registers its tree with it, and when the session that started it ends, a live mod starts another. The person keeps one address for every branch's Yard Log on the machine.
 
-  A mod starts the page server as a child that lives as long as the mod does, so the page is up while any session with the Loft plugin runs.
+  A mod starts the page server as a child that lives as long as the mod does, or until a newer `loft yard serve` replaces it, so the page is up while any session with the Loft plugin runs. Each mod learns of the page server, and is heard as live, through `loft yard serve`, which reads `~/.yard/server.json`.
 realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
@@ -19,11 +19,11 @@ requirements:
       - key: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
         name: "The mod registers the session's tree with the page server that serves the port."
       - key: 01a1646f-546c-7521-9643-bc5f9317855f
-        name: "A page server that the mod starts runs as long as the mod."
+        name: "A page server that the mod starts runs as long as the mod, or until a newer `loft yard serve` replaces it."
       - key: 01a1646f-546d-7042-befd-ea8e5a514259
         name: "The port is the plugin's `yardPort` setting, 7411 by default."
       - key: 01a1646f-546d-7042-befd-ea8fc7b5b732
-        name: "A mod that finds a page server answering starts none."
+        name: "A `loft yard serve` that finds in `~/.yard/server.json` a running page server of the same or a newer version exits 0 and starts none."
       - key: 01a1646f-546d-7042-befd-ea90b3a3d660
         name: "The session starts without waiting for the page server to answer."
       - key: 01a1646f-546d-7042-befd-ea91076e0f8d
@@ -47,7 +47,7 @@ requirements:
       shall: "add the tree's Yard Logs to the ones it serves."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea935091c8a4
-        name: "The trees served are kept in `yard/trees.json` in `loft`'s settings directory, so that a page server started later serves them again."
+        name: "The trees served are kept in `~/.yard/trees.json`, so that a page server started later serves them again."
       - key: 01a1646f-546d-7042-befd-ea94569c5337
         name: "Trees of different repositories are served by one page server."
       - key: 01a1646f-546d-7042-befd-ea95ba02c56a
@@ -57,8 +57,10 @@ requirements:
       form: state_driven
       while: "a session with the Loft plugin runs"
       system: "the Loft mod"
-      shall: "check every 5 seconds that a page server answers on the port, and start one where none answers."
+      shall: "run `loft yard serve` with its session every 5 seconds, so that a page server serves the port and the session is heard as live."
     criteria:
+      - key: 01a1649f-62ef-71e6-98de-e108efc946c7
+        name: "Each run records in `~/.yard/sessions.json` the time the session was heard."
       - key: 01a1646f-546d-7042-befd-ea97136fbdab
         name: "When the session that started the page server ends while other sessions run, another session's mod starts a page server within 5 seconds."
       - key: 01a1646f-546d-7042-befd-ea98315d97ca

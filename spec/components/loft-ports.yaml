@@ -1,0 +1,13 @@
+key: 01a1649f-62ea-7225-80e1-a3d4d9905b4d
+slug: loft-ports
+name: "loft-ports"
+body: "The ports both stores share, and nothing that knows a document or Yard Log: the journaled save over plain relative paths, in a journal directory its caller names, that the next command finishes or undoes after a crash; the runner through which `loft` reaches git, which the Software Plant's simulator stands in for; and the clock."
+tags:
+  - git
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77
+  - 8cab7e5c-cd93-48e5-91c7-019412f1abb8
+constraints:
+  - key: 01a1649f-62ea-7225-80e1-a3d5bf4de21c
+    name: "`loft-ports` shall depend on no crate of the Format and on no store."
+    verificationFate: proved

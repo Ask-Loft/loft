@@ -5,7 +5,7 @@ context: "The person reads every branch being worked on at one address. A mod li
 state:
   kind: accepted
   selectedOption: 01a1646f-5467-7025-8a88-4e68f97d272a
-  outcome: "At the start of a session the mod starts `loft yard serve` unless a page server of the same or a newer version answers on the port, then registers its tree; each mod checks the port every 5 seconds and starts a new server when the serving session has ended; a `loft yard serve` that finds an older page server asks it to stop and takes the port."
+  outcome: "Each mod runs `loft yard serve` at the start of its session and every 5 seconds after, which records that the session was heard and starts a page server only where `~/.yard/server.json` names none whose process runs; the mod then registers its tree. A page server lives as long as the mod that started it, or until a `loft yard serve` of a newer version stops it by its process id and takes the port."
 drivers:
   - key: 01a1646f-5467-7025-8a88-4e6576a5059b
     kind: local
@@ -57,7 +57,7 @@ consequences:
     statement: "The page is up only while some session with the plugin runs."
   - key: 01a1646f-5467-7025-8a88-4e6beb011135
     kind: obligation
-    statement: "The trees a page server serves are kept in `loft`'s settings directory, so that a new page server serves them again."
+    statement: "The trees a page server serves are kept in `~/.yard/trees.json`, so that a new page server serves them again."
   - key: 01a1646f-5467-7025-8a88-4e6c3d9b9b16
     kind: obligation
     statement: "Open pages connect again by themselves after a takeover, and reload their files when the server's version changed."

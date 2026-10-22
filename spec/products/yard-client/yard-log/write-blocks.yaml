@@ -34,8 +34,6 @@ requirements:
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f28d7973efc3
         name: "An id is lowercase letters, digits and hyphens, and starts with a letter."
-      - key: 01a16489-7874-7610-ab15-b12060d08711
-        name: "A stage whose id is `yardlog` is refused, since `yardlog.yaml` is the root of Yard Log's folder."
       - key: 01a1646f-546e-76cb-8b4f-f28e468e4586
         name: "A block written with an id that Yard Log does not hold is a new block with a key that `loft` mints."
       - key: 01a1646f-546e-76cb-8b4f-f28f2cba1fe3

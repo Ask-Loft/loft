@@ -85,7 +85,7 @@ requirements:
       - key: 01a1646f-546e-76cb-8b4f-f27b5d484c59
         name: "A new decision's number is one more than the highest number of Yard Log's decisions, starting at 1."
       - key: 01a1646f-546e-76cb-8b4f-f27cd3ddfbff
-        name: "A decision keeps its number through every later version."
+        name: "A decision keeps its number through every later version, until the settling of a merge numbers the decisions again."
       - key: 01a1646f-546e-76cb-8b4f-f27d19128f90
         name: "A decision written naming a question by its id records the question's key."
       - key: 01a1646f-546e-76cb-8b4f-f27efa5e22ff

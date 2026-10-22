@@ -14,13 +14,14 @@ requirements:
   - key: 01a1646f-546d-7042-befd-ea6295f02fdc
     statement:
       form: ubiquitous
-      system: "A `loft yard` command"
+      system: "A `loft yard` command that an agent runs"
       shall: "take the calling agent's session with `--session <id>` and, for a subagent, its agent with `--agent <id>` and `--agent-type <type>`."
+    body: "The commands that an agent runs are `read`, `write`, `wait`, `withdraw`, `close`, `published` and `answer`; `answer` takes the session whose agent asked. `upgrade` is run by the person, and `serve` and `protocol` act on no branch's Yard Log."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea63f62a04eb
         name: "A command run without `--agent` acts for the session's main agent."
       - key: 01a1647b-208d-7169-85c8-9a4f62de4b3d
-        name: "A command that writes Yard Log or waits on it, run without `--session`, exits 2 and names `--session`."
+        name: "`write`, `wait`, `withdraw`, `close`, `published` or `answer` run without `--session` exits 2 and names `--session`."
       - key: 01a1647b-208d-7169-85c8-9a5021e9fb72
         name: "`--agent` given without `--agent-type`, or `--agent-type` without `--agent`, exits 2 and names the one missing."
       - key: 01a1646f-546d-7042-befd-ea643af92fc6
@@ -30,7 +31,7 @@ requirements:
   - key: 01a1646f-546d-7042-befd-ea66c74879c5
     statement:
       form: ubiquitous
-      system: "A `loft yard` command"
+      system: "A `loft yard` command that acts on a branch's Yard Log"
       shall: "act on Yard Log of the branch that the worktree holding its working directory is on."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea676a927ac1
@@ -84,7 +85,7 @@ requirements:
       - key: 01a1647c-e680-7753-bf17-f181455e4d44
         name: "Each block and Act keeps the session id that wrote it."
       - key: 01a1647c-e680-7753-bf17-f18231fac8e2
-        name: "The continuation is kept in `yard/` in `loft`'s settings directory, and never under `.yard/`."
+        name: "The continuation is kept in `~/.yard/continuations.json`, and never under `.yard/`."
   - key: 01a1646f-546d-7042-befd-ea6f9460a2d0
     statement:
       form: unwanted

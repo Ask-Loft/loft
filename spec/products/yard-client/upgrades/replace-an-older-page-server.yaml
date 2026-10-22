@@ -1,7 +1,7 @@
 key: 01a1646f-546e-76cb-8b4f-f20fff3d436b
 slug: replace-an-older-page-server
 name: "Replace an older page server"
-body: "One page server serves the machine, but sessions on the machine may run different versions of `loft`. The newest one serves: a session whose `loft` is newer than the page server's replaces it, and open pages take up the new page's files. Yard Log in a format newer than the page server's is shown as such and never written by it."
+body: "One page server serves the machine, but sessions on the machine may run different versions of `loft`. The newest one serves: a session whose `loft` is newer than the page server's replaces it, stopping it by the process id that `~/.yard/server.json` gives, and open pages take up the new page's files. Yard Log in a format newer than the page server's is shown as such and never written by it."
 realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71a94f0aa021
@@ -10,21 +10,25 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page server"
-      shall: "report its `loft` version and the newest `yardlog` format it reads to every client that asks."
+      shall: "report its `loft` version and the newest `yardlog` format it reads, in `~/.yard/server.json` and to every client that asks."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f211c919436f
         name: "The version is reported without the control token."
+      - key: 01a1649f-62f0-7320-902c-7d90e88d4f61
+        name: "`~/.yard/server.json` gives the page server's port, its process id, its `loft` version and the `yardlog` formats it reads."
   - key: 01a1646f-546e-76cb-8b4f-f212dc8ad1c7
     statement:
       form: event_driven
-      when: "`loft yard serve` finds a page server of an older version on the port"
+      when: "`loft yard serve` finds in `~/.yard/server.json` a running page server of an older version"
       system: "`loft yard serve`"
-      shall: "ask it to stop with the control token from `loft`'s settings directory, and serve the port in its place."
+      shall: "stop that page server by its process id, and serve the port in its place."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f213414362f5
-        name: "The older page server stops when asked with the control token."
+        name: "The older page server's process ends before the newer one serves the port."
       - key: 01a1646f-546e-76cb-8b4f-f214e9ee2507
-        name: "A request to stop that lacks the control token is refused."
+        name: "`loft yard serve` opens no connection to the older page server to stop it."
+      - key: 01a1649f-62f0-7320-902c-7d91a4e5ed57
+        name: "`~/.yard/server.json` names the newer page server once it serves the port."
       - key: 01a1646f-546e-76cb-8b4f-f21529feeaa0
         name: "Every tree the older page server served is served by the newer one."
       - key: 01a1646f-546e-76cb-8b4f-f2164986fd80

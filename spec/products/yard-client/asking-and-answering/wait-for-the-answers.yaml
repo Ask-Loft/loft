@@ -29,6 +29,8 @@ requirements:
         name: "A wait on a submission that is withdrawn returns that it was withdrawn."
       - key: 01a1646f-546c-7521-9643-bbfa24099ddb
         name: "A wait on a submission whose Yard Log is closed returns that Yard Log is closed."
+      - key: 01a1649f-62ef-71e6-98de-e102d8a26927
+        name: "A wait on a submission that was withdrawn when its Yard Log was closed returns that Yard Log is closed, not that the submission was withdrawn."
       - key: 01a1646f-546c-7521-9643-bbfbd843cb1e
         name: "The result gives Yard Log's revision after the answers."
   - key: 01a1646f-546c-7521-9643-bbfc9af874c6
@@ -105,13 +107,15 @@ requirements:
   - key: 01a1647b-208c-755d-8b1a-5882ccac257c
     statement:
       form: optional
-      where: "an open submission of the tree and branch was sent by an agent of another session, which no session continues, and its lease is free"
+      where: "an open submission of the tree and branch was sent by an agent of another session, which has not been heard for 60 seconds and which no session continues, and its lease is free"
       system: "`loft yard wait`"
       shall: "let the main agent of the calling session take it up by waiting on it."
-    body: "A session that ended with `/clear` or a resume is continued by the next, as \"Agents as callers\" states. A session that crashed, or whose process was ended, is continued by none, and its open submissions are taken up here, by whichever main agent next waits on them."
+    body: "A session that ended with `/clear` or a resume is continued by the next, as \"Agents as callers\" states. A session that crashed, or whose process was ended, is continued by none, and its open submissions are taken up here, by whichever main agent next waits on them. A session is heard each time its mod runs `loft yard serve`, every 5 seconds, which records the time in `~/.yard/sessions.json`; a session not heard for 60 seconds has stopped."
     criteria:
       - key: 01a1647b-208c-755d-8b1a-5883df7ebb39
-        name: "The main agent of a session started after the sending session's process ended can wait on the submission."
+        name: "The main agent of a session started after the sending session's process ended can wait on the submission once the sending session has not been heard for 60 seconds."
+      - key: 01a1649f-62ef-71e6-98de-e1037b6a8872
+        name: "A submission whose sending session was heard within the last 60 seconds is not taken up."
       - key: 01a1647c-e680-7753-bf17-f1749b4a4c4c
         name: "A submission taken up records, as an Act, the session that took it up."
       - key: 01a1647c-e680-7753-bf17-f17567c3b2fd

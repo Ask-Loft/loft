@@ -25,6 +25,21 @@ requirements:
         name: "A branch whose Yard Log is closed is listed as closed."
       - key: 01a1646f-546d-7042-befd-eb2740b8a1ba
         name: "Choosing a listed branch opens its Yard Log at an address of its own, which names its tree and its branch."
+  - key: 01a1649f-62ef-71e6-98de-e10df45e19aa
+    statement:
+      form: event_driven
+      when: "a tree holds under `.yard/` Yard Log of a branch other than the one the tree is on, as one carried from the branch it was cut from"
+      system: "the page"
+      shall: "list that Yard Log under the tree as inherited, and offer it only to read."
+    criteria:
+      - key: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
+        name: "Each tree lists its current branch's Yard Log first, and each inherited one after it, marked as inherited."
+      - key: 01a1649f-62ef-71e6-98de-e10f33cdae95
+        name: "An inherited Yard Log's open questions, approvals and plans are shown and offer no answer or decision."
+      - key: 01a1649f-62ef-71e6-98de-e1107c0ffed2
+        name: "The page server takes no answer or decision for an inherited Yard Log."
+      - key: 01a1649f-62ef-71e6-98de-e111af38463b
+        name: "An inherited Yard Log adds nothing to the count of blocks that wait on the person."
   - key: 01a1646f-546d-7042-befd-eb2848576856
     statement:
       form: ubiquitous

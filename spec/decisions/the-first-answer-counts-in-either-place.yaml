@@ -5,7 +5,7 @@ context: "The person may be at the terminal or at the page when the agent asks. 
 state:
   kind: accepted
   selectedOption: 01a1646f-5467-7025-8a88-4e8c5fa0e04c
-  outcome: "A question, approval or plan is offered on the page and in Claude Code's dialog at once; the first answer or decision to reach Yard Log counts, the other place stops offering it, and a later answer to it is refused and shown as answered elsewhere, or, met in a merge of two copies, kept as answered elsewhere and not counted."
+  outcome: "A question, approval or plan is offered on the page and in Claude Code's dialog at once; the first answer or decision to reach Yard Log counts, the other place stops offering it, and a later answer to it is refused and shown as answered elsewhere. Two answers that a merge of two copies brings together are both kept as they were written; the earlier by its Act counts, which is derived from the Acts and never written into either answer."
 drivers:
   - key: 01a1646f-5467-7025-8a88-4e8a4884d312
     kind: local

@@ -38,10 +38,10 @@ components:
         verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71a7729da1ec
     name: "Yard commands"
-    body: "The `loft yard` commands, which read and write Yard Log through the yard store, compute the `loft` views from `loft`'s own library, and print one JSON document each."
+    body: "The `loft yard` commands, which read and write Yard Log through `yardlog-store`, compute the `loft` views from `loft`'s own library, and print one JSON document each."
     constraints:
       - key: 01a16475-7fb6-7322-99c9-9c0ee4654daa
-        name: "The Yard commands shall read and write Yard Log only through the yard store."
+        name: "The Yard commands shall read and write Yard Log only through `yardlog-store`."
         verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
     name: "Page server"

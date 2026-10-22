@@ -27,7 +27,7 @@ requirements:
       form: ubiquitous
       system: "A `loft yard` command"
       shall: "take the base branch from `--base <branch>`, `develop` where it is not given."
-    body: "The Loft mod passes its `baseBranch` setting, `develop` by default. The base branch is the one a branch is merged into, and the one whose tip decides whether Yard Log was closed by the merge."
+    body: "This rule binds the commands that act on a branch's Yard Log and `upgrade`. The Loft mod passes its `baseBranch` setting, `develop` by default. The base branch is the one a branch is merged into, and the one whose tip decides whether Yard Log was closed by the merge."
     criteria:
       - key: 01a1647b-208d-7169-85c8-9a4d3e3ebd74
         name: "A command run without `--base` takes `develop` as the base branch."
@@ -56,13 +56,26 @@ requirements:
       form: ubiquitous
       system: "A `loft yard` command"
       shall: "give in its result Yard Log's revision and the address of the branch's Yard Log on the page."
+    body: "This rule binds the commands that act on a branch's Yard Log: `read`, `write`, `wait`, `withdraw`, `close`, `published` and `answer`."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea59dc5f73ee
-        name: "The address is the page server's, with the tree and the branch."
+        name: "The address is that of the page server `~/.yard/server.json` names, with the tree and the branch."
       - key: 01a1646f-546d-7042-befd-ea5a9fa982c1
-        name: "Where no page server answers on the port, the result says that the page is unavailable and names the port."
+        name: "Where `~/.yard/server.json` names no page server whose process runs, the result says that the page is unavailable and names the port."
+      - key: 01a1649f-62ef-71e6-98de-e104038deca7
+        name: "A command learns whether a page server runs without opening a connection."
       - key: 01a1646f-546d-7042-befd-ea9efc9e224f
         name: "A command whose port another program holds still does its work."
+  - key: 01a1649f-62ef-71e6-98de-e1058abe2d03
+    statement:
+      form: ubiquitous
+      system: "`loft yard upgrade`"
+      shall: "act for the person, taking no `--session`."
+    criteria:
+      - key: 01a1649f-62ef-71e6-98de-e1066ae8d263
+        name: "`loft yard upgrade` run without `--session` is not refused for it."
+      - key: 01a1649f-62ef-71e6-98de-e10740e6676e
+        name: "Each Yard Log that `loft yard upgrade` rewrites records the person as the actor of the upgrade."
   - key: 01a1646f-546d-7042-befd-ea5bdf2c63b3
     statement:
       form: unwanted

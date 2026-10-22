@@ -5,7 +5,7 @@ context: "The mod hears every turn, request and tool call of a session. Raw even
 state:
   kind: accepted
   selectedOption: 01a1646f-5467-7025-8a88-4e77ff5f2656
-  outcome: "Each session's events are kept in its event log in `loft`'s settings directory and never in the working tree; the page server writes each session's token totals and activity under the branch's directory in `.yard/`, to be committed with the work."
+  outcome: "Each session's events are kept in its event log in `~/.yard/events/` and never in the working tree; the page server writes each session's token totals and activity under the branch's directory in `.yard/`, to be committed with the work."
 drivers:
   - key: 01a1646f-5467-7025-8a88-4e759d9c6df5
     kind: local

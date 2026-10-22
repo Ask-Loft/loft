@@ -16,7 +16,7 @@ requirements:
   - key: 01a1646f-546d-7042-befd-ebb20526da76
     statement:
       form: ubiquitous
-      system: "The yard store"
+      system: "`yardlog-store`"
       shall: "give Yard Log, each stage, each block, each version, each submission and each answer or outcome a key that `loft` mints when the record is first written."
     criteria:
       - key: 01a1646f-546d-7042-befd-ebb3548bbe84
@@ -30,7 +30,7 @@ requirements:
   - key: 01a1646f-546d-7042-befd-ebb7a2f6203d
     statement:
       form: ubiquitous
-      system: "The yard store"
+      system: "`yardlog-store`"
       shall: "reference one record from another only by key."
     criteria:
       - key: 01a1646f-546d-7042-befd-ebb8ed532afb
@@ -46,7 +46,7 @@ requirements:
   - key: 01a1646f-546d-7042-befd-ebbdf2aa05ac
     statement:
       form: ubiquitous
-      system: "The yard store"
+      system: "`yardlog-store`"
       shall: "record each Act with its time in UTC to the second, the revision it was made at, and its actor."
     criteria:
       - key: 01a1646f-546d-7042-befd-ebbee5a82235
@@ -58,7 +58,7 @@ requirements:
   - key: 01a1646f-546d-7042-befd-ebc1b3cfeb3a
     statement:
       form: ubiquitous
-      system: "The yard store"
+      system: "`yardlog-store`"
       shall: "keep every version of every stage and block, in the order of their Acts."
     criteria:
       - key: 01a1647b-208d-7169-85c8-9a5829b8c33f
@@ -75,7 +75,7 @@ requirements:
     statement:
       form: unwanted
       if: "Yard Log's files hold a reference to a key that Yard Log does not hold"
-      system: "the yard store"
+      system: "`yardlog-store`"
       shall: "refuse to read that Yard Log and name the record and the key."
     criteria:
       - key: 01a1646f-546d-7042-befd-ebc6d5169383

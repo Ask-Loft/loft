@@ -38,5 +38,9 @@ requirements:
         name: "An event that starts or ends no turn, no subagent run, no stretch of plan or spec mode and no `loft` run leaves the file as it was."
       - key: 01a1646f-546d-7042-befd-eaf9e32fc612
         name: "Writing the activity file leaves Yard Log's revision as it was."
+      - key: 01a1649f-62ef-71e6-98de-e10ba2181638
+        name: "The activity file is written to a temporary file and renamed into place, outside Yard Log's lock."
+      - key: 01a1649f-62ef-71e6-98de-e10c9467d774
+        name: "No event is kept in the activity file once Yard Log is closed."
       - key: 01a1646f-546d-7042-befd-eafae23372c6
         name: "No other session's activity file is written for the session's events."

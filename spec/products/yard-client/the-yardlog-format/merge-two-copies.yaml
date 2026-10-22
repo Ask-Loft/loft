@@ -4,7 +4,9 @@ name: "Merge two copies of Yard Log"
 body: |
   Yard Log is committed, so two people working one branch on two machines each write their own copy, and git meets both when it merges. `loft merge-driver` merges the files under `.yard/` by key, as it merges `spec/`.
 
-  Because every version of every record is kept, a merge of Yard Log needs no conflict record: records and their versions join as a union, and the current version is the latest Act. Only what the person decided once is settled by time: the first answer counts, wherever it was given.
+  Because every version of every record is kept, a merge of Yard Log needs no conflict record: records and their versions join as a union, and the current version is the latest Act. Only what the person decided once is settled by time: the first answer counts, wherever it was given, and which one that is follows from the Acts, so no answer is rewritten.
+
+  git merges one file at a time, so the driver joins each file by key and leaves what spans files to the next `loft yard` command that opens the merged Yard Log: two records with one id in different stages, the numbers of decisions written apart, and which records are new to this copy. That command settles them under Yard Log's lock, as one Act. Acts of one time are ordered by key.
 tags:
   - git
 realizes:
@@ -49,7 +51,9 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eba0ae5f5513
         name: "The earlier answer by its Act's time is the block's answer in the result."
       - key: 01a1646f-546d-7042-befd-eba1a81ca116
-        name: "A later answer from the other copy is kept, marked as answered elsewhere first."
+        name: "A later answer from the other copy is kept as it was written, and does not count."
+      - key: 01a1649f-62ef-71e6-98de-e112b4f533a0
+        name: "Neither answer is rewritten by the merge."
   - key: 01a1646f-546d-7042-befd-eba2c06e31b2
     statement:
       form: ubiquitous
@@ -62,12 +66,14 @@ requirements:
     statement:
       form: ubiquitous
       system: "`loft merge-driver`"
-      shall: "give the result a revision one higher than the higher of the two copies' revisions."
+      shall: "give the result a revision one higher than the higher of the two copies' revisions, and mark it as unsettled since this copy's revision."
     criteria:
-      - key: 01a1646f-546d-7042-befd-eba5774a732c
-        name: "Each record that the result holds and this copy did not is marked as arrived at the result's revision."
-      - key: 01a1646f-546d-7042-befd-eba6ee1c2c4b
-        name: "`loft yard read --since` a revision below the result's returns the records that arrived with the merge."
+      - key: 01a1649f-62ef-71e6-98de-e1138369260b
+        name: "The merged `yardlog.yaml` records the revision this copy had before the merge as the one it is unsettled since."
+      - key: 01a1649f-62ef-71e6-98de-e1149cec97fa
+        name: "The driver of a stage's file changes no id and no decision's number."
+      - key: 01a164a0-9eef-7334-9118-9a772c96e9ed
+        name: "A copy already marked as unsettled keeps the earlier of the two revisions it is unsettled since."
   - key: 01a1646f-546d-7042-befd-eba7b5d37c0e
     statement:
       form: event_driven
@@ -84,14 +90,28 @@ requirements:
   - key: 01a1646f-546d-7042-befd-ebab951c7710
     statement:
       form: event_driven
-      when: "the two copies hold two records with one id and different keys"
-      system: "`loft merge-driver`"
-      shall: "keep both, giving the later written of them the id with the suffix `-2`, or the next number free."
+      when: "a `loft yard` command opens Yard Log that is marked as unsettled since a merge"
+      system: "`yardlog-store`"
+      shall: "settle it under Yard Log's lock, as one Act, before the command acts on it."
     criteria:
+      - key: 01a1649f-62ef-71e6-98de-e11518fc2388
+        name: "Of two records with one id and different keys, the later written takes the id with the suffix `-2`, or the next number free."
       - key: 01a1646f-546d-7042-befd-ebac18695ce2
         name: "Both records keep their keys."
+      - key: 01a164a0-9eef-7334-9118-9a78aeb7a2be
+        name: "Of two records written at one time, the one with the greater key is the later written."
+      - key: 01a1649f-62ef-71e6-98de-e11619c30392
+        name: "The decisions are numbered again from 1 in the order of their first versions' Acts, ordered by key where two Acts have one time."
+      - key: 01a1646f-546d-7042-befd-eba5774a732c
+        name: "Each record that the settled Yard Log holds and this copy did not hold at the revision it is unsettled since is marked as arrived at the settling's revision."
+      - key: 01a1646f-546d-7042-befd-eba6ee1c2c4b
+        name: "`loft yard read --since` a revision below the settling's returns the records that arrived with the merge."
       - key: 01a1646f-546d-7042-befd-ebad391ae6dd
-        name: "The merge reports each id it changed, with the old id and the new."
+        name: "The settling's Act lists each id it changed, with the old id and the new, and each decision whose number it changed."
+      - key: 01a1649f-62ef-71e6-98de-e117fd79c921
+        name: "Settled Yard Log is no longer marked as unsettled, and opening it again settles nothing."
+      - key: 01a1649f-62f0-7320-902c-7d8a33899cd1
+        name: "A command that only reads Yard Log settles it as one that writes would."
   - key: 01a1647b-208d-7169-85c8-9a550c2161d5
     statement:
       form: event_driven

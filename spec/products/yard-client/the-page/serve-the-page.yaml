@@ -4,7 +4,7 @@ name: "Serve the page"
 body: |
   `loft yard serve` runs the page server: it serves the page's files, which `loft` holds within itself, answers the page's reads, takes the person's answers and decisions and the mod's events, and tells open pages of each change.
 
-  The page server is reached only from this machine, and a request that would change Yard Log is taken only from the page it served, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token that `loft` keeps in its settings directory instead.
+  The page server is reached only from this machine, and a request that would change Yard Log is taken only from the page it served, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead.
 tags:
   - yard-command
 realizes:
@@ -64,7 +64,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb8f6176fd0a
         name: "A request with no `Origin` and the control token is accepted."
       - key: 01a1646f-546d-7042-befd-eb90ce200547
-        name: "The control token is kept in `yard/` in `loft`'s settings directory, readable only by the person's own account."
+        name: "The control token is kept in `~/.yard/token`, readable only by the person's own account."
       - key: 01a1646f-546d-7042-befd-eb91a90fe38b
         name: "The control token is created the first time a page server starts where there is none."
   - key: 01a1646f-546d-7042-befd-eb9228eac8e8

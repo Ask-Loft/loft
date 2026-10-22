@@ -5,7 +5,7 @@ context: "Yard Log travels with its branch and is read in review, so it lives in
 state:
   kind: accepted
   selectedOption: 01a1646f-5467-7025-8a88-4ee45e384b21
-  outcome: "Each branch's Yard Log is the directory `.yard/<branch>/`, rooted at `yardlog.yaml`, which names the format `yardlog/1`, with one YAML file for each stage beside it, in the strict YAML that `loft` writes for `spec/`."
+  outcome: "Each branch's Yard Log is the directory `.yard/<branch>/`, rooted at `yardlog.yaml`, which names the format `yardlog/1`, with one YAML file for each stage beside it, named by the stage's key, in the strict YAML that `loft` writes for `spec/`."
 drivers:
   - key: 01a1646f-5467-7025-8a88-4ee155056718
     kind: local
@@ -54,7 +54,7 @@ assessments:
 consequences:
   - key: 01a1646f-5467-7025-8a88-4ee646e0e8d9
     kind: obligation
-    statement: "The yard store writes Yard Log in one canonical layout, so that Yard Log holding the same records always gives the same bytes."
+    statement: "`yardlog-store` writes Yard Log in one canonical layout, so that Yard Log holding the same records always gives the same bytes."
   - key: 01a1646f-5467-7025-8a88-4ee7d753df89
     kind: benefit
     statement: "A change to one stage shows in review as a change to one file."

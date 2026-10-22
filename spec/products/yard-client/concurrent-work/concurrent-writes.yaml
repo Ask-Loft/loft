@@ -9,11 +9,12 @@ realizes:
   - 01a16469-559e-73c4-85f2-71a7729da1ec
   - 01a16469-559e-73c4-85f2-71b305365c69
   - 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - 01a1649f-62ea-7225-80e1-a3d4d9905b4d
 requirements:
   - key: 01a1646f-546d-7042-befd-ea75be922fcf
     statement:
       form: ubiquitous
-      system: "The yard store"
+      system: "`yardlog-store`"
       shall: "apply one write at a time to a branch's Yard Log, under a lock kept for it in git's own directory for the worktree."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea76bdcf3e6e

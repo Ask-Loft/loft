@@ -75,7 +75,7 @@ requirements:
       shall: "append the event to the session's event log, with the tree, the branch, the stage that is active for the event's agent and the submissions that are open when it arrives."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb11fb7e4314
-        name: "A session's event log is `yard/events/<session id>.jsonl` in `loft`'s settings directory, one event to a line, in the order the events arrived."
+        name: "A session's event log is `~/.yard/events/<session id>.jsonl`, one event to a line, in the order the events arrived."
       - key: 01a1646f-546d-7042-befd-eb123a31b312
         name: "The event log is never written under the working tree."
       - key: 01a1646f-546d-7042-befd-eb139c5d21b6

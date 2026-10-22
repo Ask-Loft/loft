@@ -32,7 +32,7 @@ requirements:
       form: unwanted
       if: "a block of the run was answered or decided elsewhere first"
       system: "`loft yard answer`"
-      shall: "keep the first answer or outcome, reporting that the block was answered elsewhere."
+      shall: "refuse the later answer or outcome of that block as answered elsewhere."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea3b93c1ab09
         name: "The first answer or outcome is kept unchanged."
