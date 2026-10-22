@@ -9,5 +9,9 @@ node_modules/
 __pycache__/
 *.py[cod]
 /.loft/
+# This repository keeps no plans: each branch's Yard Log, and what other planning tools write,
+# stay on the machine.
+/.yard/
+/work-plans/
 .env
 .env.*
