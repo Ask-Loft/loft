@@ -5,8 +5,9 @@
 //! it. It reads Yard Log every 250 milliseconds and changes it only to record a take-up.
 
 use std::path::Path;
-use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
+
+use loft_ports::clock::Clock as _;
 
 use serde_json::{Value, json};
 use yardlog::log::Submission;
@@ -60,7 +61,9 @@ fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure>
         .map(SubmissionKey::new)
         .map_err(|error| Failure::Usage(format!("--submission: {error}")))?;
     let timeout = Duration::from_secs(args.timeout.min(LONGEST));
-    let deadline = Instant::now() + timeout;
+    let clock = super::clock();
+    let started = clock.elapsed();
+    let deadline = started + timeout;
     let caller = Caller::new(args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
     let home = Home::from_env();
@@ -92,15 +95,16 @@ fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure>
             match found.state(log) {
                 State::Answered => Some("answered"),
                 State::Withdrawn => Some("withdrawn"),
-                State::Open => (Instant::now() >= deadline).then_some("pending"),
+                State::Open => (clock.elapsed() >= deadline).then_some("pending"),
             }
         };
         if let Some(outcome) = outcome {
             let mut fields = waiter.fields(log, found);
             fields["takenUp"] = json!(taken_up);
+            fields["waited"] = json!(clock.elapsed().saturating_sub(started).as_secs());
             return Ok((outcome, fields));
         }
-        thread::sleep(EVERY.min(deadline.saturating_duration_since(Instant::now())));
+        clock.wait(EVERY.min(deadline.saturating_sub(clock.elapsed())));
     }
 }
 

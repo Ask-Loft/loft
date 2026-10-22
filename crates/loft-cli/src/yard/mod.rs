@@ -29,6 +29,7 @@ mod withdraw;
 mod write;
 
 use std::path::Path;
+use std::sync::OnceLock;
 
 use loft_ports::clock::{Clock as _, SystemClock};
 use yardlog::Time;
@@ -52,9 +53,17 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
     }
 }
 
+/// The run's one clock, as the environment sets it. Every reading of the time and every wait of
+/// a `loft yard` command goes through it, so that where time passes only as the run waits, each
+/// reading follows the waits made before it.
+fn clock() -> &'static SystemClock {
+    static CLOCK: OnceLock<SystemClock> = OnceLock::new();
+    CLOCK.get_or_init(SystemClock::from_env)
+}
+
 /// The time now, as the clock gives it: `SOURCE_DATE_EPOCH` where it is set.
 fn now() -> Result<Time, Failure> {
-    let seconds = SystemClock::from_env()
+    let seconds = clock()
         .now()
         .map_err(|error| Failure::one("clock", error.to_string()))?;
     Time::from_unix_seconds(seconds).map_err(|error| Failure::one("clock", error.to_string()))

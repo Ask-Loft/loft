@@ -9,6 +9,9 @@ use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 
+use software_plant::Clock;
+
+use crate::common::EPOCH;
 use crate::snapshot::snapshot;
 use crate::yard::{ASK, BRANCH, Yard, document};
 
@@ -203,4 +206,38 @@ fn a_wait_on_a_submission_yard_log_does_not_hold_is_refused_at_once_naming_it() 
     assert_eq!(refused["errors"][0]["kind"], "no-submission");
     let message = refused["errors"][0]["message"].as_str().unwrap();
     assert!(message.contains(unknown), "{message}");
+}
+
+/// Yard Log in a scratch tree whose clock lets time pass only as each run waits, so a wait of
+/// minutes ends in moments.
+fn passing() -> Yard {
+    let mut yard = Yard::new();
+    yard.clock = Clock::fixed(EPOCH).passing();
+    yard
+}
+
+#[test]
+fn a_wait_with_no_timeout_returns_pending_after_540_seconds_where_the_submission_is_still_open() {
+    let yard = passing();
+    let submission = send(&yard, "s1");
+    let started = Instant::now();
+    let (code, waited) = wait(&yard, "s1", &submission, &[]);
+    assert!(started.elapsed() < Duration::from_secs(15));
+    assert_eq!(code, Some(0));
+    assert_eq!(waited["outcome"], "pending");
+    assert_eq!(waited["waited"], 540);
+}
+
+#[test]
+fn a_timeout_of_more_than_540_seconds_is_taken_as_540_seconds() {
+    let yard = passing();
+    let submission = send(&yard, "s1");
+    for timeout in ["541", "600", "86400"] {
+        let (code, waited) = wait(&yard, "s1", &submission, &["--timeout", timeout]);
+        assert_eq!(code, Some(0), "{timeout}");
+        assert_eq!(waited["outcome"], "pending", "{timeout}");
+        assert_eq!(waited["waited"], 540, "{timeout}");
+    }
+    let (_, shorter) = wait(&yard, "s1", &submission, &["--timeout", "90"]);
+    assert_eq!(shorter["waited"], 90);
 }

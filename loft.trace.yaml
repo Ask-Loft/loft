@@ -17395,8 +17395,8 @@ links:
         name: "the_git_simulator_sets_only_the_search_path_and_its_scenario"
         body: 6fff79e7899660917674828cdd2107c0a3fa0877e6c581e561c6a9701ab3810a
       - file: "crates/software-plant/tests/reach.rs"
-        name: "the_clock_simulator_sets_only_its_epoch"
-        body: d57f99c1c2f0f9390270fa966c7029056f7ece9334229b31661042a67d1ba220
+        name: "the_clock_simulator_sets_only_its_epoch_and_whether_time_passes"
+        body: f1515ff01644b5a45fff1f850c11e0351c2e71540e62c79ddc28cdda124cdbd9
   - node: 01a12ff0-f5e5-7095-8fa8-24f638d01948
     reviewed: a3fb3624cc245df77abb4d568eb9f52ab6ba640fa0492560557758eb7db4ef9e
     tests:
@@ -17706,6 +17706,39 @@ links:
       - file: "crates/software-plant/tests/clock.rs"
         name: "a_run_outside_any_scenario_leaves_the_epoch_unset"
         body: 508465d9a6d892ba7562ef849bd5ea42b8ba28e1d1e3bd919e5267120fc485bc
+  - node: 01a16539-ae6e-7215-9bc9-bd9cb17380f3
+    reviewed: 66540cde65fe59e84bcfa95b132a784657db30cbfc742ff029ad666fd03c1911
+    tests:
+      - file: "crates/software-plant/tests/clock.rs"
+        name: "a_scenario_whose_time_passes_sets_loft_clock_and_any_other_leaves_it_unset"
+        body: 31a1d48784d423e6e8e60cb3cb2c72e4b1b0b91037a5b5495f26b29660ed1a54
+      - file: "crates/software-plant/tests/reach.rs"
+        name: "the_clock_simulator_sets_only_its_epoch_and_whether_time_passes"
+        body: f1515ff01644b5a45fff1f850c11e0351c2e71540e62c79ddc28cdda124cdbd9
+  - node: 01a16539-ae6e-7215-9bc9-bd9de8167ede
+    reviewed: 3641fb2590bf2b7551c184a5b102b3d5121df22a825b5255d45ff03538f488ca
+    tests:
+      - file: "crates/loft-ports/tests/clock.rs"
+        name: "where_time_passes_a_wait_returns_at_once_and_moves_the_time_on_by_its_length"
+        body: 1df4c36a51cc17af25405474fb051795bfa77e55377c4f2d1ab7df68a6d0dc6e
+      - file: "crates/loft-ports/tests/clock.rs"
+        name: "a_clone_of_a_clock_is_the_same_clock"
+        body: 84095f43f6d94a55162d9218264193193b0b90d5c9e437bf4e81628fc6d52831
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_with_no_timeout_returns_pending_after_540_seconds_where_the_submission_is_still_open"
+        body: de1ee74974edd3ca38b002dd28435966ebf6f9fefd51e5edfed382d7fc171caa
+  - node: 01a16539-ae6e-7215-9bc9-bd9e4488b97b
+    reviewed: e9e8561e81db1d93279ae4275fa81b290a80172a7e76278ff0aee9f01cd79658
+    tests:
+      - file: "crates/loft-ports/tests/clock.rs"
+        name: "where_time_passes_the_time_moves_only_as_the_clock_waits"
+        body: 6edd2f8ece167b046a0fb0766bb17b7257b251231b429fdac215b8f876e86981
+  - node: 01a16539-ae6e-7215-9bc9-bd9ffa02ebaf
+    reviewed: c78223e866c418c860ecf42e8e7e96763aa7726cb8958ccc1cf1fe12dd10ffec
+    tests:
+      - file: "crates/loft-ports/tests/clock.rs"
+        name: "a_wait_moves_the_time_on_by_at_least_its_length_on_the_real_clock_as_on_the_simulator"
+        body: 85f0a5c0f4ff6c8653fb1be3781787b168ffc1f769261744a6302e46cb47152c
   - node: 01a13a90-3557-734a-9b7f-e5674386be99
     reviewed: df66380e5f2fa89d43b5d38666bfde901cc4b863eb0f302b981701f97a89c886
     tests:
@@ -20540,10 +20573,16 @@ links:
         body: 65b0b25b35b93471f07adad8e2b6e0b21510ad5a2ab3f16cf1adaabea7248f72
   - node: 01a1646f-546c-7521-9643-bbfd40238669
     reviewed: eac9fa3db003a34e391b8d6216cbe0f4e788e4631c36f012847d50995e3c6dda
-    unverified: "A test would wait nine minutes: read from the code, `--timeout` is clamped to 540 seconds before the wait starts."
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_timeout_of_more_than_540_seconds_is_taken_as_540_seconds"
+        body: d8d768096574e0cc1e1a13621e7faaaf05f3f75996f98df6aba1ff4d69d73625
   - node: 01a1646f-546c-7521-9643-bbfe0ae454d1
     reviewed: 0a0d2a45500c9999cec1de7d1fcff9a36ed44c887755cddad6cde24eb7e218d9
-    unverified: "A test would wait nine minutes: read from the code, `--timeout` defaults to 540 seconds and an open submission returns `pending` once it passes."
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_with_no_timeout_returns_pending_after_540_seconds_where_the_submission_is_still_open"
+        body: de1ee74974edd3ca38b002dd28435966ebf6f9fefd51e5edfed382d7fc171caa
   - node: 01a1646f-546c-7521-9643-bbff63d64864
     reviewed: 3041c4ae0961e20a86050c07319951062e7b4d5009ad3ee0a0e390fbff8bf071
     tests:
@@ -21249,6 +21288,12 @@ links:
       - file: "crates/loft-cli/tests/test_locator.rs"
         name: "only_the_test_locator_parses_a_programming_language"
         body: 2a6ff6795ff9e7edb461b80e5cca9589dd283663167a313fa4f066d0ae422e3f
+  - node: 01a16539-ae68-7350-9547-bac08a0d0f5b
+    reviewed: c4df128e39a73f76c31d24bc6cf36c453d4ff5a441fd117a15508d3e6c11ce16
+    tests:
+      - file: "crates/loft-cli/tests/clock_port.rs"
+        name: "the_yard_commands_tell_the_time_and_wait_only_through_the_clock_port"
+        body: 9e04307bbdd8a0e366f3d0629aea5e3d93baad07e5a40584b77fc948806f704b
   - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
     reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
     tests:

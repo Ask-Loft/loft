@@ -27,6 +27,7 @@ mod check;
 mod check_baseline;
 mod checks_for_updates;
 mod citations;
+mod clock_port;
 mod closed_output;
 mod collector_contract;
 mod find;

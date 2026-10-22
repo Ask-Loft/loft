@@ -17,7 +17,8 @@
         "submission",
         "blocks",
         "takenUp",
-        "errors"
+        "errors",
+        "waited"
       ],
       "properties": {
         "tree": {
@@ -66,6 +67,11 @@
           "items": {
             "$ref": "#/$defs/error"
           }
+        },
+        "waited": {
+          "description": "How long the wait lasted, in whole seconds, as the clock measured it",
+          "type": "integer",
+          "minimum": 0
         }
       }
     },
