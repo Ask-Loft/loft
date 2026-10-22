@@ -21543,18 +21543,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "each repository is named by the top of its main worktree"
         body: e25d54ecdd354fdc428f24902648e48278bd3f9320f9a90e13dbe340324420f7
+  - node: 01a1660b-dd8a-760c-ade4-a7dfa7044f96
+    reviewed: 256780821b92fd9294568433f50bce02cf013a0005b2288104b39d4c67e9a982
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "a repository’s main worktree, whose folder is the repository’s own, is named once"
+        body: dde79f2270ce6ac9dc3b9334307318f58b67eb1a6779a1a0b5e7ed1cc4bc71bf
   - node: 01a1646f-546d-7042-befd-eb24d506d9d2
     reviewed: d9224ecea17090955c800a0023787e38211d572d365661d4a91e5353784334ad
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "each listed branch shows its worktree, its name, its title and the count of blocks that wait on the person"
-        body: 2ff434cdcca85820834a528928f622f2149edaa1e85dc26552dec1fca5240e1f
+        body: 764e3720e7d1569756e6127fac27b00de25d61ad4d99c48fa6cfc62bd3cd1e2c
   - node: 01a1646f-546d-7042-befd-eb25f7e1f2d7
     reviewed: 189b8854422bc6832ad84ad55ab49db8cf711387b8e7c984180d860507a01771
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "each listed branch shows its worktree, its name, its title and the count of blocks that wait on the person"
-        body: 2ff434cdcca85820834a528928f622f2149edaa1e85dc26552dec1fca5240e1f
+        body: 764e3720e7d1569756e6127fac27b00de25d61ad4d99c48fa6cfc62bd3cd1e2c
   - node: 01a1646f-546d-7042-befd-eb26bca8ff00
     reviewed: 9cfff6b9171a7574879ca052aa49d043c9521f23117c3b3b72894c2c69e00e2a
     tests:
@@ -21860,19 +21866,19 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
-        body: 851e2599b0a0e63e597660bae1318b3d85b3c90d8aa6b4dfa83419aa0b84244b
+        body: 1017518fc6779331cd5495f305a12dfc436eb31a50967c72e3637e2e6ea55c56
   - node: 01a1646f-546d-7042-befd-eb5f8c067f0b
     reviewed: 3c842f94d0a223b313d84032bf83f8fcd978d68f4e1eb6f72039bdc6dede4ab5
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
-        body: 851e2599b0a0e63e597660bae1318b3d85b3c90d8aa6b4dfa83419aa0b84244b
+        body: 1017518fc6779331cd5495f305a12dfc436eb31a50967c72e3637e2e6ea55c56
   - node: 01a1646f-546d-7042-befd-eb60eba23d76
     reviewed: 48d122bb52e03b0d97977689926e2629e89b0d4797f2672393401aab7284a609
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
-        body: 851e2599b0a0e63e597660bae1318b3d85b3c90d8aa6b4dfa83419aa0b84244b
+        body: 1017518fc6779331cd5495f305a12dfc436eb31a50967c72e3637e2e6ea55c56
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "what_waits_on_the_person_is_listed_oldest_first_across_the_trees_served"
         body: e3c76ec15b697ec2ceb1222167f045edeaf0460d8624229e037eb7988633eede
@@ -21996,6 +22002,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "time outside the turns is idle, and an idle stretch longer than 45 seconds is folded and labelled with its length"
         body: 0ed36af532d1354c3a32b51c447368e93fcd5a4c61bb4558cd8689f99c80273f
+  - node: 01a1660b-dd8a-760c-ade4-a7e027922586
+    reviewed: e3c0951bef7933f9c812be4f5e3831d839387dfb1f915df4c34ae9820fd9d47d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "an idle stretch folded at the end of the chart is labelled inside it, its label ending at the chart’s edge"
+        body: 8921299a0e2d713aa42d79343fa6c50dfd657fde836e3b267f799afdb9e31f4e
   - node: 01a1646f-546d-7042-befd-eb79bfb93e3a
     reviewed: ceb5c504db1fa6e6a6fb2e7229169ef6fd5583bd1416446516fe620251f40c81
     tests:

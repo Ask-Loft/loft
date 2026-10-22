@@ -164,3 +164,12 @@ test('each stretch of plan or spec mode is a band across every lane, labelled wi
   assert.equal(drawn.querySelector('.band-fill--spec').getAttribute('fill'), 'url(#hatch-spec)');
   assert.equal(drawn.querySelector('.band-fill--plan').getAttribute('fill'), null);
 });
+
+test('an idle stretch folded at the end of the chart is labelled inside it, its label ending at the chart’s edge', () => {
+  const shown = log([timed('one', MAIN, 0, 3000)], { activity: [activity({ turns: [span(0, 400)] })] });
+  const drawn = gantt(shown, { width: 1000, now: T0 + 3_000_000, onPick: () => {} });
+  const label = [...drawn.querySelectorAll('.idle-label')].at(-1);
+  assert.equal(label.textContent, 'idle 43 min');
+  assert.equal(label.getAttribute('text-anchor'), 'end');
+  assert.ok(Number(label.getAttribute('x')) <= 1000);
+});

@@ -38,7 +38,7 @@ function listing(more = {}) {
 test('the Yard Logs are listed by repository, then by worktree and branch', () => {
   const list = treeList(listing(), null);
   assert.deepEqual([...list.querySelectorAll('.repository > h2')].map((each) => each.textContent), ['shelf']);
-  assert.deepEqual([...list.querySelectorAll('.worktree > h3')].map((each) => each.textContent), ['shelf', 'shelf-docs']);
+  assert.deepEqual([...list.querySelectorAll('.worktree > h3')].map((each) => each.textContent), ['shelf-docs']);
   assert.deepEqual([...list.querySelectorAll('.log-item .branch')].map((each) => each.textContent), ['feat/shelf', 'develop', 'docs']);
 });
 
@@ -53,7 +53,8 @@ test('each listed branch shows its worktree, its name, its title and the count o
   assert.equal(item.querySelector('.branch').textContent, 'feat/shelf');
   assert.equal(item.querySelector('.title').textContent, 'Shelves for two readers');
   assert.equal(item.querySelector('.waiting-count').textContent, '2');
-  assert.equal(item.closest('.worktree').querySelector('h3').getAttribute('title'), '/work/shelf');
+  // The repository's main worktree is named by the repository's heading, once.
+  assert.equal(item.closest('.repository').querySelector('h2').getAttribute('title'), '/work/shelf');
 });
 
 test('an inherited Yard Log is listed after the current one, marked as inherited, and a closed one as closed', () => {
@@ -80,7 +81,7 @@ test('every open submission is shown above the list, oldest first, with its repo
   const items = [...waits.querySelectorAll('.wait-item')];
   assert.deepEqual(items.map((item) => item.querySelector('.branch').textContent), ['feat/shelf', 'docs']);
   assert.equal(items[0].querySelector('.tree').textContent, 'shelf');
-  assert.equal(items[0].querySelector('.repository').textContent, 'shelf');
+  assert.equal(items[1].querySelector('.repository').textContent, 'shelf');
   assert.match(items[0].querySelector('.asked').textContent, /Which shelf\?/);
   assert.match(items[1].querySelector('.sent').textContent, /Sent by Explore at/);
   assert.deepEqual(parse(items[1].querySelector('a').getAttribute('href')).branch, 'docs');
@@ -93,4 +94,25 @@ test('with no open submission anywhere, nothing is shown above the list', () => 
 test('the page title gives the count of blocks that wait on the person', () => {
   assert.equal(title(listing()), '(2) Yard');
   assert.equal(title(listing({ count: 0 })), 'Yard');
+});
+
+test('a repository’s main worktree, whose folder is the repository’s own, is named once', () => {
+  const list = treeList(listing(), null);
+  const worktrees = [...list.querySelectorAll('.worktree')];
+  assert.deepEqual(
+    worktrees.map((worktree) => worktree.querySelector('h3')?.textContent ?? null),
+    [null, 'shelf-docs'],
+  );
+  const waits = waitingList({
+    ...listing(),
+    waiting: [
+      { repository: '/work/shelf', tree: '/work/shelf', branch: 'feat/shelf', submission: 's', sent: { at: '2026-01-01T10:00:00Z' }, agent: {}, blocks: ['q1'] },
+      { repository: '/work/shelf', tree: '/work/shelf-docs', branch: 'docs', submission: 't', sent: { at: '2026-01-01T10:00:00Z' }, agent: {}, blocks: ['q2'] },
+    ],
+  });
+  const named = [...waits.querySelectorAll('.wait-link')].map((link) => [...link.querySelectorAll('span')].map((span) => span.textContent));
+  assert.deepEqual(named, [
+    ['feat/shelf', 'shelf'],
+    ['docs', 'shelf-docs', 'shelf'],
+  ]);
 });

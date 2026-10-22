@@ -15,6 +15,26 @@ const GAP = 4;
 const ROW_PAD = 8;
 const BAND_HEAD = 18;
 
+/** About how wide one character of a label is drawn, in pixels. */
+const CHARACTER = 6.5;
+
+/**
+ * An idle stretch's label, centred under it where it fits inside the chart, and otherwise held
+ * inside the chart's edge it would cross.
+ * @param {string} text
+ * @param {number} from
+ * @param {number} to
+ * @param {number} width
+ * @param {number} y
+ */
+function idleLabel(text, from, to, width, y) {
+  const half = (text.length * CHARACTER) / 2;
+  const centre = (from + to) / 2;
+  const [x, anchor] =
+    centre + half > width - 2 ? [Math.min(to, width) - 2, 'end'] : centre - half < 2 ? [Math.max(from, 0) + 2, 'start'] : [centre, 'middle'];
+  return svg('text', { x, y, 'text-anchor': anchor, class: 'idle-label' }, text);
+}
+
 /**
  * The height a stage's row takes.
  * @param {any} row
@@ -55,7 +75,7 @@ export function gantt(log, { width, now, onPick }) {
           'g',
           { class: 'idle-fold' },
           svg('rect', { x: X(span.from), y: BAND_HEAD, width: X(span.to) - X(span.from), height: height - BAND_HEAD - 34, fill: 'url(#hatch-idle)' }),
-          svg('text', { x: (X(span.from) + X(span.to)) / 2, y: height - 22, 'text-anchor': 'middle', class: 'idle-label' }, `idle ${length(span.to - span.from)}`),
+          idleLabel(`idle ${length(span.to - span.from)}`, X(span.from), X(span.to), width, height - 22),
         ),
       ),
     model.bands.map((band) =>

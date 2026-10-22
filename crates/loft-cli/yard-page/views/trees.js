@@ -39,7 +39,7 @@ export function waitingList(listing) {
             { href: address(wait.tree, wait.branch), class: 'wait-link' },
             h('span', { class: 'branch' }, wait.branch),
             h('span', { class: 'tree' }, base(wait.tree)),
-            h('span', { class: 'repository' }, base(wait.repository)),
+            wait.repository === wait.tree ? null : h('span', { class: 'repository' }, base(wait.repository)),
           ),
           h(
             'ul',
@@ -82,7 +82,7 @@ export function treeList(listing, current) {
           h(
             'div',
             { class: 'worktree' },
-            h('h3', { title: tree.tree }, base(tree.tree)),
+            tree.tree === repository.repository ? null : h('h3', { title: tree.tree }, base(tree.tree)),
             h(
               'ul',
               { class: 'logs' },
