@@ -1,0 +1,82 @@
+key: 01a1646f-546d-7042-befd-ebb1821f3ad8
+slug: records-and-keys
+name: "Records and keys"
+body: |
+  Yard Log is a set of keyed records, built as a specification is: keys are its identity and ids are the agent's handles for them. A server that connects to Yard Log later can take its records up as they are, join them with the published specification by key, and map the people and agents who acted to principals of its own.
+
+  Every write, answer and decision is an Act: when, at which revision, and by whom. Who is an agent, named by its host and session and, for a subagent, its agent id and type, or the person, named as git names them. Nothing is overwritten: every version of every stage and block stays in Yard Log, a submission keeps each change of its state, and an answer or outcome, once given, stays as it was given.
+tags:
+  - git
+  - identity
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a1646f-546d-7042-befd-ebb20526da76
+    statement:
+      form: ubiquitous
+      system: "The yard store"
+      shall: "give Yard Log, each stage, each block, each version, each submission and each answer or outcome a key that `loft` mints when the record is first written."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebb3548bbe84
+        name: "Every key is a UUID of version 7."
+      - key: 01a1646f-546d-7042-befd-ebb48f29f00c
+        name: "A record keeps its key through every later version."
+      - key: 01a1646f-546d-7042-befd-ebb5f8f03e4b
+        name: "No key is reused for another record."
+      - key: 01a1646f-546d-7042-befd-ebb63745a98d
+        name: "A submission is named by its key, never by a counter."
+  - key: 01a1646f-546d-7042-befd-ebb7a2f6203d
+    statement:
+      form: ubiquitous
+      system: "The yard store"
+      shall: "reference one record from another only by key."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebb8ed532afb
+        name: "A block names its stage by the stage's key."
+      - key: 01a1646f-546d-7042-befd-ebb97d4d1aa5
+        name: "A decision names the question it settles by the question's key."
+      - key: 01a1646f-546d-7042-befd-ebba0e3f311b
+        name: "A submission lists its blocks by their keys."
+      - key: 01a1646f-546d-7042-befd-ebbb730d95f5
+        name: "An answer or outcome names its block by the block's key."
+      - key: 01a1646f-546d-7042-befd-ebbce0647d73
+        name: "A `loft` view names each node of the specification it shows by the node's key."
+  - key: 01a1646f-546d-7042-befd-ebbdf2aa05ac
+    statement:
+      form: ubiquitous
+      system: "The yard store"
+      shall: "record each Act with its time in UTC to the second, the revision it was made at, and its actor."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebbee5a82235
+        name: "An agent's actor names its host, `claude-code`, and its session id."
+      - key: 01a1646f-546d-7042-befd-ebbf79d470c1
+        name: "A subagent's actor also names its agent id and its type."
+      - key: 01a1646f-546d-7042-befd-ebc0a5c1656b
+        name: "The person's actor names the person by the `user.name` and `user.email` that git gives for the repository."
+  - key: 01a1646f-546d-7042-befd-ebc1b3cfeb3a
+    statement:
+      form: ubiquitous
+      system: "The yard store"
+      shall: "keep every version of every stage and block, in the order of their Acts."
+    criteria:
+      - key: 01a1647b-208d-7169-85c8-9a5829b8c33f
+        name: "A submission records each change of its state as an Act, and keeps every one of them."
+      - key: 01a1647b-208d-7169-85c8-9a59bc65bb1c
+        name: "An answer or an outcome is never rewritten once it is recorded."
+      - key: 01a1646f-546d-7042-befd-ebc2b4b704f4
+        name: "A block's current version is the latest by its Act's time, and by key between versions of one time."
+      - key: 01a1646f-546d-7042-befd-ebc3879c749e
+        name: "A version's number is its position among the block's versions, starting at 1."
+      - key: 01a1646f-546d-7042-befd-ebc49992ac21
+        name: "Rewriting a block adds a version and removes none."
+  - key: 01a1646f-546d-7042-befd-ebc50e2f2c72
+    statement:
+      form: unwanted
+      if: "Yard Log's files hold a reference to a key that Yard Log does not hold"
+      system: "the yard store"
+      shall: "refuse to read that Yard Log and name the record and the key."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebc6d5169383
+        name: "The error names the file and the line of the reference."

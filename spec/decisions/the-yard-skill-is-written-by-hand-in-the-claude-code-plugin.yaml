@@ -1,0 +1,53 @@
+key: 01a1646f-5467-7025-8a88-4ea9a98b548a
+slug: the-yard-skill-is-written-by-hand-in-the-claude-code-plugin
+title: "The yard skill is written by hand in the Claude Code plugin"
+context: "The `loft-spec` skill has one host-neutral source that `loft` composes for each host. The `yard` skill teaches tools that only the Claude Code plugin's mod offers, and Claude Code is Yard Client's only host for now."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4eac6f99c7aa
+  outcome: "The `yard` skill is written by hand under `plugins/claude/loft/skills/yard/`; `loft` does not compose it and `loft skill install` does not write it."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4eaa4c76454f
+    kind: local
+    label: "Where its tools are"
+    statement: "The skill is installed only where its tools exist."
+  - key: 01a1646f-5467-7025-8a88-4eab3c03b22b
+    kind: local
+    label: "Little to maintain"
+    statement: "One host does not pay for a composition it does not need."
+options:
+  - key: 01a1646f-5467-7025-8a88-4eac6f99c7aa
+    title: "By hand in the plugin"
+    description: "A skill written for Claude Code and kept in its plugin."
+  - key: 01a1646f-5467-7025-8a88-4ead46d8c220
+    title: "A composed source"
+    description: "A host-neutral source in `crates/loft-cli/skill/`, with a Claude Code adaptation, composed by `loft`."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4eac6f99c7aa
+    driver: 01a1646f-5467-7025-8a88-4eaa4c76454f
+    rating: supports
+    rationale: "the plugin carries both"
+  - option: 01a1646f-5467-7025-8a88-4eac6f99c7aa
+    driver: 01a1646f-5467-7025-8a88-4eab3c03b22b
+    rating: supports
+    rationale: "one file set"
+  - option: 01a1646f-5467-7025-8a88-4ead46d8c220
+    driver: 01a1646f-5467-7025-8a88-4eaa4c76454f
+    rating: conflicts
+    rationale: "`loft skill install` would write it where no tool exists"
+  - option: 01a1646f-5467-7025-8a88-4ead46d8c220
+    driver: 01a1646f-5467-7025-8a88-4eab3c03b22b
+    rating: conflicts
+    rationale: "a source, an adaptation and a composer for one host"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4eaeacfb356d
+    kind: obligation
+    statement: "The check that the plugin packages match the composition accepts the `yard` skill as written by hand."
+  - key: 01a1646f-5467-7025-8a88-4eaf7cc1d972
+    kind: cost
+    statement: "A second host needs the skill adapted or a composed source then."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b7852c58c8
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc7c4e7a1936

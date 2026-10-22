@@ -1,0 +1,39 @@
+key: 01a1646f-546d-7042-befd-eb5c525a2752
+slug: see-what-waits-on-you
+name: "See what waits on you"
+body: "What the agents wait for comes first on the page, across every branch's Yard Log on the machine, so the person can answer without looking for it."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb5db625c56a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show above its list of branches every open submission of every branch's Yard Log the page server serves, each with the tree and branch it belongs to and the blocks it waits on."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb5e8b4c055c
+        name: "Each open submission shows when it was sent and the agent that sent it."
+      - key: 01a1646f-546d-7042-befd-eb5f8c067f0b
+        name: "Each open submission names its repository, its worktree and its branch, and links to its Yard Log."
+      - key: 01a1646f-546d-7042-befd-eb60eba23d76
+        name: "The open submissions are listed oldest first."
+      - key: 01a1646f-546d-7042-befd-eb610be82633
+        name: "With no open submission anywhere, nothing is shown above the list."
+  - key: 01a1646f-546d-7042-befd-eb62e8627245
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show the open submissions of the branch's Yard Log it shows above its timeline, each with the blocks it waits on."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb6376a28807
+        name: "Each open submission shows when it was sent and the agent that sent it."
+      - key: 01a1646f-546d-7042-befd-eb648d58cd02
+        name: "Where Yard Log has no open submission, nothing shows above the timeline."
+  - key: 01a1646f-546d-7042-befd-eb659242667a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "give in its title the count of the blocks that wait on the person across every branch's Yard Log it serves."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb66aa4b28b7
+        name: "The count changes within 2 seconds of a block being sent, answered, decided or withdrawn."

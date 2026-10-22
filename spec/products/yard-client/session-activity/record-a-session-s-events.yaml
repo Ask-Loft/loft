@@ -1,0 +1,86 @@
+key: 01a1646f-546d-7042-befd-eafb39a1e099
+slug: record-a-session-s-events
+name: "Record a session's events"
+body: |
+  While a branch's Yard Log is open, the Loft mod hears what happens in each Claude Code session that works on it: each turn, each request to the model, each tool call, each subagent and each compaction. It posts each event to the page server as it happens, and the page server keeps it in the session's event log on this machine, never in the repository.
+
+  An event says what happened, in which agent, and what it took, never what was said: it holds names, ids, times and counts, and none of the person's or the agent's words.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546d-7042-befd-eafcf7724f38
+    statement:
+      form: event_driven
+      when: "a turn, a model request, a tool call, a subagent, a compaction or plan mode starts or ends in a Claude Code session"
+      system: "the Loft mod"
+      shall: "post the event to the page server as it happens."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eafdf3c267d2
+        name: "Each event holds the session's id, the directory of the agent it happened in, the time, and the agent: the main agent, or a subagent's id."
+      - key: 01a1646f-546d-7042-befd-eafe7b5c5ec1
+        name: "A model request's event, posted when its response ends, holds the model that answered, the turn, the names of the tool calls the response asked for, and its input, cache read, cache write and output tokens as Claude Code reports them."
+      - key: 01a1646f-546d-7042-befd-eaff9cc533cb
+        name: "A turn's start is an event."
+      - key: 01a1646f-546d-7042-befd-eb00d74acf56
+        name: "A turn's end is an event, with the turn's input, cache read, cache write and output tokens."
+      - key: 01a1646f-546d-7042-befd-eb01a1b7b060
+        name: "A tool call's start and its end are events, each with the tool's name and the call's id."
+      - key: 01a1646f-546d-7042-befd-eb025a1a526b
+        name: "A tool call's end says whether the call failed."
+      - key: 01a1646f-546d-7042-befd-eb03dfa075b4
+        name: "A subagent's start is an event, with the subagent's id, its type and its model."
+      - key: 01a1646f-546d-7042-befd-eb0424c61342
+        name: "A compaction is an event, with the conversation's size in tokens before and after it."
+      - key: 01a16475-7fbc-7732-a78c-bc5234423864
+        name: "A compaction's event holds the input, cache read, cache write and output tokens of the compaction's own request."
+      - key: 01a1646f-546d-7042-befd-eb05c5d3d538
+        name: "The main agent's plan mode starting and ending are events."
+      - key: 01a16475-7fbc-7732-a78c-bc53338212c4
+        name: "Plan mode is heard from the permission mode that Claude Code's hooks are given, and from the `EnterPlanMode` and `ExitPlanMode` calls that succeed."
+      - key: 01a1646f-546d-7042-befd-eb06f87709de
+        name: "A file edit's start says whether the file lies under the tree's `spec/`, and holds nothing else of its path."
+      - key: 01a1646f-546d-7042-befd-eb079e1b22d9
+        name: "Events of a subagent's requests and tool calls are posted as those of the main agent are, each naming the subagent."
+      - key: 01a1646f-546d-7042-befd-eb0881f33bd6
+        name: "No event holds the person's prompt, the agent's text, a tool call's input or a tool call's result, beyond the names of the `loft` subcommands a shell command runs and whether a file edit is under `spec/`."
+      - key: 01a1646f-546d-7042-befd-eb09c697866e
+        name: "A shell command's start holds the names of the `loft` subcommands it runs."
+      - key: 01a16475-7fbc-7732-a78c-bc5471862f2a
+        name: "A shell command's `loft` subcommands are named whether it runs `loft` by its name, by a path to it, or through a shell variable it sets to either."
+      - key: 01a16475-7fbc-7732-a78c-bc55e56b2ca3
+        name: "A subcommand's name is taken only from `loft`'s own list of subcommands, never from quoted text or a heredoc."
+      - key: 01a1646f-546d-7042-befd-eb0ad2547439
+        name: "Each event carries the page server's control token and no `Origin`."
+      - key: 01a1646f-546d-7042-befd-eb0bdf72490b
+        name: "The agent's work goes on without waiting for the page server's answer."
+  - key: 01a1646f-546d-7042-befd-eb0c99dc419e
+    statement:
+      form: unwanted
+      if: "the page server does not answer an event"
+      system: "the Loft mod"
+      shall: "keep the events it could not post, at most 1,000, and post them in their order once a page server answers again."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb0d02f241f6
+        name: "Events kept while the page server was away reach it in the order they happened."
+      - key: 01a1646f-546d-7042-befd-eb0eeba43565
+        name: "Past 1,000 kept events, the oldest is dropped."
+      - key: 01a1646f-546d-7042-befd-eb0f5266c105
+        name: "The first event posted after a drop holds the number of events dropped."
+  - key: 01a1646f-546d-7042-befd-eb103c0010bb
+    statement:
+      form: event_driven
+      when: "the page server receives an event of a session whose agent's branch has its Yard Log open"
+      system: "the page server"
+      shall: "append the event to the session's event log, with the tree, the branch, the stage that is active for the event's agent and the submissions that are open when it arrives."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb11fb7e4314
+        name: "A session's event log is `yard/events/<session id>.jsonl` in `loft`'s settings directory, one event to a line, in the order the events arrived."
+      - key: 01a1646f-546d-7042-befd-eb123a31b312
+        name: "The event log is never written under the working tree."
+      - key: 01a1646f-546d-7042-befd-eb139c5d21b6
+        name: "An event whose agent's branch has no Yard Log, or a closed one, is not recorded."
+      - key: 01a1646f-546d-7042-befd-eb14bec05c05
+        name: "An event names the tree and branch that its agent's directory is on when it arrives, so that an agent that changes branch or worktree records each event with the branch it happened on."
+      - key: 01a1646f-546d-7042-befd-eb15a1f51483
+        name: "Events of two agents of one session that work in two worktrees are recorded each with its own tree and branch."

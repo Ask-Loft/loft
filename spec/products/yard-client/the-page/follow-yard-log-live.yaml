@@ -1,0 +1,33 @@
+key: 01a1646f-546d-7042-befd-eb4c63bd6b46
+slug: follow-yard-log-live
+name: "Follow Yard Log live"
+body: "An open page keeps up with every agent and with answers given in Claude Code, so the person never reloads it. The page server learns of each change from the files, whoever wrote them, and tells open pages through server-sent events."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb4dd110e73c
+    statement:
+      form: state_driven
+      while: "the page is open"
+      system: "the page"
+      shall: "show each change to the branch's Yard Log it shows, and to its list of branches, without a reload."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb4e1610e29f
+        name: "A block that an agent writes shows within 2 seconds of the write."
+      - key: 01a1646f-546d-7042-befd-eb4fcaf9fd4b
+        name: "An answer given in Claude Code shows within 2 seconds."
+      - key: 01a1646f-546d-7042-befd-eb5075712d1c
+        name: "Yard Log opened for a branch of another tree the page server serves shows in the list within 2 seconds."
+      - key: 01a1646f-546d-7042-befd-eb5140658694
+        name: "A choice the person has made and not sent is kept through a change."
+  - key: 01a1646f-546d-7042-befd-eb5268fd5363
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "follow the changes to the files of every branch's Yard Log it serves, whoever makes them."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb538ff1d6c4
+        name: "A change written by a `loft yard` command reaches open pages."
+      - key: 01a1646f-546d-7042-befd-eb542652e8d9
+        name: "A change that git makes, such as a checkout of another branch or a merge, reaches open pages."

@@ -1,0 +1,50 @@
+key: 01a1646f-5467-7025-8a88-4eb837e1b7b1
+slug: token-counts-come-from-the-mod
+title: "Token counts come from the mod"
+context: "The token counts of each model request are known inside Claude Code as the request ends, where a mod hears them, and otherwise only in the session's transcript, which a reader would have to parse after the fact."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ebbd3e5c52d
+  outcome: "The mod sends each model request's event, with its four token counts as Claude Code reports them, to the page server as the request ends."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4eb97ceb1bb3
+    kind: local
+    label: "Live"
+    statement: "The page shows a request's tokens as it ends."
+  - key: 01a1646f-5467-7025-8a88-4eba6a8982d3
+    kind: local
+    label: "One source"
+    statement: "The counts come from where Claude Code reports them."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ebbd3e5c52d
+    title: "Heard by the mod"
+    description: "The mod hears each request's end and sends its counts."
+  - key: 01a1646f-5467-7025-8a88-4ebc9b51d418
+    title: "Read from the transcript"
+    description: "`loft` parses the session's transcript for its requests."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ebbd3e5c52d
+    driver: 01a1646f-5467-7025-8a88-4eb97ceb1bb3
+    rating: supports
+    rationale: "sent as the request ends"
+  - option: 01a1646f-5467-7025-8a88-4ebbd3e5c52d
+    driver: 01a1646f-5467-7025-8a88-4eba6a8982d3
+    rating: supports
+    rationale: "the counts Claude Code reports"
+  - option: 01a1646f-5467-7025-8a88-4ebc9b51d418
+    driver: 01a1646f-5467-7025-8a88-4eb97ceb1bb3
+    rating: conflicts
+    rationale: "read after the fact"
+  - option: 01a1646f-5467-7025-8a88-4ebc9b51d418
+    driver: 01a1646f-5467-7025-8a88-4eba6a8982d3
+    rating: neutral
+    rationale: "a file format that may change"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ebdc36f455a
+    kind: cost
+    statement: "Requests Claude Code makes inside its own tools, such as a web search, are not counted."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eae568dbeb5f

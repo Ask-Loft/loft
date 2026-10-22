@@ -1,0 +1,84 @@
+key: 01a1646f-546c-7521-9643-bc11f8cd86ba
+slug: answer-a-sent-submission-in-either-place
+name: "Answer a sent submission in either place"
+body: |
+  When an agent sends its own questions, approvals and plans and waits on them with `yard_wait`, the tool call holds the agent's turn until the person answers. A person not looking at the page would not know that the agent waits, so the same call asks the blocks in Claude Code's own dialog while it waits on `loft yard wait`, and the first answer counts.
+
+  Claude Code's dialog asks at most four questions of at most four options each, so a submission is asked over as many dialogs as it needs.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc12b4be134e
+    statement:
+      form: event_driven
+      when: "an agent waits on a submission with `yard_wait`"
+      system: "the Loft mod"
+      shall: "ask the submission's blocks that wait on the person in Claude Code's own dialog, as well as on the page, within the one tool call."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc13661fd11f
+        name: "A dialog asks at most four of the submission's blocks, in the order the submission holds them."
+      - key: 01a1646f-546c-7521-9643-bc142d00420d
+        name: "Once a dialog is answered, the next dialog asks the next blocks that still wait, until none waits."
+      - key: 01a1646f-546c-7521-9643-bc154cdb5120
+        name: "A dialog shows each question's prompt, its header and the detail of each option."
+      - key: 01a1646f-546c-7521-9643-bc1683ca634b
+        name: "An approval or a plan is asked by its title."
+      - key: 01a16475-7fbc-7732-a78c-bc4d52d9dd1b
+        name: "An approval or a plan is offered the two options `Approve` and `Reject`."
+      - key: 01a1646f-546c-7521-9643-bc172b851ab7
+        name: "While more than four options of a question remain to be shown, a dialog shows the next three and `More options`."
+      - key: 01a16475-7fbc-7732-a78c-bc4eb44ec110
+        name: "Once four or fewer options of a question remain to be shown, a dialog shows them all."
+      - key: 01a1646f-546c-7521-9643-bc18affd63b8
+        name: "Each dialog shows the page's address above what it asks."
+      - key: 01a1646f-546c-7521-9643-bc19a036c764
+        name: "A dialog for a subagent's submission names the subagent."
+  - key: 01a1646f-546c-7521-9643-bc1b53c6cf05
+    statement:
+      form: event_driven
+      when: "the person answers a dialog first"
+      system: "the Loft mod"
+      shall: "record its answers and decisions with `loft yard answer` and the channel `terminal`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc1c7ae1aae7
+        name: "A dialog's answers are recorded once it is answered, so that the page no longer offers them."
+      - key: 01a1646f-546c-7521-9643-bc1d8538d8ca
+        name: "A question that takes more than one option, asked over more than one dialog, records the options chosen in each."
+      - key: 01a1646f-546c-7521-9643-bc1ebd608f91
+        name: "`Approve` records the block as `approved`."
+      - key: 01a1646f-546c-7521-9643-bc1fbb759d63
+        name: "`Reject` records the block as `rejected`, with the notes the person typed as its reason."
+      - key: 01a1646f-546c-7521-9643-bc20025a66a1
+        name: "Words that the person types in place of an option record an approval or a plan as `rejected`, with those words as its reason."
+      - key: 01a1646f-546c-7521-9643-bc2133f400f4
+        name: "The call returns once every block of the submission is answered or decided."
+  - key: 01a1646f-546c-7521-9643-bc224226625b
+    statement:
+      form: event_driven
+      when: "the person answers the submission on the page first"
+      system: "the Loft mod"
+      shall: "close the dialog that is open, and ask nothing more."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc23947b37d2
+        name: "The dialog that is open closes within 2 seconds of the page's answers."
+      - key: 01a1646f-546c-7521-9643-bc244499f9c2
+        name: "No dialog opens after the page's answers."
+  - key: 01a1646f-546c-7521-9643-bc2593cf5777
+    statement:
+      form: event_driven
+      when: "the submission is withdrawn, or Yard Log is closed, while a dialog is open"
+      system: "the Loft mod"
+      shall: "close the dialog and record nothing from it."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc26b95ceed1
+        name: "Nothing is asked after the withdrawal."
+  - key: 01a1646f-546c-7521-9643-bc275ce176b9
+    statement:
+      form: event_driven
+      when: "the person interrupts the turn while `yard_wait` waits"
+      system: "the Loft mod"
+      shall: "close the dialog and record nothing from it."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc290453d6cd
+        name: "No answer is recorded from the closed dialog."

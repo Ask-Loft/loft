@@ -1,0 +1,60 @@
+key: 01a1646f-546e-76cb-8b4f-f236e97db04a
+slug: open-yard-log-for-a-branch
+name: "Open Yard Log for a branch"
+body: "Yard Log belongs to the branch that the agent's worktree is on, and an agent's first write on that branch opens it with `loft yard write`. An agent in a linked worktree writes to that worktree's own branch."
+tags:
+  - git
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f23789a63c23
+    statement:
+      form: event_driven
+      when: "an agent first writes to a branch that has no Yard Log"
+      system: "`loft yard write`"
+      shall: "open the branch's Yard Log under `.yard/<branch>/`, titled with the branch's name, with a key of its own."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f238965d2062
+        name: "The root of the branch's Yard Log is `.yard/<branch>/yardlog.yaml`, where each `/` of the branch's name separates directories."
+      - key: 01a1646f-546e-76cb-8b4f-f2396e6f8d9d
+        name: "Yard Log carries from its opening a key that `loft` mints, which it keeps for life."
+      - key: 01a1646f-546e-76cb-8b4f-f23ab3a81452
+        name: "Yard Log records from its opening the branch's name, its title and the Act of the write that opened it."
+      - key: 01a1646f-546e-76cb-8b4f-f23bae400c69
+        name: "A later write on the same branch is applied to that branch's Yard Log."
+      - key: 01a1646f-546e-76cb-8b4f-f23c5a81ffbf
+        name: "A write on another branch of the same repository opens that branch's own Yard Log."
+  - key: 01a1646f-546e-76cb-8b4f-f23d8c03b530
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "keep `.yard/` at the top of the worktree that holds the calling agent's current directory."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f23e7f3714f6
+        name: "An agent whose current directory is below the top of the worktree writes to the `.yard/` at the top of the worktree."
+      - key: 01a1646f-546e-76cb-8b4f-f23fc9082902
+        name: "An agent in a linked worktree writes to the `.yard/` of that worktree."
+  - key: 01a1646f-546e-76cb-8b4f-f240244e8c72
+    statement:
+      form: unwanted
+      if: "the worktree is on a detached HEAD"
+      system: "`loft yard write`"
+      shall: "refuse the write and say that Yard Log belongs to a branch."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f24183348aa3
+        name: "No file under `.yard/` is written."
+      - key: 01a1646f-546e-76cb-8b4f-f242838e197d
+        name: "A read on a detached HEAD returns Yard Log with no stage at revision 0."
+  - key: 01a1646f-546e-76cb-8b4f-f243e8c0b178
+    statement:
+      form: event_driven
+      when: "an agent writes to Yard Log whose folder was moved to a renamed branch's name"
+      system: "`loft yard write`"
+      shall: "keep Yard Log's key and record the branch's new name."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f244354e02ab
+        name: "Yard Log keeps the key it was opened with."
+      - key: 01a1646f-546e-76cb-8b4f-f245fce36890
+        name: "Yard Log records the branch's new name beside the name it was opened with."

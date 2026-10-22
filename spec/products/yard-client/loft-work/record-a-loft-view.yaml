@@ -1,0 +1,76 @@
+key: 01a1646f-546d-7042-befd-eaa04de4d228
+slug: record-a-loft-view
+name: "Record a Loft view"
+body: |
+  When the work on a branch's specification reaches a point worth recording, such as a spec change committed, a decision accepted, tests linked, a check run or a publish, an agent writes a `loft` block naming the view. `loft yard write` then computes the view from `loft`'s own library, over the tree that holds Yard Log, and records the report in the block, so that what the page shows is `loft`'s own report and not the agent's retelling of it.
+
+  Yard Log only adds to what it holds: a view shows the state as it was when it was recorded, and a later state is a later block, so that Yard Log keeps the history of the specification's work. A view names the specification's nodes by their keys, so that a server can join it with the published specification.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a1646f-546d-7042-befd-eaa1583ca540
+    statement:
+      form: event_driven
+      when: "an agent writes a `loft` block"
+      system: "`loft yard write`"
+      shall: "compute the view's report from `loft`'s own library over the tree that holds Yard Log, and record it in the block."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eaa2c263bd3b
+        name: "A `loft` block holds its view, one of `spec-change`, `decision`, `trace`, `findings` and `publish`, and an optional note in Markdown."
+      - key: 01a1646f-546d-7042-befd-eaa32ea3a711
+        name: "The report is computed by the `loft` that runs `loft yard write`, and no other `loft` is run or looked for."
+      - key: 01a1646f-546d-7042-befd-eaa4fdf28e1d
+        name: "The block records the commit, the branch, whether the working tree held changes not committed, the `loft` version and the time of the report."
+      - key: 01a1646f-546d-7042-befd-eaa53eef3437
+        name: "The report names each node of the specification by its key, with its label where it has one and its name."
+      - key: 01a1646f-546d-7042-befd-eaa67d3a1c9e
+        name: "A `spec-change`, `trace` or `findings` view compares the tree with the base revision the agent names, or with the base branch where it names none."
+      - key: 01a1646f-546d-7042-befd-eaa7516bae91
+        name: "A `decision` view records the decision the agent names by its slug, its key or its label."
+      - key: 01a1646f-546d-7042-befd-eaa8d825fac5
+        name: "A `findings` view may carry the agent's reason for each finding it leaves in place, by the finding's rule and the key of the node it names."
+      - key: 01a1646f-546d-7042-befd-eaa967305e51
+        name: "A write that gives a view's report itself, beside the view, its base revision or decision, its reasons and its note, is refused."
+  - key: 01a1646f-546d-7042-befd-eaaa32f7273b
+    statement:
+      form: unwanted
+      if: "the tree holds no `spec/`, its specification does not read, or the view's report cannot be computed"
+      system: "`loft yard write`"
+      shall: "refuse the batch and say why."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eaabacd156c0
+        name: "No file is changed."
+      - key: 01a1646f-546d-7042-befd-eaac662685cf
+        name: "The refusal names the block, the view and the error that stopped the report."
+  - key: 01a1646f-546d-7042-befd-eaad10fd9d32
+    statement:
+      form: ubiquitous
+      system: "A `loft` block"
+      shall: "keep the report it recorded."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eaae09b6a57a
+        name: "A write to a `loft` block already written is refused."
+      - key: 01a1646f-546d-7042-befd-eaafc438724d
+        name: "A later report of the same view is recorded as a new block."
+  - key: 01a1646f-546d-7042-befd-eab0f8479a49
+    statement:
+      form: unwanted
+      if: "a view's report lists more than 1,000 nodes, links or findings"
+      system: "`loft yard write`"
+      shall: "record the report's counts in full, its first 1,000 items, and the number of items left out."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eab13f7eb373
+        name: "The view gives the number of items the block left out."
+      - key: 01a1646f-546d-7042-befd-eab2b5d08cae
+        name: "The counts of the report are those of the whole report."
+  - key: 01a1646f-546d-7042-befd-eab3b45d862a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw each `loft` block in its view's own form, beneath the agent's note."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eab4b5519175
+        name: "Each view names its commit, its branch, the `loft` version and when it was recorded."
+      - key: 01a1646f-546d-7042-befd-eab5b5f31064
+        name: "A view recorded from a working tree that held changes not committed says so."

@@ -1,0 +1,31 @@
+key: 01a1646f-546c-7521-9643-bc52a38e2bbd
+slug: mirror-the-agent-s-tasks
+name: "Mirror the agent's tasks"
+body: "An agent's own task list shows in Yard Log as `task` blocks, so that progress through a stage shows without extra writes. Each agent's tasks go to the stage active for that agent, so that parallel subagents each fill their own stage."
+realizes:
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc53d8dcb801
+    statement:
+      form: event_driven
+      when: "an agent creates a task with `TaskCreate`"
+      system: "the Loft mod"
+      shall: "write it as a `task` block of the stage active for that agent."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc54b796807b
+        name: "The block's id is made from the task's id and the agent, so that each later update finds it."
+      - key: 01a1646f-546c-7521-9643-bc550810c75a
+        name: "The block's title is the task's subject."
+      - key: 01a1646f-546c-7521-9643-bc56c4873439
+        name: "Where no stage is active for the agent, the task is not mirrored."
+  - key: 01a1646f-546c-7521-9643-bc57992eec69
+    statement:
+      form: event_driven
+      when: "an agent changes a task with `TaskUpdate`"
+      system: "the Loft mod"
+      shall: "set the `task` block's state to match the task's."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc582c1c94a2
+        name: "The states `pending`, `in_progress`, `completed` and `deleted` become `open`, `active`, `done` and `dropped`."
+      - key: 01a1646f-546c-7521-9643-bc59de3d65ed
+        name: "A changed subject becomes the block's new title."

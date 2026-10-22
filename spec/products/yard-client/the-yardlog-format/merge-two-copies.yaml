@@ -1,0 +1,117 @@
+key: 01a1646f-546d-7042-befd-eb945ae0aa2e
+slug: merge-two-copies
+name: "Merge two copies of Yard Log"
+body: |
+  Yard Log is committed, so two people working one branch on two machines each write their own copy, and git meets both when it merges. `loft merge-driver` merges the files under `.yard/` by key, as it merges `spec/`.
+
+  Because every version of every record is kept, a merge of Yard Log needs no conflict record: records and their versions join as a union, and the current version is the latest Act. Only what the person decided once is settled by time: the first answer counts, wherever it was given.
+tags:
+  - git
+realizes:
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb952252ad93
+    statement:
+      form: event_driven
+      when: "git merges two copies of a file under `.yard/` with `loft merge-driver`"
+      system: "`loft merge-driver`"
+      shall: "join the records of both copies by key."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb9608712c89
+        name: "A record that one copy holds and the other does not is in the result."
+      - key: 01a1646f-546d-7042-befd-eb97b5c5fb19
+        name: "The versions of a record that both copies hold join as a union, each version once."
+      - key: 01a1646f-546d-7042-befd-eb98fdbc9e58
+        name: "A record's current version in the result is the latest of its versions by Act."
+      - key: 01a1646f-546d-7042-befd-eb993fe35501
+        name: "The stages keep the base's order, followed by each copy's new stages in their order within it."
+      - key: 01a1646f-546d-7042-befd-eb9a09ff3618
+        name: "The blocks of a stage keep the base's order, followed by each copy's new blocks in their order within it."
+      - key: 01a1646f-546d-7042-befd-eb9b92c1bcf5
+        name: "The result writes no conflict record."
+  - key: 01a1646f-546d-7042-befd-eb9c8c3bc930
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "move each submission only forward."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb9de698ecdf
+        name: "A submission open in one copy and `answered` in the other is `answered` in the result."
+      - key: 01a1646f-546d-7042-befd-eb9e0d8d45d3
+        name: "A submission open in one copy and `withdrawn` in the other is `withdrawn` in the result."
+  - key: 01a1646f-546d-7042-befd-eb9f4757c2fd
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "keep as the answer or outcome of a block the earliest that either copy gives it."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eba0ae5f5513
+        name: "The earlier answer by its Act's time is the block's answer in the result."
+      - key: 01a1646f-546d-7042-befd-eba1a81ca116
+        name: "A later answer from the other copy is kept, marked as answered elsewhere first."
+  - key: 01a1646f-546d-7042-befd-eba2c06e31b2
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "treat Yard Log as closed where either copy closed it, with the earlier close."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eba3cc9480da
+        name: "The result's close is the earlier of the two closes by Act."
+  - key: 01a1646f-546d-7042-befd-eba4cc6b8167
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "give the result a revision one higher than the higher of the two copies' revisions."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eba5774a732c
+        name: "Each record that the result holds and this copy did not is marked as arrived at the result's revision."
+      - key: 01a1646f-546d-7042-befd-eba6ee1c2c4b
+        name: "`loft yard read --since` a revision below the result's returns the records that arrived with the merge."
+  - key: 01a1646f-546d-7042-befd-eba7b5d37c0e
+    statement:
+      form: event_driven
+      when: "the two copies hold Yard Logs of one branch that were opened apart, with different keys"
+      system: "`loft merge-driver`"
+      shall: "join them under the key of the one opened earlier."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eba8b9a15607
+        name: "The result keeps the earlier opened Yard Log's key."
+      - key: 01a1646f-546d-7042-befd-eba945a594e1
+        name: "The other key is listed among the result's merged keys."
+      - key: 01a1646f-546d-7042-befd-ebaac4e90b69
+        name: "Each record of both is in the result."
+  - key: 01a1646f-546d-7042-befd-ebab951c7710
+    statement:
+      form: event_driven
+      when: "the two copies hold two records with one id and different keys"
+      system: "`loft merge-driver`"
+      shall: "keep both, giving the later written of them the id with the suffix `-2`, or the next number free."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebac18695ce2
+        name: "Both records keep their keys."
+      - key: 01a1646f-546d-7042-befd-ebad391ae6dd
+        name: "The merge reports each id it changed, with the old id and the new."
+  - key: 01a1647b-208d-7169-85c8-9a550c2161d5
+    statement:
+      form: event_driven
+      when: "the two copies differ in a tokens or activity file"
+      system: "`loft merge-driver`"
+      shall: "take the copy of the file whose last event is the later."
+    body: "Each such file is written by one session alone, so two copies of it differ only where one has seen more of that session's events."
+    criteria:
+      - key: 01a1647b-208d-7169-85c8-9a56a7391c0f
+        name: "A tokens or activity file never gives a conflict."
+      - key: 01a1647b-208d-7169-85c8-9a57357c5764
+        name: "The file taken is the one whose last event ended later."
+  - key: 01a1646f-546d-7042-befd-ebae13e04266
+    statement:
+      form: unwanted
+      if: "a copy of a file under `.yard/` does not read as `yardlog`"
+      system: "`loft merge-driver`"
+      shall: "write nothing and exit 1."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebafc6010906
+        name: "The error names the copy that failed and where."
+      - key: 01a1646f-546d-7042-befd-ebb0804ba272
+        name: "`<ours>` is unchanged."

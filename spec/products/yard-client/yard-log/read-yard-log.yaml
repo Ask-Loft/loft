@@ -1,0 +1,73 @@
+key: 01a1646f-546e-76cb-8b4f-f246ba8e2f51
+slug: read-yard-log
+name: "Read Yard Log"
+body: "An agent reads Yard Log with `loft yard read` to pick up where the work stands: all of it, or only what changed since a revision it read before."
+tags:
+  - yard-command
+  - needs-repository
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f247e4549099
+    statement:
+      form: event_driven
+      when: "an agent reads the branch's Yard Log"
+      system: "`loft yard read`"
+      shall: "return its stages and their blocks in order, at its current revision."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f248a7b5cb00
+        name: "The result gives Yard Log's key and its current revision."
+      - key: 01a1646f-546e-76cb-8b4f-f24903927c6a
+        name: "The result lists the stages in their order, each with its blocks in their order."
+      - key: 01a1646f-546e-76cb-8b4f-f24a8d006945
+        name: "Each block in the result carries its key, its id, its kind and its current version."
+      - key: 01a1646f-546e-76cb-8b4f-f24bc4d1fb92
+        name: "Each answered question in the result carries its answer, who gave it, when, and on which channel."
+      - key: 01a1646f-546e-76cb-8b4f-f24c1144c6b5
+        name: "The result lists the open submissions, each with the agent that sent it."
+      - key: 01a1646f-546e-76cb-8b4f-f24d6029a08c
+        name: "The result says whether git ignores `.yard/`."
+      - key: 01a1646f-546e-76cb-8b4f-f24e1bf0d7da
+        name: "A branch with no Yard Log reads as Yard Log with no stage at revision 0."
+  - key: 01a1646f-546e-76cb-8b4f-f24faa85b636
+    statement:
+      form: event_driven
+      when: "an agent reads Yard Log since a revision"
+      system: "`loft yard read`"
+      shall: "return only the blocks written, answered or decided after that revision."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f25055e1757a
+        name: "A block that was written before the revision and answered after it is returned."
+      - key: 01a1646f-546e-76cb-8b4f-f251f961d207
+        name: "A block that a merge brought in at a revision after it is returned."
+      - key: 01a1646f-546e-76cb-8b4f-f2526f3e2b5f
+        name: "A read since the current revision returns no block."
+  - key: 01a1646f-546e-76cb-8b4f-f2537b9e7266
+    statement:
+      form: optional
+      where: "`--versions` is given"
+      system: "`loft yard read`"
+      shall: "return every version of each block it returns, oldest first."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f254e8394d9a
+        name: "Each version carries its key, its Act and its payload."
+      - key: 01a1646f-546e-76cb-8b4f-f25598041253
+        name: "Without `--versions`, each block carries its current version alone and the count of its versions."
+  - key: 01a1646f-546e-76cb-8b4f-f2564ca1fb18
+    statement:
+      form: event_driven
+      when: "an agent reads Yard Log"
+      system: "`loft yard read`"
+      shall: "record the revision it read as the one that agent last read, in the machine-local state of `loft`'s settings directory."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f257965fff0c
+        name: "The revision last read is kept for each agent apart, by its session and agent ids."
+      - key: 01a1646f-546d-7042-befd-ea8bf9cf3868
+        name: "A read by one agent leaves the revision another agent last read as it was."
+      - key: 01a1647b-208d-7169-85c8-9a5a93fa5995
+        name: "An agent with no revision of its own starts from the latest revision that any agent last read for that Yard Log on this machine."
+      - key: 01a1646f-546e-76cb-8b4f-f258a1e4b6cb
+        name: "Recording the revision read changes no file under `.yard/`."
+      - key: 01a1646f-546e-76cb-8b4f-f259ded7158f
+        name: "Recording the revision read does not raise the revision."

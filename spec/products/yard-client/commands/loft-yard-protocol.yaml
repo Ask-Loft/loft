@@ -1,0 +1,36 @@
+key: 01a1646f-546d-7042-befd-ea405aeffb3b
+slug: loft-yard-protocol
+name: "Report the yard protocol"
+body: "A host checks with `loft yard protocol` that the `loft` it runs speaks the yard commands it was written for, before it offers Yard Client's tools. It needs no repository, so a host can ask it anywhere."
+tags:
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+requirements:
+  - key: 01a1646f-546d-7042-befd-ea41ebe6abc0
+    statement:
+      form: event_driven
+      when: "a host runs `loft yard protocol`"
+      system: "`loft yard protocol`"
+      shall: "report the version of the protocol that the `loft yard` commands speak and the yardlog formats it reads and writes."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea4276b44344
+        name: "The report gives the protocol's version as one integer."
+      - key: 01a1646f-546d-7042-befd-ea43c0bb2e34
+        name: "The report gives `loft`'s own version."
+      - key: 01a1646f-546d-7042-befd-ea440b264795
+        name: "The report lists every yardlog format it reads, and names the one it writes."
+      - key: 01a1646f-546d-7042-befd-ea45ec21ca68
+        name: "The report is the same inside and outside a git repository."
+      - key: 01a1646f-546d-7042-befd-ea4652516db4
+        name: "No file is written."
+  - key: 01a1646f-546d-7042-befd-ea476fd579cb
+    statement:
+      form: ubiquitous
+      system: "`loft yard protocol`"
+      shall: "raise the protocol's version with each release that changes the input or the output of a `loft yard` command in a way that an earlier host cannot read."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea48725f8d5f
+        name: "A change to a `loft yard` command's schema that removes or renames a field raises the protocol's version."
+      - key: 01a1646f-546d-7042-befd-ea49f4d1102e
+        name: "A change that only adds an optional field leaves the protocol's version as it was."

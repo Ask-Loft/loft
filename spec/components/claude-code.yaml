@@ -1,0 +1,7 @@
+key: 01a16469-559e-73c4-85f2-71a609a6b01d
+slug: claude-code
+name: "Claude Code"
+body: "The agent host that runs the Loft plugin: it runs the plugin's mod, through which Claude Code's agents call Yard Client's tools, and shows its own dialogs for the agent's questions and plans. It calls `loft`; `loft` never calls it."
+boundary: external
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77

@@ -1,0 +1,37 @@
+key: 01a1646f-546c-7521-9643-bc5a6be5a9e6
+slug: start-with-the-session
+name: "Start with the session"
+body: "When a session starts, the agent knows where the work stands without being asked to look. At the same time the Loft mod checks its `loft`, as \"Keep the mod and loft in step\" states, registers Yard's tools and makes sure that a page server runs, as \"Share one page server\" states."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc630587c5df
+    statement:
+      form: event_driven
+      when: "a session starts on a branch whose Yard Log exists"
+      system: "the Loft mod"
+      shall: "give the agent, as context, the page's address, the stage active for the main agent, the open submissions and what was answered or decided since the agent last read Yard Log."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc648ffcbb12
+        name: "The context holds at most 2,000 characters, and counts what it leaves out."
+      - key: 01a1646f-546c-7521-9643-bc652c97d270
+        name: "A session on a branch with no Yard Log gets only the page's address and that the branch has no Yard Log yet."
+      - key: 01a1646f-546c-7521-9643-bc668f484c8e
+        name: "A session on a branch whose Yard Log is closed is told that it is closed."
+      - key: 01a1646f-546c-7521-9643-bc673dc31f07
+        name: "A session whose `.yard/` is ignored by git is told that Yard Log stays out of its commits."
+      - key: 01a1646f-546c-7521-9643-bc687ad65bab
+        name: "The context is given again after `/resume` and `/branch`."
+  - key: 01a1647c-e680-7753-bf17-f17606f6adc0
+    statement:
+      form: event_driven
+      when: "the person runs `/clear`"
+      system: "the Loft mod"
+      shall: "give the agent the context again, on Claude Code's session start of the source `clear`."
+    body: "No `session.start` reaches the mod after `/clear`, so the mod hears it from the session start that Claude Code's settings hooks are given."
+    criteria:
+      - key: 01a1647c-e680-7753-bf17-f177bc991450
+        name: "The context after `/clear` lists the open submissions that the session before it sent."
+      - key: 01a1647c-e680-7753-bf17-f1789d014daa
+        name: "The context after `/clear` counts what was answered or decided since the session before it last read Yard Log."

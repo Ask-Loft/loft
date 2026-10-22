@@ -1,0 +1,117 @@
+key: 01a16469-55a3-716f-a42c-3a3548428b77
+slug: yard-client
+name: "Yard Client"
+body: |
+  Yard Client keeps Yard Log: the record that coding agents keep for a git branch while they plan and build a change, and that the person reads, answers and approves from, on a local page or in the agent host, for every branch being worked on across the machine.
+
+  Agents write Yard Log only through Yard Client's tools, as typed blocks inside stages; the person writes nothing but answers and decisions. Each branch has its own Yard Log, kept in the repository in the `yardlog` format under `.yard/` and committed with the work by default, so that it travels with the branch and is read in review. Its records carry keys, as the nodes of a specification do, so that a server can later take Yard Log up as it is.
+
+  Yard Client is built into `loft`, which reads and writes Yard Log and serves the page, and into the Loft plugin's mod, through which Claude Code, the first host, reaches it.
+tags:
+  - git
+featureGroups:
+  - key: 01a16469-55a3-716f-a42c-3a3615ec3427
+    slug: yard-log
+    name: "Yard Log"
+    body: "What Yard Log holds, its stages and the typed blocks inside them, and how an agent opens, writes, reads and closes it."
+    features:
+      - 01a1646f-546e-76cb-8b4f-f225bd80f8c4
+      - 01a1646f-546e-76cb-8b4f-f236e97db04a
+      - 01a1646f-546e-76cb-8b4f-f246ba8e2f51
+      - 01a1646f-546e-76cb-8b4f-f25a70ebb643
+      - 01a1646f-546e-76cb-8b4f-f261e68ee669
+      - 01a1646f-546e-76cb-8b4f-f286a6afe725
+  - key: 01a16469-55a3-716f-a42c-3a3797ab339c
+    slug: the-yardlog-format
+    name: "The yardlog format"
+    body: "How Yard Log is kept in the repository: its files, its records and their keys, its versions, and how two copies of it merge."
+    features:
+      - 01a1646f-546d-7042-befd-eb945ae0aa2e
+      - 01a1646f-546d-7042-befd-ebb1821f3ad8
+      - 01a1646f-546d-7042-befd-ebc727a05b50
+  - key: 01a16469-55a3-716f-a42c-3a383d1edf2a
+    slug: asking-and-answering
+    name: "Asking and answering"
+    body: "How an agent puts questions, approvals and plans to the person in one submission and waits for them, and how the person answers."
+    features:
+      - 01a1646f-546c-7521-9643-bbc7835b5c64
+      - 01a1646f-546c-7521-9643-bbdbda40f4d2
+      - 01a1646f-546c-7521-9643-bbe81a534318
+      - 01a1646f-546c-7521-9643-bbf588bb190b
+      - 01a1646f-546c-7521-9643-bc09fcfa48f6
+  - key: 01a16469-55a3-716f-a42c-3a39c49f907c
+    slug: concurrent-work
+    name: "Concurrent work"
+    body: "How Yard Client serves many agents at once: several sessions in several worktrees of several repositories on one machine, each session perhaps running several subagents, some of them on one branch."
+    features:
+      - 01a1646f-546d-7042-befd-ea61a5a3a0c9
+      - 01a1646f-546d-7042-befd-ea74e4eb698c
+      - 01a1646f-546d-7042-befd-ea8ce9a4adcc
+  - key: 01a16469-55a3-716f-a42c-3a3a30aba3c5
+    slug: upgrades
+    name: "Upgrades"
+    body: "How Yard Client behaves across versions of `loft`: Yard Log written in an older or newer format, a mod and a `loft` of different versions, and a page server older than the `loft` a session runs."
+    features:
+      - 01a1646f-546e-76cb-8b4f-f1f1e50bff47
+      - 01a1646f-546e-76cb-8b4f-f1ffa38cce5d
+      - 01a1646f-546e-76cb-8b4f-f20fff3d436b
+      - 01a1646f-546e-76cb-8b4f-f21c3c031b26
+  - key: 01a16469-55a3-716f-a42c-3a3b0e5b311c
+    slug: the-page
+    name: "The page"
+    body: "What the person sees of Yard Log in the browser, for every branch being worked on across the machine."
+    features:
+      - 01a1646f-546d-7042-befd-eb213cfb9073
+      - 01a1646f-546d-7042-befd-eb4c63bd6b46
+      - 01a1646f-546d-7042-befd-eb55f44baf39
+      - 01a1646f-546d-7042-befd-eb5c525a2752
+      - 01a1646f-546d-7042-befd-eb677bcc8418
+      - 01a1646f-546d-7042-befd-eb813857071e
+  - key: 01a16469-55a3-716f-a42c-3a3c608676eb
+    slug: loft-work
+    name: "Loft work"
+    body: "What Yard Log records of the work on a branch's Loft specification: snapshots of `loft`'s own reports, which an agent asks for as `loft` blocks when the work reaches a point worth recording, and which the page draws in views of their own."
+    features:
+      - 01a1646f-546d-7042-befd-eaa04de4d228
+      - 01a1646f-546d-7042-befd-eab65088c9bf
+      - 01a1646f-546d-7042-befd-eabf848abd4c
+      - 01a1646f-546d-7042-befd-eacb5adebb91
+      - 01a1646f-546d-7042-befd-ead4b3f20bdd
+      - 01a1646f-546d-7042-befd-eadce3a3a098
+  - key: 01a16469-55a3-716f-a42c-3a3dbb9897a7
+    slug: session-activity
+    name: "Session activity"
+    body: "What Yard Client records of the Claude Code sessions that work on a branch whose Yard Log is open, and what the page shows of it. The first use of the record is counting the tokens Yard Log took."
+    features:
+      - 01a1646f-546d-7042-befd-eae568dbeb5f
+      - 01a1646f-546d-7042-befd-eaefec18d7c5
+      - 01a1646f-546d-7042-befd-eafb39a1e099
+      - 01a1646f-546d-7042-befd-eb166bb457fe
+  - key: 01a16469-55a3-716f-a42c-3a3efe7ff9ba
+    slug: claude-code-mod
+    name: "Claude Code mod"
+    body: "What the Loft plugin's mod adds to Claude Code, so that Yard Log takes part in the agent's planning and execution without the agent having to remember it, and the `yard` skill that teaches the agent the rest."
+    features:
+      - 01a1646f-546c-7521-9643-bc11f8cd86ba
+      - 01a1646f-546c-7521-9643-bc2af42480ee
+      - 01a1646f-546c-7521-9643-bc41c1c5820f
+      - 01a1646f-546c-7521-9643-bc52a38e2bbd
+      - 01a1646f-546c-7521-9643-bc5a6be5a9e6
+      - 01a1646f-546c-7521-9643-bc69fcfce2ec
+      - 01a1646f-546c-7521-9643-bc7c4e7a1936
+      - 01a1646f-546c-7521-9643-bca6524c277a
+  - key: 01a16469-55a3-716f-a42c-3a3f523be88e
+    slug: commands
+    name: "Yard commands"
+    body: "The `loft yard` commands through which the mod, and any other host, reaches Yard Log, and the rules they share."
+    features:
+      - 01a1646f-546d-7042-befd-ea3326dff377
+      - 01a1646f-546d-7042-befd-ea405aeffb3b
+      - 01a1646f-546d-7042-befd-ea4a4433bbd3
+constraints:
+  - key: 01a16469-55a3-716f-a42c-3a407e6d0d19
+    name: "Yard Client shall change the working tree only under `.yard/`."
+    verificationFate: proved
+  - key: 01a16469-55a3-716f-a42c-3a41d0d81520
+    name: "Yard Client shall run no git command that commits, stages, stashes or checks out."
+    verificationFate: proved

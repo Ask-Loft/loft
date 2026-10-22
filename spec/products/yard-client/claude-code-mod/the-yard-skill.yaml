@@ -1,0 +1,141 @@
+key: 01a1646f-546c-7521-9643-bc7c4e7a1936
+slug: the-yard-skill
+name: "The yard skill"
+body: "The `yard` skill teaches the agent the habits that make Yard Log worth reading. The mod keeps the questions, plans and tasks without the agent's help; the skill covers what only the agent can write."
+tags:
+  - git
+realizes:
+  - 01a16469-559e-73c4-85f2-71b7852c58c8
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc7dfc8d7a3b
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to open the branch's Yard Log when work on the branch begins, before the work's first step."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc7ef0cedbda
+        name: "The skill says that the agent's first write on a branch opens the branch's Yard Log."
+      - key: 01a1646f-546c-7521-9643-bc7fa40988ca
+        name: "The skill says that Yard Log, once closed, takes no more writes, so that more work goes on a branch of its own."
+  - key: 01a1646f-546c-7521-9643-bc80ea1b350d
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to open a stage before each step of the work, and to mark it `done` or `dropped` when the step ends."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc8124f7fe40
+        name: "The skill says to give each stage a goal that names what the step leaves done."
+      - key: 01a1646f-546c-7521-9643-bc82fcce2ab4
+        name: "The skill says that each agent has its own active stage, so that a subagent opens a stage of its own."
+  - key: 01a1646f-546c-7521-9643-bc833bcb2e08
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to begin no stage that builds the change unless the person asked for the build as well as the plan."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc84f5266332
+        name: "The skill says to stop once the plan is written, with the build's stages left `planned`, where the person asked only for a plan."
+      - key: 01a1646f-546c-7521-9643-bc85d7803b6e
+        name: "The skill says to tell the person the plan is ready and that the build waits for them to ask for it."
+      - key: 01a1646f-546c-7521-9643-bc86e32bb596
+        name: "The skill says that a plan the person approved counts as asking for the build it describes."
+  - key: 01a1646f-546c-7521-9643-bc87117049c9
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to change each task's state as its work starts and ends, so that Yard Log records when each task ran."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc883a0f6321
+        name: "The skill says to mark a task `active` in a write before its work starts."
+      - key: 01a1646f-546c-7521-9643-bc89c5da80bc
+        name: "The skill says to mark a task `done` or `dropped` once its work ends, before the next task is marked `active`."
+      - key: 01a1646f-546c-7521-9643-bc8a0a4ac1b9
+        name: "The skill says not to mark the tasks of a stage `done` in one write at its end."
+  - key: 01a1646f-546c-7521-9643-bc8bc1abadf1
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to send the questions of one decision point as one submission and wait on it, rather than ask them one at a time."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc8c8bcecb29
+        name: "The skill says to give each question a recommended option and the reasoning for each option."
+      - key: 01a1646f-546c-7521-9643-bc8d97b79456
+        name: "The skill says that `yard_wait` holds the turn until the person answers on the page or in the dialog."
+      - key: 01a1646f-546c-7521-9643-bc8e6414b455
+        name: "The skill says to read the answers from the wait's result before going on."
+  - key: 01a1646f-546c-7521-9643-bc8f8bf7a3a9
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to write what each stage produced as a note when the stage ends."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc90aff52ee8
+        name: "The skill says to write the note in Markdown, with tables and diagrams where they help."
+  - key: 01a1646f-546c-7521-9643-bc918ba7f585
+    statement:
+      form: optional
+      where: "the working tree holds a Loft specification"
+      system: "the `yard` skill"
+      shall: "tell the agent to enter plan mode once a change to the specification is written, and to plan the build there before writing any of its code."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc92617d867b
+        name: "The skill says to call `EnterPlanMode` once a change to `spec/` is committed and its `spec-change` view recorded, before any code of the build is written."
+      - key: 01a1646f-546c-7521-9643-bc935d3e9837
+        name: "The skill says to present the build as a plan with `ExitPlanMode`, worked out from the specification just written."
+      - key: 01a1646f-546c-7521-9643-bc946d49d602
+        name: "The skill says that the build begins only once the person approves that plan, and that a rejected plan is revised in plan mode."
+  - key: 01a1646f-546c-7521-9643-bc95df727d8d
+    statement:
+      form: optional
+      where: "the working tree holds a Loft specification"
+      system: "the `yard` skill"
+      shall: "tell the agent to record a `loft` block at each point of the specification's work that its view reports, in place of a note that retells `loft`'s report."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc9624480b9b
+        name: "The skill says to record a `spec-change` view once a change to `spec/` is committed."
+      - key: 01a1646f-546c-7521-9643-bc9709f3a295
+        name: "The skill says to record a `decision` view once a decision of the specification is accepted."
+      - key: 01a1646f-546c-7521-9643-bc9864856f4d
+        name: "The skill says to record a `trace` view once the tests are linked and the links accepted."
+      - key: 01a1646f-546c-7521-9643-bc99ceffd819
+        name: "The skill says to record a `findings` view after `loft check`, with a reason for each finding left in place."
+      - key: 01a1646f-546c-7521-9643-bc9a6840e738
+        name: "The skill says to record the publish with `yard_published` on the base branch once `loft publish` is committed, naming the branch whose Yard Log the merge brought in."
+  - key: 01a1646f-546c-7521-9643-bc9b150b09ee
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to record each choice the person makes as a `decision` block."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc9c02796387
+        name: "The skill says to link a decision to the question it settles."
+  - key: 01a1646f-546c-7521-9643-bc9dbcc07893
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to commit `.yard/` in each commit of the work, unless git ignores `.yard/`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc9e7078f833
+        name: "The skill says that answers given since the last commit are committed with the next."
+      - key: 01a1646f-546c-7521-9643-bc9f66547934
+        name: "The skill says that the token totals and the activity that Yard Client keeps for each session are committed with the work."
+      - key: 01a1646f-546c-7521-9643-bca03b27536e
+        name: "The skill says to commit nothing of `.yard/` where `yard_read` reports that git ignores it."
+  - key: 01a1646f-546c-7521-9643-bca1ca361934
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to close Yard Log before the branch is merged."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bca2340d1b0d
+        name: "The skill says to commit Yard Log, once closed, before the merge, unless git ignores `.yard/`."
+  - key: 01a1646f-546c-7521-9643-bca3af7b2aeb
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to read Yard Log since its last revision when a session starts and when a wait returns."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bca4c27950b3
+        name: "The skill says to base each write on the revision last read."
+      - key: 01a1646f-546c-7521-9643-bca57d50a238
+        name: "The skill says that a refused write names the blocks that changed, which the agent reads before writing again."

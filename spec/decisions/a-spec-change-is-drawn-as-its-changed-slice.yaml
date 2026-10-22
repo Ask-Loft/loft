@@ -1,0 +1,61 @@
+key: 01a1646f-5466-77f8-9738-e123c8da67b0
+slug: a-spec-change-is-drawn-as-its-changed-slice
+title: "A spec change is drawn as its changed slice"
+context: "A branch usually changes a few nodes of a specification that may hold hundreds. A diagram of the whole specification would hide the change; a list alone would lose how the changed nodes hang together."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e1263c2091ae
+  outcome: "A `spec-change` view is drawn as a diagram of the changed nodes and what they belong to, with Requirements and criteria counted on their Feature, and a tree of every changed node beneath it."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e124b194c01d
+    kind: local
+    label: "Grows with the change"
+    statement: "The drawing's size follows the change, not the specification."
+  - key: 01a1646f-5466-77f8-9738-e12532b08f5e
+    kind: local
+    label: "Shows structure"
+    statement: "The reader sees where each changed node sits."
+options:
+  - key: 01a1646f-5466-77f8-9738-e1263c2091ae
+    title: "The changed slice"
+    description: "Only changed nodes and their ancestors, with edges between them."
+  - key: 01a1646f-5466-77f8-9738-e1272cfba5b3
+    title: "The whole specification, changes marked"
+    description: "Every node drawn, the changed ones marked."
+  - key: 01a1646f-5466-77f8-9738-e1288f7eac81
+    title: "A list of changes"
+    description: "Each changed node in a list, without a diagram."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e1263c2091ae
+    driver: 01a1646f-5466-77f8-9738-e124b194c01d
+    rating: supports
+    rationale: "only what changed is drawn"
+  - option: 01a1646f-5466-77f8-9738-e1263c2091ae
+    driver: 01a1646f-5466-77f8-9738-e12532b08f5e
+    rating: supports
+    rationale: "ancestors and edges are drawn"
+  - option: 01a1646f-5466-77f8-9738-e1272cfba5b3
+    driver: 01a1646f-5466-77f8-9738-e124b194c01d
+    rating: conflicts
+    rationale: "it grows with the specification"
+  - option: 01a1646f-5466-77f8-9738-e1272cfba5b3
+    driver: 01a1646f-5466-77f8-9738-e12532b08f5e
+    rating: supports
+    rationale: "everything is placed"
+  - option: 01a1646f-5466-77f8-9738-e1288f7eac81
+    driver: 01a1646f-5466-77f8-9738-e124b194c01d
+    rating: supports
+    rationale: "one line for each change"
+  - option: 01a1646f-5466-77f8-9738-e1288f7eac81
+    driver: 01a1646f-5466-77f8-9738-e12532b08f5e
+    rating: conflicts
+    rationale: "no structure"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e129fb23151e
+    kind: obligation
+    statement: "A slice too large to read is drawn as one box for each Feature Group, opened one at a time."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a94f0aa021
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eabf848abd4c

@@ -1,0 +1,50 @@
+key: 01a1646f-5466-77f8-9738-e11dc82daea2
+slug: a-shell-command-s-loft-subcommands-are-named-in-its-events
+title: "A shell command's loft subcommands are named in its events"
+context: "The Gantt chart draws the time `loft` ran under each stage. The mod sees each shell command the agent runs, whose text may hold anything, including what the person or the agent wrote."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e12063fc9892
+  outcome: "A shell command's start event holds the names of the `loft` subcommands it runs, taken only from `loft`'s own list of subcommands, and nothing else of its text."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e11e59018a40
+    kind: local
+    label: "Loft time drawn"
+    statement: "The chart shows which `loft` commands ran, and for how long."
+  - key: 01a1646f-5466-77f8-9738-e11fb4f55ddc
+    kind: local
+    label: "No words kept"
+    statement: "Events hold no text that the person or the agent wrote."
+options:
+  - key: 01a1646f-5466-77f8-9738-e12063fc9892
+    title: "Named from loft's own list"
+    description: "Only the names of known subcommands are kept."
+  - key: 01a1646f-5466-77f8-9738-e121317e3028
+    title: "The command kept whole"
+    description: "The shell command's text is kept in its event."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e12063fc9892
+    driver: 01a1646f-5466-77f8-9738-e11e59018a40
+    rating: supports
+    rationale: "each subcommand is named"
+  - option: 01a1646f-5466-77f8-9738-e12063fc9892
+    driver: 01a1646f-5466-77f8-9738-e11fb4f55ddc
+    rating: supports
+    rationale: "only known names"
+  - option: 01a1646f-5466-77f8-9738-e121317e3028
+    driver: 01a1646f-5466-77f8-9738-e11e59018a40
+    rating: supports
+    rationale: "everything is there"
+  - option: 01a1646f-5466-77f8-9738-e121317e3028
+    driver: 01a1646f-5466-77f8-9738-e11fb4f55ddc
+    rating: conflicts
+    rationale: "arguments may hold anything"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e12278ec2e63
+    kind: obligation
+    statement: "No name is read from quoted text or a heredoc."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eafb39a1e099

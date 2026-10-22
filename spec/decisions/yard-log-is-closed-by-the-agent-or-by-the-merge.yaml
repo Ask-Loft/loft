@@ -1,0 +1,50 @@
+key: 01a1646f-5467-7025-8a88-4ed3b93364a6
+slug: yard-log-is-closed-by-the-agent-or-by-the-merge
+title: "Yard Log is closed by the agent or by the merge"
+context: "Once a branch's work is finished, its Yard Log becomes a record and takes no more writes or answers. The agent may forget to close it, and a merge is what brings its files into the base branch."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ed66156dddc
+  outcome: "The agent closes Yard Log before the merge; Yard Log that the base branch holds and that is not closed reads as closed by the merge."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ed4533d7907
+    kind: local
+    label: "Never left open"
+    statement: "A merged branch's Yard Log takes no more answers."
+  - key: 01a1646f-5467-7025-8a88-4ed580627915
+    kind: local
+    label: "Closed on purpose"
+    statement: "The agent says when the work is finished."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ed66156dddc
+    title: "By the agent, or by the merge"
+    description: "The agent closes it; the base branch holding it closes it too."
+  - key: 01a1646f-5467-7025-8a88-4ed7737efc46
+    title: "By the agent only"
+    description: "Only the agent's close closes it."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ed66156dddc
+    driver: 01a1646f-5467-7025-8a88-4ed4533d7907
+    rating: supports
+    rationale: "the merge closes it"
+  - option: 01a1646f-5467-7025-8a88-4ed66156dddc
+    driver: 01a1646f-5467-7025-8a88-4ed580627915
+    rating: supports
+    rationale: "the agent still closes it"
+  - option: 01a1646f-5467-7025-8a88-4ed7737efc46
+    driver: 01a1646f-5467-7025-8a88-4ed4533d7907
+    rating: conflicts
+    rationale: "a forgotten close leaves it open"
+  - option: 01a1646f-5467-7025-8a88-4ed7737efc46
+    driver: 01a1646f-5467-7025-8a88-4ed580627915
+    rating: supports
+    rationale: "only on purpose"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ed8ef938518
+    kind: obligation
+    statement: "Yard Client reads the base branch, by the `baseBranch` setting, to tell whether a branch's Yard Log was merged."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b305365c69
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f225bd80f8c4

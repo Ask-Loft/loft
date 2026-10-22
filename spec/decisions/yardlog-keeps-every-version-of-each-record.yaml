@@ -1,0 +1,80 @@
+key: 01a1646f-5467-7025-8a88-4ee8d32047c0
+slug: yardlog-keeps-every-version-of-each-record
+title: "yardlog keeps every version of each record"
+context: "An agent rewrites a block as the work goes on: a plan revised after a rejection, a question asked again, a stage's goal sharpened. A server that takes Yard Log up later can hold only what the files kept, and two copies of one Yard Log meet when git merges them."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4eec01d82096
+  outcome: "Each stage and block keeps all its versions, each with its own key and the act that wrote it; the current version is the latest by its act's time, and a version's number is its position. A submission keeps each change of its state as an act, and an answer or outcome is never rewritten."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ee983ca22d0
+    kind: local
+    label: "History for the reader"
+    statement: "A reviewer sees how a plan or a question changed."
+  - key: 01a1646f-5467-7025-8a88-4eeaf1fca364
+    kind: local
+    label: "History for a server"
+    statement: "A server imports what happened, not only where it ended."
+  - key: 01a1646f-5467-7025-8a88-4eebb66f0545
+    kind: local
+    label: "Readable files"
+    statement: "The files stay readable in a diff, without a replay."
+options:
+  - key: 01a1646f-5467-7025-8a88-4eec01d82096
+    title: "Every version kept"
+    description: "Each record holds its versions in its own file."
+  - key: 01a1646f-5467-7025-8a88-4eede19e5a79
+    title: "Current version only"
+    description: "Each record holds its latest version and a counter."
+  - key: 01a1646f-5467-7025-8a88-4eee00957876
+    title: "An append-only change log"
+    description: "Every write is an immutable change, and the state is replayed from them."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4eec01d82096
+    driver: 01a1646f-5467-7025-8a88-4ee983ca22d0
+    rating: supports
+    rationale: "each version is in the file"
+  - option: 01a1646f-5467-7025-8a88-4eec01d82096
+    driver: 01a1646f-5467-7025-8a88-4eeaf1fca364
+    rating: supports
+    rationale: "each version carries its act"
+  - option: 01a1646f-5467-7025-8a88-4eec01d82096
+    driver: 01a1646f-5467-7025-8a88-4eebb66f0545
+    rating: supports
+    rationale: "the state is the file"
+  - option: 01a1646f-5467-7025-8a88-4eede19e5a79
+    driver: 01a1646f-5467-7025-8a88-4ee983ca22d0
+    rating: conflicts
+    rationale: "what a block said before is lost"
+  - option: 01a1646f-5467-7025-8a88-4eede19e5a79
+    driver: 01a1646f-5467-7025-8a88-4eeaf1fca364
+    rating: conflicts
+    rationale: "only the end state is imported"
+  - option: 01a1646f-5467-7025-8a88-4eede19e5a79
+    driver: 01a1646f-5467-7025-8a88-4eebb66f0545
+    rating: supports
+    rationale: "the smallest files"
+  - option: 01a1646f-5467-7025-8a88-4eee00957876
+    driver: 01a1646f-5467-7025-8a88-4ee983ca22d0
+    rating: neutral
+    rationale: "the history is there, but as changes to replay"
+  - option: 01a1646f-5467-7025-8a88-4eee00957876
+    driver: 01a1646f-5467-7025-8a88-4eeaf1fca364
+    rating: supports
+    rationale: "the server replays the changes"
+  - option: 01a1646f-5467-7025-8a88-4eee00957876
+    driver: 01a1646f-5467-7025-8a88-4eebb66f0545
+    rating: conflicts
+    rationale: "the state is not in any file"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4eefd5c14a29
+    kind: cost
+    statement: "A stage's file grows with each rewrite of its blocks."
+  - key: 01a1646f-5467-7025-8a88-4ef0ceff563f
+    kind: benefit
+    statement: "Two copies of a record merge as the union of their versions, with no conflict."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ebb1821f3ad8

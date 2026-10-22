@@ -1,0 +1,135 @@
+key: 01a1646f-546d-7042-befd-eb213cfb9073
+slug: browse-yard-logs
+name: "Browse Yard Logs"
+body: |
+  The page lists every branch's Yard Log the page server serves, across every repository and worktree on the machine, and draws one branch's Yard Log as a timeline of its stages, from the work done through the stages in hand to the stages still planned, with each block drawn by its kind.
+
+  The page shows each block's current version and offers its earlier versions, since Yard Log keeps them all.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb22743f9709
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "list Yard Log of each branch of every tree the page server serves, grouped by repository, then by worktree and branch."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb2339a1f113
+        name: "Each repository is named by the top of its main worktree."
+      - key: 01a1646f-546d-7042-befd-eb24d506d9d2
+        name: "Each listed branch shows its worktree, its name and its Yard Log's title."
+      - key: 01a1646f-546d-7042-befd-eb25f7e1f2d7
+        name: "Each listed branch gives the count of its Yard Log's blocks that wait on the person."
+      - key: 01a1646f-546d-7042-befd-eb26bca8ff00
+        name: "A branch whose Yard Log is closed is listed as closed."
+      - key: 01a1646f-546d-7042-befd-eb2740b8a1ba
+        name: "Choosing a listed branch opens its Yard Log at an address of its own, which names its tree and its branch."
+  - key: 01a1646f-546d-7042-befd-eb2848576856
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show the stages of the branch's Yard Log as a timeline in their order, each with its title, its status, its goal and the agent that owns it."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb2917150250
+        name: "Each `active` stage is open and every other stage is folded."
+      - key: 01a1646f-546d-7042-befd-eb2a277e3a0d
+        name: "The person can fold and open each stage."
+      - key: 01a1646f-546d-7042-befd-eb2bf26cc683
+        name: "A line marks where the `done` and `dropped` stages end and the `planned` ones begin."
+      - key: 01a1646f-546d-7042-befd-eb2cf93edd47
+        name: "Each status shows as a word as well as a colour."
+      - key: 01a1646f-546d-7042-befd-eb2d6203081e
+        name: "A stage owned by a subagent names the subagent's type."
+  - key: 01a1646f-546d-7042-befd-eb2eef98b18f
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "offer the stages newest first or oldest first, newest first unless the person chose otherwise."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb2f03e5bd8d
+        name: "The person's choice of order is kept in the browser."
+  - key: 01a1646f-546d-7042-befd-eb3071ddc29b
+    statement:
+      form: optional
+      where: "the session's activity holds stretches of the main agent's plan mode or spec mode"
+      system: "the page"
+      shall: "draw together, under a band that names the mode, the blocks of a stage that were written during one stretch of that mode."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb3184fc5769
+        name: "The band names when the stretch started and how long it lasted, or that it goes on."
+      - key: 01a1646f-546d-7042-befd-eb32c1f70c7e
+        name: "A block counts as written during a stretch where its current version was written during it."
+      - key: 01a1646f-546d-7042-befd-eb35c3a78477
+        name: "A task counts as written during a stretch where it was listed during it."
+      - key: 01a1646f-546d-7042-befd-eb3400bc25ff
+        name: "A band of spec mode is told apart from a band of plan mode by its colour, its hatching and its label."
+  - key: 01a1646f-546d-7042-befd-eb36770e933e
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw each block by its kind, from its current version."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb37bdcb84e2
+        name: "A note shows its title, its Markdown and its tone as a colour and a word."
+      - key: 01a1646f-546d-7042-befd-eb38e626356c
+        name: "A note written folded starts folded."
+      - key: 01a1646f-546d-7042-befd-eb39ce7ffb3c
+        name: "A question shows its prompt, its context and its options, with each recommended option marked."
+      - key: 01a1646f-546d-7042-befd-eb3a326031ea
+        name: "An answered question folds to its answer, with who gave it, when and on which channel."
+      - key: 01a1646f-546d-7042-befd-eb3b26314975
+        name: "An `approval` or a `plan` block shows its Markdown."
+      - key: 01a16475-7fbd-7213-a7f7-927e63f98c39
+        name: "Once decided, an `approval` or a `plan` block shows its outcome, with who decided it, when and on which channel."
+      - key: 01a1646f-546d-7042-befd-eb3c782601a4
+        name: "A decision shows its number, its title and its consequence."
+      - key: 01a1646f-546d-7042-befd-eb3dabdc81f0
+        name: "A task shows its title and its state."
+      - key: 01a1646f-546d-7042-befd-eb3eba30c3b0
+        name: "Each block offers the agent that wrote it, its version and the time it was written."
+      - key: 01a1646f-546d-7042-befd-eb3f215b9440
+        name: "A block with more than one version offers each earlier version, with who wrote it and when."
+  - key: 01a1646f-546d-7042-befd-eb402c999dbd
+    statement:
+      form: optional
+      where: "a decision names the question it settles"
+      system: "the page"
+      shall: "draw the decision in the question's card, at the head of it, and give the decision no card of its own."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb412239f4dd
+        name: "The question's card is headed by the decision's number, its title and its consequence."
+      - key: 01a1646f-546d-7042-befd-eb42abe3e622
+        name: "Beneath the decision, the card gives the question's prompt and its answer, with who gave it, when and on which channel."
+      - key: 01a1646f-546d-7042-befd-eb4303724eca
+        name: "Opened, the card shows the question's context and each of its options, with each chosen option marked."
+      - key: 01a1646f-546d-7042-befd-eb44bad677d3
+        name: "Nothing of the decision is drawn where it was written."
+      - key: 01a1646f-546d-7042-befd-eb4543622219
+        name: "A question that more than one decision names is headed by each of them, in the order of their numbers."
+  - key: 01a1646f-546d-7042-befd-eb46432a419f
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show as text any HTML that a block's Markdown holds."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb47a12567f2
+        name: "No element that a block's text names is created in the page."
+  - key: 01a1646f-546d-7042-befd-eb48685b6f13
+    statement:
+      form: optional
+      where: "a block's Markdown holds a fenced code block marked `mermaid`"
+      system: "the page"
+      shall: "draw the code block as a diagram."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb49f9b1a9a6
+        name: "A diagram that does not parse shows its source, with a line saying that it could not be drawn."
+  - key: 01a1646f-546d-7042-befd-eb4a816d5c07
+    statement:
+      form: state_driven
+      while: "Yard Log is closed"
+      system: "the page"
+      shall: "show it as closed and offer nothing to answer or decide."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb4b0653b23d
+        name: "The page shows when Yard Log was closed, and whether its merge closed it."

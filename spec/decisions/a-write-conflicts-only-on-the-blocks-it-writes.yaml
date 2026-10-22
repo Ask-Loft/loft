@@ -1,0 +1,69 @@
+key: 01a1646f-5466-77f8-9738-e1310dd7208e
+slug: a-write-conflicts-only-on-the-blocks-it-writes
+title: "A write conflicts only on the blocks it writes, under a lock per Yard Log"
+context: "Agents of one or several sessions may write one Yard Log at once, and the page server writes answers to it. Each write names the revision it was based on. Writes to two Yard Logs touch no common file."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e135d6e68068
+  outcome: "A write is applied whole or not at all under the lock of its Yard Log, held only for the write; it is refused only where a block it writes changed after its base revision, and writes to different Yard Logs never wait on each other."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e132bf6d5767
+    kind: local
+    label: "Few refusals"
+    statement: "Agents writing different blocks of one Yard Log do not refuse each other."
+  - key: 01a1646f-5466-77f8-9738-e13367cc390e
+    kind: local
+    label: "No lost writes"
+    statement: "No write overwrites a change it did not see."
+  - key: 01a1646f-5466-77f8-9738-e134acab2a6e
+    kind: local
+    label: "Independent trees"
+    statement: "Work in one tree never waits on work in another."
+options:
+  - key: 01a1646f-5466-77f8-9738-e135d6e68068
+    title: "Block-level conflicts, a lock per Yard Log"
+    description: "Serialize writes per Yard Log; refuse a write only for the blocks it writes that changed since its base."
+  - key: 01a1646f-5466-77f8-9738-e1361194a1d8
+    title: "Whole-log conflicts, one lock for the machine"
+    description: "Refuse any write whose base revision is not the current one; serialize all writes on the machine."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e135d6e68068
+    driver: 01a1646f-5466-77f8-9738-e132bf6d5767
+    rating: supports
+    rationale: "only overlapping writes conflict"
+  - option: 01a1646f-5466-77f8-9738-e135d6e68068
+    driver: 01a1646f-5466-77f8-9738-e13367cc390e
+    rating: supports
+    rationale: "a block changed since the base refuses the write"
+  - option: 01a1646f-5466-77f8-9738-e135d6e68068
+    driver: 01a1646f-5466-77f8-9738-e134acab2a6e
+    rating: supports
+    rationale: "each branch's Yard Log has its own lock"
+  - option: 01a1646f-5466-77f8-9738-e1361194a1d8
+    driver: 01a1646f-5466-77f8-9738-e132bf6d5767
+    rating: conflicts
+    rationale: "every concurrent write refuses the other"
+  - option: 01a1646f-5466-77f8-9738-e1361194a1d8
+    driver: 01a1646f-5466-77f8-9738-e13367cc390e
+    rating: supports
+    rationale: "nothing is written on a stale base"
+  - option: 01a1646f-5466-77f8-9738-e1361194a1d8
+    driver: 01a1646f-5466-77f8-9738-e134acab2a6e
+    rating: conflicts
+    rationale: "all trees share one lock"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e137c9f4d79e
+    kind: obligation
+    statement: "A refused write names each block that changed and returns its current version."
+  - key: 01a1646f-5466-77f8-9738-e13828622d1e
+    kind: obligation
+    statement: "The lock and the save's journal live under git's own directory for the worktree."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b305365c69
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b4a2bf4563
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b51acd97b7
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ea74e4eb698c

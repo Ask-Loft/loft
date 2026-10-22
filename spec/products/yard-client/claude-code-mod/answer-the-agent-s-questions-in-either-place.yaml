@@ -1,0 +1,72 @@
+key: 01a1646f-546c-7521-9643-bc2af42480ee
+slug: answer-the-agent-s-questions-in-either-place
+name: "Answer the agent's questions in either place"
+body: "When an agent asks with `AskUserQuestion`, Claude Code shows its own dialog in the terminal. The Loft mod lets the dialog show and puts the same questions into Yard Log at once, so that the person answers wherever they are, and the first answer counts. Either way the questions and their answers stay in Yard Log."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc2b05d3e8a8
+    statement:
+      form: event_driven
+      when: "an agent asks questions with `AskUserQuestion`"
+      system: "the Loft mod"
+      shall: "write them as `question` blocks of the stage active for that agent, and send them as a submission with `loft yard write`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc2cb511d4cd
+        name: "Each question becomes a `question` block with its question, its header, its options and whether more than one option may be chosen."
+      - key: 01a1646f-546c-7521-9643-bc2de11768e7
+        name: "On a branch with no Yard Log, the mod opens it."
+      - key: 01a1646f-546c-7521-9643-bc2e9fe9d605
+        name: "Where no stage is active for the agent, the questions go to a stage that the mod opens and marks `active` for that agent."
+      - key: 01a1646f-546c-7521-9643-bc2fa3288035
+        name: "A stage that the mod opens comes after the last stage that is no longer `planned`, before the `planned` ones."
+      - key: 01a1646f-546c-7521-9643-bc302b8f5989
+        name: "An option whose label ends in `(Recommended)` is a recommended option of the question, and its label in the block leaves those words out."
+      - key: 01a1646f-546c-7521-9643-bc31293f4642
+        name: "In a question that takes one option, where more than one option's label ends in `(Recommended)`, the first of them is the recommended option, and each of their labels in the block leaves those words out."
+      - key: 01a1646f-546c-7521-9643-bc32869977da
+        name: "In a question that takes more than one option, each option whose label ends in `(Recommended)` is a recommended option."
+      - key: 01a1646f-546c-7521-9643-bc33d336e4c2
+        name: "The terminal's dialog shows the questions as it would without the plugin."
+      - key: 01a1646f-546c-7521-9643-bc34a2faaf4f
+        name: "The terminal's dialog shows the page's address above the questions."
+  - key: 01a1646f-546c-7521-9643-bc352794dbaf
+    statement:
+      form: event_driven
+      when: "the person answers in the terminal first"
+      system: "the Loft mod"
+      shall: "record the answers with `loft yard answer` and the channel `terminal`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc3699faece5
+        name: "The submission becomes `answered`."
+      - key: 01a1646f-546c-7521-9643-bc370109576b
+        name: "Notes that the person adds in the terminal are recorded with the answers."
+      - key: 01a1646f-546c-7521-9643-bc38edb924df
+        name: "The page no longer offers the questions to answer."
+  - key: 01a1646f-546c-7521-9643-bc39f74f9ff1
+    statement:
+      form: event_driven
+      when: "the person answers on the page first"
+      system: "the Loft mod"
+      shall: "give Claude Code the answers as the tool's answers, so that the agent goes on with them."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc3a3446db62
+        name: "The agent receives the options chosen on the page."
+      - key: 01a1646f-546c-7521-9643-bc3b82463715
+        name: "An answer in the person's own words reaches the agent as written."
+      - key: 01a1646f-546c-7521-9643-bc3c7d28f8ad
+        name: "Each option chosen on the page reaches the agent with its label as the agent wrote it."
+      - key: 01a1646f-546c-7521-9643-bc3dce07242b
+        name: "The terminal's dialog closes."
+  - key: 01a1646f-546c-7521-9643-bc3edc9df8a5
+    statement:
+      form: unwanted
+      if: "the questions cannot be written to Yard Log"
+      system: "the Loft mod"
+      shall: "leave the questions to the terminal's dialog alone."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc3fc17db8f8
+        name: "On a detached HEAD, the agent's questions are asked in the terminal only."
+      - key: 01a1646f-546c-7521-9643-bc408ddf25de
+        name: "The agent is not kept waiting by the failed write."

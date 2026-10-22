@@ -3,7 +3,7 @@ slug: the-loft-status-pane
 name: "The Loft status pane"
 body: "A pane in Claude Code that keeps track of the work on a specification while the agent does it: which checks of the loop pass, what the branch has added, changed and removed since it left its base, which of the criteria it touched still lack a reviewed test, and which file the agent is writing. It reads everything from `loft`'s JSON output and changes nothing."
 realizes:
-  - 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - 01a16469-559e-73c4-85f2-71ae94a5df07
 requirements:
   - key: 01a144ee-c59e-7325-802c-d72108b537c5
     statement:

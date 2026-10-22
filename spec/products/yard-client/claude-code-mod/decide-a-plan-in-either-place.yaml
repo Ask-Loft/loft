@@ -1,0 +1,60 @@
+key: 01a1646f-546c-7521-9643-bc41c1c5820f
+slug: decide-a-plan-in-either-place
+name: "Decide a plan in either place"
+body: "When an agent presents a plan with `ExitPlanMode`, Claude Code asks the person in the terminal to approve it. The Loft mod lets the prompt show and puts the plan into Yard Log as a `plan` block at once. The person can approve it or reject it on the page, with a reason the agent reads, or decide it in the terminal, and the first decision counts. An approval on the page ends plan mode, and the agent goes on in auto mode."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc42ae3198cb
+    statement:
+      form: event_driven
+      when: "an agent presents a plan with `ExitPlanMode`"
+      system: "the Loft mod"
+      shall: "write it as a `plan` block of the stage active for that agent, with the plan file's path, and send it."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc43f8c8af27
+        name: "The block's title is the plan's first heading, or the plan file's name where it has none."
+      - key: 01a1646f-546c-7521-9643-bc440f533210
+        name: "A plan from a file that Yard Log already holds is a new version of the same `plan` block."
+      - key: 01a1646f-546c-7521-9643-bc45e5810ca4
+        name: "The block records that the agent presented it in plan mode."
+      - key: 01a1646f-546c-7521-9643-bc46d0e7e92a
+        name: "The terminal asks for approval as it would without the plugin."
+  - key: 01a1646f-546c-7521-9643-bc47f41789df
+    statement:
+      form: event_driven
+      when: "the person decides the plan in the terminal first"
+      system: "the Loft mod"
+      shall: "record the outcome with `loft yard answer` and the channel `terminal`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc489d459a81
+        name: "An approval in the terminal is recorded as `approved`."
+      - key: 01a1646f-546c-7521-9643-bc49188fb63b
+        name: "A rejection in the terminal is recorded as `rejected`, with the feedback the person typed as its reason."
+  - key: 01a1646f-546c-7521-9643-bc4a2205071d
+    statement:
+      form: event_driven
+      when: "the person decides the plan on the page first"
+      system: "the Loft mod"
+      shall: "give Claude Code the page's decision as the person's."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc4b064c0cda
+        name: "An approval on the page ends plan mode, and the agent goes on in auto mode."
+      - key: 01a1646f-546c-7521-9643-bc4c62a6d12f
+        name: "A rejection on the page keeps the agent in plan mode and gives it the reason."
+      - key: 01a1646f-546c-7521-9643-bc4d46ffa3da
+        name: "The terminal's prompt closes."
+  - key: 01a1646f-546c-7521-9643-bc4e2f309571
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "say of a plan that an agent presented in plan mode that approving it lets the agent go on in auto mode."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc4f1a3eb87b
+        name: "The page offers a plan presented in plan mode for approval and for rejection."
+      - key: 01a1646f-546c-7521-9643-bc506fea2e7b
+        name: "The page says beside the approval of a plan presented in plan mode that the agent goes on in auto mode."
+      - key: 01a1646f-546c-7521-9643-bc51036e2440
+        name: "Once the plan is approved in the terminal, the page shows it approved, with the channel `terminal`."

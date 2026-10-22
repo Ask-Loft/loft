@@ -1,0 +1,129 @@
+key: 01a1646f-546c-7521-9643-bbf588bb190b
+slug: wait-for-the-answers
+name: "Wait for the answers"
+body: |
+  After sending, the agent waits on the submission with one call of the mod's `yard_wait` tool, which returns when the person has answered. A tool that a mod registers holds the agent's turn for as long as it runs, so the wait holds the turn: the agent has nothing else to do, and the person can still interrupt it.
+
+  One `loft yard wait` lasts at most 540 seconds, within the ten minutes a host command may run under the mod, so the mod runs it again until the submission is no longer open.
+
+  A long wait is safe under a mod because the time a hook spends awaiting a host command does not count against its own time budget, and Claude Code neither moves the call to the background nor ends it for being idle. That was measured with one wait of 180 seconds; a host that later caps a mod's tool call would end a longer wait early, and the submission would then stay open to be waited on again.
+tags:
+  - needs-repository
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546c-7521-9643-bbf6e2121aed
+    statement:
+      form: event_driven
+      when: "an agent waits on a submission with `loft yard wait`"
+      system: "`loft yard wait`"
+      shall: "return once the submission is no longer open, with the answers and outcomes of its blocks."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbf7da5107e5
+        name: "A wait on a submission that is already answered returns at once."
+      - key: 01a1646f-546c-7521-9643-bbf80010a4c8
+        name: "A wait returns within 2 seconds of the answer or outcome that completes its submission."
+      - key: 01a1646f-546c-7521-9643-bbf9b9524ae7
+        name: "A wait on a submission that is withdrawn returns that it was withdrawn."
+      - key: 01a1646f-546c-7521-9643-bbfa24099ddb
+        name: "A wait on a submission whose Yard Log is closed returns that Yard Log is closed."
+      - key: 01a1646f-546c-7521-9643-bbfbd843cb1e
+        name: "The result gives Yard Log's revision after the answers."
+  - key: 01a1646f-546c-7521-9643-bbfc9af874c6
+    statement:
+      form: event_driven
+      when: "the timeout that `--timeout` gives passes with the submission still open"
+      system: "`loft yard wait`"
+      shall: "return the outcome `pending` and exit 0."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbfd40238669
+        name: "A timeout of more than 540 seconds is taken as 540 seconds."
+      - key: 01a1646f-546c-7521-9643-bbfe0ae454d1
+        name: "A wait with no `--timeout` returns `pending` after 540 seconds where the submission is still open."
+      - key: 01a1646f-546c-7521-9643-bbff63d64864
+        name: "The submission stays open after a `pending` result."
+  - key: 01a1646f-546c-7521-9643-bc00b14eaa43
+    statement:
+      form: event_driven
+      when: "the agent calls the `yard_wait` tool"
+      system: "the Loft mod"
+      shall: "run `loft yard wait` again after each `pending` result until the submission is answered or withdrawn, or Yard Log is closed."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc01be18acec
+        name: "The tool returns the answers and outcomes of the submission's blocks once it is answered."
+      - key: 01a1646f-546c-7521-9643-bc022f20ffb4
+        name: "The tool holds the agent's turn until it returns."
+      - key: 01a1646f-546c-7521-9643-bc0335f775a9
+        name: "A wait longer than 540 seconds returns the answers that complete the submission, however long the person took."
+  - key: 01a1646f-546c-7521-9643-bc0439dc9645
+    statement:
+      form: event_driven
+      when: "the person interrupts the turn that a wait holds"
+      system: "the Loft mod"
+      shall: "stop waiting and leave the submission open."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc05a53744cf
+        name: "The submission stays open and can be waited on again."
+      - key: 01a1646f-546c-7521-9643-bc06fba6c4da
+        name: "The `loft yard wait` that was running is ended."
+  - key: 01a1647b-208c-755d-8b1a-5880f0d5ede3
+    statement:
+      form: unwanted
+      if: "a subagent waits on a submission that another agent sent"
+      system: "`loft yard wait`"
+      shall: "refuse the wait and name the agent that sent it."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea8699a04ea6
+        name: "A subagent's wait on a submission that another agent sent is refused."
+      - key: 01a1647b-208c-755d-8b1a-588108bad5ae
+        name: "The refusal names the session and the agent that sent the submission."
+  - key: 01a1647c-e680-7753-bf17-f16dc2e44afe
+    statement:
+      form: ubiquitous
+      system: "`loft yard wait`"
+      shall: "hold a lease on its submission for as long as it runs, so that one agent at a time waits on it."
+    criteria:
+      - key: 01a1647c-e680-7753-bf17-f16edaaf8cc3
+        name: "The lease is a lock in git's own directory for the worktree, held by the running `loft yard wait`."
+      - key: 01a1647c-e680-7753-bf17-f16f60432ccc
+        name: "The lease is free once its `loft yard wait` exits, whether it returned, was refused, was ended or was killed."
+      - key: 01a1647c-e680-7753-bf17-f170c3220eb0
+        name: "Nothing of the lease is written under `.yard/`."
+  - key: 01a1647c-e680-7753-bf17-f171d7891636
+    statement:
+      form: unwanted
+      if: "another wait holds the submission's lease"
+      system: "`loft yard wait`"
+      shall: "refuse the wait and name the session and the agent whose wait holds it."
+    criteria:
+      - key: 01a1647c-e680-7753-bf17-f17296e2f008
+        name: "The refusal returns at once."
+      - key: 01a1647c-e680-7753-bf17-f17331f02059
+        name: "Two sessions on one branch never both wait on one submission."
+  - key: 01a1647b-208c-755d-8b1a-5882ccac257c
+    statement:
+      form: optional
+      where: "an open submission of the tree and branch was sent by an agent of another session, which no session continues, and its lease is free"
+      system: "`loft yard wait`"
+      shall: "let the main agent of the calling session take it up by waiting on it."
+    body: "A session that ended with `/clear` or a resume is continued by the next, as \"Agents as callers\" states. A session that crashed, or whose process was ended, is continued by none, and its open submissions are taken up here, by whichever main agent next waits on them."
+    criteria:
+      - key: 01a1647b-208c-755d-8b1a-5883df7ebb39
+        name: "The main agent of a session started after the sending session's process ended can wait on the submission."
+      - key: 01a1647c-e680-7753-bf17-f1749b4a4c4c
+        name: "A submission taken up records, as an Act, the session that took it up."
+      - key: 01a1647c-e680-7753-bf17-f17567c3b2fd
+        name: "A submission taken up counts, from then on, as sent by the main agent of the session that took it up."
+      - key: 01a1647b-208c-755d-8b1a-58840fdd7c43
+        name: "The main agent's wait on a submission that a subagent of its own session sent is refused."
+  - key: 01a1646f-546c-7521-9643-bc07f0ae226e
+    statement:
+      form: unwanted
+      if: "an agent waits on a submission that Yard Log does not hold"
+      system: "`loft yard wait`"
+      shall: "refuse the wait and name the submission."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc08a5416419
+        name: "The refusal returns at once."

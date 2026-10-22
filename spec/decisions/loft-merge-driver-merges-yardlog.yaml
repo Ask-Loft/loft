@@ -1,0 +1,67 @@
+key: 01a1646f-5467-7025-8a88-4e55172cb1dc
+slug: loft-merge-driver-merges-yardlog
+title: "loft merge-driver merges yardlog"
+context: "Two people may work one branch on two machines, each writing its Yard Log, and git then meets two copies of the same files. `loft merge-driver` already merges `spec/` for git. yardlog's records carry keys and keep every version, submissions only move forward, and the first answer counts."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e59c08e92b0
+  outcome: "`loft merge-driver` merges files under `.yard/` by key, and `--install` registers it for `.yard/**/*.yaml`: records and versions join as unions, a submission's state only moves forward, the earliest answer counts, and two Yard Logs opened apart on one branch join under the key of the earlier opened."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e565d668974
+    kind: local
+    label: "No hand merges"
+    statement: "A merge of two copies of one Yard Log needs no hand edit."
+  - key: 01a1646f-5467-7025-8a88-4e57d23562dd
+    kind: local
+    label: "Nothing lost"
+    statement: "Every version and answer from either side survives the merge."
+  - key: 01a1646f-5467-7025-8a88-4e588505f257
+    kind: local
+    label: "Bounded work"
+    statement: "The branch delivers Yard Client within a bounded scope."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e59c08e92b0
+    title: "The driver merges yardlog now"
+    description: "`loft merge-driver` learns yardlog on this change."
+  - key: 01a1646f-5467-7025-8a88-4e5a9406ee0a
+    title: "Keys now, a driver later"
+    description: "The model is keyed so that a merge is well defined, and conflicts in `.yard/` are resolved by hand until a driver comes."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e59c08e92b0
+    driver: 01a1646f-5467-7025-8a88-4e565d668974
+    rating: supports
+    rationale: "git calls the driver"
+  - option: 01a1646f-5467-7025-8a88-4e59c08e92b0
+    driver: 01a1646f-5467-7025-8a88-4e57d23562dd
+    rating: supports
+    rationale: "unions by key"
+  - option: 01a1646f-5467-7025-8a88-4e59c08e92b0
+    driver: 01a1646f-5467-7025-8a88-4e588505f257
+    rating: conflicts
+    rationale: "a merge engine for a second format"
+  - option: 01a1646f-5467-7025-8a88-4e5a9406ee0a
+    driver: 01a1646f-5467-7025-8a88-4e565d668974
+    rating: conflicts
+    rationale: "conflicts are resolved by hand"
+  - option: 01a1646f-5467-7025-8a88-4e5a9406ee0a
+    driver: 01a1646f-5467-7025-8a88-4e57d23562dd
+    rating: neutral
+    rationale: "as careful as the person resolving"
+  - option: 01a1646f-5467-7025-8a88-4e5a9406ee0a
+    driver: 01a1646f-5467-7025-8a88-4e588505f257
+    rating: supports
+    rationale: "no merge engine"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e5bafabaa8d
+    kind: obligation
+    statement: "A block never moves to another stage, so that each file of a branch's Yard Log merges on its own."
+  - key: 01a1646f-5467-7025-8a88-4e5c4ddcf074
+    kind: obligation
+    statement: "Two records with one id and different keys both survive a merge, the later one's id gaining a suffix that the merge reports."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb945ae0aa2e

@@ -1,0 +1,59 @@
+key: 01a1646f-546e-76cb-8b4f-f1ffa38cce5d
+slug: read-and-write-across-format-versions
+name: "Read and write across format versions"
+body: |
+  Yard Log is committed, so a repository holds branches' Yard Logs written by several versions of `loft`, and the people who work on it may run different ones. A newer `loft` reads every older format and brings an open branch's Yard Log up to its own format as it writes it. Once closed, Yard Log is a record of finished work and stays as it was written. An older `loft` reads what it can of Yard Log in a newer format and never writes it.
+
+  The format's version is named in `yardlog.yaml`, as `yardlog/1`.
+realizes:
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f2006c60eed8
+    statement:
+      form: ubiquitous
+      system: "The yard store"
+      shall: "read Yard Log of any branch whose format is the format of its own `loft` or an older one."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f201fefe146c
+        name: "Yard Log in an older format reads as it would in its own format's terms, with every record and every version."
+      - key: 01a1646f-546e-76cb-8b4f-f202028cdac3
+        name: "A read result names the format that Yard Log is written in."
+  - key: 01a1646f-546e-76cb-8b4f-f20361a9e44d
+    statement:
+      form: event_driven
+      when: "a `loft` writes to a branch whose Yard Log is open and in an older format"
+      system: "the yard store"
+      shall: "write the branch's whole Yard Log in its own format and say so in the result."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2048b41651c
+        name: "The result names the format that Yard Log was upgraded from."
+      - key: 01a1646f-546e-76cb-8b4f-f2058c938508
+        name: "Every record and every version of that Yard Log is kept through the upgrade."
+      - key: 01a1646f-546e-76cb-8b4f-f206684b3dda
+        name: "Every key is kept through the upgrade."
+      - key: 01a1646f-546e-76cb-8b4f-f20767809a04
+        name: "The upgrade and the write are one write, applied whole or not at all."
+  - key: 01a1646f-546e-76cb-8b4f-f20852c40f94
+    statement:
+      form: ubiquitous
+      system: "The yard store"
+      shall: "leave the files of a branch whose Yard Log is closed in the format they were written in."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2092a349754
+        name: "Recording a publish in closed Yard Log of an older format writes the block in that format."
+      - key: 01a1646f-546e-76cb-8b4f-f20ad627f474
+        name: "Reading closed Yard Log of an older format changes no file."
+  - key: 01a1646f-546e-76cb-8b4f-f20baa7ba7fc
+    statement:
+      form: unwanted
+      if: "the format of a branch's Yard Log is newer than the format of the `loft` that reads it"
+      system: "the yard store"
+      shall: "refuse every write to it, name the format it needs, and read what it can."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f20c6ba8d281
+        name: "No file is changed."
+      - key: 01a1646f-546e-76cb-8b4f-f20dde5a2e4f
+        name: "The refusal names the format of that Yard Log and the newest format this `loft` writes."
+      - key: 01a1646f-546e-76cb-8b4f-f20e4e874671
+        name: "A read returns the records whose kinds this `loft` knows and counts the ones it left out."

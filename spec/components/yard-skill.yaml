@@ -1,0 +1,10 @@
+key: 01a16469-559e-73c4-85f2-71b7852c58c8
+slug: yard-skill
+name: "yard skill"
+body: "The `yard` skill under `plugins/claude/loft/skills/yard/`, written by hand for Claude Code, which teaches the agent the habits that make Yard Log worth reading."
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77
+constraints:
+  - key: 01a16469-559e-73c4-85f2-71b8ff75fdc3
+    name: "The `yard` skill shall consist of one `SKILL.md` file of at most 500 lines."
+    verificationFate: proved

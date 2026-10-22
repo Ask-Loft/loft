@@ -1,0 +1,34 @@
+key: 01a1646f-546c-7521-9643-bc09fcfa48f6
+slug: withdraw-a-submission
+name: "Withdraw a submission"
+body: "An agent withdraws a submission it no longer needs answered, as when the work has moved on or a question is to be asked differently: to change a block that a submission holds, the agent withdraws the submission and sends the changed block again."
+tags:
+  - needs-repository
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc0a0a7a155f
+    statement:
+      form: event_driven
+      when: "an agent withdraws an open submission"
+      system: "`loft yard withdraw`"
+      shall: "mark it `withdrawn` and leave its blocks unanswered."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc0ba8b94e53
+        name: "The page no longer offers the submission's blocks to answer or decide."
+      - key: 01a1646f-546c-7521-9643-bc0cad7e69e8
+        name: "A wait on the submission returns that it was withdrawn."
+      - key: 01a1646f-546c-7521-9643-bc0d8a62827d
+        name: "Answers and outcomes given before the withdrawal are kept."
+      - key: 01a1646f-546c-7521-9643-bc0e50edd174
+        name: "The withdrawal records when it was made and the session and agent that made it."
+  - key: 01a1646f-546c-7521-9643-bc0fa6ca76b7
+    statement:
+      form: unwanted
+      if: "an agent withdraws a submission that is not open"
+      system: "`loft yard withdraw`"
+      shall: "refuse and give the submission's state."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc106442a9cd
+        name: "No file is changed."

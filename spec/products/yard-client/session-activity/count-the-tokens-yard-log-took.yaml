@@ -1,0 +1,38 @@
+key: 01a1646f-546d-7042-befd-eae568dbeb5f
+slug: count-the-tokens-yard-log-took
+name: "Count the tokens Yard Log took"
+body: |
+  Each model request a session makes while its agent's Yard Log is open adds its tokens to the session's totals, which the page server keeps in Yard Log's folder. The agent commits them with its work, so that a reviewer of the branch sees what the work took, and each session writes only its own file, so that two sessions' totals never meet in one file, on one machine or after a merge.
+
+  A request's tokens are four counts, as Claude Code reports them: input tokens read fresh, input tokens read from the prompt cache, input tokens written to the prompt cache, and output tokens, thinking included.
+
+  ```text
+  .yard/<branch>/tokens/<session id>.yaml
+  ```
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546d-7042-befd-eae64ed7a0c0
+    statement:
+      form: event_driven
+      when: "the page server records a model request's event"
+      system: "the page server"
+      shall: "add the request's input, cache read, cache write and output tokens to the session's totals in `.yard/<branch>/tokens/<session id>.yaml`."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eae7dbf9b465
+        name: "The totals file holds the session's id, the host, when the session's first and last counted requests ended, and the session's four counts in all."
+      - key: 01a1646f-546d-7042-befd-eae8aef1c957
+        name: "The totals file holds the four counts of the requests that ended while each stage was active for the requesting agent, by the stage's key, and of those that ended while none was, under no stage."
+      - key: 01a1646f-546d-7042-befd-eae9b48ca003
+        name: "The totals file holds the four counts of each agent, the main agent and each subagent by its id and type, for each model the agent's requests ran on."
+      - key: 01a1646f-546d-7042-befd-eaea8bb580ce
+        name: "The totals file holds the four counts of the requests that ended while each submission was open, by the submission's key, so that a request made while two submissions were open counts under both."
+      - key: 01a1646f-546d-7042-befd-eaeb0ac9321e
+        name: "The request that a compaction makes counts as the main agent's."
+      - key: 01a1646f-546d-7042-befd-eaec64de00c6
+        name: "The totals file of a session that made no counted request is not written."
+      - key: 01a1646f-546d-7042-befd-eaeda64b3661
+        name: "Writing the totals leaves Yard Log's revision as it was."
+      - key: 01a1646f-546d-7042-befd-eaee2c0b5e00
+        name: "A request whose agent works in another worktree is counted in the totals file of that worktree's Yard Log."

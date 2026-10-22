@@ -1,0 +1,50 @@
+key: 01a1646f-5467-7025-8a88-4ecd55f82865
+slug: yard-log-counts-tokens-not-cost
+title: "Yard Log counts tokens, not cost"
+context: "A reviewer wants to know what a change took. Claude Code reports four token counts for each model request; prices differ by model, by plan and over time, and a plan's price is not the sum of its requests."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ed0c968decb
+  outcome: "Yard Log records the four token counts of each request, as Claude Code reports them, summed by session, stage, agent, model and submission, and names no price."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ece47150b5f
+    kind: local
+    label: "True when read later"
+    statement: "What Yard Log records stays true however prices change."
+  - key: 01a1646f-5467-7025-8a88-4ecfd6b068ad
+    kind: local
+    label: "Comparable"
+    statement: "Two branches' figures can be compared."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ed0c968decb
+    title: "Tokens"
+    description: "The four token counts as reported."
+  - key: 01a1646f-5467-7025-8a88-4ed1714088d9
+    title: "Cost"
+    description: "A price computed from the tokens and a price table."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ed0c968decb
+    driver: 01a1646f-5467-7025-8a88-4ece47150b5f
+    rating: supports
+    rationale: "counts do not change"
+  - option: 01a1646f-5467-7025-8a88-4ed0c968decb
+    driver: 01a1646f-5467-7025-8a88-4ecfd6b068ad
+    rating: supports
+    rationale: "the same units"
+  - option: 01a1646f-5467-7025-8a88-4ed1714088d9
+    driver: 01a1646f-5467-7025-8a88-4ece47150b5f
+    rating: conflicts
+    rationale: "prices change"
+  - option: 01a1646f-5467-7025-8a88-4ed1714088d9
+    driver: 01a1646f-5467-7025-8a88-4ecfd6b068ad
+    rating: neutral
+    rationale: "only at one price table"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ed25975596a
+    kind: cost
+    statement: "A reader who wants a price works it out from the counts."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb166bb457fe

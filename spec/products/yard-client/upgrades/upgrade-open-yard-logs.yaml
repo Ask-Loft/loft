@@ -1,0 +1,37 @@
+key: 01a1646f-546e-76cb-8b4f-f21c3c031b26
+slug: upgrade-open-yard-logs
+name: "Upgrade open Yard Logs"
+body: "A team that moves to a newer `loft` together can bring Yard Log of every branch of a tree that is still open up to the new format at once, in one commit, rather than as each is next written."
+tags:
+  - yard-command
+  - needs-repository
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f21d1d58e054
+    statement:
+      form: event_driven
+      when: "the person runs `loft yard upgrade`"
+      system: "`loft yard upgrade`"
+      shall: "write in its own format each branch's Yard Log under the tree's `.yard/` that is open and in an older format."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f21e84a2a199
+        name: "The result lists each branch whose Yard Log it upgraded, with that Yard Log's key and the format it was upgraded from."
+      - key: 01a1646f-546e-76cb-8b4f-f21fc3c5751b
+        name: "Closed Yard Log is left as it was and listed as left."
+      - key: 01a1646f-546e-76cb-8b4f-f220b5953af3
+        name: "Yard Log already in the current format is left as it was."
+      - key: 01a1646f-546e-76cb-8b4f-f22152e2349a
+        name: "Each branch's Yard Log is upgraded under its own lock, whole or not at all."
+      - key: 01a1646f-546e-76cb-8b4f-f2229564e46f
+        name: "Running it a second time changes nothing."
+  - key: 01a1646f-546e-76cb-8b4f-f2232e354e7d
+    statement:
+      form: unwanted
+      if: "a branch's Yard Log under the tree is of a newer format, or does not read"
+      system: "`loft yard upgrade`"
+      shall: "leave it as it was, upgrade the others, and exit 1."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f22405232a43
+        name: "The result names each branch whose Yard Log it left, with the reason."

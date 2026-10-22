@@ -1,0 +1,64 @@
+key: 01a1646f-5466-77f8-9738-e0f58cb202aa
+slug: a-loft-view-is-a-snapshot-that-yard-client-records
+title: "A loft view is a snapshot that Yard Client records"
+context: "When the work on a branch's specification reaches a point worth recording, the agent could retell what `loft` reported in a note, or Yard Client could record `loft`'s own report. Yard Log only adds to what it holds, and `loft` itself serves Yard Client, so the report can be computed from `loft`'s own library at the moment of the write."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e0f86de5162d
+  outcome: "An agent writes a `loft` block naming a view, and `loft yard write` computes the view's report from `loft`'s own library and records it in the block as it was then; the block is never rewritten, and a later state is a later block."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e0f62ccd9cf8
+    kind: local
+    label: "loft's own words"
+    statement: "What the page shows of the specification is `loft`'s report, not a retelling."
+  - key: 01a1646f-5466-77f8-9738-e0f7c4306f28
+    kind: local
+    label: "History of the work"
+    statement: "Yard Log keeps the specification's state at each point recorded."
+options:
+  - key: 01a1646f-5466-77f8-9738-e0f86de5162d
+    title: "Recorded by Yard Client"
+    description: "The agent names a view; Yard Client records the report."
+  - key: 01a1646f-5466-77f8-9738-e0f971ffa324
+    title: "Retold by the agent"
+    description: "The agent runs `loft` and writes what it reported as a note."
+  - key: 01a1646f-5466-77f8-9738-e0fa2da1a697
+    title: "Drawn live"
+    description: "The page runs `loft` whenever it draws a view."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e0f86de5162d
+    driver: 01a1646f-5466-77f8-9738-e0f62ccd9cf8
+    rating: supports
+    rationale: "the report is `loft`'s"
+  - option: 01a1646f-5466-77f8-9738-e0f86de5162d
+    driver: 01a1646f-5466-77f8-9738-e0f7c4306f28
+    rating: supports
+    rationale: "each block keeps its moment"
+  - option: 01a1646f-5466-77f8-9738-e0f971ffa324
+    driver: 01a1646f-5466-77f8-9738-e0f62ccd9cf8
+    rating: conflicts
+    rationale: "the agent's retelling"
+  - option: 01a1646f-5466-77f8-9738-e0f971ffa324
+    driver: 01a1646f-5466-77f8-9738-e0f7c4306f28
+    rating: supports
+    rationale: "each note keeps its moment"
+  - option: 01a1646f-5466-77f8-9738-e0fa2da1a697
+    driver: 01a1646f-5466-77f8-9738-e0f62ccd9cf8
+    rating: supports
+    rationale: "the report is `loft`'s"
+  - option: 01a1646f-5466-77f8-9738-e0fa2da1a697
+    driver: 01a1646f-5466-77f8-9738-e0f7c4306f28
+    rating: conflicts
+    rationale: "only the state of now"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e0fb3001f259
+    kind: obligation
+    statement: "A write that gives a view's report itself is refused."
+  - key: 01a1646f-5466-77f8-9738-e0fc0631ec56
+    kind: benefit
+    statement: "A view records the `loft` version that computed it, which is the one that wrote the block."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eaa04de4d228

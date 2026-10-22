@@ -1,0 +1,67 @@
+key: 01a1646f-5467-7025-8a88-4e81290adc3b
+slug: the-caller-is-an-agent-addressed-by-its-own-directory
+title: "The caller is an agent, addressed by its own directory, with one active stage per agent"
+context: "Several sessions may work at once on one machine, each perhaps running several subagents, and a subagent may work in a worktree of its own. A mod's hook can read the directory of the agent that made the call it handles. Git never checks out one branch in two worktrees, so a tree and a branch name one Yard Log."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e858cc1209a
+  outcome: "Every `loft yard` command is called for an agent, a session and for a subagent its agent id, and addresses Yard Log of the tree and branch of that agent's own current directory; each block records the agent that wrote it, and each agent has at most one active stage."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e8219e9091c
+    kind: local
+    label: "Right Yard Log"
+    statement: "A subagent in its own worktree writes to that worktree's Yard Log, not its parent's."
+  - key: 01a1646f-5467-7025-8a88-4e83872fe8f0
+    kind: local
+    label: "Parallel agents"
+    statement: "Agents working one branch in parallel each show their own progress."
+  - key: 01a1646f-5467-7025-8a88-4e84f7f39447
+    kind: local
+    label: "Who wrote it"
+    statement: "Every record names the agent behind it."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e858cc1209a
+    title: "The calling agent, by its own directory"
+    description: "The caller is a session and an agent, which reaches Yard Log of its own directory's branch, with one active stage per agent."
+  - key: 01a1646f-5467-7025-8a88-4e8673c03b51
+    title: "The session, by where it started"
+    description: "The caller is the session, which reaches Yard Log of the branch in the directory it started in, with one active stage for each branch's Yard Log."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e858cc1209a
+    driver: 01a1646f-5467-7025-8a88-4e8219e9091c
+    rating: supports
+    rationale: "the directory is read inside the call"
+  - option: 01a1646f-5467-7025-8a88-4e858cc1209a
+    driver: 01a1646f-5467-7025-8a88-4e83872fe8f0
+    rating: supports
+    rationale: "each agent has its own active stage"
+  - option: 01a1646f-5467-7025-8a88-4e858cc1209a
+    driver: 01a1646f-5467-7025-8a88-4e84f7f39447
+    rating: supports
+    rationale: "each block names its session and agent"
+  - option: 01a1646f-5467-7025-8a88-4e8673c03b51
+    driver: 01a1646f-5467-7025-8a88-4e8219e9091c
+    rating: conflicts
+    rationale: "a move into a worktree is not followed"
+  - option: 01a1646f-5467-7025-8a88-4e8673c03b51
+    driver: 01a1646f-5467-7025-8a88-4e83872fe8f0
+    rating: conflicts
+    rationale: "parallel agents contend for one active stage"
+  - option: 01a1646f-5467-7025-8a88-4e8673c03b51
+    driver: 01a1646f-5467-7025-8a88-4e84f7f39447
+    rating: neutral
+    rationale: "the session is named, its subagents are not"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e87c4fe3095
+    kind: obligation
+    statement: "Every `loft yard` command takes the session and, for a subagent, the agent as arguments, and the mod passes them."
+  - key: 01a1646f-5467-7025-8a88-4e88994e0f2a
+    kind: benefit
+    statement: "A session that moves into a worktree reaches that worktree's Yard Log without a restart."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ea61a5a3a0c9

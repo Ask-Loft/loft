@@ -1,0 +1,46 @@
+key: 01a1646f-546c-7521-9643-bbe81a534318
+slug: send-questions-and-approvals
+name: "Send questions and approvals"
+body: "An agent puts what it needs from the person into one submission: the questions of one decision point and the approvals and plans that wait on them. The person answers a submission as a whole, and the agent waits on it once. A submission is a record of its own, with a key, so that it is named the same on every machine and by a later server."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a1646f-546c-7521-9643-bbe9ca518371
+    statement:
+      form: event_driven
+      when: "an agent writes a batch marked to be sent"
+      system: "`loft yard write`"
+      shall: "open a submission of the batch's `question`, `approval` and `plan` blocks, and return its key."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbea9a49f273
+        name: "The submission lists each `question`, `approval` and `plan` block of the batch by its key, in the batch's order."
+      - key: 01a1646f-546c-7521-9643-bbebcb5aa7de
+        name: "The submission records when it was sent and the session and agent that sent it."
+      - key: 01a1646f-546c-7521-9643-bbec652de807
+        name: "The submission's key is minted by `loft`, never given by the agent."
+      - key: 01a1646f-546c-7521-9643-bbed533b1ef8
+        name: "A batch that is not marked to be sent opens no submission."
+  - key: 01a1646f-546c-7521-9643-bbeedddbe9e5
+    statement:
+      form: unwanted
+      if: "a batch marked to be sent holds no `question`, `approval` or `plan` block"
+      system: "`loft yard write`"
+      shall: "refuse the batch and say that there is nothing to send."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbef053a10d9
+        name: "No file is changed."
+  - key: 01a1646f-546c-7521-9643-bbf0f88f7d71
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "keep a submission `open` until each of its blocks is answered or decided, then `answered`, unless it is `withdrawn` first."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbf1e1d0654e
+        name: "A submission whose last open block is answered or decided becomes `answered`."
+      - key: 01a1646f-546c-7521-9643-bbf23e432959
+        name: "A withdrawn submission stays `withdrawn` whatever is answered after."
+      - key: 01a1646f-546c-7521-9643-bbf3dec194ff
+        name: "Two submissions of one Yard Log can be open at once."
+      - key: 01a1646f-546c-7521-9643-bbf4222e6200
+        name: "A submission's state never returns to `open`."

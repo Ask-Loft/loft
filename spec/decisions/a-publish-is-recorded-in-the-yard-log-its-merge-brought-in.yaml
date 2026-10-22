@@ -1,0 +1,50 @@
+key: 01a1646f-5466-77f8-9738-e11742d7f387
+slug: a-publish-is-recorded-in-the-yard-log-its-merge-brought-in
+title: "A publish is recorded in Yard Log that its merge brought in"
+context: "`loft` publishes only on its publish branch, so a branch's specification is published after the branch is merged and its Yard Log closed. The publish belongs to the work that Yard Log records."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e11a1a9bc650
+  outcome: "On the base branch, once `loft publish` is committed, `loft yard published` records a `publish` view in Yard Log that the merge brought in, after its close: the one block that Yard Log takes once closed."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e118c17b825d
+    kind: local
+    label: "With the work"
+    statement: "The publish is read in the record of the work it publishes."
+  - key: 01a1646f-5466-77f8-9738-e119cc511efb
+    kind: local
+    label: "Closed stays closed"
+    statement: "Once closed, Yard Log takes nothing that changes what it records."
+options:
+  - key: 01a1646f-5466-77f8-9738-e11a1a9bc650
+    title: "In the merged branch's Yard Log, after its close"
+    description: "One `publish` block, allowed after the close."
+  - key: 01a1646f-5466-77f8-9738-e11bb7718046
+    title: "In the base branch's own Yard Log"
+    description: "The publish goes in the base branch's own Yard Log."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e11a1a9bc650
+    driver: 01a1646f-5466-77f8-9738-e118c17b825d
+    rating: supports
+    rationale: "it is in the branch's own Yard Log"
+  - option: 01a1646f-5466-77f8-9738-e11a1a9bc650
+    driver: 01a1646f-5466-77f8-9738-e119cc511efb
+    rating: neutral
+    rationale: "one exception, which adds and changes nothing"
+  - option: 01a1646f-5466-77f8-9738-e11bb7718046
+    driver: 01a1646f-5466-77f8-9738-e118c17b825d
+    rating: conflicts
+    rationale: "it is apart from the work"
+  - option: 01a1646f-5466-77f8-9738-e11bb7718046
+    driver: 01a1646f-5466-77f8-9738-e119cc511efb
+    rating: supports
+    rationale: "nothing is added to a closed one"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e11cce8ec5db
+    kind: obligation
+    statement: "A second publish recorded after the same close is refused."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f25a70ebb643

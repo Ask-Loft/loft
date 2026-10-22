@@ -36,6 +36,34 @@ components:
       - key: 01a145e8-28eb-7721-8fd0-99ea28e0c58a
         name: "The test locator shall be the only part of `loft` that parses a programming language."
         verificationFate: proved
+  - key: 01a16469-559e-73c4-85f2-71a7729da1ec
+    name: "Yard commands"
+    body: "The `loft yard` commands, which read and write Yard Log through the yard store, compute the `loft` views from `loft`'s own library, and print one JSON document each."
+    constraints:
+      - key: 01a16475-7fb6-7322-99c9-9c0ee4654daa
+        name: "The Yard commands shall read and write Yard Log only through the yard store."
+        verificationFate: proved
+  - key: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+    name: "Page server"
+    body: "The HTTP server that `loft yard serve` runs on the loopback interface, one on the machine: it serves the page for every tree registered with it, takes the person's answers and decisions and the mod's events, and tells open pages of each change."
+    components:
+      - key: 01a16469-559e-73c4-85f2-71a94f0aa021
+        name: "Yard page"
+        body: "The HTML, styles and browser-native script modules that draw Yard Log in the browser, embedded in `loft` and served by the page server, with mermaid kept beside them as a third-party file."
+        constraints:
+          - key: 01a16469-559e-73c4-85f2-71aa0f3bc581
+            name: "The Yard page shall load every script, style and font from the page server."
+            verificationFate: proved
+          - key: 01a16469-559e-73c4-85f2-71ab037336a6
+            name: "The Yard page shall run in the browser as its files are kept in the repository, with no build step."
+            verificationFate: proved
+    constraints:
+      - key: 01a16469-559e-73c4-85f2-71ac8bfc2fae
+        name: "The page server shall listen only on the loopback interface."
+        verificationFate: proved
+      - key: 01a16469-559e-73c4-85f2-71ad0ec2fdf4
+        name: "The page server shall accept no connection it did not receive on the loopback interface, and open none."
+        verificationFate: proved
 constraints:
   - key: 58f9679b-7e68-44c5-a566-39c56384ffdd
     name: "`loft-cli` shall expose exactly one binary, named `loft`."

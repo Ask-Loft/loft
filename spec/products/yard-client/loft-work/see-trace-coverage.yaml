@@ -1,0 +1,27 @@
+key: 01a1646f-546d-7042-befd-eadce3a3a098
+slug: see-trace-coverage
+name: "See trace coverage"
+body: "A `trace` view shows how far the branch's criteria are verified by tests, as `loft reconcile` reported it when the view was recorded. The branch's criteria are those under each Feature that the branch added or changed against the base revision, so that the view grows with the change and not with the specification."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eadd3a543b1a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a `trace` view as the share of the branch's criteria linked and accepted, and a list of each of the branch's criteria with its tests, the criteria that need a look first."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eade17b99637
+        name: "A bar shows the number of the branch's criteria linked to tests, and the number of those links accepted."
+      - key: 01a1646f-546d-7042-befd-eadfa7c7e421
+        name: "The number of criteria in each state is given beside the bar only where the criteria are in more than one state."
+      - key: 01a1646f-546d-7042-befd-eae04a2537c0
+        name: "The view names the base revision it compares with."
+      - key: 01a1646f-546d-7042-befd-eae166cc8004
+        name: "Each criterion is listed under its Feature, by its label and its name, with each of its tests by its file and the line it starts at."
+      - key: 01a1646f-546d-7042-befd-eae2b314450a
+        name: "Each criterion not accepted is marked not yet reviewed, stale, unverified with its reason, or not linked, in a word as well as a colour."
+      - key: 01a1646f-546d-7042-befd-eae34b438416
+        name: "The accepted criteria of each Feature are folded into one line that counts them and opens to their list."
+      - key: 01a1646f-546d-7042-befd-eae4edf1b696
+        name: "Each finding that `loft reconcile` reported is listed with its rule and its message."

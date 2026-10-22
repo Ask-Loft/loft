@@ -1,0 +1,67 @@
+key: 01a1646f-5467-7025-8a88-4eb06df63a10
+slug: the-yard-store-lives-in-loftspec-store
+title: "The yard store lives in loftspec-store"
+context: "The yard store needs what `loftspec-store` already owns: a journaled save that a crash cannot leave half done and the next command finishes or undoes, and the port through which `loft` reaches git. The yardlog model is a crate of its own with no I/O."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4eb4f7513f20
+  outcome: "The yard store is a part of `loftspec-store`, writing through its journaled save and reaching git through its repository port; the `yardlog` crate holds the model and stays free of I/O."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4eb1b9115e11
+    kind: local
+    label: "One save"
+    statement: "Every write of a file `loft` owns goes through one journaled save."
+  - key: 01a1646f-5467-7025-8a88-4eb2e3735c80
+    kind: local
+    label: "One port to git"
+    statement: "`loft` reaches git through one port, which the Software Plant simulates."
+  - key: 01a1646f-5467-7025-8a88-4eb3ee1f8bbe
+    kind: local
+    label: "Crate stays focused"
+    statement: "`loftspec-store` stays a store of `loft`'s files, not of anything else."
+options:
+  - key: 01a1646f-5467-7025-8a88-4eb4f7513f20
+    title: "In loftspec-store"
+    description: "A yard store beside the document store, sharing the journaled save and the git port."
+  - key: 01a1646f-5467-7025-8a88-4eb5d0930556
+    title: "A crate of its own"
+    description: "A `yardlog-store` crate with its own save and its own reach to git, or depending on `loftspec-store` for them."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4eb4f7513f20
+    driver: 01a1646f-5467-7025-8a88-4eb1b9115e11
+    rating: supports
+    rationale: "the same journaled save"
+  - option: 01a1646f-5467-7025-8a88-4eb4f7513f20
+    driver: 01a1646f-5467-7025-8a88-4eb2e3735c80
+    rating: supports
+    rationale: "the same repository port"
+  - option: 01a1646f-5467-7025-8a88-4eb4f7513f20
+    driver: 01a1646f-5467-7025-8a88-4eb3ee1f8bbe
+    rating: neutral
+    rationale: "both are stores of files `loft` writes beside a tree"
+  - option: 01a1646f-5467-7025-8a88-4eb5d0930556
+    driver: 01a1646f-5467-7025-8a88-4eb1b9115e11
+    rating: conflicts
+    rationale: "a second save, or a dependency for the first"
+  - option: 01a1646f-5467-7025-8a88-4eb5d0930556
+    driver: 01a1646f-5467-7025-8a88-4eb2e3735c80
+    rating: conflicts
+    rationale: "a second reach to git"
+  - option: 01a1646f-5467-7025-8a88-4eb5d0930556
+    driver: 01a1646f-5467-7025-8a88-4eb3ee1f8bbe
+    rating: supports
+    rationale: "each crate holds one store"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4eb6e28bd834
+    kind: benefit
+    statement: "The git simulator of the Software Plant serves the yard store's tests as it serves the document store's."
+  - key: 01a1646f-5467-7025-8a88-4eb7a2ef42d0
+    kind: obligation
+    statement: "The journaled save writes the files of each branch's Yard Log under the same rules as a tree's, with its journal under git's own directory for the worktree."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71bbf8853b2b
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b305365c69
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b4a2bf4563

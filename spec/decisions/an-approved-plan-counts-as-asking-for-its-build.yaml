@@ -1,0 +1,50 @@
+key: 01a1646f-5466-77f8-9738-e13f67d4fdd2
+slug: an-approved-plan-counts-as-asking-for-its-build
+title: "An approved plan counts as asking for its build"
+context: "The `yard` skill tells the agent to begin no stage that builds a change unless the person asked for the build as well as the plan. A person who approves a plan expects the agent to go on with it, and a question they answer does not ask for anything to be built."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e1423c84245c
+  outcome: "The `yard` skill tells the agent that a plan the person approved, on the page, in the terminal or in plan mode, counts as asking for the build it describes, and that an answered question does not."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e140988b5fdd
+    kind: local
+    label: "No needless asking"
+    statement: "The person is not asked twice to go ahead."
+  - key: 01a1646f-5466-77f8-9738-e141544976d1
+    kind: local
+    label: "No surprise builds"
+    statement: "Nothing is built that the person did not ask for."
+options:
+  - key: 01a1646f-5466-77f8-9738-e1423c84245c
+    title: "An approved plan asks for its build"
+    description: "Approval of a plan is the go-ahead for its build."
+  - key: 01a1646f-5466-77f8-9738-e143661f6b8f
+    title: "The build is asked for apart"
+    description: "After approving a plan, the person asks for its build in words."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e1423c84245c
+    driver: 01a1646f-5466-77f8-9738-e140988b5fdd
+    rating: supports
+    rationale: "approving is asking"
+  - option: 01a1646f-5466-77f8-9738-e1423c84245c
+    driver: 01a1646f-5466-77f8-9738-e141544976d1
+    rating: supports
+    rationale: "only the approved plan is built"
+  - option: 01a1646f-5466-77f8-9738-e143661f6b8f
+    driver: 01a1646f-5466-77f8-9738-e140988b5fdd
+    rating: conflicts
+    rationale: "a second go-ahead"
+  - option: 01a1646f-5466-77f8-9738-e143661f6b8f
+    driver: 01a1646f-5466-77f8-9738-e141544976d1
+    rating: supports
+    rationale: "nothing until asked"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e1442765c29a
+    kind: obligation
+    statement: "A plan sent for approval describes the build it would start."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b7852c58c8
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc7c4e7a1936

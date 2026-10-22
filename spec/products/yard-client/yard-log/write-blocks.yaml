@@ -1,0 +1,100 @@
+key: 01a1646f-546e-76cb-8b4f-f286a6afe725
+slug: write-blocks
+name: "Write blocks"
+body: "An agent changes Yard Log only by writing a batch of blocks with `loft yard write`: new ones, and new versions of ones written before. A batch is applied whole or not at all, and every earlier version of a block stays in Yard Log."
+tags:
+  - yard-command
+  - needs-repository
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b707fdee97
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f287949f4317
+    statement:
+      form: event_driven
+      when: "an agent writes a batch of blocks"
+      system: "`loft yard write`"
+      shall: "apply every block of the batch, or none of them."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2886e33378e
+        name: "A batch whose blocks are all valid raises Yard Log's revision by one."
+      - key: 01a1646f-546e-76cb-8b4f-f2897d0a14a5
+        name: "The result of an applied batch gives the new revision and the key of each block it wrote."
+      - key: 01a1646f-546e-76cb-8b4f-f28a7eb61d73
+        name: "A batch with one invalid block changes no file."
+      - key: 01a1646f-546e-76cb-8b4f-f28bb84d5030
+        name: "The refusal of an invalid batch names each invalid block by its id and the field at fault."
+  - key: 01a1646f-546e-76cb-8b4f-f28cb1f5b8f3
+    statement:
+      form: ubiquitous
+      system: "`loft yard write`"
+      shall: "find each block by the id that the agent gives it, unique within Yard Log, and keep the block's key through every version."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f28d7973efc3
+        name: "An id is lowercase letters, digits and hyphens, and starts with a letter."
+      - key: 01a1646f-546e-76cb-8b4f-f28e468e4586
+        name: "A block written with an id that Yard Log does not hold is a new block with a key that `loft` mints."
+      - key: 01a1646f-546e-76cb-8b4f-f28f2cba1fe3
+        name: "A new block is added at the end of the stage it names, or after the block its `after` field names."
+      - key: 01a1646f-546e-76cb-8b4f-f29025418e92
+        name: "A block written with an id that Yard Log holds gains a new version, and keeps its key and its earlier versions."
+      - key: 01a1646f-546e-76cb-8b4f-f29114cd7b02
+        name: "A block written with the id of a block of another kind is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f292ff492380
+        name: "A block written again with another stage than the one that holds it is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f293bae3bba0
+        name: "A batch that gives a key for a block is refused."
+  - key: 01a1646f-546e-76cb-8b4f-f2941bb2763d
+    statement:
+      form: ubiquitous
+      system: "`loft yard write`"
+      shall: "record on each version it writes the Act of the write: its time, the revision and the agent that wrote it."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f29527011c40
+        name: "Each version carries the revision of the batch that wrote it."
+      - key: 01a1646f-546e-76cb-8b4f-f296e7842a82
+        name: "Each version carries the session id of the agent that wrote it and, for a subagent, its agent id and type."
+      - key: 01a1646f-546e-76cb-8b4f-f297362581d4
+        name: "Each version carries the time of its write in UTC, to the second, as the clock gives it."
+  - key: 01a1646f-546e-76cb-8b4f-f29829ddfdc8
+    statement:
+      form: ubiquitous
+      system: "`loft yard write`"
+      shall: "record on each stage and task when it was listed, when its work started and when it ended, from the writes that change its state."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f299aab73ba1
+        name: "The first write of a stage or task records the time it was listed."
+      - key: 01a1646f-546e-76cb-8b4f-f29a69a54272
+        name: "The write that first makes a stage or task `active` records the time its work started."
+      - key: 01a1646f-546e-76cb-8b4f-f29be0a8ca95
+        name: "The write that makes a stage or task `done` or `dropped` records the time its work ended."
+      - key: 01a1646f-546e-76cb-8b4f-f29c4c50541a
+        name: "A stage or task written back to a state that is not `done` or `dropped` no longer carries the time its work ended."
+      - key: 01a1646f-546e-76cb-8b4f-f29d020217aa
+        name: "A write that leaves a stage's or task's state as it was leaves its times as they were."
+      - key: 01a1646f-546e-76cb-8b4f-f29ec231ea39
+        name: "A batch that sets one of these times is refused."
+  - key: 01a1646f-546e-76cb-8b4f-f2a43abe5477
+    statement:
+      form: unwanted
+      if: "a batch sets the answer of a `question` block or the outcome of an `approval` or `plan` block"
+      system: "`loft yard write`"
+      shall: "refuse the batch, saying that only the person may answer or decide."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2a552abacb1
+        name: "A batch that sets a question's answer is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f2a61eb392de
+        name: "A batch that sets an approval's or a plan's outcome is refused."
+  - key: 01a1646f-546e-76cb-8b4f-f2a7b75d2fa2
+    statement:
+      form: unwanted
+      if: "a batch rewrites a block that an open submission holds"
+      system: "`loft yard write`"
+      shall: "refuse the batch and name the submission."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2a8617fbbc0
+        name: "The block is unchanged."
+      - key: 01a1646f-546e-76cb-8b4f-f2a9cf3ff024
+        name: "The same block can be rewritten once its submission is withdrawn."

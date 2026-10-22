@@ -1,0 +1,34 @@
+key: 01a1646f-546e-76cb-8b4f-f25a70ebb643
+slug: record-a-publish-after-the-merge
+name: "Record a publish after the merge"
+body: "`loft` publishes only on the publish branch, so a branch's specification is published after the branch is merged and its Yard Log closed. On the base branch, once `loft publish` is committed, an agent names with `loft yard published` the branch whose Yard Log the merge brought in, and `loft` records the publish there: the one block that closed Yard Log takes."
+tags:
+  - yard-command
+  - needs-repository
+  - git
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f25b014f5c14
+    statement:
+      form: event_driven
+      when: "an agent runs `loft yard published` on the base branch, naming a branch whose Yard Log the base branch holds"
+      system: "`loft yard published`"
+      shall: "record the `publish` view of the tree in that Yard Log, in its last stage, after its close."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f25c4364af72
+        name: "The block is a `loft` block of the `publish` view, with the note the agent gave, holding the report as `loft` gave it then."
+      - key: 01a1646f-546e-76cb-8b4f-f25d1c1c0e9a
+        name: "Yard Log reads as closed as it did before, with the block after its close."
+  - key: 01a1646f-546e-76cb-8b4f-f25e43e7c55d
+    statement:
+      form: unwanted
+      if: "the agent runs `loft yard published` on a branch other than the base branch, for Yard Log that the base branch does not hold, or for Yard Log that already holds a publish recorded after its close"
+      system: "`loft yard published`"
+      shall: "refuse and say why."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f25fcf790ee1
+        name: "No file is changed."
+      - key: 01a1646f-546e-76cb-8b4f-f260ba704112
+        name: "The refusal names the branch it was run on, the base branch and the branch whose Yard Log it looked for."

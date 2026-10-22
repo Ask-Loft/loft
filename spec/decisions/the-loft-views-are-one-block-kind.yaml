@@ -1,0 +1,50 @@
+key: 01a1646f-5467-7025-8a88-4e95373ab692
+slug: the-loft-views-are-one-block-kind
+title: "The loft views are one block kind"
+context: "Yard Client records five views of a specification: a spec change, a decision, trace coverage, check findings and the publish state. They share how they are recorded, what they note about their moment and that they are never rewritten; they differ only in their report."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e9830189926
+  outcome: "A `loft` block names its view, one of `spec-change`, `decision`, `trace`, `findings` and `publish`, and holds that view's report."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e96c302d53e
+    kind: local
+    label: "One set of rules"
+    statement: "What every view shares is stated once."
+  - key: 01a1646f-5467-7025-8a88-4e9783c494cc
+    kind: local
+    label: "Room for more"
+    statement: "A new view needs no new block kind."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e9830189926
+    title: "One kind with a view"
+    description: "A `loft` block with a `view` field."
+  - key: 01a1646f-5467-7025-8a88-4e994e61173c
+    title: "A kind for each view"
+    description: "Five block kinds, one for each view."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e9830189926
+    driver: 01a1646f-5467-7025-8a88-4e96c302d53e
+    rating: supports
+    rationale: "one kind's rules"
+  - option: 01a1646f-5467-7025-8a88-4e9830189926
+    driver: 01a1646f-5467-7025-8a88-4e9783c494cc
+    rating: supports
+    rationale: "a new value of `view`"
+  - option: 01a1646f-5467-7025-8a88-4e994e61173c
+    driver: 01a1646f-5467-7025-8a88-4e96c302d53e
+    rating: conflicts
+    rationale: "five kinds repeat them"
+  - option: 01a1646f-5467-7025-8a88-4e994e61173c
+    driver: 01a1646f-5467-7025-8a88-4e9783c494cc
+    rating: conflicts
+    rationale: "a new kind each time"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e9adc047eb9
+    kind: obligation
+    statement: "The page draws each view in a form of its own, chosen by the block's view."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f261e68ee669

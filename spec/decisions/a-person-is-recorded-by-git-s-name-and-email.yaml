@@ -1,0 +1,52 @@
+key: 01a1646f-5466-77f8-9738-e10590c83caa
+slug: a-person-is-recorded-by-git-s-name-and-email
+title: "A person is recorded by git's name and email"
+context: "Each answer and decision records the person who gave it. Yard Log is committed with the work, and a later server maps each person to one of its principals. Git already records each commit's author by name and email."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e1084c9496ab
+  outcome: "Every answer and decision records the person by git's `user.name` and `user.email` for the repository."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e1064a64acd0
+    kind: local
+    label: "Maps to a principal"
+    statement: "A server can tell which of its principals gave an answer, without guessing."
+  - key: 01a1646f-5466-77f8-9738-e1074d205944
+    kind: local
+    label: "Nothing new exposed"
+    statement: "Yard Log exposes nothing about a person that the repository's history does not."
+options:
+  - key: 01a1646f-5466-77f8-9738-e1084c9496ab
+    title: "Name and email"
+    description: "git's `user.name` and `user.email`."
+  - key: 01a1646f-5466-77f8-9738-e109888411b0
+    title: "Name only"
+    description: "git's `user.name`."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e1084c9496ab
+    driver: 01a1646f-5466-77f8-9738-e1064a64acd0
+    rating: supports
+    rationale: "an email names one principal"
+  - option: 01a1646f-5466-77f8-9738-e1084c9496ab
+    driver: 01a1646f-5466-77f8-9738-e1074d205944
+    rating: supports
+    rationale: "commits carry the same email"
+  - option: 01a1646f-5466-77f8-9738-e109888411b0
+    driver: 01a1646f-5466-77f8-9738-e1064a64acd0
+    rating: conflicts
+    rationale: "names collide"
+  - option: 01a1646f-5466-77f8-9738-e109888411b0
+    driver: 01a1646f-5466-77f8-9738-e1074d205944
+    rating: supports
+    rationale: "less than commits carry"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e10af8c1ec51
+    kind: risk
+    statement: "A person who commits under one email and answers under another is recorded under the one git gives at the time of the answer."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ebb1821f3ad8

@@ -1,0 +1,78 @@
+key: 01a1646f-546d-7042-befd-eb813857071e
+slug: serve-the-page
+name: "Serve the page"
+body: |
+  `loft yard serve` runs the page server: it serves the page's files, which `loft` holds within itself, answers the page's reads, takes the person's answers and decisions and the mod's events, and tells open pages of each change.
+
+  The page server is reached only from this machine, and a request that would change Yard Log is taken only from the page it served, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token that `loft` keeps in its settings directory instead.
+tags:
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+  - 01a16469-559e-73c4-85f2-71b6feef7573
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb82421bcb23
+    statement:
+      form: ubiquitous
+      system: "`loft yard serve`"
+      shall: "listen only on the loopback interface, at the port that `--port` names, 7411 by default."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb83315a9b4a
+        name: "The page server serves its page at `http://127.0.0.1:<port>/`."
+      - key: 01a1646f-546d-7042-befd-eb84ba1f667f
+        name: "A connection from another machine is not accepted."
+      - key: 01a1646f-546d-7042-befd-eb851381cb9d
+        name: "`loft yard serve` needs no git repository."
+  - key: 01a1646f-546d-7042-befd-eb860dc2fc11
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "serve the page's files from within `loft`."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb87a374ef2e
+        name: "Every script, style and font the page loads comes from the page server."
+      - key: 01a1646f-546d-7042-befd-eb8873ff3ab9
+        name: "The page's files are the ones the running `loft` was built with."
+  - key: 01a1646f-546d-7042-befd-eb89f50bd4b0
+    statement:
+      form: unwanted
+      if: "a request carries a `Host` other than the page server's own address"
+      system: "the page server"
+      shall: "refuse the request."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb8afc96b474
+        name: "No file is changed."
+  - key: 01a1646f-546d-7042-befd-eb8b5685370d
+    statement:
+      form: unwanted
+      if: "a request that would change Yard Log carries an `Origin` other than the page server's own"
+      system: "the page server"
+      shall: "refuse the request."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb8c9938bbaf
+        name: "No file is changed."
+      - key: 01a1646f-546d-7042-befd-eb8d29a09721
+        name: "A request from the page the page server served is accepted."
+  - key: 01a1646f-546d-7042-befd-eb8e6120339d
+    statement:
+      form: unwanted
+      if: "a request with no `Origin`, as from the mod, does not carry the control token"
+      system: "the page server"
+      shall: "refuse the request."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb8f6176fd0a
+        name: "A request with no `Origin` and the control token is accepted."
+      - key: 01a1646f-546d-7042-befd-eb90ce200547
+        name: "The control token is kept in `yard/` in `loft`'s settings directory, readable only by the person's own account."
+      - key: 01a1646f-546d-7042-befd-eb91a90fe38b
+        name: "The control token is created the first time a page server starts where there is none."
+  - key: 01a1646f-546d-7042-befd-eb9228eac8e8
+    statement:
+      form: unwanted
+      if: "the port is held by a program that is not a page server"
+      system: "`loft yard serve`"
+      shall: "exit 1 and name the port."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb9374d7cd55
+        name: "The error says that the port is held by another program."

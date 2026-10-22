@@ -1,0 +1,67 @@
+key: 01a1646f-5466-77f8-9738-e0fdae18c671
+slug: a-newer-loft-reads-older-yardlog-and-upgrades-only-open-yard-logs
+title: "A newer loft reads older yardlog, upgrades only open Yard Logs and never rewrites closed ones"
+context: "Yard Log is committed, so a repository holds Yard Logs written by many versions of `loft`, and the people of one team may run different versions. Once closed, Yard Log is a record of finished work."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e101686a9f9d
+  outcome: "A `loft` reads every yardlog version up to its own; it writes open Yard Log in its own version and says so; it never rewrites closed Yard Log; it refuses to write Yard Log of a newer format, naming the version needed; and `loft yard upgrade` rewrites on purpose each branch's Yard Log in a tree that is still open."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e0fed34ee47b
+    kind: local
+    label: "History kept as written"
+    statement: "Yard Log of finished work stays as it was committed."
+  - key: 01a1646f-5466-77f8-9738-e0ff39a23661
+    kind: local
+    label: "No silent loss"
+    statement: "No version of `loft` drops what a newer version wrote."
+  - key: 01a1646f-5466-77f8-9738-e100d9b08176
+    kind: local
+    label: "No manual step"
+    statement: "Work goes on after an upgrade of `loft` without a migration step."
+options:
+  - key: 01a1646f-5466-77f8-9738-e101686a9f9d
+    title: "Upgrade open ones on write"
+    description: "Read every older version; write open Yard Logs in the current version; leave closed ones alone; refuse newer ones."
+  - key: 01a1646f-5466-77f8-9738-e1026e7467fc
+    title: "Migrate everything at once"
+    description: "A newer `loft` refuses older Yard Logs until a migration command rewrites Yard Log of every branch of the tree."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e101686a9f9d
+    driver: 01a1646f-5466-77f8-9738-e0fed34ee47b
+    rating: supports
+    rationale: "closed Yard Logs are never rewritten"
+  - option: 01a1646f-5466-77f8-9738-e101686a9f9d
+    driver: 01a1646f-5466-77f8-9738-e0ff39a23661
+    rating: supports
+    rationale: "an older `loft` refuses to write a newer format"
+  - option: 01a1646f-5466-77f8-9738-e101686a9f9d
+    driver: 01a1646f-5466-77f8-9738-e100d9b08176
+    rating: supports
+    rationale: "the first write upgrades"
+  - option: 01a1646f-5466-77f8-9738-e1026e7467fc
+    driver: 01a1646f-5466-77f8-9738-e0fed34ee47b
+    rating: conflicts
+    rationale: "closed Yard Logs are rewritten"
+  - option: 01a1646f-5466-77f8-9738-e1026e7467fc
+    driver: 01a1646f-5466-77f8-9738-e0ff39a23661
+    rating: supports
+    rationale: "one version at a time"
+  - option: 01a1646f-5466-77f8-9738-e1026e7467fc
+    driver: 01a1646f-5466-77f8-9738-e100d9b08176
+    rating: conflicts
+    rationale: "a migration has to be run"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e103f69d560b
+    kind: obligation
+    statement: "Every yardlog version a `loft` has written stays readable by every later `loft`."
+  - key: 01a1646f-5466-77f8-9738-e10423b8496a
+    kind: risk
+    statement: "A team on mixed versions finds a branch whose Yard Log the older `loft` cannot write until it upgrades."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b305365c69
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f1ffa38cce5d
