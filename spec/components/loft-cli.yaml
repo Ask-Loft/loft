@@ -43,6 +43,9 @@ components:
       - key: 01a16475-7fb6-7322-99c9-9c0ee4654daa
         name: "The Yard commands shall read and write Yard Log only through `yardlog-store`."
         verificationFate: proved
+      - key: 01a16539-ae68-7350-9547-bac08a0d0f5b
+        name: "The Yard commands shall tell the time and wait only through the clock port of `loft-ports`."
+        verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
     name: "Page server"
     body: "The HTTP server that `loft yard serve` runs on the loopback interface, one on the machine: it serves the page for every tree registered with it, takes the person's answers and decisions and the mod's events, and tells open pages of each change."
