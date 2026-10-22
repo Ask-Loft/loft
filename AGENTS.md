@@ -86,13 +86,33 @@ change, or v1 reverts it.
   `loft init` write into a project.
 - `plugins/claude/loft/` and `plugins/codex/loft/` are the plugins, each holding its host's
   package under `skills/loft-spec/`; `.claude-plugin/marketplace.json` and
-  `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft
-  status pane, a hooks module written by hand: `hooks/` (`register.tsx`, its pure `model.ts`
-  and its tone table `ui.tsx`), its state contract `types/index.d.ts` and its tests `tests/`.
-  It learns of the tree only from `loft … --format json` (the accepted decision "The status
-  pane reads Loft only through the command line's JSON"). CI does not run its tests: after a
-  change to it, run `claude plugin validate plugins/claude/loft` and
-  `claude plugin test plugins/claude/loft`, and type-check it with TypeScript.
+  `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft mod,
+  one hooks module written by hand that runs both the Loft status pane and Yard Client:
+  `hooks/register.tsx` registers the hooks the two share, the pane lies in `pane.tsx`, its pure
+  `model.ts` and its tone table `ui.tsx`, and Yard Client in `hooks/yard/`. Its state contract is
+  `types/index.d.ts` and its tests are `tests/`, written with Claude Code's test kit. It learns
+  of the tree and of Yard Log only from `loft … --format json` (the accepted decisions "The
+  status pane reads Loft only through the command line's JSON" and "Yard Client is a mod over
+  loft"), and reaches the page server only to post its events. Beside `skills/loft-spec/` it
+  holds the `yard` skill, `skills/yard/SKILL.md`, written by hand for Claude Code alone.
+  CI runs `claude plugin validate plugins/claude/loft` and `claude plugin test
+  plugins/claude/loft` under a pinned Claude Code; run both after a change to the mod, and
+  type-check it with TypeScript once a session has loaded the plugin and written its types.
+- `crates/loft-cli/yard-page/` is the Yard page, browser-native modules and CSS with no build
+  step, which `loft yard serve` embeds and serves; each file is also listed in `ASSETS` in
+  `crates/loft-cli/src/yard/serve/assets.rs`. Mermaid is vendored there as
+  `vendor/mermaid.min.js.gz` only, at the version its `README.md` pins;
+  `scripts/vendor-mermaid.sh` refreshes it. Its tests are in `crates/loft-cli/yard-page-tests/`:
+  after `npm ci` there, `npm test` runs them in a DOM emulator and `npm run types` type-checks
+  the page, and CI runs both. The browser suite drives the page in a real browser and runs on
+  demand only, after `npx playwright install chromium`:
+  `cargo nextest run -p loft-cli --run-ignored only -E 'test(/yard_page_browser/)'`. Run it after
+  a change to the page or the page server, and before a release.
+- Yard Log is kept under `.yard/<branch>/` in a tree, committed with the work unless the
+  repository ignores `.yard/`, as this one does. What belongs to the machine, not the branch,
+  lies in `~/.yard/`: the page server's `server.json`, its lock and stop request, the trees it
+  serves, each session's events, when each session was last heard, the revision each agent last
+  read, the sessions that continue others and the control token.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
   of the platform it is installed on. A release packs it, and one package per platform, into
   tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;
@@ -134,6 +154,10 @@ text goes to standard error only.
   rule and no other warning; a `fragment` is shown and not run. The lint guide describes every
   rule the linter defines. `crates/loft-cli/tests/skill.rs` holds the source to these rules and
   to each reference's opening and contents.
+- The `yard` skill is not composed: it lies only in the Claude Code plugin, at
+  `plugins/claude/loft/skills/yard/SKILL.md`, and is edited there by hand; the packaging script
+  leaves it alone. `crates/loft-cli/tests/yard_skill.rs` holds it to one file of at most 500
+  lines, to naming exactly the tools the mod registers, and to each habit its Feature states.
 
 ## Software Plant
 

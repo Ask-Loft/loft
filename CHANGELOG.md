@@ -5,6 +5,30 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard Client: each branch's Yard Log, the record of what agents planned, asked, decided and did
+  on it, kept in the `yardlog` format under `.yard/<branch>/`.
+  - `loft yard` reads and writes it: `read`, `write` (with `--send` to send questions, approvals
+    and plans), `wait` (holding a lease on the submission, at most 540 s at a time, and taking up
+    a submission whose session is gone), `withdraw`, `close`, `published`, `answer`, `protocol`,
+    `upgrade`, and `serve`, the page server on the loopback interface. Each acts for a session
+    and, for a subagent, its agent; a write is applied whole or not at all, under a lock in
+    git's own directory; a `loft` block records a view of the specification's work from the
+    same report `status`, `check` or `reconcile` gives.
+  - `loft merge-driver` merges the files under `.yard/` record by record, and `--install`
+    routes them to it; the next `loft yard` command settles what spans files.
+  - The Yard page, served by `loft yard serve`: every Yard Log of the trees on the machine,
+    live, with its stages and blocks, a Gantt chart, Loft's views, the tokens each stage took
+    and what waits on the person, who answers and approves there. Mermaid ships with it,
+    compressed.
+  - The Loft plugin for Claude Code runs Yard Client and the status pane in one mod: it adds the
+    `yard_*` tools, puts `AskUserQuestion` and `ExitPlanMode` on the page beside Claude Code's
+    own dialog, mirrors tasks, records each session's events and tokens, keeps one page server
+    for the machine, and gives each session where its Yard Log stands. The `yard` skill teaches
+    the agent to keep Yard Log. The plugin's new setting `yardPort` names the page's port.
+  - New crates: `yardlog`, Yard Log's model; `yardlog-store`, its store; `loft-common`, the
+    strict YAML subset, the key and the UTC time, which `loftspec` re-exports where it always
+    had them; and `loft-ports`, the journaled save, the runner of git and the clock, beneath
+    `loftspec-store`, whose API is unchanged.
 - Settling a conflict of a document held in memory. `loftspec::conflict::settle` takes a
   document, a conflict's identifier and a `Settlement` (`Base`, `Ours`, `Theirs`, or
   `Value(ConflictValue)`) and gives a new document without that conflict record, as the reader
