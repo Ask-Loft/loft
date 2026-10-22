@@ -54,12 +54,12 @@ export function contextOf(doc: Doc, asker: Asker): string {
   const branch = String(doc.branch ?? 'this branch')
   const page = pageOf(doc)
   const head = [`Yard Log of \`${branch}\`.`, page ? `Its page: ${page}` : 'No page server serves its page yet.']
-  if (doc.ignored === true) head.push('git ignores `.yard/`, so Yard Log stays out of the commits.')
   const log = isObject(doc.yardLog) ? doc.yardLog : {}
   if (log.key === undefined) {
     head.push('The branch has no Yard Log yet: the first `yard_write` opens it.')
     return head.join('\n')
   }
+  if (doc.ignored === true) head.push('git ignores `.yard/`, so Yard Log stays out of the commits.')
   if (log.closedBy !== undefined && log.closedBy !== 'open') {
     head.push('Yard Log is closed: it takes no more writes, so more work goes on a branch of its own.')
     return head.join('\n')

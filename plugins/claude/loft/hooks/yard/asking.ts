@@ -7,7 +7,7 @@
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
 import { askResultOf, feedbackIn, givenOf, planId, planTitle, questionBlocks, type Asked, type Given } from './answers'
-import { dialogOf, recordedOf, type Paging } from './dialog'
+import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { activeStage, blockById, idOf, lastUnplanned, openSubmissions, waitingOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Doc, type Ran, type Running } from './run'
 import { askerOf, callerOf, run, state, type Presenting } from './state'
@@ -178,17 +178,24 @@ export async function decideOnPage<R>(presented: Presenting, terminal: Promise<R
   return { decision: { behavior: 'deny' as const, message: rejection(decided.reason) } }
 }
 
-/** The dialogs the mod itself opens, by their first question, each closed once it ends. */
-export const dialogs = new Map<string, Promise<void>>()
+/**
+ * The dialogs the mod itself opens, by their first question: the questions the dialog asks, the
+ * end of the wait that closes it, and its result once answered. `$.ui.ask` asks one question
+ * with its labels alone, so the mod's own hook asks the whole dialog in its place.
+ */
+type OwnDialog = { questions: DialogQuestion[]; ended: Promise<void>; result?: ToolCallResult }
+export const dialogs = new Map<string, OwnDialog>()
 
-/** One of the mod's own dialogs: Claude Code asks it, and it closes once its wait ends first. */
+/** One of the mod's own dialogs: Claude Code asks it whole, and it closes once its wait ends first. */
 export async function ownDialog(e: { questions: readonly Asked[] }, next: Next) {
-  const ended = dialogs.get(String(e.questions[0]?.question))
-  if (!ended) return next(e as never)
-  const asked = next(e as never)
+  const own = dialogs.get(String(e.questions[0]?.question))
+  if (!own) return next(e as never)
+  const asked = next({ ...e, questions: own.questions } as never)
   asked.catch(() => {})
-  const first = await Promise.race([asked.then(ran => ({ ran })), ended.then(() => null)])
-  return first === null ? { result: { questions: e.questions, answers: {} } } : first.ran
+  const first = await Promise.race([asked.then(ran => ({ ran })), own.ended.then(() => null)])
+  if (first === null) return { result: { questions: own.questions, answers: {} } }
+  own.result = first.ran
+  return first.ran
 }
 
 /** `yard_wait`: waits in Yard Log, asking in Claude Code's dialog meanwhile. */
@@ -220,16 +227,21 @@ async function askInTerminal($: EngineInterface, cwd: string, caller: Caller, su
     const who = sender?.agent ? `subagent ${sender.agentType ?? ''} ${sender.agent}`.replace(/\s+/g, ' ') : undefined
     const dialog = dialogOf(waitingOf(read.doc, submission), paging, who)
     if (!dialog) return
-    const key = dialog.questions[0]!.question
-    dialogs.set(key, over)
-    let answered: ToolCallResult | undefined
+    const [first] = dialog.questions
+    const own: OwnDialog = { questions: dialog.questions, ended: over }
+    dialogs.set(first!.question, own)
     try {
-      answered = await $.tool.call({ tool: 'AskUserQuestion', questions: dialog.questions })
+      await $.ui.ask(first!.question, {
+        options: first!.options.map(option => option.label),
+        header: first!.header,
+        ...(first!.multiSelect ? { multiSelect: true as const } : {}),
+      })
     } catch {
-      answered = undefined
+      // Dismissed, or closed once the wait ended.
     } finally {
-      dialogs.delete(key)
+      dialogs.delete(first!.question)
     }
+    const answered = own.result
     if (isOver || !answered || !isAnswered(answered)) return
     const { given, paging: after } = recordedOf(dialog, answered.result, paging)
     paging = after

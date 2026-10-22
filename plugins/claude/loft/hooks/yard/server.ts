@@ -52,9 +52,9 @@ export function serve($: EngineInterface, settings: Settings, server: Server, se
   })
 }
 
-/** One beat: runs `loft yard serve`, unless the last beat's run has yet to say what it did. */
+/** One beat: runs `loft yard serve`, unless the mod's own child serves or the last run has yet to say what it did. */
 export async function beat($: EngineInterface, settings: Settings, server: Server, session: string, tree: string) {
-  if (server.isBeating) return
+  if (server.isBeating || server.isServing) return
   server.isBeating = true
   try {
     await serve($, settings, server, session, tree)

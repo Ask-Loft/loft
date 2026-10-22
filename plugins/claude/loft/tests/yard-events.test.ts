@@ -1,0 +1,177 @@
+import { expect, test } from 'claude-code/testing'
+
+import { block, readDoc, SESSION, stage, start, TREE, world, type World } from './yard-world'
+
+const events = (w: World) => w.state.posts.flatMap(post => post.events)
+const kinds = (w: World) => events(w).map(event => event.kind)
+const USAGE = { input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 100, cache_creation_input_tokens: 20 }
+
+test("each event names the session, its directory, its time to the second, its kind and the host, and is posted to the page server's events with the token", async ($, on) => {
+  const w = world(on)
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await w.clock.settle()
+  const [post] = w.state.posts
+  expect(post!.url).toBe('http://127.0.0.1:7411/api/events')
+  expect(post!.headers).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer token-1' })
+  expect(post!.events).toEqual([{ session: SESSION, dir: TREE, at: '2026-10-22T09:30:00Z', host: 'claude-code', kind: 'turn.start', turn: 't1' }])
+})
+
+test('a post carries no Origin, so the page server tells the mod from a page', async ($, on) => {
+  const w = world(on)
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await w.clock.settle()
+  expect(Object.keys(w.state.posts[0]!.headers).map(name => name.toLowerCase())).not.toContain('origin')
+})
+
+test("a tool call's start and end are posted, the end saying whether it failed, an edit whether it is under spec/, and a shell command the loft subcommands it runs", async ($, on) => {
+  const w = world(on)
+  await start($)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/spec/products/a.yaml`, old_string: 'a', new_string: 'b', tool_use_id: 'u1' } as never)
+  await $.tool.call({ tool: 'Write', file_path: `${TREE}/src/main.rs`, content: '', tool_use_id: 'u2' } as never)
+  await $.tool.call({ tool: 'Bash', command: 'loft check --fail-on warning && cargo test', tool_use_id: 'u3' } as never)
+  w.state.terminal.Grep = () => ({ deny: 'no' })
+  await $.tool.call({ tool: 'Grep', pattern: 'x', tool_use_id: 'u4' } as never)
+  await w.clock.settle()
+  const shapes = events(w).filter(event => String(event.kind).startsWith('tool.')).map(({ kind, tool, call, spec, loft, failed }) => ({ kind, tool, call, spec, loft, failed }))
+  expect(shapes).toEqual([
+    { kind: 'tool.start', tool: 'Edit', call: 'u1', spec: true, loft: undefined, failed: undefined },
+    { kind: 'tool.end', tool: 'Edit', call: 'u1', spec: undefined, loft: undefined, failed: false },
+    { kind: 'tool.start', tool: 'Write', call: 'u2', spec: false, loft: undefined, failed: undefined },
+    { kind: 'tool.end', tool: 'Write', call: 'u2', spec: undefined, loft: undefined, failed: false },
+    { kind: 'tool.start', tool: 'Bash', call: 'u3', spec: undefined, loft: ['check'], failed: undefined },
+    { kind: 'tool.end', tool: 'Bash', call: 'u3', spec: undefined, loft: undefined, failed: false },
+    { kind: 'tool.start', tool: 'Grep', call: 'u4', spec: undefined, loft: undefined, failed: undefined },
+    { kind: 'tool.end', tool: 'Grep', call: 'u4', spec: undefined, loft: undefined, failed: true },
+  ])
+})
+
+test("a subagent's events name it by its id and type", async ($, on) => {
+  const w = world(on)
+  await start($)
+  await $.classic.SubagentStart({ agent_id: 'a9', agent_type: 'Explore' } as never)
+  await $.tool.call({ tool: 'Read', file_path: '/x', agentId: 'a9', tool_use_id: 'u1' } as never)
+  await $.classic.SubagentStop({ agent_id: 'a9', agent_type: 'Explore', stop_hook_active: false } as never)
+  await w.clock.settle()
+  const of = events(w).filter(event => event.kind === 'tool.start' || event.kind === 'subagent.end')
+  expect(of.map(event => [event.kind, event.agent])).toEqual([
+    ['tool.start', { id: 'a9', type: 'Explore' }],
+    ['subagent.end', { id: 'a9', type: 'Explore' }],
+  ])
+})
+
+test("a turn's end carries its tokens, and a compaction the tokens before and after", async ($, on) => {
+  const w = world(on)
+  await start($)
+  await $.turn.complete({ turnId: 't1', answer: '', usage: USAGE } as never)
+  await $.session.compact({ trigger: 'auto', messages: [{ role: 'user', text: 'so far', toolUses: [] }] } as never)
+  await w.clock.settle()
+  const [end, compaction] = events(w)
+  expect(end).toMatchObject({ kind: 'turn.end', turn: 't1', tokens: { input: 10, cacheRead: 100, cacheWrite: 20, output: 5 } })
+  expect(compaction).toMatchObject({ kind: 'compaction', before: 9000, after: 1200 })
+})
+
+test('plan mode starting and ending is posted once for each change, as the main agent is heard in it', async ($, on) => {
+  const w = world(on)
+  await start($)
+  await $.classic.UserPromptSubmit({ prompt: 'a', permission_mode: 'default' } as never)
+  await $.classic.UserPromptSubmit({ prompt: 'b', permission_mode: 'plan' } as never)
+  await $.classic.Stop({ stop_hook_active: false, permission_mode: 'plan' } as never)
+  await $.classic.UserPromptSubmit({ prompt: 'c', permission_mode: 'auto' } as never)
+  await w.clock.settle()
+  expect(kinds(w)).toEqual(['plan.start', 'plan.end'])
+})
+
+test("the mod's own dialogs and commands are not posted as the agent's tool calls", async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({
+    stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('q1', 'question', { prompt: 'Pick?', options: [{ label: 'A' }, { label: 'B' }] })] }],
+    submissions: [{ agent: { session: SESSION }, open: [{ key: 'sub-7', blocks: ['k-q1'], state: 'open' }] }],
+  })
+  w.state.terminal.AskUserQuestion = () => {
+    w.state.page.resolve({ outcome: 'answered', errors: [], blocks: [] })
+    return new Promise(() => {})
+  }
+  await start($)
+  await $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 'sub-7', tool_use_id: 'u1' } as never)
+  await w.clock.settle()
+  expect(events(w).map(event => event.tool)).toEqual(['mcp__loft__yard_wait', 'mcp__loft__yard_wait'])
+})
+
+test('events wait while the page server does not take them, and go in their order once it does', async ($, on) => {
+  const w = world(on)
+  await start($)
+  w.state.postStatus = 503
+  await $.turn.start({ text: 'a', turnId: 't1' })
+  await $.turn.start({ text: 'b', turnId: 't2' })
+  await w.clock.settle()
+  w.state.posts.length = 0
+  w.state.postStatus = 200
+  await w.clock.advance(5000)
+  expect(events(w).map(event => event.turn)).toEqual(['t1', 't2'])
+})
+
+test('past 1,000 events kept the oldest is dropped, and the next post says how many were', async ($, on) => {
+  const w = world(on)
+  await start($)
+  w.state.postStatus = 503
+  for (let n = 0; n < 1003; n++) await $.turn.start({ text: '', turnId: `t${n}` })
+  await w.clock.settle()
+  w.state.posts.length = 0
+  w.state.postStatus = 200
+  await w.clock.advance(5000)
+  const sent = events(w)
+  expect(sent).toHaveLength(1000)
+  expect(sent[0]).toMatchObject({ turn: 't3', dropped: 3 })
+  expect(sent[1]!.dropped).toBeUndefined()
+})
+
+test('no event is posted before the token exists, and none is lost meanwhile', async ($, on) => {
+  const w = world(on)
+  w.state.hasToken = false
+  await start($)
+  await $.turn.start({ text: '', turnId: 't1' })
+  await w.clock.settle()
+  expect(w.state.posts).toEqual([])
+  w.state.hasToken = true
+  await w.clock.advance(5000)
+  expect(events(w).map(event => event.turn)).toEqual(['t1'])
+})
+
+test('with Yard Client off, no event is posted', async ($, on) => {
+  const w = world(on, { protocol: 'none' })
+  await start($)
+  await $.turn.start({ text: '', turnId: 't1' })
+  await $.tool.call({ tool: 'Bash', command: 'loft check' })
+  await w.clock.advance(10000)
+  expect(w.state.posts).toEqual([])
+})
+
+test("a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it", async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
+  await start($)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Write the tests', description: '' } as never)
+  w.state.read = readDoc({ stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('task-3', 'task', { title: 'Write the tests', state: 'open' })] }] })
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'in_progress' } as never)
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'completed', subject: 'Write the kit tests' } as never)
+  const written = w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin!))
+  expect(written).toEqual([
+    [{ id: 'task-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'open' }],
+    [{ id: 'task-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'active' }],
+    [{ id: 'task-3', kind: 'task', stage: 'shape', title: 'Write the kit tests', state: 'done' }],
+  ])
+})
+
+test('an agent with no active stage has no task mirrored, and a failed task call mirrors nothing', async ($, on) => {
+  const w = world(on)
+  w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
+  await start($)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'A', description: '' } as never)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.TaskCreate = () => ({ deny: 'no' })
+  await $.tool.call({ tool: 'TaskCreate', subject: 'B', description: '' } as never)
+  expect(w.state.runs.filter(run => run.argv.includes('write'))).toEqual([])
+})
