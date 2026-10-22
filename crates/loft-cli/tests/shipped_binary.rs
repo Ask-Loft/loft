@@ -9,8 +9,9 @@ use crate::workflow::read;
 use std::path::Path;
 
 /// The crates built into `loft`.
-const BUILT_IN: [&str; 6] = [
+const BUILT_IN: [&str; 7] = [
     "loft-cli",
+    "loft-common",
     "loft-ports",
     "loftspec",
     "loftspec-store",

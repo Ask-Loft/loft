@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
+    "crates/loft-common",
     "crates/loft-ports",
     "crates/loftspec",
     "crates/loftspec-store",
@@ -20,6 +21,7 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
 # The published crates depend on one another at the release they ship in.
+loft-common = { path = "crates/loft-common", version = "2.2.1" }
 loft-ports = { path = "crates/loft-ports", version = "2.2.1" }
 loftspec = { path = "crates/loftspec", version = "2.2.1" }
 loftspec-store = { path = "crates/loftspec-store", version = "2.2.1" }

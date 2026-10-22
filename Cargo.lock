@@ -476,6 +476,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "loft-common"
+version = "2.2.1"
+dependencies = [
+ "serde",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "loft-ports"
 version = "2.2.1"
 dependencies = [
@@ -489,6 +498,7 @@ dependencies = [
 name = "loftspec"
 version = "2.2.1"
 dependencies = [
+ "loft-common",
  "proptest",
  "pulldown-cmark",
  "saphyr-parser",

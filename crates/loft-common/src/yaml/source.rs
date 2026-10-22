@@ -17,7 +17,7 @@ pub fn is_printable(character: char) -> bool {
 }
 
 /// The bytes as UTF-8 text, refused at the byte offset of the first sequence that is not UTF-8.
-pub(crate) fn utf8(bytes: &[u8]) -> Result<&str, Error> {
+pub fn utf8(bytes: &[u8]) -> Result<&str, Error> {
     std::str::from_utf8(bytes).map_err(|error| Error {
         location: Location::Byte(error.valid_up_to()),
         kind: ErrorKind::InvalidUtf8,

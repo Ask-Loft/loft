@@ -7,7 +7,6 @@ mod lock;
 mod repo;
 pub mod rewrite;
 pub mod settle;
-mod time;
 
 use std::borrow::Cow;
 use std::fmt;
@@ -17,8 +16,8 @@ pub use labels::{
     Allocated, Allocation, NamedAsFormer, allocate, publish_labels, record_decisions,
 };
 pub use lock::{LOCK, Lock, LockError};
+pub use loft_common::time::{Time as PublishedAt, TimeError};
 pub use repo::{Operation, RepoState, Stopped};
-pub use time::{PublishedAt, TimeError};
 
 use labels::{elements_in_order, named_as_former, publish_labels_in};
 use settle::Settlement;

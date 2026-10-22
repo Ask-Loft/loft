@@ -1,7 +1,7 @@
-//! The YAML subset of the text form (F-9, ADR-14): a strict reader that accepts block
-//! mappings and sequences with plain, double-quoted and literal scalars, and refuses every other
-//! construct at its line and column; and the canonical writer, whose output the reader reads
-//! back byte for byte.
+//! The strict YAML subset both formats of Loft are written in, the text form's (F-9, ADR-14): a
+//! strict reader that accepts block mappings and sequences with plain, double-quoted and literal
+//! scalars, and refuses every other construct at its line and column; and the canonical writer,
+//! whose output the reader reads back byte for byte.
 
 mod emit;
 mod error;
@@ -9,11 +9,11 @@ mod parse;
 mod scalar;
 mod source;
 
-pub(crate) use emit::write_keyed;
+pub use emit::write_keyed;
 pub use emit::{Out, write};
 pub use error::{Error, ErrorKind, Location, Position};
-pub(crate) use parse::is_key;
-pub(crate) use source::utf8;
+pub use parse::is_key;
+pub use source::utf8;
 
 /// A value with the position of its first character.
 #[derive(Debug, Clone, PartialEq, Eq)]

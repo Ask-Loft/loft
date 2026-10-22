@@ -1,0 +1,30 @@
+[package]
+name = "loft-common"
+version = "2.2.1"
+description = "What Loft's formats share: the reader and writer of their strict YAML subset, the key type and the UTC time"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "../../README.md"
+keywords.workspace = true
+categories = ["development-tools", "parser-implementations"]
+# The tests read the repository's own manifests, which are not published, so they run from the
+# repository only.
+exclude = ["tests"]
+# The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
+# checked by the operating system once each.
+autotests = false
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"

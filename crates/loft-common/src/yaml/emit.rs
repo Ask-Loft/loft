@@ -45,7 +45,7 @@ pub fn write(value: &Out) -> String {
 /// of every field named `key` of a mapping of fields, in the order written: where a reader of the
 /// text finds each key.
 #[must_use]
-pub(crate) fn write_keyed(value: &Out) -> (String, Vec<(String, Position)>) {
+pub fn write_keyed(value: &Out) -> (String, Vec<(String, Position)>) {
     let mut keys = Some(Keys::default());
     let text = emit(value, &mut keys);
     (text, keys.map(|keys| keys.found).unwrap_or_default())

@@ -20270,13 +20270,25 @@ links:
     tests:
       - file: "crates/loft-cli/tests/test_locator.rs"
         name: "only_the_test_locator_parses_a_programming_language"
-        body: 133ce0d8dd8f2f302f976127a4f0a57e393cde53c662b7600956ff7f57c17cd4
+        body: 2a6ff6795ff9e7edb461b80e5cca9589dd283663167a313fa4f066d0ae422e3f
   - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
     reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
     tests:
       - file: "crates/loft-cli/tests/shipped_binary.rs"
         name: "the_package_exposes_exactly_one_binary_named_loft"
         body: 74b6fe420f7fa790c89b5c7061afce466ee8dc16aca159d3ab1838d5eedab8f2
+  - node: 01a164dc-6a5a-7238-aa6a-3eddac75f643
+    reviewed: f687da7b4d5e0701bc37dc95a37202296069561daa4280a96a8f4f61870a93ba
+    tests:
+      - file: "crates/loft-common/tests/boundary.rs"
+        name: "no_source_of_the_common_crate_reaches_outside_the_process"
+        body: db0aefd1cbb945cd4db818c367a9e80490148193c0c03d1b750990a872019c20
+  - node: 01a164dc-6a5a-7238-aa6a-3edeb45a9dc7
+    reviewed: b935eaa125d42e3b3ad1904ff28df299d8c3ce469d8df30bfafe11643d4e0f5b
+    tests:
+      - file: "crates/loft-common/tests/boundary.rs"
+        name: "the_common_crate_depends_on_no_other_crate_of_the_workspace"
+        body: a81e8c995633a814c697d549a05404f0b8f35dc02667600c3ebf9f0f8346dd78
   - node: 01a144ee-c59d-7512-b23e-0aad7d296257
     reviewed: be3740d1301f5477257fecc081c078163a46c82313bcc31d1d6d42dfc3ea4d9d
     tests:

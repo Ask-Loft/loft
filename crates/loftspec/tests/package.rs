@@ -63,7 +63,8 @@ const CLOCK_LOCALE_ENVIRONMENT: [&str; 14] = [
 
 /// The dependencies `loftspec` ships with, none of which performs input or output for it. A new
 /// one is admitted here only once it is known to perform none.
-const DEPENDENCIES: [&str; 9] = [
+const DEPENDENCIES: [&str; 10] = [
+    "loft-common",
     "pulldown-cmark",
     "serde",
     "serde_json",

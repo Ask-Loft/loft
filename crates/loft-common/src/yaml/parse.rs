@@ -306,7 +306,8 @@ fn field<'t>(line: &Line<'t>) -> Result<(&'t str, usize), Error> {
 
 /// Whether `key` is a mapping key the subset holds: an ASCII letter followed by ASCII letters
 /// and digits.
-pub(crate) fn is_key(key: &str) -> bool {
+#[must_use]
+pub fn is_key(key: &str) -> bool {
     key.starts_with(|character: char| character.is_ascii_alphabetic())
         && key
             .chars()

@@ -1,5 +1,5 @@
-//! The publish time: whole seconds since the Unix epoch, written in the RFC 3339 form in UTC to
-//! the second, ending in `Z`.
+//! A UTC time to the second: whole seconds since the Unix epoch, written in the RFC 3339 form
+//! ending in `Z`, at which a publish of the Format or an Act of Yard Log is dated.
 
 use std::fmt;
 use std::str::FromStr;
@@ -9,11 +9,11 @@ const LAST: u64 = 253_402_300_799;
 
 const SECONDS_PER_DAY: u64 = 86_400;
 
-/// When a publish happened, ordered by the instant it names.
+/// An instant, to the second, ordered by the instant it names.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct PublishedAt(u64);
+pub struct Time(u64);
 
-/// A time that is not one the lock can carry.
+/// A time that is not one the form can carry.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum TimeError {
     #[error("{0} seconds since 1970 lies past the year 9999")]
@@ -22,7 +22,7 @@ pub enum TimeError {
     NotRfc3339(String),
 }
 
-impl PublishedAt {
+impl Time {
     /// The time `seconds` after 1970-01-01T00:00:00Z.
     ///
     /// # Errors
@@ -36,7 +36,7 @@ impl PublishedAt {
     }
 }
 
-impl fmt::Display for PublishedAt {
+impl fmt::Display for Time {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (year, month, day) = civil_from_days(self.0 / SECONDS_PER_DAY);
         let second = self.0 % SECONDS_PER_DAY;
@@ -50,7 +50,7 @@ impl fmt::Display for PublishedAt {
     }
 }
 
-impl FromStr for PublishedAt {
+impl FromStr for Time {
     type Err = TimeError;
 
     fn from_str(text: &str) -> Result<Self, TimeError> {

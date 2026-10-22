@@ -18,6 +18,7 @@ fn only_the_test_locator_parses_a_programming_language() {
         .collect();
     assert_eq!(users, Vec::<String>::new());
     for library in [
+        "loft-common",
         "loft-ports",
         "loftspec",
         "loftspec-store",

@@ -14,7 +14,7 @@ use crate::hash::StateView;
 use crate::identity::Key;
 use crate::ids::{AuthoredStateId, DocumentId};
 use crate::manifest::{ALGORITHM, ManifestError, check_identifiers};
-use crate::publish::time::{PublishedAt, TimeError};
+use crate::publish::{PublishedAt, TimeError};
 
 /// The lock's file name, in the directory that holds `spec/`.
 pub const LOCK: &str = "loft.lock.json";
