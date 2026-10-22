@@ -166,8 +166,10 @@ Loft depends on systems outside it: git, which tells the publisher the current b
 dates a publish. Each is a root Component with the boundary `external` in `spec/`, and Loft
 reaches it through one port with one real adapter; `loftspec-store` reaches git only through its
 repository port. Tests never reach an external system directly and never through a hook in a
-shipped binary. They put a simulator from the Software Plant in front of the unchanged binary
-under test:
+shipped binary. The only switches a shipped binary reads for a simulator are its standard and
+named environment variables (`SOURCE_DATE_EPOCH`, `LOFT_CLOCK`, `LOFT_TELEMETRY_ENDPOINT`,
+`LOFT_UPDATE_ENDPOINT`), and each changes only where its port takes its answers. Tests put a
+simulator from the Software Plant in front of the unchanged binary under test:
 
 - **git**: `software_plant::GitScenario` scripts a repository: its prefix, its branch or a
   detached HEAD, its porcelain status, its local configuration (a `config` call sets it for the
@@ -178,8 +180,11 @@ under test:
   the scratch directory, and `Installed::apply` gives a `Command` a search path whose only `git`
   is the simulator. Any call the simulator does not answer exits 2 naming the call, so Loft
   cannot come to depend on git behaviour nobody modelled.
-- **the clock**: `software_plant::Clock` sets `SOURCE_DATE_EPOCH`, which `loft publish` reads as
-  its publish time and the command event as its hour, fixed or stepping between runs.
+- **the clock**: the clock port tells the time and waits. `software_plant::Clock` sets
+  `SOURCE_DATE_EPOCH`, which `loft publish` reads as its publish time and the command event as
+  its hour, fixed or stepping between runs. `Clock::…().passing()` also sets `LOFT_CLOCK=passing`,
+  under which a wait returns at once and moves the run's time on by its length, so a run that
+  waits minutes ends in milliseconds; every other scenario clears it.
 - **the telemetry collector**: `software_plant::Collector` serves the collector's wire contract
   on a loopback port (accepting, failing with a status, silent, or a refused port) and records
   the requests and the events it accepted.
