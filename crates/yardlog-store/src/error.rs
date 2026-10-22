@@ -14,6 +14,8 @@ pub enum YardStoreError {
     Detached(PathBuf),
     #[error("`{0}` cannot name a folder of Yard Log")]
     Branch(String),
+    #[error("`{0}` cannot name a session's file")]
+    Session(String),
     /// A file of Yard Log does not read: its path from the top of the worktree, and why, at its
     /// line where the reader knows it.
     #[error("{folder}/{error}")]

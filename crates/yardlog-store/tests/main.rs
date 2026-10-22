@@ -11,3 +11,4 @@ mod files;
 mod git_contract;
 mod home;
 mod leases;
+mod session_files;

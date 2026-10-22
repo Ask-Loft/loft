@@ -72,8 +72,9 @@ fn the_store_of_yard_log_writes_its_files_only_through_the_ports_journal() {
         "remove_file",
     ];
     for (name, text) in sources() {
-        // `~/.yard/` and the files of locks are the machine's, not Yard Log's.
-        if name == "home.rs" || name == "lock.rs" {
+        // `~/.yard/` and the files of locks are the machine's, not Yard Log's; a session's token
+        // totals and activity are its own, written outside Yard Log's lock and revision.
+        if name == "home.rs" || name == "lock.rs" || name == "session.rs" {
             continue;
         }
         for call in writes {

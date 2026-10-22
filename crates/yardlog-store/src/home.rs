@@ -34,6 +34,8 @@ pub enum HomeFile {
     Continuations,
     /// The page server's control token, readable only by the person's own account.
     Token,
+    /// A newer page server's request that the running one stop.
+    Stop,
 }
 
 impl HomeFile {
@@ -46,6 +48,7 @@ impl HomeFile {
             Self::LastRead => "last-read.json",
             Self::Continuations => "continuations.json",
             Self::Token => "token",
+            Self::Stop => "stop.json",
         }
     }
 
@@ -125,6 +128,55 @@ impl Home {
         }
         written?;
         Ok(sync_dir(&self.dir)?)
+    }
+
+    /// Removes a file, where it is there.
+    ///
+    /// # Errors
+    ///
+    /// The file is there and cannot be removed.
+    pub fn remove(&self, file: HomeFile) -> Result<(), YardStoreError> {
+        let path = self.path(file);
+        match fs::remove_file(&path) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(io_error(&path)(error).into()),
+        }
+    }
+
+    /// A session's event log, or none where it has none.
+    ///
+    /// # Errors
+    ///
+    /// The log is there and cannot be read.
+    pub fn read_events(&self, session: &str) -> Result<Option<Vec<u8>>, YardStoreError> {
+        let path = self.events(session);
+        match fs::read(&path) {
+            Ok(bytes) => Ok(Some(bytes)),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(io_error(&path)(error).into()),
+        }
+    }
+
+    /// Appends `line` and a line break to a session's event log, creating the log where it is
+    /// not there.
+    ///
+    /// # Errors
+    ///
+    /// The log cannot be created or written.
+    pub fn append_event(&self, session: &str, line: &[u8]) -> Result<(), YardStoreError> {
+        let path = self.events(session);
+        let dir = path.parent().expect("the event log lies in a folder");
+        fs::create_dir_all(dir).map_err(io_error(dir))?;
+        let mut log = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&path)
+            .map_err(io_error(&path))?;
+        let mut whole = line.to_vec();
+        whole.push(b'\n');
+        log.write_all(&whole).map_err(io_error(&path))?;
+        Ok(())
     }
 
     /// Reads a file and writes back what `change` makes of it, with no other change to the file
