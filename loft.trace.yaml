@@ -20184,6 +20184,15 @@ links:
       - file: "crates/yardlog/tests/merge.rs"
         name: "the_driver_changes_no_id_and_no_number_and_settling_does"
         body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
+  - node: 01a165f1-ba03-734f-8676-10206480bf2a
+    reviewed: e440e3a4080143de8c586b2c20da7a71a5012a068db0164774ce320efb7b4fc3
+    tests:
+      - file: "crates/yardlog/tests/three_way.rs"
+        name: "a_stage_renamed_by_a_settling_on_one_side_reads_by_the_id_its_own_file_holds"
+        body: 5769a0993a80d26b33f94202efa143f1931c9def1104961ea7dc6122ba93c6b1
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "a_stage_another_clone_renamed_by_its_settling_merges_in_and_reads_by_its_new_id"
+        body: 72fd275d564f5d9c9b1d8fe150cde443c513bc90e1a062125da6feb7e5ef7ec4
   - node: 01a164a0-9eef-7334-9118-9a78aeb7a2be
     reviewed: abc06405d70621345951b2b5d6d559a9e3c0af073796b6afea4f04c1dc951052
     tests:

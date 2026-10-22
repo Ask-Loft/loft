@@ -257,3 +257,46 @@ fn a_session_s_tokens_file_changed_on_both_clones_is_taken_from_the_later_withou
         .join("tokens/s1.yaml");
     assert!(fs::read_to_string(file).unwrap().contains("requests: 3"));
 }
+
+/// A third clone of `from`, on [`BRANCH`], with the person named.
+fn third_clone(from: &Repo) -> Repo {
+    let third = Repo(Scratch::empty());
+    let cloned = setup_git()
+        .args(["clone", "--quiet", "--branch", BRANCH])
+        .arg(&from.0.0)
+        .arg(&third.0.0)
+        .output()
+        .unwrap();
+    assert!(cloned.status.success(), "{}", stderr(&cloned));
+    third.git_ok(&["config", "user.name", "Ada Reader"]);
+    third.git_ok(&["config", "user.email", "ada@example.com"]);
+    third
+}
+
+#[test]
+fn a_stage_another_clone_renamed_by_its_settling_merges_in_and_reads_by_its_new_id() {
+    let clones = Clones::new();
+    write(&clones.ours, 60, "s1", ASK);
+    clones.ours.commit("ours");
+    let before = third_clone(&clones.ours);
+    write(&clones.theirs, 0, "s2", ASK);
+    clones.theirs.commit("theirs");
+    let theirs = clones.theirs.0.0.to_str().unwrap();
+    clones.ours.git_ok(&["fetch", "--quiet", theirs, BRANCH]);
+    merged_cleanly(
+        &clones,
+        &clones.ours.git(&["merge", "--no-edit", "FETCH_HEAD"]),
+    );
+    let settled = read(&clones.ours, 180, &[]);
+    assert_eq!(ids(&settled["stages"]), ["shape-2", "shape"]);
+    clones.ours.commit("settled");
+    let stage = r#"[{"id": "build", "kind": "stage", "title": "Build"}]"#;
+    write(&before, 200, "s3", stage);
+    before.commit("before");
+    let ours = clones.ours.0.0.to_str().unwrap();
+    before.git_ok(&["fetch", "--quiet", ours, BRANCH]);
+    let merged = before.git(&["merge", "--no-edit", "FETCH_HEAD"]);
+    assert_eq!(merged.status.code(), Some(0), "{}", stderr(&merged));
+    let read_back = read(&before, 240, &[]);
+    assert_eq!(ids(&read_back["stages"]), ["shape-2", "build", "shape"]);
+}

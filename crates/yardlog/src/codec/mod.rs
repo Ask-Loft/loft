@@ -148,7 +148,7 @@ impl YardLog {
     ///
     /// # Errors
     ///
-    /// A file does not read, a stage's file is missing or disagrees with the root, or a record
+    /// A file does not read, a stage's file is missing or holds another stage, or a record
     /// refers to a key that Yard Log does not hold.
     pub fn read(
         root_bytes: &[u8],
@@ -159,10 +159,10 @@ impl YardLog {
             move |error| FileError { file, error }
         };
         let root_node = parse(ROOT, root_bytes)?;
-        let root = read_root(root_bytes)?;
+        let mut root = read_root(root_bytes)?;
         let mut stages = Vec::new();
         let mut nodes = Vec::new();
-        for entry in &root.stages {
+        for entry in &mut root.stages {
             let name = stage_file(entry.key);
             let bytes = stage_bytes(&name).ok_or_else(|| FileError {
                 file: name.clone(),
@@ -173,7 +173,10 @@ impl YardLog {
             })?;
             let node = parse(&name, &bytes)?;
             let file = stage::read(&node).map_err(in_file(&name))?;
-            agree(&name, &node, &file, entry.key, &entry.id)?;
+            agree(&name, &node, &file, entry.key)?;
+            // The stage's own record holds its id; the root's copy follows it, since git may
+            // take a stage's file whole from a copy whose settling renamed the stage.
+            entry.id = file.stage.id.clone();
             stages.push(file);
             nodes.push((name, node));
         }
@@ -208,28 +211,16 @@ impl YardLog {
     }
 }
 
-fn agree(
-    name: &str,
-    node: &Node,
-    file: &StageFile,
-    key: StageKey,
-    id: &crate::keys::Handle,
-) -> Result<(), FileError> {
-    let message = if file.stage.key.stage() != key {
-        format!("the file holds stage {}, not {key}", file.stage.key)
-    } else if &file.stage.id != id {
-        format!(
-            "the stage's id is `{}` here and `{id}` in the root",
-            file.stage.id
-        )
-    } else {
+/// Refuses a stage's file that holds another stage than the root names for it.
+fn agree(name: &str, node: &Node, file: &StageFile, key: StageKey) -> Result<(), FileError> {
+    if file.stage.key.stage() == key {
         return Ok(());
-    };
+    }
     Err(FileError {
         file: name.to_owned(),
         error: ReadError {
             position: Some(node.position),
-            message,
+            message: format!("the file holds stage {}, not {key}", file.stage.key),
         },
     })
 }

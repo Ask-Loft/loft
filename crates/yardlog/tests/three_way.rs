@@ -102,3 +102,43 @@ fn a_record_of_a_stage_s_file_git_took_whole_is_marked_as_arrived_at_the_settlin
     assert_eq!(arrived("mine"), None);
     assert_eq!(merged.root.arriving, []);
 }
+
+#[test]
+fn a_stage_renamed_by_a_settling_on_one_side_reads_by_the_id_its_own_file_holds() {
+    let (base, mut ours, _) = apart();
+    let mut theirs = base.clone();
+    let renamed = handle("build-2");
+    let entry = theirs
+        .root
+        .stages
+        .iter_mut()
+        .find(|entry| entry.id == handle("build"))
+        .unwrap();
+    entry.id = renamed.clone();
+    let file = theirs
+        .stages
+        .iter_mut()
+        .find(|file| file.stage.id == handle("build"))
+        .unwrap();
+    file.stage.id = renamed.clone();
+    write(
+        &mut theirs,
+        &note("yours", "design"),
+        &context(&other_session(), 20),
+    );
+    write(
+        &mut ours,
+        &note("again", "design"),
+        &context(&main_agent(), 12),
+    );
+    let (merged, driven) = as_git_merges(&base, &ours, &theirs);
+    assert!(driven.iter().any(|name| name == ROOT));
+    let ids: Vec<_> = merged
+        .root
+        .stages
+        .iter()
+        .map(|e| e.id.to_string())
+        .collect();
+    assert_eq!(ids, ["design", "build-2"]);
+    assert!(merged.find(&renamed).is_some());
+}
