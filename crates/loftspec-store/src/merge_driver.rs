@@ -52,6 +52,21 @@ pub struct Installed {
 /// `root` is not inside a git repository, or git cannot run `<launcher> --version`, in either
 /// case before anything is written; git fails; or the attributes file cannot be read or written.
 pub fn install(git: &GitCommand, root: &Path, launcher: &str) -> Result<Installed, StoreError> {
+    install_routing(git, root, launcher, &[ATTRIBUTE])
+}
+
+/// Registers the driver as [`install`] does, routing to it the files each of `attributes`
+/// names, each line added in its order where the attributes file does not hold it.
+///
+/// # Errors
+///
+/// As [`install`].
+pub fn install_routing(
+    git: &GitCommand,
+    root: &Path,
+    launcher: &str,
+    attributes: &[&str],
+) -> Result<Installed, StoreError> {
     git.prefix(root)?;
     let version = git
         .launcher_version(root, launcher)?
@@ -63,13 +78,24 @@ pub fn install(git: &GitCommand, root: &Path, launcher: &str) -> Result<Installe
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => String::new(),
         Err(error) => return Err(crate::error::io_error(&path)(error)),
     };
-    if !current.lines().any(|line| line.trim() == ATTRIBUTE) {
+    let missing: Vec<&str> = attributes
+        .iter()
+        .copied()
+        .filter(|attribute| !current.lines().any(|line| line.trim() == *attribute))
+        .collect();
+    if !missing.is_empty() {
         let separator = if current.is_empty() || current.ends_with('\n') {
             ""
         } else {
             "\n"
         };
-        let text = format!("{current}{separator}{ATTRIBUTE}\n");
+        let text = missing
+            .iter()
+            .fold(format!("{current}{separator}"), |mut text, line| {
+                text.push_str(line);
+                text.push('\n');
+                text
+            });
         write_outputs(root, &[(PathBuf::from(ATTRIBUTES), text.into_bytes())])?;
         written.push(ATTRIBUTES.to_owned());
     }

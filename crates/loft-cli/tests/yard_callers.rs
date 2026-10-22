@@ -79,8 +79,9 @@ fn every_block_withdrawal_and_close_records_the_session_and_agent_that_made_it()
         json!({ "host": "claude-code", "session": "s3", "agent": "a9", "agentType": "explorer" })
     );
     let root = std::fs::read_to_string(yard.folder(BRANCH).join("yardlog.yaml")).unwrap();
-    // The opening, the send, the withdrawal and the close.
-    assert_eq!(root.matches("agent: \"a9\"").count(), 4, "{root}");
+    // The opening, the send, the withdrawal and the close, then the Act of each of the three
+    // changes in the root's Acts.
+    assert_eq!(root.matches("agent: \"a9\"").count(), 7, "{root}");
 }
 
 #[test]

@@ -13,5 +13,6 @@ pub mod place;
 pub mod store;
 
 pub use error::YardStoreError;
+pub use files::{ATTRIBUTE, YARD};
 pub use place::Place;
 pub use store::{Held, Updated, YardStore};

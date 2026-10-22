@@ -13160,22 +13160,22 @@ links:
     tests:
       - file: "crates/loft-cli/tests/merge_driver_install.rs"
         name: "the_attribute_the_driver_and_its_name_are_registered"
-        body: 7eda12637d86e47942ed8f6eee1a421294e0e38f3ad17007c97265d715d9c3b2
+        body: 2d78975fed4f440c06e79ab29467eec699cb4a40aab3bd7edd006bd5dde14bde
       - file: "crates/loft-cli/tests/merge_driver_install.rs"
         name: "an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute"
-        body: c20c283ed2738c2d869a12efe550d741f6a7706a5315fb3448cf4280597b91a8
+        body: 0322c4461a6fab912a7ac9ca2ef9e1017a7ee7fe8a93519c43be789afc8a6486
   - node: 8cc41ae4-2be0-4f31-a579-2a5ff8c2b2e7
     reviewed: 6e06882a4627defe52e910cf5e04c965cf48ee6f453639710f7d531093851949
     tests:
       - file: "crates/loft-cli/tests/merge_driver_install.rs"
         name: "the_attribute_the_driver_and_its_name_are_registered"
-        body: 7eda12637d86e47942ed8f6eee1a421294e0e38f3ad17007c97265d715d9c3b2
+        body: 2d78975fed4f440c06e79ab29467eec699cb4a40aab3bd7edd006bd5dde14bde
   - node: a08f5607-f5cc-46ca-9e69-b4bc0f2b7ffe
     reviewed: 3aaf4ab3afcf8a6310add1f6e5f5007fa9e6519f2f81b3ad271b4e043438a416
     tests:
       - file: "crates/loft-cli/tests/merge_driver_install.rs"
         name: "the_attribute_the_driver_and_its_name_are_registered"
-        body: 7eda12637d86e47942ed8f6eee1a421294e0e38f3ad17007c97265d715d9c3b2
+        body: 2d78975fed4f440c06e79ab29467eec699cb4a40aab3bd7edd006bd5dde14bde
   - node: 38ba4917-e7a0-4e80-a88a-6d3ebed8f5f8
     reviewed: 31e58830a0c349fca3580cba6df37ca9b8cdb57fddcc696b40263ed8111a2bb3
     tests:
@@ -13196,7 +13196,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/merge_driver_install.rs"
         name: "the_attribute_the_driver_and_its_name_are_registered"
-        body: 7eda12637d86e47942ed8f6eee1a421294e0e38f3ad17007c97265d715d9c3b2
+        body: 2d78975fed4f440c06e79ab29467eec699cb4a40aab3bd7edd006bd5dde14bde
   - node: 01a13751-027d-754b-af03-86562bc4313a
     reviewed: df903b6175bf5c8a29ced24398aaf48bfc8bd6b469858f8d1fff9b53f310ad58
     tests:
@@ -13326,6 +13326,51 @@ links:
       - file: "crates/loft-cli/tests/merge_driver_install.rs"
         name: "the_json_document_of_an_install_lists_the_names_written_and_the_launcher_s_version"
         body: fe5ad4ba4dca1517394d93d60a51bb502bcc1f69fbde715e948e78fa25d5fd0c
+  - node: 01a1646f-546a-7037-b85c-581d77f256ff
+    reviewed: 8a73dc94b12999978f9de92366c9ea43052e737e7ca21550af8bfd74439dea82
+    tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_stage_s_file_under_yard_is_merged_by_key_and_exits_0_with_no_conflict"
+        body: 6f226c22ee05eba3dcc51c564d3fc7f0423bd76087a95ae0fec1859b3c4a246e
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "notes_written_apart_merge_cleanly_and_the_next_read_settles_their_shared_id"
+        body: 7a1f573a4e2ba3f1e355b1697a3e85b012863235226fed9a5b5a85d40ce61440
+  - node: 01a1646f-546a-7037-b85c-581e7913dca3
+    reviewed: d1e4738499c2459f05fa24984e3f9aa47a542be2140d05746edf9626392b6a2d
+    tests:
+      - file: "crates/loft-cli/tests/merge_driver.rs"
+        name: "a_clean_merge_is_written_to_ours_and_exits_0"
+        body: 5261f49edd59f9e2dc76abcd804c436352511ce5363f22cb7ebcc2d611b84d11
+  - node: 01a1646f-546a-7037-b85c-581f1115cbad
+    reviewed: 87351c48d82b52fa988e7a4386ab12c210a48e020704e5ea02f04e1c2e90353f
+    tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_stage_s_file_under_yard_is_merged_by_key_and_exits_0_with_no_conflict"
+        body: 6f226c22ee05eba3dcc51c564d3fc7f0423bd76087a95ae0fec1859b3c4a246e
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "the_root_merged_by_the_driver_is_a_revision_above_both_and_unsettled_since_this_copy_s"
+        body: 4a6bb4ca5d009c1cf96802b5e0abae7eebe671fe0a9267760449f9bdd317d534
+  - node: 01a1646f-546a-7037-b85c-58202c68fed4
+    reviewed: d5340578f59f8c2797ca227232a19373004b39a347d2be6ff94d64c888171ce3
+    tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_stage_s_file_under_yard_is_merged_by_key_and_exits_0_with_no_conflict"
+        body: 6f226c22ee05eba3dcc51c564d3fc7f0423bd76087a95ae0fec1859b3c4a246e
+  - node: 01a1646f-546a-7037-b85c-5822475eec76
+    reviewed: f0f3133d7e34f87166a35cbcc41482ec066bb9c95a3b0b5e3745c302e2e3233e
+    tests:
+      - file: "crates/loft-cli/tests/merge_driver_install.rs"
+        name: "the_attribute_the_driver_and_its_name_are_registered"
+        body: 2d78975fed4f440c06e79ab29467eec699cb4a40aab3bd7edd006bd5dde14bde
+      - file: "crates/loft-cli/tests/merge_driver_install.rs"
+        name: "an_attributes_file_that_routes_spec_alone_gains_the_yard_line_once"
+        body: cfdf1270df788fc88bab1ac4faae09ea869d8806af0553ef3e41185e14654537
+  - node: 01a1646f-546a-7037-b85c-58234214b1a5
+    reviewed: fe98e9548678f554ccf5bc0b8b6f4e091866cdbf83f20ba093416cb4145b4d76
+    tests:
+      - file: "crates/loft-cli/tests/merge_driver_install.rs"
+        name: "an_attributes_file_that_routes_spec_alone_gains_the_yard_line_once"
+        body: cfdf1270df788fc88bab1ac4faae09ea869d8806af0553ef3e41185e14654537
   - node: 01a13654-bf86-77e9-8fd5-8dc2abcad562
     reviewed: a7c0e036eb1d761d0a7f6022b139bba5a8040a1e37ea482ad2910671cb26bbc1
     tests:
@@ -19935,6 +19980,9 @@ links:
   - node: 01a1646f-546d-7042-befd-eb993fe35501
     reviewed: 00dfe4291e6f10e2dd632086ee376713b0f0aef6e71a19dade4c07c695ac52c6
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "stages_added_on_each_clone_are_each_in_a_file_of_its_own_and_kept_base_first"
+        body: fc5087449234099016e5bff11d55124b2011f3c0fe178c49ee305a4cb230543f
       - file: "crates/yardlog/tests/merge.rs"
         name: "stages_keep_the_base_s_order_followed_by_each_copy_s_new_ones"
         body: f3b1262cca18ad5da2ec0f32a6ffe52e9001a0698edf12bcef81ca42a1715b47
@@ -19944,6 +19992,15 @@ links:
       - file: "crates/yardlog/tests/merge.rs"
         name: "records_of_both_copies_join_by_key_with_every_version_once"
         body: eada5db397213f1d9c59204f427a70baec372ecee2c144d78d85cb708341d4c7
+  - node: 01a1646f-546d-7042-befd-eb9b92c1bcf5
+    reviewed: e05a3876cb0e6d77b8ec150295720735cf5447feda4fe9fe33457d11f5abd6fc
+    tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_stage_s_file_under_yard_is_merged_by_key_and_exits_0_with_no_conflict"
+        body: 6f226c22ee05eba3dcc51c564d3fc7f0423bd76087a95ae0fec1859b3c4a246e
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "notes_written_apart_merge_cleanly_and_the_next_read_settles_their_shared_id"
+        body: 7a1f573a4e2ba3f1e355b1697a3e85b012863235226fed9a5b5a85d40ce61440
   - node: 01a1646f-546d-7042-befd-eb9de698ecdf
     reviewed: f067e13040dca7e27e00be53b162f4e9f876f5090c9204cd82e2fa006accc37e
     tests:
@@ -19959,12 +20016,18 @@ links:
   - node: 01a1646f-546d-7042-befd-eba0ae5f5513
     reviewed: 7e7a4d7f76a50c6e1899318ce50b6f2f2583602048023fb0a7e29eee9920764e
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "answers_given_apart_count_the_earlier_and_keep_the_later_as_it_was_written"
+        body: 6d27379f007406e9f9e8907c3709cd1f478f6c5953190f3e601d710b7f0e1b56
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
         body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
   - node: 01a1646f-546d-7042-befd-eba1a81ca116
     reviewed: b7f13e00c3f0dba437e138a206b56dd035c402a08cd8f6253aa18a3eac85eed8
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "answers_given_apart_count_the_earlier_and_keep_the_later_as_it_was_written"
+        body: 6d27379f007406e9f9e8907c3709cd1f478f6c5953190f3e601d710b7f0e1b56
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
         body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
@@ -19977,18 +20040,27 @@ links:
   - node: 01a1646f-546d-7042-befd-eba3cc9480da
     reviewed: e9ee5bafe5f1066e869d2420b03e70b585d8460869bcf925a1d4df053eb35687
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "yard_log_closed_on_one_clone_is_closed_after_the_merge"
+        body: 65184477a743091976bcc333de89704c1f7e4d48292ef975e95dac292b6d3e54
       - file: "crates/yardlog/tests/merge.rs"
         name: "yard_log_closed_in_either_copy_is_closed_by_the_earlier_close"
         body: 8efd1c63b8b0d9bfc493093f8da2739dffdd8597ab59f01d51f47bd127514628
   - node: 01a1649f-62ef-71e6-98de-e1138369260b
     reviewed: dd5675014153557c6246f9bcfd00be2731bd4ea53b814aa2a4775bd7457b68ff
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "the_root_merged_by_the_driver_is_a_revision_above_both_and_unsettled_since_this_copy_s"
+        body: 4a6bb4ca5d009c1cf96802b5e0abae7eebe671fe0a9267760449f9bdd317d534
       - file: "crates/yardlog/tests/merge.rs"
         name: "the_result_s_revision_is_one_past_the_higher_and_unsettled_since_this_copy_s"
         body: c2d2e50d32679854720ea5829750e8aca3bcab67a0ab0a5eca0372a3f9f03bc5
   - node: 01a1649f-62ef-71e6-98de-e1149cec97fa
     reviewed: 8ed331ff05f872342a97dd5832a94b8d8ec313193cabc9b2a5042104c12f2b5b
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_stage_s_file_under_yard_is_merged_by_key_and_exits_0_with_no_conflict"
+        body: 6f226c22ee05eba3dcc51c564d3fc7f0423bd76087a95ae0fec1859b3c4a246e
       - file: "crates/yardlog/tests/merge.rs"
         name: "the_driver_changes_no_id_and_no_number_and_settling_does"
         body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
@@ -19998,15 +20070,42 @@ links:
       - file: "crates/yardlog/tests/merge.rs"
         name: "the_result_s_revision_is_one_past_the_higher_and_unsettled_since_this_copy_s"
         body: c2d2e50d32679854720ea5829750e8aca3bcab67a0ab0a5eca0372a3f9f03bc5
+  - node: 01a16532-9bbd-7310-b7f9-0e1bc9a6aeee
+    reviewed: 1ef25c24f4de6bedb22dc633be0a13f8adb5496ccb0d8e0dddc24246293be51b
+    tests:
+      - file: "crates/yardlog/tests/three_way.rs"
+        name: "two_copies_that_each_changed_yard_log_hand_the_root_to_the_driver"
+        body: 9f9d320fa4d7c1809bcff1fe06eb3909b30a77d9ade84dad61128e8cf1c9a0d9
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "notes_written_apart_merge_cleanly_and_the_next_read_settles_their_shared_id"
+        body: 7a1f573a4e2ba3f1e355b1697a3e85b012863235226fed9a5b5a85d40ce61440
+  - node: 01a16532-9bbd-7310-b7f9-0e1c9c56a776
+    reviewed: cd60ab5d9b11aa8e64dc2a2626decaad25d61f3e48b5aebfbe3c88397da408d2
+    tests:
+      - file: "crates/yardlog/tests/three_way.rs"
+        name: "the_merged_root_lists_as_arriving_each_act_the_other_copy_holds_and_this_one_did_not"
+        body: 999ac09d17474c2b5f1910693f5cdca5168a9004c1d12ec3581fadd699e853d4
   - node: 01a1646f-546d-7042-befd-eba8b9a15607
     reviewed: 6d51ccbb35727826c157a4cd3d71de65525aeb66ff062a7eb468510011dd9d1d
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "two_yard_logs_opened_apart_join_over_an_empty_base_under_the_earlier_key"
+        body: f6285028c1f9c2cbe465231a1f493563a7e0f79eabc2b54ac46ca231085e947a
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "yard_logs_opened_apart_on_two_clones_join_under_the_key_of_the_one_opened_earlier"
+        body: faf94a74c3367904c78d98aed7aea5026ebbb1b02227f85cbbfe8b847586002c
       - file: "crates/yardlog/tests/merge.rs"
         name: "yard_logs_opened_apart_join_under_the_earlier_key"
         body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
   - node: 01a1646f-546d-7042-befd-eba945a594e1
     reviewed: 6b646b2c5895e17db570291000b1b1c7b128ca03526a07e50da33d2ae2d01b24
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "two_yard_logs_opened_apart_join_over_an_empty_base_under_the_earlier_key"
+        body: f6285028c1f9c2cbe465231a1f493563a7e0f79eabc2b54ac46ca231085e947a
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "yard_logs_opened_apart_on_two_clones_join_under_the_key_of_the_one_opened_earlier"
+        body: faf94a74c3367904c78d98aed7aea5026ebbb1b02227f85cbbfe8b847586002c
       - file: "crates/yardlog/tests/merge.rs"
         name: "yard_logs_opened_apart_join_under_the_earlier_key"
         body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
@@ -20019,6 +20118,9 @@ links:
   - node: 01a1649f-62ef-71e6-98de-e11518fc2388
     reviewed: 89bee55a3bc4a77e9a76c7833fe55277c2c94966e49c4c055739c00d9fa4544e
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "notes_written_apart_merge_cleanly_and_the_next_read_settles_their_shared_id"
+        body: 7a1f573a4e2ba3f1e355b1697a3e85b012863235226fed9a5b5a85d40ce61440
       - file: "crates/yardlog/tests/merge.rs"
         name: "the_driver_changes_no_id_and_no_number_and_settling_does"
         body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
@@ -20046,9 +20148,18 @@ links:
       - file: "crates/yardlog/tests/merge.rs"
         name: "settling_marks_what_the_merge_brought_and_settles_only_once"
         body: dedda353270e3323f64f2f3d95a250e5025f9e123d79c4fb3f07df7bc216e32c
+  - node: 01a16532-9bbd-7310-b7f9-0e1de30c8c08
+    reviewed: 25c0dc82956892853b179b5e0904ccf2d11a8cca42e7321ccb368969e4844b51
+    tests:
+      - file: "crates/yardlog/tests/three_way.rs"
+        name: "a_record_of_a_stage_s_file_git_took_whole_is_marked_as_arrived_at_the_settling"
+        body: 6db51fa2b2d193ed4339ebc04b421658e55ef66c384029fb3436358c085b2fc0
   - node: 01a1646f-546d-7042-befd-eba6ee1c2c4b
     reviewed: ec7073be867b0afc5830c6423b43fc270ba57bf3255c73a4d382f9f74890790c
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "notes_written_apart_merge_cleanly_and_the_next_read_settles_their_shared_id"
+        body: 7a1f573a4e2ba3f1e355b1697a3e85b012863235226fed9a5b5a85d40ce61440
       - file: "crates/loft-cli/tests/yard_settle.rs"
         name: "a_read_since_a_revision_below_the_settling_returns_the_blocks_the_merge_brought_in"
         body: 1bb8016a7efa6448671bc49691972f50d73d3142303d30be2be5b81032a586ae
@@ -20070,12 +20181,63 @@ links:
       - file: "crates/loft-cli/tests/yard_settle.rs"
         name: "a_command_that_only_reads_yard_log_settles_it_as_one_that_writes_would"
         body: 43735dd2399a7774c84abf74689c4651a2fed94d31536221a8a807f664641d0a
+  - node: 01a1647b-208d-7169-85c8-9a56a7391c0f
+    reviewed: 9311313ea21f257b4e01684a00ea46e7e05fba3536a5e9dfe59c2586526796c4
+    tests:
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "a_session_s_tokens_file_changed_on_both_clones_is_taken_from_the_later_without_conflict"
+        body: 1880d1ed5e8c0033d41d863fbe71b58092dd0c54b95d696bd700f6b05c62e152
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_session_s_file_is_taken_whole_from_the_copy_whose_last_event_ended_later"
+        body: a90966465ce327114427af61db224a92ebdaa5fcb87de0d3322e8af792c42be5
+  - node: 01a1647b-208d-7169-85c8-9a57357c5764
+    reviewed: 037e99cb5ec6bf401a00423fbf42002ec2184e290c71b722ce30fded00991d1b
+    tests:
+      - file: "crates/yardlog/tests/session_files.rs"
+        name: "the_copy_whose_last_event_ended_later_is_taken"
+        body: b40213a00d06dbdee525a044cd5c6a7865d4d2f561765a9c4f3d2327cd53dfd9
+      - file: "crates/yardlog/tests/session_files.rs"
+        name: "a_copy_that_holds_no_ended_event_is_taken_only_where_the_other_holds_none_either"
+        body: ecec7c0a3e60c70ea27a13ef9fceaf2d1a83d910670215382c28b101aaa6d3d4
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_session_s_file_is_taken_whole_from_the_copy_whose_last_event_ended_later"
+        body: a90966465ce327114427af61db224a92ebdaa5fcb87de0d3322e8af792c42be5
+      - file: "crates/loft-cli/tests/yard_merge_contract.rs"
+        name: "a_session_s_tokens_file_changed_on_both_clones_is_taken_from_the_later_without_conflict"
+        body: 1880d1ed5e8c0033d41d863fbe71b58092dd0c54b95d696bd700f6b05c62e152
+  - node: 01a1652c-8a87-75c3-a415-c00c8396212a
+    reviewed: d75c194292abe47ae92b6cb58cfb31bebb3c2144842c6f376ca60bc9e09ca03a
+    tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_session_s_file_is_taken_whole_from_the_copy_whose_last_event_ended_later"
+        body: a90966465ce327114427af61db224a92ebdaa5fcb87de0d3322e8af792c42be5
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_stage_s_file_of_a_branch_whose_name_ends_in_tokens_is_merged_by_key"
+        body: 8c87d4c911142ad9416daf9012ff191f6483bb90582c9f97abcc608aa0678cb3
+  - node: 01a1652c-8a87-75c3-a415-c00db620b03c
+    reviewed: b8e0eca2f0280fc64152bb1ae467ea7388ecf0ac72e8b1e744b809c8f28729ef
+    tests:
+      - file: "crates/yardlog/tests/session_files.rs"
+        name: "of_two_copies_whose_last_events_ended_at_one_time_this_copy_is_taken"
+        body: ca23044083cc60d060a5ed98a209ad6d65ddb3df990e4b881f76ad6a3c2e0911
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "of_two_copies_of_a_session_s_file_whose_last_events_ended_at_one_time_this_copy_is_taken"
+        body: 2c534b84906bd5241577ab246e3802ae3d9db602e06d8df49ef0cbcc620a445b
   - node: 01a1646f-546d-7042-befd-ebafc6010906
     reviewed: dbc04b872804e41e9fbba89275da1d265b485223c40b5d422c19a480cd146cdc
     tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_copy_that_does_not_read_as_yardlog_writes_nothing_and_exits_1_naming_the_copy_and_where"
+        body: 087e310ed1c21d822da547c7550e223d4cef42cd18a9324472165df310167bf5
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_copy_that_does_not_read_as_yardlog_fails_the_merge_naming_it"
         body: 0abfa9a288aaca3801d827fdf00ed2aa87e137732322045d96f774d8b8c2207f
+  - node: 01a1646f-546d-7042-befd-ebb0804ba272
+    reviewed: ad65862899318e099892a6fc190a490402205d0066093bc1f8ebbefae7237ca9
+    tests:
+      - file: "crates/loft-cli/tests/yard_merge_driver.rs"
+        name: "a_copy_that_does_not_read_as_yardlog_writes_nothing_and_exits_1_naming_the_copy_and_where"
+        body: 087e310ed1c21d822da547c7550e223d4cef42cd18a9324472165df310167bf5
   - node: 01a1646f-546d-7042-befd-ebb3548bbe84
     reviewed: 5527bbef917beb88ed711d6e6f5daad70fe388b484bf3ea3d3144a3645381496
     tests:
@@ -20170,8 +20332,11 @@ links:
         name: "a_reference_to_a_key_yard_log_does_not_hold_is_refused_at_its_line"
         body: 5875b18d248a96f28c17cc83fcb997944cafc0cc3c6b618ca05beae21fd24205
   - node: 01a1646f-546d-7042-befd-ebc9da3f340f
-    reviewed: a49fc6e59050577c10a9fe75bbfccacc18a9bb25b23cba00729d02b63fa3937f
+    reviewed: 0132cc705e28cde70c3e42f3c73a82e773e7f2aa055a78ca049c440eee50b666
     tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "the_root_holds_the_act_of_each_change_in_the_order_it_was_made"
+        body: c77cf56a15564280fe3c1271a4ddac4388911fa4de671e3b0cefd50e8868bc2e
       - file: "crates/yardlog/tests/files.rs"
         name: "the_root_names_the_format_the_key_the_branch_the_revision_and_the_stages_by_key"
         body: 6ba7c6612bdac84ccb08069cb7a729a3ccf3d559a53322bb52eaae980e819f4f
@@ -20525,13 +20690,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "every_block_withdrawal_and_close_records_the_session_and_agent_that_made_it"
-        body: dd8c9fe2446a1a8787d370b9c1318828e793204738518df499317ddc3914e256
+        body: 73559cac9812bf869448ccfb0d7c5d6b73c9960746daa186a7caff4aade0b0c8
   - node: 01a1646f-546d-7042-befd-ea6520c0d16d
     reviewed: 5a7d7217a765fec783eeb4d437f5885115cccb5b5f4f12315d15292faa6c6ce9
     tests:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "every_block_withdrawal_and_close_records_the_session_and_agent_that_made_it"
-        body: dd8c9fe2446a1a8787d370b9c1318828e793204738518df499317ddc3914e256
+        body: 73559cac9812bf869448ccfb0d7c5d6b73c9960746daa186a7caff4aade0b0c8
   - node: 01a1646f-546d-7042-befd-ea676a927ac1
     reviewed: 1fe41b1833ba84196aea173f04f6f3450d9041556d3d6415e9333cf49a7ec2f0
     tests:

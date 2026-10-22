@@ -1,6 +1,7 @@
 //! `loft merge-driver <base> <ours> <theirs> <path>` (RQ-150, RQ-151): git's merge driver for
-//! the files of a `spec/` tree. It merges the three versions git hands it with the merge engine
-//! and writes the result to `<ours>`; every message names `<path>`, never git's temporary files.
+//! the files of a `spec/` tree and of Yard Log under `.yard/`. It merges the three versions git
+//! hands it, with the merge engine or as yardlog files, and writes the result to `<ours>`; every
+//! message names `<path>`, never git's temporary files.
 //! With `--install` it registers itself in the repository instead (RQ-152, RQ-153).
 
 use std::path::{Component, Path, PathBuf};
@@ -19,6 +20,7 @@ use crate::finish::Finished;
 use crate::json;
 use crate::out::{errln, outln};
 use crate::version::VERSION;
+use crate::yard;
 
 /// The command that starts `loft` where a project has it as an npm dev dependency.
 pub const NPM_COMMAND: &str = "npx --no-install loft";
@@ -114,7 +116,12 @@ fn settle_with_publish(disputed: &[Label]) -> String {
 /// Registers the driver started by `launcher`, printing what it wrote, one name to a line, and
 /// warning when the launcher starts another version of `loft`.
 pub fn install(root: &Path, launcher: &str, as_json: bool) -> Finished {
-    match merge_driver::install(&GitCommand::default(), root, launcher) {
+    match merge_driver::install_routing(
+        &GitCommand::default(),
+        root,
+        launcher,
+        &[merge_driver::ATTRIBUTE, yardlog_store::ATTRIBUTE],
+    ) {
         Ok(installed) => {
             let own = format!("loft {VERSION}");
             if installed.version != own {
@@ -131,7 +138,9 @@ pub fn install(root: &Path, launcher: &str, as_json: bool) -> Finished {
                     outln!("{name}");
                 }
                 if installed.written.iter().any(|name| name == ATTRIBUTES) {
-                    outln!("commit {ATTRIBUTES}, so that every clone routes spec/ to the driver");
+                    outln!(
+                        "commit {ATTRIBUTES}, so that every clone routes spec/ and .yard/ to the driver"
+                    );
                 }
             }
             Finished::success("installed")
@@ -167,8 +176,14 @@ fn refusal(error: &StoreError, launcher: &str) -> String {
 /// Merges the file and writes it to `<ours>`, giving the number of conflicts written and the
 /// labels in dispute; or the messages, each to follow `<path>`, and nothing written.
 fn merge(root: &Path, inputs: &Inputs<'_>) -> Result<(usize, Vec<Label>), Vec<String>> {
-    let spec_path =
-        spec_path(inputs.path).ok_or_else(|| vec![format!(": not under a `{SPEC}` directory")])?;
+    let spec_path = if yard::merge::holds(inputs.path) {
+        None
+    } else {
+        Some(
+            spec_path(inputs.path)
+                .ok_or_else(|| vec![format!(": not under a `{SPEC}` directory")])?,
+        )
+    };
     let read = |input: Input, file: &Path| {
         fs::read(root.join(file))
             .map_err(|error: io::Error| format!(": cannot read {input}: {error}"))
@@ -187,10 +202,20 @@ fn merge(root: &Path, inputs: &Inputs<'_>) -> Result<(usize, Vec<Label>), Vec<St
                 .collect());
         }
     };
-    let merged = merge_file(&spec_path, &base, &ours, &theirs).map_err(messages)?;
-    write_outputs(root, &[(inputs.ours.to_path_buf(), merged.bytes)])
+    let (bytes, conflicts, disputed) = match spec_path {
+        Some(spec_path) => {
+            let merged = merge_file(&spec_path, &base, &ours, &theirs).map_err(messages)?;
+            (merged.bytes, merged.conflicts, merged.disputed)
+        }
+        None => (
+            yard::merge::merge(root, inputs.path, &base, &ours, &theirs)?,
+            0,
+            Vec::new(),
+        ),
+    };
+    write_outputs(root, &[(inputs.ours.to_path_buf(), bytes)])
         .map_err(|error| vec![format!(": {error}")])?;
-    Ok((merged.conflicts, merged.disputed))
+    Ok((conflicts, disputed))
 }
 
 /// The path of the file within its tree: what follows the first `spec` directory of `path`.

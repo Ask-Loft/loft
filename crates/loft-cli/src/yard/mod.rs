@@ -12,6 +12,7 @@ mod change;
 mod close;
 mod failure;
 mod input;
+pub mod merge;
 mod page;
 mod protocol;
 mod published;

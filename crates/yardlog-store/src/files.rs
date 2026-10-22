@@ -15,6 +15,9 @@ use crate::YardStoreError;
 /// The directory at the top of the worktree that holds every branch's Yard Log.
 pub const YARD: &str = ".yard";
 
+/// The line of `.gitattributes` that routes the files of Yard Log to `loft merge-driver`.
+pub const ATTRIBUTE: &str = ".yard/**/*.yaml merge=loft";
+
 /// One branch's folder.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Folder {

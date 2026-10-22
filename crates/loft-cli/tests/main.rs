@@ -85,6 +85,8 @@ mod yard_answer;
 mod yard_callers;
 mod yard_close;
 mod yard_commands;
+mod yard_merge_contract;
+mod yard_merge_driver;
 mod yard_newer;
 mod yard_protocol;
 mod yard_published;
