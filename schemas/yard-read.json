@@ -49,6 +49,11 @@
           "type": "integer",
           "minimum": 0
         },
+        "leftOut": {
+          "description": "Yard Log is of a newer format than this `loft` reads: the number of its stages, blocks and submissions left out of the result",
+          "type": "integer",
+          "minimum": 0
+        },
         "yardLog": {
           "type": "object",
           "additionalProperties": false,

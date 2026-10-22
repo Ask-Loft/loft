@@ -73,6 +73,13 @@ pub fn run(root: &Path, base: Option<&str>, as_json: bool) -> Finished {
     Finished::success(OUTCOME)
 }
 
+/// The document `loft status --format json` prints for the tree under `root`, against `base`
+/// where one is given, as a `loft` view of Yard Log records it.
+pub fn json_document(root: &Path, base: Option<&str>) -> Result<Value, Stop> {
+    let report = attempt(root, base)?;
+    Ok(json::result(SCHEMA, OUTCOME, fields(&report), Vec::new()))
+}
+
 fn attempt(root: &Path, base: Option<&str>) -> Result<Report, Stop> {
     let store = FileStore::open(root)?;
     let files = store.read_files()?;

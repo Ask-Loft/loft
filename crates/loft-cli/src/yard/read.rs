@@ -73,32 +73,27 @@ fn attempt(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     }
     let branch = Branch::at(git, place, args.beyond)?;
     let home = Home::from_env();
-    caller.record_continuation(home.as_ref())?;
-    let held = branch.open(super::now()?, || settler(&caller, &branch))?;
+    let at = super::now()?;
+    caller.arrive(home.as_ref(), at)?;
+    let held = branch.open(at, || settler(&caller, &branch))?;
     let mut fields = branch.fields(revision_of(&held));
     fields["ignored"] = json!(branch.git.ignores_yard(&branch.place().tree)?);
     if let Some(since) = args.since {
         fields["since"] = json!(since);
     }
-    let log = match &held {
-        Held::Log(log) => log,
-        Held::Absent | Held::Newer(_) => {
-            let format = match held {
-                Held::Newer(format) => format,
-                _ => Format::CURRENT,
-            };
-            fields["yardLog"] = json!({
-                "title": branch.store.branch(),
-                "branch": branch.store.branch(),
-                "format": format.to_string(),
-                "closedBy": "open",
-                "merged": [],
-            });
-            fields["stages"] = json!([]);
-            fields["submissions"] = json!([]);
-            return Ok(fields);
-        }
+    let (log, left_out) = match held {
+        Held::Log(log) => (*log, None),
+        // Yard Log of a newer format is read for what this `loft` can read of it.
+        Held::Newer(_) => match branch.store.read_partial()? {
+            Some(partial) => (partial.log, Some(partial.left_out)),
+            None => return Ok(absent(fields, &branch)),
+        },
+        Held::Absent => return Ok(absent(fields, &branch)),
     };
+    let log = &log;
+    if let Some(left_out) = left_out {
+        fields["leftOut"] = json!(left_out);
+    }
     let closed_by_merge = !log.is_closed() && branch.closed_by_merge()?;
     fields["yardLog"] = root(log, closed_by_merge);
     let selection = Selection {
@@ -117,6 +112,20 @@ fn attempt(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
         last_read.record(log.root.key, &reader, log.root.revision)?;
     }
     Ok(fields)
+}
+
+/// What a read gives of a branch that has no Yard Log yet.
+fn absent(mut fields: Value, branch: &Branch) -> Value {
+    fields["yardLog"] = json!({
+        "title": branch.store.branch(),
+        "branch": branch.store.branch(),
+        "format": Format::CURRENT.to_string(),
+        "closedBy": "open",
+        "merged": [],
+    });
+    fields["stages"] = json!([]);
+    fields["submissions"] = json!([]);
+    fields
 }
 
 /// One line for a person at a terminal.

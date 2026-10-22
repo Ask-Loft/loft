@@ -19551,6 +19551,39 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "recording_the_revision_read_changes_no_file_under_yard_and_does_not_raise_the_revision"
         body: dc5a4be94d550d5990e3cba1c5c7758345ccf6c5df05de13cd28d3c2a9914827
+  - node: 01a1646f-546e-76cb-8b4f-f25c4364af72
+    reviewed: 710151f2138cb362ba0f5cf501de448a65ce9b6f523e3846d6f96a1a4015b787
+    tests:
+      - file: "crates/loft-cli/tests/yard_published.rs"
+        name: "a_publish_is_recorded_after_the_close_as_a_publish_view_holding_loft_s_report"
+        body: 6cac63aae4f989dca404a9425970ba36e088be9d362578a9802b1ffd35986896
+  - node: 01a1646f-546e-76cb-8b4f-f25d1c1c0e9a
+    reviewed: a256956c3b29489badf44e1fcca1085e0bc1f6fd618e8430ab5604d2e49ee989
+    tests:
+      - file: "crates/loft-cli/tests/yard_published.rs"
+        name: "yard_log_reads_as_closed_as_before_with_the_publish_after_its_close"
+        body: 9c4ac5a3bf8678c5765b804a4967f8347327206359fd6fcc32a752f4ba628a21
+  - node: 01a1646f-546e-76cb-8b4f-f25fcf790ee1
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/loft-cli/tests/yard_published.rs"
+        name: "a_publish_on_a_branch_other_than_the_base_branch_is_refused_naming_the_three_branches"
+        body: 80dc50ed17b16c382b68952e130956444d033a55e3c17aface275939cb6796ee
+      - file: "crates/loft-cli/tests/yard_published.rs"
+        name: "a_publish_for_yard_log_the_base_branch_does_not_hold_is_refused"
+        body: 17c00d065b5b7bd3731bfc3f3c96a040cc9d55fda04dfbb9b1e266cb407b49f4
+      - file: "crates/loft-cli/tests/yard_published.rs"
+        name: "a_second_publish_after_the_close_is_refused_and_changes_no_file"
+        body: 272e13d73cfcff628dd1a854f10ac735456fa1534b423a2db3648bff1ce76a7c
+  - node: 01a1646f-546e-76cb-8b4f-f260ba704112
+    reviewed: 044728a31036cf11bbacdaa9812b55430c4dd8d6ab1d83d4594d9970cd2e35da
+    tests:
+      - file: "crates/loft-cli/tests/yard_published.rs"
+        name: "a_publish_on_a_branch_other_than_the_base_branch_is_refused_naming_the_three_branches"
+        body: 80dc50ed17b16c382b68952e130956444d033a55e3c17aface275939cb6796ee
+      - file: "crates/loft-cli/tests/yard_published.rs"
+        name: "a_publish_for_yard_log_the_base_branch_does_not_hold_is_refused"
+        body: 17c00d065b5b7bd3731bfc3f3c96a040cc9d55fda04dfbb9b1e266cb407b49f4
   - node: 01a1646f-546e-76cb-8b4f-f26345298538
     reviewed: 6a5285d0744b53a6d070c49d2262aa4141bd8adb964bd26d9f4e3035321d26ad
     tests:
@@ -20190,6 +20223,12 @@ links:
       - file: "crates/yardlog/tests/files.rs"
         name: "the_files_hold_no_comments_anchors_aliases_tags_or_flow_collections"
         body: 4c1721ba3a029fb7b5fd1e4f467c71aec7092a1e00378eba06642e5c9dcb79e7
+  - node: 01a1649f-62f0-7320-902c-7d8d45d2007a
+    reviewed: f5c93633a03c03281d5160e29c4045978b7886e93723215f67e6d020f40514f5
+    tests:
+      - file: "crates/loft-cli/tests/yard_take_up.rs"
+        name: "a_session_is_heard_each_time_it_runs_a_command_that_names_it"
+        body: f9b805f729e78ddce7726464988a910226416ebba48e19b6dc10bac99e949b9c
   - node: 01a1649f-62f0-7320-902c-7d8ed7da2988
     reviewed: 4921d8a78fc72756d4d914668bbdc94a696542bbf9a8f1df79c47b25948be2a7
     tests:
@@ -20298,18 +20337,144 @@ links:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers"
         body: 5227c37e42188e2fc797af2c7edfc06d214840906b8ebb4c346e7a8a64f50ee5
+  - node: 01a1646f-546c-7521-9643-bbf7da5107e5
+    reviewed: 31478f93fdea69515564e1c23d1bc86bfba8ec7e6b39178f067dd3ad521d614e
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_on_a_submission_already_answered_returns_at_once_with_its_answers"
+        body: 65b0b25b35b93471f07adad8e2b6e0b21510ad5a2ab3f16cf1adaabea7248f72
+  - node: 01a1646f-546c-7521-9643-bbf80010a4c8
+    reviewed: 7e703c70e57ee177a357ded29ac1bcb59b8d936380dfb5c2bf885d94307a1164
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_returns_within_two_seconds_of_the_answer_that_completes_its_submission"
+        body: 5d976bdf5d517f4a1859e83b5e8f40c7658e0d068c06d0454e5dde578749badc
+  - node: 01a1646f-546c-7521-9643-bbf9b9524ae7
+    reviewed: d3090311a701df13a64b65d2dbd85e874dd232435d7b8d1027a22bfbf3e12641
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_on_a_withdrawn_submission_returns_that_it_was_withdrawn"
+        body: 13d72dcf61bfb569f07a0aabd549550dcffa28bb1b58ea532c1c6f4b334837a3
+  - node: 01a1646f-546c-7521-9643-bbfa24099ddb
+    reviewed: b7f1d4542f56410becf02ea34f82c4a7eefaac6c042eb1e0632ea9ddfbeb5608
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_on_a_submission_its_close_withdrew_returns_that_yard_log_is_closed"
+        body: 8bee693823e93879c501066118ba7414f234cbd9992721bfe8ed61e21ec9d0d0
+  - node: 01a1649f-62ef-71e6-98de-e102d8a26927
+    reviewed: 6cbae71740195fc38de670ef6819860d6ee632f5d2efc7f09c1dce43d890b43c
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_on_a_submission_its_close_withdrew_returns_that_yard_log_is_closed"
+        body: 8bee693823e93879c501066118ba7414f234cbd9992721bfe8ed61e21ec9d0d0
+  - node: 01a1646f-546c-7521-9643-bbfbd843cb1e
+    reviewed: f28ebb6a5158bdf2694704cd60e2675b55b3b210c38785334b4b145f5572a3db
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_on_a_submission_already_answered_returns_at_once_with_its_answers"
+        body: 65b0b25b35b93471f07adad8e2b6e0b21510ad5a2ab3f16cf1adaabea7248f72
+  - node: 01a1646f-546c-7521-9643-bbfd40238669
+    reviewed: eac9fa3db003a34e391b8d6216cbe0f4e788e4631c36f012847d50995e3c6dda
+    unverified: "A test would wait nine minutes: read from the code, `--timeout` is clamped to 540 seconds before the wait starts."
+  - node: 01a1646f-546c-7521-9643-bbfe0ae454d1
+    reviewed: 0a0d2a45500c9999cec1de7d1fcff9a36ed44c887755cddad6cde24eb7e218d9
+    unverified: "A test would wait nine minutes: read from the code, `--timeout` defaults to 540 seconds and an open submission returns `pending` once it passes."
+  - node: 01a1646f-546c-7521-9643-bbff63d64864
+    reviewed: 3041c4ae0961e20a86050c07319951062e7b4d5009ad3ee0a0e390fbff8bf071
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_whose_timeout_passes_returns_pending_exits_0_and_leaves_the_submission_open"
+        body: 4ce2edb1046aa8c035a750f70073fd25cab1870cffc6549de856ff1f95c47c60
+  - node: 01a1646f-546d-7042-befd-ea8699a04ea6
+    reviewed: 5077c1413262e1e393c9d9ff34be95bbaccb9414a38e176dea357c877cd4f298
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_subagent_s_wait_on_a_submission_another_agent_sent_is_refused_naming_the_sender"
+        body: a00d90a0082e1949b800bd36336fd7384e5ab82693d94017625b6d17a8b22504
+      - file: "crates/loft-cli/tests/yard_take_up.rs"
+        name: "a_subagent_of_another_session_does_not_take_up_a_submission"
+        body: 0d44cdd5cb83b4c5e556b2843bc1b0b9c0d50b0db2458412f2265d203dedaf04
+  - node: 01a1647b-208c-755d-8b1a-588108bad5ae
+    reviewed: 2f4ba69eec23363375d3e2b9c52b2214cad655e7abde2cf9417bc89a8e9c1d27
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_subagent_s_wait_on_a_submission_another_agent_sent_is_refused_naming_the_sender"
+        body: a00d90a0082e1949b800bd36336fd7384e5ab82693d94017625b6d17a8b22504
+  - node: 01a1647c-e680-7753-bf17-f16edaaf8cc3
+    reviewed: 711bdf93da67644cbaa19b5fc0574c3f83cbf301f1732d1a0bc4207019d8ad70
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_second_wait_on_a_submission_is_refused_at_once_naming_the_wait_that_holds_it"
+        body: 5d7ddda6f3075f8e8ba3c0283df75cfe381afeef8519245501617003e4ef6738
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "the_lease_is_a_lock_in_git_s_own_directory_and_nothing_of_it_is_under_yard"
+        body: 5e6f9b7e3e73012aae956ef58db15c3dc13d9c497f9f2a9fed8c4298e969f291
+  - node: 01a1647c-e680-7753-bf17-f16f60432ccc
+    reviewed: e74b56138318e1059f156ad847436d2ccc475133d184edf0589013c5f0f48a28
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "the_lease_is_free_once_the_wait_that_held_it_is_killed"
+        body: c57de77d98368a5ed75ecf2b71a49d54ceb9b8155f58c2894e7e24c04e7ff866
+  - node: 01a1647c-e680-7753-bf17-f170c3220eb0
+    reviewed: 1121f01a95e7be76a945aa2c0f29f45311d9b6422bcdbcb0e5a3a0333f610524
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "the_lease_is_a_lock_in_git_s_own_directory_and_nothing_of_it_is_under_yard"
+        body: 5e6f9b7e3e73012aae956ef58db15c3dc13d9c497f9f2a9fed8c4298e969f291
+  - node: 01a1647c-e680-7753-bf17-f17296e2f008
+    reviewed: e353df661c19027bec47c6ca9ee6a767f698a7c1d926bf0c6f38363be9582221
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_second_wait_on_a_submission_is_refused_at_once_naming_the_wait_that_holds_it"
+        body: 5d7ddda6f3075f8e8ba3c0283df75cfe381afeef8519245501617003e4ef6738
+  - node: 01a1647c-e680-7753-bf17-f17331f02059
+    reviewed: 2c4873d0430f048deb15fafafc7a7b681d3abfb9a99ab49e6eecd854a303922f
+    tests:
+      - file: "crates/loft-cli/tests/yard_take_up.rs"
+        name: "two_sessions_on_one_branch_never_both_wait_on_one_submission"
+        body: 95497bd3807a0152f21cad4c564dbd70666d0e91f9c4f395e4f0611cfad28f72
+  - node: 01a1647b-208c-755d-8b1a-5883df7ebb39
+    reviewed: 1f070568bad56e71709c10a7df0f6465d314f4e816ad8da285b6ed897c65c688
+    tests:
+      - file: "crates/loft-cli/tests/yard_take_up.rs"
+        name: "another_session_s_main_agent_takes_up_a_submission_whose_session_was_not_heard_for_60_seconds"
+        body: 3e84f273f8cf6f4975fe6f83b2595c782ef71b2ab28ef7bd692f2b009776786e
+  - node: 01a1649f-62ef-71e6-98de-e1037b6a8872
+    reviewed: cf6323b05bccecd8e07aaacb73e0cec0b913ad8c65f3fc41ae77967482d87b14
+    tests:
+      - file: "crates/loft-cli/tests/yard_take_up.rs"
+        name: "a_submission_whose_session_was_heard_within_60_seconds_is_not_taken_up"
+        body: a687da4194c89d09f26bf4c9ab34fae8cd4a33ce0e0d3ea25e99776c8e9b8294
   - node: 01a1647c-e680-7753-bf17-f1749b4a4c4c
     reviewed: 728f5ad8e0b403f83b3d085850d56ead19afb4a6cf7d8aa7d4a5c6a524404324
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_main_agent_of_another_session_takes_up_an_open_submission"
         body: f23890b07b19dd7e338fbef84b3ee9a49370c39778eee5dd4c0c2b8f003f67f4
+      - file: "crates/loft-cli/tests/yard_take_up.rs"
+        name: "a_take_up_is_recorded_as_an_act_of_the_session_that_took_it_up"
+        body: 9920d4e6c9c651bd09ae339c83ce99632018aaf462f0580926c64c67ac99473d
   - node: 01a1647c-e680-7753-bf17-f17567c3b2fd
     reviewed: 90ef0ddd8ce350bcb7bbb514c27de41fa75f857c20a3456f1e13ae4d28070115
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_main_agent_of_another_session_takes_up_an_open_submission"
         body: f23890b07b19dd7e338fbef84b3ee9a49370c39778eee5dd4c0c2b8f003f67f4
+      - file: "crates/loft-cli/tests/yard_take_up.rs"
+        name: "a_submission_taken_up_counts_from_then_on_as_sent_by_the_session_that_took_it_up"
+        body: f9b4c8db9672d2073e730f12e26306abe9820ba9b69f6ad6040d318f1f83e60f
+  - node: 01a1647b-208c-755d-8b1a-58840fdd7c43
+    reviewed: 1e331afd51d7c7a65e1490a531c7fba4d4b59bf788e28b3d38b80d202b2bbb58
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "the_main_agent_s_wait_on_a_submission_its_own_subagent_sent_is_refused"
+        body: 0c5ed7e3d5113155337cc3a6afe7ac3d3126f30fffe8acec86e2ab017c419b0a
+  - node: 01a1646f-546c-7521-9643-bc08a5416419
+    reviewed: e353df661c19027bec47c6ca9ee6a767f698a7c1d926bf0c6f38363be9582221
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_on_a_submission_yard_log_does_not_hold_is_refused_at_once_naming_it"
+        body: 1b37debf79827a5694f008998b5bf408e0eac986978a52e2111b0cfb6c4d9b7a
   - node: 01a1646f-546c-7521-9643-bc0d8a62827d
     reviewed: a394483795d90f203c6dccf7c42c9a715509f47e84daea1eb7292bb2c105dabb
     tests:
@@ -20544,6 +20709,39 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "the_result_gives_yard_log_s_key_and_its_current_revision"
         body: 6f4a9ca1c448043430066bb25d90893bd31d22a5f5b493f936cf7c38d889dbb0
+      - file: "crates/loft-cli/tests/yard_newer.rs"
+        name: "a_read_of_a_newer_format_gives_the_records_this_loft_knows_and_counts_those_it_left_out"
+        body: 7e17708d91f54a2e5c3497226bdc3865b02af7b557a567bf81d493d616f83a5f
+  - node: 01a1646f-546e-76cb-8b4f-f20c6ba8d281
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/loft-cli/tests/yard_newer.rs"
+        name: "a_write_to_a_newer_format_is_refused_naming_both_formats_and_changes_no_file"
+        body: 387ca35b8680bbb9140ac926db957f57d36184a5e1bb613e1540d4a2b6b0065a
+  - node: 01a1646f-546e-76cb-8b4f-f20dde5a2e4f
+    reviewed: 443f79b18aa17799ccdf5eab8467ac55d9bc16f37104da848017bb166df105e2
+    tests:
+      - file: "crates/loft-cli/tests/yard_newer.rs"
+        name: "a_write_to_a_newer_format_is_refused_naming_both_formats_and_changes_no_file"
+        body: 387ca35b8680bbb9140ac926db957f57d36184a5e1bb613e1540d4a2b6b0065a
+  - node: 01a1646f-546e-76cb-8b4f-f20e4e874671
+    reviewed: 8a9a80df2219ed6b10b3653811ee1bebb74b49be2013d82a0366d1fc6f98a72e
+    tests:
+      - file: "crates/loft-cli/tests/yard_newer.rs"
+        name: "a_read_of_a_newer_format_gives_the_records_this_loft_knows_and_counts_those_it_left_out"
+        body: 7e17708d91f54a2e5c3497226bdc3865b02af7b557a567bf81d493d616f83a5f
+  - node: 01a16517-45f6-7370-99ab-2200ad607110
+    reviewed: 1cfde58b554dab38e7ed7988a858a0ae6f50e47ffce0c794f4b634b77fe36dd2
+    tests:
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "where_no_running_page_server_is_named_the_result_says_the_page_is_unavailable"
+        body: 4676c0745d953d16256322e534438c2df819ff79f95ea0a41110245e8fe0d85f
+  - node: 01a16517-45f6-7370-99ab-220156f82a46
+    reviewed: f728660b2bda77cda2d34b8ca10d659b86a55720c5e1047507b3de95122000e6
+    tests:
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "where_no_running_page_server_is_named_the_result_says_the_page_is_unavailable"
+        body: 4676c0745d953d16256322e534438c2df819ff79f95ea0a41110245e8fe0d85f
   - node: 01a1646f-546e-76cb-8b4f-f21fc3c5751b
     reviewed: e01346bd027656a39f6dc618eb0e06e247193d700f2116a27d8a9f9cc8f1ebab
     tests:
@@ -20568,24 +20766,99 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade.rs"
         name: "yard_log_of_a_newer_format_or_that_does_not_read_is_left_named_and_exits_1"
         body: df6be8f338991e131eebbc61019bd3666947354588a25fb1961c8693b653faad
+  - node: 01a1646f-546d-7042-befd-eaa32ea3a711
+    reviewed: ef0fbe1d2d9aad2e1a3034ca3160a8f0acee76a1050b28e0d23fd43c958ab0ba
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_spec_change_view_holds_what_loft_status_prints_against_the_base_branch"
+        body: 78cfd45298d23e2912f625d879b3fff503d8d91a9fb92c1952eebd848d61a0d2
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_findings_view_holds_what_loft_check_prints_against_the_base_branch"
+        body: ddb5d4bf1401b3c78a8214a6c6bc2d85fdfb0ce863cea35c7d5c26e1fd8e84f5
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_trace_view_holds_what_loft_reconcile_prints_and_the_criteria_of_each_feature_the_branch_changed"
+        body: 41d5389542ed76404b181797fb72dacff82ea649bf671e8a1042d9059604c5f3
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_publish_view_holds_what_loft_status_prints"
+        body: 31ce0663ed5cfbd910b552f68ceb2726d67f6c2f4a3a1fa1a6142b71ed2c94e5
+  - node: 01a1646f-546d-7042-befd-eaa4fdf28e1d
+    reviewed: df35c1661d33ebbfe6f3ca57f6b611da365d5e3d0db1bef8b9e965cf908c7455
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_block_records_the_commit_branch_uncommitted_changes_loft_version_and_time_of_its_report"
+        body: 0958b3af28b45d09462e597fa5401df44dbc2500622b20912368bb6213dff999
+  - node: 01a1646f-546d-7042-befd-eaa53eef3437
+    reviewed: fd9615be87205a0ebdf2e71fda9f3c679ba2629fd0e3a2856a0617cd061e2520
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_spec_change_view_holds_what_loft_status_prints_against_the_base_branch"
+        body: 78cfd45298d23e2912f625d879b3fff503d8d91a9fb92c1952eebd848d61a0d2
+  - node: 01a1646f-546d-7042-befd-eaa67d3a1c9e
+    reviewed: f590a2e1ee253d38c22ff80ceaa2ec00345164e2301785bfab0feb2b8167505f
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_spec_change_view_holds_what_loft_status_prints_against_the_base_branch"
+        body: 78cfd45298d23e2912f625d879b3fff503d8d91a9fb92c1952eebd848d61a0d2
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_compares_with_the_base_revision_the_block_names"
+        body: 790de21878c7c057d5fa2c01e7ea87b51da1e8d0a904d25b4aaba73642d6e047
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_findings_view_holds_what_loft_check_prints_against_the_base_branch"
+        body: ddb5d4bf1401b3c78a8214a6c6bc2d85fdfb0ce863cea35c7d5c26e1fd8e84f5
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_trace_view_holds_what_loft_reconcile_prints_and_the_criteria_of_each_feature_the_branch_changed"
+        body: 41d5389542ed76404b181797fb72dacff82ea649bf671e8a1042d9059604c5f3
+  - node: 01a1646f-546d-7042-befd-eaa7516bae91
+    reviewed: 4f1b9a9c02e16ae10d15f20cfcd36a4084067ffbe69dc909f4a1c3e9b9abc9c0
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_decision_view_holds_the_decision_its_block_names_by_slug_key_or_label"
+        body: c7628d1bc25276a2b85e7054b16e68e5231d75ec063757549fd3f3d66c66b5a3
+  - node: 01a1646f-546d-7042-befd-eaa8d825fac5
+    reviewed: 49abac2b866d001f138f8d7b47cb331921a4180d820492718f28d13e0314d3c2
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_findings_view_keeps_the_agent_s_reason_for_each_finding_it_leaves"
+        body: 0eaca7cd9dd73785e87565940173624ba56014a70e1835b924cc402529c32dc3
   - node: 01a1646f-546d-7042-befd-eaa967305e51
     reviewed: 72e1eb7fbbb295e73b0ad966c3790d797a708a594b51b3ba815cf51061c9090e
     tests:
       - file: "crates/yardlog/tests/block_kinds.rs"
         name: "a_batch_that_gives_a_report_a_key_a_time_or_an_answer_is_refused"
         body: e5587b641ef3c2e720dc81ee5aef7c4a26fa41e8b9bf92697e989fba3cbff87e
+  - node: 01a1646f-546d-7042-befd-eaabacd156c0
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_that_cannot_be_computed_refuses_the_batch_naming_block_view_and_error"
+        body: 87c820e351868f3abc8946f85edc79bebf5fa1ed842c95fbed4f7d6f65bc820c
   - node: 01a1646f-546d-7042-befd-eaac662685cf
     reviewed: 7c79ca3bef8936bb682bb61bab7031a02ebe5082a4e21b0c1733a1e0c206c0ef
     tests:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "a_report_that_cannot_be_computed_refuses_the_batch"
         body: 2fa162d1382f93480e624cb576087d627ac89801ce6d4f971b1c27f9e246820e
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_that_cannot_be_computed_refuses_the_batch_naming_block_view_and_error"
+        body: 87c820e351868f3abc8946f85edc79bebf5fa1ed842c95fbed4f7d6f65bc820c
   - node: 01a1646f-546d-7042-befd-eaae09b6a57a
     reviewed: dbc1da85d976c6ce56c14525e55dfbdc4740455ea04630fca9baa2ac85f51c6d
     tests:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "a_loft_block_records_its_report_and_is_never_written_again"
         body: b18116af2a01bd761ca6ac3eaada42c255ef88d48db72b9f74eb196dfb6b3edb
+  - node: 01a1646f-546d-7042-befd-eab13f7eb373
+    reviewed: 6ca796e23aebb862712e8f6593e17bad82e4a92ded6237b3043899f95e2b9147
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole"
+        body: 687be064bf9a404d88fd59d2bc8d911e7ca896fc7ffdcad4b1e228344755c677
+  - node: 01a1646f-546d-7042-befd-eab2b5d08cae
+    reviewed: a24108679a1851e1fb0fb82ac9d90fd208c765f37ffa296aa8a77715f97ec8b3
+    tests:
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole"
+        body: 687be064bf9a404d88fd59d2bc8d911e7ca896fc7ffdcad4b1e228344755c677
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: 9bfb0c16bc1c637e10f46372da282715472bc706a8162fa7b4ec52a2323a6bc2
     tests:
@@ -20743,7 +21016,7 @@ links:
         name: "the_address_is_that_of_the_page_server_server_json_names_with_the_tree_and_the_branch"
         body: fa5ca0194f307f5612b727c7f1ebe0ef090cfb552c5834522372773e504200bb
   - node: 01a1646f-546d-7042-befd-ea5a9fa982c1
-    reviewed: 8aeb53c36a594b82120c6fbf1a283da20d533d3c81d667275fba508455059252
+    reviewed: c80fb714730b0dd2c3db9a36260623279010d754f6d76763edb73e7887803feb
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "where_no_running_page_server_is_named_the_result_says_the_page_is_unavailable"

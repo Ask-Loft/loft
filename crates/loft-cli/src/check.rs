@@ -81,6 +81,20 @@ pub fn run(root: &Path, options: &Options, as_json: bool) -> Finished {
     Finished::with(code, outcome, json::errors_of(&document))
 }
 
+/// The document `loft check --format json` prints for the tree under `root`, against the tree
+/// where HEAD left `baseline` where one is given, with no `--fail-on`, as a `loft` view of Yard
+/// Log records it.
+pub fn json_document(root: &Path, baseline: Option<&str>) -> Result<Value, Stop> {
+    let (checked, compared) = attempt(root, baseline)?;
+    let marked = marked(&checked, compared.as_ref());
+    let outcome = if checked.has_errors() {
+        "failed"
+    } else {
+        "passed"
+    };
+    Ok(document(&checked, &marked, compared.as_ref(), outcome))
+}
+
 /// Checks the tree under `root`, against the tree where HEAD left `baseline` where one is given.
 fn attempt(root: &Path, baseline: Option<&str>) -> Result<(Checked, Option<Compared>), Stop> {
     let files = stop::read_files(root)?;

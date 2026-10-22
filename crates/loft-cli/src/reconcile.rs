@@ -83,6 +83,19 @@ pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
     }
 }
 
+/// The document `loft reconcile --format json` prints for the tree under `root`, with no
+/// `--fail-on` and nothing accepted, as a `loft` view of Yard Log records it. It writes nothing.
+pub fn json_document(root: &Path) -> Result<Value, Stop> {
+    let read = read(root)?;
+    let files = Parsed::new(read.store.test_files());
+    let reconciled = reconcile(&read.document, &read.hashes, &read.trace, &files);
+    let report = Report {
+        document: &read.document,
+        sites: &read.sites,
+    };
+    Ok(report.document(&read.trace, &reconciled, &[], 0, "passed"))
+}
+
 fn read(root: &Path) -> Result<Read, Stop> {
     let store = FileStore::open(root)?;
     let (document, sites) = codec::read_sited(&store.read_files()?)?;

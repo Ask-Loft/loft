@@ -17,6 +17,7 @@ use super::branch::{Branch, log_of, revision_of};
 use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::render;
+use super::views::Views;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -66,8 +67,8 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
     let caller = Caller::new(args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
     let batch = super::input::json(&args.input)?;
-    caller.record_continuation(Home::from_env().as_ref())?;
     let at = super::now()?;
+    caller.arrive(Home::from_env().as_ref(), at)?;
     let agent = caller.agent().clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(agent.clone())))?;
     let inputs = match read_batch(&batch) {
@@ -84,11 +85,18 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         send: args.send,
     };
     let branch_name = branch.store.branch().to_owned();
+    let views = Views {
+        tree: &branch.place().tree,
+        base: &branch.beyond.base,
+        at,
+    };
     let applied = branch.store.update(|current| {
         let mut log = current.unwrap_or_else(|| YardLog::open(&branch_name, at, agent.clone()));
         let upgraded_from = upgrade(&mut log);
         let written = log
-            .write(&inputs, &context, &mut |_, _| Err(VIEWS_LATER.to_owned()))
+            .write(&inputs, &context, &mut |block, request| {
+                views.report(block, request)
+            })
             .map_err(Unwritten::Refused)?;
         Ok::<_, Unwritten>((
             log,
@@ -107,9 +115,6 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         }
     }
 }
-
-/// Why a `loft` block is refused until `loft` computes its views in Yard Log.
-const VIEWS_LATER: &str = "this `loft` does not record `loft` views yet";
 
 /// Brings Yard Log in an older format up to this `loft`'s, giving the format it was in.
 fn upgrade(log: &mut YardLog) -> Option<Format> {

@@ -39,8 +39,8 @@ pub fn apply(
 ) -> Result<Value, Failure> {
     let caller = Caller::new(writer.into());
     let branch = Branch::locate(dir, beyond)?;
-    caller.record_continuation(Home::from_env().as_ref())?;
     let at = super::now()?;
+    caller.arrive(Home::from_env().as_ref(), at)?;
     let agent = caller.agent().clone();
     let settler = agent.clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(settler)))?;

@@ -73,7 +73,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 25] = [
+pub const COMMANDS: [Entry; 27] = [
     ("loft-check", &["check"], Fixture::Unkeyed, "check"),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed, "fmt"),
     (
@@ -184,10 +184,40 @@ pub const COMMANDS: [Entry; 25] = [
         "yard-withdraw",
     ),
     (
+        "wait-for-the-answers",
+        &[
+            "yard",
+            "wait",
+            "--submission",
+            "01a16502-f6d2-7666-adad-3403c0a92870",
+            "--timeout",
+            "0",
+            "--session",
+            "s1",
+        ],
+        Fixture::Clean,
+        "yard-wait",
+    ),
+    (
         "close-yard-log",
         &["yard", "close", "--session", "s1"],
         Fixture::Clean,
         "yard-close",
+    ),
+    // Over the clean fixture the tree is on `main`, not the base branch, so the record is
+    // refused.
+    (
+        "record-a-publish-after-the-merge",
+        &[
+            "yard",
+            "published",
+            "--branch",
+            "feat/shelf",
+            "--session",
+            "s1",
+        ],
+        Fixture::Clean,
+        "yard-published",
     ),
     (
         "loft-yard-answer",

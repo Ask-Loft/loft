@@ -5,13 +5,17 @@
 
 use std::fs;
 use std::path::PathBuf;
-use std::process::Output;
+use std::process::{Child, Output, Stdio};
 
 use serde_json::Value;
 use software_plant::{Clock, GitScenario};
 
+use crate::base::based_on_now;
 use crate::common::{EPOCH, Scratch, workspace};
 use crate::schema;
+
+/// The commit HEAD names in a repository [`Yard::with_spec`] makes.
+pub const HEAD: &str = "feed0000feed0000feed0000feed0000feed0000";
 
 /// The branch the scratch repository is on.
 pub const BRANCH: &str = "feat/shelf";
@@ -40,12 +44,50 @@ impl Yard {
         }
     }
 
+    /// The Reading List's `spec/` in a repository on `feature`, whose base for `develop` holds
+    /// the tree as it is now and whose HEAD is [`HEAD`], with the person named, at [`EPOCH`].
+    pub fn with_spec() -> Self {
+        let scratch = Scratch::with_reading_list();
+        let git = based_on_now(&scratch)
+            .base("HEAD", HEAD)
+            .with_config("user.name", "Ada Reader")
+            .with_config("user.email", "ada@example.com");
+        Self {
+            scratch,
+            git,
+            clock: Clock::fixed(EPOCH),
+        }
+    }
+
+    /// Runs `loft` itself, not `loft yard`, with `args`, printing JSON.
+    pub fn loft(&self, args: &[&str]) -> Value {
+        let mut all = args.to_vec();
+        all.extend_from_slice(&["--format", "json"]);
+        let output = self.scratch.loft_with(&all, Some(&self.git), &self.clock);
+        serde_json::from_slice(&output.stdout).unwrap()
+    }
+
     /// Runs `loft yard` with `args`, printing JSON.
     pub fn run(&self, args: &[&str]) -> Output {
         let mut all = vec!["yard"];
         all.extend_from_slice(args);
         all.extend_from_slice(&["--format", "json"]);
         self.scratch.loft_with(&all, Some(&self.git), &self.clock)
+    }
+
+    /// Starts `loft yard` with `args`, printing JSON, and gives the running process, its
+    /// standard output piped.
+    pub fn spawn(&self, args: &[&str]) -> Child {
+        let mut all = vec!["yard"];
+        all.extend_from_slice(args);
+        all.extend_from_slice(&["--format", "json"]);
+        self.scratch
+            .command(Some(&self.git), &self.clock)
+            .args(&all)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap()
     }
 
     /// The file beside the tree that holds a command's input.

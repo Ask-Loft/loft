@@ -6,11 +6,12 @@
 use std::collections::BTreeMap;
 
 use serde_json::{Map, Value, json};
-use yardlog::{Actor, Agent, YardLogKey};
+use yardlog::{Actor, Agent, Time, YardLogKey};
 use yardlog_store::home::{Home, HomeFile};
 
 use super::args;
 use super::failure::Failure;
+use super::sessions;
 
 /// The longest chain of continuations followed, against a cycle in a file edited by hand.
 const LONGEST_CHAIN: usize = 64;
@@ -40,8 +41,17 @@ impl Caller {
         self.agent.as_ref().expect("clap requires `--session`")
     }
 
+    /// Records what the call tells of its session: that it was heard at `at`, and that it
+    /// continues another, where `--continues` says so.
+    pub fn arrive(&self, home: Option<&Home>, at: Time) -> Result<(), Failure> {
+        if let (Some(agent), Some(home)) = (&self.agent, home) {
+            sessions::heard(home, &agent.session, at)?;
+        }
+        self.record_continuation(home)
+    }
+
     /// Records that the calling session continues another, where `--continues` says so.
-    pub fn record_continuation(&self, home: Option<&Home>) -> Result<(), Failure> {
+    fn record_continuation(&self, home: Option<&Home>) -> Result<(), Failure> {
         let (Some(agent), Some(ended)) = (&self.agent, &self.continues) else {
             return Ok(());
         };
@@ -68,6 +78,16 @@ pub struct Identity {
 }
 
 impl Identity {
+    /// The first session of the agent's chain.
+    pub fn session(&self) -> &str {
+        &self.session
+    }
+
+    /// Whether the agent is a subagent.
+    pub const fn is_subagent(&self) -> bool {
+        self.subagent.is_some()
+    }
+
     /// The name under which the revision this agent last read is kept.
     fn reader(&self) -> String {
         match &self.subagent {
@@ -106,6 +126,14 @@ impl Continuations {
             session: self.first(&agent.session),
             subagent: agent.subagent.as_ref().map(|sub| sub.id.clone()),
         }
+    }
+
+    /// The session that continues `session`, where one does.
+    pub fn continued_by(&self, session: &str) -> Option<&str> {
+        self.0
+            .iter()
+            .find(|(_, ended)| ended.as_str() == Some(session))
+            .map(|(next, _)| next.as_str())
     }
 
     /// Who an Act's actor counts as, where an agent made it.

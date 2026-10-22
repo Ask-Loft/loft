@@ -82,9 +82,9 @@ fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure>
     let caller = Caller::new(args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
     let named = answer_input::read(&super::input::json(&args.input)?)?;
-    caller.record_continuation(Home::from_env().as_ref())?;
     let (name, email) = person(&branch)?;
     let at = super::now()?;
+    caller.arrive(Home::from_env().as_ref(), at)?;
     let settler = Actor::Person {
         name: name.clone(),
         email: email.clone(),

@@ -14,11 +14,16 @@ mod failure;
 mod input;
 mod page;
 mod protocol;
+mod published;
 mod read;
 mod render;
 mod render_loft;
 mod render_log;
+mod sessions;
+mod standing;
 mod upgrade;
+mod views;
+mod wait;
 mod withdraw;
 mod write;
 
@@ -37,7 +42,9 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Read(args) => read::run(root, args),
         YardAction::Write(args) => write::run(root, args),
         YardAction::Withdraw(args) => withdraw::run(root, args),
+        YardAction::Wait(args) => wait::run(root, args),
         YardAction::Close(args) => close::run(root, args),
+        YardAction::Published(args) => published::run(root, args),
         YardAction::Answer(args) => answer::run(root, args),
         YardAction::Protocol { output } => protocol::run(output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),

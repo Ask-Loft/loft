@@ -23,8 +23,14 @@ pub enum YardAction {
     Write(WriteArgs),
     /// Withdraw an open submission.
     Withdraw(WithdrawArgs),
+    /// Wait until a submission is answered or withdrawn, or Yard Log is closed, for at most
+    /// `--timeout` seconds.
+    Wait(WaitArgs),
     /// Close the branch's Yard Log once its work is finished.
     Close(CloseArgs),
+    /// On the base branch, once `loft publish` is committed, record the publish in the Yard Log
+    /// of the branch the merge brought in.
+    Published(PublishedArgs),
     /// Record the person's answers and decisions given in the agent host's own dialog.
     Answer(AnswerArgs),
     /// Report the protocol the `loft yard` commands speak and the yardlog formats they read and
@@ -143,7 +149,39 @@ pub struct WithdrawArgs {
 }
 
 #[derive(Args)]
+pub struct WaitArgs {
+    /// The key of the submission.
+    #[arg(long, value_name = "KEY")]
+    pub submission: String,
+    /// The most seconds to wait before returning `pending`; more than 540 is taken as 540.
+    #[arg(long, value_name = "SECONDS", default_value_t = 540)]
+    pub timeout: u64,
+    #[command(flatten)]
+    pub writer: Writer,
+    #[command(flatten)]
+    pub beyond: Beyond,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+#[derive(Args)]
 pub struct CloseArgs {
+    #[command(flatten)]
+    pub writer: Writer,
+    #[command(flatten)]
+    pub beyond: Beyond,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+#[derive(Args)]
+pub struct PublishedArgs {
+    /// The branch whose Yard Log the merge brought into the base branch.
+    #[arg(long, value_name = "BRANCH")]
+    pub branch: String,
+    /// A note on the publish, in Markdown.
+    #[arg(long, value_name = "TEXT")]
+    pub note: Option<String>,
     #[command(flatten)]
     pub writer: Writer,
     #[command(flatten)]
