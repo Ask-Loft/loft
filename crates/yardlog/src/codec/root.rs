@@ -2,7 +2,7 @@
 //! opened it, its stages in order by key with each one's id, its submissions, the keys of Yard
 //! Logs merged into it, its close, and what is left to settle after a merge.
 
-use loftspec::yaml::{Node, Out};
+use loft_common::yaml::{Node, Out};
 
 use super::acts::{Field, read_act, read_arrival, text, token, write_act};
 use super::reader::{Fields, Read, at, scalar};

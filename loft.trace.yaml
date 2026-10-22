@@ -19982,7 +19982,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/files.rs"
         name: "the_files_hold_no_comments_anchors_aliases_tags_or_flow_collections"
-        body: 0636e3b280289660e44481523702fb3f26ce468152dd48d2e4366d07ebf30005
+        body: 4c1721ba3a029fb7b5fd1e4f467c71aec7092a1e00378eba06642e5c9dcb79e7
   - node: 01a1646f-546e-76cb-8b4f-f1ec3c4ff3b2
     reviewed: d5ec9d0c54f512be8a7a61ce5c6af15ddefb5b6bc445d7137f5c22d0ace616d6
     tests:
@@ -20505,6 +20505,9 @@ links:
       - file: "crates/yardlog-store/tests/boundary.rs"
         name: "the_store_of_yard_log_depends_on_no_crate_of_the_format_and_not_on_the_document_store"
         body: d68b89cccfb152fc2fa4f146bf8539a8a52f6d1e23fbc055a040be7c635fd757
+      - file: "crates/yardlog-store/tests/boundary.rs"
+        name: "the_model_beneath_the_store_of_yard_log_depends_on_no_crate_of_the_format_either"
+        body: fd8522a378facf4f559a3e15432c5d86c63b2e5ac27243c942bc649ba28f254b
   - node: 01a1649f-62ea-7225-80e1-a3d8f986ff4a
     reviewed: f0673fb3932fe57412670389e0ac49e4f00f812950021cab16fc02eb9494ec6c
     tests:
@@ -20523,3 +20526,9 @@ links:
       - file: "crates/yardlog/tests/boundaries.rs"
         name: "yardlog_depends_on_no_store_and_no_crate_of_the_command_line"
         body: d83a73dc58fc1757353b99d5aa4ff3f6b51f314d22b9089d08e724c80805f372
+  - node: 01a164dc-6a5a-7238-aa6a-3edf192ec694
+    reviewed: dbbb66f21173e2b17103ab68f69764c13333062a8fc0b0a72d2cca0978f24091
+    tests:
+      - file: "crates/yardlog/tests/boundaries.rs"
+        name: "yardlog_does_not_depend_on_the_format_s_crate"
+        body: 26a9a7316580af9f689a05df68f6d2fd0a292280e03e504ef4d478d535eee9fb

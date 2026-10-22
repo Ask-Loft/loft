@@ -118,7 +118,7 @@ fn a_change_to_one_block_rewrites_only_its_stage_s_file_and_the_root() {
 fn the_files_hold_no_comments_anchors_aliases_tags_or_flow_collections() {
     // The strict reader of `spec/` refuses each of these at its line and column.
     for (name, text) in files(&full()) {
-        let read = loftspec::yaml::read(text.as_bytes());
+        let read = loft_common::yaml::read(text.as_bytes());
         assert!(matches!(read, Ok(Some(_))), "{name}: {read:?}");
     }
 }

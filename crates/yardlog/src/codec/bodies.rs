@@ -1,6 +1,6 @@
 //! The fields of one version of a block, for each kind.
 
-use loftspec::yaml::Out;
+use loft_common::yaml::Out;
 
 use super::acts::{Field, text, token};
 use super::reader::{Fields, Read, at};

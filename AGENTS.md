@@ -40,15 +40,32 @@ change, or v1 reverts it.
 
 ## Repository layout
 
+- The crates stand in two columns over two shared layers. The Format is `loftspec` over
+  `loftspec-store`; Yard Log is `yardlog` over `yardlog-store`. Neither model depends on the
+  other model, and neither store on the other store. Beneath both models lies `loft-common`,
+  which performs no I/O; beneath both stores lies `loft-ports`, which does.
+- `crates/loft-common` owns what the formats share: the reader and writer of the strict YAML
+  subset, the `Key` type and the UTC `Time`. It performs no I/O and depends on no other crate of
+  the workspace. `loftspec` re-exports each of them where it always had them.
 - `crates/loftspec` owns the document model, identity, the canonical byte form, hashing, the
   merge engine, the publisher and the conversion from the v1 export. It performs no I/O and
   depends on no store.
+- `crates/loft-ports` owns the machinery both stores share and that knows no document: the
+  journaled save over plain paths into a journal directory its caller names, the runner through
+  which Loft reaches git, and the clock. It depends on no model and no store.
 - `crates/loftspec-store` owns the `DocumentStore` trait, its memory and file implementations and
   the port to git. Every write of the tree, or of a file beside it, goes through one journaled
   save (`journal::save`), whose journal lives in `.loft/save/` beside `spec/` while it runs; a
   command opens the tree through `FileStore::open`, which first finishes or discards an
   interrupted save. Never write a file of the Format any other way. The trait holds only what the
   CLI needs: load, save and roots.
+- `crates/yardlog` owns Yard Log's model: its records and keys, the rules a write is held to,
+  its canonical YAML and the merge of two copies. It performs no I/O and depends neither on
+  `loftspec` nor on a store.
+- `crates/yardlog-store` reads and writes each branch's Yard Log under `.yard/<branch>/` through
+  `loft-ports`' journaled save, one write at a time under a lock in git's own directory for the
+  worktree, and keeps the machine's state in `~/.yard/`. It reaches git only through
+  `loft-ports`.
 - `crates/loft-cli` is the `loft` binary and owns nothing the library could own.
 - `crates/software-plant` is the Software Plant: simulators of the external systems Loft depends
   on, for tests only. It is never published and never a dependency of a published crate.

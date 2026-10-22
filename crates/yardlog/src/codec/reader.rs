@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use loftspec::yaml::{Entry, Node, Position, Value};
+use loft_common::yaml::{Entry, Node, Position, Value};
 
 use crate::keys::{Handle, Key};
 

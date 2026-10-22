@@ -1317,7 +1317,7 @@ dependencies = [
 name = "yardlog"
 version = "2.2.1"
 dependencies = [
- "loftspec",
+ "loft-common",
  "pulldown-cmark",
  "serde_json",
  "thiserror",

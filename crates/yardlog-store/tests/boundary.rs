@@ -20,10 +20,9 @@ fn sources() -> Vec<(String, String)> {
     found
 }
 
-/// The names the manifest's `[dependencies]` table lists.
-fn dependencies() -> Vec<String> {
-    let manifest =
-        fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml")).unwrap();
+/// The names the `[dependencies]` table of the manifest at `path` lists.
+fn listed(path: &Path) -> Vec<String> {
+    let manifest = fs::read_to_string(path).unwrap();
     manifest
         .lines()
         .skip_while(|line| line.trim() != "[dependencies]")
@@ -34,6 +33,11 @@ fn dependencies() -> Vec<String> {
         .filter(|name| !name.is_empty())
         .map(str::to_owned)
         .collect()
+}
+
+/// The names the crate's own manifest's `[dependencies]` table lists.
+fn dependencies() -> Vec<String> {
+    listed(&Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml"))
 }
 
 #[test]
@@ -82,4 +86,16 @@ fn the_store_of_yard_log_writes_its_files_only_through_the_ports_journal() {
         .unwrap()
         .1;
     assert!(store.contains(".save(&changes)"));
+}
+
+#[test]
+fn the_model_beneath_the_store_of_yard_log_depends_on_no_crate_of_the_format_either() {
+    let model = listed(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../yardlog/Cargo.toml"));
+    assert!(model.contains(&"loft-common".to_owned()), "{model:?}");
+    for krate in ["loftspec", "loftspec-store"] {
+        assert!(
+            !model.iter().any(|name| name == krate),
+            "yardlog depends on {krate}"
+        );
+    }
 }

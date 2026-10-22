@@ -12,7 +12,7 @@ mod stage;
 use std::collections::BTreeSet;
 use std::fmt;
 
-use loftspec::yaml::{self, Node, Position, Value};
+use loft_common::yaml::{self, Node, Position, Value};
 
 pub use reader::ReadError;
 

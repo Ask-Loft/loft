@@ -5,7 +5,7 @@
 
 use std::fmt;
 
-pub use loftspec::identity::{Key, KeyError};
+pub use loft_common::key::{Key, KeyError};
 
 macro_rules! record_keys {
     ($($(#[$doc:meta])* $name:ident),* $(,)?) => {$(

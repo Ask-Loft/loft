@@ -1,4 +1,5 @@
-//! `yardlog` performs no I/O and depends on no store and no crate of the command line.
+//! `yardlog` performs no I/O, depends on no store and no crate of the command line, and depends
+//! not on `loftspec` but on `loft-common`, which the Format shares.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -51,5 +52,27 @@ fn yardlog_depends_on_no_store_and_no_crate_of_the_command_line() {
         "software-plant",
     ] {
         assert!(!manifest.contains(name), "yardlog's manifest names {name}");
+    }
+}
+
+#[test]
+fn yardlog_does_not_depend_on_the_format_s_crate() {
+    let manifest = fs::read_to_string(crate_dir().join("Cargo.toml")).unwrap();
+    let dependencies: Vec<&str> = manifest
+        .lines()
+        .skip_while(|line| line.trim() != "[dependencies]")
+        .skip(1)
+        .take_while(|line| !line.starts_with('['))
+        .filter_map(|line| line.split(['=', '.']).next())
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .collect();
+    assert!(dependencies.contains(&"loft-common"), "{dependencies:?}");
+    assert!(!dependencies.contains(&"loftspec"), "{dependencies:?}");
+    let mut found = Vec::new();
+    sources(&crate_dir().join("src"), &mut found);
+    assert!(found.len() > 10, "the scan found {} files", found.len());
+    for (path, text) in found {
+        assert!(!text.contains("loftspec"), "{path} names loftspec");
     }
 }

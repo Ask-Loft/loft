@@ -1,7 +1,7 @@
 //! Acts and arrival marks in the files: `at`, `revision` and `by` among a record's fields, and
 //! `arrived` where a merge brought the record.
 
-use loftspec::yaml::Out;
+use loft_common::yaml::Out;
 
 use super::reader::{Fields, Read, at};
 use crate::act::{Act, Actor, Agent, Subagent, Time};
@@ -79,7 +79,7 @@ pub(super) fn read_arrival(fields: &mut Fields<'_>) -> Read<Option<Arrival>> {
         .map_err(|_| at(node.position, "`arrived` is `pending` or a revision"))
 }
 
-fn read_actor(node: &loftspec::yaml::Node) -> Read<Actor> {
+fn read_actor(node: &loft_common::yaml::Node) -> Read<Actor> {
     let mut fields = Fields::of(node)?;
     let actor = if fields.get("name").is_some() {
         Actor::Person {

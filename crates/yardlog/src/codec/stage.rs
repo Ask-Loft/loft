@@ -1,7 +1,7 @@
 //! A stage's file, `<stage key>.yaml`: the stage's key, id and versions, then its blocks in
 //! order, each with its versions and the person's answers or outcomes.
 
-use loftspec::yaml::{Node, Out};
+use loft_common::yaml::{Node, Out};
 
 use super::acts::{Field, read_act, read_arrival, text, token, write_act};
 use super::bodies::{read_body, write_body};

@@ -4,7 +4,7 @@
 use std::fmt;
 
 /// A time in UTC to the second, written as `YYYY-MM-DDTHH:MM:SSZ`.
-pub use loftspec::publish::{PublishedAt as Time, TimeError};
+pub use loft_common::time::{Time, TimeError};
 
 /// The host an agent runs in.
 pub const CLAUDE_CODE: &str = "claude-code";
