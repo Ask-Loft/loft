@@ -4,15 +4,13 @@
 //! format are left as they are; one of a newer format, or one that does not read, is left and
 //! named, and the command exits 1. The person runs it, so it takes no `--session`.
 
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::ExitCode;
 
 use serde_json::{Value, json};
-use yardlog::codec::ROOT;
-use yardlog::{Format, YardLog};
+use yardlog::{Actor, Format};
 use yardlog_store::git::YardGit;
-use yardlog_store::store::yard_dir;
+use yardlog_store::session::branches;
 use yardlog_store::{Held, Place, YardStoreError};
 
 use super::args::UpgradeArgs;
@@ -75,38 +73,13 @@ fn attempt(dir: &Path, args: &UpgradeArgs) -> Result<Vec<(String, Fate)>, Failur
     let git = YardGit::default();
     let place = Place::locate(&git, dir)?;
     let mut fates = Vec::new();
-    for name in branches(&yard_dir(&place.tree)) {
+    for name in branches(&place.tree)? {
         let mut at = place.clone();
         at.branch = Some(name.clone());
         let branch = Branch::at(YardGit::default(), at, args.beyond.clone())?;
         fates.push((name, fate(&branch)?));
     }
     Ok(fates)
-}
-
-/// Every branch whose Yard Log is under `.yard/`, by the folder that holds its root.
-fn branches(yard: &Path) -> Vec<String> {
-    let mut found = Vec::new();
-    let mut pending: Vec<PathBuf> = vec![yard.to_owned()];
-    while let Some(dir) = pending.pop() {
-        let Ok(entries) = fs::read_dir(&dir) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                pending.push(path);
-            } else if path.file_name().is_some_and(|name| name == ROOT)
-                && let Ok(folder) = dir.strip_prefix(yard)
-                && let Some(name) = folder.to_str()
-                && !name.is_empty()
-            {
-                found.push(name.replace('\\', "/"));
-            }
-        }
-    }
-    found.sort();
-    found
 }
 
 fn fate(branch: &Branch) -> Result<Fate, Failure> {
@@ -130,13 +103,35 @@ fn fate(branch: &Branch) -> Result<Fate, Failure> {
     if log.root.format >= Format::CURRENT {
         return Ok(Fate::Current { key });
     }
-    let from = log.root.format;
-    branch.store.update(|current| {
-        let mut log: YardLog = current.expect("Yard Log was read");
-        log.root.format = Format::CURRENT;
-        Ok::<_, YardStoreError>((log, ()))
-    })?;
-    Ok(Fate::Upgraded { key, from })
+    let (name, email) = super::answer::person(branch)?;
+    let actor = Actor::Person { name, email };
+    let at = super::now()?;
+    let upgraded = branch.store.update(|current| {
+        // Gone since it was read: nothing is written in its place.
+        let mut log = current.ok_or(Unupgraded::Gone)?;
+        let from = log.upgrade(at, actor);
+        Ok::<_, Unupgraded>((log, from))
+    });
+    Ok(match upgraded {
+        Ok(updated) => match updated.value {
+            Some(from) => Fate::Upgraded { key, from },
+            None => Fate::Current { key },
+        },
+        Err(Unupgraded::Gone) => left(Some(key), "has no root".to_owned(), true),
+        Err(Unupgraded::Store(error)) => return Err(error.into()),
+    })
+}
+
+/// Why a Yard Log was not upgraded under its lock.
+enum Unupgraded {
+    Store(YardStoreError),
+    Gone,
+}
+
+impl From<YardStoreError> for Unupgraded {
+    fn from(error: YardStoreError) -> Self {
+        Self::Store(error)
+    }
 }
 
 fn result(fates: &[(String, Fate)]) -> (Value, Vec<Value>) {

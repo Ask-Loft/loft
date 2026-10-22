@@ -181,3 +181,22 @@ fn a_root_of_a_newer_format_is_told_apart() {
     assert!(!Format::new(2).is_known());
     assert!(yardlog::codec::read_root(root.as_bytes()).is_err());
 }
+
+#[test]
+fn upgrading_older_yard_log_records_the_person_as_the_actor_of_one_act() {
+    let mut log = crate::common::planned();
+    log.root.format = yardlog::Format::new(0);
+    let before = log.root.revision;
+    let person = yardlog::Actor::Person {
+        name: "Ada".to_owned(),
+        email: "ada@example.com".to_owned(),
+    };
+    let from = log.upgrade(crate::common::at(9), person.clone());
+    assert_eq!(from, Some(yardlog::Format::new(0)));
+    assert_eq!(log.root.format, yardlog::Format::CURRENT);
+    assert_eq!(log.root.revision, before + 1);
+    let act = log.root.acts.last().unwrap();
+    assert_eq!((act.revision, &act.actor), (before + 1, &person));
+    assert_eq!(log.upgrade(crate::common::at(10), person), None);
+    assert_eq!(log.root.revision, before + 1);
+}

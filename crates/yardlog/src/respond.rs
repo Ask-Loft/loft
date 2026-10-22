@@ -69,6 +69,18 @@ impl YardLog {
         act
     }
 
+    /// Brings Yard Log in an older format up to the one this `loft` writes, as one Act of
+    /// `actor`, and gives the format it was in; nothing where it is already current.
+    pub fn upgrade(&mut self, at: Time, actor: Actor) -> Option<crate::Format> {
+        let from = self.root.format;
+        if from >= crate::Format::CURRENT {
+            return None;
+        }
+        self.act(at, actor);
+        self.root.format = crate::Format::CURRENT;
+        Some(from)
+    }
+
     /// Records the person's answers and outcomes. A block answered or decided first elsewhere
     /// keeps that answer, and the later reply to it is refused and reported.
     ///

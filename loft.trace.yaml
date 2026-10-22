@@ -23763,6 +23763,12 @@ links:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "upgrade_run_without_session_is_not_refused_for_it"
         body: 77181cfc8ba644eb7771f977f5c0e3ace92104d0b2faa00ef00572308e0d5709
+  - node: 01a1649f-62ef-71e6-98de-e10740e6676e
+    reviewed: abb359ccd7c013e57b4200177e10281094b29deccc7e13454016589cb37ba20c
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "upgrading_older_yard_log_records_the_person_as_the_actor_of_one_act"
+        body: f2271b1c2e5322760e624e7ae04343603c79d903d03590b4f01de3cbcd874817
   - node: 01a1646f-546d-7042-befd-ea5c524891f8
     reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
     tests:
