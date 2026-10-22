@@ -55,7 +55,13 @@ function world(on: On, options: { root?: string | null; variant?: Variant } = {}
     state.statuses.push(e.text)
     return { value: undefined }
   })
+  // Yard Client's check of `loft yard protocol` meets a loft with no yard commands, and stays off:
+  // the pane works as it does with a loft that has them.
+  on('ui.toast', () => ({ value: undefined }))
   on('process.run', async ($, e) => {
+    if (e.argv.includes('yard') || e.argv.includes('--version')) {
+      return { value: { exitCode: 2, stdout: '', stderr: "error: unrecognized subcommand 'yard'", isStdoutTruncated: false, isStderrTruncated: false } }
+    }
     state.runs.push({ argv: e.argv, cwd: e.init?.cwd, env: e.init?.env })
     if (state.pending) await state.pending
     if (state.fail === 'unrunnable') return { deny: 'loft is not on PATH' }

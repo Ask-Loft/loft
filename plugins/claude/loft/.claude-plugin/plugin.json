@@ -23,6 +23,12 @@
       "title": "loft command",
       "description": "The command that runs loft, such as `loft`, `npx --no-install loft` or `pnpm exec loft`.",
       "default": "loft"
+    },
+    "yardPort": {
+      "type": "number",
+      "title": "Yard page port",
+      "description": "The port on 127.0.0.1 that the Yard page server listens on, shared by every session on the machine.",
+      "default": 7411
     }
   }
 }

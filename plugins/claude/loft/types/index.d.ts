@@ -1,5 +1,5 @@
-// The Loft status pane's state contract: what one read of a specification gives the pane, and
-// the values the pane keeps for the session in `$.state`.
+// The Loft mod's state contract: what one read of a specification gives the Loft status pane,
+// and the values the pane and Yard Client's hooks keep for the session in `$.state`.
 
 /** A place in a file, as `loft` reports it. */
 export type LoftSite = { path: string; line?: number; column?: number }
@@ -64,6 +64,8 @@ declare module 'claude-code' {
       base: string | null
       /** The file under `spec/` the agent last wrote, from the specification's directory. */
       workingOn: string | null
+      /** The page's address for the branch's Yard Log, as the last `loft yard` command gave it. */
+      yardPage: string | null
     }
   }
 }
