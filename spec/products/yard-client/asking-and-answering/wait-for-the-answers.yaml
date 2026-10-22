@@ -97,6 +97,8 @@ requirements:
         name: "The lease is free once its `loft yard wait` exits, whether it returned, was refused, was ended or was killed."
       - key: 01a1647c-e680-7753-bf17-f170c3220eb0
         name: "Nothing of the lease is written under `.yard/`."
+      - key: 01a16602-592c-71d8-ab1f-2b84c7f0da5e
+        name: "The name of the wait that holds a lease is the one a second wait's refusal gives, and a wait that lets go of the lease takes its name with it."
   - key: 01a1647c-e680-7753-bf17-f171d7891636
     statement:
       form: unwanted
