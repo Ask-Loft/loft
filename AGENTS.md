@@ -266,8 +266,8 @@ A release happens only with the maintainer's approval, and in this order:
    builds only the host platform, so a change that breaks a cross-build, such as a dependency
    with C code, shows here first.
 1. On a branch from `develop`, set the new version in every crate's `Cargo.toml`, in the
-   workspace dependencies and in both plugin manifests (`tests/plugins.rs` fails until they
-   agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
+   workspace dependencies, in both plugin manifests and in `PLUGIN_VERSION` of the Claude Code
+   plugin's `hooks/yard/index.tsx` (`tests/plugins.rs` fails until they agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
    into `develop`, then `develop` into `main`.
 2. On `main`, run `loft publish` over the committed `spec/`, commit `spec/labels.yaml` and
    `loft.lock.json` together as the publish commit, and check that `loft verify` passes. A second

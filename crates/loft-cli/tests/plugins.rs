@@ -1,11 +1,12 @@
 //! The plugins for Claude Code and Codex: each committed package equals the composition `loft`
 //! writes for its host, each marketplace, `ask-loft`, lists the plugin `loft` at its host's plugin root, and
 //! every manifest carries the version of `loft`; the Claude Code plugin also names the hooks
-//! module and the type contract of the Loft status pane, and declares its settings.
+//! module and the type contract of the Loft status pane, and declares its settings, and its mod
+//! names the version of `loft` and the yard protocol `loft` speaks.
 
 use std::fs;
 
-use crate::common::workspace;
+use crate::common::{Scratch, workspace};
 use crate::skill_install::{CLAUDE, CODEX, installed};
 use crate::snapshot::snapshot;
 use serde_json::{Value, json};
@@ -122,6 +123,50 @@ fn the_claude_code_manifest_declares_the_base_branch_and_loft_command_settings_w
         assert_eq!(settings[name]["default"], default, "{name}");
         assert!(settings[name]["description"].is_string(), "{name}");
     }
+}
+
+#[test]
+fn the_claude_code_manifest_declares_the_yard_port_setting_with_the_page_server_s_port() {
+    let manifest = read(&format!("{CLAUDE_ROOT}/.claude-plugin/plugin.json"));
+    let setting = &manifest["userConfig"]["yardPort"];
+    assert_eq!(setting["type"], "number");
+    assert_eq!(setting["default"], 7411);
+    assert!(setting["description"].is_string());
+}
+
+/// The value of `export const <name> = <value>` in Yard Client's entry module, as written.
+fn mod_constant(name: &str) -> String {
+    let path = format!("{CLAUDE_ROOT}/hooks/yard/index.tsx");
+    let source =
+        fs::read_to_string(workspace().join(&path)).unwrap_or_else(|_| panic!("no {path}"));
+    let start = format!("export const {name} = ");
+    let line = source
+        .lines()
+        .find_map(|line| line.strip_prefix(start.as_str()))
+        .unwrap_or_else(|| panic!("{path} declares no {name}"));
+    line.trim_end_matches(" as const").to_owned()
+}
+
+#[test]
+fn the_mod_names_the_version_of_loft_as_its_own() {
+    assert_eq!(
+        mod_constant("PLUGIN_VERSION"),
+        format!("'{}'", env!("CARGO_PKG_VERSION"))
+    );
+}
+
+#[test]
+fn the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks() {
+    let scratch = Scratch::empty();
+    let output = scratch.loft(&["yard", "protocol", "--format", "json"]);
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let protocols = mod_constant("PROTOCOLS");
+    let newest = protocols
+        .split("newest: ")
+        .nth(1)
+        .and_then(|rest| rest.split(|c: char| !c.is_ascii_digit()).next())
+        .unwrap_or_else(|| panic!("PROTOCOLS = {protocols} names no newest"));
+    assert_eq!(newest, report["protocol"].to_string());
 }
 
 #[test]
