@@ -1,0 +1,16 @@
+{
+  "name": "yard-page-tests",
+  "private": true,
+  "description": "The tests of the Yard page that loft serves: its logic in a DOM emulator, its types, and the page in a real browser on demand.",
+  "type": "module",
+  "scripts": {
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test 'unit/*.test.js'",
+    "types": "tsc -p .",
+    "browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "happy-dom": "20.14.5",
+    "typescript": "6.0.3"
+  }
+}

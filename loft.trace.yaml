@@ -17643,6 +17643,18 @@ links:
       - file: "crates/loftspec-store/tests/git_contract_base.rs"
         name: "the_simulator_answers_each_call_of_a_base_read_as_real_git_does"
         body: 278d0a15a88e990d60f96bcea98678e88db131f49953c0f9d0c7973edd05d9fe
+  - node: 01a16571-d769-7590-94aa-978297cb7f3b
+    reviewed: 669d738cc4d0936a92e5707438fce26eb6bf0cc8a71a08f326d28a4272690a07
+    tests:
+      - file: "crates/loftspec-store/tests/git_contract_base.rs"
+        name: "the_simulator_names_the_commit_that_last_wrote_the_lock_as_real_git_does"
+        body: d0a18fc6a37969a46c4d47dd1b46a16537da74433d4bae64d266bbac7b79ce72
+  - node: 01a16571-d769-7590-94aa-97835a642760
+    reviewed: 18c0f1ccd4a13c39c155a02debaf70705f985cce4a7d8cfe7d31425c0ee5f6b4
+    tests:
+      - file: "crates/loftspec-store/tests/git_contract_base.rs"
+        name: "the_simulator_names_the_commit_that_last_wrote_the_lock_as_real_git_does"
+        body: d0a18fc6a37969a46c4d47dd1b46a16537da74433d4bae64d266bbac7b79ce72
   - node: 01a164cf-8fd5-7533-a02e-c04e713e8be1
     reviewed: 0d184df92107330cc479bbda8f4ab32e5064034f4dcdf36789a9f693c258849b
     tests:
@@ -20487,6 +20499,54 @@ links:
       - file: "crates/yardlog-store/tests/files.rs"
         name: "a_root_that_does_not_read_refuses_every_write"
         body: 96cdfc1ebfd2e370af841635d606351caba0bb8313843f2735d47ba271ea1ce5
+  - node: 01a1646f-546e-76cb-8b4f-f1f0c8a50d30
+    reviewed: 1646f04325e6bbc38fe995a8217fee45e3b4362e24d1ca207e4180cf0307d6d7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "Yard Log that does not read shows its errors, with their files and lines, in place of its stages"
+        body: 0e459a00af8a884ee4827ed030a20c234ef356bde5c683a41dbf8f263c175b7c
+  - node: 01a1646f-546c-7521-9643-bbc929ff388e
+    reviewed: 1289e7644988b8aa477b4088e7606ef0e2abdce0ee3a6728c290e45bbf3707d7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a question that takes one option lets the person choose one"
+        body: f38d2336c3e19c46ab415ae0fc0220a21bf82d162d82d0386a1148e6b005fc08
+  - node: 01a1646f-546c-7521-9643-bbca52bc4f23
+    reviewed: c226af8e2eb7d792f915d20e871ea94cdd7cfdda130c26bb75a09cef082697d9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a question that takes more than one option lets the person choose one or more"
+        body: 56886731a6477a5c430042f6a4ebf99f22c62748f9d31f364ecf7ab10790414a
+  - node: 01a1646f-546c-7521-9643-bbcb591fde24
+    reviewed: cbafe722d6035b8e6b98719e8f5a6588ca51b9c0926e0dbe2bb64a28ce405635
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a question that allows the person own words offers a text field beside its options"
+        body: cefe20a78d83610cdd7ae97ddf62ec6609e7ca09091d687ab3fc7cdbdf772e02
+  - node: 01a1646f-546c-7521-9643-bbcc094ac2d9
+    reviewed: 8d2e557fbee5c594f2cc65de35e590ae4ff6b5d241a7dc259c909e3b07c7dfb9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "each option shows its detail and each recommended option is marked"
+        body: ed8e273e663200f7bb3a2df679616afc94c338c9a4eb56b0ae240c72e184ff7b
+  - node: 01a1646f-546c-7521-9643-bbce40187173
+    reviewed: 0bc801b7ff85ad473c2af44ef14802b74923ebef0a4e387a6cc199a78954ca8f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "accepting the recommendations chooses the recommended options of each question with nothing chosen"
+        body: 0f92659706888e56ebb9bee0ecb99070b193e1a07107427da8f0af1780a897d4
+  - node: 01a1646f-546c-7521-9643-bbcf7adda738
+    reviewed: 29d94812c385dd8396299e2c12a5da152b387a5554e0cbf564ac3b4e6e9be3a6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "accepting the recommendations chooses the recommended options of each question with nothing chosen"
+        body: 0f92659706888e56ebb9bee0ecb99070b193e1a07107427da8f0af1780a897d4
+  - node: 01a1646f-546c-7521-9643-bbd088671e87
+    reviewed: 4cf05c6fabc46635e9b7164c0fb8c9b25aae45d2d1bebe90a6442bb15ade956c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "accepting the recommendations chooses the recommended options of each question with nothing chosen"
+        body: 0f92659706888e56ebb9bee0ecb99070b193e1a07107427da8f0af1780a897d4
   - node: 01a1646f-546c-7521-9643-bbd2658be8dc
     reviewed: e6f716082e83653be40d23c9cc0d83f77b1174241897e3ba09a232af54124852
     tests:
@@ -20505,6 +20565,21 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "answers_sent_from_the_page_are_recorded_at_once_with_the_person_and_the_channel_page"
         body: eaf0c21fa140c6154278123fc217d34f606b79c64ec34a80f0df67954f771ec4
+  - node: 01a1646f-546c-7521-9643-bbd5065188ba
+    reviewed: 61ee979e285cadcf349a59faf2592be75146765644290f15e20f725c63a8c018
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "the page offers to send only once each open question of the submission has an answer"
+        body: 196d1ff7894dd56fad2630fea89f51ffb053f74589e66e368324b5fcd86a798c
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page sends every answer of a submission at once, and shows them given on the page"
+        body: ef09922fb21a96fccad25d8df22715440c10f1708913354197b9c79ce64f699c
+  - node: 01a1646f-546c-7521-9643-bbd62c68dd85
+    reviewed: 3fc05ad6fbe036a44dc564d8714bfc8af1ac25166fb92134e3536863f68df4ee
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "answers chosen and not sent are kept in the browser only"
+        body: 735a0d11b8b5a2c6f8fd375bc5f5671b7f6da7391cf455bd6e34cebc97caabeb
   - node: 01a1646f-546c-7521-9643-bbd850b7f2ba
     reviewed: 26b456c78c1f823b0b7c504cc7582b4a026e625c91dcebe1abd6a0729ad083eb
     tests:
@@ -20514,6 +20589,15 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "an_answer_given_elsewhere_first_is_kept_and_the_page_s_later_one_refused"
         body: 2e46faa5ab5c3217accce5ef79279f607a94804c04588d07da62352bf4abfb5f
+  - node: 01a1646f-546c-7521-9643-bbd976e840e9
+    reviewed: 3c9c13e73fb53a511109010284f50eddaf18385562427c8754762626460df421
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "an answer given elsewhere first is reported with the channel it came from"
+        body: 254e17cec834609c0276f884c89e96f38790afe94336b4fa60a19fde2ff5d27b
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page shows the first answer with the channel it came from"
+        body: 1cbaece256d223a3796d227f6c881356e51df32c2cff1c35ba151ee78cd334db
   - node: 01a1646f-546c-7521-9643-bbdaebd7935a
     reviewed: e053dbce0e71816086229ed45c6927c5329e67021d1ae4815db5fa6cc65addc8
     tests:
@@ -20529,6 +20613,12 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "an_approval_and_a_plan_decided_on_the_page_record_their_outcome_with_the_person"
         body: 4a5bbe2f72952f030f712bbae409ebc1157aa6ba85a54ae23e9621133df781b2
+  - node: 01a1646f-546c-7521-9643-bbdef30ee260
+    reviewed: 76a94a500fa6118377f7fa962e1dbf2aa1a19fac06bbb56aeca1ae44256da73f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page shows a block approved once the person approves it, and the count of what waits changes"
+        body: 874db02fcbffec2b6a552d538dd378f53ba85a808792c949795c60f0e467af25
   - node: 01a1646f-546c-7521-9643-bbdfcffa05c0
     reviewed: 81f8c5cd6ffc5536f0e3afd3dcaa7ec189d3089de1a27f49dae12167d6bc3405
     tests:
@@ -20541,12 +20631,33 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "an_approval_and_a_plan_decided_on_the_page_record_their_outcome_with_the_person"
         body: 4a5bbe2f72952f030f712bbae409ebc1157aa6ba85a54ae23e9621133df781b2
+  - node: 01a1646f-546c-7521-9643-bbe26588e53c
+    reviewed: 9f58283d3ae2e44c103856399f86865c0b326bc737ca9cdaaaab40735e5070c9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a rejection without a reason records nothing and asks for the reason; with one, the page shows it rejected"
+        body: b8ac2f22bab887c5bc8b1ceed7bca9f691b3c06894f76bf83cf2047739f770d0
+  - node: 01a1646f-546c-7521-9643-bbe46778cf50
+    reviewed: da8a80635bea5f85250a216fbb3a209fad8da4f16ec212947e803721540721db
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a rejection without a reason records nothing and asks for the reason; with one, the page shows it rejected"
+        body: b8ac2f22bab887c5bc8b1ceed7bca9f691b3c06894f76bf83cf2047739f770d0
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a rejection without a reason is not sent, and the page asks for the reason"
+        body: 273ff2693ad7f49fd84b5604f6153aa14ecef0282b7630a21090014e0e2cb3b8
   - node: 01a1646f-546c-7521-9643-bbe6bf57ef82
     reviewed: f8d01d9cd9d8b6151821994353be4209949768719dc923f07452d2c3835734df
     tests:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "a_block_decided_elsewhere_first_keeps_its_first_outcome"
         body: 8137b5f7761fecdf9fb8043332d4efc1c9e424c79925931312e5c81f752bf011
+  - node: 01a1646f-546c-7521-9643-bbe701daf951
+    reviewed: f30d71a99a1317434e0077e54b718dac8307e5fef8534de1cde75f0b52fe25ae
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page shows the first outcome with the channel it came from"
+        body: 9f06ed0bda130a8a34960ffdd6c21affb2d3e6e758c2d85a59371e6f895a352a
   - node: 01a1646f-546c-7521-9643-bbea9a49f273
     reviewed: 778fc67bbfd0183629dafd1f97fbae466be4be1d31bee354b535354ec92cadf8
     tests:
@@ -21135,6 +21246,18 @@ links:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "where_no_running_page_server_is_named_the_result_says_the_page_is_unavailable"
         body: 4676c0745d953d16256322e534438c2df819ff79f95ea0a41110245e8fe0d85f
+  - node: 01a1646f-546e-76cb-8b4f-f218f2d20f06
+    reviewed: 9bfcb86e54dded848fb21a5cd55b6210930feed2ccc6d3fd9b527864c098ec66
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a choice the person made and did not send is kept through a reload of the page"
+        body: 1c169df88baf94120e1a1b30ee2d986f1ae98666a8c3c4254efebf9af1b2b5d6
+  - node: 01a1646f-546e-76cb-8b4f-f21a4834c983
+    reviewed: 34881a4552f6c477f7e430d3a8248aabfc216a1e88bc57000f5e626a53c90bbb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "Yard Log of a newer format names its format, says a newer loft is needed, and offers nothing to answer"
+        body: 7bd2dba0a6b69bdeb14294b17032bc2a456f6e3fb1dd132d9914fda238aa1440
   - node: 01a1646f-546e-76cb-8b4f-f21bb474774c
     reviewed: 26b64e6defec4212e49db1e009dfec5ce7c84715636dccd0d3c9037b0e0dfd8b
     tests:
@@ -21165,12 +21288,276 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade.rs"
         name: "yard_log_of_a_newer_format_or_that_does_not_read_is_left_named_and_exits_1"
         body: df6be8f338991e131eebbc61019bd3666947354588a25fb1961c8693b653faad
+  - node: 01a1646f-546d-7042-befd-eb2339a1f113
+    reviewed: 00decd7d740cf4b3f107231c953f28a7aa1fa7b9af8103250c7f215f6201c73f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "each repository is named by the top of its main worktree"
+        body: e25d54ecdd354fdc428f24902648e48278bd3f9320f9a90e13dbe340324420f7
+  - node: 01a1646f-546d-7042-befd-eb24d506d9d2
+    reviewed: d9224ecea17090955c800a0023787e38211d572d365661d4a91e5353784334ad
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "each listed branch shows its worktree, its name, its title and the count of blocks that wait on the person"
+        body: 2ff434cdcca85820834a528928f622f2149edaa1e85dc26552dec1fca5240e1f
+  - node: 01a1646f-546d-7042-befd-eb25f7e1f2d7
+    reviewed: 189b8854422bc6832ad84ad55ab49db8cf711387b8e7c984180d860507a01771
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "each listed branch shows its worktree, its name, its title and the count of blocks that wait on the person"
+        body: 2ff434cdcca85820834a528928f622f2149edaa1e85dc26552dec1fca5240e1f
+  - node: 01a1646f-546d-7042-befd-eb26bca8ff00
+    reviewed: 9cfff6b9171a7574879ca052aa49d043c9521f23117c3b3b72894c2c69e00e2a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "an inherited Yard Log is listed after the current one, marked as inherited, and a closed one as closed"
+        body: 24b449971f407f4cea3c3ddcdc48bcedfb224a382dee69953cbde6708cda5bd4
+  - node: 01a1646f-546d-7042-befd-eb2740b8a1ba
+    reviewed: 6576fb2ea87de71c8b68934ce0fa7a7e05e8186e2d49a187c4567c9519934758
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "choosing a listed branch opens its Yard Log at an address of its own that names its tree and branch"
+        body: e171cca783523f9d158670a868299682e927103acbc9851422b3b5e60dc76e77
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "choosing a listed branch opens its Yard Log at its own address"
+        body: 38115826f9dec0d08d0ef6a47db318cd2e23f761527bd2b169a99c4a7f6aa28b
+  - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
+    reviewed: 7bc62402f8f905e86888280c020baced0855d3256b842a94a9f4b5e80259a9bf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "an inherited Yard Log is listed after the current one, marked as inherited, and a closed one as closed"
+        body: 24b449971f407f4cea3c3ddcdc48bcedfb224a382dee69953cbde6708cda5bd4
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "each_tree_lists_its_current_branch_s_yard_log_first_and_each_inherited_one_after_it"
+        body: f004b2c48114f49aec10f09b7e61f33b418338d116c9952ff6e26cd4993a10d8
+  - node: 01a1649f-62ef-71e6-98de-e10f33cdae95
+    reviewed: 2930612d2253940418654bf40e96ab5ae2fef85119d917ead4f4a41538c643f6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an inherited Yard Log shows its open questions and offers no answer or decision"
+        body: 726a224fb7415c12916dda2783ff99571d9629d83d1c4fd0359debf0d5d0e702
   - node: 01a1649f-62ef-71e6-98de-e1107c0ffed2
     reviewed: 6d84cfad1576e19039aebc8dfe31afbbc6c6812158e465d11dc1d5e16ce850fb
     tests:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_page_server_takes_no_answer_for_an_inherited_yard_log"
         body: b84a1287da642cb0b387fca1150c385c10649129415bea8503c5f558ef47fab4
+  - node: 01a1649f-62ef-71e6-98de-e111af38463b
+    reviewed: d5df71e9d6f2cba0a2d5e4f7e41860933b641782a3e06990c6442d37ac1e519d
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "each_tree_lists_its_current_branch_s_yard_log_first_and_each_inherited_one_after_it"
+        body: f004b2c48114f49aec10f09b7e61f33b418338d116c9952ff6e26cd4993a10d8
+  - node: 01a1646f-546d-7042-befd-eb2917150250
+    reviewed: 25fceab4b21e9c298230b8069b3bb4227ea216c6edfcc5d0b5e30890baeba937
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "each active stage is open and every other stage is folded"
+        body: e538ede2b3500cdf364e539fc33802c134215412fa36b87fd3a2893b1435d610
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person can fold and open each stage, the active one open and the planned one folded"
+        body: b4ff3c5dd569f8a4bfdbde634f87dedec16ee88ca8c360f5ebb1b49267bd8bcf
+  - node: 01a1646f-546d-7042-befd-eb2a277e3a0d
+    reviewed: 1602e4121e9a40da6b262b7b5d7c776df6b602687d0d6d1b827f3db3aa3a8831
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person can fold and open each stage, the active one open and the planned one folded"
+        body: b4ff3c5dd569f8a4bfdbde634f87dedec16ee88ca8c360f5ebb1b49267bd8bcf
+  - node: 01a1646f-546d-7042-befd-eb2bf26cc683
+    reviewed: 15a7bde296c284eecaf648a1581b303f8d60b65bc50b7812b06b74a15a0ead62
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a line marks where the stages done and dropped end and the planned ones begin"
+        body: 463676c4d8f0e650da4e4c4d3fea137bb0d74cb367d095e8cd5b12948b35bcac
+  - node: 01a1646f-546d-7042-befd-eb2cf93edd47
+    reviewed: f4ad465c8cdc1d7517009c316fc58553f19b5882a5a6bd88419de2c93df6a3fa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "each stage shows its title, its status as a word, its goal and its owner"
+        body: e3cccaf55ff525be581cf7ce3372b03a4520723a3b8be060fd7e25297e08ed94
+  - node: 01a1646f-546d-7042-befd-eb2d6203081e
+    reviewed: 4000a560c54b2a4a3408f129a671b39f96247e9ee4dbb0f24b37f2edb03e71c5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "each stage shows its title, its status as a word, its goal and its owner"
+        body: e3cccaf55ff525be581cf7ce3372b03a4520723a3b8be060fd7e25297e08ed94
+  - node: 01a1646f-546d-7042-befd-eb2f03e5bd8d
+    reviewed: 265ae00336a5baf3733982a7b3b0ad22e2adff3dad924ea1e3102a848c4b7548
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "the stages are newest first unless the person chose otherwise, and the choice is kept in the browser"
+        body: 8981b322a937f1a770481294a7fa315a70d32507b2e4f69bc5de73cdf07cfd71
+  - node: 01a1646f-546d-7042-befd-eb3184fc5769
+    reviewed: f10b42c55c0593ed55a5dc061341a1aebae467514f05cb0fd39f4a2f472f9bab
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "the blocks written during one stretch of plan mode are drawn together under a band that names it"
+        body: 1ed6b8b5d6ead141132a980194144e9cbccf2b63fc177168fa281712b5c0cd88
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a band of spec mode is told apart from a band of plan mode by its class, its hatching and its label"
+        body: 089a8d4acfec4c614cbee67ad3ccf17bb3049227c161d60dda98460d195007c3
+  - node: 01a1646f-546d-7042-befd-eb32c1f70c7e
+    reviewed: 97148d77b7d85116a8d2f074e535def9e01c59367e3bf824c531208a16042693
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "the blocks written during one stretch of plan mode are drawn together under a band that names it"
+        body: 1ed6b8b5d6ead141132a980194144e9cbccf2b63fc177168fa281712b5c0cd88
+  - node: 01a1646f-546d-7042-befd-eb35c3a78477
+    reviewed: 895743b1f3fc5695da0eb97e93d3fa500e7877212a9684134812d5ca2f5de841
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "the blocks written during one stretch of plan mode are drawn together under a band that names it"
+        body: 1ed6b8b5d6ead141132a980194144e9cbccf2b63fc177168fa281712b5c0cd88
+  - node: 01a1646f-546d-7042-befd-eb3400bc25ff
+    reviewed: ca35e6add62f09f6f07024529741af4dae1fc9b7ffd59e4459db4ab6913151e1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a band of spec mode is told apart from a band of plan mode by its class, its hatching and its label"
+        body: 089a8d4acfec4c614cbee67ad3ccf17bb3049227c161d60dda98460d195007c3
+  - node: 01a1646f-546d-7042-befd-eb37bdcb84e2
+    reviewed: 47042732451b6faeb7308e8bf6be715179b8b74b54a64f341bda5026af61a13f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a note shows its title, its markdown and its tone as a colour and a word"
+        body: 9ca1c4a78352ed62fb48e2b04e5f67526d7b96b20876d78ff9051bd7aaccce41
+  - node: 01a1646f-546d-7042-befd-eb38e626356c
+    reviewed: 4b52e2b0594352f62fdb619a15a7b02f2abcde2f62ce0d0601994b9e64cca655
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a note written folded starts folded"
+        body: 7faee74edb6bbc1d9e5db80e14dcd06e37a6c8d740efda5671132f411f86fb86
+  - node: 01a1646f-546d-7042-befd-eb39ce7ffb3c
+    reviewed: 2ac4284a49d0c1abbf3155dbc41aff9f39b522535815ec58b1a67ea37054027d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a question shows its prompt, its context and its options, with each recommended option marked"
+        body: b6ae7e32440356a1c3e92576a1f1a35cbad166e712c00fba6372266cf9347093
+  - node: 01a1646f-546d-7042-befd-eb3a326031ea
+    reviewed: 1d2e740b19097ae580e542ef4e30bb7c71531997fa8e3cb8fa4995e91293a3bf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an answered question folds to its answer, with who gave it, when and on which channel"
+        body: 75f2a9cc52fcbe8de3ff5bcb978032bc588deffb8277700856c43ffd96d4fb37
+  - node: 01a1646f-546d-7042-befd-eb3b26314975
+    reviewed: b662675546b47f4d839b3eec17810eda6cf4fd82caca6ec438acee199479df22
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an approval or a plan shows its markdown, and once decided its outcome with who, when and where"
+        body: 46ba888a72ca4de4ec58e7fdaebd2180dc1e6e40f74e2b61d2fbf17ac50d1356
+  - node: 01a16475-7fbd-7213-a7f7-927e63f98c39
+    reviewed: 269afa72e801017546d811929603f430e0fa9c5cd76d14bd4022e5ff9dfd0397
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an approval or a plan shows its markdown, and once decided its outcome with who, when and where"
+        body: 46ba888a72ca4de4ec58e7fdaebd2180dc1e6e40f74e2b61d2fbf17ac50d1356
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page shows a block approved once the person approves it, and the count of what waits changes"
+        body: 874db02fcbffec2b6a552d538dd378f53ba85a808792c949795c60f0e467af25
+  - node: 01a1646f-546d-7042-befd-eb3c782601a4
+    reviewed: 11ae27cd8963f892dd55ee8d7a8c51c1475bda8cef885a2be3cddae0c74a8c51
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a decision is drawn at the head of the question it settles and given no card of its own"
+        body: fc30c1b3d601d7f1f18d0d4ee3894654f984d0e85e246f9e818f613d38f0cac0
+  - node: 01a1646f-546d-7042-befd-eb3dabdc81f0
+    reviewed: 3bb1fd05f0abd7cb429b08f94d187f283573e0728d390cb9ef1214a8ea9b9a85
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a task shows its title and its state"
+        body: 57829834bea8391152c9f6fe40cf43fac2defd7a21c8868989b957c6fc3215db
+  - node: 01a1646f-546d-7042-befd-eb3eba30c3b0
+    reviewed: f6f40ab46f1970d49a86db69a6c64a5f666ab2ec039ed28e2caf91d6d8e596be
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "each block offers the agent that wrote it, its version and the time it was written"
+        body: a3fd3db64232cbedcf002e2ff499ab0a8dd4ce654b768a069ae0f54b2d709876
+  - node: 01a1646f-546d-7042-befd-eb3f215b9440
+    reviewed: 3a9c5bd236dc0ca5c1bfc4d1e3bf0e0babdb4f4251718dd56fb65dd5d138ac1b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a block with more than one version offers each earlier version, with who wrote it and when"
+        body: 74aaa1fdde1ed3edf63a5776923784cf567713be920968be1f01587b57f5fee3
+  - node: 01a1646f-546d-7042-befd-eb412239f4dd
+    reviewed: ed5f1b3793262a6791a31779c80ec79af52544af99b333b03f1c2ae38b08976f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a decision is drawn at the head of the question it settles and given no card of its own"
+        body: fc30c1b3d601d7f1f18d0d4ee3894654f984d0e85e246f9e818f613d38f0cac0
+  - node: 01a1646f-546d-7042-befd-eb42abe3e622
+    reviewed: 12b84ada9b4f21be393aa0efa6cefed66762020a4344bd3e6402d8c040546bfd
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a decision is drawn at the head of the question it settles and given no card of its own"
+        body: fc30c1b3d601d7f1f18d0d4ee3894654f984d0e85e246f9e818f613d38f0cac0
+  - node: 01a1646f-546d-7042-befd-eb4303724eca
+    reviewed: 1c8ac6335ec2a85e844289390509933f4504b14e506bb48e9732665c02565818
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an answered question folds to its answer, with who gave it, when and on which channel"
+        body: 75f2a9cc52fcbe8de3ff5bcb978032bc588deffb8277700856c43ffd96d4fb37
+  - node: 01a1646f-546d-7042-befd-eb44bad677d3
+    reviewed: 9cff2318109211fe7013e1bd75879bf905627f663aa2bb9f04de318442af9649
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a decision is drawn at the head of the question it settles and given no card of its own"
+        body: fc30c1b3d601d7f1f18d0d4ee3894654f984d0e85e246f9e818f613d38f0cac0
+  - node: 01a1646f-546d-7042-befd-eb4543622219
+    reviewed: dce88b9909ad34a7501db1c3197134e801a9f939b799d0df657635cfc2959269
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a question that more than one decision names is headed by each of them, in the order of their numbers"
+        body: 5a8af19b46d3a778996db47b0ab23d9f55056a734c2c2a3545a48f4843aa48f5
+  - node: 01a1646f-546d-7042-befd-eb47a12567f2
+    reviewed: 72a7f7db30f0123bbb56033e7f54f4b7c0b11ce8124c5071bba8cceacf3175b0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "html that a block holds is shown as text and makes no element"
+        body: 6dd85cef2861fffb75e437dadf784fff5a9bccdd1ca24ef2101cda14bcddff08
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "html_that_a_block_s_markdown_holds_reaches_the_page_as_text"
+        body: aaa3f1dcb364788e68996acbbd8e9962494240af78b92328436835a8e0d78597
+  - node: 01a1646f-546d-7042-befd-eb49f9b1a9a6
+    reviewed: 326cfc627ca4f28c34e5fd5ed40ec11d601bee13780f777acac4024c9a5740cb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a diagram is drawn from the vendored Mermaid, and one that does not parse shows its source"
+        body: d8a1732f0056daeeb34a8625831db8cf812b0ed34127594e1cd5e174420162d5
+  - node: 01a1646f-546d-7042-befd-eb4b0653b23d
+    reviewed: b3065eac059925fa66c3d4992230182e1708cad803af938a863a98a7c5e0e7e5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "closed Yard Log shows when it was closed and offers nothing to answer or decide"
+        body: be2255503951651de0807d0cfbc6c3fc6a088a00f70afcf0727fb177670cc274
+  - node: 01a1646f-546d-7042-befd-eb4e1610e29f
+    reviewed: 863323265538fc6f0d7699b7ec015842d46a4b115178f7949f7b5eb72efb878e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a block that an agent writes shows within 2 seconds of the write"
+        body: 0ff4e9d240c9d93bee34edd6bf8ee5a7326ae6786d31a3077d121bcd840b5617
+  - node: 01a1646f-546d-7042-befd-eb4fcaf9fd4b
+    reviewed: c7c4449f2ee8943336923f95035d022a4420710961f8bdb4873f79f17b44706b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an answer given in Claude Code shows within 2 seconds, and the count of what waits changes with it"
+        body: 01bf6f0fdb26d168b2f2c7a8e33255ce421fe9750d661a8e6497e03dcdf1d558
+  - node: 01a1646f-546d-7042-befd-eb5075712d1c
+    reviewed: c642e8b75525866c4ac4718bbbb1bdb206ef0d148334cb35d22c8241b33ddb95
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a Yard Log opened in another tree the page server serves shows in the list within 2 seconds"
+        body: 3b951449bbe8da339a4ca517b3d6ddcf89cd1fe14aa4f7343ff8898f6b87febf
+  - node: 01a1646f-546d-7042-befd-eb5140658694
+    reviewed: 1e2c80d37d8d6981f5730d55fab8b4f0bd2c9b1c28a7af964f364d3d5083b932
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a choice the person has made and not sent is kept through a change"
+        body: 97f7c222b9c8278cb9b9572d791bd5967e9c5725ee7904d5521f401e7476bd6c
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a rejection without a reason records nothing and asks for the reason; with one, the page shows it rejected"
+        body: b8ac2f22bab887c5bc8b1ceed7bca9f691b3c06894f76bf83cf2047739f770d0
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a reason for a rejection typed and not sent is kept through a change, and forgotten once sent"
+        body: c7f17a6761f4719c208de3cb15c17dc81f7d48614c0b4029f9c5c58484ed4361
   - node: 01a1646f-546d-7042-befd-eb538ff1d6c4
     reviewed: c4fc52b706c7b00ba652478eed70d7c8962c7bf36b4dd96aa88e879663a977f1
     tests:
@@ -21183,6 +21570,219 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "a_change_that_git_makes_reaches_open_pages"
         body: c1686f774b9b3f51c9e9e8383809d36e27f5064beb0e525cf27d0172d6de30c4
+  - node: 01a1646f-546d-7042-befd-eb57085a1ead
+    reviewed: 7ca4a201916a9d2867f8a0bb74877f8a87f713db324ee8af7624230601b269db
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "each block written, answered or decided since the last visit is marked, and the page counts them"
+        body: 96aa4849c7f368f83a0c8d1b39d70c8db81c919f7cd1d852872b4e618d2d5eb7
+  - node: 01a1646f-546d-7042-befd-eb5815a8b42b
+    reviewed: b5ba9db8be8cb50693fab7dd956e775e1fc9274d1eed80a77ee07d8f484817a6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "opening a Yard Log for the first time marks nothing"
+        body: c2df0186515cc518bb4eb509038e136b09ccbaef40df144c68f08c12af0f98da
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the revision of the last visit is kept in the browser, and what changed since is marked and counted"
+        body: af16365d24cd4d8121201026c50a2823b8392cc2f4360de9a25ca28eb8ca7b88
+  - node: 01a1646f-546d-7042-befd-eb59defed662
+    reviewed: b2ac179734199425a35b620c99a2ae27b059561887e0afefc546e71c87d4fd57
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the revision of the last visit is kept in the browser, and what changed since is marked and counted"
+        body: af16365d24cd4d8121201026c50a2823b8392cc2f4360de9a25ca28eb8ca7b88
+  - node: 01a1646f-546d-7042-befd-eb5a0f40a50e
+    reviewed: c3ec237c98ef56e72326e8366d44551af64820721f68d4c8b7965ac701bb7c6a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a block that a merge brought in since the last visit is marked"
+        body: 1f844d8a52a8d6d6e0d579c5521d0ec001de36b704986b51281ddf83e8a8dcd3
+  - node: 01a1646f-546d-7042-befd-eb5bd46052dc
+    reviewed: 8dfea122ed4629fee7e634e421dd2b6c873c998c1f21a7c59c28265ef9eda17d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a question whose decision was written after the last visit is marked as changed"
+        body: 769933a71d4464dc5b3c011dac6d25de412e8adfebdf435bd0016b684018866d
+  - node: 01a1646f-546d-7042-befd-eb5e8b4c055c
+    reviewed: a9f22f9e332c89c102ebeda46f9d2ac826b573bd556869bd914bfd1ce82c991d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
+        body: 851e2599b0a0e63e597660bae1318b3d85b3c90d8aa6b4dfa83419aa0b84244b
+  - node: 01a1646f-546d-7042-befd-eb5f8c067f0b
+    reviewed: 3c842f94d0a223b313d84032bf83f8fcd978d68f4e1eb6f72039bdc6dede4ab5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
+        body: 851e2599b0a0e63e597660bae1318b3d85b3c90d8aa6b4dfa83419aa0b84244b
+  - node: 01a1646f-546d-7042-befd-eb60eba23d76
+    reviewed: 48d122bb52e03b0d97977689926e2629e89b0d4797f2672393401aab7284a609
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
+        body: 851e2599b0a0e63e597660bae1318b3d85b3c90d8aa6b4dfa83419aa0b84244b
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "what_waits_on_the_person_is_listed_oldest_first_across_the_trees_served"
+        body: e3c76ec15b697ec2ceb1222167f045edeaf0460d8624229e037eb7988633eede
+  - node: 01a1646f-546d-7042-befd-eb610be82633
+    reviewed: 78130a0e306b9007041c704210e95eba3ef7b348938882e2df78da226394dfa5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "with no open submission anywhere, nothing is shown above the list"
+        body: 8c6c565f75c70fe7edafd562fc1918fce0a554d0ac6f7e6ded71d95c3045ed06
+  - node: 01a1646f-546d-7042-befd-eb6376a28807
+    reviewed: a9f22f9e332c89c102ebeda46f9d2ac826b573bd556869bd914bfd1ce82c991d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "the open submissions of the Yard Log shown are above its timeline, with when each was sent and by which agent"
+        body: 28f6970d6f0a8571ae73d31814f6f5df9d2f58e23b77199e6fc1d41cfb0ef9b1
+  - node: 01a1646f-546d-7042-befd-eb648d58cd02
+    reviewed: e2adbe3fd9fd7738b12732fecc73bc934f9cc820681361b076ef7fc6dfd29d39
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "where Yard Log has no open submission, nothing shows above the timeline"
+        body: a0acaab8c2bcadc226b44c3e2d86061fb7d87c2c1cf444a8fe3a7c048b920a02
+  - node: 01a1646f-546d-7042-befd-eb66aa4b28b7
+    reviewed: d68fedf468ac9cfdc36cb56011a5a736eae23d2e9ad2525d4b1fd9135a1c86fb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an answer given in Claude Code shows within 2 seconds, and the count of what waits changes with it"
+        body: 01bf6f0fdb26d168b2f2c7a8e33255ce421fe9750d661a8e6497e03dcdf1d558
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page shows a block approved once the person approves it, and the count of what waits changes"
+        body: 874db02fcbffec2b6a552d538dd378f53ba85a808792c949795c60f0e467af25
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the count of what waits changes within 2 seconds of a submission being withdrawn"
+        body: cea3e001221a5f274f7f2ac89012fdeee10e002c875236d2c8ee1db2dcf6bb0d
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "the page title gives the count of blocks that wait on the person"
+        body: e3d7cc9af84f82f634f11ef386e77e053e4ac8832c6b88a8f13e8782ef4fe394
+  - node: 01a1646f-546d-7042-befd-eb69ef96a504
+    reviewed: dd5ed12d48818f619e1d4ce0a52b73ef1280a59e876d227d1aca4e0afe569229
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
+        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+  - node: 01a1646f-546d-7042-befd-eb6a95402082
+    reviewed: c5f20683f5e0c8667aeed4a6be61164f9ff1a0a0bd9f0dacbaa3d907a3e477b8
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
+        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+  - node: 01a1646f-546d-7042-befd-eb6b4a34aab6
+    reviewed: bacbf94e19a7a858ac362bb3162e1ae58eaa1569cab549d83dd09e3909bd95a7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
+        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+  - node: 01a1646f-546d-7042-befd-eb6c59e28e31
+    reviewed: 5503484ef181533229d1c0812fd810f5681455384e19e1d2d46e710fdf9a5d7c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
+        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+  - node: 01a1646f-546d-7042-befd-eb6eb970ce29
+    reviewed: 3e6a81087a6ccb8d20705aa248c9635b88ace4ee95554add094648619b0a511e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the main agent’s lane comes first and names its session, and a subagent’s lane names its type"
+        body: 3cb3f19ac5b453e73b33fd564f86fafb53a91d246f08c8f150a64982e0bd6313
+  - node: 01a1646f-546d-7042-befd-eb6f76ba9323
+    reviewed: 8d4e8bd47c0f211f5fc656d23c4827ebfb3847b1d49c9289b5fa30c941b289d6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the main agent’s lane comes first and names its session, and a subagent’s lane names its type"
+        body: 3cb3f19ac5b453e73b33fd564f86fafb53a91d246f08c8f150a64982e0bd6313
+  - node: 01a1646f-546d-7042-befd-eb7012fbe6ee
+    reviewed: 399d79c772f91b9f23a30f77837b7884edf209e3d4e6700b68e3d61666219c45
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "lanes that overlap in time are drawn one above the other"
+        body: a8b0b764a766b9d6c8ac71f236b7ac8c5d674a7c52c1ad163185df82c480d5d8
+  - node: 01a1646f-546d-7042-befd-eb725ec431a5
+    reviewed: fb06aa60621e3807e63c300a7b6fbb30e2302014822014bc02ae6cf92435fcb7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each stage runs from the start of its work to its end, or to the start of its agent’s next stage"
+        body: fbf6f42110a0e619a1d564de679588cfe01177de236e323434448abc0bdef326
+  - node: 01a1646f-546d-7042-befd-eb7363cd4676
+    reviewed: c2cf0dde8ea1c7debdc393d170c436490c1000104dd39b248024768cbe0b9658
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each task runs from its listing to its end, marked active from its start and done where it ended done"
+        body: d6988fe6f91aadb20c2c8e84fde193dd855a4624af342972a806b0d186d6e735
+  - node: 01a1646f-546d-7042-befd-eb74547e7a25
+    reviewed: c2f0123fe9fa3960865e169bb5542d28099cab53d24b70834c47ae6687672b89
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a task with no recorded times is drawn at the time its current version was written"
+        body: e9cad9a0946830d6bfb5a56a272eecd02239d52c35a68bc3ec15468efe7c5ccc
+  - node: 01a1646f-546d-7042-befd-eb752ee05c31
+    reviewed: aa6a00452f0f41c32df00ad5f46ede0a77a43586a311b348779094cdef6e4d2a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each Loft run is drawn under the stage its agent had active, by its subcommands, and each Loft view at its time"
+        body: 41aa665ce095024a691f0e7bb250817a6b9ad778682ea202fd09d6594e39a286
+  - node: 01a1646f-546d-7042-befd-eb7684da415a
+    reviewed: f8818f6c3b6a68144e106fb70458b117a9b0ae64f22e66f595bcb0b2d95a5a34
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each submission is drawn in its agent’s lane from its send to its last answer"
+        body: d15fc22426cbeade400738351037719af37f5fe8086ef5bd226e8e335434bd4e
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "the_page_reads_every_submission_sent_with_its_changes"
+        body: 04d1d2103a64f686712fa99defab796211212692283d89fe36f4668074feec6f
+  - node: 01a1646f-546d-7042-befd-eb7765e7bec9
+    reviewed: a69938efa2cdb0a26dbc393cb98aa95b63ca315a8aadd16b2a085a47c4d0a3fc
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a stage’s time in a turn with no active task, Loft run or wait is agent work"
+        body: 381372ea078a378331efe8909e56feeca82a41de6b158ecc994c11b974ddd37c
+  - node: 01a1646f-546d-7042-befd-eb78faca6f3a
+    reviewed: 89bcdb38b41a4135f55441f9ae8988e399dd158f8d1f90a306a501dc969e69b9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "time outside the turns is idle, and an idle stretch longer than 45 seconds is folded and labelled with its length"
+        body: 0ed36af532d1354c3a32b51c447368e93fcd5a4c61bb4558cd8689f99c80273f
+  - node: 01a1646f-546d-7042-befd-eb79bfb93e3a
+    reviewed: ceb5c504db1fa6e6a6fb2e7229169ef6fd5583bd1416446516fe620251f40c81
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the bar above the chart divides the time not idle into tasks, Loft runs, waits and agent work, each with its length and share"
+        body: 719d36e8875ec65b0ac0852720d3c83c8fcda01bea4ef294d21bef847813f22c
+  - node: 01a1646f-546d-7042-befd-eb7ae5af3ff4
+    reviewed: 932b77ed1660b545105bb444e4fd43b852348a7dac5111e71da4a38c06026f86
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "choosing a stage, a task or a submission in the chart opens the timeline at it"
+        body: 4f50574dd1ee5bfc3e2b10b05904db2862a04afb845ad462a8216811c4333d68
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "choosing a stage in the Gantt chart opens the timeline at it"
+        body: a9ebc3764d943bb95d42138af12303c21e252a90630f1903bec70ce636f4dfce
+  - node: 01a1646f-546d-7042-befd-eb7c8d9f3725
+    reviewed: bdc0c51b8f009c86ad173244e3a55826be93e7072118b93384af426396ba0fab
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
+        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
+  - node: 01a1646f-546d-7042-befd-eb7d31ce0c2d
+    reviewed: 5c67488a89d5572106b6af4f00b2efca11e13a236ea95bb04946dcc7566a5321
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
+        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
+  - node: 01a1646f-546d-7042-befd-eb7fd8a33165
+    reviewed: d23c81509015c65dc7720052a963eb899e3663fa2daaa8f3974c25fe263b071f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
+        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
+  - node: 01a1646f-546d-7042-befd-eb80ccffb25f
+    reviewed: cfcea00bc0a7b514be5132d42acbda52f149316a0d29988aaa3d45d5e8034219
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
+        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
   - node: 01a1646f-546d-7042-befd-eb83315a9b4a
     reviewed: 52d99de94924b969a84c11482d28b3e8248492b4e58fb1b5e11ac2da46b24688
     tests:
@@ -21309,6 +21909,33 @@ links:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_trace_view_holds_what_loft_reconcile_prints_and_the_criteria_of_each_feature_the_branch_changed"
         body: 41d5389542ed76404b181797fb72dacff82ea649bf671e8a1042d9059604c5f3
+  - node: 01a16571-d769-7590-94aa-9784cae11170
+    reviewed: 8963a10406ef5d77961805a56956c7089f1db5b52a9944e7893c5036dcac8f16
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_draws_a_changed_feature_under_its_feature_group_and_product"
+        body: 42356924fcb1dd4eb2355e1d7cc3e801a0c212a45ec45ce9247edfe4b1f8e2e4
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_counts_a_feature_s_requirements_and_criteria_and_those_changed"
+        body: 9ca66a08b3fa2f89d141fb34fa4636bebcd089b7f7929dd6cdf8b755bc35d600
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_draws_the_realizes_edge_between_two_changed_boxes"
+        body: f1f7dbd05080ef52aa0416c79d3627c0a7257468e5544f4239b5901f1c18eaf6
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_of_no_change_draws_no_box"
+        body: 1c0f4b012550204b3b24cdaaf69d258a96faabe45f1b48d31cbdf67a748a049c
+  - node: 01a16571-d769-7590-94aa-9785944c7484
+    reviewed: 03cf7688a67b5550592c6d3d0eb70d2a9d2bc5139cf2d1d3a077fe2b6c0c1f25
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_publish_view_compares_the_tree_with_the_commit_that_last_wrote_the_lock"
+        body: f508db52ccd4328d467d3fc9053e8daaa1c7552ee30c1ddb50c2036106f19bd8
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_publish_view_where_no_commit_wrote_the_lock_holds_what_loft_status_prints"
+        body: 151c90a952cfef8833c9dfdd270f3a492fc35038b00a06e5747f5baafc1759e5
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_publish_view_counts_the_labelled_nodes_and_decisions_by_kind"
+        body: 562929b96ace637995cdee50ab3f48f291df39acfbaf6424e1148d11d51f41de
   - node: 01a1646f-546d-7042-befd-eaa7516bae91
     reviewed: 4f1b9a9c02e16ae10d15f20cfcd36a4084067ffbe69dc909f4a1c3e9b9abc9c0
     tests:
@@ -21360,6 +21987,261 @@ links:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole"
         body: 687be064bf9a404d88fd59d2bc8d911e7ca896fc7ffdcad4b1e228344755c677
+  - node: 01a1646f-546d-7042-befd-eab87ad2fa8b
+    reviewed: e1b9f4fca3d37767aeeb549d5eaeb1e5a8ad0412bc00f4f83640f29ef869c41c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
+        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+  - node: 01a1646f-546d-7042-befd-eab9f27ee1c1
+    reviewed: a0c88885dce71550dbfdbbd5a638fa208ecd51822d5a1943d2cec6b0bc3e453c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
+        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+  - node: 01a1646f-546d-7042-befd-eababcab5af2
+    reviewed: 0d9fd5291d8784390b1f197255d6cfa5211f2b676f9a8af9e8643133badc5589
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
+        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+  - node: 01a1646f-546d-7042-befd-eabbb57e9401
+    reviewed: d2d3424d18c152652749b1def082d1935c0c58a9b64239f33e7bc9d0e23cf6fe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
+        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+  - node: 01a1646f-546d-7042-befd-eabc540b4e07
+    reviewed: f3fe2f71fb1d3a8c92815f3b4a1f50f685fca6206cd2eaec3700f1a3ff9559d7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
+        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+  - node: 01a1646f-546d-7042-befd-eabdd040918b
+    reviewed: 2060621bb194fca44e1ea6e0d7846104f981b5ceba911fb4d5ebd7baa48e16b2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision that is not accepted shows its state, and a rejected one its rationale"
+        body: 80e157c5cdd62a89a0670f99d7de32da58ab55bb0fa412e4a7c07646e784be26
+  - node: 01a1646f-546d-7042-befd-eabebf41cb3d
+    reviewed: 3a4667a957131c061c3469272816e7c4dfdff1e5a13f365782275aa1d6241fae
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
+        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+  - node: 01a1646f-546d-7042-befd-eac1d09f5f92
+    reviewed: 356d378722c644b385f3df25c227d3b53c293286791ce3d1ac51f4c39f2736dc
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a spec change diagram shows each changed node with the Feature Group and the Product above it"
+        body: 13cd964960d7f1089a7368b53d02eff573fcc39fd2db57466572b8efd65cd954
+  - node: 01a16475-7fbc-7732-a78c-bc4f592eb112
+    reviewed: 32fda0916c49229359958cfc864f362fcd6a593f32071d2ea8f5e518e7c4128f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the diagram draws the realizes and decision subject edges between the nodes it shows"
+        body: 52a3b37ba4a91240ef5e8d394892fb98ff4914503ffb2303a552900d38958cd6
+  - node: 01a1646f-546d-7042-befd-eac271279597
+    reviewed: 99d60536611c7a4634efcd6ee14e175b7897d27716ee2389087b3dcb678aa57b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a Feature box counts its Requirements and criteria, and those added, changed or removed"
+        body: 976e57faf3bef2bd2daa8af53e5db50c8f471a280a2d0898267bf63b9bcff40d
+  - node: 01a16475-7fbc-7732-a78c-bc50ee43201f
+    reviewed: c25ce3ff0e0e6884fa4af02d84dde8637034be8f834c5dcd3deb29b3b30fea0a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a Feature box counts its Requirements and criteria, and those added, changed or removed"
+        body: 976e57faf3bef2bd2daa8af53e5db50c8f471a280a2d0898267bf63b9bcff40d
+  - node: 01a1646f-546d-7042-befd-eac305fe0fe5
+    reviewed: 1cb710df492c7d8c0b616a76bf4261697ea47f7bc4e556421d5324177ea30465
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "each box says how its node changed in a word, and a box drawn for context says neither"
+        body: 3ca78591e4b1484031046ca0865fe49e7a53c6f9338c799217b17bcb6ea25457
+  - node: 01a1646f-546d-7042-befd-eac47fbbbfb2
+    reviewed: fcefd39502c3722aaf7f5734e0befdda0fe1ff291923a605516e4d208395d1b2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a spec change diagram shows each changed node with the Feature Group and the Product above it"
+        body: 13cd964960d7f1089a7368b53d02eff573fcc39fd2db57466572b8efd65cd954
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a Feature box counts its Requirements and criteria, and those added, changed or removed"
+        body: 976e57faf3bef2bd2daa8af53e5db50c8f471a280a2d0898267bf63b9bcff40d
+  - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
+    reviewed: eac542827b2b8c72d2e7c4da04766ee0073edcc60e90c10a955c1b9230ca3efc
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
+        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
+  - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
+    reviewed: b0e2772049c3cf78b3c3aa90fdb1ddde2d24a818b5873679263fe530f7ebc87a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
+        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
+  - node: 01a1646f-546d-7042-befd-eac6d7f3526d
+    reviewed: 4ed5abc236ae1444aadb7a591c678222470ee5f95f3e3788e366cf3bc508cd9e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
+        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
+  - node: 01a1646f-546d-7042-befd-eac7b48cb905
+    reviewed: 5a775079803ebb72a354fb9583c1d66ca46e2c7d47624f623ad2b09cad64f1fa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a spec change view of no change says that the specification has not changed since the base revision"
+        body: 4518e36f431f870d396db1c24a82dfaf912feb3100420bbf33ee4d44b808e141
+  - node: 01a1646f-546d-7042-befd-eac9dc2edaf7
+    reviewed: 1ad2a9dbd42978a9eeafca56ff38ff75186ee908cde099aab5d5a5cfa3f811f5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "opening a Feature Group draws its changed Features in place of its box, and opening another closes the first"
+        body: 87b84c46490ece2bddd2d798410d2d394d354afffba57dcadbb9c0eab7201f2e
+  - node: 01a1646f-546d-7042-befd-eacaa63dddfa
+    reviewed: 2bdf176a550307ee7b8df2b5b4e782d0460ac22c2b7b996cc3827a64f78fae7a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "opening a Feature Group draws its changed Features in place of its box, and opening another closes the first"
+        body: 87b84c46490ece2bddd2d798410d2d394d354afffba57dcadbb9c0eab7201f2e
+  - node: 01a1646f-546d-7042-befd-eacd8a7f0685
+    reviewed: c07d7b7fd3d97ceae1098764acb31345d4ff92afb894043cf6ba07ef794512c1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
+        body: 4516d2dc8320e0e4b912187afbb991bcb73173006da10ae0acf905578a67d8e1
+  - node: 01a1646f-546d-7042-befd-eace3bd53656
+    reviewed: f4fec1e8af5d2127c115851e76af988226afbbeafffd6bf3cdedef74b8e45b4b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
+        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_findings_view_names_each_node_a_finding_names_by_its_label_and_name"
+        body: 1a097780cc5de83fbf7ef5dc474d7f2e1b747a88f4b1de6153fffa9dd074be27
+  - node: 01a1646f-546d-7042-befd-eacf19310610
+    reviewed: 7c0e4ab7b55dd2a128d6fe52a7606f88efb72e8182f41f8314f8107468f5a856
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
+        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+  - node: 01a1646f-546d-7042-befd-ead0ef8802b7
+    reviewed: 36232e19decf1e8b38659d5e02554b8e42222b6c9aa1811f77d27078d3ccaa6d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a check with no error and no finding says that the specification is clean"
+        body: 877d3a11785b94da7eec24e7b5b0d2e69d1b696fb6ece67f7307f924d6a49e3f
+  - node: 01a1646f-546d-7042-befd-ead10ce7a734
+    reviewed: 8a3d8c6cd97add966278bc381c7856ecfef824d3adbc8342ebe4656470d51a65
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
+        body: 4516d2dc8320e0e4b912187afbb991bcb73173006da10ae0acf905578a67d8e1
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
+        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+  - node: 01a1646f-546d-7042-befd-ead279dd7751
+    reviewed: 14c726cdae8d1198ab4238abf00070bda0ee4c1c6cbcb3ce7ad72acf31a84ec5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
+        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+  - node: 01a1646f-546d-7042-befd-ead3b74268b1
+    reviewed: 3928d58f5b021c0de939751fbf7b230b94954eca3d2534bd211cc4c1c17f3a83
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
+        body: 4516d2dc8320e0e4b912187afbb991bcb73173006da10ae0acf905578a67d8e1
+  - node: 01a1646f-546d-7042-befd-ead6c6d6b941
+    reviewed: 34e9d3d3aac34e4f380f6b66f30274ab91f55e302a1e1e7b6dc6d0e4e9a45621
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a publish view shows the lock’s sequence, time and state root, and whether the tree matches it"
+        body: 4128e0de794c2b61fdc0b1c07079b12c81f65a860f7f8df282f79894d25d1565
+  - node: 01a1646f-546d-7042-befd-ead7408d9f06
+    reviewed: 9b14b99a46bd023edaa6c0f9971da926d40083583ec8cbf82dbb6077a7679924
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a publish view shows the lock’s sequence, time and state root, and whether the tree matches it"
+        body: 4128e0de794c2b61fdc0b1c07079b12c81f65a860f7f8df282f79894d25d1565
+  - node: 01a1646f-546d-7042-befd-ead8398e61d2
+    reviewed: 47f051f5887c01c21273481e0037caefb1734037287ff48d08566e797c852b22
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a tree that differs from the lock lists each node added, changed or removed since the publish"
+        body: d5764829410e4e37f42a137d48de620ad30adfbc3d19b86834f303f348961236
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_publish_view_compares_the_tree_with_the_commit_that_last_wrote_the_lock"
+        body: f508db52ccd4328d467d3fc9053e8daaa1c7552ee30c1ddb50c2036106f19bd8
+  - node: 01a1646f-546d-7042-befd-ead9aab1918f
+    reviewed: c8c380c5c69c979ccb733dce5d9a11c45fe3850b4af3722e9afdf3429e9c4a1c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a publish view shows the lock’s sequence, time and state root, and whether the tree matches it"
+        body: 4128e0de794c2b61fdc0b1c07079b12c81f65a860f7f8df282f79894d25d1565
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_publish_view_counts_the_labelled_nodes_and_decisions_by_kind"
+        body: 562929b96ace637995cdee50ab3f48f291df39acfbaf6424e1148d11d51f41de
+  - node: 01a1646f-546d-7042-befd-eadab8a39d69
+    reviewed: 1eb0557ab5d84a33615f286831de5757c8d33991927a1c3446731e5ba35a4a7d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a working tree with no lock says that the specification has not been published"
+        body: f28e0a9edfa1d12f6591e1537b787086dfb100dd865cae5ae39d6c870a3153aa
+  - node: 01a1646f-546d-7042-befd-eadba199421a
+    reviewed: ca2152c423759d5bfc3384588174de687ac84cf712f826db8ddafc25dc3ef679
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a publish recorded after Yard Log closed says it was recorded on the base branch after the merge"
+        body: b22cbca78baeb582bc2edd01ef898f19d1a436706f929c38d0342de7ef6cc5ba
+  - node: 01a1646f-546d-7042-befd-eade17b99637
+    reviewed: 437311f71cb177ff667acd5ef0fd0b30617e692e06f71d67eee2f21bea529153
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
+        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+  - node: 01a1646f-546d-7042-befd-eadfa7c7e421
+    reviewed: 187257d8c412ceb316303e77c33abc2bad4c75ec4b1bcfe3d4e8fcfe96486d2d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
+        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "where every criterion is in one state, no count is given beside the bar"
+        body: 4bdac3a1ac826af04ed0aac7c36f5597fac39a7f07ddfad5c05f86ec010cd622
+  - node: 01a1646f-546d-7042-befd-eae04a2537c0
+    reviewed: eba4c6926764f88166b37b61555ca49f2f279146dc58091c7681c2cfc28b0d37
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
+        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+  - node: 01a1646f-546d-7042-befd-eae166cc8004
+    reviewed: 655385dbbcdae1a9be887ec4620c4de994dfc739ca5e09736e186cc4f94739f6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
+        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+  - node: 01a1646f-546d-7042-befd-eae2b314450a
+    reviewed: 4d9020840d4c3e0aea79d9f4994ff0bc9757ad735e8502eeebfe963d5ad8c3b4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "each criterion of a trace view is marked accepted, not yet reviewed, stale, unverified with its reason, or not linked"
+        body: 9bc6b9d3df5baa81f5855445e77d67d190dd96a49c07d10794eaed8e00e6435e
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_trace_view_gives_the_reason_of_each_criterion_linked_unverified"
+        body: 6285ef8ea24631ba737fa3463f368d74b6b942fefdeb76a78392425341095bbe
+  - node: 01a1646f-546d-7042-befd-eae34b438416
+    reviewed: 8892445d0d3db9bfc98e677912c7d2121d1b226e0ab2b992ebc4704dae1512fe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
+        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+  - node: 01a1646f-546d-7042-befd-eae4edf1b696
+    reviewed: e56d2d84e1a8c265823e194b424f188cfcfb97e03bde001543e3b8c09df86721
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
+        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
   - node: 01a1646f-546d-7042-befd-eae7dbf9b465
     reviewed: 647ba21538b3ccdb3973b7fd0664e666b07631211d3818db88bb8be007ff5894
     tests:
@@ -21543,6 +22425,54 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_whose_agent_works_in_another_worktree_is_counted_in_that_worktree_s_yard_log"
         body: b08bcf38028d4cd4d0ab5c00eec513e7ad67e22d966e303f06d09315dcc7dcfa
+  - node: 01a1646f-546d-7042-befd-eb18be1fe4d9
+    reviewed: ba2bacdc8df73216c5f5e2b2f95c60502be149fc483aa98c37d00d00c6db10ef
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the four counts in all are summed over every totals file"
+        body: 87398a03a08cbdeb6ed03604a074e95090fbb888b01e3e94b2688f3b9bb3ed18
+  - node: 01a1646f-546d-7042-befd-eb19fd65c436
+    reviewed: 284c1f9a86f72ba344ca0d5e184f2a4849d183d358e813b2c1ac0cec4d1a27b1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "each stage has the counts of its requests, and those under no stage are shown apart"
+        body: f15c6aea079a1b0c9b4d1083d67713bf43d72f19bf9943d7d2110ae61789b0a2
+  - node: 01a1646f-546d-7042-befd-eb1a9003423c
+    reviewed: 178ca3146367dd4f40f870fd8b64b77a7a9e58a276935fc0bb156dc5fd9fd2bb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "each session is listed with when its first and last counted requests ended and its counts, the earliest first"
+        body: 2a21fb555fa8efe0eac54ff482804ea6e57d220fe52cc0374cbc7d6ee0018a6c
+  - node: 01a1646f-546d-7042-befd-eb1b42b4a475
+    reviewed: 10e7243d61531774206b026bf3e6726a1cda4ab44e9f10fa19148c892ae7cc80
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the main agent and each type of subagent have their counts for each model they ran on"
+        body: e844da5db504c55ef06fb454ad1687a62a1d2d7f0985406d134f456564121ebb
+  - node: 01a1646f-546d-7042-befd-eb1c9a6d4d36
+    reviewed: d4c89d4b6e29286a2657c41829f157f6dadfae4df8ddc07283bc17c000ae7d21
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "each submission has the counts of the requests that ended while it was open"
+        body: 47558f8e247b2f551eb0db9377350dd3566de7cd9ac14d76504747d7f20e92bb
+  - node: 01a1646f-546d-7042-befd-eb1d0e18125d
+    reviewed: 1fb79f767b25ac09192b4bdcb9eae1c0ea4e3160fa64abb9fa8fe1663046631b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the page says that requests made inside Claude Code’s own tools are not counted"
+        body: a55196078c6977ddc50fb4e9a8da8f3fac4b8a34804a76caf8ce0901654be1e0
+  - node: 01a1646f-546d-7042-befd-eb1e1e831c2e
+    reviewed: e0e380730479b2aebcc2c6700df46e5b422ffdd456f29331e5d66720b31563eb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "where no request has been counted, the page says that no tokens have been counted yet"
+        body: 51928a5b132496ae06d6673b3584a357efdef3d94edef11f62cff503370513ca
+  - node: 01a1646f-546d-7042-befd-eb20639f67b6
+    reviewed: 14077e1497c0a31d58af4534ec3b3699b39617d027d3d1eeaa33f079629e697a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an open page shows a counted request’s tokens within 2 seconds of the request’s end"
+        body: 66300d59351220c6e9e5c636b55fbeebfaa74aa30b655feb72ed240e0efbd134
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: 9bfb0c16bc1c637e10f46372da282715472bc706a8162fa7b4ec52a2323a6bc2
     tests:

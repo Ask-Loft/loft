@@ -11,8 +11,8 @@ readme = "../../README.md"
 keywords.workspace = true
 categories = ["command-line-utilities", "development-tools"]
 # The tests read fixtures from the repository and use the Software Plant, neither of which is
-# published, so they run from the repository only.
-exclude = ["tests"]
+# published, so they run from the repository only, as do the page's tests, which are Node.js's.
+exclude = ["tests", "yard-page-tests"]
 # The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
 # checked by the operating system once each.
 autotests = false
@@ -48,6 +48,8 @@ yardlog.workspace = true
 yardlog-store.workspace = true
 
 [dev-dependencies]
+# Only to read back the compressed files the page server serves; `loft` itself never decompresses.
+flate2 = "1"
 software-plant = { path = "../software-plant" }
 
 [lints]

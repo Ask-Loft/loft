@@ -5,10 +5,12 @@
 //! running only while it holds its lock.
 
 use std::fs;
+use std::io::Read;
 use std::net::TcpListener;
 use std::time::Duration;
 
 use serde_json::{Value, json};
+use sha2::Digest;
 use software_plant::Clock;
 use yardlog_store::lock;
 
@@ -65,6 +67,45 @@ fn the_page_s_files_are_the_ones_the_running_loft_was_built_with() {
         assert_eq!(file.body, page_file(name), "{name}");
     }
     assert_eq!(served.get("/nothing.js").status, 404);
+}
+
+#[test]
+fn mermaid_is_served_compressed_and_decompresses_to_the_release_its_readme_names() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &[]);
+    let script = served.get("/vendor/mermaid.min.js");
+    assert_eq!(script.status, 200);
+    assert!(
+        script.head.contains("content-encoding: gzip"),
+        "{}",
+        script.head
+    );
+    assert!(script.head.contains("text/javascript"), "{}", script.head);
+    assert_eq!(script.body, page_file("vendor/mermaid.min.js.gz"));
+    let mut text = String::new();
+    flate2::read::GzDecoder::new(script.body.as_slice())
+        .read_to_string(&mut text)
+        .unwrap();
+    let readme = String::from_utf8(page_file("vendor/README.md")).unwrap();
+    let version = readme
+        .split("Mermaid ")
+        .nth(1)
+        .and_then(|rest| rest.split(',').next())
+        .unwrap();
+    assert!(text.starts_with("\"use strict\";"), "{}", &text[..80]);
+    assert!(
+        text.contains(&format!("version:\"{version}\"")),
+        "not {version}"
+    );
+    let digest = format!("{:x}", sha2::Sha256::digest(text.as_bytes()));
+    assert!(
+        readme.contains(&digest),
+        "the README names another digest than {digest}"
+    );
+    assert_eq!(
+        served.get("/vendor/mermaid.LICENSE").body,
+        page_file("vendor/mermaid.LICENSE")
+    );
 }
 
 #[test]
