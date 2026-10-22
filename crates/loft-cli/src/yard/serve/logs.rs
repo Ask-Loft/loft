@@ -11,10 +11,12 @@ use yardlog::Channel;
 use yardlog_store::Held;
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
+use yardlog_store::session::SessionFile;
 use yardlog_store::{Place, YardStore};
 
 use super::http::Response;
 use super::trees::{is_served, store_of};
+use super::{markdown, session_files};
 use crate::cli::{Format, Output};
 use crate::json;
 use crate::yard::answer::record;
@@ -24,6 +26,7 @@ use crate::yard::branch::Branch;
 use crate::yard::caller::{Caller, Continuations};
 use crate::yard::failure::Failure;
 use crate::yard::read::document;
+use crate::yard::render::{act, actor};
 use crate::yard::render_log::{Selection, root, stages, submissions};
 
 const ANSWER_SCHEMA: &str = "loft-yard-answer/1";
@@ -88,10 +91,44 @@ pub fn read(
     } else {
         inherited(&place, &branch, port)
     };
-    match read {
+    match read.and_then(|fields| with_sessions(fields, &place, &branch)) {
         Ok(fields) => Response::json(200, &json::result(READ_SCHEMA, "read", fields, Vec::new())),
         Err(failure) => answer_failure(failure, READ_SCHEMA),
     }
+}
+
+/// A read document with its Markdown rendered and the files its sessions keep, their activity
+/// and their token totals.
+fn with_sessions(mut fields: Value, place: &Place, branch: &str) -> Result<Value, Failure> {
+    markdown::render_document(&mut fields);
+    let store = store_of(place, branch)?;
+    let folder = store.folder();
+    fields["activity"] = Value::Array(session_files::read(&folder, SessionFile::Activity));
+    fields["tokens"] = Value::Array(session_files::read(&folder, SessionFile::Tokens));
+    if let Ok(Held::Log(log)) = store.read() {
+        fields["sent"] = sent(&log);
+    }
+    Ok(fields)
+}
+
+/// Every submission of `log`, open or not, with its agent, its blocks and each change of its
+/// state, for the page's chart of where the time went.
+fn sent(log: &yardlog::YardLog) -> Value {
+    let submissions = log.root.submissions.iter().map(|submission| {
+        let changes: Vec<Value> = submission
+            .changes
+            .iter()
+            .map(|change| json!({ "what": change.what.as_str(), "act": act(&change.act) }))
+            .collect();
+        json!({
+            "key": submission.key.to_string(),
+            "agent": actor(submission.sender()),
+            "blocks": submission.blocks.iter().map(ToString::to_string).collect::<Vec<_>>(),
+            "state": submission.state(log).as_str(),
+            "changes": changes,
+        })
+    });
+    Value::Array(submissions.collect())
 }
 
 /// The tree's current branch's Yard Log, as `loft yard read --versions` gives it.

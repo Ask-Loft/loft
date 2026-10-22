@@ -10,9 +10,9 @@ use std::path::Path;
 use std::time::Duration;
 
 use serde_json::{Value, json};
-use software_plant::GitScenario;
+use software_plant::{Clock, GitScenario};
 
-use crate::common::Scratch;
+use crate::common::{EPOCH, Scratch};
 use crate::served::Served;
 use crate::snapshot::snapshot;
 use crate::yard::{ASK, BRANCH, Yard, block};
@@ -377,4 +377,40 @@ fn a_change_that_git_makes_reaches_open_pages() {
         stream_until(&mut reader, "change"),
         "no change within 2 seconds"
     );
+}
+
+#[test]
+fn what_waits_on_the_person_is_listed_oldest_first_across_the_trees_served() {
+    let mut one = Yard::new();
+    let mut two = Yard::new();
+    // The trees are listed in the order of their paths; the one listed first is sent to later.
+    let (first, second) = if tree(&one.scratch) < tree(&two.scratch) {
+        (&mut one, &mut two)
+    } else {
+        (&mut two, &mut one)
+    };
+    first.clock = Clock::fixed(EPOCH + 60);
+    first.write("s1", ASK, &["--send"]);
+    second.write("s1", ASK, &["--send"]);
+    let served = served_both(first, second);
+    let listing = served.get("/api/trees").json();
+    let waits: Vec<&str> = listing["waiting"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|wait| wait["tree"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        waits,
+        [tree(&second.scratch), tree(&first.scratch)],
+        "{listing}"
+    );
+}
+
+/// A page server serving `first`'s tree and `second`'s.
+fn served_both(first: &Yard, second: &Yard) -> Served {
+    let served = Served::start(first, &["--tree", &first.scratch.0.display().to_string()]);
+    let other = json!({ "tree": second.scratch.0.display().to_string() });
+    assert_eq!(served.post_as_mod("/api/register", &other).status, 200);
+    served
 }

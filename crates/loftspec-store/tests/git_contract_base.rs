@@ -11,7 +11,9 @@ use crate::common::Scratch;
 use crate::real_git::{git, real_git, reply, simulated};
 use loftspec::codec::Files;
 use loftspec_store::StoreError;
-use loftspec_store::repository::{BATCH, GitCommand, LIST_TREE, MERGE_BASE, MergeBase};
+use loftspec_store::repository::{
+    BATCH, GitCommand, LIST_TREE, LOCK_WRITTEN, MERGE_BASE, MergeBase,
+};
 use software_plant::GitScenario;
 
 /// What real git prints for `args` in `dir`, without its last newline.
@@ -229,4 +231,64 @@ fn a_revision_that_shares_no_history_with_head_is_unrelated_for_both() {
             MergeBase::Unrelated
         );
     }
+}
+
+#[test]
+fn the_simulator_names_the_commit_that_last_wrote_the_lock_as_real_git_does() {
+    for sub in ["", "sub/"] {
+        let repository = Scratch::new();
+        history(&repository, sub);
+        let root = root_of(&repository, sub);
+        let call: Vec<&str> = LOCK_WRITTEN.into_iter().chain(["loft.lock.json"]).collect();
+        let plant = Scratch::new();
+        let unwritten = scripted(&repository.0, sub).install(&plant.0);
+        let mut command = Command::new("git");
+        unwritten.apply(&mut command);
+        let real = run(real_git(), &root, &call, "");
+        assert_eq!(real, (Some(0), Vec::new(), String::new()), "{sub:?}");
+        assert_eq!(run(command, &root, &call, ""), real, "{sub:?}");
+
+        repository.put(&format!("{sub}loft.lock.json"), "{}\n");
+        git(&repository.0, &["add", "."]);
+        git(&repository.0, &["commit", "--quiet", "-m", "publish"]);
+        let published = rev(&repository.0, "HEAD");
+        repository.put(&format!("{sub}spec/tags.yaml"), "more tags\n");
+        git(&repository.0, &["add", "."]);
+        git(&repository.0, &["commit", "--quiet", "-m", "after"]);
+        let plant = Scratch::new();
+        let written = scripted(&repository.0, sub)
+            .lock_written_at(&published)
+            .install(&plant.0);
+        let mut command = Command::new("git");
+        written.apply(&mut command);
+        let real = run(real_git(), &root, &call, "");
+        assert_eq!(real.1, format!("{published}\n").into_bytes(), "{sub:?}");
+        assert_eq!(run(command, &root, &call, ""), real, "{sub:?}");
+    }
+}
+
+#[test]
+fn the_port_reads_the_same_lock_writer_from_the_simulator_and_real_git() {
+    let repository = Scratch::new();
+    history(&repository, "");
+    let real = GitCommand::from_command(real_git);
+    let plant = Scratch::new();
+    let simulator = simulated(&scripted(&repository.0, ""), &plant.0);
+    assert_eq!(real.lock_written(&repository.0).unwrap(), None);
+    assert_eq!(simulator.lock_written(&repository.0).unwrap(), None);
+    repository.put("loft.lock.json", "{}\n");
+    git(&repository.0, &["add", "."]);
+    git(&repository.0, &["commit", "--quiet", "-m", "publish"]);
+    let published = rev(&repository.0, "HEAD");
+    let plant = Scratch::new();
+    let scenario = scripted(&repository.0, "").lock_written_at(&published);
+    let simulator = simulated(&scenario, &plant.0);
+    assert_eq!(
+        real.lock_written(&repository.0).unwrap(),
+        Some(published.clone())
+    );
+    assert_eq!(
+        simulator.lock_written(&repository.0).unwrap(),
+        Some(published)
+    );
 }

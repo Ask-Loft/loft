@@ -6,6 +6,7 @@
 //! [`MOST`] items keeps its first [`MOST`], and the report counts what it left out.
 
 mod decision;
+mod graph;
 mod trace;
 
 use std::path::Path;
@@ -56,9 +57,18 @@ impl Views<'_> {
     fn compute(&self, request: &LoftRequest) -> Result<Value, Stop> {
         let base = request.base.as_deref().unwrap_or(self.base);
         Ok(match request.view {
-            View::SpecChange => json!({ "status": status::json_document(self.tree, Some(base))? }),
-            View::Publish => json!({ "status": status::json_document(self.tree, None)? }),
-            View::Findings => json!({ "check": check::json_document(self.tree, Some(base))? }),
+            View::SpecChange => json!({
+                "status": status::json_document(self.tree, Some(base))?,
+                "graph": self.graph(base)?,
+            }),
+            View::Publish => self.publish()?,
+            View::Findings => {
+                let check = check::json_document(self.tree, Some(base))?;
+                let files = crate::stop::read_files(self.tree)?;
+                let (document, _) = loftspec::codec::read_sited(&files)?;
+                let nodes = graph::named_by_findings(&document, &check);
+                json!({ "check": check, "nodes": nodes })
+            }
             View::Trace => trace::report(self.tree, base)?,
             View::Decision => {
                 let named = request.decision.as_deref().ok_or_else(|| {
@@ -67,6 +77,24 @@ impl Views<'_> {
                 decision::report(self.tree, named)?
             }
         })
+    }
+
+    /// The lock and whether the tree matches it, compared with the commit that last wrote the
+    /// lock where one did, and the nodes and decisions that carry a label, counted by kind.
+    fn publish(&self) -> Result<Value, Stop> {
+        let written = GitCommand::default().lock_written(self.tree).ok().flatten();
+        let status = status::json_document(self.tree, written.as_deref())?;
+        let files = crate::stop::read_files(self.tree)?;
+        let (document, _) = loftspec::codec::read_sited(&files)?;
+        Ok(json!({ "status": status, "labels": graph::labels(&document) }))
+    }
+
+    /// The diagram of the change from where HEAD left `revision` to the tree.
+    fn graph(&self, revision: &str) -> Result<Value, Stop> {
+        let files = crate::stop::read_files(self.tree)?;
+        let (document, _) = loftspec::codec::read_sited(&files)?;
+        let base = crate::base::read_tree(&GitCommand::default(), self.tree, revision)?;
+        Ok(graph::report(&base.document, &document))
     }
 
     /// Where and when the report is computed: the commit, the branch, whether `spec/` held
@@ -96,6 +124,14 @@ fn lists(view: View) -> &'static [&'static [&'static str]] {
             &["status", "base", "added"],
             &["status", "base", "changed"],
             &["status", "base", "removed"],
+            &["graph", "nodes"],
+            &["graph", "decisions"],
+            &["graph", "edges"],
+        ],
+        View::Publish => &[
+            &["status", "base", "added"],
+            &["status", "base", "changed"],
+            &["status", "base", "removed"],
         ],
         View::Findings => &[
             &["check", "findings"],
@@ -107,7 +143,7 @@ fn lists(view: View) -> &'static [&'static [&'static str]] {
             &["reconcile", "tests"],
             &["features"],
         ],
-        View::Publish | View::Decision => &[],
+        View::Decision => &[],
     }
 }
 

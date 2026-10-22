@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
 use yardlog::YardLog;
+use yardlog::body::Body;
 use yardlog_store::git::YardGit;
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::session::branches;
@@ -195,7 +196,9 @@ fn summary(
             });
             if !inherited && !log.is_closed() {
                 for (submission, blocks) in open(&log) {
+                    let asked: Vec<Value> = blocks.iter().map(|id| asking(&log, id)).collect();
                     waits.push(json!({
+                        "asked": asked,
                         "repository": repository,
                         "tree": place.tree.display().to_string(),
                         "branch": branch,
@@ -220,6 +223,26 @@ fn summary(
         }
     }
     fields
+}
+
+/// What the block `id` of `log` asks the person: its id, its kind, and its question's prompt or
+/// its approval's or plan's title.
+fn asking(log: &YardLog, id: &str) -> Value {
+    let found = log
+        .stages
+        .iter()
+        .flat_map(|file| &file.blocks)
+        .find(|block| block.id.as_str() == id);
+    let Some(block) = found else {
+        return json!({ "id": id });
+    };
+    let text = match &block.current().body {
+        Body::Question(question) => question.prompt.clone(),
+        Body::Approval(approval) => approval.title.clone(),
+        Body::Plan(plan) => plan.title.clone(),
+        _ => String::new(),
+    };
+    json!({ "id": id, "kind": block.kind.as_str(), "text": text })
 }
 
 /// The errors a failure gives, for a listing that goes on past it.

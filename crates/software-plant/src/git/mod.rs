@@ -79,6 +79,9 @@ pub struct Repository {
     /// What `git merge-base HEAD <revision>` gives each revision, by the revision.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub bases: BTreeMap<String, Base>,
+    /// The commit `git log -1 --format=%H -- loft.lock.json` gives: the last to write the lock.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lock_written: Option<String>,
     /// What Yard Client's calls read.
     #[serde(default, skip_serializing_if = "Yard::is_empty")]
     pub yard: Yard,
@@ -174,6 +177,7 @@ impl GitScenario {
                 stopped: None,
                 git_dir: None,
                 bases: BTreeMap::new(),
+                lock_written: None,
                 yard: Yard::default(),
             }),
             failures: Vec::new(),

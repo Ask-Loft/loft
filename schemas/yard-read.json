@@ -49,6 +49,84 @@
           "type": "integer",
           "minimum": 0
         },
+        "inherited": {
+          "description": "The page server's only: whether Yard Log was carried from another branch, to read only",
+          "type": "boolean"
+        },
+        "activity": {
+          "description": "The page server's only: each session's activity file, as JSON",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/activityFile"
+          }
+        },
+        "tokens": {
+          "description": "The page server's only: each session's token totals file, as JSON",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tokensFile"
+          }
+        },
+        "sent": {
+          "description": "The page server's only: every submission, sent, answered or withdrawn, with its changes, for the Gantt chart",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "agent",
+              "blocks",
+              "state",
+              "changes"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "agent": {
+                "$ref": "#/$defs/actor"
+              },
+              "blocks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "state": {
+                "enum": [
+                  "open",
+                  "answered",
+                  "withdrawn"
+                ]
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "what",
+                    "act"
+                  ],
+                  "properties": {
+                    "what": {
+                      "enum": [
+                        "sent",
+                        "taken-up",
+                        "answered",
+                        "withdrawn"
+                      ]
+                    },
+                    "act": {
+                      "$ref": "#/$defs/act"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "leftOut": {
           "description": "Yard Log is of a newer format than this `loft` reads: the number of its stages, blocks and submissions left out of the result",
           "type": "integer",
@@ -456,6 +534,10 @@
             "markdown": {
               "type": "string"
             },
+            "html": {
+              "description": "The page server's only: the Markdown as HTML, with raw HTML shown as text",
+              "type": "string"
+            },
             "folded": {
               "type": "boolean"
             },
@@ -490,6 +572,10 @@
             "context": {
               "type": "string"
             },
+            "contextHtml": {
+              "description": "The page server's only: the context as HTML, with raw HTML shown as text",
+              "type": "string"
+            },
             "options": {
               "type": "array",
               "items": {
@@ -516,6 +602,10 @@
               "type": "string"
             },
             "markdown": {
+              "type": "string"
+            },
+            "html": {
+              "description": "The page server's only: the Markdown as HTML, with raw HTML shown as text",
               "type": "string"
             }
           }
@@ -577,6 +667,10 @@
               "type": "string"
             },
             "markdown": {
+              "type": "string"
+            },
+            "html": {
+              "description": "The page server's only: the Markdown as HTML, with raw HTML shown as text",
               "type": "string"
             },
             "path": {
@@ -804,6 +898,289 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/block"
+          }
+        }
+      }
+    },
+    "span": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "started"
+      ],
+      "properties": {
+        "started": {
+          "type": "string"
+        },
+        "ended": {
+          "type": "string"
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input",
+        "cacheRead",
+        "cacheWrite",
+        "output"
+      ],
+      "properties": {
+        "input": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheRead": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheWrite": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "activityFile": {
+      "description": "A session's activity file: its turns, its subagents' runs, its stretches of plan and spec mode, and its shell commands that ran Loft",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session"
+      ],
+      "properties": {
+        "session": {
+          "type": "string"
+        },
+        "lastEnded": {
+          "type": "string"
+        },
+        "turns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/span"
+          }
+        },
+        "subagents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "agent",
+              "type",
+              "started"
+            ],
+            "properties": {
+              "agent": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "started": {
+                "type": "string"
+              },
+              "ended": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "plan": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/span"
+          }
+        },
+        "spec": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/span"
+          }
+        },
+        "loft": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "commands",
+              "agent",
+              "started"
+            ],
+            "properties": {
+              "commands": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "agent": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "started": {
+                "type": "string"
+              },
+              "ended": {
+                "type": "string"
+              },
+              "failed": {
+                "type": "boolean"
+              },
+              "stage": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "tokensFile": {
+      "description": "A session's token totals file: in all, by stage, under no stage, by agent and model, and by submission",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "host",
+        "tokens"
+      ],
+      "properties": {
+        "session": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "firstEnded": {
+          "type": "string"
+        },
+        "lastEnded": {
+          "type": "string"
+        },
+        "tokens": {
+          "$ref": "#/$defs/counts"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "stage",
+              "input",
+              "cacheRead",
+              "cacheWrite",
+              "output"
+            ],
+            "properties": {
+              "stage": {
+                "type": "string"
+              },
+              "input": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheRead": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheWrite": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "output": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "noStage": {
+          "$ref": "#/$defs/counts"
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "agent",
+              "model",
+              "input",
+              "cacheRead",
+              "cacheWrite",
+              "output"
+            ],
+            "properties": {
+              "agent": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "input": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheRead": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheWrite": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "output": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "submissions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "submission",
+              "input",
+              "cacheRead",
+              "cacheWrite",
+              "output"
+            ],
+            "properties": {
+              "submission": {
+                "type": "string"
+              },
+              "input": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheRead": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheWrite": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "output": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
           }
         }
       }

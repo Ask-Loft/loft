@@ -6,6 +6,9 @@ use serde::{Deserialize, Serialize};
 
 use super::{GitScenario, Reply, Repository, scope, within};
 
+/// The lock beside `spec/`, whose last writer a publish view reads.
+const LOCK: &str = "loft.lock.json";
+
 /// The calls with which Loft reads the tree at a base commit.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -16,6 +19,8 @@ pub enum BaseCall {
     ListTree,
     /// `git cat-file --batch`, the object ids on standard input
     Batch,
+    /// `git log -1 --format=%H -- loft.lock.json`
+    LockWritten,
 }
 
 /// What `git merge-base HEAD <revision>` gives a revision, and the files of that commit.
@@ -51,6 +56,13 @@ impl GitScenario {
         self.repository_mut()
             .bases
             .insert(revision.to_owned(), base);
+        self
+    }
+
+    /// The same repository in which `commit` is the last commit to write `loft.lock.json`.
+    #[must_use]
+    pub fn lock_written_at(mut self, commit: &str) -> Self {
+        self.repository_mut().lock_written = Some(commit.to_owned());
         self
     }
 
@@ -96,6 +108,7 @@ pub(super) fn parse<'a>(rest: &[&'a str]) -> Option<(BaseCall, Vec<&'a str>)> {
             Some((BaseCall::ListTree, operands))
         }
         ["cat-file", "--batch"] => Some((BaseCall::Batch, Vec::new())),
+        ["log", "-1", "--format=%H", "--", LOCK] => Some((BaseCall::LockWritten, Vec::new())),
         _ => None,
     }
 }
@@ -122,6 +135,12 @@ pub(super) fn answer(
         },
         BaseCall::ListTree => list_tree(repository, operands[0], &operands[1..]),
         BaseCall::Batch => Reply::ok(batch(repository, input)),
+        BaseCall::LockWritten => Reply::ok(
+            repository
+                .lock_written
+                .as_ref()
+                .map_or_else(String::new, |commit| format!("{commit}\n")),
+        ),
     }
 }
 
