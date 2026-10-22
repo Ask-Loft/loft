@@ -113,6 +113,18 @@ export function pageOf(doc: Doc | undefined): string | undefined {
   return isObject(page) && page.available === true && typeof page.url === 'string' ? page.url : undefined
 }
 
+/**
+ * The part of a minted block id that names who mints it: the subagent's id, or the session's,
+ * cut to eight letters and digits. Two sessions, or two subagents asking at one revision, never
+ * mint one id; the same agent minting for the same task does.
+ */
+export function whoOf(caller: { session: string; agent?: { id: string } }): string {
+  return (caller.agent?.id ?? caller.session)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .slice(0, 8)
+}
+
 /** A block id made of words: lowercase letters, digits and hyphens, starting with a letter. */
 export function idOf(...words: string[]): string {
   const joined = words

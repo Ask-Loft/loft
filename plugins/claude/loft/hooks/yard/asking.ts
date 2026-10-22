@@ -8,9 +8,9 @@ import type { EngineInterface, ToolCallResult } from 'claude-code'
 
 import { askResultOf, feedbackIn, givenOf, planId, planTitle, questionBlocks, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
-import { activeStage, blockById, idOf, lastUnplanned, openSubmissions, waitingOf, type Asker, type Block } from './log'
+import { activeStage, blockById, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Doc, type Ran, type Running } from './run'
-import { askerOf, callerOf, run, state, type Presenting } from './state'
+import { askerOf, callerOf, peek, run, state, type Presenting } from './state'
 
 type Next = ((e: never) => Promise<ToolCallResult>) & { signal: AbortSignal }
 
@@ -51,16 +51,22 @@ const isAnswered = (ran: ToolCallResult) =>
   Object.keys((ran.result as { answers?: object } | undefined)?.answers ?? {}).length > 0
 
 /** The stage a batch writes to: the agent's active one, or one the mod opens for it. */
-function stageFor(doc: Doc, asker: Asker, revision: number): { id: string; opened?: Record<string, unknown> } {
+function stageFor(doc: Doc, asker: Asker, minted: string): { id: string; opened?: Record<string, unknown> } {
   const active = activeStage(doc, asker)
   if (active) return { id: active.id }
-  const id = idOf('asked', `r${revision}`)
+  const id = idOf('asked', minted)
   const after = lastUnplanned(doc)
   return {
     id,
     opened: { id, kind: 'stage', title: 'Asked in the session', status: 'active', ...(after ? { after: after.id } : {}) },
   }
 }
+
+/**
+ * The part of the ids the mod mints for one ask: the revision it will write at and who asks, so
+ * that two sessions, or two subagents asking at one revision, mint different ids.
+ */
+const mintedFor = (doc: Doc, caller: Caller) => idOf(`r${Number(doc.revision ?? 0) + 1}`, whoOf(caller))
 
 /** Sends a batch and returns its submission's key, or undefined where it could not be sent. */
 async function send($: EngineInterface, cwd: string, caller: Caller, batch: unknown[]): Promise<string | undefined> {
@@ -81,13 +87,13 @@ export async function askQuestions($: EngineInterface, e: { questions: readonly 
   const cwd = await $.session.cwd()
   const first = await callerOf($, e.agentId)
   const caller = { ...first, continues: undefined }
-  const read = await run($, cwd, ['read', ...callerArgs(first)])
+  const read = await peek($, cwd, caller)
   if (!succeeded(read)) return next(e as never)
-  const revision = Number(read.doc.revision ?? 0) + 1
-  const ids = e.questions.map((_, n) => idOf('ask', `r${revision}`, String(n + 1)))
-  const stage = stageFor(read.doc, askerOf(first), revision)
+  const minted = mintedFor(read.doc, first)
+  const ids = e.questions.map((_, n) => idOf('ask', minted, String(n + 1)))
+  const stage = stageFor(read.doc, askerOf(first), minted)
   const batch = [...(stage.opened ? [stage.opened] : []), ...questionBlocks(e.questions, ids, stage.id)]
-  const submission = await send($, cwd, caller, batch)
+  const submission = await send($, cwd, first, batch)
   if (submission === undefined) return next(e as never)
   const wait = waiting($, cwd, submission, caller)
   const terminal = next(e as never).then(ran => ({ terminal: ran }))
@@ -121,14 +127,14 @@ export async function presentPlan($: EngineInterface, e: { plan?: unknown; planF
   const cwd = await $.session.cwd()
   const first = await callerOf($, e.agentId)
   const caller = { ...first, continues: undefined }
-  const read = await run($, cwd, ['read', ...callerArgs(first)])
+  const read = await peek($, cwd, caller)
   if (!succeeded(read)) return next(e as never)
-  const revision = Number(read.doc.revision ?? 0) + 1
-  const id = planId(path, idOf('plan', `r${revision}`))
+  const minted = mintedFor(read.doc, first)
+  const id = planId(path, idOf('plan', minted))
   const held = blockById(read.doc, id)
-  const stage = held ? { id: held.stage.id } : stageFor(read.doc, askerOf(first), revision)
+  const stage = held ? { id: held.stage.id } : stageFor(read.doc, askerOf(first), minted)
   const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(path ? { path } : {}), planMode: true }
-  const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
+  const submission = await send($, cwd, first, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
   if (submission === undefined) return next(e as never)
   const wait = waiting($, cwd, submission, caller)
   state.presenting = { id, decided: wait.done }
@@ -220,8 +226,7 @@ async function askInTerminal($: EngineInterface, cwd: string, caller: Caller, su
   void over.then(() => (isOver = true))
   let paging: Paging = {}
   while (!isOver) {
-    // Read without a session, so the agent's last-read revision stays as it was.
-    const read = await run($, cwd, ['read'])
+    const read = await peek($, cwd, caller)
     if (!succeeded(read) || isOver) return
     const sender = openSubmissions(read.doc).find(each => each.key === submission)?.agent
     const who = sender?.agent ? `subagent ${sender.agentType ?? ''} ${sender.agent}`.replace(/\s+/g, ' ') : undefined

@@ -19641,6 +19641,12 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "recording_the_revision_read_changes_no_file_under_yard_and_does_not_raise_the_revision"
         body: dc5a4be94d550d5990e3cba1c5c7758345ccf6c5df05de13cd28d3c2a9914827
+  - node: 01a165f5-4587-7632-89a7-b4dcba8d44d5
+    reviewed: 172244f17226469c6028dd1449373c3a5f65fff5a5cbd72b97c464ecdd7f8bba
+    tests:
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "a_peek_leaves_the_revision_the_agent_last_read_as_it_was"
+        body: bdbdca89499a5a21fa2e067cca9659ff1e9dbe0d19c6ac27bbd37cdc708f3404
   - node: 01a1646f-546e-76cb-8b4f-f25c4364af72
     reviewed: 710151f2138cb362ba0f5cf501de448a65ce9b6f523e3846d6f96a1a4015b787
     tests:
@@ -20801,7 +20807,7 @@ links:
         body: d1113415d35e301d6ff1ce27316aa92bb1441127eee014f404947a1547613b47
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
-        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+        body: 3fe55125d88eaf510be489b61832affd78b1fec13d8cf0cde97c1092fca025fd
   - node: 01a1646f-546c-7521-9643-bc0335f775a9
     reviewed: 956588eed7be151abd1c47eb3e7b01bf6d6144064908525cb48a94e1cb82a62e
     tests:
@@ -22844,7 +22850,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
-        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+        body: 3fe55125d88eaf510be489b61832affd78b1fec13d8cf0cde97c1092fca025fd
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a long question is asked over dialogs, three options and More options at a time"
         body: 55dea1f53150e9001aac852c9124d4c1584becf033d42fcdad3e29b80c3380fd
@@ -22856,7 +22862,7 @@ links:
         body: 87165411248f5add9059deb50f721d3351ec83ac7225d5ff34ea4b33c89f055b
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
-        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+        body: 3fe55125d88eaf510be489b61832affd78b1fec13d8cf0cde97c1092fca025fd
   - node: 01a1646f-546c-7521-9643-bc1683ca634b
     reviewed: e94640bf23c07eb4ce2280ae4b34d3ca3379f950d109b9cf424b1c87435e6922
     tests:
@@ -22865,7 +22871,7 @@ links:
         body: 486c5974e8e6225671e94f09f28d8d81d487582cdb8ad06431c94c41c19efe26
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
-        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+        body: 3fe55125d88eaf510be489b61832affd78b1fec13d8cf0cde97c1092fca025fd
   - node: 01a16475-7fbc-7732-a78c-bc4d52d9dd1b
     reviewed: bfbc287a6afff299f7dff1d0881f5f97ffe817b348c3239ec2247ce3250c7243
     tests:
@@ -22910,7 +22916,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
-        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+        body: 3fe55125d88eaf510be489b61832affd78b1fec13d8cf0cde97c1092fca025fd
   - node: 01a1646f-546c-7521-9643-bc1d8538d8ca
     reviewed: 58fe53372442370af5babbc20807dfaed8dc4a3d8ef089a934484643839cdd6e
     tests:
@@ -22931,7 +22937,7 @@ links:
         body: 486c5974e8e6225671e94f09f28d8d81d487582cdb8ad06431c94c41c19efe26
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
-        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+        body: 3fe55125d88eaf510be489b61832affd78b1fec13d8cf0cde97c1092fca025fd
   - node: 01a1646f-546c-7521-9643-bc20025a66a1
     reviewed: 6b96dd9950dacc580dac1c2ee8286f18d6e319caf22313f6a096aaceca1a89ce
     tests:
@@ -22946,7 +22952,7 @@ links:
         body: d1113415d35e301d6ff1ce27316aa92bb1441127eee014f404947a1547613b47
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
-        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+        body: 3fe55125d88eaf510be489b61832affd78b1fec13d8cf0cde97c1092fca025fd
   - node: 01a1646f-546c-7521-9643-bc23947b37d2
     reviewed: 780ebd179256b88069ebaee205b5b00a26d5a2ccb0591c97b3d5c66596483338
     tests:
@@ -22979,25 +22985,37 @@ links:
         body: bdebe7f88cfc5743c9d137a32746679b30cc6068a3cf59dd673dff8ee2236d5d
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
-        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+        body: a6516b4c3f92af17dbeffb96d40985117e2b301797f6bb23306fc5fec35d96e1
   - node: 01a1646f-546c-7521-9643-bc2de11768e7
     reviewed: c85b2da5ca8087fcdb96cb2a31c8f416f1ca6902ce4ba92dd0797d0c538311c5
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "questions on a branch with no Yard Log open it, in a stage the mod opens, and Claude Code's dialog shows them as the agent wrote them"
-        body: 33859d0874f1c790aeeee379302ee417a4ad9bc1fb9032a453857f83ca04d0b7
+        body: 10376081fe56fb36379931029d777e28ddf24ec78891ea8a661b8d08ed729a13
+  - node: 01a165f5-4586-7301-b38c-5172a09bf282
+    reviewed: 6dc03b6473fea2806a44f0e6fcafce2069955e9cf7cc832f235adb97d9ed158e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "two subagents asking at one revision mint different ids, each with its own stage"
+        body: 6e8f6784b98a79942c97981783f8f8f000ad9aa614a0e34a9c863b2f475aabc7
+  - node: 01a165f5-4587-7632-89a7-b4dae037e014
+    reviewed: 28849626860dfb2024dc22e61aa160afaeef3c7ebfd60373f9f9a1063b33f5c1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the mod's own reads, to send what the agent asks, leave the agent's last-read revision as it was"
+        body: 149bd05f25aafbebc99054018689cc6488fd24dfb05c21b03553f85f8010760b
   - node: 01a1646f-546c-7521-9643-bc2e9fe9d605
     reviewed: 828f80dfd9e0930d1e704ae72793d2acfdd57ce144ef2b246060db6b93cfab7e
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "an agent with no active stage has its questions in a stage the mod opens after the last unplanned stage"
-        body: d63574e0bacb8c2590fe4094652458bc8f5fda5b8700db10ec2eee6fb6ace3e8
+        body: 2f69282b5205466764930cab421cf8e754f204ec25d4b02373184e120ea11526
   - node: 01a1646f-546c-7521-9643-bc2fa3288035
     reviewed: 9784341c841839cc98e936b71724443bc7f5e8347032a5031106995de32b42fb
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "an agent with no active stage has its questions in a stage the mod opens after the last unplanned stage"
-        body: d63574e0bacb8c2590fe4094652458bc8f5fda5b8700db10ec2eee6fb6ace3e8
+        body: 2f69282b5205466764930cab421cf8e754f204ec25d4b02373184e120ea11526
   - node: 01a1646f-546c-7521-9643-bc302b8f5989
     reviewed: 499cc99c881347cbe053696cc184833f0f4495659fa515c286d7f0ee4dc3dec1
     tests:
@@ -23024,7 +23042,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "questions on a branch with no Yard Log open it, in a stage the mod opens, and Claude Code's dialog shows them as the agent wrote them"
-        body: 33859d0874f1c790aeeee379302ee417a4ad9bc1fb9032a453857f83ca04d0b7
+        body: 10376081fe56fb36379931029d777e28ddf24ec78891ea8a661b8d08ed729a13
   - node: 01a1646f-546c-7521-9643-bc34a2faaf4f
     reviewed: 124dbb838e113e52804209184cf920d6adef8238022b91a715c0cae9071373f3
     tests:
@@ -23036,13 +23054,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "an answer given first in the terminal is recorded in Yard Log with the channel of the terminal, and the wait ends"
-        body: 35eb43560905982c37b8a42449e630786541f81e5f1da350434285f0e8078e3e
+        body: 0d9f8ab35a593e423b44c0872c013be04b6b7de281757783c98c49b4d4057693
   - node: 01a1646f-546c-7521-9643-bc370109576b
     reviewed: c4f6e7b386f307745d2f5640200d8de4dc628fdabf5ffa2cfa97e3babf721593
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "questions on a branch with no Yard Log open it, in a stage the mod opens, and Claude Code's dialog shows them as the agent wrote them"
-        body: 33859d0874f1c790aeeee379302ee417a4ad9bc1fb9032a453857f83ca04d0b7
+        body: 10376081fe56fb36379931029d777e28ddf24ec78891ea8a661b8d08ed729a13
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "answers given in the terminal are recorded by their labels without the recommendation, and anything else as the words typed"
         body: 879391011bdf56560e7e6e5e441f8baead43cbc73a1fedb315d68b653af7ddb0
@@ -23051,13 +23069,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "an answer given first in the terminal is recorded in Yard Log with the channel of the terminal, and the wait ends"
-        body: 35eb43560905982c37b8a42449e630786541f81e5f1da350434285f0e8078e3e
+        body: 0d9f8ab35a593e423b44c0872c013be04b6b7de281757783c98c49b4d4057693
   - node: 01a1646f-546c-7521-9643-bc3a3446db62
     reviewed: a4d16110b07d264400dcf38d3ec531f173bd2c282054114d34163fde68856fea
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
-        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+        body: a6516b4c3f92af17dbeffb96d40985117e2b301797f6bb23306fc5fec35d96e1
   - node: 01a1646f-546c-7521-9643-bc3b82463715
     reviewed: ba8190ead3ea2194bfc2a175a4e5a464980dbca7ba6c5759ed768a56e215eda8
     tests:
@@ -23069,7 +23087,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
-        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+        body: a6516b4c3f92af17dbeffb96d40985117e2b301797f6bb23306fc5fec35d96e1
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "answers given on the page reach the agent by the labels it wrote, with words as written and the notes"
         body: b9e6a81b93a766ad57c0b58f7c89e56bc692ac63dff14d6cc6657a3cbf6160b0
@@ -23078,7 +23096,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
-        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+        body: a6516b4c3f92af17dbeffb96d40985117e2b301797f6bb23306fc5fec35d96e1
   - node: 01a1646f-546c-7521-9643-bc3fc17db8f8
     reviewed: 85aaa4f2b72e7f54af2472ddc5c2ac963b46fca802e313626708a16a635c26f4
     tests:
@@ -23152,20 +23170,29 @@ links:
         name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
         body: 3b872a65d12999bf95ef60128541c9b6322490b85754d46bde0a589c2dff8110
   - node: 01a1646f-546c-7521-9643-bc54b796807b
-    reviewed: 1b3c07cd57e78f0b255159e134166cf8442cc9148549d5330f83d428cb40c01e
+    reviewed: 753427b10b01e523c918fea29e3bc18a4ccacb60555c0f73fe25f7f8098bdc14
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "a task's block id is made of the task's id and its agent, and its states follow the task's"
-        body: 357ccb7c70257245750d721961757062a905cbbf0919d5630f04a48a597352cd
+        body: 59a66b505e894c8734421a31e9cd86e817a24173d61155ba76c7798fe77d1b2c
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was"
+        body: c1322af5dcaeb4882bda1fc5994304ac8a394dde38067a135def2127e0c48a2a
+  - node: 01a165f5-4587-7632-89a7-b4db5092dc0c
+    reviewed: 5aaa933d72df2830d93b4760f2ef4124f2688cc2fc9d9a912f0083daf26471b5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was"
+        body: c1322af5dcaeb4882bda1fc5994304ac8a394dde38067a135def2127e0c48a2a
   - node: 01a1646f-546c-7521-9643-bc550810c75a
     reviewed: dbd2b44aee6add17d78b38ca1f6e92a0e695bc5a65554ace87700c251e04ff1a
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
   - node: 01a1646f-546c-7521-9643-bc56c4873439
     reviewed: d413264a68c3dfd55e9beb5deb8f56ccffbf19e369cc89f1db52e8092609ea90
     tests:
@@ -23177,16 +23204,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "a task's block id is made of the task's id and its agent, and its states follow the task's"
-        body: 357ccb7c70257245750d721961757062a905cbbf0919d5630f04a48a597352cd
+        body: 59a66b505e894c8734421a31e9cd86e817a24173d61155ba76c7798fe77d1b2c
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
   - node: 01a1646f-546c-7521-9643-bc59de3d65ed
     reviewed: 72084d4e53e62b34f39706430a192d33dac96b193861c4ffc73f59f05bbeda66
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
   - node: 01a1646f-546c-7521-9643-bc648ffcbb12
     reviewed: e657ae2eedeb6d2fe2d49f0520ec25d53ce556237ca193242826b68535ca3e4c
     tests:

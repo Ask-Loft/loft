@@ -28,11 +28,11 @@ test("the agent's questions go to Yard Log as Claude Code's dialog shows them, a
   const dialog = deferred<Record<string, unknown>>()
   w.state.terminal.AskUserQuestion = () => dialog.promise
   await start($)
-  w.state.waits.push(answeredOnPage([{ ...block('ask-r5-1', 'question', {}), answer: { labels: ['Members'], notes: 'for now', channel: 'page' } }]))
+  w.state.waits.push(answeredOnPage([{ ...block('ask-r5-session1-1', 'question', {}), answer: { labels: ['Members'], notes: 'for now', channel: 'page' } }]))
   const answered = await ask($)
   expect(writes(w).at(-1)).toEqual([
     {
-      id: 'ask-r5-1',
+      id: 'ask-r5-session1-1',
       kind: 'question',
       stage: 'shape',
       prompt: 'Which readers?',
@@ -63,7 +63,7 @@ test('an answer given first in the terminal is recorded in Yard Log with the cha
   const answered = await ask($)
   expect((answered.result as { answers: object }).answers).toEqual({ 'Which readers?': 'Visitors' })
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
-  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'ask-r5-1', labels: ['Visitors'] }])
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'ask-r5-session1-1', labels: ['Visitors'] }])
   expect(flagOf(recorded.argv, '--session')).toBe(SESSION)
 })
 
@@ -83,8 +83,8 @@ test('an agent with no active stage has its questions in a stage the mod opens a
   await start($)
   await ask($)
   const [opened, asked] = writes(w).at(-1)!
-  expect(opened).toEqual({ id: 'asked-r5', kind: 'stage', title: 'Asked in the session', status: 'active', after: 'done' })
-  expect(asked!.stage).toBe('asked-r5')
+  expect(opened).toEqual({ id: 'asked-r5-session1', kind: 'stage', title: 'Asked in the session', status: 'active', after: 'done' })
+  expect(asked!.stage).toBe('asked-r5-session1')
 })
 
 test("a subagent's questions go to its own stage, in its own name", async ($, on) => {
@@ -215,8 +215,9 @@ test('while yard_wait waits, what still waits is asked in the dialog, and an ans
     { block: 'q1', labels: ['O2'] },
     { block: 'ship', verdict: 'rejected', reason: 'not yet' },
   ])
+  // What still waits is read for the agent with --peek, which leaves its last-read revision as it was.
   const reads = w.state.runs.filter(run => run.argv.includes('read')).at(-1)!
-  expect(reads.argv).not.toContain('--session')
+  expect(reads.argv).toContain('--peek')
 })
 
 test('a long question is asked over dialogs, three options and More options at a time', async ($, on) => {
@@ -337,7 +338,7 @@ test("questions on a branch with no Yard Log open it, in a stage the mod opens, 
   expect(writes(w).at(-1)!.map(each => each.kind)).toEqual(['stage', 'question'])
   expect(w.state.calls[0]!.questions).toEqual(QUESTIONS)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
-  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'ask-r5-1', labels: ['Visitors'], notes: 'only them' }])
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'ask-r5-session1-1', labels: ['Visitors'], notes: 'only them' }])
 })
 
 test('a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved', async ($, on) => {
@@ -353,4 +354,30 @@ test('a plan from a file Yard Log holds is a new version of its block, in its st
   expect(w.state.calls.at(-1)).toMatchObject(input)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
   expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'approved' }])
+})
+
+test('two subagents asking at one revision mint different ids, each with its own stage', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [] })
+  w.state.terminal.AskUserQuestion = () => ({ result: { questions: QUESTIONS, answers: { 'Which readers?': 'Visitors' } }, text: 'ok' })
+  await start($)
+  await $.classic.SubagentStart({ agent_id: 'a9', agent_type: 'Explore' } as never)
+  await $.classic.SubagentStart({ agent_id: 'b4', agent_type: 'Plan' } as never)
+  await ask($, 'a9')
+  await ask($, 'b4')
+  const [first, second] = writes(w).slice(-2)
+  expect(first!.map(each => each.id)).toEqual(['asked-r5-a9', 'ask-r5-a9-1'])
+  expect(second!.map(each => each.id)).toEqual(['asked-r5-b4', 'ask-r5-b4-1'])
+})
+
+test("the mod's own reads, to send what the agent asks, leave the agent's last-read revision as it was", async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.AskUserQuestion = () => ({ result: { questions: QUESTIONS, answers: { 'Which readers?': 'Visitors' } }, text: 'ok' })
+  await start($)
+  const before = w.state.runs.length
+  await ask($)
+  const reads = w.state.runs.slice(before).filter(run => run.argv.includes('read'))
+  expect(reads.length).toBeGreaterThan(0)
+  for (const run of reads) expect(run.argv).toContain('--peek')
 })

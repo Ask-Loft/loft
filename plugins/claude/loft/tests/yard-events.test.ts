@@ -154,14 +154,14 @@ test("a task the agent makes is mirrored as a task block of its active stage, an
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
   await start($)
   await $.tool.call({ tool: 'TaskCreate', subject: 'Write the tests', description: '' } as never)
-  w.state.read = readDoc({ stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('task-3', 'task', { title: 'Write the tests', state: 'open' })] }] })
+  w.state.read = readDoc({ stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('task-session1-3', 'task', { title: 'Write the tests', state: 'open' })] }] })
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'in_progress' } as never)
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'completed', subject: 'Write the kit tests' } as never)
   const written = w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin!))
   expect(written).toEqual([
-    [{ id: 'task-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'open' }],
-    [{ id: 'task-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'active' }],
-    [{ id: 'task-3', kind: 'task', stage: 'shape', title: 'Write the kit tests', state: 'done' }],
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'open' }],
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'active' }],
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the kit tests', state: 'done' }],
   ])
 })
 
@@ -243,4 +243,22 @@ test('plan mode is heard from the EnterPlanMode and ExitPlanMode calls that succ
   await $.tool.call({ tool: 'ExitPlanMode' } as never)
   await w.clock.settle()
   expect(kinds(w).filter(kind => kind.startsWith('plan.'))).toEqual(['plan.start', 'plan.end'])
+})
+
+test("after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was", async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.TaskCreate = () => ({ result: { task: { id: '1' } }, text: 'ok' })
+  await start($)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Before', description: '' } as never)
+  await $.session.end({ reason: 'clear', sessionId: SESSION } as never)
+  w.state.session = 'session-2'
+  await $.classic.SessionStart({ source: 'clear' })
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: 'session-2' })] })
+  const before = w.state.runs.length
+  await $.tool.call({ tool: 'TaskCreate', subject: 'After', description: '' } as never)
+  const ids = w.state.runs.filter(run => run.argv.includes('write')).map(run => (JSON.parse(run.stdin!) as { id: string }[])[0]!.id)
+  expect(ids).toEqual(['task-session1-1', 'task-session2-1'])
+  const mirrorReads = w.state.runs.slice(before).filter(run => run.argv.includes('read'))
+  for (const run of mirrorReads) expect(run.argv).toContain('--peek')
 })

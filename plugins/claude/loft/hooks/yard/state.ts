@@ -8,7 +8,7 @@ import type { EngineInterface, PluginOptions } from 'claude-code'
 
 import { outboxOf, type Outbox } from './outbox'
 import { pageOf, type Asker } from './log'
-import { settingsOf, yard, type Caller, type Ran, type Settings } from './run'
+import { callerArgs, settingsOf, yard, type Caller, type Ran, type Settings } from './run'
 import { register as registerTree, serverOf, type Server } from './server'
 
 /** The plugin's name, as Claude Code names it in a dispatch's origin and in its tools. */
@@ -85,6 +85,14 @@ export async function run($: EngineInterface, cwd: string, args: readonly string
     void registerTree($, state.settings, state.server, state.sessions[0] ?? '', tree)
   }
   return ran
+}
+
+/**
+ * Reads Yard Log on the agent's behalf without moving the revision it last read, as the mod reads
+ * it to mirror a task or to send what the agent asks.
+ */
+export async function peek($: EngineInterface, cwd: string, caller: Caller): Promise<Ran> {
+  return run($, cwd, ['read', '--peek', ...callerArgs({ ...caller, continues: undefined })])
 }
 
 /** A subagent's type, as Claude Code lists it. */

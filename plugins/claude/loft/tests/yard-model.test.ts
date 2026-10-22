@@ -3,7 +3,7 @@ import { expect, test } from 'claude-code/testing'
 import { askResultOf, feedbackIn, givenOf, planId, planTitle, questionBlocks, taskId, taskState } from '../hooks/yard/answers'
 import { contextOf, LIMIT } from '../hooks/yard/context'
 import { APPROVE, dialogOf, MORE, recordedOf, REJECT } from '../hooks/yard/dialog'
-import { activeStage, lastUnplanned, waitingOf, type Block } from '../hooks/yard/log'
+import { activeStage, lastUnplanned, waitingOf, whoOf, type Block } from '../hooks/yard/log'
 import { loftSubcommands } from '../hooks/yard/shell'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES } from '../hooks/yard/tools'
 import { block, readDoc, stage } from './yard-world'
@@ -100,8 +100,10 @@ test('the feedback typed with a rejection is read from what Claude Code gives th
 })
 
 test("a task's block id is made of the task's id and its agent, and its states follow the task's", () => {
-  expect(taskId('3', undefined)).toBe('task-3')
-  expect(taskId('3', 'a9f2')).toBe('task-a9f2-3')
+  const main = whoOf({ session: '5F1C9A7E-0b2d-4c11-9e3a-77aa01c2d3e4' })
+  expect(taskId('3', main)).toBe('task-5f1c9a7e-3')
+  expect(taskId('3', whoOf({ session: '5f1c9a7e-0b2d', agent: { id: 'a9f2', type: 'Explore' } }))).toBe('task-a9f2-3')
+  expect(taskId('1', whoOf({ session: 'b7d00e11-cleared' }))).not.toBe(taskId('1', main))
   expect(['pending', 'in_progress', 'completed', 'deleted'].map(taskState)).toEqual(['open', 'active', 'done', 'dropped'])
 })
 

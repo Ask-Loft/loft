@@ -132,9 +132,9 @@ export function feedbackIn(text: string): string | undefined {
   return rest === '' ? undefined : rest
 }
 
-/** A task's block id: from the task's id and the agent, so that each update finds it. */
-export function taskId(task: string, agent: string | undefined): string {
-  return agent ? idOf('task', agent, task) : idOf('task', task)
+/** A task's block id: from the task's id and who made it ([`whoOf`]), so that each update finds it. */
+export function taskId(task: string, who: string): string {
+  return idOf('task', who, task)
 }
 
 const TASK_STATES: Record<string, string> = {
