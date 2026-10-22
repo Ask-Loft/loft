@@ -290,3 +290,65 @@ test('a submission withdrawn while its dialog is open closes the dialog, records
   expect(asked).toBe(1)
   expect(yardRuns(w).some(run => run.startsWith('answer'))).toBe(false)
 })
+
+// The person interrupting the turn: a plugin above the mod's answers the call while it waits, which
+// aborts what runs beneath, as Claude Code does on an interrupt.
+const PERSON = {
+  name: 'person',
+  tier: 'prepend' as const,
+  register(on: Parameters<typeof world>[0]) {
+    on('tool.call', { tool: 'mcp__loft__yard_wait' }, async ($, e, next) => {
+      const waited = next(e)
+      waited.catch(() => {})
+      // An inline plugin shares nothing with the test but the engine: the clock tells it when.
+      await $.clock.sleep(60000)
+      return { deny: 'Interrupted by the person.' }
+    })
+  },
+}
+
+test('an interrupt while yard_wait waits ends the running wait, closes the dialog, records nothing and leaves the submission open', { plugins: [PERSON] }, async ($, on) => {
+  const w = world(on)
+  w.state.read = sentDoc([pick('q1', 2)])
+  const answer = deferred<Record<string, unknown>>()
+  w.state.terminal.AskUserQuestion = () => answer.promise
+  await start($)
+  const ran = $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 'sub-7' })
+  await w.clock.settle()
+  expect(w.state.calls.map(call => call.tool)).toEqual(['AskUserQuestion'])
+  await w.clock.advance(60000)
+  expect((await ran).deny).toBe('Interrupted by the person.')
+  await w.clock.settle()
+  answer.resolve({ result: { questions: [], answers: { 'Pick q1?': 'O1' } } })
+  await w.clock.settle()
+  expect(w.state.killed).toBe(1)
+  expect(yardRuns(w).filter(run => run.startsWith('answer') || run.startsWith('withdraw'))).toEqual([])
+  expect(w.state.calls).toHaveLength(1)
+})
+
+test("questions on a branch with no Yard Log open it, in a stage the mod opens, and Claude Code's dialog shows them as the agent wrote them", async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ yardLog: { closedBy: 'open' }, stages: [] })
+  w.state.terminal.AskUserQuestion = e => ({ result: { questions: e.questions, answers: { 'Which readers?': 'Visitors' }, annotations: { 'Which readers?': { notes: 'only them' } } } })
+  await start($)
+  await ask($)
+  expect(writes(w).at(-1)!.map(each => each.kind)).toEqual(['stage', 'question'])
+  expect(w.state.calls[0]!.questions).toEqual(QUESTIONS)
+  const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'ask-r5-1', labels: ['Visitors'], notes: 'only them' }])
+})
+
+test('a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({
+    stages: [{ ...stage('earlier', 'done', { session: SESSION }), blocks: [block('plan-shelf', 'plan', { title: 'Old' })] }, stage('shape', 'active', { session: SESSION })],
+  })
+  w.state.terminal.ExitPlanMode = () => ({ result: 'approved', text: 'approved' })
+  await start($)
+  const input = { plan: PLAN, planFilePath: '/p/shelf.md' }
+  await $.tool.call({ tool: 'ExitPlanMode', ...input } as never)
+  expect(writes(w).at(-1)!.map(each => [each.id, each.stage])).toEqual([['plan-shelf', 'earlier']])
+  expect(w.state.calls.at(-1)).toMatchObject(input)
+  const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'approved' }])
+})

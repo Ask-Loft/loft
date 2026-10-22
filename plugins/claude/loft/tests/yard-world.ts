@@ -88,6 +88,10 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     serverStops: deferred<void>(),
     posts: [] as { url: string; headers: Record<string, string>; events: Doc[] }[],
     postStatus: 200,
+    /** What the page server's answer to a post waits on. */
+    answering: Promise.resolve() as Promise<unknown>,
+    /** How many `loft yard wait` runs were killed before they printed. */
+    killed: 0,
     toasts: [] as string[],
     tools: [] as { name: string; inputSchema: unknown }[],
     /** The dialogs and tool calls that reached Claude Code's own tools, and how each is answered. */
@@ -105,7 +109,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   on('session.end', ($, e) => ({ sessionId: e.sessionId }))
   on('turn.start', ($, e) => ({ turnId: e.turnId }))
   on('turn.complete', () => ({ text: '' }))
-  on('session.compact', ($, e) => ({ messages: e.messages, tokensBefore: 9000, tokensAfter: 1200 }) as never)
+  on('session.compact', ($, e) => ({ messages: e.messages, tokensBefore: 9000, tokensAfter: 1200, usage: { input_tokens: 7000, output_tokens: 900, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } }) as never)
   // Claude Code's own classic hooks: none adds anything.
   on('classic.SessionStart', () => ({}))
   on('classic.SubagentStart', () => ({}))
@@ -128,7 +132,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   })
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))
   on('fs.read', ($, e) => (state.hasToken && e.path === `${HOME}/.yard/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
-  on('http.fetch', ($, e) => {
+  on('http.fetch', async ($, e) => {
+    await state.answering
     const headers = (e.init?.headers ?? {}) as Record<string, string>
     state.posts.push({ url: e.url, headers, events: JSON.parse(String(e.init?.body ?? '[]')) as Doc[] })
     const ok = state.postStatus >= 200 && state.postStatus < 300
@@ -165,7 +170,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     }
   })
 
-  on('process.spawn', async function* ($, e) {
+  on('process.spawn', async function* ($, e, next) {
     state.runs.push({ argv: e.argv, cwd: e.cwd, env: e.env, spawned: true })
     const sub = subOf(e.argv)
     if (sub === 'serve') {
@@ -173,7 +178,14 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
       if (state.serve === 'serving') await state.serverStops.promise
       return { value: { code: 0, signal: null } }
     }
-    const doc = state.waits.shift() ?? (await state.page.promise)
+    // A wait the mod ends is killed: the kit aborts its dispatch.
+    const signal = (next as { signal?: AbortSignal }).signal
+    const killed = new Promise<null>(done => signal?.addEventListener('abort', () => done(null), { once: true }))
+    const doc = state.waits.shift() ?? (await Promise.race([state.page.promise, killed]))
+    if (doc === null) {
+      state.killed++
+      return { value: { code: null, signal: 'SIGTERM' } }
+    }
     yield { stream: 'stdout' as const, text: JSON.stringify(doc) }
     return { value: { code: doc.outcome === 'refused' ? 1 : 0, signal: null } }
   })

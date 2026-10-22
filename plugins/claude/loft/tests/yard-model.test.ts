@@ -287,3 +287,18 @@ test("each tool runs its loft yard command with the caller's session and, for a 
   expect(commandOf('yard_published', { branch: 'feat/x', note: 'n' }, main).args).toEqual(['published', '--branch', 'feat/x', '--note', 'n', '--session', 's1'])
   expect(commandOf('yard_close', {}, { session: 's2', continues: 's1' }).args).toEqual(['close', '--session', 's2', '--continues', 's1'])
 })
+
+test('after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read', () => {
+  const text = contextOf(
+    readDoc({
+      revision: 9,
+      lastRead: 6,
+      stages: [{ ...stage('shape', 'active', { session: 's1' }), blocks: [{ ...question('q1', 2), answer: { labels: ['O1'], act: { revision: 8 } } }] }],
+      submissions: [{ agent: { session: 's1' }, open: [{ key: 'sub-7', blocks: ['k1'], state: 'open' }] }],
+    }),
+    { sessions: ['s2', 's1'] },
+  )
+  expect(text).toContain('Your active stage: `shape`')
+  expect(text).toContain('`sub-7`, 1 block, sent by you')
+  expect(text).toContain('since revision 6, which you last read (1)')
+})

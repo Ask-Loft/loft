@@ -173,3 +173,41 @@ test('the token is read from the home directory', async ($, on) => {
   expect(w.state.posts[0]!.headers.Authorization).toBe('Bearer token-1')
   expect(HOME).toBe('/home/reader')
 })
+
+test('the context is given again after /resume and /branch, and a session a new process starts names no session it continues', async ($, on) => {
+  const w = world(on)
+  await start($)
+  const first = w.state.runs.find(run => run.argv.includes('read'))!
+  expect(first.argv).not.toContain('--continues')
+  for (const source of ['resume', 'fork'] as const) {
+    const again = await $.classic.SessionStart({ source })
+    expect((again.additionalContext ?? []).join('\n')).toContain('Yard Log of `feat/shelf`')
+  }
+})
+
+test("the main agent's call names no agent, and an input at fault runs no command", async ($, on) => {
+  const w = world(on)
+  await start($)
+  await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  expect(w.state.runs.at(-1)!.argv).not.toContain('--agent')
+  const before = w.state.runs.length
+  await $.tool.call({ tool: 'mcp__loft__yard_wait' })
+  await $.tool.call({ tool: 'mcp__loft__yard_close', force: true })
+  expect(w.state.runs.length).toBe(before)
+})
+
+test('with a loftCommand that cannot be run, the agent asks and plans in Claude Code alone', async ($, on) => {
+  const w = world(on, { protocol: 'unrunnable' })
+  await start($)
+  await $.tool.call({ tool: 'AskUserQuestion', questions: [{ question: 'Which?', header: 'Pick', multiSelect: false, options: [{ label: 'A', description: '' }, { label: 'B', description: '' }] }] })
+  await $.tool.call({ tool: 'ExitPlanMode', plan: '# P', planFilePath: '/p/plan.md' } as never)
+  expect(w.state.calls.map(call => call.tool)).toEqual(['AskUserQuestion', 'ExitPlanMode'])
+  expect(w.state.runs.filter(run => !run.argv.includes('protocol'))).toEqual([])
+})
+
+test('a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update', async ($, on) => {
+  const w = world(on, { protocol: 0 })
+  await start($)
+  expect(w.state.tools).toEqual([])
+  expect(w.state.toasts[0]).toMatch(/which speaks the yard protocol 0\. To use Yard Client, bring loft up to date/)
+})

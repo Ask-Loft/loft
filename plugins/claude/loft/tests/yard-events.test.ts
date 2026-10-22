@@ -1,9 +1,9 @@
 import { expect, test } from 'claude-code/testing'
 
-import { block, readDoc, SESSION, stage, start, TREE, world, type World } from './yard-world'
+import { block, readDoc, SESSION, stage, start, TREE, world, type Engine, type World } from './yard-world'
 
 const events = (w: World) => w.state.posts.flatMap(post => post.events)
-const kinds = (w: World) => events(w).map(event => event.kind)
+const kinds = (w: World) => events(w).map(event => String(event.kind))
 const USAGE = { input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 100, cache_creation_input_tokens: 20 }
 
 test("each event names the session, its directory, its time to the second, its kind and the host, and is posted to the page server's events with the token", async ($, on) => {
@@ -69,7 +69,7 @@ test("a turn's end carries its tokens, and a compaction the tokens before and af
   await w.clock.settle()
   const [end, compaction] = events(w)
   expect(end).toMatchObject({ kind: 'turn.end', turn: 't1', tokens: { input: 10, cacheRead: 100, cacheWrite: 20, output: 5 } })
-  expect(compaction).toMatchObject({ kind: 'compaction', before: 9000, after: 1200 })
+  expect(compaction).toMatchObject({ kind: 'compaction', before: 9000, after: 1200, tokens: { input: 7000, cacheRead: 0, cacheWrite: 0, output: 900 } })
 })
 
 test('plan mode starting and ending is posted once for each change, as the main agent is heard in it', async ($, on) => {
@@ -174,4 +174,73 @@ test('an agent with no active stage has no task mirrored, and a failed task call
   w.state.terminal.TaskCreate = () => ({ deny: 'no' })
   await $.tool.call({ tool: 'TaskCreate', subject: 'B', description: '' } as never)
   expect(w.state.runs.filter(run => run.argv.includes('write'))).toEqual([])
+})
+
+const STEP = { turnId: 't1', index: 0, model: 'claude-test-1', messageCount: 1 }
+const RESPONSE = {
+  turnId: 't1',
+  index: 0,
+  answer: 'done',
+  toolUses: [{ name: 'Read', id: 'u1', input: {} }],
+  stopReason: 'tool_use',
+  usage: { ...USAGE, model: 'claude-test-1' },
+}
+
+const step = async ($: Engine, agentId?: string) => {
+  for await (const _ of $.turn.step({ ...STEP, ...(agentId ? { agentId } : {}) } as never)) void _
+}
+
+test("a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model", async ($, on) => {
+  const w = world(on)
+  on('turn.step', async function* () {
+    return RESPONSE as never
+  })
+  await start($)
+  await $.classic.SubagentStart({ agent_id: 'a9', agent_type: 'Explore' } as never)
+  await w.clock.settle()
+  expect(kinds(w)).toEqual([])
+  await step($, 'a9')
+  await step($)
+  await w.clock.settle()
+  expect(events(w).map(({ kind, agent, model, turn, tools, tokens }) => ({ kind, agent, model, turn, tools, tokens }))).toEqual([
+    { kind: 'subagent.start', agent: { id: 'a9', type: 'Explore' }, model: 'claude-test-1', turn: undefined, tools: undefined, tokens: undefined },
+    { kind: 'request', agent: { id: 'a9', type: 'Explore' }, model: 'claude-test-1', turn: 't1', tools: ['Read'], tokens: { input: 10, cacheRead: 100, cacheWrite: 20, output: 5 } },
+    { kind: 'request', agent: undefined, model: 'claude-test-1', turn: 't1', tools: ['Read'], tokens: { input: 10, cacheRead: 100, cacheWrite: 20, output: 5 } },
+  ])
+})
+
+test("no event holds the prompt, the agent's text, a tool call's input or its result", async ($, on) => {
+  const w = world(on)
+  on('turn.step', async function* () {
+    return RESPONSE as never
+  })
+  await start($)
+  await $.turn.start({ text: 'a secret prompt', turnId: 't1' })
+  await step($)
+  await $.tool.call({ tool: 'Bash', command: 'echo secret && loft check', tool_use_id: 'u1' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/spec/secret.yaml`, old_string: 'secret', new_string: 'secret', tool_use_id: 'u2' } as never)
+  await w.clock.settle()
+  const allowed = new Set(['session', 'dir', 'at', 'host', 'agent', 'kind', 'turn', 'model', 'tools', 'tokens', 'tool', 'call', 'spec', 'loft', 'failed'])
+  for (const event of events(w)) for (const field of Object.keys(event)) expect(allowed.has(field), field).toBe(true)
+  expect(JSON.stringify(events(w))).not.toContain('secret')
+})
+
+test("the agent's work goes on while the page server has yet to answer", async ($, on) => {
+  const w = world(on)
+  w.state.answering = new Promise(() => {})
+  await start($)
+  const ran = await $.tool.call({ tool: 'Bash', command: 'ls', tool_use_id: 'u1' } as never)
+  expect(ran.text).toBe('ok')
+})
+
+test('plan mode is heard from the EnterPlanMode and ExitPlanMode calls that succeed', async ($, on) => {
+  const w = world(on, { protocol: 1 })
+  w.state.terminal.ExitPlanMode = () => ({ deny: 'no' })
+  await start($)
+  await $.tool.call({ tool: 'EnterPlanMode' } as never)
+  await $.tool.call({ tool: 'ExitPlanMode' } as never)
+  w.state.terminal.ExitPlanMode = () => ({ result: 'ok', text: 'ok' })
+  await $.tool.call({ tool: 'ExitPlanMode' } as never)
+  await w.clock.settle()
+  expect(kinds(w).filter(kind => kind.startsWith('plan.'))).toEqual(['plan.start', 'plan.end'])
 })

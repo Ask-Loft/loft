@@ -59,6 +59,7 @@ function world(on: On, options: { root?: string | null; variant?: Variant } = {}
   // the pane works as it does with a loft that has them.
   on('ui.toast', () => ({ value: undefined }))
   on('process.run', async ($, e) => {
+    if (e.argv.includes('yard') && state.fail === 'unrunnable') return { deny: 'loft is not on PATH' }
     if (e.argv.includes('yard') || e.argv.includes('--version')) {
       return { value: { exitCode: 2, stdout: '', stderr: "error: unrecognized subcommand 'yard'", isStdoutTruncated: false, isStderrTruncated: false } }
     }
