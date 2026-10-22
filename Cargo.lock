@@ -1293,6 +1293,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "yardlog"
+version = "2.2.1"
+dependencies = [
+ "loftspec",
+ "pulldown-cmark",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "zeroize"
 version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

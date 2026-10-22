@@ -17,7 +17,7 @@ fn only_the_test_locator_parses_a_programming_language() {
         .filter(|shown| !shown.starts_with("crates/loft-cli/src/locate/"))
         .collect();
     assert_eq!(users, Vec::<String>::new());
-    for library in ["loftspec", "loftspec-store", "software-plant"] {
+    for library in ["loftspec", "loftspec-store", "software-plant", "yardlog"] {
         let manifest = workspace().join("crates").join(library).join("Cargo.toml");
         let manifest = fs::read_to_string(manifest).unwrap();
         assert!(!manifest.contains("tree-sitter"), "{library}");

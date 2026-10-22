@@ -19245,6 +19245,780 @@ links:
       - file: "plugins/claude/loft/tests/pane.test.tsx"
         name: "every text the pane draws takes a tone of the table, and none is dimmed"
         body: 1b4710e76080fd715053f73ca3cd1be4141a6372bf9d13b5f370f97a0215a90b
+  - node: 01a1646f-546e-76cb-8b4f-f2273651a416
+    reviewed: 4851a48ce032bda3e7ebcb5725e47ec4ec29d88bef0962ca96578f8be563c5f9
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "closing_withdraws_every_open_submission_and_refuses_answers_after"
+        body: 1911167d7c2d1a98b32c90c91ae01fa50140a368397f5b1e73787674a4de0c02
+  - node: 01a1646f-546e-76cb-8b4f-f22857f52d6e
+    reviewed: 5042803c728164c5400469a792cd66d1c072b3757f37fc93abbdaceb1ec0fe0c
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "closing_withdraws_every_open_submission_and_refuses_answers_after"
+        body: 1911167d7c2d1a98b32c90c91ae01fa50140a368397f5b1e73787674a4de0c02
+  - node: 01a1646f-546e-76cb-8b4f-f22bf330c17b
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "closed_yard_log_refuses_every_batch"
+        body: e0ef3a0c0050dde16860e765a623691f720d865bcf5e1f8991f033452185b3dc
+  - node: 01a1646f-546e-76cb-8b4f-f22e64505a26
+    reviewed: 9ea124b2709de5448683ac4940b3058c0958cebf53a10419bfeae3bd1ba5de61
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "closing_withdraws_every_open_submission_and_refuses_answers_after"
+        body: 1911167d7c2d1a98b32c90c91ae01fa50140a368397f5b1e73787674a4de0c02
+  - node: 01a1646f-546e-76cb-8b4f-f2396e6f8d9d
+    reviewed: e8419c7d65be3d07b785a9d325071acd1ab5b744333caf93d5c4cc54f84f7398
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "the_first_write_opens_yard_log_titled_with_its_branch"
+        body: be720bf1e46cd64c21ae97d122c90c4404efe77ebcec63875488b3dbe2e9c9bd
+  - node: 01a1646f-546e-76cb-8b4f-f23ab3a81452
+    reviewed: d953d17c2acd6ff1ca276eca226e88a2a8a52962219b5fac3b1f1b6f6e701ec0
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "the_first_write_opens_yard_log_titled_with_its_branch"
+        body: be720bf1e46cd64c21ae97d122c90c4404efe77ebcec63875488b3dbe2e9c9bd
+  - node: 01a1646f-546e-76cb-8b4f-f26345298538
+    reviewed: 6a5285d0744b53a6d070c49d2262aa4141bd8adb964bd26d9f4e3035321d26ad
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_block_of_each_of_the_eight_kinds_is_read"
+        body: ad333c7d5b02aba245abfbc1efc669cdf309fd0b5192b5d55c256dff2f7adbca
+  - node: 01a1646f-546e-76cb-8b4f-f264f48a498a
+    reviewed: 8101f2a897af7cd672939826d677bc041c25928addb550e56122fe58e64afa2e
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_block_of_another_kind_is_refused"
+        body: f89f4aad6a211c9526f3ad3d472c66c38f1b00a7d6b861dedcf376abe0318bbb
+  - node: 01a1646f-546e-76cb-8b4f-f26512cfbffe
+    reviewed: a33c09e34ef0547297928da5ec2075fb85d1bada875e714d0ecda277ee32741a
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_block_other_than_a_stage_that_names_no_stage_is_refused"
+        body: 48d0bf7aa8079f05ed6e575685c27e1c769da4b2c280d57dbb9da18ab49c0eb2
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_block_that_names_a_stage_yard_log_does_not_hold_is_refused"
+        body: 589e4939978ba9d4b43266ece108455a490c0d70e29671993130abd80b64344f
+  - node: 01a1646f-546e-76cb-8b4f-f267bb9a821b
+    reviewed: 46fda89303f043416d589e6c85ade2695b99f4cd9d3fefa93a39a3489de09ebd
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_stage_or_task_written_with_no_status_is_planned_or_open"
+        body: 2559745c2245cf23290a95bbe25164563f65dafba9b5034501035358f4853af7
+  - node: 01a1646f-546e-76cb-8b4f-f268eabeb578
+    reviewed: b76798161644ef98ccac66e7ce8deb799c5b1b3aad8ea98355c020ddf0e329dd
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_new_block_goes_at_the_end_of_its_stage_or_after_the_block_it_names"
+        body: 730f25cf248c91f8d945034556252df2285bf212129c28e336c4495c81144349
+  - node: 01a1646f-546e-76cb-8b4f-f26937ab4fe0
+    reviewed: edc9a02504a73940de9d289786ecaff33d1f91cd9f749d1e519fec3fb34b5318
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_stage_that_has_never_been_active_names_no_agent"
+        body: f8c2e954d9b5ba693238048422289c6495a19cc16747d3f360e217d1d27108b6
+  - node: 01a1646f-546e-76cb-8b4f-f26b9f5ff21b
+    reviewed: f38e826b52053c4dd2f2380d473ea28db5b50cee518d85193eed9a55d0ff1740
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_note_with_raw_html_is_refused_and_one_without_a_folded_flag_starts_open"
+        body: 97470c2e917f718672db89ab9d4fa5087a20067aa961d654160e50a7211998bd
+  - node: 01a1646f-546e-76cb-8b4f-f26cb594aa7c
+    reviewed: 69930b5a4560383455ac74773440d91ea8e0bb07577a144673cb86ef9d1444e8
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_note_with_raw_html_is_refused_and_one_without_a_folded_flag_starts_open"
+        body: 97470c2e917f718672db89ab9d4fa5087a20067aa961d654160e50a7211998bd
+  - node: 01a1646f-546e-76cb-8b4f-f26d4be9f189
+    reviewed: dc8ffb14b1d1a2b98657aea032c3f61566444f3061ecbf64eba1387bb001e452
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_note_with_raw_html_is_refused_and_one_without_a_folded_flag_starts_open"
+        body: 97470c2e917f718672db89ab9d4fa5087a20067aa961d654160e50a7211998bd
+  - node: 01a1646f-546e-76cb-8b4f-f27017b17983
+    reviewed: ed945de7de3d8688e6e5b8b27c4fed3fc7df00d6533db7871a8e9f1df4cb9076
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_question_that_takes_one_option_recommends_at_most_one"
+        body: de5c3dc88eea771d18234daca23570a6231975e6da67f42697448d0c5620addb
+  - node: 01a1646f-546e-76cb-8b4f-f271c7c5acbb
+    reviewed: b9fd0cdae295cff7c5e2b60adadfb6456ec0d185da50ae1e50543d4bd05b0107
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_question_that_takes_one_option_recommends_at_most_one"
+        body: de5c3dc88eea771d18234daca23570a6231975e6da67f42697448d0c5620addb
+  - node: 01a1646f-546e-76cb-8b4f-f272d3dbf550
+    reviewed: 43cbd58e72a3c76ef05c436cedb5bb77fcabdc06210c7677df4c1d8defaa356e
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_question_that_takes_one_option_recommends_at_most_one"
+        body: de5c3dc88eea771d18234daca23570a6231975e6da67f42697448d0c5620addb
+  - node: 01a1646f-546e-76cb-8b4f-f273336e30a0
+    reviewed: ce15fd996c6fcda1e76d8475b0ffea36ad7dbd0d45534c2c97820952d8e6ba09
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_question_that_takes_one_option_recommends_at_most_one"
+        body: de5c3dc88eea771d18234daca23570a6231975e6da67f42697448d0c5620addb
+  - node: 01a1646f-546e-76cb-8b4f-f27448a8483a
+    reviewed: a2e59ed2f12f8290ec7a94877562b3273febc351d52af7a723b820e4bde7ee4d
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_question_needs_two_options_with_distinct_labels"
+        body: 5c93b937d45fa3fce335bc64646ab3cc1265bbb7f66c1e3742269abca62b4eb4
+  - node: 01a1646f-546e-76cb-8b4f-f27527c987e0
+    reviewed: 57ecda199ad807501d962279c34cbb459ec9fab9765339af26b61e88b9adc893
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_question_needs_two_options_with_distinct_labels"
+        body: 5c93b937d45fa3fce335bc64646ab3cc1265bbb7f66c1e3742269abca62b4eb4
+  - node: 01a1646f-546e-76cb-8b4f-f27644ca8154
+    reviewed: c8d5ffb60b7ec31568eeba6575c2a4c99b3be68b132fc5a7bdad25d8888a7ec9
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "an_answer_records_the_person_its_act_and_its_channel"
+        body: a49ec9035b77a75d1f836d01cb9296ba985d8d5145da5552639111f9d0a2786b
+  - node: 01a1646f-546e-76cb-8b4f-f2780c5a73b7
+    reviewed: f9898378e3e75adb79862d45352f2976c947d36f70680d3fabad8c1f8efd3b52
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_rejection_carries_the_person_s_reason"
+        body: 9b4760b117c6c843d189c475b5f1c8874e9b07fa4343c6f965b7e6fc2340cb0f
+  - node: 01a1646f-546e-76cb-8b4f-f27b5d484c59
+    reviewed: b7560ac75a7fdcbd60ed5c028619828676ce11d8d53c897da39f5b66894d8850
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_new_decision_s_number_follows_the_highest_and_is_kept_through_its_versions"
+        body: a7211844de6f020dbb684c3a97d346ddda8b30b3c6cdafd24b9df967ea949d44
+  - node: 01a1646f-546e-76cb-8b4f-f27cd3ddfbff
+    reviewed: edefaea4f5594a85dd481fee13f4542d7ead20d7361764bdf8ba98cff4a4f482
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_new_decision_s_number_follows_the_highest_and_is_kept_through_its_versions"
+        body: a7211844de6f020dbb684c3a97d346ddda8b30b3c6cdafd24b9df967ea949d44
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_driver_changes_no_id_and_no_number_and_settling_does"
+        body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
+  - node: 01a1646f-546e-76cb-8b4f-f27d19128f90
+    reviewed: 0980d28721d838922c4146c48e71156155c503147d43138cb942f7a589da2ed8
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_decision_written_naming_a_question_records_the_question_s_key"
+        body: 49633fc6af3d2f641168361041d1b5124343df3ceb02b30b61ce3a2a74c83264
+  - node: 01a1646f-546e-76cb-8b4f-f27efa5e22ff
+    reviewed: 5432b8729432bc9d7ec11c57f2f406a19101fb75a3f1d5cd6a1e674213c9cb61
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_decision_naming_a_question_yard_log_does_not_hold_is_refused"
+        body: c4eba7303aeda1b05cc3b15c6ee14865e77db3af1e31feeea4befce610cd1a31
+  - node: 01a1646f-546e-76cb-8b4f-f280569b2e04
+    reviewed: ea106e4208299ec4a0fc6c66517c955c0422985bea4ad635e13f40ad49cc7653
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_stage_or_task_written_with_no_status_is_planned_or_open"
+        body: 2559745c2245cf23290a95bbe25164563f65dafba9b5034501035358f4853af7
+  - node: 01a1646f-546e-76cb-8b4f-f2828477d857
+    reviewed: c02a8f58a66fadea96604e7bd425fb59b28c0309269a43a025df6cacc5620e43
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_rejection_carries_the_person_s_reason"
+        body: 9b4760b117c6c843d189c475b5f1c8874e9b07fa4343c6f965b7e6fc2340cb0f
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
+        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+  - node: 01a1646f-546e-76cb-8b4f-f284b0b1b5f5
+    reviewed: 409e29308c747d13f3c0e34a39a1eb41470bddd403d548eaa673923df89cf186
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
+        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+  - node: 01a1646f-546e-76cb-8b4f-f2853be2aad3
+    reviewed: 7895cfe4cabcf7f9dbc046cce89c787345f07ae2446b10a2bdc7a9a1e441a749
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
+        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+  - node: 01a1646f-546e-76cb-8b4f-f2886e33378e
+    reviewed: a440ecaa942d026b83d6a5e3c116e52bbfef95a13dfe662b00d02a14c29f2950
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_valid_batch_raises_the_revision_by_one_and_gives_each_block_s_key"
+        body: 070b0b48bf594a9c89c816c4699eac339d18c4876db4f85eae62ae276ddaf777
+  - node: 01a1646f-546e-76cb-8b4f-f2897d0a14a5
+    reviewed: 5d3606b756ee39d126249ec5cdd3155e3490d3a3357ccb017a667d1dc7b76ee0
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_valid_batch_raises_the_revision_by_one_and_gives_each_block_s_key"
+        body: 070b0b48bf594a9c89c816c4699eac339d18c4876db4f85eae62ae276ddaf777
+  - node: 01a1646f-546e-76cb-8b4f-f28a7eb61d73
+    reviewed: d1e03c3c91a1be562e3a620ae98ea3fbdd0ad0ad30d7bab12dbf8095608e691b
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_batch_with_one_invalid_block_changes_nothing"
+        body: 1f1ff0a4600f769e3dc6c3a6f7ee9d33d88caf2f6d7b8e34b2177b99a5dcba86
+  - node: 01a1646f-546e-76cb-8b4f-f28bb84d5030
+    reviewed: c6eef27f6def64ce9d0cf01214e14043641b8e15e7eea475319760cc39e0a8d9
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_batch_with_one_invalid_block_changes_nothing"
+        body: 1f1ff0a4600f769e3dc6c3a6f7ee9d33d88caf2f6d7b8e34b2177b99a5dcba86
+  - node: 01a1646f-546e-76cb-8b4f-f28d7973efc3
+    reviewed: 4b093b793e40ae7e4e35abcf1a1e38f57b187039b37ba97ac7b3f9b40b33d2f4
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "an_id_is_lowercase_letters_digits_and_hyphens_starting_with_a_letter"
+        body: bd2a59c1d8b806a75a89688b46023250b41279c2ba1710e43ff498dc05e07df5
+  - node: 01a1646f-546e-76cb-8b4f-f28e468e4586
+    reviewed: 3fc71e74ddadf10685f0a55e5ffff0a7f034f5736ff7b03428f333500514c6e1
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_valid_batch_raises_the_revision_by_one_and_gives_each_block_s_key"
+        body: 070b0b48bf594a9c89c816c4699eac339d18c4876db4f85eae62ae276ddaf777
+  - node: 01a1646f-546e-76cb-8b4f-f28f2cba1fe3
+    reviewed: 5bda6d7ef18a06f015fae8cbcf1f3e6883e5ee9544eda4c1d051bcb6c99b07b7
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_new_block_goes_at_the_end_of_its_stage_or_after_the_block_it_names"
+        body: 730f25cf248c91f8d945034556252df2285bf212129c28e336c4495c81144349
+  - node: 01a1646f-546e-76cb-8b4f-f29025418e92
+    reviewed: 69c0c1d02de78422771e0ee3aa75835d2745b992dc8cbffec9203d62cceaa600
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_written_again_gains_a_version_and_keeps_its_key_and_earlier_versions"
+        body: 80e93068ca4c6b45b3657de9dc5328f0f4293de17f6a943331ead39fb0d5c649
+  - node: 01a1646f-546e-76cb-8b4f-f29114cd7b02
+    reviewed: 580073ac323758f0be1838c170ca99284fcdb479e3021651a1d0e57e9359e481
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_written_again_as_another_kind_or_in_another_stage_is_refused"
+        body: 04ab91e53f79cd1d34153f33e81f20e8768bd8970df9b00923cbcce6fefccd47
+  - node: 01a1646f-546e-76cb-8b4f-f292ff492380
+    reviewed: 9b64de6947a8f3c9406446e3444d597bc3e0d243e1d658090013aab994f7e6b9
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_written_again_as_another_kind_or_in_another_stage_is_refused"
+        body: 04ab91e53f79cd1d34153f33e81f20e8768bd8970df9b00923cbcce6fefccd47
+  - node: 01a1646f-546e-76cb-8b4f-f293bae3bba0
+    reviewed: 71e2f500c80bfb141246b5bc3892a71380ab5452adee2e4197708d0ae8cac156
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_batch_that_gives_a_report_a_key_a_time_or_an_answer_is_refused"
+        body: e5587b641ef3c2e720dc81ee5aef7c4a26fa41e8b9bf92697e989fba3cbff87e
+  - node: 01a1646f-546e-76cb-8b4f-f29527011c40
+    reviewed: 9940d3875135971b523f1e0aa0fefb02c3f9d2ed24a09b1e7fa3906b513ba3bb
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "each_version_records_the_act_of_its_write"
+        body: e83e34a5fc866262c2af1742d88b3632dc02d799273f1a20f51345ea6223be05
+  - node: 01a1646f-546e-76cb-8b4f-f296e7842a82
+    reviewed: 553df8ead83068d7872e266288b0988c328fc235c9d779d1e356b3eba0ce2241
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "each_version_records_the_act_of_its_write"
+        body: e83e34a5fc866262c2af1742d88b3632dc02d799273f1a20f51345ea6223be05
+  - node: 01a1646f-546e-76cb-8b4f-f297362581d4
+    reviewed: a0b66b22b520587b5c54cde798df8c02ee846cedb66a89b96c5b2a229de4751e
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "each_version_records_the_act_of_its_write"
+        body: e83e34a5fc866262c2af1742d88b3632dc02d799273f1a20f51345ea6223be05
+  - node: 01a1646f-546e-76cb-8b4f-f299aab73ba1
+    reviewed: d597993e5bd5c4a2d46fe584179f3b1baf50420100152bc7b2012f18d887a470
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_stage_records_when_it_was_listed_started_and_ended"
+        body: 529bf86c5d3da6c7f2fd46a8c06673646fbe7d2a08879e30776643c6639f61df
+  - node: 01a1646f-546e-76cb-8b4f-f29a69a54272
+    reviewed: 224e33453d3f690c7beef5af1b454c0ef48ecbd511c459ae8f56d50b2a7dbfd4
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_stage_records_when_it_was_listed_started_and_ended"
+        body: 529bf86c5d3da6c7f2fd46a8c06673646fbe7d2a08879e30776643c6639f61df
+  - node: 01a1646f-546e-76cb-8b4f-f29be0a8ca95
+    reviewed: 76205b14724ffd69f0641a8992858f71e93951a3bc0ff6a90ebcdbf233e8dd9e
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_stage_records_when_it_was_listed_started_and_ended"
+        body: 529bf86c5d3da6c7f2fd46a8c06673646fbe7d2a08879e30776643c6639f61df
+  - node: 01a1646f-546e-76cb-8b4f-f29c4c50541a
+    reviewed: f4935cab8bc58ce1717d04e56f80c8aedf82408f3ef237828e433a3cb85045db
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_stage_records_when_it_was_listed_started_and_ended"
+        body: 529bf86c5d3da6c7f2fd46a8c06673646fbe7d2a08879e30776643c6639f61df
+  - node: 01a1646f-546e-76cb-8b4f-f29d020217aa
+    reviewed: b73f0ee4f606475ee844962b6b48b7c02a188e3b611fb1f32b831b90cd8d0e01
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_stage_records_when_it_was_listed_started_and_ended"
+        body: 529bf86c5d3da6c7f2fd46a8c06673646fbe7d2a08879e30776643c6639f61df
+  - node: 01a1646f-546e-76cb-8b4f-f29ec231ea39
+    reviewed: a961fc1a9d41ab7e49aa88284f71b27c5352e6342f1ca036db16bfe5807aba6b
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_batch_that_gives_a_report_a_key_a_time_or_an_answer_is_refused"
+        body: e5587b641ef3c2e720dc81ee5aef7c4a26fa41e8b9bf92697e989fba3cbff87e
+  - node: 01a1646f-546e-76cb-8b4f-f2a552abacb1
+    reviewed: bea4cd047b89ec069f66e5f54efc9dddc2240cb65cdb0f5f2c868f1184f02eaf
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_batch_that_gives_a_report_a_key_a_time_or_an_answer_is_refused"
+        body: e5587b641ef3c2e720dc81ee5aef7c4a26fa41e8b9bf92697e989fba3cbff87e
+  - node: 01a1646f-546e-76cb-8b4f-f2a61eb392de
+    reviewed: 59ab6d4d8690222ead9fee204a7d0f3c752a1d9d5ba5717a1cecde4faafc3f35
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_batch_that_gives_a_report_a_key_a_time_or_an_answer_is_refused"
+        body: e5587b641ef3c2e720dc81ee5aef7c4a26fa41e8b9bf92697e989fba3cbff87e
+  - node: 01a1646f-546e-76cb-8b4f-f2a8617fbbc0
+    reviewed: 6b5ab5dd4bca2eede1f2a1d33a1bc874be732c994afff67e517041b8797186e3
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_an_open_submission_holds_is_refused_until_the_submission_is_withdrawn"
+        body: 0897cc2c3f6bb24cd1e21dc1fc0bdcdca722931ad1955f10e545f6a16c25ddbc
+  - node: 01a1646f-546e-76cb-8b4f-f2a9cf3ff024
+    reviewed: dd281cc0b4b2265671a133fb8237fc7f1d31debcdb9903fdf43f11d47688138a
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_an_open_submission_holds_is_refused_until_the_submission_is_withdrawn"
+        body: 0897cc2c3f6bb24cd1e21dc1fc0bdcdca722931ad1955f10e545f6a16c25ddbc
+  - node: 01a1646f-546d-7042-befd-eb9608712c89
+    reviewed: 9842d9db754ba7afb828af27bf9743b04a45590c646006958561504d38c21ee6
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "records_of_both_copies_join_by_key_with_every_version_once"
+        body: eada5db397213f1d9c59204f427a70baec372ecee2c144d78d85cb708341d4c7
+  - node: 01a1646f-546d-7042-befd-eb97b5c5fb19
+    reviewed: 8bd2d207d3e990b04b5d8a57d29c9ccfbc1b64276a58f5e34b6890b8c9fc86da
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "records_of_both_copies_join_by_key_with_every_version_once"
+        body: eada5db397213f1d9c59204f427a70baec372ecee2c144d78d85cb708341d4c7
+  - node: 01a1646f-546d-7042-befd-eb98fdbc9e58
+    reviewed: 61c774009c14065ce3d45649980f27863df919d8780d27f3476b0189604feca1
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "records_of_both_copies_join_by_key_with_every_version_once"
+        body: eada5db397213f1d9c59204f427a70baec372ecee2c144d78d85cb708341d4c7
+  - node: 01a1646f-546d-7042-befd-eb993fe35501
+    reviewed: 00dfe4291e6f10e2dd632086ee376713b0f0aef6e71a19dade4c07c695ac52c6
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "stages_keep_the_base_s_order_followed_by_each_copy_s_new_ones"
+        body: f3b1262cca18ad5da2ec0f32a6ffe52e9001a0698edf12bcef81ca42a1715b47
+  - node: 01a1646f-546d-7042-befd-eb9a09ff3618
+    reviewed: eb79b85172b0ab1d7d0af730396bd4bbb43145df123462f392cdaa87aec34f05
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "records_of_both_copies_join_by_key_with_every_version_once"
+        body: eada5db397213f1d9c59204f427a70baec372ecee2c144d78d85cb708341d4c7
+  - node: 01a1646f-546d-7042-befd-eb9de698ecdf
+    reviewed: f067e13040dca7e27e00be53b162f4e9f876f5090c9204cd82e2fa006accc37e
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
+        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+  - node: 01a1646f-546d-7042-befd-eb9e0d8d45d3
+    reviewed: b7cad17c8c060159d014de4555ed6c681ab51b639c637e094c309165a40aa381
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
+        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+  - node: 01a1646f-546d-7042-befd-eba0ae5f5513
+    reviewed: 7e7a4d7f76a50c6e1899318ce50b6f2f2583602048023fb0a7e29eee9920764e
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
+        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+  - node: 01a1646f-546d-7042-befd-eba1a81ca116
+    reviewed: b7f13e00c3f0dba437e138a206b56dd035c402a08cd8f6253aa18a3eac85eed8
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
+        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+  - node: 01a1649f-62ef-71e6-98de-e112b4f533a0
+    reviewed: d3b66d35a6e290013da526aae1fdadd00e991ce7bf04b7403b6ff0978c8b919b
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
+        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+  - node: 01a1646f-546d-7042-befd-eba3cc9480da
+    reviewed: e9ee5bafe5f1066e869d2420b03e70b585d8460869bcf925a1d4df053eb35687
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "yard_log_closed_in_either_copy_is_closed_by_the_earlier_close"
+        body: 8efd1c63b8b0d9bfc493093f8da2739dffdd8597ab59f01d51f47bd127514628
+  - node: 01a1649f-62ef-71e6-98de-e1138369260b
+    reviewed: dd5675014153557c6246f9bcfd00be2731bd4ea53b814aa2a4775bd7457b68ff
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_result_s_revision_is_one_past_the_higher_and_unsettled_since_this_copy_s"
+        body: c2d2e50d32679854720ea5829750e8aca3bcab67a0ab0a5eca0372a3f9f03bc5
+  - node: 01a1649f-62ef-71e6-98de-e1149cec97fa
+    reviewed: 8ed331ff05f872342a97dd5832a94b8d8ec313193cabc9b2a5042104c12f2b5b
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_driver_changes_no_id_and_no_number_and_settling_does"
+        body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
+  - node: 01a164a0-9eef-7334-9118-9a772c96e9ed
+    reviewed: 8782d8898d49719c8371ff43e570ad6e52b22397a39f499ed942d7bd36b74709
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_result_s_revision_is_one_past_the_higher_and_unsettled_since_this_copy_s"
+        body: c2d2e50d32679854720ea5829750e8aca3bcab67a0ab0a5eca0372a3f9f03bc5
+  - node: 01a1646f-546d-7042-befd-eba8b9a15607
+    reviewed: 6d51ccbb35727826c157a4cd3d71de65525aeb66ff062a7eb468510011dd9d1d
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "yard_logs_opened_apart_join_under_the_earlier_key"
+        body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
+  - node: 01a1646f-546d-7042-befd-eba945a594e1
+    reviewed: 6b646b2c5895e17db570291000b1b1c7b128ca03526a07e50da33d2ae2d01b24
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "yard_logs_opened_apart_join_under_the_earlier_key"
+        body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
+  - node: 01a1646f-546d-7042-befd-ebaac4e90b69
+    reviewed: 98f962a4a29634d61065dfc8754209b70d2603d713375f4b42303626014f2a8d
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "yard_logs_opened_apart_join_under_the_earlier_key"
+        body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
+  - node: 01a1649f-62ef-71e6-98de-e11518fc2388
+    reviewed: 89bee55a3bc4a77e9a76c7833fe55277c2c94966e49c4c055739c00d9fa4544e
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_driver_changes_no_id_and_no_number_and_settling_does"
+        body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
+  - node: 01a1646f-546d-7042-befd-ebac18695ce2
+    reviewed: 4454b83cc8ca24a1e78c660be5c4b125480dfaf882a0670f38160bea09616d5d
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_driver_changes_no_id_and_no_number_and_settling_does"
+        body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
+  - node: 01a164a0-9eef-7334-9118-9a78aeb7a2be
+    reviewed: abc06405d70621345951b2b5d6d559a9e3c0af073796b6afea4f04c1dc951052
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "of_two_records_written_at_one_time_the_greater_key_is_the_later"
+        body: 2fcee3bca067f060133d52ff1fcbc88553f164cf833dbd675e5d7268526f671d
+  - node: 01a1649f-62ef-71e6-98de-e11619c30392
+    reviewed: 364d74d98647bc8c5c0bdb76109e400e2288d43343ab8e6b8ef4e248b8719f24
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_driver_changes_no_id_and_no_number_and_settling_does"
+        body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
+  - node: 01a1646f-546d-7042-befd-eba5774a732c
+    reviewed: 7f1ee2a7757b8d50ce87cbacf53609e7d071f4988aca423a1d7b0aa1a181cf09
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "settling_marks_what_the_merge_brought_and_settles_only_once"
+        body: dedda353270e3323f64f2f3d95a250e5025f9e123d79c4fb3f07df7bc216e32c
+  - node: 01a1646f-546d-7042-befd-ebad391ae6dd
+    reviewed: 394decffb2cd2626d658bc87fad07541c9ef06c6fcf16198280d716cc0bf5af8
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "the_driver_changes_no_id_and_no_number_and_settling_does"
+        body: 0835b85942def892126cb852b766f10f2ce6cd6d1791f1654738afda33310557
+  - node: 01a1649f-62ef-71e6-98de-e117fd79c921
+    reviewed: 86d7b2881f5afc71779386b54ac7a6c24af13c98cf29eff2a5686cef0004463f
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "settling_marks_what_the_merge_brought_and_settles_only_once"
+        body: dedda353270e3323f64f2f3d95a250e5025f9e123d79c4fb3f07df7bc216e32c
+  - node: 01a1646f-546d-7042-befd-ebafc6010906
+    reviewed: dbc04b872804e41e9fbba89275da1d265b485223c40b5d422c19a480cd146cdc
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "a_copy_that_does_not_read_as_yardlog_fails_the_merge_naming_it"
+        body: 0abfa9a288aaca3801d827fdf00ed2aa87e137732322045d96f774d8b8c2207f
+  - node: 01a1646f-546d-7042-befd-ebb3548bbe84
+    reviewed: 5527bbef917beb88ed711d6e6f5daad70fe388b484bf3ea3d3144a3645381496
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "the_first_write_opens_yard_log_titled_with_its_branch"
+        body: be720bf1e46cd64c21ae97d122c90c4404efe77ebcec63875488b3dbe2e9c9bd
+  - node: 01a1646f-546d-7042-befd-ebb48f29f00c
+    reviewed: 594760d63f2c5b0f8af339caaf05b12bd99b5c901672b4f463667ac1cf234e39
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_written_again_gains_a_version_and_keeps_its_key_and_earlier_versions"
+        body: 80e93068ca4c6b45b3657de9dc5328f0f4293de17f6a943331ead39fb0d5c649
+  - node: 01a1646f-546d-7042-befd-ebb8ed532afb
+    reviewed: b5b0e5ace5821423ca527e7225c7dd0394040655e41f75291d707ad43a5ccca5
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "each_stage_s_file_is_named_by_its_key_and_holds_its_blocks_in_order"
+        body: 0f3a90455df7982026fa98b7b8c0ef45c7db7863b56e2f2edb72abd18baa6d44
+  - node: 01a1646f-546d-7042-befd-ebb97d4d1aa5
+    reviewed: f155eaece29e34006f753620107ea14cc0c28a7a8764ce2f0e8814c9b5fb3151
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_decision_written_naming_a_question_records_the_question_s_key"
+        body: 49633fc6af3d2f641168361041d1b5124343df3ceb02b30b61ce3a2a74c83264
+  - node: 01a1646f-546d-7042-befd-ebba0e3f311b
+    reviewed: 8bfa24a859edfdade4459142638c59784c9cda46a37af276e8631c30e75ce775
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_sent_batch_opens_a_submission_of_its_questions_approvals_and_plans_in_order"
+        body: 43ed3cac5e07f1e87bd32b49ccd61026993e6152d170b9e1498300ceec5ccebe
+  - node: 01a1646f-546d-7042-befd-ebbb730d95f5
+    reviewed: 513cc2dfe2df93241a63cf102a4f2002644595f4b8f6ec6656f95a7d8d8f3cf6
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "an_answer_records_the_person_its_act_and_its_channel"
+        body: a49ec9035b77a75d1f836d01cb9296ba985d8d5145da5552639111f9d0a2786b
+  - node: 01a1646f-546d-7042-befd-ebbee5a82235
+    reviewed: 35c5676b7da69302b820a7da818af607ee5ef0a5e4df0463a6ed486ec6b19ad4
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "each_version_records_the_act_of_its_write"
+        body: e83e34a5fc866262c2af1742d88b3632dc02d799273f1a20f51345ea6223be05
+  - node: 01a1646f-546d-7042-befd-ebbf79d470c1
+    reviewed: 0be6dc2fbb684c4902425b697bd0814611484da421b23ab06a6f2693e7f9ec1a
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "each_version_records_the_act_of_its_write"
+        body: e83e34a5fc866262c2af1742d88b3632dc02d799273f1a20f51345ea6223be05
+  - node: 01a1647b-208d-7169-85c8-9a5829b8c33f
+    reviewed: c65ba5366292f6690a5f77a1a810cb3b4fd5ffa4f874523a619c4fb7ee7aa9bb
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_submission_becomes_answered_once_its_last_open_block_is_answered"
+        body: 49b4f527521a9661d31faa05f867e6d65182fa2372ad637bcadb195c74b220b6
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers"
+        body: 5227c37e42188e2fc797af2c7edfc06d214840906b8ebb4c346e7a8a64f50ee5
+  - node: 01a1647b-208d-7169-85c8-9a59bc65bb1c
+    reviewed: bb9088a0ad6ecd29cdc81d5b2489bc60403fb891ee27313250f2a20d30496856
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
+        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+  - node: 01a1646f-546d-7042-befd-ebc2b4b704f4
+    reviewed: 43764eba588c254441993fcbfae234f0da2c952e9cc2d278706af6862438e69d
+    tests:
+      - file: "crates/yardlog/tests/merge.rs"
+        name: "records_of_both_copies_join_by_key_with_every_version_once"
+        body: eada5db397213f1d9c59204f427a70baec372ecee2c144d78d85cb708341d4c7
+  - node: 01a1646f-546d-7042-befd-ebc3879c749e
+    reviewed: d4a5ee49eb6618a92fba946604c612eb4f1ea882dfae2a119caef29feb1ce73c
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_written_again_gains_a_version_and_keeps_its_key_and_earlier_versions"
+        body: 80e93068ca4c6b45b3657de9dc5328f0f4293de17f6a943331ead39fb0d5c649
+  - node: 01a1646f-546d-7042-befd-ebc49992ac21
+    reviewed: deabcd0746ee446b99c33b070dad8bae780c304d6569941435104e8963a390dd
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_written_again_gains_a_version_and_keeps_its_key_and_earlier_versions"
+        body: 80e93068ca4c6b45b3657de9dc5328f0f4293de17f6a943331ead39fb0d5c649
+  - node: 01a1646f-546d-7042-befd-ebc6d5169383
+    reviewed: 0803ae993aa7c7d73b4ec36d7521c856dc363a7e4955cec9619f5591ec54993b
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "a_reference_to_a_key_yard_log_does_not_hold_is_refused_at_its_line"
+        body: 5875b18d248a96f28c17cc83fcb997944cafc0cc3c6b618ca05beae21fd24205
+  - node: 01a1646f-546d-7042-befd-ebc9da3f340f
+    reviewed: a49fc6e59050577c10a9fe75bbfccacc18a9bb25b23cba00729d02b63fa3937f
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "the_root_names_the_format_the_key_the_branch_the_revision_and_the_stages_by_key"
+        body: 6ba7c6612bdac84ccb08069cb7a729a3ccf3d559a53322bb52eaae980e819f4f
+  - node: 01a1646f-546d-7042-befd-ebca09d739e6
+    reviewed: f9343e87924d03c0aedc91c778453cfcc1e97c1d9e5e80ad61675bc01a96b69c
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "each_stage_s_file_is_named_by_its_key_and_holds_its_blocks_in_order"
+        body: 0f3a90455df7982026fa98b7b8c0ef45c7db7863b56e2f2edb72abd18baa6d44
+  - node: 01a1646f-546d-7042-befd-ebcb46f81df5
+    reviewed: 639dd717186756675c44eedfd3bb89e2e20d1e44a7b3f00551e97c4cca3cfe3b
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "yard_log_reads_back_from_its_files_as_it_was_written"
+        body: 75a1ab6dc388d29adaa62a3219e8e193a09a50460d339dda00bbe17ec82e2cdf
+  - node: 01a1646f-546d-7042-befd-ebcda23e7abb
+    reviewed: e07ad9907977bb79889438dc05c721feb054f0e0c4c4710bfeaf5ba42786a81f
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "writing_yard_log_that_has_not_changed_gives_the_same_bytes"
+        body: 1096c9db973e8a478eb137ac3ee0137d589ecde616287b93c759d3e4713a1d53
+  - node: 01a1646f-546d-7042-befd-ebce62c22acb
+    reviewed: 1786f4a37a995c9f75615d4d0e0591449a375b8ccbb39976f2cf74f3ddb24eec
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "a_change_to_one_block_rewrites_only_its_stage_s_file_and_the_root"
+        body: eacc82ab24535bc20529a4aa40d5e29cf45136f89d059423d1a7c8eaf69f87cc
+  - node: 01a1646f-546d-7042-befd-ebcf584141d9
+    reviewed: 44a2bcfcad6d89b716972003e70d827ac04381a208c935ffe9c3ac2c5880da2e
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "the_files_hold_no_comments_anchors_aliases_tags_or_flow_collections"
+        body: 0636e3b280289660e44481523702fb3f26ce468152dd48d2e4366d07ebf30005
+  - node: 01a1646f-546c-7521-9643-bbd850b7f2ba
+    reviewed: 26b456c78c1f823b0b7c504cc7582b4a026e625c91dcebe1abd6a0729ad083eb
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
+        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+  - node: 01a1646f-546c-7521-9643-bbdaebd7935a
+    reviewed: e053dbce0e71816086229ed45c6927c5329e67021d1ae4815db5fa6cc65addc8
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
+        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+  - node: 01a1646f-546c-7521-9643-bbea9a49f273
+    reviewed: 778fc67bbfd0183629dafd1f97fbae466be4be1d31bee354b535354ec92cadf8
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_sent_batch_opens_a_submission_of_its_questions_approvals_and_plans_in_order"
+        body: 43ed3cac5e07f1e87bd32b49ccd61026993e6152d170b9e1498300ceec5ccebe
+  - node: 01a1646f-546c-7521-9643-bbebcb5aa7de
+    reviewed: f19a0a412cb3b1f006a9cc06fe6285cd983c9c8541a7039e028521c45b493735
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_sent_batch_opens_a_submission_of_its_questions_approvals_and_plans_in_order"
+        body: 43ed3cac5e07f1e87bd32b49ccd61026993e6152d170b9e1498300ceec5ccebe
+  - node: 01a1646f-546c-7521-9643-bbed533b1ef8
+    reviewed: 7bb66d844a993d02e42bd051ca198d1bb0e29c26defc1716cb222600835bb2b6
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_sent_batch_with_nothing_to_ask_is_refused_and_an_unsent_one_opens_no_submission"
+        body: e0aa195abb36cba96b34bbc0944f67bf14d706687b53462de3b5947e15053133
+  - node: 01a1646f-546c-7521-9643-bbef053a10d9
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_sent_batch_with_nothing_to_ask_is_refused_and_an_unsent_one_opens_no_submission"
+        body: e0aa195abb36cba96b34bbc0944f67bf14d706687b53462de3b5947e15053133
+  - node: 01a1646f-546c-7521-9643-bbf1e1d0654e
+    reviewed: d08b87dd0b5795dda33aff8b8085f17ee5c9483b687cf7cf1aeadea73c41de0b
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_submission_becomes_answered_once_its_last_open_block_is_answered"
+        body: 49b4f527521a9661d31faa05f867e6d65182fa2372ad637bcadb195c74b220b6
+  - node: 01a1646f-546c-7521-9643-bbf23e432959
+    reviewed: 28cc08c69bceb1a097736016fde223bd462c0e70f288b6537efb72b0fe863865
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers"
+        body: 5227c37e42188e2fc797af2c7edfc06d214840906b8ebb4c346e7a8a64f50ee5
+  - node: 01a1647c-e680-7753-bf17-f1749b4a4c4c
+    reviewed: 728f5ad8e0b403f83b3d085850d56ead19afb4a6cf7d8aa7d4a5c6a524404324
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_main_agent_of_another_session_takes_up_an_open_submission"
+        body: f23890b07b19dd7e338fbef84b3ee9a49370c39778eee5dd4c0c2b8f003f67f4
+  - node: 01a1647c-e680-7753-bf17-f17567c3b2fd
+    reviewed: 90ef0ddd8ce350bcb7bbb514c27de41fa75f857c20a3456f1e13ae4d28070115
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_main_agent_of_another_session_takes_up_an_open_submission"
+        body: f23890b07b19dd7e338fbef84b3ee9a49370c39778eee5dd4c0c2b8f003f67f4
+  - node: 01a1646f-546c-7521-9643-bc0d8a62827d
+    reviewed: a394483795d90f203c6dccf7c42c9a715509f47e84daea1eb7292bb2c105dabb
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers"
+        body: 5227c37e42188e2fc797af2c7edfc06d214840906b8ebb4c346e7a8a64f50ee5
+  - node: 01a1646f-546c-7521-9643-bc0e50edd174
+    reviewed: 0c1606b7d810b3a1337a2d7cc671bbb10f32e2c32d9c28474c38a67fde23c0ee
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers"
+        body: 5227c37e42188e2fc797af2c7edfc06d214840906b8ebb4c346e7a8a64f50ee5
+  - node: 01a1646f-546c-7521-9643-bc106442a9cd
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "withdrawing_a_submission_that_is_not_open_is_refused_with_its_state"
+        body: dc01741ed409065846f1d93384b9f6ef5498c4d85f55f4b664626ef188688ed3
+  - node: 01a1646f-546d-7042-befd-ea7d2e438301
+    reviewed: 9e3092ff3776741b560c06a684ac417c4348054b0350eff70aabff227bd2dcfb
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_batch_based_on_an_older_revision_is_refused_for_the_blocks_changed_since"
+        body: 8092b9c1cc2a0023479c5b7a92d51ac4b9200f1add5de2468c58d622f6f0e32f
+  - node: 01a1646f-546d-7042-befd-ea7ed0306ea6
+    reviewed: a0f85ca91dd4af2b3e48388e0c59dd7b2b42539ce82f1964db316465c710a1ed
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_batch_based_on_an_older_revision_is_refused_for_the_blocks_changed_since"
+        body: 8092b9c1cc2a0023479c5b7a92d51ac4b9200f1add5de2468c58d622f6f0e32f
+  - node: 01a1646f-546d-7042-befd-ea81355886c3
+    reviewed: b50e72d4bc67dda8f85ee0c095706eba2d50a89fd7b76630798a9a1a4a87e28a
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "an_agent_keeps_at_most_one_stage_active_and_a_stage_passes_to_who_makes_it_active"
+        body: d60b0e0251b3345eaa59cc16cad45f9535a2a036a850427080f2069e532d78df
+  - node: 01a1646f-546d-7042-befd-ea82c3382c6e
+    reviewed: 51f2b5ba03adee1248403a5133a440607b8b8c3502412434180f4938702e0309
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "an_agent_keeps_at_most_one_stage_active_and_a_stage_passes_to_who_makes_it_active"
+        body: d60b0e0251b3345eaa59cc16cad45f9535a2a036a850427080f2069e532d78df
+  - node: 01a1646f-546d-7042-befd-ea833b829a1b
+    reviewed: 21519837787f1127e97ea254c643db30adfff32d4136ef56318f7c946dcdefce
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "an_agent_keeps_at_most_one_stage_active_and_a_stage_passes_to_who_makes_it_active"
+        body: d60b0e0251b3345eaa59cc16cad45f9535a2a036a850427080f2069e532d78df
+  - node: 01a1646f-546d-7042-befd-ea8466259887
+    reviewed: 624c63383fd4772c10e6ded29b00d0997fa9774d593d19660b6a428f06170ffb
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "an_agent_keeps_at_most_one_stage_active_and_a_stage_passes_to_who_makes_it_active"
+        body: d60b0e0251b3345eaa59cc16cad45f9535a2a036a850427080f2069e532d78df
+  - node: 01a1647b-208d-7169-85c8-9a513f984250
+    reviewed: 7e7a55d0129bb39d7d91c5cade28cc1efd7f7609336b6415281f3dc40af306fe
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_sent_batch_opens_a_submission_of_its_questions_approvals_and_plans_in_order"
+        body: 43ed3cac5e07f1e87bd32b49ccd61026993e6152d170b9e1498300ceec5ccebe
+  - node: 01a1646f-546d-7042-befd-eaa967305e51
+    reviewed: 72e1eb7fbbb295e73b0ad966c3790d797a708a594b51b3ba815cf51061c9090e
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_batch_that_gives_a_report_a_key_a_time_or_an_answer_is_refused"
+        body: e5587b641ef3c2e720dc81ee5aef7c4a26fa41e8b9bf92697e989fba3cbff87e
+  - node: 01a1646f-546d-7042-befd-eaac662685cf
+    reviewed: 7c79ca3bef8936bb682bb61bab7031a02ebe5082a4e21b0c1733a1e0c206c0ef
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_report_that_cannot_be_computed_refuses_the_batch"
+        body: 2fa162d1382f93480e624cb576087d627ac89801ce6d4f971b1c27f9e246820e
+  - node: 01a1646f-546d-7042-befd-eaae09b6a57a
+    reviewed: dbc1da85d976c6ce56c14525e55dfbdc4740455ea04630fca9baa2ac85f51c6d
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_loft_block_records_its_report_and_is_never_written_again"
+        body: b18116af2a01bd761ca6ac3eaada42c255ef88d48db72b9f74eb196dfb6b3edb
+  - node: 01a1646f-546d-7042-befd-ea3950b1221b
+    reviewed: d08b87dd0b5795dda33aff8b8085f17ee5c9483b687cf7cf1aeadea73c41de0b
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_submission_becomes_answered_once_its_last_open_block_is_answered"
+        body: 49b4f527521a9661d31faa05f867e6d65182fa2372ad637bcadb195c74b220b6
+  - node: 01a1646f-546d-7042-befd-ea3b93c1ab09
+    reviewed: 06e27b97f9b8e1c5d76582968e2b0c5ae474a1d179c9f7575b95bfdc48c01956
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
+        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+  - node: 01a1646f-546d-7042-befd-ea3cc0994266
+    reviewed: ec297e0cc0d24f9433b9f9255f69de050320020ec63a5fdd2c47f87c4a439c05
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
+        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+  - node: 01a1646f-546d-7042-befd-ea3d337fbaa1
+    reviewed: e959d795e39d3ea98c200c34aef18d253168bac2efcdf72fdf67f1dd3e4b764d
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
+        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:
@@ -19271,13 +20045,37 @@ links:
     tests:
       - file: "crates/loft-cli/tests/test_locator.rs"
         name: "only_the_test_locator_parses_a_programming_language"
-        body: cc3e0339811e554ea3f6335acbf907be669c497948cacf926d46c57308ca1346
+        body: a8250a3531b3596aec5b5f8ee2616f23f9b046bc942be26060fbd2268e0c4508
   - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
     reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
     tests:
       - file: "crates/loft-cli/tests/shipped_binary.rs"
         name: "the_package_exposes_exactly_one_binary_named_loft"
         body: 74b6fe420f7fa790c89b5c7061afce466ee8dc16aca159d3ab1838d5eedab8f2
+  - node: 01a144ee-c59d-7512-b23e-0aad7d296257
+    reviewed: be3740d1301f5477257fecc081c078163a46c82313bcc31d1d6d42dfc3ea4d9d
+    tests:
+      - file: "plugins/claude/loft/tests/pane.test.tsx"
+        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
+        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
+  - node: 01a144ef-6ca1-721a-b6f1-e990b4e77cf7
+    reviewed: c824c20994c40c8affb6fb9ca67646458705ad0289e1771fb42501533fea8945
+    tests:
+      - file: "plugins/claude/loft/tests/pane.test.tsx"
+        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
+        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
+  - node: 01a144ee-c59d-7512-b23e-0aae339f7844
+    reviewed: 03264d21c165bb59ef8682cf40fffecdedb6fcfd8548a3f27a7e2033d0c01797
+    tests:
+      - file: "plugins/claude/loft/tests/pane.test.tsx"
+        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
+        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
+  - node: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
+    reviewed: e7022e8d59a054887d232477c4ff6a4139338b7a99121b6a97f2377b0b973152
+    tests:
+      - file: "plugins/claude/loft/tests/pane.test.tsx"
+        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
+        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
   - node: 01a13653-3ec0-76e7-bf76-fc75dd4de6c2
     reviewed: 70a99dbf0ea4710f444c9260b91542d3c9cd24a974b92cfdc4d02dbfe1944394
     tests:
@@ -19302,30 +20100,6 @@ links:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
         body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
-  - node: 01a144ee-c59d-7512-b23e-0aad7d296257
-    reviewed: be3740d1301f5477257fecc081c078163a46c82313bcc31d1d6d42dfc3ea4d9d
-    tests:
-      - file: "plugins/claude/loft/tests/pane.test.tsx"
-        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
-        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
-  - node: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
-    reviewed: 3448c488451f6c600de4f8843c0c23be5368eef8181dc9a156753bd3ed92395b
-    tests:
-      - file: "plugins/claude/loft/tests/pane.test.tsx"
-        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
-        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
-  - node: 01a144ef-6ca1-721a-b6f1-e990b4e77cf7
-    reviewed: c824c20994c40c8affb6fb9ca67646458705ad0289e1771fb42501533fea8945
-    tests:
-      - file: "plugins/claude/loft/tests/pane.test.tsx"
-        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
-        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
-  - node: 01a144ee-c59d-7512-b23e-0aae339f7844
-    reviewed: 03264d21c165bb59ef8682cf40fffecdedb6fcfd8548a3f27a7e2033d0c01797
-    tests:
-      - file: "plugins/claude/loft/tests/pane.test.tsx"
-        name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
-        body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
   - node: 9908f127-794b-4463-a680-0639741cc37a
     reviewed: 8ec5d919ec898e7a2ce83348e8116b94fa37ccbd77c0384101081ae6172d4c10
     tests:
@@ -19464,3 +20238,15 @@ links:
       - file: "crates/software-plant/tests/published.rs"
         name: "no_published_crate_depends_on_software_plant"
         body: 095754942003458ec89cffa65a57dd56e4b0ce9cd33a5ad044f3661cb5658beb
+  - node: 01a16469-559e-73c4-85f2-71ba22a63b12
+    reviewed: 8855c8be858749e46fb59d5d77f65bee8be84b09fd59d2da761b307b53e4032f
+    tests:
+      - file: "crates/yardlog/tests/boundaries.rs"
+        name: "yardlog_performs_no_io"
+        body: a7f7f24b2927dd05c2a1a2f58770f2c5d9d87ef7c70e6cc820a79517ac3690d9
+  - node: 01a16469-559e-73c4-85f2-71bbf8853b2b
+    reviewed: 1b2513ad324e6704c57aba69fecb9d7efe2a4ebea1a340d23ac5d4d562fd65e3
+    tests:
+      - file: "crates/yardlog/tests/boundaries.rs"
+        name: "yardlog_depends_on_no_store_and_no_crate_of_the_command_line"
+        body: d83a73dc58fc1757353b99d5aa4ff3f6b51f314d22b9089d08e724c80805f372

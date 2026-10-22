@@ -1,0 +1,31 @@
+[package]
+name = "yardlog"
+version = "2.2.1"
+description = "The yardlog format: the model of Yard Log, its records and keys, the rules a write is held to, its canonical YAML and the merge of two copies"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "../../README.md"
+keywords.workspace = true
+categories = ["development-tools", "parser-implementations"]
+# The tests read fixtures from the repository, which is not published, so they run from the
+# repository only.
+exclude = ["tests"]
+# The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
+# checked by the operating system once each.
+autotests = false
+
+[lints]
+workspace = true
+
+[dependencies]
+loftspec.workspace = true
+pulldown-cmark.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"
