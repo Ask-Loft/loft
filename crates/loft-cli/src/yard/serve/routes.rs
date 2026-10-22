@@ -89,7 +89,7 @@ fn respond(server: &Server, request: &Request) -> Response {
         ("POST", "/api/register") => register(server, &request.body),
         ("POST", "/api/events") => server.sessions.record(home, &request.body),
         ("GET", path) if !path.starts_with("/api/") => match assets::find(path) {
-            Some(asset) => Response::file(asset.kind, asset.body),
+            Some(asset) => Response::file(asset.kind, asset.encoding, asset.body),
             None => Response::refused(404, "path", &format!("the page has no file {path}")),
         },
         (_, path) => Response::refused(

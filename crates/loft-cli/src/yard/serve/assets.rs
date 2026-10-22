@@ -1,7 +1,7 @@
 //! The page's files, built into `loft` from `crates/loft-cli/yard-page/` and served as they are
 //! kept there: the page is browser-native, with no build step, so the files `loft` was built with
 //! are the files the browser runs. Each file is listed once here, by the path the page server
-//! serves it at.
+//! serves it at. A file kept compressed is served as it is kept, its encoding named.
 
 /// One file of the page.
 pub struct Asset {
@@ -9,24 +9,72 @@ pub struct Asset {
     pub path: &'static str,
     /// Its media type.
     pub kind: &'static str,
+    /// The content coding `body` is kept in, if it is kept compressed.
+    pub encoding: Option<&'static str>,
     pub body: &'static [u8],
 }
 
 /// The file the page server serves at `/`.
 pub const INDEX: &str = "index.html";
 
+const HTML: &str = "text/html; charset=utf-8";
+const CSS: &str = "text/css; charset=utf-8";
+const JS: &str = "text/javascript; charset=utf-8";
+const TEXT: &str = "text/plain; charset=utf-8";
+
+/// The page's file at `path` under `yard-page/`, of the media type `kind`; or, with `gzip`, the
+/// file kept as `path.gz` and served at `path`.
+macro_rules! asset {
+    ($path:literal, $kind:expr) => {
+        Asset {
+            path: $path,
+            kind: $kind,
+            encoding: None,
+            body: include_bytes!(concat!("../../../yard-page/", $path)),
+        }
+    };
+    ($path:literal, $kind:expr, gzip) => {
+        Asset {
+            path: $path,
+            kind: $kind,
+            encoding: Some("gzip"),
+            body: include_bytes!(concat!("../../../yard-page/", $path, ".gz")),
+        }
+    };
+}
+
 /// Every file of the page.
 pub const ASSETS: &[Asset] = &[
-    Asset {
-        path: INDEX,
-        kind: "text/html; charset=utf-8",
-        body: include_bytes!("../../../yard-page/index.html"),
-    },
-    Asset {
-        path: "yard.css",
-        kind: "text/css; charset=utf-8",
-        body: include_bytes!("../../../yard-page/yard.css"),
-    },
+    asset!("index.html", HTML),
+    asset!("yard.css", CSS),
+    asset!("app.js", JS),
+    asset!("lib/api.js", JS),
+    asset!("lib/diagrams.js", JS),
+    asset!("lib/dom.js", JS),
+    asset!("lib/format.js", JS),
+    asset!("lib/prefs.js", JS),
+    asset!("lib/route.js", JS),
+    asset!("model/answers.js", JS),
+    asset!("model/gantt.js", JS),
+    asset!("model/log.js", JS),
+    asset!("model/tokens.js", JS),
+    asset!("views/answering.js", JS),
+    asset!("views/blocks.js", JS),
+    asset!("views/gantt.js", JS),
+    asset!("views/log.js", JS),
+    asset!("views/timeline.js", JS),
+    asset!("views/tokens.js", JS),
+    asset!("views/trees.js", JS),
+    asset!("views/loft/decision.js", JS),
+    asset!("views/loft/findings.js", JS),
+    asset!("views/loft/index.js", JS),
+    asset!("views/loft/publish.js", JS),
+    asset!("views/loft/spec-change.js", JS),
+    asset!("views/loft/trace.js", JS),
+    // Mermaid, which draws the page's diagrams, as its release ships it, kept compressed, with its
+    // licence; `vendor/README.md` names the release.
+    asset!("vendor/mermaid.min.js", JS, gzip),
+    asset!("vendor/mermaid.LICENSE", TEXT),
 ];
 
 /// The file of the page served at `path`, `/` naming the page itself.

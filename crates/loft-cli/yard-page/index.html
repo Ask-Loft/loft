@@ -3,13 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Yard</title>
 <link rel="stylesheet" href="yard.css">
+<script type="module" src="app.js"></script>
 </head>
 <body>
-<main id="yard">
-<h1>Yard</h1>
-<p>The page server is running. The page that draws Yard Log is served here.</p>
-</main>
+<header class="top">
+  <p class="mark"><span class="mark-word">Yard</span></p>
+  <p class="connection" aria-live="polite"><span class="connection-dot"></span><span class="connection-words">Live</span></p>
+</header>
+<div class="layout">
+  <aside id="side" class="side"></aside>
+  <main id="log" class="main"><p class="loading">Loading the Yard Logs…</p></main>
+</div>
+<noscript><p class="noscript">The Yard page needs JavaScript to draw Yard Log.</p></noscript>
 </body>
 </html>

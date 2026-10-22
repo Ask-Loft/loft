@@ -203,13 +203,18 @@ impl Response {
         )
     }
 
-    /// A file of the page.
-    pub fn file(kind: &'static str, body: &[u8]) -> Self {
+    /// A file of the page, of the media type `kind`, kept in the content coding `encoding` if
+    /// one is given.
+    pub fn file(kind: &'static str, encoding: Option<&'static str>, body: &[u8]) -> Self {
+        let mut headers = vec![("cache-control", "no-cache".to_owned())];
+        if let Some(encoding) = encoding {
+            headers.push(("content-encoding", encoding.to_owned()));
+        }
         Self {
             status: 200,
             kind,
             body: body.to_vec(),
-            headers: vec![("cache-control", "no-cache".to_owned())],
+            headers,
         }
     }
 }
