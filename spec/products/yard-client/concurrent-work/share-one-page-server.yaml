@@ -18,6 +18,8 @@ requirements:
     criteria:
       - key: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
         name: "The mod registers the session's tree with the page server that serves the port."
+      - key: 01a165fb-8537-775f-9fca-0d5d7807b5fd
+        name: "The mod registers the tree with its `baseBranch` setting, through `loft yard serve --base`."
       - key: 01a1646f-546c-7521-9643-bc5f9317855f
         name: "A page server that the mod starts runs as long as the mod, or until a newer `loft yard serve` replaces it."
       - key: 01a1646f-546d-7042-befd-ea8e5a514259
@@ -52,6 +54,8 @@ requirements:
         name: "Trees of different repositories are served by one page server."
       - key: 01a1646f-546d-7042-befd-ea95ba02c56a
         name: "A tree that no longer exists is dropped from those served."
+      - key: 01a165fb-8537-775f-9fca-0d5ebe05cb94
+        name: "The page server checks whether a branch's Yard Log was closed by its merge against the base branch its tree was registered with, or `develop` where none was."
   - key: 01a1646f-546d-7042-befd-ea9692532c28
     statement:
       form: state_driven
