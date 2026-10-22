@@ -38,6 +38,8 @@ requirements:
         name: "A block written with an id that Yard Log does not hold is a new block with a key that `loft` mints."
       - key: 01a1646f-546e-76cb-8b4f-f28f2cba1fe3
         name: "A new block is added at the end of the stage it names, or after the block its `after` field names."
+      - key: 01a165ee-6991-735d-9d47-0359ca055f60
+        name: "A new block that names a stage the batch writes only after it is refused, naming the block and its `stage` field."
       - key: 01a1646f-546e-76cb-8b4f-f29025418e92
         name: "A block written with an id that Yard Log holds gains a new version, and keeps its key and its earlier versions."
       - key: 01a1646f-546e-76cb-8b4f-f29114cd7b02
