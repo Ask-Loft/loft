@@ -6,6 +6,7 @@
 //! each think they hold it.
 
 use std::fs::{self, File, OpenOptions, TryLockError};
+use std::io;
 use std::path::{Path, PathBuf};
 
 use loft_ports::io_error;
@@ -84,4 +85,43 @@ pub fn try_lock(path: &Path) -> Result<Option<Locked>, YardStoreError> {
 /// The file cannot be created, opened or locked.
 pub fn is_held(path: &Path) -> Result<bool, YardStoreError> {
     Ok(try_lock(path)?.is_none())
+}
+
+/// The file beside a lock that names its holder. It is a file of its own, not the lock's, since
+/// on some systems a locked file cannot be read by another process.
+fn holder_path(path: &Path) -> PathBuf {
+    path.with_extension("holder")
+}
+
+/// Takes the lock on `path` where it is free, as [`try_lock`] does, and records `holder`, who
+/// holds it, beside it.
+///
+/// # Errors
+///
+/// The file cannot be locked, or its holder's file cannot be written.
+pub fn try_lock_as(path: &Path, holder: &[u8]) -> Result<Option<Locked>, YardStoreError> {
+    let Some(locked) = try_lock(path)? else {
+        return Ok(None);
+    };
+    let named = holder_path(path);
+    fs::write(&named, holder).map_err(io_error(&named))?;
+    Ok(Some(locked))
+}
+
+/// Who holds the lock on `path`, as [`try_lock_as`] recorded it, where another holds it: empty
+/// where the holder took the lock and has not yet named itself.
+///
+/// # Errors
+///
+/// The file cannot be locked, or its holder's file cannot be read.
+pub fn holder(path: &Path) -> Result<Option<Vec<u8>>, YardStoreError> {
+    if !is_held(path)? {
+        return Ok(None);
+    }
+    let named = holder_path(path);
+    match fs::read(&named) {
+        Ok(bytes) => Ok(Some(bytes)),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(Some(Vec::new())),
+        Err(error) => Err(io_error(&named)(error).into()),
+    }
 }

@@ -12,6 +12,7 @@ pub mod input;
 pub mod keys;
 pub mod log;
 pub mod merge;
+pub mod published;
 pub mod query;
 pub mod respond;
 mod rules;

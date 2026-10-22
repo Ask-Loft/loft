@@ -34,6 +34,12 @@ impl Time {
         }
         Ok(Self(seconds))
     }
+
+    /// The seconds since 1970-01-01T00:00:00Z.
+    #[must_use]
+    pub const fn unix_seconds(self) -> u64 {
+        self.0
+    }
 }
 
 impl fmt::Display for Time {

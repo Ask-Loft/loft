@@ -5,7 +5,7 @@
 use loft_common::yaml::{Node, Out};
 
 use super::acts::{Field, read_act, read_arrival, text, token, write_act};
-use super::reader::{Fields, Read, at, scalar};
+use super::reader::{Fields, Read, at, each, scalar};
 use crate::format::Format;
 use crate::keys::{BlockKey, StageKey, SubmissionKey, YardLogKey};
 use crate::log::{Change, Happened, Root, Settling, StageEntry, Submission};
@@ -128,10 +128,7 @@ pub(super) fn read(node: &Node) -> Read<Root> {
         });
         entry.finish()?;
     }
-    let mut submissions = Vec::new();
-    for node in fields.list("submissions")? {
-        submissions.push(read_submission(node)?);
-    }
+    let submissions = each(fields.list("submissions")?, read_submission)?;
     let mut merged = Vec::new();
     for node in fields.list("merged")? {
         merged.push(YardLogKey::new(super::reader::key(node)?));

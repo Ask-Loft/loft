@@ -1,5 +1,6 @@
 //! Reading the fields of Yard Log's files, each fault at its line and column.
 
+use std::cell::Cell;
 use std::fmt;
 
 use loft_common::yaml::{Entry, Node, Position, Value};
@@ -25,6 +26,45 @@ impl fmt::Display for ReadError {
 impl std::error::Error for ReadError {}
 
 pub(super) type Read<T> = Result<T, ReadError>;
+
+thread_local! {
+    /// While Yard Log of a newer format is read for what this `loft` can read of it: the number
+    /// of records left out so far, where it is being read so.
+    static LEFT_OUT: Cell<Option<usize>> = const { Cell::new(None) };
+}
+
+/// Runs `read` leniently, as Yard Log of a newer format is read: a field this `loft` does not
+/// know is passed over, and a record that does not read is left out and counted, in place of
+/// refusing the file. Gives what `read` gave and the number of records left out.
+pub(super) fn leniently<T>(read: impl FnOnce() -> T) -> (T, usize) {
+    let outer = LEFT_OUT.replace(Some(0));
+    let value = read();
+    let left_out = LEFT_OUT.replace(outer).unwrap_or(0);
+    (value, left_out)
+}
+
+/// Counts a record left out of a lenient read.
+pub(super) fn leave_out() {
+    LEFT_OUT.with(|cell| cell.set(cell.get().map(|count| count + 1)));
+}
+
+fn is_lenient() -> bool {
+    LEFT_OUT.get().is_some()
+}
+
+/// Reads each of `items`: in a lenient read, an item that does not read is left out and
+/// counted; otherwise the first that does not read refuses them all.
+pub(super) fn each<T>(items: &[Node], read: impl Fn(&Node) -> Read<T>) -> Read<Vec<T>> {
+    let mut read_items = Vec::with_capacity(items.len());
+    for item in items {
+        match read(item) {
+            Ok(value) => read_items.push(value),
+            Err(_) if is_lenient() => leave_out(),
+            Err(error) => return Err(error),
+        }
+    }
+    Ok(read_items)
+}
 
 pub(super) fn at(position: Position, message: impl Into<String>) -> ReadError {
     ReadError {
@@ -141,8 +181,11 @@ impl<'a> Fields<'a> {
         }
     }
 
-    /// Refuses a field this mapping does not read.
+    /// Refuses a field this mapping does not read, but in a lenient read.
     pub(super) fn finish(self) -> Read<()> {
+        if is_lenient() {
+            return Ok(());
+        }
         match self
             .entries
             .iter()

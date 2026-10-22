@@ -5,6 +5,7 @@
 
 mod acts;
 mod bodies;
+mod partial;
 mod reader;
 mod root;
 mod stage;
@@ -14,6 +15,7 @@ use std::fmt;
 
 use loft_common::yaml::{self, Node, Position, Value};
 
+pub use partial::Partial;
 pub use reader::ReadError;
 
 use crate::format::Format;

@@ -5,7 +5,7 @@ use loft_common::yaml::{Node, Out};
 
 use super::acts::{Field, read_act, read_arrival, text, token, write_act};
 use super::bodies::{read_body, write_body};
-use super::reader::{Fields, Read, at};
+use super::reader::{Fields, Read, at, each};
 use crate::act::Channel;
 use crate::body::{Kind, Verdict};
 use crate::keys::{BlockKey, ResponseKey, VersionKey};
@@ -92,10 +92,7 @@ pub(super) fn read(node: &Node) -> Read<StageFile> {
     let key = BlockKey::new(fields.key("key")?);
     let id = fields.handle("id")?;
     let versions = read_versions(Kind::Stage, &mut fields)?;
-    let mut blocks = Vec::new();
-    for node in fields.list("blocks")? {
-        blocks.push(read_block(node)?);
-    }
+    let blocks = each(fields.list("blocks")?, read_block)?;
     fields.finish()?;
     Ok(StageFile {
         stage: Block {

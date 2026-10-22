@@ -6,6 +6,7 @@
 use std::path::{Path, PathBuf};
 
 use loft_ports::journal::Journal;
+use yardlog::codec::Partial;
 use yardlog::{Format, YardLog};
 
 use crate::files::{Folder, YARD};
@@ -109,6 +110,35 @@ impl YardStore {
         let _locked = lock::lock(&self.lock_path())?;
         self.journal().recover()?;
         self.load()
+    }
+
+    /// Yard Log for what this `loft` can read of it, as Yard Log of a newer format is shown:
+    /// none where the branch has no Yard Log. It is never written.
+    ///
+    /// # Errors
+    ///
+    /// The root does not read even so, a file cannot be read, an interrupted write cannot be
+    /// finished, or the lock cannot be taken.
+    pub fn read_partial(&self) -> Result<Option<Partial>, YardStoreError> {
+        let _locked = lock::lock(&self.lock_path())?;
+        self.journal().recover()?;
+        let Some(root) = self.folder.root()? else {
+            return Ok(None);
+        };
+        let mut failed = None;
+        let read = YardLog::read_partial(&root, |name| {
+            self.folder.read(name).unwrap_or_else(|error| {
+                failed.get_or_insert(error);
+                None
+            })
+        });
+        if let Some(error) = failed {
+            return Err(error);
+        }
+        read.map(Some).map_err(|error| YardStoreError::Unreadable {
+            folder: self.folder.rel().to_owned(),
+            error,
+        })
     }
 
     /// Applies one write: `change` is given Yard Log as it is, none where the branch has none,

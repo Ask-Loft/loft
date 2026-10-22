@@ -83,4 +83,30 @@ impl Place {
     pub fn is_leased(&self, submission: SubmissionKey) -> Result<bool, YardStoreError> {
         lock::is_held(&self.lease_path(submission))
     }
+
+    /// Takes the lease on a submission, as [`Self::lease`] does, and records `holder`, who the
+    /// wait that holds it is, beside it.
+    ///
+    /// # Errors
+    ///
+    /// The lease's file cannot be locked, or its holder's file cannot be written.
+    pub fn lease_as(
+        &self,
+        submission: SubmissionKey,
+        holder: &[u8],
+    ) -> Result<Option<Locked>, YardStoreError> {
+        lock::try_lock_as(&self.lease_path(submission), holder)
+    }
+
+    /// Who holds the lease on a submission, as its holder recorded it, where a wait holds it.
+    ///
+    /// # Errors
+    ///
+    /// The lease's file cannot be locked, or its holder's file cannot be read.
+    pub fn lease_holder(
+        &self,
+        submission: SubmissionKey,
+    ) -> Result<Option<Vec<u8>>, YardStoreError> {
+        lock::holder(&self.lease_path(submission))
+    }
 }
