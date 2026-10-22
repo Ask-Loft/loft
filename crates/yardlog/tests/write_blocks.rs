@@ -82,6 +82,26 @@ fn a_batch_with_one_invalid_block_changes_nothing() {
 }
 
 #[test]
+fn a_block_naming_a_stage_the_batch_writes_only_after_it_is_refused_not_a_crash() {
+    let mut log = planned();
+    let before = log.clone();
+    let refusal = try_write(
+        &mut log,
+        &json!([
+            {"id": "n1", "kind": "note", "stage": "later", "markdown": "Early"},
+            {"id": "later", "kind": "stage", "title": "Later"}
+        ]),
+        &context(&main_agent(), 2),
+    )
+    .unwrap_err();
+    assert!(
+        matches!(&refusal, Refusal::Faults(faults) if faults[0].block == "n1" && faults[0].field == "stage"),
+        "{refusal:?}"
+    );
+    assert_eq!(log, before);
+}
+
+#[test]
 fn a_new_block_goes_at_the_end_of_its_stage_or_after_the_block_it_names() {
     let mut log = planned();
     write(

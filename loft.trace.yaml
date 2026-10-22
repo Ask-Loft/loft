@@ -19887,6 +19887,12 @@ links:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "a_new_block_goes_at_the_end_of_its_stage_or_after_the_block_it_names"
         body: 730f25cf248c91f8d945034556252df2285bf212129c28e336c4495c81144349
+  - node: 01a165ee-6991-735d-9d47-0359ca055f60
+    reviewed: cfe41b93fe477ad89ac4d452f472b1f56fa0534dc1b12efb45ba8592f6e1e552
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_block_naming_a_stage_the_batch_writes_only_after_it_is_refused_not_a_crash"
+        body: 07c542ff7acda62ac0e66d5b8254ce07a1a25cf708c56fcfea733aa390526907
   - node: 01a1646f-546e-76cb-8b4f-f29025418e92
     reviewed: 69c0c1d02de78422771e0ee3aa75835d2745b992dc8cbffec9203d62cceaa600
     tests:

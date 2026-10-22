@@ -57,14 +57,13 @@ fn rewrite(log: &YardLog, input: &Input) -> Vec<Fault> {
     }
 }
 
-/// A new block names a stage of Yard Log or of the batch, and goes after a block of that stage.
+/// A new block names a stage of Yard Log or one written earlier in the batch, since a batch is
+/// applied in order, and goes after a block of that stage.
 fn placement(log: &YardLog, inputs: &[Input], input: &Input) -> Vec<Fault> {
     let earlier = || inputs.iter().take_while(|other| other.id != input.id);
     let is_stage = |id: &Handle| {
         log.find(id).is_some_and(|block| block.kind == Kind::Stage)
-            || inputs
-                .iter()
-                .any(|other| &other.id == id && other.request.kind() == Kind::Stage)
+            || earlier().any(|other| &other.id == id && other.request.kind() == Kind::Stage)
     };
     let Some(stage) = &input.stage else {
         let placed = |after: &Handle| {
