@@ -66,29 +66,45 @@ fn active_stage(log: &YardLog, session: &str, who: &Who) -> Option<String> {
         .map(|stage| stage.key.to_string())
 }
 
-/// Where `event` is kept, where its agent's branch has its Yard Log open.
-fn arrive(event: &Event) -> Option<Arrival> {
-    let place = Place::locate(&YardGit::default(), Path::new(&event.dir)).ok()?;
+/// The store and open Yard Log of the branch the directory `dir` is on, where it has one.
+fn open_at(dir: &str) -> Option<(YardStore, YardLog)> {
+    let place = Place::locate(&YardGit::default(), Path::new(dir)).ok()?;
     place.branch.as_ref()?;
     let store = YardStore::new(place).ok()?;
     let Ok(Held::Log(log)) = store.read() else {
         return None;
     };
-    if log.is_closed() {
-        return None;
-    }
-    let open = log
-        .root
-        .submissions
+    (!log.is_closed()).then_some((store, *log))
+}
+
+/// Where each of `events` is kept, where its agent's branch has its Yard Log open: `open` finds
+/// and reads that Yard Log once for each directory the batch names, however many events name it.
+fn arrivals(
+    events: &[Event],
+    mut open: impl FnMut(&str) -> Option<(YardStore, YardLog)>,
+) -> Vec<Option<Arrival>> {
+    let mut opened: HashMap<&str, Option<(YardStore, YardLog)>> = HashMap::new();
+    events
         .iter()
-        .filter(|submission| submission.state(&log) == State::Open)
-        .map(|submission| submission.key.to_string())
-        .collect();
-    Some(Arrival {
-        stage: active_stage(&log, &event.session, &event.who),
-        open,
-        store,
-    })
+        .map(|event| {
+            let (store, log) = opened
+                .entry(event.dir.as_str())
+                .or_insert_with(|| open(&event.dir))
+                .as_ref()?;
+            let submissions = log
+                .root
+                .submissions
+                .iter()
+                .filter(|submission| submission.state(log) == State::Open)
+                .map(|submission| submission.key.to_string())
+                .collect();
+            Some(Arrival {
+                stage: active_stage(log, &event.session, &event.who),
+                open: submissions,
+                store: store.clone(),
+            })
+        })
+        .collect()
 }
 
 impl Kept {
@@ -170,23 +186,27 @@ impl Sessions {
         let mut recorded = 0;
         let mut skipped = 0;
         let mut rejected = Vec::new();
+        let mut read = Vec::new();
+        for (index, posted) in posted.iter().enumerate() {
+            match Event::read(posted) {
+                Ok(event) => read.push((index, event)),
+                Err(message) => rejected.push(json!({ "index": index, "message": message })),
+            }
+        }
+        let (indices, events): (Vec<usize>, Vec<Event>) = read.into_iter().unzip();
+        // git and Yard Log are read before the sessions are locked, so that one session's batch
+        // does not hold another's posts while it reads them.
+        let arrived = arrivals(&events, open_at);
         let mut kept = self
             .kept
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        for (index, posted) in posted.iter().enumerate() {
-            let event = match Event::read(posted) {
-                Ok(event) => event,
-                Err(message) => {
-                    rejected.push(json!({ "index": index, "message": message }));
-                    continue;
-                }
-            };
-            let Some(arrival) = arrive(&event) else {
+        for ((index, event), arrival) in indices.into_iter().zip(&events).zip(arrived) {
+            let Some(arrival) = arrival else {
                 skipped += 1;
                 continue;
             };
-            match keep(home, &mut kept, &event, &arrival) {
+            match keep(home, &mut kept, event, &arrival) {
                 Ok(()) => recorded += 1,
                 Err(message) => rejected.push(json!({ "index": index, "message": message })),
             }
@@ -231,4 +251,32 @@ fn keep(
             .map_err(|error| error.to_string())?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::{Event, arrivals};
+
+    #[test]
+    fn a_batch_opens_the_yard_log_of_each_directory_it_names_once() {
+        let events: Vec<Event> = (0..1000)
+            .map(|n| {
+                let dir = if n % 2 == 0 { "/work/a" } else { "/work/b" };
+                let posted = json!({
+                    "session": "s1", "dir": dir, "at": "2026-10-22T09:30:00Z", "kind": "turn.start"
+                });
+                Event::read(&posted).unwrap()
+            })
+            .collect();
+        let mut opened = Vec::new();
+        let found = arrivals(&events, |dir| {
+            opened.push(dir.to_owned());
+            None
+        });
+        assert_eq!(found.len(), 1000);
+        opened.sort();
+        assert_eq!(opened, ["/work/a", "/work/b"]);
+    }
 }
