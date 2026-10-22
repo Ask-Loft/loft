@@ -70,6 +70,16 @@ fn the_root_names_the_format_the_key_the_branch_the_revision_and_the_stages_by_k
 }
 
 #[test]
+fn the_root_holds_the_act_of_each_change_in_the_order_it_was_made() {
+    let log = full();
+    let revisions: Vec<u64> = log.root.acts.iter().map(|act| act.revision).collect();
+    assert_eq!(revisions, [1, 2, 3]);
+    let root = &files(&log)[ROOT];
+    assert!(root.contains("\nacts:\n  - at: "), "{root}");
+    assert_eq!(read(&files(&log)).unwrap().root.acts, log.root.acts);
+}
+
+#[test]
 fn each_stage_s_file_is_named_by_its_key_and_holds_its_blocks_in_order() {
     let log = full();
     let files = files(&log);

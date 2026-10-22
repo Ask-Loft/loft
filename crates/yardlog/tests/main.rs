@@ -8,4 +8,6 @@ mod block_kinds;
 mod boundaries;
 mod files;
 mod merge;
+mod session_files;
+mod three_way;
 mod write_blocks;

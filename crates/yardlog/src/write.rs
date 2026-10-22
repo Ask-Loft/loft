@@ -91,7 +91,9 @@ impl YardLog {
                 submissions: Vec::new(),
                 merged: Vec::new(),
                 closed: None,
+                acts: Vec::new(),
                 unsettled_since: None,
+                arriving: Vec::new(),
                 settlings: Vec::new(),
             },
             stages: Vec::new(),
@@ -134,12 +136,8 @@ impl YardLog {
         plan: &Plan,
         reporter: &mut Reporter<'_>,
     ) -> Result<Written, Refusal> {
-        let revision = self.root.revision + 1;
-        let act = Act {
-            at: context.at,
-            revision,
-            actor: Actor::Agent(context.agent.clone()),
-        };
+        let act = self.act(context.at, Actor::Agent(context.agent.clone()));
+        let revision = act.revision;
         let mut blocks = Vec::new();
         for input in inputs {
             let body = Self::body(input, plan, reporter)?;
@@ -162,7 +160,6 @@ impl YardLog {
             blocks.push((input.id.clone(), key));
         }
         let submission = context.send.then(|| self.send(&blocks, inputs, &act));
-        self.root.revision = revision;
         Ok(Written {
             revision,
             blocks,

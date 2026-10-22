@@ -12,12 +12,7 @@ impl YardLog {
     /// Settles Yard Log where a merge left it unsettled, and gives what the settling changed.
     pub fn settle(&mut self, at: Time, actor: Actor) -> Option<&Settling> {
         self.root.unsettled_since?;
-        self.root.revision += 1;
-        let act = Act {
-            at,
-            revision: self.root.revision,
-            actor,
-        };
+        let act = self.act(at, actor);
         let renamed = self.rename();
         let renumbered = self.renumber();
         self.mark(act.revision);
@@ -106,8 +101,9 @@ impl YardLog {
 
     /// Marks each record the merge brought in as arrived at `revision`.
     fn mark(&mut self, revision: u64) {
-        let settle = |arrived: &mut Option<Arrival>| {
-            if *arrived == Some(Arrival::Pending) {
+        let arriving = std::mem::take(&mut self.root.arriving);
+        let settle = |act: &Act, arrived: &mut Option<Arrival>| {
+            if *arrived == Some(Arrival::Pending) || arriving.contains(act) {
                 *arrived = Some(Arrival::At(revision));
             }
         };
@@ -116,18 +112,18 @@ impl YardLog {
                 block
                     .versions
                     .iter_mut()
-                    .for_each(|v| settle(&mut v.arrived));
+                    .for_each(|v| settle(&v.act, &mut v.arrived));
                 block
                     .responses
                     .iter_mut()
-                    .for_each(|r| settle(&mut r.arrived));
+                    .for_each(|r| settle(&r.act, &mut r.arrived));
             }
         }
         for submission in &mut self.root.submissions {
             submission
                 .changes
                 .iter_mut()
-                .for_each(|c| settle(&mut c.arrived));
+                .for_each(|c| settle(&c.act, &mut c.arrived));
         }
     }
 }

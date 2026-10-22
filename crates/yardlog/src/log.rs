@@ -33,8 +33,14 @@ pub struct Root {
     /// The keys of Yard Logs of the same branch, opened apart, that were merged into this one.
     pub merged: Vec<YardLogKey>,
     pub closed: Option<Act>,
+    /// The Act of each change this copy holds, in the order it came to hold them: two copies
+    /// that each changed Yard Log since their base always differ here, so git never takes
+    /// either root whole.
+    pub acts: Vec<Act>,
     /// The revision this copy had before a merge that is not settled yet.
     pub unsettled_since: Option<u64>,
+    /// The Acts of the changes a merge brought in that this copy did not hold, until settled.
+    pub arriving: Vec<Act>,
     pub settlings: Vec<Settling>,
 }
 

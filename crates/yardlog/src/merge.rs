@@ -3,7 +3,8 @@
 //! hold is marked as arriving. What spans files, ids shared by two records and the numbers of
 //! decisions written apart, is left to the settling of the next command.
 
-use crate::codec::{FileError, ROOT};
+use crate::act::Act;
+use crate::codec::{FileError, ROOT, session};
 use crate::log::{Arrival, Block, Change, Root, StageFile, Submission};
 
 /// Joins `theirs` into `ours`, this copy, over their common `base` where there is one.
@@ -29,6 +30,16 @@ pub fn merge_root(base: Option<&Root>, ours: &Root, theirs: &Root) -> Root {
         .flatten()
         .min_by_key(|act| (act.at, act.revision))
         .cloned();
+    let new: Vec<Act> = theirs
+        .acts
+        .iter()
+        .filter(|act| !ours.acts.contains(act))
+        .cloned()
+        .collect();
+    let mut acts = ours.acts.clone();
+    acts.extend(new.iter().cloned());
+    let mut arriving = ours.arriving.clone();
+    arriving.extend(new.into_iter().filter(|act| !ours.arriving.contains(act)));
     let mut settlings = ours.settlings.clone();
     settlings.extend(
         theirs
@@ -59,10 +70,12 @@ pub fn merge_root(base: Option<&Root>, ours: &Root, theirs: &Root) -> Root {
         ),
         merged,
         closed,
+        acts,
         unsettled_since: Some(
             ours.unsettled_since
                 .map_or(ours.revision, |since| since.min(ours.revision)),
         ),
+        arriving,
         settlings,
     }
 }
@@ -204,6 +217,33 @@ impl Arrive for Submission {
             change.arrived = Some(Arrival::Pending);
         }
     }
+}
+
+/// Which of two copies of a session's file a merge takes whole.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Taken {
+    Ours,
+    Theirs,
+}
+
+/// Takes one of two copies of a file one session writes alone, its tokens or its activity,
+/// named as in Yard Log's folder: `theirs` where its last event ended later, else `ours`.
+///
+/// # Errors
+///
+/// A copy is not a mapping, or names its last event's end other than as a time.
+pub fn take_session_file(
+    name: &str,
+    ours: &[u8],
+    theirs: &[u8],
+) -> Result<Taken, (&'static str, FileError)> {
+    let ours = session::last_ended(name, ours).map_err(|error| ("ours", error))?;
+    let theirs = session::last_ended(name, theirs).map_err(|error| ("theirs", error))?;
+    Ok(if theirs > ours {
+        Taken::Theirs
+    } else {
+        Taken::Ours
+    })
 }
 
 /// Merges two copies of one file of Yard Log, named as in its folder, over their base, and

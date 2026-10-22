@@ -8,6 +8,7 @@ mod bodies;
 mod partial;
 mod reader;
 mod root;
+pub mod session;
 mod stage;
 
 use std::collections::BTreeSet;

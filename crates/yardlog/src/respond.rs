@@ -57,13 +57,16 @@ pub enum Refused {
 }
 
 impl YardLog {
-    fn act(&mut self, at: Time, actor: Actor) -> Act {
+    /// The Act of the next change: it raises the revision and joins the root's Acts.
+    pub(crate) fn act(&mut self, at: Time, actor: Actor) -> Act {
         self.root.revision += 1;
-        Act {
+        let act = Act {
             at,
             revision: self.root.revision,
             actor,
-        }
+        };
+        self.root.acts.push(act.clone());
+        act
     }
 
     /// Records the person's answers and outcomes. A block answered or decided first elsewhere
@@ -98,14 +101,7 @@ impl YardLog {
                 answered.elsewhere.push((reply.block, first.channel));
                 continue;
             }
-            let act = act.get_or_insert_with(|| {
-                next.root.revision += 1;
-                Act {
-                    at: who.at,
-                    revision: next.root.revision,
-                    actor: person.clone(),
-                }
-            });
+            let act = act.get_or_insert_with(|| next.act(who.at, person.clone()));
             let block = next.block_mut(reply.block).expect("checked");
             block.responses.push(Response {
                 key: ResponseKey::mint(),

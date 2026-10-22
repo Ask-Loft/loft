@@ -4,7 +4,7 @@
 //! Log takes: a `loft` block of the `publish` view in its last stage, after its close. It is
 //! told apart from a publish the branch recorded itself by the branch it was recorded on.
 
-use crate::act::{Act, Actor, Agent, Time};
+use crate::act::{Actor, Agent, Time};
 use crate::body::{Body, Kind, Loft, View};
 use crate::keys::{BlockKey, Handle, VersionKey};
 use crate::log::{Block, Version, YardLog};
@@ -63,8 +63,12 @@ impl YardLog {
             return Err(Unpublished::Recorded(block.id.clone()));
         }
         let id = self.free_id();
-        let revision = self.root.revision + 1;
-        let file = self.stages.last_mut().ok_or(Unpublished::NoStage)?;
+        if self.stages.is_empty() {
+            return Err(Unpublished::NoStage);
+        }
+        let act = self.act(at, Actor::Agent(agent));
+        let revision = act.revision;
+        let file = self.stages.last_mut().expect("a stage");
         let key = BlockKey::mint();
         file.blocks.push(Block {
             key,
@@ -73,17 +77,12 @@ impl YardLog {
             number: None,
             versions: vec![Version {
                 key: VersionKey::mint(),
-                act: Act {
-                    at,
-                    revision,
-                    actor: Actor::Agent(agent),
-                },
+                act,
                 arrived: None,
                 body: Body::Loft(Box::new(loft)),
             }],
             responses: Vec::new(),
         });
-        self.root.revision = revision;
         Ok((id, key, revision))
     }
 

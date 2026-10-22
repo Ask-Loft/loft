@@ -6,6 +6,7 @@ use loft_common::yaml::{Node, Out};
 
 use super::acts::{Field, read_act, read_arrival, text, token, write_act};
 use super::reader::{Fields, Read, at, each, scalar};
+use crate::act::Act;
 use crate::format::Format;
 use crate::keys::{BlockKey, StageKey, SubmissionKey, YardLogKey};
 use crate::log::{Change, Happened, Root, Settling, StageEntry, Submission};
@@ -36,14 +37,28 @@ pub(super) fn write(root: &Root) -> Out {
     if let Some(closed) = &root.closed {
         fields.push(("closed", Out::Mapping(write_act(closed, None))));
     }
+    if !root.acts.is_empty() {
+        fields.push(("acts", acts(&root.acts)));
+    }
     if let Some(since) = root.unsettled_since {
         fields.push(("unsettledSince", Out::Integer(since)));
+    }
+    if !root.arriving.is_empty() {
+        fields.push(("arriving", acts(&root.arriving)));
     }
     if !root.settlings.is_empty() {
         let settlings = root.settlings.iter().map(settling).collect();
         fields.push(("settlings", Out::Sequence(settlings)));
     }
     Out::Mapping(fields)
+}
+
+fn acts(acts: &[Act]) -> Out {
+    Out::Sequence(
+        acts.iter()
+            .map(|act| Out::Mapping(write_act(act, None)))
+            .collect(),
+    )
 }
 
 fn stage(entry: &StageEntry) -> Out {
@@ -137,7 +152,9 @@ pub(super) fn read(node: &Node) -> Read<Root> {
         Some(node) => Some(read_act(&mut Fields::of(node)?)?),
         None => None,
     };
+    let acts = read_acts(fields.list("acts")?)?;
     let unsettled_since = fields.optional_integer("unsettledSince")?;
+    let arriving = read_acts(fields.list("arriving")?)?;
     let mut settlings = Vec::new();
     for node in fields.list("settlings")? {
         settlings.push(read_settling(node)?);
@@ -155,9 +172,18 @@ pub(super) fn read(node: &Node) -> Read<Root> {
         submissions,
         merged,
         closed,
+        acts,
         unsettled_since,
+        arriving,
         settlings,
     })
+}
+
+fn read_acts(nodes: &[Node]) -> Read<Vec<Act>> {
+    nodes
+        .iter()
+        .map(|node| read_act(&mut Fields::of(node)?))
+        .collect()
 }
 
 fn read_submission(node: &Node) -> Read<Submission> {
