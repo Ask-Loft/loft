@@ -102,6 +102,8 @@ requirements:
         name: "Of two records with one id and different keys, the later written takes the id with the suffix `-2`, or the next number free."
       - key: 01a1646f-546d-7042-befd-ebac18695ce2
         name: "Both records keep their keys."
+      - key: 01a165f1-ba03-734f-8676-10206480bf2a
+        name: "A stage that one copy's settling renamed keeps its new id after a later merge, as the stage's own file holds it, though the other copy's root still names the old one."
       - key: 01a164a0-9eef-7334-9118-9a78aeb7a2be
         name: "Of two records written at one time, the one with the greater key is the later written."
       - key: 01a1649f-62ef-71e6-98de-e11619c30392
