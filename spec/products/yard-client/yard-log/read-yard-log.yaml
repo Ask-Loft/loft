@@ -71,3 +71,5 @@ requirements:
         name: "Recording the revision read changes no file under `.yard/`."
       - key: 01a1646f-546e-76cb-8b4f-f259ded7158f
         name: "Recording the revision read does not raise the revision."
+      - key: 01a165f5-4587-7632-89a7-b4dcba8d44d5
+        name: "A read with `--peek` leaves the revision the agent last read as it was, and still gives it."

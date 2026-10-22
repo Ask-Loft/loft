@@ -17,6 +17,10 @@ requirements:
         name: "Each question becomes a `question` block with its question, its header, its options and whether more than one option may be chosen."
       - key: 01a1646f-546c-7521-9643-bc2de11768e7
         name: "On a branch with no Yard Log, the mod opens it."
+      - key: 01a165f5-4586-7301-b38c-5172a09bf282
+        name: "The ids of the blocks and of the stage that the mod writes for one ask name the revision and who asks, so that two sessions, or two subagents asking at one revision, never write to one block."
+      - key: 01a165f5-4587-7632-89a7-b4dae037e014
+        name: "The mod reads Yard Log for an ask with `loft yard read --peek`, which leaves the revision the agent last read as it was."
       - key: 01a1646f-546c-7521-9643-bc2e9fe9d605
         name: "Where no stage is active for the agent, the questions go to a stage that the mod opens and marks `active` for that agent."
       - key: 01a1646f-546c-7521-9643-bc2fa3288035
