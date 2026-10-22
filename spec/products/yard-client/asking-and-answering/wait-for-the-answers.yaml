@@ -31,6 +31,10 @@ requirements:
         name: "A wait on a submission whose Yard Log is closed returns that Yard Log is closed."
       - key: 01a1649f-62ef-71e6-98de-e102d8a26927
         name: "A wait on a submission that was withdrawn when its Yard Log was closed returns that Yard Log is closed, not that the submission was withdrawn."
+      - key: 01a16600-deb8-7106-8d7f-7eec980a4b56
+        name: "A wait returns that Yard Log is closed within 5 seconds of the base branch coming to hold it, as its branch's merge makes it."
+      - key: 01a16600-deb9-776e-9266-a8e826e5cc2c
+        name: "A wait whose Yard Log leaves the tree while it waits, as on a checkout of another branch, is refused, saying so."
       - key: 01a1646f-546c-7521-9643-bbfbd843cb1e
         name: "The result gives Yard Log's revision after the answers."
   - key: 01a1646f-546c-7521-9643-bbfc9af874c6
