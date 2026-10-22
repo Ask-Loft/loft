@@ -17,7 +17,7 @@ requirements:
       shall: "print one JSON document with `--format json`, held to the command's own schema."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea4ce182abcf
-        name: "Each command's schema is `schemas/loft-yard-<command>.json`."
+        name: "Each command's schema is `schemas/yard-<command>.json`, which names its documents `loft-yard-<command>/<version>`."
       - key: 01a1646f-546d-7042-befd-ea4d859a6f03
         name: "Each document carries `schema`, `outcome` and `errors`."
       - key: 01a1646f-546d-7042-befd-ea4ee183f9f9
