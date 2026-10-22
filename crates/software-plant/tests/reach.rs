@@ -6,7 +6,7 @@ use std::ffi::OsStr;
 use std::fs;
 use std::process::{self, Command};
 
-use software_plant::clock::EPOCH_ENV;
+use software_plant::clock::{EPOCH_ENV, PASSING_ENV};
 use software_plant::git::SCENARIO_ENV;
 use software_plant::{Clock, GitScenario};
 
@@ -41,15 +41,16 @@ fn the_git_simulator_sets_only_the_search_path_and_its_scenario() {
 }
 
 #[test]
-fn the_clock_simulator_sets_only_its_epoch() {
+fn the_clock_simulator_sets_only_its_epoch_and_whether_time_passes() {
     for clock in [
         Clock::fixed(1_700_000_000),
         Clock::stepping(100, 60),
         Clock::system(),
+        Clock::fixed(1_700_000_000).passing(),
     ] {
         let mut command = Command::new("loft");
         clock.apply(&mut command);
         assert_reaches_only_by_environment(&command);
-        assert_eq!(environment(&command), [EPOCH_ENV], "{clock:?}");
+        assert_eq!(environment(&command), [PASSING_ENV, EPOCH_ENV], "{clock:?}");
     }
 }
