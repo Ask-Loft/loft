@@ -20,6 +20,8 @@ mod schema;
 mod snapshot;
 #[path = "common/workflow.rs"]
 mod workflow;
+#[path = "common/yard.rs"]
+mod yard;
 
 mod check;
 mod check_baseline;
@@ -79,3 +81,12 @@ mod version;
 mod writes_skill;
 mod writes_skill_settings;
 mod writes_tree;
+mod yard_answer;
+mod yard_callers;
+mod yard_close;
+mod yard_commands;
+mod yard_protocol;
+mod yard_read;
+mod yard_settle;
+mod yard_upgrade;
+mod yard_write;

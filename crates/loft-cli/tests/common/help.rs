@@ -1,5 +1,5 @@
-//! The subcommands `loft --help` and `loft import --help` list, which the tests that hold every
-//! command to a rule read.
+//! The subcommands `loft --help`, `loft import --help` and `loft yard --help` list, which the
+//! tests that hold every command to a rule read.
 
 use std::process::Command;
 
@@ -10,6 +10,11 @@ pub fn subcommands() -> Vec<String> {
 /// The sources `loft import` takes, each a subcommand of its own.
 pub fn import_sources() -> Vec<String> {
     listed(&["import"])
+}
+
+/// The commands `loft yard` takes.
+pub fn yard_commands() -> Vec<String> {
+    listed(&["yard"])
 }
 
 fn listed(command: &[&str]) -> Vec<String> {

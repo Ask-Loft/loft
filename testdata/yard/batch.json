@@ -1,0 +1,26 @@
+[
+  {
+    "id": "shape",
+    "kind": "stage",
+    "title": "Shape the change",
+    "goal": "The questions that decide the change are answered",
+    "status": "active"
+  },
+  {
+    "id": "scope",
+    "kind": "question",
+    "stage": "shape",
+    "prompt": "Which readers does the change serve?",
+    "header": "Readers",
+    "options": [
+      { "label": "Members", "detail": "Readers who hold a card", "recommended": true },
+      { "label": "Visitors" }
+    ]
+  },
+  {
+    "id": "context",
+    "kind": "note",
+    "stage": "shape",
+    "markdown": "The shelf holds **two** kinds of reader."
+  }
+]

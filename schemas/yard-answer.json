@@ -1,0 +1,803 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loft-yard-answer-1.json",
+  "title": "The result of `loft yard answer --format json`, version 1: the answers and decisions recorded, those answered elsewhere first, or why the run was refused",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "tree",
+        "branch",
+        "commonDir",
+        "revision",
+        "page",
+        "recorded",
+        "elsewhere",
+        "completed",
+        "errors"
+      ],
+      "properties": {
+        "tree": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "commonDir": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "page": {
+          "$ref": "#/$defs/page"
+        },
+        "recorded": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "id"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "elsewhere": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "id",
+              "channel"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "page",
+                  "terminal"
+                ]
+              }
+            }
+          }
+        },
+        "completed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "const": "loft-yard-answer/1"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "answered",
+            "answered elsewhere"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "tree",
+        "branch",
+        "commonDir",
+        "revision",
+        "page",
+        "errors"
+      ],
+      "properties": {
+        "tree": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "commonDir": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "page": {
+          "$ref": "#/$defs/page"
+        },
+        "schema": {
+          "const": "loft-yard-answer/1"
+        },
+        "outcome": {
+          "const": "refused"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-yard-answer/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message",
+        "sites"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "repository",
+            "detached",
+            "branch",
+            "unreadable",
+            "newer",
+            "git",
+            "store",
+            "home",
+            "clock",
+            "person",
+            "closed",
+            "absent",
+            "no-block",
+            "invalid",
+            "no-submission",
+            "not-open",
+            "not-main",
+            "not-asked",
+            "answered-elsewhere"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/site"
+          }
+        }
+      }
+    },
+    "actor": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "host",
+            "session"
+          ],
+          "properties": {
+            "host": {
+              "type": "string"
+            },
+            "session": {
+              "type": "string"
+            },
+            "agent": {
+              "type": "string"
+            },
+            "agentType": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "email"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "act": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "at",
+        "revision",
+        "by"
+      ],
+      "properties": {
+        "at": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "by": {
+          "$ref": "#/$defs/actor"
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "port"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "recommended"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "recommended": {
+          "type": "boolean"
+        }
+      }
+    },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "key",
+        "reason"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "recorded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dirty",
+        "loft",
+        "at"
+      ],
+      "properties": {
+        "commit": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "dirty": {
+          "type": "boolean"
+        },
+        "loft": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        }
+      }
+    },
+    "body": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "status"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "goal": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "planned",
+                "active",
+                "done",
+                "dropped"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "markdown",
+            "folded"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "markdown": {
+              "type": "string"
+            },
+            "folded": {
+              "type": "boolean"
+            },
+            "tone": {
+              "type": "string",
+              "enum": [
+                "info",
+                "success",
+                "warning",
+                "danger"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "prompt",
+            "header",
+            "options",
+            "multiple",
+            "ownWords"
+          ],
+          "properties": {
+            "prompt": {
+              "type": "string"
+            },
+            "header": {
+              "type": "string"
+            },
+            "context": {
+              "type": "string"
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/option"
+              }
+            },
+            "multiple": {
+              "type": "boolean"
+            },
+            "ownWords": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "markdown"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "markdown": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "consequence"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "consequence": {
+              "type": "string"
+            },
+            "question": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "state"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "open",
+                "active",
+                "done",
+                "dropped"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "markdown",
+            "planMode"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "markdown": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            },
+            "planMode": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "view",
+            "reasons",
+            "recorded",
+            "report"
+          ],
+          "properties": {
+            "view": {
+              "type": "string",
+              "enum": [
+                "spec-change",
+                "decision",
+                "trace",
+                "findings",
+                "publish"
+              ]
+            },
+            "note": {
+              "type": "string"
+            },
+            "base": {
+              "type": "string"
+            },
+            "decision": {
+              "type": "string"
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/reason"
+              }
+            },
+            "recorded": {
+              "$ref": "#/$defs/recorded"
+            },
+            "report": {
+              "description": "The report as the `loft` view gave it."
+            }
+          }
+        }
+      ]
+    },
+    "version": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "number",
+        "act",
+        "body"
+      ],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "act": {
+          "$ref": "#/$defs/act"
+        },
+        "arrived": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "body": {
+          "$ref": "#/$defs/body"
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "act",
+        "channel"
+      ],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "act": {
+          "$ref": "#/$defs/act"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "page",
+            "terminal"
+          ]
+        },
+        "arrived": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "words": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "rejected"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "times": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "listed": {
+          "type": "string"
+        },
+        "started": {
+          "type": "string"
+        },
+        "ended": {
+          "type": "string"
+        }
+      }
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "id",
+        "kind",
+        "version",
+        "versionCount",
+        "reached"
+      ],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "stage",
+            "note",
+            "question",
+            "approval",
+            "decision",
+            "task",
+            "plan",
+            "loft"
+          ]
+        },
+        "stage": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "version": {
+          "$ref": "#/$defs/version"
+        },
+        "versionCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/version"
+          }
+        },
+        "answer": {
+          "$ref": "#/$defs/response"
+        },
+        "outcome": {
+          "$ref": "#/$defs/response"
+        },
+        "responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/response"
+          }
+        },
+        "times": {
+          "$ref": "#/$defs/times"
+        },
+        "owner": {
+          "$ref": "#/$defs/actor"
+        },
+        "reached": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        }
+      }
+    }
+  }
+}

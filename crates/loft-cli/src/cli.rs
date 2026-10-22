@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 
+use crate::yard::args::YardAction;
 use crate::{install, review, switch_command};
 
 #[derive(Parser)]
@@ -146,6 +147,11 @@ pub enum Command {
     UpdateCheck {
         #[command(subcommand)]
         action: SwitchAction,
+    },
+    /// Keep the branch's Yard Log: what agents planned, asked, decided and did on it.
+    Yard {
+        #[command(subcommand)]
+        action: YardAction,
     },
     /// Write the Markdown projection, the canonical JSON export, or the `OpenSpec` projection
     /// (RQ-143).
@@ -357,7 +363,8 @@ impl Command {
             | Self::Status { .. }
             | Self::RecordInstall { .. }
             | Self::Telemetry { .. }
-            | Self::UpdateCheck { .. } => None,
+            | Self::UpdateCheck { .. }
+            | Self::Yard { .. } => None,
         }
     }
 }

@@ -22,6 +22,18 @@ const OPENSPEC: &str = concat!(
     "/../../testdata/openspec/faithful/openspec"
 );
 
+/// A batch of blocks for `loft yard write`: a stage, a question and a note.
+pub const YARD_BATCH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../testdata/yard/batch.json"
+);
+
+/// An answer to the batch's question, for `loft yard answer`.
+pub const YARD_ANSWERS: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../testdata/yard/answers.json"
+);
+
 /// What a command runs over.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Fixture {
@@ -61,7 +73,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 18] = [
+pub const COMMANDS: [Entry; 25] = [
     ("loft-check", &["check"], Fixture::Unkeyed, "check"),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed, "fmt"),
     (
@@ -135,5 +147,65 @@ pub const COMMANDS: [Entry; 18] = [
         &["update-check", "status"],
         Fixture::Empty,
         "update-check",
+    ),
+    // The yard commands act on the branch's Yard Log under `.yard/`, never on the tree; over the
+    // clean fixture the branch has none until a write opens it.
+    (
+        "read-yard-log",
+        &["yard", "read", "--session", "s1"],
+        Fixture::Clean,
+        "yard-read",
+    ),
+    (
+        "write-blocks",
+        &[
+            "yard",
+            "write",
+            "--input",
+            YARD_BATCH,
+            "--send",
+            "--session",
+            "s1",
+        ],
+        Fixture::Clean,
+        "yard-write",
+    ),
+    (
+        "withdraw-a-submission",
+        &[
+            "yard",
+            "withdraw",
+            "--submission",
+            "01a16502-f6d2-7666-adad-3403c0a92870",
+            "--session",
+            "s1",
+        ],
+        Fixture::Clean,
+        "yard-withdraw",
+    ),
+    (
+        "close-yard-log",
+        &["yard", "close", "--session", "s1"],
+        Fixture::Clean,
+        "yard-close",
+    ),
+    (
+        "loft-yard-answer",
+        &["yard", "answer", "--input", YARD_ANSWERS, "--session", "s1"],
+        Fixture::Clean,
+        "yard-answer",
+    ),
+    // The protocol needs no repository.
+    (
+        "loft-yard-protocol",
+        &["yard", "protocol"],
+        Fixture::Empty,
+        "yard-protocol",
+    ),
+    (
+        "upgrade-open-yard-logs",
+        &["yard", "upgrade"],
+        Fixture::Clean,
+        "yard-upgrade",
     ),
 ];
