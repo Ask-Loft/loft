@@ -160,7 +160,7 @@ requirements:
       - key: 01a1646f-546a-7037-b85c-581f1115cbad
         name: "A yardlog merge exits 0 and writes no conflict record."
       - key: 01a1646f-546a-7037-b85c-58202c68fed4
-        name: "A yardlog merge's JSON document names the path merged and each id it changed."
+        name: "A yardlog merge's JSON document names the path merged, with no conflict and no disputed label."
   - key: 01a1646f-546a-7037-b85c-5821e4e005a5
     statement:
       form: ubiquitous

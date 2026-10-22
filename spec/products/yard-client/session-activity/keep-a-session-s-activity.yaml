@@ -22,6 +22,8 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eaf19ca8018b
         name: "A session's activity file is `activity/<session id>.yaml` in Yard Log's folder."
+      - key: 01a1652c-8a87-75c3-a415-c00b3be4bc74
+        name: "The activity file holds the session's id and the time its last kept event ended."
       - key: 01a1646f-546d-7042-befd-eaf221179a3a
         name: "Each of the main agent's turns is kept with the time it started and the time it ended."
       - key: 01a1646f-546d-7042-befd-eaf39c9c8fa0

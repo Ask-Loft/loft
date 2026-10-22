@@ -124,6 +124,10 @@ requirements:
         name: "A tokens or activity file never gives a conflict."
       - key: 01a1647b-208d-7169-85c8-9a57357c5764
         name: "The file taken is the one whose last event ended later."
+      - key: 01a1652c-8a87-75c3-a415-c00c8396212a
+        name: "A file of a `tokens` or `activity` folder that holds no `yardlog.yaml` is taken whole from one copy, and never merged by key."
+      - key: 01a1652c-8a87-75c3-a415-c00db620b03c
+        name: "Of two copies whose last events ended at one time, this copy is taken."
   - key: 01a1646f-546d-7042-befd-ebae13e04266
     statement:
       form: unwanted
