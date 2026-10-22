@@ -171,6 +171,27 @@ fn a_plan_rewritten_after_its_outcome_has_none_until_decided_again() {
 }
 
 #[test]
+fn a_rewritten_plan_sent_again_waits_for_a_new_outcome() {
+    let mut log = planned();
+    let plan = |markdown: &str| json!([{"id": "p1", "kind": "plan", "stage": "design", "title": "P", "markdown": markdown, "planMode": true}]);
+    sent(&mut log, &plan("First."), 2);
+    log.answer(
+        &[outcome(&log, "p1", Verdict::Rejected, Some("Too wide."))],
+        &person(Channel::Page, 3),
+    )
+    .unwrap();
+    let again = sent(&mut log, &plan("Second."), 4);
+    let state = |log: &yardlog::YardLog| log.submission(again).unwrap().state(log);
+    assert_eq!(state(&log), State::Open);
+    log.answer(
+        &[outcome(&log, "p1", Verdict::Approved, None)],
+        &person(Channel::Page, 5),
+    )
+    .unwrap();
+    assert_eq!(state(&log), State::Answered);
+}
+
+#[test]
 fn a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers() {
     let mut log = planned();
     let key = sent(&mut log, &json!([question("q1"), question("q2")]), 2);

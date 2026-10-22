@@ -19827,6 +19827,9 @@ links:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
         body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_rewritten_plan_sent_again_waits_for_a_new_outcome"
+        body: 97d40754740209efbfc54dfab47d4b45beeec1972ef51619e143ae5c592669b6
   - node: 01a1646f-546e-76cb-8b4f-f2853be2aad3
     reviewed: 7895cfe4cabcf7f9dbc046cce89c787345f07ae2446b10a2bdc7a9a1e441a749
     tests:

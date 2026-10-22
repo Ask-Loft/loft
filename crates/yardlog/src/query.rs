@@ -214,13 +214,14 @@ impl Submission {
         }
     }
 
-    /// When the last of its blocks was first answered or decided, once all of them are.
+    /// When the last of its blocks was answered or decided by the response that counts, once all
+    /// of them are: a plan rewritten and sent again waits for an outcome given after the rewrite.
     fn completed(&self, log: &YardLog) -> Option<Time> {
         self.blocks
             .iter()
             .map(|key| {
                 let (_, block) = log.block(*key)?;
-                block.first_response().map(|response| response.act.at)
+                block.counted().map(|response| response.act.at)
             })
             .collect::<Option<Vec<_>>>()?
             .into_iter()
