@@ -241,3 +241,50 @@ fn a_timeout_of_more_than_540_seconds_is_taken_as_540_seconds() {
     let (_, shorter) = wait(&yard, "s1", &submission, &["--timeout", "90"]);
     assert_eq!(shorter["waited"], 90);
 }
+
+#[test]
+fn a_wait_whose_yard_log_leaves_the_tree_ends_refused_saying_so() {
+    let yard = Yard::new();
+    let submission = send(&yard, "s1");
+    let waiting = yard.spawn(&[
+        "wait",
+        "--session",
+        "s1",
+        "--submission",
+        &submission,
+        "--timeout",
+        "30",
+    ]);
+    until_leased(&yard, &submission);
+    // A checkout of another branch takes this branch's Yard Log out of the tree.
+    std::fs::remove_dir_all(yard.folder(BRANCH)).unwrap();
+    let gone = Instant::now();
+    let output = waiting.wait_with_output().unwrap();
+    assert!(gone.elapsed() < Duration::from_secs(2));
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(document("wait", &output)["errors"][0]["kind"], "gone");
+}
+
+#[test]
+fn a_wait_ends_closed_soon_after_the_base_branch_comes_to_hold_its_yard_log() {
+    let yard = Yard::new();
+    let submission = send(&yard, "s1");
+    let waiting = yard.spawn(&[
+        "wait",
+        "--session",
+        "s1",
+        "--submission",
+        &submission,
+        "--timeout",
+        "30",
+    ]);
+    until_leased(&yard, &submission);
+    let root = format!(".yard/{BRANCH}/yardlog.yaml");
+    let merged = yard.git.clone().holding("develop", &root, "2222222");
+    // The git simulator reads its scenario at each call: the merge lands while the wait runs.
+    drop(yard.scratch.command(Some(&merged), &yard.clock));
+    let landed = Instant::now();
+    let output = waiting.wait_with_output().unwrap();
+    assert!(landed.elapsed() < Duration::from_secs(7));
+    assert_eq!(document("wait", &output)["outcome"], "closed");
+}

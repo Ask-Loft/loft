@@ -7,7 +7,7 @@
 use std::path::Path;
 use std::time::Duration;
 
-use loft_ports::clock::Clock as _;
+use loft_ports::clock::Clock;
 
 use serde_json::{Value, json};
 use yardlog::log::Submission;
@@ -36,6 +36,10 @@ pub const LONGEST: u64 = 540;
 
 /// How often a wait reads Yard Log.
 const EVERY: Duration = Duration::from_millis(250);
+
+/// How often a wait asks git whether the base branch came to hold its Yard Log, as a merge of
+/// its branch makes it: a few git calls a minute, however long the wait.
+const MERGE_EVERY: Duration = Duration::from_secs(5);
 
 pub fn run(root: &Path, args: WaitArgs) -> Finished {
     let as_json = args.output.json();
@@ -85,27 +89,10 @@ fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure>
     // Another wait may have taken the submission up while this one took the lease.
     let taking_up = taking_up && waiter.may_wait(&branch.store.read()?)?;
     let taken_up = taking_up && waiter.take_up(at)?;
-    loop {
-        let held = branch.store.read()?;
-        let log = log_of(&held).expect("Yard Log was read");
-        let found = log.submission(submission).expect("Yard Log holds it");
-        let outcome = if log.is_closed() || closed_by_merge {
-            Some("closed")
-        } else {
-            match found.state(log) {
-                State::Answered => Some("answered"),
-                State::Withdrawn => Some("withdrawn"),
-                State::Open => (clock.elapsed() >= deadline).then_some("pending"),
-            }
-        };
-        if let Some(outcome) = outcome {
-            let mut fields = waiter.fields(log, found);
-            fields["takenUp"] = json!(taken_up);
-            fields["waited"] = json!(clock.elapsed().saturating_sub(started).as_secs());
-            return Ok((outcome, fields));
-        }
-        clock.wait(EVERY.min(deadline.saturating_sub(clock.elapsed())));
-    }
+    let (outcome, mut fields) = waiter.until(clock, deadline, closed_by_merge)?;
+    fields["takenUp"] = json!(taken_up);
+    fields["waited"] = json!(clock.elapsed().saturating_sub(started).as_secs());
+    Ok((outcome, fields))
 }
 
 /// A wait on one submission by the calling agent.
@@ -117,6 +104,49 @@ struct Waiter<'a> {
 }
 
 impl Waiter<'_> {
+    /// Reads Yard Log every [`EVERY`] until the submission is no longer open or `deadline`
+    /// passes, and asks git every [`MERGE_EVERY`] whether the base branch came to hold Yard Log;
+    /// gives the outcome and the submission's blocks. Refused where Yard Log leaves the tree.
+    fn until(
+        &self,
+        clock: &impl Clock,
+        deadline: Duration,
+        mut merged: bool,
+    ) -> Result<(&'static str, Value), Failure> {
+        let mut checked = clock.elapsed();
+        loop {
+            let held = self.branch.store.read()?;
+            let Some((log, found)) =
+                log_of(&held).and_then(|log| Some((log, log.submission(self.key)?)))
+            else {
+                let message = format!(
+                    "the Yard Log of `{}` is no longer in the tree, as after a checkout of another \
+                     branch",
+                    self.branch.store.branch()
+                );
+                return Err(self.refused(&held, failure::error("gone", &message)));
+            };
+            if !merged && !log.is_closed() && clock.elapsed().saturating_sub(checked) >= MERGE_EVERY
+            {
+                checked = clock.elapsed();
+                merged = self.branch.closed_by_merge()?;
+            }
+            let outcome = if log.is_closed() || merged {
+                Some("closed")
+            } else {
+                match found.state(log) {
+                    State::Answered => Some("answered"),
+                    State::Withdrawn => Some("withdrawn"),
+                    State::Open => (clock.elapsed() >= deadline).then_some("pending"),
+                }
+            };
+            if let Some(outcome) = outcome {
+                return Ok((outcome, self.fields(log, found)));
+            }
+            clock.wait(EVERY.min(deadline.saturating_sub(clock.elapsed())));
+        }
+    }
+
     /// Whether the calling agent may wait on the submission as Yard Log holds it, and must take
     /// it up to: refused where it may not, or where Yard Log does not hold it.
     fn may_wait(&self, held: &Held) -> Result<bool, Failure> {
@@ -157,7 +187,8 @@ impl Waiter<'_> {
     /// open to take up.
     fn take_up(&self, at: yardlog::Time) -> Result<bool, Failure> {
         let taken = self.branch.store.update(|current| {
-            let mut log = current.expect("Yard Log was read");
+            // Gone from the tree since it was read: nothing is taken up, and the wait says so.
+            let mut log = current.ok_or(Taken::Gone)?;
             let taken = match log.take_up(self.key, self.agent.clone(), at) {
                 Ok(_) => true,
                 // Answered, withdrawn or closed since: the wait returns that instead.
@@ -168,6 +199,7 @@ impl Waiter<'_> {
         });
         match taken {
             Ok(updated) => Ok(updated.value),
+            Err(Taken::Gone) => Ok(false),
             Err(Taken::Store(error)) => Err(error.into()),
             Err(Taken::Refused(refused)) => {
                 let held = self.branch.store.read()?;
@@ -208,6 +240,7 @@ impl Waiter<'_> {
 enum Taken {
     Store(YardStoreError),
     Refused(Refused),
+    Gone,
 }
 
 impl From<YardStoreError> for Taken {

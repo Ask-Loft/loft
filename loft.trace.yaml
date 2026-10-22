@@ -20769,6 +20769,18 @@ links:
       - file: "crates/loft-cli/tests/yard_wait.rs"
         name: "a_wait_on_a_submission_its_close_withdrew_returns_that_yard_log_is_closed"
         body: 8bee693823e93879c501066118ba7414f234cbd9992721bfe8ed61e21ec9d0d0
+  - node: 01a16600-deb8-7106-8d7f-7eec980a4b56
+    reviewed: 1d450031194864d7ee38a3b2a5844fe7da97d313fb5369d94bd96f1143f89526
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_ends_closed_soon_after_the_base_branch_comes_to_hold_its_yard_log"
+        body: dfcc065bafb0275a21dda7513b20ae45ace5184239750e924a3af5281d231b49
+  - node: 01a16600-deb9-776e-9266-a8e826e5cc2c
+    reviewed: 7bf3a83e825272be8a6c48705ddb7f315728228773a155dd007ce524a3016f24
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_wait_whose_yard_log_leaves_the_tree_ends_refused_saying_so"
+        body: 90f12d6c0e4b4a400c1044fd0ecba4c6510e1855ad5e5dc35e566dd9a17aa48c
   - node: 01a1646f-546c-7521-9643-bbfbd843cb1e
     reviewed: f28ebb6a5158bdf2694704cd60e2675b55b3b210c38785334b4b145f5572a3db
     tests:
