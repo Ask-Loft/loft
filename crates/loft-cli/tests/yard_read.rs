@@ -250,3 +250,15 @@ fn recording_the_revision_read_changes_no_file_under_yard_and_does_not_raise_the
     assert_eq!(first["revision"], 1);
     assert_eq!(second["revision"], 1);
 }
+
+#[test]
+fn a_peek_leaves_the_revision_the_agent_last_read_as_it_was() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    yard.read("s1", &[]);
+    yard.write("s1", NOTES, &[]);
+    let peeked = yard.read("s1", &["--peek"]);
+    assert_eq!(peeked["revision"], 2);
+    assert_eq!(peeked["lastRead"], 1);
+    assert_eq!(yard.read("s1", &[])["lastRead"], 1);
+}

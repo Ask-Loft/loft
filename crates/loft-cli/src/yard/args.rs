@@ -126,6 +126,9 @@ pub struct ReadArgs {
     /// Return every version of each block returned, oldest first.
     #[arg(long)]
     pub versions: bool,
+    /// Leave the revision the agent last read as it was: a read made on the agent's behalf.
+    #[arg(long)]
+    pub peek: bool,
     #[command(flatten)]
     pub agent: Runner,
     #[command(flatten)]

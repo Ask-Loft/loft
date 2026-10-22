@@ -136,6 +136,7 @@ fn current(tree: &Path, beyond: Beyond) -> Result<Value, Failure> {
     let args = ReadArgs {
         since: None,
         versions: true,
+        peek: true,
         agent: Runner {
             session: None,
             agent: None,

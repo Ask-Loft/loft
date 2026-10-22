@@ -109,7 +109,9 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
         if let Some(before) = last_read.before(log.root.key, &reader)? {
             fields["lastRead"] = json!(before);
         }
-        last_read.record(log.root.key, &reader, log.root.revision)?;
+        if !args.peek {
+            last_read.record(log.root.key, &reader, log.root.revision)?;
+        }
     }
     Ok(fields)
 }
