@@ -28,7 +28,7 @@ requirements:
       shall: "keep each branch's Yard Log as YAML files under `.yard/<branch>/`: a root, one file for each stage, and one file of tokens and one of activity for each session that worked on it."
     criteria:
       - key: 01a1646f-546d-7042-befd-ebc9da3f340f
-        name: "The root `yardlog.yaml` holds `format: yardlog/1`, Yard Log's key, its branch, its title, its revision, the Act that opened it, the stages in order by key with each one's id, the submissions, the keys of Yard Logs merged into it, and whether it is closed."
+        name: "The root `yardlog.yaml` holds `format: yardlog/1`, Yard Log's key, its branch, its title, its revision, the Act that opened it, the Act of each change it holds, the stages in order by key with each one's id, the submissions, the keys of Yard Logs merged into it, and whether it is closed."
       - key: 01a1646f-546d-7042-befd-ebca09d739e6
         name: "Each stage's file is `<stage key>.yaml` beside `yardlog.yaml`, and holds the stage and its blocks in order."
       - key: 01a1649f-62f0-7320-902c-7d8bb078f994

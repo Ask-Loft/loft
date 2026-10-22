@@ -74,6 +74,10 @@ requirements:
         name: "The driver of a stage's file changes no id and no decision's number."
       - key: 01a164a0-9eef-7334-9118-9a772c96e9ed
         name: "A copy already marked as unsettled keeps the earlier of the two revisions it is unsettled since."
+      - key: 01a16532-9bbd-7310-b7f9-0e1bc9a6aeee
+        name: "Two copies that each changed Yard Log since their base differ in `yardlog.yaml`, which holds the Act of each change, so git hands the root to the driver."
+      - key: 01a16532-9bbd-7310-b7f9-0e1c9c56a776
+        name: "The merged `yardlog.yaml` lists as arriving each Act of a change that the other copy holds and this copy did not."
   - key: 01a1646f-546d-7042-befd-eba7b5d37c0e
     statement:
       form: event_driven
@@ -104,6 +108,8 @@ requirements:
         name: "The decisions are numbered again from 1 in the order of their first versions' Acts, ordered by key where two Acts have one time."
       - key: 01a1646f-546d-7042-befd-eba5774a732c
         name: "Each record that the settled Yard Log holds and this copy did not hold at the revision it is unsettled since is marked as arrived at the settling's revision."
+      - key: 01a16532-9bbd-7310-b7f9-0e1de30c8c08
+        name: "A record of a stage's file that git took whole from the other copy is marked as arrived as one the driver joined is."
       - key: 01a1646f-546d-7042-befd-eba6ee1c2c4b
         name: "`loft yard read --since` a revision below the settling's returns the records that arrived with the merge."
       - key: 01a1646f-546d-7042-befd-ebad391ae6dd
