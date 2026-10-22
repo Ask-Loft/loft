@@ -253,6 +253,8 @@ test("the page's answer first closes the mod's own dialog, and nothing is record
   await start($)
   const ran = await $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 'sub-7' })
   expect(isAsked).toBe(true)
+  await w.clock.settle()
+  expect(w.state.calls).toHaveLength(1)
   expect(JSON.parse(String(ran.result)).outcome).toBe('answered')
   expect(yardRuns(w).some(run => run.startsWith('answer'))).toBe(false)
 })

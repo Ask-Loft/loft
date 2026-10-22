@@ -84,12 +84,16 @@ test('a compaction gives no new context', async ($, on) => {
 
 test('every command Yard Client runs is loftCommand with --format json, quietly, and no other program', { options: { loftCommand: 'pnpm exec loft' } }, async ($, on) => {
   const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.AskUserQuestion = e => ({ result: { questions: e.questions, answers: { 'Which?': 'A' } }, text: 'ok' })
   await start($)
   await $.tool.call({ tool: 'mcp__loft__yard_read', since: 2 })
   await $.tool.call({ tool: 'mcp__loft__yard_write', batch: [{ id: 'shape', kind: 'stage', title: 'Shape', status: 'active' }] })
+  await $.tool.call({ tool: 'AskUserQuestion', questions: [{ question: 'Which?', header: 'Pick', multiSelect: false, options: [{ label: 'A', description: '' }, { label: 'B', description: '' }] }] })
   await $.tool.call({ tool: 'mcp__loft__yard_close' })
   await w.clock.advance(5000)
-  expect(w.state.runs.length).toBeGreaterThan(4)
+  const subs = new Set(yardRuns(w).map(run => run.split(' ')[0]))
+  expect([...subs].sort()).toEqual(['answer', 'close', 'protocol', 'read', 'serve', 'wait', 'write'])
   for (const run of w.state.runs) {
     expect(run.argv.slice(0, 4)).toEqual(['pnpm', 'exec', 'loft', 'yard'])
     expect(run.argv.slice(-2)).toEqual(['--format', 'json'])
@@ -210,4 +214,14 @@ test('a loft of an older protocol than the plugin speaks leaves Yard Client off 
   await start($)
   expect(w.state.tools).toEqual([])
   expect(w.state.toasts[0]).toMatch(/which speaks the yard protocol 0\. To use Yard Client, bring loft up to date/)
+})
+
+test('with Yard Client off, the notice asks loftCommand alone for its version', { options: { loftCommand: 'pnpm exec loft' } }, async ($, on) => {
+  const w = world(on, { protocol: 'none' })
+  await start($)
+  expect(w.state.runs.map(run => run.argv)).toEqual([
+    ['pnpm', 'exec', 'loft', 'yard', 'protocol', '--format', 'json'],
+    ['pnpm', 'exec', 'loft', '--version'],
+  ])
+  for (const run of w.state.runs) expect(run.env).toEqual({ LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' })
 })

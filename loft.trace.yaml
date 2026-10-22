@@ -20769,6 +20769,39 @@ links:
       - file: "crates/loft-cli/tests/yard_wait.rs"
         name: "a_wait_whose_timeout_passes_returns_pending_exits_0_and_leaves_the_submission_open"
         body: 4ce2edb1046aa8c035a750f70073fd25cab1870cffc6549de856ff1f95c47c60
+  - node: 01a1646f-546c-7521-9643-bc01be18acec
+    reviewed: 347ae72d83b2fc77d29841a9072ecae93fdb5fb4bb46e306d714c2521fc1ecd9
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "yard_wait runs loft yard wait again after each pending, and gives what it ends with"
+        body: d1113415d35e301d6ff1ce27316aa92bb1441127eee014f404947a1547613b47
+  - node: 01a1646f-546c-7521-9643-bc022f20ffb4
+    reviewed: 2e8f3a25a6849a70010f1f08e8101fd2607ce69837231c50f07d3758825360cc
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "yard_wait runs loft yard wait again after each pending, and gives what it ends with"
+        body: d1113415d35e301d6ff1ce27316aa92bb1441127eee014f404947a1547613b47
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
+        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+  - node: 01a1646f-546c-7521-9643-bc0335f775a9
+    reviewed: 956588eed7be151abd1c47eb3e7b01bf6d6144064908525cb48a94e1cb82a62e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "yard_wait runs loft yard wait again after each pending, and gives what it ends with"
+        body: d1113415d35e301d6ff1ce27316aa92bb1441127eee014f404947a1547613b47
+  - node: 01a1646f-546c-7521-9643-bc05a53744cf
+    reviewed: be29a67dfaf9bdca9cb533cdf75c5966071fd058ed5bce8f15be3933e3f1ec0a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an interrupt while yard_wait waits ends the running wait, closes the dialog, records nothing and leaves the submission open"
+        body: 326db6ab8694ef3ce477a8c1e24c9d02cff57bc2c0802195db153468341bedc5
+  - node: 01a1646f-546c-7521-9643-bc06fba6c4da
+    reviewed: 0aa2ef33b8b0449bab4e32189d4dbc5db0fa71426be7301f535e57f28e87d6f6
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an interrupt while yard_wait waits ends the running wait, closes the dialog, records nothing and leaves the submission open"
+        body: 326db6ab8694ef3ce477a8c1e24c9d02cff57bc2c0802195db153468341bedc5
   - node: 01a1646f-546d-7042-befd-ea8699a04ea6
     reviewed: 5077c1413262e1e393c9d9ff34be95bbaccb9414a38e176dea357c877cd4f298
     tests:
@@ -20937,6 +20970,51 @@ links:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "each_result_names_the_tree_the_branch_and_the_repository_s_common_directory"
         body: 87e52a5d2497c567488693415a6bccd639ab7bddd77ab470811bb7d9887b8432
+  - node: 01a1646f-546d-7042-befd-ea6b72c4a18a
+    reviewed: 6cde7da642d76c77975723c6da033e130f54acb922949b01ac8aebbf7f8b434d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "each tool runs its command in the session directory with the base branch and the page server port"
+        body: 424ea4b1b8579454fd01eea1416dc29b7373b2ae8c1675ba60d4b57457e33dbf
+  - node: 01a1646f-546d-7042-befd-ea6ce4e53c57
+    reviewed: 8219eb7fd5214a9b13a5e9906217c6a0238c887a6e92d1ff1a3221615c958ff7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "each tool runs its command in the session directory with the base branch and the page server port"
+        body: 424ea4b1b8579454fd01eea1416dc29b7373b2ae8c1675ba60d4b57457e33dbf
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a subagent calls a tool in its own name: its id and its type"
+        body: cd8daf70d77d697fd908763d7f9ec8483f18622059d1a6b65caeed464464eb3f
+  - node: 01a1646f-546d-7042-befd-ea6d4a1030f6
+    reviewed: 7a876287bc4be1c4296f32322bc04700da61cf32fc3d8dd37f2921ede33e6908
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "each tool runs its command in the session directory with the base branch and the page server port"
+        body: 424ea4b1b8579454fd01eea1416dc29b7373b2ae8c1675ba60d4b57457e33dbf
+  - node: 01a1646f-546d-7042-befd-ea6e6f25624a
+    reviewed: 5010f4dc37fc7cbccdd20e5427649130bcaed8adc9e35a7840b96a6ddef91f4b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the main agent's call names no agent, and an input at fault runs no command"
+        body: ab5474ef2549731a0a7a641233c523787e5bb3f97d61f476f5c3262ad0b363cf
+  - node: 01a1647c-e680-7753-bf17-f17a693b5c4a
+    reviewed: 62c801005eb3ae58c078c973287fc1ca1e1742ee6842f6c80f31b6059a85f5ba
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "after /clear the session is given its context again, and its first command names the session it continues"
+        body: dc5c433e6315acad8a426286d5e13c0446e3e0282aef50d5742334e7aab6dc1f
+  - node: 01a1647c-e680-7753-bf17-f17b0ccd5e22
+    reviewed: 1b020378558fca291755536e2c7e1c868d63a0b551742b6d32b48cbe8ae6bc19
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "after /clear the session is given its context again, and its first command names the session it continues"
+        body: dc5c433e6315acad8a426286d5e13c0446e3e0282aef50d5742334e7aab6dc1f
+  - node: 01a1647c-e680-7753-bf17-f17c4e518163
+    reviewed: 0e937df5ffca5d1a7fb7695eda5d6bf4532dec7e2512dfcb226f17456d926591
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the context is given again after /resume and /branch, and a session a new process starts names no session it continues"
+        body: fd3dbf46096bd573c1d744574a193566c686081c674232c41e9752a12a88d11d
   - node: 01a1647c-e680-7753-bf17-f17e03443c33
     reviewed: 82b3edaa8f1c0e0b9f358655381e311c49e6f07995efe13faaf9839cb74b59bc
     tests:
@@ -21087,6 +21165,27 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "the_result_lists_the_open_submissions_each_with_the_agent_that_sent_it_apart"
         body: 6c5b4f6f69ce0b00424153652e0da5f030015f272ef229af9b8d8a785b0155f2
+  - node: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
+    reviewed: c915d004fdcea33a9c0dee16c199ac54477b6f7d577930b621a4235c0b4e989a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
+        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+  - node: 01a1646f-546c-7521-9643-bc5f9317855f
+    reviewed: 3652bfa2bb06bb29c8aa69b032e0661c587fd251a6874d3251dd7bfd219f12e5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
+        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+  - node: 01a1646f-546d-7042-befd-ea8e5a514259
+    reviewed: 5b17d1cb84271dd77eabad6cc8e0527fbd2b4c949ebcb9213b3f76d035ec2e68
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
+        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "each tool runs its command in the session directory with the base branch and the page server port"
+        body: 424ea4b1b8579454fd01eea1416dc29b7373b2ae8c1675ba60d4b57457e33dbf
   - node: 01a1646f-546d-7042-befd-ea8fc7b5b732
     reviewed: 8ff3c50454413ab86e3c2ccaf7ad72a10a180a208f41e6cbb13a79c0d969defa
     tests:
@@ -21096,12 +21195,30 @@ links:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "a_second_serve_leaves_the_running_page_server_serving"
         body: ae59a10f0cd5bd6a85f765c7895cf4c605b3ae4b87c1b9c76ac0a5abc2563be7
+  - node: 01a1646f-546d-7042-befd-ea90b3a3d660
+    reviewed: 2a625aaa33170aa8e6f2472ecac6b873711ff364209a4887135810b45fd90e7c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
+        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
   - node: 01a1646f-546d-7042-befd-ea91076e0f8d
     reviewed: 6d9a8cbbdb32d648ebae9f998f7a185dd521a56436102231ba5a70ae8edc02a0
     tests:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_trees_served_are_kept_in_trees_json_once_each_and_served_again_by_a_later_page_server"
         body: 7e4924781137c494f0450b3f1a586907a9c7cc203fdf58f93965c3b07b46af68
+  - node: 01a1647b-208d-7169-85c8-9a53c278bbaf
+    reviewed: c259e2d64be99b2d25359d1e588cc474cbea184a76d5b6778ce428525589172b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tree a tool call reaches is registered with the page server once"
+        body: 6efca2c58b6734331c6d095b8edd84ffac8e3ebaec24a95dabb2d9470e1ea14f
+  - node: 01a1647b-208d-7169-85c8-9a5466ae261a
+    reviewed: 62306ec532ff7d0d8573abd13aaa7d9e80d64fe60abe295537aef00ea74586b3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tree a tool call reaches is registered with the page server once"
+        body: 6efca2c58b6734331c6d095b8edd84ffac8e3ebaec24a95dabb2d9470e1ea14f
   - node: 01a1646f-546d-7042-befd-ea935091c8a4
     reviewed: cf72032a02eaac415efa5ac4ecd2c30826859caabb70723c534217ca9d5ec356
     tests:
@@ -21126,6 +21243,15 @@ links:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "each_run_records_in_sessions_json_the_time_the_session_was_heard"
         body: 6c1f84d0cc4c8b5bb1cfb21ba7530ffcca2a998a56698802834d1d220e649d3a
+  - node: 01a1646f-546d-7042-befd-ea97136fbdab
+    reviewed: 3191ff27dc976591a61095ec87231dff09b173d87d599995bfb4d7edaa1800aa
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
+        body: 50c4b05bfb26aa174021a1461ed0885cae54a1f68bf350aca37f19adf6aa1693
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a page server another session runs is heard from at every beat"
+        body: 11e54f1de7b7d2f257aa58ac1dd0f10c0aa14614c16a95f1373f434ef9bff19c
   - node: 01a1646f-546d-7042-befd-ea98315d97ca
     reviewed: 8d3d6c4322fe56f5ae7f40ec0b18e090d73e58589efd3eab28583ee6dcf9b12b
     tests:
@@ -21138,6 +21264,75 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_trees_served_are_kept_in_trees_json_once_each_and_served_again_by_a_later_page_server"
         body: 7e4924781137c494f0450b3f1a586907a9c7cc203fdf58f93965c3b07b46af68
+  - node: 01a1646f-546c-7521-9643-bc5c90d3caac
+    reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start"
+        body: 7a11c06a55dfb881d21494bfa855cde41e6e7df92f93146679ab191879e4c56e
+  - node: 01a1646f-546e-76cb-8b4f-f1f88e7bff82
+    reviewed: 170b76c99ba3786d257d7fa2c15bdb0abb873422d5f79d69c7786b544bf49bbb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
+        body: 9401062444a1247e48ff42a70c5ce04e8009a0a6c13576c2c66d8dd1505ad284
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
+        body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks"
+        body: 76d6e55291b2ce28cb68c7e502b8407e94379ce852506a51fd22dfd0b592fa8f
+  - node: 01a16475-7fbd-7213-a7f7-927fd5de975a
+    reviewed: c435e85549d7002737e9fbdcc367022ad987b5d1dab35b43442b9bd382cedb3c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
+        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+  - node: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
+    reviewed: b2e92b9d8b9c74a9d59cd5659f907052d70f12b94cce8d1d02e27351878b33f4
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
+        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
+        body: 9401062444a1247e48ff42a70c5ce04e8009a0a6c13576c2c66d8dd1505ad284
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_mod_names_the_version_of_loft_as_its_own"
+        body: 7ad10bfc924b0309c65bc3d6f8b7e88a14c37beb93e1caf74e0eb05a35feda9d
+  - node: 01a1646f-546e-76cb-8b4f-f1fbb5dde6c7
+    reviewed: 17429b776d65cedcef2f44d262c9b101e20597c8fa0c8bb635793ce01758da5f
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
+        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
+        body: 9401062444a1247e48ff42a70c5ce04e8009a0a6c13576c2c66d8dd1505ad284
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
+        body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
+  - node: 01a1646f-546e-76cb-8b4f-f1fc6ed5f2cc
+    reviewed: c49f47f82e4a524ff2c6cf35dea9d4641b73625f6d30c020e8adeed7631c3d17
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
+        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+  - node: 01a1646f-546e-76cb-8b4f-f1fde62cb279
+    reviewed: bc1bfca105244ab915945501c1d149f7e84b784c53afba66d2612967917a7561
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "with Yard Client off, the agent asks and plans in Claude Code alone"
+        body: 191ce29b20f9cf5ddec43571c46c8ef7a66c9446fbb4c763c6a9e5e04f79589d
+      - file: "plugins/claude/loft/tests/yard-dialog.test.tsx"
+        name: "with Yard Client off, the dialog is drawn as Claude Code draws it"
+        body: a33abc7abfaac482906939c91d97c0b3370919cafb8582136764750f3e456b66
+  - node: 01a1646f-546e-76cb-8b4f-f1feb5d67d10
+    reviewed: 7a6d8e5518e5213c39a79910594990c6e675d79fa5ad3ec7d51aca06ee6063e0
+    tests:
+      - file: "plugins/claude/loft/tests/pane.test.tsx"
+        name: "a session below the specification follows it and reads it with loft --format json, quietly"
+        body: 0908195eade74f90abac993e02fc0593e6f85504bcc94c7a8a1105e1fac1b39a
   - node: 01a1646f-546e-76cb-8b4f-f202028cdac3
     reviewed: 26562d624d38ead959e49565359e8e5a51c43baa1c998f597e31b6af4b0e3977
     tests:
@@ -22389,6 +22584,153 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "no_other_session_s_activity_file_is_written_for_a_session_s_events"
         body: 0aada059c3348173d6ae6a95f73e64b67c33359d77c4bd5fa502205e69f9f175
+  - node: 01a1646f-546d-7042-befd-eafdf3c267d2
+    reviewed: 1bb212b64e491088419301bc2d73222858c1c7bcc15496b21a78c2bb387867ee
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "each event names the session, its directory, its time to the second, its kind and the host, and is posted to the page server's events with the token"
+        body: 1a59a54f5d80d7a560de28a0aea6e0037a07481667947cd0946a34856f7bcdcc
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a subagent's events name it by its id and type"
+        body: 9adbe30b877fa7a232d9254fc35cecacc299b57c24548a42a4b0e6c0a20710ee
+  - node: 01a1646f-546d-7042-befd-eafe7b5c5ec1
+    reviewed: d8d0a94dfb82c1810801da523cbda9b3edd4d7500af0a0584b8df661b818cbe0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model"
+        body: c3f823df296c88fb1d87f5585541c35407c7f478b2c6a96156afea8c44772a73
+  - node: 01a1646f-546d-7042-befd-eaff9cc533cb
+    reviewed: be0b0a21e49a820862ddd8e34a91b8203f9ff1c7315a5d9b4573bafa8d1e14b7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "each event names the session, its directory, its time to the second, its kind and the host, and is posted to the page server's events with the token"
+        body: 1a59a54f5d80d7a560de28a0aea6e0037a07481667947cd0946a34856f7bcdcc
+  - node: 01a1646f-546d-7042-befd-eb00d74acf56
+    reviewed: ae723b9bef1e370b7ce29346e53c4bf51b69c7189b2bd56ec72d3715668b837c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a turn's end carries its tokens, and a compaction the tokens before and after"
+        body: 4ffa315a2ad38616e594d658792f385569d6304efa1190aeeb4285f7b25db304
+  - node: 01a1646f-546d-7042-befd-eb01a1b7b060
+    reviewed: 2b5b50ce985c026f50e6c375c953f6224f0b52140ffbb4ccc14d589a72078a90
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call's start and end are posted, the end saying whether it failed, an edit whether it is under spec/, and a shell command the loft subcommands it runs"
+        body: 6eecd69538720c0ab4cea4e3ab8475d32ba35e92bcc8a2adb466a5868ba7826d
+  - node: 01a1646f-546d-7042-befd-eb025a1a526b
+    reviewed: 55ed2fe41d6a1177cf5049ec7a00c1ca5308286bddcff1af17dcbac4eb8c5791
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call's start and end are posted, the end saying whether it failed, an edit whether it is under spec/, and a shell command the loft subcommands it runs"
+        body: 6eecd69538720c0ab4cea4e3ab8475d32ba35e92bcc8a2adb466a5868ba7826d
+  - node: 01a1646f-546d-7042-befd-eb03dfa075b4
+    reviewed: b12f3d1fe644d453a3ef76159fba9c75d7f8ab114eff92650308fe973f0f72af
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model"
+        body: c3f823df296c88fb1d87f5585541c35407c7f478b2c6a96156afea8c44772a73
+  - node: 01a1646f-546d-7042-befd-eb0424c61342
+    reviewed: 53af57ff62ab6e97a68169acaf85c78c0993b209223e32122d44e753807ebc56
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a turn's end carries its tokens, and a compaction the tokens before and after"
+        body: 4ffa315a2ad38616e594d658792f385569d6304efa1190aeeb4285f7b25db304
+  - node: 01a16475-7fbc-7732-a78c-bc5234423864
+    reviewed: c57d58071a2147f3b4c6fab4fc3c97c89ce58acc2b96e8acace28ea34ca2eb07
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a turn's end carries its tokens, and a compaction the tokens before and after"
+        body: 4ffa315a2ad38616e594d658792f385569d6304efa1190aeeb4285f7b25db304
+  - node: 01a1646f-546d-7042-befd-eb05c5d3d538
+    reviewed: 1d4dede35a26114c4362dd932b5370730ffe5aec563d8877a8f080dffa119fe2
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "plan mode starting and ending is posted once for each change, as the main agent is heard in it"
+        body: 15a6a72e013f50ffcc5de786639c9acc3199a6fe43517f8301adfad8ba3766e0
+  - node: 01a16475-7fbc-7732-a78c-bc53338212c4
+    reviewed: b02b6b332fa2917286573a9d57f3f60a3d8cf55cd4bf268be92669136f638c66
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "plan mode starting and ending is posted once for each change, as the main agent is heard in it"
+        body: 15a6a72e013f50ffcc5de786639c9acc3199a6fe43517f8301adfad8ba3766e0
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "plan mode is heard from the EnterPlanMode and ExitPlanMode calls that succeed"
+        body: 237c2c55a95498a8c4367ce0755e6bf7d432e690f0aeb6aac164ddcf476757a0
+  - node: 01a1646f-546d-7042-befd-eb06f87709de
+    reviewed: 0d9b9493e85c723ccba238fda7426148c56319364f9f1d3878432b4fcb7038d8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call's start and end are posted, the end saying whether it failed, an edit whether it is under spec/, and a shell command the loft subcommands it runs"
+        body: 6eecd69538720c0ab4cea4e3ab8475d32ba35e92bcc8a2adb466a5868ba7826d
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "no event holds the prompt, the agent's text, a tool call's input or its result"
+        body: f21b03cc389125501e561ab261627bf2476395270dbdb67b5eddba029328ee27
+  - node: 01a1646f-546d-7042-befd-eb079e1b22d9
+    reviewed: 9b9ccec472b3c063470bb72a888aaa4f89a59d81afb8d30d4ff1514792df6667
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a subagent's events name it by its id and type"
+        body: 9adbe30b877fa7a232d9254fc35cecacc299b57c24548a42a4b0e6c0a20710ee
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model"
+        body: c3f823df296c88fb1d87f5585541c35407c7f478b2c6a96156afea8c44772a73
+  - node: 01a1646f-546d-7042-befd-eb0881f33bd6
+    reviewed: 2b2a58e0ed6b39cc26999027f8b8cb6b61255e58c03c7fa379ec5d562a9c7a9d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "no event holds the prompt, the agent's text, a tool call's input or its result"
+        body: f21b03cc389125501e561ab261627bf2476395270dbdb67b5eddba029328ee27
+  - node: 01a1646f-546d-7042-befd-eb09c697866e
+    reviewed: 375b70828ffb90dca9d8a907688e0942900f2694d63259ad83e9b477eeeb97e8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call's start and end are posted, the end saying whether it failed, an edit whether it is under spec/, and a shell command the loft subcommands it runs"
+        body: 6eecd69538720c0ab4cea4e3ab8475d32ba35e92bcc8a2adb466a5868ba7826d
+  - node: 01a16475-7fbc-7732-a78c-bc5471862f2a
+    reviewed: fd105e017597f37e6d01496b8635145eaa6f611dc79b754e10987a2c9753e147
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a shell command names the loft subcommands it runs by name, by path or through a variable it sets"
+        body: f769493872807c1ac4c672712b87f85db322040bbe2825fd23a3ea1292e0a88e
+  - node: 01a16475-7fbc-7732-a78c-bc55e56b2ca3
+    reviewed: a2420003a79a65d2f15f8c784f277569b04360a8480468966b5ca141cb0ca0c3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a subcommand is never taken from quoted text, a heredoc, or a word that is not one of loft"
+        body: cca56e7431913999fcff9bbe39b36c246b54098434055422963ab7aa9eeaa7f0
+  - node: 01a1646f-546d-7042-befd-eb0ad2547439
+    reviewed: 48410a28b6958b0aa6de30c6f65b66ae1a3666a1958b7045704f98655748996e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "each event names the session, its directory, its time to the second, its kind and the host, and is posted to the page server's events with the token"
+        body: 1a59a54f5d80d7a560de28a0aea6e0037a07481667947cd0946a34856f7bcdcc
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a post carries no Origin, so the page server tells the mod from a page"
+        body: be75fd9790c04a38e35eafa27d171096d45cf3f764294158c78a7f2683c53565
+  - node: 01a1646f-546d-7042-befd-eb0bdf72490b
+    reviewed: 52bde84706af67ee53aa0f2c4d5557ca4cb4fa0a182c334669c75f363ddb6779
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "the agent's work goes on while the page server has yet to answer"
+        body: d2c5f78016911c1689935572b7a6ba4c1ec995f3cb5cd607ac69d23ad98da76e
+  - node: 01a1646f-546d-7042-befd-eb0d02f241f6
+    reviewed: 2d0a6bc84264c9bc8e190a799b6e6b79474b3fd16cef72d0c3c7639666af8d7d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "events wait while the page server does not take them, and go in their order once it does"
+        body: 24d50f0f39fc2e3dfa3e27b24a58562cef3d47cdeb867af5351f098bf0dc28c5
+  - node: 01a1646f-546d-7042-befd-eb0eeba43565
+    reviewed: 320bc8087cd122a1aa91569b4a17da03dadff381991b341901b2f4d380873ba7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
+        body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+  - node: 01a1646f-546d-7042-befd-eb0f5266c105
+    reviewed: 3f207710753580fa4aa1401a004423bf2a5d55ceafc484a33080aa8bebee4d33
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
+        body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
   - node: 01a1646f-546d-7042-befd-eb11fb7e4314
     reviewed: 227f1c9404a955be715a8952f93aa64fd5d9cd258a91f6bbdbf5f4e2f17a36c8
     tests:
@@ -22473,6 +22815,537 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "an open page shows a counted request’s tokens within 2 seconds of the request’s end"
         body: 66300d59351220c6e9e5c636b55fbeebfaa74aa30b655feb72ed240e0efbd134
+  - node: 01a1646f-546c-7521-9643-bc13661fd11f
+    reviewed: 1c48f667a539f795fccf1276cd4ed62ca7302e21ce64521297cafdccd589406b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a dialog asks at most four blocks, in the order the submission holds them, with prompt, header and option details"
+        body: 87165411248f5add9059deb50f721d3351ec83ac7225d5ff34ea4b33c89f055b
+  - node: 01a1646f-546c-7521-9643-bc142d00420d
+    reviewed: 981c4fc97f6a9b90ebe85bc4f53a7931085c1cf13a7fcfdfa8bd911ca2e052c9
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
+        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a long question is asked over dialogs, three options and More options at a time"
+        body: 55dea1f53150e9001aac852c9124d4c1584becf033d42fcdad3e29b80c3380fd
+  - node: 01a1646f-546c-7521-9643-bc154cdb5120
+    reviewed: b6669ca92a2634ef300c66a5e3dd95ac82835f9dc71b4f94d5c7d7c75f003b61
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a dialog asks at most four blocks, in the order the submission holds them, with prompt, header and option details"
+        body: 87165411248f5add9059deb50f721d3351ec83ac7225d5ff34ea4b33c89f055b
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
+        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+  - node: 01a1646f-546c-7521-9643-bc1683ca634b
+    reviewed: e94640bf23c07eb4ce2280ae4b34d3ca3379f950d109b9cf424b1c87435e6922
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "an approval or a plan is asked by its title, with Approve and Reject, and the notes or words of a rejection are its reason"
+        body: 486c5974e8e6225671e94f09f28d8d81d487582cdb8ad06431c94c41c19efe26
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
+        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+  - node: 01a16475-7fbc-7732-a78c-bc4d52d9dd1b
+    reviewed: bfbc287a6afff299f7dff1d0881f5f97ffe817b348c3239ec2247ce3250c7243
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "an approval or a plan is asked by its title, with Approve and Reject, and the notes or words of a rejection are its reason"
+        body: 486c5974e8e6225671e94f09f28d8d81d487582cdb8ad06431c94c41c19efe26
+  - node: 01a1646f-546c-7521-9643-bc172b851ab7
+    reviewed: 0710cac42b5dc5893734d61ab74e0f20664cdfe9faf0e178440af5bcdf77f695
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a question with more than four options left shows the next three and More options, and four or fewer all of them"
+        body: 9e91bf21b7602cf0d07214537405dc8ece88e9fa2eaac82db51a0a4a548faf18
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a long question is asked over dialogs, three options and More options at a time"
+        body: 55dea1f53150e9001aac852c9124d4c1584becf033d42fcdad3e29b80c3380fd
+  - node: 01a16475-7fbc-7732-a78c-bc4eb44ec110
+    reviewed: 9bd3ed6d8e2f1b6fc2c4428df3f881799c9479f8cae8c8f23311c639ca38c613
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a question with more than four options left shows the next three and More options, and four or fewer all of them"
+        body: 9e91bf21b7602cf0d07214537405dc8ece88e9fa2eaac82db51a0a4a548faf18
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a long question is asked over dialogs, three options and More options at a time"
+        body: 55dea1f53150e9001aac852c9124d4c1584becf033d42fcdad3e29b80c3380fd
+  - node: 01a1646f-546c-7521-9643-bc18affd63b8
+    reviewed: d75e452d0e50249e2bec0c6e14f2e56ce9457fce81cb9a133c6ada904aecc88a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-dialog.test.tsx"
+        name: "Claude Code's dialog shows the page's address above what it asks, once a command has given it"
+        body: db27c6ad4a995f83adb33e6eb079561389e8fda9a666b7c1d1f055ef31bf7a9f
+  - node: 01a1646f-546c-7521-9643-bc19a036c764
+    reviewed: 2708abd8124b4d0a3d5550f6514b8c008a913afb3b41749db9c49e91e0fe7f98
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a dialog for a subagent's submission names the subagent"
+        body: 4e194d02f9811cfdac879bcbd518938f733956f1e636972494489e2d0bd8c6f8
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a dialog for a subagent's submission names the subagent"
+        body: b1bb9857c6d2d792b3e82b796631fa87124eae86175bf59fe740e99cd6e7cb54
+  - node: 01a1646f-546c-7521-9643-bc1c7ae1aae7
+    reviewed: dfc13277bafbe1705f4cc110a54d931346440d83396227cad941c96a751da92b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
+        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+  - node: 01a1646f-546c-7521-9643-bc1d8538d8ca
+    reviewed: 58fe53372442370af5babbc20807dfaed8dc4a3d8ef089a934484643839cdd6e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a question that takes more than one option, asked over two dialogs, records the options chosen in each"
+        body: 40e91c8da87a8ccc53793103a1d8b283e4875140c8fc53010f594d2a4cb97932
+  - node: 01a1646f-546c-7521-9643-bc1ebd608f91
+    reviewed: cda5f6783f0a88ca28d2ad409c9ad97453cb849ef41237d5e21a411c157a6929
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "an approval or a plan is asked by its title, with Approve and Reject, and the notes or words of a rejection are its reason"
+        body: 486c5974e8e6225671e94f09f28d8d81d487582cdb8ad06431c94c41c19efe26
+  - node: 01a1646f-546c-7521-9643-bc1fbb759d63
+    reviewed: 369711f217d00ba075f1d6df608a503d5bd04dbee4a2d806bc6b0e10abf35c81
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "an approval or a plan is asked by its title, with Approve and Reject, and the notes or words of a rejection are its reason"
+        body: 486c5974e8e6225671e94f09f28d8d81d487582cdb8ad06431c94c41c19efe26
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
+        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+  - node: 01a1646f-546c-7521-9643-bc20025a66a1
+    reviewed: 6b96dd9950dacc580dac1c2ee8286f18d6e319caf22313f6a096aaceca1a89ce
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "an approval or a plan is asked by its title, with Approve and Reject, and the notes or words of a rejection are its reason"
+        body: 486c5974e8e6225671e94f09f28d8d81d487582cdb8ad06431c94c41c19efe26
+  - node: 01a1646f-546c-7521-9643-bc2133f400f4
+    reviewed: 8dde8bd0fa4bb1953bb4bd3a8eb7453abcc486bf918a520641df22ddeb5adf5c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "yard_wait runs loft yard wait again after each pending, and gives what it ends with"
+        body: d1113415d35e301d6ff1ce27316aa92bb1441127eee014f404947a1547613b47
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
+        body: ce58a64d064f0a008b4a3d2242412f2b5884d7df960bcb9761feb22f97d54f88
+  - node: 01a1646f-546c-7521-9643-bc23947b37d2
+    reviewed: 780ebd179256b88069ebaee205b5b00a26d5a2ccb0591c97b3d5c66596483338
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the page's answer first closes the mod's own dialog, and nothing is recorded from it"
+        body: 0b54f23fb60b3e550891de60f63bcbae4ebb52088a638902d5c2f167ffe02841
+  - node: 01a1646f-546c-7521-9643-bc244499f9c2
+    reviewed: c340f85406079e1d09e9980f79507e1248b0f5e067cd952b263741b29d340d4f
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the page's answer first closes the mod's own dialog, and nothing is recorded from it"
+        body: 0b54f23fb60b3e550891de60f63bcbae4ebb52088a638902d5c2f167ffe02841
+  - node: 01a1646f-546c-7521-9643-bc26b95ceed1
+    reviewed: 09f64894b660ce9eeea1b40d9f82b91f06bdb94869d334e06284df5f9dd3531f
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a submission withdrawn while its dialog is open closes the dialog, records nothing and asks nothing more"
+        body: 9587e01cda8de180d113698eb543faf07b4736885ee77ff1397021223ab1b061
+  - node: 01a1646f-546c-7521-9643-bc290453d6cd
+    reviewed: abce2839d3b939929581815ccf8a3345d495174574ffc721b9543aaeef7c2084
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an interrupt while yard_wait waits ends the running wait, closes the dialog, records nothing and leaves the submission open"
+        body: 326db6ab8694ef3ce477a8c1e24c9d02cff57bc2c0802195db153468341bedc5
+  - node: 01a1646f-546c-7521-9643-bc2cb511d4cd
+    reviewed: b826ba601194509ae787bbe733dac8ba4b92afd78774f747e86891248b488230
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each question becomes a question block with its prompt, header, options and whether it takes more than one"
+        body: bdebe7f88cfc5743c9d137a32746679b30cc6068a3cf59dd673dff8ee2236d5d
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
+        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+  - node: 01a1646f-546c-7521-9643-bc2de11768e7
+    reviewed: c85b2da5ca8087fcdb96cb2a31c8f416f1ca6902ce4ba92dd0797d0c538311c5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "questions on a branch with no Yard Log open it, in a stage the mod opens, and Claude Code's dialog shows them as the agent wrote them"
+        body: 33859d0874f1c790aeeee379302ee417a4ad9bc1fb9032a453857f83ca04d0b7
+  - node: 01a1646f-546c-7521-9643-bc2e9fe9d605
+    reviewed: 828f80dfd9e0930d1e704ae72793d2acfdd57ce144ef2b246060db6b93cfab7e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an agent with no active stage has its questions in a stage the mod opens after the last unplanned stage"
+        body: d63574e0bacb8c2590fe4094652458bc8f5fda5b8700db10ec2eee6fb6ace3e8
+  - node: 01a1646f-546c-7521-9643-bc2fa3288035
+    reviewed: 9784341c841839cc98e936b71724443bc7f5e8347032a5031106995de32b42fb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an agent with no active stage has its questions in a stage the mod opens after the last unplanned stage"
+        body: d63574e0bacb8c2590fe4094652458bc8f5fda5b8700db10ec2eee6fb6ace3e8
+  - node: 01a1646f-546c-7521-9643-bc302b8f5989
+    reviewed: 499cc99c881347cbe053696cc184833f0f4495659fa515c286d7f0ee4dc3dec1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each question becomes a question block with its prompt, header, options and whether it takes more than one"
+        body: bdebe7f88cfc5743c9d137a32746679b30cc6068a3cf59dd673dff8ee2236d5d
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a question that takes one option recommends only its first option marked recommended, and drops the words from every label"
+        body: f5873ba66749c032a8f238e937c7f6085322a5849cdb75e4c0c2250ca40fed71
+  - node: 01a1646f-546c-7521-9643-bc31293f4642
+    reviewed: 94dfa6eedf96f2147f08a88f59ae980ba31cdc5cf0756bc0c19e8d23f584fe7e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a question that takes one option recommends only its first option marked recommended, and drops the words from every label"
+        body: f5873ba66749c032a8f238e937c7f6085322a5849cdb75e4c0c2250ca40fed71
+  - node: 01a1646f-546c-7521-9643-bc32869977da
+    reviewed: dd83358cb0a92f3a9af5eca5d91282d6bcc5a33a0c558334124e069e9c92968d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a question that takes more than one option recommends each option marked recommended"
+        body: e9224fa05db901ffb56be6d96dc644728a62a900917470a51576845e2a5cb4f5
+  - node: 01a1646f-546c-7521-9643-bc33d336e4c2
+    reviewed: d05cf6b2070b528a66a7e92c0072d5305f47ff83f423850453e705012aae49a3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "questions on a branch with no Yard Log open it, in a stage the mod opens, and Claude Code's dialog shows them as the agent wrote them"
+        body: 33859d0874f1c790aeeee379302ee417a4ad9bc1fb9032a453857f83ca04d0b7
+  - node: 01a1646f-546c-7521-9643-bc34a2faaf4f
+    reviewed: 124dbb838e113e52804209184cf920d6adef8238022b91a715c0cae9071373f3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-dialog.test.tsx"
+        name: "Claude Code's dialog shows the page's address above what it asks, once a command has given it"
+        body: db27c6ad4a995f83adb33e6eb079561389e8fda9a666b7c1d1f055ef31bf7a9f
+  - node: 01a1646f-546c-7521-9643-bc3699faece5
+    reviewed: fe973e59e680f8ebfdcc7d917b7f7f1ec06fd84597d357b0d4d6b67b77920c30
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an answer given first in the terminal is recorded in Yard Log with the channel of the terminal, and the wait ends"
+        body: 35eb43560905982c37b8a42449e630786541f81e5f1da350434285f0e8078e3e
+  - node: 01a1646f-546c-7521-9643-bc370109576b
+    reviewed: c4f6e7b386f307745d2f5640200d8de4dc628fdabf5ffa2cfa97e3babf721593
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "questions on a branch with no Yard Log open it, in a stage the mod opens, and Claude Code's dialog shows them as the agent wrote them"
+        body: 33859d0874f1c790aeeee379302ee417a4ad9bc1fb9032a453857f83ca04d0b7
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "answers given in the terminal are recorded by their labels without the recommendation, and anything else as the words typed"
+        body: 879391011bdf56560e7e6e5e441f8baead43cbc73a1fedb315d68b653af7ddb0
+  - node: 01a1646f-546c-7521-9643-bc38edb924df
+    reviewed: cff2a7bddbe0738ba3cb6a718160266aedb2a225683d89ef989ff91c27901f03
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an answer given first in the terminal is recorded in Yard Log with the channel of the terminal, and the wait ends"
+        body: 35eb43560905982c37b8a42449e630786541f81e5f1da350434285f0e8078e3e
+  - node: 01a1646f-546c-7521-9643-bc3a3446db62
+    reviewed: a4d16110b07d264400dcf38d3ec531f173bd2c282054114d34163fde68856fea
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
+        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+  - node: 01a1646f-546c-7521-9643-bc3b82463715
+    reviewed: ba8190ead3ea2194bfc2a175a4e5a464980dbca7ba6c5759ed768a56e215eda8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "answers given on the page reach the agent by the labels it wrote, with words as written and the notes"
+        body: b9e6a81b93a766ad57c0b58f7c89e56bc692ac63dff14d6cc6657a3cbf6160b0
+  - node: 01a1646f-546c-7521-9643-bc3c7d28f8ad
+    reviewed: a6dabfc0b7cf2e15d79c73f81e2f88357ea8c06400c97042301af3c3a4cf369e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
+        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "answers given on the page reach the agent by the labels it wrote, with words as written and the notes"
+        body: b9e6a81b93a766ad57c0b58f7c89e56bc692ac63dff14d6cc6657a3cbf6160b0
+  - node: 01a1646f-546c-7521-9643-bc3dce07242b
+    reviewed: a3675532e5eb32c9bfec599833a434c3ee9516cf03e8f93267c8e60a7d590637
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
+        body: 4bbcb343a3e13f7860c91701eaef928ac73b59d98a883dbd1508b3809cd012cb
+  - node: 01a1646f-546c-7521-9643-bc3fc17db8f8
+    reviewed: 85aaa4f2b72e7f54af2472ddc5c2ac963b46fca802e313626708a16a635c26f4
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "where Yard Log takes no write, as on a detached HEAD, the questions are asked in the terminal alone"
+        body: 1fadaa4006da5ff357af8c5cd4c38c9b39b31a1767f17f959ac8d656878fb123
+  - node: 01a1646f-546c-7521-9643-bc408ddf25de
+    reviewed: 0d50a996e218f092a93a052d0d23cd26d72c37ef4c0c6274f00a15b1cdb178a8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a refused write leaves the questions to the terminal"
+        body: adb2bc967f9306b544473bcdb91ea439d880b16b15598bc0dca70360dabbfe40
+  - node: 01a1646f-546c-7521-9643-bc43f8c8af27
+    reviewed: 6f4f19b278769c4c1b003ee471c0321a9d8b593af4e700ceb0e173e992b5e898
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a plan is titled by its first heading, or by its file where it has none, and its file names its block"
+        body: 30adc5e61ea5f7ec9bee066f3dccb4d67843d699218185fb2fe575e4a4f6b275
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded"
+        body: ecb5d48eff184cb5945748efd201c9129c4fc53f40061aea741141d4f40eb285
+  - node: 01a1646f-546c-7521-9643-bc440f533210
+    reviewed: 9c6f974cbe3f12c3db18c1bb5d783cf8e1e48f06430ec9c6cccffefe2da06637
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved"
+        body: 51f27a46142711a8614c7da3d9c56e8d681164ca1fc8be865fbc82c5ae545c51
+  - node: 01a1646f-546c-7521-9643-bc45e5810ca4
+    reviewed: 8762c42ea7bfb78d57376c4855ce4e36244e386c1bc65b4708d132cbb92b0707
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded"
+        body: ecb5d48eff184cb5945748efd201c9129c4fc53f40061aea741141d4f40eb285
+  - node: 01a1646f-546c-7521-9643-bc46d0e7e92a
+    reviewed: 9d3545f423cc10e21b4a1d576890b44b169acc110a93d21271c5fec243fcf724
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved"
+        body: 51f27a46142711a8614c7da3d9c56e8d681164ca1fc8be865fbc82c5ae545c51
+  - node: 01a1646f-546c-7521-9643-bc489d459a81
+    reviewed: cd10eb622abb012278e634bba0133471f490c812c5b556e72b0b8c69e848a3b8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved"
+        body: 51f27a46142711a8614c7da3d9c56e8d681164ca1fc8be865fbc82c5ae545c51
+  - node: 01a1646f-546c-7521-9643-bc49188fb63b
+    reviewed: 5f1143c45834704ce302e3e2fd2be76139d1bb5a45154278aedba43c7ea95a1b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded"
+        body: ecb5d48eff184cb5945748efd201c9129c4fc53f40061aea741141d4f40eb285
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "the feedback typed with a rejection is read from what Claude Code gives the agent"
+        body: 7bfec9029488fd8e8083d3d35f5fc9e4dddc6b182f0e47140a3828d82dec63d6
+  - node: 01a1646f-546c-7521-9643-bc4b064c0cda
+    reviewed: 4cc6d766b76e707ef2f023dcecff83a982f8899eb5a1a563f29c6004b69a0c3c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
+        body: 3b872a65d12999bf95ef60128541c9b6322490b85754d46bde0a589c2dff8110
+  - node: 01a1646f-546c-7521-9643-bc4c62a6d12f
+    reviewed: d517dfdbda65bb2d5a0a85d743ebc1b44d26f3eb68eb25b664658244a48ab4a6
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan rejected on the page first denies the plan with the reason"
+        body: 116bea940816d895d18067b5c21cf6cfa1b40c6b3a12e4c7783734ebb295b768
+  - node: 01a1646f-546c-7521-9643-bc4d46ffa3da
+    reviewed: c3a8bbbba28994fbd5f60544a0af31bac594c244efa63146ec824f54680f0cc0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
+        body: 3b872a65d12999bf95ef60128541c9b6322490b85754d46bde0a589c2dff8110
+  - node: 01a1646f-546c-7521-9643-bc54b796807b
+    reviewed: 1b3c07cd57e78f0b255159e134166cf8442cc9148549d5330f83d428cb40c01e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a task's block id is made of the task's id and its agent, and its states follow the task's"
+        body: 357ccb7c70257245750d721961757062a905cbbf0919d5630f04a48a597352cd
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
+        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+  - node: 01a1646f-546c-7521-9643-bc550810c75a
+    reviewed: dbd2b44aee6add17d78b38ca1f6e92a0e695bc5a65554ace87700c251e04ff1a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
+        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+  - node: 01a1646f-546c-7521-9643-bc56c4873439
+    reviewed: d413264a68c3dfd55e9beb5deb8f56ccffbf19e369cc89f1db52e8092609ea90
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "an agent with no active stage has no task mirrored, and a failed task call mirrors nothing"
+        body: c182beec977ba4e633753c47fbca43811571b9edfde5b2cc6d9892adfeefc84d
+  - node: 01a1646f-546c-7521-9643-bc582c1c94a2
+    reviewed: 6efd88e77be5f09b699fb279d59ffddc3979f4e82c96752865f4850d8eddcbbe
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a task's block id is made of the task's id and its agent, and its states follow the task's"
+        body: 357ccb7c70257245750d721961757062a905cbbf0919d5630f04a48a597352cd
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
+        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+  - node: 01a1646f-546c-7521-9643-bc59de3d65ed
+    reviewed: 72084d4e53e62b34f39706430a192d33dac96b193861c4ffc73f59f05bbeda66
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
+        body: c67d4850253ce17d7d8c9abffba87cb78ce202db89c91d3bfd424ba4fba335de
+  - node: 01a1646f-546c-7521-9643-bc648ffcbb12
+    reviewed: e657ae2eedeb6d2fe2d49f0520ec25d53ce556237ca193242826b68535ca3e4c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "the context holds at most 2,000 characters and counts what it leaves out"
+        body: 039c20cc026bc464ad8e1db5b09ddba1b4776a1e842a7129f8f65cc170a73d0b
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the session starts with the context of its branch, from one read in its own name"
+        body: d84aea05e124865478b1b68e2144e50004c2fde7ff90249ff8d52ae274835f11
+  - node: 01a1646f-546c-7521-9643-bc652c97d270
+    reviewed: 6c3058de595e0fc50b301f0bbe28ef73f0d071bf1a2619f48d4b14e0eb996cda
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a branch with no Yard Log is given only the page and that it has none yet"
+        body: 25af21ee69823f3cf50720de63c768782cd376e291a750c8d717f0a1fc6da1a0
+  - node: 01a1646f-546c-7521-9643-bc668f484c8e
+    reviewed: 5569a32fe07c9c59504335a6604a6e87e43612e0ae29bc5e09400339b8bb94df
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a closed Yard Log is said to be closed, and an ignored .yard/ to stay out of the commits"
+        body: 93d3b9ad5770b24248dae9986eba4cd62d616b0bcd5ba2abbb55307c2a1c60c1
+  - node: 01a1646f-546c-7521-9643-bc673dc31f07
+    reviewed: 4e39e45ae53b70269ff77217900a20478342269e9ed821b5c166dad447a595ab
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a closed Yard Log is said to be closed, and an ignored .yard/ to stay out of the commits"
+        body: 93d3b9ad5770b24248dae9986eba4cd62d616b0bcd5ba2abbb55307c2a1c60c1
+  - node: 01a1646f-546c-7521-9643-bc687ad65bab
+    reviewed: bd13bbd1931d94afd43b3b13acbd9d5088c5d49dae9d35677faf4652a246f2cc
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the context is given again after /resume and /branch, and a session a new process starts names no session it continues"
+        body: fd3dbf46096bd573c1d744574a193566c686081c674232c41e9752a12a88d11d
+  - node: 01a1647c-e680-7753-bf17-f177bc991450
+    reviewed: 35460d9e89d8fc90aa4c9d49d392d9a87b97a9471484e4af166494372d18d2da
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read"
+        body: b2257aa349af519711a17711de4be57cdd7f28745680f2c01237a8dead203020
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "after /clear the session is given its context again, and its first command names the session it continues"
+        body: dc5c433e6315acad8a426286d5e13c0446e3e0282aef50d5742334e7aab6dc1f
+  - node: 01a1647c-e680-7753-bf17-f1789d014daa
+    reviewed: 4089d9674a1f5e80f5c9336b639420894c9938466f393125d4a1a74533968356
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read"
+        body: b2257aa349af519711a17711de4be57cdd7f28745680f2c01237a8dead203020
+  - node: 01a1646f-546c-7521-9643-bc79310dc188
+    reviewed: 6b78279cd801a6199015b6f861a145645ff5b94d9055d33cde72098e7a1ad48d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "with a loftCommand that cannot be run, the agent asks and plans in Claude Code alone"
+        body: ddc2c2bfa35c82859d8c909aeb484aee2fb5ee89660fa6b42f0ad66b483bbfc8
+  - node: 01a1646f-546c-7521-9643-bc7a303448bb
+    reviewed: 07e89a2c70e0acc82b88af44bfd334e439288237e749f304c18e39a667455fca
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loftCommand that cannot be run leaves Yard Client off and names the setting"
+        body: dce1f0626d6a730807981362f3b50bc9a268d4e90e3ee88d0434f4a3934dd9fc
+  - node: 01a1646f-546c-7521-9643-bc7bcc79c152
+    reviewed: bce8d11855ae1f5268991726911154f25839be29ff6c35fb38902d127f812093
+    tests:
+      - file: "plugins/claude/loft/tests/pane.test.tsx"
+        name: "a loftCommand that cannot be run shows a notice naming the setting and no check"
+        body: ff38b04e057aff4589f1830a05322a5c54f54028def2e540fcc0a027101ced38
+  - node: 01a1646f-546c-7521-9643-bca80176474a
+    reviewed: 913de329f798b46a0229348fddc3516d31e1de1282021c565a383121f1071beb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start"
+        body: 7a11c06a55dfb881d21494bfa855cde41e6e7df92f93146679ab191879e4c56e
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tool gives the command's document to the agent, and a refusal's message as its error"
+        body: f51b6fb18f9f1f5aa81079d8ced6cefab77c65133b90c1aa0bcb6be2f5eb0303
+  - node: 01a1646f-546c-7521-9643-bca9a47ace19
+    reviewed: 40f63abfd82ca58f0c495d277dab6ecd113e01edec28ac82d7f24cf3711be63b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+  - node: 01a1646f-546c-7521-9643-bcaa2981e408
+    reviewed: 48568ba6401cdd5202b8b050189fe6e74d613d02357ead89c19b781cebf1a194
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
+        body: 3ee9e32b1cf10603c9ed21d402f72aebbfe158d022575c93bf553bd112be3edb
+  - node: 01a1646f-546c-7521-9643-bcab7a45d9c4
+    reviewed: 4039ec446447fa96de95d9c49a6c337428dd58a176edf425a8cd36e640b396df
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
+        body: 3ee9e32b1cf10603c9ed21d402f72aebbfe158d022575c93bf553bd112be3edb
+  - node: 01a1646f-546c-7521-9643-bcac49382b64
+    reviewed: e554d5e40f8a17d0caaaa47dffd04db2963fcc8ee8629ebdc163175c8cfe3733
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
+        body: 3ee9e32b1cf10603c9ed21d402f72aebbfe158d022575c93bf553bd112be3edb
+  - node: 01a1646f-546c-7521-9643-bcad38f2c75b
+    reviewed: c1261dd8a60f9d3f7d9139f7ddf5783da41a8c97dd17775ded854a941b1afc87
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+  - node: 01a1647b-208c-755d-8b1a-5885062d9589
+    reviewed: 520b7697d6e2e04ef9fc30a10a4c3394a4141f3c712d5dcd70299789f8aa5fe0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "an input that does not match its schema names the field at fault"
+        body: d9f321cf2c817b3baa734329f18c358c2702ddf4fa3890310e83b5fd44624477
+  - node: 01a1646f-546c-7521-9643-bcae4532ed4a
+    reviewed: ab182d0c9d3ac57445c7812378ba5634774aaf849287fff019586b5b88cb4a27
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
+        body: 3ee9e32b1cf10603c9ed21d402f72aebbfe158d022575c93bf553bd112be3edb
+  - node: 01a1646f-546c-7521-9643-bcafd8ae1db1
+    reviewed: 270b512e07f9a977031bff696c187bc24eb6883c62129cde6fc54aa0e19a4b65
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start"
+        body: 7a11c06a55dfb881d21494bfa855cde41e6e7df92f93146679ab191879e4c56e
+  - node: 01a1646f-546c-7521-9643-bcb14b1743cb
+    reviewed: bc7c38ee678dd0ca411b77c6e8bf6f5a0818fdc820570b1a75e5d49312ccc5ca
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "each tool runs its command in the session directory with the base branch and the page server port"
+        body: 424ea4b1b8579454fd01eea1416dc29b7373b2ae8c1675ba60d4b57457e33dbf
+  - node: 01a1646f-546c-7521-9643-bcb304796db1
+    reviewed: 395a72e9740f3192d1e1a57da8f82066158a1a089b9554aad7b95c214f9c993a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tool gives the command's document to the agent, and a refusal's message as its error"
+        body: f51b6fb18f9f1f5aa81079d8ced6cefab77c65133b90c1aa0bcb6be2f5eb0303
+  - node: 01a1646f-546c-7521-9643-bcb446be66f4
+    reviewed: 868d7929383353e5391c49e71f98763e03fc25c4a1ca2279fc41fce89c0f0b05
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tool gives the command's document to the agent, and a refusal's message as its error"
+        body: f51b6fb18f9f1f5aa81079d8ced6cefab77c65133b90c1aa0bcb6be2f5eb0303
+  - node: 01a1646f-546d-7042-befd-ea2f02c68117
+    reviewed: 347dcabee8c8f0cacbcd95f8faf60eb21ee016d332dc6cae975f10265ba3f18d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tool gives the command's document to the agent, and a refusal's message as its error"
+        body: f51b6fb18f9f1f5aa81079d8ced6cefab77c65133b90c1aa0bcb6be2f5eb0303
+  - node: 01a1646f-546d-7042-befd-ea305897268e
+    reviewed: 1c497d2472bb0abcc48e0f9cc24d0d41c8c1cb391a0a3fbadbb8e29396920f71
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tool gives the command's document to the agent, and a refusal's message as its error"
+        body: f51b6fb18f9f1f5aa81079d8ced6cefab77c65133b90c1aa0bcb6be2f5eb0303
+  - node: 01a1646f-546d-7042-befd-ea32b43b5531
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the main agent's call names no agent, and an input at fault runs no command"
+        body: ab5474ef2549731a0a7a641233c523787e5bb3f97d61f476f5c3262ad0b363cf
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "an input that does not match its schema names the field at fault"
+        body: d9f321cf2c817b3baa734329f18c358c2702ddf4fa3890310e83b5fd44624477
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: 9bfb0c16bc1c637e10f46372da282715472bc706a8162fa7b4ec52a2323a6bc2
     tests:
@@ -22767,6 +23640,12 @@ links:
       - file: "plugins/claude/loft/tests/pane.test.tsx"
         name: "the pane runs no command but loft, each with --format json, and reads and writes no file"
         body: 4c0f0c246fb4b70e8337b8a2463c4419a744768e715ee49cee2c5af63f88f402
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "every command Yard Client runs is loftCommand with --format json, quietly, and no other program"
+        body: 828409f5da8b5f3dd8baa467c0896e0b5f3d2a2b0fdaaec379b78d4168f4e702
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "with Yard Client off, the notice asks loftCommand alone for its version"
+        body: 12b95fe07054b5cbd7d66d8945ef9375e204df6eec36533801f20cfd2885c364
   - node: 01a1649f-62ea-7225-80e1-a3d5bf4de21c
     reviewed: eb4056dd9ec58a44693ce237cffdfb6f09f9c4ee4d3bad8a6e2208955d856170
     tests:
