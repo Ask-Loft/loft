@@ -630,9 +630,25 @@ body:has(.modal[open]) { overflow: hidden; }
 .lock dt { color: var(--muted); }
 .lock dd { margin: 0; }
 .after-merge { color: var(--signal); font-weight: 600; }
-.diagram { overflow: auto; background: var(--surface); border: 1px solid var(--line); padding: 10px; min-height: 40px; }
+.diagram { position: relative; overflow: auto; background: var(--surface); border: 1px solid var(--line); padding: 10px; min-height: 40px; }
 .diagram svg { max-width: 100%; height: auto; }
 .diagram-error { color: var(--danger); font-size: 13px; }
+.diagram-expand { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; box-shadow: 2px 2px 0 var(--shadow); }
+.diagram-expand:hover { background: var(--surface-2); }
+
+/* An expanded diagram: the modal's body is its stage, where it zooms and pans, never scrolls. */
+.modal--diagram .modal-body { position: relative; display: block; padding: 0; overflow: hidden; }
+.zoom { position: absolute; inset: 0; }
+.zoom-stage { position: absolute; inset: 0; overflow: hidden; background: var(--surface); touch-action: none; overscroll-behavior: contain; cursor: grab; }
+.zoom-stage.is-dragging { cursor: grabbing; }
+.zoom-stage:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
+.zoom-content { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+.zoom-stage:not(.is-fitted) .zoom-content { visibility: hidden; }
+.zoom-content svg { display: block; width: 100%; height: auto; max-width: none !important; }
+.zoom-tools { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--ink); box-shadow: 2px 2px 0 var(--shadow); }
+.zoom-button { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 16px; cursor: pointer; }
+.zoom-button:hover { background: var(--surface-2); }
+.zoom-percent { min-width: 52px; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink); }
 .group-picker { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .picker-words { color: var(--muted); font-size: 13px; }
 .group-button { border: 1px solid var(--ink); background: var(--surface); padding: 2px 10px; font-size: 13px; cursor: pointer; color: var(--ink); }

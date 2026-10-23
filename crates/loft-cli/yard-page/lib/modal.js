@@ -7,10 +7,14 @@ import { h, replace } from './dom.js';
 
 /**
  * @typedef {import('./dom.js').Child} Child
- * @typedef {{ title: string, content: Child | Child[], onClose?: () => void }} Shown
+ * @typedef {{ title: string, content: Child | Child[], onClose?: () => void, class?: string,
+ *   refocus?: () => HTMLElement | null }} Shown
+ * `class` is a class of the dialog besides `modal`; `refocus` finds what takes the focus back
+ * when what held it before the modal opened has left the page.
  */
 
-/** @type {Map<string, { dialog: HTMLDialogElement, opener: Element | null, onClose?: () => void }>} */
+/** @type {Map<string, { dialog: HTMLDialogElement, opener: Element | null, onClose?: () => void,
+ *   refocus?: () => HTMLElement | null }>} */
 const modals = new Map();
 
 /** @param {string} name */
@@ -69,6 +73,8 @@ function draw(dialog, name, shown) {
 export function show(name, shown) {
   const entry = dialogOf(name);
   entry.onClose = shown.onClose;
+  entry.refocus = shown.refocus;
+  entry.dialog.className = ['modal', shown.class].filter(Boolean).join(' ');
   if (entry.dialog.open) {
     update(name, shown);
     return entry.dialog;
@@ -144,15 +150,16 @@ export function body(name) {
 }
 
 /**
- * Once the modal `name` closed: the focus goes back to what held it before it opened, and whoever
- * opened it hears of it.
+ * Once the modal `name` closed: the focus goes back to what held it before it opened, or where
+ * that has left the page to what its opener finds in its place, and whoever opened it hears of it.
  * @param {string} name
  */
 function closed(name) {
   const entry = modals.get(name);
   if (!entry) return;
-  const opener = /** @type {HTMLElement | null} */ (entry.opener);
+  const held = /** @type {HTMLElement | null} */ (entry.opener);
   entry.opener = null;
+  const opener = held?.isConnected ? held : entry.refocus?.();
   if (opener?.isConnected && typeof opener.focus === 'function') opener.focus();
   entry.onClose?.();
 }

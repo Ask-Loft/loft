@@ -115,6 +115,124 @@ test('when the browser changes its scheme, the open page and each diagram it dre
   expect(await page.evaluate(() => /** @type {any} */ (window).unreloaded)).toBe(true);
 });
 
+/** The modal of an expanded diagram. */
+function diagramModal(page) {
+  return page.locator('dialog.modal[data-modal="diagram"]');
+}
+
+/** Expands the diagram of the block `drawn`, and gives the stage it zooms and pans on. */
+async function expandDiagram(page) {
+  await page.goto(address());
+  await closeWaiting(page);
+  const drawn = page.locator('#block-drawn');
+  await expect(drawn.locator('.diagram svg')).toBeVisible({ timeout: 10_000 });
+  await drawn.getByRole('button', { name: 'Expand the diagram' }).click();
+  const stage = diagramModal(page).locator('.zoom-stage');
+  await expect(stage).toHaveClass(/is-fitted/);
+  await expect(stage.locator('svg')).toBeVisible();
+  return stage;
+}
+
+/** The box of the expanded diagram on the screen. */
+async function diagramOnScreen(page) {
+  return /** @type {{ x: number, y: number, width: number, height: number }} */ (await diagramModal(page).locator('.zoom-content svg').boundingBox());
+}
+
+/** The zoom the modal shows, as a number of percent. */
+async function zoomShown(page) {
+  return Number((await diagramModal(page).locator('.zoom-percent').textContent())?.replace('%', ''));
+}
+
+test('expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole', async ({ page }) => {
+  const stage = await expandDiagram(page);
+  const modal = diagramModal(page);
+  await expect(modal.locator('.modal-head h2')).toHaveText('A diagram');
+  const box = /** @type {{ x: number, y: number, width: number, height: number }} */ (await modal.boundingBox());
+  const viewport = /** @type {{ width: number, height: number }} */ (page.viewportSize());
+  expect(Math.round(box.x)).toBe(24);
+  expect(Math.round(box.y)).toBe(24);
+  expect(Math.round(viewport.width - box.x - box.width)).toBe(24);
+  expect(Math.round(viewport.height - box.y - box.height)).toBe(24);
+  await expect(stage).toBeFocused();
+  await expect
+    .poll(async () => {
+      const room = /** @type {{ x: number, y: number, width: number, height: number }} */ (await stage.boundingBox());
+      const diagram = await diagramOnScreen(page);
+      const inside = diagram.x >= room.x - 0.5 && diagram.y >= room.y - 0.5;
+      const within = diagram.x + diagram.width <= room.x + room.width + 0.5 && diagram.y + diagram.height <= room.y + room.height + 0.5;
+      const centred = Math.abs(diagram.x - room.x - (room.x + room.width - diagram.x - diagram.width)) < 1;
+      return inside && within && centred;
+    })
+    .toBe(true);
+});
+
+test('a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls', async ({ page }) => {
+  const stage = await expandDiagram(page);
+  await expect.poll(() => zoomShown(page)).toBeGreaterThan(0);
+  const before = await diagramOnScreen(page);
+  const pointer = { x: before.x + before.width * 0.3, y: before.y + before.height * 0.6 };
+  const scrolled = await page.evaluate(() => window.scrollY);
+  const fitted = await zoomShown(page);
+  await page.mouse.move(pointer.x, pointer.y);
+  // A pinch on a trackpad reaches Chromium as the wheel with Ctrl held.
+  await page.keyboard.down('Control');
+  await page.mouse.wheel(0, -100);
+  await page.keyboard.up('Control');
+  await expect.poll(() => zoomShown(page)).toBeGreaterThan(fitted);
+  const zoomed = await diagramOnScreen(page);
+  expect(zoomed.width).toBeGreaterThan(before.width);
+  expect((pointer.x - zoomed.x) / zoomed.width).toBeCloseTo((pointer.x - before.x) / before.width, 2);
+  expect((pointer.y - zoomed.y) / zoomed.height).toBeCloseTo((pointer.y - before.y) / before.height, 2);
+
+  await page.mouse.wheel(40, 60);
+  await expect.poll(async () => (await diagramOnScreen(page)).x).toBeCloseTo(zoomed.x - 40, 0);
+  const wheeled = await diagramOnScreen(page);
+  expect(wheeled.y).toBeCloseTo(zoomed.y - 60, 0);
+  expect(wheeled.width).toBeCloseTo(zoomed.width, 3);
+
+  await page.mouse.move(pointer.x, pointer.y);
+  await page.mouse.down();
+  await page.mouse.move(pointer.x + 50, pointer.y + 30, { steps: 5 });
+  await page.mouse.up();
+  const dragged = await diagramOnScreen(page);
+  expect(dragged.x).toBeCloseTo(wheeled.x + 50, 0);
+  expect(dragged.y).toBeCloseTo(wheeled.y + 30, 0);
+
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+  expect(await diagramModal(page).locator('.modal-body').evaluate((body) => body.scrollTop)).toBe(0);
+  await expect(stage).toBeVisible();
+});
+
+test('the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button', async ({ page }) => {
+  const stage = await expandDiagram(page);
+  await expect.poll(() => zoomShown(page)).toBeGreaterThan(0);
+  const fitted = await zoomShown(page);
+  await stage.press('+');
+  await expect.poll(() => zoomShown(page)).toBeGreaterThan(fitted);
+  await stage.press('0');
+  await expect.poll(() => zoomShown(page)).toBe(fitted);
+  await stage.press('-');
+  await expect.poll(() => zoomShown(page)).toBeLessThan(fitted);
+  const before = await diagramOnScreen(page);
+  await stage.press('ArrowLeft');
+  await expect.poll(async () => (await diagramOnScreen(page)).x).toBeGreaterThan(before.x);
+  await stage.press('ArrowUp');
+  await expect.poll(async () => (await diagramOnScreen(page)).y).toBeGreaterThan(before.y);
+
+  const modal = diagramModal(page);
+  await modal.getByRole('button', { name: 'Fit the whole diagram' }).click();
+  await expect.poll(() => zoomShown(page)).toBe(fitted);
+  await modal.getByRole('button', { name: 'Zoom in' }).click();
+  await expect.poll(() => zoomShown(page)).toBeGreaterThan(fitted);
+  await modal.getByRole('button', { name: 'Zoom out' }).click();
+  await modal.getByRole('button', { name: 'Zoom out' }).click();
+  await expect.poll(() => zoomShown(page)).toBeLessThan(fitted);
+
+  await stage.press('Escape');
+  await expect(modal).toBeHidden();
+  await expect(page.locator('#block-drawn').getByRole('button', { name: 'Expand the diagram' })).toBeFocused();
+});
+
 test('a block that an agent writes shows within 2 seconds of the write', async ({ page }) => {
   await page.goto(address());
   await expect(page.locator('#log-title')).toBeVisible();

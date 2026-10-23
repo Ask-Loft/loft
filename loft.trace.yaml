@@ -23010,6 +23010,159 @@ links:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "a_port_another_program_holds_exits_1_naming_the_port"
         body: e3c750ce11589b48ea08f29b8e7ec823a0c40ccd11b8584d88461b2c98f18e63
+  - node: 01a1695a-dd72-7090-817b-abf748b2e193
+    reviewed: f92ff445e7c0fe78465b1c0929be5b06b5ca6c4f0cb6d7e22ff69569ed9b9ea6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it"
+        body: 1381a475aadc2f6f0c73c2448b3d6bdb2f544e9792126e7b66b7ea0ab2134fce
+  - node: 01a1695a-dd72-7090-817b-abf896e58a12
+    reviewed: fc4c750f436071b62e15c4b8212987c72757c013ec5f4591a5f2e8bc483c70be
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "each spec-change diagram shows the button that expands it"
+        body: 751c6602d154e4daf46269b3c4a1bdec72a91010b8eaa1582979250debb1d405
+  - node: 01a1695a-dd72-7090-817b-abf9704f06b2
+    reviewed: c2fb4e754123efc255f4a8f199edc5a46f5f71f00bd712d6281ae253f9eb32a0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a diagram that could not be drawn shows no button to expand it"
+        body: dd4afe4049f745ea39360353255fd456af403f9d8e09cae037bd1cc039c68c3e
+  - node: 01a1695a-dd72-7090-817b-abfa7b7e630c
+    reviewed: 20a0e07935dbea5f0a95c1472b23083f2398201ff6f1be8e0c35731dd2f795be
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it"
+        body: 1381a475aadc2f6f0c73c2448b3d6bdb2f544e9792126e7b66b7ea0ab2134fce
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-abfcdbb64f36
+    reviewed: e4257a4592700422866e437c8311dfd387e9c9f84ec7bd2a62b1d03f27d19ad5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "expanding a diagram opens it in the page’s modal, named by its block, with no button of its own"
+        body: 67368b85cdf13027613b8e7dbfe4dc8c436f86e2ba704f013c7772a8be894a57
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
+        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+  - node: 01a1695a-dd72-7090-817b-abfdbe25498a
+    reviewed: 98986df78a00939d2f0a547432cc77c7c3576f360b429beddacacd1a726b5add
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
+        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the expanded diagram shows only once it is fitted to the modal"
+        body: a542f40bfe0bc0ba5c60751b65a55eb3a93dec57d47b92381553cd3058e4dedd
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "fitting shows the whole diagram in the stage, centred in it"
+        body: 9356bf8bb482bbddbfba238ff2d88b5d3185d6aceaf1a4961e99134aee5824f7
+  - node: 01a1695a-dd72-7090-817b-abfe03d07189
+    reviewed: 12ebbbcfcce50452c92da2ffe226f67687e9ec370bc3d354ec9e87f07d2dbb45
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "expanding a diagram opens it in the page’s modal, named by its block, with no button of its own"
+        body: 67368b85cdf13027613b8e7dbfe4dc8c436f86e2ba704f013c7772a8be894a57
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
+        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+  - node: 01a1695a-dd72-7090-817b-abff8766d1fc
+    reviewed: 629d467f2c3c3ba294a9803bbca9ba3a93fba1925570a547372c172f9e6df3f0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the expanded spec-change diagram is the one the page drew, with the Feature Group the person opened"
+        body: 6ed1995902ff3cccfabdc5fb80f1bfff2b8dea6951d08d932f7532ee44cfa5a8
+  - node: 01a1695a-dd72-7090-817b-ac0012610770
+    reviewed: ccfa2af441ba4572c2cf2dc760919daafd0cf4d4747ea10e9c56ba801ad7ced5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "closing the expanded diagram gives the focus back to the button that expanded it"
+        body: eddc43791a2b5b6e070815dc08e5cb3c21f9816d059ca76a057d6768efcc78c0
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "closing the expanded diagram gives the focus back to its button, even after the page drew the block again"
+        body: e0d65fbfe1e3d15d07fc3021ed6a3378bf3dc435d93766d4f964d0553bd25f37
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-ac026a641efc
+    reviewed: 018a70ebcecfec78c487b1ec93c7998776198aafc3d5ffd2944686c164bea4c6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "zooming keeps the point under the pointer over the same point of the diagram"
+        body: 33bff3f59efd4ee8602502998eac1ea4ac949050b9339908589ed308e187c92b
+  - node: 01a1695a-dd72-7090-817b-ac03c8863b7a
+    reviewed: ef7e316c9a97b6047ccbf8ee6dbaeb1358f3c70628399df66b74480b3c2d8940
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the wheel with Ctrl or ⌘ held zooms, the wheel alone pans, and neither scrolls the modal or the page"
+        body: 4a0a3c2e6c9c55a7531c64394c1e3ba005f964f348c7c91951f1669312615981
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+  - node: 01a1695a-dd72-7090-817b-ac040919d3d1
+    reviewed: ba17081bb5ed035a938781e153cc7bd10cf37e78235558db0d4c90fe7a4a0e09
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the wheel with Ctrl or ⌘ held zooms, the wheel alone pans, and neither scrolls the modal or the page"
+        body: 4a0a3c2e6c9c55a7531c64394c1e3ba005f964f348c7c91951f1669312615981
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "panning moves the diagram across the stage at the same zoom"
+        body: d85106c65ed7bc8b2dfcf8c40941798a9e20ef3edcf119d74ffbdbb762b622e3
+  - node: 01a1695a-dd72-7090-817b-ac05c9382c0b
+    reviewed: a44d03f9ed783562b125d37289c593e870828b00224d4da6d8129ee7bff065a2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+  - node: 01a1695a-dd72-7090-817b-ac06c2e927c9
+    reviewed: 17a80b5f4c2c61261145a8e95003f841128107c2a7600504bd7712a28137c05d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "buttons in the modal zoom in, zoom out and fit, and the modal shows the zoom as a percentage"
+        body: e8ece15ab8ffb95f2df74065f9f270028ef269dec13f63e9c21e5245c0797d16
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-ac075b2314e0
+    reviewed: f8ff2f02e58e2158b653a4190976961d780de47c9f84f44b39fab48a1a7c6894
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the keys + and - zoom in and out, 0 fits the whole diagram, and the arrows pan it"
+        body: 9c9561cc96417988cd1681cb1801c0818e4e687ddd902def35e8113e5daaaf2c
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-ac08aa490e8f
+    reviewed: a6c7795ccf1ffaab21c44f2d90678a332ac15b9a1d1e3afab51f782740a96411
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "buttons in the modal zoom in, zoom out and fit, and the modal shows the zoom as a percentage"
+        body: e8ece15ab8ffb95f2df74065f9f270028ef269dec13f63e9c21e5245c0797d16
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "the zoom reads as a whole percentage of the diagram’s own size"
+        body: 8054e0316560611da29f545371f15eedf12957df93a07fbb840c9c51d8354469
+  - node: 01a1695a-dd72-7090-817b-ac09b1462a87
+    reviewed: b596459416c800ce45f108317d2843dcbd39042a57bfe25c538c688ad2b30bf3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "the zoom stays between a tenth of the diagram’s own size and eight times it"
+        body: 2f64db0bce51a99cdb06cc06251113559d170e0dc61f3a0b137293f6b38b604a
+  - node: 01a1695a-dd72-7090-817b-ac0a5117db21
+    reviewed: 0f6094b8a8fe4ec00e9fc1f2fae7a3bf0b72c54994656525020dcaf58438abd1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the wheel with Ctrl or ⌘ held zooms, the wheel alone pans, and neither scrolls the modal or the page"
+        body: 4a0a3c2e6c9c55a7531c64394c1e3ba005f964f348c7c91951f1669312615981
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
   - node: 01a1646f-546d-7042-befd-eaa32ea3a711
     reviewed: ef0fbe1d2d9aad2e1a3034ca3160a8f0acee76a1050b28e0d23fd43c958ab0ba
     tests:
