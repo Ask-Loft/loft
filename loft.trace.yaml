@@ -19881,6 +19881,27 @@ links:
       - file: "crates/yardlog/tests/block_kinds.rs"
         name: "a_stage_or_task_written_with_no_status_is_planned_or_open"
         body: 2559745c2245cf23290a95bbe25164563f65dafba9b5034501035358f4853af7
+  - node: 01a16a04-3f8b-71a9-baa3-95e77bdcfcab
+    reviewed: 6978b649c1ea16176517db128b92d33fc4f9472da74698ae6d125b9615d828f3
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_task_written_with_no_type_is_regular_and_one_written_as_a_fix_is_a_fix"
+        body: 684b7fb5a2d8b6cf1ecf0285b64a4afb4189a2dc30bd493fee70bd8b5798538c
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "a_task_carries_its_type_regular_where_it_was_written_with_none"
+        body: f8bdfbbabeb8e988b64a70ce37ba4605afd8e3ca47fc1d7ebd8d477df3faee45
+  - node: 01a16a04-3f8b-71a9-baa3-95e8d926d239
+    reviewed: acd75deb76032145ea4ef839cd785f409418637a149aa9dde571895ad09768f0
+    tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "a_regular_task_is_kept_without_a_type_and_a_fix_with_its_type"
+        body: 5491f42e5525de048df145d5197d380d107d84dda9697e9c4937867b3e28a780
+  - node: 01a16a04-3f8b-71a9-baa3-95e907cff850
+    reviewed: 06daab34d574e9498b26fff68a31d6e8977f28d3e002ea8b68ae116b2b5df130
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_task_of_a_type_other_than_regular_or_fix_is_refused"
+        body: 21d4bce0065dbb4867c41d3cfefd3d9da2057e2d6f3afbc027e739a582f370a4
   - node: 01a169a9-33b8-738f-a30d-b206873dcb5c
     reviewed: 48eddd06aa43bcd66b5efc013d727766736366991ffd2b6bbccde212c0fd6855
     tests:
@@ -22143,6 +22164,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "a task shows its title and its state"
         body: 57829834bea8391152c9f6fe40cf43fac2defd7a21c8868989b957c6fc3215db
+  - node: 01a16a04-3f8b-71a9-baa3-95e52d75699d
+    reviewed: 41e8c9f70d0dcfe6c4f6a52804868f129a4aef5e566e2f9f5a0b47196528c763
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a fix shows a mark that names it a fix beside its state, and a regular task shows none"
+        body: 5d4d75ad0bfef105b1daccd3c0d9651f2a9e7ff5b48f21acc1924bc940be2112
   - node: 01a1646f-546d-7042-befd-eb3eba30c3b0
     reviewed: f6f40ab46f1970d49a86db69a6c64a5f666ab2ec039ed28e2caf91d6d8e596be
     tests:
@@ -22929,6 +22956,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "a task with no recorded times is drawn at the time its current version was written"
         body: e9cad9a0946830d6bfb5a56a272eecd02239d52c35a68bc3ec15468efe7c5ccc
+  - node: 01a16a04-3f8b-71a9-baa3-95e69182d3bf
+    reviewed: dcfc955142cf2d5021ae5bc168bea3a45f919ca3576bea5da7656577eaaa6902
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the name and the bar of a fix are drawn in a tone of their own, apart from those of a regular task"
+        body: bf06b0230049cb648f14d398ab55669c35600c4c4d20dd302484844fff487c4c
   - node: 01a1646f-546d-7042-befd-eb752ee05c31
     reviewed: d121fea40aeae3992fc6d00630d48dc1a194c30377a24bae483b7fafea8fa18b
     tests:
@@ -24780,6 +24813,18 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "an agent with no active stage has no task mirrored, and a failed task call mirrors nothing"
         body: ba9f40c49916990a547b24a2b9240cbc431bda13e8adee638e6ecfaef7503969
+  - node: 01a16a04-3f8b-71a9-baa3-95dcb14f98d9
+    reviewed: 84069ef156b003febb887720a86ddef2f2ab92a33ff75911518c83a157f91c2c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task created with the type fix in its metadata is mirrored as a fix, and one with no type or another type as regular"
+        body: 4b3cc0f9ea665731e249a7eafbe1de47a4ff1d58fc810e53600f5369a6579202
+  - node: 01a16a04-3f8b-71a9-baa3-95dd701e7321
+    reviewed: b95d141877e8ff5a52f565056fbc980d897b21ed3eaec7096ae885b3f8909b9a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task created with the type fix in its metadata is mirrored as a fix, and one with no type or another type as regular"
+        body: 4b3cc0f9ea665731e249a7eafbe1de47a4ff1d58fc810e53600f5369a6579202
   - node: 01a1646f-546c-7521-9643-bc582c1c94a2
     reviewed: 6efd88e77be5f09b699fb279d59ffddc3979f4e82c96752865f4850d8eddcbbe
     tests:
@@ -24795,6 +24840,24 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
         body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
+  - node: 01a16a04-3f8b-71a9-baa3-95de591588b3
+    reviewed: 7ea4570c6383bbfe69ed2d7d9998b019db3b68073bb5dd255ab3def1aaf8827d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone"
+        body: 3ce5ea29f42fbf37c2cbcb5bf7e8a915735b37d5f1f5900fe793bad0fe34b8d7
+  - node: 01a16a04-3f8b-71a9-baa3-95dfe4529c42
+    reviewed: 9616e7409508560af60613b11c2b4e7e9aaf29fc636e14ec044806fc36ee9868
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone"
+        body: 3ce5ea29f42fbf37c2cbcb5bf7e8a915735b37d5f1f5900fe793bad0fe34b8d7
+  - node: 01a16a04-3f8b-71a9-baa3-95e0a38355ed
+    reviewed: 94a9f6ad8d77a4da3bb56f304f3b18d70a7acb7cbdde7cc861bdd07dd91e80df
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone"
+        body: 3ce5ea29f42fbf37c2cbcb5bf7e8a915735b37d5f1f5900fe793bad0fe34b8d7
   - node: 01a1646f-546c-7521-9643-bc648ffcbb12
     reviewed: e657ae2eedeb6d2fe2d49f0520ec25d53ce556237ca193242826b68535ca3e4c
     tests:
@@ -24933,6 +24996,24 @@ links:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
         body: af4352dc0376582e84a9ff47753ddc509b826650e3810c95e36597e1f7be2cf1
+  - node: 01a16a04-3f8b-71a9-baa3-95e262698f8b
+    reviewed: 224e233431513bd319b01f44504e469f518d2f62128bc95a41d0ea09bf4642c3
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_give_the_type_fix_to_a_task_that_corrects_work_at_the_person_s_request"
+        body: 768fd126211a7f4626624e74192bbf575ea3200127e5337cc0b077e04a358cf1
+  - node: 01a16a04-3f8b-71a9-baa3-95e3a372a16f
+    reviewed: 50b709e1039bceeded5ecd717a9badb716484906c9ed2c055c7c0a0dd374c1c2
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_give_the_type_fix_to_a_task_that_corrects_work_at_the_person_s_request"
+        body: 768fd126211a7f4626624e74192bbf575ea3200127e5337cc0b077e04a358cf1
+  - node: 01a16a04-3f8b-71a9-baa3-95e430321fa6
+    reviewed: 69a028f5a8fb7fa8b084c16d3c45522611400315d76e5c731cc63f2a0a9a020b
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_give_the_type_fix_to_a_task_that_corrects_work_at_the_person_s_request"
+        body: 768fd126211a7f4626624e74192bbf575ea3200127e5337cc0b077e04a358cf1
   - node: 01a1646f-546c-7521-9643-bc8c8bcecb29
     reviewed: 2cf88a911ee30f7117b0e1398fa84e3d4a4edcf489171e5da710748fea51141c
     tests:
