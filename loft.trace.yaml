@@ -24006,6 +24006,18 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_whose_agent_works_in_another_worktree_is_counted_in_that_worktree_s_yard_log"
         body: b08bcf38028d4cd4d0ab5c00eec513e7ad67e22d966e303f06d09315dcc7dcfa
+  - node: 01a16a5b-5fc8-7605-ba92-760602622149
+    reviewed: 93def04f277280a10513c7ef97f4a79cf45f6cc320fcba8264e05a59af961826
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/newest.rs"
+        name: "a_text_older_than_the_one_written_is_not_written_over_it"
+        body: 2614858e25a4809c9375ee9e22095df1cd820ba9cc788ba5fc01853d05467951
+      - file: "crates/loft-cli/src/yard/serve/newest.rs"
+        name: "each_file_is_written_by_its_own_texts_alone"
+        body: c84beefb824d734af10b0076813f0ed062172687d33d119c2b2902e06d99bc13
+      - file: "crates/loft-cli/src/yard/serve/newest.rs"
+        name: "a_text_whose_write_failed_is_not_taken_for_written"
+        body: dafa34b66d7bcb4707ce5a4f8a69306af0ddfb07584b27ede50112a12f3f502d
   - node: 01a1646f-546d-7042-befd-eb18be1fe4d9
     reviewed: ba2bacdc8df73216c5f5e2b2f95c60502be149fc483aa98c37d00d00c6db10ef
     tests:
