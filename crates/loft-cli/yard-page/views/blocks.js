@@ -3,7 +3,7 @@
 // whose question is not in Yard Log, and a `loft` view. Each card offers who wrote it, its
 // version and when, and its earlier versions.
 
-import { h, html } from '../lib/dom.js';
+import { h, html, markdown } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import { loftView } from './loft/index.js';
@@ -139,7 +139,7 @@ function question(block, context) {
         h('span', { class: 'option-label' }, option.label),
         option.recommended ? h('span', { class: 'badge badge--recommended' }, 'Recommended') : null,
         chosen.has(option.label) ? h('span', { class: 'badge badge--chosen' }, 'Chosen') : null,
-        option.detail ? h('p', { class: 'option-detail' }, option.detail) : null,
+        markdown(option.detailHtml, option.detail, 'option-detail'),
       ),
     ),
   );
@@ -155,7 +155,7 @@ function question(block, context) {
             { class: 'decision-line', id: `block-${decision.id}`, dataset: { key: decision.key } },
             h('span', { class: 'decision-number' }, `Decision ${decision.number ?? ''}`.trim()),
             h('h4', {}, decision.version.body.title),
-            h('p', { class: 'consequence' }, decision.version.body.consequence),
+            markdown(decision.version.body.consequenceHtml, decision.version.body.consequence, 'consequence'),
           ),
         ),
       )
@@ -252,7 +252,7 @@ function decision(block) {
   const body = block.version.body;
   return [
     h('header', { class: 'block-head' }, h('span', { class: 'decision-number' }, `Decision ${block.number ?? ''}`.trim()), h('h4', {}, body.title)),
-    h('p', { class: 'consequence' }, body.consequence),
+    markdown(body.consequenceHtml, body.consequence, 'consequence'),
   ];
 }
 
@@ -268,7 +268,7 @@ function task(block) {
       h('span', { class: ['state', `state--${body.state}`] }, TASK_STATES[body.state] ?? body.state),
       h('h4', {}, body.title),
     ),
-    body.detail ? h('p', { class: 'detail' }, body.detail) : null,
+    markdown(body.detailHtml, body.detail, 'detail'),
   ];
 }
 
@@ -280,7 +280,7 @@ function loft(block, context) {
   const body = block.version.body;
   return [
     h('header', { class: 'block-head' }, h('span', { class: 'kind' }, KINDS.loft), h('h4', {}, VIEW_NAMES[body.view] ?? body.view)),
-    body.note ? h('p', { class: 'note' }, body.note) : null,
+    markdown(body.noteHtml, body.note, 'note'),
     loftView(body, { branch: context.branch, key: block.key }),
   ];
 }
@@ -334,6 +334,6 @@ function earlierBody(body) {
   return [
     title ? h('strong', {}, title) : null,
     body.html ? html(body.html, 'prose') : null,
-    body.goal ? h('p', {}, body.goal) : null,
+    markdown(body.goalHtml, body.goal, 'earlier-goal'),
   ];
 }

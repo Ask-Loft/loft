@@ -66,6 +66,15 @@ test('each option shows its detail and each recommended option is marked', () =>
   assert.deepEqual(choices.map((choice) => Boolean(choice.querySelector('.badge--recommended'))), [true, false]);
 });
 
+test('an option’s detail is drawn from the HTML loft rendered from its Markdown', () => {
+  const asked = question('shelf', ['Top', 'Bottom']);
+  asked.version.body.options[0].detailHtml = '<p>The <strong>top</strong> one</p>';
+  const panel = submissionPanel({ key: 's', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
+  const details = [...panel.querySelectorAll('.choice-detail')];
+  assert.equal(details[0].querySelector('strong').textContent, 'top');
+  assert.equal(details[1].textContent, 'About Bottom');
+});
+
 test('accepting the recommendations chooses the recommended options of each question with nothing chosen', () => {
   const one = question('one', ['A', 'B']);
   const many = block('question', 'many', {

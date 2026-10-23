@@ -5,7 +5,7 @@
 // What the person chose and has not sent is kept in this browser only.
 
 import * as api from '../lib/api.js';
-import { h, html } from '../lib/dom.js';
+import { h, html, markdown } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
 import { getJson, setJson } from '../lib/prefs.js';
 import {
@@ -158,7 +158,7 @@ function questionForm(block, key, update) {
         }),
         h('span', { class: 'choice-label' }, option.label),
         option.recommended ? h('span', { class: 'badge badge--recommended' }, 'Recommended') : null,
-        option.detail ? h('span', { class: 'choice-detail' }, option.detail) : null,
+        markdown(option.detailHtml, option.detail, 'choice-detail'),
       ),
     ),
     body.ownWords

@@ -22077,6 +22077,15 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
         name: "the_page_reads_every_markdown_field_of_a_stage_and_its_blocks_rendered_by_loft"
         body: 7d410f860b368a3fa09458dc049e66bad08bc1325be35026cf18e1b17aa73fb0
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "every field that a block or a stage holds in Markdown is drawn from the HTML loft rendered from it"
+        body: d7e005b78c0e1cd483c366e663d12089dbbb476c0416ddb1e122dfd8aacf79e8
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a field whose HTML the page server did not give is drawn as its text"
+        body: 6c147a73ba693629631737ef815a4dfd6b9f95f434b36487524e5fd7d35b9f34
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "an option’s detail is drawn from the HTML loft rendered from its Markdown"
+        body: fcd54bb1bf33114464e41e0ba4619d098f8cd5601975a8846f1dad5c3d909bf4
   - node: 01a16854-53e3-71b2-8192-66b204b471a0
     reviewed: 2101096e3a497fc0a66e69cb08756a4be14318646ac575c1c801fa8042ad41f7
     tests:

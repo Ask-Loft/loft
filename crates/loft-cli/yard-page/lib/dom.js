@@ -127,6 +127,19 @@ export function html(rendered, className = 'prose') {
 }
 
 /**
+ * A field of a block's Markdown, such as a task's detail: the HTML `loft` rendered from it, as
+ * `html()` holds it, or its text where the page server gave no HTML; nothing where it is empty.
+ * @param {string | undefined} rendered
+ * @param {string | undefined} text
+ * @param {string} className
+ * @returns {HTMLElement | null}
+ */
+export function markdown(rendered, text, className) {
+  if (rendered) return html(rendered, `${className} prose`);
+  return text ? h('p', { class: className }, text) : null;
+}
+
+/**
  * One line of HTML that `loft` rendered from Markdown, such as a node's name, each colour in a
  * code span drawn on that colour.
  * @param {string} rendered
