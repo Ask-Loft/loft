@@ -148,8 +148,7 @@ button { font: inherit; }
   z-index: 5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 16px 32px;
   min-height: 60px;
   padding: 10px 24px;
   background: var(--header);
@@ -178,7 +177,29 @@ button { font: inherit; }
   background: var(--cyan);
   box-shadow: 0 0 0 1px var(--ink);
 }
-.connection { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+/* The Y wears the action blue the website's wordmark gives its L; the rest of the name is ink. */
+.mark-initial { color: var(--signal); }
+/* After the mark, what the header holds for the Yard Log shown: the switch of views, drawn as the
+   website's navigation, and the count of what waits on the person. */
+.chrome { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; min-width: 0; }
+.chrome:empty { display: none; }
+.views { display: flex; gap: 24px; }
+.view-tab {
+  border: 0;
+  background: none;
+  padding: 8px 0;
+  color: var(--body);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 2px;
+  cursor: pointer;
+}
+.view-tab:hover { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--signal); }
+.view-tab[aria-pressed="true"] { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--signal); }
+.chrome .wait-button { padding: 4px 12px; font-size: 14px; }
+.connection { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 13px; }
 .connection-dot { width: 8px; height: 8px; background: var(--done); box-shadow: 0 0 0 1px var(--ink); }
 .is-offline .connection-dot { background: var(--wait); }
 
@@ -223,7 +244,8 @@ button { font: inherit; }
   .layout { grid-template-columns: var(--strip) minmax(0, 1fr); }
   body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--menu), calc(100vw - 32px)); z-index: 20; box-shadow: 6px 0 0 var(--shadow); }
   .main { margin: 20px 16px 40px; }
-  .top { padding: 10px 16px; }
+  .top { padding: 10px 16px; gap: 8px 20px; flex-wrap: wrap; }
+  .connection-words { display: none; }
 }
 
 /* The menu: its head, as tall as the page's header and level with it, then the lists. */
