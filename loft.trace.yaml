@@ -22251,6 +22251,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a chart whose time needs more room than the page scrolls sideways within its frame, opening at its latest time, and the page does not"
         body: 8ca8bf387f89122f853b85c0ede8b99c480863e5cd56612274f4cbc0deca42df
+  - node: 01a168e0-b553-7083-9fa7-00e2c312fb3d
+    reviewed: 11160b671626f02349c495431a8c4f8b900a5c3c8b288aede8315af89ab60434
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the page"
+        body: 9326bab42fd493821825aae5c3dfb60c5e2bf77fd9d0686af047c79e335fdd95
+  - node: 01a168e0-b553-7083-9fa7-00e39e82b997
+    reviewed: b7ab3667b64a0ae1f1298d5200f1d686beb5ca00f45761b8ec746366a3d238e5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the page"
+        body: 9326bab42fd493821825aae5c3dfb60c5e2bf77fd9d0686af047c79e335fdd95
   - node: 01a168c0-7faa-72dc-8ad3-5215cec488ae
     reviewed: 22945532181611a48a92164959d47f46df31a4ccd144744e1ef03c664a9c0351
     tests:

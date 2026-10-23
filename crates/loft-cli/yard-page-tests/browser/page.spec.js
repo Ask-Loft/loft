@@ -372,6 +372,22 @@ test('while the chart scrolls sideways its names stay in view, and while it scro
   expect((await frame.boundingBox())?.height ?? 0).toBeLessThanOrEqual(900);
 });
 
+test('the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the page', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const behaviour = await frame.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return [style.overscrollBehaviorX, style.overscrollBehaviorY];
+  });
+  expect(behaviour).toEqual(['none', 'auto']);
+  await frame.evaluate((element) => (element.scrollTop = element.scrollHeight));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const box = await frame.boundingBox();
+  if (!box) throw new Error('the chart has no frame');
+  await page.mouse.move(box.x + box.width / 2, box.y + Math.min(box.height, 900 - box.y) / 2);
+  await page.mouse.wheel(0, 400);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+});
+
 test('every name stays inside the column, a long one cut short with an ellipsis', async ({ page }) => {
   await openLongDay(page);
   const crossing = await page.evaluate(() =>

@@ -546,7 +546,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 /* The Gantt chart. */
 
 .gantt { display: grid; gap: 12px; }
-.gantt-frame { --head: 44px; --row: 24px; --task-row: 17px; overflow: auto; max-height: calc(100vh - 24px); background: var(--surface); border: 1px solid var(--ink); overscroll-behavior: contain; }
+.gantt-frame { --head: 44px; --row: 24px; --task-row: 17px; overflow: auto; max-height: calc(100vh - 24px); background: var(--surface); border: 1px solid var(--ink); overscroll-behavior-x: none; overscroll-behavior-y: auto; }
 .gantt-sheet { position: relative; font-size: 12px; }
 .gantt-head, .gantt-row { display: grid; grid-template-columns: var(--names) minmax(0, 1fr); }
 .gantt-head { position: sticky; top: 0; z-index: 8; height: var(--head); background: var(--surface); border-bottom: 1px solid var(--line); }
