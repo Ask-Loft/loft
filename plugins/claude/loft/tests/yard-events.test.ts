@@ -168,6 +168,45 @@ test("a task the agent makes is mirrored as a task block of its active stage, an
   ])
 })
 
+test('a task created with the type fix in its metadata is mirrored as a fix, and one with no type or another type as regular', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  let id = 0
+  w.state.terminal.TaskCreate = () => ({ result: { task: { id: String(++id) } }, text: 'ok' })
+  await start($)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Mend the gutter', description: '', metadata: { type: 'fix' } } as never)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Plan', description: '' } as never)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Tidy', description: '', metadata: { type: 'chore' } } as never)
+  await w.clock.settle()
+  const written = w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin!))
+  expect(written).toEqual([
+    [{ id: 'task-session1-1', kind: 'task', stage: 'shape', title: 'Mend the gutter', state: 'open', type: 'fix' }],
+    [{ id: 'task-session1-2', kind: 'task', stage: 'shape', title: 'Plan', state: 'open' }],
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Tidy', state: 'open' }],
+  ])
+})
+
+test("a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone", async ($, on) => {
+  const w = world(on)
+  const held = (body: Record<string, unknown>) =>
+    readDoc({ stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('task-session1-3', 'task', { title: 'T', detail: 'Why', state: 'open', ...body })] }] })
+  await start($)
+  w.state.read = held({})
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', metadata: { type: 'fix' } } as never)
+  await w.clock.settle()
+  w.state.read = held({ type: 'fix' })
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'in_progress' } as never)
+  await w.clock.settle()
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', metadata: { type: null } } as never)
+  await w.clock.settle()
+  const written = w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin!))
+  expect(written).toEqual([
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'T', detail: 'Why', state: 'open', type: 'fix' }],
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'T', detail: 'Why', state: 'active', type: 'fix' }],
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'T', detail: 'Why', state: 'open' }],
+  ])
+})
+
 test('an agent with no active stage has no task mirrored, and a failed task call mirrors nothing', async ($, on) => {
   const w = world(on)
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
