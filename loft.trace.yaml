@@ -21654,39 +21654,60 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right"
         body: 261864f3ef2dce0c74b59b63bda3edeb8a062f5cf7b1533ab946769eb91c0400
+  - node: 01a16901-3952-7392-b2a8-3b99d4dc57a2
+    reviewed: 2421ccaba510452bd1bbcfc5a34f1025e3b5f713d3d78996f0c1d2c35766a74f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the menu runs down the window’s left from top to bottom, beside the page’s header, and stays while the Yard Log scrolls"
+        body: 53c20a980ee9eb03f95d6c12f90c6ec1038a82eed56a1e43e3cecc35b520d531
   - node: 01a168ea-af3e-70b5-83b9-97fe8c01e07f
-    reviewed: 67a0ffc4e738e661540326f8aa0f3a06db1e029992310fa44b8b536210067a2a
+    reviewed: 1e938396cf5e9c9a172ff7f1796b9a9312d2ac281a5e4aea9e82e15216514305
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "the button at the head of the page says whether it folds the list or opens it, and asks for the other"
-        body: 2abe36cd872807aa2620a29444ba4b1d4d1525a2dd88ff93468c5b4e743a681a
+        name: "open, the menu is headed Yard Logs beside a button that folds it, above the lists"
+        body: 9f1211148bb347beb1dd9dd68dade2b1311925b8fa3e6c62238d93d47b9bc4fb
+  - node: 01a16901-3953-712b-afc6-44269a6cf574
+    reviewed: e3d60d982c531f42759b8f9ebd41ffd98b24aeef9b63dfede97483e0603ce5ad
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "folded, the menu holds only a button drawn as three lines, which opens it"
+        body: e24dcbc6f85326c76482d5eb6de6bb12f09e04624c676283777615072b5d22d7
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "folding the menu leaves a strip and gives its room to the page, which begins as near the strip as it lay to the menu, and the next visit keeps it folded"
+        body: 3f1271eb5a073fdfef4c200ec4528b575b116ee963ae8a85a71e29adca70fed9
   - node: 01a168ea-af3e-70b5-83b9-97ff14bf889d
-    reviewed: f11ee2228ef76b05b824f76f2e9b47e378c2be0036b77c37fcfe31b51fcd6d61
+    reviewed: 551f15229430b74f7ecd206c1c4c737f2ae2dc0b993dedd22475cccbd2af3d1a
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "the list is open until the person folds it, and the browser keeps the choice"
-        body: cf7add7510c949b8e373cc7cec44b8f2b71ffe8c492c54ebcb6bcca17e09917a
+        name: "the menu is open until the person folds it, and the browser keeps the choice"
+        body: 8da53bbbaa7bb84190509130cd83a95dbadc6d557892a4ef937f6686cfbb151b
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "folding the list gives its room to the Yard Log shown, which begins where the list began, and the next visit keeps it folded"
-        body: b8182c71e60711ca3989fb192b91723ef1ff884c8e95a2a05ba42cffa6b567fe
+        name: "folding the menu leaves a strip and gives its room to the page, which begins as near the strip as it lay to the menu, and the next visit keeps it folded"
+        body: 3f1271eb5a073fdfef4c200ec4528b575b116ee963ae8a85a71e29adca70fed9
   - node: 01a168ea-af3e-70b5-83b9-9800f391884d
-    reviewed: 65c85601c4eb3727b0efef25a8bd8524881896432cff75fd778b2b9e41a17b0d
+    reviewed: ce326ff822ea9a933962ee296cca30dd37fcaee0a49db3a38eabbaaf2cebc37e
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "folding the list gives its room to the Yard Log shown, which begins where the list began, and the next visit keeps it folded"
-        body: b8182c71e60711ca3989fb192b91723ef1ff884c8e95a2a05ba42cffa6b567fe
+        name: "folding the menu leaves a strip and gives its room to the page, which begins as near the strip as it lay to the menu, and the next visit keeps it folded"
+        body: 3f1271eb5a073fdfef4c200ec4528b575b116ee963ae8a85a71e29adca70fed9
   - node: 01a168ea-af3e-70b5-83b9-9801a289a60f
-    reviewed: e619e387bef891d7b48ee6d12fa5470947f83443dd0e26a9c04ed16f594c11f5
+    reviewed: f180da11da7aec53188c48605419f7606412874352899bfe084bff58473bc1d5
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "folding the list widens the Gantt chart into the room the list left, and opening it narrows the chart again"
-        body: 99163528c6fb55269fc234ce355ec2f0fe8b6bc8a54a297c0a6e4085ec19376d
+        name: "folding the menu widens the Gantt chart into the room the menu left, and opening it narrows the chart again"
+        body: d642bf4e4523792ea3799ad98e54f961a9b430fc46ca615179764ad9881d2716
   - node: 01a168ea-af3e-70b5-83b9-9802c4271166
-    reviewed: ec2b67ee6f46d594a84de4da9456d33632d74251d8d7df5b7b3c85bc30d2ccbf
+    reviewed: 69e3cf38ab6d0c4a78674bb93ee618892a4b58f9f871c2403049f700f77bb0c7
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "with the list folded, the button gives the count of blocks that wait on the person, and none while open or while none wait"
-        body: 6882001d369f31a0d557a2e7c2042f28b3161a7eaedc186bb7c3fc3ed98c0efc
+        name: "with the menu folded, its button gives the count of blocks that wait on the person, and none while open or while none wait"
+        body: 5e3fb9cd54cc72e83c0c0d7c44ab0067e36606fff2b3127e3a4e0c75b9124798
+  - node: 01a16901-3953-712b-afc6-44278c6402e4
+    reviewed: 6eb1c9502f724a81d5a06770445dbdc693ddd725de70f68e20d91792c0451d20
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels the open menu lies over the page, which keeps only the strip’s room"
+        body: ded3ed4dc1aaf7373570f33915412648356f62c42921c77a9aa9d2bee96357bf
   - node: 01a1646f-546d-7042-befd-eb2339a1f113
     reviewed: 00decd7d740cf4b3f107231c953f28a7aa1fa7b9af8103250c7f215f6201c73f
     tests:

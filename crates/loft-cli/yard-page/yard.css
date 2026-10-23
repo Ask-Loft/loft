@@ -176,28 +176,34 @@ button { font: inherit; }
   background: var(--cyan);
   box-shadow: 0 0 0 1px var(--ink);
 }
-.top-start { display: flex; align-items: center; gap: 18px; }
-/* The button that folds the list of Yard Logs away and opens it again. */
-.fold-button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); padding: 3px 10px; font-size: 13px; cursor: pointer; }
-.fold-button:hover { background: var(--surface-2); }
 .connection { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .connection-dot { width: 8px; height: 8px; background: var(--done); box-shadow: 0 0 0 1px var(--ink); }
 .is-offline .connection-dot { background: var(--wait); }
 
+/* The window holds two columns: the menu of Yard Logs down its left from top to bottom, and the
+   page beside it, header and all. Folded, the menu is a strip that holds only its button. */
 .layout {
+  --menu: 300px;
+  --strip: 58px;
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-  gap: 36px;
+  grid-template-columns: var(--menu) minmax(0, 1fr);
   max-width: 1800px;
+  min-height: 100vh;
   margin: 0;
-  padding: 28px 24px 48px;
   align-items: start;
 }
-.side { position: sticky; top: 84px; display: grid; gap: 22px; max-height: calc(100vh - 116px); overflow: auto; padding: 0 6px 6px 0; }
-.main { min-width: 0; }
-/* Folded, the list gives its room to the Yard Log shown, which begins where the list began. */
-.is-folded .layout { grid-template-columns: minmax(0, 1fr); }
-.is-folded .side { display: none; }
+.is-folded .layout { grid-template-columns: var(--strip) minmax(0, 1fr); }
+.side {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  height: 100vh;
+  overflow: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--ink);
+}
+.page { grid-column: 2; min-width: 0; }
+.main { min-width: 0; margin: 28px 24px 48px; }
 .loading, .empty, .welcome p { color: var(--muted); }
 .welcome { padding: 40px 0; display: grid; gap: 10px; max-width: 60ch; }
 .welcome .commands { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
@@ -210,11 +216,49 @@ button { font: inherit; }
   color: var(--ink);
 }
 
+/* Too narrow for both side by side, the open menu lies over the page, which keeps the strip's room. */
 @media (max-width: 860px) {
-  .layout { grid-template-columns: minmax(0, 1fr); padding: 20px 16px 40px; gap: 24px; }
-  .side { position: static; max-height: none; }
+  .layout { grid-template-columns: var(--strip) minmax(0, 1fr); }
+  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--menu), calc(100vw - 32px)); z-index: 20; box-shadow: 6px 0 0 var(--shadow); }
+  .main { margin: 20px 16px 40px; }
   .top { padding: 10px 16px; }
 }
+
+/* The menu: its head, as tall as the page's header and level with it, then the lists. */
+
+.menu-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 60px;
+  padding: 10px 11px 10px 20px;
+  background: var(--header);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--ink);
+}
+.is-folded .menu-head { justify-content: center; padding: 10px; }
+.menu-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.menu-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.menu-button:hover { background: var(--mist); }
+.menu-icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
+.menu-button .waiting-count { position: absolute; top: -8px; right: -9px; min-width: 18px; padding: 0 4px; line-height: 16px; font-size: 11px; box-shadow: 0 0 0 1px var(--ink); }
+.menu-lists { display: grid; gap: 22px; padding: 20px 14px 32px 20px; }
+.menu-lists[hidden] { display: none; }
 
 /* The list of Yard Logs, and what waits everywhere. */
 

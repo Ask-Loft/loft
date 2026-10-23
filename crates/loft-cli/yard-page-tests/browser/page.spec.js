@@ -294,27 +294,68 @@ test('the page keeps its width and its switch of views stays in place whichever 
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('folding the list gives its room to the Yard Log shown, which begins where the list began, and the next visit keeps it folded', async ({ page }) => {
+/** The box of what `locator` finds, which must be drawn. */
+async function box(locator) {
+  const found = await locator.boundingBox();
+  if (!found) throw new Error('nothing drawn');
+  return found;
+}
+
+test('the menu runs down the window’s left from top to bottom, beside the page’s header, and stays while the Yard Log scrolls', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto(address());
+  const side = page.locator('#side');
+  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toBeVisible();
+  const menu = await box(side);
+  expect([menu.x, menu.y, menu.height]).toEqual([0, 0, 400]);
+  expect((await box(page.locator('.top'))).x).toBe(menu.x + menu.width);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  expect(Math.abs((await box(side)).y)).toBeLessThan(1);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('folding the menu leaves a strip and gives its room to the page, which begins as near the strip as it lay to the menu, and the next visit keeps it folded', async ({ page }) => {
   await page.goto(address());
   const side = page.locator('#side');
   const main = page.locator('#log');
-  const listed = await side.boundingBox();
-  const before = await main.boundingBox();
-  if (!listed || !before) throw new Error('the page has no list or no Yard Log');
-  const hide = page.getByRole('button', { name: /^Hide the list/ });
-  await expect(hide).toHaveAttribute('aria-expanded', 'true');
-  await hide.click();
-  await expect(side).toBeHidden();
-  await expect.poll(async () => (await main.boundingBox())?.x).toBe(listed.x);
-  expect((await main.boundingBox())?.width ?? 0).toBeGreaterThan(before.width + listed.width);
+  const header = page.locator('.top');
+  const open = await box(side);
+  const gap = (await box(main)).x - (open.x + open.width);
+  const fold = page.getByRole('button', { name: 'Fold the menu of Yard Logs' });
+  await expect(fold).toHaveAttribute('aria-expanded', 'true');
+  await fold.click();
+  await expect(page.locator('#menu-lists')).toBeHidden();
+  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toHaveCount(0);
+  await expect.poll(async () => (await box(side)).width).toBe(58);
+  const strip = await box(side);
+  expect(strip.height).toBe(900);
+  expect((await box(header)).x).toBe(strip.x + strip.width);
+  expect((await box(main)).x).toBe(strip.x + strip.width + gap);
   await page.reload();
-  const show = page.getByRole('button', { name: /^Show the list/ });
-  await expect(show).toHaveAttribute('aria-expanded', 'false');
-  await expect(side).toBeHidden();
-  await show.click();
-  await expect(side).toBeVisible();
-  await expect.poll(async () => (await main.boundingBox())?.x).toBe(before.x);
+  const opener = page.getByRole('button', { name: /^Open the menu of Yard Logs/ });
+  await expect(opener).toHaveAttribute('aria-expanded', 'false');
+  expect((await box(side)).width).toBe(58);
+  await opener.click();
+  await expect(page.locator('#menu-lists')).toBeVisible();
+  await expect.poll(async () => (await box(main)).x).toBe(open.x + open.width + gap);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
+});
+
+test('in a window narrower than 860 pixels the open menu lies over the page, which keeps only the strip’s room', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 900 });
+  await page.goto(address());
+  const side = page.locator('#side');
+  const menu = await box(side);
+  const header = await box(page.locator('.top'));
+  expect(menu.x).toBe(0);
+  expect(header.x).toBe(58);
+  expect(menu.x + menu.width).toBeGreaterThan(header.x + 200);
+  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(58);
+  expect((await box(page.locator('.top'))).x).toBe(58);
+  await page.evaluate(() => localStorage.removeItem('yard.list'));
+  await page.setViewportSize({ width: 1280, height: 900 });
 });
 
 /**
@@ -453,14 +494,14 @@ test('dragging the column’s edge widens it within its bounds, and the next vis
   await page.evaluate(() => localStorage.removeItem('yard.gantt-names'));
 });
 
-test('folding the list widens the Gantt chart into the room the list left, and opening it narrows the chart again', async ({ page }) => {
+test('folding the menu widens the Gantt chart into the room the menu left, and opening it narrows the chart again', async ({ page }) => {
   const frame = await openLongDay(page);
   const width = () => frame.evaluate((element) => element.clientWidth);
   const before = await width();
-  const listed = (await page.locator('#side').boundingBox())?.width ?? 0;
-  await page.getByRole('button', { name: /^Hide the list/ }).click();
-  await expect.poll(width).toBeGreaterThan(before + listed);
-  await page.getByRole('button', { name: /^Show the list/ }).click();
+  const menu = (await page.locator('#side').boundingBox())?.width ?? 0;
+  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await expect.poll(width).toBe(before + menu - 58);
+  await page.getByRole('button', { name: /^Open the menu of Yard Logs/ }).click();
   await expect.poll(width).toBe(before);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });

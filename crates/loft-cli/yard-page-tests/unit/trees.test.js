@@ -7,7 +7,7 @@ import { beforeEach, test } from 'node:test';
 
 import * as prefs from '../../yard-page/lib/prefs.js';
 import { parse } from '../../yard-page/lib/route.js';
-import { foldButton, title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
+import { menu, title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
 
 beforeEach(forget);
 
@@ -141,22 +141,36 @@ test('with no Yard Log served, the page gives the commands that install the Loft
   );
 });
 
-test('the button at the head of the page says whether it folds the list or opens it, and asks for the other', () => {
+test('open, the menu is headed Yard Logs beside a button that folds it, above the lists', () => {
   /** @type {boolean[]} */
   const asked = [];
-  const open = foldButton(listing(), false, (folded) => asked.push(folded));
-  assert.equal(open.textContent, 'Hide the list');
-  assert.equal(open.getAttribute('aria-expanded'), 'true');
-  assert.equal(open.getAttribute('aria-controls'), 'side');
-  open.click();
-  const folded = foldButton(listing(), true, (again) => asked.push(again));
-  assert.match(folded.textContent ?? '', /^Show the list/);
-  assert.equal(folded.getAttribute('aria-expanded'), 'false');
-  folded.click();
-  assert.deepEqual(asked, [true, false]);
+  const [head, lists] = menu(listing(), null, false, (folded) => asked.push(folded));
+  assert.equal(head.querySelector('h2')?.textContent, 'Yard Logs');
+  const button = head.querySelector('button');
+  assert.equal(button?.getAttribute('aria-label'), 'Fold the menu of Yard Logs');
+  assert.equal(button?.getAttribute('aria-expanded'), 'true');
+  assert.equal(button?.getAttribute('aria-controls'), lists.id);
+  assert.ok(!lists.hidden);
+  assert.ok(lists.querySelector('nav.trees'));
+  button?.click();
+  assert.deepEqual(asked, [true]);
 });
 
-test('the list is open until the person folds it, and the browser keeps the choice', () => {
+test('folded, the menu holds only a button drawn as three lines, which opens it', () => {
+  /** @type {boolean[]} */
+  const asked = [];
+  const [head, lists] = menu(listing({ count: 0 }), null, true, (folded) => asked.push(folded));
+  assert.ok(!head.querySelector('h2'));
+  const button = head.querySelector('button');
+  assert.equal(button?.getAttribute('aria-label'), 'Open the menu of Yard Logs');
+  assert.equal(button?.getAttribute('aria-expanded'), 'false');
+  assert.equal(button?.querySelectorAll('svg path').length, 3);
+  assert.ok(lists.hidden);
+  button?.click();
+  assert.deepEqual(asked, [false]);
+});
+
+test('the menu is open until the person folds it, and the browser keeps the choice', () => {
   assert.equal(prefs.folded(), false);
   prefs.set('list', 'folded');
   assert.equal(prefs.folded(), true);
@@ -165,8 +179,10 @@ test('the list is open until the person folds it, and the browser keeps the choi
   assert.equal(prefs.folded(), false);
 });
 
-test('with the list folded, the button gives the count of blocks that wait on the person, and none while open or while none wait', () => {
-  assert.equal(foldButton(listing(), true, () => {}).querySelector('.waiting-count')?.textContent, '2');
-  assert.ok(!foldButton(listing(), false, () => {}).querySelector('.waiting-count'));
-  assert.ok(!foldButton(listing({ count: 0 }), true, () => {}).querySelector('.waiting-count'));
+test('with the menu folded, its button gives the count of blocks that wait on the person, and none while open or while none wait', () => {
+  const [folded] = menu(listing(), null, true, () => {});
+  assert.equal(folded.querySelector('.waiting-count')?.textContent, '2');
+  assert.equal(folded.querySelector('button')?.getAttribute('aria-label'), 'Open the menu of Yard Logs, 2 wait on you');
+  assert.ok(!menu(listing(), null, false, () => {})[0].querySelector('.waiting-count'));
+  assert.ok(!menu(listing({ count: 0 }), null, true, () => {})[0].querySelector('.waiting-count'));
 });

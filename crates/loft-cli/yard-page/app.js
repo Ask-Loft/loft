@@ -9,7 +9,7 @@ import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
 import { logView, unreadable } from './views/log.js';
-import { foldButton, title, treeList, waitingList, welcome } from './views/trees.js';
+import { menu, title, welcome } from './views/trees.js';
 
 const state = {
   /** @type {any} */ listing: null,
@@ -89,17 +89,13 @@ function render() {
   const main = document.getElementById('log');
   const side = document.getElementById('side');
   if (!main || !side) return;
-  replace(side, waitingList(state.listing), treeList(state.listing, route));
-  const fold = document.getElementById('fold');
-  if (fold) {
-    replace(
-      fold,
-      foldButton(state.listing, prefs.folded(), (folded) => {
-        prefs.set('list', folded ? 'folded' : 'open');
-        render();
-      }),
-    );
-  }
+  replace(
+    side,
+    menu(state.listing, route, prefs.folded(), (folded) => {
+      prefs.set('list', folded ? 'folded' : 'open');
+      render();
+    }),
+  );
   document.body.classList.toggle('is-folded', prefs.folded());
   if (!route) {
     replace(main, welcome(state.listing));
@@ -156,6 +152,8 @@ function reveal(id) {
 }
 
 function start() {
+  // The menu takes the person's choice before anything is loaded, so a folded one never shows open.
+  document.body.classList.toggle('is-folded', prefs.folded());
   window.addEventListener('hashchange', () => {
     state.notice = '';
     void load();

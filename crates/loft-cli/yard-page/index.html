@@ -9,14 +9,16 @@
 <script type="module" src="app.js"></script>
 </head>
 <body>
-<header class="top">
-  <div class="top-start"><div id="fold" class="fold"></div><p class="mark"><span class="mark-word">Yard</span></p></div>
-  <p class="connection" aria-live="polite"><span class="connection-dot"></span><span class="connection-words">Live</span></p>
-</header>
-<div class="dots" aria-hidden="true"></div>
 <div class="layout">
-  <aside id="side" class="side"></aside>
-  <main id="log" class="main"><p class="loading">Loading the Yard Logs…</p></main>
+  <aside id="side" class="side" aria-label="Yard Logs"></aside>
+  <div class="page">
+    <header class="top">
+      <p class="mark"><span class="mark-word">Yard</span></p>
+      <p class="connection" aria-live="polite"><span class="connection-dot"></span><span class="connection-words">Live</span></p>
+    </header>
+    <div class="dots" aria-hidden="true"></div>
+    <main id="log" class="main"><p class="loading">Loading the Yard Logs…</p></main>
+  </div>
 </div>
 <noscript><p class="noscript">The Yard page needs JavaScript to draw Yard Log.</p></noscript>
 </body>
