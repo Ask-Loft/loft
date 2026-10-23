@@ -367,7 +367,7 @@ function stageRows(row, draw) {
       const listedTo = task.activeFrom ?? task.to;
       return h(
         'div',
-        { class: 'gantt-row task-row' },
+        { class: ['gantt-row', 'task-row', task.fix ? 'task-row--fix' : null] },
         h('div', { class: 'name-cell' }, h('button', { type: 'button', class: 'task-name', title: task.title, ...draw.pick(task.id) }, task.title)),
         h(
           'div',
@@ -379,7 +379,7 @@ function stageRows(row, draw) {
             type: 'button',
             class: ['task-bar', task.done ? 'is-done' : null],
             style: draw.span(task.from, task.to),
-            title: `${task.title}${task.done ? ', done' : ''}`,
+            title: `${task.title}${task.fix ? ', a fix' : ''}${task.done ? ', done' : ''}`,
             ...draw.pick(task.id),
           }),
         ),

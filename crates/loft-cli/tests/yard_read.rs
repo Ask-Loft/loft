@@ -65,6 +65,18 @@ fn each_block_carries_its_key_its_id_its_kind_and_its_current_version_alone() {
 }
 
 #[test]
+fn a_task_carries_its_type_regular_where_it_was_written_with_none() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let tasks = r#"[{"id": "t1", "kind": "task", "stage": "shape", "title": "Plan"},
+        {"id": "t2", "kind": "task", "stage": "shape", "title": "Mend", "type": "fix"}]"#;
+    yard.write("s1", tasks, &[]);
+    let read = yard.read("s1", &[]);
+    assert_eq!(block(&read, "t1")["version"]["body"]["type"], "regular");
+    assert_eq!(block(&read, "t2")["version"]["body"]["type"], "fix");
+}
+
+#[test]
 fn with_versions_each_block_carries_every_version_oldest_first_with_key_act_and_payload() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);

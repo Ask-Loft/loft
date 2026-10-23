@@ -64,6 +64,11 @@ words! {
 }
 
 words! {
+    /// A task's type: the sort of work it is.
+    TaskType { Regular = "regular", Fix = "fix" }
+}
+
+words! {
     /// A note's tone.
     Tone { Info = "info", Success = "success", Warning = "warning", Danger = "danger" }
 }
@@ -176,6 +181,8 @@ pub struct Task {
     pub title: String,
     pub detail: Option<String>,
     pub state: TaskState,
+    /// Its type, written `type`: a fix the person asked for, or regular work.
+    pub kind: TaskType,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

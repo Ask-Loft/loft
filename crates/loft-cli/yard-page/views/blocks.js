@@ -266,6 +266,7 @@ function task(block) {
       'header',
       { class: 'block-head' },
       h('span', { class: ['state', `state--${body.state}`] }, TASK_STATES[body.state] ?? body.state),
+      body.type === 'fix' ? h('span', { class: ['task-type', 'task-type--fix'], title: 'A fix the person asked for' }, 'Fix') : null,
       h('h4', {}, body.title),
     ),
     markdown(body.detailHtml, body.detail, 'detail'),

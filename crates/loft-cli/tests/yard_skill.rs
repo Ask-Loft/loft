@@ -129,6 +129,17 @@ fn the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts
 }
 
 #[test]
+fn the_yard_skill_tells_the_agent_to_give_the_type_fix_to_a_task_that_corrects_work_at_the_person_s_request()
+ {
+    says(&[
+        "A task is a fix where the person asked you to correct work already done",
+        "A task you take on by yourself, a correction of your own included, is `regular`",
+        "Create a fix with `TaskCreate` and `metadata: { type: \"fix\" }`",
+        "write its `task` block with `type: fix`",
+    ]);
+}
+
+#[test]
 fn the_yard_skill_tells_the_agent_to_send_a_decision_point_s_questions_together_and_wait() {
     says(&[
         "send them together as one submission, rather than ask them one at a time",

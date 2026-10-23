@@ -94,10 +94,16 @@ requirements:
     statement:
       form: ubiquitous
       system: "A `task` block"
-      shall: "hold a title, an optional detail in Markdown and a state that is `open`, `active`, `done` or `dropped`."
+      shall: "hold a title, an optional detail in Markdown, a state that is `open`, `active`, `done` or `dropped`, and a type that is `regular` or `fix`."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f280569b2e04
         name: "A task written with no state is `open`."
+      - key: 01a16a04-3f8b-71a9-baa3-95e77bdcfcab
+        name: "A task written with no type is `regular`."
+      - key: 01a16a04-3f8b-71a9-baa3-95e8d926d239
+        name: "A task of the type `regular` is kept in YAML without a type, as a task was before tasks had types."
+      - key: 01a16a04-3f8b-71a9-baa3-95e907cff850
+        name: "A task written with a type other than `regular` or `fix` is refused."
   - key: 01a1646f-546e-76cb-8b4f-f281ceac4cef
     statement:
       form: ubiquitous

@@ -262,6 +262,7 @@ function row(stage, span, agent, { loft, subagents, waits, turns }, now) {
         activeFrom: times.started ? ms(times.started) : null,
         to,
         done: block.version.body.state === 'done',
+        fix: block.version.body.type === 'fix',
       };
     });
   // A run kept with the stage it counted toward belongs to that stage, whichever agent ran it.

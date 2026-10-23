@@ -158,3 +158,16 @@ const TASK_STATES: Record<string, string> = {
 export function taskState(status: string | undefined): string | undefined {
   return status === undefined ? undefined : TASK_STATES[status]
 }
+
+const TASK_TYPES = ['regular', 'fix']
+
+/**
+ * A task's type as its metadata gives it: a type Yard Log knows, `regular` where it is `null`,
+ * and nothing where the metadata names no type or one Yard Log does not know.
+ */
+export function taskType(metadata: unknown): string | undefined {
+  if (typeof metadata !== 'object' || metadata === null || !('type' in metadata)) return undefined
+  const type = (metadata as { type: unknown }).type
+  if (type === null) return 'regular'
+  return typeof type === 'string' && TASK_TYPES.includes(type) ? type : undefined
+}

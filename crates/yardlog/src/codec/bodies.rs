@@ -7,7 +7,7 @@ use super::reader::{Fields, Read, at};
 use crate::act::Time;
 use crate::body::{
     Approval, Body, Choice, Decision, Kind, Loft, Note, Plan, Question, Reason, Recorded, Stage,
-    Status, Task, TaskState, Tone, View,
+    Status, Task, TaskState, TaskType, Tone, View,
 };
 use crate::datum::Datum;
 use crate::keys::BlockKey;
@@ -56,6 +56,9 @@ pub(super) fn write_body(body: &Body) -> Vec<Field> {
             fields.push(("title", text(&task.title)));
             optional(&mut fields, "detail", task.detail.as_ref());
             fields.push(("state", token(&task.state.as_str())));
+            if task.kind != TaskType::Regular {
+                fields.push(("type", token(&task.kind.as_str())));
+            }
         }
         Body::Plan(plan) => {
             fields.push(("title", text(&plan.title)));
@@ -149,6 +152,9 @@ pub(super) fn read_body(kind: Kind, fields: &mut Fields<'_>) -> Read<Body> {
             title: fields.text("title")?,
             detail: fields.optional_text("detail")?,
             state: fields.word("state", TaskState::parse)?,
+            kind: fields
+                .optional_word("type", TaskType::parse)?
+                .unwrap_or(TaskType::Regular),
         }),
         Kind::Plan => Body::Plan(Plan {
             title: fields.text("title")?,

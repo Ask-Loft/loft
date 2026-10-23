@@ -117,6 +117,8 @@ requirements:
         name: "Each task is drawn under its stage, from the time it was listed to the time it ended, marked apart while it was listed and while it was active, and marked as done where it ended done."
       - key: 01a1646f-546d-7042-befd-eb74547e7a25
         name: "A task with no recorded times is drawn at the time its current version was written."
+      - key: 01a16a04-3f8b-71a9-baa3-95e69182d3bf
+        name: "The name and the bar of a task of the type `fix` are drawn in a tone of their own, apart from those of a task of the type `regular`."
       - key: 01a1646f-546d-7042-befd-eb752ee05c31
         name: "Each shell command that ran Loft is drawn in the bar of the stage it counted toward, and names its Loft subcommands on hover."
       - key: 01a16995-313c-7343-8413-b5540477b877

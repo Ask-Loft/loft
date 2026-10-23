@@ -1,7 +1,7 @@
 //! The eight block kinds and what each holds.
 
 use serde_json::{Value, json};
-use yardlog::body::{Body, Status, TaskState};
+use yardlog::body::{Body, Status, TaskState, TaskType};
 use yardlog::input::{Fault, read_batch};
 
 use crate::common::{context, main_agent, planned, question, write};
@@ -84,6 +84,34 @@ fn a_stage_or_task_written_with_no_status_is_planned_or_open() {
     assert!(matches!(&stage.current().body, Body::Stage(s) if s.status == Status::Planned));
     let task = log.find(&crate::common::handle("t")).unwrap();
     assert!(matches!(&task.current().body, Body::Task(t) if t.state == TaskState::Open));
+}
+
+#[test]
+fn a_task_written_with_no_type_is_regular_and_one_written_as_a_fix_is_a_fix() {
+    let mut log = planned();
+    write(
+        &mut log,
+        &json!([
+            {"id": "t", "kind": "task", "stage": "design", "title": "T"},
+            {"id": "f", "kind": "task", "stage": "design", "title": "F", "type": "fix"}
+        ]),
+        &context(&main_agent(), 2),
+    );
+    let kind = |id: &str| match &log.find(&crate::common::handle(id)).unwrap().current().body {
+        Body::Task(task) => task.kind,
+        body => panic!("{body:?}"),
+    };
+    assert_eq!(kind("t"), TaskType::Regular);
+    assert_eq!(kind("f"), TaskType::Fix);
+}
+
+#[test]
+fn a_task_of_a_type_other_than_regular_or_fix_is_refused() {
+    let found = faults(&json!([
+        {"id": "t", "kind": "task", "stage": "s", "title": "T", "type": "chore"}
+    ]));
+    assert_eq!(fields(&found), [("t", "type")]);
+    assert!(found[0].message.contains("`regular`, `fix`"), "{found:?}");
 }
 
 #[test]

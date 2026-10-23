@@ -1,0 +1,61 @@
+key: 01a16a04-3f85-7261-af8f-b397e2284ba5
+slug: a-task-has-a-type
+title: "A task has a type, and a fix the person asked for is one"
+context: "Every task in Yard Log looks alike, so the person cannot tell the work an agent planned from the corrections they asked it to make. The agent knows which is which when it creates the task, and `TaskCreate` and `TaskUpdate` both carry metadata that the mod sees."
+state:
+  kind: accepted
+  selectedOption: 01a16a04-3f85-7261-af8f-b39a4ea48a8f
+  outcome: "A `task` block holds a type, `regular` or `fix`, which the agent gives in the task's metadata and the page draws apart."
+drivers:
+  - key: 01a16a04-3f85-7261-af8f-b3986578bca2
+    kind: local
+    label: "Room to grow"
+    statement: "More sorts of task can be told apart later without a new field for each."
+  - key: 01a16a04-3f85-7261-af8f-b399b91a0efd
+    kind: local
+    label: "Old logs unchanged"
+    statement: "A Yard Log written before tasks had types reads and writes as it did."
+options:
+  - key: 01a16a04-3f85-7261-af8f-b39a4ea48a8f
+    title: "A type word"
+    description: "A task holds a type from a closed list, `regular` by default, which later releases may extend."
+  - key: 01a16a04-3f85-7261-af8f-b39b38a1a950
+    title: "A fix flag"
+    description: "A task holds an optional `fix` flag."
+  - key: 01a16a04-3f85-7261-af8f-b39ce6e1add6
+    title: "A prefix in the title"
+    description: "A task whose title starts with `Fix:` is a fix."
+assessments:
+  - option: 01a16a04-3f85-7261-af8f-b39a4ea48a8f
+    driver: 01a16a04-3f85-7261-af8f-b3986578bca2
+    rating: supports
+    rationale: "a new sort is a new word"
+  - option: 01a16a04-3f85-7261-af8f-b39a4ea48a8f
+    driver: 01a16a04-3f85-7261-af8f-b399b91a0efd
+    rating: supports
+    rationale: "`regular` is kept without a type"
+  - option: 01a16a04-3f85-7261-af8f-b39b38a1a950
+    driver: 01a16a04-3f85-7261-af8f-b3986578bca2
+    rating: conflicts
+    rationale: "each new sort is another flag"
+  - option: 01a16a04-3f85-7261-af8f-b39b38a1a950
+    driver: 01a16a04-3f85-7261-af8f-b399b91a0efd
+    rating: supports
+    rationale: "an absent flag is no fix"
+  - option: 01a16a04-3f85-7261-af8f-b39ce6e1add6
+    driver: 01a16a04-3f85-7261-af8f-b3986578bca2
+    rating: neutral
+    rationale: "a new sort is a new prefix"
+  - option: 01a16a04-3f85-7261-af8f-b39ce6e1add6
+    driver: 01a16a04-3f85-7261-af8f-b399b91a0efd
+    rating: conflicts
+    rationale: "an old title that starts with the prefix turns into a fix"
+consequences:
+  - key: 01a16a04-3f85-7261-af8f-b39d13e36c7d
+    kind: obligation
+    statement: "A new type of task is a new word of the closed list, which an older `loft` refuses."
+subjects:
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc52a38e2bbd
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f261e68ee669

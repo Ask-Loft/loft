@@ -7,8 +7,8 @@ mod fields;
 use serde_json::Value;
 
 use crate::body::{
-    Approval, Choice, Kind, Note, Plan, Question, Reason, Stage, Status, Task, TaskState, Tone,
-    View,
+    Approval, Choice, Kind, Note, Plan, Question, Reason, Stage, Status, Task, TaskState, TaskType,
+    Tone, View,
 };
 use crate::keys::Handle;
 
@@ -183,6 +183,9 @@ fn request(kind: Kind, fields: &mut Fields<'_>) -> Request {
             state: fields
                 .word("state", TaskState::parse, &TaskState::words())
                 .unwrap_or(TaskState::Open),
+            kind: fields
+                .word("type", TaskType::parse, &TaskType::words())
+                .unwrap_or(TaskType::Regular),
         }),
         Kind::Plan => Request::Plan(Plan {
             title: fields.text("title"),

@@ -30,6 +30,7 @@ fn full() -> YardLog {
             question("q1"),
             {"id": "d1", "kind": "decision", "stage": "design", "title": "D", "consequence": "C", "question": "q1"},
             {"id": "t1", "kind": "task", "stage": "build", "title": "T", "detail": "true", "state": "active"},
+            {"id": "t2", "kind": "task", "stage": "build", "title": "F", "state": "open", "type": "fix"},
             {"id": "p1", "kind": "plan", "stage": "build", "title": "P", "markdown": "1. one\n2. two\n", "path": "plan.md", "planMode": true},
             {"id": "a1", "kind": "approval", "stage": "build", "title": "A", "markdown": ""},
             {"id": "n2", "kind": "note", "stage": "build", "markdown": "12", "tone": "warning", "folded": true, "title": "null"},
@@ -109,6 +110,18 @@ fn each_stage_s_file_is_named_by_its_key_and_holds_its_blocks_in_order() {
         .map(|id| text.find(id).unwrap())
         .collect();
     assert!(order.is_sorted(), "{text}");
+}
+
+#[test]
+fn a_regular_task_is_kept_without_a_type_and_a_fix_with_its_type() {
+    let log = full();
+    let files = files(&log);
+    let text = &files[&stage_file(log.root.stages[1].key)];
+    let regular = text.find("id: t1\n").unwrap();
+    let fix = text.find("id: t2\n").unwrap();
+    let after = text.find("id: p1\n").unwrap();
+    assert!(!text[regular..fix].contains("type:"), "{text}");
+    assert!(text[fix..after].contains("type: fix"), "{text}");
 }
 
 #[test]

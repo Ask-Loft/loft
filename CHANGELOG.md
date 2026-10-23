@@ -28,6 +28,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
     own dialog, mirrors tasks, records each session's events and tokens, keeps one page server
     for the machine, and gives each session where its Yard Log stands. The `yard` skill teaches
     the agent to keep Yard Log. The plugin's new setting `yardPort` names the page's port.
+  - A task has a type, `regular` or `fix`: a fix is work the person asked for to correct what was
+    already done. The agent gives it in a task's metadata (`metadata: { type: "fix" }`), and the
+    page marks each fix in the timeline and draws it in a tone of its own in the Gantt chart.
   - New crates: `yardlog`, Yard Log's model; `yardlog-store`, its store; `loft-common`, the
     strict YAML subset, the key and the UTC time, which `loftspec` re-exports where it always
     had them; and `loft-ports`, the journaled save, the runner of git and the clock, beneath
