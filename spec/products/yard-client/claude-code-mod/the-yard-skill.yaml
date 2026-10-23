@@ -39,6 +39,8 @@ requirements:
         name: "The skill says to tell the person the plan is ready and that the build waits for them to ask for it."
       - key: 01a1646f-546c-7521-9643-bc86e32bb596
         name: "The skill says that a plan the person approved counts as asking for the build it describes."
+      - key: 01a16a1a-78f9-750e-8105-fbc410ef6700
+        name: "The skill says that a change to the specification the person approved does not count as asking for its build."
   - key: 01a1646f-546c-7521-9643-bc87117049c9
     statement:
       form: ubiquitous
@@ -83,19 +85,45 @@ requirements:
     criteria:
       - key: 01a1646f-546c-7521-9643-bc90aff52ee8
         name: "The skill says to write the note in Markdown, with tables and diagrams where they help."
+  - key: 01a16a1a-78f9-750e-8105-fbc54c09e2a8
+    statement:
+      form: optional
+      where: "the working tree holds a Loft specification"
+      system: "the `yard` skill"
+      shall: "tell the agent to have the person approve each change to the specification, drawn as its `spec-change` view, before the change is committed and its build planned."
+    criteria:
+      - key: 01a16a1a-78f9-750e-8105-fbc646218d46
+        name: "The skill says to send an `approval` of the change right after its `spec-change` block, in the same stage."
+      - key: 01a16a1a-78f9-750e-8105-fbc76a2f5fc2
+        name: "The skill says that a change the person rejected is revised in `spec/` without a commit, then recorded as a new `spec-change` block and sent as a new approval right after it."
+      - key: 01a16a1a-78f9-750e-8105-fbc84d7fb68f
+        name: "The skill says to commit `spec/` once the person approves the change, and not before."
   - key: 01a1646f-546c-7521-9643-bc918ba7f585
     statement:
       form: optional
       where: "the working tree holds a Loft specification"
       system: "the `yard` skill"
-      shall: "tell the agent to enter plan mode once a change to the specification is written, and to plan the build there before writing any of its code."
+      shall: "tell the agent to enter plan mode once the person has approved a change to the specification, and to plan the build there before writing any of its code."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc92617d867b
-        name: "The skill says to call `EnterPlanMode` once a change to `spec/` is committed and its `spec-change` view recorded, before any code of the build is written."
+        name: "The skill says to call `EnterPlanMode` once the person has approved the change to `spec/` and it is committed, before any code of the build is written."
       - key: 01a1646f-546c-7521-9643-bc935d3e9837
-        name: "The skill says to present the build as a plan with `ExitPlanMode`, worked out from the specification just written."
+        name: "The skill says to present the build as a plan with `ExitPlanMode`, worked out from the specification the person approved."
       - key: 01a1646f-546c-7521-9643-bc946d49d602
         name: "The skill says that the build begins only once the person approves that plan, and that a rejected plan is revised in plan mode."
+  - key: 01a16a1a-78f9-750e-8105-fbc943c07728
+    statement:
+      form: optional
+      where: "the working tree holds a Loft specification"
+      system: "the `yard` skill"
+      shall: "tell the agent, where the person changes a requirement after the plan of its build is approved, to plan again only the steps that the change touches."
+    criteria:
+      - key: 01a16a1a-78f9-750e-8105-fbca6aafd170
+        name: "The skill says to commit the change to `spec/` and record its `spec-change` view before any code that meets it is written."
+      - key: 01a16a1a-78f9-750e-8105-fbcbef954e33
+        name: "The skill says to present with `ExitPlanMode` only the steps whose criteria the change touches."
+      - key: 01a16a1a-78f9-750e-8105-fbcc6dc8461d
+        name: "The skill says that the steps of the approved plan that the change leaves untouched stand without being presented again."
   - key: 01a1646f-546c-7521-9643-bc95df727d8d
     statement:
       form: optional
@@ -104,7 +132,7 @@ requirements:
       shall: "tell the agent to record a `loft` block at each point of the specification's work that its view reports, in place of a note that retells `loft`'s report."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc9624480b9b
-        name: "The skill says to record a `spec-change` view once a change to `spec/` is committed."
+        name: "The skill says to record a `spec-change` view once a change to `spec/` passes `loft fmt --check` and `loft check --fail-on warning`, whether or not it is committed."
       - key: 01a1646f-546c-7521-9643-bc9709f3a295
         name: "The skill says to record a `decision` view once a decision of the specification is accepted."
       - key: 01a1646f-546c-7521-9643-bc9864856f4d
