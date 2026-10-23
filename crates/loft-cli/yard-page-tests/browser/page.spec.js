@@ -178,7 +178,8 @@ test('a Yard Log opened in another tree the page server serves shows in the list
   expect(registered.status).toBe(200);
   await page.goto(address());
   await expect(page.locator('.trees > .repository')).toHaveCount(2, { timeout: LIVE });
-  const other = page.locator(`.worktree:has(h3[title="${setup.other.cwd}"]) .log-item`);
+  // The other tree is its repository's main worktree, named once, by the repository's heading.
+  const other = page.locator(`.repository:has(> h2[title="${setup.other.cwd}"]) .log-item`);
   await expect(other).toHaveCount(0);
   writeOther([{ id: 'docs', kind: 'stage', title: 'Write the docs', status: 'active' }]);
   await expect(other).toHaveCount(1, { timeout: LIVE });

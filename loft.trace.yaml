@@ -21800,7 +21800,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a Yard Log opened in another tree the page server serves shows in the list within 2 seconds"
-        body: 3b951449bbe8da339a4ca517b3d6ddcf89cd1fe14aa4f7343ff8898f6b87febf
+        body: 0b56d7ede8869bcee5000585218bd4635121b24cd3f7d7421ed2da9edcc8d474
   - node: 01a1646f-546d-7042-befd-eb5140658694
     reviewed: 1e2c80d37d8d6981f5730d55fab8b4f0bd2c9b1c28a7af964f364d3d5083b932
     tests:
