@@ -31,6 +31,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   - A task has a type, `regular` or `fix`: a fix is work the person asked for to correct what was
     already done. The agent gives it in a task's metadata (`metadata: { type: "fix" }`), and the
     page marks each fix in the timeline and draws it in a tone of its own in the Gantt chart.
+  - The `yard` skill has the person approve a change to the specification before it is committed
+    and its build planned: the agent records its `spec-change` view over the working tree and
+    sends an approval right after it, revising without a commit until the person approves. A
+    requirement changed once the build's plan is approved is planned again only in the steps it
+    touches.
   - New crates: `yardlog`, Yard Log's model; `yardlog-store`, its store; `loft-common`, the
     strict YAML subset, the key and the UTC time, which `loftspec` re-exports where it always
     had them; and `loft-ports`, the journaled save, the runner of git and the clock, beneath
