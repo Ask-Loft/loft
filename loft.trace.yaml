@@ -23059,20 +23059,35 @@ links:
         name: "a_trace_view_holds_the_outcome_of_loft_reconcile_and_the_criteria_of_each_feature_the_branch_changed"
         body: 05672263797e0f019e1ef85cd6214f4123958fe63c7e1d036a5a036ec527fd5b
   - node: 01a16571-d769-7590-94aa-9784cae11170
-    reviewed: 8963a10406ef5d77961805a56956c7089f1db5b52a9944e7893c5036dcac8f16
+    reviewed: 783b2873763518206e47f5d18d9315b4203cd3a39d43642c168cc72862ad5e00
     tests:
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
-        name: "a_spec_change_view_draws_a_changed_feature_under_its_feature_group_and_product"
-        body: 42356924fcb1dd4eb2355e1d7cc3e801a0c212a45ec45ce9247edfe4b1f8e2e4
+        name: "a_spec_change_view_draws_a_changed_criterion_under_its_requirement_feature_feature_group_and_product"
+        body: f3ff76bf3ae79d1a20490cbe68983f47160afb2f05b05febc65dcf4c7db56d7f
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
-        name: "a_spec_change_view_counts_a_feature_s_requirements_and_criteria_and_those_changed"
-        body: 9ca66a08b3fa2f89d141fb34fa4636bebcd089b7f7929dd6cdf8b755bc35d600
+        name: "a_spec_change_view_draws_no_unchanged_requirement_and_counts_none_on_a_feature"
+        body: 5592258d744130a8a237b2a740098df92a0782baf9fe437ced497430610f0fcd
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_spec_change_view_draws_the_realizes_edge_between_two_changed_boxes"
         body: f1f7dbd05080ef52aa0416c79d3627c0a7257468e5544f4239b5901f1c18eaf6
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_spec_change_view_of_no_change_draws_no_box"
         body: 1c0f4b012550204b3b24cdaaf69d258a96faabe45f1b48d31cbdf67a748a049c
+  - node: 01a16961-6ff0-7438-8679-6b7e58b8c092
+    reviewed: 6a9dfcfa3e29a3fde6a53bd117cfdf476dbb774bc7111f1d3f3cce26580d4046
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_a_changed_criterion_s_words_before_and_after"
+        body: dad9d8ec9efe636cceab0f73fbfc2169204a0bbc8a138ec214b50c456f6c95ce
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_an_added_node_s_words_after_and_a_removed_one_s_before"
+        body: 736dfbd59c9510bb0f81de943d769ba83d2496a39cc2a3c8e5ea28f8938a4700
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_a_decision_s_title_and_outcome"
+        body: 9be362e3f74e75e46b6ca73d39d187df09745770a7eb2f2c7a6a4aaa528153f2
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_the_same_words_before_and_after_where_only_tags_changed"
+        body: cfec5f19350240842808f362b38b342249c155529bf66cd3dbc7ac768adfb7ce
   - node: 01a16571-d769-7590-94aa-9785944c7484
     reviewed: 03cf7688a67b5550592c6d3d0eb70d2a9d2bc5139cf2d1d3a077fe2b6c0c1f25
     tests:
@@ -23223,18 +23238,6 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a Feature box counts its Requirements and criteria, and those added, changed or removed"
         body: 976e57faf3bef2bd2daa8af53e5db50c8f471a280a2d0898267bf63b9bcff40d
-  - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
-    reviewed: eac542827b2b8c72d2e7c4da04766ee0073edcc60e90c10a955c1b9230ca3efc
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
-        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
-  - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
-    reviewed: b0e2772049c3cf78b3c3aa90fdb1ddde2d24a818b5873679263fe530f7ebc87a
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
-        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
   - node: 01a1646f-546d-7042-befd-eac6d7f3526d
     reviewed: 4ed5abc236ae1444aadb7a591c678222470ee5f95f3e3788e366cf3bc508cd9e
     tests:
@@ -23247,6 +23250,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change view of no change says that the specification has not changed since the base revision"
         body: 4518e36f431f870d396db1c24a82dfaf912feb3100420bbf33ee4d44b808e141
+  - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
+    reviewed: eac542827b2b8c72d2e7c4da04766ee0073edcc60e90c10a955c1b9230ca3efc
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
+        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
+  - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
+    reviewed: b0e2772049c3cf78b3c3aa90fdb1ddde2d24a818b5873679263fe530f7ebc87a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
+        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
   - node: 01a1646f-546d-7042-befd-eac9dc2edaf7
     reviewed: 1ad2a9dbd42978a9eeafca56ff38ff75186ee908cde099aab5d5a5cfa3f811f5
     tests:

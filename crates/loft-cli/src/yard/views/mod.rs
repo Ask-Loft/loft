@@ -8,6 +8,7 @@
 mod decision;
 mod graph;
 mod trace;
+mod words;
 
 use std::path::Path;
 
@@ -141,6 +142,7 @@ fn lists(view: View) -> &'static [&'static [&'static str]] {
             &["graph", "nodes"],
             &["graph", "decisions"],
             &["graph", "edges"],
+            &["graph", "diff"],
         ],
         View::Publish => &[
             &["status", "base", "added"],

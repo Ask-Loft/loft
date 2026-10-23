@@ -1,10 +1,9 @@
 //! What a `spec-change` view's diagram draws (the See a spec change Feature): the changed
-//! Products, Feature Groups, Features and Components as boxes, each Feature Group and Product
-//! above a changed box drawn for context, the changed decisions, and the `realizes` and subject
-//! edges between them. A change to a node that has no box of its own, a Requirement, a
-//! criterion, a constraint, a quality attribute or a Section, marks the nearest box above it as
-//! changed, and a Feature counts its Requirements and criteria and the ones added, changed and
-//! removed.
+//! Products, Feature Groups, Features, Requirements, criteria and Components as boxes, each box
+//! above a changed one drawn for context, the changed decisions, and the `realizes` and subject
+//! edges between them. A change to a node that has no box of its own, a constraint, a quality
+//! attribute or a Section, marks the nearest box above it as changed. Beside the diagram, the
+//! diff gives the words of every added, changed and removed node and decision, before and after.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -16,6 +15,8 @@ use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 use serde_json::{Value, json};
 
+use super::words;
+
 /// One keyed node of a document: what a box or a tree line shows of it, and the node above it.
 #[derive(Debug, Clone)]
 struct Entry {
@@ -23,8 +24,7 @@ struct Entry {
     name: String,
     label: Option<String>,
     parent: Option<Key>,
-    requirements: usize,
-    criteria: usize,
+    words: String,
 }
 
 /// Each keyed node of a document, by its key, in the document's order.
@@ -48,17 +48,6 @@ impl Walked {
     fn visit(&mut self, document: &Document, node: Node<'_>, parent: Option<Key>) {
         let key = node.id().map(loftspec::ids::NodeId::key);
         if let (Some(key), Some(id)) = (key, node.id()) {
-            let (requirements, criteria) = match node {
-                Node::Feature(feature) => (
-                    feature.requirements.len(),
-                    feature
-                        .requirements
-                        .iter()
-                        .map(|requirement| requirement.criteria.len())
-                        .sum(),
-                ),
-                _ => (0, 0),
-            };
             self.entries.insert(
                 key,
                 Entry {
@@ -69,8 +58,7 @@ impl Walked {
                         .label_of(id)
                         .map(|label| label.to_string()),
                     parent,
-                    requirements,
-                    criteria,
+                    words: words::of_node(node),
                 },
             );
             self.order.push(key);
@@ -96,16 +84,13 @@ impl Walked {
 const fn has_box(kind: NodeKind) -> bool {
     matches!(
         kind,
-        NodeKind::Product | NodeKind::FeatureGroup | NodeKind::Feature | NodeKind::Component
+        NodeKind::Product
+            | NodeKind::FeatureGroup
+            | NodeKind::Feature
+            | NodeKind::Requirement
+            | NodeKind::Criterion
+            | NodeKind::Component
     )
-}
-
-/// How a box changed: its own change, and the Requirements and criteria beneath it.
-#[derive(Debug, Default)]
-struct Marked {
-    change: Option<&'static str>,
-    requirements: [usize; 3],
-    criteria: [usize; 3],
 }
 
 const CHANGES: [&str; 3] = ["added", "changed", "removed"];
@@ -115,7 +100,7 @@ pub fn report(base: &Document, document: &Document) -> Value {
     let now = Walked::of(document);
     let then = Walked::of(base);
     let changes = content_changes(base, document);
-    let mut marked: BTreeMap<Key, Marked> = BTreeMap::new();
+    let mut marked: BTreeMap<Key, &'static str> = BTreeMap::new();
     let lists = [&changes.added, &changes.changed, &changes.removed];
     for (index, ids) in lists.into_iter().enumerate() {
         let walked = if index == 2 { &then } else { &now };
@@ -125,10 +110,12 @@ pub fn report(base: &Document, document: &Document) -> Value {
     }
     let shown = shown(&marked, &now, &then);
     let decisions = decisions(base, document);
+    let decided = decisions.iter().map(|(_, value)| value.clone());
     json!({
         "nodes": nodes(&shown, &marked, &now, &then),
-        "decisions": decisions.iter().map(|(_, value)| value.clone()).collect::<Vec<_>>(),
+        "decisions": decided.clone().collect::<Vec<_>>(),
         "edges": edges(&shown, &decisions, document, base, &now, &then),
+        "diff": diff(&lists, &now, &then).into_iter().chain(decided).collect::<Vec<_>>(),
     })
 }
 
@@ -183,36 +170,56 @@ pub fn labels(document: &Document) -> Value {
     json!(counts)
 }
 
-/// Marks the box a change of the node `key` falls to.
-fn mark(marked: &mut BTreeMap<Key, Marked>, walked: &Walked, key: Key, index: usize) {
+/// Marks the box a change of the node `key` falls to: its own, or the nearest box above it,
+/// changed.
+fn mark(marked: &mut BTreeMap<Key, &'static str>, walked: &Walked, key: Key, index: usize) {
     let Some(entry) = walked.entries.get(&key) else {
         return;
     };
     if has_box(entry.kind) {
-        marked.entry(key).or_default().change = Some(CHANGES[index]);
-        return;
+        marked.insert(key, CHANGES[index]);
+    } else if let Some(boxed) = walked.boxed(key) {
+        marked.entry(boxed).or_insert("changed");
     }
-    let Some(boxed) = walked.boxed(key) else {
-        return;
-    };
-    let mark = marked.entry(boxed).or_default();
-    match entry.kind {
-        NodeKind::Requirement => mark.requirements[index] += 1,
-        NodeKind::Criterion => mark.criteria[index] += 1,
-        _ => {}
-    }
-    mark.change.get_or_insert("changed");
+}
+
+/// Every node added, changed and removed, with its words before and after, in the documents'
+/// order: the added and changed in the tree's, then the removed in the base's.
+fn diff(lists: &[&Vec<loftspec::ids::NodeId>; 3], now: &Walked, then: &Walked) -> Vec<Value> {
+    let changed: BTreeMap<Key, usize> = lists
+        .iter()
+        .enumerate()
+        .flat_map(|(index, ids)| ids.iter().map(move |id| (id.key(), index)))
+        .collect();
+    let removed = then.order.iter().filter(|key| changed.get(key) == Some(&2));
+    let present = now.order.iter().filter(|key| changed.contains_key(key));
+    present
+        .chain(removed)
+        .filter_map(|key| {
+            let index = changed[key];
+            let before = (index > 0).then(|| then.entries.get(key)).flatten();
+            let after = (index < 2).then(|| now.entries.get(key)).flatten();
+            let entry = after.or(before)?;
+            Some(json!({
+                "key": key.to_string(),
+                "kind": entry.kind.as_str(),
+                "label": entry.label,
+                "name": entry.name,
+                "change": CHANGES[index],
+                "words": words::pair(
+                    before.map(|entry| entry.words.as_str()),
+                    after.map(|entry| entry.words.as_str()),
+                ),
+            }))
+        })
+        .collect()
 }
 
 /// The boxes drawn: each marked one, and each box above it, in the documents' order.
-fn shown(marked: &BTreeMap<Key, Marked>, now: &Walked, then: &Walked) -> Vec<Key> {
+fn shown(marked: &BTreeMap<Key, &'static str>, now: &Walked, then: &Walked) -> Vec<Key> {
     let mut wanted = BTreeSet::new();
-    for (key, mark) in marked {
-        let walked = if mark.change == Some("removed") {
-            then
-        } else {
-            now
-        };
+    for (key, change) in marked {
+        let walked = if *change == "removed" { then } else { now };
         let mut at = Some(*key);
         while let Some(key) = at {
             let Some(entry) = walked.entries.get(&key) else {
@@ -236,38 +243,27 @@ fn shown(marked: &BTreeMap<Key, Marked>, now: &Walked, then: &Walked) -> Vec<Key
         .collect()
 }
 
-fn nodes(shown: &[Key], marked: &BTreeMap<Key, Marked>, now: &Walked, then: &Walked) -> Value {
+fn nodes(
+    shown: &[Key],
+    marked: &BTreeMap<Key, &'static str>,
+    now: &Walked,
+    then: &Walked,
+) -> Value {
     let nodes = shown.iter().filter_map(|key| {
-        let mark = marked.get(key);
-        let change = mark.and_then(|mark| mark.change);
+        let change = marked.get(key).copied();
         let entry = if change == Some("removed") {
             then.entries.get(key)
         } else {
             now.entries.get(key).or_else(|| then.entries.get(key))
         }?;
-        let mut node = json!({
+        Some(json!({
             "key": key.to_string(),
             "kind": entry.kind.as_str(),
             "label": entry.label,
             "name": entry.name,
             "parent": entry.parent.and_then(|parent| boxed_parent(parent, now, then)),
             "change": change,
-        });
-        if entry.kind == NodeKind::Feature {
-            node["requirements"] = json!(entry.requirements);
-            node["criteria"] = json!(entry.criteria);
-            let counts = |counts: [usize; 3]| {
-                json!({ "added": counts[0], "changed": counts[1], "removed": counts[2] })
-            };
-            let (requirements, criteria) = mark.map_or(([0; 3], [0; 3]), |mark| {
-                (mark.requirements, mark.criteria)
-            });
-            node["delta"] = json!({
-                "requirements": counts(requirements),
-                "criteria": counts(criteria),
-            });
-        }
-        Some(node)
+        }))
     });
     Value::Array(nodes.collect())
 }
@@ -279,7 +275,7 @@ fn boxed_parent(parent: Key, now: &Walked, then: &Walked) -> Option<String> {
         .map(|key| key.to_string())
 }
 
-/// Each decision added, changed or removed, by its key.
+/// Each decision added, changed or removed, by its key, with its words before and after.
 fn decisions(base: &Document, document: &Document) -> Vec<(Key, Value)> {
     let before: BTreeMap<Key, _> = base.decisions.iter().map(|d| (d.id.key(), d)).collect();
     let after: BTreeMap<Key, _> = document.decisions.iter().map(|d| (d.id.key(), d)).collect();
@@ -294,25 +290,35 @@ fn decisions(base: &Document, document: &Document) -> Vec<(Key, Value)> {
             .bindings
             .label_of(decision.id)
             .map(|l| l.to_string());
+        let was = before.get(key).map(|was| words::of_decision(was));
+        let words = words::pair(was.as_deref(), Some(&words::of_decision(decision)));
         found.push((
             *key,
-            decision_json(*key, label.as_deref(), &decision.title, change),
+            decision_json(*key, label.as_deref(), &decision.title, change, &words),
         ));
     }
     for (key, decision) in &before {
         if !after.contains_key(key) {
             let label = base.bindings.label_of(decision.id).map(|l| l.to_string());
+            let words = words::pair(Some(&words::of_decision(decision)), None);
             found.push((
                 *key,
-                decision_json(*key, label.as_deref(), &decision.title, "removed"),
+                decision_json(*key, label.as_deref(), &decision.title, "removed", &words),
             ));
         }
     }
     found
 }
 
-fn decision_json(key: Key, label: Option<&str>, title: &str, change: &str) -> Value {
-    json!({ "key": key.to_string(), "kind": "decision", "label": label, "name": title, "change": change })
+fn decision_json(key: Key, label: Option<&str>, title: &str, change: &str, words: &Value) -> Value {
+    json!({
+        "key": key.to_string(),
+        "kind": "decision",
+        "label": label,
+        "name": title,
+        "change": change,
+        "words": words,
+    })
 }
 
 /// The `realizes` edges between boxes drawn, and the subject edges from each decision drawn to
