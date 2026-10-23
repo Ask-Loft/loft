@@ -218,6 +218,33 @@ fn each_run_records_in_sessions_json_the_time_the_session_was_heard() {
 }
 
 #[test]
+fn the_page_server_records_a_session_its_mod_says_is_live_as_heard() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &[]);
+    let reply = served
+        .post_as_mod("/api/heard", &json!({ "session": "s7" }))
+        .json();
+    assert_eq!(reply["session"], "s7", "{reply}");
+    assert_eq!(yard.home_file("sessions.json")["s7"], EPOCH_TEXT);
+}
+
+#[test]
+fn each_event_a_session_s_mod_posts_counts_as_hearing_the_session() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let dir = yard.scratch.0.canonicalize().unwrap().display().to_string();
+    let served = Served::start(&yard, &["--tree", &dir]);
+    let event = json!({
+        "session": "s8",
+        "dir": dir,
+        "at": "2026-01-01T10:00:00Z",
+        "kind": "turn.start",
+    });
+    served.post_as_mod("/api/events", &json!([event]));
+    assert_eq!(yard.home_file("sessions.json")["s8"], EPOCH_TEXT);
+}
+
+#[test]
 fn server_json_gives_the_port_process_id_version_and_formats() {
     let yard = Yard::new();
     let served = Served::start(&yard, &[]);

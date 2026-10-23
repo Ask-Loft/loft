@@ -11,6 +11,7 @@ mod branch;
 mod caller;
 mod change;
 mod close;
+mod continuation;
 mod failure;
 mod input;
 pub mod merge;
@@ -50,6 +51,7 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Close(args) => close::run(root, args),
         YardAction::Published(args) => published::run(root, args),
         YardAction::Answer(args) => answer::run(root, args),
+        YardAction::Continue(args) => continuation::run(&args),
         YardAction::Protocol { output } => protocol::run(output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),
         YardAction::Serve(args) => serve::run(&args),

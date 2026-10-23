@@ -1,7 +1,8 @@
 //! Taking up a submission: the main agent of another session waits on an open submission once
 //! the session that sent it has not been heard for 60 seconds, no session continues it and no
 //! wait holds it; the take-up is an Act, and the submission then counts as sent by the session
-//! that took it up. A session is heard each time it runs a command that names it.
+//! that took it up. A session is heard only through the page server, on its mod's beat or an event it
+//! posts, as `~/.yard/sessions.json` records it; no command that names it records it.
 
 use serde_json::json;
 use software_plant::Clock;
@@ -10,21 +11,34 @@ use crate::common::EPOCH;
 use crate::yard::{BRANCH, Yard};
 use crate::yard_wait::{send, wait};
 
-/// A Yard Log whose submission session `s1` sent at [`EPOCH`], and the submission's key, with the
-/// clock `seconds` later for the commands after.
+/// Records `session` as heard at `at`, as the page server records the beat of its mod.
+fn heard(yard: &Yard, session: &str, at: &str) {
+    let home = yard.scratch.home().join(".yard");
+    std::fs::create_dir_all(&home).unwrap();
+    let sessions = json!({ session: at }).to_string();
+    std::fs::write(home.join("sessions.json"), sessions).unwrap();
+}
+
+/// A Yard Log whose submission session `s1` sent at [`EPOCH`], when its mod was last heard, and
+/// the submission's key, with the clock `seconds` later for the commands after.
 fn sent_then(seconds: u64) -> (Yard, String) {
     let mut yard = Yard::new();
     let submission = send(&yard, "s1");
+    heard(&yard, "s1", "2026-01-01T00:00:00Z");
     yard.clock = Clock::fixed(EPOCH + seconds);
     (yard, submission)
 }
 
 #[test]
-fn a_session_is_heard_each_time_it_runs_a_command_that_names_it() {
-    let (yard, _) = sent_then(0);
-    assert_eq!(
-        yard.home_file("sessions.json"),
-        json!({ "s1": "2026-01-01T00:00:00Z" })
+fn no_command_but_serve_records_a_session_as_heard() {
+    let yard = Yard::new();
+    send(&yard, "s1");
+    yard.read("s1", &["--mark-read"]);
+    yard.run(&["close", "--session", "s1"]);
+    let sessions = yard.scratch.home().join(".yard").join("sessions.json");
+    assert!(
+        !sessions.exists(),
+        "a command recorded its session as heard"
     );
 }
 
@@ -75,7 +89,7 @@ fn a_submission_whose_session_was_heard_within_60_seconds_is_not_taken_up() {
 fn a_submission_of_a_session_another_continues_is_not_taken_up() {
     let mut yard = Yard::new();
     let submission = send(&yard, "s1");
-    yard.read("s3", &["--continues", "s1"]);
+    yard.run(&["continue", "--session", "s3", "--from", "s1"]);
     yard.clock = Clock::fixed(EPOCH + 61);
     let (code, refused) = wait(&yard, "s2", &submission, &["--timeout", "0"]);
     assert_eq!(code, Some(1));

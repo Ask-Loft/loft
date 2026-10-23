@@ -9,25 +9,24 @@ use std::path::{Path, PathBuf};
 use serde_json::{Value, json};
 use yardlog::Channel;
 use yardlog_store::Held;
+use yardlog_store::Place;
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
-use yardlog_store::{Place, YardStore};
 
 use super::http::Response;
 use super::trees::{is_served, store_of};
 use super::{markdown, session_files};
-use crate::cli::{Format, Output};
 use crate::json;
 use crate::yard::answer::record;
 use crate::yard::answer_input;
-use crate::yard::args::{Beyond, ReadArgs, Runner};
+use crate::yard::args::{Beyond, Runner};
 use crate::yard::branch::Branch;
 use crate::yard::caller::{Caller, Continuations};
 use crate::yard::failure::Failure;
-use crate::yard::read::document;
+use crate::yard::read::{settler, shown};
 use crate::yard::render::{act, actor};
-use crate::yard::render_log::{Selection, root, stages, submissions};
+use crate::yard::render_log::Selection;
 
 const ANSWER_SCHEMA: &str = "loft-yard-answer/1";
 const READ_SCHEMA: &str = "loft-yard-read/1";
@@ -80,7 +79,7 @@ pub fn read(home: &Home, tree: Option<&str>, branch: Option<&str>, port: u16) ->
     let read = if place.branch.as_deref() == Some(branch.as_str()) {
         current(&tree, beyond)
     } else {
-        inherited(&place, &branch, port)
+        inherited(&place, &branch, beyond)
     };
     match read.and_then(|fields| with_sessions(fields, &place, &branch)) {
         Ok(fields) => Response::json(200, &json::result(READ_SCHEMA, "read", fields, Vec::new())),
@@ -122,60 +121,40 @@ fn sent(log: &yardlog::YardLog) -> Value {
     Value::Array(submissions.collect())
 }
 
-/// The tree's current branch's Yard Log, as `loft yard read --versions` gives it.
+/// The tree's current branch's Yard Log, as `loft yard read --versions` gives it: settled where
+/// a merge left it unsettled, by the person, as a read with no agent settles it.
 fn current(tree: &Path, beyond: Beyond) -> Result<Value, Failure> {
-    let args = ReadArgs {
-        since: None,
-        versions: true,
-        peek: true,
-        agent: Runner {
-            session: None,
-            agent: None,
-            agent_type: None,
-            continues: None,
-        },
-        beyond,
-        output: Output {
-            format: Some(Format::Json),
-        },
-    };
-    let mut fields = document(tree, args)?;
+    let branch = Branch::locate(tree, beyond)?;
+    let caller = Caller::new(&Runner::default());
+    let held = branch.open(crate::yard::now()?, || settler(&caller, &branch))?;
+    let mut fields = shown_with_versions(&branch, held)?;
     fields["inherited"] = json!(false);
     Ok(fields)
 }
 
-/// Yard Log of a branch the tree is not on, carried from the branch it was cut from: shown to
-/// read, never settled or written.
-fn inherited(place: &Place, branch: &str, port: u16) -> Result<Value, Failure> {
-    let store: YardStore = store_of(place, branch)?;
-    let mut fields = json!({
-        "tree": place.tree.display().to_string(),
-        "branch": branch,
-        "commonDir": place.common_dir.display().to_string(),
-        "inherited": true,
-        "page": { "available": true, "port": port, "url": crate::yard::page::url(port, &place.tree, branch) },
-    });
-    let log = match store.read()? {
-        Held::Log(log) => *log,
-        Held::Newer(_) => match store.read_partial()? {
-            Some(partial) => {
-                fields["leftOut"] = json!(partial.left_out);
-                partial.log
-            }
-            None => return Err(Failure::one("absent", "the branch has no Yard Log")),
-        },
-        Held::Absent => return Err(Failure::one("absent", "the branch has no Yard Log")),
-    };
-    fields["revision"] = json!(log.root.revision);
-    fields["yardLog"] = root(&log, false);
+/// Yard Log of a branch the tree is not on, carried from the branch it was cut from: rendered
+/// as the current branch's is, never settled or written.
+fn inherited(place: &Place, branch: &str, beyond: Beyond) -> Result<Value, Failure> {
+    let mut there = place.clone();
+    there.branch = Some(branch.to_owned());
+    let branch = Branch::at(YardGit::default(), there, beyond)?;
+    let held = branch.store.read()?;
+    if matches!(held, Held::Absent) {
+        return Err(Failure::one("absent", "the branch has no Yard Log"));
+    }
+    let mut fields = shown_with_versions(&branch, held)?;
+    fields["inherited"] = json!(true);
+    Ok(fields)
+}
+
+/// Yard Log as a read with every version renders it, recording nothing.
+fn shown_with_versions(branch: &Branch, held: Held) -> Result<Value, Failure> {
     let selection = Selection {
         since: None,
         every_version: true,
     };
-    fields["stages"] = Value::Array(stages(&log, &selection));
     let continuations = Continuations::read(Home::from_env().as_ref())?;
-    fields["submissions"] = Value::Array(submissions(&log, &continuations));
-    Ok(fields)
+    Ok(shown(branch, held, &selection, &continuations)?.0)
 }
 
 /// Records the answers and decisions the page sent: `{ tree, branch, answers }`, each
@@ -204,13 +183,7 @@ pub fn answer(home: &Home, body: &[u8], port: u16) -> Response {
         Ok(named) => named,
         Err(failure) => return answer_failure(failure, ANSWER_SCHEMA),
     };
-    let caller = Caller::new(Runner {
-        session: None,
-        agent: None,
-        agent_type: None,
-        continues: None,
-    });
-    match record(&branch, &named, &caller, Channel::Page) {
+    match record(&branch, &named, Channel::Page) {
         Ok((fields, errors)) => {
             let outcome = if errors.is_empty() {
                 "answered"

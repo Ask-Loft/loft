@@ -98,7 +98,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 28] = [
+pub const COMMANDS: [Entry; 29] = [
     ("loft-check", &["check"], Fixture::Unkeyed, "check"),
     ("loft-fmt", &["fmt"], Fixture::Unkeyed, "fmt"),
     (
@@ -256,6 +256,13 @@ pub const COMMANDS: [Entry; 28] = [
         &["yard", "protocol"],
         Fixture::Empty,
         "yard-protocol",
+    ),
+    // A continuation is the machine's: it needs no repository.
+    (
+        "record-a-continuation",
+        &["yard", "continue", "--session", "s2", "--from", "s1"],
+        Fixture::Empty,
+        "yard-continue",
     ),
     (
         "upgrade-open-yard-logs",

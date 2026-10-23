@@ -1,6 +1,7 @@
 //! When each session was last heard, in `~/.yard/sessions.json`: a session is heard each time
-//! its mod runs `loft yard serve`, and each time it runs a `loft yard` command that names it. A
-//! session not heard for 60 seconds has stopped, and the submissions it sent may be taken up.
+//! the page server hears from its mod, on the mod's beat or with an event it posts, and when its
+//! mod runs `loft yard serve`; no other command records it. A session not heard for 60 seconds
+//! has stopped, and the submissions it sent may be taken up.
 
 use std::collections::BTreeMap;
 use std::time::Duration;

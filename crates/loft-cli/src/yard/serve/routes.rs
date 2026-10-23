@@ -25,7 +25,8 @@ use super::logs;
 use super::stream::stream;
 use super::trees;
 use crate::yard::failure::Failure;
-use crate::yard::protocol;
+use crate::yard::{protocol, sessions};
+use yardlog_store::session::is_session_id;
 
 /// Answers the one request `connection` carries.
 pub fn handle(server: &Server, mut connection: Connection) {
@@ -86,6 +87,7 @@ fn respond(server: &Server, request: &Request) -> Response {
         ),
         ("POST", "/api/answer") => logs::answer(home, &request.body, server.port),
         ("POST", "/api/register") => register(server, &request.body),
+        ("POST", "/api/heard") => heard(server, &request.body),
         ("POST", "/api/events") => server.sessions.record(home, &request.body),
         ("GET", path) if !path.starts_with("/api/") => match assets::find(path) {
             Some(asset) => Response::file(asset.kind, asset.encoding, asset.body),
@@ -109,6 +111,25 @@ fn register(server: &Server, body: &[u8]) -> Response {
             server.changes.fetch_add(1, Ordering::SeqCst);
             Response::json(200, &json!({ "tree": tree.display().to_string() }))
         }
+        Err(failure) => failed(failure),
+    }
+}
+
+/// Records that the session a mod names is live: its beat, every 5 seconds.
+fn heard(server: &Server, body: &[u8]) -> Response {
+    let sent: Value = serde_json::from_slice(body).unwrap_or(Value::Null);
+    let Some(session) = sent["session"]
+        .as_str()
+        .filter(|session| is_session_id(session))
+    else {
+        return Response::refused(400, "session", "the request names no session");
+    };
+    let heard = crate::yard::now().and_then(|at| {
+        sessions::heard(&server.home, session, at)?;
+        Ok(at)
+    });
+    match heard {
+        Ok(at) => Response::json(200, &json!({ "session": session, "heard": at.to_string() })),
         Err(failure) => failed(failure),
     }
 }

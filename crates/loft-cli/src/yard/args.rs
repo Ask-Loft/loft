@@ -34,6 +34,8 @@ pub enum YardAction {
     Published(PublishedArgs),
     /// Record the person's answers and decisions given in the agent host's own dialog.
     Answer(AnswerArgs),
+    /// Record that a session continues one that ended, as after `/clear` or a resume.
+    Continue(ContinueArgs),
     /// Report the protocol the `loft yard` commands speak and the yardlog formats they read and
     /// write.
     Protocol {
@@ -63,7 +65,7 @@ pub struct ServeArgs {
 }
 
 /// The agent that runs a command, as a host names it.
-#[derive(Args, Clone)]
+#[derive(Args, Clone, Default)]
 pub struct Runner {
     /// The id of the session whose agent runs the command.
     #[arg(long, value_name = "ID")]
@@ -74,9 +76,6 @@ pub struct Runner {
     /// The type of the subagent that runs the command.
     #[arg(long, value_name = "TYPE", requires = "agent")]
     pub agent_type: Option<String>,
-    /// The id of the session this one continues, as after `/clear`.
-    #[arg(long, value_name = "ID", requires = "session")]
-    pub continues: Option<String>,
 }
 
 /// The agent that runs a command that changes Yard Log, which must name its session.
@@ -91,9 +90,6 @@ pub struct Writer {
     /// The type of the subagent that runs the command.
     #[arg(long, value_name = "TYPE", requires = "agent")]
     pub agent_type: Option<String>,
-    /// The id of the session this one continues, as after `/clear`.
-    #[arg(long, value_name = "ID")]
-    pub continues: Option<String>,
 }
 
 impl From<Writer> for Runner {
@@ -102,7 +98,6 @@ impl From<Writer> for Runner {
             session: Some(writer.session),
             agent: writer.agent,
             agent_type: writer.agent_type,
-            continues: writer.continues,
         }
     }
 }
@@ -123,9 +118,9 @@ pub struct ReadArgs {
     /// Return every version of each block returned, oldest first.
     #[arg(long)]
     pub versions: bool,
-    /// Leave the revision the agent last read as it was: a read made on the agent's behalf.
-    #[arg(long)]
-    pub peek: bool,
+    /// Record the revision read as the one the calling agent last read: the agent's own read.
+    #[arg(long, requires = "session")]
+    pub mark_read: bool,
     #[command(flatten)]
     pub agent: Runner,
     #[command(flatten)]
@@ -228,6 +223,18 @@ pub struct AnswerArgs {
 pub struct UpgradeArgs {
     #[command(flatten)]
     pub beyond: Beyond,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+#[derive(Args)]
+pub struct ContinueArgs {
+    /// The id of the session that goes on.
+    #[arg(long, value_name = "ID")]
+    pub session: String,
+    /// The id of the session that ended, which `--session` continues.
+    #[arg(long, value_name = "ID")]
+    pub from: String,
     #[command(flatten)]
     pub output: Output,
 }

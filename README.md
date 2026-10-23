@@ -101,7 +101,7 @@ needs.
 | `loft terms` | Lists the names the specification may be using for one concept, and the subjects of each Product's statements, for the term list to decide |
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
 | `loft merge-driver` | Merges one file of `spec/` or `.yard/` as git's merge driver; `--install` registers it for both |
-| `loft yard <command>` | Keeps the branch's Yard Log for Yard Client: `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `protocol`, `upgrade`, and `serve`, the page server |
+| `loft yard <command>` | Keeps the branch's Yard Log for Yard Client: `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `continue`, `protocol`, `upgrade`, and `serve`, the page server |
 | `loft skill install [--no-plugin]` | Writes the agent skill into the current directory, or brings it up to date; `--no-plugin` leaves `.claude/settings.json` alone |
 
 ## Agents

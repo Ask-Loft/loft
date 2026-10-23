@@ -197,18 +197,19 @@ fn a_read_since_the_current_revision_returns_no_block() {
 fn the_revision_last_read_is_kept_for_each_agent_apart_in_the_machine_s_home() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.read("s1", &[]);
+    yard.read("s1", &["--mark-read"]);
     yard.write("s1", NOTES, &[]);
     yard.run(&[
         "read",
         "--session",
         "s1",
+        "--mark-read",
         "--agent",
         "a1",
         "--agent-type",
         "plan",
     ]);
-    let key = yard.read("s2", &[])["yardLog"]["key"]
+    let key = yard.read("s2", &["--mark-read"])["yardLog"]["key"]
         .as_str()
         .unwrap()
         .to_owned();
@@ -220,9 +221,9 @@ fn the_revision_last_read_is_kept_for_each_agent_apart_in_the_machine_s_home() {
 fn a_read_by_one_agent_leaves_the_revision_another_last_read_as_it_was() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.read("s1", &[]);
+    yard.read("s1", &["--mark-read"]);
     yard.write("s1", NOTES, &[]);
-    yard.read("s2", &[]);
+    yard.read("s2", &["--mark-read"]);
     assert_eq!(yard.read("s1", &[])["lastRead"], 1);
 }
 
@@ -230,9 +231,9 @@ fn a_read_by_one_agent_leaves_the_revision_another_last_read_as_it_was() {
 fn an_agent_with_no_revision_of_its_own_starts_from_the_latest_any_agent_last_read() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.read("s1", &[]);
+    yard.read("s1", &["--mark-read"]);
     yard.write("s1", NOTES, &[]);
-    yard.read("s2", &[]);
+    yard.read("s2", &["--mark-read"]);
     assert_eq!(yard.read("s3", &[])["lastRead"], 2);
 }
 
@@ -252,13 +253,34 @@ fn recording_the_revision_read_changes_no_file_under_yard_and_does_not_raise_the
 }
 
 #[test]
-fn a_peek_leaves_the_revision_the_agent_last_read_as_it_was() {
+fn a_read_without_mark_read_leaves_the_revision_the_agent_last_read_as_it_was() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.read("s1", &[]);
+    yard.read("s1", &["--mark-read"]);
     yard.write("s1", NOTES, &[]);
-    let peeked = yard.read("s1", &["--peek"]);
-    assert_eq!(peeked["revision"], 2);
-    assert_eq!(peeked["lastRead"], 1);
+    let unmarked = yard.read("s1", &[]);
+    assert_eq!(unmarked["revision"], 2);
+    assert_eq!(unmarked["lastRead"], 1);
     assert_eq!(yard.read("s1", &[])["lastRead"], 1);
+}
+
+#[test]
+fn a_read_without_mark_read_writes_no_file_of_the_machine_s_home() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let home = yard.scratch.home().join(".yard");
+    std::fs::create_dir_all(&home).unwrap();
+    let before = snapshot(&home);
+    yard.read("s1", &[]);
+    yard.read("s2", &["--agent", "a1", "--agent-type", "Explore"]);
+    assert!(snapshot(&home) == before, "a file of ~/.yard/ changed");
+}
+
+#[test]
+fn mark_read_without_session_exits_2_and_names_session() {
+    let yard = Yard::new();
+    let output = yard.run(&["read", "--mark-read"]);
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("--session"), "{stderr}");
 }

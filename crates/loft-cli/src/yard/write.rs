@@ -13,7 +13,6 @@ use yardlog::input::{Fault, Request, read_batch};
 use yardlog::keys::Handle;
 use yardlog::write::{Context, Refusal, Written};
 use yardlog::{Format, YardLog};
-use yardlog_store::home::Home;
 use yardlog_store::{Held, YardStoreError};
 
 use super::args::WriteArgs;
@@ -71,11 +70,10 @@ struct Applied {
 }
 
 fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
-    let caller = Caller::new(args.writer.into());
+    let caller = Caller::new(&args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
     let batch = super::input::json(&args.input)?;
     let at = super::now()?;
-    caller.arrive(Home::from_env().as_ref(), at)?;
     let agent = caller.agent().clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(agent.clone())))?;
     let inputs = match read_batch(&batch) {

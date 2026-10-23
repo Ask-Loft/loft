@@ -1,12 +1,13 @@
 //! `loft yard read` (the Read Yard Log Feature): the branch's Yard Log at its current revision,
-//! or only what changed since a revision the agent read before. A read records, in
-//! `~/.yard/last-read.json`, the revision that agent read; it changes no file under `.yard/` and
-//! does not raise the revision, but for settling Yard Log a merge left unsettled.
+//! or only what changed since a revision the agent read before. A read writes nothing but the
+//! settling of Yard Log a merge left unsettled; with `--mark-read` it also records, in
+//! `~/.yard/last-read.json`, the revision the calling agent read. How a read renders Yard Log is
+//! one function, [`shown`], which the page server renders every Yard Log it serves with too.
 
 use std::path::Path;
 
 use serde_json::{Value, json};
-use yardlog::{Actor, Format};
+use yardlog::{Actor, Format, YardLog, YardLogKey};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 use yardlog_store::{Held, Place};
@@ -22,6 +23,9 @@ use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-read/1";
 const OUTCOME: &str = "read";
+
+/// What a read read, as `--mark-read` records it: Yard Log's key and the revision.
+type Marked = (YardLogKey, u64);
 
 pub fn run(root: &Path, args: ReadArgs) -> Finished {
     let as_json = args.output.json();
@@ -63,7 +67,7 @@ fn detached(place: &Place, port: u16) -> Value {
 }
 
 pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
-    let caller = Caller::new(args.agent);
+    let caller = Caller::new(&args.agent);
     let git = YardGit::default();
     let place = Place::locate(&git, dir)?;
     if place.branch.is_none() {
@@ -73,47 +77,60 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     }
     let branch = Branch::at(git, place, args.beyond)?;
     let home = Home::from_env();
-    let at = super::now()?;
-    caller.arrive(home.as_ref(), at)?;
-    let held = branch.open(at, || settler(&caller, &branch))?;
-    let mut fields = branch.fields(revision_of(&held));
-    fields["ignored"] = json!(branch.git.ignores_yard(&branch.place().tree)?);
+    let held = branch.open(super::now()?, || settler(&caller, &branch))?;
+    let continuations = Continuations::read(home.as_ref())?;
+    let selection = Selection {
+        since: args.since,
+        every_version: args.versions,
+    };
+    let (mut fields, read) = shown(&branch, held, &selection, &continuations)?;
     if let Some(since) = args.since {
         fields["since"] = json!(since);
     }
+    if let (Some(agent), Some(home), Some((key, revision))) = (&caller.agent, &home, read) {
+        let reader = continuations.identity(agent);
+        let last_read = LastRead::new(home);
+        if let Some(before) = last_read.before(key, &reader)? {
+            fields["lastRead"] = json!(before);
+        }
+        if args.mark_read {
+            last_read.record(key, &reader, revision)?;
+        }
+    }
+    Ok(fields)
+}
+
+/// The branch's Yard Log as it is held, as a read gives it, with the key and revision of what it
+/// read; it records nothing and settles nothing.
+pub fn shown(
+    branch: &Branch,
+    held: Held,
+    selection: &Selection,
+    continuations: &Continuations,
+) -> Result<(Value, Option<Marked>), Failure> {
+    let mut fields = branch.fields(revision_of(&held));
+    fields["ignored"] = json!(branch.git.ignores_yard(&branch.place().tree)?);
     let (log, left_out) = match held {
         Held::Log(log) => (*log, None),
         // Yard Log of a newer format is read for what this `loft` can read of it.
         Held::Newer(_) => match branch.store.read_partial()? {
             Some(partial) => (partial.log, Some(partial.left_out)),
-            None => return Ok(absent(fields, &branch)),
+            None => return Ok((absent(fields, branch), None)),
         },
-        Held::Absent => return Ok(absent(fields, &branch)),
+        Held::Absent => return Ok((absent(fields, branch), None)),
     };
-    let log = &log;
     if let Some(left_out) = left_out {
         fields["leftOut"] = json!(left_out);
     }
-    let closed_by_merge = !log.is_closed() && branch.closed_by_merge(log)?;
-    fields["yardLog"] = root(log, closed_by_merge);
-    let selection = Selection {
-        since: args.since,
-        every_version: args.versions,
-    };
-    fields["stages"] = Value::Array(stages(log, &selection));
-    let continuations = Continuations::read(home.as_ref())?;
-    fields["submissions"] = Value::Array(submissions(log, &continuations));
-    if let (Some(agent), Some(home)) = (&caller.agent, &home) {
-        let reader = continuations.identity(agent);
-        let last_read = LastRead::new(home);
-        if let Some(before) = last_read.before(log.root.key, &reader)? {
-            fields["lastRead"] = json!(before);
-        }
-        if !args.peek {
-            last_read.record(log.root.key, &reader, log.root.revision)?;
-        }
-    }
-    Ok(fields)
+    let closed_by_merge = !log.is_closed() && branch.closed_by_merge(&log)?;
+    fields["yardLog"] = root(&log, closed_by_merge);
+    fields["stages"] = Value::Array(stages(&log, selection));
+    fields["submissions"] = Value::Array(submissions(&log, continuations));
+    Ok((fields, Some(read_of(&log))))
+}
+
+fn read_of(log: &YardLog) -> Marked {
+    (log.root.key, log.root.revision)
 }
 
 /// What a read gives of a branch that has no Yard Log yet.

@@ -12,7 +12,6 @@ use yardlog::input::LoftRequest;
 use yardlog::keys::Handle;
 use yardlog::published::Unpublished;
 use yardlog_store::git::YardGit;
-use yardlog_store::home::Home;
 use yardlog_store::{Held, Place, YardStoreError};
 
 use super::args::PublishedArgs;
@@ -60,11 +59,10 @@ impl From<YardStoreError> for Unrecorded {
 }
 
 fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
-    let caller = Caller::new(args.writer.into());
+    let caller = Caller::new(&args.writer.into());
     let git = YardGit::default();
     let place = Place::locate(&git, dir)?;
     let at = super::now()?;
-    caller.arrive(Home::from_env().as_ref(), at)?;
     let on = place.branch()?.to_owned();
     let named = args.branch;
     let there = Place {

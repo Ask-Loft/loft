@@ -68,11 +68,10 @@ fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure>
     let clock = super::clock();
     let started = clock.elapsed();
     let deadline = started + timeout;
-    let caller = Caller::new(args.writer.into());
+    let caller = Caller::new(&args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
     let home = Home::from_env();
     let at = super::now()?;
-    caller.arrive(home.as_ref(), at)?;
     let agent = caller.agent().clone();
     let settler = agent.clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(settler)))?;

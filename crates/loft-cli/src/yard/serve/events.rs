@@ -194,6 +194,7 @@ impl Sessions {
             }
         }
         let (indices, events): (Vec<usize>, Vec<Event>) = read.into_iter().unzip();
+        hear(home, &events);
         // git and Yard Log are read before the sessions are locked, so that one session's batch
         // does not hold another's posts while it reads them.
         let arrived = arrivals(&events, open_at);
@@ -251,6 +252,21 @@ fn keep(
             .map_err(|error| error.to_string())?;
     }
     Ok(())
+}
+
+/// Records each session a batch holds events of as heard: an event a mod posts tells the page
+/// server its session is live, as its beat does.
+fn hear(home: &Home, events: &[Event]) {
+    let Ok(at) = crate::yard::now() else {
+        return;
+    };
+    let mut sessions: Vec<&str> = events.iter().map(|event| event.session.as_str()).collect();
+    sessions.sort_unstable();
+    sessions.dedup();
+    for session in sessions {
+        // Liveness is a hint for take-up: a failed write of it loses no event.
+        let _ = crate::yard::sessions::heard(home, session, at);
+    }
 }
 
 #[cfg(test)]

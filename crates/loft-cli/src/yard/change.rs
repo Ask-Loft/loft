@@ -8,7 +8,6 @@ use serde_json::Value;
 use yardlog::respond::Refused;
 use yardlog::{Agent, Time, YardLog};
 use yardlog_store::YardStoreError;
-use yardlog_store::home::Home;
 
 use super::args::{Beyond, Writer};
 use super::branch::{Branch, revision_of};
@@ -37,10 +36,9 @@ pub fn apply(
     beyond: Beyond,
     change: impl FnOnce(&mut YardLog, Agent, Time) -> Result<u64, Refused>,
 ) -> Result<Value, Failure> {
-    let caller = Caller::new(writer.into());
+    let caller = Caller::new(&writer.into());
     let branch = Branch::locate(dir, beyond)?;
     let at = super::now()?;
-    caller.arrive(Home::from_env().as_ref(), at)?;
     let agent = caller.agent().clone();
     let settler = agent.clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(settler)))?;

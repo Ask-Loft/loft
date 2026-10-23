@@ -130,8 +130,8 @@ fn each_result_names_the_tree_the_branch_and_the_repository_s_common_directory()
 fn a_continuation_is_kept_in_the_machine_s_home_and_never_under_yard() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.read("s1", &[]);
-    let output = yard.run(&["read", "--session", "s2", "--continues", "s1"]);
+    yard.read("s1", &["--mark-read"]);
+    let output = yard.run(&["continue", "--session", "s2", "--from", "s1"]);
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(yard.home_file("continuations.json"), json!({ "s2": "s1" }));
     let yard_files = std::fs::read_dir(yard.folder(BRANCH)).unwrap().count();
@@ -144,7 +144,8 @@ fn a_submission_the_ended_session_sent_counts_as_sent_by_the_session_that_contin
     yard.write("s1", ASK, &["--send"]);
     let other = r#"[{"id": "q2", "kind": "question", "stage": "shape", "prompt": "Why?",
         "header": "Why", "options": [{"label": "A"}, {"label": "B"}]}]"#;
-    yard.write("s2", other, &["--send", "--continues", "s1"]);
+    yard.run(&["continue", "--session", "s2", "--from", "s1"]);
+    yard.write("s2", other, &["--send"]);
     let read = yard.read("s2", &[]);
     let groups = read["submissions"].as_array().unwrap();
     assert_eq!(groups.len(), 1, "{groups:?}");
@@ -155,13 +156,11 @@ fn a_submission_the_ended_session_sent_counts_as_sent_by_the_session_that_contin
 fn the_continuing_session_starts_from_the_revision_the_ended_session_last_read() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.read("s1", &[]);
+    yard.read("s1", &["--mark-read"]);
     yard.write("s1", ASK, &[]);
-    yard.read("s9", &[]);
-    let read = document(
-        "read",
-        &yard.run(&["read", "--session", "s2", "--continues", "s1"]),
-    );
+    yard.read("s9", &["--mark-read"]);
+    yard.run(&["continue", "--session", "s2", "--from", "s1"]);
+    let read = yard.read("s2", &[]);
     assert_eq!(read["lastRead"], 1);
 }
 
@@ -169,15 +168,14 @@ fn the_continuing_session_starts_from_the_revision_the_ended_session_last_read()
 fn a_chain_of_continuations_reaches_back_to_the_first_session_of_the_chain() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.read("s1", &[]);
+    yard.read("s1", &["--mark-read"]);
     yard.write("s1", ASK, &[]);
-    yard.read("s9", &[]);
-    yard.run(&["read", "--session", "s2", "--continues", "s1"]);
+    yard.read("s9", &["--mark-read"]);
+    yard.run(&["continue", "--session", "s2", "--from", "s1"]);
+    yard.read("s2", &["--mark-read"]);
     yard.write("s1", ASK, &[]);
-    let read = document(
-        "read",
-        &yard.run(&["read", "--session", "s3", "--continues", "s2"]),
-    );
+    yard.run(&["continue", "--session", "s3", "--from", "s2"]);
+    let read = yard.read("s3", &[]);
     assert_eq!(read["lastRead"], 2);
     assert_eq!(
         yard.home_file("continuations.json"),
@@ -189,7 +187,8 @@ fn a_chain_of_continuations_reaches_back_to_the_first_session_of_the_chain() {
 fn each_block_and_act_keeps_the_session_id_that_wrote_it() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
-    yard.write("s2", ASK, &["--continues", "s1"]);
+    yard.run(&["continue", "--session", "s2", "--from", "s1"]);
+    yard.write("s2", ASK, &[]);
     let versions = block(&yard.read("s1", &["--versions"]), "q1")["versions"].clone();
     assert_eq!(versions[0]["act"]["by"]["session"], "s1");
     assert_eq!(versions[1]["act"]["by"]["session"], "s2");

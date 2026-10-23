@@ -9,9 +9,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   on it, kept in the `yardlog` format under `.yard/<branch>/`.
   - `loft yard` reads and writes it: `read`, `write` (with `--send` to send questions, approvals
     and plans), `wait` (holding a lease on the submission, at most 540 s at a time, and taking up
-    a submission whose session is gone), `withdraw`, `close`, `published`, `answer`, `protocol`,
-    `upgrade`, and `serve`, the page server on the loopback interface. Each acts for a session
-    and, for a subagent, its agent; a write is applied whole or not at all, under a lock in
+    a submission whose session is gone), `withdraw`, `close`, `published`, `answer`, `continue`,
+    `protocol`, `upgrade`, and `serve`, the page server on the loopback interface. Each acts for
+    a session and, for a subagent, its agent; Yard Log's root records the base branch it is
+    merged into, and a read marks the revision read only with `--mark-read`; a write is applied whole or not at all, under a lock in
     git's own directory; a `loft` block records a view of the specification's work from the
     same report `status`, `check` or `reconcile` gives.
   - `loft merge-driver` merges the files under `.yard/` record by record, and `--install`

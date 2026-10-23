@@ -6,12 +6,11 @@
 use std::collections::BTreeMap;
 
 use serde_json::{Map, Value, json};
-use yardlog::{Actor, Agent, Time, YardLogKey};
+use yardlog::{Actor, Agent, YardLogKey};
 use yardlog_store::home::{Home, HomeFile};
 
 use super::args;
 use super::failure::Failure;
-use super::sessions;
 
 /// The longest chain of continuations followed, against a cycle in a file edited by hand.
 const LONGEST_CHAIN: usize = 64;
@@ -19,55 +18,39 @@ const LONGEST_CHAIN: usize = 64;
 /// The agent that runs a command, where it names one.
 pub struct Caller {
     pub agent: Option<Agent>,
-    continues: Option<String>,
 }
 
 impl Caller {
-    pub fn new(args: args::Runner) -> Self {
+    pub fn new(args: &args::Runner) -> Self {
         let agent = args.session.as_deref().map(|session| {
             match (args.agent.as_deref(), args.agent_type.as_deref()) {
                 (Some(id), Some(kind)) => Agent::sub(session, id, kind),
                 _ => Agent::main(session),
             }
         });
-        Self {
-            agent,
-            continues: args.continues,
-        }
+        Self { agent }
     }
 
     /// The agent, which a command that changes Yard Log always has.
     pub fn agent(&self) -> &Agent {
         self.agent.as_ref().expect("clap requires `--session`")
     }
+}
 
-    /// Records what the call tells of its session: that it was heard at `at`, and that it
-    /// continues another, where `--continues` says so.
-    pub fn arrive(&self, home: Option<&Home>, at: Time) -> Result<(), Failure> {
-        if let (Some(agent), Some(home)) = (&self.agent, home) {
-            sessions::heard(home, &agent.session, at)?;
+/// Records that `session` continues `ended`, as `loft yard continue` does; whether it changed
+/// `~/.yard/continuations.json`, which it leaves as it was where it records that already.
+pub fn record_continuation(home: &Home, session: &str, ended: &str) -> Result<bool, Failure> {
+    let mut changed = false;
+    home.update(HomeFile::Continuations, |bytes| {
+        let mut map = object(bytes.as_deref());
+        if map.get(session) == Some(&json!(ended)) {
+            return None;
         }
-        self.record_continuation(home)
-    }
-
-    /// Records that the calling session continues another, where `--continues` says so.
-    fn record_continuation(&self, home: Option<&Home>) -> Result<(), Failure> {
-        let (Some(agent), Some(ended)) = (&self.agent, &self.continues) else {
-            return Ok(());
-        };
-        let home = home.ok_or_else(Failure::no_home)?;
-        let session = agent.session.clone();
-        let ended = ended.clone();
-        home.update(HomeFile::Continuations, |bytes| {
-            let mut map = object(bytes.as_deref());
-            if map.get(&session) == Some(&json!(ended)) {
-                return None;
-            }
-            map.insert(session, json!(ended));
-            Some(to_bytes(&map))
-        })?;
-        Ok(())
-    }
+        map.insert(session.to_owned(), json!(ended));
+        changed = true;
+        Some(to_bytes(&map))
+    })?;
+    Ok(changed)
 }
 
 /// Who an agent counts as: the first session of its chain, and its subagent id.

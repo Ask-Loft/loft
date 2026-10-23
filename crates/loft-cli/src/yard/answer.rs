@@ -12,12 +12,10 @@ use yardlog::query::State;
 use yardlog::respond::{Answered, Answering, Refused, Reply};
 use yardlog::{Actor, BlockKey, Channel, Handle, Key, YardLog};
 use yardlog_store::YardStoreError;
-use yardlog_store::home::Home;
 
 use super::answer_input::{self, Named};
 use super::args::AnswerArgs;
 use super::branch::{Branch, revision_of};
-use super::caller::Caller;
 use super::change::refusal;
 use super::failure::{self, Failure};
 use super::write::closed_by_merge;
@@ -79,10 +77,9 @@ impl From<YardStoreError> for Unapplied {
 }
 
 fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure> {
-    let caller = Caller::new(args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
     let named = answer_input::read(&super::input::json(&args.input)?)?;
-    record(&branch, &named, &caller, Channel::Terminal)
+    record(&branch, &named, Channel::Terminal)
 }
 
 /// Records the person's answers and decisions `named` in the branch's Yard Log, given on
@@ -91,12 +88,10 @@ fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure>
 pub fn record(
     branch: &Branch,
     named: &[Named],
-    caller: &Caller,
     channel: Channel,
 ) -> Result<(Value, Vec<Value>), Failure> {
     let (name, email) = person(branch)?;
     let at = super::now()?;
-    caller.arrive(Home::from_env().as_ref(), at)?;
     let settler = Actor::Person {
         name: name.clone(),
         email: email.clone(),
