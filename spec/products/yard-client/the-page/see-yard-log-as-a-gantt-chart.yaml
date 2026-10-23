@@ -41,6 +41,10 @@ requirements:
         name: "While the chart scrolls down, the time axis and the track of modes stay in view."
       - key: 01a168c0-7faa-72dc-8ad3-52143f4aabe1
         name: "The chart opens scrolled to its latest time."
+      - key: 01a168e0-b553-7083-9fa7-00e2c312fb3d
+        name: "The chart's frame scrolls no further than the chart's edges, and does not rebound at them."
+      - key: 01a168e0-b553-7083-9fa7-00e39e82b997
+        name: "A scroll down over the chart that its frame can take no further scrolls the page."
       - key: 01a168c0-7faa-72dc-8ad3-5215cec488ae
         name: "As the window is resized, the chart is laid out again to the page's width."
   - key: 01a1646f-546d-7042-befd-eb6dd986a309
