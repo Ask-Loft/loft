@@ -1,5 +1,5 @@
-// The events both parts of the mod act on. Claude Code takes one hook for each event without a
-// matcher from a module, so the module's entry hooks each of these once and calls each part.
+// The events the mod's entry hooks once and hands to Yard Client: Claude Code takes one hook for
+// each event without a matcher from a module.
 
 import type { Hook } from 'claude-code'
 
@@ -12,5 +12,5 @@ export type ToolCallNext = Parameters<Hook<'tool.call'>>[2]
 /** A `turn.complete` event's input. */
 export type TurnCompleteEvent = Parameters<Hook<'turn.complete'>>[1]
 
-/** What runs the call on: the other part's hook, then Claude Code's own. */
+/** What runs the call on: Claude Code's own handling of it. */
 export type Onward = (e: ToolCallEvent) => Promise<ToolCallAnswer>

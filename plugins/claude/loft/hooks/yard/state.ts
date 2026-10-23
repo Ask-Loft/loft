@@ -1,6 +1,6 @@
 // What Yard Client's hooks keep while the module is loaded: the settings, whether Yard Client is
 // on, the session's chain of ids, the page server, the events not yet posted. A reload starts it
-// over, as it starts the pane's over. And the calls every hook makes through it: who is calling,
+// over. And the calls every hook makes through it: who is calling,
 // and running `loft yard` in their directory.
 
 import { atom, read, update } from 'claude-code'

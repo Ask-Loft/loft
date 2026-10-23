@@ -1,7 +1,7 @@
 {
   "name": "loft",
   "version": "2.2.1",
-  "description": "Teaches a coding agent to write, change and review a Loft specification in spec/ with the loft command line, and shows the Loft status pane while it works.",
+  "description": "Teaches a coding agent to write, change and review a Loft specification in spec/ with the loft command line, and keeps each branch's Yard Log of how its work was planned, asked about, decided and done.",
   "author": {
     "name": "Locap Ventures FZCO",
     "url": "https://askloft.ai"
@@ -15,7 +15,7 @@
     "baseBranch": {
       "type": "string",
       "title": "Base branch",
-      "description": "The revision the Loft status pane compares the tree with, as `loft status --base` takes it, and the base branch Yard Log records where git names no other branch the current one was cut from.",
+      "description": "The base branch Yard Log records where git names no other branch the current one was cut from.",
       "default": "develop"
     },
     "loftCommand": {

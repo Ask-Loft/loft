@@ -87,13 +87,12 @@ change, or v1 reverts it.
 - `plugins/claude/loft/` and `plugins/codex/loft/` are the plugins, each holding its host's
   package under `skills/loft-spec/`; `.claude-plugin/marketplace.json` and
   `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft mod,
-  one hooks module written by hand that runs both the Loft status pane and Yard Client:
-  `hooks/register.tsx` registers the hooks the two share, the pane lies in `pane.tsx`, its pure
-  `model.ts` and its tone table `ui.tsx`, and Yard Client in `hooks/yard/`. Its state contract is
+  one hooks module written by hand that runs Yard Client: `hooks/register.tsx` registers the
+  hooks it records events with around Claude Code's own, `loft.ts` runs `loft` and the pure
+  `model.ts` reads what it prints, and Yard Client lies in `hooks/yard/`. Its state contract is
   `types/index.d.ts` and its tests are `tests/`, written with Claude Code's test kit. It learns
-  of the tree and of Yard Log only from `loft … --format json` (the accepted decisions "The
-  status pane reads Loft only through the command line's JSON" and "Yard Client is a mod over
-  loft"), and reaches the page server only to post its events. Beside `skills/loft-spec/` it
+  of the tree and of Yard Log only from `loft … --format json` (the accepted decision "Yard
+  Client is a mod over loft"), and reaches the page server only to post its events. Beside `skills/loft-spec/` it
   holds the `yard` skill, `skills/yard/SKILL.md`, written by hand for Claude Code alone.
   CI runs `claude plugin validate plugins/claude/loft` and `claude plugin test
   plugins/claude/loft` under a pinned Claude Code; run both after a change to the mod, and

@@ -1,0 +1,98 @@
+key: 01a16a2f-7067-72f9-b4c8-7354192c727b
+slug: yard-replaces-the-status-pane
+title: "Yard replaces the status pane"
+context: "The Loft plugin's mod drew a status pane in Claude Code: the checks of the loop, the nodes the branch added, changed and removed, the criteria to verify and the file being written, read live by four `loft` commands after each edit of the specification, each `loft` or `git` command, each turn and every 10 seconds. Yard Log now records the work's stages, tasks, questions and decisions and the reports of `loft` at each point of the specification's work, and the Yard page draws them for the person, while the agent runs the checks of the loop itself. The pane's rule that it learns of the specification only from `loft`'s JSON lives on for Yard Client in the accepted decision \"Yard Client is a mod over loft\"."
+state:
+  kind: accepted
+  selectedOption: 01a16a2f-7068-74bc-9949-6d82f8550f27
+  outcome: "The Loft plugin draws no status pane, keeps no status-line entry and offers no `/loft-status`; its mod is Yard Client alone, and the person follows the work of a specification on the Yard page."
+drivers:
+  - key: 01a16a2f-7068-74bc-9949-6d7f7e0cb7c9
+    kind: local
+    label: "One place to look"
+    statement: "The person follows the work on a branch in one place."
+  - key: 01a16a2f-7068-74bc-9949-6d80607df252
+    kind: local
+    label: "A quiet session"
+    statement: "A session runs `loft` only when its work asks for it."
+  - key: 01a16a2f-7068-74bc-9949-6d8159f77e5d
+    kind: local
+    label: "One part to keep"
+    statement: "The mod holds no part that another part of Loft already does."
+options:
+  - key: 01a16a2f-7068-74bc-9949-6d82f8550f27
+    title: "Remove the pane"
+    description: "The pane, its status-line entry and `/loft-status` go, and the mod holds Yard Client's hooks alone."
+  - key: 01a16a2f-7068-74bc-9949-6d8371779708
+    title: "Keep the status-line entry"
+    description: "The pane and `/loft-status` go, and a one-line summary of the branch stays in the status line, read as the pane read it."
+  - key: 01a16a2f-7068-74bc-9949-6d84345324c9
+    title: "Keep the pane, off by default"
+    description: "The pane stays, behind a setting that leaves it off unless the person turns it on."
+  - key: 01a16a2f-7068-74bc-9949-6d85e865fb9a
+    title: "Keep the pane beside Yard"
+    description: "The mod holds both the pane and Yard Client, as before."
+assessments:
+  - option: 01a16a2f-7068-74bc-9949-6d82f8550f27
+    driver: 01a16a2f-7068-74bc-9949-6d7f7e0cb7c9
+    rating: supports
+    rationale: "the Yard page is the one view of the work"
+  - option: 01a16a2f-7068-74bc-9949-6d82f8550f27
+    driver: 01a16a2f-7068-74bc-9949-6d80607df252
+    rating: supports
+    rationale: "no session reads the specification on a timer"
+  - option: 01a16a2f-7068-74bc-9949-6d82f8550f27
+    driver: 01a16a2f-7068-74bc-9949-6d8159f77e5d
+    rating: supports
+    rationale: "the pane's model, its tones and its tests go"
+  - option: 01a16a2f-7068-74bc-9949-6d8371779708
+    driver: 01a16a2f-7068-74bc-9949-6d7f7e0cb7c9
+    rating: neutral
+    rationale: "a line in the terminal beside the page"
+  - option: 01a16a2f-7068-74bc-9949-6d8371779708
+    driver: 01a16a2f-7068-74bc-9949-6d80607df252
+    rating: conflicts
+    rationale: "the entry needs the same reads as the pane"
+  - option: 01a16a2f-7068-74bc-9949-6d8371779708
+    driver: 01a16a2f-7068-74bc-9949-6d8159f77e5d
+    rating: conflicts
+    rationale: "the pane's model stays to sum the branch up"
+  - option: 01a16a2f-7068-74bc-9949-6d84345324c9
+    driver: 01a16a2f-7068-74bc-9949-6d7f7e0cb7c9
+    rating: neutral
+    rationale: "the pane shows only for whoever turns it on"
+  - option: 01a16a2f-7068-74bc-9949-6d84345324c9
+    driver: 01a16a2f-7068-74bc-9949-6d80607df252
+    rating: supports
+    rationale: "a session reads nothing unless the pane is on"
+  - option: 01a16a2f-7068-74bc-9949-6d84345324c9
+    driver: 01a16a2f-7068-74bc-9949-6d8159f77e5d
+    rating: conflicts
+    rationale: "the pane stays, with a setting more"
+  - option: 01a16a2f-7068-74bc-9949-6d85e865fb9a
+    driver: 01a16a2f-7068-74bc-9949-6d7f7e0cb7c9
+    rating: conflicts
+    rationale: "the pane and the page show the work twice"
+  - option: 01a16a2f-7068-74bc-9949-6d85e865fb9a
+    driver: 01a16a2f-7068-74bc-9949-6d80607df252
+    rating: conflicts
+    rationale: "four `loft` commands every 10 seconds in each session"
+  - option: 01a16a2f-7068-74bc-9949-6d85e865fb9a
+    driver: 01a16a2f-7068-74bc-9949-6d8159f77e5d
+    rating: conflicts
+    rationale: "the pane stays as it is"
+consequences:
+  - key: 01a16a2f-7068-74bc-9949-6d86d7d13728
+    kind: benefit
+    statement: "No session runs `loft` on a timer, and the mod has no part but Yard Client."
+  - key: 01a16a2f-7068-74bc-9949-6d8733c90b03
+    kind: cost
+    statement: "The terminal shows no live view of the checks of the loop; the person reads them in the `findings` and `trace` reports that Yard Log records."
+  - key: 01a16a2f-7068-74bc-9949-6d88fcacedee
+    kind: obligation
+    statement: "`loft status` stays a command of `loft`, which Yard's `trace` view reads and a person at a terminal runs."
+subjects:
+  - role: affected
+    node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc69fcfce2ec

@@ -1,24 +1,11 @@
 key: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
 slug: loft-mod
 name: "Loft mod"
-body: "The Claude Code mod under `plugins/claude/loft/hooks/`: the Loft plugin's one hooks module, which Claude Code runs from its TypeScript source. It holds the Loft status pane and Yard Client's hooks, and its state contract is `types/index.d.ts`."
+body: "The Claude Code mod under `plugins/claude/loft/hooks/`: the Loft plugin's one hooks module, which Claude Code runs from its TypeScript source. It holds Yard Client's hooks, and its state contract is `types/index.d.ts`."
 scopedTo:
   - 01a13653-2d9b-714a-a6f3-7183cacff8d8
   - 01a16469-55a3-716f-a42c-3a3548428b77
 components:
-  - key: 01a16469-559e-73c4-85f2-71ae94a5df07
-    name: "Loft status pane"
-    body: "The part of the mod that draws the Loft status pane: its hooks, which ask for a read and record what the agent works on; its model, pure functions from `loft`'s JSON documents to the pane's checks, lists and status line; and its tone table."
-    constraints:
-      - key: 01a144ee-c59d-7512-b23e-0aad7d296257
-        name: "The pane shall learn of the specification only from documents that `loft` prints with `--format json`."
-        verificationFate: proved
-      - key: 01a144ef-6ca1-721a-b6f1-e990b4e77cf7
-        name: "The pane shall read no file of `spec/`."
-        verificationFate: proved
-      - key: 01a144ee-c59d-7512-b23e-0aae339f7844
-        name: "The pane shall write no file."
-        verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71afd78c6e3e
     name: "Yard hooks"
     body: "The part of the mod that serves Yard Client in Claude Code: the tools it registers for the agent, its hooks on the agent's questions, plans and tasks, the context it gives at the start of a session, the session's events it sends, and the page server it starts."

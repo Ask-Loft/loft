@@ -1,7 +1,7 @@
 key: 01a1646f-546c-7521-9643-bc69fcfce2ec
 slug: the-loft-plugin
 name: "The Loft plugin"
-body: "Yard Client reaches Claude Code through the Loft plugin that the repository's marketplace already lists, beside the `loft-spec` skill and the Loft status pane. The plugin adds the `yard` skill and Yard Client's hooks to its one mod, and carries no MCP server and no built program: Claude Code runs the mod from its TypeScript source, and the mod runs `loft`, which the plugin already needs."
+body: "Yard Client reaches Claude Code through the Loft plugin that the repository's marketplace already lists, beside the `loft-spec` skill. The plugin adds the `yard` skill beside it and holds Yard Client's hooks in its one mod, and carries no MCP server and no built program: Claude Code runs the mod from its TypeScript source, and the mod runs `loft`, which the plugin already needs."
 realizes:
   - 01a144ee-c59d-7512-b23e-0aacc4f16f8e
   - 01a16469-559e-73c4-85f2-71a609a6b01d
@@ -10,7 +10,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The manifest `plugins/claude/loft/.claude-plugin/plugin.json`"
-      shall: "declare the settings that Yard Client and the Loft status pane read."
+      shall: "declare the settings that Yard Client reads."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc6bd7f88c35
         name: "The manifest declares the setting `loftCommand`, `loft` by default."
@@ -22,7 +22,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The Loft plugin"
-      shall: "run Yard Client's hooks and the Loft status pane in one mod."
+      shall: "run Yard Client's hooks in one mod."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc6f40f70b34
         name: "The plugin's `hooks/hooks.json` names one hooks module, which lies beside it, and holds no command hook."
@@ -57,5 +57,3 @@ requirements:
         name: "The agent's `AskUserQuestion` and `ExitPlanMode` calls show Claude Code's own dialogs alone."
       - key: 01a1646f-546c-7521-9643-bc7a303448bb
         name: "The mod tells the person once that Yard Client cannot run, naming the command."
-      - key: 01a1646f-546c-7521-9643-bc7bcc79c152
-        name: "The Loft status pane shows its own notice, as it does without Yard Client."

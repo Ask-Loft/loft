@@ -1,7 +1,7 @@
 //! The plugins for Claude Code and Codex: each committed package equals the composition `loft`
 //! writes for its host, each marketplace, `ask-loft`, lists the plugin `loft` at its host's plugin root, and
 //! every manifest carries the version of `loft`; the Claude Code plugin also names the hooks
-//! module and the type contract of the Loft status pane, and declares its settings, its mod
+//! module and the mod's type contract, and declares its settings, its mod
 //! names the version of `loft` and the yard protocol `loft` speaks, and it holds the `loft-spec`
 //! and `yard` skills; CI tests the mod under a pinned Claude Code and the Yard page in a DOM
 //! emulator.
@@ -122,7 +122,7 @@ fn the_claude_code_plugins_hooks_json_names_its_hooks_module_which_lies_beside_i
 }
 
 #[test]
-fn the_claude_code_manifest_names_the_panes_type_contract_which_lies_in_the_plugin() {
+fn the_claude_code_manifest_names_the_mods_type_contract_which_lies_in_the_plugin() {
     let manifest = read(&format!("{CLAUDE_ROOT}/.claude-plugin/plugin.json"));
     assert_eq!(manifest["types"], "./types/index.d.ts");
     assert!(

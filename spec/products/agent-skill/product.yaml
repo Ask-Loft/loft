@@ -33,9 +33,3 @@ featureGroups:
       - 01a13654-6e11-74fa-a359-2590f18ff9d5
       - 01a13654-6e11-74fa-a359-25996138a11d
       - 01a13654-6e11-74fa-a359-25a5e0990497
-  - key: 01a144ee-c59f-7034-9c62-3c494ebe90ec
-    slug: host-tools
-    name: "Host tools"
-    body: "What a plugin adds beside the skill in an agent host that can run it: the Loft status pane in Claude Code."
-    features:
-      - 01a144ee-c59e-7325-802c-d7207db4ca1b

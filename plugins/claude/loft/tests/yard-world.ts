@@ -131,9 +131,6 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   // Beneath the mod, Claude Code answers a permission request at once with no decision: its
   // dialog shows apart from the request, and the person answers there.
   on('classic.PermissionRequest', ($, e) => state.permission(e as never) as never)
-  on('command.register', ($, e) => ({ value: { command: e.name } }))
-  on('fs.exists', () => ({ value: false }))
-  on('ui.status', () => ({ value: undefined }))
   on('ui.toast', ($, e) => {
     state.toasts.push(e.text)
     return { value: undefined }
