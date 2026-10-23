@@ -99,6 +99,8 @@ requirements:
         name: "Nothing of the lease is written under `.yard/`."
       - key: 01a16602-592c-71d8-ab1f-2b84c7f0da5e
         name: "The name of the wait that holds a lease is the one a second wait's refusal gives, and a wait that lets go of the lease takes its name with it."
+      - key: 01a16a6e-42e3-7261-8a0f-1b88f7deddc0
+        name: "Finding who holds a lease never takes it, so that looking never refuses a wait."
   - key: 01a1647c-e680-7753-bf17-f171d7891636
     statement:
       form: unwanted
@@ -111,7 +113,7 @@ requirements:
       - key: 01a1647c-e680-7753-bf17-f17331f02059
         name: "Two sessions on one branch never both wait on one submission."
       - key: 01a16a59-cf10-7028-be3f-c198f1fdfac0
-        name: "A lease held for a moment by no wait that has named itself, as one that looks whether the lease is held holds it, does not refuse the wait: it takes the lease once it is free, within 2 seconds."
+        name: "A lease held for a moment by no wait that has named itself does not refuse the wait: it takes the lease once it is free, within 2 seconds."
   - key: 01a1647b-208c-755d-8b1a-5882ccac257c
     statement:
       form: optional
