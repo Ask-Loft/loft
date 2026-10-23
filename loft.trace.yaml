@@ -21100,14 +21100,14 @@ links:
     reviewed: 6cde7da642d76c77975723c6da033e130f54acb922949b01ac8aebbf7f8b434d
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546d-7042-befd-ea6ce4e53c57
     reviewed: 8219eb7fd5214a9b13a5e9906217c6a0238c887a6e92d1ff1a3221615c958ff7
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a subagent calls a tool in its own name: its id and its type"
         body: cd8daf70d77d697fd908763d7f9ec8483f18622059d1a6b65caeed464464eb3f
@@ -21115,8 +21115,8 @@ links:
     reviewed: 7a876287bc4be1c4296f32322bc04700da61cf32fc3d8dd37f2921ede33e6908
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546d-7042-befd-ea6e6f25624a
     reviewed: 5010f4dc37fc7cbccdd20e5427649130bcaed8adc9e35a7840b96a6ddef91f4b
     tests:
@@ -21268,8 +21268,8 @@ links:
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
         body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546d-7042-befd-ea8fc7b5b732
     reviewed: 8ff3c50454413ab86e3c2ccaf7ad72a10a180a208f41e6cbb13a79c0d969defa
     tests:
@@ -25081,8 +25081,8 @@ links:
     reviewed: bc7c38ee678dd0ca411b77c6e8bf6f5a0818fdc820570b1a75e5d49312ccc5ca
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546c-7521-9643-bcb304796db1
     reviewed: 395a72e9740f3192d1e1a57da8f82066158a1a089b9554aad7b95c214f9c993a
     tests:
@@ -25294,11 +25294,11 @@ links:
         name: "yard_log_opened_with_base_records_it_whichever_branch_git_names"
         body: e7d77fefbd61015722bd60c50ed64b3bc7452eb9a1dea773a41398097df6be7c
   - node: 01a1647b-208d-7169-85c8-9a4e9df86ef5
-    reviewed: 85b03cd2721b0ce40cd46c2f01493c83bde407b40478b9c1135818e31c3009a6
+    reviewed: 84d60ed54dc14797e128580498d7db386b97a5a291dc53b3dffdd5500e360afe
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a16621-e7bc-7707-b123-2163026a4f94
     reviewed: 73c8e6052cf4a771c4490276e5958347ee3281502019c53e1c838d76a752ab14
     tests:
