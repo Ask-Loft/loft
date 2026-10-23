@@ -1,7 +1,7 @@
 // A `loft` block's view, drawn from the report `loft` recorded in it, with where and when it
 // was recorded.
 
-import { h } from '../../lib/dom.js';
+import { h, inline } from '../../lib/dom.js';
 import { when } from '../../lib/format.js';
 import { decisionView } from './decision.js';
 import { findingsView } from './findings.js';
@@ -19,7 +19,7 @@ const VIEWS = {
 
 /**
  * @param {any} body the `loft` block's body
- * @param {{ branch?: string }} [context]
+ * @param {{ branch?: string, key?: string }} [context]
  */
 export function loftView(body, context = {}) {
   const draw = VIEWS[body.view];
@@ -51,11 +51,12 @@ export function chip(word, tone) {
 }
 
 /**
- * A node by its label, where it has one, and its name.
- * @param {{ label?: string | null, name?: string }} node
+ * A node by its label, where it has one, and its name: as the HTML `loft` rendered from its
+ * Markdown, where it gave one, or else as its text.
+ * @param {{ label?: string | null, name?: string, nameHtml?: string }} node
  */
 export function named(node) {
-  return [node.label ? h('span', { class: 'label' }, node.label) : null, ' ', node.name ?? ''];
+  return [node.label ? h('span', { class: 'label' }, node.label) : null, ' ', node.nameHtml ? inline(node.nameHtml) : node.name ?? ''];
 }
 
 /** The tone of each change a node can have gone through. @type {Record<string, string>} */

@@ -21864,6 +21864,33 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
         name: "html_that_a_block_s_markdown_holds_reaches_the_page_as_text"
         body: aaa3f1dcb364788e68996acbbd8e9962494240af78b92328436835a8e0d78597
+  - node: 01a16838-8fdb-7127-a23e-c559b4afac18
+    reviewed: ab3a6127984cfba8c9fb6ed658bb0a401921e14da4ec2b2d8232cdbd57688935
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "a_code_span_in_a_name_is_rendered_as_code"
+        body: f43412b649e81c44d6cdb77762ad6d3bbc23b9d3162f66835d6e976f80fb35b1
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "each_name_in_a_loft_report_gets_its_html"
+        body: e9e90c2c956ef0595de0f5ba07e2d93703e10519a48bfdeac62fed89a89670ba
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a node’s name is drawn from the HTML loft rendered from its Markdown, or as its text without it"
+        body: 72817ed7884ca391812bf03ed8fcfe7b06c106c1f84d0405600d8288814ed78c
+  - node: 01a16838-8fdb-7127-a23e-c55ab6cc3d79
+    reviewed: 9d4ba3d386e6123ca9e52e76ecb9dbb6ef73c6cdf8c9118352dbbfa6a591d3f5
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "html_a_name_holds_is_shown_as_text"
+        body: 72ef880253755bf966ec766b2a978128902d6a2fbbe2c0732d77c067c869542a
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a node’s name is drawn from the HTML loft rendered from its Markdown, or as its text without it"
+        body: 72817ed7884ca391812bf03ed8fcfe7b06c106c1f84d0405600d8288814ed78c
+  - node: 01a16838-8fdb-7127-a23e-c55bc6dabc5f
+    reviewed: 6e73ab91888ba346d5e3e08eb19451e30ea49a495bb4b79cb9bb0aa57efd8506
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "a_name_of_more_than_one_line_is_left_as_its_text"
+        body: c964cd0a2c899ee0b3f4593252ef6c6dc97dd34463b05d120eedb541f329ca96
   - node: 01a1646f-546d-7042-befd-eb49f9b1a9a6
     reviewed: 326cfc627ca4f28c34e5fd5ed40ec11d601bee13780f777acac4024c9a5740cb
     tests:
@@ -22586,13 +22613,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
   - node: 01a1646f-546d-7042-befd-eadfa7c7e421
     reviewed: 187257d8c412ceb316303e77c33abc2bad4c75ec4b1bcfe3d4e8fcfe96486d2d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "where every criterion is in one state, no count is given beside the bar"
         body: 4bdac3a1ac826af04ed0aac7c36f5597fac39a7f07ddfad5c05f86ec010cd622
@@ -22601,13 +22628,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
   - node: 01a1646f-546d-7042-befd-eae166cc8004
     reviewed: 655385dbbcdae1a9be887ec4620c4de994dfc739ca5e09736e186cc4f94739f6
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
   - node: 01a1646f-546d-7042-befd-eae2b314450a
     reviewed: 4d9020840d4c3e0aea79d9f4994ff0bc9757ad735e8502eeebfe963d5ad8c3b4
     tests:
@@ -22622,13 +22649,31 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
   - node: 01a1646f-546d-7042-befd-eae4edf1b696
     reviewed: e56d2d84e1a8c265823e194b424f188cfcfb97e03bde001543e3b8c09df86721
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: fdf54716d1d5941861cbad4d0a880f2e9e774759df6312bbf6482c4de8f32312
+        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
+  - node: 01a16838-8fdb-7127-a23e-c5553392679f
+    reviewed: 24960c0ca4e1f17ea875f745ac3648c7b548d90225b161fee7c1502f4b7745c2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view opens folded to its bar, its counts, its Features and its base"
+        body: 368a2505ea8c7845e6cfeabe59e6e882a8bfb8c1cf57942b8a8476a1f3300556
+  - node: 01a16838-8fdb-7127-a23e-c556728ecdda
+    reviewed: 2325256b4f252616597a0ecfcfcc6602c46b375f946abb3d1d9f9954e185beaa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "folded, a trace view lists no criterion and no finding"
+        body: 76fde1b2cb91789c8abf3d2fe488b1203aa3bfbd1bdfac58539dc83a4b411e30
+  - node: 01a16838-8fdb-7127-a23e-c557d7f2d37e
+    reviewed: d1c024976b878a69133105797419c911296e5bcf9901f4d939d69940345eab0c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a trace view the person opened stays open when the page draws it again, and a folded one stays folded"
+        body: d96c8962961dcc110ae8244e5749b631bb21eda7d35911e59b6f2e29626fb4e3
   - node: 01a1646f-546d-7042-befd-eae7dbf9b465
     reviewed: 647ba21538b3ccdb3973b7fd0664e666b07631211d3818db88bb8be007ff5894
     tests:

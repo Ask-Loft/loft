@@ -3,7 +3,8 @@
 //! a link keeps only an address of the web, of mail or within the page, and an image is shown
 //! as a link to it, so that no element a block names is made in the page and nothing is loaded
 //! from elsewhere. A fenced code block marked `mermaid` stays a code block of that language,
-//! which the page draws as a diagram.
+//! which the page draws as a diagram. The names of the nodes a `loft` view reports are rendered
+//! the same way, each on one line.
 
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html};
 use serde_json::Value;
@@ -20,6 +21,14 @@ pub fn to_html(markdown: &str) -> String {
     let mut out = String::new();
     html::push_html(&mut out, Safe::new(Parser::new_ext(markdown, options)));
     out
+}
+
+/// `markdown` as HTML for one line, such as a node's name: the inside of the one paragraph it
+/// makes, or none where it makes anything else.
+pub fn to_inline_html(markdown: &str) -> Option<String> {
+    let html = to_html(markdown);
+    let inner = html.strip_prefix("<p>")?.strip_suffix("</p>\n")?;
+    (!inner.contains("</p>")).then(|| inner.to_owned())
 }
 
 /// Gives each Markdown field of every version of every block and stage in a read document its
@@ -59,6 +68,28 @@ fn render_body(body: &mut Value) {
             let rendered = to_html(text);
             fields.insert(html.to_owned(), Value::String(rendered));
         }
+    }
+    if let Some(report) = fields.get_mut("report") {
+        render_names(report);
+    }
+}
+
+/// Gives each node a `loft` report names, at any depth, the HTML of its name beside it, where
+/// the name is one line of Markdown.
+fn render_names(value: &mut Value) {
+    match value {
+        Value::Object(fields) => {
+            let rendered = fields
+                .get("name")
+                .and_then(Value::as_str)
+                .and_then(to_inline_html);
+            if let Some(rendered) = rendered {
+                fields.insert("nameHtml".to_owned(), Value::String(rendered));
+            }
+            fields.values_mut().for_each(render_names);
+        }
+        Value::Array(items) => items.iter_mut().for_each(render_names),
+        _ => {}
     }
 }
 
@@ -179,6 +210,47 @@ mod tests {
         let html = to_html("![a shelf](https://example.com/shelf.png)");
         assert!(!html.contains("<img"), "{html}");
         assert!(html.contains("<a href=\"https://example.com/shelf.png\">a shelf</a>"));
+    }
+
+    #[test]
+    fn a_code_span_in_a_name_is_rendered_as_code() {
+        assert_eq!(
+            to_inline_html("Written to `<ours>`.").as_deref(),
+            Some("Written to <code>&lt;ours&gt;</code>.")
+        );
+    }
+
+    #[test]
+    fn html_a_name_holds_is_shown_as_text() {
+        let html = to_inline_html("A <b>bold</b> name").unwrap_or_default();
+        assert!(!html.contains("<b>"), "{html}");
+        assert!(html.contains("&lt;b&gt;bold&lt;/b&gt;"), "{html}");
+    }
+
+    #[test]
+    fn a_name_of_more_than_one_line_is_left_as_its_text() {
+        assert_eq!(to_inline_html("- one\n- two"), None);
+        assert_eq!(to_inline_html("One.\n\nTwo."), None);
+        assert_eq!(to_inline_html("# A heading"), None);
+    }
+
+    #[test]
+    fn each_name_in_a_loft_report_gets_its_html() {
+        let mut document = serde_json::json!({"stages": [{"blocks": [{"version": {"body": {
+            "kind": "loft",
+            "report": {"features": [{"name": "`loft merge-driver`",
+                "criteria": [{"name": "It exits `0`."}, {"name": "- one\n- two"}]}]}
+        }}}]}]});
+        render_document(&mut document);
+        let feature =
+            &document["stages"][0]["blocks"][0]["version"]["body"]["report"]["features"][0];
+        assert_eq!(feature["nameHtml"], "<code>loft merge-driver</code>");
+        assert_eq!(
+            feature["criteria"][0]["nameHtml"],
+            "It exits <code>0</code>."
+        );
+        assert!(feature["criteria"][1].get("nameHtml").is_none());
+        assert_eq!(feature["name"], "`loft merge-driver`");
     }
 
     #[test]

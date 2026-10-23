@@ -83,6 +83,17 @@ export function html(rendered, className = 'prose') {
 }
 
 /**
+ * One line of HTML that `loft` rendered from Markdown, such as a node's name.
+ * @param {string} rendered
+ */
+export function inline(rendered) {
+  const element = document.createElement('span');
+  element.className = 'inline';
+  element.innerHTML = rendered;
+  return element;
+}
+
+/**
  * Adds `children` at the end of `element`, as `h` adds them.
  * @param {Element} element
  * @param {...(Child | Child[])} children

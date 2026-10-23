@@ -1,9 +1,12 @@
 // A `trace` view: how many of the branch's criteria are linked to tests and how many of those
-// links are accepted, each criterion under its Feature with its tests, those that need a look
-// first, and the findings `loft reconcile` reported.
+// links are accepted, and, folded beneath, each criterion under its Feature with its tests, those
+// that need a look first, and the findings `loft reconcile` reported.
 
 import { h } from '../../lib/dom.js';
 import { chip, leftOut, named } from './index.js';
+
+/** Whether the person opened each `trace` view's list, by its block's key; folded unless they did. */
+const folds = new Map();
 
 const STATES = {
   accepted: { word: 'accepted', tone: 'success' },
@@ -30,8 +33,12 @@ export function linkState(criterion, rules, tests) {
   return 'accepted';
 }
 
-/** @param {any} report */
-export function traceView(report) {
+/**
+ * @param {any} report
+ * @param {any} [_body]
+ * @param {{ key?: string }} [context]
+ */
+export function traceView(report, _body, context = {}) {
   const reconcile = report.reconcile ?? {};
   /** @type {Map<string, string[]>} */
   const rules = new Map();
@@ -62,17 +69,46 @@ export function traceView(report) {
     h('p', { class: 'coverage-words' }, `${linked} of ${criteria.length} of the branch's criteria linked to tests, ${accepted} of those accepted.`),
     states.length > 1 ? h('p', { class: 'counts' }, states.map((each) => chip(`${each.count} ${STATES[each.state].word}`, STATES[each.state].tone))) : null,
     report.base ? h('p', { class: 'base' }, `Compared with ${report.base}.`) : null,
-    features.map((feature) => featureBlock(feature, tests)),
-    leftOut(report, 'features'),
-    (reconcile.findings ?? []).length
-      ? h(
-          'details',
-          { class: 'fold' },
-          h('summary', {}, `${reconcile.findings.length} findings of loft reconcile`),
-          h('ul', { class: 'findings' }, reconcile.findings.map((finding) => h('li', {}, h('span', { class: 'rule' }, finding.rule), ' ', finding.label ? `${finding.label}: ` : '', finding.message))),
-        )
-      : null,
+    h(
+      'details',
+      {
+        class: ['fold', 'trace-list'],
+        open: Boolean(context.key && folds.get(context.key)),
+        ontoggle: (event) => {
+          if (context.key) folds.set(context.key, /** @type {HTMLDetailsElement} */ (event.currentTarget).open);
+        },
+      },
+      h('summary', {}, `${counted(criteria.length, 'criterion', 'criteria')} under ${counted(features.length, 'Feature', 'Features')}`),
+      features.map((feature) => featureBlock(feature, tests)),
+      leftOut(report, 'features'),
+      findingsList(reconcile.findings ?? []),
+    ),
   ];
+}
+
+/**
+ * `count` with its noun, singular for one.
+ * @param {number} count
+ * @param {string} one
+ * @param {string} many
+ */
+function counted(count, one, many) {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
+/**
+ * The findings `loft reconcile` reported, folded into one line that counts them.
+ * @param {any[]} findings
+ */
+function findingsList(findings) {
+  return findings.length
+    ? h(
+        'details',
+        { class: 'fold' },
+        h('summary', {}, `${findings.length} findings of loft reconcile`),
+        h('ul', { class: 'findings' }, findings.map((finding) => h('li', {}, h('span', { class: 'rule' }, finding.rule), ' ', finding.label ? `${finding.label}: ` : '', finding.message))),
+      )
+    : null;
 }
 
 /**

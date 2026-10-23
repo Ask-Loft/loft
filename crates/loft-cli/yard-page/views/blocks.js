@@ -274,7 +274,7 @@ function loft(block, context) {
   return [
     h('header', { class: 'block-head' }, h('span', { class: 'kind' }, KINDS.loft), h('h4', {}, VIEW_NAMES[body.view] ?? body.view)),
     body.note ? h('p', { class: 'note' }, body.note) : null,
-    loftView(body, { branch: context.branch }),
+    loftView(body, { branch: context.branch, key: block.key }),
   ];
 }
 
