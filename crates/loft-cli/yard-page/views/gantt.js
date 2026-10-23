@@ -239,6 +239,6 @@ function legend() {
     { class: 'gantt-legend' },
     'Stages are the wide bars, tasks the thin ones beneath, their listed time pale and their active time solid. ',
     'Loft runs and waits on you sit under their stage, and a diamond marks each Loft view recorded. ',
-    'Plan mode is a pink band and spec mode a hatched one.',
+    'Plan mode is a lilac band and spec mode a hatched one.',
   );
 }
