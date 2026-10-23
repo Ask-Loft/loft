@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
 import { FOLD_AFTER, chart, scale, ticks } from '../../yard-page/model/gantt.js';
-import { gantt } from '../../yard-page/views/gantt.js';
+import { CHARACTER, gantt } from '../../yard-page/views/gantt.js';
 import { EXPLORE, MAIN, act, answer, block, log, stage } from './fixtures.js';
 
 beforeEach(forget);
@@ -122,7 +122,7 @@ test('a task with no recorded times is drawn at the time its current version was
   assert.equal(drawnTask.to, T0 + 20_000);
 });
 
-test('each Loft run is drawn under the stage its agent had active, by its subcommands, and each Loft view at its time', () => {
+test('each Loft run belongs to the stage its agent had active, by its subcommands, and each Loft view to its time', () => {
   const recorded = block('loft', 'v1', { view: 'findings', recorded: { at: at(40) } });
   const shown = log([timed('one', MAIN, 0, 60, [recorded]), timed('two', MAIN, 60, 120)], {
     activity: [activity({ loft: [{ commands: ['check', 'fmt'], agent: 'main', ...span(30, 35), failed: false }] })],
@@ -180,7 +180,7 @@ test('a stage’s time in a turn with no active task, Loft run or wait is agent 
   ]);
 });
 
-test('time outside the turns is idle, and an idle stretch longer than 45 seconds is folded and labelled with its length', () => {
+test('time outside the turns is idle, and an idle stretch longer than 45 seconds is folded to a break in the axis that gives its length on hover', () => {
   const shown = log([timed('one', MAIN, 0, 400)], { activity: [activity({ turns: [span(0, 100), span(130, 200), span(300, 400)] })] });
   const model = chart(shown, T0 + 600_000);
   assert.deepEqual(model.idle.map((each) => [(each.to - each.from) / 1000, each.folded]), [
@@ -191,7 +191,71 @@ test('time outside the turns is idle, and an idle stretch longer than 45 seconds
   const x = scale(model, 1000, 28);
   assert.equal(Math.round(x(T0 + 300_000) - x(T0 + 200_000)), 28);
   const drawn = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
-  assert.deepEqual([...drawn.querySelectorAll('.idle-label')].map((label) => label.textContent), ['idle 2 min']);
+  const folds = [...drawn.querySelectorAll('.idle-fold')];
+  assert.deepEqual(folds.map((fold) => fold.querySelector('title').textContent), ['idle 2 min']);
+  assert.ok(folds[0].querySelector('.break-mark'), 'the fold breaks the axis');
+});
+
+test('a folded idle stretch is drawn apart from plan and spec mode, with no hatching', () => {
+  const shown = log([timed('one', MAIN, 0, 400)], { activity: [activity({ turns: [span(0, 100), span(300, 400)], spec: [span(10, 90)] })] });
+  const drawn = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
+  const fold = drawn.querySelector('.idle-fold');
+  assert.ok(fold);
+  for (const part of fold.querySelectorAll('*')) assert.ok(!String(part.getAttribute('fill') ?? '').startsWith('url('), 'no pattern fills a fold');
+  assert.equal(drawn.querySelector('#hatch-idle'), null);
+});
+
+test('a session’s start in the main agent’s lane is a rule named by its number and time, giving its id on hover', () => {
+  const later = { host: 'claude-code', session: 'second-session-id' };
+  const shown = log([timed('shape', MAIN, 0, 100), timed('build', later, 110, 300)], { activity: [activity({ turns: [span(0, 300)] })] });
+  const drawn = gantt(shown, { width: 1200, now: T0 + 600_000, onPick: () => {} });
+  const sessions = [...drawn.querySelectorAll('.session')];
+  assert.equal(sessions.length, 1, 'the first session needs no rule');
+  assert.ok(sessions[0].querySelector('.session-rule'));
+  assert.match(sessions[0].querySelector('.session-label').textContent, /^Session 2 · /);
+  assert.equal(sessions[0].querySelector('title').textContent, 'Session 2: second-session-id');
+});
+
+test('each lane, stage and task is named in the column beside the chart, a task indented under its stage, each level with its bar', () => {
+  const task = block('task', 't1', { title: 'Model it', state: 'done' }, { more: { times: { listed: at(5), started: at(10), ended: at(30) } } });
+  const shown = log([timed('one', MAIN, 0, 60, [task]), timed('scan', EXPLORE, 10, 40)], { activity: [activity()] });
+  const drawn = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
+  assert.deepEqual([...drawn.querySelectorAll('.lane-label')].map((label) => label.textContent), ['main agent', 'Explore']);
+  const stage = drawn.querySelector('.stage-name text');
+  const named = drawn.querySelector('.task-name text');
+  assert.deepEqual([stage.textContent, named.textContent], ['one', 'Model it']);
+  assert.ok(Number(named.getAttribute('x')) > Number(stage.getAttribute('x')), 'a task is indented under its stage');
+  const middle = (rect) => Number(rect.getAttribute('y')) + Number(rect.getAttribute('height')) / 2;
+  assert.ok(Math.abs(Number(stage.getAttribute('y')) - 4 - middle(drawn.querySelector('.stage-rect'))) <= 2, 'a stage’s name is level with its bar');
+  assert.ok(Math.abs(Number(named.getAttribute('y')) - 4 - middle(drawn.querySelector('.task-listed'))) <= 2, 'a task’s name is level with its bar');
+  assert.ok(Number(named.getAttribute('y')) > Number(stage.getAttribute('y')), 'a task’s row lies beneath its stage’s');
+});
+
+test('a name longer than the column is cut short with an ellipsis and given whole on hover, and no name is drawn over the bars', () => {
+  const long = 'A stage whose title runs far longer than any column of names could ever hold';
+  const shown = log([timed(long, MAIN, 0, 60)], { activity: [activity()] });
+  const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
+  const name = drawn.querySelector('.stage-name');
+  assert.match(name.querySelector('text').textContent, /…$/);
+  assert.equal(name.querySelector('title').textContent, long);
+  const bars = Math.min(...[...drawn.querySelectorAll('.stage-rect')].map((rect) => Number(rect.getAttribute('x'))));
+  for (const text of drawn.querySelectorAll('.lane-label, .stage-name text, .task-name text')) {
+    assert.ok(Number(text.getAttribute('x')) + text.textContent.length * CHARACTER <= bars, `${text.textContent} stays in the column`);
+  }
+});
+
+test('each Loft run is drawn in its stage’s bar and names its subcommands on hover, and each Loft view is marked on the bar at its time', () => {
+  const recorded = block('loft', 'v1', { view: 'findings', recorded: { at: at(40) } });
+  const shown = log([timed('one', MAIN, 0, 60, [recorded])], {
+    activity: [activity({ loft: [{ commands: ['check', 'fmt'], agent: 'main', ...span(30, 35), failed: false }] })],
+  });
+  const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
+  const run = drawn.querySelector('.seg--loft');
+  const bar = drawn.querySelector('.stage-rect');
+  assert.equal(run.getAttribute('y'), bar.getAttribute('y'));
+  assert.equal(run.querySelector('title').textContent, 'loft check fmt');
+  const mark = drawn.querySelector('.loft-view-mark');
+  assert.equal(mark.querySelector('title').textContent, 'loft view: findings');
 });
 
 test('the bar above the chart divides the time not idle into tasks, Loft runs, waits and agent work, each with its length and share', () => {
@@ -221,11 +285,11 @@ test('choosing a stage, a task or a submission in the chart opens the timeline a
   const shown = log([timed('one', MAIN, 0, 100, [task, asked])], { sent, activity: [activity()] });
   const picked = [];
   const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: (id) => picked.push(id) });
-  for (const selector of ['.stage-bar', '.task-bar', '.wait']) drawn.querySelector(selector).dispatchEvent(new Event('click'));
-  assert.deepEqual(picked, ['one', 't1', 'q']);
+  for (const selector of ['.stage-bar', '.stage-name', '.task-bar', '.task-name', '.wait']) drawn.querySelector(selector).dispatchEvent(new Event('click'));
+  assert.deepEqual(picked, ['one', 'one', 't1', 't1', 'q']);
 });
 
-test('each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now', () => {
+test('each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover', () => {
   const shown = log([timed('one', MAIN, 0, 300), timed('scan', EXPLORE, 10, 60)], {
     activity: [activity({ plan: [span(10, 70)], spec: [span(200)] })],
   });
@@ -235,21 +299,47 @@ test('each stretch of plan or spec mode is a band across every lane, labelled wi
     ['plan', 60, false],
     ['spec', 60, true],
   ]);
-  const drawn = gantt(shown, { width: 900, now, onPick: () => {} });
+  const drawn = gantt(shown, { width: 1200, now, onPick: () => {} });
   const lanes = [...drawn.querySelectorAll('.lane-back')];
   const fills = [...drawn.querySelectorAll('.band-fill')];
+  const top = Math.min(...lanes.map((lane) => Number(lane.getAttribute('y'))));
   const bottom = Math.max(...lanes.map((lane) => Number(lane.getAttribute('y')) + Number(lane.getAttribute('height'))));
-  for (const fill of fills) assert.ok(Number(fill.getAttribute('y')) + Number(fill.getAttribute('height')) >= bottom - 4, 'a band spans every lane');
-  assert.deepEqual([...drawn.querySelectorAll('.band-label')].map((label) => label.textContent), ['Plan mode, 1 min', 'Spec mode, 1 min so far']);
+  for (const fill of fills) {
+    assert.ok(Number(fill.getAttribute('y')) <= top && Number(fill.getAttribute('y')) + Number(fill.getAttribute('height')) >= bottom, 'a band spans every lane');
+    for (const lane of lanes) assert.ok(lane.compareDocumentPosition(fill) & 4, 'a band is drawn over each lane’s background');
+  }
+  const track = [...drawn.querySelectorAll('.mode')];
+  assert.deepEqual(track.map((mode) => mode.querySelector('title').textContent), ['Plan mode, 1 min', 'Spec mode, 1 min so far']);
+  for (const mode of track) assert.ok(Number(mode.querySelector('rect').getAttribute('y')) + Number(mode.querySelector('rect').getAttribute('height')) <= top, 'the track lies above the lanes');
+  assert.deepEqual([...drawn.querySelectorAll('.band-label')].map((label) => label.textContent), ['Plan mode', 'Spec mode']);
   assert.equal(drawn.querySelector('.band-fill--spec').getAttribute('fill'), 'url(#hatch-spec)');
+  assert.equal(drawn.querySelector('.mode--spec rect').getAttribute('fill'), 'url(#hatch-spec)');
   assert.equal(drawn.querySelector('.band-fill--plan').getAttribute('fill'), null);
 });
 
-test('an idle stretch folded at the end of the chart is labelled inside it, its label ending at the chart’s edge', () => {
-  const shown = log([timed('one', MAIN, 0, 3000)], { activity: [activity({ turns: [span(0, 400)] })] });
-  const drawn = gantt(shown, { width: 1000, now: T0 + 3_000_000, onPick: () => {} });
-  const label = [...drawn.querySelectorAll('.idle-label')].at(-1);
-  assert.equal(label.textContent, 'idle 43 min');
-  assert.equal(label.getAttribute('text-anchor'), 'end');
-  assert.ok(Number(label.getAttribute('x')) <= 1000);
+test('a label of the track of modes is drawn only where it fits within its stretch', () => {
+  const shown = log([timed('one', MAIN, 0, 600)], { activity: [activity({ plan: [span(10, 14), span(100, 400)] })] });
+  const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
+  const modes = [...drawn.querySelectorAll('.mode')];
+  assert.deepEqual(modes.map((mode) => mode.querySelector('.band-label')?.textContent ?? null), [null, 'Plan mode']);
+  const label = modes[1].querySelector('.band-label');
+  const rect = modes[1].querySelector('rect');
+  assert.ok(Number(label.getAttribute('x')) + label.textContent.length * CHARACTER <= Number(rect.getAttribute('x')) + Number(rect.getAttribute('width')));
+});
+
+test('no label of the chart runs past its edges', () => {
+  const later = { host: 'claude-code', session: 's2' };
+  const shown = log([timed('A first stage with a long title', MAIN, 0, 400), timed('The last stage, also with a long title', later, 2400, 3000)], {
+    activity: [activity({ turns: [span(0, 400), span(2400, 3000)], plan: [span(2500, 2990)], spec: [span(0, 50)] })],
+  });
+  for (const width of [480, 900, 1600]) {
+    const drawn = gantt(shown, { width, now: T0 + 3_000_000, onPick: () => {} });
+    for (const text of drawn.querySelectorAll('svg text')) {
+      const x = Number(text.getAttribute('x'));
+      const extent = text.textContent.length * CHARACTER;
+      const anchor = text.getAttribute('text-anchor') ?? 'start';
+      const [left, right] = anchor === 'end' ? [x - extent, x] : anchor === 'middle' ? [x - extent / 2, x + extent / 2] : [x, x + extent];
+      assert.ok(left >= 0 && right <= width, `“${text.textContent}” lies inside a chart ${width} wide`);
+    }
+  }
 });

@@ -550,29 +550,41 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 .gantt-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--ink); }
 .gantt-chart { display: block; font: 12px var(--font); }
 .lane-back { fill: transparent; }
-.lane:nth-of-type(even) .lane-back { fill: var(--surface-2); }
+.lane-back--odd { fill: var(--surface-2); }
 .lane-label { fill: var(--ink); font-weight: 600; }
-.stage-rect { fill: var(--mist); stroke: var(--signal); }
-.status--done .stage-rect { fill: var(--done-soft); stroke: var(--done); }
-.status--dropped .stage-rect { fill: var(--surface-2); stroke: var(--drop); stroke-dasharray: 3 2; }
-.stage-label { fill: var(--ink); font-weight: 600; pointer-events: none; }
+.stage-name, .task-name { cursor: pointer; }
+.stage-name text { fill: var(--ink); font-weight: 600; }
+.task-name text { fill: var(--body); font-size: 11px; }
+.stage-name:hover text, .task-name:hover text { fill: var(--signal); }
+.stage-back { fill: var(--surface); }
+.stage-rect { fill: none; stroke: var(--signal); stroke-width: 1.25; pointer-events: none; }
+.stage-rect.status--done { stroke: var(--done); }
+.stage-rect.status--dropped { stroke: var(--drop); stroke-dasharray: 3 2; }
 .stage-bar, .task-bar, .wait, .loft-view-mark { cursor: pointer; }
-.work { fill: var(--series-work); opacity: 0.45; }
+.seg--task { fill: var(--series-task); }
+.seg--loft { fill: var(--series-loft); }
+.seg--failed { fill: var(--danger); }
+.seg--wait { fill: var(--series-wait); }
+.seg--work { fill: var(--series-work); opacity: 0.55; }
 .task-listed { fill: var(--series-task-pale); }
 .task-active { fill: var(--series-task); }
 .task-done { fill: var(--signal); }
-.loft { fill: var(--series-loft); }
-.loft-failed { fill: var(--danger); }
-.wait-open { fill: var(--series-wait); }
-.wait-done { fill: var(--series-wait); opacity: 0.55; }
-.view-mark { fill: var(--ink); }
-.band-fill--plan { fill: var(--plan-soft); }
+.view-mark { fill: var(--ink); stroke: var(--surface); stroke-width: 1; }
+.session-rule { stroke: var(--muted); stroke-dasharray: 4 3; }
+.session-label { fill: var(--muted); font-size: 11px; }
+.band-fill--plan { fill: var(--plan-soft); opacity: 0.6; }
+.band-fill--spec { opacity: 0.35; }
+.mode-fill { fill: var(--plan-soft); }
+.mode--plan .mode-fill { stroke: var(--plan); stroke-width: 0.75; }
+.mode--spec .mode-fill { stroke: var(--spec); stroke-width: 0.75; }
 .hatch-spec { fill: var(--spec); opacity: 0.3; }
-.band-label { fill: var(--muted); font-size: 11px; }
-.band--plan .band-label { fill: var(--plan); }
-.band--spec .band-label { fill: var(--spec); }
-.hatch-idle { fill: var(--rail); opacity: 0.6; }
-.idle-label, .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.band-label { font-size: 10px; font-weight: 600; pointer-events: none; }
+.mode--plan .band-label { fill: var(--plan); }
+.mode--spec .band-label { fill: var(--spec); }
+.idle-gap { fill: var(--surface); }
+.break-mark { fill: none; stroke: var(--rail); stroke-width: 1.25; }
+.axis-line, .tick-mark { stroke: var(--rail); }
+.tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .time-split { display: grid; gap: 8px; }
 .split-bar { display: flex; gap: 2px; height: 12px; overflow: hidden; background: var(--surface); }
 .split--task { background: var(--series-task); }
@@ -582,7 +594,6 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 .split-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--body); }
 .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
 .split-total { color: var(--muted); }
-.gantt-legend { color: var(--muted); font-size: 13px; max-width: 80ch; }
 
 /* The tokens. */
 

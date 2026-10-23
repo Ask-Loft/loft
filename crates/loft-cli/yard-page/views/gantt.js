@@ -1,47 +1,52 @@
-// The Gantt chart: a bar above it dividing the time that was not idle, then a lane for each
-// agent along time, each stage with its tasks, Loft runs and views, waits on the person and the
-// agent's own work; idle stretches longer than 45 seconds folded to a fixed width and labelled;
-// and the stretches of plan and spec mode drawn across every lane. Choosing a stage, a task or a
+// The Gantt chart: a bar above it dividing the time that was not idle, then the chart itself.
+// Along its top run the time axis and the track of plan and spec mode; beneath them a lane for
+// the main agent and one for each subagent, each stage's bar divided into its active tasks, Loft
+// runs, waits on the person and agent work, with its tasks beneath it. A column beside the chart
+// names each lane, stage and task, idle stretches longer than 45 seconds are folded into breaks
+// of the axis, and no label crosses another or the chart's edge. Choosing a stage, a task or a
 // submission opens the timeline at it.
 
 import { h, svg } from '../lib/dom.js';
 import { length, when } from '../lib/format.js';
-import { chart, scale } from '../model/gantt.js';
-
-const LABEL = 168;
-const STAGE = 16;
-const TASK = 9;
-const GAP = 4;
-const ROW_PAD = 8;
-const BAND_HEAD = 18;
+import { chart, scale, ticks } from '../model/gantt.js';
 
 /** About how wide one character of a label is drawn, in pixels. */
-const CHARACTER = 6.5;
+export const CHARACTER = 7;
+
+const AXIS = 22;
+const MODE = 12;
+const TOP = AXIS + MODE + 6;
+const LANE_HEAD = 24;
+const LANE_PAD = 8;
+const STAGE_ROW = 22;
+const STAGE = 14;
+const TASK_ROW = 15;
+const TASK = 8;
+const INDENT = 14;
+const EDGE = 8;
+const FOLD = 28;
 
 /**
- * An idle stretch's label, centred under it where it fits inside the chart, and otherwise held
- * inside the chart's edge it would cross.
+ * `text` cut short with an ellipsis to fit `room` pixels.
  * @param {string} text
- * @param {number} from
- * @param {number} to
- * @param {number} width
- * @param {number} y
+ * @param {number} room
  */
-function idleLabel(text, from, to, width, y) {
-  const half = (text.length * CHARACTER) / 2;
-  const centre = (from + to) / 2;
-  const [x, anchor] =
-    centre + half > width - 2 ? [Math.min(to, width) - 2, 'end'] : centre - half < 2 ? [Math.max(from, 0) + 2, 'start'] : [centre, 'middle'];
-  return svg('text', { x, y, 'text-anchor': anchor, class: 'idle-label' }, text);
+function fit(text, room) {
+  const most = Math.max(1, Math.floor(room / CHARACTER));
+  return text.length <= most ? text : `${text.slice(0, most - 1).trimEnd()}…`;
+}
+
+/** @param {number} room */
+function columnWidth(room) {
+  return Math.round(Math.min(300, Math.max(180, room * 0.22)));
 }
 
 /**
- * The height a stage's row takes.
- * @param {any} row
+ * The height a lane takes.
+ * @param {any} lane
  */
-function rowHeight(row) {
-  const extras = (row.loft.length || row.submissions.length || row.views.length) ? TASK + GAP : 0;
-  return STAGE + GAP + row.tasks.length * (TASK + GAP) + extras + ROW_PAD;
+function laneHeight(lane) {
+  return LANE_HEAD + lane.rows.reduce((sum, row) => sum + STAGE_ROW + row.tasks.length * TASK_ROW, 0) + LANE_PAD;
 }
 
 /**
@@ -54,11 +59,15 @@ export function gantt(log, { width, now, onPick }) {
   if (!model.lanes.length) {
     return h('p', { class: 'empty' }, 'No stage has started yet, so there is nothing to draw along time.');
   }
-  const inner = Math.max(240, width - LABEL - 8);
-  const x = scale(model, inner);
-  const X = (time) => LABEL + x(time);
-  const laneHeights = model.lanes.map((lane) => lane.rows.reduce((sum, row) => sum + rowHeight(row), 0) + 10);
-  const height = BAND_HEAD + laneHeights.reduce((a, b) => a + b, 0) + 38;
+  const names = columnWidth(width);
+  const left = names + EDGE;
+  const inner = Math.max(120, width - left - EDGE);
+  const x = scale(model, inner, FOLD);
+  const X = (time) => left + x(time);
+  const heights = model.lanes.map(laneHeight);
+  const bottom = TOP + heights.reduce((a, b) => a + b, 0);
+  const height = bottom + 6;
+  const pick = (id) => ({ onclick: () => onPick(id), tabindex: 0, role: 'button', onkeydown: (event) => (event.key === 'Enter' ? onPick(id) : null) });
   const chartSvg = svg(
     'svg',
     { class: 'gantt-chart', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': 'Yard Log along time, a lane for each agent' },
@@ -66,147 +75,240 @@ export function gantt(log, { width, now, onPick }) {
       'defs',
       {},
       svg('pattern', { id: 'hatch-spec', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, svg('rect', { width: 3, height: 6, class: 'hatch-spec' })),
-      svg('pattern', { id: 'hatch-idle', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(-45)' }, svg('rect', { width: 1, height: 5, class: 'hatch-idle' })),
     ),
-    model.idle
-      .filter((span) => span.folded)
-      .map((span) =>
-        svg(
-          'g',
-          { class: 'idle-fold' },
-          svg('rect', { x: X(span.from), y: BAND_HEAD, width: X(span.to) - X(span.from), height: height - BAND_HEAD - 34, fill: 'url(#hatch-idle)' }),
-          idleLabel(`idle ${length(span.to - span.from)}`, X(span.from), X(span.to), width, height - 22),
-        ),
-      ),
-    model.bands.map((band) =>
-      svg(
-        'g',
-        { class: ['band', `band--${band.mode}`].join(' ') },
-        svg('rect', {
-          x: X(band.from),
-          y: BAND_HEAD,
-          width: Math.max(2, X(band.to) - X(band.from)),
-          height: height - BAND_HEAD - 34,
-          class: `band-fill band-fill--${band.mode}`,
-          fill: band.mode === 'spec' ? 'url(#hatch-spec)' : null,
-        }),
-        svg(
-          'text',
-          { x: X(band.from) + 3, y: BAND_HEAD - 5, class: 'band-label' },
-          `${band.mode === 'plan' ? 'Plan mode' : 'Spec mode'}, ${band.open ? `${length(band.to - band.from)} so far` : length(band.to - band.from)}`,
-        ),
-      ),
-    ),
-    lanes(model, laneHeights, X, onPick),
-    axis(model, X, height),
+    laneBacks(model, heights, width),
+    washes(model, X, bottom),
+    axis(model, x, X, left, width),
+    modes(model, X),
+    folds(model, X, bottom),
+    lanes(model, heights, { X, names, width, pick }),
   );
-  return h('div', { class: 'gantt' }, summaryBar(model.summary), h('div', { class: 'gantt-scroll' }, chartSvg), legend());
+  return h('div', { class: 'gantt' }, summaryBar(model.summary), h('div', { class: 'gantt-scroll' }, chartSvg));
 }
 
 /**
+ * Each lane's background, beneath everything else.
  * @param {any} model
- * @param {number[]} laneHeights
- * @param {(time: number) => number} X
- * @param {(id: string) => void} onPick
+ * @param {number[]} heights
+ * @param {number} width
  */
-function lanes(model, laneHeights, X, onPick) {
-  let y = BAND_HEAD + 4;
+function laneBacks(model, heights, width) {
+  let y = TOP;
   return model.lanes.map((lane, index) => {
     const top = y;
-    y += laneHeights[index];
-    let rowTop = top + 6;
+    y += heights[index];
+    return svg('rect', { x: 0, y: top, width, height: heights[index] - 2, class: ['lane-back', index % 2 ? 'lane-back--odd' : null].filter(Boolean).join(' ') });
+  });
+}
+
+/**
+ * Each stretch of plan and spec mode shaded faintly down every lane, over their backgrounds.
+ * @param {any} model
+ * @param {(time: number) => number} X
+ * @param {number} bottom
+ */
+function washes(model, X, bottom) {
+  return model.bands.map((band) =>
+    svg('rect', {
+      x: X(band.from),
+      y: TOP,
+      width: Math.max(2, X(band.to) - X(band.from)),
+      height: bottom - TOP,
+      class: `band-fill band-fill--${band.mode}`,
+      fill: band.mode === 'spec' ? 'url(#hatch-spec)' : null,
+    }),
+  );
+}
+
+/**
+ * The time axis along the top: its line and a label at each of its marks.
+ * @param {any} model
+ * @param {(time: number) => number} x
+ * @param {(time: number) => number} X
+ * @param {number} left
+ * @param {number} width
+ */
+function axis(model, x, X, left, width) {
+  const marks = ticks(model, x, 84);
+  return svg(
+    'g',
+    { class: 'axis' },
+    svg('line', { x1: left, x2: width - EDGE, y1: AXIS - 2, y2: AXIS - 2, class: 'axis-line' }),
+    marks.map((time, index) => {
+      const at = X(time);
+      const anchor = index === 0 ? 'start' : index === marks.length - 1 && at > width - EDGE - 40 ? 'end' : 'middle';
+      return svg(
+        'g',
+        { class: 'tick-group' },
+        svg('line', { x1: at, x2: at, y1: AXIS - 6, y2: AXIS - 2, class: 'tick-mark' }),
+        svg('text', { x: at, y: AXIS - 9, 'text-anchor': anchor, class: 'tick' }, when(new Date(time).toISOString())),
+      );
+    }),
+  );
+}
+
+/**
+ * The track of modes: each stretch of plan and spec mode, labelled where the label fits.
+ * @param {any} model
+ * @param {(time: number) => number} X
+ */
+function modes(model, X) {
+  return model.bands.map((band) => {
+    const from = X(band.from);
+    const wide = Math.max(2, X(band.to) - from);
+    const name = band.mode === 'plan' ? 'Plan mode' : 'Spec mode';
+    const told = `${name}, ${length(band.to - band.from)}${band.open ? ' so far' : ''}`;
     return svg(
       'g',
-      { class: ['lane', lane.main ? 'lane--main' : 'lane--sub'].join(' '), dataset: null },
-      svg('rect', { x: 0, y: top, width: '100%', height: laneHeights[index] - 4, class: 'lane-back' }),
-      svg('text', { x: 8, y: top + 16, class: 'lane-label' }, lane.label),
+      { class: `mode mode--${band.mode}` },
+      svg('rect', { x: from, y: AXIS, width: wide, height: MODE, class: 'mode-fill', fill: band.mode === 'spec' ? 'url(#hatch-spec)' : null }),
+      name.length * CHARACTER <= wide - 6 ? svg('text', { x: from + 3, y: AXIS + MODE - 2, class: 'band-label' }, name) : null,
+      svg('title', {}, told),
+    );
+  });
+}
+
+/**
+ * Each folded idle stretch: a gap down the chart and a break in the axis and the track.
+ * @param {any} model
+ * @param {(time: number) => number} X
+ * @param {number} bottom
+ */
+function folds(model, X, bottom) {
+  return model.idle
+    .filter((span) => span.folded)
+    .map((span) => {
+      const from = X(span.from);
+      const to = X(span.to);
+      const zig = (at) => `M ${at} ${AXIS - 8} l 3 3 l -6 4 l 6 4 l -6 4 l 6 4 l -3 3`;
+      return svg(
+        'g',
+        { class: 'idle-fold' },
+        svg('rect', { x: from, y: AXIS - 8, width: to - from, height: bottom - AXIS + 8, class: 'idle-gap' }),
+        svg('path', { d: zig((from + to) / 2), class: 'break-mark' }),
+        svg('title', {}, `idle ${length(span.to - span.from)}`),
+      );
+    });
+}
+
+/**
+ * The lanes: each one's name, its sessions' rules, and its rows.
+ * @param {any} model
+ * @param {number[]} heights
+ * @param {{ X: (time: number) => number, names: number, width: number, pick: (id: string) => object }} draw
+ */
+function lanes(model, heights, draw) {
+  let y = TOP;
+  return model.lanes.map((lane, index) => {
+    const top = y;
+    y += heights[index];
+    let rowTop = top + LANE_HEAD;
+    return svg(
+      'g',
+      { class: ['lane', lane.main ? 'lane--main' : 'lane--sub'].join(' ') },
+      svg('text', { x: EDGE, y: top + 16, class: 'lane-label' }, fit(lane.label, draw.names - EDGE * 2)),
+      sessionRules(lane, top, heights[index], draw),
       lane.rows.map((row) => {
         const at = rowTop;
-        rowTop += rowHeight(row);
-        return rowGroup(row, at, X, onPick);
+        rowTop += STAGE_ROW + row.tasks.length * TASK_ROW;
+        return rowGroup(row, at, draw);
       }),
     );
   });
 }
 
 /**
- * @param {any} row
+ * A rule at the start of each session of the main agent after the first, named where its name
+ * fits before the next rule and the chart's edge.
+ * @param {any} lane
  * @param {number} top
- * @param {(time: number) => number} X
- * @param {(id: string) => void} onPick
+ * @param {number} height
+ * @param {{ X: (time: number) => number, width: number }} draw
  */
-function rowGroup(row, top, X, onPick) {
-  const stage = row.stage;
-  const width = (from, to) => Math.max(2, X(to) - X(from));
-  const pick = (id) => ({ onclick: () => onPick(id), tabindex: 0, role: 'button', onkeydown: (event) => (event.key === 'Enter' ? onPick(id) : null) });
-  const parts = [
-    row.work.map((span) => svg('rect', { x: X(span.from), y: top, width: width(span.from, span.to), height: STAGE, class: 'work' })),
-    svg(
+function sessionRules(lane, top, height, { X, width }) {
+  const later = (lane.sessions ?? []).filter((session) => session.number > 1);
+  return later.map((session, index) => {
+    const at = X(session.from);
+    const next = later[index + 1];
+    const room = (next ? X(next.from) : width - EDGE) - at - 8;
+    const name = `Session ${session.number} · ${when(new Date(session.from).toISOString())}`;
+    return svg(
       'g',
-      { class: `stage-bar status--${stage.status}`, ...pick(stage.id) },
-      svg('rect', { x: X(stage.from), y: top, width: width(stage.from, stage.to), height: STAGE, rx: 3, class: 'stage-rect' }),
-      svg('text', { x: X(stage.from) + 4, y: top + 12, class: 'stage-label' }, stage.title),
-      svg('title', {}, `${stage.title}: ${stage.status}, ${when(new Date(stage.from).toISOString())} for ${length(stage.to - stage.from)}`),
-    ),
-  ];
-  let y = top + STAGE + GAP;
-  for (const task of row.tasks) {
-    const listedTo = task.activeFrom ?? task.to;
-    parts.push(
-      svg(
-        'g',
-        { class: ['task-bar', task.done ? 'is-done' : null].filter(Boolean).join(' '), ...pick(task.id) },
-        svg('rect', { x: X(task.from), y, width: width(task.from, listedTo), height: TASK, class: 'task-listed' }),
-        task.activeFrom !== null ? svg('rect', { x: X(task.activeFrom), y, width: width(task.activeFrom, task.to), height: TASK, class: 'task-active' }) : null,
-        task.done ? svg('circle', { cx: X(task.to), cy: y + TASK / 2, r: 3, class: 'task-done' }) : null,
-        svg('title', {}, `${task.title}${task.done ? ', done' : ''}`),
-      ),
+      { class: 'session' },
+      svg('line', { x1: at, x2: at, y1: top + 2, y2: top + height - 4, class: 'session-rule' }),
+      name.length * CHARACTER <= room ? svg('text', { x: at + 4, y: top + 16, class: 'session-label' }, name) : null,
+      svg('title', {}, `Session ${session.number}: ${session.session}`),
     );
-    y += TASK + GAP;
-  }
-  if (row.loft.length || row.submissions.length || row.views.length) {
-    for (const run of row.loft) {
-      parts.push(svg('g', { class: 'loft-run' }, svg('rect', { x: X(run.from), y, width: width(run.from, run.to), height: TASK, class: run.failed ? 'loft-failed' : 'loft' }), svg('title', {}, `loft ${run.name}`)));
-    }
-    for (const wait of row.submissions) {
-      parts.push(
-        svg('g', { class: 'wait', ...(wait.block ? pick(wait.block) : {}) }, svg('rect', { x: X(wait.from), y, width: width(wait.from, wait.to), height: TASK, class: wait.open ? 'wait-open' : 'wait-done' }), svg('title', {}, `Waited on you for ${length(wait.to - wait.from)}`)),
-      );
-    }
-    for (const view of row.views) {
-      parts.push(svg('g', { class: 'loft-view-mark', ...pick(view.id) }, svg('path', { d: `M ${X(view.at)} ${y} l 4 ${TASK / 2} l -4 ${TASK / 2} l -4 -${TASK / 2} z`, class: 'view-mark' }), svg('title', {}, `loft view: ${view.view}`)));
-    }
-  }
-  return svg('g', { class: 'stage-row' }, parts);
+  });
 }
 
 /**
- * Times along the bottom.
- * @param {any} model
- * @param {(time: number) => number} X
- * @param {number} height
+ * One stage's rows: its name and bar, then each task's.
+ * @param {any} row
+ * @param {number} top
+ * @param {{ X: (time: number) => number, names: number, pick: (id: string) => object }} draw
  */
-function axis(model, X, height) {
-  // The start and the end, and the start of each stretch of work after a folded idle stretch,
-  // each kept only where it leaves room for the one before it.
-  const times = [model.start, ...model.idle.filter((span) => span.folded).map((span) => span.to), model.end];
-  const ticks = [];
-  for (const time of times) {
-    const last = ticks[ticks.length - 1];
-    if (!last || X(time) - X(last) >= 90) ticks.push(time);
-    else if (time === model.end) ticks[ticks.length - 1] = time;
-  }
-  return svg(
-    'g',
-    { class: 'axis' },
-    ticks.map((time, index) =>
+function rowGroup(row, top, { X, names, pick }) {
+  const stage = row.stage;
+  const width = (from, to) => Math.max(2, X(to) - X(from));
+  const barTop = top + (STAGE_ROW - STAGE) / 2;
+  const middle = barTop + STAGE / 2;
+  const runs = (segment) => row.loft.filter((run) => run.from < segment.to && run.to > segment.from);
+  const parts = [
+    svg('g', { class: 'stage-name', ...pick(stage.id) }, svg('text', { x: EDGE + 4, y: middle + 4 }, fit(stage.title, names - EDGE * 2 - 4)), svg('title', {}, stage.title)),
+    svg(
+      'g',
+      { class: `stage-bar status--${stage.status}`, ...pick(stage.id) },
+      svg('rect', { x: X(stage.from), y: barTop, width: width(stage.from, stage.to), height: STAGE, rx: 2, class: 'stage-back' }),
+      row.segments
+        .filter((segment) => segment.kind !== 'wait')
+        .map((segment) =>
+          svg(
+            'rect',
+            { x: X(segment.from), y: barTop, width: width(segment.from, segment.to), height: STAGE, class: `seg seg--${segment.kind}${segment.kind === 'loft' && runs(segment).some((run) => run.failed) ? ' seg--failed' : ''}` },
+            segment.kind === 'loft' ? svg('title', {}, runs(segment).map((run) => `loft ${run.name}`).join(', ')) : null,
+          ),
+        ),
+      svg('title', {}, `${stage.title}: ${stage.status}, ${when(new Date(stage.from).toISOString())} for ${length(stage.to - stage.from)}`),
+    ),
+    row.segments
+      .filter((segment) => segment.kind === 'wait')
+      .map((segment) =>
+        svg(
+          'g',
+          { class: 'wait', ...(segment.block ? pick(segment.block) : {}) },
+          svg('rect', { x: X(segment.from), y: barTop, width: width(segment.from, segment.to), height: STAGE, class: 'seg seg--wait' }),
+          svg('title', {}, `Waited on you for ${length(segment.to - segment.from)}`),
+        ),
+      ),
+    svg('rect', { x: X(stage.from), y: barTop, width: width(stage.from, stage.to), height: STAGE, rx: 2, class: `stage-rect status--${stage.status}` }),
+    row.views.map((view) =>
       svg(
-        'text',
-        { x: X(time), y: height - 6, 'text-anchor': index === 0 ? 'start' : time === model.end ? 'end' : 'middle', class: 'tick' },
-        when(new Date(time).toISOString()),
+        'g',
+        { class: 'loft-view-mark', ...pick(view.id) },
+        svg('path', { d: `M ${X(view.at)} ${middle - 5} l 3.5 5 l -3.5 5 l -3.5 -5 z`, class: 'view-mark' }),
+        svg('title', {}, `loft view: ${view.view}`),
       ),
     ),
-  );
+  ];
+  let y = top + STAGE_ROW;
+  for (const task of row.tasks) {
+    const listedTo = task.activeFrom ?? task.to;
+    const taskTop = y + (TASK_ROW - TASK) / 2;
+    parts.push(
+      svg('g', { class: 'task-name', ...pick(task.id) }, svg('text', { x: EDGE + 4 + INDENT, y: taskTop + TASK / 2 + 4 }, fit(task.title, names - EDGE * 2 - 4 - INDENT)), svg('title', {}, task.title)),
+      svg(
+        'g',
+        { class: ['task-bar', task.done ? 'is-done' : null].filter(Boolean).join(' '), ...pick(task.id) },
+        svg('rect', { x: X(task.from), y: taskTop, width: width(task.from, listedTo), height: TASK, class: 'task-listed' }),
+        task.activeFrom !== null ? svg('rect', { x: X(task.activeFrom), y: taskTop, width: width(task.activeFrom, task.to), height: TASK, class: 'task-active' }) : null,
+        task.done ? svg('circle', { cx: X(task.to), cy: taskTop + TASK / 2, r: 3, class: 'task-done' }) : null,
+        svg('title', {}, `${task.title}${task.done ? ', done' : ''}`),
+      ),
+    );
+    y += TASK_ROW;
+  }
+  return svg('g', { class: 'stage-row' }, parts);
 }
 
 /**
@@ -230,15 +332,5 @@ function summaryBar(summary) {
       ),
       h('li', { class: 'split-total' }, `Not idle: ${length(summary.total)}`),
     ),
-  );
-}
-
-function legend() {
-  return h(
-    'p',
-    { class: 'gantt-legend' },
-    'Stages are the wide bars, tasks the thin ones beneath, their listed time pale and their active time solid. ',
-    'Loft runs and waits on you sit under their stage, and a diamond marks each Loft view recorded. ',
-    'Plan mode is a lilac band and spec mode a hatched one.',
   );
 }

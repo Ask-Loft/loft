@@ -253,7 +253,7 @@ test('the Gantt chart is chosen beside the order, kept for the next visit, follo
     { id: 'shape', kind: 'stage', title: 'Shape the shelf', status: 'done' },
     { id: 'build', kind: 'stage', title: 'Build the shelf', status: 'active' },
   ]);
-  await expect(chart.locator('.stage-label', { hasText: 'Build the shelf' })).toBeVisible({ timeout: LIVE });
+  await expect(chart.locator('.stage-name', { hasText: 'Build the shelf' })).toBeVisible({ timeout: LIVE });
   const wide = Number(await chart.getAttribute('width'));
   expect(wide).toBeGreaterThan(1280 - 300 - 200);
   await page.setViewportSize({ width: 1600, height: 900 });
@@ -263,7 +263,7 @@ test('the Gantt chart is chosen beside the order, kept for the next visit, follo
 test('choosing a stage in the Gantt chart opens the timeline at it', async ({ page }) => {
   await page.goto(address());
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  await page.locator('.stage-bar', { hasText: 'Shape the shelf' }).click();
+  await page.locator('.stage-name', { hasText: 'Shape the shelf' }).click();
   await expect(page.locator('ol.timeline')).toBeVisible();
   expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('block')).toBe('shape');
   await expect(page.locator('#block-shape')).toHaveAttribute('open', '');

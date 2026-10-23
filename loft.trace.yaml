@@ -22157,43 +22157,91 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
-        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+        body: 176e801c592b6a9683a17da6313b8bbafaeffc42a6119e6c3e1ae06e26160c20
   - node: 01a1646f-546d-7042-befd-eb6a95402082
     reviewed: c5f20683f5e0c8667aeed4a6be61164f9ff1a0a0bd9f0dacbaa3d907a3e477b8
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
-        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+        body: 176e801c592b6a9683a17da6313b8bbafaeffc42a6119e6c3e1ae06e26160c20
   - node: 01a1646f-546d-7042-befd-eb6b4a34aab6
     reviewed: bacbf94e19a7a858ac362bb3162e1ae58eaa1569cab549d83dd09e3909bd95a7
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
-        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+        body: 176e801c592b6a9683a17da6313b8bbafaeffc42a6119e6c3e1ae06e26160c20
   - node: 01a1646f-546d-7042-befd-eb6c59e28e31
     reviewed: 5503484ef181533229d1c0812fd810f5681455384e19e1d2d46e710fdf9a5d7c
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window"
-        body: b7554dd385c8aaa628a999be4c6b80c7dbcafc8dbc6a373d00393c437ffaa182
+        body: 176e801c592b6a9683a17da6313b8bbafaeffc42a6119e6c3e1ae06e26160c20
   - node: 01a1646f-546d-7042-befd-eb6eb970ce29
-    reviewed: 3e6a81087a6ccb8d20705aa248c9635b88ace4ee95554add094648619b0a511e
+    reviewed: 5388dd1bf29159eb52717645e569216912d7e5a51cd65ad7626e0019e3c8c8b8
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "the main agent’s lane comes first and names its session, and a subagent’s lane names its type"
-        body: 3cb3f19ac5b453e73b33fd564f86fafb53a91d246f08c8f150a64982e0bd6313
+        name: "the main agent’s lane holds the stages of every session, numbering the sessions in the order they started"
+        body: e5ece76a70b3de688328887f95fd86e23a539a06f79bb4fd0451da846b5698fd
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the main agent’s lane comes first, and a subagent’s lane names its type"
+        body: 6a954ff09f5fd099c2f353854a0efa1c84ccab4e886e07a1be220ff459d32fe0
+  - node: 01a168a8-bdad-700b-811b-6839e7980afb
+    reviewed: d18a9ea2e673392bba436ab97eb190c45bf7870a52c5a54058956c927fb1c3f5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the main agent’s lane holds the stages of every session, numbering the sessions in the order they started"
+        body: e5ece76a70b3de688328887f95fd86e23a539a06f79bb4fd0451da846b5698fd
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a session’s start in the main agent’s lane is a rule named by its number and time, giving its id on hover"
+        body: 674fbc7bb811093afcc313fe6410fd550e2f3305355cd8226723b1c49a4f8ed6
+  - node: 01a168a8-bdad-700b-811b-683a104ee942
+    reviewed: 813660487d4136057d23be09ba6d11a375670da3ccb8a3b2dfaea16d29e23b36
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a session’s start in the main agent’s lane is a rule named by its number and time, giving its id on hover"
+        body: 674fbc7bb811093afcc313fe6410fd550e2f3305355cd8226723b1c49a4f8ed6
   - node: 01a1646f-546d-7042-befd-eb6f76ba9323
     reviewed: 8d4e8bd47c0f211f5fc656d23c4827ebfb3847b1d49c9289b5fa30c941b289d6
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "the main agent’s lane comes first and names its session, and a subagent’s lane names its type"
-        body: 3cb3f19ac5b453e73b33fd564f86fafb53a91d246f08c8f150a64982e0bd6313
+        name: "the main agent’s lane comes first, and a subagent’s lane names its type"
+        body: 6a954ff09f5fd099c2f353854a0efa1c84ccab4e886e07a1be220ff459d32fe0
   - node: 01a1646f-546d-7042-befd-eb7012fbe6ee
     reviewed: 399d79c772f91b9f23a30f77837b7884edf209e3d4e6700b68e3d61666219c45
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "lanes that overlap in time are drawn one above the other"
         body: a8b0b764a766b9d6c8ac71f236b7ac8c5d674a7c52c1ad163185df82c480d5d8
+  - node: 01a168a8-bdad-700b-811b-683c8b487733
+    reviewed: f42bb1ff23e1f753a607c2abc8d5a92f3d699f8d651c0e58fb2d69f8d73d81c4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each lane, stage and task is named in the column beside the chart, a task indented under its stage, each level with its bar"
+        body: 1af84579389adb9bd0c5e2387c8e1d8a9cfb1ec502a0222327714fe8ea827382
+  - node: 01a168a8-bdad-700b-811b-683d2522ee69
+    reviewed: 158540609a9db1e75ca5b2edcdd857db43772aa9918cc70cf9f8ad45a25a42f0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each lane, stage and task is named in the column beside the chart, a task indented under its stage, each level with its bar"
+        body: 1af84579389adb9bd0c5e2387c8e1d8a9cfb1ec502a0222327714fe8ea827382
+  - node: 01a168a8-bdad-700b-811b-683e4046a316
+    reviewed: e73836647fced6f6f970a713edd0e00408853360720def3c5c15c9febe221f2c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each lane, stage and task is named in the column beside the chart, a task indented under its stage, each level with its bar"
+        body: 1af84579389adb9bd0c5e2387c8e1d8a9cfb1ec502a0222327714fe8ea827382
+  - node: 01a168a8-bdad-700b-811b-683f243042f5
+    reviewed: 8fe5b19166c005f5b1ebea24ccd1289b118f92335a6a90a64c484f72b9fcaa4c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a name longer than the column is cut short with an ellipsis and given whole on hover, and no name is drawn over the bars"
+        body: bd1cc8d83773e0489c25af880bad9a5f0b35af14ab32991bf76ed905b072320f
+  - node: 01a168a8-bdad-700b-811b-6840c0dbed07
+    reviewed: cac90d0967299480a2c82dd0dbb873fa3668301787c9612c168cede31c156986
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a name longer than the column is cut short with an ellipsis and given whole on hover, and no name is drawn over the bars"
+        body: bd1cc8d83773e0489c25af880bad9a5f0b35af14ab32991bf76ed905b072320f
   - node: 01a1646f-546d-7042-befd-eb725ec431a5
     reviewed: fb06aa60621e3807e63c300a7b6fbb30e2302014822014bc02ae6cf92435fcb7
     tests:
@@ -22213,23 +22261,35 @@ links:
         name: "a task with no recorded times is drawn at the time its current version was written"
         body: e9cad9a0946830d6bfb5a56a272eecd02239d52c35a68bc3ec15468efe7c5ccc
   - node: 01a1646f-546d-7042-befd-eb752ee05c31
-    reviewed: aa6a00452f0f41c32df00ad5f46ede0a77a43586a311b348779094cdef6e4d2a
+    reviewed: acef332a9dff405d95c3eb2a378d7c6f598fac2e5f3916c9b4471313ccd968df
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "each Loft run is drawn under the stage its agent had active, by its subcommands, and each Loft view at its time"
-        body: 41aa665ce095024a691f0e7bb250817a6b9ad778682ea202fd09d6594e39a286
+        name: "each Loft run is drawn in its stage’s bar and names its subcommands on hover, and each Loft view is marked on the bar at its time"
+        body: 801948454ebece5269be23e3776c64a6e12da043715e5cfcd63e6b17caa6a447
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each Loft run belongs to the stage its agent had active, by its subcommands, and each Loft view to its time"
+        body: a5b70fe70d95b41a8f24ad938d2875d9e83694242bbeee0ebb4d3288b96694ac
+  - node: 01a168a8-bdad-700b-811b-6841ac3c6f87
+    reviewed: 3a9cf8922cda21068ed8baf60237594d19a4f8431bf8507b66495185c5bebbce
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each Loft run belongs to the stage its agent had active, by its subcommands, and each Loft view to its time"
+        body: a5b70fe70d95b41a8f24ad938d2875d9e83694242bbeee0ebb4d3288b96694ac
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each Loft run is drawn in its stage’s bar and names its subcommands on hover, and each Loft view is marked on the bar at its time"
+        body: 801948454ebece5269be23e3776c64a6e12da043715e5cfcd63e6b17caa6a447
   - node: 01a1646f-546d-7042-befd-eb7684da415a
     reviewed: 8ec2f92929c1ee43e2d439a6e5d1906edc078e5fc31344de6a93996eb404b35d
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a block sent again in a later submission leaves the earlier submission ending at its own answer"
+        body: 76749bb01d1bbcfd4d8b7cb4eaf936f8ae9e8750a942225ae60b2e5db151e3d9
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "each submission is drawn in its agent’s lane from its send to its answer"
         body: 0b0163fd7e0a171045043f1b1be08c0baa62e7d62180e7888dc59e8cec102c83
       - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
         name: "the_page_reads_every_submission_sent_with_its_changes"
         body: 04d1d2103a64f686712fa99defab796211212692283d89fe36f4668074feec6f
-      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "a block sent again in a later submission leaves the earlier submission ending at its own answer"
-        body: 76749bb01d1bbcfd4d8b7cb4eaf936f8ae9e8750a942225ae60b2e5db151e3d9
   - node: 01a168a8-bdad-700b-811b-68420a3173c7
     reviewed: c9339f9e1d667796100ed18bdd3a7162db56598e9a60c21354a7a33c6b33cef1
     tests:
@@ -22237,17 +22297,44 @@ links:
         name: "a block sent again in a later submission leaves the earlier submission ending at its own answer"
         body: 76749bb01d1bbcfd4d8b7cb4eaf936f8ae9e8750a942225ae60b2e5db151e3d9
   - node: 01a1646f-546d-7042-befd-eb7765e7bec9
-    reviewed: a69938efa2cdb0a26dbc393cb98aa95b63ca315a8aadd16b2a085a47c4d0a3fc
+    reviewed: 5980110113487a5c89b0a88edd90c25cf0c571edf448e23b45af15a576e8c38c
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a stage’s bar is divided into its tasks, Loft runs, waits and work as the bar above the chart counts them, idle time left empty"
+        body: 5c6d7e54501f734fd17b4d92a29541964b9cd66e6cc4c603dc3b54bfaccb38bd
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "a stage’s time in a turn with no active task, Loft run or wait is agent work"
         body: 381372ea078a378331efe8909e56feeca82a41de6b158ecc994c11b974ddd37c
-  - node: 01a1646f-546d-7042-befd-eb78faca6f3a
-    reviewed: 89bcdb38b41a4135f55441f9ae8988e399dd158f8d1f90a306a501dc969e69b9
+  - node: 01a168a8-bdad-700b-811b-68432bab687f
+    reviewed: ee9095c93e2a97bd01341d5c0477dfd77473871016906b4c1845ec69bd9da702
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "time outside the turns is idle, and an idle stretch longer than 45 seconds is folded and labelled with its length"
-        body: 0ed36af532d1354c3a32b51c447368e93fcd5a4c61bb4558cd8689f99c80273f
+        name: "a stage’s bar is divided into its tasks, Loft runs, waits and work as the bar above the chart counts them, idle time left empty"
+        body: 5c6d7e54501f734fd17b4d92a29541964b9cd66e6cc4c603dc3b54bfaccb38bd
+  - node: 01a168a8-bdad-700b-811b-6844ce75769c
+    reviewed: 5e6e1abe5f91d37cff033644b91aa2bbb5d38053809169fbf6c8eabf829f5b2f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a stage’s bar is divided into its tasks, Loft runs, waits and work as the bar above the chart counts them, idle time left empty"
+        body: 5c6d7e54501f734fd17b4d92a29541964b9cd66e6cc4c603dc3b54bfaccb38bd
+  - node: 01a1646f-546d-7042-befd-eb78faca6f3a
+    reviewed: f07d24fc2d741a1813fd7c42bcf3ed8218f9cbf2079dec17fc28c1d7c138cc29
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "time outside the turns is idle, and an idle stretch longer than 45 seconds is folded to a break in the axis that gives its length on hover"
+        body: c167d5013b37a37909c7aa89bfaf3d7793e72e5ec30805b99674bfd3850f63a1
+  - node: 01a168a8-bdad-700b-811b-6845c959bfd0
+    reviewed: ad707ca563bea9fd78de17a3470c15055b21d7a26321f552eb1a36fd010aae01
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a folded idle stretch is drawn apart from plan and spec mode, with no hatching"
+        body: 09ffd2584f728d14e2286f4c6a246568f1bdf72ae007e9cf6f4e007b8dc43101
+  - node: 01a168a8-bdad-700b-811b-6846a9c73f3f
+    reviewed: 1ba12668d9b763c9c5269f38b7a1541daa6e0802e310c64de278da1c1908bedf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the time axis is marked at regular times within each stretch between folded idle stretches, no two marks crowding"
+        body: 1dd5ebd6dce00cba63414a1c46590e07633eaf3023a98dbd0fae159a4e66bb2f
   - node: 01a1646f-546d-7042-befd-eb79bfb93e3a
     reviewed: ceb5c504db1fa6e6a6fb2e7229169ef6fd5583bd1416446516fe620251f40c81
     tests:
@@ -22259,34 +22346,64 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "choosing a stage, a task or a submission in the chart opens the timeline at it"
-        body: 4f50574dd1ee5bfc3e2b10b05904db2862a04afb845ad462a8216811c4333d68
+        body: 341fe1f67e004c04d96d06a0c062acc56fa6d02348d94a84e02c69dcd33028c0
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "choosing a stage in the Gantt chart opens the timeline at it"
-        body: a9ebc3764d943bb95d42138af12303c21e252a90630f1903bec70ce636f4dfce
+        body: 36e5e89d26cd0d49e4dd0aefc40464a68489e46dca944c4688617b74a04ff458
+  - node: 01a168a8-bdad-700b-811b-68487f427f50
+    reviewed: 53b7300ba9c1a3a91de12bb09979daf37895cfa01d0d878375b74187d6c4b577
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a label of the track of modes is drawn only where it fits within its stretch"
+        body: c8775d343f48cc2465f71a384e3af24ab949da0afc6151cb4130912ea952c309
+  - node: 01a168a8-bdad-700b-811b-6849a3d1afef
+    reviewed: b4b33684e9b4fba33d5ef4c0ca1f44d3e87613ff72ba100ae018d8801d719507
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the time axis is marked at regular times within each stretch between folded idle stretches, no two marks crowding"
+        body: 1dd5ebd6dce00cba63414a1c46590e07633eaf3023a98dbd0fae159a4e66bb2f
+  - node: 01a168a8-bdad-700b-811b-684a267b8d02
+    reviewed: 6eba5ab15dc07dc7dd99849fb64fa64fdedae36a14d573e66739633a2ae18634
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "no label of the chart runs past its edges"
+        body: 4da194d2354d40df7199c44e0e3c72b920ed5c04422488c11524b1d632376a73
   - node: 01a1646f-546d-7042-befd-eb7c8d9f3725
-    reviewed: bdc0c51b8f009c86ad173244e3a55826be93e7072118b93384af426396ba0fab
+    reviewed: 3275f761b54b528584a6825a318b6e461fad1c396e19dc9679ada1bd0a6fbb80
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
-        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
+        name: "each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover"
+        body: f15f193192cf717932eb50748c53fc657f77092a1c6aa8864fc6899a29cb155f
+  - node: 01a168a8-bdad-700b-811b-684b8764d21a
+    reviewed: a0f334c138108610e021234b720d9acf36fd7aafb55252d4f0128985b006defa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover"
+        body: f15f193192cf717932eb50748c53fc657f77092a1c6aa8864fc6899a29cb155f
   - node: 01a1646f-546d-7042-befd-eb7d31ce0c2d
-    reviewed: 5c67488a89d5572106b6af4f00b2efca11e13a236ea95bb04946dcc7566a5321
+    reviewed: d36e49a07f26307f738f9dc7d07354dfe2a7d58fcea2fb3fcaf0eff8a03cbb76
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
-        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
+        name: "each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover"
+        body: f15f193192cf717932eb50748c53fc657f77092a1c6aa8864fc6899a29cb155f
   - node: 01a1646f-546d-7042-befd-eb7fd8a33165
-    reviewed: d23c81509015c65dc7720052a963eb899e3663fa2daaa8f3974c25fe263b071f
+    reviewed: 88b8e5702eb6aee00627b54bf7d07060f8be358cacd5c7dd537315f2c4cadac9
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
-        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
+        name: "each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover"
+        body: f15f193192cf717932eb50748c53fc657f77092a1c6aa8864fc6899a29cb155f
+  - node: 01a168a8-bdad-700b-811b-684ca9e44c8f
+    reviewed: a0d5d4c6415c1eba4297f41396e047c6dc9f6e43394a03fbe03f358d536c9a16
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover"
+        body: f15f193192cf717932eb50748c53fc657f77092a1c6aa8864fc6899a29cb155f
   - node: 01a1646f-546d-7042-befd-eb80ccffb25f
-    reviewed: cfcea00bc0a7b514be5132d42acbda52f149316a0d29988aaa3d45d5e8034219
+    reviewed: fbb9930b81a8ff8b1f8616753c106678758ca745b233a349334181fe996fa0eb
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "each stretch of plan or spec mode is a band across every lane, labelled with its mode and length, an open one to now"
-        body: 81077778e23b64d3ec694dc5c0aec4c6c0282984f567f7b1eb1e00ca5ff130d8
+        name: "each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover"
+        body: f15f193192cf717932eb50748c53fc657f77092a1c6aa8864fc6899a29cb155f
   - node: 01a1646f-546d-7042-befd-eb83315a9b4a
     reviewed: 52d99de94924b969a84c11482d28b3e8248492b4e58fb1b5e11ac2da46b24688
     tests:
