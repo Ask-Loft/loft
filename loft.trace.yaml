@@ -21651,6 +21651,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "choosing a listed branch opens its Yard Log at its own address"
         body: 38115826f9dec0d08d0ef6a47db318cd2e23f761527bd2b169a99c4a7f6aa28b
+  - node: 01a16827-8a6d-74e8-a5d2-6fa1ea625f7d
+    reviewed: 19112d1c4fcaa976848a6920e29c59eff17b50c02ecab32d02fd42706031f989
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "with Yard Logs listed and none chosen, the page asks to choose one from the list"
+        body: c4f7320ba41edd01a995e6216702c43bd6bf80a66d0df90e6f7fe86c6666537c
+  - node: 01a16827-8a6d-74e8-a5d2-6fa3517630a4
+    reviewed: bd3f9eff7336b2d9c43242c5357a0df3378913e57abc09dac0a47730f6b22b4c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "with no Yard Log served, the page asks for a session rather than a choice from the list"
+        body: 9da71b2dc587728db1a3270015a50db59d22121ce24844ca59a1e21bbfa269fd
+  - node: 01a16827-8a6d-74e8-a5d2-6fa4147c7a28
+    reviewed: 738a2201f1f39a6c045cfb85001f5cdbcad4a3bd19dae14b9c12e0dd9659cbd4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "with no Yard Log served, the page gives the commands that install the Loft plugin"
+        body: 2cd081b721e6ed91bdca033ea1505676f82a79d7c744459651ee20d656230bc3
   - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
     reviewed: 7bc62402f8f905e86888280c020baced0855d3256b842a94a9f4b5e80259a9bf
     tests:

@@ -113,6 +113,39 @@ export function treeList(listing, current) {
 }
 
 /**
+ * What the page shows while no Yard Log is chosen: with none served, how to start a session that
+ * opens one; otherwise, to choose one from the list.
+ * @param {any} listing
+ */
+export function welcome(listing) {
+  if (listing && !(listing.repositories ?? []).length) {
+    return h(
+      'section',
+      { class: 'welcome' },
+      h('h2', {}, 'Start a session'),
+      h(
+        'p',
+        {},
+        'Yard Log is kept by an agent in Claude Code with the Loft plugin. Start a session in a git repository, on the branch of the work, and ask it to plan or build a change: its first write opens the branch’s Yard Log, which is listed here as soon as it is written.',
+      ),
+      h('p', {}, 'To install the plugin, run these in Claude Code:'),
+      h(
+        'ol',
+        { class: 'commands' },
+        h('li', {}, h('code', {}, '/plugin marketplace add Ask-Loft/loft')),
+        h('li', {}, h('code', {}, '/plugin install loft@ask-loft')),
+      ),
+    );
+  }
+  return h(
+    'section',
+    { class: 'welcome' },
+    h('h2', {}, 'Choose a Yard Log'),
+    h('p', {}, 'Each branch an agent works on keeps its Yard Log. Choose one from the list to follow it.'),
+  );
+}
+
+/**
  * The page's title, with the count of what waits on the person.
  * @param {any} listing
  */

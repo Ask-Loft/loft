@@ -8,7 +8,7 @@ import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
 import { logView, unreadable } from './views/log.js';
-import { title, treeList, waitingList } from './views/trees.js';
+import { title, treeList, waitingList, welcome } from './views/trees.js';
 
 const state = {
   /** @type {any} */ listing: null,
@@ -92,7 +92,7 @@ function render() {
   const gantt = prefs.view() === 'gantt' && route;
   document.body.classList.toggle('is-wide', Boolean(gantt));
   if (!route) {
-    replace(main, h('section', { class: 'welcome' }, h('h2', {}, 'Choose a Yard Log'), h('p', {}, 'Each branch an agent works on keeps its Yard Log. Choose one from the list to follow it.')));
+    replace(main, welcome(state.listing));
   } else if (state.logStatus !== 200) {
     replace(main, unreadable(state.log));
   } else {

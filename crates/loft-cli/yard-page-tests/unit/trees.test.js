@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
 import { parse } from '../../yard-page/lib/route.js';
-import { title, treeList, waitingList } from '../../yard-page/views/trees.js';
+import { title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
 
 beforeEach(forget);
 
@@ -116,4 +116,26 @@ test('a repository’s main worktree, whose folder is the repository’s own, is
     ['feat/shelf', 'shelf'],
     ['docs', 'shelf-docs', 'shelf'],
   ]);
+});
+
+test('with Yard Logs listed and none chosen, the page asks to choose one from the list', () => {
+  const shown = welcome(listing());
+  assert.equal(shown.querySelector('h2').textContent, 'Choose a Yard Log');
+  assert.match(shown.textContent, /Choose one from the list/);
+});
+
+test('with no Yard Log served, the page asks for a session rather than a choice from the list', () => {
+  const shown = welcome(listing({ repositories: [] }));
+  assert.equal(shown.querySelector('h2').textContent, 'Start a session');
+  assert.match(shown.textContent, /Claude Code/);
+  assert.match(shown.textContent, /first write/);
+  assert.doesNotMatch(shown.textContent, /Choose one from the list/);
+});
+
+test('with no Yard Log served, the page gives the commands that install the Loft plugin', () => {
+  const shown = welcome(listing({ repositories: [] }));
+  assert.deepEqual(
+    [...shown.querySelectorAll('.commands code')].map((each) => each.textContent),
+    ['/plugin marketplace add Ask-Loft/loft', '/plugin install loft@ask-loft'],
+  );
 });

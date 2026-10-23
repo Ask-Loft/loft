@@ -163,6 +163,7 @@ button { font: inherit; }
 .main { min-width: 0; }
 .loading, .empty, .welcome p { color: var(--muted); }
 .welcome { padding: 40px 0; display: grid; gap: 8px; max-width: 60ch; }
+.welcome .commands { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
 .notice:empty { display: none; }
 .notice {
   margin-bottom: 16px;
