@@ -104,6 +104,8 @@ requirements:
         name: "A note shows its title, its Markdown and its tone as a colour and a word."
       - key: 01a1646f-546d-7042-befd-eb38e626356c
         name: "A note written folded starts folded."
+      - key: 01a16854-53e3-71b2-8192-66b204b471a0
+        name: "A table in a block's Markdown spans the width of its block, breaks no word within a cell, and scrolls sideways where it is wider than the block."
       - key: 01a1646f-546d-7042-befd-eb39ce7ffb3c
         name: "A question shows its prompt, its context and its options, with each recommended option marked."
       - key: 01a1646f-546d-7042-befd-eb3a326031ea
