@@ -133,7 +133,7 @@ function questionForm(block, key, update) {
     'fieldset',
     { class: ['question-form', isAnswered(draft, block) ? 'is-answered' : null], dataset: { key: block.key } },
     h('legend', {}, h('span', { class: 'header' }, body.header), ' ', body.prompt),
-    body.contextHtml ? Object.assign(document.createElement('div'), { className: 'prose context', innerHTML: body.contextHtml }) : null,
+    body.contextHtml ? html(body.contextHtml, 'prose context') : null,
     body.multiple ? h('p', { class: 'hint' }, 'Choose one or more.') : null,
     body.options.map((option, index) =>
       h(

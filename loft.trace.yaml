@@ -21918,6 +21918,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
         name: "a label is a tag of its own, tinted by its node’s kind"
         body: 535bd026ce05a63244cca64fdb6b77772ada830c6566520f28deadec30399d52
+  - node: 01a1686f-4733-773b-b571-50bf0ed7f7e5
+    reviewed: 41184c0bf045064b7877951197ec6a43c601647d7f73f9caae2682e87fc82161
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/swatch.test.js"
+        name: "a code span holding a colour such as #62359c is drawn on that colour"
+        body: 2cc3aaa9fb7a09db3d57def540b39d7e34c6ec91e334131d1666a7c868f3bcb3
+  - node: 01a1686f-4733-773b-b571-50c06027a0c0
+    reviewed: 760880b7f52d11c93e736e3dfc23a0175927bf50e91fe5a047b16d7a976df1e1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/swatch.test.js"
+        name: "the text of an opaque colour’s code span holds 4.5 to 1 against that colour"
+        body: 97898f8efa10f80c598dda1250c8e9780c9bc86ad7e3f798674365baff7cf2ab
+  - node: 01a1686f-4733-773b-b571-50c1d42366f8
+    reviewed: a21dd11aa0ff0348c11ccd4d44c2b5a33323dc6931b0572f55b4059958346a83
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/swatch.test.js"
+        name: "a code span holding more than a colour, and a colour in a fenced code block, keep the page’s code colours"
+        body: 98dc7957571082fd659836d08e50dcda83f1b2c26060a57c23f4a31be01498af
   - node: 01a1646f-546d-7042-befd-eb49f9b1a9a6
     reviewed: 326cfc627ca4f28c34e5fd5ed40ec11d601bee13780f777acac4024c9a5740cb
     tests:

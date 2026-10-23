@@ -128,6 +128,8 @@ a:hover { text-decoration-thickness: 2.5px; }
 code, .label { font-family: var(--mono); font-size: 0.86em; }
 code { background: var(--mist); padding: 1px 5px; }
 pre code, .label code { background: none; padding: 0; }
+/* A colour written in a code span, drawn on that colour, ringed so that one like the ground shows. */
+code.colour { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabular-nums; }
 .label { display: inline-block; padding: 0 6px; background: var(--surface-2); color: var(--ink); font-weight: 600; line-height: 1.6; white-space: nowrap; }
 .label--f { background: var(--mist); box-shadow: inset 2px 0 0 var(--cyan); }
 .label--rq { background: var(--signal-soft); box-shadow: inset 2px 0 0 var(--cornflower); }
