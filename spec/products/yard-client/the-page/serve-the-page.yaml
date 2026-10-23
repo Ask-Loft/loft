@@ -34,6 +34,8 @@ requirements:
         name: "Every script, style and font the page loads comes from the page server."
       - key: 01a1646f-546d-7042-befd-eb8873ff3ab9
         name: "The page's files are the ones the running `loft` was built with."
+      - key: 01a16658-f1c3-77d4-8fd0-1b477c1499a3
+        name: "A file of the page that the browser already holds, as its entity tag names it, is not sent again."
   - key: 01a1646f-546d-7042-befd-eb89f50bd4b0
     statement:
       form: unwanted
