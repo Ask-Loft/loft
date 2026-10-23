@@ -24,7 +24,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eae34b438416
         name: "The accepted criteria of each Feature are folded into one line that counts them and opens to their list."
       - key: 01a1646f-546d-7042-befd-eae4edf1b696
-        name: "Each finding that `loft reconcile` reported is listed with its rule and its message."
+        name: "Each rule `loft reconcile` reported of one of the branch's criteria is listed with the criterion's label and name."
   - key: 01a16838-8fdb-7127-a23e-c554d58c6712
     statement:
       form: ubiquitous
@@ -70,6 +70,18 @@ requirements:
         name: "A statement in an EARS form is recorded by its form and its slots, as well as its sentence."
       - key: 01a16859-7663-77ff-83f2-f13521a5b79a
         name: "Each criterion is recorded with its own tests and the rules `loft reconcile` reported of it, however long the lists of the whole report are."
+  - key: 01a1687f-d753-7252-8187-6ec85e4823f1
+    statement:
+      form: event_driven
+      when: "an agent writes a `trace` view"
+      system: "`loft yard write`"
+      shall: "record of `loft reconcile`'s document its counts and its outcome, and leave out its lists of tests and findings, which cover the whole repository."
+    body: "The branch's criteria carry their own tests and rules, so the lists of the whole repository add nothing the view draws, and each recorded view grew by them."
+    criteria:
+      - key: 01a1687f-d753-7252-8187-6ec93313cb0c
+        name: "The view records the number of criteria `loft reconcile` held in scope, the number linked and its outcome."
+      - key: 01a1687f-d753-7252-8187-6ecac6e44363
+        name: "The view records no test and no finding of a node outside the branch's Features."
   - key: 01a16859-7663-77ff-83f2-f136d787182b
     statement:
       form: ubiquitous
@@ -80,3 +92,7 @@ requirements:
         name: "A criterion whose tests and rules the report's shortened lists left out keeps the state its own record gives."
       - key: 01a16859-7663-77ff-83f2-f13801487d85
         name: "A view recorded without each criterion's tests and rules, whose report left tests or findings out, says that its counts may fall short."
+      - key: 01a1687f-d753-7252-8187-6ecbf08fce7d
+        name: "A view recorded with the findings of `loft reconcile` and without each criterion's rules lists those findings with their rule and message."
+      - key: 01a1687f-d753-7252-8187-6eccf56b7cd5
+        name: "A view recorded with both each criterion's rules and the findings of `loft reconcile` lists only the rules of the branch's criteria."
