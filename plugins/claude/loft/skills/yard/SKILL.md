@@ -44,7 +44,7 @@ Yard Log.
   `options`, each with a `label`, a `detail` and `recommended`. `multiple` lets the person choose
   more than one option; `ownWords` lets them answer in their own words.
 - `approval`: `title` and `markdown`: something the person approves, or rejects with a reason.
-- `plan`: `title`, `markdown` and the plan file's `path`.
+- `plan`: `title`, `markdown` and, for a plan file within the tree, its `path` relative to the tree.
 - `decision`: `title`, `consequence`, and the `question` it settles, by the question's id.
 - `task`: `title`, `state` (`open`, `active`, `done` or `dropped`) and `detail`.
 - `loft`: a `view` of the branch's Loft specification (`spec-change`, `decision`, `trace`,

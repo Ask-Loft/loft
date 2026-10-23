@@ -24564,6 +24564,24 @@ links:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a refused write leaves the questions to the terminal"
         body: adb2bc967f9306b544473bcdb91ea439d880b16b15598bc0dca70360dabbfe40
+  - node: 01a169a9-33b7-726d-a1ae-1138f287374d
+    reviewed: f586daf0aa148b80ea812fec2130cdcaf1b12c9e788e32974d134c2c0321878b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
+        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a plan keeps its file's path relative to the tree, and none for a file outside it"
+        body: e16833824b383ac3c526609d12d09210fab77742fb1971f8615118f54f914a1c
+  - node: 01a169a9-33b7-726d-a1ae-113992d5bc45
+    reviewed: 931bc8149bac04c6d4054b4db167d04808de3ef363280ae0217f4d45e7e3df29
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan from a file within the tree keeps its path relative to the tree"
+        body: 0edf2a3d6891f6feab106f9049bc014f57a1fa1e9e78fdc7fde3d6ce062e3932
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "a plan keeps its file's path relative to the tree, and none for a file outside it"
+        body: e16833824b383ac3c526609d12d09210fab77742fb1971f8615118f54f914a1c
   - node: 01a1646f-546c-7521-9643-bc43f8c8af27
     reviewed: 6f4f19b278769c4c1b003ee471c0321a9d8b593af4e700ceb0e173e992b5e898
     tests:
@@ -24571,8 +24589,8 @@ links:
         name: "a plan is titled by its first heading, or by its file where it has none, and its file names its block"
         body: 30adc5e61ea5f7ec9bee066f3dccb4d67843d699218185fb2fe575e4a4f6b275
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded"
-        body: ecb5d48eff184cb5945748efd201c9129c4fc53f40061aea741141d4f40eb285
+        name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
+        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
   - node: 01a1646f-546c-7521-9643-bc440f533210
     reviewed: 9c6f974cbe3f12c3db18c1bb5d783cf8e1e48f06430ec9c6cccffefe2da06637
     tests:
@@ -24583,8 +24601,8 @@ links:
     reviewed: 8762c42ea7bfb78d57376c4855ce4e36244e386c1bc65b4708d132cbb92b0707
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded"
-        body: ecb5d48eff184cb5945748efd201c9129c4fc53f40061aea741141d4f40eb285
+        name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
+        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
   - node: 01a1646f-546c-7521-9643-bc46d0e7e92a
     reviewed: 9d3545f423cc10e21b4a1d576890b44b169acc110a93d21271c5fec243fcf724
     tests:
@@ -24604,8 +24622,8 @@ links:
     reviewed: 5f1143c45834704ce302e3e2fd2be76139d1bb5a45154278aedba43c7ea95a1b
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded"
-        body: ecb5d48eff184cb5945748efd201c9129c4fc53f40061aea741141d4f40eb285
+        name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
+        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "the feedback typed with a rejection is read from what Claude Code gives the agent"
         body: 7bfec9029488fd8e8083d3d35f5fc9e4dddc6b182f0e47140a3828d82dec63d6
