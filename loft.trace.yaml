@@ -21981,6 +21981,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "a reason for a rejection typed and not sent is kept through a change, and forgotten once sent"
         body: c7f17a6761f4719c208de3cb15c17dc81f7d48614c0b4029f9c5c58484ed4361
+  - node: 01a16a56-43e1-75a2-a1aa-f93ebdcd0c78
+    reviewed: 8eab0f2d0248ecb567438f72a5780a07df3ff15de2e3afc4eb78c4ed6890e2aa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/latest.test.js"
+        name: "of two reads under way at once, the one begun last is applied, whichever answers last"
+        body: 1ef3f06f94fc3c763e4427a987d2a1e5c676e5ee1231b1c527de614246666bda
+      - file: "crates/loft-cli/yard-page-tests/unit/latest.test.js"
+        name: "a read that no later one overtook is applied"
+        body: 334962bd372977fdd0803717def4eb1b3b041944ad46faae272a82d031c33839
   - node: 01a1646f-546d-7042-befd-eb538ff1d6c4
     reviewed: c4fc52b706c7b00ba652478eed70d7c8962c7bf36b4dd96aa88e879663a977f1
     tests:

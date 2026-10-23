@@ -4,6 +4,7 @@
 import * as api from './lib/api.js';
 import { h, replace } from './lib/dom.js';
 import { drawAll } from './lib/diagrams.js';
+import { latest } from './lib/latest.js';
 import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
@@ -35,6 +36,11 @@ function lastVisit(log) {
   return state.visits.get(key) ?? null;
 }
 
+// Loads overlap, as a change and a new address each begin one: only the latest read of each is
+// applied, so a Yard Log read for an address the page has left never shows under the new one.
+const readListing = latest();
+const readLog = latest();
+
 /**
  * Loads what `wanted` names, the listing or the Yard Log shown, and draws the page again: on a
  * change only where either changed, and always when the page is opened or its address changes.
@@ -44,14 +50,14 @@ function lastVisit(log) {
 async function load(wanted = { listing: true, log: true }, always = true) {
   const route = parse(location.hash);
   const [listing, log] = await Promise.all([
-    wanted.listing ? api.trees() : Promise.resolve(null),
-    wanted.log && route ? api.log(route.tree, route.branch) : Promise.resolve(null),
+    wanted.listing ? readListing(api.trees()) : Promise.resolve(null),
+    wanted.log ? readLog(route ? api.log(route.tree, route.branch) : Promise.resolve({ status: 0, body: null })) : Promise.resolve(null),
   ]);
   const before = JSON.stringify([state.listing, state.log, state.logStatus]);
   if (listing) state.listing = listing.body;
-  if (wanted.log) {
-    state.log = log?.body ?? null;
-    state.logStatus = log?.status ?? 0;
+  if (log) {
+    state.log = log.body ?? null;
+    state.logStatus = log.status ?? 0;
   }
   if (always || JSON.stringify([state.listing, state.log, state.logStatus]) !== before) render();
 }
