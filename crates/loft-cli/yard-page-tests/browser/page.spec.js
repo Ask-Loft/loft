@@ -117,6 +117,35 @@ test('a choice the person has made and not sent is kept through a change', async
   await expect(page.locator('input[name="answer-q1"][value="Bottom"]')).toBeChecked();
 });
 
+test('a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes', async ({ page }) => {
+  write([
+    { id: 'kept-fold', kind: 'note', stage: 'shape', title: 'Folded at first', markdown: 'Held open.', folded: true },
+    { id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'planned' },
+  ]);
+  await page.goto(address());
+  const note = page.locator('#block-kept-fold details');
+  const shape = page.locator('#block-shape');
+  const later = page.locator('#block-kept-stage');
+  await note.locator('summary').click();
+  await shape.locator(':scope > summary').click();
+  await later.locator(':scope > summary').click();
+  const held = async () => {
+    await expect(note).toHaveAttribute('open', '');
+    await expect(shape).not.toHaveAttribute('open', '');
+    await expect(later).toHaveAttribute('open', '');
+  };
+  await held();
+  write([{ id: 'kept-meanwhile', kind: 'stage', title: 'Written meanwhile', status: 'planned' }]);
+  await expect(page.locator('#block-kept-meanwhile')).toBeVisible({ timeout: LIVE });
+  await held();
+  await page.reload();
+  await expect(page.locator('#log-title')).toBeVisible();
+  await held();
+  write([{ id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'done' }]);
+  await expect(later.locator('.status')).toHaveText('Done', { timeout: LIVE });
+  await expect(later).not.toHaveAttribute('open', '');
+});
+
 test('an answer given in Claude Code shows within 2 seconds, and the count of what waits changes with it', async ({ page }) => {
   await page.goto(address());
   await expect(page).toHaveTitle('(1) Yard');
@@ -419,6 +448,20 @@ test('a chart whose time needs more room than the page scrolls sideways within i
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   const fifteen = await page.locator('.stage-bar').first().boundingBox();
   expect(fifteen?.width ?? 0).toBeGreaterThanOrEqual(15 * 8 - 1);
+});
+
+test('a chart the person scrolled opens again where they left it, after the page draws it again and after a reload', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const left = () => frame.evaluate((element) => element.scrollLeft);
+  expect(await left()).toBeGreaterThan(100);
+  await frame.evaluate((element) => element.scrollTo({ left: 40 }));
+  await expect.poll(left).toBe(40);
+  await page.getByRole('button', { name: 'Timeline' }).click();
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  await expect.poll(left).toBe(40);
+  await page.reload();
+  await frame.waitFor();
+  await expect.poll(left).toBe(40);
 });
 
 test('while the chart scrolls sideways its names stay in view, and while it scrolls down its axis does, in a frame no taller than the window', async ({ page }) => {

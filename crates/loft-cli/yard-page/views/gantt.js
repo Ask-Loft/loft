@@ -9,6 +9,7 @@
 
 import { h } from '../lib/dom.js';
 import { length, when } from '../lib/format.js';
+import * as kept from '../lib/kept.js';
 import * as prefs from '../lib/prefs.js';
 import { chart, minimumWidth, place, ticks } from '../model/gantt.js';
 
@@ -23,9 +24,6 @@ const LETTER = 6.5;
 
 /** How far an arrow key moves the column's edge, in pixels. */
 const STEP = 16;
-
-/** Where each chart's frame was scrolled to, by its Yard Log, for as long as the page is open. */
-const scrolls = new Map();
 
 /**
  * The column's width once its edge has moved `moved` pixels from `start`.
@@ -93,16 +91,14 @@ export function gantt(log, options) {
     pick: (id) => ({ onclick: () => onPick(id) }),
   };
   const marks = labels(model, ticks(model, (time) => draw.px(time), 84), draw);
-  const key = `${log?.tree ?? ''}\n${log?.branch ?? ''}`;
   const frame = h(
     'div',
     {
       class: 'gantt-frame',
       style: `--names: ${names}px`,
-      dataset: { key },
       onscroll: (/** @type {Event} */ event) => {
         const target = /** @type {HTMLElement} */ (event.currentTarget);
-        scrolls.set(key, { left: target.scrollLeft, top: target.scrollTop });
+        kept.setScroll({ left: target.scrollLeft, top: target.scrollTop });
       },
     },
     h(
@@ -124,19 +120,19 @@ export function gantt(log, options) {
 }
 
 /**
- * Scrolls each chart in `root` to where it was, or, shown for the first time, to its latest time.
+ * Scrolls the chart in `root` to where the person left it, kept in the browser for its Yard Log,
+ * or, shown for the first time, to its latest time.
  * @param {ParentNode} root
  */
 export function settle(root) {
   for (const frame of /** @type {NodeListOf<HTMLElement>} */ (root.querySelectorAll('.gantt-frame'))) {
-    const key = frame.dataset.key ?? '';
-    const kept = scrolls.get(key);
-    if (kept) {
-      frame.scrollLeft = kept.left;
-      frame.scrollTop = kept.top;
+    const was = kept.scroll();
+    if (was) {
+      frame.scrollLeft = was.left;
+      frame.scrollTop = was.top;
     } else {
       frame.scrollLeft = frame.scrollWidth;
-      scrolls.set(key, { left: frame.scrollLeft, top: frame.scrollTop });
+      kept.setScroll({ left: frame.scrollLeft, top: frame.scrollTop });
     }
   }
 }

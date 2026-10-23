@@ -5,6 +5,7 @@
 
 import { h, html } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
+import * as kept from '../lib/kept.js';
 import { loftView } from './loft/index.js';
 
 /**
@@ -96,8 +97,8 @@ function note(block) {
   const tone = body.tone ? h('span', { class: ['tone-word', `tone--${body.tone}`] }, body.tone) : null;
   const text = html(body.html ?? '', 'prose');
   if (body.folded) {
-    return h(
-      'details',
+    return kept.details(
+      { path: `${block.key}/note`, open: false },
       { class: 'fold' },
       h('summary', {}, h('span', { class: 'kind' }, KINDS.note), ' ', body.title ?? 'A folded note', ' ', tone),
       text,
@@ -172,7 +173,13 @@ function question(block, context) {
       head,
       decisions.length ? prompt : null,
       answered,
-      h('details', { class: 'fold' }, h('summary', {}, decisions.length ? 'Context and options' : body.prompt), context_, options),
+      kept.details(
+        { path: `${block.key}/options`, open: false },
+        { class: 'fold' },
+        h('summary', {}, decisions.length ? 'Context and options' : body.prompt),
+        context_,
+        options,
+      ),
     ];
   }
   const waiting = context.waiting.has(block.key);
@@ -300,8 +307,8 @@ function meta(block) {
     h('span', {}, `version ${version.number}`),
     h('time', { datetime: version.act.at }, when(version.act.at)),
     earlier.length
-      ? h(
-          'details',
+      ? kept.details(
+          { path: `${block.key}/versions`, open: false },
           { class: 'versions' },
           h('summary', {}, earlier.length === 1 ? '1 earlier version' : `${earlier.length} earlier versions`),
           h(

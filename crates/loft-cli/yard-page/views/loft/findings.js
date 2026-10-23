@@ -3,6 +3,7 @@
 // there before it, the agent's reason beside a finding left in place, and those resolved.
 
 import { h } from '../../lib/dom.js';
+import * as kept from '../../lib/kept.js';
 import { count, place } from '../../lib/format.js';
 import { chip, leftOut, named } from './index.js';
 
@@ -11,8 +12,10 @@ const SEVERITIES = ['error', 'warning', 'info', 'hint'];
 /**
  * @param {any} report
  * @param {any} body
+ * @param {{ key?: string }} [context]
  */
-export function findingsView(report, body) {
+export function findingsView(report, body, context = {}) {
+  const path = context.key ? `${context.key}/resolved` : null;
   const check = report.check ?? {};
   const errors = check.errors ?? [];
   const findings = check.findings ?? [];
@@ -27,7 +30,7 @@ export function findingsView(report, body) {
     return [
       h('p', { class: 'clean' }, 'The specification is clean: no error and no finding.'),
       base ? h('p', { class: 'base' }, `Marked against ${base}.`) : null,
-      resolvedList(resolved),
+      resolvedList(resolved, path),
     ];
   }
   return [
@@ -79,7 +82,7 @@ export function findingsView(report, body) {
       }),
     ),
     leftOut(report, 'check.findings'),
-    resolvedList(resolved),
+    resolvedList(resolved, path),
   ];
 }
 
@@ -89,11 +92,14 @@ function site(item) {
   return h('p', { class: 'site' }, h('code', {}, place(item)));
 }
 
-/** @param {any[]} resolved */
-function resolvedList(resolved) {
+/**
+ * @param {any[]} resolved
+ * @param {string | null} path
+ */
+function resolvedList(resolved, path) {
   if (!resolved.length) return null;
-  return h(
-    'details',
+  return kept.details(
+    { path, open: false },
     { class: 'fold resolved' },
     h('summary', {}, `${resolved.length} resolved by the branch`),
     h('ul', { class: 'findings' }, resolved.map((finding) => h('li', {}, h('span', { class: 'rule' }, finding.rule), ' ', finding.message))),

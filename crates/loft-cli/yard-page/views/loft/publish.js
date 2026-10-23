@@ -4,6 +4,7 @@
 
 import { h } from '../../lib/dom.js';
 import { when } from '../../lib/format.js';
+import * as kept from '../../lib/kept.js';
 import { changeItem, chip, leftOut } from './index.js';
 
 const KIND_NAMES = {
@@ -22,7 +23,7 @@ const KIND_NAMES = {
 /**
  * @param {any} report
  * @param {any} body
- * @param {{ branch?: string }} context
+ * @param {{ branch?: string, key?: string }} context
  */
 export function publishView(report, body, context) {
   const status = report.status ?? {};
@@ -50,8 +51,8 @@ export function publishView(report, body, context) {
         )
       : h('p', { class: 'unpublished' }, 'The specification has not been published: the tree holds no lock.'),
     lock && !lock.matches && changes.length
-      ? h(
-          'details',
+      ? kept.details(
+          { path: context.key ? `${context.key}/changes` : null, open: false },
           { class: 'fold' },
           h('summary', {}, `${changes.length} nodes added, changed or removed since the publish`),
           h('ul', { class: 'changes' }, changes.map(changeItem)),

@@ -3,6 +3,7 @@
 // subjects.
 
 import { h } from '../../lib/dom.js';
+import * as kept from '../../lib/kept.js';
 import { chip, named, tag } from './index.js';
 
 const RATINGS = {
@@ -19,8 +20,12 @@ const STATES = {
   superseded: 'muted',
 };
 
-/** @param {any} report */
-export function decisionView(report) {
+/**
+ * @param {any} report
+ * @param {any} [_body]
+ * @param {{ key?: string }} [context]
+ */
+export function decisionView(report, _body, context = {}) {
   const decision = report.decision ?? {};
   const state = decision.state ?? {};
   const options = decision.options ?? [];
@@ -99,8 +104,8 @@ export function decisionView(report) {
         )
       : null,
     drivers.length
-      ? h(
-          'details',
+      ? kept.details(
+          { path: context.key ? `${context.key}/drivers` : null, open: false },
           { class: 'fold' },
           h('summary', {}, `${drivers.length} drivers`),
           h('ul', {}, drivers.map((driver) => h('li', {}, h('strong', {}, driver.label ?? driver.kind), ' ', driver.statement ?? (driver.node ? named(driver.node) : '')))),

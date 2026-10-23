@@ -3,19 +3,9 @@
 // `loft reconcile` reported of them.
 
 import { h } from '../../lib/dom.js';
+import * as kept from '../../lib/kept.js';
 import { chip, leftOut } from './index.js';
 import { STATES, coverage, featureFold } from './trace-list.js';
-
-/** What the person opened in each `trace` view, by its block's key and what they opened in it. */
-const opened = new Map();
-
-/** @type {import('./trace-list.js').Folds} */
-const folds = {
-  open: (key) => Boolean(key && opened.get(key)),
-  set: (key, open) => {
-    if (key) opened.set(key, open);
-  },
-};
 
 /**
  * The state of each criterion's link: not linked, unverified with its reason, stale, not yet
@@ -62,7 +52,7 @@ export function traceView(report, _body, context = {}) {
   const states = Object.keys(STATES)
     .map((state) => ({ state, count: criteria.filter((criterion) => criterion.state === state).length }))
     .filter((each) => each.count);
-  const key = context.key ?? null;
+  const key = context.key ? `${context.key}/trace` : null;
   return [
     coverage(criteria),
     h('p', { class: 'coverage-words' }, `${linked} of ${criteria.length} of the branch's criteria linked to tests, ${accepted} of those accepted.`),
@@ -71,11 +61,11 @@ export function traceView(report, _body, context = {}) {
     report.base ? h('p', { class: 'base' }, `Compared with ${report.base}.`) : null,
     h(
       'details',
-      { class: ['fold', 'trace-list'], open: folds.open(key), ontoggle: (event) => folds.set(key, /** @type {HTMLDetailsElement} */ (event.currentTarget).open) },
+      { class: ['fold', 'trace-list'], open: kept.folds.open(key), ontoggle: (event) => kept.folds.set(key, /** @type {HTMLDetailsElement} */ (event.currentTarget).open) },
       h('summary', {}, `${counted(criteria.length, 'criterion', 'criteria')} under ${counted(features.length, 'Feature', 'Features')}`),
-      features.map((feature) => featureFold(feature, tests, folds, key && `${key}/${feature.key}`)),
+      features.map((feature) => featureFold(feature, tests, kept.folds, key && `${key}/${feature.key}`)),
       leftOut(report, 'features'),
-      findingsList(findingsOf(criteria, reconcile)),
+      findingsList(findingsOf(criteria, reconcile), context.key ? `${context.key}/findings` : null),
     ),
   ];
 }
@@ -117,11 +107,12 @@ function findingsOf(criteria, reconcile) {
 /**
  * The findings, folded into one line that counts them.
  * @param {{ rule: string, label?: string | null, message: string }[]} findings
+ * @param {string | null} path where the fold is kept
  */
-function findingsList(findings) {
+function findingsList(findings, path) {
   return findings.length
-    ? h(
-        'details',
+    ? kept.details(
+        { path, open: false },
         { class: 'fold' },
         h('summary', {}, `${findings.length} findings of loft reconcile`),
         h('ul', { class: 'findings' }, findings.map((finding) => h('li', {}, h('span', { class: 'rule' }, finding.rule), ' ', finding.label ? `${finding.label}: ` : '', finding.message))),

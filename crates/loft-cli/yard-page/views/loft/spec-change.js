@@ -6,13 +6,11 @@
 
 import { colours as schemeColours, draw } from '../../lib/diagrams.js';
 import { h } from '../../lib/dom.js';
+import * as kept from '../../lib/kept.js';
 import { changeItem, leftOut } from './index.js';
 
 /** The most boxes drawn before the Feature Groups are folded. */
 export const MOST_BOXES = 30;
-
-/** The Feature Group open in each view, by the view's block key. */
-const opened = new Map();
 
 /** @param {string} text */
 function quoted(text) {
@@ -109,8 +107,9 @@ export function source(graph, open, c = schemeColours()) {
 /**
  * @param {any} report
  * @param {any} body
+ * @param {{ key?: string }} [context]
  */
-export function specChangeView(report, body) {
+export function specChangeView(report, body, context = {}) {
   const status = report.status ?? {};
   const base = status.base ?? {};
   const graph = report.graph ?? { nodes: [], decisions: [], edges: [] };
@@ -128,11 +127,17 @@ export function specChangeView(report, body) {
   if (!changes.length && !decisions.length) {
     return [h('p', { class: 'clean' }, `The specification has not changed since ${base.revision ?? 'the base revision'}.`), compared];
   }
-  const key = body.recorded?.at ?? '';
+  // The Feature Group the person opened, kept by the block, or by this drawing without one.
+  const place = context.key ? `${context.key}/group` : null;
+  /** @type {string | null} */
+  let chosen = null;
+  const opened = () => (place ? kept.get(place, null) : chosen);
+  /** @param {string | null} key */
+  const choose = (key) => (place ? kept.set(place, key, null) : (chosen = key));
   const target = h('div', { class: 'diagram spec-diagram' });
   const holder = h('div', { class: 'spec-change' }, compared, target);
   const redraw = () => {
-    const open = opened.get(key) ?? null;
+    const open = opened();
     const { groups, folded } = boxes(graph, open);
     void draw(target, (c) => source(graph, open, c));
     picker.replaceChildren(
@@ -147,7 +152,7 @@ export function specChangeView(report, body) {
                   class: ['group-button', group.key === open ? 'is-open' : null],
                   'aria-pressed': group.key === open ? 'true' : 'false',
                   onclick: () => {
-                    opened.set(key, group.key === open ? null : group.key);
+                    choose(group.key === open ? null : group.key);
                     redraw();
                   },
                 },
@@ -162,8 +167,8 @@ export function specChangeView(report, body) {
   holder.append(picker);
   redraw();
   holder.append(
-    h(
-      'details',
+    kept.details(
+      { path: context.key ? `${context.key}/changes` : null, open: false },
       { class: 'fold change-tree' },
       h('summary', {}, `${changes.length + decisions.length} nodes and decisions changed`),
       h(

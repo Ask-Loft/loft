@@ -4,6 +4,7 @@
 
 import { add, h } from '../lib/dom.js';
 import { base, count, place, when } from '../lib/format.js';
+import * as kept from '../lib/kept.js';
 import * as prefs from '../lib/prefs.js';
 import {
   answerable,
@@ -56,6 +57,8 @@ export function unreadable(body) {
  * @param {LogContext} context
  */
 export function logView(log, context) {
+  // What the browser keeps of this Yard Log's folds and scroll is taken up before it is drawn.
+  kept.begin(log);
   const blocks = blocksByKey(log);
   const open = answerable(log) ? openSubmissions(log) : [];
   const waiting = new Set();

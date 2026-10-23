@@ -4,14 +4,12 @@
 // stage its blocks, those written during one stretch of plan or spec mode drawn under a band.
 
 import { h } from '../lib/dom.js';
+import * as kept from '../lib/kept.js';
 import { length, ms, when, who } from '../lib/format.js';
 import { drawnInQuestion, grouped, ordered } from '../model/log.js';
 import { card } from './blocks.js';
 
 const STATUS = { planned: 'Planned', active: 'Active', done: 'Done', dropped: 'Dropped' };
-
-/** Whether the person opened or folded each stage, by its key, for as long as the page is open. */
-const folds = new Map();
 
 /**
  * @param {any} log
@@ -37,18 +35,16 @@ export function timeline(log, context) {
  */
 function stageSection(stage, context) {
   const body = stage.version.body;
-  const open = folds.has(stage.key) ? folds.get(stage.key) : body.status === 'active';
   const blocks = (stage.blocks ?? []).filter((block) => !drawnInQuestion(block, context.blocks));
   const owner = stage.owner;
   const times = stage.times ?? {};
-  const details = h(
-    'details',
+  // Open while active and folded otherwise, unless the person chose otherwise under its status.
+  const details = kept.details(
+    { path: `${stage.key}/open`, open: body.status === 'active', basis: body.status },
     {
       class: ['stage', `status--${body.status}`, context.marked.has(stage.key) ? 'is-new' : null],
       id: `block-${stage.id}`,
-      open,
       dataset: { key: stage.key },
-      ontoggle: (event) => folds.set(stage.key, /** @type {HTMLDetailsElement} */ (event.currentTarget).open),
     },
     h(
       'summary',

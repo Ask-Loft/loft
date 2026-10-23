@@ -21828,6 +21828,66 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "each stage shows its title, its status as a word, its goal and its owner"
         body: e3cccaf55ff525be581cf7ce3372b03a4520723a3b8be060fd7e25297e08ed94
+  - node: 01a1690b-2c9b-7594-809f-4a8b682c03f5
+    reviewed: 8af40b72e585a526966ba9ec1a4717bafcb502268892efc0a5b51ac1810854a6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a stage and a folded note the person toggled stay so through a fresh draw and after the page loads again"
+        body: 811a158895b97e0097fb99786b06b6e06e4e17adfb24261cf442343097843891
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
+        body: c4a15d89fa8f4426cd27108a0f0bd4ac992914788c3983d7179ee92bfc5e8393
+  - node: 01a1690b-2c9b-7594-809f-4a8c73851ca5
+    reviewed: 3155a2dc73a39056ce67fa4b81160f8d94b88ad59430d45f9ddde068f2cd9575
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a fold the person toggled is drawn so again, by a fresh draw and after the page loads again"
+        body: be27c6d47420ff8f63bc25c21791455103bc5ab701ff7cd1c8dcdca31e6a7f24
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a stage and a folded note the person toggled stay so through a fresh draw and after the page loads again"
+        body: 811a158895b97e0097fb99786b06b6e06e4e17adfb24261cf442343097843891
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
+        body: c4a15d89fa8f4426cd27108a0f0bd4ac992914788c3983d7179ee92bfc5e8393
+  - node: 01a1690b-2c9b-7594-809f-4a8d7ad2d600
+    reviewed: 4e025fbfc450750bda286937c41624cc217ba9987e7183c30e44d3b51f460577
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "the Feature Group the person opened in a spec-change view is open again after the page loads again"
+        body: 4ec42576465c7acb7794faf672a120e29ff86a0d6da9e51f29c90a6ca4be0abc
+  - node: 01a1690b-2c9b-7594-809f-4a8ed8751bc7
+    reviewed: 218662597ee21fbdf64de9d7bd6166d20939e04f56613016f556bb4516adfcef
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a stage the person folded takes its default again once its status changes"
+        body: d56d4509a11b1353c9b1431cb2df5d0bd79e3f62d1fc4784716601ff4491d543
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a planned stage the person opened is folded again once it is done"
+        body: b6acd1531d3237802aa84326b57d0fda45c76dbf5e82a7637364702b681c4f67
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
+        body: c4a15d89fa8f4426cd27108a0f0bd4ac992914788c3983d7179ee92bfc5e8393
+  - node: 01a1690b-2c9b-7594-809f-4a8fd5152b89
+    reviewed: f667dc45fe9ab7cb9b08c0090013aa6f2e7906dbbf42cfb900be4d27fb57333f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a fold is kept only while it differs from its default"
+        body: 69d97d01fb82f62a25e2f53bc946775766a71e76ebb22a8b3ff31fe36525789a
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "the browser forgets the folds of blocks a Yard Log no longer holds"
+        body: 92d338afa27ae8357c4b35127539d198031fe511023d8be057f630e2f33c5420
+  - node: 01a1690b-2c9b-7594-809f-4a9086940336
+    reviewed: 44af7042646cb87ac95f30fafe7061e20de6858a2150f49b50b6d2eac194ad3a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "the browser keeps the 30 Yard Logs opened last and forgets the others"
+        body: 7411a1cd030dec33f7baf789145bde8365a0c960c5bafaa333e0f9e5644498fc
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "each Yard Log keeps its own folds and its own scroll of the Gantt chart"
+        body: 1488fee01c1528791b4168db35eee12f80965fb39c46f38b84666ae7555b2247
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a write from another tab to another Yard Log is not lost when this page writes"
+        body: fa0c3ac365a6ce03dbdc56ece465109f1f24d372cc12ff06279ff166e2e503ea
   - node: 01a1646f-546d-7042-befd-eb2f03e5bd8d
     reviewed: 265ae00336a5baf3733982a7b3b0ad22e2adff3dad924ea1e3102a848c4b7548
     tests:
@@ -22300,11 +22360,17 @@ links:
         name: "while the chart scrolls sideways its names stay in view, and while it scrolls down its axis does, in a frame no taller than the window"
         body: b31c1e545afc08e6c4ab5204ef1d45dafba518cd365f8f7475edc895de0a3e29
   - node: 01a168c0-7faa-72dc-8ad3-52143f4aabe1
-    reviewed: 3368824bbeaeb94b4a84e173b128c9d314aa33dcf0ff5d714798376dcdbccc7c
+    reviewed: eeab1d26a4091e3df0e509e68a13458fec71f84e141ff42c8bd9273f453a8d33
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a chart whose time needs more room than the page scrolls sideways within its frame, opening at its latest time, and the page does not"
         body: 8ca8bf387f89122f853b85c0ede8b99c480863e5cd56612274f4cbc0deca42df
+  - node: 01a1690b-2c9b-7594-809f-4a918b953f3f
+    reviewed: d2728fa2e88847db1d65d23a24f469352ca3eb052150d5315e3b0e4f2a28f5ec
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a chart the person scrolled opens again where they left it, after the page draws it again and after a reload"
+        body: c9ffaf34437df0de2cf61ab647d8c680cba3e8b9faf7d41d971fd66221c6c160
   - node: 01a168e0-b553-7083-9fa7-00e2c312fb3d
     reviewed: 11160b671626f02349c495431a8c4f8b900a5c3c8b288aede8315af89ab60434
     tests:
