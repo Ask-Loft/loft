@@ -25,18 +25,24 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "let the person fold the list of Yard Logs away and open it again, and give the room the list leaves to the Yard Log shown."
+      shall: "hold the list of Yard Logs in a menu down the left of the window, which the person can fold to a narrow strip and open again, and give the room the menu leaves to the Yard Log shown."
     criteria:
+      - key: 01a16901-3952-7392-b2a8-3b99d4dc57a2
+        name: "The menu runs down the left of the window from its top to its bottom, beside the page's header, and stays in place while the Yard Log scrolls."
       - key: 01a168ea-af3e-70b5-83b9-97fe8c01e07f
-        name: "A button at the head of the page folds the list and opens it again, and says which of the two it does."
+        name: "Open, the menu is headed “Yard Logs”, beside a button that folds it."
+      - key: 01a16901-3953-712b-afc6-44269a6cf574
+        name: "Folded, the menu is a narrow strip that holds a button drawn as three lines, which opens it."
       - key: 01a168ea-af3e-70b5-83b9-97ff14bf889d
-        name: "The list is open unless the person chose to fold it, and the person's choice is kept in the browser."
+        name: "The menu is open unless the person chose to fold it, and the person's choice is kept in the browser."
       - key: 01a168ea-af3e-70b5-83b9-9800f391884d
-        name: "With the list folded, the Yard Log shown begins where the list began."
+        name: "With the menu folded, the page's header and the Yard Log shown begin beside the strip, as near its edge as they lay to the open menu's."
       - key: 01a168ea-af3e-70b5-83b9-9801a289a60f
-        name: "With the list folded, the Gantt chart widens into the room the list left, and narrows again once the list is opened."
+        name: "With the menu folded, the Gantt chart widens into the room the menu left, and narrows again once the menu is opened."
       - key: 01a168ea-af3e-70b5-83b9-9802c4271166
-        name: "With the list folded, the button gives the count of blocks that wait on the person."
+        name: "With the menu folded, its button gives the count of blocks that wait on the person."
+      - key: 01a16901-3953-712b-afc6-44278c6402e4
+        name: "In a window narrower than 860 pixels, the open menu lies over the Yard Log rather than beside it."
   - key: 01a1646f-546d-7042-befd-eb22743f9709
     statement:
       form: ubiquitous
