@@ -9,8 +9,17 @@
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html};
 use serde_json::Value;
 
-/// The Markdown fields of a block's body, each with the field its HTML is given in.
-const FIELDS: [(&str, &str); 2] = [("markdown", "html"), ("context", "contextHtml")];
+/// The Markdown fields of a stage's or a block's body, each with the field its HTML is given in:
+/// a note's, an approval's and a plan's Markdown, a question's context, a stage's goal, a
+/// decision's consequence, a task's detail and a `loft` block's note.
+const FIELDS: [(&str, &str); 6] = [
+    ("markdown", "html"),
+    ("context", "contextHtml"),
+    ("goal", "goalHtml"),
+    ("consequence", "consequenceHtml"),
+    ("detail", "detailHtml"),
+    ("note", "noteHtml"),
+];
 
 /// `markdown` as HTML.
 pub fn to_html(markdown: &str) -> String {
@@ -59,8 +68,24 @@ fn render_record(record: &mut Value) {
     }
 }
 
+/// Renders each Markdown field of a body, each option's detail of a question and the names of a
+/// `loft` report.
 fn render_body(body: &mut Value) {
+    render_fields(body);
     let Some(fields) = body.as_object_mut() else {
+        return;
+    };
+    if let Some(options) = fields.get_mut("options").and_then(Value::as_array_mut) {
+        options.iter_mut().for_each(render_fields);
+    }
+    if let Some(report) = fields.get_mut("report") {
+        render_names(report);
+    }
+}
+
+/// Gives each Markdown field of `value` its HTML beside it.
+fn render_fields(value: &mut Value) {
+    let Some(fields) = value.as_object_mut() else {
         return;
     };
     for (markdown, html) in FIELDS {
@@ -68,9 +93,6 @@ fn render_body(body: &mut Value) {
             let rendered = to_html(text);
             fields.insert(html.to_owned(), Value::String(rendered));
         }
-    }
-    if let Some(report) = fields.get_mut("report") {
-        render_names(report);
     }
 }
 
@@ -282,6 +304,55 @@ mod tests {
         assert_eq!(statement["shallHtml"], "write <code>&lt;ours&gt;</code>.");
         assert_eq!(statement["form"], "event_driven");
         assert!(statement.get("formHtml").is_none());
+    }
+
+    #[test]
+    fn every_markdown_field_of_a_stage_and_its_blocks_gets_its_html() {
+        let mut document = serde_json::json!({"stages": [{
+            "version": {"body": {"title": "Model", "goal": "The *store* reads"}},
+            "blocks": [
+                {"version": {"body": {"title": "Ship", "consequence": "Ships `b84b656`"}}},
+                {"version": {"body": {"title": "Fix", "detail": "Also `5ddbbfe`", "state": "done"}}},
+                {"version": {"body": {"view": "trace", "note": "Shows *what changed*"}}},
+                {"version": {"body": {"prompt": "Which?", "options": [
+                    {"label": "Top", "detail": "The **top** shelf"},
+                    {"label": "Bottom"}
+                ]}}}
+            ]
+        }]});
+        render_document(&mut document);
+        let stage = &document["stages"][0];
+        let body = |index: usize| &stage["blocks"][index]["version"]["body"];
+        assert_eq!(
+            stage["version"]["body"]["goalHtml"],
+            "<p>The <em>store</em> reads</p>\n"
+        );
+        assert_eq!(
+            body(0)["consequenceHtml"],
+            "<p>Ships <code>b84b656</code></p>\n"
+        );
+        assert_eq!(body(1)["detailHtml"], "<p>Also <code>5ddbbfe</code></p>\n");
+        assert_eq!(body(2)["noteHtml"], "<p>Shows <em>what changed</em></p>\n");
+        assert_eq!(
+            body(3)["options"][0]["detailHtml"],
+            "<p>The <strong>top</strong> shelf</p>\n"
+        );
+        assert!(body(3)["options"][1].get("detailHtml").is_none());
+        assert_eq!(body(1)["detail"], "Also `5ddbbfe`");
+    }
+
+    #[test]
+    fn html_in_a_task_s_detail_is_shown_as_text() {
+        let mut document = serde_json::json!({"stages": [{"blocks": [
+            {"version": {"body": {"title": "Fix", "detail": "a <b>bold</b> step", "state": "done"}}}
+        ]}]});
+        render_document(&mut document);
+        let html = document["stages"][0]["blocks"][0]["version"]["body"]["detailHtml"]
+            .as_str()
+            .unwrap_or_default()
+            .to_owned();
+        assert!(!html.contains("<b>"), "{html}");
+        assert!(html.contains("&lt;b&gt;bold&lt;/b&gt;"), "{html}");
     }
 
     #[test]

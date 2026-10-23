@@ -446,6 +446,10 @@
         "detail": {
           "type": "string"
         },
+        "detailHtml": {
+          "description": "The page server's only: the detail as HTML, with raw HTML shown as text",
+          "type": "string"
+        },
         "recommended": {
           "type": "boolean"
         }
@@ -511,6 +515,10 @@
               "type": "string"
             },
             "goal": {
+              "type": "string"
+            },
+            "goalHtml": {
+              "description": "The page server's only: the goal as HTML, with raw HTML shown as text",
               "type": "string"
             },
             "status": {
@@ -628,6 +636,10 @@
             "consequence": {
               "type": "string"
             },
+            "consequenceHtml": {
+              "description": "The page server's only: the consequence as HTML, with raw HTML shown as text",
+              "type": "string"
+            },
             "question": {
               "type": "string"
             }
@@ -645,6 +657,10 @@
               "type": "string"
             },
             "detail": {
+              "type": "string"
+            },
+            "detailHtml": {
+              "description": "The page server's only: the detail as HTML, with raw HTML shown as text",
               "type": "string"
             },
             "state": {
@@ -717,6 +733,10 @@
               ]
             },
             "note": {
+              "type": "string"
+            },
+            "noteHtml": {
+              "description": "The page server's only: the note as HTML, with raw HTML shown as text",
               "type": "string"
             },
             "base": {
