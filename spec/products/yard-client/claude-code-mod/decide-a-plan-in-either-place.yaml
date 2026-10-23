@@ -46,6 +46,8 @@ requirements:
         name: "A rejection on the page keeps the agent in plan mode and gives it the reason."
       - key: 01a1646f-546c-7521-9643-bc4d46ffa3da
         name: "The terminal's prompt closes."
+      - key: 01a16845-e4a5-74f5-a40c-79dc8ac95133
+        name: "The page's decision reaches Claude Code however long after it asked the person decides."
   - key: 01a1646f-546c-7521-9643-bc4e2f309571
     statement:
       form: ubiquitous

@@ -124,6 +124,32 @@ test('a refused write leaves the questions to the terminal', async ($, on) => {
 
 const PLAN = '# Build the shelf\n\nOne step.'
 
+/**
+ * Claude Code asking for a plan's approval: the `ExitPlanMode` call whose dialog shows until it is
+ * answered, and the permission request raised beneath it, which the mod's hook answers or leaves
+ * to the dialog. `answer` settles the call as the dialog's answer would.
+ */
+async function planAsked($: Engine, w: ReturnType<typeof world>, input: Record<string, unknown>) {
+  const dialog = deferred<Record<string, unknown>>()
+  w.state.terminal.ExitPlanMode = () => dialog.promise
+  const ran = $.tool.call({ tool: 'ExitPlanMode', ...input } as never)
+  await w.clock.settle()
+  const waitsBefore = yardRuns(w).filter(run => run.startsWith('wait')).length
+  const permission = $.classic.PermissionRequest({ tool_name: 'ExitPlanMode', tool_input: input, permission_mode: 'plan' } as never)
+  await w.clock.settle()
+  return {
+    ran,
+    permission,
+    waitsBefore,
+    answer: (result: Record<string, unknown>) => {
+      dialog.resolve(result)
+      return ran
+    },
+  }
+}
+
+const approvedOnPage = () => answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }])
+
 test("the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded", async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
@@ -141,38 +167,54 @@ test("the agent's plan goes to Yard Log as a plan block in plan mode, and the te
 test("a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on", async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  const terminal = deferred<Record<string, unknown>>()
-  w.state.terminal.ExitPlanMode = () => terminal.promise
-  // Beneath the hook, Claude Code answers the request at once with no decision: its dialog shows
-  // apart from the hook, so the page's approval must answer the request in the dialog's place.
-  w.state.permission = () => ({})
   await start($)
   const input = { plan: PLAN, planFilePath: '/p/shelf.md' }
-  const ran = $.tool.call({ tool: 'ExitPlanMode', ...input } as never)
-  await w.clock.settle()
-  const permission = $.classic.PermissionRequest({ tool_name: 'ExitPlanMode', tool_input: input, permission_mode: 'plan' } as never)
-  await w.clock.settle()
-  w.state.page.resolve(answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }]))
-  expect(await permission).toEqual({
-    decision: {
-      behavior: 'allow',
-      updatedInput: input,
-      updatedPermissions: [{ type: 'setMode', mode: 'auto', destination: 'session' }],
-    },
+  const asked = await planAsked($, w, input)
+  w.state.page.resolve(approvedOnPage())
+  expect(await asked.permission).toEqual({
+    decision: { behavior: 'allow', updatedInput: input, updatedPermissions: [{ type: 'setMode', mode: 'auto', destination: 'session' }] },
   })
-  terminal.resolve({ result: 'approved', text: 'approved' })
-  await ran
+  expect((await asked.answer({ result: 'approved', text: 'approved' })).text).toBe('approved')
   expect(yardRuns(w).some(run => run.startsWith('answer'))).toBe(false)
+})
+
+// A hook's ten-second budget stands still only while its own `$` calls run, so the permission
+// request, which waits as long as the person takes, must run the plan's wait itself: no wait runs
+// before Claude Code raises it, and its one wait runs under it.
+test('the permission request runs the wait for the plan itself, and nothing waits before it is raised', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  await start($)
+  const asked = await planAsked($, w, { plan: PLAN, planFilePath: '/p/shelf.md' })
+  expect(asked.waitsBefore).toBe(0)
+  expect(yardRuns(w).filter(run => run.startsWith('wait'))).toHaveLength(1)
+  w.state.page.resolve(approvedOnPage())
+  await asked.permission
+  await asked.answer({ result: 'approved', text: 'approved' })
 })
 
 test('a plan rejected on the page first denies the plan with the reason', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  w.state.terminal.ExitPlanMode = () => new Promise(() => {})
   await start($)
-  w.state.waits.push(answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'rejected', reason: 'too big', channel: 'page' } }]))
-  const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/p/shelf.md' } as never)
-  expect(ran.deny ?? ran.text).toBe('The person rejected the plan on the Yard page: too big')
+  const asked = await planAsked($, w, { plan: PLAN, planFilePath: '/p/shelf.md' })
+  w.state.page.resolve(answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'rejected', reason: 'too big', channel: 'page' } }]))
+  const message = 'The person rejected the plan on the Yard page: too big'
+  expect(await asked.permission).toEqual({ decision: { behavior: 'deny', message } })
+  const ran = await asked.answer({ deny: message })
+  expect(ran.deny ?? ran.text).toBe(message)
+})
+
+test('a plan decided in the terminal first ends the wait the permission request runs, and its verdict is recorded', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  await start($)
+  const asked = await planAsked($, w, { plan: PLAN, planFilePath: '/p/shelf.md' })
+  await asked.answer({ result: 'approved', text: 'approved' })
+  expect(await asked.permission).toEqual({})
+  expect(w.state.killed).toBe(1)
+  const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'approved' }])
 })
 
 const sentDoc = (blocks: ReturnType<typeof block>[], agent: Record<string, unknown> = { session: SESSION }) =>

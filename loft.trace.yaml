@@ -23298,6 +23298,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved"
         body: 51f27a46142711a8614c7da3d9c56e8d681164ca1fc8be865fbc82c5ae545c51
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan decided in the terminal first ends the wait the permission request runs, and its verdict is recorded"
+        body: 404477baa27657cb0399fe32c26a25882cd27c047f1acc2b87264305df622a11
   - node: 01a1646f-546c-7521-9643-bc49188fb63b
     reviewed: 5f1143c45834704ce302e3e2fd2be76139d1bb5a45154278aedba43c7ea95a1b
     tests:
@@ -23312,19 +23315,25 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
-        body: c6f3b0413b9b7cf3e4ddcd5d141697a8b9b4ac1318821086b0abdb0358d91968
+        body: 16b30d774e15e9d4ff89f72d0c57dedcc1465fd04bebb21a7e9e60ae57bc3547
   - node: 01a1646f-546c-7521-9643-bc4c62a6d12f
     reviewed: d517dfdbda65bb2d5a0a85d743ebc1b44d26f3eb68eb25b664658244a48ab4a6
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan rejected on the page first denies the plan with the reason"
-        body: 116bea940816d895d18067b5c21cf6cfa1b40c6b3a12e4c7783734ebb295b768
+        body: cc437b32fe0c7b43d9f7ff83ee057b162619ce500febc5a2c758ab0dd59a7c11
   - node: 01a1646f-546c-7521-9643-bc4d46ffa3da
     reviewed: c3a8bbbba28994fbd5f60544a0af31bac594c244efa63146ec824f54680f0cc0
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
-        body: c6f3b0413b9b7cf3e4ddcd5d141697a8b9b4ac1318821086b0abdb0358d91968
+        body: 16b30d774e15e9d4ff89f72d0c57dedcc1465fd04bebb21a7e9e60ae57bc3547
+  - node: 01a16845-e4a5-74f5-a40c-79dc8ac95133
+    reviewed: 5db2712a2fad514057accee64287f64bc9a6c57cbcca5e6c7cb92ade2fe7926e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the permission request runs the wait for the plan itself, and nothing waits before it is raised"
+        body: a6fe929b708e4338e4db31a373a6d6a186a69a42701c3901acc5cbf4c7b34166
   - node: 01a1646f-546c-7521-9643-bc54b796807b
     reviewed: 753427b10b01e523c918fea29e3bc18a4ccacb60555c0f73fe25f7f8098bdc14
     tests:

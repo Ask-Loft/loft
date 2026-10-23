@@ -107,7 +107,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     calls: [] as Doc[],
     terminal: {} as Record<string, (e: Doc) => Promise<Doc> | Doc>,
     agents: [] as { id: string; type: string }[],
-    permission: (e: { tool_input: unknown }): unknown => ({ decision: { behavior: 'allow', updatedInput: e.tool_input } }),
+    permission: (e: { tool_input: unknown }): unknown => ({}),
     /** Whether a page server has made `~/.yard/token` yet. */
     hasToken: true,
   }
@@ -126,7 +126,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   on('classic.UserPromptSubmit', () => ({}))
   on('classic.PostToolUse', () => ({}))
   on('classic.Stop', () => ({}))
-  // The person's answer to Claude Code's own permission prompt: yes, unless a test says otherwise.
+  // Beneath the mod, Claude Code answers a permission request at once with no decision: its
+  // dialog shows apart from the request, and the person answers there.
   on('classic.PermissionRequest', ($, e) => state.permission(e as never) as never)
   on('command.register', ($, e) => ({ value: { command: e.name } }))
   on('fs.exists', () => ({ value: false }))

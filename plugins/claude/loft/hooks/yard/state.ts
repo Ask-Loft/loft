@@ -23,8 +23,14 @@ export async function pageNoted($: EngineInterface) {
   return read($, page)
 }
 
-/** The plan Claude Code is asking the person to approve, while it is asked. */
-export type Presenting = { id: string; decided: Promise<Ran> }
+/** How the person decided a plan. */
+export type Outcome = { verdict?: unknown; reason?: unknown; channel?: unknown }
+
+/**
+ * The plan Claude Code is asking the person to approve, while it is asked: where it was sent, the
+ * end of the wait the permission request runs for it, and the page's outcome once the page decided.
+ */
+export type Presenting = { id: string; cwd: string; caller: Caller; submission: string; end?: () => void; decided?: Outcome }
 
 export type YardState = {
   settings: Settings

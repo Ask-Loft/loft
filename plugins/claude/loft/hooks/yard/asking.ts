@@ -11,7 +11,7 @@ import { askResultOf, feedbackIn, givenOf, planId, planTitle, questionBlocks, ty
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { activeStage, blockById, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Running } from './run'
-import { askerOf, peek, prepare, run, state, type Presenting } from './state'
+import { askerOf, peek, prepare, run, state, type Outcome, type Presenting } from './state'
 
 type Next = ((e: never) => Promise<ToolCallResult>) & { signal: AbortSignal }
 
@@ -119,7 +119,7 @@ export async function askQuestions($: EngineInterface, e: { questions: readonly 
 }
 
 /** A plan's outcome in a wait's document, where the person decided it. */
-function outcomeOf(ran: Ran | undefined, id: string): { verdict?: unknown; reason?: unknown; channel?: unknown } | undefined {
+function outcomeOf(ran: Ran | undefined, id: string): Outcome | undefined {
   if (!ran || !succeeded(ran)) return undefined
   const block = [...blocksOf(ran.doc).values()].find(each => each.id === id)
   return block?.outcome ?? undefined
@@ -128,7 +128,10 @@ function outcomeOf(ran: Ran | undefined, id: string): { verdict?: unknown; reaso
 const rejection = (reason: unknown) =>
   `The person rejected the plan on the Yard page${typeof reason === 'string' && reason !== '' ? `: ${reason}` : '.'}`
 
-/** The agent's plan: sent to Yard Log, and decided in the terminal or on the page. */
+/**
+ * The agent's plan: sent to Yard Log, and decided in the terminal or on the page. The page's
+ * decision reaches Claude Code through its permission request (`decideOnPage`), which waits for it.
+ */
 export async function presentPlan(
   $: EngineInterface,
   e: { plan?: unknown; planFilePath?: unknown; agentId?: string; tool_use_id?: string },
@@ -147,17 +150,13 @@ export async function presentPlan(
   const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(path ? { path } : {}), planMode: true }
   const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
   if (submission === undefined) return next(e as never)
-  const wait = waiting($, cwd, submission, caller)
-  state.presenting = { id, decided: wait.done }
+  const presenting: Presenting = { id, cwd, caller, submission }
+  state.presenting = presenting
   try {
-    const terminal = next(e as never)
-    const raced = await race(terminal, wait.done)
-    const decided = 'page' in raced ? outcomeOf(raced.page, id) : undefined
-    if (decided?.channel === 'page' && decided.verdict === 'rejected') return { deny: rejection(decided.reason) }
-    const ran = 'terminal' in raced ? raced.terminal : await terminal
-    const page = outcomeOf(await Promise.race([wait.done, Promise.resolve(undefined)]), id)
-    if (page?.channel === 'page') return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
-    wait.end()
+    const ran = await next(e as never)
+    presenting.end?.()
+    const page = presenting.decided
+    if (page) return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
     if (next.signal.aborted) {
       await withdraw($, cwd, caller, submission)
       return ran
@@ -170,7 +169,7 @@ export async function presentPlan(
     return ran
   } finally {
     state.presenting = null
-    wait.end()
+    presenting.end?.()
   }
 }
 
@@ -187,16 +186,28 @@ export function approval(input: unknown) {
 /**
  * Answers Claude Code's request to approve the plan where the page decides it first. Claude Code
  * shows its dialog apart from this request and answers beneath it at once with no decision, so the
- * request waits on the page itself: until the page decides, the plan's wait ends (the terminal
- * decided, and the call went on) or Claude Code drops the request, and only then asks beneath.
+ * request runs the plan's wait itself: the wait's process is this hook's own, and a hook's time
+ * stands still while its own `$` calls run, so it waits as long as the person takes. It ends once
+ * the page decides, the terminal decided and the call went on, or Claude Code drops the request.
  */
-export async function decideOnPage<R>(presented: Presenting, beneath: () => Promise<R>, input: unknown, signal: AbortSignal) {
-  const dropped = new Promise<undefined>(done => {
-    if (signal.aborted) done(undefined)
-    signal.addEventListener('abort', () => done(undefined), { once: true })
+export async function decideOnPage<R>(
+  $: EngineInterface,
+  presented: Presenting,
+  beneath: () => Promise<R>,
+  input: unknown,
+  signal: AbortSignal,
+) {
+  const wait = waiting($, presented.cwd, presented.submission, presented.caller)
+  presented.end = wait.end
+  const dropped = new Promise<Ran>(done => {
+    if (signal.aborted) done(ENDED)
+    signal.addEventListener('abort', () => done(ENDED), { once: true })
   })
-  const decided = outcomeOf(await Promise.race([presented.decided, dropped]), presented.id)
+  const ran = await Promise.race([wait.done, dropped])
+  wait.end()
+  const decided = outcomeOf(ran, presented.id)
   if (decided?.channel !== 'page') return beneath()
+  presented.decided = decided
   if (decided.verdict === 'approved') return { decision: approval(input) }
   return { decision: { behavior: 'deny' as const, message: rejection(decided.reason) } }
 }
