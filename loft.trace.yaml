@@ -23321,28 +23321,28 @@ links:
         body: 1d0a26c799365b277c5d25a6d3ec9cf5fb13c88d1fca794a5c5b30e2759879de
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
+        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was"
-        body: 66e7eef986175e4dfa7e2191f71964c3bfcab7009e367051f3b83529e64dd260
+        body: ef5e484fdddc054dbb31231cd678595c4a935987a2d2f10eb0e614d9cc456bbb
   - node: 01a165f5-4587-7632-89a7-b4db5092dc0c
     reviewed: 40723b9c7fb5b96d0ae9267e76dbbf0c72ebdf7c8b2addfa7e22d1ef93d9a47b
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was"
-        body: 66e7eef986175e4dfa7e2191f71964c3bfcab7009e367051f3b83529e64dd260
+        body: ef5e484fdddc054dbb31231cd678595c4a935987a2d2f10eb0e614d9cc456bbb
   - node: 01a1646f-546c-7521-9643-bc550810c75a
     reviewed: dbd2b44aee6add17d78b38ca1f6e92a0e695bc5a65554ace87700c251e04ff1a
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
+        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
   - node: 01a1646f-546c-7521-9643-bc56c4873439
     reviewed: d413264a68c3dfd55e9beb5deb8f56ccffbf19e369cc89f1db52e8092609ea90
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "an agent with no active stage has no task mirrored, and a failed task call mirrors nothing"
-        body: c182beec977ba4e633753c47fbca43811571b9edfde5b2cc6d9892adfeefc84d
+        body: ba9f40c49916990a547b24a2b9240cbc431bda13e8adee638e6ecfaef7503969
   - node: 01a1646f-546c-7521-9643-bc582c1c94a2
     reviewed: 6efd88e77be5f09b699fb279d59ffddc3979f4e82c96752865f4850d8eddcbbe
     tests:
@@ -23351,13 +23351,13 @@ links:
         body: 1d0a26c799365b277c5d25a6d3ec9cf5fb13c88d1fca794a5c5b30e2759879de
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
+        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
   - node: 01a1646f-546c-7521-9643-bc59de3d65ed
     reviewed: 72084d4e53e62b34f39706430a192d33dac96b193861c4ffc73f59f05bbeda66
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: 3b8c0827d5bcc54b777ace8801328844e07a9a12bbd8f50ab456e7bb36832dba
+        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
   - node: 01a1646f-546c-7521-9643-bc648ffcbb12
     reviewed: e657ae2eedeb6d2fe2d49f0520ec25d53ce556237ca193242826b68535ca3e4c
     tests:
