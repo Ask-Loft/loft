@@ -1,7 +1,8 @@
 //! The `trace` view: the document `loft reconcile` prints, with the branch's criteria, those
 //! under each Feature whose file the branch added to or changed against the base revision, so
 //! that the view grows with the change and not with the specification. Each Feature gives its
-//! Requirements with their statements, and each criterion the key of its Requirement.
+//! Requirements with their statements, and each criterion the key of its Requirement and its own
+//! tests and rules, which the report's shortened lists may leave out.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -42,7 +43,9 @@ pub fn report(over: &Over<'_>) -> Result<Value, Stop> {
     let based = base::read_tree(over.git, over.root, over.base)?;
     status.compare(&based, &tree);
     let changed = status.changed_paths();
-    let unverified = unverified(read.trace());
+    let outcome = reconcile::outcome(None, &reconciled);
+    let reconcile = read.json(&reconciled, &[], 0, outcome);
+    let links = Links::of(read.trace(), &reconcile);
     let mut features = Vec::new();
     document.walk(&mut |node| {
         let Some(id) = node.id() else { return };
@@ -50,40 +53,77 @@ pub fn report(over: &Over<'_>) -> Result<Value, Stop> {
             .get(id.key())
             .is_some_and(|site| changed.contains(&site.path.to_string()));
         if node.kind() == NodeKind::Feature && in_branch {
-            features.push(feature(document, node, &unverified));
+            features.push(feature(document, node, &links));
         }
     });
-    let outcome = reconcile::outcome(None, &reconciled);
     Ok(json!({
-        "reconcile": read.json(&reconciled, &[], 0, outcome),
+        "reconcile": reconcile,
         "base": based.revision,
         "commit": based.commit,
         "features": features,
     }))
 }
 
-/// The reason each node linked `unverified` in the trace file gives, by its key.
-fn unverified(trace: &Trace) -> BTreeMap<Key, String> {
-    trace
-        .links
-        .iter()
-        .filter_map(|link| match &link.evidence {
-            Evidence::Unverified(reason) => Some((link.node, reason.clone())),
-            Evidence::Tests(_) => None,
-        })
-        .collect()
+/// What each node's record carries of its links, by its key: the reason one linked `unverified`
+/// gives, and its tests and the rules of its findings from the whole of what `loft reconcile`
+/// reported, before the report's lists are shortened.
+struct Links {
+    unverified: BTreeMap<Key, String>,
+    tests: BTreeMap<String, Vec<Value>>,
+    rules: BTreeMap<String, Vec<Value>>,
+}
+
+impl Links {
+    fn of(trace: &Trace, reconcile: &Value) -> Self {
+        let unverified = trace
+            .links
+            .iter()
+            .filter_map(|link| match &link.evidence {
+                Evidence::Unverified(reason) => Some((link.node, reason.clone())),
+                Evidence::Tests(_) => None,
+            })
+            .collect();
+        let mut tests: BTreeMap<String, Vec<Value>> = BTreeMap::new();
+        for test in entries(reconcile, "tests") {
+            let mut test = test.clone();
+            if let Some(Value::String(key)) =
+                test.as_object_mut().and_then(|test| test.remove("key"))
+            {
+                tests.entry(key).or_default().push(test);
+            }
+        }
+        let mut rules: BTreeMap<String, Vec<Value>> = BTreeMap::new();
+        for finding in entries(reconcile, "findings") {
+            if let Some(key) = finding["key"].as_str() {
+                rules
+                    .entry(key.to_owned())
+                    .or_default()
+                    .push(finding["rule"].clone());
+            }
+        }
+        Self {
+            unverified,
+            tests,
+            rules,
+        }
+    }
+}
+
+/// The entries of the list `name` of a reconcile document.
+fn entries<'a>(reconcile: &'a Value, name: &str) -> &'a [Value] {
+    reconcile[name].as_array().map_or(&[], Vec::as_slice)
 }
 
 /// A Feature with its Requirements, each by its key, label and statement, and its criteria, each
 /// by its key, label and name, the key of its Requirement, and the reason one linked
-/// `unverified` gives.
-fn feature(document: &Document, node: Node<'_>, unverified: &BTreeMap<Key, String>) -> Value {
+/// `unverified` gives, its tests and the rules reported of it.
+fn feature(document: &Document, node: Node<'_>, links: &Links) -> Value {
     let mut requirements = Vec::new();
     let mut criteria = Vec::new();
     node.walk(&mut |below| {
         if let Node::Requirement(requirement) = below {
             let entry = requirement_entry(document, below, &requirement.statement);
-            criteria.extend(criteria_of(document, below, &entry["key"], unverified));
+            criteria.extend(criteria_of(document, below, &entry["key"], links));
             requirements.push(entry);
         }
     });
@@ -113,30 +153,34 @@ fn criteria_of(
     document: &Document,
     node: Node<'_>,
     requirement: &Value,
-    unverified: &BTreeMap<Key, String>,
+    links: &Links,
 ) -> Vec<Value> {
     let mut criteria = Vec::new();
     node.walk(&mut |below| {
         if below.kind() == NodeKind::Criterion {
-            criteria.push(criterion_entry(document, below, requirement, unverified));
+            criteria.push(criterion_entry(document, below, requirement, links));
         }
     });
     criteria
 }
 
-/// A criterion by its key, label and name, the key of its Requirement, and the reason it is
-/// linked `unverified`, where it is.
+/// A criterion by its key, label and name, the key of its Requirement, the reason it is linked
+/// `unverified`, where it is, and its tests and the rules reported of it, each list empty where
+/// there are none.
 fn criterion_entry(
     document: &Document,
     node: Node<'_>,
     requirement: &Value,
-    unverified: &BTreeMap<Key, String>,
+    links: &Links,
 ) -> Value {
     let mut entry = named(document, node);
-    if let Some(reason) = node.id().and_then(|id| unverified.get(&id.key())) {
+    if let Some(reason) = node.id().and_then(|id| links.unverified.get(&id.key())) {
         entry["unverified"] = json!(reason);
     }
     entry["requirement"] = requirement.clone();
+    let key = entry["key"].as_str().unwrap_or_default().to_owned();
+    entry["tests"] = Value::Array(links.tests.get(&key).cloned().unwrap_or_default());
+    entry["rules"] = Value::Array(links.rules.get(&key).cloned().unwrap_or_default());
     entry
 }
 

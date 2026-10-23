@@ -428,6 +428,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .coverage-linked { position: absolute; inset: 0 auto 0 0; background: var(--info); opacity: 0.45; }
 .coverage-accepted { position: absolute; inset: 0 auto 0 0; background: var(--done); }
 .coverage-words { font-size: 14px; }
+.short { font-size: 13px; color: var(--wait); }
 .tests { padding-left: 16px; font-size: 13px; color: var(--muted); }
 .trace-list[open] > summary { margin-bottom: 10px; }
 .trace-feature { border-top: 1px solid var(--line); }

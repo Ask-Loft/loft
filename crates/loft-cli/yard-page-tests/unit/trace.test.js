@@ -8,7 +8,7 @@ import { beforeEach, test } from 'node:test';
 
 import { add, h } from '../../yard-page/lib/dom.js';
 import { named } from '../../yard-page/views/loft/index.js';
-import { traceView } from '../../yard-page/views/loft/trace.js';
+import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
 
 beforeEach(forget);
 
@@ -149,4 +149,27 @@ test('a label is a tag of its own, tinted by its node’s kind', () => {
     ],
   );
   assert.equal(tags[0].nextSibling.textContent, ' ');
+});
+
+test('a criterion’s state comes from its own tests and rules, though the report’s lists left them out', () => {
+  const none = new Map();
+  const test = { file: 'tests/share.rs', name: 'an_edit_is_refused', locations: [{ firstLine: 12 }] };
+  assert.equal(linkState({ key: 'a', tests: [test], rules: [] }, none, none), 'accepted');
+  assert.equal(linkState({ key: 'a', tests: [], rules: ['TR-001'] }, none, none), 'unlinked');
+  assert.equal(linkState({ key: 'a', tests: [test], rules: ['TR-002'] }, none, none), 'unreviewed');
+  const own = report();
+  own.reconcile = { tests: [], findings: [] };
+  own.features[0].criteria = own.features[0].criteria.map((criterion) => ({ ...criterion, tests: [test], rules: [] }));
+  own.leftOut = { 'reconcile.tests': 3408, 'reconcile.findings': 206 };
+  const view = drawn(traceView(own, {}, {}));
+  assert.match(view.querySelector('.coverage-words').textContent, /^5 of 5 .* 4 of those accepted/);
+  assert.match(view.querySelector('tr.criterion--accepted .criterion-tests').textContent, /tests\/share\.rs:12/);
+  assert.ok(!view.querySelector('.short'));
+});
+
+test('a view recorded without each criterion’s tests and rules, whose lists were shortened, says its counts may fall short', () => {
+  const old = report();
+  old.leftOut = { 'reconcile.tests': 3408 };
+  assert.match(drawn(traceView(old, {}, {})).querySelector('.short').textContent, /older loft/);
+  assert.ok(!drawn(traceView(report(), {}, {})).querySelector('.short'));
 });

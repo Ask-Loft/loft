@@ -259,3 +259,51 @@ fn a_trace_view_records_each_feature_s_requirements_by_their_statements_and_each
         .unwrap();
     assert_eq!(criterion["requirement"], shared["key"]);
 }
+
+#[test]
+fn a_trace_view_records_each_criterion_with_its_own_tests_and_the_rules_reconcile_reported_of_it() {
+    let yard = Yard::with_spec();
+    change_a_criterion(&yard);
+    let trace = "format: loft-trace/2\nlinks:\n  - node: 00000000-0000-4000-8000-000000000036\n    tests:\n      - file: \"tests/share.rs\"\n        name: \"an_edit_through_the_link_is_refused\"\n";
+    std::fs::write(yard.scratch.0.join("loft.trace.yaml"), trace).unwrap();
+    let report = report(&yard, "trace");
+    let reconcile = yard.loft(&["reconcile"]);
+    let of = |list: &str, key: &Value, field: &str| -> Vec<Value> {
+        reconcile[list]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|entry| entry["key"] == *key)
+            .map(|entry| entry[field].clone())
+            .collect()
+    };
+    let criteria: Vec<&Value> = report["features"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|feature| feature["criteria"].as_array().unwrap())
+        .collect();
+    let linked = criteria
+        .iter()
+        .find(|criterion| criterion["key"] == "00000000-0000-4000-8000-000000000036")
+        .unwrap();
+    assert_eq!(
+        linked["tests"][0]["name"], "an_edit_through_the_link_is_refused",
+        "{linked}"
+    );
+    for criterion in criteria {
+        let key = &criterion["key"];
+        assert_eq!(
+            criterion["rules"].as_array().unwrap(),
+            &of("findings", key, "rule"),
+            "{criterion}"
+        );
+        let names: Vec<Value> = criterion["tests"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|test| test["name"].clone())
+            .collect();
+        assert_eq!(names, of("tests", key, "name"), "{criterion}");
+    }
+}

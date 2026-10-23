@@ -22740,6 +22740,24 @@ links:
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_trace_view_records_each_feature_s_requirements_by_their_statements_and_each_criterion_s_requirement"
         body: b527db2eb4ace0fb903b1e08e1e67a89cb3c40a4e774fc57e0c8ca1b163242e3
+  - node: 01a16859-7663-77ff-83f2-f13521a5b79a
+    reviewed: 0324240c4c9eda418ed128e6a85f0f2cb802363714b1494125eec16b9bc1ccba
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_trace_view_records_each_criterion_with_its_own_tests_and_the_rules_reconcile_reported_of_it"
+        body: 2d7d10ec527a34e5f60925464bd158ba5eb59ed7215870a0574ec125b2b75f80
+  - node: 01a16859-7663-77ff-83f2-f137ef80c9ea
+    reviewed: a1b53ab3df8d68ed697702e4cf6d1b31c6127d38453195853e85413d8d1c1cd9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a criterion’s state comes from its own tests and rules, though the report’s lists left them out"
+        body: 54f6a09e3b7971f57410cfe9daf4bce188b7c2baddaa8b66e03dec6d7fa35adc
+  - node: 01a16859-7663-77ff-83f2-f13801487d85
+    reviewed: b9b98f944b40fc01acc4a4c0665753f1a3a03d35dab5bb5de787252149dffe2b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a view recorded without each criterion’s tests and rules, whose lists were shortened, says its counts may fall short"
+        body: 308de328fd6de6edd86902dbe07afea0219939a2fb687b1ca1244b0b28793514
   - node: 01a1646f-546d-7042-befd-eae7dbf9b465
     reviewed: 647ba21538b3ccdb3973b7fd0664e666b07631211d3818db88bb8be007ff5894
     tests:

@@ -186,7 +186,7 @@ function row(criterion, tests) {
     h(
       'td',
       { class: 'criterion-tests' },
-      (tests.get(criterion.key) ?? []).map((test) => {
+      (criterion.tests ?? tests.get(criterion.key) ?? []).map((test) => {
         const line = test.locations?.[0]?.firstLine;
         return h('div', { class: 'test' }, h('code', {}, line ? `${test.file}:${line}` : test.file), h('span', { class: 'test-name' }, test.name));
       }),

@@ -19,18 +19,21 @@ const folds = {
 
 /**
  * The state of each criterion's link: not linked, unverified with its reason, stale, not yet
- * reviewed, or accepted.
+ * reviewed, or accepted. It is taken from the tests and rules recorded with the criterion, which
+ * no shortened list leaves out, and from the report's lists for a view recorded without them.
  * @param {any} criterion
  * @param {Map<string, string[]>} rules the rules reported of each node, by its key
  * @param {Map<string, any[]>} tests
  */
 export function linkState(criterion, rules, tests) {
-  const reported = rules.get(criterion.key) ?? [];
+  const own = Array.isArray(criterion.rules) && Array.isArray(criterion.tests);
+  const reported = own ? criterion.rules : rules.get(criterion.key) ?? [];
+  const listed = own ? criterion.tests : tests.get(criterion.key) ?? [];
   if (reported.includes('TR-001')) return 'unlinked';
   if (criterion.unverified) return 'unverified';
   if (reported.some((rule) => ['TR-003', 'TR-006', 'TR-004', 'TR-009', 'TR-010'].includes(rule))) return 'stale';
   if (reported.includes('TR-002')) return 'unreviewed';
-  if (!(tests.get(criterion.key) ?? []).length) return 'unlinked';
+  if (!listed.length) return 'unlinked';
   return 'accepted';
 }
 
@@ -64,6 +67,7 @@ export function traceView(report, _body, context = {}) {
     coverage(criteria),
     h('p', { class: 'coverage-words' }, `${linked} of ${criteria.length} of the branch's criteria linked to tests, ${accepted} of those accepted.`),
     states.length > 1 ? h('p', { class: 'counts' }, states.map((each) => chip(`${each.count} ${STATES[each.state].word}`, STATES[each.state].tone))) : null,
+    short(report, criteria) ? h('p', { class: 'short' }, 'Recorded by an older loft: this view may count fewer links than loft reconcile found.') : null,
     report.base ? h('p', { class: 'base' }, `Compared with ${report.base}.`) : null,
     h(
       'details',
@@ -74,6 +78,17 @@ export function traceView(report, _body, context = {}) {
       findingsList(reconcile.findings ?? []),
     ),
   ];
+}
+
+/**
+ * Whether a view recorded without each criterion's tests and rules had its report's lists of
+ * tests or findings shortened, so that its counts may fall short.
+ * @param {any} report
+ * @param {any[]} criteria
+ */
+function short(report, criteria) {
+  const left = report.leftOut ?? {};
+  return !criteria.some((criterion) => Array.isArray(criterion.tests)) && Boolean(left['reconcile.tests'] || left['reconcile.findings']);
 }
 
 /**
