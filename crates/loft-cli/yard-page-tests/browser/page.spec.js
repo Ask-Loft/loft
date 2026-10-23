@@ -116,6 +116,16 @@ test('in a dark scheme, the mark’s Y is action blue and the rest ink, and the 
   await headerColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
 });
 
+test('the mark’s Y meets the rest of its name with no gap between them', async ({ page }) => {
+  await page.goto(address());
+  const gap = await page.locator('.mark-initial').evaluate((initial) => {
+    const rest = document.createRange();
+    rest.selectNodeContents(/** @type {Node} */ (initial.nextSibling));
+    return rest.getBoundingClientRect().left - initial.getBoundingClientRect().right;
+  });
+  expect(Math.abs(gap)).toBeLessThan(1);
+});
+
 test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(address());

@@ -21678,6 +21678,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a dark scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue"
         body: 2de5d6412c2a8b2c529a4ba62555db5b584b268fd53ea1ec1e359485c4afe95f
+  - node: 01a16991-1851-764f-877b-c2d5f6abfd47
+    reviewed: 46923dc070e582f847bef3ca0efa1fac40b6c1928554d9546a97e00d9b6bd068
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the mark’s name is one element of its box, so that no gap opens between its Y and the rest"
+        body: cdb42e2c861e753b3d3c507ece9834c620a0b0cee8998d3c65f66fe798f78812
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the mark’s Y meets the rest of its name with no gap between them"
+        body: 41c66574d71d13fc563f95510eff3fa35d4284d807430dc9b6c9ded80dc42d2e
   - node: 01a16901-3952-7392-b2a8-3b99d4dc57a2
     reviewed: 2421ccaba510452bd1bbcfc5a34f1025e3b5f713d3d78996f0c1d2c35766a74f
     tests:
