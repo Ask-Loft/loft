@@ -300,10 +300,7 @@ impl YardLog {
     /// the same batch.
     fn active_stages(&self, agent: &Agent, inputs: &[Input]) -> Vec<Fault> {
         let active: Vec<&Handle> = self
-            .stages
-            .iter()
-            .map(|file| &file.stage)
-            .filter(|stage| stage.is_active() && stage.owner().is_some_and(|o| o.same(agent)))
+            .active_stages_of(agent)
             .map(|stage| &stage.id)
             .collect();
         if active.len() < 2 {

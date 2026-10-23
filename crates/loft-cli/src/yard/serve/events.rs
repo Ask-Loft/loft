@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use serde_json::{Value, json};
-use yardlog::YardLog;
+use yardlog::{Agent, YardLog};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
@@ -61,22 +61,12 @@ fn counted_stage(log: &YardLog, event: &Event) -> Option<String> {
 
 /// The stage active for `who` of `session` in `log`, by its key.
 fn active_stage(log: &YardLog, session: &str, who: &Who) -> Option<String> {
-    log.stages
-        .iter()
-        .map(|file| &file.stage)
-        .filter(|stage| stage.is_active())
-        .find(|stage| {
-            stage.owner().is_some_and(|owner| {
-                owner.session == session
-                    && match who {
-                        Who::Main => owner.subagent.is_none(),
-                        Who::Sub { id, .. } => {
-                            owner.subagent.as_ref().is_some_and(|sub| &sub.id == id)
-                        }
-                    }
-            })
-        })
-        .map(|stage| stage.key.to_string())
+    let agent = match who {
+        Who::Main => Agent::main(session),
+        Who::Sub { id, kind } => Agent::sub(session, id, kind),
+    };
+    let stage = log.active_stages_of(&agent).next()?;
+    Some(stage.key.to_string())
 }
 
 /// The store and open Yard Log of the branch the directory `dir` is on, where it has one.
