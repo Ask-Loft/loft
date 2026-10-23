@@ -18,7 +18,6 @@ use yardlog::Time;
 use yardlog::body::{Recorded, View};
 use yardlog::datum::Datum;
 use yardlog::input::LoftRequest;
-use yardlog::keys::Handle;
 
 use crate::opened::Opened;
 use crate::stop::Stop;
@@ -43,11 +42,7 @@ impl Views<'_> {
     ///
     /// The tree holds no specification that reads, or the view cannot be computed; the error
     /// says why.
-    pub fn report(
-        &self,
-        _block: &Handle,
-        request: &LoftRequest,
-    ) -> Result<(Recorded, Datum), String> {
+    pub fn report(&self, request: &LoftRequest) -> Result<(Recorded, Datum), String> {
         let reported = self.reported(request);
         let (recorded, mut report) = reported.map_err(|stop| stop.lines.join("; "))?;
         keep_most(&mut report, request.view);

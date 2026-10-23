@@ -12,7 +12,7 @@ use yardlog_store::git::YardGit;
 use yardlog_store::{Held, Place, YardStore, YardStoreError};
 
 use super::args::Beyond;
-use super::failure::Failure;
+use super::failure::{self, Failure};
 use super::page;
 
 /// The branch's Yard Log, where a command finds it.
@@ -101,6 +101,63 @@ impl Branch {
         })?;
         Ok(self.store.read()?)
     }
+}
+
+/// Why a change under Yard Log's lock was not applied: the store failed, or the change refused
+/// with `R`.
+pub enum Unapplied<R> {
+    Store(YardStoreError),
+    Refused(R),
+}
+
+impl<R> From<YardStoreError> for Unapplied<R> {
+    fn from(error: YardStoreError) -> Self {
+        Self::Store(error)
+    }
+}
+
+impl Branch {
+    /// Applies `change` under Yard Log's lock: its value, or what it refused with, where it
+    /// refused and nothing was written.
+    pub fn update<T, R>(
+        &self,
+        change: impl FnOnce(Option<YardLog>) -> Result<(YardLog, T), Unapplied<R>>,
+    ) -> Result<Result<T, R>, Failure> {
+        match self.store.update(change) {
+            Ok(updated) => Ok(Ok(updated.value)),
+            Err(Unapplied::Store(error)) => Err(error.into()),
+            Err(Unapplied::Refused(refused)) => Ok(Err(refused)),
+        }
+    }
+
+    /// A refusal's result: where it was refused, Yard Log's revision as it is `held`, and why.
+    pub fn refused(&self, held: &Held, errors: Vec<Value>) -> Failure {
+        Failure::Refused {
+            fields: self.fields(revision_of(held)),
+            errors,
+        }
+    }
+
+    /// Refuses where Yard Log as it is `held` is open and its merge closed it all the same.
+    pub fn refuse_if_merged(&self, held: &Held) -> Result<(), Failure> {
+        if self.merged(held)? {
+            return Err(self.refused(held, vec![closed_by_merge()]));
+        }
+        Ok(())
+    }
+}
+
+/// The error of a change refused since the merge closed Yard Log.
+pub fn closed_by_merge() -> Value {
+    failure::error(
+        "closed",
+        "Yard Log is closed: the base branch holds it, so the merge closed it",
+    )
+}
+
+/// The error of a change to a branch that has no Yard Log.
+pub fn absent() -> Value {
+    failure::error("absent", "the branch has no Yard Log")
 }
 
 /// The revision of Yard Log as it is held: 0 where the branch has none.

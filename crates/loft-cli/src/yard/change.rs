@@ -7,26 +7,11 @@ use std::path::Path;
 use serde_json::Value;
 use yardlog::respond::Refused;
 use yardlog::{Agent, Time, YardLog};
-use yardlog_store::YardStoreError;
 
 use super::args::{Beyond, Writer};
-use super::branch::{Branch, revision_of};
+use super::branch::{self, Branch, Unapplied};
 use super::caller::Caller;
 use super::failure::{self, Failure};
-use super::write::closed_by_merge;
-
-/// Why a change did not apply.
-enum Unapplied {
-    Store(YardStoreError),
-    Absent,
-    Refused(Refused),
-}
-
-impl From<YardStoreError> for Unapplied {
-    fn from(error: YardStoreError) -> Self {
-        Self::Store(error)
-    }
-}
 
 /// Applies `change` to the branch's Yard Log for the calling agent at the time the clock gives,
 /// and gives the result's fields at the revision it returns.
@@ -42,31 +27,16 @@ pub fn apply(
     let agent = caller.agent().clone();
     let settler = agent.clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(settler)))?;
-    if branch.merged(&held)? {
-        return Err(Failure::Refused {
-            fields: branch.fields(revision_of(&held)),
-            errors: vec![closed_by_merge()],
-        });
-    }
-    let applied = branch.store.update(|current| {
-        let mut log = current.ok_or(Unapplied::Absent)?;
-        let revision = change(&mut log, agent, at).map_err(Unapplied::Refused)?;
-        Ok::<_, Unapplied>((log, revision))
-    });
+    branch.refuse_if_merged(&held)?;
+    let applied = branch.update(|current| {
+        let mut log = current.ok_or(Unapplied::Refused(branch::absent()))?;
+        let revision =
+            change(&mut log, agent, at).map_err(|refused| Unapplied::Refused(refusal(&refused)))?;
+        Ok((log, revision))
+    })?;
     match applied {
-        Ok(updated) => Ok(branch.fields(updated.value)),
-        Err(Unapplied::Store(error)) => Err(error.into()),
-        Err(unapplied) => {
-            let held = branch.store.read()?;
-            let error = match unapplied {
-                Unapplied::Refused(refused) => refusal(&refused),
-                _ => failure::error("absent", "the branch has no Yard Log"),
-            };
-            Err(Failure::Refused {
-                fields: branch.fields(revision_of(&held)),
-                errors: vec![error],
-            })
-        }
+        Ok(revision) => Ok(branch.fields(revision)),
+        Err(error) => Err(branch.refused(&branch.store.read()?, vec![error])),
     }
 }
 

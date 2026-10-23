@@ -6,7 +6,9 @@
 use std::process::ExitCode;
 
 use loft_ports::PortError;
-use serde_json::{Map, Value, json};
+use loftspec::codec::site_fields;
+use loftspec::yaml::Location;
+use serde_json::Value;
 use yardlog_store::YardStoreError;
 
 use crate::finish::Finished;
@@ -76,17 +78,6 @@ pub fn error(kind: &str, message: &str) -> Value {
     json::error(kind, message, &[])
 }
 
-/// An error of `kind` at a file of Yard Log, and the line and column where it has them.
-pub fn error_at_file(kind: &str, message: &str, path: &str, at: Option<(usize, usize)>) -> Value {
-    let mut site = Map::new();
-    site.insert("path".to_owned(), json!(path));
-    if let Some((line, column)) = at {
-        site.insert("line".to_owned(), json!(line));
-        site.insert("column".to_owned(), json!(column));
-    }
-    json::error_at(kind, message, vec![site])
-}
-
 /// The error a store's failure reports.
 pub fn store_error(error: &YardStoreError) -> Value {
     let message = error.to_string();
@@ -97,11 +88,8 @@ pub fn store_error(error: &YardStoreError) -> Value {
         YardStoreError::Session(_) => self::error("session", &message),
         YardStoreError::Unreadable { folder, error } => {
             let path = format!("{folder}/{}", error.file);
-            let at = error
-                .error
-                .position
-                .map(|position| (position.line, position.column));
-            error_at_file("unreadable", &message, &path, at)
+            let site = site_fields(&path, error.error.position.map(Location::At));
+            json::error_at("unreadable", &message, vec![site])
         }
         YardStoreError::Newer { .. } => self::error("newer", &message),
         YardStoreError::Answer { .. }

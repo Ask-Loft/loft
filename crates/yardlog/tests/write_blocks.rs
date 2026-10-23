@@ -349,10 +349,9 @@ fn a_report_that_cannot_be_computed_refuses_the_batch() {
         {"id": "n", "kind": "note", "stage": "design", "markdown": "N"},
         {"id": "trace", "kind": "loft", "stage": "design", "view": "trace"}
     ]));
+    let reports = [(handle("trace"), Err("no spec/".to_owned()))].into();
     let refusal = log
-        .write(&inputs, &context(&main_agent(), 2), &mut |_, _| {
-            Err("no spec/".to_owned())
-        })
+        .write(&inputs, &context(&main_agent(), 2), &reports)
         .unwrap_err();
     assert!(
         matches!(&refusal, Refusal::Report { block, view: "trace", .. } if *block == handle("trace"))

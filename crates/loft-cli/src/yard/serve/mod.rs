@@ -140,6 +140,7 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
         }
     };
     let listener = listener::listen(args.port).map_err(|error| held(args.port, &error))?;
+    super::page::serving(args.port);
     let token = token(&home)?;
     let formats = protocol::report()["formats"]["reads"].clone();
     let named = json!({

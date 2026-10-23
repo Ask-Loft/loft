@@ -7,7 +7,7 @@ use crate::act::{Act, Actor, Agent, Time};
 use crate::body::{Body, Decision, Kind, Loft, Recorded};
 use crate::datum::Datum;
 use crate::format::Format;
-use crate::input::{Fault, Input, LoftRequest, Request};
+use crate::input::{Fault, Input, Request};
 use crate::keys::{BlockKey, Handle, SubmissionKey, VersionKey};
 use crate::log::{Block, Change, Happened, StageEntry, StageFile, Submission, Version, YardLog};
 use crate::query::State;
@@ -66,8 +66,9 @@ pub enum Refusal {
     },
 }
 
-/// Computes the report of a `loft` block.
-pub type Reporter<'a> = dyn FnMut(&Handle, &LoftRequest) -> Result<(Recorded, Datum), String> + 'a;
+/// The report of each `loft` block of a batch, by its id, computed before the write: what it
+/// records, or why it could not be computed.
+pub type Reports = BTreeMap<Handle, Result<(Recorded, Datum), String>>;
 
 impl YardLog {
     /// Yard Log as an agent's first write on `branch` opens it, before the write: revision 0,
@@ -111,7 +112,7 @@ impl YardLog {
         &mut self,
         inputs: &[Input],
         context: &Context,
-        reporter: &mut Reporter<'_>,
+        reports: &Reports,
     ) -> Result<Written, Refusal> {
         if !self.root.format.is_known() {
             return Err(Refusal::Newer(self.root.format));
@@ -121,7 +122,7 @@ impl YardLog {
         }
         let plan = Plan::check(self, inputs, context)?;
         let mut next = self.clone();
-        let written = next.apply(inputs, context, &plan, reporter)?;
+        let written = next.apply(inputs, context, &plan, reports)?;
         let faults = next.active_stages(&context.agent, inputs);
         if !faults.is_empty() {
             return Err(Refusal::Faults(faults));
@@ -135,13 +136,13 @@ impl YardLog {
         inputs: &[Input],
         context: &Context,
         plan: &Plan,
-        reporter: &mut Reporter<'_>,
+        reports: &Reports,
     ) -> Result<Written, Refusal> {
         let act = self.act(context.at, Actor::Agent(context.agent.clone()));
         let revision = act.revision;
         let mut blocks = Vec::new();
         for input in inputs {
-            let body = Self::body(input, plan, reporter)?;
+            let body = Self::body(input, plan, reports)?;
             let version = Version {
                 key: VersionKey::mint(),
                 act: act.clone(),
@@ -168,7 +169,7 @@ impl YardLog {
         })
     }
 
-    fn body(input: &Input, plan: &Plan, reporter: &mut Reporter<'_>) -> Result<Body, Refusal> {
+    fn body(input: &Input, plan: &Plan, reports: &Reports) -> Result<Body, Refusal> {
         Ok(match &input.request {
             Request::Stage(stage) => Body::Stage(stage.clone()),
             Request::Note(note) => Body::Note(note.clone()),
@@ -186,12 +187,15 @@ impl YardLog {
                 question: question.as_ref().map(|id| plan.keys[id]),
             }),
             Request::Loft(request) => {
-                let (recorded, report) =
-                    reporter(&input.id, request).map_err(|error| Refusal::Report {
-                        block: input.id.clone(),
-                        view: request.view.as_str(),
-                        error,
-                    })?;
+                let computed = reports
+                    .get(&input.id)
+                    .cloned()
+                    .unwrap_or_else(|| Err("no report was computed for it".to_owned()));
+                let (recorded, report) = computed.map_err(|error| Refusal::Report {
+                    block: input.id.clone(),
+                    view: request.view.as_str(),
+                    error,
+                })?;
                 Body::Loft(Box::new(Loft {
                     view: request.view,
                     note: request.note.clone(),

@@ -11,7 +11,7 @@ use yardlog::codec::{FileError, ROOT};
 use yardlog::merge::{Taken, merge_file, take_session_file};
 
 /// The folder of every branch's Yard Log, at the top of the worktree.
-const YARD: &str = ".yard";
+use yardlog_store::YARD;
 
 /// Whether `path`, as git names it from the top of the worktree, is a file of Yard Log.
 pub fn holds(path: &str) -> bool {

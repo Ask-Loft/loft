@@ -155,7 +155,7 @@ fn next_revision(store: &YardStore) -> Changes {
             base: None,
             send: false,
         },
-        &mut |_, _| Err("no loft".to_owned()),
+        &yardlog::write::Reports::new(),
     )
     .unwrap();
     let mut changes = Changes::default();

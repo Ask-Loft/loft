@@ -3,14 +3,13 @@
 //! sent and the revision it last read, while every Act keeps the session id that made it. The
 //! continuations and the revisions last read are the machine's, kept in `~/.yard/`.
 
-use std::collections::BTreeMap;
-
 use serde_json::{Map, Value, json};
 use yardlog::{Actor, Agent, YardLogKey};
 use yardlog_store::home::{Home, HomeFile};
 
 use super::args;
 use super::failure::Failure;
+use super::home_json;
 
 /// The longest chain of continuations followed, against a cycle in a file edited by hand.
 const LONGEST_CHAIN: usize = 64;
@@ -40,17 +39,7 @@ impl Caller {
 /// Records that `session` continues `ended`, as `loft yard continue` does; whether it changed
 /// `~/.yard/continuations.json`, which it leaves as it was where it records that already.
 pub fn record_continuation(home: &Home, session: &str, ended: &str) -> Result<bool, Failure> {
-    let mut changed = false;
-    home.update(HomeFile::Continuations, |bytes| {
-        let mut map = object(bytes.as_deref());
-        if map.get(session) == Some(&json!(ended)) {
-            return None;
-        }
-        map.insert(session.to_owned(), json!(ended));
-        changed = true;
-        Some(to_bytes(&map))
-    })?;
-    Ok(changed)
+    home_json::set(home, HomeFile::Continuations, session, json!(ended))
 }
 
 /// Who an agent counts as: the first session of its chain, and its subagent id.
@@ -89,7 +78,7 @@ impl Continuations {
             Some(home) => home.read(HomeFile::Continuations)?,
             None => None,
         };
-        Ok(Self(object(bytes.as_deref())))
+        Ok(Self(home_json::object(bytes.as_deref())))
     }
 
     /// The first session of the chain `session` belongs to.
@@ -139,7 +128,7 @@ impl<'a> LastRead<'a> {
     /// any agent last read of it.
     pub fn before(&self, key: YardLogKey, reader: &Identity) -> Result<Option<u64>, Failure> {
         let bytes = self.home.read(HomeFile::LastRead)?;
-        let all = object(bytes.as_deref());
+        let all = home_json::object(bytes.as_deref());
         let Some(Value::Object(readers)) = all.get(&key.to_string()) else {
             return Ok(None);
         };
@@ -151,7 +140,7 @@ impl<'a> LastRead<'a> {
     pub fn record(&self, key: YardLogKey, reader: &Identity, revision: u64) -> Result<(), Failure> {
         let name = reader.reader();
         self.home.update(HomeFile::LastRead, |bytes| {
-            let mut all = object(bytes.as_deref());
+            let mut all = home_json::object(bytes.as_deref());
             let readers = all
                 .entry(key.to_string())
                 .or_insert_with(|| Value::Object(Map::new()));
@@ -162,25 +151,8 @@ impl<'a> LastRead<'a> {
                 return None;
             }
             readers[&name] = json!(revision);
-            Some(to_bytes(&all))
+            Some(home_json::ordered(&all))
         })?;
         Ok(())
     }
-}
-
-/// A JSON object read from a file of `~/.yard/`, empty where the file is not there or holds no
-/// object.
-fn object(bytes: Option<&[u8]>) -> Map<String, Value> {
-    match bytes.map(serde_json::from_slice::<Value>) {
-        Some(Ok(Value::Object(map))) => map,
-        _ => Map::new(),
-    }
-}
-
-/// An object's bytes as a file of `~/.yard/` holds them, its names in order.
-fn to_bytes(map: &Map<String, Value>) -> Vec<u8> {
-    let ordered: BTreeMap<&String, &Value> = map.iter().collect();
-    let mut text = serde_json::to_string_pretty(&ordered).expect("a JSON value serializes");
-    text.push('\n');
-    text.into_bytes()
 }

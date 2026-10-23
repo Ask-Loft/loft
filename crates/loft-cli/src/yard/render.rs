@@ -6,7 +6,7 @@
 use serde_json::{Map, Value, json};
 use yardlog::body::{Body, Choice};
 use yardlog::log::{Arrival, Block, Given, Response, Version};
-use yardlog::{Act, Actor};
+use yardlog::{Act, Actor, BlockKey, YardLog};
 
 /// An actor: an agent by its host and session and, for a subagent, its id and type; or the
 /// person by name and email.
@@ -148,6 +148,18 @@ pub fn response(response: &Response) -> Value {
         }
     }
     Value::Object(fields)
+}
+
+/// The blocks of `log` that `keys` name, each as [`block`] gives it with its current version,
+/// in the order of `keys`.
+pub fn blocks(log: &YardLog, keys: &[BlockKey]) -> Value {
+    keys.iter()
+        .filter_map(|key| log.block(*key))
+        .map(|(file, found)| {
+            let stage = (file.stage.key != found.key).then_some(&file.stage);
+            block(found, stage, false)
+        })
+        .collect()
 }
 
 /// A block: its key, id, kind, stage, decision number, current version or every version, the

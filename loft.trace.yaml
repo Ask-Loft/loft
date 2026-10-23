@@ -22295,7 +22295,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "a_report_that_cannot_be_computed_refuses_the_batch"
-        body: 2fa162d1382f93480e624cb576087d627ac89801ce6d4f971b1c27f9e246820e
+        body: 129ba89d1f00421a1e5646738ece58533279083475bd9a172284844260f42c80
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_that_cannot_be_computed_refuses_the_batch_naming_block_view_and_error"
         body: 87c820e351868f3abc8946f85edc79bebf5fa1ed842c95fbed4f7d6f65bc820c

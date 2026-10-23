@@ -3,20 +3,16 @@
 //! submission of its questions, approvals and plans. Yard Log in an older format is written in
 //! this `loft`'s format with the batch, as one write.
 
-use std::collections::BTreeMap;
 use std::path::Path;
 
 use serde_json::{Value, json};
-use yardlog::body::Recorded;
-use yardlog::datum::Datum;
 use yardlog::input::{Fault, Request, read_batch};
-use yardlog::keys::Handle;
-use yardlog::write::{Context, Refusal, Written};
+use yardlog::write::{Context, Refusal, Reports, Written};
 use yardlog::{Format, YardLog};
-use yardlog_store::{Held, YardStoreError};
+use yardlog_store::Held;
 
 use super::args::WriteArgs;
-use super::branch::{Branch, log_of, revision_of};
+use super::branch::{Branch, Unapplied, log_of, revision_of};
 use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::render;
@@ -27,9 +23,6 @@ use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-write/1";
 const OUTCOME: &str = "written";
-
-/// A view's report, or why it could not be computed.
-type Reported = Result<(Recorded, Datum), String>;
 
 pub fn run(root: &Path, args: WriteArgs) -> Finished {
     let as_json = args.output.json();
@@ -51,18 +44,6 @@ pub fn run(root: &Path, args: WriteArgs) -> Finished {
     }
 }
 
-/// Why a write did not apply.
-enum Unwritten {
-    Store(YardStoreError),
-    Refused(Refusal),
-}
-
-impl From<YardStoreError> for Unwritten {
-    fn from(error: YardStoreError) -> Self {
-        Self::Store(error)
-    }
-}
-
 /// What a write applied: the batch's result, and the format Yard Log was upgraded from.
 struct Applied {
     written: Written,
@@ -78,11 +59,9 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(agent.clone())))?;
     let inputs = match read_batch(&batch) {
         Ok(inputs) => inputs,
-        Err(faults) => return Err(refused(&branch, &held, faults.iter().map(fault).collect())),
+        Err(faults) => return Err(branch.refused(&held, faults.iter().map(fault).collect())),
     };
-    if branch.merged(&held)? {
-        return Err(refused(&branch, &held, vec![closed_by_merge()]));
-    }
+    branch.refuse_if_merged(&held)?;
     let context = Context {
         at,
         agent: agent.clone(),
@@ -99,45 +78,33 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
     };
     // The views read the specification and git, and need nothing of Yard Log: each is computed
     // before Yard Log's lock is taken, so that no other command waits on them.
-    let reports: BTreeMap<Handle, Reported> = inputs
+    let reports: Reports = inputs
         .iter()
         .filter_map(|input| match &input.request {
-            Request::Loft(request) => Some((input.id.clone(), views.report(&input.id, request))),
+            Request::Loft(request) => Some((input.id.clone(), views.report(request))),
             _ => None,
         })
         .collect();
-    let applied = branch.store.update(|current| {
+    let applied = branch.update(|current| {
         let mut log =
             current.unwrap_or_else(|| YardLog::open(&branch_name, &args.base, at, agent.clone()));
-        let upgraded_from = upgrade(&mut log);
+        // The write's own Act records the upgrade.
+        let upgraded_from = log.upgrade_format();
         let written = log
-            .write(&inputs, &context, &mut |block, _| reports[block].clone())
-            .map_err(Unwritten::Refused)?;
-        Ok::<_, Unwritten>((
+            .write(&inputs, &context, &reports)
+            .map_err(Unapplied::Refused)?;
+        Ok((
             log,
             Applied {
                 written,
                 upgraded_from,
             },
         ))
-    });
+    })?;
     match applied {
-        Ok(updated) => Ok(result(&branch, &updated.value)),
-        Err(Unwritten::Store(error)) => Err(error.into()),
-        Err(Unwritten::Refused(refusal)) => {
-            let held = branch.store.read()?;
-            Err(refusal_of(&branch, &held, &refusal))
-        }
+        Ok(applied) => Ok(result(&branch, &applied)),
+        Err(refusal) => Err(refusal_of(&branch, &branch.store.read()?, &refusal)),
     }
-}
-
-/// Brings Yard Log in an older format up to this `loft`'s, giving the format it was in.
-fn upgrade(log: &mut YardLog) -> Option<Format> {
-    let from = log.root.format;
-    (from < Format::CURRENT).then(|| {
-        log.root.format = Format::CURRENT;
-        from
-    })
 }
 
 fn result(branch: &Branch, applied: &Applied) -> Value {
@@ -158,14 +125,6 @@ fn result(branch: &Branch, applied: &Applied) -> Value {
     fields
 }
 
-/// A refusal's result: where it was refused, Yard Log's revision, and why.
-fn refused(branch: &Branch, held: &Held, errors: Vec<Value>) -> Failure {
-    Failure::Refused {
-        fields: branch.fields(revision_of(held)),
-        errors,
-    }
-}
-
 fn fault(fault: &Fault) -> Value {
     let message = if fault.field.is_empty() {
         format!("block `{}`: {}", fault.block, fault.message)
@@ -176,13 +135,6 @@ fn fault(fault: &Fault) -> Value {
         )
     };
     failure::error("block", &message)
-}
-
-pub fn closed_by_merge() -> Value {
-    failure::error(
-        "closed",
-        "Yard Log is closed: the base branch holds it, so the merge closed it",
-    )
 }
 
 /// The result of a refused batch: each fault, and for a stale batch each block changed since
@@ -200,15 +152,7 @@ fn refusal_of(branch: &Branch, held: &Held, refusal: &Refusal) -> Failure {
     };
     let mut fields = branch.fields(revision_of(held));
     if let (Refusal::Stale { blocks, .. }, Some(log)) = (refusal, log_of(held)) {
-        let stale: Vec<Value> = blocks
-            .iter()
-            .filter_map(|key| log.block(*key))
-            .map(|(file, block)| {
-                let stage = (file.stage.key != block.key).then_some(&file.stage);
-                render::block(block, stage, false)
-            })
-            .collect();
-        fields["stale"] = Value::Array(stale);
+        fields["stale"] = render::blocks(log, blocks);
     }
     Failure::Refused { fields, errors }
 }

@@ -59,7 +59,12 @@ pub fn recorded() -> (Recorded, Datum) {
 }
 
 pub fn try_write(log: &mut YardLog, batch: &Value, context: &Context) -> Result<Written, Refusal> {
-    log.write(&inputs(batch), context, &mut |_, _| Ok(recorded()))
+    let inputs = inputs(batch);
+    let reports = inputs
+        .iter()
+        .map(|input| (input.id.clone(), Ok(recorded())))
+        .collect();
+    log.write(&inputs, context, &reports)
 }
 
 pub fn write(log: &mut YardLog, batch: &Value, context: &Context) -> Written {

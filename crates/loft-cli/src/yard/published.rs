@@ -9,13 +9,12 @@ use std::path::Path;
 use serde_json::{Value, json};
 use yardlog::body::{Loft, View};
 use yardlog::input::LoftRequest;
-use yardlog::keys::Handle;
 use yardlog::published::Unpublished;
 use yardlog_store::git::YardGit;
-use yardlog_store::{Held, Place, YardStoreError};
+use yardlog_store::{Held, Place};
 
 use super::args::PublishedArgs;
-use super::branch::{Branch, revision_of};
+use super::branch::{Branch, Unapplied};
 use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::views::Views;
@@ -42,19 +41,6 @@ pub fn run(root: &Path, args: PublishedArgs) -> Finished {
             Finished::success(OUTCOME)
         }
         Err(failure) => failure.finish(SCHEMA, as_json),
-    }
-}
-
-/// Why a publish was not recorded.
-enum Unrecorded {
-    Store(YardStoreError),
-    Absent,
-    Refused(Unpublished),
-}
-
-impl From<YardStoreError> for Unrecorded {
-    fn from(error: YardStoreError) -> Self {
-        Self::Store(error)
     }
 }
 
@@ -104,25 +90,21 @@ fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
     };
     let loft = publish_view(&views, args.note).map_err(|error| refused(&branch, &held, error))?;
     let agent = caller.agent().clone();
-    let applied = branch.store.update(|current| {
-        let mut log = current.ok_or(Unrecorded::Absent)?;
+    let applied = branch.update(|current| {
+        let mut log = current.ok_or_else(|| Unapplied::Refused(absent()))?;
         let recorded = log
             .record_published(loft, agent, at)
-            .map_err(Unrecorded::Refused)?;
-        Ok::<_, Unrecorded>((log, recorded))
-    });
-    let unrecorded = match applied {
-        Ok(updated) => {
-            let (id, key, revision) = updated.value;
+            .map_err(|refused| Unapplied::Refused(unpublished(&refused)))?;
+        Ok((log, recorded))
+    })?;
+    match applied {
+        Ok((id, key, revision)) => {
             let mut fields = branch.fields(revision);
             fields["block"] = json!({ "id": id.as_str(), "key": key.to_string() });
-            return Ok(fields);
+            Ok(fields)
         }
-        Err(Unrecorded::Store(error)) => return Err(error.into()),
-        Err(Unrecorded::Absent) => absent(),
-        Err(Unrecorded::Refused(refused)) => unpublished(&refused),
-    };
-    Err(refused(&branch, &branch.store.read()?, unrecorded))
+        Err(error) => Err(refused(&branch, &branch.store.read()?, error)),
+    }
 }
 
 /// The `publish` view of the tree as the block records it, with the agent's note; or, where it
@@ -135,8 +117,7 @@ fn publish_view(views: &Views<'_>, note: Option<String>) -> Result<Loft, Value> 
         decision: None,
         reasons: Vec::new(),
     };
-    let id = Handle::parse("published").expect("the id is one");
-    let (recorded, report) = views.report(&id, &request).map_err(|error| {
+    let (recorded, report) = views.report(&request).map_err(|error| {
         let message = format!("the `publish` view could not be computed: {error}");
         failure::error("view", &message)
     })?;
@@ -162,8 +143,5 @@ fn unpublished(refused: &Unpublished) -> Value {
 }
 
 fn refused(branch: &Branch, held: &Held, error: Value) -> Failure {
-    Failure::Refused {
-        fields: branch.fields(revision_of(held)),
-        errors: vec![error],
-    }
+    branch.refused(held, vec![error])
 }

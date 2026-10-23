@@ -13,6 +13,7 @@ mod change;
 mod close;
 mod continuation;
 mod failure;
+pub(crate) mod home_json;
 mod input;
 pub mod merge;
 mod page;

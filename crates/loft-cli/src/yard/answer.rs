@@ -9,16 +9,14 @@ use std::process::ExitCode;
 
 use serde_json::{Value, json};
 use yardlog::query::State;
-use yardlog::respond::{Answered, Answering, Refused, Reply};
+use yardlog::respond::{Answered, Answering, Reply};
 use yardlog::{Actor, BlockKey, Channel, Handle, Key, YardLog};
-use yardlog_store::YardStoreError;
 
 use super::answer_input::{self, Named};
 use super::args::AnswerArgs;
-use super::branch::{Branch, revision_of};
+use super::branch::{self, Branch, Unapplied};
 use super::change::refusal;
 use super::failure::{self, Failure};
-use super::write::closed_by_merge;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -62,20 +60,6 @@ pub fn person(branch: &Branch) -> Result<(String, String), Failure> {
     }
 }
 
-/// Why the answers did not apply.
-enum Unapplied {
-    Store(YardStoreError),
-    Absent,
-    NotAsked(String),
-    Refused(Refused),
-}
-
-impl From<YardStoreError> for Unapplied {
-    fn from(error: YardStoreError) -> Self {
-        Self::Store(error)
-    }
-}
-
 fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure> {
     let branch = Branch::locate(dir, args.beyond)?;
     let named = answer_input::read(&super::input::json(&args.input)?)?;
@@ -97,50 +81,31 @@ pub fn record(
         email: email.clone(),
     };
     let held = branch.open(at, || Ok(settler))?;
-    if branch.merged(&held)? {
-        return Err(Failure::Refused {
-            fields: branch.fields(revision_of(&held)),
-            errors: vec![closed_by_merge()],
-        });
-    }
+    branch.refuse_if_merged(&held)?;
     let who = Answering {
         at,
         name,
         email,
         channel,
     };
-    let applied = branch.store.update(|current| {
-        let mut log = current.ok_or(Unapplied::Absent)?;
-        let replies = replies(&log, named)?;
-        let answered = log.answer(&replies, &who).map_err(Unapplied::Refused)?;
+    let applied = branch.update(|current| {
+        let mut log = current.ok_or(Unapplied::Refused(branch::absent()))?;
+        let replies = replies(&log, named).map_err(Unapplied::Refused)?;
+        let answered = log
+            .answer(&replies, &who)
+            .map_err(|refused| Unapplied::Refused(refusal(&refused)))?;
         let fields = answered_fields(&log, &answered);
-        Ok::<_, Unapplied>((log, fields))
-    });
+        Ok((log, fields))
+    })?;
     match applied {
-        Ok(updated) => {
-            let (mut fields, errors) = updated.value;
+        Ok((mut fields, errors)) => {
             let mut located = branch.fields(fields["revision"].as_u64().unwrap_or_default());
             if let (Some(all), Some(own)) = (located.as_object_mut(), fields.as_object_mut()) {
                 all.append(own);
             }
             Ok((located, errors))
         }
-        Err(Unapplied::Store(error)) => Err(error.into()),
-        Err(unapplied) => {
-            let held = branch.store.read()?;
-            let error = match unapplied {
-                Unapplied::Refused(refused) => refusal(&refused),
-                Unapplied::NotAsked(block) => failure::error(
-                    "not-asked",
-                    &format!("block `{block}` is in no open submission"),
-                ),
-                _ => failure::error("absent", "the branch has no Yard Log"),
-            };
-            Err(Failure::Refused {
-                fields: branch.fields(revision_of(&held)),
-                errors: vec![error],
-            })
-        }
+        Err(error) => Err(branch.refused(&branch.store.read()?, vec![error])),
     }
 }
 
@@ -156,7 +121,7 @@ fn block_named(log: &YardLog, name: &str) -> Option<BlockKey> {
 
 /// The replies, each to a block of a submission sent and not withdrawn: a block of one already
 /// answered goes on, to be refused as answered elsewhere.
-fn replies(log: &YardLog, named: &[Named]) -> Result<Vec<Reply>, Unapplied> {
+fn replies(log: &YardLog, named: &[Named]) -> Result<Vec<Reply>, Value> {
     let asked: Vec<BlockKey> = log
         .root
         .submissions
@@ -169,7 +134,10 @@ fn replies(log: &YardLog, named: &[Named]) -> Result<Vec<Reply>, Unapplied> {
         .map(|named| {
             let block = block_named(log, &named.block)
                 .filter(|key| asked.contains(key))
-                .ok_or_else(|| Unapplied::NotAsked(named.block.clone()))?;
+                .ok_or_else(|| {
+                    let message = format!("block `{}` is in no open submission", named.block);
+                    failure::error("not-asked", &message)
+                })?;
             Ok(Reply {
                 block,
                 given: named.given.clone(),

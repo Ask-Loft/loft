@@ -14,12 +14,12 @@ use yardlog::log::Submission;
 use yardlog::query::State;
 use yardlog::respond::Refused;
 use yardlog::{Agent, Key, SubmissionKey, YardLog};
+use yardlog_store::Held;
 use yardlog_store::home::Home;
 use yardlog_store::lock::Locked;
-use yardlog_store::{Held, YardStoreError};
 
 use super::args::WaitArgs;
-use super::branch::{Branch, log_of, revision_of};
+use super::branch::{Branch, Unapplied, log_of, revision_of};
 use super::caller::{Caller, Continuations};
 use super::change::refusal;
 use super::failure::{self, Failure};
@@ -184,22 +184,21 @@ impl Waiter<'_> {
     /// Records that the calling main agent took the submission up, and whether it still was
     /// open to take up.
     fn take_up(&self, at: yardlog::Time) -> Result<bool, Failure> {
-        let taken = self.branch.store.update(|current| {
+        let taken = self.branch.update(|current| {
             // Gone from the tree since it was read: nothing is taken up, and the wait says so.
-            let mut log = current.ok_or(Taken::Gone)?;
+            let mut log = current.ok_or(Unapplied::Refused(None))?;
             let taken = match log.take_up(self.key, self.agent.clone(), at) {
                 Ok(_) => true,
                 // Answered, withdrawn or closed since: the wait returns that instead.
                 Err(Refused::NotOpen { .. } | Refused::Closed) => false,
-                Err(refused) => return Err(Taken::Refused(refused)),
+                Err(refused) => return Err(Unapplied::Refused(Some(refused))),
             };
-            Ok::<_, Taken>((log, taken))
-        });
+            Ok((log, taken))
+        })?;
         match taken {
-            Ok(updated) => Ok(updated.value),
-            Err(Taken::Gone) => Ok(false),
-            Err(Taken::Store(error)) => Err(error.into()),
-            Err(Taken::Refused(refused)) => {
+            Ok(taken) => Ok(taken),
+            Err(None) => Ok(false),
+            Err(Some(refused)) => {
                 let held = self.branch.store.read()?;
                 Err(self.refused(&held, refusal(&refused)))
             }
@@ -220,30 +219,8 @@ impl Waiter<'_> {
     fn fields(&self, log: &YardLog, found: &Submission) -> Value {
         let mut fields = self.branch.fields(log.root.revision);
         fields["submission"] = json!(self.key.to_string());
-        let blocks: Vec<Value> = found
-            .blocks
-            .iter()
-            .filter_map(|key| log.block(*key))
-            .map(|(file, block)| {
-                let stage = (file.stage.key != block.key).then_some(&file.stage);
-                render::block(block, stage, false)
-            })
-            .collect();
-        fields["blocks"] = Value::Array(blocks);
+        fields["blocks"] = render::blocks(log, &found.blocks);
         fields
-    }
-}
-
-/// Why a take-up did not apply.
-enum Taken {
-    Store(YardStoreError),
-    Refused(Refused),
-    Gone,
-}
-
-impl From<YardStoreError> for Taken {
-    fn from(error: YardStoreError) -> Self {
-        Self::Store(error)
     }
 }
 

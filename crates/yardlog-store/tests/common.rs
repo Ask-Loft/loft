@@ -13,7 +13,7 @@ use software_plant::GitScenario;
 use yardlog::YardLog;
 use yardlog::act::{Agent, Time};
 use yardlog::input::read_batch;
-use yardlog::write::{Context, Refusal, Written};
+use yardlog::write::{Context, Refusal, Reports, Written};
 use yardlog_store::git::YardGit;
 use yardlog_store::{Place, Updated, YardStore, YardStoreError};
 
@@ -162,7 +162,7 @@ pub fn try_write(store: &YardStore, batch: &Value) -> Result<Updated<Written>, F
             send: false,
         };
         let written = log
-            .write(&inputs, &context, &mut |_, _| Err("no loft".to_owned()))
+            .write(&inputs, &context, &Reports::new())
             .map_err(Failed::Refused)?;
         Ok((log, written))
     })

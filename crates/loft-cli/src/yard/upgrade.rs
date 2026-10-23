@@ -14,7 +14,7 @@ use yardlog_store::session::branches;
 use yardlog_store::{Held, Place, YardStoreError};
 
 use super::args::UpgradeArgs;
-use super::branch::Branch;
+use super::branch::{Branch, Unapplied};
 use super::failure::Failure;
 use crate::finish::Finished;
 use crate::json;
@@ -106,32 +106,17 @@ fn fate(branch: &Branch) -> Result<Fate, Failure> {
     let (name, email) = super::answer::person(branch)?;
     let actor = Actor::Person { name, email };
     let at = super::now()?;
-    let upgraded = branch.store.update(|current| {
+    let upgraded = branch.update(|current| {
         // Gone since it was read: nothing is written in its place.
-        let mut log = current.ok_or(Unupgraded::Gone)?;
+        let mut log = current.ok_or(Unapplied::Refused(()))?;
         let from = log.upgrade(at, actor);
-        Ok::<_, Unupgraded>((log, from))
-    });
+        Ok((log, from))
+    })?;
     Ok(match upgraded {
-        Ok(updated) => match updated.value {
-            Some(from) => Fate::Upgraded { key, from },
-            None => Fate::Current { key },
-        },
-        Err(Unupgraded::Gone) => left(Some(key), "has no root".to_owned(), true),
-        Err(Unupgraded::Store(error)) => return Err(error.into()),
+        Ok(Some(from)) => Fate::Upgraded { key, from },
+        Ok(None) => Fate::Current { key },
+        Err(()) => left(Some(key), "has no root".to_owned(), true),
     })
-}
-
-/// Why a Yard Log was not upgraded under its lock.
-enum Unupgraded {
-    Store(YardStoreError),
-    Gone,
-}
-
-impl From<YardStoreError> for Unupgraded {
-    fn from(error: YardStoreError) -> Self {
-        Self::Store(error)
-    }
 }
 
 fn result(fates: &[(String, Fate)]) -> (Value, Vec<Value>) {

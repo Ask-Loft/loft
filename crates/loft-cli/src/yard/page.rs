@@ -6,31 +6,67 @@
 
 use std::fmt::Write as _;
 use std::path::Path;
+use std::sync::OnceLock;
 
 use serde_json::{Value, json};
+use yardlog_store::YardStoreError;
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::lock;
 
 /// The lock a running page server holds, in `~/.yard/`.
 pub const SERVER_LOCK: &str = "server.lock";
 
-/// The port of the page server that runs, where one does.
-fn running_port(home: &Home) -> Option<u16> {
-    let bytes = home.read(HomeFile::Server).ok()??;
-    let server: Value = serde_json::from_slice(&bytes).ok()?;
-    let port = u16::try_from(server["port"].as_u64()?).ok()?;
+/// The port this process serves the page on, where it is the page server.
+static SERVING: OnceLock<u16> = OnceLock::new();
+
+/// Records that this process serves the page on `port`, so that what it answers names its own
+/// address without looking for a page server.
+pub fn serving(port: u16) {
+    let _ = SERVING.set(port);
+}
+
+/// The page server `~/.yard/server.json` names, while it holds the lock.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Running {
+    pub port: u16,
+    pub version: String,
+}
+
+/// The page server that runs, where one does: the lock on `~/.yard/server.lock` is held and
+/// `~/.yard/server.json` names it.
+///
+/// # Errors
+///
+/// The lock or the file cannot be read.
+pub fn running(home: &Home) -> Result<Option<Running>, YardStoreError> {
     let held = home.dir().join(SERVER_LOCK);
     // A lock file that is not there is held by no server; looking does not create it.
-    if !held.is_file() || !lock::is_held(&held).ok()? {
-        return None;
+    if !held.is_file() || !lock::is_held(&held)? {
+        return Ok(None);
     }
-    Some(port)
+    let Some(bytes) = home.read(HomeFile::Server)? else {
+        return Ok(None);
+    };
+    let Ok(server) = serde_json::from_slice::<Value>(&bytes) else {
+        return Ok(None);
+    };
+    let port = server["port"]
+        .as_u64()
+        .and_then(|port| u16::try_from(port).ok());
+    let version = server["version"].as_str().map(ToOwned::to_owned);
+    Ok(port
+        .zip(version)
+        .map(|(port, version)| Running { port, version }))
 }
 
 /// The address of `branch`'s Yard Log in `tree` on the page, or, where no page server runs, that
 /// the page is unavailable, with the port it would listen on.
 pub fn address(tree: &Path, branch: &str, port: u16) -> Value {
-    match Home::from_env().as_ref().and_then(running_port) {
+    let running = SERVING.get().copied().or_else(|| {
+        let home = Home::from_env()?;
+        running(&home).ok().flatten().map(|server| server.port)
+    });
+    match running {
         Some(port) => json!({
             "available": true,
             "port": port,

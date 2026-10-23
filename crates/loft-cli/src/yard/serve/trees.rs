@@ -16,6 +16,7 @@ use yardlog_store::session::branches;
 use yardlog_store::{Held, Place, YardStore};
 
 use crate::yard::failure::Failure;
+use crate::yard::home_json;
 use crate::yard::page;
 use crate::yard::render::{act, actor};
 
@@ -41,12 +42,7 @@ impl Registry {
     }
 
     fn bytes(&self) -> Vec<u8> {
-        let mut text = serde_json::to_string_pretty(&json!({
-            "trees": self.trees,
-        }))
-        .expect("a JSON value serializes");
-        text.push('\n');
-        text.into_bytes()
+        home_json::bytes(&json!({ "trees": self.trees }))
     }
 }
 
