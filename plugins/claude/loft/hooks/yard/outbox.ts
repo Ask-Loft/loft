@@ -37,7 +37,7 @@ export function keep(box: Outbox, event: Event) {
   }
 }
 
-async function tokenOf($: EngineInterface, box: Outbox): Promise<string | undefined> {
+export async function tokenOf($: EngineInterface, box: Outbox): Promise<string | undefined> {
   if (box.token !== undefined || box.tokenPath === undefined) return box.token
   try {
     const token = (await $.fs.read(box.tokenPath)).trim()

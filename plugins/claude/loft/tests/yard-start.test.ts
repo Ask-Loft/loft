@@ -45,7 +45,7 @@ test('with Yard Client off, the agent asks and plans in Claude Code alone', asyn
   expect(w.state.calls.map(call => call.tool)).toEqual(['AskUserQuestion', 'ExitPlanMode'])
 })
 
-test('the session starts with the context of its branch, from one read in its own name', async ($, on) => {
+test('the session starts with the context of its branch, from one read in its own name that marks what it read', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   const started = await start($)
@@ -53,24 +53,27 @@ test('the session starts with the context of its branch, from one read in its ow
   expect(reads).toHaveLength(1)
   expect(flagOf(reads[0]!.argv, '--session')).toBe(SESSION)
   expect(reads[0]!.cwd).toBe(TREE)
+  expect(reads[0]!.argv).toContain('--mark-read')
   const text = (started.additionalContext ?? []).join('\n')
   expect(text).toContain('Yard Log of `feat/shelf`')
   expect(text).toContain('Your active stage: `shape`')
   expect(text.length).toBeLessThanOrEqual(2000)
 })
 
-test('after /clear the session is given its context again, and its first command names the session it continues', async ($, on) => {
+test('after /clear the session is given its context again, once loft yard continue has recorded the session it continues', async ($, on) => {
   const w = world(on)
   await start($)
   await $.session.end({ reason: 'clear', sessionId: SESSION } as never)
   w.state.session = 'session-2'
+  const before = yardRuns(w).length
   const again = await $.classic.SessionStart({ source: 'clear' })
   expect((again.additionalContext ?? []).join('\n')).toContain('Yard Log of `feat/shelf`')
-  const reads = w.state.runs.filter(run => run.argv.includes('read'))
-  expect(flagOf(reads.at(-1)!.argv, '--session')).toBe('session-2')
-  expect(flagOf(reads.at(-1)!.argv, '--continues')).toBe(SESSION)
   await $.tool.call({ tool: 'mcp__loft__yard_read' })
-  expect(w.state.runs.at(-1)!.argv).not.toContain('--continues')
+  await w.clock.advance(5000)
+  const after = yardRuns(w).slice(before)
+  expect(after[0]).toBe('continue --session session-2 --from session-1 --format json')
+  expect(after.filter(run => run.startsWith('continue'))).toHaveLength(1)
+  for (const run of after.slice(1)) expect(run).not.toContain(SESSION)
 })
 
 test('a compaction gives no new context', async ($, on) => {
@@ -101,15 +104,20 @@ test('every command Yard Client runs is loftCommand with --format json, quietly,
   }
 })
 
-test('each tool runs its command in the session directory with the base branch and the page server port', { options: { baseBranch: 'main', yardPort: 7500 } }, async ($, on) => {
+test('each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base', { options: { baseBranch: 'main', yardPort: 7500 } }, async ($, on) => {
   const w = world(on)
   await start($)
   w.state.cwd = `${TREE}/src`
   await $.tool.call({ tool: 'mcp__loft__yard_read' })
-  const run = w.state.runs.at(-1)!
-  expect(run.cwd).toBe(`${TREE}/src`)
-  expect(flagOf(run.argv, '--base')).toBe('main')
-  expect(flagOf(run.argv, '--port')).toBe('7500')
+  const read = w.state.runs.at(-1)!
+  expect(read.cwd).toBe(`${TREE}/src`)
+  expect(flagOf(read.argv, '--port')).toBe('7500')
+  expect(read.argv).not.toContain('--base')
+  await $.tool.call({ tool: 'mcp__loft__yard_write', batch: [{ id: 'shape', kind: 'stage', title: 'Shape', status: 'active' }] })
+  const write = w.state.runs.at(-1)!
+  expect(flagOf(write.argv, '--base')).toBe('main')
+  expect(flagOf(write.argv, '--port')).toBe('7500')
+  for (const run of w.state.runs.filter(each => !each.argv.includes('write'))) expect(run.argv).not.toContain('--base')
 })
 
 test("a tool gives the command's document to the agent, and a refusal's message as its error", async ($, on) => {
@@ -137,12 +145,12 @@ test('a subagent calls a tool in its own name: its id and its type', async ($, o
   expect(flagOf(w.state.runs.at(-1)!.argv, '--agent-type')).toBe('Plan')
 })
 
-test('every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again', async ($, on) => {
+test('where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again', async ($, on) => {
   const w = world(on, { serve: 'serving' })
   await start($)
   const serves = () => w.state.runs.filter(run => run.argv.includes('serve'))
   expect(serves()).toHaveLength(1)
-  expect(serves()[0]!.argv).toEqual(['loft', 'yard', 'serve', '--session', SESSION, '--tree', TREE, '--base', 'develop', '--port', '7411', '--format', 'json'])
+  expect(serves()[0]!.argv).toEqual(['loft', 'yard', 'serve', '--session', SESSION, '--tree', TREE, '--port', '7411', '--format', 'json'])
   await w.clock.advance(15000)
   expect(serves()).toHaveLength(1)
   w.state.serverStops.resolve()
@@ -150,11 +158,32 @@ test('every five seconds the mod runs loft yard serve for the session and its tr
   expect(serves().length).toBeGreaterThan(1)
 })
 
-test('a page server another session runs is heard from at every beat', async ($, on) => {
+test('where no page server answers the beat, the mod runs loft yard serve at every beat', async ($, on) => {
   const w = world(on, { serve: 'running' })
   await start($)
   await w.clock.advance(10000)
   expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(3)
+})
+
+test('every five seconds the mod tells the page server the session is live, and while one answers it starts no loft yard serve', async ($, on) => {
+  const w = world(on)
+  w.state.answersBeat = true
+  await start($)
+  await w.clock.advance(10000)
+  expect(w.state.heard).toEqual([SESSION, SESSION, SESSION])
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(0)
+  w.state.answersBeat = false
+  await w.clock.advance(5000)
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
+})
+
+test("the session whose mod's child is the page server is heard every five seconds too", async ($, on) => {
+  const w = world(on, { serve: 'serving' })
+  await start($)
+  w.state.answersBeat = true
+  await w.clock.advance(10000)
+  expect(w.state.heard).toEqual([SESSION, SESSION, SESSION])
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
 })
 
 test('a tree a tool call reaches is registered with the page server once', async ($, on) => {
@@ -181,12 +210,11 @@ test('the token is read from the home directory', async ($, on) => {
 test('the context is given again after /resume and /branch, and a session a new process starts names no session it continues', async ($, on) => {
   const w = world(on)
   await start($)
-  const first = w.state.runs.find(run => run.argv.includes('read'))!
-  expect(first.argv).not.toContain('--continues')
   for (const source of ['resume', 'fork'] as const) {
     const again = await $.classic.SessionStart({ source })
     expect((again.additionalContext ?? []).join('\n')).toContain('Yard Log of `feat/shelf`')
   }
+  expect(yardRuns(w).some(run => run.startsWith('continue'))).toBe(false)
 })
 
 test("the main agent's call names no agent, and an input at fault runs no command", async ($, on) => {
@@ -224,12 +252,4 @@ test('with Yard Client off, the notice asks loftCommand alone for its version', 
     ['pnpm', 'exec', 'loft', '--version'],
   ])
   for (const run of w.state.runs) expect(run.env).toEqual({ LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' })
-})
-
-test('the mod registers its tree with the baseBranch setting, against which the page checks a merge', { options: { baseBranch: 'main' } }, async ($, on) => {
-  const w = world(on)
-  await start($)
-  const serve = w.state.runs.find(run => run.argv.includes('serve'))!
-  expect(flagOf(serve.argv, '--base')).toBe('main')
-  expect(flagOf(serve.argv, '--tree')).toBe(TREE)
 })

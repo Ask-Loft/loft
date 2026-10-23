@@ -101,7 +101,8 @@ export function commandOf(name: ToolName, args: Record<string, unknown>, caller:
   const who = callerArgs(caller)
   switch (name) {
     case 'yard_read':
-      return { args: ['read', ...(args.since !== undefined ? ['--since', String(args.since)] : []), ...who] }
+      // The agent's own read records the revision it read.
+      return { args: ['read', ...(args.since !== undefined ? ['--since', String(args.since)] : []), '--mark-read', ...who] }
     case 'yard_write':
       return {
         args: [

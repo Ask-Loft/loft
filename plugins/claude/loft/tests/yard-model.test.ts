@@ -102,7 +102,8 @@ test('the feedback typed with a rejection is read from what Claude Code gives th
 test("a task's block id is made of the task's id and its agent, and its states follow the task's", () => {
   const main = whoOf({ session: '5F1C9A7E-0b2d-4c11-9e3a-77aa01c2d3e4' })
   expect(taskId('3', main)).toBe('task-5f1c9a7e-3')
-  expect(taskId('3', whoOf({ session: '5f1c9a7e-0b2d', agent: { id: 'a9f2', type: 'Explore' } }))).toBe('task-a9f2-3')
+  const sub = { session: '5f1c9a7e-0b2d', agent: { id: 'a9f2', type: 'Explore' } }
+  expect(taskId('3', whoOf(sub))).toBe('task-a9f2-3')
   expect(taskId('1', whoOf({ session: 'b7d00e11-cleared' }))).not.toBe(taskId('1', main))
   expect(['pending', 'in_progress', 'completed', 'deleted'].map(taskState)).toEqual(['open', 'active', 'done', 'dropped'])
 })
@@ -280,14 +281,13 @@ test('an input that does not match its schema names the field at fault', () => {
 test("each tool runs its loft yard command with the caller's session and, for a subagent, its id and type", () => {
   const main = { session: 's1' }
   const sub = { session: 's1', agent: { id: 'a9', type: 'Explore' } }
-  expect(commandOf('yard_read', { since: 3 }, main).args).toEqual(['read', '--since', '3', '--session', 's1'])
+  expect(commandOf('yard_read', { since: 3 }, main).args).toEqual(['read', '--since', '3', '--mark-read', '--session', 's1'])
   expect(commandOf('yard_write', { batch: [{ id: 'x' }], send: true, basedOn: 4 }, sub)).toEqual({
     args: ['write', '--input', '-', '--send', '--based-on', '4', '--session', 's1', '--agent', 'a9', '--agent-type', 'Explore'],
     stdin: '[{"id":"x"}]',
   })
   expect(commandOf('yard_wait', { submission: 'k' }, main).args).toEqual(['wait', '--submission', 'k', '--timeout', '540', '--session', 's1'])
   expect(commandOf('yard_published', { branch: 'feat/x', note: 'n' }, main).args).toEqual(['published', '--branch', 'feat/x', '--note', 'n', '--session', 's1'])
-  expect(commandOf('yard_close', {}, { session: 's2', continues: 's1' }).args).toEqual(['close', '--session', 's2', '--continues', 's1'])
 })
 
 test('after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read', () => {

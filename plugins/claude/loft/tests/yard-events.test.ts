@@ -260,5 +260,6 @@ test("after /clear a task the new session makes is a block of its own, and the m
   const ids = w.state.runs.filter(run => run.argv.includes('write')).map(run => (JSON.parse(run.stdin!) as { id: string }[])[0]!.id)
   expect(ids).toEqual(['task-session1-1', 'task-session2-1'])
   const mirrorReads = w.state.runs.slice(before).filter(run => run.argv.includes('read'))
-  for (const run of mirrorReads) expect(run.argv).toContain('--peek')
+  expect(mirrorReads.length).toBeGreaterThan(0)
+  for (const run of mirrorReads) expect(run.argv).not.toContain('--mark-read')
 })

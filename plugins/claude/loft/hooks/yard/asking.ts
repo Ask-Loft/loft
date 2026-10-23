@@ -63,10 +63,11 @@ function stageFor(doc: Doc, asker: Asker, minted: string): { id: string; opened?
 }
 
 /**
- * The part of the ids the mod mints for one ask: the revision it will write at and who asks, so
- * that two sessions, or two subagents asking at one revision, mint different ids.
+ * The part of the ids the mod mints for one ask: the id Claude Code gives the tool call, which no
+ * other call shares, so that no two asks, by any session or subagent, write to one block.
  */
-const mintedFor = (doc: Doc, caller: Caller) => idOf(`r${Number(doc.revision ?? 0) + 1}`, whoOf(caller))
+const mintedFor = (e: { tool_use_id?: unknown }, caller: Caller) =>
+  typeof e.tool_use_id === 'string' && e.tool_use_id !== '' ? idOf(e.tool_use_id) : idOf('call', whoOf(caller), String(Date.now()))
 
 /** Sends a batch and returns its submission's key, or undefined where it could not be sent. */
 async function send($: EngineInterface, cwd: string, caller: Caller, batch: unknown[]): Promise<string | undefined> {
@@ -83,17 +84,16 @@ async function withdraw($: EngineInterface, cwd: string, caller: Caller, submiss
 }
 
 /** The agent's own questions: sent to Yard Log, and answered in the terminal or on the page. */
-export async function askQuestions($: EngineInterface, e: { questions: readonly Asked[]; agentId?: string }, next: Next) {
+export async function askQuestions($: EngineInterface, e: { questions: readonly Asked[]; agentId?: string; tool_use_id?: string }, next: Next) {
   const cwd = await $.session.cwd()
-  const first = await callerOf($, e.agentId)
-  const caller = { ...first, continues: undefined }
+  const caller = await callerOf($, e.agentId)
   const read = await peek($, cwd, caller)
   if (!succeeded(read)) return next(e as never)
-  const minted = mintedFor(read.doc, first)
+  const minted = mintedFor(e, caller)
   const ids = e.questions.map((_, n) => idOf('ask', minted, String(n + 1)))
-  const stage = stageFor(read.doc, askerOf(first), minted)
+  const stage = stageFor(read.doc, askerOf(caller), minted)
   const batch = [...(stage.opened ? [stage.opened] : []), ...questionBlocks(e.questions, ids, stage.id)]
-  const submission = await send($, cwd, first, batch)
+  const submission = await send($, cwd, caller, batch)
   if (submission === undefined) return next(e as never)
   const wait = waiting($, cwd, submission, caller)
   const terminal = next(e as never).then(ran => ({ terminal: ran }))
@@ -120,21 +120,24 @@ const rejection = (reason: unknown) =>
   `The person rejected the plan on the Yard page${typeof reason === 'string' && reason !== '' ? `: ${reason}` : '.'}`
 
 /** The agent's plan: sent to Yard Log, and decided in the terminal or on the page. */
-export async function presentPlan($: EngineInterface, e: { plan?: unknown; planFilePath?: unknown; agentId?: string }, next: Next) {
+export async function presentPlan(
+  $: EngineInterface,
+  e: { plan?: unknown; planFilePath?: unknown; agentId?: string; tool_use_id?: string },
+  next: Next,
+) {
   const plan = typeof e.plan === 'string' ? e.plan : ''
   const path = typeof e.planFilePath === 'string' ? e.planFilePath : undefined
   if (plan.trim() === '') return next(e as never)
   const cwd = await $.session.cwd()
-  const first = await callerOf($, e.agentId)
-  const caller = { ...first, continues: undefined }
+  const caller = await callerOf($, e.agentId)
   const read = await peek($, cwd, caller)
   if (!succeeded(read)) return next(e as never)
-  const minted = mintedFor(read.doc, first)
+  const minted = mintedFor(e, caller)
   const id = planId(path, idOf('plan', minted))
   const held = blockById(read.doc, id)
-  const stage = held ? { id: held.stage.id } : stageFor(read.doc, askerOf(first), minted)
+  const stage = held ? { id: held.stage.id } : stageFor(read.doc, askerOf(caller), minted)
   const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(path ? { path } : {}), planMode: true }
-  const submission = await send($, cwd, first, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
+  const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
   if (submission === undefined) return next(e as never)
   const wait = waiting($, cwd, submission, caller)
   state.presenting = { id, decided: wait.done }
@@ -206,14 +209,13 @@ export async function ownDialog(e: { questions: readonly Asked[] }, next: Next) 
 
 /** `yard_wait`: waits in Yard Log, asking in Claude Code's dialog meanwhile. */
 export async function waitOn($: EngineInterface, cwd: string, caller: Caller, submission: string, signal: AbortSignal) {
-  const later = { ...caller, continues: undefined }
   const wait = waiting($, cwd, submission, caller)
   const aborted = new Promise<Ran>(done => {
     if (signal.aborted) done(ENDED)
     signal.addEventListener('abort', () => done(ENDED), { once: true })
   })
   const over = Promise.race([wait.done, aborted]).then(() => undefined)
-  const asking = askInTerminal($, cwd, later, submission, over)
+  const asking = askInTerminal($, cwd, caller, submission, over)
   const ran = await Promise.race([wait.done, aborted])
   wait.end()
   await asking

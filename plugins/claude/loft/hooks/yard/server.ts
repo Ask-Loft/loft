@@ -1,14 +1,16 @@
-// The page server: every BEAT the mod runs `loft yard serve`, which records the session as heard
-// and registers its tree, and exits where a page server of its version or a newer one serves the
-// port; where none does, that run becomes the page server and lives as long as the mod (the
-// Feature "Share one page server"). A tree a tool call reaches is registered the same way.
+// The page server: every BEAT the mod tells it that the session is live; only where no page server
+// answers does it run `loft yard serve`, which records the session as heard, registers its tree
+// and exits where a page server of its version or a newer one serves the port, and where none
+// does becomes the page server and lives as long as the mod (the Feature "Share one page
+// server"). A tree a tool call reaches is registered through `loft yard serve` too.
 
 import type { EngineInterface } from 'claude-code'
 
 import { parseDocument } from '../model'
+import { tokenOf, type Outbox } from './outbox'
 import { argvOf, QUIET, type Settings } from './run'
 
-/** How often the mod runs `loft yard serve`, in milliseconds. */
+/** How often the mod tells the page server its session is live, in milliseconds. */
 export const BEAT = 5000
 
 /** What the mod knows of the page server: whether its own child serves, and the trees registered. */
@@ -23,7 +25,7 @@ export function serverOf(): Server {
  * says it serves, its loop runs on after this resolves, and ends with the child.
  */
 export function serve($: EngineInterface, settings: Settings, server: Server, session: string, tree: string) {
-  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, '--base', settings.base, '--port', String(settings.port)], false)
+  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, '--port', String(settings.port)], false)
   const stream = $.process.spawn({ argv, cwd: tree, env: QUIET })
   return new Promise<string | undefined>(settled => {
     let stdout = ''
@@ -52,8 +54,29 @@ export function serve($: EngineInterface, settings: Settings, server: Server, se
   })
 }
 
-/** One beat: runs `loft yard serve`, unless the mod's own child serves or the last run has yet to say what it did. */
-export async function beat($: EngineInterface, settings: Settings, server: Server, session: string, tree: string) {
+/** Tells the page server that `session` is live; whether a page server took it. */
+export async function hear($: EngineInterface, box: Outbox, session: string): Promise<boolean> {
+  const token = await tokenOf($, box)
+  if (token === undefined) return false
+  try {
+    const heard = await $.http.fetch(`http://127.0.0.1:${box.port}/api/heard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ session }),
+    })
+    if (heard.status === 401 || heard.status === 403) box.token = undefined
+    return heard.ok
+  } catch {
+    return false
+  }
+}
+
+/**
+ * One beat: tells the page server the session is live; where none answers, runs `loft yard
+ * serve`, unless the mod's own child serves or the last run has yet to say what it did.
+ */
+export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
+  if (await hear($, box, session)) return
   if (server.isBeating || server.isServing) return
   server.isBeating = true
   try {

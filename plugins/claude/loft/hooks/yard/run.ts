@@ -1,6 +1,7 @@
 // How the Yard hooks run `loft yard`: through the plugin's `loftCommand` setting, quietly, with
-// `--format json`, the base branch and the calling agent, reading the one JSON document the
-// command prints and nothing else (the Feature "The Loft plugin").
+// `--format json`, the page server's port, the base branch for a write and the calling agent,
+// reading the one JSON document the command prints and nothing else (the Feature "The Loft
+// plugin").
 
 import type { EngineInterface, PluginOptions } from 'claude-code'
 
@@ -48,7 +49,7 @@ export function failureOf(ran: Ran): string {
 }
 
 /** The calling agent: its session, and for a subagent its id and type. */
-export type Caller = { session: string; agent?: { id: string; type: string }; continues?: string }
+export type Caller = { session: string; agent?: { id: string; type: string } }
 
 /** The flags that name the calling agent to a command that acts for one. */
 export function callerArgs(caller: Caller): string[] {
@@ -56,13 +57,16 @@ export function callerArgs(caller: Caller): string[] {
     '--session',
     caller.session,
     ...(caller.agent ? ['--agent', caller.agent.id, '--agent-type', caller.agent.type] : []),
-    ...(caller.continues ? ['--continues', caller.continues] : []),
   ]
 }
 
-/** The argument vector of `loft yard <args>`, with the settings' base and port where it takes them. */
+/**
+ * The argument vector of `loft yard <args>`, with the page server's port where it takes one, and
+ * the base branch for a write, which records it where it opens Yard Log.
+ */
 export function argvOf(settings: Settings, args: readonly string[], beyond: boolean): string[] {
-  const where = beyond ? ['--base', settings.base, '--port', String(settings.port)] : []
+  const base = args[0] === 'write' ? ['--base', settings.base] : []
+  const where = beyond ? [...base, '--port', String(settings.port)] : []
   return [...settings.words, 'yard', ...args, ...where, '--format', 'json']
 }
 

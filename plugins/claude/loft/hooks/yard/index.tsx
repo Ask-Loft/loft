@@ -13,7 +13,7 @@ import { registerEvents } from './events'
 import { flush } from './outbox'
 import { callerArgs, failureOf, QUIET, succeeded, yard, type Ran } from './run'
 import { beat, BEAT } from './server'
-import { askerOf, callerOf, PLUGIN, reset, run, state } from './state'
+import { askerOf, callerOf, continued, PLUGIN, reset, run, state } from './state'
 import { mirrorCreated, mirrorUpdated } from './tasks'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
 
@@ -41,9 +41,9 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   if (home) state.box.tokenPath = `${home}/.yard/token`
   state.isOn = true
   state.server.trees.add(cwd)
-  void beat($, state.settings, state.server, await $.session.id(), cwd)
+  void beat($, state.settings, state.server, state.box, await continued($), cwd)
   $.clock.every(BEAT, async () => {
-    void beat($, state.settings, state.server, await $.session.id(), await $.session.cwd())
+    void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())
     void flush($, state.box)
   })
   return true
@@ -94,10 +94,10 @@ async function callTool($: EngineInterface, name: ToolName, e: Record<string, un
   return { result: JSON.stringify(ran.doc) }
 }
 
-/** The session's context for its branch's Yard Log, as one `loft yard read` gives it. */
+/** The session's context for its branch's Yard Log, as one `loft yard read` gives it: the agent's own read. */
 async function contextFor($: EngineInterface, cwd: string): Promise<string | undefined> {
   const caller = await callerOf($, undefined)
-  const ran = await run($, cwd, ['read', ...callerArgs(caller)])
+  const ran = await run($, cwd, ['read', '--mark-read', ...callerArgs(caller)])
   return succeeded(ran) ? contextOf(ran.doc, askerOf(caller)) : undefined
 }
 

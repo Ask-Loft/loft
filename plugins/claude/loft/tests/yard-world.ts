@@ -1,10 +1,10 @@
 // The world beneath Yard Client's hooks, answered from memory: `loft yard` as the plugin's
-// `loftCommand` runs it, the page server's events endpoint, the token file, the host's dialogs and
+// `loftCommand` runs it, the page server's events and beat, the token file, the host's dialogs and
 // tools. Each run, post and dialog is recorded for the tests to read.
 
 import { mock, test } from 'claude-code/testing'
 
-import type { Block, Stage } from '../hooks/yard/log'
+import { idOf, type Block, type Stage } from '../hooks/yard/log'
 
 type Body = Extract<Parameters<typeof test>[1], (...args: never[]) => unknown>
 export type Engine = Parameters<Body>[0]
@@ -82,11 +82,18 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     /** What each command answers, over the defaults, by subcommand. */
     answers: {} as Record<string, { doc?: Doc; exitCode?: number }>,
     runs: [] as Run[],
-    /** What each `loft yard wait` gives in turn; once none is left, it waits on `page`. */
-    waits: [] as Doc[],
+    /**
+     * What each `loft yard wait` gives in turn, or makes when it runs from what the mod wrote before
+     * it; once none is left, it waits on `page`.
+     */
+    waits: [] as (Doc | (() => Doc))[],
     page: deferred<Doc>(),
     serverStops: deferred<void>(),
     posts: [] as { url: string; headers: Record<string, string>; events: Doc[] }[],
+    /** The sessions the mod told the page server are live, on its beat. */
+    heard: [] as string[],
+    /** Whether a page server answers the beat; where none does, the mod runs `loft yard serve`. */
+    answersBeat: false,
     postStatus: 200,
     /** What the page server's answer to a post waits on. */
     answering: Promise.resolve() as Promise<unknown>,
@@ -133,6 +140,11 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))
   on('fs.read', ($, e) => (state.hasToken && e.path === `${HOME}/.yard/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
   on('http.fetch', async ($, e) => {
+    if (e.url.endsWith('/api/heard')) {
+      state.heard.push(String((JSON.parse(String(e.init?.body ?? '{}')) as Doc).session))
+      const status = state.answersBeat ? 200 : 503
+      return { value: { status, ok: state.answersBeat, headers: {}, text: '{}' } as never }
+    }
     await state.answering
     const headers = (e.init?.headers ?? {}) as Record<string, string>
     state.posts.push({ url: e.url, headers, events: JSON.parse(String(e.init?.body ?? '[]')) as Doc[] })
@@ -181,7 +193,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     // A wait the mod ends is killed: the kit aborts its dispatch.
     const signal = (next as { signal?: AbortSignal }).signal
     const killed = new Promise<null>(done => signal?.addEventListener('abort', () => done(null), { once: true }))
-    const doc = state.waits.shift() ?? (await Promise.race([state.page.promise, killed]))
+    const given = state.waits.shift()
+    const doc = (typeof given === 'function' ? given() : given) ?? (await Promise.race([state.page.promise, killed]))
     if (doc === null) {
       state.killed++
       return { value: { code: null, signal: 'SIGTERM' } }
@@ -209,3 +222,13 @@ export async function start($: Engine, cwd = TREE) {
   await $.session.start({ cwd, surface: 'terminal', isInteractive: true })
   return $.classic.SessionStart({ source: 'startup', cwd })
 }
+
+/** The id Claude Code gave the last call of `tool` that reached its own tool, as a block id holds it. */
+export const callIdOf = (w: World, tool: string) => idOf(String(w.state.calls.filter(call => call.tool === tool).at(-1)?.tool_use_id))
+
+/** The blocks of each batch the mod wrote, in order. */
+export const writesOf = (w: World) =>
+  w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin ?? '[]') as Record<string, unknown>[])
+
+/** The id of the question the mod wrote last. */
+export const askedId = (w: World) => String(writesOf(w).at(-1)?.find(each => each.kind === 'question')?.id)

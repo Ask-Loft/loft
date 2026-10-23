@@ -28,7 +28,7 @@ export type YardState = {
   types: Map<string, string>
   /** This process's sessions, the current one first: a `/clear` or a resume starts another. */
   sessions: string[]
-  /** The session that ended with `/clear` or a resume, until the next command names it. */
+  /** The session that ended with `/clear` or a resume, until `loft yard continue` records it. */
   continues: string | undefined
   isOn: boolean
   enabling: Promise<boolean> | undefined
@@ -57,14 +57,26 @@ export function reset(options: PluginOptions) {
   Object.assign(state, fresh(options))
 }
 
-/** The calling agent; the first command after `/clear` or a resume names the session it continues. */
+/** The calling agent, once the session it may continue is recorded. */
 export async function callerOf($: EngineInterface, agentId: string | undefined): Promise<Caller> {
+  const session = await continued($)
+  const agent = agentId ? { id: agentId, type: state.types.get(agentId) ?? (await typeOf($, agentId)) } : undefined
+  return { session, ...(agent ? { agent } : {}) }
+}
+
+/**
+ * The session now, after recording once, with `loft yard continue`, that it continues the one
+ * that ended with `/clear` or a resume: before any other `loft yard` command it runs.
+ */
+export async function continued($: EngineInterface): Promise<string> {
   const session = await $.session.id()
   if (state.sessions[0] !== session) state.sessions.unshift(session)
-  const agent = agentId ? { id: agentId, type: state.types.get(agentId) ?? (await typeOf($, agentId)) } : undefined
-  const continues = state.continues !== undefined && state.continues !== session ? state.continues : undefined
-  state.continues = undefined
-  return { session, ...(agent ? { agent } : {}), ...(continues ? { continues } : {}) }
+  const ended = state.continues
+  if (ended !== undefined && ended !== session) {
+    state.continues = undefined
+    await yard($, state.settings, await $.session.cwd(), ['continue', '--session', session, '--from', ended], { beyond: false })
+  }
+  return session
 }
 
 /** Who asks, for matching the records Yard Log keeps: the session's ids and the subagent's. */
@@ -88,11 +100,11 @@ export async function run($: EngineInterface, cwd: string, args: readonly string
 }
 
 /**
- * Reads Yard Log on the agent's behalf without moving the revision it last read, as the mod reads
- * it to mirror a task or to send what the agent asks.
+ * Reads Yard Log on the agent's behalf: with no `--mark-read`, so the revision it last read stays
+ * as it was, as the mod reads it to mirror a task or to send what the agent asks.
  */
 export async function peek($: EngineInterface, cwd: string, caller: Caller): Promise<Ran> {
-  return run($, cwd, ['read', '--peek', ...callerArgs({ ...caller, continues: undefined })])
+  return run($, cwd, ['read', ...callerArgs(caller)])
 }
 
 /** A subagent's type, as Claude Code lists it. */
