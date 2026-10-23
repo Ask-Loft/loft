@@ -101,3 +101,15 @@ test('the Y of the Yard mark is action blue and the rest of the name ink, in eit
   assert.match(css.match(/^:root\s*\{([^}]*)\}/m)?.[1] ?? '', /--signal:\s*#14488f;/);
   assert.match(css.match(/@media \(prefers-color-scheme: dark\)\s*\{\s*:root\s*\{([^}]*)\}/)?.[1] ?? '', /--signal:\s*#8ec5f2;/);
 });
+
+test('the mark’s name is one element of its box, so that no gap opens between its Y and the rest', () => {
+  const drawn = root();
+  drawn.innerHTML = html;
+  // The box spaces its square from what follows it: the name must follow it whole.
+  const nodes = [...(drawn.querySelector('.mark-word')?.childNodes ?? [])];
+  assert.equal(nodes.length, 1);
+  const name = /** @type {Element} */ (nodes[0]);
+  assert.equal(name.nodeType, 1);
+  assert.equal(name.textContent, 'Yard');
+  assert.equal(name.querySelector('.mark-initial')?.textContent, 'Y');
+});

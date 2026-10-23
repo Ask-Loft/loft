@@ -1,7 +1,7 @@
 //! A session's token totals in one branch's Yard Log, as its model requests add to them: in all,
-//! by the stage active for the requesting agent, by agent and model, and by each submission open
-//! when the request ended. A compaction's own request counts as the main agent's. The page server
-//! keeps them in `tokens/<session id>.yaml` in Yard Log's folder.
+//! by the stage the request counts toward and within it by agent, by agent and model, and by each
+//! submission open when the request ended. A compaction's own request counts as the main agent's.
+//! The page server keeps them in `tokens/<session id>.yaml` in Yard Log's folder.
 
 use std::collections::BTreeMap;
 
@@ -9,6 +9,13 @@ use loftspec::yaml::{Out, write};
 use yardlog::Time;
 
 use super::event::{Event, Tokens, Who};
+
+/// What counted toward one stage: in all, and by agent.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+struct Stage {
+    all: Tokens,
+    agents: BTreeMap<Who, Tokens>,
+}
 
 /// A session's token totals in one branch's Yard Log.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -18,7 +25,7 @@ pub struct Totals {
     first_ended: Option<Time>,
     last_ended: Option<Time>,
     all: Tokens,
-    stages: BTreeMap<String, Tokens>,
+    stages: BTreeMap<String, Stage>,
     no_stage: Option<Tokens>,
     agents: BTreeMap<(Who, String), Tokens>,
     submissions: BTreeMap<String, Tokens>,
@@ -37,8 +44,8 @@ impl Totals {
         self.last_ended.is_some()
     }
 
-    /// Counts `event` where it is a model request or a compaction, `stage` the stage active for
-    /// its agent and `open` the submissions open when it ended; says whether it counted.
+    /// Counts `event` where it is a model request or a compaction, `stage` the stage it counts
+    /// toward and `open` the submissions open when it ended; says whether it counted.
     pub fn apply(&mut self, event: &Event, stage: Option<&str>, open: &[String]) -> bool {
         let who = match event.kind.as_str() {
             "request" => event.who.clone(),
@@ -55,7 +62,11 @@ impl Totals {
         self.last_ended = Some(self.last_ended.map_or(event.at, |at| at.max(event.at)));
         self.all.add(tokens);
         match stage {
-            Some(stage) => self.stages.entry(stage.to_owned()).or_default().add(tokens),
+            Some(stage) => {
+                let counted = self.stages.entry(stage.to_owned()).or_default();
+                counted.all.add(tokens);
+                counted.agents.entry(who.clone()).or_default().add(tokens);
+            }
             None => self
                 .no_stage
                 .get_or_insert_with(Tokens::default)
@@ -88,11 +99,10 @@ impl Totals {
         }
         fields.push(("tokens", Out::Mapping(counts(self.all))));
         if !self.stages.is_empty() {
-            let stages = self.stages.iter().map(|(stage, tokens)| {
-                let mut fields = vec![("stage", Out::Token(stage.clone()))];
-                fields.extend(counts(*tokens));
-                Out::Mapping(fields)
-            });
+            let stages = self
+                .stages
+                .iter()
+                .map(|(stage, counted)| stage_out(stage, counted));
             fields.push(("stages", Out::Sequence(stages.collect())));
         }
         if let Some(tokens) = self.no_stage {
@@ -115,6 +125,19 @@ impl Totals {
         }
         write(&Out::Mapping(fields))
     }
+}
+
+/// One stage's entry: its key, what counted toward it in all, and by agent.
+fn stage_out(stage: &str, counted: &Stage) -> Out {
+    let mut fields = vec![("stage", Out::Token(stage.to_owned()))];
+    fields.extend(counts(counted.all));
+    let agents = counted.agents.iter().map(|(who, tokens)| {
+        let mut fields = who.fields();
+        fields.extend(counts(*tokens));
+        Out::Mapping(fields)
+    });
+    fields.push(("agents", Out::Sequence(agents.collect())));
+    Out::Mapping(fields)
 }
 
 fn counts(tokens: Tokens) -> Vec<(&'static str, Out)> {

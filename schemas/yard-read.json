@@ -1030,6 +1030,10 @@
               },
               "ended": {
                 "type": "string"
+              },
+              "stage": {
+                "description": "The stage the run worked for: the one active for its session's main agent as it started",
+                "type": "string"
               }
             }
           }
@@ -1087,7 +1091,7 @@
       }
     },
     "tokensFile": {
-      "description": "A session's token totals file: in all, by stage, under no stage, by agent and model, and by submission",
+      "description": "A session's token totals file: in all, by stage and within each stage by agent, under no stage, by agent and model, and by submission",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1142,6 +1146,45 @@
               "output": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "agents": {
+                "description": "What counted toward the stage, by agent: the main agent, and each subagent by its id and type",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "agent",
+                    "input",
+                    "cacheRead",
+                    "cacheWrite",
+                    "output"
+                  ],
+                  "properties": {
+                    "agent": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "input": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "cacheRead": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "cacheWrite": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "output": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
               }
             }
           }

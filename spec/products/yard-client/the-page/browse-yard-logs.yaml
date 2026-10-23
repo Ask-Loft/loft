@@ -29,6 +29,8 @@ requirements:
     criteria:
       - key: 01a16984-aadb-7721-9995-4721c3e03b58
         name: "The Y of the mark is action blue and the rest of the name ink, in the light and in the dark scheme alike."
+      - key: 01a16991-1851-764f-877b-c2d5f6abfd47
+        name: "The mark's name reads as one word: no space lies between its Y and the rest of the name."
   - key: 01a168ea-af3d-7473-83c8-50bb2e1a4b32
     statement:
       form: ubiquitous

@@ -1,7 +1,8 @@
 // Yard Log along time, as the Gantt chart draws it: a lane for each agent that owned a stage,
-// each lane holding its stages with their tasks, Loft runs, Loft views, waits on the person and
-// the agent's own work between them; the idle time outside the main agent's turns, folded where
-// it is long; the stretches of plan and spec mode; and where the time that was not idle went.
+// each lane holding its stages with their tasks, Loft runs, Loft views, the runs of the subagents
+// that owned no stage and worked for them, waits on the person and the agent's own work between
+// them; the idle time outside the main agent's turns and the subagents' runs, folded where it is
+// long; the stretches of plan and spec mode; and where the time that was not idle went.
 
 import { agentKey, ms, who } from '../lib/format.js';
 
@@ -72,11 +73,12 @@ export function measure(spans) {
  */
 export function chart(log, now) {
   const sessions = activities(log, now);
-  const turns = union(sessions.flatMap((activity) => activity.turns));
+  // Time is busy while the main agent's turns or any subagent's run go on.
+  const turns = union(sessions.flatMap((activity) => [...activity.turns, ...activity.subagents]));
   const waits = submissionSpans(log, now);
   const lanes = laneList(log, now, sessions, turns, waits);
   const drawn = lanes.flatMap((lane) =>
-    lane.rows.flatMap((row) => [row.stage, ...row.tasks, ...row.loft, ...row.submissions]),
+    lane.rows.flatMap((row) => [row.stage, ...row.tasks, ...row.loft, ...row.subagents, ...row.submissions]),
   );
   const starts = [...drawn.map((span) => span.from), ...turns.map((turn) => turn.from)];
   const ends = [...drawn.map((span) => span.to), ...turns.map((turn) => turn.to)];
@@ -111,6 +113,12 @@ function activities(log, now) {
       ...(activity.plan ?? []).map((item) => ({ mode: 'plan', ...span(item), open: !item.ended })),
       ...(activity.spec ?? []).map((item) => ({ mode: 'spec', ...span(item), open: !item.ended })),
     ],
+    subagents: (activity.subagents ?? []).map((run) => ({
+      ...span(run),
+      agent: `${activity.session}/${run.agent}`,
+      type: run.type ?? 'subagent',
+      stage: run.stage,
+    })),
     loft: (activity.loft ?? []).map((run) => ({
       ...span(run),
       agent: run.agent === 'main' ? activity.session : `${activity.session}/${run.agent}`,
@@ -158,7 +166,7 @@ function submissionSpans(log, now) {
 /**
  * The lanes: one for the main agent, holding the stages of every session with the time each
  * session first started work, then one for each subagent that owned a stage, in the order each
- * first started work.
+ * first started work. The run of a subagent that owned no stage lies in a stage's row.
  * @param {any} log
  * @param {number} now
  * @param {ReturnType<typeof activities>} sessions
@@ -177,7 +185,12 @@ function laneList(log, now, sessions, turns, waits) {
     lane.stages.push(stage);
     lanes.set(key, lane);
   }
-  const loft = sessions.flatMap((activity) => activity.loft);
+  const spans = {
+    loft: sessions.flatMap((activity) => activity.loft),
+    subagents: sessions.flatMap((activity) => activity.subagents).filter((run) => !lanes.has(run.agent)),
+    waits,
+    turns,
+  };
   const built = [...lanes.values()].map((lane) => {
     const stages = lane.stages.sort((a, b) => ms(a.times.started) - ms(b.times.started));
     const rows = stages.map((stage, index) => {
@@ -185,7 +198,7 @@ function laneList(log, now, sessions, turns, waits) {
       const from = ms(stage.times.started);
       let to = stage.times.ended ? ms(stage.times.ended) : next ? ms(next.times.started) : now;
       if (to < from) to = from;
-      return row(stage, { from, to }, agentKey(stage.owner), loft, waits, turns, now);
+      return row(stage, { from, to }, agentKey(stage.owner), spans, now);
     });
     return { key: lane.key, label: lane.label, main: lane.main, sessions: lane.main ? sessionStarts(stages) : [], rows };
   });
@@ -209,24 +222,31 @@ function sessionStarts(stages) {
 
 /**
  * Where the busy time went, each moment counted once, to the first it falls in of the Loft
- * runs, the active tasks and the waits on the person, and the rest to the agent's own work.
+ * runs, the subagents' runs, the active tasks and the waits on the person, and the rest to the
+ * agent's own work.
  * @param {Span[]} busy
- * @param {{ loft: Span[], tasks: Span[], waits: Span[] }} spans
+ * @param {{ loft: Span[], subagents: Span[], tasks: Span[], waits: Span[] }} spans
  */
-function split(busy, { loft, tasks, waits }) {
+function split(busy, { loft, subagents, tasks, waits }) {
   const ran = intersect(loft, busy);
-  const active = subtract(intersect(tasks, busy), ran);
-  const waited = subtract(intersect(waits, busy), [...ran, ...active]);
-  const work = subtract(busy, [...ran, ...active, ...waited]);
-  return { task: active, loft: ran, wait: waited, work };
+  const helped = subtract(intersect(subagents, busy), ran);
+  const active = subtract(intersect(tasks, busy), [...ran, ...helped]);
+  const waited = subtract(intersect(waits, busy), [...ran, ...helped, ...active]);
+  const work = subtract(busy, [...ran, ...helped, ...active, ...waited]);
+  return { loft: ran, subagent: helped, task: active, wait: waited, work };
 }
 
 /**
- * One stage's row: its bar, its tasks, the Loft runs and views made while it was active, its
- * agent's waits on the person, the agent's own work in the rest of its time, and its bar's
- * time divided between them.
+ * One stage's row: its bar, its tasks, the Loft runs and views made while it was active, the runs
+ * of the subagents that owned no stage and worked for it, its agent's waits on the person, the
+ * agent's own work in the rest of its time, and its bar's time divided between them.
+ * @param {any} stage
+ * @param {Span} span
+ * @param {string} agent
+ * @param {{ loft: any[], subagents: any[], waits: any[], turns: Span[] }} spans
+ * @param {number} now
  */
-function row(stage, span, agent, loft, waits, turns, now) {
+function row(stage, span, agent, { loft, subagents, waits, turns }, now) {
   const tasks = (stage.blocks ?? [])
     .filter((block) => block.kind === 'task')
     .map((block) => {
@@ -244,9 +264,14 @@ function row(stage, span, agent, loft, waits, turns, now) {
         done: block.version.body.state === 'done',
       };
     });
+  // A run kept with the stage it counted toward belongs to that stage, whichever agent ran it.
   const runs = loft
-    .filter((run) => run.agent === agent && (run.stage ? run.stage === stage.key : within(run, span)))
+    .filter((run) => (run.stage ? run.stage === stage.key : run.agent === agent && within(run, span)))
     .map(({ from, to, name, failed }) => ({ from, to, name, failed }));
+  // A subagent's run kept with no stage, as an older file keeps it, works for the main agent's.
+  const helpers = subagents
+    .filter((run) => (run.stage ? run.stage === stage.key : !stage.owner.agent && within(run, span)))
+    .map(({ from, to, type }) => ({ from, to, type }));
   const views = (stage.blocks ?? [])
     .filter((block) => block.kind === 'loft' && block.version.body.recorded?.at)
     .map((block) => ({ at: ms(block.version.body.recorded.at), view: block.version.body.view, id: block.id }));
@@ -256,7 +281,7 @@ function row(stage, span, agent, loft, waits, turns, now) {
   const active = tasks
     .filter((task) => task.activeFrom !== null)
     .map((task) => ({ from: task.activeFrom, to: task.to }));
-  const parts = split(turns.length ? intersect([span], turns) : [span], { loft: runs, tasks: active, waits: asked });
+  const parts = split(turns.length ? intersect([span], turns) : [span], { loft: runs, subagents: helpers, tasks: active, waits: asked });
   const segments = Object.entries(parts)
     .flatMap(([kind, spans]) =>
       spans.map((each) => ({
@@ -276,6 +301,7 @@ function row(stage, span, agent, loft, waits, turns, now) {
     },
     tasks,
     loft: runs,
+    subagents: helpers,
     views,
     submissions: asked,
     work: parts.work,
@@ -290,9 +316,9 @@ function within(item, span) {
 }
 
 /**
- * Where the time that was not idle went: to Loft runs, then to active tasks, then to waits on
- * the person, and the rest to the agents' own work, each with its length and its share. Time is
- * counted once, to the first of these it falls in.
+ * Where the time that was not idle went: to Loft runs, then to the subagents' runs, then to active
+ * tasks, then to waits on the person, and the rest to the agents' own work, each with its length
+ * and its share. Time is counted once, to the first of these it falls in.
  * @param {Span[]} busy
  * @param {any[]} lanes
  */
@@ -300,13 +326,15 @@ function summary(busy, lanes) {
   const rows = lanes.flatMap((lane) => lane.rows);
   const spent = split(busy, {
     loft: rows.flatMap((row) => row.loft),
+    subagents: rows.flatMap((row) => row.subagents),
     tasks: rows.flatMap((row) => row.active),
     waits: rows.flatMap((row) => row.submissions),
   });
   const total = measure(busy);
   const parts = [
-    { name: 'Active tasks', kind: 'task', length: measure(spent.task) },
     { name: 'Loft runs', kind: 'loft', length: measure(spent.loft) },
+    { name: 'Subagent runs', kind: 'subagent', length: measure(spent.subagent) },
+    { name: 'Active tasks', kind: 'task', length: measure(spent.task) },
     { name: 'Waits on you', kind: 'wait', length: measure(spent.wait) },
     { name: 'Agent work', kind: 'work', length: measure(spent.work) },
   ];

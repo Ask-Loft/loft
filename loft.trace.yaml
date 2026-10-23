@@ -21678,6 +21678,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a dark scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue"
         body: 2de5d6412c2a8b2c529a4ba62555db5b584b268fd53ea1ec1e359485c4afe95f
+  - node: 01a16991-1851-764f-877b-c2d5f6abfd47
+    reviewed: 46923dc070e582f847bef3ca0efa1fac40b6c1928554d9546a97e00d9b6bd068
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the mark’s name is one element of its box, so that no gap opens between its Y and the rest"
+        body: cdb42e2c861e753b3d3c507ece9834c620a0b0cee8998d3c65f66fe798f78812
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the mark’s Y meets the rest of its name with no gap between them"
+        body: 41c66574d71d13fc563f95510eff3fa35d4284d807430dc9b6c9ded80dc42d2e
   - node: 01a16901-3952-7392-b2a8-3b99d4dc57a2
     reviewed: 2421ccaba510452bd1bbcfc5a34f1025e3b5f713d3d78996f0c1d2c35766a74f
     tests:
@@ -22825,7 +22834,7 @@ links:
         name: "a task with no recorded times is drawn at the time its current version was written"
         body: e9cad9a0946830d6bfb5a56a272eecd02239d52c35a68bc3ec15468efe7c5ccc
   - node: 01a1646f-546d-7042-befd-eb752ee05c31
-    reviewed: acef332a9dff405d95c3eb2a378d7c6f598fac2e5f3916c9b4471313ccd968df
+    reviewed: d121fea40aeae3992fc6d00630d48dc1a194c30377a24bae483b7fafea8fa18b
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "each Loft run belongs to the stage its agent had active, by its subcommands, and each Loft view to its time"
@@ -22833,6 +22842,21 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "each Loft run is drawn in its stage’s bar and names its subcommands on hover, and each Loft view is marked on the bar at its time"
         body: 17f582908838fd5990ce0782acb03579955a6005e545f25f5b764f939ffeb062
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a Loft run of a subagent that owned no stage is drawn in the bar of the stage it counted toward"
+        body: 9bbc9e72fad5aa703976fab0f2ed34f24918d4ae17270d27ff2c5f61f0c1e772
+  - node: 01a16995-313c-7343-8413-b5540477b877
+    reviewed: 814a1c3a1998a945220a10ceaea726477fcb6247d449fe3e13cbe54ecdc8ce3d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the run of a subagent that owned no stage is drawn in the bar of the stage it worked for, to now while it runs, naming its type on hover"
+        body: bf914a165d92d190e10fd2a9015064f9d8bdb2e657fe052260e65361fe3c43cc
+  - node: 01a16995-313c-7343-8413-b5555f32f389
+    reviewed: 95ba135f4daab841bad37f5b84b5a7c3d50a7db616ac958f2f3ba1511331c700
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "the run of a subagent that owned a stage is drawn in its own lane and in no other stage’s bar"
+        body: 5446340f9c8df7259448f0a0956dc2dee0f5121eb6f3ef2a4ce0b048c663b5b8
   - node: 01a168a8-bdad-700b-811b-6841ac3c6f87
     reviewed: 3a9cf8922cda21068ed8baf60237594d19a4f8431bf8507b66495185c5bebbce
     tests:
@@ -22861,7 +22885,7 @@ links:
         name: "a block sent again in a later submission leaves the earlier submission ending at its own answer"
         body: 76749bb01d1bbcfd4d8b7cb4eaf936f8ae9e8750a942225ae60b2e5db151e3d9
   - node: 01a1646f-546d-7042-befd-eb7765e7bec9
-    reviewed: 5980110113487a5c89b0a88edd90c25cf0c571edf448e23b45af15a576e8c38c
+    reviewed: d67b9204d533482ceb0b04563a7fc59c20060ee36972420bf9f2faf0d53dc428
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "a stage’s time in a turn with no active task, Loft run or wait is agent work"
@@ -22869,12 +22893,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "a stage’s bar is divided into its tasks, Loft runs, waits and work as the bar above the chart counts them, idle time left empty"
         body: 5c6d7e54501f734fd17b4d92a29541964b9cd66e6cc4c603dc3b54bfaccb38bd
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a stage’s bar counts each moment to its Loft runs, then its subagents’ runs, then its tasks, waits and work"
+        body: a936bdc283ef4f448137741ff6951bec717c14abe95515b20063ee95bebf8c10
   - node: 01a168a8-bdad-700b-811b-68432bab687f
-    reviewed: ee9095c93e2a97bd01341d5c0477dfd77473871016906b4c1845ec69bd9da702
+    reviewed: 15c76cb87bf3dad74202de2b2913dfaeea732c405cd69809fe1fab87e58326b3
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "a stage’s bar is divided into its tasks, Loft runs, waits and work as the bar above the chart counts them, idle time left empty"
         body: 5c6d7e54501f734fd17b4d92a29541964b9cd66e6cc4c603dc3b54bfaccb38bd
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a stage’s bar counts each moment to its Loft runs, then its subagents’ runs, then its tasks, waits and work"
+        body: a936bdc283ef4f448137741ff6951bec717c14abe95515b20063ee95bebf8c10
   - node: 01a168a8-bdad-700b-811b-6844ce75769c
     reviewed: 5e6e1abe5f91d37cff033644b91aa2bbb5d38053809169fbf6c8eabf829f5b2f
     tests:
@@ -22882,11 +22912,14 @@ links:
         name: "a stage’s bar is divided into its tasks, Loft runs, waits and work as the bar above the chart counts them, idle time left empty"
         body: 5c6d7e54501f734fd17b4d92a29541964b9cd66e6cc4c603dc3b54bfaccb38bd
   - node: 01a1646f-546d-7042-befd-eb78faca6f3a
-    reviewed: f07d24fc2d741a1813fd7c42bcf3ed8218f9cbf2079dec17fc28c1d7c138cc29
+    reviewed: 0c2adc470b4b8238be9e759ce90ac6fa25d99aee2f6dd79a8b533e8e0c253943
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "time outside the turns is idle, and an idle stretch longer than 45 seconds is folded to a break in the axis that gives its length on hover"
         body: ea57efdd202dd5506f02431ba3fb9e40e68f423c11910ea7afd214d45312422a
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "time inside a subagent’s run but outside the main agent’s turns is not idle"
+        body: 6624c0e60c4d38128f05ca092673d931dd0e4a652af2f4c0b8602ffe40df93e9
   - node: 01a168a8-bdad-700b-811b-6845c959bfd0
     reviewed: ad707ca563bea9fd78de17a3470c15055b21d7a26321f552eb1a36fd010aae01
     tests:
@@ -22903,11 +22936,11 @@ links:
         name: "the time axis is marked at regular times within each stretch between folded idle stretches, no two marks crowding"
         body: 1dd5ebd6dce00cba63414a1c46590e07633eaf3023a98dbd0fae159a4e66bb2f
   - node: 01a1646f-546d-7042-befd-eb79bfb93e3a
-    reviewed: ceb5c504db1fa6e6a6fb2e7229169ef6fd5583bd1416446516fe620251f40c81
+    reviewed: 68330cb9e798f2724703e9aaf786dab0d0b1153bb26524b689df20e5ff10c817
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "the bar above the chart divides the time not idle into tasks, Loft runs, waits and agent work, each with its length and share"
-        body: 719d36e8875ec65b0ac0852720d3c83c8fcda01bea4ef294d21bef847813f22c
+        name: "the bar above the chart divides the time not idle into Loft runs, subagent runs, tasks, waits and agent work, each with its length and share"
+        body: 98ce8da093f317f6516e6a1ac47bd8dff3793ab609b637ba0d0b1d87403304be
   - node: 01a1646f-546d-7042-befd-eb7ae5af3ff4
     reviewed: 932b77ed1660b545105bb444e4fd43b852348a7dac5111e71da4a38c06026f86
     tests:
@@ -23821,8 +23854,35 @@ links:
         name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
         body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
   - node: 01a1646f-546d-7042-befd-eae8aef1c957
-    reviewed: 912d2f3c417337f3996b2c996fb94bbf4d0dda7cac0dcecd84552acb4be2dbc6
+    reviewed: 8bf0f228c49d94ccfa90e31bde1ce59a45197ffd02756caece3a4e697ebec569
     tests:
+      - file: "crates/loft-cli/tests/yard_serve_events.rs"
+        name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
+        body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
+  - node: 01a16995-313c-7343-8413-b54f3d6c820f
+    reviewed: da6d87e897fab3ee91212812643044b787bd78d9f5eb1c299a7ca3a7be9a8f1c
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "once_a_subagent_opens_a_stage_of_its_own_its_requests_count_toward_that_stage_alone"
+        body: c1e34b351b3b3d97d568c1e1894d4e94d0d38d389edea0050269b32a27b5b0b2
+  - node: 01a16995-313c-7343-8413-b550557e1ea2
+    reviewed: 066f2739d21670bb68bab1eb274d4ce13ace55cd58f41a2fa9953a2cfa6b8b76
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "a_stageless_subagent_s_request_counts_toward_the_stage_active_for_its_session_s_main_agent"
+        body: b7213e9e2330a1a5fd595fd8b8465adbc398494fbd4f4c636cb1af210f8b0a3b
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "with_no_stage_active_for_either_a_subagent_s_request_counts_under_no_stage"
+        body: d45b1c94c3a4ebd9877af445478fd01f84e2c005e7af22e9e9831c6cefbdc249
+      - file: "crates/loft-cli/tests/yard_serve_events.rs"
+        name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
+        body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
+  - node: 01a16995-313c-7343-8413-b551e284ad7e
+    reviewed: dbc241536c8767de1b4eb8580b8662fd9cec615102fd8397a39528ac9bc8bbd2
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "each_stage_s_counts_are_kept_by_agent_the_main_agent_and_each_subagent_by_id_and_type"
+        body: a75f2e3fe59de916ccae19b6f4a1dfb06c47d04441d4e7361751f07c0516c8ad
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
         body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
@@ -23901,6 +23961,15 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
         body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
+  - node: 01a16995-313c-7343-8413-b55299748fdd
+    reviewed: 83f289f6c08bd9f44e54f458c6975fdbd809f9e95afde39c8aed7bf60ec1d991
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "a_subagent_s_run_is_kept_with_the_stage_its_session_s_main_agent_had_active_as_it_started"
+        body: 0ac307e49b386ca99308483cf2428075ff40f2c36461e412c349949fc215aa46
+      - file: "crates/loft-cli/tests/yard_serve_events.rs"
+        name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
+        body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
   - node: 01a1646f-546d-7042-befd-eaf4217a481b
     reviewed: 3b4303a85b4bf21fa4281e5624a8f52c0ffaa400eef5302a9d7f5ae70b903088
     tests:
@@ -23926,11 +23995,14 @@ links:
         name: "a_subagent_s_spec_edits_and_plan_mode_are_not_kept_as_stretches"
         body: db8b8795dae14db782b549d7cbabd2979dabcd22f14b34e8fa5d823453cc1d15
   - node: 01a1646f-546d-7042-befd-eaf743bef7f9
-    reviewed: 2760e2b998821030acc3ddec3bb13403a98dcca128fd1bcabd2c07edb81b0576
+    reviewed: 93497563ed5c8a24180cf9f9af23c0c81384a9a5510882612c2f68f60c878c99
     tests:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
         body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "a_stageless_subagent_s_loft_run_is_kept_with_the_main_agent_s_stage"
+        body: de95c2ce8b8ddc2b246907247e3b088566ec6f5861202c272d1a2177feb3b84d
   - node: 01a1646f-546d-7042-befd-eaf8581e4986
     reviewed: c4864ba2066d2a9d10f12f9548090080c41bc8e6ba70c0967b9f0a2f8f96cffd
     tests:
@@ -24157,11 +24229,17 @@ links:
         name: "the four counts in all are summed over every totals file"
         body: 87398a03a08cbdeb6ed03604a074e95090fbb888b01e3e94b2688f3b9bb3ed18
   - node: 01a1646f-546d-7042-befd-eb19fd65c436
-    reviewed: 284c1f9a86f72ba344ca0d5e184f2a4849d183d358e813b2c1ac0cec4d1a27b1
+    reviewed: be04fc6e0e9183715cba7da1e42b9563ede1e060a2f61198db77ebedad56a227
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "each stage has the counts of its requests, and those under no stage are shown apart"
-        body: baa138de429859a06c8215fdfb455bc9c2be483936436a8b66e961d0ddd60041
+        body: 9b50402a3aba02de4e2a7919473169ebe5eb06e622eb99ebdbc538e65bb8ab36
+  - node: 01a16995-313c-7343-8413-b553db01c09c
+    reviewed: a2703f5710d635a9eb32df4888e70651b103bd421d9ce43dc503b170c5b1be84
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "beside a stage that subagents counted toward, each type of subagent’s counts are shown within the stage’s"
+        body: 252bd9dbc53252d26285a9c34653e45e09cb4d3dee28f1fee1ac374758dcbe1e
   - node: 01a1646f-546d-7042-befd-eb1a9003423c
     reviewed: 178ca3146367dd4f40f870fd8b64b77a7a9e58a276935fc0bb156dc5fd9fd2bb
     tests:
@@ -24191,7 +24269,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "each count of a breakdown shows as a bar its share of Yard Log’s count of that kind in all"
-        body: 44fecb4bd035e9a04eb1676f98fcf743199c9ac72699d257ec814119a0adcc6a
+        body: 1510311a6b83a3a66f65965bcbaa936261c05d5e3c3f94c2044730a95d3471d5
   - node: 01a1646f-546d-7042-befd-eb1d0e18125d
     reviewed: 1fb79f767b25ac09192b4bdcb9eae1c0ea4e3160fa64abb9fa8fe1663046631b
     tests:

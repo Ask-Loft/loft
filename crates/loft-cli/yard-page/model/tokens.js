@@ -1,5 +1,5 @@
-// The tokens Yard Log took, summed over every session's totals file: in all, by stage, by
-// session, by agent and model, and by submission.
+// The tokens Yard Log took, summed over every session's totals file: in all, by stage and within
+// each stage by type of subagent, by session, by agent and model, and by submission.
 
 /**
  * @typedef {{ input: number, cacheRead: number, cacheWrite: number, output: number }} Counts
@@ -49,6 +49,8 @@ export function summarize(files) {
   let noStage = zero();
   /** @type {Map<string, Counts>} */
   const stages = new Map();
+  /** @type {Map<string, Map<string, Counts>>} */
+  const stageAgents = new Map();
   /** @type {Map<string, Counts>} */
   const submissions = new Map();
   /** @type {Map<string, { who: string, model: string, tokens: Counts }>} */
@@ -57,7 +59,15 @@ export function summarize(files) {
   for (const file of files ?? []) {
     all = add(all, file.tokens);
     noStage = add(noStage, file.noStage);
-    for (const stage of file.stages ?? []) addTo(stages, stage.stage, stage);
+    for (const stage of file.stages ?? []) {
+      addTo(stages, stage.stage, stage);
+      for (const agent of stage.agents ?? []) {
+        if (agent.agent === 'main') continue;
+        const within = stageAgents.get(stage.stage) ?? new Map();
+        addTo(within, agent.type ?? 'subagent', agent);
+        stageAgents.set(stage.stage, within);
+      }
+    }
     for (const submission of file.submissions ?? []) {
       addTo(submissions, submission.submission, submission);
     }
@@ -79,5 +89,5 @@ export function summarize(files) {
   const byAgent = [...agents.values()].sort(
     (a, b) => Number(b.who === 'main agent') - Number(a.who === 'main agent') || total(b.tokens) - total(a.tokens),
   );
-  return { all, noStage, stages, submissions, agents: byAgent, sessions, counted: total(all) > 0 };
+  return { all, noStage, stages, stageAgents, submissions, agents: byAgent, sessions, counted: total(all) > 0 };
 }

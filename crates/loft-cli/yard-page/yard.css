@@ -57,6 +57,7 @@
   --series-loft: #1baf7a;
   --series-wait: #eb6834;
   --series-work: #aab2ba;
+  --series-subagent: #8b57be;
   --scrim: rgb(14 20 29 / 55%);
   --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
@@ -106,6 +107,7 @@
     --series-loft: #199e70;
     --series-wait: #d95926;
     --series-work: #4a5561;
+    --series-subagent: #9b6fd0;
     --scrim: rgb(0 0 0 / 70%);
     color-scheme: dark;
   }
@@ -737,6 +739,7 @@ body:has(.modal[open]) { overflow: hidden; }
 .seg--failed { background: var(--danger); }
 .seg--wait { background: var(--series-wait); z-index: 4; border: 0; padding: 0; cursor: pointer; }
 .seg--work { background: var(--series-work); opacity: 0.55; }
+.seg--subagent { background: var(--series-subagent); z-index: 4; cursor: pointer; }
 .stage-bar { z-index: 3; padding: 0; border: 1.25px solid var(--signal); border-radius: 2px; background: none; cursor: pointer; }
 .stage-bar.status--done { border-color: var(--done); }
 .stage-bar.status--dropped { border-color: var(--drop); border-style: dashed; }
@@ -753,6 +756,7 @@ body:has(.modal[open]) { overflow: hidden; }
 .split--loft { background: var(--series-loft); }
 .split--wait { background: var(--series-wait); }
 .split--work { background: var(--series-work); }
+.split--subagent { background: var(--series-subagent); }
 .split-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--body); }
 .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
 .split-total { color: var(--muted); }
@@ -770,6 +774,8 @@ body:has(.modal[open]) { overflow: hidden; }
 .tokens-table thead :is(th, td) { font-family: var(--mono); color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 2px solid var(--ink); }
 .tokens-table tbody th { font-weight: 600; overflow-wrap: break-word; }
 .tokens-table th[scope="row"] { min-width: 10em; }
+/* A subagent's share of a stage, beneath the stage it worked for. */
+.tokens-table .within th { padding-left: 24px; color: var(--muted); font-weight: 400; }
 .tokens-table .number { width: 1%; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
 .tokens-table .group th { padding-top: 18px; color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 .tokens-table code { font-size: 12px; }

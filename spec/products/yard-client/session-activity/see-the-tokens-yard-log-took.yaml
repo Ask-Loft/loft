@@ -14,7 +14,9 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb18be1fe4d9
         name: "The page shows the four counts in all, summed over every totals file of Yard Log."
       - key: 01a1646f-546d-7042-befd-eb19fd65c436
-        name: "The page shows beside each stage the four counts of the requests that ended while it was active, and the counts of those under no stage apart."
+        name: "The page shows beside each stage the four counts of the requests counted toward it, and the counts of those under no stage apart."
+      - key: 01a16995-313c-7343-8413-b553db01c09c
+        name: "Beside a stage that subagents' requests counted toward, the page shows the four counts of each type of subagent within the stage's counts."
       - key: 01a1646f-546d-7042-befd-eb1a9003423c
         name: "The page lists each session that worked on Yard Log, with when its first and last counted requests ended and its four counts."
       - key: 01a1646f-546d-7042-befd-eb1b42b4a475
