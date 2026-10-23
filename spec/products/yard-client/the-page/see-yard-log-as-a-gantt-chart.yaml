@@ -94,7 +94,7 @@ requirements:
       shall: "draw a faint grid behind the bars of the Gantt chart."
     criteria:
       - key: 01a168c0-7fab-779d-8501-7d32b3d63d96
-        name: "A faint line divides each stage's rows from the next stage's rows."
+        name: "A faint line divides each stage's rows from the next stage's rows, unbroken across the whole width of the chart."
       - key: 01a168c0-7fab-779d-8501-7d33333d0b41
         name: "A faint line runs down every lane at each mark of the time axis."
   - key: 01a1646f-546d-7042-befd-eb71b01f691c

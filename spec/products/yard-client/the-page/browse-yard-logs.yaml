@@ -9,6 +9,18 @@ realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71a94f0aa021
 requirements:
+  - key: 01a168d9-f2df-7350-8964-7eca18ed1a07
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "lie at the left of the window and grow with the window up to 1800 pixels wide."
+    criteria:
+      - key: 01a168d9-f2df-7350-8964-7ecb58ac5bcb
+        name: "The page begins at the left edge of the window, whatever the window's width."
+      - key: 01a168d9-f2df-7350-8964-7ecc86fbfc7d
+        name: "The page is as wide as the window allows, up to 1800 pixels."
+      - key: 01a168d9-f2df-7350-8964-7ecd425523e1
+        name: "In a window wider than 1800 pixels, the room beyond the page lies at its right."
   - key: 01a1646f-546d-7042-befd-eb22743f9709
     statement:
       form: ubiquitous
