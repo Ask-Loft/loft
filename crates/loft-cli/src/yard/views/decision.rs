@@ -4,21 +4,19 @@
 //! kind and name.
 
 use std::collections::BTreeMap;
-use std::path::Path;
 
-use loftspec::codec;
+use loftspec::codec::{self, Files};
 use loftspec::decision::{Decision, DecisionState, Driver, DriverPayload, NodeRef};
 use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
 use loftspec::query::identifies;
 use serde_json::{Map, Value, json};
 
-use crate::stop::{self, Stop};
+use crate::stop::Stop;
 
-/// The report of a `decision` view of the decision `named` names in the tree under `tree`.
-pub fn report(tree: &Path, named: &str) -> Result<Value, Stop> {
-    let files = stop::read_files(tree)?;
-    let (document, _) = codec::read_sited(&files)?;
+/// The report of a `decision` view of the decision `named` names in the tree of `files`.
+pub fn report(files: &Files, named: &str) -> Result<Value, Stop> {
+    let (document, _) = codec::read_sited(files)?;
     let found: Vec<&Decision> = document
         .decisions
         .iter()

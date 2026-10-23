@@ -11,6 +11,7 @@ mod trace;
 
 use std::path::{Path, PathBuf};
 
+use loftspec::publish::{ReadTree, RepoState};
 use loftspec_store::repository::{GitCommand, MergeBase, Repository as _};
 use serde_json::{Map, Value, json};
 use yardlog::Time;
@@ -19,8 +20,9 @@ use yardlog::datum::Datum;
 use yardlog::input::LoftRequest;
 use yardlog::keys::Handle;
 
+use crate::opened::Opened;
 use crate::stop::Stop;
-use crate::{check, status, version};
+use crate::{base, check, status, version};
 
 /// The most items of one list a report keeps.
 pub const MOST: usize = 1_000;
@@ -60,75 +62,91 @@ impl Views<'_> {
         _block: &Handle,
         request: &LoftRequest,
     ) -> Result<(Recorded, Datum), String> {
-        let reported = self
-            .recorded()
-            .and_then(|recorded| Ok((recorded, self.compute(request)?)));
+        let reported = self.reported(request);
         let (recorded, mut report) = reported.map_err(|stop| stop.lines.join("; "))?;
         keep_most(&mut report, request.view);
         Ok((recorded, Datum::from(&report)))
     }
 
-    /// The report of the view `request` asks for.
-    fn compute(&self, request: &LoftRequest) -> Result<Value, Stop> {
+    /// Where and when the report is computed, and the report of the view `request` asks for:
+    /// the repository's state is asked for once, and the tree is read once, for both.
+    fn reported(&self, request: &LoftRequest) -> Result<(Recorded, Value), Stop> {
+        let git = GitCommand::default();
+        let state = git.state(self.tree)?;
+        let recorded = self.recorded(&git, &state);
+        let opened = Opened::open(self.tree)?;
         let base = request.base.as_deref().unwrap_or(self.base);
-        Ok(match request.view {
-            View::SpecChange => json!({
-                "status": status::json_document(self.tree, Some(base))?,
-                "graph": self.graph(base)?,
-            }),
-            View::Publish => self.publish()?,
-            View::Findings => {
-                let check = check::json_document(self.tree, Some(base))?;
-                let files = crate::stop::read_files(self.tree)?;
-                let (document, _) = loftspec::codec::read_sited(&files)?;
-                let nodes = graph::named_by_findings(&document, &check);
-                json!({ "check": check, "nodes": nodes })
+        let report = match request.view {
+            View::SpecChange => {
+                let tree = ReadTree::read(&opened.files)?;
+                let based = base::read_tree(&git, self.tree, base)?;
+                let mut status = status::Report::of(&opened.store, &tree, || Ok(state))?;
+                status.compare(&based, &tree);
+                json!({
+                    "status": status.document(),
+                    "graph": graph::report(&based.document, tree.document()),
+                })
             }
-            View::Trace => trace::report(self.tree, base)?,
+            View::Publish => self.publish(&git, &opened, state)?,
+            View::Findings => {
+                let based = base::read(&git, self.tree, base)?;
+                let baseline = check::Baseline {
+                    revision: base,
+                    commit: &based.commit,
+                    files: &based.files,
+                };
+                let check = check::Report::of(&opened.files, Some(baseline))?;
+                let (document, _) = loftspec::codec::read_sited(&opened.files)?;
+                let nodes = graph::named(&document, &check.subjects());
+                json!({ "check": check.document(check.outcome(None)), "nodes": nodes })
+            }
+            View::Trace => trace::report(&trace::Over {
+                git: &git,
+                root: self.tree,
+                opened: &opened,
+                state,
+                base,
+            })?,
             View::Decision => {
                 let named = request.decision.as_deref().ok_or_else(|| {
                     Stop::one("view", "a `decision` view names its decision".to_owned())
                 })?;
-                decision::report(self.tree, named)?
+                decision::report(&opened.files, named)?
             }
-        })
+        };
+        Ok((recorded, report))
     }
 
     /// The lock and whether the tree matches it, compared with the commit that last wrote the
     /// lock where one did, and the nodes and decisions that carry a label, counted by kind.
-    fn publish(&self) -> Result<Value, Stop> {
-        let written = GitCommand::default().lock_written(self.tree).ok().flatten();
-        let status = status::json_document(self.tree, written.as_deref())?;
-        let files = crate::stop::read_files(self.tree)?;
-        let (document, _) = loftspec::codec::read_sited(&files)?;
-        Ok(json!({ "status": status, "labels": graph::labels(&document) }))
-    }
-
-    /// The diagram of the change from where HEAD left `revision` to the tree.
-    fn graph(&self, revision: &str) -> Result<Value, Stop> {
-        let files = crate::stop::read_files(self.tree)?;
-        let (document, _) = loftspec::codec::read_sited(&files)?;
-        let base = crate::base::read_tree(&GitCommand::default(), self.tree, revision)?;
-        Ok(graph::report(&base.document, &document))
+    fn publish(&self, git: &GitCommand, opened: &Opened, state: RepoState) -> Result<Value, Stop> {
+        // git has just told the repository's state, so a `git log` that fails here is one on a
+        // branch with no commit yet, which no commit of the lock precedes: the view then compares
+        // with nothing, as for a lock no commit wrote.
+        let written = git.lock_written(self.tree).ok().flatten();
+        let tree = ReadTree::read(&opened.files)?;
+        let mut status = status::Report::of(&opened.store, &tree, || Ok(state))?;
+        if let Some(written) = written {
+            status.compare(&base::read_tree(git, self.tree, &written)?, &tree);
+        }
+        Ok(json!({ "status": status.document(), "labels": graph::labels(tree.document()) }))
     }
 
     /// Where and when the report is computed: the commit, the branch, whether `spec/` held
-    /// changes not committed, and this `loft`'s version.
-    fn recorded(&self) -> Result<Recorded, Stop> {
-        let git = GitCommand::default();
-        let state = git.state(self.tree)?;
+    /// changes not committed, as `state` gives them, and this `loft`'s version.
+    fn recorded(&self, git: &GitCommand, state: &RepoState) -> Recorded {
         // `git merge-base HEAD HEAD` names HEAD's commit; a branch with no commit has none.
         let commit = match git.merge_base(self.tree, "HEAD") {
             Ok(MergeBase::Commit(commit)) => Some(commit),
             Ok(MergeBase::Unrelated) | Err(_) => None,
         };
-        Ok(Recorded {
+        Recorded {
             commit,
-            branch: state.branch,
+            branch: state.branch.clone(),
             dirty: !state.modified.is_empty(),
             loft: version::VERSION.to_owned(),
             at: self.at,
-        })
+        }
     }
 }
 

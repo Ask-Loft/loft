@@ -132,33 +132,30 @@ pub fn report(base: &Document, document: &Document) -> Value {
     })
 }
 
-/// The label and name of each node and decision of `document` that `check`'s findings name, by
-/// its key, for a view to name them as the specification does.
-pub fn named_by_findings(document: &Document, check: &Value) -> Value {
-    let keys: BTreeSet<&str> = ["findings", "resolved"]
-        .iter()
-        .filter_map(|list| check[list].as_array())
-        .flatten()
-        .filter_map(|finding| finding["subjects"].as_array())
-        .flatten()
-        .filter_map(|subject| subject["key"].as_str())
-        .collect();
+/// The label and name of each node and decision of `document` whose key is one of `keys`, by its
+/// key, for a view to name them as the specification does.
+pub fn named(document: &Document, keys: &BTreeSet<Key>) -> Value {
     let walked = Walked::of(document);
     let mut named = serde_json::Map::new();
     for (key, entry) in &walked.entries {
-        let shown = key.to_string();
-        if keys.contains(shown.as_str()) {
-            named.insert(shown, json!({ "label": entry.label, "name": entry.name }));
+        if keys.contains(key) {
+            named.insert(
+                key.to_string(),
+                json!({ "label": entry.label, "name": entry.name }),
+            );
         }
     }
     for decision in &document.decisions {
-        let shown = decision.id.key().to_string();
-        if keys.contains(shown.as_str()) {
+        let key = decision.id.key();
+        if keys.contains(&key) {
             let label = document
                 .bindings
                 .label_of(decision.id)
                 .map(|l| l.to_string());
-            named.insert(shown, json!({ "label": label, "name": decision.title }));
+            named.insert(
+                key.to_string(),
+                json!({ "label": label, "name": decision.title }),
+            );
         }
     }
     Value::Object(named)
