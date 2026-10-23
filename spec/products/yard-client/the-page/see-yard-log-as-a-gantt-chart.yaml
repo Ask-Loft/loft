@@ -1,7 +1,7 @@
 key: 01a1646f-546d-7042-befd-eb677bcc8418
 slug: see-yard-log-as-a-gantt-chart
 name: "See Yard Log as a Gantt chart"
-body: "Beside the timeline, the page draws Yard Log as a Gantt chart along time, with a lane for the main agent and one for each subagent: each agent's stages with their tasks, each stage's bar divided into its active tasks, Loft runs, waits on the person and the agent's own work, so that the person sees where the time of the work went and which agents worked side by side. A column beside the chart names each row, so that no name is drawn over the bars."
+body: "Beside the timeline, the page draws Yard Log as a Gantt chart along time, with a lane for the main agent and one for each subagent: each agent's stages with their tasks, each stage's bar divided into its active tasks, Loft runs, the runs of the subagents that worked for it, waits on the person and the agent's own work, so that the person sees where the time of the work went and which agents worked side by side. A subagent that owned no stage has no lane: its run is drawn in the bar of the stage it worked for. A column beside the chart names each row, so that no name is drawn over the bars."
 realizes:
   - 01a16469-559e-73c4-85f2-71a94f0aa021
 requirements:
@@ -109,7 +109,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw in each agent's lane its stages along time, each stage's bar divided into its active tasks, its Loft runs, its waits on the person and its agent work, and its tasks beneath it."
+      shall: "draw in each agent's lane its stages along time, each stage's bar divided into its active tasks, its Loft runs, the runs of the subagents that worked for it, its waits on the person and its agent work, and its tasks beneath it."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb725ec431a5
         name: "Each stage is drawn from the time its work started to the time it ended, or to the start of its agent's next stage where no end was recorded."
@@ -118,7 +118,11 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb74547e7a25
         name: "A task with no recorded times is drawn at the time its current version was written."
       - key: 01a1646f-546d-7042-befd-eb752ee05c31
-        name: "Each shell command that ran Loft is drawn in the bar of the stage its agent had active, and names its Loft subcommands on hover."
+        name: "Each shell command that ran Loft is drawn in the bar of the stage it counted toward, and names its Loft subcommands on hover."
+      - key: 01a16995-313c-7343-8413-b5540477b877
+        name: "The run of a subagent that owned no stage is drawn in the bar of the stage it worked for, from the time it started to the time it ended, or to now while it runs, and names the subagent's type on hover."
+      - key: 01a16995-313c-7343-8413-b5555f32f389
+        name: "The run of a subagent that owned a stage is drawn in no other stage's bar."
       - key: 01a168a8-bdad-700b-811b-6841ac3c6f87
         name: "Each recorded Loft view is marked on its stage's bar at the time it was recorded."
       - key: 01a1646f-546d-7042-befd-eb7684da415a
@@ -126,19 +130,19 @@ requirements:
       - key: 01a168a8-bdad-700b-811b-68420a3173c7
         name: "A block sent again in a later submission leaves the span of each earlier submission as it was."
       - key: 01a1646f-546d-7042-befd-eb7765e7bec9
-        name: "Each stretch of a stage's time during a turn with no active task, no Loft run and no wait on the person is drawn in the stage's bar as agent work."
+        name: "Each stretch of a stage's time during a turn with no active task, no Loft run, no subagent run and no wait on the person is drawn in the stage's bar as agent work."
       - key: 01a168a8-bdad-700b-811b-68432bab687f
-        name: "Each stretch of a stage's bar is counted to one of its active tasks, Loft runs, waits on the person and agent work as the bar above the chart counts it, and drawn in that one's colour there."
+        name: "Each stretch of a stage's bar is counted to one of its active tasks, Loft runs, subagent runs, waits on the person and agent work as the bar above the chart counts it, and drawn in that one's colour there."
       - key: 01a168a8-bdad-700b-811b-6844ce75769c
         name: "Idle time within a stage is left empty in its bar."
       - key: 01a1646f-546d-7042-befd-eb78faca6f3a
-        name: "Time outside the main agent's turns is idle, and an idle stretch longer than 45 seconds is folded to a fixed width, drawn as a break in the time axis that gives its length on hover."
+        name: "Time outside the main agent's turns and the subagents' runs is idle, and an idle stretch longer than 45 seconds is folded to a fixed width, drawn as a break in the time axis that gives its length on hover."
       - key: 01a168a8-bdad-700b-811b-6845c959bfd0
         name: "A folded idle stretch is drawn apart from plan mode and spec mode, with no hatching."
       - key: 01a168a8-bdad-700b-811b-6846a9c73f3f
         name: "The time axis is marked at regular times within each stretch between folded idle stretches."
       - key: 01a1646f-546d-7042-befd-eb79bfb93e3a
-        name: "A bar above the chart divides the time not idle into active tasks, Loft runs, waits on the person and agent work, each with its length and its share."
+        name: "A bar above the chart divides the time not idle into Loft runs, subagent runs, active tasks, waits on the person and agent work, counting each moment once, to the first of these it falls in, each with its length and its share."
       - key: 01a1646f-546d-7042-befd-eb7ae5af3ff4
         name: "Choosing a stage, a task or a submission in the Gantt chart opens the timeline at it."
   - key: 01a168a8-bdad-700b-811b-6847f4d74704

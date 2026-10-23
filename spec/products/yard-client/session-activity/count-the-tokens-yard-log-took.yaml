@@ -6,6 +6,8 @@ body: |
 
   A request's tokens are four counts, as Claude Code reports them: input tokens read fresh, input tokens read from the prompt cache, input tokens written to the prompt cache, and output tokens, thinking included.
 
+  A request counts toward the stage active for its agent. A subagent with no stage of its own active works for the agent that started it, so its request counts toward the stage active for its session's main agent: a stage then shows what the work it delegated cost, and each stage's counts say which agents spent them.
+
   ```text
   .yard/<branch>/tokens/<session id>.yaml
   ```
@@ -23,7 +25,13 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eae7dbf9b465
         name: "The totals file holds the session's id, the host, when the session's first and last counted requests ended, and the session's four counts in all."
       - key: 01a1646f-546d-7042-befd-eae8aef1c957
-        name: "The totals file holds the four counts of the requests that ended while each stage was active for the requesting agent, by the stage's key, and of those that ended while none was, under no stage."
+        name: "The totals file holds the four counts of the requests counted toward each stage, by the stage's key, and of those counted toward none, under no stage."
+      - key: 01a16995-313c-7343-8413-b54f3d6c820f
+        name: "A request of a subagent that has a stage of its own active counts toward that stage."
+      - key: 01a16995-313c-7343-8413-b550557e1ea2
+        name: "A request of a subagent that has no stage of its own active counts toward the stage active for its session's main agent as the request ends, and toward none where the main agent has none active either."
+      - key: 01a16995-313c-7343-8413-b551e284ad7e
+        name: "The totals file holds, under each stage, the four counts of each agent whose requests counted toward it: the main agent, and each subagent by its id and type."
       - key: 01a1646f-546d-7042-befd-eae9b48ca003
         name: "The totals file holds the four counts of each agent, the main agent and each subagent by its id and type, for each model the agent's requests ran on."
       - key: 01a1646f-546d-7042-befd-eaea8bb580ce
