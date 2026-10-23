@@ -10,7 +10,7 @@ use std::collections::{BTreeSet, HashMap};
 use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+use std::time::{Duration, UNIX_EPOCH};
 
 use yardlog::codec::ROOT;
 use yardlog::codec::session::{ACTIVITY, TOKENS};
@@ -22,8 +22,12 @@ use yardlog_store::session::branches;
 use super::live::{Area, Digests};
 use super::trees;
 
-/// A file's size and modification time, as the file system keeps them.
-type Stamp = Option<(u64, Option<SystemTime>)>;
+/// A file's size and modification time, as the file system keeps them, the time as the length
+/// since the epoch.
+pub(super) type FileStamp = (u64, Option<Duration>);
+
+/// The stamp of a file, where there is one.
+type Stamp = Option<FileStamp>;
 
 /// What the page server knows of a tree's HEAD: where its file lies, asked of git once; the
 /// stamp it last saw on it; and the branch it named then, asked of git only when the stamp moves,
@@ -136,8 +140,12 @@ fn stamp_at(path: &Path) -> Stamp {
 }
 
 /// The file's own stamp, as the file system keeps it: not a reading of the clock.
-fn stamp_of(meta: &fs::Metadata) -> (u64, Option<SystemTime>) {
-    (meta.len(), meta.modified().ok())
+pub(super) fn stamp_of(meta: &fs::Metadata) -> FileStamp {
+    let modified = meta
+        .modified()
+        .ok()
+        .and_then(|at| at.duration_since(UNIX_EPOCH).ok());
+    (meta.len(), modified)
 }
 
 /// Hashes the name, size and modification time of each file right in `dir`.

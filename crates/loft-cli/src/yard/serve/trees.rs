@@ -10,7 +10,6 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use std::time::SystemTime;
 
 use serde_json::{Value, json};
 use yardlog::YardLog;
@@ -24,6 +23,7 @@ use yardlog_store::{Held, Place, YARD, YardStore};
 
 use super::event::strings;
 use super::inherited::{Inherited, distinct, page};
+use super::watch::{FileStamp, stamp_of};
 use crate::yard::failure::Failure;
 use crate::yard::home_json;
 use crate::yard::page;
@@ -128,13 +128,10 @@ fn open(log: &YardLog) -> Vec<(&Submission, Vec<&Block>)> {
         .collect()
 }
 
-/// A file's size and modification time, as the file system keeps them.
-type Stamp = (u64, Option<SystemTime>);
-
 /// What the list said of one Yard Log: its entry and the open submissions it added, as they were
 /// when its root file had `stamp`, read as inherited or not.
 struct Entry {
-    stamp: Stamp,
+    stamp: FileStamp,
     inherited: bool,
     summary: Value,
     waits: Vec<Value>,
@@ -157,9 +154,7 @@ impl Entries {
     ) -> (Value, Vec<Value>) {
         let key = (place.tree.clone(), branch.to_owned());
         let root = place.tree.join(YARD).join(branch).join(ROOT);
-        let stamp = fs::metadata(root)
-            .ok()
-            .map(|meta| (meta.len(), meta.modified().ok()));
+        let stamp = fs::metadata(root).ok().map(|meta| stamp_of(&meta));
         let mut kept = self
             .0
             .lock()

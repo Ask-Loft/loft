@@ -10,6 +10,7 @@ import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
 import { logView, unreadable } from './views/log.js';
 import { menu, title, welcome } from './views/trees.js';
+import { openWaiting, waitingModal } from './views/waiting.js';
 
 const state = {
   /** @type {any} */ listing: null,
@@ -108,8 +109,10 @@ function render() {
   document.body.classList.toggle('is-folded', prefs.folded());
   if (!route) {
     replace(main, welcome(state.listing));
+    waitingModal(null, { tree: '', branch: '', refresh, notify });
   } else if (state.logStatus !== 200) {
     replace(main, unreadable(state.log));
+    waitingModal(null, { tree: route.tree, branch: route.branch, refresh, notify });
   } else {
     const now = Date.now();
     replace(
@@ -128,8 +131,11 @@ function render() {
           prefs.set('view', 'timeline');
           location.hash = format({ ...route, block: id });
         },
+        onWaiting: openWaiting,
       }),
     );
+    // What waits on the person lies in the modal, outside what is drawn again at each change.
+    waitingModal(state.log, { tree: route.tree, branch: route.branch, refresh, notify });
     drawAll(main);
     settle(main);
     if (route.block) reveal(route.block);

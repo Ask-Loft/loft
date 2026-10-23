@@ -263,21 +263,6 @@ test('a question whose decision was written after the last visit is marked as ch
   assert.ok(changedSince(shown, 4).has(asked.key));
 });
 
-test('the open submissions of the Yard Log shown are above its timeline, with when each was sent and by which agent', () => {
-  const asked = question('shelf', ['A', 'B']);
-  const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z', EXPLORE)] });
-  const drawn = page(shown);
-  const panel = drawn.querySelector('.waiting .submission');
-  assert.ok(panel.compareDocumentPosition(drawn.querySelector('.timeline')) & 4, 'the panel comes before the timeline');
-  assert.match(panel.querySelector('.sent').textContent, /Sent by Explore at/);
-  assert.equal(panel.querySelectorAll('.question-form').length, 1);
-});
-
-test('where Yard Log has no open submission, nothing shows above the timeline', () => {
-  const drawn = page(log([stage('s', 'S', 'active', [question('shelf', ['A', 'B'])])]));
-  assert.ok(!drawn.querySelector('.waiting'));
-});
-
 test('closed Yard Log shows when it was closed and offers nothing to answer or decide', () => {
   const asked = question('shelf', ['A', 'B']);
   const closed = log([stage('s', 'S', 'done', [asked])], {

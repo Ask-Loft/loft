@@ -1,7 +1,7 @@
 key: 01a1646f-546d-7042-befd-eb5c525a2752
 slug: see-what-waits-on-you
 name: "See what waits on you"
-body: "What the agents wait for comes first on the page, across every branch's Yard Log on the machine, so the person can answer without looking for it."
+body: "What the agents wait for comes first on the page, across every branch's Yard Log on the machine, so the person can answer without looking for it. In a branch's Yard Log it opens in a modal over the page, one the page's other views open too, which the person can close to read the Yard Log behind it and open again."
 realizes:
   - 01a16469-559e-73c4-85f2-71a94f0aa021
 requirements:
@@ -23,12 +23,54 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "show the open submissions of the branch's Yard Log it shows above its timeline, each with the blocks it waits on."
+      shall: "show the open submissions of the branch's Yard Log it shows together in one modal, oldest first, each with the blocks it waits on."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb6376a28807
         name: "Each open submission shows when it was sent and the agent that sent it."
       - key: 01a1646f-546d-7042-befd-eb648d58cd02
-        name: "Where Yard Log has no open submission, nothing shows above the timeline."
+        name: "Where Yard Log has no open submission, no modal opens and nothing shows above the timeline."
+      - key: 01a1693f-7b72-7290-8335-f171c49df026
+        name: "Opening a branch's Yard Log that has an open submission opens the modal."
+      - key: 01a1693f-7b72-7290-8335-f1728dce2d53
+        name: "Nothing of an open submission is shown above the timeline or the Gantt chart."
+      - key: 01a1693f-7b72-7290-8335-f17339a7026b
+        name: "The modal closes by itself once nothing in it waits on the person, and the page then says what was sent."
+  - key: 01a1693f-7b72-7290-8335-f174a99a18cf
+    statement:
+      form: event_driven
+      when: "the person closes the modal of the open submissions"
+      system: "the page"
+      shall: "keep it closed until the person opens it again or a submission they have not seen is sent."
+    criteria:
+      - key: 01a1693f-7b72-7290-8335-f1758a4c74e2
+        name: "The modal closes by its close button and by Escape."
+      - key: 01a1693f-7b72-7290-8335-f1760105ed39
+        name: "A button in the line above the stages gives the count of the blocks that wait on the person and opens the modal."
+      - key: 01a1693f-7b72-7290-8335-f177e0a5756c
+        name: "Each waiting block's button to answer opens the modal at that block's form."
+      - key: 01a1693f-7b72-7290-8335-f17849978e57
+        name: "A change to Yard Log that sends no new submission leaves the modal closed."
+      - key: 01a1693f-7b72-7290-8335-f179f5c9ece5
+        name: "A submission sent after the modal was closed opens it again."
+      - key: 01a1693f-7b72-7290-8335-f17afbea573e
+        name: "What was chosen or typed and not sent is shown again when the modal opens again."
+  - key: 01a1693f-7b72-7290-8335-f17bf63ec21e
+    statement:
+      form: state_driven
+      while: "a modal is open"
+      system: "the page"
+      shall: "cover the viewport with the modal within a margin, darken the page behind it, and scroll the modal's content vertically within it."
+    criteria:
+      - key: 01a1693f-7b72-7290-8335-f17c0c51f112
+        name: "The modal keeps its margin to each edge of the viewport and follows the viewport's size as it changes."
+      - key: 01a1693f-7b72-7290-8335-f17d39c6e2b0
+        name: "Content taller than the modal scrolls within it, while its heading and its close button stay in place."
+      - key: 01a1693f-7b72-7290-8335-f17eb17f3678
+        name: "The page behind the modal is darkened and takes no clicks."
+      - key: 01a1693f-7b72-7290-8335-f17f8d2e0087
+        name: "A change drawn while the modal is open keeps the modal's scroll position and the field that has focus."
+      - key: 01a1693f-7b72-7290-8335-f1800d240bbf
+        name: "Closing the modal gives the focus back to what held it before it opened."
   - key: 01a1646f-546d-7042-befd-eb659242667a
     statement:
       form: ubiquitous
