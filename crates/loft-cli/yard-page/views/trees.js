@@ -1,12 +1,13 @@
 // The Yard Logs the page server serves: above them, every open submission on the machine, oldest
 // first, with its repository, worktree and branch; then each repository, named by the top of its
-// main worktree, with each worktree's branches, the current branch's Yard Log first and each
-// carried from another branch after it. They lie in the menu down the window's left, which folds
+// main worktree, with each worktree's current branch's Yard Log, and the Yard Logs carried from
+// other branches in a fold of the repository's own (`inherited.js`). They lie in the menu down the window's left, which folds
 // to a strip that holds only the button that opens it.
 
 import { h, svg } from '../lib/dom.js';
 import { base, when, who } from '../lib/format.js';
 import { format } from '../lib/route.js';
+import { inheritedFold } from './inherited.js';
 
 /**
  * The address of a branch's Yard Log.
@@ -57,6 +58,31 @@ export function waitingList(listing) {
 }
 
 /**
+ * A Yard Log of the list, at its own address, with `current` marked.
+ * @param {string} tree
+ * @param {any} log
+ * @param {{ tree: string, branch: string } | null} current
+ */
+function logItem(tree, log, current) {
+  const here = current && current.tree === tree && current.branch === log.branch;
+  return h(
+    'li',
+    { class: ['log-item', here ? 'is-current' : null, log.closed ? 'is-closed' : null, log.inherited ? 'is-inherited' : null] },
+    h(
+      'a',
+      { href: address(tree, log.branch), 'aria-current': here ? 'page' : null },
+      h('span', { class: 'branch' }, log.branch),
+      log.title && log.title !== log.branch ? h('span', { class: 'title' }, log.title) : null,
+      log.waiting ? h('span', { class: 'waiting-count', title: `${log.waiting} wait on you` }, String(log.waiting)) : null,
+      log.closed ? h('span', { class: 'tag' }, 'closed') : null,
+      log.inherited ? h('span', { class: 'tag' }, 'inherited') : null,
+      log.newer ? h('span', { class: 'tag tag--warning' }, `newer format ${log.format}`) : null,
+      log.error ? h('span', { class: 'tag tag--danger' }, 'does not read') : null,
+    ),
+  );
+}
+
+/**
  * The list of Yard Logs, with `current` marked.
  * @param {any} listing
  * @param {{ tree: string, branch: string } | null} current
@@ -74,7 +100,7 @@ export function treeList(listing, current) {
   return h(
     'nav',
     { class: 'trees', 'aria-label': 'Yard Logs' },
-    repositories.map((repository) =>
+    repositories.map((repository, index) =>
       h(
         'section',
         { class: 'repository' },
@@ -87,27 +113,11 @@ export function treeList(listing, current) {
             h(
               'ul',
               { class: 'logs' },
-              (tree.logs ?? []).map((log) => {
-                const here = current && current.tree === tree.tree && current.branch === log.branch;
-                return h(
-                  'li',
-                  { class: ['log-item', here ? 'is-current' : null, log.closed ? 'is-closed' : null, log.inherited ? 'is-inherited' : null] },
-                  h(
-                    'a',
-                    { href: address(tree.tree, log.branch), 'aria-current': here ? 'page' : null },
-                    h('span', { class: 'branch' }, log.branch),
-                    log.title && log.title !== log.branch ? h('span', { class: 'title' }, log.title) : null,
-                    log.waiting ? h('span', { class: 'waiting-count', title: `${log.waiting} wait on you` }, String(log.waiting)) : null,
-                    log.closed ? h('span', { class: 'tag' }, 'closed') : null,
-                    log.inherited ? h('span', { class: 'tag' }, 'inherited') : null,
-                    log.newer ? h('span', { class: 'tag tag--warning' }, `newer format ${log.format}`) : null,
-                    log.error ? h('span', { class: 'tag tag--danger' }, 'does not read') : null,
-                  ),
-                );
-              }),
+              (tree.logs ?? []).map((log) => logItem(tree.tree, log, current)),
             ),
           ),
         ),
+        repository.inherited ? inheritedFold(repository, index, (log) => logItem(log.tree, log, current)) : null,
       ),
     ),
   );

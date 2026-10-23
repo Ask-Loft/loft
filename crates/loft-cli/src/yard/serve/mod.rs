@@ -13,6 +13,7 @@ mod event;
 mod events;
 mod guard;
 mod http;
+mod inherited;
 mod listener;
 mod live;
 mod logs;

@@ -100,6 +100,7 @@ mod yard_serve;
 mod yard_serve_access;
 mod yard_serve_base;
 mod yard_serve_events;
+mod yard_serve_inherited;
 mod yard_serve_logs;
 mod yard_serve_page_data;
 mod yard_settle;

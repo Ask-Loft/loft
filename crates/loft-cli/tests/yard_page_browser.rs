@@ -10,7 +10,7 @@ use std::path::Path;
 use std::process::Command;
 
 use serde_json::{Map, Value, json};
-use software_plant::Clock;
+use software_plant::{Clock, GitScenario};
 
 use crate::served::Served;
 use crate::yard::Yard;
@@ -55,7 +55,18 @@ fn at_the_system_time(mut yard: Yard) -> Yard {
 #[test]
 #[ignore = "drives the page in a headless browser through Playwright, which needs Node.js"]
 fn the_page_meets_its_criteria_in_a_headless_browser() {
-    let yard = at_the_system_time(Yard::new());
+    let mut yard = at_the_system_time(Yard::new());
+    // Two Yard Logs carried from other branches, which the tree holds as inherited.
+    let own = yard.git.clone();
+    for branch in ["old/lamp", "old/desk"] {
+        yard.git = GitScenario::clean_on(branch);
+        yard.write(
+            "s0",
+            r#"[{"id": "done", "kind": "stage", "title": "Done", "status": "done"}]"#,
+            &[],
+        );
+    }
+    yard.git = own;
     yard.write("s1", OPENING, &["--send"]);
     let other = at_the_system_time(Yard::new());
     let tree = yard.scratch.0.display().to_string();

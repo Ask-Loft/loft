@@ -38,9 +38,20 @@ async function body(response) {
   }
 }
 
-/** Every tree served and its branches' Yard Logs, and what waits on the person. */
+/** Every tree served and its current branch's Yard Log, and what waits on the person. */
 export function trees() {
   return get('/api/trees');
+}
+
+/**
+ * The page from `from` of a repository's inherited Yard Logs whose branch or title holds `filter`.
+ * @param {string} repository
+ * @param {string} filter
+ * @param {number} from
+ */
+export function inherited(repository, filter, from) {
+  const query = new URLSearchParams({ repository, filter, from: String(from) });
+  return get(`/api/inherited?${query}`);
 }
 
 /**

@@ -21739,8 +21739,8 @@ links:
     reviewed: 9cfff6b9171a7574879ca052aa49d043c9521f23117c3b3b72894c2c69e00e2a
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "an inherited Yard Log is listed after the current one, marked as inherited, and a closed one as closed"
-        body: 24b449971f407f4cea3c3ddcdc48bcedfb224a382dee69953cbde6708cda5bd4
+        name: "a closed Yard Log is listed as closed, and an inherited one as inherited"
+        body: af263aebe08b6512788445e81e88ede3bde4ba6a7df67f1eabef3bce5a689905
   - node: 01a1646f-546d-7042-befd-eb2740b8a1ba
     reviewed: 6576fb2ea87de71c8b68934ce0fa7a7e05e8186e2d49a187c4567c9519934758
     tests:
@@ -21769,14 +21769,80 @@ links:
         name: "with no Yard Log served, the page gives the commands that install the Loft plugin"
         body: 2cd081b721e6ed91bdca033ea1505676f82a79d7c744459651ee20d656230bc3
   - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
-    reviewed: 7bc62402f8f905e86888280c020baced0855d3256b842a94a9f4b5e80259a9bf
+    reviewed: 3a2d7afe1a244fce40772757ece7d21948a477048b99a102e3e40e2118772728
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
+        name: "each_tree_lists_only_its_current_branch_s_yard_log_and_its_repository_counts_the_inherited_ones"
+        body: 07dc39d8eb2fa5b927a9117f562ace8fe11e6fd29f36b0636f89106056383997
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "each tree lists only its current branch’s Yard Log, and the repository folds the inherited ones beneath their count"
+        body: 7df0a0713d57f48bb0203ac88aafd12977544060d8b722597a7eafb8b05514ac
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the inherited Yard Logs are folded beneath their count under the repository, listed when opened, filtered, and kept open"
+        body: 1d106f4c3cf0cb6cc8a422406a147ad582ac006d3a0066d99e3537f5c2df7681
+  - node: 01a16920-dde7-743a-aadb-6553a3ec2a91
+    reviewed: 59c70a5dd2ae068faf2caa0511445939d28249935c297e41bc5089f15ad63052
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "an inherited Yard Log is listed after the current one, marked as inherited, and a closed one as closed"
-        body: 24b449971f407f4cea3c3ddcdc48bcedfb224a382dee69953cbde6708cda5bd4
-      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
-        name: "each_tree_lists_its_current_branch_s_yard_log_first_and_each_inherited_one_after_it"
-        body: f004b2c48114f49aec10f09b7e61f33b418338d116c9952ff6e26cd4993a10d8
+        name: "each tree lists only its current branch’s Yard Log, and the repository folds the inherited ones beneath their count"
+        body: 7df0a0713d57f48bb0203ac88aafd12977544060d8b722597a7eafb8b05514ac
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "opened, the fold lists the inherited Yard Logs 50 at a time, and the browser keeps it open"
+        body: 9c43abcb67c62b2fd8b6550390ecef26bab57d2d02bb31a543e90aab53575329
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the inherited Yard Logs are folded beneath their count under the repository, listed when opened, filtered, and kept open"
+        body: 1d106f4c3cf0cb6cc8a422406a147ad582ac006d3a0066d99e3537f5c2df7681
+  - node: 01a16920-dde7-743a-aadb-655415977acf
+    reviewed: 735330e2c35a54a8ec8b50e74d40fce1cd4327c9442727ce660214df92080a4c
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
+        name: "each_tree_lists_only_its_current_branch_s_yard_log_and_its_repository_counts_the_inherited_ones"
+        body: 07dc39d8eb2fa5b927a9117f562ace8fe11e6fd29f36b0636f89106056383997
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "each tree lists only its current branch’s Yard Log, and the repository folds the inherited ones beneath their count"
+        body: 7df0a0713d57f48bb0203ac88aafd12977544060d8b722597a7eafb8b05514ac
+  - node: 01a16920-dde7-743a-aadb-6555b77571c9
+    reviewed: 3574a7bd8f4d3dd6f6197b481b51f6288b4389083792aca976a20175fa78ef43
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/inherited.rs"
+        name: "the_yard_log_closed_last_comes_first_or_opened_last_where_none_is_closed"
+        body: ecffdb128ea04ff9ed36b08b2809fffcee3eddb942bd068431c73964270cee07
+      - file: "crates/loft-cli/src/yard/serve/inherited.rs"
+        name: "the_inherited_yard_logs_are_given_50_at_a_time_and_filtered_by_branch_or_title_whatever_the_case"
+        body: eecb69c17f2ebf8d681c401daef49cc90a4bcf403d75e6ee7845f959ca37353a
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "opened, the fold lists the inherited Yard Logs 50 at a time, and the browser keeps it open"
+        body: 9c43abcb67c62b2fd8b6550390ecef26bab57d2d02bb31a543e90aab53575329
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
+        name: "a_repository_s_inherited_yard_logs_are_given_a_page_at_a_time_filtered_by_branch_or_title"
+        body: c8ad746177d7d9f7d4dd62c8cd5c6bf0117370b0264a10b9278e64a4a03a7d3a
+  - node: 01a16920-dde7-743a-aadb-6556d72fc987
+    reviewed: 9f55eff07c0033149b0f37289983595916b4186d1bc5fd558094aca39ae9d617
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/inherited.rs"
+        name: "the_inherited_yard_logs_are_given_50_at_a_time_and_filtered_by_branch_or_title_whatever_the_case"
+        body: eecb69c17f2ebf8d681c401daef49cc90a4bcf403d75e6ee7845f959ca37353a
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "the filter lists only the inherited Yard Logs whose branch or title holds its text, whatever its case"
+        body: c3c97b6a85b1176e8b47a3a71559c5cae5011832a6f41465ac7ba011aaaf5de2
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
+        name: "a_repository_s_inherited_yard_logs_are_given_a_page_at_a_time_filtered_by_branch_or_title"
+        body: c8ad746177d7d9f7d4dd62c8cd5c6bf0117370b0264a10b9278e64a4a03a7d3a
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the inherited Yard Logs are folded beneath their count under the repository, listed when opened, filtered, and kept open"
+        body: 1d106f4c3cf0cb6cc8a422406a147ad582ac006d3a0066d99e3537f5c2df7681
+  - node: 01a16920-dde7-743a-aadb-65570f7e95f9
+    reviewed: 32a3984b972151b7a8e61e6af22f63a2460e1e0fba660be9d63ddc9ae22bd2b6
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/inherited.rs"
+        name: "a_yard_log_held_by_more_than_one_tree_is_listed_once_from_the_main_worktree"
+        body: c5f1d7e8936513029f6f5655daa2a68798f0cb0dfbcea5e271df0bb007e9f1d5
+  - node: 01a16929-b1e9-7640-a31f-7b683216bb79
+    reviewed: a6fc5552e974d71c774d23aa346c3cf8282c9eccaa1923467cbb2b7ce72d4d07
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/inherited.rs"
+        name: "a_yard_log_a_tree_is_on_is_not_among_the_inherited"
+        body: 725e869c2049aa282cb0ded522cc6cfa2388307b3afdc2346538ea56d4fbb077
   - node: 01a1649f-62ef-71e6-98de-e10f33cdae95
     reviewed: 2930612d2253940418654bf40e96ab5ae2fef85119d917ead4f4a41538c643f6
     tests:
@@ -21792,21 +21858,21 @@ links:
   - node: 01a1649f-62ef-71e6-98de-e111af38463b
     reviewed: d5df71e9d6f2cba0a2d5e4f7e41860933b641782a3e06990c6442d37ac1e519d
     tests:
-      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
-        name: "each_tree_lists_its_current_branch_s_yard_log_first_and_each_inherited_one_after_it"
-        body: f004b2c48114f49aec10f09b7e61f33b418338d116c9952ff6e26cd4993a10d8
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
+        name: "each_tree_lists_only_its_current_branch_s_yard_log_and_its_repository_counts_the_inherited_ones"
+        body: 07dc39d8eb2fa5b927a9117f562ace8fe11e6fd29f36b0636f89106056383997
   - node: 01a16920-dde7-743a-aadb-65591054d8f5
     reviewed: 885b4099bfcce57fef0d42837c5d6ac45d01406fa3a9ab1387e08606d7094df9
     tests:
-      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
         name: "an_entry_of_the_list_is_read_again_only_once_its_yard_log_s_root_changes"
-        body: 11377c674746523eb8c9f458c523aba4265a7c0e68032a898d0ec24414920882
+        body: 10668d859bde28db2c8ad7163b1b9491a3292510fea6d25f79102de69a945de1
   - node: 01a16920-dde7-743a-aadb-655a66b68f3f
     reviewed: fd495fffe09209990f15e9bb2e42e438af6f8f83f417b6a23b15c40875a997c0
     tests:
-      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
         name: "an_entry_of_the_list_is_read_again_only_once_its_yard_log_s_root_changes"
-        body: 11377c674746523eb8c9f458c523aba4265a7c0e68032a898d0ec24414920882
+        body: 10668d859bde28db2c8ad7163b1b9491a3292510fea6d25f79102de69a945de1
   - node: 01a16920-dde7-743a-aadb-655b2c318095
     reviewed: ef584b43409ce9315bc057bc6a9ff74113dbe127a14d361799c947f8851b0b23
     tests:
@@ -22236,7 +22302,7 @@ links:
   - node: 01a16920-ad17-71b2-ad0b-ba365356939e
     reviewed: 7e16e05967aad90d0ab4d86d9fc7aead94c4ae7fcaf683d6a4be303a948886f9
     tests:
-      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+      - file: "crates/loft-cli/tests/yard_serve_inherited.rs"
         name: "a_change_to_an_inherited_yard_log_reaches_open_pages_within_six_seconds"
         body: 916b41ae0891b5cc37e82ea17344dcd3c7e76acb7e877a7b98cb04ad3ed2dee4
   - node: 01a1646f-546d-7042-befd-eb57085a1ead

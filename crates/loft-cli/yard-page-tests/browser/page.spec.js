@@ -330,6 +330,26 @@ async function box(locator) {
   return found;
 }
 
+test('the inherited Yard Logs are folded beneath their count under the repository, listed when opened, filtered, and kept open', async ({ page }) => {
+  await page.goto(address());
+  const fold = page.locator('#side details.inherited');
+  await expect(fold.locator('summary')).toHaveText('Inherited (2)');
+  await expect(fold).not.toHaveAttribute('open', '');
+  await expect(page.locator('#side .log-item.is-inherited')).toHaveCount(0);
+  await fold.locator('summary').click();
+  const items = fold.locator('.log-item.is-inherited');
+  await expect(items).toHaveCount(2);
+  await fold.locator('.inherited-filter').fill('LAMP');
+  await expect(items).toHaveCount(1);
+  await expect(items.locator('.branch')).toHaveText('old/lamp');
+  await page.reload();
+  await expect(fold).toHaveAttribute('open', '');
+  await expect(items).toHaveCount(2);
+  await items.locator('a', { hasText: 'old/desk' }).click();
+  await expect(page.locator('#log-title')).toHaveText('old/desk');
+  await page.evaluate(() => localStorage.removeItem('yard.inherited'));
+});
+
 test('the menu runs down the window’s left from top to bottom, beside the page’s header, and stays while the Yard Log scrolls', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto(address());

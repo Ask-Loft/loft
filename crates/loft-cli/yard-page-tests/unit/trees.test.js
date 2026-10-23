@@ -7,9 +7,14 @@ import { beforeEach, test } from 'node:test';
 
 import * as prefs from '../../yard-page/lib/prefs.js';
 import { parse } from '../../yard-page/lib/route.js';
+import * as inherited from '../../yard-page/views/inherited.js';
 import { menu, title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
 
-beforeEach(forget);
+beforeEach(() => {
+  forget();
+  prefs.set('inherited', null);
+  inherited.forget();
+});
 
 /** A listing as the page server gives it. */
 function listing(more = {}) {
@@ -22,13 +27,11 @@ function listing(more = {}) {
             tree: '/work/shelf',
             main: true,
             branch: 'feat/shelf',
-            logs: [
-              { branch: 'feat/shelf', inherited: false, title: 'Shelves for two readers', revision: 4, closed: false, waiting: 2 },
-              { branch: 'develop', inherited: true, title: 'develop', revision: 9, closed: true, waiting: 0 },
-            ],
+            logs: [{ branch: 'feat/shelf', inherited: false, title: 'Shelves for two readers', revision: 4, closed: false, waiting: 2 }],
           },
           { tree: '/work/shelf-docs', branch: 'docs', logs: [{ branch: 'docs', inherited: false, title: 'docs', closed: false, waiting: 0 }] },
         ],
+        inherited: 51,
       },
     ],
     waiting: [],
@@ -41,7 +44,7 @@ test('the Yard Logs are listed by repository, then by worktree and branch', () =
   const list = treeList(listing(), null);
   assert.deepEqual([...list.querySelectorAll('.repository > h2')].map((each) => each.textContent), ['shelf']);
   assert.deepEqual([...list.querySelectorAll('.worktree > h3')].map((each) => each.textContent), ['shelf-docs']);
-  assert.deepEqual([...list.querySelectorAll('.log-item .branch')].map((each) => each.textContent), ['feat/shelf', 'develop', 'docs']);
+  assert.deepEqual([...list.querySelectorAll('.log-item .branch')].map((each) => each.textContent), ['feat/shelf', 'docs']);
 });
 
 test('each repository is named by the top of its main worktree', () => {
@@ -57,14 +60,6 @@ test('each listed branch shows its worktree, its name, its title and the count o
   assert.equal(item.querySelector('.waiting-count').textContent, '2');
   // The repository's main worktree is named by the repository's heading, once.
   assert.equal(item.closest('.repository').querySelector('h2').getAttribute('title'), '/work/shelf');
-});
-
-test('an inherited Yard Log is listed after the current one, marked as inherited, and a closed one as closed', () => {
-  const list = treeList(listing(), null);
-  const items = [...list.querySelectorAll('.worktree')][0].querySelectorAll('.log-item');
-  assert.ok(items[1].classList.contains('is-inherited'));
-  assert.deepEqual([...items[1].querySelectorAll('.tag')].map((tag) => tag.textContent), ['closed', 'inherited']);
-  assert.ok(!items[1].querySelector('.waiting-count'));
 });
 
 test('choosing a listed branch opens its Yard Log at an address of its own that names its tree and branch', () => {
@@ -185,4 +180,96 @@ test('with the menu folded, its button gives the count of blocks that wait on th
   assert.equal(folded.querySelector('button')?.getAttribute('aria-label'), 'Open the menu of Yard Logs, 2 wait on you');
   assert.ok(!menu(listing(), null, false, () => {})[0].querySelector('.waiting-count'));
   assert.ok(!menu(listing({ count: 0 }), null, true, () => {})[0].querySelector('.waiting-count'));
+});
+
+/** The inherited Yard Logs the page server holds in these tests: 51 of them, `old-00` closed last. */
+const HELD = Array.from({ length: 51 }, (_, n) => ({
+  branch: `old-${String(n).padStart(2, '0')}`,
+  title: n === 7 ? 'The reading lamp' : `Old work ${n}`,
+  inherited: true,
+  closed: true,
+  tree: '/work/shelf',
+}));
+
+/** A page server stub that answers `/api/inherited` from `HELD`; gives the queries it was asked. */
+function serving() {
+  /** @type {URLSearchParams[]} */
+  const asked = [];
+  globalThis.fetch = /** @type {any} */ (
+    async (/** @type {string} */ url) => {
+      const query = new URL(url, 'http://127.0.0.1:7411').searchParams;
+      asked.push(query);
+      const filter = (query.get('filter') ?? '').toLowerCase();
+      const from = Number(query.get('from') ?? 0);
+      const matching = HELD.filter((log) => !filter || `${log.branch} ${log.title}`.toLowerCase().includes(filter));
+      const body = { total: matching.length, from, logs: matching.slice(from, from + 50) };
+      return { status: 200, text: async () => JSON.stringify(body) };
+    }
+  );
+  return asked;
+}
+
+/** Lets the stubbed fetches and the draws after them run. */
+const settled = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** The fold of the inherited Yard Logs in `list`. */
+function foldOf(list) {
+  return /** @type {HTMLDetailsElement} */ (list.querySelector('details.inherited'));
+}
+
+test('each tree lists only its current branch’s Yard Log, and the repository folds the inherited ones beneath their count', async () => {
+  const asked = serving();
+  const list = treeList(listing(), null);
+  const fold = foldOf(list);
+  assert.equal(fold.querySelector('summary')?.textContent, 'Inherited (51)');
+  assert.equal(fold.open, false);
+  assert.ok([...list.querySelectorAll('.log-item')].every((item) => !item.classList.contains('is-inherited')));
+  await settled();
+  assert.equal(asked.length, 0, 'a folded fold fetches nothing');
+});
+
+test('opened, the fold lists the inherited Yard Logs 50 at a time, and the browser keeps it open', async () => {
+  const asked = serving();
+  const fold = foldOf(treeList(listing(), parse('#tree=%2Fwork%2Fshelf&branch=old-03')));
+  fold.open = true;
+  fold.dispatchEvent(new Event('toggle'));
+  await settled();
+  const items = () => [...fold.querySelectorAll('.inherited-logs .log-item')];
+  assert.equal(items().length, 50);
+  assert.equal(asked[0].get('repository'), '/work/shelf');
+  assert.ok(items().every((item) => item.classList.contains('is-inherited')));
+  assert.ok(items()[3].classList.contains('is-current'));
+  const more = /** @type {HTMLButtonElement} */ (fold.querySelector('.more-button'));
+  assert.equal(more.hidden, false);
+  more.click();
+  await settled();
+  assert.equal(items().length, 51);
+  assert.equal(more.hidden, true);
+  assert.equal(prefs.getJson('inherited', {})['/work/shelf'], true);
+  const again = foldOf(treeList(listing(), null));
+  assert.equal(again.open, true);
+  await settled();
+  assert.equal(again.querySelectorAll('.inherited-logs .log-item').length, 51, 'a menu drawn again keeps those shown');
+});
+
+test('the filter lists only the inherited Yard Logs whose branch or title holds its text, whatever its case', async () => {
+  const asked = serving();
+  prefs.setJson('inherited', { '/work/shelf': true });
+  const fold = foldOf(treeList(listing(), null));
+  await settled();
+  const filter = /** @type {HTMLInputElement} */ (fold.querySelector('.inherited-filter'));
+  filter.value = 'READING';
+  filter.dispatchEvent(new Event('input'));
+  await settled(260);
+  assert.equal(asked.at(-1)?.get('filter'), 'READING');
+  assert.deepEqual([...fold.querySelectorAll('.inherited-logs .branch')].map((each) => each.textContent), ['old-07']);
+});
+
+test('a closed Yard Log is listed as closed, and an inherited one as inherited', async () => {
+  serving();
+  prefs.setJson('inherited', { '/work/shelf': true });
+  const fold = foldOf(treeList(listing(), null));
+  await settled();
+  const first = fold.querySelector('.inherited-logs .log-item');
+  assert.deepEqual([...(first?.querySelectorAll('.tag') ?? [])].map((tag) => tag.textContent), ['closed', 'inherited']);
 });

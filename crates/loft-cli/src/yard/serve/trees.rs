@@ -23,6 +23,7 @@ use yardlog_store::session::branches;
 use yardlog_store::{Held, Place, YARD, YardStore};
 
 use super::event::strings;
+use super::inherited::{Inherited, distinct, page};
 use crate::yard::failure::Failure;
 use crate::yard::home_json;
 use crate::yard::page;
@@ -202,11 +203,23 @@ impl Entries {
     }
 }
 
-/// What the page lists of every tree served: by repository, then by tree; and above them, the
-/// open submissions of each current branch's Yard Log, oldest first.
-pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failure> {
+/// What the trees served hold of one repository: each tree with its current branch's Yard Log,
+/// every inherited Yard Log each of them holds, and the keys of the Yard Logs its trees are on.
+#[derive(Default)]
+struct Holdings {
+    trees: Vec<Value>,
+    inherited: Vec<Inherited>,
+    current: HashSet<String>,
+}
+
+/// What every tree served holds, by repository, and the open submissions of the current
+/// branches' Yard Logs.
+type Gathered = (BTreeMap<String, Holdings>, Vec<Value>);
+
+/// What `Gathered` holds, as the trees served give it now.
+fn gather(home: &Home, port: u16, entries: &Entries) -> Result<Gathered, Failure> {
     let git = YardGit::default();
-    let mut repositories: BTreeMap<String, Vec<Value>> = BTreeMap::new();
+    let mut repositories: BTreeMap<String, Holdings> = BTreeMap::new();
     let mut waits = Vec::new();
     let mut seen = HashSet::new();
     for tree in served(home)? {
@@ -214,23 +227,31 @@ pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failu
             continue;
         };
         let repository = repository(&place);
+        let held = repositories.entry(repository.clone()).or_default();
         let mut logs = Vec::new();
-        let mut found = branches(&place.tree)?;
-        let current = place.branch.as_ref();
-        if let Some(at) = found.iter().position(|branch| Some(branch) == current) {
-            let current = found.remove(at);
-            found.insert(0, current);
-        }
-        for branch in found {
+        for branch in branches(&place.tree)? {
             let inherited = place.branch.as_deref() != Some(branch.as_str());
             let (summary, added) = entries.entry(&place, &branch, inherited, || {
                 summary(&place, &branch, inherited, port, &repository)
             });
+            // A Yard Log that could not be read has no key: its tree and branch stand for it.
+            let key = summary["key"].as_str().map_or_else(
+                || format!("{}\n{branch}", place.tree.display()),
+                str::to_owned,
+            );
             seen.insert((place.tree.clone(), branch));
-            logs.push(summary);
             waits.extend(added);
+            if inherited {
+                let mut entry = summary;
+                entry["tree"] = json!(place.tree.display().to_string());
+                let main = is_main(&place);
+                held.inherited.push(Inherited { key, main, entry });
+            } else {
+                held.current.insert(key);
+                logs.push(summary);
+            }
         }
-        repositories.entry(repository).or_default().push(json!({
+        held.trees.push(json!({
             "tree": place.tree.display().to_string(),
             "main": is_main(&place),
             "branch": place.branch,
@@ -238,6 +259,14 @@ pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failu
         }));
     }
     entries.keep_only(&seen);
+    Ok((repositories, waits))
+}
+
+/// What the page lists of every tree served: by repository, then by tree with its current
+/// branch's Yard Log, and the count of the repository's inherited Yard Logs; and above them, the
+/// open submissions of each current branch's Yard Log, oldest first.
+pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failure> {
+    let (repositories, mut waits) = gather(home, port, entries)?;
     waits.sort_by(|a: &Value, b: &Value| {
         let at = |wait: &Value| wait["sent"]["at"].as_str().unwrap_or_default().to_owned();
         at(a).cmp(&at(b))
@@ -248,9 +277,29 @@ pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failu
         .sum();
     let repositories: Vec<Value> = repositories
         .into_iter()
-        .map(|(repository, trees)| json!({ "repository": repository, "trees": trees }))
+        .map(|(repository, held)| {
+            let inherited = distinct(held.inherited, &held.current).len();
+            json!({ "repository": repository, "trees": held.trees, "inherited": inherited })
+        })
         .collect();
     Ok(json!({ "repositories": repositories, "waiting": waits, "count": count }))
+}
+
+/// The page from `from` of `repository`'s inherited Yard Logs whose branch or title holds
+/// `filter`, with how many there are.
+pub fn inherited(
+    home: &Home,
+    port: u16,
+    entries: &Entries,
+    repository: &str,
+    filter: &str,
+    from: usize,
+) -> Result<Value, Failure> {
+    let (mut repositories, _) = gather(home, port, entries)?;
+    let held = repositories.remove(repository).unwrap_or_default();
+    let mut page = page(&distinct(held.inherited, &held.current), filter, from);
+    page["repository"] = json!(repository);
+    Ok(page)
 }
 
 /// What the page lists of `branch`'s Yard Log in the tree: its title, its revision, whether it
@@ -303,6 +352,10 @@ fn fields(
     fields["revision"] = json!(root.revision);
     fields["format"] = json!(root.format.to_string());
     fields["closed"] = json!(root.closed.is_some());
+    fields["openedAt"] = json!(root.opened.at.to_string());
+    if let Some(closed) = &root.closed {
+        fields["closedAt"] = json!(closed.at.to_string());
+    }
     if inherited || root.closed.is_some() {
         return fields;
     }

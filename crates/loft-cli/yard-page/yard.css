@@ -309,6 +309,17 @@ button { font: inherit; }
 .tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); padding: 0 6px; }
 .tag--warning { color: var(--wait); border-color: var(--wait-line); }
 .tag--danger { color: var(--danger); border-color: var(--danger); }
+/* A repository's inherited Yard Logs, folded beneath their count, fetched a page at a time. */
+.inherited { margin-top: 10px; }
+.inherited > summary { cursor: pointer; padding: 4px 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+.inherited-count { font-variant-numeric: tabular-nums; font-weight: 400; }
+.inherited[open] > summary { margin-bottom: 6px; }
+.inherited-filter { width: 100%; margin-bottom: 6px; padding: 5px 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; }
+.inherited-words { color: var(--muted); font-size: 13px; }
+.inherited-words:empty { display: none; }
+.more-button { margin-top: 6px; padding: 2px 10px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 13px; cursor: pointer; }
+.more-button:hover { background: var(--surface-2); }
+.more-button[hidden] { display: none; }
 
 /* A Yard Log. */
 

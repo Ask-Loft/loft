@@ -18,13 +18,13 @@ use crate::snapshot::snapshot;
 use crate::yard::{ASK, BRANCH, Yard, block};
 
 /// The directory of `scratch`'s tree, as the page server names it.
-fn tree(scratch: &Scratch) -> String {
+pub fn tree(scratch: &Scratch) -> String {
     scratch.0.canonicalize().unwrap().display().to_string()
 }
 
 /// `yard`, whose tree holds the Yard Log of `main` as well as its own branch's: one carried from
 /// the branch it was cut from.
-fn with_inherited() -> Yard {
+pub fn with_inherited() -> Yard {
     let mut yard = Yard::on("main");
     yard.write("s1", ASK, &["--send"]);
     yard.git = GitScenario::clean_on(BRANCH)
@@ -103,28 +103,6 @@ fn a_tree_that_no_longer_exists_is_dropped_from_those_served() {
     let own = tree(&yard.scratch);
     served.post_as_mod("/api/register", &json!({ "tree": own }));
     assert_eq!(yard.home_file("trees.json")["trees"], json!([own]));
-}
-
-#[test]
-fn each_tree_lists_its_current_branch_s_yard_log_first_and_each_inherited_one_after_it() {
-    let yard = with_inherited();
-    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
-    let listing = served.get("/api/trees").json();
-    let logs = &listing["repositories"][0]["trees"][0]["logs"];
-    assert_eq!(logs[0]["branch"], BRANCH);
-    assert_eq!(logs[0]["inherited"], false);
-    assert_eq!(logs[1]["branch"], "main");
-    assert_eq!(logs[1]["inherited"], true);
-    assert_eq!(logs[0]["waiting"], 1);
-    assert_eq!(
-        logs[1]["waiting"], 0,
-        "an inherited Yard Log waits on nobody"
-    );
-    assert_eq!(listing["count"], 1);
-    let waits = listing["waiting"].as_array().unwrap();
-    assert_eq!(waits.len(), 1);
-    assert_eq!(waits[0]["branch"], BRANCH);
-    assert_eq!(waits[0]["blocks"], json!(["q1"]));
 }
 
 #[test]
@@ -311,7 +289,7 @@ fn a_yard_log_of_a_newer_format_is_listed_as_such_and_takes_no_answer() {
 }
 
 /// Reads the stream until an event named `name` arrives, and says whether one did.
-fn stream_until(reader: &mut impl BufRead, name: &str) -> bool {
+pub fn stream_until(reader: &mut impl BufRead, name: &str) -> bool {
     let mut line = String::new();
     loop {
         line.clear();
@@ -380,53 +358,6 @@ fn a_change_that_git_makes_reaches_open_pages() {
         stream_until(&mut reader, "change"),
         "no change within 2 seconds"
     );
-}
-
-#[test]
-fn a_change_to_an_inherited_yard_log_reaches_open_pages_within_six_seconds() {
-    let mut yard = with_inherited();
-    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
-    let mut stream = TcpStream::connect(("127.0.0.1", served.port)).unwrap();
-    let request = format!(
-        "GET /api/stream HTTP/1.1\r\nhost: 127.0.0.1:{}\r\n\r\n",
-        served.port
-    );
-    stream.write_all(request.as_bytes()).unwrap();
-    stream
-        .set_read_timeout(Some(Duration::from_secs(6)))
-        .unwrap();
-    let mut reader = BufReader::new(stream);
-    assert!(stream_until(&mut reader, "hello"));
-    std::thread::sleep(Duration::from_millis(600));
-    // Written on `main`, whose Yard Log the page server's tree holds as inherited.
-    yard.git = GitScenario::clean_on("main");
-    let note = r#"[{"id": "n1", "kind": "note", "stage": "shape", "markdown": "Seen."}]"#;
-    yard.write("s1", note, &[]);
-    assert!(
-        stream_until(&mut reader, "change"),
-        "no change within 6 seconds"
-    );
-}
-
-#[test]
-fn an_entry_of_the_list_is_read_again_only_once_its_yard_log_s_root_changes() {
-    let yard = with_inherited();
-    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
-    let main = |listing: Value| listing["repositories"][0]["trees"][0]["logs"][1].clone();
-    let first = main(served.get("/api/trees").json());
-    assert_eq!(first["branch"], "main", "{first}");
-    assert!(first.get("error").is_none(), "{first}");
-    // The root, unreadable now, keeps its size and its time: the entry is the one last read.
-    let root = yard.folder("main").join("yardlog.yaml");
-    let meta = fs::metadata(&root).unwrap();
-    let time = meta.modified().unwrap();
-    fs::write(&root, vec![b'x'; usize::try_from(meta.len()).unwrap()]).unwrap();
-    let file = fs::File::options().write(true).open(&root).unwrap();
-    file.set_modified(time).unwrap();
-    assert_eq!(main(served.get("/api/trees").json()), first);
-    file.set_modified(time + Duration::from_secs(5)).unwrap();
-    let again = main(served.get("/api/trees").json());
-    assert!(again.get("error").is_some(), "{again}");
 }
 
 #[test]
