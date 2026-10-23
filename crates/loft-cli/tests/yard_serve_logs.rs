@@ -409,6 +409,27 @@ fn a_change_to_an_inherited_yard_log_reaches_open_pages_within_six_seconds() {
 }
 
 #[test]
+fn an_entry_of_the_list_is_read_again_only_once_its_yard_log_s_root_changes() {
+    let yard = with_inherited();
+    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
+    let main = |listing: Value| listing["repositories"][0]["trees"][0]["logs"][1].clone();
+    let first = main(served.get("/api/trees").json());
+    assert_eq!(first["branch"], "main", "{first}");
+    assert!(first.get("error").is_none(), "{first}");
+    // The root, unreadable now, keeps its size and its time: the entry is the one last read.
+    let root = yard.folder("main").join("yardlog.yaml");
+    let meta = fs::metadata(&root).unwrap();
+    let time = meta.modified().unwrap();
+    fs::write(&root, vec![b'x'; usize::try_from(meta.len()).unwrap()]).unwrap();
+    let file = fs::File::options().write(true).open(&root).unwrap();
+    file.set_modified(time).unwrap();
+    assert_eq!(main(served.get("/api/trees").json()), first);
+    file.set_modified(time + Duration::from_secs(5)).unwrap();
+    let again = main(served.get("/api/trees").json());
+    assert!(again.get("error").is_some(), "{again}");
+}
+
+#[test]
 fn what_waits_on_the_person_is_listed_oldest_first_across_the_trees_served() {
     let mut one = Yard::new();
     let mut two = Yard::new();

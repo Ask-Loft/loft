@@ -75,7 +75,7 @@ fn respond(server: &Server, request: &Request) -> Response {
     let home = &server.home;
     match (request.method.as_str(), request.path.as_str()) {
         ("GET", "/api/version") => Response::json(200, &protocol::report()),
-        ("GET", "/api/trees") => match trees::listing(home, server.port) {
+        ("GET", "/api/trees") => match trees::listing(home, server.port, &server.entries) {
             Ok(listing) => Response::json(200, &listing),
             Err(failure) => failed(failure),
         },

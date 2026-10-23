@@ -21795,6 +21795,24 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "each_tree_lists_its_current_branch_s_yard_log_first_and_each_inherited_one_after_it"
         body: f004b2c48114f49aec10f09b7e61f33b418338d116c9952ff6e26cd4993a10d8
+  - node: 01a16920-dde7-743a-aadb-65591054d8f5
+    reviewed: 885b4099bfcce57fef0d42837c5d6ac45d01406fa3a9ab1387e08606d7094df9
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "an_entry_of_the_list_is_read_again_only_once_its_yard_log_s_root_changes"
+        body: 11377c674746523eb8c9f458c523aba4265a7c0e68032a898d0ec24414920882
+  - node: 01a16920-dde7-743a-aadb-655a66b68f3f
+    reviewed: fd495fffe09209990f15e9bb2e42e438af6f8f83f417b6a23b15c40875a997c0
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "an_entry_of_the_list_is_read_again_only_once_its_yard_log_s_root_changes"
+        body: 11377c674746523eb8c9f458c523aba4265a7c0e68032a898d0ec24414920882
+  - node: 01a16920-dde7-743a-aadb-655b2c318095
+    reviewed: ef584b43409ce9315bc057bc6a9ff74113dbe127a14d361799c947f8851b0b23
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/trees.rs"
+        name: "the_page_server_forgets_what_it_read_of_a_yard_log_no_tree_holds_any_more"
+        body: edf6f37c612d0ccaeb56c8d880a3c85b1727d45cacf058f9a348ff5df9797150
   - node: 01a1646f-546d-7042-befd-eb2917150250
     reviewed: 25fceab4b21e9c298230b8069b3bb4227ea216c6edfcc5d0b5e30890baeba937
     tests:
