@@ -34,12 +34,13 @@ impl Span {
     }
 }
 
-/// A subagent's run.
+/// A subagent's run, with the stage it worked for.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Run {
     id: String,
     kind: String,
     span: Span,
+    stage: Option<String>,
 }
 
 /// A shell command that ran `loft`.
@@ -100,7 +101,7 @@ impl Activity {
         }
     }
 
-    /// Keeps what `event` starts or ends, `stage` the stage active for its agent; says whether
+    /// Keeps what `event` starts or ends, `stage` the stage it counts toward; says whether
     /// it changed anything.
     pub fn apply(&mut self, event: &Event, stage: Option<&str>) -> bool {
         let at = event.at;
@@ -119,7 +120,7 @@ impl Activity {
                 let spec = end(&mut self.spec, at);
                 end(&mut self.turns, at) | spec
             }
-            "subagent.start" => self.run_started(event),
+            "subagent.start" => self.run_started(event, stage),
             "subagent.end" => self.run_ended(event),
             "plan.start" if main => {
                 let spec = end(&mut self.spec, at);
@@ -136,7 +137,7 @@ impl Activity {
         changed
     }
 
-    fn run_started(&mut self, event: &Event) -> bool {
+    fn run_started(&mut self, event: &Event, stage: Option<&str>) -> bool {
         let Who::Sub { id, kind } = &event.who else {
             return false;
         };
@@ -144,6 +145,7 @@ impl Activity {
             id: id.clone(),
             kind: kind.clone(),
             span: Span::from(event.at),
+            stage: stage.map(ToOwned::to_owned),
         });
         true
     }
@@ -217,14 +219,7 @@ impl Activity {
             fields.push(("turns", spans(&self.turns)));
         }
         if !self.runs.is_empty() {
-            let runs = self.runs.iter().map(|run| {
-                let mut fields = vec![
-                    ("agent", Out::Token(run.id.clone())),
-                    ("type", Out::Token(run.kind.clone())),
-                ];
-                fields.extend(run.span.fields());
-                Out::Mapping(fields)
-            });
+            let runs = self.runs.iter().map(subagent_run);
             fields.push(("subagents", Out::Sequence(runs.collect())));
         }
         if !self.plan.is_empty() {
@@ -239,6 +234,18 @@ impl Activity {
         }
         write(&Out::Mapping(fields))
     }
+}
+
+fn subagent_run(run: &Run) -> Out {
+    let mut fields = vec![
+        ("agent", Out::Token(run.id.clone())),
+        ("type", Out::Token(run.kind.clone())),
+    ];
+    fields.extend(run.span.fields());
+    if let Some(stage) = &run.stage {
+        fields.push(("stage", Out::Token(stage.clone())));
+    }
+    Out::Mapping(fields)
 }
 
 fn loft_run(run: &LoftRun) -> Out {

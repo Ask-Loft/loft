@@ -12,7 +12,7 @@ use crate::served::Served;
 use crate::yard::{ASK, BRANCH, Yard};
 
 /// Yard Log with its stage active for session `s1`'s main agent and `q1` sent, and a page server.
-fn open() -> (Yard, Served) {
+pub(crate) fn open() -> (Yard, Served) {
     let yard = Yard::new();
     yard.write("s1", ASK, &["--send"]);
     let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
@@ -26,7 +26,7 @@ fn dir(yard: &Yard) -> String {
 
 /// An event of `kind` of session `s1`'s main agent in `yard`'s tree at second `second` of
 /// 10:00, with `more` fields.
-fn event(yard: &Yard, kind: &str, second: u32, more: &Value) -> Value {
+pub(crate) fn event(yard: &Yard, kind: &str, second: u32, more: &Value) -> Value {
     let mut event = json!({
         "session": "s1",
         "dir": dir(yard),
@@ -39,18 +39,18 @@ fn event(yard: &Yard, kind: &str, second: u32, more: &Value) -> Value {
     event
 }
 
-fn tokens(input: u64, read: u64, write: u64, output: u64) -> Value {
+pub(crate) fn tokens(input: u64, read: u64, write: u64, output: u64) -> Value {
     json!({ "input": input, "cacheRead": read, "cacheWrite": write, "output": output })
 }
 
-fn post(served: &Served, events: &[Value]) -> Value {
+pub(crate) fn post(served: &Served, events: &[Value]) -> Value {
     let reply = served.post_as_mod("/api/events", &json!(events));
     assert_eq!(reply.status, 200);
     reply.json()
 }
 
 /// A session's file in the folder of `yard`'s Yard Log, as text.
-fn session_file(yard: &Yard, folder: &str, session: &str) -> Option<String> {
+pub(crate) fn session_file(yard: &Yard, folder: &str, session: &str) -> Option<String> {
     let path = yard
         .folder(BRANCH)
         .join(folder)
@@ -73,7 +73,7 @@ fn log(yard: &Yard, session: &str) -> Vec<Value> {
 }
 
 /// The key of the stage `shape` and of the one submission.
-fn keys(yard: &Yard) -> (String, String) {
+pub(crate) fn keys(yard: &Yard) -> (String, String) {
     let read = yard.read("s1", &[]);
     let stage = read["stages"][0]["key"].as_str().unwrap().to_owned();
     let submission = read["submissions"][0]["open"][0]["key"]
@@ -191,7 +191,8 @@ fn a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open
 }
 
 /// The totals of the main agent's request on `opus` in stage `stage`, a subagent's on `haiku`
-/// under no stage of its own, and a compaction, all while `submission` was open.
+/// with no stage of its own, which counts toward the main agent's, and a compaction, all while
+/// `submission` was open.
 fn totals_of_three_requests(stage: &str, submission: &str) -> String {
     format!(
         "session: s1
@@ -205,15 +206,22 @@ tokens:
   output: 27
 stages:
   - stage: {stage}
-    input: 17
-    cacheRead: 100
-    cacheWrite: 5
-    output: 23
-noStage:
-  input: 1
-  cacheRead: 2
-  cacheWrite: 3
-  output: 4
+    input: 18
+    cacheRead: 102
+    cacheWrite: 8
+    output: 27
+    agents:
+      - agent: main
+        input: 17
+        cacheRead: 100
+        cacheWrite: 5
+        output: 23
+      - agent: a1
+        type: Explore
+        input: 1
+        cacheRead: 2
+        cacheWrite: 3
+        output: 4
 agents:
   - agent: main
     model: opus
@@ -367,7 +375,8 @@ fn a_turn_of_every_kind(yard: &Yard) -> Vec<Value> {
     ]
 }
 
-/// The activity [`a_turn_of_every_kind`] keeps, its `loft` run in the stage `stage`.
+/// The activity [`a_turn_of_every_kind`] keeps, its subagent's run and its `loft` run in the
+/// stage `stage`.
 fn activity_of_the_turn(stage: &str) -> String {
     format!(
         "session: s1
@@ -380,6 +389,7 @@ subagents:
     type: Explore
     started: 2026-01-01T10:00:05Z
     ended: 2026-01-01T10:00:08Z
+    stage: {stage}
 plan:
   - started: 2026-01-01T10:00:03Z
     ended: 2026-01-01T10:00:04Z

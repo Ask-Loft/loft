@@ -1,6 +1,6 @@
 //! The events the mod posts. Each is kept, where its agent's branch has its Yard Log open, in the
 //! session's event log on this machine, `~/.yard/events/<session id>.jsonl`, with the tree and
-//! branch its agent's directory is on as it arrives, the stage active for its agent and the
+//! branch its agent's directory is on as it arrives, the stage it counts toward and the
 //! submissions open; and what it starts or ends, or counts, is kept in the session's activity
 //! and token totals in that Yard Log's folder. The page server rebuilds a session's activity and
 //! totals from its event log the first time it hears of the session.
@@ -37,12 +37,23 @@ pub struct Sessions {
     kept: Mutex<HashMap<String, ByLog>>,
 }
 
-/// Where an event is kept: its agent's tree and branch, the stage active for its agent and the
+/// Where an event is kept: its agent's tree and branch, the stage it counts toward and the
 /// submissions open as it arrives.
 struct Arrival {
     store: YardStore,
     stage: Option<String>,
     open: Vec<String>,
+}
+
+/// The stage `event` counts toward, by its key: the one active for its agent, or for a subagent
+/// with none of its own, the one active for its session's main agent, which started it. A
+/// subagent's run works for the main agent's stage as it starts, whatever the subagent owns.
+fn counted_stage(log: &YardLog, event: &Event) -> Option<String> {
+    let own = match (&event.who, event.kind.as_str()) {
+        (Who::Sub { .. }, "subagent.start") => None,
+        (who, _) => active_stage(log, &event.session, who),
+    };
+    own.or_else(|| active_stage(log, &event.session, &Who::Main))
 }
 
 /// The stage active for `who` of `session` in `log`, by its key.
@@ -101,7 +112,7 @@ fn arrivals(
                 })
                 .as_ref()?;
             Some(Arrival {
-                stage: active_stage(log, &event.session, &event.who),
+                stage: counted_stage(log, event),
                 open: submissions.clone(),
                 store: store.clone(),
             })

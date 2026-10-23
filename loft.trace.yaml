@@ -23830,8 +23830,35 @@ links:
         name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
         body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
   - node: 01a1646f-546d-7042-befd-eae8aef1c957
-    reviewed: 912d2f3c417337f3996b2c996fb94bbf4d0dda7cac0dcecd84552acb4be2dbc6
+    reviewed: 8bf0f228c49d94ccfa90e31bde1ce59a45197ffd02756caece3a4e697ebec569
     tests:
+      - file: "crates/loft-cli/tests/yard_serve_events.rs"
+        name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
+        body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
+  - node: 01a16995-313c-7343-8413-b54f3d6c820f
+    reviewed: da6d87e897fab3ee91212812643044b787bd78d9f5eb1c299a7ca3a7be9a8f1c
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "once_a_subagent_opens_a_stage_of_its_own_its_requests_count_toward_that_stage_alone"
+        body: c1e34b351b3b3d97d568c1e1894d4e94d0d38d389edea0050269b32a27b5b0b2
+  - node: 01a16995-313c-7343-8413-b550557e1ea2
+    reviewed: 066f2739d21670bb68bab1eb274d4ce13ace55cd58f41a2fa9953a2cfa6b8b76
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "a_stageless_subagent_s_request_counts_toward_the_stage_active_for_its_session_s_main_agent"
+        body: b7213e9e2330a1a5fd595fd8b8465adbc398494fbd4f4c636cb1af210f8b0a3b
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "with_no_stage_active_for_either_a_subagent_s_request_counts_under_no_stage"
+        body: d45b1c94c3a4ebd9877af445478fd01f84e2c005e7af22e9e9831c6cefbdc249
+      - file: "crates/loft-cli/tests/yard_serve_events.rs"
+        name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
+        body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
+  - node: 01a16995-313c-7343-8413-b551e284ad7e
+    reviewed: dbc241536c8767de1b4eb8580b8662fd9cec615102fd8397a39528ac9bc8bbd2
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "each_stage_s_counts_are_kept_by_agent_the_main_agent_and_each_subagent_by_id_and_type"
+        body: a75f2e3fe59de916ccae19b6f4a1dfb06c47d04441d4e7361751f07c0516c8ad
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
         body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
@@ -23910,6 +23937,15 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
         body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
+  - node: 01a16995-313c-7343-8413-b55299748fdd
+    reviewed: 83f289f6c08bd9f44e54f458c6975fdbd809f9e95afde39c8aed7bf60ec1d991
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "a_subagent_s_run_is_kept_with_the_stage_its_session_s_main_agent_had_active_as_it_started"
+        body: 0ac307e49b386ca99308483cf2428075ff40f2c36461e412c349949fc215aa46
+      - file: "crates/loft-cli/tests/yard_serve_events.rs"
+        name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
+        body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
   - node: 01a1646f-546d-7042-befd-eaf4217a481b
     reviewed: 3b4303a85b4bf21fa4281e5624a8f52c0ffaa400eef5302a9d7f5ae70b903088
     tests:
@@ -23935,11 +23971,14 @@ links:
         name: "a_subagent_s_spec_edits_and_plan_mode_are_not_kept_as_stretches"
         body: db8b8795dae14db782b549d7cbabd2979dabcd22f14b34e8fa5d823453cc1d15
   - node: 01a1646f-546d-7042-befd-eaf743bef7f9
-    reviewed: 2760e2b998821030acc3ddec3bb13403a98dcca128fd1bcabd2c07edb81b0576
+    reviewed: 93497563ed5c8a24180cf9f9af23c0c81384a9a5510882612c2f68f60c878c99
     tests:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
         body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
+      - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
+        name: "a_stageless_subagent_s_loft_run_is_kept_with_the_main_agent_s_stage"
+        body: de95c2ce8b8ddc2b246907247e3b088566ec6f5861202c272d1a2177feb3b84d
   - node: 01a1646f-546d-7042-befd-eaf8581e4986
     reviewed: c4864ba2066d2a9d10f12f9548090080c41bc8e6ba70c0967b9f0a2f8f96cffd
     tests:
