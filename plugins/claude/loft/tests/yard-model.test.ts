@@ -296,7 +296,6 @@ test("each tool runs its loft yard command with the caller's session and, for a 
     args: ['write', '--input', '-', '--send', '--based-on', '4', '--session', 's1', '--agent', 'a9', '--agent-type', 'Explore'],
     stdin: '[{"id":"x"}]',
   })
-  expect(commandOf('yard_wait', { submission: 'k' }, main).args).toEqual(['wait', '--submission', 'k', '--timeout', '540', '--session', 's1'])
   expect(commandOf('yard_published', { branch: 'feat/x', note: 'n' }, main).args).toEqual(['published', '--branch', 'feat/x', '--note', 'n', '--session', 's1'])
 })
 

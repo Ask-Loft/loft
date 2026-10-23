@@ -3,8 +3,8 @@
 // browser once a drag or a key ends. It is never shorter than LEAST and always leaves ABOVE of the
 // page in view above it; a resized viewport fits it again without choosing a height.
 
-import { h } from './dom.js';
 import * as prefs from './prefs.js';
+import { separator } from './separator.js';
 
 /** The panel's least height, and the least of the page left in view above it, in pixels. */
 export const LEAST = 160;
@@ -75,38 +75,14 @@ function keep() {
 
 /** The panel's top edge: dragged, or moved with the arrow keys, it sets the panel's height. */
 export function edge() {
-  let from = /** @type {number | null} */ (null);
-  let grabbed = 0;
-  const handle = h('div', {
-    class: 'dock-edge',
-    role: 'separator',
-    tabindex: 0,
-    'aria-orientation': 'horizontal',
-    'aria-label': 'Height of the panel',
-    'aria-valuemin': LEAST,
+  return separator({
+    axis: 'y',
+    step: STEP,
+    attributes: { class: 'dock-edge', 'aria-label': 'Height of the panel', 'aria-valuemin': LEAST },
+    read: () => current.height,
+    show: set,
+    keep,
   });
-  handle.addEventListener('pointerdown', (/** @type {any} */ event) => {
-    from = event.clientY;
-    grabbed = current.height;
-    handle.setPointerCapture?.(event.pointerId);
-    event.preventDefault();
-  });
-  handle.addEventListener('pointermove', (/** @type {any} */ event) => {
-    if (from !== null) set(grabbed + from - event.clientY);
-  });
-  handle.addEventListener('pointerup', () => {
-    if (from === null) return;
-    from = null;
-    keep();
-  });
-  handle.addEventListener('keydown', (/** @type {any} */ event) => {
-    const moved = event.key === 'ArrowUp' ? STEP : event.key === 'ArrowDown' ? -STEP : 0;
-    if (!moved) return;
-    event.preventDefault();
-    set(current.height + moved);
-    keep();
-  });
-  return handle;
 }
 
 window.addEventListener('resize', () => {

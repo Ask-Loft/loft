@@ -103,8 +103,11 @@ function article(type: Field['type']): string {
   return type === 'integer' ? 'a whole number of 0 or more' : type === 'array' ? 'a list of objects' : `a ${type}`
 }
 
-/** The `loft yard` command a call runs: its arguments, and what it reads on standard input. */
-export function commandOf(name: ToolName, args: Record<string, unknown>, caller: Caller): { args: string[]; stdin?: string } {
+/**
+ * The `loft yard` command a call runs: its arguments, and what it reads on standard input.
+ * `yard_wait` runs its own wait, asking in Claude Code's dialog meanwhile (`waitOn`).
+ */
+export function commandOf(name: Exclude<ToolName, 'yard_wait'>, args: Record<string, unknown>, caller: Caller): { args: string[]; stdin?: string } {
   const who = callerArgs(caller)
   switch (name) {
     case 'yard_read':
@@ -130,8 +133,6 @@ export function commandOf(name: ToolName, args: Record<string, unknown>, caller:
         ],
         stdin: JSON.stringify(args.batch),
       }
-    case 'yard_wait':
-      return { args: ['wait', '--submission', String(args.submission), '--timeout', '540', ...who] }
     case 'yard_withdraw':
       return { args: ['withdraw', '--submission', String(args.submission), ...who] }
     case 'yard_close':

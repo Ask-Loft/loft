@@ -5,27 +5,20 @@
 use std::path::Path;
 
 use super::args::CloseArgs;
-use super::change;
+use super::{change, failure};
 use crate::finish::Finished;
-use crate::json;
-use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-close/1";
 const OUTCOME: &str = "closed";
 
 pub fn run(root: &Path, args: CloseArgs) -> Finished {
-    let as_json = args.output.json();
-    match change::apply(root, args.writer, args.beyond, |log, agent, at| {
+    let applied = change::apply(root, args.writer, args.beyond, |log, agent, at| {
         log.close(agent, at)
-    }) {
-        Ok(fields) => {
-            if as_json {
-                json::print(&json::result(SCHEMA, OUTCOME, fields, Vec::new()));
-            } else {
-                outln!("Closed Yard Log at revision {}", fields["revision"]);
-            }
-            Finished::success(OUTCOME)
-        }
-        Err(failure) => failure.finish(SCHEMA, as_json),
-    }
+    });
+    failure::end(
+        SCHEMA,
+        args.output.json(),
+        applied.map(|fields| (OUTCOME, fields)),
+        |_, fields| format!("Closed Yard Log at revision {}", fields["revision"]),
+    )
 }

@@ -133,10 +133,7 @@ impl GitCommand {
     pub fn config_get(&self, root: &Path, name: &str) -> Result<Option<String>, StoreError> {
         let call: Vec<&str> = CONFIG_GET.into_iter().chain([name]).collect();
         let output = self.run(root, &call)?;
-        if output.status.code() == Some(1) {
-            return Ok(None);
-        }
-        Ok(Some(text(&succeeded(&call, output)?)))
+        Ok(git::if_found(&call, output)?.map(|out| text(&out)))
     }
 
     /// The first line `<command> --version` prints when git runs it as it runs a merge driver:
@@ -196,11 +193,7 @@ impl GitCommand {
 
     /// Whether a `rev-parse -q --verify` call names a commit.
     fn verified(&self, root: &Path, call: &[&str]) -> Result<bool, StoreError> {
-        let output = self.run(root, call)?;
-        if output.status.code() == Some(1) {
-            return Ok(false);
-        }
-        succeeded(call, output).map(|_| true)
+        Ok(git::yes_or_no(call, self.run(root, call)?)?)
     }
 
     /// The branch a stopped rebase rebases, from the file either backend keeps it in; none

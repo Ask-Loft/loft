@@ -120,17 +120,14 @@ pub fn try_lock_as(path: &Path, holder: &[u8]) -> Result<Option<Locked>, YardSto
     Ok(Some(locked))
 }
 
-/// Who holds the lock on `path`, as [`try_lock_as`] recorded it, where another holds it: empty
-/// where the holder took the lock and has not yet named itself.
+/// Who holds the lock on `path`, as [`try_lock_as`] recorded it, read without taking the lock,
+/// so that looking never holds it from one that would take it: none where no holder has named
+/// itself, as where the lock is free or its holder has not yet written its name. A holder takes
+/// its name away before it lets go; only one that was killed leaves it.
 ///
 /// # Errors
 ///
-/// The file cannot be locked, or its holder's file cannot be read.
+/// The holder's file cannot be read.
 pub fn holder(path: &Path) -> Result<Option<Vec<u8>>, YardStoreError> {
-    if !is_held(path)? {
-        return Ok(None);
-    }
-    Ok(Some(
-        read_if_present(&holder_path(path))?.unwrap_or_default(),
-    ))
+    Ok(read_if_present(&holder_path(path))?)
 }

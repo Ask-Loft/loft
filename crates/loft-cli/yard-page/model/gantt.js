@@ -5,6 +5,7 @@
 // long; the stretches of plan and spec mode; and where the time that was not idle went.
 
 import { agentKey, ms, who } from '../lib/format.js';
+import { blocksByKey } from './log.js';
 
 /** Idle time longer than this, in milliseconds, is folded to a fixed width. */
 export const FOLD_AFTER = 45_000;
@@ -137,10 +138,7 @@ function activities(log, now) {
  * @param {number} now
  */
 function submissionSpans(log, now) {
-  const blocks = new Map();
-  for (const stage of log?.stages ?? []) {
-    for (const block of stage.blocks ?? []) blocks.set(block.key, block);
-  }
+  const blocks = blocksByKey(log);
   return (log?.sent ?? []).map((submission) => {
     const sent = submission.changes.find((change) => change.what === 'sent');
     const answered = submission.changes.find((change) => change.what === 'answered');
@@ -345,6 +343,17 @@ function summary(busy, lanes) {
   };
 }
 
+/** The width a folded idle stretch is drawn, in pixels. */
+export const FOLD = 28;
+
+/**
+ * The idle stretches of `chart` that are folded, in order.
+ * @param {{ idle: (Span & { folded: boolean })[] }} chart
+ */
+export function folds(chart) {
+  return chart.idle.filter((span) => span.folded);
+}
+
 /**
  * Where each time lies along a chart whatever its width: as a share of the width and an offset in
  * pixels, so that it lies at `share × width + offset` on a chart `width` wide. The time that is
@@ -353,8 +362,8 @@ function summary(busy, lanes) {
  * @param {number} [fold]
  * @returns {(time: number) => { share: number, offset: number }}
  */
-export function place(chart, fold = 28) {
-  const folded = chart.idle.filter((span) => span.folded);
+export function place(chart, fold = FOLD) {
+  const folded = folds(chart);
   const hidden = folded.reduce((sum, span) => sum + span.to - span.from, 0);
   const open = Math.max(1, chart.end - chart.start - hidden);
   const at = (before, folds) => {
@@ -383,7 +392,7 @@ export function place(chart, fold = 28) {
  * @param {number} [fold]
  * @returns {(time: number) => number}
  */
-export function scale(chart, width, fold = 28) {
+export function scale(chart, width, fold = FOLD) {
   const placed = place(chart, fold);
   return (time) => {
     const { share, offset } = placed(time);
@@ -398,8 +407,8 @@ export function scale(chart, width, fold = 28) {
  * @param {number} [fold]
  * @param {number} [perMinute]
  */
-export function minimumWidth(chart, fold = 28, perMinute = 8) {
-  const folded = chart.idle.filter((span) => span.folded);
+export function minimumWidth(chart, fold = FOLD, perMinute = 8) {
+  const folded = folds(chart);
   const hidden = folded.reduce((sum, span) => sum + span.to - span.from, 0);
   return Math.ceil(((chart.end - chart.start - hidden) / 60_000) * perMinute + folded.length * fold);
 }
@@ -421,7 +430,7 @@ export function ticks(chart, x, gap = 72) {
   /** @type {Span[]} */
   const stretches = [];
   let from = chart.start;
-  for (const fold of chart.idle.filter((span) => span.folded)) {
+  for (const fold of folds(chart)) {
     stretches.push({ from, to: fold.from });
     from = fold.to;
   }

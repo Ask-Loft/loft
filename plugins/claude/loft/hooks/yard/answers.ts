@@ -109,17 +109,20 @@ export function givenOf(questions: readonly Asked[], ids: readonly string[], res
   })
 }
 
+/** A file's name without its folders or its extension. */
+const stemOf = (path: string | undefined) => path?.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, '')
+
 /** A plan's title: its first heading, or its file's name where it has none. */
 export function planTitle(markdown: string, path: string | undefined): string {
   const heading = /^#{1,6}\s+(.+?)\s*#*\s*$/m.exec(markdown)?.[1]?.trim()
   if (heading) return heading
-  const name = path?.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, '')
+  const name = stemOf(path)
   return name && name !== '' ? name : 'Plan'
 }
 
 /** A plan's block id, from its file, so that the same file is a new version of the same block. */
 export function planId(path: string | undefined, fallback: string): string {
-  const name = path?.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, '')
+  const name = stemOf(path)
   return name ? idOf('plan', name) : fallback
 }
 

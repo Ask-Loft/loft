@@ -3,13 +3,12 @@
 
 use std::collections::BTreeSet;
 use std::fs;
-use std::io;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
 use crate::journal::{Journal, RelPath};
-use crate::sync::{move_into_place, read_if_present, sync_dir};
+use crate::sync::{move_into_place, read_if_present, remove_if_present, sync_dir};
 use crate::{PortError, io_error};
 
 pub(crate) const PLAN: &str = "plan.json";
@@ -66,11 +65,7 @@ impl Plan {
         }
         for path in &self.remove {
             let target = journal.root().join(path.as_str());
-            match fs::remove_file(&target) {
-                Ok(()) => {}
-                Err(error) if error.kind() == io::ErrorKind::NotFound => {}
-                Err(error) => return Err(io_error(&target)(error)),
-            }
+            remove_if_present(&target)?;
             remove_empty_parents(&journal.floor(), &target);
             touched.extend(target.parent().map(Path::to_owned));
         }

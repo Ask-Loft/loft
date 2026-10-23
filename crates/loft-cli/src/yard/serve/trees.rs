@@ -9,7 +9,7 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard, PoisonError};
 
 use serde_json::{Value, json};
 use yardlog::YardLog;
@@ -22,7 +22,7 @@ use yardlog_store::session::branches;
 use yardlog_store::{Held, Place, YARD, YardStore};
 
 use super::event::strings;
-use super::inherited::{Inherited, distinct, page};
+use super::inherited::{Inherited, distinct, distinct_count, page};
 use super::watch::{FileStamp, stamp_of};
 use crate::yard::failure::Failure;
 use crate::yard::home_json;
@@ -142,6 +142,11 @@ struct Entry {
 pub struct Entries(Mutex<HashMap<(PathBuf, String), Entry>>);
 
 impl Entries {
+    /// What is kept, whichever thread held it last, as a thread that panicked left it.
+    fn kept(&self) -> MutexGuard<'_, HashMap<(PathBuf, String), Entry>> {
+        self.0.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
     /// The entry of `branch`'s Yard Log in `place`'s tree and the open submissions it adds: the
     /// one kept while its root file keeps its stamp, or read again. One that could not be read
     /// is not kept, so that the next list tries again.
@@ -155,10 +160,7 @@ impl Entries {
         let key = (place.tree.clone(), branch.to_owned());
         let root = place.tree.join(YARD).join(branch).join(ROOT);
         let stamp = fs::metadata(root).ok().map(|meta| stamp_of(&meta));
-        let mut kept = self
-            .0
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let mut kept = self.kept();
         if let (Some(stamp), Some(entry)) = (stamp, kept.get(&key))
             && entry.stamp == stamp
             && entry.inherited == inherited
@@ -167,10 +169,7 @@ impl Entries {
         }
         drop(kept);
         let (summary, waits) = read();
-        kept = self
-            .0
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        kept = self.kept();
         match stamp {
             Some(stamp) if summary.get("error").is_none() => {
                 let entry = Entry {
@@ -190,10 +189,7 @@ impl Entries {
 
     /// Forgets what was read of each Yard Log that `seen` does not name.
     fn keep_only(&self, seen: &HashSet<(PathBuf, String)>) {
-        let mut kept = self
-            .0
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let mut kept = self.kept();
         kept.retain(|key, _| seen.contains(key));
     }
 }
@@ -273,7 +269,7 @@ pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failu
     let repositories: Vec<Value> = repositories
         .into_iter()
         .map(|(repository, held)| {
-            let inherited = distinct(held.inherited, &held.current).len();
+            let inherited = distinct_count(&held.inherited, &held.current);
             json!({ "repository": repository, "trees": held.trees, "inherited": inherited })
         })
         .collect();

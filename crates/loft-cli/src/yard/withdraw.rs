@@ -9,10 +9,8 @@ use yardlog::{Key, SubmissionKey};
 
 use super::args::WithdrawArgs;
 use super::change;
-use super::failure::Failure;
+use super::failure::{self, Failure};
 use crate::finish::Finished;
-use crate::json;
-use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-withdraw/1";
 const OUTCOME: &str = "withdrawn";
@@ -27,20 +25,15 @@ pub fn run(root: &Path, args: WithdrawArgs) -> Finished {
     };
     let applied = change::apply(root, args.writer, args.beyond, |log, agent, at| {
         log.withdraw(submission, agent, at)
+    })
+    .map(|mut fields| {
+        fields["submission"] = json!(submission.to_string());
+        (OUTCOME, fields)
     });
-    match applied {
-        Ok(mut fields) => {
-            fields["submission"] = json!(submission.to_string());
-            if as_json {
-                json::print(&json::result(SCHEMA, OUTCOME, fields, Vec::new()));
-            } else {
-                outln!(
-                    "Withdrew {submission}; Yard Log at revision {}",
-                    fields["revision"]
-                );
-            }
-            Finished::success(OUTCOME)
-        }
-        Err(failure) => failure.finish(SCHEMA, as_json),
-    }
+    failure::end(SCHEMA, as_json, applied, |_, fields| {
+        format!(
+            "Withdrew {submission}; Yard Log at revision {}",
+            fields["revision"]
+        )
+    })
 }

@@ -113,9 +113,7 @@ fn current(place: Place, beyond: Beyond) -> Result<Value, Failure> {
     let branch = Branch::at(YardGit::default(), place, beyond)?;
     let caller = Caller::new(&Runner::default());
     let held = branch.open(crate::yard::now()?, || settler(&caller, &branch))?;
-    let mut fields = shown_with_versions(&branch, held)?;
-    fields["inherited"] = json!(false);
-    Ok(fields)
+    shown_with_versions(&branch, held, false)
 }
 
 /// Yard Log of a branch the tree is not on, carried from the branch it was cut from: rendered
@@ -126,15 +124,13 @@ fn inherited(place: &Place, branch: &str, beyond: Beyond) -> Result<Value, Failu
     if matches!(held, Held::Absent) {
         return Err(Failure::one("absent", "the branch has no Yard Log"));
     }
-    let mut fields = shown_with_versions(&branch, held)?;
-    fields["inherited"] = json!(true);
-    Ok(fields)
+    shown_with_versions(&branch, held, true)
 }
 
 /// Yard Log as a read with every version renders it, recording nothing, with its Markdown
-/// rendered, every submission it sent, and the files its sessions keep, their activity and
-/// their token totals.
-fn shown_with_versions(branch: &Branch, held: Held) -> Result<Value, Failure> {
+/// rendered, every submission it sent, the files its sessions keep, their activity and their
+/// token totals, and whether it is `inherited` from the branch the tree's was cut from.
+fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<Value, Failure> {
     let selection = Selection {
         since: None,
         every_version: true,
@@ -152,6 +148,7 @@ fn shown_with_versions(branch: &Branch, held: Held) -> Result<Value, Failure> {
     if let Some(sent) = sent {
         fields["sent"] = sent;
     }
+    fields["inherited"] = json!(inherited);
     Ok(fields)
 }
 

@@ -8,33 +8,25 @@ use yardlog_store::home::Home;
 
 use super::args::ContinueArgs;
 use super::caller::record_continuation;
-use super::failure::Failure;
+use super::failure::{self, Failure};
 use crate::finish::Finished;
-use crate::json;
-use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-continue/1";
 const OUTCOME: &str = "recorded";
 
 pub fn run(args: &ContinueArgs) -> Finished {
-    let as_json = args.output.json();
     let recorded = Home::from_env()
         .ok_or_else(Failure::no_home)
-        .and_then(|home| record_continuation(&home, &args.session, &args.from));
-    match recorded {
-        Ok(changed) => {
+        .and_then(|home| record_continuation(&home, &args.session, &args.from))
+        .map(|changed| {
             let fields = json!({
                 "session": args.session,
                 "continues": args.from,
                 "changed": changed,
             });
-            if as_json {
-                json::print(&json::result(SCHEMA, OUTCOME, fields, Vec::new()));
-            } else {
-                outln!("session {} continues {}", args.session, args.from);
-            }
-            Finished::success(OUTCOME)
-        }
-        Err(failure) => failure.finish(SCHEMA, as_json),
-    }
+            (OUTCOME, fields)
+        });
+    failure::end(SCHEMA, args.output.json(), recorded, |_, _| {
+        format!("session {} continues {}", args.session, args.from)
+    })
 }

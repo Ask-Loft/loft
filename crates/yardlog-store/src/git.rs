@@ -6,7 +6,7 @@
 use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Output};
 
-use loft_ports::git::{Git, first_line, outside_a_repository, succeeded};
+use loft_ports::git::{Git, first_line, if_found, outside_a_repository, succeeded, yes_or_no};
 
 use crate::YardStoreError;
 use crate::place::GIT_DIR_NAME;
@@ -81,12 +81,7 @@ impl YardGit {
 
     /// Whether a call that answers with its exit code alone says yes (0) or no (1).
     fn yes(&self, dir: &Path, call: &[&str]) -> Result<bool, YardStoreError> {
-        let output = self.run(dir, call)?;
-        match output.status.code() {
-            Some(0) => Ok(true),
-            Some(1) => Ok(false),
-            _ => succeeded(call, output).map(|_| true).map_err(Into::into),
-        }
+        Ok(yes_or_no(call, self.run(dir, call)?)?)
     }
 
     /// The top of the worktree that holds `dir`.
@@ -112,10 +107,7 @@ impl YardGit {
     /// `dir` is in no repository, or git fails or cannot be run.
     pub fn branch(&self, dir: &Path) -> Result<Option<String>, YardStoreError> {
         let output = self.run(dir, &CURRENT_BRANCH)?;
-        if output.status.code() == Some(1) {
-            return Ok(None);
-        }
-        Ok(Some(first_line(&succeeded(&CURRENT_BRANCH, output)?)))
+        Ok(if_found(&CURRENT_BRANCH, output)?.map(|out| first_line(&out)))
     }
 
     /// In one call, the top of the worktree that holds `dir`, the repository's common directory,
@@ -168,10 +160,7 @@ impl YardGit {
         let value = |name: &str| -> Result<Option<String>, YardStoreError> {
             let call: Vec<&str> = CONFIG_GET.into_iter().chain([name]).collect();
             let output = self.git.run(dir, &call)?;
-            if output.status.code() == Some(1) {
-                return Ok(None);
-            }
-            Ok(Some(first_line(&succeeded(&call, output)?)))
+            Ok(if_found(&call, output)?.map(|out| first_line(&out)))
         };
         Ok(Person {
             name: value("user.name")?,

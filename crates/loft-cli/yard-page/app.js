@@ -27,12 +27,9 @@ const state = {
 function lastVisit(log) {
   const key = log?.yardLog?.key;
   if (!key) return null;
-  if (!state.visits.has(key)) {
-    const kept = prefs.getJson('visits', {});
-    state.visits.set(key, typeof kept[key] === 'number' ? kept[key] : null);
-  }
   const visits = prefs.getJson('visits', {});
-  prefs.setJson('visits', { ...visits, [key]: log.revision });
+  if (!state.visits.has(key)) state.visits.set(key, typeof visits[key] === 'number' ? visits[key] : null);
+  if (visits[key] !== log.revision) prefs.setJson('visits', { ...visits, [key]: log.revision });
   return state.visits.get(key) ?? null;
 }
 

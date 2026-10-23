@@ -52,6 +52,27 @@ impl Failure {
     }
 }
 
+/// Ends a command: where it succeeded, the document `--format json` asked for, or for a person
+/// the `line` its outcome and fields make, exiting 0; where it did not, as [`Failure::finish`].
+pub fn end(
+    schema: &str,
+    as_json: bool,
+    done: Result<(&'static str, Value), Failure>,
+    line: impl FnOnce(&str, &Value) -> String,
+) -> Finished {
+    match done {
+        Ok((outcome, fields)) => {
+            if as_json {
+                json::print(&json::result(schema, outcome, fields, Vec::new()));
+            } else {
+                outln!("{}", line(outcome, &fields));
+            }
+            Finished::success(outcome)
+        }
+        Err(failure) => failure.finish(schema, as_json),
+    }
+}
+
 /// Prints a refusal's result, or its reasons for a person, and exits 1.
 fn refuse(schema: &str, fields: Value, errors: Vec<Value>, as_json: bool) -> Finished {
     let finished = Finished::with(ExitCode::FAILURE, "refused", &errors);

@@ -3,6 +3,8 @@
 //! hold is marked as arriving. What spans files, ids shared by two records and the numbers of
 //! decisions written apart, is left to the settling of the next command.
 
+use std::collections::HashSet;
+
 use crate::act::Act;
 use crate::codec::{FileError, ROOT, session};
 use crate::log::{Arrival, Block, Change, Root, StageFile, Submission};
@@ -30,16 +32,19 @@ pub fn merge_root(base: Option<&Root>, ours: &Root, theirs: &Root) -> Root {
         .flatten()
         .min_by_key(|act| (act.at, act.revision))
         .cloned();
+    // Every Act of either copy, held in each root since Yard Log was opened: looked up by hash.
+    let held: HashSet<&Act> = ours.acts.iter().collect();
     let new: Vec<Act> = theirs
         .acts
         .iter()
-        .filter(|act| !ours.acts.contains(act))
+        .filter(|act| !held.contains(act))
         .cloned()
         .collect();
     let mut acts = ours.acts.clone();
     acts.extend(new.iter().cloned());
+    let arrived: HashSet<&Act> = ours.arriving.iter().collect();
     let mut arriving = ours.arriving.clone();
-    arriving.extend(new.into_iter().filter(|act| !ours.arriving.contains(act)));
+    arriving.extend(new.into_iter().filter(|act| !arrived.contains(act)));
     let mut settlings = ours.settlings.clone();
     settlings.extend(
         theirs

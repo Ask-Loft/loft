@@ -20625,6 +20625,12 @@ links:
       - file: "crates/yardlog-store/tests/leases.rs"
         name: "a_lease_s_holder_is_named_while_it_holds_it_and_its_name_goes_with_it"
         body: 186963e8ad3f4819fc31c22204d53f8478483b561881d1c0ebd908ceb91df300
+  - node: 01a16a6e-42e3-7261-8a0f-1b88f7deddc0
+    reviewed: 4589cccdd904bab962491a4650cd7cbfc08ae11805f50ba44ffe3e99326875f6
+    tests:
+      - file: "crates/yardlog-store/tests/leases.rs"
+        name: "finding_who_holds_a_lease_never_takes_it"
+        body: 051c9840c99eb0e283faaaf2bb8b8b61d19c2b9a3d145462ca3fd5d38f1377c2
   - node: 01a1647c-e680-7753-bf17-f17296e2f008
     reviewed: e353df661c19027bec47c6ca9ee6a767f698a7c1d926bf0c6f38363be9582221
     tests:
@@ -20638,7 +20644,7 @@ links:
         name: "two_sessions_on_one_branch_never_both_wait_on_one_submission"
         body: 95497bd3807a0152f21cad4c564dbd70666d0e91f9c4f395e4f0611cfad28f72
   - node: 01a16a59-cf10-7028-be3f-c198f1fdfac0
-    reviewed: 6ae403c54d777f62dc2cb7f23342e0af52389541c1a5dc7779fa0ccb4929b47f
+    reviewed: efd1ed2abc3708f3d37b2e8ae02c78ed3cb084a160d4678487d3c4cee1a4cb35
     tests:
       - file: "crates/loft-cli/tests/yard_wait.rs"
         name: "a_lease_held_a_moment_by_one_that_looks_does_not_refuse_the_wait"
@@ -23934,6 +23940,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "a subcommand is never taken from quoted text, a heredoc, or a word that is not one of loft"
         body: cca56e7431913999fcff9bbe39b36c246b54098434055422963ab7aa9eeaa7f0
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_mod_takes_a_subcommand_s_name_only_from_loft_s_own_list_of_subcommands"
+        body: d822a6d8592b41925d118bf524861f36de47e8b63afb2133ed453e19b3091714
   - node: 01a1646f-546d-7042-befd-eb0ad2547439
     reviewed: 48410a28b6958b0aa6de30c6f65b66ae1a3666a1958b7045704f98655748996e
     tests:
@@ -24887,13 +24896,13 @@ links:
         body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
-        body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
+        body: bb88b6334f259578f6435e6c8e10d54fd4ffae0ad2739fffda7881b453628c5d
   - node: 01a16621-e7bc-7707-b123-2162855d3a0d
     reviewed: 7d1a5e233b90acb3194dd59b9719f4afc4ba0494446ba1f5e4f6c5792484096d
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
-        body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
+        body: bb88b6334f259578f6435e6c8e10d54fd4ffae0ad2739fffda7881b453628c5d
   - node: 01a16880-126c-7301-9603-b98be3c7681b
     reviewed: 5560f48d2010a2ccbc934084025258be29220d73d49cc93d6cfd47e44d6b7a06
     tests:
@@ -24908,16 +24917,13 @@ links:
         body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
-        body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
+        body: bb88b6334f259578f6435e6c8e10d54fd4ffae0ad2739fffda7881b453628c5d
   - node: 01a1646f-546c-7521-9643-bcac49382b64
     reviewed: e554d5e40f8a17d0caaaa47dffd04db2963fcc8ee8629ebdc163175c8cfe3733
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
         body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
-      - file: "plugins/claude/loft/tests/yard-model.test.ts"
-        name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
-        body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
   - node: 01a1646f-546c-7521-9643-bcad38f2c75b
     reviewed: c1261dd8a60f9d3f7d9139f7ddf5783da41a8c97dd17775ded854a941b1afc87
     tests:
@@ -24941,7 +24947,7 @@ links:
         body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
-        body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
+        body: bb88b6334f259578f6435e6c8e10d54fd4ffae0ad2739fffda7881b453628c5d
   - node: 01a1646f-546c-7521-9643-bcafd8ae1db1
     reviewed: 270b512e07f9a977031bff696c187bc24eb6883c62129cde6fc54aa0e19a4b65
     tests:

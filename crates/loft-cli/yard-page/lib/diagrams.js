@@ -110,6 +110,9 @@ let counter = 0;
 /** Each source drawn in each scheme, with what it was drawn as, so that a page drawn again draws at once. */
 const drawn = new Map();
 
+/** The most drawings `drawn` keeps; past it the one kept longest is forgotten. */
+const KEPT = 200;
+
 /** Each diagram drawn, with its source, so that a change of scheme draws it again. */
 const shown = new Map();
 
@@ -143,6 +146,7 @@ export async function draw(target, source) {
     const library = await mermaid();
     const { svg } = await library.render(id, text);
     drawn.set(key, svg);
+    if (drawn.size > KEPT) drawn.delete(drawn.keys().next().value);
     if (turns.get(target) !== turn) return;
     target.innerHTML = svg;
     target.classList.add('is-drawn');
@@ -242,6 +246,10 @@ globalThis.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('chan
  * @param {ParentNode} root
  */
 export function drawAll(root) {
+  // The diagrams of a page drawn before this one are no longer on it, and are let go.
+  for (const target of shown.keys()) {
+    if (!target.isConnected) shown.delete(target);
+  }
   for (const code of root.querySelectorAll('pre > code.language-mermaid')) {
     const pre = code.parentElement;
     if (!pre || pre.dataset.drawn) continue;

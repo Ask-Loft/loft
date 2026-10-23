@@ -3,7 +3,7 @@
 //! first, or opened last where none is closed; filtered by branch or title whatever its case; and
 //! given 50 at a time, for the listing carries only their count.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use serde_json::{Value, json};
 
@@ -18,18 +18,32 @@ pub struct Inherited {
     pub entry: Value,
 }
 
+/// How many Yard Logs [`distinct`] gives of `found`, without choosing or ordering them.
+pub fn distinct_count(found: &[Inherited], current: &HashSet<String>) -> usize {
+    found
+        .iter()
+        .map(|each| each.key.as_str())
+        .filter(|key| !current.contains(*key))
+        .collect::<HashSet<_>>()
+        .len()
+}
+
 /// Each Yard Log of `found` once, from the main worktree where that holds it and from the first
 /// tree that does otherwise, less those whose key `current` names; the newest first.
 pub fn distinct(found: Vec<Inherited>, current: &HashSet<String>) -> Vec<Inherited> {
     let mut kept: Vec<Inherited> = Vec::new();
+    let mut at: HashMap<String, usize> = HashMap::new();
     for each in found {
         if current.contains(&each.key) {
             continue;
         }
-        match kept.iter_mut().find(|held| held.key == each.key) {
-            Some(held) if each.main && !held.main => *held = each,
+        match at.get(&each.key) {
+            Some(&held) if each.main && !kept[held].main => kept[held] = each,
             Some(_) => {}
-            None => kept.push(each),
+            None => {
+                at.insert(each.key.clone(), kept.len());
+                kept.push(each);
+            }
         }
     }
     kept.sort_by(|a, b| {
