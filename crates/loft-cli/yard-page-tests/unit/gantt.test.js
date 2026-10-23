@@ -5,7 +5,7 @@ import { forget } from './dom.js';
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
-import { FOLD_AFTER, chart, scale } from '../../yard-page/model/gantt.js';
+import { FOLD_AFTER, chart, scale, ticks } from '../../yard-page/model/gantt.js';
 import { gantt } from '../../yard-page/views/gantt.js';
 import { EXPLORE, MAIN, act, answer, block, log, stage } from './fixtures.js';
 
@@ -26,10 +26,65 @@ function activity(more = {}) {
   return { session: 's1', turns: [span(0, 600)], plan: [], spec: [], loft: [], ...more };
 }
 
-test('the main agent’s lane comes first and names its session, and a subagent’s lane names its type', () => {
+test('the main agent’s lane comes first, and a subagent’s lane names its type', () => {
   const shown = log([timed('scan', EXPLORE, 10, 60), timed('shape', MAIN, 20, 100)], { activity: [activity()] });
   const model = chart(shown, T0 + 600_000);
-  assert.deepEqual(model.lanes.map((lane) => lane.label), ['main agent, s1', 'Explore']);
+  assert.deepEqual(model.lanes.map((lane) => lane.label), ['main agent', 'Explore']);
+});
+
+test('the main agent’s lane holds the stages of every session, numbering the sessions in the order they started', () => {
+  const later = { host: 'claude-code', session: 's2' };
+  const shown = log([timed('shape', MAIN, 0, 100), timed('build', later, 200, 300), timed('check', MAIN, 120, 150)], {
+    activity: [activity({ turns: [span(0, 150)] }), activity({ session: 's2', turns: [span(200, 300)] })],
+  });
+  const [lane, ...others] = chart(shown, T0 + 600_000).lanes;
+  assert.equal(others.length, 0);
+  assert.deepEqual(lane.rows.map((row) => row.stage.id), ['shape', 'check', 'build']);
+  assert.deepEqual(lane.sessions.map((each) => [each.session, each.number, (each.from - T0) / 1000]), [
+    ['s1', 1, 0],
+    ['s2', 2, 200],
+  ]);
+});
+
+test('a stage’s bar is divided into its tasks, Loft runs, waits and work as the bar above the chart counts them, idle time left empty', () => {
+  const task = block('task', 't1', { title: 'T', state: 'done' }, { more: { times: { listed: at(0), started: at(10), ended: at(40) } } });
+  const asked = block('question', 'q', { prompt: 'Which?', options: [] });
+  const changes = [
+    { what: 'sent', act: act(at(35), 2) },
+    { what: 'answered', act: act(at(60), 3) },
+  ];
+  const sent = [{ key: 'sub', agent: MAIN, blocks: [asked.key], state: 'answered', changes }];
+  const shown = log([timed('one', MAIN, 0, 100, [task, asked])], {
+    sent,
+    activity: [activity({ turns: [span(0, 70), span(90, 100)], loft: [{ commands: ['check'], agent: 'main', ...span(30, 38) }] })],
+  });
+  const model = chart(shown, T0 + 600_000);
+  const [row] = model.lanes[0].rows;
+  assert.deepEqual(row.segments.map((each) => [each.kind, (each.from - T0) / 1000, (each.to - T0) / 1000]), [
+    ['work', 0, 10],
+    ['task', 10, 30],
+    ['loft', 30, 38],
+    ['task', 38, 40],
+    ['wait', 40, 60],
+    ['work', 60, 70],
+    ['work', 90, 100],
+  ]);
+  assert.equal(row.segments.find((each) => each.kind === 'wait').block, 'q');
+  const counted = (kind) => row.segments.filter((each) => each.kind === kind).reduce((sum, each) => sum + each.to - each.from, 0);
+  for (const part of model.summary.parts) assert.equal(counted(part.kind), part.length, part.kind);
+});
+
+test('the time axis is marked at regular times within each stretch between folded idle stretches, no two marks crowding', () => {
+  const shown = log([timed('one', MAIN, 0, 3600)], { activity: [activity({ turns: [span(0, 1200), span(2400, 3600)] })] });
+  const model = chart(shown, T0 + 4_000_000);
+  const x = scale(model, 1000, 28);
+  const marks = ticks(model, x, 72);
+  const inner = marks.filter((time) => time !== model.start && time !== model.end);
+  assert.ok(inner.length >= 4, 'each stretch has marks of its own');
+  const steps = new Set(inner.map((time) => (time - T0) % 300_000));
+  assert.deepEqual([...steps], [0], 'marks fall on whole steps');
+  assert.ok(inner.every((time) => time <= T0 + 1_200_000 || time >= T0 + 2_400_000), 'no mark inside a folded stretch');
+  for (let index = 1; index < marks.length; index += 1) assert.ok(x(marks[index]) - x(marks[index - 1]) >= 72);
 });
 
 test('lanes that overlap in time are drawn one above the other', () => {
