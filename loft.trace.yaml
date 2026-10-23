@@ -23928,12 +23928,21 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
         body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a full post the page server does not take keeps the newest 1,000 events, and counts the oldest dropped"
+        body: 461cc444098e54c65f9d152c2edb2994f5e2afde565fe153a77b20e714141d29
   - node: 01a1646f-546d-7042-befd-eb0f5266c105
     reviewed: 3f207710753580fa4aa1401a004423bf2a5d55ceafc484a33080aa8bebee4d33
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
         body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+  - node: 01a16a54-ced2-7361-9f2d-5f1bed8103e9
+    reviewed: 689cce4d82c418f36b8d6ffec670e7045e86585cbef090c3b19cbdb696698476
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "an event kept while a full post is under way is posted after it, and is not counted as dropped"
+        body: f776bc01cb2441a6652393335a22b455879e7af1e86bec1682eb197295e69e85
   - node: 01a1646f-546d-7042-befd-eb11fb7e4314
     reviewed: 227f1c9404a955be715a8952f93aa64fd5d9cd258a91f6bbdbf5f4e2f17a36c8
     tests:

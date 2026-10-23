@@ -1,5 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
+import { flush, keep, MOST, outboxOf } from '../hooks/yard/outbox'
 import { block, deferred, readDoc, SESSION, stage, start, TREE, world, type Engine, type World } from './yard-world'
 
 const events = (w: World) => w.state.posts.flatMap(post => post.events)
@@ -323,4 +324,52 @@ test("after /clear a task the new session makes is a block of its own, and the m
   const mirrorReads = w.state.runs.slice(before).filter(run => run.argv.includes('read'))
   expect(mirrorReads.length).toBeGreaterThan(0)
   for (const run of mirrorReads) expect(run.argv).not.toContain('--mark-read')
+})
+
+/** An outbox whose posts the test answers one at a time, holding each until it is answered. */
+function heldOutbox() {
+  const box = outboxOf(7411)
+  box.token = 'token-1'
+  const posts: { events: Record<string, unknown>[]; answer: (status: number) => void }[] = []
+  const $ = {
+    http: {
+      fetch: (_url: string, init: { body: string }) =>
+        new Promise(answered =>
+          posts.push({ events: JSON.parse(init.body), answer: status => answered({ ok: status < 300, status }) }),
+        ),
+    },
+  } as unknown as Parameters<typeof flush>[0]
+  return { box, posts, flushing: () => flush($, box) }
+}
+
+const settled = () => new Promise(done => setTimeout(done, 0))
+
+test('an event kept while a full post is under way is posted after it, and is not counted as dropped', async () => {
+  const { box, posts, flushing } = heldOutbox()
+  for (let n = 0; n < MOST; n++) keep(box, { kind: 'turn.start', turn: `t${n}` })
+  const flushed = flushing()
+  await settled()
+  keep(box, { kind: 'turn.start', turn: 'late' })
+  posts[0]!.answer(200)
+  await settled()
+  posts[1]!.answer(200)
+  await flushed
+  expect(posts[0]!.events).toHaveLength(MOST)
+  expect(posts[1]!.events).toEqual([{ kind: 'turn.start', turn: 'late' }])
+  expect(box.queue).toEqual([])
+  expect(box.dropped).toBe(0)
+})
+
+test('a full post the page server does not take keeps the newest 1,000 events, and counts the oldest dropped', async () => {
+  const { box, posts, flushing } = heldOutbox()
+  for (let n = 0; n < MOST; n++) keep(box, { kind: 'turn.start', turn: `t${n}` })
+  const flushed = flushing()
+  await settled()
+  keep(box, { kind: 'turn.start', turn: 'late' })
+  posts[0]!.answer(503)
+  await flushed
+  expect(box.queue).toHaveLength(MOST)
+  expect(box.queue[0]).toMatchObject({ turn: 't1' })
+  expect(box.queue.at(-1)).toMatchObject({ turn: 'late' })
+  expect(box.dropped).toBe(1)
 })
