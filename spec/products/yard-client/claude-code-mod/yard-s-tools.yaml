@@ -59,3 +59,17 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-ea32b43b5531
         name: "No file is changed."
+  - key: 01a1687f-8b71-721a-b646-45d0aa68e4bd
+    statement:
+      form: unwanted
+      if: "the matching `loft yard` command prints output that does not read as a JSON document"
+      system: "the Loft mod"
+      shall: "return a tool error that gives the number of bytes the command printed and says they could not be read as a document."
+    body: "Claude Code keeps only the first part of a command's output past its limit and says so; output cut short there never reads as a document."
+    criteria:
+      - key: 01a1687f-8b72-7634-ba73-84b389881000
+        name: "The error gives the number of bytes the command printed on standard output and says they could not be read as a document, rather than the command's exit code alone."
+      - key: 01a1687f-8b72-7634-ba73-84b49a0144a1
+        name: "Where Claude Code cut the command's output short, the error says that the output was cut short after the number of bytes it kept."
+      - key: 01a1687f-8b72-7634-ba73-84b5b9eea541
+        name: "Output cut short is never read as a document, even where the bytes kept would read as one."
