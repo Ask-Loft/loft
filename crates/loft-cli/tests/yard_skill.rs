@@ -115,6 +115,7 @@ fn the_yard_skill_tells_the_agent_to_build_only_once_the_person_asks_for_the_bui
         "stop once the plan is written, and leave the build's stages `planned`",
         "Tell the person the plan is ready and that the build waits for them to ask for it",
         "A plan the person approved counts as asking for the build it describes",
+        "a change to the specification the person approved does not count as asking for its build",
     ]);
 }
 
@@ -158,19 +159,40 @@ fn the_yard_skill_tells_the_agent_to_write_what_each_stage_produced_in_markdown(
 }
 
 #[test]
-fn the_yard_skill_tells_the_agent_to_plan_the_build_in_plan_mode_once_the_spec_is_written() {
+fn the_yard_skill_tells_the_agent_to_have_the_person_approve_a_spec_change_before_it_is_committed()
+{
     says(&[
-        "Once a change to `spec/` is committed and its `spec-change` view recorded, call `EnterPlanMode` before you write any code of the build",
-        "present the build as a plan with `ExitPlanMode`, worked out from the specification you just wrote",
+        "send an `approval` of the change right after its `spec-change` block, in the same stage",
+        "revise `spec/` without committing it, then record a new `spec-change` block and send a new approval right after it",
+        "Commit `spec/` once the person approves the change, and not before",
+    ]);
+}
+
+#[test]
+fn the_yard_skill_tells_the_agent_to_plan_the_build_in_plan_mode_once_the_spec_change_is_approved()
+{
+    says(&[
+        "Once the person has approved a change to `spec/` and it is committed, call `EnterPlanMode` before you write any code of the build",
+        "present the build as a plan with `ExitPlanMode`, worked out from the specification the person approved",
         "The build begins only once the person approves that plan",
         "revise in plan mode with their reason",
     ]);
 }
 
 #[test]
+fn the_yard_skill_tells_the_agent_to_plan_again_only_the_steps_a_later_requirement_change_touches()
+{
+    says(&[
+        "commit the change to `spec/` and record its `spec-change` view before you write any code that meets it",
+        "present with `ExitPlanMode` only the steps whose criteria the change touches",
+        "The steps of the approved plan that the change leaves untouched stand, and are not presented again",
+    ]);
+}
+
+#[test]
 fn the_yard_skill_tells_the_agent_to_record_loft_s_views_rather_than_retell_them() {
     says(&[
-        "Record a `spec-change` view once a change to `spec/` is committed",
+        "Record a `spec-change` view once a change to `spec/` passes `loft fmt --check` and `loft check --fail-on warning`, whether or not it is committed",
         "Record a `decision` view once a decision of the specification is accepted",
         "Record a `findings` view after `loft check`, with a reason for each finding left in place",
         "Record a `trace` view once the tests are linked and the links accepted",
