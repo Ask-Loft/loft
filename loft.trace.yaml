@@ -19433,7 +19433,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "an_answer_records_the_person_its_act_and_its_channel"
-        body: a49ec9035b77a75d1f836d01cb9296ba985d8d5145da5552639111f9d0a2786b
+        body: 4cea22928f3ef840ee47ddfb664c8491fe234a0daa08b3b814cc5d55dbabf15a
   - node: 01a1646f-546e-76cb-8b4f-f2780c5a73b7
     reviewed: f9898378e3e75adb79862d45352f2976c947d36f70680d3fabad8c1f8efd3b52
     tests:
@@ -19508,13 +19508,13 @@ links:
         body: 9b4760b117c6c843d189c475b5f1c8874e9b07fa4343c6f965b7e6fc2340cb0f
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
-        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+        body: 5b8212ada9221210651e4c9e1f1740b08873100ce96082f41426eb4c97339421
   - node: 01a1646f-546e-76cb-8b4f-f284b0b1b5f5
     reviewed: 409e29308c747d13f3c0e34a39a1eb41470bddd403d548eaa673923df89cf186
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
-        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+        body: 5b8212ada9221210651e4c9e1f1740b08873100ce96082f41426eb4c97339421
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_rewritten_plan_sent_again_waits_for_a_new_outcome"
         body: 97d40754740209efbfc54dfab47d4b45beeec1972ef51619e143ae5c592669b6
@@ -19523,7 +19523,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
-        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+        body: 5b8212ada9221210651e4c9e1f1740b08873100ce96082f41426eb4c97339421
   - node: 01a1646f-546e-76cb-8b4f-f2886e33378e
     reviewed: a440ecaa942d026b83d6a5e3c116e52bbfef95a13dfe662b00d02a14c29f2950
     tests:
@@ -19760,13 +19760,13 @@ links:
     tests:
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eb9e0d8d45d3
     reviewed: b7cad17c8c060159d014de4555ed6c681ab51b639c637e094c309165a40aa381
     tests:
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eba0ae5f5513
     reviewed: 7e7a4d7f76a50c6e1899318ce50b6f2f2583602048023fb0a7e29eee9920764e
     tests:
@@ -19775,7 +19775,7 @@ links:
         body: 6d27379f007406e9f9e8907c3709cd1f478f6c5953190f3e601d710b7f0e1b56
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eba1a81ca116
     reviewed: b7f13e00c3f0dba437e138a206b56dd035c402a08cd8f6253aa18a3eac85eed8
     tests:
@@ -19784,13 +19784,13 @@ links:
         body: 6d27379f007406e9f9e8907c3709cd1f478f6c5953190f3e601d710b7f0e1b56
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1649f-62ef-71e6-98de-e112b4f533a0
     reviewed: d3b66d35a6e290013da526aae1fdadd00e991ce7bf04b7403b6ff0978c8b919b
     tests:
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eba3cc9480da
     reviewed: e9ee5bafe5f1066e869d2420b03e70b585d8460869bcf925a1d4df053eb35687
     tests:
@@ -20036,7 +20036,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "an_answer_records_the_person_its_act_and_its_channel"
-        body: a49ec9035b77a75d1f836d01cb9296ba985d8d5145da5552639111f9d0a2786b
+        body: 4cea22928f3ef840ee47ddfb664c8491fe234a0daa08b3b814cc5d55dbabf15a
   - node: 01a1646f-546d-7042-befd-ebbee5a82235
     reviewed: 35c5676b7da69302b820a7da818af607ee5ef0a5e4df0463a6ed486ec6b19ad4
     tests:
@@ -20069,7 +20069,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ebc2b4b704f4
     reviewed: 43764eba588c254441993fcbfae234f0da2c952e9cc2d278706af6862438e69d
     tests:
@@ -20306,7 +20306,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "an_answer_given_elsewhere_first_is_kept_and_the_page_s_later_one_refused"
         body: 2e46faa5ab5c3217accce5ef79279f607a94804c04588d07da62352bf4abfb5f
@@ -20324,7 +20324,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_other_answers_of_a_send_are_recorded_when_one_was_answered_elsewhere_first"
         body: eb7d53284ed6dcec97165836633ba014855a7b6574fec2065f4965b350632689
@@ -20436,6 +20436,18 @@ links:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers"
         body: 5227c37e42188e2fc797af2c7edfc06d214840906b8ebb4c346e7a8a64f50ee5
+  - node: 01a16a51-12f0-765c-abd9-0fb6be8e1702
+    reviewed: 42de1df2e49a5e6b1d778ba7f49f6aa796bf5081f2291997b1a5eb564be2d8bc
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_rejected_approval_sent_again_waits_for_a_new_outcome"
+        body: 7992e9456e50dbf6a63281ebf4ba54874ac005832bb03983b2b9b0eff8c3a0e3
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "an_answered_question_sent_again_waits_for_a_new_answer"
+        body: 059cdb4a96c38221a68c6c758f8757f67a88b162d2a9de2e0ebdb625c1cb80b5
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_decided_plan_sent_again_unchanged_waits_for_a_new_outcome"
+        body: e1b2889d7fe064edd9b7c0549445e2feddd97d92ee1956403dabf59c4eb598bc
   - node: 01a1646f-546c-7521-9643-bbf7da5107e5
     reviewed: 31478f93fdea69515564e1c23d1bc86bfba8ec7e6b39178f067dd3ad521d614e
     tests:
@@ -24950,7 +24962,7 @@ links:
         body: 6011b348ccb493610db64473840dfee87fd9ee028a7b502f0380a04dd95fbdd7
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ea3cc0994266
     reviewed: ec297e0cc0d24f9433b9f9255f69de050320020ec63a5fdd2c47f87c4a439c05
     tests:
@@ -24959,7 +24971,7 @@ links:
         body: 6011b348ccb493610db64473840dfee87fd9ee028a7b502f0380a04dd95fbdd7
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ea3d337fbaa1
     reviewed: e959d795e39d3ea98c200c34aef18d253168bac2efcdf72fdf67f1dd3e4b764d
     tests:
@@ -24968,7 +24980,7 @@ links:
         body: 6011b348ccb493610db64473840dfee87fd9ee028a7b502f0380a04dd95fbdd7
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ea3f674f8421
     reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
     tests:

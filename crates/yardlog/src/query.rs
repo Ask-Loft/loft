@@ -91,14 +91,30 @@ impl Block {
         responses
     }
 
-    /// The answer or outcome that counts: the first, or, for a plan whose Markdown was rewritten
-    /// after it was decided, the first given after the rewrite.
+    /// The answer or outcome that counts: the first given after the block was last sent, and,
+    /// for a plan whose Markdown was rewritten after it was decided, after the rewrite.
     #[must_use]
-    pub fn counted(&self) -> Option<&Response> {
-        let reset = self.rewritten_at();
+    pub fn counted(&self, log: &YardLog) -> Option<&Response> {
+        let reset = self.rewritten_at().max(self.sent_at(log));
         self.ordered_responses()
             .into_iter()
             .find(|response| reset.is_none_or(|at| order(&response.act, response.key.key()) > at))
+    }
+
+    /// The send of the latest submission that holds the block.
+    fn sent_at(&self, log: &YardLog) -> Option<(Time, Key)> {
+        log.root
+            .submissions
+            .iter()
+            .filter(|submission| submission.blocks.contains(&self.key))
+            .filter_map(|submission| {
+                let sent = submission
+                    .changes
+                    .iter()
+                    .find(|c| c.what == Happened::Sent)?;
+                Some(order(&sent.act, submission.key.key()))
+            })
+            .max()
     }
 
     /// The Act of the latest version of a plan whose Markdown differs from the one before it.
@@ -215,7 +231,7 @@ impl Submission {
             .iter()
             .map(|key| {
                 let (_, block) = log.block(*key)?;
-                block.counted().map(|response| response.act.at)
+                block.counted(log).map(|response| response.act.at)
             })
             .collect::<Option<Vec<_>>>()?
             .into_iter()

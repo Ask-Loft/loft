@@ -121,7 +121,7 @@ fn open(log: &YardLog) -> Vec<(&Submission, Vec<&Block>)> {
                 .iter()
                 .filter_map(|key| log.block(*key))
                 .map(|(_, block)| block)
-                .filter(|block| block.counted().is_none())
+                .filter(|block| block.counted(log).is_none())
                 .collect();
             (submission, blocks)
         })

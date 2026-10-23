@@ -115,8 +115,8 @@ impl YardLog {
             completed: Vec::new(),
         };
         for reply in replies {
-            let block = next.block_mut(reply.block).expect("checked");
-            if let Some(first) = block.counted() {
+            let (_, block) = next.block(reply.block).expect("checked");
+            if let Some(first) = block.counted(&next) {
                 answered.elsewhere.push((reply.block, first.channel));
                 continue;
             }
