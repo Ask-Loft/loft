@@ -11,10 +11,8 @@ import { h } from '../lib/dom.js';
 import { length, when } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import * as prefs from '../lib/prefs.js';
-import { chart, minimumWidth, place, ticks } from '../model/gantt.js';
-
-/** The width a folded idle stretch is drawn, in pixels. */
-const FOLD = 28;
+import { separator } from '../lib/separator.js';
+import { FOLD, chart, folds, minimumWidth, place, scale, ticks } from '../model/gantt.js';
 
 /** The column of names: its narrowest, its widest and its width until one is chosen. */
 export const NAMES = { least: 160, most: 480, first: 260 };
@@ -52,7 +50,6 @@ function css({ share, offset }) {
 
 /**
  * @typedef {{
- *   at: (time: number) => { share: number, offset: number },
  *   px: (time: number) => number,
  *   span: (from: number, to: number) => string,
  *   left: (time: number) => string,
@@ -79,8 +76,7 @@ export function gantt(log, options) {
   const at = place(model, FOLD);
   /** @type {Draw} */
   const draw = {
-    at,
-    px: (time) => at(time).share * track + at(time).offset,
+    px: scale(model, track, FOLD),
     left: (time) => `left: ${css(at(time))}`,
     span: (from, to) => {
       const start = at(from);
@@ -146,47 +142,26 @@ export function settle(root) {
  */
 function edge(frame, start, done) {
   let width = start;
-  let from = /** @type {number | null} */ (null);
-  let grabbed = start;
-  const handle = h('div', {
-    class: 'names-edge',
-    role: 'separator',
-    tabindex: 0,
-    'aria-orientation': 'vertical',
-    'aria-label': 'Width of the column of names',
-    'aria-valuemin': NAMES.least,
-    'aria-valuemax': NAMES.most,
-    'aria-valuenow': start,
-  });
-  const show = (next) => {
-    width = next;
-    frame.style.setProperty('--names', `${next}px`);
-    handle.setAttribute('aria-valuenow', String(next));
-  };
-  const keep = () => {
-    prefs.set('gantt-names', String(width));
-    done();
-  };
-  handle.addEventListener('pointerdown', (/** @type {any} */ event) => {
-    from = event.clientX;
-    grabbed = width;
-    handle.setPointerCapture?.(event.pointerId);
-    event.preventDefault();
-  });
-  handle.addEventListener('pointermove', (/** @type {any} */ event) => {
-    if (from !== null) show(columnWidth(grabbed, event.clientX - from));
-  });
-  handle.addEventListener('pointerup', () => {
-    if (from === null) return;
-    from = null;
-    keep();
-  });
-  handle.addEventListener('keydown', (/** @type {any} */ event) => {
-    const moved = event.key === 'ArrowLeft' ? -STEP : event.key === 'ArrowRight' ? STEP : 0;
-    if (!moved) return;
-    event.preventDefault();
-    show(columnWidth(width, moved));
-    keep();
+  const handle = separator({
+    axis: 'x',
+    step: STEP,
+    attributes: {
+      class: 'names-edge',
+      'aria-label': 'Width of the column of names',
+      'aria-valuemin': NAMES.least,
+      'aria-valuemax': NAMES.most,
+      'aria-valuenow': start,
+    },
+    read: () => width,
+    show: (size) => {
+      width = columnWidth(size, 0);
+      frame.style.setProperty('--names', `${width}px`);
+      handle.setAttribute('aria-valuenow', String(width));
+    },
+    keep: () => {
+      prefs.set('gantt-names', String(width));
+      done();
+    },
   });
   return handle;
 }
@@ -200,7 +175,7 @@ function edge(frame, start, done) {
  * @param {Draw} draw
  */
 function labels(model, marks, draw) {
-  const folded = model.idle.filter((span) => span.folded);
+  const folded = folds(model);
   const breaks = folded.map((span) => (draw.px(span.from) + draw.px(span.to)) / 2);
   const resumes = new Set(folded.map((span) => span.to));
   return marks
@@ -232,9 +207,7 @@ function head(model, marks, draw) {
       'div',
       { class: 'gantt-axis' },
       marks.map(({ time, anchor, text }) => h('span', { class: `tick tick--${anchor}`, style: draw.left(time) }, text)),
-      model.idle
-        .filter((span) => span.folded)
-        .map((span) =>
+      folds(model).map((span) =>
           h('span', { class: 'idle-fold', style: draw.span(span.from, span.to), title: `idle ${length(span.to - span.from)}` }, h('span', { class: 'break-mark' })),
         ),
       h(
@@ -273,7 +246,7 @@ function laneBlock(model, lane, index, marks, draw) {
       { class: 'lane-overlay' },
       model.bands.map((band) => h('span', { class: `band-fill band-fill--${band.mode}`, style: draw.span(band.from, band.to) })),
       marks.map((time) => h('span', { class: 'grid-line', style: draw.left(time) })),
-      model.idle.filter((span) => span.folded).map((span) => h('span', { class: 'idle-gap', style: draw.span(span.from, span.to) })),
+      folds(model).map((span) => h('span', { class: 'idle-gap', style: draw.span(span.from, span.to) })),
       sessions.map((session) =>
         h('span', { class: 'session-rule', style: draw.left(session.from), title: `Session ${session.number}: ${session.session}` }),
       ),
