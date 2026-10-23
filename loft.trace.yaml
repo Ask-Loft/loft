@@ -23961,6 +23961,24 @@ links:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "an input that does not match its schema names the field at fault"
         body: d9f321cf2c817b3baa734329f18c358c2702ddf4fa3890310e83b5fd44624477
+  - node: 01a1687f-8b72-7634-ba73-84b389881000
+    reviewed: a131154e96f23ffa990b913171006ea7056f5bf72a15dbfc046acf52466cbbab
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "output that does not read as a document is named by its size, not by the exit code"
+        body: 5d5e2306719fe6c428f4320fc64f3ed960fad86be1610eaa846ef89664dee2d7
+  - node: 01a1687f-8b72-7634-ba73-84b49a0144a1
+    reviewed: 066158ac791b98e873a9426c24721799fd10c9f787fa77117ca3d447ad0009f5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "output Claude Code cut short says so, after the bytes it kept"
+        body: e47884dfd531ebe88e8ff4dfc29af6ee4e059e00ff2d100f9a4df3c3faadd6dc
+  - node: 01a1687f-8b72-7634-ba73-84b5b9eea541
+    reviewed: 00417e91a679795aef72faf8a830b31b056305586239c360bdde30ca2747278d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "output cut short is never read as a document, even where the bytes kept would read as one"
+        body: 8c5509be9a614d07cb3e5ad721a6d7173519c12355c2bb91d8b811d8c599942d
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: 9bfb0c16bc1c637e10f46372da282715472bc706a8162fa7b4ec52a2323a6bc2
     tests:

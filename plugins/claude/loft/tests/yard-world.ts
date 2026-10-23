@@ -81,6 +81,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     read: readDoc(),
     /** What each command answers, over the defaults, by subcommand. */
     answers: {} as Record<string, { doc?: Doc; exitCode?: number }>,
+    /** What each command prints as it is, over the answers, by subcommand: its standard output and whether Claude Code cut it short. */
+    printed: {} as Record<string, { stdout: string; truncated?: boolean; stderr?: string }>,
     runs: [] as Run[],
     /**
      * What each `loft yard wait` gives in turn, or makes when it runs from what the mod wrote before
@@ -161,6 +163,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     if (state.protocol === 'unrunnable') return { deny: 'loft is not on PATH' }
     const sub = subOf(e.argv)
     if (state.protocol === 'none') return out(undefined, 2, "error: unrecognized subcommand 'yard'")
+    const raw = sub ? state.printed[sub] : undefined
+    if (raw) return { value: { exitCode: 0, stdout: raw.stdout, stderr: raw.stderr ?? '', isStdoutTruncated: raw.truncated ?? false, isStderrTruncated: false } }
     const given = sub ? state.answers[sub] : undefined
     if (given) return out(given.doc, given.exitCode ?? 0)
     switch (sub) {

@@ -3,7 +3,7 @@
 
 import type { EngineInterface } from 'claude-code'
 
-import { loftArgv, QUIET, runLoft, type Doc, type Ran, type Settings } from '../loft'
+import { bytesOf, loftArgv, QUIET, runLoft, type Doc, type Ran, type Settings } from '../loft'
 import { parseDocument } from '../model'
 
 /** Whether the document reports a result, rather than a refusal or an error. */
@@ -11,13 +11,24 @@ export function succeeded(ran: Ran): ran is Ran & { doc: Doc } {
   return ran.doc !== undefined && ran.exitCode === 0 && ran.doc.outcome !== 'error' && ran.doc.outcome !== 'refused'
 }
 
-/** The command's own message for a run that did not succeed. */
+/**
+ * The command's own message for a run that did not succeed; for output that does not read as a
+ * document, the bytes printed, where Claude Code cut them short, and what the command said on
+ * standard error.
+ */
 export function failureOf(ran: Ran): string {
   if (ran.unrun !== undefined) return ran.unrun
   const errors = Array.isArray(ran.doc?.errors) ? (ran.doc.errors as { message?: unknown }[]) : []
   const messages = errors.map(error => String(error.message ?? '')).filter(message => message !== '')
   if (messages.length > 0) return messages.join('; ')
-  return ran.stderr.trim() || `exit ${ran.exitCode}`
+  const said = ran.stderr.trim()
+  if (ran.doc === undefined) {
+    const printed = ran.printed ?? 0
+    const cut = ran.truncated ? `, cut short by Claude Code after ${printed} bytes` : ''
+    const unread = `loft printed ${printed} bytes on standard output that could not be read as a document${cut}`
+    return said ? `${unread}: ${said}` : unread
+  }
+  return said || `exit ${ran.exitCode}`
 }
 
 /** The calling agent: its session, and for a subagent its id and type. */
@@ -68,7 +79,7 @@ export function spawnYard($: EngineInterface, settings: Settings, cwd: string, a
         const piece = await stream.next()
         if (piece.done) {
           const code = piece.value?.code ?? 1
-          return { doc: parseDocument(stdout), exitCode: code, stderr }
+          return { doc: parseDocument(stdout), exitCode: code, stderr, printed: bytesOf(stdout) }
         }
         if (piece.value.stream === 'stdout') stdout += piece.value.text
         else stderr += piece.value.text
