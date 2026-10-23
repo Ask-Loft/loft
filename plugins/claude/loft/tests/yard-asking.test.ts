@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { idOf } from '../hooks/yard/log'
-import { askedId, block, callIdOf, deferred, flagOf, readDoc, SESSION, stage, start, world, yardRuns, type Engine } from './yard-world'
+import { askedId, block, callIdOf, deferred, flagOf, readDoc, SESSION, stage, start, TREE, world, yardRuns, type Engine } from './yard-world'
 
 const QUESTIONS = [
   {
@@ -150,18 +150,28 @@ async function planAsked($: Engine, w: ReturnType<typeof world>, input: Record<s
 
 const approvedOnPage = () => answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }])
 
-test("the agent's plan goes to Yard Log as a plan block in plan mode, and the terminal's verdict is recorded", async ($, on) => {
+test("the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded", async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   w.state.terminal.ExitPlanMode = () => ({ deny: "The user doesn't want to proceed. the user said: split it" })
   await start($)
   const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
   expect(writes(w).at(-1)).toEqual([
-    { id: 'plan-shelf', kind: 'plan', stage: 'shape', title: 'Build the shelf', markdown: PLAN, path: '/home/reader/.claude/plans/shelf.md', planMode: true },
+    { id: 'plan-shelf', kind: 'plan', stage: 'shape', title: 'Build the shelf', markdown: PLAN, planMode: true },
   ])
   expect(ran.deny ?? ran.text).toMatch(/split it/)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
   expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'rejected', reason: 'split it' }])
+})
+
+test('a plan from a file within the tree keeps its path relative to the tree', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  await start($)
+  await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: `${TREE}/docs/plans/shelf.md` } as never)
+  expect(writes(w).at(-1)).toEqual([
+    { id: 'plan-shelf', kind: 'plan', stage: 'shape', title: 'Build the shelf', markdown: PLAN, path: 'docs/plans/shelf.md', planMode: true },
+  ])
 })
 
 test("a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on", async ($, on) => {

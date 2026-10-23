@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { askResultOf, feedbackIn, givenOf, planId, planTitle, questionBlocks, taskId, taskState } from '../hooks/yard/answers'
+import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, taskId, taskState } from '../hooks/yard/answers'
 import { contextOf, LIMIT } from '../hooks/yard/context'
 import { APPROVE, dialogOf, MORE, recordedOf, REJECT } from '../hooks/yard/dialog'
 import { activeStage, lastUnplanned, waitingOf, whoOf, type Block } from '../hooks/yard/log'
@@ -92,6 +92,16 @@ test('a plan is titled by its first heading, or by its file where it has none, a
   expect(planTitle('No heading here', '/p/plans/groovy-plan.md')).toBe('groovy-plan')
   expect(planId('/p/plans/Groovy_Plan.md', 'plan-r3')).toBe('plan-groovy-plan')
   expect(planId(undefined, 'plan-r3')).toBe('plan-r3')
+})
+
+test("a plan keeps its file's path relative to the tree, and none for a file outside it", () => {
+  expect(planPath('/work/shelf', '/work/shelf/docs/plans/shelf.md')).toBe('docs/plans/shelf.md')
+  expect(planPath('/work/shelf/', '/work/shelf/plan.md')).toBe('plan.md')
+  expect(planPath('/work/shelf', '/home/reader/.claude/plans/shelf.md')).toBeUndefined()
+  expect(planPath('/work/shelf', '/work/shelf-2/plan.md')).toBeUndefined()
+  expect(planPath('/work/shelf', '/work/shelf/../elsewhere/plan.md')).toBeUndefined()
+  expect(planPath(undefined, '/work/shelf/plan.md')).toBeUndefined()
+  expect(planPath('/work/shelf', undefined)).toBeUndefined()
 })
 
 test('the feedback typed with a rejection is read from what Claude Code gives the agent', () => {

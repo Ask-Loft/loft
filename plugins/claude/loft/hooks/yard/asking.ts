@@ -7,7 +7,7 @@
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
 import type { Doc, Ran } from '../loft'
-import { askResultOf, feedbackIn, givenOf, planId, planTitle, questionBlocks, type Asked, type Given } from './answers'
+import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { activeStage, blockById, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Running } from './run'
@@ -147,7 +147,8 @@ export async function presentPlan(
   const id = planId(path, idOf('plan', minted))
   const held = blockById(doc, id)
   const stage = held ? { id: held.stage.id } : stageFor(doc, askerOf(caller), minted)
-  const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(path ? { path } : {}), planMode: true }
+  const kept = planPath(typeof doc?.tree === 'string' ? doc.tree : undefined, path)
+  const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(kept ? { path: kept } : {}), planMode: true }
   const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
   if (submission === undefined) return next(e as never)
   const presenting: Presenting = { id, cwd, caller, submission }

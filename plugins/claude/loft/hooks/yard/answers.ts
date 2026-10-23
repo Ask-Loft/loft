@@ -2,6 +2,7 @@
 // recorded in Yard Log come back to the agent as Claude Code's tools give them. Pure, so that
 // each rule is tested on its own.
 
+import { relativeTo } from '../model'
 import { idOf, type Block } from './log'
 
 /** A question as `AskUserQuestion` takes it. */
@@ -120,6 +121,15 @@ export function planTitle(markdown: string, path: string | undefined): string {
 export function planId(path: string | undefined, fallback: string): string {
   const name = path?.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, '')
   return name ? idOf('plan', name) : fallback
+}
+
+/**
+ * The path a plan block keeps of its file: relative to the tree, and none for a file outside it,
+ * such as one of Claude Code's own plans, so that no path of the machine reaches Yard Log.
+ */
+export function planPath(tree: string | undefined, path: string | undefined): string | undefined {
+  const relative = tree && path ? relativeTo(tree, path) : undefined
+  return relative && !relative.split('/').includes('..') ? relative : undefined
 }
 
 // Claude Code gives the agent a rejection's feedback after these words.

@@ -12,8 +12,12 @@ requirements:
       form: event_driven
       when: "an agent presents a plan with `ExitPlanMode`"
       system: "the Loft mod"
-      shall: "write it as a `plan` block of the stage active for that agent, with the plan file's path, and send it."
+      shall: "write it as a `plan` block of the stage active for that agent, with the plan file's path relative to the tree when the file lies within the tree, and send it."
     criteria:
+      - key: 01a169a9-33b7-726d-a1ae-1138f287374d
+        name: "A plan from a file outside the tree, such as one of Claude Code's own plans, is written with no path."
+      - key: 01a169a9-33b7-726d-a1ae-113992d5bc45
+        name: "A plan from a file within the tree is written with its path relative to the tree."
       - key: 01a1646f-546c-7521-9643-bc43f8c8af27
         name: "The block's title is the plan's first heading, or the plan file's name where it has none."
       - key: 01a1646f-546c-7521-9643-bc440f533210

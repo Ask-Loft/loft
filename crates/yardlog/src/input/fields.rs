@@ -104,6 +104,15 @@ impl<'a> Fields<'a> {
         Some(text.clone())
     }
 
+    /// A path relative to the tree, which may be left out: never one of the machine's own.
+    pub(super) fn relative_path(&mut self, name: &'static str) -> Option<String> {
+        let path = self.optional_text(name)?;
+        if !is_relative(&path) {
+            self.fault(name, "is not a path relative to the tree");
+        }
+        Some(path)
+    }
+
     pub(super) fn flag(&mut self, name: &'static str) -> bool {
         match self.take(name) {
             Some(Value::Bool(flag)) => *flag,
@@ -206,4 +215,11 @@ fn holds_html(markdown: &str) -> bool {
             Event::Html(_) | Event::InlineHtml(_) | Event::Start(Tag::HtmlBlock)
         )
     })
+}
+
+/// Whether a path is relative and stays within the tree: no root, home, drive or `..` segment.
+fn is_relative(path: &str) -> bool {
+    let is_drive = path.as_bytes().get(1) == Some(&b':');
+    !(path.starts_with(['/', '\\', '~']) || is_drive)
+        && path.split(['/', '\\']).all(|segment| segment != "..")
 }

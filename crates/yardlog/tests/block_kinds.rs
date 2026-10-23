@@ -111,6 +111,30 @@ fn a_note_with_raw_html_is_refused_and_one_without_a_folded_flag_starts_open() {
     assert!(!note.folded);
 }
 
+fn plan_at(path: &str) -> Value {
+    json!([{"id": "p", "kind": "plan", "stage": "s", "title": "P", "markdown": "Plan", "path": path}])
+}
+
+#[test]
+fn a_plan_with_a_machine_path_is_refused_and_one_relative_to_the_tree_is_kept() {
+    for path in [
+        "/home/reader/.claude/plans/p.md",
+        "\\plans\\p.md",
+        "~/plans/p.md",
+        "../p.md",
+        "docs/../../p.md",
+        "docs\\..\\..\\p.md",
+        "C:\\plans\\p.md",
+    ] {
+        assert_eq!(fields(&faults(&plan_at(path))), [("p", "path")], "{path}");
+    }
+    let read = read_batch(&plan_at("docs/plans/p.md")).unwrap();
+    let yardlog::input::Request::Plan(plan) = &read[0].request else {
+        panic!()
+    };
+    assert_eq!(plan.path.as_deref(), Some("docs/plans/p.md"));
+}
+
 #[test]
 fn a_question_needs_two_options_with_distinct_labels() {
     let one = faults(&json!([{
