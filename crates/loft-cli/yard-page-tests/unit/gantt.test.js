@@ -114,6 +114,16 @@ test('each task runs from its listing to its end, marked active from its start a
   assert.ok(svg.querySelector('.task-done'));
 });
 
+test('the name and the bar of a fix are drawn in a tone of their own, apart from those of a regular task', () => {
+  const fix = block('task', 't1', { title: 'Mend it', state: 'open', type: 'fix' }, { more: { times: { listed: at(5), started: at(10) } } });
+  const regular = block('task', 't2', { title: 'Model it', state: 'open' }, { more: { times: { listed: at(5), started: at(10) } } });
+  const shown = log([timed('one', MAIN, 0, 60, [fix, regular])], { activity: [activity()] });
+  assert.deepEqual(chart(shown, T0 + 600_000).lanes[0].rows[0].tasks.map((task) => task.fix), [true, false]);
+  const svg = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
+  const rows = [...svg.querySelectorAll('.task-row')];
+  assert.deepEqual(rows.map((row) => row.classList.contains('task-row--fix')), [true, false]);
+});
+
 test('a task with no recorded times is drawn at the time its current version was written', () => {
   const task = block('task', 't1', { title: 'Model it', state: 'open' }, { at: at(20) });
   const shown = log([timed('one', MAIN, 0, 60, [task])], { activity: [activity()] });

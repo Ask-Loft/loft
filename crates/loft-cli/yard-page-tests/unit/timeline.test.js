@@ -163,6 +163,16 @@ test('a task shows its title and its state', () => {
   assert.equal(drawn.querySelector('.state').textContent, 'Active');
 });
 
+test('a fix shows a mark that names it a fix beside its state, and a regular task shows none', () => {
+  const fix = block('task', 't1', { title: 'Mend it', state: 'open', type: 'fix' });
+  const regular = block('task', 't2', { title: 'Model it', state: 'open', type: 'regular' });
+  const shown = context(log([stage('s', 'S', 'active', [fix, regular])]));
+  const mark = card(fix, shown).querySelector('.block-head .state + .task-type');
+  assert.equal(mark?.textContent, 'Fix');
+  assert.ok(mark.classList.contains('task-type--fix'));
+  assert.equal(card(regular, shown).querySelector('.task-type'), null);
+});
+
 test('every field that a block or a stage holds in Markdown is drawn from the HTML loft rendered from it', () => {
   const asked = question('shelf', ['Top', 'Bottom']);
   asked.version.body.options[0].detailHtml = '<p>The <strong>top</strong> one</p>';

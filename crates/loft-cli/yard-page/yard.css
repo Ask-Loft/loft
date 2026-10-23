@@ -1,10 +1,10 @@
 /* The Yard page, dressed as the Loft website: Inter on a white ground, square boxes with an ink
    border, a hard offset shadow on what is in hand and on what waits on the person, and the
    website's dotted cyan-to-lilac rule under the header. Action blue marks what is in hand, teal
-   what is done, rust what waits on the person and lilac plan mode. The dark scheme is the
-   website's own, taken when the browser asks for it. Tokens first, then the frame, the list of
-   Yard Logs, the timeline, the blocks, the answers, the Loft views, the Gantt chart and the
-   tokens. */
+   what is done, rust what waits on the person, lilac plan mode and rose a fix the person asked
+   for. The dark scheme is the website's own, taken when the browser asks for it. Tokens first,
+   then the frame, the list of Yard Logs, the timeline, the blocks, the answers, the Loft views,
+   the Gantt chart and the tokens. */
 
 @font-face {
   font-family: "Inter";
@@ -54,6 +54,8 @@
   --lilac: #8b57be;
   --series-task: #468de5;
   --series-task-pale: #c4dbf7;
+  --series-fix: #d23f74;
+  --series-fix-pale: #f6cddc;
   --series-loft: #1baf7a;
   --series-wait: #eb6834;
   --series-work: #aab2ba;
@@ -104,6 +106,8 @@
     --lilac: #9b6fd0;
     --series-task: #468de5;
     --series-task-pale: #24405f;
+    --series-fix: #e2578a;
+    --series-fix-pale: #4d2033;
     --series-loft: #199e70;
     --series-wait: #d95926;
     --series-work: #4a5561;
@@ -428,6 +432,8 @@ button { font: inherit; }
 .status.status--active, .state.state--active { color: var(--signal); background: var(--signal-soft); }
 .status.status--done, .state.state--done { color: var(--done); }
 .status.status--dropped, .state.state--dropped { color: var(--drop); text-decoration: line-through; }
+.task-type { font-size: 12px; font-weight: 600; padding: 0 7px; line-height: 20px; white-space: nowrap; }
+.task-type--fix { color: var(--surface); background: var(--series-fix); }
 .stage.status--dropped .stage-title { color: var(--muted); }
 
 .mode-band { border-left: 3px solid; padding: 8px 10px 10px; display: grid; gap: 10px; }
@@ -758,6 +764,9 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .task-active { background: var(--series-task); z-index: 2; }
 .task-done { top: 5px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--signal); z-index: 3; }
 .task-bar { z-index: 4; padding: 0; border: 0; background: none; cursor: pointer; }
+.task-row--fix .task-name { color: var(--series-fix); }
+.task-row--fix .task-listed { background: var(--series-fix-pale); }
+.task-row--fix .task-active { background: var(--series-fix); }
 .stage-name:focus-visible, .task-name:focus-visible, .stage-bar:focus-visible, .task-bar:focus-visible, .wait:focus-visible, .loft-view-mark:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
 .time-split { display: grid; gap: 8px; }
 .split-bar { display: flex; gap: 2px; height: 12px; overflow: hidden; background: var(--surface); }
