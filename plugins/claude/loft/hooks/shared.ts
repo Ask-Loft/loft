@@ -11,6 +11,3 @@ export type ToolCallAnswer = Awaited<ReturnType<Parameters<Hook<'tool.call'>>[2]
 export type ToolCallNext = Parameters<Hook<'tool.call'>>[2]
 /** A `turn.complete` event's input. */
 export type TurnCompleteEvent = Parameters<Hook<'turn.complete'>>[1]
-
-/** What runs the call on: Claude Code's own handling of it. */
-export type Onward = (e: ToolCallEvent) => Promise<ToolCallAnswer>
