@@ -33,3 +33,17 @@ requirements:
         name: "A change that git makes, such as a checkout of another branch or a merge, reaches open pages."
       - key: 01a16651-7f23-700e-b716-8dbcc1ebd2be
         name: "A change names each branch whose Yard Log it changed, and whether only its sessions' files changed, so that a page reads again only what it shows of them."
+  - key: 01a16920-ad17-71b2-ad0b-ba327948808a
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "look for changes at a cost that grows with the trees it serves and the files of their current branches' Yard Logs, not with every Yard Log those trees hold."
+    criteria:
+      - key: 01a16920-ad17-71b2-ad0b-ba33eaff36a2
+        name: "Every half second, the page server looks only at each tree's `HEAD`, and at the folder and the files of the Yard Log of the tree's current branch."
+      - key: 01a16920-ad17-71b2-ad0b-ba346fd0bb1b
+        name: "Every 5 seconds, the page server looks for the Yard Logs each tree holds, and at the root file of each Yard Log other than the current branch's, and at no other file of it."
+      - key: 01a16920-ad17-71b2-ad0b-ba35e925e0c4
+        name: "In its search for Yard Logs, the page server goes no deeper into a folder that holds a Yard Log's root file."
+      - key: 01a16920-ad17-71b2-ad0b-ba365356939e
+        name: "A change to a Yard Log other than a tree's current branch's reaches open pages within 6 seconds."

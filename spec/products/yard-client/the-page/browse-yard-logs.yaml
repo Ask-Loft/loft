@@ -43,6 +43,8 @@ requirements:
         name: "With the menu folded, its button gives the count of blocks that wait on the person."
       - key: 01a16901-3953-712b-afc6-44278c6402e4
         name: "In a window narrower than 860 pixels, the open menu lies over the Yard Log rather than beside it."
+      - key: 01a16920-dde7-743a-aadb-655223112875
+        name: "The page draws the menu again only when the list of Yard Logs, the Yard Log chosen or the menu's fold changes."
   - key: 01a1646f-546d-7042-befd-eb22743f9709
     statement:
       form: ubiquitous
@@ -89,6 +91,18 @@ requirements:
         name: "The page server takes no answer or decision for an inherited Yard Log."
       - key: 01a1649f-62ef-71e6-98de-e111af38463b
         name: "An inherited Yard Log adds nothing to the count of blocks that wait on the person."
+  - key: 01a16920-dde7-743a-aadb-65582e39ed26
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "read a Yard Log for the list of Yard Logs again only once its root file has changed."
+    criteria:
+      - key: 01a16920-dde7-743a-aadb-65591054d8f5
+        name: "While a Yard Log's root file keeps its size and its time, its entry in the list is the one the page server last read."
+      - key: 01a16920-dde7-743a-aadb-655a66b68f3f
+        name: "Once a Yard Log's root file changes, in size or in time, the next list reads the Yard Log again."
+      - key: 01a16920-dde7-743a-aadb-655b2c318095
+        name: "The page server forgets what it read of a Yard Log that no tree it serves holds any more."
   - key: 01a1646f-546d-7042-befd-eb2848576856
     statement:
       form: ubiquitous
