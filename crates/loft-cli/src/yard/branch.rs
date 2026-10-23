@@ -94,10 +94,13 @@ impl Branch {
             return Ok(held);
         }
         let actor = actor()?;
-        self.store.update(|current| {
-            let mut log = current.expect("Yard Log was read");
-            log.settle(at, actor);
-            Ok::<_, YardStoreError>((log, ()))
+        // Yard Log removed since it was read, as by a checkout, is left absent: nothing settles.
+        let _gone = self.update(|current| match current {
+            Some(mut log) => {
+                log.settle(at, actor);
+                Ok((log, ()))
+            }
+            None => Err(Unapplied::Refused(())),
         })?;
         Ok(self.store.read()?)
     }
@@ -173,5 +176,51 @@ pub fn log_of(held: &Held) -> Option<&YardLog> {
     match held {
         Held::Log(log) => Some(log),
         Held::Absent | Held::Newer(_) => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use yardlog::{Actor, Agent, Key, Time, YardLog};
+    use yardlog_store::git::YardGit;
+    use yardlog_store::{Held, Place, YardStoreError};
+
+    use super::Branch;
+    use crate::yard::args::Beyond;
+
+    #[test]
+    fn yard_log_removed_while_it_is_settled_is_found_absent() {
+        let dir = std::env::temp_dir().join(format!("loft-branch-{}", Key::mint()));
+        let place = Place {
+            tree: dir.clone(),
+            branch: Some("feat/x".to_owned()),
+            common_dir: dir.join(".git"),
+            git_yard: dir.join(".git").join("yard"),
+        };
+        let Ok(branch) = Branch::at(YardGit::default(), place, Beyond { port: 7411 }) else {
+            panic!("the branch's Yard Log is found");
+        };
+        let at = Time::from_unix_seconds(1_792_670_400).unwrap();
+        let agent = Agent::main("session-a");
+        branch
+            .store
+            .update(|_| {
+                let mut log = YardLog::open("feat/x", "develop", at, agent.clone());
+                log.root.unsettled_since = Some(0);
+                Ok::<_, YardStoreError>((log, ()))
+            })
+            .unwrap();
+        let folder = branch.store.folder();
+        let held = branch.open(at, || {
+            // Between the read and the settling, a checkout or `git clean` removes the folder.
+            fs::remove_dir_all(&folder).unwrap();
+            Ok(Actor::Agent(agent.clone()))
+        });
+        let written = folder.exists();
+        fs::remove_dir_all(&dir).ok();
+        assert!(matches!(held, Ok(Held::Absent)));
+        assert!(!written, "nothing is written");
     }
 }

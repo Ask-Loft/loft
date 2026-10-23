@@ -19944,6 +19944,12 @@ links:
       - file: "crates/loft-cli/tests/yard_settle.rs"
         name: "a_command_that_only_reads_yard_log_settles_it_as_one_that_writes_would"
         body: 43735dd2399a7774c84abf74689c4651a2fed94d31536221a8a807f664641d0a
+  - node: 01a16a58-511f-777c-8166-b8c175302dfb
+    reviewed: c84ae4cbf3f170ed5af02137127680cde617dec1bbda0473c3d1fd46f3c85dc1
+    tests:
+      - file: "crates/loft-cli/src/yard/branch.rs"
+        name: "yard_log_removed_while_it_is_settled_is_found_absent"
+        body: 0b2a1530ace9cedf20f6431bcd317ac8c1a269bdc66befd14a4160ca221df748
   - node: 01a1647b-208d-7169-85c8-9a56a7391c0f
     reviewed: 9311313ea21f257b4e01684a00ea46e7e05fba3536a5e9dfe59c2586526796c4
     tests:
