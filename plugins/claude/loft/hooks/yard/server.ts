@@ -8,7 +8,7 @@ import type { EngineInterface } from 'claude-code'
 
 import { QUIET, type Settings } from '../loft'
 import { parseDocument } from '../model'
-import { tokenOf, type Outbox } from './outbox'
+import { postToServer, type Outbox } from './outbox'
 import { argvOf } from './run'
 
 /** How often the mod tells the page server its session is live, in milliseconds. */
@@ -57,19 +57,7 @@ export function serve($: EngineInterface, settings: Settings, server: Server, se
 
 /** Tells the page server that `session` is live; whether a page server took it. */
 export async function hear($: EngineInterface, box: Outbox, session: string): Promise<boolean> {
-  const token = await tokenOf($, box)
-  if (token === undefined) return false
-  try {
-    const heard = await $.http.fetch(`http://127.0.0.1:${box.port}/api/heard`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ session }),
-    })
-    if (heard.status === 401 || heard.status === 403) box.token = undefined
-    return heard.ok
-  } catch {
-    return false
-  }
+  return postToServer($, box, '/api/heard', { session })
 }
 
 /**

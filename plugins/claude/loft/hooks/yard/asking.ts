@@ -86,8 +86,17 @@ async function send($: EngineInterface, cwd: string, caller: Caller, batch: unkn
   return succeeded(sent) && typeof sent.doc.submission === 'string' ? sent.doc.submission : undefined
 }
 
-async function record($: EngineInterface, cwd: string, caller: Caller, given: Given[]) {
-  await run($, cwd, ['answer', '--input', '-', ...callerArgs(caller)], JSON.stringify(given))
+/** Records what the person gave in the terminal with `loft yard answer`. */
+function record($: EngineInterface, cwd: string, caller: Caller, given: Given[]) {
+  return run($, cwd, ['answer', '--input', '-', ...callerArgs(caller)], JSON.stringify(given))
+}
+
+/** `ENDED` once `signal` aborts, as Claude Code drops a call or a request. */
+function endedBy(signal: AbortSignal) {
+  return new Promise<Ran>(done => {
+    if (signal.aborted) done(ENDED)
+    signal.addEventListener('abort', () => done(ENDED), { once: true })
+  })
 }
 
 async function withdraw($: EngineInterface, cwd: string, caller: Caller, submission: string) {
@@ -200,11 +209,7 @@ export async function decideOnPage<R>(
 ) {
   const wait = waiting($, presented.cwd, presented.submission, presented.caller)
   presented.end = wait.end
-  const dropped = new Promise<Ran>(done => {
-    if (signal.aborted) done(ENDED)
-    signal.addEventListener('abort', () => done(ENDED), { once: true })
-  })
-  const ran = await Promise.race([wait.done, dropped])
+  const ran = await Promise.race([wait.done, endedBy(signal)])
   wait.end()
   const decided = outcomeOf(ran, presented.id)
   if (decided?.channel !== 'page') return beneath()
@@ -235,11 +240,7 @@ export async function ownDialog(e: { questions: readonly Asked[] }, next: Next) 
 /** `yard_wait`: waits in Yard Log, asking in Claude Code's dialog meanwhile. */
 export async function waitOn($: EngineInterface, cwd: string, caller: Caller, submission: string, signal: AbortSignal) {
   const wait = waiting($, cwd, submission, caller)
-  const aborted = new Promise<Ran>(done => {
-    if (signal.aborted) done(ENDED)
-    signal.addEventListener('abort', () => done(ENDED), { once: true })
-  })
-  const ended = Promise.race([wait.done, aborted])
+  const ended = Promise.race([wait.done, endedBy(signal)])
   const asking = askInTerminal($, cwd, caller, submission, ended.then(() => undefined))
   const ran = await ended
   wait.end()
@@ -278,7 +279,6 @@ async function askInTerminal($: EngineInterface, cwd: string, caller: Caller, su
     const { given, paging: after } = recordedOf(dialog, answered.result, paging)
     paging = after
     if (given.length === 0) continue
-    const recorded = await run($, cwd, ['answer', '--input', '-', ...callerArgs(caller)], JSON.stringify(given))
-    if (!succeeded(recorded)) return
+    if (!succeeded(await record($, cwd, caller, given))) return
   }
 }

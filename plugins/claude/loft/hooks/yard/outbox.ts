@@ -53,6 +53,26 @@ export async function tokenOf($: EngineInterface, box: Outbox): Promise<string |
 }
 
 /**
+ * Posts `body` to the page server's `path` with the control token; whether it took it. A token it
+ * refuses is forgotten, so that the next post reads the one a newer page server made.
+ */
+export async function postToServer($: EngineInterface, box: Outbox, path: string, body: unknown): Promise<boolean> {
+  const token = await tokenOf($, box)
+  if (token === undefined) return false
+  try {
+    const posted = await $.http.fetch(`http://127.0.0.1:${box.port}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    })
+    if (posted.status === 401 || posted.status === 403) box.token = undefined
+    return posted.ok
+  } catch {
+    return false
+  }
+}
+
+/**
  * Posts every kept event in order; those the page server does not take stay kept. A post takes its
  * events out of the queue while it is under way, so an event kept meanwhile waits behind them.
  */
@@ -61,25 +81,12 @@ export async function flush($: EngineInterface, box: Outbox): Promise<void> {
   box.isPosting = true
   try {
     while (box.queue.length > 0) {
-      const token = await tokenOf($, box)
-      if (token === undefined) return
+      if ((await tokenOf($, box)) === undefined) return
       const sent = box.queue.splice(0)
       const dropped = box.dropped
       // The first event posted after a drop says how many were dropped.
       const body = sent.map((event, n) => (n === 0 && dropped > 0 ? { ...event, dropped } : event))
-      let isTaken = false
-      try {
-        const posted = await $.http.fetch(`http://127.0.0.1:${box.port}/api/events`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(body),
-        })
-        isTaken = posted.ok
-        if (posted.status === 401 || posted.status === 403) box.token = undefined
-      } catch {
-        isTaken = false
-      }
-      if (!isTaken) {
+      if (!(await postToServer($, box, '/api/events', body))) {
         box.queue.unshift(...sent)
         trim(box)
         return
