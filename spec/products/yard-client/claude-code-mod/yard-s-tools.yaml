@@ -21,6 +21,8 @@ requirements:
         name: "`yard_read` takes an optional revision to read since."
       - key: 01a16621-e7bc-7707-b123-2162855d3a0d
         name: "`yard_read` runs `loft yard read --mark-read`, so that the agent's own read records the revision it read."
+      - key: 01a16880-126c-7301-9603-b98be3c7681b
+        name: "`yard_read` takes an optional `reports`, which runs the read with `--reports`, so that a read gives each `loft` block's report only when the agent asks for it."
       - key: 01a1646f-546c-7521-9643-bcab7a45d9c4
         name: "`yard_write` takes the batch, the revision it is based on, and whether it is to be sent."
       - key: 01a1646f-546c-7521-9643-bcac49382b64
