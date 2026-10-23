@@ -73,7 +73,7 @@ requirements:
       shall: "hold a title and, in Markdown, what the person is asked to approve."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f2780c5a73b7
-        name: "An approval's outcome, once decided, is `approved`, or `rejected` with the person's reason."
+        name: "An approval's outcome, once decided, is `approved`, or `rejected` with the person's reason, which only a rejection in the terminal may leave out."
       - key: 01a1646f-546e-76cb-8b4f-f27944dc6139
         name: "An outcome holds its Act and its channel, `page` or `terminal`."
   - key: 01a1646f-546e-76cb-8b4f-f27ad9a58d69
@@ -113,7 +113,7 @@ requirements:
       - key: 01a169a9-33b8-738f-a30d-b206873dcb5c
         name: "A plan whose path is absolute, starts with `~` or has a `..` segment is refused, naming its `path` field."
       - key: 01a1646f-546e-76cb-8b4f-f2828477d857
-        name: "A plan's outcome is `approved`, or `rejected` with the person's reason."
+        name: "A plan's outcome is `approved`, or `rejected` with the person's reason, which only a rejection in the terminal may leave out."
       - key: 01a1646f-546e-76cb-8b4f-f28342049ac1
         name: "An outcome holds its Act and its channel, `page` or `terminal`."
       - key: 01a1646f-546e-76cb-8b4f-f284b0b1b5f5

@@ -37,6 +37,8 @@ requirements:
         name: "An approval in the terminal is recorded as `approved`."
       - key: 01a1646f-546c-7521-9643-bc49188fb63b
         name: "A rejection in the terminal is recorded as `rejected`, with the feedback the person typed as its reason."
+      - key: 01a16a5e-43b6-76b2-9e32-6b026850e2c0
+        name: "A rejection in the terminal with no feedback typed is recorded as `rejected` with no reason."
   - key: 01a1646f-546c-7521-9643-bc4a2205071d
     statement:
       form: event_driven
