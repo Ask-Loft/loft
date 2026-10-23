@@ -22232,7 +22232,10 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "every_script_style_and_font_the_page_loads_comes_from_the_page_server"
-        body: ef574b3d0a51aa8e497c741e2a7c659d8b804954b95d4e480f00f04f24087a08
+        body: 90d2c214e6bb5f44b4f216861842703e083f387f2541ebb6a732d0e2849895f3
+      - file: "crates/loft-cli/tests/yard_serve.rs"
+        name: "inter_is_served_as_a_font_with_its_licence"
+        body: 991770281aac19c2492b391a27ef33ccd2192df7aa923db219b237d5b0cad334
   - node: 01a1646f-546d-7042-befd-eb8873ff3ab9
     reviewed: 14d6c7fab1c7023e588453d85688a1703036cf9bd72c669fdb4f8e974d43614f
     tests:
@@ -24176,7 +24179,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "every_script_style_and_font_the_page_loads_comes_from_the_page_server"
-        body: ef574b3d0a51aa8e497c741e2a7c659d8b804954b95d4e480f00f04f24087a08
+        body: 90d2c214e6bb5f44b4f216861842703e083f387f2541ebb6a732d0e2849895f3
   - node: 01a16469-559e-73c4-85f2-71ac8bfc2fae
     reviewed: 3d7bbe3eb134dc6c874b68bb926bfd8e0fcd6915f8c87a1c2779c90aa566b44a
     tests:

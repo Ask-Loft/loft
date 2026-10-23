@@ -9,3 +9,14 @@
 
 `scripts/vendor-mermaid.sh` writes both files from the registry. To move to another release,
 change the version there and here, run it, record the new digest here, and run the page's tests.
+
+# Inter, as the Yard page sets its text in it
+
+- Release: Inter, font version v20, as `@fontsource-variable/inter` 5.3.0 ships it, SIL Open Font License 1.1,
+  Copyright 2016 The Inter Project Authors (`inter.LICENSE`).
+- Source: `files/inter-latin-wght-normal.woff2` of
+  <https://registry.npmjs.org/@fontsource-variable/inter/-/inter-5.3.0.tgz>, the Latin subset
+  with every weight from 100 to 900.
+- SHA-256: `3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62`.
+- Kept here as `inter-latin.woff2`; `yard.css` names it in its `@font-face`, and the page falls
+  back to the system's sans-serif for any character outside the subset.

@@ -25,6 +25,7 @@ const HTML: &str = "text/html; charset=utf-8";
 const CSS: &str = "text/css; charset=utf-8";
 const JS: &str = "text/javascript; charset=utf-8";
 const TEXT: &str = "text/plain; charset=utf-8";
+const FONT: &str = "font/woff2";
 
 /// The page's file at `path` under `yard-page/`, of the media type `kind`; or, with `gzip`, the
 /// file kept as `path.gz` and served at `path`.
@@ -81,6 +82,9 @@ pub const ASSETS: &[Asset] = &[
     // licence; `vendor/README.md` names the release.
     asset!("vendor/mermaid.min.js", JS, gzip),
     asset!("vendor/mermaid.LICENSE", TEXT),
+    // Inter, the Loft website's typeface, in its variable Latin cut, with its licence.
+    asset!("vendor/inter-latin.woff2", FONT),
+    asset!("vendor/inter.LICENSE", TEXT),
 ];
 
 impl Asset {
