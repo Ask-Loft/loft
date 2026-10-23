@@ -22,6 +22,7 @@ mod session_files;
 mod stream;
 mod tokens;
 mod trees;
+mod watch;
 
 use std::cmp::Ordering as Compared;
 use std::collections::VecDeque;

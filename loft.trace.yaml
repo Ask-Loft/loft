@@ -22197,6 +22197,30 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/change.test.js"
         name: "another Yard Log changing loads the listing and not the Yard Log shown"
         body: 6a4fbd4c9a28c14b91d314161a69f92fbc34bf845191063fc406f4077958a2e2
+  - node: 01a16920-ad17-71b2-ad0b-ba33eaff36a2
+    reviewed: 932d7cfd01cc22c65eb6b7bbee1a9dd2f8cb67e73a9fc02822959b40933f0887
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/watch.rs"
+        name: "a_quick_look_takes_the_current_branch_s_yard_log_and_no_other"
+        body: f7a67e16e81dca285cff1c39d56057cb7113ff155900e2445ebbad5590011590
+  - node: 01a16920-ad17-71b2-ad0b-ba346fd0bb1b
+    reviewed: b1a6d3a36521ba4a064a45330af409489d51a597d15ac9e995cfdea84386e739
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/watch.rs"
+        name: "a_sweep_takes_only_the_root_of_each_other_yard_log"
+        body: 11df555278d13298441d845dc8a6659d339bbd9c2af45b51ff8b91def7072604
+  - node: 01a16920-ad17-71b2-ad0b-ba35e925e0c4
+    reviewed: b770a547f9b2c967850cb2a7b318b329ecd9669e91c7217ca5e23973c8c1d1a1
+    tests:
+      - file: "crates/yardlog-store/tests/session_files.rs"
+        name: "the_search_for_branches_goes_no_deeper_into_a_folder_that_holds_a_root"
+        body: 14de16b99cd0262e9e578bca44fef49e29d32523e911c9b64448281b82b2ac3b
+  - node: 01a16920-ad17-71b2-ad0b-ba365356939e
+    reviewed: 7e16e05967aad90d0ab4d86d9fc7aead94c4ae7fcaf683d6a4be303a948886f9
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "a_change_to_an_inherited_yard_log_reaches_open_pages_within_six_seconds"
+        body: 916b41ae0891b5cc37e82ea17344dcd3c7e76acb7e877a7b98cb04ad3ed2dee4
   - node: 01a1646f-546d-7042-befd-eb57085a1ead
     reviewed: 7ca4a201916a9d2867f8a0bb74877f8a87f713db324ee8af7624230601b269db
     tests:

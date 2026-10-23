@@ -78,7 +78,7 @@ impl YardStore {
 }
 
 /// The branches whose Yard Log the worktree whose top is `tree` holds under `.yard/`: each folder
-/// that holds a root, by its path below `.yard/`, in order.
+/// that holds a root, by its path below `.yard/`, in order, and none within such a folder.
 ///
 /// # Errors
 ///
@@ -96,8 +96,11 @@ fn walk(dir: &Path, rel: &str, found: &mut Vec<String>) -> Result<(), YardStoreE
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
         Err(error) => return Err(io_error(dir)(error).into()),
     };
+    // A folder that holds a root is a branch's Yard Log, and nothing below it is another: git
+    // allows no branch `a/b/c` beside a branch `a/b`.
     if !rel.is_empty() && dir.join(ROOT).is_file() {
         found.push(rel.to_owned());
+        return Ok(());
     }
     for entry in entries {
         let entry = entry.map_err(io_error(dir))?;

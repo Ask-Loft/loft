@@ -383,6 +383,32 @@ fn a_change_that_git_makes_reaches_open_pages() {
 }
 
 #[test]
+fn a_change_to_an_inherited_yard_log_reaches_open_pages_within_six_seconds() {
+    let mut yard = with_inherited();
+    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
+    let mut stream = TcpStream::connect(("127.0.0.1", served.port)).unwrap();
+    let request = format!(
+        "GET /api/stream HTTP/1.1\r\nhost: 127.0.0.1:{}\r\n\r\n",
+        served.port
+    );
+    stream.write_all(request.as_bytes()).unwrap();
+    stream
+        .set_read_timeout(Some(Duration::from_secs(6)))
+        .unwrap();
+    let mut reader = BufReader::new(stream);
+    assert!(stream_until(&mut reader, "hello"));
+    std::thread::sleep(Duration::from_millis(600));
+    // Written on `main`, whose Yard Log the page server's tree holds as inherited.
+    yard.git = GitScenario::clean_on("main");
+    let note = r#"[{"id": "n1", "kind": "note", "stage": "shape", "markdown": "Seen."}]"#;
+    yard.write("s1", note, &[]);
+    assert!(
+        stream_until(&mut reader, "change"),
+        "no change within 6 seconds"
+    );
+}
+
+#[test]
 fn what_waits_on_the_person_is_listed_oldest_first_across_the_trees_served() {
     let mut one = Yard::new();
     let mut two = Yard::new();
