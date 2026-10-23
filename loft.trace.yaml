@@ -19869,6 +19869,12 @@ links:
       - file: "crates/yardlog/tests/block_kinds.rs"
         name: "a_stage_or_task_written_with_no_status_is_planned_or_open"
         body: 2559745c2245cf23290a95bbe25164563f65dafba9b5034501035358f4853af7
+  - node: 01a169a9-33b8-738f-a30d-b206873dcb5c
+    reviewed: 48eddd06aa43bcd66b5efc013d727766736366991ffd2b6bbccde212c0fd6855
+    tests:
+      - file: "crates/yardlog/tests/block_kinds.rs"
+        name: "a_plan_with_a_machine_path_is_refused_and_one_relative_to_the_tree_is_kept"
+        body: d91fcc2975eb31b5d19cf80699ea06c2ffbce768518e0da6075af8446736caa3
   - node: 01a1646f-546e-76cb-8b4f-f2828477d857
     reviewed: c02a8f58a66fadea96604e7bd425fb59b28c0309269a43a025df6cacc5620e43
     tests:

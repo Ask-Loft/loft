@@ -187,7 +187,7 @@ fn request(kind: Kind, fields: &mut Fields<'_>) -> Request {
         Kind::Plan => Request::Plan(Plan {
             title: fields.text("title"),
             markdown: fields.markdown("markdown"),
-            path: fields.optional_text("path"),
+            path: fields.relative_path("path"),
             plan_mode: fields.flag("planMode"),
         }),
         Kind::Loft => Request::Loft(loft(fields)),
