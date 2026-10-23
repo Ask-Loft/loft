@@ -95,7 +95,8 @@ Where they asked you to plan, shape or specify the change, stop once the plan is
 leave the build's stages `planned`: they show the road ahead without starting down it. Tell the
 person the plan is ready and that the build waits for them to ask for it. A plan the person
 approved counts as asking for the build it describes, whether they approved it on the page, in
-the terminal or in plan mode; a question they answered does not.
+the terminal or in plan mode. A question they answered does not, and a change to the specification
+the person approved does not count as asking for its build: it settles what is built, not when.
 
 ## Keep each task true as you go
 
@@ -162,8 +163,10 @@ each point of the specification's work, in place of a note that retells what `lo
 `loft` runs the view when you write the block and keeps its report as it was then; a later state
 is a later block.
 
-- Record a `spec-change` view once a change to `spec/` is committed. It compares with the base
-  branch, the branch this one was cut from, or with the revision you give as `base`.
+- Record a `spec-change` view once a change to `spec/` passes `loft fmt --check` and
+  `loft check --fail-on warning`, whether or not it is committed: it reads the working tree. It
+  compares with the base branch, the branch this one was cut from, or with the revision you give
+  as `base`.
 - Record a `decision` view once a decision of the specification is accepted, naming it as
   `decision` by its slug, its key or its label.
 - Record a `findings` view after `loft check`, with a reason for each finding left in place, in
@@ -178,19 +181,37 @@ Put what the report does not say in the block's `note`: why the change is shaped
 the person should look at. A refused `loft` block names the command that failed and why: fix the
 cause rather than writing the report as a note.
 
-## Plan the build in plan mode once the spec is written
+## Have the spec change approved before you commit it
 
 Where the working tree holds a Loft specification, the specification comes first and the code
-after it. Once a change to `spec/` is committed and its `spec-change` view recorded, call
-`EnterPlanMode` before you write any code of the build, even where the person asked for the build
-as well. In plan mode, read the specification back and present the build as a plan with
-`ExitPlanMode`, worked out from the specification you just wrote: which criteria each step meets,
-and the tests that will verify them. The build begins only once the person approves that plan; a
-plan they reject you revise in plan mode with their reason, and present again.
+after it, and the person settles what the change says before anything is planned on it. Once a
+change to `spec/` passes the checks, record its `spec-change` view, then send an `approval` of the
+change right after its `spec-change` block, in the same stage: its Markdown says what changed and
+what the person should look at, and the block above draws the change itself.
+
+Where the person rejects the change, the reason says what to change: revise `spec/` without
+committing it, then record a new `spec-change` block and send a new approval right after it. Each
+round is a new pair, so each approval stands beside the change it asks about. Commit `spec/` once
+the person approves the change, and not before, alone and as one commit.
+
+## Plan the build in plan mode once the change is approved
+
+Once the person has approved a change to `spec/` and it is committed, call `EnterPlanMode` before
+you write any code of the build, even where the person asked for the build as well. In plan mode,
+read the specification back and present the build as a plan with `ExitPlanMode`, worked out from
+the specification the person approved: which criteria each step meets, and the tests that will
+verify them. The build begins only once the person approves that plan; a plan they reject you
+revise in plan mode with their reason, and present again.
 
 A plan you present with `ExitPlanMode` reaches Yard Log as a `plan` block and may be approved or
 rejected on the page or in the terminal. Approved on the page, it ends plan mode and you go on in
 auto mode.
+
+Where the person changes a requirement once the plan is approved, commit the change to `spec/` and
+record its `spec-change` view before you write any code that meets it. Then call `EnterPlanMode`
+and present with `ExitPlanMode` only the steps whose criteria the change touches, each as it now
+stands. The steps of the approved plan that the change leaves untouched stand, and are not
+presented again.
 
 ## Commit `.yard/` with the work
 
