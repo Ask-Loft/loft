@@ -85,6 +85,14 @@ export function count(count, one, many = `${one}s`) {
 }
 
 /**
+ * Where a site lies, as `path:line`, or the path alone where it names no line.
+ * @param {{ path?: string, line?: number }} site
+ */
+export function place(site) {
+  return `${site.path ?? ''}${site.line ? `:${site.line}` : ''}`;
+}
+
+/**
  * The last part of a path.
  * @param {string} path
  */

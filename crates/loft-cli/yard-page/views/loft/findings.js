@@ -3,7 +3,7 @@
 // there before it, the agent's reason beside a finding left in place, and those resolved.
 
 import { h } from '../../lib/dom.js';
-import { count } from '../../lib/format.js';
+import { count, place } from '../../lib/format.js';
 import { chip, leftOut, named } from './index.js';
 
 const SEVERITIES = ['error', 'warning', 'info', 'hint'];
@@ -86,7 +86,7 @@ export function findingsView(report, body) {
 /** @param {any} item */
 function site(item) {
   if (!item.path) return null;
-  return h('p', { class: 'site' }, h('code', {}, `${item.path}${item.line ? `:${item.line}` : ''}`));
+  return h('p', { class: 'site' }, h('code', {}, place(item)));
 }
 
 /** @param {any[]} resolved */

@@ -21603,12 +21603,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "each repository is named by the top of its main worktree"
         body: e25d54ecdd354fdc428f24902648e48278bd3f9320f9a90e13dbe340324420f7
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "the_listing_marks_a_repository_s_main_worktree_and_no_linked_one"
+        body: bcb07150dc2cd8dca82574e763f36e2c404f81afaf842e471b69e8997ea886e6
   - node: 01a1660b-dd8a-760c-ade4-a7dfa7044f96
     reviewed: 256780821b92fd9294568433f50bce02cf013a0005b2288104b39d4c67e9a982
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "a repository’s main worktree, whose folder is the repository’s own, is named once"
-        body: dde79f2270ce6ac9dc3b9334307318f58b67eb1a6779a1a0b5e7ed1cc4bc71bf
+        body: 37e372e0f2823022ea1fe699a6ae98bc0b2b18367402f80338bbb2ea6d08982c
   - node: 01a1646f-546d-7042-befd-eb24d506d9d2
     reviewed: d9224ecea17090955c800a0023787e38211d572d365661d4a91e5353784334ad
     tests:
@@ -21938,19 +21941,19 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
-        body: 1017518fc6779331cd5495f305a12dfc436eb31a50967c72e3637e2e6ea55c56
+        body: 6985213339b42fcfe5c4b7ddc80dae37b706a73501b6afeeab5387c5769a8c67
   - node: 01a1646f-546d-7042-befd-eb5f8c067f0b
     reviewed: 3c842f94d0a223b313d84032bf83f8fcd978d68f4e1eb6f72039bdc6dede4ab5
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
-        body: 1017518fc6779331cd5495f305a12dfc436eb31a50967c72e3637e2e6ea55c56
+        body: 6985213339b42fcfe5c4b7ddc80dae37b706a73501b6afeeab5387c5769a8c67
   - node: 01a1646f-546d-7042-befd-eb60eba23d76
     reviewed: 48d122bb52e03b0d97977689926e2629e89b0d4797f2672393401aab7284a609
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "every open submission is shown above the list, oldest first, with its repository, worktree and branch"
-        body: 1017518fc6779331cd5495f305a12dfc436eb31a50967c72e3637e2e6ea55c56
+        body: 6985213339b42fcfe5c4b7ddc80dae37b706a73501b6afeeab5387c5769a8c67
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "what_waits_on_the_person_is_listed_oldest_first_across_the_trees_served"
         body: e3c76ec15b697ec2ceb1222167f045edeaf0460d8624229e037eb7988633eede

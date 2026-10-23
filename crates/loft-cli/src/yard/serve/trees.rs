@@ -16,6 +16,7 @@ use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::session::branches;
 use yardlog_store::{Held, Place, YardStore};
 
+use super::event::strings;
 use crate::yard::failure::Failure;
 use crate::yard::home_json;
 use crate::yard::page;
@@ -32,14 +33,9 @@ impl Registry {
         let file = bytes
             .and_then(|bytes| serde_json::from_slice::<Value>(bytes).ok())
             .unwrap_or(Value::Null);
-        let trees = file["trees"].as_array().map_or_else(Vec::new, |trees| {
-            trees
-                .iter()
-                .filter_map(Value::as_str)
-                .map(ToOwned::to_owned)
-                .collect()
-        });
-        Self { trees }
+        Self {
+            trees: strings(&file["trees"]),
+        }
     }
 
     fn bytes(&self) -> Vec<u8> {
@@ -95,11 +91,15 @@ pub fn repository(place: &Place) -> String {
     top.display().to_string()
 }
 
+/// Whether the worktree is its repository's main worktree: its own git directory, which holds
+/// `yard`, is the repository's common directory.
+fn is_main(place: &Place) -> bool {
+    place.git_yard.parent() == Some(place.common_dir.as_path())
+}
+
 /// The store of `branch`'s Yard Log in the worktree `place` names, whatever branch it is on.
 pub fn store_of(place: &Place, branch: &str) -> Result<YardStore, Failure> {
-    let mut place = place.clone();
-    place.branch = Some(branch.to_owned());
-    Ok(YardStore::new(place)?)
+    Ok(YardStore::new(place.on(branch))?)
 }
 
 /// Each open submission of `log`, with its blocks that wait on the person: those not yet
@@ -146,6 +146,7 @@ pub fn listing(home: &Home, port: u16) -> Result<Value, Failure> {
         }
         repositories.entry(repository).or_default().push(json!({
             "tree": place.tree.display().to_string(),
+            "main": is_main(&place),
             "branch": place.branch,
             "logs": logs,
         }));
@@ -222,6 +223,7 @@ fn summary(
             "asked": asked,
             "repository": repository,
             "tree": place.tree.display().to_string(),
+            "main": is_main(place),
             "branch": branch,
             "url": page::url(port, &place.tree, branch),
             "submission": submission.key.to_string(),

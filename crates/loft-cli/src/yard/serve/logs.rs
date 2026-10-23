@@ -79,7 +79,7 @@ pub fn read(home: &Home, tree: Option<&str>, branch: Option<&str>, port: u16) ->
     let read = if place.branch.as_deref() == Some(branch.as_str()) {
         current(place, beyond)
     } else {
-        inherited(place, &branch, beyond)
+        inherited(&place, &branch, beyond)
     };
     match read {
         Ok(fields) => Response::json(200, &json::result(READ_SCHEMA, "read", fields, Vec::new())),
@@ -120,9 +120,8 @@ fn current(place: Place, beyond: Beyond) -> Result<Value, Failure> {
 
 /// Yard Log of a branch the tree is not on, carried from the branch it was cut from: rendered
 /// as the current branch's is, never settled or written.
-fn inherited(mut place: Place, branch: &str, beyond: Beyond) -> Result<Value, Failure> {
-    place.branch = Some(branch.to_owned());
-    let branch = Branch::at(YardGit::default(), place, beyond)?;
+fn inherited(place: &Place, branch: &str, beyond: Beyond) -> Result<Value, Failure> {
+    let branch = Branch::at(YardGit::default(), place.on(branch), beyond)?;
     let held = branch.store.read()?;
     if matches!(held, Held::Absent) {
         return Err(Failure::one("absent", "the branch has no Yard Log"));

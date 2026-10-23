@@ -3,6 +3,7 @@
 //! its id and type) and its kind, with what that kind carries: names, ids, times and counts, and
 //! never what was said.
 
+use loftspec::yaml::Out;
 use serde_json::Value;
 use yardlog::Time;
 use yardlog_store::session::is_session_id;
@@ -57,6 +58,28 @@ impl Who {
     pub const fn is_main(&self) -> bool {
         matches!(self, Self::Main)
     }
+
+    /// The fields a session's file names the agent by: `agent`, and a subagent's `type`.
+    pub fn fields(&self) -> Vec<(&'static str, Out)> {
+        match self {
+            Self::Main => vec![("agent", Out::Token("main".to_owned()))],
+            Self::Sub { id, kind } => vec![
+                ("agent", Out::Token(id.clone())),
+                ("type", Out::Token(kind.clone())),
+            ],
+        }
+    }
+}
+
+/// The strings of the list `value` holds; none where it holds no list.
+pub fn strings(value: &Value) -> Vec<String> {
+    value.as_array().map_or_else(Vec::new, |items| {
+        items
+            .iter()
+            .filter_map(Value::as_str)
+            .map(ToOwned::to_owned)
+            .collect()
+    })
 }
 
 /// An event, read and checked.
@@ -139,16 +162,7 @@ impl Event {
 
     /// The names of the `loft` subcommands a shell command's start runs.
     pub fn loft(&self) -> Vec<String> {
-        self.posted["loft"]
-            .as_array()
-            .map(|names| {
-                names
-                    .iter()
-                    .filter_map(Value::as_str)
-                    .map(ToOwned::to_owned)
-                    .collect()
-            })
-            .unwrap_or_default()
+        strings(&self.posted["loft"])
     }
 
     /// Whether a file edit's start edits a file under the tree's `spec/`: none for any other

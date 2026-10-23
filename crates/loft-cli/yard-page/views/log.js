@@ -3,7 +3,7 @@
 // visit; the timeline or the Gantt chart; and the tokens it took.
 
 import { add, h } from '../lib/dom.js';
-import { base, count, when } from '../lib/format.js';
+import { base, count, place, when } from '../lib/format.js';
 import * as prefs from '../lib/prefs.js';
 import {
   answerable,
@@ -44,7 +44,7 @@ export function unreadable(body) {
           'li',
           {},
           error.message,
-          (error.sites ?? []).map((site) => h('code', { class: 'site' }, ` ${site.path ?? ''}${site.line ? `:${site.line}` : ''}`)),
+          (error.sites ?? []).map((site) => h('code', { class: 'site' }, ` ${place(site)}`)),
         ),
       ),
     ),

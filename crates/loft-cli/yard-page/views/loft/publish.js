@@ -4,7 +4,7 @@
 
 import { h } from '../../lib/dom.js';
 import { when } from '../../lib/format.js';
-import { chip, leftOut, named } from './index.js';
+import { changeItem, chip, leftOut } from './index.js';
 
 const KIND_NAMES = {
   product: 'Products',
@@ -54,7 +54,7 @@ export function publishView(report, body, context) {
           'details',
           { class: 'fold' },
           h('summary', {}, `${changes.length} nodes added, changed or removed since the publish`),
-          h('ul', { class: 'changes' }, changes.map((node) => h('li', {}, chip(node.change, CHANGE_TONES[node.change]), ' ', h('span', { class: 'kind' }, node.kind), ' ', named(node)))),
+          h('ul', { class: 'changes' }, changes.map(changeItem)),
           ['added', 'changed', 'removed'].map((change) => leftOut(report, `status.base.${change}`)),
         )
       : null,
@@ -70,4 +70,3 @@ export function publishView(report, body, context) {
   ];
 }
 
-export const CHANGE_TONES = { added: 'success', changed: 'warning', removed: 'danger' };

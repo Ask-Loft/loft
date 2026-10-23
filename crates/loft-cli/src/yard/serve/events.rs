@@ -17,7 +17,7 @@ use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
 use super::activity::Activity;
-use super::event::{Event, Who};
+use super::event::{Event, Who, strings};
 use super::http::Response;
 use super::tokens::Totals;
 
@@ -136,15 +136,7 @@ impl Kept {
 
 /// The open submissions an event's line in the log names.
 fn named_open(line: &Value) -> Vec<String> {
-    line["submissions"]
-        .as_array()
-        .map(|keys| {
-            keys.iter()
-                .filter_map(Value::as_str)
-                .map(ToOwned::to_owned)
-                .collect()
-        })
-        .unwrap_or_default()
+    strings(&line["submissions"])
 }
 
 /// What a session kept before the page server heard of it, rebuilt from its event log.

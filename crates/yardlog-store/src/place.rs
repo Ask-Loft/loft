@@ -46,6 +46,16 @@ impl Place {
         })
     }
 
+    /// The same worktree, taken as on `branch`, whatever branch it is on: where that branch's
+    /// Yard Log is kept under it.
+    #[must_use]
+    pub fn on(&self, branch: &str) -> Self {
+        Self {
+            branch: Some(branch.to_owned()),
+            ..self.clone()
+        }
+    }
+
     /// The branch, refusing a detached HEAD.
     ///
     /// # Errors

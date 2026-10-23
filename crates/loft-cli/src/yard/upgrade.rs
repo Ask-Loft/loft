@@ -74,9 +74,7 @@ fn attempt(dir: &Path, args: &UpgradeArgs) -> Result<Vec<(String, Fate)>, Failur
     let place = Place::locate(&git, dir)?;
     let mut fates = Vec::new();
     for name in branches(&place.tree)? {
-        let mut at = place.clone();
-        at.branch = Some(name.clone());
-        let branch = Branch::at(YardGit::default(), at, args.beyond.clone())?;
+        let branch = Branch::at(YardGit::default(), place.on(&name), args.beyond.clone())?;
         fates.push((name, fate(&branch)?));
     }
     Ok(fates)

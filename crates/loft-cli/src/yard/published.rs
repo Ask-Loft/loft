@@ -51,11 +51,7 @@ fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
     let at = super::now()?;
     let on = place.branch()?.to_owned();
     let named = args.branch;
-    let there = Place {
-        branch: Some(named.clone()),
-        ..place
-    };
-    let branch = Branch::at(git, there, args.beyond)?;
+    let branch = Branch::at(git, place.on(&named), args.beyond)?;
     let held = branch.store.read()?;
     // The base branch is the one the named Yard Log records; a tree that holds none of it has
     // none to name.

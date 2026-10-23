@@ -58,6 +58,17 @@ export function named(node) {
   return [node.label ? h('span', { class: 'label' }, node.label) : null, ' ', node.name ?? ''];
 }
 
+/** The tone of each change a node can have gone through. @type {Record<string, string>} */
+export const CHANGE_TONES = { added: 'success', changed: 'warning', removed: 'danger' };
+
+/**
+ * A node in a list of changes: how it changed, its kind and its name.
+ * @param {{ change: string, kind: string, label?: string | null, name?: string }} node
+ */
+export function changeItem(node) {
+  return h('li', {}, chip(node.change, CHANGE_TONES[node.change]), ' ', h('span', { class: 'kind' }, node.kind), ' ', named(node));
+}
+
 /**
  * How many of a report's list it left out, where it left some out.
  * @param {any} report

@@ -6,8 +6,7 @@
 
 import { draw } from '../../lib/diagrams.js';
 import { h } from '../../lib/dom.js';
-import { chip, leftOut, named } from './index.js';
-import { CHANGE_TONES } from './publish.js';
+import { changeItem, leftOut } from './index.js';
 
 /** The most boxes drawn before the Feature Groups are folded. */
 export const MOST_BOXES = 30;
@@ -169,9 +168,7 @@ export function specChangeView(report, body) {
       h(
         'ul',
         {},
-        [...changes, ...decisions].map((node) =>
-          h('li', {}, chip(node.change, CHANGE_TONES[node.change]), ' ', h('span', { class: 'kind' }, node.kind), ' ', named(node)),
-        ),
+        [...changes, ...decisions].map(changeItem),
       ),
       ['added', 'changed', 'removed'].map((change) => leftOut(report, `status.base.${change}`)),
     ),

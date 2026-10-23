@@ -244,13 +244,7 @@ impl Activity {
 fn loft_run(run: &LoftRun) -> Out {
     let commands = run.commands.iter().cloned().map(Out::Token).collect();
     let mut fields = vec![("commands", Out::Sequence(commands))];
-    match &run.who {
-        Who::Main => fields.push(("agent", Out::Token("main".to_owned()))),
-        Who::Sub { id, kind } => {
-            fields.push(("agent", Out::Token(id.clone())));
-            fields.push(("type", Out::Token(kind.clone())));
-        }
-    }
+    fields.extend(run.who.fields());
     fields.extend(run.span.fields());
     if let Some(failed) = run.failed {
         fields.push(("failed", Out::Plain(failed.to_string())));

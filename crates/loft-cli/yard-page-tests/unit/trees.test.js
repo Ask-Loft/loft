@@ -19,6 +19,7 @@ function listing(more = {}) {
         trees: [
           {
             tree: '/work/shelf',
+            main: true,
             branch: 'feat/shelf',
             logs: [
               { branch: 'feat/shelf', inherited: false, title: 'Shelves for two readers', revision: 4, closed: false, waiting: 2 },
@@ -74,7 +75,7 @@ test('choosing a listed branch opens its Yard Log at an address of its own that 
 test('every open submission is shown above the list, oldest first, with its repository, worktree and branch', () => {
   const waits = waitingList({
     waiting: [
-      { repository: '/work/shelf', tree: '/work/shelf', branch: 'feat/shelf', sent: { at: '2026-01-01T09:00:00Z' }, agent: { session: 's1' }, blocks: ['q1'], asked: [{ id: 'q1', kind: 'question', text: 'Which shelf?' }] },
+      { repository: '/work/shelf', tree: '/work/shelf', main: true, branch: 'feat/shelf', sent: { at: '2026-01-01T09:00:00Z' }, agent: { session: 's1' }, blocks: ['q1'], asked: [{ id: 'q1', kind: 'question', text: 'Which shelf?' }] },
       { repository: '/work/shelf', tree: '/work/shelf-docs', branch: 'docs', sent: { at: '2026-01-01T10:00:00Z' }, agent: { session: 's2', agent: 'a', agentType: 'Explore' }, blocks: ['p1'] },
     ],
   });
@@ -106,7 +107,7 @@ test('a repository’s main worktree, whose folder is the repository’s own, is
   const waits = waitingList({
     ...listing(),
     waiting: [
-      { repository: '/work/shelf', tree: '/work/shelf', branch: 'feat/shelf', submission: 's', sent: { at: '2026-01-01T10:00:00Z' }, agent: {}, blocks: ['q1'] },
+      { repository: '/work/shelf', tree: '/work/shelf', main: true, branch: 'feat/shelf', submission: 's', sent: { at: '2026-01-01T10:00:00Z' }, agent: {}, blocks: ['q1'] },
       { repository: '/work/shelf', tree: '/work/shelf-docs', branch: 'docs', submission: 't', sent: { at: '2026-01-01T10:00:00Z' }, agent: {}, blocks: ['q2'] },
     ],
   });

@@ -99,13 +99,7 @@ impl Totals {
             fields.push(("noStage", Out::Mapping(counts(tokens))));
         }
         let agents = self.agents.iter().map(|((who, model), tokens)| {
-            let mut fields = match who {
-                Who::Main => vec![("agent", Out::Token("main".to_owned()))],
-                Who::Sub { id, kind } => vec![
-                    ("agent", Out::Token(id.clone())),
-                    ("type", Out::Token(kind.clone())),
-                ],
-            };
+            let mut fields = who.fields();
             fields.push(("model", Out::Token(model.clone())));
             fields.extend(counts(*tokens));
             Out::Mapping(fields)

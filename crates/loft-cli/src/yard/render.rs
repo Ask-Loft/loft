@@ -33,13 +33,13 @@ pub fn act(act: &Act) -> Value {
 }
 
 /// Inserts `value` under `name` where there is one.
-fn put(fields: &mut Map<String, Value>, name: &str, value: Option<Value>) {
+pub(super) fn put(fields: &mut Map<String, Value>, name: &str, value: Option<Value>) {
     if let Some(value) = value {
         fields.insert(name.to_owned(), value);
     }
 }
 
-fn text(value: Option<&String>) -> Option<Value> {
+pub(super) fn text(value: Option<&String>) -> Option<Value> {
     value.map(|text| json!(text))
 }
 

@@ -4,18 +4,14 @@
 use serde_json::{Map, Value, json};
 use yardlog::body::{Loft, Reason, Recorded};
 
-fn put(fields: &mut Map<String, Value>, name: &str, value: Option<&String>) {
-    if let Some(value) = value {
-        fields.insert(name.to_owned(), json!(value));
-    }
-}
+use super::render::{put, text};
 
 pub fn loft(loft: &Loft) -> Value {
     let mut fields = Map::new();
     fields.insert("view".to_owned(), json!(loft.view.as_str()));
-    put(&mut fields, "note", loft.note.as_ref());
-    put(&mut fields, "base", loft.base.as_ref());
-    put(&mut fields, "decision", loft.decision.as_ref());
+    put(&mut fields, "note", text(loft.note.as_ref()));
+    put(&mut fields, "base", text(loft.base.as_ref()));
+    put(&mut fields, "decision", text(loft.decision.as_ref()));
     let reasons: Vec<Value> = loft.reasons.iter().map(reason).collect();
     fields.insert("reasons".to_owned(), Value::Array(reasons));
     fields.insert("recorded".to_owned(), recorded(&loft.recorded));
@@ -29,8 +25,8 @@ fn reason(reason: &Reason) -> Value {
 
 fn recorded(recorded: &Recorded) -> Value {
     let mut fields = Map::new();
-    put(&mut fields, "commit", recorded.commit.as_ref());
-    put(&mut fields, "branch", recorded.branch.as_ref());
+    put(&mut fields, "commit", text(recorded.commit.as_ref()));
+    put(&mut fields, "branch", text(recorded.branch.as_ref()));
     fields.insert("dirty".to_owned(), json!(recorded.dirty));
     fields.insert("loft".to_owned(), json!(recorded.loft));
     fields.insert("at".to_owned(), json!(recorded.at.to_string()));

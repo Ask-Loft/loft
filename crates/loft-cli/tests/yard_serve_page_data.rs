@@ -160,3 +160,23 @@ fn the_page_reads_every_submission_sent_with_its_changes() {
         "{read}"
     );
 }
+
+#[test]
+fn the_listing_marks_a_repository_s_main_worktree_and_no_linked_one() {
+    let main = Yard::new();
+    main.write("s1", NOTES, &[]);
+    let listing = served(&main).get("/api/trees").json();
+    let tree = &listing["repositories"][0]["trees"][0];
+    assert_eq!(tree["main"], json!(true), "{listing}");
+
+    let mut linked = Yard::new();
+    let common = linked.scratch.0.join("repository/.git");
+    linked.git = linked.git.clone().common_dir(
+        &common.to_string_lossy(),
+        &common.join("worktrees/wt").to_string_lossy(),
+    );
+    linked.write("s1", NOTES, &[]);
+    let listing = served(&linked).get("/api/trees").json();
+    let tree = &listing["repositories"][0]["trees"][0];
+    assert_eq!(tree["main"], json!(false), "{listing}");
+}
