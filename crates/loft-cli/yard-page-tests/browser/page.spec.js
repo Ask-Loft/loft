@@ -22,6 +22,17 @@ function approval(id, title) {
   return write([{ id, kind: 'approval', stage: 'shape', title, markdown: `May I ${title.toLowerCase()}?` }], ['--send']).submission;
 }
 
+/** The modal of what waits on the person. */
+function waitingModal(page) {
+  return page.locator('dialog.modal[data-modal="waiting"]');
+}
+
+/** Closes the modal of what waits, as the person does to work the page behind it. */
+async function closeWaiting(page) {
+  await waitingModal(page).getByRole('button', { name: 'Close' }).click();
+  await expect(waitingModal(page)).toBeHidden();
+}
+
 /** Keeps the page from hearing of changes, so that it shows what it loaded until it loads again. */
 async function deaf(page) {
   await page.route('**/api/stream', (route) => route.abort());
@@ -29,6 +40,7 @@ async function deaf(page) {
 
 test('the person can fold and open each stage, the active one open and the planned one folded', async ({ page }) => {
   await page.goto(address());
+  await closeWaiting(page);
   const shape = page.locator('#block-shape');
   const build = page.locator('#block-build');
   await expect(shape).toHaveAttribute('open', '');
@@ -71,6 +83,7 @@ function diagramBox(page) {
 test('in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto(address());
+  await closeWaiting(page);
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
   expect(await colour(diagramBox(page), 'fill')).toBe('rgb(24, 33, 43)');
@@ -81,6 +94,7 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
 test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(address());
+  await closeWaiting(page);
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
   expect(await colour(diagramBox(page), 'fill')).toBe('rgb(243, 247, 250)');
@@ -117,12 +131,94 @@ test('a choice the person has made and not sent is kept through a change', async
   await expect(page.locator('input[name="answer-q1"][value="Bottom"]')).toBeChecked();
 });
 
+test('the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages', async ({ page }) => {
+  await page.goto(address());
+  const modal = waitingModal(page);
+  await expect(modal).toBeVisible();
+  await expect(modal.locator('.submission legend', { hasText: 'Which shelf?' })).toBeVisible();
+  await expect(page.locator('#log .submission')).toHaveCount(0);
+  const scrim = await modal.evaluate((dialog) => getComputedStyle(dialog, '::backdrop').backgroundColor);
+  expect(scrim).toMatch(/^rgba\(\d+, \d+, \d+, 0\.\d+\)$/);
+  // A point in the margin, over the menu, and one at a stage's fold, behind the modal: neither
+  // reaches the page.
+  const shape = page.locator('#block-shape');
+  const fold = await shape.locator(':scope > summary').boundingBox();
+  for (const [x, y] of [[8, 300], [fold.x + 10, fold.y + 5]]) {
+    expect(await page.evaluate(([x, y]) => Boolean(document.elementFromPoint(x, y)?.closest('dialog')), [x, y])).toBe(true);
+  }
+  await page.mouse.click(fold.x + 10, fold.y + 5);
+  await expect(shape).toHaveAttribute('open', '');
+});
+
+test('the modal keeps its margin to each edge of the viewport and follows the viewport as it changes', async ({ page }) => {
+  await page.goto(address());
+  const modal = waitingModal(page);
+  await expect(modal).toBeVisible();
+  expect(await modal.boundingBox()).toEqual({ x: 24, y: 24, width: 1280 - 48, height: 900 - 48 });
+  await page.setViewportSize({ width: 600, height: 700 });
+  await expect.poll(() => modal.boundingBox()).toEqual({ x: 16, y: 16, width: 600 - 32, height: 700 - 32 });
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent', async ({ page }) => {
+  await page.goto(address());
+  const modal = waitingModal(page);
+  await expect(modal).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(modal).toBeHidden();
+  write([{ id: 'while-closed', kind: 'note', stage: 'shape', title: 'Written while it is closed', markdown: 'x' }]);
+  await expect(page.locator('#block-while-closed')).toBeVisible({ timeout: LIVE });
+  await expect(modal).toBeHidden();
+  const button = page.locator('.toolbar #open-waiting');
+  await expect(button).toHaveText('1 waits on you');
+  await button.click();
+  await expect(modal).toBeVisible();
+  await closeWaiting(page);
+  await expect(button).toBeFocused();
+  await page.locator('#block-q1').getByRole('button', { name: 'Answer it' }).click();
+  await expect(modal).toBeVisible();
+  await expect(modal.locator(`input[name="answer-q1"]`).first()).toBeFocused();
+  await closeWaiting(page);
+  ask('q-again', 'Which again?');
+  await expect(modal).toBeVisible({ timeout: LIVE });
+  await expect(modal.locator('.submission')).toHaveCount(2);
+  answerInTerminal([{ block: 'q-again', labels: ['Red'] }]);
+  await expect(modal.locator('.submission')).toHaveCount(1, { timeout: LIVE });
+});
+
+test('content taller than the modal scrolls within it under its heading, and a change drawn into it keeps its scroll and focus', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 360 });
+  await page.goto(address());
+  const modal = waitingModal(page);
+  await expect(modal).toBeVisible();
+  const body = modal.locator('.modal-body');
+  const head = modal.locator('.modal-head');
+  expect(await body.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+  const top = (await head.boundingBox()).y;
+  await body.evaluate((element) => {
+    element.scrollTop = 120;
+  });
+  expect((await head.boundingBox()).y).toBe(top);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  const bottom = modal.locator('input[name="answer-q1"][value="Bottom"]');
+  await bottom.focus();
+  const scrolled = await body.evaluate((element) => element.scrollTop);
+  ask('q-tall', 'Which tall?');
+  await expect(modal.locator('.submission')).toHaveCount(2, { timeout: LIVE });
+  await expect(bottom).toBeFocused();
+  expect(await body.evaluate((element) => element.scrollTop)).toBe(scrolled);
+  answerInTerminal([{ block: 'q-tall', labels: ['Red'] }]);
+  await expect(modal.locator('.submission')).toHaveCount(1, { timeout: LIVE });
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
 test('a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes', async ({ page }) => {
   write([
     { id: 'kept-fold', kind: 'note', stage: 'shape', title: 'Folded at first', markdown: 'Held open.', folded: true },
     { id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'planned' },
   ]);
   await page.goto(address());
+  await closeWaiting(page);
   const note = page.locator('#block-kept-fold details');
   const shape = page.locator('#block-shape');
   const later = page.locator('#block-kept-stage');
@@ -140,6 +236,7 @@ test('a fold the person toggled stays so through a change and after a reload, an
   await held();
   await page.reload();
   await expect(page.locator('#log-title')).toBeVisible();
+  await closeWaiting(page);
   await held();
   write([{ id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'done' }]);
   await expect(later.locator('.status')).toHaveText('Done', { timeout: LIVE });
@@ -167,6 +264,8 @@ test('the page sends every answer of a submission at once, and shows them given 
   await expect(send).toBeEnabled();
   const before = (await read()).revision;
   await send.click();
+  await expect(waitingModal(page)).toBeHidden({ timeout: LIVE });
+  await expect(page.locator('#notice')).toHaveText('Sent.');
   const card = page.locator('#block-q2');
   await expect(card.locator('.answer-text')).toHaveText('Blue', { timeout: LIVE });
   await expect(card.locator('.answer .byline')).toContainText('on the page');

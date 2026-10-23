@@ -20657,7 +20657,7 @@ links:
         body: 196d1ff7894dd56fad2630fea89f51ffb053f74589e66e368324b5fcd86a798c
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page sends every answer of a submission at once, and shows them given on the page"
-        body: ef09922fb21a96fccad25d8df22715440c10f1708913354197b9c79ce64f699c
+        body: 5f27fd36a1ffc4850d0208ed16d38d71504eddb42d42dfa8b2a511f858ee8125
   - node: 01a1646f-546c-7521-9643-bbd62c68dd85
     reviewed: 3fc05ad6fbe036a44dc564d8714bfc8af1ac25166fb92134e3536863f68df4ee
     tests:
@@ -21893,13 +21893,13 @@ links:
         body: e538ede2b3500cdf364e539fc33802c134215412fa36b87fd3a2893b1435d610
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person can fold and open each stage, the active one open and the planned one folded"
-        body: b4ff3c5dd569f8a4bfdbde634f87dedec16ee88ca8c360f5ebb1b49267bd8bcf
+        body: 08574ad6f31f4c168fba7802af41bc73f09963c3ad2ce79e1f70c37ccbe31a83
   - node: 01a1646f-546d-7042-befd-eb2a277e3a0d
     reviewed: 1602e4121e9a40da6b262b7b5d7c776df6b602687d0d6d1b827f3db3aa3a8831
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person can fold and open each stage, the active one open and the planned one folded"
-        body: b4ff3c5dd569f8a4bfdbde634f87dedec16ee88ca8c360f5ebb1b49267bd8bcf
+        body: 08574ad6f31f4c168fba7802af41bc73f09963c3ad2ce79e1f70c37ccbe31a83
   - node: 01a1646f-546d-7042-befd-eb2bf26cc683
     reviewed: 15a7bde296c284eecaf648a1581b303f8d60b65bc50b7812b06b74a15a0ead62
     tests:
@@ -21926,7 +21926,7 @@ links:
         body: 811a158895b97e0097fb99786b06b6e06e4e17adfb24261cf442343097843891
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
-        body: c4a15d89fa8f4426cd27108a0f0bd4ac992914788c3983d7179ee92bfc5e8393
+        body: 637e77081f540803ceb2e8f13cba392fecccb4d4fab26b3e15f8ad1201524569
   - node: 01a1690b-2c9b-7594-809f-4a8c73851ca5
     reviewed: 3155a2dc73a39056ce67fa4b81160f8d94b88ad59430d45f9ddde068f2cd9575
     tests:
@@ -21938,7 +21938,7 @@ links:
         body: 811a158895b97e0097fb99786b06b6e06e4e17adfb24261cf442343097843891
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
-        body: c4a15d89fa8f4426cd27108a0f0bd4ac992914788c3983d7179ee92bfc5e8393
+        body: 637e77081f540803ceb2e8f13cba392fecccb4d4fab26b3e15f8ad1201524569
   - node: 01a1690b-2c9b-7594-809f-4a8d7ad2d600
     reviewed: 4e025fbfc450750bda286937c41624cc217ba9987e7183c30e44d3b51f460577
     tests:
@@ -21956,7 +21956,7 @@ links:
         body: b6acd1531d3237802aa84326b57d0fda45c76dbf5e82a7637364702b681c4f67
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
-        body: c4a15d89fa8f4426cd27108a0f0bd4ac992914788c3983d7179ee92bfc5e8393
+        body: 637e77081f540803ceb2e8f13cba392fecccb4d4fab26b3e15f8ad1201524569
   - node: 01a1690b-2c9b-7594-809f-4a8fd5152b89
     reviewed: f667dc45fe9ab7cb9b08c0090013aa6f2e7906dbbf42cfb900be4d27fb57333f
     tests:
@@ -22202,13 +22202,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours"
-        body: cf22454214886c3a78bd34d0cf5c99dcc4c0a456a5006bf82ad5f6986b5bbe47
+        body: 28db7f06c10d80bb15a094dd373274da4a2ad90140247c84ba21185d697aff29
   - node: 01a16863-60a7-772b-980e-a07b441c8e43
     reviewed: b8421afc6d84aaa3de56f4b04ad54880fbc19dee0021c4874147871d316d8349
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours"
-        body: 08e721856db6bf3b5ad2175a8320317f9f4d67d3d47b143e36af312f5a6a9e5c
+        body: ca03e45fe73bb08687977f19955897668794768b68e1f4709bf734de14029c64
   - node: 01a16863-60a7-772b-980e-a07c5f19ca60
     reviewed: fdbf2e48e5bf4ecf968f8c7a32b7858e949bbe03e27c1acec6e70d8cbdd9fa77
     tests:
@@ -22374,15 +22374,42 @@ links:
   - node: 01a1646f-546d-7042-befd-eb6376a28807
     reviewed: a9f22f9e332c89c102ebeda46f9d2ac826b573bd556869bd914bfd1ce82c991d
     tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
-        name: "the open submissions of the Yard Log shown are above its timeline, with when each was sent and by which agent"
-        body: 28f6970d6f0a8571ae73d31814f6f5df9d2f58e23b77199e6fc1d41cfb0ef9b1
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "opening a branch’s Yard Log that has an open submission opens the modal, every open submission in it oldest first"
+        body: 66580273c66fa03e74f578ebe1688a7de426d01c9d1b43a0a4faf299a72f7541
   - node: 01a1646f-546d-7042-befd-eb648d58cd02
-    reviewed: e2adbe3fd9fd7738b12732fecc73bc934f9cc820681361b076ef7fc6dfd29d39
+    reviewed: bbfe1da50894434f5ea7b2bb9a900bcd76fdb74559919410adc61a866c21f29e
     tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
-        name: "where Yard Log has no open submission, nothing shows above the timeline"
-        body: a0acaab8c2bcadc226b44c3e2d86061fb7d87c2c1cf444a8fe3a7c048b920a02
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "where Yard Log has no open submission, no modal opens and nothing shows above the timeline"
+        body: 0921cc789fe66b45db19db4ce07805a58638bac8b666c5d9471fdb63ec518235
+  - node: 01a1693f-7b72-7290-8335-f171c49df026
+    reviewed: c559ee1700a88543215158268fa5e154074bff2e6aae04b95f546460f58332fb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "opening a branch’s Yard Log that has an open submission opens the modal, every open submission in it oldest first"
+        body: 66580273c66fa03e74f578ebe1688a7de426d01c9d1b43a0a4faf299a72f7541
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages"
+        body: 7c50a5e49baf3874a863d15f29154ff31ae33ba97f0c25dd8f8c1e24f14bc309
+  - node: 01a1693f-7b72-7290-8335-f1728dce2d53
+    reviewed: 9995c1cbb4df05d728c889b6c23fd0e907b6291bcb0348439a9a166845053c50
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "nothing of an open submission is shown above the timeline or the Gantt chart"
+        body: c0817cb0e6f33f4c3eb7e2d1dd401b0bad7459cec68ac06e759b7d7898033ae0
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages"
+        body: 7c50a5e49baf3874a863d15f29154ff31ae33ba97f0c25dd8f8c1e24f14bc309
+  - node: 01a1693f-7b72-7290-8335-f17339a7026b
+    reviewed: 240c3329ec5ee2409a2fee02997c8c3f3745a26819feef09b568b7bc2c79d0dd
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "the modal closes by itself once nothing in it waits on the person, and the page then says what was sent"
+        body: 3a14a46561b556d44dbb7dfb33eb0796b30bca14b3dab51b4448e8cde6474c4e
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page sends every answer of a submission at once, and shows them given on the page"
+        body: 5f27fd36a1ffc4850d0208ed16d38d71504eddb42d42dfa8b2a511f858ee8125
   - node: 01a1693f-7b72-7290-8335-f1758a4c74e2
     reviewed: 27808ad1fdeba64ac1cb1714ab4969e601acf71ac19a61eb26b995a788182c93
     tests:
@@ -22392,6 +22419,72 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
         name: "a modal closes on Escape, and tells whoever opened it that it closed"
         body: 6a716307cf6f49e2cc346d13b0596a26485d1a32bded0ed8af2d7e4472f20979
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "the modal closes by its close button and by Escape"
+        body: 76b42a34861ea123f8c8d6e90911566f736abd695dc1b64eaa8c8f508cb6f6cb
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+  - node: 01a1693f-7b72-7290-8335-f1760105ed39
+    reviewed: 293b49cff2722652bf5113d8a720619e3a56543d721dee59b6f6ad65be9437ec
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "a button in the line above the stages gives the count of the blocks that wait and opens the modal"
+        body: 71abe1e9b3df731435b349fc08a5746d10fc38fa3f7f8627da9a5c0c670690f7
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+  - node: 01a1693f-7b72-7290-8335-f177e0a5756c
+    reviewed: e251a440738138883448150fd3f7d3ad379eefb55cfe3bea2708022b2c1c5d99
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "each waiting block’s button to answer opens the modal at that block’s form"
+        body: a8a404d8260287641c2df854a251204a18ae94957d31c0087edf3784268b7cd6
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+  - node: 01a1693f-7b72-7290-8335-f17849978e57
+    reviewed: 77d89fa3f74f13eedfb6757369676be08f6d7e106e3dc4b32a2336606c4dd83e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "a change to Yard Log that sends no new submission leaves the modal closed"
+        body: 1223ee141584dffc23f3998ace34bcfa068b092d4663d69b689a1036fd672687
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+  - node: 01a1693f-7b72-7290-8335-f179f5c9ece5
+    reviewed: 87a17735b0564fc56f94d52d369c6bfc483e1c7d52acaf21ac3554b18a66c069
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "a submission sent after the modal was closed opens it again"
+        body: 58975e15d9e1cee6b151ffd5fb713bcd1ebcb75a7518478b744448c2e26ec5a0
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+  - node: 01a1693f-7b72-7290-8335-f17afbea573e
+    reviewed: 23ea78a103b0f4beeefd33e09d9db56d753a60564f40d6b1f2d83b2c0c4f0398
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "what was chosen or typed and not sent is shown again when the modal opens again"
+        body: 66ea6ca9aba4e4ff625b1fa564cc807f83fc9ea839641d35cdbf35eb2c650531
+  - node: 01a1693f-7b72-7290-8335-f17c0c51f112
+    reviewed: 059feeadabb1b97125704cafb550bb80141f2a2c02c3ef6efa7b66ca95e361bd
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the modal keeps its margin to each edge of the viewport and follows the viewport as it changes"
+        body: 0154d64d2ae5d6d93b33185bc8d27359afbd3ee0c4a2b16c19e3439744fe2b2d
+  - node: 01a1693f-7b72-7290-8335-f17d39c6e2b0
+    reviewed: 17422c6d79efe7e0f89f802bd356307bbebfd298c1d06b66b7efa9dcb95a17f6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "content taller than the modal scrolls within it under its heading, and a change drawn into it keeps its scroll and focus"
+        body: 303b9cd7fee9c286f990e0a5932d3b576b135b08826ac04d3bfcf4336658b0e4
+  - node: 01a1693f-7b72-7290-8335-f17eb17f3678
+    reviewed: 5f67ad832f00e3a239a757d0334e97f179e6df2c38ecd7c488caee25fe06e0a7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages"
+        body: 7c50a5e49baf3874a863d15f29154ff31ae33ba97f0c25dd8f8c1e24f14bc309
   - node: 01a1693f-7b72-7290-8335-f17f8d2e0087
     reviewed: 9bc5877e3769e367c2684380765d4f6ca527e3de00b5fd3de1474eea27237767
     tests:
@@ -22401,12 +22494,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
         name: "updating a modal that is closed draws nothing and opens nothing"
         body: 7c322e886ac2db8a9caecc30a86dcc43a7bdc6164b7dfb3de7c64ca46de80118
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "content taller than the modal scrolls within it under its heading, and a change drawn into it keeps its scroll and focus"
+        body: 303b9cd7fee9c286f990e0a5932d3b576b135b08826ac04d3bfcf4336658b0e4
   - node: 01a1693f-7b72-7290-8335-f1800d240bbf
     reviewed: 723ee24c5bac6a9b588c36eb487b41b9b37561a7246b8e64dd8414430a9db698
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
         name: "closing the modal gives the focus back to what held it before it opened"
         body: 649b0ce30ec49f8ab022fd540b180e4403f9035e482082fa2abd788f9e9cca7e
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
   - node: 01a1646f-546d-7042-befd-eb66aa4b28b7
     reviewed: d68fedf468ac9cfdc36cb56011a5a736eae23d2e9ad2525d4b1fd9135a1c86fb
     tests:

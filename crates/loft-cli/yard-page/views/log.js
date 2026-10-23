@@ -1,6 +1,7 @@
 // A branch's Yard Log: its title and where it is, whether it is closed, carried from another
-// branch or of a newer format; what waits on the person; the blocks changed since the last
-// visit; the timeline or the Gantt chart; and the tokens it took.
+// branch or of a newer format; the count of what waits on the person, which opens it in the
+// modal; the blocks changed since the last visit; the timeline or the Gantt chart; and the tokens
+// it took.
 
 import { add, h } from '../lib/dom.js';
 import { base, count, place, when } from '../lib/format.js';
@@ -15,15 +16,15 @@ import {
   stretches,
   waitingBlocks,
 } from '../model/log.js';
-import { submissionPanel } from './answering.js';
 import { gantt } from './gantt.js';
 import { timeline } from './timeline.js';
 import { tokensView } from './tokens.js';
+import { waitingIn } from './waiting.js';
 
 /**
  * @typedef {{ tree: string, branch: string, last: number | null, now: number, width: number,
  *   refresh: () => void, notify: (text: string) => void, onView: () => void,
- *   onPick: (id: string) => void }} LogContext
+ *   onPick: (id: string) => void, onWaiting?: (blockKey?: string) => void }} LogContext
  */
 
 /**
@@ -60,13 +61,13 @@ export function logView(log, context) {
   // What the browser keeps of this Yard Log's folds and scroll is taken up before it is drawn.
   kept.begin(log);
   const blocks = blocksByKey(log);
-  const open = answerable(log) ? openSubmissions(log) : [];
+  const answering = context.onWaiting && answerable(log) ? context.onWaiting : undefined;
+  const waitingCount = waitingIn(log).reduce((sum, item) => sum + item.waiting.length, 0);
   const waiting = new Set();
   for (const submission of openSubmissions(log)) {
     for (const block of waitingBlocks(submission, blocks)) waiting.add(block.key);
   }
   const marked = changedSince(log, context.last);
-  const where = { tree: context.tree, branch: context.branch, refresh: context.refresh, notify: context.notify };
   const order = prefs.order();
   const view = prefs.view();
   const blockContext = {
@@ -75,22 +76,13 @@ export function logView(log, context) {
     marked,
     waiting,
     branch: log.yardLog?.branch,
-    onAnswer: answerable(log)
-      ? (block) => document.querySelector(`[data-key="${block.key}"].question-form, .decision-form[data-key="${block.key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      : undefined,
+    onAnswer: answering ? (block) => answering(block.key) : undefined,
   };
   const section = h('section', { class: ['yard-log', `view--${view}`], 'aria-labelledby': 'log-title' });
   add(
     section,
     header(log, context),
-    open.length
-      ? h(
-          'div',
-          { class: 'waiting', 'aria-label': 'What waits on you here' },
-          open.map((submission) => submissionPanel(submission, waitingBlocks(submission, blocks), where)),
-        )
-      : null,
-    toolbar(order, view, marked.size, context.onView),
+    toolbar(order, view, marked.size, context.onView, answering && waitingCount ? { count: waitingCount, open: () => answering() } : null),
     view === 'gantt'
       ? gantt(log, { width: context.width, now: context.now, onPick: context.onPick })
       : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now }),
@@ -134,14 +126,16 @@ function header(log, context) {
 }
 
 /**
- * The view at the left, where it stays whichever view is shown, then the order of the stages, and
- * the count of blocks changed since the last visit at the right.
+ * The view at the left, where it stays whichever view is shown, then the order of the stages, the
+ * count of what waits on the person, which opens it, and the count of blocks changed since the
+ * last visit at the right.
  * @param {'newest' | 'oldest'} order
  * @param {'timeline' | 'gantt'} view
  * @param {number} changed
  * @param {() => void} onView
+ * @param {{ count: number, open: () => void } | null} waiting
  */
-function toolbar(order, view, changed, onView) {
+function toolbar(order, view, changed, onView, waiting) {
   const choice = (name, value, label, current) =>
     h(
       'button',
@@ -171,6 +165,13 @@ function toolbar(order, view, changed, onView) {
           { class: 'segments', role: 'group', 'aria-label': 'Order of the stages' },
           choice('order', 'newest', 'Newest first', order),
           choice('order', 'oldest', 'Oldest first', order),
+        )
+      : null,
+    waiting
+      ? h(
+          'button',
+          { type: 'button', class: 'primary wait-button', id: 'open-waiting', onclick: waiting.open },
+          `${waiting.count} ${waiting.count === 1 ? 'waits' : 'wait'} on you`,
         )
       : null,
     changed ? h('p', { class: 'changed-count' }, `${count(changed, 'block')} changed since your last visit`) : null,

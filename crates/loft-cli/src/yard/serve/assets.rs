@@ -74,6 +74,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("views/timeline.js", JS),
     asset!("views/tokens.js", JS),
     asset!("views/trees.js", JS),
+    asset!("views/waiting.js", JS),
     asset!("views/loft/decision.js", JS),
     asset!("views/loft/findings.js", JS),
     asset!("views/loft/index.js", JS),

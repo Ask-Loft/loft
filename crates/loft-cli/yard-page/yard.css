@@ -224,7 +224,6 @@ button { font: inherit; }
   body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--menu), calc(100vw - 32px)); z-index: 20; box-shadow: 6px 0 0 var(--shadow); }
   .main { margin: 20px 16px 40px; }
   .top { padding: 10px 16px; }
-  .modal[open] { inset: 16px; }
 }
 
 /* The menu: its head, as tall as the page's header and level with it, then the lists. */
@@ -489,7 +488,6 @@ button { font: inherit; }
 
 /* Answering. */
 
-.waiting { display: grid; gap: 16px; }
 .submission { background: var(--surface); border: 1px solid var(--ink); box-shadow: 5px 5px 0 var(--wait-line); padding: 16px; display: grid; gap: 14px; }
 .submission-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; align-items: baseline; }
 .submission-head h3 { font-size: 18px; font-weight: 700; color: var(--wait); }
@@ -560,6 +558,11 @@ body:has(.modal[open]) { overflow: hidden; }
 .modal-close:hover { background: var(--surface-2); }
 .modal-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; padding: 16px; display: grid; align-content: start; gap: 16px; }
 .modal-body .submission { box-shadow: none; }
+@media (max-width: 860px) {
+  .modal[open] { inset: 16px; }
+}
+.wait-button { background: var(--wait-soft); color: var(--wait); border-color: var(--wait-line); box-shadow: 3px 3px 0 var(--wait-line); }
+.wait-button:hover:not(:disabled) { background: var(--wait-soft); box-shadow: 5px 5px 0 var(--wait-line); }
 
 /* The Loft views. */
 
