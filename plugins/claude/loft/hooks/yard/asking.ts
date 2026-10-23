@@ -190,7 +190,8 @@ export async function decideOnPage<R>(presented: Presenting, terminal: Promise<R
 /**
  * The dialogs the mod itself opens, by their first question: the questions the dialog asks, the
  * end of the wait that closes it, and its result once answered. `$.ui.ask` asks one question
- * with its labels alone, so the mod's own hook asks the whole dialog in its place.
+ * with its labels alone, and Claude Code refuses `AskUserQuestion` through `$.tool.call`, so the
+ * mod's own hook asks the whole dialog in its place.
  */
 type OwnDialog = { questions: DialogQuestion[]; ended: Promise<void>; result?: ToolCallResult }
 export const dialogs = new Map<string, OwnDialog>()
