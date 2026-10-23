@@ -102,8 +102,10 @@ requirements:
     statement:
       form: ubiquitous
       system: "A `plan` block"
-      shall: "hold the title and Markdown of a plan that an agent proposes, the path of the file it came from, and its outcome once the person decides it."
+      shall: "hold the title and Markdown of a plan that an agent proposes, the path of the file it came from relative to the tree when the file lies within it, and its outcome once the person decides it."
     criteria:
+      - key: 01a169a9-33b8-738f-a30d-b206873dcb5c
+        name: "A plan whose path is absolute, starts with `~` or has a `..` segment is refused, naming its `path` field."
       - key: 01a1646f-546e-76cb-8b4f-f2828477d857
         name: "A plan's outcome is `approved`, or `rejected` with the person's reason."
       - key: 01a1646f-546e-76cb-8b4f-f28342049ac1
