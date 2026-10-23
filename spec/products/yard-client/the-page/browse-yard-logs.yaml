@@ -158,6 +158,18 @@ requirements:
         name: "Any HTML that a node's name holds is shown as text."
       - key: 01a16838-8fdb-7127-a23e-c55bc6dabc5f
         name: "A name whose Markdown is more than one line of text is shown as its text."
+      - key: 01a16844-c9d1-72df-8cfa-5cd7aa95dc74
+        name: "Each slot of a Requirement's statement in an EARS form is drawn as Markdown, as a name is."
+  - key: 01a16844-c9d1-72df-8cfa-5cd8fc1947f1
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "set each label a `loft` view gives apart from the name beside it, tinted by its node's kind."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5cd9ccec0949
+        name: "A label is drawn as a tag of its own, apart from the name beside it."
+      - key: 01a16844-c9d1-72df-8cfa-5cda23d83c08
+        name: "The labels of a Feature, a Requirement and a criterion each have a tint of their own, and their text keeps the page's ink."
   - key: 01a1646f-546d-7042-befd-eb48685b6f13
     statement:
       form: optional

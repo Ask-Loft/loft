@@ -18,7 +18,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eae04a2537c0
         name: "The view names the base revision it compares with."
       - key: 01a1646f-546d-7042-befd-eae166cc8004
-        name: "Each criterion is listed under its Feature, by its label and its name, with each of its tests by its file and the line it starts at."
+        name: "Each criterion is listed under its Requirement within its Feature, in a table of its label, its name, its state and each of its tests by its file and the line it starts at."
       - key: 01a1646f-546d-7042-befd-eae2b314450a
         name: "Each criterion not accepted is marked not yet reviewed, stale, unverified with its reason, or not linked, in a word as well as a colour."
       - key: 01a1646f-546d-7042-befd-eae34b438416
@@ -37,3 +37,34 @@ requirements:
         name: "Folded, the view lists no criterion and no finding."
       - key: 01a16838-8fdb-7127-a23e-c557d7f2d37e
         name: "A `trace` view the person opened stays open while the page follows Yard Log's changes, and one they folded stays folded."
+  - key: 01a16844-c9d1-72df-8cfa-5ccee8029daf
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw each Feature of a `trace` view folded to its label, its name and the number of its criteria linked to tests, and open it to its Requirements when the person asks."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5ccf74c20a73
+        name: "Folded, a Feature shows the number of its criteria linked to tests out of all of them, and a bar of that share."
+      - key: 01a16844-c9d1-72df-8cfa-5cd06cf1fed6
+        name: "A Feature the person opened stays open while the page follows Yard Log's changes."
+  - key: 01a16844-c9d1-72df-8cfa-5cd1164950b3
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw each Requirement of an opened Feature by its label and its statement, above the table of its criteria."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5cd2b2f48450
+        name: "A statement in an EARS form sets its keywords apart from its clauses."
+      - key: 01a16844-c9d1-72df-8cfa-5cd313d3bcb9
+        name: "A criterion with no label yet is marked new where its label would be."
+      - key: 01a16844-c9d1-72df-8cfa-5cd4baf29db8
+        name: "A `trace` view whose report gives no Requirement lists each Feature's criteria in one table."
+  - key: 01a16844-c9d1-72df-8cfa-5cd5f57f75bc
+    statement:
+      form: event_driven
+      when: "an agent writes a `trace` view"
+      system: "`loft yard write`"
+      shall: "record with each Feature its Requirements, each by its key, its label and its statement, and with each criterion the key of its Requirement."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5cd65a22c107
+        name: "A statement in an EARS form is recorded by its form and its slots, as well as its sentence."
