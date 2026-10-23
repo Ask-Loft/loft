@@ -22605,6 +22605,45 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
         body: fb3e0cd79a57de0af717badf69565af27e9c3163e4f4acec2438e473f580da8c
+  - node: 01a169df-0b4e-72cf-bc3c-4724cf34ab77
+    reviewed: 6a609523be5be4c455e73fee7274754c399b4d4764bc037152b53b890a13c3d6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the panel first opens at half the viewport’s height"
+        body: 111904d4667f3d755478b7edfefe96c8d8169733273ee981df6c7af5a2ac5a1f
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the panel lies along the bottom of the viewport within its margin, half the viewport high, and follows the viewport as it changes"
+        body: a3565b4eb61892a4e759afee04922cf9a14890ca10302cd8aaa26229f8331948
+  - node: 01a169df-0b4e-72cf-bc3c-47254b086a53
+    reviewed: b77f0e4abb18fa5702193cb92dbfdf8c936a4007036ed0569bb98f22aec91b09
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "dragging the panel’s top edge makes the panel taller or shorter by the length dragged"
+        body: a32548f66572a25b65404a68347e95374c1f77cf7851a7abf4075ebfc84761fc
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the panel’s top edge makes it taller by the length dragged, and the next visit opens it at that height"
+        body: 0d120bcf3444a4fb9a996f0b983704b8e0f9df6ad655e7e374c0e1aa4b6a824b
+  - node: 01a169df-0b4e-72cf-bc3c-47260ce66358
+    reviewed: b120bba964f22a57fe6e1ee9d9a7c799791aed55c1f3884d92abdc7c8668afbe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the edge is reached by the keyboard, and the arrow keys up and down make the panel taller and shorter"
+        body: f03581a8b4f86aeef5c0c143ae28f58c483887e545e8a1bff2652f0b7f02d72d
+  - node: 01a169df-0b4e-72cf-bc3c-4727b1a9e96d
+    reviewed: 3e49f41569be18ba074914bcf35d37a9101bc04e7249e4ae5600eeb90a54154b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the panel is never shorter than 160 pixels, and always leaves at least 120 pixels of the page above it, also as the viewport changes"
+        body: 19d759deb20cf93961f915226628aba95a4b11403c57da005e717e25209d3424
+  - node: 01a169df-0b4e-72cf-bc3c-4728f66a5fca
+    reviewed: 14c47fb7835115aefd33cbbe9196c0687e449fa72102a16684ed7e79e65cf5a4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the height chosen is the panel’s height the next time it opens in this browser, and a resize chooses none"
+        body: 8f212a75a88fcdd77d6a402647c14a5551a67bc15f7cd418e140de0e2a733522
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the panel’s top edge makes it taller by the length dragged, and the next visit opens it at that height"
+        body: 0d120bcf3444a4fb9a996f0b983704b8e0f9df6ad655e7e374c0e1aa4b6a824b
   - node: 01a1646f-546d-7042-befd-eb66aa4b28b7
     reviewed: d68fedf468ac9cfdc36cb56011a5a736eae23d2e9ad2525d4b1fd9135a1c86fb
     tests:

@@ -4,6 +4,7 @@
 // that opens one opens it here. The dialog lies outside what the page draws again at each change,
 // so a change drawn into it keeps its scroll and the field that has focus.
 
+import * as dock from './dock.js';
 import { h, replace } from './dom.js';
 
 /**
@@ -62,6 +63,7 @@ function draw(dialog, name, shown) {
   const id = idOf(name);
   replace(
     dialog,
+    shown.docked ? dock.edge() : null,
     h(
       'header',
       { class: 'modal-head' },
@@ -88,8 +90,12 @@ export function show(name, shown) {
   }
   entry.opener = document.activeElement;
   draw(entry.dialog, name, shown);
-  if (shown.docked) entry.dialog.show();
-  else entry.dialog.showModal();
+  if (shown.docked) {
+    dock.fit(entry.dialog);
+    entry.dialog.show();
+  } else {
+    entry.dialog.showModal();
+  }
   return entry.dialog;
 }
 

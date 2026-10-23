@@ -323,6 +323,24 @@ test('the panel lies along the bottom of the viewport within its margin, half th
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+test('dragging the panel’s top edge makes it taller by the length dragged, and the next visit opens it at that height', async ({ page }) => {
+  await page.goto(address());
+  const panel = waitingModal(page);
+  await expect(panel).toBeVisible();
+  const edge = await box(panel.locator('.dock-edge'));
+  const x = edge.x + edge.width / 3;
+  const y = edge.y + edge.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y - 100, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(async () => (await box(panel)).height).toBe(550);
+  expect((await box(panel)).y + 550).toBe(900 - 24);
+  await page.reload();
+  await expect(panel).toBeVisible();
+  await expect.poll(async () => (await box(panel)).height).toBe(550);
+});
+
 test('while the panel is open, the page’s end scrolls above the panel, so no part of the Yard Log stays hidden beneath it', async ({ page }) => {
   await page.goto(address());
   const panel = waitingModal(page);

@@ -589,6 +589,9 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 }
 .modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; box-shadow: 6px -6px 0 var(--wait-line); }
 body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 50vh) + 24px); }
+.dock-edge { position: absolute; top: -5px; left: 0; right: 0; z-index: 1; height: 10px; cursor: row-resize; touch-action: none; }
+.dock-edge::after { content: ''; position: absolute; top: 3px; left: 50%; width: 48px; height: 4px; margin-left: -24px; background: var(--rail); }
+.dock-edge:hover::after, .dock-edge:focus-visible::after { background: var(--signal); }
 .wait-button { background: var(--wait-soft); color: var(--wait); border-color: var(--wait-line); box-shadow: 3px 3px 0 var(--wait-line); }
 .wait-button:hover:not(:disabled) { background: var(--wait-soft); box-shadow: 5px 5px 0 var(--wait-line); }
 
