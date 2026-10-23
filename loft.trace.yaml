@@ -20328,6 +20328,24 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_other_answers_of_a_send_are_recorded_when_one_was_answered_elsewhere_first"
         body: eb7d53284ed6dcec97165836633ba014855a7b6574fec2065f4965b350632689
+  - node: 01a16a53-6d71-7288-9245-8df446ff7236
+    reviewed: 18d9afc42e5c65f7f42be3efe47641acd0be59c54254306b967188baf1e591fa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "answers that the page server refuses to record are kept in the browser"
+        body: f5400332b510b46cf2ee497199a2cebcc68e47669fd36ac6b8e51fa85636a4c8
+  - node: 01a16a53-6d71-7288-9245-8df586280e46
+    reviewed: 2e4b13db7b5f13c854cfd97300afa4d2cf973c2a6940704e8a25e89fe5036140
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a reason for a rejection that the page server refuses to record is kept in the browser"
+        body: 3f845a56ffa33f913f3f38fe50cd4f30307dca237d2598f7cda9cd95e802f030
+  - node: 01a16a53-6d71-7288-9245-8df6b6548a40
+    reviewed: 24b23d420288db1c0d6376c41f870e64ffe86f29fba144d41eedc274bb7bcb8d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a send that cannot reach the page server says so, and its button can be pressed again"
+        body: 74efc61aa3ff69587e6c9738adbe86342492302335ac05b060fe0de04efd731f
   - node: 01a1646f-546c-7521-9643-bbddef0f8d85
     reviewed: c8334794b880d031fe2004c8513edaf6c0223f94818ecdecae4e50564dc9ea9c
     tests:

@@ -59,7 +59,8 @@ export function submissionPanel(submission, waiting, where) {
     send.setAttribute('disabled', '');
     message.textContent = 'Sending…';
     const reply = await api.answer(where.tree, where.branch, toSend(draft, questions));
-    keep(submission.key, {});
+    if (isRecorded(reply)) keep(submission.key, {});
+    else update();
     message.textContent = sentWords(reply);
     where.notify(message.textContent);
     where.refresh();
@@ -101,6 +102,14 @@ export function submissionPanel(submission, waiting, where) {
   );
   update();
   return panel;
+}
+
+/**
+ * Whether the page server recorded a send: what it did not record stays to be sent again.
+ * @param {{ status: number, body: any }} reply
+ */
+function isRecorded(reply) {
+  return ['answered', 'answered elsewhere'].includes(reply.body?.outcome);
 }
 
 /**
@@ -212,7 +221,7 @@ function decisionForm(block, where) {
     }
     message.textContent = 'Sending…';
     const reply = await api.answer(where.tree, where.branch, [sent]);
-    setJson(kept, null);
+    if (isRecorded(reply)) setJson(kept, null);
     const elsewhere = reply.body?.outcome === 'answered elsewhere';
     message.textContent = elsewhere
       ? 'It was decided elsewhere first, so the first outcome is kept.'

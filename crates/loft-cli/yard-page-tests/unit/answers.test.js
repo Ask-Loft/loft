@@ -170,6 +170,49 @@ test('a reason for a rejection typed and not sent is kept through a change, and 
   assert.equal(localStorage.getItem(`yard.reason.${approval.key}`), null);
 });
 
+test('answers that the page server refuses to record are kept in the browser', async () => {
+  globalThis.fetch = async () => new Response(JSON.stringify({ outcome: 'error', errors: [{ kind: 'branch', message: 'the branch changed' }] }), { status: 409 });
+  const asked = question('shelf', ['Top', 'Bottom']);
+  const draft = choose({}, asked, 'Top');
+  localStorage.setItem('yard.draft.s9', JSON.stringify(draft));
+  const panel = submissionPanel({ key: 's9', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
+  root().append(panel);
+  panel.querySelector('#send-s9').click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.deepEqual(JSON.parse(localStorage.getItem('yard.draft.s9')), draft);
+  assert.match(panel.querySelector('.send-message').textContent, /Not sent: the branch changed/);
+  assert.equal(panel.querySelector('#send-s9').hasAttribute('disabled'), false);
+});
+
+test('a reason for a rejection that the page server refuses to record is kept in the browser', async () => {
+  globalThis.fetch = async () => new Response(JSON.stringify({ outcome: 'error', errors: [{ kind: 'stopping', message: 'the page server is stopping' }] }), { status: 503 });
+  const approval = block('approval', 'ship', { title: 'Ship it?', markdown: 'x', html: '<p>x</p>' });
+  const panel = submissionPanel({ key: 's10', state: 'open', blocks: [approval.key], sent: { at: '', revision: 1, by: {} } }, [approval], where);
+  root().append(panel);
+  const reason = panel.querySelector('#reason-ship');
+  reason.value = 'Too soon';
+  reason.dispatchEvent(new Event('input'));
+  panel.querySelector('#reject-ship').click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(JSON.parse(localStorage.getItem(`yard.reason.${approval.key}`)), 'Too soon');
+  assert.match(panel.querySelector('.decision-form .send-message').textContent, /Not sent: the page server is stopping/);
+});
+
+test('a send that cannot reach the page server says so, and its button can be pressed again', async () => {
+  globalThis.fetch = async () => {
+    throw new TypeError('Failed to fetch');
+  };
+  const asked = question('shelf', ['Top', 'Bottom']);
+  localStorage.setItem('yard.draft.s11', JSON.stringify(choose({}, asked, 'Top')));
+  const panel = submissionPanel({ key: 's11', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
+  root().append(panel);
+  panel.querySelector('#send-s11').click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.match(panel.querySelector('.send-message').textContent, /Not sent: the page server could not be reached/);
+  assert.equal(panel.querySelector('#send-s11').hasAttribute('disabled'), false);
+  assert.notEqual(localStorage.getItem('yard.draft.s11'), null);
+});
+
 test('approving sends the outcome approved', async () => {
   const approval = block('approval', 'ship', { title: 'Ship it?', markdown: 'x', html: '<p>x</p>' });
   const panel = submissionPanel({ key: 's6', state: 'open', blocks: [approval.key], sent: { at: '', revision: 1, by: {} } }, [approval], where);
