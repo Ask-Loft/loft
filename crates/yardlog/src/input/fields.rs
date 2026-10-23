@@ -48,21 +48,28 @@ impl<'a> Fields<'a> {
 
     /// A text that must be given and not be blank.
     pub(super) fn text(&mut self, name: &'static str) -> String {
-        let found = self.optional_text(name);
-        if found.is_none() && !self.faulted(name) {
-            self.fault(name, "is required");
+        match self.take(name) {
+            Some(Value::String(text)) if !text.trim().is_empty() => text.clone(),
+            Some(Value::String(_)) => {
+                self.fault(name, "is blank");
+                String::new()
+            }
+            Some(_) => {
+                self.fault(name, "is not text");
+                String::new()
+            }
+            None => {
+                self.fault(name, "is required");
+                String::new()
+            }
         }
-        found.unwrap_or_default()
     }
 
-    /// A text that may be left out, but is not blank where given.
+    /// A text that may be left out; given blank, it is taken as left out.
     pub(super) fn optional_text(&mut self, name: &'static str) -> Option<String> {
         match self.take(name)? {
             Value::String(text) if !text.trim().is_empty() => Some(text.clone()),
-            Value::String(_) => {
-                self.fault(name, "is blank");
-                None
-            }
+            Value::String(_) => None,
             _ => {
                 self.fault(name, "is not text");
                 None
@@ -159,10 +166,6 @@ impl<'a> Fields<'a> {
             return None;
         };
         Some(items)
-    }
-
-    fn faulted(&self, name: &str) -> bool {
-        self.faults.iter().any(|fault| fault.field == name)
     }
 
     /// Refuses each field the block's kind does not read.

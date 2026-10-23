@@ -102,6 +102,31 @@ fn a_block_naming_a_stage_the_batch_writes_only_after_it_is_refused_not_a_crash(
 }
 
 #[test]
+fn a_blank_text_a_block_may_leave_out_is_left_out_and_a_blank_one_it_must_give_is_refused() {
+    let mut log = planned();
+    write(
+        &mut log,
+        &json!([{"id": "t1", "kind": "task", "stage": "design", "title": "Look", "detail": " ", "state": "open"}]),
+        &context(&main_agent(), 2),
+    );
+    let Body::Task(task) = &log.find(&handle("t1")).unwrap().current().body else {
+        panic!("not a task")
+    };
+    assert_eq!(task.detail, None);
+
+    let faults = yardlog::input::read_batch(
+        &json!([{"id": "t2", "kind": "task", "stage": "design", "title": "", "state": "open"}]),
+    )
+    .unwrap_err();
+    assert!(
+        faults.iter().any(|fault| fault.block == "t2"
+            && fault.field == "title"
+            && fault.message == "is blank"),
+        "{faults:?}"
+    );
+}
+
+#[test]
 fn a_new_block_goes_at_the_end_of_its_stage_or_after_the_block_it_names() {
     let mut log = planned();
     write(

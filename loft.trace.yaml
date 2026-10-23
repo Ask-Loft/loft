@@ -19944,6 +19944,18 @@ links:
       - file: "crates/yardlog/tests/block_kinds.rs"
         name: "a_batch_that_gives_a_report_a_key_a_time_or_an_answer_is_refused"
         body: e5587b641ef3c2e720dc81ee5aef7c4a26fa41e8b9bf92697e989fba3cbff87e
+  - node: 01a16832-cef7-7761-a85a-4e7369a9a57e
+    reviewed: e58b4f4b330ea7f03fa481f057f181f7942e410a7bd87fcf619a16ff1b164dd3
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_blank_text_a_block_may_leave_out_is_left_out_and_a_blank_one_it_must_give_is_refused"
+        body: 89548aac7fb2190c5c30d59d0b265c4b8145406da7bc39409760f03632ecb3b4
+  - node: 01a16832-cef8-72f9-b780-5f6329894f56
+    reviewed: cbd1120e1ba1a585ed1b52f7befe6ac6dab7dad3db5053346339ecbe34170d94
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "a_blank_text_a_block_may_leave_out_is_left_out_and_a_blank_one_it_must_give_is_refused"
+        body: 89548aac7fb2190c5c30d59d0b265c4b8145406da7bc39409760f03632ecb3b4
   - node: 01a1646f-546e-76cb-8b4f-f29527011c40
     reviewed: 9940d3875135971b523f1e0aa0fefb02c3f9d2ed24a09b1e7fa3906b513ba3bb
     tests:
@@ -23300,7 +23312,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
-        body: 3b872a65d12999bf95ef60128541c9b6322490b85754d46bde0a589c2dff8110
+        body: c6f3b0413b9b7cf3e4ddcd5d141697a8b9b4ac1318821086b0abdb0358d91968
   - node: 01a1646f-546c-7521-9643-bc4c62a6d12f
     reviewed: d517dfdbda65bb2d5a0a85d743ebc1b44d26f3eb68eb25b664658244a48ab4a6
     tests:
@@ -23312,7 +23324,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
-        body: 3b872a65d12999bf95ef60128541c9b6322490b85754d46bde0a589c2dff8110
+        body: c6f3b0413b9b7cf3e4ddcd5d141697a8b9b4ac1318821086b0abdb0358d91968
   - node: 01a1646f-546c-7521-9643-bc54b796807b
     reviewed: 753427b10b01e523c918fea29e3bc18a4ccacb60555c0f73fe25f7f8098bdc14
     tests:

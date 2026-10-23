@@ -48,6 +48,10 @@ requirements:
         name: "A block written again with another stage than the one that holds it is refused."
       - key: 01a1646f-546e-76cb-8b4f-f293bae3bba0
         name: "A batch that gives a key for a block is refused."
+      - key: 01a16832-cef7-7761-a85a-4e7369a9a57e
+        name: "A text field that a block may leave out, given as blank text, is taken as left out."
+      - key: 01a16832-cef8-72f9-b780-5f6329894f56
+        name: "A text field that a block must give, given as blank text, is refused."
   - key: 01a1646f-546e-76cb-8b4f-f2941bb2763d
     statement:
       form: ubiquitous
