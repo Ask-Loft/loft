@@ -113,6 +113,23 @@ export function treeList(listing, current) {
 }
 
 /**
+ * The button that folds the list of Yard Logs and opens it again; folded, it gives the count of
+ * what waits on the person, which the list no longer shows.
+ * @param {any} listing
+ * @param {boolean} folded
+ * @param {(folded: boolean) => void} onToggle
+ */
+export function foldButton(listing, folded, onToggle) {
+  const waiting = listing?.count ?? 0;
+  return h(
+    'button',
+    { type: 'button', id: 'fold-button', class: 'fold-button', 'aria-controls': 'side', 'aria-expanded': folded ? 'false' : 'true', onclick: () => onToggle(!folded) },
+    folded ? 'Show the list' : 'Hide the list',
+    folded && waiting ? h('span', { class: 'waiting-count', title: `${waiting} wait on you` }, String(waiting)) : null,
+  );
+}
+
+/**
  * What the page shows while no Yard Log is chosen: with none served, how to start a session that
  * opens one; otherwise, to choose one from the list.
  * @param {any} listing

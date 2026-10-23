@@ -21654,6 +21654,39 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right"
         body: 261864f3ef2dce0c74b59b63bda3edeb8a062f5cf7b1533ab946769eb91c0400
+  - node: 01a168ea-af3e-70b5-83b9-97fe8c01e07f
+    reviewed: 67a0ffc4e738e661540326f8aa0f3a06db1e029992310fa44b8b536210067a2a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "the button at the head of the page says whether it folds the list or opens it, and asks for the other"
+        body: 2abe36cd872807aa2620a29444ba4b1d4d1525a2dd88ff93468c5b4e743a681a
+  - node: 01a168ea-af3e-70b5-83b9-97ff14bf889d
+    reviewed: f11ee2228ef76b05b824f76f2e9b47e378c2be0036b77c37fcfe31b51fcd6d61
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "the list is open until the person folds it, and the browser keeps the choice"
+        body: cf7add7510c949b8e373cc7cec44b8f2b71ffe8c492c54ebcb6bcca17e09917a
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "folding the list gives its room to the Yard Log shown, which begins where the list began, and the next visit keeps it folded"
+        body: b8182c71e60711ca3989fb192b91723ef1ff884c8e95a2a05ba42cffa6b567fe
+  - node: 01a168ea-af3e-70b5-83b9-9800f391884d
+    reviewed: 65c85601c4eb3727b0efef25a8bd8524881896432cff75fd778b2b9e41a17b0d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "folding the list gives its room to the Yard Log shown, which begins where the list began, and the next visit keeps it folded"
+        body: b8182c71e60711ca3989fb192b91723ef1ff884c8e95a2a05ba42cffa6b567fe
+  - node: 01a168ea-af3e-70b5-83b9-9801a289a60f
+    reviewed: e619e387bef891d7b48ee6d12fa5470947f83443dd0e26a9c04ed16f594c11f5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "folding the list widens the Gantt chart into the room the list left, and opening it narrows the chart again"
+        body: 99163528c6fb55269fc234ce355ec2f0fe8b6bc8a54a297c0a6e4085ec19376d
+  - node: 01a168ea-af3e-70b5-83b9-9802c4271166
+    reviewed: ec2b67ee6f46d594a84de4da9456d33632d74251d8d7df5b7b3c85bc30d2ccbf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "with the list folded, the button gives the count of blocks that wait on the person, and none while open or while none wait"
+        body: 6882001d369f31a0d557a2e7c2042f28b3161a7eaedc186bb7c3fc3ed98c0efc
   - node: 01a1646f-546d-7042-befd-eb2339a1f113
     reviewed: 00decd7d740cf4b3f107231c953f28a7aa1fa7b9af8103250c7f215f6201c73f
     tests:

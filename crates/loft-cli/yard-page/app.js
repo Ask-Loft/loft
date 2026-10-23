@@ -9,7 +9,7 @@ import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
 import { logView, unreadable } from './views/log.js';
-import { title, treeList, waitingList, welcome } from './views/trees.js';
+import { foldButton, title, treeList, waitingList, welcome } from './views/trees.js';
 
 const state = {
   /** @type {any} */ listing: null,
@@ -90,6 +90,17 @@ function render() {
   const side = document.getElementById('side');
   if (!main || !side) return;
   replace(side, waitingList(state.listing), treeList(state.listing, route));
+  const fold = document.getElementById('fold');
+  if (fold) {
+    replace(
+      fold,
+      foldButton(state.listing, prefs.folded(), (folded) => {
+        prefs.set('list', folded ? 'folded' : 'open');
+        render();
+      }),
+    );
+  }
+  document.body.classList.toggle('is-folded', prefs.folded());
   if (!route) {
     replace(main, welcome(state.listing));
   } else if (state.logStatus !== 200) {

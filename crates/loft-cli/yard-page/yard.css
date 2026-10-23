@@ -176,6 +176,10 @@ button { font: inherit; }
   background: var(--cyan);
   box-shadow: 0 0 0 1px var(--ink);
 }
+.top-start { display: flex; align-items: center; gap: 18px; }
+/* The button that folds the list of Yard Logs away and opens it again. */
+.fold-button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); padding: 3px 10px; font-size: 13px; cursor: pointer; }
+.fold-button:hover { background: var(--surface-2); }
 .connection { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .connection-dot { width: 8px; height: 8px; background: var(--done); box-shadow: 0 0 0 1px var(--ink); }
 .is-offline .connection-dot { background: var(--wait); }
@@ -191,6 +195,9 @@ button { font: inherit; }
 }
 .side { position: sticky; top: 84px; display: grid; gap: 22px; max-height: calc(100vh - 116px); overflow: auto; padding: 0 6px 6px 0; }
 .main { min-width: 0; }
+/* Folded, the list gives its room to the Yard Log shown, which begins where the list began. */
+.is-folded .layout { grid-template-columns: minmax(0, 1fr); }
+.is-folded .side { display: none; }
 .loading, .empty, .welcome p { color: var(--muted); }
 .welcome { padding: 40px 0; display: grid; gap: 10px; max-width: 60ch; }
 .welcome .commands { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }

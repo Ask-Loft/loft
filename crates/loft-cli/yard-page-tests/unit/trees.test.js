@@ -5,8 +5,9 @@ import { forget } from './dom.js';
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
+import * as prefs from '../../yard-page/lib/prefs.js';
 import { parse } from '../../yard-page/lib/route.js';
-import { title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
+import { foldButton, title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
 
 beforeEach(forget);
 
@@ -138,4 +139,34 @@ test('with no Yard Log served, the page gives the commands that install the Loft
     [...shown.querySelectorAll('.commands code')].map((each) => each.textContent),
     ['/plugin marketplace add Ask-Loft/loft', '/plugin install loft@ask-loft'],
   );
+});
+
+test('the button at the head of the page says whether it folds the list or opens it, and asks for the other', () => {
+  /** @type {boolean[]} */
+  const asked = [];
+  const open = foldButton(listing(), false, (folded) => asked.push(folded));
+  assert.equal(open.textContent, 'Hide the list');
+  assert.equal(open.getAttribute('aria-expanded'), 'true');
+  assert.equal(open.getAttribute('aria-controls'), 'side');
+  open.click();
+  const folded = foldButton(listing(), true, (again) => asked.push(again));
+  assert.match(folded.textContent ?? '', /^Show the list/);
+  assert.equal(folded.getAttribute('aria-expanded'), 'false');
+  folded.click();
+  assert.deepEqual(asked, [true, false]);
+});
+
+test('the list is open until the person folds it, and the browser keeps the choice', () => {
+  assert.equal(prefs.folded(), false);
+  prefs.set('list', 'folded');
+  assert.equal(prefs.folded(), true);
+  assert.equal(localStorage.getItem('yard.list'), 'folded');
+  prefs.set('list', 'open');
+  assert.equal(prefs.folded(), false);
+});
+
+test('with the list folded, the button gives the count of blocks that wait on the person, and none while open or while none wait', () => {
+  assert.equal(foldButton(listing(), true, () => {}).querySelector('.waiting-count')?.textContent, '2');
+  assert.ok(!foldButton(listing(), false, () => {}).querySelector('.waiting-count'));
+  assert.ok(!foldButton(listing({ count: 0 }), true, () => {}).querySelector('.waiting-count'));
 });
