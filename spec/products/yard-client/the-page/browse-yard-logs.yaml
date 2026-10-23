@@ -21,6 +21,22 @@ requirements:
         name: "The page is as wide as the window allows, up to 1800 pixels."
       - key: 01a168d9-f2df-7350-8964-7ecd425523e1
         name: "In a window wider than 1800 pixels, the room beyond the page lies at its right."
+  - key: 01a168ea-af3d-7473-83c8-50bb2e1a4b32
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "let the person fold the list of Yard Logs away and open it again, and give the room the list leaves to the Yard Log shown."
+    criteria:
+      - key: 01a168ea-af3e-70b5-83b9-97fe8c01e07f
+        name: "A button at the head of the page folds the list and opens it again, and says which of the two it does."
+      - key: 01a168ea-af3e-70b5-83b9-97ff14bf889d
+        name: "The list is open unless the person chose to fold it, and the person's choice is kept in the browser."
+      - key: 01a168ea-af3e-70b5-83b9-9800f391884d
+        name: "With the list folded, the Yard Log shown begins where the list began."
+      - key: 01a168ea-af3e-70b5-83b9-9801a289a60f
+        name: "With the list folded, the Gantt chart widens into the room the list left, and narrows again once the list is opened."
+      - key: 01a168ea-af3e-70b5-83b9-9802c4271166
+        name: "With the list folded, the button gives the count of blocks that wait on the person."
   - key: 01a1646f-546d-7042-befd-eb22743f9709
     statement:
       form: ubiquitous
