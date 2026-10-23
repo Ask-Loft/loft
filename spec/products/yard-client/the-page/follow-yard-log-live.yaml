@@ -31,3 +31,5 @@ requirements:
         name: "A change written by a `loft yard` command reaches open pages."
       - key: 01a1646f-546d-7042-befd-eb542652e8d9
         name: "A change that git makes, such as a checkout of another branch or a merge, reaches open pages."
+      - key: 01a16651-7f23-700e-b716-8dbcc1ebd2be
+        name: "A change names each branch whose Yard Log it changed, and whether only its sessions' files changed, so that a page reads again only what it shows of them."
