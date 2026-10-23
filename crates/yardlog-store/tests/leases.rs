@@ -65,3 +65,24 @@ fn a_lease_s_holder_is_named_while_it_holds_it_and_its_name_goes_with_it() {
     assert_eq!(std::fs::read(&named).unwrap(), b"second");
     drop(second);
 }
+
+#[test]
+fn finding_who_holds_a_lease_never_takes_it() {
+    let tree = Tree::new();
+    let place = tree.place(&tree.on("main"), &tree.top()).unwrap();
+    let key = SubmissionKey::mint();
+    assert_eq!(place.lease_holder(key).unwrap(), None);
+    assert!(
+        !place.lease_path(key).exists(),
+        "looking opened the lease's file to lock it"
+    );
+    let held = place
+        .lease_as(key, b"first")
+        .unwrap()
+        .expect("the lease is free");
+    assert_eq!(
+        place.lease_holder(key).unwrap().as_deref(),
+        Some(&b"first"[..])
+    );
+    drop(held);
+}

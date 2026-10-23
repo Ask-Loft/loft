@@ -41,9 +41,8 @@ const EVERY: Duration = Duration::from_millis(250);
 /// its branch makes it: a few git calls a minute, however long the wait.
 const MERGE_EVERY: Duration = Duration::from_secs(5);
 
-/// How long a wait goes on trying for a lease that no wait has named itself as holding: one that
-/// looks whether the lease is held holds it for a moment, and a wait names itself just after it
-/// takes it.
+/// How long a wait goes on trying for a lease that no wait has named itself as holding: a wait
+/// names itself just after it takes the lease, and a process outside Loft may hold it a moment.
 const UNNAMED: Duration = Duration::from_secs(2);
 
 /// How often a wait tries for such a lease meanwhile.

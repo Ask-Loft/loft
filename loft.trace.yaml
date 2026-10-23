@@ -20625,6 +20625,12 @@ links:
       - file: "crates/yardlog-store/tests/leases.rs"
         name: "a_lease_s_holder_is_named_while_it_holds_it_and_its_name_goes_with_it"
         body: 186963e8ad3f4819fc31c22204d53f8478483b561881d1c0ebd908ceb91df300
+  - node: 01a16a6e-42e3-7261-8a0f-1b88f7deddc0
+    reviewed: 4589cccdd904bab962491a4650cd7cbfc08ae11805f50ba44ffe3e99326875f6
+    tests:
+      - file: "crates/yardlog-store/tests/leases.rs"
+        name: "finding_who_holds_a_lease_never_takes_it"
+        body: 051c9840c99eb0e283faaaf2bb8b8b61d19c2b9a3d145462ca3fd5d38f1377c2
   - node: 01a1647c-e680-7753-bf17-f17296e2f008
     reviewed: e353df661c19027bec47c6ca9ee6a767f698a7c1d926bf0c6f38363be9582221
     tests:
@@ -20638,7 +20644,7 @@ links:
         name: "two_sessions_on_one_branch_never_both_wait_on_one_submission"
         body: 95497bd3807a0152f21cad4c564dbd70666d0e91f9c4f395e4f0611cfad28f72
   - node: 01a16a59-cf10-7028-be3f-c198f1fdfac0
-    reviewed: 6ae403c54d777f62dc2cb7f23342e0af52389541c1a5dc7779fa0ccb4929b47f
+    reviewed: efd1ed2abc3708f3d37b2e8ae02c78ed3cb084a160d4678487d3c4cee1a4cb35
     tests:
       - file: "crates/loft-cli/tests/yard_wait.rs"
         name: "a_lease_held_a_moment_by_one_that_looks_does_not_refuse_the_wait"

@@ -108,11 +108,12 @@ impl Place {
         lock::try_lock_as(&self.lease_path(submission), holder)
     }
 
-    /// Who holds the lease on a submission, as its holder recorded it, where a wait holds it.
+    /// Who holds the lease on a submission, as its holder recorded it, read without taking the
+    /// lease: none where no wait has named itself as holding it.
     ///
     /// # Errors
     ///
-    /// The lease's file cannot be locked, or its holder's file cannot be read.
+    /// The holder's file cannot be read.
     pub fn lease_holder(
         &self,
         submission: SubmissionKey,
