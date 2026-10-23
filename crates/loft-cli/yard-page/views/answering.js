@@ -5,7 +5,7 @@
 // What the person chose and has not sent is kept in this browser only.
 
 import * as api from '../lib/api.js';
-import { h } from '../lib/dom.js';
+import { h, html } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
 import { getJson, setJson } from '../lib/prefs.js';
 import {
@@ -133,7 +133,7 @@ function questionForm(block, key, update) {
     'fieldset',
     { class: ['question-form', isAnswered(draft, block) ? 'is-answered' : null], dataset: { key: block.key } },
     h('legend', {}, h('span', { class: 'header' }, body.header), ' ', body.prompt),
-    body.contextHtml ? Object.assign(document.createElement('div'), { className: 'prose context', innerHTML: body.contextHtml }) : null,
+    body.contextHtml ? html(body.contextHtml, 'prose context') : null,
     body.multiple ? h('p', { class: 'hint' }, 'Choose one or more.') : null,
     body.options.map((option, index) =>
       h(
@@ -225,7 +225,7 @@ function decisionForm(block, where) {
     { class: 'decision-form', dataset: { key: block.key } },
     h('h4', {}, h('span', { class: 'kind' }, block.kind === 'plan' ? 'Plan' : 'Approval'), ' ', body.title),
     block.kind === 'plan' && body.planMode ? h('p', { class: 'plan-mode' }, 'Approving it lets the agent go on in auto mode.') : null,
-    Object.assign(document.createElement('div'), { className: 'prose', innerHTML: body.html ?? '' }),
+    html(body.html ?? ''),
     h(
       'div',
       { class: 'decide-row' },

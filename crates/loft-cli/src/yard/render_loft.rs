@@ -1,5 +1,6 @@
 //! A `loft` block's version as the results give it: the view, what the agent asked for, where
-//! and when the report was computed, and the report as `loft` gave it.
+//! and when the report was computed, and the report as `loft` gave it, or, in a read without
+//! `--reports`, its size.
 
 use serde_json::{Map, Value, json};
 use yardlog::body::{Loft, Reason, Recorded};
@@ -31,4 +32,37 @@ fn recorded(recorded: &Recorded) -> Value {
     fields.insert("loft".to_owned(), json!(recorded.loft));
     fields.insert("at".to_owned(), json!(recorded.at.to_string()));
     Value::Object(fields)
+}
+
+/// Gives each `loft` block's report in `stages`, in its current version and in each version
+/// listed, by its size in bytes as JSON, in place of the report itself.
+pub fn without_reports(stages: &mut Value) {
+    let blocks = stages
+        .as_array_mut()
+        .into_iter()
+        .flatten()
+        .filter_map(|stage| stage["blocks"].as_array_mut())
+        .flatten()
+        .filter(|block| block["kind"] == "loft");
+    for block in blocks {
+        sized(block.get_mut("version"));
+        let versions = block.get_mut("versions").and_then(Value::as_array_mut);
+        for version in versions.into_iter().flatten() {
+            sized(Some(version));
+        }
+    }
+}
+
+/// Gives the report of a version's body by its size.
+fn sized(version: Option<&mut Value>) {
+    let Some(fields) = version
+        .and_then(|version| version.get_mut("body"))
+        .and_then(Value::as_object_mut)
+    else {
+        return;
+    };
+    if let Some(report) = fields.remove("report") {
+        let bytes = serde_json::to_vec(&report).map_or(0, |bytes| bytes.len());
+        fields.insert("reportBytes".to_owned(), json!(bytes));
+    }
 }

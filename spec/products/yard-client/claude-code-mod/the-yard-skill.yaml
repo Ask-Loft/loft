@@ -139,3 +139,5 @@ requirements:
         name: "The skill says to base each write on the revision last read."
       - key: 01a1646f-546c-7521-9643-bca57d50a238
         name: "The skill says that a refused write names the blocks that changed, which the agent reads before writing again."
+      - key: 01a16880-126c-7301-9603-b98acd507292
+        name: "The skill says that a read gives each `loft` block's report by its size, and that `reports` gives the reports themselves, best with `since`."

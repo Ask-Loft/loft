@@ -21,6 +21,10 @@ requirements:
         name: "The page shows the four counts of the main agent and of each type of subagent, for each model they ran on."
       - key: 01a1646f-546d-7042-befd-eb1c9a6d4d36
         name: "The page shows with each submission the four counts of the requests that ended while it was open."
+      - key: 01a1682e-2675-75b2-871c-e260967a6cf8
+        name: "The breakdowns share one table, whose columns are the four counts."
+      - key: 01a1682e-2675-75b2-871c-e2613eb8729b
+        name: "Each count of a breakdown shows, as a bar, its share of Yard Log's count of that kind in all."
       - key: 01a1646f-546d-7042-befd-eb1d0e18125d
         name: "The page says that requests Claude Code makes inside its own tools, such as a web search or a web fetch, are not counted."
       - key: 01a1646f-546d-7042-befd-eb1e1e831c2e

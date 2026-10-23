@@ -149,6 +149,33 @@ fn every_script_style_and_font_the_page_loads_comes_from_the_page_server() {
             );
         }
     }
+    let style = String::from_utf8(page_file("yard.css")).unwrap();
+    for (at, _) in style.match_indices("url(") {
+        let value = style[at + "url(".len()..].trim_start_matches(['"', '\'']);
+        assert!(
+            !value.starts_with("http") && !value.starts_with("//"),
+            "the style loads {}",
+            &value[..value.find(')').unwrap_or(value.len())]
+        );
+    }
+    assert!(style.contains("url(\"vendor/inter-latin.woff2\")"));
+}
+
+#[test]
+fn inter_is_served_as_a_font_with_its_licence() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &[]);
+    let font = served.get("/vendor/inter-latin.woff2");
+    assert_eq!(font.status, 200);
+    assert!(font.head.contains("font/woff2"), "{}", font.head);
+    assert_eq!(font.body, page_file("vendor/inter-latin.woff2"));
+    let licence = served.get("/vendor/inter.LICENSE");
+    assert_eq!(licence.status, 200);
+    assert!(
+        String::from_utf8(licence.body)
+            .unwrap()
+            .contains("SIL Open Font License")
+    );
 }
 
 #[test]

@@ -18,13 +18,13 @@ use crate::snapshot::snapshot;
 use crate::yard::{ASK, BRANCH, Yard, block};
 
 /// The directory of `scratch`'s tree, as the page server names it.
-fn tree(scratch: &Scratch) -> String {
+pub fn tree(scratch: &Scratch) -> String {
     scratch.0.canonicalize().unwrap().display().to_string()
 }
 
 /// `yard`, whose tree holds the Yard Log of `main` as well as its own branch's: one carried from
 /// the branch it was cut from.
-fn with_inherited() -> Yard {
+pub fn with_inherited() -> Yard {
     let mut yard = Yard::on("main");
     yard.write("s1", ASK, &["--send"]);
     yard.git = GitScenario::clean_on(BRANCH)
@@ -103,28 +103,6 @@ fn a_tree_that_no_longer_exists_is_dropped_from_those_served() {
     let own = tree(&yard.scratch);
     served.post_as_mod("/api/register", &json!({ "tree": own }));
     assert_eq!(yard.home_file("trees.json")["trees"], json!([own]));
-}
-
-#[test]
-fn each_tree_lists_its_current_branch_s_yard_log_first_and_each_inherited_one_after_it() {
-    let yard = with_inherited();
-    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
-    let listing = served.get("/api/trees").json();
-    let logs = &listing["repositories"][0]["trees"][0]["logs"];
-    assert_eq!(logs[0]["branch"], BRANCH);
-    assert_eq!(logs[0]["inherited"], false);
-    assert_eq!(logs[1]["branch"], "main");
-    assert_eq!(logs[1]["inherited"], true);
-    assert_eq!(logs[0]["waiting"], 1);
-    assert_eq!(
-        logs[1]["waiting"], 0,
-        "an inherited Yard Log waits on nobody"
-    );
-    assert_eq!(listing["count"], 1);
-    let waits = listing["waiting"].as_array().unwrap();
-    assert_eq!(waits.len(), 1);
-    assert_eq!(waits[0]["branch"], BRANCH);
-    assert_eq!(waits[0]["blocks"], json!(["q1"]));
 }
 
 #[test]
@@ -311,7 +289,7 @@ fn a_yard_log_of_a_newer_format_is_listed_as_such_and_takes_no_answer() {
 }
 
 /// Reads the stream until an event named `name` arrives, and says whether one did.
-fn stream_until(reader: &mut impl BufRead, name: &str) -> bool {
+pub fn stream_until(reader: &mut impl BufRead, name: &str) -> bool {
     let mut line = String::new();
     loop {
         line.clear();

@@ -30,8 +30,16 @@ export function settingsOf(options: PluginOptions): Settings {
 /** A JSON document a `loft` command printed. */
 export type Doc = Record<string, unknown>
 
-/** What one run gave: its document where it printed one, its exit code, and why it never ran. */
-export type Ran = { doc?: Doc; exitCode: number; stderr: string; unrun?: string }
+/**
+ * What one run gave: its document where it printed one, its exit code, and why it never ran; the
+ * bytes it printed on standard output, and whether Claude Code cut them short.
+ */
+export type Ran = { doc?: Doc; exitCode: number; stderr: string; unrun?: string; printed?: number; truncated?: boolean }
+
+/** The number of bytes `text` takes in UTF-8. */
+export function bytesOf(text: string): number {
+  return new TextEncoder().encode(text).length
+}
 
 /** The argument vector of `loft <args> --format json`. */
 export function loftArgv(settings: Settings, args: readonly string[]): string[] {
@@ -52,7 +60,15 @@ export async function runLoft(
       timeoutMs: init.timeoutMs ?? 30000,
       ...(init.stdin !== undefined ? { stdin: init.stdin } : {}),
     })
-    return { doc: parseDocument(ran.stdout), exitCode: ran.exitCode, stderr: ran.stderr }
+    // Output cut short is never a document, even where the bytes kept would read as one.
+    const truncated = ran.isStdoutTruncated === true
+    return {
+      doc: truncated ? undefined : parseDocument(ran.stdout),
+      exitCode: ran.exitCode,
+      stderr: ran.stderr,
+      printed: bytesOf(ran.stdout),
+      truncated,
+    }
   } catch (error) {
     return { exitCode: -1, stderr: '', unrun: error instanceof Error ? error.message : String(error) }
   }

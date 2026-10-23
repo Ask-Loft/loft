@@ -9,6 +9,42 @@ realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71a94f0aa021
 requirements:
+  - key: 01a168d9-f2df-7350-8964-7eca18ed1a07
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "lie at the left of the window and grow with the window up to 1800 pixels wide."
+    criteria:
+      - key: 01a168d9-f2df-7350-8964-7ecb58ac5bcb
+        name: "The page begins at the left edge of the window, whatever the window's width."
+      - key: 01a168d9-f2df-7350-8964-7ecc86fbfc7d
+        name: "The page is as wide as the window allows, up to 1800 pixels."
+      - key: 01a168d9-f2df-7350-8964-7ecd425523e1
+        name: "In a window wider than 1800 pixels, the room beyond the page lies at its right."
+  - key: 01a168ea-af3d-7473-83c8-50bb2e1a4b32
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "hold the list of Yard Logs in a menu down the left of the window, which the person can fold to a narrow strip and open again, and give the room the menu leaves to the Yard Log shown."
+    criteria:
+      - key: 01a16901-3952-7392-b2a8-3b99d4dc57a2
+        name: "The menu runs down the left of the window from its top to its bottom, beside the page's header, and stays in place while the Yard Log scrolls."
+      - key: 01a168ea-af3e-70b5-83b9-97fe8c01e07f
+        name: "Open, the menu is headed “Yard Logs”, beside a button that folds it."
+      - key: 01a16901-3953-712b-afc6-44269a6cf574
+        name: "Folded, the menu is a narrow strip that holds a button drawn as three lines, which opens it."
+      - key: 01a168ea-af3e-70b5-83b9-97ff14bf889d
+        name: "The menu is open unless the person chose to fold it, and the person's choice is kept in the browser."
+      - key: 01a168ea-af3e-70b5-83b9-9800f391884d
+        name: "With the menu folded, the page's header and the Yard Log shown begin beside the strip, as near its edge as they lay to the open menu's."
+      - key: 01a168ea-af3e-70b5-83b9-9801a289a60f
+        name: "With the menu folded, the Gantt chart widens into the room the menu left, and narrows again once the menu is opened."
+      - key: 01a168ea-af3e-70b5-83b9-9802c4271166
+        name: "With the menu folded, its button gives the count of blocks that wait on the person."
+      - key: 01a16901-3953-712b-afc6-44278c6402e4
+        name: "In a window narrower than 860 pixels, the open menu lies over the Yard Log rather than beside it."
+      - key: 01a16920-dde7-743a-aadb-655223112875
+        name: "The page draws the menu again only when the list of Yard Logs, the Yard Log chosen or the menu's fold changes."
   - key: 01a1646f-546d-7042-befd-eb22743f9709
     statement:
       form: ubiquitous
@@ -27,21 +63,58 @@ requirements:
         name: "A branch whose Yard Log is closed is listed as closed."
       - key: 01a1646f-546d-7042-befd-eb2740b8a1ba
         name: "Choosing a listed branch opens its Yard Log at an address of its own, which names its tree and its branch."
+      - key: 01a16827-8a6d-74e8-a5d2-6fa1ea625f7d
+        name: "With Yard Logs listed and none chosen, the page asks the person to choose one from the list."
+  - key: 01a16827-8a6d-74e8-a5d2-6fa2a20ebe40
+    statement:
+      form: state_driven
+      while: "the page server serves no Yard Log"
+      system: "the page"
+      shall: "ask the person to start a Claude Code session with the Loft plugin on a branch of a git repository, and say that the agent's first write there opens the branch's Yard Log."
+    criteria:
+      - key: 01a16827-8a6d-74e8-a5d2-6fa3517630a4
+        name: "With no Yard Log served, the page asks for a session rather than a choice from the list."
+      - key: 01a16827-8a6d-74e8-a5d2-6fa4147c7a28
+        name: "With no Yard Log served, the page gives the commands that install the Loft plugin in Claude Code."
   - key: 01a1649f-62ef-71e6-98de-e10df45e19aa
     statement:
       form: event_driven
       when: "a tree holds under `.yard/` Yard Log of a branch other than the one the tree is on, as one carried from the branch it was cut from"
       system: "the page"
-      shall: "list that Yard Log under the tree as inherited, and offer it only to read."
+      shall: "list that Yard Log as inherited under its repository, once whatever number of the repository's trees hold it, and offer it only to read."
     criteria:
       - key: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
-        name: "Each tree lists its current branch's Yard Log first, and each inherited one after it, marked as inherited."
+        name: "Each tree lists only its current branch's Yard Log, and its repository lists the inherited ones in a fold of their own, marked as inherited."
+      - key: 01a16920-dde7-743a-aadb-6553a3ec2a91
+        name: "The fold of a repository's inherited Yard Logs gives their count, is folded unless the person opened it, and the person's choice is kept in the browser."
+      - key: 01a16920-dde7-743a-aadb-655415977acf
+        name: "The list the page server gives carries the count of each repository's inherited Yard Logs, and not the Yard Logs themselves."
+      - key: 01a16920-dde7-743a-aadb-6555b77571c9
+        name: "Opened, the fold lists the inherited Yard Logs 50 at a time, the one closed last first, or opened last where none is closed, with a button that lists 50 more."
+      - key: 01a16920-dde7-743a-aadb-6556d72fc987
+        name: "A filter in the fold lists only the inherited Yard Logs whose branch or title holds its text, whatever its case."
+      - key: 01a16920-dde7-743a-aadb-65570f7e95f9
+        name: "An inherited Yard Log that more than one of the repository's trees hold is listed once, and opens in the repository's main worktree where that holds it, or in the first tree that does."
+      - key: 01a16929-b1e9-7640-a31f-7b683216bb79
+        name: "A Yard Log of a branch that one of the repository's trees is on is listed under that tree, and not among the inherited ones."
       - key: 01a1649f-62ef-71e6-98de-e10f33cdae95
         name: "An inherited Yard Log's open questions, approvals and plans are shown and offer no answer or decision."
       - key: 01a1649f-62ef-71e6-98de-e1107c0ffed2
         name: "The page server takes no answer or decision for an inherited Yard Log."
       - key: 01a1649f-62ef-71e6-98de-e111af38463b
         name: "An inherited Yard Log adds nothing to the count of blocks that wait on the person."
+  - key: 01a16920-dde7-743a-aadb-65582e39ed26
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "read a Yard Log for the list of Yard Logs again only once its root file has changed."
+    criteria:
+      - key: 01a16920-dde7-743a-aadb-65591054d8f5
+        name: "While a Yard Log's root file keeps its size and its time, its entry in the list is the one the page server last read."
+      - key: 01a16920-dde7-743a-aadb-655a66b68f3f
+        name: "Once a Yard Log's root file changes, in size or in time, the next list reads the Yard Log again."
+      - key: 01a16920-dde7-743a-aadb-655b2c318095
+        name: "The page server forgets what it read of a Yard Log that no tree it serves holds any more."
   - key: 01a1646f-546d-7042-befd-eb2848576856
     statement:
       form: ubiquitous
@@ -58,6 +131,24 @@ requirements:
         name: "Each status shows as a word as well as a colour."
       - key: 01a1646f-546d-7042-befd-eb2d6203081e
         name: "A stage owned by a subagent names the subagent's type."
+  - key: 01a1690b-2c9b-7594-809f-4a8a666e8f7c
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "keep in the browser, for each Yard Log, each fold the person opened or closed and the Feature Group they opened in each spec-change view, and draw them so again after a change and after a reload."
+    criteria:
+      - key: 01a1690b-2c9b-7594-809f-4a8b682c03f5
+        name: "A fold the person opened or closed, of a stage, of a block or of a Loft view, stays so when a change draws the page again."
+      - key: 01a1690b-2c9b-7594-809f-4a8c73851ca5
+        name: "A fold the person opened or closed stays so after a reload of the page."
+      - key: 01a1690b-2c9b-7594-809f-4a8d7ad2d600
+        name: "The Feature Group the person opened in a spec-change view is open again after a reload of the page."
+      - key: 01a1690b-2c9b-7594-809f-4a8ed8751bc7
+        name: "A stage the person folded or opened takes its default again once its status changes: open while active, folded otherwise."
+      - key: 01a1690b-2c9b-7594-809f-4a8fd5152b89
+        name: "The browser keeps a fold only while it differs from its default, and only while its block is in its Yard Log."
+      - key: 01a1690b-2c9b-7594-809f-4a9086940336
+        name: "The browser keeps the folds, the Feature Groups and the Gantt chart's scroll of the 30 Yard Logs opened last, and forgets those of the others."
   - key: 01a1646f-546d-7042-befd-eb2eef98b18f
     statement:
       form: ubiquitous
@@ -91,6 +182,8 @@ requirements:
         name: "A note shows its title, its Markdown and its tone as a colour and a word."
       - key: 01a1646f-546d-7042-befd-eb38e626356c
         name: "A note written folded starts folded."
+      - key: 01a16854-53e3-71b2-8192-66b204b471a0
+        name: "A table in a block's Markdown spans the width of its block, breaks no word within a cell, and scrolls sideways where it is wider than the block."
       - key: 01a1646f-546d-7042-befd-eb39ce7ffb3c
         name: "A question shows its prompt, its context and its options, with each recommended option marked."
       - key: 01a1646f-546d-7042-befd-eb3a326031ea
@@ -132,6 +225,44 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb47a12567f2
         name: "No element that a block's text names is created in the page."
+  - key: 01a16838-8fdb-7127-a23e-c5588e3201c7
+    statement:
+      form: optional
+      where: "a `loft` view names a node whose name holds Markdown"
+      system: "the page"
+      shall: "draw the name as Markdown rendered by `loft`, on one line."
+    criteria:
+      - key: 01a16838-8fdb-7127-a23e-c559b4afac18
+        name: "A code span in a node's name is drawn as code."
+      - key: 01a16838-8fdb-7127-a23e-c55ab6cc3d79
+        name: "Any HTML that a node's name holds is shown as text."
+      - key: 01a16838-8fdb-7127-a23e-c55bc6dabc5f
+        name: "A name whose Markdown is more than one line of text is shown as its text."
+      - key: 01a16844-c9d1-72df-8cfa-5cd7aa95dc74
+        name: "Each slot of a Requirement's statement in an EARS form is drawn as Markdown, as a name is."
+  - key: 01a16844-c9d1-72df-8cfa-5cd8fc1947f1
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "set each label a `loft` view gives apart from the name beside it, tinted by its node's kind."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5cd9ccec0949
+        name: "A label is drawn as a tag of its own, apart from the name beside it."
+      - key: 01a16844-c9d1-72df-8cfa-5cda23d83c08
+        name: "The labels of a Feature, a Requirement and a criterion each have a tint of their own, and their text keeps the page's ink."
+  - key: 01a1686f-4733-773b-b571-50bed5024ccb
+    statement:
+      form: optional
+      where: "a code span of a block's Markdown, or of a name a `loft` view draws, holds only a colour written as `#` and three, four, six or eight hexadecimal digits"
+      system: "the page"
+      shall: "draw the code span on that colour, with its text in whichever of dark or white ink reads more clearly on it."
+    criteria:
+      - key: 01a1686f-4733-773b-b571-50bf0ed7f7e5
+        name: "A code span holding `#62359c` is drawn on the colour `#62359c`."
+      - key: 01a1686f-4733-773b-b571-50c06027a0c0
+        name: "The text of an opaque colour's code span holds a contrast of at least 4.5 to 1 against that colour."
+      - key: 01a1686f-4733-773b-b571-50c1d42366f8
+        name: "A code span that holds more than a colour, and a colour within a fenced code block, keep the page's own code colours."
   - key: 01a1646f-546d-7042-befd-eb48685b6f13
     statement:
       form: optional
@@ -150,3 +281,26 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb4b0653b23d
         name: "The page shows when Yard Log was closed, and whether its merge closed it."
+  - key: 01a16863-60a7-772b-980e-a0799595ed06
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw itself, its Gantt chart and its diagrams in the colour scheme the browser asks for, light or dark."
+    criteria:
+      - key: 01a16863-60a7-772b-980e-a07a7bb898ff
+        name: "In a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours."
+      - key: 01a16863-60a7-772b-980e-a07b441c8e43
+        name: "In a browser that asks for a light scheme, or for none, the page, its Gantt chart and its diagrams are drawn in their light colours."
+      - key: 01a16863-60a7-772b-980e-a07c5f19ca60
+        name: "Each colour the page gives text holds a contrast of at least 4.5 to 1 against each ground it is drawn on, in either scheme."
+  - key: 01a16863-60a7-772b-980e-a07df2e896da
+    statement:
+      form: event_driven
+      when: "the browser's colour scheme changes while the page is open"
+      system: "the page"
+      shall: "draw itself again in the new scheme, without a reload."
+    criteria:
+      - key: 01a16863-60a7-772b-980e-a07e6f0492af
+        name: "The page's colours turn to the new scheme without a reload."
+      - key: 01a16863-60a7-772b-980e-a07f74dd4ee6
+        name: "Each diagram already drawn is drawn again in the new scheme's colours."

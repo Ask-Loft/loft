@@ -132,6 +132,44 @@ test("a tool gives the command's document to the agent, and a refusal's message 
   expect(fault.deny ?? fault.text).toContain('the field `batch` must be a list of objects')
 })
 
+test('yard_read gives each loft report only when the agent asks for reports', async ($, on) => {
+  const w = world(on)
+  await start($)
+  const before = w.state.runs.length
+  await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  await $.tool.call({ tool: 'mcp__loft__yard_read', since: 3, reports: true })
+  const [plain, asked] = w.state.runs.slice(before).filter(run => run.argv.includes('read') && run.argv.includes('--mark-read'))
+  expect(plain?.argv).not.toContain('--reports')
+  expect(asked?.argv).toContain('--reports')
+  expect(flagOf(asked?.argv ?? [], '--since')).toBe('3')
+})
+
+test('output that does not read as a document is named by its size, not by the exit code', async ($, on) => {
+  const w = world(on)
+  await start($)
+  w.state.printed.read = { stdout: '{"schema": "loft-yard-read/1", "outc' }
+  const failed = await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  const error = String(failed.deny ?? failed.text)
+  expect(error).toContain('loft printed 36 bytes on standard output that could not be read as a document')
+  expect(error).not.toMatch(/^exit \d+$/)
+})
+
+test('output Claude Code cut short says so, after the bytes it kept', async ($, on) => {
+  const w = world(on)
+  await start($)
+  w.state.printed.read = { stdout: '{"schema": "loft-yard-read/1", "stages": [', truncated: true }
+  const failed = await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  expect(String(failed.deny ?? failed.text)).toContain('cut short by Claude Code after 42 bytes')
+})
+
+test('output cut short is never read as a document, even where the bytes kept would read as one', async ($, on) => {
+  const w = world(on)
+  await start($)
+  w.state.printed.read = { stdout: JSON.stringify(w.state.read), truncated: true }
+  const failed = await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  expect(failed.deny).toMatch(/could not be read as a document, cut short by Claude Code after \d+ bytes/)
+})
+
 test('a subagent calls a tool in its own name: its id and its type', async ($, on) => {
   const w = world(on)
   await start($)

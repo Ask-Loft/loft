@@ -58,6 +58,49 @@ test('a diagram is drawn from the vendored Mermaid, and one that does not parse 
   await expect(broken).toContainText('shelf --> --> ((');
 });
 
+/** The computed colour of `property` on the first element `locator` finds. */
+function colour(locator, property) {
+  return locator.first().evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
+}
+
+/** A box of the diagram drawn in the block `drawn`. */
+function diagramBox(page) {
+  return page.locator('#block-drawn svg g.node').first().locator('rect, path, polygon');
+}
+
+test('in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto(address());
+  expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
+  await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(24, 33, 43)');
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
+});
+
+test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto(address());
+  expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
+  await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(243, 247, 250)');
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
+});
+
+test('when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto(address());
+  await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
+  await page.evaluate(() => {
+    /** @type {any} */ (window).unreloaded = true;
+  });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect.poll(() => colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
+  await expect.poll(() => colour(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(24, 33, 43)');
+  expect(await page.evaluate(() => /** @type {any} */ (window).unreloaded)).toBe(true);
+});
+
 test('a block that an agent writes shows within 2 seconds of the write', async ({ page }) => {
   await page.goto(address());
   await expect(page.locator('#log-title')).toBeVisible();
@@ -72,6 +115,35 @@ test('a choice the person has made and not sent is kept through a change', async
   write([{ id: 'meanwhile', kind: 'note', stage: 'shape', title: 'Meanwhile', markdown: 'x' }]);
   await expect(page.locator('#block-meanwhile')).toBeVisible({ timeout: LIVE });
   await expect(page.locator('input[name="answer-q1"][value="Bottom"]')).toBeChecked();
+});
+
+test('a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes', async ({ page }) => {
+  write([
+    { id: 'kept-fold', kind: 'note', stage: 'shape', title: 'Folded at first', markdown: 'Held open.', folded: true },
+    { id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'planned' },
+  ]);
+  await page.goto(address());
+  const note = page.locator('#block-kept-fold details');
+  const shape = page.locator('#block-shape');
+  const later = page.locator('#block-kept-stage');
+  await note.locator('summary').click();
+  await shape.locator(':scope > summary').click();
+  await later.locator(':scope > summary').click();
+  const held = async () => {
+    await expect(note).toHaveAttribute('open', '');
+    await expect(shape).not.toHaveAttribute('open', '');
+    await expect(later).toHaveAttribute('open', '');
+  };
+  await held();
+  write([{ id: 'kept-meanwhile', kind: 'stage', title: 'Written meanwhile', status: 'planned' }]);
+  await expect(page.locator('#block-kept-meanwhile')).toBeVisible({ timeout: LIVE });
+  await held();
+  await page.reload();
+  await expect(page.locator('#log-title')).toBeVisible();
+  await held();
+  write([{ id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'done' }]);
+  await expect(later.locator('.status')).toHaveText('Done', { timeout: LIVE });
+  await expect(later).not.toHaveAttribute('open', '');
 });
 
 test('an answer given in Claude Code shows within 2 seconds, and the count of what waits changes with it', async ({ page }) => {
@@ -199,10 +271,10 @@ test('the revision of the last visit is kept in the browser, and what changed si
   await expect(page.locator('#block-away')).toHaveClass(/is-new/);
 });
 
-test('the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window', async ({ page }) => {
+test('the Gantt chart is chosen, kept for the next visit, follows changes, and fits the page as the window narrows', async ({ page }) => {
   await page.goto(address());
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  const chart = page.locator('svg.gantt-chart');
+  const chart = page.locator('.gantt');
   await expect(chart).toBeVisible();
   await page.reload();
   await expect(chart).toBeVisible();
@@ -210,17 +282,313 @@ test('the Gantt chart is chosen beside the order, kept for the next visit, follo
     { id: 'shape', kind: 'stage', title: 'Shape the shelf', status: 'done' },
     { id: 'build', kind: 'stage', title: 'Build the shelf', status: 'active' },
   ]);
-  await expect(chart.locator('.stage-label', { hasText: 'Build the shelf' })).toBeVisible({ timeout: LIVE });
-  const wide = Number(await chart.getAttribute('width'));
-  expect(wide).toBeGreaterThan(1280 - 300 - 200);
+  await expect(chart.locator('.stage-name', { hasText: 'Build the shelf' })).toBeVisible({ timeout: LIVE });
+  const width = async (locator) => (await locator.boundingBox())?.width ?? 0;
+  const main = page.locator('#log');
+  expect(await width(chart)).toBeLessThanOrEqual((await width(main)) + 1);
+  await page.setViewportSize({ width: 1000, height: 900 });
+  await expect.poll(async () => (await width(chart)) - (await width(main)), { timeout: LIVE }).toBeLessThanOrEqual(1);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right', async ({ page }) => {
+  const layout = page.locator('.layout');
+  await page.goto(address());
+  for (const [window, wide] of [
+    [1280, 1280],
+    [2200, 1800],
+  ]) {
+    await page.setViewportSize({ width: window, height: 900 });
+    await expect.poll(async () => (await layout.boundingBox())?.width).toBe(wide);
+    expect((await layout.boundingBox())?.x).toBe(0);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('the page keeps its width and its switch of views stays in place whichever view is shown', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
-  await expect.poll(async () => Number(await chart.getAttribute('width')), { timeout: LIVE }).toBeGreaterThan(wide + 200);
+  await page.goto(address());
+  const main = page.locator('#log');
+  const timeline = page.getByRole('button', { name: 'Timeline' });
+  await timeline.click();
+  await expect(page.locator('ol.timeline')).toBeVisible();
+  const before = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  await expect(page.locator('.gantt')).toBeVisible();
+  const after = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
+  expect(after.main?.width).toBe(before.main?.width);
+  expect(after.switch?.x).toBe(before.switch?.x);
+  expect(after.switch?.y).toBe(before.switch?.y);
+  await page.getByRole('button', { name: 'Timeline' }).click();
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+/** The box of what `locator` finds, which must be drawn. */
+async function box(locator) {
+  const found = await locator.boundingBox();
+  if (!found) throw new Error('nothing drawn');
+  return found;
+}
+
+test('the inherited Yard Logs are folded beneath their count under the repository, listed when opened, filtered, and kept open', async ({ page }) => {
+  await page.goto(address());
+  const fold = page.locator('#side details.inherited');
+  await expect(fold.locator('summary')).toHaveText('Inherited (2)');
+  await expect(fold).not.toHaveAttribute('open', '');
+  await expect(page.locator('#side .log-item.is-inherited')).toHaveCount(0);
+  await fold.locator('summary').click();
+  const items = fold.locator('.log-item.is-inherited');
+  await expect(items).toHaveCount(2);
+  await fold.locator('.inherited-filter').fill('LAMP');
+  await expect(items).toHaveCount(1);
+  await expect(items.locator('.branch')).toHaveText('old/lamp');
+  await page.reload();
+  await expect(fold).toHaveAttribute('open', '');
+  await expect(items).toHaveCount(2);
+  await items.locator('a', { hasText: 'old/desk' }).click();
+  await expect(page.locator('#log-title')).toHaveText('old/desk');
+  await page.evaluate(() => localStorage.removeItem('yard.inherited'));
+});
+
+test('the menu runs down the window’s left from top to bottom, beside the page’s header, and stays while the Yard Log scrolls', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto(address());
+  const side = page.locator('#side');
+  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toBeVisible();
+  const menu = await box(side);
+  expect([menu.x, menu.y, menu.height]).toEqual([0, 0, 400]);
+  expect((await box(page.locator('.top'))).x).toBe(menu.x + menu.width);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  expect(Math.abs((await box(side)).y)).toBeLessThan(1);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('folding the menu leaves a strip and gives its room to the page, which begins as near the strip as it lay to the menu, and the next visit keeps it folded', async ({ page }) => {
+  await page.goto(address());
+  const side = page.locator('#side');
+  const main = page.locator('#log');
+  const header = page.locator('.top');
+  const open = await box(side);
+  const gap = (await box(main)).x - (open.x + open.width);
+  const fold = page.getByRole('button', { name: 'Fold the menu of Yard Logs' });
+  await expect(fold).toHaveAttribute('aria-expanded', 'true');
+  await fold.click();
+  await expect(page.locator('#menu-lists')).toBeHidden();
+  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toHaveCount(0);
+  await expect.poll(async () => (await box(side)).width).toBe(58);
+  const strip = await box(side);
+  expect(strip.height).toBe(900);
+  expect((await box(header)).x).toBe(strip.x + strip.width);
+  expect((await box(main)).x).toBe(strip.x + strip.width + gap);
+  await page.reload();
+  const opener = page.getByRole('button', { name: /^Open the menu of Yard Logs/ });
+  await expect(opener).toHaveAttribute('aria-expanded', 'false');
+  expect((await box(side)).width).toBe(58);
+  await opener.click();
+  await expect(page.locator('#menu-lists')).toBeVisible();
+  await expect.poll(async () => (await box(main)).x).toBe(open.x + open.width + gap);
+  await page.evaluate(() => localStorage.removeItem('yard.list'));
+});
+
+test('in a window narrower than 860 pixels the open menu lies over the page, which keeps only the strip’s room', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 900 });
+  await page.goto(address());
+  const side = page.locator('#side');
+  const menu = await box(side);
+  const header = await box(page.locator('.top'));
+  expect(menu.x).toBe(0);
+  expect(header.x).toBe(58);
+  expect(menu.x + menu.width).toBeGreaterThan(header.x + 200);
+  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(58);
+  expect((await box(page.locator('.top'))).x).toBe(58);
+  await page.evaluate(() => localStorage.removeItem('yard.list'));
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+/**
+ * A long day of work, as the page server would give it: twelve stages of fifteen minutes with
+ * three tasks each, the last stage's title far too long for the column, in two turns with a
+ * folded idle stretch of ten minutes between them.
+ */
+function longDay() {
+  const start = Date.now() - 4 * 3600_000;
+  const iso = (minutes) => new Date(start + minutes * 60_000).toISOString().replace(/\.\d+Z$/, 'Z');
+  const by = { host: 'claude-code', session: 's1' };
+  let keys = 0;
+  const key = () => `00000000-0000-7000-9000-${String((keys += 1)).padStart(12, '0')}`;
+  const version = (body, minutes) => ({ key: key(), number: 1, act: { at: iso(minutes), revision: 1, by }, body });
+  const stages = Array.from({ length: 12 }, (_, index) => {
+    const from = index * 15 + (index >= 6 ? 10 : 0);
+    const title = index === 11 ? 'The last stage, whose title runs on far longer than any column of names could ever hold' : `Stage ${index + 1}`;
+    const tasks = [0, 1, 2].map((each) => ({
+      key: key(),
+      id: `long-${index}-task-${each}`,
+      kind: 'task',
+      version: version({ title: `Task ${each + 1} of stage ${index + 1}`, state: 'done' }, from + 5 * each + 5),
+      times: { listed: iso(from), started: iso(from + 5 * each), ended: iso(from + 5 * each + 5) },
+    }));
+    return {
+      key: key(),
+      id: `long-${index}`,
+      kind: 'stage',
+      owner: by,
+      times: { listed: iso(from), started: iso(from), ended: iso(from + 15) },
+      version: version({ title, status: 'done', goal: title }, from + 15),
+      blocks: tasks,
+    };
+  });
+  const turns = [
+    { started: iso(0), ended: iso(90) },
+    { started: iso(100), ended: iso(190) },
+  ];
+  return { stages, sent: [], activity: [{ session: 's1', turns, plan: [], spec: [], loft: [] }] };
+}
+
+/** Opens the page on the long day, in the Gantt chart, deaf to changes; gives the chart's frame. */
+async function openLongDay(page) {
+  await deaf(page);
+  await page.route('**/api/log?*', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), ...longDay() } });
+  });
+  await page.goto(address());
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  const frame = page.locator('.gantt-frame');
+  await expect(frame).toBeVisible();
+  return frame;
+}
+
+test('a chart whose time needs more room than the page scrolls sideways within its frame, opening at its latest time, and the page does not', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const sizes = await frame.evaluate((element) => ({ left: element.scrollLeft, width: element.scrollWidth, shown: element.clientWidth }));
+  expect(sizes.width).toBeGreaterThan(sizes.shown);
+  expect(sizes.left + sizes.shown).toBeGreaterThanOrEqual(sizes.width - 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const fifteen = await page.locator('.stage-bar').first().boundingBox();
+  expect(fifteen?.width ?? 0).toBeGreaterThanOrEqual(15 * 8 - 1);
+});
+
+test('a chart the person scrolled opens again where they left it, after the page draws it again and after a reload', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const left = () => frame.evaluate((element) => element.scrollLeft);
+  expect(await left()).toBeGreaterThan(100);
+  await frame.evaluate((element) => element.scrollTo({ left: 40 }));
+  await expect.poll(left).toBe(40);
+  await page.getByRole('button', { name: 'Timeline' }).click();
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  await expect.poll(left).toBe(40);
+  await page.reload();
+  await frame.waitFor();
+  await expect.poll(left).toBe(40);
+});
+
+test('while the chart scrolls sideways its names stay in view, and while it scrolls down its axis does, in a frame no taller than the window', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const name = page.locator('.stage-name').first();
+  await frame.evaluate((element) => (element.scrollLeft = 0));
+  const before = await name.boundingBox();
+  await frame.evaluate((element) => (element.scrollLeft = 400));
+  expect((await name.boundingBox())?.x).toBe(before?.x);
+  const head = page.locator('.gantt-head');
+  const top = await head.boundingBox();
+  await frame.evaluate((element) => (element.scrollTop = 300));
+  expect(await frame.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  expect((await head.boundingBox())?.y).toBe(top?.y);
+  expect((await frame.boundingBox())?.height ?? 0).toBeLessThanOrEqual(900);
+});
+
+test('the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the page', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const behaviour = await frame.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return [style.overscrollBehaviorX, style.overscrollBehaviorY];
+  });
+  expect(behaviour).toEqual(['none', 'auto']);
+  await frame.evaluate((element) => (element.scrollTop = element.scrollHeight));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const box = await frame.boundingBox();
+  if (!box) throw new Error('the chart has no frame');
+  await page.mouse.move(box.x + box.width / 2, box.y + Math.min(box.height, 900 - box.y) / 2);
+  await page.mouse.wheel(0, 400);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+});
+
+test('every name stays inside the column, a long one cut short with an ellipsis', async ({ page }) => {
+  await openLongDay(page);
+  const crossing = await page.evaluate(() =>
+    [...document.querySelectorAll('.name-cell')].filter((cell) => {
+      const name = /** @type {HTMLElement | null} */ (cell.querySelector('.lane-label, .stage-name, .task-name'));
+      return name && name.getBoundingClientRect().right > cell.getBoundingClientRect().right + 0.5;
+    }).length,
+  );
+  expect(crossing).toBe(0);
+  const long = page.locator('.stage-name', { hasText: 'The last stage' });
+  expect(await long.evaluate((element) => getComputedStyle(element).textOverflow)).toBe('ellipsis');
+  expect(await long.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+});
+
+test('dragging the column’s edge widens it within its bounds, and the next visit keeps the width', async ({ page }) => {
+  await openLongDay(page);
+  const cell = page.locator('.stage-row .name-cell').first();
+  const width = async () => (await cell.boundingBox())?.width ?? 0;
+  const first = await width();
+  const edge = await page.locator('.names-edge').boundingBox();
+  if (!edge) throw new Error('the column has no edge');
+  const x = edge.x + edge.width / 2;
+  const y = edge.y + edge.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 60, y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(width).toBeGreaterThan(first + 55);
+  const dragged = await width();
+  const again = await page.locator('.names-edge').boundingBox();
+  if (!again) throw new Error('the column has no edge');
+  await page.mouse.move(again.x + again.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(again.x + 1000, y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(width).toBeLessThanOrEqual(481);
+  await page.reload();
+  await page.locator('.gantt-frame').waitFor();
+  expect(await width()).toBeGreaterThan(dragged);
+  await page.evaluate(() => localStorage.removeItem('yard.gantt-names'));
+});
+
+test('folding the menu widens the Gantt chart into the room the menu left, and opening it narrows the chart again', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const width = () => frame.evaluate((element) => element.clientWidth);
+  const before = await width();
+  const menu = (await page.locator('#side').boundingBox())?.width ?? 0;
+  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await expect.poll(width).toBe(before + menu - 58);
+  await page.getByRole('button', { name: /^Open the menu of Yard Logs/ }).click();
+  await expect.poll(width).toBe(before);
+  await page.evaluate(() => localStorage.removeItem('yard.list'));
+});
+
+test('a faint grid lies behind the bars, its lines unbroken by folded idle stretches, which are unhatched', async ({ page }) => {
+  await openLongDay(page);
+  expect(await page.locator('.stage-row').first().evaluate((element) => getComputedStyle(element).borderTopWidth)).toBe('1px');
+  const alpha = (colour) => {
+    const found = /\/\s*([\d.]+)\)$/.exec(colour) ?? /rgba\([^)]*,\s*([\d.]+)\)$/.exec(colour);
+    return found ? Number(found[1]) : colour === 'transparent' ? 0 : 1;
+  };
+  const gaps = await page.locator('.idle-gap').evaluateAll((elements) => elements.map((element) => getComputedStyle(element).backgroundColor));
+  expect(gaps.length).toBeGreaterThan(0);
+  for (const colour of gaps) expect(alpha(colour), `a gap of ${colour} lets the line beneath it through`).toBeLessThan(0.2);
+  const lines = page.locator('.gantt-lane .grid-line');
+  expect(await lines.count()).toBe(await page.locator('.gantt-axis .tick').count());
+  expect(await lines.first().evaluate((element) => getComputedStyle(element).borderLeftWidth)).toBe('1px');
+  expect(await page.locator('.idle-gap').first().evaluate((element) => getComputedStyle(element).backgroundImage)).toBe('none');
 });
 
 test('choosing a stage in the Gantt chart opens the timeline at it', async ({ page }) => {
   await page.goto(address());
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  await page.locator('.stage-bar', { hasText: 'Shape the shelf' }).click();
+  await page.locator('.stage-name', { hasText: 'Shape the shelf' }).click();
   await expect(page.locator('ol.timeline')).toBeVisible();
   expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('block')).toBe('shape');
   await expect(page.locator('#block-shape')).toHaveAttribute('open', '');
@@ -244,4 +612,21 @@ test('an open page shows a counted request’s tokens within 2 seconds of the re
   const posted = await postAsMod('/api/events', events);
   expect(posted.status).toBe(200);
   await expect(page.locator('.token-totals dd').first()).toHaveAttribute('title', '4321', { timeout: LIVE });
+});
+
+test('the page draws the menu again only when the list, the Yard Log chosen or the menu’s fold changes', async ({ page }) => {
+  await page.goto(address());
+  const totals = page.locator('.token-totals dd').first();
+  await expect(page.locator('#tokens')).toBeVisible();
+  const before = await totals.getAttribute('title');
+  // A mark on the menu as drawn, which a menu drawn again does not carry.
+  await page.evaluate(() => document.querySelector('#side .menu-head')?.setAttribute('data-mark', 'drawn'));
+  const marked = page.locator('#side .menu-head[data-mark="drawn"]');
+  const request = { session: 's1', dir: setup.tree, at: since(-1), kind: 'request', model: 'claude-opus-5-5', tokens: { input: 1111, cacheRead: 0, cacheWrite: 0, output: 1 } };
+  expect((await postAsMod('/api/events', [request])).status).toBe(200);
+  await expect.poll(() => totals.getAttribute('title'), { timeout: LIVE }).not.toBe(before);
+  await expect(marked).toHaveCount(1);
+  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await expect(marked).toHaveCount(0);
+  await page.evaluate(() => localStorage.removeItem('yard.list'));
 });

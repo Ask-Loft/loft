@@ -3,20 +3,27 @@
 //! main worktree, each of its trees served, and each branch's Yard Log under the tree's `.yard/`,
 //! the tree's current branch's first and those carried from another branch after it, offered
 //! only to read. Above the list come the open submissions of every current branch's Yard Log.
+//! What the list says of a Yard Log is kept with the stamp of its root file, which each write to
+//! the Yard Log rewrites, and read again only once that stamp moves.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
+use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
+use std::time::SystemTime;
 
 use serde_json::{Value, json};
 use yardlog::YardLog;
 use yardlog::body::Body;
+use yardlog::codec::ROOT;
 use yardlog::log::{Block, Submission};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::session::branches;
-use yardlog_store::{Held, Place, YardStore};
+use yardlog_store::{Held, Place, YARD, YardStore};
 
 use super::event::strings;
+use super::inherited::{Inherited, distinct, page};
 use crate::yard::failure::Failure;
 use crate::yard::home_json;
 use crate::yard::page;
@@ -121,36 +128,145 @@ fn open(log: &YardLog) -> Vec<(&Submission, Vec<&Block>)> {
         .collect()
 }
 
-/// What the page lists of every tree served: by repository, then by tree; and above them, the
-/// open submissions of each current branch's Yard Log, oldest first.
-pub fn listing(home: &Home, port: u16) -> Result<Value, Failure> {
+/// A file's size and modification time, as the file system keeps them.
+type Stamp = (u64, Option<SystemTime>);
+
+/// What the list said of one Yard Log: its entry and the open submissions it added, as they were
+/// when its root file had `stamp`, read as inherited or not.
+struct Entry {
+    stamp: Stamp,
+    inherited: bool,
+    summary: Value,
+    waits: Vec<Value>,
+}
+
+/// What the page server last read of each Yard Log for the list, by its tree and its branch.
+#[derive(Default)]
+pub struct Entries(Mutex<HashMap<(PathBuf, String), Entry>>);
+
+impl Entries {
+    /// The entry of `branch`'s Yard Log in `place`'s tree and the open submissions it adds: the
+    /// one kept while its root file keeps its stamp, or read again. One that could not be read
+    /// is not kept, so that the next list tries again.
+    fn entry(
+        &self,
+        place: &Place,
+        branch: &str,
+        inherited: bool,
+        read: impl FnOnce() -> (Value, Vec<Value>),
+    ) -> (Value, Vec<Value>) {
+        let key = (place.tree.clone(), branch.to_owned());
+        let root = place.tree.join(YARD).join(branch).join(ROOT);
+        let stamp = fs::metadata(root)
+            .ok()
+            .map(|meta| (meta.len(), meta.modified().ok()));
+        let mut kept = self
+            .0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if let (Some(stamp), Some(entry)) = (stamp, kept.get(&key))
+            && entry.stamp == stamp
+            && entry.inherited == inherited
+        {
+            return (entry.summary.clone(), entry.waits.clone());
+        }
+        drop(kept);
+        let (summary, waits) = read();
+        kept = self
+            .0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        match stamp {
+            Some(stamp) if summary.get("error").is_none() => {
+                let entry = Entry {
+                    stamp,
+                    inherited,
+                    summary: summary.clone(),
+                    waits: waits.clone(),
+                };
+                kept.insert(key, entry);
+            }
+            _ => {
+                kept.remove(&key);
+            }
+        }
+        (summary, waits)
+    }
+
+    /// Forgets what was read of each Yard Log that `seen` does not name.
+    fn keep_only(&self, seen: &HashSet<(PathBuf, String)>) {
+        let mut kept = self
+            .0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        kept.retain(|key, _| seen.contains(key));
+    }
+}
+
+/// What the trees served hold of one repository: each tree with its current branch's Yard Log,
+/// every inherited Yard Log each of them holds, and the keys of the Yard Logs its trees are on.
+#[derive(Default)]
+struct Holdings {
+    trees: Vec<Value>,
+    inherited: Vec<Inherited>,
+    current: HashSet<String>,
+}
+
+/// What every tree served holds, by repository, and the open submissions of the current
+/// branches' Yard Logs.
+type Gathered = (BTreeMap<String, Holdings>, Vec<Value>);
+
+/// What `Gathered` holds, as the trees served give it now.
+fn gather(home: &Home, port: u16, entries: &Entries) -> Result<Gathered, Failure> {
     let git = YardGit::default();
-    let mut repositories: BTreeMap<String, Vec<Value>> = BTreeMap::new();
+    let mut repositories: BTreeMap<String, Holdings> = BTreeMap::new();
     let mut waits = Vec::new();
+    let mut seen = HashSet::new();
     for tree in served(home)? {
         let Ok(place) = Place::locate(&git, &tree) else {
             continue;
         };
         let repository = repository(&place);
+        let held = repositories.entry(repository.clone()).or_default();
         let mut logs = Vec::new();
-        let mut found = branches(&place.tree)?;
-        let current = place.branch.as_ref();
-        if let Some(at) = found.iter().position(|branch| Some(branch) == current) {
-            let current = found.remove(at);
-            found.insert(0, current);
-        }
-        for branch in found {
+        for branch in branches(&place.tree)? {
             let inherited = place.branch.as_deref() != Some(branch.as_str());
-            let summary = summary(&place, &branch, inherited, port, &repository, &mut waits);
-            logs.push(summary);
+            let (summary, added) = entries.entry(&place, &branch, inherited, || {
+                summary(&place, &branch, inherited, port, &repository)
+            });
+            // A Yard Log that could not be read has no key: its tree and branch stand for it.
+            let key = summary["key"].as_str().map_or_else(
+                || format!("{}\n{branch}", place.tree.display()),
+                str::to_owned,
+            );
+            seen.insert((place.tree.clone(), branch));
+            waits.extend(added);
+            if inherited {
+                let mut entry = summary;
+                entry["tree"] = json!(place.tree.display().to_string());
+                let main = is_main(&place);
+                held.inherited.push(Inherited { key, main, entry });
+            } else {
+                held.current.insert(key);
+                logs.push(summary);
+            }
         }
-        repositories.entry(repository).or_default().push(json!({
+        held.trees.push(json!({
             "tree": place.tree.display().to_string(),
             "main": is_main(&place),
             "branch": place.branch,
             "logs": logs,
         }));
     }
+    entries.keep_only(&seen);
+    Ok((repositories, waits))
+}
+
+/// What the page lists of every tree served: by repository, then by tree with its current
+/// branch's Yard Log, and the count of the repository's inherited Yard Logs; and above them, the
+/// open submissions of each current branch's Yard Log, oldest first.
+pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failure> {
+    let (repositories, mut waits) = gather(home, port, entries)?;
     waits.sort_by(|a: &Value, b: &Value| {
         let at = |wait: &Value| wait["sent"]["at"].as_str().unwrap_or_default().to_owned();
         at(a).cmp(&at(b))
@@ -161,15 +277,48 @@ pub fn listing(home: &Home, port: u16) -> Result<Value, Failure> {
         .sum();
     let repositories: Vec<Value> = repositories
         .into_iter()
-        .map(|(repository, trees)| json!({ "repository": repository, "trees": trees }))
+        .map(|(repository, held)| {
+            let inherited = distinct(held.inherited, &held.current).len();
+            json!({ "repository": repository, "trees": held.trees, "inherited": inherited })
+        })
         .collect();
     Ok(json!({ "repositories": repositories, "waiting": waits, "count": count }))
 }
 
+/// The page from `from` of `repository`'s inherited Yard Logs whose branch or title holds
+/// `filter`, with how many there are.
+pub fn inherited(
+    home: &Home,
+    port: u16,
+    entries: &Entries,
+    repository: &str,
+    filter: &str,
+    from: usize,
+) -> Result<Value, Failure> {
+    let (mut repositories, _) = gather(home, port, entries)?;
+    let held = repositories.remove(repository).unwrap_or_default();
+    let mut page = page(&distinct(held.inherited, &held.current), filter, from);
+    page["repository"] = json!(repository);
+    Ok(page)
+}
+
 /// What the page lists of `branch`'s Yard Log in the tree: its title, its revision, whether it
 /// is closed, inherited or of a newer format, and how many of its blocks wait on the person;
-/// the open submissions of a current branch's Yard Log are added to `waits`.
+/// and the open submissions of a current branch's Yard Log.
 fn summary(
+    place: &Place,
+    branch: &str,
+    inherited: bool,
+    port: u16,
+    repository: &str,
+) -> (Value, Vec<Value>) {
+    let mut waits = Vec::new();
+    let fields = fields(place, branch, inherited, port, repository, &mut waits);
+    (fields, waits)
+}
+
+/// The fields of `summary`'s entry, its open submissions added to `waits`.
+fn fields(
     place: &Place,
     branch: &str,
     inherited: bool,
@@ -203,6 +352,10 @@ fn summary(
     fields["revision"] = json!(root.revision);
     fields["format"] = json!(root.format.to_string());
     fields["closed"] = json!(root.closed.is_some());
+    fields["openedAt"] = json!(root.opened.at.to_string());
+    if let Some(closed) = &root.closed {
+        fields["closedAt"] = json!(closed.at.to_string());
+    }
     if inherited || root.closed.is_some() {
         return fields;
     }
@@ -254,5 +407,33 @@ pub fn failure_value(failure: Failure) -> Value {
         Failure::Stopped(stop) => json!(stop.errors),
         Failure::Refused { errors, .. } => json!(errors),
         Failure::Usage(message) => json!([crate::json::error("usage", &message, &[])]),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+    use std::path::PathBuf;
+
+    use serde_json::json;
+
+    use super::{Entries, Entry};
+
+    #[test]
+    fn the_page_server_forgets_what_it_read_of_a_yard_log_no_tree_holds_any_more() {
+        let entries = Entries::default();
+        let key = |tree: &str, branch: &str| (PathBuf::from(tree), branch.to_owned());
+        for (tree, branch) in [("/work/a", "main"), ("/work/a", "old"), ("/work/b", "main")] {
+            let entry = Entry {
+                stamp: (1, None),
+                inherited: false,
+                summary: json!({}),
+                waits: Vec::new(),
+            };
+            entries.0.lock().unwrap().insert(key(tree, branch), entry);
+        }
+        entries.keep_only(&HashSet::from([key("/work/a", "main")]));
+        let kept: Vec<_> = entries.0.lock().unwrap().keys().cloned().collect();
+        assert_eq!(kept, [key("/work/a", "main")]);
     }
 }

@@ -3,7 +3,9 @@
 //! - `GET /` and `GET /<file>`: the page's files.
 //! - `GET /api/version`: the page server's version and formats, as `loft yard protocol` gives
 //!   them.
-//! - `GET /api/trees`: every tree served and its branches' Yard Logs, and the open submissions.
+//! - `GET /api/trees`: every tree served and its current branch's Yard Log, the count of each
+//!   repository's inherited Yard Logs, and the open submissions.
+//! - `GET /api/inherited?repository=&filter=&from=`: a page of a repository's inherited Yard Logs.
 //! - `GET /api/log?tree=<dir>&branch=<name>[&base=<branch>]`: a branch's Yard Log.
 //! - `GET /api/stream`: the stream of changes.
 //! - `POST /api/answer`: the person's answers and decisions, `{ tree, branch, answers }`.
@@ -75,10 +77,25 @@ fn respond(server: &Server, request: &Request) -> Response {
     let home = &server.home;
     match (request.method.as_str(), request.path.as_str()) {
         ("GET", "/api/version") => Response::json(200, &protocol::report()),
-        ("GET", "/api/trees") => match trees::listing(home, server.port) {
+        ("GET", "/api/trees") => match trees::listing(home, server.port, &server.entries) {
             Ok(listing) => Response::json(200, &listing),
             Err(failure) => failed(failure),
         },
+        ("GET", "/api/inherited") => {
+            let from = request.param("from").and_then(|from| from.parse().ok());
+            let found = trees::inherited(
+                home,
+                server.port,
+                &server.entries,
+                request.param("repository").unwrap_or_default(),
+                request.param("filter").unwrap_or_default(),
+                from.unwrap_or(0),
+            );
+            match found {
+                Ok(page) => Response::json(200, &page),
+                Err(failure) => failed(failure),
+            }
+        }
         ("GET", "/api/log") => logs::read(
             home,
             request.param("tree"),

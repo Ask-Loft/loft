@@ -12,7 +12,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
     a submission whose session is gone), `withdraw`, `close`, `published`, `answer`, `continue`,
     `protocol`, `upgrade`, and `serve`, the page server on the loopback interface. Each acts for
     a session and, for a subagent, its agent; Yard Log's root records the base branch it is
-    merged into, and a read marks the revision read only with `--mark-read`; a write is applied whole or not at all, under a lock in
+    merged into, and a read marks the revision read only with `--mark-read` and gives each `loft`
+    block's report by its size unless `--reports` is given; a write is applied whole or not at all, under a lock in
     git's own directory; a `loft` block records a view of the specification's work from the
     same report `status`, `check` or `reconcile` gives.
   - `loft merge-driver` merges the files under `.yard/` record by record, and `--install`

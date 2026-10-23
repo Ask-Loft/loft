@@ -1,0 +1,65 @@
+key: 01a16863-60a6-73b6-8b11-7a33382e9275
+slug: the-page-wears-the-loft-website-s-design
+title: "The page wears the Loft website's design"
+context: "The Yard page began with a palette of its own: a slate ground, rounded cards, amber for what waits and green for what is done, in the system's sans-serif. The Loft website, where Loft is introduced and its articles are read, sets its text in Inter on a white ground, draws its boxes square with an ink border and an offset shadow, and keeps a palette of ink, action blue, teal, rust and lilac in a light and a dark scheme. A person who reads about Loft on the website and then opens the Yard page meets two products."
+state:
+  kind: accepted
+  selectedOption: 01a16863-60a6-73b6-8b11-7a3781eb2f4f
+  outcome: "The page sets its text in Inter, which the page server serves with it, and takes its palette, its square ink-bordered boxes and its offset shadows from the Loft website, in the website's light and dark schemes, following the browser's scheme with no switch of its own."
+drivers:
+  - key: 01a16863-60a6-73b6-8b11-7a347cce8834
+    kind: local
+    label: "One family"
+    statement: "The page reads as part of Loft, as the website presents it."
+  - key: 01a16863-60a6-73b6-8b11-7a35e278cc25
+    kind: local
+    label: "Served from loft"
+    statement: "The page loads nothing from outside the page server."
+  - key: 01a16863-60a6-73b6-8b11-7a367fc14c6d
+    kind: local
+    label: "Legible in both schemes"
+    statement: "Every text of the page reads clearly in a light and in a dark scheme."
+options:
+  - key: 01a16863-60a6-73b6-8b11-7a3781eb2f4f
+    title: "The website's design"
+    description: "The website's typeface, palette, borders and shadows, with the page's own meanings mapped onto its colours: action blue for what is in hand, teal for what is done, rust for what waits on the person, lilac for plan mode."
+  - key: 01a16863-60a6-73b6-8b11-7a380be772c6
+    title: "A palette of the page's own"
+    description: "The slate ground, rounded cards and signal colours the page began with."
+assessments:
+  - option: 01a16863-60a6-73b6-8b11-7a3781eb2f4f
+    driver: 01a16863-60a6-73b6-8b11-7a347cce8834
+    rating: supports
+    rationale: "the same type, colours and boxes as the website"
+  - option: 01a16863-60a6-73b6-8b11-7a3781eb2f4f
+    driver: 01a16863-60a6-73b6-8b11-7a35e278cc25
+    rating: neutral
+    rationale: "Inter is kept beside the page and served by the page server, as Mermaid is"
+  - option: 01a16863-60a6-73b6-8b11-7a3781eb2f4f
+    driver: 01a16863-60a6-73b6-8b11-7a367fc14c6d
+    rating: supports
+    rationale: "the website's own dark scheme, held to the contrast its criterion names"
+  - option: 01a16863-60a6-73b6-8b11-7a380be772c6
+    driver: 01a16863-60a6-73b6-8b11-7a347cce8834
+    rating: conflicts
+    rationale: "the page and the website look like two products"
+  - option: 01a16863-60a6-73b6-8b11-7a380be772c6
+    driver: 01a16863-60a6-73b6-8b11-7a35e278cc25
+    rating: supports
+    rationale: "the system's fonts need nothing served"
+  - option: 01a16863-60a6-73b6-8b11-7a380be772c6
+    driver: 01a16863-60a6-73b6-8b11-7a367fc14c6d
+    rating: supports
+    rationale: "it has a light and a dark scheme"
+consequences:
+  - key: 01a16863-60a6-73b6-8b11-7a398e6d4882
+    kind: cost
+    statement: "The page's files grow by the Inter font, about 48 KB, and its licence."
+  - key: 01a16863-60a6-73b6-8b11-7a3a7564911f
+    kind: obligation
+    statement: "A change of the website's palette reaches the page only when the page's tokens are changed to match it."
+subjects:
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eb213cfb9073
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a94f0aa021

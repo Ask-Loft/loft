@@ -1,0 +1,204 @@
+// The list of a `trace` view: each Feature folded to its count and a bar, its Requirements by
+// their statements, and its criteria as a table; and the labels of every `loft` view.
+
+import { forget } from './dom.js';
+
+import assert from 'node:assert/strict';
+import { beforeEach, test } from 'node:test';
+
+import { add, h } from '../../yard-page/lib/dom.js';
+import { named } from '../../yard-page/views/loft/index.js';
+import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
+
+beforeEach(forget);
+
+/** Draws `children` into one element. */
+function drawn(children) {
+  const at = h('div');
+  add(at, children);
+  return at;
+}
+
+/**
+ * A trace report of one Feature with two Requirements, as `loft` records it and the page server
+ * renders its Markdown: one Requirement in an EARS form, one in plain text.
+ */
+function report() {
+  return {
+    base: 'develop',
+    features: [
+      {
+        key: 'f',
+        label: 'F-3',
+        name: 'Share a list',
+        requirements: [
+          {
+            key: 'r1',
+            label: 'RQ-6',
+            name: 'While a list is shared, the shelf shall refuse edits made through the link.',
+            statement: {
+              form: 'state_driven',
+              condition: 'a list is shared',
+              system: 'the shelf',
+              shall: 'refuse edits made through the `link`.',
+              shallHtml: 'refuse edits made through the <code>link</code>.',
+            },
+          },
+          { key: 'r2', label: null, name: 'Lists stay private unless shared.' },
+        ],
+        criteria: [
+          { key: 'a', label: 'AC-7', name: 'An edit made through the link is refused.', requirement: 'r1' },
+          { key: 'b', label: 'AC-8', name: 'The link says so.', requirement: 'r1' },
+          { key: 'c', label: null, name: 'A list starts private.', requirement: 'r2', unverified: 'Read by hand' },
+          { key: 'd', label: 'AC-9', name: 'Nobody else sees it.', requirement: 'r2' },
+          { key: 'e', label: 'AC-10', name: 'A shared list can be private again.', requirement: 'r2' },
+        ],
+      },
+    ],
+    reconcile: {
+      tests: [
+        { key: 'a', file: 'tests/share.rs', name: 'an_edit_is_refused', locations: [{ firstLine: 12 }] },
+        { key: 'b', file: 'tests/share.rs', name: 'the_link_says_so', locations: [{ firstLine: 30 }] },
+        { key: 'd', file: 'tests/private.rs', name: 'nobody_else_sees_it' },
+      ],
+      findings: [
+        { key: 'b', rule: 'TR-002', message: 'not yet reviewed' },
+        { key: 'e', rule: 'TR-001', message: 'no link' },
+      ],
+    },
+  };
+}
+
+/** The view's Feature folds. */
+const features = (view) => [...view.querySelectorAll('details.trace-feature')];
+
+test('each Feature of a trace view starts folded to its label, its name, the number of its criteria linked and a bar', () => {
+  const [feature] = features(drawn(traceView(report(), {}, {})));
+  assert.equal(feature.open, false);
+  const summary = feature.querySelector('summary');
+  assert.equal(summary.querySelector('.label').textContent, 'F-3');
+  assert.match(summary.textContent, /Share a list/);
+  assert.equal(summary.querySelector('.feature-count').textContent, '4 of 5 linked');
+  assert.equal(parseFloat(summary.querySelector('.coverage-linked').style.width), 80);
+  assert.ok(summary.querySelector('.coverage').getAttribute('aria-label'));
+});
+
+test('a Feature the person opened stays open when the page draws it again', () => {
+  const [first] = features(drawn(traceView(report(), {}, { key: 'trace-9' })));
+  first.open = true;
+  first.dispatchEvent(new Event('toggle'));
+  assert.equal(features(drawn(traceView(report(), {}, { key: 'trace-9' })))[0].open, true);
+  assert.equal(features(drawn(traceView(report(), {}, { key: 'trace-10' })))[0].open, false);
+});
+
+test('each Requirement shows its label and its statement with its EARS keywords set apart, above its criteria', () => {
+  const groups = [...drawn(traceView(report(), {}, {})).querySelectorAll('tbody.requirement')];
+  const head = groups[0].querySelector('.requirement-row');
+  assert.equal(head.querySelector('.label').textContent, 'RQ-6');
+  assert.equal(head.querySelector('.statement').textContent, 'While a list is shared, the shelf shall refuse edits made through the link.');
+  assert.deepEqual([...head.querySelectorAll('.ears-word')].map((word) => word.textContent), ['While', 'shall']);
+  assert.equal(head.querySelector('.statement code').textContent, 'link');
+  assert.equal(groups[0].querySelector('tr'), head);
+  assert.equal(groups[1].querySelector('.statement').textContent, 'Lists stay private unless shared.');
+  assert.ok(!groups[1].querySelector('.ears-word'));
+});
+
+test('the criteria table gives each criterion’s label, name, state and tests, those that need a look first and the accepted behind one line', () => {
+  const table = drawn(traceView(report(), {}, {})).querySelector('table.criteria-table');
+  assert.deepEqual([...table.querySelectorAll('thead th')].map((cell) => cell.textContent), ['Label', 'Criterion', 'State', 'Tests']);
+  const [first] = [...table.querySelectorAll('tbody.requirement')];
+  const rows = [...first.querySelectorAll('tr.criterion')];
+  assert.deepEqual(rows.map((row) => [...row.cells].map((cell) => cell.textContent)), [['AC-8', 'The link says so.', 'not yet reviewed', 'tests/share.rs:30the_link_says_so']]);
+  const toggle = first.querySelector('button.accepted-toggle');
+  assert.equal(toggle.textContent, '1 accepted');
+  const accepted = toggle.closest('table').querySelectorAll('tbody.accepted')[0];
+  assert.equal(accepted.hidden, true);
+  assert.match(accepted.textContent, /AC-7.*An edit made through the link is refused\..*accepted.*tests\/share\.rs:12/);
+  toggle.click();
+  assert.equal(accepted.hidden, false);
+  assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+});
+
+test('a criterion with no label yet reads new where its label would be', () => {
+  const row = [...drawn(traceView(report(), {}, {})).querySelectorAll('tr.criterion')].find((each) => /starts private/.test(each.textContent));
+  const label = row.cells[0].querySelector('.label');
+  assert.equal(label.textContent, 'new');
+  assert.ok(label.classList.contains('label--new'));
+  assert.equal(row.querySelector('.reason').textContent, 'Read by hand');
+});
+
+test('a trace view whose report gives no Requirement lists each Feature’s criteria in one table', () => {
+  const flat = report();
+  delete flat.features[0].requirements;
+  for (const criterion of flat.features[0].criteria) delete criterion.requirement;
+  const view = drawn(traceView(flat, {}, {}));
+  assert.equal(view.querySelectorAll('table.criteria-table').length, 1);
+  assert.ok(!view.querySelector('.requirement-row'));
+  assert.equal(view.querySelectorAll('tr.criterion').length, 5);
+});
+
+test('a label is a tag of its own, tinted by its node’s kind', () => {
+  const tags = ['F-3', 'RQ-6', 'AC-7', 'CMP-2'].map((label) => drawn(named({ label, name: 'A node' })).querySelector('.label'));
+  assert.deepEqual(
+    tags.map((each) => [...each.classList]),
+    [
+      ['label', 'label--f'],
+      ['label', 'label--rq'],
+      ['label', 'label--ac'],
+      ['label', 'label--cmp'],
+    ],
+  );
+  assert.equal(tags[0].nextSibling.textContent, ' ');
+});
+
+test('a criterion’s state comes from its own tests and rules, though the report’s lists left them out', () => {
+  const none = new Map();
+  const test = { file: 'tests/share.rs', name: 'an_edit_is_refused', locations: [{ firstLine: 12 }] };
+  assert.equal(linkState({ key: 'a', tests: [test], rules: [] }, none, none), 'accepted');
+  assert.equal(linkState({ key: 'a', tests: [], rules: ['TR-001'] }, none, none), 'unlinked');
+  assert.equal(linkState({ key: 'a', tests: [test], rules: ['TR-002'] }, none, none), 'unreviewed');
+  const own = report();
+  own.reconcile = { tests: [], findings: [] };
+  own.features[0].criteria = own.features[0].criteria.map((criterion) => ({ ...criterion, tests: [test], rules: [] }));
+  own.leftOut = { 'reconcile.tests': 3408, 'reconcile.findings': 206 };
+  const view = drawn(traceView(own, {}, {}));
+  assert.match(view.querySelector('.coverage-words').textContent, /^5 of 5 .* 4 of those accepted/);
+  assert.match(view.querySelector('tr.criterion--accepted .criterion-tests').textContent, /tests\/share\.rs:12/);
+  assert.ok(!view.querySelector('.short'));
+});
+
+test('a view recorded without each criterion’s tests and rules, whose lists were shortened, says its counts may fall short', () => {
+  const old = report();
+  old.leftOut = { 'reconcile.tests': 3408 };
+  assert.match(drawn(traceView(old, {}, {})).querySelector('.short').textContent, /older loft/);
+  assert.ok(!drawn(traceView(report(), {}, {})).querySelector('.short'));
+});
+
+/** The lines of a view's fold of the findings of loft reconcile, and its summary. */
+function findingsFold(view) {
+  const fold = [...view.querySelectorAll('details.fold')].find((each) => /findings of loft reconcile/.test(each.querySelector('summary').textContent));
+  return fold ? { summary: fold.querySelector('summary').textContent, lines: [...fold.querySelectorAll('ul.findings li')].map((li) => li.textContent) } : null;
+}
+
+test('a slim view lists each rule reported of the branch’s criteria with the criterion’s label and name', () => {
+  const slim = report();
+  slim.reconcile = { schema: 'loft-reconcile/3', outcome: 'passed', inScope: 4161, linked: 3738 };
+  const rules = { a: [], b: ['TR-002'], c: [], d: [], e: ['TR-001'] };
+  slim.features[0].criteria = slim.features[0].criteria.map((criterion) => ({ ...criterion, tests: [], rules: rules[criterion.key] }));
+  const fold = findingsFold(drawn(traceView(slim, {}, {})));
+  assert.equal(fold.summary, '2 findings of loft reconcile');
+  assert.deepEqual(fold.lines, ['TR-002 AC-8: The link says so.', 'TR-001 AC-10: A shared list can be private again.']);
+});
+
+test('a view recorded with reconcile’s findings and without each criterion’s rules lists those findings with their rule and message', () => {
+  const fold = findingsFold(drawn(traceView(report(), {}, {})));
+  assert.deepEqual(fold.lines, ['TR-002 not yet reviewed', 'TR-001 no link']);
+});
+
+test('a view recorded with both each criterion’s rules and reconcile’s findings lists only the rules of the branch’s criteria', () => {
+  const both = report();
+  both.reconcile.findings.push({ key: 'elsewhere', rule: 'TR-003', label: 'AC-400', message: 'a criterion of another Feature' });
+  both.features[0].criteria = both.features[0].criteria.map((criterion) => ({ ...criterion, tests: [], rules: criterion.key === 'e' ? ['TR-001'] : [] }));
+  const fold = findingsFold(drawn(traceView(both, {}, {})));
+  assert.deepEqual(fold.lines, ['TR-001 AC-10: A shared list can be private again.']);
+});

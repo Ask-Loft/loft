@@ -13,6 +13,7 @@ mod event;
 mod events;
 mod guard;
 mod http;
+mod inherited;
 mod listener;
 mod live;
 mod logs;
@@ -22,6 +23,7 @@ mod session_files;
 mod stream;
 mod tokens;
 mod trees;
+mod watch;
 
 use std::cmp::Ordering as Compared;
 use std::collections::VecDeque;
@@ -71,6 +73,8 @@ pub struct Server {
     /// How many responses it is sending.
     busy: AtomicUsize,
     sessions: Sessions,
+    /// What the page server last read of each Yard Log for the list of Yard Logs.
+    entries: trees::Entries,
     /// The lock on `~/.yard/server.lock`, held for as long as the page server runs.
     _lock: Locked,
 }
@@ -202,6 +206,7 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
         stopping: AtomicBool::new(false),
         busy: AtomicUsize::new(0),
         sessions: Sessions::default(),
+        entries: trees::Entries::default(),
         _lock: lock,
     });
     let mut fields = named;

@@ -1,5 +1,5 @@
 // What the page keeps in this browser, and only here: the order of the stages, the view chosen,
-// the revision of each Yard Log's last visit, and the answers chosen and not sent. Storage may be
+// whether the list of Yard Logs is folded, the revision of each Yard Log's last visit, and the answers chosen and not sent. Storage may be
 // missing or refuse, as in a private window; the page then works with what it holds in memory.
 
 const PREFIX = 'yard.';
@@ -78,4 +78,9 @@ export function order() {
 /** The view of Yard Log: the `timeline` unless the person chose the `gantt` chart. */
 export function view() {
   return get('view') === 'gantt' ? 'gantt' : 'timeline';
+}
+
+/** Whether the list of Yard Logs is folded: open unless the person folded it. */
+export function folded() {
+  return get('list') === 'folded';
 }

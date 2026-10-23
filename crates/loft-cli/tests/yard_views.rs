@@ -26,7 +26,7 @@ fn batch(view: &str, extra: &str) -> String {
 fn recorded(yard: &Yard, view: &str, extra: &str) -> Value {
     let written = yard.write("s1", &batch(view, extra), &[]);
     assert_eq!(written["outcome"], "written", "{written}");
-    let read = yard.read("s1", &[]);
+    let read = yard.read("s1", &["--reports"]);
     block(&read, "v1")["version"]["body"].clone()
 }
 
@@ -61,7 +61,7 @@ fn a_view_compares_with_the_base_revision_the_block_names() {
     let named = batch("spec-change", r#", "base": "develop""#);
     let written = yard.write("s1", &named, &["--base", "main"]);
     assert_eq!(written["outcome"], "written", "{written}");
-    let read = yard.read("s1", &[]);
+    let read = yard.read("s1", &["--reports"]);
     let body = &block(&read, "v1")["version"]["body"];
     assert_eq!(body["base"], "develop");
     assert_eq!(body["report"]["status"]["base"]["revision"], "develop");
@@ -104,12 +104,13 @@ fn a_findings_view_keeps_the_agent_s_reason_for_each_finding_it_leaves() {
 }
 
 #[test]
-fn a_trace_view_holds_what_loft_reconcile_prints_and_the_criteria_of_each_feature_the_branch_changed()
+fn a_trace_view_holds_the_outcome_of_loft_reconcile_and_the_criteria_of_each_feature_the_branch_changed()
  {
     let yard = Yard::with_spec();
     change_a_criterion(&yard);
     let body = recorded(&yard, "trace", "");
-    assert_eq!(body["report"]["reconcile"], yard.loft(&["reconcile"]));
+    let reconcile = yard.loft(&["reconcile"]);
+    assert_eq!(body["report"]["reconcile"]["outcome"], reconcile["outcome"]);
     assert_eq!(body["report"]["base"], "develop");
     let features = body["report"]["features"].as_array().unwrap();
     assert_eq!(features.len(), 1, "{features:?}");
@@ -225,7 +226,7 @@ fn a_view_is_computed_over_the_specification_below_the_top_of_the_worktree() {
     );
     assert_eq!(written["outcome"], "written", "{written}");
     assert!(yard.folder("feature").join("yardlog.yaml").is_file());
-    let read = in_package(&yard, &["yard", "read", "--session", "s1"]);
+    let read = in_package(&yard, &["yard", "read", "--session", "s1", "--reports"]);
     let found = in_package(&yard, &["find", "store-a-shelf-in-one-file"]);
     assert_eq!(
         block(&read, "v1")["version"]["body"]["report"]["decision"]["key"],

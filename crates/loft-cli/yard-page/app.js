@@ -7,8 +7,9 @@ import { drawAll } from './lib/diagrams.js';
 import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
+import { settle } from './views/gantt.js';
 import { logView, unreadable } from './views/log.js';
-import { title, treeList, waitingList } from './views/trees.js';
+import { menu, title, welcome } from './views/trees.js';
 
 const state = {
   /** @type {any} */ listing: null,
@@ -80,6 +81,9 @@ function notify(text) {
   if (region) region.textContent = text;
 }
 
+/** What the menu was last drawn from: the listing, the Yard Log chosen and the menu's fold. */
+let drawnMenu = '';
+
 function render() {
   const route = parse(location.hash);
   document.title = title(state.listing);
@@ -88,11 +92,22 @@ function render() {
   const main = document.getElementById('log');
   const side = document.getElementById('side');
   if (!main || !side) return;
-  replace(side, waitingList(state.listing), treeList(state.listing, route));
-  const gantt = prefs.view() === 'gantt' && route;
-  document.body.classList.toggle('is-wide', Boolean(gantt));
+  // The menu is drawn again only when what it shows changed, not at each change of the Yard Log.
+  const chosen = route && { tree: route.tree, branch: route.branch };
+  const shown = JSON.stringify([state.listing, chosen, prefs.folded()]);
+  if (shown !== drawnMenu) {
+    drawnMenu = shown;
+    replace(
+      side,
+      menu(state.listing, route, prefs.folded(), (folded) => {
+        prefs.set('list', folded ? 'folded' : 'open');
+        render();
+      }),
+    );
+  }
+  document.body.classList.toggle('is-folded', prefs.folded());
   if (!route) {
-    replace(main, h('section', { class: 'welcome' }, h('h2', {}, 'Choose a Yard Log'), h('p', {}, 'Each branch an agent works on keeps its Yard Log. Choose one from the list to follow it.')));
+    replace(main, welcome(state.listing));
   } else if (state.logStatus !== 200) {
     replace(main, unreadable(state.log));
   } else {
@@ -116,6 +131,7 @@ function render() {
       }),
     );
     drawAll(main);
+    settle(main);
     if (route.block) reveal(route.block);
   }
   if (focus) {
@@ -145,6 +161,8 @@ function reveal(id) {
 }
 
 function start() {
+  // The menu takes the person's choice before anything is loaded, so a folded one never shows open.
+  document.body.classList.toggle('is-folded', prefs.folded());
   window.addEventListener('hashchange', () => {
     state.notice = '';
     void load();

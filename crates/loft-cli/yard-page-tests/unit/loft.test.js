@@ -8,7 +8,7 @@ import { beforeEach, test } from 'node:test';
 import { add, h } from '../../yard-page/lib/dom.js';
 import { decisionView } from '../../yard-page/views/loft/decision.js';
 import { findingsView } from '../../yard-page/views/loft/findings.js';
-import { loftView } from '../../yard-page/views/loft/index.js';
+import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
 import { MOST_BOXES, boxes, boxText, source } from '../../yard-page/views/loft/spec-change.js';
 import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
@@ -44,6 +44,27 @@ test('a spec change diagram shows each changed node with the Feature Group and t
   assert.match(text, /n1\["FG-2 Sharing"\]:::context/);
   assert.match(text, /n0 --> n1/);
   assert.match(text, /n1 --> n2/);
+});
+
+test('a spec change diagram colours each box by how it changed, in the colours of the scheme it is drawn in', () => {
+  const colours = {
+    ink: '#000001',
+    muted: '#000002',
+    rail: '#000003',
+    surface2: '#000004',
+    done: '#000005',
+    doneSoft: '#000006',
+    wait: '#000007',
+    waitSoft: '#000008',
+    danger: '#000009',
+    dangerSoft: '#00000a',
+  };
+  const text = source({ nodes: [product, group, feature], decisions: [], edges: [] }, null, colours);
+  assert.match(text, /classDef added fill:#000006,stroke:#000005,color:#000001/);
+  assert.match(text, /classDef changed fill:#000008,stroke:#000007,color:#000001/);
+  assert.match(text, /classDef removed fill:#00000a,stroke:#000009,color:#000001,stroke-dasharray:4 3/);
+  assert.match(text, /classDef context fill:#000004,stroke:#000003,color:#000002/);
+  assert.doesNotMatch(text, /#e3f4e8|#fdf0d8|#fbe4e2|#f1f3f5/);
 });
 
 test('a Feature box counts its Requirements and criteria, and those added, changed or removed', () => {
@@ -168,10 +189,9 @@ test('a trace view bars the criteria linked and accepted, counts each state wher
   assert.match(view.querySelector('.coverage-words').textContent, /2 of 3 .* linked to tests, 1 of those accepted/);
   assert.deepEqual([...view.querySelector('.counts').children].map((chip) => chip.textContent), ['1 accepted', '1 not yet reviewed', '1 not linked']);
   assert.match(view.querySelector('.base').textContent, /Compared with develop/);
-  const accepted = view.querySelector('.trace-feature details');
-  assert.equal(accepted.querySelector('summary').textContent, '1 accepted');
-  assert.match(accepted.querySelector('.tests').textContent, /tests\/a\.rs:12 one/);
-  const reconciled = [...view.querySelectorAll('details.fold')].find((fold) => /findings of loft reconcile/.test(fold.textContent));
+  assert.equal(view.querySelector('.trace-feature .accepted-toggle').textContent, '1 accepted');
+  assert.match(view.querySelector('.trace-feature tbody.accepted .criterion-tests').textContent, /tests\/a\.rs:12one/);
+  const reconciled = [...view.querySelectorAll('details.fold:not(.trace-list)')].find((fold) => /findings of loft reconcile/.test(fold.textContent));
   assert.match(reconciled.querySelector('summary').textContent, /2 findings of loft reconcile/);
   assert.deepEqual([...reconciled.querySelectorAll('li')].map((item) => item.textContent), ['TR-002 not yet reviewed', 'TR-001 no link']);
 });
@@ -184,6 +204,54 @@ test('where every criterion is in one state, no count is given beside the bar', 
   const view = drawn(traceView(report));
   assert.ok(view.querySelector('.coverage'));
   assert.ok(!view.querySelector('.counts'));
+});
+
+/** A trace report over two Features, with code spans in its names, a link to review and a finding. */
+function traced() {
+  return {
+    base: 'develop',
+    features: [
+      { key: 'f', label: 'F-3', name: '`loft share`', nameHtml: '<code>loft share</code>', criteria: [{ key: 'a', label: 'AC-1', name: 'One' }, { key: 'b', label: 'AC-2', name: 'Two' }] },
+      { key: 'g', label: 'F-4', name: 'Keep a list', criteria: [{ key: 'e', label: 'AC-3', name: 'Three' }] },
+    ],
+    reconcile: { tests: [{ key: 'a', file: 'tests/a.rs', name: 'one' }, { key: 'b', file: 'tests/b.rs', name: 'two' }], findings: [{ key: 'b', rule: 'TR-002', message: 'not yet reviewed' }, { key: 'e', rule: 'TR-001', message: 'no link' }] },
+  };
+}
+
+test('a trace view opens folded to its bar, its counts, its Features and its base', () => {
+  const view = drawn(traceView(traced(), {}, {}));
+  const list = view.querySelector('details.trace-list');
+  assert.equal(list.open, false);
+  assert.equal(list.querySelector('summary').textContent, '3 criteria under 2 Features');
+  for (const figure of ['.coverage', '.coverage-words', '.counts', '.base']) assert.ok(!view.querySelector(figure).closest('details'), figure);
+});
+
+test('folded, a trace view lists no criterion and no finding', () => {
+  const view = drawn(traceView(traced(), {}, {}));
+  const list = view.querySelector('details.trace-list');
+  assert.equal(list.open, false);
+  assert.ok([...view.querySelectorAll('.criterion, .findings li, .trace-feature')].every((item) => list.contains(item)));
+  assert.equal(view.querySelectorAll('.criterion').length, 3);
+});
+
+test('a trace view the person opened stays open when the page draws it again, and a folded one stays folded', () => {
+  const first = drawn(traceView(traced(), {}, { key: 'trace-1' })).querySelector('details.trace-list');
+  first.open = true;
+  first.dispatchEvent(new Event('toggle'));
+  assert.equal(drawn(traceView(traced(), {}, { key: 'trace-1' })).querySelector('details.trace-list').open, true);
+  assert.equal(drawn(traceView(traced(), {}, { key: 'trace-2' })).querySelector('details.trace-list').open, false);
+  first.open = false;
+  first.dispatchEvent(new Event('toggle'));
+  assert.equal(drawn(traceView(traced(), {}, { key: 'trace-1' })).querySelector('details.trace-list').open, false);
+});
+
+test('a node’s name is drawn from the HTML loft rendered from its Markdown, or as its text without it', () => {
+  const rendered = drawn(named({ label: 'AC-1', name: 'Written to `<ours>`.', nameHtml: 'Written to <code>&lt;ours&gt;</code>.' }));
+  assert.equal(rendered.querySelector('code').textContent, '<ours>');
+  assert.equal(rendered.textContent, 'AC-1 Written to <ours>.');
+  const plain = drawn(named({ label: 'AC-2', name: 'A <b>bold</b> `name`' }));
+  assert.ok(!plain.querySelector('b, code'));
+  assert.equal(plain.textContent, 'AC-2 A <b>bold</b> `name`');
 });
 
 test('a decision view shows the decision, its options with the selected one marked, and a table of its assessments', () => {

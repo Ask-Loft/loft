@@ -10,7 +10,13 @@ export type ToolName = 'yard_read' | 'yard_write' | 'yard_wait' | 'yard_withdraw
 type Field = { type: 'integer' | 'boolean' | 'string' | 'array'; description: string; isRequired?: boolean }
 
 const FIELDS: Record<ToolName, Record<string, Field>> = {
-  yard_read: { since: { type: 'integer', description: 'Return only what changed after this revision.' } },
+  yard_read: {
+    since: { type: 'integer', description: 'Return only what changed after this revision.' },
+    reports: {
+      type: 'boolean',
+      description: "Return each loft block's report, which is otherwise given by its size in bytes; best with `since`.",
+    },
+  },
   yard_write: {
     batch: {
       type: 'array',
@@ -30,7 +36,8 @@ const FIELDS: Record<ToolName, Record<string, Field>> = {
 }
 
 const DESCRIPTIONS: Record<ToolName, string> = {
-  yard_read: "Read the branch's Yard Log: all of it, or what changed since a revision. Gives the revision and the page's address.",
+  yard_read:
+    "Read the branch's Yard Log: all of it, or what changed since a revision, each loft block's report by its size unless `reports` asks for it. Gives the revision and the page's address.",
   yard_write:
     "Write a batch of blocks to the branch's Yard Log, opening it on the first write; with `send`, send its questions, approvals and plans to the person.",
   yard_wait:
@@ -102,7 +109,15 @@ export function commandOf(name: ToolName, args: Record<string, unknown>, caller:
   switch (name) {
     case 'yard_read':
       // The agent's own read records the revision it read.
-      return { args: ['read', ...(args.since !== undefined ? ['--since', String(args.since)] : []), '--mark-read', ...who] }
+      return {
+        args: [
+          'read',
+          ...(args.since !== undefined ? ['--since', String(args.since)] : []),
+          ...(args.reports === true ? ['--reports'] : []),
+          '--mark-read',
+          ...who,
+        ],
+      }
     case 'yard_write':
       return {
         args: [

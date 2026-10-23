@@ -48,7 +48,7 @@ fn a_publish_is_recorded_after_the_close_as_a_publish_view_holding_loft_s_report
     assert_eq!(recorded["block"]["id"], "published");
     let status = yard.loft(&["status"]);
     yard.git = on(BRANCH);
-    let read = yard.read("s1", &[]);
+    let read = yard.read("s1", &["--reports"]);
     let body = &block(&read, "published")["version"]["body"];
     assert_eq!(body["view"], "publish");
     assert_eq!(body["note"], "Published.");

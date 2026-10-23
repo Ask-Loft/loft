@@ -21,6 +21,8 @@ requirements:
         name: "`yard_read` takes an optional revision to read since."
       - key: 01a16621-e7bc-7707-b123-2162855d3a0d
         name: "`yard_read` runs `loft yard read --mark-read`, so that the agent's own read records the revision it read."
+      - key: 01a16880-126c-7301-9603-b98be3c7681b
+        name: "`yard_read` takes an optional `reports`, which runs the read with `--reports`, so that a read gives each `loft` block's report only when the agent asks for it."
       - key: 01a1646f-546c-7521-9643-bcab7a45d9c4
         name: "`yard_write` takes the batch, the revision it is based on, and whether it is to be sent."
       - key: 01a1646f-546c-7521-9643-bcac49382b64
@@ -59,3 +61,17 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-ea32b43b5531
         name: "No file is changed."
+  - key: 01a1687f-8b71-721a-b646-45d0aa68e4bd
+    statement:
+      form: unwanted
+      if: "the matching `loft yard` command prints output that does not read as a JSON document"
+      system: "the Loft mod"
+      shall: "return a tool error that gives the number of bytes the command printed and says they could not be read as a document."
+    body: "Claude Code keeps only the first part of a command's output past its limit and says so; output cut short there never reads as a document."
+    criteria:
+      - key: 01a1687f-8b72-7634-ba73-84b389881000
+        name: "The error gives the number of bytes the command printed on standard output and says they could not be read as a document, rather than the command's exit code alone."
+      - key: 01a1687f-8b72-7634-ba73-84b49a0144a1
+        name: "Where Claude Code cut the command's output short, the error says that the output was cut short after the number of bytes it kept."
+      - key: 01a1687f-8b72-7634-ba73-84b5b9eea541
+        name: "Output cut short is never read as a document, even where the bytes kept would read as one."

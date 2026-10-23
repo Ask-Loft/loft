@@ -1,7 +1,7 @@
 key: 01a1646f-546d-7042-befd-eb677bcc8418
 slug: see-yard-log-as-a-gantt-chart
 name: "See Yard Log as a Gantt chart"
-body: "Beside the timeline, the page draws Yard Log as a Gantt chart along time, with a lane for each agent: each agent's stages with their tasks, the Loft runs and the waits on the person, and the agent's own work in the time between them, so that the person sees where the time of the work went and which agents worked side by side."
+body: "Beside the timeline, the page draws Yard Log as a Gantt chart along time, with a lane for the main agent and one for each subagent: each agent's stages with their tasks, each stage's bar divided into its active tasks, Loft runs, waits on the person and the agent's own work, so that the person sees where the time of the work went and which agents worked side by side. A column beside the chart names each row, so that no name is drawn over the bars."
 realizes:
   - 01a16469-559e-73c4-85f2-71a94f0aa021
 requirements:
@@ -12,30 +12,102 @@ requirements:
       shall: "offer the timeline and the Gantt chart as two views of Yard Log, and remember in this browser the one chosen."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb69ef96a504
-        name: "A switch beside the order of the stages chooses the timeline or the Gantt chart."
+        name: "A switch at the left of the line above the stages chooses the timeline or the Gantt chart."
+      - key: 01a168c0-7faa-72dc-8ad3-520c27488530
+        name: "The switch stays in the same place whichever view is shown."
       - key: 01a1646f-546d-7042-befd-eb6a95402082
         name: "The view chosen is the one shown the next time the page opens in this browser."
       - key: 01a1646f-546d-7042-befd-eb6b4a34aab6
         name: "The Gantt chart follows Yard Log's changes as the timeline does."
       - key: 01a1646f-546d-7042-befd-eb6c59e28e31
-        name: "While the Gantt chart is shown, the page takes the whole width of the window, and the chart is drawn again to the page's width as the window is resized."
+        name: "While the Gantt chart is shown, the page keeps the width it has while the timeline is shown."
+  - key: 01a168c0-7faa-72dc-8ad3-520deb7f6c75
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "fit the Gantt chart to the width of the page, and scroll the chart within its frame where its time or its lanes need more room."
+    criteria:
+      - key: 01a168c0-7faa-72dc-8ad3-520ece07dbc3
+        name: "The chart fills the width of the page where its time needs no more room."
+      - key: 01a168c0-7faa-72dc-8ad3-520f767d7d23
+        name: "One minute of time that is not folded is never drawn narrower than 8 pixels."
+      - key: 01a168c0-7faa-72dc-8ad3-52107efef47e
+        name: "Where the chart's time needs more room than the page's width, the chart scrolls sideways within its frame."
+      - key: 01a168c0-7faa-72dc-8ad3-52115a5765e0
+        name: "The chart's frame is never taller than the window, and scrolls down within itself where the lanes need more room."
+      - key: 01a168c0-7faa-72dc-8ad3-5212c486888a
+        name: "While the chart scrolls sideways, the column of names stays in view."
+      - key: 01a168c0-7faa-72dc-8ad3-5213cbb5c3a7
+        name: "While the chart scrolls down, the time axis and the track of modes stay in view."
+      - key: 01a168c0-7faa-72dc-8ad3-52143f4aabe1
+        name: "Shown for the first time for a Yard Log in this browser, the chart opens scrolled to its latest time."
+      - key: 01a1690b-2c9b-7594-809f-4a918b953f3f
+        name: "A chart the person scrolled opens again where they left it, after a change and after a reload of the page."
+      - key: 01a168e0-b553-7083-9fa7-00e2c312fb3d
+        name: "The chart's frame scrolls no further than the chart's edges, and does not rebound at them."
+      - key: 01a168e0-b553-7083-9fa7-00e39e82b997
+        name: "A scroll down over the chart that its frame can take no further scrolls the page."
+      - key: 01a168c0-7faa-72dc-8ad3-5215cec488ae
+        name: "As the window is resized, the chart is laid out again to the page's width."
   - key: 01a1646f-546d-7042-befd-eb6dd986a309
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw in the Gantt chart a lane for each agent that owned a stage, in the order the agents first started work."
+      shall: "draw in the Gantt chart one lane for the main agent, holding the stages of every session, and a lane for each subagent that owned a stage, in the order the subagents first started work."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb6eb970ce29
-        name: "The main agent's lane comes first and names its session."
+        name: "The main agent's lane comes first and holds the stages the main agent of each session owned."
+      - key: 01a168a8-bdad-700b-811b-6839e7980afb
+        name: "Where each session's main agent first started work, its lane is marked by a rule across it, named by the session's number and the time it started."
+      - key: 01a168a8-bdad-700b-811b-683a104ee942
+        name: "A session's rule gives the session's id on hover."
       - key: 01a1646f-546d-7042-befd-eb6f76ba9323
         name: "A subagent's lane names its type."
       - key: 01a1646f-546d-7042-befd-eb7012fbe6ee
         name: "Lanes that overlap in time are drawn one above the other, so that work done side by side shows as such."
+  - key: 01a168a8-bdad-700b-811b-683bde3f3ceb
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "name each lane, each stage and each task of the Gantt chart in a column beside the chart, on a row of its own."
+    criteria:
+      - key: 01a168a8-bdad-700b-811b-683c8b487733
+        name: "Each lane's name heads its rows in the column."
+      - key: 01a168a8-bdad-700b-811b-683d2522ee69
+        name: "Each stage is named on a row of its own, level with its bar."
+      - key: 01a168a8-bdad-700b-811b-683e4046a316
+        name: "Each task is named on a row of its own beneath its stage, indented under the stage's name and level with its bar."
+      - key: 01a168a8-bdad-700b-811b-683f243042f5
+        name: "A name longer than the column is cut short with an ellipsis and given whole on hover."
+      - key: 01a168a8-bdad-700b-811b-6840c0dbed07
+        name: "No name of a lane, a stage or a task is drawn over the chart's bars."
+  - key: 01a168c0-7faa-72dc-8ad3-521690510a4a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "let the person drag the edge of the column of names to make it wider or narrower, and remember in this browser the width chosen."
+    criteria:
+      - key: 01a168c0-7fab-779d-8501-7d2e76a90eb6
+        name: "Dragging the column's edge makes the column wider or narrower by the length dragged."
+      - key: 01a168c0-7fab-779d-8501-7d2f9b1e4a65
+        name: "The column is never narrower than 160 pixels nor wider than 480 pixels."
+      - key: 01a168c0-7fab-779d-8501-7d30a89a6dfa
+        name: "The width chosen is the column's width the next time the page opens in this browser."
+  - key: 01a168c0-7fab-779d-8501-7d317c288f20
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a faint grid behind the bars of the Gantt chart."
+    criteria:
+      - key: 01a168c0-7fab-779d-8501-7d32b3d63d96
+        name: "A faint line divides each stage's rows from the next stage's rows, unbroken across the whole width of the chart."
+      - key: 01a168c0-7fab-779d-8501-7d33333d0b41
+        name: "A faint line runs down every lane at each mark of the time axis."
   - key: 01a1646f-546d-7042-befd-eb71b01f691c
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw in each agent's lane its stages along time, with their tasks, their Loft runs, their waits on the person and their agent work."
+      shall: "draw in each agent's lane its stages along time, each stage's bar divided into its active tasks, its Loft runs, its waits on the person and its agent work, and its tasks beneath it."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb725ec431a5
         name: "Each stage is drawn from the time its work started to the time it ended, or to the start of its agent's next stage where no end was recorded."
@@ -44,38 +116,64 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb74547e7a25
         name: "A task with no recorded times is drawn at the time its current version was written."
       - key: 01a1646f-546d-7042-befd-eb752ee05c31
-        name: "Each shell command that ran Loft is drawn under the stage that its agent had active, named by its Loft subcommands, and each recorded Loft view is marked at the time it was recorded."
+        name: "Each shell command that ran Loft is drawn in the bar of the stage its agent had active, and names its Loft subcommands on hover."
+      - key: 01a168a8-bdad-700b-811b-6841ac3c6f87
+        name: "Each recorded Loft view is marked on its stage's bar at the time it was recorded."
       - key: 01a1646f-546d-7042-befd-eb7684da415a
-        name: "Each submission is drawn in its agent's lane from the time it was sent to its last answer or outcome."
+        name: "Each submission is drawn in the bar of its agent's stage from the time it was sent to the time it was answered or withdrawn, or to now while it is open."
+      - key: 01a168a8-bdad-700b-811b-68420a3173c7
+        name: "A block sent again in a later submission leaves the span of each earlier submission as it was."
       - key: 01a1646f-546d-7042-befd-eb7765e7bec9
-        name: "Each stretch of a stage's time during a turn with no active task, no Loft run and no wait on the person is drawn as agent work."
+        name: "Each stretch of a stage's time during a turn with no active task, no Loft run and no wait on the person is drawn in the stage's bar as agent work."
+      - key: 01a168a8-bdad-700b-811b-68432bab687f
+        name: "Each stretch of a stage's bar is counted to one of its active tasks, Loft runs, waits on the person and agent work as the bar above the chart counts it, and drawn in that one's colour there."
+      - key: 01a168a8-bdad-700b-811b-6844ce75769c
+        name: "Idle time within a stage is left empty in its bar."
       - key: 01a1646f-546d-7042-befd-eb78faca6f3a
-        name: "Time outside the main agent's turns is idle, and an idle stretch longer than 45 seconds is folded to a fixed width that is labelled with its length."
-      - key: 01a1660b-dd8a-760c-ade4-a7e027922586
-        name: "The label of a folded idle stretch at an edge of the chart lies inside the chart."
+        name: "Time outside the main agent's turns is idle, and an idle stretch longer than 45 seconds is folded to a fixed width, drawn as a break in the time axis that gives its length on hover."
+      - key: 01a168a8-bdad-700b-811b-6845c959bfd0
+        name: "A folded idle stretch is drawn apart from plan mode and spec mode, with no hatching."
+      - key: 01a168a8-bdad-700b-811b-6846a9c73f3f
+        name: "The time axis is marked at regular times within each stretch between folded idle stretches."
       - key: 01a1646f-546d-7042-befd-eb79bfb93e3a
         name: "A bar above the chart divides the time not idle into active tasks, Loft runs, waits on the person and agent work, each with its length and its share."
       - key: 01a1646f-546d-7042-befd-eb7ae5af3ff4
         name: "Choosing a stage, a task or a submission in the Gantt chart opens the timeline at it."
+  - key: 01a168a8-bdad-700b-811b-6847f4d74704
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "keep every label of the Gantt chart clear of every other label and inside the chart."
+    criteria:
+      - key: 01a168a8-bdad-700b-811b-68487f427f50
+        name: "A label of the track of modes is drawn only where it fits within its stretch."
+      - key: 01a168a8-bdad-700b-811b-6849a3d1afef
+        name: "A mark of the time axis is drawn only where it leaves room for the marks beside it."
+      - key: 01a168a8-bdad-700b-811b-684a267b8d02
+        name: "No label of the chart runs past the chart's edges."
   - key: 01a1646f-546d-7042-befd-eb7b30851fda
     statement:
       form: optional
       where: "the session's activity holds stretches of the main agent's plan mode"
       system: "the page"
-      shall: "mark each stretch of plan mode across the Gantt chart."
+      shall: "mark each stretch of plan mode in a track of modes above the lanes of the Gantt chart, and faintly across every lane."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb7c8d9f3725
-        name: "Each stretch of plan mode is drawn as a band across every lane of the chart, from the time it started to the time it ended, or to now where it has not ended."
+        name: "Each stretch of plan mode is drawn in the track of modes from the time it started to the time it ended, or to now where it has not ended."
+      - key: 01a168a8-bdad-700b-811b-684b8764d21a
+        name: "Each stretch of plan mode is shaded faintly across every lane of the chart, over each lane's background."
       - key: 01a1646f-546d-7042-befd-eb7d31ce0c2d
-        name: "Each band is labelled as plan mode, with its length."
+        name: "Each stretch of plan mode is labelled as plan mode, and gives its length on hover."
   - key: 01a1646f-546d-7042-befd-eb7e81779f4d
     statement:
       form: optional
       where: "the session's activity holds stretches of the main agent's spec mode"
       system: "the page"
-      shall: "mark each stretch of spec mode across the Gantt chart, apart from plan mode by its colour and its hatching."
+      shall: "mark each stretch of spec mode in the track of modes and faintly across every lane, apart from plan mode by its colour and its hatching."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb7fd8a33165
-        name: "Each stretch of spec mode is drawn as a hatched band across every lane of the chart, from the time it started to the time it ended, or to now where it has not ended."
+        name: "Each stretch of spec mode is drawn hatched in the track of modes, from the time it started to the time it ended, or to now where it has not ended."
+      - key: 01a168a8-bdad-700b-811b-684ca9e44c8f
+        name: "Each stretch of spec mode is shaded faintly and hatched across every lane of the chart, over each lane's background."
       - key: 01a1646f-546d-7042-befd-eb80ccffb25f
-        name: "Each band of spec mode is labelled as spec mode, with its length."
+        name: "Each stretch of spec mode is labelled as spec mode, and gives its length on hover."

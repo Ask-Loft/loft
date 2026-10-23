@@ -69,3 +69,23 @@ fn the_branches_a_worktree_holds_are_the_folders_with_a_root() {
         .unwrap();
     assert_eq!(branches(&tree.top()).unwrap(), ["feat/shelf", "main"]);
 }
+
+#[test]
+fn the_search_for_branches_goes_no_deeper_into_a_folder_that_holds_a_root() {
+    let tree = Tree::new();
+    let store = tree.store("main");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    // A root within a Yard Log's own folders is none of a branch's: git allows no branch
+    // `main/below` beside `main`, so the search need not look there.
+    let below = store.folder().join("below");
+    fs::create_dir_all(&below).unwrap();
+    fs::copy(
+        store.folder().join(yardlog::codec::ROOT),
+        below.join(yardlog::codec::ROOT),
+    )
+    .unwrap();
+    assert_eq!(branches(&tree.top()).unwrap(), ["main"]);
+}

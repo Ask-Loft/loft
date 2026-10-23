@@ -68,9 +68,46 @@ function append(element, children) {
   }
 }
 
+/** A colour as a code span may hold it: `#` and three, four, six or eight hexadecimal digits. */
+const COLOUR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
+/**
+ * The ink that reads more clearly on the colour `hex`, its alpha left aside: black on a light
+ * colour and white on a dark one, each at least 4.5 to 1 (the page's own dark ink, a shade off
+ * black, would fall short on a mid grey).
+ * @param {string} hex
+ */
+export function inkOn(hex) {
+  const digits = hex.slice(1);
+  const full = digits.length <= 4 ? [...digits.slice(0, 3)].map((digit) => digit + digit).join('') : digits.slice(0, 6);
+  const n = Number.parseInt(full, 16);
+  const luminance = [n >> 16, (n >> 8) & 255, n & 255]
+    .map((c) => c / 255)
+    .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+    .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  return luminance > 0.179 ? '#000000' : '#ffffff';
+}
+
+/**
+ * Draws each code span under `root` that holds only a colour on that colour; a code block's
+ * code is left as it is.
+ * @param {ParentNode} root
+ */
+function swatch(root) {
+  for (const code of root.querySelectorAll('code')) {
+    const text = code.textContent?.trim() ?? '';
+    if (!COLOUR.test(text) || code.closest('pre')) continue;
+    const span = /** @type {HTMLElement} */ (code);
+    span.classList.add('colour');
+    span.style.backgroundColor = text;
+    span.style.color = inkOn(text);
+  }
+}
+
 /**
  * A container holding HTML that `loft` rendered from a block's Markdown, with raw HTML already
- * turned to text and unsafe links undone.
+ * turned to text and unsafe links undone, each table in a wrapper that scrolls sideways where the
+ * table is wider than the block, and each colour in a code span drawn on that colour.
  * @param {string} rendered
  * @param {string} [className]
  * @returns {HTMLElement}
@@ -79,6 +116,26 @@ export function html(rendered, className = 'prose') {
   const element = document.createElement('div');
   element.className = className;
   element.innerHTML = rendered ?? '';
+  for (const table of element.querySelectorAll('table')) {
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    table.replaceWith(wrap);
+    wrap.append(table);
+  }
+  swatch(element);
+  return element;
+}
+
+/**
+ * One line of HTML that `loft` rendered from Markdown, such as a node's name, each colour in a
+ * code span drawn on that colour.
+ * @param {string} rendered
+ */
+export function inline(rendered) {
+  const element = document.createElement('span');
+  element.className = 'inline';
+  element.innerHTML = rendered;
+  swatch(element);
   return element;
 }
 

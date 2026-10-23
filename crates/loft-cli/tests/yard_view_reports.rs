@@ -27,7 +27,7 @@ fn report(yard: &Yard, view: &str) -> Value {
     );
     let written = yard.write("s1", &batch, &[]);
     assert_eq!(written["outcome"], "written", "{written}");
-    let read = yard.read("s1", &[]);
+    let read = yard.read("s1", &["--reports"]);
     block(&read, "v1")["version"]["body"]["report"].clone()
 }
 
@@ -226,4 +226,108 @@ fn a_findings_view_names_each_node_a_finding_names_by_its_label_and_name() {
         assert!(named["name"].is_string(), "{key}: {named}");
         assert!(named.get("label").is_some(), "{key}: {named}");
     }
+}
+
+#[test]
+fn a_trace_view_records_each_feature_s_requirements_by_their_statements_and_each_criterion_s_requirement()
+ {
+    let yard = Yard::with_spec();
+    change_a_criterion(&yard);
+    let report = report(&yard, "trace");
+    let feature = &report["features"][0];
+    let requirements = feature["requirements"].as_array().unwrap();
+    let shared = requirements
+        .iter()
+        .find(|requirement| requirement["key"] == "00000000-0000-4000-8000-000000000035")
+        .unwrap_or_else(|| panic!("no requirement: {feature}"));
+    assert_eq!(
+        shared["name"],
+        "While a list is shared, the shelf shall refuse edits made through the link."
+    );
+    assert_eq!(shared["statement"]["form"], "state_driven");
+    assert_eq!(shared["statement"]["condition"], "a list is shared");
+    assert_eq!(shared["statement"]["system"], "the shelf");
+    assert_eq!(
+        shared["statement"]["shall"],
+        "refuse edits made through the link."
+    );
+    let criterion = feature["criteria"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|criterion| criterion["key"] == "00000000-0000-4000-8000-000000000036")
+        .unwrap();
+    assert_eq!(criterion["requirement"], shared["key"]);
+}
+
+#[test]
+fn a_trace_view_records_each_criterion_with_its_own_tests_and_the_rules_reconcile_reported_of_it() {
+    let yard = Yard::with_spec();
+    change_a_criterion(&yard);
+    let trace = "format: loft-trace/2\nlinks:\n  - node: 00000000-0000-4000-8000-000000000036\n    tests:\n      - file: \"tests/share.rs\"\n        name: \"an_edit_through_the_link_is_refused\"\n";
+    std::fs::write(yard.scratch.0.join("loft.trace.yaml"), trace).unwrap();
+    let report = report(&yard, "trace");
+    let reconcile = yard.loft(&["reconcile"]);
+    let of = |list: &str, key: &Value, field: &str| -> Vec<Value> {
+        reconcile[list]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|entry| entry["key"] == *key)
+            .map(|entry| entry[field].clone())
+            .collect()
+    };
+    let criteria: Vec<&Value> = report["features"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|feature| feature["criteria"].as_array().unwrap())
+        .collect();
+    let linked = criteria
+        .iter()
+        .find(|criterion| criterion["key"] == "00000000-0000-4000-8000-000000000036")
+        .unwrap();
+    assert_eq!(
+        linked["tests"][0]["name"], "an_edit_through_the_link_is_refused",
+        "{linked}"
+    );
+    for criterion in criteria {
+        let key = &criterion["key"];
+        assert_eq!(
+            criterion["rules"].as_array().unwrap(),
+            &of("findings", key, "rule"),
+            "{criterion}"
+        );
+        let names: Vec<Value> = criterion["tests"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|test| test["name"].clone())
+            .collect();
+        assert_eq!(names, of("tests", key, "name"), "{criterion}");
+    }
+}
+
+#[test]
+fn a_trace_view_records_reconcile_s_counts_and_outcome_and_none_of_its_tests_or_findings() {
+    let yard = Yard::with_spec();
+    change_a_criterion(&yard);
+    let report = report(&yard, "trace");
+    let recorded = &report["reconcile"];
+    let reconcile = yard.loft(&["reconcile"]);
+    assert!(recorded.get("tests").is_none(), "{recorded}");
+    assert!(recorded.get("findings").is_none(), "{recorded}");
+    for field in [
+        "schema", "outcome", "inScope", "linked", "accepted", "errors",
+    ] {
+        assert_eq!(recorded[field], reconcile[field], "{field}: {recorded}");
+    }
+    assert!(
+        report["counts"].get("reconcile.tests").is_none(),
+        "{report}"
+    );
+    assert!(
+        report["leftOut"].get("reconcile.findings").is_none(),
+        "{report}"
+    );
 }

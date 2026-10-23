@@ -18,10 +18,81 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eae04a2537c0
         name: "The view names the base revision it compares with."
       - key: 01a1646f-546d-7042-befd-eae166cc8004
-        name: "Each criterion is listed under its Feature, by its label and its name, with each of its tests by its file and the line it starts at."
+        name: "Each criterion is listed under its Requirement within its Feature, in a table of its label, its name, its state and each of its tests by its file and the line it starts at."
       - key: 01a1646f-546d-7042-befd-eae2b314450a
         name: "Each criterion not accepted is marked not yet reviewed, stale, unverified with its reason, or not linked, in a word as well as a colour."
       - key: 01a1646f-546d-7042-befd-eae34b438416
         name: "The accepted criteria of each Feature are folded into one line that counts them and opens to their list."
       - key: 01a1646f-546d-7042-befd-eae4edf1b696
-        name: "Each finding that `loft reconcile` reported is listed with its rule and its message."
+        name: "Each rule `loft reconcile` reported of one of the branch's criteria is listed with the criterion's label and name."
+  - key: 01a16838-8fdb-7127-a23e-c554d58c6712
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a `trace` view folded to its figures, and open it to its list of criteria and its findings when the person asks."
+    criteria:
+      - key: 01a16838-8fdb-7127-a23e-c5553392679f
+        name: "Folded, the view shows the bar, the number of the branch's criteria linked and accepted, the number in each state, the number of Features and the base revision."
+      - key: 01a16838-8fdb-7127-a23e-c556728ecdda
+        name: "Folded, the view lists no criterion and no finding."
+      - key: 01a16838-8fdb-7127-a23e-c557d7f2d37e
+        name: "A `trace` view the person opened stays open while the page follows Yard Log's changes, and one they folded stays folded."
+  - key: 01a16844-c9d1-72df-8cfa-5ccee8029daf
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw each Feature of a `trace` view folded to its label, its name and the number of its criteria linked to tests, and open it to its Requirements when the person asks."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5ccf74c20a73
+        name: "Folded, a Feature shows the number of its criteria linked to tests out of all of them, and a bar of that share."
+      - key: 01a16844-c9d1-72df-8cfa-5cd06cf1fed6
+        name: "A Feature the person opened stays open while the page follows Yard Log's changes."
+  - key: 01a16844-c9d1-72df-8cfa-5cd1164950b3
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw each Requirement of an opened Feature by its label and its statement, above the table of its criteria."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5cd2b2f48450
+        name: "A statement in an EARS form sets its keywords apart from its clauses."
+      - key: 01a16844-c9d1-72df-8cfa-5cd313d3bcb9
+        name: "A criterion with no label yet is marked new where its label would be."
+      - key: 01a16844-c9d1-72df-8cfa-5cd4baf29db8
+        name: "A `trace` view whose report gives no Requirement lists each Feature's criteria in one table."
+  - key: 01a16844-c9d1-72df-8cfa-5cd5f57f75bc
+    statement:
+      form: event_driven
+      when: "an agent writes a `trace` view"
+      system: "`loft yard write`"
+      shall: "record with each Feature its Requirements, each by its key, its label and its statement, and with each criterion the key of its Requirement."
+    criteria:
+      - key: 01a16844-c9d1-72df-8cfa-5cd65a22c107
+        name: "A statement in an EARS form is recorded by its form and its slots, as well as its sentence."
+      - key: 01a16859-7663-77ff-83f2-f13521a5b79a
+        name: "Each criterion is recorded with its own tests and the rules `loft reconcile` reported of it, however long the lists of the whole report are."
+  - key: 01a1687f-d753-7252-8187-6ec85e4823f1
+    statement:
+      form: event_driven
+      when: "an agent writes a `trace` view"
+      system: "`loft yard write`"
+      shall: "record of `loft reconcile`'s document its counts and its outcome, and leave out its lists of tests and findings, which cover the whole repository."
+    body: "The branch's criteria carry their own tests and rules, so the lists of the whole repository add nothing the view draws, and each recorded view grew by them."
+    criteria:
+      - key: 01a1687f-d753-7252-8187-6ec93313cb0c
+        name: "The view records the number of criteria `loft reconcile` held in scope, the number linked and its outcome."
+      - key: 01a1687f-d753-7252-8187-6ecac6e44363
+        name: "The view records no test and no finding of a node outside the branch's Features."
+  - key: 01a16859-7663-77ff-83f2-f136d787182b
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "take the state of each criterion of a `trace` view from the tests and rules recorded with it."
+    criteria:
+      - key: 01a16859-7663-77ff-83f2-f137ef80c9ea
+        name: "A criterion whose tests and rules the report's shortened lists left out keeps the state its own record gives."
+      - key: 01a16859-7663-77ff-83f2-f13801487d85
+        name: "A view recorded without each criterion's tests and rules, whose report left tests or findings out, says that its counts may fall short."
+      - key: 01a1687f-d753-7252-8187-6ecbf08fce7d
+        name: "A view recorded with the findings of `loft reconcile` and without each criterion's rules lists those findings with their rule and message."
+      - key: 01a1687f-d753-7252-8187-6eccf56b7cd5
+        name: "A view recorded with both each criterion's rules and the findings of `loft reconcile` lists only the rules of the branch's criteria."

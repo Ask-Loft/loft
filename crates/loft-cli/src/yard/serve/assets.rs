@@ -25,6 +25,7 @@ const HTML: &str = "text/html; charset=utf-8";
 const CSS: &str = "text/css; charset=utf-8";
 const JS: &str = "text/javascript; charset=utf-8";
 const TEXT: &str = "text/plain; charset=utf-8";
+const FONT: &str = "font/woff2";
 
 /// The page's file at `path` under `yard-page/`, of the media type `kind`; or, with `gzip`, the
 /// file kept as `path.gz` and served at `path`.
@@ -56,6 +57,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("lib/diagrams.js", JS),
     asset!("lib/dom.js", JS),
     asset!("lib/format.js", JS),
+    asset!("lib/kept.js", JS),
     asset!("lib/prefs.js", JS),
     asset!("lib/route.js", JS),
     asset!("model/answers.js", JS),
@@ -66,6 +68,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("views/answering.js", JS),
     asset!("views/blocks.js", JS),
     asset!("views/gantt.js", JS),
+    asset!("views/inherited.js", JS),
     asset!("views/log.js", JS),
     asset!("views/timeline.js", JS),
     asset!("views/tokens.js", JS),
@@ -76,10 +79,14 @@ pub const ASSETS: &[Asset] = &[
     asset!("views/loft/publish.js", JS),
     asset!("views/loft/spec-change.js", JS),
     asset!("views/loft/trace.js", JS),
+    asset!("views/loft/trace-list.js", JS),
     // Mermaid, which draws the page's diagrams, as its release ships it, kept compressed, with its
     // licence; `vendor/README.md` names the release.
     asset!("vendor/mermaid.min.js", JS, gzip),
     asset!("vendor/mermaid.LICENSE", TEXT),
+    // Inter, the Loft website's typeface, in its variable Latin cut, with its licence.
+    asset!("vendor/inter-latin.woff2", FONT),
+    asset!("vendor/inter.LICENSE", TEXT),
 ];
 
 impl Asset {

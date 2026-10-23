@@ -691,8 +691,19 @@
           "required": [
             "view",
             "reasons",
-            "recorded",
-            "report"
+            "recorded"
+          ],
+          "oneOf": [
+            {
+              "required": [
+                "report"
+              ]
+            },
+            {
+              "required": [
+                "reportBytes"
+              ]
+            }
           ],
           "properties": {
             "view": {
@@ -724,7 +735,12 @@
               "$ref": "#/$defs/recorded"
             },
             "report": {
-              "description": "The report as the `loft` view gave it."
+              "description": "The report as the `loft` view gave it, in a read with `--reports` and as the page server serves Yard Log."
+            },
+            "reportBytes": {
+              "description": "The size of the report as JSON, in bytes, in a read without `--reports`, which leaves the report out.",
+              "type": "integer",
+              "minimum": 0
             }
           }
         }

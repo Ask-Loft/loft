@@ -284,3 +284,59 @@ fn mark_read_without_session_exits_2_and_names_session() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("--session"), "{stderr}");
 }
+
+/// A stage and a `spec-change` view with a note, written over a tree with a specification.
+const VIEW: &str = r#"[
+  {"id": "shape", "kind": "stage", "title": "Shape it", "status": "active"},
+  {"id": "v1", "kind": "loft", "stage": "shape", "view": "spec-change", "note": "Look at the box."}
+]"#;
+
+/// The number of bytes `value` takes as JSON.
+fn bytes(value: &serde_json::Value) -> usize {
+    serde_json::to_vec(value).unwrap().len()
+}
+
+#[test]
+fn without_reports_a_loft_block_gives_its_report_by_its_size_in_bytes_and_keeps_the_rest() {
+    let yard = Yard::with_spec();
+    yard.write("s1", VIEW, &[]);
+    let full = yard.read("s1", &["--reports"]);
+    let report = &block(&full, "v1")["version"]["body"]["report"];
+    assert!(report.is_object(), "{full}");
+    let read = yard.read("s1", &[]);
+    let body = &block(&read, "v1")["version"]["body"];
+    assert!(body.get("report").is_none(), "{body}");
+    assert_eq!(body["reportBytes"], bytes(report));
+    assert_eq!(body["view"], "spec-change");
+    assert_eq!(body["note"], "Look at the box.");
+    assert_eq!(body["reasons"], json!([]));
+    assert_eq!(
+        body["recorded"],
+        block(&full, "v1")["version"]["body"]["recorded"]
+    );
+}
+
+#[test]
+fn with_reports_a_loft_block_carries_its_report_as_recorded() {
+    let yard = Yard::with_spec();
+    yard.write("s1", VIEW, &[]);
+    let read = yard.read("s1", &["--reports"]);
+    let body = &block(&read, "v1")["version"]["body"];
+    assert!(body["report"]["status"].is_object(), "{body}");
+    assert!(body.get("reportBytes").is_none(), "{body}");
+}
+
+#[test]
+fn every_version_of_a_loft_block_gives_its_report_by_its_size_without_reports() {
+    let yard = Yard::with_spec();
+    yard.write("s1", VIEW, &[]);
+    let versions =
+        |read: &serde_json::Value| block(read, "v1")["versions"].as_array().unwrap().clone();
+    let full = versions(&yard.read("s1", &["--versions", "--reports"]));
+    let slim = versions(&yard.read("s1", &["--versions"]));
+    assert_eq!(slim.len(), full.len());
+    for (slim, full) in slim.iter().zip(&full) {
+        assert!(slim["body"].get("report").is_none(), "{slim}");
+        assert_eq!(slim["body"]["reportBytes"], bytes(&full["body"]["report"]));
+    }
+}
