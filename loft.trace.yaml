@@ -21708,6 +21708,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a window narrower than 860 pixels the open menu lies over the page, which keeps only the strip’s room"
         body: ded3ed4dc1aaf7373570f33915412648356f62c42921c77a9aa9d2bee96357bf
+  - node: 01a16920-dde7-743a-aadb-655223112875
+    reviewed: 5f29e7ba3c1dac989d43f6f596016436e966da4f1a75ccbe565713ab51ba373d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page draws the menu again only when the list, the Yard Log chosen or the menu’s fold changes"
+        body: 1367ab75bf16080862e6b61c2c2f0edacc6cc30459d92f39eacac2a77a0038dc
   - node: 01a1646f-546d-7042-befd-eb2339a1f113
     reviewed: 00decd7d740cf4b3f107231c953f28a7aa1fa7b9af8103250c7f215f6201c73f
     tests:

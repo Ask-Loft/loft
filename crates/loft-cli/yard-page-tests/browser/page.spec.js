@@ -613,3 +613,20 @@ test('an open page shows a counted request’s tokens within 2 seconds of the re
   expect(posted.status).toBe(200);
   await expect(page.locator('.token-totals dd').first()).toHaveAttribute('title', '4321', { timeout: LIVE });
 });
+
+test('the page draws the menu again only when the list, the Yard Log chosen or the menu’s fold changes', async ({ page }) => {
+  await page.goto(address());
+  const totals = page.locator('.token-totals dd').first();
+  await expect(page.locator('#tokens')).toBeVisible();
+  const before = await totals.getAttribute('title');
+  // A mark on the menu as drawn, which a menu drawn again does not carry.
+  await page.evaluate(() => document.querySelector('#side .menu-head')?.setAttribute('data-mark', 'drawn'));
+  const marked = page.locator('#side .menu-head[data-mark="drawn"]');
+  const request = { session: 's1', dir: setup.tree, at: since(-1), kind: 'request', model: 'claude-opus-5-5', tokens: { input: 1111, cacheRead: 0, cacheWrite: 0, output: 1 } };
+  expect((await postAsMod('/api/events', [request])).status).toBe(200);
+  await expect.poll(() => totals.getAttribute('title'), { timeout: LIVE }).not.toBe(before);
+  await expect(marked).toHaveCount(1);
+  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await expect(marked).toHaveCount(0);
+  await page.evaluate(() => localStorage.removeItem('yard.list'));
+});

@@ -81,6 +81,9 @@ function notify(text) {
   if (region) region.textContent = text;
 }
 
+/** What the menu was last drawn from: the listing, the Yard Log chosen and the menu's fold. */
+let drawnMenu = '';
+
 function render() {
   const route = parse(location.hash);
   document.title = title(state.listing);
@@ -89,13 +92,19 @@ function render() {
   const main = document.getElementById('log');
   const side = document.getElementById('side');
   if (!main || !side) return;
-  replace(
-    side,
-    menu(state.listing, route, prefs.folded(), (folded) => {
-      prefs.set('list', folded ? 'folded' : 'open');
-      render();
-    }),
-  );
+  // The menu is drawn again only when what it shows changed, not at each change of the Yard Log.
+  const chosen = route && { tree: route.tree, branch: route.branch };
+  const shown = JSON.stringify([state.listing, chosen, prefs.folded()]);
+  if (shown !== drawnMenu) {
+    drawnMenu = shown;
+    replace(
+      side,
+      menu(state.listing, route, prefs.folded(), (folded) => {
+        prefs.set('list', folded ? 'folded' : 'open');
+        render();
+      }),
+    );
+  }
   document.body.classList.toggle('is-folded', prefs.folded());
   if (!route) {
     replace(main, welcome(state.listing));
