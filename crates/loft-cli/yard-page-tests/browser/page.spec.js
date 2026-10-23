@@ -262,6 +262,20 @@ test('the Gantt chart is chosen, kept for the next visit, follows changes, and f
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+test('the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right', async ({ page }) => {
+  const layout = page.locator('.layout');
+  await page.goto(address());
+  for (const [window, wide] of [
+    [1280, 1280],
+    [2200, 1800],
+  ]) {
+    await page.setViewportSize({ width: window, height: 900 });
+    await expect.poll(async () => (await layout.boundingBox())?.width).toBe(wide);
+    expect((await layout.boundingBox())?.x).toBe(0);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
 test('the page keeps its width and its switch of views stays in place whichever view is shown', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto(address());
@@ -400,9 +414,16 @@ test('dragging the column’s edge widens it within its bounds, and the next vis
   await page.evaluate(() => localStorage.removeItem('yard.gantt-names'));
 });
 
-test('a faint grid lies behind the bars, and a folded idle stretch is unhatched', async ({ page }) => {
+test('a faint grid lies behind the bars, its lines unbroken by folded idle stretches, which are unhatched', async ({ page }) => {
   await openLongDay(page);
   expect(await page.locator('.stage-row').first().evaluate((element) => getComputedStyle(element).borderTopWidth)).toBe('1px');
+  const alpha = (colour) => {
+    const found = /\/\s*([\d.]+)\)$/.exec(colour) ?? /rgba\([^)]*,\s*([\d.]+)\)$/.exec(colour);
+    return found ? Number(found[1]) : colour === 'transparent' ? 0 : 1;
+  };
+  const gaps = await page.locator('.idle-gap').evaluateAll((elements) => elements.map((element) => getComputedStyle(element).backgroundColor));
+  expect(gaps.length).toBeGreaterThan(0);
+  for (const colour of gaps) expect(alpha(colour), `a gap of ${colour} lets the line beneath it through`).toBeLessThan(0.2);
   const lines = page.locator('.gantt-lane .grid-line');
   expect(await lines.count()).toBe(await page.locator('.gantt-axis .tick').count());
   expect(await lines.first().evaluate((element) => getComputedStyle(element).borderLeftWidth)).toBe('1px');

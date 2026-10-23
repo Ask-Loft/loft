@@ -21636,6 +21636,24 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade.rs"
         name: "yard_log_of_a_newer_format_or_that_does_not_read_is_left_named_and_exits_1"
         body: df6be8f338991e131eebbc61019bd3666947354588a25fb1961c8693b653faad
+  - node: 01a168d9-f2df-7350-8964-7ecb58ac5bcb
+    reviewed: 986b16aee741106e6c2b49bc4e18fa5b80896ee9f68dc263c4c94742bcaf122a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right"
+        body: 261864f3ef2dce0c74b59b63bda3edeb8a062f5cf7b1533ab946769eb91c0400
+  - node: 01a168d9-f2df-7350-8964-7ecc86fbfc7d
+    reviewed: 40b1ce4662a89a1028aa010af9617fb5b9d658b4b2943233c8a6578acaa8001e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right"
+        body: 261864f3ef2dce0c74b59b63bda3edeb8a062f5cf7b1533ab946769eb91c0400
+  - node: 01a168d9-f2df-7350-8964-7ecd425523e1
+    reviewed: 1de28f78cc63b5abbcf1cdf33524e25d1a7f9e0955e417c9310ae6625141c0ac
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right"
+        body: 261864f3ef2dce0c74b59b63bda3edeb8a062f5cf7b1533ab946769eb91c0400
   - node: 01a1646f-546d-7042-befd-eb2339a1f113
     reviewed: 00decd7d740cf4b3f107231c953f28a7aa1fa7b9af8103250c7f215f6201c73f
     tests:
@@ -22345,14 +22363,14 @@ links:
         name: "dragging the column’s edge widens it within its bounds, and the next visit keeps the width"
         body: 818b579bd5bc79a834b9668661ec2ac4d830d39c5b045e2941010a25d9a2f5be
   - node: 01a168c0-7fab-779d-8501-7d32b3d63d96
-    reviewed: ffad2693a5313e11d2d6424a7498150a57ee032c64e8a6bf97f8f36760821c0a
+    reviewed: 91045866f65782a5715b2e0028b558ea95de3a1e7fe9e28775ecd5fe32e441b3
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "a faint grid runs behind the bars: a line at each mark of the time axis in every lane, and a line above each stage’s rows"
         body: 01a10883ab0e2d94a65cf1453a3f488988a98b1a0e6ab34cc16f7b2074674032
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a faint grid lies behind the bars, and a folded idle stretch is unhatched"
-        body: 5d27b4f469890f9fb9e59f5a4ff7db25eb3d1c6c652e76205206ebd5a991bdc3
+        name: "a faint grid lies behind the bars, its lines unbroken by folded idle stretches, which are unhatched"
+        body: 149b6155481c3c6a158088af3deb3080631e76058d37934aeb538140895974a4
   - node: 01a168c0-7fab-779d-8501-7d33333d0b41
     reviewed: 38b51ef6d638225bd2388fca95daa353a2d3e907d219d5b78af9aa6990deae50
     tests:
@@ -22360,8 +22378,8 @@ links:
         name: "a faint grid runs behind the bars: a line at each mark of the time axis in every lane, and a line above each stage’s rows"
         body: 01a10883ab0e2d94a65cf1453a3f488988a98b1a0e6ab34cc16f7b2074674032
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a faint grid lies behind the bars, and a folded idle stretch is unhatched"
-        body: 5d27b4f469890f9fb9e59f5a4ff7db25eb3d1c6c652e76205206ebd5a991bdc3
+        name: "a faint grid lies behind the bars, its lines unbroken by folded idle stretches, which are unhatched"
+        body: 149b6155481c3c6a158088af3deb3080631e76058d37934aeb538140895974a4
   - node: 01a1646f-546d-7042-befd-eb725ec431a5
     reviewed: fb06aa60621e3807e63c300a7b6fbb30e2302014822014bc02ae6cf92435fcb7
     tests:
@@ -22450,8 +22468,8 @@ links:
         name: "a folded idle stretch is drawn apart from plan and spec mode, with no hatching"
         body: 24cd1c223700695f402b8f1d2cb962bbb4a3be0223cf48c2e98a7e128a31efcf
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a faint grid lies behind the bars, and a folded idle stretch is unhatched"
-        body: 5d27b4f469890f9fb9e59f5a4ff7db25eb3d1c6c652e76205206ebd5a991bdc3
+        name: "a faint grid lies behind the bars, its lines unbroken by folded idle stretches, which are unhatched"
+        body: 149b6155481c3c6a158088af3deb3080631e76058d37934aeb538140895974a4
   - node: 01a168a8-bdad-700b-811b-6846a9c73f3f
     reviewed: 1ba12668d9b763c9c5269f38b7a1541daa6e0802e310c64de278da1c1908bedf
     tests:

@@ -184,8 +184,8 @@ button { font: inherit; }
   display: grid;
   grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
   gap: 36px;
-  max-width: 1280px;
-  margin: 0 auto;
+  max-width: 1800px;
+  margin: 0;
   padding: 28px 24px 48px;
   align-items: start;
 }
@@ -574,11 +574,11 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 .band-fill--plan { background: var(--plan-soft); opacity: 0.6; }
 .band-fill--spec { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--spec) 30%, transparent) 0 2px, transparent 2px 6px); opacity: 0.6; }
 .grid-line { width: 0; border-left: 1px solid var(--line); opacity: 0.7; }
-.idle-gap { background: var(--surface); box-shadow: inset 1px 0 0 var(--line), inset -1px 0 0 var(--line); }
+.idle-gap { background: color-mix(in srgb, var(--rail) 10%, transparent); box-shadow: inset 1px 0 0 var(--line), inset -1px 0 0 var(--line); }
 .session-rule { width: 0; border-left: 1px dashed var(--muted); pointer-events: auto; padding-left: 3px; }
 .gantt-row { height: var(--row); }
 .task-row { height: var(--task-row); }
-.stage-row { border-top: 1px solid var(--line); }
+.stage-row { border-top: 1px solid color-mix(in srgb, var(--rail) 60%, transparent); }
 .name-cell { position: sticky; left: 0; z-index: 6; display: flex; align-items: center; min-width: 0; background: var(--lane-bg); border-right: 1px solid var(--line); }
 .lane-label { padding: 0 8px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stage-name, .task-name { display: block; width: 100%; padding: 0 8px 0 12px; border: 0; background: none; font: inherit; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
