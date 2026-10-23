@@ -23436,6 +23436,9 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "the diff beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
         body: f13c947e66fce78003a7ecddb48172781ecdbaa245b55f3556e5541e1c018aaf
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a node of the diff says nothing more than its change, its kind, its label, its name and its words"
+        body: 494508b075dcecc671d0b8e04db51ca74d31b15119b8016ed1419fb34ba816ca
   - node: 01a1695a-dd72-7090-817b-abed3355eb7d
     reviewed: dfb7857896f19a3e8e3c2963ace4b3b69c412b68119ba940bfb6cf9686623db8
     tests:
@@ -23449,23 +23452,23 @@ links:
         name: "a_spec_change_view_s_diff_gives_the_same_words_before_and_after_where_only_tags_changed"
         body: cfec5f19350240842808f362b38b342249c155529bf66cd3dbc7ac768adfb7ce
   - node: 01a1695a-dd72-7090-817b-abee85f754da
-    reviewed: 334f20602b029e818f012c1702b0267fa3e0584a75208fc341b6b9f79d70762b
+    reviewed: cebcc494d098a48cf70bf43b1cea3ee7dc7d1057ae752711619cafa62e5762f9
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "an added node shows its words marked as added, and a removed node its words as they were, marked as removed"
-        body: b6f677ffb59a8372beddfdc045644690d82233591cb77227319bf68ab4d06d65
+        name: "an added node shows its words unmarked, and a removed node its words as they were, marked as removed"
+        body: ae3c1637b8477caf7cfa73b26c5aa1541a3ed1cae3ec23501d11075a5a3122c1
   - node: 01a1695a-dd72-7090-817b-abefd279bcb5
     reviewed: 49f6af62977924348efd813ebd9bf0b6cd6d9cc3e42956d8aeb5a0b7e1566153
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "an added node shows its words marked as added, and a removed node its words as they were, marked as removed"
-        body: b6f677ffb59a8372beddfdc045644690d82233591cb77227319bf68ab4d06d65
+        name: "an added node shows its words unmarked, and a removed node its words as they were, marked as removed"
+        body: ae3c1637b8477caf7cfa73b26c5aa1541a3ed1cae3ec23501d11075a5a3122c1
   - node: 01a1695a-dd72-7090-817b-abf0d6c9c185
     reviewed: 521fbdfd188e6c399539306a849a1f010a3002067f8a7789175448e6ff8966f4
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a changed node shows its words once, each word removed marked removed and each word added marked added"
-        body: 94a507d281d4ff4c44441a0b1f04f149a9f09d7c53a9c9be69e759b5cc29d1f8
+        body: 82e19e44a4f9531627384f6a4297d10dda8debd5efbd2d8c7b8667431d2d4155
       - file: "crates/loft-cli/yard-page-tests/unit/words.test.js"
         name: "the words a change added are marked added, and the rest kept as they were"
         body: 2274891437bad34b5c503bddffd131f89852874e0de2a7bb99c309544b10f4c3
@@ -23483,7 +23486,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a changed node whose words did not change says that only its other fields changed"
-        body: 252080d98a654d479786125879ff94b7b7bfc019b30b0e8aae434e9b65b3af80
+        body: 25020f60e5f1145068eed1f8ed3d1c2618796b78597a173651c0ed2a70267583
       - file: "crates/loft-cli/yard-page-tests/unit/words.test.js"
         name: "the same words before and after give one run kept as it was"
         body: 792dd6481656d45c964b23daf7e329eb32d53e687afe394a9c3169f500a6fbc8

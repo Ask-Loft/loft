@@ -235,22 +235,27 @@ export function specChangeView(report, body, context = {}) {
 }
 
 /**
- * A node of the diff: how it changed, its kind, its label and its name, then its words with the
- * words removed and the words added marked.
+ * A node of the diff: how it changed, its kind, its label and its name, then its words: a changed
+ * node's once, with the words removed and the words added marked in place; an added node's as
+ * they are, the word beside them saying they were added; a removed node's struck through.
  * @param {{ change: string, kind: string, label?: string | null, name?: string,
  *   words?: { before?: string, after?: string } }} entry
  */
 export function diffItem(entry) {
   const { before, after } = entry.words ?? {};
-  const runs = compareWords(before ?? '', after ?? '');
+  /** @type {import('../../model/words.js').Run[]} */
+  const runs =
+    before === undefined
+      ? [{ text: after ?? '', mark: 'same' }]
+      : compareWords(before, after ?? '');
   const item = changeItem(entry);
   item.append(
     h(
       'div',
-      { class: 'words' },
+      { class: 'diff-words' },
       runs.map(({ text, mark }) => (mark === 'added' ? h('ins', {}, text) : mark === 'removed' ? h('del', {}, text) : text)),
     ),
-    before !== undefined && before === after ? h('p', { class: 'words-same' }, 'Only its other fields changed.') : null,
   );
+  if (before !== undefined && before === after) item.append(h('p', { class: 'diff-same' }, 'Only its other fields changed.'));
   return item;
 }

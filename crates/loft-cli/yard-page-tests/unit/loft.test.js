@@ -182,16 +182,25 @@ test('the diff beneath the diagram lists every changed node by its kind, its lab
   assert.match(items[1].textContent, /^removed decision\s+Keep links short/);
 });
 
-test('an added node shows its words marked as added, and a removed node its words as they were, marked as removed', () => {
+test('an added node shows its words unmarked, and a removed node its words as they were, marked as removed', () => {
   const view = diffView([
     { key: 'c1', kind: 'criterion', label: null, name: 'A new one', change: 'added', words: { after: 'A new one' } },
     { key: 'c2', kind: 'criterion', label: 'AC-3', name: 'An old one', change: 'removed', words: { before: 'An old one' } },
   ]);
-  const [added, removed] = view.querySelectorAll('.diff .words');
-  assert.equal(added.querySelector('ins').textContent, 'A new one');
-  assert.equal(added.querySelector('del'), null);
+  const [added, removed] = view.querySelectorAll('.diff .diff-words');
+  assert.equal(added.textContent, 'A new one');
+  assert.equal(added.querySelector('ins, del'), null);
   assert.equal(removed.querySelector('del').textContent, 'An old one');
   assert.equal(removed.querySelector('ins'), null);
+});
+
+test('a node of the diff says nothing more than its change, its kind, its label, its name and its words', () => {
+  const view = diffView([
+    { key: 'c1', kind: 'criterion', label: null, name: 'A new one', change: 'added', words: { after: 'A new one' } },
+    { key: 'c2', kind: 'criterion', label: 'AC-4', name: 'Two', change: 'changed', words: { before: 'One', after: 'Two' } },
+  ]);
+  for (const item of view.querySelectorAll('.diff li')) assert.doesNotMatch(item.textContent, /null|undefined/);
+  assert.equal(view.querySelector('.diff .words'), null, 'the page’s muted grid of words is another thing');
 });
 
 test('a changed node shows its words once, each word removed marked removed and each word added marked added', () => {
@@ -205,19 +214,19 @@ test('a changed node shows its words once, each word removed marked removed and 
       words: { before: 'An edit made through the link is refused.', after: 'An edit made through the link is refused, and the link says so.' },
     },
   ]);
-  const words = view.querySelector('.diff .words');
+  const words = view.querySelector('.diff .diff-words');
   assert.equal(words.querySelector('del').textContent, 'refused.');
   assert.equal(words.querySelector('ins').textContent, 'refused, and the link says so.');
   assert.match(words.textContent, /^An edit made through the link is /);
-  assert.equal(view.querySelector('.words-same'), null);
+  assert.equal(view.querySelector('.diff-same'), null);
 });
 
 test('a changed node whose words did not change says that only its other fields changed', () => {
   const statement = 'While a list is shared, the shelf shall refuse edits made through the link.';
   const view = diffView([{ key: 'r', kind: 'requirement', label: 'RQ-7', name: statement, change: 'changed', words: { before: statement, after: statement } }]);
-  assert.equal(view.querySelector('.diff .words').textContent, statement);
+  assert.equal(view.querySelector('.diff .diff-words').textContent, statement);
   assert.equal(view.querySelector('.diff ins, .diff del'), null);
-  assert.match(view.querySelector('.words-same').textContent, /Only its other fields changed/);
+  assert.match(view.querySelector('.diff-same').textContent, /Only its other fields changed/);
 });
 
 test('a spec change view of no change says that the specification has not changed since the base revision', () => {

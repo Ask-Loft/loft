@@ -657,10 +657,10 @@ body:has(.modal[open]) { overflow: hidden; }
 /* The diff of a spec change: each node's words, the words removed struck through and the words
    added underlined, as well as coloured. */
 .diff > ul { display: grid; gap: 10px; }
-.diff .words { margin: 4px 0 0; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
+.diff .diff-words { margin: 4px 0 0; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
 .diff ins { text-decoration: underline; text-decoration-thickness: 2px; background: var(--done-soft); color: var(--ink); }
 .diff del { text-decoration: line-through; text-decoration-thickness: 2px; background: var(--danger-soft); color: var(--ink); }
-.diff .words-same { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.diff .diff-same { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 
 /* The Gantt chart. */
 
