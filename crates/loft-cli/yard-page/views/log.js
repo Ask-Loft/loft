@@ -131,7 +131,8 @@ function header(log, context) {
 }
 
 /**
- * The order of the stages and the view, beside the count of blocks changed since the last visit.
+ * The view at the left, where it stays whichever view is shown, then the order of the stages, and
+ * the count of blocks changed since the last visit at the right.
  * @param {'newest' | 'oldest'} order
  * @param {'timeline' | 'gantt'} view
  * @param {number} changed
@@ -155,7 +156,6 @@ function toolbar(order, view, changed, onView) {
   return h(
     'div',
     { class: 'toolbar' },
-    changed ? h('p', { class: 'changed-count' }, `${count(changed, 'block')} changed since your last visit`) : h('span', {}),
     h(
       'div',
       { class: 'segments', role: 'group', 'aria-label': 'View' },
@@ -170,5 +170,6 @@ function toolbar(order, view, changed, onView) {
           choice('order', 'oldest', 'Oldest first', order),
         )
       : null,
+    changed ? h('p', { class: 'changed-count' }, `${count(changed, 'block')} changed since your last visit`) : null,
   );
 }

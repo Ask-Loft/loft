@@ -89,8 +89,6 @@ function render() {
   const side = document.getElementById('side');
   if (!main || !side) return;
   replace(side, waitingList(state.listing), treeList(state.listing, route));
-  const gantt = prefs.view() === 'gantt' && route;
-  document.body.classList.toggle('is-wide', Boolean(gantt));
   if (!route) {
     replace(main, welcome(state.listing));
   } else if (state.logStatus !== 200) {

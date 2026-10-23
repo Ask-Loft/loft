@@ -189,7 +189,6 @@ button { font: inherit; }
   padding: 28px 24px 48px;
   align-items: start;
 }
-.is-wide .layout { max-width: none; }
 .side { position: sticky; top: 84px; display: grid; gap: 22px; max-height: calc(100vh - 116px); overflow: auto; padding: 0 6px 6px 0; }
 .main { min-width: 0; }
 .loading, .empty, .welcome p { color: var(--muted); }
@@ -273,8 +272,8 @@ button { font: inherit; }
 .unreadable { background: var(--danger-soft); border: 1px solid var(--ink); box-shadow: 4px 4px 0 var(--danger); padding: 16px; display: grid; gap: 8px; }
 .unreadable h2 { color: var(--danger); font-size: 18px; }
 
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-.changed-count { color: var(--new); font-weight: 600; font-size: 14px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 10px; }
+.changed-count { color: var(--new); font-weight: 600; font-size: 14px; margin-left: auto; }
 .segments { display: inline-flex; border: 1px solid var(--ink); background: var(--surface); }
 .segment { border: 0; background: none; padding: 6px 14px; color: var(--body); font-weight: 500; cursor: pointer; }
 .segment + .segment { border-left: 1px solid var(--ink); }

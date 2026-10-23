@@ -242,10 +242,10 @@ test('the revision of the last visit is kept in the browser, and what changed si
   await expect(page.locator('#block-away')).toHaveClass(/is-new/);
 });
 
-test('the Gantt chart is chosen beside the order, kept for the next visit, follows changes and fills the window', async ({ page }) => {
+test('the Gantt chart is chosen, kept for the next visit, follows changes, and fits the page as the window narrows', async ({ page }) => {
   await page.goto(address());
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  const chart = page.locator('svg.gantt-chart');
+  const chart = page.locator('.gantt');
   await expect(chart).toBeVisible();
   await page.reload();
   await expect(chart).toBeVisible();
@@ -254,10 +254,30 @@ test('the Gantt chart is chosen beside the order, kept for the next visit, follo
     { id: 'build', kind: 'stage', title: 'Build the shelf', status: 'active' },
   ]);
   await expect(chart.locator('.stage-name', { hasText: 'Build the shelf' })).toBeVisible({ timeout: LIVE });
-  const wide = Number(await chart.getAttribute('width'));
-  expect(wide).toBeGreaterThan(1280 - 300 - 200);
+  const width = async (locator) => (await locator.boundingBox())?.width ?? 0;
+  const main = page.locator('#log');
+  expect(await width(chart)).toBeLessThanOrEqual((await width(main)) + 1);
+  await page.setViewportSize({ width: 1000, height: 900 });
+  await expect.poll(async () => (await width(chart)) - (await width(main)), { timeout: LIVE }).toBeLessThanOrEqual(1);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('the page keeps its width and its switch of views stays in place whichever view is shown', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
-  await expect.poll(async () => Number(await chart.getAttribute('width')), { timeout: LIVE }).toBeGreaterThan(wide + 200);
+  await page.goto(address());
+  const main = page.locator('#log');
+  const timeline = page.getByRole('button', { name: 'Timeline' });
+  await timeline.click();
+  await expect(page.locator('ol.timeline')).toBeVisible();
+  const before = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  await expect(page.locator('.gantt')).toBeVisible();
+  const after = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
+  expect(after.main?.width).toBe(before.main?.width);
+  expect(after.switch?.x).toBe(before.switch?.x);
+  expect(after.switch?.y).toBe(before.switch?.y);
+  await page.getByRole('button', { name: 'Timeline' }).click();
+  await page.setViewportSize({ width: 1280, height: 900 });
 });
 
 test('choosing a stage in the Gantt chart opens the timeline at it', async ({ page }) => {
