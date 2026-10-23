@@ -210,6 +210,8 @@ requirements:
         name: "A decision shows its number, its title and its consequence."
       - key: 01a1646f-546d-7042-befd-eb3dabdc81f0
         name: "A task shows its title and its state."
+      - key: 01a16a04-3f8b-71a9-baa3-95e52d75699d
+        name: "A task of the type `fix` shows a mark that names it a fix beside its state, and a task of the type `regular` shows none."
       - key: 01a1646f-546d-7042-befd-eb3eba30c3b0
         name: "Each block offers the agent that wrote it, its version and the time it was written."
       - key: 01a1646f-546d-7042-befd-eb3f215b9440

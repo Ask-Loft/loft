@@ -20,14 +20,24 @@ requirements:
         name: "The block's title is the task's subject."
       - key: 01a1646f-546c-7521-9643-bc56c4873439
         name: "Where no stage is active for the agent, the task is not mirrored."
+      - key: 01a16a04-3f8b-71a9-baa3-95dcb14f98d9
+        name: "A task created with the type `fix` in its metadata is written as a task of the type `fix`."
+      - key: 01a16a04-3f8b-71a9-baa3-95dd701e7321
+        name: "A task created with no type in its metadata, or with a type the mod does not know, is written as a task of the type `regular`."
   - key: 01a1646f-546c-7521-9643-bc57992eec69
     statement:
       form: event_driven
       when: "an agent changes a task with `TaskUpdate`"
       system: "the Loft mod"
-      shall: "set the `task` block's state to match the task's."
+      shall: "set the `task` block's state and type to match the task's."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc582c1c94a2
         name: "The states `pending`, `in_progress`, `completed` and `deleted` become `open`, `active`, `done` and `dropped`."
       - key: 01a1646f-546c-7521-9643-bc59de3d65ed
         name: "A changed subject becomes the block's new title."
+      - key: 01a16a04-3f8b-71a9-baa3-95de591588b3
+        name: "A type of `fix` or `regular` in the update's metadata becomes the block's type."
+      - key: 01a16a04-3f8b-71a9-baa3-95dfe4529c42
+        name: "A type set to `null` in the update's metadata makes the block's type `regular`."
+      - key: 01a16a04-3f8b-71a9-baa3-95e0a38355ed
+        name: "The block keeps its type and its detail where the update does not change them."

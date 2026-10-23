@@ -51,6 +51,18 @@ requirements:
         name: "The skill says to mark a task `done` or `dropped` once its work ends, before the next task is marked `active`."
       - key: 01a1646f-546c-7521-9643-bc8a0a4ac1b9
         name: "The skill says not to mark the tasks of a stage `done` in one write at its end."
+  - key: 01a16a04-3f8b-71a9-baa3-95e142be0bf6
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to give the type `fix` to each task whose work corrects, at the person's request, what was already done."
+    criteria:
+      - key: 01a16a04-3f8b-71a9-baa3-95e262698f8b
+        name: "The skill says that a task is a fix where the person asked for it to correct work already done, such as a fault they found or a change they reviewed."
+      - key: 01a16a04-3f8b-71a9-baa3-95e3a372a16f
+        name: "The skill says that a task the agent takes on by itself, a correction of its own included, is `regular`."
+      - key: 01a16a04-3f8b-71a9-baa3-95e430321fa6
+        name: "The skill says to create a fix with `TaskCreate` and the type `fix` in its metadata, or to write its `task` block with the type `fix`."
   - key: 01a1646f-546c-7521-9643-bc8bc1abadf1
     statement:
       form: ubiquitous
