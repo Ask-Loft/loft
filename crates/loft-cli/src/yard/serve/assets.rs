@@ -55,6 +55,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("app.js", JS),
     asset!("lib/api.js", JS),
     asset!("lib/diagrams.js", JS),
+    asset!("lib/dock.js", JS),
     asset!("lib/dom.js", JS),
     asset!("lib/format.js", JS),
     asset!("lib/kept.js", JS),

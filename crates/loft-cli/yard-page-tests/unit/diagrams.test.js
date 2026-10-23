@@ -105,7 +105,7 @@ test('each spec-change diagram shows the button that expands it', async () => {
   assert.ok(block.querySelector('.spec-diagram .diagram-expand'));
 });
 
-test('expanding a diagram opens it in the page’s modal, named by its block, with no button of its own', async () => {
+test('expanding a diagram opens it in a modal over the page, named by its block, with no button of its own', async () => {
   const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
   drawAll(note);
   await settled();

@@ -22453,23 +22453,23 @@ links:
     reviewed: a9f22f9e332c89c102ebeda46f9d2ac826b573bd556869bd914bfd1ce82c991d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "opening a branch’s Yard Log that has an open submission opens the modal, every open submission in it oldest first"
-        body: 66580273c66fa03e74f578ebe1688a7de426d01c9d1b43a0a4faf299a72f7541
+        name: "opening a branch’s Yard Log that has an open submission opens the panel, every open submission in it oldest first"
+        body: b055d044676d4a618cac22b6576461a1f7c03c5b213f6afc4cf41a2a4ca427c2
   - node: 01a1646f-546d-7042-befd-eb648d58cd02
-    reviewed: bbfe1da50894434f5ea7b2bb9a900bcd76fdb74559919410adc61a866c21f29e
+    reviewed: 1a8eac02d84faf9cd3417dbc2c9e8e79ec8001bb34d194331de6cff89cea8c64
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "where Yard Log has no open submission, no modal opens and nothing shows above the timeline"
-        body: 0921cc789fe66b45db19db4ce07805a58638bac8b666c5d9471fdb63ec518235
+        name: "where Yard Log has no open submission, no panel opens and nothing shows above the timeline"
+        body: 2f227d848f05c794bdec6f0ee408dc5a6b72645dac93e5836b18566a8bbf2df5
   - node: 01a1693f-7b72-7290-8335-f171c49df026
-    reviewed: c559ee1700a88543215158268fa5e154074bff2e6aae04b95f546460f58332fb
+    reviewed: e4234292d5131269e7163985baabf599245de15f75d544c3d874343518029807
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "opening a branch’s Yard Log that has an open submission opens the modal, every open submission in it oldest first"
-        body: 66580273c66fa03e74f578ebe1688a7de426d01c9d1b43a0a4faf299a72f7541
+        name: "opening a branch’s Yard Log that has an open submission opens the panel, every open submission in it oldest first"
+        body: b055d044676d4a618cac22b6576461a1f7c03c5b213f6afc4cf41a2a4ca427c2
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages"
-        body: 7c50a5e49baf3874a863d15f29154ff31ae33ba97f0c25dd8f8c1e24f14bc309
+        name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
+        body: d2d7ad649f4ce7ecdd0ed0bbad4bed6646854feda4a830fcb0c0601169383f09
   - node: 01a1693f-7b72-7290-8335-f1728dce2d53
     reviewed: 9995c1cbb4df05d728c889b6c23fd0e907b6291bcb0348439a9a166845053c50
     tests:
@@ -22477,19 +22477,19 @@ links:
         name: "nothing of an open submission is shown above the timeline or the Gantt chart"
         body: c0817cb0e6f33f4c3eb7e2d1dd401b0bad7459cec68ac06e759b7d7898033ae0
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages"
-        body: 7c50a5e49baf3874a863d15f29154ff31ae33ba97f0c25dd8f8c1e24f14bc309
+        name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
+        body: d2d7ad649f4ce7ecdd0ed0bbad4bed6646854feda4a830fcb0c0601169383f09
   - node: 01a1693f-7b72-7290-8335-f17339a7026b
-    reviewed: 240c3329ec5ee2409a2fee02997c8c3f3745a26819feef09b568b7bc2c79d0dd
+    reviewed: cfab7e77c29b1f1505debb826db238d7df771974a1726f39eabc8e3cffb1b2e4
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "the modal closes by itself once nothing in it waits on the person, and the page then says what was sent"
-        body: 3a14a46561b556d44dbb7dfb33eb0796b30bca14b3dab51b4448e8cde6474c4e
+        name: "the panel closes by itself once nothing in it waits on the person, and the page then says what was sent"
+        body: 19c600a1cea3294d7b7c4f314d29371e4a3f724c6104819e0b127926a17034f2
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page sends every answer of a submission at once, and shows them given on the page"
         body: 5f27fd36a1ffc4850d0208ed16d38d71504eddb42d42dfa8b2a511f858ee8125
   - node: 01a1693f-7b72-7290-8335-f1758a4c74e2
-    reviewed: 27808ad1fdeba64ac1cb1714ab4969e601acf71ac19a61eb26b995a788182c93
+    reviewed: fc614609ae2d42c927055141a9843011d5b06ee09700af96ba93688bbf61c76b
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
         name: "a modal opens over the page with its title, its content and a button that closes it"
@@ -22498,23 +22498,26 @@ links:
         name: "a modal closes on Escape, and tells whoever opened it that it closed"
         body: 6a716307cf6f49e2cc346d13b0596a26485d1a32bded0ed8af2d7e4472f20979
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "the modal closes by its close button and by Escape"
-        body: 76b42a34861ea123f8c8d6e90911566f736abd695dc1b64eaa8c8f508cb6f6cb
+        name: "the panel closes by its close button, and by Escape while the focus is within it"
+        body: f55f5a108fcf25c890b43d6ef6fc53c3cafbba34598c2b907553c739166a4598
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
+        name: "the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: fb3e0cd79a57de0af717badf69565af27e9c3163e4f4acec2438e473f580da8c
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "a docked modal closes on Escape pressed within it, and on no Escape pressed outside it"
+        body: eba22f6f7be023df2a88d28cd5aebda797bd9700665e1e82b17a47427f38cd51
   - node: 01a1693f-7b72-7290-8335-f1760105ed39
-    reviewed: f6b525941370d3334a2e47b99df7692c8ca07f5a6642546fce8c06e45fcbacca
+    reviewed: 4053a0e0612c6b968209fa907579ac1a0b5cbcba949070c3d139fb01784d42ac
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
         name: "the button that opens what waits follows the switch of views in the page’s header"
         body: 04f32b947d51013c2eecb443b6c2857da87a659d729c9530e5e8f668404c708f
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the modal"
-        body: a2a75af4b9ff09b4af4978e97a956ede5f12d441b758b1f879409951d28c9668
+        name: "a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the panel"
+        body: 37fe895201ceb0748f18be123a85e369dcd3af6c2aea88ea4e6ffeeb0f04d575
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
+        name: "the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: fb3e0cd79a57de0af717badf69565af27e9c3163e4f4acec2438e473f580da8c
   - node: 01a16984-aadb-7721-9995-472382b34b90
     reviewed: 834b062106d50860061eb6f89a137994a7d00c23bb80b49f43c4e9f0c6c2b374
     tests:
@@ -22522,58 +22525,73 @@ links:
         name: "the button that opens what waits lies in the page’s header after the switch of views, and stays in view while the Yard Log scrolls"
         body: 9759b71733502b7afe2ca2d7a726f2ce1681823164e74adef5f26d467b33ab9a
   - node: 01a1693f-7b72-7290-8335-f177e0a5756c
-    reviewed: e251a440738138883448150fd3f7d3ad379eefb55cfe3bea2708022b2c1c5d99
+    reviewed: 443cf942d2aeaba2644bfd1da9ea0997d56877197e8538f19b1abd24ba084e4f
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "each waiting block’s button to answer opens the modal at that block’s form"
-        body: a8a404d8260287641c2df854a251204a18ae94957d31c0087edf3784268b7cd6
+        name: "each waiting block’s button to answer opens the panel at that block’s form"
+        body: 5294f5e34dc1a3b80a6ab02e18ddf8311ad53fdb9b847385f279a73e3b03c0eb
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
+        name: "the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: fb3e0cd79a57de0af717badf69565af27e9c3163e4f4acec2438e473f580da8c
   - node: 01a1693f-7b72-7290-8335-f17849978e57
-    reviewed: 77d89fa3f74f13eedfb6757369676be08f6d7e106e3dc4b32a2336606c4dd83e
+    reviewed: ddf413544f2573194964c45562fc293eeae729ca18cc4077a86c996b33c91df8
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "a change to Yard Log that sends no new submission leaves the modal closed"
-        body: 1223ee141584dffc23f3998ace34bcfa068b092d4663d69b689a1036fd672687
+        name: "a change to Yard Log that sends no new submission leaves the panel closed"
+        body: 9ca98d6bd61b9467b23fa75fe7c09a3fa59241b8a756ec4a38e4fbd4392f37c4
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
+        name: "the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: fb3e0cd79a57de0af717badf69565af27e9c3163e4f4acec2438e473f580da8c
   - node: 01a1693f-7b72-7290-8335-f179f5c9ece5
-    reviewed: 87a17735b0564fc56f94d52d369c6bfc483e1c7d52acaf21ac3554b18a66c069
+    reviewed: f7d085605f3e6d46f1c0e8b021327881ea16bb3544c3ef881f192c475558c6b4
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "a submission sent after the modal was closed opens it again"
-        body: 58975e15d9e1cee6b151ffd5fb713bcd1ebcb75a7518478b744448c2e26ec5a0
+        name: "a submission sent after the panel was closed opens it again"
+        body: f081952839440c18681220a6a497365e6e071358a291ccccea91dd14234a589e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
+        name: "the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: fb3e0cd79a57de0af717badf69565af27e9c3163e4f4acec2438e473f580da8c
   - node: 01a1693f-7b72-7290-8335-f17afbea573e
-    reviewed: 23ea78a103b0f4beeefd33e09d9db56d753a60564f40d6b1f2d83b2c0c4f0398
+    reviewed: a1b895e7e9672dad295266339c9eb310d8a61af42c8cc28806b648aeaf9822c1
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "what was chosen or typed and not sent is shown again when the modal opens again"
-        body: 66ea6ca9aba4e4ff625b1fa564cc807f83fc9ea839641d35cdbf35eb2c650531
+        name: "what was chosen or typed and not sent is shown again when the panel opens again"
+        body: 6052679388908d73da61074a7820f1d11b3652b1f947e10f2d5983c8f8e0bce2
   - node: 01a1693f-7b72-7290-8335-f17c0c51f112
-    reviewed: 059feeadabb1b97125704cafb550bb80141f2a2c02c3ef6efa7b66ca95e361bd
+    reviewed: 7d67045055463590d0e7cb9e3518d41d9ef99c5e95f8004e64c6714148ddf465
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the modal keeps its margin to each edge of the viewport and follows the viewport as it changes"
-        body: 0154d64d2ae5d6d93b33185bc8d27359afbd3ee0c4a2b16c19e3439744fe2b2d
+        name: "the panel lies along the bottom of the viewport within its margin, half the viewport high, and follows the viewport as it changes"
+        body: 0b5c2c1d103fb33433d48f82797c0098452a657a5927e4717cbec2657e49b442
   - node: 01a1693f-7b72-7290-8335-f17d39c6e2b0
-    reviewed: 17422c6d79efe7e0f89f802bd356307bbebfd298c1d06b66b7efa9dcb95a17f6
+    reviewed: bc938e04ba51eb7c5f1ce6bc7ba8c4bc469276f2f570a72dd00432b7be4c7b09
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "content taller than the modal scrolls within it under its heading, and a change drawn into it keeps its scroll and focus"
-        body: 303b9cd7fee9c286f990e0a5932d3b576b135b08826ac04d3bfcf4336658b0e4
-  - node: 01a1693f-7b72-7290-8335-f17eb17f3678
-    reviewed: 5f67ad832f00e3a239a757d0334e97f179e6df2c38ecd7c488caee25fe06e0a7
+        name: "content taller than the panel scrolls within it under its heading, and a change drawn into it keeps its scroll and focus"
+        body: b4bddbffbc69bb683373a916820dd18186d7c15444f876ffc00fdfae932cda0d
+  - node: 01a169df-0b4e-72cf-bc3c-472000361eef
+    reviewed: 4e9fa08419554d3eca5c44fbab0e3151b28c69cc91fb2d3fce31ccba586f0447
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages"
-        body: 7c50a5e49baf3874a863d15f29154ff31ae33ba97f0c25dd8f8c1e24f14bc309
+        name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
+        body: d2d7ad649f4ce7ecdd0ed0bbad4bed6646854feda4a830fcb0c0601169383f09
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "a docked modal opens as a panel that leaves the page live, not as a modal over it"
+        body: 209188cbb054d749168c50b371825bf8ce6b75b8e2c2bab055f332218d5ffb3d
+  - node: 01a169df-0b4e-72cf-bc3c-472182670121
+    reviewed: a41ed95fd4e489d3e57f38822318e0791b1cdce21a83c5e585099adcb5c14af0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "while the panel is open, the page’s end scrolls above the panel, so no part of the Yard Log stays hidden beneath it"
+        body: 9105610a175ada8e065c8b7f3e63bbb4939cbc70d7e886885c3b7682a5147d8a
+  - node: 01a169df-0b4e-72cf-bc3c-4722edee80d5
+    reviewed: ddf6ff8d0c4421d2c3e396e2f3db1af072dab60adab74bc1301f4936d589eca1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the Markdown, the prompt and the options of each block in the panel span the panel’s width, held to no narrower measure"
+        body: a628b31e54a18a0fa604e6480233241d1cea8003e918a3837e1e9a3ff9860c05
   - node: 01a1693f-7b72-7290-8335-f17f8d2e0087
-    reviewed: 9bc5877e3769e367c2684380765d4f6ca527e3de00b5fd3de1474eea27237767
+    reviewed: f05a28fc80f36f9df51e8f1b0b4f9a9d0494aa54b0718ca933f36e3c09c03e78
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
         name: "a change drawn while the modal is open keeps its scroll position and the field that has focus"
@@ -22582,17 +22600,56 @@ links:
         name: "updating a modal that is closed draws nothing and opens nothing"
         body: 7c322e886ac2db8a9caecc30a86dcc43a7bdc6164b7dfb3de7c64ca46de80118
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "content taller than the modal scrolls within it under its heading, and a change drawn into it keeps its scroll and focus"
-        body: 303b9cd7fee9c286f990e0a5932d3b576b135b08826ac04d3bfcf4336658b0e4
+        name: "content taller than the panel scrolls within it under its heading, and a change drawn into it keeps its scroll and focus"
+        body: b4bddbffbc69bb683373a916820dd18186d7c15444f876ffc00fdfae932cda0d
   - node: 01a1693f-7b72-7290-8335-f1800d240bbf
-    reviewed: 723ee24c5bac6a9b588c36eb487b41b9b37561a7246b8e64dd8414430a9db698
+    reviewed: 56d80c8dff8aa5b2393601c8505cb155688439126a68ce05318d9ae232f3a8db
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
         name: "closing the modal gives the focus back to what held it before it opened"
         body: 649b0ce30ec49f8ab022fd540b180e4403f9035e482082fa2abd788f9e9cca7e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
+        name: "the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
+        body: fb3e0cd79a57de0af717badf69565af27e9c3163e4f4acec2438e473f580da8c
+  - node: 01a169df-0b4e-72cf-bc3c-4724cf34ab77
+    reviewed: 6a609523be5be4c455e73fee7274754c399b4d4764bc037152b53b890a13c3d6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the panel first opens at half the viewport’s height"
+        body: 111904d4667f3d755478b7edfefe96c8d8169733273ee981df6c7af5a2ac5a1f
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the panel lies along the bottom of the viewport within its margin, half the viewport high, and follows the viewport as it changes"
+        body: 0b5c2c1d103fb33433d48f82797c0098452a657a5927e4717cbec2657e49b442
+  - node: 01a169df-0b4e-72cf-bc3c-47254b086a53
+    reviewed: b77f0e4abb18fa5702193cb92dbfdf8c936a4007036ed0569bb98f22aec91b09
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "dragging the panel’s top edge makes the panel taller or shorter by the length dragged"
+        body: a32548f66572a25b65404a68347e95374c1f77cf7851a7abf4075ebfc84761fc
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the panel’s top edge makes it taller by the length dragged, and the next visit opens it at that height"
+        body: 0d120bcf3444a4fb9a996f0b983704b8e0f9df6ad655e7e374c0e1aa4b6a824b
+  - node: 01a169df-0b4e-72cf-bc3c-47260ce66358
+    reviewed: b120bba964f22a57fe6e1ee9d9a7c799791aed55c1f3884d92abdc7c8668afbe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the edge is reached by the keyboard, and the arrow keys up and down make the panel taller and shorter"
+        body: f03581a8b4f86aeef5c0c143ae28f58c483887e545e8a1bff2652f0b7f02d72d
+  - node: 01a169df-0b4e-72cf-bc3c-4727b1a9e96d
+    reviewed: 3e49f41569be18ba074914bcf35d37a9101bc04e7249e4ae5600eeb90a54154b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the panel is never shorter than 160 pixels, and always leaves at least 120 pixels of the page above it, also as the viewport changes"
+        body: 19d759deb20cf93961f915226628aba95a4b11403c57da005e717e25209d3424
+  - node: 01a169df-0b4e-72cf-bc3c-4728f66a5fca
+    reviewed: 14c47fb7835115aefd33cbbe9196c0687e449fa72102a16684ed7e79e65cf5a4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/dock.test.js"
+        name: "the height chosen is the panel’s height the next time it opens in this browser, and a resize chooses none"
+        body: 8f212a75a88fcdd77d6a402647c14a5551a67bc15f7cd418e140de0e2a733522
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the panel’s top edge makes it taller by the length dragged, and the next visit opens it at that height"
+        body: 0d120bcf3444a4fb9a996f0b983704b8e0f9df6ad655e7e374c0e1aa4b6a824b
   - node: 01a1646f-546d-7042-befd-eb66aa4b28b7
     reviewed: d68fedf468ac9cfdc36cb56011a5a736eae23d2e9ad2525d4b1fd9135a1c86fb
     tests:
@@ -23167,20 +23224,29 @@ links:
         name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
         body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
   - node: 01a1695a-dd72-7090-817b-abfcdbb64f36
-    reviewed: e4257a4592700422866e437c8311dfd387e9c9f84ec7bd2a62b1d03f27d19ad5
+    reviewed: 0cb21a818ecbb55e30d85a7dc04e6bcad4db04aa70690243b1e7c5359ef2845d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
-        name: "expanding a diagram opens it in the page’s modal, named by its block, with no button of its own"
-        body: 67368b85cdf13027613b8e7dbfe4dc8c436f86e2ba704f013c7772a8be894a57
+        name: "expanding a diagram opens it in a modal over the page, named by its block, with no button of its own"
+        body: 9da8be3abc00f158430e811f419eaed60d446690a0a40262f05bcf531146fca4
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
-        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+        name: "expanding a diagram opens it in a modal, named by its block, over the viewport within its margin and the page darkened behind it, and fitted whole"
+        body: a31f765557d3381959483fe1e45d6711d3bea72eed3da49197c79dc85672b2c9
+  - node: 01a169df-0b4e-72cf-bc3c-471fe7b9fbdb
+    reviewed: 5f67ad832f00e3a239a757d0334e97f179e6df2c38ecd7c488caee25fe06e0a7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "expanding a diagram opens it in a modal, named by its block, over the viewport within its margin and the page darkened behind it, and fitted whole"
+        body: a31f765557d3381959483fe1e45d6711d3bea72eed3da49197c79dc85672b2c9
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "a modal that is not docked opens modal, over the page darkened behind it"
+        body: 46ef30b31255a9986dd733308de29fe5acc6267874669da44e5490befbd13e7b
   - node: 01a1695a-dd72-7090-817b-abfdbe25498a
     reviewed: 98986df78a00939d2f0a547432cc77c7c3576f360b429beddacacd1a726b5add
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
-        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+        name: "expanding a diagram opens it in a modal, named by its block, over the viewport within its margin and the page darkened behind it, and fitted whole"
+        body: a31f765557d3381959483fe1e45d6711d3bea72eed3da49197c79dc85672b2c9
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "the expanded diagram shows only once it is fitted to the modal"
         body: a542f40bfe0bc0ba5c60751b65a55eb3a93dec57d47b92381553cd3058e4dedd
@@ -23191,11 +23257,11 @@ links:
     reviewed: 12ebbbcfcce50452c92da2ffe226f67687e9ec370bc3d354ec9e87f07d2dbb45
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
-        name: "expanding a diagram opens it in the page’s modal, named by its block, with no button of its own"
-        body: 67368b85cdf13027613b8e7dbfe4dc8c436f86e2ba704f013c7772a8be894a57
+        name: "expanding a diagram opens it in a modal over the page, named by its block, with no button of its own"
+        body: 9da8be3abc00f158430e811f419eaed60d446690a0a40262f05bcf531146fca4
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
-        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+        name: "expanding a diagram opens it in a modal, named by its block, over the viewport within its margin and the page darkened behind it, and fitted whole"
+        body: a31f765557d3381959483fe1e45d6711d3bea72eed3da49197c79dc85672b2c9
   - node: 01a1695a-dd72-7090-817b-abff8766d1fc
     reviewed: 629d467f2c3c3ba294a9803bbca9ba3a93fba1925570a547372c172f9e6df3f0
     tests:

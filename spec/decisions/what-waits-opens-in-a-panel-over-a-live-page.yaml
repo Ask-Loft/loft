@@ -1,0 +1,48 @@
+key: 01a169df-0b48-7128-8502-25f25746afa8
+slug: what-waits-opens-in-a-panel-over-a-live-page
+title: "What waits opens in a panel over a live page"
+context: "A plan or a question the person must answer often refers to the Yard Log around it: the stages, the notes and the decisions that led to it. In a modal over the darkened page, the person must close what waits to read that, and lose their place in it."
+state:
+  kind: accepted
+  selectedOption: 01a169df-0b49-74f5-81fd-d8ca58f96c56
+  outcome: "The open submissions of a branch's Yard Log open in a panel along the bottom of the window, whose height the person sets, over a page that still scrolls, takes clicks and switches its views. An expanded diagram keeps its modal."
+drivers:
+  - key: 01a169df-0b49-74f5-81fd-d8c805854f72
+    kind: local
+    label: "Read beside"
+    statement: "The person can read and move about the Yard Log while what waits stays open."
+  - key: 01a169df-0b49-74f5-81fd-d8c9288fee11
+    kind: local
+    label: "Room to read"
+    statement: "What waits has room enough to be read without scrolling at every line."
+options:
+  - key: 01a169df-0b49-74f5-81fd-d8ca58f96c56
+    title: "A panel along the bottom"
+    description: "What waits lies in a panel across the window's width at its bottom, half its height at first and as tall as the person drags it, with the page live above it."
+  - key: 01a169df-0b49-74f5-81fd-d8cb65f12bc2
+    title: "A modal over the darkened page"
+    description: "What waits covers the viewport within a margin, and the page behind it takes no clicks until it closes."
+assessments:
+  - option: 01a169df-0b49-74f5-81fd-d8ca58f96c56
+    driver: 01a169df-0b49-74f5-81fd-d8c805854f72
+    rating: supports
+    rationale: "the page stays live"
+  - option: 01a169df-0b49-74f5-81fd-d8ca58f96c56
+    driver: 01a169df-0b49-74f5-81fd-d8c9288fee11
+    rating: neutral
+    rationale: "less height, filled to the full width"
+  - option: 01a169df-0b49-74f5-81fd-d8cb65f12bc2
+    driver: 01a169df-0b49-74f5-81fd-d8c805854f72
+    rating: conflicts
+    rationale: "it must be closed first"
+  - option: 01a169df-0b49-74f5-81fd-d8cb65f12bc2
+    driver: 01a169df-0b49-74f5-81fd-d8c9288fee11
+    rating: supports
+    rationale: "the whole viewport"
+consequences:
+  - key: 01a169df-0b49-74f5-81fd-d8cc4d8e9e55
+    kind: obligation
+    statement: "The text of each block in the panel fills the panel's width, since the panel has less height to give it."
+subjects:
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb5c525a2752

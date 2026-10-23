@@ -556,7 +556,9 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 .decision-form { border: 1px solid var(--line); padding: 10px 12px; display: grid; gap: 8px; }
 
 /* The modal: over the page darkened behind it, a margin from each edge of the viewport, its
-   heading and close button fixed above content that scrolls. */
+   heading and close button fixed above content that scrolls. Docked, it is a panel along the
+   bottom of the viewport within the same margin, over a page that stays live above it and gains
+   room at its end as tall as the panel, so nothing of it stays hidden beneath. */
 
 .modal[open] {
   position: fixed;
@@ -575,7 +577,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
   box-shadow: 6px 6px 0 var(--wait-line);
 }
 .modal::backdrop { background: var(--scrim); }
-body:has(.modal[open]) { overflow: hidden; }
+body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
 .modal-head h2 { font-size: 18px; font-weight: 700; }
 .modal-close { width: 36px; height: 36px; flex: none; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 2px 2px 0 var(--shadow); }
@@ -585,6 +587,13 @@ body:has(.modal[open]) { overflow: hidden; }
 @media (max-width: 860px) {
   .modal[open] { inset: 16px; }
 }
+.modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; box-shadow: 6px -6px 0 var(--wait-line); }
+body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 50vh) + 24px); }
+/* In the panel, text spans its width: the panel has less height to give it than the timeline. */
+.modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .consequence, .goal, .banner) { max-width: none; }
+.dock-edge { position: absolute; top: -5px; left: 0; right: 0; z-index: 1; height: 10px; cursor: row-resize; touch-action: none; }
+.dock-edge::after { content: ''; position: absolute; top: 3px; left: 50%; width: 48px; height: 4px; margin-left: -24px; background: var(--rail); }
+.dock-edge:hover::after, .dock-edge:focus-visible::after { background: var(--signal); }
 .wait-button { background: var(--wait-soft); color: var(--wait); border-color: var(--wait-line); box-shadow: 3px 3px 0 var(--wait-line); }
 .wait-button:hover:not(:disabled) { background: var(--wait-soft); box-shadow: 5px 5px 0 var(--wait-line); }
 
