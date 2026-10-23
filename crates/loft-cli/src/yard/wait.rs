@@ -112,17 +112,30 @@ impl Waiter<'_> {
         mut merged: bool,
     ) -> Result<(&'static str, Value), Failure> {
         let mut checked = clock.elapsed();
+        let mut last: Option<Held> = None;
         loop {
-            let held = self.branch.store.read()?;
+            // Every write of Yard Log rewrites its root, so a look reads the root alone and the
+            // stages only where the root is no longer the one last read.
+            let unchanged = match last.as_ref().and_then(log_of) {
+                Some(log) => matches!(
+                    self.branch.store.read_root()?,
+                    Some(Ok(root)) if root == log.root
+                ),
+                None => false,
+            };
+            if !unchanged {
+                last = Some(self.branch.store.read()?);
+            }
+            let held = last.as_ref().expect("Yard Log was read above");
             let Some((log, found)) =
-                log_of(&held).and_then(|log| Some((log, log.submission(self.key)?)))
+                log_of(held).and_then(|log| Some((log, log.submission(self.key)?)))
             else {
                 let message = format!(
                     "the Yard Log of `{}` is no longer in the tree, as after a checkout of another \
                      branch",
                     self.branch.store.branch()
                 );
-                return Err(self.refused(&held, failure::error("gone", &message)));
+                return Err(self.refused(held, failure::error("gone", &message)));
             };
             if !merged && !log.is_closed() && clock.elapsed().saturating_sub(checked) >= MERGE_EVERY
             {
