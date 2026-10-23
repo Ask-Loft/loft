@@ -27,6 +27,19 @@ requirements:
         name: "A branch whose Yard Log is closed is listed as closed."
       - key: 01a1646f-546d-7042-befd-eb2740b8a1ba
         name: "Choosing a listed branch opens its Yard Log at an address of its own, which names its tree and its branch."
+      - key: 01a16827-8a6d-74e8-a5d2-6fa1ea625f7d
+        name: "With Yard Logs listed and none chosen, the page asks the person to choose one from the list."
+  - key: 01a16827-8a6d-74e8-a5d2-6fa2a20ebe40
+    statement:
+      form: state_driven
+      while: "the page server serves no Yard Log"
+      system: "the page"
+      shall: "ask the person to start a Claude Code session with the Loft plugin on a branch of a git repository, and say that the agent's first write there opens the branch's Yard Log."
+    criteria:
+      - key: 01a16827-8a6d-74e8-a5d2-6fa3517630a4
+        name: "With no Yard Log served, the page asks for a session rather than a choice from the list."
+      - key: 01a16827-8a6d-74e8-a5d2-6fa4147c7a28
+        name: "With no Yard Log served, the page gives the commands that install the Loft plugin in Claude Code."
   - key: 01a1649f-62ef-71e6-98de-e10df45e19aa
     statement:
       form: event_driven
