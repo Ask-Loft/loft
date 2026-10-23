@@ -91,6 +91,31 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
 
+/** The mark's Y and the header's switch of views in `scheme`, whose ink and action blue are given. */
+async function headerColours(page, scheme, ink, signal) {
+  await page.emulateMedia({ colorScheme: scheme });
+  await page.goto(address());
+  await closeWaiting(page);
+  expect(await colour(page.locator('.mark-initial'), 'color')).toBe(signal);
+  expect(await colour(page.locator('.mark-word'), 'color')).toBe(ink);
+  const shown = page.locator('header.top nav.views [aria-pressed="true"]');
+  await expect(shown).toHaveText('Timeline');
+  expect(await colour(shown, 'color')).toBe(ink);
+  expect(await colour(shown, 'text-decoration-line')).toBe('underline');
+  expect(await colour(shown, 'text-decoration-color')).toBe(signal);
+  const other = page.locator('header.top nav.views [aria-pressed="false"]');
+  expect(await colour(other, 'text-decoration-line')).toBe('none');
+  expect(await colour(other, 'border-top-width')).toBe('0px');
+}
+
+test('in a light scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue', async ({ page }) => {
+  await headerColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)');
+});
+
+test('in a dark scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue', async ({ page }) => {
+  await headerColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
+});
+
 test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(address());
@@ -287,7 +312,7 @@ test('the person closes the modal by its button or Escape and it stays closed th
   write([{ id: 'while-closed', kind: 'note', stage: 'shape', title: 'Written while it is closed', markdown: 'x' }]);
   await expect(page.locator('#block-while-closed')).toBeVisible({ timeout: LIVE });
   await expect(modal).toBeHidden();
-  const button = page.locator('.toolbar #open-waiting');
+  const button = page.locator('.top #open-waiting');
   await expect(button).toHaveText('1 waits on you');
   await button.click();
   await expect(modal).toBeVisible();
@@ -302,6 +327,22 @@ test('the person closes the modal by its button or Escape and it stays closed th
   await expect(modal.locator('.submission')).toHaveCount(2);
   answerInTerminal([{ block: 'q-again', labels: ['Red'] }]);
   await expect(modal.locator('.submission')).toHaveCount(1, { timeout: LIVE });
+});
+
+test('the button that opens what waits lies in the page’s header after the switch of views, and stays in view while the Yard Log scrolls', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 });
+  await page.goto(address());
+  await closeWaiting(page);
+  const button = page.locator('header.top #open-waiting');
+  await expect(button).toHaveText('1 waits on you');
+  expect((await box(button)).x).toBeGreaterThan((await box(page.locator('header.top nav.views'))).x);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect(button).toBeInViewport();
+  await button.click();
+  await expect(waitingModal(page)).toBeVisible();
+  await closeWaiting(page);
+  await page.setViewportSize({ width: 1280, height: 900 });
 });
 
 test('content taller than the modal scrolls within it under its heading, and a change drawn into it keeps its scroll and focus', async ({ page }) => {
@@ -529,6 +570,8 @@ test('the page keeps its width and its switch of views stays in place whichever 
   const timeline = page.getByRole('button', { name: 'Timeline' });
   await timeline.click();
   await expect(page.locator('ol.timeline')).toBeVisible();
+  await expect(page.locator('header.top nav.views').getByRole('button', { name: 'Timeline' })).toBeVisible();
+  expect((await box(timeline)).x).toBeGreaterThan((await box(page.locator('header.top .mark'))).x);
   const before = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   await expect(page.locator('.gantt')).toBeVisible();

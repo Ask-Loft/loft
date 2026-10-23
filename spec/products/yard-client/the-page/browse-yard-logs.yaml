@@ -21,6 +21,14 @@ requirements:
         name: "The page is as wide as the window allows, up to 1800 pixels."
       - key: 01a168d9-f2df-7350-8964-7ecd425523e1
         name: "In a window wider than 1800 pixels, the room beyond the page lies at its right."
+  - key: 01a16984-aada-7286-b3f3-2f74df71220a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "head itself with the Yard mark, whose Y wears the action blue that the Loft website's wordmark gives its L, and the rest of the name ink."
+    criteria:
+      - key: 01a16984-aadb-7721-9995-4721c3e03b58
+        name: "The Y of the mark is action blue and the rest of the name ink, in the light and in the dark scheme alike."
   - key: 01a168ea-af3d-7473-83c8-50bb2e1a4b32
     statement:
       form: ubiquitous
@@ -157,6 +165,8 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb2f03e5bd8d
         name: "The person's choice of order is kept in the browser."
+      - key: 01a16984-aadb-7721-9995-4722a569ce6d
+        name: "The switch of order lies at the left of the line above the stages, and is shown only with the timeline."
   - key: 01a1646f-546d-7042-befd-eb3071ddc29b
     statement:
       form: optional

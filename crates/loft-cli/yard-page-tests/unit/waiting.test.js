@@ -7,8 +7,9 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 
 import * as prefs from '../../yard-page/lib/prefs.js';
+import { h } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
-import { logView } from '../../yard-page/views/log.js';
+import { logChrome, logView } from '../../yard-page/views/log.js';
 import { openWaiting, waitingModal } from '../../yard-page/views/waiting.js';
 import { EXPLORE, act, block, log, open, question, stage } from './fixtures.js';
 
@@ -36,21 +37,20 @@ function dialog() {
 /** A Yard Log's page drawn into the document, with what waits brought into the modal, as the page does. */
 function page(shown, more = {}) {
   const at = root();
-  at.append(
-    logView(shown, {
-      tree: '/work/shelf',
-      branch: 'feat/shelf',
-      last: null,
-      now: Date.parse('2026-01-01T12:00:00Z'),
-      width: 960,
-      refresh: () => {},
-      notify: () => {},
-      onView: () => {},
-      onPick: () => {},
-      onWaiting: openWaiting,
-      ...more,
-    }),
-  );
+  const context = {
+    tree: '/work/shelf',
+    branch: 'feat/shelf',
+    last: null,
+    now: Date.parse('2026-01-01T12:00:00Z'),
+    width: 960,
+    refresh: () => {},
+    notify: () => {},
+    onView: () => {},
+    onPick: () => {},
+    onWaiting: openWaiting,
+    ...more,
+  };
+  at.append(h('header', { class: 'top' }, h('div', { id: 'chrome', class: 'chrome' }, logChrome(shown, context))), logView(shown, context));
   waitingModal(shown, where);
   return at;
 }
@@ -141,13 +141,13 @@ test('a submission sent after the modal was closed opens it again', () => {
   assert.equal(dialog().querySelectorAll('.submission').length, 2);
 });
 
-test('a button in the line above the stages gives the count of the blocks that wait and opens the modal', () => {
+test('a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the modal', () => {
   const first = question('colour', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], { submissions: [open([first, second], '2026-01-01T10:04:00Z')] });
   const drawn = page(shown);
   modal.close('waiting');
-  const button = drawn.querySelector('.toolbar #open-waiting');
+  const button = drawn.querySelector('header.top nav.views + #open-waiting');
   assert.equal(button.textContent, '2 wait on you');
   button.click();
   assert.ok(dialog().open);

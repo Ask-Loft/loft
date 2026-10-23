@@ -45,7 +45,9 @@ requirements:
       - key: 01a1693f-7b72-7290-8335-f1758a4c74e2
         name: "The modal closes by its close button and by Escape."
       - key: 01a1693f-7b72-7290-8335-f1760105ed39
-        name: "A button in the line above the stages gives the count of the blocks that wait on the person and opens the modal."
+        name: "A button in the page's header, after the switch of views, gives the count of the blocks that wait on the person and opens the modal."
+      - key: 01a16984-aadb-7721-9995-472382b34b90
+        name: "The button stays in view while the Yard Log scrolls."
       - key: 01a1693f-7b72-7290-8335-f177e0a5756c
         name: "Each waiting block's button to answer opens the modal at that block's form."
       - key: 01a1693f-7b72-7290-8335-f17849978e57

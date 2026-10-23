@@ -21666,6 +21666,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right"
         body: 261864f3ef2dce0c74b59b63bda3edeb8a062f5cf7b1533ab946769eb91c0400
+  - node: 01a16984-aadb-7721-9995-4721c3e03b58
+    reviewed: 4c3bcb2f02ffe84b9eaadd234a635bacda204e1f527b2a471945c66daf8c4825
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the Y of the Yard mark is action blue and the rest of the name ink, in either scheme"
+        body: 13c68224939c1b87c58e0a19198b8340cbe576cda4898054a4eaca473a61e97d
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a light scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue"
+        body: 1ddedd8cc89fc6ae32978f0faf8c72a1e15a2ff9d8269a520efcddb70cae03e5
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a dark scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue"
+        body: 2de5d6412c2a8b2c529a4ba62555db5b584b268fd53ea1ec1e359485c4afe95f
   - node: 01a16901-3952-7392-b2a8-3b99d4dc57a2
     reviewed: 2421ccaba510452bd1bbcfc5a34f1025e3b5f713d3d78996f0c1d2c35766a74f
     tests:
@@ -21996,6 +22008,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "the stages are newest first unless the person chose otherwise, and the choice is kept in the browser"
         body: 8981b322a937f1a770481294a7fa315a70d32507b2e4f69bc5de73cdf07cfd71
+  - node: 01a16984-aadb-7721-9995-4722a569ce6d
+    reviewed: c1a639c1a1fe09f8a880b575f2a36ccac04bcb7d9d292a854a39b7b1180cca30
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the switch of order lies at the left of the line above the stages, shown only with the timeline"
+        body: 162dcc786e9b3132cc318f62d8b350052124eedb11bbea9a6a6c768167659b1b
   - node: 01a1646f-546d-7042-befd-eb3184fc5769
     reviewed: f10b42c55c0593ed55a5dc061341a1aebae467514f05cb0fd39f4a2f472f9bab
     tests:
@@ -22436,16 +22454,25 @@ links:
         body: 76b42a34861ea123f8c8d6e90911566f736abd695dc1b64eaa8c8f508cb6f6cb
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
   - node: 01a1693f-7b72-7290-8335-f1760105ed39
-    reviewed: 293b49cff2722652bf5113d8a720619e3a56543d721dee59b6f6ad65be9437ec
+    reviewed: f6b525941370d3334a2e47b99df7692c8ca07f5a6642546fce8c06e45fcbacca
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the button that opens what waits follows the switch of views in the page’s header"
+        body: 04f32b947d51013c2eecb443b6c2857da87a659d729c9530e5e8f668404c708f
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
-        name: "a button in the line above the stages gives the count of the blocks that wait and opens the modal"
-        body: 71abe1e9b3df731435b349fc08a5746d10fc38fa3f7f8627da9a5c0c670690f7
+        name: "a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the modal"
+        body: a2a75af4b9ff09b4af4978e97a956ede5f12d441b758b1f879409951d28c9668
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
+  - node: 01a16984-aadb-7721-9995-472382b34b90
+    reviewed: 834b062106d50860061eb6f89a137994a7d00c23bb80b49f43c4e9f0c6c2b374
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the button that opens what waits lies in the page’s header after the switch of views, and stays in view while the Yard Log scrolls"
+        body: 9759b71733502b7afe2ca2d7a726f2ce1681823164e74adef5f26d467b33ab9a
   - node: 01a1693f-7b72-7290-8335-f177e0a5756c
     reviewed: e251a440738138883448150fd3f7d3ad379eefb55cfe3bea2708022b2c1c5d99
     tests:
@@ -22454,7 +22481,7 @@ links:
         body: a8a404d8260287641c2df854a251204a18ae94957d31c0087edf3784268b7cd6
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
   - node: 01a1693f-7b72-7290-8335-f17849978e57
     reviewed: 77d89fa3f74f13eedfb6757369676be08f6d7e106e3dc4b32a2336606c4dd83e
     tests:
@@ -22463,7 +22490,7 @@ links:
         body: 1223ee141584dffc23f3998ace34bcfa068b092d4663d69b689a1036fd672687
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
   - node: 01a1693f-7b72-7290-8335-f179f5c9ece5
     reviewed: 87a17735b0564fc56f94d52d369c6bfc483e1c7d52acaf21ac3554b18a66c069
     tests:
@@ -22472,7 +22499,7 @@ links:
         body: 58975e15d9e1cee6b151ffd5fb713bcd1ebcb75a7518478b744448c2e26ec5a0
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
   - node: 01a1693f-7b72-7290-8335-f17afbea573e
     reviewed: 23ea78a103b0f4beeefd33e09d9db56d753a60564f40d6b1f2d83b2c0c4f0398
     tests:
@@ -22517,7 +22544,7 @@ links:
         body: 649b0ce30ec49f8ab022fd540b180e4403f9035e482082fa2abd788f9e9cca7e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent"
-        body: d53a9c42a1deb061a54dadb98e463f57f4f95e494b8b7dfbc2aacf638e5b5343
+        body: d0a7338328fb62dd71f97aadbb0cdde0043757d6a31e82184a3f4ebee542ce29
   - node: 01a1646f-546d-7042-befd-eb66aa4b28b7
     reviewed: d68fedf468ac9cfdc36cb56011a5a736eae23d2e9ad2525d4b1fd9135a1c86fb
     tests:
@@ -22534,20 +22561,38 @@ links:
         name: "the page title gives the count of blocks that wait on the person"
         body: e3d7cc9af84f82f634f11ef386e77e053e4ac8832c6b88a8f13e8782ef4fe394
   - node: 01a1646f-546d-7042-befd-eb69ef96a504
-    reviewed: 5183832351060553e6310dff4b919794dc1e45a530a4998ca700c66be08d1eb4
+    reviewed: e7d073463fcb130bc8044d4db9ca49d779e8b2334f26049b26739f6b44cfac3a
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the switch of views lies in the page’s header after the Yard mark, the view shown pressed"
+        body: c8fb1b12d4cf911fac9dcee5a6ded46ab7c6de21ca0456749194f84dde7dc7ee
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the chosen view is pressed in the header, and choosing the other is kept in the browser"
+        body: c302c8d5222cfe6dc981f33417d0d2ca140f87f8755ffd53e3eb208da27635aa
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width and its switch of views stays in place whichever view is shown"
-        body: 25a5315d59e28fa14f53b65a106aedcfe66295661a9d1e5e094d535903695e72
+        body: fd4792090912321a3b7befa673cd4aa777aafac32ad4353ffdd5bdec6999e330
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Gantt chart is chosen, kept for the next visit, follows changes, and fits the page as the window narrows"
         body: 46134f1ef0922ec28d59d15b06da20723e6cb4e528dd7cdb0acf1631943a21bc
+  - node: 01a16984-aadb-7721-9995-472440ea0ee8
+    reviewed: 6054b1a024d29eb1bb16d91b57da90b126fc48566e09c206fe6efb9332d1206d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the switch of views lies in the page’s header after the Yard mark, the view shown pressed"
+        body: c8fb1b12d4cf911fac9dcee5a6ded46ab7c6de21ca0456749194f84dde7dc7ee
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a light scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue"
+        body: 1ddedd8cc89fc6ae32978f0faf8c72a1e15a2ff9d8269a520efcddb70cae03e5
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a dark scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue"
+        body: 2de5d6412c2a8b2c529a4ba62555db5b584b268fd53ea1ec1e359485c4afe95f
   - node: 01a168c0-7faa-72dc-8ad3-520c27488530
     reviewed: 5909e4496c7acb61e6bcf0a53756b22f805d44cb9fc9ad3d3a2335bf8a9bd3c6
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width and its switch of views stays in place whichever view is shown"
-        body: 25a5315d59e28fa14f53b65a106aedcfe66295661a9d1e5e094d535903695e72
+        body: fd4792090912321a3b7befa673cd4aa777aafac32ad4353ffdd5bdec6999e330
   - node: 01a1646f-546d-7042-befd-eb6a95402082
     reviewed: c5f20683f5e0c8667aeed4a6be61164f9ff1a0a0bd9f0dacbaa3d907a3e477b8
     tests:
@@ -22565,7 +22610,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width and its switch of views stays in place whichever view is shown"
-        body: 25a5315d59e28fa14f53b65a106aedcfe66295661a9d1e5e094d535903695e72
+        body: fd4792090912321a3b7befa673cd4aa777aafac32ad4353ffdd5bdec6999e330
   - node: 01a168c0-7faa-72dc-8ad3-520ece07dbc3
     reviewed: 30ca4895b79672ad3c175e1335cfef5a0763f66dfdac930c1f4e85551feaeae9
     tests:

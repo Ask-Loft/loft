@@ -8,7 +8,7 @@ import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
-import { logView, unreadable } from './views/log.js';
+import { logChrome, logView, unreadable } from './views/log.js';
 import { menu, title, welcome } from './views/trees.js';
 import { openWaiting, waitingModal } from './views/waiting.js';
 
@@ -92,7 +92,8 @@ function render() {
   const focus = focused?.id ? { id: focused.id, start: focused.selectionStart, end: focused.selectionEnd } : null;
   const main = document.getElementById('log');
   const side = document.getElementById('side');
-  if (!main || !side) return;
+  const chrome = document.getElementById('chrome');
+  if (!main || !side || !chrome) return;
   // The menu is drawn again only when what it shows changed, not at each change of the Yard Log.
   const chosen = route && { tree: route.tree, branch: route.branch };
   const shown = JSON.stringify([state.listing, chosen, prefs.folded()]);
@@ -108,31 +109,35 @@ function render() {
   }
   document.body.classList.toggle('is-folded', prefs.folded());
   if (!route) {
+    replace(chrome);
     replace(main, welcome(state.listing));
     waitingModal(null, { tree: '', branch: '', refresh, notify });
   } else if (state.logStatus !== 200) {
+    replace(chrome);
     replace(main, unreadable(state.log));
     waitingModal(null, { tree: route.tree, branch: route.branch, refresh, notify });
   } else {
-    const now = Date.now();
+    /** @type {import('./views/log.js').LogContext} */
+    const context = {
+      tree: route.tree,
+      branch: route.branch,
+      last: lastVisit(state.log),
+      now: Date.now(),
+      width: main.clientWidth || 960,
+      refresh,
+      notify,
+      onView: render,
+      onPick: (id) => {
+        prefs.set('view', 'timeline');
+        location.hash = format({ ...route, block: id });
+      },
+      onWaiting: openWaiting,
+    };
+    replace(chrome, logChrome(state.log, context));
     replace(
       main,
       h('p', { id: 'notice', class: 'notice', role: 'status', 'aria-live': 'polite' }, state.notice),
-      logView(state.log, {
-        tree: route.tree,
-        branch: route.branch,
-        last: lastVisit(state.log),
-        now,
-        width: main.clientWidth || 960,
-        refresh,
-        notify,
-        onView: render,
-        onPick: (id) => {
-          prefs.set('view', 'timeline');
-          location.hash = format({ ...route, block: id });
-        },
-        onWaiting: openWaiting,
-      }),
+      logView(state.log, context),
     );
     // What waits on the person lies in the modal, outside what is drawn again at each change.
     waitingModal(state.log, { tree: route.tree, branch: route.branch, refresh, notify });
