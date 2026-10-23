@@ -61,7 +61,7 @@ fn a_view_compares_with_the_base_revision_the_block_names() {
     let named = batch("spec-change", r#", "base": "develop""#);
     let written = yard.write("s1", &named, &["--base", "main"]);
     assert_eq!(written["outcome"], "written", "{written}");
-    let read = yard.read("s1", &["--base", "main"]);
+    let read = yard.read("s1", &[]);
     let body = &block(&read, "v1")["version"]["body"];
     assert_eq!(body["base"], "develop");
     assert_eq!(body["report"]["status"]["base"]["revision"], "develop");

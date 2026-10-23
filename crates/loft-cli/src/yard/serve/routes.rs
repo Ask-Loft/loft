@@ -82,7 +82,6 @@ fn respond(server: &Server, request: &Request) -> Response {
             home,
             request.param("tree"),
             request.param("branch"),
-            request.param("base"),
             server.port,
         ),
         ("POST", "/api/answer") => logs::answer(home, &request.body, server.port),
@@ -105,11 +104,7 @@ fn register(server: &Server, body: &[u8]) -> Response {
     let Some(tree) = sent["tree"].as_str() else {
         return Response::refused(400, "tree", "the request names no tree");
     };
-    match trees::register(
-        &server.home,
-        std::path::Path::new(tree),
-        sent["base"].as_str(),
-    ) {
+    match trees::register(&server.home, std::path::Path::new(tree)) {
         Ok(tree) => {
             server.changes.fetch_add(1, Ordering::SeqCst);
             Response::json(200, &json!({ "tree": tree.display().to_string() }))

@@ -32,7 +32,7 @@ pub fn inputs(batch: &Value) -> Vec<Input> {
 
 /// Opened Yard Log of branch `feat/x`, at revision 0.
 pub fn opened() -> YardLog {
-    YardLog::open("feat/x", at(0), main_agent())
+    YardLog::open("feat/x", "develop", at(0), main_agent())
 }
 
 pub fn context(agent: &Agent, seconds: u64) -> Context {

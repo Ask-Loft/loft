@@ -269,7 +269,7 @@ fn yard_logs_opened_apart_join_under_the_earlier_key() {
         &json!([{"id": "design", "kind": "stage", "title": "D"}]),
         &context(&main_agent(), 1),
     );
-    let mut late = YardLog::open("feat/x", at(5), other_session());
+    let mut late = YardLog::open("feat/x", "develop", at(5), other_session());
     write(
         &mut late,
         &json!([{"id": "build", "kind": "stage", "title": "B"}]),

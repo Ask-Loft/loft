@@ -1,6 +1,7 @@
 //! The arguments of `loft yard`: each command, and the options they share. An agent's command
-//! names the agent that runs it; a command that acts on a branch's Yard Log names the base
-//! branch and the page server's port. A usage error exits 2 and names the argument at fault.
+//! names the agent that runs it; a command that acts on a branch's Yard Log names the page
+//! server's port, and the write that opens Yard Log names the base branch it records. A usage
+//! error exits 2 and names the argument at fault.
 
 use std::path::PathBuf;
 
@@ -11,7 +12,7 @@ use crate::cli::Output;
 /// The port the page server listens on unless told another.
 pub const DEFAULT_PORT: u16 = 7411;
 
-/// The base branch unless `--base` names another.
+/// The base branch Yard Log records where the write that opens it names none.
 pub const DEFAULT_BASE: &str = "develop";
 
 #[derive(Subcommand)]
@@ -57,10 +58,6 @@ pub struct ServeArgs {
     /// A directory of a worktree whose Yard Logs the page server is to serve.
     #[arg(long, value_name = "DIR")]
     pub tree: Option<PathBuf>,
-    /// The base branch followed in `--tree`, against which the page checks whether a branch's
-    /// Yard Log was closed by its merge.
-    #[arg(long, value_name = "BRANCH", requires = "tree")]
-    pub base: Option<String>,
     #[command(flatten)]
     pub output: Output,
 }
@@ -110,13 +107,9 @@ impl From<Writer> for Runner {
     }
 }
 
-/// Where a command finds what lies beyond the branch: the base branch it is merged into, and
-/// the page server's port.
+/// Where a command finds the page server: its port, named in the result where none runs.
 #[derive(Args, Clone)]
 pub struct Beyond {
-    /// The branch this one is merged into; Yard Log its tip holds reads as closed by the merge.
-    #[arg(long, value_name = "BRANCH", default_value = DEFAULT_BASE)]
-    pub base: String,
     /// The page server's port, named where no page server runs.
     #[arg(long, value_name = "PORT", default_value_t = DEFAULT_PORT)]
     pub port: u16,
@@ -152,6 +145,9 @@ pub struct WriteArgs {
     /// The revision the batch is based on: a block of it changed since is refused.
     #[arg(long, value_name = "REVISION")]
     pub based_on: Option<u64>,
+    /// The branch this one is merged into, recorded in Yard Log.s root where this write opens it.
+    #[arg(long, value_name = "BRANCH", default_value = DEFAULT_BASE)]
+    pub base: String,
     #[command(flatten)]
     pub writer: Writer,
     #[command(flatten)]

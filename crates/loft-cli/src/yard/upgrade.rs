@@ -97,7 +97,7 @@ fn fate(branch: &Branch) -> Result<Fate, Failure> {
         Err(error) => return Err(error.into()),
     };
     let key = log.root.key.to_string();
-    if log.is_closed() || branch.closed_by_merge()? {
+    if log.is_closed() || branch.closed_by_merge(&log)? {
         return Ok(left(Some(key), "closed".to_owned(), false));
     }
     if log.root.format >= Format::CURRENT {

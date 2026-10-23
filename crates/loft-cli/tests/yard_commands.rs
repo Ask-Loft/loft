@@ -66,16 +66,42 @@ fn a_refusal_is_listed_among_the_errors_and_exits_1() {
 }
 
 #[test]
-fn a_command_run_without_base_takes_develop_as_the_base_branch() {
+fn yard_log_opened_without_base_records_develop_as_its_base_branch() {
     let mut yard = Yard::new();
     yard.write("s1", ASK, &[]);
+    assert_eq!(yard.read("s1", &[])["yardLog"]["base"], "develop");
     let root = format!(".yard/{BRANCH}/yardlog.yaml");
     yard.git = yard.git.clone().holding("develop", &root, "1111111");
     assert_eq!(yard.read("s1", &[])["yardLog"]["closedBy"], "merge");
-    assert_eq!(
-        yard.read("s1", &["--base", "main"])["yardLog"]["closedBy"],
-        "open"
-    );
+}
+
+#[test]
+fn the_base_branch_is_recorded_by_the_write_that_opens_yard_log_and_kept_after() {
+    let mut yard = Yard::new();
+    yard.write("s1", ASK, &["--base", "main"]);
+    let later = r#"[{"id": "n1", "kind": "note", "stage": "shape", "markdown": "x"}]"#;
+    let written = yard.write("s1", later, &["--base", "trunk"]);
+    assert_eq!(written["outcome"], "written", "{written}");
+    assert_eq!(yard.read("s1", &[])["yardLog"]["base"], "main");
+    let root = format!(".yard/{BRANCH}/yardlog.yaml");
+    yard.git = yard.git.clone().holding("develop", &root, "1111111");
+    assert_eq!(yard.read("s1", &[])["yardLog"]["closedBy"], "open");
+    yard.git = yard.git.clone().holding("main", &root, "2222222");
+    assert_eq!(yard.read("s1", &[])["yardLog"]["closedBy"], "merge");
+}
+
+#[test]
+fn no_yard_command_but_write_takes_base() {
+    let yard = Yard::new();
+    for args in [
+        &["read", "--session", "s1", "--base", "main"][..],
+        &["close", "--session", "s1", "--base", "main"],
+    ] {
+        let output = yard.run(args);
+        assert_eq!(output.status.code(), Some(2), "{args:?}");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains("--base"), "{stderr}");
+    }
 }
 
 #[test]

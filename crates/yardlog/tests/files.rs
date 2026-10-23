@@ -70,6 +70,21 @@ fn the_root_names_the_format_the_key_the_branch_the_revision_and_the_stages_by_k
 }
 
 #[test]
+fn the_root_records_the_base_branch_yard_log_is_merged_into_and_reads_it_back() {
+    let log = full();
+    let root = &files(&log)[ROOT];
+    assert!(root.contains("\nbase: \"develop\"\n"), "{root}");
+    assert_eq!(read(&files(&log)).unwrap().root.base, "develop");
+    let without = root.replace("\nbase: \"develop\"\n", "\n");
+    let mut changed = files(&log);
+    changed.insert(ROOT.to_owned(), without);
+    assert!(
+        read(&changed).is_err(),
+        "a root without its base branch reads"
+    );
+}
+
+#[test]
 fn the_root_holds_the_act_of_each_change_in_the_order_it_was_made() {
     let log = full();
     let revisions: Vec<u64> = log.root.acts.iter().map(|act| act.revision).collect();

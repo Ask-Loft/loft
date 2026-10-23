@@ -16,6 +16,7 @@ pub(super) fn write(root: &Root) -> Out {
         ("format", token(&root.format)),
         ("key", token(&root.key)),
         ("branch", text(&root.branch)),
+        ("base", text(&root.base)),
     ];
     if let Some(name) = &root.opened_as {
         fields.push(("openedAs", text(name)));
@@ -130,6 +131,7 @@ pub(super) fn read(node: &Node) -> Read<Root> {
     let format = fields.word("format", Format::parse)?;
     let key = YardLogKey::new(fields.key("key")?);
     let branch = fields.text("branch")?;
+    let base = fields.text("base")?;
     let opened_as = fields.optional_text("openedAs")?;
     let title = fields.text("title")?;
     let revision = fields.integer("revision")?;
@@ -164,6 +166,7 @@ pub(super) fn read(node: &Node) -> Read<Root> {
         format,
         key,
         branch,
+        base,
         opened_as,
         title,
         revision,

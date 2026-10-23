@@ -20156,7 +20156,7 @@ links:
         body: faf94a74c3367904c78d98aed7aea5026ebbb1b02227f85cbbfe8b847586002c
       - file: "crates/yardlog/tests/merge.rs"
         name: "yard_logs_opened_apart_join_under_the_earlier_key"
-        body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
+        body: e35ece738cf5d2f72ba75461f0bca0922dcd011aeb440da418f36d61815a899d
   - node: 01a1646f-546d-7042-befd-eba945a594e1
     reviewed: 6b646b2c5895e17db570291000b1b1c7b128ca03526a07e50da33d2ae2d01b24
     tests:
@@ -20168,13 +20168,13 @@ links:
         body: faf94a74c3367904c78d98aed7aea5026ebbb1b02227f85cbbfe8b847586002c
       - file: "crates/yardlog/tests/merge.rs"
         name: "yard_logs_opened_apart_join_under_the_earlier_key"
-        body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
+        body: e35ece738cf5d2f72ba75461f0bca0922dcd011aeb440da418f36d61815a899d
   - node: 01a1646f-546d-7042-befd-ebaac4e90b69
     reviewed: 98f962a4a29634d61065dfc8754209b70d2603d713375f4b42303626014f2a8d
     tests:
       - file: "crates/yardlog/tests/merge.rs"
         name: "yard_logs_opened_apart_join_under_the_earlier_key"
-        body: 52d1312b8043dac0ab5c234a940a26c3b1fdf0654e74ddefa7693c34dd544d14
+        body: e35ece738cf5d2f72ba75461f0bca0922dcd011aeb440da418f36d61815a899d
   - node: 01a1649f-62ef-71e6-98de-e11518fc2388
     reviewed: 89bee55a3bc4a77e9a76c7833fe55277c2c94966e49c4c055739c00d9fa4544e
     tests:
@@ -20401,8 +20401,11 @@ links:
         name: "a_reference_to_a_key_yard_log_does_not_hold_is_refused_at_its_line"
         body: 5875b18d248a96f28c17cc83fcb997944cafc0cc3c6b618ca05beae21fd24205
   - node: 01a1646f-546d-7042-befd-ebc9da3f340f
-    reviewed: 0132cc705e28cde70c3e42f3c73a82e773e7f2aa055a78ca049c440eee50b666
+    reviewed: e1d537d1421bb4462488048895df1d843934de9908abe170cd32366b09ea534e
     tests:
+      - file: "crates/yardlog/tests/files.rs"
+        name: "the_root_records_the_base_branch_yard_log_is_merged_into_and_reads_it_back"
+        body: 477454112d449b06dfae26e59599c56501f508736838b056c93f301b7063f1d2
       - file: "crates/yardlog/tests/files.rs"
         name: "the_root_holds_the_act_of_each_change_in_the_order_it_was_made"
         body: c77cf56a15564280fe3c1271a4ddac4388911fa4de671e3b0cefd50e8868bc2e
@@ -21039,54 +21042,6 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "the main agent's call names no agent, and an input at fault runs no command"
         body: ab5474ef2549731a0a7a641233c523787e5bb3f97d61f476f5c3262ad0b363cf
-  - node: 01a1647c-e680-7753-bf17-f17a693b5c4a
-    reviewed: 62c801005eb3ae58c078c973287fc1ca1e1742ee6842f6c80f31b6059a85f5ba
-    tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "after /clear the session is given its context again, and its first command names the session it continues"
-        body: dc5c433e6315acad8a426286d5e13c0446e3e0282aef50d5742334e7aab6dc1f
-  - node: 01a1647c-e680-7753-bf17-f17b0ccd5e22
-    reviewed: 1b020378558fca291755536e2c7e1c868d63a0b551742b6d32b48cbe8ae6bc19
-    tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "after /clear the session is given its context again, and its first command names the session it continues"
-        body: dc5c433e6315acad8a426286d5e13c0446e3e0282aef50d5742334e7aab6dc1f
-  - node: 01a1647c-e680-7753-bf17-f17c4e518163
-    reviewed: 0e937df5ffca5d1a7fb7695eda5d6bf4532dec7e2512dfcb226f17456d926591
-    tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the context is given again after /resume and /branch, and a session a new process starts names no session it continues"
-        body: fd3dbf46096bd573c1d744574a193566c686081c674232c41e9752a12a88d11d
-  - node: 01a1647c-e680-7753-bf17-f17e03443c33
-    reviewed: 82b3edaa8f1c0e0b9f358655381e311c49e6f07995efe13faaf9839cb74b59bc
-    tests:
-      - file: "crates/loft-cli/tests/yard_callers.rs"
-        name: "a_submission_the_ended_session_sent_counts_as_sent_by_the_session_that_continues_it"
-        body: 019e27a4db011380b3b7bd4c8c0504aeab871c0da32a32bb68420b3e1b9c485f
-  - node: 01a1647c-e680-7753-bf17-f17f45dc6ca1
-    reviewed: e998a56a9f5288e53e7b91002d6211a9b308627043ad26b9430dd2fc096e838f
-    tests:
-      - file: "crates/loft-cli/tests/yard_callers.rs"
-        name: "the_continuing_session_starts_from_the_revision_the_ended_session_last_read"
-        body: b3aa82913272be4d74ff1e99a5260175d94ea67a1b0e0160412f47894187c330
-  - node: 01a1647c-e680-7753-bf17-f180dc77d947
-    reviewed: 0d0169a077f597d8af2920c59d1490addf08d7ae8b5b0a00ec9debe23d460cca
-    tests:
-      - file: "crates/loft-cli/tests/yard_callers.rs"
-        name: "a_chain_of_continuations_reaches_back_to_the_first_session_of_the_chain"
-        body: e303d62cb51adf11fdf28f1d50e8a8b62baf7c98d1fc31bb9b1ba2fb3eb4f6ad
-  - node: 01a1647c-e680-7753-bf17-f181455e4d44
-    reviewed: 1ed59fe740537dff9655e69c7dcc3465f4f683b513a1e4fa8909017cc8878b6a
-    tests:
-      - file: "crates/loft-cli/tests/yard_callers.rs"
-        name: "each_block_and_act_keeps_the_session_id_that_wrote_it"
-        body: 2fb9eda3229c4fe4569afe1f5ddcccdd06bc97602ccfc40612f64e521c015a13
-  - node: 01a1647c-e680-7753-bf17-f18231fac8e2
-    reviewed: 1dd93952948b33761fe09d06f9714b087406e07dea267dedef75f5c3330872a1
-    tests:
-      - file: "crates/loft-cli/tests/yard_callers.rs"
-        name: "a_continuation_is_kept_in_the_machine_s_home_and_never_under_yard"
-        body: 8103416f8d8f8503bce77a135dee64a1bec825fbc9807c4cb6e2a1af1ea2f8a7
   - node: 01a1646f-546d-7042-befd-ea70497a2092
     reviewed: 5fcdd4d9ffdc8504f0fb6295ac82278a2b938f17a61dd492ad32dc355a19cc94
     tests:
@@ -21213,12 +21168,6 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every five seconds the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
         body: 3e5276ba78cd47226c877a52ddbc27420bd09e8d7a4246bfe4a690c734dc1966
-  - node: 01a165fb-8537-775f-9fca-0d5d7807b5fd
-    reviewed: 30f228a2eaf224819321045c7c6200d30a2643c72bac146aa8bde4e5a8c1b4c5
-    tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the mod registers its tree with the baseBranch setting, against which the page checks a merge"
-        body: 0c1a34d3e253d87060381fb1857cbaab4494528bcd650b055232063ce43aa50a
   - node: 01a1646f-546c-7521-9643-bc5f9317855f
     reviewed: 3652bfa2bb06bb29c8aa69b032e0661c587fd251a6874d3251dd7bfd219f12e5
     tests:
@@ -21286,11 +21235,11 @@ links:
         name: "a_tree_that_no_longer_exists_is_dropped_from_those_served"
         body: a80c1514c00baa4bfd0ddd5c6c98ef607b0741ef75ef566e522311329ba4e387
   - node: 01a165fb-8537-775f-9fca-0d5ebe05cb94
-    reviewed: 297e0f6e1c213b067efe5e8df80bcd9cce264ddf2ce2cf3a34b5f566c501ba2c
+    reviewed: 3513e1d63b4cc959faa92ac30673faeb7e51e45cc386577786013c63281e4e5a
     tests:
       - file: "crates/loft-cli/tests/yard_serve_base.rs"
-        name: "the_page_server_checks_the_merge_against_the_base_branch_its_tree_was_registered_with"
-        body: c58512a3eae5f0547c7895fb2c7a4d65a6ddc0dec3df30137f450d2404a2ec49
+        name: "the_page_server_checks_the_merge_against_the_base_branch_yard_log_records"
+        body: b757ac6c9fe717e858fe1fc2276f965303c20119230f39247f3ecd8abdc7899a
   - node: 01a1649f-62ef-71e6-98de-e108efc946c7
     reviewed: 17b9eba85270fe6caa4b0743db123a6b9b6773fba9763fddf7f2d843e37a0847
     tests:
@@ -21318,6 +21267,54 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_trees_served_are_kept_in_trees_json_once_each_and_served_again_by_a_later_page_server"
         body: 7e4924781137c494f0450b3f1a586907a9c7cc203fdf58f93965c3b07b46af68
+  - node: 01a1647c-e680-7753-bf17-f17a693b5c4a
+    reviewed: 62c801005eb3ae58c078c973287fc1ca1e1742ee6842f6c80f31b6059a85f5ba
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "after /clear the session is given its context again, and its first command names the session it continues"
+        body: dc5c433e6315acad8a426286d5e13c0446e3e0282aef50d5742334e7aab6dc1f
+  - node: 01a1647c-e680-7753-bf17-f17b0ccd5e22
+    reviewed: 1b020378558fca291755536e2c7e1c868d63a0b551742b6d32b48cbe8ae6bc19
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "after /clear the session is given its context again, and its first command names the session it continues"
+        body: dc5c433e6315acad8a426286d5e13c0446e3e0282aef50d5742334e7aab6dc1f
+  - node: 01a1647c-e680-7753-bf17-f17c4e518163
+    reviewed: 0e937df5ffca5d1a7fb7695eda5d6bf4532dec7e2512dfcb226f17456d926591
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the context is given again after /resume and /branch, and a session a new process starts names no session it continues"
+        body: fd3dbf46096bd573c1d744574a193566c686081c674232c41e9752a12a88d11d
+  - node: 01a1647c-e680-7753-bf17-f17e03443c33
+    reviewed: 82b3edaa8f1c0e0b9f358655381e311c49e6f07995efe13faaf9839cb74b59bc
+    tests:
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "a_submission_the_ended_session_sent_counts_as_sent_by_the_session_that_continues_it"
+        body: 019e27a4db011380b3b7bd4c8c0504aeab871c0da32a32bb68420b3e1b9c485f
+  - node: 01a1647c-e680-7753-bf17-f17f45dc6ca1
+    reviewed: e998a56a9f5288e53e7b91002d6211a9b308627043ad26b9430dd2fc096e838f
+    tests:
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "the_continuing_session_starts_from_the_revision_the_ended_session_last_read"
+        body: b3aa82913272be4d74ff1e99a5260175d94ea67a1b0e0160412f47894187c330
+  - node: 01a1647c-e680-7753-bf17-f180dc77d947
+    reviewed: 0d0169a077f597d8af2920c59d1490addf08d7ae8b5b0a00ec9debe23d460cca
+    tests:
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "a_chain_of_continuations_reaches_back_to_the_first_session_of_the_chain"
+        body: e303d62cb51adf11fdf28f1d50e8a8b62baf7c98d1fc31bb9b1ba2fb3eb4f6ad
+  - node: 01a1647c-e680-7753-bf17-f181455e4d44
+    reviewed: 1ed59fe740537dff9655e69c7dcc3465f4f683b513a1e4fa8909017cc8878b6a
+    tests:
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "each_block_and_act_keeps_the_session_id_that_wrote_it"
+        body: 2fb9eda3229c4fe4569afe1f5ddcccdd06bc97602ccfc40612f64e521c015a13
+  - node: 01a1647c-e680-7753-bf17-f18231fac8e2
+    reviewed: 1dd93952948b33761fe09d06f9714b087406e07dea267dedef75f5c3330872a1
+    tests:
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "a_continuation_is_kept_in_the_machine_s_home_and_never_under_yard"
+        body: 8103416f8d8f8503bce77a135dee64a1bec825fbc9807c4cb6e2a1af1ea2f8a7
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:
@@ -22172,7 +22169,7 @@ links:
         body: 78cfd45298d23e2912f625d879b3fff503d8d91a9fb92c1952eebd848d61a0d2
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_compares_with_the_base_revision_the_block_names"
-        body: 790de21878c7c057d5fa2c01e7ea87b51da1e8d0a904d25b4aaba73642d6e047
+        body: 05990e2bb93ee55015484453cd57927592a1193b13f6b4f53bc41e9e6dbcdd38
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_findings_view_holds_what_loft_check_prints_against_the_base_branch"
         body: ddb5d4bf1401b3c78a8214a6c6bc2d85fdfb0ce863cea35c7d5c26e1fd8e84f5
@@ -23761,11 +23758,32 @@ links:
         name: "a_refusal_is_listed_among_the_errors_and_exits_1"
         body: e35a1fd14430a1a37ac027f389d40e998359d8fb600460d65b8ddfbec7dd336b
   - node: 01a1647b-208d-7169-85c8-9a4d3e3ebd74
-    reviewed: 241cf98a064afb8895a55853db99848d4ea3ff4169c640896d6ffd986eb187c7
+    reviewed: 38a3f9d66d7fba377115df4220f950408c3b524105e0ac6b3949160a0ecab274
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
-        name: "a_command_run_without_base_takes_develop_as_the_base_branch"
-        body: 14ada434725027baea170bd5ef6b65c91807ab258e198b5c6918f9bc62f55b54
+        name: "yard_log_opened_without_base_records_develop_as_its_base_branch"
+        body: 320a66d4308165d10a433fc7c3a36e38fd3a25e5349f2b576275ee3a2e0ad2a3
+  - node: 01a16621-e7bc-7707-b123-2163026a4f94
+    reviewed: 73c8e6052cf4a771c4490276e5958347ee3281502019c53e1c838d76a752ab14
+    tests:
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "the_base_branch_is_recorded_by_the_write_that_opens_yard_log_and_kept_after"
+        body: 10904e79a52d89b56b6c9fcc21a3284a29d50b377e158c29309beb3c24c35f18
+  - node: 01a16621-e7bc-7707-b123-2164410db0f5
+    reviewed: 0f68f3300ba28a8a8586f20324beea094365cbeb7d922af87863dcca2319149d
+    tests:
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "the_base_branch_is_recorded_by_the_write_that_opens_yard_log_and_kept_after"
+        body: 10904e79a52d89b56b6c9fcc21a3284a29d50b377e158c29309beb3c24c35f18
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "no_yard_command_but_write_takes_base"
+        body: 615ffc081a5d0b3c86f2f1d5b2a1629f81495f48b9139d083f2c10fc9d969c17
+      - file: "crates/loft-cli/tests/yard_serve_base.rs"
+        name: "the_page_server_checks_the_merge_against_the_base_branch_yard_log_records"
+        body: b757ac6c9fe717e858fe1fc2276f965303c20119230f39247f3ecd8abdc7899a
+      - file: "crates/loft-cli/tests/yard_serve_base.rs"
+        name: "the_page_server_takes_no_base_branch_from_its_command_line"
+        body: b42263d091cb6f5a69e727eac01c1d09ddd81fd6bb71216c6f502032e8088b12
   - node: 01a1646f-546d-7042-befd-ea5421fc725c
     reviewed: ac5e3b9b18722a17015b110029badf73144afa8b8a829504a0b83f47bf1da18a
     tests:

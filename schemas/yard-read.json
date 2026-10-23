@@ -152,6 +152,10 @@
             "branch": {
               "type": "string"
             },
+            "base": {
+              "description": "The base branch Yard Log records: the one it is merged into, whose tip decides whether the merge closed it",
+              "type": "string"
+            },
             "openedAs": {
               "type": "string"
             },

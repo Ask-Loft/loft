@@ -94,7 +94,7 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     if let Some(left_out) = left_out {
         fields["leftOut"] = json!(left_out);
     }
-    let closed_by_merge = !log.is_closed() && branch.closed_by_merge()?;
+    let closed_by_merge = !log.is_closed() && branch.closed_by_merge(log)?;
     fields["yardLog"] = root(log, closed_by_merge);
     let selection = Selection {
         since: args.since,

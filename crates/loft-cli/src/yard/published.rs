@@ -72,20 +72,32 @@ fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
         ..place
     };
     let branch = Branch::at(git, there, args.beyond)?;
-    let base = branch.beyond.base.clone();
-    let looked_for = format!("run on {on}, the base branch {base}, for the Yard Log of {named}");
-    if on != base {
-        let message = format!("a publish is recorded on the base branch only: {looked_for}");
-        let error = failure::error("not-base", &message);
-        return Err(refused(&branch, &Held::Absent, error));
-    }
+    let held = branch.store.read()?;
+    // The base branch is the one the named Yard Log records; a tree that holds none of it has
+    // none to name.
+    let base = match &held {
+        Held::Log(log) => Some(log.root.base.clone()),
+        Held::Newer(_) => branch
+            .store
+            .read_partial()?
+            .map(|partial| partial.log.root.base),
+        Held::Absent => None,
+    };
+    let looked_for = match &base {
+        Some(base) => format!("run on {on}, the base branch {base}, for the Yard Log of {named}"),
+        None => format!("run on {on}, for the Yard Log of {named}"),
+    };
     let absent = || {
         let message = format!("the base branch holds no such Yard Log: {looked_for}");
         failure::error("absent", &message)
     };
-    let held = branch.store.read()?;
-    if matches!(held, Held::Absent) {
+    let Some(base) = base else {
         return Err(refused(&branch, &held, absent()));
+    };
+    if on != base {
+        let message = format!("a publish is recorded on the base branch only: {looked_for}");
+        let error = failure::error("not-base", &message);
+        return Err(refused(&branch, &Held::Absent, error));
     }
     let spec = spec_root(dir, &branch.place().tree);
     let views = Views {

@@ -154,7 +154,7 @@ pub fn try_write(store: &YardStore, batch: &Value) -> Result<Updated<Written>, F
     let inputs = read_batch(batch).unwrap_or_else(|faults| panic!("{faults:?}"));
     let branch = store.branch().to_owned();
     store.update(|current| {
-        let mut log = current.unwrap_or_else(|| YardLog::open(&branch, at(0), agent()));
+        let mut log = current.unwrap_or_else(|| YardLog::open(&branch, "develop", at(0), agent()));
         let context = Context {
             at: at(log.root.revision + 1),
             agent: agent(),

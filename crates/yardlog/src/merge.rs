@@ -52,6 +52,7 @@ pub fn merge_root(base: Option<&Root>, ours: &Root, theirs: &Root) -> Root {
         format: ours.format.max(theirs.format),
         key: first.key,
         branch: ours.branch.clone(),
+        base: first.base.clone(),
         opened_as: ours.opened_as.clone(),
         title: ours.title.clone(),
         revision: ours.revision.max(theirs.revision) + 1,

@@ -21,6 +21,9 @@ pub struct Root {
     pub format: Format,
     pub key: YardLogKey,
     pub branch: String,
+    /// The branch this one is merged into, recorded when Yard Log was opened: its tip decides
+    /// whether a merge closed Yard Log.
+    pub base: String,
     /// The branch's name when Yard Log was opened, where the branch has been renamed since.
     pub opened_as: Option<String>,
     pub title: String,

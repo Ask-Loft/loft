@@ -44,9 +44,7 @@ pub fn apply(
     let agent = caller.agent().clone();
     let settler = agent.clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(settler)))?;
-    if super::branch::log_of(&held).is_some_and(|log| !log.is_closed())
-        && branch.closed_by_merge()?
-    {
+    if branch.merged(&held)? {
         return Err(Failure::Refused {
             fields: branch.fields(revision_of(&held)),
             errors: vec![closed_by_merge()],

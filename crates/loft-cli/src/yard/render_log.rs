@@ -25,6 +25,7 @@ pub fn root(log: &YardLog, closed_by_merge: bool) -> Value {
     fields.insert("key".to_owned(), json!(root.key.to_string()));
     fields.insert("title".to_owned(), json!(root.title));
     fields.insert("branch".to_owned(), json!(root.branch));
+    fields.insert("base".to_owned(), json!(root.base));
     if let Some(opened_as) = &root.opened_as {
         fields.insert("openedAs".to_owned(), json!(opened_as));
     }

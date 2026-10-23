@@ -16,7 +16,7 @@ use yardlog_store::home::Home;
 
 use super::answer_input::{self, Named};
 use super::args::AnswerArgs;
-use super::branch::{Branch, log_of, revision_of};
+use super::branch::{Branch, revision_of};
 use super::caller::Caller;
 use super::change::refusal;
 use super::failure::{self, Failure};
@@ -102,7 +102,7 @@ pub fn record(
         email: email.clone(),
     };
     let held = branch.open(at, || Ok(settler))?;
-    if log_of(&held).is_some_and(|log| !log.is_closed()) && branch.closed_by_merge()? {
+    if branch.merged(&held)? {
         return Err(Failure::Refused {
             fields: branch.fields(revision_of(&held)),
             errors: vec![closed_by_merge()],

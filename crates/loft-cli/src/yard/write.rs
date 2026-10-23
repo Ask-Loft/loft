@@ -82,7 +82,7 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         Ok(inputs) => inputs,
         Err(faults) => return Err(refused(&branch, &held, faults.iter().map(fault).collect())),
     };
-    if log_of(&held).is_some_and(|log| !log.is_closed()) && branch.closed_by_merge()? {
+    if branch.merged(&held)? {
         return Err(refused(&branch, &held, vec![closed_by_merge()]));
     }
     let context = Context {
@@ -93,9 +93,11 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
     };
     let branch_name = branch.store.branch().to_owned();
     let spec = spec_root(dir, &branch.place().tree);
+    // The views compare with the base branch Yard Log records, or the one this write opens it on.
+    let base = log_of(&held).map_or(args.base.as_str(), |log| log.root.base.as_str());
     let views = Views {
         tree: &spec,
-        base: &branch.beyond.base,
+        base,
         at,
     };
     // The views read the specification and git, and need nothing of Yard Log: each is computed
@@ -108,7 +110,8 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         })
         .collect();
     let applied = branch.store.update(|current| {
-        let mut log = current.unwrap_or_else(|| YardLog::open(&branch_name, at, agent.clone()));
+        let mut log =
+            current.unwrap_or_else(|| YardLog::open(&branch_name, &args.base, at, agent.clone()));
         let upgraded_from = upgrade(&mut log);
         let written = log
             .write(&inputs, &context, &mut |block, _| reports[block].clone())

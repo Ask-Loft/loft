@@ -21,7 +21,7 @@ use crate::cli::{Format, Output};
 use crate::json;
 use crate::yard::answer::record;
 use crate::yard::answer_input;
-use crate::yard::args::{Beyond, DEFAULT_BASE, ReadArgs, Runner};
+use crate::yard::args::{Beyond, ReadArgs, Runner};
 use crate::yard::branch::Branch;
 use crate::yard::caller::{Caller, Continuations};
 use crate::yard::failure::Failure;
@@ -51,15 +51,6 @@ fn served_tree(home: &Home, named: Option<&str>) -> Result<PathBuf, Response> {
     }
 }
 
-/// The base branch a request on `tree` checks a merge against: the one it names, else the one
-/// the tree was registered with, else the default.
-fn base_for(home: &Home, tree: &Path, named: Option<&str>) -> String {
-    named
-        .map(ToOwned::to_owned)
-        .or_else(|| super::trees::base_of(home, tree))
-        .unwrap_or_else(|| DEFAULT_BASE.to_owned())
-}
-
 /// The answer to a request that failed.
 fn answer_failure(failure: Failure, schema: &str) -> Response {
     match failure {
@@ -72,13 +63,7 @@ fn answer_failure(failure: Failure, schema: &str) -> Response {
 }
 
 /// `branch`'s Yard Log in the served tree `tree`, as the page reads it.
-pub fn read(
-    home: &Home,
-    tree: Option<&str>,
-    branch: Option<&str>,
-    base: Option<&str>,
-    port: u16,
-) -> Response {
+pub fn read(home: &Home, tree: Option<&str>, branch: Option<&str>, port: u16) -> Response {
     let tree = match served_tree(home, tree) {
         Ok(tree) => tree,
         Err(refused) => return refused,
@@ -91,10 +76,7 @@ pub fn read(
     let Some(branch) = branch else {
         return Response::refused(400, "branch", "the request names no branch");
     };
-    let beyond = Beyond {
-        base: base_for(home, &tree, base),
-        port,
-    };
+    let beyond = Beyond { port };
     let read = if place.branch.as_deref() == Some(branch.as_str()) {
         current(&tree, beyond)
     } else {
@@ -196,7 +178,7 @@ fn inherited(place: &Place, branch: &str, port: u16) -> Result<Value, Failure> {
     Ok(fields)
 }
 
-/// Records the answers and decisions the page sent: `{ tree, branch, answers, base? }`, each
+/// Records the answers and decisions the page sent: `{ tree, branch, answers }`, each
 /// answer as `loft yard answer` takes it.
 pub fn answer(home: &Home, body: &[u8], port: u16) -> Response {
     let Ok(sent) = serde_json::from_slice::<Value>(body) else {
@@ -206,10 +188,7 @@ pub fn answer(home: &Home, body: &[u8], port: u16) -> Response {
         Ok(tree) => tree,
         Err(refused) => return refused,
     };
-    let beyond = Beyond {
-        base: base_for(home, &tree, sent["base"].as_str()),
-        port,
-    };
+    let beyond = Beyond { port };
     let branch = match Branch::locate(&tree, beyond) {
         Ok(branch) => branch,
         Err(failure) => return answer_failure(failure, ANSWER_SCHEMA),

@@ -73,12 +73,13 @@ impl YardLog {
     /// Yard Log as an agent's first write on `branch` opens it, before the write: revision 0,
     /// with the Act of the write that opens it.
     #[must_use]
-    pub fn open(branch: &str, at: Time, agent: Agent) -> Self {
+    pub fn open(branch: &str, base: &str, at: Time, agent: Agent) -> Self {
         Self {
             root: crate::log::Root {
                 format: Format::CURRENT,
                 key: crate::keys::YardLogKey::mint(),
                 branch: branch.to_owned(),
+                base: base.to_owned(),
                 opened_as: None,
                 title: branch.to_owned(),
                 revision: 0,

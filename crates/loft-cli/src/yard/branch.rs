@@ -60,15 +60,23 @@ impl Branch {
         fields
     }
 
-    /// Whether the base branch's tip holds Yard Log's root, so that the merge closed it.
-    pub fn closed_by_merge(&self) -> Result<bool, Failure> {
-        if self.store.branch() == self.beyond.base {
+    /// Whether the tip of the base branch `log`'s root records holds Yard Log's root, so that
+    /// the merge closed it.
+    pub fn closed_by_merge(&self, log: &YardLog) -> Result<bool, Failure> {
+        let base = &log.root.base;
+        if self.store.branch() == base {
             return Ok(false);
         }
         let root = format!("{}/{ROOT}", self.store.folder_rel());
-        Ok(self
-            .git
-            .holds(&self.place().tree, &self.beyond.base, &root)?)
+        Ok(self.git.holds(&self.place().tree, base, &root)?)
+    }
+
+    /// Whether Yard Log as it is held is open, and closed by its merge all the same.
+    pub fn merged(&self, held: &Held) -> Result<bool, Failure> {
+        match log_of(held) {
+            Some(log) if !log.is_closed() => self.closed_by_merge(log),
+            _ => Ok(false),
+        }
     }
 
     /// Yard Log as it is, settled first where a merge left it unsettled; `actor` makes the

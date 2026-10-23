@@ -76,8 +76,7 @@ fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure>
     let agent = caller.agent().clone();
     let settler = agent.clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(settler)))?;
-    let closed_by_merge =
-        log_of(&held).is_some_and(|log| !log.is_closed()) && branch.closed_by_merge()?;
+    let closed_by_merge = branch.merged(&held)?;
     let waiter = Waiter {
         branch: &branch,
         key: submission,
@@ -129,7 +128,7 @@ impl Waiter<'_> {
             if !merged && !log.is_closed() && clock.elapsed().saturating_sub(checked) >= MERGE_EVERY
             {
                 checked = clock.elapsed();
-                merged = self.branch.closed_by_merge()?;
+                merged = self.branch.closed_by_merge(log)?;
             }
             let outcome = if log.is_closed() || merged {
                 Some("closed")
