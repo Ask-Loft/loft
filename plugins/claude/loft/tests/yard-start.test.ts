@@ -132,6 +132,18 @@ test("a tool gives the command's document to the agent, and a refusal's message 
   expect(fault.deny ?? fault.text).toContain('the field `batch` must be a list of objects')
 })
 
+test('yard_read gives each loft report only when the agent asks for reports', async ($, on) => {
+  const w = world(on)
+  await start($)
+  const before = w.state.runs.length
+  await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  await $.tool.call({ tool: 'mcp__loft__yard_read', since: 3, reports: true })
+  const [plain, asked] = w.state.runs.slice(before).filter(run => run.argv.includes('read') && run.argv.includes('--mark-read'))
+  expect(plain?.argv).not.toContain('--reports')
+  expect(asked?.argv).toContain('--reports')
+  expect(flagOf(asked?.argv ?? [], '--since')).toBe('3')
+})
+
 test('output that does not read as a document is named by its size, not by the exit code', async ($, on) => {
   const w = world(on)
   await start($)

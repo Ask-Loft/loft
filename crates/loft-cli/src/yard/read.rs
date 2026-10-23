@@ -2,7 +2,9 @@
 //! or only what changed since a revision the agent read before. A read writes nothing but the
 //! settling of Yard Log a merge left unsettled; with `--mark-read` it also records, in
 //! `~/.yard/last-read.json`, the revision the calling agent read. How a read renders Yard Log is
-//! one function, [`shown`], which the page server renders every Yard Log it serves with too.
+//! one function, [`shown`], which the page server renders every Yard Log it serves with too; a
+//! read then gives each `loft` block's report by its size unless `--reports` asks for it, while
+//! the page server keeps every report for the page to draw.
 
 use std::path::Path;
 
@@ -84,6 +86,9 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
         every_version: args.versions,
     };
     let (mut fields, read) = shown(&branch, held, &selection, &continuations)?;
+    if !args.reports {
+        super::render_loft::without_reports(&mut fields["stages"]);
+    }
     if let Some(since) = args.since {
         fields["since"] = json!(since);
     }

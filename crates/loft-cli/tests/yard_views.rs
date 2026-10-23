@@ -26,7 +26,7 @@ fn batch(view: &str, extra: &str) -> String {
 fn recorded(yard: &Yard, view: &str, extra: &str) -> Value {
     let written = yard.write("s1", &batch(view, extra), &[]);
     assert_eq!(written["outcome"], "written", "{written}");
-    let read = yard.read("s1", &[]);
+    let read = yard.read("s1", &["--reports"]);
     block(&read, "v1")["version"]["body"].clone()
 }
 
@@ -61,7 +61,7 @@ fn a_view_compares_with_the_base_revision_the_block_names() {
     let named = batch("spec-change", r#", "base": "develop""#);
     let written = yard.write("s1", &named, &["--base", "main"]);
     assert_eq!(written["outcome"], "written", "{written}");
-    let read = yard.read("s1", &[]);
+    let read = yard.read("s1", &["--reports"]);
     let body = &block(&read, "v1")["version"]["body"];
     assert_eq!(body["base"], "develop");
     assert_eq!(body["report"]["status"]["base"]["revision"], "develop");
@@ -226,7 +226,7 @@ fn a_view_is_computed_over_the_specification_below_the_top_of_the_worktree() {
     );
     assert_eq!(written["outcome"], "written", "{written}");
     assert!(yard.folder("feature").join("yardlog.yaml").is_file());
-    let read = in_package(&yard, &["yard", "read", "--session", "s1"]);
+    let read = in_package(&yard, &["yard", "read", "--session", "s1", "--reports"]);
     let found = in_package(&yard, &["find", "store-a-shelf-in-one-file"]);
     assert_eq!(
         block(&read, "v1")["version"]["body"]["report"]["decision"]["key"],

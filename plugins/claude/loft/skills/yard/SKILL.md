@@ -19,7 +19,7 @@ You reach it through six tools:
 
 | Tool | What it does |
 | --- | --- |
-| `mcp__loft__yard_read` | Yard Log, or with `since` only what changed after that revision. |
+| `mcp__loft__yard_read` | Yard Log, or with `since` only what changed after that revision; each `loft` block's report by its size, or with `reports` the report itself. |
 | `mcp__loft__yard_write` | A `batch` of blocks, applied whole or not at all, based on the revision in `basedOn`. With `send: true`, its questions, approvals and plans open a submission. |
 | `mcp__loft__yard_wait` | Waits until the person has answered or decided a `submission`, and returns what they gave. |
 | `mcp__loft__yard_withdraw` | Withdraws a `submission` that no longer needs answers. |
@@ -68,6 +68,10 @@ revision you last read, and take in what the person answered or decided meanwhil
 gives you the revision you last read when the session starts. Base each write on the revision you
 last read, in `basedOn`. A write refused because Yard Log changed names the blocks that changed
 under you: read them, then write again on the new revision.
+
+A read gives each `loft` block's report by its size in `reportBytes`, not the report: a report
+can run to hundreds of kilobytes, and the page draws them for the person. Where you need what a
+report holds, read with `reports` as well as `since`, so that only the reports you need come back.
 
 ## Open a stage for each step
 

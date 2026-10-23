@@ -19665,12 +19665,39 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "a_read_without_mark_read_writes_no_file_of_the_machine_s_home"
         body: deb6155ed5d6dd053706f15b2f08f2d21abf3991b57962f914a0e8020108c3d5
+  - node: 01a16880-126c-7301-9603-b98df4b2fa9e
+    reviewed: 62063d57add33df15af3889f7f22cd67305b13f7924b17df4b9940132cf47ffc
+    tests:
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "without_reports_a_loft_block_gives_its_report_by_its_size_in_bytes_and_keeps_the_rest"
+        body: 32ffb327682599c730f1d189475471a34341873c91ce5136879d1cd92dd49813
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "every_version_of_a_loft_block_gives_its_report_by_its_size_without_reports"
+        body: ddbda1720c8210c5656102e523fd53483bc3bed437ba03157bc6526115f68889
+  - node: 01a16880-126c-7301-9603-b98ee4fc50ed
+    reviewed: bc529665f539c14de80dbc2c533f6b5eb68b5ea1a7a4617a6c79857c3d39c013
+    tests:
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "without_reports_a_loft_block_gives_its_report_by_its_size_in_bytes_and_keeps_the_rest"
+        body: 32ffb327682599c730f1d189475471a34341873c91ce5136879d1cd92dd49813
+  - node: 01a16880-126c-7301-9603-b98f56f34cf8
+    reviewed: bb04d2288d0794377e35a53a01acad0bd63137662630fbb2b66999418760602b
+    tests:
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "with_reports_a_loft_block_carries_its_report_as_recorded"
+        body: 732e62d74c58efdb5816cbf9a7b5b1e421450d7c78206fe4ee94a808c27ad552
+  - node: 01a16880-126c-7301-9603-b9906374c516
+    reviewed: 0226585cbcd46c3c5f82a35a1a1ca331823ed3a1dbef31d8ca3f44cef46f5bd8
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "the_page_reads_each_loft_block_with_its_report"
+        body: 4136d2fdb76ad943d043948c70155e20b70f5038d1e68aef9c836c479028d06a
   - node: 01a1646f-546e-76cb-8b4f-f25c4364af72
     reviewed: 710151f2138cb362ba0f5cf501de448a65ce9b6f523e3846d6f96a1a4015b787
     tests:
       - file: "crates/loft-cli/tests/yard_published.rs"
         name: "a_publish_is_recorded_after_the_close_as_a_publish_view_holding_loft_s_report"
-        body: 6cac63aae4f989dca404a9425970ba36e088be9d362578a9802b1ffd35986896
+        body: 4fc8695712b76326a644c09fa8360ed4baec9fb9dc3499fbffaefe465d517e4b
   - node: 01a1646f-546e-76cb-8b4f-f25d1c1c0e9a
     reviewed: a256956c3b29489badf44e1fcca1085e0bc1f6fd618e8430ab5604d2e49ee989
     tests:
@@ -22370,7 +22397,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_is_computed_over_the_specification_below_the_top_of_the_worktree"
-        body: 5a29d643c62de214579724d3c23e98bd93cf99750610032432eb0b06534f6694
+        body: 3230e236694089bff38044a12e9e67cf3bb905d33d7b9e1965ad7d591fdd09ff
   - node: 01a1646f-546d-7042-befd-eaa4fdf28e1d
     reviewed: 7e92c05a8a7fbca4c08120b5f44fdb9b3cd96899cf6608850b9aead88c3ccd4f
     tests:
@@ -22391,7 +22418,7 @@ links:
         body: 78cfd45298d23e2912f625d879b3fff503d8d91a9fb92c1952eebd848d61a0d2
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_compares_with_the_base_revision_the_block_names"
-        body: 05990e2bb93ee55015484453cd57927592a1193b13f6b4f53bc41e9e6dbcdd38
+        body: 48836ccae47bc990baa008fd41318fc359cb57dbf1e1f1aa2f79e5d0f8049879
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_findings_view_holds_what_loft_check_prints_against_the_base_branch"
         body: ddb5d4bf1401b3c78a8214a6c6bc2d85fdfb0ce863cea35c7d5c26e1fd8e84f5
@@ -23868,6 +23895,12 @@ links:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_read_what_changed_and_base_each_write_on_it"
         body: 458a420c5bccf13885e3dc7fdc4cd657f4efb1e86307ac9ee743f258148cba61
+  - node: 01a16880-126c-7301-9603-b98acd507292
+    reviewed: 01695996a89cf7b394aa4581ab42adb61916f5e2b0a96949e6af678c691e8ef2
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_that_a_read_gives_each_report_by_its_size_and_reports_gives_them"
+        body: 486cc2b94047ca6414608c276f819fb0a515379de15ba315a82ba951c6d368a4
   - node: 01a1646f-546c-7521-9643-bca80176474a
     reviewed: 913de329f798b46a0229348fddc3516d31e1de1282021c565a383121f1071beb
     tests:
@@ -23882,13 +23915,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
   - node: 01a1646f-546c-7521-9643-bcaa2981e408
     reviewed: 48568ba6401cdd5202b8b050189fe6e74d613d02357ead89c19b781cebf1a194
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
@@ -23898,12 +23931,18 @@ links:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
+  - node: 01a16880-126c-7301-9603-b98be3c7681b
+    reviewed: 5560f48d2010a2ccbc934084025258be29220d73d49cc93d6cfd47e44d6b7a06
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "yard_read gives each loft report only when the agent asks for reports"
+        body: 76036cec5be957098b5549a38449e0e8d12dc70208cca0582512ca0ecd5a42ce
   - node: 01a1646f-546c-7521-9643-bcab7a45d9c4
     reviewed: 4039ec446447fa96de95d9c49a6c337428dd58a176edf425a8cd36e640b396df
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
@@ -23912,7 +23951,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7
@@ -23921,13 +23960,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
   - node: 01a1647b-208c-755d-8b1a-5885062d9589
     reviewed: 520b7697d6e2e04ef9fc30a10a4c3394a4141f3c712d5dcd70299789f8aa5fe0
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "an input that does not match its schema names the field at fault"
         body: d9f321cf2c817b3baa734329f18c358c2702ddf4fa3890310e83b5fd44624477
@@ -23936,7 +23975,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: dec20dce0c1363e4c8ab9b4f2ea485e969d050beb3306afa1a83dc15fe9624b0
+        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: 303828909d18da44f54fbc70106662bdb6023de2fbe025900aed9ddef8b74ca7

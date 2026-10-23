@@ -262,7 +262,7 @@ test('a closed Yard Log is said to be closed, and an ignored .yard/ to stay out 
 test("each of Yard's six tools has a JSON schema of its input", () => {
   expect(TOOL_NAMES).toEqual(['yard_read', 'yard_write', 'yard_wait', 'yard_withdraw', 'yard_close', 'yard_published'])
   const schema = (name: (typeof TOOL_NAMES)[number]) => specOf(name).inputSchema as { properties: object; required: string[] }
-  expect(Object.keys(schema('yard_read').properties)).toEqual(['since'])
+  expect(Object.keys(schema('yard_read').properties)).toEqual(['since', 'reports'])
   expect(Object.keys(schema('yard_write').properties)).toEqual(['batch', 'basedOn', 'send'])
   expect(schema('yard_wait').required).toEqual(['submission'])
   expect(schema('yard_withdraw').required).toEqual(['submission'])

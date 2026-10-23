@@ -27,7 +27,7 @@ fn report(yard: &Yard, view: &str) -> Value {
     );
     let written = yard.write("s1", &batch, &[]);
     assert_eq!(written["outcome"], "written", "{written}");
-    let read = yard.read("s1", &[]);
+    let read = yard.read("s1", &["--reports"]);
     block(&read, "v1")["version"]["body"]["report"].clone()
 }
 

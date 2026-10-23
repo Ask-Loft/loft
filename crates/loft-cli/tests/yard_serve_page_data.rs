@@ -23,8 +23,13 @@ const NOTES: &str = r#"[
 
 /// `yard`'s Yard Log as the page reads it from `served`, held to the read schema.
 fn log(yard: &Yard, served: &Served) -> Value {
+    log_of(yard, served, BRANCH)
+}
+
+/// `yard`'s Yard Log of `branch` as the page reads it from `served`, held to the read schema.
+fn log_of(yard: &Yard, served: &Served, branch: &str) -> Value {
     let tree = yard.scratch.0.canonicalize().unwrap().display().to_string();
-    let reply = served.get(&format!("/api/log?tree={tree}&branch={BRANCH}"));
+    let reply = served.get(&format!("/api/log?tree={tree}&branch={branch}"));
     let schema = fs::read_to_string(workspace().join("schemas/yard-read.json")).unwrap();
     schema::conforming(&reply.body, &schema)
 }
@@ -179,4 +184,17 @@ fn the_listing_marks_a_repository_s_main_worktree_and_no_linked_one() {
     let listing = served(&linked).get("/api/trees").json();
     let tree = &listing["repositories"][0]["trees"][0];
     assert_eq!(tree["main"], json!(false), "{listing}");
+}
+
+#[test]
+fn the_page_reads_each_loft_block_with_its_report() {
+    let yard = Yard::with_spec();
+    let view = r#"[{"id": "shape", "kind": "stage", "title": "Shape it", "status": "active"},
+        {"id": "v1", "kind": "loft", "stage": "shape", "view": "spec-change"}]"#;
+    yard.write("s1", view, &[]);
+    let served = served(&yard);
+    let read = log_of(&yard, &served, "feature");
+    let body = &block(&read, "v1")["version"]["body"];
+    assert!(body["report"]["status"].is_object(), "{body}");
+    assert!(body.get("reportBytes").is_none(), "{body}");
 }

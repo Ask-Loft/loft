@@ -202,3 +202,12 @@ fn the_yard_skill_tells_the_agent_to_read_what_changed_and_base_each_write_on_it
         "names the blocks that changed under you: read them, then write again",
     ]);
 }
+
+#[test]
+fn the_yard_skill_tells_the_agent_that_a_read_gives_each_report_by_its_size_and_reports_gives_them()
+{
+    says(&[
+        "A read gives each `loft` block's report by its size in `reportBytes`, not the report",
+        "read with `reports` as well as `since`",
+    ]);
+}

@@ -118,6 +118,9 @@ pub struct ReadArgs {
     /// Return every version of each block returned, oldest first.
     #[arg(long)]
     pub versions: bool,
+    /// Return each `loft` block's report, which is otherwise given by its size in bytes.
+    #[arg(long)]
+    pub reports: bool,
     /// Record the revision read as the one the calling agent last read: the agent's own read.
     #[arg(long, requires = "session")]
     pub mark_read: bool,
