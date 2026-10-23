@@ -23940,6 +23940,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "a subcommand is never taken from quoted text, a heredoc, or a word that is not one of loft"
         body: cca56e7431913999fcff9bbe39b36c246b54098434055422963ab7aa9eeaa7f0
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_mod_takes_a_subcommand_s_name_only_from_loft_s_own_list_of_subcommands"
+        body: d822a6d8592b41925d118bf524861f36de47e8b63afb2133ed453e19b3091714
   - node: 01a1646f-546d-7042-befd-eb0ad2547439
     reviewed: 48410a28b6958b0aa6de30c6f65b66ae1a3666a1958b7045704f98655748996e
     tests:

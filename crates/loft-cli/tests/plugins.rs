@@ -226,3 +226,34 @@ fn ci_tests_the_mod_under_a_pinned_claude_code_and_the_page_in_a_dom_emulator() 
         ["npm ci", "npm test", "npm run types"]
     );
 }
+
+/// The subcommands `loft --help` lists, in its order, less `help`.
+fn loft_subcommands() -> Vec<String> {
+    let output = Scratch::empty().loft(&["--help"]);
+    let help = String::from_utf8(output.stdout).unwrap();
+    help.lines()
+        .skip_while(|line| *line != "Commands:")
+        .skip(1)
+        .take_while(|line| line.starts_with("  "))
+        .filter_map(|line| line.split_whitespace().next())
+        .filter(|name| *name != "help")
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
+#[test]
+fn the_mod_takes_a_subcommand_s_name_only_from_loft_s_own_list_of_subcommands() {
+    let path = format!("{CLAUDE_ROOT}/hooks/yard/shell.ts");
+    let source =
+        fs::read_to_string(workspace().join(&path)).unwrap_or_else(|_| panic!("no {path}"));
+    let listed: Vec<String> = source
+        .split("export const LOFT_SUBCOMMANDS: readonly string[] = [")
+        .nth(1)
+        .and_then(|rest| rest.split(']').next())
+        .unwrap_or_else(|| panic!("{path} declares no LOFT_SUBCOMMANDS"))
+        .split(',')
+        .map(|name| name.trim().trim_matches('\'').to_owned())
+        .filter(|name| !name.is_empty())
+        .collect();
+    assert_eq!(listed, loft_subcommands());
+}
