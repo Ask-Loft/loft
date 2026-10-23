@@ -78,13 +78,38 @@ test('each Loft run is drawn under the stage its agent had active, by its subcom
   assert.deepEqual(one.views.map((view) => [view.view, view.at - T0]), [['findings', 40_000]]);
 });
 
-test('each submission is drawn in its agent’s lane from its send to its last answer', () => {
+test('each submission is drawn in its agent’s lane from its send to its answer', () => {
   const asked = block('question', 'q', { prompt: 'Which?', options: [] });
   asked.responses = [answer(['A'], 'page', at(80), 3)];
-  const sent = [{ key: 'sub', agent: MAIN, blocks: [asked.key], state: 'answered', changes: [{ what: 'sent', act: act(at(20), 2) }] }];
+  const changes = [
+    { what: 'sent', act: act(at(20), 2) },
+    { what: 'answered', act: act(at(80), 3) },
+  ];
+  const sent = [{ key: 'sub', agent: MAIN, blocks: [asked.key], state: 'answered', changes }];
   const shown = log([timed('one', MAIN, 0, 100, [asked])], { activity: [activity()], sent });
   const [wait] = chart(shown, T0 + 600_000).lanes[0].rows[0].submissions;
   assert.deepEqual([(wait.from - T0) / 1000, (wait.to - T0) / 1000, wait.block], [20, 80, 'q']);
+});
+
+test('a block sent again in a later submission leaves the earlier submission ending at its own answer', () => {
+  const plan = block('plan', 'p', { title: 'Plan', markdown: '', path: 'plan.md' });
+  plan.responses = [answer(['approved'], 'page', at(30), 3), answer(['approved'], 'page', at(250), 5)];
+  const submission = (key, from, to, revision) => ({
+    key,
+    agent: MAIN,
+    blocks: [plan.key],
+    state: 'answered',
+    changes: [
+      { what: 'sent', act: act(at(from), revision) },
+      { what: 'answered', act: act(at(to), revision + 1) },
+    ],
+  });
+  const sent = [submission('first', 20, 30, 2), submission('second', 200, 250, 4)];
+  const shown = log([timed('one', MAIN, 0, 100, [plan]), timed('two', MAIN, 150, 300)], { activity: [activity()], sent });
+  const [one, two] = chart(shown, T0 + 600_000).lanes[0].rows;
+  const seconds = (wait) => [(wait.from - T0) / 1000, (wait.to - T0) / 1000];
+  assert.deepEqual(one.submissions.map(seconds), [[20, 30]]);
+  assert.deepEqual(two.submissions.map(seconds), [[200, 250]]);
 });
 
 test('a stage’s time in a turn with no active task, Loft run or wait is agent work', () => {

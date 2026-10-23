@@ -22219,14 +22219,23 @@ links:
         name: "each Loft run is drawn under the stage its agent had active, by its subcommands, and each Loft view at its time"
         body: 41aa665ce095024a691f0e7bb250817a6b9ad778682ea202fd09d6594e39a286
   - node: 01a1646f-546d-7042-befd-eb7684da415a
-    reviewed: f8818f6c3b6a68144e106fb70458b117a9b0ae64f22e66f595bcb0b2d95a5a34
+    reviewed: 8ec2f92929c1ee43e2d439a6e5d1906edc078e5fc31344de6a93996eb404b35d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "each submission is drawn in its agent’s lane from its send to its last answer"
-        body: d15fc22426cbeade400738351037719af37f5fe8086ef5bd226e8e335434bd4e
+        name: "each submission is drawn in its agent’s lane from its send to its answer"
+        body: 0b0163fd7e0a171045043f1b1be08c0baa62e7d62180e7888dc59e8cec102c83
       - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
         name: "the_page_reads_every_submission_sent_with_its_changes"
         body: 04d1d2103a64f686712fa99defab796211212692283d89fe36f4668074feec6f
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a block sent again in a later submission leaves the earlier submission ending at its own answer"
+        body: 76749bb01d1bbcfd4d8b7cb4eaf936f8ae9e8750a942225ae60b2e5db151e3d9
+  - node: 01a168a8-bdad-700b-811b-68420a3173c7
+    reviewed: c9339f9e1d667796100ed18bdd3a7162db56598e9a60c21354a7a33c6b33cef1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a block sent again in a later submission leaves the earlier submission ending at its own answer"
+        body: 76749bb01d1bbcfd4d8b7cb4eaf936f8ae9e8750a942225ae60b2e5db151e3d9
   - node: 01a1646f-546d-7042-befd-eb7765e7bec9
     reviewed: a69938efa2cdb0a26dbc393cb98aa95b63ca315a8aadd16b2a085a47c4d0a3fc
     tests:

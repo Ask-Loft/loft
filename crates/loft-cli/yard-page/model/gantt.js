@@ -122,7 +122,9 @@ function activities(log, now) {
 }
 
 /**
- * Each submission's span, from its send to its last answer or outcome, its withdrawal, or now.
+ * Each submission's span, from its send to its own answer, its withdrawal, or now. A block sent
+ * again in a later submission holds the later answers too, so a submission's end is its own
+ * `answered` change, and its blocks' answers only where it records none.
  * @param {any} log
  * @param {number} now
  */
@@ -133,12 +135,14 @@ function submissionSpans(log, now) {
   }
   return (log?.sent ?? []).map((submission) => {
     const sent = submission.changes.find((change) => change.what === 'sent');
+    const answered = submission.changes.find((change) => change.what === 'answered');
     const withdrawn = submission.changes.find((change) => change.what === 'withdrawn');
     const answers = submission.blocks
       .flatMap((key) => blocks.get(key)?.responses ?? [])
       .map((response) => ms(response.act?.at));
     let to = now;
     if (submission.state === 'withdrawn' && withdrawn) to = ms(withdrawn.act.at);
+    else if (submission.state === 'answered' && answered) to = ms(answered.act.at);
     else if (submission.state === 'answered' && answers.length) to = Math.max(...answers);
     return {
       key: submission.key,
