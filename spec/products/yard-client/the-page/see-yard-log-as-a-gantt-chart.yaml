@@ -12,13 +12,37 @@ requirements:
       shall: "offer the timeline and the Gantt chart as two views of Yard Log, and remember in this browser the one chosen."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb69ef96a504
-        name: "A switch beside the order of the stages chooses the timeline or the Gantt chart."
+        name: "A switch at the left of the line above the stages chooses the timeline or the Gantt chart."
+      - key: 01a168c0-7faa-72dc-8ad3-520c27488530
+        name: "The switch stays in the same place whichever view is shown."
       - key: 01a1646f-546d-7042-befd-eb6a95402082
         name: "The view chosen is the one shown the next time the page opens in this browser."
       - key: 01a1646f-546d-7042-befd-eb6b4a34aab6
         name: "The Gantt chart follows Yard Log's changes as the timeline does."
       - key: 01a1646f-546d-7042-befd-eb6c59e28e31
-        name: "While the Gantt chart is shown, the page takes the whole width of the window, and the chart is drawn again to the page's width as the window is resized."
+        name: "While the Gantt chart is shown, the page keeps the width it has while the timeline is shown."
+  - key: 01a168c0-7faa-72dc-8ad3-520deb7f6c75
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "fit the Gantt chart to the width of the page, and scroll the chart within its frame where its time or its lanes need more room."
+    criteria:
+      - key: 01a168c0-7faa-72dc-8ad3-520ece07dbc3
+        name: "The chart fills the width of the page where its time needs no more room."
+      - key: 01a168c0-7faa-72dc-8ad3-520f767d7d23
+        name: "One minute of time that is not folded is never drawn narrower than 8 pixels."
+      - key: 01a168c0-7faa-72dc-8ad3-52107efef47e
+        name: "Where the chart's time needs more room than the page's width, the chart scrolls sideways within its frame."
+      - key: 01a168c0-7faa-72dc-8ad3-52115a5765e0
+        name: "The chart's frame is never taller than the window, and scrolls down within itself where the lanes need more room."
+      - key: 01a168c0-7faa-72dc-8ad3-5212c486888a
+        name: "While the chart scrolls sideways, the column of names stays in view."
+      - key: 01a168c0-7faa-72dc-8ad3-5213cbb5c3a7
+        name: "While the chart scrolls down, the time axis and the track of modes stay in view."
+      - key: 01a168c0-7faa-72dc-8ad3-52143f4aabe1
+        name: "The chart opens scrolled to its latest time."
+      - key: 01a168c0-7faa-72dc-8ad3-5215cec488ae
+        name: "As the window is resized, the chart is laid out again to the page's width."
   - key: 01a1646f-546d-7042-befd-eb6dd986a309
     statement:
       form: ubiquitous
@@ -28,7 +52,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb6eb970ce29
         name: "The main agent's lane comes first and holds the stages the main agent of each session owned."
       - key: 01a168a8-bdad-700b-811b-6839e7980afb
-        name: "Where a later session's main agent first started work, its lane is marked by a rule across it, named by the session's number and the time it started."
+        name: "Where each session's main agent first started work, its lane is marked by a rule across it, named by the session's number and the time it started."
       - key: 01a168a8-bdad-700b-811b-683a104ee942
         name: "A session's rule gives the session's id on hover."
       - key: 01a1646f-546d-7042-befd-eb6f76ba9323
@@ -51,6 +75,28 @@ requirements:
         name: "A name longer than the column is cut short with an ellipsis and given whole on hover."
       - key: 01a168a8-bdad-700b-811b-6840c0dbed07
         name: "No name of a lane, a stage or a task is drawn over the chart's bars."
+  - key: 01a168c0-7faa-72dc-8ad3-521690510a4a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "let the person drag the edge of the column of names to make it wider or narrower, and remember in this browser the width chosen."
+    criteria:
+      - key: 01a168c0-7fab-779d-8501-7d2e76a90eb6
+        name: "Dragging the column's edge makes the column wider or narrower by the length dragged."
+      - key: 01a168c0-7fab-779d-8501-7d2f9b1e4a65
+        name: "The column is never narrower than 160 pixels nor wider than 480 pixels."
+      - key: 01a168c0-7fab-779d-8501-7d30a89a6dfa
+        name: "The width chosen is the column's width the next time the page opens in this browser."
+  - key: 01a168c0-7fab-779d-8501-7d317c288f20
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a faint grid behind the bars of the Gantt chart."
+    criteria:
+      - key: 01a168c0-7fab-779d-8501-7d32b3d63d96
+        name: "A faint line divides each stage's rows from the next stage's rows."
+      - key: 01a168c0-7fab-779d-8501-7d33333d0b41
+        name: "A faint line runs down every lane at each mark of the time axis."
   - key: 01a1646f-546d-7042-befd-eb71b01f691c
     statement:
       form: ubiquitous
