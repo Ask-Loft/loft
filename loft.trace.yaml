@@ -19674,6 +19674,12 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "every_version_of_a_loft_block_gives_its_report_by_its_size_without_reports"
         body: ddbda1720c8210c5656102e523fd53483bc3bed437ba03157bc6526115f68889
+  - node: 01a16979-7fc8-7561-aa3e-41cacdaab526
+    reviewed: dd50b16c380f04bcabb9f065fe03df14af737ebfe717279a3dc5701d77a15055
+    tests:
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "without_reports_a_loft_block_gives_the_number_of_items_of_each_list_its_report_counts"
+        body: 0d1f87a9e1bdba2a4b3309ef6d51636fa8835e64e64e93f9e0700494e59afbeb
   - node: 01a16880-126c-7301-9603-b98ee4fc50ed
     reviewed: bc529665f539c14de80dbc2c533f6b5eb68b5ea1a7a4617a6c79857c3d39c013
     tests:
@@ -19685,7 +19691,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "with_reports_a_loft_block_carries_its_report_as_recorded"
-        body: 732e62d74c58efdb5816cbf9a7b5b1e421450d7c78206fe4ee94a808c27ad552
+        body: c4a7cd247bc7ce0cd91fea5b52b031123c68522d5e6e5055beaf4245f715ca53
   - node: 01a16880-126c-7301-9603-b9906374c516
     reviewed: 0226585cbcd46c3c5f82a35a1a1ca331823ed3a1dbef31d8ca3f44cef46f5bd8
     tests:
@@ -24801,6 +24807,12 @@ links:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_that_a_read_gives_each_report_by_its_size_and_reports_gives_them"
         body: 486cc2b94047ca6414608c276f819fb0a515379de15ba315a82ba951c6d368a4
+  - node: 01a16979-7fc7-740c-a7e4-9e31eef6017f
+    reviewed: 298f2388ec745e6e7cfe871fdb25bc55ec68d31bf1500d5c58ab837aee1202f1
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_check_a_report_by_the_counts_a_read_gives"
+        body: dd921b5d51273ce555064e35ea3ffc5c8cdfd9828277ffd71aba97f9367a649c
   - node: 01a1646f-546c-7521-9643-bca80176474a
     reviewed: 913de329f798b46a0229348fddc3516d31e1de1282021c565a383121f1071beb
     tests:

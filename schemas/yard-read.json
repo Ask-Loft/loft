@@ -741,6 +741,29 @@
               "description": "The size of the report as JSON, in bytes, in a read without `--reports`, which leaves the report out.",
               "type": "integer",
               "minimum": 0
+            },
+            "reportCounts": {
+              "description": "The number of items of each list the report counts, by the list's path, in a read without `--reports`, where the report counts its lists.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "list",
+                  "items"
+                ],
+                "properties": {
+                  "list": {
+                    "description": "The list's path in the report, its names joined by dots, such as `graph.diff`.",
+                    "type": "string"
+                  },
+                  "items": {
+                    "description": "The number of items the list holds, those the report left out included.",
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
             }
           }
         }

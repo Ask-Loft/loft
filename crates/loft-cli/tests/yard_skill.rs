@@ -211,3 +211,11 @@ fn the_yard_skill_tells_the_agent_that_a_read_gives_each_report_by_its_size_and_
         "read with `reports` as well as `since`",
     ]);
 }
+
+#[test]
+fn the_yard_skill_tells_the_agent_to_check_a_report_by_the_counts_a_read_gives() {
+    says(&[
+        "the number of items of each list it counts in `reportCounts`",
+        "check what a report holds by its counts",
+    ]);
+}
