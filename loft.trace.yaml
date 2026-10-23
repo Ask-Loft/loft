@@ -22155,6 +22155,12 @@ links:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "the_page_s_files_are_the_ones_the_running_loft_was_built_with"
         body: b29d66cd2d0570d2adcd4cc2f04ac427d7d0f8fb54b9070263eb9430a2e439a6
+  - node: 01a16658-f1c3-77d4-8fd0-1b477c1499a3
+    reviewed: ce1bf7cb957786ce2f54848cf3434f3338bc2ed0e846e964e273c8b400202ac1
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve.rs"
+        name: "a_file_of_the_page_the_browser_holds_is_not_sent_again"
+        body: adab8ff9957abbf978191e7acfa9a58c499d7783ba6c9620de52e0e16e2c8fa5
   - node: 01a1646f-546d-7042-befd-eb8afc96b474
     reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
     tests:

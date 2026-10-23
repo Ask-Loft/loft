@@ -2,6 +2,7 @@
 //! with its body where it names one; and one response written back. Each connection carries one
 //! request and is closed after its answer, but the stream of changes, which stays open.
 
+use std::borrow::Cow;
 use std::fmt::Write as _;
 use std::io::{self, Read, Write};
 
@@ -178,7 +179,7 @@ const fn hex(digit: u8) -> Option<u8> {
 pub struct Response {
     pub status: u16,
     pub kind: &'static str,
-    pub body: Vec<u8>,
+    pub body: Cow<'static, [u8]>,
     pub headers: Vec<(&'static str, String)>,
 }
 
@@ -190,7 +191,7 @@ impl Response {
         Self {
             status,
             kind: "application/json",
-            body,
+            body: body.into(),
             headers: Vec::new(),
         }
     }
@@ -204,16 +205,34 @@ impl Response {
     }
 
     /// A file of the page, of the media type `kind`, kept in the content coding `encoding` if
-    /// one is given.
-    pub fn file(kind: &'static str, encoding: Option<&'static str>, body: &[u8]) -> Self {
-        let mut headers = vec![("cache-control", "no-cache".to_owned())];
+    /// one is given, sent as it is built into `loft`, with its entity tag `tag`; or, where the
+    /// browser holds the file of that tag already (`held`), no file and the status 304.
+    pub fn file(
+        kind: &'static str,
+        encoding: Option<&'static str>,
+        body: &'static [u8],
+        tag: &str,
+        held: Option<&str>,
+    ) -> Self {
+        let mut headers = vec![
+            ("cache-control", "no-cache".to_owned()),
+            ("etag", tag.to_owned()),
+        ];
+        if held == Some(tag) {
+            return Self {
+                status: 304,
+                kind,
+                body: Cow::Borrowed(&[]),
+                headers,
+            };
+        }
         if let Some(encoding) = encoding {
             headers.push(("content-encoding", encoding.to_owned()));
         }
         Self {
             status: 200,
             kind,
-            body: body.to_vec(),
+            body: Cow::Borrowed(body),
             headers,
         }
     }
@@ -222,6 +241,7 @@ impl Response {
 const fn reason(status: u16) -> &'static str {
     match status {
         200 => "OK",
+        304 => "Not Modified",
         400 => "Bad Request",
         401 => "Unauthorized",
         403 => "Forbidden",

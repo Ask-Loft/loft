@@ -3,6 +3,10 @@
 //! are the files the browser runs. Each file is listed once here, by the path the page server
 //! serves it at. A file kept compressed is served as it is kept, its encoding named.
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+use std::sync::OnceLock;
+
 /// One file of the page.
 pub struct Asset {
     /// The path the page server serves it at, without its leading `/`.
@@ -77,6 +81,28 @@ pub const ASSETS: &[Asset] = &[
     asset!("vendor/mermaid.min.js", JS, gzip),
     asset!("vendor/mermaid.LICENSE", TEXT),
 ];
+
+impl Asset {
+    /// The file's entity tag: a digest of the bytes it is built from, worked out once.
+    pub fn tag(&self) -> &'static str {
+        static TAGS: OnceLock<Vec<String>> = OnceLock::new();
+        let tags = TAGS.get_or_init(|| {
+            ASSETS
+                .iter()
+                .map(|asset| {
+                    let mut hasher = DefaultHasher::new();
+                    asset.body.hash(&mut hasher);
+                    format!("\"{:016x}\"", hasher.finish())
+                })
+                .collect()
+        });
+        let at = ASSETS
+            .iter()
+            .position(|asset| asset.path == self.path)
+            .expect("an asset is one of the page's files");
+        &tags[at]
+    }
+}
 
 /// The file of the page served at `path`, `/` naming the page itself.
 pub fn find(path: &str) -> Option<&'static Asset> {

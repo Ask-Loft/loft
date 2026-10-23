@@ -70,6 +70,34 @@ fn the_page_s_files_are_the_ones_the_running_loft_was_built_with() {
 }
 
 #[test]
+fn a_file_of_the_page_the_browser_holds_is_not_sent_again() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &[]);
+    let first = served.get("/app.js");
+    let tag = first
+        .head
+        .lines()
+        .find_map(|line| line.strip_prefix("etag: "))
+        .unwrap_or_else(|| panic!("{}", first.head))
+        .trim()
+        .to_owned();
+    let head = format!(
+        "GET /app.js HTTP/1.1\r\nhost: 127.0.0.1:{}\r\nif-none-match: {tag}\r\n",
+        served.port
+    );
+    let again = served.send(&head, &[]);
+    assert_eq!(again.status, 304, "{}", again.head);
+    assert_eq!(again.body.len(), 0, "a 304 carries no body");
+    let other = format!(
+        "GET /app.js HTTP/1.1\r\nhost: 127.0.0.1:{}\r\nif-none-match: \"another\"\r\n",
+        served.port
+    );
+    let changed = served.send(&other, &[]);
+    assert_eq!(changed.status, 200);
+    assert_eq!(changed.body, page_file("app.js"));
+}
+
+#[test]
 fn mermaid_is_served_compressed_and_decompresses_to_the_release_its_readme_names() {
     let yard = Yard::new();
     let served = Served::start(&yard, &[]);
