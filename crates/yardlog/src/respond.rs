@@ -99,7 +99,7 @@ impl YardLog {
             return Err(Refused::Closed);
         }
         for reply in replies {
-            self.check(reply)?;
+            self.check(reply, who.channel)?;
         }
         let open: Vec<SubmissionKey> = self.open_submissions();
         let mut next = self.clone();
@@ -172,7 +172,7 @@ impl YardLog {
         done
     }
 
-    fn check(&self, reply: &Reply) -> Result<(), Refused> {
+    fn check(&self, reply: &Reply, channel: Channel) -> Result<(), Refused> {
         let (_, block) = self
             .block(reply.block)
             .ok_or(Refused::NoBlock(reply.block))?;
@@ -206,7 +206,9 @@ impl YardLog {
                 Ok(())
             }
             (Body::Approval(_) | Body::Plan(_), Given::Outcome { verdict, reason }) => {
-                if *verdict == Verdict::Rejected && reason.is_none() {
+                // The page asks for the reason; the terminal's own dialog may give none.
+                if *verdict == Verdict::Rejected && reason.is_none() && channel != Channel::Terminal
+                {
                     return Err(invalid("a rejection gives the person's reason"));
                 }
                 Ok(())

@@ -156,6 +156,14 @@ test('an approval or a plan shows its markdown, and once decided its outcome wit
   assert.match(drawn.querySelector('.outcome').textContent, /Ada Reader .* on the page: too wide/);
 });
 
+test('a block rejected in the terminal with no reason shows as rejected, with no reason given', () => {
+  const plan = block('plan', 'p1', { title: 'The plan', markdown: 'm', html: '<p>Do it</p>', planMode: true });
+  plan.outcome = { key: 'k', verdict: 'rejected', channel: 'terminal', act: act('2026-01-01T10:09:00Z', 4, PERSON) };
+  const drawn = card(plan, context(log([stage('s', 'S', 'active', [plan])])));
+  assert.equal(drawn.querySelector('.verdict-word').textContent, 'Rejected');
+  assert.match(drawn.querySelector('.outcome').textContent, /in the terminal, with no reason given$/);
+});
+
 test('a task shows its title and its state', () => {
   const task = block('task', 't1', { title: 'Model it', state: 'active' });
   const drawn = card(task, context(log([stage('s', 'S', 'active', [task])])));

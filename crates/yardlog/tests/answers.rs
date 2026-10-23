@@ -147,6 +147,30 @@ fn a_rejection_carries_the_person_s_reason() {
 }
 
 #[test]
+fn a_rejection_in_the_terminal_may_leave_the_reason_out() {
+    let mut log = planned();
+    let key = sent(
+        &mut log,
+        &json!([{"id": "p1", "kind": "plan", "stage": "design", "title": "P", "markdown": "Do it.", "planMode": true}]),
+        2,
+    );
+    log.answer(
+        &[outcome(&log, "p1", Verdict::Rejected, None)],
+        &person(Channel::Terminal, 3),
+    )
+    .unwrap();
+    let counted = log.find(&handle("p1")).unwrap().counted(&log).unwrap();
+    assert!(matches!(
+        counted.given,
+        Given::Outcome {
+            verdict: Verdict::Rejected,
+            reason: None
+        }
+    ));
+    assert_eq!(log.submission(key).unwrap().state(&log), State::Answered);
+}
+
+#[test]
 fn a_plan_rewritten_after_its_outcome_has_none_until_decided_again() {
     let mut log = planned();
     let plan = |markdown: &str| json!([{"id": "p1", "kind": "plan", "stage": "design", "title": "P", "markdown": markdown, "planMode": true}]);

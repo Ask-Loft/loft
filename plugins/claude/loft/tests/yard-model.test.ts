@@ -314,3 +314,10 @@ test('after /clear the context counts the submissions the session before it sent
   expect(text).toContain('`sub-7`, 1 block, sent by you')
   expect(text).toContain('since revision 6, which you last read (1)')
 })
+
+test('Reject with no notes typed records the block as rejected with no reason', () => {
+  const approval = block('ship', 'approval', { title: 'Ship it?', markdown: '' })
+  const dialog = dialogOf([approval], {})!
+  const answered = recordedOf(dialog, { answers: { 'Ship it?': REJECT }, annotations: { 'Ship it?': { notes: '  ' } } }, {})
+  expect(answered.given).toEqual([{ block: 'ship', verdict: 'rejected' }])
+})

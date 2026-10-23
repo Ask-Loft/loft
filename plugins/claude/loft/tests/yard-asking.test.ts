@@ -164,6 +164,16 @@ test("the agent's plan goes to Yard Log as a plan block in plan mode, with no pa
   expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'rejected', reason: 'split it' }])
 })
 
+test('a plan rejected in the terminal with no feedback typed is recorded as rejected with no reason', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.ExitPlanMode = () => ({ deny: "The user doesn't want to proceed with this tool use." })
+  await start($)
+  await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
+  const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'rejected' }])
+})
+
 test('a plan from a file within the tree keeps its path relative to the tree', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })

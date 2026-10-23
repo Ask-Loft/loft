@@ -57,6 +57,17 @@ fn a_decision_records_approved_or_rejected_with_the_person_s_reason() {
 }
 
 #[test]
+fn a_rejection_given_with_no_reason_is_recorded_rejected_with_none() {
+    let yard = asked();
+    yard.answer("s1", r#"[{"block": "how", "verdict": "rejected"}]"#);
+    let read = yard.read("s1", &[]);
+    let how = &block(&read, "how")["outcome"];
+    assert_eq!(how["verdict"], "rejected");
+    assert!(how.get("reason").is_none_or(serde_json::Value::is_null));
+    assert_eq!(how["channel"], "terminal");
+}
+
+#[test]
 fn the_person_is_named_by_the_user_name_and_user_email_git_gives() {
     let yard = asked();
     yard.answer("s1", r#"[{"block": "go", "verdict": "approved"}]"#);
