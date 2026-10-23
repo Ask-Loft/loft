@@ -49,6 +49,8 @@ requirements:
         name: "`Approve` records the block as `approved`."
       - key: 01a1646f-546c-7521-9643-bc1fbb759d63
         name: "`Reject` records the block as `rejected`, with the notes the person typed as its reason."
+      - key: 01a16a5e-43b6-76b2-9e32-6b01cc9dc0f5
+        name: "`Reject` with no notes typed records the block as `rejected` with no reason."
       - key: 01a1646f-546c-7521-9643-bc20025a66a1
         name: "Words that the person types in place of an option record an approval or a plan as `rejected`, with those words as its reason."
       - key: 01a1646f-546c-7521-9643-bc2133f400f4

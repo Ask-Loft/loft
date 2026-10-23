@@ -133,7 +133,7 @@ fn a_submission_only_moves_forward_and_the_earlier_answer_counts() {
     );
     let block = result.find(&handle("q1")).unwrap();
     assert_eq!(block.responses.len(), 2);
-    assert_eq!(block.counted().unwrap().channel, Channel::Terminal);
+    assert_eq!(block.counted(&result).unwrap().channel, Channel::Terminal);
     let ours_answer = &ours.find(&handle("q1")).unwrap().responses[0];
     assert!(
         block.responses.contains(ours_answer),

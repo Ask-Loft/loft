@@ -1,4 +1,4 @@
-// How both parts of the mod run `loft`: through the plugin's `loftCommand` setting, quietly, with
+// How the mod runs `loft`: through the plugin's `loftCommand` setting, quietly, with
 // `--format json`, reading the one JSON document the command prints and nothing else (the
 // Feature "The Loft plugin").
 

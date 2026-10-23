@@ -14,7 +14,7 @@ export const register: Register = (on, options) => {
     return next(e)
   })
 
-  on('tool.call', ($, e, next) => eventsOfToolCall($, e, next, next))
+  on('tool.call', ($, e, next) => eventsOfToolCall($, e, next))
 
   on('turn.complete', async ($, e, next) => {
     const ended = await next(e)

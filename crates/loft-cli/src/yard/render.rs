@@ -158,14 +158,14 @@ pub fn blocks(log: &YardLog, keys: &[BlockKey]) -> Value {
         .filter_map(|key| log.block(*key))
         .map(|(file, found)| {
             let stage = (file.stage.key != found.key).then_some(&file.stage);
-            block(found, stage, false)
+            block(log, found, stage, false)
         })
         .collect()
 }
 
 /// A block: its key, id, kind, stage, decision number, current version or every version, the
 /// answer or outcome that counts, and a stage's or task's times and a stage's owner.
-pub fn block(block: &Block, stage: Option<&Block>, every_version: bool) -> Value {
+pub fn block(log: &YardLog, block: &Block, stage: Option<&Block>, every_version: bool) -> Value {
     let mut fields = Map::new();
     fields.insert("key".to_owned(), json!(block.key.to_string()));
     fields.insert("id".to_owned(), json!(block.id.as_str()));
@@ -186,7 +186,7 @@ pub fn block(block: &Block, stage: Option<&Block>, every_version: bool) -> Value
         let versions = block.ordered().into_iter().map(|v| version(block, v));
         fields.insert("versions".to_owned(), Value::Array(versions.collect()));
     }
-    let counted = block.counted().map(response);
+    let counted = block.counted(log).map(response);
     let name = if block.kind == yardlog::body::Kind::Question {
         "answer"
     } else {

@@ -31,10 +31,14 @@ export function timeOf(ms: number): string {
 /** Keeps an event, dropping the oldest past MOST. */
 export function keep(box: Outbox, event: Event) {
   box.queue.push(event)
-  if (box.queue.length > MOST) {
-    box.queue.shift()
-    box.dropped++
-  }
+  trim(box)
+}
+
+function trim(box: Outbox) {
+  const over = box.queue.length - MOST
+  if (over <= 0) return
+  box.queue.splice(0, over)
+  box.dropped += over
 }
 
 export async function tokenOf($: EngineInterface, box: Outbox): Promise<string | undefined> {
@@ -48,7 +52,10 @@ export async function tokenOf($: EngineInterface, box: Outbox): Promise<string |
   return box.token
 }
 
-/** Posts every kept event in order; those the page server does not take stay kept. */
+/**
+ * Posts every kept event in order; those the page server does not take stay kept. A post takes its
+ * events out of the queue while it is under way, so an event kept meanwhile waits behind them.
+ */
 export async function flush($: EngineInterface, box: Outbox): Promise<void> {
   if (box.isPosting) return
   box.isPosting = true
@@ -56,7 +63,7 @@ export async function flush($: EngineInterface, box: Outbox): Promise<void> {
     while (box.queue.length > 0) {
       const token = await tokenOf($, box)
       if (token === undefined) return
-      const sent = box.queue.slice()
+      const sent = box.queue.splice(0)
       const dropped = box.dropped
       // The first event posted after a drop says how many were dropped.
       const body = sent.map((event, n) => (n === 0 && dropped > 0 ? { ...event, dropped } : event))
@@ -72,8 +79,11 @@ export async function flush($: EngineInterface, box: Outbox): Promise<void> {
       } catch {
         isTaken = false
       }
-      if (!isTaken) return
-      box.queue.splice(0, sent.length)
+      if (!isTaken) {
+        box.queue.unshift(...sent)
+        trim(box)
+        return
+      }
       box.dropped -= dropped
     }
   } finally {

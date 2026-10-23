@@ -63,3 +63,16 @@ requirements:
         name: "The page shows the first answer with the channel it came from."
       - key: 01a1646f-546c-7521-9643-bbdaebd7935a
         name: "The other answers of the send are recorded."
+  - key: 01a16a53-6d71-7288-9245-8df389b572b0
+    statement:
+      form: unwanted
+      if: "a send of answers or of an outcome is not recorded"
+      system: "the page"
+      shall: "keep what the person chose and typed, say why it was not sent, and offer to send it again."
+    criteria:
+      - key: 01a16a53-6d71-7288-9245-8df446ff7236
+        name: "Answers that the page server refuses to record are kept in the browser."
+      - key: 01a16a53-6d71-7288-9245-8df586280e46
+        name: "A reason for a rejection that the page server refuses to record is kept in the browser."
+      - key: 01a16a53-6d71-7288-9245-8df6b6548a40
+        name: "A send that cannot reach the page server says so, and its button can be pressed again."

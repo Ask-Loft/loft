@@ -30,6 +30,8 @@ requirements:
         name: "Rejecting raises Yard Log's revision by one."
       - key: 01a1646f-546c-7521-9643-bbe26588e53c
         name: "The page shows the block rejected, with the reason."
+      - key: 01a16a5e-43b6-76b2-9e32-6b009aaf1086
+        name: "A block rejected in the terminal with no reason shows as rejected, with no reason given."
   - key: 01a1646f-546c-7521-9643-bbe33a38e791
     statement:
       form: unwanted

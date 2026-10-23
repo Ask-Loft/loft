@@ -18,6 +18,7 @@ mod listener;
 mod live;
 mod logs;
 mod markdown;
+mod newest;
 mod routes;
 mod session_files;
 mod stream;

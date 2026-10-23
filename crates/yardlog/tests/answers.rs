@@ -44,7 +44,7 @@ fn an_answer_records_the_person_its_act_and_its_channel() {
     let answered = answer(&mut log, "q1", "B", &person(Channel::Terminal, 3));
     assert_eq!(answered.revision, 3);
     let block = log.find(&handle("q1")).unwrap();
-    let counted = block.counted().unwrap();
+    let counted = block.counted(&log).unwrap();
     assert_eq!(counted.channel, Channel::Terminal);
     assert_eq!(
         counted.act.actor,
@@ -95,7 +95,7 @@ fn a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept() 
     let first = log.find(&handle("q1")).unwrap();
     assert_eq!(first.responses.len(), 1);
     assert!(
-        matches!(&first.counted().unwrap().given, Given::Answer { chosen, .. } if chosen == &["A"])
+        matches!(&first.counted(&log).unwrap().given, Given::Answer { chosen, .. } if chosen == &["A"])
     );
 }
 
@@ -147,6 +147,30 @@ fn a_rejection_carries_the_person_s_reason() {
 }
 
 #[test]
+fn a_rejection_in_the_terminal_may_leave_the_reason_out() {
+    let mut log = planned();
+    let key = sent(
+        &mut log,
+        &json!([{"id": "p1", "kind": "plan", "stage": "design", "title": "P", "markdown": "Do it.", "planMode": true}]),
+        2,
+    );
+    log.answer(
+        &[outcome(&log, "p1", Verdict::Rejected, None)],
+        &person(Channel::Terminal, 3),
+    )
+    .unwrap();
+    let counted = log.find(&handle("p1")).unwrap().counted(&log).unwrap();
+    assert!(matches!(
+        counted.given,
+        Given::Outcome {
+            verdict: Verdict::Rejected,
+            reason: None
+        }
+    ));
+    assert_eq!(log.submission(key).unwrap().state(&log), State::Answered);
+}
+
+#[test]
 fn a_plan_rewritten_after_its_outcome_has_none_until_decided_again() {
     let mut log = planned();
     let plan = |markdown: &str| json!([{"id": "p1", "kind": "plan", "stage": "design", "title": "P", "markdown": markdown, "planMode": true}]);
@@ -156,16 +180,20 @@ fn a_plan_rewritten_after_its_outcome_has_none_until_decided_again() {
         &person(Channel::Page, 3),
     )
     .unwrap();
-    assert!(log.find(&handle("p1")).unwrap().counted().is_some());
+    assert!(log.find(&handle("p1")).unwrap().counted(&log).is_some());
     write(&mut log, &plan("Second."), &context(&main_agent(), 4));
-    assert!(log.find(&handle("p1")).unwrap().counted().is_none());
+    assert!(log.find(&handle("p1")).unwrap().counted(&log).is_none());
     log.answer(
         &[outcome(&log, "p1", Verdict::Approved, None)],
         &person(Channel::Terminal, 5),
     )
     .unwrap();
     assert_eq!(
-        log.find(&handle("p1")).unwrap().counted().unwrap().channel,
+        log.find(&handle("p1"))
+            .unwrap()
+            .counted(&log)
+            .unwrap()
+            .channel,
         Channel::Terminal
     );
 }
@@ -189,6 +217,67 @@ fn a_rewritten_plan_sent_again_waits_for_a_new_outcome() {
     )
     .unwrap();
     assert_eq!(state(&log), State::Answered);
+}
+
+#[test]
+fn a_rejected_approval_sent_again_waits_for_a_new_outcome() {
+    let mut log = planned();
+    let approval = |markdown: &str| json!([{"id": "a1", "kind": "approval", "stage": "design", "title": "A", "markdown": markdown}]);
+    sent(&mut log, &approval("First."), 2);
+    log.answer(
+        &[outcome(&log, "a1", Verdict::Rejected, Some("Too wide."))],
+        &person(Channel::Page, 3),
+    )
+    .unwrap();
+    let again = sent(&mut log, &approval("Second."), 4);
+    let state = |log: &yardlog::YardLog| log.submission(again).unwrap().state(log);
+    assert_eq!(state(&log), State::Open);
+    assert!(log.find(&handle("a1")).unwrap().counted(&log).is_none());
+    let answered = log
+        .answer(
+            &[outcome(&log, "a1", Verdict::Approved, None)],
+            &person(Channel::Terminal, 5),
+        )
+        .unwrap();
+    assert_eq!(answered.recorded, [log.find(&handle("a1")).unwrap().key]);
+    assert_eq!(state(&log), State::Answered);
+    let counted = log.find(&handle("a1")).unwrap().counted(&log).unwrap();
+    assert!(matches!(
+        counted.given,
+        Given::Outcome {
+            verdict: Verdict::Approved,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn an_answered_question_sent_again_waits_for_a_new_answer() {
+    let mut log = planned();
+    sent(&mut log, &json!([question("q1")]), 2);
+    answer(&mut log, "q1", "A", &person(Channel::Page, 3));
+    let again = sent(&mut log, &json!([question("q1")]), 4);
+    assert_eq!(log.submission(again).unwrap().state(&log), State::Open);
+    answer(&mut log, "q1", "B", &person(Channel::Page, 5));
+    let block = log.find(&handle("q1")).unwrap();
+    assert!(
+        matches!(&block.counted(&log).unwrap().given, Given::Answer { chosen, .. } if chosen == &["B"])
+    );
+}
+
+#[test]
+fn a_decided_plan_sent_again_unchanged_waits_for_a_new_outcome() {
+    let mut log = planned();
+    let plan = json!([{"id": "p1", "kind": "plan", "stage": "design", "title": "P", "markdown": "Same.", "planMode": true}]);
+    sent(&mut log, &plan, 2);
+    log.answer(
+        &[outcome(&log, "p1", Verdict::Approved, None)],
+        &person(Channel::Page, 3),
+    )
+    .unwrap();
+    let again = sent(&mut log, &plan, 4);
+    assert_eq!(log.submission(again).unwrap().state(&log), State::Open);
+    assert!(log.find(&handle("p1")).unwrap().counted(&log).is_none());
 }
 
 #[test]

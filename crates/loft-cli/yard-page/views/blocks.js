@@ -222,7 +222,11 @@ function decidable(block, context) {
         h('span', { class: ['verdict-word', `verdict--${outcome.verdict}`] }, outcome.verdict === 'approved' ? 'Approved' : 'Rejected'),
         ' ',
         byline(outcome),
-        outcome.reason ? h('span', { class: 'reason' }, `: ${outcome.reason}`) : null,
+        outcome.reason
+          ? h('span', { class: 'reason' }, `: ${outcome.reason}`)
+          : outcome.verdict === 'rejected'
+            ? h('span', { class: 'reason is-none' }, ', with no reason given')
+            : null,
       )
     : null;
   const waiting = context.waiting.has(block.key);

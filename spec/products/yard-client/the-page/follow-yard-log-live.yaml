@@ -21,6 +21,8 @@ requirements:
         name: "Yard Log opened for a branch of another tree the page server serves shows in the list within 2 seconds."
       - key: 01a1646f-546d-7042-befd-eb5140658694
         name: "A choice the person has made and not sent is kept through a change."
+      - key: 01a16a56-43e1-75a2-a1aa-f93ebdcd0c78
+        name: "Of two reads of Yard Log under way at once, the page shows the one it began last, whichever answers last."
   - key: 01a1646f-546d-7042-befd-eb5268fd5363
     statement:
       form: ubiquitous

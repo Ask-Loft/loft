@@ -67,6 +67,8 @@ requirements:
         name: "Past 1,000 kept events, the oldest is dropped."
       - key: 01a1646f-546d-7042-befd-eb0f5266c105
         name: "The first event posted after a drop holds the number of events dropped."
+      - key: 01a16a54-ced2-7361-9f2d-5f1bed8103e9
+        name: "An event kept while a post is under way is posted after it, and is never taken for one of the events that post carried."
   - key: 01a1646f-546d-7042-befd-eb103c0010bb
     statement:
       form: event_driven
@@ -86,3 +88,5 @@ requirements:
         name: "An event names the tree and branch that its agent's directory is on when it arrives, so that an agent that changes branch or worktree records each event with the branch it happened on."
       - key: 01a1646f-546d-7042-befd-eb15a1f51483
         name: "Events of two agents of one session that work in two worktrees are recorded each with its own tree and branch."
+      - key: 01a16a5b-5fc8-7605-ba92-760602622149
+        name: "Of two posts of one session's events handled at once, the session's activity and token files are left as the events kept last make them, whichever post writes last."

@@ -41,6 +41,14 @@ const EVERY: Duration = Duration::from_millis(250);
 /// its branch makes it: a few git calls a minute, however long the wait.
 const MERGE_EVERY: Duration = Duration::from_secs(5);
 
+/// How long a wait goes on trying for a lease that no wait has named itself as holding: one that
+/// looks whether the lease is held holds it for a moment, and a wait names itself just after it
+/// takes it.
+const UNNAMED: Duration = Duration::from_secs(2);
+
+/// How often a wait tries for such a lease meanwhile.
+const LEASE_AGAIN: Duration = Duration::from_millis(50);
+
 pub fn run(root: &Path, args: WaitArgs) -> Finished {
     let as_json = args.output.json();
     match attempt(root, args) {
@@ -175,23 +183,38 @@ impl Waiter<'_> {
         }
     }
 
-    /// The submission's lease, refused, naming who holds it, where another wait does.
+    /// The submission's lease, refused, naming who holds it, where another wait does. A lease
+    /// held by none that named itself is tried again for [`UNNAMED`] before it is refused.
     fn lease(&self) -> Result<Locked, Failure> {
         let place = self.branch.place();
         let holder = render::actor(&yardlog::Actor::Agent(self.agent.clone()));
         let bytes = serde_json::to_vec(&holder).expect("a JSON value serializes");
-        if let Some(lease) = place.lease_as(self.key, &bytes)? {
-            return Ok(lease);
+        let clock = super::clock();
+        let began = clock.elapsed();
+        loop {
+            if let Some(lease) = place.lease_as(self.key, &bytes)? {
+                return Ok(lease);
+            }
+            let named = place
+                .lease_holder(self.key)?
+                .filter(|named| !named.is_empty());
+            if named.is_some() || clock.elapsed().saturating_sub(began) >= UNNAMED {
+                return Err(self.leased(&named.unwrap_or_default())?);
+            }
+            clock.wait(LEASE_AGAIN);
         }
-        let holder = place.lease_holder(self.key)?.unwrap_or_default();
-        let holder = serde_json::from_slice::<Value>(&holder).unwrap_or(Value::Null);
+    }
+
+    /// The refusal of a wait whose lease another holds, naming the `holder` it recorded.
+    fn leased(&self, holder: &[u8]) -> Result<Failure, Failure> {
+        let holder = serde_json::from_slice::<Value>(holder).unwrap_or(Value::Null);
         let message = format!(
             "another wait holds the lease on submission {}: {}",
             self.key,
             holder_text(&holder)
         );
         let held = self.branch.store.read()?;
-        Err(self.refused(&held, failure::error("leased", &message)))
+        Ok(self.refused(&held, failure::error("leased", &message)))
     }
 
     /// Records that the calling main agent took the submission up, and whether it still was

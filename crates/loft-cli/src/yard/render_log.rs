@@ -62,12 +62,12 @@ pub fn stages(log: &YardLog, selection: &Selection) -> Vec<Value> {
             .blocks
             .iter()
             .filter(|b| after(b.reached()))
-            .map(|b| block(b, Some(&file.stage), selection.every_version))
+            .map(|b| block(log, b, Some(&file.stage), selection.every_version))
             .collect();
         if blocks.is_empty() && !after(file.stage.reached()) {
             continue;
         }
-        let mut stage = block(&file.stage, None, selection.every_version);
+        let mut stage = block(log, &file.stage, None, selection.every_version);
         stage["blocks"] = Value::Array(blocks);
         stages.push(stage);
     }

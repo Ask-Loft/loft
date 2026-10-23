@@ -136,6 +136,23 @@ fn a_second_wait_on_a_submission_is_refused_at_once_naming_the_wait_that_holds_i
 }
 
 #[test]
+fn a_lease_held_a_moment_by_one_that_looks_does_not_refuse_the_wait() {
+    let yard = Yard::new();
+    let submission = send(&yard, "s1");
+    yard.answer("s1", r#"[{"block": "q1", "labels": ["Top"]}]"#);
+    let lease = holder(&yard, &submission).with_extension("lease");
+    // Held as one that only looks whether the lease is held holds it: with no name beside it.
+    let looking = yardlog_store::lock::try_lock(&lease).unwrap().unwrap();
+    let waiting = yard.spawn(&["wait", "--session", "s1", "--submission", &submission]);
+    thread::sleep(Duration::from_millis(500));
+    drop(looking);
+    let output = waiting.wait_with_output().unwrap();
+    let waited = document("wait", &output);
+    assert_eq!(output.status.code(), Some(0), "{waited}");
+    assert_eq!(waited["outcome"], "answered");
+}
+
+#[test]
 fn the_lease_is_free_once_the_wait_that_held_it_is_killed() {
     let yard = Yard::new();
     let submission = send(&yard, "s1");

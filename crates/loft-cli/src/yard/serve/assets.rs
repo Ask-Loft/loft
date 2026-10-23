@@ -59,6 +59,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("lib/dom.js", JS),
     asset!("lib/format.js", JS),
     asset!("lib/kept.js", JS),
+    asset!("lib/latest.js", JS),
     asset!("lib/modal.js", JS),
     asset!("lib/prefs.js", JS),
     asset!("lib/route.js", JS),

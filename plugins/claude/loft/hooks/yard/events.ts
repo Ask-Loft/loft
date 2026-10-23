@@ -6,7 +6,7 @@
 import type { EngineInterface, ModelUsage, On } from 'claude-code'
 
 import { relativeTo } from '../model'
-import type { Onward, ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } from '../shared'
+import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } from '../shared'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
 import { agentOf, PLUGIN, state } from './state'
@@ -144,8 +144,8 @@ export function eventsOfTurnEnd($: EngineInterface, e: TurnCompleteEvent) {
 }
 
 /** A tool call's start and end; the mod's own dialogs are not the agent's calls. */
-export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, onward: Onward, next: ToolCallNext): Promise<ToolCallAnswer> {
-  if (next.origin.plugin === PLUGIN) return onward(e)
+export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, next: ToolCallNext): Promise<ToolCallAnswer> {
+  if (next.origin.plugin === PLUGIN) return next(e)
   const call = e.tool_use_id ?? ''
   const field = EDITED[String(e.tool)]
   const path = field ? (e as Record<string, unknown>)[field] : undefined
@@ -155,7 +155,7 @@ export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, onw
   tell($, e.agentId, { kind: 'tool.start', tool: e.tool, call, ...(spec !== undefined ? { spec } : {}), ...(loft.length > 0 ? { loft } : {}) })
   let failed = true
   try {
-    const ran = await onward(e)
+    const ran = await next(e)
     failed = ran.deny !== undefined || ran.isError === true
     return ran
   } finally {

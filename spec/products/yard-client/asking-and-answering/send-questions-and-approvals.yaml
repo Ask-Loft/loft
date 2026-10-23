@@ -44,3 +44,5 @@ requirements:
         name: "Two submissions of one Yard Log can be open at once."
       - key: 01a1646f-546c-7521-9643-bbf4222e6200
         name: "A submission's state never returns to `open`."
+      - key: 01a16a51-12f0-765c-abd9-0fb6be8e1702
+        name: "A block sent again in a later submission is answered or decided there only by an answer or outcome given after that send."

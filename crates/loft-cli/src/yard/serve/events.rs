@@ -19,6 +19,7 @@ use yardlog_store::{Held, Place, YardStore};
 use super::activity::Activity;
 use super::event::{Event, Who, strings};
 use super::http::Response;
+use super::newest::Newest;
 use super::tokens::Totals;
 
 /// What one session keeps in one branch's Yard Log.
@@ -31,10 +32,12 @@ struct Kept {
 /// What one session keeps, by the tree and branch of each Yard Log it keeps it in.
 type ByLog = BTreeMap<(String, String), Kept>;
 
-/// Each session's activity and totals, by session.
+/// Each session's activity and totals, by session, and the newest text written of each of their
+/// files.
 #[derive(Default)]
 pub struct Sessions {
     kept: Mutex<HashMap<String, ByLog>>,
+    written: Newest,
 }
 
 /// Where an event is kept: its agent's tree and branch, the stage it counts toward and the
@@ -217,15 +220,20 @@ impl Sessions {
             match keep(home, &mut kept, event, &arrival) {
                 Ok(files) => {
                     recorded += 1;
-                    note(&mut changed, index, event, &arrival, files);
+                    let generation = self.written.generation();
+                    note(&mut changed, (index, generation), event, &arrival, files);
                 }
                 Err(message) => rejected.push(json!({ "index": index, "message": message })),
             }
         }
-        // The sessions are let go before the files are written, so that no post waits on a disk.
+        // The sessions are let go before the files are written, so that no post waits on a disk;
+        // a post that writes after a later one leaves that one's newer text in place.
         drop(kept);
-        for (index, store, file, session, text) in changed.into_values() {
-            if let Err(error) = store.write_session(file, &session, text.as_bytes()) {
+        for (path, ((index, generation), store, file, session, text)) in changed {
+            let wrote = self.written.write(&path, generation, || {
+                store.write_session(file, &session, text.as_bytes())
+            });
+            if let Err(error) = wrote {
                 rejected.push(json!({ "index": index, "message": error.to_string() }));
             }
         }
@@ -236,14 +244,14 @@ impl Sessions {
     }
 }
 
-/// A session's file a batch changed: the index of the event that last changed it, the store of
-/// its Yard Log, which file, whose, and its text.
-type Changed = (usize, YardStore, SessionFile, String, String);
+/// A session's file a batch changed: the index of the event that last changed it with the
+/// number of its text, the store of its Yard Log, which file, whose, and its text.
+type Changed = ((usize, u64), YardStore, SessionFile, String, String);
 
 /// Notes the session's files `event` changed, each to be written once the batch is kept.
 fn note(
     changed: &mut BTreeMap<PathBuf, Changed>,
-    index: usize,
+    index: (usize, u64),
     event: &Event,
     arrival: &Arrival,
     files: Vec<(SessionFile, String)>,

@@ -20,11 +20,16 @@ export async function get(path) {
  * @returns {Promise<Reply>}
  */
 export async function post(path, sent) {
-  const response = await fetch(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify(sent),
-  });
+  let response;
+  try {
+    response = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(sent),
+    });
+  } catch {
+    return { status: 0, body: { errors: [{ kind: 'unreachable', message: 'the page server could not be reached' }] } };
+  }
   return { status: response.status, body: await body(response) };
 }
 

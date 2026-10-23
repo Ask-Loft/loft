@@ -19433,13 +19433,16 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "an_answer_records_the_person_its_act_and_its_channel"
-        body: a49ec9035b77a75d1f836d01cb9296ba985d8d5145da5552639111f9d0a2786b
+        body: 4cea22928f3ef840ee47ddfb664c8491fe234a0daa08b3b814cc5d55dbabf15a
   - node: 01a1646f-546e-76cb-8b4f-f2780c5a73b7
-    reviewed: f9898378e3e75adb79862d45352f2976c947d36f70680d3fabad8c1f8efd3b52
+    reviewed: a12ee3d2817bc565094c4c39e8261e9963353891de23196fad166d78a748e801
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_rejection_carries_the_person_s_reason"
         body: 9b4760b117c6c843d189c475b5f1c8874e9b07fa4343c6f965b7e6fc2340cb0f
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_rejection_in_the_terminal_may_leave_the_reason_out"
+        body: 3f51cf54f8f77021f8301cc968597d35a2db4105ced0fc751091be8b4fddc88e
   - node: 01a1646f-546e-76cb-8b4f-f27b5d484c59
     reviewed: b7560ac75a7fdcbd60ed5c028619828676ce11d8d53c897da39f5b66894d8850
     tests:
@@ -19501,20 +19504,23 @@ links:
         name: "a_plan_with_a_machine_path_is_refused_and_one_relative_to_the_tree_is_kept"
         body: d91fcc2975eb31b5d19cf80699ea06c2ffbce768518e0da6075af8446736caa3
   - node: 01a1646f-546e-76cb-8b4f-f2828477d857
-    reviewed: c02a8f58a66fadea96604e7bd425fb59b28c0309269a43a025df6cacc5620e43
+    reviewed: 0224c2d39d8a0fa09de514e5a3566a142299e9b54674fd9d0a2591bfb0395b24
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_rejection_carries_the_person_s_reason"
         body: 9b4760b117c6c843d189c475b5f1c8874e9b07fa4343c6f965b7e6fc2340cb0f
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
-        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+        body: 5b8212ada9221210651e4c9e1f1740b08873100ce96082f41426eb4c97339421
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_rejection_in_the_terminal_may_leave_the_reason_out"
+        body: 3f51cf54f8f77021f8301cc968597d35a2db4105ced0fc751091be8b4fddc88e
   - node: 01a1646f-546e-76cb-8b4f-f284b0b1b5f5
     reviewed: 409e29308c747d13f3c0e34a39a1eb41470bddd403d548eaa673923df89cf186
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
-        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+        body: 5b8212ada9221210651e4c9e1f1740b08873100ce96082f41426eb4c97339421
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_rewritten_plan_sent_again_waits_for_a_new_outcome"
         body: 97d40754740209efbfc54dfab47d4b45beeec1972ef51619e143ae5c592669b6
@@ -19523,7 +19529,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_plan_rewritten_after_its_outcome_has_none_until_decided_again"
-        body: 657e96146deb877ad9f505a9bcc98187ea936eeb7fe5265bd21c4680654afc42
+        body: 5b8212ada9221210651e4c9e1f1740b08873100ce96082f41426eb4c97339421
   - node: 01a1646f-546e-76cb-8b4f-f2886e33378e
     reviewed: a440ecaa942d026b83d6a5e3c116e52bbfef95a13dfe662b00d02a14c29f2950
     tests:
@@ -19760,13 +19766,13 @@ links:
     tests:
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eb9e0d8d45d3
     reviewed: b7cad17c8c060159d014de4555ed6c681ab51b639c637e094c309165a40aa381
     tests:
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eba0ae5f5513
     reviewed: 7e7a4d7f76a50c6e1899318ce50b6f2f2583602048023fb0a7e29eee9920764e
     tests:
@@ -19775,7 +19781,7 @@ links:
         body: 6d27379f007406e9f9e8907c3709cd1f478f6c5953190f3e601d710b7f0e1b56
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eba1a81ca116
     reviewed: b7f13e00c3f0dba437e138a206b56dd035c402a08cd8f6253aa18a3eac85eed8
     tests:
@@ -19784,13 +19790,13 @@ links:
         body: 6d27379f007406e9f9e8907c3709cd1f478f6c5953190f3e601d710b7f0e1b56
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1649f-62ef-71e6-98de-e112b4f533a0
     reviewed: d3b66d35a6e290013da526aae1fdadd00e991ce7bf04b7403b6ff0978c8b919b
     tests:
       - file: "crates/yardlog/tests/merge.rs"
         name: "a_submission_only_moves_forward_and_the_earlier_answer_counts"
-        body: b7c7542c8fdb405a4d480865130a9fdcc77112d739dfa836ec76e6e984aebce8
+        body: 86d491bf157de1b173b4ac42ed85a1ca21865b4348567183ca24e11eb8edb11f
   - node: 01a1646f-546d-7042-befd-eba3cc9480da
     reviewed: e9ee5bafe5f1066e869d2420b03e70b585d8460869bcf925a1d4df053eb35687
     tests:
@@ -19944,6 +19950,12 @@ links:
       - file: "crates/loft-cli/tests/yard_settle.rs"
         name: "a_command_that_only_reads_yard_log_settles_it_as_one_that_writes_would"
         body: 43735dd2399a7774c84abf74689c4651a2fed94d31536221a8a807f664641d0a
+  - node: 01a16a58-511f-777c-8166-b8c175302dfb
+    reviewed: c84ae4cbf3f170ed5af02137127680cde617dec1bbda0473c3d1fd46f3c85dc1
+    tests:
+      - file: "crates/loft-cli/src/yard/branch.rs"
+        name: "yard_log_removed_while_it_is_settled_is_found_absent"
+        body: 0b2a1530ace9cedf20f6431bcd317ac8c1a269bdc66befd14a4160ca221df748
   - node: 01a1647b-208d-7169-85c8-9a56a7391c0f
     reviewed: 9311313ea21f257b4e01684a00ea46e7e05fba3536a5e9dfe59c2586526796c4
     tests:
@@ -20036,7 +20048,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "an_answer_records_the_person_its_act_and_its_channel"
-        body: a49ec9035b77a75d1f836d01cb9296ba985d8d5145da5552639111f9d0a2786b
+        body: 4cea22928f3ef840ee47ddfb664c8491fe234a0daa08b3b814cc5d55dbabf15a
   - node: 01a1646f-546d-7042-befd-ebbee5a82235
     reviewed: 35c5676b7da69302b820a7da818af607ee5ef0a5e4df0463a6ed486ec6b19ad4
     tests:
@@ -20069,7 +20081,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ebc2b4b704f4
     reviewed: 43764eba588c254441993fcbfae234f0da2c952e9cc2d278706af6862438e69d
     tests:
@@ -20306,7 +20318,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "an_answer_given_elsewhere_first_is_kept_and_the_page_s_later_one_refused"
         body: 2e46faa5ab5c3217accce5ef79279f607a94804c04588d07da62352bf4abfb5f
@@ -20324,10 +20336,28 @@ links:
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_other_answers_of_a_send_are_recorded_when_one_was_answered_elsewhere_first"
         body: eb7d53284ed6dcec97165836633ba014855a7b6574fec2065f4965b350632689
+  - node: 01a16a53-6d71-7288-9245-8df446ff7236
+    reviewed: 18d9afc42e5c65f7f42be3efe47641acd0be59c54254306b967188baf1e591fa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "answers that the page server refuses to record are kept in the browser"
+        body: f5400332b510b46cf2ee497199a2cebcc68e47669fd36ac6b8e51fa85636a4c8
+  - node: 01a16a53-6d71-7288-9245-8df586280e46
+    reviewed: 2e4b13db7b5f13c854cfd97300afa4d2cf973c2a6940704e8a25e89fe5036140
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a reason for a rejection that the page server refuses to record is kept in the browser"
+        body: 3f845a56ffa33f913f3f38fe50cd4f30307dca237d2598f7cda9cd95e802f030
+  - node: 01a16a53-6d71-7288-9245-8df6b6548a40
+    reviewed: 24b23d420288db1c0d6376c41f870e64ffe86f29fba144d41eedc274bb7bcb8d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "a send that cannot reach the page server says so, and its button can be pressed again"
+        body: 74efc61aa3ff69587e6c9738adbe86342492302335ac05b060fe0de04efd731f
   - node: 01a1646f-546c-7521-9643-bbddef0f8d85
     reviewed: c8334794b880d031fe2004c8513edaf6c0223f94818ecdecae4e50564dc9ea9c
     tests:
@@ -20358,6 +20388,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a rejection without a reason records nothing and asks for the reason; with one, the page shows it rejected"
         body: b8ac2f22bab887c5bc8b1ceed7bca9f691b3c06894f76bf83cf2047739f770d0
+  - node: 01a16a5e-43b6-76b2-9e32-6b009aaf1086
+    reviewed: d542a8b629cb0ff78b64e8be538c6560475037a732897ba097dd8209548f7b34
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a block rejected in the terminal with no reason shows as rejected, with no reason given"
+        body: e739dd24c55a60505dfb046da04a00b7ac6d50552c652e57ade2b3471b8924b3
   - node: 01a1646f-546c-7521-9643-bbe46778cf50
     reviewed: da8a80635bea5f85250a216fbb3a209fad8da4f16ec212947e803721540721db
     tests:
@@ -20436,6 +20472,18 @@ links:
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_withdrawn_submission_stays_withdrawn_and_keeps_its_earlier_answers"
         body: 5227c37e42188e2fc797af2c7edfc06d214840906b8ebb4c346e7a8a64f50ee5
+  - node: 01a16a51-12f0-765c-abd9-0fb6be8e1702
+    reviewed: 42de1df2e49a5e6b1d778ba7f49f6aa796bf5081f2291997b1a5eb564be2d8bc
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_rejected_approval_sent_again_waits_for_a_new_outcome"
+        body: 7992e9456e50dbf6a63281ebf4ba54874ac005832bb03983b2b9b0eff8c3a0e3
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "an_answered_question_sent_again_waits_for_a_new_answer"
+        body: 059cdb4a96c38221a68c6c758f8757f67a88b162d2a9de2e0ebdb625c1cb80b5
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "a_decided_plan_sent_again_unchanged_waits_for_a_new_outcome"
+        body: e1b2889d7fe064edd9b7c0549445e2feddd97d92ee1956403dabf59c4eb598bc
   - node: 01a1646f-546c-7521-9643-bbf7da5107e5
     reviewed: 31478f93fdea69515564e1c23d1bc86bfba8ec7e6b39178f067dd3ad521d614e
     tests:
@@ -20589,6 +20637,12 @@ links:
       - file: "crates/loft-cli/tests/yard_take_up.rs"
         name: "two_sessions_on_one_branch_never_both_wait_on_one_submission"
         body: 95497bd3807a0152f21cad4c564dbd70666d0e91f9c4f395e4f0611cfad28f72
+  - node: 01a16a59-cf10-7028-be3f-c198f1fdfac0
+    reviewed: 6ae403c54d777f62dc2cb7f23342e0af52389541c1a5dc7779fa0ccb4929b47f
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_lease_held_a_moment_by_one_that_looks_does_not_refuse_the_wait"
+        body: 5be8602252e289679540bb3aa5d067a901a22ddbdb87282b12470260cad0b44a
   - node: 01a1647b-208c-755d-8b1a-5883df7ebb39
     reviewed: 1f070568bad56e71709c10a7df0f6465d314f4e816ad8da285b6ed897c65c688
     tests:
@@ -21951,6 +22005,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "a reason for a rejection typed and not sent is kept through a change, and forgotten once sent"
         body: c7f17a6761f4719c208de3cb15c17dc81f7d48614c0b4029f9c5c58484ed4361
+  - node: 01a16a56-43e1-75a2-a1aa-f93ebdcd0c78
+    reviewed: 8eab0f2d0248ecb567438f72a5780a07df3ff15de2e3afc4eb78c4ed6890e2aa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/latest.test.js"
+        name: "of two reads under way at once, the one begun last is applied, whichever answers last"
+        body: 1ef3f06f94fc3c763e4427a987d2a1e5c676e5ee1231b1c527de614246666bda
+      - file: "crates/loft-cli/yard-page-tests/unit/latest.test.js"
+        name: "a read that no later one overtook is applied"
+        body: 334962bd372977fdd0803717def4eb1b3b041944ad46faae272a82d031c33839
   - node: 01a1646f-546d-7042-befd-eb538ff1d6c4
     reviewed: c4fc52b706c7b00ba652478eed70d7c8962c7bf36b4dd96aa88e879663a977f1
     tests:
@@ -23898,12 +23961,21 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
         body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a full post the page server does not take keeps the newest 1,000 events, and counts the oldest dropped"
+        body: 461cc444098e54c65f9d152c2edb2994f5e2afde565fe153a77b20e714141d29
   - node: 01a1646f-546d-7042-befd-eb0f5266c105
     reviewed: 3f207710753580fa4aa1401a004423bf2a5d55ceafc484a33080aa8bebee4d33
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
         body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+  - node: 01a16a54-ced2-7361-9f2d-5f1bed8103e9
+    reviewed: 689cce4d82c418f36b8d6ffec670e7045e86585cbef090c3b19cbdb696698476
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "an event kept while a full post is under way is posted after it, and is not counted as dropped"
+        body: f776bc01cb2441a6652393335a22b455879e7af1e86bec1682eb197295e69e85
   - node: 01a1646f-546d-7042-befd-eb11fb7e4314
     reviewed: 227f1c9404a955be715a8952f93aa64fd5d9cd258a91f6bbdbf5f4e2f17a36c8
     tests:
@@ -23946,6 +24018,18 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_whose_agent_works_in_another_worktree_is_counted_in_that_worktree_s_yard_log"
         body: b08bcf38028d4cd4d0ab5c00eec513e7ad67e22d966e303f06d09315dcc7dcfa
+  - node: 01a16a5b-5fc8-7605-ba92-760602622149
+    reviewed: 93def04f277280a10513c7ef97f4a79cf45f6cc320fcba8264e05a59af961826
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/newest.rs"
+        name: "a_text_older_than_the_one_written_is_not_written_over_it"
+        body: 2614858e25a4809c9375ee9e22095df1cd820ba9cc788ba5fc01853d05467951
+      - file: "crates/loft-cli/src/yard/serve/newest.rs"
+        name: "each_file_is_written_by_its_own_texts_alone"
+        body: c84beefb824d734af10b0076813f0ed062172687d33d119c2b2902e06d99bc13
+      - file: "crates/loft-cli/src/yard/serve/newest.rs"
+        name: "a_text_whose_write_failed_is_not_taken_for_written"
+        body: dafa34b66d7bcb4707ce5a4f8a69306af0ddfb07584b27ede50112a12f3f502d
   - node: 01a1646f-546d-7042-befd-eb18be1fe4d9
     reviewed: ba2bacdc8df73216c5f5e2b2f95c60502be149fc483aa98c37d00d00c6db10ef
     tests:
@@ -24111,6 +24195,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "while yard_wait waits, what still waits is asked in the dialog, and an answer there is recorded from the terminal"
         body: bd01ae475929fe1178431de725b8d25cc91eca09e15dae093033715745e18369
+  - node: 01a16a5e-43b6-76b2-9e32-6b01cc9dc0f5
+    reviewed: 5f7120a947312a78b3a777bb926a7a56ada95837f631f074db45047acddf2ae8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "Reject with no notes typed records the block as rejected with no reason"
+        body: 9653316fbbf072dc3a25a7dc64190013ed2dcc4eb5d116c16b718d04220bc766
   - node: 01a1646f-546c-7521-9643-bc20025a66a1
     reviewed: 6b96dd9950dacc580dac1c2ee8286f18d6e319caf22313f6a096aaceca1a89ce
     tests:
@@ -24345,6 +24435,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "the feedback typed with a rejection is read from what Claude Code gives the agent"
         body: 7bfec9029488fd8e8083d3d35f5fc9e4dddc6b182f0e47140a3828d82dec63d6
+  - node: 01a16a5e-43b6-76b2-9e32-6b026850e2c0
+    reviewed: 36ad088137f3259b68b02870a5682d057f21d80a17f92aee3231d2d1d0d82b50
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan rejected in the terminal with no feedback typed is recorded as rejected with no reason"
+        body: 35bbba550fc15a2696bac832f68f09996dfb07e10b6064a0e65a39390cd68655
   - node: 01a1646f-546c-7521-9643-bc4b064c0cda
     reviewed: 4cc6d766b76e707ef2f023dcecff83a982f8899eb5a1a563f29c6004b69a0c3c
     tests:
@@ -24916,11 +25012,14 @@ links:
         name: "an_answer_records_the_labels_or_the_person_s_own_words_and_the_person_s_notes"
         body: 040deb656b2fc8b8872ba2190ad381654870ec566d184736201ba4b3f1ee6ae5
   - node: 01a1646f-546d-7042-befd-ea36cd0087ca
-    reviewed: c961f75ab343cb0ddc3000022825f2497e925eeb822642f318b7693e0cecfa39
+    reviewed: f961c2b501f77f7ec811ff4a71502a3aa60eef249a0361d2077eea78369f52af
     tests:
       - file: "crates/loft-cli/tests/yard_answer.rs"
         name: "a_decision_records_approved_or_rejected_with_the_person_s_reason"
         body: e6dba0ecaf8cd0e6aafcfb83a961dfb6e1b0ed1d390c1e8d5da027a41da050fd
+      - file: "crates/loft-cli/tests/yard_answer.rs"
+        name: "a_rejection_given_with_no_reason_is_recorded_rejected_with_none"
+        body: 26272952f139c94e349c7884a95be6d8d9aaeadcbfe384dfe7c741db354350e5
   - node: 01a1646f-546d-7042-befd-ea37505961d9
     reviewed: 85ed70bd3a50c08eea9d9c462aaf713bf5fdc8c8d8fdb7f357dcb3774bb6b58b
     tests:
@@ -24950,7 +25049,7 @@ links:
         body: 6011b348ccb493610db64473840dfee87fd9ee028a7b502f0380a04dd95fbdd7
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ea3cc0994266
     reviewed: ec297e0cc0d24f9433b9f9255f69de050320020ec63a5fdd2c47f87c4a439c05
     tests:
@@ -24959,7 +25058,7 @@ links:
         body: 6011b348ccb493610db64473840dfee87fd9ee028a7b502f0380a04dd95fbdd7
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ea3d337fbaa1
     reviewed: e959d795e39d3ea98c200c34aef18d253168bac2efcdf72fdf67f1dd3e4b764d
     tests:
@@ -24968,7 +25067,7 @@ links:
         body: 6011b348ccb493610db64473840dfee87fd9ee028a7b502f0380a04dd95fbdd7
       - file: "crates/yardlog/tests/answers.rs"
         name: "a_later_answer_to_a_block_answered_elsewhere_is_refused_and_the_first_kept"
-        body: deb7b264df391c2592592e2d0529aec221ba0696663c42def7a704d97738bf22
+        body: 795684feef0c443c4cb66abbec73f7bce6e9a44212c2cfd19914b3767ef646ab
   - node: 01a1646f-546d-7042-befd-ea3f674f8421
     reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
     tests:
