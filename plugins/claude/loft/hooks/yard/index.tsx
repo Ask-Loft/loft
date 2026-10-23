@@ -98,7 +98,7 @@ async function contextFor($: EngineInterface, cwd: string): Promise<string | und
   return succeeded(ran) ? contextOf(ran.doc, askerOf(caller)) : undefined
 }
 
-/** Registers Yard Client's own hooks; the entry hooks the events it shares with the pane. */
+/** Registers Yard Client's own hooks; the entry hooks the events it records around Claude Code's. */
 export function registerYard(on: On, options: PluginOptions) {
   reset(options)
 

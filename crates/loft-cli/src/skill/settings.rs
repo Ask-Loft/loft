@@ -1,8 +1,8 @@
 //! Enabling the Claude Code plugin `loft@ask-loft` beside the skill (Writing the skill): the
 //! marketplace `ask-loft` and the plugin go into the project's `.claude/settings.json`, so that
-//! Claude Code offers the Loft status pane to everyone who trusts the project. Every other entry
-//! is kept in the file's own order, an entry the file already sets is kept as it is, and a file
-//! that is not a JSON object is left alone.
+//! Claude Code offers the plugin's `yard` skill and Yard Client to everyone who trusts the
+//! project. Every other entry is kept in the file's own order, an entry the file already sets is
+//! kept as it is, and a file that is not a JSON object is left alone.
 
 use std::fmt;
 use std::fs;
@@ -81,7 +81,7 @@ pub fn enable(root: &Path) -> io::Result<Enabled> {
 pub fn by_hand() -> String {
     format!(
         "{SETTINGS} does not hold a JSON object these entries fit in, so it was left as it is; \
-         to enable the Loft status pane, add \"extraKnownMarketplaces\": {{\"{MARKETPLACE}\": {{\"source\": {{\"source\": \
+         to enable the Loft plugin, add \"extraKnownMarketplaces\": {{\"{MARKETPLACE}\": {{\"source\": {{\"source\": \
          \"github\", \"repo\": \"{REPOSITORY}\"}}}}}} and \"enabledPlugins\": {{\"{PLUGIN}\": true}}"
     )
 }
