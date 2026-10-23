@@ -145,6 +145,19 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb47a12567f2
         name: "No element that a block's text names is created in the page."
+  - key: 01a16838-8fdb-7127-a23e-c5588e3201c7
+    statement:
+      form: optional
+      where: "a `loft` view names a node whose name holds Markdown"
+      system: "the page"
+      shall: "draw the name as Markdown rendered by `loft`, on one line."
+    criteria:
+      - key: 01a16838-8fdb-7127-a23e-c559b4afac18
+        name: "A code span in a node's name is drawn as code."
+      - key: 01a16838-8fdb-7127-a23e-c55ab6cc3d79
+        name: "Any HTML that a node's name holds is shown as text."
+      - key: 01a16838-8fdb-7127-a23e-c55bc6dabc5f
+        name: "A name whose Markdown is more than one line of text is shown as its text."
   - key: 01a1646f-546d-7042-befd-eb48685b6f13
     statement:
       form: optional

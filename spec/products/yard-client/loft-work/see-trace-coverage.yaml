@@ -25,3 +25,15 @@ requirements:
         name: "The accepted criteria of each Feature are folded into one line that counts them and opens to their list."
       - key: 01a1646f-546d-7042-befd-eae4edf1b696
         name: "Each finding that `loft reconcile` reported is listed with its rule and its message."
+  - key: 01a16838-8fdb-7127-a23e-c554d58c6712
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a `trace` view folded to its figures, and open it to its list of criteria and its findings when the person asks."
+    criteria:
+      - key: 01a16838-8fdb-7127-a23e-c5553392679f
+        name: "Folded, the view shows the bar, the number of the branch's criteria linked and accepted, the number in each state, the number of Features and the base revision."
+      - key: 01a16838-8fdb-7127-a23e-c556728ecdda
+        name: "Folded, the view lists no criterion and no finding."
+      - key: 01a16838-8fdb-7127-a23e-c557d7f2d37e
+        name: "A `trace` view the person opened stays open while the page follows Yard Log's changes, and one they folded stays folded."
