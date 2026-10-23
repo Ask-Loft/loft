@@ -1,5 +1,5 @@
-// The tokens Yard Log took: the four counts in all, by stage, by session, by agent and model,
-// and by submission.
+// The tokens Yard Log took: the four counts in all, by stage with each type of subagent's share
+// beneath it, by session, by agent and model, and by submission.
 
 import { add, h } from '../lib/dom.js';
 import { tokens as amount, when } from '../lib/format.js';
@@ -30,7 +30,7 @@ function cell(count, all, word) {
 
 /**
  * Every breakdown in one table, whose columns are the four counts: a group of rows for each.
- * @param {{ by: string, title: string, rows: [any, import('../model/tokens.js').Counts][] }[]} groups
+ * @param {{ by: string, title: string, rows: [any, import('../model/tokens.js').Counts, string?][] }[]} groups
  * @param {import('../model/tokens.js').Counts} all
  */
 function breakdowns(groups, all) {
@@ -46,7 +46,9 @@ function breakdowns(groups, all) {
           'tbody',
           { dataset: { by } },
           h('tr', { class: 'group' }, h('th', { scope: 'rowgroup', colspan: String(COUNTS.length + 1) }, title)),
-          rows.map(([name, counts]) => h('tr', {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word)))),
+          rows.map(([name, counts, kind]) =>
+            h('tr', kind ? { class: kind } : {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word))),
+          ),
         ),
       ),
     ),
@@ -88,7 +90,13 @@ export function tokensView(log) {
     add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), note);
     return section;
   }
-  const stages = (log.stages ?? []).map((stage) => [stage.version.body.title, summary.stages.get(stage.key) ?? zero()]);
+  const stages = (log.stages ?? []).flatMap((stage) => [
+    [stage.version.body.title, summary.stages.get(stage.key) ?? zero()],
+    // Each type of subagent that worked for the stage, its counts within the stage's.
+    ...[...(summary.stageAgents.get(stage.key) ?? [])]
+      .sort(([, a], [, b]) => total(b) - total(a))
+      .map(([type, counts]) => [`${type} subagent`, counts, 'within']),
+  ]);
   if (total(summary.noStage)) stages.push([h('span', { class: 'no-stage' }, 'Under no stage'), summary.noStage]);
   const submissions = (log.sent ?? [])
     .filter((submission) => summary.submissions.has(submission.key))

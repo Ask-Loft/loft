@@ -23,7 +23,16 @@ function shown() {
       lastEnded: '2026-01-01T10:30:00Z',
       tokens: counts(100, 1000, 10, 50),
       noStage: counts(20, 0, 0, 5),
-      stages: [{ stage: shaping.key, ...counts(80, 1000, 10, 45) }],
+      stages: [
+        {
+          stage: shaping.key,
+          ...counts(80, 1000, 10, 45),
+          agents: [
+            { agent: 'main', ...counts(50, 900, 10, 35) },
+            { agent: 'a1', type: 'Explore', ...counts(30, 100, 0, 10) },
+          ],
+        },
+      ],
       agents: [
         { agent: 'main', model: 'opus', ...counts(70, 900, 10, 40) },
         { agent: 'a1', type: 'Explore', model: 'haiku', ...counts(30, 100, 0, 10) },
@@ -58,6 +67,7 @@ test('each stage has the counts of its requests, and those under no stage are sh
   const rows = body('stage').map((row) => [...row.cells].map((cell) => cell.textContent));
   assert.deepEqual(rows, [
     ['Shaping', '81', '1.0k', '13', '49'],
+    ['Explore subagent', '30', '100', '0', '10'],
     ['Under no stage', '20', '0', '0', '5'],
   ]);
 });
@@ -108,7 +118,7 @@ test('the breakdowns share one table, whose columns are the four counts', () => 
 });
 
 test('each count of a breakdown shows as a bar its share of Yard Log’s count of that kind in all', () => {
-  const [shaping, noStage] = body('stage');
+  const [shaping, , noStage] = body('stage');
   const share = (cell) => parseFloat(cell.querySelector('.share-fill').style.width);
   assert.equal(share(shaping.cells[1]).toFixed(1), '80.2');
   assert.equal(share(noStage.cells[1]).toFixed(1), '19.8');
@@ -116,4 +126,15 @@ test('each count of a breakdown shows as a bar its share of Yard Log’s count o
   assert.equal(share(noStage.cells[2]), 0);
   assert.equal(shaping.cells[1].getAttribute('title'), '81 · 80% of all input');
   assert.equal(shaping.cells[1].querySelector('.share').getAttribute('aria-hidden'), 'true');
+});
+
+test('beside a stage that subagents counted toward, each type of subagent’s counts are shown within the stage’s', () => {
+  const view = shown();
+  const summary = summarize(view.tokens);
+  const [shaping] = view.stages;
+  assert.deepEqual([...(summary.stageAgents.get(shaping.key) ?? new Map())], [['Explore', counts(30, 100, 0, 10)]]);
+  const rows = body('stage');
+  const within = rows.filter((row) => row.classList.contains('within'));
+  assert.deepEqual(within.map((row) => [...row.cells].map((cell) => cell.textContent)), [['Explore subagent', '30', '100', '0', '10']]);
+  assert.equal(rows.indexOf(within[0]), 1, 'the subagent’s row follows its stage’s');
 });

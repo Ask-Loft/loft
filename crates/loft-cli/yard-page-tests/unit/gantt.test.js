@@ -259,7 +259,7 @@ test('each Loft run is drawn in its stage’s bar and names its subcommands on h
   assert.ok(mark.closest('.gantt-row').querySelector('.stage-bar'));
 });
 
-test('the bar above the chart divides the time not idle into tasks, Loft runs, waits and agent work, each with its length and share', () => {
+test('the bar above the chart divides the time not idle into Loft runs, subagent runs, tasks, waits and agent work, each with its length and share', () => {
   const task = block('task', 't1', { title: 'T', state: 'done' }, { more: { times: { listed: at(0), started: at(0), ended: at(20) } } });
   const asked = block('question', 'q', { prompt: 'Which?', options: [] });
   asked.responses = [answer(['A'], 'page', at(80), 3)];
@@ -270,13 +270,14 @@ test('the bar above the chart divides the time not idle into tasks, Loft runs, w
   });
   const { summary } = chart(shown, T0 + 600_000);
   assert.deepEqual(summary.parts.map((part) => [part.kind, part.length / 1000, part.share]), [
-    ['task', 20, 0.2],
     ['loft', 10, 0.1],
+    ['subagent', 0, 0],
+    ['task', 20, 0.2],
     ['wait', 20, 0.2],
     ['work', 50, 0.5],
   ]);
   const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
-  assert.match(drawn.querySelector('.split-legend').textContent, /Active tasks: 20 s, 20%.*Loft runs: 10 s, 10%.*Waits on you: 20 s, 20%.*Agent work: 50 s, 50%/);
+  assert.match(drawn.querySelector('.split-legend').textContent, /Loft runs: 10 s, 10%.*Subagent runs: 0 s, 0%.*Active tasks: 20 s, 20%.*Waits on you: 20 s, 20%.*Agent work: 50 s, 50%/);
 });
 
 test('choosing a stage, a task or a submission in the chart opens the timeline at it', () => {
@@ -393,4 +394,77 @@ test('dragging the column’s edge sets its width, and the width chosen is the o
   const edge = holder.querySelector('.names-edge');
   edge.dispatchEvent(Object.assign(new Event('keydown'), { key: 'ArrowLeft' }));
   assert.equal(localStorage.getItem('yard.gantt-names'), '344');
+});
+
+/** A run of subagent `agent`, of type `type`, from `from` to `to` seconds, for the stage `stage`. */
+function run(agent, type, from, to, stage) {
+  return { agent, type, ...span(from, to), ...(stage ? { stage: stage.key } : {}) };
+}
+
+test('the run of a subagent that owned no stage is drawn in the bar of the stage it worked for, to now while it runs, naming its type on hover', () => {
+  const one = timed('one', MAIN, 0, 60);
+  const two = timed('two', MAIN, 60, undefined, [], 'active');
+  const shown = log([one, two], { activity: [activity({ subagents: [run('a2', 'Explore', 10, 30, one), run('a3', 'Plan', 70, undefined, two)] })] });
+  const model = chart(shown, T0 + 150_000);
+  assert.deepEqual(model.lanes.map((lane) => lane.label), ['main agent'], 'a subagent that owned no stage has no lane');
+  const [first, second] = model.lanes[0].rows;
+  const seconds = (each) => [each.type, (each.from - T0) / 1000, (each.to - T0) / 1000];
+  assert.deepEqual(first.subagents.map(seconds), [['Explore', 10, 30]]);
+  assert.deepEqual(second.subagents.map(seconds), [['Plan', 70, 150]]);
+  assert.deepEqual(first.segments.filter((each) => each.kind === 'subagent').map((each) => [(each.from - T0) / 1000, (each.to - T0) / 1000]), [[10, 30]]);
+  const drawn = gantt(shown, { width: 900, now: T0 + 150_000, onPick: () => {} });
+  const titles = [...drawn.querySelectorAll('.seg--subagent')].map((each) => each.getAttribute('title'));
+  assert.deepEqual(titles, ['Explore subagent for 20 s', 'Plan subagent for 1 min']);
+});
+
+test('the run of a subagent that owned a stage is drawn in its own lane and in no other stage’s bar', () => {
+  const one = timed('one', MAIN, 0, 100);
+  const shown = log([one, timed('scan', EXPLORE, 20, 50)], { activity: [activity({ subagents: [run('a1', 'Explore', 10, 50, one)] })] });
+  const model = chart(shown, T0 + 600_000);
+  assert.deepEqual(model.lanes.map((lane) => lane.label), ['main agent', 'Explore']);
+  const [main] = model.lanes[0].rows;
+  assert.deepEqual(main.subagents, []);
+  assert.ok(main.segments.every((each) => each.kind !== 'subagent'));
+});
+
+test('time inside a subagent’s run but outside the main agent’s turns is not idle', () => {
+  const one = timed('one', MAIN, 0, 300);
+  const shown = log([one], { activity: [activity({ turns: [span(0, 100)], subagents: [run('a2', 'Explore', 100, 200, one)] })] });
+  const model = chart(shown, T0 + 300_000);
+  assert.deepEqual(model.idle.map((each) => [(each.from - T0) / 1000, (each.to - T0) / 1000]), [[200, 300]]);
+  const [row] = model.lanes[0].rows;
+  assert.deepEqual(row.segments.map((each) => [each.kind, (each.from - T0) / 1000, (each.to - T0) / 1000]), [
+    ['work', 0, 100],
+    ['subagent', 100, 200],
+  ]);
+});
+
+test('a stage’s bar counts each moment to its Loft runs, then its subagents’ runs, then its tasks, waits and work', () => {
+  const task = block('task', 't1', { title: 'T', state: 'done' }, { more: { times: { listed: at(0), started: at(10), ended: at(40) } } });
+  const one = timed('one', MAIN, 0, 60, [task]);
+  const shown = log([one], {
+    activity: [activity({ turns: [span(0, 60)], loft: [{ commands: ['check'], agent: 'main', ...span(30, 35) }], subagents: [run('a2', 'Explore', 20, 50, one)] })],
+  });
+  const model = chart(shown, T0 + 600_000);
+  const [row] = model.lanes[0].rows;
+  assert.deepEqual(row.segments.map((each) => [each.kind, (each.from - T0) / 1000, (each.to - T0) / 1000]), [
+    ['work', 0, 10],
+    ['task', 10, 20],
+    ['subagent', 20, 30],
+    ['loft', 30, 35],
+    ['subagent', 35, 50],
+    ['work', 50, 60],
+  ]);
+  const counted = (kind) => row.segments.filter((each) => each.kind === kind).reduce((sum, each) => sum + each.to - each.from, 0);
+  for (const part of model.summary.parts) assert.equal(counted(part.kind), part.length, part.kind);
+});
+
+test('a Loft run of a subagent that owned no stage is drawn in the bar of the stage it counted toward', () => {
+  const one = timed('one', MAIN, 0, 60);
+  const shown = log([one, timed('two', MAIN, 60, 120)], {
+    activity: [activity({ loft: [{ commands: ['check'], agent: 'a2', ...span(70, 75), failed: false, stage: one.key }] })],
+  });
+  const [first, second] = chart(shown, T0 + 600_000).lanes[0].rows;
+  assert.deepEqual(first.loft.map((each) => each.name), ['check']);
+  assert.deepEqual(second.loft, []);
 });

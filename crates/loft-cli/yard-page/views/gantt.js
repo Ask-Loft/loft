@@ -1,9 +1,9 @@
 // The Gantt chart, in HTML: a bar above it dividing the time that was not idle, then a frame
 // that scrolls within the page. In the frame, the time axis and the track of plan and spec mode
 // stay at the top and a column naming each lane, stage and task stays at the left; beneath them a
-// lane for the main agent and one for each subagent, each stage's bar divided into its active
-// tasks, Loft runs, waits on the person and agent work, with its tasks beneath it, over a faint
-// grid. Every time is placed as a share of the chart's width and an offset in pixels, so the bars
+// lane for the main agent and one for each subagent that owned a stage, each stage's bar divided
+// into its active tasks, Loft runs, the runs of the subagents that worked for it, waits on the
+// person and agent work, with its tasks beneath it, over a faint grid. Every time is placed as a share of the chart's width and an offset in pixels, so the bars
 // follow the width the browser gives them. The column's edge can be dragged, and its width is
 // kept in this browser. Choosing a stage, a task or a submission opens the timeline at it.
 
@@ -307,6 +307,7 @@ function laneBlock(model, lane, index, marks, draw) {
 function stageRows(row, draw) {
   const stage = row.stage;
   const runs = (segment) => row.loft.filter((run) => run.from < segment.to && run.to > segment.from);
+  const helpers = (segment) => row.subagents.filter((run) => run.from < segment.to && run.to > segment.from);
   return [
     h(
       'div',
@@ -317,7 +318,7 @@ function stageRows(row, draw) {
         { class: 'track-cell' },
         h('span', { class: 'stage-back', style: draw.span(stage.from, stage.to) }),
         row.segments
-          .filter((segment) => segment.kind !== 'wait' && segment.kind !== 'loft')
+          .filter((segment) => segment.kind === 'task' || segment.kind === 'work')
           .map((segment) => h('span', { class: `seg seg--${segment.kind}`, style: draw.span(segment.from, segment.to) })),
         h('button', {
           type: 'button',
@@ -333,6 +334,16 @@ function stageRows(row, draw) {
               class: ['seg', 'seg--loft', runs(segment).some((run) => run.failed) ? 'seg--failed' : null],
               style: draw.span(segment.from, segment.to),
               title: runs(segment).map((run) => `loft ${run.name}`).join(', '),
+              ...draw.pick(stage.id),
+            }),
+          ),
+        row.segments
+          .filter((segment) => segment.kind === 'subagent')
+          .map((segment) =>
+            h('span', {
+              class: 'seg seg--subagent',
+              style: draw.span(segment.from, segment.to),
+              title: helpers(segment).map((run) => `${run.type} subagent for ${length(run.to - run.from)}`).join(', '),
               ...draw.pick(stage.id),
             }),
           ),
