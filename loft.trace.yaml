@@ -22068,6 +22068,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "a note written folded starts folded"
         body: 7faee74edb6bbc1d9e5db80e14dcd06e37a6c8d740efda5671132f411f86fb86
+  - node: 01a169b5-e858-7099-9745-8598cc3dc66f
+    reviewed: eac4d11a4a53537ccee21d2d21c1bfc68e9051ff35d95bd0eb393a51caef191a
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "every_markdown_field_of_a_stage_and_its_blocks_gets_its_html"
+        body: 3d3d43567b981360fc2423da51f5699f96109c8120cd133d73a343f9133c2f4b
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "the_page_reads_every_markdown_field_of_a_stage_and_its_blocks_rendered_by_loft"
+        body: 7d410f860b368a3fa09458dc049e66bad08bc1325be35026cf18e1b17aa73fb0
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "every field that a block or a stage holds in Markdown is drawn from the HTML loft rendered from it"
+        body: d7e005b78c0e1cd483c366e663d12089dbbb476c0416ddb1e122dfd8aacf79e8
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a field whose HTML the page server did not give is drawn as its text"
+        body: 6c147a73ba693629631737ef815a4dfd6b9f95f434b36487524e5fd7d35b9f34
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "an option’s detail is drawn from the HTML loft rendered from its Markdown"
+        body: fcd54bb1bf33114464e41e0ba4619d098f8cd5601975a8846f1dad5c3d909bf4
   - node: 01a16854-53e3-71b2-8192-66b204b471a0
     reviewed: 2101096e3a497fc0a66e69cb08756a4be14318646ac575c1c801fa8042ad41f7
     tests:
@@ -22164,6 +22182,9 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
         name: "html_that_a_block_s_markdown_holds_reaches_the_page_as_text"
         body: aaa3f1dcb364788e68996acbbd8e9962494240af78b92328436835a8e0d78597
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "html_in_a_task_s_detail_is_shown_as_text"
+        body: b67ca37983c7af5573dd8a90b54327172f49c12d6a0a90d50400ddf3ba7d17d9
   - node: 01a16838-8fdb-7127-a23e-c559b4afac18
     reviewed: ab3a6127984cfba8c9fb6ed658bb0a401921e14da4ec2b2d8232cdbd57688935
     tests:

@@ -66,6 +66,41 @@ fn the_page_reads_each_block_s_markdown_rendered_to_html_by_loft() {
 }
 
 #[test]
+fn the_page_reads_every_markdown_field_of_a_stage_and_its_blocks_rendered_by_loft() {
+    let yard = Yard::new();
+    yard.write(
+        "s1",
+        r#"[
+  {"id": "shape", "kind": "stage", "title": "Shape it", "status": "active", "goal": "The *store* reads"},
+  {"id": "q1", "kind": "question", "stage": "shape", "prompt": "Which shelf?", "header": "Shelf",
+   "options": [{"label": "Top", "detail": "The **top** one", "recommended": true}, {"label": "Bottom"}]},
+  {"id": "d1", "kind": "decision", "stage": "shape", "title": "Top", "consequence": "Ships `b84b656`"},
+  {"id": "t1", "kind": "task", "stage": "shape", "title": "Fix", "state": "done", "detail": "Also `5ddbbfe`"}
+]"#,
+        &[],
+    );
+    let served = served(&yard);
+    let read = log(&yard, &served);
+    let body = |id: &str| block(&read, id)["version"]["body"].clone();
+    assert_eq!(
+        body("shape")["goalHtml"],
+        "<p>The <em>store</em> reads</p>\n"
+    );
+    assert_eq!(
+        body("q1")["options"][0]["detailHtml"],
+        "<p>The <strong>top</strong> one</p>\n"
+    );
+    assert_eq!(
+        body("d1")["consequenceHtml"],
+        "<p>Ships <code>b84b656</code></p>\n"
+    );
+    assert_eq!(
+        body("t1")["detailHtml"],
+        "<p>Also <code>5ddbbfe</code></p>\n"
+    );
+}
+
+#[test]
 fn html_that_a_block_s_markdown_holds_reaches_the_page_as_text() {
     let yard = Yard::new();
     yard.write("s1", NOTES, &[]);

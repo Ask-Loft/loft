@@ -163,6 +163,34 @@ test('a task shows its title and its state', () => {
   assert.equal(drawn.querySelector('.state').textContent, 'Active');
 });
 
+test('every field that a block or a stage holds in Markdown is drawn from the HTML loft rendered from it', () => {
+  const asked = question('shelf', ['Top', 'Bottom']);
+  asked.version.body.options[0].detailHtml = '<p>The <strong>top</strong> one</p>';
+  asked.answer = answer(['Top'], 'page');
+  const settles = block('decision', 'd1', { title: 'Top', consequence: 'c', consequenceHtml: '<p>Ships <code>b84b656</code></p>', question: asked.key }, { more: { number: 1 } });
+  const alone = block('decision', 'd2', { title: 'Alone', consequence: 'c', consequenceHtml: '<p>Keeps <em>it</em></p>' }, { more: { number: 2 } });
+  const task = block('task', 't1', { title: 'Fix', state: 'done', detail: 'd', detailHtml: '<p>Also <code>5ddbbfe</code></p>' });
+  const view = block('loft', 'v1', { view: 'findings', note: 'n', noteHtml: '<p>Shows <em>what changed</em></p>', reasons: [], recorded: { at: '2026-01-01T10:00:00Z' }, report: { findings: [] } });
+  const shaped = stage('s', 'S', 'active', [asked, settles, alone, task, view]);
+  shaped.version.body.goalHtml = '<p>The <em>store</em> reads</p>';
+  const shown = log([shaped]);
+  const drawn = timeline(shown, context(shown));
+  const article = (kind) => drawn.querySelector(`article.block[data-kind="${kind}"]`);
+  assert.equal(drawn.querySelector('.goal em').textContent, 'store');
+  assert.equal(article('question').querySelector('.option-detail strong').textContent, 'top');
+  assert.equal(article('question').querySelector('.decision-head .consequence code').textContent, 'b84b656');
+  assert.equal(article('decision').querySelector('.consequence em').textContent, 'it');
+  assert.equal(article('task').querySelector('.detail code').textContent, '5ddbbfe');
+  assert.equal(article('loft').querySelector('.note em').textContent, 'what changed');
+});
+
+test('a field whose HTML the page server did not give is drawn as its text', () => {
+  const task = block('task', 't1', { title: 'Fix', state: 'done', detail: 'Also `5ddbbfe`' });
+  const drawn = card(task, context(log([stage('s', 'S', 'active', [task])])));
+  assert.equal(drawn.querySelector('.detail').textContent, 'Also `5ddbbfe`');
+  assert.ok(!drawn.querySelector('.detail code'));
+});
+
 test('each block offers the agent that wrote it, its version and the time it was written', () => {
   const note = block('note', 'n1', { markdown: 'x', html: '<p>x</p>', folded: false }, { by: EXPLORE });
   const drawn = card(note, context(log([stage('s', 'S', 'active', [note])])));

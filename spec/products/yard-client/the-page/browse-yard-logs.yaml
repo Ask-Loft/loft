@@ -194,6 +194,8 @@ requirements:
         name: "A note shows its title, its Markdown and its tone as a colour and a word."
       - key: 01a1646f-546d-7042-befd-eb38e626356c
         name: "A note written folded starts folded."
+      - key: 01a169b5-e858-7099-9745-8598cc3dc66f
+        name: "Every field that a block or a stage holds in Markdown is drawn as Markdown rendered by `loft`: a stage's goal, a question's context and each option's detail, a decision's consequence, a task's detail and a `loft` block's note, as well as the Markdown of a note, an approval and a plan."
       - key: 01a16854-53e3-71b2-8192-66b204b471a0
         name: "A table in a block's Markdown spans the width of its block, breaks no word within a cell, and scrolls sideways where it is wider than the block."
       - key: 01a1646f-546d-7042-befd-eb39ce7ffb3c

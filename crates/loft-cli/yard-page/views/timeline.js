@@ -3,7 +3,7 @@
 // folded; a line where the stages done or dropped end and the planned ones begin; and in each
 // stage its blocks, those written during one stretch of plan or spec mode drawn under a band.
 
-import { h } from '../lib/dom.js';
+import { h, markdown } from '../lib/dom.js';
 import * as kept from '../lib/kept.js';
 import { length, ms, when, who } from '../lib/format.js';
 import { drawnInQuestion, grouped, ordered } from '../model/log.js';
@@ -54,7 +54,7 @@ function stageSection(stage, context) {
       owner ? h('span', { class: 'owner' }, owner.agent ? `${who(owner)} subagent` : 'main agent') : null,
       h('span', { class: 'count' }, blocks.length === 1 ? '1 block' : `${blocks.length} blocks`),
     ),
-    body.goal ? h('p', { class: 'goal' }, body.goal) : null,
+    markdown(body.goalHtml, body.goal, 'goal'),
     times.started
       ? h(
           'p',
