@@ -68,3 +68,15 @@ requirements:
     criteria:
       - key: 01a16844-c9d1-72df-8cfa-5cd65a22c107
         name: "A statement in an EARS form is recorded by its form and its slots, as well as its sentence."
+      - key: 01a16859-7663-77ff-83f2-f13521a5b79a
+        name: "Each criterion is recorded with its own tests and the rules `loft reconcile` reported of it, however long the lists of the whole report are."
+  - key: 01a16859-7663-77ff-83f2-f136d787182b
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "take the state of each criterion of a `trace` view from the tests and rules recorded with it."
+    criteria:
+      - key: 01a16859-7663-77ff-83f2-f137ef80c9ea
+        name: "A criterion whose tests and rules the report's shortened lists left out keeps the state its own record gives."
+      - key: 01a16859-7663-77ff-83f2-f13801487d85
+        name: "A view recorded without each criterion's tests and rules, whose report left tests or findings out, says that its counts may fall short."
