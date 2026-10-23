@@ -4,7 +4,7 @@
 //! since HEAD left the revision. It writes nothing and exits 0 whatever it finds; a tree that
 //! does not read, a conflict record and a base it cannot read stop it with exit 1.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use loftspec::codec::{Site, Sites};
@@ -20,6 +20,7 @@ use serde_json::{Map, Value, json};
 use crate::base;
 use crate::finish::Finished;
 use crate::json;
+use crate::opened::Opened;
 use crate::out::outln;
 use crate::stop::Stop;
 
@@ -27,8 +28,8 @@ use crate::stop::Stop;
 const SCHEMA: &str = "loft-status/2";
 const OUTCOME: &str = "reported";
 
-/// Where the tree stands.
-struct Report {
+/// Where the tree stands: what `loft status` reports.
+pub struct Report {
     lock: Option<LockReport>,
     repository: RepoState,
     base: Option<BaseReport>,
@@ -64,7 +65,7 @@ pub fn run(root: &Path, base: Option<&str>, as_json: bool) -> Finished {
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
     if as_json {
-        json::print(&json::result(SCHEMA, OUTCOME, fields(&report), Vec::new()));
+        json::print(&report.document());
     } else {
         for line in lines(&report) {
             outln!("{line}");
@@ -73,38 +74,76 @@ pub fn run(root: &Path, base: Option<&str>, as_json: bool) -> Finished {
     Finished::success(OUTCOME)
 }
 
-/// The document `loft status --format json` prints for the tree under `root`, against `base`
-/// where one is given, as a `loft` view of Yard Log records it.
-pub fn json_document(root: &Path, base: Option<&str>) -> Result<Value, Stop> {
-    let report = attempt(root, base)?;
-    Ok(json::result(SCHEMA, OUTCOME, fields(&report), Vec::new()))
+fn attempt(root: &Path, base: Option<&str>) -> Result<Report, Stop> {
+    let opened = Opened::open(root)?;
+    let tree = ReadTree::read(&opened.files)?;
+    let git = GitCommand::default();
+    let mut report = Report::of(&opened.store, &tree, || repository(&git, root))?;
+    if let Some(revision) = base {
+        report.compare(&base::read_tree(&git, root, revision)?, &tree);
+    }
+    Ok(report)
 }
 
-fn attempt(root: &Path, base: Option<&str>) -> Result<Report, Stop> {
-    let store = FileStore::open(root)?;
-    let files = store.read_files()?;
-    let tree = ReadTree::read(&files)?;
-    let (document, sites) = (tree.document(), tree.sites());
-    // The tree's own state root, which a publish would record, is under the highest view.
-    let (roots, state) = tree.roots().map_err(|errors| Stop::invalid(&errors))?;
-    let lock = store
-        .lock()
-        .map_err(|error| lock_error(&error))?
-        .map(|lock| {
-            let differs = first_difference(&lock, &roots, state).map(|(root, ..)| root);
-            LockReport { lock, differs }
-        });
-    let git = GitCommand::default();
-    let repository = git.state(root).map_err(repository_error)?;
-    let base = match base {
-        Some(revision) => Some(base_report(&git, root, revision, document, sites)?),
-        None => None,
-    };
-    Ok(Report {
-        lock,
-        repository,
-        base,
-    })
+/// The state of the repository that holds the tree under `root`.
+///
+/// # Errors
+///
+/// The tree is not inside a git repository, or git fails.
+pub fn repository(git: &GitCommand, root: &Path) -> Result<RepoState, Stop> {
+    git.state(root).map_err(repository_error)
+}
+
+impl Report {
+    /// Where `tree`, read from `store`, stands: its lock and whether it matches it, and the state
+    /// of the repository `repository` gives.
+    ///
+    /// # Errors
+    ///
+    /// The tree does not validate, its lock does not read, or `repository` fails.
+    pub fn of(
+        store: &FileStore,
+        tree: &ReadTree,
+        repository: impl FnOnce() -> Result<RepoState, Stop>,
+    ) -> Result<Self, Stop> {
+        // The tree's own state root, which a publish would record, is under the highest view.
+        let (roots, state) = tree.roots().map_err(|errors| Stop::invalid(&errors))?;
+        let lock = store
+            .lock()
+            .map_err(|error| lock_error(&error))?
+            .map(|lock| {
+                let differs = first_difference(&lock, &roots, state).map(|(root, ..)| root);
+                LockReport { lock, differs }
+            });
+        Ok(Self {
+            lock,
+            repository: repository()?,
+            base: None,
+        })
+    }
+
+    /// Adds the nodes `tree` added, changed and removed since `base`.
+    pub fn compare(&mut self, base: &base::Tree, tree: &ReadTree) {
+        self.base = Some(base_report(base, tree.document(), tree.sites()));
+    }
+
+    /// The paths of the files that hold a node added or changed since the base, where the report
+    /// compares with one.
+    pub fn changed_paths(&self) -> BTreeSet<String> {
+        let Some(base) = &self.base else {
+            return BTreeSet::new();
+        };
+        base.added
+            .iter()
+            .chain(&base.changed)
+            .map(|listed| listed.site.path.to_string())
+            .collect()
+    }
+
+    /// The document `loft status --format json` prints.
+    pub fn document(&self) -> Value {
+        json::result(SCHEMA, OUTCOME, fields(self), Vec::new())
+    }
 }
 
 fn lock_error(error: &StoreError) -> Stop {
@@ -129,25 +168,18 @@ fn repository_error(error: StoreError) -> Stop {
     }
 }
 
-/// The nodes `document` added, changed and removed since HEAD left `revision`.
-fn base_report(
-    git: &GitCommand,
-    root: &Path,
-    revision: &str,
-    document: &Document,
-    sites: &Sites,
-) -> Result<BaseReport, Stop> {
-    let base = base::read_tree(git, root, revision)?;
+/// The nodes `document` added, changed and removed since `base`.
+fn base_report(base: &base::Tree, document: &Document, sites: &Sites) -> BaseReport {
     let changes = content_changes(&base.document, document);
     let now = Nodes::of(document, sites);
     let then = Nodes::of(&base.document, &base.sites);
-    Ok(BaseReport {
-        revision: base.revision,
-        commit: base.commit,
+    BaseReport {
+        revision: base.revision.clone(),
+        commit: base.commit.clone(),
         added: changes.added.iter().map(|id| now.listed(*id)).collect(),
         changed: changes.changed.iter().map(|id| now.listed(*id)).collect(),
         removed: changes.removed.iter().map(|id| then.listed(*id)).collect(),
-    })
+    }
 }
 
 /// The keyed nodes of a document by key, with what the report lists of each.

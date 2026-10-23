@@ -26,11 +26,14 @@ use serde_json::{Map, Value, json};
 use crate::finish::Finished;
 use crate::json;
 use crate::locate::Parsed;
+use crate::opened::Opened;
 use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
 const SCHEMA: &str = "loft-reconcile/3";
+
+const FAILED: &str = "failed";
 
 /// What the command was asked to do beyond reporting.
 pub struct Options<'a> {
@@ -41,21 +44,25 @@ pub struct Options<'a> {
     pub accept_stale: bool,
 }
 
-/// The tree and the trace file, read.
-struct Read {
-    store: FileStore,
-    document: Document,
-    sites: Sites,
+/// The tree and the trace file, read: what `loft reconcile` reconciles.
+pub struct Read<'a> {
+    store: &'a FileStore,
+    document: &'a Document,
+    sites: &'a Sites,
     hashes: DocumentHashes,
     trace: Trace,
 }
 
 pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
-    let mut read = match read(root) {
+    let (opened, document, sites) = match sited(root) {
         Ok(read) => read,
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
-    let files = Parsed::new(read.store.test_files());
+    let mut read = match Read::of(&opened.store, &document, &sites) {
+        Ok(read) => read,
+        Err(stop) => return stop.exit(SCHEMA, as_json),
+    };
+    let files = Parsed::new(opened.store.test_files());
     let Accepted {
         keys: accepted,
         recorded,
@@ -63,51 +70,89 @@ pub fn run(root: &Path, options: &Options<'_>, as_json: bool) -> Finished {
         Ok(accepted) => accepted,
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
-    let reconciled = reconcile(&read.document, &read.hashes, &read.trace, &files);
-    let severities = reconciled.findings.iter().map(TraceFinding::severity);
-    let failed = json::fails_on(options.fail_on, severities);
-    let report = Report {
-        document: &read.document,
-        sites: &read.sites,
-    };
-    let outcome = if failed { "failed" } else { "passed" };
+    let reconciled = reconcile(read.document, &read.hashes, &read.trace, &files);
+    let outcome = outcome(options.fail_on, &reconciled);
     if as_json {
-        json::print(&report.document(&read.trace, &reconciled, &accepted, recorded, outcome));
+        json::print(&read.json(&reconciled, &accepted, recorded, outcome));
     } else {
-        report.print(&reconciled, &accepted, recorded);
+        read.report().print(&reconciled, &accepted, recorded);
     }
-    if failed {
+    if outcome == FAILED {
         Finished::failure(outcome)
     } else {
         Finished::success(outcome)
     }
 }
 
-/// The document `loft reconcile --format json` prints for the tree under `root`, with no
-/// `--fail-on` and nothing accepted, as a `loft` view of Yard Log records it. It writes nothing.
-pub fn json_document(root: &Path) -> Result<Value, Stop> {
-    let read = read(root)?;
-    let files = Parsed::new(read.store.test_files());
-    let reconciled = reconcile(&read.document, &read.hashes, &read.trace, &files);
-    let report = Report {
-        document: &read.document,
-        sites: &read.sites,
-    };
-    Ok(report.document(&read.trace, &reconciled, &[], 0, "passed"))
+/// The tree under `root`, opened and read with the site of each element.
+fn sited(root: &Path) -> Result<(Opened, Document, Sites), Stop> {
+    let opened = Opened::open(root)?;
+    let (document, sites) = codec::read_sited(&opened.files)?;
+    Ok((opened, document, sites))
 }
 
-fn read(root: &Path) -> Result<Read, Stop> {
-    let store = FileStore::open(root)?;
-    let (document, sites) = codec::read_sited(&store.read_files()?)?;
-    let hashes = hashed(&document, &sites).map_err(|errors| Stop::invalid(&errors))?;
-    let trace = trace::read(store.trace()?.as_deref())?;
-    Ok(Read {
-        store,
-        document,
-        sites,
-        hashes,
-        trace,
-    })
+/// `failed` where, under `fail_on`, a finding is as severe; `passed` otherwise.
+pub fn outcome(fail_on: Option<Severity>, reconciled: &Reconciled) -> &'static str {
+    let severities = reconciled.findings.iter().map(TraceFinding::severity);
+    if json::fails_on(fail_on, severities) {
+        FAILED
+    } else {
+        "passed"
+    }
+}
+
+impl<'a> Read<'a> {
+    /// The tree `document` and `sites` hold, read from `store`, with its hashes and trace file.
+    ///
+    /// # Errors
+    ///
+    /// The tree does not hash, or the trace file cannot be read or does not read.
+    pub fn of(
+        store: &'a FileStore,
+        document: &'a Document,
+        sites: &'a Sites,
+    ) -> Result<Self, Stop> {
+        let hashes = hashed(document, sites).map_err(|errors| Stop::invalid(&errors))?;
+        let trace = trace::read(store.trace()?.as_deref())?;
+        Ok(Self {
+            store,
+            document,
+            sites,
+            hashes,
+            trace,
+        })
+    }
+
+    /// The trace file, as read.
+    pub fn trace(&self) -> &Trace {
+        &self.trace
+    }
+
+    /// The trace file reconciled with the tree and the files that hold the tests.
+    pub fn reconciled(&self) -> Reconciled {
+        let files = Parsed::new(self.store.test_files());
+        reconcile(self.document, &self.hashes, &self.trace, &files)
+    }
+
+    /// The document `loft reconcile --format json` prints, with `outcome`, having accepted the
+    /// links of `accepted` and recorded the body of `recorded` tests.
+    pub fn json(
+        &self,
+        reconciled: &Reconciled,
+        accepted: &[Key],
+        recorded: usize,
+        outcome: &str,
+    ) -> Value {
+        self.report()
+            .document(&self.trace, reconciled, accepted, recorded, outcome)
+    }
+
+    fn report(&self) -> Report<'_> {
+        Report {
+            document: self.document,
+            sites: self.sites,
+        }
+    }
 }
 
 /// The nodes whose links were accepted, and the number of tests whose body was recorded.
@@ -125,7 +170,7 @@ fn accepted(
 ) -> Result<Accepted, Stop> {
     let before = read.trace.clone();
     let keys = if options.accept_stale {
-        accept_stale(&mut read.trace, &read.document, &read.hashes, files)
+        accept_stale(&mut read.trace, read.document, &read.hashes, files)
     } else if options.accept.is_empty() {
         Vec::new()
     } else {
@@ -133,7 +178,7 @@ fn accepted(
     };
     let recorded = recorded(&before, &read.trace);
     if !keys.is_empty() || recorded > 0 {
-        let text = trace::write(&read.trace, &read.document);
+        let text = trace::write(&read.trace, read.document);
         read.store.write_trace(text)?;
     }
     Ok(Accepted { keys, recorded })
@@ -170,10 +215,10 @@ fn accept_named(
 ) -> Result<Vec<Key>, Stop> {
     let resolved: Vec<(&String, Result<Key, &str>)> = names
         .iter()
-        .map(|name| (name, resolve(&read.document, name)))
+        .map(|name| (name, resolve(read.document, name)))
         .collect();
     let keys: Vec<Key> = resolved.iter().filter_map(|(_, key)| key.ok()).collect();
-    let refusals = accept(&mut read.trace, &keys, &read.document, &read.hashes, files)
+    let refusals = accept(&mut read.trace, &keys, read.document, &read.hashes, files)
         .err()
         .unwrap_or_default();
     let messages: Vec<String> = resolved

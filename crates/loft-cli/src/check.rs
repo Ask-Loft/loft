@@ -4,10 +4,13 @@
 //! <revision>`, the findings are marked against the tree where HEAD left the revision: the text
 //! prints the introduced ones and a count, and `--fail-on` gates on the introduced ones alone.
 
+use std::collections::BTreeSet;
 use std::path::Path;
 use std::process::ExitCode;
 
 use loftspec::check::{Change, Checked, LintConfigs, Split, check, check_against};
+use loftspec::codec::Files;
+use loftspec::identity::Key;
 use loftspec::lint::{Finding, Severity};
 use loftspec_store::repository::GitCommand;
 use serde_json::{Map, Value, json};
@@ -21,10 +24,21 @@ use crate::{base, version};
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-check/2";
 
+const FAILED: &str = "failed";
+const PASSED: &str = "passed";
+
 /// What `loft check` was asked for.
 pub struct Options<'a> {
     pub fail_on: Option<Severity>,
     pub baseline: Option<&'a str>,
+}
+
+/// The base a check compares with: the revision named, the commit where HEAD left it, and the
+/// files of `spec/` there.
+pub struct Baseline<'a> {
+    pub revision: &'a str,
+    pub commit: &'a str,
+    pub files: &'a Files,
 }
 
 /// The tree's findings split against a base, and where the base came from.
@@ -35,45 +49,25 @@ struct Compared {
     lint_configs: LintConfigs,
 }
 
-/// Each finding of the tree with its change against the base, `None` without one.
-fn marked<'a>(
-    checked: &'a Checked,
-    compared: Option<&'a Compared>,
-) -> Vec<(&'a Finding, Option<Change>)> {
-    match compared {
-        Some(compared) => compared
-            .split
-            .marked(checked.findings())
-            .map(|(finding, change)| (finding, Some(change)))
-            .collect(),
-        None => checked.findings().iter().map(|f| (f, None)).collect(),
-    }
-}
-
-/// Whether a finding counts: every finding without a base, the introduced ones against one.
-fn counts(change: Option<Change>) -> bool {
-    change.is_none_or(|change| change == Change::Introduced)
+/// A tree checked, against a base where one is given: what `loft check` reports.
+pub struct Report {
+    checked: Checked,
+    compared: Option<Compared>,
 }
 
 pub fn run(root: &Path, options: &Options, as_json: bool) -> Finished {
-    let (checked, compared) = match attempt(root, options.baseline) {
-        Ok(result) => result,
+    let report = match attempt(root, options.baseline) {
+        Ok(report) => report,
         Err(stop) => return stop.exit(SCHEMA, as_json),
     };
-    let marked = marked(&checked, compared.as_ref());
-    let gated = marked
-        .iter()
-        .filter(|(_, change)| counts(*change))
-        .map(|(finding, _)| finding.severity);
-    let failed = checked.has_errors() || json::fails_on(options.fail_on, gated);
-    let outcome = if failed { "failed" } else { "passed" };
-    let document = document(&checked, &marked, compared.as_ref(), outcome);
+    let outcome = report.outcome(options.fail_on);
+    let document = report.document(outcome);
     if as_json {
         json::print(&document);
     } else {
-        print(&checked, &marked, compared.as_ref());
+        report.print();
     }
-    let code = if failed {
+    let code = if outcome == FAILED {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
@@ -81,64 +75,159 @@ pub fn run(root: &Path, options: &Options, as_json: bool) -> Finished {
     Finished::with(code, outcome, json::errors_of(&document))
 }
 
-/// The document `loft check --format json` prints for the tree under `root`, against the tree
-/// where HEAD left `baseline` where one is given, with no `--fail-on`, as a `loft` view of Yard
-/// Log records it.
-pub fn json_document(root: &Path, baseline: Option<&str>) -> Result<Value, Stop> {
-    let (checked, compared) = attempt(root, baseline)?;
-    let marked = marked(&checked, compared.as_ref());
-    let outcome = if checked.has_errors() {
-        "failed"
-    } else {
-        "passed"
-    };
-    Ok(document(&checked, &marked, compared.as_ref(), outcome))
-}
-
 /// Checks the tree under `root`, against the tree where HEAD left `baseline` where one is given.
-fn attempt(root: &Path, baseline: Option<&str>) -> Result<(Checked, Option<Compared>), Stop> {
+fn attempt(root: &Path, baseline: Option<&str>) -> Result<Report, Stop> {
     let files = stop::read_files(root)?;
     let Some(revision) = baseline else {
-        return Ok((check(&files), None));
+        return Report::of(&files, None);
     };
     let base = base::read(&GitCommand::default(), root, revision)?;
-    let baselined =
-        check_against(&files, &base.files).map_err(|errors| base::unread(&base.commit, &errors))?;
-    let compared = Compared {
-        revision: revision.to_owned(),
-        commit: base.commit,
-        split: baselined.split,
-        lint_configs: baselined.lint_configs,
+    let baseline = Baseline {
+        revision,
+        commit: &base.commit,
+        files: &base.files,
     };
-    Ok((baselined.checked, Some(compared)))
+    Report::of(&files, Some(baseline))
 }
 
-fn print(checked: &Checked, marked: &[(&Finding, Option<Change>)], compared: Option<&Compared>) {
-    match checked {
-        Checked::Unread(errors) => {
-            for error in errors {
-                outln!("{error}");
-            }
+impl Report {
+    /// Checks the tree of `files`, against `baseline` where one is given.
+    ///
+    /// # Errors
+    ///
+    /// The base's files do not read.
+    pub fn of(files: &Files, baseline: Option<Baseline<'_>>) -> Result<Self, Stop> {
+        let Some(baseline) = baseline else {
+            return Ok(Self {
+                checked: check(files),
+                compared: None,
+            });
+        };
+        let baselined = check_against(files, baseline.files)
+            .map_err(|errors| base::unread(baseline.commit, &errors))?;
+        Ok(Self {
+            checked: baselined.checked,
+            compared: Some(Compared {
+                revision: baseline.revision.to_owned(),
+                commit: baseline.commit.to_owned(),
+                split: baselined.split,
+                lint_configs: baselined.lint_configs,
+            }),
+        })
+    }
+
+    /// `failed` where the tree has errors or, under `fail_on`, a counted finding as severe;
+    /// `passed` otherwise.
+    pub fn outcome(&self, fail_on: Option<Severity>) -> &'static str {
+        let marked = self.marked();
+        let gated = marked
+            .iter()
+            .filter(|(_, change)| counts(*change))
+            .map(|(finding, _)| finding.severity);
+        if self.checked.has_errors() || json::fails_on(fail_on, gated) {
+            FAILED
+        } else {
+            PASSED
         }
-        Checked::Read {
-            invalid, config, ..
-        } => {
-            for error in invalid {
-                outln!("{error}");
+    }
+
+    /// The keys of the nodes and decisions the findings, and the findings resolved since the
+    /// base, name.
+    pub fn subjects(&self) -> BTreeSet<Key> {
+        let resolved = self
+            .compared
+            .iter()
+            .flat_map(|compared| &compared.split.resolved);
+        self.checked
+            .findings()
+            .iter()
+            .chain(resolved)
+            .flat_map(|finding| &finding.subjects)
+            .map(|subject| subject.key)
+            .collect()
+    }
+
+    /// Each finding of the tree with its change against the base, `None` without one.
+    fn marked(&self) -> Vec<(&Finding, Option<Change>)> {
+        match &self.compared {
+            Some(compared) => compared
+                .split
+                .marked(self.checked.findings())
+                .map(|(finding, change)| (finding, Some(change)))
+                .collect(),
+            None => self.checked.findings().iter().map(|f| (f, None)).collect(),
+        }
+    }
+
+    fn print(&self) {
+        match &self.checked {
+            Checked::Unread(errors) => {
+                for error in errors {
+                    outln!("{error}");
+                }
             }
-            for error in config {
-                outln!("{error}");
-            }
-            for (finding, change) in marked {
-                if counts(*change) {
+            Checked::Read {
+                invalid, config, ..
+            } => {
+                for error in invalid {
+                    outln!("{error}");
+                }
+                for error in config {
+                    outln!("{error}");
+                }
+                let counted = self
+                    .marked()
+                    .into_iter()
+                    .filter(|(_, change)| counts(*change));
+                for (finding, _) in counted {
                     outln!("{finding}");
                 }
             }
         }
+        if let Some(compared) = &self.compared {
+            outln!("{}", summary(compared));
+        }
     }
-    if let Some(compared) = compared {
-        outln!("{}", summary(compared));
+
+    /// The document `loft check --format json` prints, with `outcome`.
+    pub fn document(&self, outcome: &str) -> Value {
+        let errors: Vec<Value> = match &self.checked {
+            Checked::Unread(errors) => json::read_errors(errors),
+            Checked::Read {
+                invalid, config, ..
+            } => json::validation_errors(invalid)
+                .into_iter()
+                .chain(config.iter().map(|e| json::read_error("lint-config", e)))
+                .collect(),
+        };
+        let findings: Vec<Value> = self
+            .marked()
+            .into_iter()
+            .map(|(finding, change)| {
+                let mut value = json::finding(finding);
+                if let Some(change) = change {
+                    value["change"] = json!(match change {
+                        Change::Introduced => "introduced",
+                        Change::Preexisting => "preexisting",
+                    });
+                }
+                value
+            })
+            .collect();
+        let mut fields = Map::new();
+        if let Some(compared) = &self.compared {
+            let resolved = compared.split.resolved.iter().map(json::finding).collect();
+            fields.insert("resolved".to_owned(), Value::Array(resolved));
+            fields.insert("baseline".to_owned(), baseline(compared));
+        }
+        fields.insert("findings".to_owned(), Value::Array(findings));
+        json::result(SCHEMA, outcome, Value::Object(fields), errors)
     }
+}
+
+/// Whether a finding counts: every finding without a base, the introduced ones against one.
+fn counts(change: Option<Change>) -> bool {
+    change.is_none_or(|change| change == Change::Introduced)
 }
 
 /// The line that ends a check against a base.
@@ -155,44 +244,6 @@ fn summary(compared: &Compared) -> String {
         changes.len() - introduced,
         compared.split.resolved.len()
     )
-}
-
-fn document(
-    checked: &Checked,
-    marked: &[(&Finding, Option<Change>)],
-    compared: Option<&Compared>,
-    outcome: &str,
-) -> Value {
-    let errors: Vec<Value> = match checked {
-        Checked::Unread(errors) => json::read_errors(errors),
-        Checked::Read {
-            invalid, config, ..
-        } => json::validation_errors(invalid)
-            .into_iter()
-            .chain(config.iter().map(|e| json::read_error("lint-config", e)))
-            .collect(),
-    };
-    let findings: Vec<Value> = marked
-        .iter()
-        .map(|(finding, change)| {
-            let mut value = json::finding(finding);
-            if let Some(change) = change {
-                value["change"] = json!(match change {
-                    Change::Introduced => "introduced",
-                    Change::Preexisting => "preexisting",
-                });
-            }
-            value
-        })
-        .collect();
-    let mut fields = Map::new();
-    if let Some(compared) = compared {
-        let resolved = compared.split.resolved.iter().map(json::finding).collect();
-        fields.insert("resolved".to_owned(), Value::Array(resolved));
-        fields.insert("baseline".to_owned(), baseline(compared));
-    }
-    fields.insert("findings".to_owned(), Value::Array(findings));
-    json::result(SCHEMA, outcome, Value::Object(fields), errors)
 }
 
 fn baseline(compared: &Compared) -> Value {

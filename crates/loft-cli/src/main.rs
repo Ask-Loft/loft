@@ -19,6 +19,7 @@ mod json;
 mod locate;
 mod merge_driver;
 mod network;
+mod opened;
 mod out;
 mod publish;
 mod reconcile;
