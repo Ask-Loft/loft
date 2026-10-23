@@ -40,7 +40,9 @@ requirements:
       - key: 01a168c0-7faa-72dc-8ad3-5213cbb5c3a7
         name: "While the chart scrolls down, the time axis and the track of modes stay in view."
       - key: 01a168c0-7faa-72dc-8ad3-52143f4aabe1
-        name: "The chart opens scrolled to its latest time."
+        name: "Shown for the first time for a Yard Log in this browser, the chart opens scrolled to its latest time."
+      - key: 01a1690b-2c9b-7594-809f-4a918b953f3f
+        name: "A chart the person scrolled opens again where they left it, after a change and after a reload of the page."
       - key: 01a168e0-b553-7083-9fa7-00e2c312fb3d
         name: "The chart's frame scrolls no further than the chart's edges, and does not rebound at them."
       - key: 01a168e0-b553-7083-9fa7-00e39e82b997
