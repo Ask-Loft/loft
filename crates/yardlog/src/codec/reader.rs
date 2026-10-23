@@ -5,6 +5,7 @@ use std::fmt;
 
 use loft_common::yaml::{Entry, Node, Position, Value};
 
+use crate::act::Time;
 use crate::keys::{Handle, Key};
 
 /// Why a file of Yard Log does not read, and where.
@@ -139,6 +140,10 @@ impl<'a> Fields<'a> {
         key(self.required(name)?)
     }
 
+    pub(super) fn time(&mut self, name: &'static str) -> Read<Time> {
+        time(self.required(name)?)
+    }
+
     pub(super) fn handle(&mut self, name: &'static str) -> Read<Handle> {
         let node = self.required(name)?;
         Handle::parse(&scalar(node)?).map_err(|error| at(node.position, error.to_string()))
@@ -211,6 +216,13 @@ fn number(node: &Node) -> Read<u64> {
     let text = scalar(node)?;
     text.parse()
         .map_err(|_| at(node.position, format!("`{text}` is not a whole number")))
+}
+
+/// A time, as a scalar node holds it.
+pub(super) fn time(node: &Node) -> Read<Time> {
+    scalar(node)?
+        .parse::<Time>()
+        .map_err(|error| at(node.position, error.to_string()))
 }
 
 pub(super) fn key(node: &Node) -> Read<Key> {

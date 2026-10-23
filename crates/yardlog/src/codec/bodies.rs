@@ -4,7 +4,6 @@ use loft_common::yaml::Out;
 
 use super::acts::{Field, text, token};
 use super::reader::{Fields, Read, at};
-use crate::act::Time;
 use crate::body::{
     Approval, Body, Choice, Decision, Kind, Loft, Note, Plan, Question, Reason, Recorded, Stage,
     Status, Task, TaskState, TaskType, Tone, View,
@@ -206,15 +205,12 @@ fn read_loft(fields: &mut Fields<'_>) -> Read<Loft> {
         entry.finish()?;
     }
     let mut place = Fields::of(fields.required("recorded")?)?;
-    let when = place.required("at")?;
     let recorded = Recorded {
         commit: place.optional_text("commit")?,
         branch: place.optional_text("branch")?,
         dirty: place.flag("dirty")?,
         loft: place.text("loft")?,
-        at: super::reader::scalar(when)?
-            .parse::<Time>()
-            .map_err(|error| at(when.position, error.to_string()))?,
+        at: place.time("at")?,
     };
     place.finish()?;
     let written = fields.required("report")?;

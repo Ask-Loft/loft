@@ -10,7 +10,7 @@ pub use loft_common::time::{Time, TimeError};
 pub const CLAUDE_CODE: &str = "claude-code";
 
 /// When an Act was made, at which revision, and by whom.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Act {
     pub at: Time,
     pub revision: u64,

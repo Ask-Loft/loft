@@ -4,7 +4,7 @@
 use loft_common::yaml::Out;
 
 use super::reader::{Fields, Read, at};
-use crate::act::{Act, Actor, Agent, Subagent, Time};
+use crate::act::{Act, Actor, Agent, Subagent};
 use crate::log::Arrival;
 
 pub(super) type Field = (&'static str, Out);
@@ -52,11 +52,7 @@ fn write_actor(actor: &Actor) -> Out {
 }
 
 pub(super) fn read_act(fields: &mut Fields<'_>) -> Read<Act> {
-    let node = fields.required("at")?;
-    let text = super::reader::scalar(node)?;
-    let at_time: Time = text
-        .parse()
-        .map_err(|error: crate::act::TimeError| at(node.position, error.to_string()))?;
+    let at_time = fields.time("at")?;
     let revision = fields.integer("revision")?;
     let actor = read_actor(fields.required("by")?)?;
     Ok(Act {

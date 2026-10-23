@@ -3,9 +3,7 @@
 //! one has seen more of its events, and the merge driver takes one whole rather than joining
 //! them; all it reads of a copy is when its last event ended.
 
-use loft_common::yaml::Node;
-
-use super::reader::{Fields, at, scalar};
+use super::reader::{Fields, time};
 use super::{FileError, parse};
 use crate::act::Time;
 
@@ -33,10 +31,4 @@ pub fn last_ended(name: &str, bytes: &[u8]) -> Result<Option<Time>, FileError> {
         .map(time)
         .transpose()
         .map_err(in_file)
-}
-
-fn time(node: &Node) -> super::reader::Read<Time> {
-    scalar(node)?
-        .parse::<Time>()
-        .map_err(|error| at(node.position, error.to_string()))
 }
