@@ -113,6 +113,31 @@ pub fn succeeded(call: &[&str], output: Output) -> Result<Vec<u8>, PortError> {
     }
 }
 
+/// Whether a call that answers with its exit code alone says yes (0) or no (1).
+///
+/// # Errors
+///
+/// The call exited with another code.
+pub fn yes_or_no(call: &[&str], output: Output) -> Result<bool, PortError> {
+    if output.status.code() == Some(1) {
+        return Ok(false);
+    }
+    succeeded(call, output).map(|_| true)
+}
+
+/// What a call printed, where it succeeded, and none where it exited 1, as a call that finds
+/// nothing does.
+///
+/// # Errors
+///
+/// The call exited with another code than 0 or 1.
+pub fn if_found(call: &[&str], output: Output) -> Result<Option<Vec<u8>>, PortError> {
+    if output.status.code() == Some(1) {
+        return Ok(None);
+    }
+    succeeded(call, output).map(Some)
+}
+
 /// Whether a call failed because its directory lies in no repository.
 #[must_use]
 pub fn outside_a_repository(output: &Output) -> bool {
