@@ -22828,7 +22828,7 @@ links:
         name: "an_event_is_kept_in_the_session_s_event_log_with_its_tree_branch_stage_and_open_submissions"
         body: 8a650e512475afbd86e4f2b9751814283b676ce1c0c8e7ead8f8fd3c9a5c7e02
   - node: 01a165fd-782b-723a-b2d7-578e4cefd187
-    reviewed: ebdae8e32eba1bea6ca66eca644bb7cb203138059ac0d6c150fffcf2e555857b
+    reviewed: 1fdad934cdad4f9604bf7c40e4ad536abfc3bcddb5811e25cd9ffbeadcb15157
     tests:
       - file: "crates/loft-cli/src/yard/serve/events.rs"
         name: "a_batch_opens_the_yard_log_of_each_directory_it_names_once"
