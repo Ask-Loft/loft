@@ -88,6 +88,8 @@ requirements:
     criteria:
       - key: 01a16880-126c-7301-9603-b98df4b2fa9e
         name: "Without `--reports`, each version of a `loft` block in the result carries the size of its report as JSON in bytes, and no report."
+      - key: 01a16979-7fc8-7561-aa3e-41cacdaab526
+        name: "Without `--reports`, each version of a `loft` block in the result carries the number of items of each list its report counts, by the list's path."
       - key: 01a16880-126c-7301-9603-b98ee4fc50ed
         name: "Without `--reports`, a `loft` block in the result keeps its view, its note, its reasons and where and when its report was recorded."
       - key: 01a16880-126c-7301-9603-b98f56f34cf8

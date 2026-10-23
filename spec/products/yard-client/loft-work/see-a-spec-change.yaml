@@ -2,9 +2,9 @@ key: 01a1646f-546d-7042-befd-eabf848abd4c
 slug: see-a-spec-change
 name: "See a spec change"
 body: |
-  A `spec-change` view shows what a branch added to the specification, changed in it or removed from it, against the base revision. The diagram holds only the changed slice and what it belongs to, so that it grows with the change and not with the specification: a branch that touches two Features of a specification of hundreds is drawn as small as those two Features.
+  A `spec-change` view shows what a branch added to the specification, changed in it or removed from it, against the base revision. The diagram holds only the changed slice and what it belongs to, so that it grows with the change and not with the specification: a branch that touches two criteria of a specification of hundreds is drawn as small as those two criteria and the Feature above them.
 
-  Requirements and criteria are counted on their Feature, not drawn, as a diagram of every criterion would not read.
+  The diagram shows where each change lies and the diff beneath it what each change says: a changed criterion's box can hold only its new words, so its old words are read in the diff.
 realizes:
   - 01a16469-559e-73c4-85f2-71a94f0aa021
 requirements:
@@ -12,28 +12,59 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Components and decisions, with a tree of every changed node beneath it."
+      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Requirements, criteria, Components and decisions, with a diff of every changed node beneath it."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac1d09f5f92
-        name: "The diagram shows each changed node with the Feature Group and the Product above it."
+        name: "The diagram shows each changed node with the Requirement, the Feature, the Feature Group and the Product above it."
       - key: 01a16475-7fbc-7732-a78c-bc4f592eb112
         name: "The diagram draws the `realizes` and decision subject edges between the nodes it shows."
       - key: 01a1646f-546d-7042-befd-eac271279597
-        name: "A Feature's box counts its Requirements and its criteria."
+        name: "Each added, changed or removed Requirement is drawn as a box beneath its Feature that holds its statement."
       - key: 01a16475-7fbc-7732-a78c-bc50ee43201f
-        name: "A Feature's box gives the number of its Requirements and criteria that were added, changed or removed."
+        name: "Each added, changed or removed criterion is drawn as a box beneath its Requirement that holds its name."
+      - key: 01a1695a-dd72-7090-817b-abea7cf0c895
+        name: "A Requirement or a criterion that did not change is drawn only where a changed criterion lies beneath it, and then only for context."
+      - key: 01a1695a-dd72-7090-817b-abebaa96fd5a
+        name: "A Feature's box gives no count of its Requirements or its criteria."
       - key: 01a1646f-546d-7042-befd-eac305fe0fe5
         name: "Each box says whether its node was added, changed or removed, in a word as well as a colour, and a box drawn only for context says neither."
       - key: 01a1646f-546d-7042-befd-eac47fbbbfb2
-        name: "Each box names its node, and gives its label where the node has one."
-      - key: 01a1646f-546d-7042-befd-eac5a7afa6b1
-        name: "The tree beneath the diagram lists every added, changed and removed node by its kind, its label and its name."
-      - key: 01a16475-7fbc-7732-a78c-bc51485eea5d
-        name: "The tree beneath the diagram starts folded."
+        name: "Each box of a Product, a Feature Group, a Feature, a Component or a decision names its node, and every box gives its node's label where the node has one."
       - key: 01a1646f-546d-7042-befd-eac6d7f3526d
         name: "The view names the base revision it compares with, and the commit it was recorded at."
       - key: 01a1646f-546d-7042-befd-eac7b48cb905
         name: "A view of no change says that the specification has not changed since the base revision."
+  - key: 01a1695a-dd72-7090-817b-abecf6ac6c9d
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show in the diff beneath the diagram the words of each added, changed and removed node, with the words added and the words removed marked."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eac5a7afa6b1
+        name: "The diff lists every added, changed and removed node by its kind, its label and its name."
+      - key: 01a1695a-dd72-7090-817b-abed3355eb7d
+        name: "A node's words are a Requirement's statement, a criterion's name, a decision's title and outcome, and the name and body of any other node."
+      - key: 01a1695a-dd72-7090-817b-abee85f754da
+        name: "An added node shows its words unmarked, as the word beside it says it was added."
+      - key: 01a1695a-dd72-7090-817b-abefd279bcb5
+        name: "A removed node shows its words as they were, marked as removed."
+      - key: 01a1695a-dd72-7090-817b-abf0d6c9c185
+        name: "A changed node shows its words once, with each word removed marked as removed and each word added marked as added."
+      - key: 01a1695a-dd72-7090-817b-abf130c2dda7
+        name: "A changed node whose words did not change says that only its other fields changed."
+      - key: 01a16475-7fbc-7732-a78c-bc51485eea5d
+        name: "The diff starts folded."
+  - key: 01a1695a-dd72-7090-817b-abf280f1f0dd
+    statement:
+      form: unwanted
+      if: "a `spec-change` report was recorded without the words of its nodes"
+      system: "the page"
+      shall: "draw it as it was drawn when it was recorded, with each Feature's box counting its Requirements and its criteria and those added, changed and removed."
+    criteria:
+      - key: 01a1695a-dd72-7090-817b-abf37e7d1fe9
+        name: "Such a report's diagram draws no box for a Requirement or a criterion."
+      - key: 01a1695a-dd72-7090-817b-abf4975045c0
+        name: "Such a report's diff lists every changed node by its kind, its label and its name, without its words."
   - key: 01a1646f-546d-7042-befd-eac86409601b
     statement:
       form: unwanted
@@ -42,6 +73,6 @@ requirements:
       shall: "draw each Feature Group as one box that counts its changed nodes, and let the person open one Feature Group at a time."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac9dc2edaf7
-        name: "Opening a Feature Group draws its changed Features in place of its box."
+        name: "Opening a Feature Group draws its changed Features, Requirements and criteria in place of its box."
       - key: 01a1646f-546d-7042-befd-eacaa63dddfa
         name: "Opening another Feature Group closes the one that was open."

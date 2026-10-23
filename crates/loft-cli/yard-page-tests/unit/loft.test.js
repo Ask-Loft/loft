@@ -24,17 +24,23 @@ function drawn(children) {
 
 const RECORDED = { commit: 'abcdef0123456789', branch: 'feat/shelf', dirty: false, loft: '2.2.1', at: '2026-01-01T10:00:00Z' };
 
-const feature = {
-  key: 'f',
-  kind: 'feature',
-  label: 'F-3',
-  name: 'Share a list',
-  parent: 'g',
-  change: 'changed',
+const feature = { key: 'f', kind: 'feature', label: 'F-3', name: 'Share a list', parent: 'g', change: 'changed' };
+/** A Feature as a report recorded before the words were kept gives it. */
+const counting = {
+  ...feature,
   requirements: 4,
   criteria: 9,
   delta: { requirements: { added: 1, changed: 0, removed: 0 }, criteria: { added: 2, changed: 1, removed: 0 } },
 };
+const requirement = {
+  key: 'r',
+  kind: 'requirement',
+  label: 'RQ-7',
+  name: 'While a list is shared, the shelf shall refuse edits made through the link.',
+  parent: 'f',
+  change: null,
+};
+const criterion = { key: 'c1', kind: 'criterion', label: 'AC-21', name: 'An edit made through the link is refused, and the link says so.', parent: 'r', change: 'changed' };
 const group = { key: 'g', kind: 'feature_group', label: 'FG-2', name: 'Sharing', parent: 'p', change: null };
 const product = { key: 'p', kind: 'product', label: 'P-1', name: 'Reading List', parent: null, change: null };
 
@@ -67,8 +73,23 @@ test('a spec change diagram colours each box by how it changed, in the colours o
   assert.doesNotMatch(text, /#e3f4e8|#fdf0d8|#fbe4e2|#f1f3f5/);
 });
 
-test('a Feature box counts its Requirements and criteria, and those added, changed or removed', () => {
-  assert.equal(boxText(feature), 'F-3 Share a list<br/>changed<br/>4 Requirements, 9 criteria<br/>1 Requirements added, 2 criteria added, 1 criteria changed');
+test('a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name', () => {
+  const text = source({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion], decisions: [], edges: [] }, null);
+  assert.match(text, /n3\("RQ-7 While a list is shared, the shelf shall<br\/>refuse edits made through the link\.<br\/>added"\):::added/);
+  assert.match(text, /n4\(\["AC-21 An edit made through the link is<br\/>refused, and the link says so\.<br\/>changed"\]\):::changed/);
+  assert.match(text, /n2 --> n3/);
+  assert.match(text, /n3 --> n4/);
+});
+
+test('a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count', () => {
+  const text = source({ nodes: [product, group, feature, requirement, criterion], decisions: [], edges: [] }, null);
+  assert.match(text, /n3\("RQ-7 [^"]*"\):::context/);
+  assert.doesNotMatch(boxText(requirement), /added|changed|removed/);
+  assert.equal(boxText(feature), 'F-3 Share a list<br/>changed');
+});
+
+test('a report recorded without the words counts a Feature box’s Requirements and criteria, and those added, changed or removed', () => {
+  assert.equal(boxText(counting), 'F-3 Share a list<br/>changed<br/>4 Requirements, 9 criteria<br/>1 Requirement added, 2 criteria added, 1 criterion changed');
 });
 
 test('each box says how its node changed in a word, and a box drawn for context says neither', () => {
@@ -108,20 +129,25 @@ test('a diagram of more than 30 boxes draws each Feature Group as one box that c
   assert.match(boxText(folded.shown[2]), /9 changed/);
 });
 
-test('opening a Feature Group draws its changed Features in place of its box, and opening another closes the first', () => {
+test('opening a Feature Group draws its changed Features, Requirements and criteria in place of its box, and opening another closes the first', () => {
   const nodes = [product];
   for (let g = 0; g < 4; g += 1) {
     nodes.push({ key: `g${g}`, kind: 'feature_group', label: `FG-${g}`, name: `Group ${g}`, parent: 'p', change: null });
     for (let f = 0; f < 9; f += 1) nodes.push({ ...feature, key: `g${g}f${f}`, parent: `g${g}` });
+    nodes.push({ ...requirement, key: `g${g}r`, parent: `g${g}f0` }, { ...criterion, key: `g${g}c`, parent: `g${g}r` });
   }
   const one = boxes({ nodes, decisions: [], edges: [] }, 'g1');
   assert.equal(one.shown.filter((node) => node.kind === 'feature').length, 9);
+  assert.deepEqual(
+    one.shown.filter((node) => node.kind === 'requirement' || node.kind === 'criterion').map((node) => node.key),
+    ['g1r', 'g1c'],
+  );
   assert.ok(one.shown.every((node) => node.kind !== 'feature' || node.parent === 'g1'));
   const other = boxes({ nodes, decisions: [], edges: [] }, 'g2');
   assert.ok(other.shown.every((node) => node.kind !== 'feature' || node.parent === 'g2'));
 });
 
-test('the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded', () => {
+test('a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded', () => {
   const report = {
     status: { base: { revision: 'develop', commit: '0123456789abcdef', added: [{ kind: 'criterion', label: null, name: 'A new one' }], changed: [], removed: [] } },
     graph: { nodes: [feature], decisions: [], edges: [] },
@@ -132,6 +158,75 @@ test('the tree beneath the diagram lists every changed node by its kind, its lab
   assert.match(tree.querySelector('li').textContent, /added criterion\s+A new one/);
   assert.match(view.querySelector('.base').textContent, /Compared with develop at 0123456789/);
   assert.match(view.querySelector('.recorded').textContent, /Recorded abcdef0123 on feat\/shelf/);
+});
+
+/** A spec-change view of a report whose diff holds `diff`. */
+function diffView(diff) {
+  const report = {
+    status: { base: { revision: 'develop', commit: '0123456789abcdef', added: [], changed: [], removed: [] } },
+    graph: { nodes: [product, group, feature], decisions: [], edges: [], diff },
+  };
+  return loftView({ view: 'spec-change', report, recorded: RECORDED, base: 'develop', reasons: [] });
+}
+
+test('the diff beneath the diagram lists every changed node by its kind, its label and its name, and starts folded', () => {
+  const view = diffView([
+    { key: 'c1', kind: 'criterion', label: 'AC-21', name: 'A new one', change: 'added', words: { after: 'A new one' } },
+    { key: 'd', kind: 'decision', label: null, name: 'Keep links short', change: 'removed', words: { before: 'Keep links short' } },
+  ]);
+  const diff = view.querySelector('.diff');
+  assert.equal(diff.open, false);
+  assert.match(diff.querySelector('summary').textContent, /2 nodes and decisions changed/);
+  const items = [...diff.querySelectorAll('li')];
+  assert.match(items[0].textContent, /^added criterion\s+AC-21\s*A new one/);
+  assert.match(items[1].textContent, /^removed decision\s+Keep links short/);
+});
+
+test('an added node shows its words unmarked, and a removed node its words as they were, marked as removed', () => {
+  const view = diffView([
+    { key: 'c1', kind: 'criterion', label: null, name: 'A new one', change: 'added', words: { after: 'A new one' } },
+    { key: 'c2', kind: 'criterion', label: 'AC-3', name: 'An old one', change: 'removed', words: { before: 'An old one' } },
+  ]);
+  const [added, removed] = view.querySelectorAll('.diff .diff-words');
+  assert.equal(added.textContent, 'A new one');
+  assert.equal(added.querySelector('ins, del'), null);
+  assert.equal(removed.querySelector('del').textContent, 'An old one');
+  assert.equal(removed.querySelector('ins'), null);
+});
+
+test('a node of the diff says nothing more than its change, its kind, its label, its name and its words', () => {
+  const view = diffView([
+    { key: 'c1', kind: 'criterion', label: null, name: 'A new one', change: 'added', words: { after: 'A new one' } },
+    { key: 'c2', kind: 'criterion', label: 'AC-4', name: 'Two', change: 'changed', words: { before: 'One', after: 'Two' } },
+  ]);
+  for (const item of view.querySelectorAll('.diff li')) assert.doesNotMatch(item.textContent, /null|undefined/);
+  assert.equal(view.querySelector('.diff .words'), null, 'the page’s muted grid of words is another thing');
+});
+
+test('a changed node shows its words once, each word removed marked removed and each word added marked added', () => {
+  const view = diffView([
+    {
+      key: 'c1',
+      kind: 'criterion',
+      label: 'AC-21',
+      name: 'An edit made through the link is refused, and the link says so.',
+      change: 'changed',
+      words: { before: 'An edit made through the link is refused.', after: 'An edit made through the link is refused, and the link says so.' },
+    },
+  ]);
+  const words = view.querySelector('.diff .diff-words');
+  assert.equal(words.querySelector('del').textContent, 'refused.');
+  assert.equal(words.querySelector('ins').textContent, 'refused, and the link says so.');
+  assert.match(words.textContent, /^An edit made through the link is /);
+  assert.equal(view.querySelector('.diff-same'), null);
+});
+
+test('a changed node whose words did not change says that only its other fields changed', () => {
+  const statement = 'While a list is shared, the shelf shall refuse edits made through the link.';
+  const view = diffView([{ key: 'r', kind: 'requirement', label: 'RQ-7', name: statement, change: 'changed', words: { before: statement, after: statement } }]);
+  assert.equal(view.querySelector('.diff .diff-words').textContent, statement);
+  assert.equal(view.querySelector('.diff ins, .diff del'), null);
+  assert.match(view.querySelector('.diff-same').textContent, /Only its other fields changed/);
 });
 
 test('a spec change view of no change says that the specification has not changed since the base revision', () => {

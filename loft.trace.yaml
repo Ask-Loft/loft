@@ -19674,6 +19674,12 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "every_version_of_a_loft_block_gives_its_report_by_its_size_without_reports"
         body: ddbda1720c8210c5656102e523fd53483bc3bed437ba03157bc6526115f68889
+  - node: 01a16979-7fc8-7561-aa3e-41cacdaab526
+    reviewed: dd50b16c380f04bcabb9f065fe03df14af737ebfe717279a3dc5701d77a15055
+    tests:
+      - file: "crates/loft-cli/tests/yard_read.rs"
+        name: "without_reports_a_loft_block_gives_the_number_of_items_of_each_list_its_report_counts"
+        body: 0d1f87a9e1bdba2a4b3309ef6d51636fa8835e64e64e93f9e0700494e59afbeb
   - node: 01a16880-126c-7301-9603-b98ee4fc50ed
     reviewed: bc529665f539c14de80dbc2c533f6b5eb68b5ea1a7a4617a6c79857c3d39c013
     tests:
@@ -19685,7 +19691,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "with_reports_a_loft_block_carries_its_report_as_recorded"
-        body: 732e62d74c58efdb5816cbf9a7b5b1e421450d7c78206fe4ee94a808c27ad552
+        body: c4a7cd247bc7ce0cd91fea5b52b031123c68522d5e6e5055beaf4245f715ca53
   - node: 01a16880-126c-7301-9603-b9906374c516
     reviewed: 0226585cbcd46c3c5f82a35a1a1ca331823ed3a1dbef31d8ca3f44cef46f5bd8
     tests:
@@ -21195,6 +21201,12 @@ links:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "an_agent_keeps_at_most_one_stage_active_and_a_stage_passes_to_who_makes_it_active"
         body: d60b0e0251b3345eaa59cc16cad45f9535a2a036a850427080f2069e532d78df
+  - node: 01a16976-40ac-705b-958a-7cf2454c58db
+    reviewed: d4c82a833e71fc5ac5ba75a03e28a3ccf9926c448b405e514cec6108a634eade
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "the_refusal_of_a_second_active_stage_names_the_one_active_and_says_to_set_its_status_in_the_batch"
+        body: f5e90edfc27c031a219c57e411a280aa4c5baa59d40b9f9d0754cfa02eb7108a
   - node: 01a1646f-546d-7042-befd-ea833b829a1b
     reviewed: 21519837787f1127e97ea254c643db30adfff32d4136ef56318f7c946dcdefce
     tests:
@@ -23010,6 +23022,159 @@ links:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "a_port_another_program_holds_exits_1_naming_the_port"
         body: e3c750ce11589b48ea08f29b8e7ec823a0c40ccd11b8584d88461b2c98f18e63
+  - node: 01a1695a-dd72-7090-817b-abf748b2e193
+    reviewed: f92ff445e7c0fe78465b1c0929be5b06b5ca6c4f0cb6d7e22ff69569ed9b9ea6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it"
+        body: 1381a475aadc2f6f0c73c2448b3d6bdb2f544e9792126e7b66b7ea0ab2134fce
+  - node: 01a1695a-dd72-7090-817b-abf896e58a12
+    reviewed: fc4c750f436071b62e15c4b8212987c72757c013ec5f4591a5f2e8bc483c70be
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "each spec-change diagram shows the button that expands it"
+        body: 751c6602d154e4daf46269b3c4a1bdec72a91010b8eaa1582979250debb1d405
+  - node: 01a1695a-dd72-7090-817b-abf9704f06b2
+    reviewed: c2fb4e754123efc255f4a8f199edc5a46f5f71f00bd712d6281ae253f9eb32a0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a diagram that could not be drawn shows no button to expand it"
+        body: dd4afe4049f745ea39360353255fd456af403f9d8e09cae037bd1cc039c68c3e
+  - node: 01a1695a-dd72-7090-817b-abfa7b7e630c
+    reviewed: 20a0e07935dbea5f0a95c1472b23083f2398201ff6f1be8e0c35731dd2f795be
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it"
+        body: 1381a475aadc2f6f0c73c2448b3d6bdb2f544e9792126e7b66b7ea0ab2134fce
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-abfcdbb64f36
+    reviewed: e4257a4592700422866e437c8311dfd387e9c9f84ec7bd2a62b1d03f27d19ad5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "expanding a diagram opens it in the page’s modal, named by its block, with no button of its own"
+        body: 67368b85cdf13027613b8e7dbfe4dc8c436f86e2ba704f013c7772a8be894a57
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
+        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+  - node: 01a1695a-dd72-7090-817b-abfdbe25498a
+    reviewed: 98986df78a00939d2f0a547432cc77c7c3576f360b429beddacacd1a726b5add
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
+        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the expanded diagram shows only once it is fitted to the modal"
+        body: a542f40bfe0bc0ba5c60751b65a55eb3a93dec57d47b92381553cd3058e4dedd
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "fitting shows the whole diagram in the stage, centred in it"
+        body: 9356bf8bb482bbddbfba238ff2d88b5d3185d6aceaf1a4961e99134aee5824f7
+  - node: 01a1695a-dd72-7090-817b-abfe03d07189
+    reviewed: 12ebbbcfcce50452c92da2ffe226f67687e9ec370bc3d354ec9e87f07d2dbb45
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "expanding a diagram opens it in the page’s modal, named by its block, with no button of its own"
+        body: 67368b85cdf13027613b8e7dbfe4dc8c436f86e2ba704f013c7772a8be894a57
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole"
+        body: eca1b896a4797c1efe98f0cb240bedbfaf95edbfd2ee27e2def2c07283e51a23
+  - node: 01a1695a-dd72-7090-817b-abff8766d1fc
+    reviewed: 629d467f2c3c3ba294a9803bbca9ba3a93fba1925570a547372c172f9e6df3f0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the expanded spec-change diagram is the one the page drew, with the Feature Group the person opened"
+        body: 6ed1995902ff3cccfabdc5fb80f1bfff2b8dea6951d08d932f7532ee44cfa5a8
+  - node: 01a1695a-dd72-7090-817b-ac0012610770
+    reviewed: ccfa2af441ba4572c2cf2dc760919daafd0cf4d4747ea10e9c56ba801ad7ced5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "closing the expanded diagram gives the focus back to the button that expanded it"
+        body: eddc43791a2b5b6e070815dc08e5cb3c21f9816d059ca76a057d6768efcc78c0
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "closing the expanded diagram gives the focus back to its button, even after the page drew the block again"
+        body: e0d65fbfe1e3d15d07fc3021ed6a3378bf3dc435d93766d4f964d0553bd25f37
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-ac026a641efc
+    reviewed: 018a70ebcecfec78c487b1ec93c7998776198aafc3d5ffd2944686c164bea4c6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "zooming keeps the point under the pointer over the same point of the diagram"
+        body: 33bff3f59efd4ee8602502998eac1ea4ac949050b9339908589ed308e187c92b
+  - node: 01a1695a-dd72-7090-817b-ac03c8863b7a
+    reviewed: ef7e316c9a97b6047ccbf8ee6dbaeb1358f3c70628399df66b74480b3c2d8940
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the wheel with Ctrl or ⌘ held zooms, the wheel alone pans, and neither scrolls the modal or the page"
+        body: 4a0a3c2e6c9c55a7531c64394c1e3ba005f964f348c7c91951f1669312615981
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+  - node: 01a1695a-dd72-7090-817b-ac040919d3d1
+    reviewed: ba17081bb5ed035a938781e153cc7bd10cf37e78235558db0d4c90fe7a4a0e09
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the wheel with Ctrl or ⌘ held zooms, the wheel alone pans, and neither scrolls the modal or the page"
+        body: 4a0a3c2e6c9c55a7531c64394c1e3ba005f964f348c7c91951f1669312615981
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "panning moves the diagram across the stage at the same zoom"
+        body: d85106c65ed7bc8b2dfcf8c40941798a9e20ef3edcf119d74ffbdbb762b622e3
+  - node: 01a1695a-dd72-7090-817b-ac05c9382c0b
+    reviewed: a44d03f9ed783562b125d37289c593e870828b00224d4da6d8129ee7bff065a2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
+  - node: 01a1695a-dd72-7090-817b-ac06c2e927c9
+    reviewed: 17a80b5f4c2c61261145a8e95003f841128107c2a7600504bd7712a28137c05d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "buttons in the modal zoom in, zoom out and fit, and the modal shows the zoom as a percentage"
+        body: e8ece15ab8ffb95f2df74065f9f270028ef269dec13f63e9c21e5245c0797d16
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-ac075b2314e0
+    reviewed: f8ff2f02e58e2158b653a4190976961d780de47c9f84f44b39fab48a1a7c6894
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the keys + and - zoom in and out, 0 fits the whole diagram, and the arrows pan it"
+        body: 9c9561cc96417988cd1681cb1801c0818e4e687ddd902def35e8113e5daaaf2c
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
+        body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
+  - node: 01a1695a-dd72-7090-817b-ac08aa490e8f
+    reviewed: a6c7795ccf1ffaab21c44f2d90678a332ac15b9a1d1e3afab51f782740a96411
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "buttons in the modal zoom in, zoom out and fit, and the modal shows the zoom as a percentage"
+        body: e8ece15ab8ffb95f2df74065f9f270028ef269dec13f63e9c21e5245c0797d16
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "the zoom reads as a whole percentage of the diagram’s own size"
+        body: 8054e0316560611da29f545371f15eedf12957df93a07fbb840c9c51d8354469
+  - node: 01a1695a-dd72-7090-817b-ac09b1462a87
+    reviewed: b596459416c800ce45f108317d2843dcbd39042a57bfe25c538c688ad2b30bf3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
+        name: "the zoom stays between a tenth of the diagram’s own size and eight times it"
+        body: 2f64db0bce51a99cdb06cc06251113559d170e0dc61f3a0b137293f6b38b604a
+  - node: 01a1695a-dd72-7090-817b-ac0a5117db21
+    reviewed: 0f6094b8a8fe4ec00e9fc1f2fae7a3bf0b72c54994656525020dcaf58438abd1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the wheel with Ctrl or ⌘ held zooms, the wheel alone pans, and neither scrolls the modal or the page"
+        body: 4a0a3c2e6c9c55a7531c64394c1e3ba005f964f348c7c91951f1669312615981
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
+        body: ec5ae7ceda849a63da42a8cc925072bdf61e2ade6ac086100b5b789e323f212f
   - node: 01a1646f-546d-7042-befd-eaa32ea3a711
     reviewed: ef0fbe1d2d9aad2e1a3034ca3160a8f0acee76a1050b28e0d23fd43c958ab0ba
     tests:
@@ -23059,20 +23224,35 @@ links:
         name: "a_trace_view_holds_the_outcome_of_loft_reconcile_and_the_criteria_of_each_feature_the_branch_changed"
         body: 05672263797e0f019e1ef85cd6214f4123958fe63c7e1d036a5a036ec527fd5b
   - node: 01a16571-d769-7590-94aa-9784cae11170
-    reviewed: 8963a10406ef5d77961805a56956c7089f1db5b52a9944e7893c5036dcac8f16
+    reviewed: 783b2873763518206e47f5d18d9315b4203cd3a39d43642c168cc72862ad5e00
     tests:
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
-        name: "a_spec_change_view_draws_a_changed_feature_under_its_feature_group_and_product"
-        body: 42356924fcb1dd4eb2355e1d7cc3e801a0c212a45ec45ce9247edfe4b1f8e2e4
+        name: "a_spec_change_view_draws_a_changed_criterion_under_its_requirement_feature_feature_group_and_product"
+        body: f3ff76bf3ae79d1a20490cbe68983f47160afb2f05b05febc65dcf4c7db56d7f
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
-        name: "a_spec_change_view_counts_a_feature_s_requirements_and_criteria_and_those_changed"
-        body: 9ca66a08b3fa2f89d141fb34fa4636bebcd089b7f7929dd6cdf8b755bc35d600
+        name: "a_spec_change_view_draws_no_unchanged_requirement_and_counts_none_on_a_feature"
+        body: 5592258d744130a8a237b2a740098df92a0782baf9fe437ced497430610f0fcd
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_spec_change_view_draws_the_realizes_edge_between_two_changed_boxes"
         body: f1f7dbd05080ef52aa0416c79d3627c0a7257468e5544f4239b5901f1c18eaf6
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_spec_change_view_of_no_change_draws_no_box"
         body: 1c0f4b012550204b3b24cdaaf69d258a96faabe45f1b48d31cbdf67a748a049c
+  - node: 01a16961-6ff0-7438-8679-6b7e58b8c092
+    reviewed: 6a9dfcfa3e29a3fde6a53bd117cfdf476dbb774bc7111f1d3f3cce26580d4046
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_a_changed_criterion_s_words_before_and_after"
+        body: dad9d8ec9efe636cceab0f73fbfc2169204a0bbc8a138ec214b50c456f6c95ce
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_an_added_node_s_words_after_and_a_removed_one_s_before"
+        body: 736dfbd59c9510bb0f81de943d769ba83d2496a39cc2a3c8e5ea28f8938a4700
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_a_decision_s_title_and_outcome"
+        body: 9be362e3f74e75e46b6ca73d39d187df09745770a7eb2f2c7a6a4aaa528153f2
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_the_same_words_before_and_after_where_only_tags_changed"
+        body: cfec5f19350240842808f362b38b342249c155529bf66cd3dbc7ac768adfb7ce
   - node: 01a16571-d769-7590-94aa-9785944c7484
     reviewed: 03cf7688a67b5550592c6d3d0eb70d2a9d2bc5139cf2d1d3a077fe2b6c0c1f25
     tests:
@@ -23185,11 +23365,17 @@ links:
         name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
         body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
   - node: 01a1646f-546d-7042-befd-eac1d09f5f92
-    reviewed: 356d378722c644b385f3df25c227d3b53c293286791ce3d1ac51f4c39f2736dc
+    reviewed: 4608f5f9b322cc70d356f4a5668ab0702ac000ea0addf3edd71be758fcfa82a4
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change diagram shows each changed node with the Feature Group and the Product above it"
         body: 13cd964960d7f1089a7368b53d02eff573fcc39fd2db57466572b8efd65cd954
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
+        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_draws_a_changed_criterion_under_its_requirement_feature_feature_group_and_product"
+        body: f3ff76bf3ae79d1a20490cbe68983f47160afb2f05b05febc65dcf4c7db56d7f
   - node: 01a16475-7fbc-7732-a78c-bc4f592eb112
     reviewed: 32fda0916c49229359958cfc864f362fcd6a593f32071d2ea8f5e518e7c4128f
     tests:
@@ -23197,17 +23383,38 @@ links:
         name: "the diagram draws the realizes and decision subject edges between the nodes it shows"
         body: 52a3b37ba4a91240ef5e8d394892fb98ff4914503ffb2303a552900d38958cd6
   - node: 01a1646f-546d-7042-befd-eac271279597
-    reviewed: 99d60536611c7a4634efcd6ee14e175b7897d27716ee2389087b3dcb678aa57b
+    reviewed: 263c384193d0b44ffd372f4d0ba19ce92d065c7c364f3be70c529c308c96a54c
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a Feature box counts its Requirements and criteria, and those added, changed or removed"
-        body: 976e57faf3bef2bd2daa8af53e5db50c8f471a280a2d0898267bf63b9bcff40d
+        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
+        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
   - node: 01a16475-7fbc-7732-a78c-bc50ee43201f
-    reviewed: c25ce3ff0e0e6884fa4af02d84dde8637034be8f834c5dcd3deb29b3b30fea0a
+    reviewed: b814569b8851de4a223c2f77b235c52dbf9c9afdc8d26ca9b8418853196da2f7
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a Feature box counts its Requirements and criteria, and those added, changed or removed"
-        body: 976e57faf3bef2bd2daa8af53e5db50c8f471a280a2d0898267bf63b9bcff40d
+        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
+        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
+  - node: 01a1695a-dd72-7090-817b-abea7cf0c895
+    reviewed: 6354ea4edd365237a916b0fe92b888bb76457ed3fefd1503ee99d9e393605d45
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count"
+        body: 610fca38b0ed2d18933350752b56e35045dc77156bf546173d8ddff9dd599d1c
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_draws_a_changed_criterion_under_its_requirement_feature_feature_group_and_product"
+        body: f3ff76bf3ae79d1a20490cbe68983f47160afb2f05b05febc65dcf4c7db56d7f
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_draws_no_unchanged_requirement_and_counts_none_on_a_feature"
+        body: 5592258d744130a8a237b2a740098df92a0782baf9fe437ced497430610f0fcd
+  - node: 01a1695a-dd72-7090-817b-abebaa96fd5a
+    reviewed: 65c0e933a3742413f21edd20e4463c5f8d66f45e7908f40dc9402cb6051bf58d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count"
+        body: 610fca38b0ed2d18933350752b56e35045dc77156bf546173d8ddff9dd599d1c
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_draws_no_unchanged_requirement_and_counts_none_on_a_feature"
+        body: 5592258d744130a8a237b2a740098df92a0782baf9fe437ced497430610f0fcd
   - node: 01a1646f-546d-7042-befd-eac305fe0fe5
     reviewed: 1cb710df492c7d8c0b616a76bf4261697ea47f7bc4e556421d5324177ea30465
     tests:
@@ -23215,50 +23422,116 @@ links:
         name: "each box says how its node changed in a word, and a box drawn for context says neither"
         body: 3ca78591e4b1484031046ca0865fe49e7a53c6f9338c799217b17bcb6ea25457
   - node: 01a1646f-546d-7042-befd-eac47fbbbfb2
-    reviewed: fcefd39502c3722aaf7f5734e0befdda0fe1ff291923a605516e4d208395d1b2
+    reviewed: ab243427d554d742fbea2a1ce64c2a36d647532c218691cd6ffad0dd849bc3bf
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change diagram shows each changed node with the Feature Group and the Product above it"
         body: 13cd964960d7f1089a7368b53d02eff573fcc39fd2db57466572b8efd65cd954
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a Feature box counts its Requirements and criteria, and those added, changed or removed"
-        body: 976e57faf3bef2bd2daa8af53e5db50c8f471a280a2d0898267bf63b9bcff40d
-  - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
-    reviewed: eac542827b2b8c72d2e7c4da04766ee0073edcc60e90c10a955c1b9230ca3efc
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
-        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
-  - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
-    reviewed: b0e2772049c3cf78b3c3aa90fdb1ddde2d24a818b5873679263fe530f7ebc87a
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
-        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
+        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
+        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
   - node: 01a1646f-546d-7042-befd-eac6d7f3526d
     reviewed: 4ed5abc236ae1444aadb7a591c678222470ee5f95f3e3788e366cf3bc508cd9e
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "the tree beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
-        body: 28260bb6de76f9935bcaae2ab6c1b446fe9d7c5e6482265580896a04a7c2d07f
+        name: "a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded"
+        body: 316ae92e9ff423fa714faafe0a09b407dcec10a675d50963333b0cb64a263240
   - node: 01a1646f-546d-7042-befd-eac7b48cb905
     reviewed: 5a775079803ebb72a354fb9583c1d66ca46e2c7d47624f623ad2b09cad64f1fa
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change view of no change says that the specification has not changed since the base revision"
         body: 4518e36f431f870d396db1c24a82dfaf912feb3100420bbf33ee4d44b808e141
-  - node: 01a1646f-546d-7042-befd-eac9dc2edaf7
-    reviewed: 1ad2a9dbd42978a9eeafca56ff38ff75186ee908cde099aab5d5a5cfa3f811f5
+  - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
+    reviewed: 5e8a8d2490cd2c5b2f68bef2301663b81adf663d9c4fa6f7915d59c49262b6fb
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "opening a Feature Group draws its changed Features in place of its box, and opening another closes the first"
-        body: 87b84c46490ece2bddd2d798410d2d394d354afffba57dcadbb9c0eab7201f2e
+        name: "the diff beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
+        body: f13c947e66fce78003a7ecddb48172781ecdbaa245b55f3556e5541e1c018aaf
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a node of the diff says nothing more than its change, its kind, its label, its name and its words"
+        body: 494508b075dcecc671d0b8e04db51ca74d31b15119b8016ed1419fb34ba816ca
+  - node: 01a1695a-dd72-7090-817b-abed3355eb7d
+    reviewed: dfb7857896f19a3e8e3c2963ace4b3b69c412b68119ba940bfb6cf9686623db8
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_a_changed_criterion_s_words_before_and_after"
+        body: dad9d8ec9efe636cceab0f73fbfc2169204a0bbc8a138ec214b50c456f6c95ce
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_a_decision_s_title_and_outcome"
+        body: 9be362e3f74e75e46b6ca73d39d187df09745770a7eb2f2c7a6a4aaa528153f2
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_spec_change_view_s_diff_gives_the_same_words_before_and_after_where_only_tags_changed"
+        body: cfec5f19350240842808f362b38b342249c155529bf66cd3dbc7ac768adfb7ce
+  - node: 01a1695a-dd72-7090-817b-abee85f754da
+    reviewed: cebcc494d098a48cf70bf43b1cea3ee7dc7d1057ae752711619cafa62e5762f9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "an added node shows its words unmarked, and a removed node its words as they were, marked as removed"
+        body: ae3c1637b8477caf7cfa73b26c5aa1541a3ed1cae3ec23501d11075a5a3122c1
+  - node: 01a1695a-dd72-7090-817b-abefd279bcb5
+    reviewed: 49f6af62977924348efd813ebd9bf0b6cd6d9cc3e42956d8aeb5a0b7e1566153
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "an added node shows its words unmarked, and a removed node its words as they were, marked as removed"
+        body: ae3c1637b8477caf7cfa73b26c5aa1541a3ed1cae3ec23501d11075a5a3122c1
+  - node: 01a1695a-dd72-7090-817b-abf0d6c9c185
+    reviewed: 521fbdfd188e6c399539306a849a1f010a3002067f8a7789175448e6ff8966f4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed node shows its words once, each word removed marked removed and each word added marked added"
+        body: 82e19e44a4f9531627384f6a4297d10dda8debd5efbd2d8c7b8667431d2d4155
+      - file: "crates/loft-cli/yard-page-tests/unit/words.test.js"
+        name: "the words a change added are marked added, and the rest kept as they were"
+        body: 2274891437bad34b5c503bddffd131f89852874e0de2a7bb99c309544b10f4c3
+      - file: "crates/loft-cli/yard-page-tests/unit/words.test.js"
+        name: "the words a change removed are marked removed"
+        body: d283e9c911133580d36cababef34d944e7a49e0546730cd78450938d711063c8
+      - file: "crates/loft-cli/yard-page-tests/unit/words.test.js"
+        name: "the runs joined give the text after back, with the words removed left out"
+        body: 5bf6b5853fc303bccf08e68e1ad22b370cb9a54f59f614fc03f8ab7ba717e946
+      - file: "crates/loft-cli/yard-page-tests/unit/words.test.js"
+        name: "texts too long to compare word by word count as the whole before removed and the whole after added"
+        body: 4c83447c60f7c31e80da4153990ab26d53fec4f67c2e9da108b872ff46f37ebf
+  - node: 01a1695a-dd72-7090-817b-abf130c2dda7
+    reviewed: 2c17c167f76972aad4361aab1fdf4b788294ce0d8c8a6be7a4bd8e1c3a3c43fa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed node whose words did not change says that only its other fields changed"
+        body: 25020f60e5f1145068eed1f8ed3d1c2618796b78597a173651c0ed2a70267583
+      - file: "crates/loft-cli/yard-page-tests/unit/words.test.js"
+        name: "the same words before and after give one run kept as it was"
+        body: 792dd6481656d45c964b23daf7e329eb32d53e687afe394a9c3169f500a6fbc8
+  - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
+    reviewed: dea93ed5f29437fa4001e0abc1666d588ba51096b7422c88b09feac71429f49b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the diff beneath the diagram lists every changed node by its kind, its label and its name, and starts folded"
+        body: f13c947e66fce78003a7ecddb48172781ecdbaa245b55f3556e5541e1c018aaf
+  - node: 01a1695a-dd72-7090-817b-abf37e7d1fe9
+    reviewed: 2b4acba132d51a09070e64e824725a172b148d5eb0731c21049e2cc0aca411a2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a report recorded without the words counts a Feature box’s Requirements and criteria, and those added, changed or removed"
+        body: c79e644f27a95332269ae30ccb5699175201398eb2def43c56c38018aa76e8af
+  - node: 01a1695a-dd72-7090-817b-abf4975045c0
+    reviewed: 72cc7fc540128c26e5689faacd32c3868993aa25cd4fb64325124481fb31f4c4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded"
+        body: 316ae92e9ff423fa714faafe0a09b407dcec10a675d50963333b0cb64a263240
+  - node: 01a1646f-546d-7042-befd-eac9dc2edaf7
+    reviewed: e21e6cf88c8c7aac1691b60e194d01504bbf2f01c1ea184993b3b409ad6c2ed6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "opening a Feature Group draws its changed Features, Requirements and criteria in place of its box, and opening another closes the first"
+        body: 7064f158d8816851a3a76448a1f16fe053ea1e370c21fbae89b5cb6c7853cb1b
   - node: 01a1646f-546d-7042-befd-eacaa63dddfa
     reviewed: 2bdf176a550307ee7b8df2b5b4e782d0460ac22c2b7b996cc3827a64f78fae7a
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "opening a Feature Group draws its changed Features in place of its box, and opening another closes the first"
-        body: 87b84c46490ece2bddd2d798410d2d394d354afffba57dcadbb9c0eab7201f2e
+        name: "opening a Feature Group draws its changed Features, Requirements and criteria in place of its box, and opening another closes the first"
+        body: 7064f158d8816851a3a76448a1f16fe053ea1e370c21fbae89b5cb6c7853cb1b
   - node: 01a1646f-546d-7042-befd-eacd8a7f0685
     reviewed: c07d7b7fd3d97ceae1098764acb31345d4ff92afb894043cf6ba07ef794512c1
     tests:
@@ -24534,6 +24807,12 @@ links:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_that_a_read_gives_each_report_by_its_size_and_reports_gives_them"
         body: 486cc2b94047ca6414608c276f819fb0a515379de15ba315a82ba951c6d368a4
+  - node: 01a16979-7fc7-740c-a7e4-9e31eef6017f
+    reviewed: 298f2388ec745e6e7cfe871fdb25bc55ec68d31bf1500d5c58ab837aee1202f1
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_check_a_report_by_the_counts_a_read_gives"
+        body: dd921b5d51273ce555064e35ea3ffc5c8cdfd9828277ffd71aba97f9367a649c
   - node: 01a1646f-546c-7521-9643-bca80176474a
     reviewed: 913de329f798b46a0229348fddc3516d31e1de1282021c565a383121f1071beb
     tests:

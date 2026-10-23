@@ -2,7 +2,12 @@
 // builds, drawn by the copy of Mermaid the page server serves with the page. Mermaid is loaded
 // the first time a diagram is drawn, in its strict mode, which draws no HTML the source holds.
 // It draws in the page's own colours for the scheme the browser asks for, and each diagram on
-// the page is drawn again when the browser changes its scheme.
+// the page is drawn again when the browser changes its scheme. Each diagram drawn has a button
+// that expands it into the page's modal, where it zooms and pans.
+
+import { h } from './dom.js';
+import * as modal from './modal.js';
+import { zoomStage } from './zoom.js';
 
 /** The colours of the page's light scheme, for a page whose stylesheet sets none. */
 const LIGHT = {
@@ -111,9 +116,13 @@ const shown = new Map();
 /** The latest drawing asked of each diagram, so that an earlier one finishing late is dropped. */
 const turns = new WeakMap();
 
+/** The targets of the diagrams drawn expanded, in the modal, which have no button to expand. */
+const EXPANDED = new WeakSet();
+
 /**
  * Draws `source` into `target`, or the source that `source` makes from the colours of the
- * scheme; where it does not parse, shows the source with a line saying it could not be drawn.
+ * scheme, with a button that expands it; where it does not parse, shows the source with a line
+ * saying it could not be drawn, and no button.
  * @param {HTMLElement} target
  * @param {string | ((colours: Colours) => string)} source
  */
@@ -126,6 +135,7 @@ export async function draw(target, source) {
   if (drawn.has(key)) {
     target.innerHTML = drawn.get(key);
     target.classList.add('is-drawn');
+    expandable(target);
     return;
   }
   const id = `diagram-${(counter += 1)}`;
@@ -136,6 +146,7 @@ export async function draw(target, source) {
     if (turns.get(target) !== turn) return;
     target.innerHTML = svg;
     target.classList.add('is-drawn');
+    expandable(target);
   } catch (error) {
     document.getElementById(id)?.remove();
     document.getElementById(`d${id}`)?.remove();
@@ -148,6 +159,72 @@ export async function draw(target, source) {
     target.replaceChildren(line, pre);
     target.classList.add('is-failed');
   }
+}
+
+/**
+ * Gives the diagram drawn in `target` its button that expands it, unless it is itself drawn
+ * expanded.
+ * @param {HTMLElement} target
+ */
+function expandable(target) {
+  if (EXPANDED.has(target)) return;
+  // The icon is a glyph, not an SVG, so that the diagram's SVG stays the only one it holds.
+  const button = h(
+    'button',
+    { type: 'button', class: 'diagram-expand', 'aria-label': 'Expand the diagram', title: 'Expand the diagram' },
+    h('span', { 'aria-hidden': 'true' }, '⤢'),
+  );
+  button.addEventListener('click', () => expand(target, button));
+  target.append(button);
+}
+
+/**
+ * Where the button that expands a diagram lies: its block's key and its place among the block's
+ * buttons, by which it is found again once the page has drawn the block afresh.
+ * @param {HTMLElement} button
+ */
+function placeOf(button) {
+  const block = /** @type {HTMLElement | null} */ (button.closest('article.block'));
+  const index = block ? [...block.querySelectorAll('.diagram-expand')].indexOf(button) : -1;
+  return { key: block?.dataset.key ?? null, index };
+}
+
+/**
+ * The button at `place`, as the page now draws it.
+ * @param {{ key: string | null, index: number }} place
+ * @returns {HTMLElement | null}
+ */
+function buttonAt(place) {
+  if (!place.key || place.index < 0) return null;
+  const block = [...document.querySelectorAll('article.block')].find((each) => /** @type {HTMLElement} */ (each).dataset.key === place.key);
+  return /** @type {HTMLElement | null} */ (block?.querySelectorAll('.diagram-expand')[place.index] ?? null);
+}
+
+/**
+ * Opens the diagram drawn in `target` in the page's modal, named by its block's heading, drawn
+ * from the same source and fitted to the modal.
+ * @param {HTMLElement} target
+ * @param {HTMLElement} button
+ */
+export function expand(target, button) {
+  const source = shown.get(target);
+  if (source === undefined) return;
+  const heading = target.closest('article.block')?.querySelector('h4')?.textContent?.trim();
+  const place = placeOf(button);
+  const content = h('div', { class: 'zoom-content' });
+  EXPANDED.add(content);
+  const zoom = zoomStage(content);
+  // A browser that gives a clicked button no focus would give it back to nothing.
+  button.focus();
+  modal.show('diagram', {
+    title: heading || 'Diagram',
+    content: zoom.element,
+    class: 'modal--diagram',
+    refocus: () => buttonAt(place),
+  });
+  zoom.stage.focus();
+  // The modal has its size once it is open; the diagram, once it is drawn.
+  void draw(content, source).then(() => requestAnimationFrame(zoom.fit));
 }
 
 /** Draws again each diagram still on the page, in the scheme the browser now asks for. */

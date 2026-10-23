@@ -141,3 +141,5 @@ requirements:
         name: "The skill says that a refused write names the blocks that changed, which the agent reads before writing again."
       - key: 01a16880-126c-7301-9603-b98acd507292
         name: "The skill says that a read gives each `loft` block's report by its size, and that `reports` gives the reports themselves, best with `since`."
+      - key: 01a16979-7fc7-740c-a7e4-9e31eef6017f
+        name: "The skill says that a read gives the number of items of each list a report counts, and to check what a report holds by them rather than read it whole."

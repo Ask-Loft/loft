@@ -14,7 +14,7 @@ const FIELDS: Record<ToolName, Record<string, Field>> = {
     since: { type: 'integer', description: 'Return only what changed after this revision.' },
     reports: {
       type: 'boolean',
-      description: "Return each loft block's report, which is otherwise given by its size in bytes; best with `since`.",
+      description: "Return each loft block's report, which is otherwise given by its size in bytes and the number of items of each list it counts; best with `since`.",
     },
   },
   yard_write: {
@@ -37,7 +37,7 @@ const FIELDS: Record<ToolName, Record<string, Field>> = {
 
 const DESCRIPTIONS: Record<ToolName, string> = {
   yard_read:
-    "Read the branch's Yard Log: all of it, or what changed since a revision, each loft block's report by its size unless `reports` asks for it. Gives the revision and the page's address.",
+    "Read the branch's Yard Log: all of it, or what changed since a revision, each loft block's report by its size and its lists' counts unless `reports` asks for it. Gives the revision and the page's address.",
   yard_write:
     "Write a batch of blocks to the branch's Yard Log, opening it on the first write; with `send`, send its questions, approvals and plans to the person.",
   yard_wait:

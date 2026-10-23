@@ -29,7 +29,9 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eaa67d3a1c9e
         name: "A `spec-change`, `trace` or `findings` view compares the tree with the base revision the agent names, or with the base branch where it names none."
       - key: 01a16571-d769-7590-94aa-9784cae11170
-        name: "A `spec-change` view records, beside the changed nodes, the Feature Groups and Products above them, the changed decisions, and the `realizes` and decision subject edges between them."
+        name: "A `spec-change` view records, beside the changed nodes, the Requirements, Features, Feature Groups and Products above them, the changed decisions, and the `realizes` and decision subject edges between them."
+      - key: 01a16961-6ff0-7438-8679-6b7e58b8c092
+        name: "A `spec-change` view records the words of each added, changed and removed node and decision in each version that holds it."
       - key: 01a16571-d769-7590-94aa-9785944c7484
         name: "A `publish` view compares the tree with the commit that last wrote `loft.lock.json`, and counts the nodes and decisions that carry a label, by kind."
       - key: 01a1646f-546d-7042-befd-eaa7516bae91

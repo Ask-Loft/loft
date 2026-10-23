@@ -54,6 +54,8 @@ requirements:
         name: "Two agents may each have a stage `active` at once."
       - key: 01a1646f-546d-7042-befd-ea82c3382c6e
         name: "A batch that would leave two stages `active` for one agent is refused."
+      - key: 01a16976-40ac-705b-958a-7cf2454c58db
+        name: "The refusal names the stage that the agent already has `active`, and says to set that stage's status to `done`, `planned` or `dropped` in the same batch."
       - key: 01a1646f-546d-7042-befd-ea833b829a1b
         name: "A stage records the agent that owns it."
       - key: 01a1646f-546d-7042-befd-ea8466259887

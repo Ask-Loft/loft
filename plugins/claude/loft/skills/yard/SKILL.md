@@ -70,8 +70,10 @@ last read, in `basedOn`. A write refused because Yard Log changed names the bloc
 under you: read them, then write again on the new revision.
 
 A read gives each `loft` block's report by its size in `reportBytes`, not the report: a report
-can run to hundreds of kilobytes, and the page draws them for the person. Where you need what a
-report holds, read with `reports` as well as `since`, so that only the reports you need come back.
+can run to hundreds of kilobytes, and the page draws them for the person. It also gives the number
+of items of each list it counts in `reportCounts`, such as 45 items in `graph.diff`: check what a report
+holds by its counts, and read it whole only for what they do not say. Where you need what a report
+holds, read with `reports` as well as `since`, so that only the reports you need come back.
 
 ## Open a stage for each step
 

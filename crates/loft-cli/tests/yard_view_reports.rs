@@ -63,48 +63,184 @@ fn published_now(yard: &Yard, scenario: GitScenario) -> GitScenario {
     scenario
 }
 
+/// The box whose key is `node`'s parent.
+fn parent<'a>(graph: &'a Value, node: &Value) -> &'a Value {
+    graph["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|above| above["key"] == node["parent"])
+        .unwrap_or_else(|| panic!("no box above {node}: {graph}"))
+}
+
+/// The entry of the diff for the node or decision named `name`.
+fn diffed<'a>(graph: &'a Value, name: &str) -> &'a Value {
+    graph["diff"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["name"] == name)
+        .unwrap_or_else(|| panic!("no diff of {name}: {graph}"))
+}
+
+/// The statement of the Requirement above the criterion [`change_a_criterion`] changes.
+const REFUSE_EDITS: &str =
+    "While a list is shared, the shelf shall refuse edits made through the link.";
+
 #[test]
-fn a_spec_change_view_draws_a_changed_feature_under_its_feature_group_and_product() {
+fn a_spec_change_view_draws_a_changed_criterion_under_its_requirement_feature_feature_group_and_product()
+ {
     let yard = Yard::with_spec();
     change_a_criterion(&yard);
     let graph = report(&yard, "spec-change")["graph"].clone();
-    let feature = node(&graph, "Share a list");
-    assert_eq!(feature["kind"], "feature");
-    assert_eq!(feature["change"], "changed");
-    let group = graph["nodes"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|node| node["key"] == feature["parent"])
-        .expect("the Feature Group above the Feature");
+    let criterion = node(
+        &graph,
+        "An edit made through the link is refused, and the link says so.",
+    );
+    assert_eq!(criterion["kind"], "criterion");
+    assert_eq!(criterion["change"], "changed");
+    let requirement = parent(&graph, criterion);
+    assert_eq!(requirement["kind"], "requirement");
+    assert_eq!(
+        requirement["name"], REFUSE_EDITS,
+        "a Requirement is named by its statement"
+    );
+    assert_eq!(requirement["change"], Value::Null, "drawn only for context");
+    let feature = parent(&graph, requirement);
+    assert_eq!(feature["name"], "Share a list");
+    assert_eq!(
+        feature["change"],
+        Value::Null,
+        "its own content did not change"
+    );
+    let group = parent(&graph, feature);
     assert_eq!(group["kind"], "feature_group");
-    assert_eq!(group["change"], Value::Null, "drawn only for context");
-    let product = graph["nodes"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|node| node["key"] == group["parent"])
-        .expect("the Product above the Feature Group");
+    assert_eq!(group["change"], Value::Null);
+    let product = parent(&graph, group);
     assert_eq!(product["kind"], "product");
     assert_eq!(product["change"], Value::Null);
-    assert_eq!(graph["nodes"].as_array().unwrap().len(), 3, "{graph}");
+    assert_eq!(graph["nodes"].as_array().unwrap().len(), 5, "{graph}");
 }
 
 #[test]
-fn a_spec_change_view_counts_a_feature_s_requirements_and_criteria_and_those_changed() {
+fn a_spec_change_view_draws_no_unchanged_requirement_and_counts_none_on_a_feature() {
     let yard = Yard::with_spec();
     change_a_criterion(&yard);
     let graph = report(&yard, "spec-change")["graph"].clone();
+    let names: Vec<&Value> = graph["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|node| &node["name"])
+        .collect();
+    assert!(
+        !names.contains(&&Value::from(
+            "Where sharing is enabled, the shelf shall publish a read-only link."
+        )),
+        "{names:?}"
+    );
     let feature = node(&graph, "Share a list");
-    assert!(feature["requirements"].as_u64().unwrap() > 0, "{feature}");
-    assert!(feature["criteria"].as_u64().unwrap() > 0, "{feature}");
-    assert_eq!(feature["delta"]["criteria"]["changed"], 1, "{feature}");
-    assert_eq!(feature["delta"]["criteria"]["added"], 0, "{feature}");
-    assert_eq!(feature["delta"]["requirements"]["changed"], 0, "{feature}");
+    assert!(feature.get("requirements").is_none(), "{feature}");
+    assert!(feature.get("criteria").is_none(), "{feature}");
+    assert!(feature.get("delta").is_none(), "{feature}");
     assert!(
         feature["label"].is_string(),
         "a published node keeps its label"
     );
+}
+
+#[test]
+fn a_spec_change_view_s_diff_gives_a_changed_criterion_s_words_before_and_after() {
+    let yard = Yard::with_spec();
+    change_a_criterion(&yard);
+    let graph = report(&yard, "spec-change")["graph"].clone();
+    let entry = diffed(
+        &graph,
+        "An edit made through the link is refused, and the link says so.",
+    );
+    assert_eq!(entry["kind"], "criterion");
+    assert_eq!(entry["change"], "changed");
+    assert!(entry["label"].is_string(), "{entry}");
+    assert_eq!(
+        entry["words"]["before"],
+        "An edit made through the link is refused."
+    );
+    assert_eq!(
+        entry["words"]["after"],
+        "An edit made through the link is refused, and the link says so."
+    );
+}
+
+#[test]
+fn a_spec_change_view_s_diff_gives_an_added_node_s_words_after_and_a_removed_one_s_before() {
+    let yard = Yard::with_spec();
+    yard.scratch.edit(
+        SHARE,
+        "        name: \"The link opens the list read-only, as RQ-99 once required.\"\n",
+        "        name: \"The link opens the list read-only, as RQ-99 once required.\"\n      \
+         - key: 00000000-0000-4000-8000-0000000000a1\n        name: \"The link names the shelf.\"\n",
+    );
+    yard.scratch.edit(
+        SHARE,
+        "    criteria:\n      - key: 00000000-0000-4000-8000-000000000036\n        \
+         name: \"An edit made through the link is refused.\"\n",
+        "",
+    );
+    // A removed node's label is marked departed, as a removal is written.
+    let formatted = yard.scratch.loft(&["fmt"]);
+    assert!(formatted.status.success(), "{formatted:?}");
+    let graph = report(&yard, "spec-change")["graph"].clone();
+    let added = diffed(&graph, "The link names the shelf.");
+    assert_eq!(added["change"], "added");
+    assert_eq!(
+        added["words"],
+        serde_json::json!({ "after": "The link names the shelf." })
+    );
+    let removed = diffed(&graph, "An edit made through the link is refused.");
+    assert_eq!(removed["change"], "removed");
+    assert_eq!(
+        removed["words"],
+        serde_json::json!({ "before": "An edit made through the link is refused." })
+    );
+    assert_eq!(node(&graph, "The link names the shelf.")["change"], "added");
+    assert_eq!(
+        node(&graph, "An edit made through the link is refused.")["change"],
+        "removed"
+    );
+}
+
+#[test]
+fn a_spec_change_view_s_diff_gives_a_decision_s_title_and_outcome() {
+    let yard = Yard::with_spec();
+    yard.scratch.edit(
+        "decisions/keep-a-change-log.yaml",
+        "outcome: \"An append-only log.\"",
+        "outcome: \"An append-only log, kept a year.\"",
+    );
+    let graph = report(&yard, "spec-change")["graph"].clone();
+    let entry = diffed(&graph, "Keep a change log");
+    assert_eq!(entry["kind"], "decision");
+    assert_eq!(entry["change"], "changed");
+    assert_eq!(
+        entry["words"]["before"],
+        "Keep a change log\n\nAn append-only log."
+    );
+    assert_eq!(
+        entry["words"]["after"],
+        "Keep a change log\n\nAn append-only log, kept a year."
+    );
+}
+
+#[test]
+fn a_spec_change_view_s_diff_gives_the_same_words_before_and_after_where_only_tags_changed() {
+    let yard = Yard::with_spec();
+    yard.scratch
+        .edit(SHARE, "    tags:\n      - portable\n", "");
+    let graph = report(&yard, "spec-change")["graph"].clone();
+    let entry = diffed(&graph, REFUSE_EDITS);
+    assert_eq!(entry["change"], "changed");
+    assert_eq!(entry["words"]["before"], REFUSE_EDITS);
+    assert_eq!(entry["words"]["after"], REFUSE_EDITS);
 }
 
 #[test]

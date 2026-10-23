@@ -1,6 +1,6 @@
 //! A `loft` block's version as the results give it: the view, what the agent asked for, where
 //! and when the report was computed, and the report as `loft` gave it, or, in a read without
-//! `--reports`, its size.
+//! `--reports`, its size and the number of items of each list it counts.
 
 use serde_json::{Map, Value, json};
 use yardlog::body::{Loft, Reason, Recorded};
@@ -35,7 +35,8 @@ fn recorded(recorded: &Recorded) -> Value {
 }
 
 /// Gives each `loft` block's report in `stages`, in its current version and in each version
-/// listed, by its size in bytes as JSON, in place of the report itself.
+/// listed, by its size in bytes as JSON and the counts it keeps of its lists, in place of the
+/// report itself.
 pub fn without_reports(stages: &mut Value) {
     let blocks = stages
         .as_array_mut()
@@ -53,7 +54,7 @@ pub fn without_reports(stages: &mut Value) {
     }
 }
 
-/// Gives the report of a version's body by its size.
+/// Gives the report of a version's body by its size, and by its counts where it keeps them.
 fn sized(version: Option<&mut Value>) {
     let Some(fields) = version
         .and_then(|version| version.get_mut("body"))
@@ -64,5 +65,12 @@ fn sized(version: Option<&mut Value>) {
     if let Some(report) = fields.remove("report") {
         let bytes = serde_json::to_vec(&report).map_or(0, |bytes| bytes.len());
         fields.insert("reportBytes".to_owned(), json!(bytes));
+        if let Some(counts) = report.get("counts").and_then(Value::as_object) {
+            let counts: Vec<Value> = counts
+                .iter()
+                .map(|(list, items)| json!({ "list": list, "items": items }))
+                .collect();
+            fields.insert("reportCounts".to_owned(), Value::Array(counts));
+        }
     }
 }

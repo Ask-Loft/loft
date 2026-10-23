@@ -317,6 +317,25 @@ fn without_reports_a_loft_block_gives_its_report_by_its_size_in_bytes_and_keeps_
 }
 
 #[test]
+fn without_reports_a_loft_block_gives_the_number_of_items_of_each_list_its_report_counts() {
+    let yard = Yard::with_spec();
+    yard.write("s1", VIEW, &[]);
+    let full = yard.read("s1", &["--reports"]);
+    let counts = &block(&full, "v1")["version"]["body"]["report"]["counts"];
+    assert!(counts["graph.diff"].is_u64(), "{counts}");
+    let read = yard.read("s1", &[]);
+    let body = &block(&read, "v1")["version"]["body"];
+    let given = body["reportCounts"]
+        .as_array()
+        .expect("the counts, as a list");
+    assert_eq!(given.len(), counts.as_object().unwrap().len(), "{body}");
+    for each in given {
+        let list = each["list"].as_str().unwrap();
+        assert_eq!(each["items"], counts[list], "{each}");
+    }
+}
+
+#[test]
 fn with_reports_a_loft_block_carries_its_report_as_recorded() {
     let yard = Yard::with_spec();
     yard.write("s1", VIEW, &[]);
@@ -324,6 +343,7 @@ fn with_reports_a_loft_block_carries_its_report_as_recorded() {
     let body = &block(&read, "v1")["version"]["body"];
     assert!(body["report"]["status"].is_object(), "{body}");
     assert!(body.get("reportBytes").is_none(), "{body}");
+    assert!(body.get("reportCounts").is_none(), "{body}");
 }
 
 #[test]
