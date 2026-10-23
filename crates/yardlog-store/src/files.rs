@@ -9,6 +9,7 @@ use yardlog::YardLog;
 use yardlog::codec::ROOT;
 
 use crate::YardStoreError;
+use crate::store::Read;
 
 /// The directory at the top of the worktree that holds every branch's Yard Log.
 pub const YARD: &str = ".yard";
@@ -60,18 +61,18 @@ impl Folder {
         self.read(ROOT)
     }
 
-    /// The files of `log` whose bytes differ from the folder's, by their paths from the top of
-    /// the worktree.
-    pub(crate) fn changes(&self, log: &YardLog) -> Result<Changes, YardStoreError> {
+    /// The files of `log` whose bytes differ from those `read` met in the folder under the same
+    /// lock, by their paths from the top of the worktree; a file the read did not meet is written.
+    pub(crate) fn changes(&self, read: &Read, log: &YardLog) -> Changes {
         let mut changes = Changes::default();
         for (name, text) in log.files() {
-            if self.read(&name)?.as_deref() != Some(text.as_bytes()) {
+            if read.get(&name).map(Vec::as_slice) != Some(text.as_bytes()) {
                 changes.write.insert(
                     RelPath::new(format!("{}/{name}", self.rel)),
                     text.into_bytes(),
                 );
             }
         }
-        Ok(changes)
+        changes
     }
 }

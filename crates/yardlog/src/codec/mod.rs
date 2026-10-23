@@ -87,12 +87,16 @@ pub fn read_format(root: &[u8]) -> Result<Format, FileError> {
 ///
 /// The root does not read, or is of a format newer than this `loft` reads.
 pub fn read_root(bytes: &[u8]) -> Result<crate::log::Root, FileError> {
+    root_of(&parse(ROOT, bytes)?)
+}
+
+/// The root a parsed root file holds, refusing a format newer than this `loft` reads.
+fn root_of(node: &Node) -> Result<crate::log::Root, FileError> {
     let in_root = |error| FileError {
         file: ROOT.to_owned(),
         error,
     };
-    let node = parse(ROOT, bytes)?;
-    let format = root::format(&node).map_err(in_root)?;
+    let format = root::format(node).map_err(in_root)?;
     if !format.is_known() {
         return Err(in_root(ReadError {
             position: Some(node.position),
@@ -102,7 +106,7 @@ pub fn read_root(bytes: &[u8]) -> Result<crate::log::Root, FileError> {
             ),
         }));
     }
-    root::read(&node).map_err(in_root)
+    root::read(node).map_err(in_root)
 }
 
 /// Reads a stage's file alone, as the merge driver meets it.
@@ -152,14 +156,41 @@ impl YardLog {
     /// refers to a key that Yard Log does not hold.
     pub fn read(
         root_bytes: &[u8],
+        stage_bytes: impl FnMut(&str) -> Option<Vec<u8>>,
+    ) -> Result<Self, FileError> {
+        Self::read_parsed(&parse(ROOT, root_bytes)?, stage_bytes)
+    }
+
+    /// Reads Yard Log as [`Self::read`] does, or gives the format a root newer than this `loft`
+    /// reads names, parsing the root once either way.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::read`], but for a root of a newer format.
+    pub fn read_or_newer(
+        root_bytes: &[u8],
+        stage_bytes: impl FnMut(&str) -> Option<Vec<u8>>,
+    ) -> Result<Result<Self, Format>, FileError> {
+        let root_node = parse(ROOT, root_bytes)?;
+        let format = root::format(&root_node).map_err(|error| FileError {
+            file: ROOT.to_owned(),
+            error,
+        })?;
+        if !format.is_known() {
+            return Ok(Err(format));
+        }
+        Self::read_parsed(&root_node, stage_bytes).map(Ok)
+    }
+
+    fn read_parsed(
+        root_node: &Node,
         mut stage_bytes: impl FnMut(&str) -> Option<Vec<u8>>,
     ) -> Result<Self, FileError> {
         let in_file = |file: &str| {
             let file = file.to_owned();
             move |error| FileError { file, error }
         };
-        let root_node = parse(ROOT, root_bytes)?;
-        let mut root = read_root(root_bytes)?;
+        let mut root = root_of(root_node)?;
         let mut stages = Vec::new();
         let mut nodes = Vec::new();
         for entry in &mut root.stages {
@@ -181,7 +212,7 @@ impl YardLog {
             nodes.push((name, node));
         }
         let log = Self { root, stages };
-        log.references(&root_node, &nodes)?;
+        log.references(root_node, &nodes)?;
         Ok(log)
     }
 

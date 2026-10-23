@@ -91,12 +91,6 @@ impl Block {
         responses
     }
 
-    /// The first response given at all, which completes the block for its submission.
-    #[must_use]
-    pub fn first_response(&self) -> Option<&Response> {
-        self.ordered_responses().into_iter().next()
-    }
-
     /// The answer or outcome that counts: the first, or, for a plan whose Markdown was rewritten
     /// after it was decided, the first given after the rewrite.
     #[must_use]

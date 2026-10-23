@@ -3,10 +3,12 @@
 //! as it now is, and saves only the files whose bytes change, through the journal. A read takes
 //! the same lock for as long as it reads, so it never sees a write half done.
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+
+use std::collections::BTreeMap;
 
 use loft_ports::journal::Journal;
-use yardlog::codec::Partial;
+use yardlog::codec::{FileError, Partial, ROOT};
 use yardlog::{Format, YardLog};
 
 use crate::files::{Folder, YARD};
@@ -107,9 +109,8 @@ impl YardStore {
     /// A file of Yard Log does not read, an interrupted write cannot be finished, or the lock
     /// cannot be taken.
     pub fn read(&self) -> Result<Held, YardStoreError> {
-        let _locked = lock::lock(&self.lock_path())?;
-        self.journal().recover()?;
-        self.load()
+        let _locked = self.locked()?;
+        Ok(self.load()?.0)
     }
 
     /// Yard Log for what this `loft` can read of it, as Yard Log of a newer format is shown:
@@ -120,25 +121,12 @@ impl YardStore {
     /// The root does not read even so, a file cannot be read, an interrupted write cannot be
     /// finished, or the lock cannot be taken.
     pub fn read_partial(&self) -> Result<Option<Partial>, YardStoreError> {
-        let _locked = lock::lock(&self.lock_path())?;
-        self.journal().recover()?;
+        let _locked = self.locked()?;
         let Some(root) = self.folder.root()? else {
             return Ok(None);
         };
-        let mut failed = None;
-        let read = YardLog::read_partial(&root, |name| {
-            self.folder.read(name).unwrap_or_else(|error| {
-                failed.get_or_insert(error);
-                None
-            })
-        });
-        if let Some(error) = failed {
-            return Err(error);
-        }
-        read.map(Some).map_err(|error| YardStoreError::Unreadable {
-            folder: self.folder.rel().to_owned(),
-            error,
-        })
+        let (partial, _) = self.with_files(|stage| YardLog::read_partial(&root, stage))?;
+        Ok(Some(partial))
     }
 
     /// Applies one write: `change` is given Yard Log as it is, none where the branch has none,
@@ -157,9 +145,9 @@ impl YardStore {
     where
         E: From<YardStoreError>,
     {
-        let _locked = lock::lock(&self.lock_path())?;
-        self.journal().recover().map_err(YardStoreError::from)?;
-        let current = match self.load()? {
+        let _locked = self.locked()?;
+        let (held, read) = self.load()?;
+        let current = match held {
             Held::Absent => None,
             Held::Log(log) => Some(self.renamed(*log)),
             Held::Newer(found) => {
@@ -171,7 +159,7 @@ impl YardStore {
             }
         };
         let (next, value) = change(current)?;
-        let changes = self.folder.changes(&next)?;
+        let changes = self.folder.changes(&read, &next);
         self.journal()
             .save(&changes)
             .map_err(YardStoreError::from)?;
@@ -197,34 +185,56 @@ impl YardStore {
         log
     }
 
-    fn load(&self) -> Result<Held, YardStoreError> {
+    /// Takes the branch's lock and finishes or undoes an interrupted write.
+    fn locked(&self) -> Result<lock::Locked, YardStoreError> {
+        let locked = lock::lock(&self.lock_path())?;
+        self.journal().recover()?;
+        Ok(locked)
+    }
+
+    /// Yard Log as it is, with the bytes of each file read for it, by name.
+    fn load(&self) -> Result<(Held, Read), YardStoreError> {
         let Some(root) = self.folder.root()? else {
-            return Ok(Held::Absent);
+            return Ok((Held::Absent, Read::new()));
         };
-        let unreadable = |error| YardStoreError::Unreadable {
-            folder: self.folder.rel().to_owned(),
-            error,
-        };
-        let format = yardlog::codec::read_format(&root).map_err(unreadable)?;
-        if !format.is_known() {
-            return Ok(Held::Newer(format));
-        }
+        let (held, mut read) = self.with_files(|stage| YardLog::read_or_newer(&root, stage))?;
+        read.insert(ROOT.to_owned(), root);
+        Ok((
+            held.map_or_else(Held::Newer, |log| Held::Log(Box::new(log))),
+            read,
+        ))
+    }
+
+    /// Runs `reading` over the folder's files, keeping the bytes of each it reads; a file that
+    /// cannot be read fails the whole read, and one that does not read names the folder.
+    fn with_files<T>(
+        &self,
+        reading: impl FnOnce(&mut dyn FnMut(&str) -> Option<Vec<u8>>) -> Result<T, FileError>,
+    ) -> Result<(T, Read), YardStoreError> {
         let mut failed = None;
-        let read = YardLog::read(&root, |name| {
-            self.folder.read(name).unwrap_or_else(|error| {
+        let mut read = Read::new();
+        let value = reading(&mut |name| match self.folder.read(name) {
+            Ok(bytes) => {
+                if let Some(bytes) = &bytes {
+                    read.insert(name.to_owned(), bytes.clone());
+                }
+                bytes
+            }
+            Err(error) => {
                 failed.get_or_insert(error);
                 None
-            })
+            }
         });
         if let Some(error) = failed {
             return Err(error);
         }
-        read.map(|log| Held::Log(Box::new(log))).map_err(unreadable)
+        let value = value.map_err(|error| YardStoreError::Unreadable {
+            folder: self.folder.rel().to_owned(),
+            error,
+        })?;
+        Ok((value, read))
     }
 }
 
-/// The folder that holds every branch's Yard Log in the worktree whose top is `tree`.
-#[must_use]
-pub fn yard_dir(tree: &Path) -> PathBuf {
-    tree.join(YARD)
-}
+/// The bytes of each file of a Yard Log's folder that a read met, by name.
+pub(crate) type Read = BTreeMap<String, Vec<u8>>;

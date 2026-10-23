@@ -8,7 +8,7 @@ use super::reader::{leave_out, leniently};
 use super::{FileError, ROOT, parse, root, stage, stage_file};
 use crate::body::Body;
 use crate::keys::{Key, StageKey};
-use crate::log::{StageFile, YardLog};
+use crate::log::{StageEntry, StageFile, YardLog};
 
 /// What a lenient read gave: Yard Log as far as this `loft` reads it, and the number of its
 /// records that it left out.
@@ -36,18 +36,7 @@ impl YardLog {
                 file: ROOT.to_owned(),
                 error,
             })?;
-            let read: Vec<Option<StageFile>> = root
-                .stages
-                .iter()
-                .map(|entry| stage_of(entry.key, &mut stage_bytes))
-                .collect();
-            let mut files = read.iter();
-            root.stages
-                .retain(|_| files.next().is_some_and(Option::is_some));
-            for _ in read.iter().filter(|file| file.is_none()) {
-                leave_out();
-            }
-            let stages = read.into_iter().flatten().collect();
+            let stages = keep_readable(&mut root.stages, &mut stage_bytes);
             Ok(Self { root, stages })
         });
         let mut log = read?;
@@ -78,6 +67,23 @@ impl YardLog {
             }
         }
     }
+}
+
+/// The file of each stage the root lists that reads, leaving each other stage out of the root.
+fn keep_readable(
+    entries: &mut Vec<StageEntry>,
+    bytes: &mut impl FnMut(&str) -> Option<Vec<u8>>,
+) -> Vec<StageFile> {
+    let mut stages = Vec::new();
+    entries.retain(|entry| {
+        let Some(file) = stage_of(entry.key, bytes) else {
+            leave_out();
+            return false;
+        };
+        stages.push(file);
+        true
+    });
+    stages
 }
 
 /// The stage `key`'s file, where it is there and reads as that stage's.
