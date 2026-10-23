@@ -22976,25 +22976,37 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "each stage has the counts of its requests, and those under no stage are shown apart"
-        body: f15c6aea079a1b0c9b4d1083d67713bf43d72f19bf9943d7d2110ae61789b0a2
+        body: baa138de429859a06c8215fdfb455bc9c2be483936436a8b66e961d0ddd60041
   - node: 01a1646f-546d-7042-befd-eb1a9003423c
     reviewed: 178ca3146367dd4f40f870fd8b64b77a7a9e58a276935fc0bb156dc5fd9fd2bb
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "each session is listed with when its first and last counted requests ended and its counts, the earliest first"
-        body: 2a21fb555fa8efe0eac54ff482804ea6e57d220fe52cc0374cbc7d6ee0018a6c
+        body: 9abc30d940a50b597c3bb60d55b97ae7eafccd395258681debcda41673d84845
   - node: 01a1646f-546d-7042-befd-eb1b42b4a475
     reviewed: 10e7243d61531774206b026bf3e6726a1cda4ab44e9f10fa19148c892ae7cc80
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "the main agent and each type of subagent have their counts for each model they ran on"
-        body: e844da5db504c55ef06fb454ad1687a62a1d2d7f0985406d134f456564121ebb
+        body: 25cac431f2f031b43a2f5bcb1230bfbff68cf0854160261f198f705ba9326e7f
   - node: 01a1646f-546d-7042-befd-eb1c9a6d4d36
     reviewed: d4c89d4b6e29286a2657c41829f157f6dadfae4df8ddc07283bc17c000ae7d21
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "each submission has the counts of the requests that ended while it was open"
-        body: 47558f8e247b2f551eb0db9377350dd3566de7cd9ac14d76504747d7f20e92bb
+        body: 7c69e028bd48d0e0b0556487ca88dae229f55a074cbd716fd056355b9725c662
+  - node: 01a1682e-2675-75b2-871c-e260967a6cf8
+    reviewed: f349384fb1faf1fe1346725a513de91f72c25e71e3f9e5caee3a7960161b66c3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the breakdowns share one table, whose columns are the four counts"
+        body: 4a35e96e9aa84eaee468906bded21333c48275575291f7062baee62d94d96103
+  - node: 01a1682e-2675-75b2-871c-e2613eb8729b
+    reviewed: 3b0e39561f82358cf8f91c16a80bd7a8c5ecee50b3986a33d499261287264b2a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "each count of a breakdown shows as a bar its share of Yard Log’s count of that kind in all"
+        body: 44fecb4bd035e9a04eb1676f98fcf743199c9ac72699d257ec814119a0adcc6a
   - node: 01a1646f-546d-7042-befd-eb1d0e18125d
     reviewed: 1fb79f767b25ac09192b4bdcb9eae1c0ea4e3160fa64abb9fa8fe1663046631b
     tests:

@@ -431,8 +431,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .decision-option { border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 10px; display: grid; gap: 2px; }
 .decision-option.is-selected { border-color: var(--done); background: var(--done-soft); }
 .table-wrap { overflow-x: auto; }
-.assessments, .tokens-table { border-collapse: collapse; font-size: 13px; }
-.assessments th, .assessments td, .tokens-table th, .tokens-table td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+.assessments { border-collapse: collapse; font-size: 13px; }
+.assessments th, .assessments td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
 .assessments .rationale { font-size: 12px; margin-top: 2px; }
 .lock { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
 .lock dt { color: var(--muted); }
@@ -491,12 +491,29 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .tokens { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; }
 .tokens h3 { font-size: 17px; }
 .tokens h4 { font-size: 14px; color: var(--muted); }
-.token-totals { display: grid; grid-template-columns: repeat(4, minmax(0, max-content)); gap: 2px 28px; margin: 0; }
-.token-totals dt { color: var(--muted); font-size: 12px; grid-row: 1; }
-.token-totals dd { margin: 0; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; grid-row: 2; }
+.token-totals { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; }
+.token-totals dt { color: var(--muted); font-size: 12px; }
+.token-totals dd { margin: 0; font-size: 22px; font-weight: 700; }
+.tokens-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tokens-table th, .tokens-table td { padding: 6px 8px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.tokens-table thead th { color: var(--muted); font-size: 12px; font-weight: 600; }
+.tokens-table tbody th { font-weight: 600; overflow-wrap: break-word; }
+.tokens-table th[scope="row"] { min-width: 10em; }
+.tokens-table .number { width: 1%; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.tokens-table .group th { padding-top: 18px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.tokens-table code { font-size: 12px; }
+.tokens-table code, .tokens-table .span, .tokens-table .model { white-space: nowrap; }
+.tokens-table .span, .tokens-table .model, .tokens-table .no-stage { color: var(--muted); font-weight: 400; }
+.tokens-table .span, .tokens-table .model { margin-left: 8px; }
+.share { display: block; min-width: 72px; height: 4px; margin-top: 4px; background: var(--surface-2); border-radius: 2px; }
+.share-fill { display: block; height: 100%; max-width: 100%; background: var(--signal); border-radius: 0 2px 2px 0; }
 .number { text-align: right; font-variant-numeric: tabular-nums; }
 .tokens-note { color: var(--muted); font-size: 13px; }
 @media (max-width: 560px) {
-  .token-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .token-totals dt, .token-totals dd { grid-row: auto; }
+  .token-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .share { display: none; }
+  .tokens-table .span, .tokens-table .model { display: block; margin-left: 0; }
+  .tokens-table thead .number { white-space: normal; }
+  .tokens-table th, .tokens-table td { padding: 6px 4px; }
+  .tokens-table th[scope="row"] { min-width: 8em; }
 }

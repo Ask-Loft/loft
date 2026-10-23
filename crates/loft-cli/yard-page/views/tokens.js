@@ -12,26 +12,64 @@ const COUNTS = [
   ['output', 'Output'],
 ];
 
-/** @param {import('../model/tokens.js').Counts} counts */
-function cells(counts) {
-  return COUNTS.map(([name]) => h('td', { class: 'number', title: String(counts[name]) }, amount(counts[name])));
-}
-
-/** @param {string} first */
-function head(first) {
-  return h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, first), COUNTS.map(([, word]) => h('th', { scope: 'col', class: 'number' }, word))));
+/**
+ * A count, with a bar of its share of Yard Log's count of that kind in all.
+ * @param {number} count
+ * @param {number} all
+ * @param {string} word
+ */
+function cell(count, all, word) {
+  const share = all ? count / all : 0;
+  return h(
+    'td',
+    { class: 'number', title: `${count.toLocaleString()} · ${Math.round(share * 100)}% of all ${word.toLowerCase()}` },
+    amount(count),
+    h('span', { class: 'share', 'aria-hidden': 'true' }, h('span', { class: 'share-fill', style: `width:${share * 100}%` })),
+  );
 }
 
 /**
- * @param {string} first
- * @param {[any, import('../model/tokens.js').Counts][]} rows
+ * Every breakdown in one table, whose columns are the four counts: a group of rows for each.
+ * @param {{ by: string, title: string, rows: [any, import('../model/tokens.js').Counts][] }[]} groups
+ * @param {import('../model/tokens.js').Counts} all
  */
-function table(first, rows) {
+function breakdowns(groups, all) {
   return h(
     'div',
     { class: 'table-wrap' },
-    h('table', { class: 'tokens-table' }, head(first), h('tbody', {}, rows.map(([name, counts]) => h('tr', {}, h('th', { scope: 'row' }, name), cells(counts))))),
+    h(
+      'table',
+      { class: 'tokens-table' },
+      h('thead', {}, h('tr', {}, h('td', {}), COUNTS.map(([, word]) => h('th', { scope: 'col', class: 'number' }, word)))),
+      groups.map(({ by, title, rows }) =>
+        h(
+          'tbody',
+          { dataset: { by } },
+          h('tr', { class: 'group' }, h('th', { scope: 'rowgroup', colspan: String(COUNTS.length + 1) }, title)),
+          rows.map(([name, counts]) => h('tr', {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word)))),
+        ),
+      ),
+    ),
   );
+}
+
+/**
+ * A session, by the start of its id, with when its first and last counted requests ended.
+ * @param {{ session: string, firstEnded: string, lastEnded: string }} session
+ */
+function sessionName(session) {
+  return [
+    h('code', { title: session.session }, String(session.session).slice(0, 8)),
+    h('span', { class: 'span' }, `${when(session.firstEnded)} – ${when(session.lastEnded)}`),
+  ];
+}
+
+/**
+ * An agent, by who it is, and the model it ran on.
+ * @param {{ who: string, model: string }} agent
+ */
+function agentName(agent) {
+  return [agent.who.charAt(0).toUpperCase() + agent.who.slice(1), h('span', { class: 'model' }, agent.model)];
 }
 
 /**
@@ -51,29 +89,23 @@ export function tokensView(log) {
     return section;
   }
   const stages = (log.stages ?? []).map((stage) => [stage.version.body.title, summary.stages.get(stage.key) ?? zero()]);
-  if (total(summary.noStage)) stages.push(['Under no stage', summary.noStage]);
+  if (total(summary.noStage)) stages.push([h('span', { class: 'no-stage' }, 'Under no stage'), summary.noStage]);
   const submissions = (log.sent ?? [])
     .filter((submission) => summary.submissions.has(submission.key))
     .map((submission) => {
       const sent = submission.changes.find((change) => change.what === 'sent');
       return [`Sent ${when(sent?.act.at)}`, summary.submissions.get(submission.key)];
     });
+  const groups = [
+    { by: 'stage', title: 'By stage', rows: stages },
+    { by: 'session', title: 'By session', rows: summary.sessions.map((session) => [sessionName(session), session.tokens]) },
+    { by: 'agent', title: 'By agent and model', rows: summary.agents.map((agent) => [agentName(agent), agent.tokens]) },
+    { by: 'submission', title: 'While a submission was open', rows: submissions },
+  ].filter((group) => group.rows.length);
   add(
     section,
-    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => [h('dt', {}, word), h('dd', { title: String(summary.all[name]) }, amount(summary.all[name]))])),
-    h('h4', {}, 'By stage'),
-    table('Stage', stages),
-    h('h4', {}, 'By session'),
-    table(
-      'Session',
-      summary.sessions.map((session) => [
-        [h('code', {}, session.session), h('span', { class: 'span' }, ` ${when(session.firstEnded)} to ${when(session.lastEnded)}`)],
-        session.tokens,
-      ]),
-    ),
-    h('h4', {}, 'By agent and model'),
-    table('Agent', summary.agents.map((agent) => [`${agent.who} on ${agent.model}`, agent.tokens])),
-    submissions.length ? [h('h4', {}, 'While a submission was open'), table('Submission', submissions)] : null,
+    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: String(summary.all[name]) }, amount(summary.all[name]))))),
+    breakdowns(groups, summary.all),
     note,
   );
   return section;
