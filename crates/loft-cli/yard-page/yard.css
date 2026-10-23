@@ -331,11 +331,13 @@ button { font: inherit; }
 .tone-word.tone--success { color: var(--done); }
 .tone-word.tone--warning { color: var(--wait); }
 .tone-word.tone--danger { color: var(--danger); }
-.prose { max-width: 75ch; overflow-wrap: anywhere; }
+.prose { overflow-wrap: anywhere; }
+.prose > :not(.table-wrap, pre) { max-width: 75ch; }
 .prose > * + * { margin-top: 0.6em; }
-.prose pre { overflow: auto; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
-.prose table { border-collapse: collapse; }
-.prose th, .prose td { border: 1px solid var(--line); padding: 3px 8px; text-align: left; }
+.prose pre { overflow: auto; contain: inline-size; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.prose table { width: 100%; border-collapse: collapse; overflow-wrap: normal; }
+.prose th, .prose td { padding: 6px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); overflow-wrap: break-word; }
+.prose thead th { background: var(--surface-2); font-weight: 600; border-bottom-color: var(--rail); }
 .prose ul, .prose ol { padding-left: 22px; }
 .block-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 12px; }
 .versions summary { cursor: pointer; }
@@ -460,7 +462,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .decision-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .decision-option { border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 10px; display: grid; gap: 2px; }
 .decision-option.is-selected { border-color: var(--done); background: var(--done-soft); }
-.table-wrap { overflow-x: auto; }
+.table-wrap { overflow-x: auto; contain: inline-size; }
 .assessments { border-collapse: collapse; font-size: 13px; }
 .assessments th, .assessments td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
 .assessments .rationale { font-size: 12px; margin-top: 2px; }

@@ -5,7 +5,7 @@
 // What the person chose and has not sent is kept in this browser only.
 
 import * as api from '../lib/api.js';
-import { h } from '../lib/dom.js';
+import { h, html } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
 import { getJson, setJson } from '../lib/prefs.js';
 import {
@@ -225,7 +225,7 @@ function decisionForm(block, where) {
     { class: 'decision-form', dataset: { key: block.key } },
     h('h4', {}, h('span', { class: 'kind' }, block.kind === 'plan' ? 'Plan' : 'Approval'), ' ', body.title),
     block.kind === 'plan' && body.planMode ? h('p', { class: 'plan-mode' }, 'Approving it lets the agent go on in auto mode.') : null,
-    Object.assign(document.createElement('div'), { className: 'prose', innerHTML: body.html ?? '' }),
+    html(body.html ?? ''),
     h(
       'div',
       { class: 'decide-row' },

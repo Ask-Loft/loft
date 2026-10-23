@@ -98,6 +98,18 @@ test('a note shows its title, its markdown and its tone as a colour and a word',
   assert.ok(drawn.classList.contains('tone--warning'));
 });
 
+test('a table in a block’s Markdown sits in a wrapper that scrolls sideways, and spans its block', () => {
+  const table = '<table><thead><tr><th>Part</th><th>What changed</th></tr></thead><tbody><tr><td>Feature</td><td>Folded</td></tr></tbody></table>';
+  const note = block('note', 'n1', { title: 'Done', markdown: '| Part | What changed |', html: `<p>Before</p>${table}`, folded: false });
+  const drawn = card(note, context(log([stage('s', 'S', 'active', [note])])));
+  const wrap = drawn.querySelector('.prose > .table-wrap');
+  assert.ok(wrap);
+  assert.equal(wrap.children.length, 1);
+  assert.equal(wrap.firstElementChild.tagName, 'TABLE');
+  assert.equal(wrap.querySelector('td').textContent, 'Feature');
+  assert.equal(drawn.querySelector('.prose > p').textContent, 'Before');
+});
+
 test('a note written folded starts folded', () => {
   const note = block('note', 'n1', { title: 'Later', markdown: 'x', html: '<p>x</p>', folded: true });
   const drawn = card(note, context(log([stage('s', 'S', 'active', [note])])));

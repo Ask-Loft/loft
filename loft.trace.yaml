@@ -21774,6 +21774,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "a note written folded starts folded"
         body: 7faee74edb6bbc1d9e5db80e14dcd06e37a6c8d740efda5671132f411f86fb86
+  - node: 01a16854-53e3-71b2-8192-66b204b471a0
+    reviewed: 2101096e3a497fc0a66e69cb08756a4be14318646ac575c1c801fa8042ad41f7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a table in a block’s Markdown sits in a wrapper that scrolls sideways, and spans its block"
+        body: e33c8bf8307b20d1f7f3517011c9d60bbb4c2a4e2f57612c25331a2236693669
   - node: 01a1646f-546d-7042-befd-eb39ce7ffb3c
     reviewed: 2ac4284a49d0c1abbf3155dbc41aff9f39b522535815ec58b1a67ea37054027d
     tests:

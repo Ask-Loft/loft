@@ -70,7 +70,8 @@ function append(element, children) {
 
 /**
  * A container holding HTML that `loft` rendered from a block's Markdown, with raw HTML already
- * turned to text and unsafe links undone.
+ * turned to text and unsafe links undone, each table in a wrapper that scrolls sideways where the
+ * table is wider than the block.
  * @param {string} rendered
  * @param {string} [className]
  * @returns {HTMLElement}
@@ -79,6 +80,12 @@ export function html(rendered, className = 'prose') {
   const element = document.createElement('div');
   element.className = className;
   element.innerHTML = rendered ?? '';
+  for (const table of element.querySelectorAll('table')) {
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    table.replaceWith(wrap);
+    wrap.append(table);
+  }
   return element;
 }
 
