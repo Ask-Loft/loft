@@ -120,6 +120,8 @@ requirements:
         name: "Settled Yard Log is no longer marked as unsettled, and opening it again settles nothing."
       - key: 01a1649f-62f0-7320-902c-7d8a33899cd1
         name: "A command that only reads Yard Log settles it as one that writes would."
+      - key: 01a16a58-511f-777c-8166-b8c175302dfb
+        name: "Yard Log removed after the command read it and before it settles is found absent, and nothing is written."
   - key: 01a1647b-208d-7169-85c8-9a550c2161d5
     statement:
       form: event_driven
