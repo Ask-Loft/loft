@@ -12,6 +12,10 @@ use crate::PortError;
 
 /// What git prints, with exit code 128, in a directory outside any repository.
 pub const NOT_A_REPOSITORY: &str = "not a git repository";
+/// The checked-out branch; exit 1 on a detached HEAD.
+pub const CURRENT_BRANCH: [&str; 4] = ["symbolic-ref", "--quiet", "--short", "HEAD"];
+/// A path under the worktree's own git directory, from the working directory, completed by it.
+pub const GIT_PATH: [&str; 2] = ["rev-parse", "--git-path"];
 
 /// Runs git.
 pub struct Git {

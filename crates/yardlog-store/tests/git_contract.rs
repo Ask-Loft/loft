@@ -9,7 +9,8 @@ use crate::common::{Scratch, simulated};
 use software_plant::GitScenario;
 use software_plant::real_git::{git, real_git};
 use yardlog_store::git::{
-    COMMON_DIR, CONFIG_GET, CURRENT_BRANCH, GIT_PATH, TOP_LEVEL, VERIFY, YARD_PATHSPEC, YardGit,
+    COMMON_DIR, CONFIG_GET, CURRENT_BRANCH, GIT_PATH, LOCATE, TOP_LEVEL, VERIFY, YARD_PATHSPEC,
+    YardGit,
 };
 use yardlog_store::{Place, YardStoreError};
 
@@ -133,6 +134,7 @@ fn calls() -> Vec<Vec<&'static str>> {
         CURRENT_BRANCH.to_vec(),
         COMMON_DIR.to_vec(),
         with(&GIT_PATH, "yard"),
+        LOCATE.to_vec(),
         vec!["check-ignore", "-q", YARD_PATHSPEC],
         with(&CONFIG_GET, "user.name"),
         with(&CONFIG_GET, "user.email"),
@@ -265,14 +267,14 @@ fn asking_git_changes_no_file_of_the_repository() {
 fn a_scripted_git_error_is_reported_with_its_call_and_message() {
     let plant = Scratch::new();
     let scenario = GitScenario::clean_on("main").failing(
-        software_plant::git::Call::Yard(software_plant::git::YardCall::CommonDir),
+        software_plant::git::Call::Yard(software_plant::git::YardCall::Locate),
         128,
         "fatal: something broke\n",
     );
     let error = Place::locate(&simulated(&scenario, &plant.0), &plant.0).unwrap_err();
     assert!(
         matches!(&error, YardStoreError::Port(loft_ports::PortError::Git { call, message })
-            if call == "rev-parse --git-common-dir" && message == "fatal: something broke"),
+            if call == "rev-parse --show-toplevel --git-common-dir --git-path yard" && message == "fatal: something broke"),
         "{error}"
     );
 }

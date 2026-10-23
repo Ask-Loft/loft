@@ -8,7 +8,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use loft_ports::io_error;
-use loft_ports::sync::{move_into_place, sync_dir, write_synced};
+use loft_ports::sync::replace_synced;
 use yardlog::codec::ROOT;
 use yardlog::codec::session::{ACTIVITY, TOKENS};
 
@@ -73,14 +73,7 @@ impl YardStore {
         let path = self.session_path(file, session);
         let dir = path.parent().expect("a session's file lies in a folder");
         fs::create_dir_all(dir).map_err(io_error(dir))?;
-        let temporary = dir.join(format!(".{session}.yaml.{}.tmp", std::process::id()));
-        let written =
-            write_synced(&temporary, bytes).and_then(|()| move_into_place(&temporary, &path));
-        if written.is_err() {
-            let _ = fs::remove_file(&temporary);
-        }
-        written?;
-        Ok(sync_dir(dir)?)
+        Ok(replace_synced(&path, bytes, false)?)
     }
 }
 

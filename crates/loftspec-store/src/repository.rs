@@ -19,8 +19,7 @@ pub use base::{BATCH, LIST_TREE, LOCK_WRITTEN, MERGE_BASE, MergeBase};
 
 /// The working directory's path from the repository's top level.
 pub const SHOW_PREFIX: [&str; 2] = ["rev-parse", "--show-prefix"];
-/// The checked-out branch; exit 1 on a detached HEAD.
-pub const CURRENT_BRANCH: [&str; 4] = ["symbolic-ref", "--quiet", "--short", "HEAD"];
+pub use loft_ports::git::{CURRENT_BRANCH, GIT_PATH};
 /// The porcelain v1 records of the uncommitted changes under `spec/`.
 pub const STATUS: [&str; 6] = [
     "status",
@@ -40,8 +39,6 @@ pub const CONFIG_SET: [&str; 2] = ["config", "--local"];
 pub const MERGE_HEAD: [&str; 4] = ["rev-parse", "-q", "--verify", "MERGE_HEAD"];
 /// The commit a stopped rebase replays; exit 1 when no rebase stopped.
 pub const REBASE_HEAD: [&str; 4] = ["rev-parse", "-q", "--verify", "REBASE_HEAD"];
-/// A path under the git directory, from the working directory, completed by the path.
-pub const GIT_PATH: [&str; 2] = ["rev-parse", "--git-path"];
 /// Where each backend of a stopped rebase keeps the branch it rebases.
 pub const REBASE_HEAD_NAMES: [&str; 2] = ["rebase-merge/head-name", "rebase-apply/head-name"];
 /// The index entries of every unmerged path in the repository, with their paths from the top
@@ -100,8 +97,7 @@ impl GitCommand {
     pub fn prefix(&self, root: &Path) -> Result<String, StoreError> {
         let call = SHOW_PREFIX;
         let output = self.run(root, &call)?;
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        if output.status.code() == Some(128) && stderr.contains("not a git repository") {
+        if git::outside_a_repository(&output) {
             return Err(StoreError::NotARepository(root.to_owned()));
         }
         Ok(text(&succeeded(&call, output)?))
@@ -115,14 +111,11 @@ impl GitCommand {
     pub fn branch(&self, root: &Path) -> Result<Option<String>, StoreError> {
         let call = CURRENT_BRANCH;
         let output = self.run(root, &call)?;
-        match output.status.code() {
-            Some(1) => return Ok(None),
-            Some(128)
-                if String::from_utf8_lossy(&output.stderr).contains("not a git repository") =>
-            {
-                return Err(StoreError::NotARepository(root.to_owned()));
-            }
-            _ => {}
+        if output.status.code() == Some(1) {
+            return Ok(None);
+        }
+        if git::outside_a_repository(&output) {
+            return Err(StoreError::NotARepository(root.to_owned()));
         }
         Ok(Some(text(&succeeded(&call, output)?)))
     }

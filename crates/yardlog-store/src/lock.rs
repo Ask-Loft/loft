@@ -7,10 +7,10 @@
 //! holder lets go; only a holder that was killed leaves its name, for the next to replace.
 
 use std::fs::{self, File, OpenOptions, TryLockError};
-use std::io;
 use std::path::{Path, PathBuf};
 
 use loft_ports::io_error;
+use loft_ports::sync::{read_if_present, replace_synced};
 
 use crate::YardStoreError;
 
@@ -112,12 +112,10 @@ pub fn try_lock_as(path: &Path, holder: &[u8]) -> Result<Option<Locked>, YardSto
     let Some(mut locked) = try_lock(path)? else {
         return Ok(None);
     };
-    // Written whole beside the name and renamed over it, so that a reader sees one holder's
-    // name or the one before, never half of either.
+    // Replaced whole, so that a reader sees one holder's name or the one before, never half of
+    // either.
     let named = holder_path(path);
-    let beside = named.with_extension("holder.new");
-    fs::write(&beside, holder).map_err(io_error(&beside))?;
-    fs::rename(&beside, &named).map_err(io_error(&named))?;
+    replace_synced(&named, holder, false)?;
     locked.named = Some(named);
     Ok(Some(locked))
 }
@@ -132,10 +130,7 @@ pub fn holder(path: &Path) -> Result<Option<Vec<u8>>, YardStoreError> {
     if !is_held(path)? {
         return Ok(None);
     }
-    let named = holder_path(path);
-    match fs::read(&named) {
-        Ok(bytes) => Ok(Some(bytes)),
-        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(Some(Vec::new())),
-        Err(error) => Err(io_error(&named)(error).into()),
-    }
+    Ok(Some(
+        read_if_present(&holder_path(path))?.unwrap_or_default(),
+    ))
 }

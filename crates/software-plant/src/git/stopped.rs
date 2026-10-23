@@ -106,13 +106,7 @@ pub(super) fn answer(call: StoppedCall, operands: &[&str], repository: &Reposito
     match call {
         StoppedCall::MergeHead => head(Operation::Merge),
         StoppedCall::RebaseHead => head(Operation::Rebase),
-        StoppedCall::GitPath => {
-            let base = repository
-                .git_dir
-                .clone()
-                .unwrap_or_else(|| "../".repeat(repository.prefix.matches('/').count()) + ".git");
-            Reply::ok(format!("{base}/{}\n", operands[0]))
-        }
+        StoppedCall::GitPath => Reply::ok(format!("{}\n", git_path(repository, operands[0]))),
         StoppedCall::Unmerged => Reply::ok(unmerged(stopped)),
         StoppedCall::LockObject => stopped
             .and_then(|stopped| stopped.locks.get(operands[0]))
@@ -135,6 +129,16 @@ pub(super) fn answer(call: StoppedCall, operands: &[&str], repository: &Reposito
                 |lock| Reply::ok(lock.text.clone()),
             ),
     }
+}
+
+/// What `rev-parse --git-path <name>` prints: `name` under the worktree's own git directory, as
+/// git prints it from the directory the call runs in.
+pub(super) fn git_path(repository: &Repository, name: &str) -> String {
+    let base = repository
+        .git_dir
+        .clone()
+        .unwrap_or_else(|| "../".repeat(repository.prefix.matches('/').count()) + ".git");
+    format!("{base}/{name}")
 }
 
 fn unmerged(stopped: Option<&Stopped>) -> Vec<u8> {

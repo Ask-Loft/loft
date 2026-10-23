@@ -17673,6 +17673,12 @@ links:
       - file: "crates/yardlog-store/tests/git_contract.rs"
         name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
         body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a16642-fc1b-745e-ae1d-4291a49f064f
+    reviewed: d51c7cf989ca0da515ebd19239ccd0147d39c033d490a606111562ca02165ef4
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
   - node: 01a164cf-8fd5-7533-a02e-c051c6c67714
     reviewed: 10fcc32eaf94e24c7dfb872b54cc7687974c371fa148763ffa7216a410c16282
     tests:

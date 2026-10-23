@@ -9,15 +9,22 @@ use std::process::{Command, Output};
 use loft_ports::git::{Git, first_line, outside_a_repository, succeeded};
 
 use crate::YardStoreError;
+use crate::place::GIT_DIR_NAME;
 
 /// The top of the worktree, as an absolute path.
 pub const TOP_LEVEL: [&str; 2] = ["rev-parse", "--show-toplevel"];
-/// The checked-out branch; exit 1 on a detached HEAD.
-pub const CURRENT_BRANCH: [&str; 4] = ["symbolic-ref", "--quiet", "--short", "HEAD"];
+pub use loft_ports::git::{CURRENT_BRANCH, GIT_PATH};
 /// The repository's common directory, from the working directory.
 pub const COMMON_DIR: [&str; 2] = ["rev-parse", "--git-common-dir"];
-/// A path under the worktree's own git directory, from the working directory, completed by it.
-pub const GIT_PATH: [&str; 2] = ["rev-parse", "--git-path"];
+/// The top of the worktree, the common directory and Yard's directory under the worktree's own
+/// git directory, one per line, in one call.
+pub const LOCATE: [&str; 5] = [
+    "rev-parse",
+    "--show-toplevel",
+    "--git-common-dir",
+    "--git-path",
+    GIT_DIR_NAME,
+];
 /// Whether git ignores a path, completed by it; exit 1 when it does not.
 pub const CHECK_IGNORE: [&str; 2] = ["check-ignore", "-q"];
 /// A name's value in git's configuration, from every scope; exit 1 when it is unset.
@@ -101,13 +108,25 @@ impl YardGit {
         Ok(Some(first_line(&succeeded(&CURRENT_BRANCH, output)?)))
     }
 
-    /// The common directory of the repository that holds `dir`, as an absolute path.
+    /// In one call, the top of the worktree that holds `dir`, the repository's common directory,
+    /// and `yard` under the worktree's own git directory, each as an absolute path.
     ///
     /// # Errors
     ///
     /// `dir` is in no repository, or git fails or cannot be run.
-    pub fn common_dir(&self, dir: &Path) -> Result<PathBuf, YardStoreError> {
-        Ok(from(dir, &self.line(dir, &COMMON_DIR)?))
+    pub fn locate(&self, dir: &Path) -> Result<(PathBuf, PathBuf, PathBuf), YardStoreError> {
+        let printed =
+            String::from_utf8_lossy(&succeeded(&LOCATE, self.run(dir, &LOCATE)?)?).into_owned();
+        let mut lines = printed.lines();
+        let mut next = || lines.next().unwrap_or_default().to_owned();
+        let (top, common, yard) = (next(), next(), next());
+        if top.is_empty() || common.is_empty() || yard.is_empty() {
+            return Err(YardStoreError::Answer {
+                call: LOCATE.join(" "),
+                answer: printed,
+            });
+        }
+        Ok((PathBuf::from(top), from(dir, &common), from(dir, &yard)))
     }
 
     /// The path `name` under the worktree's own git directory, as an absolute path.

@@ -17,6 +17,8 @@ pub enum YardCall {
     TopLevel,
     /// `git rev-parse --git-common-dir`
     CommonDir,
+    /// `git rev-parse --show-toplevel --git-common-dir --git-path <name>`
+    Locate,
     /// `git check-ignore -q <path>`
     Ignored,
     /// `git config --get <name>`
@@ -80,6 +82,13 @@ pub(super) fn parse<'a>(rest: &[&'a str]) -> Option<(YardCall, Vec<&'a str>)> {
     match rest {
         ["rev-parse", "--show-toplevel"] => Some((YardCall::TopLevel, vec![])),
         ["rev-parse", "--git-common-dir"] => Some((YardCall::CommonDir, vec![])),
+        [
+            "rev-parse",
+            "--show-toplevel",
+            "--git-common-dir",
+            "--git-path",
+            name,
+        ] => Some((YardCall::Locate, vec![*name])),
         ["check-ignore", "-q", path] => Some((YardCall::Ignored, vec![*path])),
         ["config", "--get", name] => Some((YardCall::Config, vec![*name])),
         ["rev-parse", "-q", "--verify", object] if object.contains(':') => {
@@ -107,6 +116,24 @@ pub(super) fn outside(call: YardCall) -> Reply {
     }
 }
 
+/// What `rev-parse --show-toplevel` prints from `dir`: the top of the worktree, resolved on disk.
+fn top_level(repository: &Repository, dir: &Path) -> String {
+    let mut top = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
+    for _ in 0..repository.prefix.matches('/').count() {
+        top.pop();
+    }
+    top.display().to_string()
+}
+
+/// What `rev-parse --git-common-dir` prints: the path the scenario gives it, or `.git` at the top.
+fn common_dir(repository: &Repository) -> String {
+    repository
+        .yard
+        .common_dir
+        .clone()
+        .unwrap_or_else(|| "../".repeat(repository.prefix.matches('/').count()) + ".git")
+}
+
 /// Answers a call in a repository, from the directory `dir` the call runs in.
 pub(super) fn answer(
     call: YardCall,
@@ -114,23 +141,15 @@ pub(super) fn answer(
     repository: &Repository,
     dir: &Path,
 ) -> Reply {
-    let depth = repository.prefix.matches('/').count();
     match call {
-        YardCall::TopLevel => {
-            let mut top = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
-            for _ in 0..depth {
-                top.pop();
-            }
-            Reply::ok(format!("{}\n", top.display()))
-        }
-        YardCall::CommonDir => {
-            let common = repository
-                .yard
-                .common_dir
-                .clone()
-                .unwrap_or_else(|| "../".repeat(depth) + ".git");
-            Reply::ok(format!("{common}\n"))
-        }
+        YardCall::TopLevel => Reply::ok(format!("{}\n", top_level(repository, dir))),
+        YardCall::CommonDir => Reply::ok(format!("{}\n", common_dir(repository))),
+        YardCall::Locate => Reply::ok(format!(
+            "{}\n{}\n{}\n",
+            top_level(repository, dir),
+            common_dir(repository),
+            super::stopped::git_path(repository, operands[0])
+        )),
         YardCall::Ignored => {
             let ignored = repository
                 .yard

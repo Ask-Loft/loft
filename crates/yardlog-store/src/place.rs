@@ -37,11 +37,11 @@ impl Place {
     pub fn locate(git: &YardGit, dir: &Path) -> Result<Self, YardStoreError> {
         // git prints its directories from the one it runs in, resolved on disk.
         let dir = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
-        let tree = git.top_level(&dir)?;
+        let (tree, common_dir, git_yard) = git.locate(&dir)?;
         Ok(Self {
             branch: git.branch(&dir)?,
-            common_dir: git.common_dir(&dir)?,
-            git_yard: git.git_path(&dir, GIT_DIR_NAME)?,
+            common_dir,
+            git_yard,
             tree,
         })
     }

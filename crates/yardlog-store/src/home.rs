@@ -6,13 +6,11 @@
 //! it back holds the directory's lock while it does.
 
 use std::fs::{self, OpenOptions};
-use std::io::{self, Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process;
-use std::sync::atomic::{AtomicU64, Ordering};
 
 use loft_ports::io_error;
-use loft_ports::sync::sync_dir;
+use loft_ports::sync::{read_if_present, remove_if_present, replace_synced};
 
 use crate::{YardStoreError, lock};
 
@@ -101,12 +99,7 @@ impl Home {
     ///
     /// The file cannot be read.
     pub fn read(&self, file: HomeFile) -> Result<Option<Vec<u8>>, YardStoreError> {
-        let path = self.path(file);
-        match fs::read(&path) {
-            Ok(bytes) => Ok(Some(bytes)),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
-            Err(error) => Err(io_error(&path)(error).into()),
-        }
+        Ok(read_if_present(&self.path(file))?)
     }
 
     /// Replaces a file with `bytes`, through a temporary file beside it renamed into place.
@@ -116,18 +109,7 @@ impl Home {
     /// The directory or the file cannot be written.
     pub fn write(&self, file: HomeFile, bytes: &[u8]) -> Result<(), YardStoreError> {
         fs::create_dir_all(&self.dir).map_err(io_error(&self.dir))?;
-        let path = self.path(file);
-        let temporary = self.dir.join(format!(".{}.{}", file.name(), unique()));
-        let written = write_new(&temporary, bytes, file.private()).and_then(|()| {
-            fs::rename(&temporary, &path)
-                .map_err(io_error(&path))
-                .map_err(Into::into)
-        });
-        if written.is_err() {
-            let _ = fs::remove_file(&temporary);
-        }
-        written?;
-        Ok(sync_dir(&self.dir)?)
+        Ok(replace_synced(&self.path(file), bytes, file.private())?)
     }
 
     /// Removes a file, where it is there.
@@ -136,12 +118,7 @@ impl Home {
     ///
     /// The file is there and cannot be removed.
     pub fn remove(&self, file: HomeFile) -> Result<(), YardStoreError> {
-        let path = self.path(file);
-        match fs::remove_file(&path) {
-            Ok(()) => Ok(()),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
-            Err(error) => Err(io_error(&path)(error).into()),
-        }
+        Ok(remove_if_present(&self.path(file))?)
     }
 
     /// A session's event log, or none where it has none.
@@ -150,12 +127,7 @@ impl Home {
     ///
     /// The log is there and cannot be read.
     pub fn read_events(&self, session: &str) -> Result<Option<Vec<u8>>, YardStoreError> {
-        let path = self.events(session);
-        match fs::read(&path) {
-            Ok(bytes) => Ok(Some(bytes)),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
-            Err(error) => Err(io_error(&path)(error).into()),
-        }
+        Ok(read_if_present(&self.events(session))?)
     }
 
     /// Appends `line` and a line break to a session's event log, creating the log where it is
@@ -197,31 +169,4 @@ impl Home {
         }
         Ok(())
     }
-}
-
-/// A name no other temporary file of this process or another has at once.
-fn unique() -> String {
-    static NEXT: AtomicU64 = AtomicU64::new(0);
-    format!(
-        "{}.{}.tmp",
-        process::id(),
-        NEXT.fetch_add(1, Ordering::Relaxed)
-    )
-}
-
-/// Writes a new file, synced, readable only by its owner where `private`.
-fn write_new(path: &Path, bytes: &[u8], private: bool) -> Result<(), YardStoreError> {
-    let mut options = OpenOptions::new();
-    options.write(true).create_new(true);
-    #[cfg(unix)]
-    if private {
-        use std::os::unix::fs::OpenOptionsExt as _;
-        options.mode(0o600);
-    }
-    #[cfg(not(unix))]
-    let _ = private;
-    let mut handle = options.open(path).map_err(io_error(path))?;
-    handle.write_all(bytes).map_err(io_error(path))?;
-    handle.sync_all().map_err(io_error(path))?;
-    Ok(())
 }

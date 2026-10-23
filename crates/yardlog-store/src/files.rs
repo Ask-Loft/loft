@@ -1,12 +1,10 @@
 //! Yard Log's folder, `.yard/<branch>/` at the top of the worktree: reading its files, and the
 //! changes that turn them into the files of Yard Log as it is to be written.
 
-use std::fs;
-use std::io;
 use std::path::{Path, PathBuf};
 
-use loft_ports::io_error;
 use loft_ports::journal::{Changes, RelPath};
+use loft_ports::sync::read_if_present;
 use yardlog::YardLog;
 use yardlog::codec::ROOT;
 
@@ -54,12 +52,7 @@ impl Folder {
 
     /// A file's bytes, or none where it is not there.
     pub(crate) fn read(&self, name: &str) -> Result<Option<Vec<u8>>, YardStoreError> {
-        let path = self.path().join(name);
-        match fs::read(&path) {
-            Ok(bytes) => Ok(Some(bytes)),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
-            Err(error) => Err(io_error(&path)(error).into()),
-        }
+        Ok(read_if_present(&self.path().join(name))?)
     }
 
     /// The root's bytes, or none where Yard Log was never opened.

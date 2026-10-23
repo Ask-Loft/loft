@@ -9,7 +9,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 
 use crate::journal::{Journal, RelPath};
-use crate::sync::{move_into_place, sync_dir};
+use crate::sync::{move_into_place, read_if_present, sync_dir};
 use crate::{PortError, io_error};
 
 pub(crate) const PLAN: &str = "plan.json";
@@ -36,10 +36,8 @@ impl Plan {
     /// Reads the plan of a committed save, where there is one.
     pub(crate) fn read(journal: &Journal) -> Result<Option<Self>, PortError> {
         let path = journal.dir().join(PLAN);
-        let bytes = match fs::read(&path) {
-            Ok(bytes) => bytes,
-            Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
-            Err(error) => return Err(io_error(&path)(error)),
+        let Some(bytes) = read_if_present(&path)? else {
+            return Ok(None);
         };
         let plan: Self = serde_json::from_slice(&bytes)
             .map_err(|error| PortError::Journal(path.clone(), error.to_string()))?;
