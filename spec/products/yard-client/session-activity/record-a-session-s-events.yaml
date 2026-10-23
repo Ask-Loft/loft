@@ -67,6 +67,8 @@ requirements:
         name: "Past 1,000 kept events, the oldest is dropped."
       - key: 01a1646f-546d-7042-befd-eb0f5266c105
         name: "The first event posted after a drop holds the number of events dropped."
+      - key: 01a16a54-ced2-7361-9f2d-5f1bed8103e9
+        name: "An event kept while a post is under way is posted after it, and is never taken for one of the events that post carried."
   - key: 01a1646f-546d-7042-befd-eb103c0010bb
     statement:
       form: event_driven
