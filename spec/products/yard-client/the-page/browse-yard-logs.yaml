@@ -81,10 +81,22 @@ requirements:
       form: event_driven
       when: "a tree holds under `.yard/` Yard Log of a branch other than the one the tree is on, as one carried from the branch it was cut from"
       system: "the page"
-      shall: "list that Yard Log under the tree as inherited, and offer it only to read."
+      shall: "list that Yard Log as inherited under its repository, once whatever number of the repository's trees hold it, and offer it only to read."
     criteria:
       - key: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
-        name: "Each tree lists its current branch's Yard Log first, and each inherited one after it, marked as inherited."
+        name: "Each tree lists only its current branch's Yard Log, and its repository lists the inherited ones in a fold of their own, marked as inherited."
+      - key: 01a16920-dde7-743a-aadb-6553a3ec2a91
+        name: "The fold of a repository's inherited Yard Logs gives their count, is folded unless the person opened it, and the person's choice is kept in the browser."
+      - key: 01a16920-dde7-743a-aadb-655415977acf
+        name: "The list the page server gives carries the count of each repository's inherited Yard Logs, and not the Yard Logs themselves."
+      - key: 01a16920-dde7-743a-aadb-6555b77571c9
+        name: "Opened, the fold lists the inherited Yard Logs 50 at a time, the one closed last first, or opened last where none is closed, with a button that lists 50 more."
+      - key: 01a16920-dde7-743a-aadb-6556d72fc987
+        name: "A filter in the fold lists only the inherited Yard Logs whose branch or title holds its text, whatever its case."
+      - key: 01a16920-dde7-743a-aadb-65570f7e95f9
+        name: "An inherited Yard Log that more than one of the repository's trees hold is listed once, and opens in the repository's main worktree where that holds it, or in the first tree that does."
+      - key: 01a16929-b1e9-7640-a31f-7b683216bb79
+        name: "A Yard Log of a branch that one of the repository's trees is on is listed under that tree, and not among the inherited ones."
       - key: 01a1649f-62ef-71e6-98de-e10f33cdae95
         name: "An inherited Yard Log's open questions, approvals and plans are shown and offer no answer or decision."
       - key: 01a1649f-62ef-71e6-98de-e1107c0ffed2
