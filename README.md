@@ -130,14 +130,9 @@ The skill is also a plugin, for an agent that works across projects:
 
 The plugin teaches the agent; it does not install `loft`, which the skill expects on the path.
 
-In Claude Code the plugin also shows the Loft status pane in a project that holds `spec/`: the
-checks of the loop (format, check, `spec/` committed, trace, lock) and the next step, the nodes
-the branch added, changed and removed since its base, the criteria it touched that still lack a
-reviewed test, and the file the agent is writing. `/loft-status` opens it; `/loft-status
-<revision>` compares with another base for the session, and `/loft-status auto` returns to the
-`baseBranch` setting (`develop` by default). The pane runs `loft status`, `loft fmt --check`,
-`loft check` and `loft reconcile` with telemetry and the update check off; where `loft` is not on
-the path, set the plugin's `loftCommand` setting, for example to `pnpm exec loft`.
+In Claude Code the plugin runs `loft` itself, with telemetry and the update check off; where
+`loft` is not on the path, set the plugin's `loftCommand` setting, for example to
+`pnpm exec loft`.
 
 ### Yard Client
 

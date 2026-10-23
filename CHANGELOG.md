@@ -5,6 +5,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- The Claude Code plugin no longer shows the Loft status pane: its pane, its status-line entry
+  and `/loft-status` are gone, and no session runs `loft` every 10 seconds to draw them. Yard Log
+  and its page show the work on a specification instead. `loft status` stays a command, and the
+  `baseBranch` and `loftCommand` settings stay for Yard Client.
 - Yard Client: each branch's Yard Log, the record of what agents planned, asked, decided and did
   on it, kept in the `yardlog` format under `.yard/<branch>/`.
   - `loft yard` reads and writes it: `read`, `write` (with `--send` to send questions, approvals
@@ -23,7 +27,7 @@ Format and the hashing algorithm carry their own versions, which `loft --version
     live, with its stages and blocks, a Gantt chart, Loft's views, the tokens each stage took
     and what waits on the person, who answers and approves there. Mermaid ships with it,
     compressed.
-  - The Loft plugin for Claude Code runs Yard Client and the status pane in one mod: it adds the
+  - The Loft plugin for Claude Code runs Yard Client in its mod: it adds the
     `yard_*` tools, puts `AskUserQuestion` and `ExitPlanMode` on the page beside Claude Code's
     own dialog, mirrors tasks, records each session's events and tokens, keeps one page server
     for the machine, and gives each session where its Yard Log stands. The `yard` skill teaches
