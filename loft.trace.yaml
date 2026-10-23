@@ -20625,6 +20625,12 @@ links:
       - file: "crates/loft-cli/tests/yard_take_up.rs"
         name: "two_sessions_on_one_branch_never_both_wait_on_one_submission"
         body: 95497bd3807a0152f21cad4c564dbd70666d0e91f9c4f395e4f0611cfad28f72
+  - node: 01a16a59-cf10-7028-be3f-c198f1fdfac0
+    reviewed: 6ae403c54d777f62dc2cb7f23342e0af52389541c1a5dc7779fa0ccb4929b47f
+    tests:
+      - file: "crates/loft-cli/tests/yard_wait.rs"
+        name: "a_lease_held_a_moment_by_one_that_looks_does_not_refuse_the_wait"
+        body: 5be8602252e289679540bb3aa5d067a901a22ddbdb87282b12470260cad0b44a
   - node: 01a1647b-208c-755d-8b1a-5883df7ebb39
     reviewed: 1f070568bad56e71709c10a7df0f6465d314f4e816ad8da285b6ed897c65c688
     tests:
