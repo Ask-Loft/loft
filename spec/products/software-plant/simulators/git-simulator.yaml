@@ -153,5 +153,9 @@ requirements:
         name: "`config --get <name>` prints the value of a name the scenario sets, and exits 1 and prints nothing for one it does not set."
       - key: 01a164cf-8fd5-7533-a02e-c053f8d7d124
         name: "`rev-parse -q --verify <revision>:<path>` prints the object id the scenario gives the path at the revision, and exits 1 and prints nothing where it gives none."
+      - key: 01a169c2-313f-70fe-a064-ad6feaedaefb
+        name: "`reflog show --format=%gs refs/heads/<branch> --` prints the subject of each entry the scenario gives the branch's reflog, newest first, and exits 128 with git's `bad revision` message for a branch whose reflog it does not give."
+      - key: 01a169c2-313f-70fe-a064-ad708e34e9fc
+        name: "`show-ref --verify -q refs/heads/<branch>` exits 0 and prints nothing for a local branch the scenario names, and exits 1 for any other."
       - key: 01a164cf-8fd5-7533-a02e-c054dfca0a97
         name: "Each of these calls run outside a repository exits 128 with git's message, except `config --get`, which exits 1."

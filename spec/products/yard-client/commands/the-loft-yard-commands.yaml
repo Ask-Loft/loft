@@ -27,12 +27,18 @@ requirements:
       form: ubiquitous
       system: "A `loft yard` command"
       shall: "take the base branch from Yard Log's root, where `loft yard write` recorded it when it opened Yard Log."
-    body: "The base branch is the one a branch is merged into, and the one whose tip decides whether Yard Log was closed by the merge. It is recorded once, when Yard Log is opened, from `--base <branch>` of the `loft yard write` that opens it, `develop` where that write names none; the Loft mod passes its `baseBranch` setting. No other command takes `--base`, so a command run by hand checks a merge against the same branch as the mod and the page."
+    body: "The base branch is the one a branch is merged into, and the one whose tip decides whether Yard Log was closed by the merge. It is recorded once, when Yard Log is opened, by the `loft yard write` that opens it: the branch its `--base <branch>` names; else the local branch that git's reflog says the branch was created from, so that a branch cut from another feature branch is compared with that branch; else the branch its `--default-base <branch>` names; else `develop`. The Loft mod passes its `baseBranch` setting as `--default-base`. No other command takes either option, so a command run by hand checks a merge against the same branch as the mod and the page."
     criteria:
       - key: 01a1647b-208d-7169-85c8-9a4d3e3ebd74
-        name: "Yard Log opened by a `loft yard write` without `--base` records `develop` as its base branch."
+        name: "Yard Log opened by a `loft yard write` without `--base`, on a branch that git's reflog says was created from another local branch, records that branch as its base branch."
+      - key: 01a169c2-313f-70fe-a064-ad7198503947
+        name: "Yard Log opened by a `loft yard write` without `--base`, on a branch that git's reflog says was created from no other local branch, records the branch `--default-base` names, or `develop` where that write names none."
+      - key: 01a169c2-313f-70fe-a064-ad72205c72c6
+        name: "A branch created from `HEAD`, from a commit, from a remote branch or from itself, and a branch whose reflog holds no entry of its creation, counts as created from no other local branch."
+      - key: 01a169c2-313f-70fe-a064-ad7376ed0349
+        name: "Yard Log opened by a `loft yard write` with `--base` records the branch it names, whichever branch git says the branch was created from."
       - key: 01a1647b-208d-7169-85c8-9a4e9df86ef5
-        name: "The Loft mod runs `loft yard write` with `--base` set to its `baseBranch` setting."
+        name: "The Loft mod runs `loft yard write` with `--default-base` set to its `baseBranch` setting, and never with `--base`."
       - key: 01a16621-e7bc-7707-b123-2163026a4f94
         name: "A `loft yard write` with `--base` to Yard Log already open leaves the base branch its root records as it was."
       - key: 01a16621-e7bc-7707-b123-2164410db0f5
