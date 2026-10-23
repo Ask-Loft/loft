@@ -19,29 +19,20 @@ use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::views::Views;
 use crate::finish::Finished;
-use crate::json;
-use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-published/1";
 const OUTCOME: &str = "recorded";
 
 pub fn run(root: &Path, args: PublishedArgs) -> Finished {
     let as_json = args.output.json();
-    match attempt(root, args) {
-        Ok(fields) => {
-            if as_json {
-                json::print(&json::result(SCHEMA, OUTCOME, fields, Vec::new()));
-            } else {
-                outln!(
-                    "Recorded the publish in the Yard Log of {} at revision {}",
-                    fields["branch"].as_str().unwrap_or_default(),
-                    fields["revision"]
-                );
-            }
-            Finished::success(OUTCOME)
-        }
-        Err(failure) => failure.finish(SCHEMA, as_json),
-    }
+    let recorded = attempt(root, args).map(|fields| (OUTCOME, fields));
+    failure::end(SCHEMA, as_json, recorded, |_, fields| {
+        format!(
+            "Recorded the publish in the Yard Log of {} at revision {}",
+            fields["branch"].as_str().unwrap_or_default(),
+            fields["revision"]
+        )
+    })
 }
 
 fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {

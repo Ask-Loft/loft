@@ -26,8 +26,6 @@ use super::failure::{self, Failure};
 use super::render;
 use super::standing::{Standing, standing};
 use crate::finish::Finished;
-use crate::json;
-use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-wait/1";
 
@@ -50,21 +48,13 @@ const LEASE_AGAIN: Duration = Duration::from_millis(50);
 
 pub fn run(root: &Path, args: WaitArgs) -> Finished {
     let as_json = args.output.json();
-    match attempt(root, args) {
-        Ok((outcome, fields)) => {
-            if as_json {
-                json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
-            } else {
-                outln!(
-                    "Submission {} is {outcome}; Yard Log at revision {}",
-                    fields["submission"].as_str().unwrap_or_default(),
-                    fields["revision"]
-                );
-            }
-            Finished::success(outcome)
-        }
-        Err(failure) => failure.finish(SCHEMA, as_json),
-    }
+    failure::end(SCHEMA, as_json, attempt(root, args), |outcome, fields| {
+        format!(
+            "Submission {} is {outcome}; Yard Log at revision {}",
+            fields["submission"].as_str().unwrap_or_default(),
+            fields["revision"]
+        )
+    })
 }
 
 fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {

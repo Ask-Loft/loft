@@ -17,11 +17,9 @@ use yardlog_store::{Held, Place};
 use super::args::ReadArgs;
 use super::branch::{Branch, revision_of};
 use super::caller::{Caller, Continuations, LastRead};
-use super::failure::Failure;
+use super::failure::{self, Failure};
 use super::render_log::{Selection, closed_by, root, stages, submissions};
 use crate::finish::Finished;
-use crate::json;
-use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-read/1";
 const OUTCOME: &str = "read";
@@ -31,17 +29,8 @@ type Marked = (YardLogKey, u64);
 
 pub fn run(root: &Path, args: ReadArgs) -> Finished {
     let as_json = args.output.json();
-    match document(root, args) {
-        Ok(fields) => {
-            if as_json {
-                json::print(&json::result(SCHEMA, OUTCOME, fields, Vec::new()));
-            } else {
-                outln!("{}", summary(&fields));
-            }
-            Finished::success(OUTCOME)
-        }
-        Err(failure) => failure.finish(SCHEMA, as_json),
-    }
+    let read = document(root, args).map(|fields| (OUTCOME, fields));
+    failure::end(SCHEMA, as_json, read, |_, fields| summary(fields))
 }
 
 /// The actor of a settling a read makes: the calling agent, or the person where it names none.

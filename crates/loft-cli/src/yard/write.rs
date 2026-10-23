@@ -18,30 +18,21 @@ use super::failure::{self, Failure};
 use super::render;
 use super::views::Views;
 use crate::finish::Finished;
-use crate::json;
-use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-write/1";
 const OUTCOME: &str = "written";
 
 pub fn run(root: &Path, args: WriteArgs) -> Finished {
     let as_json = args.output.json();
-    match attempt(root, args) {
-        Ok(fields) => {
-            if as_json {
-                json::print(&json::result(SCHEMA, OUTCOME, fields, Vec::new()));
-            } else {
-                outln!(
-                    "Yard Log of {} at revision {}; {}",
-                    fields["branch"].as_str().unwrap_or_default(),
-                    fields["revision"],
-                    super::read::page_line(&fields["page"])
-                );
-            }
-            Finished::success(OUTCOME)
-        }
-        Err(failure) => failure.finish(SCHEMA, as_json),
-    }
+    let written = attempt(root, args).map(|fields| (OUTCOME, fields));
+    failure::end(SCHEMA, as_json, written, |_, fields| {
+        format!(
+            "Yard Log of {} at revision {}; {}",
+            fields["branch"].as_str().unwrap_or_default(),
+            fields["revision"],
+            super::read::page_line(&fields["page"])
+        )
+    })
 }
 
 /// What a write applied: the batch's result, and the format Yard Log was upgraded from.
