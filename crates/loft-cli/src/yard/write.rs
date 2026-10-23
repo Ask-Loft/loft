@@ -11,7 +11,7 @@ use yardlog::write::{Context, Refusal, Reports, Written};
 use yardlog::{Format, YardLog};
 use yardlog_store::Held;
 
-use super::args::WriteArgs;
+use super::args::{DEFAULT_BASE, WriteArgs};
 use super::branch::{Branch, Unapplied, log_of, revision_of};
 use super::caller::Caller;
 use super::failure::{self, Failure};
@@ -70,10 +70,18 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
     };
     let branch_name = branch.store.branch().to_owned();
     // The views compare with the base branch Yard Log records, or the one this write opens it on.
-    let base = log_of(&held).map_or(args.base.as_str(), |log| log.root.base.as_str());
+    let base = match log_of(&held) {
+        Some(log) => log.root.base.clone(),
+        None => opening_base(
+            &branch,
+            dir,
+            args.base.as_deref(),
+            args.default_base.as_deref(),
+        )?,
+    };
     let views = Views {
         tree: dir,
-        base,
+        base: &base,
         at,
     };
     // The views read the specification and git, and need nothing of Yard Log: each is computed
@@ -87,7 +95,7 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         .collect();
     let applied = branch.update(|current| {
         let mut log =
-            current.unwrap_or_else(|| YardLog::open(&branch_name, &args.base, at, agent.clone()));
+            current.unwrap_or_else(|| YardLog::open(&branch_name, &base, at, agent.clone()));
         // The write's own Act records the upgrade.
         let upgraded_from = log.upgrade_format();
         let written = log
@@ -105,6 +113,21 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         Ok(applied) => Ok(result(&branch, &applied)),
         Err(refusal) => Err(refusal_of(&branch, &branch.store.read()?, &refusal)),
     }
+}
+
+/// The base branch a write records as it opens Yard Log: the one `--base` names; else the local
+/// branch git says this one was cut from; else the one `--default-base` names; else `develop`.
+fn opening_base(
+    branch: &Branch,
+    dir: &Path,
+    named: Option<&str>,
+    default: Option<&str>,
+) -> Result<String, Failure> {
+    if let Some(named) = named {
+        return Ok(named.to_owned());
+    }
+    let cut_from = branch.git.cut_from(dir, branch.store.branch())?;
+    Ok(cut_from.unwrap_or_else(|| default.unwrap_or(DEFAULT_BASE).to_owned()))
 }
 
 fn result(branch: &Branch, applied: &Applied) -> Value {

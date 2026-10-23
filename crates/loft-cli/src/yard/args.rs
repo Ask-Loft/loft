@@ -1,7 +1,8 @@
 //! The arguments of `loft yard`: each command, and the options they share. An agent's command
 //! names the agent that runs it; a command that acts on a branch's Yard Log names the page
-//! server's port, and the write that opens Yard Log names the base branch it records. A usage
-//! error exits 2 and names the argument at fault.
+//! server's port, and the write that opens Yard Log may name the base branch it records, or the
+//! one it records where git names no branch this one was cut from. A usage error exits 2 and
+//! names the argument at fault.
 
 use std::path::PathBuf;
 
@@ -12,7 +13,8 @@ use crate::cli::Output;
 /// The port the page server listens on unless told another.
 pub const DEFAULT_PORT: u16 = 7411;
 
-/// The base branch Yard Log records where the write that opens it names none.
+/// The base branch Yard Log records where the write that opens it names none, git names no
+/// branch this one was cut from, and the write names no default.
 pub const DEFAULT_BASE: &str = "develop";
 
 #[derive(Subcommand)]
@@ -143,9 +145,14 @@ pub struct WriteArgs {
     /// The revision the batch is based on: a block of it changed since is refused.
     #[arg(long, value_name = "REVISION")]
     pub based_on: Option<u64>,
-    /// The branch this one is merged into, recorded in Yard Log.s root where this write opens it.
-    #[arg(long, value_name = "BRANCH", default_value = DEFAULT_BASE)]
-    pub base: String,
+    /// The branch this one is merged into, recorded in Yard Log's root where this write opens it,
+    /// whichever branch git says this one was cut from.
+    #[arg(long, value_name = "BRANCH")]
+    pub base: Option<String>,
+    /// The branch recorded in Yard Log's root where this write opens it without `--base` and git
+    /// names no local branch this one was cut from; `develop` where this is not given.
+    #[arg(long, value_name = "BRANCH")]
+    pub default_base: Option<String>,
     #[command(flatten)]
     pub writer: Writer,
     #[command(flatten)]

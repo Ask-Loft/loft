@@ -25261,8 +25261,20 @@ links:
         name: "a_refusal_is_listed_among_the_errors_and_exits_1"
         body: e35a1fd14430a1a37ac027f389d40e998359d8fb600460d65b8ddfbec7dd336b
   - node: 01a1647b-208d-7169-85c8-9a4d3e3ebd74
-    reviewed: 38a3f9d66d7fba377115df4220f950408c3b524105e0ac6b3949160a0ecab274
+    reviewed: 2c9b1f4df729d6c17d59669e96d4cd56b316c3bd2115d854f13eb792a2d6bd5d
     tests:
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "yard_log_opened_without_base_records_the_local_branch_its_branch_was_cut_from"
+        body: 3e816246f909afd26c24a23e8fedae05e6598e8c501ac3838be9a5f0a28af155
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "a_view_written_as_yard_log_opens_compares_with_the_branch_it_was_cut_from"
+        body: f41005346abbc1afdfe023335ddd399a210f547ccb3a1f416b27170db41b4831
+  - node: 01a169c2-313f-70fe-a064-ad7198503947
+    reviewed: dd7df5e3b54cedbb3d73180c5ba21291698ec0ba3f3250bf88d9cb4045313844
+    tests:
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "a_branch_cut_from_no_other_local_branch_records_the_default_base_or_develop"
+        body: 4ae2a89fee834c50f9912449cb42472795555950671704aa3148f24efe1c9b5d
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "yard_log_opened_without_base_records_develop_as_its_base_branch"
         body: 320a66d4308165d10a433fc7c3a36e38fd3a25e5349f2b576275ee3a2e0ad2a3
@@ -25272,6 +25284,15 @@ links:
       - file: "crates/yardlog-store/tests/git_contract.rs"
         name: "a_branch_is_cut_from_the_local_branch_its_reflog_names_and_from_none_otherwise"
         body: 1df738e20a483b0385d851b090ca94c29ce6e7cb818ceb4cce9d74915b72fa32
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "a_branch_cut_from_no_other_local_branch_records_the_default_base_or_develop"
+        body: 4ae2a89fee834c50f9912449cb42472795555950671704aa3148f24efe1c9b5d
+  - node: 01a169c2-313f-70fe-a064-ad7376ed0349
+    reviewed: c6be852444ce496f3b9f5e8417d5003d6608de8ac31ef179dce8593336c8d972
+    tests:
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "yard_log_opened_with_base_records_it_whichever_branch_git_names"
+        body: e7d77fefbd61015722bd60c50ed64b3bc7452eb9a1dea773a41398097df6be7c
   - node: 01a1647b-208d-7169-85c8-9a4e9df86ef5
     reviewed: 85b03cd2721b0ce40cd46c2f01493c83bde407b40478b9c1135818e31c3009a6
     tests:
@@ -25292,7 +25313,7 @@ links:
         body: 10904e79a52d89b56b6c9fcc21a3284a29d50b377e158c29309beb3c24c35f18
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "no_yard_command_but_write_takes_base"
-        body: 615ffc081a5d0b3c86f2f1d5b2a1629f81495f48b9139d083f2c10fc9d969c17
+        body: 1a9737b92effe9d2b40c987b09d28f3c3b33bf899e7fa0cd43fce12a29e6aaaf
       - file: "crates/loft-cli/tests/yard_serve_base.rs"
         name: "the_page_server_checks_the_merge_against_the_base_branch_yard_log_records"
         body: b757ac6c9fe717e858fe1fc2276f965303c20119230f39247f3ecd8abdc7899a

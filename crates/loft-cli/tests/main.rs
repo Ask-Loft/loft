@@ -85,6 +85,7 @@ mod writes_skill;
 mod writes_skill_settings;
 mod writes_tree;
 mod yard_answer;
+mod yard_base;
 mod yard_callers;
 mod yard_close;
 mod yard_commands;
