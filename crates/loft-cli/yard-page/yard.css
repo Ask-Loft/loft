@@ -546,44 +546,66 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 /* The Gantt chart. */
 
 .gantt { display: grid; gap: 12px; }
-.gantt-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--ink); }
-.gantt-chart { display: block; font: 12px var(--font); }
-.lane-back { fill: transparent; }
-.lane-back--odd { fill: var(--surface-2); }
-.lane-label { fill: var(--ink); font-weight: 600; }
-.stage-name, .task-name { cursor: pointer; }
-.stage-name text { fill: var(--ink); font-weight: 600; }
-.task-name text { fill: var(--body); font-size: 11px; }
-.stage-name:hover text, .task-name:hover text { fill: var(--signal); }
-.stage-back { fill: var(--surface); }
-.stage-rect { fill: none; stroke: var(--signal); stroke-width: 1.25; pointer-events: none; }
-.stage-rect.status--done { stroke: var(--done); }
-.stage-rect.status--dropped { stroke: var(--drop); stroke-dasharray: 3 2; }
-.stage-bar, .task-bar, .wait, .loft-view-mark { cursor: pointer; }
-.seg--task { fill: var(--series-task); }
-.seg--loft { fill: var(--series-loft); }
-.seg--failed { fill: var(--danger); }
-.seg--wait { fill: var(--series-wait); }
-.seg--work { fill: var(--series-work); opacity: 0.55; }
-.task-listed { fill: var(--series-task-pale); }
-.task-active { fill: var(--series-task); }
-.task-done { fill: var(--signal); }
-.view-mark { fill: var(--ink); stroke: var(--surface); stroke-width: 1; }
-.session-rule { stroke: var(--muted); stroke-dasharray: 4 3; }
-.session-label { fill: var(--muted); font-size: 11px; }
-.band-fill--plan { fill: var(--plan-soft); opacity: 0.6; }
-.band-fill--spec { opacity: 0.35; }
-.mode-fill { fill: var(--plan-soft); }
-.mode--plan .mode-fill { stroke: var(--plan); stroke-width: 0.75; }
-.mode--spec .mode-fill { stroke: var(--spec); stroke-width: 0.75; }
-.hatch-spec { fill: var(--spec); opacity: 0.3; }
-.band-label { font-size: 10px; font-weight: 600; pointer-events: none; }
-.mode--plan .band-label { fill: var(--plan); }
-.mode--spec .band-label { fill: var(--spec); }
-.idle-gap { fill: var(--surface); }
-.break-mark { fill: none; stroke: var(--rail); stroke-width: 1.25; }
-.axis-line, .tick-mark { stroke: var(--rail); }
-.tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.gantt-frame { --head: 44px; --row: 24px; --task-row: 17px; overflow: auto; max-height: calc(100vh - 24px); background: var(--surface); border: 1px solid var(--ink); overscroll-behavior: contain; }
+.gantt-sheet { position: relative; font-size: 12px; }
+.gantt-head, .gantt-row { display: grid; grid-template-columns: var(--names) minmax(0, 1fr); }
+.gantt-head { position: sticky; top: 0; z-index: 8; height: var(--head); background: var(--surface); border-bottom: 1px solid var(--line); }
+.gantt-corner { position: sticky; left: 0; z-index: 9; background: var(--surface); border-right: 1px solid var(--line); }
+.names-edge { position: absolute; top: 0; right: -4px; bottom: 0; width: 8px; cursor: col-resize; touch-action: none; }
+.names-edge::after { content: ''; position: absolute; top: 8px; bottom: 8px; left: 3px; width: 2px; background: var(--rail); }
+.names-edge:hover::after, .names-edge:focus-visible::after { background: var(--signal); }
+.gantt-axis { position: relative; }
+.tick { position: absolute; top: 4px; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; border-left: 1px solid var(--rail); padding-left: 3px; }
+.tick--middle { transform: translateX(-50%); border-left: 0; padding-left: 0; }
+.tick--end { transform: translateX(-100%); border-left: 0; border-right: 1px solid var(--rail); padding: 0 3px 0 0; }
+.idle-fold { position: absolute; top: 0; bottom: 0; }
+.break-mark { position: absolute; top: 6px; left: 50%; width: 5px; height: 12px; margin-left: -3px; border-left: 1px solid var(--rail); border-right: 1px solid var(--rail); transform: skewX(-20deg); }
+.mode-track { position: absolute; left: 0; right: 0; bottom: 4px; height: 14px; }
+.mode { position: absolute; top: 0; bottom: 0; min-width: 2px; overflow: hidden; white-space: nowrap; }
+.mode--plan { background: var(--plan-soft); box-shadow: inset 0 0 0 1px var(--plan); }
+.mode--spec { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--spec) 35%, transparent) 0 2px, transparent 2px 6px), var(--spec-soft); box-shadow: inset 0 0 0 1px var(--spec); }
+.band-label { display: block; padding: 0 4px; font-size: 10px; font-weight: 600; line-height: 14px; }
+.mode--plan .band-label { color: var(--plan); }
+.mode--spec .band-label { color: var(--spec); }
+.gantt-lane { --lane-bg: var(--surface); position: relative; background: var(--lane-bg); padding-bottom: 6px; }
+.gantt-lane.lane--odd { --lane-bg: var(--surface-2); }
+.lane-overlay { position: absolute; top: 0; bottom: 0; left: var(--names); right: 0; z-index: 1; pointer-events: none; }
+.band-fill, .idle-gap, .grid-line, .session-rule { position: absolute; top: 0; bottom: 0; }
+.band-fill--plan { background: var(--plan-soft); opacity: 0.6; }
+.band-fill--spec { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--spec) 30%, transparent) 0 2px, transparent 2px 6px); opacity: 0.6; }
+.grid-line { width: 0; border-left: 1px solid var(--line); opacity: 0.7; }
+.idle-gap { background: var(--surface); box-shadow: inset 1px 0 0 var(--line), inset -1px 0 0 var(--line); }
+.session-rule { width: 0; border-left: 1px dashed var(--muted); pointer-events: auto; padding-left: 3px; }
+.gantt-row { height: var(--row); }
+.task-row { height: var(--task-row); }
+.stage-row { border-top: 1px solid var(--line); }
+.name-cell { position: sticky; left: 0; z-index: 6; display: flex; align-items: center; min-width: 0; background: var(--lane-bg); border-right: 1px solid var(--line); }
+.lane-label { padding: 0 8px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stage-name, .task-name { display: block; width: 100%; padding: 0 8px 0 12px; border: 0; background: none; font: inherit; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.stage-name { color: var(--ink); font-weight: 600; }
+.task-name { padding-left: 26px; color: var(--body); font-size: 11px; }
+.stage-name:hover, .task-name:hover { color: var(--signal); }
+.track-cell { position: relative; }
+.track-cell > * { position: absolute; min-width: 2px; }
+.lane-head .track-cell > .session-label { top: 5px; padding-left: 4px; color: var(--muted); font-size: 11px; white-space: nowrap; z-index: 2; }
+.stage-back, .seg, .stage-bar { top: 5px; height: 14px; }
+.stage-back { background: var(--surface); z-index: 2; }
+.seg { z-index: 2; }
+.seg--task { background: var(--series-task); }
+.seg--loft { background: var(--series-loft); z-index: 4; cursor: pointer; }
+.seg--failed { background: var(--danger); }
+.seg--wait { background: var(--series-wait); z-index: 4; border: 0; padding: 0; cursor: pointer; }
+.seg--work { background: var(--series-work); opacity: 0.55; }
+.stage-bar { z-index: 3; padding: 0; border: 1.25px solid var(--signal); border-radius: 2px; background: none; cursor: pointer; }
+.stage-bar.status--done { border-color: var(--done); }
+.stage-bar.status--dropped { border-color: var(--drop); border-style: dashed; }
+.loft-view-mark { top: 7px; width: 8px; height: 8px; margin-left: -4px; padding: 0; border: 1px solid var(--surface); background: var(--ink); transform: rotate(45deg); z-index: 5; cursor: pointer; }
+.task-listed, .task-active, .task-bar { top: 4px; height: 8px; }
+.task-listed { background: var(--series-task-pale); z-index: 2; }
+.task-active { background: var(--series-task); z-index: 2; }
+.task-done { top: 5px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--signal); z-index: 3; }
+.task-bar { z-index: 4; padding: 0; border: 0; background: none; cursor: pointer; }
+.stage-name:focus-visible, .task-name:focus-visible, .stage-bar:focus-visible, .task-bar:focus-visible, .wait:focus-visible, .loft-view-mark:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
 .time-split { display: grid; gap: 8px; }
 .split-bar { display: flex; gap: 2px; height: 12px; overflow: hidden; background: var(--surface); }
 .split--task { background: var(--series-task); }

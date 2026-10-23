@@ -75,7 +75,7 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
   expect(await colour(diagramBox(page), 'fill')).toBe('rgb(24, 33, 43)');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  expect(await colour(page.locator('svg.gantt-chart .lane-label'), 'fill')).toBe('rgb(232, 238, 244)');
+  expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
 
 test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
@@ -85,7 +85,7 @@ test('in a browser that asks for a light scheme, the page, its Gantt chart and i
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
   expect(await colour(diagramBox(page), 'fill')).toBe('rgb(243, 247, 250)');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  expect(await colour(page.locator('svg.gantt-chart .lane-label'), 'fill')).toBe('rgb(14, 20, 29)');
+  expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
 });
 
 test('when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload', async ({ page }) => {
@@ -278,6 +278,135 @@ test('the page keeps its width and its switch of views stays in place whichever 
   expect(after.switch?.y).toBe(before.switch?.y);
   await page.getByRole('button', { name: 'Timeline' }).click();
   await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+/**
+ * A long day of work, as the page server would give it: twelve stages of fifteen minutes with
+ * three tasks each, the last stage's title far too long for the column, in two turns with a
+ * folded idle stretch of ten minutes between them.
+ */
+function longDay() {
+  const start = Date.now() - 4 * 3600_000;
+  const iso = (minutes) => new Date(start + minutes * 60_000).toISOString().replace(/\.\d+Z$/, 'Z');
+  const by = { host: 'claude-code', session: 's1' };
+  let keys = 0;
+  const key = () => `00000000-0000-7000-9000-${String((keys += 1)).padStart(12, '0')}`;
+  const version = (body, minutes) => ({ key: key(), number: 1, act: { at: iso(minutes), revision: 1, by }, body });
+  const stages = Array.from({ length: 12 }, (_, index) => {
+    const from = index * 15 + (index >= 6 ? 10 : 0);
+    const title = index === 11 ? 'The last stage, whose title runs on far longer than any column of names could ever hold' : `Stage ${index + 1}`;
+    const tasks = [0, 1, 2].map((each) => ({
+      key: key(),
+      id: `long-${index}-task-${each}`,
+      kind: 'task',
+      version: version({ title: `Task ${each + 1} of stage ${index + 1}`, state: 'done' }, from + 5 * each + 5),
+      times: { listed: iso(from), started: iso(from + 5 * each), ended: iso(from + 5 * each + 5) },
+    }));
+    return {
+      key: key(),
+      id: `long-${index}`,
+      kind: 'stage',
+      owner: by,
+      times: { listed: iso(from), started: iso(from), ended: iso(from + 15) },
+      version: version({ title, status: 'done', goal: title }, from + 15),
+      blocks: tasks,
+    };
+  });
+  const turns = [
+    { started: iso(0), ended: iso(90) },
+    { started: iso(100), ended: iso(190) },
+  ];
+  return { stages, sent: [], activity: [{ session: 's1', turns, plan: [], spec: [], loft: [] }] };
+}
+
+/** Opens the page on the long day, in the Gantt chart, deaf to changes; gives the chart's frame. */
+async function openLongDay(page) {
+  await deaf(page);
+  await page.route('**/api/log?*', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), ...longDay() } });
+  });
+  await page.goto(address());
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  const frame = page.locator('.gantt-frame');
+  await expect(frame).toBeVisible();
+  return frame;
+}
+
+test('a chart whose time needs more room than the page scrolls sideways within its frame, opening at its latest time, and the page does not', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const sizes = await frame.evaluate((element) => ({ left: element.scrollLeft, width: element.scrollWidth, shown: element.clientWidth }));
+  expect(sizes.width).toBeGreaterThan(sizes.shown);
+  expect(sizes.left + sizes.shown).toBeGreaterThanOrEqual(sizes.width - 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const fifteen = await page.locator('.stage-bar').first().boundingBox();
+  expect(fifteen?.width ?? 0).toBeGreaterThanOrEqual(15 * 8 - 1);
+});
+
+test('while the chart scrolls sideways its names stay in view, and while it scrolls down its axis does, in a frame no taller than the window', async ({ page }) => {
+  const frame = await openLongDay(page);
+  const name = page.locator('.stage-name').first();
+  await frame.evaluate((element) => (element.scrollLeft = 0));
+  const before = await name.boundingBox();
+  await frame.evaluate((element) => (element.scrollLeft = 400));
+  expect((await name.boundingBox())?.x).toBe(before?.x);
+  const head = page.locator('.gantt-head');
+  const top = await head.boundingBox();
+  await frame.evaluate((element) => (element.scrollTop = 300));
+  expect(await frame.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  expect((await head.boundingBox())?.y).toBe(top?.y);
+  expect((await frame.boundingBox())?.height ?? 0).toBeLessThanOrEqual(900);
+});
+
+test('every name stays inside the column, a long one cut short with an ellipsis', async ({ page }) => {
+  await openLongDay(page);
+  const crossing = await page.evaluate(() =>
+    [...document.querySelectorAll('.name-cell')].filter((cell) => {
+      const name = /** @type {HTMLElement | null} */ (cell.querySelector('.lane-label, .stage-name, .task-name'));
+      return name && name.getBoundingClientRect().right > cell.getBoundingClientRect().right + 0.5;
+    }).length,
+  );
+  expect(crossing).toBe(0);
+  const long = page.locator('.stage-name', { hasText: 'The last stage' });
+  expect(await long.evaluate((element) => getComputedStyle(element).textOverflow)).toBe('ellipsis');
+  expect(await long.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+});
+
+test('dragging the column’s edge widens it within its bounds, and the next visit keeps the width', async ({ page }) => {
+  await openLongDay(page);
+  const cell = page.locator('.stage-row .name-cell').first();
+  const width = async () => (await cell.boundingBox())?.width ?? 0;
+  const first = await width();
+  const edge = await page.locator('.names-edge').boundingBox();
+  if (!edge) throw new Error('the column has no edge');
+  const x = edge.x + edge.width / 2;
+  const y = edge.y + edge.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 60, y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(width).toBeGreaterThan(first + 55);
+  const dragged = await width();
+  const again = await page.locator('.names-edge').boundingBox();
+  if (!again) throw new Error('the column has no edge');
+  await page.mouse.move(again.x + again.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(again.x + 1000, y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(width).toBeLessThanOrEqual(481);
+  await page.reload();
+  await page.locator('.gantt-frame').waitFor();
+  expect(await width()).toBeGreaterThan(dragged);
+  await page.evaluate(() => localStorage.removeItem('yard.gantt-names'));
+});
+
+test('a faint grid lies behind the bars, and a folded idle stretch is unhatched', async ({ page }) => {
+  await openLongDay(page);
+  expect(await page.locator('.stage-row').first().evaluate((element) => getComputedStyle(element).borderTopWidth)).toBe('1px');
+  const lines = page.locator('.gantt-lane .grid-line');
+  expect(await lines.count()).toBe(await page.locator('.gantt-axis .tick').count());
+  expect(await lines.first().evaluate((element) => getComputedStyle(element).borderLeftWidth)).toBe('1px');
+  expect(await page.locator('.idle-gap').first().evaluate((element) => getComputedStyle(element).backgroundImage)).toBe('none');
 });
 
 test('choosing a stage in the Gantt chart opens the timeline at it', async ({ page }) => {

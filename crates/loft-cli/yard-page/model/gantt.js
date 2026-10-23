@@ -317,6 +317,37 @@ function summary(busy, lanes) {
 }
 
 /**
+ * Where each time lies along a chart whatever its width: as a share of the width and an offset in
+ * pixels, so that it lies at `share × width + offset` on a chart `width` wide. The time that is
+ * not folded divides the width left after each folded idle stretch takes `fold` pixels.
+ * @param {{ start: number, end: number, idle: (Span & { folded: boolean })[] }} chart
+ * @param {number} [fold]
+ * @returns {(time: number) => { share: number, offset: number }}
+ */
+export function place(chart, fold = 28) {
+  const folded = chart.idle.filter((span) => span.folded);
+  const hidden = folded.reduce((sum, span) => sum + span.to - span.from, 0);
+  const open = Math.max(1, chart.end - chart.start - hidden);
+  const at = (before, folds) => {
+    const share = before / open;
+    return { share, offset: (folds - share * folded.length) * fold };
+  };
+  return (time) => {
+    let before = 0;
+    let folds = 0;
+    let from = chart.start;
+    for (const span of folded) {
+      if (time <= span.from) break;
+      before += span.from - from;
+      if (time < span.to) return at(before, folds + (time - span.from) / (span.to - span.from));
+      folds += 1;
+      from = span.to;
+    }
+    return at(before + Math.max(0, Math.min(time, chart.end) - from), folds);
+  };
+}
+
+/**
  * The x of each time on a chart `width` wide, each folded idle stretch drawn `fold` wide.
  * @param {{ start: number, end: number, idle: (Span & { folded: boolean })[] }} chart
  * @param {number} width
@@ -324,31 +355,34 @@ function summary(busy, lanes) {
  * @returns {(time: number) => number}
  */
 export function scale(chart, width, fold = 28) {
+  const placed = place(chart, fold);
+  return (time) => {
+    const { share, offset } = placed(time);
+    return share * width + offset;
+  };
+}
+
+/**
+ * The narrowest a chart may be drawn: `perMinute` pixels for each minute that is not folded, and
+ * `fold` pixels for each folded idle stretch.
+ * @param {{ start: number, end: number, idle: (Span & { folded: boolean })[] }} chart
+ * @param {number} [fold]
+ * @param {number} [perMinute]
+ */
+export function minimumWidth(chart, fold = 28, perMinute = 8) {
   const folded = chart.idle.filter((span) => span.folded);
   const hidden = folded.reduce((sum, span) => sum + span.to - span.from, 0);
-  const open = Math.max(1, chart.end - chart.start - hidden);
-  const room = Math.max(1, width - folded.length * fold);
-  return (time) => {
-    let x = 0;
-    let at = chart.start;
-    for (const span of folded) {
-      if (time <= span.from) break;
-      x += ((span.from - at) / open) * room;
-      if (time < span.to) return x + ((time - span.from) / (span.to - span.from)) * fold;
-      x += fold;
-      at = span.to;
-    }
-    return x + ((Math.min(time, chart.end) - at) / open) * room;
-  };
+  return Math.ceil(((chart.end - chart.start - hidden) / 60_000) * perMinute + folded.length * fold);
 }
 
 /** The steps the time axis is marked at, in milliseconds: from a minute to an hour. */
 const STEPS = [1, 2, 5, 10, 15, 30, 60].map((minutes) => minutes * 60_000);
 
 /**
- * The times the axis is marked at: the chart's start and end, and within each stretch between
- * folded idle stretches the whole multiples of the smallest step that leaves `gap` pixels
- * between marks, each kept only where it leaves `gap` pixels after the mark before it.
+ * The times the axis is marked at: the chart's start and end, the start of each stretch after a
+ * folded idle stretch, and within each stretch the whole multiples of the smallest step that
+ * leaves `gap` pixels between marks, short of a fold that ends it, each kept only where it leaves
+ * `gap` pixels after the mark before it.
  * @param {{ start: number, end: number, idle: (Span & { folded: boolean })[] }} chart
  * @param {(time: number) => number} x
  * @param {number} [gap]
@@ -363,12 +397,13 @@ export function ticks(chart, x, gap = 72) {
     from = fold.to;
   }
   stretches.push({ from, to: chart.end });
-  const times = [chart.start];
-  for (const stretch of stretches) {
+  const times = [chart.start, ...stretches.slice(1).map((stretch) => stretch.from)];
+  for (const [index, stretch] of stretches.entries()) {
+    const last = index === stretches.length - 1;
     const pixels = (x(stretch.to) - x(stretch.from)) / Math.max(1, stretch.to - stretch.from);
     const wanted = gap / Math.max(pixels, Number.MIN_VALUE);
     const step = STEPS.find((each) => each >= wanted) ?? Math.ceil(wanted / STEPS[STEPS.length - 1]) * STEPS[STEPS.length - 1];
-    for (let time = Math.ceil(stretch.from / step) * step; time <= stretch.to; time += step) times.push(time);
+    for (let time = Math.ceil(stretch.from / step) * step; last ? time <= stretch.to : time < stretch.to; time += step) times.push(time);
   }
   const kept = [];
   for (const time of times.sort((a, b) => a - b)) {

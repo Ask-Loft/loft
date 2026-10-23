@@ -1,314 +1,384 @@
-// The Gantt chart: a bar above it dividing the time that was not idle, then the chart itself.
-// Along its top run the time axis and the track of plan and spec mode; beneath them a lane for
-// the main agent and one for each subagent, each stage's bar divided into its active tasks, Loft
-// runs, waits on the person and agent work, with its tasks beneath it. A column beside the chart
-// names each lane, stage and task, idle stretches longer than 45 seconds are folded into breaks
-// of the axis, and no label crosses another or the chart's edge. Choosing a stage, a task or a
-// submission opens the timeline at it.
+// The Gantt chart, in HTML: a bar above it dividing the time that was not idle, then a frame
+// that scrolls within the page. In the frame, the time axis and the track of plan and spec mode
+// stay at the top and a column naming each lane, stage and task stays at the left; beneath them a
+// lane for the main agent and one for each subagent, each stage's bar divided into its active
+// tasks, Loft runs, waits on the person and agent work, with its tasks beneath it, over a faint
+// grid. Every time is placed as a share of the chart's width and an offset in pixels, so the bars
+// follow the width the browser gives them. The column's edge can be dragged, and its width is
+// kept in this browser. Choosing a stage, a task or a submission opens the timeline at it.
 
-import { h, svg } from '../lib/dom.js';
+import { h } from '../lib/dom.js';
 import { length, when } from '../lib/format.js';
-import { chart, scale, ticks } from '../model/gantt.js';
+import * as prefs from '../lib/prefs.js';
+import { chart, minimumWidth, place, ticks } from '../model/gantt.js';
 
-/** About how wide one character of a label is drawn, in pixels. */
-export const CHARACTER = 7;
-
-const AXIS = 22;
-const MODE = 12;
-const TOP = AXIS + MODE + 6;
-const LANE_HEAD = 24;
-const LANE_PAD = 8;
-const STAGE_ROW = 22;
-const STAGE = 14;
-const TASK_ROW = 15;
-const TASK = 8;
-const INDENT = 14;
-const EDGE = 8;
+/** The width a folded idle stretch is drawn, in pixels. */
 const FOLD = 28;
 
+/** The column of names: its narrowest, its widest and its width until one is chosen. */
+export const NAMES = { least: 160, most: 480, first: 260 };
+
+/** About how wide one character of a small label is drawn, in pixels. */
+const LETTER = 6.5;
+
+/** How far an arrow key moves the column's edge, in pixels. */
+const STEP = 16;
+
+/** Where each chart's frame was scrolled to, by its Yard Log, for as long as the page is open. */
+const scrolls = new Map();
+
 /**
- * `text` cut short with an ellipsis to fit `room` pixels.
- * @param {string} text
- * @param {number} room
+ * The column's width once its edge has moved `moved` pixels from `start`.
+ * @param {number} start
+ * @param {number} moved
  */
-function fit(text, room) {
-  const most = Math.max(1, Math.floor(room / CHARACTER));
-  return text.length <= most ? text : `${text.slice(0, most - 1).trimEnd()}…`;
+export function columnWidth(start, moved) {
+  return Math.round(Math.min(NAMES.most, Math.max(NAMES.least, start + moved)));
 }
 
-/** @param {number} room */
-function columnWidth(room) {
-  return Math.round(Math.min(300, Math.max(180, room * 0.22)));
+/** The column's width kept in this browser, or its first width. */
+function keptWidth() {
+  const kept = Number(prefs.get('gantt-names'));
+  return Number.isFinite(kept) && kept > 0 ? columnWidth(kept, 0) : NAMES.first;
 }
 
 /**
- * The height a lane takes.
- * @param {any} lane
+ * A length as CSS gives it: a share of the track's width and pixels.
+ * @param {{ share: number, offset: number }} at
  */
-function laneHeight(lane) {
-  return LANE_HEAD + lane.rows.reduce((sum, row) => sum + STAGE_ROW + row.tasks.length * TASK_ROW, 0) + LANE_PAD;
+function css({ share, offset }) {
+  const percent = Number((share * 100).toFixed(4));
+  const pixels = Number(offset.toFixed(2));
+  return `calc(${percent}% ${pixels < 0 ? '-' : '+'} ${Math.abs(pixels)}px)`;
 }
 
 /**
- * The chart of `log`, `width` wide, at `now`; `onPick` opens the timeline at a block.
+ * @typedef {{
+ *   at: (time: number) => { share: number, offset: number },
+ *   px: (time: number) => number,
+ *   span: (from: number, to: number) => string,
+ *   left: (time: number) => string,
+ *   track: number,
+ *   pick: (id: string) => object,
+ * }} Draw
+ */
+
+/**
+ * The chart of `log`, on a page `width` wide, at `now`; `onPick` opens the timeline at a block.
  * @param {any} log
  * @param {{ width: number, now: number, onPick: (id: string) => void }} options
+ * @returns {HTMLElement}
  */
-export function gantt(log, { width, now, onPick }) {
+export function gantt(log, options) {
+  const { width, now, onPick } = options;
   const model = chart(log, now);
   if (!model.lanes.length) {
     return h('p', { class: 'empty' }, 'No stage has started yet, so there is nothing to draw along time.');
   }
-  const names = columnWidth(width);
-  const left = names + EDGE;
-  const inner = Math.max(120, width - left - EDGE);
-  const x = scale(model, inner, FOLD);
-  const X = (time) => left + x(time);
-  const heights = model.lanes.map(laneHeight);
-  const bottom = TOP + heights.reduce((a, b) => a + b, 0);
-  const height = bottom + 6;
-  const pick = (id) => ({ onclick: () => onPick(id), tabindex: 0, role: 'button', onkeydown: (event) => (event.key === 'Enter' ? onPick(id) : null) });
-  const chartSvg = svg(
-    'svg',
-    { class: 'gantt-chart', width, height, viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': 'Yard Log along time, a lane for each agent' },
-    svg(
-      'defs',
-      {},
-      svg('pattern', { id: 'hatch-spec', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, svg('rect', { width: 3, height: 6, class: 'hatch-spec' })),
+  const names = keptWidth();
+  const least = minimumWidth(model, FOLD);
+  const track = Math.max(width - names - 2, least);
+  const at = place(model, FOLD);
+  /** @type {Draw} */
+  const draw = {
+    at,
+    px: (time) => at(time).share * track + at(time).offset,
+    left: (time) => `left: ${css(at(time))}`,
+    span: (from, to) => {
+      const start = at(from);
+      const end = at(to);
+      return `left: ${css(start)}; width: ${css({ share: end.share - start.share, offset: end.offset - start.offset })}`;
+    },
+    track,
+    pick: (id) => ({ onclick: () => onPick(id) }),
+  };
+  const marks = labels(model, ticks(model, (time) => draw.px(time), 84), draw);
+  const key = `${log?.tree ?? ''}\n${log?.branch ?? ''}`;
+  const frame = h(
+    'div',
+    {
+      class: 'gantt-frame',
+      style: `--names: ${names}px`,
+      dataset: { key },
+      onscroll: (/** @type {Event} */ event) => {
+        const target = /** @type {HTMLElement} */ (event.currentTarget);
+        scrolls.set(key, { left: target.scrollLeft, top: target.scrollTop });
+      },
+    },
+    h(
+      'div',
+      { class: 'gantt-sheet', style: `width: max(100%, calc(var(--names) + ${least}px))` },
+      head(model, marks, draw),
+      model.lanes.map((lane, index) => laneBlock(model, lane, index, marks.map((mark) => mark.time), draw)),
     ),
-    laneBacks(model, heights, width),
-    washes(model, X, bottom),
-    axis(model, x, X, left, width),
-    modes(model, X),
-    folds(model, X, bottom),
-    lanes(model, heights, { X, names, width, pick }),
   );
-  return h('div', { class: 'gantt' }, summaryBar(model.summary), h('div', { class: 'gantt-scroll' }, chartSvg));
+  const view = h('div', { class: 'gantt' }, summaryBar(model.summary), frame);
+  const corner = frame.querySelector('.gantt-corner');
+  corner?.append(edge(frame, names, () => {
+    const again = gantt(log, options);
+    view.replaceWith(again);
+    settle(again);
+    /** @type {HTMLElement | null} */ (again.querySelector('.names-edge'))?.focus();
+  }));
+  return view;
 }
 
 /**
- * Each lane's background, beneath everything else.
- * @param {any} model
- * @param {number[]} heights
- * @param {number} width
+ * Scrolls each chart in `root` to where it was, or, shown for the first time, to its latest time.
+ * @param {ParentNode} root
  */
-function laneBacks(model, heights, width) {
-  let y = TOP;
-  return model.lanes.map((lane, index) => {
-    const top = y;
-    y += heights[index];
-    return svg('rect', { x: 0, y: top, width, height: heights[index] - 2, class: ['lane-back', index % 2 ? 'lane-back--odd' : null].filter(Boolean).join(' ') });
-  });
-}
-
-/**
- * Each stretch of plan and spec mode shaded faintly down every lane, over their backgrounds.
- * @param {any} model
- * @param {(time: number) => number} X
- * @param {number} bottom
- */
-function washes(model, X, bottom) {
-  return model.bands.map((band) =>
-    svg('rect', {
-      x: X(band.from),
-      y: TOP,
-      width: Math.max(2, X(band.to) - X(band.from)),
-      height: bottom - TOP,
-      class: `band-fill band-fill--${band.mode}`,
-      fill: band.mode === 'spec' ? 'url(#hatch-spec)' : null,
-    }),
-  );
-}
-
-/**
- * The time axis along the top: its line and a label at each of its marks.
- * @param {any} model
- * @param {(time: number) => number} x
- * @param {(time: number) => number} X
- * @param {number} left
- * @param {number} width
- */
-function axis(model, x, X, left, width) {
-  const marks = ticks(model, x, 84);
-  return svg(
-    'g',
-    { class: 'axis' },
-    svg('line', { x1: left, x2: width - EDGE, y1: AXIS - 2, y2: AXIS - 2, class: 'axis-line' }),
-    marks.map((time, index) => {
-      const at = X(time);
-      const anchor = index === 0 ? 'start' : index === marks.length - 1 && at > width - EDGE - 40 ? 'end' : 'middle';
-      return svg(
-        'g',
-        { class: 'tick-group' },
-        svg('line', { x1: at, x2: at, y1: AXIS - 6, y2: AXIS - 2, class: 'tick-mark' }),
-        svg('text', { x: at, y: AXIS - 9, 'text-anchor': anchor, class: 'tick' }, when(new Date(time).toISOString())),
-      );
-    }),
-  );
-}
-
-/**
- * The track of modes: each stretch of plan and spec mode, labelled where the label fits.
- * @param {any} model
- * @param {(time: number) => number} X
- */
-function modes(model, X) {
-  return model.bands.map((band) => {
-    const from = X(band.from);
-    const wide = Math.max(2, X(band.to) - from);
-    const name = band.mode === 'plan' ? 'Plan mode' : 'Spec mode';
-    const told = `${name}, ${length(band.to - band.from)}${band.open ? ' so far' : ''}`;
-    return svg(
-      'g',
-      { class: `mode mode--${band.mode}` },
-      svg('rect', { x: from, y: AXIS, width: wide, height: MODE, class: 'mode-fill', fill: band.mode === 'spec' ? 'url(#hatch-spec)' : null }),
-      name.length * CHARACTER <= wide - 6 ? svg('text', { x: from + 3, y: AXIS + MODE - 2, class: 'band-label' }, name) : null,
-      svg('title', {}, told),
-    );
-  });
-}
-
-/**
- * Each folded idle stretch: a gap down the chart and a break in the axis and the track.
- * @param {any} model
- * @param {(time: number) => number} X
- * @param {number} bottom
- */
-function folds(model, X, bottom) {
-  return model.idle
-    .filter((span) => span.folded)
-    .map((span) => {
-      const from = X(span.from);
-      const to = X(span.to);
-      const zig = (at) => `M ${at} ${AXIS - 8} l 3 3 l -6 4 l 6 4 l -6 4 l 6 4 l -3 3`;
-      return svg(
-        'g',
-        { class: 'idle-fold' },
-        svg('rect', { x: from, y: AXIS - 8, width: to - from, height: bottom - AXIS + 8, class: 'idle-gap' }),
-        svg('path', { d: zig((from + to) / 2), class: 'break-mark' }),
-        svg('title', {}, `idle ${length(span.to - span.from)}`),
-      );
-    });
-}
-
-/**
- * The lanes: each one's name, its sessions' rules, and its rows.
- * @param {any} model
- * @param {number[]} heights
- * @param {{ X: (time: number) => number, names: number, width: number, pick: (id: string) => object }} draw
- */
-function lanes(model, heights, draw) {
-  let y = TOP;
-  return model.lanes.map((lane, index) => {
-    const top = y;
-    y += heights[index];
-    let rowTop = top + LANE_HEAD;
-    return svg(
-      'g',
-      { class: ['lane', lane.main ? 'lane--main' : 'lane--sub'].join(' ') },
-      svg('text', { x: EDGE, y: top + 16, class: 'lane-label' }, fit(lane.label, draw.names - EDGE * 2)),
-      sessionRules(lane, top, heights[index], draw),
-      lane.rows.map((row) => {
-        const at = rowTop;
-        rowTop += STAGE_ROW + row.tasks.length * TASK_ROW;
-        return rowGroup(row, at, draw);
-      }),
-    );
-  });
-}
-
-/**
- * A rule at the start of each session of the main agent after the first, named where its name
- * fits before the next rule and the chart's edge.
- * @param {any} lane
- * @param {number} top
- * @param {number} height
- * @param {{ X: (time: number) => number, width: number }} draw
- */
-function sessionRules(lane, top, height, { X, width }) {
-  const later = (lane.sessions ?? []).filter((session) => session.number > 1);
-  return later.map((session, index) => {
-    const at = X(session.from);
-    const next = later[index + 1];
-    const room = (next ? X(next.from) : width - EDGE) - at - 8;
-    const name = `Session ${session.number} · ${when(new Date(session.from).toISOString())}`;
-    return svg(
-      'g',
-      { class: 'session' },
-      svg('line', { x1: at, x2: at, y1: top + 2, y2: top + height - 4, class: 'session-rule' }),
-      name.length * CHARACTER <= room ? svg('text', { x: at + 4, y: top + 16, class: 'session-label' }, name) : null,
-      svg('title', {}, `Session ${session.number}: ${session.session}`),
-    );
-  });
-}
-
-/**
- * One stage's rows: its name and bar, then each task's.
- * @param {any} row
- * @param {number} top
- * @param {{ X: (time: number) => number, names: number, pick: (id: string) => object }} draw
- */
-function rowGroup(row, top, { X, names, pick }) {
-  const stage = row.stage;
-  const width = (from, to) => Math.max(2, X(to) - X(from));
-  const barTop = top + (STAGE_ROW - STAGE) / 2;
-  const middle = barTop + STAGE / 2;
-  const runs = (segment) => row.loft.filter((run) => run.from < segment.to && run.to > segment.from);
-  const parts = [
-    svg('g', { class: 'stage-name', ...pick(stage.id) }, svg('text', { x: EDGE + 4, y: middle + 4 }, fit(stage.title, names - EDGE * 2 - 4)), svg('title', {}, stage.title)),
-    svg(
-      'g',
-      { class: `stage-bar status--${stage.status}`, ...pick(stage.id) },
-      svg('rect', { x: X(stage.from), y: barTop, width: width(stage.from, stage.to), height: STAGE, rx: 2, class: 'stage-back' }),
-      row.segments
-        .filter((segment) => segment.kind !== 'wait')
-        .map((segment) =>
-          svg(
-            'rect',
-            { x: X(segment.from), y: barTop, width: width(segment.from, segment.to), height: STAGE, class: `seg seg--${segment.kind}${segment.kind === 'loft' && runs(segment).some((run) => run.failed) ? ' seg--failed' : ''}` },
-            segment.kind === 'loft' ? svg('title', {}, runs(segment).map((run) => `loft ${run.name}`).join(', ')) : null,
-          ),
-        ),
-      svg('title', {}, `${stage.title}: ${stage.status}, ${when(new Date(stage.from).toISOString())} for ${length(stage.to - stage.from)}`),
-    ),
-    row.segments
-      .filter((segment) => segment.kind === 'wait')
-      .map((segment) =>
-        svg(
-          'g',
-          { class: 'wait', ...(segment.block ? pick(segment.block) : {}) },
-          svg('rect', { x: X(segment.from), y: barTop, width: width(segment.from, segment.to), height: STAGE, class: 'seg seg--wait' }),
-          svg('title', {}, `Waited on you for ${length(segment.to - segment.from)}`),
-        ),
-      ),
-    svg('rect', { x: X(stage.from), y: barTop, width: width(stage.from, stage.to), height: STAGE, rx: 2, class: `stage-rect status--${stage.status}` }),
-    row.views.map((view) =>
-      svg(
-        'g',
-        { class: 'loft-view-mark', ...pick(view.id) },
-        svg('path', { d: `M ${X(view.at)} ${middle - 5} l 3.5 5 l -3.5 5 l -3.5 -5 z`, class: 'view-mark' }),
-        svg('title', {}, `loft view: ${view.view}`),
-      ),
-    ),
-  ];
-  let y = top + STAGE_ROW;
-  for (const task of row.tasks) {
-    const listedTo = task.activeFrom ?? task.to;
-    const taskTop = y + (TASK_ROW - TASK) / 2;
-    parts.push(
-      svg('g', { class: 'task-name', ...pick(task.id) }, svg('text', { x: EDGE + 4 + INDENT, y: taskTop + TASK / 2 + 4 }, fit(task.title, names - EDGE * 2 - 4 - INDENT)), svg('title', {}, task.title)),
-      svg(
-        'g',
-        { class: ['task-bar', task.done ? 'is-done' : null].filter(Boolean).join(' '), ...pick(task.id) },
-        svg('rect', { x: X(task.from), y: taskTop, width: width(task.from, listedTo), height: TASK, class: 'task-listed' }),
-        task.activeFrom !== null ? svg('rect', { x: X(task.activeFrom), y: taskTop, width: width(task.activeFrom, task.to), height: TASK, class: 'task-active' }) : null,
-        task.done ? svg('circle', { cx: X(task.to), cy: taskTop + TASK / 2, r: 3, class: 'task-done' }) : null,
-        svg('title', {}, `${task.title}${task.done ? ', done' : ''}`),
-      ),
-    );
-    y += TASK_ROW;
+export function settle(root) {
+  for (const frame of /** @type {NodeListOf<HTMLElement>} */ (root.querySelectorAll('.gantt-frame'))) {
+    const key = frame.dataset.key ?? '';
+    const kept = scrolls.get(key);
+    if (kept) {
+      frame.scrollLeft = kept.left;
+      frame.scrollTop = kept.top;
+    } else {
+      frame.scrollLeft = frame.scrollWidth;
+      scrolls.set(key, { left: frame.scrollLeft, top: frame.scrollTop });
+    }
   }
-  return svg('g', { class: 'stage-row' }, parts);
+}
+
+/**
+ * The column's edge: dragged, or moved with the arrow keys, it sets the column's width, kept in
+ * this browser once the drag ends.
+ * @param {HTMLElement} frame
+ * @param {number} start
+ * @param {() => void} done
+ */
+function edge(frame, start, done) {
+  let width = start;
+  let from = /** @type {number | null} */ (null);
+  let grabbed = start;
+  const handle = h('div', {
+    class: 'names-edge',
+    role: 'separator',
+    tabindex: 0,
+    'aria-orientation': 'vertical',
+    'aria-label': 'Width of the column of names',
+    'aria-valuemin': NAMES.least,
+    'aria-valuemax': NAMES.most,
+    'aria-valuenow': start,
+  });
+  const show = (next) => {
+    width = next;
+    frame.style.setProperty('--names', `${next}px`);
+    handle.setAttribute('aria-valuenow', String(next));
+  };
+  const keep = () => {
+    prefs.set('gantt-names', String(width));
+    done();
+  };
+  handle.addEventListener('pointerdown', (/** @type {any} */ event) => {
+    from = event.clientX;
+    grabbed = width;
+    handle.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  });
+  handle.addEventListener('pointermove', (/** @type {any} */ event) => {
+    if (from !== null) show(columnWidth(grabbed, event.clientX - from));
+  });
+  handle.addEventListener('pointerup', () => {
+    if (from === null) return;
+    from = null;
+    keep();
+  });
+  handle.addEventListener('keydown', (/** @type {any} */ event) => {
+    const moved = event.key === 'ArrowLeft' ? -STEP : event.key === 'ArrowRight' ? STEP : 0;
+    if (!moved) return;
+    event.preventDefault();
+    show(columnWidth(width, moved));
+    keep();
+  });
+  return handle;
+}
+
+/**
+ * The label of each mark of the time axis, anchored so that it stays inside the chart, a mark
+ * where time resumes after a folded idle stretch beginning just after its break, and kept only
+ * where it crosses no break.
+ * @param {any} model
+ * @param {number[]} marks
+ * @param {Draw} draw
+ */
+function labels(model, marks, draw) {
+  const folded = model.idle.filter((span) => span.folded);
+  const breaks = folded.map((span) => (draw.px(span.from) + draw.px(span.to)) / 2);
+  const resumes = new Set(folded.map((span) => span.to));
+  return marks
+    .map((time, index) => {
+      const x = draw.px(time);
+      const text = when(new Date(time).toISOString());
+      const wide = text.length * LETTER + 6;
+      const anchor =
+        index === 0 || resumes.has(time) ? 'start' : index === marks.length - 1 && x > draw.track - wide / 2 ? 'end' : 'middle';
+      const [from, to] = anchor === 'start' ? [x, x + wide] : anchor === 'end' ? [x - wide, x] : [x - wide / 2, x + wide / 2];
+      return { time, anchor, text, clear: breaks.every((at) => at < from - 4 || at > to + 4) };
+    })
+    .filter((label) => label.clear);
+}
+
+/**
+ * The head of the frame, held at its top: the corner above the column, the time axis with a break
+ * at each folded idle stretch, and the track of modes.
+ * @param {any} model
+ * @param {ReturnType<typeof labels>} marks
+ * @param {Draw} draw
+ */
+function head(model, marks, draw) {
+  return h(
+    'div',
+    { class: 'gantt-head' },
+    h('div', { class: 'gantt-corner' }),
+    h(
+      'div',
+      { class: 'gantt-axis' },
+      marks.map(({ time, anchor, text }) => h('span', { class: `tick tick--${anchor}`, style: draw.left(time) }, text)),
+      model.idle
+        .filter((span) => span.folded)
+        .map((span) =>
+          h('span', { class: 'idle-fold', style: draw.span(span.from, span.to), title: `idle ${length(span.to - span.from)}` }, h('span', { class: 'break-mark' })),
+        ),
+      h(
+        'div',
+        { class: 'mode-track' },
+        model.bands.map((band) => {
+          const name = band.mode === 'plan' ? 'Plan mode' : 'Spec mode';
+          const wide = draw.px(band.to) - draw.px(band.from);
+          return h(
+            'span',
+            { class: `mode mode--${band.mode}`, style: draw.span(band.from, band.to), title: `${name}, ${length(band.to - band.from)}${band.open ? ' so far' : ''}` },
+            name.length * LETTER <= wide - 6 ? h('span', { class: 'band-label' }, name) : null,
+          );
+        }),
+      ),
+    ),
+  );
+}
+
+/**
+ * One lane: its overlay of washes, grid lines, idle gaps and session rules beneath the bars, its
+ * name and session labels, and a row for each stage and each task.
+ * @param {any} model
+ * @param {any} lane
+ * @param {number} index
+ * @param {number[]} marks
+ * @param {Draw} draw
+ */
+function laneBlock(model, lane, index, marks, draw) {
+  const sessions = lane.sessions ?? [];
+  return h(
+    'div',
+    { class: ['gantt-lane', lane.main ? 'lane--main' : 'lane--sub', index % 2 ? 'lane--odd' : null] },
+    h(
+      'div',
+      { class: 'lane-overlay' },
+      model.bands.map((band) => h('span', { class: `band-fill band-fill--${band.mode}`, style: draw.span(band.from, band.to) })),
+      marks.map((time) => h('span', { class: 'grid-line', style: draw.left(time) })),
+      model.idle.filter((span) => span.folded).map((span) => h('span', { class: 'idle-gap', style: draw.span(span.from, span.to) })),
+      sessions.map((session) =>
+        h('span', { class: 'session-rule', style: draw.left(session.from), title: `Session ${session.number}: ${session.session}` }),
+      ),
+    ),
+    h(
+      'div',
+      { class: 'gantt-row lane-head' },
+      h('div', { class: 'name-cell' }, h('span', { class: 'lane-label', title: lane.label }, lane.label)),
+      h(
+        'div',
+        { class: 'track-cell' },
+        sessions.map((session, at) => {
+          const next = sessions[at + 1];
+          const room = (next ? draw.px(next.from) : draw.track) - draw.px(session.from) - 8;
+          const name = `Session ${session.number} · ${when(new Date(session.from).toISOString())}`;
+          return name.length * LETTER <= room
+            ? h('span', { class: 'session-label', style: draw.left(session.from), title: `Session ${session.number}: ${session.session}` }, name)
+            : null;
+        }),
+      ),
+    ),
+    lane.rows.map((row) => stageRows(row, draw)),
+  );
+}
+
+/**
+ * A stage's row, then a row for each of its tasks.
+ * @param {any} row
+ * @param {Draw} draw
+ */
+function stageRows(row, draw) {
+  const stage = row.stage;
+  const runs = (segment) => row.loft.filter((run) => run.from < segment.to && run.to > segment.from);
+  return [
+    h(
+      'div',
+      { class: 'gantt-row stage-row' },
+      h('div', { class: 'name-cell' }, h('button', { type: 'button', class: 'stage-name', title: stage.title, ...draw.pick(stage.id) }, stage.title)),
+      h(
+        'div',
+        { class: 'track-cell' },
+        h('span', { class: 'stage-back', style: draw.span(stage.from, stage.to) }),
+        row.segments
+          .filter((segment) => segment.kind !== 'wait' && segment.kind !== 'loft')
+          .map((segment) => h('span', { class: `seg seg--${segment.kind}`, style: draw.span(segment.from, segment.to) })),
+        h('button', {
+          type: 'button',
+          class: `stage-bar status--${stage.status}`,
+          style: draw.span(stage.from, stage.to),
+          title: `${stage.title}: ${stage.status}, ${when(new Date(stage.from).toISOString())} for ${length(stage.to - stage.from)}`,
+          ...draw.pick(stage.id),
+        }),
+        row.segments
+          .filter((segment) => segment.kind === 'loft')
+          .map((segment) =>
+            h('span', {
+              class: ['seg', 'seg--loft', runs(segment).some((run) => run.failed) ? 'seg--failed' : null],
+              style: draw.span(segment.from, segment.to),
+              title: runs(segment).map((run) => `loft ${run.name}`).join(', '),
+              ...draw.pick(stage.id),
+            }),
+          ),
+        row.segments
+          .filter((segment) => segment.kind === 'wait')
+          .map((segment) =>
+            h('button', {
+              type: 'button',
+              class: 'wait seg seg--wait',
+              style: draw.span(segment.from, segment.to),
+              title: `Waited on you for ${length(segment.to - segment.from)}`,
+              ...(segment.block ? draw.pick(segment.block) : {}),
+            }),
+          ),
+        row.views.map((view) =>
+          h('button', { type: 'button', class: 'loft-view-mark', style: draw.left(view.at), title: `loft view: ${view.view}`, ...draw.pick(view.id) }),
+        ),
+      ),
+    ),
+    row.tasks.map((task) => {
+      const listedTo = task.activeFrom ?? task.to;
+      return h(
+        'div',
+        { class: 'gantt-row task-row' },
+        h('div', { class: 'name-cell' }, h('button', { type: 'button', class: 'task-name', title: task.title, ...draw.pick(task.id) }, task.title)),
+        h(
+          'div',
+          { class: 'track-cell' },
+          h('span', { class: 'task-listed', style: draw.span(task.from, listedTo) }),
+          task.activeFrom !== null ? h('span', { class: 'task-active', style: draw.span(task.activeFrom, task.to) }) : null,
+          task.done ? h('span', { class: 'task-done', style: draw.left(task.to) }) : null,
+          h('button', {
+            type: 'button',
+            class: ['task-bar', task.done ? 'is-done' : null],
+            style: draw.span(task.from, task.to),
+            title: `${task.title}${task.done ? ', done' : ''}`,
+            ...draw.pick(task.id),
+          }),
+        ),
+      );
+    }),
+  ];
 }
 
 /**

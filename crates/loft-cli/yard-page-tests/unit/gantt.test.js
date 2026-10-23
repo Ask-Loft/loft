@@ -1,12 +1,12 @@
 // Yard Log along time: the Gantt chart's model and its drawing.
 
-import { forget } from './dom.js';
+import { forget, root } from './dom.js';
 
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
-import { FOLD_AFTER, chart, scale, ticks } from '../../yard-page/model/gantt.js';
-import { CHARACTER, gantt } from '../../yard-page/views/gantt.js';
+import { FOLD_AFTER, chart, minimumWidth, place, scale, ticks } from '../../yard-page/model/gantt.js';
+import { NAMES, columnWidth, gantt } from '../../yard-page/views/gantt.js';
 import { EXPLORE, MAIN, act, answer, block, log, stage } from './fixtures.js';
 
 beforeEach(forget);
@@ -90,9 +90,9 @@ test('the time axis is marked at regular times within each stretch between folde
 test('lanes that overlap in time are drawn one above the other', () => {
   const shown = log([timed('shape', MAIN, 0, 100), timed('scan', EXPLORE, 10, 60)], { activity: [activity()] });
   const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
-  const tops = [...drawn.querySelectorAll('.lane-back')].map((rect) => Number(rect.getAttribute('y')));
-  assert.equal(tops.length, 2);
-  assert.ok(tops[1] > tops[0]);
+  const lanes = [...drawn.querySelectorAll('.gantt-lane')];
+  assert.deepEqual(lanes.map((lane) => lane.querySelector('.lane-label').textContent), ['main agent', 'Explore']);
+  assert.ok(lanes[0].compareDocumentPosition(lanes[1]) & 4, 'the second lane follows the first, beneath it');
 });
 
 test('each stage runs from the start of its work to its end, or to the start of its agent’s next stage', () => {
@@ -191,57 +191,58 @@ test('time outside the turns is idle, and an idle stretch longer than 45 seconds
   const x = scale(model, 1000, 28);
   assert.equal(Math.round(x(T0 + 300_000) - x(T0 + 200_000)), 28);
   const drawn = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
-  const folds = [...drawn.querySelectorAll('.idle-fold')];
-  assert.deepEqual(folds.map((fold) => fold.querySelector('title').textContent), ['idle 2 min']);
+  const folds = [...drawn.querySelectorAll('.gantt-axis .idle-fold')];
+  assert.deepEqual(folds.map((fold) => fold.getAttribute('title')), ['idle 2 min']);
   assert.ok(folds[0].querySelector('.break-mark'), 'the fold breaks the axis');
+  assert.equal(drawn.querySelectorAll('.lane-overlay .idle-gap').length, 1);
 });
 
 test('a folded idle stretch is drawn apart from plan and spec mode, with no hatching', () => {
   const shown = log([timed('one', MAIN, 0, 400)], { activity: [activity({ turns: [span(0, 100), span(300, 400)], spec: [span(10, 90)] })] });
   const drawn = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
-  const fold = drawn.querySelector('.idle-fold');
-  assert.ok(fold);
-  for (const part of fold.querySelectorAll('*')) assert.ok(!String(part.getAttribute('fill') ?? '').startsWith('url('), 'no pattern fills a fold');
-  assert.equal(drawn.querySelector('#hatch-idle'), null);
+  const parts = [...drawn.querySelectorAll('.idle-fold, .idle-gap')];
+  assert.equal(parts.length, 2);
+  for (const part of parts) {
+    assert.ok(!/mode|band/.test(part.className), 'a fold is no band of a mode');
+    assert.ok(!/gradient/.test(part.getAttribute('style') ?? ''), 'no hatching fills a fold');
+  }
 });
 
-test('a session’s start in the main agent’s lane is a rule named by its number and time, giving its id on hover', () => {
+test('each session’s start in the main agent’s lane is a rule named by its number and time, giving its id on hover', () => {
   const later = { host: 'claude-code', session: 'second-session-id' };
   const shown = log([timed('shape', MAIN, 0, 100), timed('build', later, 110, 300)], { activity: [activity({ turns: [span(0, 300)] })] });
-  const drawn = gantt(shown, { width: 1200, now: T0 + 600_000, onPick: () => {} });
-  const sessions = [...drawn.querySelectorAll('.session')];
-  assert.equal(sessions.length, 1, 'the first session needs no rule');
-  assert.ok(sessions[0].querySelector('.session-rule'));
-  assert.match(sessions[0].querySelector('.session-label').textContent, /^Session 2 · /);
-  assert.equal(sessions[0].querySelector('title').textContent, 'Session 2: second-session-id');
+  const drawn = gantt(shown, { width: 1400, now: T0 + 600_000, onPick: () => {} });
+  const rules = [...drawn.querySelectorAll('.session-rule')];
+  assert.deepEqual(rules.map((rule) => rule.getAttribute('title')), ['Session 1: s1', 'Session 2: second-session-id']);
+  const labels = [...drawn.querySelectorAll('.session-label')].map((label) => label.textContent);
+  assert.equal(labels.length, 2);
+  assert.match(labels[0], /^Session 1 · /);
+  assert.match(labels[1], /^Session 2 · /);
 });
 
-test('each lane, stage and task is named in the column beside the chart, a task indented under its stage, each level with its bar', () => {
+test('each lane, stage and task is named in the column beside the chart, a task beneath its stage, each on the row of its bar', () => {
   const task = block('task', 't1', { title: 'Model it', state: 'done' }, { more: { times: { listed: at(5), started: at(10), ended: at(30) } } });
   const shown = log([timed('one', MAIN, 0, 60, [task]), timed('scan', EXPLORE, 10, 40)], { activity: [activity()] });
   const drawn = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
-  assert.deepEqual([...drawn.querySelectorAll('.lane-label')].map((label) => label.textContent), ['main agent', 'Explore']);
-  const stage = drawn.querySelector('.stage-name text');
-  const named = drawn.querySelector('.task-name text');
+  assert.deepEqual([...drawn.querySelectorAll('.lane-head .name-cell .lane-label')].map((label) => label.textContent), ['main agent', 'Explore']);
+  const stage = drawn.querySelector('.stage-name');
+  const named = drawn.querySelector('.task-name');
   assert.deepEqual([stage.textContent, named.textContent], ['one', 'Model it']);
-  assert.ok(Number(named.getAttribute('x')) > Number(stage.getAttribute('x')), 'a task is indented under its stage');
-  const middle = (rect) => Number(rect.getAttribute('y')) + Number(rect.getAttribute('height')) / 2;
-  assert.ok(Math.abs(Number(stage.getAttribute('y')) - 4 - middle(drawn.querySelector('.stage-rect'))) <= 2, 'a stage’s name is level with its bar');
-  assert.ok(Math.abs(Number(named.getAttribute('y')) - 4 - middle(drawn.querySelector('.task-listed'))) <= 2, 'a task’s name is level with its bar');
-  assert.ok(Number(named.getAttribute('y')) > Number(stage.getAttribute('y')), 'a task’s row lies beneath its stage’s');
+  assert.ok(stage.closest('.name-cell') && named.closest('.name-cell'), 'names lie in the column');
+  assert.ok(stage.closest('.gantt-row').querySelector('.track-cell .stage-bar'), 'a stage’s name is on its bar’s row');
+  assert.ok(named.closest('.gantt-row').querySelector('.track-cell .task-bar'), 'a task’s name is on its bar’s row');
+  assert.ok(stage.closest('.gantt-row').compareDocumentPosition(named.closest('.gantt-row')) & 4, 'a task’s row lies beneath its stage’s');
 });
 
-test('a name longer than the column is cut short with an ellipsis and given whole on hover, and no name is drawn over the bars', () => {
+test('every name gives itself whole on hover and lies in the column, apart from the bars', () => {
   const long = 'A stage whose title runs far longer than any column of names could ever hold';
   const shown = log([timed(long, MAIN, 0, 60)], { activity: [activity()] });
   const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
   const name = drawn.querySelector('.stage-name');
-  assert.match(name.querySelector('text').textContent, /…$/);
-  assert.equal(name.querySelector('title').textContent, long);
-  const bars = Math.min(...[...drawn.querySelectorAll('.stage-rect')].map((rect) => Number(rect.getAttribute('x'))));
-  for (const text of drawn.querySelectorAll('.lane-label, .stage-name text, .task-name text')) {
-    assert.ok(Number(text.getAttribute('x')) + text.textContent.length * CHARACTER <= bars, `${text.textContent} stays in the column`);
-  }
+  assert.equal(name.getAttribute('title'), long);
+  assert.equal(name.textContent, long);
+  for (const each of drawn.querySelectorAll('.lane-label, .stage-name, .task-name')) assert.ok(each.closest('.name-cell') && !each.closest('.track-cell'));
+  for (const each of drawn.querySelectorAll('.stage-bar, .task-bar, .seg')) assert.ok(each.closest('.track-cell'));
 });
 
 test('each Loft run is drawn in its stage’s bar and names its subcommands on hover, and each Loft view is marked on the bar at its time', () => {
@@ -251,11 +252,11 @@ test('each Loft run is drawn in its stage’s bar and names its subcommands on h
   });
   const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
   const run = drawn.querySelector('.seg--loft');
-  const bar = drawn.querySelector('.stage-rect');
-  assert.equal(run.getAttribute('y'), bar.getAttribute('y'));
-  assert.equal(run.querySelector('title').textContent, 'loft check fmt');
+  assert.equal(run.getAttribute('title'), 'loft check fmt');
+  assert.ok(run.closest('.gantt-row').querySelector('.stage-bar'), 'the run lies on its stage’s bar');
   const mark = drawn.querySelector('.loft-view-mark');
-  assert.equal(mark.querySelector('title').textContent, 'loft view: findings');
+  assert.equal(mark.getAttribute('title'), 'loft view: findings');
+  assert.ok(mark.closest('.gantt-row').querySelector('.stage-bar'));
 });
 
 test('the bar above the chart divides the time not idle into tasks, Loft runs, waits and agent work, each with its length and share', () => {
@@ -300,21 +301,16 @@ test('each stretch of plan or spec mode is drawn in the track of modes and shade
     ['spec', 60, true],
   ]);
   const drawn = gantt(shown, { width: 1200, now, onPick: () => {} });
-  const lanes = [...drawn.querySelectorAll('.lane-back')];
-  const fills = [...drawn.querySelectorAll('.band-fill')];
-  const top = Math.min(...lanes.map((lane) => Number(lane.getAttribute('y'))));
-  const bottom = Math.max(...lanes.map((lane) => Number(lane.getAttribute('y')) + Number(lane.getAttribute('height'))));
-  for (const fill of fills) {
-    assert.ok(Number(fill.getAttribute('y')) <= top && Number(fill.getAttribute('y')) + Number(fill.getAttribute('height')) >= bottom, 'a band spans every lane');
-    for (const lane of lanes) assert.ok(lane.compareDocumentPosition(fill) & 4, 'a band is drawn over each lane’s background');
+  const lanes = [...drawn.querySelectorAll('.gantt-lane')];
+  assert.equal(lanes.length, 2);
+  for (const lane of lanes) {
+    const overlay = lane.querySelector(':scope > .lane-overlay');
+    assert.ok(overlay.querySelector('.band-fill--plan') && overlay.querySelector('.band-fill--spec'), 'each band shades every lane');
   }
-  const track = [...drawn.querySelectorAll('.mode')];
-  assert.deepEqual(track.map((mode) => mode.querySelector('title').textContent), ['Plan mode, 1 min', 'Spec mode, 1 min so far']);
-  for (const mode of track) assert.ok(Number(mode.querySelector('rect').getAttribute('y')) + Number(mode.querySelector('rect').getAttribute('height')) <= top, 'the track lies above the lanes');
+  const track = [...drawn.querySelectorAll('.gantt-head .mode-track .mode')];
+  assert.deepEqual(track.map((mode) => mode.getAttribute('title')), ['Plan mode, 1 min', 'Spec mode, 1 min so far']);
+  assert.deepEqual(track.map((mode) => mode.className), ['mode mode--plan', 'mode mode--spec']);
   assert.deepEqual([...drawn.querySelectorAll('.band-label')].map((label) => label.textContent), ['Plan mode', 'Spec mode']);
-  assert.equal(drawn.querySelector('.band-fill--spec').getAttribute('fill'), 'url(#hatch-spec)');
-  assert.equal(drawn.querySelector('.mode--spec rect').getAttribute('fill'), 'url(#hatch-spec)');
-  assert.equal(drawn.querySelector('.band-fill--plan').getAttribute('fill'), null);
 });
 
 test('a label of the track of modes is drawn only where it fits within its stretch', () => {
@@ -322,24 +318,79 @@ test('a label of the track of modes is drawn only where it fits within its stret
   const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
   const modes = [...drawn.querySelectorAll('.mode')];
   assert.deepEqual(modes.map((mode) => mode.querySelector('.band-label')?.textContent ?? null), [null, 'Plan mode']);
-  const label = modes[1].querySelector('.band-label');
-  const rect = modes[1].querySelector('rect');
-  assert.ok(Number(label.getAttribute('x')) + label.textContent.length * CHARACTER <= Number(rect.getAttribute('x')) + Number(rect.getAttribute('width')));
 });
 
-test('no label of the chart runs past its edges', () => {
-  const later = { host: 'claude-code', session: 's2' };
-  const shown = log([timed('A first stage with a long title', MAIN, 0, 400), timed('The last stage, also with a long title', later, 2400, 3000)], {
-    activity: [activity({ turns: [span(0, 400), span(2400, 3000)], plan: [span(2500, 2990)], spec: [span(0, 50)] })],
-  });
-  for (const width of [480, 900, 1600]) {
-    const drawn = gantt(shown, { width, now: T0 + 3_000_000, onPick: () => {} });
-    for (const text of drawn.querySelectorAll('svg text')) {
-      const x = Number(text.getAttribute('x'));
-      const extent = text.textContent.length * CHARACTER;
-      const anchor = text.getAttribute('text-anchor') ?? 'start';
-      const [left, right] = anchor === 'end' ? [x - extent, x] : anchor === 'middle' ? [x - extent / 2, x + extent / 2] : [x, x + extent];
-      assert.ok(left >= 0 && right <= width, `“${text.textContent}” lies inside a chart ${width} wide`);
-    }
+test('the axis’s first label begins at the chart’s start and a label at its end ends there, and no label crosses a break', () => {
+  const shown = log([timed('one', MAIN, 0, 3600)], { activity: [activity({ turns: [span(0, 1500), span(2400, 3600)] })] });
+  const drawn = gantt(shown, { width: 1200, now: T0 + 3_600_000, onPick: () => {} });
+  const ticks = [...drawn.querySelectorAll('.gantt-axis .tick')];
+  assert.ok(ticks.length >= 3);
+  assert.equal(ticks[0].className, 'tick tick--start');
+  assert.equal(ticks.at(-1).className, 'tick tick--end');
+  assert.ok(ticks.some((tick) => tick.className === 'tick tick--start' && tick !== ticks[0]), 'time resuming after a break is labelled from the break');
+});
+
+test('each time lies at its share of the track’s width and its offset in pixels, so a bar follows the width the browser gives it', () => {
+  const shown = log([timed('one', MAIN, 100, 400)], { activity: [activity({ turns: [span(0, 200), span(300, 600)] })] });
+  const model = chart(shown, T0 + 600_000);
+  const at = place(model, 28);
+  const drawn = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
+  const style = drawn.querySelector('.stage-bar').getAttribute('style');
+  const [, share, sign, pixels] = /left: calc\(([\d.]+)% ([+-]) ([\d.]+)px\)/.exec(style) ?? [];
+  const start = at(T0 + 100_000);
+  assert.ok(Math.abs(Number(share) - start.share * 100) < 0.001);
+  assert.ok(Math.abs((sign === '-' ? -1 : 1) * Number(pixels) - start.offset) < 0.01);
+  for (const width of [500, 1000, 2000]) {
+    const x = scale(model, width, 28);
+    assert.ok(Math.abs(at(T0 + 450_000).share * width + at(T0 + 450_000).offset - x(T0 + 450_000)) < 1e-6);
   }
+});
+
+test('a minute that is not folded is never narrower than 8 pixels, the sheet never narrower than its time needs', () => {
+  const shown = log([timed('one', MAIN, 0, 600)], { activity: [activity({ turns: [span(0, 600)] })] });
+  const model = chart(shown, T0 + 600_000);
+  assert.equal(minimumWidth(model, 28), 80);
+  const folded = chart(log([timed('one', MAIN, 0, 900)], { activity: [activity({ turns: [span(0, 300), span(600, 900)] })] }), T0 + 900_000);
+  assert.equal(minimumWidth(folded, 28), 80 + 28);
+  const drawn = gantt(shown, { width: 900, now: T0 + 600_000, onPick: () => {} });
+  assert.match(drawn.querySelector('.gantt-sheet').getAttribute('style'), /width: max\(100%, calc\(var\(--names\) \+ 80px\)\)/);
+});
+
+test('a faint grid runs behind the bars: a line at each mark of the time axis in every lane, and a line above each stage’s rows', () => {
+  const task = block('task', 't1', { title: 'T', state: 'done' }, { more: { times: { listed: at(0), started: at(0), ended: at(20) } } });
+  const shown = log([timed('one', MAIN, 0, 1800, [task]), timed('two', MAIN, 1800, 3600), timed('scan', EXPLORE, 10, 60)], {
+    activity: [activity({ turns: [span(0, 3600)] })],
+  });
+  const drawn = gantt(shown, { width: 1200, now: T0 + 3_600_000, onPick: () => {} });
+  const marks = drawn.querySelectorAll('.gantt-axis .tick').length;
+  assert.ok(marks >= 2);
+  for (const lane of drawn.querySelectorAll('.gantt-lane')) assert.equal(lane.querySelectorAll('.lane-overlay .grid-line').length, marks);
+  assert.equal(drawn.querySelectorAll('.stage-row').length, 3);
+  assert.equal(drawn.querySelectorAll('.task-row').length, 1);
+});
+
+test('the column’s edge moves the column by the length dragged, within 160 and 480 pixels', () => {
+  assert.equal(columnWidth(260, 40), 300);
+  assert.equal(columnWidth(260, -500), NAMES.least);
+  assert.equal(columnWidth(260, 500), NAMES.most);
+  assert.deepEqual([NAMES.least, NAMES.most], [160, 480]);
+});
+
+test('dragging the column’s edge sets its width, and the width chosen is the one the next chart opens with', () => {
+  const shown = log([timed('one', MAIN, 0, 60)], { activity: [activity()] });
+  const holder = root();
+  holder.append(gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} }));
+  assert.match(holder.querySelector('.gantt-frame').getAttribute('style'), /--names: 260px/);
+  const handle = holder.querySelector('.names-edge');
+  const pointer = (type, clientX) => Object.assign(new Event(type), { clientX, pointerId: 1 });
+  handle.dispatchEvent(pointer('pointerdown', 500));
+  handle.dispatchEvent(pointer('pointermove', 600));
+  assert.match(holder.querySelector('.gantt-frame').getAttribute('style'), /--names: 360px/);
+  handle.dispatchEvent(pointer('pointerup', 600));
+  assert.equal(localStorage.getItem('yard.gantt-names'), '360');
+  const again = gantt(shown, { width: 1000, now: T0 + 600_000, onPick: () => {} });
+  assert.match(again.querySelector('.gantt-frame').getAttribute('style'), /--names: 360px/);
+  const edge = holder.querySelector('.names-edge');
+  edge.dispatchEvent(Object.assign(new Event('keydown'), { key: 'ArrowLeft' }));
+  assert.equal(localStorage.getItem('yard.gantt-names'), '344');
 });

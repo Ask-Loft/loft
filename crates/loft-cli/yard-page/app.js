@@ -7,6 +7,7 @@ import { drawAll } from './lib/diagrams.js';
 import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
+import { settle } from './views/gantt.js';
 import { logView, unreadable } from './views/log.js';
 import { title, treeList, waitingList, welcome } from './views/trees.js';
 
@@ -114,6 +115,7 @@ function render() {
       }),
     );
     drawAll(main);
+    settle(main);
     if (route.block) reveal(route.block);
   }
   if (focus) {
