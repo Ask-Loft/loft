@@ -138,7 +138,7 @@ export function registerYard(on: On, options: PluginOptions) {
   on('classic.PermissionRequest', async ($, e, next) => {
     const presented = state.presenting
     if (e.tool_name !== 'ExitPlanMode' || !presented) return next(e)
-    return decideOnPage(presented, next(e), e.tool_input)
+    return decideOnPage(presented, () => next(e), e.tool_input, next.signal)
   })
 
   // The agent's task call returns at once; its mirror follows.

@@ -143,13 +143,15 @@ test("a plan approved on the page first answers Claude Code's permission: it all
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   const terminal = deferred<Record<string, unknown>>()
   w.state.terminal.ExitPlanMode = () => terminal.promise
-  const person = deferred<Record<string, unknown>>()
-  w.state.permission = () => person.promise
+  // Beneath the hook, Claude Code answers the request at once with no decision: its dialog shows
+  // apart from the hook, so the page's approval must answer the request in the dialog's place.
+  w.state.permission = () => ({})
   await start($)
   const input = { plan: PLAN, planFilePath: '/p/shelf.md' }
   const ran = $.tool.call({ tool: 'ExitPlanMode', ...input } as never)
   await w.clock.settle()
   const permission = $.classic.PermissionRequest({ tool_name: 'ExitPlanMode', tool_input: input, permission_mode: 'plan' } as never)
+  await w.clock.settle()
   w.state.page.resolve(answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }]))
   expect(await permission).toEqual({
     decision: {

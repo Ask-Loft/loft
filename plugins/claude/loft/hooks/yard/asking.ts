@@ -184,12 +184,19 @@ export function approval(input: unknown) {
   }
 }
 
-/** Answers Claude Code's request to approve the plan once the page decides it first. */
-export async function decideOnPage<R>(presented: Presenting, terminal: Promise<R>, input: unknown) {
-  const raced = await race(terminal, presented.decided)
-  if ('terminal' in raced) return raced.terminal
-  const decided = outcomeOf(raced.page, presented.id)
-  if (decided?.channel !== 'page') return terminal
+/**
+ * Answers Claude Code's request to approve the plan where the page decides it first. Claude Code
+ * shows its dialog apart from this request and answers beneath it at once with no decision, so the
+ * request waits on the page itself: until the page decides, the plan's wait ends (the terminal
+ * decided, and the call went on) or Claude Code drops the request, and only then asks beneath.
+ */
+export async function decideOnPage<R>(presented: Presenting, beneath: () => Promise<R>, input: unknown, signal: AbortSignal) {
+  const dropped = new Promise<undefined>(done => {
+    if (signal.aborted) done(undefined)
+    signal.addEventListener('abort', () => done(undefined), { once: true })
+  })
+  const decided = outcomeOf(await Promise.race([presented.decided, dropped]), presented.id)
+  if (decided?.channel !== 'page') return beneath()
   if (decided.verdict === 'approved') return { decision: approval(input) }
   return { decision: { behavior: 'deny' as const, message: rejection(decided.reason) } }
 }
