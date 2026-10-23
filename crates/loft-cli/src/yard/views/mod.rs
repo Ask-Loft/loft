@@ -152,11 +152,7 @@ fn lists(view: View) -> &'static [&'static [&'static str]] {
             &["check", "resolved"],
             &["check", "errors"],
         ],
-        View::Trace => &[
-            &["reconcile", "findings"],
-            &["reconcile", "tests"],
-            &["features"],
-        ],
+        View::Trace => &[&["features"]],
         View::Decision => &[],
     }
 }

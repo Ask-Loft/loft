@@ -307,3 +307,27 @@ fn a_trace_view_records_each_criterion_with_its_own_tests_and_the_rules_reconcil
         assert_eq!(names, of("tests", key, "name"), "{criterion}");
     }
 }
+
+#[test]
+fn a_trace_view_records_reconcile_s_counts_and_outcome_and_none_of_its_tests_or_findings() {
+    let yard = Yard::with_spec();
+    change_a_criterion(&yard);
+    let report = report(&yard, "trace");
+    let recorded = &report["reconcile"];
+    let reconcile = yard.loft(&["reconcile"]);
+    assert!(recorded.get("tests").is_none(), "{recorded}");
+    assert!(recorded.get("findings").is_none(), "{recorded}");
+    for field in [
+        "schema", "outcome", "inScope", "linked", "accepted", "errors",
+    ] {
+        assert_eq!(recorded[field], reconcile[field], "{field}: {recorded}");
+    }
+    assert!(
+        report["counts"].get("reconcile.tests").is_none(),
+        "{report}"
+    );
+    assert!(
+        report["leftOut"].get("reconcile.findings").is_none(),
+        "{report}"
+    );
+}

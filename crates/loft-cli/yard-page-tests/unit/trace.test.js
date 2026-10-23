@@ -173,3 +173,32 @@ test('a view recorded without each criterion’s tests and rules, whose lists we
   assert.match(drawn(traceView(old, {}, {})).querySelector('.short').textContent, /older loft/);
   assert.ok(!drawn(traceView(report(), {}, {})).querySelector('.short'));
 });
+
+/** The lines of a view's fold of the findings of loft reconcile, and its summary. */
+function findingsFold(view) {
+  const fold = [...view.querySelectorAll('details.fold')].find((each) => /findings of loft reconcile/.test(each.querySelector('summary').textContent));
+  return fold ? { summary: fold.querySelector('summary').textContent, lines: [...fold.querySelectorAll('ul.findings li')].map((li) => li.textContent) } : null;
+}
+
+test('a slim view lists each rule reported of the branch’s criteria with the criterion’s label and name', () => {
+  const slim = report();
+  slim.reconcile = { schema: 'loft-reconcile/3', outcome: 'passed', inScope: 4161, linked: 3738 };
+  const rules = { a: [], b: ['TR-002'], c: [], d: [], e: ['TR-001'] };
+  slim.features[0].criteria = slim.features[0].criteria.map((criterion) => ({ ...criterion, tests: [], rules: rules[criterion.key] }));
+  const fold = findingsFold(drawn(traceView(slim, {}, {})));
+  assert.equal(fold.summary, '2 findings of loft reconcile');
+  assert.deepEqual(fold.lines, ['TR-002 AC-8: The link says so.', 'TR-001 AC-10: A shared list can be private again.']);
+});
+
+test('a view recorded with reconcile’s findings and without each criterion’s rules lists those findings with their rule and message', () => {
+  const fold = findingsFold(drawn(traceView(report(), {}, {})));
+  assert.deepEqual(fold.lines, ['TR-002 not yet reviewed', 'TR-001 no link']);
+});
+
+test('a view recorded with both each criterion’s rules and reconcile’s findings lists only the rules of the branch’s criteria', () => {
+  const both = report();
+  both.reconcile.findings.push({ key: 'elsewhere', rule: 'TR-003', label: 'AC-400', message: 'a criterion of another Feature' });
+  both.features[0].criteria = both.features[0].criteria.map((criterion) => ({ ...criterion, tests: [], rules: criterion.key === 'e' ? ['TR-001'] : [] }));
+  const fold = findingsFold(drawn(traceView(both, {}, {})));
+  assert.deepEqual(fold.lines, ['TR-001 AC-10: A shared list can be private again.']);
+});

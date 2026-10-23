@@ -22360,8 +22360,8 @@ links:
         name: "a_findings_view_holds_what_loft_check_prints_against_the_base_branch"
         body: ddb5d4bf1401b3c78a8214a6c6bc2d85fdfb0ce863cea35c7d5c26e1fd8e84f5
       - file: "crates/loft-cli/tests/yard_views.rs"
-        name: "a_trace_view_holds_what_loft_reconcile_prints_and_the_criteria_of_each_feature_the_branch_changed"
-        body: 41d5389542ed76404b181797fb72dacff82ea649bf671e8a1042d9059604c5f3
+        name: "a_trace_view_holds_the_outcome_of_loft_reconcile_and_the_criteria_of_each_feature_the_branch_changed"
+        body: 05672263797e0f019e1ef85cd6214f4123958fe63c7e1d036a5a036ec527fd5b
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_publish_view_holds_what_loft_status_prints"
         body: 31ce0663ed5cfbd910b552f68ceb2726d67f6c2f4a3a1fa1a6142b71ed2c94e5
@@ -22396,8 +22396,8 @@ links:
         name: "a_findings_view_holds_what_loft_check_prints_against_the_base_branch"
         body: ddb5d4bf1401b3c78a8214a6c6bc2d85fdfb0ce863cea35c7d5c26e1fd8e84f5
       - file: "crates/loft-cli/tests/yard_views.rs"
-        name: "a_trace_view_holds_what_loft_reconcile_prints_and_the_criteria_of_each_feature_the_branch_changed"
-        body: 41d5389542ed76404b181797fb72dacff82ea649bf671e8a1042d9059604c5f3
+        name: "a_trace_view_holds_the_outcome_of_loft_reconcile_and_the_criteria_of_each_feature_the_branch_changed"
+        body: 05672263797e0f019e1ef85cd6214f4123958fe63c7e1d036a5a036ec527fd5b
   - node: 01a16571-d769-7590-94aa-9784cae11170
     reviewed: 8963a10406ef5d77961805a56956c7089f1db5b52a9944e7893c5036dcac8f16
     tests:
@@ -22735,11 +22735,11 @@ links:
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
         body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
   - node: 01a1646f-546d-7042-befd-eae4edf1b696
-    reviewed: e56d2d84e1a8c265823e194b424f188cfcfb97e03bde001543e3b8c09df86721
+    reviewed: 0f0556dafdf860b4cd64cd0129178763b79d6026b1a4ce05f86615385ad8f50b
     tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a slim view lists each rule reported of the branch’s criteria with the criterion’s label and name"
+        body: 0b0b3a160c0d2fd52ae3889726420bdede850f0d703fa44043e209b86a249019
   - node: 01a16838-8fdb-7127-a23e-c5553392679f
     reviewed: 24960c0ca4e1f17ea875f745ac3648c7b548d90225b161fee7c1502f4b7745c2
     tests:
@@ -22800,6 +22800,18 @@ links:
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_trace_view_records_each_criterion_with_its_own_tests_and_the_rules_reconcile_reported_of_it"
         body: 2d7d10ec527a34e5f60925464bd158ba5eb59ed7215870a0574ec125b2b75f80
+  - node: 01a1687f-d753-7252-8187-6ec93313cb0c
+    reviewed: 09e0dbc08b33eee80d5b685f474755e0c7662107ddb5280429a70cc1cd727aaf
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_trace_view_records_reconcile_s_counts_and_outcome_and_none_of_its_tests_or_findings"
+        body: 9387fc374820edf0250add99ba01ab7d2c3179956cf17c4b8688925a8c107fbe
+  - node: 01a1687f-d753-7252-8187-6ecac6e44363
+    reviewed: 71c211dd68d0227ef0327d9d2498924d18ebd2a9b050505b416b96064ed6623f
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_trace_view_records_reconcile_s_counts_and_outcome_and_none_of_its_tests_or_findings"
+        body: 9387fc374820edf0250add99ba01ab7d2c3179956cf17c4b8688925a8c107fbe
   - node: 01a16859-7663-77ff-83f2-f137ef80c9ea
     reviewed: a1b53ab3df8d68ed697702e4cf6d1b31c6127d38453195853e85413d8d1c1cd9
     tests:
@@ -22812,6 +22824,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
         name: "a view recorded without each criterion’s tests and rules, whose lists were shortened, says its counts may fall short"
         body: 308de328fd6de6edd86902dbe07afea0219939a2fb687b1ca1244b0b28793514
+  - node: 01a1687f-d753-7252-8187-6ecbf08fce7d
+    reviewed: 3167ded49b5a2596ba4c402e23bb47c0f2928f1d299db39a3308465dcaaa32d1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a view recorded with reconcile’s findings and without each criterion’s rules lists those findings with their rule and message"
+        body: 3240a21139b624efa776334827248705baa6113e0a8fcd96b9ce06030720f66b
+  - node: 01a1687f-d753-7252-8187-6eccf56b7cd5
+    reviewed: 8faba4f0a0f5efcdb72a412bba99638dc36b65c950da988e2521f60c2e807bb5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a view recorded with both each criterion’s rules and reconcile’s findings lists only the rules of the branch’s criteria"
+        body: d2f27c7af3ac860839bb01695e4fb317eb4eba75e97e5427df4a360c001106af
   - node: 01a1646f-546d-7042-befd-eae7dbf9b465
     reviewed: 647ba21538b3ccdb3973b7fd0664e666b07631211d3818db88bb8be007ff5894
     tests:

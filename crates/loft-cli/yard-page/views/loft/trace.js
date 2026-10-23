@@ -1,6 +1,6 @@
 // A `trace` view: how many of the branch's criteria are linked to tests and how many of those
-// links are accepted, and, folded beneath, each Feature with its criteria and the findings
-// `loft reconcile` reported.
+// links are accepted, and, folded beneath, each Feature with its criteria and the rules
+// `loft reconcile` reported of them.
 
 import { h } from '../../lib/dom.js';
 import { chip, leftOut } from './index.js';
@@ -75,7 +75,7 @@ export function traceView(report, _body, context = {}) {
       h('summary', {}, `${counted(criteria.length, 'criterion', 'criteria')} under ${counted(features.length, 'Feature', 'Features')}`),
       features.map((feature) => featureFold(feature, tests, folds, key && `${key}/${feature.key}`)),
       leftOut(report, 'features'),
-      findingsList(reconcile.findings ?? []),
+      findingsList(findingsOf(criteria, reconcile)),
     ),
   ];
 }
@@ -102,8 +102,21 @@ function counted(count, one, many) {
 }
 
 /**
- * The findings `loft reconcile` reported, folded into one line that counts them.
- * @param {any[]} findings
+ * The findings to list: each rule `loft reconcile` reported of one of the branch's criteria, with
+ * the criterion's label and name; or, for a view recorded without each criterion's rules, the
+ * findings of the report with their messages.
+ * @param {any[]} criteria
+ * @param {any} reconcile
+ * @returns {{ rule: string, label?: string | null, message: string }[]}
+ */
+function findingsOf(criteria, reconcile) {
+  if (!criteria.some((criterion) => Array.isArray(criterion.rules))) return reconcile.findings ?? [];
+  return criteria.flatMap((criterion) => (criterion.rules ?? []).map((rule) => ({ rule, label: criterion.label, message: criterion.name })));
+}
+
+/**
+ * The findings, folded into one line that counts them.
+ * @param {{ rule: string, label?: string | null, message: string }[]} findings
  */
 function findingsList(findings) {
   return findings.length

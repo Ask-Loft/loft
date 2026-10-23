@@ -1,8 +1,9 @@
-//! The `trace` view: the document `loft reconcile` prints, with the branch's criteria, those
-//! under each Feature whose file the branch added to or changed against the base revision, so
-//! that the view grows with the change and not with the specification. Each Feature gives its
-//! Requirements with their statements, and each criterion the key of its Requirement and its own
-//! tests and rules, which the report's shortened lists may leave out.
+//! The `trace` view: the counts and outcome of the document `loft reconcile` prints, with the
+//! branch's criteria, those under each Feature whose file the branch added to or changed against
+//! the base revision, so that the view grows with the change and not with the specification.
+//! Each Feature gives its Requirements with their statements, and each criterion the key of its
+//! Requirement and its own tests and rules; reconcile's lists of tests and findings, which cover
+//! the whole repository, are not recorded.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -44,8 +45,13 @@ pub fn report(over: &Over<'_>) -> Result<Value, Stop> {
     status.compare(&based, &tree);
     let changed = status.changed_paths();
     let outcome = reconcile::outcome(None, &reconciled);
-    let reconcile = read.json(&reconciled, &[], 0, outcome);
+    let mut reconcile = read.json(&reconciled, &[], 0, outcome);
     let links = Links::of(read.trace(), &reconcile);
+    // The lists of the whole repository: each of the branch's criteria carries its own share.
+    if let Some(fields) = reconcile.as_object_mut() {
+        fields.remove("tests");
+        fields.remove("findings");
+    }
     let mut features = Vec::new();
     document.walk(&mut |node| {
         let Some(id) = node.id() else { return };

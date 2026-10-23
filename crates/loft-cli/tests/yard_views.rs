@@ -104,12 +104,13 @@ fn a_findings_view_keeps_the_agent_s_reason_for_each_finding_it_leaves() {
 }
 
 #[test]
-fn a_trace_view_holds_what_loft_reconcile_prints_and_the_criteria_of_each_feature_the_branch_changed()
+fn a_trace_view_holds_the_outcome_of_loft_reconcile_and_the_criteria_of_each_feature_the_branch_changed()
  {
     let yard = Yard::with_spec();
     change_a_criterion(&yard);
     let body = recorded(&yard, "trace", "");
-    assert_eq!(body["report"]["reconcile"], yard.loft(&["reconcile"]));
+    let reconcile = yard.loft(&["reconcile"]);
+    assert_eq!(body["report"]["reconcile"]["outcome"], reconcile["outcome"]);
     assert_eq!(body["report"]["base"], "develop");
     let features = body["report"]["features"].as_array().unwrap();
     assert_eq!(features.len(), 1, "{features:?}");
