@@ -6,18 +6,17 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
 import type { LoftError, LoftRead, LoftSnapshot } from '../types'
+import { loftArgv, runLoft, settingsOf, type Ran } from './loft'
 import {
   ancestors,
   brokenLinks,
   checks,
-  commandWords,
   criteriaToVerify,
   documentErrors,
   isLoftSpecSkill,
   labelOf,
   nextStep,
   nodesIn,
-  parseDocument,
   readOf,
   relativeTo,
   runsLoftOrGit,
@@ -33,18 +32,13 @@ const PANE = 'loft-status'
 const TITLE = 'Loft'
 const TICK_MS = 400
 const POLL_MS = 10000
-/** A read is the pane's, not the person's: it sends no command event and asks for no update. */
-const QUIET = { LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' }
 
 const snapshot = atom({ plugin: 'loft', key: 'snapshot' } as const, null)
 const baseOverride = atom({ plugin: 'loft', key: 'base' } as const, null)
 const workingOn = atom({ plugin: 'loft', key: 'workingOn' } as const, null)
 
-type Ran = { document?: Record<string, unknown>; exitCode: number; unrun?: string }
-
 /** The words that run loft, and the base the pane follows by default: the plugin's settings. */
-let words = ['loft']
-let setting = 'develop'
+let settings = settingsOf({})
 /** The directory that holds `spec/`: undefined until looked for, null where there is none. */
 let root: string | null | undefined
 let isDirty = true
@@ -62,13 +56,8 @@ async function findRoot($: EngineInterface, cwd: string): Promise<string | null>
   return null
 }
 
-async function run($: EngineInterface, cwd: string, args: string[]): Promise<Ran> {
-  try {
-    const ran = await $.process.run([...words, ...args, '--format', 'json'], { cwd, env: QUIET, timeoutMs: 20000 })
-    return { document: parseDocument(ran.stdout), exitCode: ran.exitCode }
-  } catch (error) {
-    return { exitCode: -1, unrun: error instanceof Error ? error.message : String(error) }
-  }
+function run($: EngineInterface, cwd: string, args: string[]): Promise<Ran> {
+  return runLoft($, cwd, loftArgv(settings, args), { timeoutMs: 20000 })
 }
 
 async function readOnce($: EngineInterface) {
@@ -78,7 +67,7 @@ async function readOnce($: EngineInterface) {
     return
   }
   const dir = root
-  const base = (await read($, baseOverride)) ?? setting
+  const base = (await read($, baseOverride)) ?? settings.base
   const [status, fmt, check, reconcile] = await Promise.all([
     run($, dir, ['status', '--base', base]),
     run($, dir, ['fmt', '--check']),
@@ -86,11 +75,11 @@ async function readOnce($: EngineInterface) {
     run($, dir, ['reconcile']),
   ])
   const previous = (await read($, snapshot))?.read ?? null
-  const command = `\`${words.join(' ')}\``
+  const command = `\`${settings.words.join(' ')}\``
   const notice =
     status.unrun !== undefined
       ? `${command} cannot be run (${status.unrun}); set the loft plugin's loftCommand setting.`
-      : status.exitCode === 2 && !status.document
+      : status.exitCode === 2 && !status.doc
         ? `${command} has no \`status\` command: it is too old for the Loft status pane; update loft or set loftCommand.`
         : null
   if (notice) {
@@ -106,15 +95,15 @@ async function readOnce($: EngineInterface) {
     ['reconcile', reconcile],
   ] as const
   for (const [name, ran] of documents) {
-    if (!ran.document) {
+    if (!ran.doc) {
       errors.push({ command: name, message: ran.unrun ?? `printed no JSON document (exit ${ran.exitCode})` })
-    } else if (stopped(ran.document)) {
-      errors.push(...documentErrors(name, ran.document))
+    } else if (stopped(ran.doc)) {
+      errors.push(...documentErrors(name, ran.doc))
     }
   }
   const next: LoftRead | null =
-    errors.length === 0 && status.document && fmt.document && check.document && reconcile.document
-      ? readOf(status.document, fmt.document, check.document, reconcile.document)
+    errors.length === 0 && status.doc && fmt.doc && check.doc && reconcile.doc
+      ? readOf(status.doc, fmt.doc, check.doc, reconcile.doc)
       : previous
   await update($, snapshot, () => ({ root: dir, read: next, notice: null, errors }))
   $.ui.status(next ? statusLine(next) : undefined)
@@ -136,9 +125,7 @@ async function tick($: EngineInterface) {
 
 /** Registers the pane's own hooks; the entry hooks the events it shares with Yard Client's. */
 export function registerPane(on: On, options: PluginOptions) {
-  words = commandWords(typeof options.loftCommand === 'string' ? options.loftCommand : 'loft')
-  setting =
-    typeof options.baseBranch === 'string' && options.baseBranch.trim() !== '' ? options.baseBranch.trim() : 'develop'
+  settings = settingsOf(options)
   root = undefined
   isDirty = true
   isReading = false
@@ -151,7 +138,7 @@ export function registerPane(on: On, options: PluginOptions) {
     requestRead()
     await tick($)
     if (!root) return { text: 'The Loft status pane found no Loft specification at or above this directory.' }
-    const base = (await read($, baseOverride)) ?? setting
+    const base = (await read($, baseOverride)) ?? settings.base
     return { text: `The Loft status pane compares the tree with \`${base}\`.` }
   })
 
@@ -167,7 +154,7 @@ export function registerPane(on: On, options: PluginOptions) {
     const ui = kit(elements, width)
     const shown = await read($, snapshot)
     const file = await read($, workingOn)
-    const base = (await read($, baseOverride)) ?? setting
+    const base = (await read($, baseOverride)) ?? settings.base
     return (
       <elements.Box flexDirection="column">{drawPane(ui, shown, file, base, e.props.scroll.bodyRows)}</elements.Box>
     )

@@ -1,14 +1,12 @@
 // The context a session starts with: where the branch's Yard Log stands, from one `loft yard read`
 // (the Feature "Start with the session"). Pure, and never longer than LIMIT characters.
 
+import type { Doc } from '../loft'
+import { isObject } from '../model'
 import { activeStage, openSubmissions, pageOf, stagesOf, type Asker, type Block } from './log'
-import type { Doc } from './run'
 
 /** The most characters the context holds. */
 export const LIMIT = 2000
-
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /** The revision of a response's Act. */
 function revisionOf(response: unknown): number {

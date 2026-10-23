@@ -6,11 +6,12 @@
 
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
+import type { Doc, Ran } from '../loft'
 import { askResultOf, feedbackIn, givenOf, planId, planTitle, questionBlocks, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { activeStage, blockById, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
-import { callerArgs, spawnYard, succeeded, type Caller, type Doc, type Ran, type Running } from './run'
-import { askerOf, callerOf, peek, run, state, type Presenting } from './state'
+import { callerArgs, spawnYard, succeeded, type Caller, type Running } from './run'
+import { askerOf, peek, prepare, run, state, type Presenting } from './state'
 
 type Next = ((e: never) => Promise<ToolCallResult>) & { signal: AbortSignal }
 
@@ -43,6 +44,16 @@ export function waiting($: EngineInterface, cwd: string, submission: string, cal
 function blocksOf(doc: Doc | undefined): Map<string, Block> {
   const blocks = Array.isArray(doc?.blocks) ? (doc.blocks as Block[]) : []
   return new Map(blocks.map(block => [block.key, block]))
+}
+
+/**
+ * Whichever comes first: Claude Code's answer in the terminal, or what the page gives. The other
+ * runs on; a terminal that fails after the page came first fails unheard.
+ */
+function race<T, P>(terminal: Promise<T>, page: Promise<P>): Promise<{ terminal: T } | { page: P }> {
+  const answered = terminal.then(ran => ({ terminal: ran }))
+  answered.catch(() => {})
+  return Promise.race([answered, page.then(ran => ({ page: ran }))])
 }
 
 const isAnswered = (ran: ToolCallResult) =>
@@ -85,25 +96,23 @@ async function withdraw($: EngineInterface, cwd: string, caller: Caller, submiss
 
 /** The agent's own questions: sent to Yard Log, and answered in the terminal or on the page. */
 export async function askQuestions($: EngineInterface, e: { questions: readonly Asked[]; agentId?: string; tool_use_id?: string }, next: Next) {
-  const cwd = await $.session.cwd()
-  const caller = await callerOf($, e.agentId)
-  const read = await peek($, cwd, caller)
-  if (!succeeded(read)) return next(e as never)
+  const asking = await prepare($, e.agentId)
+  if (!asking) return next(e as never)
+  const { cwd, caller, doc } = asking
   const minted = mintedFor(e, caller)
   const ids = e.questions.map((_, n) => idOf('ask', minted, String(n + 1)))
-  const stage = stageFor(read.doc, askerOf(caller), minted)
+  const stage = stageFor(doc, askerOf(caller), minted)
   const batch = [...(stage.opened ? [stage.opened] : []), ...questionBlocks(e.questions, ids, stage.id)]
   const submission = await send($, cwd, caller, batch)
   if (submission === undefined) return next(e as never)
   const wait = waiting($, cwd, submission, caller)
-  const terminal = next(e as never).then(ran => ({ terminal: ran }))
-  terminal.catch(() => {})
-  const raced = await Promise.race([terminal, wait.done.then(ran => ({ page: ran }))])
+  const terminal = next(e as never)
+  const raced = await race(terminal, wait.done)
   if ('page' in raced && succeeded(raced.page) && raced.page.doc.outcome === 'answered') {
     return { result: askResultOf(e.questions, blocksOf(raced.page.doc), ids) }
   }
   wait.end()
-  const ran = 'terminal' in raced ? raced.terminal : (await terminal).terminal
+  const ran = 'terminal' in raced ? raced.terminal : await terminal
   if (isAnswered(ran)) await record($, cwd, caller, givenOf(e.questions, ids, ran.result))
   else await withdraw($, cwd, caller, submission)
   return ran
@@ -128,26 +137,24 @@ export async function presentPlan(
   const plan = typeof e.plan === 'string' ? e.plan : ''
   const path = typeof e.planFilePath === 'string' ? e.planFilePath : undefined
   if (plan.trim() === '') return next(e as never)
-  const cwd = await $.session.cwd()
-  const caller = await callerOf($, e.agentId)
-  const read = await peek($, cwd, caller)
-  if (!succeeded(read)) return next(e as never)
+  const asking = await prepare($, e.agentId)
+  if (!asking) return next(e as never)
+  const { cwd, caller, doc } = asking
   const minted = mintedFor(e, caller)
   const id = planId(path, idOf('plan', minted))
-  const held = blockById(read.doc, id)
-  const stage = held ? { id: held.stage.id } : stageFor(read.doc, askerOf(caller), minted)
+  const held = blockById(doc, id)
+  const stage = held ? { id: held.stage.id } : stageFor(doc, askerOf(caller), minted)
   const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(path ? { path } : {}), planMode: true }
   const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
   if (submission === undefined) return next(e as never)
   const wait = waiting($, cwd, submission, caller)
   state.presenting = { id, decided: wait.done }
   try {
-    const terminal = next(e as never).then(ran => ({ terminal: ran }))
-    terminal.catch(() => {})
-    const raced = await Promise.race([terminal, wait.done.then(ran => ({ page: ran }))])
+    const terminal = next(e as never)
+    const raced = await race(terminal, wait.done)
     const decided = 'page' in raced ? outcomeOf(raced.page, id) : undefined
     if (decided?.channel === 'page' && decided.verdict === 'rejected') return { deny: rejection(decided.reason) }
-    const ran = 'terminal' in raced ? raced.terminal : (await terminal).terminal
+    const ran = 'terminal' in raced ? raced.terminal : await terminal
     const page = outcomeOf(await Promise.race([wait.done, Promise.resolve(undefined)]), id)
     if (page?.channel === 'page') return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
     wait.end()
@@ -179,7 +186,7 @@ export function approval(input: unknown) {
 
 /** Answers Claude Code's request to approve the plan once the page decides it first. */
 export async function decideOnPage<R>(presented: Presenting, terminal: Promise<R>, input: unknown) {
-  const raced = await Promise.race([terminal.then(ran => ({ terminal: ran })), presented.decided.then(ran => ({ page: ran }))])
+  const raced = await race(terminal, presented.decided)
   if ('terminal' in raced) return raced.terminal
   const decided = outcomeOf(raced.page, presented.id)
   if (decided?.channel !== 'page') return terminal
@@ -200,12 +207,10 @@ export const dialogs = new Map<string, OwnDialog>()
 export async function ownDialog(e: { questions: readonly Asked[] }, next: Next) {
   const own = dialogs.get(String(e.questions[0]?.question))
   if (!own) return next(e as never)
-  const asked = next({ ...e, questions: own.questions } as never)
-  asked.catch(() => {})
-  const first = await Promise.race([asked.then(ran => ({ ran })), own.ended.then(() => null)])
-  if (first === null) return { result: { questions: own.questions, answers: {} } }
-  own.result = first.ran
-  return first.ran
+  const first = await race(next({ ...e, questions: own.questions } as never), own.ended)
+  if ('page' in first) return { result: { questions: own.questions, answers: {} } }
+  own.result = first.terminal
+  return first.terminal
 }
 
 /** `yard_wait`: waits in Yard Log, asking in Claude Code's dialog meanwhile. */
@@ -215,9 +220,9 @@ export async function waitOn($: EngineInterface, cwd: string, caller: Caller, su
     if (signal.aborted) done(ENDED)
     signal.addEventListener('abort', () => done(ENDED), { once: true })
   })
-  const over = Promise.race([wait.done, aborted]).then(() => undefined)
-  const asking = askInTerminal($, cwd, caller, submission, over)
-  const ran = await Promise.race([wait.done, aborted])
+  const ended = Promise.race([wait.done, aborted])
+  const asking = askInTerminal($, cwd, caller, submission, ended.then(() => undefined))
+  const ran = await ended
   wait.end()
   await asking
   return ran

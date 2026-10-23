@@ -11,9 +11,9 @@ import { ensureYard, registerYard } from './yard/index'
 
 export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
-    // Yard's tools are registered here, before the session's first turn.
-    await ensureYard($, e.cwd)
-    await paneSessionStart($, e.cwd)
+    // Yard's tools are registered here, before the session's first turn; the pane's start needs
+    // nothing of Yard's, so the two start side by side.
+    await Promise.all([ensureYard($, e.cwd), paneSessionStart($, e.cwd)])
     return next(e)
   })
 
@@ -22,7 +22,7 @@ export const register: Register = (on, options) => {
   on('turn.complete', async ($, e, next) => {
     paneTurnComplete()
     const ended = await next(e)
-    await eventsOfTurnEnd($, e)
+    eventsOfTurnEnd($, e)
     return ended
   })
 

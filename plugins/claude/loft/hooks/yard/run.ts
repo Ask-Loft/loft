@@ -1,38 +1,10 @@
-// How the Yard hooks run `loft yard`: through the plugin's `loftCommand` setting, quietly, with
-// `--format json`, the page server's port, the base branch for a write and the calling agent,
-// reading the one JSON document the command prints and nothing else (the Feature "The Loft
-// plugin").
+// How the Yard hooks run `loft yard`: as the mod runs `loft` (`../loft`), with the page server's
+// port, the base branch for a write and the calling agent (the Feature "The Loft plugin").
 
-import type { EngineInterface, PluginOptions } from 'claude-code'
+import type { EngineInterface } from 'claude-code'
 
-import { commandWords, parseDocument } from '../model'
-
-/** A `loft yard` command sends no command event and asks for no update. */
-export const QUIET = { LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' }
-
-/** The page server's port unless the `yardPort` setting names another. */
-export const DEFAULT_PORT = 7411
-
-/** The plugin's settings, as the Yard hooks read them. */
-export type Settings = { words: string[]; base: string; port: number }
-
-export function settingsOf(options: PluginOptions): Settings {
-  const command = typeof options.loftCommand === 'string' ? options.loftCommand : 'loft'
-  const base =
-    typeof options.baseBranch === 'string' && options.baseBranch.trim() !== '' ? options.baseBranch.trim() : 'develop'
-  const port = Number(options.yardPort)
-  return {
-    words: commandWords(command),
-    base,
-    port: Number.isInteger(port) && port > 0 && port < 65536 ? port : DEFAULT_PORT,
-  }
-}
-
-/** A JSON document a `loft` command printed. */
-export type Doc = Record<string, unknown>
-
-/** What one run gave: its document where it printed one, its exit code, and why it never ran. */
-export type Ran = { doc?: Doc; exitCode: number; stderr: string; unrun?: string }
+import { loftArgv, QUIET, runLoft, type Doc, type Ran, type Settings } from '../loft'
+import { parseDocument } from '../model'
 
 /** Whether the document reports a result, rather than a refusal or an error. */
 export function succeeded(ran: Ran): ran is Ran & { doc: Doc } {
@@ -67,28 +39,18 @@ export function callerArgs(caller: Caller): string[] {
 export function argvOf(settings: Settings, args: readonly string[], beyond: boolean): string[] {
   const base = args[0] === 'write' ? ['--base', settings.base] : []
   const where = beyond ? [...base, '--port', String(settings.port)] : []
-  return [...settings.words, 'yard', ...args, ...where, '--format', 'json']
+  return loftArgv(settings, ['yard', ...args, ...where])
 }
 
 /** Runs `loft yard <args>` in `cwd` and reads its document. */
-export async function yard(
+export function yard(
   $: EngineInterface,
   settings: Settings,
   cwd: string,
   args: readonly string[],
   init: { stdin?: string; beyond?: boolean; timeoutMs?: number } = {},
 ): Promise<Ran> {
-  try {
-    const ran = await $.process.run(argvOf(settings, args, init.beyond ?? true), {
-      cwd,
-      env: QUIET,
-      timeoutMs: init.timeoutMs ?? 30000,
-      ...(init.stdin !== undefined ? { stdin: init.stdin } : {}),
-    })
-    return { doc: parseDocument(ran.stdout), exitCode: ran.exitCode, stderr: ran.stderr }
-  } catch (error) {
-    return { exitCode: -1, stderr: '', unrun: error instanceof Error ? error.message : String(error) }
-  }
+  return runLoft($, cwd, argvOf(settings, args, init.beyond ?? true), init)
 }
 
 /** A command that runs until its document is printed, ended early by leaving its loop. */

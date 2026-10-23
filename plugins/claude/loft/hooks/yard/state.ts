@@ -3,19 +3,25 @@
 // over, as it starts the pane's over. And the calls every hook makes through it: who is calling,
 // and running `loft yard` in their directory.
 
-import { atom, update } from 'claude-code'
+import { atom, read, update } from 'claude-code'
 import type { EngineInterface, PluginOptions } from 'claude-code'
 
+import { settingsOf, type Ran, type Settings } from '../loft'
 import { outboxOf, type Outbox } from './outbox'
 import { pageOf, type Asker } from './log'
-import { callerArgs, settingsOf, yard, type Caller, type Ran, type Settings } from './run'
+import { callerArgs, succeeded, yard, type Caller } from './run'
 import { register as registerTree, serverOf, type Server } from './server'
 
 /** The plugin's name, as Claude Code names it in a dispatch's origin and in its tools. */
 export const PLUGIN = 'loft'
 
-/** The page's address for the branch's Yard Log, which the dialogs show above what they ask. */
+/** The page's address for the branch's Yard Log, which a dialog shows above what it asks. */
 const page = atom({ plugin: 'loft', key: 'yardPage' } as const, null)
+
+/** The page's address, as the last `loft yard` run gave it; null until one does. */
+export async function pageNoted($: EngineInterface) {
+  return read($, page)
+}
 
 /** The plan Claude Code is asking the person to approve, while it is asked. */
 export type Presenting = { id: string; decided: Promise<Ran> }
@@ -60,7 +66,7 @@ export function reset(options: PluginOptions) {
 /** The calling agent, once the session it may continue is recorded. */
 export async function callerOf($: EngineInterface, agentId: string | undefined): Promise<Caller> {
   const session = await continued($)
-  const agent = agentId ? { id: agentId, type: state.types.get(agentId) ?? (await typeOf($, agentId)) } : undefined
+  const agent = await agentOf($, agentId)
   return { session, ...(agent ? { agent } : {}) }
 }
 
@@ -105,6 +111,17 @@ export async function run($: EngineInterface, cwd: string, args: readonly string
  */
 export async function peek($: EngineInterface, cwd: string, caller: Caller): Promise<Ran> {
   return run($, cwd, ['read', ...callerArgs(caller)])
+}
+
+/**
+ * Where the calling agent works, who it is, and Yard Log as the mod peeks at it on their behalf;
+ * undefined where Yard Log cannot be read.
+ */
+export async function prepare($: EngineInterface, agentId: string | undefined) {
+  const cwd = await $.session.cwd()
+  const caller = await callerOf($, agentId)
+  const read = await peek($, cwd, caller)
+  return succeeded(read) ? { cwd, caller, doc: read.doc } : undefined
 }
 
 /** A subagent's type, as Claude Code lists it. */

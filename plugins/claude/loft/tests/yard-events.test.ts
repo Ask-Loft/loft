@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { block, readDoc, SESSION, stage, start, TREE, world, type Engine, type World } from './yard-world'
+import { block, deferred, readDoc, SESSION, stage, start, TREE, world, type Engine, type World } from './yard-world'
 
 const events = (w: World) => w.state.posts.flatMap(post => post.events)
 const kinds = (w: World) => events(w).map(event => String(event.kind))
@@ -154,9 +154,12 @@ test("a task the agent makes is mirrored as a task block of its active stage, an
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
   await start($)
   await $.tool.call({ tool: 'TaskCreate', subject: 'Write the tests', description: '' } as never)
+  await w.clock.settle()
   w.state.read = readDoc({ stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('task-session1-3', 'task', { title: 'Write the tests', state: 'open' })] }] })
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'in_progress' } as never)
+  await w.clock.settle()
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'completed', subject: 'Write the kit tests' } as never)
+  await w.clock.settle()
   const written = w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin!))
   expect(written).toEqual([
     [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'open' }],
@@ -170,10 +173,27 @@ test('an agent with no active stage has no task mirrored, and a failed task call
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
   await start($)
   await $.tool.call({ tool: 'TaskCreate', subject: 'A', description: '' } as never)
+  await w.clock.settle()
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   w.state.terminal.TaskCreate = () => ({ deny: 'no' })
   await $.tool.call({ tool: 'TaskCreate', subject: 'B', description: '' } as never)
+  await w.clock.settle()
   expect(w.state.runs.filter(run => run.argv.includes('write'))).toEqual([])
+})
+
+test("the agent's task call returns while its mirror has yet to read Yard Log", async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
+  await start($)
+  const read = deferred<void>()
+  w.state.reading = read.promise
+  const ran = await $.tool.call({ tool: 'TaskCreate', subject: 'Write the tests', description: '' } as never)
+  expect(ran.text).toBe('ok')
+  expect(w.state.runs.filter(run => run.argv.includes('write'))).toEqual([])
+  read.resolve()
+  await w.clock.settle()
+  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(1)
 })
 
 const STEP = { turnId: 't1', index: 0, model: 'claude-test-1', messageCount: 1 }
@@ -251,12 +271,14 @@ test("after /clear a task the new session makes is a block of its own, and the m
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '1' } }, text: 'ok' })
   await start($)
   await $.tool.call({ tool: 'TaskCreate', subject: 'Before', description: '' } as never)
+  await w.clock.settle()
   await $.session.end({ reason: 'clear', sessionId: SESSION } as never)
   w.state.session = 'session-2'
   await $.classic.SessionStart({ source: 'clear' })
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: 'session-2' })] })
   const before = w.state.runs.length
   await $.tool.call({ tool: 'TaskCreate', subject: 'After', description: '' } as never)
+  await w.clock.settle()
   const ids = w.state.runs.filter(run => run.argv.includes('write')).map(run => (JSON.parse(run.stdin!) as { id: string }[])[0]!.id)
   expect(ids).toEqual(['task-session1-1', 'task-session2-1'])
   const mirrorReads = w.state.runs.slice(before).filter(run => run.argv.includes('read'))

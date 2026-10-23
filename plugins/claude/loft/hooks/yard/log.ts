@@ -2,7 +2,8 @@
 // an agent, the blocks of a submission and which of them still wait on the person. Pure, so that
 // each rule is tested on its own.
 
-import type { Doc } from './run'
+import type { Doc } from '../loft'
+import { isObject, records } from '../model'
 
 /** The agent a record names: its session, and for a subagent its id. */
 export type Actor = { session?: string; agent?: string; agentType?: string }
@@ -24,11 +25,8 @@ export type Stage = Block & { owner?: Actor | null; blocks: Block[] }
 /** Who is asking: the session and its earlier ids in this process, and the subagent, if one. */
 export type Asker = { sessions: readonly string[]; agent?: string }
 
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-
 export function stagesOf(doc: Doc): Stage[] {
-  return Array.isArray(doc.stages) ? (doc.stages.filter(isObject) as unknown as Stage[]) : []
+  return records(doc.stages) as unknown as Stage[]
 }
 
 export function statusOf(block: Block): string | undefined {
@@ -74,11 +72,9 @@ export function blockById(doc: Doc, id: string): { block: Block; stage: Stage } 
 export type Submission = { key: string; blocks: string[]; agent: Actor }
 
 export function openSubmissions(doc: Doc): Submission[] {
-  const groups = Array.isArray(doc.submissions) ? doc.submissions.filter(isObject) : []
-  return groups.flatMap(group => {
+  return records(doc.submissions).flatMap(group => {
     const agent = (isObject(group.agent) ? group.agent : {}) as Actor
-    const open = Array.isArray(group.open) ? group.open.filter(isObject) : []
-    return open
+    return records(group.open)
       .filter(each => each.state === undefined || each.state === 'open')
       .map(each => ({
         key: String(each.key),

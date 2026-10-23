@@ -6,10 +6,12 @@ import type { LoftError, LoftFinding, LoftNode, LoftRead, LoftStatus } from '../
 
 type Json = Record<string, unknown>
 
-const isObject = (value: unknown): value is Json =>
+/** Whether a JSON value is an object, rather than an array, a scalar or null. */
+export const isObject = (value: unknown): value is Json =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const records = (value: unknown): Json[] => (Array.isArray(value) ? value.filter(isObject) : [])
+/** The objects of a JSON array; none for anything else. */
+export const records = (value: unknown): Json[] => (Array.isArray(value) ? value.filter(isObject) : [])
 
 const text = (value: unknown): string | undefined => (typeof value === 'string' ? value : undefined)
 

@@ -4,16 +4,16 @@
 // events to the page server. Otherwise they leave Claude Code as it is and tell the person once
 // (the Features "Yard's tools", "Keep the mod and loft in step" and "Start with the session").
 
-import { atom, read } from 'claude-code'
 import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
+import { QUIET, type Ran } from '../loft'
 import { askQuestions, decideOnPage, ownDialog, presentPlan, waitOn } from './asking'
 import { contextOf } from './context'
 import { registerEvents } from './events'
 import { flush } from './outbox'
-import { callerArgs, failureOf, QUIET, succeeded, yard, type Ran } from './run'
+import { callerArgs, failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
-import { askerOf, callerOf, continued, PLUGIN, reset, run, state } from './state'
+import { askerOf, callerOf, continued, pageNoted, PLUGIN, reset, run, state } from './state'
 import { mirrorCreated, mirrorUpdated } from './tasks'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
 
@@ -21,9 +21,6 @@ import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './too
 export const PLUGIN_VERSION = '2.2.1'
 /** The oldest and the newest yard protocol this mod speaks. */
 export const PROTOCOLS = { oldest: 1, newest: 1 } as const
-
-/** The page's address for the branch's Yard Log, which a dialog shows above what it asks. */
-const page = atom({ plugin: 'loft', key: 'yardPage' } as const, null)
 
 /** Turns Yard Client on for the session, once, where the protocol check passes. */
 export function ensureYard($: EngineInterface, cwd: string): Promise<boolean> {
@@ -36,7 +33,7 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   const protocol = checked.doc?.protocol
   if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd)
   if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
-  for (const name of TOOL_NAMES) await $.tool.register(specOf(name))
+  await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
   const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
   if (home) state.box.tokenPath = `${home}/.yard/token`
   state.isOn = true
@@ -144,21 +141,22 @@ export function registerYard(on: On, options: PluginOptions) {
     return decideOnPage(presented, next(e), e.tool_input)
   })
 
+  // The agent's task call returns at once; its mirror follows.
   on('tool.call', { tool: 'TaskCreate' }, async ($, e, next) => {
     const ran = await next(e)
-    if (state.isOn) await mirrorCreated($, e, ran)
+    if (state.isOn) mirrorCreated($, e, ran)
     return ran
   })
 
   on('tool.call', { tool: 'TaskUpdate' }, async ($, e, next) => {
     const ran = await next(e)
-    if (state.isOn) await mirrorUpdated($, e, ran)
+    if (state.isOn) mirrorUpdated($, e, ran)
     return ran
   })
 
   on('ui.render', { component: 'AskUserQuestion' }, async ($, e, next) => {
     const drawn = await next(e)
-    const url = state.isOn ? await read($, page) : null
+    const url = state.isOn ? await pageNoted($) : null
     if (!url) return drawn
     const { Box, Text } = $.ui.resolve(e)
     return (

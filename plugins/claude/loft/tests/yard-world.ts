@@ -97,6 +97,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     postStatus: 200,
     /** What the page server's answer to a post waits on. */
     answering: Promise.resolve() as Promise<unknown>,
+    /** What each `loft yard read` waits on before it answers. */
+    reading: Promise.resolve() as Promise<unknown>,
     /** How many `loft yard wait` runs were killed before they printed. */
     killed: 0,
     toasts: [] as string[],
@@ -152,7 +154,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     return { value: { status: state.postStatus, ok, headers: {}, text: '{"recorded":1}' } as never }
   })
 
-  on('process.run', ($, e) => {
+  on('process.run', async ($, e) => {
     state.runs.push({ argv: e.argv, cwd: e.init?.cwd, env: e.init?.env, stdin: e.init?.stdin, spawned: false })
     if (!e.argv.includes('yard')) return out(undefined, 0, '')
     if (state.protocol === 'unrunnable') return { deny: 'loft is not on PATH' }
@@ -164,6 +166,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
       case 'protocol':
         return out({ schema: 'loft-yard-protocol/1', outcome: 'ok', errors: [], protocol: state.protocol, loft: '2.2.1', formats: {} })
       case 'read':
+        await state.reading
         return out(state.read)
       case 'write': {
         const batch = JSON.parse(e.init?.stdin ?? '[]') as { id: string }[]

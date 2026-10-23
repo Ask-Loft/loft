@@ -6,9 +6,10 @@
 
 import type { EngineInterface } from 'claude-code'
 
+import { QUIET, type Settings } from '../loft'
 import { parseDocument } from '../model'
 import { tokenOf, type Outbox } from './outbox'
-import { argvOf, QUIET, type Settings } from './run'
+import { argvOf } from './run'
 
 /** How often the mod tells the page server its session is live, in milliseconds. */
 export const BEAT = 5000
@@ -25,7 +26,7 @@ export function serverOf(): Server {
  * says it serves, its loop runs on after this resolves, and ends with the child.
  */
 export function serve($: EngineInterface, settings: Settings, server: Server, session: string, tree: string) {
-  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, '--port', String(settings.port)], false)
+  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree], true)
   const stream = $.process.spawn({ argv, cwd: tree, env: QUIET })
   return new Promise<string | undefined>(settled => {
     let stdout = ''
