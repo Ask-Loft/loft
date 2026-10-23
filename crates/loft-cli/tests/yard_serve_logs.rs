@@ -444,3 +444,38 @@ fn a_checkout_that_rewrites_the_tree_s_head_reaches_open_pages() {
         "no change within 2 seconds"
     );
 }
+
+#[test]
+fn a_change_names_the_branch_whose_yard_log_changed_so_a_page_reads_only_that() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
+    let mut stream = TcpStream::connect(("127.0.0.1", served.port)).unwrap();
+    let request = format!(
+        "GET /api/stream HTTP/1.1\r\nhost: 127.0.0.1:{}\r\n\r\n",
+        served.port
+    );
+    stream.write_all(request.as_bytes()).unwrap();
+    stream
+        .set_read_timeout(Some(Duration::from_secs(2)))
+        .unwrap();
+    let mut reader = BufReader::new(stream);
+    assert!(stream_until(&mut reader, "hello"));
+    std::thread::sleep(Duration::from_millis(600));
+    let note = r#"[{"id": "n1", "kind": "note", "stage": "shape", "markdown": "Seen."}]"#;
+    yard.write("s1", note, &[]);
+    assert!(
+        stream_until(&mut reader, "change"),
+        "no change within 2 seconds"
+    );
+    let mut line = String::new();
+    reader.read_line(&mut line).unwrap();
+    let change: Value = serde_json::from_str(line.trim_start_matches("data: ").trim()).unwrap();
+    assert_eq!(change["trees"], json!(false), "{change}");
+    let logs = change["logs"].as_array().unwrap();
+    assert!(
+        logs.iter()
+            .any(|log| log["branch"] == json!(BRANCH) && log["log"] == json!(true)),
+        "{change}"
+    );
+}

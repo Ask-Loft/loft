@@ -21888,6 +21888,18 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "a_checkout_that_rewrites_the_tree_s_head_reaches_open_pages"
         body: 2719b59f2c671f18be53c3995cc22762ac4787088164323d3a2e20a8b1729a3f
+  - node: 01a16651-7f23-700e-b716-8dbcc1ebd2be
+    reviewed: 7e9b27fd10e522f5ec8d3d380cb5f45e876a4ca89f39d5279e630c85799fa0d5
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "a_change_names_the_branch_whose_yard_log_changed_so_a_page_reads_only_that"
+        body: 47f156971fa58a27a7407658c0a963da32b8a848d4a58cd8cde9a6fcb14071bb
+      - file: "crates/loft-cli/yard-page-tests/unit/change.test.js"
+        name: "only the sessions of the Yard Log shown changing loads it and not the listing"
+        body: 6f4e1c6c26c4b35c30afdfa5f673aa78339152eed90291c01c1f16a5c55c09e5
+      - file: "crates/loft-cli/yard-page-tests/unit/change.test.js"
+        name: "another Yard Log changing loads the listing and not the Yard Log shown"
+        body: 6a4fbd4c9a28c14b91d314161a69f92fbc34bf845191063fc406f4077958a2e2
   - node: 01a1646f-546d-7042-befd-eb57085a1ead
     reviewed: 7ca4a201916a9d2867f8a0bb74877f8a87f713db324ee8af7624230601b269db
     tests:

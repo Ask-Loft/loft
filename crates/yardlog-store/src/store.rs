@@ -9,6 +9,7 @@ use std::collections::BTreeMap;
 
 use loft_ports::journal::Journal;
 use yardlog::codec::{FileError, Partial, ROOT};
+use yardlog::log::Root;
 use yardlog::{Format, YardLog};
 
 use crate::files::{Folder, YARD};
@@ -183,6 +184,30 @@ impl YardStore {
             root.opened_as = (opened != self.branch).then_some(opened);
         }
         log
+    }
+
+    /// Yard Log's root alone, as a listing shows it, with no stage read: none where the branch
+    /// has none, and the format of a root newer than this `loft` reads.
+    ///
+    /// # Errors
+    ///
+    /// The root does not read, an interrupted write cannot be finished, or the lock cannot be
+    /// taken.
+    pub fn read_root(&self) -> Result<Option<Result<Root, Format>>, YardStoreError> {
+        let _locked = self.locked()?;
+        let Some(bytes) = self.folder.root()? else {
+            return Ok(None);
+        };
+        let unreadable = |error| YardStoreError::Unreadable {
+            folder: self.folder.rel().to_owned(),
+            error,
+        };
+        let format = yardlog::codec::read_format(&bytes).map_err(unreadable)?;
+        if !format.is_known() {
+            return Ok(Some(Err(format)));
+        }
+        let root = yardlog::codec::read_root(&bytes).map_err(unreadable)?;
+        Ok(Some(Ok(root)))
     }
 
     /// Takes the branch's lock and finishes or undoes an interrupted write.

@@ -24,9 +24,11 @@ mod tokens;
 mod trees;
 
 use std::cmp::Ordering as Compared;
+use std::collections::VecDeque;
 use std::io;
-use std::sync::Arc;
+use std::sync::atomic::Ordering;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
@@ -62,6 +64,8 @@ pub struct Server {
     home: Home,
     /// How many changes the page server has seen to the files of the Yard Logs it serves.
     changes: AtomicU64,
+    /// The latest changes, by their count, and the areas of the page each changed.
+    recent: Mutex<VecDeque<(u64, Vec<live::Area>)>>,
     /// Whether it is stopping, for a newer one.
     stopping: AtomicBool,
     /// How many responses it is sending.
@@ -69,6 +73,44 @@ pub struct Server {
     sessions: Sessions,
     /// The lock on `~/.yard/server.lock`, held for as long as the page server runs.
     _lock: Locked,
+}
+
+/// How many of the latest changes the page server keeps, for a page that falls behind.
+const RECENT: usize = 64;
+
+impl Server {
+    /// Counts one change, of the areas `areas`.
+    fn changed(&self, areas: Vec<live::Area>) {
+        let mut recent = self
+            .recent
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let count = self.changes.fetch_add(1, Ordering::SeqCst) + 1;
+        recent.push_back((count, areas));
+        while recent.len() > RECENT {
+            recent.pop_front();
+        }
+    }
+
+    /// The areas changed since the change `seen`, or none where the page server no longer keeps
+    /// all of them.
+    fn changed_since(&self, seen: u64) -> Option<Vec<live::Area>> {
+        let recent = self
+            .recent
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if recent.front().is_none_or(|(count, _)| *count > seen + 1) {
+            return None;
+        }
+        let mut areas: Vec<live::Area> = recent
+            .iter()
+            .filter(|(count, _)| *count > seen)
+            .flat_map(|(_, areas)| areas.iter().cloned())
+            .collect();
+        areas.sort();
+        areas.dedup();
+        Some(areas)
+    }
 }
 
 /// What a run comes to: another page server runs, or this one serves.
@@ -156,6 +198,7 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
         token,
         home,
         changes: AtomicU64::new(0),
+        recent: Mutex::new(VecDeque::new()),
         stopping: AtomicBool::new(false),
         busy: AtomicUsize::new(0),
         sessions: Sessions::default(),

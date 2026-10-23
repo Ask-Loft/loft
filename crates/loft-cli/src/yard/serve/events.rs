@@ -6,12 +6,11 @@
 //! totals from its event log the first time it hears of the session.
 
 use std::collections::{BTreeMap, HashMap};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use serde_json::{Value, json};
 use yardlog::YardLog;
-use yardlog::query::State;
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
@@ -83,24 +82,27 @@ fn arrivals(
     events: &[Event],
     mut open: impl FnMut(&str) -> Option<(YardStore, YardLog)>,
 ) -> Vec<Option<Arrival>> {
-    let mut opened: HashMap<&str, Option<(YardStore, YardLog)>> = HashMap::new();
+    // Each directory's Yard Log, with its open submissions, worked out once for the batch.
+    type Opened = Option<(YardStore, YardLog, Vec<String>)>;
+    let mut opened: HashMap<&str, Opened> = HashMap::new();
     events
         .iter()
         .map(|event| {
-            let (store, log) = opened
+            let (store, log, submissions) = opened
                 .entry(event.dir.as_str())
-                .or_insert_with(|| open(&event.dir))
+                .or_insert_with(|| {
+                    let (store, log) = open(&event.dir)?;
+                    let submissions = log
+                        .open_submissions()
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect();
+                    Some((store, log, submissions))
+                })
                 .as_ref()?;
-            let submissions = log
-                .root
-                .submissions
-                .iter()
-                .filter(|submission| submission.state(log) == State::Open)
-                .map(|submission| submission.key.to_string())
-                .collect();
             Some(Arrival {
                 stage: active_stage(log, &event.session, &event.who),
-                open: submissions,
+                open: submissions.clone(),
                 store: store.clone(),
             })
         })
@@ -198,6 +200,8 @@ impl Sessions {
         // git and Yard Log are read before the sessions are locked, so that one session's batch
         // does not hold another's posts while it reads them.
         let arrived = arrivals(&events, open_at);
+        // Each session's file a batch changes is written once, as the batch leaves it.
+        let mut changed: BTreeMap<PathBuf, Changed> = BTreeMap::new();
         let mut kept = self
             .kept
             .lock()
@@ -208,8 +212,18 @@ impl Sessions {
                 continue;
             };
             match keep(home, &mut kept, event, &arrival) {
-                Ok(()) => recorded += 1,
+                Ok(files) => {
+                    recorded += 1;
+                    note(&mut changed, index, event, &arrival, files);
+                }
                 Err(message) => rejected.push(json!({ "index": index, "message": message })),
+            }
+        }
+        // The sessions are let go before the files are written, so that no post waits on a disk.
+        drop(kept);
+        for (index, store, file, session, text) in changed.into_values() {
+            if let Err(error) = store.write_session(file, &session, text.as_bytes()) {
+                rejected.push(json!({ "index": index, "message": error.to_string() }));
             }
         }
         Response::json(
@@ -219,16 +233,50 @@ impl Sessions {
     }
 }
 
-/// Appends `event` to its session's log and keeps what it adds in its Yard Log's folder.
+/// A session's file a batch changed: the index of the event that last changed it, the store of
+/// its Yard Log, which file, whose, and its text.
+type Changed = (usize, YardStore, SessionFile, String, String);
+
+/// Notes the session's files `event` changed, each to be written once the batch is kept.
+fn note(
+    changed: &mut BTreeMap<PathBuf, Changed>,
+    index: usize,
+    event: &Event,
+    arrival: &Arrival,
+    files: Vec<(SessionFile, String)>,
+) {
+    for (file, text) in files {
+        let path = arrival.store.session_path(file, &event.session);
+        let entry = (
+            index,
+            arrival.store.clone(),
+            file,
+            event.session.clone(),
+            text,
+        );
+        changed.insert(path, entry);
+    }
+}
+
+/// How many sessions the page server keeps in memory; a session it lets go is rebuilt from its
+/// event log the next time it is heard of.
+const SESSIONS_KEPT: usize = 256;
+
+/// Appends `event` to its session's log and keeps what it adds; gives the session's files of its
+/// Yard Log's folder whose text changed.
 fn keep(
     home: &Home,
     kept: &mut HashMap<String, ByLog>,
     event: &Event,
     arrival: &Arrival,
-) -> Result<(), String> {
+) -> Result<Vec<(SessionFile, String)>, String> {
     let place = arrival.store.place();
     let tree = place.tree.display().to_string();
     let branch = arrival.store.branch().to_owned();
+    if !kept.contains_key(&event.session) && kept.len() >= SESSIONS_KEPT {
+        let gone = kept.keys().next().cloned();
+        gone.map(|gone| kept.remove(&gone));
+    }
     let session = kept
         .entry(event.session.clone())
         .or_insert_with(|| replay(home, &event.session));
@@ -240,18 +288,11 @@ fn keep(
     let text = serde_json::to_vec(&line).map_err(|error| error.to_string())?;
     home.append_event(&event.session, &text)
         .map_err(|error| error.to_string())?;
-    let changed = session.entry((tree, branch)).or_default().apply(
+    Ok(session.entry((tree, branch)).or_default().apply(
         event,
         arrival.stage.as_deref(),
         &arrival.open,
-    );
-    for (file, text) in changed {
-        arrival
-            .store
-            .write_session(file, &event.session, text.as_bytes())
-            .map_err(|error| error.to_string())?;
-    }
-    Ok(())
+    ))
 }
 
 /// Records each session a batch holds events of as heard: an event a mod posts tells the page

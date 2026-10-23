@@ -63,10 +63,13 @@ export function answer(tree, branch, answers) {
   return post('/api/answer', { tree, branch, answers });
 }
 
+/** @typedef {import('../model/change.js').Change} Change */
+
 /**
  * Listens to the page server's stream: `onHello` with its protocol each time it connects, and
- * `onChange` each time a Yard Log it serves changes. Gives a function that stops listening.
- * @param {{ onHello: (protocol: any) => void, onChange: () => void,
+ * `onChange` with what changed each time a Yard Log it serves changes. Gives a function that
+ * stops listening.
+ * @param {{ onHello: (protocol: any) => void, onChange: (change: Change) => void,
  *   onState?: (open: boolean) => void }} handlers
  */
 export function follow({ onHello, onChange, onState }) {
@@ -79,7 +82,13 @@ export function follow({ onHello, onChange, onState }) {
       onHello({});
     }
   });
-  source.addEventListener('change', () => onChange());
+  source.addEventListener('change', (event) => {
+    try {
+      onChange(JSON.parse(/** @type {MessageEvent} */ (event).data));
+    } catch {
+      onChange({ all: true });
+    }
+  });
   source.addEventListener('error', () => onState?.(false));
   return () => source.close();
 }

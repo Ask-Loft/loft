@@ -22,9 +22,9 @@ use crate::json;
 use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-answer/1";
-const OUTCOME: &str = "answered";
+pub const OUTCOME: &str = "answered";
 /// Some answers were recorded, and others refused as answered elsewhere first.
-const PARTLY: &str = "answered elsewhere";
+pub const PARTLY: &str = "answered elsewhere";
 
 pub fn run(root: &Path, args: AnswerArgs) -> Finished {
     let as_json = args.output.json();

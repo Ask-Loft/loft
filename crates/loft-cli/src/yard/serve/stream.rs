@@ -7,12 +7,12 @@ use std::io::Write;
 use std::sync::atomic::Ordering;
 
 use loft_ports::clock::Clock as _;
-use serde_json::json;
+use serde_json::{Value, json};
 
 use super::Server;
 use super::http::write_event_stream_head;
 use super::listener::Connection;
-use super::live::TICK;
+use super::live::{Area, TICK};
 use crate::yard::clock;
 use crate::yard::protocol;
 
@@ -44,17 +44,37 @@ pub fn stream(server: &Server, mut connection: Connection) {
                 Ok(())
             }
         } else {
+            let detail = change(server, seen, now);
             seen = now;
-            send(
-                &mut connection,
-                "change",
-                &json!({ "change": now }).to_string(),
-            )
+            send(&mut connection, "change", &detail.to_string())
         };
         if sent.is_err() {
             return;
         }
     }
+}
+
+/// What a `change` event says: the count it reached and what changed since the page last heard,
+/// so that it reads again only what it shows of that; or `all`, where the page server no longer
+/// keeps every change since.
+fn change(server: &Server, seen: u64, now: u64) -> Value {
+    let Some(areas) = server.changed_since(seen) else {
+        return json!({ "change": now, "all": true });
+    };
+    let mut trees = false;
+    let mut logs = Vec::new();
+    for area in areas {
+        match area {
+            Area::Trees => trees = true,
+            Area::Log { tree, branch } => {
+                logs.push(json!({ "tree": tree, "branch": branch, "log": true }));
+            }
+            Area::Sessions { tree, branch } => {
+                logs.push(json!({ "tree": tree, "branch": branch, "log": false }));
+            }
+        }
+    }
+    json!({ "change": now, "trees": trees, "logs": logs })
 }
 
 fn send(connection: &mut Connection, event: &str, data: &str) -> std::io::Result<()> {

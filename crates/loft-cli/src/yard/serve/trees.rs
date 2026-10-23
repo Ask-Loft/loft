@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use serde_json::{Value, json};
 use yardlog::YardLog;
 use yardlog::body::Body;
+use yardlog::log::{Block, Submission};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::session::branches;
@@ -101,28 +102,23 @@ pub fn store_of(place: &Place, branch: &str) -> Result<YardStore, Failure> {
     Ok(YardStore::new(place)?)
 }
 
-/// The blocks of `log`'s open submissions that wait on the person: those not yet answered or
-/// decided.
-pub fn waiting(log: &YardLog) -> usize {
-    open(log).map(|(_, blocks)| blocks.len()).sum()
-}
-
-/// Each open submission of `log`, with the ids of its blocks that wait on the person.
-fn open(log: &YardLog) -> impl Iterator<Item = (&yardlog::log::Submission, Vec<String>)> {
-    log.root
-        .submissions
-        .iter()
-        .filter(|submission| submission.state(log) == yardlog::query::State::Open)
+/// Each open submission of `log`, with its blocks that wait on the person: those not yet
+/// answered or decided.
+fn open(log: &YardLog) -> Vec<(&Submission, Vec<&Block>)> {
+    log.open_submissions()
+        .into_iter()
+        .filter_map(|key| log.submission(key))
         .map(|submission| {
             let blocks = submission
                 .blocks
                 .iter()
                 .filter_map(|key| log.block(*key))
-                .filter(|(_, block)| block.counted().is_none())
-                .map(|(_, block)| block.id.to_string())
+                .map(|(_, block)| block)
+                .filter(|block| block.counted().is_none())
                 .collect();
             (submission, blocks)
         })
+        .collect()
 }
 
 /// What the page lists of every tree served: by repository, then by tree; and above them, the
@@ -184,69 +180,70 @@ fn summary(
         "branch": branch,
         "inherited": inherited,
         "url": page::url(port, &place.tree, branch),
+        "waiting": 0,
     });
-    let held = store_of(place, branch).and_then(|store| Ok(store.read()?));
-    match held {
-        Ok(Held::Log(log)) => {
-            fields["key"] = json!(log.root.key.to_string());
-            fields["title"] = json!(log.root.title);
-            fields["revision"] = json!(log.root.revision);
-            fields["format"] = json!(log.root.format.to_string());
-            fields["closed"] = json!(log.is_closed());
-            fields["waiting"] = json!(if inherited || log.is_closed() {
-                0
-            } else {
-                waiting(&log)
-            });
-            if !inherited && !log.is_closed() {
-                for (submission, blocks) in open(&log) {
-                    let asked: Vec<Value> = blocks.iter().map(|id| asking(&log, id)).collect();
-                    waits.push(json!({
-                        "asked": asked,
-                        "repository": repository,
-                        "tree": place.tree.display().to_string(),
-                        "branch": branch,
-                        "url": page::url(port, &place.tree, branch),
-                        "submission": submission.key.to_string(),
-                        "sent": act(submission.sending()),
-                        "agent": actor(submission.sender()),
-                        "blocks": blocks,
-                    }));
-                }
-            }
-        }
-        Ok(Held::Newer(format)) => {
+    // Only the root is read of Yard Log that cannot wait on the person: inherited or closed.
+    let read = store_of(place, branch).and_then(|store| Ok((store.read_root()?, store)));
+    let (root, store) = match read {
+        Ok((Some(Ok(root)), store)) => (root, store),
+        Ok((Some(Err(format)), _)) => {
             fields["format"] = json!(format.to_string());
             fields["newer"] = json!(true);
-            fields["waiting"] = json!(0);
+            return fields;
         }
-        Ok(Held::Absent) => fields["waiting"] = json!(0),
+        Ok((None, _)) => return fields,
         Err(failure) => {
             fields["error"] = failure_value(failure);
-            fields["waiting"] = json!(0);
+            return fields;
         }
+    };
+    fields["key"] = json!(root.key.to_string());
+    fields["title"] = json!(root.title);
+    fields["revision"] = json!(root.revision);
+    fields["format"] = json!(root.format.to_string());
+    fields["closed"] = json!(root.closed.is_some());
+    if inherited || root.closed.is_some() {
+        return fields;
     }
+    let log = match store.read() {
+        Ok(Held::Log(log)) => log,
+        Ok(_) => return fields,
+        Err(error) => {
+            fields["error"] = failure_value(error.into());
+            return fields;
+        }
+    };
+    let mut count = 0;
+    for (submission, blocks) in open(&log) {
+        count += blocks.len();
+        let asked: Vec<Value> = blocks.iter().map(|block| asking(block)).collect();
+        let ids: Vec<&str> = blocks.iter().map(|block| block.id.as_str()).collect();
+        waits.push(json!({
+            "asked": asked,
+            "repository": repository,
+            "tree": place.tree.display().to_string(),
+            "branch": branch,
+            "url": page::url(port, &place.tree, branch),
+            "submission": submission.key.to_string(),
+            "sent": act(submission.sending()),
+            "agent": actor(submission.sender()),
+            "blocks": ids,
+        }));
+    }
+    fields["waiting"] = json!(count);
     fields
 }
 
-/// What the block `id` of `log` asks the person: its id, its kind, and its question's prompt or
-/// its approval's or plan's title.
-fn asking(log: &YardLog, id: &str) -> Value {
-    let found = log
-        .stages
-        .iter()
-        .flat_map(|file| &file.blocks)
-        .find(|block| block.id.as_str() == id);
-    let Some(block) = found else {
-        return json!({ "id": id });
-    };
+/// What `block` asks the person: its id, its kind, and its question's prompt or its approval's
+/// or plan's title.
+fn asking(block: &Block) -> Value {
     let text = match &block.current().body {
         Body::Question(question) => question.prompt.clone(),
         Body::Approval(approval) => approval.title.clone(),
         Body::Plan(plan) => plan.title.clone(),
         _ => String::new(),
     };
-    json!({ "id": id, "kind": block.kind.as_str(), "text": text })
+    json!({ "id": block.id.as_str(), "kind": block.kind.as_str(), "text": text })
 }
 
 /// The errors a failure gives, for a listing that goes on past it.

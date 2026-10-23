@@ -6,6 +6,7 @@ import { h, replace } from './lib/dom.js';
 import { drawAll } from './lib/diagrams.js';
 import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
+import { wantedBy } from './model/change.js';
 import { logView, unreadable } from './views/log.js';
 import { title, treeList, waitingList } from './views/trees.js';
 
@@ -32,25 +33,43 @@ function lastVisit(log) {
   return state.visits.get(key) ?? null;
 }
 
-async function load() {
+/**
+ * Loads what `wanted` names, the listing or the Yard Log shown, and draws the page again: on a
+ * change only where either changed, and always when the page is opened or its address changes.
+ * @param {{ listing: boolean, log: boolean }} wanted
+ * @param {boolean} [always]
+ */
+async function load(wanted = { listing: true, log: true }, always = true) {
   const route = parse(location.hash);
   const [listing, log] = await Promise.all([
-    api.trees(),
-    route ? api.log(route.tree, route.branch) : Promise.resolve(null),
+    wanted.listing ? api.trees() : Promise.resolve(null),
+    wanted.log && route ? api.log(route.tree, route.branch) : Promise.resolve(null),
   ]);
-  state.listing = listing.body;
-  state.log = log?.body ?? null;
-  state.logStatus = log?.status ?? 0;
-  render();
+  const before = JSON.stringify([state.listing, state.log, state.logStatus]);
+  if (listing) state.listing = listing.body;
+  if (wanted.log) {
+    state.log = log?.body ?? null;
+    state.logStatus = log?.status ?? 0;
+  }
+  if (always || JSON.stringify([state.listing, state.log, state.logStatus]) !== before) render();
 }
 
 let pending = null;
-/** Loads again soon, once, however many changes arrive together. */
-function refresh() {
-  if (pending) return;
+/** @type {{ listing: boolean, log: boolean }} */
+let wanting = { listing: false, log: false };
+/**
+ * Loads again soon, once, however many changes arrive together: what each of them asks for.
+ * @param {import('./model/change.js').Change} [change]
+ */
+function refresh(change = { all: true }) {
+  const wanted = wantedBy(change, parse(location.hash));
+  wanting = { listing: wanting.listing || wanted.listing, log: wanting.log || wanted.log };
+  if (pending || !(wanting.listing || wanting.log)) return;
   pending = setTimeout(() => {
     pending = null;
-    void load();
+    const loading = wanting;
+    wanting = { listing: false, log: false };
+    void load(loading, false);
   }, 120);
 }
 

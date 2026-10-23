@@ -15,10 +15,10 @@ use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 
 use super::http::Response;
-use super::trees::{is_served, store_of};
+use super::trees::is_served;
 use super::{markdown, session_files};
 use crate::json;
-use crate::yard::answer::record;
+use crate::yard::answer::{OUTCOME, PARTLY, record};
 use crate::yard::answer_input;
 use crate::yard::args::{Beyond, Runner};
 use crate::yard::branch::Branch;
@@ -77,28 +77,14 @@ pub fn read(home: &Home, tree: Option<&str>, branch: Option<&str>, port: u16) ->
     };
     let beyond = Beyond { port };
     let read = if place.branch.as_deref() == Some(branch.as_str()) {
-        current(&tree, beyond)
+        current(place, beyond)
     } else {
-        inherited(&place, &branch, beyond)
+        inherited(place, &branch, beyond)
     };
-    match read.and_then(|fields| with_sessions(fields, &place, &branch)) {
+    match read {
         Ok(fields) => Response::json(200, &json::result(READ_SCHEMA, "read", fields, Vec::new())),
         Err(failure) => answer_failure(failure, READ_SCHEMA),
     }
-}
-
-/// A read document with its Markdown rendered and the files its sessions keep, their activity
-/// and their token totals.
-fn with_sessions(mut fields: Value, place: &Place, branch: &str) -> Result<Value, Failure> {
-    markdown::render_document(&mut fields);
-    let store = store_of(place, branch)?;
-    let folder = store.folder();
-    fields["activity"] = Value::Array(session_files::read(&folder, SessionFile::Activity));
-    fields["tokens"] = Value::Array(session_files::read(&folder, SessionFile::Tokens));
-    if let Ok(Held::Log(log)) = store.read() {
-        fields["sent"] = sent(&log);
-    }
-    Ok(fields)
 }
 
 /// Every submission of `log`, open or not, with its agent, its blocks and each change of its
@@ -123,8 +109,8 @@ fn sent(log: &yardlog::YardLog) -> Value {
 
 /// The tree's current branch's Yard Log, as `loft yard read --versions` gives it: settled where
 /// a merge left it unsettled, by the person, as a read with no agent settles it.
-fn current(tree: &Path, beyond: Beyond) -> Result<Value, Failure> {
-    let branch = Branch::locate(tree, beyond)?;
+fn current(place: Place, beyond: Beyond) -> Result<Value, Failure> {
+    let branch = Branch::at(YardGit::default(), place, beyond)?;
     let caller = Caller::new(&Runner::default());
     let held = branch.open(crate::yard::now()?, || settler(&caller, &branch))?;
     let mut fields = shown_with_versions(&branch, held)?;
@@ -134,10 +120,9 @@ fn current(tree: &Path, beyond: Beyond) -> Result<Value, Failure> {
 
 /// Yard Log of a branch the tree is not on, carried from the branch it was cut from: rendered
 /// as the current branch's is, never settled or written.
-fn inherited(place: &Place, branch: &str, beyond: Beyond) -> Result<Value, Failure> {
-    let mut there = place.clone();
-    there.branch = Some(branch.to_owned());
-    let branch = Branch::at(YardGit::default(), there, beyond)?;
+fn inherited(mut place: Place, branch: &str, beyond: Beyond) -> Result<Value, Failure> {
+    place.branch = Some(branch.to_owned());
+    let branch = Branch::at(YardGit::default(), place, beyond)?;
     let held = branch.store.read()?;
     if matches!(held, Held::Absent) {
         return Err(Failure::one("absent", "the branch has no Yard Log"));
@@ -147,14 +132,28 @@ fn inherited(place: &Place, branch: &str, beyond: Beyond) -> Result<Value, Failu
     Ok(fields)
 }
 
-/// Yard Log as a read with every version renders it, recording nothing.
+/// Yard Log as a read with every version renders it, recording nothing, with its Markdown
+/// rendered, every submission it sent, and the files its sessions keep, their activity and
+/// their token totals.
 fn shown_with_versions(branch: &Branch, held: Held) -> Result<Value, Failure> {
     let selection = Selection {
         since: None,
         every_version: true,
     };
     let continuations = Continuations::read(Home::from_env().as_ref())?;
-    Ok(shown(branch, held, &selection, &continuations)?.0)
+    let sent = match &held {
+        Held::Log(log) => Some(sent(log)),
+        Held::Absent | Held::Newer(_) => None,
+    };
+    let mut fields = shown(branch, held, &selection, &continuations)?.0;
+    markdown::render_document(&mut fields);
+    let folder = branch.store.folder();
+    fields["activity"] = Value::Array(session_files::read(&folder, SessionFile::Activity));
+    fields["tokens"] = Value::Array(session_files::read(&folder, SessionFile::Tokens));
+    if let Some(sent) = sent {
+        fields["sent"] = sent;
+    }
+    Ok(fields)
 }
 
 /// Records the answers and decisions the page sent: `{ tree, branch, answers }`, each
@@ -185,11 +184,7 @@ pub fn answer(home: &Home, body: &[u8], port: u16) -> Response {
     };
     match record(&branch, &named, Channel::Page) {
         Ok((fields, errors)) => {
-            let outcome = if errors.is_empty() {
-                "answered"
-            } else {
-                "answered elsewhere"
-            };
+            let outcome = if errors.is_empty() { OUTCOME } else { PARTLY };
             Response::json(200, &json::result(ANSWER_SCHEMA, outcome, fields, errors))
         }
         Err(failure) => answer_failure(failure, ANSWER_SCHEMA),

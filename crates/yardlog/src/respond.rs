@@ -139,7 +139,9 @@ impl YardLog {
         Ok(answered)
     }
 
-    fn open_submissions(&self) -> Vec<SubmissionKey> {
+    /// The keys of the submissions still open, in the order they were sent.
+    #[must_use]
+    pub fn open_submissions(&self) -> Vec<SubmissionKey> {
         self.root
             .submissions
             .iter()
