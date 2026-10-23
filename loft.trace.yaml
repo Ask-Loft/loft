@@ -22151,7 +22151,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_is_computed_over_the_specification_below_the_top_of_the_worktree"
-        body: ffc20a5db96620eab7b0a44c85080ec2d16130cd1bbfa35eb66ed3ee68519e70
+        body: 5a29d643c62de214579724d3c23e98bd93cf99750610032432eb0b06534f6694
   - node: 01a1646f-546d-7042-befd-eaa4fdf28e1d
     reviewed: 7e92c05a8a7fbca4c08120b5f44fdb9b3cd96899cf6608850b9aead88c3ccd4f
     tests:

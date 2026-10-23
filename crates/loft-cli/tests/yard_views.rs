@@ -4,6 +4,7 @@
 //! refuses the batch and changes no file; and a long list is kept to its first 1,000 items.
 
 use std::fmt::Write as _;
+use std::fs;
 
 use serde_json::{Value, json};
 
@@ -194,15 +195,40 @@ fn a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole() {
     assert_eq!(report["leftOut"]["status.base.added"], 1);
 }
 
+/// Runs `loft` with `args` in the folder `pkg/` of `yard`'s tree, printing JSON.
+fn in_package(yard: &Yard, args: &[&str]) -> Value {
+    let output = yard
+        .scratch
+        .command(Some(&yard.git), &yard.clock)
+        .current_dir(yard.scratch.0.join("pkg"))
+        .args(args)
+        .args(["--format", "json"])
+        .output()
+        .unwrap();
+    serde_json::from_slice(&output.stdout).unwrap()
+}
+
 #[test]
 fn a_view_is_computed_over_the_specification_below_the_top_of_the_worktree() {
     let mut yard = Yard::with_spec();
+    let package = yard.scratch.0.join("pkg");
+    fs::create_dir_all(&package).unwrap();
+    fs::rename(yard.scratch.0.join("spec"), package.join("spec")).unwrap();
     yard.git = yard.git.clone().below("pkg/");
+    let input = yard.scratch.home().join("input.json");
     let named = r#", "decision": "store-a-shelf-in-one-file""#;
-    let body = recorded(&yard, "decision", named);
-    let found = yard.loft(&["find", "store-a-shelf-in-one-file"]);
+    fs::write(&input, batch("decision", named)).unwrap();
+    let input = input.to_str().unwrap();
+    let written = in_package(
+        &yard,
+        &["yard", "write", "--session", "s1", "--input", input],
+    );
+    assert_eq!(written["outcome"], "written", "{written}");
+    assert!(yard.folder("feature").join("yardlog.yaml").is_file());
+    let read = in_package(&yard, &["yard", "read", "--session", "s1"]);
+    let found = in_package(&yard, &["find", "store-a-shelf-in-one-file"]);
     assert_eq!(
-        body["report"]["decision"]["key"],
+        block(&read, "v1")["version"]["body"]["report"]["decision"]["key"],
         found["matches"][0]["key"]
     );
 }
