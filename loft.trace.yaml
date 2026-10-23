@@ -22201,7 +22201,7 @@ links:
         name: "a_publish_view_holds_what_loft_status_prints"
         body: 31ce0663ed5cfbd910b552f68ceb2726d67f6c2f4a3a1fa1a6142b71ed2c94e5
   - node: 01a165f7-a4b1-74a9-8047-9b9fd0a3c605
-    reviewed: add91a56429b20a806d53883a30fdaec7235816b8b98ecdafeba400427dbafc2
+    reviewed: cdf70c01f94751aa1d89a2c25164db223b6592ba3bd0722cb0f20d441259d04d
     tests:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_is_computed_over_the_specification_below_the_top_of_the_worktree"

@@ -18,7 +18,7 @@ use super::args::PublishedArgs;
 use super::branch::{Branch, revision_of};
 use super::caller::Caller;
 use super::failure::{self, Failure};
-use super::views::{Views, spec_root};
+use super::views::Views;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -97,9 +97,8 @@ fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
         let error = failure::error("not-base", &message);
         return Err(refused(&branch, &Held::Absent, error));
     }
-    let spec = spec_root(dir, &branch.place().tree);
     let views = Views {
-        tree: &spec,
+        tree: dir,
         base: &base,
         at,
     };

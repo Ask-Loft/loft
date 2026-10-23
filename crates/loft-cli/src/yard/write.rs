@@ -20,7 +20,7 @@ use super::branch::{Branch, log_of, revision_of};
 use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::render;
-use super::views::{Views, spec_root};
+use super::views::Views;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -90,11 +90,10 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         send: args.send,
     };
     let branch_name = branch.store.branch().to_owned();
-    let spec = spec_root(dir, &branch.place().tree);
     // The views compare with the base branch Yard Log records, or the one this write opens it on.
     let base = log_of(&held).map_or(args.base.as_str(), |log| log.root.base.as_str());
     let views = Views {
-        tree: &spec,
+        tree: dir,
         base,
         at,
     };
