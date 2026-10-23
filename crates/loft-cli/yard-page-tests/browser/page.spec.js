@@ -341,6 +341,38 @@ test('dragging the panel’s top edge makes it taller by the length dragged, and
   await expect.poll(async () => (await box(panel)).height).toBe(550);
 });
 
+test('the Markdown, the prompt and the options of each block in the panel span the panel’s width, held to no narrower measure', async ({ page }) => {
+  const words = 'The plan reads across the whole panel rather than down a narrow column of it. '.repeat(12);
+  const sent = write(
+    [
+      { id: 'wide-plan', kind: 'plan', stage: 'shape', title: 'A wide plan', markdown: words },
+      { id: 'wide-q', kind: 'question', stage: 'shape', header: 'Wide', prompt: words, context: words, options: [{ label: 'Wide', detail: words, recommended: true }, { label: 'Narrow', detail: words }] },
+    ],
+    ['--send'],
+  ).submission;
+  try {
+    await page.goto(address());
+    const panel = waitingModal(page);
+    await expect(panel.locator('.prose p', { hasText: 'The plan reads' }).first()).toBeVisible();
+    const room = (await box(panel.locator('.modal-body'))).width;
+    // Each text fills the box it lies in, and the box is most of the panel's width: far more than
+    // a measure of 75 characters, about 700 pixels here. The plan, the question's prompt and
+    // context, and each option's detail.
+    const texts = await panel.locator('.prose > p, .prompt, legend', { hasText: 'The plan reads' }).all();
+    expect(texts.length).toBeGreaterThanOrEqual(5);
+    for (const text of texts) {
+      expect(await text.evaluate((element) => getComputedStyle(element).maxWidth)).toBe('none');
+      expect((await box(text)).width).toBeGreaterThan(room * 0.8);
+    }
+    // The timeline keeps its measure.
+    await closeWaiting(page);
+    const note = page.locator('#block-wide-plan .prose p').first();
+    expect(await note.evaluate((element) => getComputedStyle(element).maxWidth)).not.toBe('none');
+  } finally {
+    withdraw(sent);
+  }
+});
+
 test('while the panel is open, the page’s end scrolls above the panel, so no part of the Yard Log stays hidden beneath it', async ({ page }) => {
   await page.goto(address());
   const panel = waitingModal(page);

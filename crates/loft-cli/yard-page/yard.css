@@ -589,6 +589,8 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 }
 .modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; box-shadow: 6px -6px 0 var(--wait-line); }
 body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 50vh) + 24px); }
+/* In the panel, text spans its width: the panel has less height to give it than the timeline. */
+.modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .consequence, .goal, .banner) { max-width: none; }
 .dock-edge { position: absolute; top: -5px; left: 0; right: 0; z-index: 1; height: 10px; cursor: row-resize; touch-action: none; }
 .dock-edge::after { content: ''; position: absolute; top: 3px; left: 50%; width: 48px; height: 4px; margin-left: -24px; background: var(--rail); }
 .dock-edge:hover::after, .dock-edge:focus-visible::after { background: var(--signal); }

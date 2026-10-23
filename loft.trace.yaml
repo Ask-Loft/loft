@@ -22584,6 +22584,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "while the panel is open, the page’s end scrolls above the panel, so no part of the Yard Log stays hidden beneath it"
         body: 9105610a175ada8e065c8b7f3e63bbb4939cbc70d7e886885c3b7682a5147d8a
+  - node: 01a169df-0b4e-72cf-bc3c-4722edee80d5
+    reviewed: ddf6ff8d0c4421d2c3e396e2f3db1af072dab60adab74bc1301f4936d589eca1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the Markdown, the prompt and the options of each block in the panel span the panel’s width, held to no narrower measure"
+        body: a628b31e54a18a0fa604e6480233241d1cea8003e918a3837e1e9a3ff9860c05
   - node: 01a1693f-7b72-7290-8335-f17f8d2e0087
     reviewed: f05a28fc80f36f9df51e8f1b0b4f9a9d0494aa54b0718ca933f36e3c09c03e78
     tests:
