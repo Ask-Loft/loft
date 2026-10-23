@@ -145,6 +145,8 @@ requirements:
         name: "`rev-parse --git-common-dir` prints the repository's common directory as git prints it from the directory the call runs in, or the path the scenario gives it for a linked worktree."
       - key: 01a164cf-8fd5-7533-a02e-c0500b520607
         name: "`rev-parse --git-path yard` prints `yard` under the worktree's own git directory."
+      - key: 01a16642-fc1b-745e-ae1d-4291a49f064f
+        name: "`rev-parse --show-toplevel --git-common-dir --git-path yard` prints what each of the three prints alone, one per line, in that order."
       - key: 01a164cf-8fd5-7533-a02e-c051c6c67714
         name: "`check-ignore -q <path>` exits 0 for a path the scenario ignores and 1 for any other."
       - key: 01a164cf-8fd5-7533-a02e-c0521d4db6c6
