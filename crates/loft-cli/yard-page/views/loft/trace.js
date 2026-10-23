@@ -3,6 +3,7 @@
 // `loft reconcile` reported of them.
 
 import { h } from '../../lib/dom.js';
+import { count } from '../../lib/format.js';
 import * as kept from '../../lib/kept.js';
 import { chip, leftOut } from './index.js';
 import { STATES, coverage, featureFold } from './trace-list.js';
@@ -59,10 +60,10 @@ export function traceView(report, _body, context = {}) {
     states.length > 1 ? h('p', { class: 'counts' }, states.map((each) => chip(`${each.count} ${STATES[each.state].word}`, STATES[each.state].tone))) : null,
     short(report, criteria) ? h('p', { class: 'short' }, 'Recorded by an older loft: this view may count fewer links than loft reconcile found.') : null,
     report.base ? h('p', { class: 'base' }, `Compared with ${report.base}.`) : null,
-    h(
-      'details',
-      { class: ['fold', 'trace-list'], open: kept.folds.open(key), ontoggle: (event) => kept.folds.set(key, /** @type {HTMLDetailsElement} */ (event.currentTarget).open) },
-      h('summary', {}, `${counted(criteria.length, 'criterion', 'criteria')} under ${counted(features.length, 'Feature', 'Features')}`),
+    kept.details(
+      { path: key, open: false },
+      { class: ['fold', 'trace-list'] },
+      h('summary', {}, `${count(criteria.length, 'criterion', 'criteria')} under ${count(features.length, 'Feature')}`),
       features.map((feature) => featureFold(feature, tests, kept.folds, key && `${key}/${feature.key}`)),
       leftOut(report, 'features'),
       findingsList(findingsOf(criteria, reconcile), context.key ? `${context.key}/findings` : null),
@@ -79,16 +80,6 @@ export function traceView(report, _body, context = {}) {
 function short(report, criteria) {
   const left = report.leftOut ?? {};
   return !criteria.some((criterion) => Array.isArray(criterion.tests)) && Boolean(left['reconcile.tests'] || left['reconcile.findings']);
-}
-
-/**
- * `count` with its noun, singular for one.
- * @param {number} count
- * @param {string} one
- * @param {string} many
- */
-function counted(count, one, many) {
-  return `${count} ${count === 1 ? one : many}`;
 }
 
 /**

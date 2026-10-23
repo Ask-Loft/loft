@@ -5,7 +5,7 @@
 
 import { h, markdown } from '../lib/dom.js';
 import * as kept from '../lib/kept.js';
-import { length, ms, when, who } from '../lib/format.js';
+import { count, length, ms, when, who } from '../lib/format.js';
 import { drawnInQuestion, grouped, ordered } from '../model/log.js';
 import { card } from './blocks.js';
 
@@ -52,7 +52,7 @@ function stageSection(stage, context) {
       h('span', { class: ['status', `status--${body.status}`] }, STATUS[body.status] ?? body.status),
       h('h3', { class: 'stage-title' }, body.title),
       owner ? h('span', { class: 'owner' }, owner.agent ? `${who(owner)} subagent` : 'main agent') : null,
-      h('span', { class: 'count' }, blocks.length === 1 ? '1 block' : `${blocks.length} blocks`),
+      h('span', { class: 'count' }, count(blocks.length, 'block')),
     ),
     markdown(body.goalHtml, body.goal, 'goal'),
     times.started

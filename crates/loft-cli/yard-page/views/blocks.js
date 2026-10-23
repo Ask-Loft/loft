@@ -4,7 +4,7 @@
 // version and when, and its earlier versions.
 
 import { h, html, markdown } from '../lib/dom.js';
-import { when, who } from '../lib/format.js';
+import { count, when, who } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import { loftView } from './loft/index.js';
 
@@ -315,7 +315,7 @@ function meta(block) {
       ? kept.details(
           { path: `${block.key}/versions`, open: false },
           { class: 'versions' },
-          h('summary', {}, earlier.length === 1 ? '1 earlier version' : `${earlier.length} earlier versions`),
+          h('summary', {}, count(earlier.length, 'earlier version')),
           h(
             'ol',
             {},

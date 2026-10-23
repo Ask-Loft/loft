@@ -8,6 +8,7 @@
 
 import { colours as schemeColours, draw } from '../../lib/diagrams.js';
 import { h } from '../../lib/dom.js';
+import { count } from '../../lib/format.js';
 import * as kept from '../../lib/kept.js';
 import { compareWords } from '../../model/words.js';
 import { changeItem, leftOut } from './index.js';
@@ -35,15 +36,6 @@ export function wrapped(text) {
   return lines;
 }
 
-/**
- * A count and its noun, singular for one.
- * @param {number} count
- * @param {[string, string]} noun
- */
-function counted(count, [one, many]) {
-  return `${count} ${count === 1 ? one : many}`;
-}
-
 /** @param {string} text */
 function quoted(text) {
   return String(text ?? '')
@@ -65,12 +57,12 @@ export function boxText(node) {
   if (node.kind === 'feature' && node.delta) {
     /** @type {Record<'requirements' | 'criteria', [string, string]>} */
     const nouns = { requirements: ['Requirement', 'Requirements'], criteria: ['criterion', 'criteria'] };
-    lines.push(`${counted(node.requirements ?? 0, nouns.requirements)}, ${counted(node.criteria ?? 0, nouns.criteria)}`);
+    lines.push(`${count(node.requirements ?? 0, ...nouns.requirements)}, ${count(node.criteria ?? 0, ...nouns.criteria)}`);
     const delta = [];
     for (const kind of /** @type {const} */ (['requirements', 'criteria'])) {
       for (const change of ['added', 'changed', 'removed']) {
-        const count = node.delta[kind]?.[change];
-        if (count) delta.push(`${counted(count, nouns[kind])} ${change}`);
+        const changed = node.delta[kind]?.[change];
+        if (changed) delta.push(`${count(changed, ...nouns[kind])} ${change}`);
       }
     }
     if (delta.length) lines.push(delta.join(', '));
