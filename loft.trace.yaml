@@ -22383,6 +22383,30 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "where Yard Log has no open submission, nothing shows above the timeline"
         body: a0acaab8c2bcadc226b44c3e2d86061fb7d87c2c1cf444a8fe3a7c048b920a02
+  - node: 01a1693f-7b72-7290-8335-f1758a4c74e2
+    reviewed: 27808ad1fdeba64ac1cb1714ab4969e601acf71ac19a61eb26b995a788182c93
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "a modal opens over the page with its title, its content and a button that closes it"
+        body: e87dcf7b789cad6a82c8c0ee148ebdf6370a854808505568e59b906edc0b4654
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "a modal closes on Escape, and tells whoever opened it that it closed"
+        body: 6a716307cf6f49e2cc346d13b0596a26485d1a32bded0ed8af2d7e4472f20979
+  - node: 01a1693f-7b72-7290-8335-f17f8d2e0087
+    reviewed: 9bc5877e3769e367c2684380765d4f6ca527e3de00b5fd3de1474eea27237767
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "a change drawn while the modal is open keeps its scroll position and the field that has focus"
+        body: 0fc7ee81c7aee3663c9e8d35abecf2ed363805baefe96cc277ced5581ca2f24d
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "updating a modal that is closed draws nothing and opens nothing"
+        body: 7c322e886ac2db8a9caecc30a86dcc43a7bdc6164b7dfb3de7c64ca46de80118
+  - node: 01a1693f-7b72-7290-8335-f1800d240bbf
+    reviewed: 723ee24c5bac6a9b588c36eb487b41b9b37561a7246b8e64dd8414430a9db698
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
+        name: "closing the modal gives the focus back to what held it before it opened"
+        body: 649b0ce30ec49f8ab022fd540b180e4403f9035e482082fa2abd788f9e9cca7e
   - node: 01a1646f-546d-7042-befd-eb66aa4b28b7
     reviewed: d68fedf468ac9cfdc36cb56011a5a736eae23d2e9ad2525d4b1fd9135a1c86fb
     tests:
