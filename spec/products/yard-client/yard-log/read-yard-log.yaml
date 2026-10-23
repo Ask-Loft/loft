@@ -56,10 +56,11 @@ requirements:
         name: "Without `--versions`, each block carries its current version alone and the count of its versions."
   - key: 01a1646f-546e-76cb-8b4f-f2564ca1fb18
     statement:
-      form: event_driven
-      when: "an agent reads Yard Log"
+      form: optional
+      where: "`--mark-read` is given"
       system: "`loft yard read`"
-      shall: "record the revision it read as the one that agent last read, in `~/.yard/last-read.json`."
+      shall: "record the revision it read as the one the calling agent last read, in `~/.yard/last-read.json`."
+    body: "A read is the agent's own when the agent reads Yard Log for itself, through `yard_read` or the context at a session's start; a read the mod makes on the agent's behalf, to mirror a task or to ask, marks nothing. Without `--mark-read`, a read writes nothing but the settling of Yard Log a merge left unsettled."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f257965fff0c
         name: "The revision last read is kept for each agent apart, by its session and agent ids."
@@ -72,4 +73,8 @@ requirements:
       - key: 01a1646f-546e-76cb-8b4f-f259ded7158f
         name: "Recording the revision read does not raise the revision."
       - key: 01a165f5-4587-7632-89a7-b4dcba8d44d5
-        name: "A read with `--peek` leaves the revision the agent last read as it was, and still gives it."
+        name: "A read without `--mark-read` leaves the revision the agent last read as it was, and still gives it."
+      - key: 01a16621-e7bc-7707-b123-216d03f48f1c
+        name: "`--mark-read` given without `--session` exits 2 and names `--session`."
+      - key: 01a16621-e7bc-7707-b123-216eafa4b4d0
+        name: "A read without `--mark-read` writes no file of `~/.yard/`."

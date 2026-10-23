@@ -19,6 +19,8 @@ requirements:
         name: "Each tool's input is described by a JSON schema."
       - key: 01a1646f-546c-7521-9643-bcaa2981e408
         name: "`yard_read` takes an optional revision to read since."
+      - key: 01a16621-e7bc-7707-b123-2162855d3a0d
+        name: "`yard_read` runs `loft yard read --mark-read`, so that the agent's own read records the revision it read."
       - key: 01a1646f-546c-7521-9643-bcab7a45d9c4
         name: "`yard_write` takes the batch, the revision it is based on, and whether it is to be sent."
       - key: 01a1646f-546c-7521-9643-bcac49382b64

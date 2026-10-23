@@ -15,7 +15,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc54b796807b
         name: "The block's id is made from the task's id and the agent, the session for the main agent, so that each later update finds it and a session started after `/clear` writes blocks of its own."
       - key: 01a165f5-4587-7632-89a7-b4db5092dc0c
-        name: "The mod reads Yard Log to mirror a task with `loft yard read --peek`, which leaves the revision the agent last read as it was."
+        name: "The mod reads Yard Log to mirror a task with `loft yard read` without `--mark-read`, which leaves the revision the agent last read as it was."
       - key: 01a1646f-546c-7521-9643-bc550810c75a
         name: "The block's title is the task's subject."
       - key: 01a1646f-546c-7521-9643-bc56c4873439

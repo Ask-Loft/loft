@@ -23,6 +23,8 @@ requirements:
         name: "A session whose `.yard/` is ignored by git is told that Yard Log stays out of its commits."
       - key: 01a1646f-546c-7521-9643-bc687ad65bab
         name: "The context is given again after `/resume` and `/branch`."
+      - key: 01a16621-e7bc-7707-b123-2161fe5b53dc
+        name: "The mod reads the context with `loft yard read --mark-read`, so that the agent's next read since its last starts from what the context showed."
   - key: 01a1647c-e680-7753-bf17-f17606f6adc0
     statement:
       form: event_driven
