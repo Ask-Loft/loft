@@ -105,6 +105,7 @@ pub fn body(body: &Body) -> Value {
             fields.insert("title".to_owned(), json!(task.title));
             put(&mut fields, "detail", text(task.detail.as_ref()));
             fields.insert("state".to_owned(), json!(task.state.as_str()));
+            fields.insert("type".to_owned(), json!(task.kind.as_str()));
         }
         Body::Plan(plan) => {
             fields.insert("title".to_owned(), json!(plan.title));

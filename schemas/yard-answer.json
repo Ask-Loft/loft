@@ -552,6 +552,14 @@
                 "done",
                 "dropped"
               ]
+            },
+            "type": {
+              "description": "The task's type: `regular` work, or a `fix` the person asked for",
+              "type": "string",
+              "enum": [
+                "regular",
+                "fix"
+              ]
             }
           }
         },
