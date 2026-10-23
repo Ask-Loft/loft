@@ -310,6 +310,45 @@ fn an_agent_keeps_at_most_one_stage_active_and_a_stage_passes_to_who_makes_it_ac
 }
 
 #[test]
+fn the_refusal_of_a_second_active_stage_names_the_one_active_and_says_to_set_its_status_in_the_batch()
+ {
+    let mut log = planned();
+    let stage =
+        |id: &str, status: &str| json!({"id": id, "kind": "stage", "title": id, "status": status});
+    write(
+        &mut log,
+        &json!([stage("design", "active")]),
+        &context(&main_agent(), 2),
+    );
+    let refusal = try_write(
+        &mut log,
+        &json!([stage("review", "active")]),
+        &context(&main_agent(), 3),
+    )
+    .unwrap_err();
+    let Refusal::Faults(faults) = &refusal else {
+        panic!("{refusal:?}");
+    };
+    assert_eq!(faults.len(), 1, "{faults:?}");
+    let message = &faults[0].message;
+    assert!(
+        message.contains("stage `design` is already active"),
+        "{message}"
+    );
+    assert!(
+        message.contains("`done`, `planned` or `dropped` in the same batch"),
+        "{message}"
+    );
+    assert!(message.contains("`review`"), "{message}");
+    write(
+        &mut log,
+        &json!([stage("design", "planned"), stage("review", "active")]),
+        &context(&main_agent(), 4),
+    );
+    assert!(log.find(&handle("review")).unwrap().is_active());
+}
+
+#[test]
 fn a_sent_batch_opens_a_submission_of_its_questions_approvals_and_plans_in_order() {
     let mut log = planned();
     let written = write(

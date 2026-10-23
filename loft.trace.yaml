@@ -21195,6 +21195,12 @@ links:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "an_agent_keeps_at_most_one_stage_active_and_a_stage_passes_to_who_makes_it_active"
         body: d60b0e0251b3345eaa59cc16cad45f9535a2a036a850427080f2069e532d78df
+  - node: 01a16976-40ac-705b-958a-7cf2454c58db
+    reviewed: d4c82a833e71fc5ac5ba75a03e28a3ccf9926c448b405e514cec6108a634eade
+    tests:
+      - file: "crates/yardlog/tests/write_blocks.rs"
+        name: "the_refusal_of_a_second_active_stage_names_the_one_active_and_says_to_set_its_status_in_the_batch"
+        body: f5e90edfc27c031a219c57e411a280aa4c5baa59d40b9f9d0754cfa02eb7108a
   - node: 01a1646f-546d-7042-befd-ea833b829a1b
     reviewed: 21519837787f1127e97ea254c643db30adfff32d4136ef56318f7c946dcdefce
     tests:

@@ -295,7 +295,9 @@ impl YardLog {
         key
     }
 
-    /// Faults for an agent left with two stages `active`, once a batch is applied.
+    /// Faults for an agent left with two stages `active`, once a batch is applied: each stage the
+    /// batch makes `active` names the agent's other active stages, and how to set them aside in
+    /// the same batch.
     fn active_stages(&self, agent: &Agent, inputs: &[Input]) -> Vec<Fault> {
         let active: Vec<&Handle> = self
             .stages
@@ -307,18 +309,31 @@ impl YardLog {
         if active.len() < 2 {
             return Vec::new();
         }
-        let names = active
-            .iter()
-            .map(|id| format!("`{id}`"))
-            .collect::<Vec<_>>()
-            .join(", ");
         inputs
             .iter()
             .filter(|input| active.contains(&&input.id))
-            .map(|input| Fault {
-                block: input.id.to_string(),
-                field: "status".to_owned(),
-                message: format!("would leave stages {names} active for one agent; an agent has one stage active at a time"),
+            .map(|input| {
+                let others: Vec<String> = active
+                    .iter()
+                    .filter(|id| ***id != input.id)
+                    .map(|id| format!("`{id}`"))
+                    .collect();
+                let (stage, verb, its) = if others.len() == 1 {
+                    ("stage", "is", "its")
+                } else {
+                    ("stages", "are", "their")
+                };
+                Fault {
+                    block: input.id.to_string(),
+                    field: "status".to_owned(),
+                    message: format!(
+                        "{stage} {} {verb} already active for this agent, which has one stage \
+                         active at a time: set {its} status to `done`, `planned` or `dropped` in \
+                         the same batch to make `{}` active",
+                        others.join(", "),
+                        input.id,
+                    ),
+                }
             })
             .collect()
     }
