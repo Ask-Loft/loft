@@ -190,3 +190,26 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb4b0653b23d
         name: "The page shows when Yard Log was closed, and whether its merge closed it."
+  - key: 01a16863-60a7-772b-980e-a0799595ed06
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw itself, its Gantt chart and its diagrams in the colour scheme the browser asks for, light or dark."
+    criteria:
+      - key: 01a16863-60a7-772b-980e-a07a7bb898ff
+        name: "In a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours."
+      - key: 01a16863-60a7-772b-980e-a07b441c8e43
+        name: "In a browser that asks for a light scheme, or for none, the page, its Gantt chart and its diagrams are drawn in their light colours."
+      - key: 01a16863-60a7-772b-980e-a07c5f19ca60
+        name: "Each colour the page gives text holds a contrast of at least 4.5 to 1 against each ground it is drawn on, in either scheme."
+  - key: 01a16863-60a7-772b-980e-a07df2e896da
+    statement:
+      form: event_driven
+      when: "the browser's colour scheme changes while the page is open"
+      system: "the page"
+      shall: "draw itself again in the new scheme, without a reload."
+    criteria:
+      - key: 01a16863-60a7-772b-980e-a07e6f0492af
+        name: "The page's colours turn to the new scheme without a reload."
+      - key: 01a16863-60a7-772b-980e-a07f74dd4ee6
+        name: "Each diagram already drawn is drawn again in the new scheme's colours."
