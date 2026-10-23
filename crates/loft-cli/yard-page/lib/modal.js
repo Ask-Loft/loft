@@ -63,7 +63,6 @@ function draw(dialog, name, shown) {
   const id = idOf(name);
   replace(
     dialog,
-    shown.docked ? dock.edge() : null,
     h(
       'header',
       { class: 'modal-head' },
@@ -71,6 +70,8 @@ function draw(dialog, name, shown) {
       h('button', { type: 'button', class: 'modal-close', 'aria-label': 'Close', onclick: () => close(name) }, '×'),
     ),
     h('div', { class: 'modal-body' }, shown.content),
+    // The edge comes last, so that opening the panel gives the focus to what answers, not to it.
+    shown.docked ? dock.edge() : null,
   );
 }
 

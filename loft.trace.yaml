@@ -22562,7 +22562,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the panel lies along the bottom of the viewport within its margin, half the viewport high, and follows the viewport as it changes"
-        body: a3565b4eb61892a4e759afee04922cf9a14890ca10302cd8aaa26229f8331948
+        body: 0b5c2c1d103fb33433d48f82797c0098452a657a5927e4717cbec2657e49b442
   - node: 01a1693f-7b72-7290-8335-f17d39c6e2b0
     reviewed: bc938e04ba51eb7c5f1ce6bc7ba8c4bc469276f2f570a72dd00432b7be4c7b09
     tests:
@@ -22619,7 +22619,7 @@ links:
         body: 111904d4667f3d755478b7edfefe96c8d8169733273ee981df6c7af5a2ac5a1f
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the panel lies along the bottom of the viewport within its margin, half the viewport high, and follows the viewport as it changes"
-        body: a3565b4eb61892a4e759afee04922cf9a14890ca10302cd8aaa26229f8331948
+        body: 0b5c2c1d103fb33433d48f82797c0098452a657a5927e4717cbec2657e49b442
   - node: 01a169df-0b4e-72cf-bc3c-47254b086a53
     reviewed: b77f0e4abb18fa5702193cb92dbfdf8c936a4007036ed0569bb98f22aec91b09
     tests:

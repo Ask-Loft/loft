@@ -318,6 +318,8 @@ test('the panel lies along the bottom of the viewport within its margin, half th
   const panel = waitingModal(page);
   await expect(panel).toBeVisible();
   expect(await panel.boundingBox()).toEqual({ x: 24, y: 900 - 24 - 450, width: 1280 - 48, height: 450 });
+  // Opening it leaves the focus on what a person answers with, not on the edge that sizes it.
+  await expect(panel.locator('.dock-edge')).not.toBeFocused();
   await page.setViewportSize({ width: 600, height: 700 });
   await expect.poll(() => panel.boundingBox()).toEqual({ x: 16, y: 700 - 16 - 350, width: 600 - 32, height: 350 });
   await page.setViewportSize({ width: 1280, height: 900 });
