@@ -1,5 +1,6 @@
-// What waits on the person in the branch's Yard Log shown, in the page's modal: when it opens by
-// itself, when it stays closed, how the person opens it again, and when it closes.
+// What waits on the person in the branch's Yard Log shown, in the panel along the bottom of the
+// page: when it opens by itself, when it stays closed, how the person opens it again, and when it
+// closes.
 
 import { forget, root } from './dom.js';
 
@@ -12,6 +13,8 @@ import * as modal from '../../yard-page/lib/modal.js';
 import { logChrome, logView } from '../../yard-page/views/log.js';
 import { openWaiting, waitingModal } from '../../yard-page/views/waiting.js';
 import { EXPLORE, act, block, log, open, question, stage } from './fixtures.js';
+
+const window = /** @type {any} */ (globalThis.window);
 
 /** @type {string[]} */
 let notices = [];
@@ -34,7 +37,7 @@ function dialog() {
   return /** @type {any} */ (document.querySelector('dialog.modal[data-modal="waiting"]'));
 }
 
-/** A Yard Log's page drawn into the document, with what waits brought into the modal, as the page does. */
+/** A Yard Log's page drawn into the document, with what waits brought into the panel, as the page does. */
 function page(shown, more = {}) {
   const at = root();
   const context = {
@@ -60,7 +63,7 @@ function later(shown, submissions, revision = shown.revision + 1) {
   return { ...shown, revision, submissions };
 }
 
-test('opening a branch’s Yard Log that has an open submission opens the modal, every open submission in it oldest first', () => {
+test('opening a branch’s Yard Log that has an open submission opens the panel, every open submission in it oldest first', () => {
   const first = question('colour', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], {
@@ -86,14 +89,14 @@ test('nothing of an open submission is shown above the timeline or the Gantt cha
   }
 });
 
-test('where Yard Log has no open submission, no modal opens and nothing shows above the timeline', () => {
+test('where Yard Log has no open submission, no panel opens and nothing shows above the timeline', () => {
   const drawn = page(log([stage('s', 'S', 'active', [question('colour', ['Red', 'Blue'])])]));
   assert.ok(!modal.isOpen('waiting'));
   assert.ok(!drawn.querySelector('.submission'));
   assert.ok(!drawn.querySelector('#open-waiting'));
 });
 
-test('a closed, inherited or newer Yard Log opens no modal and offers nothing to answer', () => {
+test('a closed, inherited or newer Yard Log opens no panel and offers nothing to answer', () => {
   const asked = question('colour', ['Red', 'Blue']);
   const submissions = [open([asked], '2026-01-01T10:04:00Z')];
   const yardLog = { key: 'k', title: 'Shelf', branch: 'feat/shelf', format: 'yardlog/1', closedBy: 'agent', closed: act('2026-01-01T11:00:00Z', 9) };
@@ -108,19 +111,23 @@ test('a closed, inherited or newer Yard Log opens no modal and offers nothing to
   }
 });
 
-test('the modal closes by its close button and by Escape', () => {
+test('the panel closes by its close button, and by Escape while the focus is within it', () => {
   const asked = question('colour', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
+  assert.ok(dialog().classList.contains('modal--docked'));
   dialog().querySelector('.modal-close').click();
   assert.ok(!dialog().open);
   openWaiting();
   assert.ok(dialog().open);
-  dialog().dispatchEvent(new Event('cancel', { cancelable: true }));
+  const escape = () => new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+  document.body.dispatchEvent(escape());
+  assert.ok(dialog().open, 'an Escape outside the panel leaves it open');
+  dialog().querySelector('input').dispatchEvent(escape());
   assert.ok(!dialog().open);
 });
 
-test('a change to Yard Log that sends no new submission leaves the modal closed', () => {
+test('a change to Yard Log that sends no new submission leaves the panel closed', () => {
   const asked = question('colour', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
@@ -130,7 +137,7 @@ test('a change to Yard Log that sends no new submission leaves the modal closed'
   assert.ok(!dialog().open);
 });
 
-test('a submission sent after the modal was closed opens it again', () => {
+test('a submission sent after the panel was closed opens it again', () => {
   const first = question('colour', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], { submissions: [open([first], '2026-01-01T10:04:00Z')] });
@@ -141,7 +148,7 @@ test('a submission sent after the modal was closed opens it again', () => {
   assert.equal(dialog().querySelectorAll('.submission').length, 2);
 });
 
-test('a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the modal', () => {
+test('a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the panel', () => {
   const first = question('colour', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], { submissions: [open([first, second], '2026-01-01T10:04:00Z')] });
@@ -153,7 +160,7 @@ test('a button in the page’s header, after the switch of views, gives the coun
   assert.ok(dialog().open);
 });
 
-test('each waiting block’s button to answer opens the modal at that block’s form', () => {
+test('each waiting block’s button to answer opens the panel at that block’s form', () => {
   const asked = question('colour', ['Red', 'Blue']);
   const approval = block('approval', 'ship', { title: 'Ship it', html: '<p>May I?</p>' });
   const shown = log([stage('s', 'S', 'active', [asked, approval])], { submissions: [open([asked, approval], '2026-01-01T10:04:00Z')] });
@@ -166,7 +173,7 @@ test('each waiting block’s button to answer opens the modal at that block’s 
   assert.ok(form.contains(document.activeElement), 'the focus is in the block’s form');
 });
 
-test('what was chosen or typed and not sent is shown again when the modal opens again', () => {
+test('what was chosen or typed and not sent is shown again when the panel opens again', () => {
   const asked = question('colour', ['Red', 'Blue'], { ownWords: true });
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
@@ -182,7 +189,7 @@ test('what was chosen or typed and not sent is shown again when the modal opens 
   assert.equal(dialog().querySelector(`#words-${asked.id}`).value, 'Or teal');
 });
 
-test('accepting the recommendations shows them chosen in the modal at once', () => {
+test('accepting the recommendations shows them chosen in the panel at once', () => {
   const asked = question('colour', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
@@ -192,7 +199,7 @@ test('accepting the recommendations shows them chosen in the modal at once', () 
   assert.ok(dialog().querySelector(`input[value="${recommended}"]`).checked);
 });
 
-test('the modal closes by itself once nothing in it waits on the person, and the page then says what was sent', async () => {
+test('the panel closes by itself once nothing in it waits on the person, and the page then says what was sent', async () => {
   const asked = question('colour', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);

@@ -22,12 +22,12 @@ function approval(id, title) {
   return write([{ id, kind: 'approval', stage: 'shape', title, markdown: `May I ${title.toLowerCase()}?` }], ['--send']).submission;
 }
 
-/** The modal of what waits on the person. */
+/** The panel of what waits on the person. */
 function waitingModal(page) {
   return page.locator('dialog.modal[data-modal="waiting"]');
 }
 
-/** Closes the modal of what waits, as the person does to work the page behind it. */
+/** Closes the panel of what waits, as the person does to see the whole page. */
 async function closeWaiting(page) {
   await waitingModal(page).getByRole('button', { name: 'Close' }).click();
   await expect(waitingModal(page)).toBeHidden();
@@ -178,7 +178,7 @@ async function zoomShown(page) {
   return Number((await diagramModal(page).locator('.zoom-percent').textContent())?.replace('%', ''));
 }
 
-test('expanding a diagram opens it in the modal, named by its block, over the viewport within its margin and fitted whole', async ({ page }) => {
+test('expanding a diagram opens it in a modal, named by its block, over the viewport within its margin and the page darkened behind it, and fitted whole', async ({ page }) => {
   const stage = await expandDiagram(page);
   const modal = diagramModal(page);
   await expect(modal.locator('.modal-head h2')).toHaveText('A diagram');
@@ -188,6 +188,10 @@ test('expanding a diagram opens it in the modal, named by its block, over the vi
   expect(Math.round(box.y)).toBe(24);
   expect(Math.round(viewport.width - box.x - box.width)).toBe(24);
   expect(Math.round(viewport.height - box.y - box.height)).toBe(24);
+  const scrim = await modal.evaluate((dialog) => getComputedStyle(dialog, '::backdrop').backgroundColor);
+  expect(scrim).toMatch(/^rgba\(\d+, \d+, \d+, 0\.\d+\)$/);
+  // A point in the margin, over the menu, reaches the dialog and not the page.
+  expect(await page.evaluate(() => Boolean(document.elementFromPoint(8, 300)?.closest('dialog')))).toBe(true);
   await expect(stage).toBeFocused();
   await expect
     .poll(async () => {
@@ -284,36 +288,51 @@ test('a choice the person has made and not sent is kept through a change', async
   await expect(page.locator('input[name="answer-q1"][value="Bottom"]')).toBeChecked();
 });
 
-test('the open submissions wait in a modal over the darkened page, which takes no clicks, and nothing of them shows above the stages', async ({ page }) => {
+test('the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open', async ({ page }) => {
   await page.goto(address());
-  const modal = waitingModal(page);
-  await expect(modal).toBeVisible();
-  await expect(modal.locator('.submission legend', { hasText: 'Which shelf?' })).toBeVisible();
+  const panel = waitingModal(page);
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('.submission legend', { hasText: 'Which shelf?' })).toBeVisible();
   await expect(page.locator('#log .submission')).toHaveCount(0);
-  const scrim = await modal.evaluate((dialog) => getComputedStyle(dialog, '::backdrop').backgroundColor);
-  expect(scrim).toMatch(/^rgba\(\d+, \d+, \d+, 0\.\d+\)$/);
-  // A point in the margin, over the menu, and one at a stage's fold, behind the modal: neither
-  // reaches the page.
+  expect(await panel.evaluate((dialog) => dialog.matches(':modal'))).toBe(false);
+  // A stage's fold above the panel takes the click, and the page scrolls under the wheel.
   const shape = page.locator('#block-shape');
-  const fold = await shape.locator(':scope > summary').boundingBox();
-  for (const [x, y] of [[8, 300], [fold.x + 10, fold.y + 5]]) {
-    expect(await page.evaluate(([x, y]) => Boolean(document.elementFromPoint(x, y)?.closest('dialog')), [x, y])).toBe(true);
-  }
+  const fold = /** @type {{ x: number, y: number }} */ (await shape.locator(':scope > summary').boundingBox());
+  expect(fold.y).toBeLessThan((await box(panel)).y);
+  await page.mouse.click(fold.x + 10, fold.y + 5);
+  await expect(shape).not.toHaveAttribute('open', '');
   await page.mouse.click(fold.x + 10, fold.y + 5);
   await expect(shape).toHaveAttribute('open', '');
+  await page.mouse.move(640, 100);
+  await page.mouse.wheel(0, 200);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  await expect(page.locator('.gantt-frame')).toBeVisible();
+  await expect(panel).toBeVisible();
+  await page.getByRole('button', { name: 'Timeline' }).click();
+  await expect(panel).toBeVisible();
 });
 
-test('the modal keeps its margin to each edge of the viewport and follows the viewport as it changes', async ({ page }) => {
+test('the panel lies along the bottom of the viewport within its margin, half the viewport high, and follows the viewport as it changes', async ({ page }) => {
   await page.goto(address());
-  const modal = waitingModal(page);
-  await expect(modal).toBeVisible();
-  expect(await modal.boundingBox()).toEqual({ x: 24, y: 24, width: 1280 - 48, height: 900 - 48 });
+  const panel = waitingModal(page);
+  await expect(panel).toBeVisible();
+  expect(await panel.boundingBox()).toEqual({ x: 24, y: 900 - 24 - 450, width: 1280 - 48, height: 450 });
   await page.setViewportSize({ width: 600, height: 700 });
-  await expect.poll(() => modal.boundingBox()).toEqual({ x: 16, y: 16, width: 600 - 32, height: 700 - 32 });
+  await expect.poll(() => panel.boundingBox()).toEqual({ x: 16, y: 700 - 16 - 350, width: 600 - 32, height: 350 });
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('the person closes the modal by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent', async ({ page }) => {
+test('while the panel is open, the page’s end scrolls above the panel, so no part of the Yard Log stays hidden beneath it', async ({ page }) => {
+  await page.goto(address());
+  const panel = waitingModal(page);
+  await expect(panel).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const last = page.locator('#log > :last-child');
+  await expect.poll(async () => (await box(last)).y + (await box(last)).height).toBeLessThanOrEqual((await box(panel)).y);
+});
+
+test('the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent', async ({ page }) => {
   await page.goto(address());
   const modal = waitingModal(page);
   await expect(modal).toBeVisible();
@@ -355,7 +374,7 @@ test('the button that opens what waits lies in the page’s header after the swi
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('content taller than the modal scrolls within it under its heading, and a change drawn into it keeps its scroll and focus', async ({ page }) => {
+test('content taller than the panel scrolls within it under its heading, and a change drawn into it keeps its scroll and focus', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 360 });
   await page.goto(address());
   const modal = waitingModal(page);

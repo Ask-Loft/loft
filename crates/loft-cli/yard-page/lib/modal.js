@@ -1,16 +1,17 @@
-// The page's modal: one native dialog for each name, over the page darkened behind it, with its
-// title and a button that closes it above content that scrolls within it. Every view that opens
-// a modal opens it here. The dialog lies outside what the page draws again at each change, so a
-// change drawn into it keeps its scroll and the field that has focus.
+// The page's modals: one native dialog for each name, with its title and a button that closes it
+// above content that scrolls within it. A modal lies over the page darkened behind it; a docked
+// one is a panel along the bottom of the window that leaves the page above it live. Every view
+// that opens one opens it here. The dialog lies outside what the page draws again at each change,
+// so a change drawn into it keeps its scroll and the field that has focus.
 
 import { h, replace } from './dom.js';
 
 /**
  * @typedef {import('./dom.js').Child} Child
  * @typedef {{ title: string, content: Child | Child[], onClose?: () => void, class?: string,
- *   refocus?: () => HTMLElement | null }} Shown
+ *   refocus?: () => HTMLElement | null, docked?: boolean }} Shown
  * `class` is a class of the dialog besides `modal`; `refocus` finds what takes the focus back
- * when what held it before the modal opened has left the page.
+ * when what held it before the modal opened has left the page; `docked` opens it as a panel.
  */
 
 /** @type {Map<string, { dialog: HTMLDialogElement, opener: Element | null, onClose?: () => void,
@@ -35,6 +36,12 @@ function dialogOf(name) {
   );
   // Escape closes the modal as its button does, through `close`, whatever the browser would do.
   dialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    close(name);
+  });
+  // A panel is no modal, so the browser sends it no `cancel`: Escape pressed within it closes it.
+  dialog.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || event.defaultPrevented || !dialog.classList.contains('modal--docked')) return;
     event.preventDefault();
     close(name);
   });
@@ -74,14 +81,15 @@ export function show(name, shown) {
   const entry = dialogOf(name);
   entry.onClose = shown.onClose;
   entry.refocus = shown.refocus;
-  entry.dialog.className = ['modal', shown.class].filter(Boolean).join(' ');
+  entry.dialog.className = ['modal', shown.docked && 'modal--docked', shown.class].filter(Boolean).join(' ');
   if (entry.dialog.open) {
     update(name, shown);
     return entry.dialog;
   }
   entry.opener = document.activeElement;
   draw(entry.dialog, name, shown);
-  entry.dialog.showModal();
+  if (shown.docked) entry.dialog.show();
+  else entry.dialog.showModal();
   return entry.dialog;
 }
 

@@ -1,5 +1,5 @@
 // What waits on the person in the branch's Yard Log shown: every open submission, oldest first,
-// together in the page's modal. It opens by itself for a submission the person has not seen in
+// together in a panel along the bottom of the page. It opens by itself for a submission the person has not seen in
 // this visit, stays closed once they close it until another is sent, opens again at their asking
 // and closes by itself once nothing in it waits.
 
@@ -19,7 +19,7 @@ const NAME = 'waiting';
 
 /** The submissions shown in this visit, for each Yard Log by its key. @type {Map<string, Set<string>>} */
 const seen = new Map();
-/** What the modal shows now, and what it was last drawn from. */
+/** What the panel shows now, and what it was last drawn from. */
 const current = { /** @type {Waiting[]} */ items: [], /** @type {Where | null} */ where: null, drawn: '' };
 
 /**
@@ -40,16 +40,17 @@ function signature(items) {
   return JSON.stringify(items.map((item) => [item.submission.key, item.waiting.map((block) => [block.key, block.version.number, block.versionCount])]));
 }
 
-/** The modal's title and the panels of what waits. */
+/** The panel's title and the cards of what waits, docked. */
 function shown() {
   const where = /** @type {Where} */ (current.where);
   // A panel asks for a refresh where what it shows changed in this browser alone, as when the
-  // person accepts the recommendations: the modal draws it at once, and the page loads again.
+  // person accepts the recommendations: the panel draws it at once, and the page loads again.
   const inside = { ...where, refresh: () => { redraw(); where.refresh(); } };
   const blocks = current.items.reduce((sum, item) => sum + item.waiting.length, 0);
   return {
     title: `${count(blocks, 'block')} ${blocks === 1 ? 'waits' : 'wait'} on you`,
     content: current.items.map((item) => submissionPanel(item.submission, item.waiting, inside)),
+    docked: true,
   };
 }
 
@@ -60,7 +61,7 @@ function redraw() {
 }
 
 /**
- * Brings the modal in line with `log`, the branch's Yard Log just drawn, or with none: it opens
+ * Brings the panel in line with `log`, the branch's Yard Log just drawn, or with none: it opens
  * for a submission not seen in this visit, is drawn again where what waits changed, and closes
  * once nothing waits.
  * @param {any} log
@@ -88,7 +89,7 @@ export function waitingModal(log, where) {
 }
 
 /**
- * Opens the modal of what waits, at the form of the block `blockKey` where one is named.
+ * Opens the panel of what waits, at the form of the block `blockKey` where one is named.
  * @param {string} [blockKey]
  */
 export function openWaiting(blockKey) {

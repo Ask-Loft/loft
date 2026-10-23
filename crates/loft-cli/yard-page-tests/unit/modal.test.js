@@ -8,6 +8,8 @@ import { beforeEach, test } from 'node:test';
 import { h } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
 
+const window = /** @type {any} */ (globalThis.window);
+
 beforeEach(() => {
   forget();
   root();
@@ -98,4 +100,53 @@ test('a modal whose dialog left the document is drawn afresh the next time it is
   modal.show('shelf', { title: 'The shelf', content: 'Ash' });
   assert.ok(dialogOf('shelf').isConnected);
   assert.ok(dialogOf('shelf').open);
+});
+
+/** Counts the dialogs opened modal and opened as panels while `run` runs. */
+function opening(run) {
+  const proto = Object.getPrototypeOf(document.createElement('dialog'));
+  const { show, showModal } = proto;
+  const opened = { modal: 0, docked: 0 };
+  proto.show = function () {
+    opened.docked++;
+    return show.call(this);
+  };
+  proto.showModal = function () {
+    opened.modal++;
+    return showModal.call(this);
+  };
+  try {
+    run();
+  } finally {
+    proto.show = show;
+    proto.showModal = showModal;
+  }
+  return opened;
+}
+
+test('a docked modal opens as a panel that leaves the page live, not as a modal over it', () => {
+  const opened = opening(() => modal.show('shelf', { title: 'The shelf', content: 'Oak', docked: true }));
+  assert.deepEqual(opened, { modal: 0, docked: 1 });
+  assert.ok(dialogOf('shelf').open);
+  assert.ok(dialogOf('shelf').classList.contains('modal--docked'));
+});
+
+test('a modal that is not docked opens modal, over the page darkened behind it', () => {
+  const opened = opening(() => modal.show('shelf', { title: 'The shelf', content: 'Oak' }));
+  assert.deepEqual(opened, { modal: 1, docked: 0 });
+  assert.ok(!dialogOf('shelf').classList.contains('modal--docked'));
+});
+
+test('a docked modal closes on Escape pressed within it, and on no Escape pressed outside it', () => {
+  let closed = 0;
+  const outside = h('input', { id: 'outside' });
+  document.body.append(outside);
+  modal.show('shelf', { title: 'The shelf', content: h('input', { id: 'inside' }), docked: true, onClose: () => closed++ });
+  outside.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  assert.ok(dialogOf('shelf').open);
+  const escape = new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+  /** @type {any} */ (document.getElementById('inside')).dispatchEvent(escape);
+  assert.ok(!dialogOf('shelf').open);
+  assert.ok(escape.defaultPrevented);
+  assert.equal(closed, 1);
 });
