@@ -172,6 +172,19 @@ requirements:
         name: "A label is drawn as a tag of its own, apart from the name beside it."
       - key: 01a16844-c9d1-72df-8cfa-5cda23d83c08
         name: "The labels of a Feature, a Requirement and a criterion each have a tint of their own, and their text keeps the page's ink."
+  - key: 01a1686f-4733-773b-b571-50bed5024ccb
+    statement:
+      form: optional
+      where: "a code span of a block's Markdown, or of a name a `loft` view draws, holds only a colour written as `#` and three, four, six or eight hexadecimal digits"
+      system: "the page"
+      shall: "draw the code span on that colour, with its text in whichever of dark or white ink reads more clearly on it."
+    criteria:
+      - key: 01a1686f-4733-773b-b571-50bf0ed7f7e5
+        name: "A code span holding `#62359c` is drawn on the colour `#62359c`."
+      - key: 01a1686f-4733-773b-b571-50c06027a0c0
+        name: "The text of an opaque colour's code span holds a contrast of at least 4.5 to 1 against that colour."
+      - key: 01a1686f-4733-773b-b571-50c1d42366f8
+        name: "A code span that holds more than a colour, and a colour within a fenced code block, keep the page's own code colours."
   - key: 01a1646f-546d-7042-befd-eb48685b6f13
     statement:
       form: optional
