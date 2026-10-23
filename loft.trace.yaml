@@ -22239,12 +22239,6 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "time outside the turns is idle, and an idle stretch longer than 45 seconds is folded and labelled with its length"
         body: 0ed36af532d1354c3a32b51c447368e93fcd5a4c61bb4558cd8689f99c80273f
-  - node: 01a1660b-dd8a-760c-ade4-a7e027922586
-    reviewed: e3c0951bef7933f9c812be4f5e3831d839387dfb1f915df4c34ae9820fd9d47d
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
-        name: "an idle stretch folded at the end of the chart is labelled inside it, its label ending at the chart’s edge"
-        body: 8921299a0e2d713aa42d79343fa6c50dfd657fde836e3b267f799afdb9e31f4e
   - node: 01a1646f-546d-7042-befd-eb79bfb93e3a
     reviewed: ceb5c504db1fa6e6a6fb2e7229169ef6fd5583bd1416446516fe620251f40c81
     tests:
