@@ -3,9 +3,10 @@ slug: the-status-pane-reads-loft-only-through-its-json
 title: "The status pane reads Loft only through the command line's JSON"
 context: "The Loft status pane needs the state of a specification: its findings, its layout, its trace and what a branch changed in it. The Format, its reader and its rules belong to `loftspec` and `loft`, and each `loft` command prints one JSON document whose shape its schema fixes. A pane in an agent host is written in that host's language and released with the plugin, not with `loft`."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a144ee-c59e-7325-802c-d718444afde2
   outcome: "The pane runs `loft` commands with `--format json` and draws from their documents alone; what it needs that no command reports becomes a command of `loft` first, as `loft status` did."
+  successor: 01a16a2f-7067-72f9-b4c8-7354192c727b
 drivers:
   - key: 01a144ee-c59e-7325-802c-d7153f4c3289
     kind: local
@@ -65,4 +66,5 @@ subjects:
   - role: affected
     node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
   - role: outcome
-    node: 01a144ee-c59d-7512-b23e-0aad7d296257
+    node:
+      formerLabel: CON-28

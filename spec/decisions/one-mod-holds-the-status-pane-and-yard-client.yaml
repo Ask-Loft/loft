@@ -3,9 +3,10 @@ slug: one-mod-holds-the-status-pane-and-yard-client
 title: "One mod holds the status pane and Yard Client"
 context: "The Loft plugin already holds a mod, the Loft status pane, which runs `loft` through its `loftCommand` setting and hears the agent's edits. Yard Client needs a mod too, to register its tools and to hook the agent's questions, plans and tasks. A plugin's `hooks/hooks.json` may name more than one module."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a1646f-5467-7025-8a88-4e60d4a1ed44
   outcome: "The plugin's one hooks module, the Loft mod, holds both the Loft status pane and the Yard hooks, which share its settings, its `loft` runner and its state."
+  successor: 01a16a2f-7067-72f9-b4c8-7354192c727b
 drivers:
   - key: 01a1646f-5467-7025-8a88-4e5e3b97aeaa
     kind: local
@@ -47,8 +48,6 @@ consequences:
     kind: benefit
     statement: "The pane and Yard Client share one reading of the session's events."
 subjects:
-  - role: affected
-    node: 01a16469-559e-73c4-85f2-71ae94a5df07
   - role: affected
     node: 01a16469-559e-73c4-85f2-71afd78c6e3e
   - role: outcome

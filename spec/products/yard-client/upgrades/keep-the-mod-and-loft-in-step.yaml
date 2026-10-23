@@ -4,7 +4,7 @@ name: "Keep the mod and loft in step"
 body: |
   The mod comes with the Loft plugin, and the `loft` it runs comes from the `loftCommand` setting, which may name another version, such as the one a repository pins as a dev dependency. The `loft yard` commands speak a protocol whose version moves when their arguments or their documents change in a way an older mod cannot read.
 
-  Rather than half work across a mismatch, the mod offers no Yard tools and leaves Claude Code as it would be without them. The status pane reads other commands and keeps working.
+  Rather than half work across a mismatch, the mod offers no Yard tools and leaves Claude Code as it would be without them.
 realizes:
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
 requirements:
@@ -36,5 +36,3 @@ requirements:
         name: "The notice is shown once in a session."
       - key: 01a1646f-546e-76cb-8b4f-f1fde62cb279
         name: "`AskUserQuestion` and `ExitPlanMode` show Claude Code's own dialogs alone."
-      - key: 01a1646f-546e-76cb-8b4f-f1feb5d67d10
-        name: "The Loft status pane works as it does with a `loft` the mod speaks."
