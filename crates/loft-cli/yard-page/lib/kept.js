@@ -104,19 +104,28 @@ export function begin(log) {
   }
   const logs = store();
   const kept = mine();
+  // Written only where it changed, since each change of the Yard Log draws the page again.
+  let changed = false;
   const others = Object.entries(logs).filter(([key]) => key !== current);
   const newest = Math.max(0, ...others.map(([, each]) => each.at ?? 0));
-  if (kept.at <= newest) kept.at = newest + 1;
+  if (kept.at <= newest) {
+    kept.at = newest + 1;
+    changed = true;
+  }
   const keys = new Set();
   for (const stage of log.stages ?? []) {
     keys.add(stage.key);
     for (const block of stage.blocks ?? []) keys.add(block.key);
   }
   for (const path of Object.keys(kept.folds)) {
-    if (!keys.has(path.split('/')[0])) delete kept.folds[path];
+    if (!keys.has(path.split('/')[0])) {
+      delete kept.folds[path];
+      changed = true;
+    }
   }
+  const held = Object.keys(logs).length;
   bound(logs);
-  save();
+  if (changed || Object.keys(logs).length !== held) save();
 }
 
 /**
