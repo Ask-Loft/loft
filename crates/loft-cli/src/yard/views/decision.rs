@@ -9,7 +9,9 @@ use loftspec::codec::{self, Files};
 use loftspec::decision::{Decision, DecisionState, Driver, DriverPayload, NodeRef};
 use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
-use loftspec::query::identifies;
+use loftspec::ids::OptionId;
+use loftspec::index::selected_option;
+use loftspec::query::{element_fields, identifies};
 use serde_json::{Map, Value, json};
 
 use crate::stop::Stop;
@@ -61,19 +63,15 @@ impl<'a> Nodes<'a> {
             NodeRef::Held(id) => {
                 let key = id.key();
                 let (kind, name) = self.by_key.get(&key).cloned().unwrap_or_default();
-                json!({
-                    "key": key.to_string(),
-                    "label": self.document.bindings.label_of(id).map(|label| label.to_string()),
-                    "kind": kind,
-                    "name": name,
-                })
+                let label = self.document.bindings.label_of(id);
+                Value::Object(element_fields(key, label, kind, None, &name))
             }
             NodeRef::Former(label) => json!({ "formerLabel": label.to_string() }),
         }
     }
 
     fn decision(&self, decision: &Decision) -> Value {
-        let selected = selected(&decision.state);
+        let selected = selected_option(&decision.state).map(OptionId::key);
         let label = self.document.bindings.label_of(decision.id);
         let mut fields = Map::new();
         fields.insert("key".to_owned(), json!(decision.id.key().to_string()));
@@ -172,20 +170,4 @@ fn state(state: &DecisionState) -> Value {
         DecisionState::Proposed | DecisionState::Accepted { .. } => {}
     }
     fields
-}
-
-/// The key of the option a state selected, where it selected one.
-fn selected(state: &DecisionState) -> Option<Key> {
-    match state {
-        DecisionState::Accepted {
-            selected_option, ..
-        }
-        | DecisionState::Superseded {
-            selected_option, ..
-        }
-        | DecisionState::Retired {
-            selected_option, ..
-        } => Some(selected_option.key()),
-        DecisionState::Proposed | DecisionState::Rejected { .. } => None,
-    }
 }
