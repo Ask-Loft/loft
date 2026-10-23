@@ -12,7 +12,9 @@ requirements:
       shall: "offer the timeline and the Gantt chart as two views of Yard Log, and remember in this browser the one chosen."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb69ef96a504
-        name: "A switch at the left of the line above the stages chooses the timeline or the Gantt chart."
+        name: "A switch in the page's header, after the Yard mark, chooses the timeline or the Gantt chart."
+      - key: 01a16984-aadb-7721-9995-472440ea0ee8
+        name: "The switch is drawn as the Loft website's navigation: each view named in text, the one shown in ink and underlined in action blue."
       - key: 01a168c0-7faa-72dc-8ad3-520c27488530
         name: "The switch stays in the same place whichever view is shown."
       - key: 01a1646f-546d-7042-befd-eb6a95402082
