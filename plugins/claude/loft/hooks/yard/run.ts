@@ -45,10 +45,11 @@ export function callerArgs(caller: Caller): string[] {
 
 /**
  * The argument vector of `loft yard <args>`, with the page server's port where it takes one, and
- * the base branch for a write, which records it where it opens Yard Log.
+ * the default base branch for a write, which records it where it opens Yard Log on a branch git
+ * names no other branch it was cut from.
  */
 export function argvOf(settings: Settings, args: readonly string[], beyond: boolean): string[] {
-  const base = args[0] === 'write' ? ['--base', settings.base] : []
+  const base = args[0] === 'write' ? ['--default-base', settings.base] : []
   const where = beyond ? [...base, '--port', String(settings.port)] : []
   return loftArgv(settings, ['yard', ...args, ...where])
 }

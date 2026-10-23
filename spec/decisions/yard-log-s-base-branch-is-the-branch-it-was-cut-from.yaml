@@ -1,0 +1,95 @@
+key: 01a169c2-313a-70c2-8ca5-2cf71f89c128
+slug: yard-log-s-base-branch-is-the-branch-it-was-cut-from
+title: "Yard Log's base branch is the branch it was cut from"
+context: "Yard Log records its base branch once, when it is opened, and every `loft` view written without a base of its own compares with it. The Loft mod passed its `baseBranch` setting, `develop` by default, so a branch cut from another feature branch compared its specification with `develop` and reported all of that feature branch's work as its own change. git records the branch a branch was created from in the branch's reflog, as `branch: Created from <branch>`."
+state:
+  kind: accepted
+  selectedOption: 01a169c2-313a-70c2-8ca5-2cfb49fe4187
+  outcome: "The write that opens Yard Log records the branch its `--base` names; else the local branch the reflog says the branch was created from; else the branch its `--default-base` names, to which the mod passes `baseBranch`; else `develop`."
+drivers:
+  - key: 01a169c2-313a-70c2-8ca5-2cf869c2165c
+    kind: local
+    label: "Stacked branches"
+    statement: "A branch cut from a feature branch is compared with that feature branch without the person setting anything."
+  - key: 01a169c2-313a-70c2-8ca5-2cf9007485ab
+    kind: local
+    label: "Few rules"
+    statement: "The base is read from one fact of git that needs no interpretation."
+  - key: 01a169c2-313a-70c2-8ca5-2cfa8cd60ea2
+    kind: local
+    label: "A named base wins"
+    statement: "A base that the person names by hand is the one recorded."
+options:
+  - key: 01a169c2-313a-70c2-8ca5-2cfb49fe4187
+    title: "The branch it was cut from, then the setting"
+    description: "The reflog's `Created from` when it names another local branch; else `baseBranch`, else `develop`; `--base` overrides both."
+  - key: 01a169c2-313a-70c2-8ca5-2cfc4fc01664
+    title: "The setting alone"
+    description: "The mod passes `baseBranch` as `--base`, as before."
+  - key: 01a169c2-313a-70c2-8ca5-2cfd24cd2a32
+    title: "The upstream, then the branch it was cut from"
+    description: "An upstream that names another branch first, then the reflog, then `baseBranch`."
+  - key: 01a169c2-313a-70c2-8ca5-2cfe36280dc1
+    title: "The setting as an override of git"
+    description: "`baseBranch` defaults to nothing; set, it is passed as `--base` and git is not asked."
+assessments:
+  - option: 01a169c2-313a-70c2-8ca5-2cfb49fe4187
+    driver: 01a169c2-313a-70c2-8ca5-2cf869c2165c
+    rating: supports
+    rationale: "the reflog names the feature branch"
+  - option: 01a169c2-313a-70c2-8ca5-2cfb49fe4187
+    driver: 01a169c2-313a-70c2-8ca5-2cf9007485ab
+    rating: supports
+    rationale: "one reflog entry and a check that it names a local branch"
+  - option: 01a169c2-313a-70c2-8ca5-2cfb49fe4187
+    driver: 01a169c2-313a-70c2-8ca5-2cfa8cd60ea2
+    rating: supports
+    rationale: "`--base` is asked first"
+  - option: 01a169c2-313a-70c2-8ca5-2cfc4fc01664
+    driver: 01a169c2-313a-70c2-8ca5-2cf869c2165c
+    rating: conflicts
+    rationale: "each stacked branch needs the setting changed, or a base on every view"
+  - option: 01a169c2-313a-70c2-8ca5-2cfc4fc01664
+    driver: 01a169c2-313a-70c2-8ca5-2cf9007485ab
+    rating: supports
+    rationale: "git is not asked"
+  - option: 01a169c2-313a-70c2-8ca5-2cfc4fc01664
+    driver: 01a169c2-313a-70c2-8ca5-2cfa8cd60ea2
+    rating: supports
+    rationale: "the setting is the base"
+  - option: 01a169c2-313a-70c2-8ca5-2cfd24cd2a32
+    driver: 01a169c2-313a-70c2-8ca5-2cf869c2165c
+    rating: supports
+    rationale: "it also covers a stack set up with `--track` whose reflog expired"
+  - option: 01a169c2-313a-70c2-8ca5-2cfd24cd2a32
+    driver: 01a169c2-313a-70c2-8ca5-2cf9007485ab
+    rating: conflicts
+    rationale: "an upstream that names the branch's own remote copy must be told apart, and a remote one mapped to a local name"
+  - option: 01a169c2-313a-70c2-8ca5-2cfd24cd2a32
+    driver: 01a169c2-313a-70c2-8ca5-2cfa8cd60ea2
+    rating: supports
+    rationale: "`--base` is asked first"
+  - option: 01a169c2-313a-70c2-8ca5-2cfe36280dc1
+    driver: 01a169c2-313a-70c2-8ca5-2cf869c2165c
+    rating: conflicts
+    rationale: "a person who sets `baseBranch` loses the detection"
+  - option: 01a169c2-313a-70c2-8ca5-2cfe36280dc1
+    driver: 01a169c2-313a-70c2-8ca5-2cf9007485ab
+    rating: supports
+    rationale: "one fact of git, asked only while the setting is empty"
+  - option: 01a169c2-313a-70c2-8ca5-2cfe36280dc1
+    driver: 01a169c2-313a-70c2-8ca5-2cfa8cd60ea2
+    rating: supports
+    rationale: "the setting is the base"
+consequences:
+  - key: 01a169c2-313a-70c2-8ca5-2cff2727603d
+    kind: obligation
+    statement: "Yard Client asks git for a branch's reflog and whether a branch is local, through the git port, each scripted by the git simulator."
+  - key: 01a169c2-313a-70c2-8ca5-2d00d7ae0ab7
+    kind: risk
+    statement: "A branch created from `HEAD`, as by `git checkout -b <branch>` with no start point, or whose reflog expired, falls back to `baseBranch`."
+subjects:
+  - role: affected
+    node: 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - role: outcome
+    node: 01a1647b-208d-7169-85c8-9a4c743bc0a1

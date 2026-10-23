@@ -93,14 +93,13 @@ fn the_base_branch_is_recorded_by_the_write_that_opens_yard_log_and_kept_after()
 #[test]
 fn no_yard_command_but_write_takes_base() {
     let yard = Yard::new();
-    for args in [
-        &["read", "--session", "s1", "--base", "main"][..],
-        &["close", "--session", "s1", "--base", "main"],
-    ] {
-        let output = yard.run(args);
-        assert_eq!(output.status.code(), Some(2), "{args:?}");
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        assert!(stderr.contains("--base"), "{stderr}");
+    for option in ["--base", "--default-base"] {
+        for command in ["read", "close"] {
+            let output = yard.run(&[command, "--session", "s1", option, "main"]);
+            assert_eq!(output.status.code(), Some(2), "{command} {option}");
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            assert!(stderr.contains(option), "{stderr}");
+        }
     }
 }
 

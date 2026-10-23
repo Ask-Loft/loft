@@ -152,7 +152,7 @@ each point of the specification's work, in place of a note that retells what `lo
 is a later block.
 
 - Record a `spec-change` view once a change to `spec/` is committed. It compares with the base
-  branch, or with the revision you give as `base`.
+  branch, the branch this one was cut from, or with the revision you give as `base`.
 - Record a `decision` view once a decision of the specification is accepted, naming it as
   `decision` by its slug, its key or its label.
 - Record a `findings` view after `loft check`, with a reason for each finding left in place, in

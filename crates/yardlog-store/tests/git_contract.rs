@@ -1,6 +1,6 @@
 //! The git contract of Yard Client's calls: each scenario runs against real git in a scratch
 //! repository and against the Software Plant's git simulator, and the two must answer each call
-//! alike, byte for byte, and give the store the same place, person and answers.
+//! alike, byte for byte, and give the store the same place, person, branch cut from and answers.
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -9,8 +9,8 @@ use crate::common::{Scratch, simulated};
 use software_plant::GitScenario;
 use software_plant::real_git::{git, real_git};
 use yardlog_store::git::{
-    COMMON_DIR, CONFIG_GET, CURRENT_BRANCH, GIT_PATH, LOCATE, TOP_LEVEL, VERIFY, YARD_PATHSPEC,
-    YardGit,
+    COMMON_DIR, CONFIG_GET, CURRENT_BRANCH, GIT_PATH, LOCATE, REFLOG, SHOW_REF, TOP_LEVEL, VERIFY,
+    YARD_PATHSPEC, YardGit,
 };
 use yardlog_store::{Place, YardStoreError};
 
@@ -29,8 +29,30 @@ fn committed(dir: &Scratch) -> PathBuf {
     repo
 }
 
+/// The reflog of `main` once `committed` made its one commit.
+const STARTED: [&str; 1] = ["commit (initial): start"];
+
 fn clean(_: &Path) -> GitScenario {
-    GitScenario::clean_on("main").holding("HEAD", ".yard/main/yardlog.yaml", ROOT_BLOB)
+    GitScenario::clean_on("main")
+        .holding("HEAD", ".yard/main/yardlog.yaml", ROOT_BLOB)
+        .with_reflog("main", &STARTED)
+}
+
+/// `committed`, then `topic` created from `from` by `git switch -c` and checked out.
+fn switched(dir: &Scratch, from: &str) -> PathBuf {
+    let repo = committed(dir);
+    git(&repo, &["switch", "--quiet", "-c", "topic", from]);
+    repo
+}
+
+/// The simulator's `topic`, created from `main` as `committed` left it, whose reflog is
+/// `subjects`.
+fn topic(subjects: &[&str]) -> GitScenario {
+    GitScenario::clean_on("topic")
+        .holding("HEAD", ".yard/main/yardlog.yaml", ROOT_BLOB)
+        .with_branch("main")
+        .with_reflog("main", &STARTED)
+        .with_reflog("topic", subjects)
 }
 
 /// One scenario: how to build it with real git, giving the directory the calls run in, and the
@@ -41,7 +63,7 @@ type Case = (
     fn(&Path) -> GitScenario,
 );
 
-const CASES: [Case; 8] = [
+const CASES: [Case; 11] = [
     ("clean on main", committed, clean),
     (
         "below the top level",
@@ -59,7 +81,11 @@ const CASES: [Case; 8] = [
             git(&repo, &["commit", "--quiet", "-m", "ignore"]);
             repo
         },
-        |_| GitScenario::clean_on("main").ignoring(YARD_PATHSPEC),
+        |_| {
+            GitScenario::clean_on("main")
+                .ignoring(YARD_PATHSPEC)
+                .with_reflog("main", &["commit: ignore", STARTED[0]])
+        },
     ),
     (
         // A tracked file is not subject to the ignore rules.
@@ -95,7 +121,7 @@ const CASES: [Case; 8] = [
             git(&repo, &["checkout", "--quiet", "--detach"]);
             repo
         },
-        |dir| clean(dir).detached(),
+        |dir| clean(dir).detached().with_branch("main"),
     ),
     (
         "a linked worktree",
@@ -111,6 +137,9 @@ const CASES: [Case; 8] = [
             let common = dir.join("repo/.git");
             GitScenario::clean_on("other")
                 .holding("HEAD", ".yard/main/yardlog.yaml", ROOT_BLOB)
+                .with_branch("main")
+                .with_reflog("main", &STARTED)
+                .with_reflog("other", &["branch: Created from HEAD"])
                 .common_dir(
                     &common.to_string_lossy(),
                     &common.join("worktrees/wt").to_string_lossy(),
@@ -122,6 +151,37 @@ const CASES: [Case; 8] = [
         |dir| dir.0.clone(),
         |_| GitScenario::outside_repository(),
     ),
+    (
+        "cut from a local branch",
+        |dir| {
+            let repo = committed(dir);
+            git(&repo, &["branch", "feat"]);
+            git(&repo, &["switch", "--quiet", "-c", "topic", "feat"]);
+            repo
+        },
+        |_| {
+            topic(&["branch: Created from feat"])
+                .with_branch("feat")
+                .with_reflog("feat", &["branch: Created from main"])
+        },
+    ),
+    (
+        "cut from a revision that names no branch",
+        |dir| switched(dir, "HEAD~0"),
+        |_| topic(&["branch: Created from HEAD~0"]),
+    ),
+    (
+        "cut from a branch, its reflog emptied",
+        |dir| {
+            let repo = switched(dir, "main");
+            git(
+                &repo,
+                &["reflog", "delete", "--rewrite", "refs/heads/topic@{0}"],
+            );
+            repo
+        },
+        |_| topic(&[]),
+    ),
 ];
 
 /// Each call Yard Client makes of git, exactly as the store makes it.
@@ -129,7 +189,22 @@ fn calls() -> Vec<Vec<&'static str>> {
     let with = |call: &[&'static str], operand: &'static str| {
         call.iter().copied().chain([operand]).collect::<Vec<_>>()
     };
+    let reflog = |reference: &'static str| {
+        REFLOG
+            .iter()
+            .copied()
+            .chain([reference, "--"])
+            .collect::<Vec<_>>()
+    };
     vec![
+        reflog("refs/heads/main"),
+        reflog("refs/heads/topic"),
+        reflog("refs/heads/other"),
+        reflog("refs/heads/nope"),
+        with(&SHOW_REF, "refs/heads/main"),
+        with(&SHOW_REF, "refs/heads/feat"),
+        with(&SHOW_REF, "refs/heads/topic"),
+        with(&SHOW_REF, "refs/heads/HEAD"),
         TOP_LEVEL.to_vec(),
         CURRENT_BRANCH.to_vec(),
         COMMON_DIR.to_vec(),
@@ -176,8 +251,8 @@ fn the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does() {
 }
 
 /// What the store learns of a worktree: where it is, whether `.yard/` is ignored, the person,
-/// and whether HEAD holds each of two Yard Logs.
-type Learned = (Place, bool, Vec<Option<String>>, [bool; 2]);
+/// whether HEAD holds each of two Yard Logs, and the local branch its branch was cut from.
+type Learned = (Place, bool, Vec<Option<String>>, [bool; 2], Option<String>);
 
 /// What the store learns of a scenario, with an error reduced to what a command acts on.
 fn learned(git: &YardGit, dir: &Path) -> Result<Learned, String> {
@@ -188,6 +263,10 @@ fn learned(git: &YardGit, dir: &Path) -> Result<Learned, String> {
     let place = Place::locate(git, dir).map_err(reduce)?;
     let person = git.person(dir).map_err(reduce)?;
     let holds = |path| git.holds(dir, "HEAD", path).map_err(reduce);
+    let cut_from = match &place.branch {
+        Some(branch) => git.cut_from(dir, branch).map_err(reduce)?,
+        None => None,
+    };
     Ok((
         place,
         git.ignores_yard(dir).map_err(reduce)?,
@@ -196,6 +275,7 @@ fn learned(git: &YardGit, dir: &Path) -> Result<Learned, String> {
             holds(".yard/main/yardlog.yaml")?,
             holds(".yard/other/yardlog.yaml")?,
         ],
+        cut_from,
     ))
 }
 
@@ -226,6 +306,51 @@ fn a_linked_worktree_is_its_own_tree_with_its_own_git_directory_and_the_reposito
     assert_eq!(
         place.git_yard,
         repository.0.join("repo/.git/worktrees/wt/yard")
+    );
+}
+
+#[test]
+fn a_branch_is_cut_from_the_local_branch_its_reflog_names_and_from_none_otherwise() {
+    let real = YardGit::from_command(real_git);
+    let expected = [
+        ("clean on main", None),
+        ("a linked worktree", None),
+        ("cut from a local branch", Some("feat")),
+        ("cut from a revision that names no branch", None),
+        ("cut from a branch, its reflog emptied", None),
+    ];
+    for (name, cut_from) in expected {
+        let (_, build, _) = CASES.iter().find(|case| case.0 == name).unwrap();
+        let repository = Scratch::new();
+        let dir = build(&repository);
+        let place = Place::locate(&real, &dir).unwrap();
+        let branch = place.branch.unwrap();
+        assert_eq!(
+            real.cut_from(&dir, &branch).unwrap().as_deref(),
+            cut_from,
+            "{name}"
+        );
+    }
+    let repository = Scratch::new();
+    let (_, build, _) = CASES
+        .iter()
+        .find(|case| case.0 == "cut from a local branch")
+        .unwrap();
+    let dir = build(&repository);
+    git(&dir, &["commit", "--quiet", "--allow-empty", "-m", "later"]);
+    assert_eq!(
+        real.cut_from(&dir, "topic").unwrap().as_deref(),
+        Some("feat"),
+        "a branch with commits since it was cut"
+    );
+    let repository = Scratch::new();
+    let repo = repository.0.join("unborn");
+    std::fs::create_dir_all(&repo).unwrap();
+    git(&repo, &["init", "--quiet", "-b", "main"]);
+    assert_eq!(
+        real.cut_from(&repo, "main").unwrap(),
+        None,
+        "an unborn branch"
     );
 }
 

@@ -17700,6 +17700,18 @@ links:
       - file: "crates/yardlog-store/tests/git_contract.rs"
         name: "a_revision_that_names_nothing_holds_no_path"
         body: 34966e7fa20dbd32aa38d49d5ee0cb8241b83bff765586065c09aad30381b507
+  - node: 01a169c2-313f-70fe-a064-ad6feaedaefb
+    reviewed: 1ea6143ad2e5951dc03801a3ef1bde17d9532aab7871c260b97221ab1cb71d0e
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a169c2-313f-70fe-a064-ad708e34e9fc
+    reviewed: c10fce656549970bfc1e3ef13209d55834aab0a76ad2a676faea2dede7a441e5
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
   - node: 01a164cf-8fd5-7533-a02e-c054dfca0a97
     reviewed: 1d4ae9bd14566f60d682d8e65ea2a2103014cfbc1652933ed01c5c86eadd5c7f
     tests:
@@ -21088,14 +21100,14 @@ links:
     reviewed: 6cde7da642d76c77975723c6da033e130f54acb922949b01ac8aebbf7f8b434d
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546d-7042-befd-ea6ce4e53c57
     reviewed: 8219eb7fd5214a9b13a5e9906217c6a0238c887a6e92d1ff1a3221615c958ff7
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a subagent calls a tool in its own name: its id and its type"
         body: cd8daf70d77d697fd908763d7f9ec8483f18622059d1a6b65caeed464464eb3f
@@ -21103,8 +21115,8 @@ links:
     reviewed: 7a876287bc4be1c4296f32322bc04700da61cf32fc3d8dd37f2921ede33e6908
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546d-7042-befd-ea6e6f25624a
     reviewed: 5010f4dc37fc7cbccdd20e5427649130bcaed8adc9e35a7840b96a6ddef91f4b
     tests:
@@ -21256,8 +21268,8 @@ links:
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
         body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546d-7042-befd-ea8fc7b5b732
     reviewed: 8ff3c50454413ab86e3c2ccaf7ad72a10a180a208f41e6cbb13a79c0d969defa
     tests:
@@ -25069,8 +25081,8 @@ links:
     reviewed: bc7c38ee678dd0ca411b77c6e8bf6f5a0818fdc820570b1a75e5d49312ccc5ca
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a1646f-546c-7521-9643-bcb304796db1
     reviewed: 395a72e9740f3192d1e1a57da8f82066158a1a089b9554aad7b95c214f9c993a
     tests:
@@ -25249,17 +25261,44 @@ links:
         name: "a_refusal_is_listed_among_the_errors_and_exits_1"
         body: e35a1fd14430a1a37ac027f389d40e998359d8fb600460d65b8ddfbec7dd336b
   - node: 01a1647b-208d-7169-85c8-9a4d3e3ebd74
-    reviewed: 38a3f9d66d7fba377115df4220f950408c3b524105e0ac6b3949160a0ecab274
+    reviewed: 2c9b1f4df729d6c17d59669e96d4cd56b316c3bd2115d854f13eb792a2d6bd5d
     tests:
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "yard_log_opened_without_base_records_the_local_branch_its_branch_was_cut_from"
+        body: 3e816246f909afd26c24a23e8fedae05e6598e8c501ac3838be9a5f0a28af155
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "a_view_written_as_yard_log_opens_compares_with_the_branch_it_was_cut_from"
+        body: f41005346abbc1afdfe023335ddd399a210f547ccb3a1f416b27170db41b4831
+  - node: 01a169c2-313f-70fe-a064-ad7198503947
+    reviewed: dd7df5e3b54cedbb3d73180c5ba21291698ec0ba3f3250bf88d9cb4045313844
+    tests:
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "a_branch_cut_from_no_other_local_branch_records_the_default_base_or_develop"
+        body: 4ae2a89fee834c50f9912449cb42472795555950671704aa3148f24efe1c9b5d
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "yard_log_opened_without_base_records_develop_as_its_base_branch"
         body: 320a66d4308165d10a433fc7c3a36e38fd3a25e5349f2b576275ee3a2e0ad2a3
+  - node: 01a169c2-313f-70fe-a064-ad72205c72c6
+    reviewed: c36e6c90c0caacbc3f3279446bbd457a808499a2f8a796b56364ef8cc57b0eab
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "a_branch_is_cut_from_the_local_branch_its_reflog_names_and_from_none_otherwise"
+        body: 1df738e20a483b0385d851b090ca94c29ce6e7cb818ceb4cce9d74915b72fa32
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "a_branch_cut_from_no_other_local_branch_records_the_default_base_or_develop"
+        body: 4ae2a89fee834c50f9912449cb42472795555950671704aa3148f24efe1c9b5d
+  - node: 01a169c2-313f-70fe-a064-ad7376ed0349
+    reviewed: c6be852444ce496f3b9f5e8417d5003d6608de8ac31ef179dce8593336c8d972
+    tests:
+      - file: "crates/loft-cli/tests/yard_base.rs"
+        name: "yard_log_opened_with_base_records_it_whichever_branch_git_names"
+        body: e7d77fefbd61015722bd60c50ed64b3bc7452eb9a1dea773a41398097df6be7c
   - node: 01a1647b-208d-7169-85c8-9a4e9df86ef5
-    reviewed: 85b03cd2721b0ce40cd46c2f01493c83bde407b40478b9c1135818e31c3009a6
+    reviewed: 84d60ed54dc14797e128580498d7db386b97a5a291dc53b3dffdd5500e360afe
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base"
-        body: d1b19e8f9ce793745c2fdfb431b2d9bbc995272221b00a3856879fc78c22ab00
+        name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
+        body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
   - node: 01a16621-e7bc-7707-b123-2163026a4f94
     reviewed: 73c8e6052cf4a771c4490276e5958347ee3281502019c53e1c838d76a752ab14
     tests:
@@ -25274,7 +25313,7 @@ links:
         body: 10904e79a52d89b56b6c9fcc21a3284a29d50b377e158c29309beb3c24c35f18
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "no_yard_command_but_write_takes_base"
-        body: 615ffc081a5d0b3c86f2f1d5b2a1629f81495f48b9139d083f2c10fc9d969c17
+        body: 1a9737b92effe9d2b40c987b09d28f3c3b33bf899e7fa0cd43fce12a29e6aaaf
       - file: "crates/loft-cli/tests/yard_serve_base.rs"
         name: "the_page_server_checks_the_merge_against_the_base_branch_yard_log_records"
         body: b757ac6c9fe717e858fe1fc2276f965303c20119230f39247f3ecd8abdc7899a

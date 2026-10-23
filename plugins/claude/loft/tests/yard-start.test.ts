@@ -104,7 +104,7 @@ test('every command Yard Client runs is loftCommand with --format json, quietly,
   }
 })
 
-test('each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its base', { options: { baseBranch: 'main', yardPort: 7500 } }, async ($, on) => {
+test('each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base', { options: { baseBranch: 'main', yardPort: 7500 } }, async ($, on) => {
   const w = world(on)
   await start($)
   w.state.cwd = `${TREE}/src`
@@ -115,9 +115,10 @@ test('each tool runs its command in the session directory with the page server p
   expect(read.argv).not.toContain('--base')
   await $.tool.call({ tool: 'mcp__loft__yard_write', batch: [{ id: 'shape', kind: 'stage', title: 'Shape', status: 'active' }] })
   const write = w.state.runs.at(-1)!
-  expect(flagOf(write.argv, '--base')).toBe('main')
+  expect(flagOf(write.argv, '--default-base')).toBe('main')
+  expect(write.argv).not.toContain('--base')
   expect(flagOf(write.argv, '--port')).toBe('7500')
-  for (const run of w.state.runs.filter(each => !each.argv.includes('write'))) expect(run.argv).not.toContain('--base')
+  for (const run of w.state.runs.filter(each => !each.argv.includes('write'))) expect(run.argv).not.toContain('--default-base')
 })
 
 test("a tool gives the command's document to the agent, and a refusal's message as its error", async ($, on) => {

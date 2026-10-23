@@ -1,6 +1,7 @@
 //! The calls with which Yard Client finds Yard Log of a worktree, as the git simulator scripts
 //! them: the top of the worktree, the repository's common directory, whether git ignores a
-//! path, a name of git's configuration, and whether a revision holds a path.
+//! path, a name of git's configuration, whether a revision holds a path, a branch's reflog and
+//! whether a branch is local.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -25,6 +26,10 @@ pub enum YardCall {
     Config,
     /// `git rev-parse -q --verify <revision>:<path>`
     ObjectAt,
+    /// `git reflog show --format=%gs refs/heads/<branch> --`
+    Reflog,
+    /// `git show-ref --verify -q refs/heads/<branch>`
+    ShowRef,
 }
 
 /// What a repository holds for Yard Client's calls.
@@ -40,6 +45,12 @@ pub struct Yard {
     /// The object id of each `<revision>:<path>` a revision holds.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub objects: BTreeMap<String, String>,
+    /// The subject of each entry of a branch's reflog, newest first, by the branch.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub reflogs: BTreeMap<String, Vec<String>>,
+    /// The local branches beside the one checked out.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub branches: Vec<String>,
 }
 
 impl Yard {
@@ -64,6 +75,34 @@ impl GitScenario {
     pub fn ignoring(mut self, path: &str) -> Self {
         self.repository_mut().yard.ignored.push(path.to_owned());
         self
+    }
+
+    /// The same repository, in which `branch`'s reflog holds an entry for each of `subjects`,
+    /// newest first; with none, its reflog is empty.
+    #[must_use]
+    pub fn with_reflog(mut self, branch: &str, subjects: &[&str]) -> Self {
+        self.repository_mut().yard.reflogs.insert(
+            branch.to_owned(),
+            subjects.iter().map(|&subject| subject.to_owned()).collect(),
+        );
+        self
+    }
+
+    /// The same repository, holding the local branch `branch` beside the one checked out.
+    #[must_use]
+    pub fn with_branch(mut self, branch: &str) -> Self {
+        self.repository_mut().yard.branches.push(branch.to_owned());
+        self
+    }
+
+    /// The same repository, whose checked-out branch was created from `from` with
+    /// `git switch -c`, and in which `from` is a local branch.
+    #[must_use]
+    pub fn cut_from(mut self, from: &str) -> Self {
+        let branch = self.repository_mut().branch.clone().unwrap_or_default();
+        let subject = format!("branch: Created from {from}");
+        self.with_branch(from)
+            .with_reflog(&branch, &[subject.as_str()])
     }
 
     /// The same repository, in which `revision` holds `path` as the object `object`.
@@ -94,6 +133,10 @@ pub(super) fn parse<'a>(rest: &[&'a str]) -> Option<(YardCall, Vec<&'a str>)> {
         ["rev-parse", "-q", "--verify", object] if object.contains(':') => {
             Some((YardCall::ObjectAt, vec![*object]))
         }
+        ["reflog", "show", "--format=%gs", reference, "--"] => {
+            Some((YardCall::Reflog, vec![*reference]))
+        }
+        ["show-ref", "--verify", "-q", reference] => Some((YardCall::ShowRef, vec![*reference])),
         _ => None,
     }
 }
@@ -170,5 +213,36 @@ pub(super) fn answer(
             Some(object) => Reply::ok(format!("{object}\n")),
             None => Reply::fail(1, ""),
         },
+        YardCall::Reflog => reflog(repository, operands[0]),
+        YardCall::ShowRef => {
+            let local = operands[0]
+                .strip_prefix("refs/heads/")
+                .is_some_and(|branch| {
+                    repository.branch.as_deref() == Some(branch)
+                        || repository.yard.branches.iter().any(|each| each == branch)
+                });
+            if local {
+                Reply::ok("")
+            } else {
+                Reply::fail(1, "")
+            }
+        }
+    }
+}
+
+/// What `reflog show --format=%gs <reference> --` prints: the subject of each entry of the
+/// branch's reflog, newest first, or git's `bad revision` where the scenario gives none.
+fn reflog(repository: &Repository, reference: &str) -> Reply {
+    let subjects = reference
+        .strip_prefix("refs/heads/")
+        .and_then(|branch| repository.yard.reflogs.get(branch));
+    match subjects {
+        Some(subjects) => Reply::ok(
+            subjects
+                .iter()
+                .flat_map(|subject| [subject.as_str(), "\n"])
+                .collect::<String>(),
+        ),
+        None => Reply::fail(128, format!("fatal: bad revision '{reference}'\n")),
     }
 }
