@@ -46,7 +46,8 @@ Yard Log.
 - `approval`: `title` and `markdown`: something the person approves, or rejects with a reason.
 - `plan`: `title`, `markdown` and, for a plan file within the tree, its `path` relative to the tree.
 - `decision`: `title`, `consequence`, and the `question` it settles, by the question's id.
-- `task`: `title`, `state` (`open`, `active`, `done` or `dropped`) and `detail`.
+- `task`: `title`, `state` (`open`, `active`, `done` or `dropped`), `detail` and `type`
+  (`regular`, the default, or `fix`).
 - `loft`: a `view` of the branch's Loft specification (`spec-change`, `decision`, `trace`,
   `findings` or `publish`) and an optional `note`. `loft` runs the view and keeps its report; see
   below.
@@ -107,6 +108,16 @@ Either way, mark a task `active` in a write before its work starts. As soon as i
 it `done`, or `dropped` with a reason in its `detail`, before the next task is marked `active`.
 Never mark the tasks of a stage `done` in one write at its end: the ones not marked as they ran
 show no time of their own on the page's Gantt chart.
+
+## Mark the fixes the person asked for
+
+A task is a fix where the person asked you to correct work already done: a fault they found, a
+change they reviewed, a plan or approval they rejected with a reason. A task you take on by
+yourself, a correction of your own included, is `regular`. The page marks each fix apart, so the
+person sees how much of a stage went on what they asked to have put right.
+
+Create a fix with `TaskCreate` and `metadata: { type: "fix" }`, or write its `task` block with
+`type: fix`. A `TaskUpdate` with a `type` in its metadata changes it; `null` makes it `regular`.
 
 ## Ask once per decision point, then wait
 
