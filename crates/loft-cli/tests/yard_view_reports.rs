@@ -227,3 +227,35 @@ fn a_findings_view_names_each_node_a_finding_names_by_its_label_and_name() {
         assert!(named.get("label").is_some(), "{key}: {named}");
     }
 }
+
+#[test]
+fn a_trace_view_records_each_feature_s_requirements_by_their_statements_and_each_criterion_s_requirement()
+ {
+    let yard = Yard::with_spec();
+    change_a_criterion(&yard);
+    let report = report(&yard, "trace");
+    let feature = &report["features"][0];
+    let requirements = feature["requirements"].as_array().unwrap();
+    let shared = requirements
+        .iter()
+        .find(|requirement| requirement["key"] == "00000000-0000-4000-8000-000000000035")
+        .unwrap_or_else(|| panic!("no requirement: {feature}"));
+    assert_eq!(
+        shared["name"],
+        "While a list is shared, the shelf shall refuse edits made through the link."
+    );
+    assert_eq!(shared["statement"]["form"], "state_driven");
+    assert_eq!(shared["statement"]["condition"], "a list is shared");
+    assert_eq!(shared["statement"]["system"], "the shelf");
+    assert_eq!(
+        shared["statement"]["shall"],
+        "refuse edits made through the link."
+    );
+    let criterion = feature["criteria"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|criterion| criterion["key"] == "00000000-0000-4000-8000-000000000036")
+        .unwrap();
+    assert_eq!(criterion["requirement"], shared["key"]);
+}

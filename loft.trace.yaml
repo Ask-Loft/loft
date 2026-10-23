@@ -21891,6 +21891,27 @@ links:
       - file: "crates/loft-cli/src/yard/serve/markdown.rs"
         name: "a_name_of_more_than_one_line_is_left_as_its_text"
         body: c964cd0a2c899ee0b3f4593252ef6c6dc97dd34463b05d120eedb541f329ca96
+  - node: 01a16844-c9d1-72df-8cfa-5cd7aa95dc74
+    reviewed: 98e86f39bdb785a479e1bbdfc850f78d9c67477853f08e551a805966115e4a77
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "each_slot_of_a_statement_is_rendered_as_a_name_is"
+        body: 6aeb1a1dce404674d64d6923e5e47da6f1ff152a4247c5bd7ebf683c6e1c1ecd
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "each Requirement shows its label and its statement with its EARS keywords set apart, above its criteria"
+        body: a800ba6bde4083cea7d49b97bf007a9049793a0a6ee64ba215e8c9b157a7fda9
+  - node: 01a16844-c9d1-72df-8cfa-5cd9ccec0949
+    reviewed: f049912e585ea7f4c853e9fdc5f99a3cc1bf20a739ca4e1ebb36f019108cd41f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a label is a tag of its own, tinted by its node’s kind"
+        body: 535bd026ce05a63244cca64fdb6b77772ada830c6566520f28deadec30399d52
+  - node: 01a16844-c9d1-72df-8cfa-5cda23d83c08
+    reviewed: d63813f6c728b648278ba184c3a9bcd3d2a4d003dd469ca9ff4ecfbc2eaeeb3f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a label is a tag of its own, tinted by its node’s kind"
+        body: 535bd026ce05a63244cca64fdb6b77772ada830c6566520f28deadec30399d52
   - node: 01a1646f-546d-7042-befd-eb49f9b1a9a6
     reviewed: 326cfc627ca4f28c34e5fd5ed40ec11d601bee13780f777acac4024c9a5740cb
     tests:
@@ -22613,13 +22634,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
+        body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
   - node: 01a1646f-546d-7042-befd-eadfa7c7e421
     reviewed: 187257d8c412ceb316303e77c33abc2bad4c75ec4b1bcfe3d4e8fcfe96486d2d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
+        body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "where every criterion is in one state, no count is given beside the bar"
         body: 4bdac3a1ac826af04ed0aac7c36f5597fac39a7f07ddfad5c05f86ec010cd622
@@ -22628,13 +22649,16 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
+        body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
   - node: 01a1646f-546d-7042-befd-eae166cc8004
-    reviewed: 655385dbbcdae1a9be887ec4620c4de994dfc739ca5e09736e186cc4f94739f6
+    reviewed: 4849341d97a5364f02c486445409ce95774856bc72d60c845c9cb59da2e7bab9
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
+        body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "the criteria table gives each criterion’s label, name, state and tests, those that need a look first and the accepted behind one line"
+        body: 271d849fb82d2cc2589dbdf9ed10344de9ce0ce2a43fdec7c9ceb19f110d3cd1
   - node: 01a1646f-546d-7042-befd-eae2b314450a
     reviewed: 4d9020840d4c3e0aea79d9f4994ff0bc9757ad735e8502eeebfe963d5ad8c3b4
     tests:
@@ -22649,13 +22673,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
+        body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
   - node: 01a1646f-546d-7042-befd-eae4edf1b696
     reviewed: e56d2d84e1a8c265823e194b424f188cfcfb97e03bde001543e3b8c09df86721
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view bars the criteria linked and accepted, counts each state where there is more than one, and folds the accepted"
-        body: 76b151a714261a142058568dade7eedd051f15298d86fddbe42836eefb9af4e4
+        body: 05408c4a9ac04f610ef674158a3c47260160b39a63408f90aaeae2af3a23752c
   - node: 01a16838-8fdb-7127-a23e-c5553392679f
     reviewed: 24960c0ca4e1f17ea875f745ac3648c7b548d90225b161fee7c1502f4b7745c2
     tests:
@@ -22674,6 +22698,42 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a trace view the person opened stays open when the page draws it again, and a folded one stays folded"
         body: d96c8962961dcc110ae8244e5749b631bb21eda7d35911e59b6f2e29626fb4e3
+  - node: 01a16844-c9d1-72df-8cfa-5ccf74c20a73
+    reviewed: 5fa65d808604d991f2481b0a27c012788b2d7b4e1b9c9d674656bcd80c795d26
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "each Feature of a trace view starts folded to its label, its name, the number of its criteria linked and a bar"
+        body: c7faee83b3b73ab3b2937d1f769c1dbc9fc0f55457163286589d42aabc155144
+  - node: 01a16844-c9d1-72df-8cfa-5cd06cf1fed6
+    reviewed: 94a761091d7b3e4da56274c93de7c49d4b1d5a8921dbf1421d9e309b02c9b8e9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a Feature the person opened stays open when the page draws it again"
+        body: 87087bc869be73037cbd73f73e69ed87a80d375e366496c9dfda6d46490207a6
+  - node: 01a16844-c9d1-72df-8cfa-5cd2b2f48450
+    reviewed: 2b9ee4f5c146cd35bb3f1c2de81e45fb3574ccdb47766c63bbb8ca02aa7eebeb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "each Requirement shows its label and its statement with its EARS keywords set apart, above its criteria"
+        body: a800ba6bde4083cea7d49b97bf007a9049793a0a6ee64ba215e8c9b157a7fda9
+  - node: 01a16844-c9d1-72df-8cfa-5cd313d3bcb9
+    reviewed: 1c6245222381e839a8e94052ce6a8449d73de377cb2e39504912cef8271672c3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a criterion with no label yet reads new where its label would be"
+        body: e4f8664908cf63842a7a94012472979dc806f54df224f06cbdb9cbc2f9637f8d
+  - node: 01a16844-c9d1-72df-8cfa-5cd4baf29db8
+    reviewed: 5fc498348c895e189bf4b7b00383d6b0aef783ee72b4cee55488b76ca08d7188
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a trace view whose report gives no Requirement lists each Feature’s criteria in one table"
+        body: 05278ff742f932f54b8d5edb10ee4b6b8670399071d093e0c7899e8202f43a11
+  - node: 01a16844-c9d1-72df-8cfa-5cd65a22c107
+    reviewed: 83e79250fce48a6fe51b7eefa5a8ef8ea422c9a3fe536f8c98ffa0c03f5db331
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_reports.rs"
+        name: "a_trace_view_records_each_feature_s_requirements_by_their_statements_and_each_criterion_s_requirement"
+        body: b527db2eb4ace0fb903b1e08e1e67a89cb3c40a4e774fc57e0c8ca1b163242e3
   - node: 01a1646f-546d-7042-befd-eae7dbf9b465
     reviewed: 647ba21538b3ccdb3973b7fd0664e666b07631211d3818db88bb8be007ff5894
     tests:

@@ -168,9 +168,8 @@ test('a trace view bars the criteria linked and accepted, counts each state wher
   assert.match(view.querySelector('.coverage-words').textContent, /2 of 3 .* linked to tests, 1 of those accepted/);
   assert.deepEqual([...view.querySelector('.counts').children].map((chip) => chip.textContent), ['1 accepted', '1 not yet reviewed', '1 not linked']);
   assert.match(view.querySelector('.base').textContent, /Compared with develop/);
-  const accepted = view.querySelector('.trace-feature details');
-  assert.equal(accepted.querySelector('summary').textContent, '1 accepted');
-  assert.match(accepted.querySelector('.tests').textContent, /tests\/a\.rs:12 one/);
+  assert.equal(view.querySelector('.trace-feature .accepted-toggle').textContent, '1 accepted');
+  assert.match(view.querySelector('.trace-feature tbody.accepted .criterion-tests').textContent, /tests\/a\.rs:12one/);
   const reconciled = [...view.querySelectorAll('details.fold:not(.trace-list)')].find((fold) => /findings of loft reconcile/.test(fold.textContent));
   assert.match(reconciled.querySelector('summary').textContent, /2 findings of loft reconcile/);
   assert.deepEqual([...reconciled.querySelectorAll('li')].map((item) => item.textContent), ['TR-002 not yet reviewed', 'TR-001 no link']);

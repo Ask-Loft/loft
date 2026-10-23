@@ -74,17 +74,28 @@ fn render_body(body: &mut Value) {
     }
 }
 
-/// Gives each node a `loft` report names, at any depth, the HTML of its name beside it, where
-/// the name is one line of Markdown.
+/// The one-line fields of a `loft` report, each with the field its HTML is given in: a node's
+/// name and the slots of a Requirement's statement.
+const LINES: [(&str, &str); 4] = [
+    ("name", "nameHtml"),
+    ("condition", "conditionHtml"),
+    ("system", "systemHtml"),
+    ("shall", "shallHtml"),
+];
+
+/// Gives each node a `loft` report names, at any depth, the HTML of its name beside it, and each
+/// statement the HTML of its slots, where each is one line of Markdown.
 fn render_names(value: &mut Value) {
     match value {
         Value::Object(fields) => {
-            let rendered = fields
-                .get("name")
-                .and_then(Value::as_str)
-                .and_then(to_inline_html);
-            if let Some(rendered) = rendered {
-                fields.insert("nameHtml".to_owned(), Value::String(rendered));
+            for (line, html) in LINES {
+                let rendered = fields
+                    .get(line)
+                    .and_then(Value::as_str)
+                    .and_then(to_inline_html);
+                if let Some(rendered) = rendered {
+                    fields.insert(html.to_owned(), Value::String(rendered));
+                }
             }
             fields.values_mut().for_each(render_names);
         }
@@ -251,6 +262,26 @@ mod tests {
         );
         assert!(feature["criteria"][1].get("nameHtml").is_none());
         assert_eq!(feature["name"], "`loft merge-driver`");
+    }
+
+    #[test]
+    fn each_slot_of_a_statement_is_rendered_as_a_name_is() {
+        let mut document = serde_json::json!({"stages": [{"blocks": [{"version": {"body": {
+            "report": {"features": [{"requirements": [{"statement": {"form": "event_driven",
+                "condition": "`loft yard write` runs", "system": "the `loft` command",
+                "shall": "write `<ours>`."}}]}]}
+        }}}]}]});
+        render_document(&mut document);
+        let statement = &document["stages"][0]["blocks"][0]["version"]["body"]["report"]["features"]
+            [0]["requirements"][0]["statement"];
+        assert_eq!(
+            statement["conditionHtml"],
+            "<code>loft yard write</code> runs"
+        );
+        assert_eq!(statement["systemHtml"], "the <code>loft</code> command");
+        assert_eq!(statement["shallHtml"], "write <code>&lt;ours&gt;</code>.");
+        assert_eq!(statement["form"], "event_driven");
+        assert!(statement.get("formHtml").is_none());
     }
 
     #[test]

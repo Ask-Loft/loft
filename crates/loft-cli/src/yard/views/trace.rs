@@ -1,6 +1,7 @@
 //! The `trace` view: the document `loft reconcile` prints, with the branch's criteria, those
 //! under each Feature whose file the branch added to or changed against the base revision, so
-//! that the view grows with the change and not with the specification.
+//! that the view grows with the change and not with the specification. Each Feature gives its
+//! Requirements with their statements, and each criterion the key of its Requirement.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -10,6 +11,7 @@ use loftspec::identity::Key;
 use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 use loftspec::publish::{ReadTree, RepoState};
+use loftspec::statement::Statement;
 use loftspec::trace::{Evidence, Trace};
 use loftspec_store::repository::GitCommand;
 use serde_json::{Value, json};
@@ -72,23 +74,70 @@ fn unverified(trace: &Trace) -> BTreeMap<Key, String> {
         .collect()
 }
 
-/// A Feature with its criteria, each by its key, label and name, and the reason one linked
+/// A Feature with its Requirements, each by its key, label and statement, and its criteria, each
+/// by its key, label and name, the key of its Requirement, and the reason one linked
 /// `unverified` gives.
 fn feature(document: &Document, node: Node<'_>, unverified: &BTreeMap<Key, String>) -> Value {
+    let mut requirements = Vec::new();
     let mut criteria = Vec::new();
     node.walk(&mut |below| {
-        if below.kind() == NodeKind::Criterion {
-            let mut criterion = named(document, below);
-            let reason = below.id().and_then(|id| unverified.get(&id.key()));
-            if let Some(reason) = reason {
-                criterion["unverified"] = json!(reason);
-            }
-            criteria.push(criterion);
+        if let Node::Requirement(requirement) = below {
+            let entry = requirement_entry(document, below, &requirement.statement);
+            criteria.extend(criteria_of(document, below, &entry["key"], unverified));
+            requirements.push(entry);
         }
     });
     let mut feature = named(document, node);
+    feature["requirements"] = Value::Array(requirements);
     feature["criteria"] = Value::Array(criteria);
     feature
+}
+
+/// A Requirement by its key, label and sentence, and, in an EARS form, its form and its slots.
+fn requirement_entry(document: &Document, node: Node<'_>, statement: &Statement) -> Value {
+    let mut entry = named(document, node);
+    if let Statement::Form(form) = statement {
+        let (condition, system, shall) = form.parts();
+        entry["statement"] = json!({
+            "form": form.kind().as_str(),
+            "condition": condition,
+            "system": system,
+            "shall": shall,
+        });
+    }
+    entry
+}
+
+/// The criteria of a Requirement, each with the key of its Requirement.
+fn criteria_of(
+    document: &Document,
+    node: Node<'_>,
+    requirement: &Value,
+    unverified: &BTreeMap<Key, String>,
+) -> Vec<Value> {
+    let mut criteria = Vec::new();
+    node.walk(&mut |below| {
+        if below.kind() == NodeKind::Criterion {
+            criteria.push(criterion_entry(document, below, requirement, unverified));
+        }
+    });
+    criteria
+}
+
+/// A criterion by its key, label and name, the key of its Requirement, and the reason it is
+/// linked `unverified`, where it is.
+fn criterion_entry(
+    document: &Document,
+    node: Node<'_>,
+    requirement: &Value,
+    unverified: &BTreeMap<Key, String>,
+) -> Value {
+    let mut entry = named(document, node);
+    if let Some(reason) = node.id().and_then(|id| unverified.get(&id.key())) {
+        entry["unverified"] = json!(reason);
+    }
+    entry["requirement"] = requirement.clone();
+    entry
 }
 
 fn named(document: &Document, node: Node<'_>) -> Value {

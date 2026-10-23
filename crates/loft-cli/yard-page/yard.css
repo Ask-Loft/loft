@@ -108,6 +108,10 @@ h2, h3 { text-wrap: balance; }
 a { color: var(--signal); }
 a:hover { text-decoration-thickness: 2px; }
 code, .label { font-family: var(--mono); font-size: 0.86em; }
+.label { display: inline-block; padding: 0 5px; border-radius: 4px; background: var(--surface-2); color: var(--ink); font-weight: 600; line-height: 1.55; white-space: nowrap; }
+.label--f { background: var(--signal-soft); }
+.label--rq { background: var(--info-soft); }
+.label--new { background: none; box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-weight: 400; font-style: italic; }
 button { font: inherit; }
 :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
@@ -422,8 +426,34 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .coverage-linked { position: absolute; inset: 0 auto 0 0; background: var(--info); opacity: 0.45; }
 .coverage-accepted { position: absolute; inset: 0 auto 0 0; background: var(--done); }
 .coverage-words { font-size: 14px; }
-.trace-feature h5 { font-size: 14px; margin: 6px 0 4px; }
 .tests { padding-left: 16px; font-size: 13px; color: var(--muted); }
+.trace-list[open] > summary { margin-bottom: 10px; }
+.trace-feature { border-top: 1px solid var(--line); }
+.trace-feature:last-of-type { border-bottom: 1px solid var(--line); }
+.trace-feature > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 8px 2px; cursor: pointer; }
+.trace-feature > summary::marker { color: var(--muted); }
+.trace-feature[open] > summary { padding-bottom: 6px; }
+.feature-name { flex: 1 1 280px; font-weight: 600; }
+.feature-count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.coverage--small { flex: 0 0 120px; height: 6px; border-radius: 3px; }
+.criteria-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
+.criteria-table th, .criteria-table td { padding: 5px 8px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.criteria-table thead th { color: var(--muted); font-size: 12px; font-weight: 600; }
+.criteria-table .requirement-row th { padding-top: 14px; font-weight: 400; font-size: 14px; line-height: 1.5; border-bottom-color: var(--rail); }
+.criteria-table tbody:first-of-type .requirement-row th { padding-top: 8px; }
+.ears-word { color: var(--muted); font-style: italic; }
+.criterion-label, .criterion-state { width: 1%; white-space: nowrap; }
+.criterion-name { min-width: 16em; }
+.criterion-tests { color: var(--muted); }
+.test { display: grid; max-width: 22em; }
+.test code { overflow-wrap: anywhere; }
+.test-name { font-size: 12px; overflow-wrap: anywhere; }
+.accepted-row td { padding: 3px 8px; }
+.accepted-toggle { border: 0; background: none; padding: 0; font: inherit; color: var(--muted); cursor: pointer; }
+.accepted-toggle::before { content: "▸ "; }
+.accepted-toggle[aria-expanded="true"]::before { content: "▾ "; }
+.accepted-toggle:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; border-radius: 2px; }
+.criterion--accepted td { color: var(--muted); }
 .decision-view-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
 .decision-view-head h5 { font-size: 15px; }
 .unpublished { color: var(--muted); font-size: 13px; }
@@ -510,6 +540,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .number { text-align: right; font-variant-numeric: tabular-nums; }
 .tokens-note { color: var(--muted); font-size: 13px; }
 @media (max-width: 560px) {
+  .criteria-table thead { display: none; }
+  .criteria-table tr.criterion { display: grid; grid-template-columns: max-content 1fr; gap: 2px 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .criteria-table tr.criterion td { border: 0; padding: 0; width: auto; }
+  .criteria-table .criterion-name { min-width: 0; }
+  .criteria-table .criterion-state, .criteria-table .criterion-tests { grid-column: 2; }
+  .coverage--small { flex-basis: 80px; }
   .token-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .share { display: none; }
   .tokens-table .span, .tokens-table .model { display: block; margin-left: 0; }

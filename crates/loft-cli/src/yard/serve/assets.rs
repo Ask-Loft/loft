@@ -76,6 +76,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("views/loft/publish.js", JS),
     asset!("views/loft/spec-change.js", JS),
     asset!("views/loft/trace.js", JS),
+    asset!("views/loft/trace-list.js", JS),
     // Mermaid, which draws the page's diagrams, as its release ships it, kept compressed, with its
     // licence; `vendor/README.md` names the release.
     asset!("vendor/mermaid.min.js", JS, gzip),

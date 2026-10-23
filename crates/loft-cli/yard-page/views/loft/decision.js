@@ -3,7 +3,7 @@
 // subjects.
 
 import { h } from '../../lib/dom.js';
-import { chip, named } from './index.js';
+import { chip, named, tag } from './index.js';
 
 const RATINGS = {
   supports: 'success',
@@ -32,7 +32,7 @@ export function decisionView(report) {
     h(
       'header',
       { class: 'decision-view-head' },
-      h('h5', {}, decision.label ? h('span', { class: 'label' }, decision.label) : null, ' ', decision.title),
+      h('h5', {}, decision.label ? tag(decision.label) : null, ' ', decision.title),
       chip(state.kind ?? 'unknown', STATES[state.kind] ?? 'muted'),
       decision.label ? null : h('span', { class: 'unpublished' }, 'Not published yet: it has no label.'),
     ),

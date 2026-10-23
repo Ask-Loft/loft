@@ -51,12 +51,28 @@ export function chip(word, tone) {
 }
 
 /**
- * A node by its label, where it has one, and its name: as the HTML `loft` rendered from its
- * Markdown, where it gave one, or else as its text.
+ * A label as a tag of its own, tinted by its node's kind, which its prefix names.
+ * @param {string} label
+ */
+export function tag(label) {
+  return h('span', { class: ['label', `label--${label.split('-')[0].toLowerCase()}`] }, label);
+}
+
+/**
+ * A node's name: as the HTML `loft` rendered from its Markdown, where it gave one, or else as
+ * its text.
+ * @param {{ name?: string, nameHtml?: string }} node
+ */
+export function nameOf(node) {
+  return node.nameHtml ? inline(node.nameHtml) : node.name ?? '';
+}
+
+/**
+ * A node by its label, where it has one, and its name.
  * @param {{ label?: string | null, name?: string, nameHtml?: string }} node
  */
 export function named(node) {
-  return [node.label ? h('span', { class: 'label' }, node.label) : null, ' ', node.nameHtml ? inline(node.nameHtml) : node.name ?? ''];
+  return [node.label ? tag(node.label) : null, ' ', nameOf(node)];
 }
 
 /** The tone of each change a node can have gone through. @type {Record<string, string>} */
