@@ -1,7 +1,7 @@
 //! What Yard Client asks of git, through `loft-ports`' runner: where the worktree's top is, which
 //! branch it is on, where git keeps its own files for it and for the repository, whether it
-//! ignores `.yard/`, who the person is, and whether a revision holds a path. Nothing else in this
-//! crate runs git.
+//! ignores `.yard/`, who the person is, whether a revision holds a path, and which local branch
+//! a branch was cut from. Nothing else in this crate runs git.
 
 use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Output};
@@ -31,6 +31,16 @@ pub const CHECK_IGNORE: [&str; 2] = ["check-ignore", "-q"];
 pub const CONFIG_GET: [&str; 2] = ["config", "--get"];
 /// The object a `<revision>:<path>` names; exit 1, with no message, when there is none.
 pub const VERIFY: [&str; 3] = ["rev-parse", "-q", "--verify"];
+/// The subject of each entry of a reference's reflog, newest first, completed by the reference
+/// and `--`; exit 128, `bad revision`, for a reference with no reflog.
+pub const REFLOG: [&str; 3] = ["reflog", "show", "--format=%gs"];
+/// Whether a full reference name exists, completed by it; exit 1 when it does not.
+pub const SHOW_REF: [&str; 3] = ["show-ref", "--verify", "-q"];
+
+/// The subject git gives the reflog entry that created a branch, before what it was created from.
+const CREATED_FROM: &str = "branch: Created from ";
+/// The start of git's message for a reference that has no reflog, as of an unborn branch.
+const BAD_REVISION: &str = "fatal: bad revision";
 
 /// `.yard/` from the top of the worktree, as `check-ignore` is given it.
 pub const YARD_PATHSPEC: &str = ":/.yard/";
@@ -182,6 +192,39 @@ impl YardGit {
         let object = format!("{revision}:{path}");
         let call: Vec<&str> = VERIFY.into_iter().chain([object.as_str()]).collect();
         self.yes(dir, &call)
+    }
+
+    /// The local branch that `branch` was created from, as the oldest entry of its reflog names
+    /// it; none where that entry names no other local branch, such as `HEAD` or a commit, or
+    /// where the branch has no reflog.
+    ///
+    /// # Errors
+    ///
+    /// `dir` is in no repository, or git fails or cannot be run.
+    pub fn cut_from(&self, dir: &Path, branch: &str) -> Result<Option<String>, YardStoreError> {
+        let reference = format!("refs/heads/{branch}");
+        let call: Vec<&str> = REFLOG
+            .into_iter()
+            .chain([reference.as_str(), "--"])
+            .collect();
+        let output = self.run(dir, &call)?;
+        if output.status.code() == Some(128)
+            && String::from_utf8_lossy(&output.stderr).starts_with(BAD_REVISION)
+        {
+            return Ok(None);
+        }
+        let subjects = String::from_utf8_lossy(&succeeded(&call, output)?).into_owned();
+        let from = subjects
+            .lines()
+            .next_back()
+            .and_then(|oldest| oldest.strip_prefix(CREATED_FROM))
+            .filter(|from| !from.is_empty() && !from.starts_with('-') && *from != branch);
+        let Some(from) = from else {
+            return Ok(None);
+        };
+        let local = format!("refs/heads/{from}");
+        let call: Vec<&str> = SHOW_REF.into_iter().chain([local.as_str()]).collect();
+        Ok(self.yes(dir, &call)?.then(|| from.to_owned()))
     }
 }
 

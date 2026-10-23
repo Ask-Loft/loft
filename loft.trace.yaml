@@ -17700,6 +17700,18 @@ links:
       - file: "crates/yardlog-store/tests/git_contract.rs"
         name: "a_revision_that_names_nothing_holds_no_path"
         body: 34966e7fa20dbd32aa38d49d5ee0cb8241b83bff765586065c09aad30381b507
+  - node: 01a169c2-313f-70fe-a064-ad6feaedaefb
+    reviewed: 1ea6143ad2e5951dc03801a3ef1bde17d9532aab7871c260b97221ab1cb71d0e
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
+  - node: 01a169c2-313f-70fe-a064-ad708e34e9fc
+    reviewed: c10fce656549970bfc1e3ef13209d55834aab0a76ad2a676faea2dede7a441e5
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "the_simulator_answers_each_of_yard_client_s_calls_as_real_git_does"
+        body: 24e8d53cc9287cc9cec4a16e10d31625c8c9b8d5c09d295c75050bbc42857127
   - node: 01a164cf-8fd5-7533-a02e-c054dfca0a97
     reviewed: 1d4ae9bd14566f60d682d8e65ea2a2103014cfbc1652933ed01c5c86eadd5c7f
     tests:
@@ -25254,6 +25266,12 @@ links:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "yard_log_opened_without_base_records_develop_as_its_base_branch"
         body: 320a66d4308165d10a433fc7c3a36e38fd3a25e5349f2b576275ee3a2e0ad2a3
+  - node: 01a169c2-313f-70fe-a064-ad72205c72c6
+    reviewed: c36e6c90c0caacbc3f3279446bbd457a808499a2f8a796b56364ef8cc57b0eab
+    tests:
+      - file: "crates/yardlog-store/tests/git_contract.rs"
+        name: "a_branch_is_cut_from_the_local_branch_its_reflog_names_and_from_none_otherwise"
+        body: 1df738e20a483b0385d851b090ca94c29ce6e7cb818ceb4cce9d74915b72fa32
   - node: 01a1647b-208d-7169-85c8-9a4e9df86ef5
     reviewed: 85b03cd2721b0ce40cd46c2f01493c83bde407b40478b9c1135818e31c3009a6
     tests:
