@@ -1,16 +1,48 @@
-// A `spec-change` view: a diagram of the changed Products, Feature Groups, Features, Components
-// and decisions, each box saying how it changed, with the Feature Group and Product above each
-// for context and the `realizes` and subject edges between them; beneath it, a folded tree of
-// every changed node. A diagram of more than 30 boxes draws each Feature Group as one box that
-// counts its changed nodes, and opens one Feature Group at a time.
+// A `spec-change` view: a diagram of the changed Products, Feature Groups, Features,
+// Requirements, criteria, Components and decisions, each box saying how it changed, with the
+// boxes above each for context and the `realizes` and subject edges between them; beneath it, a
+// folded diff of the words of every changed node. A diagram of more than 30 boxes draws each
+// Feature Group as one box that counts its changed nodes, and opens one Feature Group at a time.
+// A report recorded before the words were kept has no diff: its Features count their
+// Requirements and criteria, and a folded tree lists its changed nodes.
 
 import { colours as schemeColours, draw } from '../../lib/diagrams.js';
 import { h } from '../../lib/dom.js';
 import * as kept from '../../lib/kept.js';
+import { compareWords } from '../../model/words.js';
 import { changeItem, leftOut } from './index.js';
 
 /** The most boxes drawn before the Feature Groups are folded. */
 export const MOST_BOXES = 30;
+
+/** The most characters of a line of a box's name. */
+const LINE = 44;
+
+/**
+ * `text` in lines of at most [`LINE`] characters, broken between words.
+ * @param {string} text
+ */
+export function wrapped(text) {
+  const lines = [];
+  let line = '';
+  for (const word of String(text ?? '').split(/\s+/).filter(Boolean)) {
+    if (line && line.length + 1 + word.length > LINE) {
+      lines.push(line);
+      line = word;
+    } else line = line ? `${line} ${word}` : word;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+/**
+ * A count and its noun, singular for one.
+ * @param {number} count
+ * @param {[string, string]} noun
+ */
+function counted(count, [one, many]) {
+  return `${count} ${count === 1 ? one : many}`;
+}
 
 /** @param {string} text */
 function quoted(text) {
@@ -22,18 +54,23 @@ function quoted(text) {
 }
 
 /**
- * What a box says: its label and name, how it changed, and for a Feature its counts.
+ * What a box says: its label and its name (a Requirement's statement, a criterion's name), and
+ * how it changed; a Feature of a report recorded before the words were kept also counts its
+ * Requirements and criteria.
  * @param {any} node
  */
 export function boxText(node) {
-  const lines = [[node.label, node.name].filter(Boolean).join(' ')];
+  const lines = wrapped([node.label, node.name].filter(Boolean).join(' '));
   if (node.change) lines.push(node.change);
-  if (node.kind === 'feature') {
-    lines.push(`${node.requirements ?? 0} Requirements, ${node.criteria ?? 0} criteria`);
+  if (node.kind === 'feature' && node.delta) {
+    /** @type {Record<'requirements' | 'criteria', [string, string]>} */
+    const nouns = { requirements: ['Requirement', 'Requirements'], criteria: ['criterion', 'criteria'] };
+    lines.push(`${counted(node.requirements ?? 0, nouns.requirements)}, ${counted(node.criteria ?? 0, nouns.criteria)}`);
     const delta = [];
-    for (const [kind, counts] of [['Requirements', node.delta?.requirements], ['criteria', node.delta?.criteria]]) {
+    for (const kind of /** @type {const} */ (['requirements', 'criteria'])) {
       for (const change of ['added', 'changed', 'removed']) {
-        if (counts?.[change]) delta.push(`${counts[change]} ${kind} ${change}`);
+        const count = node.delta[kind]?.[change];
+        if (count) delta.push(`${counted(count, nouns[kind])} ${change}`);
       }
     }
     if (delta.length) lines.push(delta.join(', '));
@@ -73,6 +110,14 @@ export function boxes(graph, open) {
   return { shown: marked, groups, folded: true };
 }
 
+/** The shape of each kind of box that is not a plain one. @type {Record<string, [string, string]>} */
+const SHAPES = {
+  decision: ['{{"', '"}}'],
+  component: ['[("', '")]'],
+  requirement: ['("', '")'],
+  criterion: ['(["', '"])'],
+};
+
 /**
  * The diagram's Mermaid source, its boxes coloured by how their nodes changed.
  * @param {any} graph
@@ -84,7 +129,7 @@ export function source(graph, open, c = schemeColours()) {
   const ids = new Map(shown.map((node, index) => [node.key, `n${index}`]));
   const lines = ['flowchart TD'];
   for (const node of shown) {
-    const shape = node.kind === 'decision' ? ['{{"', '"}}'] : node.kind === 'component' ? ['[("', '")]'] : ['["', '"]'];
+    const shape = SHAPES[node.kind] ?? ['["', '"]'];
     lines.push(`  ${ids.get(node.key)}${shape[0]}${boxText(node)}${shape[1]}:::${node.change ?? 'context'}`);
   }
   for (const node of shown) {
@@ -124,7 +169,8 @@ export function specChangeView(report, body, context = {}) {
     base.commit ? [' at ', h('code', {}, String(base.commit).slice(0, 10))] : null,
     '.',
   );
-  if (!changes.length && !decisions.length) {
+  const unchanged = graph.diff ? !graph.diff.length : !changes.length && !decisions.length;
+  if (unchanged) {
     return [h('p', { class: 'clean' }, `The specification has not changed since ${base.revision ?? 'the base revision'}.`), compared];
   }
   // The Feature Group the person opened, kept by the block, or by this drawing without one.
@@ -166,18 +212,45 @@ export function specChangeView(report, body, context = {}) {
   const picker = h('div', { class: 'group-picker' });
   holder.append(picker);
   redraw();
+  const fold = { path: context.key ? `${context.key}/changes` : null, open: false };
+  const diff = graph.diff;
   holder.append(
-    kept.details(
-      { path: context.key ? `${context.key}/changes` : null, open: false },
-      { class: 'fold change-tree' },
-      h('summary', {}, `${changes.length + decisions.length} nodes and decisions changed`),
-      h(
-        'ul',
-        {},
-        [...changes, ...decisions].map(changeItem),
-      ),
-      ['added', 'changed', 'removed'].map((change) => leftOut(report, `status.base.${change}`)),
-    ),
+    diff
+      ? kept.details(
+          fold,
+          { class: 'fold change-tree diff' },
+          h('summary', {}, `${diff.length} nodes and decisions changed`),
+          h('ul', {}, diff.map(diffItem)),
+          leftOut(report, 'graph.diff'),
+        )
+      : kept.details(
+          fold,
+          { class: 'fold change-tree' },
+          h('summary', {}, `${changes.length + decisions.length} nodes and decisions changed`),
+          h('ul', {}, [...changes, ...decisions].map(changeItem)),
+          ['added', 'changed', 'removed'].map((change) => leftOut(report, `status.base.${change}`)),
+        ),
   );
   return holder;
+}
+
+/**
+ * A node of the diff: how it changed, its kind, its label and its name, then its words with the
+ * words removed and the words added marked.
+ * @param {{ change: string, kind: string, label?: string | null, name?: string,
+ *   words?: { before?: string, after?: string } }} entry
+ */
+export function diffItem(entry) {
+  const { before, after } = entry.words ?? {};
+  const runs = compareWords(before ?? '', after ?? '');
+  const item = changeItem(entry);
+  item.append(
+    h(
+      'div',
+      { class: 'words' },
+      runs.map(({ text, mark }) => (mark === 'added' ? h('ins', {}, text) : mark === 'removed' ? h('del', {}, text) : text)),
+    ),
+    before !== undefined && before === after ? h('p', { class: 'words-same' }, 'Only its other fields changed.') : null,
+  );
+  return item;
 }

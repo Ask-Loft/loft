@@ -638,6 +638,13 @@ body:has(.modal[open]) { overflow: hidden; }
 .group-button { border: 1px solid var(--ink); background: var(--surface); padding: 2px 10px; font-size: 13px; cursor: pointer; color: var(--ink); }
 .group-button:hover { background: var(--surface-2); }
 .group-button.is-open { background: var(--ink); color: var(--canvas); }
+/* The diff of a spec change: each node's words, the words removed struck through and the words
+   added underlined, as well as coloured. */
+.diff > ul { display: grid; gap: 10px; }
+.diff .words { margin: 4px 0 0; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
+.diff ins { text-decoration: underline; text-decoration-thickness: 2px; background: var(--done-soft); color: var(--ink); }
+.diff del { text-decoration: line-through; text-decoration-thickness: 2px; background: var(--danger-soft); color: var(--ink); }
+.diff .words-same { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 
 /* The Gantt chart. */
 

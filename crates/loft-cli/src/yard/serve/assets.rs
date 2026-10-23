@@ -66,6 +66,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("model/gantt.js", JS),
     asset!("model/log.js", JS),
     asset!("model/tokens.js", JS),
+    asset!("model/words.js", JS),
     asset!("views/answering.js", JS),
     asset!("views/blocks.js", JS),
     asset!("views/gantt.js", JS),
