@@ -46,6 +46,27 @@ test('a spec change diagram shows each changed node with the Feature Group and t
   assert.match(text, /n1 --> n2/);
 });
 
+test('a spec change diagram colours each box by how it changed, in the colours of the scheme it is drawn in', () => {
+  const colours = {
+    ink: '#000001',
+    muted: '#000002',
+    rail: '#000003',
+    surface2: '#000004',
+    done: '#000005',
+    doneSoft: '#000006',
+    wait: '#000007',
+    waitSoft: '#000008',
+    danger: '#000009',
+    dangerSoft: '#00000a',
+  };
+  const text = source({ nodes: [product, group, feature], decisions: [], edges: [] }, null, colours);
+  assert.match(text, /classDef added fill:#000006,stroke:#000005,color:#000001/);
+  assert.match(text, /classDef changed fill:#000008,stroke:#000007,color:#000001/);
+  assert.match(text, /classDef removed fill:#00000a,stroke:#000009,color:#000001,stroke-dasharray:4 3/);
+  assert.match(text, /classDef context fill:#000004,stroke:#000003,color:#000002/);
+  assert.doesNotMatch(text, /#e3f4e8|#fdf0d8|#fbe4e2|#f1f3f5/);
+});
+
 test('a Feature box counts its Requirements and criteria, and those added, changed or removed', () => {
   assert.equal(boxText(feature), 'F-3 Share a list<br/>changed<br/>4 Requirements, 9 criteria<br/>1 Requirements added, 2 criteria added, 1 criteria changed');
 });

@@ -4,7 +4,7 @@
 // every changed node. A diagram of more than 30 boxes draws each Feature Group as one box that
 // counts its changed nodes, and opens one Feature Group at a time.
 
-import { draw } from '../../lib/diagrams.js';
+import { colours as schemeColours, draw } from '../../lib/diagrams.js';
 import { h } from '../../lib/dom.js';
 import { changeItem, leftOut } from './index.js';
 
@@ -76,11 +76,12 @@ export function boxes(graph, open) {
 }
 
 /**
- * The diagram's Mermaid source.
+ * The diagram's Mermaid source, its boxes coloured by how their nodes changed.
  * @param {any} graph
  * @param {string | null} open
+ * @param {Pick<import('../../lib/diagrams.js').Colours, 'ink' | 'muted' | 'rail' | 'surface2' | 'done' | 'doneSoft' | 'wait' | 'waitSoft' | 'danger' | 'dangerSoft'>} [c] the scheme's colours
  */
-export function source(graph, open) {
+export function source(graph, open, c = schemeColours()) {
   const { shown } = boxes(graph, open);
   const ids = new Map(shown.map((node, index) => [node.key, `n${index}`]));
   const lines = ['flowchart TD'];
@@ -97,10 +98,10 @@ export function source(graph, open) {
     lines.push(`  ${ids.get(edge.from)} -. ${word} .-> ${ids.get(edge.to)}`);
   }
   lines.push(
-    '  classDef added fill:#e3f4e8,stroke:#2f7d4f,color:#123b22',
-    '  classDef changed fill:#fdf0d8,stroke:#b26a00,color:#4a2c00',
-    '  classDef removed fill:#fbe4e2,stroke:#b42318,color:#5a120c,stroke-dasharray:4 3',
-    '  classDef context fill:#f1f3f5,stroke:#9aa7b4,color:#3b4652',
+    `  classDef added fill:${c.doneSoft},stroke:${c.done},color:${c.ink}`,
+    `  classDef changed fill:${c.waitSoft},stroke:${c.wait},color:${c.ink}`,
+    `  classDef removed fill:${c.dangerSoft},stroke:${c.danger},color:${c.ink},stroke-dasharray:4 3`,
+    `  classDef context fill:${c.surface2},stroke:${c.rail},color:${c.muted}`,
   );
   return lines.join('\n');
 }
@@ -133,7 +134,7 @@ export function specChangeView(report, body) {
   const redraw = () => {
     const open = opened.get(key) ?? null;
     const { groups, folded } = boxes(graph, open);
-    void draw(target, source(graph, open));
+    void draw(target, (c) => source(graph, open, c));
     picker.replaceChildren(
       ...(folded
         ? [

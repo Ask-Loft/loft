@@ -21930,12 +21930,39 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "closed Yard Log shows when it was closed and offers nothing to answer or decide"
         body: be2255503951651de0807d0cfbc6c3fc6a088a00f70afcf0727fb177670cc274
+  - node: 01a16863-60a7-772b-980e-a07a7bb898ff
+    reviewed: ea329040c3ae6bbcaac2775ce5664f5a82c7465c0de210dd53593c05b7f18bda
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours"
+        body: 1630521904e8de97b38160fa5c41414d9c2309218710c489d41236a188336eda
+  - node: 01a16863-60a7-772b-980e-a07b441c8e43
+    reviewed: b8421afc6d84aaa3de56f4b04ad54880fbc19dee0021c4874147871d316d8349
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours"
+        body: 2b5c9e9980634357742a8c163fef3664f6cf879a6aabd636fcaba0c29b3554fb
   - node: 01a16863-60a7-772b-980e-a07c5f19ca60
     reviewed: fdbf2e48e5bf4ecf968f8c7a32b7858e949bbe03e27c1acec6e70d8cbdd9fa77
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/scheme.test.js"
         name: "each colour the page gives text holds 4.5 to 1 against each ground, in either scheme"
         body: aa4d31eafff5c89264698be5258440b38561ee04a3d1809a8aa8c80715471591
+  - node: 01a16863-60a7-772b-980e-a07e6f0492af
+    reviewed: 0ef2a70be3391accdc327278c2936b4bbacfea729228d34128b88dd561e73513
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload"
+        body: b01fd5bda027ddaf4cba8a26e58ae2c00bc4a774ab8316045330fa7234a49128
+  - node: 01a16863-60a7-772b-980e-a07f74dd4ee6
+    reviewed: f2b6f77b24afd43e37a05977c9593bd0ff01527822a246b0f3d253c5956cc8dc
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload"
+        body: b01fd5bda027ddaf4cba8a26e58ae2c00bc4a774ab8316045330fa7234a49128
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a spec change diagram colours each box by how it changed, in the colours of the scheme it is drawn in"
+        body: bae5434beec339f4eec522e0f3d9e949a50b83f387393aad4b5f5bb9a1d28d2c
   - node: 01a1646f-546d-7042-befd-eb4e1610e29f
     reviewed: 863323265538fc6f0d7699b7ec015842d46a4b115178f7949f7b5eb72efb878e
     tests:

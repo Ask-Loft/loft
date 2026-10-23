@@ -58,6 +58,49 @@ test('a diagram is drawn from the vendored Mermaid, and one that does not parse 
   await expect(broken).toContainText('shelf --> --> ((');
 });
 
+/** The computed colour of `property` on the first element `locator` finds. */
+function colour(locator, property) {
+  return locator.first().evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
+}
+
+/** A box of the diagram drawn in the block `drawn`. */
+function diagramBox(page) {
+  return page.locator('#block-drawn svg g.node').first().locator('rect, path, polygon');
+}
+
+test('in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto(address());
+  expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
+  await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(24, 33, 43)');
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  expect(await colour(page.locator('svg.gantt-chart .lane-label'), 'fill')).toBe('rgb(232, 238, 244)');
+});
+
+test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto(address());
+  expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
+  await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(243, 247, 250)');
+  await page.getByRole('button', { name: 'Gantt chart' }).click();
+  expect(await colour(page.locator('svg.gantt-chart .lane-label'), 'fill')).toBe('rgb(14, 20, 29)');
+});
+
+test('when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto(address());
+  await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
+  await page.evaluate(() => {
+    /** @type {any} */ (window).unreloaded = true;
+  });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect.poll(() => colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
+  await expect.poll(() => colour(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(24, 33, 43)');
+  expect(await page.evaluate(() => /** @type {any} */ (window).unreloaded)).toBe(true);
+});
+
 test('a block that an agent writes shows within 2 seconds of the write', async ({ page }) => {
   await page.goto(address());
   await expect(page.locator('#log-title')).toBeVisible();
