@@ -100,7 +100,8 @@ needs.
 | `loft review [--base <revision>] [--node <node>] [--max-chars <n>] [--page <k>]` | Gathers the context each assertion under review is read against, as a JSON packet paged by whole units, and judges nothing; with `--base`, only what the branch added, changed, moved or removed |
 | `loft terms` | Lists the names the specification may be using for one concept, and the subjects of each Product's statements, for the term list to decide |
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml`, which links each criterion to the tests that verify it, against the tree and the test files, and records links a reviewer has checked |
-| `loft merge-driver` | Merges one file of `spec/` as git's merge driver; `--install` registers it |
+| `loft merge-driver` | Merges one file of `spec/` or `.yard/` as git's merge driver; `--install` registers it for both |
+| `loft yard <command>` | Keeps the branch's Yard Log for Yard Client: `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `continue`, `protocol`, `upgrade`, and `serve`, the page server |
 | `loft skill install [--no-plugin]` | Writes the agent skill into the current directory, or brings it up to date; `--no-plugin` leaves `.claude/settings.json` alone |
 
 ## Agents
@@ -129,14 +130,30 @@ The skill is also a plugin, for an agent that works across projects:
 
 The plugin teaches the agent; it does not install `loft`, which the skill expects on the path.
 
-In Claude Code the plugin also shows the Loft status pane in a project that holds `spec/`: the
-checks of the loop (format, check, `spec/` committed, trace, lock) and the next step, the nodes
-the branch added, changed and removed since its base, the criteria it touched that still lack a
-reviewed test, and the file the agent is writing. `/loft-status` opens it; `/loft-status
-<revision>` compares with another base for the session, and `/loft-status auto` returns to the
-`baseBranch` setting (`develop` by default). The pane runs `loft status`, `loft fmt --check`,
-`loft check` and `loft reconcile` with telemetry and the update check off; where `loft` is not on
-the path, set the plugin's `loftCommand` setting, for example to `pnpm exec loft`.
+In Claude Code the plugin runs `loft` itself, with telemetry and the update check off; where
+`loft` is not on the path, set the plugin's `loftCommand` setting, for example to
+`pnpm exec loft`.
+
+### Yard Client
+
+In Claude Code the plugin also keeps each branch's Yard Log: what the agent planned, asked,
+decided and did on the branch, kept as YAML under `.yard/<branch>/` and committed with the work.
+The `yard` skill teaches the agent to open it as work on a branch begins, to give each step a
+stage, to send the questions of one decision point together and wait for the answers, and to
+record what each step produced and Loft's reports of the specification's work. The questions it
+asks with `AskUserQuestion`, the plans it presents with `ExitPlanMode` and its tasks reach Yard
+Log by themselves.
+
+The Yard page, at `http://127.0.0.1:7411/`, shows every Yard Log of the trees on the machine,
+live: the stages and blocks, a Gantt chart of the session, Loft's reports, the tokens each stage
+took, and what waits on you. Answer and approve there or in Claude Code's own dialog: whichever
+comes first counts, and the other closes. `loft yard serve` serves the page on the loopback
+interface only; the plugin starts it and keeps one running for the machine. Set the plugin's
+`yardPort` setting to serve another port.
+
+A repository that keeps its plans off git ignores `.yard/`. Run `loft merge-driver --install` so
+that a merge joins two copies of a Yard Log record by record. What belongs to the machine, such
+as the page server's address and each session's events, is kept in `~/.yard/`.
 
 ## Exit codes and JSON
 

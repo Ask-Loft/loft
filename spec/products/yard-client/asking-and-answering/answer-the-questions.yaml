@@ -1,0 +1,78 @@
+key: 01a1646f-546c-7521-9643-bbc7835b5c64
+slug: answer-the-questions
+name: "Answer the questions"
+body: "The person answers a submission's questions on the page, all of them together, as they would answer a form. An answer is a record of its own, with a key, that names the person by git's name and email, so that a later server can tell who answered."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546c-7521-9643-bbc853083ff5
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "offer each open question's options to choose from, with each recommended option marked."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbc929ff388e
+        name: "A question that takes one option lets the person choose one."
+      - key: 01a1646f-546c-7521-9643-bbca52bc4f23
+        name: "A question that takes more than one option lets the person choose one or more."
+      - key: 01a1646f-546c-7521-9643-bbcb591fde24
+        name: "A question that allows the person's own words offers a text field beside its options."
+      - key: 01a1646f-546c-7521-9643-bbcc094ac2d9
+        name: "Each option shows its detail."
+  - key: 01a1646f-546c-7521-9643-bbcda4ebeec9
+    statement:
+      form: event_driven
+      when: "the person accepts the recommendations of a submission"
+      system: "the page"
+      shall: "choose the recommended options of each of its questions that has nothing chosen."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbce40187173
+        name: "A question that takes more than one option has each of its recommended options chosen."
+      - key: 01a1646f-546c-7521-9643-bbcf7adda738
+        name: "A question with no recommended option is left for the person."
+      - key: 01a1646f-546c-7521-9643-bbd088671e87
+        name: "A question the person has already chosen for keeps the person's choice."
+  - key: 01a1646f-546c-7521-9643-bbd124198232
+    statement:
+      form: event_driven
+      when: "the person sends a submission's answers"
+      system: "the page server"
+      shall: "record every answer of the send at once, each with the person, the time and the channel `page`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbd2658be8dc
+        name: "The person is recorded by the `user.name` and `user.email` that git gives for the repository."
+      - key: 01a1646f-546c-7521-9643-bbd341c0d139
+        name: "Each answer is recorded with a key of its own and the key of the block it answers."
+      - key: 01a1646f-546c-7521-9643-bbd490eb3c5a
+        name: "Sending raises Yard Log's revision by one."
+      - key: 01a1646f-546c-7521-9643-bbd5065188ba
+        name: "The page offers to send only once each open question of the submission has an answer."
+      - key: 01a1646f-546c-7521-9643-bbd62c68dd85
+        name: "Answers chosen and not sent are kept in the browser only."
+  - key: 01a1646f-546c-7521-9643-bbd7a1165492
+    statement:
+      form: unwanted
+      if: "a question of the send was answered elsewhere first"
+      system: "the page server"
+      shall: "refuse the later answer to that question as answered elsewhere."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbd850b7f2ba
+        name: "The first answer is kept unchanged."
+      - key: 01a1646f-546c-7521-9643-bbd976e840e9
+        name: "The page shows the first answer with the channel it came from."
+      - key: 01a1646f-546c-7521-9643-bbdaebd7935a
+        name: "The other answers of the send are recorded."
+  - key: 01a16a53-6d71-7288-9245-8df389b572b0
+    statement:
+      form: unwanted
+      if: "a send of answers or of an outcome is not recorded"
+      system: "the page"
+      shall: "keep what the person chose and typed, say why it was not sent, and offer to send it again."
+    criteria:
+      - key: 01a16a53-6d71-7288-9245-8df446ff7236
+        name: "Answers that the page server refuses to record are kept in the browser."
+      - key: 01a16a53-6d71-7288-9245-8df586280e46
+        name: "A reason for a rejection that the page server refuses to record is kept in the browser."
+      - key: 01a16a53-6d71-7288-9245-8df6b6548a40
+        name: "A send that cannot reach the page server says so, and its button can be pressed again."

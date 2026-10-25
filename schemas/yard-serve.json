@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loft-yard-serve-1.json",
+  "title": "The result of `loft yard serve --format json`, version 1: the page server that serves the port, this one or one already running",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "port",
+        "url",
+        "pid",
+        "version",
+        "formats",
+        "errors"
+      ],
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "url": {
+          "type": "string"
+        },
+        "pid": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "version": {
+          "type": "string"
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "schema": {
+          "const": "loft-yard-serve/1"
+        },
+        "outcome": {
+          "const": "serving"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "port",
+        "url",
+        "version",
+        "errors"
+      ],
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "url": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "schema": {
+          "const": "loft-yard-serve/1"
+        },
+        "outcome": {
+          "const": "running"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-yard-serve/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message",
+        "sites"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "branch",
+            "clock",
+            "detached",
+            "git",
+            "home",
+            "newer",
+            "port",
+            "repository",
+            "session",
+            "stop",
+            "store",
+            "unreadable"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/site"
+          }
+        }
+      }
+    }
+  }
+}

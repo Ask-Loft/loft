@@ -9,7 +9,15 @@ use crate::workflow::read;
 use std::path::Path;
 
 /// The crates built into `loft`.
-const BUILT_IN: [&str; 3] = ["loft-cli", "loftspec", "loftspec-store"];
+const BUILT_IN: [&str; 7] = [
+    "loft-cli",
+    "loft-common",
+    "loft-ports",
+    "loftspec",
+    "loftspec-store",
+    "yardlog",
+    "yardlog-store",
+];
 
 /// What a test may start other than `loft`: the archiver, Node and npm, which unpack, run and
 /// install the npm packages built around it, the scripts that build and smoke-test those

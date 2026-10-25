@@ -1,0 +1,122 @@
+key: 01a1646f-546e-76cb-8b4f-f261e68ee669
+slug: the-block-kinds
+name: "The block kinds"
+body: |
+  Yard Log holds blocks of eight kinds. A kind exists only where the person acts on it, where Yard Log follows its state over time, or where the block records a report of `loft`'s that the page draws in a form of its own; everything else an agent has to say is Markdown in a `note` block, tables and diagrams included.
+
+  The `question`, `approval` and `plan` blocks are the ones the person acts on. The `loft` block records a report of `loft`'s, as "Record a Loft view" says.
+realizes:
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f2629a94435d
+    statement:
+      form: ubiquitous
+      system: "Every block of Yard Log"
+      shall: "carry its key, its id, its kind and, unless it is a stage, the key of the stage that holds it."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f26345298538
+        name: "A block's kind is one of `stage`, `note`, `question`, `approval`, `decision`, `task`, `plan` and `loft`."
+      - key: 01a1646f-546e-76cb-8b4f-f264f48a498a
+        name: "A block of any other kind is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f26512cfbffe
+        name: "A block other than a stage that names no stage, or a stage that Yard Log does not hold, is refused."
+  - key: 01a1646f-546e-76cb-8b4f-f2666ca14a12
+    statement:
+      form: ubiquitous
+      system: "A `stage` block"
+      shall: "hold a title, an optional goal in Markdown, a status that is `planned`, `active`, `done` or `dropped`, and the agent that last made it `active`."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f267bb9a821b
+        name: "A stage written with no status is `planned`."
+      - key: 01a1646f-546e-76cb-8b4f-f268eabeb578
+        name: "A new stage is added after the last stage, or after the stage its `after` field names."
+      - key: 01a1646f-546e-76cb-8b4f-f26937ab4fe0
+        name: "A stage that has never been `active` names no agent."
+  - key: 01a1646f-546e-76cb-8b4f-f26a3d7a4d02
+    statement:
+      form: ubiquitous
+      system: "A `note` block"
+      shall: "hold Markdown, an optional title, an optional tone that is `info`, `success`, `warning` or `danger`, and whether it starts folded."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f26b9f5ff21b
+        name: "A note's Markdown may hold paragraphs, lists, tables, emphasis, links, code spans and fenced code blocks."
+      - key: 01a1646f-546e-76cb-8b4f-f26cb594aa7c
+        name: "A note whose Markdown holds raw HTML is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f26d4be9f189
+        name: "A note written with no folded flag starts open."
+  - key: 01a1646f-546e-76cb-8b4f-f26e793b0ab4
+    statement:
+      form: ubiquitous
+      system: "A `question` block"
+      shall: "hold a prompt, a short header, optional context in Markdown, two or more options, and whether more than one option may be chosen."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f26f3f5b2e48
+        name: "Each option holds a label and an optional detail in Markdown."
+      - key: 01a1646f-546e-76cb-8b4f-f27017b17983
+        name: "A question that takes one option marks at most one option as recommended."
+      - key: 01a1646f-546e-76cb-8b4f-f271c7c5acbb
+        name: "A question that takes more than one option may mark more than one of its options as recommended."
+      - key: 01a1646f-546e-76cb-8b4f-f272d3dbf550
+        name: "A question that takes one option and marks more than one as recommended is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f273336e30a0
+        name: "A question may allow an answer in the person's own words beside its options."
+      - key: 01a1646f-546e-76cb-8b4f-f27448a8483a
+        name: "A question with fewer than two options is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f27527c987e0
+        name: "A question whose options repeat a label is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f27644ca8154
+        name: "An answer holds the chosen labels or the person's own words, the person's notes, its Act and its channel, `page` or `terminal`."
+  - key: 01a1646f-546e-76cb-8b4f-f277f1c5565b
+    statement:
+      form: ubiquitous
+      system: "An `approval` block"
+      shall: "hold a title and, in Markdown, what the person is asked to approve."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2780c5a73b7
+        name: "An approval's outcome, once decided, is `approved`, or `rejected` with the person's reason, which only a rejection in the terminal may leave out."
+      - key: 01a1646f-546e-76cb-8b4f-f27944dc6139
+        name: "An outcome holds its Act and its channel, `page` or `terminal`."
+  - key: 01a1646f-546e-76cb-8b4f-f27ad9a58d69
+    statement:
+      form: ubiquitous
+      system: "A `decision` block"
+      shall: "hold a number, a title, its consequence in Markdown and, optionally, the key of the question it settles."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f27b5d484c59
+        name: "A new decision's number is one more than the highest number of Yard Log's decisions, starting at 1."
+      - key: 01a1646f-546e-76cb-8b4f-f27cd3ddfbff
+        name: "A decision keeps its number through every later version, until the settling of a merge numbers the decisions again."
+      - key: 01a1646f-546e-76cb-8b4f-f27d19128f90
+        name: "A decision written naming a question by its id records the question's key."
+      - key: 01a1646f-546e-76cb-8b4f-f27efa5e22ff
+        name: "A decision that names a question that Yard Log does not hold is refused."
+  - key: 01a1646f-546e-76cb-8b4f-f27f9dd3aad8
+    statement:
+      form: ubiquitous
+      system: "A `task` block"
+      shall: "hold a title, an optional detail in Markdown, a state that is `open`, `active`, `done` or `dropped`, and a type that is `regular` or `fix`."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f280569b2e04
+        name: "A task written with no state is `open`."
+      - key: 01a16a04-3f8b-71a9-baa3-95e77bdcfcab
+        name: "A task written with no type is `regular`."
+      - key: 01a16a04-3f8b-71a9-baa3-95e8d926d239
+        name: "A task of the type `regular` is kept in YAML without a type, as a task was before tasks had types."
+      - key: 01a16a04-3f8b-71a9-baa3-95e907cff850
+        name: "A task written with a type other than `regular` or `fix` is refused."
+  - key: 01a1646f-546e-76cb-8b4f-f281ceac4cef
+    statement:
+      form: ubiquitous
+      system: "A `plan` block"
+      shall: "hold the title and Markdown of a plan that an agent proposes, the path of the file it came from relative to the tree when the file lies within it, and its outcome once the person decides it."
+    criteria:
+      - key: 01a169a9-33b8-738f-a30d-b206873dcb5c
+        name: "A plan whose path is absolute, starts with `~` or has a `..` segment is refused, naming its `path` field."
+      - key: 01a1646f-546e-76cb-8b4f-f2828477d857
+        name: "A plan's outcome is `approved`, or `rejected` with the person's reason, which only a rejection in the terminal may leave out."
+      - key: 01a1646f-546e-76cb-8b4f-f28342049ac1
+        name: "An outcome holds its Act and its channel, `page` or `terminal`."
+      - key: 01a1646f-546e-76cb-8b4f-f284b0b1b5f5
+        name: "A plan whose Markdown is rewritten after its outcome was decided has no outcome until the person decides it again."
+      - key: 01a1646f-546e-76cb-8b4f-f2853be2aad3
+        name: "A plan may record that the agent presented it in plan mode."

@@ -1,0 +1,69 @@
+key: 01a1646f-5467-7025-8a88-4ee064996973
+slug: yard-log-is-kept-as-yardlog-in-yaml-under-yard
+title: "Yard Log is kept as yardlog, in YAML, under .yard/"
+context: "Yard Log travels with its branch and is read in review, so it lives in the working tree. A specification is kept as YAML under `spec/`, with a root file that names its format, and `loft` already reads and writes that strict YAML. A branch's name may hold `/`, and two branches never share a name."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ee45e384b21
+  outcome: "Each branch's Yard Log is the directory `.yard/<branch>/`, rooted at `yardlog.yaml`, which names the format `yardlog/1`, with one YAML file for each stage beside it, named by the stage's key, in the strict YAML that `loft` writes for `spec/`."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ee155056718
+    kind: local
+    label: "Read in review"
+    statement: "A reviewer reads Yard Log in a diff as they read `spec/`."
+  - key: 01a1646f-5467-7025-8a88-4ee2dc8e045c
+    kind: local
+    label: "Out of the way"
+    statement: "Yard Log does not crowd the top of the working tree."
+  - key: 01a1646f-5467-7025-8a88-4ee3e6e28d16
+    kind: local
+    label: "Named format"
+    statement: "A reader can tell which version of the format each branch's Yard Log is written in."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ee45e384b21
+    title: "YAML under .yard/<branch>/"
+    description: "A hidden directory, a root file naming the format, one file per stage, in the strict YAML `spec/` uses."
+  - key: 01a1646f-5467-7025-8a88-4ee51309492b
+    title: "One JSON file per branch"
+    description: "A single JSON document for each branch's Yard Log, in a visible directory."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ee45e384b21
+    driver: 01a1646f-5467-7025-8a88-4ee155056718
+    rating: supports
+    rationale: "a change to one block changes one stage's file, in readable YAML"
+  - option: 01a1646f-5467-7025-8a88-4ee45e384b21
+    driver: 01a1646f-5467-7025-8a88-4ee2dc8e045c
+    rating: supports
+    rationale: "a hidden directory"
+  - option: 01a1646f-5467-7025-8a88-4ee45e384b21
+    driver: 01a1646f-5467-7025-8a88-4ee3e6e28d16
+    rating: supports
+    rationale: "`yardlog.yaml` names `yardlog/1`"
+  - option: 01a1646f-5467-7025-8a88-4ee51309492b
+    driver: 01a1646f-5467-7025-8a88-4ee155056718
+    rating: conflicts
+    rationale: "every change rewrites one large document"
+  - option: 01a1646f-5467-7025-8a88-4ee51309492b
+    driver: 01a1646f-5467-7025-8a88-4ee2dc8e045c
+    rating: neutral
+    rationale: "one file, but in a visible directory"
+  - option: 01a1646f-5467-7025-8a88-4ee51309492b
+    driver: 01a1646f-5467-7025-8a88-4ee3e6e28d16
+    rating: supports
+    rationale: "the document can name its format"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ee646e0e8d9
+    kind: obligation
+    statement: "`yardlog-store` writes Yard Log in one canonical layout, so that Yard Log holding the same records always gives the same bytes."
+  - key: 01a1646f-5467-7025-8a88-4ee7d753df89
+    kind: benefit
+    statement: "A change to one stage shows in review as a change to one file."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b305365c69
+  - role: outcome
+    node: 01a16469-55a3-716f-a42c-3a407e6d0d19
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ebc727a05b50

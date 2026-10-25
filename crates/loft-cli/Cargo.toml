@@ -11,8 +11,8 @@ readme = "../../README.md"
 keywords.workspace = true
 categories = ["command-line-utilities", "development-tools"]
 # The tests read fixtures from the repository and use the Software Plant, neither of which is
-# published, so they run from the repository only.
-exclude = ["tests"]
+# published, so they run from the repository only, as do the page's tests, which are Node.js's.
+exclude = ["tests", "yard-page-tests"]
 # The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
 # checked by the operating system once each.
 autotests = false
@@ -24,8 +24,14 @@ path = "src/main.rs"
 [dependencies]
 clap.workspace = true
 hmac.workspace = true
+httparse.workspace = true
+loft-ports.workspace = true
 loftspec.workspace = true
 loftspec-store.workspace = true
+# The page server renders the Markdown of Yard Log's blocks to HTML, so the page never renders
+# Markdown itself. The parser is the same pinned one the linter reads text with; the feature adds
+# only the HTML writer.
+pulldown-cmark = { workspace = true, features = ["html"] }
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
@@ -38,8 +44,12 @@ tree-sitter-rust.workspace = true
 tree-sitter-typescript.workspace = true
 ureq.workspace = true
 uuid.workspace = true
+yardlog.workspace = true
+yardlog-store.workspace = true
 
 [dev-dependencies]
+# Only to read back the compressed files the page server serves; `loft` itself never decompresses.
+flate2 = "1"
 software-plant = { path = "../software-plant" }
 
 [lints]

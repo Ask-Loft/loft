@@ -3,7 +3,7 @@
 use std::process::Command;
 
 use software_plant::Clock;
-use software_plant::clock::EPOCH_ENV;
+use software_plant::clock::{EPOCH_ENV, PASSING_ENV};
 
 fn epoch_of(command: &Command) -> Option<String> {
     command
@@ -38,4 +38,31 @@ fn a_run_outside_any_scenario_leaves_the_epoch_unset() {
     command.env(EPOCH_ENV, "5");
     Clock::system().apply(&mut command);
     assert_eq!(epoch_of(&command), None);
+}
+
+fn passing_of(command: &Command) -> Option<String> {
+    command
+        .get_envs()
+        .find(|(name, _)| *name == PASSING_ENV)
+        .and_then(|(_, value)| value.map(|value| value.to_string_lossy().into_owned()))
+}
+
+#[test]
+fn a_scenario_whose_time_passes_sets_loft_clock_and_any_other_leaves_it_unset() {
+    for (clock, expected) in [
+        (Clock::fixed(100).passing(), Some("passing")),
+        (Clock::stepping(100, 60).passing(), Some("passing")),
+        (Clock::fixed(100), None),
+        (Clock::system(), None),
+    ] {
+        for _ in 0..2 {
+            let mut command = Command::new("loft");
+            command.env(PASSING_ENV, "passing");
+            clock.apply(&mut command);
+            assert_eq!(passing_of(&command).as_deref(), expected);
+        }
+    }
+    let mut command = Command::new("loft");
+    Clock::fixed(100).passing().apply(&mut command);
+    assert_eq!(epoch_of(&command).as_deref(), Some("100"));
 }

@@ -1,13 +1,17 @@
 //! The plugins for Claude Code and Codex: each committed package equals the composition `loft`
 //! writes for its host, each marketplace, `ask-loft`, lists the plugin `loft` at its host's plugin root, and
 //! every manifest carries the version of `loft`; the Claude Code plugin also names the hooks
-//! module and the type contract of the Loft status pane, and declares its settings.
+//! module and the mod's type contract, and declares its settings, its mod
+//! names the version of `loft` and the yard protocol `loft` speaks, and it holds the `loft-spec`
+//! and `yard` skills; CI tests the mod under a pinned Claude Code and the Yard page in a DOM
+//! emulator.
 
 use std::fs;
 
-use crate::common::workspace;
+use crate::common::{Scratch, workspace};
 use crate::skill_install::{CLAUDE, CODEX, installed};
 use crate::snapshot::snapshot;
+use crate::workflow::job;
 use serde_json::{Value, json};
 
 fn read(path: &str) -> Value {
@@ -28,6 +32,23 @@ fn each_committed_package_equals_the_composition_for_its_host() {
             "{root}: run scripts/package-skill.sh"
         );
     }
+}
+
+/// The skills a plugin's package holds, by their folder names.
+fn skills(root: &str) -> Vec<String> {
+    let mut found: Vec<String> = fs::read_dir(workspace().join(root).join("skills"))
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    found.sort();
+    found
+}
+
+#[test]
+fn the_claude_code_plugin_holds_the_loft_spec_and_yard_skills_and_the_codex_plugin_loft_spec_alone()
+{
+    assert_eq!(skills(CLAUDE_ROOT), ["loft-spec", "yard"]);
+    assert_eq!(skills(CODEX_ROOT), ["loft-spec"]);
 }
 
 #[test]
@@ -101,7 +122,7 @@ fn the_claude_code_plugins_hooks_json_names_its_hooks_module_which_lies_beside_i
 }
 
 #[test]
-fn the_claude_code_manifest_names_the_panes_type_contract_which_lies_in_the_plugin() {
+fn the_claude_code_manifest_names_the_mods_type_contract_which_lies_in_the_plugin() {
     let manifest = read(&format!("{CLAUDE_ROOT}/.claude-plugin/plugin.json"));
     assert_eq!(manifest["types"], "./types/index.d.ts");
     assert!(
@@ -125,7 +146,114 @@ fn the_claude_code_manifest_declares_the_base_branch_and_loft_command_settings_w
 }
 
 #[test]
+fn the_claude_code_manifest_declares_the_yard_port_setting_with_the_page_server_s_port() {
+    let manifest = read(&format!("{CLAUDE_ROOT}/.claude-plugin/plugin.json"));
+    let setting = &manifest["userConfig"]["yardPort"];
+    assert_eq!(setting["type"], "number");
+    assert_eq!(setting["default"], 7411);
+    assert!(setting["description"].is_string());
+}
+
+/// The value of `export const <name> = <value>` in Yard Client's entry module, as written.
+fn mod_constant(name: &str) -> String {
+    let path = format!("{CLAUDE_ROOT}/hooks/yard/index.tsx");
+    let source =
+        fs::read_to_string(workspace().join(&path)).unwrap_or_else(|_| panic!("no {path}"));
+    let start = format!("export const {name} = ");
+    let line = source
+        .lines()
+        .find_map(|line| line.strip_prefix(start.as_str()))
+        .unwrap_or_else(|| panic!("{path} declares no {name}"));
+    line.trim_end_matches(" as const").to_owned()
+}
+
+#[test]
+fn the_mod_names_the_version_of_loft_as_its_own() {
+    assert_eq!(
+        mod_constant("PLUGIN_VERSION"),
+        format!("'{}'", env!("CARGO_PKG_VERSION"))
+    );
+}
+
+#[test]
+fn the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks() {
+    let scratch = Scratch::empty();
+    let output = scratch.loft(&["yard", "protocol", "--format", "json"]);
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let protocols = mod_constant("PROTOCOLS");
+    let newest = protocols
+        .split("newest: ")
+        .nth(1)
+        .and_then(|rest| rest.split(|c: char| !c.is_ascii_digit()).next())
+        .unwrap_or_else(|| panic!("PROTOCOLS = {protocols} names no newest"));
+    assert_eq!(newest, report["protocol"].to_string());
+}
+
+#[test]
 fn the_claude_code_plugins_hooks_json_holds_an_empty_hooks_record_for_a_host_without_modules() {
     let hooks = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
     assert_eq!(hooks["hooks"], json!({}));
+}
+
+/// The oldest Claude Code the mod runs under, as the Loft mod's Component states it.
+const OLDEST_CLAUDE_CODE: [u32; 3] = [2, 1, 287];
+
+#[test]
+fn ci_tests_the_mod_under_a_pinned_claude_code_and_the_page_in_a_dom_emulator() {
+    let ci = fs::read_to_string(workspace().join(".github/workflows/ci.yml")).unwrap();
+    let plugin = job(&ci, "plugin").runs();
+    let install = plugin
+        .iter()
+        .find_map(|run| run.strip_prefix("npm install --global @anthropic-ai/claude-code@"))
+        .expect("the plugin job installs Claude Code");
+    let pinned: Vec<u32> = install
+        .split('.')
+        .map(|part| part.parse().expect("an exact version"))
+        .collect();
+    assert!(
+        pinned.as_slice() >= OLDEST_CLAUDE_CODE.as_slice(),
+        "{install}"
+    );
+    let script = plugin.join("\n");
+    for command in [
+        "claude plugin validate plugins/claude/loft",
+        "claude plugin test plugins/claude/loft",
+    ] {
+        assert!(script.lines().any(|line| line == command), "{command}");
+    }
+    assert_eq!(
+        job(&ci, "page").runs(),
+        ["npm ci", "npm test", "npm run types"]
+    );
+}
+
+/// The subcommands `loft --help` lists, in its order, less `help`.
+fn loft_subcommands() -> Vec<String> {
+    let output = Scratch::empty().loft(&["--help"]);
+    let help = String::from_utf8(output.stdout).unwrap();
+    help.lines()
+        .skip_while(|line| *line != "Commands:")
+        .skip(1)
+        .take_while(|line| line.starts_with("  "))
+        .filter_map(|line| line.split_whitespace().next())
+        .filter(|name| *name != "help")
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
+#[test]
+fn the_mod_takes_a_subcommand_s_name_only_from_loft_s_own_list_of_subcommands() {
+    let path = format!("{CLAUDE_ROOT}/hooks/yard/shell.ts");
+    let source =
+        fs::read_to_string(workspace().join(&path)).unwrap_or_else(|_| panic!("no {path}"));
+    let listed: Vec<String> = source
+        .split("export const LOFT_SUBCOMMANDS: readonly string[] = [")
+        .nth(1)
+        .and_then(|rest| rest.split(']').next())
+        .unwrap_or_else(|| panic!("{path} declares no LOFT_SUBCOMMANDS"))
+        .split(',')
+        .map(|name| name.trim().trim_matches('\'').to_owned())
+        .filter(|name| !name.is_empty())
+        .collect();
+    assert_eq!(listed, loft_subcommands());
 }

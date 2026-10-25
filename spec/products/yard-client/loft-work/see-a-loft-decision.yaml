@@ -1,0 +1,27 @@
+key: 01a1646f-546d-7042-befd-eab65088c9bf
+slug: see-a-loft-decision
+name: "See a Loft decision"
+body: "A `decision` view shows a decision of the specification as `loft` holds it, so that the person reads why a choice was made: the options weighed, against what, and with what consequences."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eab70d4b9fa4
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a `decision` view with the decision's title, label, state, context and outcome, its options, a table of its assessments, its consequences and its subjects."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eab87ad2fa8b
+        name: "Each option shows its title and description, and the selected option is marked as selected."
+      - key: 01a1646f-546d-7042-befd-eab9f27ee1c1
+        name: "The table has a row for each option and a column for each driver, and each cell gives the rating in a word as well as a colour, with its rationale."
+      - key: 01a1646f-546d-7042-befd-eababcab5af2
+        name: "Each driver shows its label and statement, or the node it stands for."
+      - key: 01a1646f-546d-7042-befd-eabbb57e9401
+        name: "Each consequence shows its kind and its statement."
+      - key: 01a1646f-546d-7042-befd-eabc540b4e07
+        name: "Each subject shows its role and its node, by its label and its name."
+      - key: 01a1646f-546d-7042-befd-eabdd040918b
+        name: "A decision that is not accepted shows its state, and a rejected or retired one its rationale."
+      - key: 01a1646f-546d-7042-befd-eabebf41cb3d
+        name: "A decision with no label shows that it has not been published."

@@ -1,0 +1,72 @@
+key: 01a1646f-5467-7025-8a88-4ec441646df9
+slug: yard-client-is-a-mod-over-loft
+title: "Yard Client is a mod over loft"
+context: "Yard Client has four parts with a fixed home or language: the part Claude Code runs, which is a mod and so TypeScript run from source; the page, which a browser runs as JavaScript; a server for the page, which a mod cannot be, since a mod listens on no port; and the store of Yard Log. The Loft plugin is installed from this repository with no build step, so nothing built can reach the person through it, and the plugin already needs `loft`, which every way of installing Loft delivers."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ec8d87c5ef0
+  outcome: "The Loft mod registers Yard Client's tools and hooks, and reaches Yard Log only through `loft yard` commands and the page server; `loft` owns the yardlog format, `yardlog-store`, the `loft` views and the page server. There is no MCP server and no Node program."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ec5e4f432fb
+    kind: local
+    label: "Nothing new to install"
+    statement: "A person who has the Loft plugin and `loft` needs nothing else for Yard Client."
+  - key: 01a1646f-5467-7025-8a88-4ec6b4fa0139
+    kind: local
+    label: "Nothing built committed"
+    statement: "The repository holds sources only; no built program is committed for the plugin to carry."
+  - key: 01a1646f-5467-7025-8a88-4ec7a7b352e5
+    kind: local
+    label: "One gate for the core"
+    statement: "The format, the store and the server are built, tested and released as `loft` is."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ec8d87c5ef0
+    title: "A mod over loft"
+    description: "The mod, in TypeScript, holds what Claude Code runs; `loft`, in Rust, holds the format, the store, the views and the page server, reached through `loft yard` commands."
+  - key: 01a1646f-5467-7025-8a88-4ec9bd0feac8
+    title: "A Node program over MCP"
+    description: "A TypeScript program, built and carried by the plugin or published to npm, serves the agent's tools over MCP and hosts the page; the mod only wraps Claude Code's dialogs."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ec8d87c5ef0
+    driver: 01a1646f-5467-7025-8a88-4ec5e4f432fb
+    rating: supports
+    rationale: "the plugin already needs `loft`"
+  - option: 01a1646f-5467-7025-8a88-4ec8d87c5ef0
+    driver: 01a1646f-5467-7025-8a88-4ec6b4fa0139
+    rating: supports
+    rationale: "Claude Code runs the mod from source, and `loft` is released as it is"
+  - option: 01a1646f-5467-7025-8a88-4ec8d87c5ef0
+    driver: 01a1646f-5467-7025-8a88-4ec7a7b352e5
+    rating: supports
+    rationale: "the core is Rust in this workspace, under its gates and the Software Plant"
+  - option: 01a1646f-5467-7025-8a88-4ec9bd0feac8
+    driver: 01a1646f-5467-7025-8a88-4ec5e4f432fb
+    rating: conflicts
+    rationale: "the person needs Node.js, and a package fetched on first run"
+  - option: 01a1646f-5467-7025-8a88-4ec9bd0feac8
+    driver: 01a1646f-5467-7025-8a88-4ec6b4fa0139
+    rating: conflicts
+    rationale: "the plugin carries a built program, or a second package is published"
+  - option: 01a1646f-5467-7025-8a88-4ec9bd0feac8
+    driver: 01a1646f-5467-7025-8a88-4ec7a7b352e5
+    rating: conflicts
+    rationale: "a second toolchain to build, test and release"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4eca900398b6
+    kind: benefit
+    statement: "Every way of installing `loft` delivers Yard Client, and `loft init`, which enables the Loft plugin, sets it up."
+  - key: 01a1646f-5467-7025-8a88-4ecb0cd04629
+    kind: cost
+    statement: "Yard Log's records are typed in Rust and reach the mod and the page through the JSON documents of `loft yard` commands, each held to its schema."
+  - key: 01a1646f-5467-7025-8a88-4eccdce45d20
+    kind: obligation
+    statement: "Every read and write that the mod needs is a `loft yard` command first."
+subjects:
+  - role: affected
+    node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b1a05afaff
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bca6524c277a

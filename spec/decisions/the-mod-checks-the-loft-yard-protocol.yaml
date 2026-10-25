@@ -1,0 +1,55 @@
+key: 01a1646f-5467-7025-8a88-4e9b7b879b72
+slug: the-mod-checks-the-loft-yard-protocol
+title: "The mod checks the loft yard protocol and offers no tools across a mismatch"
+context: "The mod comes with the plugin, and the `loft` it runs comes from its `loftCommand` setting, which may name another version, such as one a repository pins. A mod and a `loft` that disagree on the commands' documents would write wrong Yard Logs or fail half way."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e9e96527160
+  outcome: "At the start of a session the mod asks `loft yard protocol` which protocol it speaks; where the mod cannot speak it, the mod says so once, naming both versions and how to align them, registers no Yard tools, and leaves the agent's questions, plans and tasks to Claude Code alone, while the status pane goes on."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e9ccc3fd431
+    kind: local
+    label: "No half-working tools"
+    statement: "Yard Client either works or says plainly why not."
+  - key: 01a1646f-5467-7025-8a88-4e9d84d81acc
+    kind: local
+    label: "Pane unaffected"
+    statement: "A mismatch for Yard Client leaves the status pane working."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e9e96527160
+    title: "Check, and offer nothing across a mismatch"
+    description: "Ask `loft yard protocol` at the start of each session and offer Yard Client only where both sides speak it."
+  - key: 01a1646f-5467-7025-8a88-4e9f899b2f37
+    title: "Try and report each failure"
+    description: "Offer the tools and report each command that fails."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e9e96527160
+    driver: 01a1646f-5467-7025-8a88-4e9ccc3fd431
+    rating: supports
+    rationale: "one notice, and no tools"
+  - option: 01a1646f-5467-7025-8a88-4e9e96527160
+    driver: 01a1646f-5467-7025-8a88-4e9d84d81acc
+    rating: supports
+    rationale: "the check is Yard Client's alone"
+  - option: 01a1646f-5467-7025-8a88-4e9f899b2f37
+    driver: 01a1646f-5467-7025-8a88-4e9ccc3fd431
+    rating: conflicts
+    rationale: "some commands work and others fail"
+  - option: 01a1646f-5467-7025-8a88-4e9f899b2f37
+    driver: 01a1646f-5467-7025-8a88-4e9d84d81acc
+    rating: supports
+    rationale: "the pane runs its own commands"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ea0928212b3
+    kind: obligation
+    statement: "`loft yard protocol` reports the protocol the yard commands speak and the newest yardlog format the `loft` reads."
+  - key: 01a1646f-5467-7025-8a88-4ea15de4150e
+    kind: cost
+    statement: "A person whose `loft` is too old or too new for the plugin has to align them before using Yard Client."
+subjects:
+  - role: affected
+    node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f1f1e50bff47

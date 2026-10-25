@@ -1,7 +1,7 @@
 key: 01a12ff0-f5e5-7095-8fa8-24dbf02d347a
 slug: clock-simulator
 name: "Clock simulator"
-body: "Sets the time that the binary under test reads, through `SOURCE_DATE_EPOCH`, so that a test can name the publish time exactly."
+body: "Sets the time that the binary under test reads, through `SOURCE_DATE_EPOCH`, so that a test can name the publish time exactly. Where a scenario lets time pass, it also sets `LOFT_CLOCK=passing`, and the run's time then moves only as the run waits through the clock port: a wait returns at once and adds its length to the time, so a run that waits minutes ends in milliseconds."
 tags:
   - plant-simulator
 realizes:
@@ -21,3 +21,17 @@ requirements:
         name: "A stepping scenario advances `SOURCE_DATE_EPOCH` by its step on each run."
       - key: 01a12ff0-f5e5-7095-8fa8-24dffd60173a
         name: "A run outside any scenario leaves `SOURCE_DATE_EPOCH` unset."
+  - key: 01a16539-ae6e-7215-9bc9-bd9b88d25866
+    statement:
+      form: ubiquitous
+      system: "The clock simulator"
+      shall: "let time pass within a run only as the run waits through the clock port, where its scenario says so."
+    criteria:
+      - key: 01a16539-ae6e-7215-9bc9-bd9cb17380f3
+        name: "A scenario whose time passes sets `LOFT_CLOCK=passing` on each run, and any other scenario leaves `LOFT_CLOCK` unset."
+      - key: 01a16539-ae6e-7215-9bc9-bd9de8167ede
+        name: "In a run whose time passes, a wait through the clock port returns at once and moves the time the run reads on by the length of the wait."
+      - key: 01a16539-ae6e-7215-9bc9-bd9e4488b97b
+        name: "In a run whose time passes, the time the run reads moves only as it waits."
+      - key: 01a16539-ae6e-7215-9bc9-bd9ffa02ebaf
+        name: "A wait through the clock port moves the time the run reads on by at least its length on the real clock as on the simulator."

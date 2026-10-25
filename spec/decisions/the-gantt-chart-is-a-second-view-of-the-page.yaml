@@ -1,0 +1,50 @@
+key: 01a1646f-5467-7025-8a88-4e8f743f1320
+slug: the-gantt-chart-is-a-second-view-of-the-page
+title: "The Gantt chart is a second view of the page"
+context: "The page draws Yard Log as a timeline of stages and their blocks. The person also wants to see where the time of the work went: tasks, `loft` runs, waits on the person and the agents' own work, along time."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e92767f6e83
+  outcome: "The page offers the timeline and a Gantt chart as two views of a branch's Yard Log, and remembers in the browser the one chosen."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e9010280059
+    kind: local
+    label: "Room to read"
+    statement: "Each view has the whole page."
+  - key: 01a1646f-5467-7025-8a88-4e91a2675659
+    kind: local
+    label: "One page"
+    statement: "The person stays on one page for one Yard Log."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e92767f6e83
+    title: "A second view"
+    description: "A switch between the timeline and the Gantt chart."
+  - key: 01a1646f-5467-7025-8a88-4e9357c0ef19
+    title: "A chart above the timeline"
+    description: "A small chart above the timeline, always shown."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e92767f6e83
+    driver: 01a1646f-5467-7025-8a88-4e9010280059
+    rating: supports
+    rationale: "each view takes the page"
+  - option: 01a1646f-5467-7025-8a88-4e92767f6e83
+    driver: 01a1646f-5467-7025-8a88-4e91a2675659
+    rating: supports
+    rationale: "a switch on the page"
+  - option: 01a1646f-5467-7025-8a88-4e9357c0ef19
+    driver: 01a1646f-5467-7025-8a88-4e9010280059
+    rating: conflicts
+    rationale: "both share the page"
+  - option: 01a1646f-5467-7025-8a88-4e9357c0ef19
+    driver: 01a1646f-5467-7025-8a88-4e91a2675659
+    rating: supports
+    rationale: "one page"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e94361eefdf
+    kind: obligation
+    statement: "Each part of the Gantt chart opens the timeline at the block it stands for."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a94f0aa021
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb677bcc8418

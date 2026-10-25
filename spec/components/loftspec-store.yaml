@@ -11,3 +11,6 @@ constraints:
   - key: 01a12ff0-f5e5-7095-8fa8-250890794446
     name: "`loftspec-store` shall reach git only through its repository port."
     verificationFate: proved
+  - key: 01a1649f-62ea-7225-80e1-a3d6f1031098
+    name: "`loftspec-store` shall depend on no crate of Yard Client."
+    verificationFate: proved

@@ -291,7 +291,8 @@ fn decision_references<'a>(
 }
 
 /// The option a decision's state selects, if it selects one.
-pub(crate) const fn selected_option(state: &DecisionState) -> Option<OptionId> {
+#[must_use]
+pub const fn selected_option(state: &DecisionState) -> Option<OptionId> {
     match state {
         DecisionState::Accepted {
             selected_option, ..

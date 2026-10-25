@@ -1,0 +1,7 @@
+key: 01a16469-559e-73c4-85f2-71b6feef7573
+slug: web-browser
+name: "Web browser"
+body: "The person's browser, in which the page server's page is opened. It calls the page server; `loft` never calls it."
+boundary: external
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77

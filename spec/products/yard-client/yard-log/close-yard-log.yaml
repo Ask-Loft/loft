@@ -1,0 +1,63 @@
+key: 01a1646f-546e-76cb-8b4f-f225bd80f8c4
+slug: close-yard-log
+name: "Close Yard Log"
+body: "Once the branch's work is finished, before it is merged, an agent closes its Yard Log with `loft yard close`. Yard Log then reads as a record of the work and takes no more writes or answers, but for the record of the publish that follows its merge. Yard Log that an agent left open is closed by the merge, since the merge is what brings its files into the base branch."
+tags:
+  - yard-command
+  - needs-repository
+  - git
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f226d3751e3f
+    statement:
+      form: event_driven
+      when: "an agent closes the branch's Yard Log"
+      system: "`loft yard close`"
+      shall: "mark it closed, with the Act of the close."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2273651a416
+        name: "The root of closed Yard Log says that it is closed, when and by which agent."
+      - key: 01a1646f-546e-76cb-8b4f-f22857f52d6e
+        name: "Closing withdraws every open submission."
+      - key: 01a1646f-546e-76cb-8b4f-f22902d34edd
+        name: "Closed Yard Log reads as before it was closed, with the Act of the close."
+  - key: 01a1646f-546e-76cb-8b4f-f22a369a9eed
+    statement:
+      form: unwanted
+      if: "an agent writes a batch to closed Yard Log"
+      system: "`loft yard write`"
+      shall: "refuse the batch and say that Yard Log is closed."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f22bf330c17b
+        name: "No file is changed."
+  - key: 01a1646f-546e-76cb-8b4f-f22cfae1d538
+    statement:
+      form: unwanted
+      if: "the person answers or decides a block of closed Yard Log"
+      system: "Yard Client"
+      shall: "refuse the answer and say that Yard Log is closed."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f22dc7671b26
+        name: "An answer from the page is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f22e64505a26
+        name: "An answer from the terminal is refused."
+      - key: 01a1646f-546e-76cb-8b4f-f22f95611e51
+        name: "No file is changed."
+  - key: 01a1646f-546e-76cb-8b4f-f23011de05ad
+    statement:
+      form: state_driven
+      while: "the base branch holds Yard Log that is not closed"
+      system: "Yard Client"
+      shall: "treat that Yard Log as closed by the merge."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f2326071c8c1
+        name: "Yard Log whose root is in the tip of the base branch reads as closed by the merge."
+      - key: 01a1646f-546e-76cb-8b4f-f23388ec8b78
+        name: "Yard Log that the base branch does not hold stays open, whatever commits its branch holds."
+      - key: 01a1646f-546e-76cb-8b4f-f234fe9ce72b
+        name: "Writes and answers to Yard Log closed by the merge are refused as for closed Yard Log."
+      - key: 01a1646f-546e-76cb-8b4f-f2353f9a5f73
+        name: "The page shows that the merge closed Yard Log."

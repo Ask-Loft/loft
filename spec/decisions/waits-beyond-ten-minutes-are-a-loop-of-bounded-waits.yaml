@@ -1,0 +1,52 @@
+key: 01a1646f-5467-7025-8a88-4ebe383cee8b
+slug: waits-beyond-ten-minutes-are-a-loop-of-bounded-waits
+title: "Waits beyond ten minutes are a loop of bounded waits"
+context: "A mod runs a host command for at most ten minutes, and a person may take an hour to answer. `loft yard wait` can either wait as long as it is asked or return after a bound."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ec1a16c54c0
+  outcome: "`loft yard wait` returns within 2 seconds of its submission ceasing to be open, or with the outcome `pending` after its timeout of at most 540 seconds; the mod runs it again until the submission is answered or withdrawn, or Yard Log is closed."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ebf526d92d4
+    kind: local
+    label: "Within the host's limit"
+    statement: "No single command outlives what the host allows a command to run."
+  - key: 01a1646f-5467-7025-8a88-4ec000e8051f
+    kind: local
+    label: "Prompt"
+    statement: "The answer reaches the agent within seconds."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ec1a16c54c0
+    title: "A loop of bounded waits"
+    description: "Each `loft yard wait` ends by its timeout, and the mod starts the next."
+  - key: 01a1646f-5467-7025-8a88-4ec216a5486f
+    title: "One unbounded wait"
+    description: "One `loft yard wait` runs until the submission is no longer open."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ec1a16c54c0
+    driver: 01a1646f-5467-7025-8a88-4ebf526d92d4
+    rating: supports
+    rationale: "540 seconds is under ten minutes"
+  - option: 01a1646f-5467-7025-8a88-4ec1a16c54c0
+    driver: 01a1646f-5467-7025-8a88-4ec000e8051f
+    rating: supports
+    rationale: "each wait returns within 2 seconds of the answer"
+  - option: 01a1646f-5467-7025-8a88-4ec216a5486f
+    driver: 01a1646f-5467-7025-8a88-4ebf526d92d4
+    rating: conflicts
+    rationale: "the host kills it at ten minutes"
+  - option: 01a1646f-5467-7025-8a88-4ec216a5486f
+    driver: 01a1646f-5467-7025-8a88-4ec000e8051f
+    rating: supports
+    rationale: "it returns as soon as the answer comes"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ec325493897
+    kind: obligation
+    statement: "A wait's result says whether the submission is still open, so that the mod knows to wait again."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bbf588bb190b

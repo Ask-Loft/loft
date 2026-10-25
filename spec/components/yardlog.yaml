@@ -1,0 +1,16 @@
+key: 01a16469-559e-73c4-85f2-71b98f3a0df7
+slug: yardlog
+name: "yardlog"
+body: "The `yardlog` crate: the model of Yard Log, its records and their keys, the rules a write is held to, the format's versions, its canonical YAML and the merge of two copies. It performs no I/O, as `loftspec` performs none."
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77
+constraints:
+  - key: 01a16469-559e-73c4-85f2-71ba22a63b12
+    name: "`yardlog` shall perform no I/O."
+    verificationFate: proved
+  - key: 01a16469-559e-73c4-85f2-71bbf8853b2b
+    name: "`yardlog` shall depend on no store and on no crate of `loft-cli`."
+    verificationFate: proved
+  - key: 01a164dc-6a5a-7238-aa6a-3edf192ec694
+    name: "`yardlog` shall not depend on `loftspec`."
+    verificationFate: proved

@@ -1,0 +1,14 @@
+key: 01a164dc-6a5a-7238-aa6a-3edc39b2de92
+slug: loft-common
+name: "loft-common"
+body: "What the Format and `yardlog` share, and nothing that reaches outside the process: the reader and writer of the strict YAML subset both formats are written in, the key type their records carry, and the UTC time, to the second, at which their Acts and publishes are dated. `loftspec` and `yardlog` each depend on it and not on each other, so each format keeps one canonical byte form and one key type without the other."
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77
+  - 82902abe-15bc-4742-b6fb-57d28ac4ff6d
+constraints:
+  - key: 01a164dc-6a5a-7238-aa6a-3eddac75f643
+    name: "`loft-common` shall perform no I/O."
+    verificationFate: proved
+  - key: 01a164dc-6a5a-7238-aa6a-3edeb45a9dc7
+    name: "`loft-common` shall depend on no other crate of the workspace."
+    verificationFate: proved

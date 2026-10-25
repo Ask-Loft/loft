@@ -1,0 +1,151 @@
+key: 01a1646f-546d-7042-befd-eb945ae0aa2e
+slug: merge-two-copies
+name: "Merge two copies of Yard Log"
+body: |
+  Yard Log is committed, so two people working one branch on two machines each write their own copy, and git meets both when it merges. `loft merge-driver` merges the files under `.yard/` by key, as it merges `spec/`.
+
+  Because every version of every record is kept, a merge of Yard Log needs no conflict record: records and their versions join as a union, and the current version is the latest Act. Only what the person decided once is settled by time: the first answer counts, wherever it was given, and which one that is follows from the Acts, so no answer is rewritten.
+
+  git merges one file at a time, so the driver joins each file by key and leaves what spans files to the next `loft yard` command that opens the merged Yard Log: two records with one id in different stages, the numbers of decisions written apart, and which records are new to this copy. That command settles them under Yard Log's lock, as one Act. Acts of one time are ordered by key.
+tags:
+  - git
+realizes:
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb952252ad93
+    statement:
+      form: event_driven
+      when: "git merges two copies of a file under `.yard/` with `loft merge-driver`"
+      system: "`loft merge-driver`"
+      shall: "join the records of both copies by key."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb9608712c89
+        name: "A record that one copy holds and the other does not is in the result."
+      - key: 01a1646f-546d-7042-befd-eb97b5c5fb19
+        name: "The versions of a record that both copies hold join as a union, each version once."
+      - key: 01a1646f-546d-7042-befd-eb98fdbc9e58
+        name: "A record's current version in the result is the latest of its versions by Act."
+      - key: 01a1646f-546d-7042-befd-eb993fe35501
+        name: "The stages keep the base's order, followed by each copy's new stages in their order within it."
+      - key: 01a1646f-546d-7042-befd-eb9a09ff3618
+        name: "The blocks of a stage keep the base's order, followed by each copy's new blocks in their order within it."
+      - key: 01a1646f-546d-7042-befd-eb9b92c1bcf5
+        name: "The result writes no conflict record."
+  - key: 01a1646f-546d-7042-befd-eb9c8c3bc930
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "move each submission only forward."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb9de698ecdf
+        name: "A submission open in one copy and `answered` in the other is `answered` in the result."
+      - key: 01a1646f-546d-7042-befd-eb9e0d8d45d3
+        name: "A submission open in one copy and `withdrawn` in the other is `withdrawn` in the result."
+  - key: 01a1646f-546d-7042-befd-eb9f4757c2fd
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "keep as the answer or outcome of a block the earliest that either copy gives it."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eba0ae5f5513
+        name: "The earlier answer by its Act's time is the block's answer in the result."
+      - key: 01a1646f-546d-7042-befd-eba1a81ca116
+        name: "A later answer from the other copy is kept as it was written, and does not count."
+      - key: 01a1649f-62ef-71e6-98de-e112b4f533a0
+        name: "Neither answer is rewritten by the merge."
+  - key: 01a1646f-546d-7042-befd-eba2c06e31b2
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "treat Yard Log as closed where either copy closed it, with the earlier close."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eba3cc9480da
+        name: "The result's close is the earlier of the two closes by Act."
+  - key: 01a1646f-546d-7042-befd-eba4cc6b8167
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver`"
+      shall: "give the result a revision one higher than the higher of the two copies' revisions, and mark it as unsettled since this copy's revision."
+    criteria:
+      - key: 01a1649f-62ef-71e6-98de-e1138369260b
+        name: "The merged `yardlog.yaml` records the revision this copy had before the merge as the one it is unsettled since."
+      - key: 01a1649f-62ef-71e6-98de-e1149cec97fa
+        name: "The driver of a stage's file changes no id and no decision's number."
+      - key: 01a164a0-9eef-7334-9118-9a772c96e9ed
+        name: "A copy already marked as unsettled keeps the earlier of the two revisions it is unsettled since."
+      - key: 01a16532-9bbd-7310-b7f9-0e1bc9a6aeee
+        name: "Two copies that each changed Yard Log since their base differ in `yardlog.yaml`, which holds the Act of each change, so git hands the root to the driver."
+      - key: 01a16532-9bbd-7310-b7f9-0e1c9c56a776
+        name: "The merged `yardlog.yaml` lists as arriving each Act of a change that the other copy holds and this copy did not."
+  - key: 01a1646f-546d-7042-befd-eba7b5d37c0e
+    statement:
+      form: event_driven
+      when: "the two copies hold Yard Logs of one branch that were opened apart, with different keys"
+      system: "`loft merge-driver`"
+      shall: "join them under the key of the one opened earlier."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eba8b9a15607
+        name: "The result keeps the earlier opened Yard Log's key."
+      - key: 01a1646f-546d-7042-befd-eba945a594e1
+        name: "The other key is listed among the result's merged keys."
+      - key: 01a1646f-546d-7042-befd-ebaac4e90b69
+        name: "Each record of both is in the result."
+  - key: 01a1646f-546d-7042-befd-ebab951c7710
+    statement:
+      form: event_driven
+      when: "a `loft yard` command opens Yard Log that is marked as unsettled since a merge"
+      system: "`yardlog-store`"
+      shall: "settle it under Yard Log's lock, as one Act, before the command acts on it."
+    criteria:
+      - key: 01a1649f-62ef-71e6-98de-e11518fc2388
+        name: "Of two records with one id and different keys, the later written takes the id with the suffix `-2`, or the next number free."
+      - key: 01a1646f-546d-7042-befd-ebac18695ce2
+        name: "Both records keep their keys."
+      - key: 01a165f1-ba03-734f-8676-10206480bf2a
+        name: "A stage that one copy's settling renamed keeps its new id after a later merge, as the stage's own file holds it, though the other copy's root still names the old one."
+      - key: 01a164a0-9eef-7334-9118-9a78aeb7a2be
+        name: "Of two records written at one time, the one with the greater key is the later written."
+      - key: 01a1649f-62ef-71e6-98de-e11619c30392
+        name: "The decisions are numbered again from 1 in the order of their first versions' Acts, ordered by key where two Acts have one time."
+      - key: 01a1646f-546d-7042-befd-eba5774a732c
+        name: "Each record that the settled Yard Log holds and this copy did not hold at the revision it is unsettled since is marked as arrived at the settling's revision."
+      - key: 01a16532-9bbd-7310-b7f9-0e1de30c8c08
+        name: "A record of a stage's file that git took whole from the other copy is marked as arrived as one the driver joined is."
+      - key: 01a1646f-546d-7042-befd-eba6ee1c2c4b
+        name: "`loft yard read --since` a revision below the settling's returns the records that arrived with the merge."
+      - key: 01a1646f-546d-7042-befd-ebad391ae6dd
+        name: "The settling's Act lists each id it changed, with the old id and the new, and each decision whose number it changed."
+      - key: 01a1649f-62ef-71e6-98de-e117fd79c921
+        name: "Settled Yard Log is no longer marked as unsettled, and opening it again settles nothing."
+      - key: 01a1649f-62f0-7320-902c-7d8a33899cd1
+        name: "A command that only reads Yard Log settles it as one that writes would."
+      - key: 01a16a58-511f-777c-8166-b8c175302dfb
+        name: "Yard Log removed after the command read it and before it settles is found absent, and nothing is written."
+  - key: 01a1647b-208d-7169-85c8-9a550c2161d5
+    statement:
+      form: event_driven
+      when: "the two copies differ in a tokens or activity file"
+      system: "`loft merge-driver`"
+      shall: "take the copy of the file whose last event is the later."
+    body: "Each such file is written by one session alone, so two copies of it differ only where one has seen more of that session's events."
+    criteria:
+      - key: 01a1647b-208d-7169-85c8-9a56a7391c0f
+        name: "A tokens or activity file never gives a conflict."
+      - key: 01a1647b-208d-7169-85c8-9a57357c5764
+        name: "The file taken is the one whose last event ended later."
+      - key: 01a1652c-8a87-75c3-a415-c00c8396212a
+        name: "A file of a `tokens` or `activity` folder that holds no `yardlog.yaml` is taken whole from one copy, and never merged by key."
+      - key: 01a1652c-8a87-75c3-a415-c00db620b03c
+        name: "Of two copies whose last events ended at one time, this copy is taken."
+  - key: 01a1646f-546d-7042-befd-ebae13e04266
+    statement:
+      form: unwanted
+      if: "a copy of a file under `.yard/` does not read as `yardlog`"
+      system: "`loft merge-driver`"
+      shall: "write nothing and exit 1."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebafc6010906
+        name: "The error names the copy that failed and where."
+      - key: 01a1646f-546d-7042-befd-ebb0804ba272
+        name: "`<ours>` is unchanged."

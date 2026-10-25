@@ -1,0 +1,50 @@
+key: 01a1646f-5466-77f8-9738-e1399e89620b
+slug: agents-write-typed-blocks-and-the-person-only-answers
+title: "Agents write typed blocks and the person only answers"
+context: "Yard Log is written by agents and read and answered by a person. Its page draws questions as forms, decisions beside the questions they settle and tasks along time; a free document would leave each of these to be guessed from prose, and a document both sides edit would let an agent write a person's answer."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e13c521321a5
+  outcome: "Agents write Yard Log only as typed blocks inside stages, through Yard Client's tools; the person writes only answers and decisions; and a write that sets an answer or a decision is refused."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e13a13ff43f5
+    kind: local
+    label: "Drawn by kind"
+    statement: "Each kind of content is drawn and acted on in a form of its own."
+  - key: 01a1646f-5466-77f8-9738-e13b12ff12cc
+    kind: local
+    label: "Answers are the person's"
+    statement: "An answer in Yard Log is always one the person gave."
+options:
+  - key: 01a1646f-5466-77f8-9738-e13c521321a5
+    title: "Typed blocks, answers by the person"
+    description: "Eight block kinds; the agent writes blocks, the person answers and decides."
+  - key: 01a1646f-5466-77f8-9738-e13d033decec
+    title: "A shared Markdown document"
+    description: "One document both write, with conventions for questions and answers."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e13c521321a5
+    driver: 01a1646f-5466-77f8-9738-e13a13ff43f5
+    rating: supports
+    rationale: "each block's kind is in the data"
+  - option: 01a1646f-5466-77f8-9738-e13c521321a5
+    driver: 01a1646f-5466-77f8-9738-e13b12ff12cc
+    rating: supports
+    rationale: "a write that sets an answer is refused"
+  - option: 01a1646f-5466-77f8-9738-e13d033decec
+    driver: 01a1646f-5466-77f8-9738-e13a13ff43f5
+    rating: conflicts
+    rationale: "kinds are guessed from prose"
+  - option: 01a1646f-5466-77f8-9738-e13d033decec
+    driver: 01a1646f-5466-77f8-9738-e13b12ff12cc
+    rating: conflicts
+    rationale: "either side can write any line"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e13e1ca48962
+    kind: obligation
+    statement: "A kind exists only where the person acts on it, where Yard Log follows its state over time, or where it records another program's report; everything else is a note."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f286a6afe725

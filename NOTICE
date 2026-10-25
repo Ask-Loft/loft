@@ -2,3 +2,9 @@ Loft Specification Format
 Copyright 2026 Locap Ventures FZCO
 
 This product includes software developed by Locap Ventures FZCO (https://askloft.ai).
+
+The `loft` binary embeds Mermaid 11.17.2 (https://mermaid.js.org), which the Yard page draws its
+diagrams with: Copyright (c) 2014 - 2022 Knut Sveidqvist, released under the MIT License. Its
+licence is in crates/loft-cli/yard-page/vendor/mermaid.LICENSE and is served beside it, and the
+script carries the notices of the third-party code it bundles. Where it comes from is recorded in
+crates/loft-cli/yard-page/vendor/README.md.

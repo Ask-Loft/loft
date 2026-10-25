@@ -2,12 +2,11 @@
 //! the revision, as `git merge-base` gives it, and the files under `spec/` that the commit
 //! holds, listed by `git ls-tree` and read in one `git cat-file --batch`.
 
-use std::io::Write;
 use std::path::Path;
-use std::process::{Output, Stdio};
-use std::{io, thread};
+use std::process::Output;
 
 use loftspec::codec::{Files, SpecPath};
+use loftspec::publish::LOCK;
 
 use super::{GitCommand, succeeded, text};
 use crate::StoreError;
@@ -19,6 +18,8 @@ pub const MERGE_BASE: [&str; 2] = ["merge-base", "HEAD"];
 pub const LIST_TREE: [&str; 3] = ["ls-tree", "-r", "-z"];
 /// Each object whose id is a line of standard input, after a header of its id, type and size.
 pub const BATCH: [&str; 2] = ["cat-file", "--batch"];
+/// The last commit that wrote a path, completed by the path.
+pub const LOCK_WRITTEN: [&str; 4] = ["log", "-1", "--format=%H", "--"];
 
 /// What `git merge-base HEAD <revision>` says of a revision that names a commit.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -84,37 +85,26 @@ impl GitCommand {
         Ok(files)
     }
 
-    /// Runs one call with `input` on its standard input, written from another thread so that a
-    /// call that answers while it reads cannot stall on a full pipe.
+    /// The commit that last wrote the lock beside `spec/`, the publish commit the lock pins; none
+    /// where no commit wrote it.
+    ///
+    /// # Errors
+    ///
+    /// git fails or cannot be run.
+    pub fn lock_written(&self, root: &Path) -> Result<Option<String>, StoreError> {
+        let call: Vec<&str> = LOCK_WRITTEN.into_iter().chain([LOCK]).collect();
+        let commit = text(&succeeded(&call, self.run(root, &call)?)?);
+        Ok(Some(commit).filter(|commit| !commit.is_empty()))
+    }
+
+    /// Runs one call with `input` on its standard input.
     fn run_with_input(
         &self,
         root: &Path,
         call: &[&str],
         input: &[u8],
     ) -> Result<Output, StoreError> {
-        let failed = |error: io::Error| match error.kind() {
-            io::ErrorKind::NotFound => StoreError::GitUnavailable(error.to_string()),
-            _ => StoreError::Git {
-                call: call.join(" "),
-                message: error.to_string(),
-            },
-        };
-        let mut child = (self.command)()
-            .arg("-C")
-            .arg(root)
-            .args(call)
-            .env("GIT_OPTIONAL_LOCKS", "0")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(failed)?;
-        let mut stdin = child.stdin.take().expect("the input is piped");
-        thread::scope(|scope| {
-            scope.spawn(move || stdin.write_all(input));
-            child.wait_with_output()
-        })
-        .map_err(failed)
+        Ok(self.git.run_with_input(root, call, input)?)
     }
 }
 

@@ -1,0 +1,59 @@
+key: 01a1646f-546c-7521-9643-bc69fcfce2ec
+slug: the-loft-plugin
+name: "The Loft plugin"
+body: "Yard Client reaches Claude Code through the Loft plugin that the repository's marketplace already lists, beside the `loft-spec` skill. The plugin adds the `yard` skill beside it and holds Yard Client's hooks in its one mod, and carries no MCP server and no built program: Claude Code runs the mod from its TypeScript source, and the mod runs `loft`, which the plugin already needs."
+realizes:
+  - 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+requirements:
+  - key: 01a1646f-546c-7521-9643-bc6ad3206949
+    statement:
+      form: ubiquitous
+      system: "The manifest `plugins/claude/loft/.claude-plugin/plugin.json`"
+      shall: "declare the settings that Yard Client reads."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc6bd7f88c35
+        name: "The manifest declares the setting `loftCommand`, `loft` by default."
+      - key: 01a1646f-546c-7521-9643-bc6c3149e8d0
+        name: "The manifest declares the setting `baseBranch`, `develop` by default."
+      - key: 01a1646f-546c-7521-9643-bc6d03d57093
+        name: "The manifest declares the setting `yardPort`, 7411 by default."
+  - key: 01a1646f-546c-7521-9643-bc6e24d81e93
+    statement:
+      form: ubiquitous
+      system: "The Loft plugin"
+      shall: "run Yard Client's hooks in one mod."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc6f40f70b34
+        name: "The plugin's `hooks/hooks.json` names one hooks module, which lies beside it, and holds no command hook."
+      - key: 01a1646f-546c-7521-9643-bc702a58c485
+        name: "The plugin holds no `.mcp.json`."
+      - key: 01a1646f-546c-7521-9643-bc7141354239
+        name: "The plugin holds no built program and no file that a build writes."
+      - key: 01a1646f-546c-7521-9643-bc72fc00b830
+        name: "The plugin's `yard` skill lies at `skills/yard/`, beside `skills/loft-spec/`."
+      - key: 01a1646f-546c-7521-9643-bc73ad3fd07b
+        name: "The repository's `.claude-plugin/marketplace.json` lists the plugin `loft` at `./plugins/claude/loft`, as before."
+  - key: 01a1646f-546c-7521-9643-bc7439f2ddc5
+    statement:
+      form: ubiquitous
+      system: "The Loft mod"
+      shall: "run every `loft` command through its `loftCommand` setting, with `LOFT_TELEMETRY` and `LOFT_UPDATE_CHECK` set to `off`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc751adb4ee0
+        name: "A `loft yard` command that the mod runs sends no command event and asks for no update."
+      - key: 01a1646f-546c-7521-9643-bc76e3286f0f
+        name: "A `loftCommand` of more than one word, such as `pnpm exec loft`, runs its first word with the others as its first arguments."
+      - key: 01a1646f-546c-7521-9643-bc77fff4bff1
+        name: "Each `loft yard` command the mod runs is given `--format json`, and the mod reads its document alone."
+  - key: 01a1646f-546c-7521-9643-bc7863e23233
+    statement:
+      form: unwanted
+      if: "the `loftCommand` setting cannot be run"
+      system: "the Loft mod"
+      shall: "register no Yard tool and let each tool call of the agent run as it would without the plugin."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc79310dc188
+        name: "The agent's `AskUserQuestion` and `ExitPlanMode` calls show Claude Code's own dialogs alone."
+      - key: 01a1646f-546c-7521-9643-bc7a303448bb
+        name: "The mod tells the person once that Yard Client cannot run, naming the command."

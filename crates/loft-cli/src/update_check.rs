@@ -99,7 +99,7 @@ fn keep(body: &[u8], now: u64, mut kept: Value) {
 }
 
 /// The numbers of a version `X.Y.Z`, if it is one.
-fn parse(version: &str) -> Option<(u64, u64, u64)> {
+pub fn parse(version: &str) -> Option<(u64, u64, u64)> {
     let mut parts = version.split('.');
     let mut number = || {
         parts

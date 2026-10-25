@@ -1,0 +1,109 @@
+key: 01a1646f-546d-7042-befd-ea4a4433bbd3
+slug: the-loft-yard-commands
+name: "The `loft yard` commands"
+body: |
+  The `loft yard` commands are Yard Client's one way in: the mod reaches Yard Log through them, and so may any other host or a person at a terminal. Each command follows the rules every `loft` command follows, and a command opts into the rules below by listing the tag `yard-command` on its Feature, which the command tests hold it to.
+
+  The commands are `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `continue`, `serve`, `upgrade` and `protocol`. A host may run them every few seconds, so none of them sends a command event or asks for an update.
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b707fdee97
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+requirements:
+  - key: 01a1646f-546d-7042-befd-ea4b1bd3ec77
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command"
+      shall: "print one JSON document with `--format json`, held to the command's own schema."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea4ce182abcf
+        name: "Each command's schema is `schemas/yard-<command>.json`, which names its documents `loft-yard-<command>/<version>`."
+      - key: 01a1646f-546d-7042-befd-ea4d859a6f03
+        name: "Each document carries `schema`, `outcome` and `errors`."
+      - key: 01a1646f-546d-7042-befd-ea4ee183f9f9
+        name: "A refusal is listed among the document's errors and exits 1."
+  - key: 01a1647b-208d-7169-85c8-9a4c743bc0a1
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command"
+      shall: "take the base branch from Yard Log's root, where `loft yard write` recorded it when it opened Yard Log."
+    body: "The base branch is the one a branch is merged into, and the one whose tip decides whether Yard Log was closed by the merge. It is recorded once, when Yard Log is opened, by the `loft yard write` that opens it: the branch its `--base <branch>` names; else the local branch that git's reflog says the branch was created from, so that a branch cut from another feature branch is compared with that branch; else the branch its `--default-base <branch>` names; else `develop`. The Loft mod passes its `baseBranch` setting as `--default-base`. No other command takes either option, so a command run by hand checks a merge against the same branch as the mod and the page."
+    criteria:
+      - key: 01a1647b-208d-7169-85c8-9a4d3e3ebd74
+        name: "Yard Log opened by a `loft yard write` without `--base`, on a branch that git's reflog says was created from another local branch, records that branch as its base branch."
+      - key: 01a169c2-313f-70fe-a064-ad7198503947
+        name: "Yard Log opened by a `loft yard write` without `--base`, on a branch that git's reflog says was created from no other local branch, records the branch `--default-base` names, or `develop` where that write names none."
+      - key: 01a169c2-313f-70fe-a064-ad72205c72c6
+        name: "A branch created from `HEAD`, from a commit, from a remote branch or from itself, and a branch whose reflog holds no entry of its creation, counts as created from no other local branch."
+      - key: 01a169c2-313f-70fe-a064-ad7376ed0349
+        name: "Yard Log opened by a `loft yard write` with `--base` records the branch it names, whichever branch git says the branch was created from."
+      - key: 01a1647b-208d-7169-85c8-9a4e9df86ef5
+        name: "The Loft mod runs `loft yard write` with `--default-base` set to its `baseBranch` setting, and never with `--base`."
+      - key: 01a16621-e7bc-7707-b123-2163026a4f94
+        name: "A `loft yard write` with `--base` to Yard Log already open leaves the base branch its root records as it was."
+      - key: 01a16621-e7bc-7707-b123-2164410db0f5
+        name: "Every command and the page check whether a merge closed Yard Log against the base branch its root records."
+  - key: 01a1646f-546d-7042-befd-ea53b8737c7d
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command"
+      shall: "send no command event and ask for no update."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea5421fc725c
+        name: "No `loft yard` command lists the tag `sends-telemetry`."
+      - key: 01a1646f-546d-7042-befd-ea55f059792d
+        name: "No `loft yard` command lists the tag `checks-for-updates`."
+  - key: 01a1646f-546d-7042-befd-ea565cdcdcbb
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command"
+      shall: "date what it writes by the time the clock gives."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea5723af7f2f
+        name: "A run with `SOURCE_DATE_EPOCH` set dates its Acts by that time."
+  - key: 01a1646f-546d-7042-befd-ea58870b0cf6
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command"
+      shall: "give in its result Yard Log's revision and the address of the branch's Yard Log on the page."
+    body: "This rule binds the commands that act on a branch's Yard Log: `read`, `write`, `wait`, `withdraw`, `close`, `published` and `answer`."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea59dc5f73ee
+        name: "The address is that of the page server `~/.yard/server.json` names, with the tree and the branch."
+      - key: 01a1646f-546d-7042-befd-ea5a9fa982c1
+        name: "Where `~/.yard/server.json` names no page server that holds the lock on `~/.yard/server.lock`, the result says that the page is unavailable and names the port."
+      - key: 01a1649f-62ef-71e6-98de-e104038deca7
+        name: "A command learns whether a page server runs without opening a connection."
+      - key: 01a1646f-546d-7042-befd-ea9efc9e224f
+        name: "A command whose port another program holds still does its work."
+  - key: 01a1649f-62ef-71e6-98de-e1058abe2d03
+    statement:
+      form: ubiquitous
+      system: "`loft yard upgrade`"
+      shall: "act for the person, taking no `--session`."
+    criteria:
+      - key: 01a1649f-62ef-71e6-98de-e1066ae8d263
+        name: "`loft yard upgrade` run without `--session` is not refused for it."
+      - key: 01a1649f-62ef-71e6-98de-e10740e6676e
+        name: "Each Yard Log that `loft yard upgrade` rewrites records the person as the actor of the upgrade."
+  - key: 01a1646f-546d-7042-befd-ea5bdf2c63b3
+    statement:
+      form: unwanted
+      if: "an argument of a `loft yard` command does not match the command's input"
+      system: "a `loft yard` command"
+      shall: "exit 2 and name the argument at fault."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea5c524891f8
+        name: "No file is changed."
+  - key: 01a1646f-546d-7042-befd-ea5d9469f09c
+    statement:
+      form: ubiquitous
+      system: "The Feature of each `loft yard` command"
+      shall: "list the tag `yard-command`."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea5efadc6100
+        name: "Each `loft yard` command has a Feature that lists `yard-command`."
+      - key: 01a1646f-546d-7042-befd-ea5fa659b008
+        name: "Each Feature that lists `yard-command` belongs to a `loft yard` command."
+      - key: 01a1646f-546d-7042-befd-ea6063179e7b
+        name: "Each `loft yard` command but `serve`, `protocol` and `continue` has a Feature that lists `needs-repository`."

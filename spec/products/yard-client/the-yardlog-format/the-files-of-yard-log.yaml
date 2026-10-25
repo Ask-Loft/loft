@@ -1,0 +1,88 @@
+key: 01a1646f-546d-7042-befd-ebc727a05b50
+slug: the-files-of-yard-log
+name: "The files of Yard Log"
+body: |
+  Yard Log's folder is laid out as `spec/` is: a root, then one file for each stage, which holds its blocks as a Feature's file holds its Requirements. A stage's file is named by the stage's key, not its id, so that two copies of Yard Log can never put two different stages at one path; the root maps each key to its id. Beside them, one file for each session holds the tokens that session took, and one its activity, so that no two writers ever share a file.
+
+  ```text
+  .yard/<branch>/yardlog.yaml
+  .yard/<branch>/<stage key>.yaml
+  .yard/<branch>/tokens/<session id>.yaml
+  .yard/<branch>/activity/<session id>.yaml
+  ```
+
+  What belongs to the machine and not to the branch stays out of the working tree, in `~/.yard/` in the person's home directory: the page server's address and the lock it holds while it runs, a request that it stop, the trees it serves, each session's events, when each session was last heard, the revision each agent last read, the sessions that continue others and the control token. The lock and save journal of each branch's Yard Log, and the lease of each wait, are kept in git's own directory for the worktree.
+tags:
+  - git
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - 01a1649f-62ea-7225-80e1-a3d4d9905b4d
+  - 01a164dc-6a5a-7238-aa6a-3edc39b2de92
+requirements:
+  - key: 01a1646f-546d-7042-befd-ebc81208c92b
+    statement:
+      form: ubiquitous
+      system: "`yardlog-store`"
+      shall: "keep each branch's Yard Log as YAML files under `.yard/<branch>/`: a root, one file for each stage, and one file of tokens and one of activity for each session that worked on it."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebc9da3f340f
+        name: "The root `yardlog.yaml` holds `format: yardlog/1`, Yard Log's key, its branch, the base branch it is merged into, its title, its revision, the Act that opened it, the Act of each change it holds, the stages in order by key with each one's id, the submissions, the keys of Yard Logs merged into it, and whether it is closed."
+      - key: 01a1646f-546d-7042-befd-ebca09d739e6
+        name: "Each stage's file is `<stage key>.yaml` beside `yardlog.yaml`, and holds the stage and its blocks in order."
+      - key: 01a1649f-62f0-7320-902c-7d8bb078f994
+        name: "A stage keeps its file through every change of its id."
+      - key: 01a1646f-546d-7042-befd-ebcb46f81df5
+        name: "Each block's versions, answers and outcomes are kept with the block in its stage's file."
+  - key: 01a1646f-546d-7042-befd-ebcc6631d4d4
+    statement:
+      form: ubiquitous
+      system: "`yardlog-store`"
+      shall: "write the files in one canonical layout, so that Yard Log holding the same records always gives the same bytes."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ebcda23e7abb
+        name: "Writing Yard Log that has not changed leaves its files' bytes unchanged."
+      - key: 01a1646f-546d-7042-befd-ebce62c22acb
+        name: "A change to one block rewrites only its stage's file and `yardlog.yaml`."
+      - key: 01a1646f-546d-7042-befd-ebcf584141d9
+        name: "The files hold no comments, anchors, aliases, tags or flow collections."
+  - key: 01a1646f-546e-76cb-8b4f-f1e8b2166a6e
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "keep what belongs to the machine, and not to the branch, in `~/.yard/` in the person's home directory."
+    criteria:
+      - key: 01a1649f-62f0-7320-902c-7d8cecb4b54e
+        name: "The running page server's port, process id, version and formats are kept in `~/.yard/server.json`."
+      - key: 01a16517-45f6-7370-99ab-21f8c5bfb74f
+        name: "The running page server holds the operating system's lock on `~/.yard/server.lock` for as long as its process runs."
+      - key: 01a16517-45f6-7370-99ab-21f99fda8153
+        name: "A request that the running page server stop is kept in `~/.yard/stop.json`, naming the version of `loft` that asks."
+      - key: 01a1646f-546e-76cb-8b4f-f1e9d5f6fcfc
+        name: "The trees the page server serves are kept in `~/.yard/trees.json`."
+      - key: 01a1646f-546e-76cb-8b4f-f1eac3fca16f
+        name: "Each session's event log is kept in `~/.yard/events/<session id>.jsonl`."
+      - key: 01a1649f-62f0-7320-902c-7d8d45d2007a
+        name: "When each session was last heard is kept in `~/.yard/sessions.json`."
+      - key: 01a1649f-62f0-7320-902c-7d8ed7da2988
+        name: "The revision each agent last read is kept in `~/.yard/last-read.json`."
+      - key: 01a1647c-e680-7753-bf17-f18342ac8828
+        name: "The sessions that continue others are kept in `~/.yard/continuations.json`."
+      - key: 01a1646f-546e-76cb-8b4f-f1ec3c4ff3b2
+        name: "The page server's control token is kept in `~/.yard/token`, readable only by the person's own account."
+      - key: 01a1649f-62f0-7320-902c-7d8fc94401ef
+        name: "Each file of `~/.yard/` is written to a temporary file and renamed into place."
+  - key: 01a1646f-546e-76cb-8b4f-f1ed1bb5b7d8
+    statement:
+      form: unwanted
+      if: "Yard Log's files do not read, as after a bad edit by hand or an unresolved merge conflict"
+      system: "`yardlog-store`"
+      shall: "refuse every write to that Yard Log, naming the file and the line at fault."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f1ee570d4cd2
+        name: "No file is changed."
+      - key: 01a1646f-546e-76cb-8b4f-f1ef3e16f013
+        name: "`loft yard read` reports the error with its file and line in place of the stages."
+      - key: 01a1646f-546e-76cb-8b4f-f1f0c8a50d30
+        name: "The page shows the error in place of Yard Log's stages."

@@ -1,0 +1,65 @@
+key: 01a1695a-dd72-7090-817b-abf55a3053cc
+slug: expand-a-diagram
+name: "Expand a diagram"
+body: "A diagram drawn in the width of the timeline can be too small to read. Each one the page draws can be expanded into a modal over the page and zoomed and panned there as a picture is on a trackpad: pinch to zoom, scroll to pan."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1695a-dd72-7090-817b-abf65f739324
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "give each diagram it draws a control that expands it."
+    criteria:
+      - key: 01a1695a-dd72-7090-817b-abf748b2e193
+        name: "Each diagram of a block's Markdown shows the control."
+      - key: 01a1695a-dd72-7090-817b-abf896e58a12
+        name: "Each `spec-change` diagram shows the control."
+      - key: 01a1695a-dd72-7090-817b-abf9704f06b2
+        name: "A diagram that could not be drawn shows no control."
+      - key: 01a1695a-dd72-7090-817b-abfa7b7e630c
+        name: "The control is reached by the keyboard and named as expanding the diagram."
+  - key: 01a1695a-dd72-7090-817b-abfbb9b74c25
+    statement:
+      form: event_driven
+      when: "the person expands a diagram"
+      system: "the page"
+      shall: "open the diagram in a modal over the page, scaled to fit the modal and centred in it."
+    criteria:
+      - key: 01a1695a-dd72-7090-817b-abfcdbb64f36
+        name: "The modal covers the viewport within a margin, over the panel of the open submissions where that is open."
+      - key: 01a169df-0b4e-72cf-bc3c-471fe7b9fbdb
+        name: "The page behind the modal is darkened and takes no clicks."
+      - key: 01a1695a-dd72-7090-817b-abfdbe25498a
+        name: "The whole diagram is shown when the modal opens."
+      - key: 01a1695a-dd72-7090-817b-abfe03d07189
+        name: "The modal's title names the block the diagram belongs to."
+      - key: 01a1695a-dd72-7090-817b-abff8766d1fc
+        name: "The expanded diagram is the diagram as the page drew it, with the Feature Group the person opened in a `spec-change` diagram."
+      - key: 01a1695a-dd72-7090-817b-ac0012610770
+        name: "Closing the modal gives the focus back to the control that expanded the diagram."
+  - key: 01a1695a-dd72-7090-817b-ac01f0d079f2
+    statement:
+      form: state_driven
+      while: "a diagram is expanded"
+      system: "the page"
+      shall: "let the person zoom and pan the diagram within the modal."
+    criteria:
+      - key: 01a1695a-dd72-7090-817b-ac026a641efc
+        name: "Pinching on a trackpad zooms the diagram in or out about the point under the pointer."
+      - key: 01a1695a-dd72-7090-817b-ac03c8863b7a
+        name: "Turning the wheel with Ctrl or ⌘ held zooms the diagram in or out about the point under the pointer."
+      - key: 01a1695a-dd72-7090-817b-ac040919d3d1
+        name: "Scrolling with two fingers or with the wheel pans the diagram."
+      - key: 01a1695a-dd72-7090-817b-ac05c9382c0b
+        name: "Dragging the diagram pans it."
+      - key: 01a1695a-dd72-7090-817b-ac06c2e927c9
+        name: "Buttons in the modal zoom in, zoom out and fit the whole diagram to the modal."
+      - key: 01a1695a-dd72-7090-817b-ac075b2314e0
+        name: "The keys `+` and `-` zoom in and out, `0` fits the whole diagram to the modal, and the arrow keys pan it."
+      - key: 01a1695a-dd72-7090-817b-ac08aa490e8f
+        name: "The modal shows the zoom as a percentage of the diagram's own size."
+      - key: 01a1695a-dd72-7090-817b-ac09b1462a87
+        name: "The zoom stays between a tenth of the diagram's own size and eight times it."
+      - key: 01a1695a-dd72-7090-817b-ac0a5117db21
+        name: "Zooming and panning move only the diagram, never the modal's content or the page behind it."

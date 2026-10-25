@@ -1,0 +1,53 @@
+key: 01a1646f-5467-7025-8a88-4e6ddeea4fa1
+slug: one-yard-log-for-each-branch
+title: "One Yard Log for each branch"
+context: "A branch carries one intent, and its commits are reviewed together before it is merged. The agent and the person both need to know, without asking, where the record of the work they are on is kept."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e707e63b4f6
+  outcome: "Each branch has one Yard Log, which the first write on that branch opens, and which travels and is reviewed with the branch."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e6e59d84756
+    kind: local
+    label: "Found without asking"
+    statement: "The agent knows which Yard Log to write from the branch it is on."
+  - key: 01a1646f-5467-7025-8a88-4e6f84c8519c
+    kind: local
+    label: "Reviewed with the change"
+    statement: "Yard Log is read beside the change it records."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e707e63b4f6
+    title: "One for each branch"
+    description: "Yard Log belongs to one branch, and each branch has its own Yard Log."
+  - key: 01a1646f-5467-7025-8a88-4e71efe61179
+    title: "One for each task the agent names"
+    description: "The agent opens and names Yard Logs as it chooses, several on a branch or one across branches."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e707e63b4f6
+    driver: 01a1646f-5467-7025-8a88-4e6e59d84756
+    rating: supports
+    rationale: "the branch names it"
+  - option: 01a1646f-5467-7025-8a88-4e707e63b4f6
+    driver: 01a1646f-5467-7025-8a88-4e6f84c8519c
+    rating: supports
+    rationale: "it is in the branch"
+  - option: 01a1646f-5467-7025-8a88-4e71efe61179
+    driver: 01a1646f-5467-7025-8a88-4e6e59d84756
+    rating: conflicts
+    rationale: "the agent has to be told which one"
+  - option: 01a1646f-5467-7025-8a88-4e71efe61179
+    driver: 01a1646f-5467-7025-8a88-4e6f84c8519c
+    rating: neutral
+    rationale: "only where the agent kept them apart"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e72ac177213
+    kind: obligation
+    statement: "On a detached HEAD there is no Yard Log to write, and a write is refused."
+  - key: 01a1646f-5467-7025-8a88-4e73e388f250
+    kind: obligation
+    statement: "Further work after Yard Log is closed goes on a branch of its own."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b305365c69
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f236e97db04a

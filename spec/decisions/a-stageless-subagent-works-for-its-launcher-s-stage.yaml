@@ -1,0 +1,82 @@
+key: 01a16995-3135-7553-a05c-9ca5e72517d6
+slug: a-stageless-subagent-works-for-its-launcher-s-stage
+title: "A subagent with no stage of its own works for the stage of the agent that started it"
+context: "Most subagents never open a stage of their own: an Explore or Plan agent, or one given a narrow brief, writes nothing to Yard Log, and one that does opens its stage only after its first steps. A subagent working in a worktree of its own keeps that worktree's Yard Log. In Claude Code only a session's main agent starts subagents, and a subagent started in the background ends its starter's tool call at once."
+state:
+  kind: accepted
+  selectedOption: 01a16995-3136-7736-9507-6df5bce81750
+  outcome: "While a subagent has no stage of its own active, its requests, its Loft runs and its run count toward the stage active for its session's main agent, each stage's tokens are kept by agent too, and the Gantt chart draws the run of a subagent that owned no stage in the bar of the stage it worked for."
+drivers:
+  - key: 01a16995-3136-7736-9507-6df27fa660a0
+    kind: local
+    label: "Delegated cost"
+    statement: "A stage shows what the work it delegated to subagents cost, in tokens and in time."
+  - key: 01a16995-3136-7736-9507-6df394476305
+    kind: local
+    label: "Who spent it"
+    statement: "Each agent's share of what a stage cost stays visible."
+  - key: 01a16995-3136-7736-9507-6df43a702edb
+    kind: local
+    label: "Few lanes"
+    statement: "A session that runs many short subagents does not fill the Gantt chart with near-empty lanes."
+options:
+  - key: 01a16995-3136-7736-9507-6df5bce81750
+    title: "The launcher's stage"
+    description: "While a subagent has no stage of its own active, its requests, its Loft runs and its run count toward the stage active for its session's main agent, and the Gantt chart draws its run in that stage's bar; once it opens a stage, its work counts toward that stage, and it has a lane."
+  - key: 01a16995-3136-7736-9507-6df65b3a4e91
+    title: "No stage"
+    description: "A subagent's work counts toward a stage only while it has one of its own, and is otherwise counted under no stage and drawn nowhere."
+  - key: 01a16995-3136-7736-9507-6df76c18809c
+    title: "A stage for every subagent"
+    description: "The yard skill tells every subagent to open a stage before its first step, and the accounting stays as it is."
+assessments:
+  - option: 01a16995-3136-7736-9507-6df5bce81750
+    driver: 01a16995-3136-7736-9507-6df27fa660a0
+    rating: supports
+    rationale: "the delegating stage counts the subagent's tokens and draws its run"
+  - option: 01a16995-3136-7736-9507-6df5bce81750
+    driver: 01a16995-3136-7736-9507-6df394476305
+    rating: supports
+    rationale: "each stage's counts are kept by agent too"
+  - option: 01a16995-3136-7736-9507-6df5bce81750
+    driver: 01a16995-3136-7736-9507-6df43a702edb
+    rating: supports
+    rationale: "only a subagent that owns a stage has a lane"
+  - option: 01a16995-3136-7736-9507-6df65b3a4e91
+    driver: 01a16995-3136-7736-9507-6df27fa660a0
+    rating: conflicts
+    rationale: "the delegating stage looks cheaper than its work"
+  - option: 01a16995-3136-7736-9507-6df65b3a4e91
+    driver: 01a16995-3136-7736-9507-6df43a702edb
+    rating: supports
+    rationale: "nothing new is drawn"
+  - option: 01a16995-3136-7736-9507-6df76c18809c
+    driver: 01a16995-3136-7736-9507-6df27fa660a0
+    rating: conflicts
+    rationale: "a subagent not told of Yard Log still goes uncounted"
+  - option: 01a16995-3136-7736-9507-6df76c18809c
+    driver: 01a16995-3136-7736-9507-6df43a702edb
+    rating: conflicts
+    rationale: "every subagent gets a lane"
+  - option: 01a16995-3136-7736-9507-6df65b3a4e91
+    driver: 01a16995-3136-7736-9507-6df394476305
+    rating: neutral
+    rationale: "each agent's totals stay, but no stage holds a subagent's"
+  - option: 01a16995-3136-7736-9507-6df76c18809c
+    driver: 01a16995-3136-7736-9507-6df394476305
+    rating: supports
+    rationale: "each subagent's stage holds its own counts"
+consequences:
+  - key: 01a16995-3136-7736-9507-6df8cf60a05d
+    kind: obligation
+    statement: "The page server finds, for each event of a subagent with no active stage, the stage active for its session's main agent."
+  - key: 01a16995-3136-7736-9507-6df931e0c341
+    kind: benefit
+    statement: "Under no stage remain only the requests made while neither the subagent nor its session's main agent had a stage active."
+subjects:
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eae568dbeb5f
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eaefec18d7c5
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb677bcc8418

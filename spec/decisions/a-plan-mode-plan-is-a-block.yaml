@@ -1,0 +1,50 @@
+key: 01a1646f-5466-77f8-9738-e10b83ab48c0
+slug: a-plan-mode-plan-is-a-block
+title: "A plan-mode plan is a block"
+context: "A plan presented with `ExitPlanMode` lives in a file and in Claude Code's prompt. The person approves or rejects it with a reason, and the agent may revise and present it again."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e10ec81b4ef0
+  outcome: "A plan is a `plan` block, with its title, its Markdown, the path of its file and its outcome; a plan from a file that Yard Log already holds is a new version of the same block."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e10cbe27dbc1
+    kind: local
+    label: "Kept with its outcome"
+    statement: "A plan and how the person decided it are read together."
+  - key: 01a1646f-5466-77f8-9738-e10de85c2d9f
+    kind: local
+    label: "Revisions followed"
+    statement: "Each revision of a plan is a version of one record."
+options:
+  - key: 01a1646f-5466-77f8-9738-e10ec81b4ef0
+    title: "A plan block"
+    description: "A block kind of its own for plans."
+  - key: 01a1646f-5466-77f8-9738-e10f36f1c44b
+    title: "An approval"
+    description: "The plan's text in an `approval` block."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e10ec81b4ef0
+    driver: 01a1646f-5466-77f8-9738-e10cbe27dbc1
+    rating: supports
+    rationale: "the outcome is on the block"
+  - option: 01a1646f-5466-77f8-9738-e10ec81b4ef0
+    driver: 01a1646f-5466-77f8-9738-e10de85c2d9f
+    rating: supports
+    rationale: "one block for each plan file"
+  - option: 01a1646f-5466-77f8-9738-e10f36f1c44b
+    driver: 01a1646f-5466-77f8-9738-e10cbe27dbc1
+    rating: supports
+    rationale: "the outcome is on the block"
+  - option: 01a1646f-5466-77f8-9738-e10f36f1c44b
+    driver: 01a1646f-5466-77f8-9738-e10de85c2d9f
+    rating: conflicts
+    rationale: "nothing ties a revision to its file"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e110ff5acb9a
+    kind: obligation
+    statement: "A plan whose Markdown is rewritten after its outcome has no outcome until the person decides it again."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc41c1c5820f

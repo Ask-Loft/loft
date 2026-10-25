@@ -1,13 +1,15 @@
 //! The clock port: the time of a publish, in whole seconds since the Unix epoch, from
-//! `SOURCE_DATE_EPOCH` when it is set and from the system clock otherwise.
+//! `SOURCE_DATE_EPOCH` when it is set and from the system clock otherwise. The clock itself is
+//! `loft-ports'`; this module gives it the store's errors.
 
 use std::ffi::OsString;
-use std::time::{SystemTime, UNIX_EPOCH};
+
+use loft_ports::clock::Clock as _;
 
 use crate::StoreError;
 
 /// The environment variable that names a publish time, for a reproducible publish.
-pub const EPOCH_ENV: &str = "SOURCE_DATE_EPOCH";
+pub const EPOCH_ENV: &str = loft_ports::clock::EPOCH_ENV;
 
 /// Where a publish learns the time.
 pub trait Clock {
@@ -21,38 +23,24 @@ pub trait Clock {
 
 /// The system clock, unless an epoch is given.
 #[derive(Debug, Clone, Default)]
-pub struct SystemClock {
-    epoch: Option<OsString>,
-}
+pub struct SystemClock(loft_ports::clock::SystemClock);
 
 impl SystemClock {
     /// The clock as the process's environment sets it.
     #[must_use]
     pub fn from_env() -> Self {
-        Self::with_epoch(std::env::var_os(EPOCH_ENV))
+        Self(loft_ports::clock::SystemClock::from_env())
     }
 
     /// The clock with `SOURCE_DATE_EPOCH` set to `epoch`, or unset.
     #[must_use]
     pub fn with_epoch(epoch: Option<impl Into<OsString>>) -> Self {
-        Self {
-            epoch: epoch.map(Into::into),
-        }
+        Self(loft_ports::clock::SystemClock::with_epoch(epoch))
     }
 }
 
 impl Clock for SystemClock {
     fn now(&self) -> Result<u64, StoreError> {
-        match &self.epoch {
-            Some(epoch) => epoch
-                .to_str()
-                .filter(|text| !text.is_empty() && text.bytes().all(|byte| byte.is_ascii_digit()))
-                .and_then(|text| text.parse().ok())
-                .ok_or_else(|| StoreError::Epoch(epoch.to_string_lossy().into_owned())),
-            None => Ok(SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .map_err(|_| StoreError::Epoch("a system time before 1970".to_owned()))?
-                .as_secs()),
-        }
+        Ok(self.0.now()?)
     }
 }

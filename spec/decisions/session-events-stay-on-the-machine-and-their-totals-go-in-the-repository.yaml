@@ -1,0 +1,63 @@
+key: 01a1646f-5467-7025-8a88-4e74fcabbf4a
+slug: session-events-stay-on-the-machine-and-their-totals-go-in-the-repository
+title: "Session events stay on the machine, and their totals go in the repository"
+context: "The mod hears every turn, request and tool call of a session. Raw events are many, change with every tool call, and say more about a session than a review needs; their totals and the stretches of work are what the page and a reviewer read, on any machine."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e77ff5f2656
+  outcome: "Each session's events are kept in its event log in `~/.yard/events/` and never in the working tree; the page server writes each session's token totals and activity under the branch's directory in `.yard/`, to be committed with the work."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e759d9c6df5
+    kind: local
+    label: "Small diffs"
+    statement: "What is committed changes little and reads in review."
+  - key: 01a1646f-5467-7025-8a88-4e76c987cc70
+    kind: local
+    label: "Seen on any machine"
+    statement: "A reviewer on another machine sees what the work took."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e77ff5f2656
+    title: "Events local, totals committed"
+    description: "The event log stays on the machine; totals and activity go in the repository."
+  - key: 01a1646f-5467-7025-8a88-4e78029e3c60
+    title: "Everything committed"
+    description: "The event log is kept under the branch's directory in `.yard/` too."
+  - key: 01a1646f-5467-7025-8a88-4e796a4c713c
+    title: "Nothing committed"
+    description: "Events, totals and activity all stay on the machine."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e77ff5f2656
+    driver: 01a1646f-5467-7025-8a88-4e759d9c6df5
+    rating: supports
+    rationale: "one small file for each session"
+  - option: 01a1646f-5467-7025-8a88-4e77ff5f2656
+    driver: 01a1646f-5467-7025-8a88-4e76c987cc70
+    rating: supports
+    rationale: "the totals are committed"
+  - option: 01a1646f-5467-7025-8a88-4e78029e3c60
+    driver: 01a1646f-5467-7025-8a88-4e759d9c6df5
+    rating: conflicts
+    rationale: "every event changes a file"
+  - option: 01a1646f-5467-7025-8a88-4e78029e3c60
+    driver: 01a1646f-5467-7025-8a88-4e76c987cc70
+    rating: supports
+    rationale: "all of it is committed"
+  - option: 01a1646f-5467-7025-8a88-4e796a4c713c
+    driver: 01a1646f-5467-7025-8a88-4e759d9c6df5
+    rating: supports
+    rationale: "nothing to diff"
+  - option: 01a1646f-5467-7025-8a88-4e796a4c713c
+    driver: 01a1646f-5467-7025-8a88-4e76c987cc70
+    rating: conflicts
+    rationale: "it stays on one machine"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e7a007bf9e3
+    kind: obligation
+    statement: "Each session writes only its own totals and activity files, so that no two writers share one."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eae568dbeb5f
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eafb39a1e099

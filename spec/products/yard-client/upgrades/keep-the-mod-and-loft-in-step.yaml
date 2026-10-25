@@ -1,0 +1,38 @@
+key: 01a1646f-546e-76cb-8b4f-f1f1e50bff47
+slug: keep-the-mod-and-loft-in-step
+name: "Keep the mod and loft in step"
+body: |
+  The mod comes with the Loft plugin, and the `loft` it runs comes from the `loftCommand` setting, which may name another version, such as the one a repository pins as a dev dependency. The `loft yard` commands speak a protocol whose version moves when their arguments or their documents change in a way an older mod cannot read.
+
+  Rather than half work across a mismatch, the mod offers no Yard tools and leaves Claude Code as it would be without them.
+realizes:
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f1f673fb9737
+    statement:
+      form: event_driven
+      when: "a session starts"
+      system: "the Loft mod"
+      shall: "run `loft yard protocol` and register Yard Client's tools only where the protocol is one the mod speaks."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bc5c90d3caac
+        name: "The check runs before the mod registers Yard's tools."
+      - key: 01a1646f-546e-76cb-8b4f-f1f88e7bff82
+        name: "The mod speaks every protocol version from the one it names as its oldest to the one it names as its newest."
+  - key: 01a1646f-546e-76cb-8b4f-f1f95e6a96af
+    statement:
+      form: unwanted
+      if: "the `loft` that `loftCommand` runs speaks a protocol the mod does not, or has no `yard` command"
+      system: "the Loft mod"
+      shall: "leave the agent's questions, plans and tasks to Claude Code alone, telling the person why once."
+    criteria:
+      - key: 01a16475-7fbd-7213-a7f7-927fd5de975a
+        name: "No Yard Client tool is registered."
+      - key: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
+        name: "The notice names the plugin's version and the version of the `loft` that `loftCommand` runs."
+      - key: 01a1646f-546e-76cb-8b4f-f1fbb5dde6c7
+        name: "The notice says which of the two to bring up to date, and names the `loftCommand` setting."
+      - key: 01a1646f-546e-76cb-8b4f-f1fc6ed5f2cc
+        name: "The notice is shown once in a session."
+      - key: 01a1646f-546e-76cb-8b4f-f1fde62cb279
+        name: "`AskUserQuestion` and `ExitPlanMode` show Claude Code's own dialogs alone."

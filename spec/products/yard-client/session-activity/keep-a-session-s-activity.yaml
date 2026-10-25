@@ -1,0 +1,52 @@
+key: 01a1646f-546d-7042-befd-eaefec18d7c5
+slug: keep-a-session-s-activity
+name: "Keep a session's activity"
+body: |
+  Beside its token totals, each session keeps in Yard Log's folder when its agents' turns ran, when the main agent was in plan mode or writing the specification, and when the shell ran `loft`, so that the page can tell the time agents worked from the time nobody did, on any machine that reads the branch. The page server writes the file from the session's events, and the agent commits it with its work.
+
+  A subagent's run is kept with the stage it worked for: the stage active for its session's main agent as the run started. A shell command that runs `loft` is kept with the stage it counted toward, as a request is counted (the Feature "Count the tokens Yard Log took").
+
+  Plan mode and spec mode are heard for the main agent only: a subagent's own permission mode and edits under `spec/` are not kept as stretches of either.
+
+  ```text
+  .yard/<branch>/activity/<session id>.yaml
+  ```
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546d-7042-befd-eaf0e5633e7e
+    statement:
+      form: event_driven
+      when: "the page server records an event of a session whose agent's branch has its Yard Log open"
+      system: "the page server"
+      shall: "keep in the session's activity file each turn, each stretch of the main agent's plan mode and of its spec mode, and each shell command that runs `loft`, with when it started and when it ended."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eaf19ca8018b
+        name: "A session's activity file is `activity/<session id>.yaml` in Yard Log's folder."
+      - key: 01a1652c-8a87-75c3-a415-c00b3be4bc74
+        name: "The activity file holds the session's id and the time its last kept event ended."
+      - key: 01a1646f-546d-7042-befd-eaf221179a3a
+        name: "Each of the main agent's turns is kept with the time it started and the time it ended."
+      - key: 01a1646f-546d-7042-befd-eaf39c9c8fa0
+        name: "Each subagent's run is kept with its agent id, its type, the time it started and the time it ended."
+      - key: 01a16995-313c-7343-8413-b55299748fdd
+        name: "Each subagent's run is kept with the stage active for its session's main agent as the run started, where the main agent had one active."
+      - key: 01a1646f-546d-7042-befd-eaf4217a481b
+        name: "A turn already under way when Yard Log opened is kept from the session's first recorded event."
+      - key: 01a1646f-546d-7042-befd-eaf5bc56ffef
+        name: "Each stretch of the main agent's plan mode is kept with the time it started and the time it ended."
+      - key: 01a1646f-546d-7042-befd-eaf6e893accc
+        name: "Each stretch of the main agent's spec mode is kept from its first edit of a file under `spec/` to its next edit of another file, the start of its plan mode, or the end of its turn."
+      - key: 01a1646f-546d-7042-befd-eaf743bef7f9
+        name: "Each shell command that runs `loft` is kept with the names of its `loft` subcommands, the agent that ran it, the time it started and ended, whether it failed, and the stage it counted toward."
+      - key: 01a1646f-546d-7042-befd-eaf8581e4986
+        name: "An event that starts or ends no turn, no subagent run, no stretch of plan or spec mode and no `loft` run leaves the file as it was."
+      - key: 01a1646f-546d-7042-befd-eaf9e32fc612
+        name: "Writing the activity file leaves Yard Log's revision as it was."
+      - key: 01a1649f-62ef-71e6-98de-e10ba2181638
+        name: "The activity file is written to a temporary file and renamed into place, outside Yard Log's lock."
+      - key: 01a1649f-62ef-71e6-98de-e10c9467d774
+        name: "No event is kept in the activity file once Yard Log is closed."
+      - key: 01a1646f-546d-7042-befd-eafae23372c6
+        name: "No other session's activity file is written for the session's events."

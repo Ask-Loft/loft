@@ -1,0 +1,54 @@
+key: 01a1646f-546c-7521-9643-bbdbda40f4d2
+slug: approve-or-reject
+name: "Approve or reject"
+body: "The person decides each `approval` and `plan` block on its own, approving it or rejecting it with a reason the agent can act on."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546c-7521-9643-bbdc93294564
+    statement:
+      form: event_driven
+      when: "the person approves an `approval` or a `plan` block"
+      system: "the page server"
+      shall: "record the outcome `approved` with the person, the time and the channel `page`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbddef0f8d85
+        name: "Approving raises Yard Log's revision by one."
+      - key: 01a1646f-546c-7521-9643-bbdef30ee260
+        name: "The page shows the block approved."
+      - key: 01a1646f-546c-7521-9643-bbdfcffa05c0
+        name: "The outcome names the person by git's `user.name` and `user.email`."
+  - key: 01a1646f-546c-7521-9643-bbe03e6aa71e
+    statement:
+      form: event_driven
+      when: "the person rejects an `approval` or a `plan` block with a reason"
+      system: "the page server"
+      shall: "record the outcome `rejected` with the reason, the person, the time and the channel `page`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbe11fb0f639
+        name: "Rejecting raises Yard Log's revision by one."
+      - key: 01a1646f-546c-7521-9643-bbe26588e53c
+        name: "The page shows the block rejected, with the reason."
+      - key: 01a16a5e-43b6-76b2-9e32-6b009aaf1086
+        name: "A block rejected in the terminal with no reason shows as rejected, with no reason given."
+  - key: 01a1646f-546c-7521-9643-bbe33a38e791
+    statement:
+      form: unwanted
+      if: "the person rejects a block without a reason"
+      system: "the page"
+      shall: "keep the rejection from being sent and ask for the reason."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbe46778cf50
+        name: "Nothing is recorded."
+  - key: 01a1646f-546c-7521-9643-bbe5a49c9d19
+    statement:
+      form: unwanted
+      if: "the block was decided elsewhere first"
+      system: "the page server"
+      shall: "keep the first outcome and tell the person that the block was decided elsewhere."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bbe6bf57ef82
+        name: "The first outcome is kept unchanged."
+      - key: 01a1646f-546c-7521-9643-bbe701daf951
+        name: "The page shows the first outcome with the channel it came from."

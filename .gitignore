@@ -6,8 +6,16 @@
 # Written by Claude Code each time it loads the plugin from this folder.
 /plugins/claude/loft/.claude-plugin/types/
 node_modules/
+# What a run of the Yard page's browser suite leaves.
+/crates/loft-cli/yard-page-tests/test-results/
+/crates/loft-cli/yard-page-tests/playwright-report/
 __pycache__/
 *.py[cod]
 /.loft/
+# This repository keeps no plans: each branch's Yard Log, and what other planning tools write,
+# stay on the machine.
+/.yard/
+/work-plans/
 .env
 .env.*
+/.mcp.json

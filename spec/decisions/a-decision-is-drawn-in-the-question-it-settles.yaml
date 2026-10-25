@@ -1,0 +1,50 @@
+key: 01a1646f-5466-77f8-9738-e0ef0ee8f808
+slug: a-decision-is-drawn-in-the-question-it-settles
+title: "A decision is drawn in the question it settles"
+context: "An agent records each choice the person makes as a `decision` block, which names the question it settles. Drawn apart, a decision and its question repeat each other and send the reader looking for the other."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e0f2a480faae
+  outcome: "The page draws a decision that names its question at the head of that question's card, above the answer, and gives it no card of its own."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e0f0996a71b3
+    kind: local
+    label: "Read once"
+    statement: "The reader meets the choice and what follows from it in one place."
+  - key: 01a1646f-5466-77f8-9738-e0f1bb89f73c
+    kind: local
+    label: "Choice first"
+    statement: "What was chosen reads before how it was asked."
+options:
+  - key: 01a1646f-5466-77f8-9738-e0f2a480faae
+    title: "At the head of its question"
+    description: "The decision heads the question's card."
+  - key: 01a1646f-5466-77f8-9738-e0f3f6f8fdad
+    title: "A card of its own"
+    description: "The decision is drawn where it was written, linking to its question."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e0f2a480faae
+    driver: 01a1646f-5466-77f8-9738-e0f0996a71b3
+    rating: supports
+    rationale: "one card"
+  - option: 01a1646f-5466-77f8-9738-e0f2a480faae
+    driver: 01a1646f-5466-77f8-9738-e0f1bb89f73c
+    rating: supports
+    rationale: "it heads the card"
+  - option: 01a1646f-5466-77f8-9738-e0f3f6f8fdad
+    driver: 01a1646f-5466-77f8-9738-e0f0996a71b3
+    rating: conflicts
+    rationale: "two cards to read"
+  - option: 01a1646f-5466-77f8-9738-e0f3f6f8fdad
+    driver: 01a1646f-5466-77f8-9738-e0f1bb89f73c
+    rating: neutral
+    rationale: "it depends on where it was written"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e0f432f73f8e
+    kind: obligation
+    statement: "A decision's consequence says what follows from the choice rather than repeating the answer."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a94f0aa021
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb213cfb9073

@@ -1,0 +1,72 @@
+key: 01a1646f-546d-7042-befd-ea74e4eb698c
+slug: concurrent-writes
+name: "Concurrent writes"
+body: |
+  Agents that write one Yard Log at once never lose each other's work, and agents that write different Yard Logs never wait on each other. A write takes its Yard Log's lock only for as long as the write lasts, and is refused only where it would overwrite a block that another agent changed since the writer last read it.
+
+  Parallel subagents each work through their own stage, so one stage is active for each agent rather than one for the branch's whole Yard Log. A submission belongs to the agent that sent it, so that each agent's wait returns its own answers.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - 01a1649f-62ea-7225-80e1-a3d4d9905b4d
+requirements:
+  - key: 01a1646f-546d-7042-befd-ea75be922fcf
+    statement:
+      form: ubiquitous
+      system: "`yardlog-store`"
+      shall: "apply one write at a time to a branch's Yard Log, under a lock kept for it in git's own directory for the worktree."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea76bdcf3e6e
+        name: "Two writes to one Yard Log that come at once, from any agents or from the page server, are applied one after the other."
+      - key: 01a1646f-546d-7042-befd-ebd2fe7be62d
+        name: "The lock and the save journal lie under the directory that `git rev-parse --git-path yard` names, never in the working tree."
+      - key: 01a1646f-546d-7042-befd-ea77f8efc7c8
+        name: "A write to one Yard Log never waits on the lock of another."
+      - key: 01a1646f-546d-7042-befd-ea7877e241c6
+        name: "The lock is held only while one write is applied."
+      - key: 01a1646f-546d-7042-befd-ea79fed9c718
+        name: "A lock left by a process that ended is taken over by the next write."
+      - key: 01a1646f-546d-7042-befd-ea7ad8dc3944
+        name: "A write interrupted part way is finished or undone by the next write, so that the files are never left half written."
+  - key: 01a1646f-546d-7042-befd-ea7b80f399ee
+    statement:
+      form: unwanted
+      if: "a block of the batch was changed after the revision the batch is based on"
+      system: "`loft yard write`"
+      shall: "refuse the batch, name each such block and return its current version."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea7c67013396
+        name: "A refused batch changes no file."
+      - key: 01a1646f-546d-7042-befd-ea7d2e438301
+        name: "The refusal gives Yard Log's current revision."
+      - key: 01a1646f-546d-7042-befd-ea7ed0306ea6
+        name: "A batch whose blocks were not changed after its base revision is applied, though other blocks were."
+      - key: 01a1646f-546d-7042-befd-ea7f582c8bcf
+        name: "An answer given after the base revision to a question of the batch makes the batch refused."
+  - key: 01a1646f-546d-7042-befd-ea80179ee714
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "keep at most one stage `active` for each agent, owned by the agent that last made it `active`."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea81355886c3
+        name: "Two agents may each have a stage `active` at once."
+      - key: 01a1646f-546d-7042-befd-ea82c3382c6e
+        name: "A batch that would leave two stages `active` for one agent is refused."
+      - key: 01a16976-40ac-705b-958a-7cf2454c58db
+        name: "The refusal names the stage that the agent already has `active`, and says to set that stage's status to `done`, `planned` or `dropped` in the same batch."
+      - key: 01a1646f-546d-7042-befd-ea833b829a1b
+        name: "A stage records the agent that owns it."
+      - key: 01a1646f-546d-7042-befd-ea8466259887
+        name: "A stage that another agent makes `active` passes to that agent."
+  - key: 01a1646f-546d-7042-befd-ea85c7150f27
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "keep each submission as the agent's that sent it."
+    criteria:
+      - key: 01a1647b-208d-7169-85c8-9a513f984250
+        name: "A submission records the session and the agent that sent it."
+      - key: 01a1646f-546d-7042-befd-ea87b67da7dc
+        name: "Each agent's open submissions are listed apart in a read."

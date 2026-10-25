@@ -1,0 +1,42 @@
+key: 01a1646f-546d-7042-befd-eb166bb457fe
+slug: see-the-tokens-yard-log-took
+name: "See the tokens Yard Log took"
+body: "The page shows what Yard Log's sessions spent in tokens, summed over every totals file in Yard Log's folder, whichever machine wrote it, and broken down the ways a person asks of it: by stage, by session, by agent and model, and by the waits on the person."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb17b49846d6
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show Yard Log's input, cache read, cache write and output tokens, in all and broken down by stage, by session, by agent and model, and by submission."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb18be1fe4d9
+        name: "The page shows the four counts in all, summed over every totals file of Yard Log."
+      - key: 01a1646f-546d-7042-befd-eb19fd65c436
+        name: "The page shows beside each stage the four counts of the requests counted toward it, and the counts of those under no stage apart."
+      - key: 01a16995-313c-7343-8413-b553db01c09c
+        name: "Beside a stage that subagents' requests counted toward, the page shows the four counts of each type of subagent within the stage's counts."
+      - key: 01a1646f-546d-7042-befd-eb1a9003423c
+        name: "The page lists each session that worked on Yard Log, with when its first and last counted requests ended and its four counts."
+      - key: 01a1646f-546d-7042-befd-eb1b42b4a475
+        name: "The page shows the four counts of the main agent and of each type of subagent, for each model they ran on."
+      - key: 01a1646f-546d-7042-befd-eb1c9a6d4d36
+        name: "The page shows with each submission the four counts of the requests that ended while it was open."
+      - key: 01a1682e-2675-75b2-871c-e260967a6cf8
+        name: "The breakdowns share one table, whose columns are the four counts."
+      - key: 01a1682e-2675-75b2-871c-e2613eb8729b
+        name: "Each count of a breakdown shows, as a bar, its share of Yard Log's count of that kind in all."
+      - key: 01a1646f-546d-7042-befd-eb1d0e18125d
+        name: "The page says that requests Claude Code makes inside its own tools, such as a web search or a web fetch, are not counted."
+      - key: 01a1646f-546d-7042-befd-eb1e1e831c2e
+        name: "Where Yard Log has no counted request, the page shows that no tokens have been counted yet."
+  - key: 01a1646f-546d-7042-befd-eb1fa3e702b8
+    statement:
+      form: event_driven
+      when: "the page server counts a model request"
+      system: "the page"
+      shall: "show the new counts."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb20639f67b6
+        name: "An open page shows a counted request's tokens within 2 seconds of the request's end, without being reloaded."

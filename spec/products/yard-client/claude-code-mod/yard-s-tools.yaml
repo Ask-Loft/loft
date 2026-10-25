@@ -1,0 +1,77 @@
+key: 01a1646f-546c-7521-9643-bca6524c277a
+slug: yard-s-tools
+name: "Yard's tools"
+body: "The agent reaches Yard Log through six tools that the Loft mod registers with Claude Code, each served by a hook of the mod that runs the matching `loft yard` command. A tool call applies to the calling agent's own directory and names the agent to `loft`, so that a subagent in a worktree of its own reaches that worktree's Yard Log."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546c-7521-9643-bca74afebbeb
+    statement:
+      form: event_driven
+      when: "a Claude Code session starts and the protocol check passes"
+      system: "the Loft mod"
+      shall: "register the tools `yard_read`, `yard_write`, `yard_wait`, `yard_withdraw`, `yard_close` and `yard_published`."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bca80176474a
+        name: "Claude Code lists each tool as `mcp__loft__<tool>`."
+      - key: 01a1646f-546c-7521-9643-bca9a47ace19
+        name: "Each tool's input is described by a JSON schema."
+      - key: 01a1646f-546c-7521-9643-bcaa2981e408
+        name: "`yard_read` takes an optional revision to read since."
+      - key: 01a16621-e7bc-7707-b123-2162855d3a0d
+        name: "`yard_read` runs `loft yard read --mark-read`, so that the agent's own read records the revision it read."
+      - key: 01a16880-126c-7301-9603-b98be3c7681b
+        name: "`yard_read` takes an optional `reports`, which runs the read with `--reports`, so that a read gives each `loft` block's report only when the agent asks for it."
+      - key: 01a1646f-546c-7521-9643-bcab7a45d9c4
+        name: "`yard_write` takes the batch, the revision it is based on, and whether it is to be sent."
+      - key: 01a1646f-546c-7521-9643-bcac49382b64
+        name: "`yard_wait` takes the submission's key."
+      - key: 01a1646f-546c-7521-9643-bcad38f2c75b
+        name: "`yard_withdraw` takes the submission's key."
+      - key: 01a1647b-208c-755d-8b1a-5885062d9589
+        name: "`yard_close` takes no input."
+      - key: 01a1646f-546c-7521-9643-bcae4532ed4a
+        name: "`yard_published` takes the branch of Yard Log that the merge brought in, and a note."
+      - key: 01a1646f-546c-7521-9643-bcafd8ae1db1
+        name: "The tools are registered before the session's first turn."
+  - key: 01a1646f-546c-7521-9643-bcb00e88f54a
+    statement:
+      form: event_driven
+      when: "an agent calls one of Yard's tools"
+      system: "the Loft mod"
+      shall: "answer the call with the document of the matching `loft yard` command."
+    criteria:
+      - key: 01a1646f-546c-7521-9643-bcb14b1743cb
+        name: "The command runs in the directory that `$.session.cwd()` gives inside the call's hook."
+      - key: 01a1646f-546c-7521-9643-bcb304796db1
+        name: "The tool's result is the command's JSON document."
+      - key: 01a1646f-546c-7521-9643-bcb446be66f4
+        name: "Each tool's result gives Yard Log's revision."
+      - key: 01a1646f-546d-7042-befd-ea2f02c68117
+        name: "Each tool's result gives the address of the branch's own Yard Log on the page, where a page server serves it."
+      - key: 01a1646f-546d-7042-befd-ea305897268e
+        name: "A call that the command refuses returns the refusal as the tool's error, with the command's message."
+  - key: 01a1646f-546d-7042-befd-ea3183df1bae
+    statement:
+      form: unwanted
+      if: "a tool's input does not match its schema"
+      system: "the Loft mod"
+      shall: "return a tool error that names the field at fault, and run no command."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea32b43b5531
+        name: "No file is changed."
+  - key: 01a1687f-8b71-721a-b646-45d0aa68e4bd
+    statement:
+      form: unwanted
+      if: "the matching `loft yard` command prints output that does not read as a JSON document"
+      system: "the Loft mod"
+      shall: "return a tool error that gives the number of bytes the command printed and says they could not be read as a document."
+    body: "Claude Code keeps only the first part of a command's output past its limit and says so; output cut short there never reads as a document."
+    criteria:
+      - key: 01a1687f-8b72-7634-ba73-84b389881000
+        name: "The error gives the number of bytes the command printed on standard output and says they could not be read as a document, rather than the command's exit code alone."
+      - key: 01a1687f-8b72-7634-ba73-84b49a0144a1
+        name: "Where Claude Code cut the command's output short, the error says that the output was cut short after the number of bytes it kept."
+      - key: 01a1687f-8b72-7634-ba73-84b5b9eea541
+        name: "Output cut short is never read as a document, even where the bytes kept would read as one."

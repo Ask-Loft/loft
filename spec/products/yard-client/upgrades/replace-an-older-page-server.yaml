@@ -1,0 +1,80 @@
+key: 01a1646f-546e-76cb-8b4f-f20fff3d436b
+slug: replace-an-older-page-server
+name: "Replace an older page server"
+body: "One page server serves the machine, but sessions on the machine may run different versions of `loft`. The newest one serves: a session whose `loft` is newer than the page server's replaces it, asking it to stop through a request it leaves in `~/.yard/`, and open pages take up the new page's files. Yard Log in a format newer than the page server's is shown as such and never written by it."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546e-76cb-8b4f-f210281dd3aa
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "report its `loft` version and the newest `yardlog` format it reads, in `~/.yard/server.json` and to every client that asks."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f211c919436f
+        name: "The version is reported without the control token."
+      - key: 01a1649f-62f0-7320-902c-7d90e88d4f61
+        name: "`~/.yard/server.json` gives the page server's port, its process id, its `loft` version and the `yardlog` formats it reads."
+  - key: 01a1646f-546e-76cb-8b4f-f212dc8ad1c7
+    statement:
+      form: event_driven
+      when: "`loft yard serve` finds in `~/.yard/server.json` a running page server of an older version"
+      system: "`loft yard serve`"
+      shall: "ask that page server to stop through `~/.yard/stop.json`, and serve the port in its place once the page server has stopped."
+    criteria:
+      - key: 01a16517-45f6-7370-99ab-21fa38d8b291
+        name: "The request names the `loft` version of the `loft yard serve` that makes it."
+      - key: 01a1646f-546e-76cb-8b4f-f213414362f5
+        name: "The older page server's process ends before the newer one serves the port."
+      - key: 01a1646f-546e-76cb-8b4f-f214e9ee2507
+        name: "`loft yard serve` opens no connection to the older page server to stop it."
+      - key: 01a1649f-62f0-7320-902c-7d91a4e5ed57
+        name: "`~/.yard/server.json` names the newer page server once it serves the port."
+      - key: 01a1646f-546e-76cb-8b4f-f21529feeaa0
+        name: "Every tree the older page server served is served by the newer one."
+      - key: 01a1646f-546e-76cb-8b4f-f2164986fd80
+        name: "A page server of the same or a newer version is left serving, and `loft yard serve` exits 0 saying that one runs."
+  - key: 01a16517-45f6-7370-99ab-21fb6385919d
+    statement:
+      form: event_driven
+      when: "a page server finds in `~/.yard/stop.json` a request made by a `loft` of a newer version than its own"
+      system: "The page server"
+      shall: "finish the responses it is sending and exit, freeing the lock on `~/.yard/server.lock`."
+    criteria:
+      - key: 01a16517-45f6-7370-99ab-21fc7a388cc8
+        name: "The page server exits within one second of the request."
+      - key: 01a16517-45f6-7370-99ab-21fd6c061b36
+        name: "A request made by a `loft` of the same or an older version leaves the page server serving."
+      - key: 01a16517-45f6-7370-99ab-21feeb0b2d3e
+        name: "The page server that replaced it removes the request once it serves the port."
+  - key: 01a16517-45f6-7370-99ab-21ff5e62cfd9
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command"
+      shall: "count a page server as running only while it holds the lock on `~/.yard/server.lock`."
+    criteria:
+      - key: 01a16517-45f6-7370-99ab-2200ad607110
+        name: "A page server whose process ended, however it ended, is no longer counted as running."
+      - key: 01a16517-45f6-7370-99ab-220156f82a46
+        name: "The process id in `~/.yard/server.json` is not used to tell whether the page server runs."
+  - key: 01a1646f-546e-76cb-8b4f-f217e6cc3369
+    statement:
+      form: event_driven
+      when: "an open page connects to a page server of another version than the one that served it"
+      system: "the page"
+      shall: "reload its own files from the page server."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f218f2d20f06
+        name: "A choice the person made and did not send is kept through the reload."
+  - key: 01a1646f-546e-76cb-8b4f-f219ecda70c7
+    statement:
+      form: unwanted
+      if: "the format of a branch's Yard Log is newer than the newest format the page server reads"
+      system: "the page server"
+      shall: "list that branch as needing a newer `loft`, and take no answer or decision for its Yard Log."
+    criteria:
+      - key: 01a1646f-546e-76cb-8b4f-f21a4834c983
+        name: "The page names the format of that Yard Log and says a newer `loft` is needed to show it."
+      - key: 01a1646f-546e-76cb-8b4f-f21bb474774c
+        name: "No file of that Yard Log is changed."

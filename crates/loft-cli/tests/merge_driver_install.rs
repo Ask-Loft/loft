@@ -115,7 +115,7 @@ fn the_attribute_the_driver_and_its_name_are_registered() {
     assert_eq!(lines.len(), 4, "{printed}");
     assert_eq!(
         dirs.attributes().as_deref(),
-        Some("spec/**/*.yaml merge=loft\n")
+        Some("spec/**/*.yaml merge=loft\n.yard/**/*.yaml merge=loft\n")
     );
     let driver = config(&scenario, DRIVER).unwrap();
     assert_eq!(driver, loftspec_store::merge_driver::driver("loft"));
@@ -134,8 +134,25 @@ fn an_existing_attributes_file_keeps_its_lines_and_gains_the_attribute() {
     assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
     assert_eq!(
         dirs.attributes().as_deref(),
-        Some("*.png binary\nspec/**/*.yaml merge=loft\n")
+        Some("*.png binary\nspec/**/*.yaml merge=loft\n.yard/**/*.yaml merge=loft\n")
     );
+}
+
+#[test]
+fn an_attributes_file_that_routes_spec_alone_gains_the_yard_line_once() {
+    let dirs = Dirs::new("yard");
+    fs::write(
+        dirs.tree.join(".gitattributes"),
+        "spec/**/*.yaml merge=loft\n",
+    )
+    .unwrap();
+    let (output, installed) = dirs.install(&clean());
+    assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    let both = "spec/**/*.yaml merge=loft\n.yard/**/*.yaml merge=loft\n";
+    assert_eq!(dirs.attributes().as_deref(), Some(both));
+    let (output, _) = dirs.install(&installed);
+    assert_eq!(output.status.code(), Some(0), "{}", text(&output.stderr));
+    assert_eq!(dirs.attributes().as_deref(), Some(both));
 }
 
 #[test]

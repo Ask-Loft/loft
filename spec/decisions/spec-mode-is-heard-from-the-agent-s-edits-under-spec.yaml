@@ -1,0 +1,50 @@
+key: 01a1646f-5467-7025-8a88-4e7b001624ae
+slug: spec-mode-is-heard-from-the-agent-s-edits-under-spec
+title: "Spec mode is heard from the agent's edits under spec/"
+context: "The page marks the stretches in which the main agent wrote the specification, as it marks plan mode. Claude Code has no spec mode of its own; the mod hears each file edit, and can tell whether its file lies under `spec/`."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e7e2b13e153
+  outcome: "A stretch of spec mode runs from the main agent's first edit of a file under `spec/` to its next edit of another file, the start of its plan mode, or the end of its turn."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e7c8f4d1f06
+    kind: local
+    label: "No ceremony"
+    statement: "The agent does nothing extra for spec mode to be recorded."
+  - key: 01a1646f-5467-7025-8a88-4e7dc751217c
+    kind: local
+    label: "Nothing of the path"
+    statement: "An event holds nothing of a file's path beyond whether it lies under `spec/`."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e7e2b13e153
+    title: "Heard from edits"
+    description: "The mod marks an edit under `spec/` and Yard Client works out the stretches."
+  - key: 01a1646f-5467-7025-8a88-4e7fbd0f5842
+    title: "Declared by the agent"
+    description: "The agent writes when it starts and stops writing the specification."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e7e2b13e153
+    driver: 01a1646f-5467-7025-8a88-4e7c8f4d1f06
+    rating: supports
+    rationale: "the edits are heard"
+  - option: 01a1646f-5467-7025-8a88-4e7e2b13e153
+    driver: 01a1646f-5467-7025-8a88-4e7dc751217c
+    rating: supports
+    rationale: "one flag on the edit"
+  - option: 01a1646f-5467-7025-8a88-4e7fbd0f5842
+    driver: 01a1646f-5467-7025-8a88-4e7c8f4d1f06
+    rating: conflicts
+    rationale: "the agent has to remember"
+  - option: 01a1646f-5467-7025-8a88-4e7fbd0f5842
+    driver: 01a1646f-5467-7025-8a88-4e7dc751217c
+    rating: supports
+    rationale: "no path is sent"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e802c1dc619
+    kind: cost
+    statement: "Reading the specification without editing it is not counted as spec mode."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eaefec18d7c5

@@ -1,0 +1,83 @@
+key: 01a16488-d2a3-7188-9662-db6787a6b731
+slug: the-mod-is-tested-by-claude-code-s-test-kit-in-ci
+title: "The mod is tested by Claude Code's test kit in CI"
+context: "Claude Code calls the Loft mod, so the mod is held by tests that run it under Claude Code rather than by a simulator. Claude Code's test kit, run by `claude plugin test`, loads the mod, fires events through its hooks and lets each test stub what Claude Code would answer, with no session, no sign-in and no network, and exits 1 when a test fails. Until now CI ran none of the mod's tests."
+state:
+  kind: accepted
+  selectedOption: 01a16488-d2a3-7188-9662-db6bc69250dd
+  outcome: "The mod's tests are written with Claude Code's test kit and run in CI by `claude plugin test`, under a version of Claude Code that CI installs at a pinned version, no older than the mod needs."
+drivers:
+  - key: 01a16488-d2a3-7188-9662-db68adb5e80f
+    kind: local
+    label: "The real dispatch"
+    statement: "A hook is tested as Claude Code dispatches it: its matcher, its arguments and its time budget."
+  - key: 01a16488-d2a3-7188-9662-db69990cdfb5
+    kind: local
+    label: "Checked on every change"
+    statement: "A change that breaks a hook fails CI."
+  - key: 01a16488-d2a3-7188-9662-db6af18cc359
+    kind: local
+    label: "Little to install"
+    statement: "CI needs as few tools beyond the Rust toolchain as it can."
+options:
+  - key: 01a16488-d2a3-7188-9662-db6bc69250dd
+    title: "Claude Code's test kit in CI"
+    description: "Tests written with `claude-code/testing`, run in CI by `claude plugin test` under a pinned Claude Code."
+  - key: 01a16488-d2a3-7188-9662-db6cd0db4832
+    title: "An own harness"
+    description: "Tests run by a JavaScript test runner against a hand-written fake of `on` and `$`."
+  - key: 01a16488-d2a3-7188-9662-db6d129999ca
+    title: "Tests run by hand"
+    description: "Tests written with the kit and run only on a developer's machine, as before."
+assessments:
+  - option: 01a16488-d2a3-7188-9662-db6bc69250dd
+    driver: 01a16488-d2a3-7188-9662-db68adb5e80f
+    rating: supports
+    rationale: "the engine itself dispatches each event"
+  - option: 01a16488-d2a3-7188-9662-db6bc69250dd
+    driver: 01a16488-d2a3-7188-9662-db69990cdfb5
+    rating: supports
+    rationale: "CI runs the tests on every change"
+  - option: 01a16488-d2a3-7188-9662-db6bc69250dd
+    driver: 01a16488-d2a3-7188-9662-db6af18cc359
+    rating: conflicts
+    rationale: "CI installs Claude Code"
+  - option: 01a16488-d2a3-7188-9662-db6cd0db4832
+    driver: 01a16488-d2a3-7188-9662-db68adb5e80f
+    rating: conflicts
+    rationale: "the fake copies only what its author knew of the dispatch"
+  - option: 01a16488-d2a3-7188-9662-db6cd0db4832
+    driver: 01a16488-d2a3-7188-9662-db69990cdfb5
+    rating: supports
+    rationale: "CI runs the tests on every change"
+  - option: 01a16488-d2a3-7188-9662-db6cd0db4832
+    driver: 01a16488-d2a3-7188-9662-db6af18cc359
+    rating: neutral
+    rationale: "CI installs a JavaScript runtime and runner"
+  - option: 01a16488-d2a3-7188-9662-db6d129999ca
+    driver: 01a16488-d2a3-7188-9662-db68adb5e80f
+    rating: supports
+    rationale: "the engine itself dispatches each event"
+  - option: 01a16488-d2a3-7188-9662-db6d129999ca
+    driver: 01a16488-d2a3-7188-9662-db69990cdfb5
+    rating: conflicts
+    rationale: "a change can merge with a failing hook"
+  - option: 01a16488-d2a3-7188-9662-db6d129999ca
+    driver: 01a16488-d2a3-7188-9662-db6af18cc359
+    rating: supports
+    rationale: "CI installs nothing"
+consequences:
+  - key: 01a16488-d2a3-7188-9662-db6ee293be44
+    kind: obligation
+    statement: "CI installs Claude Code at a pinned version and runs `claude plugin validate` and `claude plugin test` on the Loft plugin."
+  - key: 01a16488-d2a3-7188-9662-db6f83a081a9
+    kind: obligation
+    statement: "The pinned version is raised on purpose, in a change of its own, and never below the version the mod needs."
+  - key: 01a16488-d2a3-7188-9662-db70cd923dcd
+    kind: risk
+    statement: "A release of Claude Code that changes the test kit fails CI until the tests or the pin follow it."
+subjects:
+  - role: affected
+    node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b2642c0076

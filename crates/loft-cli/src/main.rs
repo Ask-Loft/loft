@@ -19,6 +19,7 @@ mod json;
 mod locate;
 mod merge_driver;
 mod network;
+mod opened;
 mod out;
 mod publish;
 mod reconcile;
@@ -36,6 +37,7 @@ mod terms;
 mod update_check;
 mod verify;
 mod version;
+mod yard;
 
 use std::path::Path;
 use std::process::ExitCode;
@@ -206,5 +208,6 @@ fn dispatch(command: Command) -> Finished {
             let (action, as_json) = action.split();
             switch_command::update_check(action, as_json)
         }
+        Command::Yard { action } => yard::run(root, action),
     }
 }

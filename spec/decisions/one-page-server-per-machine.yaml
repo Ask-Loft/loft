@@ -1,0 +1,72 @@
+key: 01a1646f-5467-7025-8a88-4e648446890f
+slug: one-page-server-per-machine
+title: "One page server per machine, started by whichever mod needs it first and replaced by the newest loft"
+context: "The person reads every branch being worked on at one address. A mod listens on no port and its child processes end with it, so the page server is a `loft yard serve` that some session's mod starts; sessions end at any time, and different repositories may run different versions of `loft`."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e68f97d272a
+  outcome: "Each mod runs `loft yard serve` at the start of its session and every 5 seconds after, which records that the session was heard and starts a page server only where no page server holds the lock on `~/.yard/server.lock`; the mod then registers its tree. A page server lives as long as the mod that started it, or until a `loft yard serve` of a newer version asks it to stop through a request in `~/.yard/stop.json`, which it reads while it polls, and takes the port once its lock is free. Neither signals nor connections pass between the two, so it works alike on every platform `loft` is built for."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e6576a5059b
+    kind: local
+    label: "One address"
+    statement: "The person opens every branch's Yard Log on the machine at one address."
+  - key: 01a1646f-5467-7025-8a88-4e66aeaeaed3
+    kind: local
+    label: "Outlives a session"
+    statement: "The page stays up while any session with the plugin runs."
+  - key: 01a1646f-5467-7025-8a88-4e679f4e7732
+    kind: local
+    label: "Newest wins"
+    statement: "The page reads Yard Log in any format that a running `loft` can write."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e68f97d272a
+    title: "Whichever mod needs it first"
+    description: "Sessions start and hand over one page server between them, the newest version taking over."
+  - key: 01a1646f-5467-7025-8a88-4e69f6fef317
+    title: "A page server for each session"
+    description: "Each session's mod runs its own page server on a port of its own."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e68f97d272a
+    driver: 01a1646f-5467-7025-8a88-4e6576a5059b
+    rating: supports
+    rationale: "one port on the machine"
+  - option: 01a1646f-5467-7025-8a88-4e68f97d272a
+    driver: 01a1646f-5467-7025-8a88-4e66aeaeaed3
+    rating: supports
+    rationale: "a live mod starts it again within 5 seconds"
+  - option: 01a1646f-5467-7025-8a88-4e68f97d272a
+    driver: 01a1646f-5467-7025-8a88-4e679f4e7732
+    rating: supports
+    rationale: "a newer `loft` replaces an older server"
+  - option: 01a1646f-5467-7025-8a88-4e69f6fef317
+    driver: 01a1646f-5467-7025-8a88-4e6576a5059b
+    rating: conflicts
+    rationale: "an address for each session"
+  - option: 01a1646f-5467-7025-8a88-4e69f6fef317
+    driver: 01a1646f-5467-7025-8a88-4e66aeaeaed3
+    rating: conflicts
+    rationale: "the page goes with its session"
+  - option: 01a1646f-5467-7025-8a88-4e69f6fef317
+    driver: 01a1646f-5467-7025-8a88-4e679f4e7732
+    rating: neutral
+    rationale: "each server reads its own session's trees"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e6a131f5ea3
+    kind: cost
+    statement: "The page is up only while some session with the plugin runs."
+  - key: 01a1646f-5467-7025-8a88-4e6beb011135
+    kind: obligation
+    statement: "The trees a page server serves are kept in `~/.yard/trees.json`, so that a new page server serves them again."
+  - key: 01a1646f-5467-7025-8a88-4e6c3d9b9b16
+    kind: obligation
+    statement: "Open pages connect again by themselves after a takeover, and reload their files when the server's version changed."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ac8bfc2fae
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ea8ce9a4adcc

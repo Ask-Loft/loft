@@ -1,0 +1,47 @@
+key: 01a16621-e7bc-7707-b123-216501e46cf7
+slug: record-a-continuation
+name: "Record a continuation"
+body: "After `/clear` or a resume, Claude Code goes on in the same process under a new session id. The Loft mod records once, with `loft yard continue`, that the new session continues the one that ended, so that every later `loft yard` command counts the new session as the first of its chain for the submissions it sent and the revision it last read. No other command takes the continuation."
+tags:
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1647c-e680-7753-bf17-f1791ef9b2da
+    statement:
+      form: event_driven
+      when: "a session ends with `/clear` or a resume and Claude Code goes on in the same process under a new session id"
+      system: "the Loft mod"
+      shall: "record, with `loft yard continue` and before any other `loft yard` command under the new id, that the new session continues the one that ended."
+    body: "Claude Code gives the ended session's id in `session.end`, with the reason `clear` or `resume`, and the mod keeps it until the new id is in use."
+    criteria:
+      - key: 01a1647c-e680-7753-bf17-f17a693b5c4a
+        name: "The mod runs `loft yard continue --session <new id> --from <ended id>` before any other `loft yard` command under the new session id."
+      - key: 01a1647c-e680-7753-bf17-f17b0ccd5e22
+        name: "The mod records each continuation once, and no other command it runs names the session that ended."
+      - key: 01a1647c-e680-7753-bf17-f17c4e518163
+        name: "A session that a new process starts records no continuation."
+  - key: 01a1647c-e680-7753-bf17-f17d6f5c0cb6
+    statement:
+      form: event_driven
+      when: "`loft yard continue --session <id> --from <ended>` runs"
+      system: "`loft yard continue`"
+      shall: "record that session `<id>` continues session `<ended>`, so that every later `loft yard` command treats `<id>` as `<ended>` for the submissions it sent and the revision it last read."
+    criteria:
+      - key: 01a1647c-e680-7753-bf17-f17e03443c33
+        name: "A submission that the ended session's main agent sent counts as sent by the main agent of the session that continues it."
+      - key: 01a1647c-e680-7753-bf17-f17f45dc6ca1
+        name: "The continuing session starts from the revision that the ended session last read."
+      - key: 01a1647c-e680-7753-bf17-f180dc77d947
+        name: "A chain of continuations, as after two `/clear`s, reaches back to the first session of the chain."
+      - key: 01a1647c-e680-7753-bf17-f181455e4d44
+        name: "Each block and Act keeps the session id that wrote it."
+      - key: 01a1647c-e680-7753-bf17-f18231fac8e2
+        name: "The continuation is kept in `~/.yard/continuations.json`, and never under `.yard/`."
+      - key: 01a16621-e7bc-7707-b123-2166ec09ffcd
+        name: "`loft yard continue` needs no git repository."
+      - key: 01a16621-e7bc-7707-b123-2167b04a173d
+        name: "Recording a continuation already recorded changes no file."
+      - key: 01a16621-e7bc-7707-b123-2168138ff2e5
+        name: "`loft yard continue` run without `--session` or `--from` exits 2 and names the one missing."

@@ -1,0 +1,5 @@
+rules:
+  - rule: V2-008
+    properNames:
+      - "Yard Client"
+      - "Yard Log"

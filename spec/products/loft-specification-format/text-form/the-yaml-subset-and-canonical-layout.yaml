@@ -5,6 +5,7 @@ body: "The YAML constructs the reader accepts and the single layout the formatte
 tags:
   - portable
 realizes:
+  - 01a164dc-6a5a-7238-aa6a-3edc39b2de92
   - bc3f5237-54b0-405a-9078-978e4c8c0419
 requirements:
   - key: c4cd9b41-10b0-48ce-904d-d6c7316b0958

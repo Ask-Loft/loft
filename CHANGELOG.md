@@ -5,6 +5,45 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- The Claude Code plugin no longer shows the Loft status pane: its pane, its status-line entry
+  and `/loft-status` are gone, and no session runs `loft` every 10 seconds to draw them. Yard Log
+  and its page show the work on a specification instead. `loft status` stays a command, and the
+  `baseBranch` and `loftCommand` settings stay for Yard Client.
+- Yard Client: each branch's Yard Log, the record of what agents planned, asked, decided and did
+  on it, kept in the `yardlog` format under `.yard/<branch>/`.
+  - `loft yard` reads and writes it: `read`, `write` (with `--send` to send questions, approvals
+    and plans), `wait` (holding a lease on the submission, at most 540 s at a time, and taking up
+    a submission whose session is gone), `withdraw`, `close`, `published`, `answer`, `continue`,
+    `protocol`, `upgrade`, and `serve`, the page server on the loopback interface. Each acts for
+    a session and, for a subagent, its agent; Yard Log's root records the base branch it is
+    merged into (the one `write --base` names, else the local branch git's reflog says the branch
+    was cut from, else `--default-base`, else `develop`), and a read marks the revision read only with `--mark-read` and gives each `loft`
+    block's report by its size unless `--reports` is given; a write is applied whole or not at all, under a lock in
+    git's own directory; a `loft` block records a view of the specification's work from the
+    same report `status`, `check` or `reconcile` gives.
+  - `loft merge-driver` merges the files under `.yard/` record by record, and `--install`
+    routes them to it; the next `loft yard` command settles what spans files.
+  - The Yard page, served by `loft yard serve`: every Yard Log of the trees on the machine,
+    live, with its stages and blocks, a Gantt chart, Loft's views, the tokens each stage took
+    and what waits on the person, who answers and approves there. Mermaid ships with it,
+    compressed.
+  - The Loft plugin for Claude Code runs Yard Client in its mod: it adds the
+    `yard_*` tools, puts `AskUserQuestion` and `ExitPlanMode` on the page beside Claude Code's
+    own dialog, mirrors tasks, records each session's events and tokens, keeps one page server
+    for the machine, and gives each session where its Yard Log stands. The `yard` skill teaches
+    the agent to keep Yard Log. The plugin's new setting `yardPort` names the page's port.
+  - A task has a type, `regular` or `fix`: a fix is work the person asked for to correct what was
+    already done. The agent gives it in a task's metadata (`metadata: { type: "fix" }`), and the
+    page marks each fix in the timeline and draws it in a tone of its own in the Gantt chart.
+  - The `yard` skill has the person approve a change to the specification before it is committed
+    and its build planned: the agent records its `spec-change` view over the working tree and
+    sends an approval right after it, revising without a commit until the person approves. A
+    requirement changed once the build's plan is approved is planned again only in the steps it
+    touches.
+  - New crates: `yardlog`, Yard Log's model; `yardlog-store`, its store; `loft-common`, the
+    strict YAML subset, the key and the UTC time, which `loftspec` re-exports where it always
+    had them; and `loft-ports`, the journaled save, the runner of git and the clock, beneath
+    `loftspec-store`, whose API is unchanged.
 - Settling a conflict of a document held in memory. `loftspec::conflict::settle` takes a
   document, a conflict's identifier and a `Settlement` (`Base`, `Ours`, `Theirs`, or
   `Value(ConflictValue)`) and gives a new document without that conflict record, as the reader

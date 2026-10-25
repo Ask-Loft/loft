@@ -1,0 +1,103 @@
+key: 01a1646f-546d-7042-befd-eb5c525a2752
+slug: see-what-waits-on-you
+name: "See what waits on you"
+body: "What the agents wait for comes first on the page, across every branch's Yard Log on the machine, so the person can answer without looking for it. In a branch's Yard Log it opens in a panel along the bottom of the window, over a page that stays live above it, so the person can read the Yard Log, scroll it and switch its views while they study a plan or a question. They can close the panel and open it again."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb5db625c56a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show above its list of branches every open submission of every branch's Yard Log the page server serves, each with the tree and branch it belongs to and the blocks it waits on."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb5e8b4c055c
+        name: "Each open submission shows when it was sent and the agent that sent it."
+      - key: 01a1646f-546d-7042-befd-eb5f8c067f0b
+        name: "Each open submission names its repository, its worktree and its branch, and links to its Yard Log."
+      - key: 01a1646f-546d-7042-befd-eb60eba23d76
+        name: "The open submissions are listed oldest first."
+      - key: 01a1646f-546d-7042-befd-eb610be82633
+        name: "With no open submission anywhere, nothing is shown above the list."
+  - key: 01a1646f-546d-7042-befd-eb62e8627245
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show the open submissions of the branch's Yard Log it shows together in one panel, oldest first, each with the blocks it waits on."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb6376a28807
+        name: "Each open submission shows when it was sent and the agent that sent it."
+      - key: 01a1646f-546d-7042-befd-eb648d58cd02
+        name: "Where Yard Log has no open submission, no panel opens and nothing shows above the timeline."
+      - key: 01a1693f-7b72-7290-8335-f171c49df026
+        name: "Opening a branch's Yard Log that has an open submission opens the panel."
+      - key: 01a1693f-7b72-7290-8335-f1728dce2d53
+        name: "Nothing of an open submission is shown above the timeline or the Gantt chart."
+      - key: 01a1693f-7b72-7290-8335-f17339a7026b
+        name: "The panel closes by itself once nothing in it waits on the person, and the page then says what was sent."
+  - key: 01a1693f-7b72-7290-8335-f174a99a18cf
+    statement:
+      form: event_driven
+      when: "the person closes the panel of the open submissions"
+      system: "the page"
+      shall: "keep it closed until the person opens it again or a submission they have not seen is sent."
+    criteria:
+      - key: 01a1693f-7b72-7290-8335-f1758a4c74e2
+        name: "The panel closes by its close button, and by Escape while the focus is within it."
+      - key: 01a1693f-7b72-7290-8335-f1760105ed39
+        name: "A button in the page's header, after the switch of views, gives the count of the blocks that wait on the person and opens the panel."
+      - key: 01a16984-aadb-7721-9995-472382b34b90
+        name: "The button stays in view while the Yard Log scrolls."
+      - key: 01a1693f-7b72-7290-8335-f177e0a5756c
+        name: "Each waiting block's button to answer opens the panel at that block's form."
+      - key: 01a1693f-7b72-7290-8335-f17849978e57
+        name: "A change to Yard Log that sends no new submission leaves the panel closed."
+      - key: 01a1693f-7b72-7290-8335-f179f5c9ece5
+        name: "A submission sent after the panel was closed opens it again."
+      - key: 01a1693f-7b72-7290-8335-f17afbea573e
+        name: "What was chosen or typed and not sent is shown again when the panel opens again."
+  - key: 01a1693f-7b72-7290-8335-f17bf63ec21e
+    statement:
+      form: state_driven
+      while: "the panel of the open submissions is open"
+      system: "the page"
+      shall: "lay the panel along the bottom of the viewport and across its width within a margin, leave the page above it live, and scroll the panel's content vertically within it."
+    criteria:
+      - key: 01a1693f-7b72-7290-8335-f17c0c51f112
+        name: "The panel keeps its margin to the bottom, left and right edges of the viewport and follows the viewport's size as it changes."
+      - key: 01a1693f-7b72-7290-8335-f17d39c6e2b0
+        name: "Content taller than the panel scrolls within it, while its heading and its close button stay in place."
+      - key: 01a169df-0b4e-72cf-bc3c-472000361eef
+        name: "The page above the panel is not darkened, scrolls and takes clicks, and its switch of views changes the view while the panel stays open."
+      - key: 01a169df-0b4e-72cf-bc3c-472182670121
+        name: "While the panel is open, the page's end can be scrolled above the panel, so no part of the Yard Log stays hidden beneath it."
+      - key: 01a169df-0b4e-72cf-bc3c-4722edee80d5
+        name: "The Markdown, the prompt and the options of each block in the panel span the panel's width, held to no narrower measure."
+      - key: 01a1693f-7b72-7290-8335-f17f8d2e0087
+        name: "A change drawn while the panel is open keeps the panel's scroll position and the field that has focus."
+      - key: 01a1693f-7b72-7290-8335-f1800d240bbf
+        name: "Closing the panel gives the focus back to what held it before it opened."
+  - key: 01a169df-0b4e-72cf-bc3c-4723cdd970e3
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "let the person drag the top edge of the panel of the open submissions to make it taller or shorter, and remember in this browser the height chosen."
+    criteria:
+      - key: 01a169df-0b4e-72cf-bc3c-4724cf34ab77
+        name: "The panel first opens at half the viewport's height."
+      - key: 01a169df-0b4e-72cf-bc3c-47254b086a53
+        name: "Dragging the panel's top edge makes the panel taller or shorter by the length dragged."
+      - key: 01a169df-0b4e-72cf-bc3c-47260ce66358
+        name: "The edge is reached by the keyboard, and the arrow keys up and down make the panel taller and shorter."
+      - key: 01a169df-0b4e-72cf-bc3c-4727b1a9e96d
+        name: "The panel is never shorter than 160 pixels, and always leaves at least 120 pixels of the page in view above it, also as the viewport's size changes."
+      - key: 01a169df-0b4e-72cf-bc3c-4728f66a5fca
+        name: "The height chosen is the panel's height the next time it opens in this browser."
+  - key: 01a1646f-546d-7042-befd-eb659242667a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "give in its title the count of the blocks that wait on the person across every branch's Yard Log it serves."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb66aa4b28b7
+        name: "The count changes within 2 seconds of a block being sent, answered, decided or withdrawn."

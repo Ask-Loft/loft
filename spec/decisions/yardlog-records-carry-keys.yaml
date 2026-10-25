@@ -1,0 +1,67 @@
+key: 01a1646f-5467-7025-8a88-4ef1a2266994
+slug: yardlog-records-carry-keys
+title: "yardlog records carry keys, so that a server can take Yard Log up"
+context: "Yard Log will later be connected with a server, which must hold the same records as the files. The agent names its blocks by ids it chooses, which it may reuse or rename; branches are renamed; counters such as a submission's number collide across clones. A specification already gives each node a key that `loft` mints and the author never writes."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ef569ed9643
+  outcome: "Every record of Yard Log carries a UUIDv7 key that `loft` mints on its first write and keeps for life: Yard Log itself, each stage, block, version, submission and response; every reference between records is by key, and the agent's ids are handles that the store maps to keys."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ef24dfd1306
+    kind: local
+    label: "A server takes it up as it is"
+    statement: "A server holds the same records, by the same identities, as the files."
+  - key: 01a1646f-5467-7025-8a88-4ef389f67f24
+    kind: local
+    label: "Simple for the agent"
+    statement: "The agent names its blocks by short ids of its choosing."
+  - key: 01a1646f-5467-7025-8a88-4ef4c66939a1
+    kind: local
+    label: "Stable across renames"
+    statement: "Renaming a branch or a block's id leaves its records' identity unchanged."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ef569ed9643
+    title: "Keys minted by loft, ids as handles"
+    description: "Keys for identity, minted by `loft`; ids for the agent, mapped to keys by the store."
+  - key: 01a1646f-5467-7025-8a88-4ef62266e5c1
+    title: "Ids and counters only"
+    description: "Records are known by the agent's ids, the branch and counters such as `s1`."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ef569ed9643
+    driver: 01a1646f-5467-7025-8a88-4ef24dfd1306
+    rating: supports
+    rationale: "keys join the server's records"
+  - option: 01a1646f-5467-7025-8a88-4ef569ed9643
+    driver: 01a1646f-5467-7025-8a88-4ef389f67f24
+    rating: supports
+    rationale: "the agent never sees a key unless it asks"
+  - option: 01a1646f-5467-7025-8a88-4ef569ed9643
+    driver: 01a1646f-5467-7025-8a88-4ef4c66939a1
+    rating: supports
+    rationale: "keys outlive names"
+  - option: 01a1646f-5467-7025-8a88-4ef62266e5c1
+    driver: 01a1646f-5467-7025-8a88-4ef24dfd1306
+    rating: conflicts
+    rationale: "ids and counters collide between Yard Logs and clones"
+  - option: 01a1646f-5467-7025-8a88-4ef62266e5c1
+    driver: 01a1646f-5467-7025-8a88-4ef389f67f24
+    rating: supports
+    rationale: "one name per record"
+  - option: 01a1646f-5467-7025-8a88-4ef62266e5c1
+    driver: 01a1646f-5467-7025-8a88-4ef4c66939a1
+    rating: conflicts
+    rationale: "a renamed branch or id is a new record"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ef7fc5b3bfe
+    kind: obligation
+    statement: "`yardlog-store` maps each id to its key, and refuses a write that would give one id two keys in one Yard Log."
+  - key: 01a1646f-5467-7025-8a88-4ef82dfcff1d
+    kind: benefit
+    statement: "A `loft` view names the specification's nodes by their keys, so that a server joins Yard Log with the published specification."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b305365c69
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ebb1821f3ad8

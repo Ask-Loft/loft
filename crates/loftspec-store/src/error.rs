@@ -58,3 +58,17 @@ pub(crate) fn io_error(path: &Path) -> impl FnOnce(io::Error) -> StoreError + '_
         source,
     }
 }
+
+impl From<loft_ports::PortError> for StoreError {
+    fn from(error: loft_ports::PortError) -> Self {
+        use loft_ports::PortError;
+        match error {
+            PortError::Io { path, source } => Self::Io { path, source },
+            PortError::Pending(path) => Self::Pending(path),
+            PortError::Journal(path, message) => Self::Journal(path, message),
+            PortError::GitUnavailable(message) => Self::GitUnavailable(message),
+            PortError::Git { call, message } => Self::Git { call, message },
+            PortError::Epoch(epoch) => Self::Epoch(epoch),
+        }
+    }
+}

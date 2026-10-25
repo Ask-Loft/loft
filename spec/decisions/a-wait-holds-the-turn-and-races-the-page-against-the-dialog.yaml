@@ -1,0 +1,57 @@
+key: 01a1646f-5466-77f8-9738-e12a7b747141
+slug: a-wait-holds-the-turn-and-races-the-page-against-the-dialog
+title: "A wait holds the turn and races the page against Claude Code's dialog"
+context: "After sending a submission the agent waits for the person. A tool that a mod registers holds the agent's turn until it answers, unlike a call to an MCP server, which Claude Code moves to the background after two minutes; time the mod spends awaiting a command it runs does not count against its hook's budget. One run of a host command lasts at most ten minutes. The person may answer on the page or in Claude Code's own dialog."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e12de33ab54f
+  outcome: "The mod's wait tool holds the turn: inside the one call it asks the submission in Claude Code's dialog and runs `loft yard wait` for the page, and the first answer counts."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e12bd5ca03f9
+    kind: local
+    label: "Answer anywhere"
+    statement: "The person answers wherever they are, and the agent goes on with the first answer."
+  - key: 01a1646f-5466-77f8-9738-e12c1b5efc7d
+    kind: local
+    label: "No lost turns"
+    statement: "The agent does not spend turns polling for the answer."
+options:
+  - key: 01a1646f-5466-77f8-9738-e12de33ab54f
+    title: "Hold the turn and race both"
+    description: "One tool call that ends with the first answer, from the page or the dialog."
+  - key: 01a1646f-5466-77f8-9738-e12eb46b9dd8
+    title: "Return and call again"
+    description: "The wait returns at once with what is answered, and the agent calls it again until the submission is answered."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e12de33ab54f
+    driver: 01a1646f-5466-77f8-9738-e12bd5ca03f9
+    rating: supports
+    rationale: "the call hears both places"
+  - option: 01a1646f-5466-77f8-9738-e12de33ab54f
+    driver: 01a1646f-5466-77f8-9738-e12c1b5efc7d
+    rating: supports
+    rationale: "one call, however long the person takes"
+  - option: 01a1646f-5466-77f8-9738-e12eb46b9dd8
+    driver: 01a1646f-5466-77f8-9738-e12bd5ca03f9
+    rating: neutral
+    rationale: "both places count, but the dialog is asked outside the wait"
+  - option: 01a1646f-5466-77f8-9738-e12eb46b9dd8
+    driver: 01a1646f-5466-77f8-9738-e12c1b5efc7d
+    rating: conflicts
+    rationale: "each call is a turn"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e12f41042b68
+    kind: cost
+    statement: "The agent does nothing else while it waits; the person can interrupt the turn, and the submission stays open."
+  - key: 01a1646f-5466-77f8-9738-e1306a052c1e
+    kind: obligation
+    statement: "Once one place is answered, the mod closes the other place's question."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bbf588bb190b
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc11f8cd86ba

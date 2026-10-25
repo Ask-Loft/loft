@@ -1,0 +1,25 @@
+key: 01a1646f-546d-7042-befd-ead4b3f20bdd
+slug: see-the-publish-state
+name: "See the publish state"
+body: "A `publish` view shows the specification's last publish, as `loft status` reported it when the view was recorded: which publish the lock pins, and whether the tree is still the one it pins."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-ead52e222735
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a `publish` view with the publish sequence and time that the lock pins, and whether the tree matches the lock."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ead6c6d6b941
+        name: "The view shows the lock's publish sequence, its time and the start of its state root."
+      - key: 01a1646f-546d-7042-befd-ead7408d9f06
+        name: "A tree that matches the lock is shown as matching."
+      - key: 01a1646f-546d-7042-befd-ead8398e61d2
+        name: "A tree that differs from the lock lists each node added, changed or removed since the publish."
+      - key: 01a1646f-546d-7042-befd-ead9aab1918f
+        name: "The view counts the nodes and decisions that carry a label, by kind."
+      - key: 01a1646f-546d-7042-befd-eadab8a39d69
+        name: "A working tree with no lock says that the specification has not been published."
+      - key: 01a1646f-546d-7042-befd-eadba199421a
+        name: "A publish recorded after Yard Log closed says that it was recorded on the base branch after the merge."

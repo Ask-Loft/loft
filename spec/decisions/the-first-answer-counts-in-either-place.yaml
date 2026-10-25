@@ -1,0 +1,54 @@
+key: 01a1646f-5467-7025-8a88-4e8920c89003
+slug: the-first-answer-counts-in-either-place
+title: "The first answer counts in either place"
+context: "The person may be at the terminal or at the page when the agent asks. Both can offer the same question, and an answer can come from either while the other is still open."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4e8c5fa0e04c
+  outcome: "A question, approval or plan is offered on the page and in Claude Code's dialog at once; the first answer or decision to reach Yard Log counts, the other place stops offering it, and a later answer to it is refused and shown as answered elsewhere. Two answers that a merge of two copies brings together are both kept as they were written; the earlier by its Act counts, which is derived from the Acts and never written into either answer."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4e8a4884d312
+    kind: local
+    label: "Answer where you are"
+    statement: "The person answers in whichever place they are looking at."
+  - key: 01a1646f-5467-7025-8a88-4e8b29b3e816
+    kind: local
+    label: "One answer"
+    statement: "Each question has one answer the agent goes on with."
+options:
+  - key: 01a1646f-5467-7025-8a88-4e8c5fa0e04c
+    title: "The first answer counts"
+    description: "Both places offer it; the first answer wins; the other place closes."
+  - key: 01a1646f-5467-7025-8a88-4e8d8644fab9
+    title: "One place only"
+    description: "The agent's questions go either to the page or to the terminal, by a setting."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4e8c5fa0e04c
+    driver: 01a1646f-5467-7025-8a88-4e8a4884d312
+    rating: supports
+    rationale: "both places offer it"
+  - option: 01a1646f-5467-7025-8a88-4e8c5fa0e04c
+    driver: 01a1646f-5467-7025-8a88-4e8b29b3e816
+    rating: supports
+    rationale: "the later answer is refused"
+  - option: 01a1646f-5467-7025-8a88-4e8d8644fab9
+    driver: 01a1646f-5467-7025-8a88-4e8a4884d312
+    rating: conflicts
+    rationale: "the person has to be in the chosen place"
+  - option: 01a1646f-5467-7025-8a88-4e8d8644fab9
+    driver: 01a1646f-5467-7025-8a88-4e8b29b3e816
+    rating: supports
+    rationale: "only one place asks"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4e8eb6842129
+    kind: obligation
+    statement: "Every answer and decision records its channel, `page` or `terminal`."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc11f8cd86ba
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc2af42480ee

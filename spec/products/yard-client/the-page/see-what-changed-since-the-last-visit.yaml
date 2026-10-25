@@ -1,0 +1,24 @@
+key: 01a1646f-546d-7042-befd-eb55f44baf39
+slug: see-what-changed-since-the-last-visit
+name: "See what changed since the last visit"
+body: "A person who comes back to a branch's Yard Log sees what the agents wrote and what was answered while they were away."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eb56bc567922
+    statement:
+      form: event_driven
+      when: "the person opens a branch's Yard Log that they opened before in the same browser"
+      system: "the page"
+      shall: "mark each block written, answered or decided since that visit."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eb57085a1ead
+        name: "The page gives the count of the marked blocks."
+      - key: 01a1646f-546d-7042-befd-eb5815a8b42b
+        name: "Opening a branch's Yard Log for the first time marks nothing."
+      - key: 01a1646f-546d-7042-befd-eb59defed662
+        name: "The revision of the last visit is kept in the browser, for each branch's Yard Log by its key."
+      - key: 01a1646f-546d-7042-befd-eb5a0f40a50e
+        name: "A block that a merge brought in since the last visit is marked."
+      - key: 01a1646f-546d-7042-befd-eb5bd46052dc
+        name: "A question whose decision was written after the last visit is marked as changed."

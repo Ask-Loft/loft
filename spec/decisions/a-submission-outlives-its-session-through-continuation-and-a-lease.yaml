@@ -1,0 +1,85 @@
+key: 01a1647c-e67a-75da-a3d7-447f71f7e7a6
+slug: a-submission-outlives-its-session-through-continuation-and-a-lease
+title: "A submission outlives its session through continuation and a lease"
+context: "A submission belongs to the agent that sent it, and only that agent's wait returns its answers. Claude Code gives a session a new id after `/clear` and after a resume, in the same process, and a crash or an ended process leaves a session that nothing continues. Keyed by the sending session alone, a submission sent before any of these could never be waited on again; open to any session on the branch, two live sessions could wait on it at once and both act on its answers."
+state:
+  kind: accepted
+  selectedOption: 01a1647c-e67a-75da-a3d7-448550273ad9
+  outcome: "The mod records that the session after `/clear` or a resume continues the one that ended, which keeps its submissions and its last-read revision; a running wait holds a lease on its submission, and a main agent of the tree and branch may take up an open submission that no session continues once its lease is free."
+drivers:
+  - key: 01a1647c-e67a-75da-a3d7-4480c6a95cac
+    kind: local
+    label: "Nothing stranded"
+    statement: "An open submission can be waited on after `/clear`, a resume, a crash or a restart."
+  - key: 01a1647c-e67a-75da-a3d7-4481edb7b52e
+    kind: local
+    label: "One waiter"
+    statement: "At most one agent waits on a submission at a time, so that its answers are acted on once."
+  - key: 01a1647c-e67a-75da-a3d7-448206052eb4
+    kind: local
+    label: "Exact where known"
+    statement: "Where the host says which session continues which, Yard Client follows it rather than guessing."
+options:
+  - key: 01a1647c-e67a-75da-a3d7-4483e4b9052c
+    title: "The sending session alone"
+    description: "Only the agent that sent a submission may wait on it."
+  - key: 01a1647c-e67a-75da-a3d7-448459b8f751
+    title: "Any main agent of the branch"
+    description: "The main agent of any session on the tree and branch may wait on any open submission."
+  - key: 01a1647c-e67a-75da-a3d7-448550273ad9
+    title: "Continuation and a lease"
+    description: "A session continues the one that `/clear` or a resume ended, a running wait holds a lease, and a main agent takes up an open submission that no session continues once its lease is free."
+assessments:
+  - option: 01a1647c-e67a-75da-a3d7-4483e4b9052c
+    driver: 01a1647c-e67a-75da-a3d7-4480c6a95cac
+    rating: conflicts
+    rationale: "a new session id strands every open submission"
+  - option: 01a1647c-e67a-75da-a3d7-4483e4b9052c
+    driver: 01a1647c-e67a-75da-a3d7-4481edb7b52e
+    rating: supports
+    rationale: "only the sender waits"
+  - option: 01a1647c-e67a-75da-a3d7-4483e4b9052c
+    driver: 01a1647c-e67a-75da-a3d7-448206052eb4
+    rating: neutral
+    rationale: "it uses nothing the host says"
+  - option: 01a1647c-e67a-75da-a3d7-448459b8f751
+    driver: 01a1647c-e67a-75da-a3d7-4480c6a95cac
+    rating: supports
+    rationale: "any later session can wait"
+  - option: 01a1647c-e67a-75da-a3d7-448459b8f751
+    driver: 01a1647c-e67a-75da-a3d7-4481edb7b52e
+    rating: conflicts
+    rationale: "two live sessions can wait on one submission"
+  - option: 01a1647c-e67a-75da-a3d7-448459b8f751
+    driver: 01a1647c-e67a-75da-a3d7-448206052eb4
+    rating: conflicts
+    rationale: "it ignores which session continues which"
+  - option: 01a1647c-e67a-75da-a3d7-448550273ad9
+    driver: 01a1647c-e67a-75da-a3d7-4480c6a95cac
+    rating: supports
+    rationale: "a continuation keeps the submissions, and a free lease lets another session take them up"
+  - option: 01a1647c-e67a-75da-a3d7-448550273ad9
+    driver: 01a1647c-e67a-75da-a3d7-4481edb7b52e
+    rating: supports
+    rationale: "the lease admits one wait at a time"
+  - option: 01a1647c-e67a-75da-a3d7-448550273ad9
+    driver: 01a1647c-e67a-75da-a3d7-448206052eb4
+    rating: supports
+    rationale: "the mod records the continuation that `session.end` reports"
+consequences:
+  - key: 01a1647c-e67a-75da-a3d7-448695d5dd4a
+    kind: obligation
+    statement: "The mod keeps the id of a session that `/clear` or a resume ended until its next `loft yard` command, which records the continuation."
+  - key: 01a1647c-e67a-75da-a3d7-4487226ee0c8
+    kind: obligation
+    statement: "`loft yard wait` holds a lock in git's own directory for the worktree for as long as it runs."
+  - key: 01a1647c-e67a-75da-a3d7-4488242e0840
+    kind: cost
+    statement: "A submission whose sending session crashed is waited on by whichever main agent of the branch next asks, which may be another person's session on a shared machine."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bbf588bb190b
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ea61a5a3a0c9

@@ -40,15 +40,32 @@ change, or v1 reverts it.
 
 ## Repository layout
 
+- The crates stand in two columns over two shared layers. The Format is `loftspec` over
+  `loftspec-store`; Yard Log is `yardlog` over `yardlog-store`. Neither model depends on the
+  other model, and neither store on the other store. Beneath both models lies `loft-common`,
+  which performs no I/O; beneath both stores lies `loft-ports`, which does.
+- `crates/loft-common` owns what the formats share: the reader and writer of the strict YAML
+  subset, the `Key` type and the UTC `Time`. It performs no I/O and depends on no other crate of
+  the workspace. `loftspec` re-exports each of them where it always had them.
 - `crates/loftspec` owns the document model, identity, the canonical byte form, hashing, the
   merge engine, the publisher and the conversion from the v1 export. It performs no I/O and
   depends on no store.
+- `crates/loft-ports` owns the machinery both stores share and that knows no document: the
+  journaled save over plain paths into a journal directory its caller names, the runner through
+  which Loft reaches git, and the clock. It depends on no model and no store.
 - `crates/loftspec-store` owns the `DocumentStore` trait, its memory and file implementations and
   the port to git. Every write of the tree, or of a file beside it, goes through one journaled
   save (`journal::save`), whose journal lives in `.loft/save/` beside `spec/` while it runs; a
   command opens the tree through `FileStore::open`, which first finishes or discards an
   interrupted save. Never write a file of the Format any other way. The trait holds only what the
   CLI needs: load, save and roots.
+- `crates/yardlog` owns Yard Log's model: its records and keys, the rules a write is held to,
+  its canonical YAML and the merge of two copies. It performs no I/O and depends neither on
+  `loftspec` nor on a store.
+- `crates/yardlog-store` reads and writes each branch's Yard Log under `.yard/<branch>/` through
+  `loft-ports`' journaled save, one write at a time under a lock in git's own directory for the
+  worktree, and keeps the machine's state in `~/.yard/`. It reaches git only through
+  `loft-ports`.
 - `crates/loft-cli` is the `loft` binary and owns nothing the library could own.
 - `crates/software-plant` is the Software Plant: simulators of the external systems Loft depends
   on, for tests only. It is never published and never a dependency of a published crate.
@@ -69,13 +86,32 @@ change, or v1 reverts it.
   `loft init` write into a project.
 - `plugins/claude/loft/` and `plugins/codex/loft/` are the plugins, each holding its host's
   package under `skills/loft-spec/`; `.claude-plugin/marketplace.json` and
-  `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft
-  status pane, a hooks module written by hand: `hooks/` (`register.tsx`, its pure `model.ts`
-  and its tone table `ui.tsx`), its state contract `types/index.d.ts` and its tests `tests/`.
-  It learns of the tree only from `loft … --format json` (the accepted decision "The status
-  pane reads Loft only through the command line's JSON"). CI does not run its tests: after a
-  change to it, run `claude plugin validate plugins/claude/loft` and
-  `claude plugin test plugins/claude/loft`, and type-check it with TypeScript.
+  `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft mod,
+  one hooks module written by hand that runs Yard Client: `hooks/register.tsx` registers the
+  hooks it records events with around Claude Code's own, `loft.ts` runs `loft` and the pure
+  `model.ts` reads what it prints, and Yard Client lies in `hooks/yard/`. Its state contract is
+  `types/index.d.ts` and its tests are `tests/`, written with Claude Code's test kit. It learns
+  of the tree and of Yard Log only from `loft … --format json` (the accepted decision "Yard
+  Client is a mod over loft"), and reaches the page server only to post its events. Beside `skills/loft-spec/` it
+  holds the `yard` skill, `skills/yard/SKILL.md`, written by hand for Claude Code alone.
+  CI runs `claude plugin validate plugins/claude/loft` and `claude plugin test
+  plugins/claude/loft` under a pinned Claude Code; run both after a change to the mod, and
+  type-check it with TypeScript once a session has loaded the plugin and written its types.
+- `crates/loft-cli/yard-page/` is the Yard page, browser-native modules and CSS with no build
+  step, which `loft yard serve` embeds and serves; each file is also listed in `ASSETS` in
+  `crates/loft-cli/src/yard/serve/assets.rs`. Mermaid is vendored there as
+  `vendor/mermaid.min.js.gz` only, at the version its `README.md` pins;
+  `scripts/vendor-mermaid.sh` refreshes it. Its tests are in `crates/loft-cli/yard-page-tests/`:
+  after `npm ci` there, `npm test` runs them in a DOM emulator and `npm run types` type-checks
+  the page, and CI runs both. The browser suite drives the page in a real browser and runs on
+  demand only, after `npx playwright install chromium`:
+  `cargo nextest run -p loft-cli --run-ignored only -E 'test(/yard_page_browser/)'`. Run it after
+  a change to the page or the page server, and before a release.
+- Yard Log is kept under `.yard/<branch>/` in a tree, committed with the work unless the
+  repository ignores `.yard/`, as this one does. What belongs to the machine, not the branch,
+  lies in `~/.yard/`: the page server's `server.json`, its lock and stop request, the trees it
+  serves, each session's events, when each session was last heard, the revision each agent last
+  read, the sessions that continue others and the control token.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
   of the platform it is installed on. A release packs it, and one package per platform, into
   tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;
@@ -117,6 +153,10 @@ text goes to standard error only.
   rule and no other warning; a `fragment` is shown and not run. The lint guide describes every
   rule the linter defines. `crates/loft-cli/tests/skill.rs` holds the source to these rules and
   to each reference's opening and contents.
+- The `yard` skill is not composed: it lies only in the Claude Code plugin, at
+  `plugins/claude/loft/skills/yard/SKILL.md`, and is edited there by hand; the packaging script
+  leaves it alone. `crates/loft-cli/tests/yard_skill.rs` holds it to one file of at most 500
+  lines, to naming exactly the tools the mod registers, and to each habit its Feature states.
 
 ## Software Plant
 
@@ -125,8 +165,10 @@ Loft depends on systems outside it: git, which tells the publisher the current b
 dates a publish. Each is a root Component with the boundary `external` in `spec/`, and Loft
 reaches it through one port with one real adapter; `loftspec-store` reaches git only through its
 repository port. Tests never reach an external system directly and never through a hook in a
-shipped binary. They put a simulator from the Software Plant in front of the unchanged binary
-under test:
+shipped binary. The only switches a shipped binary reads for a simulator are its standard and
+named environment variables (`SOURCE_DATE_EPOCH`, `LOFT_CLOCK`, `LOFT_TELEMETRY_ENDPOINT`,
+`LOFT_UPDATE_ENDPOINT`), and each changes only where its port takes its answers. Tests put a
+simulator from the Software Plant in front of the unchanged binary under test:
 
 - **git**: `software_plant::GitScenario` scripts a repository: its prefix, its branch or a
   detached HEAD, its porcelain status, its local configuration (a `config` call sets it for the
@@ -137,8 +179,11 @@ under test:
   the scratch directory, and `Installed::apply` gives a `Command` a search path whose only `git`
   is the simulator. Any call the simulator does not answer exits 2 naming the call, so Loft
   cannot come to depend on git behaviour nobody modelled.
-- **the clock**: `software_plant::Clock` sets `SOURCE_DATE_EPOCH`, which `loft publish` reads as
-  its publish time and the command event as its hour, fixed or stepping between runs.
+- **the clock**: the clock port tells the time and waits. `software_plant::Clock` sets
+  `SOURCE_DATE_EPOCH`, which `loft publish` reads as its publish time and the command event as
+  its hour, fixed or stepping between runs. `Clock::…().passing()` also sets `LOFT_CLOCK=passing`,
+  under which a wait returns at once and moves the run's time on by its length, so a run that
+  waits minutes ends in milliseconds; every other scenario clears it.
 - **the telemetry collector**: `software_plant::Collector` serves the collector's wire contract
   on a loopback port (accepting, failing with a status, silent, or a refused port) and records
   the requests and the events it accepted.
@@ -249,8 +294,8 @@ A release happens only with the maintainer's approval, and in this order:
    builds only the host platform, so a change that breaks a cross-build, such as a dependency
    with C code, shows here first.
 1. On a branch from `develop`, set the new version in every crate's `Cargo.toml`, in the
-   workspace dependencies and in both plugin manifests (`tests/plugins.rs` fails until they
-   agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
+   workspace dependencies, in both plugin manifests and in `PLUGIN_VERSION` of the Claude Code
+   plugin's `hooks/yard/index.tsx` (`tests/plugins.rs` fails until they agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
    into `develop`, then `develop` into `main`.
 2. On `main`, run `loft publish` over the committed `spec/`, commit `spec/labels.yaml` and
    `loft.lock.json` together as the publish commit, and check that `loft verify` passes. A second

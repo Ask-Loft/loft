@@ -1,0 +1,57 @@
+key: 01a1646f-5467-7025-8a88-4ed9956dda92
+slug: yard-log-is-committed-with-the-work-by-default
+title: "Yard Log is committed with the work by default"
+context: "Yard Log records how a change was planned and decided: the questions asked, the answers given, the plans approved. Kept in the repository, it travels with the branch and is read in review. Some repositories keep plans out of their history, such as a public one whose rules say so, and such a repository ignores the directory."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4edc9471939f
+  outcome: "Yard Log is kept under `.yard/` in the working tree; `loft yard read` reports whether git ignores `.yard/`, and the `yard` skill tells the agent to commit `.yard/` with its work unless it is ignored."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4eda92f8615b
+    kind: local
+    label: "Travels with the branch"
+    statement: "Yard Log reaches every clone of the branch and its review."
+  - key: 01a1646f-5467-7025-8a88-4edb73e8ea9b
+    kind: local
+    label: "The repository decides"
+    statement: "A repository that keeps plans out of its history can do so without changing Yard Client."
+options:
+  - key: 01a1646f-5467-7025-8a88-4edc9471939f
+    title: "Committed unless ignored"
+    description: "Kept in the working tree and committed with the work, unless the repository ignores `.yard/`."
+  - key: 01a1646f-5467-7025-8a88-4edd71a25a90
+    title: "Local unless chosen"
+    description: "Kept outside the working tree, on the machine, and committed only where a project opts in."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4edc9471939f
+    driver: 01a1646f-5467-7025-8a88-4eda92f8615b
+    rating: supports
+    rationale: "it is in the branch's commits"
+  - option: 01a1646f-5467-7025-8a88-4edc9471939f
+    driver: 01a1646f-5467-7025-8a88-4edb73e8ea9b
+    rating: supports
+    rationale: "`.gitignore` keeps it out"
+  - option: 01a1646f-5467-7025-8a88-4edd71a25a90
+    driver: 01a1646f-5467-7025-8a88-4eda92f8615b
+    rating: conflicts
+    rationale: "it stays on one machine"
+  - option: 01a1646f-5467-7025-8a88-4edd71a25a90
+    driver: 01a1646f-5467-7025-8a88-4edb73e8ea9b
+    rating: supports
+    rationale: "a project opts in"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4eded412308c
+    kind: obligation
+    statement: "Every file Yard Client writes under `.yard/` is fit to be committed: it holds names, ids, times, counts and what the agent and the person wrote, and never the session's raw events."
+  - key: 01a1646f-5467-7025-8a88-4edf066e6016
+    kind: risk
+    statement: "A repository that should not hold plans has to ignore `.yard/` before the first commit of any branch's Yard Log."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b7852c58c8
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc7c4e7a1936
+  - role: outcome
+    node: 01a1646f-546e-76cb-8b4f-f246ba8e2f51

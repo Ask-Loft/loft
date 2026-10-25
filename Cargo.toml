@@ -1,8 +1,12 @@
 [workspace]
 resolver = "3"
 members = [
+    "crates/loft-common",
+    "crates/loft-ports",
     "crates/loftspec",
     "crates/loftspec-store",
+    "crates/yardlog",
+    "crates/yardlog-store",
     "crates/loft-cli",
     "crates/software-plant",
 ]
@@ -17,10 +21,16 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
 # The published crates depend on one another at the release they ship in.
+loft-common = { path = "crates/loft-common", version = "2.2.1" }
+loft-ports = { path = "crates/loft-ports", version = "2.2.1" }
 loftspec = { path = "crates/loftspec", version = "2.2.1" }
 loftspec-store = { path = "crates/loftspec-store", version = "2.2.1" }
+yardlog = { path = "crates/yardlog", version = "2.2.1" }
+yardlog-store = { path = "crates/yardlog-store", version = "2.2.1" }
 clap = { version = "4", features = ["derive"] }
 hmac = "0.12"
+# The page server reads each request it is sent with it; it is already in the lock through ureq.
+httparse = "1.10"
 # Pinned: the language rules read a body's text as this Markdown parser yields it, so a version
 # change can change a finding.
 pulldown-cmark = { version = "=0.13.4", default-features = false }

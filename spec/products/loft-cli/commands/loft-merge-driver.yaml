@@ -1,10 +1,11 @@
 key: 929999f2-93e0-468b-9e85-5d438ec6b1b7
 slug: loft-merge-driver
 name: "`loft merge-driver`"
-body: "Runs the merge engine as the git merge driver for `spec/` files, and with `--install` registers that driver in the repository."
+body: "Runs the merge engine as the git merge driver for `spec/` files and the yardlog merge for the files of Yard Log under `.yard/`, and with `--install` registers that driver in the repository."
 tags:
   - needs-repository
 realizes:
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
   - key: 9b4fe97f-079b-4407-a4f5-04f53e943a86
@@ -145,3 +146,28 @@ requirements:
         name: "A merge's outcome is `conflicted` when it wrote a conflict record."
       - key: 01a1354e-bca0-714b-8727-09b591b36d45
         name: "An installation's outcome is `installed`."
+  - key: 01a1646f-546a-7037-b85c-581c938e3690
+    statement:
+      form: event_driven
+      when: "git runs `loft merge-driver` on a path under `.yard/`"
+      system: "`loft merge-driver`"
+      shall: "merge the three copies by key as yardlog files, in place of the merge engine of the Format."
+    criteria:
+      - key: 01a1646f-546a-7037-b85c-581d77f256ff
+        name: "A path under `.yard/` is merged by key as a yardlog file."
+      - key: 01a1646f-546a-7037-b85c-581e7913dca3
+        name: "A path under `spec/` is merged by the merge engine as before."
+      - key: 01a1646f-546a-7037-b85c-581f1115cbad
+        name: "A yardlog merge exits 0 and writes no conflict record."
+      - key: 01a1646f-546a-7037-b85c-58202c68fed4
+        name: "A yardlog merge's JSON document names the path merged, with no conflict and no disputed label."
+  - key: 01a1646f-546a-7037-b85c-5821e4e005a5
+    statement:
+      form: ubiquitous
+      system: "`loft merge-driver --install`"
+      shall: "register the driver for the files of Yard Log as well as for `spec/`."
+    criteria:
+      - key: 01a1646f-546a-7037-b85c-5822475eec76
+        name: "`.gitattributes` gains `.yard/**/*.yaml merge=loft` when absent."
+      - key: 01a1646f-546a-7037-b85c-58234214b1a5
+        name: "A second `--install` adds no second `.yard/` line."

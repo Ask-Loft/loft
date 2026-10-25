@@ -1,0 +1,50 @@
+key: 01a1646f-5466-77f8-9738-e1117d5a3ded
+slug: a-plan-presented-in-plan-mode-is-decided-in-either-place
+title: "A plan presented in plan mode is decided in either place"
+context: "When the agent presents a plan with `ExitPlanMode`, Claude Code asks the person in the terminal to approve it, and an approval ends plan mode. The person may be reading the plan on the page. A mod can answer the tool call in Claude Code's place."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5466-77f8-9738-e114c452f282
+  outcome: "The mod puts the plan on the page while Claude Code asks in the terminal; the first decision counts, and an approval on the page is given to Claude Code as the person's, ending plan mode, with the agent going on in auto mode."
+drivers:
+  - key: 01a1646f-5466-77f8-9738-e112ce8d7b79
+    kind: local
+    label: "Decide where you read"
+    statement: "The person decides the plan where they read it."
+  - key: 01a1646f-5466-77f8-9738-e113f3e47532
+    kind: local
+    label: "Same effect"
+    statement: "An approval on the page has the effect an approval in the terminal has."
+options:
+  - key: 01a1646f-5466-77f8-9738-e114c452f282
+    title: "Either place, first decision counts"
+    description: "Page and terminal both offer the decision; the page's is given to Claude Code."
+  - key: 01a1646f-5466-77f8-9738-e115fecee752
+    title: "The terminal decides"
+    description: "The page shows the plan; only the terminal decides it."
+assessments:
+  - option: 01a1646f-5466-77f8-9738-e114c452f282
+    driver: 01a1646f-5466-77f8-9738-e112ce8d7b79
+    rating: supports
+    rationale: "both places decide"
+  - option: 01a1646f-5466-77f8-9738-e114c452f282
+    driver: 01a1646f-5466-77f8-9738-e113f3e47532
+    rating: supports
+    rationale: "plan mode ends either way"
+  - option: 01a1646f-5466-77f8-9738-e115fecee752
+    driver: 01a1646f-5466-77f8-9738-e112ce8d7b79
+    rating: conflicts
+    rationale: "the person goes to the terminal"
+  - option: 01a1646f-5466-77f8-9738-e115fecee752
+    driver: 01a1646f-5466-77f8-9738-e113f3e47532
+    rating: supports
+    rationale: "one place, one effect"
+consequences:
+  - key: 01a1646f-5466-77f8-9738-e116ac1cd950
+    kind: obligation
+    statement: "The page says beside the approval of a plan presented in plan mode that the agent goes on in auto mode."
+subjects:
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc41c1c5820f

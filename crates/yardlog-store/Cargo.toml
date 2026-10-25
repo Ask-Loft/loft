@@ -1,0 +1,34 @@
+[package]
+name = "yardlog-store"
+version = "2.2.1"
+description = "The store of Yard Log: a branch's Yard Log under `.yard/`, written one write at a time through a journal in git's own directory, and the machine's state in `~/.yard/`"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "../../README.md"
+keywords.workspace = true
+categories = ["development-tools", "filesystem"]
+# The tests use the Software Plant and real git, neither of which is published, so they run from
+# the repository only.
+exclude = ["tests"]
+# The integration tests are one binary, `tests/main.rs`: a binary per file is linked and
+# checked by the operating system once each.
+autotests = false
+
+[dependencies]
+loft-ports.workspace = true
+thiserror.workspace = true
+yardlog.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+software-plant = { path = "../software-plant" }
+
+[lints]
+workspace = true
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"

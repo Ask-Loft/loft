@@ -144,7 +144,13 @@ impl Scratch {
     /// Runs `loft` at [`EPOCH`] under real git, kept from the user's configuration, as a
     /// contract suite runs it.
     pub fn loft_under_real_git(&self, args: &[&str]) -> Output {
-        let mut command = self.bare(&Clock::fixed(EPOCH));
+        self.loft_under_real_git_at(args, &Clock::fixed(EPOCH))
+    }
+
+    /// Runs `loft` at the time `clock` gives under real git, kept from the user's
+    /// configuration, as a contract suite runs it.
+    pub fn loft_under_real_git_at(&self, args: &[&str], clock: &Clock) -> Output {
+        let mut command = self.bare(clock);
         real_git::isolate(&mut command).args(args).output().unwrap()
     }
 

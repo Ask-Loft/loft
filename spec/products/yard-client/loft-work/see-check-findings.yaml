@@ -1,0 +1,27 @@
+key: 01a1646f-546d-7042-befd-eacb5adebb91
+slug: see-check-findings
+name: "See check findings"
+body: "A `findings` view shows what `loft check` reported when the view was recorded, which of its findings the branch introduced, and why the agent left each finding it left."
+realizes:
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1646f-546d-7042-befd-eacc62f9fa3a
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a `findings` view as the count of errors and of findings at each severity, and a list of each."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-eacd8a7f0685
+        name: "Each error and each finding shows its rule, its severity, its message, and the file and line it names."
+      - key: 01a1646f-546d-7042-befd-eace3bd53656
+        name: "A finding that names a node gives the node's label and name."
+      - key: 01a1646f-546d-7042-befd-eacf19310610
+        name: "A finding the agent left in place shows the agent's reason beside it."
+      - key: 01a1646f-546d-7042-befd-ead0ef8802b7
+        name: "A check with no error and no finding says that the specification is clean."
+      - key: 01a1646f-546d-7042-befd-ead10ce7a734
+        name: "Each finding is marked as introduced by the branch or there before it, against the base revision."
+      - key: 01a1646f-546d-7042-befd-ead279dd7751
+        name: "The findings that the branch resolved are listed."
+      - key: 01a1646f-546d-7042-befd-ead3b74268b1
+        name: "The view names the base revision it marks the findings against."

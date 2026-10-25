@@ -16,15 +16,20 @@ mod markdown;
 mod repo;
 #[path = "common/schema.rs"]
 mod schema;
+#[path = "common/served.rs"]
+mod served;
 #[path = "common/snapshot.rs"]
 mod snapshot;
 #[path = "common/workflow.rs"]
 mod workflow;
+#[path = "common/yard.rs"]
+mod yard;
 
 mod check;
 mod check_baseline;
 mod checks_for_updates;
 mod citations;
+mod clock_port;
 mod closed_output;
 mod collector_contract;
 mod find;
@@ -79,3 +84,32 @@ mod version;
 mod writes_skill;
 mod writes_skill_settings;
 mod writes_tree;
+mod yard_answer;
+mod yard_base;
+mod yard_callers;
+mod yard_close;
+mod yard_commands;
+mod yard_continue;
+mod yard_merge_contract;
+mod yard_merge_driver;
+mod yard_newer;
+mod yard_page_browser;
+mod yard_protocol;
+mod yard_published;
+mod yard_read;
+mod yard_serve;
+mod yard_serve_access;
+mod yard_serve_base;
+mod yard_serve_events;
+mod yard_serve_inherited;
+mod yard_serve_logs;
+mod yard_serve_page_data;
+mod yard_serve_subagents;
+mod yard_settle;
+mod yard_skill;
+mod yard_take_up;
+mod yard_upgrade;
+mod yard_view_reports;
+mod yard_views;
+mod yard_wait;
+mod yard_write;

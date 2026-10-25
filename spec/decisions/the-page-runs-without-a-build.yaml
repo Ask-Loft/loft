@@ -1,0 +1,53 @@
+key: 01a1646f-5467-7025-8a88-4ea206de9025
+slug: the-page-runs-without-a-build
+title: "The page runs without a build"
+context: "The page is served by `loft`, which embeds its files when it is built from this repository. Cargo builds `loft` with no other toolchain, and nothing built is committed. Browsers run JavaScript modules as they are, and TypeScript checks JavaScript annotated with JSDoc types."
+state:
+  kind: accepted
+  selectedOption: 01a1646f-5467-7025-8a88-4ea54430ad04
+  outcome: "The page is HTML, CSS and JavaScript modules kept in the repository as the browser runs them, type-checked by `tsc` from their JSDoc types; mermaid is kept beside them as a third-party file, and `loft` renders Markdown to HTML."
+drivers:
+  - key: 01a1646f-5467-7025-8a88-4ea3887ed86f
+    kind: local
+    label: "Cargo alone builds loft"
+    statement: "Building `loft` needs no toolchain beyond Cargo."
+  - key: 01a1646f-5467-7025-8a88-4ea40065c54e
+    kind: local
+    label: "Typed"
+    statement: "The page's code is type-checked."
+options:
+  - key: 01a1646f-5467-7025-8a88-4ea54430ad04
+    title: "Browser-native modules, checked"
+    description: "Plain JavaScript modules with JSDoc types, checked by `tsc` and served as they are."
+  - key: 01a1646f-5467-7025-8a88-4ea619c8dd4e
+    title: "TypeScript built by a bundler"
+    description: "TypeScript bundled by esbuild before `loft` is built, the bundle embedded."
+assessments:
+  - option: 01a1646f-5467-7025-8a88-4ea54430ad04
+    driver: 01a1646f-5467-7025-8a88-4ea3887ed86f
+    rating: supports
+    rationale: "the files are embedded as they are"
+  - option: 01a1646f-5467-7025-8a88-4ea54430ad04
+    driver: 01a1646f-5467-7025-8a88-4ea40065c54e
+    rating: supports
+    rationale: "`tsc` checks the JSDoc types"
+  - option: 01a1646f-5467-7025-8a88-4ea619c8dd4e
+    driver: 01a1646f-5467-7025-8a88-4ea3887ed86f
+    rating: conflicts
+    rationale: "a bundle must be built, or committed, first"
+  - option: 01a1646f-5467-7025-8a88-4ea619c8dd4e
+    driver: 01a1646f-5467-7025-8a88-4ea40065c54e
+    rating: supports
+    rationale: "TypeScript"
+consequences:
+  - key: 01a1646f-5467-7025-8a88-4ea7762fbf51
+    kind: cost
+    statement: "The page's types are written as JSDoc annotations rather than TypeScript syntax."
+  - key: 01a1646f-5467-7025-8a88-4ea8d7e2bf1f
+    kind: obligation
+    statement: "CI type-checks the page's modules."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71a94f0aa021
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ab037336a6

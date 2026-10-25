@@ -1,0 +1,51 @@
+key: 01a1646f-546d-7042-befd-ea3326dff377
+slug: loft-yard-answer
+name: "Record an answer given in the terminal"
+body: "When the person answers or decides in the agent host's own dialog, the host records it with `loft yard answer`, so that the answer is kept in Yard Log beside the ones given on the page and the first answer counts wherever it was given."
+tags:
+  - yard-command
+  - needs-repository
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1646f-546d-7042-befd-ea3420066996
+    statement:
+      form: event_driven
+      when: "a host records the person's answers and decisions with `loft yard answer`"
+      system: "`loft yard answer`"
+      shall: "record each of them with the person's Act and the channel `terminal`."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea352a11cc41
+        name: "An answer to a question records the chosen labels, or the person's own words, and the person's notes."
+      - key: 01a1646f-546d-7042-befd-ea36cd0087ca
+        name: "A decision of an `approval` or a `plan` block records `approved`, or `rejected` with the person's reason where they gave one."
+      - key: 01a1646f-546d-7042-befd-ea37505961d9
+        name: "The person is named by the `user.name` and `user.email` that git gives for the repository."
+      - key: 01a1646f-546d-7042-befd-ea3833ed0c8e
+        name: "All the answers of one run are recorded at one revision."
+      - key: 01a1646f-546d-7042-befd-ea3950b1221b
+        name: "A submission whose last open block is answered or decided becomes `answered`."
+  - key: 01a1646f-546d-7042-befd-ea3a712ef15e
+    statement:
+      form: unwanted
+      if: "a block of the run was answered or decided elsewhere first"
+      system: "`loft yard answer`"
+      shall: "refuse the later answer or outcome of that block as answered elsewhere."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea3b93c1ab09
+        name: "The first answer or outcome is kept unchanged."
+      - key: 01a1646f-546d-7042-befd-ea3cc0994266
+        name: "The result names each block answered elsewhere, with the channel it was answered on."
+      - key: 01a1646f-546d-7042-befd-ea3d337fbaa1
+        name: "The other answers of the run are recorded."
+  - key: 01a1646f-546d-7042-befd-ea3ecbe0acfa
+    statement:
+      form: unwanted
+      if: "a block of the run is not in an open submission"
+      system: "`loft yard answer`"
+      shall: "refuse the run and name the block."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea3f674f8421
+        name: "No file is changed."

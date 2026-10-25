@@ -1,0 +1,66 @@
+key: 01a1646f-546d-7042-befd-ea61a5a3a0c9
+slug: agents-as-callers
+name: "Agents as callers"
+body: |
+  Several Claude Code sessions may work at once on one machine, each perhaps running several subagents, and a subagent may work in a worktree of its own. Each call to Yard Client is made by one agent: a session and, for a subagent, its agent id. The call reaches Yard Log of the branch in that agent's own directory, so that a subagent in its own worktree writes to that worktree's branch and never to its parent's.
+
+  Yard Log is named by its tree, the top of the worktree, and its branch. Git never checks out one branch in two worktrees, so the pair names one branch's Yard Log, and git's common directory names the repository the tree belongs to.
+tags:
+  - git
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1646f-546d-7042-befd-ea6295f02fdc
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command that an agent runs"
+      shall: "take the calling agent's session with `--session <id>` and, for a subagent, its agent with `--agent <id>` and `--agent-type <type>`."
+    body: "The commands that an agent runs are `read`, `write`, `wait`, `withdraw`, `close`, `published` and `answer`; `answer` takes the session whose agent asked. `upgrade` is run by the person, `continue` records what a session continues, and `serve` and `protocol` act on no branch's Yard Log."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea63f62a04eb
+        name: "A command run without `--agent` acts for the session's main agent."
+      - key: 01a1647b-208d-7169-85c8-9a4f62de4b3d
+        name: "`write`, `wait`, `withdraw`, `close`, `published` or `answer` run without `--session` exits 2 and names `--session`."
+      - key: 01a1647b-208d-7169-85c8-9a5021e9fb72
+        name: "`--agent` given without `--agent-type`, or `--agent-type` without `--agent`, exits 2 and names the one missing."
+      - key: 01a1646f-546d-7042-befd-ea643af92fc6
+        name: "Every block a command writes records the session and the agent that wrote it."
+      - key: 01a1646f-546d-7042-befd-ea6520c0d16d
+        name: "Every withdrawal and close records the session and the agent that made it."
+  - key: 01a1646f-546d-7042-befd-ea66c74879c5
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command that acts on a branch's Yard Log"
+      shall: "act on Yard Log of the branch that the worktree holding its working directory is on."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea676a927ac1
+        name: "A command run in a subdirectory of a worktree acts on Yard Log at the top of that worktree."
+      - key: 01a1646f-546d-7042-befd-ea6848223efc
+        name: "A command run in a linked worktree acts on that worktree's own `.yard/`."
+      - key: 01a1646f-546d-7042-befd-ea69d9a4f371
+        name: "Each result names the tree, the branch and the repository's common directory."
+  - key: 01a1646f-546d-7042-befd-ea6a19706e0a
+    statement:
+      form: event_driven
+      when: "an agent calls one of Yard Client's tools"
+      system: "the Loft mod"
+      shall: "run the `loft yard` command in that agent's own current directory, with that agent's session and, for a subagent, its agent id and type."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea6b72c4a18a
+        name: "The directory is read while the tool call is handled, so that a subagent's call runs in the subagent's directory."
+      - key: 01a1646f-546d-7042-befd-ea6ce4e53c57
+        name: "A subagent working in a worktree of its own writes to that worktree's Yard Log."
+      - key: 01a1646f-546d-7042-befd-ea6d4a1030f6
+        name: "A session that moves into another worktree reaches that worktree's Yard Log with its next call."
+      - key: 01a1646f-546d-7042-befd-ea6e6f25624a
+        name: "The main agent's call carries no `--agent`."
+  - key: 01a1646f-546d-7042-befd-ea6f9460a2d0
+    statement:
+      form: unwanted
+      if: "the calling agent's directory is in no git repository"
+      system: "a `loft yard` command"
+      shall: "refuse and say that Yard Log needs a git repository."
+    criteria:
+      - key: 01a1646f-546d-7042-befd-ea70497a2092
+        name: "No file is written."
