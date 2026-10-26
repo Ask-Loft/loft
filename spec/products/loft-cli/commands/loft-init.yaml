@@ -75,7 +75,7 @@ requirements:
       - key: 01a13654-bf86-77e9-8fd5-8dbbc2ae6315
         name: "Each package is the composition of the skill that `loft` embeds."
       - key: 01a13654-bf86-77e9-8fd5-8dbc6fd2c972
-        name: "A skill directory that already exists is replaced."
+        name: "An existing materialized skill directory is replaced."
   - key: 01a13654-bf86-77e9-8fd5-8dbdbd959708
     statement:
       form: optional

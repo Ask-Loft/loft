@@ -35,7 +35,7 @@ requirements:
   - key: 01a14545-579b-7242-998f-2f3a641f9d23
     statement:
       form: event_driven
-      when: "a command tagged `writes-skill` writes the skill without `--no-plugin`"
+      when: "a command tagged `writes-skill` writes the Claude Code skill without `--no-plugin`"
       system: "the command"
       shall: "enable the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`."
     criteria:

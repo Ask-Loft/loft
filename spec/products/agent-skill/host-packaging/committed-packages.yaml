@@ -25,3 +25,15 @@ requirements:
     criteria:
       - key: 01a13654-6e11-74fa-a359-2581cfacca51
         name: "After the script runs, each committed package equals its composition."
+  - key: 01a17844-cbca-7515-8e4e-48d6a5372e2a
+    statement:
+      form: ubiquitous
+      system: "The repository's Codex discovery entry"
+      shall: "expose the canonical skill source through a relative symbolic link."
+    criteria:
+      - key: 01a17844-cbca-7515-8e4e-48d7402352da
+        name: "The entry at .agents/skills/loft-spec points to ../../crates/loft-cli/skill/loft-spec."
+      - key: 01a17844-cbca-7515-8e4e-48d81e7fbb52
+        name: "The packaging guard refuses a missing, copied or retargeted discovery entry."
+      - key: 01a17844-cbca-7515-8e4e-48d9ebc35d82
+        name: "The link resolves to the shared router, references and Codex metadata in the current worktree."
