@@ -1,0 +1,24 @@
+key: 01a177f9-8294-77e4-aa6e-705fbff4e41f
+slug: compose-the-yard-skill
+name: "Compose the Yard skill"
+body: |
+  The shared Yard workflow has one source under `crates/loft-cli/skill/yard/`. Its `SKILL.md` names no host or native host tool; the Claude-specific tools, task metadata, automatic mirroring and plan-mode instructions lie in `agents/claude.md`. Composition appends that adaptation to the common source and produces the Claude plugin's single `skills/yard/SKILL.md`, with its existing name, description fields and 500-line ceiling.
+
+  The existing specification skill's installation is unchanged. Yard is packaged only for the Claude adapter until another adapter is implemented. The packaging script rewrites the composed Yard package, and a guard detects drift.
+realizes:
+  - 01a16469-559e-73c4-85f2-71b7852c58c8
+requirements:
+  - key: 01a177f9-8294-77e4-aa6e-70601612ac46
+    statement:
+      form: ubiquitous
+      system: "The Yard skill composer"
+      shall: "combine host-neutral workflow instructions with only the selected host's adaptation."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-7061e2a58d45
+        name: "The shared source describes stages, tasks, fixes, decisions, submissions, specification approval, build approval, delta plans, Loft reports, commits and closure without native host tool names."
+      - key: 01a177f9-8294-77e4-aa6e-7062ff87c95e
+        name: "The Claude adaptation names all six registered Yard tools and retains native dialog, task metadata and plan-mode instructions."
+      - key: 01a177f9-8294-77e4-aa6e-7063a3a5f1a5
+        name: "The composed Claude package is one SKILL.md of at most 500 lines, whose frontmatter holds name and description alone."
+      - key: 01a177f9-8294-77e4-aa6e-7064fd177e6d
+        name: "The committed package equals the composition, and packaging does not install Yard for a host without an adapter."

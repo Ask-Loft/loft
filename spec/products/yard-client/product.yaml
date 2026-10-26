@@ -6,10 +6,18 @@ body: |
 
   Agents write Yard Log only through Yard Client's tools, as typed blocks inside stages; the person writes nothing but answers and decisions. Each branch has its own Yard Log, kept in the repository in the `yardlog` format under `.yard/` and committed with the work by default, so that it travels with the branch and is read in review. Its records carry keys, as the nodes of a specification do, so that a server can later take Yard Log up as it is.
 
-  Yard Client is built into `loft`, which reads and writes Yard Log and serves the page, and into the Loft plugin's mod, through which Claude Code, the first host, reaches it.
+  Yard Client is built into `loft`, which reads and writes Yard Log and serves the page, and into adapters through which agent hosts reach it. The Claude adapter runs as the Loft plugin's TypeScript mod, preserving the host's native tools and dialogs.
 tags:
   - git
 featureGroups:
+  - key: 01a177f9-8295-7328-aa9b-0fa3313017f1
+    slug: adapters
+    name: "Agent adapters"
+    body: "The host-neutral boundary of Yard and the adapters that translate each agent host into its commands and events."
+    features:
+      - 01a177f9-8294-77e4-aa6e-705fbff4e41f
+      - 01a177f9-8294-77e4-aa6e-7065158afd8d
+      - 01a177f9-8294-77e4-aa6e-7076e270dd65
   - key: 01a16469-55a3-716f-a42c-3a3615ec3427
     slug: yard-log
     name: "Yard Log"
@@ -83,7 +91,7 @@ featureGroups:
   - key: 01a16469-55a3-716f-a42c-3a3dbb9897a7
     slug: session-activity
     name: "Session activity"
-    body: "What Yard Client records of the Claude Code sessions that work on a branch whose Yard Log is open, and what the page shows of it. The first use of the record is counting the tokens Yard Log took."
+    body: "What Yard Client records of agent sessions that work on a branch whose Yard Log is open, and what the page shows of it. The first use of the record is counting the tokens Yard Log took."
     features:
       - 01a1646f-546d-7042-befd-eae568dbeb5f
       - 01a1646f-546d-7042-befd-eaefec18d7c5
@@ -91,7 +99,7 @@ featureGroups:
       - 01a1646f-546d-7042-befd-eb166bb457fe
   - key: 01a16469-55a3-716f-a42c-3a3efe7ff9ba
     slug: claude-code-mod
-    name: "Claude Code mod"
+    name: "Claude adapter"
     body: "What the Loft plugin's mod adds to Claude Code, so that Yard Log takes part in the agent's planning and execution without the agent having to remember it, and the `yard` skill that teaches the agent the rest."
     features:
       - 01a1646f-546c-7521-9643-bc11f8cd86ba

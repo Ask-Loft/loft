@@ -1,0 +1,36 @@
+key: 01a177f9-828d-76fd-97d7-f20c0b86cc1b
+slug: yard-has-a-host-neutral-core-and-native-adapters
+title: "Yard has a host-neutral core and native adapters"
+context: "Yard's first host is Claude Code. Its records already name a host, but several identity comparisons and machine-state keys assume that a session identifier is globally unique. A second host needs the same log, page and submission semantics while retaining its own native integration."
+state:
+  kind: accepted
+  selectedOption: 01a177f9-828d-76fd-97d7-f20e9b1af7c3
+  outcome: "Yard's Rust core owns its behavior and host-neutral contracts. Each adapter translates its host into the existing JSON CLI and page-server interfaces. The Claude adapter remains TypeScript loaded from source, retaining native hooks, tools, dialogs, timers, queues and process handling. Identities include the host, and adapters declare their capabilities."
+drivers:
+  - key: 01a177f9-828d-76fd-97d7-f20d56dd5194
+    kind: local
+    label: "Native integration"
+    statement: "Claude's mod APIs own its native dialogs, timers, process lifetimes and hook execution budgets."
+options:
+  - key: 01a177f9-828d-76fd-97d7-f20e9b1af7c3
+    title: "Native adapters over the core"
+    description: "Keep host integration in its native runtime and give all adapters one host-neutral Yard contract."
+  - key: 01a177f9-828d-76fd-97d7-f20fccae5832
+    title: "One runtime for every host"
+    description: "Move all integration and delivery orchestration into the Rust binary."
+assessments:
+  - option: 01a177f9-828d-76fd-97d7-f20e9b1af7c3
+    driver: 01a177f9-828d-76fd-97d7-f20d56dd5194
+    rating: supports
+    rationale: "each host retains its native execution and cancellation rules"
+  - option: 01a177f9-828d-76fd-97d7-f20fccae5832
+    driver: 01a177f9-828d-76fd-97d7-f20d56dd5194
+    rating: conflicts
+    rationale: "an external process cannot replace Claude's in-process hook continuations or native dialogs"
+consequences:
+  - key: 01a177f9-828d-76fd-97d7-f210590b5ea5
+    kind: obligation
+    statement: "The same contract scenarios exercise the core with more than one host identity, while each adapter has its host's own integration tests."
+subjects:
+  - role: outcome
+    node: 01a177f9-8294-77e4-aa6e-7065158afd8d

@@ -1,7 +1,7 @@
 key: 01a16469-559e-73c4-85f2-71b7852c58c8
 slug: yard-skill
 name: "yard skill"
-body: "The `yard` skill under `plugins/claude/loft/skills/yard/`, written by hand for Claude Code, which teaches the agent the habits that make Yard Log worth reading."
+body: "The `yard` skill composed from host-neutral source under `crates/loft-cli/skill/yard/` and a host adaptation, which teaches the agent the habits that make Yard Log worth reading."
 scopedTo:
   - 01a16469-55a3-716f-a42c-3a3548428b77
 constraints:

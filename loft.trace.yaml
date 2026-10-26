@@ -25345,7 +25345,7 @@ links:
         name: "the_common_crate_depends_on_no_other_crate_of_the_workspace"
         body: a81e8c995633a814c697d549a05404f0b8f35dc02667600c3ebf9f0f8346dd78
   - node: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
-    reviewed: e7022e8d59a054887d232477c4ff6a4139338b7a99121b6a97f2377b0b973152
+    reviewed: a075172b9263bdd9ad1aacc47272cc584b87efba4c6397dccb0ccc570da380c7
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every command Yard Client runs is loftCommand with --format json, quietly, and no other program"

@@ -1,0 +1,60 @@
+key: 01a177f9-8294-77e4-aa6e-7065158afd8d
+slug: identify-an-agent-host
+name: "Identify an agent host"
+body: |
+  Yard owns its records, submissions, answers, persistence, accounting and page. An adapter translates its host's native tools and events into the JSON commands and events that Yard accepts. Claude Code is the first adapter; the core accepts other host identifiers without a host-specific branch.
+
+  A host identifier starts with a lowercase letter, contains only lowercase letters, digits and hyphens, and has at most 64 characters. A session identifier keeps its existing rules. The storage key is the session identifier for `claude-code`, or `<host>~<session>` for another host. The separator cannot occur in a session identifier. Records continue to hold the original host and session separately, and existing Claude files and machine state stay at their original paths.
+realizes:
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a177f9-8294-77e4-aa6e-70663ebeb76c
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "identify each agent by its host, session and optional subagent identifier."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-7067b42cdd3c
+        name: "Two hosts with the same session and subagent identifiers own separate stages, submissions, read revisions, liveness, event logs and session files."
+      - key: 01a177f9-8294-77e4-aa6e-7068d4ac1774
+        name: "The server attributes activity and usage to the stage of the event's host as well as its session and agent."
+      - key: 01a177f9-8294-77e4-aa6e-70690bcc8fb7
+        name: "The page distinguishes sessions and subagent lanes by host as well as session and agent."
+      - key: 01a177f9-8294-77e4-aa6e-706aca6d6e2c
+        name: "A session's continuation follows only that host's chain, even where another host uses the same identifiers."
+  - key: 01a177f9-8294-77e4-aa6e-706b93fd11e7
+    statement:
+      form: ubiquitous
+      system: "A session-bearing `loft yard` command"
+      shall: "take the agent host with `--host`, using `claude-code` where the option is omitted."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-706cf54dee23
+        name: "The option is accepted by read, write, wait, withdraw, close, published, answer, continue and serve."
+      - key: 01a177f9-8294-77e4-aa6e-706da4ed7cea
+        name: "An invalid host identifier exits 2 before any file is written."
+      - key: 01a177f9-8294-77e4-aa6e-706ebfa984f4
+        name: "A command without the option keeps its existing Claude behavior, file paths and serialized actors."
+  - key: 01a177f9-8294-77e4-aa6e-706f06b5e207
+    statement:
+      form: event_driven
+      when: "a main agent of another host waits on a submission whose sender stopped"
+      system: "Yard Client"
+      shall: "apply the same continuation, liveness and exclusive-lease rules as for another session of the sender's host."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-70709f3b2989
+        name: "A main agent can take over an unanswered submission from a stopped host session with no continuation and no held lease."
+      - key: 01a177f9-8294-77e4-aa6e-7071008b8433
+        name: "A live sender, a continuation, a held lease or a caller that is a subagent prevents cross-host takeover."
+  - key: 01a177f9-8294-77e4-aa6e-7072f5b48e41
+    statement:
+      form: ubiquitous
+      system: "The Claude adapter"
+      shall: "keep its native integration in TypeScript, calling Yard only through the JSON CLI and page-server interfaces."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-707342f97ff9
+        name: "The adapter retains native tools, dialogs, answer races, plan permissions, cancellation, event translation, task mirroring, its outbox, timers and process handling."
+      - key: 01a177f9-8294-77e4-aa6e-70743921560a
+        name: "The adapter passes its host explicitly on protocol 2 and keeps protocol 1 compatibility without new arguments or descriptors."
+      - key: 01a177f9-8294-77e4-aa6e-7075bdc3587a
+        name: "The adapter compares actors by host as well as session and subagent."

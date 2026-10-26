@@ -16,6 +16,10 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-ea4276b44344
         name: "The report gives the protocol's version as one integer."
+      - key: 01a177f9-8295-7328-aa9b-0fa2869127b8
+        name: "The report gives protocol 2 for host-aware callers and adapter descriptors."
+      - key: 01a177f9-f61a-77e3-89ef-0d0bfe35cd61
+        name: "The Claude adapter accepts protocols 1 and 2."
       - key: 01a1646f-546d-7042-befd-ea43c0bb2e34
         name: "The report gives `loft`'s own version."
       - key: 01a1646f-546d-7042-befd-ea440b264795

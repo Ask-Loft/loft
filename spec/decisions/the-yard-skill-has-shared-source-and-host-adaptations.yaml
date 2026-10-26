@@ -1,0 +1,36 @@
+key: 01a177f9-828d-76fd-97d7-f2071d13de1a
+slug: the-yard-skill-has-shared-source-and-host-adaptations
+title: "The Yard skill has shared source and host adaptations"
+context: "Yard's workflow applies to any agent host, while its first skill names Claude's native tools. A host-neutral core needs its workflow separated from those mechanisms before another adapter is added."
+state:
+  kind: accepted
+  selectedOption: 01a177f9-828d-76fd-97d7-f2099819c6a2
+  outcome: "The Yard skill is composed from common source and a host adaptation. The Claude package remains one SKILL.md; only adapters implemented in the repository receive a package. Standalone specification-skill installation does not install Yard."
+drivers:
+  - key: 01a177f9-828d-76fd-97d7-f2089f648f3c
+    kind: local
+    label: "One workflow"
+    statement: "Shared Yard habits have one source while native mechanisms remain specific to their host."
+options:
+  - key: 01a177f9-828d-76fd-97d7-f2099819c6a2
+    title: "Compose shared source"
+    description: "Keep common workflow prose and append the host's native instructions during packaging."
+  - key: 01a177f9-828d-76fd-97d7-f20ad80fbbd7
+    title: "Copy each host's skill"
+    description: "Maintain a complete handwritten workflow for every adapter."
+assessments:
+  - option: 01a177f9-828d-76fd-97d7-f2099819c6a2
+    driver: 01a177f9-828d-76fd-97d7-f2089f648f3c
+    rating: supports
+    rationale: "a workflow correction is made once"
+  - option: 01a177f9-828d-76fd-97d7-f20ad80fbbd7
+    driver: 01a177f9-828d-76fd-97d7-f2089f648f3c
+    rating: conflicts
+    rationale: "shared instructions can diverge between host copies"
+consequences:
+  - key: 01a177f9-828d-76fd-97d7-f20bb805d237
+    kind: obligation
+    statement: "The packaging guard checks the Yard skill against its composition."
+subjects:
+  - role: outcome
+    node: 01a177f9-8294-77e4-aa6e-705fbff4e41f

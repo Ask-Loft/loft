@@ -3,9 +3,10 @@ slug: the-yard-skill-is-written-by-hand-in-the-claude-code-plugin
 title: "The yard skill is written by hand in the Claude Code plugin"
 context: "The `loft-spec` skill has one host-neutral source that `loft` composes for each host. The `yard` skill teaches tools that only the Claude Code plugin's mod offers, and Claude Code is Yard Client's only host for now."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a1646f-5467-7025-8a88-4eac6f99c7aa
   outcome: "The `yard` skill is written by hand under `plugins/claude/loft/skills/yard/`; `loft` does not compose it and `loft skill install` does not write it."
+  successor: 01a177f9-828d-76fd-97d7-f2071d13de1a
 drivers:
   - key: 01a1646f-5467-7025-8a88-4eaa4c76454f
     kind: local

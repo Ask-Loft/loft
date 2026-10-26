@@ -1,7 +1,7 @@
 key: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
 slug: loft-mod
-name: "Loft mod"
-body: "The Claude Code mod under `plugins/claude/loft/hooks/`: the Loft plugin's one hooks module, which Claude Code runs from its TypeScript source. It holds Yard Client's hooks, and its state contract is `types/index.d.ts`."
+name: "Claude adapter"
+body: "The Claude adapter, a Claude Code mod under `plugins/claude/loft/hooks/adapter/`: the Loft plugin's one hooks module, which Claude Code runs from its TypeScript source. It holds Yard Client's hooks, and its state contract is `types/index.d.ts`."
 scopedTo:
   - 01a13653-2d9b-714a-a6f3-7183cacff8d8
   - 01a16469-55a3-716f-a42c-3a3548428b77
@@ -18,8 +18,8 @@ components:
         verificationFate: proved
 constraints:
   - key: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
-    name: "The Loft mod shall run no command but the one that its `loftCommand` setting names."
+    name: "The Claude adapter shall run no command but the one that its `loftCommand` setting names."
     verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71b2642c0076
-    name: "The Loft mod shall need Claude Code 2.1.287 or later."
+    name: "The Claude adapter shall need Claude Code 2.1.287 or later."
     verificationFate: proved
