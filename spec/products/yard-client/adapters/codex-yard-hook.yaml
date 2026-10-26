@@ -5,6 +5,8 @@ body: |
   The Codex plugin uses native command hooks, with loft on the search path and no other runtime. `loft yard codex hook` reads one native hook object from standard input, or from `--input`, and returns a native hook response by default. `--format json` wraps that response as `hookOutput` in the standard Loft result. Codex controls hook trust, permissions and session cancellation.
 
   The adapter uses Yard protocol 2 and host codex. Questions and plan approvals use the Yard page through the existing write, wait, withdraw, close, read and published commands. A page approval does not change Codex's mode or permission controls. Transcript parsing, model request reporting and token reporting are outside this adapter's coverage.
+tags:
+  - yard-command
 realizes:
   - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
 requirements:

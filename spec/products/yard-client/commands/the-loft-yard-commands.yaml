@@ -4,7 +4,7 @@ name: "The `loft yard` commands"
 body: |
   The `loft yard` commands are Yard Client's one way in: the mod reaches Yard Log through them, and so may any other host or a person at a terminal. Each command follows the rules every `loft` command follows, and a command opts into the rules below by listing the tag `yard-command` on its Feature, which the command tests hold it to.
 
-  The commands are `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `continue`, `serve`, `upgrade` and `protocol`. A host may run them every few seconds, so none of them sends a command event or asks for an update.
+  The commands are `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `continue`, `serve`, `upgrade`, `protocol`, `codex hook` and `codex watch`. A nested command's schema name joins its command words with hyphens. A host may run them every few seconds, so none of them sends a command event or asks for an update.
 realizes:
   - 01a12ff0-f5e5-7095-8fa8-24b707fdee97
   - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
@@ -106,4 +106,4 @@ requirements:
       - key: 01a1646f-546d-7042-befd-ea5fa659b008
         name: "Each Feature that lists `yard-command` belongs to a `loft yard` command."
       - key: 01a1646f-546d-7042-befd-ea6063179e7b
-        name: "Each `loft yard` command but `serve`, `protocol` and `continue` has a Feature that lists `needs-repository`."
+        name: "Each `loft yard` command but `serve`, `protocol`, `continue`, `codex hook` and `codex watch` has a Feature that lists `needs-repository`."
