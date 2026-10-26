@@ -4,7 +4,7 @@ name: "Compose the Yard skill"
 body: |
   The shared Yard workflow has one source under `crates/loft-cli/skill/yard/`. Its `SKILL.md` names no host or native host tool; the Claude-specific tools, task metadata, automatic mirroring and plan-mode instructions lie in `agents/claude.md`. Composition appends that adaptation to the common source and produces the Claude plugin's single `skills/yard/SKILL.md`, with its existing name, description fields and 500-line ceiling.
 
-  The existing specification skill's installation is unchanged. Yard is packaged only for the Claude adapter until another adapter is implemented. The packaging script rewrites the composed Yard package, and a guard detects drift.
+  The Codex adaptation lies in agents/codex.md beside the shared source. It describes the six Yard CLI operations, page-based questions and plans, automatic plan-step mirroring and the limits of native integration. Both plugins carry the composition for their own adapter. The existing specification skill's installation is unchanged: loft skill install installs loft-spec alone. The packaging script rewrites the composed Yard packages, and a guard detects drift.
 realizes:
   - 01a16469-559e-73c4-85f2-71b7852c58c8
 requirements:
@@ -22,3 +22,9 @@ requirements:
         name: "The composed Claude package is one SKILL.md of at most 500 lines, whose frontmatter holds name and description alone."
       - key: 01a177f9-8294-77e4-aa6e-7064fd177e6d
         name: "The committed package equals the composition, and packaging does not install Yard for a host without an adapter."
+      - key: 01a1787c-f803-70b1-b946-b71adb17c6f4
+        name: "The Codex package is the shared source followed by its Codex adaptation in one SKILL.md of at most 500 lines."
+      - key: 01a1787c-f803-70b1-b946-b71b18646046
+        name: "The Codex adaptation names caller identity, revision handling, all six Yard CLI operations, task mirroring and page-based submissions."
+      - key: 01a1787c-f803-70b1-b946-b71c877ab0bd
+        name: "The Codex adaptation keeps native mode and permission controls separate from page approval."

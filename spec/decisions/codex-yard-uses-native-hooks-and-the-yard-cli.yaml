@@ -1,0 +1,38 @@
+key: 01a1787c-f7fd-71c5-bbdd-a8ba14bf1a10
+slug: codex-yard-uses-native-hooks-and-the-yard-cli
+title: "Codex Yard uses native hooks and the Yard CLI"
+context: "Codex offers native command hooks and a plugin skill but no equivalent of Claude Code's in-process mod API. Its app-server API offers richer client control, at the cost of making Loft the client through which a person starts Codex."
+state:
+  kind: accepted
+  selectedOption: 01a1787c-f7fd-71c5-bbdd-a8bc5e532fe4
+  outcome: "The existing Codex plugin carries native hooks that call the adapter built into loft and a composition of the shared Yard skill. Questions and plans use the Yard page; native Codex controls stay authoritative. The adapter reports its coverage, with no transcript parsing, model usage counters or native dialog synchronization."
+drivers:
+  - key: 01a1787c-f7fd-71c5-bbdd-a8bb8f6f2b78
+    kind: local
+    label: "Ordinary sessions"
+    statement: "A person keeps using Codex through its existing local clients."
+options:
+  - key: 01a1787c-f7fd-71c5-bbdd-a8bc5e532fe4
+    title: "Native plugin"
+    description: "Use command hooks and the Yard CLI, declaring the integration that those hooks supply."
+  - key: 01a1787c-f7fd-71c5-bbdd-a8bd871519bb
+    title: "Loft-managed client"
+    description: "Own an app-server client to receive richer events and control interactive requests."
+assessments:
+  - option: 01a1787c-f7fd-71c5-bbdd-a8bc5e532fe4
+    driver: 01a1787c-f7fd-71c5-bbdd-a8bb8f6f2b78
+    rating: supports
+    rationale: "the plugin runs within the existing Codex session"
+  - option: 01a1787c-f7fd-71c5-bbdd-a8bd871519bb
+    driver: 01a1787c-f7fd-71c5-bbdd-a8bb8f6f2b78
+    rating: conflicts
+    rationale: "the person starts the session through a new client"
+consequences:
+  - key: 01a1787c-f7fd-71c5-bbdd-a8bea090e9b8
+    kind: cost
+    statement: "The Yard page is the answer surface, and usage unavailable from hooks remains unavailable."
+subjects:
+  - role: outcome
+    node: 01a1787c-f803-70b1-b946-b6ee1da9af0b
+  - role: outcome
+    node: 01a1787c-f803-70b1-b946-b70ceb2b1660

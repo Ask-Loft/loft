@@ -1,0 +1,9 @@
+key: 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+slug: codex-yard-adapter
+name: "Codex Yard adapter"
+body: "The native Codex hooks and the adapter built into loft that translate local sessions into Yard's JSON commands and normalized events."
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77
+constraints:
+  - key: 01a1787d-a217-73db-8329-d11665b83b7c
+    name: "The Codex Yard adapter shall read and modify Yard Log only through the existing JSON command interfaces."
