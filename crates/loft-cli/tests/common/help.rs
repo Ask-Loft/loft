@@ -17,6 +17,11 @@ pub fn yard_commands() -> Vec<String> {
     listed(&["yard"])
 }
 
+/// The leaf commands of the native Codex adapter.
+pub fn yard_codex_commands() -> Vec<String> {
+    listed(&["yard", "codex"])
+}
+
 fn listed(command: &[&str]) -> Vec<String> {
     let output = Command::new(env!("CARGO_BIN_EXE_loft"))
         .args(command)

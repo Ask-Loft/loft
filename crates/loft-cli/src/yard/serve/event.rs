@@ -172,7 +172,7 @@ impl Event {
     }
 
     /// Whether a tool call's end says it failed.
-    pub fn failed(&self) -> bool {
-        self.posted["failed"].as_bool().unwrap_or(false)
+    pub fn failed(&self) -> Option<bool> {
+        self.posted["failed"].as_bool()
     }
 }

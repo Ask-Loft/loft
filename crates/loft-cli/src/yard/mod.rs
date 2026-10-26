@@ -11,6 +11,7 @@ mod branch;
 mod caller;
 mod change;
 mod close;
+pub mod codex;
 mod continuation;
 mod failure;
 pub(crate) mod home_json;
@@ -45,6 +46,7 @@ use failure::Failure;
 /// Runs a `loft yard` command in `root`.
 pub fn run(root: &Path, action: YardAction) -> Finished {
     match action {
+        YardAction::Codex { action } => codex::run(action),
         YardAction::Read(args) => read::run(root, args),
         YardAction::Write(args) => write::run(root, args),
         YardAction::Withdraw(args) => withdraw::run(root, args),

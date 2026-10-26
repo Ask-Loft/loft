@@ -207,7 +207,7 @@ impl Activity {
         };
         let run = &mut self.loft[at];
         run.span.ended = Some(event.at);
-        run.failed = Some(event.failed());
+        run.failed = event.failed();
         true
     }
 

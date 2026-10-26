@@ -19,6 +19,11 @@ pub const DEFAULT_BASE: &str = "develop";
 
 #[derive(Subcommand)]
 pub enum YardAction {
+    /// Translate native Codex hooks and run their session worker.
+    Codex {
+        #[command(subcommand)]
+        action: super::codex::Action,
+    },
     /// Read the branch's Yard Log: all of it, or what changed since a revision.
     Read(ReadArgs),
     /// Write a batch of blocks, read as JSON from `--input`, and send its questions, approvals

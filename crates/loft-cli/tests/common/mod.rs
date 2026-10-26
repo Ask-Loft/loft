@@ -282,7 +282,11 @@ impl Drop for Scratch {
 
 /// The variables that would let a test run reach the user's own settings, or tell `loft` that
 /// an agent or CI started it.
-const OUTSIDE: [&str; 20] = [
+const OUTSIDE: [&str; 24] = [
+    "PLUGIN_DATA",
+    "PLUGIN_ROOT",
+    "CLAUDE_PLUGIN_DATA",
+    "CLAUDE_PLUGIN_ROOT",
     "ALL_PROXY",
     "all_proxy",
     "HTTPS_PROXY",

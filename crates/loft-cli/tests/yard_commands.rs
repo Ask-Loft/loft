@@ -30,20 +30,35 @@ fn every_yard_command_has_one_entry_in_the_commands() {
     listed.sort();
     let mut entries: Vec<&str> = yard_entries().iter().map(|(_, args, ..)| args[1]).collect();
     entries.sort_unstable();
+    entries.dedup();
     assert_eq!(listed, entries);
+    let mut native = help::yard_codex_commands();
+    native.sort();
+    let mut leaves: Vec<&str> = yard_entries()
+        .iter()
+        .filter(|(_, args, ..)| args[1] == "codex")
+        .map(|(_, args, ..)| args[2])
+        .collect();
+    leaves.sort_unstable();
+    assert_eq!(native, leaves);
 }
 
 #[test]
 fn each_yard_command_prints_one_document_its_own_schema_holds() {
     for (slug, args, kind, schema) in yard_entries() {
-        assert_eq!(schema, format!("yard-{}", args[1]), "{slug}");
+        let command = if args[1] == "codex" {
+            format!("codex-{}", args[2])
+        } else {
+            args[1].to_owned()
+        };
+        assert_eq!(schema, format!("yard-{command}"), "{slug}");
         let scratch = fixture(kind);
         let output = crate::commands::command(&scratch, kind)
             .args(args)
             .args(["--format", "json"])
             .output()
             .unwrap();
-        let document = document(args[1], &output);
+        let document = document(&command, &output);
         for field in ["schema", "outcome", "errors"] {
             assert!(document.get(field).is_some(), "{slug}: {field}");
         }
@@ -127,7 +142,7 @@ fn each_yard_command_has_a_feature_that_lists_yard_command() {
 fn each_yard_command_but_serve_protocol_and_continue_lists_needs_repository() {
     let needing = tagged("needs-repository");
     for (slug, args, ..) in yard_entries() {
-        let needs = !["serve", "protocol", "continue"].contains(&args[1]);
+        let needs = !["serve", "protocol", "continue", "codex"].contains(&args[1]);
         assert_eq!(needing.contains(&slug.to_owned()), needs, "{slug}");
     }
 }
@@ -254,10 +269,9 @@ fn fields(schema: &Value, at: &str, found: &mut Vec<String>) {
 /// Every field of every yard command's schema.
 pub fn schema_fields() -> Vec<String> {
     let mut found = Vec::new();
-    for (_, args, ..) in yard_entries() {
-        let name = format!("yard-{}", args[1]);
+    for (_, _, _, name) in yard_entries() {
         let text = fs::read_to_string(workspace().join(format!("schemas/{name}.json"))).unwrap();
-        fields(&serde_json::from_str(&text).unwrap(), &name, &mut found);
+        fields(&serde_json::from_str(&text).unwrap(), name, &mut found);
     }
     found
 }

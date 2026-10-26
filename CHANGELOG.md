@@ -5,6 +5,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- `loft yard codex hook` translates native Codex activity and mirrors successful `update_plan`
+  calls into the caller's active stage. `loft yard codex watch` owns session heartbeats, bounded
+  event delivery and page-server recovery. Unavailable usage and tool outcomes remain unknown.
 - `loft skill install --host codex|claude-code|all` selects the hosts to install, retaining both
   as the default. Codex-only installation leaves Claude Code files and settings alone. This
   repository exposes its canonical skill source through a Codex discovery link, which the
