@@ -21558,12 +21558,6 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "with no Yard Log served, the page asks for a session rather than a choice from the list"
         body: 9da71b2dc587728db1a3270015a50db59d22121ce24844ca59a1e21bbfa269fd
-  - node: 01a16827-8a6d-74e8-a5d2-6fa4147c7a28
-    reviewed: 738a2201f1f39a6c045cfb85001f5cdbcad4a3bd19dae14b9c12e0dd9659cbd4
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "with no Yard Log served, the page gives the commands that install the Loft plugin"
-        body: 2cd081b721e6ed91bdca033ea1505676f82a79d7c744459651ee20d656230bc3
   - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
     reviewed: 3a2d7afe1a244fce40772757ece7d21948a477048b99a102e3e40e2118772728
     tests:
@@ -24159,12 +24153,6 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "each count of a breakdown shows as a bar its share of Yard Log’s count of that kind in all"
         body: 1510311a6b83a3a66f65965bcbaa936261c05d5e3c3f94c2044730a95d3471d5
-  - node: 01a1646f-546d-7042-befd-eb1d0e18125d
-    reviewed: 1fb79f767b25ac09192b4bdcb9eae1c0ea4e3160fa64abb9fa8fe1663046631b
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
-        name: "the page says that requests made inside Claude Code’s own tools are not counted"
-        body: a55196078c6977ddc50fb4e9a8da8f3fac4b8a34804a76caf8ce0901654be1e0
   - node: 01a1646f-546d-7042-befd-eb1e1e831c2e
     reviewed: e0e380730479b2aebcc2c6700df46e5b422ffdd456f29331e5d66720b31563eb
     tests:
