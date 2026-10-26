@@ -94,6 +94,7 @@ mod yard_codex;
 mod yard_codex_contract;
 mod yard_codex_skill;
 mod yard_codex_tasks;
+mod yard_codex_usage;
 mod yard_codex_watch;
 mod yard_commands;
 mod yard_continue;

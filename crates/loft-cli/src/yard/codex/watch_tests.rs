@@ -87,3 +87,34 @@ fn a_failed_codex_delivery_restores_its_batch_before_new_events_for_retry() {
     );
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn an_identified_in_flight_payload_and_drop_report_survive_failure_and_restart_unchanged() {
+    let root = std::env::temp_dir().join(format!("codex-identified-{}", uuid::Uuid::new_v4()));
+    let files = Files(root.clone());
+    let mut state = State::default();
+    state.keep(vec![
+        json!({"eventId":"observation","at":"original","tokens":{"input":7}}),
+    ]);
+    state.dropped = 3;
+    files.write(&state).unwrap();
+    let mut original = serde_json::Value::Null;
+    flush(&files, |body| {
+        original = body.clone();
+        let mut during = files.read().unwrap();
+        during.keep((0..1002).map(|n| json!({"n":n})).collect());
+        files.write(&during).unwrap();
+        false
+    })
+    .unwrap();
+    assert_eq!(files.read().unwrap().in_flight[0]["dropped"], 3);
+    let restarted = Files(root.clone());
+    flush(&restarted, |body| {
+        assert_eq!(body, &original);
+        true
+    })
+    .unwrap();
+    assert_eq!(restarted.read().unwrap().events.len(), 1000);
+    assert_eq!(restarted.read().unwrap().dropped, 2);
+    std::fs::remove_dir_all(root).unwrap();
+}

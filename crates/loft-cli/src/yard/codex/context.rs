@@ -18,7 +18,20 @@ pub fn output(hook: &Hook, caller: &Caller, port: u16) -> Value {
             let _ = writeln!(text, "Yard is unavailable: {error}");
         }
     }
-    text.push_str("Read with --mark-read before writing. Questions and plan approvals use the Yard page; native Codex mode and permissions still apply. Usage counters are unavailable. Load the yard skill for the workflow.");
+    text.push_str("Read with --mark-read before writing. Questions and plan approvals use the Yard page; native Codex mode and permissions still apply. Native hooks carry no usage counters. ");
+    let available = super::state::Files::of(hook)
+        .and_then(|files| files.read())
+        .is_ok_and(|state| {
+            state
+                .usage
+                .active
+                .values()
+                .any(|active| active.source == super::usage::Source::Available)
+        });
+    text.push_str(if available { "App-server usage is available for an observed native turn. " } else { "App-server usage is currently unavailable; observation is attempted during identified native turns. " });
+    text.push_str(
+        "Missing sources and observation gaps stay unknown. Load the yard skill for the workflow.",
+    );
     let count = text.chars().count();
     if count > 2000 {
         text = text.chars().take(1940).collect();

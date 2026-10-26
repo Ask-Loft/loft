@@ -165,6 +165,14 @@ fn codex_session_context_is_a_peek_with_explicit_caller_arguments() {
         "{text}"
     );
     assert!(text.contains("Page:"), "{text}");
+    assert!(
+        text.contains("Native hooks carry no usage counters"),
+        "{text}"
+    );
+    assert!(
+        text.contains("App-server usage is currently unavailable"),
+        "{text}"
+    );
     assert!(text.chars().count() <= 2000);
     assert_eq!(
         fs::read(yard.scratch.home().join(".yard/last-read.json")).ok(),

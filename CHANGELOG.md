@@ -5,10 +5,16 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Codex Yard observes latest-request token usage from an existing local app server during
+  identified native turns. Cached input is separated from fresh input, missing counters and
+  observation gaps stay unavailable, and reconnects import no historical totals. Stable event
+  identifiers prevent duplicate charges after delivery retries or page-server restarts.
+  `loft yard codex watch --app-server-socket ABSOLUTE_PATH` selects a custom local socket;
+  otherwise it uses the daemon socket under `CODEX_HOME` or `~/.codex` on Unix platforms.
 - The Codex plugin includes its Yard skill, composed from the shared workflow and Codex
   instructions, and native hooks for local sessions. Questions and plans use the Yard page;
   Codex's native modes and permissions stay authoritative. Review and trust the hooks after
-  installation. Usage reporting remains unavailable from Codex hooks.
+  installation. Native hooks provide activity; live usage comes from the local app server.
 - `loft yard codex hook` translates native Codex activity and mirrors successful `update_plan`
   calls into the caller's active stage. `loft yard codex watch` owns session heartbeats, bounded
   event delivery and page-server recovery. Unavailable usage and tool outcomes remain unknown.

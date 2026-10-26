@@ -23,6 +23,7 @@ pub struct State {
     pub planning: Option<bool>,
     pub stopped: bool,
     pub subagents: BTreeMap<String, String>,
+    pub usage: super::usage::Usage,
 }
 
 impl State {

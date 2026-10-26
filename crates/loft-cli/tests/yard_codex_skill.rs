@@ -79,6 +79,23 @@ fn the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submi
 }
 
 #[test]
+fn codex_usage_guidance_distinguishes_app_server_observation_from_native_hook_coverage() {
+    let text = adaptation();
+    for phrase in [
+        "Native hooks carry no token counters",
+        "already running local Codex app server",
+        "--app-server-socket ABSOLUTE_PATH",
+        "500 milliseconds",
+        "unavailable or partial",
+        "reconnecting imports no historical token totals",
+        "absent cache-write counter stays unavailable",
+        "Native activity and heartbeats continue",
+    ] {
+        assert!(text.contains(phrase), "{phrase}");
+    }
+}
+
+#[test]
 fn the_codex_yard_adaptation_keeps_page_approval_separate_from_native_controls() {
     let text = adaptation();
     for phrase in [

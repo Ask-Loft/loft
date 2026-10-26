@@ -139,8 +139,19 @@ mirrored task and write its whole block with `type: fix`; later mirrors retain t
 No task is mirrored without an active stage belonging to its caller. Keep stages, notes,
 decisions and Loft reports yourself.
 
-Token usage is unavailable from this adapter's native hooks, and an unreported tool outcome
-stays unknown. During concurrent subagent work, activity without a reliable agent identity is
-omitted. The adapter does not parse transcripts. Its heartbeat worker has a 24-hour lifetime;
+Native hooks carry no token counters. During an identified native turn, the worker observes
+latest-request usage from an already running local Codex app server over its Unix-domain
+WebSocket. It uses `$CODEX_HOME/app-server-control/app-server-control.sock`, or the same path
+under `~/.codex`; `loft yard codex watch --app-server-socket ABSOLUTE_PATH` selects another
+local socket. It starts no Codex process and changes no configuration, collaboration mode or
+permissions. The prompt hook waits at most 500 milliseconds for readiness; an absent server,
+an unready new thread or an observation gap leaves usage unavailable or partial. It disconnects
+when the turn ends, and reconnecting imports no historical token totals.
+
+Fresh input excludes cached input, cached input is cacheRead, and output already includes
+reasoning output. An absent cache-write counter stays unavailable. Native activity and
+heartbeats continue without the usage source, and an unreported tool outcome stays unknown.
+During concurrent subagent work, activity without a reliable agent identity is omitted.
+The adapter does not parse transcripts. Its heartbeat worker has a 24-hour lifetime;
 later hooked activity restarts a worker that ended. The integration supports local Codex
 workflows; cloud orchestration does not run these plugin hooks.

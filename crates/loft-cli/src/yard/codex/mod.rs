@@ -1,10 +1,13 @@
 //! The Codex adapter: native hook input, CLI JSON for Yard, and a Codex-owned background worker.
 
+mod app_server;
 mod commands;
 mod context;
+mod observer;
 mod state;
 mod tasks;
 mod translate;
+mod usage;
 mod watch;
 
 use std::path::PathBuf;
@@ -34,6 +37,9 @@ pub struct Input {
     /// The page server's port where no server runs yet.
     #[arg(long, default_value_t = super::args::DEFAULT_PORT)]
     port: u16,
+    /// Observe an existing local app server at this absolute Unix-domain socket path.
+    #[arg(long, value_name = "ABSOLUTE_PATH")]
+    app_server_socket: Option<PathBuf>,
     #[command(flatten)]
     output: Output,
 }
@@ -43,16 +49,23 @@ pub fn run(action: Action) -> Finished {
         Action::Hook(input) => (input, false, "loft-yard-codex-hook/1"),
         Action::Watch(input) => (input, true, "loft-yard-codex-watch/1"),
     };
-    let result = super::input::json(&input.source)
-        .map_err(message)
-        .and_then(translate::Hook::read)
-        .and_then(|hook| {
-            if watching {
-                watch::run(&hook, input.port)
-            } else {
-                handle(&hook, input.port)
-            }
-        });
+    let result = app_server::endpoint(
+        input.app_server_socket.as_deref(),
+        std::env::var_os("CODEX_HOME").map(PathBuf::from),
+        std::env::var_os("HOME").map(PathBuf::from),
+    )
+    .and_then(|socket| {
+        super::input::json(&input.source)
+            .map_err(message)
+            .and_then(translate::Hook::read)
+            .and_then(|hook| {
+                if watching {
+                    watch::run(&hook, input.port, socket.as_ref())
+                } else {
+                    handle(&hook, input.port)
+                }
+            })
+    });
     match result {
         Ok(output) => {
             if input.output.json() {
@@ -91,15 +104,18 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     let files = state::Files::of(hook)?;
     // Serializes hooks and task mirrors for this session; the worker never holds this lock
     // while posting, so an unavailable page cannot delay a native tool.
-    let _locked = files.lock()?;
+    let locked = files.lock()?;
     let mut state = files.read()?;
     let events = translate::events(hook, &mut state)?;
+    usage::native(hook, &mut state);
     state.keep(events);
     files.write(&state)?;
     let caller = hook.caller(&state);
     if let Some(caller) = &caller {
         tasks::mirror(hook, caller, port)?;
     }
+    drop(locked);
+    observer::readiness(&files, hook);
     if matches!(hook.name(), "SessionStart" | "SubagentStart")
         && let Some(caller) = caller
     {

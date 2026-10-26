@@ -87,7 +87,11 @@ fn a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server() {
     let mut end = event(&yard, "Stop");
     end["last_assistant_message"] = json!("PRIVATE MESSAGE");
     hook(&yard, &end);
-    let recovered = within(Duration::from_secs(10), || events(&yard).len() == 2);
+    let recovered = within(Duration::from_secs(10), || {
+        events(&yard)
+            .iter()
+            .any(|event| event["kind"] == "turn.end")
+    });
     assert!(
         recovered,
         "events: {:?}; state: {}; server: {}; worker: {:?}",
@@ -97,7 +101,7 @@ fn a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server() {
         running.0.try_wait()
     );
     assert_ne!(yard.home_file("server.json")["pid"], original);
-    assert_eq!(events(&yard)[1]["kind"], "turn.end");
+    assert_eq!(events(&yard).last().unwrap()["kind"], "turn.end");
     assert!(
         !serde_json::to_string(&events(&yard))
             .unwrap()

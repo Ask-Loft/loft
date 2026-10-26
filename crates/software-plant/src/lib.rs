@@ -8,6 +8,8 @@
 //! crate.
 
 pub mod clock;
+#[cfg(unix)]
+pub mod codex;
 pub mod collector;
 pub mod git;
 pub mod http;

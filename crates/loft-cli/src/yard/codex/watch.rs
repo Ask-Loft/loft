@@ -1,5 +1,6 @@
 //! A native background hook owns liveness, delivery and its page-server child.
 
+use std::path::PathBuf;
 use std::process::{Child, Stdio};
 use std::time::Duration;
 
@@ -26,7 +27,7 @@ impl Drop for ServerChild {
     }
 }
 
-pub fn run(hook: &Hook, port: u16) -> Result<Value> {
+pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
     let files = Files::of(hook)?;
     let Some(_worker) = lock::try_lock(&files.0.join("worker.lock")).map_err(|e| e.to_string())?
     else {
@@ -45,14 +46,14 @@ pub fn run(hook: &Hook, port: u16) -> Result<Value> {
     let home = Home::from_env().ok_or("no machine home for Yard")?;
     let clock = crate::yard::clock();
     let mut server = ServerChild(None);
+    let mut observer = super::observer::Observer::default();
     drive(clock, |beat| {
-        {
+        observer.tick(&files, socket.map(PathBuf::as_path))?;
+        let stopped = {
             let _locked = files.lock()?;
-            if files.read()?.stopped {
-                return Ok(false);
-            }
-        }
-        if beat {
+            files.read()?.stopped
+        };
+        if beat && !stopped {
             let running = crate::yard::page::running(&home).map_err(|e| e.to_string())?;
             let current_port = running.as_ref().map_or(port, |running| running.port);
             let live = running.as_ref().is_some_and(|running| {
@@ -80,7 +81,7 @@ pub fn run(hook: &Hook, port: u16) -> Result<Value> {
                 post(&home, running.port, "/api/events", body)
             })?;
         }
-        Ok(true)
+        Ok(!stopped)
     })?;
     Ok(json!({}))
 }
@@ -154,17 +155,30 @@ fn flush(files: &Files, post: impl FnOnce(&Value) -> bool) -> Result<()> {
             }
             state.in_flight = std::mem::take(&mut state.events);
             state.in_flight_dropped = std::mem::take(&mut state.dropped);
+            if state.in_flight_dropped > 0 {
+                state.in_flight[0]["dropped"] = json!(state.in_flight_dropped);
+            }
             files.write(&state)?;
         }
         (state.in_flight, state.in_flight_dropped)
     };
     let mut body = sent;
-    if dropped > 0 {
+    if dropped > 0 && body[0].get("dropped").is_none() {
         body[0]["dropped"] = json!(dropped);
     }
     let accepted = post(&json!(body));
     let _locked = files.lock()?;
     let mut state = files.read()?;
+    // Identified payloads must survive a lost acknowledgement byte-for-byte, including
+    // their drop report. Later hooks keep appending to the separate pending queue.
+    if !accepted
+        && state
+            .in_flight
+            .iter()
+            .any(|event| event.get("eventId").is_some())
+    {
+        return Ok(());
+    }
     if !accepted {
         let mut restored = std::mem::take(&mut state.in_flight);
         restored.append(&mut state.events);

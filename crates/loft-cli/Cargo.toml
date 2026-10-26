@@ -46,6 +46,10 @@ ureq.workspace = true
 uuid.workspace = true
 yardlog.workspace = true
 yardlog-store.workspace = true
+tungstenite.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+socket2.workspace = true
 
 [dev-dependencies]
 # Only to read back the compressed files the page server serves; `loft` itself never decompresses.
