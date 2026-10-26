@@ -41,6 +41,31 @@ requirements:
         name: "The skill says that a plan the person approved counts as asking for the build it describes."
       - key: 01a16a1a-78f9-750e-8105-fbc410ef6700
         name: "The skill says that a change to the specification the person approved does not count as asking for its build."
+  - key: 01a179ce-71a7-726e-acc9-01da254fba3b
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to decompose each implementation plan into bounded tasks."
+    criteria:
+      - key: 01a179ce-71a7-726e-acc9-01db9e60eead
+        name: "The skill says that each task has one concrete outcome."
+      - key: 01a179ce-71a7-726e-acc9-01dc3b7f4fe5
+        name: "The skill says that each task has an explicit scope."
+      - key: 01a179ce-71a7-726e-acc9-01dd66cc26e5
+        name: "The skill says that each task has a verifiable completion condition."
+      - key: 01a179ce-71a7-726e-acc9-01de6de2d389
+        name: "The skill says to split a task whose outcomes can be finished independently."
+  - key: 01a179ce-71a7-726e-acc9-01df5026fdc0
+    statement:
+      form: event_driven
+      when: "the person approves an implementation plan"
+      system: "the `yard` skill"
+      shall: "tell the agent to register its planned implementation tasks in Yard Log before implementation starts."
+    criteria:
+      - key: 01a179ce-71a7-726e-acc9-01e0de97c444
+        name: "The skill says to register every planned implementation task before the first implementation task starts."
+      - key: 01a179ce-71a7-726e-acc9-01e1b6416ad2
+        name: "The skill says to register tasks through the host adaptation's task mirroring when available, or explicit task blocks otherwise."
   - key: 01a1646f-546c-7521-9643-bc87117049c9
     statement:
       form: ubiquitous
