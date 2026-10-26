@@ -21,13 +21,13 @@ requirements:
       shall: "write the `loft-spec` skill into the current directory."
     criteria:
       - key: 01a13654-bf86-77e9-8fd5-8dc2abcad562
-        name: "The Claude Code package is written to `.claude/skills/loft-spec/`."
+        name: "A selected Claude Code package is written to `.claude/skills/loft-spec/`."
       - key: 01a13654-bf86-77e9-8fd5-8dc38e0eec9a
-        name: "The Codex package is written to `.agents/skills/loft-spec/`."
+        name: "A selected materialized Codex package is written to `.agents/skills/loft-spec/`."
       - key: 01a13654-bf86-77e9-8fd5-8dc45d64494e
         name: "Each materialized package is the composition of the skill that `loft` embeds."
       - key: 01a13654-bf86-77e9-8fd5-8dc58145c4bd
-        name: "A file that a skill directory held and its package does not is removed."
+        name: "A file that a replaced materialized directory held and its package does not is removed."
       - key: 01a13654-bf86-77e9-8fd5-8dc69b2cc428
         name: "No file outside the two skill directories and `.claude/settings.json` is written."
       - key: 01a1549d-6653-72d3-930f-ce5d71b3edcf
