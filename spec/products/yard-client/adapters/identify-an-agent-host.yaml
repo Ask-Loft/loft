@@ -5,6 +5,8 @@ body: |
   Yard owns its records, submissions, answers, persistence, accounting and page. An adapter translates its host's native tools and events into the JSON commands and events that Yard accepts. Claude Code is the first adapter; the core accepts other host identifiers without a host-specific branch.
 
   A host identifier starts with a lowercase letter, contains only lowercase letters, digits and hyphens, and has at most 64 characters. A session identifier keeps its existing rules. The storage key is the session identifier for `claude-code`, or `<host>~<session>` for another host. The separator cannot occur in a session identifier. Records continue to hold the original host and session separately, and existing Claude files and machine state stay at their original paths.
+
+  An omitted event or heartbeat host field uses `claude-code` for compatibility. An explicitly invalid field is refused.
 realizes:
   - 01a16469-559e-73c4-85f2-71b305365c69
   - 01a16469-559e-73c4-85f2-71b98f3a0df7
@@ -23,6 +25,8 @@ requirements:
         name: "The page distinguishes sessions and subagent lanes by host as well as session and agent."
       - key: 01a177f9-8294-77e4-aa6e-706aca6d6e2c
         name: "A session's continuation follows only that host's chain, even where another host uses the same identifiers."
+      - key: 01a17821-94d6-766a-a99c-565e5b315deb
+        name: "An event or heartbeat with an explicit invalid host field is refused before writing session state."
   - key: 01a177f9-8294-77e4-aa6e-706b93fd11e7
     statement:
       form: ubiquitous
