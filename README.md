@@ -119,6 +119,16 @@ project, and after an upgrade of `loft` brings it to the new version, enabling t
 same way. Commit both directories and `.claude/settings.json` so that everyone working on the
 project has the skill and is offered the plugin.
 
+Use `loft skill install --host codex` or `--host claude-code` to install only that host; an
+omitted `--host`, or `--host all`, installs both. A Codex-only install leaves Claude Code's files
+and settings untouched. `--no-plugin` leaves plugin settings untouched when installing for
+Claude Code.
+
+In this repository, `.agents/skills/loft-spec` is a relative link to the source under
+`crates/loft-cli/skill/loft-spec/`, so Codex discovers the same router and references that we
+edit and ship. Installation preserves that link and reports it as unchanged. Broken or
+unexpected skill links are refused before any selected skill or plugin settings are written.
+
 The skill is also a plugin, for an agent that works across projects:
 
 - Claude Code: `/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@ask-loft`.

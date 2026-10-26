@@ -6,6 +6,15 @@
 set -eu
 root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$root"
+discovery=".agents/skills/loft-spec"
+if [ ! -L "$discovery" ] || [ "$(readlink "$discovery")" != "../../crates/loft-cli/skill/loft-spec" ]; then
+  printf '%s\n' 'The Codex discovery entry must link to the canonical skill source.' >&2
+  exit 1
+fi
+if [ ! -f "$discovery/SKILL.md" ] || [ ! -f "$discovery/agents/openai.yaml" ]; then
+  printf '%s\n' 'The Codex discovery link must resolve to the router and Codex metadata.' >&2
+  exit 1
+fi
 cargo build --quiet --release -p loft-cli
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT

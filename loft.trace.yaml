@@ -11986,7 +11986,7 @@ links:
         name: "the_codex_package_is_the_source_without_the_claude_code_adaptation"
         body: d7579a078a019d04492d4e262845bd30b6fd44f1e6a04779af3d0b2dd050ace7
   - node: 01a13654-bf86-77e9-8fd5-8dbc6fd2c972
-    reviewed: 63d23b9b222c0b6cddd8172df0aa8a54d11055258b4a967e3e00ecad64fb9d4f
+    reviewed: f9c1335f200befbdf14cfc3edc16212413f4c28c1e69999e7b8ed170963f057e
     tests:
       - file: "crates/loft-cli/tests/init.rs"
         name: "init_replaces_a_skill_directory_that_already_exists"
@@ -13309,7 +13309,7 @@ links:
         name: "an_attributes_file_that_routes_spec_alone_gains_the_yard_line_once"
         body: cfdf1270df788fc88bab1ac4faae09ea869d8806af0553ef3e41185e14654537
   - node: 01a13654-bf86-77e9-8fd5-8dc2abcad562
-    reviewed: a7c0e036eb1d761d0a7f6022b139bba5a8040a1e37ea482ad2910671cb26bbc1
+    reviewed: b44c067df829083e3aeb3b8d15b4e8134b9d252cf692b208e62876ab244a9ad5
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_writes_a_package_for_each_host_where_there_is_no_spec"
@@ -13318,7 +13318,7 @@ links:
         name: "the_claude_code_package_is_the_source_with_its_adaptation_applied"
         body: ae833b0788259cc7d8213e28d264966fbf5c0ae3b048c3d5293ec21e85b97248
   - node: 01a13654-bf86-77e9-8fd5-8dc38e0eec9a
-    reviewed: 4022c293a73b83b7b23c23517e7ae1a669fca1d2bb80527283430a2167a9baa3
+    reviewed: f6b708c2613145ceee65ac176ae54399d2894e69fdf1ecafd9caf7821863b0a8
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_writes_a_package_for_each_host_where_there_is_no_spec"
@@ -13327,7 +13327,7 @@ links:
         name: "the_codex_package_is_the_source_without_the_claude_code_adaptation"
         body: d7579a078a019d04492d4e262845bd30b6fd44f1e6a04779af3d0b2dd050ace7
   - node: 01a13654-bf86-77e9-8fd5-8dc45d64494e
-    reviewed: a3dfc53ce77bea743cb06a2883dedd764ba7129df8ceaea33208c7e77b483eb8
+    reviewed: 6b1fa670681ae4788f5fe232a238933c4ebef041f5f7d75bfaf0435b188a31fa
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "the_claude_code_package_is_the_source_with_its_adaptation_applied"
@@ -13336,7 +13336,7 @@ links:
         name: "the_codex_package_is_the_source_without_the_claude_code_adaptation"
         body: d7579a078a019d04492d4e262845bd30b6fd44f1e6a04779af3d0b2dd050ace7
   - node: 01a13654-bf86-77e9-8fd5-8dc58145c4bd
-    reviewed: 7e1b7847bb748e8a97bd06a713c74a2819778a8faa5264607248c8a588109adc
+    reviewed: da885ce21c255518f972a302a95c237553e1ea006800b78d0ca85578c9fc6bd9
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_replaces_each_directory_whole_and_leaves_no_temporary_directory"
@@ -13399,7 +13399,7 @@ links:
         name: "the_json_of_skill_install_names_the_directories_it_wrote"
         body: a6af60732dbe5b2d9edc598c50962b4fb8f5bdbb421e425142011018c2518e4b
   - node: 01a13654-bf86-77e9-8fd5-8dd1585f57e4
-    reviewed: ced208388ffc8ae1e44d365849b2e8cb43fd85a8dc26ebf3f509d31c2e3f4533
+    reviewed: cf02288ab3c7df0a963ad5ac7de7588a04ce36de1676309935d984592d1da908
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "the_json_of_skill_install_names_the_directories_it_wrote"
@@ -13410,6 +13410,84 @@ links:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "the_json_of_a_failed_skill_install_lists_the_error"
         body: 113512a2d329af3f3de9f21b504b0e493206b5c9c7400e5a4e3dde268a24f0d9
+  - node: 01a17844-cbcb-77bf-af93-ba96b26094e4
+    reviewed: 44d3d9150507708a3aa364087aab815ec25684fd9ab7deb8f08f744872bcaba5
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "selecting_all_installs_the_same_hosts_as_omitting_the_option"
+        body: 4cbdb89c96da46883dba0505c1c29f8a1bff27f82e4530a8cbdf1194851917d4
+  - node: 01a17844-cbcb-77bf-af93-ba97849d5605
+    reviewed: 89c2b62d996487c50a4587eb57ff484574e33bff9830d11e812c6c3c095274bb
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "selecting_codex_preserves_claude_files_and_does_not_enable_its_plugin"
+        body: af05c888d67749e16eb017d1ad7a7b71013e5bb680503ba659e8a42703ff5ef5
+  - node: 01a17844-cbcb-77bf-af93-ba9899a0a2a8
+    reviewed: d4b276845a8ac91cf171d8c365f6f5bba532fe71f7cb474d609e780c614543d4
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "selecting_claude_code_leaves_even_an_invalid_codex_destination_untouched"
+        body: 0a7424701b79a5212dab49e94a195f0dc5a7970c19d52d8cf3e4083d535ef865
+  - node: 01a17844-cbcb-77bf-af93-ba99e75f4bed
+    reviewed: bd490ca7508f75d4ceec8538f858089d6429db741900db8351207dca35f97a9b
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "an_unknown_skill_host_is_a_usage_error_without_writes"
+        body: f2e2f53bd1c1dfa8a66872c19ac7aece8aeb02ec8ab0f0cdc15e806623d4f1c2
+  - node: 01a17844-cbcb-77bf-af93-ba9af5ee5df5
+    reviewed: ec1f366bd3e992a53e5efedff91fee75c293da7fda87b91471169a3e4539a6d6
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "selecting_all_installs_the_same_hosts_as_omitting_the_option"
+        body: 4cbdb89c96da46883dba0505c1c29f8a1bff27f82e4530a8cbdf1194851917d4
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "selecting_codex_preserves_claude_files_and_does_not_enable_its_plugin"
+        body: af05c888d67749e16eb017d1ad7a7b71013e5bb680503ba659e8a42703ff5ef5
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
+        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+  - node: 01a17844-cbcb-77bf-af93-ba9c3e6fb522
+    reviewed: 194f8405f58043f5936ef6ae6465a5c178aea5d6d658abbba1860df5df0d61ff
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "the_known_link_requires_its_source_router_and_codex_metadata"
+        body: 17fc19fdb8478b7eef0dba17daf0aa6a551f1bd41a4cb931b735eedc89078688
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
+        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+  - node: 01a17844-cbcb-77bf-af93-ba9d055e3558
+    reviewed: a90ef02fb2e9fa1d0414951610d0da673fa965db1bc1f5fa505efbbf815199cc
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
+        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "default_install_and_init_preserve_the_link_while_installing_claude"
+        body: daffe1fbfaad800de136efdb3d242cadcc7d76e4a53171f2c46955d9630a67e5
+  - node: 01a17844-cbcb-77bf-af93-ba9ef9131ceb
+    reviewed: d7e8b6a4ae21bc4a191cc2d28a06be869ea500e4c6fe47031f872de5ef59e0ff
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
+        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+  - node: 01a17844-cbcb-77bf-af93-baa026e0f72c
+    reviewed: 2f923843e27e37ddba20e9f191c529ff92154aef0671b79e9c5ee317c6cd489c
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "broken_and_unexpected_links_are_refused_before_any_installation"
+        body: 665505867c6c11cea79bd80749b9d8a4c5534593796091a1372dc5edbe80a23a
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "the_known_link_requires_its_source_router_and_codex_metadata"
+        body: 17fc19fdb8478b7eef0dba17daf0aa6a551f1bd41a4cb931b735eedc89078688
+  - node: 01a17844-cbcb-77bf-af93-baa10982a76c
+    reviewed: be534d0f84328b119ffc91231d8885e5eecdbdc8ea402feea42123471d8827b4
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "selecting_claude_code_leaves_even_an_invalid_codex_destination_untouched"
+        body: 0a7424701b79a5212dab49e94a195f0dc5a7970c19d52d8cf3e4083d535ef865
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "selecting_codex_does_not_inspect_an_invalid_claude_destination"
+        body: be9b39c44503fbe956d95fe1b288254f15f47f5d9aa09b74e64633d7b66357f8
   - node: 01a13743-3a3f-7716-90b9-0942fff3d721
     reviewed: 8108b3645cd91896c4f0a5885896fd1fa5b8ae4b2656fb5ad3c8173b31d22232
     tests:
@@ -18795,6 +18873,24 @@ links:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
         body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
+  - node: 01a17844-cbca-7515-8e4e-48d7402352da
+    reviewed: 36d08903542e95516329d75020ffd585773eaa394a767a8cb4843e8c1444a870
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_repository_codex_skill_is_a_relative_link_to_the_shared_source"
+        body: b496fe09fef6cc52f0af921718f7cebf05638a8ec2b13e5306051ae7d30e2220
+  - node: 01a17844-cbca-7515-8e4e-48d81e7fbb52
+    reviewed: 30b2381be715a61f368fc05275a5c8b2b6713cb1be3002fe4439005cf29dbfaa
+    tests:
+      - file: "crates/loft-cli/tests/skill_hosts.rs"
+        name: "the_packager_refuses_missing_copied_and_retargeted_discovery_entries"
+        body: b266fe024eb7125dd74d55c3c5ab1db915262a343b6668306bb0a8b256dc63b8
+  - node: 01a17844-cbca-7515-8e4e-48d9ebc35d82
+    reviewed: c191723d356ebaf33b21bf0736eadbe8040cd5b99ac69b08ac26f496c60051eb
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_repository_codex_skill_is_a_relative_link_to_the_shared_source"
+        body: b496fe09fef6cc52f0af921718f7cebf05638a8ec2b13e5306051ae7d30e2220
   - node: 01a13654-6e11-74fa-a359-2584b63d1878
     reviewed: 189b4e72b5f3def5ed54630b94e3ce265ea8f512c4417c3f0c5b85140d18932f
     tests:

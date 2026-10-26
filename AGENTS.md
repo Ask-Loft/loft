@@ -146,6 +146,10 @@ text goes to standard error only.
   packages. Never edit a package under `plugins/` by hand: `crates/loft-cli/tests/plugins.rs`
   fails while a package differs from the composition, or a manifest's version from the version
   of `loft`.
+- This repository exposes that source to Codex through the relative link
+  `.agents/skills/loft-spec` to `../../crates/loft-cli/skill/loft-spec`. Keep the link; never
+  replace it with a copy. Before editing `spec/`, load the source skill's router and the
+  references it selects. The installer preserves this link and the packager checks it.
 - `SKILL.md` and the references name no host; whatever is particular to a host lies under
   `agents/`. A new source file is also listed in `SOURCE` in `crates/loft-cli/src/skill/mod.rs`.
 - Every YAML block of a reference is marked: `path=` blocks form the reference's example tree,

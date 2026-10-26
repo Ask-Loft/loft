@@ -4,6 +4,8 @@
 //! `--no-plugin` is given.
 
 mod compose;
+mod discovery;
+mod hosts;
 mod settings;
 mod write;
 
@@ -18,6 +20,7 @@ use crate::json;
 use crate::out::outln;
 
 use compose::Host;
+pub use hosts::Hosts;
 pub use settings::Enabled;
 use settings::SETTINGS;
 
@@ -80,6 +83,7 @@ pub enum Plugin {
 /// enabled the plugin.
 pub struct Installed {
     pub skills: Vec<&'static str>,
+    pub preserved: Vec<&'static str>,
     pub settings: Option<Enabled>,
 }
 
@@ -92,8 +96,30 @@ pub struct Installed {
 /// A directory or the settings file that cannot be written; one not yet reached is left as it
 /// was.
 pub fn install(root: &Path, plugin: Plugin) -> Result<Installed, SkillError> {
+    install_for(root, Hosts::All, plugin)
+}
+
+/// Installs only the selected hosts, preserving the repository's live source link.
+fn install_for(root: &Path, hosts: Hosts, plugin: Plugin) -> Result<Installed, SkillError> {
+    let destinations = hosts
+        .selected()
+        .iter()
+        .map(|&host| {
+            discovery::preserved(root, host)
+                .map(|preserved| (host, preserved))
+                .map_err(|error| SkillError {
+                    directory: host.directory(),
+                    error,
+                })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
     let mut written = Vec::new();
-    for host in Host::ALL {
+    let mut preserved = Vec::new();
+    for (host, linked) in destinations {
+        if linked {
+            preserved.push(host.directory());
+            continue;
+        }
         // The source is embedded, and its tests compose it for every host.
         let files = compose::compose(host, SOURCE).expect("the embedded skill composes");
         let directory = host.directory();
@@ -101,15 +127,16 @@ pub fn install(root: &Path, plugin: Plugin) -> Result<Installed, SkillError> {
             .map_err(|error| SkillError { directory, error })?;
         written.push(directory);
     }
-    let settings = match plugin {
-        Plugin::Enable => Some(settings::enable(root).map_err(|error| SkillError {
+    let settings = match (plugin, hosts.includes_claude()) {
+        (Plugin::Enable, true) => Some(settings::enable(root).map_err(|error| SkillError {
             directory: SETTINGS,
             error,
         })?),
-        Plugin::Leave => None,
+        _ => None,
     };
     Ok(Installed {
         skills: written,
+        preserved,
         settings,
     })
 }
@@ -129,6 +156,9 @@ pub fn error_json(error: &SkillError) -> serde_json::Value {
 /// Prints the line for each skill directory written and for the settings, then asks for what
 /// was written to be committed (Writing the skill).
 pub fn report(installed: &Installed) {
+    for directory in &installed.preserved {
+        outln!("unchanged {directory} (repository source link)");
+    }
     for directory in &installed.skills {
         outln!("installed {directory}");
     }
@@ -157,8 +187,8 @@ pub fn report(installed: &Installed) {
 
 /// `loft skill install`: writes the skill into the current directory and names the directories
 /// it wrote.
-pub fn run(root: &Path, plugin: Plugin, as_json: bool) -> Finished {
-    match install(root, plugin) {
+pub fn run(root: &Path, hosts: Hosts, plugin: Plugin, as_json: bool) -> Finished {
+    match install_for(root, hosts, plugin) {
         Ok(installed) => {
             if as_json {
                 let fields = json!({ "skills": installed.skills });

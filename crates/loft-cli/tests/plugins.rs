@@ -23,6 +23,33 @@ const CLAUDE_ROOT: &str = "plugins/claude/loft";
 const CODEX_ROOT: &str = "plugins/codex/loft";
 
 #[test]
+fn the_repository_codex_skill_is_a_relative_link_to_the_shared_source() {
+    let root = workspace();
+    let entry = root.join(".agents/skills/loft-spec");
+    assert!(
+        fs::symlink_metadata(&entry)
+            .unwrap()
+            .file_type()
+            .is_symlink()
+    );
+    assert_eq!(
+        fs::read_link(&entry).unwrap(),
+        std::path::Path::new("../../crates/loft-cli/skill/loft-spec")
+    );
+    let source = root.join("crates/loft-cli/skill/loft-spec");
+    assert_eq!(
+        entry.canonicalize().unwrap(),
+        source.canonicalize().unwrap()
+    );
+    for path in ["SKILL.md", "agents/openai.yaml", "references/the-loop.md"] {
+        assert_eq!(
+            fs::read(entry.join(path)).unwrap(),
+            fs::read(source.join(path)).unwrap()
+        );
+    }
+}
+
+#[test]
 fn each_committed_package_equals_the_composition_for_its_host() {
     let composed = installed();
     for (root, package) in [(CLAUDE_ROOT, CLAUDE), (CODEX_ROOT, CODEX)] {
