@@ -89,10 +89,11 @@ impl Hook {
     }
 }
 
+/// Supported counters remain distinct from whether a usage source is currently available.
 pub fn descriptor() -> Value {
     json!({"format":"yard-adapter/1", "version":crate::version::VERSION, "capabilities":{
-        "events":["turn.start","turn.end","tool.start","tool.end","subagent.start","subagent.end","compaction","plan.start","plan.end"],
-        "nativeQuestions":false,"nativePlans":false,"taskMirroring":true,"usage":[]
+        "events":["turn.start","turn.end","request","tool.start","tool.end","subagent.start","subagent.end","compaction","plan.start","plan.end"],
+        "nativeQuestions":false,"nativePlans":false,"taskMirroring":true,"usage":["input","cacheRead","cacheWrite","output"]
     }})
 }
 

@@ -97,6 +97,7 @@ mod yard_codex_tasks;
 mod yard_codex_watch;
 mod yard_commands;
 mod yard_continue;
+mod yard_event_ids;
 mod yard_hosts;
 mod yard_merge_contract;
 mod yard_merge_driver;

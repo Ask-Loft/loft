@@ -19424,7 +19424,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_activity_declares_coverage_without_retaining_native_words"
-        body: 3bbb26cecfd3c9cf584a4676e23091081cbb8cc9e4a6f3b15c0bcda66a69baa4
+        body: 4358d2b5b10de5330ec01f675ea7434c0bbd57db21f1b7d569c0520e504d23b6
   - node: 01a1787c-f803-70b1-b946-b6f3b78aec70
     reviewed: 92a7818e1dd1e23d37c9395ab377469b7bbca3a542f244185308383cedfacbf8
     tests:
@@ -19454,7 +19454,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_activity_declares_coverage_without_retaining_native_words"
-        body: 3bbb26cecfd3c9cf584a4676e23091081cbb8cc9e4a6f3b15c0bcda66a69baa4
+        body: 4358d2b5b10de5330ec01f675ea7434c0bbd57db21f1b7d569c0520e504d23b6
   - node: 01a1787c-f803-70b1-b946-b6f717e44770
     reviewed: 5411df2e2f2cbf31eb3eaeed5fbc6b80a9448b386be0ca2de809cbc0f0391bcc
     tests:
@@ -19472,7 +19472,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_activity_declares_coverage_without_retaining_native_words"
-        body: 3bbb26cecfd3c9cf584a4676e23091081cbb8cc9e4a6f3b15c0bcda66a69baa4
+        body: 4358d2b5b10de5330ec01f675ea7434c0bbd57db21f1b7d569c0520e504d23b6
       - file: "crates/loft-cli/tests/yard_codex_watch.rs"
         name: "a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server"
         body: d12e4fefd3d7b3e2aa76bd6bae8edd2f4f01ae1e66f3ed27ae579ce2535b9644
@@ -19481,16 +19481,16 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_activity_declares_coverage_without_retaining_native_words"
-        body: 3bbb26cecfd3c9cf584a4676e23091081cbb8cc9e4a6f3b15c0bcda66a69baa4
+        body: 4358d2b5b10de5330ec01f675ea7434c0bbd57db21f1b7d569c0520e504d23b6
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_omits_ambiguous_agent_events_and_keeps_explicit_tool_failures_distinct_from_unknown"
         body: 279166eafc8142585913ea0a26ac04802c91edea4f164021ff42fda13c05c289
   - node: 01a1787c-f803-70b1-b946-b6fb02bd5c3e
-    reviewed: 81f830a0b79086f5df1337dba133af3a547ba386c6e3781f44c3b8633bacaa02
+    reviewed: 94966ffd1490f2c158a0519ceb82115cea92d39e89a72f856c3d2fef9ae466f4
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_activity_declares_coverage_without_retaining_native_words"
-        body: 3bbb26cecfd3c9cf584a4676e23091081cbb8cc9e4a6f3b15c0bcda66a69baa4
+        body: 4358d2b5b10de5330ec01f675ea7434c0bbd57db21f1b7d569c0520e504d23b6
   - node: 01a1787c-f803-70b1-b946-b6fde6757eda
     reviewed: 43a275ed0c49d4da7cec1491f8d9e9a787f10956c150e958910172b1eb5fcd7e
     tests:
@@ -24486,6 +24486,66 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "no_other_session_s_activity_file_is_written_for_a_session_s_events"
         body: 0aada059c3348173d6ae6a95f73e64b67c33359d77c4bd5fa502205e69f9f175
+  - node: 01a17989-a8ba-7109-a214-b519f2ff0e19
+    reviewed: 8cb3d48273dfe919c4e8188c914d946167ed40810f52d83266b96d286b28c2eb
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "identical_identified_requests_are_acknowledged_and_counted_once"
+        body: 74fb52ebd5a94fdb9758df43bb1c0742dfe918450cff587c7864fada1dd17640
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "concurrent_identified_retries_append_and_count_only_once"
+        body: bb49af92485e39095e6e7195d179eb8bf53bab6e48aac1a0c7d4c47977d60eb5
+  - node: 01a1798c-4746-7044-bb90-3e4fc9a74e63
+    reviewed: 088904b7d67edbb61607b173d28c29b2a7556a85b9ca7eb4ccf634338390568a
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "identical_identified_requests_are_acknowledged_and_counted_once"
+        body: 74fb52ebd5a94fdb9758df43bb1c0742dfe918450cff587c7864fada1dd17640
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "concurrent_identified_retries_append_and_count_only_once"
+        body: bb49af92485e39095e6e7195d179eb8bf53bab6e48aac1a0c7d4c47977d60eb5
+  - node: 01a1798c-4746-7044-bb90-3e50a68ef266
+    reviewed: 123314caf7d4a715fe4aa4157c996867132cb2b5fb5b08e1925906a35131ef7d
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "identical_identified_requests_are_acknowledged_and_counted_once"
+        body: 74fb52ebd5a94fdb9758df43bb1c0742dfe918450cff587c7864fada1dd17640
+  - node: 01a1798c-4746-7044-bb90-3e514d240f21
+    reviewed: f36aaf61e983756285a85e6735d14b57a11769cb9df7706aa31205a85f51b628
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "empty_or_non_string_event_identifiers_change_no_event_log"
+        body: e892657fc42290fd1a1e50eee121e1124dd93a5c5b66507673c96e20e58e63cd
+  - node: 01a17989-a8ba-7109-a214-b51a276715b1
+    reviewed: 293fceacf3b2d48ad5b649022e0b7972affa5c7a0c94c74e6814f0e0a5cae2ea
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "conflicting_reuse_of_an_event_identifier_is_refused_without_changing_totals"
+        body: b93a60e26dba39969649d77043134f46806e6e4501e5b4df322583888cefc978
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "moving_an_identified_payload_to_another_tree_does_not_escape_its_session_receipt"
+        body: aa83d31b7d4635601229313942b601a2da2b9955661e887a89d3664110bc2c5e
+  - node: 01a17989-a8ba-7109-a214-b51ba964e015
+    reviewed: 486527e9fee472f73e29b46f0cf47af160a80da32602967e25d8afcdf3c4eba8
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "a_lost_acknowledgement_can_be_retried_after_a_page_server_restart"
+        body: 47c8b3f0c41fe6f362b982a43a5464f60a8000d26f9e537e45909a6a4ff41c10
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "an_identified_retry_repairs_derived_totals_after_replay_without_another_charge"
+        body: 9881828204a65a613d18a006bfeaa638fe34a910537d8ca51e1fe2ca24196505
+  - node: 01a17989-a8ba-7109-a214-b51c4e8ab04f
+    reviewed: 68aafa7479fc3894865d4c6936f9ac34079c11db5eabff5fc7e53363a8e1d97e
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "an_event_identifier_is_independent_between_hosts_and_sessions"
+        body: e31801ede037d0a7d93dcd92ae77af67c6d20e7f932d9c093ab2c1ecbb6f9c4c
+  - node: 01a17989-a8ba-7109-a214-b51df5bfdc4f
+    reviewed: dfabcc2f9313b27a9f2d361fa7e7fe4cdb104585a8e5b68c93430ecff29ac26a
+    tests:
+      - file: "crates/loft-cli/tests/yard_event_ids.rs"
+        name: "missing_event_identifiers_retain_legacy_append_behavior"
+        body: 9e039732772cdace6ceb18d77ebf418b97b5a76e13265a0d39e74d8c30a7a1d0
   - node: 01a1646f-546d-7042-befd-eafdf3c267d2
     reviewed: 1bb212b64e491088419301bc2d73222858c1c7bcc15496b21a78c2bb387867ee
     tests:

@@ -8,6 +8,8 @@ use serde_json::Value;
 use yardlog::Time;
 use yardlog_store::session::is_session_id;
 
+use super::event_ids::Receipt;
+
 pub use yardlog::usage::Counts as Tokens;
 
 /// The agent an event happened in.
@@ -78,6 +80,7 @@ pub struct Event {
     /// The event as it was posted, kept whole in the event log.
     pub posted: Value,
     pub adapter: Option<yardlog::adapter::Descriptor>,
+    pub receipt: Option<Receipt>,
     tokens: Option<Tokens>,
 }
 
@@ -133,6 +136,7 @@ impl Event {
             host: host.to_owned(),
             posted: posted.clone(),
             adapter,
+            receipt: Receipt::read(posted)?,
             tokens,
         })
     }

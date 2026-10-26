@@ -10,6 +10,7 @@ mod activity;
 mod assets;
 mod discovery;
 mod event;
+mod event_ids;
 mod events;
 mod guard;
 mod http;

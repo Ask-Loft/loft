@@ -75,7 +75,16 @@ fn codex_activity_declares_coverage_without_retaining_native_words() {
         assert_eq!(event["session"], "codex-session");
         assert_eq!(event["dir"], json!(yard.scratch.0.canonicalize().unwrap()));
         assert_eq!(event["at"], "2026-01-01T00:00:00Z");
-        assert_eq!(event["adapter"]["capabilities"]["usage"], json!([]));
+        assert_eq!(
+            event["adapter"]["capabilities"]["usage"],
+            json!(["input", "cacheRead", "cacheWrite", "output"])
+        );
+        assert!(
+            event["adapter"]["capabilities"]["events"]
+                .as_array()
+                .unwrap()
+                .contains(&json!("request"))
+        );
         assert_eq!(event["adapter"]["capabilities"]["nativeQuestions"], false);
         assert_eq!(event["adapter"]["capabilities"]["nativePlans"], false);
         assert_eq!(event["adapter"]["capabilities"]["taskMirroring"], true);
