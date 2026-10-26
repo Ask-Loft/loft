@@ -1,11 +1,10 @@
 #!/bin/zsh
 # Start Claude Code or Codex with this worktree's Loft binary and Yard plugin.
 # Both start in the caller's working directory. Claude is the default.
-#   ./scripts/yard-dogfood.sh            start a new session
-#   ./scripts/yard-dogfood.sh --continue resume the last one (Claude flags pass through)
-#   ./scripts/yard-dogfood.sh --resume <session-id> resume a specific Claude session
-#   ./scripts/yard-dogfood.sh codex      start Codex (requires Python 3)
-#   ./scripts/yard-dogfood.sh codex resume <session-id> resume a Codex session
+#   ./scripts/yard-dogfood.sh claude                    start Claude Code
+#   ./scripts/yard-dogfood.sh claude resume <session-id> resume Claude Code
+#   ./scripts/yard-dogfood.sh codex                     start Codex (requires Python 3)
+#   ./scripts/yard-dogfood.sh codex resume <session-id>  resume Codex
 set -euo pipefail
 
 TREE=${0:A:h:h}
@@ -15,6 +14,17 @@ AGENT_COMMAND=claude
 if [[ ${1-} == codex || ${1-} == claude ]]; then
   AGENT_COMMAND=$1
   shift
+fi
+
+if [[ ${1-} == resume ]]; then
+  if [[ $# -lt 2 || -z ${2-} || ${2-} == -* ]]; then
+    print -u2 -- "Usage: ${0:t} {claude|codex} [resume SESSION] [agent options...]"
+    exit 2
+  fi
+  if [[ $AGENT_COMMAND == claude ]]; then
+    shift
+    set -- --resume "$@"
+  fi
 fi
 
 echo "Building loft (release) in $TREE ..."
