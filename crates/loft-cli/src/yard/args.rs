@@ -53,6 +53,9 @@ pub enum YardAction {
 
 #[derive(Args)]
 pub struct ServeArgs {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The port to serve the page on.
     #[arg(long, value_name = "PORT", default_value_t = DEFAULT_PORT)]
     pub port: u16,
@@ -69,6 +72,9 @@ pub struct ServeArgs {
 /// The agent that runs a command, as a host names it.
 #[derive(Args, Clone, Default)]
 pub struct Runner {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The id of the session whose agent runs the command.
     #[arg(long, value_name = "ID")]
     pub session: Option<String>,
@@ -83,6 +89,9 @@ pub struct Runner {
 /// The agent that runs a command that changes Yard Log, which must name its session.
 #[derive(Args, Clone)]
 pub struct Writer {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The id of the session whose agent runs the command.
     #[arg(long, value_name = "ID", required = true)]
     pub session: String,
@@ -97,6 +106,7 @@ pub struct Writer {
 impl From<Writer> for Runner {
     fn from(writer: Writer) -> Self {
         Self {
+            host: writer.host,
             session: Some(writer.session),
             agent: writer.agent,
             agent_type: writer.agent_type,
@@ -239,6 +249,9 @@ pub struct UpgradeArgs {
 
 #[derive(Args)]
 pub struct ContinueArgs {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The id of the session that goes on.
     #[arg(long, value_name = "ID")]
     pub session: String,
@@ -247,4 +260,11 @@ pub struct ContinueArgs {
     pub from: String,
     #[command(flatten)]
     pub output: Output,
+}
+
+/// Parses an open adapter identifier before a command can write anything.
+fn host(value: &str) -> Result<String, String> {
+    yardlog::identity::is_host_id(value)
+        .then(|| value.to_owned())
+        .ok_or_else(|| "a host starts with a lowercase letter and holds at most 64 lowercase letters, digits or hyphens".to_owned())
 }

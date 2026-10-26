@@ -71,7 +71,8 @@ export function who(by) {
  */
 export function agentKey(by) {
   if (!by) return '';
-  return by.agent ? `${by.session}/${by.agent}` : String(by.session ?? '');
+  const session = by.host && by.host !== 'claude-code' ? `${by.host}~${by.session ?? ''}` : String(by.session ?? '');
+  return by.agent ? `${session}/${by.agent}` : session;
 }
 
 /**

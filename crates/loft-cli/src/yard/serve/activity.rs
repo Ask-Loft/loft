@@ -57,6 +57,7 @@ struct LoftRun {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Activity {
     session: String,
+    host: String,
     last_ended: Option<Time>,
     turns: Vec<Span>,
     runs: Vec<Run>,
@@ -104,6 +105,7 @@ impl Activity {
     /// Keeps what `event` starts or ends, `stage` the stage it counts toward; says whether
     /// it changed anything.
     pub fn apply(&mut self, event: &Event, stage: Option<&str>) -> bool {
+        self.host.clone_from(&event.host);
         let at = event.at;
         let main = event.who.is_main();
         let mut changed = false;
@@ -204,6 +206,9 @@ impl Activity {
     /// The activity file's text.
     pub fn text(&self) -> String {
         let mut fields = vec![("session", Out::Token(self.session.clone()))];
+        if self.host != yardlog::act::CLAUDE_CODE && !self.host.is_empty() {
+            fields.push(("host", Out::Token(self.host.clone())));
+        }
         if let Some(at) = self.last_ended {
             fields.push(("lastEnded", time(at)));
         }

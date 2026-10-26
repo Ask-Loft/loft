@@ -18996,6 +18996,78 @@ links:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_manifest_carries_the_version_of_loft"
         body: c2557effbdb82d0834d3c7b2463223d843d505fb14aa10501c8046bf781dec12
+  - node: 01a177f9-8294-77e4-aa6e-7067b42cdd3c
+    reviewed: ef283fb5971820f9c21d1a3fe9dcf582d3ce6e475f572ea0528eb52873c0bfa1
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "two_hosts_with_the_same_session_own_separate_stages_and_submissions"
+        body: 1fc1acae83e129c52fc7b3c7754ba53641ba15ba8934bd528e72e6368cd03dee
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "events_and_heartbeats_of_identical_sessions_keep_their_hosts_separate"
+        body: 606820949720ff83dc6882e8d6bf4d33de9c2c49842a8597ad0233ff5c86257d
+      - file: "crates/yardlog/tests/identity.rs"
+        name: "identical_session_and_subagent_ids_in_two_hosts_keep_their_own_active_stages"
+        body: 53abb0d9c4dcdb343f700f464a46b9bdafa1f97d9db850cdf4e8f5ed31889568
+  - node: 01a177f9-8294-77e4-aa6e-7068d4ac1774
+    reviewed: 8245d75e02ce101cd5b8ff5759815b8eb2c8d5481d53b7b810c98970973bb8f2
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "events_and_heartbeats_of_identical_sessions_keep_their_hosts_separate"
+        body: 606820949720ff83dc6882e8d6bf4d33de9c2c49842a8597ad0233ff5c86257d
+  - node: 01a177f9-8294-77e4-aa6e-70690bcc8fb7
+    reviewed: 2355255b47327a5b35489eb353a06ee8567719ac345580d57173cfb5eec1b77b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/host-identity.test.js"
+        name: "agents with identical native ids in different hosts have distinct page identities"
+        body: 7849fea419b287cbbb69ba17f56545a025ecada0626c2455ea38fe1937f22cf2
+  - node: 01a177f9-8294-77e4-aa6e-706aca6d6e2c
+    reviewed: 720e8e2fd44db4ed653e08bbb808cdeb4a1cf4a9d91e2ee72bbf9812a55694d3
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "read_revisions_and_continuations_are_separate_for_identical_host_session_ids"
+        body: ef0310eb5d466f8548a418a3c0575754be4147b4a67134bed5fc68499f3fe914
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "another_hosts_continuation_does_not_continue_the_sender"
+        body: 9deef6223f65b6641f587c031df4f244a079e8cd5e9e2e9b12a481c395e2c801
+  - node: 01a177f9-8294-77e4-aa6e-706cf54dee23
+    reviewed: a825d6801ead5bebd9ecdd5ba942908846b86fe42bfbc6689cb990a4556ee63c
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "every_session_bearing_command_accepts_an_explicit_host"
+        body: 21f8ca702f780ad14fe448b1270b36edeceaefe83369fb81563913ac6bc0bd57
+  - node: 01a177f9-8294-77e4-aa6e-706da4ed7cea
+    reviewed: 8106c2be13d1632f359af2fa786675d4a9e72267f2157ffd4a84b1b6e4de9378
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "invalid_host_identifiers_are_usage_errors_without_writing_a_log"
+        body: e1d42d55ce583ce0cebdb21c8ff8afa39b7ea0743ad5ba4451e9e8dcd9643e00
+  - node: 01a177f9-8294-77e4-aa6e-706ebfa984f4
+    reviewed: c7523d11f7f6fb7d366c673b0306e5be1b65bf1e31c70234700a85a3d920275a
+    tests:
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "a_command_run_without_agent_acts_for_the_session_s_main_agent"
+        body: 9736cbb23f7d45a3a3d1f4348cfd46d4e75642027113bb54075a4713c241a820
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "read_revisions_and_continuations_are_separate_for_identical_host_session_ids"
+        body: ef0310eb5d466f8548a418a3c0575754be4147b4a67134bed5fc68499f3fe914
+  - node: 01a177f9-8294-77e4-aa6e-70709f3b2989
+    reviewed: 35502e186f1970df9f6e230005bc973ab2156cf4456d12dda1b3e0ef5333b091
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "a_host_takes_over_a_stopped_sender_even_when_the_native_session_id_matches"
+        body: 3997dccc506d527a3bdffae1eee33d2e5b8c78655cd6dd202ee32f4dca7bb826
+  - node: 01a177f9-8294-77e4-aa6e-7071008b8433
+    reviewed: ca4c91517d7a5d709ef1223dfca49020cdd127c2e45794baa052a4db687b848b
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "a_live_sender_or_its_continuation_prevents_cross_host_takeover"
+        body: e1d972958010b2b4391091ddd173b60187309b2efa24813839b1061d3f5f5152
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "a_subagent_cannot_take_over_another_hosts_submission"
+        body: d0218ddf85c861dbc4b6c8b5a18ce4141e1e8051eede5642821ceda68739bb77
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "a_lease_prevents_a_second_host_from_taking_over"
+        body: ec32aadc818d4ac0b8dd7cda50e8b229df9889282bafa29d817a104a5efc40d2
   - node: 01a1646f-546e-76cb-8b4f-f2273651a416
     reviewed: 4851a48ce032bda3e7ebcb5725e47ec4ec29d88bef0962ca96578f8be563c5f9
     tests:

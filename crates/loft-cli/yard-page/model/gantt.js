@@ -116,13 +116,13 @@ function activities(log, now) {
     ],
     subagents: (activity.subagents ?? []).map((run) => ({
       ...span(run),
-      agent: `${activity.session}/${run.agent}`,
+      agent: agentKey({ host: activity.host, session: activity.session, agent: run.agent }),
       type: run.type ?? 'subagent',
       stage: run.stage,
     })),
     loft: (activity.loft ?? []).map((run) => ({
       ...span(run),
-      agent: run.agent === 'main' ? activity.session : `${activity.session}/${run.agent}`,
+      agent: agentKey({ host: activity.host, session: activity.session, ...(run.agent === 'main' ? {} : { agent: run.agent }) }),
       stage: run.stage,
       name: (run.commands ?? []).join(' '),
       failed: run.failed === true,
@@ -212,7 +212,7 @@ function sessionStarts(stages) {
   /** @type {Map<string, number>} */
   const starts = new Map();
   for (const stage of stages) {
-    const session = String(stage.owner.session ?? '');
+    const session = agentKey({ host: stage.owner.host, session: stage.owner.session });
     if (!starts.has(session)) starts.set(session, ms(stage.times.started));
   }
   return [...starts].map(([session, from], index) => ({ session, number: index + 1, from }));

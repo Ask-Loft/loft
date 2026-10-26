@@ -8,6 +8,7 @@ pub mod body;
 pub mod codec;
 pub mod datum;
 pub mod format;
+pub mod identity;
 pub mod input;
 pub mod keys;
 pub mod log;

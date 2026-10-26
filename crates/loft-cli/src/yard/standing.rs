@@ -39,10 +39,10 @@ pub fn standing(
     if mine == theirs {
         return Ok(Standing::Own);
     }
-    if mine.is_subagent() || mine.session() == theirs.session() {
+    if mine.is_subagent() || mine.same_session(&theirs) {
         return Ok(Standing::Refused(not_sender(submission, sender)));
     }
-    if let Some(next) = continuations.continued_by(&sending.session) {
+    if let Some(next) = continuations.continued_by(&sending.host, &sending.session) {
         let message = format!(
             "submission {} was sent by {sender}, which session {next} continues",
             submission.key
@@ -50,7 +50,10 @@ pub fn standing(
         return Ok(Standing::Refused(failure::error("continued", &message)));
     }
     let last = match home {
-        Some(home) => sessions::last_heard(home, &sending.session)?,
+        Some(home) => sessions::last_heard(
+            home,
+            &yardlog::identity::session_key(&sending.host, &sending.session),
+        )?,
         None => None,
     };
     if !sessions::stopped(last, now) {

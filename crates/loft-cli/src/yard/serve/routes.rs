@@ -148,7 +148,15 @@ fn heard(server: &Server, body: &[u8]) -> Response {
         return Response::refused(400, "session", "the request names no session");
     };
     let heard = crate::yard::now().and_then(|at| {
-        sessions::heard(&server.home, session, at)?;
+        let host = sent["host"].as_str().unwrap_or(yardlog::act::CLAUDE_CODE);
+        if !yardlog::identity::is_host_id(host) {
+            return Err(Failure::Usage("invalid host identifier".to_owned()));
+        }
+        sessions::heard(
+            &server.home,
+            &yardlog::identity::session_key(host, session),
+            at,
+        )?;
         Ok(at)
     });
     match heard {

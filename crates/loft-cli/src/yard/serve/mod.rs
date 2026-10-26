@@ -171,7 +171,11 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
                 "--session: `{session}` cannot name a session's file"
             )));
         }
-        sessions::heard(&home, session, now()?)?;
+        sessions::heard(
+            &home,
+            &yardlog::identity::session_key(&args.host, session),
+            now()?,
+        )?;
     }
     if let Some(tree) = &args.tree {
         trees::register(&home, tree)?;

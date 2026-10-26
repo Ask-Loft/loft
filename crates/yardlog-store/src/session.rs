@@ -67,7 +67,11 @@ impl YardStore {
         session: &str,
         bytes: &[u8],
     ) -> Result<(), YardStoreError> {
-        if !is_session_id(session) {
+        let valid = match session.split_once('~') {
+            Some((host, id)) => yardlog::identity::is_host_id(host) && is_session_id(id),
+            None => is_session_id(session),
+        };
+        if !valid {
             return Err(YardStoreError::Session(session.to_owned()));
         }
         let path = self.session_path(file, session);

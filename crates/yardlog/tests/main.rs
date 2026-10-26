@@ -7,6 +7,7 @@ mod answers;
 mod block_kinds;
 mod boundaries;
 mod files;
+mod identity;
 mod merge;
 mod session_files;
 mod three_way;

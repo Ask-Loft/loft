@@ -54,16 +54,16 @@ struct Arrival {
 fn counted_stage(log: &YardLog, event: &Event) -> Option<String> {
     let own = match (&event.who, event.kind.as_str()) {
         (Who::Sub { .. }, "subagent.start") => None,
-        (who, _) => active_stage(log, &event.session, who),
+        (who, _) => active_stage(log, &event.host, &event.session, who),
     };
-    own.or_else(|| active_stage(log, &event.session, &Who::Main))
+    own.or_else(|| active_stage(log, &event.host, &event.session, &Who::Main))
 }
 
 /// The stage active for `who` of `session` in `log`, by its key.
-fn active_stage(log: &YardLog, session: &str, who: &Who) -> Option<String> {
+fn active_stage(log: &YardLog, host: &str, session: &str, who: &Who) -> Option<String> {
     let agent = match who {
-        Who::Main => Agent::main(session),
-        Who::Sub { id, kind } => Agent::sub(session, id, kind),
+        Who::Main => Agent::main_in(host, session),
+        Who::Sub { id, kind } => Agent::sub_in(host, session, id, kind),
     };
     let stage = log.active_stages_of(&agent).next()?;
     Some(stage.key.to_string())
@@ -247,12 +247,12 @@ fn note(
     files: Vec<(SessionFile, String)>,
 ) {
     for (file, text) in files {
-        let path = arrival.store.session_path(file, &event.session);
+        let path = arrival.store.session_path(file, &event.session_key());
         let entry = (
             index,
             arrival.store.clone(),
             file,
-            event.session.clone(),
+            event.session_key(),
             text,
         );
         changed.insert(path, entry);
@@ -274,20 +274,20 @@ fn keep(
     let place = arrival.store.place();
     let tree = place.tree.display().to_string();
     let branch = arrival.store.branch().to_owned();
-    if !kept.contains_key(&event.session) && kept.len() >= SESSIONS_KEPT {
+    if !kept.contains_key(&event.session_key()) && kept.len() >= SESSIONS_KEPT {
         let gone = kept.keys().next().cloned();
         gone.map(|gone| kept.remove(&gone));
     }
     let session = kept
-        .entry(event.session.clone())
-        .or_insert_with(|| replay(home, &event.session));
+        .entry(event.session_key())
+        .or_insert_with(|| replay(home, &event.session_key()));
     let mut line = event.posted.clone();
     line["tree"] = json!(tree);
     line["branch"] = json!(branch);
     line["stage"] = json!(arrival.stage);
     line["submissions"] = json!(arrival.open);
     let text = serde_json::to_vec(&line).map_err(|error| error.to_string())?;
-    home.append_event(&event.session, &text)
+    home.append_event(&event.session_key(), &text)
         .map_err(|error| error.to_string())?;
     Ok(session.entry((tree, branch)).or_default().apply(
         event,
@@ -302,12 +302,12 @@ fn hear(home: &Home, events: &[Event]) {
     let Ok(at) = crate::yard::now() else {
         return;
     };
-    let mut sessions: Vec<&str> = events.iter().map(|event| event.session.as_str()).collect();
+    let mut sessions: Vec<String> = events.iter().map(Event::session_key).collect();
     sessions.sort_unstable();
     sessions.dedup();
     for session in sessions {
         // Liveness is a hint for take-up: a failed write of it loses no event.
-        let _ = crate::yard::sessions::heard(home, session, at);
+        let _ = crate::yard::sessions::heard(home, &session, at);
     }
 }
 

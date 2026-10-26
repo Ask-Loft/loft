@@ -128,18 +128,24 @@ impl Event {
             .as_str()
             .filter(|kind| !kind.is_empty())
             .ok_or("the event names no kind")?;
+        let host = posted["host"].as_str().unwrap_or(yardlog::act::CLAUDE_CODE);
+        if !yardlog::identity::is_host_id(host) {
+            return Err("the event names no valid host identifier".to_owned());
+        }
         Ok(Self {
             session: session.to_owned(),
             dir: dir.to_owned(),
             at,
             who: Who::of(&posted["agent"]),
             kind: kind.to_owned(),
-            host: posted["host"]
-                .as_str()
-                .unwrap_or(yardlog::act::CLAUDE_CODE)
-                .to_owned(),
+            host: host.to_owned(),
             posted: posted.clone(),
         })
+    }
+
+    /// This session's storage identity, separate from its native identifier.
+    pub fn session_key(&self) -> String {
+        yardlog::identity::session_key(&self.host, &self.session)
     }
 
     /// A model request's tokens, or a compaction's own request's.

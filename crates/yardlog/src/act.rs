@@ -47,8 +47,14 @@ impl Agent {
     /// The main agent of a Claude Code session.
     #[must_use]
     pub fn main(session: &str) -> Self {
+        Self::main_in(CLAUDE_CODE, session)
+    }
+
+    /// The main agent of an explicitly named host's session.
+    #[must_use]
+    pub fn main_in(host: &str, session: &str) -> Self {
         Self {
-            host: CLAUDE_CODE.to_owned(),
+            host: host.to_owned(),
             session: session.to_owned(),
             subagent: None,
         }
@@ -57,12 +63,18 @@ impl Agent {
     /// A subagent of a Claude Code session.
     #[must_use]
     pub fn sub(session: &str, id: &str, kind: &str) -> Self {
+        Self::sub_in(CLAUDE_CODE, session, id, kind)
+    }
+
+    /// A subagent of an explicitly named host's session.
+    #[must_use]
+    pub fn sub_in(host: &str, session: &str, id: &str, kind: &str) -> Self {
         Self {
             subagent: Some(Subagent {
                 id: id.to_owned(),
                 kind: kind.to_owned(),
             }),
-            ..Self::main(session)
+            ..Self::main_in(host, session)
         }
     }
 
