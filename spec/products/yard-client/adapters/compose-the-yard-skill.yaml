@@ -5,6 +5,8 @@ body: |
   The shared Yard workflow has one source under `crates/loft-cli/skill/yard/`. Its `SKILL.md` names no host or native host tool; the Claude-specific tools, task metadata, automatic mirroring and plan-mode instructions lie in `agents/claude.md`. Composition appends that adaptation to the common source and produces the Claude plugin's single `skills/yard/SKILL.md`, with its existing name, description fields and 500-line ceiling.
 
   The Codex adaptation lies in agents/codex.md beside the shared source. It describes the six Yard CLI operations, page-based questions and plans, automatic plan-step mirroring and the limits of native integration. Both plugins carry the composition for their own adapter. The existing specification skill's installation is unchanged: loft skill install installs loft-spec alone. The packaging script rewrites the composed Yard packages, and a guard detects drift.
+
+  Codex planning follows an adaptation of OpenAI Codex's Plan mode prompt at release rust-v0.164.0, with its source and attribution retained. Yard supplies the planning records, questions and approval surface while Codex retains its native collaboration mode and permissions.
 realizes:
   - 01a16469-559e-73c4-85f2-71b7852c58c8
 requirements:
@@ -28,3 +30,31 @@ requirements:
         name: "The Codex adaptation names caller identity, revision handling, all six Yard CLI operations, task mirroring and page-based submissions."
       - key: 01a1787c-f803-70b1-b946-b71c877ab0bd
         name: "The Codex adaptation keeps native mode and permission controls separate from page approval."
+  - key: 01a1795d-05c7-708c-baca-726db6233a60
+    statement:
+      form: ubiquitous
+      system: "The Codex Yard adaptation"
+      shall: "teach the versioned Codex Plan mode prompt's planning workflow through Yard records and page submissions within native mode and permission controls."
+    criteria:
+      - key: 01a1795d-05c7-708c-baca-726eacc0ce50
+        name: "The adaptation attributes its planning workflow to OpenAI Codex's Plan mode prompt at release rust-v0.164.0 under Apache-2.0."
+      - key: 01a1795d-05c7-708c-baca-726f32b8433c
+        name: "The workflow applies when the person asks for a plan or the shared workflow requires a build plan after specification approval."
+      - key: 01a1795d-05c7-708c-baca-72700fd10cf5
+        name: "Planning begins with repository exploration before questions about discoverable facts."
+      - key: 01a1795d-05c7-708c-baca-7271de73e0ec
+        name: "Intent clarification establishes the goal, success criteria, scope, constraints and material tradeoffs."
+      - key: 01a1795d-05c7-708c-baca-727239cec815
+        name: "Implementation planning covers interfaces, data flow, failure cases, compatibility and verification before presenting a plan."
+      - key: 01a1795d-05c7-708c-baca-7273d8668d3a
+        name: "Planning permits exploration and Yard planning records without implementing the change or rewriting product files."
+      - key: 01a1795d-05c7-708c-baca-7274873063b1
+        name: "Required questions use Yard submissions whose unanswered decisions cannot be replaced by assumed defaults."
+      - key: 01a1795d-05c7-708c-baca-7275d7383b90
+        name: "A complete Markdown plan records its summary, implementation steps, interfaces, tests and assumptions in a Yard plan submission for approval."
+      - key: 01a1795d-05c7-708c-baca-7276fc5c6667
+        name: "A rejected plan is revised before a new submission is approved."
+      - key: 01a1795d-05c7-708c-baca-7277f6c139f7
+        name: "The workflow distinguishes planning and approval from the native update_plan checklist."
+      - key: 01a1795d-05c7-708c-baca-7278658667c3
+        name: "The adaptation claims neither a native mode transition nor a native plan approval from Yard's planning instructions or page approval."
