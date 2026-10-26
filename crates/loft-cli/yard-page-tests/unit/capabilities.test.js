@@ -4,7 +4,7 @@ import { beforeEach, test } from 'node:test';
 import { tokensView } from '../../yard-page/views/tokens.js';
 import { summarize } from '../../yard-page/model/tokens.js';
 import { welcome } from '../../yard-page/views/trees.js';
-import { log } from './fixtures.js';
+import { log, stage } from './fixtures.js';
 
 beforeEach(forget);
 
@@ -32,6 +32,28 @@ test('mixed counter coverage displays recorded subtotals as partial', () => {
   const view = tokensView(log([], { tokens: files }));
   assert.match(view.querySelector('.token-totals dd').textContent, /2.*partial/i);
   assert.equal(view.querySelector('tbody[data-by="session"] tr:not(.group)').cells[2].querySelector('.share'), null);
+});
+
+test('complete breakdown rows stay complete when the overall total is partial', () => {
+  const complete = { input: 10, cacheRead: 20, cacheWrite: 0, output: 5 };
+  const incomplete = { ...complete, partial: ['input'] };
+  const fullStage = stage('complete', 'Complete stage', 'done', []);
+  const partialStage = stage('partial', 'Partial stage', 'done', []);
+  const files = [
+    { ...file('one', complete), stages: [{ stage: fullStage.key, ...complete, agents: [{ agent: 'child', type: 'Explore', ...complete }] }], agents: [{ agent: 'main', model: 'fixture', ...complete }] },
+    { ...file('two', incomplete), stages: [{ stage: partialStage.key, ...incomplete }] },
+  ];
+  const view = tokensView(log([fullStage, partialStage], { tokens: files }));
+  assert.match(view.querySelector('.token-totals dd').textContent, /partial/);
+  const stageRows = [...view.querySelectorAll('tbody[data-by="stage"] tr:not(.group)')];
+  assert.equal(stageRows[0].cells[1].textContent, '10');
+  assert.equal(stageRows[1].cells[1].textContent, '10');
+  assert.equal(stageRows[2].cells[1].textContent, '10 (partial)');
+  assert.equal(stageRows[0].cells[1].querySelector('.share'), null);
+  assert.match(stageRows[0].cells[1].title, /share unavailable.*overall total is partial/);
+  assert.ok(stageRows[0].cells[4].querySelector('.share'));
+  assert.equal(view.querySelector('tbody[data-by="session"] tr:not(.group)').cells[1].textContent, '10');
+  assert.equal(view.querySelector('tbody[data-by="agent"] tr:not(.group)').cells[1].textContent, '10');
 });
 
 test('adapter coverage is shown with no token file and distinguishes unavailable from unknown', () => {

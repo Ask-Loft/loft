@@ -19434,6 +19434,9 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
         name: "an unreporting session makes the observed aggregate partial"
         body: 51f5537b6dbc03f18f645cb97362b448bb88b70b5c8cc6dab81656ac9f5318cc
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "complete breakdown rows stay complete when the overall total is partial"
+        body: b09b9196a2eb1f13f560115cbe3c5b2a026eacc0b5b847fabd09d4f51d35c2cf
   - node: 01a177f9-8294-77e4-aa6e-70807ce3385d
     reviewed: ea9acacd0f8765ebcda4fc150b92849faa3ce00a9f8d7df2a3f5505f95670aa1
     tests:

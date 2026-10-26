@@ -18,10 +18,12 @@ const COUNTS = [
  * @param {number | undefined} all
  * @param {string} word
  * @param {boolean} [partial]
+ * @param {boolean} [allPartial]
  */
-function cell(count, all, word, partial = false) {
+function cell(count, all, word, partial = false, allPartial = false) {
   if (count === undefined) return h('td', { class: 'number', title: 'Unavailable' }, 'Unavailable');
   if (partial) return h('td', { class: 'number', title: `${count} recorded; coverage is partial` }, `${amount(count)} (partial)`);
+  if (allPartial || all === undefined) return h('td', { class: 'number', title: `${count.toLocaleString()} recorded; share unavailable because the overall total is ${allPartial ? 'partial' : 'unavailable'}` }, amount(count));
   const share = all ? count / all : 0;
   return h(
     'td',
@@ -50,7 +52,7 @@ function breakdowns(groups, all) {
           { dataset: { by } },
           h('tr', { class: 'group' }, h('th', { scope: 'rowgroup', colspan: String(COUNTS.length + 1) }, title)),
           rows.map(([name, counts, kind]) =>
-            h('tr', kind ? { class: kind } : {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word, counts.partial?.includes(key) || all.partial?.includes(key)))),
+            h('tr', kind ? { class: kind } : {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word, counts.partial?.includes(key), all.partial?.includes(key)))),
           ),
         ),
       ),
