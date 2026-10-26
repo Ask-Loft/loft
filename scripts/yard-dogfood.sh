@@ -76,7 +76,8 @@ PY
   export PATH="$TREE/target/release:$PATH"
   export LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off
   codex "${CODEX_OPTIONS[@]}" plugin add loft@yard-dogfood --json >/dev/null
-  exec codex --no-daemon "${CODEX_OPTIONS[@]}" "$@"
+  # Resume through the shared server, which may already own the conversation's writer lock.
+  exec codex "${CODEX_OPTIONS[@]}" "$@"
 fi
 
 SETTINGS=$(cat <<JSON
