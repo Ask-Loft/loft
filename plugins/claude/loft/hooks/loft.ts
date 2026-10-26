@@ -13,7 +13,7 @@ export const QUIET = { LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' }
 export const DEFAULT_PORT = 7411
 
 /** The plugin's settings: the words that run loft, the base branch and the page server's port. */
-export type Settings = { words: string[]; base: string; port: number }
+export type Settings = { words: string[]; base: string; port: number; protocol?: number }
 
 export function settingsOf(options: PluginOptions): Settings {
   const command = typeof options.loftCommand === 'string' ? options.loftCommand : 'loft'

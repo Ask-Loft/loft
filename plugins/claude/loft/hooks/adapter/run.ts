@@ -5,6 +5,7 @@ import type { EngineInterface } from 'claude-code'
 
 import { bytesOf, loftArgv, QUIET, runLoft, type Doc, type Ran, type Settings } from '../loft'
 import { parseDocument } from '../model'
+import { HOST } from './contract'
 
 /** Whether the document reports a result, rather than a refusal or an error. */
 export function succeeded(ran: Ran): ran is Ran & { doc: Doc } {
@@ -51,7 +52,8 @@ export function callerArgs(caller: Caller): string[] {
 export function argvOf(settings: Settings, args: readonly string[], beyond: boolean): string[] {
   const base = args[0] === 'write' ? ['--default-base', settings.base] : []
   const where = beyond ? [...base, '--port', String(settings.port)] : []
-  return loftArgv(settings, ['yard', ...args, ...where])
+  const host = (settings.protocol ?? 1) >= 2 && args.includes('--session') ? ['--host', HOST] : []
+  return loftArgv(settings, ['yard', ...args, ...host, ...where])
 }
 
 /** Runs `loft yard <args>` in `cwd` and reads its document. */

@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { idOf } from '../hooks/yard/log'
+import { idOf } from '../hooks/adapter/log'
 import { askedId, block, callIdOf, deferred, flagOf, readDoc, SESSION, stage, start, TREE, world, yardRuns, type Engine } from './yard-world'
 
 const QUESTIONS = [

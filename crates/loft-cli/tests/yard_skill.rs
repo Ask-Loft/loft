@@ -8,7 +8,7 @@ use std::fs;
 use crate::common::workspace;
 
 const SKILL: &str = "plugins/claude/loft/skills/yard";
-const TOOLS: &str = "plugins/claude/loft/hooks/yard/tools.ts";
+const TOOLS: &str = "plugins/claude/loft/hooks/adapter/tools.ts";
 
 fn read(path: &str) -> String {
     fs::read_to_string(workspace().join(path)).unwrap_or_else(|_| panic!("no {path}"))

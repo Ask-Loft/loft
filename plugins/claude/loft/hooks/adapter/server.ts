@@ -8,6 +8,7 @@ import type { EngineInterface } from 'claude-code'
 
 import { QUIET, type Settings } from '../loft'
 import { parseDocument } from '../model'
+import { HOST } from './contract'
 import { postToServer, type Outbox } from './outbox'
 import { argvOf } from './run'
 
@@ -56,8 +57,8 @@ export function serve($: EngineInterface, settings: Settings, server: Server, se
 }
 
 /** Tells the page server that `session` is live; whether a page server took it. */
-export async function hear($: EngineInterface, box: Outbox, session: string): Promise<boolean> {
-  return postToServer($, box, '/api/heard', { session })
+export async function hear($: EngineInterface, box: Outbox, session: string, protocol = 1): Promise<boolean> {
+  return postToServer($, box, '/api/heard', { session, ...(protocol >= 2 ? { host: HOST } : {}) })
 }
 
 /**
@@ -65,7 +66,7 @@ export async function hear($: EngineInterface, box: Outbox, session: string): Pr
  * serve`, unless the mod's own child serves or the last run has yet to say what it did.
  */
 export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
-  if (await hear($, box, session)) return
+  if (await hear($, box, session, settings.protocol)) return
   if (server.isBeating || server.isServing) return
   server.isBeating = true
   try {

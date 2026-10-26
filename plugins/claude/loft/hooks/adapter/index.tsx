@@ -9,6 +9,7 @@ import type { EngineInterface, On, PluginOptions } from 'claude-code'
 import { QUIET, type Ran } from '../loft'
 import { askQuestions, decideOnPage, ownDialog, presentPlan, waitOn } from './asking'
 import { contextOf } from './context'
+import { descriptor } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
 import { callerArgs, failureOf, succeeded, yard } from './run'
@@ -22,6 +23,10 @@ export const PLUGIN_VERSION = '2.2.1'
 /** The oldest and the newest yard protocol this mod speaks. */
 export const PROTOCOLS = { oldest: 1, newest: 2 } as const
 
+function protocolRange({ oldest, newest }: { oldest: number; newest: number }): string {
+  return `${oldest}${newest === oldest ? '' : `–${newest}`}`
+}
+
 /** Turns Yard Client on for the session, once, where the protocol check passes. */
 export function ensureYard($: EngineInterface, cwd: string): Promise<boolean> {
   state.enabling ??= enable($, cwd)
@@ -33,6 +38,8 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   const protocol = checked.doc?.protocol
   if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd)
   if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
+  state.settings.protocol = protocol
+  state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
   const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
   if (home) state.box.tokenPath = `${home}/.yard/token`
@@ -49,7 +56,7 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
 /** Tells the person once why Yard Client is off; Claude Code's own dialogs then ask alone. */
 async function off($: EngineInterface, checked: Ran, cwd: string, protocol?: number): Promise<false> {
   const command = `\`${state.settings.words.join(' ')}\``
-  const speaks = `the yard protocol ${PROTOCOLS.oldest}${PROTOCOLS.newest === PROTOCOLS.oldest ? '' : `–${PROTOCOLS.newest}`}`
+  const speaks = `the yard protocol ${protocolRange(PROTOCOLS)}`
   let text: string
   if (checked.unrun !== undefined) {
     text = `Yard Client is off: ${command} cannot be run (${checked.unrun}). Set the loft plugin's loftCommand setting to a loft that can.`

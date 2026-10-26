@@ -89,7 +89,7 @@ change, or v1 reverts it.
   `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft mod,
   one hooks module written by hand that runs Yard Client: `hooks/register.tsx` registers the
   hooks it records events with around Claude Code's own, `loft.ts` runs `loft` and the pure
-  `model.ts` reads what it prints, and Yard Client lies in `hooks/yard/`. Its state contract is
+  `model.ts` reads what it prints, and Yard Client lies in `hooks/adapter/`. Its state contract is
   `types/index.d.ts` and its tests are `tests/`, written with Claude Code's test kit. It learns
   of the tree and of Yard Log only from `loft … --format json` (the accepted decision "Yard
   Client is a mod over loft"), and reaches the page server only to post its events. Beside `skills/loft-spec/` it
@@ -295,7 +295,7 @@ A release happens only with the maintainer's approval, and in this order:
    with C code, shows here first.
 1. On a branch from `develop`, set the new version in every crate's `Cargo.toml`, in the
    workspace dependencies, in both plugin manifests and in `PLUGIN_VERSION` of the Claude Code
-   plugin's `hooks/yard/index.tsx` (`tests/plugins.rs` fails until they agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
+   plugin's `hooks/adapter/index.tsx` (`tests/plugins.rs` fails until they agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
    into `develop`, then `develop` into `main`.
 2. On `main`, run `loft publish` over the committed `spec/`, commit `spec/labels.yaml` and
    `loft.lock.json` together as the publish commit, and check that `loft verify` passes. A second

@@ -156,7 +156,7 @@ fn the_claude_code_manifest_declares_the_yard_port_setting_with_the_page_server_
 
 /// The value of `export const <name> = <value>` in Yard Client's entry module, as written.
 fn mod_constant(name: &str) -> String {
-    let path = format!("{CLAUDE_ROOT}/hooks/yard/index.tsx");
+    let path = format!("{CLAUDE_ROOT}/hooks/adapter/index.tsx");
     let source =
         fs::read_to_string(workspace().join(&path)).unwrap_or_else(|_| panic!("no {path}"));
     let start = format!("export const {name} = ");
@@ -243,7 +243,7 @@ fn loft_subcommands() -> Vec<String> {
 
 #[test]
 fn the_mod_takes_a_subcommand_s_name_only_from_loft_s_own_list_of_subcommands() {
-    let path = format!("{CLAUDE_ROOT}/hooks/yard/shell.ts");
+    let path = format!("{CLAUDE_ROOT}/hooks/adapter/shell.ts");
     let source =
         fs::read_to_string(workspace().join(&path)).unwrap_or_else(|_| panic!("no {path}"));
     let listed: Vec<String> = source

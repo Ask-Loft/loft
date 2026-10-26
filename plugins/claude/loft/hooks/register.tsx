@@ -4,8 +4,8 @@
 
 import type { Register } from 'claude-code'
 
-import { eventsOfToolCall, eventsOfTurnEnd } from './yard/events'
-import { ensureYard, registerYard } from './yard/index'
+import { eventsOfToolCall, eventsOfTurnEnd } from './adapter/events'
+import { ensureYard, registerYard } from './adapter/index'
 
 export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {

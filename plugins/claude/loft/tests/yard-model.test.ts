@@ -1,11 +1,11 @@
 import { expect, test } from 'claude-code/testing'
 
-import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, taskId, taskState } from '../hooks/yard/answers'
-import { contextOf, LIMIT } from '../hooks/yard/context'
-import { APPROVE, dialogOf, MORE, recordedOf, REJECT } from '../hooks/yard/dialog'
-import { activeStage, lastUnplanned, waitingOf, whoOf, type Block } from '../hooks/yard/log'
-import { loftSubcommands } from '../hooks/yard/shell'
-import { argumentsOf, commandOf, specOf, TOOL_NAMES } from '../hooks/yard/tools'
+import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, taskId, taskState } from '../hooks/adapter/answers'
+import { contextOf, LIMIT } from '../hooks/adapter/context'
+import { APPROVE, dialogOf, MORE, recordedOf, REJECT } from '../hooks/adapter/dialog'
+import { activeStage, lastUnplanned, waitingOf, whoOf, type Block } from '../hooks/adapter/log'
+import { loftSubcommands } from '../hooks/adapter/shell'
+import { argumentsOf, commandOf, specOf, TOOL_NAMES } from '../hooks/adapter/tools'
 import { block, readDoc, stage } from './yard-world'
 
 const ASKED = [

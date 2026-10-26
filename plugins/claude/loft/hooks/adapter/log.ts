@@ -4,9 +4,10 @@
 
 import type { Doc } from '../loft'
 import { isObject, records } from '../model'
+import { HOST } from './contract'
 
 /** The agent a record names: its session, and for a subagent its id. */
-export type Actor = { session?: string; agent?: string; agentType?: string }
+export type Actor = { host?: string; session?: string; agent?: string; agentType?: string }
 
 /** A block as a `loft yard` document gives it. */
 export type Block = {
@@ -23,7 +24,7 @@ export type Block = {
 export type Stage = Block & { owner?: Actor | null; blocks: Block[] }
 
 /** Who is asking: the session and its earlier ids in this process, and the subagent, if one. */
-export type Asker = { sessions: readonly string[]; agent?: string }
+export type Asker = { host?: string; sessions: readonly string[]; agent?: string }
 
 export function stagesOf(doc: Doc): Stage[] {
   return records(doc.stages) as unknown as Stage[]
@@ -37,6 +38,7 @@ export function statusOf(block: Block): string | undefined {
 /** Whether a record's actor is the asking agent. */
 export function isAsker(actor: Actor | null | undefined, asker: Asker): boolean {
   if (!actor?.session || !asker.sessions.includes(actor.session)) return false
+  if ((actor.host ?? HOST) !== (asker.host ?? HOST)) return false
   return (actor.agent ?? undefined) === asker.agent
 }
 

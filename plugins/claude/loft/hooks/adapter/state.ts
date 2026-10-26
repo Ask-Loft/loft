@@ -7,6 +7,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, PluginOptions } from 'claude-code'
 
 import { settingsOf, type Ran, type Settings } from '../loft'
+import { HOST, type descriptor } from './contract'
 import { outboxOf, type Outbox } from './outbox'
 import { pageOf, type Asker } from './log'
 import { callerArgs, succeeded, yard, type Caller } from './run'
@@ -34,6 +35,7 @@ export type Presenting = { id: string; cwd: string; caller: Caller; submission: 
 
 export type YardState = {
   settings: Settings
+  adapter: ReturnType<typeof descriptor> | undefined
   server: Server
   box: Outbox
   /** Each subagent's type, by its id. */
@@ -51,6 +53,7 @@ function fresh(options: PluginOptions): YardState {
   const settings = settingsOf(options)
   return {
     settings,
+    adapter: undefined,
     server: serverOf(),
     box: outboxOf(settings.port),
     types: new Map(),
@@ -94,6 +97,7 @@ export async function continued($: EngineInterface): Promise<string> {
 /** Who asks, for matching the records Yard Log keeps: the session's ids and the subagent's. */
 export function askerOf(caller: Caller): Asker {
   return {
+    host: HOST,
     sessions: [caller.session, ...state.sessions.filter(each => each !== caller.session)],
     ...(caller.agent ? { agent: caller.agent.id } : {}),
   }

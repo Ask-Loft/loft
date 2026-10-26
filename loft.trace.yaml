@@ -19068,6 +19068,45 @@ links:
       - file: "crates/loft-cli/tests/yard_hosts.rs"
         name: "a_lease_prevents_a_second_host_from_taking_over"
         body: ec32aadc818d4ac0b8dd7cda50e8b229df9889282bafa29d817a104a5efc40d2
+  - node: 01a177f9-8294-77e4-aa6e-707342f97ff9
+    reviewed: 76fef104aebc848d9b71029274e36403294a62842bef6148793935dd4337c80c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
+        body: 2b327a27b24f8e8d92641858283568440579f733d74251d676716b9f64d360c6
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
+        body: ab055ee3a1914d3ef7baf55d02849c493c88f278b14a7a31fe1d0b043c42baaa
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
+        body: 16b30d774e15e9d4ff89f72d0c57dedcc1465fd04bebb21a7e9e60ae57bc3547
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "an interrupt while yard_wait waits ends the running wait, closes the dialog, records nothing and leaves the submission open"
+        body: 326db6ab8694ef3ce477a8c1e24c9d02cff57bc2c0802195db153468341bedc5
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "the agent's task call returns while its mirror has yet to read Yard Log"
+        body: 73e8ee27054a5e7697cdb497ac8e693df3958b9bcc9006f5ea62a68921251cf3
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "events wait while the page server does not take them, and go in their order once it does"
+        body: 24d50f0f39fc2e3dfa3e27b24a58562cef3d47cdeb867af5351f098bf0dc28c5
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
+        body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
+  - node: 01a177f9-8294-77e4-aa6e-70743921560a
+    reviewed: 1c79b8403fe00167a811709fa76b3315810b27be738397e003ee5b6c3a75d7cb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
+        body: 2b327a27b24f8e8d92641858283568440579f733d74251d676716b9f64d360c6
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "protocol one keeps the Claude arguments and events without adapter descriptors"
+        body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
+  - node: 01a177f9-8294-77e4-aa6e-7075bdc3587a
+    reviewed: ba4b67ed0c798ad39874932d883fc4f8c115f63ca92f575f1230caf70f256875
+    tests:
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "a foreign host with the same native identifiers is another actor in stages and context"
+        body: 91b9a9e1118f3b6a3d173b4224279240e7b42f68dc73746cf555da6c3677956e
   - node: 01a177f9-8294-77e4-aa6e-7078a4c09f21
     reviewed: 18e266fc39c2e3f6dd3bf2e61c33c39a6554cabb1c6807b3d6782912b3635ae9
     tests:
@@ -24092,7 +24131,7 @@ links:
         body: cca56e7431913999fcff9bbe39b36c246b54098434055422963ab7aa9eeaa7f0
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_mod_takes_a_subcommand_s_name_only_from_loft_s_own_list_of_subcommands"
-        body: d822a6d8592b41925d118bf524861f36de47e8b63afb2133ed453e19b3091714
+        body: f46352406c2856ffa13038d8d3f768f28eaca251d6803d30f50093319029a5d4
   - node: 01a1646f-546d-7042-befd-eb0ad2547439
     reviewed: 48410a28b6958b0aa6de30c6f65b66ae1a3666a1958b7045704f98655748996e
     tests:
@@ -24122,7 +24161,7 @@ links:
         body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a full post the page server does not take keeps the newest 1,000 events, and counts the oldest dropped"
-        body: 461cc444098e54c65f9d152c2edb2994f5e2afde565fe153a77b20e714141d29
+        body: 546392e659e12898744ef1a6a9e963b800d67bfba294bd6a7190793ffbf4d055
   - node: 01a1646f-546d-7042-befd-eb0f5266c105
     reviewed: 3f207710753580fa4aa1401a004423bf2a5d55ceafc484a33080aa8bebee4d33
     tests:
@@ -24134,7 +24173,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "an event kept while a full post is under way is posted after it, and is not counted as dropped"
-        body: f776bc01cb2441a6652393335a22b455879e7af1e86bec1682eb197295e69e85
+        body: 53bebfe88b1627f3df027b14b5e6c2a0afb7a822f418d67958ba0b51af822f34
   - node: 01a1646f-546d-7042-befd-eb11fb7e4314
     reviewed: 227f1c9404a955be715a8952f93aa64fd5d9cd258a91f6bbdbf5f4e2f17a36c8
     tests:
@@ -25242,6 +25281,15 @@ links:
       - file: "crates/loft-cli/tests/yard_protocol.rs"
         name: "host_aware_callers_and_adapter_descriptors_use_protocol_two"
         body: 4d5bc8c632bf0f0d0fef725cb88e1869619f6e51c1a419619c42fa170351299a
+  - node: 01a177f9-f61a-77e3-89ef-0d0bfe35cd61
+    reviewed: 380d159027a4e8262f5f2cba360fcc917e550906c3a124a1011a3bc6dd521d64
+    tests:
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
+        body: 2b327a27b24f8e8d92641858283568440579f733d74251d676716b9f64d360c6
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "protocol one keeps the Claude arguments and events without adapter descriptors"
+        body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
   - node: 01a1646f-546d-7042-befd-ea43c0bb2e34
     reviewed: f9d7ec8d86cde32fd131534ed2250c2467037800d605df6ff6d1cc7923d2b0e4
     tests:

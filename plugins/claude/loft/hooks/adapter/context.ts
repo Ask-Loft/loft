@@ -3,7 +3,7 @@
 
 import type { Doc } from '../loft'
 import { isObject } from '../model'
-import { activeStage, openSubmissions, pageOf, stagesOf, type Asker, type Block } from './log'
+import { activeStage, isAsker, openSubmissions, pageOf, stagesOf, type Asker, type Block } from './log'
 
 /** The most characters the context holds. */
 export const LIMIT = 2000
@@ -72,7 +72,7 @@ export function contextOf(doc: Doc, asker: Asker): string {
     {
       title: sent.length === 0 ? 'No submission is open.' : `Open submissions (${sent.length}), each waited on with \`yard_wait\`:`,
       lines: sent.map(each => {
-        const who = asker.sessions.includes(each.agent.session ?? '') && !each.agent.agent ? 'sent by you' : 'sent by another agent'
+        const who = isAsker(each.agent, asker) ? 'sent by you' : 'sent by another agent'
         return `- \`${each.key}\`, ${each.blocks.length} block${each.blocks.length === 1 ? '' : 's'}, ${who}`
       }),
     },

@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { flush, keep, MOST, outboxOf } from '../hooks/yard/outbox'
+import { flush, keep, MOST, outboxOf } from '../hooks/adapter/outbox'
 import { block, deferred, readDoc, SESSION, stage, start, TREE, world, type Engine, type World } from './yard-world'
 
 const events = (w: World) => w.state.posts.flatMap(post => post.events)
@@ -331,27 +331,33 @@ function heldOutbox() {
   const box = outboxOf(7411)
   box.token = 'token-1'
   const posts: { events: Record<string, unknown>[]; answer: (status: number) => void }[] = []
+  const notices = new Map<number, ReturnType<typeof deferred<void>>>()
+  const posted = (index: number) => {
+    if (posts.length > index) return Promise.resolve()
+    const notice = deferred<void>()
+    notices.set(index, notice)
+    return notice.promise
+  }
   const $ = {
     http: {
       fetch: (_url: string, init: { body: string }) =>
-        new Promise(answered =>
-          posts.push({ events: JSON.parse(init.body), answer: status => answered({ ok: status < 300, status }) }),
-        ),
+        new Promise(answered => {
+          posts.push({ events: JSON.parse(init.body), answer: status => answered({ ok: status < 300, status }) })
+          notices.get(posts.length - 1)?.resolve()
+        }),
     },
   } as unknown as Parameters<typeof flush>[0]
-  return { box, posts, flushing: () => flush($, box) }
+  return { box, posts, posted, flushing: () => flush($, box) }
 }
 
-const settled = () => new Promise(done => setTimeout(done, 0))
-
 test('an event kept while a full post is under way is posted after it, and is not counted as dropped', async () => {
-  const { box, posts, flushing } = heldOutbox()
+  const { box, posts, posted, flushing } = heldOutbox()
   for (let n = 0; n < MOST; n++) keep(box, { kind: 'turn.start', turn: `t${n}` })
   const flushed = flushing()
-  await settled()
+  await posted(0)
   keep(box, { kind: 'turn.start', turn: 'late' })
   posts[0]!.answer(200)
-  await settled()
+  await posted(1)
   posts[1]!.answer(200)
   await flushed
   expect(posts[0]!.events).toHaveLength(MOST)
@@ -361,10 +367,10 @@ test('an event kept while a full post is under way is posted after it, and is no
 })
 
 test('a full post the page server does not take keeps the newest 1,000 events, and counts the oldest dropped', async () => {
-  const { box, posts, flushing } = heldOutbox()
+  const { box, posts, posted, flushing } = heldOutbox()
   for (let n = 0; n < MOST; n++) keep(box, { kind: 'turn.start', turn: `t${n}` })
   const flushed = flushing()
-  await settled()
+  await posted(0)
   keep(box, { kind: 'turn.start', turn: 'late' })
   posts[0]!.answer(503)
   await flushed

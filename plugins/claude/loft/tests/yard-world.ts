@@ -4,7 +4,7 @@
 
 import { mock, test } from 'claude-code/testing'
 
-import { idOf, type Block, type Stage } from '../hooks/yard/log'
+import { idOf, type Block, type Stage } from '../hooks/adapter/log'
 
 type Body = Extract<Parameters<typeof test>[1], (...args: never[]) => unknown>
 export type Engine = Parameters<Body>[0]
@@ -94,6 +94,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     posts: [] as { url: string; headers: Record<string, string>; events: Doc[] }[],
     /** The sessions the mod told the page server are live, on its beat. */
     heard: [] as string[],
+    beats: [] as Doc[],
     /** Whether a page server answers the beat; where none does, the mod runs `loft yard serve`. */
     answersBeat: false,
     postStatus: 200,
@@ -143,7 +144,9 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   on('fs.read', ($, e) => (state.hasToken && e.path === `${HOME}/.yard/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
   on('http.fetch', async ($, e) => {
     if (e.url.endsWith('/api/heard')) {
-      state.heard.push(String((JSON.parse(String(e.init?.body ?? '{}')) as Doc).session))
+      const beat = JSON.parse(String(e.init?.body ?? '{}')) as Doc
+      state.heard.push(String(beat.session))
+      state.beats.push(beat)
       const status = state.answersBeat ? 200 : 503
       return { value: { status, ok: state.answersBeat, headers: {}, text: '{}' } as never }
     }

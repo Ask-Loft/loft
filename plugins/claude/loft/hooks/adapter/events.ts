@@ -7,6 +7,7 @@ import type { EngineInterface, ModelUsage, On } from 'claude-code'
 
 import { relativeTo } from '../model'
 import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } from '../shared'
+import { HOST } from './contract'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
 import { agentOf, PLUGIN, state } from './state'
@@ -43,7 +44,7 @@ export function tell($: EngineInterface, agentId: string | undefined, fields: Ev
   const read = Promise.all([$.session.id(), $.session.cwd(), $.clock.now(), agentOf($, agentId)])
   told = Promise.all([told, read])
     .then(([, [session, dir, now, agent]]) => {
-      keep(state.box, { session, dir, at: timeOf(now), host: 'claude-code', ...(agent ? { agent } : {}), ...fields })
+      keep(state.box, { session, dir, at: timeOf(now), host: HOST, ...(state.adapter ? { adapter: state.adapter } : {}), ...(agent ? { agent } : {}), ...fields })
       void flush($, state.box)
     })
     .catch(() => {})
