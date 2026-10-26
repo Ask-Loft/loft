@@ -17,17 +17,14 @@ const COUNTS = [
  * @param {number | undefined} count
  * @param {number | undefined} all
  * @param {string} word
- * @param {boolean} [partial]
- * @param {boolean} [allPartial]
  */
-function cell(count, all, word, partial = false, allPartial = false) {
+function cell(count, all, word) {
   if (count === undefined) return h('td', { class: 'number', title: 'Unavailable' }, 'Unavailable');
-  if (partial) return h('td', { class: 'number', title: `${count} recorded; coverage is partial` }, `${amount(count)} (partial)`);
-  if (allPartial || all === undefined) return h('td', { class: 'number', title: `${count.toLocaleString()} recorded; share unavailable because the overall total is ${allPartial ? 'partial' : 'unavailable'}` }, amount(count));
+  if (all === undefined) return h('td', { class: 'number', title: `${count.toLocaleString()} recorded` }, amount(count));
   const share = all ? count / all : 0;
   return h(
     'td',
-    { class: 'number', title: `${count.toLocaleString()} · ${Math.round(share * 100)}% of all ${word.toLowerCase()}` },
+    { class: 'number', title: `${count.toLocaleString()} · ${Math.round(share * 100)}% of recorded ${word.toLowerCase()}` },
     amount(count),
     h('span', { class: 'share', 'aria-hidden': 'true' }, h('span', { class: 'share-fill', style: `width:${share * 100}%` })),
   );
@@ -52,7 +49,7 @@ function breakdowns(groups, all) {
           { dataset: { by } },
           h('tr', { class: 'group' }, h('th', { scope: 'rowgroup', colspan: String(COUNTS.length + 1) }, title)),
           rows.map(([name, counts, kind]) =>
-            h('tr', kind ? { class: kind } : {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word, counts.partial?.includes(key), all.partial?.includes(key)))),
+            h('tr', kind ? { class: kind } : {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word))),
           ),
         ),
       ),
@@ -93,6 +90,7 @@ export function tokensView(log) {
     'Usage includes requests reported by each adapter. Requests a host makes inside its own tools may be outside these counts.',
   );
   const reporting = reportingOf(log.activity ?? []);
+  if (summary.partial) add(section, h('p', { class: 'token-coverage', role: 'status' }, 'Token accounting: partial. Percentages show shares of recorded usage.'));
   if (!summary.counted) {
     add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), reporting, note);
     return section;
@@ -119,7 +117,7 @@ export function tokensView(log) {
   ].filter((group) => group.rows.length);
   add(
     section,
-    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: summary.all[name] === undefined ? 'Unavailable' : String(summary.all[name]) }, summary.all[name] === undefined ? 'Unavailable' : `${amount(summary.all[name])}${summary.all.partial?.includes(name) ? ' (partial)' : ''}`)))),
+    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: summary.all[name] === undefined ? 'Unavailable' : String(summary.all[name]) }, summary.all[name] === undefined ? 'Unavailable' : amount(summary.all[name]))))),
     breakdowns(groups, summary.all),
     reporting,
     note,

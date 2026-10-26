@@ -117,14 +117,14 @@ test('the breakdowns share one table, whose columns are the four counts', () => 
   );
 });
 
-test('each count of a breakdown shows as a bar its share of Yard Log’s count of that kind in all', () => {
+test('each measured breakdown count shows its share of the recorded log subtotal', () => {
   const [shaping, , noStage] = body('stage');
   const share = (cell) => parseFloat(cell.querySelector('.share-fill').style.width);
   assert.equal(share(shaping.cells[1]).toFixed(1), '80.2');
   assert.equal(share(noStage.cells[1]).toFixed(1), '19.8');
   assert.equal(share(shaping.cells[2]), 100);
   assert.equal(share(noStage.cells[2]), 0);
-  assert.equal(shaping.cells[1].getAttribute('title'), '81 · 80% of all input');
+  assert.equal(shaping.cells[1].getAttribute('title'), '81 · 80% of recorded input');
   assert.equal(shaping.cells[1].querySelector('.share').getAttribute('aria-hidden'), 'true');
 });
 

@@ -109,5 +109,6 @@ export function summarize(files, activities = []) {
   const byAgent = [...agents.values()].sort(
     (a, b) => Number(b.who === 'main agent') - Number(a.who === 'main agent') || total(b.tokens) - total(a.tokens),
   );
-  return { all: all ?? {}, noStage: noStage ?? {}, stages, stageAgents, submissions, agents: byAgent, sessions, counted: COUNTERS.some((key) => all?.[key] !== undefined) };
+  const partial = all !== undefined && COUNTERS.some((key) => all?.[key] === undefined || all?.partial?.includes(key));
+  return { all: all ?? {}, noStage: noStage ?? {}, stages, stageAgents, submissions, agents: byAgent, sessions, partial, counted: COUNTERS.some((key) => all?.[key] !== undefined) };
 }

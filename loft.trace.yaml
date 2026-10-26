@@ -19421,22 +19421,49 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
         name: "a measured all-zero request is shown as measured usage"
-        body: 0b4bd3796c9e702f8a6b63a216fccf08350d960ee0473e7674c63e6b0496db98
+        body: 948bc84ad3da00a6f49fafbe4973e84d3cc1f2abe5872c044b46b002be7daa1b
   - node: 01a177f9-8294-77e4-aa6e-707f3b171f93
-    reviewed: e4df8e6efbd6e218c799994e9fdbb4c4634cff63eb96bafd5ea403f8ab26b8d9
+    reviewed: 7bd5258247bb63bf0dc844304e6657bf04ffac4d4bba752c161bcc45b9b578f7
     tests:
       - file: "crates/loft-cli/tests/yard_capabilities.rs"
         name: "missing_usage_is_not_written_as_zero_and_partial_subtotals_are_marked"
         body: f074509c0173d084606d13db5f6174470b561e5c5f0124891b10bb9cdf82a05b
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
-        name: "mixed counter coverage displays recorded subtotals as partial"
-        body: e6ac245bcd703666779c8d65543c681c600b4acc2fe5308fd208bb749d9e9a56
+        name: "mixed counter coverage marks the log partial while keeping numeric subtotals"
+        body: cc89bbe0344825823a9466089d9258f32081522bb1c79e10b6228eba1ae8c7c9
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
-        name: "an unreporting session makes the observed aggregate partial"
-        body: 51f5537b6dbc03f18f645cb97362b448bb88b70b5c8cc6dab81656ac9f5318cc
+        name: "an unreporting session marks token accounting partial at log level"
+        body: e6e6d12d9d3fb15dbb76611c401c2c4df99a662a3657a9cf3f0ac7247caec226
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
-        name: "complete breakdown rows stay complete when the overall total is partial"
-        body: b09b9196a2eb1f13f560115cbe3c5b2a026eacc0b5b847fabd09d4f51d35c2cf
+        name: "partial log coverage is shown once while breakdown bars use recorded subtotals"
+        body: b8ad6e3eb758389963b057497ddd7a4d243063921af8ebb67d58283f81e544e4
+  - node: 01a17a6d-c247-738d-ac55-ded57a9a6ce5
+    reviewed: d8ea3e7d5062fb289d7147a1a8823eafcde77118c84b60109b740672bdc3ce75
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "token accounting completeness is a derived property of the whole log"
+        body: 1e06df702db99ef8e1439213cadbfa4bf350ebacb72e5affbdc7dcf89e945a49
+  - node: 01a17a6d-c247-738d-ac55-ded626362168
+    reviewed: 93c81f3ee5bfc2102c1050ab9f4f87a5c9c8e17464cb6ed1fd6276857865296b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "partial log coverage is shown once while breakdown bars use recorded subtotals"
+        body: b8ad6e3eb758389963b057497ddd7a4d243063921af8ebb67d58283f81e544e4
+  - node: 01a17a6d-c247-738d-ac55-ded71d91edfc
+    reviewed: cf7b763149e3d1febbbe012296b3b31766d2a2173dc46bde4dca14413a273ee0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "partial log coverage is shown once while breakdown bars use recorded subtotals"
+        body: b8ad6e3eb758389963b057497ddd7a4d243063921af8ebb67d58283f81e544e4
+  - node: 01a17a6d-c247-738d-ac55-ded87f1a5251
+    reviewed: 27bea7eeb3f58f9751970b737c6bf93c77a218c1df86d7188da29447879126f5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "token accounting completeness is a derived property of the whole log"
+        body: 1e06df702db99ef8e1439213cadbfa4bf350ebacb72e5affbdc7dcf89e945a49
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "a measured all-zero request is shown as measured usage"
+        body: 948bc84ad3da00a6f49fafbe4973e84d3cc1f2abe5872c044b46b002be7daa1b
   - node: 01a177f9-8294-77e4-aa6e-70807ce3385d
     reviewed: ea9acacd0f8765ebcda4fc150b92849faa3ce00a9f8d7df2a3f5505f95670aa1
     tests:
@@ -25096,11 +25123,23 @@ links:
         name: "the breakdowns share one table, whose columns are the four counts"
         body: 4a35e96e9aa84eaee468906bded21333c48275575291f7062baee62d94d96103
   - node: 01a1682e-2675-75b2-871c-e2613eb8729b
-    reviewed: 3b0e39561f82358cf8f91c16a80bd7a8c5ecee50b3986a33d499261287264b2a
+    reviewed: d5c117c6fc3acc32c44978c1f1bbfdc730f0b8627d02b8106a65f54a68d8051d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
-        name: "each count of a breakdown shows as a bar its share of Yard Log’s count of that kind in all"
-        body: 1510311a6b83a3a66f65965bcbaa936261c05d5e3c3f94c2044730a95d3471d5
+        name: "each measured breakdown count shows its share of the recorded log subtotal"
+        body: 82ac73e7f0cdac4ffc64bc38d10df2ffd47f29524abdad73b65d88d24f2e2d0d
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "partial log coverage is shown once while breakdown bars use recorded subtotals"
+        body: b8ad6e3eb758389963b057497ddd7a4d243063921af8ebb67d58283f81e544e4
+  - node: 01a17a6d-c247-738d-ac55-ded98716c59e
+    reviewed: a3ac2660ac107394772496a678240c8f4bcded627430d29c835c572250e2e018
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "each measured breakdown count shows its share of the recorded log subtotal"
+        body: 82ac73e7f0cdac4ffc64bc38d10df2ffd47f29524abdad73b65d88d24f2e2d0d
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "partial log coverage is shown once while breakdown bars use recorded subtotals"
+        body: b8ad6e3eb758389963b057497ddd7a4d243063921af8ebb67d58283f81e544e4
   - node: 01a1646f-546d-7042-befd-eb1d0e18125d
     reviewed: 85a313541e390272ce06b2af82e3b1a70db14f9feebf82c909e1527d8542b00e
     tests:
