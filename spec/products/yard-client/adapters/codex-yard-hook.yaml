@@ -4,7 +4,7 @@ name: "Codex Yard hook"
 body: |
   The Codex plugin uses native command hooks, with loft on the search path and no other runtime. `loft yard codex hook` reads one native hook object from standard input, or from `--input`, and returns a native hook response by default. `--format json` wraps that response as `hookOutput` in the standard Loft result. Codex controls hook trust, permissions and session cancellation.
 
-  The adapter uses Yard protocol 2 and host codex. Questions and plan approvals use the Yard page through the existing write, wait, withdraw, close, read and published commands. A page approval does not change Codex's mode or permission controls. Transcript parsing, model request reporting and token reporting are outside this adapter's coverage.
+  The adapter uses Yard protocol 2 and host codex. Questions and plan approvals use the Yard page through the existing write, wait, withdraw, close, read and published commands. A page approval does not change Codex's mode or permission controls. Native hooks do not report model usage themselves: the worker observes live request counters from an available local app server. Transcript parsing remains outside this adapter's coverage.
 tags:
   - yard-command
 realizes:
@@ -40,7 +40,7 @@ requirements:
       - key: 01a1787c-f803-70b1-b946-b6fa156f1f41
         name: "Unavailable token counters and tool outcomes remain unknown."
       - key: 01a1787c-f803-70b1-b946-b6fb02bd5c3e
-        name: "The adapter descriptor declares its supported events, task mirroring, unavailable native dialogs and an empty usage list."
+        name: "The adapter descriptor declares request events, four supported usage counters, task mirroring and unavailable native dialogs."
   - key: 01a1787c-f803-70b1-b946-b6fcb7f93fca
     statement:
       form: event_driven

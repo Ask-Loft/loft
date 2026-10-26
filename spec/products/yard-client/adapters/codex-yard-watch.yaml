@@ -4,7 +4,7 @@ name: "Codex Yard watch"
 body: |
   `loft yard codex watch` is a native background command hook started with a session and on later hooked activity. It reads the native input in the same way as the hook command. Codex owns its lifetime, with a 24-hour timeout; later hooked activity restarts a worker that has ended. Local Codex workflows are supported, while cloud orchestration is outside this integration.
 
-  Adapter bookkeeping lives in the plugin's writable data directory, with a machine-local fallback under ~/.yard/codex. It holds normalized pending events and task identity, never a second Yard Log. All Yard reads and writes use the existing JSON command interfaces.
+  Adapter bookkeeping lives in the plugin's writable data directory, with a machine-local fallback under ~/.yard/codex. It holds normalized pending events, task identity and usage checkpoints, never a second Yard Log. All Yard reads and writes use the existing JSON command interfaces. The worker's bounded app-server observer supplies usage while a native turn is active and releases its subscription when the turn ends.
 tags:
   - yard-command
 realizes:
