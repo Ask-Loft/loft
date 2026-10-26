@@ -32,6 +32,16 @@ pub fn run(hook: &Hook, port: u16) -> Result<Value> {
     else {
         return Ok(json!({}));
     };
+    // Codex launches matching handlers concurrently: this startup handler may run before
+    // the context handler has cleared a previous session-end request.
+    if matches!(hook.name(), "SessionStart" | "UserPromptSubmit") {
+        let _locked = files.lock()?;
+        let mut state = files.read()?;
+        if state.stopped {
+            state.stopped = false;
+            files.write(&state)?;
+        }
+    }
     let home = Home::from_env().ok_or("no machine home for Yard")?;
     let clock = crate::yard::clock();
     let mut server = ServerChild(None);

@@ -81,8 +81,14 @@ fn the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptatio
 }
 
 #[test]
-fn a_host_without_a_yard_adapter_has_no_yard_package_or_standalone_install() {
-    assert!(!workspace().join("plugins/codex/loft/skills/yard").exists());
+fn yard_is_packaged_for_each_adapter_but_not_installed_as_a_standalone_skill() {
+    for host in ["claude", "codex"] {
+        assert!(
+            workspace()
+                .join(format!("plugins/{host}/loft/skills/yard/SKILL.md"))
+                .is_file()
+        );
+    }
     let scratch = Scratch::empty();
     let output = scratch.loft(&["skill", "install", "--no-plugin"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));

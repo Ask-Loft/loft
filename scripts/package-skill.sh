@@ -1,7 +1,7 @@
 #!/bin/sh
 # Rewrites the committed plugin packages from the skill's source: `loft skill install` composes
 # the source for each host in a scratch directory, and each package replaces the plugin's copy.
-# Yard's common workflow and Claude adaptation compose one file beside loft-spec.
+# Yard's common workflow and each host adaptation compose one file beside loft-spec.
 # Edit only crates/loft-cli/skill/, then run this script; guards fail on drift.
 set -eu
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -29,11 +29,13 @@ for pair in "claude:.claude/skills/loft-spec" "codex:.agents/skills/loft-spec"; 
   cp -R "$scratch/$package" "$target"
 done
 yard_source="crates/loft-cli/skill/yard"
-yard_target="plugins/claude/loft/skills/yard"
-rm -rf "$yard_target"
-mkdir -p "$yard_target"
-{
-  cat "$yard_source/SKILL.md"
-  printf '\n'
-  cat "$yard_source/agents/claude.md"
-} > "$yard_target/SKILL.md"
+for host in claude codex; do
+  yard_target="plugins/$host/loft/skills/yard"
+  rm -rf "$yard_target"
+  mkdir -p "$yard_target"
+  {
+    cat "$yard_source/SKILL.md"
+    printf '\n'
+    cat "$yard_source/agents/$host.md"
+  } > "$yard_target/SKILL.md"
+done

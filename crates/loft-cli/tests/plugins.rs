@@ -72,10 +72,9 @@ fn skills(root: &str) -> Vec<String> {
 }
 
 #[test]
-fn the_claude_code_plugin_holds_the_loft_spec_and_yard_skills_and_the_codex_plugin_loft_spec_alone()
-{
+fn both_plugins_hold_loft_spec_and_their_adapters_yard_skills() {
     assert_eq!(skills(CLAUDE_ROOT), ["loft-spec", "yard"]);
-    assert_eq!(skills(CODEX_ROOT), ["loft-spec"]);
+    assert_eq!(skills(CODEX_ROOT), ["loft-spec", "yard"]);
 }
 
 #[test]
@@ -126,10 +125,8 @@ fn the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_categ
     }
     assert!(entry["category"].is_string());
     let manifest = read(&format!("{CODEX_ROOT}/plugin.json"));
-    assert_eq!(
-        manifest["$schema"],
-        "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
-    );
+    assert!(manifest.get("$schema").is_none());
+    assert_eq!(manifest["hooks"], "./hooks/hooks.json");
     assert_eq!(manifest["name"], entry["name"]);
     for field in ["description", "author"] {
         assert!(!manifest[field].is_null(), "{field}");

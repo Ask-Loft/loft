@@ -19028,49 +19028,52 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
   - node: 01a13654-6e11-74fa-a359-259c47fce600
     reviewed: 0f79ef39cba5415138e528ce9aa23f4a38b5dc177e52d0624481ab0908da6e55
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
   - node: 01a13654-6e11-74fa-a359-259da6905e8d
     reviewed: b422bd468f277418a5cd804472cb60e1fd6fe70010984764de89623bc09c982e
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
   - node: 01a13654-6e11-74fa-a359-259e441509e2
     reviewed: 7511adaa7d98c54e6ae56aad78ab46b74fd9d810e08707778a5ba23d8bb47815
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
   - node: 01a13654-6e11-74fa-a359-259f8f155f76
     reviewed: 5c9df435c79f8b631e882fec09866c3b96e1ecadcc74b572e2e9a9965f61f958
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
   - node: 01a13654-6e11-74fa-a359-25a1fb8cabae
-    reviewed: f617b3730cdcca0ef7e84da5183becefa8f57b86042c384559e80a95d5b3f9be
+    reviewed: 5d243843c72330f54f9a90c3ce2819f20ed17048d6017f8eb009f30d6ef1712c
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
+      - file: "crates/loft-cli/tests/yard_codex_contract.rs"
+        name: "real_codex_hooks_record_native_tool_activity_without_a_remote_model"
+        body: 91c905bf6a80443a1061ad5ca4ab6ea07d38c44236411d42bcc50feade77250f
   - node: 01a13654-6e11-74fa-a359-25a24d99231b
     reviewed: c75d6d27f4b0506b8351de3c10eae5af779a8539b36c725f92eb12f1c6d29409
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
   - node: 01a13654-6e11-74fa-a359-25a3b563d673
     reviewed: 24317e53060964bd135024e91c340c6521da7bcc177e79ac47d06358242bdd60
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_codex_marketplace_lists_the_plugin_loft_at_its_root_with_policy_and_category"
-        body: ae447bc6980d6d27eb4bf6d9d259a0ec8f5afc7dcf1513b0f3db984f0b48e445
+        body: 53647d62094d4e80d11633af0b38055c21267d15ebda976cee20e3674f32ded1
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_manifest_carries_the_version_of_loft"
         body: c2557effbdb82d0834d3c7b2463223d843d505fb14aa10501c8046bf781dec12
@@ -19117,8 +19120,26 @@ links:
         name: "the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptation"
         body: 6fab4ec8dcf7e17430456ceaccb87454bece6fd196f3808bf811c7eac4e7822b
       - file: "crates/loft-cli/tests/yard_skill.rs"
-        name: "a_host_without_a_yard_adapter_has_no_yard_package_or_standalone_install"
-        body: 3011353365871b83cdeb6fdcf4427c9d6f3a1106b1f81e03e040134c62f601e0
+        name: "yard_is_packaged_for_each_adapter_but_not_installed_as_a_standalone_skill"
+        body: 84795bcf4521ab0996adff173da409e9c66644765160686bda092166947d8bb2
+  - node: 01a1787c-f803-70b1-b946-b71adb17c6f4
+    reviewed: 62d4ee13fff906105387ea4a9a28965ef04bcebbb8457023a4f0e52eaf31473f
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_codex_yard_package_equals_the_shared_source_with_only_its_codex_adaptation"
+        body: 4b47ea67a6178fc2614c79299a99e2e8fc04e547102bb911f26a1ca2b45f3d62
+  - node: 01a1787c-f803-70b1-b946-b71b18646046
+    reviewed: b43fd2c88b52f4fb3c10d2ab52c90399d8569f877c6c627a268ed247d4544311
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submissions"
+        body: 64b5f0f205adad1352ca8069225569bb5b77ccf119f3667112240c0d94bb61eb
+  - node: 01a1787c-f803-70b1-b946-b71c877ab0bd
+    reviewed: 6744efc618e24c37ca550932eea922be4e4a212c198f70d0536310a52ab864d4
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_codex_yard_adaptation_keeps_page_approval_separate_from_native_controls"
+        body: f5b8596585f3829173a1568814928cc858ff92fc5f4937dadc2fceb6b78dde5c
   - node: 01a177f9-8294-77e4-aa6e-7067b42cdd3c
     reviewed: ef283fb5971820f9c21d1a3fe9dcf582d3ce6e475f572ea0528eb52873c0bfa1
     tests:
@@ -19500,6 +19521,9 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_watch.rs"
         name: "a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server"
         body: d12e4fefd3d7b3e2aa76bd6bae8edd2f4f01ae1e66f3ed27ae579ce2535b9644
+      - file: "crates/loft-cli/tests/yard_codex_watch.rs"
+        name: "a_resumed_codex_worker_can_start_before_the_other_startup_hook_clears_the_stop_request"
+        body: 6d353387917bf3547d06e0ad9b849f966cce878e20113887187486aa0e28e77a
   - node: 01a1787c-f803-70b1-b946-b71000ef7515
     reviewed: c7ad2c201851aeaa9f45894b8613f3bf7e479bb635910017dbb45d48877c3c17
     tests:
@@ -19518,6 +19542,9 @@ links:
       - file: "crates/loft-cli/src/yard/codex/watch_tests.rs"
         name: "the_codex_worker_beats_every_five_seconds_and_ends_after_twenty_four_hours"
         body: bfe7ff726dbd93be2f8f40de8c84d7f9d5966788b3b3409a0a192b0e40b29c65
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_plugin_hooks_use_the_native_adapter_with_bounded_commands_and_one_background_worker"
+        body: 6ab82c924c45bf2186d6486898d0559b2a5e7d2286f7357fdd424951447edab1
   - node: 01a1787c-f803-70b1-b946-b7130eb95402
     reviewed: 5f6b5852818f21b1e6f05a5f0c3cc41f99a099d5fc57d3cc30d36f4f3e12faeb
     tests:
@@ -25171,8 +25198,8 @@ links:
     reviewed: 3c22ab6158564ca67cff544ff4612d677892041251f9a69865347c1148796832
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
-        name: "the_claude_code_plugin_holds_the_loft_spec_and_yard_skills_and_the_codex_plugin_loft_spec_alone"
-        body: f1c36f27a2c483dac4b61b44604e3bd4eb6f7c6993101d68574ca2a31a5e787a
+        name: "both_plugins_hold_loft_spec_and_their_adapters_yard_skills"
+        body: 779ad4bf895d18a350c0a26dad07050eca62fe401e5d385ea8641c419f9734d7
   - node: 01a1646f-546c-7521-9643-bc76e3286f0f
     reviewed: 7fa34b7a2892b5bd9d4e204a8cd40f272ef02e5a0daeca683e3e74fd0b3971c0
     tests:

@@ -11,29 +11,39 @@ use crate::served::{Served, within};
 use crate::yard::Yard;
 use crate::yard_codex::{event, hook};
 
-struct Worker(Child);
+struct Worker<'a>(Child, &'a Yard, Value);
 
-impl Drop for Worker {
+impl Drop for Worker<'_> {
     fn drop(&mut self) {
+        let mut end = self.2.clone();
+        end["hook_event_name"] = json!("SessionEnd");
+        let _ = self.1.run_with(&["codex", "hook"], &end.to_string());
+        let _ = within(Duration::from_secs(1), || {
+            self.0.try_wait().is_ok_and(|status| status.is_some())
+        });
         let _ = self.0.kill();
         let _ = self.0.wait();
     }
 }
 
-fn worker(yard: &Yard, input: &Value, port: u16) -> Worker {
+fn worker<'a>(yard: &'a Yard, input: &Value, port: u16) -> Worker<'a> {
     let path = yard.scratch.home().join(format!(
         "watch-{}.json",
         input["session_id"].as_str().unwrap()
     ));
     fs::write(&path, input.to_string()).unwrap();
-    Worker(yard.spawn(&[
-        "codex",
-        "watch",
-        "--input",
-        path.to_str().unwrap(),
-        "--port",
-        &port.to_string(),
-    ]))
+    Worker(
+        yard.spawn(&[
+            "codex",
+            "watch",
+            "--input",
+            path.to_str().unwrap(),
+            "--port",
+            &port.to_string(),
+        ]),
+        yard,
+        input.clone(),
+    )
 }
 
 fn events(yard: &Yard) -> Vec<Value> {
@@ -147,4 +157,20 @@ fn codex_workers_are_unique_per_session_and_one_session_end_leaves_the_other_run
         .try_wait()
         .unwrap()
         .is_some()));
+}
+
+#[test]
+fn a_resumed_codex_worker_can_start_before_the_other_startup_hook_clears_the_stop_request() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &[]);
+    hook(&yard, &event(&yard, "SessionEnd"));
+    let input = event(&yard, "SessionStart");
+    let mut resumed = worker(&yard, &input, served.port);
+    let heard = yard.scratch.home().join(".yard/sessions.json");
+    assert!(within(Duration::from_secs(3), || heard.exists()));
+    assert_eq!(
+        yard.home_file("sessions.json")["codex~codex-session"],
+        "2026-01-01T00:00:00Z"
+    );
+    assert!(resumed.0.try_wait().unwrap().is_none());
 }

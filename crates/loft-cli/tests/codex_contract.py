@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import queue
+import shutil
 import socket
 import subprocess
 import sys
@@ -61,20 +62,37 @@ def run(loft, work, home):
     assert version.strip() == "codex-cli 0.164.0", f"Review the Codex contract pin: {version}"
     codex_home = home / "codex-contract"
     codex_home.mkdir()
-    (codex_home / "config.toml").write_text("[features]\nhooks = true\n")
+    (codex_home / "config.toml").write_text("[features]\nhooks = true\nplugins = true\n")
     port = free_port()
     # Only this isolated fixture bypasses trust review; installation never does.
-    normal = f'"{loft}" yard codex hook --port {port}'
-    watch = f'"{loft}" yard codex watch --port {port}'
-    names = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SessionEnd"]
-    hooks = {name: [{"hooks": [{"type": "command", "command": normal}]}] for name in names}
-    hooks["SessionStart"][0]["hooks"].append({"type": "command", "command": watch, "async": True, "timeout": 86400})
-    (codex_home / "hooks.json").write_text(json.dumps({"hooks": hooks}))
+    plugin = Path(__file__).resolve().parents[3] / "plugins/codex/loft"
+    manifest = json.loads((plugin / "plugin.json").read_text())
+    hook_file = manifest["hooks"]
+    hooks = json.loads((plugin / hook_file).read_text())
+    for groups in hooks["hooks"].values():
+        for group in groups:
+            for handler in group["hooks"]:
+                command = handler["command"]
+                assert command.startswith("loft yard codex "), command
+                handler["command"] = f'"{loft}" ' + command[5:] + f" --port {port}"
     env = {key: value for key, value in os.environ.items() if not key.startswith("CODEX_")}
     env.update(CODEX_HOME=str(codex_home), HOME=str(home), USERPROFILE=str(home),
                LOFT_TELEMETRY="off", LOFT_UPDATE_CHECK="off")
     for name in ("OPENAI_API_KEY", "PLUGIN_DATA", "CLAUDE_PLUGIN_DATA", "CODEX_THREAD_ID"):
         env.pop(name, None)
+    marketplace = home / "codex-marketplace"
+    shutil.copytree(plugin, marketplace / "plugin")
+    (marketplace / "plugin" / hook_file).write_text(json.dumps(hooks))
+    registry = marketplace / ".agents/plugins/marketplace.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps({"name": "yard-contract", "plugins": [{
+        "name": "loft", "source": {"source": "local", "path": "./plugin"},
+        "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+        "category": "Developer Tools",
+    }]}))
+    for args in (["marketplace", "add", str(marketplace)], ["add", "loft@yard-contract"]):
+        subprocess.run(["codex", "plugin", *args, "--json"], cwd=work, env=env,
+                       check=True, capture_output=True, timeout=20)
     provider = ThreadingHTTPServer(("127.0.0.1", 0), Provider)
     Provider.home = home
     threading.Thread(target=provider.serve_forever, daemon=True).start()
@@ -110,7 +128,8 @@ def run(loft, work, home):
             document = json.loads(subprocess.check_output([
                 loft, "yard", "read", "--host", "codex", "--session", session, "--format", "json"
             ], cwd=work, env=env))
-            states = list((home / ".yard/codex").glob("*/state.json"))
+            states = list(home.rglob("state.json")) + list(work.rglob("state.json"))
+            states = [path for path in states if "in_flight" in json.loads(path.read_text())]
             assert states, (document, "No native hook reached the adapter")
             state = json.loads(states[0].read_text())
             events = state["events"] + state["in_flight"]

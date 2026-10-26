@@ -148,7 +148,7 @@ In Claude Code the plugin runs `loft` itself, with telemetry and the update chec
 
 Yard's core keeps the log, submissions, reports and page independently of the agent host.
 Adapters translate a host's native tools and events into Yard's JSON commands and events;
-Claude Code is the first supported adapter. Sessions are identified by host as well as session
+Claude Code and Codex have native adapters. Sessions are identified by host as well as session
 and subagent, so different hosts can share a branch without sharing an agent's state.
 
 In Claude Code the plugin keeps each branch's Yard Log: what the agent planned, asked,
@@ -170,8 +170,31 @@ The page reports each adapter's capabilities. Unreported usage is shown as unava
 subtotal missing contributing counters is marked partial. The Claude adapter supports Yard
 protocols 1 and 2; protocol 2 carries explicit host identity and adapter capabilities.
 
-The Yard skill is composed from a shared workflow and Claude's adaptation under
-`crates/loft-cli/skill/yard/`. `scripts/package-skill.sh` updates its plugin package alongside
+In local Codex sessions, the plugin's native command hooks run `loft yard codex hook` and a
+background `loft yard codex watch`. Use a build of `loft` that provides those commands, install
+the Codex plugin as above, then review and trust its hooks in `/hooks`; installing a skill alone
+does not activate them. Codex may require another review after a hook definition changes.
+Keep hooks enabled in Codex's configuration (`features.hooks = true`). This integration is for
+local Codex workflows and is not available with cloud orchestration.
+The plugin uses Codex's native manifest: Codex 0.164.0 ignores lifecycle hooks in a manifest
+that declares the Agent Plugins schema.
+
+The Codex `yard` skill uses the six existing Yard CLI operations and sends questions and plans
+to the Yard page. Page approval records your decision; Codex's own mode and permission controls
+still govern execution. Successful `update_plan` calls mirror tasks into the caller's active
+stage when Codex offers that tool; otherwise the skill maintains tasks through explicit Yard
+writes. Native dialogs are not synchronized with the page. Usage counters are unavailable, and
+tool activity with ambiguous subagent identity is omitted. No transcripts are parsed.
+
+Codex owns its background worker, which sends a heartbeat every five seconds, recovers the page
+server and retains at most 1,000 queued events. Each worker lasts at most 24 hours; later hooked
+activity restarts one that ended. Adapter bookkeeping lives in Codex's plugin data directory,
+with a fallback under `~/.yard/codex/`. The on-demand native contract requires Codex 0.164.0 and
+Python 3 and uses a loopback model fixture, with no API account:
+`cargo nextest run -p loft-cli --run-ignored only -E 'test(real_codex_hooks)'`.
+
+The Yard skill is composed from a shared workflow and each host's adaptation under
+`crates/loft-cli/skill/yard/`. `scripts/package-skill.sh` updates both plugin packages alongside
 the specification skill. Standalone `loft skill install` installs the specification skill;
 the Yard skill ships with its adapter's plugin.
 

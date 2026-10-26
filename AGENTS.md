@@ -97,6 +97,14 @@ change, or v1 reverts it.
   CI runs `claude plugin validate plugins/claude/loft` and `claude plugin test
   plugins/claude/loft` under a pinned Claude Code; run both after a change to the mod, and
   type-check it with TypeScript once a session has loaded the plugin and written its types.
+- The Codex plugin holds native command hooks in `plugins/codex/loft/hooks/hooks.json`, calling
+  the adapter in `crates/loft-cli/src/yard/codex/`. It reaches Yard Log through JSON commands;
+  its native hook command returns Codex wire output by default and a Loft envelope with
+  `--format json`. Codex owns the background worker's lifetime. Test it with the focused
+  `yard_codex` suites; the ignored `real_codex_hooks` contract uses Codex 0.164.0, Python 3 and
+  a loopback model fixture, never a paid API. Its skill is composed beside `loft-spec` too.
+  Its root manifest uses Codex's native fields without `$schema`: Codex 0.164.0 ignores hooks
+  in schema-declared Agent Plugins manifests. The installed-plugin contract verifies activation.
 - `crates/loft-cli/yard-page/` is the Yard page, browser-native modules and CSS with no build
   step, which `loft yard serve` embeds and serves; each file is also listed in `ASSETS` in
   `crates/loft-cli/src/yard/serve/assets.rs`. Mermaid is vendored there as
@@ -158,10 +166,10 @@ text goes to standard error only.
   rule the linter defines. `crates/loft-cli/tests/skill.rs` holds the source to these rules and
   to each reference's opening and contents.
 - The `yard` skill has its shared workflow at `crates/loft-cli/skill/yard/SKILL.md`, with no
-  host or native tool names, and its Claude adaptation at `agents/claude.md` beside it. Change
+  host or native tool names, and its adaptations at `agents/claude.md` and `agents/codex.md` beside it. Change
   those sources and run `scripts/package-skill.sh`; never edit the plugin package by hand.
-  Composition appends the adaptation to the shared source, making the Claude plugin's single
-  `skills/yard/SKILL.md`. `crates/loft-cli/tests/yard_skill.rs` holds it to that composition,
+  Composition appends the selected adaptation to the shared source, making each plugin's single
+  `skills/yard/SKILL.md`. `crates/loft-cli/tests/yard_skill.rs` and `yard_codex_skill.rs` hold it to that composition,
   to at most 500 lines, to naming exactly the adapter's tools and to each habit its Feature
   states. Only hosts with a Yard adapter receive a Yard package; `loft skill install` continues
   to install the specification skill alone.

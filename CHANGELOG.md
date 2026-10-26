@@ -5,6 +5,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- The Codex plugin includes its Yard skill, composed from the shared workflow and Codex
+  instructions, and native hooks for local sessions. Questions and plans use the Yard page;
+  Codex's native modes and permissions stay authoritative. Review and trust the hooks after
+  installation. Usage reporting remains unavailable from Codex hooks.
 - `loft yard codex hook` translates native Codex activity and mirrors successful `update_plan`
   calls into the caller's active stage. `loft yard codex watch` owns session heartbeats, bounded
   event delivery and page-server recovery. Unavailable usage and tool outcomes remain unknown.
