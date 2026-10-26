@@ -136,7 +136,12 @@ In Claude Code the plugin runs `loft` itself, with telemetry and the update chec
 
 ### Yard Client
 
-In Claude Code the plugin also keeps each branch's Yard Log: what the agent planned, asked,
+Yard's core keeps the log, submissions, reports and page independently of the agent host.
+Adapters translate a host's native tools and events into Yard's JSON commands and events;
+Claude Code is the first supported adapter. Sessions are identified by host as well as session
+and subagent, so different hosts can share a branch without sharing an agent's state.
+
+In Claude Code the plugin keeps each branch's Yard Log: what the agent planned, asked,
 decided and did on the branch, kept as YAML under `.yard/<branch>/` and committed with the work.
 The `yard` skill teaches the agent to open it as work on a branch begins, to give each step a
 stage, to send the questions of one decision point together and wait for the answers, and to
@@ -150,6 +155,15 @@ took, and what waits on you. Answer and approve there or in Claude Code's own di
 comes first counts, and the other closes. `loft yard serve` serves the page on the loopback
 interface only; the plugin starts it and keeps one running for the machine. Set the plugin's
 `yardPort` setting to serve another port.
+
+The page reports each adapter's capabilities. Unreported usage is shown as unavailable, and a
+subtotal missing contributing counters is marked partial. The Claude adapter supports Yard
+protocols 1 and 2; protocol 2 carries explicit host identity and adapter capabilities.
+
+The Yard skill is composed from a shared workflow and Claude's adaptation under
+`crates/loft-cli/skill/yard/`. `scripts/package-skill.sh` updates its plugin package alongside
+the specification skill. Standalone `loft skill install` installs the specification skill;
+the Yard skill ships with its adapter's plugin.
 
 A repository that keeps its plans off git ignores `.yard/`. Run `loft merge-driver --install` so
 that a merge joins two copies of a Yard Log record by record. What belongs to the machine, such

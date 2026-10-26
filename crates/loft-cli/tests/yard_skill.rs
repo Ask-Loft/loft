@@ -1,14 +1,102 @@
-//! The `yard` skill, written by hand for Claude Code: one `SKILL.md` of at most 500 lines whose
+//! The `yard` skill, composed for Claude Code: one `SKILL.md` of at most 500 lines whose
 //! frontmatter holds its name and description alone, which names the tools the Loft mod registers
 //! and no other, and which teaches the habits that make Yard Log worth reading.
 
 use std::collections::BTreeSet;
 use std::fs;
 
-use crate::common::workspace;
+use crate::common::{Scratch, stderr, workspace};
 
 const SKILL: &str = "plugins/claude/loft/skills/yard";
 const TOOLS: &str = "plugins/claude/loft/hooks/adapter/tools.ts";
+const SOURCE: &str = "crates/loft-cli/skill/yard";
+
+#[test]
+fn the_shared_yard_workflow_names_no_host_or_native_tool() {
+    let text = read(&format!("{SOURCE}/SKILL.md"));
+    let lower = text.to_ascii_lowercase();
+    for native in [
+        "claude",
+        "codex",
+        "askuserquestion",
+        "taskcreate",
+        "taskupdate",
+        "enterplanmode",
+        "exitplanmode",
+        "mcp__",
+        "yard_",
+    ] {
+        assert!(!lower.contains(native), "shared source names {native}");
+    }
+    for habit in [
+        "## Open Yard Log",
+        "## Read before",
+        "## Open a stage",
+        "## Keep each task",
+        "## Mark the fixes",
+        "## Ask once",
+        "## Write what each stage produced",
+        "## Record each choice",
+        "## Record Loft's reports",
+        "## Have the spec change approved",
+        "## Plan the build",
+        "only the steps",
+        "## Commit",
+        "## Close it",
+    ] {
+        assert!(text.contains(habit), "shared source omits {habit}");
+    }
+}
+
+#[test]
+fn the_claude_yard_adaptation_holds_the_native_tools_dialogs_tasks_and_planning() {
+    let text = read(&format!("{SOURCE}/agents/claude.md"));
+    assert_eq!(tool_names(&text), tool_names(&read(TOOLS)));
+    for native in [
+        "AskUserQuestion",
+        "TaskCreate",
+        "TaskUpdate",
+        "metadata: { type: \"fix\" }",
+        "EnterPlanMode",
+        "ExitPlanMode",
+        "auto mode",
+        "dialog",
+    ] {
+        assert!(text.contains(native), "Claude adaptation omits {native}");
+    }
+    assert!(
+        !text.starts_with("---"),
+        "only the common source has frontmatter"
+    );
+}
+
+#[test]
+fn the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptation() {
+    let common = read(&format!("{SOURCE}/SKILL.md"));
+    let claude = read(&format!("{SOURCE}/agents/claude.md"));
+    assert_eq!(
+        read(&format!("{SKILL}/SKILL.md")),
+        format!("{common}\n{claude}")
+    );
+}
+
+#[test]
+fn a_host_without_a_yard_adapter_has_no_yard_package_or_standalone_install() {
+    assert!(!workspace().join("plugins/codex/loft/skills/yard").exists());
+    let scratch = Scratch::empty();
+    let output = scratch.loft(&["skill", "install", "--no-plugin"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    for host in [".claude", ".agents"] {
+        assert!(
+            scratch
+                .0
+                .join(host)
+                .join("skills/loft-spec/SKILL.md")
+                .is_file()
+        );
+        assert!(!scratch.0.join(host).join("skills/yard").exists());
+    }
+}
 
 fn read(path: &str) -> String {
     fs::read_to_string(workspace().join(path)).unwrap_or_else(|_| panic!("no {path}"))

@@ -93,7 +93,7 @@ change, or v1 reverts it.
   `types/index.d.ts` and its tests are `tests/`, written with Claude Code's test kit. It learns
   of the tree and of Yard Log only from `loft … --format json` (the accepted decision "Yard
   Client is a mod over loft"), and reaches the page server only to post its events. Beside `skills/loft-spec/` it
-  holds the `yard` skill, `skills/yard/SKILL.md`, written by hand for Claude Code alone.
+  holds the composed `yard` skill, `skills/yard/SKILL.md`, for the Claude adapter.
   CI runs `claude plugin validate plugins/claude/loft` and `claude plugin test
   plugins/claude/loft` under a pinned Claude Code; run both after a change to the mod, and
   type-check it with TypeScript once a session has loaded the plugin and written its types.
@@ -153,10 +153,14 @@ text goes to standard error only.
   rule and no other warning; a `fragment` is shown and not run. The lint guide describes every
   rule the linter defines. `crates/loft-cli/tests/skill.rs` holds the source to these rules and
   to each reference's opening and contents.
-- The `yard` skill is not composed: it lies only in the Claude Code plugin, at
-  `plugins/claude/loft/skills/yard/SKILL.md`, and is edited there by hand; the packaging script
-  leaves it alone. `crates/loft-cli/tests/yard_skill.rs` holds it to one file of at most 500
-  lines, to naming exactly the tools the mod registers, and to each habit its Feature states.
+- The `yard` skill has its shared workflow at `crates/loft-cli/skill/yard/SKILL.md`, with no
+  host or native tool names, and its Claude adaptation at `agents/claude.md` beside it. Change
+  those sources and run `scripts/package-skill.sh`; never edit the plugin package by hand.
+  Composition appends the adaptation to the shared source, making the Claude plugin's single
+  `skills/yard/SKILL.md`. `crates/loft-cli/tests/yard_skill.rs` holds it to that composition,
+  to at most 500 lines, to naming exactly the adapter's tools and to each habit its Feature
+  states. Only hosts with a Yard adapter receive a Yard package; `loft skill install` continues
+  to install the specification skill alone.
 
 ## Software Plant
 

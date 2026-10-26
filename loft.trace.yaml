@@ -18996,6 +18996,33 @@ links:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_manifest_carries_the_version_of_loft"
         body: c2557effbdb82d0834d3c7b2463223d843d505fb14aa10501c8046bf781dec12
+  - node: 01a177f9-8294-77e4-aa6e-7061e2a58d45
+    reviewed: b29031d6e1c64a703638403640f94ec466e5e01235de153bdace3b2059f474c0
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_shared_yard_workflow_names_no_host_or_native_tool"
+        body: a4fe3418fda21814a21f546f778291a9a4b20493e8f353e0b3d225c961df26e0
+  - node: 01a177f9-8294-77e4-aa6e-7062ff87c95e
+    reviewed: 399bbfed3230352b3d13c77a3922077b1b10144bbd9079027b62b52f66a60b91
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_claude_yard_adaptation_holds_the_native_tools_dialogs_tasks_and_planning"
+        body: f1e9062f4d7aaf584a95bc0d82ac1d35a14fa18856bff25567de4893e29f83ec
+  - node: 01a177f9-8294-77e4-aa6e-7063a3a5f1a5
+    reviewed: 4820312c5ba86df88f663bb9bf49c4927696cf357856fa85ff22e703efee3c93
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_is_one_file_of_at_most_500_lines_whose_frontmatter_holds_its_name_and_description_alone"
+        body: 3c03b449d53c29c945effeee46d034144cb635a501e9625b98a084ca0431ebb4
+  - node: 01a177f9-8294-77e4-aa6e-7064fd177e6d
+    reviewed: 7d50a000b94b285c708139c31db7bbf9d1c28922e9abfc0eb84650462a75737c
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptation"
+        body: 6fab4ec8dcf7e17430456ceaccb87454bece6fd196f3808bf811c7eac4e7822b
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "a_host_without_a_yard_adapter_has_no_yard_package_or_standalone_install"
+        body: 3011353365871b83cdeb6fdcf4427c9d6f3a1106b1f81e03e040134c62f601e0
   - node: 01a177f9-8294-77e4-aa6e-7067b42cdd3c
     reviewed: ef283fb5971820f9c21d1a3fe9dcf582d3ce6e475f572ea0528eb52873c0bfa1
     tests:

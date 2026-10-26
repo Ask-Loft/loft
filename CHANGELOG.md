@@ -5,6 +5,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard has a host-neutral core and a native Claude adapter. Session identity includes the
+  host across ownership, continuations, liveness, event storage, stage accounting and the page.
+  Yard protocol 2 reports adapter capabilities and distinguishes unreported usage from zero;
+  incomplete totals are marked partial. The Claude adapter retains protocol 1 compatibility.
+  The Yard skill is composed from a shared workflow and Claude-specific instructions.
 - The Claude Code plugin no longer shows the Loft status pane: its pane, its status-line entry
   and `/loft-status` are gone, and no session runs `loft` every 10 seconds to draw them. Yard Log
   and its page show the work on a specification instead. `loft status` stays a command, and the
