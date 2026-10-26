@@ -72,6 +72,52 @@ fn invalid_host_identifiers_are_usage_errors_without_writing_a_log() {
     }
 }
 
+fn malformed_hosts() -> [serde_json::Value; 8] {
+    [
+        json!(null),
+        json!(true),
+        json!(3),
+        json!({}),
+        json!([]),
+        json!(""),
+        json!("Uppercase"),
+        json!("bad~host"),
+    ]
+}
+
+#[test]
+fn malformed_event_hosts_never_use_the_legacy_session_identity() {
+    use crate::served::Served;
+    use crate::yard_serve_events::{event, post, session_file};
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let served = Served::start(&yard, &[]);
+    for host in malformed_hosts() {
+        let posted = post(
+            &served,
+            &[event(&yard, "turn.start", 1, &json!({"host":host}))],
+        );
+        assert_eq!(posted["recorded"], 0, "{host}: {posted}");
+        assert_eq!(posted["rejected"].as_array().unwrap().len(), 1);
+    }
+    assert!(session_file(&yard, "activity", "s1").is_none());
+    assert!(!yard.scratch.home().join(".yard/events/s1.jsonl").exists());
+}
+
+#[test]
+fn malformed_heartbeat_hosts_never_use_the_legacy_session_identity() {
+    use crate::served::Served;
+    let yard = Yard::new();
+    let served = Served::start(&yard, &[]);
+    let sessions = yard.scratch.home().join(".yard/sessions.json");
+    let before = std::fs::read(&sessions).ok();
+    for host in malformed_hosts() {
+        let heard = served.post_as_mod("/api/heard", &json!({"session":"s1","host":host}));
+        assert_eq!(heard.status, 400, "{host}: {}", heard.json());
+    }
+    assert_eq!(std::fs::read(sessions).ok(), before);
+}
+
 #[test]
 fn a_host_takes_over_a_stopped_sender_even_when_the_native_session_id_matches() {
     let yard = Yard::new();

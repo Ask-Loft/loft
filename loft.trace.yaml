@@ -19056,6 +19056,15 @@ links:
       - file: "crates/loft-cli/tests/yard_hosts.rs"
         name: "another_hosts_continuation_does_not_continue_the_sender"
         body: 9deef6223f65b6641f587c031df4f244a079e8cd5e9e2e9b12a481c395e2c801
+  - node: 01a17821-94d6-766a-a99c-565e5b315deb
+    reviewed: bf317fdd40db804adb4ee8c1a2ae59a63af84630f55480ed998c364181d788c8
+    tests:
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "malformed_event_hosts_never_use_the_legacy_session_identity"
+        body: 1bb95086c51f157e2461e27303b63bbd8c25dbe4e7bae09a56e95d33ebc9f09d
+      - file: "crates/loft-cli/tests/yard_hosts.rs"
+        name: "malformed_heartbeat_hosts_never_use_the_legacy_session_identity"
+        body: 7cfe072e8ef4d4540175602f6439213d795a35b303002d6bc8fc1ce84e3b8a41
   - node: 01a177f9-8294-77e4-aa6e-706cf54dee23
     reviewed: a825d6801ead5bebd9ecdd5ba942908846b86fe42bfbc6689cb990a4556ee63c
     tests:

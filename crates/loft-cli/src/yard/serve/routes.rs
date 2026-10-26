@@ -20,6 +20,7 @@ use serde_json::{Value, json};
 
 use super::Server;
 use super::assets;
+use super::event::host_in;
 use super::guard::{Access, admit};
 use super::http::{self, Request, Response};
 use super::listener::Connection;
@@ -147,11 +148,11 @@ fn heard(server: &Server, body: &[u8]) -> Response {
     else {
         return Response::refused(400, "session", "the request names no session");
     };
+    let host = match host_in(&sent) {
+        Ok(host) => host,
+        Err(message) => return Response::refused(400, "host", message),
+    };
     let heard = crate::yard::now().and_then(|at| {
-        let host = sent["host"].as_str().unwrap_or(yardlog::act::CLAUDE_CODE);
-        if !yardlog::identity::is_host_id(host) {
-            return Err(Failure::Usage("invalid host identifier".to_owned()));
-        }
         sessions::heard(
             &server.home,
             &yardlog::identity::session_key(host, session),

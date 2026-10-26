@@ -55,6 +55,16 @@ pub fn strings(value: &Value) -> Vec<String> {
     })
 }
 
+/// A wire request's host: omitted fields retain the legacy identity; invalid fields do not.
+pub(super) fn host_in(value: &Value) -> Result<&str, &'static str> {
+    let host = match value.get("host") {
+        None => Some(yardlog::act::CLAUDE_CODE),
+        Some(host) => host.as_str(),
+    };
+    host.filter(|host| yardlog::identity::is_host_id(host))
+        .ok_or("the request names no valid host identifier")
+}
+
 /// An event, read and checked.
 #[derive(Debug, Clone)]
 pub struct Event {
@@ -103,10 +113,7 @@ impl Event {
             .as_str()
             .filter(|kind| !kind.is_empty())
             .ok_or("the event names no kind")?;
-        let host = posted["host"].as_str().unwrap_or(yardlog::act::CLAUDE_CODE);
-        if !yardlog::identity::is_host_id(host) {
-            return Err("the event names no valid host identifier".to_owned());
-        }
+        let host = host_in(posted)?;
         let adapter = posted
             .get("adapter")
             .map(yardlog::adapter::Descriptor::read)
