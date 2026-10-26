@@ -45,10 +45,86 @@ plan mode or grant permissions: Codex's mode and permissions still govern what y
 When the host prevents a required write, explain the constraint and keep the plan in the
 conversation until the host permits that write.
 
-After an approved specification change, present the build as a Yard plan and wait for its page
-approval before implementing. A changed requirement needs a plan for only the steps it affects.
-Keep implementation stages planned until the person has asked for their build and the native
-mode permits it.
+### Planning workflow
+
+This workflow is adapted from [OpenAI Codex's Plan mode prompt](https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/collaboration-mode-templates/templates/plan.md)
+at release `rust-v0.164.0`, Copyright 2025 OpenAI, licensed under Apache-2.0. Its questions,
+plan presentation and completion boundary are adapted for Yard. No prompt in this skill changes
+Codex's native collaboration mode.
+
+Use this workflow when the person asks for a plan, and for the build plan required after
+specification approval and its separate commit. A changed requirement needs a plan for only the
+steps it affects. Keep implementation stages planned until the person has approved their plan
+and native mode permits their build.
+
+#### Planning boundary
+
+Do not implement the change while planning. In particular, do not edit product files,
+specifications or tests, apply patches, run migrations or code generation, run rewriting
+formatters, or commit the implementation. Explore through reads, searches, static inspection
+and dry runs. Focused tests or builds may write caches and build artifacts when they establish
+facts needed for the plan and respect the person's testing limits.
+
+Yard planning records are the only writes this workflow permits: planning stages and their
+tasks, questions, approvals, plans, notes and decisions, plus the build's stages left `planned`.
+Native mode and permissions still govern those writes. If native Plan mode prevents a Yard
+write, keep the plan in the conversation and explain that the person must change the native
+mode before it can be recorded. Never bypass that limit or claim that page approval changed
+the mode.
+
+`update_plan` is an execution-progress checklist: it does not enter or exit native Plan mode,
+present a reviewable build plan or approve it. Do not use it to start implementation tasks while
+planning. Once the build is approved and permitted, use the task-mirroring workflow below.
+
+#### 1. Explore the repository
+
+Explore before asking about discoverable facts. Read the relevant specification, implementation,
+entry points, configuration, schemas and tests. Check the existing behavior and constraints with
+targeted non-mutating commands. Resolve facts the repository can supply rather than asking the
+person to locate code or choose something the existing implementation already establishes.
+Ask before exploration only when the request itself has an obvious contradiction or ambiguity
+that exploration cannot settle.
+
+#### 2. Clarify intent
+
+Establish the goal and success criteria, who the change serves, its scope, constraints and
+material tradeoffs. Separate discoverable facts from the person's preferences. Resolve the
+high-impact uncertainties before choosing an implementation approach.
+
+Required questions go through Yard submissions: group one decision point's questions, give
+meaningful options with a recommendation and its reasoning, send them together and wait for the
+answers as described above. Ask only questions whose answers affect the plan or settle an
+important assumption. Do not replace an unanswered required decision with an assumed default.
+Record low-impact defaults that need no question as assumptions in the plan.
+
+#### 3. Resolve implementation
+
+Work out the interfaces and data flow, failure cases, compatibility and migrations, verification
+and acceptance criteria, and any rollout needs relevant to the change. Tie the implementation
+steps and tests to the approved specification's criteria where one exists. Ground the approach
+in the repository and make the material implementation choices explicit. Continue exploration
+or send another decision point's questions when a required choice is still open.
+
+#### Present the plan and wait
+
+Present one complete `plan` block with `title` and `markdown` once no material decisions remain
+for the implementer. Keep the plan concise but complete: summary, implementation steps,
+interfaces, tests and assumptions. Group steps by behavior or subsystem rather than listing
+every file. Include risks and compatibility or rollout work where they affect implementation.
+
+Submit the plan with `--send`, give the person the Yard page address, then wait with
+`--submission` and read the outcome. Leave the build's stages `planned` and wait for approval
+before implementation. No question answer, timeout or native plan rendering counts as Yard plan
+approval. An approved Yard plan authorizes only its described build when native mode and
+permissions allow it.
+
+Revise a rejected plan as a complete replacement, addressing the person's reason, and send it
+in a new submission for approval. Withdraw any superseded submission that is still pending.
+Do not present an incomplete replacement as the final plan.
+
+Do not put `<proposed_plan>` tags in the Yard plan's Markdown. Where actual native Plan mode
+requires that presentation in the conversation, follow the host's instruction there; that
+presentation does not synchronize a native approval with the Yard page.
 
 ### Plan steps and reporting limits
 

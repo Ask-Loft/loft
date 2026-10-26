@@ -19140,6 +19140,75 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_adaptation_keeps_page_approval_separate_from_native_controls"
         body: f5b8596585f3829173a1568814928cc858ff92fc5f4937dadc2fceb6b78dde5c
+  - node: 01a1795d-05c7-708c-baca-726eacc0ce50
+    reviewed: 1d7317cbef950fb21661a52d5802baca0d22f6a0076ee887d2feab69160960e9
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_retains_its_versioned_upstream_source_and_attribution"
+        body: dd57e2cf1bda2bcfb9767d0cd6b7bc07d0424741bd49a3a00a7a575a26944dab
+  - node: 01a1795d-05c7-708c-baca-726f32b8433c
+    reviewed: c4d9556e86d840083c58eefb14af2a52c8ea732d45c4916722dfe300eb3d489c
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_explores_then_clarifies_intent_and_implementation"
+        body: a69f560ca9540f714d67c1da2041eb156972d71078515f6c135e8e5753d60d11
+  - node: 01a1795d-05c7-708c-baca-72700fd10cf5
+    reviewed: 3a9c3687e57643e5a0be41483ce4ed3f0221872bb619b450f50deaf38ce2cef3
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_explores_then_clarifies_intent_and_implementation"
+        body: a69f560ca9540f714d67c1da2041eb156972d71078515f6c135e8e5753d60d11
+  - node: 01a1795d-05c7-708c-baca-7271de73e0ec
+    reviewed: 42fee063f88c781510eca9aaf18bf1abf4e2ad28be4eb7e412de76bd1072115a
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_explores_then_clarifies_intent_and_implementation"
+        body: a69f560ca9540f714d67c1da2041eb156972d71078515f6c135e8e5753d60d11
+  - node: 01a1795d-05c7-708c-baca-727239cec815
+    reviewed: 7e798349213b3060f1033e10045a5029cf71fa739fe1f9dbaf0c2d1e193b28cc
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_explores_then_clarifies_intent_and_implementation"
+        body: a69f560ca9540f714d67c1da2041eb156972d71078515f6c135e8e5753d60d11
+  - node: 01a1795d-05c7-708c-baca-7273d8668d3a
+    reviewed: 0796a8c698ef71e9fbe328e29f02ff4a9c09b761a116e7821de0aa7f0e1a493c
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_defers_product_mutation_and_keeps_native_controls_authoritative"
+        body: ab00ae7322c924b708a991258a319db37b220cfbe6638a4fa08a7f50a02ccd8a
+  - node: 01a1795d-05c7-708c-baca-7274873063b1
+    reviewed: 864c24b62b077abcb0defa0406157be1f89ed2abb4c08d602d73887cf908d4c1
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_uses_yard_questions_and_complete_plan_submissions_before_building"
+        body: 34b1773f72c38f2e010fe6239fdb9e85923c165ff62404d3509ad66b06fa019b
+  - node: 01a1795d-05c7-708c-baca-7275d7383b90
+    reviewed: 3dd0a88b09c2b681e180f5525c5a3de0477ae5514854867c70fa0bcfc40bee4a
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_uses_yard_questions_and_complete_plan_submissions_before_building"
+        body: 34b1773f72c38f2e010fe6239fdb9e85923c165ff62404d3509ad66b06fa019b
+  - node: 01a1795d-05c7-708c-baca-7276fc5c6667
+    reviewed: dc54e164d220f1df17361c58b5ace0f0b93cdb06e9af665a6c349942cfb93c34
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_uses_yard_questions_and_complete_plan_submissions_before_building"
+        body: 34b1773f72c38f2e010fe6239fdb9e85923c165ff62404d3509ad66b06fa019b
+  - node: 01a1795d-05c7-708c-baca-7277f6c139f7
+    reviewed: 2da4a0286939a29f3af8fb0e7e62f2843dc1cefc6fa87d986df0d0835d24d61c
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_defers_product_mutation_and_keeps_native_controls_authoritative"
+        body: ab00ae7322c924b708a991258a319db37b220cfbe6638a4fa08a7f50a02ccd8a
+  - node: 01a1795d-05c7-708c-baca-7278658667c3
+    reviewed: 8d6158ee54f398f214f4f0ce07cf2331f9a537c1a1db761b6ea1b1aac8078db5
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_defers_product_mutation_and_keeps_native_controls_authoritative"
+        body: ab00ae7322c924b708a991258a319db37b220cfbe6638a4fa08a7f50a02ccd8a
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_planning_uses_yard_questions_and_complete_plan_submissions_before_building"
+        body: 34b1773f72c38f2e010fe6239fdb9e85923c165ff62404d3509ad66b06fa019b
   - node: 01a177f9-8294-77e4-aa6e-7067b42cdd3c
     reviewed: ef283fb5971820f9c21d1a3fe9dcf582d3ce6e475f572ea0528eb52873c0bfa1
     tests:

@@ -94,6 +94,91 @@ fn the_codex_yard_adaptation_keeps_page_approval_separate_from_native_controls()
 }
 
 #[test]
+fn codex_planning_retains_its_versioned_upstream_source_and_attribution() {
+    let text = adaptation();
+    assert!(text.contains(
+        "https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/collaboration-mode-templates/templates/plan.md"
+    ));
+    assert!(text.contains("OpenAI Codex"));
+    assert!(text.contains("Apache-2.0"));
+    let notice = read("NOTICE");
+    assert!(notice.contains("OpenAI Codex"));
+    assert!(notice.contains("Copyright 2025 OpenAI"));
+    assert!(notice.contains("planning workflow"));
+}
+
+#[test]
+fn codex_planning_explores_then_clarifies_intent_and_implementation() {
+    let text = adaptation();
+    let phases = [
+        "#### 1. Explore the repository",
+        "#### 2. Clarify intent",
+        "#### 3. Resolve implementation",
+    ];
+    let positions: Vec<_> = phases
+        .iter()
+        .map(|phase| text.find(phase).unwrap_or_else(|| panic!("no {phase}")))
+        .collect();
+    assert!(positions.windows(2).all(|pair| pair[0] < pair[1]));
+    for phrase in [
+        "when the person asks for a plan",
+        "after specification approval",
+        "Explore before asking about discoverable facts",
+        "goal and success criteria",
+        "scope, constraints and material tradeoffs",
+        "interfaces and data flow",
+        "failure cases",
+        "compatibility and migrations",
+        "verification and acceptance criteria",
+    ] {
+        assert!(text.contains(phrase), "{phrase}");
+    }
+}
+
+#[test]
+fn codex_planning_defers_product_mutation_and_keeps_native_controls_authoritative() {
+    let text = adaptation();
+    for phrase in [
+        "Do not implement the change while planning",
+        "do not edit product files, specifications or tests",
+        "Yard planning records are the only writes this workflow permits",
+        "Native mode and permissions still govern those writes",
+        "`update_plan` is an execution-progress checklist",
+        "does not enter or exit native Plan mode",
+        "If native Plan mode prevents a Yard write, keep the plan in the conversation",
+        "No prompt in this skill changes Codex's native collaboration mode",
+    ] {
+        assert!(text.contains(phrase), "{phrase}");
+    }
+    for native_declaration in [
+        "You are in **Plan Mode** until a developer message explicitly ends it",
+        "You are now in Plan mode",
+        "## Mode rules (strict)",
+    ] {
+        assert!(!text.contains(native_declaration), "{native_declaration}");
+    }
+}
+
+#[test]
+fn codex_planning_uses_yard_questions_and_complete_plan_submissions_before_building() {
+    let text = adaptation();
+    for phrase in [
+        "Required questions go through Yard submissions",
+        "Do not replace an unanswered required decision with an assumed default",
+        "one complete `plan` block with `title` and `markdown`",
+        "summary, implementation steps, interfaces, tests and assumptions",
+        "wait for approval before implementation",
+        "Revise a rejected plan as a complete replacement",
+        "new submission",
+        "Do not put `<proposed_plan>` tags in the Yard plan's Markdown",
+        "No question answer, timeout or native plan rendering counts as Yard plan approval",
+        "An approved Yard plan authorizes only its described build when native mode and permissions allow it",
+    ] {
+        assert!(text.contains(phrase), "{phrase}");
+    }
+}
+
+#[test]
 fn codex_plugin_hooks_use_the_native_adapter_with_bounded_commands_and_one_background_worker() {
     let plugin: Value = serde_json::from_str(&read("plugins/codex/loft/plugin.json")).unwrap();
     assert_eq!(plugin["hooks"], "./hooks/hooks.json");
