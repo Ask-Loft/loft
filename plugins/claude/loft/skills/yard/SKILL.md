@@ -85,6 +85,18 @@ approved counts as asking for the build it describes, through any supported appr
 A question they answered does not, and a change to the specification the person approved does not
 count as asking for its build: it settles what is built, not when.
 
+## Make bounded tasks part of the plan
+
+Break each implementation plan into bounded tasks. Each task has one concrete outcome. Give
+each task an explicit scope and a verifiable completion condition, such as a focused check or
+an observable result. Split a task whose outcomes can be finished independently. For example,
+"Reject invalid record keys" has a clear finish when the focused refusal check passes.
+
+Once the person approves the implementation plan, register every planned implementation task
+in Yard Log before the first implementation task starts. Use the host adaptation's task
+mirroring when available, or write explicit `task` blocks otherwise. Put each task in its
+stage, ready to be marked `active` when its work begins.
+
 ## Keep each task true as you go
 
 Yard Log dates each task by the writes that change its state, so a task's state is only as true

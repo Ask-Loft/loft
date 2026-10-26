@@ -214,6 +214,36 @@ fn the_yard_skill_tells_the_agent_to_build_only_once_the_person_asks_for_the_bui
 }
 
 #[test]
+fn the_shared_yard_workflow_defines_bounded_implementation_tasks() {
+    let text = read(&format!("{SOURCE}/SKILL.md"))
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for phrase in [
+        "Break each implementation plan into bounded tasks",
+        "Each task has one concrete outcome",
+        "Give each task an explicit scope and a verifiable completion condition",
+        "Split a task whose outcomes can be finished independently",
+    ] {
+        assert!(text.contains(phrase), "shared source omits: {phrase}");
+    }
+}
+
+#[test]
+fn the_shared_yard_workflow_registers_all_planned_tasks_before_implementation() {
+    let text = read(&format!("{SOURCE}/SKILL.md"))
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    for phrase in [
+        "Once the person approves the implementation plan, register every planned implementation task in Yard Log before the first implementation task starts",
+        "Use the host adaptation's task mirroring when available, or write explicit `task` blocks otherwise",
+    ] {
+        assert!(text.contains(phrase), "shared source omits: {phrase}");
+    }
+}
+
+#[test]
 fn the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends() {
     says(&[
         "mark a task `active` in a write before its work starts",

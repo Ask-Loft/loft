@@ -25686,6 +25686,42 @@ links:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_build_only_once_the_person_asks_for_the_build"
         body: 8779d814558cff00fe2099822acd34057b2dfaad04061bba7cd473d6a3151cb3
+  - node: 01a179ce-71a7-726e-acc9-01db9e60eead
+    reviewed: 72d456388805c1d57d2b140fcfec90b4b3541b43fdde33e6287b2bf2f0ec6556
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_shared_yard_workflow_defines_bounded_implementation_tasks"
+        body: ceb4a7234f1b97c507645d5293d789cf77d5b86dd5b66ae708d19a95d179baf8
+  - node: 01a179ce-71a7-726e-acc9-01dc3b7f4fe5
+    reviewed: 2d3d5018779de631c211289326ceffa0d5082e300d6021249ccc7f67b4e6d7ab
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_shared_yard_workflow_defines_bounded_implementation_tasks"
+        body: ceb4a7234f1b97c507645d5293d789cf77d5b86dd5b66ae708d19a95d179baf8
+  - node: 01a179ce-71a7-726e-acc9-01dd66cc26e5
+    reviewed: bf11fb684c524c4e9d89828b05c9b908e8517c035e97e932989a6ecb73d249b3
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_shared_yard_workflow_defines_bounded_implementation_tasks"
+        body: ceb4a7234f1b97c507645d5293d789cf77d5b86dd5b66ae708d19a95d179baf8
+  - node: 01a179ce-71a7-726e-acc9-01de6de2d389
+    reviewed: 25ddf55933e3efc07313f6cd5e410be0bde8cdecb807a41d65518a1523525544
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_shared_yard_workflow_defines_bounded_implementation_tasks"
+        body: ceb4a7234f1b97c507645d5293d789cf77d5b86dd5b66ae708d19a95d179baf8
+  - node: 01a179ce-71a7-726e-acc9-01e0de97c444
+    reviewed: 2053e4618c390e170deba0da00f3b54a180b52a3c68c9a34ea7ce1136fd721e3
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_shared_yard_workflow_registers_all_planned_tasks_before_implementation"
+        body: 6fdf9c8e9286522b5fbe7b3e6d8e34b21a95c6157ddf7d7697b9ff1db0025fb6
+  - node: 01a179ce-71a7-726e-acc9-01e1b6416ad2
+    reviewed: f3e25eb5a82b30e90e550eae260f3b0999e0d5fa2d34172c5dd771411658fe29
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_shared_yard_workflow_registers_all_planned_tasks_before_implementation"
+        body: 6fdf9c8e9286522b5fbe7b3e6d8e34b21a95c6157ddf7d7697b9ff1db0025fb6
   - node: 01a1646f-546c-7521-9643-bc883a0f6321
     reviewed: dc3409a578535a28fe18ab3e7ef79b2866afa71e5b681ddb373a58d8df9f56b8
     tests:
