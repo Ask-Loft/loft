@@ -87,6 +87,7 @@ mod writes_tree;
 mod yard_answer;
 mod yard_base;
 mod yard_callers;
+mod yard_capabilities;
 mod yard_close;
 mod yard_commands;
 mod yard_continue;

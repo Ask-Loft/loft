@@ -8,34 +8,7 @@ use serde_json::Value;
 use yardlog::Time;
 use yardlog_store::session::is_session_id;
 
-/// The four counts of a model request's tokens.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct Tokens {
-    pub input: u64,
-    pub cache_read: u64,
-    pub cache_write: u64,
-    pub output: u64,
-}
-
-impl Tokens {
-    /// The counts an event's `tokens` gives: none where it gives none.
-    fn of(value: &Value) -> Option<Self> {
-        let count = |name: &str| value[name].as_u64().unwrap_or_default();
-        value.is_object().then(|| Self {
-            input: count("input"),
-            cache_read: count("cacheRead"),
-            cache_write: count("cacheWrite"),
-            output: count("output"),
-        })
-    }
-
-    pub fn add(&mut self, other: Self) {
-        self.input += other.input;
-        self.cache_read += other.cache_read;
-        self.cache_write += other.cache_write;
-        self.output += other.output;
-    }
-}
+pub use yardlog::usage::Counts as Tokens;
 
 /// The agent an event happened in.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -94,6 +67,8 @@ pub struct Event {
     pub host: String,
     /// The event as it was posted, kept whole in the event log.
     pub posted: Value,
+    pub adapter: Option<yardlog::adapter::Descriptor>,
+    tokens: Option<Tokens>,
 }
 
 /// The time an event gives, to the second: a fraction of a second is dropped.
@@ -132,6 +107,16 @@ impl Event {
         if !yardlog::identity::is_host_id(host) {
             return Err("the event names no valid host identifier".to_owned());
         }
+        let adapter = posted
+            .get("adapter")
+            .map(yardlog::adapter::Descriptor::read)
+            .transpose()
+            .map_err(str::to_owned)?;
+        let tokens = posted
+            .get("tokens")
+            .map(Tokens::read)
+            .transpose()
+            .map_err(str::to_owned)?;
         Ok(Self {
             session: session.to_owned(),
             dir: dir.to_owned(),
@@ -140,6 +125,8 @@ impl Event {
             kind: kind.to_owned(),
             host: host.to_owned(),
             posted: posted.clone(),
+            adapter,
+            tokens,
         })
     }
 
@@ -150,7 +137,7 @@ impl Event {
 
     /// A model request's tokens, or a compaction's own request's.
     pub fn tokens(&self) -> Option<Tokens> {
-        Tokens::of(&self.posted["tokens"])
+        self.tokens
     }
 
     /// The model that answered a request.

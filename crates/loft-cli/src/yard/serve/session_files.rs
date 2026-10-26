@@ -28,7 +28,14 @@ pub fn read(folder: &Path, kind: SessionFile) -> Vec<Value> {
         .iter()
         .filter_map(|path| fs::read(path).ok())
         .filter_map(|bytes| yaml::read(&bytes).ok().flatten())
-        .map(|node| json(&node))
+        .filter_map(|node| {
+            let mut value = json(&node);
+            if let Some(adapter) = value.get("adapter") {
+                let descriptor = yardlog::adapter::Descriptor::read(adapter).ok()?;
+                value["adapter"] = descriptor.json();
+            }
+            Some(value)
+        })
         .collect()
 }
 

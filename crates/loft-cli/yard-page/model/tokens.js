@@ -2,7 +2,7 @@
 // each stage by type of subagent, by session, by agent and model, and by submission.
 
 /**
- * @typedef {{ input: number, cacheRead: number, cacheWrite: number, output: number }} Counts
+ * @typedef {{ input?: number, cacheRead?: number, cacheWrite?: number, output?: number, partial?: string[] }} Counts
  */
 
 /** @returns {Counts} */
@@ -10,24 +10,33 @@ export function zero() {
   return { input: 0, cacheRead: 0, cacheWrite: 0, output: 0 };
 }
 
+/** The normalized counters, in display order. */
+export const COUNTERS = ['input', 'cacheRead', 'cacheWrite', 'output'];
+
 /**
- * `into` with `counts` added.
- * @param {Counts} into
- * @param {Partial<Counts> | undefined} counts
+ * Adds recorded values, preserving absent and partially reported counters.
+ * @param {Counts | undefined} into
+ * @param {Counts | undefined} counts
  * @returns {Counts}
  */
 export function add(into, counts) {
-  return {
-    input: into.input + (counts?.input ?? 0),
-    cacheRead: into.cacheRead + (counts?.cacheRead ?? 0),
-    cacheWrite: into.cacheWrite + (counts?.cacheWrite ?? 0),
-    output: into.output + (counts?.output ?? 0),
-  };
+  const result = {};
+  const partial = new Set([...(into?.partial ?? []), ...(counts?.partial ?? [])]);
+  for (const key of COUNTERS) {
+    const left = into?.[key];
+    const right = counts?.[key];
+    if (left !== undefined || right !== undefined) {
+      result[key] = (left ?? 0) + (right ?? 0);
+      if (into !== undefined && (left === undefined || right === undefined)) partial.add(key);
+    }
+  }
+  if (partial.size) result.partial = [...partial];
+  return result;
 }
 
-/** @param {Counts} counts */
-export function total(counts) {
-  return counts.input + counts.cacheRead + counts.cacheWrite + counts.output;
+/** @param {Counts} [counts] */
+export function total(counts = {}) {
+  return COUNTERS.reduce((sum, key) => sum + (counts[key] ?? 0), 0);
 }
 
 /**
@@ -37,16 +46,19 @@ export function total(counts) {
  * @param {Partial<Counts>} counts
  */
 function addTo(map, key, counts) {
-  map.set(key, add(map.get(key) ?? zero(), counts));
+  map.set(key, add(map.get(key), counts));
 }
 
 /**
  * Yard Log's tokens, from the totals files of its sessions.
  * @param {any[]} files
+ * @param {any[]} [activities]
  */
-export function summarize(files) {
-  let all = zero();
-  let noStage = zero();
+export function summarize(files, activities = []) {
+  /** @type {Counts | undefined} */
+  let all;
+  /** @type {Counts | undefined} */
+  let noStage;
   /** @type {Map<string, Counts>} */
   const stages = new Map();
   /** @type {Map<string, Map<string, Counts>>} */
@@ -58,7 +70,7 @@ export function summarize(files) {
   const sessions = [];
   for (const file of files ?? []) {
     all = add(all, file.tokens);
-    noStage = add(noStage, file.noStage);
+    noStage = add(noStage, file.noStage ?? Object.fromEntries(COUNTERS.filter((key) => file.tokens?.[key] !== undefined).map((key) => [key, 0])));
     for (const stage of file.stages ?? []) {
       addTo(stages, stage.stage, stage);
       for (const agent of stage.agents ?? []) {
@@ -74,20 +86,28 @@ export function summarize(files) {
     for (const agent of file.agents ?? []) {
       const who = agent.agent === 'main' ? 'main agent' : agent.type ?? 'subagent';
       const model = agent.model ?? 'unknown';
-      const key = `${who}\u0000${model}`;
-      const held = agents.get(key) ?? { who, model, tokens: zero() };
-      agents.set(key, { ...held, tokens: add(held.tokens, agent) });
+      const host = file.host ?? 'claude-code';
+      const key = `${host}\u0000${who}\u0000${model}`;
+      const label = host === 'claude-code' ? who : `${host} ${who}`;
+      const held = agents.get(key);
+      const named = held ?? { who: label, model };
+      agents.set(key, { ...named, tokens: add(held?.tokens, agent) });
     }
     sessions.push({
+      host: file.host ?? 'claude-code',
       session: file.session,
       firstEnded: file.firstEnded,
       lastEnded: file.lastEnded,
-      tokens: add(zero(), file.tokens),
+      tokens: add(undefined, file.tokens),
     });
+  }
+  for (const activity of activities) {
+    const host = activity.host ?? 'claude-code';
+    if (!sessions.some((session) => session.host === host && session.session === activity.session)) all = add(all, {});
   }
   sessions.sort((a, b) => String(a.firstEnded).localeCompare(String(b.firstEnded)));
   const byAgent = [...agents.values()].sort(
     (a, b) => Number(b.who === 'main agent') - Number(a.who === 'main agent') || total(b.tokens) - total(a.tokens),
   );
-  return { all, noStage, stages, stageAgents, submissions, agents: byAgent, sessions, counted: total(all) > 0 };
+  return { all: all ?? {}, noStage: noStage ?? {}, stages, stageAgents, submissions, agents: byAgent, sessions, counted: COUNTERS.some((key) => all?.[key] !== undefined) };
 }

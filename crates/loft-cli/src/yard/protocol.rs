@@ -16,7 +16,7 @@ const OUTCOME: &str = "reported";
 
 /// The protocol's version, raised with each release that changes the input or the output of a
 /// `loft yard` command in a way an earlier host cannot read.
-pub const PROTOCOL: u32 = 1;
+pub const PROTOCOL: u32 = 2;
 
 /// Every format this `loft` reads, oldest first: each up to the one it writes.
 fn reads() -> Vec<String> {

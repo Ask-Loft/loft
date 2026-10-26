@@ -52,14 +52,14 @@ impl Totals {
             "compaction" => Who::Main,
             _ => return false,
         };
-        let Some(tokens) = event.tokens() else {
-            return false;
-        };
+        let tokens = event.tokens().unwrap_or_else(Tokens::unreported);
         if self.host.is_empty() {
             self.host.clone_from(&event.host);
         }
-        self.first_ended = Some(self.first_ended.map_or(event.at, |at| at.min(event.at)));
-        self.last_ended = Some(self.last_ended.map_or(event.at, |at| at.max(event.at)));
+        if tokens.measured() || self.counted() {
+            self.first_ended = Some(self.first_ended.map_or(event.at, |at| at.min(event.at)));
+            self.last_ended = Some(self.last_ended.map_or(event.at, |at| at.max(event.at)));
+        }
         self.all.add(tokens);
         match stage {
             Some(stage) => {
@@ -97,7 +97,10 @@ impl Totals {
         if let Some(at) = self.last_ended {
             fields.push(("lastEnded", Out::Token(at.to_string())));
         }
-        fields.push(("tokens", Out::Mapping(counts(self.all))));
+        let all = counts(self.all);
+        if !all.is_empty() {
+            fields.push(("tokens", Out::Mapping(all)));
+        }
         if !self.stages.is_empty() {
             let stages = self
                 .stages
@@ -106,7 +109,10 @@ impl Totals {
             fields.push(("stages", Out::Sequence(stages.collect())));
         }
         if let Some(tokens) = self.no_stage {
-            fields.push(("noStage", Out::Mapping(counts(tokens))));
+            let fields_of = counts(tokens);
+            if !fields_of.is_empty() {
+                fields.push(("noStage", Out::Mapping(fields_of)));
+            }
         }
         let agents = self.agents.iter().map(|((who, model), tokens)| {
             let mut fields = who.fields();
@@ -141,10 +147,5 @@ fn stage_out(stage: &str, counted: &Stage) -> Out {
 }
 
 fn counts(tokens: Tokens) -> Vec<(&'static str, Out)> {
-    vec![
-        ("input", Out::Integer(tokens.input)),
-        ("cacheRead", Out::Integer(tokens.cache_read)),
-        ("cacheWrite", Out::Integer(tokens.cache_write)),
-        ("output", Out::Integer(tokens.output)),
-    ]
+    tokens.fields()
 }

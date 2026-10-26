@@ -3,7 +3,7 @@
 
 import { add, h } from '../lib/dom.js';
 import { tokens as amount, when } from '../lib/format.js';
-import { summarize, total, zero } from '../model/tokens.js';
+import { COUNTERS as KEYS, summarize, total } from '../model/tokens.js';
 
 const COUNTS = [
   ['input', 'Input'],
@@ -14,11 +14,14 @@ const COUNTS = [
 
 /**
  * A count, with a bar of its share of Yard Log's count of that kind in all.
- * @param {number} count
- * @param {number} all
+ * @param {number | undefined} count
+ * @param {number | undefined} all
  * @param {string} word
+ * @param {boolean} [partial]
  */
-function cell(count, all, word) {
+function cell(count, all, word, partial = false) {
+  if (count === undefined) return h('td', { class: 'number', title: 'Unavailable' }, 'Unavailable');
+  if (partial) return h('td', { class: 'number', title: `${count} recorded; coverage is partial` }, `${amount(count)} (partial)`);
   const share = all ? count / all : 0;
   return h(
     'td',
@@ -47,7 +50,7 @@ function breakdowns(groups, all) {
           { dataset: { by } },
           h('tr', { class: 'group' }, h('th', { scope: 'rowgroup', colspan: String(COUNTS.length + 1) }, title)),
           rows.map(([name, counts, kind]) =>
-            h('tr', kind ? { class: kind } : {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word))),
+            h('tr', kind ? { class: kind } : {}, h('th', { scope: 'row' }, name), COUNTS.map(([key, word]) => cell(counts[key], all[key], word, counts.partial?.includes(key) || all.partial?.includes(key)))),
           ),
         ),
       ),
@@ -57,10 +60,11 @@ function breakdowns(groups, all) {
 
 /**
  * A session, by the start of its id, with when its first and last counted requests ended.
- * @param {{ session: string, firstEnded: string, lastEnded: string }} session
+ * @param {{ host?: string, session: string, firstEnded: string, lastEnded: string }} session
  */
 function sessionName(session) {
   return [
+    session.host ? h('span', { class: 'host' }, `${session.host} · `) : null,
     h('code', { title: session.session }, String(session.session).slice(0, 8)),
     h('span', { class: 'span' }, `${when(session.firstEnded)} – ${when(session.lastEnded)}`),
   ];
@@ -79,19 +83,20 @@ function agentName(agent) {
  * @param {any} log
  */
 export function tokensView(log) {
-  const summary = summarize(log.tokens);
+  const summary = summarize(log.tokens, log.activity);
   const section = h('section', { class: 'tokens', id: 'tokens', 'aria-labelledby': 'tokens-title' }, h('h3', { id: 'tokens-title' }, 'Tokens'));
   const note = h(
     'p',
     { class: 'tokens-note' },
-    'Requests that Claude Code makes inside its own tools, such as a web search or a web fetch, are not counted.',
+    'Usage includes requests reported by each adapter. Requests a host makes inside its own tools may be outside these counts.',
   );
+  const reporting = reportingOf(log.activity ?? []);
   if (!summary.counted) {
-    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), note);
+    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), reporting, note);
     return section;
   }
   const stages = (log.stages ?? []).flatMap((stage) => [
-    [stage.version.body.title, summary.stages.get(stage.key) ?? zero()],
+    [stage.version.body.title, summary.stages.get(stage.key) ?? zeroFor(log, stage.owner)],
     // Each type of subagent that worked for the stage, its counts within the stage's.
     ...[...(summary.stageAgents.get(stage.key) ?? [])]
       .sort(([, a], [, b]) => total(b) - total(a))
@@ -112,9 +117,30 @@ export function tokensView(log) {
   ].filter((group) => group.rows.length);
   add(
     section,
-    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: String(summary.all[name]) }, amount(summary.all[name]))))),
+    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: summary.all[name] === undefined ? 'Unavailable' : String(summary.all[name]) }, summary.all[name] === undefined ? 'Unavailable' : `${amount(summary.all[name])}${summary.all.partial?.includes(name) ? ' (partial)' : ''}`)))),
     breakdowns(groups, summary.all),
+    reporting,
     note,
   );
   return section;
+}
+
+/** Recorded zero only for counters this session actually reports. @param {any} log @param {any} owner */
+function zeroFor(log, owner) {
+  const file = (log.tokens ?? []).find((file) => file.session === owner?.session && (file.host ?? 'claude-code') === (owner?.host ?? 'claude-code'));
+  return Object.fromEntries(KEYS.filter((key) => file?.tokens?.[key] !== undefined).map((key) => [key, 0]));
+}
+
+/** The integration available from each session, including ones with no measured usage. @param {any[]} activities */
+function reportingOf(activities) {
+  if (!activities.length) return null;
+  return h('div', { class: 'reporting-coverage' }, h('h4', {}, 'Reporting coverage'), h('ul', {}, activities.map((activity) => {
+    const host = activity.host ?? 'claude-code';
+    const descriptor = activity.adapter;
+    if (!descriptor) return h('li', {}, `${host} · ${activity.session}: reporting coverage unknown.`);
+    const caps = descriptor.capabilities ?? {};
+    const available = (flag) => flag ? 'available' : 'unavailable';
+    const usage = (caps.usage ?? []).length ? `Usage: ${caps.usage.join(', ')}.` : 'Usage unavailable.';
+    return h('li', {}, `${host} · ${activity.session} (${descriptor.version}): ${usage} Activity ${available((caps.events ?? []).length)}. Native questions ${available(caps.nativeQuestions)}. Native plans ${available(caps.nativePlans)}. Task mirroring ${available(caps.taskMirroring)}.`);
+  })));
 }

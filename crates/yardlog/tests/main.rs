@@ -3,6 +3,7 @@
 
 mod common;
 
+mod adapter;
 mod answers;
 mod block_kinds;
 mod boundaries;

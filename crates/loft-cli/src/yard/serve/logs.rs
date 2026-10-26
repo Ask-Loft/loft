@@ -29,7 +29,7 @@ use crate::yard::render::{act, actor};
 use crate::yard::render_log::Selection;
 
 const ANSWER_SCHEMA: &str = "loft-yard-answer/1";
-const READ_SCHEMA: &str = "loft-yard-read/1";
+const READ_SCHEMA: &str = "loft-yard-read/2";
 
 /// The tree a request names, where the page server serves it.
 fn served_tree(home: &Home, named: Option<&str>) -> Result<PathBuf, Response> {

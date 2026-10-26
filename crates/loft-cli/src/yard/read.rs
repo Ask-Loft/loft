@@ -21,7 +21,7 @@ use super::failure::{self, Failure};
 use super::render_log::{Selection, closed_by, root, stages, submissions};
 use crate::finish::Finished;
 
-const SCHEMA: &str = "loft-yard-read/1";
+const SCHEMA: &str = "loft-yard-read/2";
 const OUTCOME: &str = "read";
 
 /// What a read read, as `--mark-read` records it: Yard Log's key and the revision.

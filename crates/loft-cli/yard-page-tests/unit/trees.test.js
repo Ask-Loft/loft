@@ -123,17 +123,15 @@ test('with Yard Logs listed and none chosen, the page asks to choose one from th
 test('with no Yard Log served, the page asks for a session rather than a choice from the list', () => {
   const shown = welcome(listing({ repositories: [] }));
   assert.equal(shown.querySelector('h2').textContent, 'Start a session');
-  assert.match(shown.textContent, /Claude Code/);
+  assert.match(shown.textContent, /agent through its Yard adapter/);
   assert.match(shown.textContent, /first write/);
   assert.doesNotMatch(shown.textContent, /Choose one from the list/);
 });
 
-test('with no Yard Log served, the page gives the commands that install the Loft plugin', () => {
+test('with no Yard Log served, the page links adapter installation instructions', () => {
   const shown = welcome(listing({ repositories: [] }));
-  assert.deepEqual(
-    [...shown.querySelectorAll('.commands code')].map((each) => each.textContent),
-    ['/plugin marketplace add Ask-Loft/loft', '/plugin install loft@ask-loft'],
-  );
+  assert.match(shown.querySelector('a').textContent, /Install a Yard adapter/);
+  assert.equal(shown.querySelector('a').getAttribute('href'), 'https://github.com/Ask-Loft/loft#yard-client');
 });
 
 test('open, the menu is headed Yard Logs beside a button that folds it, above the lists', () => {

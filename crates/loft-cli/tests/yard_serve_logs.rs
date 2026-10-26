@@ -134,7 +134,7 @@ fn a_branch_s_yard_log_reads_as_loft_yard_read_gives_it_with_every_version() {
             tree(&yard.scratch)
         ))
         .json();
-    assert_eq!(read["schema"], "loft-yard-read/1");
+    assert_eq!(read["schema"], "loft-yard-read/2");
     assert_eq!(read["inherited"], false);
     assert_eq!(block(&read, "q1")["versions"].as_array().unwrap().len(), 1);
     let command = yard.read("s1", &[]);

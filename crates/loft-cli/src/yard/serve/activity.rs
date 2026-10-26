@@ -58,6 +58,7 @@ struct LoftRun {
 pub struct Activity {
     session: String,
     host: String,
+    adapter: Option<yardlog::adapter::Descriptor>,
     last_ended: Option<Time>,
     turns: Vec<Span>,
     runs: Vec<Run>,
@@ -105,10 +106,17 @@ impl Activity {
     /// Keeps what `event` starts or ends, `stage` the stage it counts toward; says whether
     /// it changed anything.
     pub fn apply(&mut self, event: &Event, stage: Option<&str>) -> bool {
+        let metadata_changed = event
+            .adapter
+            .as_ref()
+            .is_some_and(|adapter| self.adapter.as_ref() != Some(adapter));
+        if let Some(adapter) = &event.adapter {
+            self.adapter = Some(adapter.clone());
+        }
         self.host.clone_from(&event.host);
         let at = event.at;
         let main = event.who.is_main();
-        let mut changed = false;
+        let mut changed = metadata_changed;
         if !self.heard {
             self.heard = true;
             // A turn under way when Yard Log opened is kept from the first event heard of it.
@@ -206,8 +214,13 @@ impl Activity {
     /// The activity file's text.
     pub fn text(&self) -> String {
         let mut fields = vec![("session", Out::Token(self.session.clone()))];
-        if self.host != yardlog::act::CLAUDE_CODE && !self.host.is_empty() {
+        if (self.adapter.is_some() || self.host != yardlog::act::CLAUDE_CODE)
+            && !self.host.is_empty()
+        {
             fields.push(("host", Out::Token(self.host.clone())));
+        }
+        if let Some(adapter) = &self.adapter {
+            fields.push(("adapter", adapter.yaml()));
         }
         if let Some(at) = self.last_ended {
             fields.push(("lastEnded", time(at)));

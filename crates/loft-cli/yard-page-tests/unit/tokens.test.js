@@ -92,8 +92,8 @@ test('each submission has the counts of the requests that ended while it was ope
   assert.deepEqual(rows, [[true, '10']]);
 });
 
-test('the page says that requests made inside Claude Code’s own tools are not counted', () => {
-  assert.match(tokensView(shown()).querySelector('.tokens-note').textContent, /web search or a web fetch, are not counted/);
+test('the page explains that host-internal requests may be outside reported usage', () => {
+  assert.match(tokensView(shown()).querySelector('.tokens-note').textContent, /Requests a host makes inside its own tools may be outside these counts/);
 });
 
 test('where no request has been counted, the page says that no tokens have been counted yet', () => {

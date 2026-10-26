@@ -20,7 +20,7 @@ import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './too
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
 export const PLUGIN_VERSION = '2.2.1'
 /** The oldest and the newest yard protocol this mod speaks. */
-export const PROTOCOLS = { oldest: 1, newest: 1 } as const
+export const PROTOCOLS = { oldest: 1, newest: 2 } as const
 
 /** Turns Yard Client on for the session, once, where the protocol check passes. */
 export function ensureYard($: EngineInterface, cwd: string): Promise<boolean> {

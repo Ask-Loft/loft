@@ -19068,6 +19068,84 @@ links:
       - file: "crates/loft-cli/tests/yard_hosts.rs"
         name: "a_lease_prevents_a_second_host_from_taking_over"
         body: ec32aadc818d4ac0b8dd7cda50e8b229df9889282bafa29d817a104a5efc40d2
+  - node: 01a177f9-8294-77e4-aa6e-7078a4c09f21
+    reviewed: 18e266fc39c2e3f6dd3bf2e61c33c39a6554cabb1c6807b3d6782912b3635ae9
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "an_adapter_descriptor_is_kept_without_a_token_event_and_survives_replay"
+        body: eda56f7808abf5aeebd3cfb9f0a53a13f77e2a00dc4a45cce69aebf64389b3e6
+  - node: 01a177f9-8294-77e4-aa6e-7079dff4b963
+    reviewed: 1cd0305e6151476c423829527207773dc79cb50ff0013b47adfa1c9ce8488915
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "an_adapter_descriptor_is_kept_without_a_token_event_and_survives_replay"
+        body: eda56f7808abf5aeebd3cfb9f0a53a13f77e2a00dc4a45cce69aebf64389b3e6
+  - node: 01a177f9-8294-77e4-aa6e-707ae3c700b2
+    reviewed: ddec9ae0f9c3bc671cff71506e8f32f9b5a9455e310c2ba9613048a2cc8bf6fd
+    tests:
+      - file: "crates/yardlog/tests/adapter.rs"
+        name: "an_empty_capability_declaration_is_known_unavailable_and_normalizes_to_empty_lists"
+        body: b8b1e48f80e131743e36c268b5e0318c6bd215d2479e3f76609356672bfe1bec
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "adapter coverage is shown with no token file and distinguishes unavailable from unknown"
+        body: 515ba1054f8dc97d02f627348e155bc084e8bcb015716f08aeb26f693c6d01a7
+  - node: 01a177f9-8294-77e4-aa6e-707bd3345e9c
+    reviewed: 6403df28c11693c8802248580a8c0c3c9a84392c90251f501976634c732b34dd
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "malformed_descriptors_and_usage_are_rejected_before_recording"
+        body: 493c1e26d2ea681970f20893b4003524edc897a13e16012a40185b3203db232c
+  - node: 01a177f9-8294-77e4-aa6e-707df5aba626
+    reviewed: d2e1492e8101a387c4ea6f4196651e212c6271461b7142f3e0d371256edcd92f
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "missing_usage_is_not_written_as_zero_and_partial_subtotals_are_marked"
+        body: f074509c0173d084606d13db5f6174470b561e5c5f0124891b10bb9cdf82a05b
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "missing counters display unavailable while measured zero displays zero"
+        body: 3ceea8c5f3a10a70a65f98c631e3f1372464657c90f8e7a7ea22c345a2e35670
+  - node: 01a177f9-8294-77e4-aa6e-707e68eb827c
+    reviewed: ed45f5ec443d9c716446f69e4d87fcae1408d251dd9f9f7dcca802ebcfee5eed
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "a measured all-zero request is shown as measured usage"
+        body: 0b4bd3796c9e702f8a6b63a216fccf08350d960ee0473e7674c63e6b0496db98
+  - node: 01a177f9-8294-77e4-aa6e-707f3b171f93
+    reviewed: e4df8e6efbd6e218c799994e9fdbb4c4634cff63eb96bafd5ea403f8ab26b8d9
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "missing_usage_is_not_written_as_zero_and_partial_subtotals_are_marked"
+        body: f074509c0173d084606d13db5f6174470b561e5c5f0124891b10bb9cdf82a05b
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "mixed counter coverage displays recorded subtotals as partial"
+        body: e6ac245bcd703666779c8d65543c681c600b4acc2fe5308fd208bb749d9e9a56
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "an unreporting session makes the observed aggregate partial"
+        body: 51f5537b6dbc03f18f645cb97362b448bb88b70b5c8cc6dab81656ac9f5318cc
+  - node: 01a177f9-8294-77e4-aa6e-70807ce3385d
+    reviewed: ea9acacd0f8765ebcda4fc150b92849faa3ce00a9f8d7df2a3f5505f95670aa1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "missing counters display unavailable while measured zero displays zero"
+        body: 3ceea8c5f3a10a70a65f98c631e3f1372464657c90f8e7a7ea22c345a2e35670
+  - node: 01a177f9-8294-77e4-aa6e-708196a2cfcf
+    reviewed: f822d37291a10fa1a9146bd7240b484aae3f08c3e94bc35dcb37e167e6008028
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the four counts in all are summed over every totals file"
+        body: 87398a03a08cbdeb6ed03604a074e95090fbb888b01e3e94b2688f3b9bb3ed18
+  - node: 01a177f9-8294-77e4-aa6e-708363ed3edf
+    reviewed: 7fa90a276eed0fc6e668106ef550c2680fefee80ea70a493d75bcf5568cbbae3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "adapter coverage is shown with no token file and distinguishes unavailable from unknown"
+        body: 515ba1054f8dc97d02f627348e155bc084e8bcb015716f08aeb26f693c6d01a7
+  - node: 01a177f9-8294-77e4-aa6e-70846d43994b
+    reviewed: 6c7f021813e883efc1cc493fa7ece1efd5a70815b6c788ade0bf3f8329e962a7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
+        name: "the empty page describes an agent host without requiring Claude"
+        body: 4031f330b7afc8fc22321f0bea12253483c092b1697c7413596c3379f74361ae
   - node: 01a1646f-546e-76cb-8b4f-f2273651a416
     reviewed: 4851a48ce032bda3e7ebcb5725e47ec4ec29d88bef0962ca96578f8be563c5f9
     tests:
@@ -21203,7 +21281,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 9401062444a1247e48ff42a70c5ce04e8009a0a6c13576c2c66d8dd1505ad284
+        body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -21215,16 +21293,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
   - node: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
     reviewed: b2e92b9d8b9c74a9d59cd5659f907052d70f12b94cce8d1d02e27351878b33f4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 9401062444a1247e48ff42a70c5ce04e8009a0a6c13576c2c66d8dd1505ad284
+        body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_mod_names_the_version_of_loft_as_its_own"
         body: 7ad10bfc924b0309c65bc3d6f8b7e88a14c37beb93e1caf74e0eb05a35feda9d
@@ -21233,10 +21311,10 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 9401062444a1247e48ff42a70c5ce04e8009a0a6c13576c2c66d8dd1505ad284
+        body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -21245,7 +21323,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 43a8ace11a76f91628a197840e7dce4fbbf22ec4468fa17d533d641476ef496f
+        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
   - node: 01a1646f-546e-76cb-8b4f-f1fde62cb279
     reviewed: bc1bfca105244ab915945501c1d149f7e84b784c53afba66d2612967917a7561
     tests:
@@ -21557,7 +21635,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "with no Yard Log served, the page asks for a session rather than a choice from the list"
-        body: 9da71b2dc587728db1a3270015a50db59d22121ce24844ca59a1e21bbfa269fd
+        body: f7c39e847aca6f6d5da4ad2f2e69d2868c394b09dcc97410255bf75cba692b75
+  - node: 01a16827-8a6d-74e8-a5d2-6fa4147c7a28
+    reviewed: e86d7b30bca278a42a0b8cf47ec64e182a1427bd67ba140c41829e6d51af8e64
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "with no Yard Log served, the page links adapter installation instructions"
+        body: ae3cfda45f74e980c439e9721cea8065764d56a77fd04c3153be9fa84fb89d28
   - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
     reviewed: 3a2d7afe1a244fce40772757ece7d21948a477048b99a102e3e40e2118772728
     tests:
@@ -24153,6 +24237,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "each count of a breakdown shows as a bar its share of Yard Log’s count of that kind in all"
         body: 1510311a6b83a3a66f65965bcbaa936261c05d5e3c3f94c2044730a95d3471d5
+  - node: 01a1646f-546d-7042-befd-eb1d0e18125d
+    reviewed: 85a313541e390272ce06b2af82e3b1a70db14f9feebf82c909e1527d8542b00e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the page explains that host-internal requests may be outside reported usage"
+        body: 3448045ec5842ef4da09f50d843d3c5114dbc7d992a24f5f072eff0a4f9e09fa
   - node: 01a1646f-546d-7042-befd-eb1e1e831c2e
     reviewed: e0e380730479b2aebcc2c6700df46e5b422ffdd456f29331e5d66720b31563eb
     tests:
@@ -25146,6 +25236,12 @@ links:
       - file: "crates/loft-cli/tests/yard_protocol.rs"
         name: "the_report_gives_the_protocol_s_version_as_one_integer"
         body: 9ecd35de70b2762f403efdc8c93bdb67a24fc7d7cb00500978c31a3e1e949d29
+  - node: 01a177f9-8295-7328-aa9b-0fa2869127b8
+    reviewed: b5e7963f2f5df37d4f5395df9388d4f44d7da0e3d7a32edb37c3f4ceec5d077b
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "host_aware_callers_and_adapter_descriptors_use_protocol_two"
+        body: 4d5bc8c632bf0f0d0fef725cb88e1869619f6e51c1a419619c42fa170351299a
   - node: 01a1646f-546d-7042-befd-ea43c0bb2e34
     reviewed: f9d7ec8d86cde32fd131534ed2250c2467037800d605df6ff6d1cc7923d2b0e4
     tests:
@@ -25187,13 +25283,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: e91b7bae78fe05eb1b5060916a71c1bbb1fa2dbabf6e29446e149391be1247ef
+        body: 0e311c7620b841319ef880b32d5f332eefc28e576beac6a0e7a1821d65b8f2eb
   - node: 01a1646f-546d-7042-befd-ea4d859a6f03
     reviewed: e3639f6455b24eed94333fa4a304d289dad64e278b5fe2a3600e553338402675
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: e91b7bae78fe05eb1b5060916a71c1bbb1fa2dbabf6e29446e149391be1247ef
+        body: 0e311c7620b841319ef880b32d5f332eefc28e576beac6a0e7a1821d65b8f2eb
   - node: 01a1646f-546d-7042-befd-ea4ee183f9f9
     reviewed: 4f39839ca98658c67ed14e7fda627fafe4db01d0e8edd9c689870b33d4b509f4
     tests:
