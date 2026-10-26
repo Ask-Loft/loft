@@ -35,7 +35,15 @@ requirements:
       - key: 01a177f9-8294-77e4-aa6e-707e68eb827c
         name: "Measured zero is displayed as zero even when no positive count was recorded."
       - key: 01a177f9-8294-77e4-aa6e-707f3b171f93
-        name: "An aggregate with missing contributing counters shows its recorded subtotal as partial."
+        name: "A Yard Log with missing contributing counters reports token accounting as partial."
+      - key: 01a17a6d-c247-738d-ac55-ded57a9a6ce5
+        name: "Yard Log's token-accounting completeness is derived from its recorded coverage evidence."
+      - key: 01a17a6d-c247-738d-ac55-ded626362168
+        name: "Partial token accounting is indicated once for the whole Yard Log."
+      - key: 01a17a6d-c247-738d-ac55-ded71d91edfc
+        name: "Individual token counts display their recorded numeric values without partial suffixes."
+      - key: 01a17a6d-c247-738d-ac55-ded87f1a5251
+        name: "Complete recorded coverage is not marked partial."
       - key: 01a177f9-8294-77e4-aa6e-70807ce3385d
         name: "A counter unavailable from every contributor is displayed as unavailable, without a numeric share bar."
       - key: 01a177f9-8294-77e4-aa6e-708196a2cfcf

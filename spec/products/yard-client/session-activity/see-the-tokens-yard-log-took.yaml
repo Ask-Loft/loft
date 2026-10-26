@@ -26,7 +26,9 @@ requirements:
       - key: 01a1682e-2675-75b2-871c-e260967a6cf8
         name: "The breakdowns share one table, whose columns are the four counts."
       - key: 01a1682e-2675-75b2-871c-e2613eb8729b
-        name: "Each count of a breakdown shows, as a bar, its share of Yard Log's count of that kind in all."
+        name: "Each measured breakdown count has a bar showing its share of Yard Log's recorded subtotal for that counter, including when token accounting is partial."
+      - key: 01a17a6d-c247-738d-ac55-ded98716c59e
+        name: "Each displayed token percentage describes a share of recorded usage."
       - key: 01a1646f-546d-7042-befd-eb1d0e18125d
         name: "The page explains that requests an agent host makes inside its own tools may be outside the reported usage."
       - key: 01a1646f-546d-7042-befd-eb1e1e831c2e
