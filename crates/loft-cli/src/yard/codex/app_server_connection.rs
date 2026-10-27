@@ -11,6 +11,7 @@ use tungstenite::handshake::HandshakeError;
 use tungstenite::protocol::WebSocketConfig;
 use tungstenite::{Error, Message, WebSocket};
 
+use super::super::account::{Account, Provenance};
 use super::{CallFailure, Notice, Result};
 
 #[path = "app_server_socket.rs"]
@@ -26,6 +27,7 @@ pub struct Connection {
     pending: VecDeque<Notice>,
     subscribed: bool,
     failed: bool,
+    account: Provenance,
 }
 
 impl Connection {
@@ -56,6 +58,7 @@ impl Connection {
             pending: VecDeque::new(),
             subscribed: false,
             failed: false,
+            account: Provenance::default(),
         };
         connection.call("initialize", &json!({"clientInfo":{"name":"loft-yard","version":crate::version::VERSION},"capabilities":{"experimentalApi":true}}), deadline)?;
         connection.send(&json!({"method":"initialized"}))?;
@@ -66,6 +69,7 @@ impl Connection {
         {
             return Err(FAILURE.into());
         }
+        connection.identify_account(deadline);
         connection.call(
             "thread/resume",
             &json!({"threadId":thread,"excludeTurns":true}),
@@ -91,11 +95,30 @@ impl Connection {
                     break;
                 }
             };
-            if let Some(notice) = notice(&value) {
+            if let Some(notice) = self.observed(&value) {
                 result.push(notice);
             }
         }
         Ok(result)
+    }
+
+    fn identify_account(&mut self, deadline: Instant) {
+        let response = self
+            .request_until(
+                "account/read",
+                &json!({"refreshToken":false}),
+                deadline.min(Instant::now() + Duration::from_millis(60)),
+            )
+            .ok();
+        self.account.initial(response.as_ref());
+    }
+
+    fn observed(&mut self, value: &Value) -> Option<Notice> {
+        if value["method"] == "account/updated" {
+            self.account.update(&value["params"]["authMode"]);
+            return None;
+        }
+        notice(value, self.account.kind())
     }
 
     fn send(&mut self, value: &Value) -> Result<()> {
@@ -137,7 +160,7 @@ impl Connection {
             if self.pending.len() >= 128 {
                 return Err(CallFailure::Unavailable);
             }
-            if let Some(notice) = notice(&value) {
+            if let Some(notice) = self.observed(&value) {
                 self.pending.push_back(notice);
             }
             pause(deadline).map_err(|_| CallFailure::Unavailable)?;
@@ -187,13 +210,13 @@ fn pause(deadline: Instant) -> Result<()> {
     Ok(())
 }
 
-fn notice(value: &Value) -> Option<Notice> {
+fn notice(value: &Value, account: Account) -> Option<Notice> {
     let params = &value["params"];
     let thread = params["threadId"].as_str()?.to_owned();
     match value["method"].as_str()? {
         "thread/tokenUsage/updated" => {
             let turn = params["turnId"].as_str()?.to_owned();
-            let mut usage = json!({});
+            let mut usage = json!({"account":account});
             for part in ["last", "total"] {
                 let source = params["tokenUsage"][part].as_object()?;
                 let fields = [

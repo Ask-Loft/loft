@@ -45,6 +45,9 @@ fn verify_notice(notice: &Notice, thread: &str, count: u64) -> (bool, bool) {
             ..
         } => {
             assert_eq!(actual, thread);
+            assert_eq!(usage["account"], "unknown");
+            assert_eq!(usage["last"]["cacheWriteInputTokens"], 7);
+            assert_eq!(usage["total"]["cacheWriteInputTokens"], count * 7);
             assert_eq!(usage["last"]["inputTokens"], 100);
             assert_eq!(usage["last"]["cachedInputTokens"], 30);
             assert_eq!(usage["last"]["outputTokens"], 5);
@@ -66,10 +69,11 @@ fn simulated_codex_subscription_and_usage_obey_the_supported_contract() {
         ..Scenario::default()
     });
     contract(peer.path(), "thread", |count| {
-        let last = json!({"inputTokens":100,"cachedInputTokens":30,"outputTokens":5,"reasoningOutputTokens":2,"totalTokens":105});
+        let last = json!({"inputTokens":100,"cachedInputTokens":30,"cacheWriteInputTokens":7,"outputTokens":5,"reasoningOutputTokens":2,"totalTokens":105});
         let mut total = last.clone();
         total["inputTokens"] = json!(count * 100);
         total["cachedInputTokens"] = json!(count * 30);
+        total["cacheWriteInputTokens"] = json!(count * 7);
         total["outputTokens"] = json!(count * 5);
         total["totalTokens"] = json!(count * 105);
         peer.emit(&json!({"method":"thread/tokenUsage/updated","params":{"threadId":"thread","turnId":format!("turn-{count}"),"tokenUsage":{"last":last,"total":total}}}));

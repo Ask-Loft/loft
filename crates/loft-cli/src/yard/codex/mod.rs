@@ -1,5 +1,6 @@
 //! The Codex adapter: native hook input, CLI JSON for Yard, and a Codex-owned background worker.
 
+mod account;
 mod app_server;
 mod commands;
 mod context;

@@ -105,3 +105,19 @@ fn skipped_observations_record_one_unavailable_request_without_guessing_counts()
     super::gap(&mut state, "thread", "again");
     assert_eq!(state.events.len(), 3);
 }
+
+#[test]
+fn source_account_classification_is_preserved_without_losing_raw_zero_counters() {
+    for account in ["apiKey", "chatgpt", "unknown"] {
+        let mut state = state();
+        let mut counters = usage(100, 30, 5);
+        counters["account"] = json!(account);
+        counters["last"]["cacheWriteInputTokens"] = json!(0);
+        counters["total"]["cacheWriteInputTokens"] = json!(0);
+        assert!(observe(&mut state, "thread", "turn", &counters, "now"));
+        assert_eq!(state.events[0]["usageSource"]["account"], account);
+        assert_eq!(state.events[0]["tokens"]["cacheWrite"], 0);
+        let kept = serde_json::to_value(&state.usage.cursors["thread"]).unwrap();
+        assert_eq!(kept["snapshot"]["write"], 0);
+    }
+}

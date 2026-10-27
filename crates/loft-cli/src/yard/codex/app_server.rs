@@ -56,3 +56,7 @@ mod tests;
 #[cfg(all(test, unix))]
 #[path = "app_server_contract.rs"]
 mod contract;
+
+#[cfg(all(test, unix))]
+#[path = "account_tests.rs"]
+mod account_tests;

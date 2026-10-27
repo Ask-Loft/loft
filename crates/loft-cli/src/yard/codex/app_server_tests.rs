@@ -51,12 +51,14 @@ fn a_loaded_thread_is_observed_without_configuration_or_turn_mutations() {
             "initialize",
             "initialized",
             "thread/loaded/list",
+            "account/read",
             "thread/resume",
             "thread/unsubscribe"
         ]
     );
+    assert_eq!(requests[3]["params"], json!({"refreshToken":false}));
     assert_eq!(
-        requests[3]["params"],
+        requests[4]["params"],
         json!({"threadId":"native-thread","excludeTurns":true})
     );
 }
@@ -120,7 +122,7 @@ fn only_accounting_fields_are_retained_from_notifications() {
         vec![Notice::Usage {
             thread: "native-thread".into(),
             turn: "turn".into(),
-            usage: json!({"last":{"inputTokens":100,"outputTokens":5},"total":{"inputTokens":100}})
+            usage: json!({"account":"unknown","last":{"inputTokens":100,"outputTokens":5},"total":{"inputTokens":100}})
         }]
     );
 }

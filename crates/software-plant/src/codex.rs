@@ -39,6 +39,8 @@ impl Default for NativeThread {
 pub struct Scenario {
     pub loaded: Vec<String>,
     pub on_subscribe: Vec<Value>,
+    /// Account metadata for the non-refreshing lookup; no real credentials are used.
+    pub account: Option<Value>,
     /// Ignore all RPCs, fail subscription, or send malformed JSON at subscription.
     pub silent: bool,
     pub refuse_subscription: bool,
@@ -257,6 +259,9 @@ fn reply(scenario: &Scenario, method: &str, id: &Value, params: &Value, shared: 
     let result = match method {
         "thread/loaded/list" => json!({"data":scenario.loaded,"nextCursor":null}),
         "initialize" => json!({"userAgent":"software-plant"}),
+        "account/read" => {
+            json!({"account":scenario.account,"requiresOpenaiAuth":scenario.account.is_some()})
+        }
         "thread/read" | "thread/turns/list" | "thread/items/list" | "turn/start" | "turn/steer" => {
             return match turns::reply(shared, method, params) {
                 Some(result) => json!({"id":id,"result":result}),

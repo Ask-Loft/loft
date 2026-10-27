@@ -198,6 +198,7 @@ pub fn observe(state: &mut State, thread: &str, turn: &str, usage: &Value, at: &
     let id = identity(&json!([thread, turn, generation, total]));
     let mut request = event(active, at, &id);
     request["tokens"] = last.tokens();
+    request["usageSource"] = json!({"account":super::account::Account::source(&usage["account"])});
     if skipped {
         gap(state, thread, at);
     }

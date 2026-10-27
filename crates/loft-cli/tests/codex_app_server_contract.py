@@ -108,7 +108,7 @@ class Provider(BaseHTTPRequestHandler):
             {"type": "response.output_item.done", "output_index": 0, "item": item},
             {"type": "response.completed", "response": {
                 "id": f"fixture_{Provider.requests}", "status": "completed", "output": [item],
-                "usage": {"input_tokens": 100, "input_tokens_details": {"cached_tokens": 30},
+                "usage": {"input_tokens": 100, "input_tokens_details": {"cached_tokens": 30, "cache_write_tokens": 7},
                           "output_tokens": 5, "output_tokens_details": {"reasoning_tokens": 2},
                           "total_tokens": 105}}},
         ]
