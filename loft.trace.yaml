@@ -25439,7 +25439,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
-        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
+        body: 52280b2e1472e08e2e718e4763c88642b04acf0bcf5cb50ee2bf938fa252886e
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "a plan keeps its file's path relative to the tree, and none for a file outside it"
         body: e16833824b383ac3c526609d12d09210fab77742fb1971f8615118f54f914a1c
@@ -25448,7 +25448,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan from a file within the tree keeps its path relative to the tree"
-        body: 0edf2a3d6891f6feab106f9049bc014f57a1fa1e9e78fdc7fde3d6ce062e3932
+        body: 4f2320331d8d94a5514c3bd29d66fb31b36ea709ab8caa3f75a7e2c5eeaf700b
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "a plan keeps its file's path relative to the tree, and none for a file outside it"
         body: e16833824b383ac3c526609d12d09210fab77742fb1971f8615118f54f914a1c
@@ -25460,40 +25460,82 @@ links:
         body: 30adc5e61ea5f7ec9bee066f3dccb4d67843d699218185fb2fe575e4a4f6b275
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
-        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
+        body: 52280b2e1472e08e2e718e4763c88642b04acf0bcf5cb50ee2bf938fa252886e
   - node: 01a1646f-546c-7521-9643-bc440f533210
-    reviewed: 9c6f974cbe3f12c3db18c1bb5d783cf8e1e48f06430ec9c6cccffefe2da06637
+    reviewed: 74b762e01fb38eeb1a863ece5dcf4a95eb3783ffc201f3498ea00c2bd12940da
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved"
-        body: 51f27a46142711a8614c7da3d9c56e8d681164ca1fc8be865fbc82c5ae545c51
+        name: "a repeated file plan revises its block within the active stage and records terminal approval"
+        body: 35a75da0a16993f135de4e15cb843c9ab160c82911ab7d948c4b0c70ec443615
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "repeated file revisions in one active stage keep the same scoped plan id"
+        body: 917439530e7fb4c9d8c8c654b0f3c7fc82a6f63f61ff0d5c7edd3a9ac6e8a266
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "a plan in an automatically opened stage keeps its identity after persistence and a stage rename"
+        body: bc32941a35f8f0a8c8d9d8e4379466fc4f1fe11ffdf8dd46cde884d9b5cc2c20
+  - node: 01a17aa0-27b4-71a9-b430-6afc5dc27194
+    reviewed: 0cb3597226bd28e8bca725146e05cee9767f5d484f4470bf90a72d17516109f3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "reusing a file attaches a fresh plan to the active stage and preserves the earlier plan"
+        body: c9ddaa048ac06535435604b86d9fdd27c454f23593fc12409947eac535258188
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "the selected stage belongs to the invoking subagent even when another caller holds the same file"
+        body: 2e7da30e2c2094c33a1494b6ea98ba201f30949eb0d3250f15f9a65629dc7bf3
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "a plan held by another host cannot override the invoking agent active stage"
+        body: b2c58839687253dc5f05e2a9c977ab80554853174c722e910b7043e2bd177d28
+  - node: 01a17aa0-27b4-71a9-b430-6afdda893e1a
+    reviewed: a913029bb434130a6e9600cd2f47cff4210b62a6d8e0be84c6d890aec2c69fb4
+    tests:
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "reusing a file attaches a fresh plan to the active stage and preserves the earlier plan"
+        body: c9ddaa048ac06535435604b86d9fdd27c454f23593fc12409947eac535258188
+  - node: 01a17aa0-27b4-71a9-b430-6afea45e9b49
+    reviewed: d90f08704ff65c44df312b7045a4409b2d5c21c049b423381c5d28feb9f7119a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "an earlier file plan does not prevent opening a stage when none is active"
+        body: 134abf7a903f25dc17e1c63dface87662d5bc8d3503fbafc4d67f13f766b5a6e
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "a plan in an automatically opened stage keeps its identity after persistence and a stage rename"
+        body: bc32941a35f8f0a8c8d9d8e4379466fc4f1fe11ffdf8dd46cde884d9b5cc2c20
+  - node: 01a17aa0-27b4-71a9-b430-6aff1898efa6
+    reviewed: 3f2c176775345fd56d7b372b9824a7d04544cdfce2780495fc563523705588fb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "a legacy filename plan is revised only when it belongs to the active stage"
+        body: 6dca68f08e97f7e02419a66379093a27c7d8dbf241b287fd0b01c8eee2de58a8
+      - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
+        name: "reusing a file attaches a fresh plan to the active stage and preserves the earlier plan"
+        body: c9ddaa048ac06535435604b86d9fdd27c454f23593fc12409947eac535258188
   - node: 01a1646f-546c-7521-9643-bc45e5810ca4
     reviewed: 8762c42ea7bfb78d57376c4855ce4e36244e386c1bc65b4708d132cbb92b0707
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
-        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
+        body: 52280b2e1472e08e2e718e4763c88642b04acf0bcf5cb50ee2bf938fa252886e
   - node: 01a1646f-546c-7521-9643-bc46d0e7e92a
     reviewed: 9d3545f423cc10e21b4a1d576890b44b169acc110a93d21271c5fec243fcf724
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved"
-        body: 51f27a46142711a8614c7da3d9c56e8d681164ca1fc8be865fbc82c5ae545c51
+        name: "a repeated file plan revises its block within the active stage and records terminal approval"
+        body: 35a75da0a16993f135de4e15cb843c9ab160c82911ab7d948c4b0c70ec443615
   - node: 01a1646f-546c-7521-9643-bc489d459a81
     reviewed: cd10eb622abb012278e634bba0133471f490c812c5b556e72b0b8c69e848a3b8
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved"
-        body: 51f27a46142711a8614c7da3d9c56e8d681164ca1fc8be865fbc82c5ae545c51
+        name: "a repeated file plan revises its block within the active stage and records terminal approval"
+        body: 35a75da0a16993f135de4e15cb843c9ab160c82911ab7d948c4b0c70ec443615
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan decided in the terminal first ends the wait the permission request runs, and its verdict is recorded"
-        body: 404477baa27657cb0399fe32c26a25882cd27c047f1acc2b87264305df622a11
+        body: 0d4e9aa55e927e0d1c54675ca8d06d3982749a31416e31d74e3486beb193f817
   - node: 01a1646f-546c-7521-9643-bc49188fb63b
     reviewed: 5f1143c45834704ce302e3e2fd2be76139d1bb5a45154278aedba43c7ea95a1b
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded"
-        body: 22573aa65d2af61d5d1b659cac6f09919d7050ef39760de370540df01de06d40
+        body: 52280b2e1472e08e2e718e4763c88642b04acf0bcf5cb50ee2bf938fa252886e
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "the feedback typed with a rejection is read from what Claude Code gives the agent"
         body: 7bfec9029488fd8e8083d3d35f5fc9e4dddc6b182f0e47140a3828d82dec63d6
@@ -25502,7 +25544,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan rejected in the terminal with no feedback typed is recorded as rejected with no reason"
-        body: 35bbba550fc15a2696bac832f68f09996dfb07e10b6064a0e65a39390cd68655
+        body: 7606bf8b11fe104c712e63b978952c615444c1dfe02b9f6e05789b6d66771fd6
   - node: 01a1646f-546c-7521-9643-bc4b064c0cda
     reviewed: 4cc6d766b76e707ef2f023dcecff83a982f8899eb5a1a563f29c6004b69a0c3c
     tests:
@@ -25514,7 +25556,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan rejected on the page first denies the plan with the reason"
-        body: cc437b32fe0c7b43d9f7ff83ee057b162619ce500febc5a2c758ab0dd59a7c11
+        body: c9e561dfec4a8df2468e02cc4410167a54678ec65ab0444d8dbced13d01c68d9
   - node: 01a1646f-546c-7521-9643-bc4d46ffa3da
     reviewed: c3a8bbbba28994fbd5f60544a0af31bac594c244efa63146ec824f54680f0cc0
     tests:

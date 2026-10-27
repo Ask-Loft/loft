@@ -122,6 +122,8 @@ test('a refused write leaves the questions to the terminal', async ($, on) => {
   expect(yardRuns(w).filter(run => run.startsWith('wait') || run.startsWith('answer'))).toEqual([])
 })
 
+const PLAN_ID = 'plan-10-plan-shelf-k-shape'
+
 const PLAN = '# Build the shelf\n\nOne step.'
 
 /**
@@ -148,7 +150,7 @@ async function planAsked($: Engine, w: ReturnType<typeof world>, input: Record<s
   }
 }
 
-const approvedOnPage = () => answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }])
+const approvedOnPage = () => answeredOnPage([{ ...block(PLAN_ID, 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }])
 
 test("the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded", async ($, on) => {
   const w = world(on)
@@ -157,11 +159,11 @@ test("the agent's plan goes to Yard Log as a plan block in plan mode, with no pa
   await start($)
   const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
   expect(writes(w).at(-1)).toEqual([
-    { id: 'plan-shelf', kind: 'plan', stage: 'shape', title: 'Build the shelf', markdown: PLAN, planMode: true },
+    { id: PLAN_ID, kind: 'plan', stage: 'shape', title: 'Build the shelf', markdown: PLAN, planMode: true },
   ])
   expect(ran.deny ?? ran.text).toMatch(/split it/)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
-  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'rejected', reason: 'split it' }])
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: PLAN_ID, verdict: 'rejected', reason: 'split it' }])
 })
 
 test('a plan rejected in the terminal with no feedback typed is recorded as rejected with no reason', async ($, on) => {
@@ -171,7 +173,7 @@ test('a plan rejected in the terminal with no feedback typed is recorded as reje
   await start($)
   await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
-  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'rejected' }])
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: PLAN_ID, verdict: 'rejected' }])
 })
 
 test('a plan from a file within the tree keeps its path relative to the tree', async ($, on) => {
@@ -180,7 +182,7 @@ test('a plan from a file within the tree keeps its path relative to the tree', a
   await start($)
   await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: `${TREE}/docs/plans/shelf.md` } as never)
   expect(writes(w).at(-1)).toEqual([
-    { id: 'plan-shelf', kind: 'plan', stage: 'shape', title: 'Build the shelf', markdown: PLAN, path: 'docs/plans/shelf.md', planMode: true },
+    { id: PLAN_ID, kind: 'plan', stage: 'shape', title: 'Build the shelf', markdown: PLAN, path: 'docs/plans/shelf.md', planMode: true },
   ])
 })
 
@@ -218,7 +220,7 @@ test('a plan rejected on the page first denies the plan with the reason', async 
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   await start($)
   const asked = await planAsked($, w, { plan: PLAN, planFilePath: '/p/shelf.md' })
-  w.state.page.resolve(answeredOnPage([{ ...block('plan-shelf', 'plan', {}), outcome: { verdict: 'rejected', reason: 'too big', channel: 'page' } }]))
+  w.state.page.resolve(answeredOnPage([{ ...block(PLAN_ID, 'plan', {}), outcome: { verdict: 'rejected', reason: 'too big', channel: 'page' } }]))
   const message = 'The person rejected the plan on the Yard page: too big'
   expect(await asked.permission).toEqual({ decision: { behavior: 'deny', message } })
   const ran = await asked.answer({ deny: message })
@@ -234,7 +236,7 @@ test('a plan decided in the terminal first ends the wait the permission request 
   expect(await asked.permission).toEqual({})
   expect(w.state.killed).toBe(1)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
-  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'approved' }])
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: PLAN_ID, verdict: 'approved' }])
 })
 
 const sentDoc = (blocks: ReturnType<typeof block>[], agent: Record<string, unknown> = { session: SESSION }) =>
@@ -407,19 +409,19 @@ test("questions on a branch with no Yard Log open it, in a stage the mod opens, 
   expect(JSON.parse(recorded.stdin!)).toEqual([{ block: `ask-${callIdOf(w, 'AskUserQuestion')}-1`, labels: ['Visitors'], notes: 'only them' }])
 })
 
-test('a plan from a file Yard Log holds is a new version of its block, in its stage, and an approval in the terminal is recorded approved', async ($, on) => {
+test('a repeated file plan revises its block within the active stage and records terminal approval', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({
-    stages: [{ ...stage('earlier', 'done', { session: SESSION }), blocks: [block('plan-shelf', 'plan', { title: 'Old' })] }, stage('shape', 'active', { session: SESSION })],
+    stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block(PLAN_ID, 'plan', { title: 'Old' })] }],
   })
   w.state.terminal.ExitPlanMode = () => ({ result: 'approved', text: 'approved' })
   await start($)
   const input = { plan: PLAN, planFilePath: '/p/shelf.md' }
   await $.tool.call({ tool: 'ExitPlanMode', ...input } as never)
-  expect(writes(w).at(-1)!.map(each => [each.id, each.stage])).toEqual([['plan-shelf', 'earlier']])
+  expect(writes(w).at(-1)!.map(each => [each.id, each.stage])).toEqual([[PLAN_ID, 'shape']])
   expect(w.state.calls.at(-1)).toMatchObject(input)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
-  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: 'plan-shelf', verdict: 'approved' }])
+  expect(JSON.parse(recorded.stdin!)).toEqual([{ block: PLAN_ID, verdict: 'approved' }])
 })
 
 test("two subagents asking at one revision write to stages and blocks whose ids are made from each call's own id, not from what the mod read", async ($, on) => {

@@ -9,11 +9,12 @@ import type { EngineInterface, ToolCallResult } from 'claude-code'
 import type { Doc, Ran } from '../loft'
 import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
-import { activeStage, blockById, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
+import { activeStage, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Running } from './run'
 import { askerOf, peek, prepare, run, state, type Outcome, type Presenting } from './state'
 
 type Next = ((e: never) => Promise<ToolCallResult>) & { signal: AbortSignal }
+type SelectedStage = { id: string; key?: string; blocks?: Block[]; opened?: Record<string, unknown> }
 
 const ENDED: Ran = { exitCode: -1, stderr: '', unrun: 'ended' }
 
@@ -62,15 +63,25 @@ const isAnswered = (ran: ToolCallResult) =>
   Object.keys((ran.result as { answers?: object } | undefined)?.answers ?? {}).length > 0
 
 /** The stage a batch writes to: the agent's active one, or one the mod opens for it. */
-function stageFor(doc: Doc, asker: Asker, minted: string): { id: string; opened?: Record<string, unknown> } {
+function stageFor(doc: Doc, asker: Asker, minted: string): SelectedStage {
   const active = activeStage(doc, asker)
-  if (active) return { id: active.id }
+  if (active) return { id: active.id, key: active.key, blocks: active.blocks }
   const id = idOf('asked', minted)
   const after = lastUnplanned(doc)
   return {
     id,
     opened: { id, kind: 'stage', title: 'Asked in the session', status: 'active', ...(after ? { after: after.id } : {}) },
   }
+}
+
+/** A file's revisions belong to the selected stage, including blocks with legacy ids. */
+function planFor(stage: SelectedStage, path: string | undefined, fallback: string): string {
+  const base = planId(path, fallback)
+  if (!path) return base
+  // The length separates the filename identity from the stage namespace without ambiguity.
+  const prefix = idOf('plan', String(base.length), base)
+  const held = stage.blocks?.find(block => block.kind === 'plan' && (block.id === base || block.id.startsWith(`${prefix}-`)))
+  return held?.id ?? idOf(prefix, stage.key ?? stage.id)
 }
 
 /**
@@ -153,9 +164,8 @@ export async function presentPlan(
   if (!asking) return next(e as never)
   const { cwd, caller, doc } = asking
   const minted = mintedFor(e, caller)
-  const id = planId(path, idOf('plan', minted))
-  const held = blockById(doc, id)
-  const stage = held ? { id: held.stage.id } : stageFor(doc, askerOf(caller), minted)
+  const stage = stageFor(doc, askerOf(caller), minted)
+  const id = planFor(stage, path, idOf('plan', minted))
   const kept = planPath(typeof doc?.tree === 'string' ? doc.tree : undefined, path)
   const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(kept ? { path: kept } : {}), planMode: true }
   const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])

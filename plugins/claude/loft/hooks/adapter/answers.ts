@@ -120,7 +120,7 @@ export function planTitle(markdown: string, path: string | undefined): string {
   return name && name !== '' ? name : 'Plan'
 }
 
-/** A plan's block id, from its file, so that the same file is a new version of the same block. */
+/** A plan's filename identity; the caller scopes it to the selected stage. */
 export function planId(path: string | undefined, fallback: string): string {
   const name = stemOf(path)
   return name ? idOf('plan', name) : fallback
