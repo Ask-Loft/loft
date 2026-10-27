@@ -19,6 +19,12 @@ pub enum Notice {
     },
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CallFailure {
+    Refused,
+    Unavailable,
+}
+
 pub fn endpoint(
     explicit: Option<&Path>,
     codex_home: Option<PathBuf>,
@@ -39,6 +45,10 @@ pub fn endpoint(
 #[path = "app_server_connection.rs"]
 mod transport;
 pub use transport::Connection;
+
+#[cfg(test)]
+#[path = "notification_connection.rs"]
+pub mod notifications;
 
 #[cfg(all(test, unix))]
 #[path = "app_server_tests.rs"]

@@ -1,5 +1,6 @@
 //! Local Codex app-server metadata and notification peer. No model or transcript is needed.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::ErrorKind;
 use std::os::unix::net::UnixListener;
@@ -14,6 +15,26 @@ use tungstenite::{Error, Message, accept};
 
 static NEXT: AtomicU64 = AtomicU64::new(0);
 
+#[path = "codex_turns.rs"]
+mod turns;
+
+#[derive(Clone)]
+pub struct NativeThread {
+    pub directory: String,
+    pub active_turn: Option<String>,
+    pub items: Vec<Value>,
+}
+
+impl Default for NativeThread {
+    fn default() -> Self {
+        Self {
+            directory: "/work".into(),
+            active_turn: None,
+            items: Vec::new(),
+        }
+    }
+}
+
 #[derive(Clone, Default)]
 pub struct Scenario {
     pub loaded: Vec<String>,
@@ -22,6 +43,10 @@ pub struct Scenario {
     pub silent: bool,
     pub refuse_subscription: bool,
     pub malformed: bool,
+    pub threads: BTreeMap<String, NativeThread>,
+    pub refuse_methods: Vec<String>,
+    /// Apply a request but close its first connection before acknowledging it.
+    pub drop_acknowledgements: Vec<String>,
 }
 
 #[derive(Default)]
@@ -29,6 +54,9 @@ struct Shared {
     stop: AtomicBool,
     requests: Mutex<Vec<Value>>,
     outgoing: Mutex<Vec<Message>>,
+    threads: Mutex<BTreeMap<String, NativeThread>>,
+    dropped: Mutex<BTreeSet<String>>,
+    turns: AtomicU64,
 }
 
 pub struct CodexAppServer {
@@ -48,6 +76,16 @@ impl CodexAppServer {
         let listener = UnixListener::bind(&path).expect("bind simulator socket");
         listener.set_nonblocking(true).unwrap();
         let shared = Arc::new(Shared::default());
+        *shared.threads.lock().unwrap() = scenario
+            .loaded
+            .iter()
+            .map(|id| {
+                (
+                    id.clone(),
+                    scenario.threads.get(id).cloned().unwrap_or_default(),
+                )
+            })
+            .collect();
         let running = Arc::clone(&shared);
         let worker = thread::spawn(move || serve(&listener, &scenario, &running));
         Self {
@@ -90,6 +128,16 @@ impl CodexAppServer {
             .unwrap()
             .push(Message::Close(None));
     }
+
+    pub fn end_turn(&self, thread: &str, interrupted: bool) {
+        let mut threads = self.shared.threads.lock().unwrap();
+        if let Some(turn) = threads
+            .get_mut(thread)
+            .and_then(|state| state.active_turn.take())
+        {
+            self.emit(&json!({"method":"turn/completed","params":{"threadId":thread,"turn":{"id":turn,"status":if interrupted {"interrupted"} else {"completed"}}}}));
+        }
+    }
 }
 
 impl Drop for CodexAppServer {
@@ -103,31 +151,34 @@ impl Drop for CodexAppServer {
 }
 
 fn serve(listener: &UnixListener, scenario: &Scenario, shared: &Shared) {
-    while !shared.stop.load(Ordering::Acquire) {
-        let Ok((stream, _)) = listener.accept() else {
-            thread::sleep(Duration::from_millis(2));
-            continue;
-        };
-        stream.set_nonblocking(false).unwrap();
-        stream
-            .set_read_timeout(Some(Duration::from_millis(50)))
-            .unwrap();
-        stream
-            .set_write_timeout(Some(Duration::from_millis(50)))
-            .unwrap();
-        let Ok(mut socket) = accept(stream) else {
-            continue;
-        };
-        connected(&mut socket, scenario, shared);
-    }
+    thread::scope(|scope| {
+        while !shared.stop.load(Ordering::Acquire) {
+            let Ok((stream, _)) = listener.accept() else {
+                thread::sleep(Duration::from_millis(2));
+                continue;
+            };
+            stream.set_nonblocking(false).unwrap();
+            stream
+                .set_read_timeout(Some(Duration::from_millis(50)))
+                .unwrap();
+            stream
+                .set_write_timeout(Some(Duration::from_millis(50)))
+                .unwrap();
+            let Ok(mut socket) = accept(stream) else {
+                continue;
+            };
+            scope.spawn(move || connected(&mut socket, scenario, shared));
+        }
+    });
 }
 
 type Peer = tungstenite::WebSocket<std::os::unix::net::UnixStream>;
 
 fn connected(socket: &mut Peer, scenario: &Scenario, shared: &Shared) {
     let mut subscribed = false;
+    let mut cursor = shared.outgoing.lock().unwrap().len();
     while !shared.stop.load(Ordering::Acquire) {
-        if subscribed && !send_pending(socket, shared) {
+        if subscribed && !send_pending(socket, shared, &mut cursor) {
             break;
         }
         match socket.read() {
@@ -144,8 +195,11 @@ fn connected(socket: &mut Peer, scenario: &Scenario, shared: &Shared) {
     }
 }
 
-fn send_pending(socket: &mut Peer, shared: &Shared) -> bool {
-    let pending = std::mem::take(&mut *shared.outgoing.lock().unwrap());
+fn send_pending(socket: &mut Peer, shared: &Shared, cursor: &mut usize) -> bool {
+    let outgoing = shared.outgoing.lock().unwrap();
+    let pending = outgoing[*cursor..].to_vec();
+    *cursor = outgoing.len();
+    drop(outgoing);
     pending
         .into_iter()
         .all(|message| socket.send(message).is_ok())
@@ -169,7 +223,15 @@ fn requested(
         return true;
     };
     let method = request["method"].as_str().unwrap_or_default();
-    let response = reply(scenario, method, id);
+    let response = reply(scenario, method, id, &request["params"], shared);
+    if scenario
+        .drop_acknowledgements
+        .iter()
+        .any(|name| name == method)
+        && shared.dropped.lock().unwrap().insert(method.into())
+    {
+        return false;
+    }
     if socket
         .send(Message::Text(response.to_string().into()))
         .is_err()
@@ -186,13 +248,23 @@ fn requested(
     true
 }
 
-fn reply(scenario: &Scenario, method: &str, id: &Value) -> Value {
-    if method == "thread/resume" && scenario.refuse_subscription {
+fn reply(scenario: &Scenario, method: &str, id: &Value, params: &Value, shared: &Shared) -> Value {
+    if (method == "thread/resume" && scenario.refuse_subscription)
+        || scenario.refuse_methods.iter().any(|name| name == method)
+    {
         return json!({"id":id,"error":{"code":-32600,"message":"subscription refused"}});
     }
     let result = match method {
         "thread/loaded/list" => json!({"data":scenario.loaded,"nextCursor":null}),
         "initialize" => json!({"userAgent":"software-plant"}),
+        "thread/read" | "thread/turns/list" | "thread/items/list" | "turn/start" | "turn/steer" => {
+            return match turns::reply(shared, method, params) {
+                Some(result) => json!({"id":id,"result":result}),
+                None => {
+                    json!({"id":id,"error":{"code":-32600,"message":"thread or expected turn unavailable"}})
+                }
+            };
+        }
         _ => json!({}),
     };
     json!({"id":id,"result":result})

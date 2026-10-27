@@ -17943,6 +17943,9 @@ links:
       - file: "crates/loft-cli/src/yard/codex/app_server_tests.rs"
         name: "an_unloaded_thread_is_never_resumed"
         body: d163d3d7ab6e70a21d8fec5d602f983180d06a0f8c8382e8c91415000cd1d747
+      - file: "crates/loft-cli/src/yard/codex/notification_connection_tests.rs"
+        name: "a_notification_client_does_not_displace_an_existing_usage_client"
+        body: ce36803351e0b58b946114a8c832055c30eca906705ad42f047abe6d530840f7
   - node: 01a17989-a8b9-74b1-9049-073c2d26a1c0
     reviewed: c9017c3c8d81bd5784900bfbf07f11636553b7fd52caeea05f5c266495245a7c
     tests:
@@ -17970,6 +17973,9 @@ links:
       - file: "crates/loft-cli/src/yard/codex/app_server_tests.rs"
         name: "malformed_oversized_and_disconnected_peers_are_unavailable_without_accounting"
         body: af0d3136ac2b3978549a38a0080c7932920d7fe5302f3185d335f5b582ecc5b5
+      - file: "crates/loft-cli/src/yard/codex/notification_connection_tests.rs"
+        name: "an_explicit_native_refusal_is_distinct_from_an_uncertain_transport_failure"
+        body: c29ad2e03f7208049cbfa1b58d69e397395b8e6664d0dd4afd625d62457c5183
   - node: 01a17989-a8b9-74b1-9049-0740529d4832
     reviewed: 1de26044d1e9ad112ed0e4fe1e65d67412acfcaf1afe6bb1e188afbb147216f2
     tests:
@@ -17985,6 +17991,78 @@ links:
       - file: "crates/loft-cli/src/yard/codex/app_server_contract.rs"
         name: "real_codex_subscription_and_usage_obey_the_supported_contract_without_an_account"
         body: b83d84531204a3c96d8328ea592d77c3f0a995dfd322b3b65175218501c4f824
+  - node: 01a17afd-c25e-744a-84c1-0854f822502b
+    reviewed: 7fdc46aab31268c866f866bfe7395a60c6be068ef4cf6b5b7ad2c90b2fef3220
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-0855c7bb7148
+    reviewed: ab46df50c6ab1ebcf643272babf0bbe87942399c559483c4176273926109da18
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-08562ca4abc8
+    reviewed: 4c19a038e1566d8b3196f1a481262e67ba8b0d8109b12c8511ad08513a039ed5
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-08570f7a52fc
+    reviewed: d1454e1a1e81f47d1ed92a09eaf35b8db5414cf5aa86ea77b6cf39334a373a51
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-0858fa7ebd34
+    reviewed: 91953a5a1d42314bfbe8a208c36cd827e6dde0b35e43878a949e1159113420c0
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+      - file: "crates/loft-cli/src/yard/codex/notification_connection_tests.rs"
+        name: "receipt_inspection_stops_after_its_bounded_pages_and_ignores_assistant_text"
+        body: 62f5b3c62e3b03db1b07db798b5ccf7c80dcdaa39842a331be81d2da7fee824e
+  - node: 01a17afd-c25e-744a-84c1-08598ae1c84f
+    reviewed: a02e3009c5d759918f89cdf781496e6857005eb78231a6d637cefab31e7d3d43
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_connection_tests.rs"
+        name: "a_lost_acknowledgment_can_be_recovered_from_the_native_receipt_after_reconnect"
+        body: ba0177c2d119ef0310c709bd1b9f984ed1c2c2f825c06f293d48d05a57bfe502
+  - node: 01a17afd-c25e-744a-84c1-085a2e450238
+    reviewed: e01c2826e1563a779e0f94ea9f7489076a95cd58a6b22029614cd691e07c8a03
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-085b7fc4beb5
+    reviewed: 2e3016aaecc75a92ccbc2c306d8dc7850a0559039bbc79389863e6cb73f0024b
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
   - node: 01a13654-6e12-74a1-ad7f-e7d4c0dc3e58
     reviewed: 3f41a2be394b6b630da9e6129a912554832b8a0f5b879b067f3c43e53b5362f0
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/changing-a-specified-product.md, read it there."
@@ -19977,6 +20055,51 @@ links:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_session_context_is_a_peek_with_explicit_caller_arguments"
         body: 4c64cd0ef7c04383501e2e688fec8aee41b0b81f107a9e9d7c98a6f48b60894b
+  - node: 01a17afd-c25e-744a-84c1-086a0647ad97
+    reviewed: 14151fe41e3985ff79716979b3deb8956c63f083a9b1ac3474ff99caa4860847
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-086bb5906510
+    reviewed: 2b8481b9702612aa38b71eab9123a1ef9d6e1b58f8d22143767c54849ff7c85f
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-086d672db53d
+    reviewed: bf7b4db28cad4223e7ce053e6791ada24eeffbe980293b14c769949477fc087c
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "simulated_native_notifications_obey_the_shared_delivery_contract"
+        body: 7ebad61855b8bbc7a596138c1cdfbd624708bb8647fea570d21ec0f00345c62e
+      - file: "crates/loft-cli/src/yard/codex/notification_contract.rs"
+        name: "real_native_notifications_obey_the_shared_delivery_contract"
+        body: a5fc1e56d19e049ed66acd7e9a665e3a35c4312e4f37af8ac82be4cb448a7d3d
+  - node: 01a17afd-c25e-744a-84c1-086e87310a0f
+    reviewed: eba5ea1c8a68d36895c31bc2b9074e6524646c91d84a3f0e74adc36687efa0dd
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_connection_tests.rs"
+        name: "an_unloaded_thread_or_different_directory_is_not_used_for_delivery"
+        body: 24d18431790a2c99d63612f6417db65087dab05f7f3205e8472bea5f0a892299
+  - node: 01a17afd-c25e-744a-84c1-08861420e599
+    reviewed: 6c327611cc1df289565548651fa05f9abbdd819a9e6fd1f0a7a3ab552e8e9722
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_connection_tests.rs"
+        name: "an_idle_loaded_thread_can_be_inspected_without_returning_its_conversation"
+        body: a2d5207b6aa2080314fa17e3685351e7ad8767cbe7109a3fdd7e135e2e215558
+  - node: 01a17afd-c25e-744a-84c1-088721e93910
+    reviewed: a406c35fcfdcf3e5f4d5be7ca737d8f21edbfaaec3f778bd6e892a6365184285
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/notification_connection_tests.rs"
+        name: "idle_delivery_is_receipted_and_a_repeated_start_joins_the_active_turn"
+        body: a0bc7de1932c347246ee90bf4593dbd827b1d4f28f64b65796708fb300e78102
   - node: 01a1646f-546e-76cb-8b4f-f2273651a416
     reviewed: 4851a48ce032bda3e7ebcb5725e47ec4ec29d88bef0962ca96578f8be563c5f9
     tests:

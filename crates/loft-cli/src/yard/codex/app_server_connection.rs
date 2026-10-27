@@ -11,7 +11,7 @@ use tungstenite::handshake::HandshakeError;
 use tungstenite::protocol::WebSocketConfig;
 use tungstenite::{Error, Message, WebSocket};
 
-use super::{Notice, Result};
+use super::{CallFailure, Notice, Result};
 
 #[path = "app_server_socket.rs"]
 mod socket;
@@ -105,26 +105,43 @@ impl Connection {
     }
 
     fn call(&mut self, method: &str, params: &Value, deadline: Instant) -> Result<Value> {
+        self.request_until(method, params, deadline)
+            .map_err(|_| FAILURE.to_owned())
+    }
+
+    #[cfg(test)]
+    pub(super) fn request(
+        &mut self,
+        method: &str,
+        params: &Value,
+    ) -> std::result::Result<Value, CallFailure> {
+        self.request_until(method, params, Instant::now() + Duration::from_millis(300))
+    }
+
+    fn request_until(
+        &mut self,
+        method: &str,
+        params: &Value,
+        deadline: Instant,
+    ) -> std::result::Result<Value, CallFailure> {
         self.next += 1;
-        self.send(&json!({"id":self.next,"method":method,"params":params}))?;
+        self.send(&json!({"id":self.next,"method":method,"params":params}))
+            .map_err(|_| CallFailure::Unavailable)?;
         loop {
-            let Some(value) = self.read()? else {
-                pause(deadline)?;
+            let Some(value) = self.read().map_err(|_| CallFailure::Unavailable)? else {
+                pause(deadline).map_err(|_| CallFailure::Unavailable)?;
                 continue;
             };
             if value["id"].as_u64() == Some(self.next) {
-                return value
-                    .get("result")
-                    .cloned()
-                    .ok_or_else(|| FAILURE.to_owned());
+                return response(&value);
             }
             if self.pending.len() >= 128 {
-                return Err(FAILURE.into());
+                return Err(CallFailure::Unavailable);
             }
             if let Some(notice) = notice(&value) {
                 self.pending.push_back(notice);
             }
-            pause(deadline)?;
+            pause(deadline).map_err(|_| CallFailure::Unavailable)?;
         }
     }
 
@@ -150,6 +167,13 @@ impl Drop for Connection {
         }
         let _ = self.socket.close(None);
     }
+}
+
+fn response(value: &Value) -> std::result::Result<Value, CallFailure> {
+    if value.get("error").is_some() {
+        return Err(CallFailure::Refused);
+    }
+    value.get("result").cloned().ok_or(CallFailure::Unavailable)
 }
 
 fn failed(_: impl std::fmt::Display) -> String {
