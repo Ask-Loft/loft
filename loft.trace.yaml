@@ -20394,6 +20394,30 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_notifications.rs"
         name: "context_reports_delivery_status_and_late_cancelled_prompts_cannot_rearm_the_worker"
         body: eacc2d9051c376258297a41f72083ceaf213a6f02d2f484cb77a1035d2c76e23
+  - node: 01a17afd-c25e-744a-84c1-088e866475f9
+    reviewed: 78874004f667b382ef25e8a76b2eb43f8dcaca768fba73d0c714dd88c9c69b82
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback"
+        body: cfa7b8b1285527a5becf573061d95400437698cb33025baee04d9350855ba4d3
+  - node: 01a17afd-c25e-744a-84c1-088f991ff6f9
+    reviewed: 02ce8cf6a6f7288a5c1cd6c8701b45c6526b3c5cedb63f9e9247d2e133159306
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback"
+        body: cfa7b8b1285527a5becf573061d95400437698cb33025baee04d9350855ba4d3
+  - node: 01a17afd-c25e-744a-84c1-089058137937
+    reviewed: ca20489f36da014f3d98e0481f244a439e15f4889d79420a7bbb536e77c6c1e5
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback"
+        body: cfa7b8b1285527a5becf573061d95400437698cb33025baee04d9350855ba4d3
+  - node: 01a17afd-c25e-744a-84c1-0891ba177c63
+    reviewed: 0e4f36222af6486c7c7d8f9a06b8830f8581709f84f6be8079d75571db70919f
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback"
+        body: cfa7b8b1285527a5becf573061d95400437698cb33025baee04d9350855ba4d3
   - node: 01a1646f-546e-76cb-8b4f-f2273651a416
     reviewed: 4851a48ce032bda3e7ebcb5725e47ec4ec29d88bef0962ca96578f8be563c5f9
     tests:

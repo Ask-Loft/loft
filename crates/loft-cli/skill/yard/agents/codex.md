@@ -33,17 +33,40 @@ ignores `.yard/`; where it is ignored, leave it out of commits.
 ### Questions and plan approval use the Yard page
 
 Write the questions, approvals and plans of one decision point in a batch with `--send`.
-Give the person the page address, then wait with `--submission` set to the returned submission
-key. Read the answers and outcomes before proceeding. A wait that returns `pending` after 540
-seconds has no answer yet: read what changed, then wait again while the decision is needed.
-Withdraw a submission the work has overtaken. Never treat a timeout as approval, and never write
-the person's answers yourself.
+Give the person the page address, then await the decision using automatic monitoring or explicit
+waiting as described below. Read the answers and outcomes before proceeding. Withdraw a
+submission the work has overtaken. Never treat a timeout as approval, and never write the
+person's answers yourself.
 
 Yard submissions use the page rather than native questions. Native question dialogs and native
 plan approvals are not synchronized with the page. Page approval does not switch Codex out of
 plan mode or grant permissions: Codex's mode and permissions still govern what you may execute.
 When the host prevents a required write, explain the constraint and keep the plan in the
 conversation until the host permits that write.
+
+### Automatic decisions and explicit waiting
+
+Session context reports whether decision notifications are available, unavailable or uncertain.
+When decision notifications are available, you may end your turn after sending the submission.
+The adapter's worker monitors fully resolved submissions and notifies your already loaded
+native thread when a decision arrives; automatic monitoring fulfills the shared workflow's wait.
+Do not keep the agent polling or keep a turn alive just to await the person.
+
+When availability is unavailable, uncertain or not reported, wait with `--submission` set to the
+returned submission key. A wait that returns `pending` after 540 seconds has no answer yet:
+read what changed, then wait again while the decision is needed. If automatic monitoring becomes
+unavailable while you are active and a decision is still needed, use this explicit waiting
+fallback. Neither availability nor the end of a turn is an approval.
+
+An adapter notification identifies the Yard Log, tree, branch, submission and resolution revision;
+it is not a new approval. Before acting, read with `--mark-read` using your supplied caller identity
+in the named tree and take the authoritative counted answers and outcomes from Yard. A retry
+after uncertain delivery may produce an exceptional duplicate notification: make a fresh Yard read,
+check what work is already done, and do not repeat completed work because another ping arrived.
+
+Interruption or session end disarms automatic continuation. A later genuine user prompt can rearm
+monitoring; an adapter-generated notification cannot. Normal turn completion leaves monitoring armed.
+Native mode, permissions and hook trust continue to govern all work.
 
 ### Planning workflow
 
@@ -112,8 +135,8 @@ for the implementer. Keep the plan concise but complete: summary, implementation
 interfaces, tests and assumptions. Group steps by behavior or subsystem rather than listing
 every file. Include risks and compatibility or rollout work where they affect implementation.
 
-Submit the plan with `--send`, give the person the Yard page address, then wait with
-`--submission` and read the outcome. Leave the build's stages `planned` and wait for approval
+Submit the plan with `--send`, give the person the Yard page address, then await and read the
+outcome using automatic monitoring or explicit waiting above. Leave the build's stages `planned` and wait for approval
 before implementation. No question answer, timeout or native plan rendering counts as Yard plan
 approval. An approved Yard plan authorizes only its described build when native mode and
 permissions allow it.

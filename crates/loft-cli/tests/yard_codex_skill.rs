@@ -234,3 +234,26 @@ fn codex_plugin_hooks_use_the_native_adapter_with_bounded_commands_and_one_backg
         }
     }
 }
+
+#[test]
+fn codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback() {
+    let text = adaptation();
+    for phrase in [
+        "When decision notifications are available",
+        "end your turn after sending the submission",
+        "worker monitors fully resolved submissions",
+        "automatic monitoring fulfills the shared workflow's wait",
+        "unavailable, uncertain or not reported",
+        "wait with `--submission`",
+        "Never treat a timeout as approval",
+        "read with `--mark-read` using your supplied caller identity",
+        "exceptional duplicate notification",
+        "fresh Yard read",
+        "not a new approval",
+        "Interruption or session end disarms automatic continuation",
+        "genuine user prompt can rearm",
+        "Normal turn completion leaves monitoring armed",
+    ] {
+        assert!(text.contains(phrase), "{phrase}");
+    }
+}
