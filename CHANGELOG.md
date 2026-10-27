@@ -5,6 +5,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard cards distinguish their Created and Updated times while keeping their stored timeline
+  positions through edits, mode grouping and reversing the stage view.
+
 - Codex Yard observes latest-request token usage from an existing local app server during
   identified native turns. Cached input is separated from fresh input, missing counters and
   observation gaps stay unavailable, and reconnects import no historical totals. Stable event

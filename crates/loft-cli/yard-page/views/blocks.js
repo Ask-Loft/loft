@@ -305,13 +305,18 @@ const VIEW_NAMES = {
  */
 function meta(block) {
   const version = block.version;
+  const first = (block.versions ?? []).find((each) => each.number === 1)
+    ?? (version.number === 1 ? version : null);
   const earlier = (block.versions ?? []).filter((each) => each.key !== version.key).reverse();
   return h(
     'footer',
     { class: 'block-meta' },
     h('span', { class: 'who' }, who(version.act.by)),
     h('span', {}, `version ${version.number}`),
-    h('time', { datetime: version.act.at }, when(version.act.at)),
+    h('span', {}, 'Created ', first ? h('time', { datetime: first.act.at }, when(first.act.at)) : 'unavailable'),
+    version.number > 1
+      ? h('span', {}, 'Updated ', h('time', { datetime: version.act.at }, when(version.act.at)))
+      : null,
     earlier.length
       ? kept.details(
           { path: `${block.key}/versions`, open: false },

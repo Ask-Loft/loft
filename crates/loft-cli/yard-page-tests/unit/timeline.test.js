@@ -210,13 +210,15 @@ test('a field whose HTML the page server did not give is drawn as its text', () 
   assert.ok(!drawn.querySelector('.detail code'));
 });
 
-test('each block offers the agent that wrote it, its version and the time it was written', () => {
+test('each block offers its current author and version with its creation time labelled', () => {
   const note = block('note', 'n1', { markdown: 'x', html: '<p>x</p>', folded: false }, { by: EXPLORE });
   const drawn = card(note, context(log([stage('s', 'S', 'active', [note])])));
   const meta = drawn.querySelector('.block-meta');
   assert.equal(meta.querySelector('.who').textContent, 'Explore');
   assert.match(meta.textContent, /version 1/);
   assert.equal(meta.querySelector('time').getAttribute('datetime'), '2026-01-01T10:00:00Z');
+  assert.match(meta.textContent, /Created/);
+  assert.doesNotMatch(meta.textContent, /Updated/);
 });
 
 test('a block with more than one version offers each earlier version, with who wrote it and when', () => {

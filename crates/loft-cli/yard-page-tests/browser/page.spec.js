@@ -1012,3 +1012,24 @@ test('historical Codex cache-write zeros display as unavailable while their sour
   await expect(row.locator('td').nth(2)).toHaveText('Unavailable');
   expect(source.read()).toBe(source.text);
 });
+
+test('editing a card keeps its position and creation time while showing its update', async ({ page }) => {
+  write([
+    { id: 'order-first', kind: 'note', stage: 'shape', title: 'First captured', markdown: 'Before' },
+    { id: 'order-second', kind: 'note', stage: 'shape', title: 'Second captured', markdown: 'After' },
+  ]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  const shape = page.locator('#block-shape');
+  if (await shape.getAttribute('open') === null) await shape.locator(':scope > summary').click();
+  const first = page.locator('#block-order-first');
+  const meta = first.locator('.block-meta');
+  await expect(meta).toContainText('Created');
+  const created = await meta.locator('time').first().getAttribute('datetime');
+  await expect(meta).not.toContainText('Updated');
+  write([{ id: 'order-first', kind: 'note', stage: 'shape', title: 'First captured', markdown: 'Edited' }]);
+  await expect(meta).toContainText('Updated', { timeout: LIVE });
+  await expect(meta.locator('time').first()).toHaveAttribute('datetime', created);
+  const cards = page.locator('[id="block-order-first"], [id="block-order-second"]');
+  expect(await cards.evaluateAll(elements => elements.map(element => element.id))).toEqual(['block-order-first', 'block-order-second']);
+});

@@ -23244,6 +23244,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "each stage shows its title, its status as a word, its goal and its owner"
         body: e3cccaf55ff525be581cf7ce3372b03a4520723a3b8be060fd7e25297e08ed94
+  - node: 01a17f75-05dc-7361-a0cd-c0247d869c6b
+    reviewed: c25420bb3712caa444ff16e83d3f6b9500f68afed77f1390ca9a844763f92c0f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/order.test.js"
+        name: "updating a block preserves its position through mode grouping and reversing stages"
+        body: 69822870f5d487bbc53cb2914dddcd58d707967eb14c02ebff96118f4e0e28a3
+  - node: 01a17f75-05dc-7361-a0cd-c025788f6f99
+    reviewed: cec4a8eb62c337cd4d6318e7ab7998c99425fc0e2ee3bac0b55b974f00a372a7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/order.test.js"
+        name: "updating a block preserves its position through mode grouping and reversing stages"
+        body: 69822870f5d487bbc53cb2914dddcd58d707967eb14c02ebff96118f4e0e28a3
   - node: 01a1690b-2c9b-7594-809f-4a8b682c03f5
     reviewed: 8af40b72e585a526966ba9ec1a4717bafcb502268892efc0a5b51ac1810854a6
     tests:
@@ -23316,6 +23328,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
         name: "the switch of order lies at the left of the line above the stages, shown only with the timeline"
         body: 162dcc786e9b3132cc318f62d8b350052124eedb11bbea9a6a6c768167659b1b
+  - node: 01a17f75-05dc-7361-a0cd-c0268b033931
+    reviewed: 2770602722e35ad5cef105c46772236eab053532756649725b9f2bf138913052
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/order.test.js"
+        name: "updating a block preserves its position through mode grouping and reversing stages"
+        body: 69822870f5d487bbc53cb2914dddcd58d707967eb14c02ebff96118f4e0e28a3
   - node: 01a1646f-546d-7042-befd-eb3184fc5769
     reviewed: f10b42c55c0593ed55a5dc061341a1aebae467514f05cb0fd39f4a2f472f9bab
     tests:
@@ -23458,11 +23476,17 @@ links:
         name: "a fix shows a mark that names it a fix beside its state, and a regular task shows none"
         body: 5d4d75ad0bfef105b1daccd3c0d9651f2a9e7ff5b48f21acc1924bc940be2112
   - node: 01a1646f-546d-7042-befd-eb3eba30c3b0
-    reviewed: f6f40ab46f1970d49a86db69a6c64a5f666ab2ec039ed28e2caf91d6d8e596be
+    reviewed: 6a633826748355ed540976ce741b6e5d9ca94d1a0853fcb9452e91ea4f2e4bd5
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
-        name: "each block offers the agent that wrote it, its version and the time it was written"
-        body: a3fd3db64232cbedcf002e2ff499ab0a8dd4ce654b768a069ae0f54b2d709876
+        name: "each block offers its current author and version with its creation time labelled"
+        body: d43e42db70903d6126a611e7938a904f651acdfd5515f055716fe6040adbfe46
+  - node: 01a17f75-05dc-7361-a0cd-c027e9f5c5a1
+    reviewed: 7ffe10fe3d0e5242d0413b89106c43e563f5e8439c3da655be8612e36bf093d1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/order.test.js"
+        name: "a revised card labels creation and update independently even within the same second"
+        body: e9fd197fae7d08a714baefa8cebc3cafc5cb601566254f639127ca403640ae0d
   - node: 01a1646f-546d-7042-befd-eb3f215b9440
     reviewed: 3a9c5bd236dc0ca5c1bfc4d1e3bf0e0babdb4f4251718dd56fb65dd5d138ac1b
     tests:
