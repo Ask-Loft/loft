@@ -52,6 +52,12 @@ export function write(batch, extra = []) {
   return yard(setup.driver, ['write', '--session', 's1', ...extra], batch);
 }
 
+/** Sends a batch as another caller, using the clock simulator's fixed epoch. */
+export function sendAs(session, batch, epoch) {
+  const driver = { ...setup.driver, env: { ...setup.driver.env, SOURCE_DATE_EPOCH: String(epoch) } };
+  return yard(driver, ['write', '--session', session, '--send'], batch);
+}
+
 /**
  * Writes `batch` in the other tree the page server serves.
  * @param {object[]} batch

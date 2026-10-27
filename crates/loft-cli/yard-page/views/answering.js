@@ -45,7 +45,6 @@ function keep(key, draft) {
  */
 export function submissionPanel(submission, waiting, where) {
   const questions = waiting.filter((block) => block.kind === 'question');
-  const decidable = waiting.filter((block) => block.kind !== 'question');
   const message = h('p', { class: 'send-message', role: 'status', 'aria-live': 'polite' });
   const send = h('button', { type: 'button', class: 'primary', id: `send-${submission.key}` }, 'Send answers');
   const update = () => {
@@ -76,7 +75,9 @@ export function submissionPanel(submission, waiting, where) {
       h('h3', {}, waiting.length === 1 ? 'Waits on you' : `${waiting.length} wait on you`),
       h('p', { class: 'sent' }, 'Sent by ', h('span', { class: 'who' }, who(submission.agent ?? submission.sent?.by)), ' at ', h('time', { datetime: submission.sent?.at }, when(submission.sent?.at))),
     ),
-    questions.map((block) => questionForm(block, submission.key, update)),
+    waiting.map((block) => block.kind === 'question'
+      ? questionForm(block, submission.key, update)
+      : decisionForm(block, where)),
     questions.length
       ? h(
           'div',
@@ -98,7 +99,6 @@ export function submissionPanel(submission, waiting, where) {
           send,
         )
       : null,
-    decidable.map((block) => decisionForm(block, where)),
     message,
   );
   update();

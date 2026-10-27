@@ -5,6 +5,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard's waiting panel preserves mixed question, plan and approval order, and same-second
+  submissions follow their local arrival order across callers.
 - Claude captures tasks, questions, plans and Yard tool calls in receipt order for each caller,
   selects task stages before native creation and releases capture on interruption.
 - Yard cards distinguish their Created and Updated times while keeping their stored timeline

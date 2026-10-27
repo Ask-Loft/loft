@@ -23817,6 +23817,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
         name: "opening a branch’s Yard Log that has an open submission opens the panel, every open submission in it oldest first"
         body: b055d044676d4a618cac22b6576461a1f7c03c5b213f6afc4cf41a2a4ca427c2
+  - node: 01a17f75-05dc-7361-a0cd-c0298a6d9cea
+    reviewed: 320ba34c9777b6707f4b7f59165176b1376b79150499d546f1fcacfb8b21ae2a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/order.test.js"
+        name: "same second submissions use local sending arrivals with revision and key fallbacks"
+        body: 01308ccf3e667922e6ed87da1bd0cac643aa327ddbdac75ef8731d9720ac7e4f
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "same second submissions from different callers retain arrival order in the panel and sidebar"
+        body: 0f437600d0c25ea1f20a5a41a10e80fe2b346bfc1ead538621f595bf9cace1be
+  - node: 01a17f75-05dc-7361-a0cd-c02ae4b708af
+    reviewed: f66b0fc4abed8368782f2c5b7fd0037a30b13e06a60693c4785ec5dfc1f5dab5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/order.test.js"
+        name: "mixed waiting forms retain submission order and share one question send action through rerenders"
+        body: ed1a0081be9627525d040345833e38abf3d5a69f72e320417f5975fe7dc60b30
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "mixed waiting forms retain submission order through decisions and sending all question answers"
+        body: baa3fb47281266bd2f3261e0872d23f1eae4596882a970529f3578ef6cbe05a8
   - node: 01a1646f-546d-7042-befd-eb648d58cd02
     reviewed: 1a8eac02d84faf9cd3417dbc2c9e8e79ec8001bb34d194331de6cff89cea8c64
     tests:

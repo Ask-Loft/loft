@@ -4,7 +4,7 @@
 
 import { expect, test } from '@playwright/test';
 
-import { address, answerInTerminal, historicalCodexTotals, postAsMod, read, setup, since, withdraw, write, writeOther } from './yard.js';
+import { address, answerInTerminal, historicalCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, writeOther } from './yard.js';
 
 /** Live changes reach an open page within this many milliseconds. */
 const LIVE = 2000;
@@ -1032,4 +1032,55 @@ test('editing a card keeps its position and creation time while showing its upda
   await expect(meta.locator('time').first()).toHaveAttribute('datetime', created);
   const cards = page.locator('[id="block-order-first"], [id="block-order-second"]');
   expect(await cards.evaluateAll(elements => elements.map(element => element.id))).toEqual(['block-order-first', 'block-order-second']);
+});
+
+test('mixed waiting forms retain submission order through decisions and sending all question answers', async ({ page }) => {
+  const question = id => ({ id, kind: 'question', stage: 'shape', prompt: id, header: id, options: [{ label: 'Red' }, { label: 'Blue' }] });
+  const sent = write([
+    { id: 'mixed-plan', kind: 'plan', stage: 'shape', title: 'Mixed plan', markdown: 'A plan first' },
+    question('mixed-first'),
+    { id: 'mixed-approval', kind: 'approval', stage: 'shape', title: 'Mixed approval', markdown: 'Approve this' },
+    question('mixed-second'),
+  ], ['--send']);
+  const shown = await read();
+  const blocks = shown.stages.flatMap(stage => stage.blocks);
+  const key = id => blocks.find(block => block.id === id).key;
+  await page.goto(address());
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const forms = panel.locator('.question-form, .decision-form');
+  await expect(forms).toHaveCount(4);
+  expect(await forms.evaluateAll(elements => elements.map(element => element.dataset.key))).toEqual(
+    ['mixed-plan', 'mixed-first', 'mixed-approval', 'mixed-second'].map(key));
+  await panel.locator(`[data-key="${key('mixed-first')}"]`).getByLabel('Red').check();
+  await panel.locator('#approve-mixed-plan').click();
+  await expect(forms).toHaveCount(3, { timeout: LIVE });
+  expect(await forms.evaluateAll(elements => elements.map(element => element.dataset.key))).toEqual(
+    ['mixed-first', 'mixed-approval', 'mixed-second'].map(key));
+  await expect(panel.locator(`[data-key="${key('mixed-first')}"]`).getByLabel('Red')).toBeChecked();
+  await panel.locator(`[data-key="${key('mixed-second')}"]`).getByLabel('Blue').check();
+  await expect(panel.getByRole('button', { name: 'Send answers', exact: true })).toHaveCount(1);
+  await panel.getByRole('button', { name: 'Send answers', exact: true }).click();
+  await expect(forms).toHaveCount(1, { timeout: LIVE });
+  await panel.locator('#approve-mixed-approval').click();
+  await expect(panel).toBeHidden({ timeout: LIVE });
+});
+
+test('same second submissions from different callers retain arrival order in the panel and sidebar', async ({ page }) => {
+  const epoch = Math.floor(Date.now() / 1000);
+  const approval = id => [{ id, kind: 'approval', stage: 'shape', title: id, markdown: 'Ready' }];
+  const earlier = sendAs('z-order', approval('arrival-earlier'), epoch).submission;
+  const later = sendAs('a-order', approval('arrival-later'), epoch).submission;
+  await page.goto(address());
+  const modal = waitingModal(page);
+  const selector = `#submission-${earlier}, #submission-${later}`;
+  await expect(modal.locator(selector)).toHaveCount(2);
+  expect(await modal.locator(selector).evaluateAll(elements => elements.map(element => element.id)))
+    .toEqual([`submission-${earlier}`, `submission-${later}`]);
+  await expect(page.locator('.everywhere')).toContainText('arrival-later');
+  const waits = await page.locator('.everywhere .wait-item').allTextContents();
+  expect(waits.findIndex(text => text.includes('arrival-earlier'))).toBeLessThan(waits.findIndex(text => text.includes('arrival-later')));
+  await modal.locator('#approve-arrival-earlier').click();
+  await expect(modal.locator(`#submission-${earlier}`)).toBeHidden({ timeout: LIVE });
+  await modal.locator('#approve-arrival-later').click();
+  await expect(modal.locator(`#submission-${later}`)).toBeHidden({ timeout: LIVE });
 });

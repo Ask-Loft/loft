@@ -12,7 +12,7 @@ import { ms } from '../lib/format.js';
  *   versions?: any[], versionCount: number, answer?: any, outcome?: any, responses?: any[],
  *   times?: { listed?: string, started?: string, ended?: string }, owner?: Actor,
  *   reached: number, blocks?: Block[] }} Block
- * @typedef {{ key: string, state: string, blocks: string[], sent: Act, agent?: Actor }} Submission
+ * @typedef {{ key: string, state: string, blocks: string[], sent: Act, sentReached?: number, agent?: Actor }} Submission
  * @typedef {{ mode: 'plan' | 'spec', started: string, ended?: string }} Stretch
  */
 
@@ -75,7 +75,9 @@ export function openSubmissions(log) {
       if (submission.state === 'open') open.push({ ...submission, agent: group.agent });
     }
   }
-  return open.sort((a, b) => ms(a.sent?.at) - ms(b.sent?.at));
+  return open.sort((a, b) => ms(a.sent?.at) - ms(b.sent?.at)
+    || (a.sentReached ?? a.sent?.revision ?? 0) - (b.sentReached ?? b.sent?.revision ?? 0)
+    || a.key.localeCompare(b.key));
 }
 
 /**
