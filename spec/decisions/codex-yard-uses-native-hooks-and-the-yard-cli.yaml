@@ -1,11 +1,11 @@
 key: 01a1787c-f7fd-71c5-bbdd-a8ba14bf1a10
 slug: codex-yard-uses-native-hooks-and-the-yard-cli
 title: "Codex Yard uses native hooks and the Yard CLI"
-context: "Codex offers native command hooks and a plugin skill but no equivalent of Claude Code's in-process mod API. Its local app-server API also permits a session-scoped usage observer while the person's existing client remains in control, without making Loft an interactive Codex client."
+context: "Codex offers native command hooks and a plugin skill but no equivalent of Claude Code's in-process mod API. Its local app-server API also permits session-scoped usage observation and delivery of Yard decision notifications while the person's existing client remains in control. Agent-owned wait loops can time out or be abandoned even after the person answers."
 state:
   kind: accepted
   selectedOption: 01a1787c-f7fd-71c5-bbdd-a8bc5e532fe4
-  outcome: "The existing Codex plugin carries native hooks that call the adapter built into loft and a composition of the shared Yard skill. A bounded observer of an existing local app server supplies live request usage where available. Questions and plans use the Yard page; native Codex controls stay authoritative. The adapter reports partial or unavailable coverage without transcript parsing or native dialog synchronization."
+  outcome: "The existing Codex plugin carries native hooks that call the adapter built into loft and a composition of the shared Yard skill. A bounded observer of an existing local app server supplies live request usage where available. Questions and plans use the Yard page, and the existing worker notifies the matching loaded native thread when a decision point resolves. Native Codex controls stay authoritative. The adapter reports partial or unavailable coverage without transcript parsing or native dialog synchronization."
 drivers:
   - key: 01a1787c-f7fd-71c5-bbdd-a8bb8f6f2b78
     kind: local
@@ -14,7 +14,7 @@ drivers:
 options:
   - key: 01a1787c-f7fd-71c5-bbdd-a8bc5e532fe4
     title: "Native plugin"
-    description: "Use command hooks and the Yard CLI, with a local usage observer that does not drive model turns or native interaction."
+    description: "Use command hooks and the Yard CLI, with a local usage observer and a bounded decision notifier that can wake or steer the existing native thread."
   - key: 01a1787c-f7fd-71c5-bbdd-a8bd871519bb
     title: "Loft-managed client"
     description: "Own an app-server client to receive richer events and control interactive requests."
@@ -30,9 +30,11 @@ assessments:
 consequences:
   - key: 01a1787c-f7fd-71c5-bbdd-a8bea090e9b8
     kind: cost
-    statement: "The Yard page is the answer surface, and usage not observed from an available app server remains unavailable."
+    statement: "The Yard page is the answer surface, and usage not observed from an available app server remains unavailable. Decision delivery needs durable cancellation and deduplication state, with retries of unread decisions after uncertain delivery."
 subjects:
   - role: outcome
     node: 01a1787c-f803-70b1-b946-b6ee1da9af0b
   - role: outcome
     node: 01a1787c-f803-70b1-b946-b70ceb2b1660
+  - role: outcome
+    node: 01a17afd-c25e-744a-84c1-085c486f59e5

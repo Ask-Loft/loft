@@ -98,7 +98,7 @@ requirements:
       shall: "retain only accounting metadata from its app-server connection."
     criteria:
       - key: 01a17989-a8b9-74b1-9049-07630ffd0163
-        name: "Adapter state and normalized events retain no app-server transcript, prompt, assistant message or tool payload."
+        name: "Accounting state and normalized usage events retain no app-server transcript, prompt, assistant message or tool payload."
       - key: 01a17989-a8b9-74b1-9049-0764aa9f9420
         name: "Malformed, oversized or unrelated messages do not become accounting events."
       - key: 01a17989-a8b9-74b1-9049-0765cae065cb

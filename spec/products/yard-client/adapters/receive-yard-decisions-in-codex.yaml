@@ -1,0 +1,152 @@
+key: 01a17afd-c25e-744a-84c1-085c486f59e5
+slug: receive-yard-decisions-in-codex
+name: "Receive Yard decisions in Codex"
+body: |
+  The existing Codex Yard worker delivers a notification when the person's answers or verdicts resolve one of its caller's submissions. The agent can end its turn while the worker monitors Yard through JSON reads. A notification directs the agent to read the authoritative Yard state rather than treating the notification itself as an answer.
+
+  The local app-server connection reaches the person's already loaded native thread. Active turns accept steering and idle threads accept a new turn while the existing client remains attached. This notification capability is separate from the accounting-only usage observer. An unavailable local connection leaves the existing explicit wait command as a fallback.
+
+  Codex does not deduplicate repeated client message identifiers. The selected recovery policy favors retrying an unread decision over silently losing its wakeup. Durable identities, acknowledged sends, read progress and available native receipts suppress known duplicates, but a lost acknowledgment can still produce an exceptional duplicate notification.
+realizes:
+  - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+mentions:
+  - 01a17989-a8b4-7254-bee6-8c17685ca099
+requirements:
+  - key: 01a17afd-c25e-744a-84c1-085da7f1d709
+    statement:
+      form: state_driven
+      while: "a local Codex Yard worker is armed for its caller"
+      system: "the Codex Yard adapter"
+      shall: "discover that caller's resolved submissions through Yard JSON reads independently of agent polling."
+    criteria:
+      - key: 01a17afe-ab67-76b3-964d-3fd4fc2e4d1b
+        name: "A new session is armed for its explicitly identified main caller."
+      - key: 01a17afd-c25e-744a-84c1-085eff8597bb
+        name: "Discovery includes a submission resolved before the worker's first scan."
+      - key: 01a17afd-c25e-744a-84c1-085f57660801
+        name: "Discovery includes a submission resolved while the worker or page server was unavailable."
+      - key: 01a17afd-c25e-744a-84c1-08601d1743a5
+        name: "A submission is eligible only after every answerable block it contains has a counted response."
+      - key: 01a17afd-c25e-744a-84c1-0861f01f91e7
+        name: "A withdrawn submission causes no decision notification."
+      - key: 01a17afd-c25e-744a-84c1-08625e66e336
+        name: "The submission's sender determines its host, session and subagent routing."
+      - key: 01a17afd-c25e-744a-84c1-0863d066971e
+        name: "Discovery takes no submission wait lease."
+      - key: 01a17afd-c25e-744a-84c1-0864b30fc963
+        name: "Discovery leaves the agent's last-read revision unchanged."
+      - key: 01a17afd-c25e-744a-84c1-086514073180
+        name: "Token counters and ordinary activity cause no decision notification."
+  - key: 01a17afd-c25e-744a-84c1-0866233a4e1f
+    statement:
+      form: event_driven
+      when: "an eligible unread submission is discovered"
+      system: "the Codex Yard adapter"
+      shall: "notify its matching loaded native thread through the existing local app-server port."
+    criteria:
+      - key: 01a17afd-c25e-744a-84c1-08679f8f3a77
+        name: "The notification identifies Yard Log, its tree, branch, submission and resolution revision."
+      - key: 01a17afd-c25e-744a-84c1-08682c4d6758
+        name: "The notification instructs the agent to read Yard with its own caller identity before acting."
+      - key: 01a17afd-c25e-744a-84c1-086970fc878a
+        name: "The notification contains no copied question, plan, answer or verdict body."
+      - key: 01a17afd-c25e-744a-84c1-086a0647ad97
+        name: "An active turn receives the notification through turn/steer with its expected turn identifier."
+      - key: 01a17afd-c25e-744a-84c1-086bb5906510
+        name: "An idle thread receives the notification through turn/start."
+      - key: 01a17afd-c25e-744a-84c1-086ccbff3271
+        name: "A stale-turn refusal triggers a fresh state check before another delivery attempt."
+      - key: 01a17afd-c25e-744a-84c1-086d672db53d
+        name: "A turn/start that races an active turn adds input to that existing turn."
+      - key: 01a17afd-c25e-744a-84c1-086e87310a0f
+        name: "A thread absent from the loaded-thread list is not reopened automatically."
+      - key: 01a17afd-c25e-744a-84c1-086f712f7d93
+        name: "A subagent without an explicit native thread mapping receives no notification in the main thread."
+      - key: 01a17afd-c25e-744a-84c1-08700cbb7969
+        name: "A different current tree or branch prevents delivery into unrelated work."
+      - key: 01a17afd-c25e-744a-84c1-0871ed3e8bbb
+        name: "Notification delivery starts no Codex process."
+  - key: 01a17afd-c25e-744a-84c1-0872d3751615
+    statement:
+      form: event_driven
+      when: "a decision notification is queued or attempted"
+      system: "the Codex Yard adapter"
+      shall: "persist its delivery progress under the session lock to recover unread work without repeating known deliveries."
+    criteria:
+      - key: 01a17afd-c25e-744a-84c1-0873ca4de0a5
+        name: "Yard Log's key and the submission's key determine a stable notification identity."
+      - key: 01a17afd-c25e-744a-84c1-0874db2fc363
+        name: "The notification identity and pending payload are saved before sending model input."
+      - key: 01a17afd-c25e-744a-84c1-0875d20154cc
+        name: "An acknowledged notification is not sent again after another scan or worker restart."
+      - key: 01a17afd-c25e-744a-84c1-08763379a0a8
+        name: "The agent's read of the resolution revision suppresses a pending notification."
+      - key: 01a17afe-ab67-76b3-964d-3fd599254b1d
+        name: "Another agent's fallback read revision does not suppress the caller's unread notification."
+      - key: 01a17afd-c25e-744a-84c1-087773253da7
+        name: "An unavailable endpoint leaves the pending notification available for a later retry."
+      - key: 01a17afd-c25e-744a-84c1-0878c8b1ebd7
+        name: "An uncertain send checks read progress and available native receipts before retrying."
+      - key: 01a17afd-c25e-744a-84c1-08793a5b31ab
+        name: "A native receipt of the notification's stable marker suppresses another send."
+      - key: 01a17afd-c25e-744a-84c1-087a28217197
+        name: "An unread notification with no confirmed receipt is retried after uncertain delivery."
+      - key: 01a17afd-c25e-744a-84c1-087b8ed46134
+        name: "Retries retain the original notification identity."
+      - key: 01a17afd-c25e-744a-84c1-087c6e2489b9
+        name: "A retry waits at least five seconds after the preceding failed attempt."
+  - key: 01a17afd-c25e-744a-84c1-087d1855a620
+    statement:
+      form: event_driven
+      when: "the adapter receives an explicit native interruption or session end"
+      system: "the Codex Yard adapter"
+      shall: "disarm the affected caller's automatic continuation."
+    criteria:
+      - key: 01a17afd-c25e-744a-84c1-087efbda5f0f
+        name: "Queued notifications are cancelled before any later dispatch for the disarmed caller."
+      - key: 01a17afd-c25e-744a-84c1-087f2aacfd32
+        name: "Disarming survives a worker restart."
+      - key: 01a17afd-c25e-744a-84c1-0880026bf8d4
+        name: "A later genuine user prompt can rearm monitoring for its caller."
+      - key: 01a17afd-c25e-744a-84c1-088191a5914c
+        name: "An adapter-generated notification does not rearm a disarmed caller."
+      - key: 01a17afd-c25e-744a-84c1-0882262fbba8
+        name: "Normal turn completion leaves decision monitoring armed."
+      - key: 01a17afd-c25e-744a-84c1-08834be34d2b
+        name: "Stopping a subagent leaves the main agent's monitoring state unchanged."
+      - key: 01a17afd-c25e-744a-84c1-0884a3927916
+        name: "Closing Yard Log cancels pending notification delivery for that log."
+  - key: 01a17afd-c25e-744a-84c1-088540e57849
+    statement:
+      form: ubiquitous
+      system: "The Codex decision notifier"
+      shall: "preserve native controls and retain only delivery metadata from its app-server interaction."
+    criteria:
+      - key: 01a17afd-c25e-744a-84c1-08861420e599
+        name: "Subscription supplies no configuration or collaboration-mode overrides."
+      - key: 01a17afd-c25e-744a-84c1-088721e93910
+        name: "Delivery supplies no permission, model, working-directory or collaboration-mode overrides."
+      - key: 01a17afd-c25e-744a-84c1-0888d3f82a82
+        name: "A Yard approval changes no native mode or permission policy."
+      - key: 01a17afd-c25e-744a-84c1-0889f0bfa457
+        name: "Adapter state retains no native conversation text beyond its own notification metadata."
+      - key: 01a17afd-c25e-744a-84c1-088a103bb68c
+        name: "Notification failure leaves native activity and token observation available."
+      - key: 01a17afd-c25e-744a-84c1-088bcecdba2c
+        name: "Native hook processing does not wait for notification delivery."
+  - key: 01a17afd-c25e-744a-84c1-088ce3a9432e
+    statement:
+      form: ubiquitous
+      system: "The Codex Yard adaptation"
+      shall: "describe automatic decision notifications and their delivery limits."
+    criteria:
+      - key: 01a17afd-c25e-744a-84c1-088d4a7fc9c7
+        name: "Session context reports whether decision notification delivery is available, unavailable or uncertain."
+      - key: 01a17afd-c25e-744a-84c1-088e866475f9
+        name: "The skill lets the agent end its turn after sending a submission while automatic notification delivery is available."
+      - key: 01a17afd-c25e-744a-84c1-088f991ff6f9
+        name: "The skill retains explicit Yard waiting as the fallback when automatic delivery is unavailable."
+      - key: 01a17afd-c25e-744a-84c1-089058137937
+        name: "The skill explains that an exceptional duplicate notification requires a fresh Yard read rather than treating it as a new approval."
+      - key: 01a17afd-c25e-744a-84c1-0891ba177c63
+        name: "The skill explains that interruption disarms automatic continuation."

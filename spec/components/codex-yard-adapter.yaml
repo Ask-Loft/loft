@@ -1,7 +1,7 @@
 key: 01a1787c-f7fc-7749-a978-1a96e6c41c4a
 slug: codex-yard-adapter
 name: "Codex Yard adapter"
-body: "The native Codex hooks and the adapter built into loft that translate local sessions into Yard's JSON commands and normalized events, with one port to the existing local Codex app server for live token usage."
+body: "The native Codex hooks and the adapter built into loft that translate local sessions into Yard's JSON commands and normalized events, with one port to the existing local Codex app server for live token usage and decision notifications."
 scopedTo:
   - 01a16469-55a3-716f-a42c-3a3548428b77
 constraints:
