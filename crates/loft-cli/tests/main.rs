@@ -92,6 +92,7 @@ mod yard_capabilities;
 mod yard_close;
 mod yard_codex;
 mod yard_codex_contract;
+mod yard_codex_notifications;
 mod yard_codex_skill;
 mod yard_codex_tasks;
 mod yard_codex_usage;

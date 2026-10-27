@@ -24,6 +24,7 @@ pub struct State {
     pub stopped: bool,
     pub subagents: BTreeMap<String, String>,
     pub usage: super::usage::Usage,
+    pub notifications: super::notification_state::Ledger,
 }
 
 impl State {

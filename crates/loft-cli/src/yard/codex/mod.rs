@@ -3,8 +3,10 @@
 mod app_server;
 mod commands;
 mod context;
-#[cfg(test)]
+mod notification_discovery;
+mod notification_hooks;
 mod notification_state;
+mod notification_worker;
 mod observer;
 mod state;
 mod tasks;
@@ -108,18 +110,29 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     // while posting, so an unavailable page cannot delay a native tool.
     let locked = files.lock()?;
     let mut state = files.read()?;
+    let caller = hook.caller(&state);
+    let disposition = notification_hooks::record(hook, caller.as_ref(), &mut state.notifications);
+    if disposition == notification_hooks::Disposition::Cancelled {
+        files.write(&state)?;
+        return Ok(
+            json!({"decision":"block","reason":"This Yard notification was cancelled after native interruption or session end."}),
+        );
+    }
     let events = translate::events(hook, &mut state)?;
     usage::native(hook, &mut state);
     state.keep(events);
     files.write(&state)?;
-    let caller = hook.caller(&state);
     if let Some(caller) = &caller {
         tasks::mirror(hook, caller, port)?;
     }
     drop(locked);
-    observer::readiness(&files, hook);
-    if matches!(hook.name(), "SessionStart" | "SubagentStart")
-        && let Some(caller) = caller
+    if disposition != notification_hooks::Disposition::Notification {
+        observer::readiness(&files, hook);
+    }
+    if matches!(
+        hook.name(),
+        "SessionStart" | "SubagentStart" | "UserPromptSubmit"
+    ) && let Some(caller) = caller
     {
         return Ok(context::output(hook, &caller, port));
     }

@@ -46,7 +46,6 @@ pub fn endpoint(
 mod transport;
 pub use transport::Connection;
 
-#[cfg(test)]
 #[path = "notification_connection.rs"]
 pub mod notifications;
 

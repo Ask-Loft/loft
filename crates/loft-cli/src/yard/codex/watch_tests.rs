@@ -118,3 +118,49 @@ fn an_identified_in_flight_payload_and_drop_report_survive_failure_and_restart_u
     assert_eq!(restarted.read().unwrap().dropped, 2);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn a_background_handler_for_a_cancelled_nudge_cannot_resume_an_ended_session() {
+    use crate::yard::codex::commands::Caller;
+    use crate::yard::codex::notification_state::{Lifecycle, Resolution, Route};
+    use crate::yard::codex::translate::Hook;
+
+    let root = std::env::temp_dir().join(format!("codex-ended-nudge-{}", uuid::Uuid::new_v4()));
+    let files = Files(root.clone());
+    let route = Route {
+        caller: Caller {
+            session: "session".into(),
+            agent: None,
+        },
+        thread: "session".into(),
+        directory: "/work".into(),
+    };
+    let mut state = State::default();
+    state.notifications.observe(route.clone(), Lifecycle::Start);
+    let marker = state
+        .notifications
+        .offer(
+            Resolution {
+                log: "log".into(),
+                submission: "submission".into(),
+                revision: 2,
+                tree: "/work".into(),
+                branch: "feat/shelf".into(),
+                thread: "session".into(),
+            },
+            None,
+        )
+        .unwrap();
+    state.notifications.observe(route, Lifecycle::EndSession);
+    state.stopped = true;
+    files.write(&state).unwrap();
+    let mut hook = Hook(
+        json!({"session_id":"session","cwd":"/work","hook_event_name":"UserPromptSubmit","prompt":marker}),
+    );
+    super::resume(&files, &hook).unwrap();
+    assert!(files.read().unwrap().stopped);
+    hook.0["prompt"] = json!("Continue");
+    super::resume(&files, &hook).unwrap();
+    assert!(!files.read().unwrap().stopped);
+    std::fs::remove_dir_all(root).unwrap();
+}

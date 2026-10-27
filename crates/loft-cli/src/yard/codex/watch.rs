@@ -33,26 +33,21 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
     else {
         return Ok(json!({}));
     };
-    // Codex launches matching handlers concurrently: this startup handler may run before
-    // the context handler has cleared a previous session-end request.
-    if matches!(hook.name(), "SessionStart" | "UserPromptSubmit") {
-        let _locked = files.lock()?;
-        let mut state = files.read()?;
-        if state.stopped {
-            state.stopped = false;
-            files.write(&state)?;
-        }
-    }
+    resume(&files, hook)?;
     let home = Home::from_env().ok_or("no machine home for Yard")?;
     let clock = crate::yard::clock();
     let mut server = ServerChild(None);
     let mut observer = super::observer::Observer::default();
+    let mut notifications = super::notification_worker::Monitor::default();
     drive(clock, |beat| {
-        observer.tick(&files, socket.map(PathBuf::as_path))?;
+        observer.tick(&files, socket.map(PathBuf::as_path), clock)?;
         let stopped = {
             let _locked = files.lock()?;
             files.read()?.stopped
         };
+        if !stopped {
+            notifications.tick(&files, socket.map(PathBuf::as_path), port, clock)?;
+        }
         if beat && !stopped {
             let running = crate::yard::page::running(&home).map_err(|e| e.to_string())?;
             let current_port = running.as_ref().map_or(port, |running| running.port);
@@ -84,6 +79,26 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
         Ok(!stopped)
     })?;
     Ok(json!({}))
+}
+
+// Concurrent background startup may precede the ordinary prompt handler. A cancelled nudge
+// cannot clear a previous session end, even when Codex launches both handlers at once.
+fn resume(files: &Files, hook: &Hook) -> Result<()> {
+    if matches!(hook.name(), "SessionStart" | "UserPromptSubmit") {
+        let _locked = files.lock()?;
+        let mut state = files.read()?;
+        let thread = hook.0["agent_id"]
+            .as_str()
+            .unwrap_or_else(|| hook.session());
+        let generated = state
+            .notifications
+            .is_notification(thread, hook.0["prompt"].as_str().unwrap_or_default());
+        if state.stopped && !generated {
+            state.stopped = false;
+            files.write(&state)?;
+        }
+    }
+    Ok(())
 }
 
 fn drive(

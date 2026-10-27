@@ -86,6 +86,12 @@ pub fn read(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
     run(dir, &args, port, None)
 }
 
+pub fn history(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
+    let mut args = vec!["read".into(), "--submissions".into()];
+    args.extend(caller.args());
+    run(dir, &args, port, None)
+}
+
 pub fn active<'a>(doc: &'a Value, caller: &Caller) -> Option<&'a Value> {
     doc["stages"].as_array()?.iter().find(|stage| {
         stage["version"]["body"]["status"] == "active" && caller.owns(&stage["owner"])

@@ -225,3 +225,37 @@ fn ending_one_session_does_not_disarm_an_unrelated_session() {
     assert!(!ledger.callers["main"].armed);
     assert!(ledger.callers["foreign"].armed);
 }
+
+#[test]
+fn a_native_prompt_receipt_confirms_only_a_current_armed_delivery() {
+    let clock = clock();
+    let mut ledger = Ledger::default();
+    ledger.observe(route("thread"), Lifecycle::Start);
+    let marker = ledger.offer(resolution("thread"), None).unwrap();
+    let attempt = ledger.claim(&marker, clock.now().unwrap()).unwrap();
+    assert!(!ledger.receive_prompt("other", &marker));
+    assert!(ledger.receive_prompt("thread", &marker));
+    assert_eq!(ledger.deliveries[&marker].progress, Progress::Accepted);
+    assert!(!ledger.current(&attempt));
+    assert_eq!(ledger.availability("thread"), Availability::Available);
+    ledger.observe(route("thread"), Lifecycle::Interrupt);
+    assert!(!ledger.receive_prompt("thread", &marker));
+    assert!(!ledger.callers["thread"].armed);
+}
+
+#[test]
+fn a_late_native_prompt_does_not_revive_a_cancelled_or_superseded_attempt() {
+    let mut ledger = Ledger::default();
+    ledger.observe(route("thread"), Lifecycle::Start);
+    let marker = ledger.offer(resolution("thread"), None).unwrap();
+    ledger.cancel_marker(&marker);
+    assert!(!ledger.receive_prompt("thread", &marker));
+    ledger.observe(route("thread"), Lifecycle::Interrupt);
+    ledger.observe(route("thread"), Lifecycle::UserPrompt);
+    assert!(!ledger.receive_prompt("thread", &marker));
+    ledger.offer(resolution("thread"), None);
+    assert!(ledger.receive_prompt("thread", &marker));
+    ledger.offer(resolution("thread"), Some(2));
+    assert!(ledger.receive_prompt("thread", &marker));
+    assert_eq!(ledger.deliveries[&marker].progress, Progress::Read);
+}

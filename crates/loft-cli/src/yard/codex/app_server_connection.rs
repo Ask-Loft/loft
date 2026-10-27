@@ -109,7 +109,6 @@ impl Connection {
             .map_err(|_| FAILURE.to_owned())
     }
 
-    #[cfg(test)]
     pub(super) fn request(
         &mut self,
         method: &str,

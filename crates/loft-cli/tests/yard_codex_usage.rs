@@ -7,7 +7,10 @@ use std::process::Child;
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
+use software_plant::Clock;
 use software_plant::codex::{CodexAppServer, Scenario};
+
+use crate::common::EPOCH;
 
 use crate::served::{Served, within};
 use crate::yard::Yard;
@@ -29,16 +32,22 @@ fn worker<'a>(yard: &'a Yard, port: u16, socket: &Path) -> Worker<'a> {
     let path = yard.scratch.home().join("watch.json");
     fs::write(&path, event(yard, "SessionStart").to_string()).unwrap();
     Worker(
-        yard.spawn(&[
-            "codex",
-            "watch",
-            "--input",
-            path.to_str().unwrap(),
-            "--port",
-            &port.to_string(),
-            "--app-server-socket",
-            socket.to_str().unwrap(),
-        ]),
+        yard.scratch
+            .command(Some(&yard.git), &Clock::fixed(EPOCH).passing())
+            .args([
+                "yard",
+                "codex",
+                "watch",
+                "--input",
+                path.to_str().unwrap(),
+                "--port",
+                &port.to_string(),
+                "--app-server-socket",
+                socket.to_str().unwrap(),
+            ])
+            .args(["--format", "json"])
+            .spawn()
+            .unwrap(),
         yard,
     )
 }
@@ -199,13 +208,18 @@ fn source_disconnect_and_worker_restart_preserve_the_checkpoint_and_exact_charge
         .any(|e| e.get("tokens").is_some())));
     first.0.kill().unwrap();
     first.0.wait().unwrap();
+    let before = server
+        .requests()
+        .iter()
+        .filter(|r| r["method"] == "thread/resume")
+        .count();
     let mut second = worker(&yard, page.port, server.path());
     assert!(within(Duration::from_secs(3), || server
         .requests()
         .iter()
         .filter(|r| r["method"] == "thread/resume")
         .count()
-        == 2));
+        > before));
     server.emit(&usage(1));
     server.emit(&usage(2));
     assert!(within(Duration::from_secs(3), || recorded(&yard)
@@ -225,7 +239,8 @@ fn source_disconnect_and_worker_restart_preserve_the_checkpoint_and_exact_charge
             .count(),
         1
     );
-    server.disconnect();
+    // Keep the endpoint down: a passing clock can reconnect before a real-time poll sees the gap.
+    drop(server);
     assert!(within(
         Duration::from_secs(3),
         || state(&yard)["usage"]["active"]["codex-session"]["source"] == "unavailable"

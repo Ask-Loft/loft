@@ -221,6 +221,34 @@ impl Ledger {
         })
     }
 
+    /// A native prompt hook is a receipt too, even if the RPC acknowledgment is still in flight.
+    pub fn receive_prompt(&mut self, thread: &str, prompt: &str) -> bool {
+        let Some(marker) = prompt.lines().next() else {
+            return false;
+        };
+        let Some(watcher) = self.callers.get_mut(thread).filter(|w| w.armed) else {
+            return false;
+        };
+        let Some(ticket) = self.deliveries.get_mut(marker).filter(|t| {
+            t.resolution.thread == thread
+                && t.generation == watcher.generation
+                && t.progress != Progress::Cancelled
+        }) else {
+            return false;
+        };
+        if ticket.progress != Progress::Read {
+            ticket.progress = Progress::Accepted;
+        }
+        watcher.availability = Availability::Available;
+        true
+    }
+
+    pub fn cancel_marker(&mut self, marker: &str) {
+        if let Some(ticket) = self.deliveries.get_mut(marker) {
+            cancel(ticket);
+        }
+    }
+
     pub fn availability(&self, thread: &str) -> Availability {
         let Some(watcher) = self.callers.get(thread).filter(|w| w.armed) else {
             return Availability::Unavailable;
