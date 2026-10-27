@@ -1,6 +1,8 @@
 // The person's answers to a submission while they choose them: kept in this browser only until
 // they are sent, and sent all at once.
 
+export const PLAN_APPROVAL = "Approving authorizes the planned work, subject to the agent's mode and permissions.";
+
 /**
  * @typedef {{ labels: string[], words?: string }} Answer
  * @typedef {{ verdict: 'approved' | 'rejected', reason?: string }} Verdict

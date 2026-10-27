@@ -23199,6 +23199,39 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "a band of spec mode is told apart from a band of plan mode by its class, its hatching and its label"
         body: 089a8d4acfec4c614cbee67ad3ccf17bb3049227c161d60dda98460d195007c3
+  - node: 01a17b28-3826-7755-a564-ddfae0c6fd36
+    reviewed: db97d0adbd0e8583c8c19c755e550b93655d871f2947d48c64f24f59c0092957
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "every host plan has the same Plan mode band and approval explanation without native activity"
+        body: 5f6df070e147f3090d5e285f4fba021c71a9c46446faa1931620ef3684102b46
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "Claude and Codex plans use the same Plan mode bands and approval explanation"
+        body: d348d29fdfa811fbf12507a393fbfe903419b0a61807f7b38d7424fe414d96be
+  - node: 01a17b28-3826-7755-a564-ddfb45598062
+    reviewed: 26f7996f4645ec255872822d7f3c190304ba20851704ea9d49466b3cc1bf2678
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a plan fallback band uses its current presentation and decision times and contains that plan alone"
+        body: 42074392937b509ea58f62796b3d6afc7491d11496bd5ecfac49f5da2df7e8f2
+  - node: 01a17b28-c0f9-7056-82dd-76cfcc7c78cc
+    reviewed: 8c8d850ceb53207c6b74ec2bc9213b59532f9e64b82697ae7f3b725283089dcc
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a plan fallback band uses its current presentation and decision times and contains that plan alone"
+        body: 42074392937b509ea58f62796b3d6afc7491d11496bd5ecfac49f5da2df7e8f2
+  - node: 01a17b28-3826-7755-a564-ddfc714df647
+    reviewed: 0300b10c59c7e7f81919d7c1b78928aa18442f6e9efb749efafa4c7aff826556
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a plan within native plan activity reuses its band once and otherwise receives its own Plan mode band"
+        body: 3c98340c7c8f9de04a0a5a9662bf5290627cef8f44c6a826f6dbeec2344235b8
+  - node: 01a17b28-3826-7755-a564-ddfd119e623a
+    reviewed: 6ee2246026ce2f15cddbbe88015af83b55453016d98839f0afddbbbe53111ff8
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a plan fallback band uses its current presentation and decision times and contains that plan alone"
+        body: 42074392937b509ea58f62796b3d6afc7491d11496bd5ecfac49f5da2df7e8f2
   - node: 01a1646f-546d-7042-befd-eb37bdcb84e2
     reviewed: 47042732451b6faeb7308e8bf6be715179b8b74b54a64f341bda5026af61a13f
     tests:
@@ -26052,6 +26085,24 @@ links:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the permission request runs the wait for the plan itself, and nothing waits before it is raised"
         body: a6fe929b708e4338e4db31a373a6d6a186a69a42701c3901acc5cbf4c7b34166
+  - node: 01a1646f-546c-7521-9643-bc4f1a3eb87b
+    reviewed: b39cd79380774b3a76f00dd3e903ead390d6467d68fa97555af5314201ca595f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "every plan has the same approval explanation regardless of host or native plan flag"
+        body: 576fd1d16c893e06af89dc5a467c624bb5aad4f30a20c14cf0ffe328c0a7b6f6
+  - node: 01a1646f-546c-7521-9643-bc506fea2e7b
+    reviewed: 25fc1ad22dc629bd2c0a74964e95c92e6805d0d056527b14b8d6bcdb55f97759
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "every plan has the same approval explanation regardless of host or native plan flag"
+        body: 576fd1d16c893e06af89dc5a467c624bb5aad4f30a20c14cf0ffe328c0a7b6f6
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "every host plan has the same Plan mode band and approval explanation without native activity"
+        body: 5f6df070e147f3090d5e285f4fba021c71a9c46446faa1931620ef3684102b46
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "Claude and Codex plans use the same Plan mode bands and approval explanation"
+        body: d348d29fdfa811fbf12507a393fbfe903419b0a61807f7b38d7424fe414d96be
   - node: 01a1646f-546c-7521-9643-bc54b796807b
     reviewed: 753427b10b01e523c918fea29e3bc18a4ccacb60555c0f73fe25f7f8098bdc14
     tests:

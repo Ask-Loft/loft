@@ -6,6 +6,7 @@
 import { h, html, markdown } from '../lib/dom.js';
 import { count, when, who } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
+import { PLAN_APPROVAL } from '../model/answers.js';
 import { loftView } from './loft/index.js';
 
 /**
@@ -234,8 +235,8 @@ function decidable(block, context) {
     head,
     decided,
     body.path ? h('p', { class: 'path' }, body.path) : null,
-    block.kind === 'plan' && body.planMode
-      ? h('p', { class: 'plan-mode' }, 'Presented in plan mode: approving it lets the agent go on in auto mode.')
+    block.kind === 'plan'
+      ? h('p', { class: 'plan-mode' }, PLAN_APPROVAL)
       : null,
     html(body.html ?? '', 'prose'),
     waiting

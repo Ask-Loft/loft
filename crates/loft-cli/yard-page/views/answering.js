@@ -9,6 +9,7 @@ import { h, html, markdown } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
 import { getJson, setJson } from '../lib/prefs.js';
 import {
+  PLAN_APPROVAL,
   acceptRecommendations,
   answerOf,
   choose,
@@ -233,7 +234,7 @@ function decisionForm(block, where) {
     'div',
     { class: 'decision-form', dataset: { key: block.key } },
     h('h4', {}, h('span', { class: 'kind' }, block.kind === 'plan' ? 'Plan' : 'Approval'), ' ', body.title),
-    block.kind === 'plan' && body.planMode ? h('p', { class: 'plan-mode' }, 'Approving it lets the agent go on in auto mode.') : null,
+    block.kind === 'plan' ? h('p', { class: 'plan-mode' }, PLAN_APPROVAL) : null,
     html(body.html ?? ''),
     h(
       'div',

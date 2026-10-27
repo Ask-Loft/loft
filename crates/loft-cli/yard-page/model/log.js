@@ -160,7 +160,8 @@ export function writtenAt(block) {
 
 /**
  * The blocks of a stage in order, those written during one stretch of plan or spec mode drawn
- * together under it.
+ * together under it. Every plan has a Plan mode band, using its presentation and decision
+ * when no native plan stretch covers it. These per-plan bands add no native activity.
  * @param {Block[]} blocks
  * @param {Stretch[]} modes
  * @param {number} now
@@ -171,9 +172,12 @@ export function grouped(blocks, modes, now) {
   const items = [];
   for (const block of blocks) {
     const at = ms(writtenAt(block));
-    const stretch = modes.find(
-      (mode) => at >= ms(mode.started) && at <= (mode.ended ? ms(mode.ended) : now),
-    );
+    const covers = (mode) => at >= ms(mode.started) && at <= (mode.ended ? ms(mode.ended) : now);
+    /** @type {Stretch | undefined} */
+    const stretch = block.kind === 'plan'
+      ? modes.find((mode) => mode.mode === 'plan' && covers(mode))
+        ?? { mode: 'plan', started: writtenAt(block), ended: block.outcome?.act?.at }
+      : modes.find(covers);
     const last = items[items.length - 1];
     if (stretch && last && 'stretch' in last && last.stretch === stretch) {
       last.blocks.push(block);

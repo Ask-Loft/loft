@@ -971,3 +971,30 @@ test('the page draws the menu again only when the list, the Yard Log chosen or t
   await expect(marked).toHaveCount(0);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });
+
+test('Claude and Codex plans use the same Plan mode bands and approval explanation', async ({ page }) => {
+  for (const [host, id, title] of [['claude-code', 'claude', 'Claude shared plan'], ['codex', 'codex', 'Codex shared plan']]) {
+    write([
+      { id: `shared-${id}`, kind: 'stage', title, status: 'planned' },
+      { id: `shared-plan-${id}`, kind: 'plan', stage: `shared-${id}`, title, markdown: 'Build the shelf.', ...(host === 'claude-code' ? { planMode: true } : {}) },
+    ], ['--host', host, '--send']);
+  }
+  await page.goto(address());
+  const waiting = waitingModal(page);
+  const copy = "Approving authorizes the planned work, subject to the agent's mode and permissions.";
+  for (const id of ['claude', 'codex']) {
+    const form = waiting.locator('.decision-form').filter({ has: page.locator(`#approve-shared-plan-${id}`) });
+    await expect(form.locator('.plan-mode')).toHaveText(copy);
+    await form.getByRole('button', { name: 'Approve', exact: true }).click();
+    await expect(page.locator(`#block-shared-plan-${id} .verdict-word`)).toHaveText('Approved');
+  }
+  if (await waiting.isVisible()) await closeWaiting(page);
+  for (const id of ['claude', 'codex']) {
+    await page.locator(`#block-shared-${id} > summary`).click();
+    const band = page.locator('.mode-band--plan').filter({ has: page.locator(`#block-shared-plan-${id}`) });
+    await expect(band).toHaveCount(1);
+    await expect(band.locator('.mode-head')).toContainText('Plan mode');
+    await expect(band.locator('.plan-mode')).toHaveText(copy);
+    await expect(band.locator('.verdict-word')).toHaveText('Approved');
+  }
+});
