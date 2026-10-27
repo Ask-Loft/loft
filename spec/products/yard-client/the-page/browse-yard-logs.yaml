@@ -141,6 +141,10 @@ requirements:
         name: "Each status shows as a word as well as a colour."
       - key: 01a1646f-546d-7042-befd-eb2d6203081e
         name: "A stage owned by a subagent names the subagent's type."
+      - key: 01a17f75-05dc-7361-a0cd-c0247d869c6b
+        name: "The blocks within each stage retain Yard Log's stored order through mode grouping."
+      - key: 01a17f75-05dc-7361-a0cd-c025788f6f99
+        name: "Changing a block's current version leaves its timeline position unchanged."
   - key: 01a1690b-2c9b-7594-809f-4a8a666e8f7c
     statement:
       form: ubiquitous
@@ -169,6 +173,8 @@ requirements:
         name: "The person's choice of order is kept in the browser."
       - key: 01a16984-aadb-7721-9995-4722a569ce6d
         name: "The switch of order lies at the left of the line above the stages, and is shown only with the timeline."
+      - key: 01a17f75-05dc-7361-a0cd-c0268b033931
+        name: "Choosing newest first reverses stages without reversing the blocks within them."
   - key: 01a1646f-546d-7042-befd-eb3071ddc29b
     statement:
       form: optional
@@ -229,7 +235,9 @@ requirements:
       - key: 01a16a04-3f8b-71a9-baa3-95e52d75699d
         name: "A task of the type `fix` shows a mark that names it a fix beside its state, and a task of the type `regular` shows none."
       - key: 01a1646f-546d-7042-befd-eb3eba30c3b0
-        name: "Each block offers the agent that wrote it, its version and the time it was written."
+        name: "Each block offers the agent that wrote its current version, its version number and its first version's time marked Created."
+      - key: 01a17f75-05dc-7361-a0cd-c027e9f5c5a1
+        name: "A block with more than one version shows its current version's time marked Updated, including when it shares the creation time to the second."
       - key: 01a1646f-546d-7042-befd-eb3f215b9440
         name: "A block with more than one version offers each earlier version, with who wrote it and when."
   - key: 01a1646f-546d-7042-befd-eb402c999dbd

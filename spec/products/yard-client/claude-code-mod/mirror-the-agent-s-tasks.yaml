@@ -18,6 +18,8 @@ requirements:
         name: "The mod reads Yard Log to mirror a task with `loft yard read` without `--mark-read`, which leaves the revision the agent last read as it was."
       - key: 01a1646f-546c-7521-9643-bc550810c75a
         name: "The block's title is the task's subject."
+      - key: 01a17f75-05db-72d1-b940-2d49f24fff4a
+        name: "The task belongs to the stage selected before its native creation runs, even if another caller changes Yard Log while the native creation runs."
       - key: 01a1646f-546c-7521-9643-bc56c4873439
         name: "Where no stage is active for the agent, the task is not mirrored."
       - key: 01a16a04-3f8b-71a9-baa3-95dcb14f98d9
@@ -41,3 +43,22 @@ requirements:
         name: "A type set to `null` in the update's metadata makes the block's type `regular`."
       - key: 01a16a04-3f8b-71a9-baa3-95e0a38355ed
         name: "The block keeps its type and its detail where the update does not change them."
+  - key: 01a17f75-05db-72d1-b940-2d4ade336dc2
+    statement:
+      form: event_driven
+      when: "the Loft mod receives task, question, plan or Yard tool calls from one caller"
+      system: "the Loft mod"
+      shall: "capture their Yard operations in hook receipt order for that caller."
+    criteria:
+      - key: 01a17f75-05db-72d1-b940-2d4b9e8362e2
+        name: "A task call returns its native result only after its mirror has been attempted."
+      - key: 01a17f75-05db-72d1-b940-2d4cc0da493d
+        name: "A later question, plan or Yard tool call cannot overtake an earlier task's capture."
+      - key: 01a17f75-05db-72d1-b940-2d4dcee25ee7
+        name: "Waiting for the person to answer a question or decide a plan leaves later capture operations free to run."
+      - key: 01a17f75-05db-72d1-b940-2d4e46dd6aee
+        name: "A failed capture preserves the native task's result."
+      - key: 01a17f75-05db-72d1-b940-2d4f11bf8cd7
+        name: "A failed capture leaves the next capture able to run."
+      - key: 01a17f75-05db-72d1-b940-2d50f245d266
+        name: "A caller whose capture is delayed leaves another caller's capture free to run."
