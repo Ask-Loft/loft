@@ -135,9 +135,8 @@ pub struct ReadArgs {
     /// Return every version of each block returned, oldest first.
     #[arg(long)]
     pub versions: bool,
-    /// Return each `loft` block's report, which is otherwise given by its size in bytes.
-    #[arg(long)]
-    pub reports: bool,
+    #[command(flatten)]
+    pub details: ReadDetails,
     /// Record the revision read as the one the calling agent last read: the agent's own read.
     #[arg(long, requires = "session")]
     pub mark_read: bool,
@@ -147,6 +146,17 @@ pub struct ReadArgs {
     pub beyond: Beyond,
     #[command(flatten)]
     pub output: Output,
+}
+
+/// Optional detailed material accompanying a Yard read.
+#[derive(Args)]
+pub struct ReadDetails {
+    /// Return each `loft` block's report, which is otherwise given by its size in bytes.
+    #[arg(long)]
+    pub reports: bool,
+    /// Include every submission's lifecycle and the caller's explicit read marker.
+    #[arg(long)]
+    pub submissions: bool,
 }
 
 #[derive(Args)]

@@ -24,12 +24,10 @@ use crate::yard::args::{Beyond, Runner};
 use crate::yard::branch::Branch;
 use crate::yard::caller::{Caller, Continuations};
 use crate::yard::failure::Failure;
-use crate::yard::read::{settler, shown};
-use crate::yard::render::{act, actor};
+use crate::yard::read::{SCHEMA as READ_SCHEMA, settler, shown};
 use crate::yard::render_log::Selection;
 
 const ANSWER_SCHEMA: &str = "loft-yard-answer/1";
-const READ_SCHEMA: &str = "loft-yard-read/2";
 
 /// The tree a request names, where the page server serves it.
 fn served_tree(home: &Home, named: Option<&str>) -> Result<PathBuf, Response> {
@@ -87,26 +85,6 @@ pub fn read(home: &Home, tree: Option<&str>, branch: Option<&str>, port: u16) ->
     }
 }
 
-/// Every submission of `log`, open or not, with its agent, its blocks and each change of its
-/// state, for the page's chart of where the time went.
-fn sent(log: &yardlog::YardLog) -> Value {
-    let submissions = log.root.submissions.iter().map(|submission| {
-        let changes: Vec<Value> = submission
-            .changes
-            .iter()
-            .map(|change| json!({ "what": change.what.as_str(), "act": act(&change.act) }))
-            .collect();
-        json!({
-            "key": submission.key.to_string(),
-            "agent": actor(submission.sender()),
-            "blocks": submission.blocks.iter().map(ToString::to_string).collect::<Vec<_>>(),
-            "state": submission.state(log).as_str(),
-            "changes": changes,
-        })
-    });
-    Value::Array(submissions.collect())
-}
-
 /// The tree's current branch's Yard Log, as `loft yard read --versions` gives it: settled where
 /// a merge left it unsettled, by the person, as a read with no agent settles it.
 fn current(place: Place, beyond: Beyond) -> Result<Value, Failure> {
@@ -134,20 +112,14 @@ fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<V
     let selection = Selection {
         since: None,
         every_version: true,
+        submissions: matches!(&held, Held::Log(_)),
     };
     let continuations = Continuations::read(Home::from_env().as_ref())?;
-    let sent = match &held {
-        Held::Log(log) => Some(sent(log)),
-        Held::Absent | Held::Newer(_) => None,
-    };
     let mut fields = shown(branch, held, &selection, &continuations)?.0;
     markdown::render_document(&mut fields);
     let folder = branch.store.folder();
     fields["activity"] = Value::Array(session_files::read(&folder, SessionFile::Activity));
     fields["tokens"] = Value::Array(session_files::read(&folder, SessionFile::Tokens));
-    if let Some(sent) = sent {
-        fields["sent"] = sent;
-    }
     fields["inherited"] = json!(inherited);
     Ok(fields)
 }

@@ -147,6 +147,16 @@ impl<'a> LastRead<'a> {
         Self { home }
     }
 
+    /// Only this reader's recorded revision, without inheriting another agent's progress.
+    pub fn own(&self, key: YardLogKey, reader: &Identity) -> Result<Option<u64>, Failure> {
+        let bytes = self.home.read(HomeFile::LastRead)?;
+        let all = home_json::object(bytes.as_deref());
+        Ok(all
+            .get(&key.to_string())
+            .and_then(|readers| readers.get(reader.reader()))
+            .and_then(Value::as_u64))
+    }
+
     /// The revision `reader` last read of Yard Log `key`, or, where it read none, the latest
     /// any agent last read of it.
     pub fn before(&self, key: YardLogKey, reader: &Identity) -> Result<Option<u64>, Failure> {

@@ -106,3 +106,32 @@ fn a_read_since_a_revision_below_the_settling_returns_the_blocks_the_merge_broug
     assert_eq!(ids, ["n1-2"]);
     assert_eq!(block(&read, "n1-2")["reached"], 4);
 }
+
+#[test]
+fn submission_history_reports_when_a_merged_resolution_reached_this_copy() {
+    let mut yard = Yard::new();
+    yard.write("s1", ASK, &["--send"]);
+    let dir = yard.folder(BRANCH);
+    let base = files(&dir);
+    for minute in 1..=2 {
+        yard.clock = Clock::fixed(EPOCH + minute * 60);
+        yard.write(
+            "s1",
+            &format!(r#"[{{"id":"n{minute}","kind":"note","stage":"shape","markdown":"Ours"}}]"#),
+            &[],
+        );
+    }
+    let ours = files(&dir);
+    put(&dir, &base);
+    yard.clock = Clock::fixed(EPOCH + 180);
+    yard.answer("s1", r#"[{"block":"q1","labels":["Top"]}]"#);
+    let theirs = files(&dir);
+    merge(&dir, &base, &ours, &theirs);
+    yard.clock = Clock::fixed(EPOCH + 240);
+    let read = yard.read("s1", &["--submissions"]);
+    let sent = &read["sent"][0];
+    assert_eq!(sent["state"], "answered");
+    assert_eq!(sent["changes"][1]["act"]["revision"], 2);
+    assert!(sent["reached"].as_u64().unwrap() >= 4);
+    assert!(sent["reached"].as_u64().unwrap() <= read["revision"].as_u64().unwrap());
+}

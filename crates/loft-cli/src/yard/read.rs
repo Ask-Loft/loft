@@ -21,7 +21,7 @@ use super::failure::{self, Failure};
 use super::render_log::{Selection, closed_by, root, stages, submissions};
 use crate::finish::Finished;
 
-const SCHEMA: &str = "loft-yard-read/2";
+pub const SCHEMA: &str = "loft-yard-read/3";
 const OUTCOME: &str = "read";
 
 /// What a read read, as `--mark-read` records it: Yard Log's key and the revision.
@@ -63,6 +63,10 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     let place = Place::locate(&git, dir)?;
     if place.branch.is_none() {
         let mut fields = detached(&place, args.beyond.port);
+        if args.details.submissions {
+            fields["sent"] = json!([]);
+            fields["ownLastRead"] = Value::Null;
+        }
         fields["ignored"] = json!(git.ignores_yard(&place.tree)?);
         return Ok(fields);
     }
@@ -73,17 +77,24 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     let selection = Selection {
         since: args.since,
         every_version: args.versions,
+        submissions: args.details.submissions,
     };
     let (mut fields, read) = shown(&branch, held, &selection, &continuations)?;
-    if !args.reports {
+    if !args.details.reports {
         super::render_loft::without_reports(&mut fields["stages"]);
     }
     if let Some(since) = args.since {
         fields["since"] = json!(since);
     }
+    if args.details.submissions {
+        fields["ownLastRead"] = Value::Null;
+    }
     if let (Some(agent), Some(home), Some((key, revision))) = (&caller.agent, &home, read) {
         let reader = continuations.identity(agent);
         let last_read = LastRead::new(home);
+        if args.details.submissions {
+            fields["ownLastRead"] = json!(last_read.own(key, &reader)?);
+        }
         if let Some(before) = last_read.before(key, &reader)? {
             fields["lastRead"] = json!(before);
         }
@@ -103,6 +114,9 @@ pub fn shown(
     continuations: &Continuations,
 ) -> Result<(Value, Option<Marked>), Failure> {
     let mut fields = branch.fields(revision_of(&held));
+    if selection.submissions {
+        fields["sent"] = json!([]);
+    }
     fields["ignored"] = json!(branch.git.ignores_yard(&branch.place().tree)?);
     let (log, left_out) = match held {
         Held::Log(log) => (*log, None),
@@ -120,6 +134,9 @@ pub fn shown(
     fields["yardLog"] = root(&log, closed_by_merge);
     fields["stages"] = Value::Array(stages(&log, selection));
     fields["submissions"] = Value::Array(submissions(&log, continuations));
+    if selection.submissions {
+        fields["sent"] = super::render_log::sent(&log);
+    }
     Ok((fields, Some(read_of(&log))))
 }
 

@@ -126,7 +126,14 @@ fn the_page_server_takes_no_answer_for_an_inherited_yard_log() {
 #[test]
 fn a_branch_s_yard_log_reads_as_loft_yard_read_gives_it_with_every_version() {
     let yard = Yard::new();
-    yard.write("s1", ASK, &["--send"]);
+    yard.write("s1", ASK, &[]);
+    let revised = yard.write(
+        "s1",
+        r#"[{"id":"q1","kind":"question","stage":"shape","prompt":"Which one?",
+        "header":"Shelf","options":[{"label":"Top"},{"label":"Bottom"}]}]"#,
+        &["--send"],
+    );
+    assert_eq!(revised["outcome"], "written");
     let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
     let read = served
         .get(&format!(
@@ -134,9 +141,17 @@ fn a_branch_s_yard_log_reads_as_loft_yard_read_gives_it_with_every_version() {
             tree(&yard.scratch)
         ))
         .json();
-    assert_eq!(read["schema"], "loft-yard-read/2");
+    assert_eq!(read["schema"], "loft-yard-read/3");
     assert_eq!(read["inherited"], false);
-    assert_eq!(block(&read, "q1")["versions"].as_array().unwrap().len(), 1);
+    let question = block(&read, "q1");
+    let versions = question["versions"].as_array().unwrap();
+    assert_eq!(versions.len(), 2);
+    assert_eq!(versions[0]["body"]["prompt"], "Which shelf?");
+    assert_eq!(versions[1]["body"]["prompt"], "Which one?");
+    for version in versions {
+        assert!(version["key"].is_string());
+        assert!(version["act"]["revision"].is_number());
+    }
     let command = yard.read("s1", &[]);
     assert_eq!(read["revision"], command["revision"]);
     assert_eq!(read["submissions"], command["submissions"]);
