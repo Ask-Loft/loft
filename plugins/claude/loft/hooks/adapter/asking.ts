@@ -9,6 +9,7 @@ import type { EngineInterface, ToolCallResult } from 'claude-code'
 import type { Doc, Ran } from '../loft'
 import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
+import { capture, checkCapture } from './capture'
 import { activeStage, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Running } from './run'
 import { askerOf, peek, prepare, run, state, type Outcome, type Presenting } from './state'
@@ -116,15 +117,20 @@ async function withdraw($: EngineInterface, cwd: string, caller: Caller, submiss
 
 /** The agent's own questions: sent to Yard Log, and answered in the terminal or on the page. */
 export async function askQuestions($: EngineInterface, e: { questions: readonly Asked[]; agentId?: string; tool_use_id?: string }, next: Next) {
-  const asking = await prepare($, e.agentId)
-  if (!asking) return next(e as never)
-  const { cwd, caller, doc } = asking
-  const minted = mintedFor(e, caller)
-  const ids = e.questions.map((_, n) => idOf('ask', minted, String(n + 1)))
-  const stage = stageFor(doc, askerOf(caller), minted)
-  const batch = [...(stage.opened ? [stage.opened] : []), ...questionBlocks(e.questions, ids, stage.id)]
-  const submission = await send($, cwd, caller, batch)
-  if (submission === undefined) return next(e as never)
+  const captured = await capture(e.agentId, next.signal, async () => {
+    const asking = await prepare($, e.agentId)
+    checkCapture(next.signal)
+    if (!asking) return undefined
+    const { cwd, caller, doc } = asking
+    const minted = mintedFor(e, caller)
+    const ids = e.questions.map((_, n) => idOf('ask', minted, String(n + 1)))
+    const stage = stageFor(doc, askerOf(caller), minted)
+    const batch = [...(stage.opened ? [stage.opened] : []), ...questionBlocks(e.questions, ids, stage.id)]
+    const submission = await send($, cwd, caller, batch)
+    return submission === undefined ? undefined : { cwd, caller, ids, submission }
+  })
+  if (!captured) return next(e as never)
+  const { cwd, caller, ids, submission } = captured
   const wait = waiting($, cwd, submission, caller)
   const terminal = next(e as never)
   const raced = await race(terminal, wait.done)
@@ -160,16 +166,21 @@ export async function presentPlan(
   const plan = typeof e.plan === 'string' ? e.plan : ''
   const path = typeof e.planFilePath === 'string' ? e.planFilePath : undefined
   if (plan.trim() === '') return next(e as never)
-  const asking = await prepare($, e.agentId)
-  if (!asking) return next(e as never)
-  const { cwd, caller, doc } = asking
-  const minted = mintedFor(e, caller)
-  const stage = stageFor(doc, askerOf(caller), minted)
-  const id = planFor(stage, path, idOf('plan', minted))
-  const kept = planPath(typeof doc?.tree === 'string' ? doc.tree : undefined, path)
-  const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(kept ? { path: kept } : {}), planMode: true }
-  const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
-  if (submission === undefined) return next(e as never)
+  const captured = await capture(e.agentId, next.signal, async () => {
+    const asking = await prepare($, e.agentId)
+    checkCapture(next.signal)
+    if (!asking) return undefined
+    const { cwd, caller, doc } = asking
+    const minted = mintedFor(e, caller)
+    const stage = stageFor(doc, askerOf(caller), minted)
+    const id = planFor(stage, path, idOf('plan', minted))
+    const kept = planPath(typeof doc?.tree === 'string' ? doc.tree : undefined, path)
+    const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(kept ? { path: kept } : {}), planMode: true }
+    const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
+    return submission === undefined ? undefined : { id, cwd, caller, submission }
+  })
+  if (!captured) return next(e as never)
+  const { id, cwd, caller, submission } = captured
   const presenting: Presenting = { id, cwd, caller, submission }
   state.presenting = presenting
   try {

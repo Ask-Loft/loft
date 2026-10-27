@@ -221,18 +221,22 @@ test('an agent with no active stage has no task mirrored, and a failed task call
   expect(w.state.runs.filter(run => run.argv.includes('write'))).toEqual([])
 })
 
-test("the agent's task call returns while its mirror has yet to read Yard Log", async ($, on) => {
+test("the agent's task call waits until its mirror has been attempted", async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
   await start($)
   const read = deferred<void>()
   w.state.reading = read.promise
-  const ran = await $.tool.call({ tool: 'TaskCreate', subject: 'Write the tests', description: '' } as never)
-  expect(ran.text).toBe('ok')
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toEqual([])
-  read.resolve()
+  let returned = false
+  const pending = $.tool.call({ tool: 'TaskCreate', subject: 'Write the tests', description: '' } as never).then(ran => { returned = true; return ran })
   await w.clock.settle()
+  const returnedBeforeRead = returned
+  read.resolve()
+  const ran = await pending
+  await w.clock.settle()
+  expect(returnedBeforeRead).toBe(false)
+  expect(ran.text).toBe('ok')
   expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(1)
 })
 

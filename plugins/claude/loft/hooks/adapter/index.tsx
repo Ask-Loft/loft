@@ -9,12 +9,13 @@ import type { EngineInterface, On, PluginOptions } from 'claude-code'
 import { QUIET, type Ran } from '../loft'
 import { askQuestions, decideOnPage, ownDialog, presentPlan, waitOn } from './asking'
 import { contextOf } from './context'
+import { capture, checkCapture } from './capture'
 import { descriptor } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
 import { callerArgs, failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
-import { askerOf, callerOf, continued, pageNoted, PLUGIN, reset, run, state } from './state'
+import { askerOf, callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
 import { mirrorCreated, mirrorUpdated } from './tasks'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
 
@@ -85,15 +86,19 @@ async function callTool($: EngineInterface, name: ToolName, e: Record<string, un
   if (!state.isOn) return { deny: 'Yard Client is off in this session.' }
   const checked = argumentsOf(name, e)
   if ('fault' in checked) return { deny: checked.fault }
-  const cwd = await $.session.cwd()
-  const caller = await callerOf($, typeof e.agentId === 'string' ? e.agentId : undefined)
-  let ran: Ran
-  if (name === 'yard_wait') {
-    ran = await waitOn($, cwd, caller, String(checked.args.submission), signal)
-  } else {
+  const agentId = typeof e.agentId === 'string' ? e.agentId : undefined
+  const prepared = capture(agentId, signal, async () => {
+    const cwd = await $.session.cwd()
+    const caller = await callerOf($, agentId)
+    checkCapture(signal)
+    if (name === 'yard_wait') return { kind: 'wait' as const, cwd, caller }
     const command = commandOf(name, checked.args, caller)
-    ran = await run($, cwd, command.args, command.stdin)
-  }
+    return { kind: 'result' as const, ran: await run($, cwd, command.args, command.stdin) }
+  })
+  const ready = await prepared
+  const ran = ready.kind === 'wait'
+    ? await waitOn($, ready.cwd, ready.caller, String(checked.args.submission), signal)
+    : ready.ran
   if (!succeeded(ran)) return { deny: failureOf(ran) }
   return { result: JSON.stringify(ran.doc) }
 }
@@ -148,17 +153,28 @@ export function registerYard(on: On, options: PluginOptions) {
     return decideOnPage($, presented, () => next(e), e.tool_input, next.signal)
   })
 
-  // The agent's task call returns at once; its mirror follows.
-  on('tool.call', { tool: 'TaskCreate' }, async ($, e, next) => {
-    const ran = await next(e)
-    if (state.isOn) mirrorCreated($, e, ran)
-    return ran
+  // Keep task preparation, native execution and its mirror in the same capture slot.
+  on('tool.call', { tool: 'TaskCreate' }, ($, e, next) => {
+    if (!state.isOn) return next(e)
+    return capture(e.agentId, next.signal, async () => {
+      const asking = await prepare($, e.agentId).catch(() => undefined)
+      checkCapture(next.signal)
+      const ran = await next(e)
+      if (!next.signal.aborted) await mirrorCreated($, e, ran, asking).catch(() => {})
+      return ran
+    })
   })
 
-  on('tool.call', { tool: 'TaskUpdate' }, async ($, e, next) => {
-    const ran = await next(e)
-    if (state.isOn) mirrorUpdated($, e, ran)
-    return ran
+  on('tool.call', { tool: 'TaskUpdate' }, ($, e, next) => {
+    if (!state.isOn) return next(e)
+    return capture(e.agentId, next.signal, async () => {
+      const ran = await next(e)
+      if (!next.signal.aborted) {
+        const asking = await prepare($, e.agentId).catch(() => undefined)
+        if (!next.signal.aborted) await mirrorUpdated($, e, ran, asking).catch(() => {})
+      }
+      return ran
+    })
   })
 
   on('ui.render', { component: 'AskUserQuestion' }, async ($, e, next) => {

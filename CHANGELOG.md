@@ -5,6 +5,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Claude captures tasks, questions, plans and Yard tool calls in receipt order for each caller,
+  selects task stages before native creation and releases capture on interruption.
 - Yard cards distinguish their Created and Updated times while keeping their stored timeline
   positions through edits, mode grouping and reversing the stage view.
 

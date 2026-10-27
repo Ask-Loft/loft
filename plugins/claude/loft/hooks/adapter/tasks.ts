@@ -1,6 +1,6 @@
 // The agent's own tasks, mirrored as `task` blocks of the stage active for the agent that made them
-// (the Feature "Mirror the agent's tasks"). The agent's call never waits on a mirror; the mirrors
-// run one after another, so that an update finds the block its task's creation wrote.
+// (the Feature "Mirror the agent's tasks"). Their caller's capture lane selects the stage before
+// native creation and attempts the mirror before returning the native result.
 
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
@@ -11,13 +11,7 @@ import { askerOf, prepare, run } from './state'
 
 const failed = (ran: ToolCallResult) => ran.deny !== undefined || ran.isError === true
 
-/** The mirrors under way, the last one queued at its end. */
-let mirroring: Promise<void> = Promise.resolve()
-
-/** Runs a mirror once those queued before it are done; a mirror that fails is dropped. */
-function queue(mirror: () => Promise<void>) {
-  mirroring = mirroring.then(mirror).catch(() => {})
-}
+type Prepared = Awaited<ReturnType<typeof prepare>>
 
 async function write($: EngineInterface, cwd: string, caller: Caller, block: Record<string, unknown>) {
   await run($, cwd, ['write', '--input', '-', ...callerArgs(caller)], JSON.stringify([block]))
@@ -27,31 +21,14 @@ async function write($: EngineInterface, cwd: string, caller: Caller, block: Rec
 const typed = (type: string | undefined) => (type === undefined || type === 'regular' ? {} : { type })
 
 /** Mirrors a task `TaskCreate` made; nothing where the agent has no active stage. */
-export function mirrorCreated(
+export async function mirrorCreated(
   $: EngineInterface,
   e: { subject?: unknown; metadata?: unknown; agentId?: string },
   ran: ToolCallResult,
-) {
-  queue(() => created($, e, ran))
-}
-
-/** Mirrors a change `TaskUpdate` made to a task already mirrored. */
-export function mirrorUpdated(
-  $: EngineInterface,
-  e: { taskId?: unknown; subject?: unknown; status?: unknown; metadata?: unknown; agentId?: string },
-  ran: ToolCallResult,
-) {
-  queue(() => updated($, e, ran))
-}
-
-async function created(
-  $: EngineInterface,
-  e: { subject?: unknown; metadata?: unknown; agentId?: string },
-  ran: ToolCallResult,
+  asking: Prepared,
 ) {
   const id = (ran.result as { task?: { id?: unknown } } | undefined)?.task?.id
   if (failed(ran) || typeof id !== 'string') return
-  const asking = await prepare($, e.agentId)
   if (!asking) return
   const { cwd, caller, doc } = asking
   const stage = activeStage(doc, askerOf(caller))
@@ -61,14 +38,15 @@ async function created(
   await write($, cwd, caller, { ...block, ...typed(taskType(e.metadata)) })
 }
 
-async function updated(
+/** Mirrors a change `TaskUpdate` made to a task already mirrored. */
+export async function mirrorUpdated(
   $: EngineInterface,
   e: { taskId?: unknown; subject?: unknown; status?: unknown; metadata?: unknown; agentId?: string },
   ran: ToolCallResult,
+  asking: Prepared,
 ) {
   if (failed(ran) || typeof e.taskId !== 'string') return
   if ((ran.result as { success?: unknown } | undefined)?.success === false) return
-  const asking = await prepare($, e.agentId)
   if (!asking) return
   const { cwd, caller, doc } = asking
   const id = taskId(e.taskId, whoOf(caller))

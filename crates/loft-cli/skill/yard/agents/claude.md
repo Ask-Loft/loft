@@ -4,6 +4,10 @@ The Loft plugin records the questions you ask with `AskUserQuestion`, the plans 
 with `ExitPlanMode` and the tasks you create and update. Keep stages, notes, decisions and Loft
 reports yourself using the tools below.
 
+Task capture is attempted before the native task call returns, in the same order as your other
+Yard captures. A new task uses the stage selected before its native creation runs. Waiting for
+a question or plan decision leaves later captures free to run.
+
 You reach it through six tools:
 
 | Tool | What it does |

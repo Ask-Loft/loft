@@ -19462,8 +19462,8 @@ links:
         name: "an interrupt while yard_wait waits ends the running wait, closes the dialog, records nothing and leaves the submission open"
         body: 326db6ab8694ef3ce477a8c1e24c9d02cff57bc2c0802195db153468341bedc5
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "the agent's task call returns while its mirror has yet to read Yard Log"
-        body: 73e8ee27054a5e7697cdb497ac8e693df3958b9bcc9006f5ea62a68921251cf3
+        name: "the agent's task call waits until its mirror has been attempted"
+        body: 3fc7cab84f3446209becaa3a594c26362452252c1ff6623fbc795d8403e3ce47
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "events wait while the page server does not take them, and go in their order once it does"
         body: 24d50f0f39fc2e3dfa3e27b24a58562cef3d47cdeb867af5351f098bf0dc28c5
@@ -26400,6 +26400,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
         body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
+  - node: 01a17f75-05db-72d1-b940-2d49f24fff4a
+    reviewed: 61308535366cd3d6aa197d72047aedd34d9f73597de5e7bbcb7403fd7c033db8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "task creation keeps the stage selected before its native tool runs"
+        body: 9a884a8a0ea00606a902bc022d8f64520f9da61e206c7396b2cb53ff00ea148a
   - node: 01a1646f-546c-7521-9643-bc56c4873439
     reviewed: d413264a68c3dfd55e9beb5deb8f56ccffbf19e369cc89f1db52e8092609ea90
     tests:
@@ -26451,6 +26457,54 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone"
         body: 3ce5ea29f42fbf37c2cbcb5bf7e8a915735b37d5f1f5900fe793bad0fe34b8d7
+  - node: 01a17f75-05db-72d1-b940-2d4b9e8362e2
+    reviewed: 078af02c3a6951b405b6d462b9ff981e42fdb8066828c73df755c7d7f16d4bc8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "the agent's task call waits until its mirror has been attempted"
+        body: 3fc7cab84f3446209becaa3a594c26362452252c1ff6623fbc795d8403e3ce47
+  - node: 01a17f75-05db-72d1-b940-2d4cc0da493d
+    reviewed: ec30bc54834fb445ce2ae763d25b083a0f46e0adfc61c61064b1aafeaf4b0294
+    tests:
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "task capture cannot be overtaken by later plans questions or Yard writes"
+        body: 0d4ca826ad1fc24c54e9f0b231702706dc24f868a6d631283e19ff456c842e32
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "cancelling a queued capture never lets a later call overtake its active predecessor"
+        body: 937efd419db4b155e88ba01a0211a3176d2ae7c79895dbc6f21b509c2a39c09d
+  - node: 01a17f75-05db-72d1-b940-2d4dcee25ee7
+    reviewed: 87f09e8e641948b821b282a30c359d9fe4dfebbc4623d0d93ee5b6f124627c92
+    tests:
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "waiting for a plan decision does not hold the capture lane"
+        body: ce7dfcdd1a119ee6f69b083fac7f847f16ae289c5637e5e1bba4e3d7990830bc
+  - node: 01a17f75-05db-72d1-b940-2d4e46dd6aee
+    reviewed: 4be1d20d5a53d1dbe7aed9603b27352197de7a3be31654cb73b70691e226691e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "a native task still runs when preparation or mirroring fails and the next capture can run"
+        body: fd83b22f36c78a7a4ccf0e9cc6da2c3a32723a923afb507f245eb1dcf1f1dba6
+  - node: 01a17f75-05db-72d1-b940-2d4f11bf8cd7
+    reviewed: 045534bda02719a5116f4f728d119da22b311d9553342ed988144d593fd5b5d5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "a native task still runs when preparation or mirroring fails and the next capture can run"
+        body: fd83b22f36c78a7a4ccf0e9cc6da2c3a32723a923afb507f245eb1dcf1f1dba6
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "an interrupted native task releases its capture lane without a late mirror"
+        body: dfc54a91ecdd3fac8d1d4cc0443884904d6b81362ac7887cc597ca2fee2d8579
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "an interrupted preparation cannot write a late mirror after a later capture"
+        body: e173dafd0357c88d9224e6ac55939167cd61d37081fdfc8025c36f4485d79303
+  - node: 01a17f75-05db-72d1-b940-2d50f245d266
+    reviewed: 07f88e330d8566547f629f7d1aef6fa54815e8f04519d35a1054a5aab0cd4c26
+    tests:
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "a delayed main agent capture leaves a subagent free to capture its own task"
+        body: d26e9324da394dc36ed4a7afafd5d9dd9bcd2981e66b26e07f6699dc7f30c670
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "a new session has its own capture lane while an old native task finishes"
+        body: 3befe384b5a05c738665c7370231913723d8d1dabdcad19f0802e39cf80c02df
   - node: 01a1646f-546c-7521-9643-bc648ffcbb12
     reviewed: e657ae2eedeb6d2fe2d49f0520ec25d53ce556237ca193242826b68535ca3e4c
     tests:
