@@ -25860,6 +25860,51 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "an open page shows a counted request’s tokens within 2 seconds of the request’s end"
         body: 66300d59351220c6e9e5c636b55fbeebfaa74aa30b655feb72ed240e0efbd134
+  - node: 01a17d58-a535-7258-91b4-bc9b36d959eb
+    reviewed: 3b260e72a80f944aafd5f306e9b690e106e8e7c4b81c92f21861cc4f627d6fae
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "historical Codex zero writes are unavailable in every breakdown without mutating source data"
+        body: 0174a81ee8fb0a6049c2b9b0b0b8d0760cc253df087666e6dc2153accb9e3cd3
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "historical Codex cache-write zeros display as unavailable while their source file stays intact"
+        body: 0ce158f9d3455d1eecda061167cf655b9674981dcd27b40275c54e9a3a7fb442
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "an empty stage uses classified session coverage rather than historical raw zero fields"
+        body: ca9e07fbe7c043ca2bb7baeb6ed96fbb5728228490507bf7f8cd34762b5b2344
+  - node: 01a17d58-a535-7258-91b4-bc9cd648fbe7
+    reviewed: bb2e0b2c0e218e1f2fee3917c5bde1b090d915aeaf248748c98adcc67da0af4c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "positive legacy writes and classified or Claude measured zeros retain their meaning"
+        body: 0e24038fd34a05183de6dbe2c137804264ff2860bb76ea40ecba35c30310df3e
+  - node: 01a17d58-a535-7258-91b4-bc9d7c0151d4
+    reviewed: 8952e800d0d014c40947e25f923dec917396eafb099da5acf5d6cb98b2b645da
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "positive legacy writes and classified or Claude measured zeros retain their meaning"
+        body: 0e24038fd34a05183de6dbe2c137804264ff2860bb76ea40ecba35c30310df3e
+  - node: 01a17d58-a535-7258-91b4-bc9e51136b47
+    reviewed: 290f53304717b90f2d5f81ac627190e87278d4d29768ebd979ad46c0ec897414
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "positive legacy writes and classified or Claude measured zeros retain their meaning"
+        body: 0e24038fd34a05183de6dbe2c137804264ff2860bb76ea40ecba35c30310df3e
+  - node: 01a17d58-a535-7258-91b4-bc9f647372f4
+    reviewed: 3b35b4688a2ba4243f231368fe8c99617572426960856ddbe63f42646eb34a79
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "historical Codex zero writes are unavailable in every breakdown without mutating source data"
+        body: 0174a81ee8fb0a6049c2b9b0b0b8d0760cc253df087666e6dc2153accb9e3cd3
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "historical Codex cache-write zeros display as unavailable while their source file stays intact"
+        body: 0ce158f9d3455d1eecda061167cf655b9674981dcd27b40275c54e9a3a7fb442
+  - node: 01a17d58-a535-7258-91b4-bca03221cedc
+    reviewed: 138421b311b3cff3ff7c830450c61c97749120e415456f0f72bb39e7b2ddd876
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "mixed historical Codex and Claude totals preserve measured subtotals and partial coverage"
+        body: bf8b24645dee4d03f87f3098299080c1e8301413872a778dbb44155554ac2040
   - node: 01a1646f-546c-7521-9643-bc13661fd11f
     reviewed: 1c48f667a539f795fccf1276cd4ed62ca7302e21ce64521297cafdccd589406b
     tests:

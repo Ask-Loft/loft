@@ -49,6 +49,27 @@ function addTo(map, key, counts) {
   map.set(key, add(map.get(key), counts));
 }
 
+/** Historical Codex zeros lack verified provenance. Project counts without changing the file.
+ * @param {any} file
+ */
+function classified(file) {
+  if (file.host !== 'codex' || file.cacheWriteClassified === true) return file;
+  const counts = (value) => {
+    if (value === undefined) return undefined;
+    const shown = { ...value };
+    if (shown.cacheWrite === 0) delete shown.cacheWrite;
+    return shown;
+  };
+  return {
+    ...file,
+    tokens: counts(file.tokens),
+    noStage: counts(file.noStage),
+    stages: (file.stages ?? []).map((stage) => ({ ...counts(stage), agents: stage.agents?.map(counts) })),
+    agents: file.agents?.map(counts),
+    submissions: file.submissions?.map(counts),
+  };
+}
+
 /**
  * Yard Log's tokens, from the totals files of its sessions.
  * @param {any[]} files
@@ -68,7 +89,8 @@ export function summarize(files, activities = []) {
   /** @type {Map<string, { who: string, model: string, tokens: Counts }>} */
   const agents = new Map();
   const sessions = [];
-  for (const file of files ?? []) {
+  for (const original of files ?? []) {
+    const file = classified(original);
     all = add(all, file.tokens);
     noStage = add(noStage, file.noStage ?? Object.fromEntries(COUNTERS.filter((key) => file.tokens?.[key] !== undefined).map((key) => [key, 0])));
     for (const stage of file.stages ?? []) {

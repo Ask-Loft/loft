@@ -96,7 +96,7 @@ export function tokensView(log) {
     return section;
   }
   const stages = (log.stages ?? []).flatMap((stage) => [
-    [stage.version.body.title, summary.stages.get(stage.key) ?? zeroFor(log, stage.owner)],
+    [stage.version.body.title, summary.stages.get(stage.key) ?? zeroFor(summary.sessions, stage.owner)],
     // Each type of subagent that worked for the stage, its counts within the stage's.
     ...[...(summary.stageAgents.get(stage.key) ?? [])]
       .sort(([, a], [, b]) => total(b) - total(a))
@@ -125,9 +125,9 @@ export function tokensView(log) {
   return section;
 }
 
-/** Recorded zero only for counters this session actually reports. @param {any} log @param {any} owner */
-function zeroFor(log, owner) {
-  const file = (log.tokens ?? []).find((file) => file.session === owner?.session && (file.host ?? 'claude-code') === (owner?.host ?? 'claude-code'));
+/** Recorded zero only for counters this session actually reports. @param {any[]} sessions @param {any} owner */
+function zeroFor(sessions, owner) {
+  const file = sessions.find((file) => file.session === owner?.session && (file.host ?? 'claude-code') === (owner?.host ?? 'claude-code'));
   return Object.fromEntries(KEYS.filter((key) => file?.tokens?.[key] !== undefined).map((key) => [key, 0]));
 }
 

@@ -138,3 +138,68 @@ test('beside a stage that subagents counted toward, each type of subagent’s co
   assert.deepEqual(within.map((row) => [...row.cells].map((cell) => cell.textContent)), [['Explore subagent', '30', '100', '0', '10']]);
   assert.equal(rows.indexOf(within[0]), 1, 'the subagent’s row follows its stage’s');
 });
+
+function legacyCodex(shaping) {
+  return {
+    host: 'codex', session: 'legacy', tokens: counts(10, 100, 0, 2),
+    noStage: counts(0, 0, 0, 0),
+    stages: [{ stage: shaping.key, ...counts(10, 100, 0, 2), agents: [{ agent: 'child', type: 'review', ...counts(10, 100, 0, 2) }] }],
+    agents: [{ agent: 'child', type: 'review', model: 'fixture', ...counts(10, 100, 0, 2) }],
+    submissions: [{ submission: 'sub', ...counts(10, 100, 0, 2) }],
+  };
+}
+
+test('historical Codex zero writes are unavailable in every breakdown without mutating source data', () => {
+  const shaping = stage('shape', 'Shaping', 'active', []);
+  const file = legacyCodex(shaping);
+  const original = structuredClone(file);
+  const summary = summarize([file]);
+  const values = [summary.all, summary.noStage, summary.stages.get(shaping.key), summary.stageAgents.get(shaping.key).get('review'), summary.agents[0].tokens, summary.sessions[0].tokens, summary.submissions.get('sub')];
+  for (const counts of values) assert.equal(counts.cacheWrite, undefined);
+  assert.equal(summary.all.input, 10);
+  assert.equal(summary.all.cacheRead, 100);
+  assert.equal(summary.all.output, 2);
+  assert.equal(summary.partial, true);
+  const view = tokensView(log([shaping], { tokens: [file] }));
+  assert.equal(view.querySelectorAll('.token-totals dd')[2].textContent, 'Unavailable');
+  for (const row of view.querySelectorAll('tbody tr:not(.group)')) {
+    assert.equal(row.cells[3].textContent, 'Unavailable');
+    assert.equal(row.cells[3].querySelector('.share'), null);
+  }
+  assert.deepEqual(file, original);
+});
+
+test('positive legacy writes and classified or Claude measured zeros retain their meaning', () => {
+  const shaping = stage('shape', 'Shaping', 'active', []);
+  for (const host of ['codex', 'claude-code']) {
+    for (const classified of [undefined, false, true]) {
+      for (const write of [0, 7]) {
+        const file = { ...legacyCodex(shaping), host, tokens: counts(10, 100, write, 2), ...(classified === undefined ? {} : { cacheWriteClassified: classified }) };
+        assert.equal(summarize([file]).all.cacheWrite, host === 'codex' && classified !== true && write === 0 ? undefined : write);
+      }
+    }
+  }
+});
+
+test('mixed historical Codex and Claude totals preserve measured subtotals and partial coverage', () => {
+  const shaping = stage('shape', 'Shaping', 'active', []);
+  const codex = legacyCodex(shaping);
+  const claude = { ...legacyCodex(shaping), host: 'claude-code', session: 'claude', tokens: counts(20, 200, 7, 3) };
+  const summary = summarize([codex, claude]);
+  assert.equal(summary.all.cacheWrite, 7);
+  assert.equal(summary.all.input, 30);
+  assert.ok(summary.all.partial.includes('cacheWrite'));
+  assert.equal(summary.partial, true);
+  assert.equal(summary.sessions.find((s) => s.host === 'codex').tokens.cacheWrite, undefined);
+});
+
+test('an empty stage uses classified session coverage rather than historical raw zero fields', () => {
+  const shaping = stage('shape', 'Unstarted', 'planned', [], { owner: { host: 'codex', session: 'legacy' } });
+  for (const classified of [false, true]) {
+    const file = { ...legacyCodex(shaping), stages: [], cacheWriteClassified: classified };
+    const view = tokensView(log([shaping], { tokens: [file] }));
+    const row = view.querySelector('tbody[data-by="stage"] tr:not(.group)');
+    assert.equal(row.cells[1].textContent, '0');
+    assert.equal(row.cells[3].textContent, classified ? '0' : 'Unavailable');
+  }
+});
