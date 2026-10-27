@@ -66,11 +66,11 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "say of a plan that an agent presented in plan mode that approving it lets the agent go on in auto mode."
+      shall: "say of every plan that approval authorizes the planned work, subject to the host's mode and permissions."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc4f1a3eb87b
         name: "The page offers a plan presented in plan mode for approval and for rejection."
       - key: 01a1646f-546c-7521-9643-bc506fea2e7b
-        name: "The page says beside the approval of a plan presented in plan mode that the agent goes on in auto mode."
+        name: "The page uses the same approval explanation for every plan, regardless of host or the planMode field: approval authorizes the planned work, subject to the host's mode and permissions."
       - key: 01a1646f-546c-7521-9643-bc51036e2440
         name: "Once the plan is approved in the terminal, the page shows it approved, with the channel `terminal`."

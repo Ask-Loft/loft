@@ -184,6 +184,22 @@ requirements:
         name: "A task counts as written during a stretch where it was listed during it."
       - key: 01a1646f-546d-7042-befd-eb3400bc25ff
         name: "A band of spec mode is told apart from a band of plan mode by its colour, its hatching and its label."
+  - key: 01a17b28-85cd-71b5-8420-67ee22ffafa7
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw every plan under a Plan mode band, regardless of the agent's host or the native mode activity available."
+    criteria:
+      - key: 01a17b28-3826-7755-a564-ddfae0c6fd36
+        name: "Every plan block is drawn under the same Plan mode band, regardless of its host or whether native mode activity was recorded."
+      - key: 01a17b28-3826-7755-a564-ddfb45598062
+        name: "A plan outside a recorded plan-mode stretch has a band from its current version's presentation until its decision, or marked as ongoing while undecided."
+      - key: 01a17b28-c0f9-7056-82dd-76cfcc7c78cc
+        name: "A band derived from a plan contains that plan alone."
+      - key: 01a17b28-3826-7755-a564-ddfc714df647
+        name: "A plan within a recorded plan-mode stretch uses that band's recorded times and is drawn once."
+      - key: 01a17b28-3826-7755-a564-ddfd119e623a
+        name: "A plan outside a recorded plan-mode stretch creates no native activity or Gantt duration."
   - key: 01a1646f-546d-7042-befd-eb36770e933e
     statement:
       form: ubiquitous
