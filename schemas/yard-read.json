@@ -254,7 +254,7 @@
           }
         },
         "ownLastRead": {
-          "description": "With --submissions: the caller’s own recorded read revision, excluding fallback reads",
+          "description": "With --submissions: the caller\u2019s own recorded read revision, excluding fallback reads",
           "type": [
             "integer",
             "null"
@@ -1359,6 +1359,10 @@
               }
             }
           }
+        },
+        "cacheWriteClassified": {
+          "type": "boolean",
+          "description": "True for Codex totals whose zero cache-write reports have been classified by source account. Legacy totals omit this marker."
         }
       }
     },

@@ -20082,6 +20082,45 @@ links:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_session_context_is_a_peek_with_explicit_caller_arguments"
         body: 4c64cd0ef7c04383501e2e688fec8aee41b0b81f107a9e9d7c98a6f48b60894b
+  - node: 01a17d58-a534-746d-9e9d-03faace608a9
+    reviewed: 7df2bae93487dd62588c2233c3f005e8aae33203b76ccc980edd09fad71b415a
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "only_verified_api_key_zeros_are_measured_in_codex_cache_write_accounting"
+        body: 1fa2f07b4ce4fa1df2bc45ed8a0fe983c8ad6c389b2bc3f72cb07cab15158648
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_breakdown"
+        body: a9fa61bfaa8fcb8a935dae7d28e9e3fc91622400ac6114be527935ab7c30ea48
+  - node: 01a17d58-a534-746d-9e9d-03fbf1e25de3
+    reviewed: 8103b17b7eb34a71952d525a084b08167c40e5aef5ad0d445ebdc8f95c3b15a2
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "only_verified_api_key_zeros_are_measured_in_codex_cache_write_accounting"
+        body: 1fa2f07b4ce4fa1df2bc45ed8a0fe983c8ad6c389b2bc3f72cb07cab15158648
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "replay_preserves_known_api_zeros_and_positive_counts_without_counting_legacy_zeros"
+        body: 41a91482b8384741e05b9bfb8d59804f7d60fe01f016ae83f45790c04686bd36
+  - node: 01a17d58-a534-746d-9e9d-03fc5ea6ef90
+    reviewed: d06b587fc12aeeabc52a5222636302dfe6927b97eaf0193cc844e451a6363943
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "only_verified_api_key_zeros_are_measured_in_codex_cache_write_accounting"
+        body: 1fa2f07b4ce4fa1df2bc45ed8a0fe983c8ad6c389b2bc3f72cb07cab15158648
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "replay_preserves_known_api_zeros_and_positive_counts_without_counting_legacy_zeros"
+        body: 41a91482b8384741e05b9bfb8d59804f7d60fe01f016ae83f45790c04686bd36
+  - node: 01a17d58-a534-746d-9e9d-03fd5b60ece0
+    reviewed: 3c079d55f76f50cb92f25a1dae48512c02288365935661bb42e0b6ca93af2a7d
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "missing_or_malformed_source_counters_are_not_replaced_with_measured_zeros"
+        body: 22bb2e6bafe3dbb832e47fe682f0aad6e1996da1e079fac2653fbcbe8fefccd9
+  - node: 01a17d58-a534-746d-9e9d-03fe586bb77d
+    reviewed: 24c30cfc403ebc94d0d77dc0fda5e735b990fb63f690bc7fd3e2da416acd4bda
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_breakdown"
+        body: a9fa61bfaa8fcb8a935dae7d28e9e3fc91622400ac6114be527935ab7c30ea48
   - node: 01a17d58-a534-746d-9e9d-03ff056b0671
     reviewed: efd9dabdc8acd6a484a14cc18183e0cfd311a0519bc4f34da95c87a5870f8500
     tests:
@@ -25329,6 +25368,51 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_whose_agent_works_in_another_worktree_is_counted_in_that_worktree_s_yard_log"
         body: b08bcf38028d4cd4d0ab5c00eec513e7ad67e22d966e303f06d09315dcc7dcfa
+  - node: 01a17d58-a535-7258-91b4-bc947d9fa1f1
+    reviewed: 95a9d6494b47d5cd7bc4cadeb05861228f9577a6861943e33d525e979aead542
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "only_verified_api_key_zeros_are_measured_in_codex_cache_write_accounting"
+        body: 1fa2f07b4ce4fa1df2bc45ed8a0fe983c8ad6c389b2bc3f72cb07cab15158648
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_breakdown"
+        body: a9fa61bfaa8fcb8a935dae7d28e9e3fc91622400ac6114be527935ab7c30ea48
+  - node: 01a17d58-a535-7258-91b4-bc95f4f30d26
+    reviewed: 76c08a24c2dc7f86dadbc3569b5593dcb29b84df4d9ae005061caddeb7008816
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "only_verified_api_key_zeros_are_measured_in_codex_cache_write_accounting"
+        body: 1fa2f07b4ce4fa1df2bc45ed8a0fe983c8ad6c389b2bc3f72cb07cab15158648
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "replay_preserves_known_api_zeros_and_positive_counts_without_counting_legacy_zeros"
+        body: 41a91482b8384741e05b9bfb8d59804f7d60fe01f016ae83f45790c04686bd36
+  - node: 01a17d58-a535-7258-91b4-bc968d111228
+    reviewed: 15993fb0f4a85deb698818033c88f618fe0dc215dc9d07996dc15b3b804b4d93
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "positive_codex_counts_and_claude_measured_zeros_remain_measured"
+        body: 1ae670187d738f6ccf88034bffb8fedb3920254cf71eb1fc2e2af7a4936f62ca
+  - node: 01a17d58-a535-7258-91b4-bc97b03fa0e7
+    reviewed: 95bbd43b30d5a41c01dc0ffbef560f8d23d9976d67f3502f95c4d929e077e212
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_breakdown"
+        body: a9fa61bfaa8fcb8a935dae7d28e9e3fc91622400ac6114be527935ab7c30ea48
+  - node: 01a17d58-a535-7258-91b4-bc980ac52043
+    reviewed: f1fb528258504ce894a4591476a90c3eb15b7f73b99086d830de5dc69384023c
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "replay_preserves_known_api_zeros_and_positive_counts_without_counting_legacy_zeros"
+        body: 41a91482b8384741e05b9bfb8d59804f7d60fe01f016ae83f45790c04686bd36
+  - node: 01a17d58-a535-7258-91b4-bc991c193166
+    reviewed: 572461a63d7c7e09f49baae608144310d1e340636f73503d61f384c68d1896b8
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_breakdown"
+        body: a9fa61bfaa8fcb8a935dae7d28e9e3fc91622400ac6114be527935ab7c30ea48
+      - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
+        name: "replay_preserves_known_api_zeros_and_positive_counts_without_counting_legacy_zeros"
+        body: 41a91482b8384741e05b9bfb8d59804f7d60fe01f016ae83f45790c04686bd36
   - node: 01a1646f-546d-7042-befd-eaf19ca8018b
     reviewed: 06367a845e5e5ed0bfc3a62d79560d728e3dfc2997819187b272b8571eae6c57
     tests:

@@ -91,6 +91,9 @@ impl Totals {
             ("session", Out::Token(self.session.clone())),
             ("host", Out::Token(self.host.clone())),
         ];
+        if self.host == "codex" {
+            fields.push(("cacheWriteClassified", Out::Plain("true".into())));
+        }
         if let Some(at) = self.first_ended {
             fields.push(("firstEnded", Out::Token(at.to_string())));
         }
