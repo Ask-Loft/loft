@@ -234,6 +234,11 @@
                     },
                     "sent": {
                       "$ref": "#/$defs/act"
+                    },
+                    "sentReached": {
+                      "description": "The local revision at which the currently counted send or take-up reached this Yard Log",
+                      "type": "integer",
+                      "minimum": 0
                     }
                   }
                 }

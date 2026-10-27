@@ -20720,7 +20720,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "the_result_lists_the_open_submissions_each_with_the_agent_that_sent_it_apart"
-        body: 6c5b4f6f69ce0b00424153652e0da5f030015f272ef229af9b8d8a785b0155f2
+        body: b502c9889b3fdcc316860c225f46416e9f29f0412957032a9659c42de8c207f8
   - node: 01a1646f-546e-76cb-8b4f-f24d6029a08c
     reviewed: 6d645ac31236160fce30e2ad7279a6f9439dc1afc9844f30aea0e3ccf86dbfdb
     tests:
@@ -21261,6 +21261,12 @@ links:
       - file: "crates/yardlog/tests/write_blocks.rs"
         name: "each_version_records_the_act_of_its_write"
         body: e83e34a5fc866262c2af1742d88b3632dc02d799273f1a20f51345ea6223be05
+  - node: 01a17f75-05dc-7361-a0cd-c02b73a9b723
+    reviewed: c8c543f5e5f696926fa523f955526a3032046a196e58738381d7564b1735ba43
+    tests:
+      - file: "crates/loft-cli/src/yard/write/tests.rs"
+        name: "a_prepared_batch_reads_its_write_time_only_when_it_is_applied"
+        body: 6e07728c14cf7db5a58bfb84125b2ba250512ef34b77c75fc73cbf8c111ccfbf
   - node: 01a1646f-546e-76cb-8b4f-f299aab73ba1
     reviewed: d597993e5bd5c4a2d46fe584179f3b1baf50420100152bc7b2012f18d887a470
     tests:
@@ -22529,7 +22535,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "the_result_lists_the_open_submissions_each_with_the_agent_that_sent_it_apart"
-        body: 6c5b4f6f69ce0b00424153652e0da5f030015f272ef229af9b8d8a785b0155f2
+        body: b502c9889b3fdcc316860c225f46416e9f29f0412957032a9659c42de8c207f8
   - node: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
     reviewed: c915d004fdcea33a9c0dee16c199ac54477b6f7d577930b621a4235c0b4e989a
     tests:
@@ -23790,6 +23796,15 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "what_waits_on_the_person_is_listed_oldest_first_across_the_trees_served"
         body: e3c76ec15b697ec2ceb1222167f045edeaf0460d8624229e037eb7988633eede
+  - node: 01a17f75-05dc-7361-a0cd-c02843413bd7
+    reviewed: 8852b2bb060a6d5065a78fb6f7b5dc2143c492ee346e2e803e54aae71924d05c
+    tests:
+      - file: "crates/loft-cli/src/yard/render_log/tests.rs"
+        name: "an_open_submission_exposes_the_local_arrival_of_its_current_send"
+        body: 9c1eeab1e8221394701cc1f78848d7e6f986b4ec4f5021b8bea9bae65a904d6b
+      - file: "crates/loft-cli/src/yard/serve/trees.rs"
+        name: "same_second_waiting_submissions_follow_local_arrival_within_each_log"
+        body: 2439268a3ac9840dbb147ad05c13e7b02589cb0123dc4b5e302db62630df021f
   - node: 01a1646f-546d-7042-befd-eb610be82633
     reviewed: 78130a0e306b9007041c704210e95eba3ef7b348938882e2df78da226394dfa5
     tests:

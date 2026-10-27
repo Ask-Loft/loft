@@ -258,10 +258,7 @@ fn gather(home: &Home, port: u16, entries: &Entries) -> Result<Gathered, Failure
 /// open submissions of each current branch's Yard Log, oldest first.
 pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failure> {
     let (repositories, mut waits) = gather(home, port, entries)?;
-    waits.sort_by(|a: &Value, b: &Value| {
-        let at = |wait: &Value| wait["sent"]["at"].as_str().unwrap_or_default().to_owned();
-        at(a).cmp(&at(b))
-    });
+    order_waiting(&mut waits);
     let count: usize = waits
         .iter()
         .map(|wait| wait["blocks"].as_array().map_or(0, Vec::len))
@@ -274,6 +271,23 @@ pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failu
         })
         .collect();
     Ok(json!({ "repositories": repositories, "waiting": waits, "count": count }))
+}
+
+fn order_waiting(waits: &mut [Value]) {
+    // Revisions are local to one log: group equal-time ties by log before comparing them.
+    waits.sort_by_key(|wait| {
+        let text = |field| wait[field].as_str().unwrap_or_default().to_owned();
+        (
+            wait["sent"]["at"].as_str().unwrap_or_default().to_owned(),
+            text("tree"),
+            text("branch"),
+            wait["sentReached"]
+                .as_u64()
+                .or_else(|| wait["sent"]["revision"].as_u64())
+                .unwrap_or(0),
+            text("submission"),
+        )
+    });
 }
 
 /// The page from `from` of `repository`'s inherited Yard Logs whose branch or title holds
@@ -372,6 +386,7 @@ fn fields(
             "url": page::url(port, &place.tree, branch),
             "submission": submission.key.to_string(),
             "sent": act(submission.sending()),
+            "sentReached": crate::yard::render_log::sent_reached(submission),
             "agent": actor(submission.sender()),
             "blocks": ids,
         }));
@@ -409,6 +424,29 @@ mod tests {
     use serde_json::json;
 
     use super::{Entries, Entry};
+
+    #[test]
+    fn same_second_waiting_submissions_follow_local_arrival_within_each_log() {
+        let wait = |tree, key, original, arrived| {
+            json!({
+                "tree": tree, "branch":"feat/shelf", "submission":key,
+                "sent":{"at":"2026-10-22T09:30:00Z","revision":original}, "sentReached":arrived,
+            })
+        };
+        let mut waits = vec![
+            wait("/a", "later", 1, 9),
+            wait("/b", "other", 1, 1),
+            wait("/a", "earlier", 80, 7),
+        ];
+        super::order_waiting(&mut waits);
+        assert_eq!(
+            waits
+                .iter()
+                .map(|w| w["submission"].as_str().unwrap())
+                .collect::<Vec<_>>(),
+            ["earlier", "later", "other"]
+        );
+    }
 
     #[test]
     fn the_page_server_forgets_what_it_read_of_a_yard_log_no_tree_holds_any_more() {

@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 
 use serde_json::{Map, Value, json};
 use yardlog::YardLog;
-use yardlog::query::State;
+use yardlog::log::Submission;
+use yardlog::query::{State, reached};
 
 use super::caller::{Continuations, Identity};
 use super::render::{act, actor, block};
@@ -93,12 +94,24 @@ pub fn submissions(log: &YardLog, continuations: &Continuations) -> Vec<Value> {
             "state": State::Open.as_str(),
             "blocks": blocks,
             "sent": act(submission.sending()),
+            "sentReached": sent_reached(submission),
         }));
     }
     by_agent
         .into_values()
         .map(|(agent, open)| json!({ "agent": agent, "open": open }))
         .collect()
+}
+
+/// The arrival of the send currently counted, independent of subsequent lifecycle changes.
+pub fn sent_reached(submission: &Submission) -> u64 {
+    let sent = submission.sending();
+    let change = submission
+        .changes
+        .iter()
+        .find(|change| &change.act == sent)
+        .expect("a submission holds its sending Act");
+    reached(sent, change.arrived)
 }
 
 /// Submission history, including terminal states and the local revision of arrival.
@@ -125,3 +138,6 @@ pub fn sent(log: &YardLog) -> Value {
             .collect(),
     )
 }
+
+#[cfg(test)]
+mod tests;
