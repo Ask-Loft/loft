@@ -3,6 +3,8 @@
 mod app_server;
 mod commands;
 mod context;
+#[cfg(test)]
+mod notification_state;
 mod observer;
 mod state;
 mod tasks;

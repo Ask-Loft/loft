@@ -7,6 +7,7 @@ use serde_json::Value;
 
 use super::Result;
 
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Caller {
     pub session: String,
     pub agent: Option<(String, String)>,
