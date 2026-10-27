@@ -4,7 +4,7 @@ name: "Observe Codex token usage"
 body: |
   The existing Codex Yard worker observes live usage from an already running local Codex app server over its Unix-domain WebSocket. Native hooks remain the source of caller identifiers, turn identifiers and activity. This observation is available on platforms with Unix-domain sockets; ordinary hook activity continues without it on other platforms or when no reachable server serves the thread.
 
-  The observer uses the daemon socket under CODEX_HOME, or ~/.codex when CODEX_HOME is absent. An explicit --app-server-socket path selects another local socket for the watch command. It initializes a client, checks loaded threads, subscribes with thread/resume and excludeTurns, and unsubscribes when observation ends. It supplies no configuration or collaboration-mode overrides and sends no model input. Native mode, permissions and hook trust stay authoritative.
+  The observer uses the daemon socket under CODEX_HOME, or ~/.codex when CODEX_HOME is absent. An explicit --app-server-socket path selects another local socket for the watch command. It initializes a client, checks loaded threads, reads the account type without requesting a token refresh, subscribes with thread/resume and excludeTurns, and unsubscribes when observation ends. It supplies no configuration or collaboration-mode overrides and sends no model input. Native mode, permissions and hook trust stay authoritative.
 
   A thread/tokenUsage/updated notification supplies the latest request's last counters and cumulative total counters. Only the latest request is charged. Cumulative counters identify repeated observations and resets; neither cumulative totals nor modelContextWindow are treated as new requests. A reconnect has no historical usage import. Observation gaps remain partial coverage rather than guessed token amounts or attribution.
 realizes:
@@ -30,7 +30,7 @@ requirements:
       - key: 01a17989-a8b9-74b1-9049-0747aded4d67
         name: "A subscription requests excludeTurns without configuration or collaboration-mode overrides."
       - key: 01a17989-a8b9-74b1-9049-07486f7ebda8
-        name: "The observer sends only initialization, loaded-thread inspection, subscription and unsubscription requests."
+        name: "The observer sends only initialization, loaded-thread inspection, account-type inspection without token refresh, subscription and unsubscription requests."
       - key: 01a17989-a8b9-74b1-9049-0749dad857bc
         name: "The adapter never starts a Codex process to obtain usage."
       - key: 01a17989-a8b9-74b1-9049-074a9f9ae651
@@ -53,7 +53,7 @@ requirements:
       - key: 01a17989-a8b9-74b1-9049-0750f37f147e
         name: "Cached input is recorded as cacheRead."
       - key: 01a17989-a8b9-74b1-9049-0751134c636a
-        name: "A reported cacheWriteInputTokens value is recorded as cacheWrite."
+        name: "A positive cacheWriteInputTokens value remains measured for every account type."
       - key: 01a17989-a8b9-74b1-9049-0752fefe6e1d
         name: "An absent cache-write counter remains unavailable."
       - key: 01a17989-a8b9-74b1-9049-07531c541885
@@ -105,3 +105,33 @@ requirements:
         name: "Usage connection failure does not stop queued native activity from being delivered."
       - key: 01a17989-a8b9-74b1-9049-0766236c5ab6
         name: "Session context and the Yard skill describe app-server usage availability separately from native-hook coverage."
+  - key: 01a17d58-a534-746d-9e9d-03f9e8d5a838
+    statement:
+      form: ubiquitous
+      system: "The Codex usage observer"
+      shall: "classify cache-write availability from the source count and the account type reported by its app-server connection."
+    criteria:
+      - key: 01a17d58-a534-746d-9e9d-03faace608a9
+        name: "A reported zero cache-write count from a ChatGPT account is unavailable for accounting."
+      - key: 01a17d58-a534-746d-9e9d-03fbf1e25de3
+        name: "A reported zero cache-write count with no verified account type is unavailable for accounting."
+      - key: 01a17d58-a534-746d-9e9d-03fc5ea6ef90
+        name: "A reported zero cache-write count from a verified API-key account remains measured."
+      - key: 01a17d58-a534-746d-9e9d-03fd5b60ece0
+        name: "An absent cache-write count remains unavailable even for a verified API-key account."
+      - key: 01a17d58-a534-746d-9e9d-03fe586bb77d
+        name: "The raw latest-request cache-write count is retained in the machine event log even when it is unavailable for accounting."
+      - key: 01a17d58-a534-746d-9e9d-03ff056b0671
+        name: "Each reported request retains only the account classification apiKey, chatgpt or unknown in usageSource.account beside its source counters."
+      - key: 01a17d58-a534-746d-9e9d-0400724a00e6
+        name: "The account lookup requests no token refresh or authentication change."
+      - key: 01a17d58-a534-746d-9e9d-0401d88463b5
+        name: "An unavailable, refused or unsupported account lookup leaves other token counters and native activity available."
+      - key: 01a17d58-a534-746d-9e9d-040255f85d2c
+        name: "An account update changes the classification of subsequent observations on the connection."
+      - key: 01a17d58-a534-746d-9e9d-04035b06bc79
+        name: "Loft never reads a credential file to classify usage."
+      - key: 01a17d59-37d3-7407-b1b0-e8448b1be8ca
+        name: "The accounting checkpoint retains the raw cumulative cache-write count."
+      - key: 01a17d59-37d3-7407-b1b0-e84595ee6fd4
+        name: "Account identifiers, email addresses, access tokens and refresh tokens are not retained in adapter state or events."

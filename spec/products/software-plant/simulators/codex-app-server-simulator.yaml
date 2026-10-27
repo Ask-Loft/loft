@@ -45,3 +45,11 @@ requirements:
         name: "A scenario scripts native interruption and a later idle state."
       - key: 01a17afd-c25e-744a-84c1-085b7fc4beb5
         name: "The same supported wakeup and steering cases run against the simulator and real Codex."
+      - key: 01a17d58-a534-746d-9e9d-03f5abb36ae3
+        name: "A scenario supplies API-key, ChatGPT, absent or unrecognized account metadata without real credentials."
+      - key: 01a17d58-a534-746d-9e9d-03f697c334af
+        name: "A scenario emits account-type updates among usage notifications."
+      - key: 01a17d58-a534-746d-9e9d-03f7e278dd81
+        name: "Account inspection can be refused independently of usage subscription."
+      - key: 01a17d58-a534-746d-9e9d-03f81335617c
+        name: "The account-inspection contract runs against the simulator and a real isolated Codex app server."
