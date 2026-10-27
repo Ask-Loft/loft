@@ -392,7 +392,11 @@ an unready new thread or an observation gap leaves usage unavailable or partial.
 when the turn ends, and reconnecting imports no historical token totals.
 
 Fresh input excludes cached input, cached input is cacheRead, and output already includes
-reasoning output. An absent cache-write counter stays unavailable. Native activity and
+reasoning output. An absent cache-write counter stays unavailable. Zero cache writes from ChatGPT or unclassified
+sources are unavailable. Verified API-key zeros and positive reported counts remain measured.
+Raw source values are preserved in machine events and accounting checkpoints. Historical Codex
+zeros without verified provenance are unavailable on the page; their source files are unchanged.
+Native activity and
 heartbeats continue without the usage source, and an unreported tool outcome stays unknown.
 During concurrent subagent work, activity without a reliable agent identity is omitted.
 The adapter does not parse transcripts. Its heartbeat worker has a 24-hour lifetime;

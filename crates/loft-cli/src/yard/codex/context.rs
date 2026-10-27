@@ -13,6 +13,7 @@ pub fn output(hook: &Hook, caller: &Caller, port: u16) -> Value {
         caller.args().join(" ")
     );
     text.push_str(notification_context(hook, caller));
+    text.push_str("Zero cache writes from ChatGPT or unclassified sources are unavailable. Verified API-key zeros and positive reported counts remain measured. Raw source values are preserved. ");
     match commands::read(hook.dir(), caller, port) {
         Ok(doc) => describe(&mut text, &doc, caller, port),
         Err(error) => {

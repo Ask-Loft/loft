@@ -20082,6 +20082,9 @@ links:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_session_context_is_a_peek_with_explicit_caller_arguments"
         body: 4c64cd0ef7c04383501e2e688fec8aee41b0b81f107a9e9d7c98a6f48b60894b
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "codex_cache_write_guidance_distinguishes_raw_reports_from_measured_counts"
+        body: e944f3d7b444ac3ef1542212bdfed5df7d5cb3dec02fdf08d420473f0b216cad
   - node: 01a17d58-a534-746d-9e9d-03faace608a9
     reviewed: 7df2bae93487dd62588c2233c3f005e8aae33203b76ccc980edd09fad71b415a
     tests:

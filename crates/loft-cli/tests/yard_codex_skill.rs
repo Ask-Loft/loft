@@ -257,3 +257,22 @@ fn codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback
         assert!(text.contains(phrase), "{phrase}");
     }
 }
+
+#[test]
+fn codex_cache_write_guidance_distinguishes_raw_reports_from_measured_counts() {
+    let text = adaptation();
+    let yard = crate::yard::Yard::new();
+    let reply = crate::yard_codex::hook(&yard, &crate::yard_codex::event(&yard, "SessionStart"));
+    let context = reply["hookOutput"]["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap();
+    for phrase in [
+        "Zero cache writes from ChatGPT or unclassified sources are unavailable",
+        "Verified API-key zeros and positive reported counts remain measured",
+        "Raw source values are preserved",
+    ] {
+        assert!(text.contains(phrase), "{phrase}");
+        assert!(context.contains(phrase), "{phrase}");
+    }
+    assert!(context.chars().count() <= 2000);
+}
