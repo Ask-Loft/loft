@@ -28002,6 +28002,66 @@ links:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_but_serve_protocol_and_continue_lists_needs_repository"
         body: 915daab6cdca4caff902d96bd2dfe6408f54c05947612a0f47d33fac29400982
+  - node: 01a182b6-3c58-7235-ad04-3918a33b8514
+    reviewed: 0676bf94426ed7746485bd87e02ef190addf0a7798e9044361dc7d71301114be
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_changed_task_keeps_its_stage_assignee_and_every_field_not_given"
+        body: 52803ccc0c2355d2a23d91c14a9b0effaa8f8c9f263f4ea5bf3fcf16919acbec
+  - node: 01a182b6-3c58-7235-ad04-3919838ebc43
+    reviewed: 10a62c1766445f966ac12c97e6e5c0a59f97a8b905e736846eda28868d156c74
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_change_applies_to_the_task_as_it_stands_without_a_revision_to_base_it_on"
+        body: ad4c13874c9f5bbc3d5b159eb5f1e97a4a4ae246c7f0ba276133b5026e2ccc19
+  - node: 01a182b6-3c58-7235-ad04-391a16adf69c
+    reviewed: 2a67ac9d3635ec55d5293ff4bb5bdbc34370415cbb4fee2d61c7d9496b691c39
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_change_that_leaves_the_task_as_it_was_writes_nothing"
+        body: 418d2d219d65904db43ab400f089e773513ed7ce76b21f02d00af4c831b3bdb0
+  - node: 01a182b6-3c58-7235-ad04-391c56e74744
+    reviewed: becd11a0bc0301561eefa7380ccc5c158b4f689b762da9716169b2281c57dfce
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_change_the_delegation_rules_refuse_changes_no_block"
+        body: 17721d9d7ec513c632f2da05aeac4c8795a632176de940e5accb63348602d163
+  - node: 01a182b6-3c58-7235-ad04-391e7bba112b
+    reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_change_of_an_id_that_names_no_task_is_refused_naming_the_id"
+        body: 48d3bd7e0d66997274b04017b213dcfb4294ff81762dbc347941ffabb6a0f36e
+  - node: 01a182b6-3c58-7235-ad04-39202de76849
+    reviewed: 03b48ab8276148b0c5aa00331e0f49540079cdf3221f4c99a0fc82a0e9ead7fe
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "releasing_returns_the_agent_s_active_tasks_to_open_keeping_their_assignee"
+        body: 45da8f7a007885c15376d688507b8dfcd295bd79e047933ec1ed69518e228141
+  - node: 01a182b6-3c58-7235-ad04-392155540e65
+    reviewed: 93c66282b9f9749f9fc10d50db5b5ea42042749d025b7417f89fb22de0a86aeb
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "releasing_leaves_the_agent_s_finished_and_open_tasks_and_other_agents_tasks_as_they_were"
+        body: 7c0c2cdc33c9ea485e0e70d128cf4d558b71419cf3c2cb6e113178047e4dbec5
+  - node: 01a182b6-3c58-7235-ad04-3922e12e3989
+    reviewed: 0aa7793cc5164bab364bca6560dc33bb92985ac3cb15dbd035969991c08aea7b
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "releasing_leaves_the_agent_s_finished_and_open_tasks_and_other_agents_tasks_as_they_were"
+        body: 7c0c2cdc33c9ea485e0e70d128cf4d558b71419cf3c2cb6e113178047e4dbec5
+  - node: 01a182b6-3c58-7235-ad04-3923e166a1b6
+    reviewed: f8113e08fdcca27215a6f46745a89e802ff0dc2b3b013a4d31eff109a98a8e2b
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "releasing_an_agent_with_no_active_task_writes_nothing"
+        body: 9c7a6fb7371177616861ee50a52b026b8564023af5979d721f73535f26f52589
+  - node: 01a182b6-3c58-7235-ad04-39240719464e
+    reviewed: d740f849b47e3af5d2da19110fff26af43cbd112739dbbce1f48e9723a401750
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "releasing_returns_the_agent_s_active_tasks_to_open_keeping_their_assignee"
+        body: 45da8f7a007885c15376d688507b8dfcd295bd79e047933ec1ed69518e228141
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:

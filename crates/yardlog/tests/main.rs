@@ -12,6 +12,7 @@ mod files;
 mod identity;
 mod merge;
 mod session_files;
+mod task_change;
 mod three_way;
 mod working_stage;
 mod write_blocks;
