@@ -5,7 +5,9 @@ Use this workflow for a `spec/` that `loft import openspec` wrote: taking it to 
 switches. It owns reading the import's findings, what to keep of what the import recorded, and
 the steps of the adoption in their order. The fields of `ext` and the rule for copying a Feature
 belong to `format.md`; how to word a statement, a criterion, a Constraint or a decision to
-`writing-rules.md`; linking tests to `reconciling.md`. Never restate or override them here.
+`writing-rules.md`; linking tests to `reconciling.md`. Never restate or override them here. A
+`spec/` that `loft import v1` wrote from a Loft v1 export takes none of these steps: run the loop
+of `the-loop.md` over it.
 
 ## Contents
 
@@ -82,7 +84,8 @@ spec's Purpose, in place of the placeholder.
 
 The import read the main specs only. The rest of the project still holds what Loft can state:
 
-- The `design.md` of each change under `openspec/changes/archive/` records decisions and their
+- The `design.md` of each change under `openspec/changes/archive/`, or under `openspec/archive/`
+  in an older project, records decisions and their
   reasons. Propose a Decision for each one the user confirms still holds, with state `proposed`.
 - `project.md`, which became the Product's Section, and the `context` of `openspec/config.yaml`
   hold conventions. Propose a Constraint for each one that limits how the system is built.
@@ -110,6 +113,10 @@ loft render --openspec openspec
   and scenario comes from, with its file and line.
 
 ## Finish the adoption
+
+The import writes `spec/` and its sidecar only. Set up what `loft init` would have: run
+`loft skill install` and `loft merge-driver --install`, then commit `spec/`, the sidecar, the
+skill directories and agent settings `loft skill install` names, and `.gitattributes` together.
 
 Once no criterion's body states an obligation, remove the `V2-007` entry from `spec/lint.yaml`,
 and fix each `V2-007` warning that returns. Report to the user what remains: Features without a

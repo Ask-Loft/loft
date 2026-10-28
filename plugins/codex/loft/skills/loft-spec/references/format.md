@@ -44,7 +44,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | `spec/components/<component>.yaml` | One root Component and everything beneath it | you and `loft fmt` |
 | `spec/decisions/<decision>.yaml` | One decision | you and `loft fmt` |
 | `loft.lock.json`, beside `spec/` | The lock that pins the published tree | `loft publish` only |
-| `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` |
+| `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` and each test's `body`, and `--accept-stale` does so for every link whose tests are found |
 | `v1-sidecar.json`, beside `spec/` | What a Loft v1 export held that the format has no field for | `loft import v1` only |
 | `openspec-sidecar.json`, beside `spec/` | Where each node imported from an OpenSpec project came from, with the requirement and scenario names | `loft import openspec` only |
 
@@ -53,7 +53,9 @@ citation of a label it withdrew, in the prose of the node or decision that cites
 `loft import v1` writes a whole tree from a Loft v1 export, and `loft import openspec` one from
 the main specs of an OpenSpec project; each writes its sidecar beside the tree.
 `loft skill install` writes this skill beside `spec/`, in a directory for each agent, as
-`loft init` does unless given `--no-skill`.
+`loft init` does unless given `--no-skill`; run it again after upgrading `loft`, to bring the
+skill to the new version. `--host` installs for one agent only, and `--no-plugin` leaves the
+agent settings as they are.
 
 A file's name is its slug: lowercase letters, digits and hyphens. No other path under `spec/` is
 allowed, but files and directories whose names start with `.` are ignored. A registry with no
@@ -75,7 +77,7 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 | `algorithm` | required: the hash algorithm | `contentAddress` | required |
 | `documentKey` | required: the document's key | `publishSequence` | required |
 | `publishBranch` | optional: the branch publishes run on, where it is not `main` | | |
-| `connected` | optional: `true` once the document is connected to a remote | | |
+| `connected` | optional: `true` once the document is connected to a remote, which `loft publish` then publishes through; never set it by hand | | |
 | `products` | optional: the Products' keys, in order | | |
 | `derivedFrom` | optional: the Loft v1 Authored State an imported document derives from | | |
 

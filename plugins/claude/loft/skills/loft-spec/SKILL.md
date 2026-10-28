@@ -2,7 +2,7 @@
 name: loft-spec
 description: Write, change and review a Loft specification in `spec/` with the `loft` command line. Use when the user asks to specify a product or feature, start a specification, write Requirements, acceptance criteria, Components, Constraints, Quality Attributes or decisions, change a product that a `spec/` already describes before changing its code, fix `loft check` findings, review a specification, or publish and merge one.
 when_to_use: Use when the repository holds a spec/ directory or a loft.lock.json, when the user names Loft, a Specification, a Requirement or criterion, a label such as RQ-12 or AC-40, a Feature, Component, Constraint, Quality Attribute or decision, or asks to specify, spec out, write acceptance criteria, review a spec, or fix loft check findings.
-allowed-tools: Bash(loft --version), Bash(loft check:*), Bash(loft fmt --check:*), Bash(loft verify:*)
+allowed-tools: Bash(loft --version), Bash(loft check:*), Bash(loft fmt --check:*), Bash(loft verify:*), Bash(loft find:*), Bash(loft terms:*), Bash(loft status:*), Bash(loft review:*)
 ---
 
 # Loft specification
@@ -61,8 +61,9 @@ no second reading.
 Edit `spec/` only when the user's intent includes it; a review or a question changes nothing.
 Within a specification task the user asked for ("write", "change", "review and fix"), these are
 the task itself and need no further approval: editing `spec/`, running `loft fmt`, `loft check`,
-`loft review` and `loft reconcile`, and committing on the working branch, one commit for each
-step or wave.
+`loft review`, `loft find`, `loft terms`, `loft status`, `loft verify` and `loft reconcile`, and
+committing on the working branch, one commit for each step or wave. Where the Yard skill is in
+use, a change to `spec/` is committed only once the person has approved it there.
 
 - Ask every question that would change the content (the scope, a reading the text leaves open, a
   choice between designs) once, before the work starts, so the rest runs without stopping. A plan

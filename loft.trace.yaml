@@ -18846,6 +18846,9 @@ links:
   - node: 01a154c3-02c1-74da-a483-d4b6a19dd39d
     reviewed: 2c4df21a996ce6c845ae54ba0200457edf3ae8910dcdb04c36dd0685f352aede
     unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
+  - node: 01a18475-9e92-72e2-8662-f89470221ff1
+    reviewed: 69cab6f9a07e804e11833d18528a65eb6b10ef8750826330dda60336aaf969e7
+    unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
   - node: 01a154c3-02c1-74da-a483-d4b77091d61c
     reviewed: 67c06413905f78611835ce721555033399d72a9a5ce96763cf923b1d8e33e1be
     unverified: "Guidance an agent reads and acts on; the skill text states it in SKILL.md, read it there."
@@ -19137,6 +19140,12 @@ links:
       - file: "crates/loft-cli/tests/skill.rs"
         name: "each_host_s_adaptation_lies_under_agents"
         body: c26ea688ede1a61ca9d9276feb402f2c3994d31ff07fdfd148025402e13c7947
+  - node: 01a18475-9e91-722a-a3e4-1cee46f180fb
+    reviewed: e3850d1b0ede160b37bb2b20b65562554958d963330368668dec546300d1ed10
+    tests:
+      - file: "crates/loft-cli/tests/skill.rs"
+        name: "the_claude_code_fragment_pre_approves_only_the_commands_that_write_nothing"
+        body: f9afe60ccad3f1e28006a50cc3c726f28536ce14a20036cd73e846f74833601c
   - node: 01a13654-6e11-74fa-a359-257ad4b67436
     reviewed: 9a27830d093ca96300b2ce3c6c23cbc104a42c71af42e5d385f2e9d81f2956a0
     tests:

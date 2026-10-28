@@ -57,8 +57,9 @@ no second reading.
 Edit `spec/` only when the user's intent includes it; a review or a question changes nothing.
 Within a specification task the user asked for ("write", "change", "review and fix"), these are
 the task itself and need no further approval: editing `spec/`, running `loft fmt`, `loft check`,
-`loft review` and `loft reconcile`, and committing on the working branch, one commit for each
-step or wave.
+`loft review`, `loft find`, `loft terms`, `loft status`, `loft verify` and `loft reconcile`, and
+committing on the working branch, one commit for each step or wave. Where the Yard skill is in
+use, a change to `spec/` is committed only once the person has approved it there.
 
 - Ask every question that would change the content (the scope, a reading the text leaves open, a
   choice between designs) once, before the work starts, so the rest runs without stopping. A plan

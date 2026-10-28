@@ -21,9 +21,10 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
 - Run `loft find` with a label the user names, such as `RQ-12`, a slug, or part of a node's
   name: it prints each match's key, label, kind, file and name. `spec/labels.yaml` binds each
   label to its key.
-- To find a node by its words, run `loft render`, which writes the whole document as Markdown to
-  `docs/spec.md`, with every node under its label, and search it. The projection is for reading;
-  never edit it, and never commit it unless the project does.
+- To find a node by its words, run `loft render --markdown <path>` with a path outside the tree,
+  which writes the whole document as Markdown, with every node under its label, and search it. A
+  plain `loft render` writes `docs/spec.md` and `docs/spec.json` beside `spec/`. The projection is
+  for reading; never edit it, and never commit it unless the project does.
 - Read the Feature that holds the behaviour, its Requirements and criteria, the Components it
   realizes, the decisions whose subjects include it, and every node that `mentions` it.
 - Open the file `loft find` names and confirm the node's name and kind there before you edit it.
@@ -59,14 +60,16 @@ document.
 ## Keep one intent to a branch and a commit
 
 A branch carries one intent, and each of its commits one coherent step of it. Before committing,
-read `git diff` against the intent, node by node: every node it changes is one the intent
+read `git diff` against the intent, node by node, with `loft status --base <base>`, which lists
+the nodes the branch added, changed and removed: every node it changes is one the intent
 touches, and every node the intent touches is changed as intended. A clean `loft check` shows the
 tree is well formed, not that it means what was intended.
 
 ## Commit the specification, then the code
 
 Run the loop until `loft fmt --check` and `loft check --fail-on warning` pass, then commit `spec/`
-alone, before any code: "spec: <the change>". Then write the code against the committed
+alone, before any code, once the person has approved it where the Yard skill is in use: "spec:
+<the change>". Then write the code against the committed
 specification, in its own commits.
 
 ## Check the code against the criteria

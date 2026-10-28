@@ -23,8 +23,9 @@ where `spec/` already exists.
 The specification lives in git. If the directory is not in a git repository, ask the user before
 running `git init`; never create a repository unasked. Once the project is under git, run
 `loft merge-driver --install`, so that git merges `spec/` by key, and commit the `.gitattributes`
-it writes, as `publishing-and-merging.md` says, together with the skill directories that
-`loft init` names, so that every clone's coding agents have the skill. The last line of `loft init` says what the merge driver still needs: the
+it writes, as `publishing-and-merging.md` says, together with the skill directories and the
+agent settings that `loft init` names, so that every clone's coding agents have the skill
+and are offered the plugin. The last line of `loft init` says what the merge driver still needs: the
 install, or putting the project under git first.
 
 ## Draft from a conversation
@@ -57,7 +58,8 @@ install, or putting the project under git first.
 ## Finish the first draft
 
 Run the loop until `loft fmt --check` and `loft check --fail-on warning` pass, then commit
-`spec/` on its own: "spec: first draft". Report the outline, the open questions, and any finding
+`spec/` on its own, once the person has approved it where the Yard skill is in use: "spec: first
+draft". Report the outline, the open questions, and any finding
 left with its reason. Open questions go in the report, never into `spec/`: not as a node, a
 body or a Section. Never call the draft ready for implementation while a question that would
 change it is open. Publishing comes later, at the user's request.

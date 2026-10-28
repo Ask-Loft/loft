@@ -16,7 +16,9 @@ or override them here.
 
 Run `loft` with the Bash tool from the directory that holds `spec/`. Within a specification task
 the user asked for, its commands run without asking: `loft fmt`, `loft check`, `loft review`,
-`loft find`, `loft terms`, `loft verify` and `loft reconcile`, `--accept` included. Ask first only
+`loft find`, `loft terms`, `loft status`, `loft verify` and `loft reconcile`, `--accept`
+included. The skill pre-approves those that write nothing, so Claude Code may still ask the
+user's permission for `loft fmt` and `loft reconcile`. Ask first only
 for the steps the router names, `loft publish` among them. Edit the files of `spec/` with the
 Edit and Write tools, never with shell redirection.
 
