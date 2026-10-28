@@ -8,7 +8,7 @@ use std::path::Path;
 use super::compose::Host;
 
 const SOURCE: &str = "crates/loft-cli/skill/loft-spec";
-const LINK: &str = "../../crates/loft-cli/skill/loft-spec";
+pub const LINK: &str = "../../crates/loft-cli/skill/loft-spec";
 
 /// Whether this destination is the valid repository source link, preserved as it stands.
 pub fn preserved(root: &Path, host: Host) -> io::Result<bool> {

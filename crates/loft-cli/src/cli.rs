@@ -247,6 +247,16 @@ pub enum SkillAction {
         #[command(flatten)]
         output: Output,
     },
+    /// Write every plugin package under `plugins/` from the skill sources `loft` embeds, in the
+    /// repository of `loft` (a maintainer's command).
+    #[command(hide = true)]
+    Package {
+        /// Write nothing, and fail naming each package file that differs from its composition.
+        #[arg(long)]
+        check: bool,
+        #[command(flatten)]
+        output: Output,
+    },
 }
 
 #[derive(Subcommand)]
@@ -361,8 +371,13 @@ impl Command {
             Self::Review(..) => Some("review"),
             Self::Verify { .. } => Some("verify"),
             Self::Render { .. } => Some("render"),
-            Self::Skill { .. } => Some("skill install"),
-            Self::MergeDriver(..)
+            Self::Skill {
+                action: SkillAction::Install { .. },
+            } => Some("skill install"),
+            Self::Skill {
+                action: SkillAction::Package { .. },
+            }
+            | Self::MergeDriver(..)
             | Self::Status { .. }
             | Self::RecordInstall { .. }
             | Self::Telemetry { .. }

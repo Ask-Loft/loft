@@ -14775,6 +14775,51 @@ links:
       - file: "crates/loft-cli/tests/review.rs"
         name: "a_base_tree_that_does_not_read_is_refused_naming_the_commit_and_the_place"
         body: 6f9a0b882564c715d3df029685e87b17ab74b945da28ea0642c09eb259ba832c
+  - node: 01a1835b-defe-736c-aa9f-0f404d3d62ba
+    reviewed: 5a8a5fd124915d785a352924aaf7341b669eb6978c9ba623949fc056b75e0b7f
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "after_skill_package_runs_each_package_equals_its_composition"
+        body: 60ca0c8529609d7c723dfa4884b5183436913bfe061703247f398cffd1873336
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "skill_package_reports_the_package_directories_it_wrote"
+        body: 1a9a611c970fa92491609761fbdd7a528823eed01460082876fc026e6f3e5b97
+  - node: 01a1835b-defe-736c-aa9f-0f41ec3e6b18
+    reviewed: 1ebbd62d60dcd58388be86ddb9b7234a1d76b92cc58904eaab7ee7db8c4bf49c
+    tests:
+      - file: "crates/loft-cli/src/skill/package.rs"
+        name: "a_host_without_a_yard_adapter_gets_no_yard_package"
+        body: 73625bf093784ad8fc76ae5c38dde5b54d2dc00d38908a8a63774c01aa253680
+  - node: 01a1835b-defe-736c-aa9f-0f425c3d1d76
+    reviewed: c11edd3c211e9c2983ce678efca2b10026b5c03e4d2e51c3ad776f6d19dd3de6
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "skill_package_sends_no_command_event_and_asks_for_no_update"
+        body: 2e8ae89494fa14008ce2920764b4f2dfa3583d9b3d6ed34ded059d9acf033c11
+  - node: 01a1835b-defe-736c-aa9f-0f43b7b11425
+    reviewed: cc6369e50c54f97efd5b3d0b999ac9b68e600fc9d6e2e016f6124ec6a35ce781
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "neither_loft_help_nor_loft_skill_help_lists_skill_package"
+        body: ea1b22c05c3356ef30109ccc3a98b5356905a9ad8d5e7fbdf0f220dcf0e8ca2b
+  - node: 01a1835b-defe-736c-aa9f-0f455b8c4f0c
+    reviewed: 948c5623d8bf8d94e15aac7cc131ca87f7326e88791217f82c1e04b2b12898d8
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_committed_package_that_equals_its_composition_checks_with_exit_0"
+        body: 22861b7ee6f6dc7871f66a4e57a182b488e7bfa946c1e14170591b9a2da8af34
+  - node: 01a1835b-defe-736c-aa9f-0f466e14b4a0
+    reviewed: 3fb27fb6b88a913dac3088afd3358e97422d1c08e2252969e59aab136cc0ca78
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_changed_missing_or_extra_package_file_is_named_and_exits_1_writing_nothing"
+        body: 25f8efe41e1569246c06eec5887b975535a817dd1387c8351ed10adbad58c7e2
+  - node: 01a1835b-defe-736c-aa9f-0f48d7979372
+    reviewed: bd28b55c44b55078aee387749ff5508e0d5a2aaa4ff6bf7af54185945575805b
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_broken_discovery_entry_is_refused_and_named_and_no_package_file_changes"
+        body: 8033b686d2febe70f0f70fc2a96d455661311e893256bf9544cd28f726c84468
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:

@@ -122,10 +122,6 @@ pub fn compose(host: Host, source: &[(&str, &str)]) -> Result<Files, ComposeErro
 /// # Errors
 ///
 /// [`ComposeError::Missing`] for a source without the shared workflow or the adaptation.
-#[cfg_attr(
-    not(test),
-    expect(dead_code, reason = "`loft skill package` composes it next")
-)]
 pub fn compose_yard(
     adaptation: &'static str,
     source: &[(&str, &str)],

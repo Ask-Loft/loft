@@ -1,11 +1,13 @@
 //! The `loft-spec` skill (the Agent Skill Product): its host-neutral source, embedded in `loft`,
 //! composed for each agent host and written into a project by `loft skill install` and
 //! `loft init`, which also enable the Claude Code plugin `loft@ask-loft` beside it unless
-//! `--no-plugin` is given.
+//! `--no-plugin` is given. `loft skill package` writes the plugins' packages from it, and from
+//! the `yard` skill's source beside it.
 
 mod compose;
 mod discovery;
 mod hosts;
+pub mod package;
 mod settings;
 mod write;
 
@@ -55,10 +57,6 @@ const SOURCE: &[(&str, &str)] = source![
 ];
 
 /// The `yard` skill's source: its shared workflow and each host's adaptation.
-#[cfg_attr(
-    not(test),
-    expect(dead_code, reason = "`loft skill package` composes it next")
-)]
 const YARD_SOURCE: &[(&str, &str)] =
     source!["yard": "SKILL.md", "agents/claude.md", "agents/codex.md"];
 
