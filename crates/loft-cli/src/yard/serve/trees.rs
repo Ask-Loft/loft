@@ -21,9 +21,9 @@ use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::session::branches;
 use yardlog_store::{Held, Place, YARD, YardStore};
 
-use super::event::strings;
 use super::inherited::{Inherited, distinct, distinct_count, page};
 use super::watch::{FileStamp, stamp_of};
+use crate::yard::event::strings;
 use crate::yard::failure::Failure;
 use crate::yard::home_json;
 use crate::yard::page;

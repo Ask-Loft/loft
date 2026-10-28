@@ -19608,7 +19608,7 @@ links:
       - file: "crates/yardlog/tests/adapter.rs"
         name: "a_counter_that_is_not_a_whole_number_is_unreported_beside_the_counters_measured"
         body: 4d1e946aae9e7c8847fa92da1de3e3aff8ef71e8d67963f1022ff69bc0acf4a4
-      - file: "crates/loft-cli/src/yard/serve/event/usage_tests.rs"
+      - file: "crates/loft-cli/src/yard/event/usage_tests.rs"
         name: "an_unusable_counter_is_unreported_and_its_event_is_still_read"
         body: fe485745f9cd0a1cc8dafbfddea4eacced994243d9a3f6bdc711e12422d8ccd5
       - file: "crates/loft-cli/tests/yard_serve_usage.rs"
@@ -20265,7 +20265,7 @@ links:
   - node: 01a17d58-a534-746d-9e9d-03fd5b60ece0
     reviewed: 3c079d55f76f50cb92f25a1dae48512c02288365935661bb42e0b6ca93af2a7d
     tests:
-      - file: "crates/loft-cli/src/yard/serve/event/usage_tests.rs"
+      - file: "crates/loft-cli/src/yard/event/usage_tests.rs"
         name: "missing_or_malformed_source_counters_are_not_replaced_with_measured_zeros"
         body: 85a947217128e905565cea38f3bd9a29be1b7d706809b4f1e520c7b563a2b7b3
       - file: "crates/loft-cli/src/yard/codex/usage/tests.rs"
@@ -23835,7 +23835,7 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
         name: "a_claude_code_totals_file_keeps_its_counts_and_gains_the_marker"
         body: 36d65fa0bc578392d1d1b23ce26141f607d15dcec239226b21a88b318eb31c9c
-      - file: "crates/loft-cli/src/yard/serve/tokens/tests.rs"
+      - file: "crates/loft-cli/src/yard/totals/tests.rs"
         name: "a_totals_file_read_back_is_written_as_the_same_text"
         body: db23d7ea93b58952d121ba7d54e21845f74293113fc56b71854afdc41af65226
   - node: 01a1835b-a222-7677-8e34-d52c0920576b
@@ -26385,7 +26385,7 @@ links:
   - node: 01a17d58-a535-7258-91b4-bc968d111228
     reviewed: 15993fb0f4a85deb698818033c88f618fe0dc215dc9d07996dc15b3b804b4d93
     tests:
-      - file: "crates/loft-cli/src/yard/serve/event/usage_tests.rs"
+      - file: "crates/loft-cli/src/yard/event/usage_tests.rs"
         name: "positive_codex_counts_and_claude_measured_zeros_remain_measured"
         body: 1ae670187d738f6ccf88034bffb8fedb3920254cf71eb1fc2e2af7a4936f62ca
       - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
@@ -26415,7 +26415,7 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_cachewrite.rs"
         name: "replay_counts_each_request_s_tokens_as_given_whatever_its_source"
         body: be390d12779c569f413400e6c04079e6f23fdca7bf9dfd5b18fca9f0204b1326
-      - file: "crates/loft-cli/src/yard/serve/event/usage_tests.rs"
+      - file: "crates/loft-cli/src/yard/event/usage_tests.rs"
         name: "a_zero_cache_write_is_counted_as_given_whatever_the_host_or_account"
         body: 036c38132f08e1c41334fc0fc6b0fdd31d29810648c843a61babcdf5af36ae52
       - file: "crates/loft-cli/src/yard/serve/token_sums/tests.rs"

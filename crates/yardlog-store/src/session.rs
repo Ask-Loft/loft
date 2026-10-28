@@ -66,6 +66,32 @@ impl YardStore {
         fs::create_dir_all(dir).map_err(io_error(dir))?;
         Ok(replace_synced(&path, bytes, false)?)
     }
+
+    /// Every session's file of `kind` in Yard Log's folder, by the session key that names it, in
+    /// the order of their keys. A file that cannot be read is left out, since only its own
+    /// session's events change it and the next event writes it whole again.
+    #[must_use]
+    pub fn session_files(&self, kind: SessionFile) -> Vec<(String, Vec<u8>)> {
+        let Ok(entries) = fs::read_dir(self.folder().join(kind.folder())) else {
+            return Vec::new();
+        };
+        let mut paths: Vec<_> = entries
+            .filter_map(Result::ok)
+            .map(|entry| entry.path())
+            .filter(|path| {
+                path.extension()
+                    .is_some_and(|extension| extension == "yaml")
+            })
+            .collect();
+        paths.sort();
+        paths
+            .iter()
+            .filter_map(|path| {
+                let key = path.file_stem()?.to_str()?.to_owned();
+                Some((key, fs::read(path).ok()?))
+            })
+            .collect()
+    }
 }
 
 /// The branches whose Yard Log the worktree whose top is `tree` holds under `.yard/`: each folder

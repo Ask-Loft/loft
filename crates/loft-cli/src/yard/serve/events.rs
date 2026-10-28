@@ -17,12 +17,14 @@ use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
+use yardlog::totals::Totals;
+
 use super::activity::Activity;
-use super::event::{Event, Who, strings};
-use super::event_ids::{Receipt, Receipts};
 use super::http::Response;
 use super::newest::Newest;
-use super::tokens::Totals;
+use crate::yard::event::{Event, Who};
+use crate::yard::event_ids::Receipts;
+use crate::yard::totals;
 
 /// What one session keeps in one branch's Yard Log.
 #[derive(Default)]
@@ -200,7 +202,7 @@ impl Kept {
         let totals = self
             .totals
             .get_or_insert_with(|| Totals::new(&event.session));
-        if totals.apply(event, stage, open) && totals.counted() {
+        if totals::count(totals, event, stage, open) && totals.counted() {
             changed.push((SessionFile::Tokens, totals.text()));
         }
         changed
@@ -222,59 +224,21 @@ impl Kept {
     }
 }
 
-/// The open submissions an event's line in the log names.
-fn named_open(line: &Value) -> Vec<String> {
-    strings(&line["submissions"])
-}
-
 /// What a session kept before the page server heard of it, rebuilt from its event log.
 fn replay(home: &Home, session: &str) -> SessionKept {
     let mut kept = SessionKept::default();
-    let Ok(Some(bytes)) = home.read_events(session) else {
-        return kept;
-    };
-    for line in bytes.split(|byte| *byte == b'\n') {
-        let Ok(line) = serde_json::from_slice::<Value>(line) else {
-            continue;
-        };
-        let (Ok(event), Some(tree), Some(branch)) = (
-            Event::read(&line),
-            line["tree"].as_str(),
-            line["branch"].as_str(),
-        ) else {
-            continue;
-        };
-        let Ok(receipt) = Receipt::replay(&line) else {
-            continue;
-        };
-        if kept.receipts.contains(receipt.as_ref()) != Ok(false) {
-            continue;
-        }
-        kept.receipts.keep(receipt.as_ref());
-        kept.describe(&event);
+    kept.receipts = totals::replay(home, session, |logged| {
+        kept.describe(&logged.event);
         kept.logs
-            .entry((tree.to_owned(), branch.to_owned()))
+            .entry((logged.tree.to_owned(), logged.branch.to_owned()))
             .or_default()
             .apply(
-                &event,
-                (line["stage"].as_str(), &named_open(&line)),
+                &logged.event,
+                (logged.stage, logged.open),
                 kept.adapter.as_ref(),
             );
-    }
+    });
     kept
-}
-
-/// The text of the totals file the page server would write for session `key` in the Yard Log of
-/// `branch` in `tree`, rebuilt from the session's event log; none where the log counts no
-/// request there.
-pub fn replayed_totals(home: &Home, key: &str, tree: &str, branch: &str) -> Option<String> {
-    let kept = replay(home, key);
-    let totals = kept
-        .logs
-        .get(&(tree.to_owned(), branch.to_owned()))?
-        .totals
-        .as_ref()?;
-    totals.counted().then(|| totals.text())
 }
 
 impl Sessions {

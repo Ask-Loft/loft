@@ -9,8 +9,6 @@
 mod activity;
 mod assets;
 mod discovery;
-mod event;
-mod event_ids;
 mod events;
 mod guard;
 mod http;
@@ -21,10 +19,8 @@ mod logs;
 mod markdown;
 mod newest;
 mod routes;
-pub(super) mod session_files;
 mod stream;
 mod token_sums;
-pub(super) mod tokens;
 mod trees;
 mod watch;
 
@@ -52,7 +48,6 @@ use crate::json;
 use crate::out::outln;
 use crate::version::VERSION;
 use events::Sessions;
-pub(super) use events::replayed_totals;
 use listener::Listener;
 
 const SCHEMA: &str = "loft-yard-serve/1";

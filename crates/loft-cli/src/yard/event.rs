@@ -3,57 +3,24 @@
 //! its id and type) and its kind, with what that kind carries: names, ids, times and counts, and
 //! never what was said.
 
-use loftspec::yaml::Out;
 use serde_json::Value;
 use yardlog::Time;
 use yardlog::identity::is_session_id;
 
 use super::event_ids::Receipt;
 
+pub use yardlog::totals::Who;
 pub use yardlog::usage::Counts as Tokens;
 
-/// The agent an event happened in.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Who {
-    Main,
-    Sub { id: String, kind: String },
-}
-
-impl Who {
-    fn of(value: &Value) -> Self {
-        match (value["id"].as_str(), value["type"].as_str()) {
-            (Some(id), kind) => Self::Sub {
-                id: id.to_owned(),
-                kind: kind.unwrap_or_default().to_owned(),
-            },
-            _ => Self::Main,
-        }
-    }
-
-    pub const fn is_main(&self) -> bool {
-        matches!(self, Self::Main)
-    }
-
-    /// The fields a session's file names the agent by: `agent`, and a subagent's `type`.
-    /// Reads what [`Who::fields`] wrote: the main agent, or a subagent by its id and type.
-    pub fn from_fields(value: &Value) -> Self {
-        match (value["agent"].as_str(), value["type"].as_str()) {
-            (Some("main") | None, None) => Self::Main,
-            (id, kind) => Self::Sub {
-                id: id.unwrap_or_default().to_owned(),
-                kind: kind.unwrap_or_default().to_owned(),
-            },
-        }
-    }
-
-    pub fn fields(&self) -> Vec<(&'static str, Out)> {
-        match self {
-            Self::Main => vec![("agent", Out::Token("main".to_owned()))],
-            Self::Sub { id, kind } => vec![
-                ("agent", Out::Token(id.clone())),
-                ("type", Out::Token(kind.clone())),
-            ],
-        }
+/// The agent an event happened in: a subagent by the `id` and `type` its `agent` names, else the
+/// main agent.
+fn who(value: &Value) -> Who {
+    match (value["id"].as_str(), value["type"].as_str()) {
+        (Some(id), kind) => Who::Sub {
+            id: id.to_owned(),
+            kind: kind.unwrap_or_default().to_owned(),
+        },
+        _ => Who::Main,
     }
 }
 
@@ -69,7 +36,7 @@ pub fn strings(value: &Value) -> Vec<String> {
 }
 
 /// A wire request's host: omitted fields retain the legacy identity; invalid fields do not.
-pub(super) fn host_in(value: &Value) -> Result<&str, &'static str> {
+pub fn host_in(value: &Value) -> Result<&str, &'static str> {
     let host = match value.get("host") {
         None => Some(yardlog::act::CLAUDE_CODE),
         Some(host) => host.as_str(),
@@ -138,7 +105,7 @@ impl Event {
             session: session.to_owned(),
             dir: dir.to_owned(),
             at,
-            who: Who::of(&posted["agent"]),
+            who: who(&posted["agent"]),
             kind: kind.to_owned(),
             host: host.to_owned(),
             posted: posted.clone(),

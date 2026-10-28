@@ -11,14 +11,15 @@
 use std::collections::BTreeSet;
 
 use serde_json::{Value, json};
+use yardlog::totals::Totals;
 use yardlog_store::YardStore;
 use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 
 use crate::yard::failure::Failure;
 use crate::yard::page;
-use crate::yard::serve::tokens::Totals;
-use crate::yard::serve::{replayed_totals, session_files};
+use crate::yard::session_files;
+use crate::yard::totals::replayed_totals;
 
 /// What became of the totals files of the open Yard Logs.
 pub enum Classifying {
@@ -50,7 +51,7 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
     let files: Vec<_> = open
         .iter()
         .flat_map(|(branch, store)| {
-            let files = session_files::entries(&store.folder(), SessionFile::Tokens);
+            let files = session_files::entries(store, SessionFile::Tokens);
             files
                 .into_iter()
                 .map(move |(key, file)| (branch, store, key, file))

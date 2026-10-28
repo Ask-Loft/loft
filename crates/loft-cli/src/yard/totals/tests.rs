@@ -1,8 +1,10 @@
 use serde_json::{Value, json};
 
-use super::Totals;
-use crate::yard::serve::event::Event;
-use crate::yard::serve::session_files;
+use yardlog::totals::Totals;
+
+use super::count;
+use crate::yard::event::Event;
+use crate::yard::session_files;
 
 fn request(second: u32, more: &Value) -> Event {
     let mut posted = json!({"host":"codex","session":"s1","dir":"/work",
@@ -25,14 +27,24 @@ fn a_totals_file_read_back_is_written_as_the_same_text() {
     let measured = json!({"input":70,"cacheRead":30,"cacheWrite":0,"output":5});
     let partly = json!({"input":7,"cacheRead":3,"output":1});
     let sub = json!({"id":"r1","type":"review"});
-    totals.apply(&request(1, &json!({"tokens":measured})), Some("shape"), &[]);
+    count(
+        &mut totals,
+        &request(1, &json!({"tokens":measured})),
+        Some("shape"),
+        &[],
+    );
     let open = ["sub".to_owned()];
     let event = request(2, &json!({"tokens":partly,"agent":sub}));
-    totals.apply(&event, Some("shape"), &open);
-    totals.apply(&request(3, &json!({"tokens":measured})), None, &open);
-    totals.apply(&request(4, &json!({})), None, &[]);
+    count(&mut totals, &event, Some("shape"), &open);
+    count(
+        &mut totals,
+        &request(3, &json!({"tokens":measured})),
+        None,
+        &open,
+    );
+    count(&mut totals, &request(4, &json!({})), None, &[]);
     let compaction = request(5, &json!({"kind":"compaction","tokens":measured}));
-    totals.apply(&compaction, Some("build"), &[]);
+    count(&mut totals, &compaction, Some("build"), &[]);
     let text = totals.text();
     assert!(text.contains("partial:"), "{text}");
     assert!(text.contains("type: review"), "{text}");
