@@ -19819,7 +19819,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_codex_tasks.rs"
         name: "codex_hooks_that_release_tasks_outside_a_git_repository_still_answer"
-        body: 26617c4029e25459e5ac40967ebb09b0e94d067842db1f90c0c95889ff1b643d
+        body: 07cb9b31bce916fb1ebe5d3ae5be54cac50f24d3632033095d90301acfb465d9
   - node: 01a182b6-62b5-70ae-a9a2-26117bfcbc6b
     reviewed: 38365f1c873f830e725420267dad10f4983a0d2974c4dea2bb9413d2298ff514
     tests:
@@ -23285,6 +23285,9 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "worker_end_opens_unfinished_tasks_and_late_progress_waits_for_a_new_start"
         body: 1b4ea6247a41a41331456e19d677f5ff7ca0d9c95de64933c5f45d9b0540fd4a
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "a_task_assigned_after_the_worker_started_and_made_active_by_hand_is_released_at_its_end"
+        body: c808ae6cc312498e5c0ea4657a0118be18883bfe9e127ed5b32b0f53b6630b7f
   - node: 01a18053-9e08-72a7-ab94-f3c9767bbaf3
     reviewed: d8e589e0eb1fe6676adddf91299d7ea1edfc9d7a84090ef9ae9853cfda874545
     tests:

@@ -162,17 +162,14 @@ fn step(
     Some(input(&Handle::parse(id).ok()?, &file.stage.id, task))
 }
 
-/// Mirrors a successful plan update; says whether the caller then holds unfinished tasks
-/// assigned to it.
-pub fn mirror(hook: &Hook, caller: &Caller, port: u16) -> Result<bool> {
+/// Mirrors a successful plan update.
+pub fn mirror(hook: &Hook, caller: &Caller, port: u16) -> Result<()> {
     let Some(steps) = steps(hook) else {
-        return Ok(false);
+        return Ok(());
     };
-    let agent = caller.agent();
-    let holds = commands::change_tasks(hook.dir(), caller, port, |log, context| {
+    commands::change_tasks(hook.dir(), caller, port, |log, context| {
         let change = log.change_tasks(batch(log, caller, &steps), context)?;
-        let holds = log.assigned_to(&agent).any(|(_, _, task)| !finished(task));
-        Ok((wrote(&change), holds))
-    })?;
-    Ok(holds.unwrap_or(false))
+        Ok((wrote(&change), ()))
+    })
+    .map(|_| ())
 }

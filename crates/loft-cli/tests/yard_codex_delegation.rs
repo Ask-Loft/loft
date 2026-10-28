@@ -393,3 +393,42 @@ fn a_worker_s_end_returns_all_its_active_tasks_to_open_in_one_write() {
         assert_eq!(body["assignee"]["agent"], "worker", "{id}");
     }
 }
+
+#[test]
+fn a_task_assigned_after_the_worker_started_and_made_active_by_hand_is_released_at_its_end() {
+    let yard = Yard::new();
+    assert_written(&yard.write(
+        "codex-session",
+        r#"[{"id":"build","kind":"stage","title":"Build","status":"active"}]"#,
+        &["--host", "codex"],
+    ));
+    hook(&yard, &worker(&yard, "SubagentStart"));
+    assert_written(&yard.write(
+        "codex-session",
+        r#"[
+      {"id":"late","kind":"task","stage":"build","title":"Late scope","state":"open",
+       "assignee":{"host":"codex","session":"codex-session","agent":"worker","agentType":"builder"}}
+    ]"#,
+        &["--host", "codex"],
+    ));
+    let started = yard.run(&[
+        "task",
+        "late",
+        "--state",
+        "active",
+        "--host",
+        "codex",
+        "--session",
+        "codex-session",
+        "--agent",
+        "worker",
+        "--agent-type",
+        "builder",
+    ]);
+    assert_eq!(document("task", &started)["outcome"], "changed");
+    hook(&yard, &worker(&yard, "SubagentStop"));
+    let ended = read(&yard);
+    let body = &block(&ended, "late")["version"]["body"];
+    assert_eq!(body["state"], "open");
+    assert_eq!(body["assignee"]["agent"], "worker");
+}

@@ -143,20 +143,15 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     // Yard Log takes the task changes under its own lock. A change Yard cannot take leaves the
     // hook answered as it would be without Yard: the native call already ran and its events are
     // kept.
+    // Every end releases: an agent with no active assigned task writes nothing.
     if let Some(caller) = &caller {
-        let key = task_writes::actor_key(caller);
         if matches!(
             hook.name(),
             "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
         ) {
-            if state.holding.contains(&key) {
-                let _ = task_writes::release(hook, caller, port);
-            }
-        } else if !state.ended_tasks.contains(&key)
-            && tasks::mirror(hook, caller, port).unwrap_or(false)
-            && !state.holding.contains(&key)
-        {
-            hold(&files, key, true)?;
+            let _ = task_writes::release(hook, caller, port);
+        } else if !state.ended_tasks.contains(&task_writes::actor_key(caller)) {
+            let _ = tasks::mirror(hook, caller, port);
         }
     }
     if disposition != notification_hooks::Disposition::Notification {
@@ -168,30 +163,9 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     match hook.name() {
         "SessionStart" | "SubagentStart" => {
             let briefing = commands::briefing(hook.dir(), &caller, port);
-            if let Ok(doc) = &briefing {
-                let assigned = doc["context"]["assigned"]
-                    .as_array()
-                    .is_some_and(|tasks| !tasks.is_empty());
-                hold(&files, task_writes::actor_key(&caller), assigned)?;
-            }
             Ok(context::start(hook, &caller, &briefing))
         }
         "UserPromptSubmit" => Ok(context::prompt(hook, &caller)),
         _ => Ok(json!({})),
     }
-}
-
-/// Records whether the agent `key` may hold tasks assigned to it, which its end then releases.
-fn hold(files: &state::Files, key: String, holding: bool) -> Result<()> {
-    let _locked = files.lock()?;
-    let mut state = files.read()?;
-    let changed = if holding {
-        state.holding.insert(key)
-    } else {
-        state.holding.remove(&key)
-    };
-    if changed {
-        files.write(&state)?;
-    }
-    Ok(())
 }
