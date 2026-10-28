@@ -1,0 +1,94 @@
+key: 01a183e9-dfcb-7796-a0a4-3ca302fffd8b
+slug: claude-code-s-guarded-events-reach-yard-client-through-command-hooks
+title: "Claude Code's guarded events reach Yard Client through command hooks"
+context: "Where Claude Code's built-in guard loads, on a machine with managed settings or under a Team or Enterprise login, it runs no hook of a user's mod on a settings hook event, on `session.compact` or on the prompt's events, and tells the person so for each one. The Loft plugin, installed from a marketplace, is always a user's. The context at a session's start, the continuation after `/clear`, the main agent's permission mode, compactions and the page's decision of a plan reached the mod only through those events. A plugin's command hooks in `hooks/hooks.json` run under the guard, and a `PermissionRequest` command hook on `ExitPlanMode` runs beside Claude Code's dialog and closes it with its answer."
+state:
+  kind: accepted
+  selectedOption: 01a183e9-dfcb-7796-a0a4-3ca735be9816
+  outcome: "The plugin's `hooks/hooks.json` runs `loft yard claude hook` for the events the guard keeps from a user's mod, and the mod registers a hook on none of them, on any machine. Subagents' starts and ends come from the mod's own unguarded events."
+drivers:
+  - key: 01a183e9-dfcb-7796-a0a4-3ca41a23c0a0
+    kind: local
+    label: "Works under the guard"
+    statement: "A person whose organization manages Claude Code gets Yard context and Yard's records."
+  - key: 01a183e9-dfcb-7796-a0a4-3ca57c90f3f7
+    kind: local
+    label: "One path"
+    statement: "Each function has one path on every machine, so nothing is given or recorded twice."
+  - key: 01a183e9-dfcb-7796-a0a4-3ca693a9d1a0
+    kind: local
+    label: "Nothing new to install"
+    statement: "A person who has the Loft plugin and `loft` needs nothing else."
+options:
+  - key: 01a183e9-dfcb-7796-a0a4-3ca735be9816
+    title: "Command hooks that run loft"
+    description: "The plugin's `hooks/hooks.json` runs `loft yard claude hook` for these events, and the mod registers no hook on them."
+  - key: 01a183e9-dfcb-7796-a0a4-3ca857c2e565
+    title: "The mod's hooks alone"
+    description: "The mod keeps its hooks on these events, which run only where the guard does not load."
+  - key: 01a183e9-dfcb-7796-a0a4-3ca9e2c2c69a
+    title: "Both, side by side"
+    description: "The mod keeps its hooks and the command hooks are added beside them, with a record of which one ran."
+assessments:
+  - option: 01a183e9-dfcb-7796-a0a4-3ca735be9816
+    driver: 01a183e9-dfcb-7796-a0a4-3ca41a23c0a0
+    rating: supports
+    rationale: "command hooks run where the guard loads"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca735be9816
+    driver: 01a183e9-dfcb-7796-a0a4-3ca57c90f3f7
+    rating: supports
+    rationale: "the mod no longer hears these events anywhere"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca735be9816
+    driver: 01a183e9-dfcb-7796-a0a4-3ca693a9d1a0
+    rating: supports
+    rationale: "the hooks run the `loft` the plugin already needs"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca857c2e565
+    driver: 01a183e9-dfcb-7796-a0a4-3ca41a23c0a0
+    rating: conflicts
+    rationale: "the guard skips every one of these hooks"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca857c2e565
+    driver: 01a183e9-dfcb-7796-a0a4-3ca57c90f3f7
+    rating: supports
+    rationale: "there is only the mod"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca857c2e565
+    driver: 01a183e9-dfcb-7796-a0a4-3ca693a9d1a0
+    rating: supports
+    rationale: "nothing changes"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca9e2c2c69a
+    driver: 01a183e9-dfcb-7796-a0a4-3ca41a23c0a0
+    rating: supports
+    rationale: "the command hooks run where the mod's do not"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca9e2c2c69a
+    driver: 01a183e9-dfcb-7796-a0a4-3ca57c90f3f7
+    rating: conflicts
+    rationale: "machines without the guard run both and must tell them apart"
+  - option: 01a183e9-dfcb-7796-a0a4-3ca9e2c2c69a
+    driver: 01a183e9-dfcb-7796-a0a4-3ca693a9d1a0
+    rating: supports
+    rationale: "the hooks run the `loft` the plugin already needs"
+consequences:
+  - key: 01a183e9-dfcb-7796-a0a4-3caab2b3e9da
+    kind: cost
+    statement: "A compaction's event holds no sizes and no usage on any machine, so a compaction's tokens no longer reach the totals."
+  - key: 01a183e9-dfcb-7796-a0a4-3cabd1a3b813
+    kind: cost
+    statement: "Plan mode is heard only from the permission mode a command hook is given, not from the `EnterPlanMode` and `ExitPlanMode` calls."
+  - key: 01a183e9-dfcb-7796-a0a4-3caca1aa843f
+    kind: risk
+    statement: "The continuation after `/clear` or a resume is handed on by the id of the Claude Code process that the shell gives the hook, and is lost where the shell gives none."
+  - key: 01a183e9-dfcb-7796-a0a4-3cadfecb940f
+    kind: obligation
+    statement: "The mod's hooks are held to register none on an event the guard keeps from a user's mod."
+subjects:
+  - role: affected
+    node: 01a1646f-546c-7521-9643-bc41c1c5820f
+  - role: affected
+    node: 01a1646f-546c-7521-9643-bc5a6be5a9e6
+  - role: affected
+    node: 01a1646f-546c-7521-9643-bc69fcfce2ec
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eafb39a1e099
+  - role: outcome
+    node: 01a183e9-dfd2-74b1-a45a-149af1a33579
+mentions:
+  - 01a1646f-5467-7025-8a88-4ec441646df9

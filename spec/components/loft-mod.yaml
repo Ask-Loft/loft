@@ -8,7 +8,7 @@ scopedTo:
 components:
   - key: 01a16469-559e-73c4-85f2-71afd78c6e3e
     name: "Yard hooks"
-    body: "The part of the mod that serves Yard Client in Claude Code: the tools it registers for the agent, its hooks on the agent's questions, plans and tasks, the context it gives at the start of a session, the session's events it sends, and the page server it starts."
+    body: "The part of the mod that serves Yard Client in Claude Code: the tools it registers for the agent, its hooks on the agent's questions, plans and tasks, the session's events it sends, and the page server it starts. The context at a session's start, plan mode, compactions and the page's decision of a plan are the Claude command hooks', since Claude Code's built-in guard keeps their events from a user's mod."
     constraints:
       - key: 01a16469-559e-73c4-85f2-71b0728e8b20
         name: "The Yard hooks shall read and write no file of `.yard/`."

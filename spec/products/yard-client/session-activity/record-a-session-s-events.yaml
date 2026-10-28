@@ -2,12 +2,13 @@ key: 01a1646f-546d-7042-befd-eafb39a1e099
 slug: record-a-session-s-events
 name: "Record a session's events"
 body: |
-  While a branch's Yard Log is open, the Loft mod hears what happens in each Claude Code session that works on it: each turn, each request to the model, each tool call, each subagent and each compaction. It posts each event to the page server as it happens, and the page server keeps it in the session's event log on this machine, never in the repository.
+  While a branch's Yard Log is open, the Loft plugin hears what happens in each Claude Code session that works on it: each turn, each request to the model, each tool call, each subagent and each compaction. Its mod hears most of them, and its command hooks hear plan mode and compactions, which Claude Code's built-in guard keeps from a user's mod. It posts each event to the page server as it happens, and the page server keeps it in the session's event log on this machine, never in the repository.
 
   An event says what happened, in which agent, and what it took, never what was said: it holds names, ids, times and counts, and none of the person's or the agent's words.
 realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - 01a183e9-dfcb-7796-a0a4-3ca11fc1a795
 requirements:
   - key: 01a17989-a8ba-7109-a214-b51853740db3
     statement:
@@ -36,7 +37,7 @@ requirements:
     statement:
       form: event_driven
       when: "a turn, a model request, a tool call, a subagent, a compaction or plan mode starts or ends in a Claude Code session"
-      system: "the Loft mod"
+      system: "the Loft plugin"
       shall: "post the event to the page server as it happens."
     criteria:
       - key: 01a1646f-546d-7042-befd-eafdf3c267d2
@@ -53,14 +54,14 @@ requirements:
         name: "A tool call's end says whether the call failed."
       - key: 01a1646f-546d-7042-befd-eb03dfa075b4
         name: "A subagent's start is an event, with the subagent's id, its type and its model."
+      - key: 01a183e9-dfd3-7653-8da8-4c16b6410896
+        name: "A subagent's end is an event, once its run's turn completes."
       - key: 01a1646f-546d-7042-befd-eb0424c61342
-        name: "A compaction is an event, with the conversation's size in tokens before and after it."
-      - key: 01a16475-7fbc-7732-a78c-bc5234423864
-        name: "A compaction's event holds the input, cache read, cache write and output tokens of the compaction's own request."
+        name: "A compaction is an event, once it ends, with no sizes and no usage."
       - key: 01a1646f-546d-7042-befd-eb05c5d3d538
         name: "The main agent's plan mode starting and ending are events."
       - key: 01a16475-7fbc-7732-a78c-bc53338212c4
-        name: "Plan mode is heard from the permission mode that Claude Code's hooks are given, and from the `EnterPlanMode` and `ExitPlanMode` calls that succeed."
+        name: "Plan mode is heard from the permission mode that Claude Code gives the plugin's UserPromptSubmit, PostToolUse and Stop command hooks."
       - key: 01a1646f-546d-7042-befd-eb06f87709de
         name: "A file edit's start says whether the file lies under the tree's `spec/`, and holds nothing else of its path."
       - key: 01a1646f-546d-7042-befd-eb079e1b22d9

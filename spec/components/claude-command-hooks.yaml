@@ -1,0 +1,9 @@
+key: 01a183e9-dfcb-7796-a0a4-3ca11fc1a795
+slug: claude-command-hooks
+name: "Claude command hooks"
+body: "The command hooks of the Loft plugin's `hooks/hooks.json` and the `loft yard claude hook` command built into loft that they run. They serve the settings hook events that Claude Code's built-in guard keeps from a user's mod, beside the Claude adapter's mod."
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77
+constraints:
+  - key: 01a183e9-dfcb-7796-a0a4-3ca2b7272705
+    name: "The Claude command hooks shall reach Yard Log only through `loft yard` commands and the page server."
