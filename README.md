@@ -140,9 +140,9 @@ The skill is also a plugin, for an agent that works across projects:
 
 The plugin teaches the agent; it does not install `loft`, which the skill expects on the path.
 
-In Claude Code the plugin runs `loft` itself, with telemetry and the update check off; where
-`loft` is not on the path, set the plugin's `loftCommand` setting, for example to
-`pnpm exec loft`.
+In Claude Code the plugin runs `loft` itself, with telemetry and the update check off, from its
+mod and from its command hooks; where `loft` is not on the path, set the plugin's `loftCommand`
+setting, for example to `pnpm exec loft`.
 
 ### Yard Client
 
@@ -165,6 +165,12 @@ took, and what waits on you. Answer and approve there or in Claude Code's own di
 comes first counts, and the other closes. `loft yard serve` serves the page on the loopback
 interface only; the plugin starts it and keeps one running for the machine. Set the plugin's
 `yardPort` setting to serve another port.
+
+Where an organization manages Claude Code, or the session is signed in with a Team or
+Enterprise account, Claude Code runs none of a user's mod hooks on its settings hook events. So
+the plugin gives the session its Yard context, follows plan mode and compactions, and takes the
+page's decision of a plan through command hooks in `hooks/hooks.json`, which run
+`loft yard claude hook` and work the same on every machine.
 
 The page reports each adapter's capabilities. Unreported usage is shown as unavailable, and a
 subtotal missing contributing counters is marked partial. The Claude adapter supports Yard

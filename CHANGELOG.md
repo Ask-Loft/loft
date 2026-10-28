@@ -5,6 +5,15 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard Client works in Claude Code sessions signed in with a Team or Enterprise account, and on
+  machines with managed settings, where Claude Code's built-in guard skips a user's mod hooks on
+  its settings hook events. The session's and each subagent's Yard context, plan mode,
+  compactions and the page's decision of a plan now come from the plugin's command hooks, which
+  run the new `loft yard claude hook`, and the mod registers none of the hooks the guard skips,
+  so its per-event notices are gone too. After `/clear` or a resume, the new session is briefed
+  as continuing the one that ended. A compaction is recorded without its sizes or tokens on
+  every machine.
+
 - Tasks can be assigned to agents independently of stage ownership, including parallel subagents
   within a main agent's stage. Claude task metadata and Codex plan-step prefixes bind native
   progress to existing tasks. Reassignment guards protect progress; observed ends return active

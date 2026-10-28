@@ -97,6 +97,13 @@ change, or v1 reverts it.
   CI runs `claude plugin validate plugins/claude/loft` and `claude plugin test
   plugins/claude/loft` under a pinned Claude Code; run both after a change to the mod, and
   type-check it with TypeScript once a session has loaded the plugin and written its types.
+  Where Claude Code's built-in guard loads (managed settings, or a Team or Enterprise login), it
+  runs no hook of a user's mod on a `classic.` event, `session.compact` or the prompt's events,
+  so the mod hooks none of them (the accepted decision "Claude Code's guarded events reach Yard
+  Client through command hooks"; `tests/plugins.rs` fails on one). The plugin's
+  `hooks/hooks.json` runs `loft yard claude hook`, in `crates/loft-cli/src/yard/claude/`, for
+  those events instead: the session's and a subagent's context, the hand-off of a session after
+  `/clear`, plan mode, compactions and the page's decision of a plan.
 - The Codex plugin holds native command hooks in `plugins/codex/loft/hooks/hooks.json`, calling
   the adapter in `crates/loft-cli/src/yard/codex/`. It reaches Yard Log through JSON commands;
   its native hook command returns Codex wire output by default and a Loft envelope with
@@ -119,7 +126,8 @@ change, or v1 reverts it.
   repository ignores `.yard/`, as this one does. What belongs to the machine, not the branch,
   lies in `~/.yard/`: the page server's `server.json`, its lock and stop request, the trees it
   serves, each session's events, when each session was last heard, the revision each agent last
-  read, the sessions that continue others and the control token.
+  read, the sessions that continue others, the control token, and in `claude/` the Claude
+  hook's hand-offs and each session's last permission mode.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
   of the platform it is installed on. A release packs it, and one package per platform, into
   tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;
