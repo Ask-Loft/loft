@@ -23211,6 +23211,42 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "identified_worker_context_lists_its_recorded_assignment_in_a_bounded_message"
         body: 4ac2844f1dba70244f8f7e585501a537e0a7e7be213ab18d559d559bdb2d1603
+  - node: 01a18053-9e08-72a7-ab94-f3d27168e568
+    reviewed: 456692309e29ce1349665c2d5dab7fb3a5c58d0220454e356f7ce71e7a5c908b
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
+        name: "assigned_task_stage_precedes_current_parent_and_worker_stages_for_usage_and_runs"
+        body: 36d5f07cb775949df65241e59333360ea6edd9cfe064305251a030123eb80fe6
+      - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
+        name: "an_explicit_current_assignment_selects_its_stage_and_invalid_bindings_never_guess"
+        body: 9a8499106f18a683183b6c9df01937837bb321561a06f4f6fe5868d90ca9ca8b
+  - node: 01a18053-9e08-72a7-ab94-f3d3e2162225
+    reviewed: 94bfd5ec46e0152af1532cf374b1e4ecabae9125724668f967ed65f95e52ef42
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
+        name: "assigned_task_stage_precedes_current_parent_and_worker_stages_for_usage_and_runs"
+        body: 36d5f07cb775949df65241e59333360ea6edd9cfe064305251a030123eb80fe6
+  - node: 01a18053-9e08-72a7-ab94-f3d4a5dd5445
+    reviewed: b149c6dd353e0ee37f4e5344763c98f7dd5ef27feaa7d3cfe93ce1a8ec4c918f
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
+        name: "assignments_across_stages_keep_reported_tokens_in_session_totals_without_guessing_a_stage"
+        body: 092b4ddd9c1d8c83d37d1345e56b87db06c937d7f038d2ef7493631f66be79fd
+  - node: 01a18053-9e08-72a7-ab94-f3d53e9b56b5
+    reviewed: ceb6ce654d2712d58450cfcc8646410e92ca7e85b1e8f729bf9a9c0463b844fd
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
+        name: "assignments_across_stages_keep_reported_tokens_in_session_totals_without_guessing_a_stage"
+        body: 092b4ddd9c1d8c83d37d1345e56b87db06c937d7f038d2ef7493631f66be79fd
+  - node: 01a18053-9e08-72a7-ab94-f3d6a2af5820
+    reviewed: f3173dc8b72a2faf0da1df18a1585fca7c404b5f33b9be424ad4bcd7f8a8f9a0
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
+        name: "assigned_task_stage_precedes_current_parent_and_worker_stages_for_usage_and_runs"
+        body: 36d5f07cb775949df65241e59333360ea6edd9cfe064305251a030123eb80fe6
+      - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
+        name: "assignments_across_stages_keep_reported_tokens_in_session_totals_without_guessing_a_stage"
+        body: 092b4ddd9c1d8c83d37d1345e56b87db06c937d7f038d2ef7493631f66be79fd
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:

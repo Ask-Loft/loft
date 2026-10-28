@@ -117,6 +117,7 @@ mod yard_read_history;
 mod yard_serve;
 mod yard_serve_access;
 mod yard_serve_base;
+mod yard_serve_delegation;
 mod yard_serve_events;
 mod yard_serve_inherited;
 mod yard_serve_logs;

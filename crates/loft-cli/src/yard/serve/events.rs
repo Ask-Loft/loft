@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use serde_json::{Value, json};
+use yardlog::delegation::StageContext;
 use yardlog::{Agent, YardLog};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
@@ -56,25 +57,41 @@ struct Arrival {
     open: Vec<String>,
 }
 
-/// The stage `event` counts toward, by its key: the one active for its agent, or for a subagent
-/// with none of its own, the one active for its session's main agent, which started it. A
-/// subagent's run works for the main agent's stage as it starts, whatever the subagent owns.
+/// Delegation supplies the stage before the legacy owner/main fallback. An explicit binding
+/// must identify a current assignment; ambiguous active assignments never guess a stage.
 fn counted_stage(log: &YardLog, event: &Event) -> Option<String> {
+    let agent = agent_of(&event.host, &event.session, &event.who);
+    if let Some(reference) = event.posted.get("task") {
+        let id = reference.as_str()?;
+        return log
+            .assigned_to(&agent)
+            .find(|(_, block, _)| block.id.as_str() == id)
+            .map(|(file, _, _)| file.stage.key.to_string());
+    }
+    match log.delegation_context(&agent) {
+        StageContext::Stage(stage) => return Some(stage.to_string()),
+        StageContext::Ambiguous => return None,
+        StageContext::None => {}
+    }
     let own = match (&event.who, event.kind.as_str()) {
         (Who::Sub { .. }, "subagent.start") => None,
-        (who, _) => active_stage(log, &event.host, &event.session, who),
+        _ => log
+            .active_stages_of(&agent)
+            .next()
+            .map(|stage| stage.key.to_string()),
     };
-    own.or_else(|| active_stage(log, &event.host, &event.session, &Who::Main))
+    own.or_else(|| {
+        log.active_stages_of(&Agent::main_in(&event.host, &event.session))
+            .next()
+            .map(|stage| stage.key.to_string())
+    })
 }
 
-/// The stage active for `who` of `session` in `log`, by its key.
-fn active_stage(log: &YardLog, host: &str, session: &str, who: &Who) -> Option<String> {
-    let agent = match who {
+fn agent_of(host: &str, session: &str, who: &Who) -> Agent {
+    match who {
         Who::Main => Agent::main_in(host, session),
         Who::Sub { id, kind } => Agent::sub_in(host, session, id, kind),
-    };
-    let stage = log.active_stages_of(&agent).next()?;
-    Some(stage.key.to_string())
+    }
 }
 
 /// The store and open Yard Log of the branch the directory `dir` is on, where it has one.
