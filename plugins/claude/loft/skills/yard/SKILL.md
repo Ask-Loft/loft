@@ -82,8 +82,9 @@ the recorded task id, stage and instructions to read Yard Log under its own call
 Keep the same task through handoff: never create a second task for the delegated work. The stage
 owner or current assignee can reassign or release it; other agents cannot overwrite its
 assignment or execution state. Use the host adaptation's explicit binding where supported, or
-write the existing task directly. A newly continued session needs an explicit assignment or
-stage handoff; never infer identity from an agent's display name.
+write the existing task directly. A session recorded as continuing another, after `/clear` or a
+resume, keeps that session's stages and tasks; any other new session needs an explicit
+assignment or stage handoff. Never infer identity from an agent's display name.
 
 ## Plan, then wait to be asked to build
 
