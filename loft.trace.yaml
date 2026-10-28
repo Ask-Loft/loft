@@ -19061,19 +19061,37 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_changed_missing_or_extra_package_file_is_named_and_exits_1_writing_nothing"
+        body: 25f8efe41e1569246c06eec5887b975535a817dd1387c8351ed10adbad58c7e2
   - node: 01a13654-6e11-74fa-a359-257e776f9932
     reviewed: bb498a6a7e8942ea3abdc51b716d0126d922fec07688283b16178f647ba0c728
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_changed_missing_or_extra_package_file_is_named_and_exits_1_writing_nothing"
+        body: 25f8efe41e1569246c06eec5887b975535a817dd1387c8351ed10adbad58c7e2
   - node: 01a13654-6e11-74fa-a359-257fc96e0159
     reviewed: 941e3d9204aed142207e0ee4af8a1e3ed50ab00277c3e719e8f95be9be1d0f6d
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_changed_missing_or_extra_package_file_is_named_and_exits_1_writing_nothing"
+        body: 25f8efe41e1569246c06eec5887b975535a817dd1387c8351ed10adbad58c7e2
+  - node: 01a13654-6e11-74fa-a359-2581cfacca51
+    reviewed: 9017d3b7a3f7e0d033e13b0716a6c6c58af01624af1e789e098e27de2edbc6d7
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "after_skill_package_runs_each_package_equals_its_composition"
+        body: 60ca0c8529609d7c723dfa4884b5183436913bfe061703247f398cffd1873336
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "each_committed_package_equals_the_composition_for_its_host"
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
   - node: 01a17844-cbca-7515-8e4e-48d7402352da
     reviewed: 36d08903542e95516329d75020ffd585773eaa394a767a8cb4843e8c1444a870
     tests:
@@ -19083,9 +19101,9 @@ links:
   - node: 01a17844-cbca-7515-8e4e-48d81e7fbb52
     reviewed: 30b2381be715a61f368fc05275a5c8b2b6713cb1be3002fe4439005cf29dbfaa
     tests:
-      - file: "crates/loft-cli/tests/skill_hosts.rs"
-        name: "the_packager_refuses_missing_copied_and_retargeted_discovery_entries"
-        body: b266fe024eb7125dd74d55c3c5ab1db915262a343b6668306bb0a8b256dc63b8
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_broken_discovery_entry_is_refused_and_named_and_no_package_file_changes"
+        body: 8033b686d2febe70f0f70fc2a96d455661311e893256bf9544cd28f726c84468
   - node: 01a17844-cbca-7515-8e4e-48d9ebc35d82
     reviewed: c191723d356ebaf33b21bf0736eadbe8040cd5b99ac69b08ac26f496c60051eb
     tests:
@@ -19199,7 +19217,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
   - node: 01a144ee-c59e-7325-802c-d71d0cf0947c
     reviewed: 83d267d165277492a4e3a91c8b3b73eb2dbd1ec0ff3c40981d588cca309be1e5
     tests:
@@ -19283,7 +19301,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
   - node: 01a13654-6e11-74fa-a359-25a786145aea
     reviewed: 61ef55c530369a871fa920f6afcb175c0a43ec697675a6a1e25ef184a5a340b6
     tests:
@@ -19319,7 +19337,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptation"
-        body: 6fab4ec8dcf7e17430456ceaccb87454bece6fd196f3808bf811c7eac4e7822b
+        body: f494c91532ca6e84363995a65ab8fc6e33556e7757c3a125ab69ef43977c6171
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "yard_is_packaged_for_each_adapter_but_not_installed_as_a_standalone_skill"
         body: 84795bcf4521ab0996adff173da409e9c66644765160686bda092166947d8bb2
@@ -19332,12 +19350,18 @@ links:
       - file: "crates/loft-cli/src/skill/compose.rs"
         name: "a_yard_package_is_the_shared_workflow_a_blank_line_and_its_host_adaptation"
         body: 0509a281b198808ff8f068919b213fea90d6cc4adebe02277d093857b4d13253
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_packaging_script_runs_loft_skill_package_and_composes_nothing_itself"
+        body: 1c7c8033577285f8fa5d3c7a6ebee1d7c60ee0bf786c64639a6e03409aab44a6
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "each_committed_package_equals_the_composition_for_its_host"
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
   - node: 01a1787c-f803-70b1-b946-b71adb17c6f4
     reviewed: 62d4ee13fff906105387ea4a9a28965ef04bcebbb8457023a4f0e52eaf31473f
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_package_equals_the_shared_source_with_only_its_codex_adaptation"
-        body: 4b47ea67a6178fc2614c79299a99e2e8fc04e547102bb911f26a1ca2b45f3d62
+        body: 0f17ff5867b58dd9e4f960c7e9a4f81b01d99cd0cc7fb9d3e4d51e691781fa7f
   - node: 01a1787c-f803-70b1-b946-b71b18646046
     reviewed: b43fd2c88b52f4fb3c10d2ab52c90399d8569f877c6c627a268ed247d4544311
     tests:
@@ -28541,7 +28565,7 @@ links:
         body: d7579a078a019d04492d4e262845bd30b6fd44f1e6a04779af3d0b2dd050ace7
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: 9789ebfa5f642cac8041932e090b15a142b9919b0226ba5e943f1448de2f2b2a
+        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
   - node: 9908f127-794b-4463-a680-0639741cc37a
     reviewed: 8ec5d919ec898e7a2ce83348e8116b94fa37ccbd77c0384101081ae6172d4c10
     tests:

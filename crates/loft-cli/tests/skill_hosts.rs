@@ -184,34 +184,3 @@ fn the_known_link_requires_its_source_router_and_codex_metadata() {
         assert!(!scratch.0.join(".claude").exists());
     }
 }
-
-#[test]
-fn the_packager_refuses_missing_copied_and_retargeted_discovery_entries() {
-    for kind in ["missing", "copied", "retargeted"] {
-        let scratch = Scratch::empty();
-        fs::create_dir_all(scratch.0.join("scripts")).unwrap();
-        let script = scratch.0.join("scripts/package-skill.sh");
-        fs::copy(
-            crate::common::workspace().join("scripts/package-skill.sh"),
-            &script,
-        )
-        .unwrap();
-        fs::create_dir_all(scratch.0.join(".agents/skills")).unwrap();
-        match kind {
-            "copied" => fs::create_dir(scratch.0.join(CODEX)).unwrap(),
-            "retargeted" => symlink("../../other", scratch.0.join(CODEX)).unwrap(),
-            _ => {}
-        }
-        let output = std::process::Command::new(scratch.0.join("scripts/package-skill.sh"))
-            .current_dir(&scratch.0)
-            .env("PATH", "/usr/bin:/bin")
-            .output()
-            .unwrap();
-        assert_eq!(output.status.code(), Some(1), "{kind}: {}", stderr(&output));
-        assert!(
-            stderr(&output).contains("Codex discovery entry must link"),
-            "{kind}: {}",
-            stderr(&output)
-        );
-    }
-}
