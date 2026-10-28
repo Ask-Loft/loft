@@ -19532,7 +19532,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: 67cce3062e3b504c818b2d225c937ddeed2eb3634e56c0819173d398db2a9fe5
+        body: a3b933cef569fa9903ac57aa58977531f4c08733adbd260bb67304ae1a75afd3
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
         body: ab055ee3a1914d3ef7baf55d02849c493c88f278b14a7a31fe1d0b043c42baaa
@@ -19556,7 +19556,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: 67cce3062e3b504c818b2d225c937ddeed2eb3634e56c0819173d398db2a9fe5
+        body: a3b933cef569fa9903ac57aa58977531f4c08733adbd260bb67304ae1a75afd3
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "protocol one keeps the Claude arguments and events without adapter descriptors"
         body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
@@ -23603,13 +23603,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
+        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
   - node: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
     reviewed: b2e92b9d8b9c74a9d59cd5659f907052d70f12b94cce8d1d02e27351878b33f4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
+        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
         body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
@@ -23621,7 +23621,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
+        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
         body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
@@ -23633,7 +23633,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: b9b0f89520125eca9ce0528ee3d70f62e7a8edd58eb9ebce305e3890f9220c53
+        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
   - node: 01a1646f-546e-76cb-8b4f-f1fde62cb279
     reviewed: bc1bfca105244ab915945501c1d149f7e84b784c53afba66d2612967917a7561
     tests:
@@ -28190,7 +28190,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: 67cce3062e3b504c818b2d225c937ddeed2eb3634e56c0819173d398db2a9fe5
+        body: a3b933cef569fa9903ac57aa58977531f4c08733adbd260bb67304ae1a75afd3
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "protocol one keeps the Claude arguments and events without adapter descriptors"
         body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
