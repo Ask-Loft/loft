@@ -61,6 +61,16 @@ impl HookKind {
             Self::Stop | Self::Interrupt | Self::SubagentStop | Self::SessionEnd
         )
     }
+
+    /// An end of the caller's work, which returns its active tasks to open: a subagent's end, an
+    /// interruption or the session's end. A main agent goes on after its turn, so the main
+    /// agent's `Stop` is not one.
+    pub fn releases(self, subagent: bool) -> bool {
+        match self {
+            Self::Stop => subagent,
+            kind => kind.ends(),
+        }
+    }
 }
 
 impl Hook {

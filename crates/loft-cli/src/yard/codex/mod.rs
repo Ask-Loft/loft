@@ -125,7 +125,7 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         if let Some(key) = &key {
             if hook.kind().starts() {
                 state.ended_tasks.remove(key);
-            } else if hook.kind().ends() {
+            } else if releases(hook, caller.as_ref()) {
                 state.ended_tasks.insert(key.clone());
             }
         }
@@ -142,9 +142,9 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     // Yard Log takes the task changes under its own lock. A change Yard cannot take leaves the
     // hook answered as it would be without Yard: the native call already ran and its events are
     // kept.
-    // Every end releases: an agent with no active assigned task writes nothing.
+    // Every end of an agent's work releases: an agent with no active assigned task writes nothing.
     if let Some(caller) = &caller {
-        if hook.kind().ends() {
+        if releases(hook, Some(caller)) {
             let _ = task_writes::release(hook, caller, port);
         } else if !ended {
             let _ = tasks::mirror(hook, caller, port);
@@ -164,4 +164,10 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         translate::HookKind::UserPromptSubmit => Ok(context::prompt(hook, &caller)),
         _ => Ok(json!({})),
     }
+}
+
+/// Whether `hook` ends the work of `caller`, a subagent where it names one.
+fn releases(hook: &translate::Hook, caller: Option<&commands::Caller>) -> bool {
+    hook.kind()
+        .releases(caller.is_some_and(|caller| caller.agent.is_some()))
 }

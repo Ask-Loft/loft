@@ -97,9 +97,10 @@ export function registerEvents(on: On) {
 /** A turn's end, posted once Claude Code has ended it. */
 export async function eventsOfTurnEnd($: EngineInterface, e: TurnCompleteEvent) {
   tell($, e.agentId, { kind: 'turn.end', turn: e.turnId, ...(e.usage ? { tokens: tokensOf(e.usage) } : {}) })
-  // Each run of a subagent's loop is one turn, so its turn's end is the subagent's.
+  // Each run of a subagent's loop is one turn, so its turn's end is the subagent's. The main
+  // agent goes on after its turn: only an interruption, or its session's end, ends its work.
   if (e.agentId) tell($, e.agentId, { kind: 'subagent.end' })
-  await endAssigned($, e.agentId).catch(() => {})
+  if (e.agentId || e.isAborted) await endAssigned($, e.agentId).catch(() => {})
 }
 
 /** A tool call's start and end; the mod's own dialogs are not the agent's calls. */

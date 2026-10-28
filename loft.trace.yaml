@@ -23857,8 +23857,44 @@ links:
         name: "an identified worker end returns its active tasks to open in one loft yard task --release"
         body: e8e51ba04464e225371eabe1977da3334e16862233aa71a930b06354d3a3b408
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "the main agent's turn end and its session's end each release the main agent's tasks"
-        body: 75de73e900ddf3d5e15b93974a9384c7f157639c723923bed32437ff72affaf1
+        name: "the main agent's session's end returns its active tasks to open"
+        body: a1ad36cfcd63606c8adfeb5f12ccabf3b557705d2d399503501ad14d248defd7
+  - node: 01a18475-9e95-77ed-8ed1-562b1e5b8a85
+    reviewed: d4f4b1dc98bcd2adbf1bf8523601ab842f673d3da4cc3c907b0ddf107a831b6d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "an identified worker end returns its active tasks to open in one loft yard task --release"
+        body: e8e51ba04464e225371eabe1977da3334e16862233aa71a930b06354d3a3b408
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "worker_end_opens_unfinished_tasks_and_late_progress_waits_for_a_new_start"
+        body: a2b2949111050914575e0d075ed75bccd2410718e14489fffbb6f2d5859bf035
+  - node: 01a18475-9e95-77ed-8ed1-562cdb8031bf
+    reviewed: 80adbe23f96699cd253df8657934dff5eac0971a5c0caecada3bc56065a7efed
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "the main agent's session's end returns its active tasks to open"
+        body: a1ad36cfcd63606c8adfeb5f12ccabf3b557705d2d399503501ad14d248defd7
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "a_main_agent_s_interruption_or_session_end_returns_its_active_task_to_open"
+        body: acc8c5d4117b9c65f17437ccac43b02ad4cc9e21920c1ae4abe0809fb92b7c49
+  - node: 01a18475-9e95-77ed-8ed1-562dbc7e6ba4
+    reviewed: caa4274c2d9e23d73153fb7ecba5670dfa77556cd0ff11c722216e8360ed28bf
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "the end of the main agent's turn that was not interrupted releases nothing, and its tasks keep mirroring"
+        body: 9d07981986f259000c4edee43ed1d02d26bfbd265c70e89f93444df228dd51d6
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "a_main_agent_s_stop_leaves_its_active_task_active_and_its_later_progress_mirrored"
+        body: 7997e7af35c636102b6c01248614a6f292c6be1dce2128c596292ddd0a327993
+  - node: 01a18475-9e95-77ed-8ed1-562e0424366d
+    reviewed: 5ac8ad9ba69aa80ef41e6b2ba5817354ac1edb3df2477c1bb67fb3c257981769
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "the main agent's interrupted turn returns its active tasks to open"
+        body: 1ace625e2f48267804f109d9c2648909c2dbff7d652760d14f5d51b6b9183007
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "a_main_agent_s_interruption_or_session_end_returns_its_active_task_to_open"
+        body: acc8c5d4117b9c65f17437ccac43b02ad4cc9e21920c1ae4abe0809fb92b7c49
   - node: 01a18053-9e08-72a7-ab94-f3cd1556846f
     reviewed: ab0fcc31148ec45734b51b359a9981ed13e81d86892659aa89afbd2495d0faeb
     tests:
