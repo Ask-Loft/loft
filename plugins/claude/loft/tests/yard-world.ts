@@ -84,6 +84,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     /** What each command prints as it is, over the answers, by subcommand: its standard output and whether Claude Code cut it short. */
     printed: {} as Record<string, { stdout: string; truncated?: boolean; stderr?: string }>,
     runs: [] as Run[],
+    /** Optional per-write contract response, used to exercise concurrent task updates. */
+    writing: undefined as ((run: Run) => { doc?: Doc; exitCode?: number } | undefined) | undefined,
     /**
      * What each `loft yard wait` gives in turn, or makes when it runs from what the mod wrote before
      * it; once none is left, it waits on `page`.
@@ -174,6 +176,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
         await state.reading
         return out(state.read)
       case 'write': {
+        const response = state.writing?.({ argv: e.argv, cwd: e.init?.cwd, stdin: e.init?.stdin, spawned: false })
+        if (response) return out(response.doc, response.exitCode ?? 0)
         const batch = JSON.parse(e.init?.stdin ?? '[]') as { id: string }[]
         return out({
           outcome: 'written',

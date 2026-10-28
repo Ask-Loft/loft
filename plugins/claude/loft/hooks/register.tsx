@@ -18,7 +18,7 @@ export const register: Register = (on, options) => {
 
   on('turn.complete', async ($, e, next) => {
     const ended = await next(e)
-    eventsOfTurnEnd($, e)
+    await eventsOfTurnEnd($, e)
     return ended
   })
 

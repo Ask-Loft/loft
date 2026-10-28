@@ -34,6 +34,19 @@ each `TaskUpdate` writes the new state: `in_progress` as `active`, `completed` a
 Create a fix with `TaskCreate` and `metadata: { type: "fix" }`, or write its `task` block with
 `type: fix`. A `TaskUpdate` with a `type` in its metadata changes it; `null` makes it `regular`.
 
+For delegated work, read the existing Yard task and claim it through `yard_write`, retaining its
+id, stage and complete body while setting `assignee` to your own host/session/agent identity.
+The stage owner can assign it before your start instead. Use the read revision as `basedOn`.
+Update that task with `TaskUpdate` and `metadata: { yardTask: "TASK-ID" }` on every call, or
+update its existing block through `yard_write`. The explicit Yard id is independent of the
+native task id; a bound `TaskCreate` makes no second Yard task. Do not recreate a parent's task
+under your own stage. Assignment context names your tasks and their recorded stages.
+
+Only the assigned executor's native progress is mirrored for an assigned task. A stale mirror
+reads the latest assignment and body before retrying; it stops after reassignment. Finished
+delegated tasks are not reopened by automatic mirroring. A reliably observed end or interruption
+returns active assignments to `open`, keeping their assignee for the stage owner's review.
+
 ## Plan the build in plan mode once the change is approved
 
 Once the person has approved a change to `spec/` and it is committed, call `EnterPlanMode` before

@@ -44,6 +44,8 @@ export type YardState = {
   sessions: string[]
   /** Capture tails, reserved synchronously by session and native agent at hook receipt. */
   captures: Map<string, Promise<void>>
+  /** Exact actors whose execution ended, until a new identified start. */
+  endedTasks: Set<string>
   /** The session that ended with `/clear` or a resume, until `loft yard continue` records it. */
   continues: string | undefined
   isOn: boolean
@@ -61,6 +63,7 @@ function fresh(options: PluginOptions): YardState {
     types: new Map(),
     sessions: [],
     captures: new Map(),
+    endedTasks: new Set(),
     continues: undefined,
     isOn: false,
     enabling: undefined,

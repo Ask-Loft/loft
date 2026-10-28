@@ -17,6 +17,7 @@ import { callerArgs, failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
 import { askerOf, callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
 import { mirrorCreated, mirrorUpdated } from './tasks'
+import { actorKey, endAssigned } from './task-writes'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
 
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
@@ -115,6 +116,7 @@ export function registerYard(on: On, options: PluginOptions) {
   reset(options)
 
   on('session.end', async ($, e, next) => {
+    if (state.isOn) await endAssigned($, undefined).catch(() => {})
     if (e.reason === 'clear' || e.reason === 'resume') state.continues = e.sessionId
     return next(e)
   })
@@ -124,6 +126,7 @@ export function registerYard(on: On, options: PluginOptions) {
     const started = await next(e)
     if (!['startup', 'resume', 'clear', 'fork'].includes(e.source)) return started
     if (!(await ensureYard($, e.cwd))) return started
+    state.endedTasks.delete(actorKey(await callerOf($, undefined)))
     const text = await contextFor($, e.cwd)
     return text === undefined ? started : { ...started, additionalContext: [...(started.additionalContext ?? []), text] }
   })
@@ -160,7 +163,7 @@ export function registerYard(on: On, options: PluginOptions) {
       const asking = await prepare($, e.agentId).catch(() => undefined)
       checkCapture(next.signal)
       const ran = await next(e)
-      if (!next.signal.aborted) await mirrorCreated($, e, ran, asking).catch(() => {})
+      if (!next.signal.aborted) await mirrorCreated($, e, ran, asking, next.signal).catch(() => {})
       return ran
     })
   })
@@ -171,7 +174,7 @@ export function registerYard(on: On, options: PluginOptions) {
       const ran = await next(e)
       if (!next.signal.aborted) {
         const asking = await prepare($, e.agentId).catch(() => undefined)
-        if (!next.signal.aborted) await mirrorUpdated($, e, ran, asking).catch(() => {})
+        if (!next.signal.aborted) await mirrorUpdated($, e, ran, asking, next.signal).catch(() => {})
       }
       return ran
     })

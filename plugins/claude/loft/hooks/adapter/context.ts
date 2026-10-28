@@ -4,9 +4,11 @@
 import type { Doc } from '../loft'
 import { isObject } from '../model'
 import { activeStage, isAsker, openSubmissions, pageOf, stagesOf, type Asker, type Block } from './log'
+import { assignedTasks } from './task-writes'
 
 /** The most characters the context holds. */
 export const LIMIT = 2000
+const clipped = (text: string, limit: number) => text.length > limit ? `${text.slice(0, limit - 1)}…` : text
 
 /** The revision of a response's Act. */
 function revisionOf(response: unknown): number {
@@ -49,9 +51,9 @@ function fitted(lines: readonly string[], room: number): string[] {
 
 /** The session's context for the branch's Yard Log, as `loft yard read` reported it. */
 export function contextOf(doc: Doc, asker: Asker): string {
-  const branch = String(doc.branch ?? 'this branch')
+  const branch = clipped(String(doc.branch ?? 'this branch'), 120)
   const page = pageOf(doc)
-  const head = [`Yard Log of \`${branch}\`.`, page ? `Its page: ${page}` : 'No page server serves its page yet.']
+  const head = [`Yard Log of \`${branch}\`.`, page ? `Its page: ${clipped(page, 400)}` : 'No page server serves its page yet.']
   const log = isObject(doc.yardLog) ? doc.yardLog : {}
   if (log.key === undefined) {
     head.push('The branch has no Yard Log yet: the first `yard_write` opens it.')
@@ -64,11 +66,16 @@ export function contextOf(doc: Doc, asker: Asker): string {
   }
   head.push(`Revision ${String(doc.revision)}.`)
   const stage = activeStage(doc, asker)
-  head.push(stage ? `Your active stage: \`${stage.id}\` — ${titleOf(stage)}.` : 'You have no active stage.')
+  head.push(stage ? `Your active stage: ${clipped(`\`${stage.id}\` — ${titleOf(stage)}`, 240)}.` : 'You have no active stage.')
   const sent = openSubmissions(doc)
   const since = typeof doc.lastRead === 'number' ? doc.lastRead : 0
   const responded = respondedSince(doc, since)
   const sections: { title: string; lines: string[] }[] = [
+    {
+      title: 'Tasks assigned to you (read Yard Log for their current state):',
+      lines: assignedTasks(doc, asker).filter(({ block }) => !['done', 'dropped'].includes(String(block.version.body.state)))
+        .map(({ stage, block }) => `- \`${block.id}\` in stage \`${stage.id}\``),
+    },
     {
       title: sent.length === 0 ? 'No submission is open.' : `Open submissions (${sent.length}), each waited on with \`yard_wait\`:`,
       lines: sent.map(each => {

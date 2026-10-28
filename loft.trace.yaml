@@ -23034,6 +23034,105 @@ links:
       - file: "crates/yardlog/tests/delegation.rs"
         name: "releasing_an_assignment_keeps_protection_and_allows_a_new_self_claim"
         body: 95936670556fbd95e5f97cf1297b8033fe86765a69863bbd138a17c34c0b06f7
+  - node: 01a18053-9e08-72a7-ab94-f3bc9471690c
+    reviewed: 4152bbf5d4cb37f358873f7a4a2cf10d3b41e0890107279b621a6f6052030bbc
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "a worker updates the explicitly bound task without owning or taking its stage"
+        body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
+  - node: 01a18053-9e08-72a7-ab94-f3be2573b3d5
+    reviewed: 54e209b70fa441d4fdff835daab5cc23a704250ccaa4b16cbdfe00e9f841af2f
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "a bound native create leaves the existing task identity and scope intact"
+        body: db9f7ba31d7e6bc838beafa6e4b9db2f44f3ed6619fe3f634af4548034d5bb7f
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "a worker updates the explicitly bound task without owning or taking its stage"
+        body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
+  - node: 01a18053-9e08-72a7-ab94-f3bf1de16fbf
+    reviewed: c5e7f52f195c62f93607e2b301709216b3a0fbc9ef650947baefc6b90c6b1f62
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "invalid explicit bindings never create replacement native tasks"
+        body: 4f231c8cf3e658af2ed898d2de43f6ee32528804d36db759e16e85805c55772c
+  - node: 01a18053-9e08-72a7-ab94-f3c09862bb9d
+    reviewed: 425bd8d01ee4cbf8bcc4d95ca83d4924e7cd62bd876330e606127db8f9893b38
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "a worker updates the explicitly bound task without owning or taking its stage"
+        body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "a stale retry preserves unrelated fields from the latest task body"
+        body: 0623ccdc1ca6d512f71b953409b4f00d9a4a3a30ece9f08b6e4f0ac8b038b051
+  - node: 01a18053-9e08-72a7-ab94-f3c39ffa0b6c
+    reviewed: fcdb1f05f13fa603e7ba8dd4d58fe27dd07d9b4b73afbd4518d3a69e3b3a6b22
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "unchanged and terminal delegated updates create no versions"
+        body: 91a63bece044d0e66645358c79da1608a89fdcdb4c35d69f01f90f745830af30
+  - node: 01a18053-9e08-72a7-ab94-f3c430201df0
+    reviewed: 015f10a45c5f8242c688e643d21e43126f754eeb9a2556938dc9d8170e4f1b02
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "unchanged and terminal delegated updates create no versions"
+        body: 91a63bece044d0e66645358c79da1608a89fdcdb4c35d69f01f90f745830af30
+  - node: 01a18053-9e08-72a7-ab94-f3c50ed30e6e
+    reviewed: 8eba1babcbf481a4bd3377000ae34bd5729ab5bf865e82554738c62bfcfc05ce
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "a stale retry preserves unrelated fields from the latest task body"
+        body: 0623ccdc1ca6d512f71b953409b4f00d9a4a3a30ece9f08b6e4f0ac8b038b051
+  - node: 01a18053-9e08-72a7-ab94-f3c613583e48
+    reviewed: 5b0cad78e2bb38825254f1ffabc687aedf298f8a4295f564155c62ca04cae831
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "stale retries reread the task and stop when another worker received its assignment"
+        body: aed0ff95255893b8267fd249e63dc19ddf69a47cf53e44ad72407535c9025e4b
+  - node: 01a18053-9e08-72a7-ab94-f3c89e4da1b7
+    reviewed: 7764c38824c5b8d9e453eddd470c5d93ebfaf18ac55e309e2664d379e3edf38a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "an identified worker end reopens its unfinished assignment and keeps the assignee"
+        body: 7f97a68aa229728aabc1662f4db5d99a210b461d07a47614394707d166f7896b
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "an actual interruption returns unfinished execution to open without changing the native answer"
+        body: a96b9c9edafec1b259be6ddd496455b4d0c672c6ad136904b4a76aebb7c874d2
+  - node: 01a18053-9e08-72a7-ab94-f3c9767bbaf3
+    reviewed: d8e589e0eb1fe6676adddf91299d7ea1edfc9d7a84090ef9ae9853cfda874545
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "worker end leaves completed and reassigned tasks untouched"
+        body: 826a7994e21656ca0fd032380dcc4e451e8936cc237d87313cdd7d26edce2cdd
+  - node: 01a18053-9e08-72a7-ab94-f3cac642e25b
+    reviewed: 1eb003fe2a5e2202ec2a476a3e0758425b61ce32dd2eb54b930a5eb601b39bb7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "worker end leaves completed and reassigned tasks untouched"
+        body: 826a7994e21656ca0fd032380dcc4e451e8936cc237d87313cdd7d26edce2cdd
+  - node: 01a18054-bf15-7113-9ce0-7fae57e0bb10
+    reviewed: fdc32fccdeeacd6d6d4d8de36ee37b897ce6935ca9a2c995c0baa4ebb723c5b4
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "assignment context names existing tasks and stages without an owned stage"
+        body: 680404cd2092f53c1f315551862aa7b454b45c04bf5cda1829672807a18f0b0c
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "native subagent start supplies its assigned task context without taking the stage"
+        body: e136ff4bee26620315548594bd339f33fdb7f1c94e05dbe951909a6dbef8ae8b
+  - node: 01a18054-bf15-7113-9ce0-7fafa8cf72ab
+    reviewed: 341c44ac13b90298dbe2bd290629c7a0c26b9f6b63ec3a4b2e4fb1dec76eb540
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "assignment context bounds its list and directs the worker to read the rest"
+        body: 205d158a9102a105e57f150e054bee69de9784c12757ec107e986ef6f4c4696b
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "long page addresses leave room for assignment counts and a read instruction"
+        body: a3d29eb4f3792fd8cfee1783ce2098dcd7f32dec4ae3bf16531af9120cc38244
+  - node: 01a18054-bf15-7113-9ce0-7fb040e2af57
+    reviewed: 1c0ee0d9ba3c1aeb31ce5a4e50732fd9408e6bae2c5e1cde0f40f9821df02e68
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "assignment context names existing tasks and stages without an owned stage"
+        body: 680404cd2092f53c1f315551862aa7b454b45c04bf5cda1829672807a18f0b0c
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:

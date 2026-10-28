@@ -10,7 +10,9 @@ import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } f
 import { HOST } from './contract'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
-import { agentOf, PLUGIN, state } from './state'
+import { agentOf, PLUGIN, prepare, state } from './state'
+import { contextOf } from './context'
+import { actorKey, endAssigned } from './task-writes'
 
 /** Model usage as the page counts it. */
 export function tokensOf(usage: ModelUsage) {
@@ -76,6 +78,7 @@ export function registerEvents(on: On) {
   told = Promise.resolve()
 
   on('turn.start', async ($, e, next) => {
+    state.endedTasks.delete(actorKey({ session: state.sessions[0] ?? await $.session.id(), ...(e.agentId ? { agent: { id: e.agentId, type: '' } } : {}) }))
     tell($, e.agentId, { kind: 'turn.start', turn: e.turnId })
     return next(e)
   })
@@ -100,9 +103,14 @@ export function registerEvents(on: On) {
   })
 
   on('classic.SubagentStart', async ($, e, next) => {
+    state.endedTasks.delete(actorKey({ session: state.sessions[0] ?? e.session_id, agent: { id: e.agent_id, type: e.agent_type } }))
     state.types.set(e.agent_id, e.agent_type)
     starting.set(e.agent_id, { at: timeOf(await $.clock.now()), type: e.agent_type })
-    return next(e)
+    const started = await next(e)
+    const asking = state.isOn ? await prepare($, e.agent_id).catch(() => undefined) : undefined
+    if (!asking) return started
+    const text = contextOf(asking.doc, { sessions: [asking.caller.session], agent: e.agent_id })
+    return { ...started, additionalContext: [...(started.additionalContext ?? []), text] }
   })
 
   on('classic.SubagentStop', async ($, e, next) => {
@@ -126,6 +134,7 @@ export function registerEvents(on: On) {
 
   // Claude Code gives each classic hook the permission mode, however plan mode began or ended.
   on('classic.UserPromptSubmit', async ($, e, next) => {
+    state.endedTasks.delete(actorKey({ session: state.sessions[0] ?? e.session_id }))
     heard($, e)
     return next(e)
   })
@@ -140,8 +149,9 @@ export function registerEvents(on: On) {
 }
 
 /** A turn's end, posted once Claude Code has ended it. */
-export function eventsOfTurnEnd($: EngineInterface, e: TurnCompleteEvent) {
+export async function eventsOfTurnEnd($: EngineInterface, e: TurnCompleteEvent) {
   tell($, e.agentId, { kind: 'turn.end', turn: e.turnId, ...(e.usage ? { tokens: tokensOf(e.usage) } : {}) })
+  await endAssigned($, e.agentId).catch(() => {})
 }
 
 /** A tool call's start and end; the mod's own dialogs are not the agent's calls. */
