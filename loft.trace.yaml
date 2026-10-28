@@ -21865,11 +21865,83 @@ links:
         name: "a question that takes more than one option lets the person choose one or more"
         body: 56886731a6477a5c430042f6a4ebf99f22c62748f9d31f364ecf7ab10790414a
   - node: 01a1646f-546c-7521-9643-bbcb591fde24
-    reviewed: cbafe722d6035b8e6b98719e8f5a6588ca51b9c0926e0dbe2bb64a28ce405635
+    reviewed: 326504f445d1f359e57ecb0be6052b10ed6d53901df2da0ace1f2ed8564c25c3
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
-        name: "a question that allows the person own words offers a text field beside its options"
-        body: cefe20a78d83610cdd7ae97ddf62ec6609e7ca09091d687ab3fc7cdbdf772e02
+        name: "a question that allows own words offers a selectable option with a text field"
+        body: 6518f5482d934853973685a2c4a92974198c50730f7c7eb5caa6a00e34453e41
+  - node: 01a17fef-700e-72d2-a706-77312594a4f4
+    reviewed: 8e8d2348d7f6247fea9df5f30ece6abd091a617bea9097f89375f11fa58a15b9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "typing selects the own words radio and clears named choices without replacing the text field"
+        body: 63f10b9884f6cfee8601c1cd63c439f6012f5f95d23f1f52e934f43f1eb492b7
+  - node: 01a17fef-700e-72d2-a706-7732f76e866c
+    reviewed: 5cd0bd4805a136c639519d75a4e9398b466b693f6289a2d57a9a981531c6b05d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "typing selects the own words radio and clears named choices without replacing the text field"
+        body: 63f10b9884f6cfee8601c1cd63c439f6012f5f95d23f1f52e934f43f1eb492b7
+  - node: 01a17fef-700e-72d2-a706-773322142336
+    reviewed: 1ae9d273dbab085e1ca0415a7d230444a7ee37c4e7c1fe770736734df34d0593
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "a named radio deselects own words while preserving text that is excluded from sending"
+        body: effe4556afc36c7e05fa3303b290cb14a74db2f0e75e320ac4649fe114692080
+  - node: 01a17fef-700e-72d2-a706-77347331ddf4
+    reviewed: 865de136e5b365e27bb2b55c93de827ed39a685e6bb2876bf04672db11dcfc75
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "the own words checkbox combines with named choices and can be unchecked without losing text"
+        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+  - node: 01a17fef-700e-72d2-a706-77352f54f423
+    reviewed: 115f02beaf81dfd088c7952cff8f96a08045e7170f80749de7e0d90fb7f44ff1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "typing selects the own words radio and clears named choices without replacing the text field"
+        body: 63f10b9884f6cfee8601c1cd63c439f6012f5f95d23f1f52e934f43f1eb492b7
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "the own words checkbox combines with named choices and can be unchecked without losing text"
+        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "editing restored unselected text selects the option and sends only the existing answer wire fields"
+        body: b39afe87da9a431bccb59c5bc7a73f26345a207bfb3085180b24b485568e6111
+  - node: 01a17ff3-c7f0-721f-a3ab-a9b0128f8739
+    reviewed: 638067e92ca89ee95bcc9c71b7ebfd1a5a4c7bf82b4e71b1e847e4f69af3c621
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "clearing text keeps the explicit choice selected and prevents sending even alongside named checkboxes"
+        body: a925e05ea0ddc9c3ad21f95f8ffe32e63b8d296fab2f5f4310fcde4864615e9c
+  - node: 01a17fef-700e-72d2-a706-7736415b6f0f
+    reviewed: 3c8c2d91652a7d87399f7e458b22e2490b0e69805908f024f5c98721a7566a9d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "a named radio deselects own words while preserving text that is excluded from sending"
+        body: effe4556afc36c7e05fa3303b290cb14a74db2f0e75e320ac4649fe114692080
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "the own words checkbox combines with named choices and can be unchecked without losing text"
+        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+  - node: 01a17fef-700e-72d2-a706-7737c25c629c
+    reviewed: c5d8a28c7dfc40919e5388ba35cf1ecb200f0a76c5fae309d64d41ad1a77c7e0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "restoring a draft uses explicit selection independently of retained text including legacy drafts"
+        body: 6156677c73706705fa051d93dbb462d16b983540f5ecb367604331781b686ce4
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "legacy text stays unselected until editing and explicit free form selection survives reload"
+        body: 2719b680ece731d51b8eb2f5b1c5b8b6f17acf5d3441341a48b48058e131505e
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "typing selects the free form radio while a later named choice sends no retained text"
+        body: 1f52385efb3bcead738fd17f5c4828fb5f4524e57ec2e6148918172ad3d09cd0
+  - node: 01a17fef-700e-72d2-a706-7738ee244179
+    reviewed: 25aac29037a22bf927e9f0be47a2d255b3908d5de7bf696d93165f6d2159d7d9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "restoring a draft uses explicit selection independently of retained text including legacy drafts"
+        body: 6156677c73706705fa051d93dbb462d16b983540f5ecb367604331781b686ce4
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "legacy text stays unselected until editing and explicit free form selection survives reload"
+        body: 2719b680ece731d51b8eb2f5b1c5b8b6f17acf5d3441341a48b48058e131505e
   - node: 01a1646f-546c-7521-9643-bbcc094ac2d9
     reviewed: 8d2e557fbee5c594f2cc65de35e590ae4ff6b5d241a7dc259c909e3b07c7dfb9
     tests:
@@ -21894,6 +21966,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "accepting the recommendations chooses the recommended options of each question with nothing chosen"
         body: 0f92659706888e56ebb9bee0ecb99070b193e1a07107427da8f0af1780a897d4
+  - node: 01a17fef-700e-72d2-a706-7739303fc425
+    reviewed: 5c887f87652d7855d6e2edc2f707e623367cb4c8486ae8899c91c332c96f3f09
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "recommendations preserve a selected empty own words option but ignore unselected draft text"
+        body: 35e270d0af5670b83c3740683f518d17cfdff645756d5ecc3d752976b123b49b
+  - node: 01a17fef-700e-72d2-a706-773a1b1b20fa
+    reviewed: 152f29a0c6d036706e58f1f48d7c9bfdac91016cff0cb335b6f8898e1f5d2e19
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "recommendations preserve a selected empty own words option but ignore unselected draft text"
+        body: 35e270d0af5670b83c3740683f518d17cfdff645756d5ecc3d752976b123b49b
   - node: 01a1646f-546c-7521-9643-bbd2658be8dc
     reviewed: e6f716082e83653be40d23c9cc0d83f77b1174241897e3ba09a232af54124852
     tests:
@@ -21921,6 +22005,27 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page sends every answer of a submission at once, and shows them given on the page"
         body: 5f27fd36a1ffc4850d0208ed16d38d71504eddb42d42dfa8b2a511f858ee8125
+  - node: 01a17fef-700e-72d2-a706-773bf0bde7e5
+    reviewed: 5b370a348460635fad64bf639f1af68a57bfe55ba727a5c5752633a3a5c9bfdb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "a named radio deselects own words while preserving text that is excluded from sending"
+        body: effe4556afc36c7e05fa3303b290cb14a74db2f0e75e320ac4649fe114692080
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "the own words checkbox combines with named choices and can be unchecked without losing text"
+        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "typing selects the free form radio while a later named choice sends no retained text"
+        body: 1f52385efb3bcead738fd17f5c4828fb5f4524e57ec2e6148918172ad3d09cd0
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "free form checkboxes combine with named choices and keep selection independently of text"
+        body: 1711b40abba192a07d6449193668210ece7dd0d7787c8503c0a0c9dc9c4e1296
+  - node: 01a17fef-700e-72d2-a706-773c0bf9ddcb
+    reviewed: efa06dd5eee9dbc9ca5e3f5b8995aa347d75145a24a2676ecc6989406cd0319d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "clearing text keeps the explicit choice selected and prevents sending even alongside named checkboxes"
+        body: a925e05ea0ddc9c3ad21f95f8ffe32e63b8d296fab2f5f4310fcde4864615e9c
   - node: 01a1646f-546c-7521-9643-bbd62c68dd85
     reviewed: 3fc05ad6fbe036a44dc564d8714bfc8af1ac25166fb92134e3536863f68df4ee
     tests:
@@ -23936,7 +24041,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
         name: "what was chosen or typed and not sent is shown again when the panel opens again"
-        body: 6052679388908d73da61074a7820f1d11b3652b1f947e10f2d5983c8f8e0bce2
+        body: a0081a9f1f2d3113e450d79397401a93025a2aaf74abaa93cd86acb29b7d4693
   - node: 01a1693f-7b72-7290-8335-f17c0c51f112
     reviewed: 7d67045055463590d0e7cb9e3518d41d9ef99c5e95f8004e64c6714148ddf465
     tests:

@@ -534,6 +534,7 @@ button { font: inherit; }
 .choice .badge { grid-column: 2; justify-self: start; }
 .choice-detail { grid-column: 2; color: var(--body); font-size: 14px; }
 .words, .reason { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.own-words .words { padding: 0 8px 8px; }
 textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--rail); padding: 6px 8px; width: 100%; resize: vertical; }
 textarea:focus { border-color: var(--ink); }
 .send-row, .decide-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }

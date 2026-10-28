@@ -1084,3 +1084,95 @@ test('same second submissions from different callers retain arrival order in the
   await modal.locator('#approve-arrival-later').click();
   await expect(modal.locator(`#submission-${later}`)).toBeHidden({ timeout: LIVE });
 });
+
+test('typing selects the free form radio while a later named choice sends no retained text', async ({ page }) => {
+  const id = 'freeform-radio';
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colour?', header: 'Colour', ownWords: true,
+    options: [{ label: 'Red' }, { label: 'Blue' }] }], ['--send']);
+  await page.goto(address());
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const own = panel.getByRole('radio', { name: 'In your own words', exact: true });
+  const text = panel.getByLabel('Your answer', { exact: true });
+  const send = panel.getByRole('button', { name: 'Send answers', exact: true });
+  await panel.getByRole('radio', { name: 'Red', exact: true }).check();
+  await text.fill('Teal');
+  await expect(own).toBeChecked();
+  await expect(panel.getByRole('radio', { name: 'Red', exact: true })).not.toBeChecked();
+  await text.fill('');
+  await expect(own).toBeChecked();
+  await expect(send).toBeDisabled();
+  await text.fill('Teal');
+  await panel.getByRole('radio', { name: 'Blue', exact: true }).check();
+  await expect(own).not.toBeChecked();
+  await expect(text).toHaveValue('Teal');
+  await page.reload();
+  await expect(panel.getByRole('radio', { name: 'Blue', exact: true })).toBeChecked();
+  await expect(own).not.toBeChecked();
+  await expect(text).toHaveValue('Teal');
+  const sending = page.waitForRequest(request => request.url().endsWith('/api/answer') && request.method() === 'POST');
+  await send.click();
+  expect((await sending).postDataJSON().answers).toEqual([{ block: (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key, labels: ['Blue'] }]);
+  await expect(panel).toBeHidden({ timeout: LIVE });
+  const recorded = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).answer;
+  expect(recorded.labels).toEqual(['Blue']);
+  expect(recorded.words).toBeUndefined();
+});
+
+test('legacy text stays unselected until editing and explicit free form selection survives reload', async ({ page }) => {
+  const id = 'freeform-legacy';
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colour?', header: 'Colour', ownWords: true,
+    options: [{ label: 'Red', recommended: true }, { label: 'Blue' }] }], ['--send']);
+  const block = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key;
+  await page.goto(address());
+  await page.evaluate(({ submission, block }) => {
+    localStorage.setItem(`yard.draft.${submission}`, JSON.stringify({ [block]: { labels: [], words: 'Legacy text' } }));
+  }, { submission: sent.submission, block });
+  await page.reload();
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const own = panel.getByRole('radio', { name: 'In your own words', exact: true });
+  const text = panel.getByLabel('Your answer', { exact: true });
+  const send = panel.getByRole('button', { name: 'Send answers', exact: true });
+  await expect(text).toHaveValue('Legacy text');
+  await expect(own).not.toBeChecked();
+  await expect(send).toBeDisabled();
+  await text.fill('Green');
+  await expect(own).toBeChecked();
+  await page.reload();
+  await expect(text).toHaveValue('Green');
+  await expect(own).toBeChecked();
+  const sending = page.waitForRequest(request => request.url().endsWith('/api/answer') && request.method() === 'POST');
+  await send.click();
+  expect((await sending).postDataJSON().answers).toEqual([{ block, labels: [], words: 'Green' }]);
+  await expect(panel).toBeHidden({ timeout: LIVE });
+});
+
+test('free form checkboxes combine with named choices and keep selection independently of text', async ({ page }) => {
+  const id = 'freeform-multi';
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colours?', header: 'Colours', ownWords: true, multiple: true,
+    options: [{ label: 'Red' }, { label: 'Blue' }] }], ['--send']);
+  const block = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key;
+  await page.goto(address());
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const own = panel.getByRole('checkbox', { name: 'In your own words', exact: true });
+  const text = panel.getByLabel('Your answer', { exact: true });
+  const send = panel.getByRole('button', { name: 'Send answers', exact: true });
+  await panel.getByRole('checkbox', { name: 'Red', exact: true }).check();
+  await text.fill('Teal');
+  await expect(own).toBeChecked();
+  await panel.getByRole('checkbox', { name: 'Blue', exact: true }).check();
+  await own.uncheck();
+  await page.reload();
+  await expect(own).not.toBeChecked();
+  await expect(text).toHaveValue('Teal');
+  await expect(panel.getByRole('checkbox', { name: 'Red', exact: true })).toBeChecked();
+  await expect(panel.getByRole('checkbox', { name: 'Blue', exact: true })).toBeChecked();
+  await own.check();
+  await text.fill('');
+  await expect(own).toBeChecked();
+  await expect(send).toBeDisabled();
+  await text.fill('Amber');
+  const sending = page.waitForRequest(request => request.url().endsWith('/api/answer') && request.method() === 'POST');
+  await send.click();
+  expect((await sending).postDataJSON().answers).toEqual([{ block, labels: ['Red', 'Blue'], words: 'Amber' }]);
+  await expect(panel).toBeHidden({ timeout: LIVE });
+});

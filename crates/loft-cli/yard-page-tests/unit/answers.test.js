@@ -49,10 +49,12 @@ test('a question that takes more than one option lets the person choose one or m
   assert.equal(panel.querySelectorAll('input[type=checkbox]').length, 3);
 });
 
-test('a question that allows the person own words offers a text field beside its options', () => {
+test('a question that allows own words offers a selectable option with a text field', () => {
   const asked = question('shelf', ['Top', 'Bottom'], { ownWords: true });
   const panel = submissionPanel({ key: 's', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
   assert.ok(panel.querySelector(`#words-${asked.id}`));
+  assert.equal(panel.querySelector(`#answer-${asked.id}-words`).type, 'radio');
+  assert.equal(panel.querySelectorAll('input[type=radio]').length, 3);
   const draft = say({}, asked, 'The window sill');
   assert.ok(readyToSend(draft, [asked]));
   assert.deepEqual(toSend(draft, [asked]), [{ block: asked.key, labels: [], words: 'The window sill' }]);

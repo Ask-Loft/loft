@@ -4,7 +4,7 @@
 export const PLAN_APPROVAL = "Approving authorizes the planned work, subject to the agent's mode and permissions.";
 
 /**
- * @typedef {{ labels: string[], words?: string }} Answer
+ * @typedef {{ labels: string[], words?: string, ownWordsSelected?: boolean }} Answer
  * @typedef {{ verdict: 'approved' | 'rejected', reason?: string }} Verdict
  * @typedef {Record<string, Answer>} Draft
  */
@@ -37,18 +37,39 @@ export function choose(draft, block, label) {
   } else {
     labels = [label];
   }
-  return { ...draft, [block.key]: { ...answer, labels } };
+  const selected = !block.version.body.multiple && block.version.body.ownWords
+    ? { ownWordsSelected: false } : {};
+  return { ...draft, [block.key]: { ...answer, labels, ...selected } };
 }
 
 /**
- * The draft with the person's own words for the question `block`.
+ * Selects the own-words radio or toggles its checkbox, independently of retained text.
+ * @param {Draft} draft
+ * @param {any} block
+ * @returns {Draft}
+ */
+export function chooseOwnWords(draft, block) {
+  if (!block.version.body.ownWords) return draft;
+  const answer = answerOf(draft, block.key);
+  const multiple = block.version.body.multiple;
+  return { ...draft, [block.key]: { ...answer,
+    labels: multiple ? answer.labels : [],
+    ownWordsSelected: multiple ? answer.ownWordsSelected !== true : true,
+  } };
+}
+
+/**
+ * Editing the person's own words selects their option, including when the edit clears text.
  * @param {Draft} draft
  * @param {any} block
  * @param {string} words
  * @returns {Draft}
  */
 export function say(draft, block, words) {
-  return { ...draft, [block.key]: { ...answerOf(draft, block.key), words } };
+  const answer = answerOf(draft, block.key);
+  const selected = block.version.body.ownWords
+    ? { ownWordsSelected: true, labels: block.version.body.multiple ? answer.labels : [] } : {};
+  return { ...draft, [block.key]: { ...answer, words, ...selected } };
 }
 
 /**
@@ -61,7 +82,9 @@ export function say(draft, block, words) {
 export function acceptRecommendations(draft, questions) {
   let next = { ...draft };
   for (const block of questions) {
-    if (block.kind !== 'question' || isAnswered(next, block)) continue;
+    if (block.kind !== 'question') continue;
+    const answer = answerOf(next, block.key);
+    if (answer.labels.length || (block.version.body.ownWords && answer.ownWordsSelected === true)) continue;
     const recommended = block.version.body.options
       .filter((option) => option.recommended)
       .map((option) => option.label);
@@ -73,15 +96,14 @@ export function acceptRecommendations(draft, questions) {
 }
 
 /**
- * Whether a draft answers the question `block`: an option chosen, or words given where the
- * question allows them.
+ * Whether the selected answer is valid: a chosen own-words option needs non-blank text.
  * @param {Draft} draft
  * @param {any} block
  */
 export function isAnswered(draft, block) {
   const answer = answerOf(draft, block.key);
-  const words = block.version.body.ownWords && (answer.words ?? '').trim() !== '';
-  return answer.labels.length > 0 || Boolean(words);
+  if (block.version.body.ownWords && answer.ownWordsSelected === true) return (answer.words ?? '').trim() !== '';
+  return answer.labels.length > 0;
 }
 
 /**
@@ -106,7 +128,7 @@ export function toSend(draft, questions) {
       const answer = answerOf(draft, block.key);
       const sent = { block: block.key, labels: answer.labels };
       const words = (answer.words ?? '').trim();
-      return words ? { ...sent, words } : sent;
+      return block.version.body.ownWords && answer.ownWordsSelected === true && words ? { ...sent, words } : sent;
     });
 }
 
