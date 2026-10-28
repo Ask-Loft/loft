@@ -737,6 +737,10 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .session-rule { width: 0; border-left: 1px dashed var(--muted); pointer-events: auto; padding-left: 3px; }
 .gantt-row { height: var(--row); }
 .task-row { height: var(--task-row); }
+.task-row--assigned { height: 32px; }
+.task-row--assigned .name-cell { display: block; padding-top: 1px; }
+.task-assignee { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.task-row .task-assignee { display: block; margin: 0; padding: 0 8px 0 26px; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stage-row { border-top: 1px solid color-mix(in srgb, var(--rail) 60%, transparent); }
 .name-cell { position: sticky; left: 0; z-index: 6; display: flex; align-items: center; min-width: 0; background: var(--lane-bg); border-right: 1px solid var(--line); }
 .lane-label { padding: 0 8px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -8,7 +8,7 @@
 // kept in this browser. Choosing a stage, a task or a submission opens the timeline at it.
 
 import { h } from '../lib/dom.js';
-import { length, when } from '../lib/format.js';
+import { assignee, length, when } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import * as prefs from '../lib/prefs.js';
 import { separator } from '../lib/separator.js';
@@ -340,13 +340,19 @@ function stageRows(row, draw) {
       const listedTo = task.activeFrom ?? task.to;
       return h(
         'div',
-        { class: ['gantt-row', 'task-row', task.fix ? 'task-row--fix' : null] },
-        h('div', { class: 'name-cell' }, h('button', { type: 'button', class: 'task-name', title: task.title, ...draw.pick(task.id) }, task.title)),
+        { class: ['gantt-row', 'task-row', task.fix ? 'task-row--fix' : null, task.assignee ? 'task-row--assigned' : null] },
+        h('div', { class: 'name-cell' },
+          h('button', { type: 'button', class: 'task-name', title: task.title, ...draw.pick(task.id) }, task.title),
+          task.assignee ? h('small', { class: 'task-assignee', title: `Assigned to ${assignee(task.assignee)}` }, `Assigned to ${assignee(task.assignee)}`) : null,
+        ),
         h(
           'div',
           { class: 'track-cell' },
           h('span', { class: 'task-listed', style: draw.span(task.from, listedTo) }),
-          task.activeFrom !== null ? h('span', { class: 'task-active', style: draw.span(task.activeFrom, task.to) }) : null,
+          task.active.map((execution) => h('span', {
+            class: 'task-active', style: draw.span(execution.from, execution.to),
+            title: `Execution${execution.assignee ? ` by ${assignee(execution.assignee)}` : ''}: ${length(execution.to - execution.from)}`,
+          })),
           task.done ? h('span', { class: 'task-done', style: draw.left(task.to) }) : null,
           h('button', {
             type: 'button',

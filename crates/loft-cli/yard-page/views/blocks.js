@@ -4,7 +4,7 @@
 // version and when, and its earlier versions.
 
 import { h, html, markdown } from '../lib/dom.js';
-import { count, when, who } from '../lib/format.js';
+import { assignee, count, when, who } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import { PLAN_APPROVAL } from '../model/answers.js';
 import { loftView } from './loft/index.js';
@@ -274,6 +274,7 @@ function task(block) {
       body.type === 'fix' ? h('span', { class: ['task-type', 'task-type--fix'], title: 'A fix the person asked for' }, 'Fix') : null,
       h('h4', {}, body.title),
     ),
+    body.assignee ? h('p', { class: 'task-assignee' }, `Assigned to ${assignee(body.assignee)}`) : null,
     markdown(body.detailHtml, body.detail, 'detail'),
   ];
 }

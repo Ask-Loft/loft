@@ -4,7 +4,7 @@
 
 import { expect, test } from '@playwright/test';
 
-import { address, answerInTerminal, historicalCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, writeOther } from './yard.js';
+import { atEpoch, address, answerInTerminal, historicalCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, writeOther } from './yard.js';
 
 /** Live changes reach an open page within this many milliseconds. */
 const LIVE = 2000;
@@ -1213,4 +1213,52 @@ test('token details start closed and keyboard choices survive live counts and re
   await expect(totals).toBeVisible();
   await expect(details).not.toHaveAttribute('open', '');
   await expect(section.locator('.tokens-table')).toBeHidden();
+});
+
+
+test('delegated tasks stay in their owner stage through parallel execution, interruption and reassignment', async ({ page }) => {
+  const epoch = Math.floor(Date.now() / 1000) - 90;
+  const session = 'delegation-browser';
+  const owner = ['--session', session];
+  const actor = (host, agent) => ({ host, session, agent, agentType: 'builder' });
+  const a = { id: 'delegated-a', kind: 'task', stage: 'delegated-stage', title: 'Delegated A', state: 'open', assignee: actor('codex', 'worker-a') };
+  const b = { id: 'delegated-b', kind: 'task', stage: 'delegated-stage', title: 'Delegated B', state: 'open', assignee: actor('claude-code', 'worker-b') };
+  atEpoch(['write', ...owner], [{ id: 'delegated-stage', kind: 'stage', title: 'Delegated build', status: 'active' }, a, b], epoch);
+  atEpoch(['write', ...owner, '--host', 'codex', '--agent', 'worker-a', '--agent-type', 'builder'], [{ ...a, state: 'active' }], epoch + 5);
+  atEpoch(['write', ...owner, '--agent', 'worker-b', '--agent-type', 'builder'], [{ ...b, state: 'active' }], epoch + 10);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  const original = page.locator('#block-delegated-stage');
+  const card = original.locator('#block-delegated-a');
+  await expect(card.locator('.task-assignee')).toHaveText('Assigned to codex / delegation-browser / worker-a (builder)');
+  await expect(original.locator(':scope > summary .owner')).toHaveText('main agent');
+  const end = { session_id: session, cwd: setup.tree, hook_event_name: 'SubagentStop', agent_id: 'worker-a', agent_type: 'builder' };
+  atEpoch(['codex', 'hook'], end, epoch + 20);
+  await expect(card.locator('.state')).toHaveText('Open', { timeout: LIVE });
+  const held = (await read()).stages.flatMap(stage => stage.blocks).find(block => block.id === a.id);
+  expect(held.executions).toHaveLength(1);
+  expect(held.executions[0].ended).toBe(new Date((epoch + 20) * 1000).toISOString().replace('.000', ''));
+  const reassigned = { ...a, assignee: actor('claude-code', 'worker-c'), state: 'active' };
+  atEpoch(['write', ...owner], [
+    { id: 'delegated-stage', kind: 'stage', title: 'Delegated build', status: 'planned' },
+    { id: 'delegated-next', kind: 'stage', title: 'Next work', status: 'active' }, reassigned,
+  ], epoch + 25);
+  const revision = (await read()).revision;
+  atEpoch(['codex', 'hook'], end, epoch + 26);
+  expect((await read()).revision).toBe(revision);
+  await page.getByRole('button', { name: 'Gantt chart', exact: true }).click();
+  const aRow = page.locator('.task-row').filter({ has: page.getByRole('button', { name: 'Delegated A', exact: true }) });
+  const bRow = page.locator('.task-row').filter({ has: page.getByRole('button', { name: 'Delegated B', exact: true }) });
+  await expect(aRow.locator('.task-assignee')).toContainText('worker-c', { timeout: LIVE });
+  await expect(aRow.locator('.task-active')).toHaveCount(2);
+  await expect(bRow.locator('.task-active')).toHaveCount(1);
+  const active = aRow.locator('.task-active').first();
+  await expect(active).toHaveAttribute('title', /worker-a.*15 s/);
+  atEpoch(['write', ...owner, '--agent', 'worker-c', '--agent-type', 'builder'], [{ ...reassigned, state: 'done' }], epoch + 40);
+  await expect(aRow.locator('.task-done')).toHaveCount(1, { timeout: LIVE });
+  await expect(aRow.locator('.task-active').last()).toHaveAttribute('title', /worker-c.*15 s/);
+  await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  await expect(original.locator('#block-delegated-a .task-assignee')).toContainText('worker-c');
+  expect(await page.locator('#block-delegated-next #block-delegated-a').count()).toBe(0);
 });

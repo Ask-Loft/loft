@@ -11,6 +11,7 @@ import { ms } from '../lib/format.js';
  *   version: { key: string, number: number, act: Act, arrived?: any, body: any },
  *   versions?: any[], versionCount: number, answer?: any, outcome?: any, responses?: any[],
  *   times?: { listed?: string, started?: string, ended?: string }, owner?: Actor,
+ *   executions?: { started: string, ended?: string, assignee?: Actor }[],
  *   reached: number, blocks?: Block[] }} Block
  * @typedef {{ key: string, state: string, blocks: string[], sent: Act, sentReached?: number, agent?: Actor }} Submission
  * @typedef {{ mode: 'plan' | 'spec', started: string, ended?: string }} Stretch

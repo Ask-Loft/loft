@@ -65,6 +65,14 @@ export function who(by) {
   return 'main agent';
 }
 
+/** The full execution identity, kept separate from a stage's owner and version author.
+ * @param {Actor} by
+ */
+export function assignee(by) {
+  const identity = [by.host ?? 'claude-code', by.session, by.agent ?? 'main'].join(' / ');
+  return by.agentType ? `${identity} (${by.agentType})` : identity;
+}
+
 /**
  * The agent an actor names, as one key: its session, and its subagent where it is one.
  * @param {Actor | undefined} by

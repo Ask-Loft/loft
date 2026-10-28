@@ -23178,6 +23178,45 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "an_ambiguous_end_cannot_open_another_actors_active_assignment"
         body: 119e14084883a14014fc0384550b797c8d785bed719493f45a04aaed20f650c7
+  - node: 01a18053-9e08-72a7-ab94-f3cd1556846f
+    reviewed: ab0fcc31148ec45734b51b359a9981ed13e81d86892659aa89afbd2495d0faeb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/delegation.test.js"
+        name: "concurrent assignments keep separate bars beneath the original stage after the owner moves on"
+        body: 303c07cb541a6a749a6f028fd455a74609fccf29ea0e5faf9fddc0357d160409
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "delegated tasks stay in their owner stage through parallel execution, interruption and reassignment"
+        body: 58cf07f2a4982adef06525be9b4b91540c82f3a452f2807abb8f08dc225137fb
+  - node: 01a18053-9e08-72a7-ab94-f3cec5239069
+    reviewed: 8bafe83cd2bc84721ba3640c1cd4d6f4cb1ada8683566b7b5500f9d8cc69f760
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/delegation.test.js"
+        name: "a task card distinguishes the assignee from the stage owner and version author"
+        body: 5b4c16596678e8210e4a9de0300af815214fc680ab70241e86d4b044378d8c7f
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "delegated tasks stay in their owner stage through parallel execution, interruption and reassignment"
+        body: 58cf07f2a4982adef06525be9b4b91540c82f3a452f2807abb8f08dc225137fb
+  - node: 01a18053-9e08-72a7-ab94-f3cfc5b103f2
+    reviewed: 89122422c6d6b0fb768aa30e33e5a9f9f97410fe2c8d63e06eb82ee03e681465
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/delegation.test.js"
+        name: "concurrent assignments keep separate bars beneath the original stage after the owner moves on"
+        body: 303c07cb541a6a749a6f028fd455a74609fccf29ea0e5faf9fddc0357d160409
+  - node: 01a18053-9e08-72a7-ab94-f3d041b93742
+    reviewed: 7c3a6902ee7209b6b6e3aa909e5720e1bcf932a64aa3e7a05ff1ed8be58389ce
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/delegation.test.js"
+        name: "overlapping assignments count elapsed execution once in the total work"
+        body: 030de9de022b26774ce03cbb9d73648feca2e8dff2a4354fb8df2120cf14ad14
+  - node: 01a18054-bf15-7113-9ce0-7fac802e6dcf
+    reviewed: ccbf05e0bc0591602a291317c63b95dd3d4ed0ec9d69f2d887abe1b885bbfd58
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/delegation.test.js"
+        name: "returning to open ends active paint and a later execution leaves the pause visible"
+        body: 540728d46c2fb1985ddbc5c0463ad070b3bd6de4fdd2b53dd80e9bfbde25ab67
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "delegated tasks stay in their owner stage through parallel execution, interruption and reassignment"
+        body: 58cf07f2a4982adef06525be9b4b91540c82f3a452f2807abb8f08dc225137fb
   - node: 01a18054-bf15-7113-9ce0-7fae57e0bb10
     reviewed: fdc32fccdeeacd6d6d4d8de36ee37b897ce6935ca9a2c995c0baa4ebb723c5b4
     tests:

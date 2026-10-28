@@ -193,6 +193,23 @@ with a fallback under `~/.yard/codex/`. The on-demand native contract requires C
 Python 3 and uses a loopback model fixture, with no API account:
 `cargo nextest run -p loft-cli --run-ignored only -E 'test(real_codex_hooks)'`.
 
+Tasks can be assigned explicitly to another agent while staying in their original stage. Set a
+task's `assignee` to `{ "host": "codex", "session": "SESSION", "agent": "AGENT", "agentType": "TYPE" }`
+(without the agent fields for a main agent). The stage owner or current assignee can reassign or
+release unfinished work; a worker can claim an unassigned task for itself. Read the latest
+revision before writing. The page identifies the assignee separately from the stage owner and
+keeps separate execution attempts and concurrent task bars without counting overlapping time twice.
+
+After assignment, Claude native task operations bind with `metadata.yardTask: "TASK-ID"` on
+every update. Codex native plan steps bind with `[yard:TASK-ID] Local wording`. These references
+update the existing task in its original stage, without requiring the worker to own a stage.
+Unbound native tasks retain their normal mirroring behavior. An observed end or interruption
+returns active assignments to open, retaining the assignee; it never marks unfinished work done.
+Activity and reported tokens use the assigned task's stage where unambiguous. Active assignments
+in different stages remain unassigned to a stage unless an event explicitly identifies a current
+assignment; reported counters still contribute to session totals. Restart agent sessions to load
+updated adapter hooks, and refresh the Yard page after rebuilding the server.
+
 The Yard skill is composed from a shared workflow and each host's adaptation under
 `crates/loft-cli/skill/yard/`. `scripts/package-skill.sh` updates both plugin packages alongside
 the specification skill. Standalone `loft skill install` installs the specification skill;

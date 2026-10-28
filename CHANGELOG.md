@@ -5,6 +5,12 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Tasks can be assigned to agents independently of stage ownership, including parallel subagents
+  within a main agent's stage. Claude task metadata and Codex plan-step prefixes bind native
+  progress to existing tasks. Reassignment guards protect progress; observed ends return active
+  work to open. The page shows assignees and separate execution attempts, and activity and tokens
+  follow the assigned task's stage where unambiguous without duplicating elapsed time.
+
 - Both dogfood launch commands rebuild Loft and restart the shared Yard server on port 7412
   before starting the agent, including same-version rebuilds. Concurrent launches serialize;
   existing sessions reconnect, and a failed build leaves the running server alone.

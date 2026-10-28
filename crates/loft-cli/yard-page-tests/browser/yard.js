@@ -124,3 +124,9 @@ export function historicalCodexTotals() {
   writeFileSync(path, text);
   return { path, text, read: () => readFileSync(path, 'utf8') };
 }
+
+/** Runs a command as the named caller with the simulated clock fixed to `epoch`. */
+export function atEpoch(args, input, epoch) {
+  const driver = { ...setup.driver, env: { ...setup.driver.env, SOURCE_DATE_EPOCH: String(epoch) } };
+  return yard(driver, args, input);
+}
