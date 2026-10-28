@@ -3,6 +3,7 @@
 use std::collections::BTreeMap;
 
 use serde_json::json;
+use yardlog::identity::SessionKey;
 use yardlog::{Agent, YardLog};
 
 use crate::common::{context, opened, write};
@@ -39,4 +40,40 @@ fn identical_session_and_subagent_ids_in_two_hosts_keep_their_own_active_stages(
     }
     assert_eq!(Agent::main("same"), Agent::main_in("claude-code", "same"));
     assert_eq!(Agent::sub("same", "sub", "reader"), agents[1]);
+}
+
+#[test]
+fn a_session_key_reads_back_as_the_host_and_session_it_was_made_from() {
+    for (host, session, stored) in [
+        ("claude-code", "abc-1", "abc-1"),
+        ("codex", "019a-77", "codex~019a-77"),
+        ("other-agent", "same", "other-agent~same"),
+    ] {
+        let key = SessionKey::new(host, session);
+        assert_eq!(key.to_string(), stored);
+        assert_eq!(yardlog::identity::session_key(host, session), stored);
+        let read = SessionKey::parse(stored);
+        assert_eq!(read, key);
+        assert_eq!((read.host(), read.session()), (host, session));
+        assert!(read.is_valid());
+    }
+    assert_ne!(
+        SessionKey::new("claude-code", "same").to_string(),
+        SessionKey::new("codex", "same").to_string()
+    );
+}
+
+#[test]
+fn a_session_key_with_an_unusable_host_or_session_cannot_name_a_file() {
+    for stored in [
+        "",
+        "Codex~abc",
+        "codex~",
+        "codex~.hidden",
+        "codex~a/b",
+        "../x",
+    ] {
+        assert!(!SessionKey::parse(stored).is_valid(), "{stored}");
+    }
+    assert_eq!(SessionKey::parse("codex~a~b").session(), "a~b");
 }

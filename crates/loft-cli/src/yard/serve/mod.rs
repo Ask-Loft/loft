@@ -38,9 +38,9 @@ use std::time::Duration;
 
 use loft_ports::clock::Clock as _;
 use serde_json::{Value, json};
+use yardlog::identity::is_session_id;
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::lock::{self, Locked};
-use yardlog_store::session::is_session_id;
 
 use super::args::ServeArgs;
 use super::failure::Failure;

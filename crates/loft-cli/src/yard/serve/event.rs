@@ -6,7 +6,7 @@
 use loftspec::yaml::Out;
 use serde_json::Value;
 use yardlog::Time;
-use yardlog_store::session::is_session_id;
+use yardlog::identity::is_session_id;
 
 use super::event_ids::Receipt;
 

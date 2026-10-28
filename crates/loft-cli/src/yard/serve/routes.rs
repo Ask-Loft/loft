@@ -29,7 +29,7 @@ use super::stream::stream;
 use super::trees;
 use crate::yard::failure::Failure;
 use crate::yard::{protocol, sessions};
-use yardlog_store::session::is_session_id;
+use yardlog::identity::is_session_id;
 
 /// Answers the one request `connection` carries.
 pub fn handle(server: &Server, mut connection: Connection) {

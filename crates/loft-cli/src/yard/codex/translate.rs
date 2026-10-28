@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use serde_json::{Value, json};
-use yardlog_store::session::is_session_id;
+use yardlog::identity::is_session_id;
 
 use super::Result;
 use super::commands::Caller;

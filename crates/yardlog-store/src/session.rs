@@ -11,6 +11,7 @@ use loft_ports::io_error;
 use loft_ports::sync::replace_synced;
 use yardlog::codec::ROOT;
 use yardlog::codec::session::{ACTIVITY, TOKENS};
+use yardlog::identity::SessionKey;
 
 use crate::files::YARD;
 use crate::{YardStore, YardStoreError};
@@ -34,17 +35,7 @@ impl SessionFile {
     }
 }
 
-/// Whether `session` can name a file: letters, digits, `.`, `_` and `-`, not starting with a
-/// `.`, and at most 128 of them, so that no session id reaches outside its folder.
-#[must_use]
-pub fn is_session_id(session: &str) -> bool {
-    !session.is_empty()
-        && session.len() <= 128
-        && !session.starts_with('.')
-        && session
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || b"._-".contains(&byte))
-}
+pub use yardlog::identity::is_session_id;
 
 impl YardStore {
     /// The path of a session's file in Yard Log's folder.
@@ -67,11 +58,7 @@ impl YardStore {
         session: &str,
         bytes: &[u8],
     ) -> Result<(), YardStoreError> {
-        let valid = match session.split_once('~') {
-            Some((host, id)) => yardlog::identity::is_host_id(host) && is_session_id(id),
-            None => is_session_id(session),
-        };
-        if !valid {
+        if !SessionKey::parse(session).is_valid() {
             return Err(YardStoreError::Session(session.to_owned()));
         }
         let path = self.session_path(file, session);

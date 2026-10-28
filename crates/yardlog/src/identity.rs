@@ -64,9 +64,59 @@ pub fn is_host_id(host: &str) -> bool {
 /// The storage identity of a host's session. The original session stays in each record.
 #[must_use]
 pub fn session_key(host: &str, session: &str) -> String {
-    if host == CLAUDE_CODE {
-        session.to_owned()
-    } else {
-        format!("{host}~{session}")
+    SessionKey::new(host, session).to_string()
+}
+
+/// A host's session as machine-local records name it: `host~session`, or the bare session for
+/// Claude Code, whose records predate other hosts.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct SessionKey {
+    host: String,
+    session: String,
+}
+
+impl SessionKey {
+    #[must_use]
+    pub fn new(host: &str, session: &str) -> Self {
+        Self {
+            host: host.to_owned(),
+            session: session.to_owned(),
+        }
+    }
+
+    /// Reads a stored key: what precedes the first `~` is its host, and a key without one is
+    /// Claude Code's.
+    #[must_use]
+    pub fn parse(key: &str) -> Self {
+        match key.split_once('~') {
+            Some((host, session)) => Self::new(host, session),
+            None => Self::new(CLAUDE_CODE, key),
+        }
+    }
+
+    #[must_use]
+    pub fn host(&self) -> &str {
+        &self.host
+    }
+
+    #[must_use]
+    pub fn session(&self) -> &str {
+        &self.session
+    }
+
+    /// Whether the key can name a file: a valid host and a valid session id.
+    #[must_use]
+    pub fn is_valid(&self) -> bool {
+        is_host_id(&self.host) && is_session_id(&self.session)
+    }
+}
+
+impl std::fmt::Display for SessionKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.host == CLAUDE_CODE {
+            f.write_str(&self.session)
+        } else {
+            write!(f, "{}~{}", self.host, self.session)
+        }
     }
 }

@@ -4,7 +4,7 @@
 //! continuations and the revisions last read are the machine's, kept in `~/.yard/`.
 
 use serde_json::{Map, Value, json};
-use yardlog::identity::session_key;
+use yardlog::identity::{SessionKey, session_key};
 use yardlog::{Actor, Agent, YardLogKey};
 use yardlog_store::home::{Home, HomeFile};
 
@@ -118,17 +118,13 @@ impl Continuations {
     }
 
     /// The session that continues `session`, where one does.
-    pub fn continued_by(&self, host: &str, session: &str) -> Option<&str> {
+    pub fn continued_by(&self, host: &str, session: &str) -> Option<String> {
         self.0
             .iter()
-            .find(|(next, ended)| {
-                let same_host = host_of(next) == host;
-                same_host && ended.as_str() == Some(session)
-            })
-            .map(|(next, _)| {
-                next.strip_prefix(&format!("{host}~"))
-                    .unwrap_or(next.as_str())
-            })
+            .filter(|(_, ended)| ended.as_str() == Some(session))
+            .map(|(next, _)| SessionKey::parse(next))
+            .find(|next| next.host() == host)
+            .map(|next| next.session().to_owned())
     }
 
     /// Who an Act's actor counts as, where an agent made it.
@@ -169,7 +165,7 @@ impl<'a> LastRead<'a> {
         Ok(own.or_else(|| {
             readers
                 .iter()
-                .filter(|(name, _)| host_of(name) == reader.host)
+                .filter(|(name, _)| SessionKey::parse(name).host() == reader.host)
                 .filter_map(|(_, value)| value.as_u64())
                 .max()
         }))
@@ -194,10 +190,4 @@ impl<'a> LastRead<'a> {
         })?;
         Ok(())
     }
-}
-
-/// The namespace of a stored session or reader; unqualified legacy keys belong to Claude.
-fn host_of(key: &str) -> &str {
-    key.split_once('~')
-        .map_or(yardlog::act::CLAUDE_CODE, |(host, _)| host)
 }

@@ -19377,6 +19377,9 @@ links:
       - file: "crates/yardlog/tests/identity.rs"
         name: "identical_session_and_subagent_ids_in_two_hosts_keep_their_own_active_stages"
         body: 53abb0d9c4dcdb343f700f464a46b9bdafa1f97d9db850cdf4e8f5ed31889568
+      - file: "crates/yardlog/tests/identity.rs"
+        name: "a_session_key_reads_back_as_the_host_and_session_it_was_made_from"
+        body: ef916ded66ee8c469fb3592876356abe5374aec7e18664fec3c77737aa7aaf9b
   - node: 01a177f9-8294-77e4-aa6e-7068d4ac1774
     reviewed: 8245d75e02ce101cd5b8ff5759815b8eb2c8d5481d53b7b810c98970973bb8f2
     tests:
