@@ -58,11 +58,16 @@ requirements:
   - key: 01a1835b-a222-7677-8e34-d52ea28fec32
     statement:
       form: event_driven
-      when: "`loft yard upgrade` rewrites a Codex session's totals file"
+      when: "`loft yard upgrade` finds, in a Codex session's events in `~/.yard/events/` that count toward an open Yard Log, a model request whose tokens hold a zero cache-write count that no verified API-key account reported"
       system: "`loft yard upgrade`"
-      shall: "move each zero cache-write count of that session's request events in `~/.yard/events/` that no verified API-key account reported under `usageSource.reported`."
+      shall: "move that count under the event's `usageSource.reported`, whether or not the session's totals file carries `cacheWriteClassified`."
+    body: "The Codex adapter no longer posts such a count in a request's tokens, so an event that holds one was posted before it classified cache writes at the source, and moving it once leaves nothing to move on a second run. Totals files an older page server already marked keep their counts, yet their events are moved, so that a replay after a resumed session counts them as the totals do."
     criteria:
       - key: 01a1835b-a222-7677-8e34-d52f17634aa3
         name: "Replaying the session's events after the upgrade gives the totals the upgrade wrote."
       - key: 01a1835b-a222-7677-8e34-d530298dfd95
         name: "Each rewritten event keeps its event identity, so a retry of it is still recognized."
+      - key: 01a1838b-6fc9-778b-82be-c3b09a65599b
+        name: "The events of a Codex session whose totals file already carries `cacheWriteClassified` are moved, and its totals file is left as it was."
+      - key: 01a1838b-6fc9-778b-82be-c3b15f337a17
+        name: "A second run moves no event."
