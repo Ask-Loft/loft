@@ -21,7 +21,7 @@ fn adaptation() -> String {
 }
 
 #[test]
-fn the_codex_yard_package_equals_the_shared_source_with_only_its_codex_adaptation() {
+fn the_codex_yard_package_opens_with_the_shared_source_and_ends_with_its_codex_adaptation() {
     let shared = read(&format!("{SOURCE}/SKILL.md"));
     let adapted = read(&format!("{SOURCE}/agents/codex.md"));
     let package = read(&format!("{PACKAGE}/SKILL.md"));

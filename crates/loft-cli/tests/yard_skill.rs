@@ -71,7 +71,7 @@ fn the_claude_yard_adaptation_holds_the_native_tools_dialogs_tasks_and_planning(
 }
 
 #[test]
-fn the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptation() {
+fn the_committed_yard_package_opens_with_the_shared_source_and_ends_with_its_claude_adaptation() {
     let package = read(&format!("{SKILL}/SKILL.md"));
     assert!(package.starts_with(&read(&format!("{SOURCE}/SKILL.md"))));
     assert!(package.ends_with(&read(&format!("{SOURCE}/agents/claude.md"))));

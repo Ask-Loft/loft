@@ -19348,8 +19348,8 @@ links:
     reviewed: 7d50a000b94b285c708139c31db7bbf9d1c28922e9abfc0eb84650462a75737c
     tests:
       - file: "crates/loft-cli/tests/yard_skill.rs"
-        name: "the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptation"
-        body: 4e90dbd00a6b3f79370e383dccad0a9b2d7eaacf8fb5be1e055cd18a014a3a30
+        name: "the_committed_yard_package_opens_with_the_shared_source_and_ends_with_its_claude_adaptation"
+        body: 87b9d71092b1b35a36ad872e0516b9b0e88a5ca5a3db49a3c4e3343024375dd2
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "yard_is_packaged_for_each_adapter_but_not_installed_as_a_standalone_skill"
         body: 84795bcf4521ab0996adff173da409e9c66644765160686bda092166947d8bb2
@@ -19372,8 +19372,8 @@ links:
     reviewed: 62d4ee13fff906105387ea4a9a28965ef04bcebbb8457023a4f0e52eaf31473f
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
-        name: "the_codex_yard_package_equals_the_shared_source_with_only_its_codex_adaptation"
-        body: 2d42f327a9e49d21d0c356190e0945f721b2920ca84d3ce1a4722ed8333666bb
+        name: "the_codex_yard_package_opens_with_the_shared_source_and_ends_with_its_codex_adaptation"
+        body: d888c6eafa1440521060a54d95d599df61ba255f4adf9d426a12d12692bf329e
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
         body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
