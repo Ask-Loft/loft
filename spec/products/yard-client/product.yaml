@@ -60,6 +60,7 @@ featureGroups:
       - 01a1646f-546d-7042-befd-ea74e4eb698c
       - 01a1646f-546d-7042-befd-ea8ce9a4adcc
       - 01a16621-e7bc-7707-b123-216501e46cf7
+      - 01a18053-9e08-72a7-ab94-f3ac99efc18e
   - key: 01a16469-55a3-716f-a42c-3a3a30aba3c5
     slug: upgrades
     name: "Upgrades"

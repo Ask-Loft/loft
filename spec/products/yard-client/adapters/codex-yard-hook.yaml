@@ -61,7 +61,7 @@ requirements:
   - key: 01a1787c-f803-70b1-b946-b702bab29a35
     statement:
       form: event_driven
-      when: "a successful update_plan hook supplies plan steps for an identified agent"
+      when: "a successful update_plan hook supplies unbound plan steps for an identified agent"
       system: "the Codex Yard adapter"
       shall: "mirror the steps as tasks in that agent's active stage through Yard commands."
     criteria:
@@ -78,7 +78,7 @@ requirements:
       - key: 01a1787c-f803-70b1-b946-b708e98ffd86
         name: "A mirrored task preserves an explicitly written fix classification."
       - key: 01a1787c-f803-70b1-b946-b7099cf2b7ad
-        name: "A failed call, malformed step or missing active stage produces no task write."
+        name: "A failed call, malformed step or missing active stage produces no unbound task write."
       - key: 01a1787c-f803-70b1-b946-b70a6477a613
         name: "Repeating an unchanged plan creates no task versions."
       - key: 01a1787c-f803-70b1-b946-b70b5d8c32a4

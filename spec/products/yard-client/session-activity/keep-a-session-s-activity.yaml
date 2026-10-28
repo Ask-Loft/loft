@@ -31,7 +31,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eaf39c9c8fa0
         name: "Each subagent's run is kept with its agent id, its type, the time it started and the time it ended."
       - key: 01a16995-313c-7343-8413-b55299748fdd
-        name: "Each subagent's run is kept with the stage active for its session's main agent as the run started, where the main agent had one active."
+        name: "Each subagent's run is kept with its unambiguous delegated-task stage context as the run started, or with its session's main agent's active stage where no delegated-task context exists."
       - key: 01a1646f-546d-7042-befd-eaf4217a481b
         name: "A turn already under way when Yard Log opened is kept from the session's first recorded event."
       - key: 01a1646f-546d-7042-befd-eaf5bc56ffef

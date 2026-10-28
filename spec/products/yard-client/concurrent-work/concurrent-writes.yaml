@@ -4,7 +4,7 @@ name: "Concurrent writes"
 body: |
   Agents that write one Yard Log at once never lose each other's work, and agents that write different Yard Logs never wait on each other. A write takes its Yard Log's lock only for as long as the write lasts, and is refused only where it would overwrite a block that another agent changed since the writer last read it.
 
-  Parallel subagents each work through their own stage, so one stage is active for each agent rather than one for the branch's whole Yard Log. A submission belongs to the agent that sent it, so that each agent's wait returns its own answers.
+  Agents can own separate stages, or execute assigned tasks in another agent's stage. The limit of one active stage per agent leaves several agents free to execute different tasks in one stage at once. A submission belongs to the agent that sent it, so that each agent's wait returns its own answers.
 realizes:
   - 01a16469-559e-73c4-85f2-71a7729da1ec
   - 01a16469-559e-73c4-85f2-71b305365c69

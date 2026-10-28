@@ -26,7 +26,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc8124f7fe40
         name: "The skill says to give each stage a goal that names what the step leaves done."
       - key: 01a1646f-546c-7521-9643-bc82fcce2ab4
-        name: "The skill says that each agent has its own active stage, so that a subagent opens a stage of its own."
+        name: "The skill says that a subagent executing an assigned task keeps it in its recorded stage, and opens its own stage for independent work."
   - key: 01a1646f-546c-7521-9643-bc833bcb2e08
     statement:
       form: ubiquitous
@@ -75,9 +75,15 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc883a0f6321
         name: "The skill says to mark a task `active` in a write before its work starts."
       - key: 01a1646f-546c-7521-9643-bc89c5da80bc
-        name: "The skill says to mark a task `done` or `dropped` once its work ends, before the next task is marked `active`."
+        name: "The skill says to mark each task `done` or `dropped` once its work ends, independently of other tasks running in parallel."
       - key: 01a1646f-546c-7521-9643-bc8a0a4ac1b9
         name: "The skill says not to mark the tasks of a stage `done` in one write at its end."
+      - key: 01a18053-9e08-72a7-ab94-f3a964c9ed6b
+        name: "The skill says to name an existing task explicitly when delegating it, then record or claim its assignment before execution."
+      - key: 01a18053-9e08-72a7-ab94-f3aac12732f2
+        name: "The skill says to reread a task after a stale refusal without overwriting another agent's assignment or progress."
+      - key: 01a18053-9e08-72a7-ab94-f3ab07cae130
+        name: "The skill says that an agent's end alone does not prove its delegated task complete."
   - key: 01a16a04-3f8b-71a9-baa3-95e142be0bf6
     statement:
       form: ubiquitous
