@@ -5,6 +5,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Both dogfood launch commands rebuild Loft and restart the shared Yard server on port 7412
+  before starting the agent, including same-version rebuilds. Concurrent launches serialize;
+  existing sessions reconnect, and a failed build leaves the running server alone.
 - Yard's token details start collapsed while summary totals stay visible, with the fold choice
   remembered separately for each Yard Log through live updates and reloads.
 - Yard's free-form answers have explicit radio buttons or checkboxes. Typing selects the

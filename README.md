@@ -202,6 +202,25 @@ A repository that keeps its plans off git ignores `.yard/`. Run `loft merge-driv
 that a merge joins two copies of a Yard Log record by record. What belongs to the machine, such
 as the page server's address and each session's events, is kept in `~/.yard/`.
 
+For development on Unix, use this checkout's `scripts/yard-dogfood.sh` with Python 3, `ps` and
+`lsof` installed:
+
+```sh
+scripts/yard-dogfood.sh claude
+scripts/yard-dogfood.sh claude resume <session-id>
+scripts/yard-dogfood.sh codex
+scripts/yard-dogfood.sh codex resume <session-id>
+```
+
+Each launch builds the release binary, restarts the shared Yard server on port 7412 even when
+the version number is unchanged, and confirms it is serving before starting the agent. You can
+invoke the script by its path from another directory; the agent starts in that directory.
+Concurrent launches serialize their builds and restarts. Other running Claude and Codex
+sessions reconnect without restarting their agents; refresh open Yard pages to load files from
+a same-version rebuild. Registered trees and Yard state are kept. A build failure leaves the
+current server running, and a restart failure stops the launch with an error. Detached server
+output is kept in `~/.yard/dogfood-server.log`.
+
 ## Exit codes and JSON
 
 Every command exits 0 on success, 1 on an error, a refusal or a failed check, and 2 on a usage
