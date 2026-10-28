@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
+use super::account::Account;
 use super::state::State;
 use super::translate::{Hook, HookKind, envelope};
 
@@ -75,13 +76,20 @@ impl Counters {
         self.input.saturating_sub(previous.input) > last.input
             || self.output.saturating_sub(previous.output) > last.output
     }
-    fn tokens(&self) -> Value {
+    /// The tokens and their source: a cache-write count is measured when positive or when a
+    /// verified API-key account reports zero; any other zero is kept only as reported.
+    fn tokens(&self, account: Account) -> (Value, Value) {
         let mut tokens =
             json!({"input":self.input-self.cached,"cacheRead":self.cached,"output":self.output});
-        if let Some(write) = self.write {
-            tokens["cacheWrite"] = json!(write);
+        let mut source = json!({"account":account});
+        match self.write {
+            Some(write) if write > 0 || account == Account::ApiKey => {
+                tokens["cacheWrite"] = json!(write);
+            }
+            Some(write) => source["reported"] = json!({"cacheWrite":write}),
+            None => {}
         }
-        tokens
+        (tokens, source)
     }
 }
 
@@ -199,8 +207,7 @@ pub fn observe(state: &mut State, thread: &str, turn: &str, usage: &Value, at: &
     let skipped = !reset && previous.is_some_and(|p| total.skips(&p.snapshot, &last));
     let id = identity(&json!([thread, turn, generation, total]));
     let mut request = event(active, at, &id);
-    request["tokens"] = last.tokens();
-    request["usageSource"] = json!({"account":super::account::Account::source(&usage["account"])});
+    (request["tokens"], request["usageSource"]) = last.tokens(Account::source(&usage["account"]));
     if skipped {
         gap(state, thread, at);
     }

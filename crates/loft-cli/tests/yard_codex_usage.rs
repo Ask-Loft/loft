@@ -85,7 +85,11 @@ fn native_turn_usage_is_normalized_once_and_the_subscription_is_released_on_comp
     assert_eq!(requests.len(), 1, "{recorded:?}");
     assert_eq!(
         requests[0]["tokens"],
-        json!({"input":70,"cacheRead":30,"cacheWrite":0,"output":5})
+        json!({"input":70,"cacheRead":30,"output":5})
+    );
+    assert_eq!(
+        requests[0]["usageSource"],
+        json!({"account":"unknown","reported":{"cacheWrite":0}})
     );
     assert_eq!(requests[0]["model"], "test-model");
     assert!(requests[0]["stage"].is_string());

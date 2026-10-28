@@ -106,18 +106,64 @@ fn skipped_observations_record_one_unavailable_request_without_guessing_counts()
     assert_eq!(state.events.len(), 3);
 }
 
+fn zero_write(account: Option<&str>) -> State {
+    let mut state = state();
+    let mut counters = usage(100, 30, 5);
+    if let Some(account) = account {
+        counters["account"] = json!(account);
+    }
+    counters["last"]["cacheWriteInputTokens"] = json!(0);
+    counters["total"]["cacheWriteInputTokens"] = json!(0);
+    assert!(observe(&mut state, "thread", "turn", &counters, "now"));
+    let kept = serde_json::to_value(&state.usage.cursors["thread"]).unwrap();
+    assert_eq!(kept["snapshot"]["write"], 0);
+    state
+}
+
 #[test]
-fn source_account_classification_is_preserved_without_losing_raw_zero_counters() {
+fn a_zero_cache_write_from_a_verified_api_key_account_is_measured_in_the_tokens() {
+    let state = zero_write(Some("apiKey"));
+    assert_eq!(state.events[0]["tokens"]["cacheWrite"], 0);
+    assert_eq!(state.events[0]["usageSource"], json!({"account":"apiKey"}));
+}
+
+#[test]
+fn an_unverified_zero_cache_write_leaves_the_tokens_and_is_reported_under_its_source() {
+    for (account, kept) in [
+        (Some("chatgpt"), "chatgpt"),
+        (Some("unknown"), "unknown"),
+        (None, "unknown"),
+    ] {
+        let state = zero_write(account);
+        let tokens = &state.events[0]["tokens"];
+        assert!(tokens.get("cacheWrite").is_none(), "{tokens}");
+        assert_eq!(tokens["input"], 70);
+        assert_eq!(
+            state.events[0]["usageSource"],
+            json!({"account":kept,"reported":{"cacheWrite":0}})
+        );
+    }
+}
+
+#[test]
+fn a_positive_cache_write_is_measured_for_every_account() {
     for account in ["apiKey", "chatgpt", "unknown"] {
         let mut state = state();
         let mut counters = usage(100, 30, 5);
         counters["account"] = json!(account);
-        counters["last"]["cacheWriteInputTokens"] = json!(0);
-        counters["total"]["cacheWriteInputTokens"] = json!(0);
+        counters["last"]["cacheWriteInputTokens"] = json!(4);
         assert!(observe(&mut state, "thread", "turn", &counters, "now"));
-        assert_eq!(state.events[0]["usageSource"]["account"], account);
-        assert_eq!(state.events[0]["tokens"]["cacheWrite"], 0);
-        let kept = serde_json::to_value(&state.usage.cursors["thread"]).unwrap();
-        assert_eq!(kept["snapshot"]["write"], 0);
+        assert_eq!(state.events[0]["tokens"]["cacheWrite"], 4);
+        assert_eq!(state.events[0]["usageSource"], json!({"account":account}));
     }
+}
+
+#[test]
+fn an_absent_cache_write_is_neither_measured_nor_reported_even_for_an_api_key_account() {
+    let mut state = state();
+    let mut counters = usage(100, 30, 5);
+    counters["account"] = json!("apiKey");
+    assert!(observe(&mut state, "thread", "turn", &counters, "now"));
+    assert!(state.events[0]["tokens"].get("cacheWrite").is_none());
+    assert_eq!(state.events[0]["usageSource"], json!({"account":"apiKey"}));
 }
