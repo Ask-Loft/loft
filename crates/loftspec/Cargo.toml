@@ -1,6 +1,6 @@
 [package]
 name = "loftspec"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 description = "The Loft Specification Format: document model, identity, canonical bytes, hashing and conversion"
 edition.workspace = true
 rust-version.workspace = true

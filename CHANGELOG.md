@@ -3,6 +3,16 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.3.0-alpha.1 (2026-10-28)
+
+A prerelease of 2.3.0, for trying what `develop` holds before the release:
+`npm install @ask-loft/loft@alpha`, or `cargo install --locked loft-cli --version 2.3.0-alpha.1`.
+It lets you try Yard Client in Claude Code sessions signed in with a Team or Enterprise account
+and on machines with managed settings, a session that continues another after `/clear` or a
+resume and keeps its stages and tasks, a main agent's tasks staying active across its turns, and
+the `loft-spec` and `yard` skills brought up to date. The entries under Unreleased below list
+everything 2.3.0 will hold.
+
 ## Unreleased
 
 - Yard Client works in Claude Code sessions signed in with a Team or Enterprise account, and on

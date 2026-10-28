@@ -530,7 +530,7 @@ checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
 name = "loft-cli"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "clap",
  "flate2",
@@ -561,7 +561,7 @@ dependencies = [
 
 [[package]]
 name = "loft-common"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "serde",
  "thiserror",
@@ -570,7 +570,7 @@ dependencies = [
 
 [[package]]
 name = "loft-ports"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -580,7 +580,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "loft-common",
  "proptest",
@@ -598,7 +598,7 @@ dependencies = [
 
 [[package]]
 name = "loftspec-store"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "loft-ports",
  "loftspec",
@@ -999,7 +999,7 @@ dependencies = [
 
 [[package]]
 name = "software-plant"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -1461,7 +1461,7 @@ dependencies = [
 
 [[package]]
 name = "yardlog"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "loft-common",
  "pulldown-cmark",
@@ -1471,7 +1471,7 @@ dependencies = [
 
 [[package]]
 name = "yardlog-store"
-version = "2.3.0"
+version = "2.3.0-alpha.1"
 dependencies = [
  "loft-ports",
  "serde_json",
