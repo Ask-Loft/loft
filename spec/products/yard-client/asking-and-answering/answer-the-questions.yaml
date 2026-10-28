@@ -17,7 +17,25 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bbca52bc4f23
         name: "A question that takes more than one option lets the person choose one or more."
       - key: 01a1646f-546c-7521-9643-bbcb591fde24
-        name: "A question that allows the person's own words offers a text field beside its options."
+        name: "A question that allows the person's own words offers them as a selectable option with a text field."
+      - key: 01a17fef-700e-72d2-a706-77312594a4f4
+        name: "The own-words option of a question that takes one option has a radio button in the same group as its named options."
+      - key: 01a17fef-700e-72d2-a706-7732f76e866c
+        name: "Selecting the own-words radio button deselects every named option."
+      - key: 01a17fef-700e-72d2-a706-773322142336
+        name: "Selecting a named radio button deselects the own-words option."
+      - key: 01a17fef-700e-72d2-a706-77347331ddf4
+        name: "The own-words option of a question that takes more than one option has a checkbox independent of its named options."
+      - key: 01a17fef-700e-72d2-a706-77352f54f423
+        name: "Editing text selects the own-words option."
+      - key: 01a17ff3-c7f0-721f-a3ab-a9b0128f8739
+        name: "Deleting all text leaves the own-words option selected."
+      - key: 01a17fef-700e-72d2-a706-7736415b6f0f
+        name: "Switching options retains text the person typed but has not sent."
+      - key: 01a17fef-700e-72d2-a706-7737c25c629c
+        name: "Reloading the page restores the own-words option's explicit selection independently of its retained text."
+      - key: 01a17fef-700e-72d2-a706-7738ee244179
+        name: "A saved draft that has text but no explicit own-words selection leaves the own-words option unselected."
       - key: 01a1646f-546c-7521-9643-bbcc094ac2d9
         name: "Each option shows its detail."
   - key: 01a1646f-546c-7521-9643-bbcda4ebeec9
@@ -33,6 +51,10 @@ requirements:
         name: "A question with no recommended option is left for the person."
       - key: 01a1646f-546c-7521-9643-bbd088671e87
         name: "A question the person has already chosen for keeps the person's choice."
+      - key: 01a17fef-700e-72d2-a706-7739303fc425
+        name: "Unselected draft text leaves the question eligible for accepting its recommendations."
+      - key: 01a17fef-700e-72d2-a706-773a1b1b20fa
+        name: "A selected own-words option is preserved when recommendations are accepted, even while its text is blank."
   - key: 01a1646f-546c-7521-9643-bbd124198232
     statement:
       form: event_driven
@@ -48,6 +70,10 @@ requirements:
         name: "Sending raises Yard Log's revision by one."
       - key: 01a1646f-546c-7521-9643-bbd5065188ba
         name: "The page offers to send only once each open question of the submission has an answer."
+      - key: 01a17fef-700e-72d2-a706-773bf0bde7e5
+        name: "The page sends the person's own words only when the own-words option is selected."
+      - key: 01a17fef-700e-72d2-a706-773c0bf9ddcb
+        name: "A selected own-words option with blank text prevents sending the submission."
       - key: 01a1646f-546c-7521-9643-bbd62c68dd85
         name: "Answers chosen and not sent are kept in the browser only."
   - key: 01a1646f-546c-7521-9643-bbd7a1165492
