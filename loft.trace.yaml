@@ -23415,18 +23415,75 @@ links:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "the_continuing_session_starts_from_the_revision_the_ended_session_last_read"
         body: ec02b5486218537651457db5cd2ee221c40616f65fcf5b52ce15a2bb71ecbee9
+  - node: 01a1841d-e02f-7402-9ad5-b81fb3fae702
+    reviewed: 47f423ce2efe6021eefcd4c6db7fa9c26223f9266e9bb8e262f6604009691f9a
+    tests:
+      - file: "crates/loft-cli/tests/yard_continued_holds.rs"
+        name: "the_continuing_session_is_briefed_with_the_stage_the_ended_session_made_active"
+        body: 860adba95a7a0a8ab56982cbcb6db2490a6d37bbdad557aea633858de86711a2
+      - file: "crates/loft-cli/tests/yard_continued_holds.rs"
+        name: "the_continuing_session_changes_and_reassigns_the_tasks_of_the_ended_session_s_stage"
+        body: a7969407438c126ddd083b234834093a7438f5809ffa7ee2f5fa904eda66fdab
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "the_continuing_session_works_in_the_stage_the_session_it_continues_made_active"
+        body: c61b9b43a5b55e40ced5ddf1307cb409e75d5437f78966994cfa81dbda0f2d82
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "the_continuing_session_reassigns_a_task_of_the_stage_as_its_owner"
+        body: 75b04cb8e30ffd44ecbb15a4a1b1dd084f48ca3430cbf5ee228128c7b90fa336
+      - file: "crates/yardlog-store/tests/home.rs"
+        name: "a_log_the_store_reads_carries_the_chains_of_continuations_its_home_records"
+        body: 7f3d39eb28cfacbaf50260b2580757e3a2c63c0ac11413a1dd57e46075235af2
+  - node: 01a1841d-e02f-7402-9ad5-b82084e00618
+    reviewed: b1286c7dc7e209957f8c1858f442e4f5ae42aad8c404d13e1740493f42182ff8
+    tests:
+      - file: "crates/loft-cli/tests/yard_continued_holds.rs"
+        name: "the_continuing_session_changes_and_reassigns_the_tasks_of_the_ended_session_s_stage"
+        body: a7969407438c126ddd083b234834093a7438f5809ffa7ee2f5fa904eda66fdab
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "a_task_assigned_to_the_ended_session_counts_as_assigned_to_the_one_that_continues_it"
+        body: fb0f0027513c262d76fdd8092439bec617c78192306abc4e046bb86790253a1d
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "a_mirror_by_the_continuing_session_changes_the_task_assigned_to_the_ended_one"
+        body: a55eb1e939f4a49d48618caac8ed94fa75b60f7ae4c81703b63735767d8286e8
+  - node: 01a1841d-e02f-7402-9ad5-b82115a8606f
+    reviewed: 41e3dce31d2a27b0592449a7532dc83308557cbfea98310d97c7c12ad4e349e5
+    tests:
+      - file: "crates/loft-cli/tests/yard_continued_holds.rs"
+        name: "the_continuing_session_s_tokens_and_activity_count_toward_the_ended_session_s_stage"
+        body: 78597989db0d0a9d280609286d8d932f0484aad781af7a40fd773b6af334f1fe
+  - node: 01a1841d-e02f-7402-9ad5-b8223ab5ed85
+    reviewed: a7aa9009cdb9be23b63425da164e2cefd68b1a0faee28d3a24f1c21b0fcbfe56
+    tests:
+      - file: "crates/loft-cli/tests/yard_continued_holds.rs"
+        name: "a_second_stage_made_active_by_the_continuing_session_is_refused_naming_the_first"
+        body: 50d3b62990da3ec2539d0d5db7bedd1576ca0fa390ea458af834895a8dadce09
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "a_second_stage_made_active_by_the_continuing_session_is_refused_as_for_one_agent"
+        body: fd4f6e4bee40db7ee1e1b7c77b362e9b3e83651a6e132fc0506dfce44728d2e9
   - node: 01a1647c-e680-7753-bf17-f180dc77d947
     reviewed: 0d0169a077f597d8af2920c59d1490addf08d7ae8b5b0a00ec9debe23d460cca
     tests:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "a_chain_of_continuations_reaches_back_to_the_first_session_of_the_chain"
         body: 2d51424d7a18edc4ec306725799b8f90b34ebcf469fff62bb8080f66fb12fb0e
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "a_chain_of_continuations_reaches_back_to_its_first_session"
+        body: 42c5408bd9129a3b219a22ef83b0d4e1b89029dc87a3c7d9ce82782cadafc870
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "a_cycle_in_the_continuations_ends_the_chain_and_bytes_that_are_not_an_object_hold_none"
+        body: 81eb298b39929f65e9fba5a8642e93db42756806aa455cbafa0cad878208538e
   - node: 01a1647c-e680-7753-bf17-f181455e4d44
     reviewed: 1ed59fe740537dff9655e69c7dcc3465f4f683b513a1e4fa8909017cc8878b6a
     tests:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "each_block_and_act_keeps_the_session_id_that_wrote_it"
         body: d89f04f72d842b8767a0d19e92093aff1a57c782f5c41dfa80ee6348814634ea
+      - file: "crates/loft-cli/tests/yard_continued_holds.rs"
+        name: "each_version_the_continuing_session_writes_keeps_its_own_session_id"
+        body: 815ad19192eb910ec78a37081f05807511525211e770071c08286963f54d7da3
+      - file: "crates/yardlog/tests/lineage.rs"
+        name: "a_write_of_the_continuing_session_keeps_its_own_session_id"
+        body: 45852dc28af424345830191537c0715230adb3eb8d15a6e9fef1b9bae19e7efc
   - node: 01a1647c-e680-7753-bf17-f18231fac8e2
     reviewed: 1dd93952948b33761fe09d06f9714b087406e07dea267dedef75f5c3330872a1
     tests:

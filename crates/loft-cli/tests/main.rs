@@ -105,6 +105,7 @@ mod yard_codex_usage;
 mod yard_codex_watch;
 mod yard_commands;
 mod yard_continue;
+mod yard_continued_holds;
 mod yard_delegation;
 #[cfg(unix)]
 mod yard_dogfood;
