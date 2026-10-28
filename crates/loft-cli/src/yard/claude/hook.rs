@@ -4,7 +4,8 @@
 
 use std::path::{Path, PathBuf};
 
-use serde_json::Value;
+use serde_json::{Value, json};
+use yardlog::Time;
 use yardlog::identity::is_session_id;
 
 use crate::yard::args::Runner;
@@ -54,6 +55,16 @@ impl Hook {
         self.raw[name].as_str()
     }
 
+    /// The hook's whole object.
+    pub const fn raw(&self) -> &Value {
+        &self.raw
+    }
+
+    /// Whether a subagent runs the hook.
+    pub fn is_subagent(&self) -> bool {
+        self.field("agent_id").is_some()
+    }
+
     pub fn session(&self) -> &str {
         &self.session
     }
@@ -74,5 +85,17 @@ impl Hook {
             agent,
             agent_type,
         }
+    }
+
+    /// An event of `kind` of the session's main agent at `at`, as the page server takes it: no
+    /// agent, and nothing of the hook's words.
+    pub fn main_event(&self, kind: &str, at: Time) -> Value {
+        json!({
+            "session": self.session,
+            "dir": self.dir.display().to_string(),
+            "at": at.to_string(),
+            "host": yardlog::act::CLAUDE_CODE,
+            "kind": kind,
+        })
     }
 }

@@ -90,6 +90,7 @@ mod yard_answer;
 mod yard_base;
 mod yard_callers;
 mod yard_capabilities;
+mod yard_claude_events;
 mod yard_claude_hook;
 mod yard_close;
 mod yard_codex;

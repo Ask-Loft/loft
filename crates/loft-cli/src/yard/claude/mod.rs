@@ -2,12 +2,15 @@
 //! Code's and answers it as Claude Code reads a command hook's output. The Loft plugin's command
 //! hooks run it where Claude Code's built-in guard passes over a user's mod's hooks, and
 //! everywhere else alike, so that it alone serves what the mod cannot hear there: the context as
-//! a session or a subagent starts, and the continuation of a session after `/clear` or a resume.
+//! a session or a subagent starts, the continuation of a session after `/clear` or a resume, the
+//! main agent's plan mode, compactions and the page's decision of a plan.
 //! A hook it does not serve, or one it cannot serve because Yard Log or the page server cannot be
 //! reached, it answers with nothing, so that Claude Code goes on as it would without the plugin.
 
 mod handoff;
 mod hook;
+mod mode;
+mod plan;
 mod store;
 
 use std::path::PathBuf;
@@ -100,9 +103,28 @@ fn answer(hook: &Hook, input: &Input) -> Value {
             if let Some(pid) = input.host_pid {
                 let _ = handoff::leave(hook, pid, at);
             }
+            let _ = mode::forget(hook);
+            json!({})
+        }
+        "PostCompact" => {
+            post(&hook.main_event("compaction", at));
+            json!({})
+        }
+        "PermissionRequest" => plan::decide(hook, input.port),
+        event if mode::CARRY.contains(&event) => {
+            if let Ok(Some(kind)) = mode::heard(hook) {
+                post(&hook.main_event(kind, at));
+            }
             json!({})
         }
         _ => json!({}),
+    }
+}
+
+/// Posts an event to the page server that runs; an event no page server takes is dropped.
+fn post(event: &Value) {
+    if let Some(home) = yardlog_store::home::Home::from_env() {
+        let _ = super::post::events(&home, event);
     }
 }
 

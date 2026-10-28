@@ -13,3 +13,12 @@ pub fn post(home: &Home, port: u16, path: &str, body: &Value) -> bool {
     let token = String::from_utf8_lossy(&token);
     crate::network::post_local_json(port, path, token.trim(), body.to_string().as_bytes())
 }
+
+/// Posts `body`, one event or a batch of them, to the page server `~/.yard/server.json` names
+/// while it runs; whether it accepted them. With no page server running, nothing is posted.
+pub fn events(home: &Home, body: &Value) -> bool {
+    match super::page::running(home) {
+        Ok(Some(running)) => post(home, running.port, "/api/events", body),
+        _ => false,
+    }
+}

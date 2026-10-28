@@ -57,7 +57,7 @@ pub fn run(root: &Path, args: WaitArgs) -> Finished {
     })
 }
 
-fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {
+pub(super) fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {
     let submission = Key::parse(&args.submission)
         .map(SubmissionKey::new)
         .map_err(|error| Failure::Usage(format!("--submission: {error}")))?;

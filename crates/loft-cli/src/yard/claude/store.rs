@@ -13,12 +13,20 @@ use yardlog_store::lock;
 /// The sessions handed on by the Claude Code process that ended them, by its process id.
 pub const HANDOFFS: &str = "handoffs.json";
 
+/// Each session's last permission mode, whether it is `plan`, by its session id.
+pub const MODES: &str = "modes.json";
+
 /// `~/.yard/claude/`, where a home is known.
 pub struct Store(PathBuf);
 
 impl Store {
     pub fn of_home() -> Option<Self> {
         Home::from_env().map(|home| Self(home.dir().join("claude")))
+    }
+
+    /// Whether `file` is there.
+    pub fn holds(&self, file: &str) -> bool {
+        self.0.join(file).is_file()
     }
 
     /// Changes the object of `file` under the lock, and writes it only where the change left it

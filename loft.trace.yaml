@@ -20841,12 +20841,111 @@ links:
       - file: "crates/loft-cli/tests/yard_claude_hook.rs"
         name: "a_hook_given_no_claude_code_process_leaves_and_takes_no_hand_off"
         body: 0f486ee5d6049f218de2de50811ba4b1fb8159dbb719d1ba584070c2068e3404
+  - node: 01a183e9-dfd2-74b1-a45a-14ab0c96c220
+    reviewed: 548dba8ed0eaeeeec0b7c174d55556f318e22d0b8626e367caef517f8d505133
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "plan_mode_starting_and_ending_is_posted_once_for_each_change_of_the_main_agent_s_mode"
+        body: 57e00a634a1e04eaafebe1e1192d67f534c9964557c5b2d6cf21334df738343d
+  - node: 01a183e9-dfd2-74b1-a45a-14ac7d3db027
+    reviewed: bff07257ec4a73bfde059c491243f63e457ba1b1ec18849e0b93432acb2e470b
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_session_first_heard_in_plan_mode_starts_it_and_one_first_heard_outside_says_nothing"
+        body: 5ff0caafde13b3081eb7726700679622b15c4e4220662d16e2f75f45612fc94a
+  - node: 01a183e9-dfd2-74b1-a45a-14ad5885fd18
+    reviewed: eb629f16f60069692f0a76b8cb8c176ab6454cbf781e9c1d7d01aea95310133d
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_subagent_s_permission_mode_posts_nothing_and_leaves_the_session_s_mode"
+        body: bade07303e8b24425cc3f2756d35310c8e6e99032e8d676ab362d972cfffc38d
+  - node: 01a183e9-dfd2-74b1-a45a-14aea8c471e9
+    reviewed: 8155a3d4db6a29d492a58be5e8bae12d3fe64cd5fd51cae14ae524704dd0deb4
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "each_session_s_last_mode_is_kept_in_the_yard_home_and_never_in_the_tree"
+        body: 71816d23e397342854ef3bebab45f537805462735b1e1a1936aa4746a72ac5b7
+  - node: 01a183ea-072a-770b-8855-636c42cc6f18
+    reviewed: e0ea119997257ed96a00176e87d05d3ede1ba29cb3b16cb3e0763fc3ffdaaf85
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_manual_and_an_automatic_compaction_are_each_one_event_with_no_sizes_and_no_usage"
+        body: 330ba53753363b7350664d5f75c59dfa0a9d53a13d8f42db9d3f9a262abb450a
+  - node: 01a183ea-072a-770b-8855-636d2f7ec47e
+    reviewed: 4e2c913676ea73cfd374f0a0a96f78aa93727f9ddfae929eb216835008469ace
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_manual_and_an_automatic_compaction_are_each_one_event_with_no_sizes_and_no_usage"
+        body: 330ba53753363b7350664d5f75c59dfa0a9d53a13d8f42db9d3f9a262abb450a
+  - node: 01a183e9-dfd2-74b1-a45a-14b1f3cf1e0e
+    reviewed: f8dc2cb822f2d272cf04bcb62839af9a6c2bb39f464005ca7f176d4ad8787f31
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "an_event_names_the_host_the_session_and_no_agent_and_holds_none_of_the_hook_s_words"
+        body: 081afaf97e5500518b28a44ad42c8b4521146afcf8319b3beaabf98ae56bfae4
+  - node: 01a183e9-dfd2-74b1-a45a-14b262b971ce
+    reviewed: a99e817b4748a6737e7617b98ed8969ddc449f51011fa447a1795a0b463b8f82
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "an_event_names_the_host_the_session_and_no_agent_and_holds_none_of_the_hook_s_words"
+        body: 081afaf97e5500518b28a44ad42c8b4521146afcf8319b3beaabf98ae56bfae4
+  - node: 01a183e9-dfd2-74b1-a45a-14b3c5e375ba
+    reviewed: 06b7e96f590c30e5ecb85dd20e2a427608e85c864b09a03e0067dc91d44e7c4c
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "an_event_names_the_host_the_session_and_no_agent_and_holds_none_of_the_hook_s_words"
+        body: 081afaf97e5500518b28a44ad42c8b4521146afcf8319b3beaabf98ae56bfae4
+  - node: 01a183e9-dfd2-74b1-a45a-14b527df65c8
+    reviewed: 1e23d28a6f81189d67384c27c58bc4f0c048ae189d61426b98271f69c5eed141
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_approved_on_the_page_is_allowed_with_its_input_and_auto_mode"
+        body: 53b08d2df52c6c105ae076b4ab3002252cea1771f91f6fe23811dec10876b3b8
+  - node: 01a183e9-dfd2-74b1-a45a-14b6190257cb
+    reviewed: a8149d2d4ef9c075bd0f6dce14484c6b0f5847e92db763c12ba8124f745fe299
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_rejected_on_the_page_is_denied_with_the_person_s_reason"
+        body: 33c1264d05b8ed10a3e3f8f738fccf80bdd431dc102a56f646f0838817a75630
+  - node: 01a183e9-dfd2-74b1-a45a-14b7303150a4
+    reviewed: aa76e7a4e1f5d4bfa85df904a8d5f25dcb994600121110b94bb21106e4f7815f
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_decided_in_the_terminal_first_ends_the_wait_and_the_hook_answers_nothing"
+        body: 1fadefb381ef4769e73be7aa8bd4caa744ccf5f146fd657595a59ac2cda87677
+  - node: 01a183e9-dfd2-74b1-a45a-14b8d540956c
+    reviewed: abf28ca425a6502ed28be795bdc72626f1eeae64273c94bf4d720be3e8caf9e8
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "with_no_plan_open_for_the_hook_s_agent_the_request_is_answered_at_once_with_nothing"
+        body: 04762fb9b0f5ca451839e89d9ac90dd262d5d65278505415c2fc641ccdd8528c
+  - node: 01a183e9-dfd2-74b1-a45a-14b9db7714f2
+    reviewed: 00ef6e1cd6b9200d41b2bc048bdb8346ce407d264535469261eeacc3a27c4eae
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_subagent_s_request_waits_on_the_plan_that_subagent_presented"
+        body: 1c490fde177b809c5d020d37e88b9cd674a56bdcc425b77824577a2fb895d68f
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "with_no_plan_open_for_the_hook_s_agent_the_request_is_answered_at_once_with_nothing"
+        body: 04762fb9b0f5ca451839e89d9ac90dd262d5d65278505415c2fc641ccdd8528c
   - node: 01a183e9-dfd2-74b1-a45a-14bbe6224c9c
     reviewed: 1137f5c47ffed92997321d22b65d85d2822bdba38cff5154170c8e73760dc598
     tests:
       - file: "crates/loft-cli/tests/yard_claude_hook.rs"
         name: "a_session_start_outside_a_git_repository_answers_nothing_and_exits_0"
         body: eec002de7dda23e6e21a1414a62a4f1b6e5296e911e22d0146200fbc817955da
+  - node: 01a183e9-dfd2-74b1-a45a-14bc3edb6bc0
+    reviewed: 5370592b4a7694b785323eccc28e104f67a84bac93eb5949bdb9767c1205c130
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_post_compact_hook_with_no_page_server_running_exits_0_and_drops_its_event"
+        body: 34c3265ce7455a0f89efe40dc1a222be92105f7ae30bdcd6768325aa85a61b19
+  - node: 01a183e9-dfd2-74b1-a45a-14bdd3725970
+    reviewed: 6b4599625a54ff8ea0b021a077f4d4fc6bd715aa674a9e1932622e555e122e64
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_hook_of_an_event_the_command_does_not_serve_answers_nothing"
+        body: d7ddada811fd51d2de43f742efa2b66c681f05c288af8d4e622e160738fae1c9
   - node: 01a1646f-546e-76cb-8b4f-f2273651a416
     reviewed: 4851a48ce032bda3e7ebcb5725e47ec4ec29d88bef0962ca96578f8be563c5f9
     tests:
@@ -26851,11 +26950,11 @@ links:
         name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model"
         body: c3f823df296c88fb1d87f5585541c35407c7f478b2c6a96156afea8c44772a73
   - node: 01a1646f-546d-7042-befd-eb0424c61342
-    reviewed: 53af57ff62ab6e97a68169acaf85c78c0993b209223e32122d44e753807ebc56
+    reviewed: 21675eb5daafef4d3cee5de0a1055f1f5dea335690aad5e33ae9305cf77dcb52
     tests:
-      - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a turn's end carries its tokens, and a compaction the tokens before and after"
-        body: 4ffa315a2ad38616e594d658792f385569d6304efa1190aeeb4285f7b25db304
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_manual_and_an_automatic_compaction_are_each_one_event_with_no_sizes_and_no_usage"
+        body: 330ba53753363b7350664d5f75c59dfa0a9d53a13d8f42db9d3f9a262abb450a
   - node: 01a1646f-546d-7042-befd-eb05c5d3d538
     reviewed: 1d4dede35a26114c4362dd932b5370730ffe5aec563d8877a8f080dffa119fe2
     tests:
@@ -26863,14 +26962,11 @@ links:
         name: "plan mode starting and ending is posted once for each change, as the main agent is heard in it"
         body: 15a6a72e013f50ffcc5de786639c9acc3199a6fe43517f8301adfad8ba3766e0
   - node: 01a16475-7fbc-7732-a78c-bc53338212c4
-    reviewed: b02b6b332fa2917286573a9d57f3f60a3d8cf55cd4bf268be92669136f638c66
+    reviewed: 8837faacebd2a669a88f0e331fbbaa61f448076ae4385991522fb06e8451b992
     tests:
-      - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "plan mode starting and ending is posted once for each change, as the main agent is heard in it"
-        body: 15a6a72e013f50ffcc5de786639c9acc3199a6fe43517f8301adfad8ba3766e0
-      - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "plan mode is heard from the EnterPlanMode and ExitPlanMode calls that succeed"
-        body: 237c2c55a95498a8c4367ce0755e6bf7d432e690f0aeb6aac164ddcf476757a0
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "plan_mode_starting_and_ending_is_posted_once_for_each_change_of_the_main_agent_s_mode"
+        body: 57e00a634a1e04eaafebe1e1192d67f534c9964557c5b2d6cf21334df738343d
   - node: 01a1646f-546d-7042-befd-eb06f87709de
     reviewed: 0d9b9493e85c723ccba238fda7426148c56319364f9f1d3878432b4fcb7038d8
     tests:
