@@ -6,7 +6,7 @@
 
 use std::path::PathBuf;
 
-use clap::{Args, Subcommand};
+use clap::{ArgGroup, Args, Subcommand};
 
 use crate::cli::Output;
 
@@ -31,6 +31,9 @@ pub enum YardAction {
     Write(WriteArgs),
     /// Withdraw an open submission.
     Withdraw(WithdrawArgs),
+    /// Change fields of a task as Yard Log holds it, or with `--release` return the calling
+    /// agent's active tasks to `open`.
+    Task(TaskArgs),
     /// Wait until a submission is answered or withdrawn, or Yard Log is closed, for at most
     /// `--timeout` seconds.
     Wait(WaitArgs),
@@ -191,6 +194,35 @@ pub struct WithdrawArgs {
     /// The key of the submission.
     #[arg(long, value_name = "KEY")]
     pub submission: String,
+    #[command(flatten)]
+    pub writer: Writer,
+    #[command(flatten)]
+    pub beyond: Beyond,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+#[derive(Args)]
+#[command(group(ArgGroup::new("target").required(true).args(["id", "release"])))]
+pub struct TaskArgs {
+    /// The id of the task to change.
+    #[arg(value_name = "ID")]
+    pub id: Option<String>,
+    /// Return each active task assigned to the calling agent to `open`, in one write.
+    #[arg(long, conflicts_with_all = ["id", "state", "title", "detail", "kind"])]
+    pub release: bool,
+    /// The task's new state.
+    #[arg(long, value_name = "STATE", value_parser = ["open", "active", "done", "dropped"])]
+    pub state: Option<String>,
+    /// The task's new title.
+    #[arg(long, value_name = "TEXT")]
+    pub title: Option<String>,
+    /// The task's new detail.
+    #[arg(long, value_name = "TEXT")]
+    pub detail: Option<String>,
+    /// The task's new type.
+    #[arg(long = "type", value_name = "TYPE", value_parser = ["regular", "fix"])]
+    pub kind: Option<String>,
     #[command(flatten)]
     pub writer: Writer,
     #[command(flatten)]

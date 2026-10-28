@@ -127,6 +127,7 @@ mod yard_serve_usage;
 mod yard_settle;
 mod yard_skill;
 mod yard_take_up;
+mod yard_task;
 mod yard_upgrade;
 mod yard_view_reports;
 mod yard_views;

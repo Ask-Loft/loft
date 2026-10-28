@@ -27,6 +27,7 @@ mod render_log;
 mod serve;
 mod sessions;
 mod standing;
+mod task;
 mod upgrade;
 mod views;
 mod wait;
@@ -50,6 +51,7 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Read(args) => read::run(root, args),
         YardAction::Write(args) => write::run(root, args),
         YardAction::Withdraw(args) => withdraw::run(root, args),
+        YardAction::Task(args) => task::run(root, args),
         YardAction::Wait(args) => wait::run(root, args),
         YardAction::Close(args) => close::run(root, args),
         YardAction::Published(args) => published::run(root, args),

@@ -173,7 +173,7 @@ fn fault(fault: &Fault) -> Value {
 
 /// The result of a refused batch: each fault, and for a stale batch each block changed since
 /// its base revision, with its current version.
-fn refusal_of(branch: &Branch, held: &Held, refusal: &Refusal) -> Failure {
+pub(super) fn refusal_of(branch: &Branch, held: &Held, refusal: &Refusal) -> Failure {
     let message = refusal.to_string();
     let errors = match refusal {
         Refusal::Faults(faults) => faults.iter().map(fault).collect(),
