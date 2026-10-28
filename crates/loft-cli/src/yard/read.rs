@@ -14,12 +14,13 @@ use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 use yardlog_store::{Held, Place};
 
-use super::args::ReadArgs;
+use super::args::{Beyond, ReadArgs, ReadDetails, Runner};
 use super::branch::{Branch, revision_of};
 use super::briefing::{Where, briefing};
 use super::caller::{Caller, Continuations, LastRead};
 use super::failure::{self, Failure};
 use super::render_log::{Selection, closed_by, root, stages, submissions};
+use crate::cli::Output;
 use crate::finish::Finished;
 
 pub const SCHEMA: &str = "loft-yard-read/3";
@@ -56,6 +57,27 @@ fn detached(place: &Place, port: u16) -> Value {
         "stages": [],
         "submissions": [],
     })
+}
+
+/// The calling agent's briefing, as `loft yard read --context --mark-read` gives it: the read
+/// it shows is recorded as the agent's last.
+pub fn briefing_of(dir: &Path, agent: Runner, port: u16) -> Result<Value, Failure> {
+    let args = ReadArgs {
+        since: None,
+        versions: false,
+        details: ReadDetails {
+            reports: false,
+            submissions: false,
+        },
+        mark_read: true,
+        context: true,
+        agent,
+        beyond: Beyond { port },
+        output: Output {
+            format: Some(crate::cli::Format::Json),
+        },
+    };
+    document(dir, args)
 }
 
 pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {

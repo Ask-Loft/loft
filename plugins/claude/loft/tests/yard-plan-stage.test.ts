@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { block, readDoc, SESSION, stage, start, world, writesOf, type Engine, type On } from './yard-world'
+import { block, readDoc, SESSION, spawn, stage, start, world, writesOf, type Engine, type On } from './yard-world'
 
 const PLAN = '# Build the shelf\n\nKeep the books.'
 const FILE = '/p/shelf.md'
@@ -83,7 +83,7 @@ test('the selected stage belongs to the invoking subagent even when another call
     stage('review', 'active', { session: SESSION, agent: 'a9', agentType: 'Explore' }),
   ] })
   await start($)
-  await $.classic.SubagentStart({ agent_id: 'a9', agent_type: 'Explore' } as never)
+  await spawn($, w, 'a9', 'Explore')
   await present($, 'a9')
   const written = writesOf(w).at(-1)![0]!
   expect(written).toMatchObject({ kind: 'plan', stage: 'review' })

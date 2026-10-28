@@ -104,6 +104,9 @@ export const flagOf = (argv: readonly string[], flag: string) => {
 
 export type World = ReturnType<typeof world>
 
+/** Settles the clock of the world the running test made last, as a session's start does. */
+let settle: (() => Promise<unknown>) | undefined
+
 export function world(on: On, options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running' } = {}) {
   const clock = mock.clock(on, { now: Date.UTC(2026, 9, 22, 9, 30, 0) })
   mock.env(on, { HOME })
@@ -146,7 +149,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     calls: [] as Doc[],
     terminal: {} as Record<string, (e: Doc) => Promise<Doc> | Doc>,
     agents: [] as { id: string; type: string }[],
-    permission: (e: { tool_input: unknown }): unknown => ({}),
+    /** The id of the next subagent Claude Code starts. */
+    spawning: 'a9',
     /** Whether a page server has made `~/.yard/token` yet. */
     hasToken: true,
   }
@@ -157,17 +161,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   on('session.end', ($, e) => ({ sessionId: e.sessionId }))
   on('turn.start', ($, e) => ({ turnId: e.turnId }))
   on('turn.complete', () => ({ text: '' }))
-  on('session.compact', ($, e) => ({ messages: e.messages, tokensBefore: 9000, tokensAfter: 1200, usage: { input_tokens: 7000, output_tokens: 900, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } }) as never)
-  // Claude Code's own classic hooks: none adds anything.
-  on('classic.SessionStart', () => ({}))
-  on('classic.SubagentStart', () => ({}))
-  on('classic.SubagentStop', () => ({}))
-  on('classic.UserPromptSubmit', () => ({}))
-  on('classic.PostToolUse', () => ({}))
-  on('classic.Stop', () => ({}))
-  // Beneath the mod, Claude Code answers a permission request at once with no decision: its
-  // dialog shows apart from the request, and the person answers there.
-  on('classic.PermissionRequest', ($, e) => state.permission(e as never) as never)
+  // Beneath the mod, Claude Code starts the subagent the test names and runs it on its model.
+  on('agent.spawn', () => ({ model: 'claude-test-1', agentId: state.spawning }))
   on('ui.toast', ($, e) => {
     state.toasts.push(e.text)
     return { value: undefined }
@@ -259,6 +254,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     return answer(e as Doc) as never
   })
 
+  settle = () => clock.settle()
   return { clock, state }
 }
 
@@ -266,10 +262,17 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
 export const yardRuns = (w: World) =>
   w.state.runs.filter(run => run.argv.includes('yard')).map(run => run.argv.slice(run.argv.indexOf('yard') + 1).join(' '))
 
-/** Starts the session: Claude Code's start, then its classic SessionStart. */
+/** Starts the session, as Claude Code does, and lets what the start set going settle. */
 export async function start($: Engine, cwd = TREE) {
-  await $.session.start({ cwd, surface: 'terminal', isInteractive: true })
-  return $.classic.SessionStart({ source: 'startup', cwd })
+  const started = await $.session.start({ cwd, surface: 'terminal', isInteractive: true })
+  await settle?.()
+  return started
+}
+
+/** Starts subagent `id` of type `type`, as the Agent tool does. */
+export async function spawn($: Engine, w: World, id: string, type: string) {
+  w.state.spawning = id
+  return $.agent.spawn({ prompt: 'Go.', subagentType: type, description: 'work' } as never)
 }
 
 /** The id Claude Code gave the last call of `tool` that reached its own tool, as a block id holds it. */

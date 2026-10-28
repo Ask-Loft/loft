@@ -90,6 +90,8 @@ mod yard_answer;
 mod yard_base;
 mod yard_callers;
 mod yard_capabilities;
+mod yard_claude_events;
+mod yard_claude_hook;
 mod yard_close;
 mod yard_codex;
 mod yard_codex_cachewrite;
@@ -103,6 +105,7 @@ mod yard_codex_usage;
 mod yard_codex_watch;
 mod yard_commands;
 mod yard_continue;
+mod yard_continued_holds;
 mod yard_delegation;
 #[cfg(unix)]
 mod yard_dogfood;

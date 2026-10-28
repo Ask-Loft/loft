@@ -9,6 +9,7 @@ use crate::datum::Datum;
 use crate::format::Format;
 use crate::input::{Fault, Input, Request};
 use crate::keys::{BlockKey, Handle, SubmissionKey, VersionKey};
+use crate::lineage::Lineage;
 use crate::log::{Block, Change, Happened, StageEntry, StageFile, Submission, Version, YardLog};
 use crate::query::State;
 
@@ -99,6 +100,7 @@ impl YardLog {
                 settlings: Vec::new(),
             },
             stages: Vec::new(),
+            lineage: Lineage::default(),
         }
     }
 

@@ -27,12 +27,6 @@ export async function pageNoted($: EngineInterface) {
 /** How the person decided a plan. */
 export type Outcome = { verdict?: unknown; reason?: unknown; channel?: unknown }
 
-/**
- * The plan Claude Code is asking the person to approve, while it is asked: where it was sent, the
- * end of the wait the permission request runs for it, and the page's outcome once the page decided.
- */
-export type Presenting = { id: string; cwd: string; caller: Caller; submission: string; end?: () => void; decided?: Outcome }
-
 export type YardState = {
   settings: Settings
   adapter: ReturnType<typeof descriptor> | undefined
@@ -52,7 +46,6 @@ export type YardState = {
   continues: string | undefined
   isOn: boolean
   enabling: Promise<boolean> | undefined
-  presenting: Presenting | null
 }
 
 function fresh(options: PluginOptions): YardState {
@@ -70,7 +63,6 @@ function fresh(options: PluginOptions): YardState {
     continues: undefined,
     isOn: false,
     enabling: undefined,
-    presenting: null,
   }
 }
 

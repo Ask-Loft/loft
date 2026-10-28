@@ -1,21 +1,22 @@
 // Yard Client's hooks: once `loft yard protocol` shows that the `loft` the plugin runs speaks a
-// protocol this mod speaks, they register Yard's tools, keep a page server running, give each
-// session its context, send the agent's questions, plans and tasks to Yard Log and the session's
-// events to the page server. Otherwise they leave Claude Code as it is and tell the person once
-// (the Features "Yard's tools", "Keep the mod and loft in step" and "Start with the session").
+// protocol this mod speaks, they register Yard's tools, keep a page server running, send the
+// agent's questions, plans and tasks to Yard Log and the session's events to the page server.
+// Otherwise they leave Claude Code as it is and tell the person once (the Features "Yard's tools",
+// "Keep the mod and loft in step" and "Start with the session"). They hook no event that Claude
+// Code's built-in guard passes over for a user's mod: the plugin's command hooks serve those
+// (the Feature "The Loft plugin").
 
 import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
 import { QUIET, type Ran } from '../loft'
-import { askQuestions, decideOnPage, ownDialog, presentPlan, waitOn } from './asking'
-import { contextFor } from './context'
+import { askQuestions, ownDialog, presentPlan, waitOn } from './asking'
 import { capture, checkCapture } from './capture'
 import { descriptor } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
 import { failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
-import { actorKey, callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
+import { callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
 import { mirrorCreated, mirrorUpdated } from './tasks'
 import { endAssigned } from './task-writes'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
@@ -46,7 +47,6 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
   if (home) state.box.tokenPath = `${home}/.yard/token`
   state.isOn = true
-  state.server.trees.add(cwd)
   void beat($, state.settings, state.server, state.box, await continued($), cwd)
   $.clock.every(BEAT, async () => {
     void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())
@@ -114,16 +114,6 @@ export function registerYard(on: On, options: PluginOptions) {
     return next(e)
   })
 
-  // The context, at the session's start and again after `/resume`, `/branch` and `/clear`.
-  on('classic.SessionStart', async ($, e, next) => {
-    const started = await next(e)
-    if (!['startup', 'resume', 'clear', 'fork'].includes(e.source)) return started
-    if (!(await ensureYard($, e.cwd))) return started
-    state.endedTasks.delete(actorKey((await callerOf($, undefined)).session))
-    const text = await contextFor($, e.cwd, undefined)
-    return text === undefined ? started : { ...started, additionalContext: [...(started.additionalContext ?? []), text] }
-  })
-
   // Each tool is served by a hook whose matcher names it literally.
   on('tool.call', { tool: 'mcp__loft__yard_read' }, ($, e, next) => callTool($, 'yard_read', e, next.signal))
   on('tool.call', { tool: 'mcp__loft__yard_write' }, ($, e, next) => callTool($, 'yard_write', e, next.signal))
@@ -141,12 +131,6 @@ export function registerYard(on: On, options: PluginOptions) {
   on('tool.call', { tool: 'ExitPlanMode' }, async ($, e, next) => {
     if (!state.isOn) return next(e)
     return presentPlan($, e as typeof e & { plan?: unknown; planFilePath?: unknown }, next)
-  })
-
-  on('classic.PermissionRequest', async ($, e, next) => {
-    const presented = state.presenting
-    if (e.tool_name !== 'ExitPlanMode' || !presented) return next(e)
-    return decideOnPage($, presented, () => next(e), e.tool_input, next.signal)
   })
 
   // Keep task preparation, native execution and its mirror in the same capture slot.

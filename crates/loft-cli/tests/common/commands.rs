@@ -98,7 +98,13 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 33] = [
+pub const COMMANDS: [Entry; 34] = [
+    (
+        "claude-yard-hook",
+        &["yard", "claude", "hook"],
+        Fixture::Empty,
+        "yard-claude-hook",
+    ),
     (
         "codex-yard-hook",
         &["yard", "codex", "hook"],

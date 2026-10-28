@@ -1,16 +1,17 @@
 key: 01a1646f-546c-7521-9643-bc5a6be5a9e6
 slug: start-with-the-session
 name: "Start with the session"
-body: "When a session starts, the agent knows where the work stands without being asked to look. At the same time the Loft mod checks its `loft`, as \"Keep the mod and loft in step\" states, registers Yard's tools and makes sure that a page server runs, as \"Share one page server\" states."
+body: "When a session starts, the agent knows where the work stands without being asked to look. At the same time the Loft mod checks its `loft`, as \"Keep the mod and loft in step\" states, registers Yard's tools and makes sure that a page server runs, as \"Share one page server\" states. The context comes from the plugin's command hooks, which run `loft yard claude hook`, so that it reaches the agent where Claude Code's built-in guard passes over the mod's own hooks."
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - 01a183e9-dfcb-7796-a0a4-3ca11fc1a795
 requirements:
   - key: 01a1646f-546c-7521-9643-bc630587c5df
     statement:
       form: event_driven
       when: "a session starts on a branch whose Yard Log exists"
-      system: "the Loft mod"
+      system: "the Loft plugin"
       shall: "give the agent, as context, the page's address, the stage active for the main agent, the open submissions and what was answered or decided since the agent last read Yard Log."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc648ffcbb12
@@ -24,14 +25,14 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc687ad65bab
         name: "The context is given again after `/resume` and `/branch`."
       - key: 01a16621-e7bc-7707-b123-2161fe5b53dc
-        name: "The mod reads the context as the agent's briefing with `loft yard read --context --mark-read`, so that the agent's next read since its last starts from what the context showed."
+        name: "The plugin reads the context as the agent's briefing with `loft yard read --context --mark-read`, so that the agent's next read since its last starts from what the context showed."
   - key: 01a1647c-e680-7753-bf17-f17606f6adc0
     statement:
       form: event_driven
       when: "the person runs `/clear`"
-      system: "the Loft mod"
+      system: "the Loft plugin"
       shall: "give the agent the context again, on Claude Code's session start of the source `clear`."
-    body: "No `session.start` reaches the mod after `/clear`, so the mod hears it from the session start that Claude Code's settings hooks are given."
+    body: "No `session.start` reaches the mod after `/clear`. The plugin's SessionStart command hook hears it, once the SessionEnd command hook of the session before has handed that session on, as \"Claude Yard hook\" states."
     criteria:
       - key: 01a1647c-e680-7753-bf17-f177bc991450
         name: "The context after `/clear` lists the open submissions that the session before it sent."

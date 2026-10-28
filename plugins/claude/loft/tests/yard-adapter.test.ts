@@ -17,7 +17,6 @@ test('the Claude adapter names its host on protocol two commands, events and hea
   await $.tool.call({ tool: 'mcp__loft__yard_published', branch: 'feat/shelf' })
   await $.session.end({ reason: 'clear', sessionId: SESSION } as never)
   w.state.session = 'session-2'
-  await $.classic.SessionStart({ source: 'clear' })
   await $.turn.start({ text: 'go', turnId: 't1' })
   await w.clock.advance(5000)
   const runs = w.state.runs.filter(run => run.argv.includes('--session'))

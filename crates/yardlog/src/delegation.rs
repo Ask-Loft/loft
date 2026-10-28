@@ -4,15 +4,15 @@ use crate::body::{Body, Status, Task, TaskState};
 use crate::input::{Fault, Input, Request};
 use crate::log::{Block, StageFile};
 use crate::write::{Context, fault};
-use crate::{Agent, StageKey, Time, YardLog};
+use crate::{Agent, Lineage, StageKey, Time, YardLog};
 
 fn unfinished(state: TaskState) -> bool {
     matches!(state, TaskState::Open | TaskState::Active)
 }
 
-fn same(left: Option<&Agent>, right: Option<&Agent>) -> bool {
+fn same(lineage: &Lineage, left: Option<&Agent>, right: Option<&Agent>) -> bool {
     match (left, right) {
-        (Some(left), Some(right)) => left.same(right),
+        (Some(left), Some(right)) => lineage.same(left, right),
         (None, None) => true,
         _ => false,
     }
@@ -38,7 +38,7 @@ pub(crate) fn faults(
             && file
                 .stage
                 .owner()
-                .is_some_and(|owner| !owner.same(&context.agent))
+                .is_some_and(|owner| !log.lineage.same(owner, &context.agent))
     });
     let activated = inputs.iter().any(|input| {
         input.id == *stage
@@ -46,7 +46,7 @@ pub(crate) fn faults(
     });
     let owner = held
         .and_then(|file| file.stage.owner())
-        .is_some_and(|owner| owner.same(&context.agent))
+        .is_some_and(|owner| log.lineage.same(owner, &context.agent))
         || (activated && !owned_by_another);
     let previous = log.find(&input.id);
     let before = previous.and_then(|block| {
@@ -58,16 +58,17 @@ pub(crate) fn faults(
     });
     let assigned = before
         .and_then(|task| task.assignee.as_ref())
-        .is_some_and(|agent| agent.same(&context.agent));
+        .is_some_and(|agent| log.lineage.same(agent, &context.agent));
     let claim = before.is_none_or(|task| task.assignee.is_none() && unfinished(task.state))
         && next
             .assignee
             .as_ref()
-            .is_some_and(|agent| agent.same(&context.agent));
+            .is_some_and(|agent| log.lineage.same(agent, &context.agent));
     let authorized = owner || assigned || claim;
     let mut faults = vec![];
     if !authorized
         && !same(
+            &log.lineage,
             before.and_then(|task| task.assignee.as_ref()),
             next.assignee.as_ref(),
         )
@@ -106,7 +107,11 @@ impl Block {
             let active = spans.last().filter(|span| span.ended.is_none());
             let unchanged = active.is_some_and(|span| {
                 task.state == TaskState::Active
-                    && same(span.assignee.as_ref(), task.assignee.as_ref())
+                    && same(
+                        &Lineage::default(),
+                        span.assignee.as_ref(),
+                        task.assignee.as_ref(),
+                    )
             });
             if unchanged {
                 continue;
@@ -145,7 +150,10 @@ impl YardLog {
                 .iter()
                 .filter_map(move |block| match &block.current().body {
                     Body::Task(task)
-                        if task.assignee.as_ref().is_some_and(|who| who.same(agent)) =>
+                        if task
+                            .assignee
+                            .as_ref()
+                            .is_some_and(|who| self.lineage.same(who, agent)) =>
                     {
                         Some((file, block, task))
                     }

@@ -5,8 +5,12 @@
 
 use std::thread;
 
-use crate::common::Scratch;
+use serde_json::json;
+use yardlog::Lineage;
+use yardlog_store::Held;
 use yardlog_store::home::{Home, HomeFile};
+
+use crate::common::{Failed, Scratch, Tree, write};
 
 #[test]
 fn each_file_of_the_machine_has_its_name_in_the_home_directory() {
@@ -106,4 +110,33 @@ fn changes_that_read_a_file_and_write_it_back_are_made_one_at_a_time() {
         home.read(HomeFile::Sessions).unwrap().as_deref(),
         Some(&b"40"[..])
     );
+}
+
+#[test]
+fn a_log_the_store_reads_carries_the_chains_of_continuations_its_home_records() {
+    let tree = Tree::new();
+    write(
+        &tree.store("feat/x"),
+        &json!([{"id": "build", "kind": "stage", "title": "Build", "status": "active"}]),
+    );
+    let home = Home::at(tree.scratch.0.join(".yard"));
+    home.write(HomeFile::Continuations, br#"{"session-b": "session-a"}"#)
+        .unwrap();
+    let store = tree.store("feat/x").with_home(Some(home));
+    let Held::Log(log) = store.read().unwrap() else {
+        panic!("no Yard Log");
+    };
+    assert_eq!(log.lineage.first("claude-code", "session-b"), "session-a");
+    let written = store
+        .update(|log| {
+            let log = log.unwrap();
+            let first = log.lineage.first("claude-code", "session-b");
+            Ok::<_, Failed>((log, first))
+        })
+        .unwrap();
+    assert_eq!(written.value, "session-a");
+    let Held::Log(alone) = tree.store("feat/x").with_home(None).read().unwrap() else {
+        panic!("no Yard Log");
+    };
+    assert_eq!(alone.lineage, Lineage::default());
 }

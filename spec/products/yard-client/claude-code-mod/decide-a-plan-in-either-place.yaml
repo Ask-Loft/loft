@@ -1,11 +1,12 @@
 key: 01a1646f-546c-7521-9643-bc41c1c5820f
 slug: decide-a-plan-in-either-place
 name: "Decide a plan in either place"
-body: "When an agent presents a plan with `ExitPlanMode`, Claude Code asks the person in the terminal to approve it. The Loft mod lets the prompt show and puts the plan into Yard Log as a `plan` block at once. The person can approve it or reject it on the page, with a reason the agent reads, or decide it in the terminal, and the first decision counts. An approval on the page ends plan mode, and the agent goes on in auto mode."
+body: "When an agent presents a plan with `ExitPlanMode`, Claude Code asks the person in the terminal to approve it. The Loft mod lets the prompt show and puts the plan into Yard Log as a `plan` block at once. The person can approve it or reject it on the page, with a reason the agent reads, or decide it in the terminal, and the first decision counts. An approval on the page ends plan mode, and the agent goes on in auto mode. The page's decision reaches Claude Code through the plugin's PermissionRequest command hook, which runs where Claude Code's built-in guard passes over the mod's own hooks."
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71a94f0aa021
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - 01a183e9-dfcb-7796-a0a4-3ca11fc1a795
 requirements:
   - key: 01a1646f-546c-7521-9643-bc42ae3198cb
     statement:
@@ -51,7 +52,7 @@ requirements:
     statement:
       form: event_driven
       when: "the person decides the plan on the page first"
-      system: "the Loft mod"
+      system: "the Loft plugin"
       shall: "give Claude Code the page's decision as the person's."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc4b064c0cda

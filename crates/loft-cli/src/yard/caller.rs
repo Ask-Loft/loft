@@ -1,19 +1,17 @@
 //! The agent that runs a `loft yard` command, and who it counts as: a session that continues
 //! another, as after `/clear`, counts as the first session of its chain for the submissions it
-//! sent and the revision it last read, while every Act keeps the session id that made it. The
-//! continuations and the revisions last read are the machine's, kept in `~/.yard/`.
+//! sent, the revision it last read, the stages it owns and the tasks assigned to it, while every
+//! Act keeps the session id that made it. The continuations and the revisions last read are the
+//! machine's, kept in `~/.yard/`; the chain rule is `yardlog`'s `Lineage`.
 
 use serde_json::{Map, Value, json};
 use yardlog::identity::{SessionKey, session_key};
-use yardlog::{Actor, Agent, YardLogKey};
+use yardlog::{Actor, Agent, Lineage, YardLogKey};
 use yardlog_store::home::{Home, HomeFile};
 
 use super::args;
 use super::failure::Failure;
 use super::home_json;
-
-/// The longest chain of continuations followed, against a cycle in a file edited by hand.
-const LONGEST_CHAIN: usize = 64;
 
 /// The agent that runs a command, where it names one.
 pub struct Caller {
@@ -82,7 +80,7 @@ impl Identity {
 }
 
 /// The continuations this machine records, read once for a command.
-pub struct Continuations(Map<String, Value>);
+pub struct Continuations(Lineage);
 
 impl Continuations {
     pub fn read(home: Option<&Home>) -> Result<Self, Failure> {
@@ -90,41 +88,20 @@ impl Continuations {
             Some(home) => home.read(HomeFile::Continuations)?,
             None => None,
         };
-        Ok(Self(home_json::object(bytes.as_deref())))
-    }
-
-    /// The first session of the chain `session` belongs to.
-    fn first(&self, host: &str, session: &str) -> String {
-        let mut current = session.to_owned();
-        for _ in 0..LONGEST_CHAIN {
-            match self
-                .0
-                .get(&session_key(host, &current))
-                .and_then(Value::as_str)
-            {
-                Some(earlier) if earlier != session => earlier.clone_into(&mut current),
-                _ => break,
-            }
-        }
-        current
+        Ok(Self(Lineage::read(bytes.as_deref())))
     }
 
     pub fn identity(&self, agent: &Agent) -> Identity {
         Identity {
             host: agent.host.clone(),
-            session: self.first(&agent.host, &agent.session),
+            session: self.0.first(&agent.host, &agent.session),
             subagent: agent.subagent.as_ref().map(|sub| sub.id.clone()),
         }
     }
 
     /// The session that continues `session`, where one does.
     pub fn continued_by(&self, host: &str, session: &str) -> Option<String> {
-        self.0
-            .iter()
-            .filter(|(_, ended)| ended.as_str() == Some(session))
-            .map(|(next, _)| SessionKey::parse(next))
-            .find(|next| next.host() == host)
-            .map(|next| next.session().to_owned())
+        self.0.continued_by(host, session)
     }
 
     /// Who an Act's actor counts as, where an agent made it.

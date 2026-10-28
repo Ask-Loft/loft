@@ -19,6 +19,11 @@ pub const DEFAULT_BASE: &str = "develop";
 
 #[derive(Subcommand)]
 pub enum YardAction {
+    /// Answer Claude Code's command hooks for the events a user's mod cannot hear.
+    Claude {
+        #[command(subcommand)]
+        action: super::claude::Action,
+    },
     /// Translate native Codex hooks and run their session worker.
     Codex {
         #[command(subcommand)]

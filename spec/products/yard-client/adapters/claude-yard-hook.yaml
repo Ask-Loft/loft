@@ -1,0 +1,136 @@
+key: 01a183e9-dfd2-74b1-a45a-149af1a33579
+slug: claude-yard-hook
+name: "Claude Yard hook"
+body: |
+  The Loft plugin's command hooks run `loft yard claude hook`, which reads one Claude Code hook object from standard input, or from `--input`, and prints Claude Code's hook output by default. `--format json` wraps that output as `hookOutput` in the standard Loft result.
+
+  Claude Code runs a plugin's command hooks where its built-in guard loads, on a machine with managed settings or under a Team or Enterprise login, and there passes over a user's mod's hooks on its settings hook events, on compaction and on the prompt. The command serves what the Claude adapter's mod cannot hear there: the context as a session or a subagent starts, the continuation of a session after `/clear` or a resume, the main agent's permission mode, compactions and the page's decision of a plan. It runs the same way where the guard does not load, so each of these has one path on every machine. It names the session's agents as the mod names them, with the host `claude-code`.
+tags:
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a183e9-dfcb-7796-a0a4-3ca11fc1a795
+requirements:
+  - key: 01a183e9-dfd2-74b1-a45a-149bf1804875
+    statement:
+      form: event_driven
+      when: "a SessionStart hook of the source `startup`, `resume`, `clear` or `fork` is received"
+      system: "the Claude Yard hook"
+      shall: "give the main agent its briefing from `loft yard read --context --mark-read` as additional context, followed only by the line that tells it to read Yard Log with `yard_read` before writing."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-149c4a9d8161
+        name: "The briefing is read with the host `claude-code` and the hook's session as the caller."
+      - key: 01a183e9-dfd2-74b1-a45a-149d1538005e
+        name: "The output is Claude Code's `hookSpecificOutput` with the hook's event name and the context as `additionalContext`."
+      - key: 01a183e9-dfd2-74b1-a45a-149eee7934bd
+        name: "The read records the revision the briefing showed as the main agent's last read."
+      - key: 01a183e9-dfd2-74b1-a45a-149fef294391
+        name: "A SessionStart hook of the source `compact` gives no context."
+  - key: 01a183e9-dfd2-74b1-a45a-14a037d9b68e
+    statement:
+      form: event_driven
+      when: "a SubagentStart hook is received"
+      system: "the Claude Yard hook"
+      shall: "give the subagent its briefing as additional context, read with the hook's session, the subagent's id and its type as the caller."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14a1de16e202
+        name: "The briefing names the tasks assigned to the subagent and their recorded stages."
+      - key: 01a183e9-dfd2-74b1-a45a-14a2bb2ea2f0
+        name: "The read records the revision the briefing showed as the subagent's last read."
+  - key: 01a183e9-dfd2-74b1-a45a-14a3956185c3
+    statement:
+      form: event_driven
+      when: "a SessionEnd hook of the reason `clear` or `resume` is received"
+      system: "the Claude Yard hook"
+      shall: "leave the ended session as a hand-off to the Claude Code process that ran it."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14a88aecc4ac
+        name: "A hook that is given no Claude Code process leaves no hand-off."
+      - key: 01a183e9-dfd2-74b1-a45a-14a9d1a810a1
+        name: "Hand-offs are kept in `~/.yard/`, never under the working tree."
+  - key: 01a183ea-67e8-75e0-b6d0-9777d2c0412c
+    statement:
+      form: event_driven
+      when: "a SessionStart hook of the source `clear` or `resume` is received in a Claude Code process that has a hand-off"
+      system: "the Claude Yard hook"
+      shall: "take the hand-off and record the new session as continuing the ended one with `loft yard continue`, before it reads the briefing."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14a4b6b293f6
+        name: "The briefing after `/clear` is read with the new session recorded as continuing the one that ended."
+      - key: 01a183e9-dfd2-74b1-a45a-14a5a774a93b
+        name: "A hand-off is taken once, by the next SessionStart hook of the source `clear` or `resume` in its process."
+      - key: 01a183e9-dfd2-74b1-a45a-14a6e790a4d7
+        name: "A SessionStart hook in another Claude Code process takes no hand-off."
+      - key: 01a183e9-dfd2-74b1-a45a-14a7d69ca7a1
+        name: "A hand-off left more than a minute before is discarded and not taken."
+      - key: 01a183ea-67e8-75e0-b6d0-97780378a270
+        name: "A SessionStart hook that is given no Claude Code process takes no hand-off and reads the briefing of its own session."
+  - key: 01a183e9-dfd2-74b1-a45a-14aa3c42a089
+    statement:
+      form: event_driven
+      when: "a UserPromptSubmit, PostToolUse or Stop hook of the main agent names a permission mode"
+      system: "the Claude Yard hook"
+      shall: "post `plan.start` when the session's mode becomes `plan` and `plan.end` when it leaves `plan`, keeping each session's last mode on the machine."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14ab0c96c220
+        name: "A mode heard again unchanged posts nothing."
+      - key: 01a183e9-dfd2-74b1-a45a-14ac7d3db027
+        name: "A session first heard outside plan mode posts nothing."
+      - key: 01a183e9-dfd2-74b1-a45a-14ad5885fd18
+        name: "A subagent's permission mode posts nothing and leaves the session's last mode as it was."
+      - key: 01a183e9-dfd2-74b1-a45a-14aea8c471e9
+        name: "Each session's last mode is kept in `~/.yard/`, never under the working tree."
+  - key: 01a183e9-dfd2-74b1-a45a-14af514c2da9
+    statement:
+      form: event_driven
+      when: "a PostCompact hook is received"
+      system: "the Claude Yard hook"
+      shall: "post a `compaction` event of the main agent, with no sizes and no usage."
+    criteria:
+      - key: 01a183ea-072a-770b-8855-636c42cc6f18
+        name: "A manual and an automatic compaction are each one event."
+      - key: 01a183ea-072a-770b-8855-636d2f7ec47e
+        name: "A compaction's event adds nothing to the token totals."
+  - key: 01a183e9-dfd2-74b1-a45a-14b0d4f06cc9
+    statement:
+      form: ubiquitous
+      system: "The Claude Yard hook"
+      shall: "post each event to the page server that `~/.yard/server.json` names, with the page server's control token, the host `claude-code`, the hook's session, its directory and the time."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14b1f3cf1e0e
+        name: "An event carries the control token and no `Origin`."
+      - key: 01a183e9-dfd2-74b1-a45a-14b262b971ce
+        name: "An event of the main agent names no agent."
+      - key: 01a183e9-dfd2-74b1-a45a-14b3c5e375ba
+        name: "No event holds the person's prompt, the agent's text or a tool call's input or result."
+  - key: 01a183e9-dfd2-74b1-a45a-14b4af501d17
+    statement:
+      form: event_driven
+      when: "a PermissionRequest hook for `ExitPlanMode` is received"
+      system: "the Claude Yard hook"
+      shall: "wait for the decision of the newest open submission of the hook's agent that holds a plan-mode `plan` block, and answer Claude Code with the decision where the page made it."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14b527df65c8
+        name: "An approval on the page answers `allow` with the tool's input and a change of the session's mode to `auto`."
+      - key: 01a183e9-dfd2-74b1-a45a-14b6190257cb
+        name: "A rejection on the page answers `deny` with the person's reason in the message."
+      - key: 01a183e9-dfd2-74b1-a45a-14b7303150a4
+        name: "A decision made in the terminal first ends the wait, and the hook answers nothing."
+      - key: 01a183e9-dfd2-74b1-a45a-14b8d540956c
+        name: "With no such submission open, the hook answers nothing at once."
+      - key: 01a183e9-dfd2-74b1-a45a-14b9db7714f2
+        name: "The hook's agent is the main agent, or the subagent the hook's `agent_id` names."
+  - key: 01a183e9-dfd2-74b1-a45a-14ba0656313e
+    statement:
+      form: unwanted
+      if: "Yard Log cannot be read or written, or no page server answers, while the Claude Yard hook serves a hook"
+      system: "the Claude Yard hook"
+      shall: "answer the hook with no output and exit 0, so that Claude Code goes on as it would without the plugin."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14bbe6224c9c
+        name: "A SessionStart hook outside a git repository exits 0 with no output."
+      - key: 01a183e9-dfd2-74b1-a45a-14bc3edb6bc0
+        name: "A PostCompact hook with no page server running exits 0, and its event is dropped."
+      - key: 01a183e9-dfd2-74b1-a45a-14bdd3725970
+        name: "A hook of an event that the command does not serve exits 0 with no output and posts nothing."

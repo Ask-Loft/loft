@@ -1,7 +1,7 @@
 key: 01a16621-e7bc-7707-b123-216501e46cf7
 slug: record-a-continuation
 name: "Record a continuation"
-body: "After `/clear` or a resume, Claude Code goes on in the same process under a new session id. The Loft mod records once, with `loft yard continue`, that the new session continues the one that ended, so that every later `loft yard` command counts the new session as the first of its chain for the submissions it sent and the revision it last read. No other command takes the continuation."
+body: "After `/clear` or a resume, Claude Code goes on in the same process under a new session id. The Loft mod records once, with `loft yard continue`, that the new session continues the one that ended, so that every later `loft yard` command, and the page server, count the new session as the first of its chain: for the submissions it sent, the revision it last read, the stages it owns and the tasks assigned to it. No other command takes the continuation."
 tags:
   - yard-command
 realizes:
@@ -27,12 +27,20 @@ requirements:
       form: event_driven
       when: "`loft yard continue --session <id> --from <ended>` runs"
       system: "`loft yard continue`"
-      shall: "record that session `<id>` continues session `<ended>`, so that every later `loft yard` command treats `<id>` as `<ended>` for the submissions it sent and the revision it last read."
+      shall: "record that session `<id>` continues session `<ended>`, so that every later `loft yard` command, and the page server, treat `<id>` as `<ended>` for the submissions it sent, the revision it last read, the stages it owns and the tasks assigned to it."
     criteria:
       - key: 01a1647c-e680-7753-bf17-f17e03443c33
         name: "A submission that the ended session's main agent sent counts as sent by the main agent of the session that continues it."
       - key: 01a1647c-e680-7753-bf17-f17f45dc6ca1
         name: "The continuing session starts from the revision that the ended session last read."
+      - key: 01a1841d-e02f-7402-9ad5-b81fb3fae702
+        name: "The continuing session's main agent works in the stage that the ended session's main agent made active, as its owner."
+      - key: 01a1841d-e02f-7402-9ad5-b82084e00618
+        name: "A task assigned to the ended session's main agent counts as assigned to the main agent of the session that continues it."
+      - key: 01a1841d-e02f-7402-9ad5-b82115a8606f
+        name: "The tokens and activity of the continuing session's main agent count toward the stage that the ended session's main agent made active."
+      - key: 01a1841d-e02f-7402-9ad5-b8223ab5ed85
+        name: "A write that makes a second stage active for the continuing session while the ended session's stage is active is refused, as for one agent."
       - key: 01a1647c-e680-7753-bf17-f180dc77d947
         name: "A chain of continuations, as after two `/clear`s, reaches back to the first session of the chain."
       - key: 01a1647c-e680-7753-bf17-f181455e4d44

@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loft-yard-claude-hook-1.json",
+  "title": "The result of loft yard claude hook --format json, version 1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "hookOutput",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-yard-claude-hook/1"
+        },
+        "outcome": {
+          "const": "handled"
+        },
+        "hookOutput": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hookSpecificOutput": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "hookEventName"
+              ],
+              "properties": {
+                "hookEventName": {
+                  "type": "string",
+                  "enum": [
+                    "SessionStart",
+                    "SubagentStart",
+                    "PermissionRequest"
+                  ]
+                },
+                "additionalContext": {
+                  "type": "string"
+                },
+                "decision": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "behavior"
+                  ],
+                  "properties": {
+                    "behavior": {
+                      "type": "string",
+                      "enum": [
+                        "allow",
+                        "deny"
+                      ]
+                    },
+                    "updatedInput": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "plan": {
+                          "type": "string"
+                        },
+                        "planFilePath": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "updatedPermissions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "type",
+                          "mode",
+                          "destination"
+                        ],
+                        "properties": {
+                          "type": {
+                            "const": "setMode"
+                          },
+                          "mode": {
+                            "const": "auto"
+                          },
+                          "destination": {
+                            "const": "session"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-yard-claude-hook/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message",
+        "sites"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "claude-hook"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/site"
+          }
+        }
+      }
+    }
+  }
+}

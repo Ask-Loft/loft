@@ -1,7 +1,7 @@
 key: 01a1646f-546c-7521-9643-bc69fcfce2ec
 slug: the-loft-plugin
 name: "The Loft plugin"
-body: "Yard Client reaches Claude Code through the Loft plugin that the repository's marketplace already lists, beside the `loft-spec` skill. The plugin adds the `yard` skill beside it and holds Yard Client's hooks in its one mod, and carries no MCP server and no built program: Claude Code runs the mod from its TypeScript source, and the mod runs `loft`, which the plugin already needs."
+body: "Yard Client reaches Claude Code through the Loft plugin that the repository's marketplace already lists, beside the `loft-spec` skill. The plugin adds the `yard` skill beside it and holds Yard Client's hooks in its one mod and in command hooks that run `loft`, and carries no MCP server and no built program: Claude Code runs the mod from its TypeScript source, and both the mod and the command hooks run `loft`, which the plugin already needs."
 realizes:
   - 01a144ee-c59d-7512-b23e-0aacc4f16f8e
   - 01a16469-559e-73c4-85f2-71a609a6b01d
@@ -25,7 +25,7 @@ requirements:
       shall: "run Yard Client's hooks in one mod."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc6f40f70b34
-        name: "The plugin's `hooks/hooks.json` names one hooks module, which lies beside it, and holds no command hook."
+        name: "The plugin's `hooks/hooks.json` names one hooks module, which lies beside it."
       - key: 01a1646f-546c-7521-9643-bc702a58c485
         name: "The plugin holds no `.mcp.json`."
       - key: 01a1646f-546c-7521-9643-bc7141354239
@@ -34,6 +34,33 @@ requirements:
         name: "The plugin's `yard` skill lies at `skills/yard/`, beside `skills/loft-spec/`."
       - key: 01a1646f-546c-7521-9643-bc73ad3fd07b
         name: "The repository's `.claude-plugin/marketplace.json` lists the plugin `loft` at `./plugins/claude/loft`, as before."
+  - key: 01a183e9-dfd2-74b1-a45a-14bec14372e8
+    statement:
+      form: ubiquitous
+      system: "The plugin's `hooks/hooks.json`"
+      shall: "hold one command hook that runs `loft yard claude hook` for each of the events SessionStart, SessionEnd, SubagentStart, UserPromptSubmit, PostToolUse, Stop and PostCompact, one for PermissionRequest of `ExitPlanMode`, and no other command hook."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14bf569c68bb
+        name: "Each command hook runs `loft` through the `loftCommand` setting, with `LOFT_TELEMETRY` and `LOFT_UPDATE_CHECK` set to `off`."
+      - key: 01a183e9-dfd2-74b1-a45a-14c0b6bfae37
+        name: "A `loftCommand` of more than one word, such as `pnpm exec loft`, runs its first word with the others as its first arguments."
+      - key: 01a183e9-dfd2-74b1-a45a-14c1bcd08990
+        name: "Each command hook passes `loft` the id of the Claude Code process that runs it."
+      - key: 01a183e9-dfd2-74b1-a45a-14c2f1e0d78d
+        name: "The PermissionRequest hook allows a day before Claude Code ends it, so that a plan decided late on the page still reaches Claude Code."
+  - key: 01a183e9-dfd2-74b1-a45a-14c3e87f62d5
+    statement:
+      form: ubiquitous
+      system: "The Loft mod"
+      shall: "register no hook on an event that Claude Code's built-in guard passes over for a user's mod."
+    body: "Where the guard loads, Claude Code runs no hook of a user's mod on these events and tells the person so for each one, and a plugin installed from a marketplace is always a user's. A hook the mod registered on one of them would serve nobody there and would be heard twice beside the plugin's command hooks elsewhere."
+    criteria:
+      - key: 01a183e9-dfd2-74b1-a45a-14c4d303077f
+        name: "The mod registers no hook on a `classic.` event."
+      - key: 01a183e9-dfd2-74b1-a45a-14c5a979d9e4
+        name: "The mod registers no hook on `prompt.compose`, `prompt.section`, `prompt.context`, `prompt.attachment`, `skill.prompt`, `attribution.text`, `session.compact` or `settings.read`."
+      - key: 01a183e9-dfd2-74b1-a45a-14c6ffcb6274
+        name: "The mod registers no `session.append` hook filtered to the rows of an attachment, of hook context or of a compaction."
   - key: 01a1646f-546c-7521-9643-bc7439f2ddc5
     statement:
       form: ubiquitous

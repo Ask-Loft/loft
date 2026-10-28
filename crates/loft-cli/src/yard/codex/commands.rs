@@ -111,47 +111,30 @@ fn document(
     }
 }
 
-/// What a read gives the caller, as `loft yard read` does with these details.
-struct Details {
-    submissions: bool,
-    context: bool,
+/// The caller's briefing, as `loft yard read --context --mark-read` gives it: the read it shows
+/// is recorded as the caller's last.
+pub fn briefing(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
+    let done = yard_read::briefing_of(Path::new(dir), caller.runner(), port);
+    document(yard_read::SCHEMA, "read", done)
 }
 
-fn read_with(dir: &str, caller: &Caller, port: u16, details: &Details) -> Result<Value> {
+/// Yard Log with every submission's lifecycle, as `loft yard read --submissions` gives it.
+pub fn history(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
     let args = ReadArgs {
         since: None,
         versions: false,
         details: ReadDetails {
             reports: false,
-            submissions: details.submissions,
+            submissions: true,
         },
-        mark_read: details.context,
-        context: details.context,
+        mark_read: false,
+        context: false,
         agent: caller.runner(),
         beyond: Beyond { port },
         output: json_output(),
     };
     let done = yard_read::document(Path::new(dir), args);
     document(yard_read::SCHEMA, "read", done)
-}
-
-/// The caller's briefing, as `loft yard read --context --mark-read` gives it: the read it shows
-/// is recorded as the caller's last.
-pub fn briefing(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
-    let details = Details {
-        submissions: false,
-        context: true,
-    };
-    read_with(dir, caller, port, &details)
-}
-
-/// Yard Log with every submission's lifecycle, as `loft yard read --submissions` gives it.
-pub fn history(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
-    let details = Details {
-        submissions: true,
-        context: false,
-    };
-    read_with(dir, caller, port, &details)
 }
 
 /// Changes the caller's tasks as `loft yard task` does: `change` applied to Yard Log as it

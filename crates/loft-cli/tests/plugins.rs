@@ -259,10 +259,168 @@ fn the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks() {
     assert_eq!(newest, report["protocol"].to_string());
 }
 
+/// The command each of the Claude Code plugin's command hooks runs.
+const CLAUDE_HOOK: &str = "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"";
+
 #[test]
-fn the_claude_code_plugins_hooks_json_holds_an_empty_hooks_record_for_a_host_without_modules() {
-    let hooks = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
-    assert_eq!(hooks["hooks"], json!({}));
+fn the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook()
+ {
+    let manifest = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
+    let hooks = manifest["hooks"].as_object().unwrap();
+    let mut names: Vec<_> = hooks.keys().map(String::as_str).collect();
+    names.sort_unstable();
+    assert_eq!(
+        names,
+        [
+            "PermissionRequest",
+            "PostCompact",
+            "PostToolUse",
+            "SessionEnd",
+            "SessionStart",
+            "Stop",
+            "SubagentStart",
+            "UserPromptSubmit"
+        ]
+    );
+    for (name, groups) in hooks {
+        let groups = groups.as_array().unwrap();
+        assert_eq!(groups.len(), 1, "{name}");
+        let asking = name == "PermissionRequest";
+        assert_eq!(
+            groups[0].get("matcher"),
+            asking.then(|| json!("ExitPlanMode")).as_ref(),
+            "{name}"
+        );
+        assert_eq!(
+            groups[0]["hooks"],
+            json!([{"type": "command", "command": CLAUDE_HOOK, "timeout": if asking { 86_400 } else { 10 }}]),
+            "{name}"
+        );
+    }
+}
+
+/// Runs the Claude Code plugin's hook command through the shell as Claude Code does, with the
+/// `loftCommand` setting `setting` and the hook object `hook` on its standard input.
+fn run_claude_hook(scratch: &Scratch, setting: &str, hook: &Value) -> std::process::Output {
+    use std::io::Write as _;
+    let mut command = Command::new("sh");
+    command
+        .args(["-c", CLAUDE_HOOK])
+        .env("CLAUDE_PLUGIN_OPTION_LOFTCOMMAND", setting)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+    isolate(&mut command, &scratch.home());
+    let mut child = command.spawn().unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(hook.to_string().as_bytes())
+        .unwrap();
+    child.wait_with_output().unwrap()
+}
+
+#[cfg(unix)]
+#[test]
+fn the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process()
+{
+    let scratch = Scratch::empty();
+    let setting = format!("/usr/bin/env {}", env!("CARGO_BIN_EXE_loft"));
+    let dir = scratch.0.canonicalize().unwrap();
+    let ended =
+        json!({"session_id": "s1", "cwd": dir, "hook_event_name": "SessionEnd", "reason": "clear"});
+    let ran = run_claude_hook(&scratch, &setting, &ended);
+    assert!(ran.status.success(), "{}", stderr(&ran));
+    let started = json!({"session_id": "s2", "cwd": dir, "hook_event_name": "SessionStart", "source": "clear"});
+    let ran = run_claude_hook(&scratch, &setting, &started);
+    assert!(ran.status.success(), "{}", stderr(&ran));
+    let continued = fs::read_to_string(scratch.home().join(".yard/continuations.json")).unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(&continued).unwrap(),
+        json!({"s2": "s1"}),
+        "both hooks ran under one parent, the process the shell names in $PPID"
+    );
+}
+
+/// The events whose hooks Claude Code's built-in guard passes over for a user's mod; `classic.`
+/// names every settings hook event.
+const GUARDED: [&str; 9] = [
+    "classic.",
+    "prompt.compose",
+    "prompt.section",
+    "prompt.context",
+    "prompt.attachment",
+    "skill.prompt",
+    "attribution.text",
+    "session.compact",
+    "settings.read",
+];
+
+/// The `session.append` rows the guard keeps from a user's mod, by the `door` a hook filters to.
+const GUARDED_DOORS: [&str; 3] = ["attachment", "hook-context", "compaction"];
+
+/// Each hook `source` registers on an event the guard passes over, as `on('<event>'` names it.
+fn guarded_hooks(source: &str) -> Vec<String> {
+    let mut found = Vec::new();
+    for (at, _) in source.match_indices("on(") {
+        let rest = &source[at + 3..];
+        let Some(quote) = rest
+            .chars()
+            .next()
+            .filter(|c| matches!(c, '\'' | '"' | '`'))
+        else {
+            continue;
+        };
+        let Some(name) = rest[1..].split(quote).next() else {
+            continue;
+        };
+        let filter = rest[1 + name.len()..].split(')').next().unwrap_or_default();
+        let door = GUARDED_DOORS
+            .iter()
+            .any(|door| filter.contains(&format!("door: '{door}'")));
+        if GUARDED.iter().any(|guarded| name.starts_with(guarded))
+            || (name == "session.append" && door)
+        {
+            found.push(name.to_owned());
+        }
+    }
+    found
+}
+
+#[test]
+fn a_hook_on_an_event_the_guard_passes_over_is_found() {
+    let source = "on('turn.start', f)\non('classic.Stop', f)\non(\"session.compact\", f)\non('session.append', { door: 'hook-context' }, f)\non('session.append', f)";
+    assert_eq!(
+        guarded_hooks(source),
+        ["classic.Stop", "session.compact", "session.append"]
+    );
+}
+
+#[test]
+fn the_mod_registers_no_hook_on_an_event_claude_code_s_guard_passes_over() {
+    let mut sources = vec![workspace().join(CLAUDE_ROOT).join("hooks")];
+    let mut found = Vec::new();
+    while let Some(path) = sources.pop() {
+        if path.is_dir() {
+            sources.extend(
+                fs::read_dir(&path)
+                    .unwrap()
+                    .map(|entry| entry.unwrap().path()),
+            );
+        } else if path
+            .extension()
+            .is_some_and(|extension| extension == "ts" || extension == "tsx")
+        {
+            let source = fs::read_to_string(&path).unwrap();
+            found.extend(
+                guarded_hooks(&source)
+                    .into_iter()
+                    .map(|name| format!("{}: {name}", path.display())),
+            );
+        }
+    }
+    assert_eq!(found, Vec::<String>::new());
 }
 
 /// The oldest Claude Code the mod runs under, as the Loft mod's Component states it.
