@@ -43,10 +43,14 @@ raises its rule, and no other rule at warning.
 | `read` | A file breaks the YAML subset, holds an unknown or missing field, a bad value, or sits at a path the format does not allow | Fix the file at the line and column given; see `the-loop.md` for the subset and `format.md` for the fields |
 | `validation` | The tree reads but breaks a rule across nodes: a reference to a key that is not there, a decision incomplete for its state, a tag listed twice, a conflict record left by a merge | Fix the reference or complete the node; a conflict record is settled as `publishing-and-merging.md` says |
 | `lint-config` | `spec/lint.yaml` names a rule, severity or option that does not exist | Fix the entry at the line given |
-| `store` | `spec/` cannot be read: missing, unreadable, or not a tree | Run `loft` from the directory that holds `spec/` |
-| `refused` | The command refused to act, such as `loft init` over an existing `spec/` | Read the message; it names what to change |
-| `integrity` | The tree and the lock disagree | Only `loft verify` and `loft publish` report it; see `publishing-and-merging.md` |
+| `store` | `spec/` cannot be read: missing, unreadable, or not a tree; `loft init` over an existing `spec/` is one too | Run `loft` from the directory that holds `spec/` |
+| `refused` | The command refused to act, such as `loft publish` off the publish branch, or `loft render` asked to write under `spec/` | Read the message; it names what to change |
+| `integrity` | A reference does not resolve, or the edges form a cycle, so the document cannot be rendered | Only `loft render` reports it; run `loft check` and fix what it reports |
 | `base` | The `--baseline` revision names no commit, shares no history with HEAD, or its tree does not read, or the command ran outside a git repository | Name a revision HEAD descends from, such as `develop`, or fix the base's file at the line given |
+
+`loft verify` reports one more kind, `lock`, where there is no lock or it does not read; run
+`loft publish` on the publish branch, as `publishing-and-merging.md` says. A tree that differs
+from the lock is not an error: `loft verify` exits 1 with the outcome `mismatch`.
 
 ## Against a base
 

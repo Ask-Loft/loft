@@ -69,15 +69,30 @@ test('an identified worker end returns its active tasks to open in one loft yard
   expect(writes(w)).toHaveLength(0)
 })
 
-test("the main agent's turn end and its session's end each release the main agent's tasks", async ($, on) => {
+const MAIN = `--session ${SESSION} --host claude-code --port 7411 --format json`
+
+test("the end of the main agent's turn that was not interrupted releases nothing, and its tasks keep mirroring", async ($, on) => {
   const w = world(on, { protocol: 2 })
+  w.state.read = doc()
   await start($)
   await $.turn.complete({ turnId: 't1', answer: '', durationMs: 1, reason: 'answer', isAborted: false } as never)
+  expect(taskRuns(w)).toEqual([])
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '7', status: 'completed', metadata: { yardTask: 'shared' } } as never)
+  expect(taskRuns(w)).toEqual([`task shared --mirror --state done ${MAIN}`])
+})
+
+test("the main agent's interrupted turn returns its active tasks to open", async ($, on) => {
+  const w = world(on, { protocol: 2 })
+  await start($)
+  await $.turn.complete({ turnId: 't1', answer: '', durationMs: 1, reason: 'aborted', isAborted: true } as never)
+  expect(taskRuns(w)).toEqual([`task --release ${MAIN}`])
+})
+
+test("the main agent's session's end returns its active tasks to open", async ($, on) => {
+  const w = world(on, { protocol: 2 })
+  await start($)
   await $.session.end({ reason: 'other', sessionId: SESSION } as never)
-  expect(taskRuns(w)).toEqual([
-    `task --release --session ${SESSION} --host claude-code --port 7411 --format json`,
-    `task --release --session ${SESSION} --host claude-code --port 7411 --format json`,
-  ])
+  expect(taskRuns(w)).toEqual([`task --release ${MAIN}`])
 })
 
 test('an ended worker cannot mirror late delegated progress until an identified new start', async ($, on) => {

@@ -16,8 +16,9 @@ and the merge driver. The edit cycle belongs to
 
 ## Start a branch and bring it up to date
 
-- Name the base of every branch explicitly, and start it from the latest published state of the
-  publish branch, or from the branch the user names.
+- Name the base of every branch explicitly, and start it from the integration branch, such as
+  `develop`, where the project has one, else from the publish branch, or from the branch the
+  user names.
 - When the base moves on, rebase onto it or merge it in with the merge driver installed, below,
   and settle each conflict once.
 - When a git step that discards work fails, such as a reset, a checkout over changes or a forced
@@ -29,10 +30,13 @@ Run `loft publish` only when the user asks for it. It runs on the publish branch
 `spec/loftspec.yaml` names another as `publishBranch`, over a `spec/` with no uncommitted
 change. It gives each new node a label in `spec/labels.yaml`, and writes `loft.lock.json`, which
 pins the tree. Commit those two files together, and nothing else, as the publish commit. A second
-`loft publish` with nothing changed writes nothing.
+`loft publish` with nothing changed writes nothing. Run `loft status` first: it reports the
+branch, any uncommitted path under `spec/`, and whether the tree matches the lock.
 
-A publish refuses on another branch, over uncommitted changes, or over a tree with errors; read
-the refusal and report it rather than working around it.
+A publish refuses on another branch, over uncommitted changes, over a tree with errors or a lock
+that does not read, where git cannot be run, and, for a connected document, where its remote
+cannot be reached or refuses the change. Read the refusal and report it rather than working
+around it.
 
 ## Verify in CI
 
@@ -44,7 +48,9 @@ next publish makes normative, so they run `loft fmt --check` and
 ## Merge with the merge driver
 
 Run `loft merge-driver --install` once in each clone. git then merges each file of `spec/` by
-key: two branches that edit different nodes, or different fields of one node, merge cleanly.
+key, and each record of `.yard/`: two branches that edit different nodes, or different fields of
+one node, merge cleanly. `spec/lint.yaml` is not merged by key: where both branches change it,
+merge it by hand.
 When git runs the driver through something other than a `loft` on its search path, pass the
 command that starts it: `loft merge-driver --install --command "npx --no-install loft"`. When
 the install writes `.gitattributes`, commit it: every clone needs the attribute, while the driver

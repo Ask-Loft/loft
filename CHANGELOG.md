@@ -21,6 +21,13 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - The Claude plugin registers its session's tree with a page server another session already
   runs, so the page shows that tree and takes its answers; before, it did so only where its own
   `loft yard serve` started the page server.
+- A main agent's assigned tasks stay active across its turns, in Claude Code and in Codex. Only
+  the end of a subagent's run, an interrupted turn or the session's end returns an agent's active
+  tasks to open; before, the end of every turn of the main agent did.
+- The `loft-spec` and `yard` skills say how `loft` and Yard behave today. Where Yard is in use, a
+  change to `spec/` is committed only once the person has approved it there. The Claude Code skill
+  also pre-approves `loft find`, `loft terms`, `loft status` and `loft review`, which write
+  nothing.
 - A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, is released from `develop` without
   `loft verify`: npm publishes it under the dist-tag of its identifier and GitHub marks it a
   prerelease, so neither offers it as the latest. `loft` orders a prerelease before the release

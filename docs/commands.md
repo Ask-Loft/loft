@@ -6,7 +6,7 @@ takes `--help`.
 | Command | What it does |
 |---|---|
 | `loft init [--no-skill \| --no-plugin]` | Creates an empty document in the current directory, and the agent skill beside it; `--no-plugin` leaves `.claude/settings.json` alone |
-| `loft fmt [--check]` | Rewrites `spec/` in canonical layout, mints missing keys, turns references written by name into keys and drops the label bindings of deleted nodes, or reports drift |
+| `loft fmt [--check]` | Rewrites `spec/` in canonical layout, mints missing keys, turns references written by name into keys and marks the label bindings of deleted nodes departed, or reports drift |
 | `loft check [--fail-on <severity>] [--baseline <revision>]` | Reads, validates and lints `spec/`; with `--baseline`, marks each finding introduced or preexisting against the tree where HEAD left the revision, and gates on the introduced ones |
 | `loft render [--openspec <dir> [--force]]` | Writes the Markdown projection and the canonical JSON export, or the specification as OpenSpec main specs |
 | `loft find <query>` | Prints the key, label, kind, file and name of each node or decision a label, slug, key or name identifies |

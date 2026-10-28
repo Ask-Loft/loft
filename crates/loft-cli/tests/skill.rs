@@ -180,6 +180,28 @@ fn each_host_s_adaptation_lies_under_agents() {
 }
 
 #[test]
+fn the_claude_code_fragment_pre_approves_only_the_commands_that_write_nothing() {
+    let fragment = text(&skill_source().join("agents/claude/frontmatter.yaml"));
+    let tools = fragment
+        .lines()
+        .find_map(|line| line.strip_prefix("allowed-tools: "))
+        .unwrap();
+    assert_eq!(
+        tools.split(", ").collect::<Vec<_>>(),
+        [
+            "Bash(loft --version)",
+            "Bash(loft check:*)",
+            "Bash(loft fmt --check:*)",
+            "Bash(loft verify:*)",
+            "Bash(loft find:*)",
+            "Bash(loft terms:*)",
+            "Bash(loft status:*)",
+            "Bash(loft review:*)",
+        ]
+    );
+}
+
+#[test]
 fn the_frontmatter_holds_the_name_and_the_description_alone() {
     let skill_md = text(&skill_source().join("SKILL.md"));
     let (frontmatter, _) = split(&skill_md);

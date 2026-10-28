@@ -9,4 +9,4 @@
 #
 # allowed-tools pre-approves only the commands that change nothing, so every write still asks.
 when_to_use: Use when the repository holds a spec/ directory or a loft.lock.json, when the user names Loft, a Specification, a Requirement or criterion, a label such as RQ-12 or AC-40, a Feature, Component, Constraint, Quality Attribute or decision, or asks to specify, spec out, write acceptance criteria, review a spec, or fix loft check findings.
-allowed-tools: Bash(loft --version), Bash(loft check:*), Bash(loft fmt --check:*), Bash(loft verify:*)
+allowed-tools: Bash(loft --version), Bash(loft check:*), Bash(loft fmt --check:*), Bash(loft verify:*), Bash(loft find:*), Bash(loft terms:*), Bash(loft status:*), Bash(loft review:*)

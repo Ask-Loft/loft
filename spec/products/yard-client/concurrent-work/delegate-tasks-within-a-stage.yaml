@@ -100,6 +100,14 @@ requirements:
         name: "An event without a reliable agent identity changes no task."
       - key: 01a182b6-3c58-7235-ad04-392745d42342
         name: "The adapter returns the agent's tasks to open in one write, as `loft yard task --release` does."
+      - key: 01a18475-9e95-77ed-8ed1-562b1e5b8a85
+        name: "A subagent ends when its run ends."
+      - key: 01a18475-9e95-77ed-8ed1-562cdb8031bf
+        name: "A main agent ends when its session ends."
+      - key: 01a18475-9e95-77ed-8ed1-562dbc7e6ba4
+        name: "The end of a main agent's turn that was not interrupted leaves its active tasks active."
+      - key: 01a18475-9e95-77ed-8ed1-562e0424366d
+        name: "A main agent's interrupted turn returns its active tasks to open."
   - key: 01a18053-9e08-72a7-ab94-f3ccb1588733
     statement:
       form: ubiquitous

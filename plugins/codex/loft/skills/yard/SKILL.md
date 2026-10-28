@@ -22,23 +22,26 @@ Every block has an `id` (lowercase letters, digits and hyphens, starting with a 
 `kind`. Every block but a stage names its `stage`. `after` places a block after another one; a new
 block without it goes last. Writing a block again with the same id makes a new version of it,
 which holds the whole block: write every field you mean to keep. Every earlier version stays in
-Yard Log.
+Yard Log. A block keeps its kind and its stage, and `after` names a block of the same stage. A
+block that an open submission holds cannot change: withdraw the submission first.
 
 - `stage`: `title`, `goal` and `status` (`planned`, `active`, `done` or `dropped`).
 - `note`: `markdown`, with an optional `title`, `tone` (`info`, `success`, `warning` or `danger`)
   and `folded`. Markdown only: a note holds no raw HTML.
 - `question`: `prompt`, a short `header`, an optional `context` in Markdown, and two or more
-  `options`, each with a `label`, a `detail` and `recommended`. `multiple` lets the person choose
-  more than one option; `ownWords` lets them answer in their own words.
+  `options`, each with a `label`, a `detail` and `recommended`. Labels are unique, and a
+  question with one answer recommends at most one option. `multiple` lets the person choose more
+  than one option; `ownWords` lets them answer in their own words.
 - `approval`: `title` and `markdown`: something the person approves, or rejects with a reason.
 - `plan`: `title`, `markdown` and, for a plan file within the tree, its `path` relative to the tree.
+  Never set `planMode`: the adapter sets it on a plan presented through the host's plan mode.
 - `decision`: `title`, `consequence`, and the `question` it settles, by the question's id.
 - `task`: `title`, `state` (`open`, `active`, `done` or `dropped`), `detail` and `type`
   (`regular`, the default, or `fix`), with optional `assignee`: an agent's `host` and `session`,
   plus `agent` and `agentType` for a subagent.
 - `loft`: a `view` of the branch's Loft specification (`spec-change`, `decision`, `trace`,
-  `findings` or `publish`) and an optional `note`. `loft` runs the view and keeps its report; see
-  below.
+  `findings` or `publish`) and an optional `note`, in Markdown with no raw HTML. `loft` runs the
+  view and keeps its report; see below.
 
 Only the person answers and decides: never write an answer or an outcome. Only `loft` records a
 `loft` block's report: never write one, and never write a `loft` block again once written.
@@ -82,9 +85,9 @@ the recorded task id, stage and instructions to read Yard Log under its own call
 Keep the same task through handoff: never create a second task for the delegated work. The stage
 owner or current assignee can reassign or release it; other agents cannot overwrite its
 assignment or execution state. Use the host adaptation's explicit binding where supported, or
-write the existing task directly. A session recorded as continuing another, after `/clear` or a
-resume, keeps that session's stages and tasks; any other new session needs an explicit
-assignment or stage handoff. Never infer identity from an agent's display name.
+write the existing task directly. A new session needs an explicit assignment or stage handoff,
+unless the host adaptation says it continues an earlier one. Never infer identity from an
+agent's display name.
 
 ## Plan, then wait to be asked to build
 
@@ -118,7 +121,9 @@ Either way, mark a task `active` in a write before its work starts. As soon as i
 it `done`, or `dropped` with a reason in its `detail`. Different tasks can be active in parallel,
 including tasks executed by different agents within one stage. Update each task when its own
 work ends, independently of the others. An agent's end alone does not prove its task complete:
-unfinished execution returns to `open`, retaining its assignee for review or reassignment.
+unfinished execution returns to `open`, retaining its assignee for review or reassignment. An
+agent ends when its run as a subagent ends, when its session ends, or when it is interrupted;
+the end of a turn of a session's main agent is not its end, and its tasks stay as they are.
 After a stale refusal, reread the task and preserve the latest assignment and unrelated fields
 before retrying; stop if the task was reassigned to someone else.
 Never mark the tasks of a stage `done` in one write at its end: the ones not marked as they ran
@@ -181,7 +186,8 @@ is a later block.
   `decision` by its slug, its key or its label.
 - Record a `findings` view after `loft check`, with a reason for each finding left in place, in
   `reasons`: each with the finding's `rule`, the `key` of the node it names and the `reason`.
-- Record a `trace` view once the tests are linked and the links accepted.
+- Record a `trace` view once the tests are linked and the links accepted. A `trace` or
+  `findings` view also compares with a `base` revision when you give one.
 - Record the publish with the published operation on the base branch once `loft publish` is committed
   there. `loft` publishes only on its publish branch, so the publish comes after the branch is
   merged and its Yard Log closed: name the branch whose Yard Log the merge brought in, and commit
@@ -265,8 +271,8 @@ The startup context is your briefing, from `loft yard read --context --mark-read
 recorded as your last, so a later read with `--since` starts from what it showed. A later prompt's
 context says only whether decision notifications reach you. Read with `--mark-read` before your
 first write, then base your write on that result's revision. Run the commands in the worktree
-whose branch you are recording. Each result reports the page's address and whether git
-ignores `.yard/`; where it is ignored, leave it out of commits.
+whose branch you are recording. Each result reports the page's address, and a read also
+reports whether git ignores `.yard/`; where it is ignored, leave it out of commits.
 
 ### Questions and plan approval use the Yard page
 
@@ -397,8 +403,10 @@ It identifies steps by exact text and duplicate occurrence: reordering retains t
 renaming creates a new task and drops the old unfinished task. Removed completed tasks stay done.
 Do not duplicate these tasks in explicit writes.
 
-When Codex does not offer `update_plan`, write Yard task blocks yourself. For a fix, read the
-mirrored task and write its whole block with `type: fix`; later mirrors retain that classification.
+When Codex does not offer `update_plan`, write Yard task blocks yourself. For a fix, run
+`loft yard task TASK-ID --type fix` with your caller arguments, which changes that field alone,
+or read the mirrored task and write its whole block with `type: fix`; later mirrors retain that
+classification.
 Unbound steps need a working stage: none is mirrored while your active assigned tasks lie in more
 than one stage. A step mirrored into a stage you do not own is assigned to you. Keep stages,
 notes, decisions and Loft reports yourself.
@@ -412,8 +420,11 @@ removing a bound step leaves the task unchanged. Another assignee's progress and
 delegated tasks are preserved.
 
 An identified end or interruption returns your still-active assignments to open, retaining their
-assignee and execution history. It never implies completion. A new start permits progress again;
-late native updates from an ended worker are ignored. Ambiguous actor identity changes no task.
+assignee and execution history; it never implies completion. A subagent's stop, an interruption
+and the session's end each count. The main agent's `Stop` at the end of an uninterrupted turn
+does not, and leaves them active. A new start permits progress again; late native updates from an
+ended worker are ignored. Ambiguous actor identity changes no task. A new Codex session does not
+continue an earlier one: it needs an explicit assignment or stage handoff.
 Startup context lists your assigned task IDs and original stages separately from your own stage;
 read Yard Log for any assignments omitted from that bounded context.
 

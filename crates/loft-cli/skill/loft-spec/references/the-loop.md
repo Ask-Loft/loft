@@ -27,7 +27,8 @@ override them here.
 4. Fix each error and each finding at warning, then each finding below warning that the text
    should not carry. Read `lint-findings.md` only for a finding whose message leaves its fix
    unclear. Return to step 2.
-5. Commit `spec/` once `loft fmt --check` and `loft check --fail-on warning` pass.
+5. Commit `spec/` once `loft fmt --check` and `loft check --fail-on warning` pass, and, where the
+   Yard skill is in use, once the person has approved the change there.
 
 `loft fmt` changes only layout and identity, never your words. Run it as often as you like.
 
@@ -61,7 +62,7 @@ of its name: it prints each match's key, label, kind, file and name. Never inven
 ## Expect `loft fmt` to reshape the file
 
 `loft fmt` writes each file in canonical layout: each item of a list of records gains a `key:`
-line first, quotes that YAML does not need are dropped, fields move into the Format's order, and
+line first, free text is written double-quoted and every other quote is dropped, fields move into the Format's order, and
 each reference by name becomes a key. Read a file again after `loft fmt` before you edit it; an
 edit prepared against the text you wrote may no longer match.
 
@@ -88,8 +89,8 @@ the order `format.md` gives; `loft fmt` restores the order if you do not.
 
 - Never write or change a `key`. A node keeps its key for life, through every rename and move.
 - Never write a label such as `RQ-12` where a key belongs, and never give a node a label field.
-  Labels live only in `spec/labels.yaml`, which `loft publish` writes and `loft fmt` clears of
-  deleted nodes. Prose may cite a label;
+  Labels live only in `spec/labels.yaml`, which `loft publish` writes and in which `loft fmt`
+  marks the binding of a deleted node departed. Prose may cite a label;
   `writing-rules.md` says how.
 - Never edit `spec/labels.yaml` or `loft.lock.json`.
 - Never write a `reviewed` hash into `loft.trace.yaml`: `loft reconcile --accept` writes it.

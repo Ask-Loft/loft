@@ -101,6 +101,8 @@ requirements:
         name: "The router tells the agent to ask every question that would change the content once, before the work starts."
       - key: 01a154c3-02c1-74da-a483-d4b6a19dd39d
         name: "The router tells the agent that a plan the user approved covers the commits it lists on the working branch."
+      - key: 01a18475-9e92-72e2-8662-f89470221ff1
+        name: "The router tells the agent that, where the Yard skill is in use, a change to `spec/` is committed only once the person has approved it there."
       - key: 01a154c3-02c1-74da-a483-d4b77091d61c
         name: "The router tells the agent to ask before each push, each merge into a shared branch, each `loft publish`, each deletion of a branch, each rewrite of history and each supersession of an accepted decision."
       - key: 01a154c3-02c1-74da-a483-d4b834d5008f

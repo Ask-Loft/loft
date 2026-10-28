@@ -424,3 +424,60 @@ fn a_task_assigned_after_the_worker_started_and_made_active_by_hand_is_released_
     assert_eq!(body["state"], "open");
     assert_eq!(body["assignee"]["agent"], "worker");
 }
+
+/// [`setup`], with `mine` assigned to the session's main agent and made active by its plan.
+fn mine_active() -> Yard {
+    let yard = setup();
+    assert_written(&yard.write(
+        "codex-session",
+        r#"[{"id":"mine","kind":"task","stage":"build","title":"Mine","state":"open",
+             "assignee":{"host":"codex","session":"codex-session"}}]"#,
+        &["--host", "codex"],
+    ));
+    hook(
+        &yard,
+        &plan_update(
+            event(&yard, "PostToolUse"),
+            &[("[yard:mine] Work", "in_progress")],
+        ),
+    );
+    assert_eq!(
+        block(&read_marked(&yard), "mine")["version"]["body"]["state"],
+        "active"
+    );
+    yard
+}
+
+#[test]
+fn a_main_agent_s_stop_leaves_its_active_task_active_and_its_later_progress_mirrored() {
+    let yard = mine_active();
+    hook(&yard, &event(&yard, "Stop"));
+    assert_eq!(
+        block(&read_marked(&yard), "mine")["version"]["body"]["state"],
+        "active"
+    );
+    hook(
+        &yard,
+        &plan_update(
+            event(&yard, "PostToolUse"),
+            &[("[yard:mine] Work", "completed")],
+        ),
+    );
+    assert_eq!(
+        block(&read_marked(&yard), "mine")["version"]["body"]["state"],
+        "done"
+    );
+}
+
+#[test]
+fn a_main_agent_s_interruption_or_session_end_returns_its_active_task_to_open() {
+    for name in ["Interrupt", "SessionEnd"] {
+        let yard = mine_active();
+        hook(&yard, &event(&yard, name));
+        assert_eq!(
+            block(&read_marked(&yard), "mine")["version"]["body"]["state"],
+            "open",
+            "{name}"
+        );
+    }
+}
