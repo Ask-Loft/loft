@@ -34,6 +34,13 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   last adapter descriptor, which adapters now send only with a session's first event and each
   turn start. A compaction that reports no tokens leaves the accounting complete, and an
   unusable token counter is unreported rather than dropping its event.
+- The Codex adapter decides at the source whether a cache-write count is measured: a zero it
+  cannot verify is left out of a request's tokens and kept under `usageSource.reported`. The page
+  server counts every host's tokens as given and keeps no host's rule. `loft yard upgrade`
+  settles older Codex totals of open Yard Logs and their events once, while no page server runs.
+- `loft` composes the `yard` skill packages from the source it embeds, as it does `loft-spec`.
+  The hidden maintainer command `loft skill package [--check]` writes or checks every plugin
+  package, and `scripts/package-skill.sh` runs it.
 - Yard's token details start collapsed while summary totals stay visible, with the fold choice
   remembered separately for each Yard Log through live updates and reloads.
 - Yard's free-form answers have explicit radio buttons or checkboxes. Typing selects the
