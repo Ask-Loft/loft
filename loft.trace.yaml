@@ -27132,6 +27132,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-capture.test.ts"
         name: "a native task still runs when preparation or mirroring fails and the next capture can run"
         body: fd83b22f36c78a7a4ccf0e9cc6da2c3a32723a923afb507f245eb1dcf1f1dba6
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "an interruption after the native task ran keeps its result while its mirror is abandoned"
+        body: aa33c4190d89b5244412a1e4f1bbac62d36303732b2518af0af7e824c4e8a5fe
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "an interruption before the native task ran cancels its capture"
+        body: 25ae21ecd89c29dee0b76902d90400632a64636cf31e58f3ef2987da741c13b0
   - node: 01a17f75-05db-72d1-b940-2d4f11bf8cd7
     reviewed: 045534bda02719a5116f4f728d119da22b311d9553342ed988144d593fd5b5d5
     tests:

@@ -159,10 +159,10 @@ export function registerYard(on: On, options: PluginOptions) {
   // Keep task preparation, native execution and its mirror in the same capture slot.
   on('tool.call', { tool: 'TaskCreate' }, ($, e, next) => {
     if (!state.isOn) return next(e)
-    return capture(e.agentId, next.signal, async () => {
+    return capture(e.agentId, next.signal, async keep => {
       const asking = await prepare($, e.agentId).catch(() => undefined)
       checkCapture(next.signal)
-      const ran = await next(e)
+      const ran = keep(await next(e))
       if (!next.signal.aborted) await mirrorCreated($, e, ran, asking, next.signal).catch(() => {})
       return ran
     })
@@ -170,8 +170,8 @@ export function registerYard(on: On, options: PluginOptions) {
 
   on('tool.call', { tool: 'TaskUpdate' }, ($, e, next) => {
     if (!state.isOn) return next(e)
-    return capture(e.agentId, next.signal, async () => {
-      const ran = await next(e)
+    return capture(e.agentId, next.signal, async keep => {
+      const ran = keep(await next(e))
       if (!next.signal.aborted) {
         const asking = await prepare($, e.agentId).catch(() => undefined)
         if (!next.signal.aborted) await mirrorUpdated($, e, ran, asking, next.signal).catch(() => {})

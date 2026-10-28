@@ -1,4 +1,5 @@
 import { expect, test } from 'claude-code/testing'
+import { capture } from '../hooks/adapter/capture'
 import { deferred, readDoc, SESSION, stage, start, world } from './yard-world'
 
 const questions = [{ question: 'Proceed?', header: 'Next', multiSelect: false, options: [{ label: 'Yes', description: '' }, { label: 'No', description: '' }] }]
@@ -181,4 +182,31 @@ test('cancelling a queued capture never lets a later call overtake its active pr
   await Promise.all([first, later])
   expect(overtook).toBe(false)
   expect(writes(w).map(batch => batch[0]!.title)).toEqual(['First', 'Later'])
+})
+
+test('an interruption after the native task ran keeps its result while its mirror is abandoned', async () => {
+  const interrupt = new AbortController()
+  const mirror = deferred<void>()
+  const captured = capture('kept-result', interrupt.signal, async keep => {
+    const ran = keep(created)
+    await mirror.promise
+    return ran
+  })
+  await Promise.resolve()
+  await Promise.resolve()
+  interrupt.abort()
+  const kept = await captured.then(ran => ran, () => 'lost')
+  mirror.resolve()
+  expect(kept).toEqual(created)
+})
+
+test('an interruption before the native task ran cancels its capture', async () => {
+  const interrupt = new AbortController()
+  const native = deferred<typeof created>()
+  const captured = capture('cancelled-result', interrupt.signal, async keep => keep(await native.promise))
+  await Promise.resolve()
+  interrupt.abort()
+  const kept = await captured.then(ran => ran, () => 'lost')
+  native.resolve(created)
+  expect(kept).toBe('lost')
 })
