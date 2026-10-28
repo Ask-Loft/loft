@@ -15,7 +15,7 @@ use crate::network::{self, Job};
 use crate::out::errln;
 use crate::settings;
 use crate::switches::UPDATE_CHECK;
-use crate::version::VERSION;
+use crate::version::{VERSION, Version};
 
 /// How long an answer, and a notice, last.
 const DAY: u64 = 86_400;
@@ -57,6 +57,12 @@ pub fn after_run() -> Option<Job> {
 
 /// The notice for the answer `kept` holds at `now`, if one is due.
 fn notice(kept: &Value, now: u64) -> Option<String> {
+    notice_for(kept, now, VERSION)
+}
+
+/// The notice for the answer `kept` holds at `now` to a `loft` of the version `running`, if one
+/// is due: a release newer than `running`, and no notice in the last day.
+fn notice_for(kept: &Value, now: u64, running: &str) -> Option<String> {
     let recent = kept["noticeAt"]
         .as_u64()
         .is_some_and(|at| now < at.saturating_add(DAY));
@@ -65,7 +71,7 @@ fn notice(kept: &Value, now: u64) -> Option<String> {
     }
     let latest = kept["latest"]["tag"].as_str()?.strip_prefix('v')?;
     let page = kept["latest"]["page"].as_str()?;
-    if parse(latest)? <= parse(VERSION)? {
+    if Version::parse(latest) <= Version::parse(running) {
         return None;
     }
     let how = match install::way() {
@@ -74,7 +80,7 @@ fn notice(kept: &Value, now: u64) -> Option<String> {
         Way::ReleaseBinary | Way::Unknown => format!("download it from {page}"),
     };
     Some(format!(
-        "loft: loft {latest} is available; this is {VERSION}. To update, {how}."
+        "loft: loft {latest} is available; this is {running}. To update, {how}."
     ))
 }
 
@@ -98,42 +104,30 @@ fn keep(body: &[u8], now: u64, mut kept: Value) {
     let _ = settings::write(UPDATE_CHECK.file, &kept);
 }
 
-/// The numbers of a version `X.Y.Z`, if it is one.
-pub fn parse(version: &str) -> Option<(u64, u64, u64)> {
-    let mut parts = version.split('.');
-    let mut number = || {
-        parts
-            .next()
-            .filter(|part| !part.is_empty() && part.bytes().all(|byte| byte.is_ascii_digit()))
-            .and_then(|part| part.parse().ok())
-    };
-    let parsed = (number()?, number()?, number()?);
-    parts.next().is_none().then_some(parsed)
-}
-
 #[cfg(test)]
 mod tests {
-    use super::parse;
+    use serde_json::json;
 
-    #[test]
-    fn only_three_numbers_parse_as_a_version() {
-        assert_eq!(parse("2.10.3"), Some((2, 10, 3)));
-        for text in [
-            "2.1",
-            "2.1.0.1",
-            "2.1.0-rc.1",
-            "nightly",
-            "",
-            "v2.1.0",
-            "2..1",
-        ] {
-            assert_eq!(parse(text), None, "{text}");
-        }
+    use super::notice_for;
+
+    fn kept(latest: &str) -> serde_json::Value {
+        json!({ "latest": { "tag": format!("v{latest}"), "page": "https://example.test/release" } })
     }
 
     #[test]
-    fn versions_compare_by_their_numbers() {
-        assert!(parse("2.10.0") > parse("2.9.9"));
-        assert!(parse("3.0.0") > parse("2.99.99"));
+    fn a_prerelease_is_told_of_the_release_of_its_numbers() {
+        let notice = notice_for(&kept("2.3.0"), 0, "2.3.0-alpha.1");
+        assert!(
+            notice.as_deref().is_some_and(
+                |notice| notice.contains("loft 2.3.0 is available; this is 2.3.0-alpha.1")
+            ),
+            "{notice:?}"
+        );
+    }
+
+    #[test]
+    fn a_release_is_not_told_of_itself_or_an_earlier_one() {
+        assert_eq!(notice_for(&kept("2.3.0"), 0, "2.3.0"), None);
+        assert_eq!(notice_for(&kept("2.2.9"), 0, "2.3.0-alpha.1"), None);
     }
 }

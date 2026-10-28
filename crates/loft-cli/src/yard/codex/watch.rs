@@ -8,6 +8,8 @@ use serde_json::{Value, json};
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::lock;
 
+use crate::version::{VERSION, Version};
+
 use super::Result;
 use super::classify_event;
 use super::commands;
@@ -64,10 +66,9 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
             let running = crate::yard::page::running(&home).map_err(|e| e.to_string())?;
             page_port = running.as_ref().map(|running| running.port);
             let current_port = page_port.unwrap_or(port);
-            let live = running.as_ref().is_some_and(|running| {
-                crate::update_check::parse(&running.version)
-                    >= crate::update_check::parse(crate::version::VERSION)
-            });
+            let live = running
+                .as_ref()
+                .is_some_and(|running| Version::parse(&running.version) >= Version::parse(VERSION));
             if !live {
                 start_server(hook, port, &mut server)?;
             }
