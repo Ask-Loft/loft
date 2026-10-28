@@ -53,6 +53,8 @@ requirements:
         name: "A totals file that already carries the marker is left as it was, so a second run changes nothing."
       - key: 01a1835b-a222-7677-8e34-d52d413fb73b
         name: "Totals files of a closed Yard Log are left as they were written."
+      - key: 01a18368-8abb-774b-ad89-b2abe250e47c
+        name: "While a page server runs, `loft yard upgrade` leaves totals files and event logs as they were and names the page server, so that a run after it stops settles them."
   - key: 01a1835b-a222-7677-8e34-d52ea28fec32
     statement:
       form: event_driven
